@@ -15,7 +15,7 @@ String station_psk = MY_ACCESSPOINT_PSK ;
  * @{
  */
 const char* ap_default_ssid = "SoftRF"; ///< Default SSID.
-const char* ap_default_psk = "1234567"; ///< Default PSK.
+const char* ap_default_psk = "123456123456"; ///< Default PSK.
 /// @}
 
 /// Uncomment the next line for verbose output over UART.
@@ -206,7 +206,7 @@ void WiFi_setup()
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 
-#ifdef CLOUD_MODE
+#if CLOUD_MODE
 
     // close any connection before send a new request.
     // This will free the socket on the WiFi shield

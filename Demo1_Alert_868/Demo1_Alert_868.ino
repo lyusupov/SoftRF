@@ -110,7 +110,7 @@ void loop()
   	nRF905_setData(data, NRF905_PAYLOAD_SIZE );
 
   	// Send payload (send fails if other transmissions are going on, keep trying until success)
-  	while(!nRF905_send()) { delay(0); } ;
+  	while(!nRF905_send()) { yield(); } ;
 
     txready = TX_SENT;
   }
@@ -129,7 +129,7 @@ void loop()
 		// Timeout
 		if(millis() - sendStartTime > TIMEOUT)
 			break;
-    delay(0);
+    yield();
 	}
 
 #if DEBUG
@@ -199,4 +199,6 @@ void loop()
   
   // Handle Web
   Web_loop();
+
+  yield();
 }
