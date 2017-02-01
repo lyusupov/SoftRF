@@ -1,0 +1,27 @@
+#######################################
+# Syntax Coloring Map For TrueRandom
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ESP8266TrueRandom  KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+rand  KEYWORD2
+random  KEYWORD2
+randomBit KEYWORD2
+randomByte  KEYWORD2
+memfill KEYWORD2
+mac KEYWORD2
+uuid  KEYWORD2
+uuidToString  KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
