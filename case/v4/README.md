@@ -8,5 +8,6 @@ This type of enclosure is built arround "SoftRF Shield Rev.1" and fits typical 2
 
 # Instructions
 
-3D print four STL files from this folder then stick them together with eight 2.5x10 mm screws.
-PCB is secured to the shell with M3 screws and nuts. 
+3D print four STL files from this folder. You may pick some printing advisories om [my Thingiverse page](http://www.thingiverse.com/thing:2075683).
+
+Fasten printed parts with eight 2.5x10 mm screws. PCB is secured to the shell with M3 screws and nuts. 
