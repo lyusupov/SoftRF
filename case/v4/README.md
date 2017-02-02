@@ -1,6 +1,6 @@
 # Enclosure version 4.0
 
-This type of enclosure is built arround "SoftRF Shield Rev.1" and fits typical 2.25 inch (58 mm) hole of an aircraft instrument panel.
+This type of enclosure is built around "SoftRF Shield Rev.1" and fits typical 2.25 inch (58 mm) hole of an aircraft instrument panel.
 
 # Exterior
 
