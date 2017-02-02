@@ -1,3 +1,4 @@
+
 # Schematics
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-schematics-rev1.1.png)
@@ -20,3 +21,15 @@ I've used [ShenZhen2U](http://www.shenzhen2u.com/) and is pretty much satisfied 
 # Bottom:
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-PCB-rev1.0-photo-bottom.jpg)
+
+# Soldered shield
+
+![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-PCB-rev1.0-photo-soldered.jpg)
+
+# Partially assembled
+
+![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-PCB-rev1.0-partial.jpg)
+
+# Complete
+
+![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-Electronics.jpg)
