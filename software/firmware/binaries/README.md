@@ -1,4 +1,4 @@
-# First-time firmware installation
+# First-time firmware installation procedure
 
 
 
