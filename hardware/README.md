@@ -14,7 +14,7 @@ If you would like to print the schematics I would suggest to use [this PDF file]
 Grab [this ZIP archive](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-PCB-Gerber-rev1.1.zip) with Gerber files then place an order for a "PCB service".
 I've used [ShenZhen2U](http://www.shenzhen2u.com/) and is pretty much satisfied with price, quality and turnaroud time.
 
-# Photo's of the unpopulated PCB.  Top:
+# Photo of the unpopulated PCB.  Top:
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/hardware/SoftRF-shield-PCB-rev1.0-photo-top.jpg)
 
