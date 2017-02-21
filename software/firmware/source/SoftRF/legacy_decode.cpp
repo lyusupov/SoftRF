@@ -159,7 +159,8 @@ bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon, int16_t ref
 }
 
 extern String Bin2Hex(byte *);
-legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat, float ref_lon, int16_t ref_alt, uint32_t timestamp) {
+legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat,
+      float ref_lon, int16_t ref_alt, uint32_t timestamp, unsigned int aircraft_type) {
 
     int ndx;
     uint8_t pkt_parity=0;
@@ -173,7 +174,7 @@ legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat, flo
     pkt->stealth = 0;
     pkt->no_track = 0;
 
-    pkt->aircraft_type = AIRCRAFT_TYPE_GLIDER;
+    pkt->aircraft_type = aircraft_type;
 
     pkt->gps = 323;
 

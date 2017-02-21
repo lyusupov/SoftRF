@@ -83,7 +83,7 @@ void RF_Transmit(void)
 
     time_t timestamp = now();
     char *data = (char *) legacy_encode(&TxPkt, ThisAircraft.addr, ThisAircraft.latitude,
-          ThisAircraft.longtitude, ThisAircraft.altitude, ThisAircraft.timestamp);
+          ThisAircraft.longtitude, ThisAircraft.altitude, ThisAircraft.timestamp, ThisAircraft.aircraft_type);
     //Serial.println(Bin2Hex((byte *) data));
 
     // Set address of device to send to

@@ -119,7 +119,9 @@ typedef struct {
 
 //#define MYADDR  Device_Id
 
-bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon, int16_t ref_alt, uint32_t timestamp, ufo_t *fop);
-legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat, float ref_lon, int16_t ref_alt, uint32_t timestamp);
+bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon,
+  int16_t ref_alt, uint32_t timestamp, ufo_t *fop);
+legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat,
+  float ref_lon, int16_t ref_alt, uint32_t timestamp, unsigned int aircraft_type);
 
 #endif

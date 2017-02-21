@@ -109,6 +109,7 @@ void handleSettings() {
 <option %s value='%d'>Tx Test</option>\
 <option %s value='%d'>Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
+<option %s value='%d'>UAV</option>\
 </select>\
 </td>\
 </tr>\
@@ -192,6 +193,7 @@ void handleSettings() {
   (settings->mode == SOFTRF_MODE_TX_TEST ? "selected" : ""), SOFTRF_MODE_TX_TEST,
   (settings->mode == SOFTRF_MODE_RX_TEST ? "selected" : ""), SOFTRF_MODE_RX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
+  (settings->mode == SOFTRF_MODE_UAV_BEACON ? "selected" : ""), SOFTRF_MODE_UAV_BEACON,
   (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
   (settings->band == RF_BAND_RU1 ? "selected" : ""), RF_BAND_RU1,
   (settings->band == RF_BAND_RU2 ? "selected" : ""), RF_BAND_RU2,

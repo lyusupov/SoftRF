@@ -138,12 +138,14 @@ void read_mavlink()
          mavlink_active = true;
          switch(msg.msgid) {
             case MAVLINK_MSG_ID_HEARTBEAT:
+               //Serial.println("MAVLINK_MSG_ID_HEARTBEAT");
                do_mavlink_heartbeat(&msg);
                if ( rate_request_sent_flag == false){
                   request_mavlink_rates();
                }
             break;
             case MAVLINK_MSG_ID_SYSTEM_TIME:
+               //Serial.println("MAVLINK_MSG_ID_SYSTEM_TIME");
                do_mavlink_system_time(&msg);
             break;
             case MAVLINK_MSG_ID_SYS_STATUS:
@@ -158,6 +160,7 @@ void read_mavlink()
             break;
 #else
             case MAVLINK_MSG_ID_GPS_RAW_INT:
+               //Serial.println("MAVLINK_MSG_ID_GPS_RAW_INT");
                do_mavlink_gps_raw_int(&msg);
             break;
 #endif          

@@ -90,9 +90,11 @@ void setup()
 
 
   if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
-    MAVLink_setup();  
+    MAVLink_setup();
+    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
   }  else {
-    GNSS_setup();  
+    GNSS_setup();
+    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_GLIDER;  
   }
   
   LED_setup();
@@ -352,11 +354,14 @@ void rx_test_loop()
 
 void uav_loop()
 {
+  bool success = false;
+
   PickMAVLinkFix();
 
   MAVLinkTimeSync();
 
   ThisAircraft.timestamp = now();
+
   if (the_aircraft.gps.fix_type == 3 /* 3D fix */ ) {
     ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
     ThisAircraft.longtitude = the_aircraft.location.gps_lon / 1e7;
@@ -364,6 +369,8 @@ void uav_loop()
     ThisAircraft.course = the_aircraft.location.gps_cog;
 
     RF_Transmit();
+
+    success = RF_Receive();
   }
 }
 
@@ -402,3 +409,4 @@ void bridge_loop()
   success = RF_Receive();
 
 }
+
