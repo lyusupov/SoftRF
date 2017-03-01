@@ -88,9 +88,9 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char temp[2560];
+  char temp[2600];
 
-  snprintf ( temp, 2560,
+  snprintf ( temp, 2600,
 
 "<html>\
 <head>\
@@ -135,6 +135,7 @@ void handleSettings() {
 <option %s value='%d'>6</option>\
 <option %s value='%d'>0.6</option>\
 <option %s value='%d'>0.1</option>\
+<option %s value='%d'>OFF</option>\
 </select>\
 </td>\
 </tr>\
@@ -205,6 +206,7 @@ void handleSettings() {
   (settings->txpower == NRF905_PWR_6 ? "selected" : ""),  NRF905_PWR_6,
   (settings->txpower == NRF905_PWR_n2 ? "selected" : ""),  NRF905_PWR_n2,
   (settings->txpower == NRF905_PWR_n10 ? "selected" : ""),  NRF905_PWR_n10,
+  (settings->txpower == NRF905_TX_PWR_OFF ? "selected" : ""),  NRF905_TX_PWR_OFF,
   (settings->volume == 1 ? "selected" : "") , (settings->volume == 2 ? "selected" : ""), (settings->volume == 3 ? "selected" : ""),
   (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
   (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),

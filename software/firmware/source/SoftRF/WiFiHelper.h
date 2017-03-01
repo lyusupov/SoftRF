@@ -19,9 +19,12 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
+#include <ESP8266WiFi.h>
+
 #include "SoftRF.h"
 
 void WiFi_setup(void);
 void WiFi_loop(void);
+IPAddress WiFi_get_broadcast(void);
 
 #endif /* WIFIHELPER_H */

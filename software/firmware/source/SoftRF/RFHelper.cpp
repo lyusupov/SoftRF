@@ -51,7 +51,12 @@ void RF_setup(void)
 
   //nRF905_setTransmitPower(NRF905_PWR_10);
   //nRF905_setTransmitPower(NRF905_PWR_n10);
-  nRF905_setTransmitPower((nRF905_pwr_t)settings->txpower);
+
+  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+    nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_n10);
+  } else {
+    nRF905_setTransmitPower((nRF905_pwr_t)settings->txpower);
+  }
 
   nRF905_setCRC(NRF905_CRC_16);
   //nRF905_setCRC(NRF905_CRC_DISABLE);
@@ -66,7 +71,13 @@ void RF_setup(void)
 
 void RF_Transmit(void)
 {
-  long RandomValue = ESP8266TrueRandom.random(500,1000);
+  long RandomValue;
+
+  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+    return;
+  }
+  
+  RandomValue = ESP8266TrueRandom.random(500,1000);
 
   if ((millis() - TxTimeMarker > (int)RandomValue)) {
 #if 0

@@ -26,6 +26,8 @@
 #define RF_FREQ   NRF905_FREQ
 #define PKT_SIZE  NRF905_PAYLOAD_SIZE
 
+#define NRF905_TX_PWR_OFF  0xFF
+
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
 
@@ -100,6 +102,7 @@ extern void Export(void);
 extern void ParseData(void);
 extern void ClearExpired(void);
 extern void *WiFi_relay_from_android(void);
+extern void WiFi_relay_to_android(void);
 
 #endif /* SOFTRF_H */
 

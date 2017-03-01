@@ -181,9 +181,20 @@ void LED_show(int bearing) {
 
 void LED_Clear_noflush() {
 
+  for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+    strip.setPixelColor(i, LED_COLOR_BACKLIT);
+  }
+
   if (rx_packets_counter > prev_rx_packets_counter) {
     strip.setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
     prev_rx_packets_counter = rx_packets_counter;
+
+    if (settings->mode == SOFTRF_MODE_ALARM || settings->mode == SOFTRF_MODE_BRIDGE) {
+      for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+        strip.setPixelColor(i, LED_COLOR_RED);
+      }    
+    }
+
   }  else {
     strip.setPixelColor(LED_STATUS_RX, LED_COLOR_BLACK);  
   }
@@ -197,10 +208,6 @@ void LED_Clear_noflush() {
 
   strip.setPixelColor(LED_STATUS_POWER, Battery_voltage() > 2.3 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
   strip.setPixelColor(LED_STATUS_SAT, gnss.location.isValid() && (gnss.location.age()) <= 3000 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
-
-  for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-    strip.setPixelColor(i, LED_COLOR_BACKLIT);
-  }
 
 }
 

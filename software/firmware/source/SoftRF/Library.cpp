@@ -23,6 +23,7 @@
 
 #include "GNSSHelper.h"
 #include "RFHelper.h"
+#include "WiFiHelper.h"
 
 #include "SoftRF.h"
 
@@ -369,4 +370,19 @@ void *WiFi_relay_from_android()
   } else {
     return NULL;
   }  // end if
+}
+
+char misc_hexdata[2 * PKT_SIZE + 1] ;
+void WiFi_relay_to_android()
+{
+    Udp.beginPacket(WiFi_get_broadcast(), RELAY_PORT);
+    fo.raw.toCharArray(misc_hexdata, sizeof(misc_hexdata));
+    snprintf(UDPpacketBuffer, sizeof(UDPpacketBuffer), "%s\n", misc_hexdata );
+
+#if 0
+    Serial.println(UDPpacketBuffer);
+#endif
+
+    Udp.write(UDPpacketBuffer, strlen(UDPpacketBuffer));
+    Udp.endPacket();
 }

@@ -263,7 +263,8 @@ void WiFi_setup()
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
     // WiFi.setOutputPower(10); // 10 dB
-    system_phy_set_max_tpw(4 * 0); // 0 dB
+    WiFi.setOutputPower(0); // 0 dB
+    //system_phy_set_max_tpw(4 * 0); // 0 dB
     delay(10);
 
     WiFi.softAP(ap_default_ssid, ap_default_psk);
@@ -288,3 +289,19 @@ void WiFi_loop()
     dnsServer.processNextRequest();  
   }
 }
+
+IPAddress WiFi_get_broadcast()
+{
+  struct ip_info ipinfo;
+  IPAddress broadcastIp;
+
+  if (WiFi.getMode() == WIFI_STA) {
+    wifi_get_ip_info(STATION_IF, &ipinfo);
+  } else {
+    wifi_get_ip_info(SOFTAP_IF, &ipinfo);
+  }
+  broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
+//  Serial.println(broadcastIp.toString());
+  return broadcastIp;  
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   

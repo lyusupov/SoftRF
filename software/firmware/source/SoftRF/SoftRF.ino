@@ -380,7 +380,7 @@ void bridge_loop()
   bool success;
 
   void *answer = WiFi_relay_from_android();
-  if (answer != NULL)
+  if ((answer != NULL) && (settings->txpower != NRF905_TX_PWR_OFF) )
   {
     memcpy(TxBuffer, (unsigned char*) answer, PKT_SIZE);
 
@@ -408,5 +408,20 @@ void bridge_loop()
 
   success = RF_Receive();
 
-}
+  if(success)
+  {
 
+    fo.raw = Bin2Hex(RxBuffer);
+
+    if (settings->nmea_p) {
+      Serial.print(F("$PSRFI,")); Serial.print(now()); Serial.print(F(",")); Serial.println(fo.raw);
+    }
+
+    WiFi_relay_to_android();
+  }
+
+  if (isTimeToDisplay()) {
+    LED_Clear();  
+    LEDTimeMarker = millis();  
+  }
+}
