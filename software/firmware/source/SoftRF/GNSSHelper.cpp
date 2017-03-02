@@ -157,14 +157,17 @@ void GNSSTimeSync()
 
 void PickGNSSFix()
 {
+  bool isValidSentence = false;
+
   //check UART for data
   while (swSer.available() > 0) {
     GNSSbuf[GNSS_cnt] = swSer.read();
-    gnss.encode(GNSSbuf[GNSS_cnt]);
-    if (settings->nmea_g) {
-      Serial.write(GNSSbuf[GNSS_cnt]);
+    isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
+    if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
+      Serial.write((char *) &GNSSbuf[0], GNSS_cnt+1);
+      Serial.write('\n');
     }
-    if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == 127) {
+    if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
 #if 0
       //push UART data to all connected telnet clients
       for (i = 0; i < MAX_SRV_CLIENTS; i++) {
