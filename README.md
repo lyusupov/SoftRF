@@ -10,8 +10,16 @@ Features:
 UPDATE (21/02/2017): I am currently deploying accumulated results of work made in 2016 and composing a document with an overview.
 This will take couple more weeks to go. Right now you can make yourself familiar with [previous version of the document](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf). 
 
+# Standalone
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v4/SoftRF-Case-v4-Exterior.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/first-five-units.jpg)
+
+# Software driven
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/softrf-emulation.jpg)
+
+# UAV appliance
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/softrrf-case-uav-ext.jpg )
