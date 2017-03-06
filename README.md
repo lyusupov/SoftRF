@@ -20,6 +20,8 @@ This will take couple more weeks to go. Right now you can make yourself familiar
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/softrf-emulation.jpg)
 
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/LK8000-emu.jpg)
+
 # UAV appliance
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/softrrf-case-uav-ext.jpg )
