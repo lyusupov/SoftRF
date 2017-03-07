@@ -37,8 +37,6 @@ def platform_init(emu):
     device = "/dev/ttyUSB0" # device
     emu.myId = format(int(hostid(),16) & 0xffffff, 'x')
 
-    "Process one incoming GPS message into one outgoing UDP packet."
-
     #gpsd.stream(WATCH_DEVICE, device)
     emu.gpsd.stream(WATCH_ENABLE)
 

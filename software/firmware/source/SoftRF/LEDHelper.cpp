@@ -189,10 +189,14 @@ void LED_Clear_noflush() {
     strip.setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
     prev_rx_packets_counter = rx_packets_counter;
 
-    if (settings->mode == SOFTRF_MODE_ALARM || settings->mode == SOFTRF_MODE_BRIDGE) {
+    if (settings->mode == SOFTRF_MODE_ALARM) {
       for (uint16_t i = 0; i < RING_LED_NUM; i++) {
         strip.setPixelColor(i, LED_COLOR_RED);
       }    
+    } else if (settings->mode == SOFTRF_MODE_BRIDGE) {
+      for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+        strip.setPixelColor(i, LED_COLOR_MI_RED);
+      }
     }
 
   }  else {

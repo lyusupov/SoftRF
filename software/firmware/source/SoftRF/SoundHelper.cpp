@@ -23,7 +23,9 @@
 #include <osapi.h>
 #include <gpio.h>
 #include <os_type.h>
+extern "C" {
 #include <user_interface.h>
+}
 
 void ICACHE_FLASH_ATTR user_init()
 {   
@@ -39,19 +41,22 @@ void Sound_setup(void)
 }
 
 
-void Sound_test(void)
+void Sound_test(int var)
 {
   swSer.enableRx(false);
-  tone(10, 440, 500);delay(500);
-  tone(10, 640, 500);delay(500);
-  tone(10, 840, 500);delay(500);
-  tone(10, 1040, 500);
+
+  if (var == REASON_DEFAULT_RST || var == REASON_EXT_SYS_RST) {
+    tone(10, 440, 500);delay(500);
+    tone(10, 640, 500);delay(500);
+    tone(10, 840, 500);delay(500);
+    tone(10, 1040, 500);
+  } else {
+    tone(10, 1040, 500);delay(500);
+    tone(10, 840, 500);delay(500); 
+    tone(10, 640, 500);delay(500);
+    tone(10, 440, 500);;
+  }
   delay(1000); 
-/*
-  tone(10, 1040, 500);delay(500);
-  tone(10, 840, 500);delay(500); 
-  tone(10, 640, 500);delay(500);
-  tone(10, 440, 500);delay(500);
-*/
+
   swSer.enableRx(true);
 }

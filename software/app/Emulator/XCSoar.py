@@ -22,6 +22,15 @@ from math import sin, cos, radians
 
 import re
 
+DISTANCE_CLOSE = 500
+DISTANCE_NEAR  = 1500
+DISTANCE_FAR   = 5000
+ALTITUDE_FAR   = 2000
+
+ALARM_LEVEL_LOW       = 1
+ALARM_LEVEL_IMPORTANT = 2
+ALARM_LEVEL_URGENT    = 3
+
 """ Calculate  the checksum for NMEA sentence 
     from a GPS device. An NMEA sentence comprises
     a number of comma separated fields followed by
@@ -48,35 +57,44 @@ def checksum(sentence):
 def export(emu, icao, trlat, trlgt, tralt):
 
     distance = EarthDistance((trlat, trlgt), (emu.mylat, emu.mylon))
-    (dx, dy) = MeterOffset((trlat, trlgt), (emu.mylat, emu.mylon))
-    
-    math_angle = Rad2Deg(atan2(dy , dx))
-    
-    azim = 90 - math_angle
-    if emu.NorthUp is False:
-      azim = azim - emu.mytrk
-    azim = (azim + 360) % 360
-    
     alt_diff = tralt - emu.refalt
-    
-    bearing = int(azim)
-    if bearing > 180:
-      bearing = bearing - 360
-    #print distance , azimuth
-    str1 = "$PFLAU,%d,1,2,1,1,%d,2,%d,%u*" % \
-      ( 1, bearing, int(alt_diff), int(distance) )
-    csum = checksum(str1)
-    str1 += "%02x\r\n" % csum
-    #print str1
-    #self.tty.write(str1)
-    emu.x.sendto(bytearray(str1), (emu.xcsoar_host, emu.xcsoar_port))
-    # XCSoar ignores warning data from PFLAU
-    azim_rad = radians(azim)
-    str2 = "$PFLAA,1,%d,%d,%d,2,%s,,,,,1*" % \
-      ( int(distance * cos(azim_rad)), int(distance * sin(azim_rad)),\
-        int(alt_diff), icao )
-    csum = checksum(str2)
-    str2 += "%02x\r\n" % csum
-    #print str2
-    #self.tty.write(str2)
-    emu.x.sendto(bytearray(str2), (emu.xcsoar_host, emu.xcsoar_port))
+    if (distance < DISTANCE_FAR and alt_diff < ALTITUDE_FAR): # Filter out unrealistic readings
+      (dx, dy) = MeterOffset((trlat, trlgt), (emu.mylat, emu.mylon))
+      
+      math_angle = Rad2Deg(atan2(dy , dx))
+      
+      azim = 90 - math_angle
+      if emu.NorthUp is False:
+        azim = azim - emu.mytrk
+      azim = (azim + 360) % 360
+      
+      bearing = int(azim)
+      if bearing > 180:
+        bearing = bearing - 360
+      #print distance , azimuth
+
+      if (distance < DISTANCE_CLOSE):
+        alarm_level = ALARM_LEVEL_URGENT
+      else:
+        if (distance < DISTANCE_NEAR):
+          alarm_level = ALARM_LEVEL_IMPORTANT
+        else:
+          alarm_level = ALARM_LEVEL_LOW          
+
+      str1 = "$PFLAU,%d,1,2,1,%d,%d,2,%d,%u*" % \
+        ( 1, alarm_level, bearing, int(alt_diff), int(distance) )
+      csum = checksum(str1)
+      str1 += "%02x\r\n" % csum
+      #print str1
+      #self.tty.write(str1)
+      emu.x.sendto(bytearray(str1), (emu.xcsoar_host, emu.xcsoar_port))
+      # XCSoar ignores warning data from PFLAU
+      azim_rad = radians(azim)
+      str2 = "$PFLAA,%d,%d,%d,%d,2,%s,,,,,1*" % \
+        ( alarm_level, int(distance * cos(azim_rad)), \
+          int(distance * sin(azim_rad)), int(alt_diff), icao )
+      csum = checksum(str2)
+      str2 += "%02x\r\n" % csum
+      #print str2
+      #self.tty.write(str2)
+      emu.x.sendto(bytearray(str2), (emu.xcsoar_host, emu.xcsoar_port))

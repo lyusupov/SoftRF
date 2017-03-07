@@ -44,6 +44,9 @@
 */
 
 #include <SoftwareSerial.h>
+extern "C" {
+#include <user_interface.h>
+}
 
 #include "WiFiHelper.h"
 #include "OTAHelper.h"
@@ -77,8 +80,17 @@ SoftwareSerial swSer(D3 /* 0 */, /* 5 */ 9 , false, 256);
 
 void setup()
 {
+  rst_info *resetInfo;
+
+  resetInfo = ESP.getResetInfoPtr();
+
   Serial.begin(38400);
   //Misc_info();
+
+  Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
+  Serial.println(ESP.getResetReason());
+  Serial.print(F("Free heap size: ")); Serial.println(ESP.getFreeHeap());
+  Serial.println(ESP.getResetInfo()); Serial.println("");
 
   EEPROM_setup();
   Battery_setup();
@@ -109,7 +121,7 @@ void setup()
 #endif
 
   LED_test();
-  Sound_test();
+  Sound_test(resetInfo->reason);
  
   if (settings->mode == SOFTRF_MODE_TX_TEST || settings->mode == SOFTRF_MODE_RX_TEST) {
     Time_setup();  

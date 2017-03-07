@@ -43,7 +43,7 @@ String station_psk = MY_ACCESSPOINT_PSK ;
  * @{
  */
 const char* ap_default_ssid = "SoftRF"; ///< Default SSID.
-const char* ap_default_psk = "1234567"; ///< Default PSK.
+const char* ap_default_psk = "12345678"; ///< Default PSK.
 /// @}
 
 /// Uncomment the next line for verbose output over UART.

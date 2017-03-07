@@ -24,7 +24,7 @@
 #include "SoftRF.h"
 
 void Sound_setup(void);
-void Sound_test(void);
+void Sound_test(int var);
 
 extern SoftwareSerial swSer;
 
