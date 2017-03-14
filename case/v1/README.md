@@ -14,3 +14,4 @@ that was presented in December 2015.
 # Instructions
 
 3D print three STL files from this folder then stick them together with M4 screws.
+You may pick some printing advisories on [my Thingiverse page](http://www.thingiverse.com/thing:2075669).
