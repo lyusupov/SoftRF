@@ -10,7 +10,7 @@ Features:
 UPDATE (21/02/2017): I am currently deploying accumulated results of work made in 2016 and composing a document with an overview.
 This will take couple more weeks to go. Right now you can make yourself familiar with [previous version of the document](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf). 
 
-# User Documentation:
+# Documentation :
 
 * SoftRF overview
     * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf)
@@ -35,7 +35,7 @@ This will take couple more weeks to go. Right now you can make yourself familiar
     * Applications
         * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
 
-# Highlights:
+# Highlights :
 
 * **Standalone**
 
