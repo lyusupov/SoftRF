@@ -1,4 +1,4 @@
-# SoftRF
+ # SoftRF
 
 Multifunctional DIY IoT-based general aviation proximity awareness system.
 
@@ -13,8 +13,8 @@ This will take couple more weeks to go. Right now you can make yourself familiar
 # Documentation :
 
 * SoftRF overview
-    * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf)
-    * Part 2
+    * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf) (Dec'15)
+    * Part 2 (Mar'17) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
