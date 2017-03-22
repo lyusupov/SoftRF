@@ -7,14 +7,11 @@ Features:
 * standalone, battery powered, compatible proximity awareness instrument that fits typical 2.25 inches hole ;
 * lightweight Tx-only version to carry onboard of an UAV.
 
-UPDATE (21/02/2017): I am currently deploying accumulated results of work made in 2016 and composing a document with an overview.
-This will take couple more weeks to go. Right now you can make yourself familiar with [previous version of the document](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf). 
-
 # Documentation :
 
 * SoftRF overview
-    * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf) (December 2015)
-    * Part 2 (March 2017) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) _**COMING SOON!**_
+    * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf) (PDF, December 2015)
+    * [Part 2](https://github.com/lyusupov/SoftRF/raw/master/documents/SoftRF-release-2.pdf) (PDF, March 2017) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
