@@ -31,11 +31,13 @@
 
 uint32_t get_num_heartbeats();
 void read_mavlink();
+void write_mavlink(uint32_t addr, float latitude, float longtitude, int32_t altitude);
 
 #include "include/mavlink/v1.0/mavlink_types.h"
 
 extern mavlink_system_t mavlink_system;
 
 #include "include/mavlink/v1.0/ardupilotmega/mavlink.h"
+#include "include/mavlink/v1.0/uAvionix/mavlink.h"
 
 #endif // ARD_MAV_TO_FRSKY_MAVLINK_H_INCLUDED

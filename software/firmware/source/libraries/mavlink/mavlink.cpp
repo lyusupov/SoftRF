@@ -1,4 +1,4 @@
-/*/*
+/*
 
  Copyright (c) 2012 Andy Little 11/11/2012
 
@@ -24,7 +24,6 @@
 */
 
 #include <Arduino.h>
-//#include <cstdint>
 #include <mavlink.h>
 #include <aircraft.h>
 
@@ -33,14 +32,14 @@
 extern SoftwareSerial swSer;
 #endif
 
-mavlink_system_t mavlink_system = {12,1,0,0};
+mavlink_system_t mavlink_system = {12, MAV_COMP_ID_ADSB};
 
 void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 {
 #if defined __AVR_ATmega32U4_
   Serial1.write(ch);
 #elif defined ESP8266
-  swSer.write(ch);
+  Serial.write(ch);
 #else
   Serial.write(ch);
 #endif
@@ -70,15 +69,14 @@ namespace{
       uint16_t rate;
    };
 
-// The same as the minimosd
-
    mav_sr_t MAVStreams[] = {
-      {MAV_DATA_STREAM_RAW_SENSORS,0x02},
+//      {MAV_DATA_STREAM_RAW_SENSORS,0x02},
       {MAV_DATA_STREAM_EXTENDED_STATUS,0x02},
-      {MAV_DATA_STREAM_RC_CHANNELS,0x05},
-      {MAV_DATA_STREAM_POSITION,0x02},
-      {MAV_DATA_STREAM_EXTRA1, 0x05},
-      {MAV_DATA_STREAM_EXTRA2,0x02}
+//      {MAV_DATA_STREAM_RC_CHANNELS,0x05},
+//      {MAV_DATA_STREAM_POSITION,0x02},
+//      {MAV_DATA_STREAM_EXTRA1, 0x05},
+//      {MAV_DATA_STREAM_EXTRA2, 0x02},
+      {MAV_DATA_STREAM_EXTRA3,0x02}
    };
 
    void request_mavlink_rate(uint8_t mav_system, uint8_t mav_component, uint8_t stream_number, uint16_t rate );
@@ -110,7 +108,8 @@ namespace{
    #endif
      void do_mavlink_vfr_hud(mavlink_message_t * pmsg);
      void do_mavlink_attitude(mavlink_message_t * pmsg);
-
+     void do_mavlink_adsb(uint32_t addr, float latitude, float longtitude, int32_t altitude);
+     void do_mavlink_traffic(mavlink_message_t * pmsg);
 } // ~namespace
 
 void read_mavlink()
@@ -170,6 +169,10 @@ void read_mavlink()
             case MAVLINK_MSG_ID_ATTITUDE:
                do_mavlink_attitude(&msg);
             break;
+            case MAVLINK_MSG_ID_ADSB_VEHICLE:
+               //Serial.println("MAVLINK_MSG_ID_ADSB_VEHICLE");
+               do_mavlink_traffic(&msg);
+            break;
             default:
             break;
          }
@@ -180,12 +183,17 @@ void read_mavlink()
   parse_error += status.parse_error;
 }
 
+void write_mavlink(uint32_t addr, float latitude, float longtitude, int32_t altitude)
+{
+    do_mavlink_adsb(addr, latitude, longtitude, altitude);
+}
+
 namespace {
 
   void do_mavlink_heartbeat(mavlink_message_t* pmsg)
   {    
       apm_mav_system    = pmsg->sysid;
-      apm_mav_component = pmsg->compid;
+      apm_mav_component = pmsg->compid;     
       apm_mav_type      = mavlink_msg_heartbeat_get_type(pmsg);
 #ifdef MAVLINK10             
       the_aircraft.custom_mode = mavlink_msg_heartbeat_get_custom_mode(pmsg);
@@ -294,4 +302,34 @@ namespace {
       // the_aircraft.attitude.yaw = quan::angle_<float>::rad{mavlink_msg_attitude_get_yaw(pmsg)};
       the_aircraft.attitude.yaw = mavlink_msg_attitude_get_yaw(pmsg) * rad_to_deg;
    }
+
+   void do_mavlink_adsb(uint32_t addr, float latitude, float longtitude, int32_t altitude)
+   {
+      uint8_t system_id = mavlink_system.sysid;
+      uint8_t component_id = mavlink_system.compid;
+      uint32_t ICAO_address = addr ;
+      int32_t lat = int32_t(latitude * 10000000) ;  
+      int32_t lon = int32_t(longtitude * 10000000) ;
+      uint8_t altitude_type = ADSB_ALTITUDE_TYPE_GEOMETRIC;
+      int32_t alt = altitude * 1000; /*< Altitude(ASL) in millimeters*/
+      uint16_t heading = 0;
+      uint16_t hor_velocity = 0;
+      int16_t ver_velocity = 0;
+      const char *callsign = "NONE";
+      uint8_t emitter_type = ADSB_EMITTER_TYPE_GLIDER;
+      uint8_t tslc = 1;
+      uint16_t flags = ADSB_FLAGS_VALID_COORDS | ADSB_FLAGS_VALID_ALTITUDE ;
+      uint16_t squawk = 0;   
+   
+      mavlink_msg_adsb_vehicle_send(MAVLINK_COMM_0, ICAO_address, lat, lon,
+                                altitude_type, alt, heading,
+                                hor_velocity, ver_velocity, callsign,
+                                emitter_type,  tslc,  flags,  squawk);
+   }
+
+   void do_mavlink_traffic(mavlink_message_t * pmsg)
+   {
+    /* Nothing to do right now yet */
+   }
+
 }// ~namespace
