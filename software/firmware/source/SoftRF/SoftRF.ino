@@ -102,6 +102,7 @@ void setup()
 
 
   if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
+    Serial.begin(57600);
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
   }  else {
@@ -209,6 +210,39 @@ void normal_loop()
 
   ClearExpired();
 
+}
+
+#define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
+
+void uav_loop()
+{
+  bool success = false;
+
+  PickMAVLinkFix();
+
+  MAVLinkTimeSync();
+
+  ThisAircraft.timestamp = now();
+
+  if (MAVisValidFix()) {
+    ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
+    ThisAircraft.longtitude = the_aircraft.location.gps_lon / 1e7;
+    ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
+    ThisAircraft.course = the_aircraft.location.gps_cog;
+
+    RF_Transmit();
+  }
+
+  success = RF_Receive();
+
+  if (success && MAVisValidFix()) ParseData();
+
+  if (isTimeToExport() && MAVisValidFix()) {
+    MAVLinkShareTraffic();
+    ExportTimeMarker = millis(); 
+  }
+
+  ClearExpired();
 }
 
 //const float tx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
@@ -364,27 +398,6 @@ void rx_test_loop()
   ClearExpired();
 }
 
-void uav_loop()
-{
-  bool success = false;
-
-  PickMAVLinkFix();
-
-  MAVLinkTimeSync();
-
-  ThisAircraft.timestamp = now();
-
-  if (the_aircraft.gps.fix_type == 3 /* 3D fix */ ) {
-    ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
-    ThisAircraft.longtitude = the_aircraft.location.gps_lon / 1e7;
-    ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
-    ThisAircraft.course = the_aircraft.location.gps_cog;
-
-    RF_Transmit();
-
-    success = RF_Receive();
-  }
-}
 
 void bridge_loop()
 {

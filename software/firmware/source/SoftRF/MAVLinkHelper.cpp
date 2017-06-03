@@ -47,3 +47,16 @@ void MAVLinkTimeSync()
     }  
   }
 }
+
+void MAVLinkShareTraffic()
+{
+    time_t this_moment = now();
+
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+
+        write_mavlink(Container[i].addr, Container[i].latitude, Container[i].longtitude, Container[i].altitude);
+
+      }
+    }
+}
