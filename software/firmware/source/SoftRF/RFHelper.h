@@ -23,6 +23,10 @@
 #include <TimeLib.h>
 #include <ESP8266TrueRandom.h>
 
+#include <lmic.h>
+#include <hal/hal.h>
+#include "lib_crc.h"
+
 #include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "WebHelper.h"
@@ -39,9 +43,27 @@ enum
 	RF_BAND_AU 	/* 921 MHz band */
 };
 
+typedef struct rfchip_ops_struct {
+  bool (*probe)();
+  void (*setup)();
+  bool (*receive)();
+  void (*transmit)();
+} rfchip_ops_t;
+
 void RF_setup(void);
 void RF_Transmit(void);
 bool RF_Receive(void);
+
+bool nrf905_probe(void);
+void nrf905_setup(void);
+bool nrf905_receive(void);
+void nrf905_transmit(void);
+
+bool sx1276_probe(void);
+void sx1276_setup(void);
+bool sx1276_receive(void);
+void sx1276_transmit(void);
+
 
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 //extern tx_state txready;

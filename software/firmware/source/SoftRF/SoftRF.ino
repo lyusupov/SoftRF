@@ -84,7 +84,7 @@ void setup()
 
   resetInfo = ESP.getResetInfoPtr();
 
-  Serial.begin(38400);
+  Serial.begin(38400);  
   //Misc_info();
 
   Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
@@ -364,6 +364,15 @@ void tx_test_loop()
   RF_Transmit();
 
   success = RF_Receive();
+
+  if(success)
+  {
+    fo.raw = Bin2Hex(RxBuffer);
+
+    if (settings->nmea_p) {
+      Serial.print(F("$PSRFI,")); Serial.print(now()); Serial.print(F(",")); Serial.println(fo.raw);
+    }
+  }
 }
 
 const float rx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };

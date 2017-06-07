@@ -25,7 +25,69 @@ legacy_packet TxPkt;
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
+rfchip_ops_t *rf_chip = NULL;
+
+rfchip_ops_t nrf905_ops = {
+  nrf905_probe,
+  nrf905_setup,
+  nrf905_receive,
+  nrf905_transmit  
+};
+
+rfchip_ops_t sx1276_ops = {
+  sx1276_probe,
+  sx1276_setup,
+  sx1276_receive,
+  sx1276_transmit  
+};
+ 
 void RF_setup(void)
+{
+
+  if (rf_chip == NULL) {
+    if (sx1276_ops.probe()) {
+      rf_chip = &sx1276_ops;  
+      Serial.println("SX1276 RFIC is detected.");
+    } else {
+      rf_chip = &nrf905_ops;
+      Serial.println("SX1276 RFIC is NOT detected! Fallback to NRF905 operations.");
+    }  
+  }  
+
+  rf_chip->setup();
+}
+
+void RF_Transmit(void)
+{
+  if (rf_chip) {
+    rf_chip->transmit();
+  }
+}
+
+
+bool RF_Receive(void)
+{
+  bool rval = false;
+
+  if (rf_chip) {
+    rval = rf_chip->receive();
+  }
+  
+  return rval;
+}
+
+/*
+ * NRF905-specific code
+ *
+ *
+ */
+
+bool nrf905_probe()
+{
+  return true;
+}
+
+void nrf905_setup()
 {
   // Start up
   nRF905_init();
@@ -69,7 +131,37 @@ void RF_setup(void)
   nRF905_receive();
 }
 
-void RF_Transmit(void)
+bool nrf905_receive()
+{
+  bool success = false;
+
+  // Put into receive mode
+  nRF905_receive();
+
+  // Wait for reply with timeout
+  unsigned long sendStartTime = millis();
+  while (1)
+  {
+    success = nRF905_getData(RxBuffer, sizeof(RxBuffer));
+    if (success) { // Got data
+      rx_packets_counter++;
+      break;        
+    }
+
+    // Timeout
+    if (millis() - sendStartTime > TIMEOUT) {
+#if DEBUG
+      Serial.println("Timeout");
+#endif
+      break;
+    }
+    delay(0);
+  }
+
+  return success;
+}
+
+void nrf905_transmit()
 {
   long RandomValue;
 
@@ -116,33 +208,252 @@ void RF_Transmit(void)
   }
 }
 
+/*
+ * SX1276-specific code
+ *
+ *
+ */
 
-bool RF_Receive(void)
+#if !defined(DISABLE_INVERT_IQ_ON_RX)
+#error This example requires DISABLE_INVERT_IQ_ON_RX to be set. Update \
+       config.h in the lmic library to set it.
+#endif
+
+// Pin mapping
+const lmic_pinmap lmic_pins = {
+    .nss = D8,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = LMIC_UNUSED_PIN,
+    .dio = {D0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+};
+
+osjob_t sx1276_txjob;
+osjob_t sx1276_timeoutjob;
+
+static void sx1276_tx_func (osjob_t* job);
+static void sx1276_rx_func (osjob_t* job);
+void sx1276_rx(osjobcb_t func);
+
+static bool sx1276_receive_complete = false;
+static bool sx1276_transmit_complete = false;
+
+#define SX1276_RegVersion          0x42 // common
+
+static u1_t sx1276_readReg (u1_t addr) {
+    hal_pin_nss(0);
+    hal_spi(addr & 0x7F);
+    u1_t val = hal_spi(0x00);
+    hal_pin_nss(1);
+    return val;
+}
+
+bool sx1276_probe()
+{
+  u1_t v;
+
+  hal_init();
+  
+  v = sx1276_readReg(SX1276_RegVersion);
+
+  if (v == 0x12) {
+    return true;
+  } else {
+    return false;  
+  }
+}
+
+void sx1276_setup()
+{
+  // initialize runtime env
+  os_init();
+
+  // Set up these settings once, and use them for both TX and RX
+
+  if (settings->band == RF_BAND_EU) {
+    LMIC.freq = 868400000UL; 
+  } else if (settings->band == RF_BAND_RU1) {
+    LMIC.freq = 868200000UL; 
+  } else if (settings->band == RF_BAND_RU2) {
+    LMIC.freq = 868800000UL;
+  } else if (settings->band == RF_BAND_NZ) {
+    LMIC.freq = 869250000UL;  
+  } else if (settings->band == RF_BAND_US) {
+    LMIC.freq = 915000000UL;
+  } else if (settings->band == RF_BAND_AU) {
+    LMIC.freq = 921000000UL;   
+  } else {  /* RF_BAND_CN */
+    LMIC.freq = 433200000UL;  
+  }
+
+  // Maximum TX power
+//  LMIC.txpow = 27;
+  LMIC.txpow = 15;
+  // Use a medium spread factor. This can be increased up to SF12 for
+  // better range, but then the interval should be (significantly)
+  // lowered to comply with duty cycle limits as well.
+  LMIC.datarate =  DR_FSK /*  DR_SF9  */ ;
+  // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
+  LMIC.rps = updr2rps(LMIC.datarate);
+
+}
+
+bool sx1276_receive()
 {
   bool success = false;
 
-  // Put into receive mode
-  nRF905_receive();
-
   // Wait for reply with timeout
   unsigned long sendStartTime = millis();
-  while (1)
-  {
-    success = nRF905_getData(RxBuffer, sizeof(RxBuffer));
-    if (success) { // Got data
-      rx_packets_counter++;
-      break;        
+
+  sx1276_receive_complete = false;
+
+  sx1276_rx(sx1276_rx_func);
+
+  while (sx1276_receive_complete == false) {
+      // execute scheduled jobs and events
+      os_runloop_once();
+      // Timeout
+      if (millis() - sendStartTime > TIMEOUT) {
+#if DEBUG
+        Serial.println("Timeout");
+#endif
+        break;
+      }
+
+    delay(0);
+  };
+
+  os_radio(RADIO_RST);
+
+  if (sx1276_receive_complete == true) {
+
+    for (u1_t i=0; i<(LMIC.dataLen-2); i++) {
+      RxBuffer[i] = LMIC.frame[i];
     }
 
-    // Timeout
-    if (millis() - sendStartTime > TIMEOUT) {
-#if DEBUG
-      Serial.println("Timeout");
-#endif
-      break;
-    }
-    delay(0);
+    rx_packets_counter++;
+    success = true;
   }
 
   return success;
+}
+
+void sx1276_transmit()
+{
+  long RandomValue;
+
+  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+    return;
+  }
+  
+  RandomValue = ESP8266TrueRandom.random(500,1000);
+
+  if ((millis() - TxTimeMarker > (int)RandomValue)) {
+
+    time_t timestamp = now();
+
+    sx1276_transmit_complete = false;
+    os_setCallback(&sx1276_txjob, sx1276_tx_func);
+
+    while (sx1276_transmit_complete == false) {
+      // execute scheduled jobs and events
+      os_runloop_once();
+      delay(0);
+    } ;
+
+    if (settings->nmea_p) {
+      Serial.print(F("$PSRFO,")); Serial.print(timestamp); Serial.print(F(",")); Serial.println(Bin2Hex((byte *) &TxPkt));
+    }
+    tx_packets_counter++;
+    TxTimeMarker = millis();
+  } 
+  
+}
+
+// Enable rx mode and call func when a packet is received
+void sx1276_rx(osjobcb_t func) {
+  LMIC.osjob.func = func;
+  LMIC.rxtime = os_getTime(); // RX _now_
+  // Enable "continuous" RX (e.g. without a timeout, still stops after
+  // receiving a packet)
+  os_radio(RADIO_RX /* RADIO_RXON */);
+  //Serial.println("RX");
+}
+
+static void sx1276_rx_func (osjob_t* job) {
+
+  u2_t crc16 = 0xffff;  /* seed value */
+  u1_t i;
+
+  //Serial.print("Got ");
+  //Serial.print(LMIC.dataLen);
+  //Serial.println(" bytes");
+
+  crc16 = update_crc_ccitt(crc16, 0x31);
+  crc16 = update_crc_ccitt(crc16, 0xFA);
+  crc16 = update_crc_ccitt(crc16, 0xB6);
+  
+  for (i=0; i<(LMIC.dataLen-2); i++)
+  {
+#if DEBUG
+    Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
+#endif
+    crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
+  }
+  u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+#if DEBUG
+  if (crc16 == pkt_crc ) {
+    Serial.printf(" %04x is valid crc", pkt_crc);
+  } else {
+    Serial.printf(" %04x is wrong crc", pkt_crc);
+  }
+  Serial.println();
+#endif
+  if (crc16 == pkt_crc) {
+    sx1276_receive_complete = true;  
+  } else {
+    sx1276_receive_complete = false;
+  }
+}
+
+// Transmit the given string and call the given function afterwards
+void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
+
+  u2_t crc16 = 0xffff;  /* seed value */
+  
+  os_radio(RADIO_RST); // Stop RX first
+  delay(1); // Wait a bit, without this os_radio below asserts, apparently because the state hasn't changed yet
+
+  LMIC.dataLen = 0;
+
+  crc16 = update_crc_ccitt(crc16, 0x31);
+  crc16 = update_crc_ccitt(crc16, 0xFA);
+  crc16 = update_crc_ccitt(crc16, 0xB6);
+
+  for (u1_t i=0; i<size; i++) {
+    LMIC.frame[LMIC.dataLen] = buf[i];
+
+    crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[LMIC.dataLen]));
+    LMIC.dataLen++;
+  }
+
+
+  LMIC.frame[LMIC.dataLen++] = (crc16 >>  8) & 0xFF;
+  LMIC.frame[LMIC.dataLen++] = (crc16      ) & 0xFF;
+
+  LMIC.osjob.func = func;
+  os_radio(RADIO_TX);
+  //Serial.println("TX");
+}
+
+static void sx1276_txdone_func (osjob_t* job) {
+  sx1276_transmit_complete = true;
+}
+
+static void sx1276_tx_func (osjob_t* job) {
+
+  unsigned char *data = (unsigned char *) legacy_encode(&TxPkt, ThisAircraft.addr,
+        ThisAircraft.latitude, ThisAircraft.longtitude, ThisAircraft.altitude,
+        ThisAircraft.timestamp, ThisAircraft.aircraft_type);
+
+  sx1276_tx(data, sizeof(TxPkt), sx1276_txdone_func);
 }
