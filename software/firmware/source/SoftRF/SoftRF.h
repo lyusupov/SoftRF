@@ -23,6 +23,14 @@
 
 #define SOFTRF_FIRMWARE_VERSION "0.9"
 
+#define LOGGER_IS_ENABLED 0
+
+#if LOGGER_IS_ENABLED
+#define StdOut  LogFile
+#else
+#define StdOut  Serial
+#endif /* LOGGER_IS_ENABLED */
+
 #define RF_FREQ   NRF905_FREQ
 #define PKT_SIZE  NRF905_PAYLOAD_SIZE
 

@@ -18,6 +18,10 @@
 
 #include "RFHelper.h"
 
+#if LOGGER_IS_ENABLED
+#include "LogHelper.h"
+#endif /* LOGGER_IS_ENABLED */
+
 byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 unsigned long TxTimeMarker = 0;
 legacy_packet TxPkt;
@@ -47,10 +51,10 @@ void RF_setup(void)
   if (rf_chip == NULL) {
     if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;  
-      Serial.println("SX1276 RFIC is detected.");
+      Serial.println(F("SX1276 RFIC is detected."));
     } else {
       rf_chip = &nrf905_ops;
-      Serial.println("SX1276 RFIC is NOT detected! Fallback to NRF905 operations.");
+      Serial.println(F("SX1276 RFIC is NOT detected! Fallback to NRF905 operations."));
     }  
   }  
 
@@ -151,7 +155,7 @@ bool nrf905_receive()
     // Timeout
     if (millis() - sendStartTime > TIMEOUT) {
 #if DEBUG
-      Serial.println("Timeout");
+      Serial.println(F("Timeout"));
 #endif
       break;
     }
@@ -201,7 +205,7 @@ void nrf905_transmit()
       delay(0);
     } ;
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFO,")); Serial.print(timestamp); Serial.print(F(",")); Serial.println(Bin2Hex((byte *) data));
+      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
     }
     tx_packets_counter++;
     TxTimeMarker = millis();
@@ -314,7 +318,7 @@ bool sx1276_receive()
       // Timeout
       if (millis() - sendStartTime > TIMEOUT) {
 #if DEBUG
-        Serial.println("Timeout");
+        Serial.println(F("Timeout"));
 #endif
         break;
       }
@@ -361,7 +365,7 @@ void sx1276_transmit()
     } ;
 
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFO,")); Serial.print(timestamp); Serial.print(F(",")); Serial.println(Bin2Hex((byte *) &TxPkt));
+      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt));
     }
     tx_packets_counter++;
     TxTimeMarker = millis();
@@ -395,16 +399,16 @@ static void sx1276_rx_func (osjob_t* job) {
   for (i=0; i<(LMIC.dataLen-2); i++)
   {
 #if DEBUG
-    Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
+    Serial.printf(F("%02x"), (u1_t)(LMIC.frame[i]));
 #endif
     crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
   }
   u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
 #if DEBUG
   if (crc16 == pkt_crc ) {
-    Serial.printf(" %04x is valid crc", pkt_crc);
+    Serial.printf(F(" %04x is valid crc"), pkt_crc);
   } else {
-    Serial.printf(" %04x is wrong crc", pkt_crc);
+    Serial.printf(F(" %04x is wrong crc"), pkt_crc);
   }
   Serial.println();
 #endif

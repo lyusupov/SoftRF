@@ -14,6 +14,8 @@
  * TinyGPS++ and PString Libraries are developed by Mikal Hart
  * Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
  * TrueRandom Library is developed by Peter Knight
+ * IBM LMIC framework is maintained by Matthijs Kooijman
+ * ESP8266FtpServer is developed by David Paiva
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +64,10 @@ extern "C" {
 
 #include "SoftRF.h"
 
+#if LOGGER_IS_ENABLED
+#include "LogHelper.h"
+#endif /* LOGGER_IS_ENABLED */
+
 #define DEBUG 0
 
 
@@ -86,6 +92,10 @@ void setup()
 
   Serial.begin(38400);  
   //Misc_info();
+
+#if LOGGER_IS_ENABLED
+  Logger_setup();
+#endif /* LOGGER_IS_ENABLED */
 
   Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
   Serial.println(ESP.getResetReason());
@@ -161,6 +171,10 @@ void loop()
 
   // Handle Web
   Web_loop();
+
+#if LOGGER_IS_ENABLED
+  Logger_loop();
+#endif /* LOGGER_IS_ENABLED */
 
   delay(0);
 }
@@ -370,7 +384,7 @@ void tx_test_loop()
     fo.raw = Bin2Hex(RxBuffer);
 
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFI,")); Serial.print(now()); Serial.print(F(",")); Serial.println(fo.raw);
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
   }
 }
@@ -433,7 +447,7 @@ void bridge_loop()
       delay(0);
     } ;
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFO,")); Serial.print(now()); Serial.print(F(",")); Serial.println(Bin2Hex((byte *) data));
+      StdOut.print(F("$PSRFO,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
     }
 
     tx_packets_counter++;
@@ -448,7 +462,7 @@ void bridge_loop()
     fo.raw = Bin2Hex(RxBuffer);
 
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFI,")); Serial.print(now()); Serial.print(F(",")); Serial.println(fo.raw);
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
 
     WiFi_relay_to_android();
