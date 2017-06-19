@@ -57,7 +57,7 @@ void Logger_setup()
     } else {
       LogFile.println();
       LogFile.println(F("******* Logging is restarted *******"));
-      LogFile.print(F("*** Storage free space:"));
+      LogFile.print(F("*** Storage free space: "));
       LogFile.print(fs_info.totalBytes - fs_info.usedBytes);    
       LogFile.println(F(" bytes ***"));
   

@@ -27,6 +27,10 @@
 
 #include "SoftRF.h"
 
+#if LOGGER_IS_ENABLED
+#include "LogHelper.h"
+#endif /* LOGGER_IS_ENABLED */
+
 extern WiFiUDP Udp;
 
 #define TypeADSB  1
@@ -176,11 +180,9 @@ void ParseData()
 
     fo.raw = Bin2Hex(RxBuffer);
 
-#if 1
     if (settings->nmea_p) {
-      Serial.print(F("$PSRFI,")); Serial.print(now()); Serial.print(F(",")); Serial.println(fo.raw);
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
-#endif
 
     if (legacy_decode(
             (legacy_packet *) RxBuffer,
