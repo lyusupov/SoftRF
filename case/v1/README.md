@@ -1,6 +1,6 @@
 # Enclosure version 1.0
 
-This type of enclosure were designed to protect PCB-less assembly of minimal SoftRF hardware
+This type of enclosure was designed to protect PCB-less assembly of minimal SoftRF hardware
 that was presented in December 2015.
 
 # Exterior
