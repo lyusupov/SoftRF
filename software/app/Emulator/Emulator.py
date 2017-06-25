@@ -66,7 +66,7 @@ def get_default_gateway_linux():
 
 class legacy_emulator:
 
-    def __init__(self, bridge_host='', bridge_port=12390, \
+    def __init__(self, bridge_host='192.168.4.255', bridge_port=12390, \
       xcsoar_host='localhost' , xcsoar_port=4353):
       print 'legacy_emulator: bridge_host =' , bridge_host , ', bridge_port =' , bridge_port , \
         ', xcsoar_host =' , xcsoar_host, ', xcsoar_port =' , xcsoar_port
@@ -77,8 +77,8 @@ class legacy_emulator:
         broadip = inet_ntoa( inet_aton(myip)[:3] + b'\xff' )
         self.src_host = gethostbyname(broadip)
       self.src_port = bridge_port
-      self.dst_host = gethostbyname(get_default_gateway_linux())
-      #self.dst_host = gethostbyname('192.168.157.159')
+      #self.dst_host = gethostbyname(get_default_gateway_linux())
+      self.dst_host = gethostbyname('192.168.4.1')
       self.dst_port = bridge_port
       self.xcsoar_host = gethostbyname(xcsoar_host)
       self.xcsoar_port = xcsoar_port
@@ -156,7 +156,7 @@ class legacy_emulator:
       
               else:
                   print "Don't know how to decrypt packet type {0:02x}".format(in_bytes[3])
-                  icao, _, _, _, _, _, _, _, _, _, _, _ = self.extract_values(in_bytes[0:24])
+                  icao, _, _, _, _, _, _, _, _, _, _, _ = extract_values(in_bytes[0:24])
                   lat, lon, alt = -1, -1, -1
 
               return (0,0,0,0) # ""
