@@ -25,8 +25,13 @@ Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmitt
 
 3) SoftRF-Emu .py files from here: https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator
    has to be transferred into QPython scripts 'home' directory of your Tablet/Cellphone ;
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Emulator-files.jpg)
+
 4) configure your XCSoar or LK8000 data source onto UDP port number 4353.   
- 
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime-XCSoar-Settings.jpg)
+
 ## Instructions:
 
 1) set the prerequisites above up ;
