@@ -36,7 +36,8 @@ Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmitt
 
 1) set the prerequisites above up ;
 2) enable your Tablet/Cellphone GNSS ;
-3) connect your Tablet/Cellphone to SoftRF Wi-Fi Access Point. Default SSID: SoftRF . Default password: 12345678 ;
+3) connect your Tablet/Cellphone to SoftRF Wi-Fi Access Point. <br>
+   Default SSID: SoftRF . Default password: 12345678 . URL: http://192.168.4.1/ ;
 4) put your "Prime" into "Bridge" mode ;
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/firmware-settings-bridge.jpg)
