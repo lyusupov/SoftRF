@@ -3,7 +3,7 @@
 <br>
 
 Emulator is currently implemented as a background Python process being running
-on an Android or RaspberryPi/Linux host.
+on an Android or Raspberry Pi host.
 
 ## List of functions:
 
