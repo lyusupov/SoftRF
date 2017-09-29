@@ -46,7 +46,7 @@ from legacy_protocol import pack_values, make_key, encrypt_packet, \
      hex_to_bits, decrypt_packet, extract_values, parityOf, recover_lat, \
      recover_lon
 
-from XCSoar import export
+from NMEA import export_nmea
 
 #Snippet for getting the default gateway on Linux
 #No dependencies beyond Python stdlib
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         (icao, lat, lon, alt) = session.process_d()
         if icao != 0:
           print  "R", session.rx_cnt, session.mytstamp, icao, "%.4f" % lat, "%.4f" % lon, int(alt)
-          export(session, icao, lat, lon, alt)
+          export_nmea(session, icao, lat, lon, alt)
           session.rx_cnt = session.rx_cnt + 1
 
     except KeyboardInterrupt:
