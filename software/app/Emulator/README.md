@@ -44,3 +44,18 @@ Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmitt
 
 5) execute "Emulator.py" within QPython ;
 6) if no errors appeared at step 5, launch your XCSoar or LK8000 app.
+
+## Optional:
+
+In addition to traditional NMEA data protocol the Emulator is able to speak in Garmin GDL90 language as well.<br>
+One known good example of compatible EFB applications is "Avare".
+
+At first, you will need to install and set up an "Avare plug-in" as follows:
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Avare-plugin.jpg)
+
+
+"Avare" app will show the FLARM traffic on a moving map:
+
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Avare.jpg)
