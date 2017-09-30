@@ -19,7 +19,7 @@
 
 from sys import argv
 from socket import socket, gethostname, gethostbyname, AF_INET, SOCK_DGRAM, \
-      SOL_SOCKET, SO_REUSEADDR
+      SOL_SOCKET, SO_REUSEADDR, SO_BROADCAST
 from socket import inet_ntoa, inet_aton, error
 from time import time, sleep
 
@@ -47,6 +47,12 @@ from legacy_protocol import pack_values, make_key, encrypt_packet, \
      recover_lon
 
 from NMEA import export_nmea
+from GDL90 import Encoder
+from math import isnan
+
+#DEF_SEND_ADDR="255.255.255.255"
+DEF_SEND_ADDR="192.168.4.255"
+DEF_SEND_PORT=43211
 
 #Snippet for getting the default gateway on Linux
 #No dependencies beyond Python stdlib
@@ -62,7 +68,6 @@ def get_default_gateway_linux():
                 continue
 
             return inet_ntoa(struct.pack("=L", int(fields[2], 16)))
-
 
 class legacy_emulator:
 
@@ -89,6 +94,10 @@ class legacy_emulator:
       self.s.setblocking(0)
       self.d = socket(AF_INET, SOCK_DGRAM)
       self.x = socket(AF_INET, SOCK_DGRAM)
+      self.g = socket(AF_INET, SOCK_DGRAM)
+      self.g.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+      self.g.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+      self.gdl90_encoder = Encoder()
       self.tx_cnt = 0
       self.rx_cnt = 0
       self.mylat = 0
@@ -200,12 +209,34 @@ if __name__ == "__main__":
     session = legacy_emulator(**opts)
     
     platform_init(session)
+
+
+    destAddr = DEF_SEND_ADDR
+    destPort = int(DEF_SEND_PORT)
     
     try:
       while True:
   
+        # Heartbeat Message
+        buf = session.gdl90_encoder.msgHeartbeat()
+        session.g.sendto(buf, (destAddr, destPort))
+
         result = platform_get_fix(session)
         if result:
+
+          if isnan(session.mytrk):
+            heading = 0
+          else:
+            heading = int(session.mytrk)
+
+          # Demo data
+          # session.mylat = 43.9790152
+          # session.mylon = -88.5559553
+	
+          # Ownership Report
+          buf = session.gdl90_encoder.msgOwnershipReport(latitude=session.mylat, longitude=session.mylon, altitude=session.myalt, trackHeading=heading, callSign=session.myId)
+          session.g.sendto(buf, (destAddr, destPort))
+
           print "S", session.tx_cnt, session.mytstamp, session.myId, "%.4f" % session.mylat, "%.4f" % session.mylon, int(session.myalt)
           session.process_e()
           session.tx_cnt = session.tx_cnt + 1
@@ -213,7 +244,22 @@ if __name__ == "__main__":
         (icao, lat, lon, alt) = session.process_d()
         if icao != 0:
           print  "R", session.rx_cnt, session.mytstamp, icao, "%.4f" % lat, "%.4f" % lon, int(alt)
+
           export_nmea(session, icao, lat, lon, alt)
+
+          # Demo data
+          # lat = 43.97446
+          # lon = -88.6032945
+          # alt = 1000
+
+          tcall ='FLARM'
+          icao_bytes = numpy.packbits(hex_to_bits(icao))
+          taddr = (icao_bytes[0]<<16) | (icao_bytes[1]<<8) | icao_bytes[2] 
+ 
+          # Traffic Report
+          buf = session.gdl90_encoder.msgTrafficReport(latitude=lat, longitude=lon, altitude=alt, callSign=tcall, address=taddr)
+          session.g.sendto(buf, (destAddr, destPort))
+
           session.rx_cnt = session.rx_cnt + 1
 
     except KeyboardInterrupt:
