@@ -237,7 +237,7 @@ void handleRoot() {
   int32_t alt = ThisAircraft.altitude;
 
   dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
-  dtostrf(ThisAircraft.longtitude, 8, 4, str_lon);
+  dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
   dtostrf(vdd, 4, 2, str_Vcc);
 
   snprintf ( Root_temp, 2048,
@@ -263,7 +263,7 @@ void handleRoot() {
   <tr><th align=left>Time</th><td align=right>%u</td></tr>\
   <tr><th align=left>Sattelites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Longtitude</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Altitude</th><td align=right>%d</td></tr>\
  </table>\
  <hr>\

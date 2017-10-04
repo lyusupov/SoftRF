@@ -55,7 +55,7 @@ void MAVLinkShareTraffic()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        write_mavlink(Container[i].addr, Container[i].latitude, Container[i].longtitude, Container[i].altitude);
+        write_mavlink(Container[i].addr, Container[i].latitude, Container[i].longitude, Container[i].altitude);
 
       }
     }

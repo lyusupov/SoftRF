@@ -1,8 +1,8 @@
 /*
- * legacy_decode, decoder for legacy radio protocol
+ * Protocol_Legacy, decoder for legacy radio protocol
  * Copyright (C) 2014-2015 Stanislaw Pusep
  *
- * legacy_encode, encoder for legacy radio protocol
+ * Protocol_Legacy, encoder for legacy radio protocol
  * Copyright (C) 2016-2017 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <stdint.h>
 
 #include "SoftRF.h"
-#include "legacy_codec.h"
+#include "Protocol_Legacy.h"
 
 /* http://en.wikipedia.org/wiki/XXTEA */
 void btea(uint32_t *v, int8_t n, const uint32_t key[4]) {
@@ -108,7 +108,12 @@ uint8_t parity(uint32_t x) {
     return (parity % 2);
 }
 
-bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon, int16_t ref_alt, uint32_t timestamp, ufo_t *fop) {
+bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+
+    float ref_lat = this_aircraft->latitude;
+    float ref_lon = this_aircraft->longitude;
+    int16_t ref_alt = (int16_t) this_aircraft->altitude;
+    uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
     uint32_t key[4];
     int ndx;
@@ -144,7 +149,7 @@ bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon, int16_t ref
     fop->addr_type = pkt->addr_type;
     fop->timestamp = timestamp;
     fop->latitude = (float)lat / 1e7;
-    fop->longtitude = (float)lon / 1e7;
+    fop->longitude = (float)lon / 1e7;
     fop->altitude = alt;
     fop->vs = vs;
     fop->aircraft_type = pkt->aircraft_type;
@@ -159,12 +164,18 @@ bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon, int16_t ref
 }
 
 extern String Bin2Hex(byte *);
-legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat,
-      float ref_lon, int16_t ref_alt, uint32_t timestamp, unsigned int aircraft_type) {
+legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft) {
 
     int ndx;
     uint8_t pkt_parity=0;
     uint32_t key[4];
+
+    uint32_t id = this_aircraft->addr;
+    float lat = this_aircraft->latitude;
+    float lon = this_aircraft->longitude;
+    int16_t alt = (int16_t) this_aircraft->altitude;
+    uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
+    unsigned int aircraft_type =  this_aircraft->aircraft_type;
 
     pkt->addr = id & 0x00FFFFFF;
     pkt->addr_type = ADDR_TYPE_FLARM;
@@ -178,9 +189,9 @@ legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat,
 
     pkt->gps = 323;
 
-    pkt->lat = (uint32_t ( ref_lat * 1e7) >> 7) & 0x7FFFF;
-    pkt->lon = (uint32_t ( ref_lon * 1e7) >> 7) & 0xFFFFF;
-    pkt->alt = ref_alt ;
+    pkt->lat = (uint32_t ( lat * 1e7) >> 7) & 0x7FFFF;
+    pkt->lon = (uint32_t ( lon * 1e7) >> 7) & 0xFFFFF;
+    pkt->alt = alt ;
 
     pkt->_unk0 = 0;
     pkt->_unk1 = 0;

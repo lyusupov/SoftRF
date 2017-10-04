@@ -31,7 +31,7 @@ void WiFi_forward_to_argus()
     char str_lon[16];
 
     dtostrf(fo.latitude, 8, 4, str_lat);
-    dtostrf(fo.longtitude, 8, 4, str_lon);
+    dtostrf(fo.longitude, 8, 4, str_lon);
 
     Udp.beginPacket(ARGUS_HOSTNAME, ARGUS_PORT);
 
@@ -57,15 +57,15 @@ void WiFi_forward_to_cloud() {
   breakTime(fo.timestamp, tm);
 
   dtostrf_workaround(take_minutes(fo.latitude), 5, 2, str_lat);
-  dtostrf_workaround(take_minutes(fo.longtitude), 5, 2, str_lon);
+  dtostrf_workaround(take_minutes(fo.longitude), 5, 2, str_lon);
 
-  //Serial.print(fo.latitude); Serial.print(" "); Serial.println(fo.longtitude); 
+  //Serial.print(fo.latitude); Serial.print(" "); Serial.println(fo.longitude); 
 
   snprintf(UDPpacketBuffer, sizeof(UDPpacketBuffer), \
     "FLR%X>APRS,qAS,%s:/%02d%02d%02dh%02d%s%s/%03d%s%s/A=%05u TS:%d RAW:%s", \
     fo.addr, STATION_ID, tm.Hour, tm.Minute, tm.Second, \
     abs(take_degrees(fo.latitude)), str_lat, (fo.latitude < 0 ? "S" : "N"), \
-    abs(take_degrees(fo.longtitude)), str_lon, (fo.longtitude < 0 ? "W" : "E"), \
+    abs(take_degrees(fo.longitude)), str_lon, (fo.longitude < 0 ? "W" : "E"), \
     fo.altitude, fo.timestamp, fo.raw.c_str() );
 
 #ifdef SERIAL_VERBOSE

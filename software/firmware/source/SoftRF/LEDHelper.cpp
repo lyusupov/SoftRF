@@ -230,8 +230,8 @@ void LED_DisplayTraffic() {
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
 
     if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
-      bearing = (int) gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longtitude, Container[i].latitude, Container[i].longtitude);     
-      distance = (int) gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longtitude, Container[i].latitude, Container[i].longtitude);
+      bearing = (int) gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);     
+      distance = (int) gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
       if (settings->pointer == DIRECTION_TRACK_UP) {
         bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
       }

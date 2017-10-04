@@ -191,7 +191,7 @@ void normal_loop()
   ThisAircraft.timestamp = now();
   if (isValidFix()) {
     ThisAircraft.latitude = gnss.location.lat();
-    ThisAircraft.longtitude = gnss.location.lng();
+    ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
     ThisAircraft.course = gnss.course.deg();
 
@@ -240,7 +240,7 @@ void uav_loop()
 
   if (MAVisValidFix()) {
     ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
-    ThisAircraft.longtitude = the_aircraft.location.gps_lon / 1e7;
+    ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
     ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
     ThisAircraft.course = the_aircraft.location.gps_cog;
 
@@ -368,7 +368,7 @@ void tx_test_loop()
 
   if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
     ThisAircraft.latitude =  pgm_read_float( &tx_test_positions[pos_ndx][0]);
-    ThisAircraft.longtitude =  pgm_read_float( &tx_test_positions[pos_ndx][1]);
+    ThisAircraft.longitude =  pgm_read_float( &tx_test_positions[pos_ndx][1]);
     pos_ndx = (pos_ndx + 1) % NUM_POSITIONS;
     TxPosUpdMarker = millis();
   }
@@ -398,7 +398,7 @@ void rx_test_loop()
   ThisAircraft.timestamp = now();
 
   ThisAircraft.latitude = pgm_read_float( &rx_test_positions[0][0]);;
-  ThisAircraft.longtitude = pgm_read_float( &rx_test_positions[0][1]);
+  ThisAircraft.longitude = pgm_read_float( &rx_test_positions[0][1]);
   ThisAircraft.altitude = ALTITUDE;
   ThisAircraft.course = 0;
 

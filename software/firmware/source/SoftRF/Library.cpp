@@ -94,7 +94,7 @@ void Export()
 #if 0
         Serial.println(fo.addr);
         Serial.println(fo.latitude, 4);
-        Serial.println(fo.longtitude, 4);
+        Serial.println(fo.longitude, 4);
         Serial.println(fo.altitude);
         Serial.println(fo.distance);
         Serial.println(fo.vs);
@@ -103,7 +103,7 @@ void Export()
         Serial.println(fo.no_track);
 #endif
         if (settings->nmea_l) {
-          distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longtitude, Container[i].latitude, Container[i].longtitude);
+          distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
 
           if (distance < EXPORT_DISTANCE_FAR) {  
 
@@ -115,7 +115,7 @@ void Export()
               alarm_level = ALARM_LEVEL_LOW;          
             }
 
-            bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longtitude, Container[i].latitude, Container[i].longtitude);
+            bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
             alt_diff = Container[i].altitude - ThisAircraft.altitude;
             snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
                     total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING, POWER_STATUS_GOOD, alarm_level,
@@ -184,10 +184,7 @@ void ParseData()
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
 
-    if (legacy_decode(
-            (legacy_packet *) RxBuffer,
-            ThisAircraft.latitude, ThisAircraft.longtitude, ThisAircraft.altitude,
-            ThisAircraft.timestamp, &fo)) {
+    if (legacy_decode((legacy_packet *) RxBuffer, &ThisAircraft, &fo)) {            
 
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
         int max_dist_ndx = 0;
@@ -285,8 +282,8 @@ int CalcBearing(double lat1, double lon1, double lat2, double lon2)
 
 void WiFi_forward_to_xcsoar()
 {
-    float dist = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longtitude, fo.latitude, fo.longtitude);
-    int bearing = CalcBearing(fo.latitude, fo.longtitude, ThisAircraft.latitude, ThisAircraft.longtitude);
+    float dist = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, fo.latitude, fo.longitude);
+    int bearing = CalcBearing(fo.latitude, fo.longitude, ThisAircraft.latitude, ThisAircraft.longitude);
     int alt_diff = fo.altitude - ThisAircraft.altitude;
     char *csum_ptr;
     unsigned char cs = 0; //clear any old checksum

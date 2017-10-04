@@ -1,5 +1,5 @@
 /*
- * legacy_codec.h
+ * Protocol_Legacy.h
  * Copyright (C) 2014-2015 Stanislaw Pusep
  * Copyright (C) 2016-2017 Linar Yusupov
  *
@@ -17,9 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LEGACY_CODEC
-
-#define LEGACY_CODEC
+#ifndef PROTOCOL_LEGACY_H
+#define PROTOCOL_LEGACY_H
 
 #define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b }
 #define LEGACY_KEY2 0x045d9f3b
@@ -119,9 +118,7 @@ typedef struct {
 
 //#define MYADDR  Device_Id
 
-bool legacy_decode(legacy_packet *pkt, float ref_lat, float ref_lon,
-  int16_t ref_alt, uint32_t timestamp, ufo_t *fop);
-legacy_packet *legacy_encode(legacy_packet *pkt, uint32_t id, float ref_lat,
-  float ref_lon, int16_t ref_alt, uint32_t timestamp, unsigned int aircraft_type);
+bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop);
+legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft);
 
-#endif
+#endif /* PROTOCOL_LEGACY_H */

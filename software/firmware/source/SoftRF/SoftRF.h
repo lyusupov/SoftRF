@@ -72,7 +72,7 @@ typedef struct UFO {
     uint32_t  addr;
     uint8_t   addr_type;
     float     latitude;
-    float     longtitude;
+    float     longitude;
     int32_t   altitude;
     float     course;
     unsigned int aircraft_type;
@@ -102,6 +102,13 @@ enum
 {
 	DIRECTION_TRACK_UP,
 	DIRECTION_NORTH_UP  
+};
+
+enum
+{
+	RF_PROTOCOL_LEGACY,  /* Air V6 */
+	RF_PROTOCOL_OGNTP,     /* Open Glider Network tracker */
+	RF_PROTOCOL_P3I      /* PilotAware */
 };
 
 extern void Misc_info(void);

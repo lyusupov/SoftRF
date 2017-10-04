@@ -30,7 +30,7 @@
 #include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "WebHelper.h"
-#include "legacy_codec.h"
+#include "Protocol_Legacy.h"
 
 enum
 {

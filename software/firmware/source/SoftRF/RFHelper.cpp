@@ -189,8 +189,7 @@ void nrf905_transmit()
     //char *data = (char *) TxBuffer;
 
     time_t timestamp = now();
-    char *data = (char *) legacy_encode(&TxPkt, ThisAircraft.addr, ThisAircraft.latitude,
-          ThisAircraft.longtitude, ThisAircraft.altitude, ThisAircraft.timestamp, ThisAircraft.aircraft_type);
+    char *data = (char *) legacy_encode(&TxPkt, &ThisAircraft);
     //Serial.println(Bin2Hex((byte *) data));
 
     // Set address of device to send to
@@ -455,9 +454,7 @@ static void sx1276_txdone_func (osjob_t* job) {
 
 static void sx1276_tx_func (osjob_t* job) {
 
-  unsigned char *data = (unsigned char *) legacy_encode(&TxPkt, ThisAircraft.addr,
-        ThisAircraft.latitude, ThisAircraft.longtitude, ThisAircraft.altitude,
-        ThisAircraft.timestamp, ThisAircraft.aircraft_type);
+  unsigned char *data = (unsigned char *) legacy_encode(&TxPkt, &ThisAircraft);
 
   sx1276_tx(data, sizeof(TxPkt), sx1276_txdone_func);
 }
