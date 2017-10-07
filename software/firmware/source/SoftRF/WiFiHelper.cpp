@@ -26,6 +26,7 @@
 #include "WiFiHelper.h"
 #include "OTAHelper.h"
 #include "GNSSHelper.h"
+#include "EEPROMHelper.h"
 
 // Expose Espressif SDK functionality - wrapped in ifdef so that it still
 // compiles on other platforms
@@ -278,9 +279,12 @@ void WiFi_setup()
     Serial.println(WiFi.softAPIP());
   }
 
-  Serial.print("Udp server started at port ");
-  Serial.println(RFlocalPort);
-  Udp.begin(RFlocalPort);
+  if (settings->mode == SOFTRF_MODE_BRIDGE) {
+    Serial.print("Udp server started at port ");
+    Serial.println(RFlocalPort);
+    Udp.begin(RFlocalPort);
+  }
+
 }
 
 void WiFi_loop()
