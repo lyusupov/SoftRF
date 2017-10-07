@@ -20,6 +20,18 @@
 #define PROTOCOL_P3I_H
 
 /*
+ *  Initially, the PilotAware were using Ciseco ARF module.
+ *  The module is based on Ti's CC1110 RF+MCU combo.
+ *  The Ciseco went out of buisness but some ARF firmare is still available
+ *  on GitHub: https://github.com/CisecoPlc/XRF-Firmware-downloads
+ *  
+ *  Current PAW RF hardware design is "PilotAware Bridge".
+ *  The bridge contains:
+ *  - NiceRF SV650 module (Si4432 RF + R5R0C002SN MCU + Tx amp.)
+ *  - MPL3115A2 I2C baro sensor  
+ */
+
+/*
  *
  * http://www.pilotaware.com/wp-content/uploads/2017/03/Protocol.pdf
  *
