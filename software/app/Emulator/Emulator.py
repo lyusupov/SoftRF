@@ -33,14 +33,14 @@ if platform.system() == "Linux":
     # Raspbian
     #
     #from gps import gps
-    from Linux import platform_init, platform_get_fix, platform_fini
+    from Linux import platform_init, platform_get_fix, platform_fini, platform_name
 
   else:
     #
     # Android
     #  
     
-    from Android import platform_init, platform_get_fix, platform_fini
+    from Android import platform_init, platform_get_fix, platform_fini, platform_name
 
 from legacy_protocol import pack_values, make_key, encrypt_packet, \
      hex_to_bits, decrypt_packet, extract_values, parityOf, recover_lat, \
@@ -219,7 +219,8 @@ if __name__ == "__main__":
   
         # Heartbeat Message
         buf = session.gdl90_encoder.msgHeartbeat()
-        session.g.sendto(buf, (destAddr, destPort))
+        if platform_name() != 'Android':  # workaround against broadcast UDP packets issue
+          session.g.sendto(buf, (destAddr, destPort))
 
         result = platform_get_fix(session)
         if result:
@@ -229,13 +230,17 @@ if __name__ == "__main__":
           else:
             heading = int(session.mytrk)
 
+          if isnan(session.myalt):
+            session.myalt = 0
+
           # Demo data
           # session.mylat = 43.9790152
           # session.mylon = -88.5559553
 	
           # Ownership Report
           buf = session.gdl90_encoder.msgOwnershipReport(latitude=session.mylat, longitude=session.mylon, altitude=session.myalt, trackHeading=heading, callSign=session.myId)
-          session.g.sendto(buf, (destAddr, destPort))
+          if platform_name() != 'Android':  # workaround against broadcast UDP packets issue
+            session.g.sendto(buf, (destAddr, destPort))
 
           print "S", session.tx_cnt, session.mytstamp, session.myId, "%.4f" % session.mylat, "%.4f" % session.mylon, int(session.myalt)
           session.process_e()
@@ -258,7 +263,8 @@ if __name__ == "__main__":
  
           # Traffic Report
           buf = session.gdl90_encoder.msgTrafficReport(latitude=lat, longitude=lon, altitude=alt, callSign=tcall, address=taddr)
-          session.g.sendto(buf, (destAddr, destPort))
+          if platform_name() != 'Android':  # workaround against broadcast UDP packets issue
+            session.g.sendto(buf, (destAddr, destPort))
 
           session.rx_cnt = session.rx_cnt + 1
 

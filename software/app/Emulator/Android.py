@@ -27,6 +27,9 @@ def hostid():
     hash_object = hashlib.md5(serial)
     return hash_object.hexdigest()
 
+def platform_name():
+    return 'Android'
+
 def platform_init(emu):
 
     emu.myId = format(int(hostid(),16) & 0xffffff, 'x')

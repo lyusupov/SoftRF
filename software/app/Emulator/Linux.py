@@ -18,6 +18,7 @@
 
 from gps import gps
 from time import mktime
+from calendar import timegm
 
 import iso8601
 import os
@@ -30,6 +31,9 @@ WATCH_NEWSTYLE	= 0x010000	# force JSON streaming
 
 def hostid():
     return os.popen("hostid").read().strip()
+
+def platform_name():
+    return 'Linux'
 
 def platform_init(emu):
 
@@ -62,7 +66,7 @@ def platform_get_fix(emu):
 
       if (gpsd.utc != '') and (gpsd.utc != None):
         dt = iso8601.parse_date(gpsd.utc)
-        emu.mytstamp = int(long(mktime(dt.timetuple())*1000 + dt.microsecond/1000) / 1000)
+        emu.mytstamp = int(long(timegm(dt.timetuple())*1000 + dt.microsecond/1000) / 1000)
 
       if gpsd.fix.mode > 1:
         emu.mylat = gpsd.fix.latitude
