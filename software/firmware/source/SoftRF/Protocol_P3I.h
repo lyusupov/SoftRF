@@ -27,8 +27,18 @@
  *  
  *  Current PAW RF hardware design is "PilotAware Bridge".
  *  The bridge contains:
+ *  --------------------
  *  - NiceRF SV650 module (Si4432 RF + R5R0C002SN MCU + Tx amp.)
  *  - MPL3115A2 I2C baro sensor  
+ *
+ *  The bridge wiring:
+ *  ------------------
+ *  GPIO02 - MPL3115A2 SDA
+ *  GPIO03 - MPL3115A2 SCL
+ *  GPOI14 - SV650 Rx
+ *  GPIO15 - SV650 Tx
+ *  GPIO18 - SV650 CS
+ *  GPIO23 - SV650 SET
  */
 
 /*
