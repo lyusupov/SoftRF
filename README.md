@@ -31,6 +31,8 @@ Features:
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
     * Applications
         * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
+* Extras
+    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
 
 # Highlights :
 
