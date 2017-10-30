@@ -80,11 +80,13 @@
  * data rate of 38.4kb/s 
  */
 
-#define P3I_PREAMBLE_SIZE   1             /* TBD */
-#define P3I_SYNCWORD        {0, 0, 0, 0}  /* TBD */
+ /* Valid for NiceRF SV610 firmware ver. 4.66 */  
+#define P3I_PREAMBLE        {0x55, 0x55, 0x55, 0x55, 0x55}
+#define P3I_SYNCWORD        {0x2d, 0xd4}
+#define P3I_NET_ID          {0x00, 0x00, 0x00, 0x00}
 #define P3I_PAYLOAD_SIZE    24
-#define P3I_CRC_SIZE        0             /* TBD */
-#define P3I_CRC_TYPE        0             /* TBD */
+#define P3I_CRC_SIZE        2
+#define P3I_CRC_TYPE        2     /* CCITT CRC-16, Seed value: 0x0000 */
 
 #define ADDR_TYPE_PILOTAWARE  0
 
