@@ -29,9 +29,18 @@ const uint8_t whitening_pattern[] PROGMEM = { 0x05, 0xb4, 0x05, 0xae, 0x14, 0xda
   0x04, 0xbc, 0xf6, 0x12, 0x2c, 0x01, 0xd9, 0x04, 0xb1, 0xd5, 0x03, 0xab, 0x06,
   0xcf, 0x08, 0xe6, 0xf2, 0x07, 0xd0, 0x12, 0xc2, 0x09, 0x34, 0x20 };
 
-bool p3i_decode(p3i_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+bool p3i_decode(p3i_packet_t *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
+
+  uint8_t cs = 0;
+  uint8_t *p = (uint8_t *)pkt;
+
+  for (int i=0; i<sizeof(p3i_packet_t); i++) {
+    cs ^= *p++;
+  }
+  if (cs)
+    return(false);
 
   fop->addr = pkt->icao;
   fop->latitude = pkt->latitude;
@@ -53,7 +62,7 @@ bool p3i_decode(p3i_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   return true;
 }
 
-p3i_packet *p3i_encode(p3i_packet *pkt, ufo_t *this_aircraft) {
+p3i_packet_t *p3i_encode(p3i_packet_t *pkt, ufo_t *this_aircraft) {
 
   uint32_t id = this_aircraft->addr;
   float lat = this_aircraft->latitude;
@@ -62,19 +71,28 @@ p3i_packet *p3i_encode(p3i_packet *pkt, ufo_t *this_aircraft) {
   uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
   unsigned int aircraft_type =  this_aircraft->aircraft_type;
 
+  uint8_t cs = 0;
+  uint8_t *p = (uint8_t *)pkt;
+
   pkt->sync = '$'; 
   pkt->icao = id & 0x00FFFFFF;
-  pkt->longitude = lon;
-  pkt->latitude = lat;
-  pkt->altitude = (uint16_t) alt;
+  pkt->longitude = lon;  // IEEE-754
+  pkt->latitude = lat;   // IEEE-754
+  pkt->altitude = (uint16_t) alt; // metres
   
-  pkt->track = (uint16_t) this_aircraft->course;
+  pkt->track = (uint16_t) this_aircraft->course; // degrees relative to true north
   pkt->msd[0] = 0;
   pkt->msd[1] = 0;
   pkt->msd[2] = 0;
   pkt->msd[3] = 0;
   pkt->knots  = 0;    
   pkt->aircraft = aircraft_type;
+
+  for (int i=0; i<(sizeof(p3i_packet_t)-1); i++) {
+    cs ^= *p++;
+  }
   
-  pkt->crc = 0;
+  pkt->crc = cs;
+
+  return pkt;
 }

@@ -90,10 +90,23 @@
 
 #define ADDR_TYPE_PILOTAWARE  0
 
+/*
+ * Example:
+ * --------
+ * icao=374780 type=1f (GS) lat=56.50000 lon=38.90000 alt=138
+ * 
+ * Raw:
+ * ----
+ * 0x24,
+ * 0x80, 0x47, 0x37,
+ * 0x9a, 0x99, 0x1b, 0x42,    0x00, 0x00, 0x62, 0x42,    0x8a, 0x00,
+ * 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+ * 0x1f,
+ * 0x3b
+ */
 typedef struct {
     uint8_t  sync;      // $
-    uint8_t  icao:24;   // 24bit identifier 
-    /* floats alignment is TBD */
+    uint32_t  icao:24;   // 24bit identifier 
     float    longitude; // IEEE-754 
     float    latitude;  // IEEE-754 
     uint16_t altitude;  // metres
@@ -102,6 +115,6 @@ typedef struct {
     uint16_t knots;     //  ground speed of the aircraft in knots
     uint8_t  aircraft;  //  aircraft type
     uint8_t  crc;
-} p3i_packet;
+} __attribute__((packed)) p3i_packet_t;
 
 #endif /* PROTOCOL_P3I_H */
