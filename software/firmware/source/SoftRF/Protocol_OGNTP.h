@@ -21,7 +21,7 @@
 #ifndef PROTOCOL_OGNTP_H
 #define PROTOCOL_OGNTP_H
 
-#define OGNTP_PREAMBLE_SIZE   1             /* TBD */
+#define OGNTP_PREAMBLE_SIZE   1 /* Warmup: 6 bits, preamble: 8 bits, value:  0xAA */
 #define OGNTP_SYNCWORD        {0x0A, 0xF3, 0x65, 0x6C}
 #define OGNTP_PAYLOAD_SIZE    20
 #define OGNTP_CRC_SIZE        6             

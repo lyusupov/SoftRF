@@ -253,13 +253,10 @@ void GDL90_Export()
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
   IPAddress broadcastIP = WiFi_get_broadcast();
 
-#if 0 
   GDL90_Udp.beginPacket(broadcastIP, GDL90_PORT);
   size = makeHeartbeat(buf);
   GDL90_Udp.write(buf, size);
   GDL90_Udp.endPacket();  
-#endif
-//  Serial.printf("GDL90_Msg_HeartBeat size = %d, makeHeartbeat buf size: %d\n", sizeof(GDL90_Msg_HeartBeat_t), size);
 
   GDL90_Udp.beginPacket(broadcastIP, GDL90_PORT);
   size = makeOwnershipReport(buf, &ThisAircraft);
