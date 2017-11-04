@@ -61,6 +61,7 @@ extern "C" {
 #include "EEPROMHelper.h"
 #include "BatteryHelper.h"
 #include "MAVLinkHelper.h"
+#include "GDL90Helper.h"
 
 #include "SoftRF.h"
 
@@ -125,6 +126,8 @@ void setup()
   WiFi_setup();
   OTA_setup();
   Web_setup();
+
+  GDL90_setup();
 
 #if 0
   GNSSserver.begin();
@@ -386,6 +389,11 @@ void tx_test_loop()
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
+  }
+
+  if (isTimeToExport()) {
+    GDL90_Export();
+    ExportTimeMarker = millis(); 
   }
 }
 

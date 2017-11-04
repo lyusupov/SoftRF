@@ -457,3 +457,18 @@ static void init_crcccitt_tab( void ) {
     crc_tabccitt_init = TRUE;
 
 }  /* init_crcccitt_tab */
+
+unsigned short update_crc_gdl90( unsigned short crc, char c ) {
+
+    unsigned short tmp, short_c;
+
+    short_c  = 0x00ff & (unsigned short) c;
+
+    if ( ! crc_tabccitt_init ) init_crcccitt_tab();
+
+    tmp = (crc >> 8) ;
+    crc = crc_tabccitt[tmp] ^ (crc << 8) ^  short_c;
+
+    return crc;
+
+}  /* update_crc_gdl90 */

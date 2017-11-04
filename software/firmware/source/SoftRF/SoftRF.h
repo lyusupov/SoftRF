@@ -62,6 +62,7 @@
 //#define CLOUD_MODE  0
 
 #define RELAY_PORT 12390
+#define GDL90_PORT  43211
 
 //#define STATION_ID  String(ESP.getChipId(), HEX).c_str()
 
