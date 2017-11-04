@@ -37,8 +37,8 @@
  *  GPIO03 - MPL3115A2 SCL
  *  GPOI14 - SV650 Rx
  *  GPIO15 - SV650 Tx
+ *  GPIO17 - SV650 SET
  *  GPIO18 - SV650 CS
- *  GPIO23 - SV650 SET
  *
  * Settings:
  * ---------
