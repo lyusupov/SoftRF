@@ -20,6 +20,15 @@
 #ifndef PROTOCOL_LEGACY_H
 #define PROTOCOL_LEGACY_H
 
+#define LEGACY_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_55
+#define LEGACY_PREAMBLE_SIZE   1
+/*  IEEE Manchester(F531FAB6) = 55 99 A5 A9 55 66 65 96 */
+#define LEGACY_SYNCWORD        {0x55, 0x99, 0xA5, 0xA9, 0x55, 0x66, 0x65, 0x96}
+#define LEGACY_SYNCWORD_SIZE   8
+#define LEGACY_PAYLOAD_SIZE    24
+#define LEGACY_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
+#define LEGACY_CRC_SIZE        2
+
 #define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b }
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
@@ -114,11 +123,13 @@ typedef struct {
     int8_t ns[4];
     int8_t ew[4];
     /********************/
-} legacy_packet;
+} legacy_packet_t;
 
 //#define MYADDR  Device_Id
 
-bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop);
-legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft);
+bool legacy_decode(void *, ufo_t *, ufo_t *);
+size_t legacy_encode(void *, ufo_t *);
+
+extern const rf_proto_desc_t legacy_proto_desc;
 
 #endif /* PROTOCOL_LEGACY_H */

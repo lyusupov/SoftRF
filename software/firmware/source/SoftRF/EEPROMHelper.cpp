@@ -58,6 +58,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_p = 1;
   eeprom_block.field.settings.nmea_l = 1;
   eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
+  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_LEGACY;
 }
 
 

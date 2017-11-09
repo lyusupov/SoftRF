@@ -183,9 +183,8 @@ void ParseData()
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
-
-    if (legacy_decode((legacy_packet *) RxBuffer, &ThisAircraft, &fo)) {            
-
+          
+    if ((*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {    
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
         int max_dist_ndx = 0;
         

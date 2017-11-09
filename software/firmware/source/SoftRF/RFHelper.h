@@ -26,21 +26,24 @@
 #include <lmic.h>
 #include <hal/hal.h>
 #include "lib_crc.h"
+#include <protocol.h>
 
 #include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "WebHelper.h"
 #include "Protocol_Legacy.h"
+#include "Protocol_P3I.h"
 
 enum
 {
-	RF_BAND_EU,	/* 868.4 MHz band */
-	RF_BAND_RU1,	/* 868.2 MHz band */
-	RF_BAND_RU2,	/* 868.8 MHz band */
-	RF_BAND_CN,	/* 433 MHz band */
-	RF_BAND_US, 	/* 915 MHz band */
-	RF_BAND_NZ,	/* 869.250 MHz band */
-	RF_BAND_AU 	/* 921 MHz band */
+	RF_BAND_EU,	 /* 868.4 MHz band */
+	RF_BAND_RU1,	 /* 868.2 MHz band */
+	RF_BAND_RU2,	 /* 868.8 MHz band */
+	RF_BAND_CN,	 /* 433 MHz band */
+	RF_BAND_US,	 /* 915 MHz band */
+	RF_BAND_NZ,	 /* 869.250 MHz band */
+	RF_BAND_AU,	 /* 921 MHz band */
+	RF_BAND_UK 	 /* 869.92 MHz band */
 };
 
 typedef struct rfchip_ops_struct {
@@ -49,6 +52,8 @@ typedef struct rfchip_ops_struct {
   bool (*receive)();
   void (*transmit)();
 } rfchip_ops_t;
+
+uint8_t parity(uint32_t);
 
 void RF_setup(void);
 void RF_Transmit(void);
@@ -64,12 +69,14 @@ void sx1276_setup(void);
 bool sx1276_receive(void);
 void sx1276_transmit(void);
 
-
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 //extern tx_state txready;
 extern unsigned long TxTimeMarker;
 //extern uint32_t Device_Id;
-extern legacy_packet TxPkt;
+extern byte TxPkt[MAX_PKT_SIZE];
 extern ufo_t ThisAircraft;
+
+extern size_t (*protocol_encode)(void *, ufo_t *);
+extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 #endif /* RFHELPER_H */

@@ -34,6 +34,8 @@
 #include "oslmic.h"
 #include "lorabase.h"
 
+#include <protocol.h>
+
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -275,6 +277,8 @@ struct lmic_t {
     ostime_t    bcnRxtime;
     bcninfo_t   bcninfo;      // Last received beacon info
 #endif
+
+    const rf_proto_desc_t  *protocol;
 
     u1_t        noRXIQinversion;
 };

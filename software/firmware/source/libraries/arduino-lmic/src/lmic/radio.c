@@ -26,6 +26,7 @@
  */
 
 #include "lmic.h"
+#include <protocol.h>
 
 // ----------------------------------------
 // Registers Mapping
@@ -475,31 +476,59 @@ static void txfsk () {
     ASSERT(readReg(RegOpMode) == 0x0 /* 0x10 */ );
     // enter standby mode (required for FIFO loading))
     opmode(OPMODE_STANDBY);
+
+    ASSERT(LMIC.protocol);
+
     // set bitrate
-    writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
-    writeReg(FSKRegBitrateLsb, 0x40);
+    switch (LMIC.protocol->bitrate)
+    {
+    case RF_BITRATE_38400:
+      writeReg(FSKRegBitrateMsb, 0x03); // 38400 bps
+      writeReg(FSKRegBitrateLsb, 0x41);
+      break;
+    case RF_BITRATE_100KBPS:
+    default:
+      writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
+      writeReg(FSKRegBitrateLsb, 0x40);
+      break;
+    }
+
     // set frequency deviation
     writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
     writeReg(FSKRegFdevLsb, 0x33);
+
     // frame and packet handler settings
     writeReg(FSKRegPreambleMsb, 0x00);
-    writeReg(FSKRegPreambleLsb, 0x01);
-    writeReg(FSKRegSyncConfig, 0x37 /*0x31*/);
-    writeReg(FSKRegPacketConfig1, 0x20 /* 0xD0 */);  // Manchester (inverted)
+    writeReg(FSKRegPreambleLsb, LMIC.protocol->preabmble_size);
+
+    uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
+    switch (LMIC.protocol->preamble_type)
+    {
+    case RF_PREAMBLE_TYPE_AA:
+      writeReg(FSKRegSyncConfig, (0x10 | SyncConfig));
+      break;
+    case RF_PREAMBLE_TYPE_55:
+    default:
+      writeReg(FSKRegSyncConfig, (0x30 | SyncConfig));
+      break;
+    }
+
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_MANCHESTER:
+      writeReg(FSKRegPacketConfig1, 0x20);
+      break;
+    case RF_WHITENING_NONE:
+    case RF_WHITENING_NICERF:
+    default:
+      writeReg(FSKRegPacketConfig1, 0x00);
+      break;
+    }
     writeReg(FSKRegPacketConfig2, 0x40);
-    /* IEEE  Manchester(F5) = 55 99 */
 
-    writeReg(FSKRegSyncValue1, 0x55);
-    writeReg(FSKRegSyncValue2, 0x99);
-    
-    /*  IEEE Manchester(31FAB6) = A5 A9 55 66 65 96 */
-
-    writeReg(FSKRegSyncValue3, 0xA5);
-    writeReg(FSKRegSyncValue4, 0xA9);
-    writeReg(FSKRegSyncValue5, 0x55);
-    writeReg(FSKRegSyncValue6, 0x66);
-    writeReg(FSKRegSyncValue7, 0x65);
-    writeReg(FSKRegSyncValue8, 0x96);
+    for (int i=0; i < LMIC.protocol->syncword_size; i++) {
+      writeReg((FSKRegSyncValue1 + i), LMIC.protocol->syncword[i]);
+    }
 
     // configure frequency
     configChannel();
@@ -511,24 +540,21 @@ static void txfsk () {
     writeReg(RegDioMapping1, MAP_DIO0_FSK_READY|MAP_DIO1_FSK_NOP|MAP_DIO2_FSK_TXNOP);
 
     // initialize the payload size and address pointers
- //   writeReg(FSKRegPayloadLength, LMIC.dataLen+1); // (insert length byte into payload))
     writeReg(FSKRegPayloadLength, LMIC.dataLen); // (insert length byte into payload))
-    // download length byte and buffer to the radio FIFO
-//    writeReg(RegFifo, LMIC.dataLen);
-//    writeBuf(RegFifo, LMIC.frame, LMIC.dataLen);
 
-    writeReg(FSKRegFifoThresh, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY  );   
 
-//    FIFO_Push_Inv(0x31);
-//    FIFO_Push_Inv(0xFA);
-//    FIFO_Push_Inv(0xB6);
+    writeReg(FSKRegFifoThresh, RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY  );
 
-    writeBuf_Inv(RegFifo, LMIC.frame, LMIC.dataLen);
-//    writeReg(RegFifo, ~0x8d /* 0xCF */);
-//    writeReg(RegFifo, ~0x59 /* 0xB1 */);
-//    FIFO_Push_Inv((crc16 >>  8) & 0xFF );
-//    FIFO_Push_Inv((crc16      ) & 0xFF );
-
+    switch (LMIC.protocol->payload_type)
+    {
+    case RF_PAYLOAD_INVERTED:
+      writeBuf_Inv(RegFifo, LMIC.frame, LMIC.dataLen);
+      break;
+    case RF_PAYLOAD_DIRECT:
+    default:
+      writeBuf(RegFifo, LMIC.frame, LMIC.dataLen);
+      break;
+    }
 
     // enable antenna switch for TX
     hal_pin_rxtx(1);
@@ -697,69 +723,91 @@ static void rxfsk (u1_t rxmode) {
     //writeReg(RegLna, 0x20|0x03); // max gain, boost enable
     writeReg(RegLna, LNA_RX_GAIN);
     // configure receiver
-    writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
-//    writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC, trigger on preamble?!?
+//    writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
+    writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC, trigger on preamble?!?
+
     // set receiver bandwidth
-//    writeReg(FSKRegRxBw, 0x0B); // 50kHz SSb
-    writeReg(FSKRegRxBw, 0x0A); // 100kHz SSb
+    switch (LMIC.protocol->bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_100KHZ:
+      writeReg(FSKRegRxBw, 0x0A); // 100kHz SSb
+      break;
+    case RF_RX_BANDWIDTH_SS_166KHZ:
+      writeReg(FSKRegRxBw, 0x11); // 166.6kHz SSB
+      break;
+    case RF_RX_BANDWIDTH_SS_125KHZ:
+    default:
+      writeReg(FSKRegRxBw, 0x02); // 125kHz SSb; BW >= (DR + 2 X FDEV)
+      break;
+    }
+
     // set AFC bandwidth
-//    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB
+    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB  // PAW
 //    writeReg(FSKRegAfcBw, 0x12); // 83.3kHz SSB
-    writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
+//    writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
+
     // set preamble detection
 //    writeReg(FSKRegPreambleDetect, 0x8A); // enable, 1 bytes, 10 chip errors
-    writeReg(FSKRegPreambleDetect, 0xAA); // enable, 2 bytes, 10 chip errors
+    writeReg(FSKRegPreambleDetect, 0xAA); // enable, 2 bytes, 10 chip errors // PAW
+
     // set sync config
 //    writeReg(FSKRegSyncConfig, 0x12); // no auto restart, preamble 0xAA, enable, fill FIFO, 3 bytes sync
-    writeReg(FSKRegSyncConfig, 0x36 /*0x31*/);
+
+    uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
+    switch (LMIC.protocol->preamble_type)
+    {
+    case RF_PREAMBLE_TYPE_AA:
+      writeReg(FSKRegSyncConfig, (0x10 | SyncConfig));
+      break;
+    case RF_PREAMBLE_TYPE_55:
+    default:
+      writeReg(FSKRegSyncConfig, (0x30 | SyncConfig));
+      break;
+    }
 
     // set packet config
-    writeReg(FSKRegPacketConfig1, 0x20 /* 0xD0 */);  // Manchester (inverted)
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_MANCHESTER:
+      writeReg(FSKRegPacketConfig1, 0x20);
+      break;
+    case RF_WHITENING_NONE:
+    case RF_WHITENING_NICERF:
+    default:
+      writeReg(FSKRegPacketConfig1, 0x00);
+      break;
+    }
     writeReg(FSKRegPacketConfig2, 0x40); // packet mode
-    writeReg(FSKRegPayloadLength, 24 /*+ 3*/ + 2); // (insert length byte into payload))
+
+    writeReg(FSKRegPayloadLength,
+      LMIC.protocol->payload_size +
+      LMIC.protocol->payload_offset +
+      LMIC.protocol->crc_size);
+
     // set sync value
-#if 0
-    /* IEEE  Manchester(F5) = 55 99 */
-    writeReg(FSKRegSyncValue1, 0x55);
-    writeReg(FSKRegSyncValue2, 0x99);
+    for (int i=0; i < LMIC.protocol->syncword_size; i++) {
+      writeReg((FSKRegSyncValue1 + i), LMIC.protocol->syncword[i]);
+    }
 
-    /*  IEEE Manchester(31FAB6) = A5 A9 55 66 65 96 */
-
-    writeReg(FSKRegSyncValue3, 0xA5);
-    writeReg(FSKRegSyncValue4, 0xA9);
-    writeReg(FSKRegSyncValue5, 0x55);
-    writeReg(FSKRegSyncValue6, 0x66);
-    writeReg(FSKRegSyncValue7, 0x65);
-    writeReg(FSKRegSyncValue8, 0x96);
-#else
-    writeReg(FSKRegSyncValue1, 0x99);
-
-    /*  IEEE Manchester(31FAB6) = A5 A9 55 66 65 96 */
-
-    writeReg(FSKRegSyncValue2, 0xA5);
-    writeReg(FSKRegSyncValue3, 0xA9);
-    writeReg(FSKRegSyncValue4, 0x55);
-    writeReg(FSKRegSyncValue5, 0x66);
-    writeReg(FSKRegSyncValue6, 0x65);
-    writeReg(FSKRegSyncValue7, 0x96);
-#endif
     // set preamble timeout
     writeReg(FSKRegRxTimeout2, 0xFF);//(LMIC.rxsyms+1)/2);
-#if 0
-    // set bitrate
-    writeReg(FSKRegBitrateMsb, 0x02); // 50kbps
-    writeReg(FSKRegBitrateLsb, 0x80);
-    // set frequency deviation
-    writeReg(FSKRegFdevMsb, 0x01); // +/- 25kHz
-    writeReg(FSKRegFdevLsb, 0x99);
-#else
-    // set bitrate
-    writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
-    writeReg(FSKRegBitrateLsb, 0x40);
+
+    switch (LMIC.protocol->bitrate)
+    {
+    case RF_BITRATE_38400:
+      writeReg(FSKRegBitrateMsb, 0x03); // 38400 bps
+      writeReg(FSKRegBitrateLsb, 0x41);
+      break;
+    case RF_BITRATE_100KBPS:
+    default:
+      writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
+      writeReg(FSKRegBitrateLsb, 0x40);
+      break;
+    }
+
     // set frequency deviation
     writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
     writeReg(FSKRegFdevLsb, 0x33);
-#endif
 
     // configure DIO mapping DIO0=PayloadReady DIO1=NOP DIO2=TimeOut
     writeReg(RegDioMapping1, MAP_DIO0_FSK_READY|MAP_DIO1_FSK_NOP|MAP_DIO2_FSK_TIMEOUT);
@@ -951,7 +999,16 @@ void radio_irq_handler (u1_t dio) {
             // read the PDU and inform the MAC that we received something
             LMIC.dataLen = readReg(FSKRegPayloadLength);
             // now read the FIFO
-            readBuf_Inv(RegFifo, LMIC.frame, LMIC.dataLen);
+            switch (LMIC.protocol->payload_type)
+            {
+            case RF_PAYLOAD_INVERTED:
+              readBuf_Inv(RegFifo, LMIC.frame, LMIC.dataLen);
+              break;
+            case RF_PAYLOAD_DIRECT:
+            default:
+              readBuf(RegFifo, LMIC.frame, LMIC.dataLen);
+              break;
+            }
             // read rx quality parameters
             LMIC.snr  = 0; // determine snr
             LMIC.rssi = 0; // determine rssi

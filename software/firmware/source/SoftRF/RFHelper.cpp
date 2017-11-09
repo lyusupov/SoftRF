@@ -17,19 +17,28 @@
  */
 
 #include "RFHelper.h"
+#include "Protocol_Legacy.h"
+#include "Protocol_OGNTP.h"
+#include "Protocol_P3I.h"
 
 #if LOGGER_IS_ENABLED
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
 
-byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
+byte RxBuffer[PKT_SIZE];
+byte TxBuffer[PKT_SIZE]; /* to be deprecated soon - in use by bridge mode only */
 unsigned long TxTimeMarker = 0;
-legacy_packet TxPkt;
+
+byte TxPkt[MAX_PKT_SIZE];
+//legacy_packet TxPkt;
 
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
 rfchip_ops_t *rf_chip = NULL;
+
+size_t (*protocol_encode)(void *, ufo_t *);
+bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 rfchip_ops_t nrf905_ops = {
   nrf905_probe,
@@ -44,6 +53,17 @@ rfchip_ops_t sx1276_ops = {
   sx1276_receive,
   sx1276_transmit  
 };
+
+uint8_t parity(uint32_t x) {
+    uint8_t parity=0;
+    while (x > 0) {
+      if (x & 0x1) {
+          parity++;
+      }
+      x >>= 1;
+    }
+    return (parity % 2);
+}
  
 void RF_setup(void)
 {
@@ -67,7 +87,6 @@ void RF_Transmit(void)
     rf_chip->transmit();
   }
 }
-
 
 bool RF_Receive(void)
 {
@@ -96,23 +115,22 @@ void nrf905_setup()
   // Start up
   nRF905_init();
 
-  //nRF905_setFrequency(NRF905_BAND_868 , RF_FREQ);
-  //nRF905_setFrequency(NRF905_BAND_433 , 433200000UL);
-  //nRF905_setFrequency(NRF905_BAND_868 , 868200000UL);
   if (settings->band == RF_BAND_EU) {
-    nRF905_setFrequency(NRF905_BAND_868 , 868400000UL); 
+    nRF905_setFrequency(NRF905_BAND_868 , 868400000UL);
   } else if (settings->band == RF_BAND_RU1) {
-    nRF905_setFrequency(NRF905_BAND_868 , 868200000UL); 
+    nRF905_setFrequency(NRF905_BAND_868 , 868200000UL);
   } else if (settings->band == RF_BAND_RU2) {
     nRF905_setFrequency(NRF905_BAND_868 , 868800000UL);
   } else if (settings->band == RF_BAND_NZ) {
-    nRF905_setFrequency(NRF905_BAND_868 , 869250000UL);  
+    nRF905_setFrequency(NRF905_BAND_868 , 869250000UL);
+  } else if (settings->band == RF_BAND_UK) {
+    nRF905_setFrequency(NRF905_BAND_868 , 869920000UL);
   } else if (settings->band == RF_BAND_US) {
     nRF905_setFrequency(NRF905_BAND_915 , 915000000UL);
   } else if (settings->band == RF_BAND_AU) {
-    nRF905_setFrequency(NRF905_BAND_915 , 921000000UL);   
+    nRF905_setFrequency(NRF905_BAND_915 , 921000000UL);
   } else {  /* RF_BAND_CN */
-    nRF905_setFrequency(NRF905_BAND_433 , 433200000UL);  
+    nRF905_setFrequency(NRF905_BAND_433 , 433200000UL);
   }
 
   //nRF905_setTransmitPower(NRF905_PWR_10);
@@ -133,6 +151,10 @@ void nrf905_setup()
 
   // Put into receive mode
   nRF905_receive();
+
+  protocol_encode = &legacy_encode;
+  protocol_decode = &legacy_decode;
+
 }
 
 bool nrf905_receive()
@@ -189,7 +211,8 @@ void nrf905_transmit()
     //char *data = (char *) TxBuffer;
 
     time_t timestamp = now();
-    char *data = (char *) legacy_encode(&TxPkt, &ThisAircraft);
+    size_t size = (*protocol_encode)((void *) &TxPkt, &ThisAircraft);
+
     //Serial.println(Bin2Hex((byte *) data));
 
     // Set address of device to send to
@@ -197,14 +220,14 @@ void nrf905_transmit()
     nRF905_setTXAddress(addr);
 
     // Set payload data
-    nRF905_setData(data, NRF905_PAYLOAD_SIZE );
+    nRF905_setData(&TxPkt, NRF905_PAYLOAD_SIZE );
 
     // Send payload (send fails if other transmissions are going on, keep trying until success)
     while (!nRF905_send()) {
       delay(0);
     } ;
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
+      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt));
     }
     tx_packets_counter++;
     TxTimeMarker = millis();
@@ -284,8 +307,10 @@ void sx1276_setup()
     LMIC.freq = 915000000UL;
   } else if (settings->band == RF_BAND_AU) {
     LMIC.freq = 921000000UL;   
+  } else if (settings->band == RF_BAND_UK) {
+    LMIC.freq = 869920000UL;
   } else {  /* RF_BAND_CN */
-    LMIC.freq = 433200000UL;  
+    LMIC.freq = 433200000UL;
   }
 
   // Maximum TX power
@@ -298,6 +323,25 @@ void sx1276_setup()
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = updr2rps(LMIC.datarate);
 
+  switch (settings->rf_protocol)
+  {
+  case RF_PROTOCOL_OGNTP:
+    LMIC.protocol = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
+    break;
+  case RF_PROTOCOL_P3I:
+    LMIC.protocol = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
+    break;
+  case RF_PROTOCOL_LEGACY:
+  default:
+    LMIC.protocol = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
+    break;
+  }
 }
 
 bool sx1276_receive()
@@ -329,8 +373,10 @@ bool sx1276_receive()
 
   if (sx1276_receive_complete == true) {
 
-    for (u1_t i=0; i<(LMIC.dataLen-2); i++) {
-      RxBuffer[i] = LMIC.frame[i];
+    for (u1_t i=LMIC.protocol->payload_offset;
+      i<(LMIC.dataLen - LMIC.protocol->crc_size);
+      i++) {
+        RxBuffer[i] = LMIC.frame[i];
     }
 
     rx_packets_counter++;
@@ -384,64 +430,198 @@ void sx1276_rx(osjobcb_t func) {
 
 static void sx1276_rx_func (osjob_t* job) {
 
-  u2_t crc16 = 0xffff;  /* seed value */
+  u2_t crc16;
   u1_t i;
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
 
   //Serial.print("Got ");
   //Serial.print(LMIC.dataLen);
   //Serial.println(" bytes");
 
-  crc16 = update_crc_ccitt(crc16, 0x31);
-  crc16 = update_crc_ccitt(crc16, 0xFA);
-  crc16 = update_crc_ccitt(crc16, 0xB6);
-  
-  for (i=0; i<(LMIC.dataLen-2); i++)
+  switch (LMIC.protocol->type)
   {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+  case RF_PROTOCOL_OGNTP:
+  default:
+    break;
+  }
+
+  for (i = LMIC.protocol->payload_offset;
+       i < (LMIC.dataLen - LMIC.protocol->crc_size);
+       i++)
+  {
+
+    switch (LMIC.protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
+      break;
+    }
+
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      LMIC.frame[i] ^= whitening_pattern[i - LMIC.protocol->payload_offset];
+      break;
+    case RF_WHITENING_MANCHESTER:
+    case RF_WHITENING_NONE:
+    default:
+      break;
+    }
+
 #if DEBUG
-    Serial.printf(F("%02x"), (u1_t)(LMIC.frame[i]));
+    Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
 #endif
-    crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
   }
-  u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+    if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
 #if DEBUG
-  if (crc16 == pkt_crc ) {
-    Serial.printf(F(" %04x is valid crc"), pkt_crc);
-  } else {
-    Serial.printf(F(" %04x is wrong crc"), pkt_crc);
+      Serial.printf(" %02x%02x%02x%02x%02x%02x is wrong FEC",
+        LMIC.frame[i], LMIC.frame[i+1], LMIC.frame[i+2],
+        LMIC.frame[i+3], LMIC.frame[i+4], LMIC.frame[i+5]);
+#endif
+      sx1276_receive_complete = false;
+    } else {
+      sx1276_receive_complete = true;
+    }
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+#if DEBUG
+    if (crc16 == pkt_crc ) {
+      Serial.printf(" %04x is valid crc", pkt_crc);
+    } else {
+      Serial.printf(" %04x is wrong crc", pkt_crc);
+    }
+#endif
+    if (crc16 == pkt_crc) {
+      sx1276_receive_complete = true;
+    } else {
+      sx1276_receive_complete = false;
+    }
+    break;
   }
+
+#if DEBUG
   Serial.println();
 #endif
-  if (crc16 == pkt_crc) {
-    sx1276_receive_complete = true;  
-  } else {
-    sx1276_receive_complete = false;
-  }
+
 }
 
 // Transmit the given string and call the given function afterwards
 void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 
-  u2_t crc16 = 0xffff;  /* seed value */
+  u2_t crc16;
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
   
   os_radio(RADIO_RST); // Stop RX first
   delay(1); // Wait a bit, without this os_radio below asserts, apparently because the state hasn't changed yet
 
   LMIC.dataLen = 0;
 
-  crc16 = update_crc_ccitt(crc16, 0x31);
-  crc16 = update_crc_ccitt(crc16, 0xFA);
-  crc16 = update_crc_ccitt(crc16, 0xB6);
+  switch (LMIC.protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 24) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 16) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    LMIC.frame[LMIC.dataLen++] = LMIC.protocol->payload_size;
+    break;
+  case RF_PROTOCOL_OGNTP:
+  default:
+    break;
+  }
 
-  for (u1_t i=0; i<size; i++) {
-    LMIC.frame[LMIC.dataLen] = buf[i];
+  for (u1_t i=0; i < size; i++) {
 
-    crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[LMIC.dataLen]));
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      LMIC.frame[LMIC.dataLen] = buf[i] ^ whitening_pattern[i];
+      break;
+    case RF_WHITENING_MANCHESTER:
+    case RF_WHITENING_NONE:
+    default:
+      LMIC.frame[LMIC.dataLen] = buf[i];
+      break;
+    }
+
+    switch (LMIC.protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[LMIC.dataLen]));
+      break;
+    }
+
     LMIC.dataLen++;
   }
 
 
-  LMIC.frame[LMIC.dataLen++] = (crc16 >>  8) & 0xFF;
-  LMIC.frame[LMIC.dataLen++] = (crc16      ) & 0xFF;
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    LMIC.frame[LMIC.dataLen++] = (crc16 >>  8) & 0xFF;
+    LMIC.frame[LMIC.dataLen++] = (crc16      ) & 0xFF;
+    break;
+  }
 
   LMIC.osjob.func = func;
   os_radio(RADIO_TX);
@@ -454,7 +634,7 @@ static void sx1276_txdone_func (osjob_t* job) {
 
 static void sx1276_tx_func (osjob_t* job) {
 
-  unsigned char *data = (unsigned char *) legacy_encode(&TxPkt, &ThisAircraft);
+  size_t size = (*protocol_encode)((void *) &TxPkt, &ThisAircraft);
 
-  sx1276_tx(data, sizeof(TxPkt), sx1276_txdone_func);
+  sx1276_tx((unsigned char *) &TxPkt, size, sx1276_txdone_func);
 }

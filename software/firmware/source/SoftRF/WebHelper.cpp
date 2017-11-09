@@ -114,6 +114,16 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Protocol</th>\
+<td align=right>\
+<select name='protocol'>\
+<option %s value='%d'>Legacy</option>\
+<option %s value='%d'>OGNTP</option>\
+<option %s value='%d'>P3I</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Band</th>\
 <td align=right>\
 <select name='band'>\
@@ -123,6 +133,7 @@ void handleSettings() {
 <option %s value='%d'>CN (433 MHz)</option>\
 <option %s value='%d'>US (915 MHz)</option>\
 <option %s value='%d'>NZ (869.25 MHz)</option>\
+<option %s value='%d'>UK (869.92 MHz)</option>\
 <option %s value='%d'>AU (921 MHz)</option>\
 </select>\
 </td>\
@@ -195,12 +206,16 @@ void handleSettings() {
   (settings->mode == SOFTRF_MODE_RX_TEST ? "selected" : ""), SOFTRF_MODE_RX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
   (settings->mode == SOFTRF_MODE_UAV_BEACON ? "selected" : ""), SOFTRF_MODE_UAV_BEACON,
+  (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
+  (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
+  (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
   (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
   (settings->band == RF_BAND_RU1 ? "selected" : ""), RF_BAND_RU1,
   (settings->band == RF_BAND_RU2 ? "selected" : ""), RF_BAND_RU2,
   (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
   (settings->band == RF_BAND_US ? "selected" : ""),  RF_BAND_US,
   (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
+  (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
   (settings->band == RF_BAND_AU ? "selected" : ""),  RF_BAND_AU,
   (settings->txpower == NRF905_PWR_10 ? "selected" : ""),  NRF905_PWR_10,
   (settings->txpower == NRF905_PWR_6 ? "selected" : ""),  NRF905_PWR_6,
@@ -295,6 +310,8 @@ void handleInput() {
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if (server.argName(i).equals("mode")) {
       settings->mode = server.arg(i).toInt();
+    } else if (server.argName(i).equals("protocol")) {
+      settings->rf_protocol = server.arg(i).toInt();
     } else if (server.argName(i).equals("band")) {
       settings->band = server.arg(i).toInt();
     } else if (server.argName(i).equals("txpower")) {
@@ -322,6 +339,7 @@ void handleInput() {
 <h1 align=center>New settings:</h1>\
 <table width=100\%>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
+<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
@@ -334,7 +352,7 @@ void handleInput() {
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1>\<p>\
 </body>\
 </html>",
-  settings->mode, settings->band, settings->txpower, settings->volume,
+  settings->mode, settings->rf_protocol, settings->band, settings->txpower, settings->volume,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p), BOOL_STR(settings->nmea_l),
   settings->pointer
   );

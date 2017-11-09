@@ -34,6 +34,9 @@
 #define RF_FREQ   NRF905_FREQ
 #define PKT_SIZE  NRF905_PAYLOAD_SIZE
 
+/* Max. paket's payload size for all supported RF protocols */
+#define MAX_PKT_SIZE  32 
+
 #define NRF905_TX_PWR_OFF  0xFF
 
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
@@ -94,9 +97,9 @@ enum
 	SOFTRF_MODE_BRIDGE,
 	SOFTRF_MODE_OGN,
 	SOFTRF_MODE_TX_TEST,
-  SOFTRF_MODE_RX_TEST,
+	SOFTRF_MODE_RX_TEST,
 	SOFTRF_MODE_LOOPBACK,
-  SOFTRF_MODE_UAV_BEACON  
+	SOFTRF_MODE_UAV_BEACON  
 };
 
 enum
@@ -107,9 +110,11 @@ enum
 
 enum
 {
-	RF_PROTOCOL_LEGACY,  /* Air V6 */
+	RF_PROTOCOL_LEGACY,    /* Air V6 */
 	RF_PROTOCOL_OGNTP,     /* Open Glider Network tracker */
-	RF_PROTOCOL_P3I      /* PilotAware */
+	RF_PROTOCOL_P3I,       /* PilotAware */
+	RF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
+	RF_PROTOCOL_ADSB_UAT   /* ADS-B UAT */
 };
 
 extern void Misc_info(void);

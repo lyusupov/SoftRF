@@ -20,16 +20,41 @@
 
 #include <stdint.h>
 
+#include <protocol.h>
+#include <Time.h>
+
 #include "SoftRF.h"
 #include "Protocol_OGNTP.h"
 #include "Protocol_Legacy.h"
+#include "RFHelper.h"
+
+const rf_proto_desc_t ogntp_proto_desc = {
+  .type           = RF_PROTOCOL_OGNTP,
+  .preamble_type  = OGNTP_PREAMBLE_TYPE,
+  .preabmble_size = OGNTP_PREAMBLE_SIZE,
+  .syncword       = OGNTP_SYNCWORD,
+  .syncword_size  = OGNTP_SYNCWORD_SIZE,
+  .net_id         = 0x0000, /* not in use */
+  .payload_type   = RF_PAYLOAD_INVERTED,
+  .payload_size   = OGNTP_PAYLOAD_SIZE,
+  .payload_offset = 0,
+  .crc_type       = OGNTP_CRC_TYPE,
+  .crc_size       = OGNTP_CRC_SIZE,
+
+  .bitrate        = RF_BITRATE_100KBPS,
+  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening      = RF_WHITENING_MANCHESTER,
+  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+};
 
 static GPS_Position pos;
-static OGN_TxPacket ogn_pkt;
+static OGN_TxPacket ogn_tx_pkt;
+static OGN_RxPacket ogn_rx_pkt;
 
 void ogntp_init()
 {
   pos.Clear();
+  ogn_rx_pkt.Clear();
 }
 
 void ogntp_fini()
@@ -37,19 +62,33 @@ void ogntp_fini()
 
 }
 
-bool ogntp_decode(ogntp_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-  fop->addr = ogn_pkt.Packet.Header.Address;
-  fop->latitude = ogn_pkt.Packet.DecodeLatitude();
-  fop->longitude = ogn_pkt.Packet.DecodeLongitude();
-  fop->altitude = ogn_pkt.Packet.DecodeAltitude();
-  fop->aircraft_type = ogn_pkt.Packet.Position.AcftType;
+  ogn_rx_pkt.recvBytes((uint8_t *) pkt);
 
-  fop->addr_type = ogn_pkt.Packet.Header.AddrType;
+/* that has been alreay done by RFHelper */
+//  if (ogn_rx_pkt.checkFEC()) {
+//    return false;
+//  }
+
+  if( ogn_tx_pkt.Packet.Header.Other || ogn_tx_pkt.Packet.Header.Encrypted ) {
+    return false;
+  }
+
+  ogn_tx_pkt.Packet.Dewhiten();
+
+  fop->addr = ogn_rx_pkt.Packet.Header.Address;
+  fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
+  fop->longitude = ogn_rx_pkt.Packet.DecodeLongitude() * 0.0001/60;
+  fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude() / 10;
+  fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
+  fop->course = ogn_rx_pkt.Packet.Position.Heading / 10;
+
+  fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
   fop->timestamp = this_aircraft->timestamp;
 
   fop->vs = 0;
-  fop->stealth = ogn_pkt.Packet.Position.Stealth;
+  fop->stealth = ogn_rx_pkt.Packet.Position.Stealth;
   fop->no_track = 0;
   fop->ns[0] = 0; fop->ns[1] = 0;
   fop->ns[2] = 0; fop->ns[3] = 0;
@@ -59,19 +98,25 @@ bool ogntp_decode(ogntp_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   return true;
 }
 
-ogntp_packet *ogntp_encode(ogntp_packet *pkt, ufo_t *this_aircraft) {
+size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
 
-  pos.Latitude = this_aircraft->latitude;
-  pos.Longitude = this_aircraft->longitude;
-  pos.Altitude = (int16_t) this_aircraft->altitude;
-  pos.Heading = (int16_t) this_aircraft->course;
-  pos.Encode(ogn_pkt.Packet);
+  pos.Latitude = (int32_t) (this_aircraft->latitude * 600000);
+  pos.Longitude = (int32_t) (this_aircraft->longitude * 600000);
+  pos.Altitude = (int32_t) (this_aircraft->altitude * 10);
+  pos.Heading = (int16_t) (this_aircraft->course * 10);
+  pos.Encode(ogn_tx_pkt.Packet);
 
-  ogn_pkt.Packet.Header.Address = this_aircraft->addr;
-  ogn_pkt.Packet.Header.AddrType = ADDR_TYPE_OGN;
+  ogn_tx_pkt.Packet.Header.Address = this_aircraft->addr;
+  ogn_tx_pkt.Packet.Header.AddrType = ADDR_TYPE_OGN;
+  ogn_tx_pkt.Packet.Header.Parity = parity(ogn_tx_pkt.Packet.HeaderWord & 0x0FFFFFFF); /* lowest 28 bits */
 
-  ogn_pkt.Packet.Position.AcftType = (int16_t) this_aircraft->aircraft_type;
-  ogn_pkt.Packet.Position.Stealth = (int16_t) this_aircraft->stealth;
+  ogn_tx_pkt.Packet.Position.AcftType = (int16_t) this_aircraft->aircraft_type;
+  ogn_tx_pkt.Packet.Position.Stealth = (int16_t) this_aircraft->stealth;
+  ogn_tx_pkt.Packet.Position.Time = second();
 
-  ogn_pkt.calcFEC();
+  ogn_tx_pkt.Packet.Whiten();
+  ogn_tx_pkt.calcFEC();
+
+  memcpy((void *) pkt,  ogn_tx_pkt.Byte(), ogn_tx_pkt.Bytes);
+  return (ogn_tx_pkt.Bytes);
 }

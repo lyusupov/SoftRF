@@ -80,13 +80,18 @@
  * data rate of 38.4kb/s 
  */
 
+#include "RFHelper.h"
+
  /* Valid for NiceRF SV610 firmware ver. 4.66 */  
-#define P3I_PREAMBLE        {0x55, 0x55, 0x55, 0x55, 0x55}
+#define P3I_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_55
+#define P3I_PREAMBLE_SIZE   5
 #define P3I_SYNCWORD        {0x2d, 0xd4}
-#define P3I_NET_ID          {0x00, 0x00, 0x00, 0x00}
+#define P3I_SYNCWORD_SIZE   2
+#define P3I_NET_ID          0x00000000
 #define P3I_PAYLOAD_SIZE    24
+#define P3I_PAYLOAD_OFFSET  5
+#define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_0000
 #define P3I_CRC_SIZE        2
-#define P3I_CRC_TYPE        2     /* CCITT CRC-16, Seed value: 0x0000 */
 
 #define ADDR_TYPE_PILOTAWARE  0
 
@@ -116,5 +121,11 @@ typedef struct {
     uint8_t  aircraft;  //  aircraft type
     uint8_t  crc;
 } __attribute__((packed)) p3i_packet_t;
+
+extern const rf_proto_desc_t p3i_proto_desc;
+extern const uint8_t whitening_pattern[];
+
+bool p3i_decode(void *, ufo_t *, ufo_t *);
+size_t p3i_encode(void *, ufo_t *);
 
 #endif /* PROTOCOL_P3I_H */

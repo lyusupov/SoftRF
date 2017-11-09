@@ -23,8 +23,30 @@
 #include <math.h>
 #include <stdint.h>
 
+#include <protocol.h>
+
 #include "SoftRF.h"
+#include "RFHelper.h"
 #include "Protocol_Legacy.h"
+
+const rf_proto_desc_t legacy_proto_desc = {
+  .type           = RF_PROTOCOL_LEGACY,
+  .preamble_type  = LEGACY_PREAMBLE_TYPE,
+  .preabmble_size = LEGACY_PREAMBLE_SIZE,
+  .syncword       = LEGACY_SYNCWORD,
+  .syncword_size  = LEGACY_SYNCWORD_SIZE,
+  .net_id         = 0x0000, /* not in use */
+  .payload_type   = RF_PAYLOAD_INVERTED,
+  .payload_size   = LEGACY_PAYLOAD_SIZE,
+  .payload_offset = 0,
+  .crc_type       = LEGACY_CRC_TYPE,
+  .crc_size       = LEGACY_CRC_SIZE,
+
+  .bitrate        = RF_BITRATE_100KBPS,
+  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening      = RF_WHITENING_MANCHESTER,
+  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+};
 
 /* http://en.wikipedia.org/wiki/XXTEA */
 void btea(uint32_t *v, int8_t n, const uint32_t key[4]) {
@@ -97,18 +119,9 @@ void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address) {
         key[i] = obscure(table[i] ^ ((timestamp >> 6) ^ address), LEGACY_KEY2) ^ LEGACY_KEY3;
 }
 
-uint8_t parity(uint32_t x) {
-    uint8_t parity=0;
-    while (x > 0) {
-      if (x & 0x1) {
-          parity++;
-      }
-      x >>= 1;
-    }
-    return (parity % 2);
-}
+bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+    legacy_packet_t *pkt = (legacy_packet_t *) legacy_pkt;
 
     float ref_lat = this_aircraft->latitude;
     float ref_lon = this_aircraft->longitude;
@@ -122,7 +135,7 @@ bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
     make_key(key, timestamp, (pkt->addr << 8) & 0xffffff);
     btea((uint32_t *) pkt + 1, -5, key);
 
-    for (ndx = 0; ndx < sizeof (legacy_packet); ndx++) {
+    for (ndx = 0; ndx < sizeof (legacy_packet_t); ndx++) {
       pkt_parity += parity(*(((unsigned char *) pkt) + ndx));
     }
     if (pkt_parity % 2) {
@@ -164,7 +177,9 @@ bool legacy_decode(legacy_packet *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 }
 
 extern String Bin2Hex(byte *);
-legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft) {
+size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
+
+    legacy_packet_t *pkt = (legacy_packet_t *) legacy_pkt;
 
     int ndx;
     uint8_t pkt_parity=0;
@@ -201,7 +216,7 @@ legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft) {
     pkt->ns[0] = 0; pkt->ns[1] = 0; pkt->ns[2] = 0; pkt->ns[3] = 0;
     pkt->ew[0] = 0; pkt->ew[1] = 0; pkt->ew[2] = 0; pkt->ew[3] = 0;
 
-    for (ndx = 0; ndx < sizeof (legacy_packet); ndx++) {
+    for (ndx = 0; ndx < sizeof (legacy_packet_t); ndx++) {
       pkt_parity += parity(*(((unsigned char *) pkt) + ndx));
     }
      
@@ -218,6 +233,6 @@ legacy_packet *legacy_encode(legacy_packet *pkt, ufo_t *this_aircraft) {
 #endif    
     btea((uint32_t *) pkt + 1, 5, key);
 
-    return pkt;
+    return (sizeof(legacy_packet_t));
 }
 
