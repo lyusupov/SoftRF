@@ -373,7 +373,7 @@ bool sx1276_receive()
 
   if (sx1276_receive_complete == true) {
 
-    size_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
+    u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
 
     for (u1_t i=0; i < size; i++) {
         RxBuffer[i] = LMIC.frame[i + LMIC.protocol->payload_offset];

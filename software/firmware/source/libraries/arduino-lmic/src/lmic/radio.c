@@ -747,8 +747,24 @@ static void rxfsk (u1_t rxmode) {
 //    writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
 
     // set preamble detection
-//    writeReg(FSKRegPreambleDetect, 0x8A); // enable, 1 bytes, 10 chip errors
-    writeReg(FSKRegPreambleDetect, 0xAA); // enable, 2 bytes, 10 chip errors // PAW
+    switch (LMIC.protocol->preabmble_size)
+    {
+    case 0:
+    case 1:
+      // Legacy, OGNTP
+      writeReg(FSKRegPreambleDetect, 0x8A); // enable, 1 bytes, 10 chip errors
+      break;
+    case 2:
+      writeReg(FSKRegPreambleDetect, 0xAA); // enable, 2 bytes, 10 chip errors
+      break;
+    case 3:
+    case 4:
+    case 5:
+    default:
+      // PAW
+      writeReg(FSKRegPreambleDetect, 0xCA); // enable, 3 bytes, 10 chip errors
+      break;
+    }
 
     // set sync config
 //    writeReg(FSKRegSyncConfig, 0x12); // no auto restart, preamble 0xAA, enable, fill FIFO, 3 bytes sync
