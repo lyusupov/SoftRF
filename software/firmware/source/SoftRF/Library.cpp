@@ -96,9 +96,9 @@ void Export()
         Serial.println(fo.latitude, 4);
         Serial.println(fo.longitude, 4);
         Serial.println(fo.altitude);
-        Serial.println(fo.distance);
+        Serial.println(fo.addr_type);
         Serial.println(fo.vs);
-        Serial.println(fo.type);
+        Serial.println(fo.aircraft_type);
         Serial.println(fo.stealth);
         Serial.println(fo.no_track);
 #endif

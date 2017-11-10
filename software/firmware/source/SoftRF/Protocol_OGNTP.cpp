@@ -71,18 +71,18 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 //    return false;
 //  }
 
-  if( ogn_tx_pkt.Packet.Header.Other || ogn_tx_pkt.Packet.Header.Encrypted ) {
+  if( ogn_rx_pkt.Packet.Header.Other || ogn_rx_pkt.Packet.Header.Encrypted ) {
     return false;
   }
 
-  ogn_tx_pkt.Packet.Dewhiten();
+  ogn_rx_pkt.Packet.Dewhiten();
 
   fop->addr = ogn_rx_pkt.Packet.Header.Address;
   fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
   fop->longitude = ogn_rx_pkt.Packet.DecodeLongitude() * 0.0001/60;
-  fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude() / 10;
+  fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude();
   fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
-  fop->course = ogn_rx_pkt.Packet.Position.Heading / 10;
+  fop->course = ogn_rx_pkt.Packet.Position.Heading * 0.1;
 
   fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
   fop->timestamp = this_aircraft->timestamp;
