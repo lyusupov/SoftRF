@@ -296,7 +296,7 @@ void sx1276_setup()
   // Set up these settings once, and use them for both TX and RX
 
   if (settings->band == RF_BAND_EU) {
-    LMIC.freq = 868400000UL; 
+    LMIC.freq = 868400000UL;
   } else if (settings->band == RF_BAND_RU1) {
     LMIC.freq = 868200000UL; 
   } else if (settings->band == RF_BAND_RU2) {

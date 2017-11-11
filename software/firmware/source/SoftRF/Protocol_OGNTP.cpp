@@ -31,7 +31,7 @@
 const rf_proto_desc_t ogntp_proto_desc = {
   .type           = RF_PROTOCOL_OGNTP,
   .preamble_type  = OGNTP_PREAMBLE_TYPE,
-  .preabmble_size = OGNTP_PREAMBLE_SIZE,
+  .preamble_size  = OGNTP_PREAMBLE_SIZE,
   .syncword       = OGNTP_SYNCWORD,
   .syncword_size  = OGNTP_SYNCWORD_SIZE,
   .net_id         = 0x0000, /* not in use */

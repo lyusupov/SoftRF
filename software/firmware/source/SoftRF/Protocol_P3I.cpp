@@ -29,7 +29,7 @@
 const rf_proto_desc_t p3i_proto_desc = {
   .type           = RF_PROTOCOL_P3I,
   .preamble_type  = P3I_PREAMBLE_TYPE,
-  .preabmble_size = P3I_PREAMBLE_SIZE,
+  .preamble_size  = P3I_PREAMBLE_SIZE,
   .syncword       = P3I_SYNCWORD,
   .syncword_size  = P3I_SYNCWORD_SIZE,
   .net_id         = P3I_NET_ID,

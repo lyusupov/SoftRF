@@ -63,7 +63,9 @@ enum
 {
 	RF_RX_BANDWIDTH_SS_100KHZ,
 	RF_RX_BANDWIDTH_SS_125KHZ,
-	RF_RX_BANDWIDTH_SS_166KHZ
+	RF_RX_BANDWIDTH_SS_166KHZ,
+	RF_RX_BANDWIDTH_SS_200KHZ,
+	RF_RX_BANDWIDTH_SS_250KHZ
 };
 
 #define RF_MAX_SYNC_WORD_SIZE  8
@@ -71,7 +73,7 @@ enum
 typedef struct RF_PROTOCOL {
     uint8_t   type;
     uint8_t   preamble_type;
-    uint8_t   preabmble_size;
+    uint8_t   preamble_size;
     uint8_t   syncword[RF_MAX_SYNC_WORD_SIZE];
     uint8_t   syncword_size;
     uint32_t  net_id;

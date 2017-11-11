@@ -32,7 +32,7 @@
 const rf_proto_desc_t legacy_proto_desc = {
   .type           = RF_PROTOCOL_LEGACY,
   .preamble_type  = LEGACY_PREAMBLE_TYPE,
-  .preabmble_size = LEGACY_PREAMBLE_SIZE,
+  .preamble_size  = LEGACY_PREAMBLE_SIZE,
   .syncword       = LEGACY_SYNCWORD,
   .syncword_size  = LEGACY_SYNCWORD_SIZE,
   .net_id         = 0x0000, /* not in use */

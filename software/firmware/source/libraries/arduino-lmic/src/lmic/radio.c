@@ -499,7 +499,7 @@ static void txfsk () {
 
     // frame and packet handler settings
     writeReg(FSKRegPreambleMsb, 0x00);
-    writeReg(FSKRegPreambleLsb, LMIC.protocol->preabmble_size);
+    writeReg(FSKRegPreambleLsb, LMIC.protocol->preamble_size);
 
     uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
     switch (LMIC.protocol->preamble_type)
@@ -715,16 +715,25 @@ static void rxfsk (u1_t rxmode) {
     //writeReg(RegOpMode, 0x00); // (not LoRa)
     opmodeFSK();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) == 0);
+
     // enter standby mode (warm up))
     opmode(OPMODE_STANDBY);
+
     // configure frequency
     configChannel();
+
     // set LNA gain
-    //writeReg(RegLna, 0x20|0x03); // max gain, boost enable
-    writeReg(RegLna, LNA_RX_GAIN);
+    //writeReg(RegLna, LNA_RX_GAIN);
+    //writeReg(RegLna, 0x20 | 0x03); // max gain, boost enable
+    writeReg(RegLna, 0x20 | 0x00); // max gain, default LNA current
+    //writeReg(RegLna, 0x60 | 0x00); // -12dB gain, default LNA current
+    //writeReg(RegLna, 0x80 | 0x00); // -24dB gain, default LNA current
+    //writeReg(RegLna, 0xC0 | 0x00); // -48dB gain, default LNA current
+
     // configure receiver
-//    writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
-    writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC, trigger on preamble?!?
+    //writeReg(FSKRegRxConfig, 0x1E); // AFC auto, AGC, trigger on preamble?!?
+    writeReg(FSKRegRxConfig, 0x0E); // AFC off, AGC on, trigger on preamble?!?
+    //writeReg(FSKRegRxConfig, 0x06); // AFC off, AGC off, trigger on preamble?!?
 
     // set receiver bandwidth
     switch (LMIC.protocol->bandwidth)
@@ -735,6 +744,12 @@ static void rxfsk (u1_t rxmode) {
     case RF_RX_BANDWIDTH_SS_166KHZ:
       writeReg(FSKRegRxBw, 0x11); // 166.6kHz SSB
       break;
+    case RF_RX_BANDWIDTH_SS_200KHZ:
+      writeReg(FSKRegRxBw, 0x09); // 200kHz SSB
+      break;
+    case RF_RX_BANDWIDTH_SS_250KHZ:
+      writeReg(FSKRegRxBw, 0x01); // 250kHz SSB
+      break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
       writeReg(FSKRegRxBw, 0x02); // 125kHz SSb; BW >= (DR + 2 X FDEV)
@@ -742,12 +757,14 @@ static void rxfsk (u1_t rxmode) {
     }
 
     // set AFC bandwidth
-    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB  // PAW
+//    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB  // PAW
 //    writeReg(FSKRegAfcBw, 0x12); // 83.3kHz SSB
 //    writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
+//    writeReg(FSKRegAfcBw, 0x09); // 200kHz SSB
+//    writeReg(FSKRegAfcBw, 0x01); // 250kHz SSB
 
     // set preamble detection
-    switch (LMIC.protocol->preabmble_size)
+    switch (LMIC.protocol->preamble_size)
     {
     case 0:
     case 1:

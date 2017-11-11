@@ -25,6 +25,7 @@
 /*  IEEE Manchester(F531FAB6) = 55 99 A5 A9 55 66 65 96 */
 #define LEGACY_SYNCWORD        {0x55, 0x99, 0xA5, 0xA9, 0x55, 0x66, 0x65, 0x96}
 #define LEGACY_SYNCWORD_SIZE   8
+
 #define LEGACY_PAYLOAD_SIZE    24
 #define LEGACY_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
 #define LEGACY_CRC_SIZE        2
