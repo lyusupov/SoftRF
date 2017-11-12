@@ -499,7 +499,8 @@ static void txfsk () {
 
     // frame and packet handler settings
     writeReg(FSKRegPreambleMsb, 0x00);
-    writeReg(FSKRegPreambleLsb, LMIC.protocol->preamble_size);
+    /* extra preamble symbol at Tx to ease reception on partner's side */
+    writeReg(FSKRegPreambleLsb, LMIC.protocol->preamble_size + 1);
 
     uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
     switch (LMIC.protocol->preamble_type)
@@ -724,8 +725,8 @@ static void rxfsk (u1_t rxmode) {
 
     // set LNA gain
     //writeReg(RegLna, LNA_RX_GAIN);
-    //writeReg(RegLna, 0x20 | 0x03); // max gain, boost enable
-    writeReg(RegLna, 0x20 | 0x00); // max gain, default LNA current
+    writeReg(RegLna, 0x20 | 0x03); // max gain, boost enable
+    //writeReg(RegLna, 0x20 | 0x00); // max gain, default LNA current
     //writeReg(RegLna, 0x60 | 0x00); // -12dB gain, default LNA current
     //writeReg(RegLna, 0x80 | 0x00); // -24dB gain, default LNA current
     //writeReg(RegLna, 0xC0 | 0x00); // -48dB gain, default LNA current
@@ -759,7 +760,7 @@ static void rxfsk (u1_t rxmode) {
     // set AFC bandwidth
 //    writeReg(FSKRegAfcBw, 0x0B); // 50kHz SSB  // PAW
 //    writeReg(FSKRegAfcBw, 0x12); // 83.3kHz SSB
-//    writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
+      writeReg(FSKRegAfcBw, 0x11); // 166.6kHz SSB
 //    writeReg(FSKRegAfcBw, 0x09); // 200kHz SSB
 //    writeReg(FSKRegAfcBw, 0x01); // 250kHz SSB
 
@@ -767,9 +768,10 @@ static void rxfsk (u1_t rxmode) {
     switch (LMIC.protocol->preamble_size)
     {
     case 0:
+      //writeReg(FSKRegPreambleDetect, 0x05); // disable, 5 chip errors
     case 1:
       // Legacy, OGNTP
-      writeReg(FSKRegPreambleDetect, 0x8A); // enable, 1 bytes, 10 chip errors
+      writeReg(FSKRegPreambleDetect, 0x85); // enable, 1 bytes, 5 chip errors
       break;
     case 2:
       writeReg(FSKRegPreambleDetect, 0xAA); // enable, 2 bytes, 10 chip errors
@@ -784,8 +786,6 @@ static void rxfsk (u1_t rxmode) {
     }
 
     // set sync config
-//    writeReg(FSKRegSyncConfig, 0x12); // no auto restart, preamble 0xAA, enable, fill FIFO, 3 bytes sync
-
     uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
     switch (LMIC.protocol->preamble_type)
     {
