@@ -21,6 +21,8 @@
 #include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
 
+#include <freqplan.h>
+
 #if LOGGER_IS_ENABLED
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
@@ -34,6 +36,8 @@ byte TxPkt[MAX_PKT_SIZE];
 
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
+
+static FreqPlan RF_FreqPlan;
 
 rfchip_ops_t *rf_chip = NULL;
 
@@ -78,6 +82,8 @@ void RF_setup(void)
     }  
   }  
 
+  RF_FreqPlan.setPlan(settings->band == RF_BAND_DEFAULT ? RF_BAND_EU : settings->band);
+
   rf_chip->setup();
 }
 
@@ -112,26 +118,19 @@ bool nrf905_probe()
 
 void nrf905_setup()
 {
+  uint32_t frequency;
+  nRF905_band_t band;
+
+  /* stick EU freq. to 868.4 MHz for now */
+  uint8_t channel = (settings->band == RF_BAND_EU ? 1 : 0);
+
   // Start up
   nRF905_init();
 
-  if (settings->band == RF_BAND_EU) {
-    nRF905_setFrequency(NRF905_BAND_868 , 868400000UL);
-  } else if (settings->band == RF_BAND_RU1) {
-    nRF905_setFrequency(NRF905_BAND_868 , 868200000UL);
-  } else if (settings->band == RF_BAND_RU2) {
-    nRF905_setFrequency(NRF905_BAND_868 , 868800000UL);
-  } else if (settings->band == RF_BAND_NZ) {
-    nRF905_setFrequency(NRF905_BAND_868 , 869250000UL);
-  } else if (settings->band == RF_BAND_UK) {
-    nRF905_setFrequency(NRF905_BAND_868 , 869920000UL);
-  } else if (settings->band == RF_BAND_US) {
-    nRF905_setFrequency(NRF905_BAND_915 , 915000000UL);
-  } else if (settings->band == RF_BAND_AU) {
-    nRF905_setFrequency(NRF905_BAND_915 , 921000000UL);
-  } else {  /* RF_BAND_CN */
-    nRF905_setFrequency(NRF905_BAND_433 , 433200000UL);
-  }
+  frequency = RF_FreqPlan.getChanFrequency(channel);
+  band = (frequency >= 868000000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+
+  nRF905_setFrequency(band , frequency);
 
   //nRF905_setTransmitPower(NRF905_PWR_10);
   //nRF905_setTransmitPower(NRF905_PWR_n10);
@@ -290,28 +289,15 @@ bool sx1276_probe()
 
 void sx1276_setup()
 {
+  /* stick EU freq. to 868.4 MHz for now */
+  uint8_t channel = (settings->band == RF_BAND_EU ? 1 : 0);
+  uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+
   // initialize runtime env
   os_init();
 
-  // Set up these settings once, and use them for both TX and RX
-
-  if (settings->band == RF_BAND_EU) {
-    LMIC.freq = 868400000UL;
-  } else if (settings->band == RF_BAND_RU1) {
-    LMIC.freq = 868200000UL; 
-  } else if (settings->band == RF_BAND_RU2) {
-    LMIC.freq = 868800000UL;
-  } else if (settings->band == RF_BAND_NZ) {
-    LMIC.freq = 869250000UL;  
-  } else if (settings->band == RF_BAND_US) {
-    LMIC.freq = 915000000UL;
-  } else if (settings->band == RF_BAND_AU) {
-    LMIC.freq = 921000000UL;   
-  } else if (settings->band == RF_BAND_UK) {
-    LMIC.freq = 869920000UL;
-  } else {  /* RF_BAND_CN */
-    LMIC.freq = 433200000UL;
-  }
+  LMIC.freq = frequency;
+//LMIC.freq = 868400000UL;
 
   // Maximum TX power
 //  LMIC.txpow = 27;
@@ -427,6 +413,7 @@ void sx1276_rx(osjobcb_t func) {
   os_radio(RADIO_RX /* RADIO_RXON */);
   //Serial.println("RX");
 }
+
 
 static void sx1276_rx_func (osjob_t* job) {
 
