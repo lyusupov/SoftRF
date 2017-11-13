@@ -64,8 +64,11 @@
 //#define CLOUD_PORT 4352 /* echo TCP/IP service to test response */ // 14580
 //#define CLOUD_MODE  0
 
-#define RELAY_PORT 12390
-#define GDL90_PORT  43211
+#define RELAY_DST_PORT 12390
+#define RELAY_SRC_PORT (RELAY_DST_PORT - 1)
+
+#define GDL90_DST_PORT  43211
+#define GDL90_SRC_PORT  (GDL90_DST_PORT - 1)
 
 //#define STATION_ID  String(ESP.getChipId(), HEX).c_str()
 

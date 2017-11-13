@@ -242,7 +242,7 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 
 void GDL90_setup()
 {
-  GDL90_Udp.begin(GDL90_PORT);
+  GDL90_Udp.begin(GDL90_SRC_PORT);
   Serial.print("GDL90 server started at port: ");
   Serial.println(GDL90_Udp.localPort());
 }
@@ -253,12 +253,12 @@ void GDL90_Export()
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
   IPAddress broadcastIP = WiFi_get_broadcast();
 
-  GDL90_Udp.beginPacket(broadcastIP, GDL90_PORT);
+  GDL90_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeHeartbeat(buf);
   GDL90_Udp.write(buf, size);
   GDL90_Udp.endPacket();  
 
-  GDL90_Udp.beginPacket(broadcastIP, GDL90_PORT);
+  GDL90_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeOwnershipReport(buf, &ThisAircraft);
   GDL90_Udp.write(buf, size);
   GDL90_Udp.endPacket();     

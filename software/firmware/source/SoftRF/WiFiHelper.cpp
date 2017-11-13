@@ -60,7 +60,7 @@ WiFiClient client;
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 
-unsigned int RFlocalPort = RELAY_PORT;      // local port to listen for UDP packets
+unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
 
 /**
  * @brief Read WiFi connection information from file system.
