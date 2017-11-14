@@ -128,5 +128,10 @@ extern void ClearExpired(void);
 extern void *WiFi_relay_from_android(void);
 extern void WiFi_relay_to_android(void);
 
+extern const float tx_test_positions[90][2] PROGMEM;
+
+#define TX_TEST_NUM_POSITIONS (sizeof(tx_test_positions) / sizeof(float) / 2)
+#define TEST_ALTITUDE    438
+
 #endif /* SOFTRF_H */
 

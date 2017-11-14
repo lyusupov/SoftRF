@@ -5,7 +5,7 @@
 
 class FreqPlan
 { public:
-   uint8_t  Plan;        // 1=Europe, 2=USA/Canada, 3=Australia/Chile, 4=New Zeeland
+   uint8_t  Plan;        // 1=Europe, 2=USA/Canada, 3=Australia/Chile, 4=New Zealand
    uint8_t  Channels;    // number of channels
    uint32_t BaseFreq;    // [Hz] base channel (#0) frequency
    uint32_t ChanSepar;   // [Hz] channel spacing
@@ -16,7 +16,7 @@ class FreqPlan
    { Plan=NewPlan;
           if(Plan==2) { BaseFreq=902200000; ChanSepar=400000; Channels=65; } // USA
      else if(Plan==3) { BaseFreq=917000000; ChanSepar=400000; Channels=24; } // Australia and South America
-     else if(Plan==4) { BaseFreq=869250000; ChanSepar=200000; Channels= 1; } // New Zeeland
+     else if(Plan==4) { BaseFreq=869250000; ChanSepar=200000; Channels= 1; } // New Zealand
      else if(Plan==5) { BaseFreq=868800000; ChanSepar=200000; Channels= 1; } // Russia
      else if(Plan==6) { BaseFreq=433200000; ChanSepar=200000; Channels= 1; } // China
      else if(Plan==7) { BaseFreq=869920000; ChanSepar=200000; Channels= 1; } // PilotAware (UK)
@@ -30,13 +30,13 @@ class FreqPlan
 
    static const char *getPlanName(uint8_t Plan)
    { static const char *Name[8] = { "Default", "Europe/Africa",
-       "USA/Canada", "Australia/South America", "New Zeeland",
+       "USA/Canada", "Australia/South America", "New Zealand",
        "Russia", "China", "PilotAware (UK)" } ;
      if(Plan>4) return 0;
      return Name[Plan]; }
 
    uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or FLARM, UTC time, slot: 0 or 1
-   { if(Channels<=1) return 0;                                         // if single channel (New Zeeland) return channel #0
+   { if(Channels<=1) return 0;                                         // if single channel (New Zealand) return channel #0
      if(Plan>=2)                                                       // if USA/Canada or Australia/South America
      { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // Flarm hopping channel
        if(OGN)                                                         // for OGN tracker
@@ -58,7 +58,7 @@ class FreqPlan
    uint8_t static calcPlan(int32_t Latitude, int32_t Longitude) // get the frequency plan from Lat/Lon: 1 = Europe + Africa, 2 = USA/CAnada, 3 = Australia + South America, 4$
    { if( (Longitude>=(-20*600000)) && (Longitude<=(60*600000)) ) return 1; // between -20 and 60 deg Lat => Europe + Africa: 868MHz band
      if( Latitude<(20*600000) )                                            // below 20deg latitude
-     { if( ( Longitude>(164*600000)) && (Latitude<(-30*600000)) && (Latitude>(-48*600000)) ) return 4;  // => New Zeeland
+     { if( ( Longitude>(164*600000)) && (Latitude<(-30*600000)) && (Latitude>(-48*600000)) ) return 4;  // => New Zealand
        return 3; }                                                         // => Australia + South America: upper half of 915MHz band
      return 2; }                                                           // => USA/Canada: full 915MHz band
 
