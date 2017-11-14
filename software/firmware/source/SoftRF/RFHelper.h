@@ -36,13 +36,12 @@
 
 enum
 {
-	RF_BAND_DEFAULT,
+	RF_BAND_AUTO,
 	RF_BAND_EU,	 /* 868.4 MHz band */
 	RF_BAND_US,	 /* 915 MHz band */
 	RF_BAND_AU,	 /* 921 MHz band */
 	RF_BAND_NZ,	 /* 869.250 MHz band */
-	RF_BAND_RU1,	 /* 868.2 MHz band */
-	RF_BAND_RU2,	 /* 868.8 MHz band */
+	RF_BAND_RU,	 /* 868.8 MHz band */
 	RF_BAND_CN,	 /* 433 MHz band */
 	RF_BAND_UK 	 /* 869.92 MHz band */
 };
@@ -57,6 +56,7 @@ typedef struct rfchip_ops_struct {
 uint8_t parity(uint32_t);
 
 void RF_setup(void);
+void RF_loop(void);
 void RF_Transmit(void);
 bool RF_Receive(void);
 

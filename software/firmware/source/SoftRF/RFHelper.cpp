@@ -38,6 +38,7 @@ uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
 static FreqPlan RF_FreqPlan;
+static bool RF_ready = false;
 
 rfchip_ops_t *rf_chip = NULL;
 
@@ -82,14 +83,41 @@ void RF_setup(void)
     }  
   }  
 
-  RF_FreqPlan.setPlan(settings->band == RF_BAND_DEFAULT ? RF_BAND_EU : settings->band);
+  /* "AUTO" freq. will set the plan upon very first valid GNSS fix */
+  if (settings->band == RF_BAND_AUTO) {
+    /* Supersede EU plan with UK when PAW is selected */
+    if (rf_chip != &nrf905_ops && settings->rf_protocol == RF_PROTOCOL_P3I) {
+      RF_FreqPlan.setPlan(RF_BAND_UK);
+    } else {
+      return;
+    }
+  } else {
+    RF_FreqPlan.setPlan(settings->band);
+  }
 
   rf_chip->setup();
 }
 
+void RF_loop()
+{
+  if (!RF_ready) {
+    if (settings->band == RF_BAND_AUTO) {
+      if (ThisAircraft.latitude || ThisAircraft.longitude) {
+        RF_FreqPlan.setPlan((int32_t)(ThisAircraft.latitude  * 600000),
+                            (int32_t)(ThisAircraft.longitude * 600000));
+
+        rf_chip->setup();
+        RF_ready = true;
+      }
+    } else {
+      RF_ready = true;
+    }
+  }
+}
+
 void RF_Transmit(void)
 {
-  if (rf_chip) {
+  if (RF_ready && rf_chip) {
     rf_chip->transmit();
   }
 }
@@ -98,7 +126,7 @@ bool RF_Receive(void)
 {
   bool rval = false;
 
-  if (rf_chip) {
+  if (RF_ready && rf_chip) {
     rval = rf_chip->receive();
   }
   
@@ -122,7 +150,7 @@ void nrf905_setup()
   nRF905_band_t band;
 
   /* stick EU freq. to 868.4 MHz for now */
-  uint8_t channel = (settings->band == RF_BAND_EU ? 1 : 0);
+  uint8_t channel = (RF_FreqPlan.Plan == RF_BAND_EU ? 1 : 0);
 
   // Start up
   nRF905_init();
@@ -290,7 +318,7 @@ bool sx1276_probe()
 void sx1276_setup()
 {
   /* stick EU freq. to 868.4 MHz for now */
-  uint8_t channel = (settings->band == RF_BAND_EU ? 1 : 0);
+  uint8_t channel = (RF_FreqPlan.Plan == RF_BAND_EU ? 1 : 0);
   uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
 
   // initialize runtime env

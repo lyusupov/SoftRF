@@ -127,9 +127,9 @@ void handleSettings() {
 <th align=left>Band</th>\
 <td align=right>\
 <select name='band'>\
+<option %s value='%d'>AUTO (GNSS)</option>\
 <option %s value='%d'>EU (868.4 MHz)</option>\
-<option %s value='%d'>RU1 (868.2 MHz)</option>\
-<option %s value='%d'>RU2 (868.8 MHz)</option>\
+<option %s value='%d'>RU (868.8 MHz)</option>\
 <option %s value='%d'>CN (433 MHz)</option>\
 <option %s value='%d'>US (915 MHz)</option>\
 <option %s value='%d'>NZ (869.25 MHz)</option>\
@@ -209,9 +209,9 @@ void handleSettings() {
   (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
   (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
   (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
+  (settings->band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
   (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
-  (settings->band == RF_BAND_RU1 ? "selected" : ""), RF_BAND_RU1,
-  (settings->band == RF_BAND_RU2 ? "selected" : ""), RF_BAND_RU2,
+  (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
   (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
   (settings->band == RF_BAND_US ? "selected" : ""),  RF_BAND_US,
   (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,

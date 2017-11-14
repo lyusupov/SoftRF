@@ -143,7 +143,6 @@ void setup()
 
 }
 
-
 void loop()
 {
   switch (settings->mode)
@@ -165,6 +164,8 @@ void loop()
     normal_loop();
     break;
   }   
+
+  RF_loop();
 
   // Handle OTA update.
   OTA_loop();
