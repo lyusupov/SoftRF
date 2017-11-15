@@ -145,6 +145,9 @@ void setup()
 
 void loop()
 {
+  // Do common RF stuff first
+  RF_loop();
+
   switch (settings->mode)
   {
   case SOFTRF_MODE_TX_TEST:
@@ -164,8 +167,6 @@ void loop()
     normal_loop();
     break;
   }   
-
-  RF_loop();
 
   // Handle OTA update.
   OTA_loop();

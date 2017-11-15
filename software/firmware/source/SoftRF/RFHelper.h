@@ -49,6 +49,7 @@ enum
 typedef struct rfchip_ops_struct {
   bool (*probe)();
   void (*setup)();
+  void (*channel)(uint8_t);
   bool (*receive)();
   void (*transmit)();
 } rfchip_ops_t;
@@ -56,17 +57,20 @@ typedef struct rfchip_ops_struct {
 uint8_t parity(uint32_t);
 
 void RF_setup(void);
+void RF_SetChannel(void);
 void RF_loop(void);
 void RF_Transmit(void);
 bool RF_Receive(void);
 
 bool nrf905_probe(void);
 void nrf905_setup(void);
+void nrf905_channel(uint8_t);
 bool nrf905_receive(void);
 void nrf905_transmit(void);
 
 bool sx1276_probe(void);
 void sx1276_setup(void);
+void sx1276_channel(uint8_t);
 bool sx1276_receive(void);
 void sx1276_transmit(void);
 

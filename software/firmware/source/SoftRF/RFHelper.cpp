@@ -48,6 +48,7 @@ bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 rfchip_ops_t nrf905_ops = {
   nrf905_probe,
   nrf905_setup,
+  nrf905_channel,
   nrf905_receive,
   nrf905_transmit  
 };
@@ -55,6 +56,7 @@ rfchip_ops_t nrf905_ops = {
 rfchip_ops_t sx1276_ops = {
   sx1276_probe,
   sx1276_setup,
+  sx1276_channel,
   sx1276_receive,
   sx1276_transmit  
 };
@@ -88,8 +90,6 @@ void RF_setup(void)
     /* Supersede EU plan with UK when PAW is selected */
     if (rf_chip != &nrf905_ops && settings->rf_protocol == RF_PROTOCOL_P3I) {
       RF_FreqPlan.setPlan(RF_BAND_UK);
-    } else {
-      return;
     }
   } else {
     RF_FreqPlan.setPlan(settings->band);
@@ -98,20 +98,43 @@ void RF_setup(void)
   rf_chip->setup();
 }
 
+void RF_SetChannel(void)
+{
+  uint32_t Time = (uint32_t) now(); // ThisAircraft.timestamp ;
+  /* stick EU freq. on 868.4 MHz for now */
+  uint8_t Slot = 1; /* only #1 "400ms" timeslot is currently in use */
+  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
+
+  uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
+
+#if DEBUG
+  Serial.print("Plan: "); Serial.println(RF_FreqPlan.Plan);
+  Serial.print("Slot: "); Serial.println(Slot);
+  Serial.print("OGN: "); Serial.println(OGN);
+  Serial.print("Channel: "); Serial.println(chan);
+#endif
+
+  if (RF_ready && rf_chip) {
+    rf_chip->channel(chan);
+  }
+}
+
 void RF_loop()
 {
   if (!RF_ready) {
-    if (settings->band == RF_BAND_AUTO) {
+    if (RF_FreqPlan.Plan == RF_BAND_AUTO) {
       if (ThisAircraft.latitude || ThisAircraft.longitude) {
         RF_FreqPlan.setPlan((int32_t)(ThisAircraft.latitude  * 600000),
                             (int32_t)(ThisAircraft.longitude * 600000));
-
-        rf_chip->setup();
         RF_ready = true;
       }
     } else {
       RF_ready = true;
     }
+  }
+
+  if (RF_ready) {
+    RF_SetChannel();
   }
 }
 
@@ -139,26 +162,36 @@ bool RF_Receive(void)
  *
  */
 
+static uint8_t nrf905_channel_prev = (uint8_t) -1;
+
 bool nrf905_probe()
 {
   return true;
 }
 
+void nrf905_channel(uint8_t channel)
+{
+  if (channel != nrf905_channel_prev) {
+
+    uint32_t frequency;
+    nRF905_band_t band;
+
+    frequency = RF_FreqPlan.getChanFrequency(channel);
+    band = (frequency >= 868000000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+
+    nRF905_setFrequency(band , frequency);
+
+    nrf905_channel_prev = channel;
+  }
+}
+
 void nrf905_setup()
 {
-  uint32_t frequency;
-  nRF905_band_t band;
-
-  /* stick EU freq. to 868.4 MHz for now */
-  uint8_t channel = (RF_FreqPlan.Plan == RF_BAND_EU ? 1 : 0);
-
   // Start up
   nRF905_init();
 
-  frequency = RF_FreqPlan.getChanFrequency(channel);
-  band = (frequency >= 868000000UL ? NRF905_BAND_868 : NRF905_BAND_433);
-
-  nRF905_setFrequency(band , frequency);
+  /* Channel selection is now part of RF_loop() */
+//  nrf905_channel(channel);
 
   //nRF905_setTransmitPower(NRF905_PWR_10);
   //nRF905_setTransmitPower(NRF905_PWR_n10);
@@ -315,17 +348,22 @@ bool sx1276_probe()
   }
 }
 
-void sx1276_setup()
+void sx1276_channel(uint8_t channel)
 {
-  /* stick EU freq. to 868.4 MHz for now */
-  uint8_t channel = (RF_FreqPlan.Plan == RF_BAND_EU ? 1 : 0);
   uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
 
+  /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
+  LMIC.freq = frequency;
+//LMIC.freq = 868400000UL;
+}
+
+void sx1276_setup()
+{
   // initialize runtime env
   os_init();
 
-  LMIC.freq = frequency;
-//LMIC.freq = 868400000UL;
+  /* Channel selection is now part of RF_loop() */
+//  sx1276_channel(channel);
 
   // Maximum TX power
 //  LMIC.txpow = 27;
