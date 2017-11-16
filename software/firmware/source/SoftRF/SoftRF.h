@@ -58,6 +58,10 @@
 #define GDL90_DST_PORT  43211
 #define NMEA_DST_PORT   10110
 
+#define EXPORT_DISTANCE_CLOSE  500
+#define EXPORT_DISTANCE_NEAR   1500
+#define EXPORT_DISTANCE_FAR    10000
+
 //#define STATION_ID  String(ESP.getChipId(), HEX).c_str()
 
 typedef struct UFO {

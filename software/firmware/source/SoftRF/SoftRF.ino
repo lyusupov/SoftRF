@@ -213,16 +213,17 @@ void normal_loop()
 
   if (isTimeToDisplay()) {
     if (isValidFix()) {
-      LED_DisplayTraffic();  
+      LED_DisplayTraffic();
     } else {
-      LED_Clear();      
+      LED_Clear();
     }
-    LEDTimeMarker = millis();  
+    LEDTimeMarker = millis();
   }
 
   if (isTimeToExport() && isValidFix()) {
     NMEA_Export();
-    ExportTimeMarker = millis(); 
+    GDL90_Export();
+    ExportTimeMarker = millis();
   }
 
   ClearExpired();
@@ -294,8 +295,7 @@ void tx_test_loop()
   }
 
   if (isTimeToExport()) {
-    GDL90_Export();
-    ExportTimeMarker = millis(); 
+    ExportTimeMarker = millis();
   }
 }
 
@@ -319,13 +319,14 @@ void rx_test_loop()
   if (success) ParseData();
 
   if (isTimeToDisplay()) {
-    LED_DisplayTraffic();  
-    LEDTimeMarker = millis();  
+    LED_DisplayTraffic();
+    LEDTimeMarker = millis();
   }
 
   if (isTimeToExport()) {
     NMEA_Export();
-    ExportTimeMarker = millis(); 
+    GDL90_Export();
+    ExportTimeMarker = millis();
   }
 
   ClearExpired();

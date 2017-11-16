@@ -33,6 +33,7 @@
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
 
+extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
 extern char UDPpacketBuffer[512];
 
@@ -240,6 +241,8 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 void GDL90_Export()
 {
   size_t size;
+  float distance;
+  time_t this_moment = now();
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
   IPAddress broadcastIP = WiFi_get_broadcast();
 
@@ -252,4 +255,18 @@ void GDL90_Export()
   size = makeOwnershipReport(buf, &ThisAircraft);
   Uni_Udp.write(buf, size);
   Uni_Udp.endPacket();
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+
+      distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+
+      if (distance < EXPORT_DISTANCE_FAR) {
+        Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
+        size = makeTrafficReport(buf, &Container[i]);
+        Uni_Udp.write(buf, size);
+        Uni_Udp.endPacket();
+      }
+    }
+  }
 }

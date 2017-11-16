@@ -26,7 +26,7 @@
 
 char NMEABuffer[128]; //buffer for NMEA data
 
-extern ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
+extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
 
 //convert degrees to radians
@@ -65,10 +65,6 @@ int CalcBearing(double lat1, double lon1, double lat2, double lon2)
   //return (int) bearing + 0.5;
   return ((int) bearing + 360) % 360;
 }
-
-#define EXPORT_DISTANCE_CLOSE  500
-#define EXPORT_DISTANCE_NEAR   1500
-#define EXPORT_DISTANCE_FAR    10000
 
 void NMEA_Export()
 {
