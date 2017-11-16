@@ -38,7 +38,7 @@ const char* serverIndex = "\
 <body>\
  <h1 align=center>Firmware update</h1>\
  <hr>\
- <table width=100\%>\
+ <table width=100%%>\
   <tr>\
     <td align=left>\
     <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>\
@@ -100,7 +100,7 @@ void handleSettings() {
 <body>\
 <h1 align=center>Settings</h1>\
 <form action='/input' method='GET'>\
-<table width=100\%>\
+<table width=100%%>\
 <tr>\
 <th align=left>Mode</th>\
 <td align=right>\
@@ -264,7 +264,7 @@ void handleRoot() {
   </head>\
 <body>\
  <h1 align=center>SoftRF status</h1>\
- <table width=100\%>\
+ <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s</td></tr>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
@@ -274,7 +274,7 @@ void handleRoot() {
   <tr><th align=left>&nbsp;&nbsp;&nbsp;&nbsp;- received</th><td align=right>%u</td></tr>\
  </table>\
  <h2 align=center>Most recent GNSS fix</h2>\
- <table width=100\%>\
+ <table width=100%%>\
   <tr><th align=left>Time</th><td align=right>%u</td></tr>\
   <tr><th align=left>Sattelites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
@@ -282,7 +282,7 @@ void handleRoot() {
   <tr><th align=left>Altitude</th><td align=right>%d</td></tr>\
  </table>\
  <hr>\
- <table width=100\%>\
+ <table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
@@ -337,7 +337,7 @@ void handleInput() {
 </head>\
 <body>\
 <h1 align=center>New settings:</h1>\
-<table width=100\%>\
+<table width=100%%>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
