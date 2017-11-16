@@ -58,7 +58,7 @@ WiFiClient client;
 //#include <WiFiUDP.h>
 
 // A UDP instance to let us send and receive packets over UDP
-WiFiUDP Udp;
+WiFiUDP Uni_Udp;
 
 unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
 
@@ -78,7 +78,7 @@ bool loadConfig(String *ssid, String *pass)
   File configFile = SPIFFS.open("/cl_conf.txt", "r");
   if (!configFile)
   {
-    Serial.println("Failed to open cl_conf.txt.");
+    Serial.println(F("Failed to open cl_conf.txt."));
 
     return false;
   }
@@ -106,7 +106,7 @@ bool loadConfig(String *ssid, String *pass)
   // If there is no second line: Some information is missing.
   if (pos == -1)
   {
-    Serial.println("Infvalid content.");
+    Serial.println(F("Invalid content."));
     Serial.println(content);
 
     return false;
@@ -143,7 +143,7 @@ bool saveConfig(String *ssid, String *pass)
   File configFile = SPIFFS.open("/cl_conf.txt", "w");
   if (!configFile)
   {
-    Serial.println("Failed to open cl_conf.txt for writing");
+    Serial.println(F("Failed to open cl_conf.txt for writing"));
 
     return false;
   }
@@ -177,7 +177,7 @@ void WiFi_setup()
   // Initialize file system.
   if (!SPIFFS.begin())
   {
-    Serial.println("Failed to mount file system");
+    Serial.println(F("Failed to mount file system"));
     return;
   }
 
@@ -187,7 +187,7 @@ void WiFi_setup()
     station_ssid = MY_ACCESSPOINT_SSID ;
     station_psk = MY_ACCESSPOINT_PSK ;
 
-    Serial.println("No WiFi connection information available.");
+    Serial.println(F("No WiFi connection information available."));
   }
 
   // Check WiFi connection
@@ -201,13 +201,13 @@ void WiFi_setup()
   // ... Compare file config with sdk config.
   if (WiFi.SSID() != station_ssid || WiFi.psk() != station_psk)
   {
-    Serial.println("WiFi config changed.");
+    Serial.println(F("WiFi config changed."));
 
     // ... Try to connect to WiFi station.
     WiFi.begin(station_ssid.c_str(), station_psk.c_str());
 
     // ... Pritn new SSID
-    Serial.print("new SSID: ");
+    Serial.print(F("new SSID: "));
     Serial.println(WiFi.SSID());
 
     // ... Uncomment this for debugging output.
@@ -219,7 +219,7 @@ void WiFi_setup()
     WiFi.begin();
   }
 
-  Serial.println("Wait for WiFi connection.");
+  Serial.println(F("Wait for WiFi connection."));
 
   // ... Give ESP 10 seconds to connect to station.
   unsigned long startTime = millis();
@@ -235,7 +235,7 @@ void WiFi_setup()
   if(WiFi.status() == WL_CONNECTED)
   {
     // ... print IP Address
-    Serial.print("IP address: ");
+    Serial.print(F("IP address: "));
     Serial.println(WiFi.localIP());
 
 #if CLOUD_MODE
@@ -246,20 +246,21 @@ void WiFi_setup()
 
     delay(1000);
 
-    Serial.print("Connection to "); Serial.print(CLOUD_HOSTNAME); Serial.print(":"); Serial.print(CLOUD_PORT); Serial.print(" ");
+    Serial.print(F("Connection to ")); Serial.print(CLOUD_HOSTNAME);
+    Serial.print(":"); Serial.print(CLOUD_PORT); Serial.print(" ");
     // if there's a successful connection:
     if (client.connect(CLOUD_HOSTNAME, CLOUD_PORT)) {
-      Serial.println("succeed");
+      Serial.println(F("succeed"));
     } else {
       // if you couldn't make a connection:
-      Serial.println("failed");
+      Serial.println(F("failed"));
     }
 #endif
 
   }
   else
   {
-    Serial.println("Can not connect to WiFi station. Go into AP mode.");
+    Serial.println(F("Can not connect to WiFi station. Go into AP mode."));
     
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
@@ -275,16 +276,13 @@ void WiFi_setup()
     dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
     dns_active = true;
 
-    Serial.print("IP address: ");
+    Serial.print(F("IP address: "));
     Serial.println(WiFi.softAPIP());
   }
 
-  if (settings->mode == SOFTRF_MODE_BRIDGE) {
-    Serial.print("Udp server started at port ");
+    Serial.print(F("Udp server started at port "));
     Serial.println(RFlocalPort);
-    Udp.begin(RFlocalPort);
-  }
-
+    Uni_Udp.begin(RFlocalPort);
 }
 
 void WiFi_loop()
@@ -306,6 +304,5 @@ IPAddress WiFi_get_broadcast()
   }
   broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
 //  Serial.println(broadcastIp.toString());
-  return broadcastIp;  
+  return broadcastIp;
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   

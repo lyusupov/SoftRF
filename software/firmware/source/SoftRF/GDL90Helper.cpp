@@ -30,9 +30,6 @@
 
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
 
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP GDL90_Udp;
-
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
 
@@ -240,26 +237,19 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 #define makeOwnershipReport(b,a)  makeType10and20(b, GDL90_OWNSHIP_MSG_ID, a)
 #define makeTrafficReport(b,a)    makeType10and20(b, GDL90_TRAFFIC_MSG_ID, a)
 
-void GDL90_setup()
-{
-  GDL90_Udp.begin(GDL90_SRC_PORT);
-  Serial.print("GDL90 server started at port: ");
-  Serial.println(GDL90_Udp.localPort());
-}
-
 void GDL90_Export()
 {
   size_t size;
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
   IPAddress broadcastIP = WiFi_get_broadcast();
 
-  GDL90_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
+  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeHeartbeat(buf);
-  GDL90_Udp.write(buf, size);
-  GDL90_Udp.endPacket();  
+  Uni_Udp.write(buf, size);
+  Uni_Udp.endPacket();
 
-  GDL90_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
+  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeOwnershipReport(buf, &ThisAircraft);
-  GDL90_Udp.write(buf, size);
-  GDL90_Udp.endPacket();     
+  Uni_Udp.write(buf, size);
+  Uni_Udp.endPacket();
 }

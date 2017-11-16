@@ -62,6 +62,7 @@ extern "C" {
 #include "BatteryHelper.h"
 #include "MAVLinkHelper.h"
 #include "GDL90Helper.h"
+#include "NMEAHelper.h"
 
 #include "SoftRF.h"
 
@@ -127,8 +128,6 @@ void setup()
   OTA_setup();
   Web_setup();
 
-  GDL90_setup();
-
 #if 0
   GNSSserver.begin();
   GNSSserver.setNoDelay(true);
@@ -136,11 +135,10 @@ void setup()
 
   LED_test();
   Sound_test(resetInfo->reason);
- 
+
   if (settings->mode == SOFTRF_MODE_TX_TEST || settings->mode == SOFTRF_MODE_RX_TEST) {
     Time_setup();  
   }
-
 }
 
 void loop()
@@ -223,7 +221,7 @@ void normal_loop()
   }
 
   if (isTimeToExport() && isValidFix()) {
-    Export();
+    NMEA_Export();
     ExportTimeMarker = millis(); 
   }
 
@@ -326,7 +324,7 @@ void rx_test_loop()
   }
 
   if (isTimeToExport()) {
-    Export();
+    NMEA_Export();
     ExportTimeMarker = millis(); 
   }
 

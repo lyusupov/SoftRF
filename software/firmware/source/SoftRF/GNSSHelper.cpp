@@ -21,6 +21,8 @@
 
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
+#include "WiFiHelper.h"
+
 #include "SoftRF.h"
 
 unsigned long GNSSTimeSyncMarker = 0;
@@ -158,25 +160,23 @@ void GNSSTimeSync()
 void PickGNSSFix()
 {
   bool isValidSentence = false;
+  IPAddress broadcastIP = WiFi_get_broadcast();
 
   //check UART for data
   while (swSer.available() > 0) {
     GNSSbuf[GNSS_cnt] = swSer.read();
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
+
       Serial.write((char *) &GNSSbuf[0], GNSS_cnt+1);
       Serial.write('\n');
+
+      Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
+      Uni_Udp.write(&GNSSbuf[0], GNSS_cnt + 1);
+      Uni_Udp.write('\n');
+      Uni_Udp.endPacket();
     }
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
-#if 0
-      //push UART data to all connected telnet clients
-      for (i = 0; i < MAX_SRV_CLIENTS; i++) {
-        if (serverClients[i] && serverClients[i].connected()) {
-          serverClients[i].write(&GNSSbuf[0], GNSS_cnt + 1);
-          delay(1);
-        }
-      }
-#endif
       GNSS_cnt = 0;
     } else {
       GNSS_cnt++;

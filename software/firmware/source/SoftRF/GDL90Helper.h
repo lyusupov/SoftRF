@@ -91,7 +91,6 @@ typedef struct GDL90_Msg_Traffic {
 
 } __attribute__((packed)) GGDL90_Msg_Traffic_t;
 
-void GDL90_setup(void);
 void GDL90_Export(void);
 
 #endif /* GDL90HELPER_H */

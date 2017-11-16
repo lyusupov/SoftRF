@@ -1,6 +1,6 @@
 /*
- * WiFiHelper.h
- * Copyright (C) 2016-2017 Linar Yusupov
+ * NMEAHelper.h
+ * Copyright (C) 2017 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WIFIHELPER_H
-#define WIFIHELPER_H
-
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+#ifndef NMEAHELPER_H
+#define NMEAHELPER_H
 
 #include "SoftRF.h"
 
-void WiFi_setup(void);
-void WiFi_loop(void);
-IPAddress WiFi_get_broadcast(void);
+void NMEA_Export(void);
 
-extern WiFiUDP Uni_Udp;
-
-#endif /* WIFIHELPER_H */
+#endif /* NMEAHELPER_H */

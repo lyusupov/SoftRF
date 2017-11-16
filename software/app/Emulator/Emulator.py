@@ -84,7 +84,7 @@ class legacy_emulator:
       self.src_port = bridge_port
       #self.dst_host = gethostbyname(get_default_gateway_linux())
       self.dst_host = gethostbyname('192.168.4.1')
-      self.dst_port = bridge_port
+      self.dst_port = bridge_port - 1
       self.xcsoar_host = gethostbyname(xcsoar_host)
       self.xcsoar_port = xcsoar_port
       self.NorthUp = True

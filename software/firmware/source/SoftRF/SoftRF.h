@@ -49,26 +49,14 @@
 #define LED_EXPIRATION_TIME 5 /* seconds */
 #define EXPORT_EXPIRATION_TIME 5 /* seconds */
 
-#define ALTITUDE    138
-
 #define MY_ACCESSPOINT_SSID ""
 #define MY_ACCESSPOINT_PSK  ""
 
-//#define ARGUS_HOSTNAME "192.168.157.129"
-//#define ARGUS_PORT  7777
-
-#define XCSOAR_HOSTNAME "192.168.157.129" // "192.168.157.248"
-#define XCSOAR_PORT 10110
-
-//#define CLOUD_HOSTNAME "192.168.157.129" // glidern1.glidernet.org
-//#define CLOUD_PORT 4352 /* echo TCP/IP service to test response */ // 14580
-//#define CLOUD_MODE  0
-
-#define RELAY_DST_PORT 12390
-#define RELAY_SRC_PORT (RELAY_DST_PORT - 1)
+#define RELAY_DST_PORT  12390
+#define RELAY_SRC_PORT  (RELAY_DST_PORT - 1)
 
 #define GDL90_DST_PORT  43211
-#define GDL90_SRC_PORT  (GDL90_DST_PORT - 1)
+#define NMEA_DST_PORT   10110
 
 //#define STATION_ID  String(ESP.getChipId(), HEX).c_str()
 
@@ -122,7 +110,6 @@ enum
 
 extern void Misc_info(void);
 extern bool Import(void);
-extern void Export(void);
 extern void ParseData(void);
 extern void ClearExpired(void);
 extern void *WiFi_relay_from_android(void);
