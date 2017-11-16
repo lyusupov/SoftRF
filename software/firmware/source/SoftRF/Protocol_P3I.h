@@ -123,7 +123,7 @@ typedef struct {
 } __attribute__((packed)) p3i_packet_t;
 
 extern const rf_proto_desc_t p3i_proto_desc;
-extern const uint8_t whitening_pattern[];
+extern const uint8_t whitening_pattern[] PROGMEM;
 
 bool p3i_decode(void *, ufo_t *, ufo_t *);
 size_t p3i_encode(void *, ufo_t *);

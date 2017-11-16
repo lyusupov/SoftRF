@@ -537,7 +537,7 @@ static void sx1276_rx_func (osjob_t* job) {
     switch (LMIC.protocol->whitening)
     {
     case RF_WHITENING_NICERF:
-      LMIC.frame[i] ^= whitening_pattern[i - LMIC.protocol->payload_offset];
+      LMIC.frame[i] ^= pgm_read_byte(&whitening_pattern[i - LMIC.protocol->payload_offset]);
       break;
     case RF_WHITENING_MANCHESTER:
     case RF_WHITENING_NONE:
@@ -640,7 +640,7 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     switch (LMIC.protocol->whitening)
     {
     case RF_WHITENING_NICERF:
-      LMIC.frame[LMIC.dataLen] = buf[i] ^ whitening_pattern[i];
+      LMIC.frame[LMIC.dataLen] = buf[i] ^ pgm_read_byte(&whitening_pattern[i]);
       break;
     case RF_WHITENING_MANCHESTER:
     case RF_WHITENING_NONE:
