@@ -144,7 +144,6 @@ void LED_test() {
   //  rainbowCycle(20);
   //  theaterChaseRainbow(50);
   colorWipe(strip.Color(0, 0, 0), 50); // clear
-  delay(2000);
 #if 0
   LED_show(-20);
   delay(2000);

@@ -45,18 +45,25 @@ void Sound_test(int var)
 {
   swSer.enableRx(false);
 
-  if (var == REASON_DEFAULT_RST || var == REASON_EXT_SYS_RST) {
+  if (var == REASON_DEFAULT_RST ||
+      var == REASON_EXT_SYS_RST ||
+      var == REASON_SOFT_RESTART) {
     tone(10, 440, 500);delay(500);
     tone(10, 640, 500);delay(500);
     tone(10, 840, 500);delay(500);
+    tone(10, 1040, 500);
+  } else if (var == REASON_WDT_RST) {
+    tone(10, 440, 500);delay(500);
+    tone(10, 1040, 500);delay(500);
+    tone(10, 440, 500);delay(500);
     tone(10, 1040, 500);
   } else {
     tone(10, 1040, 500);delay(500);
     tone(10, 840, 500);delay(500); 
     tone(10, 640, 500);delay(500);
-    tone(10, 440, 500);;
+    tone(10, 440, 500);
   }
-  delay(1000); 
+  delay(600); 
 
   swSer.enableRx(true);
 }

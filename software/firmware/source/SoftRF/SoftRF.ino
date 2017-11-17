@@ -112,7 +112,6 @@ void setup()
   RF_setup();
   delay(100);
 
-
   if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
     Serial.begin(57600);
     MAVLink_setup();
@@ -133,7 +132,11 @@ void setup()
   GNSSserver.setNoDelay(true);
 #endif
 
-  LED_test();
+  /* expedite restart on WDT reset */
+  if (resetInfo->reason != REASON_WDT_RST) {
+    LED_test();
+  }
+
   Sound_test(resetInfo->reason);
 
   if (settings->mode == SOFTRF_MODE_TX_TEST || settings->mode == SOFTRF_MODE_RX_TEST) {
