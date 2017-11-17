@@ -10,12 +10,12 @@ Features:
 # Compatibility :
 Type|Protocol|FLARM|OGN tracker|PilotAware|SoftRF
 ---|---|---|---|---|---
-Radio|FLARM AIR V6|X|||X
-&nbsp;|OGNTP||X||X <sup>1</sup>
-&nbsp;|P3I|||X|X <sup>1</sup>
-Data|FLARM NMEA|X|X|X|X
-&nbsp;|Garmin GDL90|||X|X
-&nbsp;|MAVLINK|X|||X
+Radio|FLARM AIR V6|<p align="center">X</p>|||<p align="center">X</p>
+&nbsp;|<p align="center">OGNTP</p>||<p align="center">X</p>||<p align="center">X<sup>1</sup></p>
+&nbsp;|<p align="center">P3I</p>|||<p align="center">X</p>|<p align="center">X<sup>1</sup></p>
+Data|FLARM NMEA|<p align="center">X</p>|<p align="center">X</p>|<p align="center">X</p>|<p align="center">X</p>
+&nbsp;|Garmin GDL90|||<p align="center">X</p>|<p align="center">X</p>
+&nbsp;|<p align="center">MAVLINK</p>|<p align="center">X</p>|||<p align="center">X</p>
 
 <sup>1</sup> - with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
 # Documentation :
