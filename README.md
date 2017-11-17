@@ -7,6 +7,16 @@ Features:
 * standalone, battery powered, compatible proximity awareness instrument that fits typical 2.25 inches hole ;
 * lightweight version to carry onboard of an UAV.
 
+# Compatibility :
+Type|Protocol|FLARM|OGN tracker|PilotAware|SoftRF
+---|---|---|---|---|---
+Radio|FLARM AIR V6|X|||X
+&nbsp;|OGNTP||X||X
+&nbsp;|P3I|||X|X
+Data|FLARM NMEA|X|X|X|X
+&nbsp;|Garmin GDL90|||X|X
+&nbsp;|MAVLINK|X|||X
+
 # Documentation :
 
 * SoftRF overview
