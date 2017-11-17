@@ -7,7 +7,7 @@ Features:
 * standalone, battery powered, compatible proximity awareness instrument that fits typical 2.25 inches hole ;
 * lightweight version to carry onboard of an UAV.
 
-# Compatibility :
+# Compatibility
 Type|Protocol|FLARM|OGN tracker|PilotAware|SoftRF
 ---|---|---|---|---|---
 Radio|FLARM AIR V6|<p align="center">X</p>|||<p align="center">X</p>
@@ -18,7 +18,7 @@ Data|FLARM NMEA|<p align="center">X</p>|<p align="center">X</p>|<p align="center
 &nbsp;|<p align="center">MAVLINK</p>|<p align="center">X</p>|||<p align="center">X</p>
 
 <sup>1</sup> - with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
-# Documentation :
+# Documentation
 
 * SoftRF overview
     * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf) (PDF, December 2015)
@@ -45,7 +45,7 @@ Data|FLARM NMEA|<p align="center">X</p>|<p align="center">X</p>|<p align="center
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
 
-# Highlights :
+# Highlights
 
 * **Standalone**
 
