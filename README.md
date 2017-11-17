@@ -11,12 +11,13 @@ Features:
 Type|Protocol|FLARM|OGN tracker|PilotAware|SoftRF
 ---|---|---|---|---|---
 Radio|FLARM AIR V6|X|||X
-&nbsp;|OGNTP||X||X
-&nbsp;|P3I|||X|X
+&nbsp;|OGNTP||X||X <sup>1</sup>
+&nbsp;|P3I|||X|X <sup>1</sup>
 Data|FLARM NMEA|X|X|X|X
 &nbsp;|Garmin GDL90|||X|X
 &nbsp;|MAVLINK|X|||X
 
+<sup>1</sup> - with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
 # Documentation :
 
 * SoftRF overview
