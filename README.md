@@ -42,8 +42,11 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
     * Applications
         * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
-* Extras
+* Extras ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
+    * Protocols
+        * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
+        * P3I Open (PilotAware)
 
 # Highlights
 
