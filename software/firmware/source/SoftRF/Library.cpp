@@ -239,7 +239,7 @@ size_t Raw_Receive_UDP(uint8_t *buf)
   }
 }
 
-char misc_hexdata[2 * MAX_PKT_SIZE + 1] ;
+char misc_hexdata[2 * PKT_SIZE + 1] ;
 void Raw_Transmit_UDP()
 {
     Uni_Udp.beginPacket(WiFi_get_broadcast(), RELAY_DST_PORT);
