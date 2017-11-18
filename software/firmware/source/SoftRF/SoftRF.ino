@@ -187,7 +187,6 @@ void loop()
 
 void normal_loop()
 {
-  unsigned long startTime = millis();
   bool success;
 
   PickGNSSFix();
@@ -201,10 +200,8 @@ void normal_loop()
     ThisAircraft.altitude = gnss.altitude.meters();
     ThisAircraft.course = gnss.course.deg();
 
-    RF_Transmit();
+    RF_Transmit(RF_Encode());
   }
-
-  if (Import()) success = true;
 
   success = RF_Receive();
 
@@ -251,7 +248,7 @@ void uav_loop()
     ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
     ThisAircraft.course = the_aircraft.location.gps_cog;
 
-    RF_Transmit();
+    RF_Transmit(RF_Encode());
   }
 
   success = RF_Receive();
@@ -260,7 +257,7 @@ void uav_loop()
 
   if (isTimeToExport() && MAVisValidFix()) {
     MAVLinkShareTraffic();
-    ExportTimeMarker = millis(); 
+    ExportTimeMarker = millis();
   }
 
   ClearExpired();
@@ -284,7 +281,7 @@ void tx_test_loop()
   ThisAircraft.altitude = TEST_ALTITUDE;
   ThisAircraft.course = 0;
 
-  RF_Transmit();
+  RF_Transmit(RF_Encode());
 
   success = RF_Receive();
 
@@ -315,7 +312,7 @@ void rx_test_loop()
   ThisAircraft.altitude = TEST_ALTITUDE;
   ThisAircraft.course = 0;
 
-  //RF_Transmit();
+  //RF_Transmit(RF_Encode());
 
   success = RF_Receive();
 
@@ -335,37 +332,14 @@ void rx_test_loop()
   ClearExpired();
 }
 
-
 void bridge_loop()
 {
-  unsigned long startTime = millis();
   bool success;
 
-  void *answer = WiFi_relay_from_android();
-  if ((answer != NULL) && (settings->txpower != NRF905_TX_PWR_OFF) )
-  {
-    memcpy(TxBuffer, (unsigned char*) answer, PKT_SIZE);
+  size_t tx_size = Raw_Receive_UDP(&TxPkt[0]);
 
-    // Make data
-    char *data = (char *) TxBuffer;
-
-    // Set address of device to send to
-    byte addr[] = TXADDR;
-    nRF905_setTXAddress(addr);
-
-    // Set payload data
-    nRF905_setData(data, NRF905_PAYLOAD_SIZE );
-
-    // Send payload (send fails if other transmissions are going on, keep trying until success)
-    while (!nRF905_send()) {
-      delay(0);
-    } ;
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
-    }
-
-    tx_packets_counter++;
-    TxTimeMarker = millis();
+  if (tx_size > 0) {
+    RF_Transmit(tx_size);
   }
 
   success = RF_Receive();
@@ -379,11 +353,11 @@ void bridge_loop()
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
 
-    WiFi_relay_to_android();
+    Raw_Transmit_UDP();
   }
 
   if (isTimeToDisplay()) {
     LED_Clear();  
-    LEDTimeMarker = millis();  
+    LEDTimeMarker = millis();
   }
 }

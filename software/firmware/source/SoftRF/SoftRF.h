@@ -113,11 +113,10 @@ enum
 };
 
 extern void Misc_info(void);
-extern bool Import(void);
 extern void ParseData(void);
 extern void ClearExpired(void);
-extern void *WiFi_relay_from_android(void);
-extern void WiFi_relay_to_android(void);
+extern size_t Raw_Receive_UDP(uint8_t *);
+extern void Raw_Transmit_UDP(void);
 
 extern const float tx_test_positions[90][2] PROGMEM;
 

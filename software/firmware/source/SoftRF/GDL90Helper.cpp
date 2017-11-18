@@ -35,7 +35,7 @@ static GGDL90_Msg_Traffic_t Traffic;
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
-extern char UDPpacketBuffer[512];
+extern char UDPpacketBuffer[256];
 
 /* convert a signed latitude to 2s complement ready for 24-bit packing */
 uint32_t makeLatitude(float latitude)

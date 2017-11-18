@@ -38,7 +38,6 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 extern WiFiClient client;
-extern char UDPpacketBuffer[512];
 extern TinyGPSPlus gps;
 //extern uint32_t Device_Id;
 

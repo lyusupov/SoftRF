@@ -75,3 +75,82 @@ void WiFi_forward_to_cloud() {
   client.println(UDPpacketBuffer);
 }
 #endif
+
+#if 0
+bool Import()
+{
+  void *answer = WiFi_relay_from_android();
+  if (answer != NULL)
+  {
+    memcpy(RxBuffer, (unsigned char*) answer, PKT_SIZE);
+    return true;
+  } else {
+    return false;
+  }
+}
+#endif
+
+#if 0
+void *WiFi_relay_from_android()
+{
+  int noBytes = Uni_Udp.parsePacket();
+  if ( noBytes ) {
+#if 0
+    Serial.print(millis() / 1000);
+    Serial.print(":Packet of ");
+    Serial.print(noBytes);
+    Serial.print(" received from ");
+    Serial.print(Uni_Udp.remoteIP());
+    Serial.print(":");
+    Serial.println(Udp.remotePort());
+#endif
+    // We've received a packet, read the data from it
+    Uni_Udp.read(UDPpacketBuffer,noBytes); // read the packet into the buffer
+#if 0
+    // display the packet contents in HEX
+    for (int i=1;i<=noBytes;i++){
+      Serial.print(UDPpacketBuffer[i-1],HEX);
+      if (i % 32 == 0){
+        Serial.println();
+      }
+      else Serial.print(' ');
+    } // end for
+    Serial.println();
+#endif
+    return UDPpacketBuffer;
+  } else {
+    return NULL;
+  }  // end if
+}
+#endif
+
+
+/* bridge_loop */
+#if 0
+  void *answer = WiFi_relay_from_android();
+  if ((answer != NULL) && (settings->txpower != NRF905_TX_PWR_OFF) )
+  {
+    memcpy(TxBuffer, (unsigned char*) answer, PKT_SIZE);
+
+    // Make data
+    char *data = (char *) TxBuffer;
+
+    // Set address of device to send to
+    byte addr[] = TXADDR;
+    nRF905_setTXAddress(addr);
+
+    // Set payload data
+    nRF905_setData(data, NRF905_PAYLOAD_SIZE );
+
+    // Send payload (send fails if other transmissions are going on, keep trying until success)
+    while (!nRF905_send()) {
+      delay(0);
+    } ;
+    if (settings->nmea_p) {
+      StdOut.print(F("$PSRFO,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
+    }
+
+    tx_packets_counter++;
+    TxTimeMarker = millis();
+  }
+#endif

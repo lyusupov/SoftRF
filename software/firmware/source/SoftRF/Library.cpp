@@ -30,7 +30,7 @@
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
 
-char UDPpacketBuffer[512]; //buffer to hold incoming and outgoing packets
+char UDPpacketBuffer[256]; //buffer to hold incoming and outgoing packets
 
 void WiFi_forward_to_argus(void);
 void WiFi_forward_to_cloud(void);
@@ -139,18 +139,6 @@ const float tx_test_positions[90][2] PROGMEM = {
       };
 #endif
 
-bool Import()
-{
-  void *answer = WiFi_relay_from_android();
-  if (answer != NULL)
-  {
-    memcpy(RxBuffer, (unsigned char*) answer, PKT_SIZE);
-    return true;
-  } else {
-    return false;
-  }
-}
-
 void ParseData()
 {
 
@@ -163,22 +151,22 @@ void ParseData()
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
     }
-          
-    if ((*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {    
+
+    if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
         int max_dist_ndx = 0;
-        
+
         if (Container[i].addr == fo.addr) {
-          Container[i] = fo;   
-           break;  
+          Container[i] = fo;
+           break;
         } else {
           if (now() - Container[i].timestamp > 5000) {
             Container[i] = fo;
-            break;  
+            break;
           }
 #if 0
           if  (Container[i].distance > Container[max_dist_ndx].distance)  {
-            max_dist_ndx = i;  
+            max_dist_ndx = i;
           }
           if ((i == (MAX_TRACKING_OBJECTS-1)) && (Container[max_dist_ndx].distance > fo.distance) ) {
             Container[max_dist_ndx] = fo; 
@@ -192,24 +180,24 @@ void ParseData()
 void Misc_info()
 {
   Serial.println("\r\n");
-  Serial.print("Chip ID: 0x");
+  Serial.print(F("Chip ID: 0x"));
   Serial.println(ESP.getChipId(), HEX);
 
   uint32_t realSize = ESP.getFlashChipRealSize();
   uint32_t ideSize = ESP.getFlashChipSize();
   FlashMode_t ideMode = ESP.getFlashChipMode();
 
-  Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
-  Serial.printf("Flash real size: %u\n\n", realSize);
+  Serial.printf_P(PSTR("Flash real id:   %08X\n"), ESP.getFlashChipId());
+  Serial.printf_P(PSTR("Flash real size: %u\n\n"), realSize);
 
-  Serial.printf("Flash ide  size: %u\n", ideSize);
-  Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
-  Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+  Serial.printf_P(PSTR("Flash ide  size: %u\n"), ideSize);
+  Serial.printf_P(PSTR("Flash ide speed: %u\n"), ESP.getFlashChipSpeed());
+  Serial.printf_P(PSTR("Flash ide mode:  %s\n"), (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
 
   if (ideSize != realSize) {
-    Serial.println("Flash Chip configuration wrong!\n");
+    Serial.println(F("Flash Chip configuration wrong!\n"));
   } else {
-    Serial.println("Flash Chip configuration ok.\n");
+    Serial.println(F("Flash Chip configuration ok.\n"));
   }
 }
 
@@ -233,40 +221,26 @@ char * dtostrf_workaround(double number, signed char width, unsigned char prec, 
   return rval;
 }
 
-void *WiFi_relay_from_android()
+size_t Raw_Receive_UDP(uint8_t *buf)
 {
   int noBytes = Uni_Udp.parsePacket();
   if ( noBytes ) {
-#if 0
-    Serial.print(millis() / 1000);
-    Serial.print(":Packet of ");
-    Serial.print(noBytes);
-    Serial.print(" received from ");
-    Serial.print(Uni_Udp.remoteIP());
-    Serial.print(":");
-    Serial.println(Udp.remotePort());
-#endif
+
+    if (noBytes > MAX_PKT_SIZE) {
+      noBytes = MAX_PKT_SIZE;
+    }
+
     // We've received a packet, read the data from it
-    Uni_Udp.read(UDPpacketBuffer,noBytes); // read the packet into the buffer
-#if 0
-    // display the packet contents in HEX
-    for (int i=1;i<=noBytes;i++){
-      Serial.print(UDPpacketBuffer[i-1],HEX);
-      if (i % 32 == 0){
-        Serial.println();
-      }
-      else Serial.print(' ');
-    } // end for
-    Serial.println();
-#endif
-    return UDPpacketBuffer;
+    Uni_Udp.read(buf,noBytes); // read the packet into the buffer
+
+    return (size_t) noBytes;
   } else {
-    return NULL;
-  }  // end if
+    return 0;
+  }
 }
 
-char misc_hexdata[2 * PKT_SIZE + 1] ;
-void WiFi_relay_to_android()
+char misc_hexdata[2 * MAX_PKT_SIZE + 1] ;
+void Raw_Transmit_UDP()
 {
     Uni_Udp.beginPacket(WiFi_get_broadcast(), RELAY_DST_PORT);
     fo.raw.toCharArray(misc_hexdata, sizeof(misc_hexdata));

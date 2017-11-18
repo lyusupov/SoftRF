@@ -59,7 +59,8 @@ uint8_t parity(uint32_t);
 void RF_setup(void);
 void RF_SetChannel(void);
 void RF_loop(void);
-void RF_Transmit(void);
+size_t RF_Encode(void);
+void RF_Transmit(size_t);
 bool RF_Receive(void);
 
 bool nrf905_probe(void);

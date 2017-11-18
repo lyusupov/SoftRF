@@ -28,17 +28,17 @@
 #endif /* LOGGER_IS_ENABLED */
 
 byte RxBuffer[PKT_SIZE];
-byte TxBuffer[PKT_SIZE]; /* to be deprecated soon - in use by bridge mode only */
 unsigned long TxTimeMarker = 0;
 
 byte TxPkt[MAX_PKT_SIZE];
-//legacy_packet TxPkt;
 
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
 static FreqPlan RF_FreqPlan;
 static bool RF_ready = false;
+
+static size_t RF_tx_size = 0;
 
 rfchip_ops_t *rf_chip = NULL;
 
@@ -138,9 +138,19 @@ void RF_loop()
   }
 }
 
-void RF_Transmit(void)
+size_t RF_Encode(void)
 {
-  if (RF_ready && rf_chip) {
+  size_t size = 0;
+  if (RF_ready && protocol_encode) {
+    size = (*protocol_encode)((void *) &TxPkt[0], &ThisAircraft);
+  }
+  return size;
+}
+
+void RF_Transmit(size_t size)
+{
+  if (RF_ready && rf_chip && (size > 0)) {
+    RF_tx_size = size;
     rf_chip->transmit();
   }
 }
@@ -267,29 +277,24 @@ void nrf905_transmit()
     Serial.println(gnss.location.age());
 #endif
 
-    // Make data
-    //char *data = (char *) TxBuffer;
-
     time_t timestamp = now();
-    size_t size = (*protocol_encode)((void *) &TxPkt, &ThisAircraft);
-
-    //Serial.println(Bin2Hex((byte *) data));
 
     // Set address of device to send to
     byte addr[] = TXADDR;
     nRF905_setTXAddress(addr);
 
     // Set payload data
-    nRF905_setData(&TxPkt, NRF905_PAYLOAD_SIZE );
+    nRF905_setData(&TxPkt[0], NRF905_PAYLOAD_SIZE );
 
     // Send payload (send fails if other transmissions are going on, keep trying until success)
     while (!nRF905_send()) {
       delay(0);
     } ;
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt));
+      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
     }
     tx_packets_counter++;
+    RF_tx_size = 0;
     TxTimeMarker = millis();
   }
 }
@@ -462,7 +467,7 @@ void sx1276_transmit()
     } ;
 
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt));
+      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
     }
     tx_packets_counter++;
     TxTimeMarker = millis();
@@ -682,12 +687,13 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 }
 
 static void sx1276_txdone_func (osjob_t* job) {
+  RF_tx_size = 0;
   sx1276_transmit_complete = true;
 }
 
 static void sx1276_tx_func (osjob_t* job) {
 
-  size_t size = (*protocol_encode)((void *) &TxPkt, &ThisAircraft);
-
-  sx1276_tx((unsigned char *) &TxPkt, size, sx1276_txdone_func);
+  if (RF_tx_size > 0) {
+    sx1276_tx((unsigned char *) &TxPkt[0], RF_tx_size, sx1276_txdone_func);
+  }
 }

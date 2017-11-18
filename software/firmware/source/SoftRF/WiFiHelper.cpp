@@ -280,7 +280,7 @@ void WiFi_setup()
     Serial.println(WiFi.softAPIP());
   }
 
-    Serial.print(F("Udp server started at port "));
+    Serial.print(F("UDP server started at port "));
     Serial.println(RFlocalPort);
     Uni_Udp.begin(RFlocalPort);
 }

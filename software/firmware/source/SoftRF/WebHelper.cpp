@@ -48,7 +48,6 @@ const char* serverIndex = "\
 </body>\
 </html>";
 
-//char hexdata[2 * PKT_SIZE + 1] ;
 static uint32_t prev_rx_pkt_cnt = 0;
 
 byte getVal(char c)
@@ -79,12 +78,6 @@ String Bin2Hex(byte *buffer)
   }
   return str;
 }
-
-/*
-
-
-
-*/
 
 void handleSettings() {
 
@@ -127,7 +120,7 @@ void handleSettings() {
 <th align=left>Band</th>\
 <td align=right>\
 <select name='band'>\
-<option %s value='%d'>AUTO (GNSS)</option>\
+<option %s value='%d'>AUTO</option>\
 <option %s value='%d'>EU (868.4 MHz)</option>\
 <option %s value='%d'>RU (868.8 MHz)</option>\
 <option %s value='%d'>CN (433 MHz)</option>\
@@ -234,7 +227,6 @@ void handleSettings() {
   server.sendHeader("Expires", "-1");
   server.send ( 200, "text/html", temp );
 }
-
 
 void handleRoot() {
   char Root_temp[2048];
@@ -382,7 +374,6 @@ void handleNotFound() {
 
 void Web_setup()
 {
-  //server.on ( "/", handleRxRoot );
 
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );
@@ -430,8 +421,6 @@ void Web_setup()
 
   server.begin();
   Serial.println ( "HTTP server started" );
-
-//  TxDataTemplate.toCharArray(hexdata, sizeof(hexdata));
 
   delay(1000);
 }
