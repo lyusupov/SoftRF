@@ -46,7 +46,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
     * Protocols
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
-        * P3I Open (PilotAware)
+        * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
 
 # Highlights
 
