@@ -47,6 +47,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * Protocols
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
         * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
+    * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
 
 # Highlights
 
