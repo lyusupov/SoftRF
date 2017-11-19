@@ -10,11 +10,11 @@ on an Android or Raspberry Pi host.
 1) The emulator takes current GNSS position, time stamp and ID to encode them into raw data packet.
 Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmittion into air.
 
-2) The emulator does also 
- - receive inbound raw data packets from SoftRF Prime;
- - apply decoding algorithm ;
- - convert decoded data into a fraction of FLARM datalink format ; 
- - deliver the NMEA datalink strings to localy running XCSoar or LK8000 app via UDP stream.
+2) The emulator also 
+ - receives inbound raw data packets from SoftRF Prime;
+ - applies decoding algorithm ;
+ - converts decoded data into a fraction of FLARM datalink format ; 
+ - delivers the NMEA datalink strings to localy running XCSoar or LK8000 app via UDP stream.
 
 ## Prerequisites:
 
