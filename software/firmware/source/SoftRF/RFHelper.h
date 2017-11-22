@@ -43,7 +43,7 @@ enum
 	RF_BAND_NZ,	 /* 869.250 MHz band */
 	RF_BAND_RU,	 /* 868.8 MHz band */
 	RF_BAND_CN,	 /* 433 MHz band */
-	RF_BAND_UK 	 /* 869.92 MHz band */
+	RF_BAND_UK 	 /* 869.52 MHz band */
 };
 
 typedef struct rfchip_ops_struct {

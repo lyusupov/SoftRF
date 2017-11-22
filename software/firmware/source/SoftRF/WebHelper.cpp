@@ -126,7 +126,7 @@ void handleSettings() {
 <option %s value='%d'>CN (433 MHz)</option>\
 <option %s value='%d'>US (915 MHz)</option>\
 <option %s value='%d'>NZ (869.25 MHz)</option>\
-<option %s value='%d'>UK (869.92 MHz)</option>\
+<option %s value='%d'>UK (869.52 MHz)</option>\
 <option %s value='%d'>AU (921 MHz)</option>\
 </select>\
 </td>\
