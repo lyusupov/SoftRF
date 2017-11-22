@@ -512,7 +512,7 @@ static const unsigned char crc8_table[256]
 };
 
 
-void crc8(unsigned char *crc, unsigned char m)
+void update_crc8(unsigned char *crc, unsigned char m)
      /*
       * For a byte array whose accumulated crc value is stored in *crc, computes
       * resultant crc obtained by appending m to the byte array

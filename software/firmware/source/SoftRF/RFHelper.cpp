@@ -105,6 +105,10 @@ void RF_SetChannel(void)
   uint8_t Slot = 1; /* only #1 "400ms" timeslot is currently in use */
   uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
 
+#if 1  /* Temporarily force both OGN and Legacy to live on the same channel */
+  OGN = 0;
+#endif
+
   uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
 
 #if DEBUG
@@ -488,13 +492,17 @@ void sx1276_rx(osjobcb_t func) {
 
 static void sx1276_rx_func (osjob_t* job) {
 
-  u2_t crc16;
+  u1_t crc8, pkt_crc8;
+  u2_t crc16, pkt_crc16;
   u1_t i;
 
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
      /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
     break;
   case RF_CHECKSUM_TYPE_CCITT_0000:
     crc16 = 0x0000;  /* seed value */
@@ -531,6 +539,9 @@ static void sx1276_rx_func (osjob_t* job) {
     switch (LMIC.protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+      break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(LMIC.frame[i]));
       break;
     case RF_CHECKSUM_TYPE_CCITT_FFFF:
     case RF_CHECKSUM_TYPE_CCITT_0000:
@@ -569,18 +580,33 @@ static void sx1276_rx_func (osjob_t* job) {
       sx1276_receive_complete = true;
     }
     break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    pkt_crc8 = LMIC.frame[i];
+#if DEBUG
+    if (crc8 == pkt_crc8 ) {
+      Serial.printf(" %02x is valid crc", pkt_crc8);
+    } else {
+      Serial.printf(" %02x is wrong crc", pkt_crc8);
+    }
+#endif
+    if (crc8 == pkt_crc8) {
+      sx1276_receive_complete = true;
+    } else {
+      sx1276_receive_complete = false;
+    }
+    break;
   case RF_CHECKSUM_TYPE_CCITT_FFFF:
   case RF_CHECKSUM_TYPE_CCITT_0000:
   default:
-    u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+    pkt_crc16 = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
 #if DEBUG
-    if (crc16 == pkt_crc ) {
-      Serial.printf(" %04x is valid crc", pkt_crc);
+    if (crc16 == pkt_crc16 ) {
+      Serial.printf(" %04x is valid crc", pkt_crc16);
     } else {
-      Serial.printf(" %04x is wrong crc", pkt_crc);
+      Serial.printf(" %04x is wrong crc", pkt_crc16);
     }
 #endif
-    if (crc16 == pkt_crc) {
+    if (crc16 == pkt_crc16) {
       sx1276_receive_complete = true;
     } else {
       sx1276_receive_complete = false;
@@ -597,12 +623,16 @@ static void sx1276_rx_func (osjob_t* job) {
 // Transmit the given string and call the given function afterwards
 void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 
+  u1_t crc8;
   u2_t crc16;
 
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
      /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
     break;
   case RF_CHECKSUM_TYPE_CCITT_0000:
     crc16 = 0x0000;  /* seed value */
@@ -634,6 +664,12 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
     /* insert byte with payload size */
     LMIC.frame[LMIC.dataLen++] = LMIC.protocol->payload_size;
+
+    /* insert byte with CRC-8 seed value when necessary */
+    if (LMIC.protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
+      LMIC.frame[LMIC.dataLen++] = crc8;
+    }
+
     break;
   case RF_PROTOCOL_OGNTP:
   default:
@@ -658,6 +694,9 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
       break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(LMIC.frame[LMIC.dataLen]));
+      break;
     case RF_CHECKSUM_TYPE_CCITT_FFFF:
     case RF_CHECKSUM_TYPE_CCITT_0000:
     default:
@@ -668,10 +707,12 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     LMIC.dataLen++;
   }
 
-
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    LMIC.frame[LMIC.dataLen++] = crc8;
     break;
   case RF_CHECKSUM_TYPE_CCITT_FFFF:
   case RF_CHECKSUM_TYPE_CCITT_0000:

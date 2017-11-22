@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define TEST_PAW_ON_NICERF_SV610_FW466
+//#define TEST_PAW_ON_NICERF_SV610_FW466
 
 class FreqPlan
 { public:
