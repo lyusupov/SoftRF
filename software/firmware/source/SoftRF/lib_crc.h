@@ -65,3 +65,5 @@ unsigned short          update_crc_dnp(    unsigned short crc, char c           
 unsigned short          update_crc_kermit( unsigned short crc, char c                 );
 unsigned short          update_crc_sick(   unsigned short crc, char c, char prev_byte );
 unsigned short          update_crc_gdl90(  unsigned short crc, char c                 );
+
+void                    crc8(              unsigned char *crc, unsigned char m        );
