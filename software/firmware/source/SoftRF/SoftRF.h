@@ -75,7 +75,8 @@ typedef struct UFO {
     float     latitude;
     float     longitude;
     int32_t   altitude;
-    float     course;
+    float     course;     /* CoG */
+    float     speed;      /* ground speed in knots */
     unsigned int aircraft_type;
 
     int32_t   vs;
@@ -123,7 +124,9 @@ extern void Raw_Transmit_UDP(void);
 extern const float tx_test_positions[90][2] PROGMEM;
 
 #define TX_TEST_NUM_POSITIONS (sizeof(tx_test_positions) / sizeof(float) / 2)
-#define TEST_ALTITUDE    438
+#define TEST_ALTITUDE    438.0
+#define TEST_COURSE      0.0
+#define TEST_SPEED       50.0
 
 #endif /* SOFTRF_H */
 

@@ -72,6 +72,8 @@ bool p3i_decode(void *p3i_pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->longitude = pkt->longitude;
   fop->altitude = pkt->altitude;
   fop->aircraft_type = pkt->aircraft;
+  fop->course = (float) pkt->track;
+  fop->speed = (float) pkt->knots;
 
   fop->addr_type = ADDR_TYPE_PILOTAWARE;
   fop->timestamp = timestamp;
@@ -106,19 +108,21 @@ size_t p3i_encode(void *p3i_pkt, ufo_t *this_aircraft) {
   pkt->longitude = lon;  // IEEE-754
   pkt->latitude = lat;   // IEEE-754
   pkt->altitude = (uint16_t) alt; // metres
-  
+
   pkt->track = (uint16_t) this_aircraft->course; // degrees relative to true north
+  pkt->knots = (uint16_t) this_aircraft->speed;  // knots
+
   pkt->msd[0] = 0;
   pkt->msd[1] = 0;
   pkt->msd[2] = 0;
   pkt->msd[3] = 0;
-  pkt->knots  = 0;    
+
   pkt->aircraft = aircraft_type;
 
   for (int i=0; i<(sizeof(p3i_packet_t)-1); i++) {
     cs ^= *p++;
   }
-  
+
   pkt->crc = cs;
 
   return sizeof(p3i_packet_t);

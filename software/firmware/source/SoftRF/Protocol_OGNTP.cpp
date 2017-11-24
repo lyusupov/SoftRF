@@ -83,6 +83,7 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude();
   fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
   fop->course = ogn_rx_pkt.Packet.Position.Heading * 0.1;
+  fop->speed = (ogn_rx_pkt.Packet.Position.Speed * 0.1) / _GPS_MPS_PER_KNOT;
 
   fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
   fop->timestamp = this_aircraft->timestamp;
@@ -104,6 +105,8 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Longitude = (int32_t) (this_aircraft->longitude * 600000);
   pos.Altitude = (int32_t) (this_aircraft->altitude * 10);
   pos.Heading = (int16_t) (this_aircraft->course * 10);
+  pos.Speed = (int16_t) (this_aircraft->speed * 10 * _GPS_MPS_PER_KNOT);
+
   pos.Encode(ogn_tx_pkt.Packet);
 
   ogn_tx_pkt.Packet.Header.Address = this_aircraft->addr;

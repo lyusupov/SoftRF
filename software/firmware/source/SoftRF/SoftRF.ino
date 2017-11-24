@@ -199,6 +199,7 @@ void normal_loop()
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
     ThisAircraft.course = gnss.course.deg();
+    ThisAircraft.speed = gnss.speed.knots() ;
 
     RF_Transmit(RF_Encode());
   }
@@ -247,6 +248,7 @@ void uav_loop()
     ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
     ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
     ThisAircraft.course = the_aircraft.location.gps_cog;
+    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT ;
 
     RF_Transmit(RF_Encode());
   }
@@ -279,7 +281,8 @@ void tx_test_loop()
     TxPosUpdMarker = millis();
   }
   ThisAircraft.altitude = TEST_ALTITUDE;
-  ThisAircraft.course = 0;
+  ThisAircraft.course = TEST_COURSE;
+  ThisAircraft.speed = TEST_SPEED;
 
   RF_Transmit(RF_Encode());
 
@@ -310,7 +313,8 @@ void rx_test_loop()
   ThisAircraft.latitude = pgm_read_float( &rx_test_positions[0][0]);;
   ThisAircraft.longitude = pgm_read_float( &rx_test_positions[0][1]);
   ThisAircraft.altitude = TEST_ALTITUDE;
-  ThisAircraft.course = 0;
+  ThisAircraft.course = TEST_COURSE;
+  ThisAircraft.speed = TEST_SPEED;
 
   //RF_Transmit(RF_Encode());
 
