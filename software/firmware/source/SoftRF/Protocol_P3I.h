@@ -62,7 +62,7 @@
 #include "RFHelper.h"
 
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
-
+/* Valid for NiceRF SV650 firmware revision: "SV650_PA_VER1.1" */
 /*
  *  RF frame:
  *  ---------
@@ -101,7 +101,7 @@
 
 #else
 
- /* Valid for NiceRF SV610 firmware ver. 4.66 */
+/* Valid for NiceRF SV610 firmware ver. 4.66 */
 /*
  *  RF frame:
  *  ---------  
