@@ -499,8 +499,9 @@ static void txfsk () {
 
     // frame and packet handler settings
     writeReg(FSKRegPreambleMsb, 0x00);
-    /* extra preamble symbol at Tx to ease reception on partner's side */
-    writeReg(FSKRegPreambleLsb, LMIC.protocol->preamble_size + 1);
+    /* add extra preamble symbol at Tx to ease reception on partner's side */
+    writeReg(FSKRegPreambleLsb, LMIC.protocol->preamble_size > 2 ?
+      LMIC.protocol->preamble_size : LMIC.protocol->preamble_size + 1);
 
     uint8_t SyncConfig = (LMIC.protocol->syncword_size - 1);
     switch (LMIC.protocol->preamble_type)
