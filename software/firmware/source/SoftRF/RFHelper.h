@@ -25,7 +25,7 @@
 
 #include <lmic.h>
 #include <hal/hal.h>
-#include "lib_crc.h"
+#include <lib_crc.h>
 #include <protocol.h>
 
 #include "SoftRF.h"

@@ -21,11 +21,11 @@
 
 #include <TimeLib.h>
 #include <WiFiUdp.h>
+#include <lib_crc.h>
 
 #include "GDL90Helper.h"
 #include "GNSSHelper.h"
 #include "SoftRF.h"
-#include "lib_crc.h"
 #include "WiFiHelper.h"
 
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
