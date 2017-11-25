@@ -1,9 +1,11 @@
 /*
- *
  * Protocol_FANET.cpp
  *
  * Encoder and decoder for open FANET radio protocol
- * URL: https://github.com/3s1d/fanet-stm32/tree/master/Src/fanet
+ *
+ * URL:
+ *    Development -  https://github.com/3s1d/fanet-stm32
+ *    Deprecated  -  https://github.com/3s1d/fanet
  *
  * Copyright (C) 2017 Linar Yusupov
  *
@@ -90,18 +92,18 @@ bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
 
   size_t size;
-	Frame* frm;
+  Frame* frm;
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
 
   app.set( this_aircraft->latitude, this_aircraft->longitude,
-    this_aircraft->altitude, this_aircraft->speed * _GPS_MPS_PER_KNOT,
+    this_aircraft->altitude, this_aircraft->speed * _GPS_KMPH_PER_KNOT,
     0, this_aircraft->course, 0
   );
 
   frm = app.get_frame();
-	if(frm == NULL)
-		return (0);
+  if(frm == NULL)
+    return (0);
 
   uint8_t* buffer;
   size = frm->serialize(buffer);
@@ -110,7 +112,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
 
   if (size > 0) {
     memcpy((void *) pkt, buffer, size);
-  	delete[] buffer;
+    delete[] buffer;
   } else {
     size = 0;
   }
