@@ -1,0 +1,14 @@
+TimerObject 			KEYWORD1
+setInterval				KEYWORD2
+setEnabled				KEYWORD2
+setSingleShot			KEYWORD2
+setOnTimer				KEYWORD2
+Start					KEYWORD2
+Resume					KEYWORD2
+Pause					KEYWORD2
+Stop					KEYWORD2
+Update					KEYWORD2
+getInterval				KEYWORD2
+getOnTimerCallback		KEYWORD2
+isEnabled				KEYWORD2
+isSingleShot			KEYWORD2

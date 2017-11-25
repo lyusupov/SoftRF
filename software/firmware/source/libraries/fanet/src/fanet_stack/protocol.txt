@@ -1,0 +1,184 @@
+
+
+
+Header:
+[Byte 0]
+7bit 		Extended Header
+6bit 		Forward
+5-0bit 		Type
+
+Source Address:
+[Byte 1-3]
+1byte		Manufacturer
+2byte		Unique ID (Little Endian)
+ 
+Extended Header:
+[Byte 4 (if Extended Header bit is set)]
+7-6bit 		ACK:
+			0: none (default)
+			1: requested
+			2: requested (via forward, if received via forward (received forward bit = 0). must be used if forward is set)
+			3: reserved
+5bit		Cast:
+			0: Broadcast (default)
+			1: Unicast (adds destination address (8+16bit)) (should only be forwarded if dest addr in cache and no 'better' retransmission heard so far)
+4bit 		Signature (if 1, add 4byte)
+3-0bit 		Reserved	(ideas: indicate multicast interest add 16bit addr, emergency)
+
+Destination Address (if unicast is set):
+[Byte 5-7]
+1byte		Manufacturer
+2byte		Unique ID (Little Endian)
+
+Signature (if signature bit is set):
+[Byte 5-8 or Byte 8-11 (if unicast is set)]
+4byte 		Signature (todo)
+
+
+
+Types:
+-----------
+
+ACK (Type = 0)
+No Payload, must be unicast
+
+-----------
+
+Tracking (Type = 1)
+
+[Byte 0-1]	Position	(Little Endian, 2-Complement)
+bit 0-15	Latitude
+[Byte 2-3]	Position	(Little Endian, 2-Complement)
+bit 0-15	Longitude
+			
+			Detail:
+			bit 15		even 0 odd 1 degree
+			ddeg = (signed 15bit) * value / 2^15
+			if(round(my_deg) is equal to bit15)
+				deg = round(my_deg) + ddeg
+			else
+				find minimum of |round(my_deg)-1 + ddeg - my_lat| and |round(my_lat1)+1 + ddeg - my_lat| 
+			
+			(Max allowed distance 1deg -> approx. 111km latitude or longitude@latitude=equator,
+			longitude@latitude=60deg: 55km, longitude@latitude=70deg: 38km (critical)) 
+			(Max error <2m)
+			(Note: longitude block-bit could be extended by a further bit in case of lat > +/-60deg, future work...)
+
+[Byte 4-5]	Type		(Little Endian)
+bit 15 		Online Tracking
+bit 12-14	Aircraft Type
+			0: Other
+			1: Paraglider
+			2: Hangglider
+			3: Balloon
+			4: Glider
+			5: Powered Aircraft
+			6: Helicopter
+			7: Parachute	(maybe change to UAV?)
+bit 11		Altitude Scaling 1->4x, 0->1x
+bit 0-10	Altitude in m
+
+[Byte 6]	Speed		(max 317.5km/h)
+bit 7		Scaling 	1->5x, 0->1x
+bit 0-6		Value		in 0.5km/h		
+
+[Byte 7]	Climb		(max +/- 31.5m/s, 2-Complement)
+bit 7		Scaling 	1->5x, 0->1x
+bit 0-6		Value		in 0.1m/s
+
+[Byte 8]	Heading
+bit 0-7		Value		in 360/256 deg
+
+[optional]
+[Byte 9]	Turn rate 	(max +/- 64deg/s, 2-Complement)
+bit 7		Scaling 	1->4x, 0->1x
+bit 0-6		Value 		in 0.25deg/s	
+
+------------
+
+Name (Type = 2)
+
+8bit String (of arbitrary length)
+
+------------
+
+Message (Type = 3)
+
+[Byte 0]	Header
+bit 0-7 	Subheader, Subtype (TBD)
+			0: Normal Message
+			
+8bit String (of arbitrary length)
+
+------------
+
+Service (Type = 4)
+
+[Byte 0]	Header	(additional payload will be added in order 6 to 1, followed by Extended Header 7 to 0)
+bit 7		Internet Gateway (no additional payload)
+bit 6		Temperature (+1byte in 0.5 degree, 2-Complement)
+bit 5		Wind (+3Byte: 1byte Heading in 360/256 degree, 1byte speed and 1byte gusts in 0.2km/h (each: bit 7 scale 5x or 1x, bit 0-6))
+bit 1-4		TBD
+bit 0		Extended Header (+1byte) (TBD, it may indicate the number of available landmarks) 
+			The following is only mandatory if additional data will be added. Broadcasting the only the gateway flag doesn't require pos information. 
+[Byte 1-2 or Byte 2-3]	Position	(Little Endian, 2-Complement)		
+bit 0-15	Latitude	(same as for Type 1)
+[Byte 3-4 or Byte 4-5]	Position	(Little Endian, 2-Complement)
+bit 0-15	Longitude   (same as for Type 1)
++ additional data according to the sub header order (6 to 0)
+
+------------
+
+Landmarks (Type = 5)
+
+[Byte 0]
+bit 7		TBD
+bit 4-6		Number of landmark feature (Required to replace old one. As e.g. the wind changed a feature may also change.)
+bit 0-3		Subtype:
+			0	TBD		(maybe used to remove the feature?)
+			1	Text	
+			2	Line
+			3	Area
+			4	Circle
+			5	Filled circle
+			6-15 TBD
+[Byte 1]
+bit 7-4		'Number of elements'-1=n (String in words n<=16 (max string -> 32byte), circles n<=6, others n<=8)
+bit 3-0		Layer:
+			0	Info
+			1	Warning
+			2	Keep out
+			3	Touch down
+[n Elements]
+			Text (1): 			Position (4 Bytes, see type 1, only once) + Chars (1 Byte)
+			Line (2): 			Position (4 Bytes, see type 1, minimum 2 elements)
+			Area (3): 			Position (4 Bytes, see type 1, minimum 3 elements)
+			Circle (4):			Position (4 Bytes, see type 1) + Radius (in: ('1Byte' + 1) * 25m)
+			Filled Circle (5):	Position (4 Bytes, see type 1) + Radius (in: ('1Byte' + 1) * 25m)
+
+------------
+
+//todo address detection, etc...
+//todo: as a base station is in rage, do not forward tracking info. only forward tracking info if very little traffic is present...
+//todo: forward bit for type 1 should only be set it no inet gateway in in close range
+
+Notes:
+------
+Version number:
+We omitted a bit field that shows the protocol version as this would take to much space. The app layer should provide this, if required. (Todo)
+
+Device ID:
+-For unregistered Devices/Manufacturers: Set the Manufacturer to 0xFC or 0xFD and choose a random ID between 0x0001 and 0xFFFE. 
+List on the channel if the id is already used.
+-0xFE shall be used for multicast (E.g. competition/group messaging).
+-The manufacturers 0x00 and 0xFF as well as the IDs 0x0000 and 0xFFFF are reserved.
+
+
+Manufacturer IDs:
+0x00		[reserved]
+0x01		Skytraxx
+...
+0xFC		Unregistered Devices
+0xFD		Unregistered Devices
+0xFE		[Multicast]
+0xFF		[reserved]
