@@ -34,21 +34,21 @@
 
 const rf_proto_desc_t fanet_proto_desc = {
   .type           = RF_PROTOCOL_FANET,
-  .preamble_type  = FANET_PREAMBLE_TYPE,
-  .preamble_size  = FANET_PREAMBLE_SIZE,
-  .syncword       = FANET_SYNCWORD,
-  .syncword_size  = FANET_SYNCWORD_SIZE,
+  .preamble_type  = 0 /* INVALID FOR LORA */,
+  .preamble_size  = 0 /* INVALID FOR LORA */,
+  .syncword       = {0} /* INVALID FOR LORA */,
+  .syncword_size  = 0 /* INVALID FOR LORA */,
   .net_id         = 0x0000, /* not in use */
-  .payload_type   = 0 /* TBD */,
+  .payload_type   = 0 /* INVALID FOR LORA */,
   .payload_size   = FANET_PAYLOAD_SIZE,
   .payload_offset = 0,
-  .crc_type       = FANET_CRC_TYPE,
-  .crc_size       = FANET_CRC_SIZE,
+  .crc_type       = 0 /* INVALID FOR LORA */,
+  .crc_size       = 0 /* INVALID FOR LORA */,
 
-  .bitrate        = 0 /* TBD */,
-  .deviation      = 0 /* TBD */,
-  .whitening      = 0 /* TBD */,
-  .bandwidth      = 0 /* TBD */
+  .bitrate        = 0 /* INVALID FOR LORA */,
+  .deviation      = 0 /* INVALID FOR LORA */,
+  .whitening      = 0 /* INVALID FOR LORA */,
+  .bandwidth      = 0 /* INVALID FOR LORA */
 };
 
 App app = App();
@@ -64,6 +64,37 @@ void fanet_fini()
 }
 
 bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+
+  /* deserialize packet */
+  Frame *frm = new Frame(sizeof(fanet_packet_t), (uint8_t *) pkt);
+
+
+	/* simply print frame */
+
+	Serial.print(F(FANET_CMD_START CMD_RX_FRAME " "));
+
+	/* src_manufacturer,src_id,broadcast,signature,type,payloadlength,payload */
+	Serial.print(frm->src.manufacturer, HEX);
+	Serial.print(',');
+	Serial.print(frm->src.id, HEX);
+	Serial.print(',');
+	Serial.print(frm->dest == MacAddr());	//broadcast
+	Serial.print(',');
+	Serial.print(frm->signature, HEX);
+	Serial.print(',');
+	Serial.print(frm->type, HEX);
+	Serial.print(',');
+	Serial.print(frm->payload_length, HEX);
+	Serial.print(',');
+	for(int i=0; i<frm->payload_length; i++)
+	{
+		char buf[8];
+		sprintf(buf, "%02X", frm->payload[i]);
+		Serial.print(buf);
+	}
+
+	Serial.println();
+	Serial.flush();
 
 #if 0
   fop->addr = ogn_rx_pkt.Packet.Header.Address;
@@ -86,7 +117,9 @@ bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->ew[2] = 0; fop->ew[3] = 0;
 #endif
 
-  return true;
+  delete frm;
+
+  return false; // true;
 }
 
 size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {

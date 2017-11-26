@@ -26,15 +26,17 @@
 
 #include <app.h>
 
-#define FANET_PREAMBLE_TYPE   0 /* TBD */
-#define FANET_PREAMBLE_SIZE   0 /* TBD */
+/*
+ * In FANET  they use LoRa only
+ * In FANET+ they use both LoRa (FANET) and FSK(FLARM)
+ *
+ * Freq: 868.2 [ 869.525 ] MHz
+ * Modulation: LoRa (TM)
+ * Parameters: BW_250 SF_7 CR_5
+ */
 
-#define FANET_SYNCWORD        { 0xF1 }  /* TBD */
-#define FANET_SYNCWORD_SIZE   1         /* TBD */
 /* MAC_FRM_MIN_HEADER_LENGTH + MAC_FRM_ADDR_LENGTH + MAC_FRM_SIGNATURE_LENGTH + APP_TYPE1_SIZE */
-#define FANET_PAYLOAD_SIZE    21 
-#define FANET_CRC_TYPE        0  /* TBD */
-#define FANET_CRC_SIZE        0  /* TBD */
+#define FANET_PAYLOAD_SIZE    21
 
 typedef struct {
 
