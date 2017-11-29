@@ -494,8 +494,22 @@ static void txfsk () {
     }
 
     // set frequency deviation
-    writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
-    writeReg(FSKRegFdevLsb, 0x33);
+    switch (LMIC.protocol->deviation)
+    {
+    case RF_FREQUENCY_DEVIATION_12_5KHZ:
+      writeReg(FSKRegFdevMsb, 0x00); // +/- 12.5kHz
+      writeReg(FSKRegFdevLsb, 0xcd);
+      break;
+    case RF_FREQUENCY_DEVIATION_25KHZ:
+      writeReg(FSKRegFdevMsb, 0x01); // +/- 25kHz
+      writeReg(FSKRegFdevLsb, 0x9a);
+      break;
+    case RF_FREQUENCY_DEVIATION_50KHZ:
+    default:
+      writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
+      writeReg(FSKRegFdevLsb, 0x33);
+      break;
+    }
 
     // frame and packet handler settings
     writeReg(FSKRegPreambleMsb, 0x00);
@@ -840,8 +854,22 @@ static void rxfsk (u1_t rxmode) {
     }
 
     // set frequency deviation
-    writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
-    writeReg(FSKRegFdevLsb, 0x33);
+    switch (LMIC.protocol->deviation)
+    {
+    case RF_FREQUENCY_DEVIATION_12_5KHZ:
+      writeReg(FSKRegFdevMsb, 0x00); // +/- 12.5kHz
+      writeReg(FSKRegFdevLsb, 0xcd);
+      break;
+    case RF_FREQUENCY_DEVIATION_25KHZ:
+      writeReg(FSKRegFdevMsb, 0x01); // +/- 25kHz
+      writeReg(FSKRegFdevLsb, 0x9a);
+      break;
+    case RF_FREQUENCY_DEVIATION_50KHZ:
+    default:
+      writeReg(FSKRegFdevMsb, 0x03); // +/- 50kHz
+      writeReg(FSKRegFdevLsb, 0x33);
+      break;
+    }
 
     // configure DIO mapping DIO0=PayloadReady DIO1=NOP DIO2=TimeOut
     writeReg(RegDioMapping1, MAP_DIO0_FSK_READY|MAP_DIO1_FSK_NOP|MAP_DIO2_FSK_TIMEOUT);
