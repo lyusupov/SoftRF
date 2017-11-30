@@ -147,7 +147,7 @@ void *msgHeartbeat()
 
 void *msgType10and20(ufo_t *aircraft)
 {
-  int altitude = ((int)(aircraft->altitude) + 1000) / 25;
+  int altitude = ((int)(aircraft->altitude * _GPS_FEET_PER_METER) + 1000) / 25;
   int trackHeading = (int)(aircraft->course / (360.0 / 256)); /* convert to 1.4 deg single byte */
 
   if (altitude < 0) {

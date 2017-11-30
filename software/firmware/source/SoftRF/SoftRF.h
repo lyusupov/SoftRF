@@ -74,7 +74,7 @@ typedef struct UFO {
     uint8_t   addr_type;
     float     latitude;
     float     longitude;
-    int32_t   altitude;
+    float     altitude;
     float     course;     /* CoG */
     float     speed;      /* ground speed in knots */
     unsigned int aircraft_type;

@@ -70,7 +70,7 @@ bool p3i_decode(void *p3i_pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->addr = pkt->icao;
   fop->latitude = pkt->latitude;
   fop->longitude = pkt->longitude;
-  fop->altitude = pkt->altitude;
+  fop->altitude = (float) pkt->altitude;
   fop->aircraft_type = pkt->aircraft;
   fop->course = (float) pkt->track;
   fop->speed = (float) pkt->knots;

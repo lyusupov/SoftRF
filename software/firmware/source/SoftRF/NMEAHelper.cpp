@@ -114,7 +114,7 @@ void NMEA_Export()
             }
 
             bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
-            alt_diff = Container[i].altitude - ThisAircraft.altitude;
+            alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
             snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
                     total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING, POWER_STATUS_GOOD, alarm_level,
                     (bearing < 180 ? bearing : bearing - 360), ALARM_TYPE_AIRCRAFT, alt_diff, (int) distance );

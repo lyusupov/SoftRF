@@ -240,11 +240,12 @@ void handleRoot() {
   unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
   char str_lat[16];
   char str_lon[16];
+  char str_alt[16];
   char str_Vcc[8];
-  int32_t alt = ThisAircraft.altitude;
 
   dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
+  dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
   snprintf ( Root_temp, 2048,
@@ -271,7 +272,7 @@ void handleRoot() {
   <tr><th align=left>Sattelites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Altitude</th><td align=right>%d</td></tr>\
+  <tr><th align=left>Altitude</th><td align=right>%s</td></tr>\
  </table>\
  <hr>\
  <table width=100%%>\
@@ -284,7 +285,7 @@ void handleRoot() {
 </html>",
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
-    timestamp, sats, str_lat, str_lon, alt
+    timestamp, sats, str_lat, str_lon, str_alt
   );
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");

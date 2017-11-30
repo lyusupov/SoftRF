@@ -80,7 +80,7 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->addr = ogn_rx_pkt.Packet.Header.Address;
   fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
   fop->longitude = ogn_rx_pkt.Packet.DecodeLongitude() * 0.0001/60;
-  fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude();
+  fop->altitude = (float) ogn_rx_pkt.Packet.DecodeAltitude();
   fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
   fop->course = ogn_rx_pkt.Packet.Position.Heading * 0.1;
   fop->speed = (ogn_rx_pkt.Packet.Position.Speed * 0.1) / _GPS_MPS_PER_KNOT;
