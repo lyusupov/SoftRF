@@ -20,6 +20,7 @@
 #include "Protocol_Legacy.h"
 #include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
+#include "Protocol_FANET.h"
 
 #include <freqplan.h>
 
@@ -374,16 +375,6 @@ void sx1276_setup()
   /* Channel selection is now part of RF_loop() */
 //  sx1276_channel(channel);
 
-  // Maximum TX power
-//  LMIC.txpow = 27;
-  LMIC.txpow = 15;
-  // Use a medium spread factor. This can be increased up to SF12 for
-  // better range, but then the interval should be (significantly)
-  // lowered to comply with duty cycle limits as well.
-  LMIC.datarate =  DR_FSK /*  DR_SF9  */ ;
-  // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
-  LMIC.rps = updr2rps(LMIC.datarate);
-
   switch (settings->rf_protocol)
   {
   case RF_PROTOCOL_OGNTP:
@@ -396,6 +387,11 @@ void sx1276_setup()
     protocol_encode = &p3i_encode;
     protocol_decode = &p3i_decode;
     break;
+  case RF_PROTOCOL_FANET:
+    LMIC.protocol = &fanet_proto_desc;
+    protocol_encode = &fanet_encode;
+    protocol_decode = &fanet_decode;
+    break;
   case RF_PROTOCOL_LEGACY:
   default:
     LMIC.protocol = &legacy_proto_desc;
@@ -403,6 +399,19 @@ void sx1276_setup()
     protocol_decode = &legacy_decode;
     break;
   }
+
+  // Maximum TX power
+//  LMIC.txpow = 27;
+  LMIC.txpow = 15;
+
+  if (LMIC.protocol->modulation_type == RF_MODULATION_TYPE_2FSK) {
+    LMIC.datarate =  DR_FSK;
+  } else {    /* Valid for LORA only */
+    LMIC.datarate = LMIC.protocol->bitrate;
+  }
+
+  // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
+  LMIC.rps = updr2rps(LMIC.datarate);
 }
 
 bool sx1276_receive()
