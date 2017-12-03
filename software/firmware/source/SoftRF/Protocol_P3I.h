@@ -99,6 +99,9 @@
 #define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CRC8_107
 #define P3I_CRC_SIZE        1
 
+#define P3I_FDEV            RF_FREQUENCY_DEVIATION_19_2KHZ
+#define P3I_BANDWIDTH       RF_RX_BANDWIDTH_SS_50KHZ
+
 #else
 
 /* Valid for NiceRF SV610 firmware ver. 4.66 */
@@ -134,6 +137,9 @@
 #define P3I_PAYLOAD_OFFSET  5
 #define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_0000
 #define P3I_CRC_SIZE        2
+
+#define P3I_FDEV            RF_FREQUENCY_DEVIATION_50KHZ
+#define P3I_BANDWIDTH       RF_RX_BANDWIDTH_SS_100KHZ
 
 #endif
 

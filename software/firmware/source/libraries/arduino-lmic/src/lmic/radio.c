@@ -496,9 +496,9 @@ static void txfsk () {
     // set frequency deviation
     switch (LMIC.protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_12_5KHZ:
-      writeReg(FSKRegFdevMsb, 0x00); // +/- 12.5kHz
-      writeReg(FSKRegFdevLsb, 0xcd);
+    case RF_FREQUENCY_DEVIATION_19_2KHZ:
+      writeReg(FSKRegFdevMsb, 0x01); // +/- 19.2kHz
+      writeReg(FSKRegFdevLsb, 0x3b);
       break;
     case RF_FREQUENCY_DEVIATION_25KHZ:
       writeReg(FSKRegFdevMsb, 0x01); // +/- 25kHz
@@ -582,6 +582,7 @@ static void txfsk () {
 static void txlora () {
     // select LoRa modem (from sleep mode)
     //writeReg(RegOpMode, OPMODE_LORA);
+    //Serial.println("+++ txlora +++");
     opmodeLora();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) != 0);
 
@@ -653,6 +654,7 @@ static CONST_TABLE(u1_t, rxlorairqmask)[] = {
 
 // start LoRa receiver (time=LMIC.rxtime, timeout=LMIC.rxsyms, result=LMIC.frame[LMIC.dataLen])
 static void rxlora (u1_t rxmode) {
+    //Serial.println("*** rxlora ***");
     // select LoRa modem (from sleep mode)
     opmodeLora();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) != 0);
@@ -754,6 +756,9 @@ static void rxfsk (u1_t rxmode) {
     // set receiver bandwidth
     switch (LMIC.protocol->bandwidth)
     {
+    case RF_RX_BANDWIDTH_SS_50KHZ:
+      writeReg(FSKRegRxBw, 0x0B); // 50kHz SSb
+      break;
     case RF_RX_BANDWIDTH_SS_100KHZ:
       writeReg(FSKRegRxBw, 0x0A); // 100kHz SSb
       break;
@@ -856,9 +861,9 @@ static void rxfsk (u1_t rxmode) {
     // set frequency deviation
     switch (LMIC.protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_12_5KHZ:
-      writeReg(FSKRegFdevMsb, 0x00); // +/- 12.5kHz
-      writeReg(FSKRegFdevLsb, 0xcd);
+    case RF_FREQUENCY_DEVIATION_19_2KHZ:
+      writeReg(FSKRegFdevMsb, 0x01); // +/- 19.2kHz
+      writeReg(FSKRegFdevLsb, 0x3b);
       break;
     case RF_FREQUENCY_DEVIATION_25KHZ:
       writeReg(FSKRegFdevMsb, 0x01); // +/- 25kHz

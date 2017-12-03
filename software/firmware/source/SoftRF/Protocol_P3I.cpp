@@ -40,9 +40,9 @@ const rf_proto_desc_t p3i_proto_desc = {
   .crc_size       = P3I_CRC_SIZE,
 
   .bitrate        = RF_BITRATE_38400,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
+  .deviation      = P3I_FDEV,
   .whitening      = RF_WHITENING_NICERF,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_100KHZ
+  .bandwidth      = P3I_BANDWIDTH
 };
 
 

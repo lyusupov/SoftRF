@@ -22,7 +22,7 @@ class FreqPlan
      else if(Plan==5) { BaseFreq=868800000; ChanSepar=200000; Channels= 1; } // Russia
      else if(Plan==6) { BaseFreq=433200000; ChanSepar=200000; Channels= 1; } // China
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
-     else if(Plan==7) { BaseFreq=869520000; ChanSepar=200000; Channels= 1; } // PilotAware (UK)
+     else if(Plan==7) { BaseFreq=869525000; ChanSepar=200000; Channels= 1; } // PilotAware (UK)
 #else
      else if(Plan==7) { BaseFreq=869920000; ChanSepar=200000; Channels= 1; } // Test PAW on NiceRF SV6X0
 #endif
