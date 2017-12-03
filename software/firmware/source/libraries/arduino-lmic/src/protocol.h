@@ -83,6 +83,7 @@ enum
 
 typedef struct RF_PROTOCOL {
     uint8_t   type;
+    uint8_t   modulation_type;
     uint8_t   preamble_type;
     uint8_t   preamble_size;
     uint8_t   syncword[RF_MAX_SYNC_WORD_SIZE];

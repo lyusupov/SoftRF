@@ -34,6 +34,7 @@
 
 const rf_proto_desc_t fanet_proto_desc = {
   .type           = RF_PROTOCOL_FANET,
+  .modulation_type = RF_MODULATION_TYPE_LORA,
   .preamble_type  = 0 /* INVALID FOR LORA */,
   .preamble_size  = 0 /* INVALID FOR LORA */,
   .syncword       = {0} /* INVALID FOR LORA */,
@@ -45,7 +46,7 @@ const rf_proto_desc_t fanet_proto_desc = {
   .crc_type       = 0 /* INVALID FOR LORA */,
   .crc_size       = 0 /* INVALID FOR LORA */,
 
-  .bitrate        = 0 /* INVALID FOR LORA */,
+  .bitrate        = DR_SF7B /* CR_5 BW_250 SF_7 */,
   .deviation      = 0 /* INVALID FOR LORA */,
   .whitening      = 0 /* INVALID FOR LORA */,
   .bandwidth      = 0 /* INVALID FOR LORA */

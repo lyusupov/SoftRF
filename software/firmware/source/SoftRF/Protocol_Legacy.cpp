@@ -31,6 +31,7 @@
 
 const rf_proto_desc_t legacy_proto_desc = {
   .type           = RF_PROTOCOL_LEGACY,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type  = LEGACY_PREAMBLE_TYPE,
   .preamble_size  = LEGACY_PREAMBLE_SIZE,
   .syncword       = LEGACY_SYNCWORD,

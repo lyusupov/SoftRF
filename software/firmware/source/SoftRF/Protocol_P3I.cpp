@@ -28,6 +28,7 @@
 
 const rf_proto_desc_t p3i_proto_desc = {
   .type           = RF_PROTOCOL_P3I,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type  = P3I_PREAMBLE_TYPE,
   .preamble_size  = P3I_PREAMBLE_SIZE,
   .syncword       = P3I_SYNCWORD,
