@@ -119,84 +119,84 @@ unsigned char tx_data[] = {
 #define  FANET
 
 const rf_proto_desc_t legacy_proto_desc  = {
-  .type           = RF_PROTOCOL_LEGACY,
-  .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = LEGACY_PREAMBLE_TYPE,
-  .preamble_size  = LEGACY_PREAMBLE_SIZE,
-  .syncword       = LEGACY_SYNCWORD,
-  .syncword_size  = LEGACY_SYNCWORD_SIZE,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = RF_PAYLOAD_INVERTED,
-  .payload_size   = LEGACY_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = LEGACY_CRC_TYPE,
-  .crc_size       = LEGACY_CRC_SIZE,
+  .type             = RF_PROTOCOL_LEGACY,
+  .modulation_type  = RF_MODULATION_TYPE_2FSK,
+  .preamble_type    = LEGACY_PREAMBLE_TYPE,
+  .preamble_size    = LEGACY_PREAMBLE_SIZE,
+  .syncword         = LEGACY_SYNCWORD,
+  .syncword_size    = LEGACY_SYNCWORD_SIZE,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_INVERTED,
+  .payload_size     = LEGACY_PAYLOAD_SIZE,
+  .payload_offset   = 0,
+  .crc_type         = LEGACY_CRC_TYPE,
+  .crc_size         = LEGACY_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_100KBPS,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
-  .whitening      = RF_WHITENING_MANCHESTER,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+  .bitrate          = RF_BITRATE_100KBPS,
+  .deviation        = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening        = RF_WHITENING_MANCHESTER,
+  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ
 };
 
 const rf_proto_desc_t ogntp_proto_desc = {
-  .type           = RF_PROTOCOL_OGNTP,
-  .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = OGNTP_PREAMBLE_TYPE,
-  .preamble_size  = OGNTP_PREAMBLE_SIZE,
-  .syncword       = OGNTP_SYNCWORD,
-  .syncword_size  = OGNTP_SYNCWORD_SIZE,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = RF_PAYLOAD_INVERTED,
-  .payload_size   = OGNTP_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = OGNTP_CRC_TYPE,
-  .crc_size       = OGNTP_CRC_SIZE,
+  .type             = RF_PROTOCOL_OGNTP,
+  .modulation_type  = RF_MODULATION_TYPE_2FSK,
+  .preamble_type    = OGNTP_PREAMBLE_TYPE,
+  .preamble_size    = OGNTP_PREAMBLE_SIZE,
+  .syncword         = OGNTP_SYNCWORD,
+  .syncword_size    = OGNTP_SYNCWORD_SIZE,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_INVERTED,
+  .payload_size     = OGNTP_PAYLOAD_SIZE,
+  .payload_offset   = 0,
+  .crc_type         = OGNTP_CRC_TYPE,
+  .crc_size         = OGNTP_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_100KBPS,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
-  .whitening      = RF_WHITENING_MANCHESTER,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+  .bitrate          = RF_BITRATE_100KBPS,
+  .deviation        = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening        = RF_WHITENING_MANCHESTER,
+  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ
 };
 
 const rf_proto_desc_t p3i_proto_desc  = {
-  .type           = RF_PROTOCOL_P3I,
-  .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = P3I_PREAMBLE_TYPE,
-  .preamble_size  = P3I_PREAMBLE_SIZE,
-  .syncword       = P3I_SYNCWORD,
-  .syncword_size  = P3I_SYNCWORD_SIZE,
-  .net_id         = P3I_NET_ID,
-  .payload_type   = RF_PAYLOAD_DIRECT,
-  .payload_size   = P3I_PAYLOAD_SIZE,
-  .payload_offset = P3I_PAYLOAD_OFFSET,
-  .crc_type       = P3I_CRC_TYPE,
-  .crc_size       = P3I_CRC_SIZE,
+  .type             = RF_PROTOCOL_P3I,
+  .modulation_type  = RF_MODULATION_TYPE_2FSK,
+  .preamble_type    = P3I_PREAMBLE_TYPE,
+  .preamble_size    = P3I_PREAMBLE_SIZE,
+  .syncword         = P3I_SYNCWORD,
+  .syncword_size    = P3I_SYNCWORD_SIZE,
+  .net_id           = P3I_NET_ID,
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = P3I_PAYLOAD_SIZE,
+  .payload_offset   = P3I_PAYLOAD_OFFSET,
+  .crc_type         = P3I_CRC_TYPE,
+  .crc_size         = P3I_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_38400,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
-  .whitening      = RF_WHITENING_NICERF,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_100KHZ
+  .bitrate          = RF_BITRATE_38400,
+  .deviation        = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening        = RF_WHITENING_NICERF,
+  .bandwidth        = RF_RX_BANDWIDTH_SS_100KHZ
 };
 
 const rf_proto_desc_t fanet_proto_desc = {
-  .type           = RF_PROTOCOL_FANET,
-  .modulation_type = RF_MODULATION_TYPE_LORA,
-  .preamble_type  = 0 /* INVALID FOR LORA */,
-  .preamble_size  = 0 /* INVALID FOR LORA */,
-  .syncword       = { 0x12 },  // sx127x default value, valid for FANET
+  .type             = RF_PROTOCOL_FANET,
+  .modulation_type  = RF_MODULATION_TYPE_LORA,
+  .preamble_type    = 0 /* INVALID FOR LORA */,
+  .preamble_size    = 0 /* INVALID FOR LORA */,
+  .syncword         = { 0x12 },  // sx127x default value, valid for FANET
 //  .syncword       = { 0xF1 },  // FANET+
-  .syncword_size  = 1,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = RF_PAYLOAD_DIRECT,
-  .payload_size   = FANET_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = RF_CHECKSUM_TYPE_NONE,
-  .crc_size       = 0 /* INVALID FOR LORA */,
+  .syncword_size    = 1,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = FANET_PAYLOAD_SIZE,
+  .payload_offset   = 0,
+  .crc_type         = RF_CHECKSUM_TYPE_NONE,
+  .crc_size         = 0 /* INVALID FOR LORA */,
 
-  .bitrate        = DR_SF7B,
-  .deviation      = 0 /* INVALID FOR LORA */,
-  .whitening      = RF_WHITENING_NONE,
-  .bandwidth      = 0 /* INVALID FOR LORA */
+  .bitrate          = DR_SF7B,
+  .deviation        = 0 /* INVALID FOR LORA */,
+  .whitening        = RF_WHITENING_NONE,
+  .bandwidth        = 0 /* INVALID FOR LORA */
 };
 
 // every row represents a parity check to be performed on the received codeword

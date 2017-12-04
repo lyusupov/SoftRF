@@ -33,23 +33,24 @@
 #include "RFHelper.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
-  .type           = RF_PROTOCOL_FANET,
-  .modulation_type = RF_MODULATION_TYPE_LORA,
-  .preamble_type  = 0 /* INVALID FOR LORA */,
-  .preamble_size  = 0 /* INVALID FOR LORA */,
-  .syncword       = {0} /* INVALID FOR LORA */,
-  .syncword_size  = 0 /* INVALID FOR LORA */,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = 0 /* INVALID FOR LORA */,
-  .payload_size   = FANET_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = 0 /* INVALID FOR LORA */,
-  .crc_size       = 0 /* INVALID FOR LORA */,
+  .type             = RF_PROTOCOL_FANET,
+  .modulation_type  = RF_MODULATION_TYPE_LORA,
+  .preamble_type    = 0 /* INVALID FOR LORA */,
+  .preamble_size    = 0 /* INVALID FOR LORA */,
+  .syncword         = { 0x12 },  // sx127x default value, valid for FANET
+//  .syncword       = { 0xF1 },  // FANET+
+  .syncword_size    = 1,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = FANET_PAYLOAD_SIZE,
+  .payload_offset   = 0,
+  .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
+  .crc_size         = 0 /* INVALID FOR LORA */,
 
-  .bitrate        = DR_SF7B /* CR_5 BW_250 SF_7 */,
-  .deviation      = 0 /* INVALID FOR LORA */,
-  .whitening      = 0 /* INVALID FOR LORA */,
-  .bandwidth      = 0 /* INVALID FOR LORA */
+  .bitrate          = DR_SF7B /* CR_5 BW_250 SF_7 */,
+  .deviation        = 0 /* INVALID FOR LORA */,
+  .whitening        = RF_WHITENING_NONE,
+  .bandwidth        = 0 /* INVALID FOR LORA */
 };
 
 App app = App();
@@ -97,6 +98,12 @@ bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 	Serial.println();
 	Serial.flush();
 
+  if (frm->type == 1 && frm->signature == 0 &&
+      frm->payload_length == (FANET_PAYLOAD_SIZE - 4)) {
+
+    fop->addr = (frm->src.manufacturer << 16) | frm->src.id;
+  }
+
 #if 0
   fop->addr = ogn_rx_pkt.Packet.Header.Address;
   fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
@@ -125,7 +132,7 @@ bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
 size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
 
-  size_t size;
+  size_t size = 0;
   Frame* frm;
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
@@ -134,7 +141,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
     this_aircraft->altitude, this_aircraft->speed * _GPS_KMPH_PER_KNOT,
     0, this_aircraft->course, 0
   );
-
+#if 0
   frm = app.get_frame();
   if(frm == NULL)
     return (0);
@@ -150,6 +157,6 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   } else {
     size = 0;
   }
-
+#endif
   return (size);
 }

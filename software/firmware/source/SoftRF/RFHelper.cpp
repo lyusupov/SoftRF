@@ -364,7 +364,7 @@ void sx1276_channel(uint8_t channel)
 
   /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
   LMIC.freq = frequency;
-//LMIC.freq = 868400000UL;
+//LMIC.freq = 868200000UL;
 }
 
 void sx1276_setup()
@@ -374,6 +374,8 @@ void sx1276_setup()
 
   /* Channel selection is now part of RF_loop() */
 //  sx1276_channel(channel);
+
+  //settings->rf_protocol = RF_PROTOCOL_FANET;
 
   switch (settings->rf_protocol)
   {
@@ -404,14 +406,19 @@ void sx1276_setup()
 //  LMIC.txpow = 27;
   LMIC.txpow = 15;
 
-  if (LMIC.protocol->modulation_type == RF_MODULATION_TYPE_2FSK) {
-    LMIC.datarate =  DR_FSK;
-  } else {    /* Valid for LORA only */
+  if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
+  } else {
+    LMIC.datarate = DR_FSK;
   }
 
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = updr2rps(LMIC.datarate);
+
+  if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
+    /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
+    setCr(LMIC.rps, CR_4_8);
+  }
 }
 
 bool sx1276_receive()
@@ -492,9 +499,11 @@ void sx1276_transmit()
 void sx1276_rx(osjobcb_t func) {
   LMIC.osjob.func = func;
   LMIC.rxtime = os_getTime(); // RX _now_
-  // Enable "continuous" RX (e.g. without a timeout, still stops after
-  // receiving a packet)
-  os_radio(RADIO_RX /* RADIO_RXON */);
+  // Enable "continuous" RX for LoRa only (e.g. without a timeout,
+  // still stops after receiving a packet)
+  os_radio(LMIC.protocol &&
+           LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA ?
+          RADIO_RXON : RADIO_RX);
   //Serial.println("RX");
 }
 
@@ -508,6 +517,7 @@ static void sx1276_rx_func (osjob_t* job) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
      /* crc16 left not initialized */
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:
@@ -548,6 +558,7 @@ static void sx1276_rx_func (osjob_t* job) {
     switch (LMIC.protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
       update_crc8(&crc8, (u1_t)(LMIC.frame[i]));
@@ -577,6 +588,9 @@ static void sx1276_rx_func (osjob_t* job) {
 
   switch (LMIC.protocol->crc_type)
   {
+  case RF_CHECKSUM_TYPE_NONE:
+    sx1276_receive_complete = true;
+    break;
   case RF_CHECKSUM_TYPE_GALLAGER:
     if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
 #if DEBUG
@@ -638,6 +652,7 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
      /* crc16 left not initialized */
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:
@@ -702,6 +717,7 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     switch (LMIC.protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
       update_crc8(&crc8, (u1_t)(LMIC.frame[LMIC.dataLen]));
@@ -719,6 +735,7 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:
     LMIC.frame[LMIC.dataLen++] = crc8;
