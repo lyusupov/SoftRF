@@ -19,13 +19,12 @@
 #include <EEPROM.h>
 
 #include "EEPROMHelper.h"
+#include "RFHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 
-
 eeprom_t eeprom_block;
 settings_t *settings;
-
 
 void EEPROM_setup()
 {

@@ -27,15 +27,6 @@
 
 #include <protocol.h>
 
-enum
-{
-	RF_PROTOCOL_LEGACY,    /* Air V6 */
-	RF_PROTOCOL_OGNTP,     /* Open Glider Network tracker */
-	RF_PROTOCOL_P3I,       /* PilotAware */
-	RF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
-	RF_PROTOCOL_ADSB_UAT   /* ADS-B UAT */
-};
-
 // Expose Espressif SDK functionality - wrapped in ifdef so that it still
 // compiles on other platforms
 #ifdef ESP8266
@@ -83,232 +74,16 @@ osjob_t txjob;
 osjob_t timeoutjob;
 static void tx_func (osjob_t* job);
 
-const uint8_t whitening_pattern[] = { 0x05, 0xb4, 0x05, 0xae, 0x14, 0xda,
-  0xbf, 0x83, 0xc4, 0x04, 0xb2, 0x04, 0xd6, 0x4d, 0x87, 0xe2, 0x01, 0xa3, 0x26,
-  0xac, 0xbb, 0x63, 0xf1, 0x01, 0xca, 0x07, 0xbd, 0xaf, 0x60, 0xc8, 0x12, 0xed,
-  0x04, 0xbc, 0xf6, 0x12, 0x2c, 0x01, 0xd9, 0x04, 0xb1, 0xd5, 0x03, 0xab, 0x06,
-  0xcf, 0x08, 0xe6, 0xf2, 0x07, 0xd0, 0x12, 0xc2, 0x09, 0x34, 0x20 };
-
-void tx(unsigned char *buf, size_t size, osjobcb_t func) {
-
-  u2_t crc16;
-
-  switch (LMIC.protocol->crc_type)
-  {
-  case RF_CHECKSUM_TYPE_GALLAGER:
-     /* crc16 left not initialized */
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_0000:
-    crc16 = 0x0000;  /* seed value */
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_FFFF:
-  default:
-    crc16 = 0xffff;  /* seed value */
-    break;
-  }
-
-  os_radio(RADIO_RST); // Stop RX first
-  delay(1); // Wait a bit, without this os_radio below asserts, apparently because the state hasn't changed yet
-
-  LMIC.dataLen = 0;
-
-  switch (LMIC.protocol->type)
-  {
-  case RF_PROTOCOL_LEGACY:
-    /* take in account NRF905/FLARM "address" bytes */
-    crc16 = update_crc_ccitt(crc16, 0x31);
-    crc16 = update_crc_ccitt(crc16, 0xFA);
-    crc16 = update_crc_ccitt(crc16, 0xB6);
-    break;
-  case RF_PROTOCOL_P3I:
-    /* insert Net ID */
-    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 24) & 0x000000FF);
-    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 16) & 0x000000FF);
-    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
-    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
-    /* insert byte with payload size */
-    LMIC.frame[LMIC.dataLen++] = LMIC.protocol->payload_size;
-    break;
-  case RF_PROTOCOL_OGNTP:
-  default:
-    break;
-  }
-
-  for (u1_t i=0; i < size; i++) {
-
-    switch (LMIC.protocol->whitening)
-    {
-    case RF_WHITENING_NICERF:
-      LMIC.frame[LMIC.dataLen] = buf[i] ^ whitening_pattern[i];
-      break;
-    case RF_WHITENING_MANCHESTER:
-    case RF_WHITENING_NONE:
-    default:
-      LMIC.frame[LMIC.dataLen] = buf[i];
-      break;
-    }
-
-    switch (LMIC.protocol->crc_type)
-    {
-    case RF_CHECKSUM_TYPE_GALLAGER:
-      break;
-    case RF_CHECKSUM_TYPE_CCITT_FFFF:
-    case RF_CHECKSUM_TYPE_CCITT_0000:
-    default:
-      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[LMIC.dataLen]));
-      break;
-    }
-
-    LMIC.dataLen++;
-  }
-
-  switch (LMIC.protocol->crc_type)
-  {
-  case RF_CHECKSUM_TYPE_GALLAGER:
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_FFFF:
-  case RF_CHECKSUM_TYPE_CCITT_0000:
-  default:
-    LMIC.frame[LMIC.dataLen++] = (crc16 >>  8) & 0xFF;
-    LMIC.frame[LMIC.dataLen++] = (crc16      ) & 0xFF;
-    break;
-  }
-
-  LMIC.osjob.func = func;
-  os_radio(RADIO_TX);
-  Serial.println("TX");
-}
-
-
-// Enable rx mode and call func when a packet is received
-void rx(osjobcb_t func) {
-  LMIC.osjob.func = func;
-  LMIC.rxtime = os_getTime(); // RX _now_
-  // Enable "continuous" RX (e.g. without a timeout, still stops after
-  // receiving a packet)
-  os_radio(RADIO_RX /* RADIO_RXON */);
-  Serial.println("RX");
-}
-
-static void rxtimeout_func(osjob_t *job) {
-  digitalWrite(LED_BUILTIN, LOW); // off
-}
-
-static void rx_func (osjob_t* job) {
-
-  u2_t crc16;
-  u1_t i;
-
-  switch (LMIC.protocol->crc_type)
-  {
-  case RF_CHECKSUM_TYPE_GALLAGER:
-     /* crc16 left not initialized */
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_0000:
-    crc16 = 0x0000;  /* seed value */
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_FFFF:
-  default:
-    crc16 = 0xffff;  /* seed value */
-    break;
-  }
-
-  // Blink once to confirm reception and then keep the led on
-  digitalWrite(LED_BUILTIN, LOW); // off
-  delay(10);
-  digitalWrite(LED_BUILTIN, HIGH); // on
-
-  // Timeout RX (i.e. update led status) after 3 periods without RX
-  os_setTimedCallback(&timeoutjob, os_getTime() + ms2osticks(3*TX_INTERVAL), rxtimeout_func);
-
-  // Reschedule TX so that it should not collide with the other side's
-  // next TX
-  os_setTimedCallback(&txjob, os_getTime() + ms2osticks(TX_INTERVAL/2), tx_func);
-
-  Serial.print("Got ");
-  Serial.print(LMIC.dataLen);
-  Serial.println(" bytes");
-
-  switch (LMIC.protocol->type)
-  {
-  case RF_PROTOCOL_LEGACY:
-    /* take in account NRF905/FLARM "address" bytes */
-    crc16 = update_crc_ccitt(crc16, 0x31);
-    crc16 = update_crc_ccitt(crc16, 0xFA);
-    crc16 = update_crc_ccitt(crc16, 0xB6);
-    break;
-  case RF_PROTOCOL_P3I:
-  case RF_PROTOCOL_OGNTP:
-  default:
-    break;
-  }
-
-  for (i = LMIC.protocol->payload_offset;
-       i < (LMIC.dataLen - LMIC.protocol->crc_size);
-       i++)
-  {
-
-
-    switch (LMIC.protocol->crc_type)
-    {
-    case RF_CHECKSUM_TYPE_GALLAGER:
-      break;
-    case RF_CHECKSUM_TYPE_CCITT_FFFF:
-    case RF_CHECKSUM_TYPE_CCITT_0000:
-    default:
-      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
-      break;
-    }
-
-    switch (LMIC.protocol->whitening)
-    {
-    case RF_WHITENING_NICERF:
-      LMIC.frame[i] ^= whitening_pattern[i - LMIC.protocol->payload_offset];
-      break;
-    case RF_WHITENING_MANCHESTER:
-    case RF_WHITENING_NONE:
-    default:
-      break;
-    }
-
-    Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
-  }
-
-  switch (LMIC.protocol->crc_type)
-  {
-  case RF_CHECKSUM_TYPE_GALLAGER:
-    if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
-      Serial.printf(" %02x%02x%02x%02x%02x%02x is wrong FCS",
-        LMIC.frame[i], LMIC.frame[i+1], LMIC.frame[i+2],
-        LMIC.frame[i+3], LMIC.frame[i+4], LMIC.frame[i+5]);
-    }
-    break;
-  case RF_CHECKSUM_TYPE_CCITT_FFFF:
-  case RF_CHECKSUM_TYPE_CCITT_0000:
-  default:
-    u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
-    if (crc16 == pkt_crc ) {
-      Serial.printf(" %04x is valid crc", pkt_crc);
-    } else {
-      Serial.printf(" %04x is wrong crc", pkt_crc);
-    }
-    break;
-  }
-
-  Serial.println();
-
-  // Restart RX
-  rx(rx_func);
-}
-
-static void txdone_func (osjob_t* job) {
-  rx(rx_func);
-}
-
+#if 0  /* P3I */
 unsigned char tx_data[] = {
   0x24, 0x81, 0x47, 0x37, 0x9a, 0x99, 0x1b, 0x42, 0x00, 0x00, 0x62, 0x42,
   0x8a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x3a
 };
+#else /* FANET */
+unsigned char tx_data[] = {
+  0x41, 0xAA, 0xBC, 0xBB, 0x00, 0x80, 0x00, 0x00, 0x64, 0x00, 0x14, 0x00, 0x00
+};
+#endif
 
 #define LEGACY_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_55
 #define LEGACY_PREAMBLE_SIZE   1
@@ -338,12 +113,16 @@ unsigned char tx_data[] = {
 #define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_0000
 #define P3I_CRC_SIZE        2
 
-#define  PILOTAWARE
+#define FANET_PAYLOAD_SIZE    13
+
+//#define  PILOTAWARE
+#define  FANET
 
 const rf_proto_desc_t legacy_proto_desc  = {
   .type           = RF_PROTOCOL_LEGACY,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type  = LEGACY_PREAMBLE_TYPE,
-  .preabmble_size = LEGACY_PREAMBLE_SIZE,
+  .preamble_size  = LEGACY_PREAMBLE_SIZE,
   .syncword       = LEGACY_SYNCWORD,
   .syncword_size  = LEGACY_SYNCWORD_SIZE,
   .net_id         = 0x0000, /* not in use */
@@ -361,8 +140,9 @@ const rf_proto_desc_t legacy_proto_desc  = {
 
 const rf_proto_desc_t ogntp_proto_desc = {
   .type           = RF_PROTOCOL_OGNTP,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type  = OGNTP_PREAMBLE_TYPE,
-  .preabmble_size = OGNTP_PREAMBLE_SIZE,
+  .preamble_size  = OGNTP_PREAMBLE_SIZE,
   .syncword       = OGNTP_SYNCWORD,
   .syncword_size  = OGNTP_SYNCWORD_SIZE,
   .net_id         = 0x0000, /* not in use */
@@ -380,8 +160,9 @@ const rf_proto_desc_t ogntp_proto_desc = {
 
 const rf_proto_desc_t p3i_proto_desc  = {
   .type           = RF_PROTOCOL_P3I,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type  = P3I_PREAMBLE_TYPE,
-  .preabmble_size = P3I_PREAMBLE_SIZE,
+  .preamble_size  = P3I_PREAMBLE_SIZE,
   .syncword       = P3I_SYNCWORD,
   .syncword_size  = P3I_SYNCWORD_SIZE,
   .net_id         = P3I_NET_ID,
@@ -395,6 +176,27 @@ const rf_proto_desc_t p3i_proto_desc  = {
   .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
   .whitening      = RF_WHITENING_NICERF,
   .bandwidth      = RF_RX_BANDWIDTH_SS_100KHZ
+};
+
+const rf_proto_desc_t fanet_proto_desc = {
+  .type           = RF_PROTOCOL_FANET,
+  .modulation_type = RF_MODULATION_TYPE_LORA,
+  .preamble_type  = 0 /* INVALID FOR LORA */,
+  .preamble_size  = 0 /* INVALID FOR LORA */,
+  .syncword       = { 0x12 },  // sx127x default value, valid for FANET
+//  .syncword       = { 0xF1 },  // FANET+
+  .syncword_size  = 1,
+  .net_id         = 0x0000, /* not in use */
+  .payload_type   = RF_PAYLOAD_DIRECT,
+  .payload_size   = FANET_PAYLOAD_SIZE,
+  .payload_offset = 0,
+  .crc_type       = RF_CHECKSUM_TYPE_NONE,
+  .crc_size       = 0 /* INVALID FOR LORA */,
+
+  .bitrate        = DR_SF7B,
+  .deviation      = 0 /* INVALID FOR LORA */,
+  .whitening      = RF_WHITENING_NONE,
+  .bandwidth      = 0 /* INVALID FOR LORA */
 };
 
 // every row represents a parity check to be performed on the received codeword
@@ -482,10 +284,237 @@ uint8_t LDPC_Check(const uint8_t *Data) // 20 data bytes followed by 6 parity by
     if(Count&1) Errors++; }
   return Errors; }
 
+const uint8_t whitening_pattern[] = { 0x05, 0xb4, 0x05, 0xae, 0x14, 0xda,
+  0xbf, 0x83, 0xc4, 0x04, 0xb2, 0x04, 0xd6, 0x4d, 0x87, 0xe2, 0x01, 0xa3, 0x26,
+  0xac, 0xbb, 0x63, 0xf1, 0x01, 0xca, 0x07, 0xbd, 0xaf, 0x60, 0xc8, 0x12, 0xed,
+  0x04, 0xbc, 0xf6, 0x12, 0x2c, 0x01, 0xd9, 0x04, 0xb1, 0xd5, 0x03, 0xab, 0x06,
+  0xcf, 0x08, 0xe6, 0xf2, 0x07, 0xd0, 0x12, 0xc2, 0x09, 0x34, 0x20 };
+
+void tx(unsigned char *buf, size_t size, osjobcb_t func) {
+
+  u2_t crc16;
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  os_radio(RADIO_RST); // Stop RX first
+  delay(1); // Wait a bit, without this os_radio below asserts, apparently because the state hasn't changed yet
+
+  LMIC.dataLen = 0;
+
+  switch (LMIC.protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 24) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >> 16) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
+    LMIC.frame[LMIC.dataLen++] = (u1_t) ((LMIC.protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    LMIC.frame[LMIC.dataLen++] = LMIC.protocol->payload_size;
+    break;
+  case RF_PROTOCOL_OGNTP:
+  default:
+    break;
+  }
+
+  for (u1_t i=0; i < size; i++) {
+
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      LMIC.frame[LMIC.dataLen] = buf[i] ^ whitening_pattern[i];
+      break;
+    case RF_WHITENING_MANCHESTER:
+    case RF_WHITENING_NONE:
+    default:
+      LMIC.frame[LMIC.dataLen] = buf[i];
+      break;
+    }
+
+    switch (LMIC.protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[LMIC.dataLen]));
+      break;
+    }
+
+    LMIC.dataLen++;
+  }
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    LMIC.frame[LMIC.dataLen++] = (crc16 >>  8) & 0xFF;
+    LMIC.frame[LMIC.dataLen++] = (crc16      ) & 0xFF;
+    break;
+  }
+
+  LMIC.osjob.func = func;
+  os_radio(RADIO_TX);
+  Serial.println("TX");
+}
+
+// Enable rx mode and call func when a packet is received
+void rx(osjobcb_t func) {
+  LMIC.osjob.func = func;
+  LMIC.rxtime = os_getTime(); // RX _now_
+  // Enable "continuous" RX for LoRa only (e.g. without a timeout,
+  // still stops after receiving a packet)
+  os_radio(LMIC.protocol &&
+           LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA ?
+          RADIO_RXON : RADIO_RX);
+  Serial.println("RX");
+}
+
+static void rxtimeout_func(osjob_t *job) {
+  digitalWrite(LED_BUILTIN, LOW); // off
+}
+
+static void rx_func (osjob_t* job) {
+
+  u2_t crc16;
+  u1_t i;
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  // Blink once to confirm reception and then keep the led on
+  digitalWrite(LED_BUILTIN, LOW); // off
+  delay(10);
+  digitalWrite(LED_BUILTIN, HIGH); // on
+
+  // Timeout RX (i.e. update led status) after 3 periods without RX
+  os_setTimedCallback(&timeoutjob, os_getTime() + ms2osticks(3*TX_INTERVAL), rxtimeout_func);
+
+  // Reschedule TX so that it should not collide with the other side's
+  // next TX
+  os_setTimedCallback(&txjob, os_getTime() + ms2osticks(TX_INTERVAL/2), tx_func);
+
+  Serial.print("Got ");
+  Serial.print(LMIC.dataLen);
+  Serial.println(" bytes");
+
+  switch (LMIC.protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+  case RF_PROTOCOL_OGNTP:
+  default:
+    break;
+  }
+
+  for (i = LMIC.protocol->payload_offset;
+       i < (LMIC.dataLen - LMIC.protocol->crc_size);
+       i++)
+  {
+
+    switch (LMIC.protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      crc16 = update_crc_ccitt(crc16, (u1_t)(LMIC.frame[i]));
+      break;
+    }
+
+    switch (LMIC.protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      LMIC.frame[i] ^= whitening_pattern[i - LMIC.protocol->payload_offset];
+      break;
+    case RF_WHITENING_MANCHESTER:
+    case RF_WHITENING_NONE:
+    default:
+      break;
+    }
+
+    Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
+  }
+
+  switch (LMIC.protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_GALLAGER:
+    if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
+      Serial.printf(" %02x%02x%02x%02x%02x%02x is wrong FCS",
+        LMIC.frame[i], LMIC.frame[i+1], LMIC.frame[i+2],
+        LMIC.frame[i+3], LMIC.frame[i+4], LMIC.frame[i+5]);
+    };
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+    if (crc16 == pkt_crc ) {
+      Serial.printf(" %04x is valid crc", pkt_crc);
+    } else {
+      Serial.printf(" %04x is wrong crc", pkt_crc);
+    }
+    break;
+  }
+
+  Serial.println();
+
+  // Restart RX
+  rx(rx_func);
+}
+
+static void txdone_func (osjob_t* job) {
+  rx(rx_func);
+}
 
 // log text to USART and toggle LED
 static void tx_func (osjob_t* job) {
-
 
   tx(tx_data, sizeof(tx_data), txdone_func);
 
@@ -551,16 +580,29 @@ void setup() {
   // initialize runtime env
   os_init();
 
+  //LMIC.protocol = &ogntp_proto_desc;
+  //LMIC.protocol = &p3i_proto_desc;
+  //LMIC.protocol = &legacy_proto_desc;
+  LMIC.protocol = &fanet_proto_desc;
+
   // Set up these settings once, and use them for both TX and RX
 
 #if defined(CFG_eu868)
-  // Use a frequency in the g3 which allows 10% duty cycling.
 
-#if defined(FLARMAIR) || defined(OGNTRACKER)
-  LMIC.freq = 868400000;
-#elif defined(PILOTAWARE)
-  LMIC.freq = 869920000;
-#endif
+  switch (LMIC.protocol->type)
+  {
+  case RF_PROTOCOL_P3I:
+    LMIC.freq = 869920000; /* 869525000 */
+    break;
+  case RF_PROTOCOL_FANET:
+    LMIC.freq = 868200000;
+    break;
+  case RF_PROTOCOL_LEGACY:
+  case RF_PROTOCOL_OGNTP:
+  default:
+    LMIC.freq = 868400000;
+    break;
+  }
 
 #elif defined(CFG_us915)
   LMIC.freq = 902300000;
@@ -568,18 +610,23 @@ void setup() {
 
   // Maximum TX power
 //  LMIC.txpow = 27;
-  LMIC.txpow = 15;
-  // Use a medium spread factor. This can be increased up to SF12 for
-  // better range, but then the interval should be (significantly)
-  // lowered to comply with duty cycle limits as well.
-  LMIC.datarate =  DR_FSK /*  DR_SF9  */ ;
+//  LMIC.txpow = 15;
+//  LMIC.txpow = 5;
+  LMIC.txpow = 1;
+
+  if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
+    LMIC.datarate = LMIC.protocol->bitrate;
+  } else {
+    LMIC.datarate = DR_FSK;
+  }
+
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = updr2rps(LMIC.datarate);
 
-
-  //LMIC.protocol = &ogntp_proto_desc;
-  LMIC.protocol = &p3i_proto_desc;
-  //LMIC.protocol = &legacy_proto_desc;
+  if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
+    /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
+    setCr(LMIC.rps, CR_4_8);
+  }
 
   Serial.println("Started");
   Serial.flush();

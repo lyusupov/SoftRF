@@ -21,6 +21,16 @@
 
 enum
 {
+	RF_PROTOCOL_LEGACY,    /* Air V6 */
+	RF_PROTOCOL_OGNTP,     /* Open Glider Network tracker */
+	RF_PROTOCOL_P3I,       /* PilotAware */
+	RF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
+	RF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
+	RF_PROTOCOL_FANET
+};
+
+enum
+{
 	RF_MODULATION_TYPE_2FSK,
 	RF_MODULATION_TYPE_LORA,
 	RF_MODULATION_TYPE_PPM
@@ -101,6 +111,4 @@ typedef struct RF_PROTOCOL {
     uint8_t   bandwidth;                    
 } rf_proto_desc_t;
 
-
 #endif /* PROTOCOL_H */
-
