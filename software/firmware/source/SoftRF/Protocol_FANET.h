@@ -24,7 +24,9 @@
 #ifndef PROTOCOL_FANET_H
 #define PROTOCOL_FANET_H
 
+#if 0
 #include <app.h>
+#endif
 
 /*
  * FANET uses LoRa modulation
@@ -35,14 +37,64 @@
  * Parameters: BW_250 SF_7 CR_5
  */
 
-#define FANET_PAYLOAD_SIZE    13
-#define FANET_VENDOR_ID       0xFD  /* Unregistered Devices */
+#define SOFRF_FANET_VENDOR_ID       0xFD  /* Unregistered Devices */
 
+#define FANET_DEPRECATED
+
+enum
+{
+	FANET_AIRCRAFT_TYPE_OTHER,
+	FANET_AIRCRAFT_TYPE_PARAGLIDER,
+	FANET_AIRCRAFT_TYPE_HANGGLIDER,
+	FANET_AIRCRAFT_TYPE_BALLOON,
+	FANET_AIRCRAFT_TYPE_GLIDER,
+	FANET_AIRCRAFT_TYPE_POWERED,
+	FANET_AIRCRAFT_TYPE_HELICOPTER,
+	FANET_AIRCRAFT_TYPE_UAV
+};
+
+/*
+ * Tracking frame type (#1),
+ * Standard header,
+ * No signature,
+ * Broadcast
+ */
 typedef struct {
+  unsigned int type           :6;
+  unsigned int forward        :1;
+  unsigned int ext_header     :1;
 
-  uint8_t data[FANET_PAYLOAD_SIZE];
+  unsigned int vendor         :8;
+  unsigned int address        :16;
 
-} fanet_packet_t;
+#if defined(FANET_DEPRECATED)
+  unsigned int latitude       :16;
+  unsigned int longitude      :16;
+#else
+  unsigned int latitude       :24;
+  unsigned int longitude      :24;
+#endif
+
+  unsigned int altitude_lsb   :8;
+  unsigned int altitude_msb   :3;
+  unsigned int altitude_scale :1;
+  unsigned int aircraft_type  :3;
+  unsigned int track_online   :1;
+
+  unsigned int speed          :7;
+  unsigned int speed_scale    :1;
+
+  unsigned int climb          :7;
+  unsigned int climb_scale    :1;
+
+  unsigned int heading        :8;
+
+  unsigned int turn_rate      :7;
+  unsigned int turn_scale     :1;
+
+} __attribute__((packed)) fanet_packet_t;
+
+#define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)  // 14
 
 extern const rf_proto_desc_t fanet_proto_desc;
 

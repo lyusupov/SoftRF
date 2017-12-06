@@ -27,23 +27,23 @@
 #include "RFHelper.h"
 
 const rf_proto_desc_t p3i_proto_desc = {
-  .type           = RF_PROTOCOL_P3I,
-  .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = P3I_PREAMBLE_TYPE,
-  .preamble_size  = P3I_PREAMBLE_SIZE,
-  .syncword       = P3I_SYNCWORD,
-  .syncword_size  = P3I_SYNCWORD_SIZE,
-  .net_id         = P3I_NET_ID,
-  .payload_type   = RF_PAYLOAD_DIRECT,
-  .payload_size   = P3I_PAYLOAD_SIZE,
-  .payload_offset = P3I_PAYLOAD_OFFSET,
-  .crc_type       = P3I_CRC_TYPE,
-  .crc_size       = P3I_CRC_SIZE,
+  .type             = RF_PROTOCOL_P3I,
+  .modulation_type  = RF_MODULATION_TYPE_2FSK,
+  .preamble_type    = P3I_PREAMBLE_TYPE,
+  .preamble_size    = P3I_PREAMBLE_SIZE,
+  .syncword         = P3I_SYNCWORD,
+  .syncword_size    = P3I_SYNCWORD_SIZE,
+  .net_id           = P3I_NET_ID,
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = P3I_PAYLOAD_SIZE,
+  .payload_offset   = P3I_PAYLOAD_OFFSET,
+  .crc_type         = P3I_CRC_TYPE,
+  .crc_size         = P3I_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_38400,
-  .deviation      = P3I_FDEV,
-  .whitening      = RF_WHITENING_NICERF,
-  .bandwidth      = P3I_BANDWIDTH
+  .bitrate          = RF_BITRATE_38400,
+  .deviation        = P3I_FDEV,
+  .whitening        = RF_WHITENING_NICERF,
+  .bandwidth        = P3I_BANDWIDTH
 };
 
 
@@ -98,7 +98,6 @@ size_t p3i_encode(void *p3i_pkt, ufo_t *this_aircraft) {
   float lat = this_aircraft->latitude;
   float lon = this_aircraft->longitude;
   int16_t alt = (int16_t) this_aircraft->altitude;
-  uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
   unsigned int aircraft_type =  this_aircraft->aircraft_type;
 
   uint8_t cs = 0;

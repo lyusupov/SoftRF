@@ -37,8 +37,11 @@ const rf_proto_desc_t fanet_proto_desc = {
   .modulation_type  = RF_MODULATION_TYPE_LORA,
   .preamble_type    = 0 /* INVALID FOR LORA */,
   .preamble_size    = 0 /* INVALID FOR LORA */,
+#if defined(FANET_DEPRECATED)
   .syncword         = { 0x12 },  // sx127x default value, valid for FANET
-//  .syncword       = { 0xF1 },  // FANET+
+#else
+  .syncword         = { 0xF1 },  // FANET+
+#endif
   .syncword_size    = 1,
   .net_id           = 0x0000, /* not in use */
   .payload_type     = RF_PAYLOAD_DIRECT,
@@ -53,110 +56,254 @@ const rf_proto_desc_t fanet_proto_desc = {
   .bandwidth        = 0 /* INVALID FOR LORA */
 };
 
-App app = App();
+const uint8_t aircraft_type_to_fanet[] PROGMEM = {
+	FANET_AIRCRAFT_TYPE_OTHER,
+	FANET_AIRCRAFT_TYPE_GLIDER,
+	FANET_AIRCRAFT_TYPE_POWERED,
+	FANET_AIRCRAFT_TYPE_HELICOPTER,
+	FANET_AIRCRAFT_TYPE_OTHER,
+	FANET_AIRCRAFT_TYPE_POWERED,
+	FANET_AIRCRAFT_TYPE_HANGGLIDER,
+	FANET_AIRCRAFT_TYPE_PARAGLIDER,
+	FANET_AIRCRAFT_TYPE_POWERED,
+	FANET_AIRCRAFT_TYPE_POWERED,
+	FANET_AIRCRAFT_TYPE_OTHER,
+	FANET_AIRCRAFT_TYPE_BALLOON,
+	FANET_AIRCRAFT_TYPE_BALLOON,
+	FANET_AIRCRAFT_TYPE_UAV,
+	FANET_AIRCRAFT_TYPE_OTHER,
+	FANET_AIRCRAFT_TYPE_OTHER
+};
 
-void fanet_init()
+const uint8_t aircraft_type_from_fanet[] PROGMEM = {
+	AIRCRAFT_TYPE_UNKNOWN,
+	AIRCRAFT_TYPE_PARAGLIDER,
+	AIRCRAFT_TYPE_HANGGLIDER,
+	AIRCRAFT_TYPE_BALLOON,
+	AIRCRAFT_TYPE_GLIDER,
+	AIRCRAFT_TYPE_POWERED,
+	AIRCRAFT_TYPE_HELICOPTER,
+	AIRCRAFT_TYPE_UAV
+};
+
+#define AT_TO_FANET(x)  (x > 15 ? \
+   FANET_AIRCRAFT_TYPE_OTHER : pgm_read_byte(&aircraft_type_to_fanet[x]))
+
+#define AT_FROM_FANET(x)  (x > 7 ? \
+   AIRCRAFT_TYPE_UNKNOWN : pgm_read_byte(&aircraft_type_from_fanet[x]))
+
+#if defined(FANET_DEPRECATED)
+/* ------------------------------------------------------------------------- */
+/*
+ * mac.h
+ *
+ *  Created on: 30 Sep 2016
+ *      Author: sid
+ */
+static uint16_t coord2payload_compressed(float deg)
 {
+	float deg_round =  roundf(deg);
+	bool deg_odd = ((int)deg_round) & 1;
+	const float decimal = deg-deg_round;
+	const int dec_int = constrain((int)(decimal*32767), -16383, 16383);
 
+	return ((dec_int&0x7FFF) | (!!deg_odd<<15));
 }
-
-void fanet_fini()
+/* ------------------------------------------------------------------------- */
+/*
+ *  Created on: 06 Dec 2017
+ *      Author: Linar Yusupov
+ */
+static float payload_compressed2coord(uint16_t payload, float ref_deg)
 {
+  float deg;
+  bool deg_odd = (payload >> 15) & 0x1;
+  unsigned int dec_uint = payload & 0x7FFF;
 
-}
+  float ref_deg_round =  roundf(ref_deg);
+  bool ref_deg_odd = ((int)ref_deg_round) & 1;
 
-bool fanet_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
-
-  /* deserialize packet */
-  Frame *frm = new Frame(sizeof(fanet_packet_t), (uint8_t *) pkt);
-
-
-	/* simply print frame */
-
-	Serial.print(F(FANET_CMD_START CMD_RX_FRAME " "));
-
-	/* src_manufacturer,src_id,broadcast,signature,type,payloadlength,payload */
-	Serial.print(frm->src.manufacturer, HEX);
-	Serial.print(',');
-	Serial.print(frm->src.id, HEX);
-	Serial.print(',');
-	Serial.print(frm->dest == MacAddr());	//broadcast
-	Serial.print(',');
-	Serial.print(frm->signature, HEX);
-	Serial.print(',');
-	Serial.print(frm->type, HEX);
-	Serial.print(',');
-	Serial.print(frm->payload_length, HEX);
-	Serial.print(',');
-	for(int i=0; i<frm->payload_length; i++)
-	{
-		char buf[8];
-		sprintf(buf, "%02X", frm->payload[i]);
-		Serial.print(buf);
-	}
-
-	Serial.println();
-	Serial.flush();
-
-  if (frm->type == 1 && frm->signature == 0 &&
-      frm->payload_length == (FANET_PAYLOAD_SIZE - 4)) {
-
-    fop->addr = (frm->src.manufacturer << 16) | frm->src.id;
+  int dec_int = 0;
+  if (dec_uint <= 0x3FFF) {
+      dec_int = (int) dec_uint;
+  } else if (dec_uint >= 0x4001) {
+    dec_int = (int)-1 - (int) (dec_uint ^ 0x7FFF);
   }
 
-#if 0
-  fop->addr = ogn_rx_pkt.Packet.Header.Address;
-  fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
-  fop->longitude = ogn_rx_pkt.Packet.DecodeLongitude() * 0.0001/60;
-  fop->altitude = ogn_rx_pkt.Packet.DecodeAltitude();
-  fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
-  fop->course = ogn_rx_pkt.Packet.Position.Heading * 0.1;
-  fop->speed = (ogn_rx_pkt.Packet.Position.Speed * 0.1) / _GPS_MPS_PER_KNOT;
+  float decimal = (float) dec_int / 32767.0;
 
-  fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
-  fop->timestamp = this_aircraft->timestamp;
+  if (deg_odd == ref_deg_odd) {
+    deg = ref_deg_round + decimal;
+  } else {
+    if (decimal < 0) {
+      deg = ref_deg_round + 1 + decimal;
+    } else {
+      deg = ref_deg_round - 1 + decimal;
+    }
+  }
 
-  fop->vs = 0;
-  fop->stealth = ogn_rx_pkt.Packet.Position.Stealth;
-  fop->no_track = 0;
-  fop->ns[0] = 0; fop->ns[1] = 0;
-  fop->ns[2] = 0; fop->ns[3] = 0;
-  fop->ew[0] = 0; fop->ew[1] = 0;
-  fop->ew[2] = 0; fop->ew[3] = 0;
+  return deg;
+}
+/* ------------------------------------------------------------------------- */
+#else
+/* ------------------------------------------------------------------------- */
+/*
+ * mac.h
+ *
+ *  Created on: 30 Sep 2016
+ *      Author: sid
+ */
+static void coord2payload_absolut(float lat, float lon, uint8_t *buf)
+{
+	if(buf == NULL)
+		return;
+
+	int32_t lat_i = roundf(lat * 93206.0f);
+	int32_t lon_i = roundf(lon * 46603.0f);
+
+	buf[0] = ((uint8_t*)&lat_i)[0];
+	buf[1] = ((uint8_t*)&lat_i)[1];
+	buf[2] = ((uint8_t*)&lat_i)[2];
+
+	buf[3] = ((uint8_t*)&lon_i)[0];
+	buf[4] = ((uint8_t*)&lon_i)[1];
+	buf[5] = ((uint8_t*)&lon_i)[2];
+}
+/* ------------------------------------------------------------------------- */
 #endif
 
-  delete frm;
+bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-  return false; // true;
+  fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
+  unsigned int altitude, speed;
+
+  if (pkt->ext_header == 0 && pkt->type == 1 ) {  /* Tracking  */
+
+    fop->addr = (pkt->vendor << 16) | pkt->address;
+
+    fop->latitude  = payload_compressed2coord(pkt->latitude, this_aircraft->latitude);
+    fop->longitude = payload_compressed2coord(pkt->longitude, this_aircraft->longitude);
+
+    altitude = ((pkt->altitude_msb << 8) | pkt->altitude_lsb);
+    if (pkt->altitude_scale) {
+      altitude = altitude * 4 /* -2 */;
+    }
+    fop->altitude = (float) altitude;
+
+    fop->aircraft_type = AT_FROM_FANET(pkt->aircraft_type);
+    fop->course = (float) pkt->heading * 360.0 / 256.0;
+
+    speed = pkt->speed;
+    if (pkt->speed_scale) {
+      speed =  speed * 5 /* -2 */;
+    }
+    fop->speed = ((float) speed) / (2 * _GPS_KMPH_PER_KNOT);
+
+    fop->addr_type = 0;
+    fop->timestamp = this_aircraft->timestamp;
+
+    fop->vs = 0;
+    fop->stealth = 0;
+    fop->no_track = !(pkt->track_online);
+
+    fop->ns[0] = 0; fop->ns[1] = 0;
+    fop->ns[2] = 0; fop->ns[3] = 0;
+    fop->ew[0] = 0; fop->ew[1] = 0;
+    fop->ew[2] = 0; fop->ew[3] = 0;
+#if 0
+    Serial.print(fop->addr, HEX);
+    Serial.print(',');
+    Serial.print(fop->aircraft_type, HEX);
+    Serial.print(',');
+    Serial.print(fop->latitude, 6);
+    Serial.print(',');
+    Serial.print(fop->longitude, 6);
+    Serial.print(',');
+    Serial.print(fop->altitude);
+    Serial.print(',');
+    Serial.print(fop->speed);
+    Serial.print(',');
+    Serial.print(fop->course);
+    Serial.println();
+    Serial.flush();
+#endif
+    return true;
+  } else {
+    return false;
+  }
 }
 
 size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
 
-  size_t size = 0;
-  Frame* frm;
+  uint32_t id = this_aircraft->addr;
+  float lat = this_aircraft->latitude;
+  float lon = this_aircraft->longitude;
+  int16_t alt = (int16_t) this_aircraft->altitude;
+  unsigned int aircraft_type =  this_aircraft->aircraft_type;
+  float speed = this_aircraft->speed * _GPS_KMPH_PER_KNOT;
+  float climb = 0;
+  float heading = this_aircraft->course;
+  float turnrate = 0;
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
 
-  app.set( this_aircraft->latitude, this_aircraft->longitude,
-    this_aircraft->altitude, this_aircraft->speed * _GPS_KMPH_PER_KNOT,
-    0, this_aircraft->course, 0
-  );
-#if 0
-  frm = app.get_frame();
-  if(frm == NULL)
-    return (0);
+  pkt->ext_header     = 0;
+  pkt->forward        = 1;
+  pkt->type           = 1;  /* Tracking  */
 
-  uint8_t* buffer;
-  size = frm->serialize(buffer);
+  pkt->vendor         = SOFRF_FANET_VENDOR_ID;
+  pkt->address        = id & 0xFFFF;
 
-  delete frm;
-
-  if (size > 0) {
-    memcpy((void *) pkt, buffer, size);
-    delete[] buffer;
-  } else {
-    size = 0;
-  }
+#if defined(FANET_DEPRECATED)
+  pkt->latitude       = coord2payload_compressed(lat);
+  pkt->longitude      = coord2payload_compressed(lon);
+#else
+  coord2payload_absolut(lat, lon, (uint8_t *) &(pkt->latitude));
 #endif
-  return (size);
+
+  pkt->track_online   = 0;
+  pkt->aircraft_type  = AT_TO_FANET(aircraft_type);
+
+  int altitude        = constrain(alt, 0, 8190);
+  if(altitude > 2047) {
+    int alt_s = ((altitude + 2) / 4);
+    pkt->altitude_scale = 1;
+    pkt->altitude_msb   = (alt_s & 0x700) >> 16;
+    pkt->altitude_lsb   = (alt_s & 0x0FF);
+  } else {
+    pkt->altitude_scale = 0;
+    pkt->altitude_msb   = (altitude & 0x700) >> 16;
+    pkt->altitude_lsb   = (altitude & 0x0FF);
+  }
+
+  int speed2          = constrain((int)roundf(speed * 2.0f), 0, 635);
+  if(speed2 > 127) {
+    pkt->speed_scale  = 1;
+    pkt->speed        = ((speed2 + 2) / 5);
+  } else {
+    pkt->speed_scale  = 0;
+    pkt->speed        = speed2 & 0x7F;
+  }
+
+  int climb10         = constrain((int)roundf(climb * 10.0f), -315, 315);
+  if(climb10 > 63) {
+    pkt->climb_scale  = 1;
+    pkt->climb        = ((climb10 + (climb10 >= 0 ? 2 : -2)) / 5);
+  } else {
+    pkt->climb_scale  = 0;
+    pkt->climb        = climb10 & 0x7F;
+  }
+
+  pkt->heading        = constrain((int)roundf(heading * 256.0f)/360.0f, 0, 255);
+
+  int turnr4          = constrain((int)roundf(turnrate * 4.0f), 0, 255);
+  if(abs(turnr4) > 63) {
+    pkt->turn_scale   = 1;
+    pkt->turn_rate    = ((turnr4 + (turnr4 >= 0 ? 2 : -2)) / 4);
+  } else {
+    pkt->turn_scale   = 0;
+    pkt->turn_rate    = turnr4 & 0x7F;
+  }
+
+  return sizeof(fanet_packet_t);
 }
