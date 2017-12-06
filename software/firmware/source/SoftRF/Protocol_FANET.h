@@ -24,10 +24,6 @@
 #ifndef PROTOCOL_FANET_H
 #define PROTOCOL_FANET_H
 
-#if 0
-#include <app.h>
-#endif
-
 /*
  * FANET uses LoRa modulation
  * FANET+ uses both LoRa (FANET) and FSK(FLARM)
