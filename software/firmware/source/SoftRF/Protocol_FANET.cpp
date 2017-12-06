@@ -95,7 +95,6 @@ const uint8_t aircraft_type_from_fanet[] PROGMEM = {
 #if defined(FANET_DEPRECATED)
 /* ------------------------------------------------------------------------- */
 /*
- * mac.h
  *
  *  Created on: 30 Sep 2016
  *      Author: sid
@@ -146,9 +145,9 @@ static float payload_compressed2coord(uint16_t payload, float ref_deg)
 }
 /* ------------------------------------------------------------------------- */
 #else
+
 /* ------------------------------------------------------------------------- */
 /*
- * mac.h
  *
  *  Created on: 30 Sep 2016
  *      Author: sid
@@ -170,6 +169,31 @@ static void coord2payload_absolut(float lat, float lon, uint8_t *buf)
 	buf[5] = ((uint8_t*)&lon_i)[2];
 }
 /* ------------------------------------------------------------------------- */
+/*
+ *  Created on: 06 Dec 2017
+ *      Author: Linar Yusupov
+ */
+static void payload_absolut2coord(float *lat, float *lon, uint8_t *buf)
+{
+  int32_t lat_i = 0;
+  int32_t lon_i = 0;
+
+  if(buf == NULL || lat == NULL || lon == NULL)
+    return;
+
+  ((uint8_t*)&lat_i)[0] = buf[0];
+  ((uint8_t*)&lat_i)[1] = buf[1];
+  ((uint8_t*)&lat_i)[2] = buf[2];
+
+  ((uint8_t*)&lon_i)[0] = buf[3];
+  ((uint8_t*)&lon_i)[1] = buf[4];
+  ((uint8_t*)&lon_i)[2] = buf[5];
+
+  *lat = (float) lat_i / 93206.0f;
+  *lon = (float) lon_i / 46603.0f;
+}
+
+/* ------------------------------------------------------------------------- */
 #endif
 
 bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
@@ -181,8 +205,13 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
     fop->addr = (pkt->vendor << 16) | pkt->address;
 
+#if defined(FANET_DEPRECATED)
     fop->latitude  = payload_compressed2coord(pkt->latitude, this_aircraft->latitude);
     fop->longitude = payload_compressed2coord(pkt->longitude, this_aircraft->longitude);
+#else
+    payload_absolut2coord(&(fop->latitude), &(fop->longitude),
+      ((uint8_t *) pkt) + FANET_HEADER_SIZE);
+#endif
 
     altitude = ((pkt->altitude_msb << 8) | pkt->altitude_lsb);
     if (pkt->altitude_scale) {
@@ -258,7 +287,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   pkt->latitude       = coord2payload_compressed(lat);
   pkt->longitude      = coord2payload_compressed(lon);
 #else
-  coord2payload_absolut(lat, lon, (uint8_t *) &(pkt->latitude));
+  coord2payload_absolut(lat, lon, ((uint8_t *) pkt) + FANET_HEADER_SIZE);
 #endif
 
   pkt->track_online   = 0;

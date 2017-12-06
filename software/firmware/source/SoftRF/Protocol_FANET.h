@@ -90,7 +90,8 @@ typedef struct {
 
 } __attribute__((packed)) fanet_packet_t;
 
-#define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)  // 14
+#define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
+#define FANET_HEADER_SIZE     4
 
 extern const rf_proto_desc_t fanet_proto_desc;
 
