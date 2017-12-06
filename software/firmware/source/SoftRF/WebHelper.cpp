@@ -113,6 +113,7 @@ void handleSettings() {
 <option %s value='%d'>Legacy</option>\
 <option %s value='%d'>OGNTP</option>\
 <option %s value='%d'>P3I</option>\
+<option %s value='%d'>FANET</option>\
 </select>\
 </td>\
 </tr>\
@@ -202,6 +203,7 @@ void handleSettings() {
   (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
   (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
   (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
+  (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""), RF_PROTOCOL_FANET,
   (settings->band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
   (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
   (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
