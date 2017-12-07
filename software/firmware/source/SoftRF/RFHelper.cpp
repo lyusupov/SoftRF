@@ -109,6 +109,10 @@ void RF_SetChannel(void)
 #if 1  /* Temporarily force both OGN and Legacy to live on the same channel */
   OGN = 0;
 #endif
+  /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
+  if (settings->rf_protocol == RF_PROTOCOL_FANET) {
+    Slot = 0;
+  }
 
   uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
 
@@ -374,8 +378,6 @@ void sx1276_setup()
 
   /* Channel selection is now part of RF_loop() */
 //  sx1276_channel(channel);
-
-  //settings->rf_protocol = RF_PROTOCOL_FANET;
 
   switch (settings->rf_protocol)
   {
