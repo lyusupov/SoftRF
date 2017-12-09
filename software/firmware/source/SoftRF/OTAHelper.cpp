@@ -23,6 +23,7 @@
 #include <ArduinoOTA.h>
 
 #include "OTAHelper.h"
+#include "WiFiHelper.h"
 
 void OTA_setup()
 {
@@ -31,7 +32,7 @@ void OTA_setup()
   // ArduinoOTA.setPort(8266);
 
   // Start OTA server.
-  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.setHostname(host_name.c_str());
 
   // No authentication by default
   // ArduinoOTA.setPassword((const char *)"123");

@@ -19,8 +19,15 @@
 #ifndef NMEAHELPER_H
 #define NMEAHELPER_H
 
+#include <ESP8266WiFi.h>
 #include "SoftRF.h"
 
+void NMEA_setup(void);
+void NMEA_loop(void);
 void NMEA_Export(void);
+
+#if defined(AIRCONNECT_IS_ACTIVE)
+extern WiFiClient AirConnectClient;
+#endif
 
 #endif /* NMEAHELPER_H */

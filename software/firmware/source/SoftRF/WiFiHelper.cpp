@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <FS.h>
@@ -39,23 +38,21 @@ extern "C" {
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk = MY_ACCESSPOINT_PSK ;
 
-/**
- * @brief Default WiFi connection information.
- * @{
- */
-const char* ap_default_ssid = "SoftRF"; ///< Default SSID.
-const char* ap_default_psk = "12345678"; ///< Default PSK.
-/// @}
+String host_name = HOSTNAME;
 
-/// Uncomment the next line for verbose output over UART.
-//#define SERIAL_VERBOSE
+IPAddress local_IP(192,168,1,1);
+IPAddress gateway(192,168,1,1);
+IPAddress subnet(255,255,255,0);
+
+/**
+ * Default WiFi connection information.
+ *
+ */
+const char* ap_default_psk = "12345678"; ///< Default PSK.
 
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
 bool dns_active = false;
-
-WiFiClient client;
-//#include <WiFiUDP.h>
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Uni_Udp;
@@ -165,9 +162,9 @@ void WiFi_setup()
 {
 
   // Set Hostname.
-  String hostname(HOSTNAME);
-  hostname += String(ESP.getChipId(), HEX);
-  WiFi.hostname(hostname);
+
+  host_name += String(ESP.getChipId(), HEX);
+  WiFi.hostname(host_name);
 
   // Print hostname.
   //Serial.println("Hostname: " + hostname);
@@ -237,26 +234,6 @@ void WiFi_setup()
     // ... print IP Address
     Serial.print(F("IP address: "));
     Serial.println(WiFi.localIP());
-
-#if CLOUD_MODE
-
-    // close any connection before send a new request.
-    // This will free the socket on the WiFi shield
-    client.stop();
-
-    delay(1000);
-
-    Serial.print(F("Connection to ")); Serial.print(CLOUD_HOSTNAME);
-    Serial.print(":"); Serial.print(CLOUD_PORT); Serial.print(" ");
-    // if there's a successful connection:
-    if (client.connect(CLOUD_HOSTNAME, CLOUD_PORT)) {
-      Serial.println(F("succeed"));
-    } else {
-      // if you couldn't make a connection:
-      Serial.println(F("failed"));
-    }
-#endif
-
   }
   else
   {
@@ -264,12 +241,18 @@ void WiFi_setup()
     
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
-    // WiFi.setOutputPower(10); // 10 dB
-    WiFi.setOutputPower(0); // 0 dB
+    WiFi.setOutputPower(10); // 10 dB
+    // WiFi.setOutputPower(0); // 0 dB
     //system_phy_set_max_tpw(4 * 0); // 0 dB
     delay(10);
 
-    WiFi.softAP(ap_default_ssid, ap_default_psk);
+    Serial.print(F("Setting soft-AP configuration ... "));
+    Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ?
+      F("Ready") : F("Failed!"));
+
+    Serial.print(F("Setting soft-AP ... "));
+    Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
+      F("Ready") : F("Failed!"));
 
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
@@ -280,9 +263,9 @@ void WiFi_setup()
     Serial.println(WiFi.softAPIP());
   }
 
-    Serial.print(F("UDP server started at port "));
-    Serial.println(RFlocalPort);
     Uni_Udp.begin(RFlocalPort);
+    Serial.print(F("UDP server has started at port: "));
+    Serial.println(RFlocalPort);
 }
 
 void WiFi_loop()

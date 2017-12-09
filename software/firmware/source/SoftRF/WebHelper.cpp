@@ -423,7 +423,7 @@ void Web_setup()
   });
 
   server.begin();
-  Serial.println ( "HTTP server started" );
+  Serial.println (F("HTTP server has started at port: 80"));
 
   delay(1000);
 }

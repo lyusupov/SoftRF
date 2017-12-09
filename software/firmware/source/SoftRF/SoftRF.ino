@@ -72,7 +72,6 @@ extern "C" {
 
 #define DEBUG 0
 
-
 #define isTimeToDisplay() (millis() - LEDTimeMarker > 1000)
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
@@ -126,11 +125,7 @@ void setup()
   WiFi_setup();
   OTA_setup();
   Web_setup();
-
-#if 0
-  GNSSserver.begin();
-  GNSSserver.setNoDelay(true);
-#endif
+  NMEA_setup();
 
   /* expedite restart on WDT reset */
   if (resetInfo->reason != REASON_WDT_RST) {
@@ -167,16 +162,19 @@ void loop()
   default:
     normal_loop();
     break;
-  }   
+  }
 
-  // Handle OTA update.
-  OTA_loop();
+  // Handle Air Connect
+  NMEA_loop();
 
   // Handle DNS
   WiFi_loop();
 
   // Handle Web
   Web_loop();
+
+  // Handle OTA update.
+  OTA_loop();
 
 #if LOGGER_IS_ENABLED
   Logger_loop();

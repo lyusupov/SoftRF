@@ -22,6 +22,7 @@
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
+#include "NMEAHelper.h"
 
 #include "SoftRF.h"
 
@@ -175,6 +176,14 @@ void PickGNSSFix()
       Uni_Udp.write(&GNSSbuf[0], GNSS_cnt + 1);
       Uni_Udp.write('\n');
       Uni_Udp.endPacket();
+
+#if defined(AIRCONNECT_IS_ACTIVE)
+    if (AirConnectClient && AirConnectClient.connected()){
+      AirConnectClient.write(&GNSSbuf[0], GNSS_cnt + 1);
+      AirConnectClient.write('\n');
+    }
+#endif
+
     }
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
       GNSS_cnt = 0;

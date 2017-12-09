@@ -24,6 +24,11 @@
 #include "RFHelper.h"
 #include "WiFiHelper.h"
 
+#if defined(AIRCONNECT_IS_ACTIVE)
+WiFiServer AirConnectServer(AIR_CONNECT_PORT);
+WiFiClient AirConnectClient;
+#endif
+
 char NMEABuffer[128]; //buffer for NMEA data
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
@@ -134,6 +139,13 @@ void NMEA_Export()
             Uni_Udp.write('\r'); Uni_Udp.write('\n');
             Uni_Udp.endPacket();
     
+#if defined(AIRCONNECT_IS_ACTIVE)
+            if (AirConnectClient && AirConnectClient.connected()){
+              AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
+              AirConnectClient.write('\r'); AirConnectClient.write('\n');
+            }
+#endif
+
             snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X,,,,,%d*",
                     alarm_level,
                     (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))), alt_diff,
@@ -154,29 +166,37 @@ void NMEA_Export()
             Uni_Udp.write('\r'); Uni_Udp.write('\n');
             Uni_Udp.endPacket();
 
+#if defined(AIRCONNECT_IS_ACTIVE)
+            if (AirConnectClient && AirConnectClient.connected()){
+              AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
+              AirConnectClient.write('\r'); AirConnectClient.write('\n');
+            }
+#endif
           }
         }
       }
     }
-#if 0
-  uint8_t i;
-  //check if there are any new clients
-  if (GNSSserver.hasClient()) {
-    for (i = 0; i < MAX_SRV_CLIENTS; i++) {
-      //find free/disconnected spot
-      if (!serverClients[i] || !serverClients[i].connected()) {
-        if (serverClients[i]) serverClients[i].stop();
-        serverClients[i] = GNSSserver.available();
-        Serial.print("New client: "); Serial.print(i);
-        //serverClients[i].setNoDelay(true);
-        continue;
-      }
-    }
-    //no free/disconnected spot so reject
-    WiFiClient serverClient = GNSSserver.available();
-    serverClient.stop();
-  }
-#endif
-
 }
 
+void NMEA_setup()
+{
+#if defined(AIRCONNECT_IS_ACTIVE)
+  AirConnectServer.begin();
+  Serial.print(F("AirConnect server has started at port: "));
+  Serial.println(AIR_CONNECT_PORT);
+
+  AirConnectServer.setNoDelay(true);
+#endif
+}
+
+void NMEA_loop()
+{
+#if defined(AIRCONNECT_IS_ACTIVE)
+  if (AirConnectServer.hasClient()){
+    if (!AirConnectClient || !AirConnectClient.connected()){
+      if(AirConnectClient) AirConnectClient.stop();
+      AirConnectClient = AirConnectServer.available();
+    }
+  }
+#endif
+}

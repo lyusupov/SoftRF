@@ -24,10 +24,13 @@
 
 #include "SoftRF.h"
 
+#define HOSTNAME "SoftRF-"
+
 void WiFi_setup(void);
 void WiFi_loop(void);
 IPAddress WiFi_get_broadcast(void);
 
+extern String host_name;
 extern WiFiUDP Uni_Udp;
 
 #endif /* WIFIHELPER_H */
