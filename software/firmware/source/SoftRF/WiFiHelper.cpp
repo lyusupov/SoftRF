@@ -253,12 +253,12 @@ void WiFi_setup()
     Serial.print(F("Setting soft-AP ... "));
     Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
       F("Ready") : F("Failed!"));
-
+#if 0
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
     dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
     dns_active = true;
-
+#endif
     Serial.print(F("IP address: "));
     Serial.println(WiFi.softAPIP());
   }
