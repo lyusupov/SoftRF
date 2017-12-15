@@ -47,9 +47,11 @@
 #define TIMEOUT   100 // 1000
 
 #define RRB_SIZE  10
-#define MAX_TRACKING_OBJECTS 8
-#define LED_EXPIRATION_TIME 5 /* seconds */
-#define EXPORT_EXPIRATION_TIME 5 /* seconds */
+#define MAX_TRACKING_OBJECTS    8
+
+#define ENTRY_EXPIRATION_TIME   10 /* seconds */
+#define LED_EXPIRATION_TIME     5 /* seconds */
+#define EXPORT_EXPIRATION_TIME  5 /* seconds */
 
 #define MY_ACCESSPOINT_SSID ""
 #define MY_ACCESSPOINT_PSK  ""
@@ -64,8 +66,6 @@
 #define EXPORT_DISTANCE_CLOSE  500
 #define EXPORT_DISTANCE_NEAR   1500
 #define EXPORT_DISTANCE_FAR    10000
-
-//#define STATION_ID  String(ESP.getChipId(), HEX).c_str()
 
 typedef struct UFO {
     String    raw;
