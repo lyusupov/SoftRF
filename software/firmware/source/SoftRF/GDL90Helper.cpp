@@ -32,6 +32,7 @@
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
+static GDL90_Msg_OwnershipGeometricAltitude_t GeometricAltitude;
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
@@ -195,6 +196,18 @@ void *msgType10and20(ufo_t *aircraft)
   return (&Traffic);
 }
 
+void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
+{
+  uint16_t altitude = (int16_t)(aircraft->altitude * _GPS_FEET_PER_METER / 5);
+  uint16_t vfom = 0x000A;
+
+  GeometricAltitude.geo_altitude  = ((altitude & 0x00FF) << 8) | ((altitude & 0xFF00) >> 8) ;
+  GeometricAltitude.VFOM          = ((vfom & 0x00FF) << 8) | ((vfom & 0xFF00) >> 8);
+  GeometricAltitude.vert_warning  = 0;
+
+  return (&GeometricAltitude);
+}
+
 size_t makeHeartbeat(uint8_t *buf)
 {
   uint8_t *ptr = buf;
@@ -207,9 +220,9 @@ size_t makeHeartbeat(uint8_t *buf)
 
   *ptr++ = 0x7E; /* Start flag */
   *ptr++ = GDL90_HEARTBEAT_MSG_ID;
-  ptr = EscapeFilter(ptr, msg, sizeof(GDL90_Msg_HeartBeat_t)); 
-  ptr = EscapeFilter(ptr, &fcs_lsb, 1); 
-  ptr = EscapeFilter(ptr, &fcs_msb, 1);  
+  ptr = EscapeFilter(ptr, msg, sizeof(GDL90_Msg_HeartBeat_t));
+  ptr = EscapeFilter(ptr, &fcs_lsb, 1);
+  ptr = EscapeFilter(ptr, &fcs_msb, 1);
   *ptr++ = 0x7E; /* Stop flag */
 
   return(ptr-buf);
@@ -227,9 +240,29 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 
   *ptr++ = 0x7E; /* Start flag */
   *ptr++ = id;
-  ptr = EscapeFilter(ptr, msg, sizeof(GGDL90_Msg_Traffic_t)); 
-  ptr = EscapeFilter(ptr, &fcs_lsb, 1); 
-  ptr = EscapeFilter(ptr, &fcs_msb, 1);  
+  ptr = EscapeFilter(ptr, msg, sizeof(GGDL90_Msg_Traffic_t));
+  ptr = EscapeFilter(ptr, &fcs_lsb, 1);
+  ptr = EscapeFilter(ptr, &fcs_msb, 1);
+  *ptr++ = 0x7E; /* Stop flag */
+
+  return(ptr-buf);
+}
+
+size_t makeGeometricAltitude(uint8_t *buf, ufo_t *aircraft)
+{
+  uint8_t *ptr = buf;
+  uint8_t *msg = (uint8_t *) msgOwnershipGeometricAltitude(aircraft);
+  uint16_t fcs = calcFCS(GDL90_OWNGEOMALT_MSG_ID, msg, sizeof(GDL90_Msg_OwnershipGeometricAltitude_t));
+  uint8_t fcs_lsb, fcs_msb;
+
+  fcs_lsb = fcs        & 0xFF;
+  fcs_msb = (fcs >> 8) & 0xFF;
+
+  *ptr++ = 0x7E; /* Start flag */
+  *ptr++ = GDL90_OWNGEOMALT_MSG_ID;
+  ptr = EscapeFilter(ptr, msg, sizeof(GDL90_Msg_OwnershipGeometricAltitude_t));
+  ptr = EscapeFilter(ptr, &fcs_lsb, 1);
+  ptr = EscapeFilter(ptr, &fcs_msb, 1);
   *ptr++ = 0x7E; /* Stop flag */
 
   return(ptr-buf);
@@ -253,6 +286,11 @@ void GDL90_Export()
 
   Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeOwnershipReport(buf, &ThisAircraft);
+  Uni_Udp.write(buf, size);
+  Uni_Udp.endPacket();
+
+  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
+  size = makeGeometricAltitude(buf, &ThisAircraft);
   Uni_Udp.write(buf, size);
   Uni_Udp.endPacket();
 

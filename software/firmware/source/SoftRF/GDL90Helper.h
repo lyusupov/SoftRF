@@ -91,6 +91,17 @@ typedef struct GDL90_Msg_Traffic {
 
 } __attribute__((packed)) GGDL90_Msg_Traffic_t;
 
+#define GDL90_OWNGEOMALT_MSG_ID  11
+
+typedef struct GDL90_Msg_OwnershipGeometricAltitude {
+
+  unsigned int geo_altitude :16;  // MSB first
+
+  unsigned int VFOM         :15;
+  unsigned int vert_warning :1;
+
+} __attribute__((packed)) GDL90_Msg_OwnershipGeometricAltitude_t;
+
 void GDL90_Export(void);
 
 #endif /* GDL90HELPER_H */
