@@ -18,6 +18,7 @@
 
 #include <TimeLib.h>
 #include <WiFiUdp.h>
+#include <nmealib.h>
 
 #include "NMEAHelper.h"
 #include "GNSSHelper.h"
@@ -30,6 +31,7 @@ WiFiClient AirConnectClient;
 #endif
 
 char NMEABuffer[128]; //buffer for NMEA data
+NmeaMallocedBuffer nmealib_buf;
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
@@ -69,6 +71,30 @@ int CalcBearing(double lat1, double lon1, double lat2, double lon2)
   //bearing = fmod((bearing + 360.0), 360);
   //return (int) bearing + 0.5;
   return ((int) bearing + 360) % 360;
+}
+
+void NMEA_setup()
+{
+#if defined(AIRCONNECT_IS_ACTIVE)
+  AirConnectServer.begin();
+  Serial.print(F("AirConnect server has started at port: "));
+  Serial.println(AIR_CONNECT_PORT);
+
+  AirConnectServer.setNoDelay(true);
+#endif
+  memset(&nmealib_buf, 0, sizeof(nmealib_buf));
+}
+
+void NMEA_loop()
+{
+#if defined(AIRCONNECT_IS_ACTIVE)
+  if (AirConnectServer.hasClient()){
+    if (!AirConnectClient || !AirConnectClient.connected()){
+      if(AirConnectClient) AirConnectClient.stop();
+      AirConnectClient = AirConnectServer.available();
+    }
+  }
+#endif
 }
 
 void NMEA_Export()
@@ -118,58 +144,58 @@ void NMEA_Export()
               alarm_level = ALARM_LEVEL_LOW;
             }
 
-            bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+            bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude,
+                                Container[i].latitude, Container[i].longitude);
             alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
             snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
-                    total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING, POWER_STATUS_GOOD, alarm_level,
-                    (bearing < 180 ? bearing : bearing - 360), ALARM_TYPE_AIRCRAFT, alt_diff, (int) distance );
-    
+                    total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING,
+                    POWER_STATUS_GOOD, alarm_level,
+                    (bearing < 180 ? bearing : bearing - 360),
+                    ALARM_TYPE_AIRCRAFT, alt_diff, (int) distance );
+
             //calculate the checksum
             for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
               cs ^= NMEABuffer[n]; 
             }
-    
+
             csum_ptr = NMEABuffer + strlen(NMEABuffer);
-            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X", cs);
-    
-            Serial.println(NMEABuffer);
+            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
+
+            Serial.print(NMEABuffer);
 
             Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
             Uni_Udp.write(NMEABuffer, strlen(NMEABuffer));
-            Uni_Udp.write('\r'); Uni_Udp.write('\n');
             Uni_Udp.endPacket();
-    
+
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
               AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
-              AirConnectClient.write('\r'); AirConnectClient.write('\n');
             }
 #endif
-
-            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X,,,,,%d*",
+            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X!%X,%d,,%d,,%d*",
                     alarm_level,
-                    (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))), alt_diff,
-                    ADDR_TYPE_FLARM, Container[i].addr, AIRCRAFT_TYPE_GLIDER );
-    
+                    (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))),
+                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr, Container[i].addr,
+                    (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
+                    AIRCRAFT_TYPE_GLIDER);
+
             cs = 0; //clear any old checksum
             for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
               cs ^= NMEABuffer[n]; //calculates the checksum
             }
-    
+
             csum_ptr = NMEABuffer + strlen(NMEABuffer);
-            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X", cs);
-    
-            Serial.println(NMEABuffer);
+            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
+
+            Serial.print(NMEABuffer);
 
             Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
             Uni_Udp.write(NMEABuffer, strlen(NMEABuffer));
-            Uni_Udp.write('\r'); Uni_Udp.write('\n');
             Uni_Udp.endPacket();
 
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
               AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
-              AirConnectClient.write('\r'); AirConnectClient.write('\n');
             }
 #endif
           }
@@ -178,25 +204,91 @@ void NMEA_Export()
     }
 }
 
-void NMEA_setup()
+void NMEA_Position()
 {
-#if defined(AIRCONNECT_IS_ACTIVE)
-  AirConnectServer.begin();
-  Serial.print(F("AirConnect server has started at port: "));
-  Serial.println(AIR_CONNECT_PORT);
+  NmeaInfo info;
+  size_t i;
+  IPAddress broadcastIP = WiFi_get_broadcast();
+  struct timeval tv;
 
-  AirConnectServer.setNoDelay(true);
+  if (settings->nmea_g) {
+
+    nmeaInfoClear(&info);
+
+    info.sig = NMEALIB_SIG_SENSITIVE;
+    info.fix = NMEALIB_FIX_3D;
+
+    tv.tv_sec  = ThisAircraft.timestamp;
+    tv.tv_usec = 0;
+
+    nmeaTimeSet(&info.utc, &info.present, &tv);
+
+    info.latitude = ((int) ThisAircraft.latitude) * 100.0;
+    info.latitude += (ThisAircraft.latitude - (int) ThisAircraft.latitude) * 60.0;
+    info.longitude = ((int) ThisAircraft.longitude) * 100.0;
+    info.longitude += (ThisAircraft.longitude - (int) ThisAircraft.longitude) * 60.0;
+    info.speed = ThisAircraft.speed * _GPS_KMPH_PER_KNOT;
+    info.elevation = ThisAircraft.altitude;
+    info.track = ThisAircraft.course;
+
+#if 0
+    info.mtrack = 55;
+    info.magvar = 55;
 #endif
-}
+    info.hdop = 2.3;
+    info.vdop = 1.2;
+    info.pdop = 2.594224354;
 
-void NMEA_loop()
-{
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SIG);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_FIX);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LAT);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LON);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SPEED);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_ELV);
+
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_TRACK);
+#if 0
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_MTRACK);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_MAGVAR);
+#endif
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HDOP);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_VDOP);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_PDOP);
+
+#if 0
+    info.satellites.inUseCount = NMEALIB_MAX_SATELLITES;
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SATINUSECOUNT);
+    for (i = 0; i < NMEALIB_MAX_SATELLITES; i++) {
+      info.satellites.inUse[i] = (unsigned int) (i + 1);
+    }
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SATINUSE);
+
+    info.satellites.inViewCount = NMEALIB_MAX_SATELLITES;
+    for (i = 0; i < NMEALIB_MAX_SATELLITES; i++) {
+      info.satellites.inView[i].prn = (unsigned int) i + 1;
+      info.satellites.inView[i].elevation = (int) ((i * 10) % 90);
+      info.satellites.inView[i].azimuth = (unsigned int) (i + 1);
+      info.satellites.inView[i].snr = 99 - (unsigned int) i;
+    }
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SATINVIEWCOUNT);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SATINVIEW);
+#endif
+
+    size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
+      (NMEALIB_SENTENCE_GPGGA | NMEALIB_SENTENCE_GPGSA | NMEALIB_SENTENCE_GPRMC));
+
+    if (gen_sz) {
+      Serial.write((char *) nmealib_buf.buffer, gen_sz);
+
+      Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
+      Uni_Udp.write((char *)  nmealib_buf.buffer, gen_sz);
+      Uni_Udp.endPacket();
+
 #if defined(AIRCONNECT_IS_ACTIVE)
-  if (AirConnectServer.hasClient()){
-    if (!AirConnectClient || !AirConnectClient.connected()){
-      if(AirConnectClient) AirConnectClient.stop();
-      AirConnectClient = AirConnectServer.available();
+      if (AirConnectClient && AirConnectClient.connected()){
+        AirConnectClient.write((char *)  nmealib_buf.buffer, gen_sz);
+      }
+#endif
     }
   }
-#endif
 }

@@ -326,6 +326,7 @@ void rx_test_loop()
   }
 
   if (isTimeToExport()) {
+    NMEA_Position();
     NMEA_Export();
     GDL90_Export();
     ExportTimeMarker = millis();
