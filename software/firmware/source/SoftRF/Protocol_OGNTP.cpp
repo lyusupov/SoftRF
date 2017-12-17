@@ -29,23 +29,23 @@
 #include "RFHelper.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {
-  .type           = RF_PROTOCOL_OGNTP,
+  .type            = RF_PROTOCOL_OGNTP,
   .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = OGNTP_PREAMBLE_TYPE,
-  .preamble_size  = OGNTP_PREAMBLE_SIZE,
-  .syncword       = OGNTP_SYNCWORD,
-  .syncword_size  = OGNTP_SYNCWORD_SIZE,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = RF_PAYLOAD_INVERTED,
-  .payload_size   = OGNTP_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = OGNTP_CRC_TYPE,
-  .crc_size       = OGNTP_CRC_SIZE,
+  .preamble_type   = OGNTP_PREAMBLE_TYPE,
+  .preamble_size   = OGNTP_PREAMBLE_SIZE,
+  .syncword        = OGNTP_SYNCWORD,
+  .syncword_size   = OGNTP_SYNCWORD_SIZE,
+  .net_id          = 0x0000, /* not in use */
+  .payload_type    = RF_PAYLOAD_INVERTED,
+  .payload_size    = OGNTP_PAYLOAD_SIZE,
+  .payload_offset  = 0,
+  .crc_type        = OGNTP_CRC_TYPE,
+  .crc_size        = OGNTP_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_100KBPS,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
-  .whitening      = RF_WHITENING_MANCHESTER,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+  .bitrate         = RF_BITRATE_100KBPS,
+  .deviation       = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening       = RF_WHITENING_MANCHESTER,
+  .bandwidth       = RF_RX_BANDWIDTH_SS_125KHZ
 };
 
 static GPS_Position pos;
@@ -77,6 +77,8 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   }
 
   ogn_rx_pkt.Packet.Dewhiten();
+
+  fop->protocol = RF_PROTOCOL_OGNTP;
 
   fop->addr = ogn_rx_pkt.Packet.Header.Address;
   fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;

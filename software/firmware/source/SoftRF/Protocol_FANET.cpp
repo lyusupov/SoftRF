@@ -203,6 +203,8 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   if (pkt->ext_header == 0 && pkt->type == 1 ) {  /* Tracking  */
 
+    fop->protocol = RF_PROTOCOL_FANET;
+
     fop->addr = (pkt->vendor << 16) | pkt->address;
 
 #if defined(FANET_DEPRECATED)

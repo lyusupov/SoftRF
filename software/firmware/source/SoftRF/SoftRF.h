@@ -71,6 +71,8 @@ typedef struct UFO {
     String    raw;
     time_t    timestamp;
 
+    uint8_t   protocol;
+
     uint32_t  addr;
     uint8_t   addr_type;
     float     latitude;

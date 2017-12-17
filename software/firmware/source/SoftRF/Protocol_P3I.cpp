@@ -68,6 +68,8 @@ bool p3i_decode(void *p3i_pkt, ufo_t *this_aircraft, ufo_t *fop) {
   if (cs)
     return(false);
 
+  fop->protocol = RF_PROTOCOL_P3I;
+
   fop->addr = pkt->icao;
   fop->latitude = pkt->latitude;
   fop->longitude = pkt->longitude;

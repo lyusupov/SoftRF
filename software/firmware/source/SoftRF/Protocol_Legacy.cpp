@@ -30,23 +30,23 @@
 #include "Protocol_Legacy.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
-  .type           = RF_PROTOCOL_LEGACY,
+  .type            = RF_PROTOCOL_LEGACY,
   .modulation_type = RF_MODULATION_TYPE_2FSK,
-  .preamble_type  = LEGACY_PREAMBLE_TYPE,
-  .preamble_size  = LEGACY_PREAMBLE_SIZE,
-  .syncword       = LEGACY_SYNCWORD,
-  .syncword_size  = LEGACY_SYNCWORD_SIZE,
-  .net_id         = 0x0000, /* not in use */
-  .payload_type   = RF_PAYLOAD_INVERTED,
-  .payload_size   = LEGACY_PAYLOAD_SIZE,
-  .payload_offset = 0,
-  .crc_type       = LEGACY_CRC_TYPE,
-  .crc_size       = LEGACY_CRC_SIZE,
+  .preamble_type   = LEGACY_PREAMBLE_TYPE,
+  .preamble_size   = LEGACY_PREAMBLE_SIZE,
+  .syncword        = LEGACY_SYNCWORD,
+  .syncword_size   = LEGACY_SYNCWORD_SIZE,
+  .net_id          = 0x0000, /* not in use */
+  .payload_type    = RF_PAYLOAD_INVERTED,
+  .payload_size    = LEGACY_PAYLOAD_SIZE,
+  .payload_offset  = 0,
+  .crc_type        = LEGACY_CRC_TYPE,
+  .crc_size        = LEGACY_CRC_SIZE,
 
-  .bitrate        = RF_BITRATE_100KBPS,
-  .deviation      = RF_FREQUENCY_DEVIATION_50KHZ,
-  .whitening      = RF_WHITENING_MANCHESTER,
-  .bandwidth      = RF_RX_BANDWIDTH_SS_125KHZ
+  .bitrate         = RF_BITRATE_100KBPS,
+  .deviation       = RF_FREQUENCY_DEVIATION_50KHZ,
+  .whitening       = RF_WHITENING_MANCHESTER,
+  .bandwidth       = RF_RX_BANDWIDTH_SS_125KHZ
 };
 
 /* http://en.wikipedia.org/wiki/XXTEA */
@@ -158,6 +158,8 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     int32_t vs = pkt->vs * (1 << pkt->vsmult);
 
     int16_t alt = pkt->alt /* - ref_alt */ ;
+
+    fop->protocol = RF_PROTOCOL_LEGACY;
 
     fop->addr = pkt->addr;
     fop->addr_type = pkt->addr_type;
