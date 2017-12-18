@@ -119,7 +119,8 @@ void setup()
     GNSS_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_GLIDER;  
   }
-  
+  ThisAircraft.protocol = settings->rf_protocol;
+
   LED_setup();
 
   WiFi_setup();

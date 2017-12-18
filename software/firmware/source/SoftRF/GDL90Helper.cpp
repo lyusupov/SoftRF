@@ -22,6 +22,7 @@
 #include <TimeLib.h>
 #include <WiFiUdp.h>
 #include <lib_crc.h>
+#include <protocol.h>
 
 #include "GDL90Helper.h"
 #include "GNSSHelper.h"
@@ -37,6 +38,37 @@ static GDL90_Msg_OwnershipGeometricAltitude_t GeometricAltitude;
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
 extern char UDPpacketBuffer[256];
+
+const char *GDL90_CallSign_Prefix[] = {
+  [RF_PROTOCOL_LEGACY]    = "FL",
+  [RF_PROTOCOL_OGNTP]     = "OG",
+  [RF_PROTOCOL_P3I]       = "PA",
+  [RF_PROTOCOL_ADSB_1090] = "AD",
+  [RF_PROTOCOL_ADSB_UAT]  = "UA",
+  [RF_PROTOCOL_FANET]     = "FA"
+};
+
+const uint8_t aircraft_type_to_gdl90[] PROGMEM = {
+	GDL90_EMITTER_CATEGORY_NONE,
+	GDL90_EMITTER_CATEGORY_GLIDER,
+	GDL90_EMITTER_CATEGORY_LIGHT,
+	GDL90_EMITTER_CATEGORY_ROTORCRAFT,
+	GDL90_EMITTER_CATEGORY_SKYDIVER,
+	GDL90_EMITTER_CATEGORY_LIGHT,
+	GDL90_EMITTER_CATEGORY_ULTRALIGHT,
+	GDL90_EMITTER_CATEGORY_ULTRALIGHT,
+	GDL90_EMITTER_CATEGORY_LIGHT,
+	GDL90_EMITTER_CATEGORY_SMALL,
+	GDL90_EMITTER_CATEGORY_MANEUVERABLE,
+	GDL90_EMITTER_CATEGORY_BALLOON,
+	GDL90_EMITTER_CATEGORY_BALLOON,
+	GDL90_EMITTER_CATEGORY_UAV,
+	GDL90_EMITTER_CATEGORY_UNASSIGNED1,
+	GDL90_EMITTER_CATEGORY_NONE
+};
+
+#define AT_TO_GDL90(x)  (x > 15 ? \
+   GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[x]))
 
 /* convert a signed latitude to 2s complement ready for 24-bit packing */
 uint32_t makeLatitude(float latitude)
@@ -161,8 +193,8 @@ void *msgType10and20(ufo_t *aircraft)
   uint8_t misc = 9;
   //altitude = 0x678;
   
-  uint16_t vert_vel = 0 /* 0xdef */;
-  uint16_t horiz_vel = 0 /* 0x123 */;
+  uint16_t horiz_vel = (uint16_t) aircraft->speed /* 0x123 */ ; /*  in knots */
+  uint16_t vert_vel = 0 /* 0x456 */;
 
   Traffic.alert_status  = 0 /* 0x1 */;
   Traffic.addr_type     = 0 /* 0x2 */;
@@ -184,12 +216,28 @@ void *msgType10and20(ufo_t *aircraft)
    * workaround against "implementation dependant"
    * XTENSA's GCC bitmap layout in structures
    */
-  Traffic.vert_vel      = ((vert_vel >> 4) & 0x0FF) | (horiz_vel & 0xF00);
-  Traffic.horiz_vel     = ((horiz_vel & 0xFF) << 4) | (vert_vel & 0x00F);
+
+  Traffic.horiz_vel = (((vert_vel >> 8) & 0xF) << 8)| (((horiz_vel >> 8) & 0xF) << 4) | ((horiz_vel >> 4) & 0xF) ;
+  Traffic.vert_vel =  (((vert_vel >> 4) & 0xF) << 8) | ((vert_vel & 0xF) << 4) | (horiz_vel & 0xF) ;
 
   Traffic.track         = (trackHeading & 0xFF) /* 0x03 */;
-  Traffic.emit_cat      = 1 /* 0x4 */;
-  strcpy((char *)Traffic.callsign, "FLARM");
+  Traffic.emit_cat      = AT_TO_GDL90(aircraft->aircraft_type) /* 0x4 */;
+
+  memcpy((char *)Traffic.callsign, GDL90_CallSign_Prefix[aircraft->protocol],
+    strlen(GDL90_CallSign_Prefix[aircraft->protocol]));
+
+  String str = "";
+
+#define ADD_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
+
+  ADD_HEX_STR(str, (aircraft->addr >> 16) & 0xFF);
+  ADD_HEX_STR(str, (aircraft->addr >>  8) & 0xFF);
+  ADD_HEX_STR(str, (aircraft->addr      ) & 0xFF);
+
+  str.toUpperCase();
+  memcpy((char *)Traffic.callsign + strlen(GDL90_CallSign_Prefix[aircraft->protocol]),
+    str.c_str(), str.length());
+
   Traffic.emerg_code    = 0 /* 0x5 */;
 //Traffic.reserved      = 0;
 
@@ -277,22 +325,15 @@ void GDL90_Export()
   float distance;
   time_t this_moment = now();
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
-  IPAddress broadcastIP = WiFi_get_broadcast();
 
-  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeHeartbeat(buf);
-  Uni_Udp.write(buf, size);
-  Uni_Udp.endPacket();
+  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
-  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeOwnershipReport(buf, &ThisAircraft);
-  Uni_Udp.write(buf, size);
-  Uni_Udp.endPacket();
+  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
-  Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
   size = makeGeometricAltitude(buf, &ThisAircraft);
-  Uni_Udp.write(buf, size);
-  Uni_Udp.endPacket();
+  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
     if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
@@ -300,10 +341,8 @@ void GDL90_Export()
       distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
 
       if (distance < EXPORT_DISTANCE_FAR) {
-        Uni_Udp.beginPacket(broadcastIP, GDL90_DST_PORT);
         size = makeTrafficReport(buf, &Container[i]);
-        Uni_Udp.write(buf, size);
-        Uni_Udp.endPacket();
+        WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
       }
     }
   }

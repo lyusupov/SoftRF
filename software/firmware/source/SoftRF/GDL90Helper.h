@@ -21,6 +21,26 @@
 
 #include "SoftRF.h"
 
+enum
+{
+	GDL90_EMITTER_CATEGORY_NONE,
+	GDL90_EMITTER_CATEGORY_LIGHT,
+	GDL90_EMITTER_CATEGORY_SMALL,
+	GDL90_EMITTER_CATEGORY_LARGE,
+	GDL90_EMITTER_CATEGORY_HVLARGE,
+	GDL90_EMITTER_CATEGORY_HEAVY,
+	GDL90_EMITTER_CATEGORY_MANEUVERABLE,
+	GDL90_EMITTER_CATEGORY_ROTORCRAFT,
+	GDL90_EMITTER_CATEGORY_UNASSIGNED1,
+	GDL90_EMITTER_CATEGORY_GLIDER,
+	GDL90_EMITTER_CATEGORY_BALLOON,
+	GDL90_EMITTER_CATEGORY_SKYDIVER,
+	GDL90_EMITTER_CATEGORY_ULTRALIGHT,
+	GDL90_EMITTER_CATEGORY_UNASSIGNED2,
+	GDL90_EMITTER_CATEGORY_UAV,
+	GDL90_EMITTER_CATEGORY_SPACESHIP
+};
+
 typedef struct GDL90_Message {
   uint8_t   flag_start;
   uint8_t   message_id;
@@ -78,8 +98,8 @@ typedef struct GDL90_Msg_Traffic {
   unsigned int nacp:4;
   unsigned int nic:4;
 
-  unsigned int vert_vel:12; /* in knots */
-  unsigned int horiz_vel:12;  /* x 64 fpm */
+  unsigned int horiz_vel:12; /* in knots */
+  unsigned int vert_vel:12;  /* x 64 fpm */
 
   unsigned int track:8;
   unsigned int emit_cat:8;
