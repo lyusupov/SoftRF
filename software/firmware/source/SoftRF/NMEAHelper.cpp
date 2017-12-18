@@ -36,6 +36,15 @@ NmeaMallocedBuffer nmealib_buf;
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
 extern ufo_t ThisAircraft;
 
+const char *NMEA_CallSign_Prefix[] = {
+  [RF_PROTOCOL_LEGACY]    = "FLR",
+  [RF_PROTOCOL_OGNTP]     = "OGN",
+  [RF_PROTOCOL_P3I]       = "PAW",
+  [RF_PROTOCOL_ADSB_1090] = "ADS",
+  [RF_PROTOCOL_ADSB_UAT]  = "UAT",
+  [RF_PROTOCOL_FANET]     = "FAN"
+};
+
 //convert degrees to radians
 double dtor(double fdegrees)
 {
@@ -105,7 +114,6 @@ void NMEA_Export()
     int total_objects = 0;
     int alarm_level = ALARM_LEVEL_NONE;
     time_t this_moment = now();
-    IPAddress broadcastIP = WiFi_get_broadcast();
 
     /* account for all detected objects at first */
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -132,7 +140,10 @@ void NMEA_Export()
         Serial.println(fo.no_track);
 #endif
         if (settings->nmea_l) {
-          distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+          distance = gnss.distanceBetween(ThisAircraft.latitude,
+            ThisAircraft.longitude,
+            Container[i].latitude,
+            Container[i].longitude);
 
           if (distance < EXPORT_DISTANCE_FAR) {
 
@@ -163,19 +174,18 @@ void NMEA_Export()
 
             Serial.print(NMEABuffer);
 
-            Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-            Uni_Udp.write(NMEABuffer, strlen(NMEABuffer));
-            Uni_Udp.endPacket();
+            WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
 
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
               AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
             }
 #endif
-            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X!%X,%d,,%d,,%d*",
+            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X!%s_%X,%d,,%d,,%d*",
                     alarm_level,
                     (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))),
-                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr, Container[i].addr,
+                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
+                    NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
                     (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
                     AIRCRAFT_TYPE_GLIDER);
 
@@ -189,9 +199,7 @@ void NMEA_Export()
 
             Serial.print(NMEABuffer);
 
-            Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-            Uni_Udp.write(NMEABuffer, strlen(NMEABuffer));
-            Uni_Udp.endPacket();
+            WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
 
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
@@ -280,13 +288,11 @@ void NMEA_Position()
     if (gen_sz) {
       Serial.write((char *) nmealib_buf.buffer, gen_sz);
 
-      Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-      Uni_Udp.write((char *)  nmealib_buf.buffer, gen_sz);
-      Uni_Udp.endPacket();
+      WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
 
 #if defined(AIRCONNECT_IS_ACTIVE)
       if (AirConnectClient && AirConnectClient.connected()){
-        AirConnectClient.write((char *)  nmealib_buf.buffer, gen_sz);
+        AirConnectClient.write((char *) nmealib_buf.buffer, gen_sz);
       }
 #endif
     }
