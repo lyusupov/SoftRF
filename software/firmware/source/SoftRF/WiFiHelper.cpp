@@ -289,3 +289,36 @@ IPAddress WiFi_get_broadcast()
 //  Serial.println(broadcastIp.toString());
   return broadcastIp;
 }
+
+void WiFi_transmit_UDP(int port, byte *buf, size_t size)
+{
+  IPAddress ClientIP;
+
+/*
+ * Unicast UDP transfer gives much better reception quality
+ * for Android clients rather than broadcast one.
+ * But it is still disabled due to detected instability of
+ * NodeMCU & unicast UDPs which I have not not resolved yet.
+ */
+  if (true) {
+//  if (WiFi.getMode() == WIFI_STA) {
+    ClientIP = WiFi_get_broadcast();
+
+    Uni_Udp.beginPacket(ClientIP, port);
+    Uni_Udp.write(buf, size);
+    Uni_Udp.endPacket();
+
+  } else {
+    struct station_info *stat_info = wifi_softap_get_station_info();
+
+    while (stat_info != NULL) {
+      ClientIP = stat_info->ip.addr;
+
+      Uni_Udp.beginPacket(ClientIP, port);
+      Uni_Udp.write(buf, size);
+      Uni_Udp.endPacket();
+
+      stat_info = STAILQ_NEXT(stat_info, next);
+    }
+  }
+}

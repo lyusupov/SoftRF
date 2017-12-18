@@ -29,6 +29,7 @@
 void WiFi_setup(void);
 void WiFi_loop(void);
 IPAddress WiFi_get_broadcast(void);
+void WiFi_transmit_UDP(int, byte *, size_t);
 
 extern String host_name;
 extern WiFiUDP Uni_Udp;
