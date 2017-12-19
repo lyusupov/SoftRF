@@ -51,8 +51,8 @@ from GDL90 import Encoder
 from math import isnan
 
 #DEF_SEND_ADDR="255.255.255.255"
-DEF_SEND_ADDR="192.168.4.255"
-DEF_SEND_PORT=43211
+DEF_SEND_ADDR="192.168.1.255"
+DEF_SEND_PORT=4000
 
 #Snippet for getting the default gateway on Linux
 #No dependencies beyond Python stdlib
@@ -71,8 +71,8 @@ def get_default_gateway_linux():
 
 class legacy_emulator:
 
-    def __init__(self, bridge_host='192.168.4.255', bridge_port=12390, \
-      xcsoar_host='localhost' , xcsoar_port=4353):
+    def __init__(self, bridge_host='192.168.1.255', bridge_port=12390, \
+      xcsoar_host='localhost' , xcsoar_port=10110):
       print 'legacy_emulator: bridge_host =' , bridge_host , ', bridge_port =' , bridge_port , \
         ', xcsoar_host =' , xcsoar_host, ', xcsoar_port =' , xcsoar_port
       if bridge_host:
@@ -83,7 +83,7 @@ class legacy_emulator:
         self.src_host = gethostbyname(broadip)
       self.src_port = bridge_port
       #self.dst_host = gethostbyname(get_default_gateway_linux())
-      self.dst_host = gethostbyname('192.168.4.1')
+      self.dst_host = gethostbyname('192.168.1.1')
       self.dst_port = bridge_port - 1
       self.xcsoar_host = gethostbyname(xcsoar_host)
       self.xcsoar_port = xcsoar_port
