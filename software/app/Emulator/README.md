@@ -28,7 +28,7 @@ Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmitt
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Emulator-files.jpg)
 
-4) configure your XCSoar or LK8000 data source onto UDP port number 4353.   
+4) configure your XCSoar or LK8000 data source onto UDP port number 10110.   
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime-XCSoar-Settings.jpg)
 
@@ -37,7 +37,7 @@ Then it gives the outbound packet via Wi-Fi to SoftRF Prime for actual transmitt
 1) set the prerequisites above up ;
 2) enable your Tablet/Cellphone GNSS ;
 3) connect your Tablet/Cellphone to SoftRF Wi-Fi Access Point. <br>
-   Default SSID: SoftRF . Default password: 12345678 . URL: http://192.168.4.1/ ;
+   Default SSID: SoftRF-XXXXXX . Default password: 12345678 . URL: http://192.168.1.1/ ;
 4) put your "Prime" into "Bridge" mode ;
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/firmware-settings-bridge.jpg)
