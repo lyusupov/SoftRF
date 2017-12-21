@@ -35,8 +35,8 @@ typedef struct Settings {
     uint8_t  nmea_l;
     uint8_t  pointer;
     uint8_t  rf_protocol;
-    uint8_t  resvd2;
-    uint8_t  resvd3;
+    uint8_t  gdl90;
+    uint8_t  d1090;
     uint8_t  resvd4;
     uint8_t  resvd5;
     uint8_t  resvd6;
