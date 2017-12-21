@@ -28,25 +28,6 @@
 #include "BatteryHelper.h"
 
 ESP8266WebServer server ( 80 );
-const char* serverIndex = "\
-<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>Firmware update</title>\
-  </head>\
-<body>\
-<body>\
- <h1 align=center>Firmware update</h1>\
- <hr>\
- <table width=100%%>\
-  <tr>\
-    <td align=left>\
-    <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>\
-    </td>\
-  </tr>\
- </table>\
-</body>\
-</html>";
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -81,11 +62,13 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char temp[2600];
+  char *temp = (char *) malloc(3000);
+  if (temp == NULL) {
+    return;
+  }
 
-  snprintf ( temp, 2600,
-
-"<html>\
+  snprintf_P ( temp, 3000,
+    PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
 <title>Settings</title>\
@@ -179,6 +162,20 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>GDL90</th>\
+<td align=right>\
+<input type='radio' name='gdl90' value='0' %s>Off\
+<input type='radio' name='gdl90' value='1' %s>On\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Dump1090</th>\
+<td align=right>\
+<input type='radio' name='d1090' value='0' %s>Off\
+<input type='radio' name='d1090' value='1' %s>On\
+</td>\
+</tr>\
+<tr>\
 <tr>\
 <th align=left>LED ring:</th>\
 </tr>\
@@ -194,7 +191,7 @@ void handleSettings() {
 <p align=center><INPUT type='submit' value='Save and restart'><p>\
 </form>\
 </body>\
-</html>",
+</html>"),
   (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->mode == SOFTRF_MODE_TX_TEST ? "selected" : ""), SOFTRF_MODE_TX_TEST,
   (settings->mode == SOFTRF_MODE_RX_TEST ? "selected" : ""), SOFTRF_MODE_RX_TEST,
@@ -221,6 +218,8 @@ void handleSettings() {
   (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
   (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),
   (settings->nmea_l == 0 ? "checked" : "") , (settings->nmea_l == 1 ? "checked" : ""),
+  (settings->gdl90 == 0 ? "checked" : "") , (settings->gdl90 == 1 ? "checked" : ""),
+  (settings->d1090 == 0 ? "checked" : "") , (settings->d1090 == 1 ? "checked" : ""),
   (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP
   );
@@ -228,6 +227,7 @@ void handleSettings() {
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");
   server.send ( 200, "text/html", temp );
+  free(temp);
 }
 
 void handleRoot() {
@@ -250,9 +250,8 @@ void handleRoot() {
   dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf ( Root_temp, 2048,
-
-"<html>\
+  snprintf_P ( Root_temp, 2048,
+    PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
     <title>SoftRF status</title>\
@@ -284,7 +283,7 @@ void handleRoot() {
   </tr>\
  </table>\
 </body>\
-</html>",
+</html>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
@@ -319,12 +318,16 @@ void handleInput() {
       settings->nmea_p = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_l")) {
       settings->nmea_l = server.arg(i).toInt();
+    } else if (server.argName(i).equals("gdl90")) {
+      settings->gdl90 = server.arg(i).toInt();
+    } else if (server.argName(i).equals("d1090")) {
+      settings->d1090 = server.arg(i).toInt();
     } else if (server.argName(i).equals("pointer")) {
       settings->pointer = server.arg(i).toInt();
     }
   }
-  snprintf ( temp, 1024,
-"<html>\
+  snprintf_P ( temp, 1024,
+PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'/>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -341,14 +344,17 @@ void handleInput() {
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
+<tr><th align=left>GDL90</th><td align=right>%s</td></tr>\
+<tr><th align=left>DUMP1090</th><td align=right>%s</td></tr>\
 <tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1>\<p>\
 </body>\
-</html>",
+</html>"),
   settings->mode, settings->rf_protocol, settings->band, settings->txpower, settings->volume,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p), BOOL_STR(settings->nmea_l),
+  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090),
   settings->pointer
   );
   server.send ( 200, "text/html", temp );
@@ -377,7 +383,6 @@ void handleNotFound() {
 
 void Web_setup()
 {
-
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );
   
@@ -388,7 +393,28 @@ void Web_setup()
   server.on("/firmware", HTTP_GET, [](){
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(200, "text/html", serverIndex);
+    server.send_P(200,
+      PSTR("text/html"),
+      PSTR("\
+<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>Firmware update</title>\
+  </head>\
+<body>\
+<body>\
+ <h1 align=center>Firmware update</h1>\
+ <hr>\
+ <table width=100%%>\
+  <tr>\
+    <td align=left>\
+    <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>\
+    </td>\
+  </tr>\
+ </table>\
+</body>\
+</html>")
+    );
   });
   server.onNotFound ( handleNotFound );
 
@@ -402,7 +428,7 @@ void Web_setup()
     if(upload.status == UPLOAD_FILE_START){
       Serial.setDebugOutput(true);
       WiFiUDP::stopAll();
-      Serial.printf("Update: %s\n", upload.filename.c_str());
+      Serial.printf_P(PSTR("Update: %s\n"), upload.filename.c_str());
       uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
       if(!Update.begin(maxSketchSpace)){//start with max available size
         Update.printError(Serial);
