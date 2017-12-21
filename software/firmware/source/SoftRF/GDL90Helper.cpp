@@ -26,10 +26,12 @@
 
 #include "GDL90Helper.h"
 #include "GNSSHelper.h"
+#include "EEPROMHelper.h"
 #include "SoftRF.h"
 #include "WiFiHelper.h"
 
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
+#define ADDR_TO_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
@@ -66,9 +68,6 @@ const uint8_t aircraft_type_to_gdl90[] PROGMEM = {
 	GDL90_EMITTER_CATEGORY_UNASSIGNED1,
 	GDL90_EMITTER_CATEGORY_NONE
 };
-
-#define AT_TO_GDL90(x)  (x > 15 ? \
-   GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[x]))
 
 /* convert a signed latitude to 2s complement ready for 24-bit packing */
 uint32_t makeLatitude(float latitude)
@@ -228,11 +227,9 @@ void *msgType10and20(ufo_t *aircraft)
 
   String str = "";
 
-#define ADD_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
-
-  ADD_HEX_STR(str, (aircraft->addr >> 16) & 0xFF);
-  ADD_HEX_STR(str, (aircraft->addr >>  8) & 0xFF);
-  ADD_HEX_STR(str, (aircraft->addr      ) & 0xFF);
+  ADDR_TO_HEX_STR(str, (aircraft->addr >> 16) & 0xFF);
+  ADDR_TO_HEX_STR(str, (aircraft->addr >>  8) & 0xFF);
+  ADDR_TO_HEX_STR(str, (aircraft->addr      ) & 0xFF);
 
   str.toUpperCase();
   memcpy((char *)Traffic.callsign + strlen(GDL90_CallSign_Prefix[aircraft->protocol]),
@@ -326,23 +323,25 @@ void GDL90_Export()
   time_t this_moment = now();
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
 
-  size = makeHeartbeat(buf);
-  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+  if (settings->gdl90) {
+    size = makeHeartbeat(buf);
+    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
-  size = makeOwnershipReport(buf, &ThisAircraft);
-  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    size = makeOwnershipReport(buf, &ThisAircraft);
+    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
-  size = makeGeometricAltitude(buf, &ThisAircraft);
-  WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    size = makeGeometricAltitude(buf, &ThisAircraft);
+    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
-  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-      distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+        distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
 
-      if (distance < EXPORT_DISTANCE_FAR) {
-        size = makeTrafficReport(buf, &Container[i]);
-        WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+        if (distance < EXPORT_DISTANCE_FAR) {
+          size = makeTrafficReport(buf, &Container[i]);
+          WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+        }
       }
     }
   }
