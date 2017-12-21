@@ -63,6 +63,7 @@ extern "C" {
 #include "MAVLinkHelper.h"
 #include "GDL90Helper.h"
 #include "NMEAHelper.h"
+#include "D1090Helper.h"
 
 #include "SoftRF.h"
 
@@ -223,6 +224,7 @@ void normal_loop()
   if (isTimeToExport() && isValidFix()) {
     NMEA_Export();
     GDL90_Export();
+    D1090_Export();
     ExportTimeMarker = millis();
   }
 
@@ -330,6 +332,7 @@ void rx_test_loop()
     NMEA_Position();
     NMEA_Export();
     GDL90_Export();
+    D1090_Export();
     ExportTimeMarker = millis();
   }
 
