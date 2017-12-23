@@ -46,13 +46,14 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
     * Applications
         * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
-* Extras ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
+* Extras
+    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * Protocols
-        * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
-        * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
-        * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility)
-    * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
+        * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 # Highlights
 
