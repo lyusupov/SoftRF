@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015 Matthijs Kooijman
- * Copyright (c) 2017 Linar Yusupov
+ * Copyright (c) 2017-2018 Linar Yusupov
  *
  * Permission is hereby granted, free of charge, to anyone
  * obtaining a copy of this document and accompanying files,
