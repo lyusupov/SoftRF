@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include <protocol.h>
-#include <Time.h>
+#include <TimeLib.h>
 
 #include "SoftRF.h"
 #include "Protocol_OGNTP.h"

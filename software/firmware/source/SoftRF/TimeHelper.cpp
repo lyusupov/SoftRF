@@ -18,7 +18,7 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <Time.h>
+#include <TimeLib.h>
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
