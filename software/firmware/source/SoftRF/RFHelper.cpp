@@ -47,6 +47,7 @@ size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 rfchip_ops_t nrf905_ops = {
+  "NRF905",
   nrf905_probe,
   nrf905_setup,
   nrf905_channel,
@@ -55,6 +56,7 @@ rfchip_ops_t nrf905_ops = {
 };
 
 rfchip_ops_t sx1276_ops = {
+  "RFM95W",
   sx1276_probe,
   sx1276_setup,
   sx1276_channel,
@@ -215,10 +217,16 @@ void nrf905_setup()
   //nRF905_setTransmitPower(NRF905_PWR_10);
   //nRF905_setTransmitPower(NRF905_PWR_n10);
 
-  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+    nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_10);
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
     nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_n10);
-  } else {
-    nRF905_setTransmitPower((nRF905_pwr_t)settings->txpower);
+    break;
   }
 
   nRF905_setCRC(NRF905_CRC_16);
@@ -270,7 +278,7 @@ void nrf905_transmit()
 {
   long RandomValue;
 
-  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+  if (settings->txpower == RF_TX_POWER_OFF ) {
     return;
   }
   
@@ -404,9 +412,22 @@ void sx1276_setup()
     break;
   }
 
-  // Maximum TX power
-//  LMIC.txpow = 27;
-  LMIC.txpow = 15;
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+    if (RF_FreqPlan.Plan == RF_BAND_US || RF_FreqPlan.Plan == RF_BAND_UK) {
+      LMIC.txpow = 17; /* 17 dBm for NA and PilotAware/UK */
+    } else {
+      /* EU and other regions */
+      LMIC.txpow = 14; /* 14 dBm */
+    }
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    LMIC.txpow = 2; /* 2 dBm is minimum for RFM95W on PA_BOOST pin */
+    break;
+  }
 
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
@@ -469,7 +490,7 @@ void sx1276_transmit()
 {
   long RandomValue;
 
-  if (settings->txpower == NRF905_TX_PWR_OFF ) {
+  if (settings->txpower == RF_TX_POWER_OFF ) {
     return;
   }
   

@@ -46,7 +46,15 @@ enum
 	RF_BAND_UK 	 /* 869.52 MHz band */
 };
 
+enum
+{
+  RF_TX_POWER_FULL,
+  RF_TX_POWER_LOW,
+  RF_TX_POWER_OFF
+};
+
 typedef struct rfchip_ops_struct {
+  const char name[8];
   bool (*probe)();
   void (*setup)();
   void (*channel)(uint8_t);
@@ -82,6 +90,7 @@ extern unsigned long TxTimeMarker;
 extern byte TxPkt[MAX_PKT_SIZE];
 extern ufo_t ThisAircraft;
 
+extern rfchip_ops_t *rf_chip;
 extern size_t (*protocol_encode)(void *, ufo_t *);
 extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
