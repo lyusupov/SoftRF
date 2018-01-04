@@ -37,7 +37,7 @@ typedef struct Settings {
     uint8_t  rf_protocol;
     uint8_t  gdl90;
     uint8_t  d1090;
-    uint8_t  resvd4;
+    uint8_t  aircraft_type;
     uint8_t  resvd5;
     uint8_t  resvd6;
     uint8_t  resvd7;
