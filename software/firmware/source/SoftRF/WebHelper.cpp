@@ -22,10 +22,10 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-#include <nRF905.h>
 
 #include "WebHelper.h"
 #include "BatteryHelper.h"
+#include "RFHelper.h"
 
 ESP8266WebServer server ( 80 );
 
@@ -62,12 +62,12 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char *temp = (char *) malloc(3000);
+  char *temp = (char *) malloc(3200);
   if (temp == NULL) {
     return;
   }
 
-  snprintf_P ( temp, 3000,
+  snprintf_P ( temp, 3200,
     PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -101,7 +101,7 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
-<th align=left>Band</th>\
+<th align=left>Region</th>\
 <td align=right>\
 <select name='band'>\
 <option %s value='%d'>AUTO</option>\
@@ -116,14 +116,26 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
-<th align=left>Tx Power (mW)</th>\
+<th align=left>Aircraft type</th>\
+<td align=right>\
+<select name='acft_type'>\
+<option %s value='%d'>Glider</option>\
+<option %s value='%d'>Towplane</option>\
+<option %s value='%d'>Powered</option>\
+<option %s value='%d'>Helicopter</option>\
+<option %s value='%d'>UAV</option>\
+<option %s value='%d'>Hangglider</option>\
+<option %s value='%d'>Paraglider</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Tx Power</th>\
 <td align=right>\
 <select name='txpower'>\
-<option %s value='%d'>10</option>\
-<option %s value='%d'>6</option>\
-<option %s value='%d'>0.6</option>\
-<option %s value='%d'>0.1</option>\
-<option %s value='%d'>OFF</option>\
+<option %s value='%d'>Full</option>\
+<option %s value='%d'>Low</option>\
+<option %s value='%d'>Off</option>\
 </select>\
 </td>\
 </tr>\
@@ -209,11 +221,16 @@ void handleSettings() {
   (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
   (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
   (settings->band == RF_BAND_AU ? "selected" : ""),  RF_BAND_AU,
-  (settings->txpower == NRF905_PWR_10 ? "selected" : ""),  NRF905_PWR_10,
-  (settings->txpower == NRF905_PWR_6 ? "selected" : ""),  NRF905_PWR_6,
-  (settings->txpower == NRF905_PWR_n2 ? "selected" : ""),  NRF905_PWR_n2,
-  (settings->txpower == NRF905_PWR_n10 ? "selected" : ""),  NRF905_PWR_n10,
-  (settings->txpower == NRF905_TX_PWR_OFF ? "selected" : ""),  NRF905_TX_PWR_OFF,
+  (settings->aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
+  (settings->aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
+  (settings->aircraft_type == AIRCRAFT_TYPE_HELICOPTER ? "selected" : ""),  AIRCRAFT_TYPE_HELICOPTER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_UAV ? "selected" : ""),  AIRCRAFT_TYPE_UAV,
+  (settings->aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
+  (settings->txpower == RF_TX_POWER_FULL ? "selected" : ""),  RF_TX_POWER_FULL,
+  (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
+  (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
   (settings->volume == 1 ? "selected" : "") , (settings->volume == 2 ? "selected" : ""), (settings->volume == 3 ? "selected" : ""),
   (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
   (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),
@@ -261,6 +278,7 @@ void handleRoot() {
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Radio</th><td align=right>%s</td></tr>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
   <tr><th align=left>Packets:</th></tr>\
@@ -285,6 +303,7 @@ void handleRoot() {
 </body>\
 </html>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
+    (rf_chip == NULL ? "NONE" : rf_chip->name),
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
@@ -308,6 +327,8 @@ void handleInput() {
       settings->rf_protocol = server.arg(i).toInt();
     } else if (server.argName(i).equals("band")) {
       settings->band = server.arg(i).toInt();
+    } else if (server.argName(i).equals("acft_type")) {
+      settings->aircraft_type = server.arg(i).toInt();
     } else if (server.argName(i).equals("txpower")) {
       settings->txpower = server.arg(i).toInt();
     } else if (server.argName(i).equals("volume")) {
@@ -339,6 +360,7 @@ PSTR("<html>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
+<tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
@@ -352,7 +374,8 @@ PSTR("<html>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1>\<p>\
 </body>\
 </html>"),
-  settings->mode, settings->rf_protocol, settings->band, settings->txpower, settings->volume,
+  settings->mode, settings->rf_protocol, settings->band, settings->aircraft_type,
+  settings->txpower, settings->volume,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p), BOOL_STR(settings->nmea_l),
   BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090),
   settings->pointer

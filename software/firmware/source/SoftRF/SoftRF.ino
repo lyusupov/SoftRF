@@ -118,7 +118,7 @@ void setup()
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
   }  else {
     GNSS_setup();
-    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_GLIDER;  
+    ThisAircraft.aircraft_type = settings->aircraft_type;
   }
   ThisAircraft.protocol = settings->rf_protocol;
 

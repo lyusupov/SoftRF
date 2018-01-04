@@ -19,7 +19,7 @@
 #ifndef SOFTRF_H
 #define SOFTRF_H
 
-#include <nRF905.h>
+#include <Arduino.h>
 
 #define SOFTRF_FIRMWARE_VERSION "0.9"
 
@@ -33,13 +33,10 @@
 #define StdOut  Serial
 #endif /* LOGGER_IS_ENABLED */
 
-#define RF_FREQ   NRF905_FREQ
-#define PKT_SIZE  NRF905_PAYLOAD_SIZE
+#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
 
 /* Max. paket's payload size for all supported RF protocols */
 #define MAX_PKT_SIZE  32 
-
-#define NRF905_TX_PWR_OFF  0xFF
 
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
@@ -80,7 +77,7 @@ typedef struct UFO {
     float     altitude;
     float     course;     /* CoG */
     float     speed;      /* ground speed in knots */
-    unsigned int aircraft_type;
+    uint8_t   aircraft_type;
 
     int32_t   vs;
 

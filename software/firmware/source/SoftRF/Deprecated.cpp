@@ -128,7 +128,7 @@ void *WiFi_relay_from_android()
 /* bridge_loop */
 #if 0
   void *answer = WiFi_relay_from_android();
-  if ((answer != NULL) && (settings->txpower != NRF905_TX_PWR_OFF) )
+  if ((answer != NULL) && (settings->txpower != RF_TX_POWER_OFF) )
   {
     memcpy(TxBuffer, (unsigned char*) answer, PKT_SIZE);
 
