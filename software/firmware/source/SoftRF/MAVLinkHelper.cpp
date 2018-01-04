@@ -18,8 +18,10 @@
 
 #include <TimeLib.h>
 #include <SoftwareSerial.h>
+#include <TinyGPS++.h>
 
 #include "MAVLinkHelper.h"
+#include "GDL90Helper.h"
 
 unsigned long MAVLinkTimeSyncMarker = 0;
 extern SoftwareSerial swSer;
@@ -55,7 +57,13 @@ void MAVLinkShareTraffic()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        write_mavlink(Container[i].addr, Container[i].latitude, Container[i].longitude, (int32_t) Container[i].altitude);
+        write_mavlink(Container[i].addr,
+          Container[i].latitude,
+          Container[i].longitude,
+          Container[i].altitude,
+          Container[i].course,
+          Container[i].speed * _GPS_MPS_PER_KNOT, /* m/s */
+          AT_TO_GDL90(Container[i].aircraft_type));
 
       }
     }

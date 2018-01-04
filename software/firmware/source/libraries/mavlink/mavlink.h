@@ -31,7 +31,8 @@
 
 uint32_t get_num_heartbeats();
 void read_mavlink();
-void write_mavlink(uint32_t addr, float latitude, float longtitude, int32_t altitude);
+void write_mavlink(uint32_t addr, float latitude, float longtitude,
+  float altitude, float course, float speed, uint8_t emitter_type);
 
 #include "include/mavlink/v1.0/mavlink_types.h"
 
