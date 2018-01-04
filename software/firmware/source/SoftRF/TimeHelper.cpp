@@ -62,7 +62,7 @@ unsigned long sendNTPpacket(IPAddress& address)
 
 void Time_setup()
 {
-  Serial.println(F("Starting UDP"));
+  Serial.println(F("Starting NTP UDP"));
   NTP_udp.begin(localPort);
   Serial.print(F("Local port: "));
   Serial.println(NTP_udp.localPort());
@@ -70,10 +70,13 @@ void Time_setup()
   //get a random server from the pool
   WiFi.hostByName(ntpServerName, timeServerIP);
 
+  Serial.print(F("NTP server's IP address: "));
+  Serial.println(timeServerIP);
+
   sendNTPpacket(timeServerIP); // send an NTP packet to a time server
   // wait to see if a reply is available
 
-  delay(5000);
+  delay(2000);
 
   int cb = NTP_udp.parsePacket();
   if (!cb) {
