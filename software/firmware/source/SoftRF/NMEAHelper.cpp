@@ -166,7 +166,7 @@ void NMEA_Export()
 
             //calculate the checksum
             for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
-              cs ^= NMEABuffer[n]; 
+              cs ^= NMEABuffer[n];
             }
 
             csum_ptr = NMEABuffer + strlen(NMEABuffer);
@@ -174,7 +174,9 @@ void NMEA_Export()
 
             Serial.print(NMEABuffer);
 
-            WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+            if (settings->nmea_u) {
+              WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+            }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
@@ -199,7 +201,9 @@ void NMEA_Export()
 
             Serial.print(NMEABuffer);
 
-            WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+            if (settings->nmea_u) {
+              WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+            }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
             if (AirConnectClient && AirConnectClient.connected()){
@@ -288,7 +292,9 @@ void NMEA_Position()
     if (gen_sz) {
       Serial.write((char *) nmealib_buf.buffer, gen_sz);
 
-      WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
+      if (settings->nmea_u) {
+        WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
+      }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
       if (AirConnectClient && AirConnectClient.connected()){

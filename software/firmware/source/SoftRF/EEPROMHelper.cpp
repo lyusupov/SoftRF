@@ -52,15 +52,17 @@ void EEPROM_defaults()
   eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_LEGACY;
   eeprom_block.field.settings.band = RF_BAND_EU;
+  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
   eeprom_block.field.settings.volume = 2;
-  eeprom_block.field.settings.nmea_g = 1;
-  eeprom_block.field.settings.nmea_p = 0;
-  eeprom_block.field.settings.nmea_l = 0;
-  eeprom_block.field.settings.gdl90  = 0;
-  eeprom_block.field.settings.d1090  = 0;
-  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
+
+  eeprom_block.field.settings.nmea_g = false;
+  eeprom_block.field.settings.nmea_p = false;
+  eeprom_block.field.settings.nmea_l = false;
+  eeprom_block.field.settings.nmea_u = false;
+  eeprom_block.field.settings.gdl90  = false;
+  eeprom_block.field.settings.d1090  = false;
 }
 
 void EEPROM_store()

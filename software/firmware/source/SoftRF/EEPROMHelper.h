@@ -21,23 +21,30 @@
 
 #include "SoftRF.h"
 
-#define SOFTRF_EEPROM_MAGIC 0xBABAABBA
-#define SOFTRF_EEPROM_VERSION 0x00000099
+#define SOFTRF_EEPROM_MAGIC 0xBABADEDA
+#define SOFTRF_EEPROM_VERSION 0x0000005A
 
 typedef struct Settings {
     uint8_t  mode;
+    uint8_t  rf_protocol;
     uint8_t  band;
+    uint8_t  aircraft_type;
     uint8_t  txpower;
     uint8_t  volume;
     uint8_t  led_num;
-    uint8_t  nmea_g;
-    uint8_t  nmea_p;
-    uint8_t  nmea_l;
     uint8_t  pointer;
-    uint8_t  rf_protocol;
-    uint8_t  gdl90;
-    uint8_t  d1090;
-    uint8_t  aircraft_type;
+
+    bool     nmea_g:1;
+    bool     nmea_p:1;
+    bool     nmea_l:1;
+    bool     nmea_u:1;
+    bool     gdl90:1;
+    bool     d1090:1;
+    bool     resvd1:1;
+    bool     resvd2:1;
+
+    uint8_t  resvd3;
+    uint8_t  resvd4;
     uint8_t  resvd5;
     uint8_t  resvd6;
     uint8_t  resvd7;
@@ -49,6 +56,8 @@ typedef struct Settings {
     uint8_t  resvd13;
     uint8_t  resvd14;
     uint8_t  resvd15;
+    uint8_t  resvd16;
+    uint8_t  resvd17;
 } settings_t;
 
 typedef struct EEPROM_S {

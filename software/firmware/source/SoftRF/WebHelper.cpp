@@ -62,12 +62,12 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char *temp = (char *) malloc(3200);
+  char *temp = (char *) malloc(3400);
   if (temp == NULL) {
     return;
   }
 
-  snprintf_P ( temp, 3200,
+  snprintf_P ( temp, 3400,
     PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -150,6 +150,18 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<tr>\
+<th align=left>LED ring:</th>\
+</tr>\
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Direction</th>\
+<td align=right>\
+<select name='pointer'>\
+<option %s value='%d'>CoG Up</option>\
+<option %s value='%d'>North Up</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>NMEA:</th>\
 </tr>\
 <tr>\
@@ -174,6 +186,13 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UDP</th>\
+<td align=right>\
+<input type='radio' name='nmea_u' value='0' %s>Off\
+<input type='radio' name='nmea_u' value='1' %s>On\
+</td>\
+</tr>\
+<tr>\
 <th align=left>GDL90</th>\
 <td align=right>\
 <input type='radio' name='gdl90' value='0' %s>Off\
@@ -185,18 +204,6 @@ void handleSettings() {
 <td align=right>\
 <input type='radio' name='d1090' value='0' %s>Off\
 <input type='radio' name='d1090' value='1' %s>On\
-</td>\
-</tr>\
-<tr>\
-<tr>\
-<th align=left>LED ring:</th>\
-</tr>\
-<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Direction</th>\
-<td align=right>\
-<select name='pointer'>\
-<option %s value='%d'>CoG Up</option>\
-<option %s value='%d'>North Up</option>\
-</select>\
 </td>\
 </tr>\
 </table>\
@@ -232,13 +239,14 @@ void handleSettings() {
   (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
   (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
   (settings->volume == 1 ? "selected" : "") , (settings->volume == 2 ? "selected" : ""), (settings->volume == 3 ? "selected" : ""),
+  (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
+  (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
   (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),
   (settings->nmea_l == 0 ? "checked" : "") , (settings->nmea_l == 1 ? "checked" : ""),
+  (settings->nmea_u == 0 ? "checked" : "") , (settings->nmea_u == 1 ? "checked" : ""),
   (settings->gdl90 == 0 ? "checked" : "") , (settings->gdl90 == 1 ? "checked" : ""),
-  (settings->d1090 == 0 ? "checked" : "") , (settings->d1090 == 1 ? "checked" : ""),
-  (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
-  (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP
+  (settings->d1090 == 0 ? "checked" : "") , (settings->d1090 == 1 ? "checked" : "")
   );
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
@@ -318,7 +326,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char temp[1024];
+  char temp[1200];
 
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if (server.argName(i).equals("mode")) {
@@ -333,21 +341,23 @@ void handleInput() {
       settings->txpower = server.arg(i).toInt();
     } else if (server.argName(i).equals("volume")) {
       settings->volume = server.arg(i).toInt();
+    } else if (server.argName(i).equals("pointer")) {
+      settings->pointer = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_g")) {
       settings->nmea_g = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_p")) {
       settings->nmea_p = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_l")) {
       settings->nmea_l = server.arg(i).toInt();
+    } else if (server.argName(i).equals("nmea_u")) {
+      settings->nmea_u = server.arg(i).toInt();
     } else if (server.argName(i).equals("gdl90")) {
       settings->gdl90 = server.arg(i).toInt();
     } else if (server.argName(i).equals("d1090")) {
       settings->d1090 = server.arg(i).toInt();
-    } else if (server.argName(i).equals("pointer")) {
-      settings->pointer = server.arg(i).toInt();
     }
   }
-  snprintf_P ( temp, 1024,
+  snprintf_P ( temp, 1200,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'/>\
@@ -363,22 +373,23 @@ PSTR("<html>\
 <tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
+<tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA UDP</th><td align=right>%s</td></tr>\
 <tr><th align=left>GDL90</th><td align=right>%s</td></tr>\
 <tr><th align=left>DUMP1090</th><td align=right>%s</td></tr>\
-<tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1>\<p>\
 </body>\
 </html>"),
   settings->mode, settings->rf_protocol, settings->band, settings->aircraft_type,
-  settings->txpower, settings->volume,
-  BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p), BOOL_STR(settings->nmea_l),
-  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090),
-  settings->pointer
+  settings->txpower, settings->volume, settings->pointer,
+  BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
+  BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_u),
+  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090)
   );
   server.send ( 200, "text/html", temp );
   EEPROM_store();

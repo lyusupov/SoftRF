@@ -172,10 +172,12 @@ void PickGNSSFix()
       Serial.write((char *) &GNSSbuf[0], GNSS_cnt+1);
       Serial.write('\n');
 
-      Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-      Uni_Udp.write(&GNSSbuf[0], GNSS_cnt + 1);
-      Uni_Udp.write('\n');
-      Uni_Udp.endPacket();
+      if (settings->nmea_u) {
+        Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
+        Uni_Udp.write(&GNSSbuf[0], GNSS_cnt + 1);
+        Uni_Udp.write('\n');
+        Uni_Udp.endPacket();
+      }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
     if (AirConnectClient && AirConnectClient.connected()){
