@@ -537,6 +537,11 @@ static void sx1276_rx_func (osjob_t* job) {
   u2_t crc16, pkt_crc16;
   u1_t i;
 
+  /* FANET (LoRa) LMIC IRQ handler may deliver empty packets here when CRC is invalid. */
+  if (LMIC.dataLen == 0) {
+    return;
+  }
+
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:

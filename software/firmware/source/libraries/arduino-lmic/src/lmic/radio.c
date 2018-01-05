@@ -654,7 +654,7 @@ enum { RXMODE_SINGLE, RXMODE_SCAN, RXMODE_RSSI };
 
 static CONST_TABLE(u1_t, rxlorairqmask)[] = {
     [RXMODE_SINGLE] = IRQ_LORA_RXDONE_MASK|IRQ_LORA_RXTOUT_MASK,
-    [RXMODE_SCAN]   = IRQ_LORA_RXDONE_MASK,
+    [RXMODE_SCAN]   = IRQ_LORA_RXDONE_MASK|IRQ_LORA_CRCERR_MASK,
     [RXMODE_RSSI]   = 0x00,
 };
 
@@ -1024,6 +1024,8 @@ u1_t radio_has_irq (void) {
     return 0;
 }
 
+#define RXLORA_REG_HOPCHANNEL_CRC_ON_PAYLOAD 0x40
+
 // called by hal ext IRQ handler
 // (radio goes to stanby mode after tx/rx operations)
 void radio_irq_handler (u1_t dio) {
@@ -1044,21 +1046,33 @@ void radio_irq_handler (u1_t dio) {
             // save exact tx time
             LMIC.txend = now - us2osticks(43); // TXDONE FIXUP
         } else if( flags & IRQ_LORA_RXDONE_MASK ) {
-            // save exact rx time
-            if(getBw(LMIC.rps) == BW125) {
-                now -= TABLE_GET_U2(LORA_RXDONE_FIXUP, getSf(LMIC.rps));
+            /*
+             * RF noise may trigger LoRa packets receiver
+             * to capture some garbage into the FIFO.
+             * CRC checker helps to filter them out.
+             */
+            u1_t crc_on = readReg(LORARegHopChannel) & RXLORA_REG_HOPCHANNEL_CRC_ON_PAYLOAD;
+
+            if (crc_on && !(flags & IRQ_LORA_CRCERR_MASK)) {
+              // save exact rx time
+              if(getBw(LMIC.rps) == BW125) {
+                  now -= TABLE_GET_U2(LORA_RXDONE_FIXUP, getSf(LMIC.rps));
+              }
+              LMIC.rxtime = now;
+              // read the PDU and inform the MAC that we received something
+              LMIC.dataLen = (readReg(LORARegModemConfig1) & SX1272_MC1_IMPLICIT_HEADER_MODE_ON) ?
+                  readReg(LORARegPayloadLength) : readReg(LORARegRxNbBytes);
+              // set FIFO read address pointer
+              writeReg(LORARegFifoAddrPtr, readReg(LORARegFifoRxCurrentAddr));
+              // now read the FIFO
+              readBuf(RegFifo, LMIC.frame, LMIC.dataLen);
+              // read rx quality parameters
+              LMIC.snr  = readReg(LORARegPktSnrValue); // SNR [dB] * 4
+              LMIC.rssi = readReg(LORARegPktRssiValue) - 125 + 64; // RSSI [dBm] (-196...+63)
+            } else {
+              // indicate CRC error
+              LMIC.dataLen = 0;
             }
-            LMIC.rxtime = now;
-            // read the PDU and inform the MAC that we received something
-            LMIC.dataLen = (readReg(LORARegModemConfig1) & SX1272_MC1_IMPLICIT_HEADER_MODE_ON) ?
-                readReg(LORARegPayloadLength) : readReg(LORARegRxNbBytes);
-            // set FIFO read address pointer
-            writeReg(LORARegFifoAddrPtr, readReg(LORARegFifoRxCurrentAddr));
-            // now read the FIFO
-            readBuf(RegFifo, LMIC.frame, LMIC.dataLen);
-            // read rx quality parameters
-            LMIC.snr  = readReg(LORARegPktSnrValue); // SNR [dB] * 4
-            LMIC.rssi = readReg(LORARegPktRssiValue) - 125 + 64; // RSSI [dBm] (-196...+63)
         } else if( flags & IRQ_LORA_RXTOUT_MASK ) {
             // indicate timeout
             LMIC.dataLen = 0;
