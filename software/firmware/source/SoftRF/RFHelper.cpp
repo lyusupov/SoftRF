@@ -40,6 +40,7 @@ static FreqPlan RF_FreqPlan;
 static bool RF_ready = false;
 
 static size_t RF_tx_size = 0;
+static long TxRandomValue = 0;
 
 rfchip_ops_t *rf_chip = NULL;
 
@@ -153,7 +154,14 @@ size_t RF_Encode(void)
 {
   size_t size = 0;
   if (RF_ready && protocol_encode) {
-    size = (*protocol_encode)((void *) &TxPkt[0], &ThisAircraft);
+
+    if (settings->txpower == RF_TX_POWER_OFF ) {
+      return size;
+    }
+
+    if ((millis() - TxTimeMarker) > TxRandomValue) {
+      size = (*protocol_encode)((void *) &TxPkt[0], &ThisAircraft);
+    }
   }
   return size;
 }
@@ -162,7 +170,25 @@ void RF_Transmit(size_t size)
 {
   if (RF_ready && rf_chip && (size > 0)) {
     RF_tx_size = size;
-    rf_chip->transmit();
+
+    if (settings->txpower == RF_TX_POWER_OFF ) {
+      return;
+    }
+
+    if ((millis() - TxTimeMarker) > TxRandomValue) {
+
+      time_t timestamp = now();
+
+      rf_chip->transmit();
+
+      if (settings->nmea_p) {
+        StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
+      }
+      tx_packets_counter++;
+      RF_tx_size = 0;
+      TxRandomValue = ESP8266TrueRandom.random(600,1400);
+      TxTimeMarker = millis();
+    }
   }
 }
 
@@ -276,26 +302,6 @@ bool nrf905_receive()
 
 void nrf905_transmit()
 {
-  long RandomValue;
-
-  if (settings->txpower == RF_TX_POWER_OFF ) {
-    return;
-  }
-  
-  RandomValue = ESP8266TrueRandom.random(500,1000);
-
-  if ((millis() - TxTimeMarker > (int)RandomValue)) {
-#if 0
-    Serial.print("Valid: ");
-    Serial.println(gnss.location.isValid());
-    Serial.print("isUpdated: ");
-    Serial.println(gnss.location.isUpdated());
-    Serial.print("age: ");
-    Serial.println(gnss.location.age());
-#endif
-
-    time_t timestamp = now();
-
     // Set address of device to send to
     byte addr[] = TXADDR;
     nRF905_setTXAddress(addr);
@@ -307,13 +313,6 @@ void nrf905_transmit()
     while (!nRF905_send()) {
       delay(0);
     } ;
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
-    }
-    tx_packets_counter++;
-    RF_tx_size = 0;
-    TxTimeMarker = millis();
-  }
 }
 
 /*
@@ -488,18 +487,6 @@ bool sx1276_receive()
 
 void sx1276_transmit()
 {
-  long RandomValue;
-
-  if (settings->txpower == RF_TX_POWER_OFF ) {
-    return;
-  }
-  
-  RandomValue = ESP8266TrueRandom.random(500,1000);
-
-  if ((millis() - TxTimeMarker > (int)RandomValue)) {
-
-    time_t timestamp = now();
-
     sx1276_transmit_complete = false;
     os_setCallback(&sx1276_txjob, sx1276_tx_func);
 
@@ -508,14 +495,6 @@ void sx1276_transmit()
       os_runloop_once();
       delay(0);
     } ;
-
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
-    }
-    tx_packets_counter++;
-    TxTimeMarker = millis();
-  } 
-  
 }
 
 // Enable rx mode and call func when a packet is received
@@ -782,7 +761,6 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 }
 
 static void sx1276_txdone_func (osjob_t* job) {
-  RF_tx_size = 0;
   sx1276_transmit_complete = true;
 }
 
