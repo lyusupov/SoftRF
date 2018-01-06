@@ -894,9 +894,10 @@ static void rxfsk (u1_t rxmode) {
 
     // enable antenna switch for RX
     hal_pin_rxtx(0);
-
+#if 0  /* SoftRF: there is no need to wait for anything here */
     // now instruct the radio to receive
     hal_waitUntil(LMIC.rxtime); // busy wait until exact rx time
+#endif
     opmode(OPMODE_RX); // no single rx mode available in FSK
 }
 

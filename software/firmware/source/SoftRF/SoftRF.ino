@@ -276,7 +276,9 @@ unsigned long TxPosUpdMarker = 0;
 void tx_test_loop()
 {
   bool success = false;
-
+#if DEBUG_TIMING
+  unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
+#endif
   ThisAircraft.timestamp = now();
 
   if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
@@ -288,10 +290,27 @@ void tx_test_loop()
   ThisAircraft.altitude = TEST_ALTITUDE;
   ThisAircraft.course = TEST_COURSE;
   ThisAircraft.speed = TEST_SPEED;
-
+#if DEBUG_TIMING
+  tx_start_ms = millis();
+#endif
   RF_Transmit(RF_Encode());
-
+#if DEBUG_TIMING
+  tx_end_ms = millis();
+  rx_start_ms = millis();
+#endif
   success = RF_Receive();
+#if DEBUG_TIMING
+  rx_end_ms = millis();
+
+  Serial.print(F("TX start: "));
+  Serial.print(tx_start_ms);
+  Serial.print(F(" TX stop: "));
+  Serial.print(tx_end_ms);
+  Serial.print(F(" RX start: "));
+  Serial.print(rx_start_ms);
+  Serial.print(F(" RX stop: "));
+  Serial.println(rx_end_ms);
+#endif
 
   if(success)
   {
