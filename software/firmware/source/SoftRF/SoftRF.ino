@@ -76,6 +76,7 @@ extern "C" {
 #endif /* LOGGER_IS_ENABLED */
 
 #define DEBUG 0
+#define DEBUG_TIMING 0
 
 #define isTimeToDisplay() (millis() - LEDTimeMarker > 1000)
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
@@ -275,6 +276,8 @@ void txrx_test_loop()
   bool success = false;
 #if DEBUG_TIMING
   unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
+  unsigned long parse_start_ms, parse_end_ms, led_start_ms, led_end_ms;
+  unsigned long export_start_ms, export_end_ms;
 #endif
   ThisAircraft.timestamp = now();
 
@@ -298,24 +301,30 @@ void txrx_test_loop()
   success = RF_Receive();
 #if DEBUG_TIMING
   rx_end_ms = millis();
-
-  Serial.print(F("TX start: "));
-  Serial.print(tx_start_ms);
-  Serial.print(F(" TX stop: "));
-  Serial.print(tx_end_ms);
-  Serial.print(F(" RX start: "));
-  Serial.print(rx_start_ms);
-  Serial.print(F(" RX stop: "));
-  Serial.println(rx_end_ms);
 #endif
 
+#if DEBUG_TIMING
+  parse_start_ms = millis();
+#endif
   if (success) ParseData();
+#if DEBUG_TIMING
+  parse_end_ms = millis();
+#endif
 
+#if DEBUG_TIMING
+  led_start_ms = millis();
+#endif
   if (isTimeToDisplay()) {
     LED_DisplayTraffic();
     LEDTimeMarker = millis();
   }
+#if DEBUG_TIMING
+  led_end_ms = millis();
+#endif
 
+#if DEBUG_TIMING
+  export_start_ms = millis();
+#endif
   if (isTimeToExport()) {
     NMEA_Position();
     NMEA_Export();
@@ -323,6 +332,42 @@ void txrx_test_loop()
     D1090_Export();
     ExportTimeMarker = millis();
   }
+#if DEBUG_TIMING
+  export_end_ms = millis();
+#endif
+
+#if DEBUG_TIMING
+  if (tx_end_ms - tx_start_ms) {
+    Serial.print(F("TX start: "));
+    Serial.print(tx_start_ms);
+    Serial.print(F(" TX stop: "));
+    Serial.println(tx_end_ms);
+  }
+  if (rx_end_ms - rx_start_ms) {
+    Serial.print(F("RX start: "));
+    Serial.print(rx_start_ms);
+    Serial.print(F(" RX stop: "));
+    Serial.println(rx_end_ms);
+  }
+  if (parse_end_ms - parse_start_ms) {
+    Serial.print(F("Parse start: "));
+    Serial.print(parse_start_ms);
+    Serial.print(F(" Parse stop: "));
+    Serial.println(parse_end_ms);
+  }
+  if (led_end_ms - led_start_ms) {
+    Serial.print(F("LED start: "));
+    Serial.print(led_start_ms);
+    Serial.print(F(" LED stop: "));
+    Serial.println(led_end_ms);
+  }
+  if (export_end_ms - export_start_ms) {
+    Serial.print(F("Export start: "));
+    Serial.print(export_start_ms);
+    Serial.print(F(" Export stop: "));
+    Serial.println(export_end_ms);
+  }
+#endif
 
   ClearExpired();
 }
