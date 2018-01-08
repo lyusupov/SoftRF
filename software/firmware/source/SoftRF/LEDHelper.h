@@ -59,8 +59,6 @@
 
 void LED_setup();
 void LED_test();
-void colorWipe(uint32_t, uint8_t);
-void LED_show(int);
 void LED_DisplayTraffic();
 void LED_Clear();
 

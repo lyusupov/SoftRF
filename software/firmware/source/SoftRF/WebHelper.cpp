@@ -157,6 +157,7 @@ void handleSettings() {
 <select name='pointer'>\
 <option %s value='%d'>CoG Up</option>\
 <option %s value='%d'>North Up</option>\
+<option %s value='%d'>Off</option>\
 </select>\
 </td>\
 </tr>\
@@ -239,6 +240,7 @@ void handleSettings() {
   (settings->volume == 1 ? "selected" : "") , (settings->volume == 2 ? "selected" : ""), (settings->volume == 3 ? "selected" : ""),
   (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+  (settings->pointer == LED_OFF ? "selected" : ""), LED_OFF,
   (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
   (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),
   (settings->nmea_l == 0 ? "checked" : "") , (settings->nmea_l == 1 ? "checked" : ""),

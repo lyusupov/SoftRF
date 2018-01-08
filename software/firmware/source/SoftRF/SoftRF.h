@@ -96,13 +96,14 @@ enum
 	SOFTRF_MODE_OGN,
 	SOFTRF_MODE_TXRX_TEST,
 	SOFTRF_MODE_LOOPBACK,
-	SOFTRF_MODE_UAV_BEACON  
+	SOFTRF_MODE_UAV_BEACON
 };
 
 enum
 {
 	DIRECTION_TRACK_UP,
-	DIRECTION_NORTH_UP  
+	DIRECTION_NORTH_UP,
+	LED_OFF
 };
 
 extern void Misc_info(void);
@@ -119,4 +120,3 @@ extern const float txrx_test_positions[90][2] PROGMEM;
 #define TXRX_TEST_SPEED       50.0
 
 #endif /* SOFTRF_H */
-

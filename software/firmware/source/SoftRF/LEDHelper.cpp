@@ -37,8 +37,10 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, PIN, NEO_GRB + NEO_KHZ800);
 // on a live circuit...if you must, connect GND first.
 
 void LED_setup() {
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  if (settings->pointer != LED_OFF) {
+    strip.begin();
+    strip.show(); // Initialize all pixels to 'off'
+  }
 }
 
 // Fill the dots one after the other with a color
@@ -131,92 +133,86 @@ void theaterChaseRainbow(uint8_t wait) {
 #endif
 
 void LED_test() {
-  // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
-  // Send a theater pixel chase in...
-  theaterChase(strip.Color(127, 127, 127), 50); // White
-  theaterChase(strip.Color(127, 0, 0), 50); // Red
-  theaterChase(strip.Color(0, 0, 127), 50); // Blue
+  if (settings->pointer != LED_OFF) {
+    // Some example procedures showing how to display to the pixels:
+    colorWipe(strip.Color(255, 0, 0), 50); // Red
+    colorWipe(strip.Color(0, 255, 0), 50); // Green
+    colorWipe(strip.Color(0, 0, 255), 50); // Blue
+    // Send a theater pixel chase in...
+    theaterChase(strip.Color(127, 127, 127), 50); // White
+    theaterChase(strip.Color(127, 0, 0), 50); // Red
+    theaterChase(strip.Color(0, 0, 127), 50); // Blue
 
-  //  rainbow(20);
-  //  rainbowCycle(20);
-  //  theaterChaseRainbow(50);
-  colorWipe(strip.Color(0, 0, 0), 50); // clear
+    //  rainbow(20);
+    //  rainbowCycle(20);
+    //  theaterChaseRainbow(50);
+    colorWipe(strip.Color(0, 0, 0), 50); // clear
 #if 0
-  LED_show(-20);
-  delay(2000);
-  LED_show(40);
-  delay(2000);
-  LED_show(110);
-  delay(2000);
-  LED_show(125);
-  delay(2000);
-  LED_show(160);
-  delay(2000);
-  LED_show(215);
-  delay(2000);
-  LED_show(290);
-  delay(2000);
-  LED_show(295);
-  delay(2000);
-  LED_show(340);
-  delay(2000);
-  colorWipe(strip.Color(0, 0, 0), 50); // clear
+    LED_show(-20);
+    delay(2000);
+    LED_show(40);
+    delay(2000);
+    LED_show(110);
+    delay(2000);
+    LED_show(125);
+    delay(2000);
+    LED_show(160);
+    delay(2000);
+    LED_show(215);
+    delay(2000);
+    LED_show(290);
+    delay(2000);
+    LED_show(295);
+    delay(2000);
+    LED_show(340);
+    delay(2000);
+    colorWipe(strip.Color(0, 0, 0), 50); // clear
 #endif
+  }
 }
-
-#if 0
-void LED_show(int bearing) {
-  // LED
-  int led_num = ((bearing + LED_ROTATE_ANGLE + SECTOR_PER_LED/2) % 360) / SECTOR_PER_LED;
-  //int led_num = (bearing * strip.numPixels()) / 360;
-  colorWipe(strip.Color(0, 0, 0), 0); // clear all
-  strip.setPixelColor(led_num, strip.Color(255, 0, 0));
-  strip.show();
-}
-#endif
 
 void LED_Clear_noflush() {
-
-  for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-    strip.setPixelColor(i, LED_COLOR_BACKLIT);
-  }
-
-  if (rx_packets_counter > prev_rx_packets_counter) {
-    strip.setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
-    prev_rx_packets_counter = rx_packets_counter;
-
-    if (settings->mode == SOFTRF_MODE_ALARM) {
-      for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-        strip.setPixelColor(i, LED_COLOR_RED);
-      }    
-    } else if (settings->mode == SOFTRF_MODE_BRIDGE) {
-      for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-        strip.setPixelColor(i, LED_COLOR_MI_RED);
-      }
+    for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+      strip.setPixelColor(i, LED_COLOR_BACKLIT);
     }
 
-  }  else {
-    strip.setPixelColor(LED_STATUS_RX, LED_COLOR_BLACK);  
-  }
+    if (rx_packets_counter > prev_rx_packets_counter) {
+      strip.setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
+      prev_rx_packets_counter = rx_packets_counter;
 
-  if (tx_packets_counter > prev_tx_packets_counter) {
-    strip.setPixelColor(LED_STATUS_TX, LED_COLOR_MI_GREEN);
-    prev_tx_packets_counter = tx_packets_counter;
-  } else {
-    strip.setPixelColor(LED_STATUS_TX, LED_COLOR_BLACK);  
-  }
+      if (settings->mode == SOFTRF_MODE_ALARM) {
+        for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+          strip.setPixelColor(i, LED_COLOR_RED);
+        }
+      } else if (settings->mode == SOFTRF_MODE_BRIDGE) {
+        for (uint16_t i = 0; i < RING_LED_NUM; i++) {
+          strip.setPixelColor(i, LED_COLOR_MI_RED);
+        }
+      }
 
-  strip.setPixelColor(LED_STATUS_POWER, Battery_voltage() > 2.3 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
-  strip.setPixelColor(LED_STATUS_SAT, gnss.location.isValid() && (gnss.location.age()) <= 3000 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
+    }  else {
+      strip.setPixelColor(LED_STATUS_RX, LED_COLOR_BLACK);
+    }
 
+    if (tx_packets_counter > prev_tx_packets_counter) {
+      strip.setPixelColor(LED_STATUS_TX, LED_COLOR_MI_GREEN);
+      prev_tx_packets_counter = tx_packets_counter;
+    } else {
+      strip.setPixelColor(LED_STATUS_TX, LED_COLOR_BLACK);
+    }
+
+    strip.setPixelColor(LED_STATUS_POWER,
+      Battery_voltage() > 2.3 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
+    strip.setPixelColor(LED_STATUS_SAT,
+      gnss.location.isValid() && (gnss.location.age()) <= 3000 ?
+      LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
 }
 
 void LED_Clear() {
-  LED_Clear_noflush();
-  strip.show();
+  if (settings->pointer != LED_OFF) {
+    LED_Clear_noflush();
+    strip.show();
+  }
 }
 
 void LED_DisplayTraffic() {
@@ -224,34 +220,38 @@ void LED_DisplayTraffic() {
   int led_num;
   uint32_t color;
 
-  LED_Clear_noflush();
+  if (settings->pointer != LED_OFF) {
+    LED_Clear_noflush();
 
-  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
 
-    if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
-      bearing = (int) gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);     
-      distance = (int) gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
-      if (settings->pointer == DIRECTION_TRACK_UP) {
-        bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
-      }
-      led_num = ((bearing + LED_ROTATE_ANGLE + SECTOR_PER_LED/2) % 360) / SECTOR_PER_LED;
+      if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
+        bearing = (int) gnss.courseTo(ThisAircraft.latitude,
+          ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+        distance = (int) gnss.distanceBetween(ThisAircraft.latitude,
+          ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+        if (settings->pointer == DIRECTION_TRACK_UP) {
+          bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
+        }
+        led_num = ((bearing + LED_ROTATE_ANGLE + SECTOR_PER_LED/2) % 360) / SECTOR_PER_LED;
 //      Serial.print(bearing);
 //      Serial.print(" , ");
 //      Serial.println(led_num);
-//      Serial.println(distance);      
-      if (distance < LED_DISTANCE_FAR) {
-        if (distance >= 0 && distance <= LED_DISTANCE_CLOSE) {
-          color =  LED_COLOR_RED;
-        } else if (distance > LED_DISTANCE_CLOSE && distance <= LED_DISTANCE_NEAR) {
-          color =  LED_COLOR_YELLOW;      
-        } else if (distance > LED_DISTANCE_NEAR && distance <= LED_DISTANCE_FAR) {
-          color =  LED_COLOR_BLUE;  
+//      Serial.println(distance);
+        if (distance < LED_DISTANCE_FAR) {
+          if (distance >= 0 && distance <= LED_DISTANCE_CLOSE) {
+            color =  LED_COLOR_RED;
+          } else if (distance > LED_DISTANCE_CLOSE && distance <= LED_DISTANCE_NEAR) {
+            color =  LED_COLOR_YELLOW;
+          } else if (distance > LED_DISTANCE_NEAR && distance <= LED_DISTANCE_FAR) {
+            color =  LED_COLOR_BLUE;
+          }
+          strip.setPixelColor(led_num, color);
         }
-        strip.setPixelColor(led_num, color);
       }
     }
-  }
 
-  strip.show();
+    strip.show();
+  }
 }
 
