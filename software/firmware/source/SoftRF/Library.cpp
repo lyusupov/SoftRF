@@ -185,12 +185,12 @@ void Misc_info()
   uint32_t ideSize = ESP.getFlashChipSize();
   FlashMode_t ideMode = ESP.getFlashChipMode();
 
-  Serial.printf_P(PSTR("Flash real id:   %08X\n"), ESP.getFlashChipId());
-  Serial.printf_P(PSTR("Flash real size: %u\n\n"), realSize);
+  Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+  Serial.printf("Flash real size: %u\n\n", realSize);
 
-  Serial.printf_P(PSTR("Flash ide  size: %u\n"), ideSize);
-  Serial.printf_P(PSTR("Flash ide speed: %u\n"), ESP.getFlashChipSpeed());
-  Serial.printf_P(PSTR("Flash ide mode:  %s\n"), (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+  Serial.printf("Flash ide  size: %u\n", ideSize);
+  Serial.printf("Flash ide speed: %u\n", ESP.getFlashChipSpeed());
+  Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
 
   if (ideSize != realSize) {
     Serial.println(F("Flash Chip configuration wrong!\n"));

@@ -62,6 +62,11 @@ unsigned long sendNTPpacket(IPAddress& address)
 
 void Time_setup()
 {
+  // Do not attempt an NTP timesync in Soft AP mode
+  if (WiFi.getMode() == WIFI_AP) {
+    return;
+  }
+
   Serial.println(F("Starting NTP UDP"));
   NTP_udp.begin(localPort);
   Serial.print(F("Local port: "));
