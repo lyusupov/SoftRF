@@ -32,7 +32,7 @@ extern SoftwareSerial swSer;
 byte gnss_set_sucess = 0 ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
-uint8_t GNSSbuf[128];
+uint8_t GNSSbuf[160]; // 2 lines of 80 characters each
 int GNSS_cnt = 0;
 
 #if 0
@@ -162,30 +162,35 @@ void PickGNSSFix()
 {
   bool isValidSentence = false;
   IPAddress broadcastIP = WiFi_get_broadcast();
+  int ndx;
 
   //check UART for data
   while (swSer.available() > 0) {
     GNSSbuf[GNSS_cnt] = swSer.read();
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
+      for (ndx = GNSS_cnt - 4; ndx >= 0; ndx--) { // skip CS and *
+        if ((GNSSbuf[ndx] == '$') && (GNSSbuf[ndx+1] == 'G')) {
 
-      Serial.write((uint8_t *) &GNSSbuf[0], GNSS_cnt+1);
-      Serial.write('\n');
+          Serial.write((uint8_t *) &GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+          Serial.write('\n');
 
-      if (settings->nmea_u) {
-        Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-        Uni_Udp.write(&GNSSbuf[0], GNSS_cnt + 1);
-        Uni_Udp.write('\n');
-        Uni_Udp.endPacket();
-      }
+          if (settings->nmea_u) {
+            Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
+            Uni_Udp.write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+            Uni_Udp.write('\n');
+            Uni_Udp.endPacket();
+          }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-    if (AirConnectClient && AirConnectClient.connected()){
-      AirConnectClient.write(&GNSSbuf[0], GNSS_cnt + 1);
-      AirConnectClient.write('\n');
-    }
+          if (AirConnectClient && AirConnectClient.connected()){
+            AirConnectClient.write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+            AirConnectClient.write('\n');
+          }
 #endif
-
+          break;
+        }
+      }
     }
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
       GNSS_cnt = 0;
