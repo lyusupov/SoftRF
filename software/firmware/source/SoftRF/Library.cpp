@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <TimeLib.h>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 
@@ -43,9 +41,9 @@ extern ufo_t ThisAircraft;
 String TxDataTemplate = "0282dd204901f981798a85b69764bdf99ed77fd3c2300000";
 #endif
 
-//const float tx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
+//const float txrx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
 #if 1 /* 2017 */
-const float tx_test_positions[90][2] PROGMEM = {
+const float txrx_test_positions[90][2] PROGMEM = {
          { 56.014028944788 , 38.353422195622 } ,
          { 56.01443675978 , 38.354237587162 } ,
          { 56.014484737731 , 38.355439216801 } ,

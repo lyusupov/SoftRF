@@ -82,8 +82,7 @@ void handleSettings() {
 <td align=right>\
 <select name='mode'>\
 <option %s value='%d'>Normal</option>\
-<option %s value='%d'>Tx Test</option>\
-<option %s value='%d'>Rx Test</option>\
+<option %s value='%d'>Tx/Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
 </select>\
@@ -212,8 +211,7 @@ void handleSettings() {
 </body>\
 </html>"),
   (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
-  (settings->mode == SOFTRF_MODE_TX_TEST ? "selected" : ""), SOFTRF_MODE_TX_TEST,
-  (settings->mode == SOFTRF_MODE_RX_TEST ? "selected" : ""), SOFTRF_MODE_RX_TEST,
+  (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
   (settings->mode == SOFTRF_MODE_UAV_BEACON ? "selected" : ""), SOFTRF_MODE_UAV_BEACON,
   (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,

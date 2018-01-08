@@ -140,7 +140,7 @@ void setup()
 
   Sound_test(resetInfo->reason);
 
-  if (settings->mode == SOFTRF_MODE_TX_TEST || settings->mode == SOFTRF_MODE_RX_TEST) {
+  if (settings->mode == SOFTRF_MODE_TXRX_TEST) {
     Time_setup();  
   }
 }
@@ -152,11 +152,8 @@ void loop()
 
   switch (settings->mode)
   {
-  case SOFTRF_MODE_TX_TEST:
-    tx_test_loop();
-    break;
-  case SOFTRF_MODE_RX_TEST:
-    rx_test_loop();
+  case SOFTRF_MODE_TXRX_TEST:
+    txrx_test_loop();
     break;
   case SOFTRF_MODE_UAV_BEACON:
     uav_loop();
@@ -273,7 +270,7 @@ void uav_loop()
 unsigned int pos_ndx = 0;
 unsigned long TxPosUpdMarker = 0;
 
-void tx_test_loop()
+void txrx_test_loop()
 {
   bool success = false;
 #if DEBUG_TIMING
@@ -282,14 +279,14 @@ void tx_test_loop()
   ThisAircraft.timestamp = now();
 
   if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
-    ThisAircraft.latitude =  pgm_read_float( &tx_test_positions[pos_ndx][0]);
-    ThisAircraft.longitude =  pgm_read_float( &tx_test_positions[pos_ndx][1]);
-    pos_ndx = (pos_ndx + 1) % TX_TEST_NUM_POSITIONS;
+    ThisAircraft.latitude =  pgm_read_float( &txrx_test_positions[pos_ndx][0]);
+    ThisAircraft.longitude =  pgm_read_float( &txrx_test_positions[pos_ndx][1]);
+    pos_ndx = (pos_ndx + 1) % TXRX_TEST_NUM_POSITIONS;
     TxPosUpdMarker = millis();
   }
-  ThisAircraft.altitude = TEST_ALTITUDE;
-  ThisAircraft.course = TEST_COURSE;
-  ThisAircraft.speed = TEST_SPEED;
+  ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
+  ThisAircraft.course = TXRX_TEST_COURSE;
+  ThisAircraft.speed = TXRX_TEST_SPEED;
 #if DEBUG_TIMING
   tx_start_ms = millis();
 #endif
@@ -311,38 +308,6 @@ void tx_test_loop()
   Serial.print(F(" RX stop: "));
   Serial.println(rx_end_ms);
 #endif
-
-  if(success)
-  {
-    fo.raw = Bin2Hex(RxBuffer);
-
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
-    }
-  }
-
-  if (isTimeToExport()) {
-    ExportTimeMarker = millis();
-  }
-}
-
-const float rx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
-
-void rx_test_loop()
-{
-  bool success = false;
-
-  ThisAircraft.timestamp = now();
-
-  ThisAircraft.latitude = pgm_read_float( &rx_test_positions[0][0]);;
-  ThisAircraft.longitude = pgm_read_float( &rx_test_positions[0][1]);
-  ThisAircraft.altitude = TEST_ALTITUDE;
-  ThisAircraft.course = TEST_COURSE;
-  ThisAircraft.speed = TEST_SPEED;
-
-  //RF_Transmit(RF_Encode());
-
-  success = RF_Receive();
 
   if (success) ParseData();
 

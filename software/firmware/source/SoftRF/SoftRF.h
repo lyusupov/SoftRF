@@ -94,8 +94,7 @@ enum
 	SOFTRF_MODE_ALARM,
 	SOFTRF_MODE_BRIDGE,
 	SOFTRF_MODE_OGN,
-	SOFTRF_MODE_TX_TEST,
-	SOFTRF_MODE_RX_TEST,
+	SOFTRF_MODE_TXRX_TEST,
 	SOFTRF_MODE_LOOPBACK,
 	SOFTRF_MODE_UAV_BEACON  
 };
@@ -112,12 +111,12 @@ extern void ClearExpired(void);
 extern size_t Raw_Receive_UDP(uint8_t *);
 extern void Raw_Transmit_UDP(void);
 
-extern const float tx_test_positions[90][2] PROGMEM;
+extern const float txrx_test_positions[90][2] PROGMEM;
 
-#define TX_TEST_NUM_POSITIONS (sizeof(tx_test_positions) / sizeof(float) / 2)
-#define TEST_ALTITUDE    438.0
-#define TEST_COURSE      0.0
-#define TEST_SPEED       50.0
+#define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)
+#define TXRX_TEST_ALTITUDE    438.0
+#define TXRX_TEST_COURSE      0.0
+#define TXRX_TEST_SPEED       50.0
 
 #endif /* SOFTRF_H */
 

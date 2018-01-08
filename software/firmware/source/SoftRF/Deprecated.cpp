@@ -154,3 +154,98 @@ void *WiFi_relay_from_android()
     TxTimeMarker = millis();
   }
 #endif
+
+
+#if 0
+unsigned int pos_ndx = 0;
+unsigned long TxPosUpdMarker = 0;
+
+void tx_test_loop()
+{
+  bool success = false;
+#if DEBUG_TIMING
+  unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
+#endif
+  ThisAircraft.timestamp = now();
+
+  if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
+    ThisAircraft.latitude =  pgm_read_float( &tx_test_positions[pos_ndx][0]);
+    ThisAircraft.longitude =  pgm_read_float( &tx_test_positions[pos_ndx][1]);
+    pos_ndx = (pos_ndx + 1) % TX_TEST_NUM_POSITIONS;
+    TxPosUpdMarker = millis();
+  }
+  ThisAircraft.altitude = TEST_ALTITUDE;
+  ThisAircraft.course = TEST_COURSE;
+  ThisAircraft.speed = TEST_SPEED;
+#if DEBUG_TIMING
+  tx_start_ms = millis();
+#endif
+  RF_Transmit(RF_Encode());
+#if DEBUG_TIMING
+  tx_end_ms = millis();
+  rx_start_ms = millis();
+#endif
+  success = RF_Receive();
+#if DEBUG_TIMING
+  rx_end_ms = millis();
+
+  Serial.print(F("TX start: "));
+  Serial.print(tx_start_ms);
+  Serial.print(F(" TX stop: "));
+  Serial.print(tx_end_ms);
+  Serial.print(F(" RX start: "));
+  Serial.print(rx_start_ms);
+  Serial.print(F(" RX stop: "));
+  Serial.println(rx_end_ms);
+#endif
+
+  if(success)
+  {
+    fo.raw = Bin2Hex(RxBuffer);
+
+    if (settings->nmea_p) {
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+    }
+  }
+
+  if (isTimeToExport()) {
+    ExportTimeMarker = millis();
+  }
+}
+
+const float rx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
+
+void rx_test_loop()
+{
+  bool success = false;
+
+  ThisAircraft.timestamp = now();
+
+  ThisAircraft.latitude = pgm_read_float( &rx_test_positions[0][0]);;
+  ThisAircraft.longitude = pgm_read_float( &rx_test_positions[0][1]);
+  ThisAircraft.altitude = TEST_ALTITUDE;
+  ThisAircraft.course = TEST_COURSE;
+  ThisAircraft.speed = TEST_SPEED;
+
+  //RF_Transmit(RF_Encode());
+
+  success = RF_Receive();
+
+  if (success) ParseData();
+
+  if (isTimeToDisplay()) {
+    LED_DisplayTraffic();
+    LEDTimeMarker = millis();
+  }
+
+  if (isTimeToExport()) {
+    NMEA_Position();
+    NMEA_Export();
+    GDL90_Export();
+    D1090_Export();
+    ExportTimeMarker = millis();
+  }
+
+  ClearExpired();
+}
+#endif
