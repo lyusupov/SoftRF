@@ -17,8 +17,9 @@
  */
 
 #include "SoundHelper.h"
+#include "EEPROMHelper.h"
 
-#if 1
+#if ESP8266
 #include <ets_sys.h>
 #include <osapi.h>
 #include <gpio.h>
@@ -40,30 +41,31 @@ void Sound_setup(void)
 
 }
 
-
 void Sound_test(int var)
 {
-  swSer.enableRx(false);
+  if (settings->volume != BUZZER_OFF) {
+    swSer.enableRx(false);
 
-  if (var == REASON_DEFAULT_RST ||
-      var == REASON_EXT_SYS_RST ||
-      var == REASON_SOFT_RESTART) {
-    tone(10, 440, 500);delay(500);
-    tone(10, 640, 500);delay(500);
-    tone(10, 840, 500);delay(500);
-    tone(10, 1040, 500);
-  } else if (var == REASON_WDT_RST) {
-    tone(10, 440, 500);delay(500);
-    tone(10, 1040, 500);delay(500);
-    tone(10, 440, 500);delay(500);
-    tone(10, 1040, 500);
-  } else {
-    tone(10, 1040, 500);delay(500);
-    tone(10, 840, 500);delay(500); 
-    tone(10, 640, 500);delay(500);
-    tone(10, 440, 500);
+    if (var == REASON_DEFAULT_RST ||
+        var == REASON_EXT_SYS_RST ||
+        var == REASON_SOFT_RESTART) {
+      tone(10, 440, 500);delay(500);
+      tone(10, 640, 500);delay(500);
+      tone(10, 840, 500);delay(500);
+      tone(10, 1040, 500);
+    } else if (var == REASON_WDT_RST) {
+      tone(10, 440, 500);delay(500);
+      tone(10, 1040, 500);delay(500);
+      tone(10, 440, 500);delay(500);
+      tone(10, 1040, 500);
+    } else {
+      tone(10, 1040, 500);delay(500);
+      tone(10, 840, 500);delay(500);
+      tone(10, 640, 500);delay(500);
+      tone(10, 440, 500);
+    }
+    delay(600);
+
+    swSer.enableRx(true);
   }
-  delay(600); 
-
-  swSer.enableRx(true);
 }

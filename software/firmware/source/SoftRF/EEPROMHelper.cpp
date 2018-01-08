@@ -54,7 +54,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.band = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
-  eeprom_block.field.settings.volume = 2;
+  eeprom_block.field.settings.volume = BUZZER_VOLUME_FULL;
   eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
 
   eeprom_block.field.settings.nmea_g = false;

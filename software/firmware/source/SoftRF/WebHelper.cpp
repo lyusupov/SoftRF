@@ -142,9 +142,9 @@ void handleSettings() {
 <th align=left>Volume</th>\
 <td align=right>\
 <select name='volume'>\
-<option %s value='1'>Low</option>\
-<option %s value='2'>Medium</option>\
-<option %s value='3'>High</option>\
+<option %s value='%d'>Loud</option>\
+<option %s value='%d'>Low</option>\
+<option %s value='%d'>Off</option>\
 </select>\
 </td>\
 </tr>\
@@ -237,7 +237,9 @@ void handleSettings() {
   (settings->txpower == RF_TX_POWER_FULL ? "selected" : ""),  RF_TX_POWER_FULL,
   (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
   (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
-  (settings->volume == 1 ? "selected" : "") , (settings->volume == 2 ? "selected" : ""), (settings->volume == 3 ? "selected" : ""),
+  (settings->volume == BUZZER_VOLUME_FULL ? "selected" : ""), BUZZER_VOLUME_FULL,
+  (settings->volume == BUZZER_VOLUME_LOW ? "selected" : ""), BUZZER_VOLUME_LOW,
+  (settings->volume == BUZZER_OFF ? "selected" : ""), BUZZER_OFF,
   (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->pointer == LED_OFF ? "selected" : ""), LED_OFF,
