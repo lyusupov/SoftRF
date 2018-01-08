@@ -290,7 +290,7 @@ void NMEA_Position()
       (NMEALIB_SENTENCE_GPGGA | NMEALIB_SENTENCE_GPGSA | NMEALIB_SENTENCE_GPRMC));
 
     if (gen_sz) {
-      Serial.write((char *) nmealib_buf.buffer, gen_sz);
+      Serial.write((uint8_t *) nmealib_buf.buffer, gen_sz);
 
       if (settings->nmea_u) {
         WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);

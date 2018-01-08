@@ -169,7 +169,7 @@ void PickGNSSFix()
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
 
-      Serial.write((char *) &GNSSbuf[0], GNSS_cnt+1);
+      Serial.write((uint8_t *) &GNSSbuf[0], GNSS_cnt+1);
       Serial.write('\n');
 
       if (settings->nmea_u) {

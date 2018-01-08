@@ -250,6 +250,6 @@ void Raw_Transmit_UDP()
     Serial.println(UDPpacketBuffer);
 #endif
 
-    Uni_Udp.write(UDPpacketBuffer, strlen(UDPpacketBuffer));
+    Uni_Udp.write((uint8_t *) UDPpacketBuffer, strlen(UDPpacketBuffer));
     Uni_Udp.endPacket();
 }
