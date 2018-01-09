@@ -20,7 +20,6 @@
 #include <ESP8266mDNS.h>
 #include <FS.h>
 #include <TimeLib.h>
-#include <DNSServer.h>
 
 #include "WiFiHelper.h"
 #include "OTAHelper.h"
@@ -36,7 +35,7 @@ extern "C" {
 #endif
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
-String station_psk = MY_ACCESSPOINT_PSK ;
+String station_psk  = MY_ACCESSPOINT_PSK ;
 
 String host_name = HOSTNAME;
 
@@ -50,9 +49,13 @@ IPAddress subnet(255,255,255,0);
  */
 const char* ap_default_psk = "12345678"; ///< Default PSK.
 
+#if defined(USE_DNS_SERVER)
+#include <DNSServer.h>
+
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
 bool dns_active = false;
+#endif
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Uni_Udp;
@@ -253,7 +256,7 @@ void WiFi_setup()
     Serial.print(F("Setting soft-AP ... "));
     Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
       F("Ready") : F("Failed!"));
-#if 0
+#if defined(USE_DNS_SERVER)
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
     dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
@@ -270,9 +273,11 @@ void WiFi_setup()
 
 void WiFi_loop()
 {
+#if defined(USE_DNS_SERVER)
   if (dns_active) {
     dnsServer.processNextRequest();  
   }
+#endif
 }
 
 IPAddress WiFi_get_broadcast()
