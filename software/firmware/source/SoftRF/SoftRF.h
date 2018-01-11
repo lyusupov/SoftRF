@@ -21,7 +21,7 @@
 
 #include <Arduino.h>
 
-#define SOFTRF_FIRMWARE_VERSION "0.9"
+#define SOFTRF_FIRMWARE_VERSION "1.0-rc1"
 
 //#define TEST_PAW_ON_NICERF_SV610_FW466
 
