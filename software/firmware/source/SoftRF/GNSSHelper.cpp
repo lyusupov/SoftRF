@@ -17,17 +17,16 @@
  */
 
 #include <TimeLib.h>
-#include <SoftwareSerial.h>
 
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
-#include "WiFiHelper.h"
 #include "NMEAHelper.h"
+#include "SoCHelper.h"
+#include "WiFiHelper.h"
 
 #include "SoftRF.h"
 
 unsigned long GNSSTimeSyncMarker = 0;
-extern SoftwareSerial swSer;
 
 byte gnss_set_sucess = 0 ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
@@ -161,7 +160,7 @@ void GNSSTimeSync()
 void PickGNSSFix()
 {
   bool isValidSentence = false;
-  IPAddress broadcastIP = WiFi_get_broadcast();
+  IPAddress broadcastIP = SoC->WiFi_get_broadcast();
   int ndx;
 
   //check UART for data

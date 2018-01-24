@@ -17,14 +17,13 @@
  */
 
 #include <TimeLib.h>
-#include <SoftwareSerial.h>
 #include <TinyGPS++.h>
 
 #include "MAVLinkHelper.h"
 #include "GDL90Helper.h"
+#include "SoCHelper.h"
 
 unsigned long MAVLinkTimeSyncMarker = 0;
-extern SoftwareSerial swSer;
 
 void MAVLink_setup()
 {

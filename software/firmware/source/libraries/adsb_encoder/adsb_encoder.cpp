@@ -11,7 +11,7 @@
 
 #define MODES_GENERATOR_POLY 0xfff409U
 
-#if !defined(ESP8266)
+#if !defined(ESP8266) && !defined(ESP32)
 static unsigned int crc_table[256];
 #else
 #include <pgmspace.h>
@@ -64,7 +64,7 @@ unsigned int modes_crc(unsigned char *buf, size_t  len)
 	unsigned int rem = 0;
 	size_t  i;
 	for (rem = 0, i = len; i > 0; --i) {
-#if !defined(ESP8266)
+#if !defined(ESP8266) && !defined(ESP32)
 		rem = ((rem & 0x00ffff) << 8) ^ crc_table[*buf++ ^ ((rem & 0xff0000) >> 16)];
 #else
 		rem = ((rem & 0x00ffff) << 8) ^ pgm_read_dword(&crc_table[*buf++ ^ ((rem & 0xff0000) >> 16)]);
@@ -620,7 +620,7 @@ frame_data_t make_velocity_frame(unsigned int addr,
 
 int modescrc_module_init()
 {
-#if !defined(ESP8266)
+#if !defined(ESP8266) && !defined(ESP32)
 	int i;
 
 	for (i = 0; i < 256; ++i) {

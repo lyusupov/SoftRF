@@ -19,13 +19,11 @@
 #ifndef SOUNDHELPER_H
 #define SOUNDHELPER_H
 
-#include <SoftwareSerial.h>
-
 #include "SoftRF.h"
 
 void Sound_setup(void);
+#if 0
 void Sound_test(int var);
-
-extern SoftwareSerial swSer;
+#endif
 
 #endif /* SOUNDHELPER_H */

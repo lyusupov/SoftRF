@@ -49,14 +49,7 @@
    14 -> SCK
 */
 
-#include <SoftwareSerial.h>
-extern "C" {
-#include <user_interface.h>
-}
-
-#include "WiFiHelper.h"
 #include "OTAHelper.h"
-#include "WebHelper.h"
 #include "TimeHelper.h"
 #include "LEDHelper.h"
 #include "GNSSHelper.h"
@@ -68,6 +61,9 @@ extern "C" {
 #include "GDL90Helper.h"
 #include "NMEAHelper.h"
 #include "D1090Helper.h"
+#include "SoCHelper.h"
+#include "WiFiHelper.h"
+#include "WebHelper.h"
 
 #include "SoftRF.h"
 
@@ -89,13 +85,13 @@ unsigned long ExportTimeMarker = 0;
 
 //ADC_MODE(ADC_VCC);
 
-SoftwareSerial swSer(D3 /* 0 */, /* 5 */ 9 , false, 256);
-
 void setup()
 {
   rst_info *resetInfo;
 
-  resetInfo = ESP.getResetInfoPtr();
+  SoC_setup(); // Has to be very first procedure in the execution order
+
+  resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
   Serial.begin(38400);  
   //Misc_info();
@@ -105,14 +101,14 @@ void setup()
 #endif /* LOGGER_IS_ENABLED */
 
   Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
-  Serial.println(ESP.getResetReason());
+  Serial.println(SoC->getResetReason());
   Serial.print(F("Free heap size: ")); Serial.println(ESP.getFreeHeap());
-  Serial.println(ESP.getResetInfo()); Serial.println("");
+  Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
   Battery_setup();
 
-  ThisAircraft.addr = ESP.getChipId() & 0x00FFFFFF;
+  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
   RF_setup();
   delay(100);
@@ -139,7 +135,7 @@ void setup()
     LED_test();
   }
 
-  Sound_test(resetInfo->reason);
+  SoC->Sound_test(resetInfo->reason);
 
   if (settings->mode == SOFTRF_MODE_TXRX_TEST) {
     Time_setup();  

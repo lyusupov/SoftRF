@@ -16,23 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
 #include <FS.h>
 #include <TimeLib.h>
 
-#include "WiFiHelper.h"
 #include "OTAHelper.h"
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
-
-// Expose Espressif SDK functionality - wrapped in ifdef so that it still
-// compiles on other platforms
-#ifdef ESP8266
-extern "C" {
-#include "user_interface.h"
-}
-#endif
+#include "SoCHelper.h"
+#include "WiFiHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
@@ -165,14 +156,11 @@ void WiFi_setup()
 {
 
   // Set Hostname.
-
-  host_name += String(ESP.getChipId(), HEX);
-  WiFi.hostname(host_name);
+  host_name += String(SoC->getChipId(), HEX);
+  SoC->WiFi_hostname(host_name);
 
   // Print hostname.
-  //Serial.println("Hostname: " + hostname);
-  Serial.println("Hostname: " + WiFi.hostname());
-
+  Serial.println("Hostname: " + host_name);
 
   // Initialize file system.
   if (!SPIFFS.begin())
@@ -244,7 +232,7 @@ void WiFi_setup()
     
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
-    WiFi.setOutputPower(10); // 10 dB
+    SoC->WiFi_setOutputPower(10); // 10 dB
     // WiFi.setOutputPower(0); // 0 dB
     //system_phy_set_max_tpw(4 * 0); // 0 dB
     delay(10);
@@ -280,6 +268,7 @@ void WiFi_loop()
 #endif
 }
 
+#if 0
 IPAddress WiFi_get_broadcast()
 {
   struct ip_info ipinfo;
@@ -327,3 +316,4 @@ void WiFi_transmit_UDP(int port, byte *buf, size_t size)
     }
   }
 }
+#endif

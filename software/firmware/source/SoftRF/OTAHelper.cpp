@@ -16,13 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
 #include <FS.h>
 #include <ArduinoOTA.h>
 
 #include "OTAHelper.h"
+#include "SoCHelper.h"
 #include "WiFiHelper.h"
 
 void OTA_setup()

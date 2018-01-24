@@ -20,7 +20,6 @@
  */
 
 #include <TimeLib.h>
-#include <WiFiUdp.h>
 #include <lib_crc.h>
 #include <protocol.h>
 
@@ -28,6 +27,7 @@
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
 #include "SoftRF.h"
+#include "SoCHelper.h"
 #include "WiFiHelper.h"
 
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
@@ -325,13 +325,13 @@ void GDL90_Export()
 
   if (settings->gdl90) {
     size = makeHeartbeat(buf);
-    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
     size = makeOwnershipReport(buf, &ThisAircraft);
-    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
     size = makeGeometricAltitude(buf, &ThisAircraft);
-    WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
 
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
@@ -340,7 +340,7 @@ void GDL90_Export()
 
         if (distance < EXPORT_DISTANCE_FAR) {
           size = makeTrafficReport(buf, &Container[i]);
-          WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+          SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
         }
       }
     }

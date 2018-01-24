@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ESP8266FtpServer.h>
+#include "SoCHelper.h"
 #include "LogHelper.h"
 
 #if LOGGER_IS_ENABLED

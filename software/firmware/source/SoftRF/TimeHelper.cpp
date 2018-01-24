@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
 #include <TimeLib.h>
+
+#include "SoCHelper.h"
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
@@ -70,7 +70,7 @@ void Time_setup()
   Serial.println(F("Starting NTP UDP"));
   NTP_udp.begin(localPort);
   Serial.print(F("Local port: "));
-  Serial.println(NTP_udp.localPort());
+  Serial.println(localPort);
 
   //get a random server from the pool
   WiFi.hostByName(ntpServerName, timeServerIP);

@@ -18,16 +18,10 @@
 
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-
-#include "WebHelper.h"
 #include "BatteryHelper.h"
 #include "RFHelper.h"
-
-ESP8266WebServer server ( 80 );
+#include "SoCHelper.h"
+#include "WebHelper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -288,6 +282,7 @@ void handleRoot() {
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s</td></tr>\
+  <tr><th align=left>SoC</th><td align=right>%s</td></tr>\
   <tr><th align=left>Radio</th><td align=right>%s</td></tr>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
@@ -313,6 +308,7 @@ void handleRoot() {
 </body>\
 </html>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
+    (SoC == NULL ? "NONE" : SoC->name),
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
@@ -463,9 +459,9 @@ void Web_setup()
     HTTPUpload& upload = server.upload();
     if(upload.status == UPLOAD_FILE_START){
       Serial.setDebugOutput(true);
-      WiFiUDP::stopAll();
+      SoC->WiFiUDP_stopAll();
       Serial.printf("Update: %s\n", upload.filename.c_str());
-      uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+      uint32_t maxSketchSpace = SoC->maxSketchSpace();
       if(!Update.begin(maxSketchSpace)){//start with max available size
         Update.printError(Serial);
       }

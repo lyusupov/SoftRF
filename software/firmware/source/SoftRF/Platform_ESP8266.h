@@ -1,6 +1,6 @@
 /*
- * NMEAHelper.h
- * Copyright (C) 2017-2018 Linar Yusupov
+ * Platform_ESP8266.h
+ * Copyright (C) 2018 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#if defined(ESP8266)
 
-#ifndef NMEAHELPER_H
-#define NMEAHELPER_H
+#ifndef ESP8266HELPER_H
+#define ESP8266HELPER_H
 
-#include "SoCHelper.h"
-#include "SoftRF.h"
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
 
-void NMEA_setup(void);
-void NMEA_loop(void);
-void NMEA_Export(void);
-void NMEA_Position(void);
+#include <SoftwareSerial.h>
+#include <ESP8266FtpServer.h>
 
-#if defined(AIRCONNECT_IS_ACTIVE)
-extern WiFiClient AirConnectClient;
-#endif
+#define SOC_GPIO_PIN_SWSER_RX D3
+#define SOC_GPIO_PIN_SWSER_TX 9
+#define SOC_GPIO_PIN_LED      D1
+#define SOC_GPIO_PIN_BUZZER   10
 
-#endif /* NMEAHELPER_H */
+extern "C" {
+#include <user_interface.h>
+}
+
+extern ESP8266WebServer server;
+extern SoftwareSerial swSer;
+
+#endif /* ESP8266HELPER_H */
+
+#endif /* ESP8266 */

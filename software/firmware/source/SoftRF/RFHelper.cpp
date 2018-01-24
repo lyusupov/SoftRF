@@ -21,6 +21,9 @@
 #include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
 #include "Protocol_FANET.h"
+#include "SoCHelper.h"
+#include "EEPROMHelper.h"
+#include "WebHelper.h"
 
 #include <freqplan.h>
 
@@ -186,7 +189,7 @@ void RF_Transmit(size_t size)
       }
       tx_packets_counter++;
       RF_tx_size = 0;
-      TxRandomValue = ESP8266TrueRandom.random(600,1400);
+      TxRandomValue = SoC->random(600,1400);
       TxTimeMarker = millis();
     }
   }
@@ -325,14 +328,6 @@ void nrf905_transmit()
 #error This example requires DISABLE_INVERT_IQ_ON_RX to be set. Update \
        config.h in the lmic library to set it.
 #endif
-
-// Pin mapping
-const lmic_pinmap lmic_pins = {
-    .nss = D8,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst = LMIC_UNUSED_PIN,
-    .dio = {D0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
-};
 
 osjob_t sx1276_txjob;
 osjob_t sx1276_timeoutjob;

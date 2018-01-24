@@ -1,6 +1,6 @@
 /*
- * NMEAHelper.h
- * Copyright (C) 2017-2018 Linar Yusupov
+ * SoCHelper.cpp
+ * Copyright (C) 2018 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NMEAHELPER_H
-#define NMEAHELPER_H
-
 #include "SoCHelper.h"
-#include "SoftRF.h"
 
-void NMEA_setup(void);
-void NMEA_loop(void);
-void NMEA_Export(void);
-void NMEA_Position(void);
+SoC_ops_t *SoC;
 
-#if defined(AIRCONNECT_IS_ACTIVE)
-extern WiFiClient AirConnectClient;
-#endif
+void SoC_setup()
+{
+#if defined(ESP8266)
+  SoC = &ESP8266_ops;
+#endif /* ESP8266 */
 
-#endif /* NMEAHELPER_H */
+#if defined(ESP32)
+  SoC = &ESP32_ops;
+#endif /* ESP32 */
+
+  if (SoC && SoC->probe()) {
+    SoC->setup();
+    return;
+  }
+}

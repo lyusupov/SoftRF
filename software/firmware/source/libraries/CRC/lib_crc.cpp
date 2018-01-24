@@ -1,6 +1,6 @@
 #include "lib_crc.h"
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
 #endif
 
@@ -483,7 +483,7 @@ unsigned short update_crc_gdl90( unsigned short crc, char c ) {
   */
 
 static const unsigned char crc8_table[256]
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
  PROGMEM
 #endif
 = {
@@ -518,7 +518,7 @@ void update_crc8(unsigned char *crc, unsigned char m)
       * resultant crc obtained by appending m to the byte array
       */
 {
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   *crc = pgm_read_byte(&crc8_table[(*crc) ^ m]);
 #else
   *crc = crc8_table[(*crc) ^ m];

@@ -34,11 +34,9 @@ String Bin2Hex(byte *);
 
 extern ufo_t fo;
 extern uint32_t tx_packets_counter, rx_packets_counter;
-//extern tx_state txready;
 extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 extern WiFiClient client;
 extern TinyGPSPlus gps;
-//extern uint32_t Device_Id;
 
 #endif /* WEBHELPER_H */

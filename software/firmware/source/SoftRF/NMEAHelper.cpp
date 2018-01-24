@@ -17,13 +17,14 @@
  */
 
 #include <TimeLib.h>
-#include <WiFiUdp.h>
 #include <nmealib.h>
 
 #include "NMEAHelper.h"
 #include "GNSSHelper.h"
 #include "RFHelper.h"
+#include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "EEPROMHelper.h"
 
 #if defined(AIRCONNECT_IS_ACTIVE)
 WiFiServer AirConnectServer(AIR_CONNECT_PORT);
@@ -175,7 +176,7 @@ void NMEA_Export()
             Serial.print(NMEABuffer);
 
             if (settings->nmea_u) {
-              WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+              SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
             }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
@@ -202,7 +203,7 @@ void NMEA_Export()
             Serial.print(NMEABuffer);
 
             if (settings->nmea_u) {
-              WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+              SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
             }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
@@ -220,7 +221,7 @@ void NMEA_Position()
 {
   NmeaInfo info;
   size_t i;
-  IPAddress broadcastIP = WiFi_get_broadcast();
+  IPAddress broadcastIP = SoC->WiFi_get_broadcast();
   struct timeval tv;
 
   if (settings->nmea_g) {
@@ -293,7 +294,7 @@ void NMEA_Position()
       Serial.write((uint8_t *) nmealib_buf.buffer, gen_sz);
 
       if (settings->nmea_u) {
-        WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
+        SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
       }
 
 #if defined(AIRCONNECT_IS_ACTIVE)

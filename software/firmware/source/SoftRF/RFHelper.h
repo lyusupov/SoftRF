@@ -21,7 +21,6 @@
 
 #include <nRF905.h>
 #include <TimeLib.h>
-#include <ESP8266TrueRandom.h>
 
 #include <lmic.h>
 #include <hal/hal.h>
@@ -30,7 +29,6 @@
 
 #include "SoftRF.h"
 #include "GNSSHelper.h"
-#include "WebHelper.h"
 #include "Protocol_Legacy.h"
 #include "Protocol_P3I.h"
 
@@ -84,9 +82,7 @@ bool sx1276_receive(void);
 void sx1276_transmit(void);
 
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
-//extern tx_state txready;
 extern unsigned long TxTimeMarker;
-//extern uint32_t Device_Id;
 extern byte TxPkt[MAX_PKT_SIZE];
 extern ufo_t ThisAircraft;
 

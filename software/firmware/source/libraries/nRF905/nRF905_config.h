@@ -21,7 +21,7 @@
 
 // Use pin interrupt for data ready
 // NOTE: If you have other devices connected that use the SPI bus then you will need to call nRF905_interrupt_off() before using SPI comms and then RF905_interrupt_on() once you've finished.
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -42,7 +42,7 @@
 
 // Use software to get address match state instead of reading pin for high/low state
 // Not used in this library yet
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -53,7 +53,7 @@
 #define NRF905_DR_SW		1
 
 // Don't transmit if airway is busy (other transmissions are going on)
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -65,7 +65,7 @@
 
 #ifdef ARDUINO
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 // NodeMCU 1.0 GPIO pins
 #define TRX_EN		2	// Enable/standby pin
 #define PWR_MODE	4	// Power mode pin
@@ -171,7 +171,7 @@
 ///////////////////
 
 // Frequency
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -181,7 +181,7 @@
 // NRF905_BAND_433
 // NRF905_BAND_868
 // NRF905_BAND_915
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -225,7 +225,7 @@
 // Number of bytes for address
 // NRF905_ADDR_SIZE_1
 // NRF905_ADDR_SIZE_4
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -233,7 +233,7 @@
 #endif
 
 // Payload size (1 - 32)
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

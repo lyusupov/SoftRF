@@ -16,11 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-
 #include "RFHelper.h"
+#include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "WebHelper.h"
 
 #include "SoftRF.h"
 
@@ -179,13 +178,13 @@ void Misc_info()
 {
   Serial.println("\r\n");
   Serial.print(F("Chip ID: 0x"));
-  Serial.println(ESP.getChipId(), HEX);
+  Serial.println(SoC->getChipId(), HEX);
 
-  uint32_t realSize = ESP.getFlashChipRealSize();
+  uint32_t realSize = SoC->getFlashChipRealSize();
   uint32_t ideSize = ESP.getFlashChipSize();
   FlashMode_t ideMode = ESP.getFlashChipMode();
 
-  Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+  Serial.printf("Flash real id:   %08X\n", SoC->getFlashChipId());
   Serial.printf("Flash real size: %u\n\n", realSize);
 
   Serial.printf("Flash ide  size: %u\n", ideSize);
@@ -240,7 +239,7 @@ size_t Raw_Receive_UDP(uint8_t *buf)
 char misc_hexdata[2 * PKT_SIZE + 1] ;
 void Raw_Transmit_UDP()
 {
-    Uni_Udp.beginPacket(WiFi_get_broadcast(), RELAY_DST_PORT);
+    Uni_Udp.beginPacket(SoC->WiFi_get_broadcast(), RELAY_DST_PORT);
     fo.raw.toCharArray(misc_hexdata, sizeof(misc_hexdata));
     snprintf(UDPpacketBuffer, sizeof(UDPpacketBuffer), "%s\n", misc_hexdata );
 

@@ -30,6 +30,8 @@
 #if defined ESP8266
 #include <SoftwareSerial.h>
 extern SoftwareSerial swSer;
+#elif defined ESP32
+extern HardwareSerial Serial1;
 #endif
 
 mavlink_system_t mavlink_system = {12, MAV_COMP_ID_ADSB};
@@ -38,7 +40,7 @@ void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 {
 #if defined __AVR_ATmega32U4_
   Serial1.write(ch);
-#elif defined ESP8266
+#elif defined(ESP8266) || defined(ESP32)
   Serial.write(ch);
 #else
   Serial.write(ch);
@@ -129,6 +131,9 @@ void read_mavlink()
 #elif defined ESP8266
    while (swSer.available() > 0) {
             uint8_t ch = swSer.read();
+#elif defined ESP32
+   while (Serial1.available() > 0) {
+            uint8_t ch = Serial1.read();
 #else
    while (Serial.available() > 0) {
             uint8_t ch = Serial.read();

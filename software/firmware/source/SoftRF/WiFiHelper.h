@@ -19,7 +19,6 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
 #include "SoftRF.h"

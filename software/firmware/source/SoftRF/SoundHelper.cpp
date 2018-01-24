@@ -19,7 +19,7 @@
 #include "SoundHelper.h"
 #include "EEPROMHelper.h"
 
-#if ESP8266
+#if 0
 #include <ets_sys.h>
 #include <osapi.h>
 #include <gpio.h>
@@ -41,6 +41,7 @@ void Sound_setup(void)
 
 }
 
+#if 0
 void Sound_test(int var)
 {
   if (settings->volume != BUZZER_OFF) {
@@ -69,3 +70,4 @@ void Sound_test(int var)
     swSer.enableRx(true);
   }
 }
+#endif
