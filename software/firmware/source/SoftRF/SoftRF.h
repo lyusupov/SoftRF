@@ -38,9 +38,6 @@
 /* Max. paket's payload size for all supported RF protocols */
 #define MAX_PKT_SIZE  32 
 
-#define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
-#define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
-
 #define TIMEOUT   500
 
 #define RRB_SIZE  10

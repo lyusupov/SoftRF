@@ -51,6 +51,9 @@ enum
   RF_TX_POWER_OFF
 };
 
+#define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
+#define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
+
 typedef struct rfchip_ops_struct {
   const char name[8];
   bool (*probe)();

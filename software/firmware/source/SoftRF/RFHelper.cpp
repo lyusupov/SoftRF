@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <SPI.h>
 
 #include "RFHelper.h"
 #include "Protocol_Legacy.h"
@@ -56,7 +57,7 @@ rfchip_ops_t nrf905_ops = {
   nrf905_setup,
   nrf905_channel,
   nrf905_receive,
-  nrf905_transmit  
+  nrf905_transmit
 };
 
 rfchip_ops_t sx1276_ops = {
@@ -65,7 +66,7 @@ rfchip_ops_t sx1276_ops = {
   sx1276_setup,
   sx1276_channel,
   sx1276_receive,
-  sx1276_transmit  
+  sx1276_transmit
 };
 
 uint8_t parity(uint32_t x) {
@@ -86,23 +87,27 @@ void RF_setup(void)
     if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;  
       Serial.println(F("SX1276 RFIC is detected."));
-    } else {
+    } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
-      Serial.println(F("SX1276 RFIC is NOT detected! Fallback to NRF905 operations."));
-    }  
+      Serial.println(F("NRF905 RFIC is detected."));
+    } else {
+      Serial.println(F("WARNING! Neither SX1276 nor NRF905 RFIC is detected!"));    
+    }
   }  
 
   /* "AUTO" freq. will set the plan upon very first valid GNSS fix */
   if (settings->band == RF_BAND_AUTO) {
     /* Supersede EU plan with UK when PAW is selected */
-    if (rf_chip != &nrf905_ops && settings->rf_protocol == RF_PROTOCOL_P3I) {
+    if (rf_chip && rf_chip != &nrf905_ops && settings->rf_protocol == RF_PROTOCOL_P3I) {
       RF_FreqPlan.setPlan(RF_BAND_UK);
     }
   } else {
     RF_FreqPlan.setPlan(settings->band);
   }
 
-  rf_chip->setup();
+  if (rf_chip) {
+    rf_chip->setup();
+  }
 }
 
 void RF_SetChannel(void)
@@ -216,7 +221,47 @@ static uint8_t nrf905_channel_prev = (uint8_t) -1;
 
 bool nrf905_probe()
 {
-  return true;
+  uint8_t addr[4];
+  uint8_t ref[] = TXADDR;
+
+  digitalWrite(CSN, HIGH);
+  pinMode(CSN, OUTPUT);
+
+  SPI.begin();
+  SPI.setClockDivider(SPI_CLOCK_DIV2);
+
+  digitalWrite(CSN, LOW);
+
+  SPI.transfer(NRF905_CMD_R_TX_ADDRESS);
+  for(uint8_t i=4;i--;) {
+    addr[i] = SPI.transfer(NRF905_CMD_NOP);
+  }
+
+  digitalWrite(CSN, HIGH);
+
+  SPI.end();
+
+#if 0
+  delay(3000);
+  Serial.print("NRF905 probe: ");
+  Serial.print(addr[0], HEX); Serial.print(" ");
+  Serial.print(addr[1], HEX); Serial.print(" ");
+  Serial.print(addr[2], HEX); Serial.print(" ");
+  Serial.print(addr[3], HEX); Serial.print(" ");
+  Serial.println();
+#endif
+
+  /* Cold reset state */
+  if ((addr[0] == 0xE7) && (addr[1] == 0xE7) && (addr[2] == 0xE7) && (addr[3] == 0xE7)) {
+    return true;
+  }
+
+  /* Warm reset state */
+  if ((addr[0] == 0xE7) && (addr[1] == ref[0]) && (addr[2] == ref[1]) && (addr[3] == ref[2])) {
+    return true;
+  }
+
+  return false;
 }
 
 void nrf905_channel(uint8_t channel)
