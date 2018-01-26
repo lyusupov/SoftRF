@@ -281,8 +281,7 @@ void handleRoot() {
  <h1 align=center>SoftRF status</h1>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s</td></tr>\
-  <tr><th align=left>SoC</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
   <tr><th align=left>Radio</th><td align=right>%s</td></tr>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
