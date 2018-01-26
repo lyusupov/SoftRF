@@ -33,6 +33,12 @@
 #define SOC_GPIO_PIN_LED      22
 #define SOC_GPIO_PIN_BUZZER   10
 
+#define SOC_GPIO_PIN_MOSI     27
+#define SOC_GPIO_PIN_MISO     19
+#define SOC_GPIO_PIN_SCK      5
+#define SOC_GPIO_PIN_SS       18
+#define SOC_GPIO_PIN_DIO0     26
+
 extern WebServer server;
 extern HardwareSerial Serial1;
 

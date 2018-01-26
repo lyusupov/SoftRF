@@ -26,10 +26,10 @@
 
 // RFM95W pin mapping
 const lmic_pinmap lmic_pins = {
-    .nss = 5,
+    .nss = SOC_GPIO_PIN_SS,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = LMIC_UNUSED_PIN,
-    .dio = {23, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
 HardwareSerial Serial1(1);
