@@ -18,6 +18,7 @@
 #if defined(ESP8266)
 
 #include <ESP8266TrueRandom.h>
+#include <SPI.h>
 
 #include "Platform_ESP8266.h"
 #include "SoCHelper.h"
@@ -48,17 +49,6 @@ void ICACHE_FLASH_ATTR user_init()
   // init gpio subsytem
   gpio_init();
   PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA3_U, FUNC_GPIO10);
-}
-
-static bool ESP8266_probe()
-{
-
-  return true;
-}
-
-static void ESP8266_setup()
-{
-
 }
 
 static uint32_t ESP8266_getChipId()
@@ -193,10 +183,19 @@ static bool ESP8266_WiFi_hostname(String aHostname)
   return WiFi.hostname(aHostname);
 }
 
+static bool ESP8266_EEPROM_begin(size_t size)
+{
+  EEPROM.begin(size);
+  return true;
+}
+
+static void ESP8266_SPI_begin()
+{
+  SPI.begin();
+}
+
 SoC_ops_t ESP8266_ops = {
   "ESP8266",
-  ESP8266_probe,
-  ESP8266_setup,
   ESP8266_getChipId,
   ESP8266_getFlashChipId,
   ESP8266_getFlashChipRealSize,
@@ -210,7 +209,9 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_WiFi_get_broadcast,
   ESP8266_WiFi_transmit_UDP,
   ESP8266_WiFiUDP_stopAll,
-  ESP8266_WiFi_hostname
+  ESP8266_WiFi_hostname,
+  ESP8266_EEPROM_begin,
+  ESP8266_SPI_begin
 };
 
 #endif /* ESP8266 */

@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <EEPROM.h>
-
+#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 
@@ -28,7 +27,13 @@ settings_t *settings;
 
 void EEPROM_setup()
 {
-  EEPROM.begin(sizeof(eeprom_t));
+  if (!SoC->EEPROM_begin(sizeof(eeprom_t)))
+  {
+    Serial.print(F("ERROR: Failed to initialize "));
+    Serial.print(sizeof(eeprom_t));
+    Serial.println(F(" bytes of EEPROM!"));
+    delay(1000000);
+  }
 
   for (int i=0; i<sizeof(eeprom_t); i++) {
     eeprom_block.raw[i] = EEPROM.read(i);  

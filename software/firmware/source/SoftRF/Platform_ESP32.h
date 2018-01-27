@@ -30,14 +30,25 @@
 #define SoftwareSerial HardwareSerial
 #define swSer Serial1
 
-#define SOC_GPIO_PIN_LED      22
-#define SOC_GPIO_PIN_BUZZER   10
+/* Peripherals */
+#define SOC_GPIO_PIN_GNSS     23
+#define SOC_GPIO_PIN_LED      25
+#define SOC_GPIO_PIN_BUZZER   13
 
+/* SPI */
 #define SOC_GPIO_PIN_MOSI     27
 #define SOC_GPIO_PIN_MISO     19
 #define SOC_GPIO_PIN_SCK      5
 #define SOC_GPIO_PIN_SS       18
+
+/* SX1276 (RFM95W) */
+#define SOC_GPIO_PIN_RST      14
 #define SOC_GPIO_PIN_DIO0     26
+
+/* NRF905 */
+#define SOC_GPIO_PIN_TXE      26
+#define SOC_GPIO_PIN_CE       12
+#define SOC_GPIO_PIN_PWR      14
 
 extern WebServer server;
 extern HardwareSerial Serial1;

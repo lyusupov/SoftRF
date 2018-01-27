@@ -65,16 +65,29 @@
 
 #ifdef ARDUINO
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266)
 // NodeMCU 1.0 GPIO pins
-#define TRX_EN		2	// Enable/standby pin
-#define PWR_MODE	4	// Power mode pin
-#define TX_EN		16	// TX / RX mode pin
-#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
-#define CSN			15	// SPI slave select pin
+#define TRX_EN    2   // Enable/standby pin
+#define PWR_MODE  4   // Power mode pin
+#define TX_EN     16  // TX / RX mode pin
+#define CSN       15  // SPI slave select pin
 
+#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
 #define DR			5
+
+#elif defined(ESP32)
+
+// DOIT ESP32
+#define TRX_EN    12  // Enable/standby pin
+#define PWR_MODE  14  // Power mode pin
+#define TX_EN     26  // TX / RX mode pin
+#define CSN       18  // SPI slave select pin
+
+#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
+#define DR			5
+
 #else
+
 // Arduino pins
 #define TRX_EN		7	// Enable/standby pin
 #define PWR_MODE	8	// Power mode pin

@@ -154,14 +154,7 @@ bool saveConfig(String *ssid, String *pass)
  */
 void WiFi_setup()
 {
-
-  // Set Hostname.
-  host_name += String(SoC->getChipId(), HEX);
-  SoC->WiFi_hostname(host_name);
-
-  // Print hostname.
-  Serial.println("Hostname: " + host_name);
-
+#if 0
   // Initialize file system.
   if (!SPIFFS.begin())
   {
@@ -177,6 +170,7 @@ void WiFi_setup()
 
     Serial.println(F("No WiFi connection information available."));
   }
+#endif
 
   // Check WiFi connection
   // ... check mode
@@ -206,6 +200,13 @@ void WiFi_setup()
     // ... Begin with sdk config.
     WiFi.begin();
   }
+
+  // Set Hostname.
+  host_name += String(SoC->getChipId(), HEX);
+  SoC->WiFi_hostname(host_name);
+
+  // Print hostname.
+  Serial.println("Hostname: " + host_name);
 
   Serial.println(F("Wait for WiFi connection."));
 

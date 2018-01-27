@@ -142,7 +142,11 @@ static void hal_io_check() {
 static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
 
 static void hal_spi_init () {
-    SPI.begin();
+    SPI.begin(
+#if defined(ESP32)
+        5, 19, 27, 18
+#endif
+    );
 }
 
 void hal_pin_nss (u1_t val) {

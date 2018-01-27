@@ -156,7 +156,12 @@ void nRF905_init()
 	digitalWrite(CSN, HIGH);
 	pinMode(CSN, OUTPUT);
 
-	SPI.begin();
+	SPI.begin(
+#if defined(ESP32)
+		5, 19, 27, 18
+#endif
+		);
+
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
 #else
 	TRX_EN_DDR |= _BV(TRX_EN_BIT);

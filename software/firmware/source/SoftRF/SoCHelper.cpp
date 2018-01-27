@@ -22,16 +22,13 @@ SoC_ops_t *SoC;
 
 void SoC_setup()
 {
+
 #if defined(ESP8266)
   SoC = &ESP8266_ops;
-#endif /* ESP8266 */
-
-#if defined(ESP32)
+#elif defined(ESP32)
   SoC = &ESP32_ops;
-#endif /* ESP32 */
+#else
+#error "This hardware platform is not supported!"
+#endif
 
-  if (SoC && SoC->probe()) {
-    SoC->setup();
-    return;
-  }
 }

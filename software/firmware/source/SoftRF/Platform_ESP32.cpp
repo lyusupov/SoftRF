@@ -17,6 +17,8 @@
  */
 #if defined(ESP32)
 
+#include <SPI.h>
+
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
 #include "SoundHelper.h"
@@ -129,10 +131,18 @@ static bool ESP32_WiFi_hostname(String aHostname)
   return WiFi.setHostname(aHostname.c_str());
 }
 
+static bool ESP32_EEPROM_begin(size_t size)
+{
+  return EEPROM.begin(size);
+}
+
+static void ESP32_SPI_begin()
+{
+  SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
+}
+
 SoC_ops_t ESP32_ops = {
   "ESP32",
-  ESP32_probe,
-  ESP32_setup,
   ESP32_getChipId,
   ESP32_getFlashChipId,
   ESP32_getFlashChipRealSize,
@@ -146,7 +156,9 @@ SoC_ops_t ESP32_ops = {
   ESP32_WiFi_get_broadcast,
   ESP32_WiFi_transmit_UDP,
   ESP32_WiFiUDP_stopAll,
-  ESP32_WiFi_hostname
+  ESP32_WiFi_hostname,
+  ESP32_EEPROM_begin,
+  ESP32_SPI_begin
 };
 
 #endif /* ESP32 */

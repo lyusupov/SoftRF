@@ -227,7 +227,7 @@ bool nrf905_probe()
   digitalWrite(CSN, HIGH);
   pinMode(CSN, OUTPUT);
 
-  SPI.begin();
+  SoC->SPI_begin();
   SPI.setClockDivider(SPI_CLOCK_DIV2);
 
   digitalWrite(CSN, LOW);

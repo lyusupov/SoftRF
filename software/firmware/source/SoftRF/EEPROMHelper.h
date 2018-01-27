@@ -19,6 +19,8 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
+#include <EEPROM.h>
+
 #include "SoftRF.h"
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
