@@ -163,9 +163,18 @@ void PickGNSSFix()
   IPAddress broadcastIP = SoC->WiFi_get_broadcast();
   int ndx;
 
-  //check UART for data
-  while (swSer.available() > 0) {
-    GNSSbuf[GNSS_cnt] = swSer.read();
+  /*
+   * Check both SW and HW UARTs for data
+   * WARNING! Make use only one input source at a time.
+   */
+  while (swSer.available() > 0 || Serial.available() > 0) {
+
+    if (swSer.available() > 0) {
+      GNSSbuf[GNSS_cnt] = swSer.read();
+    } else {
+      GNSSbuf[GNSS_cnt] = Serial.read();
+    }
+
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
       for (ndx = GNSS_cnt - 4; ndx >= 0; ndx--) { // skip CS and *
