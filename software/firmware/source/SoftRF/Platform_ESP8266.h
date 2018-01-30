@@ -28,10 +28,27 @@
 #include <SoftwareSerial.h>
 #include <ESP8266FtpServer.h>
 
+/* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX D3
-#define SOC_GPIO_PIN_SWSER_TX 9
+#define SOC_GPIO_PIN_SWSER_TX 9  /* not in use */
 #define SOC_GPIO_PIN_LED      D1
 #define SOC_GPIO_PIN_BUZZER   10
+#define SOC_GPIO_PIN_BATTERY  AD0
+
+/* SPI */
+#define SOC_GPIO_PIN_MOSI     D7
+#define SOC_GPIO_PIN_MISO     D6
+#define SOC_GPIO_PIN_SCK      D5
+#define SOC_GPIO_PIN_SS       D8
+
+/* SX1276 (RFM95W) */
+#define SOC_GPIO_PIN_RST      D2
+#define SOC_GPIO_PIN_DIO0     D0
+
+/* NRF905 */
+#define SOC_GPIO_PIN_TXE      D0
+#define SOC_GPIO_PIN_CE       D4
+#define SOC_GPIO_PIN_PWR      D2
 
 extern "C" {
 #include <user_interface.h>

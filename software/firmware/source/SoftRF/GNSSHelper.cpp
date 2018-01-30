@@ -107,7 +107,7 @@ boolean getUBX_ACK(uint8_t *MSG) {
 
 void GNSS_setup() {
 
-  swSer.begin(9600);
+  SoC->swSer_begin(9600);
 
 #if 0
   gnss_set_sucess = 0;

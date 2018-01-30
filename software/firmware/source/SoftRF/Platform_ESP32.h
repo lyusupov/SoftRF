@@ -31,17 +31,18 @@
 #define swSer Serial1
 
 /* Peripherals */
-#define SOC_GPIO_PIN_GNSS     23
+#define SOC_GPIO_PIN_GNSS_RX  23
+#define SOC_GPIO_PIN_GNSS_TX  2 /* OLED: Heltec - 4 & 15 ; TTGO V2 - 21 & 22 */
 #define SOC_GPIO_PIN_LED      25
 #define SOC_GPIO_PIN_BUZZER   13
 
-/* SPI */
+/* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI     27
 #define SOC_GPIO_PIN_MISO     19
 #define SOC_GPIO_PIN_SCK      5
 #define SOC_GPIO_PIN_SS       18
 
-/* SX1276 (RFM95W) */
+/* SX1276 [RFM95W] (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_RST      14
 #define SOC_GPIO_PIN_DIO0     26
 

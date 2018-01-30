@@ -51,6 +51,11 @@ void ICACHE_FLASH_ATTR user_init()
   PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA3_U, FUNC_GPIO10);
 }
 
+static void ESP8266_setup()
+{
+ /* Do nothing */
+}
+
 static uint32_t ESP8266_getChipId()
 {
   return ESP.getChipId();
@@ -94,20 +99,20 @@ static void ESP8266_Sound_test(int var)
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
         var == REASON_SOFT_RESTART) {
-      tone(10, 440, 500);delay(500);
-      tone(10, 640, 500);delay(500);
-      tone(10, 840, 500);delay(500);
-      tone(10, 1040, 500);
+      tone(SOC_GPIO_PIN_BUZZER, 440, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 500);
     } else if (var == REASON_WDT_RST) {
-      tone(10, 440, 500);delay(500);
-      tone(10, 1040, 500);delay(500);
-      tone(10, 440, 500);delay(500);
-      tone(10, 1040, 500);
+      tone(SOC_GPIO_PIN_BUZZER, 440, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 440, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 500);
     } else {
-      tone(10, 1040, 500);delay(500);
-      tone(10, 840, 500);delay(500);
-      tone(10, 640, 500);delay(500);
-      tone(10, 440, 500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640, 500);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 440, 500);
     }
     delay(600);
 
@@ -194,8 +199,14 @@ static void ESP8266_SPI_begin()
   SPI.begin();
 }
 
+static void ESP8266_swSer_begin(unsigned long baud)
+{
+  swSer.begin(baud);
+}
+
 SoC_ops_t ESP8266_ops = {
   "ESP8266",
+  ESP8266_setup,
   ESP8266_getChipId,
   ESP8266_getFlashChipId,
   ESP8266_getFlashChipRealSize,
@@ -211,7 +222,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_WiFiUDP_stopAll,
   ESP8266_WiFi_hostname,
   ESP8266_EEPROM_begin,
-  ESP8266_SPI_begin
+  ESP8266_SPI_begin,
+  ESP8266_swSer_begin
 };
 
 #endif /* ESP8266 */

@@ -18,6 +18,8 @@
 #if defined(ESP32)
 
 #include <SPI.h>
+#include <esp_err.h>
+#include <esp_wifi.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -25,6 +27,9 @@
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 #include "WiFiHelper.h"
+
+#define LEDC_CHANNEL_BUZZER     0
+#define LEDC_RESOLUTION_BUZZER  8
 
 // RFM95W pin mapping
 const lmic_pinmap lmic_pins = {
@@ -38,15 +43,10 @@ HardwareSerial Serial1(1);
 
 WebServer server ( 80 );
 
-static bool ESP32_probe()
-{
-/* not implemented yet */
-  return true;
-}
-
 static void ESP32_setup()
 {
-/* not implemented yet */
+  ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+  ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
 }
 
 static uint32_t ESP32_getChipId()
@@ -95,7 +95,32 @@ static long ESP32_random(long howsmall, long howBig)
 
 static void ESP32_Sound_test(int var)
 {
-/* not implemented yet */
+  if (settings->volume != BUZZER_OFF) {
+
+    ledcWrite(LEDC_CHANNEL_BUZZER, 125); // high volume
+
+    if (var == REASON_DEFAULT_RST ||
+        var == REASON_EXT_SYS_RST ||
+        var == REASON_SOFT_RESTART) {
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 640);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 840);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 1040);
+    } else if (var == REASON_WDT_RST) {
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 1040);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 1040);
+    } else {
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 1040);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 840);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 640);delay(500);
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);
+    }
+    delay(600);
+
+    ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
+  }
 }
 
 static uint32_t ESP32_maxSketchSpace()
@@ -103,22 +128,85 @@ static uint32_t ESP32_maxSketchSpace()
   return 0x140000;
 }
 
+static const int8_t ESP32_dB_to_power_level[21] = {
+  8,  /* 2    dB, #0 */
+  8,  /* 2    dB, #1 */
+  8,  /* 2    dB, #2 */
+  8,  /* 2    dB, #3 */
+  8,  /* 2    dB, #4 */
+  20, /* 5    dB, #5 */
+  20, /* 5    dB, #6 */
+  28, /* 7    dB, #7 */
+  28, /* 7    dB, #8 */
+  34, /* 8.5  dB, #9 */
+  34, /* 8.5  dB, #10 */
+  44, /* 11   dB, #11 */
+  44, /* 11   dB, #12 */
+  52, /* 13   dB, #13 */
+  52, /* 13   dB, #14 */
+  60, /* 15   dB, #15 */
+  60, /* 15   dB, #16 */
+  68, /* 17   dB, #17 */
+  74, /* 18.5 dB, #18 */
+  76, /* 19   dB, #19 */
+  78  /* 19.5 dB, #20 */
+};
+
 static void ESP32_WiFi_setOutputPower(int dB)
 {
-/* not implemented yet */
+  if (dB > 20) {
+    dB = 20;
+  }
+
+  if (dB < 0) {
+    dB = 0;
+  }
+
+  ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dB_to_power_level[dB]));
 }
 
 static IPAddress ESP32_WiFi_get_broadcast()
 {
-/* not implemented yet */
-  IPAddress broadcastIp((192,168,1,255));
+  tcpip_adapter_ip_info_t info;
+  IPAddress broadcastIp;
+
+  if (WiFi.getMode() == WIFI_STA) {
+    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &info);
+  } else {
+    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &info);
+  }
+  broadcastIp = ~info.netmask.addr | info.ip.addr;
 
   return broadcastIp;
 }
 
 static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-/* not implemented yet */
+  IPAddress ClientIP;
+
+  if (WiFi.getMode() == WIFI_STA) {
+    ClientIP = ESP32_WiFi_get_broadcast();
+
+    Uni_Udp.beginPacket(ClientIP, port);
+    Uni_Udp.write(buf, size);
+    Uni_Udp.endPacket();
+
+  } else {
+    wifi_sta_list_t stations;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
+
+    tcpip_adapter_sta_list_t infoList;
+    ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
+
+    int i = 0;
+    while(i < infoList.num) {
+      ClientIP = infoList.sta[i++].ip.addr;
+
+      Uni_Udp.beginPacket(ClientIP, port);
+      Uni_Udp.write(buf, size);
+      Uni_Udp.endPacket();
+    }
+  }
 }
 
 static void ESP32_WiFiUDP_stopAll()
@@ -141,8 +229,14 @@ static void ESP32_SPI_begin()
   SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
 }
 
+static void ESP32_swSer_begin(unsigned long baud)
+{
+  swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+}
+
 SoC_ops_t ESP32_ops = {
   "ESP32",
+  ESP32_setup,
   ESP32_getChipId,
   ESP32_getFlashChipId,
   ESP32_getFlashChipRealSize,
@@ -158,7 +252,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_WiFiUDP_stopAll,
   ESP32_WiFi_hostname,
   ESP32_EEPROM_begin,
-  ESP32_SPI_begin
+  ESP32_SPI_begin,
+  ESP32_swSer_begin
 };
 
 #endif /* ESP32 */

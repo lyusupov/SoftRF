@@ -27,7 +27,7 @@ unsigned long MAVLinkTimeSyncMarker = 0;
 
 void MAVLink_setup()
 {
-  swSer.begin(57600);    
+  SoC->swSer_begin(57600);
 }
 
 void PickMAVLinkFix()

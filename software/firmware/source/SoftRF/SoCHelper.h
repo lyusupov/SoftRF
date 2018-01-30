@@ -25,6 +25,7 @@
 
 typedef struct SoC_ops_struct {
   const char name[16];
+  void (*setup)();
   uint32_t (*getChipId)();
   uint32_t (*getFlashChipId)();
   uint32_t (*getFlashChipRealSize)();
@@ -41,6 +42,7 @@ typedef struct SoC_ops_struct {
   bool (*WiFi_hostname)(String);
   bool (*EEPROM_begin)(size_t);
   void (*SPI_begin)();
+  void (*swSer_begin)(unsigned long);
 } SoC_ops_t;
 
 extern SoC_ops_t *SoC;

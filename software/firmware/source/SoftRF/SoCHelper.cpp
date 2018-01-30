@@ -31,4 +31,7 @@ void SoC_setup()
 #error "This hardware platform is not supported!"
 #endif
 
+  if (SoC && SoC->setup) {
+    SoC->setup();
+  }
 }

@@ -66,11 +66,20 @@
 #ifdef ARDUINO
 
 #if defined(ESP8266)
+
+#if defined(ARDUINO_ESP8266_NODEMCU)
 // NodeMCU 1.0 GPIO pins
+#define TRX_EN    D4  // GPIO 2   // Enable/standby pin
+#define PWR_MODE  D2  // GPIO 4   // Power mode pin
+#define TX_EN     D0  // GPIO 16  // TX / RX mode pin
+#define CSN       D8  // GPIO 15  // SPI slave select pin
+#else
+/* Generic ESP8266 */
 #define TRX_EN    2   // Enable/standby pin
 #define PWR_MODE  4   // Power mode pin
 #define TX_EN     16  // TX / RX mode pin
 #define CSN       15  // SPI slave select pin
+#endif /* ARDUINO_ESP8266_NODEMCU */
 
 #define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
 #define DR			5
