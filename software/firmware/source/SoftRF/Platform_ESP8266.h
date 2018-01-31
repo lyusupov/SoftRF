@@ -41,14 +41,28 @@
 #define SOC_GPIO_PIN_SCK      D5
 #define SOC_GPIO_PIN_SS       D8
 
-/* SX1276 (RFM95W) */
-#define SOC_GPIO_PIN_RST      D2
-#define SOC_GPIO_PIN_DIO0     D0
-
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      D0
 #define SOC_GPIO_PIN_CE       D4
 #define SOC_GPIO_PIN_PWR      D2
+
+#define SOFTRF_LORA_PCB_1_1
+//#define SOFTRF_LORA_PCB_1_2_PROTO
+
+/* SX1276 (RFM95W) */
+#if defined(SOFTRF_LORA_PCB_1_1)
+
+#define SOC_GPIO_PIN_RST      D2
+#define SOC_GPIO_PIN_DIO0     D0
+
+#elif defined(SOFTRF_LORA_PCB_1_2_PROTO)
+
+#define SOC_GPIO_PIN_RST      D2
+#define SOC_GPIO_PIN_DIO0     D0
+#define SOC_GPIO_PIN_SDA      D2
+#define SOC_GPIO_PIN_SCL      D4
+
+#endif /* SOFTRF_LORA_PCB */
 
 extern "C" {
 #include <user_interface.h>

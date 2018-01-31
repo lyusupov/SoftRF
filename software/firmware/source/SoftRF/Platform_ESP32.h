@@ -42,14 +42,28 @@
 #define SOC_GPIO_PIN_SCK      5
 #define SOC_GPIO_PIN_SS       18
 
-/* SX1276 [RFM95W] (does match Heltec & TTGO LoRa32 pins mapping) */
-#define SOC_GPIO_PIN_RST      14
-#define SOC_GPIO_PIN_DIO0     26
-
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      26
 #define SOC_GPIO_PIN_CE       12
 #define SOC_GPIO_PIN_PWR      14
+
+#define SOFTRF_LORA_PCB_1_1
+//#define SOFTRF_LORA_PCB_1_2_PROTO
+
+/* SX1276 [RFM95W] (does match Heltec & TTGO LoRa32 pins mapping) */
+#if defined(SOFTRF_LORA_PCB_1_1)
+
+#define SOC_GPIO_PIN_RST      14
+#define SOC_GPIO_PIN_DIO0     26
+
+#elif defined(SOFTRF_LORA_PCB_1_2_PROTO)
+
+#define SOC_GPIO_PIN_RST      14
+#define SOC_GPIO_PIN_DIO0     26
+#define SOC_GPIO_PIN_SDA      14
+#define SOC_GPIO_PIN_SCL      12
+
+#endif /* SOFTRF_LORA_PCB */
 
 extern WebServer server;
 extern HardwareSerial Serial1;
