@@ -64,6 +64,7 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "WebHelper.h"
+#include "BaroHelper.h"
 
 #include "SoftRF.h"
 
@@ -112,6 +113,10 @@ void setup()
 
   RF_setup();
   delay(100);
+
+  if (rf_chip && (rf_chip->type == RF_MODULE_RFM95W)) {
+    Baro_setup();
+  }
 
   if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
     Serial.begin(57600);

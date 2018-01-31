@@ -46,6 +46,12 @@ enum
 
 enum
 {
+  RF_MODULE_NRF905,
+  RF_MODULE_RFM95W
+};
+
+enum
+{
   RF_TX_POWER_FULL,
   RF_TX_POWER_LOW,
   RF_TX_POWER_OFF
@@ -55,6 +61,7 @@ enum
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
 
 typedef struct rfchip_ops_struct {
+  byte type;
   const char name[8];
   bool (*probe)();
   void (*setup)();
