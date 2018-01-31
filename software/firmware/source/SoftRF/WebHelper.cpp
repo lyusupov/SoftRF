@@ -22,6 +22,7 @@
 #include "RFHelper.h"
 #include "SoCHelper.h"
 #include "WebHelper.h"
+#include "BaroHelper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -283,6 +284,7 @@ void handleRoot() {
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
   <tr><th align=left>Radio</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Baro</th><td align=right>%s</td></tr>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
   <tr><th align=left>Packets:</th></tr>\
@@ -309,6 +311,7 @@ void handleRoot() {
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
     (SoC == NULL ? "NONE" : SoC->name),
     (rf_chip == NULL ? "NONE" : rf_chip->name),
+    (baro_chip == NULL ? "NONE" : baro_chip->name),
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
