@@ -52,7 +52,7 @@ size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 rfchip_ops_t nrf905_ops = {
-  RF_MODULE_NRF905,
+  RF_IC_NRF905,
   "NRF905",
   nrf905_probe,
   nrf905_setup,
@@ -62,8 +62,8 @@ rfchip_ops_t nrf905_ops = {
 };
 
 rfchip_ops_t sx1276_ops = {
-  RF_MODULE_RFM95W,
-  "RFM95W",
+  RF_IC_SX1276,
+  "SX1276",
   sx1276_probe,
   sx1276_setup,
   sx1276_channel,

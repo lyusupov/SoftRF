@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Wire.h>
 #include <Adafruit_BMP085.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MPL3115A2.h>
@@ -141,8 +140,6 @@ void Baro_setup()
 
 #if defined(SOFTRF_LORA_PCB_1_2_PROTO)
 
-  Wire.pins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-
   baro_chip = &bmp180_ops;
 
   if (baro_chip->probe()) {
@@ -171,6 +168,7 @@ void Baro_setup()
 
     baro_chip->setup();
   } else {
+    baro_chip = NULL;
     Serial.println(F("WARNING! Barometric pressure sensor is NOT detected."));
   }
 

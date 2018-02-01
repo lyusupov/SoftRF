@@ -114,7 +114,7 @@ void setup()
   RF_setup();
   delay(100);
 
-  if (rf_chip && (rf_chip->type == RF_MODULE_RFM95W)) {
+  if (rf_chip && (rf_chip->type == RF_IC_SX1276)) {
     Baro_setup();
   }
 

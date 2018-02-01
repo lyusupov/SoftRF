@@ -46,8 +46,8 @@ enum
 
 enum
 {
-  RF_MODULE_NRF905,
-  RF_MODULE_RFM95W
+  RF_IC_NRF905,
+  RF_IC_SX1276
 };
 
 enum
