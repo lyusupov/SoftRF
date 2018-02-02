@@ -47,6 +47,24 @@
 #define LED_EXPIRATION_TIME     5 /* seconds */
 #define EXPORT_EXPIRATION_TIME  5 /* seconds */
 
+/*
+ * If you need for SoftRF to operate in wireless
+ * client mode - specify your local AP's SSID/PSK:
+ *
+ * #define MY_ACCESSPOINT_SSID "My_AP_SSID"
+ * #define MY_ACCESSPOINT_PSK  "My_AP_PSK"
+ *
+ * If SoftRF's built-in AP is not stable enough for you, consider
+ * to use "reverse" operation when your smartphone is acting
+ * as an AP for the SoftRF unit as a client:
+ *
+ * #define MY_ACCESSPOINT_SSID "AndroidAP"
+ * #define MY_ACCESSPOINT_PSK  "12345678"
+ */
+
+// Default mode is AP with
+// IP: 192.168.1.1
+// NETMASK: 255.255.255.0
 #define MY_ACCESSPOINT_SSID ""
 #define MY_ACCESSPOINT_PSK  ""
 
