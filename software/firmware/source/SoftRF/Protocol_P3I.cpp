@@ -43,7 +43,10 @@ const rf_proto_desc_t p3i_proto_desc = {
   .bitrate          = RF_BITRATE_38400,
   .deviation        = P3I_FDEV,
   .whitening        = RF_WHITENING_NICERF,
-  .bandwidth        = P3I_BANDWIDTH
+  .bandwidth        = P3I_BANDWIDTH,
+
+  .tx_interval_min  = P3I_TX_INTERVAL_MIN,
+  .tx_interval_max  = P3I_TX_INTERVAL_MAX
 };
 
 

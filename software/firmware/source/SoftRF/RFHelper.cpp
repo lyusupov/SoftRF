@@ -196,7 +196,11 @@ void RF_Transmit(size_t size)
       }
       tx_packets_counter++;
       RF_tx_size = 0;
-      TxRandomValue = SoC->random(600,1400);
+
+      TxRandomValue = (LMIC.protocol ?
+        SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
+        SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
+
       TxTimeMarker = millis();
     }
   }
@@ -253,12 +257,12 @@ bool nrf905_probe()
   Serial.println();
 #endif
 
-  /* Cold reset state */
+  /* Cold start state */
   if ((addr[0] == 0xE7) && (addr[1] == 0xE7) && (addr[2] == 0xE7) && (addr[3] == 0xE7)) {
     return true;
   }
 
-  /* Warm reset state */
+  /* Warm restart state */
   if ((addr[0] == 0xE7) && (addr[1] == ref[0]) && (addr[2] == ref[1]) && (addr[3] == ref[2])) {
     return true;
   }

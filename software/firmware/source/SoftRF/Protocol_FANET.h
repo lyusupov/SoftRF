@@ -91,6 +91,9 @@ typedef struct {
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
 #define FANET_HEADER_SIZE     4
 
+#define FANET_TX_INTERVAL_MIN 1500 /* in ms */
+#define FANET_TX_INTERVAL_MAX 2500
+
 extern const rf_proto_desc_t fanet_proto_desc;
 
 bool fanet_decode(void *, ufo_t *, ufo_t *);

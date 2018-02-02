@@ -28,13 +28,16 @@
 #define OGNTP_SYNCWORD_SIZE   8
 #define OGNTP_PAYLOAD_SIZE    20
 #define OGNTP_CRC_TYPE        RF_CHECKSUM_TYPE_GALLAGER
-#define OGNTP_CRC_SIZE        6             
+#define OGNTP_CRC_SIZE        6
+
+#define OGNTP_TX_INTERVAL_MIN 600 /* in ms */
+#define OGNTP_TX_INTERVAL_MAX 1400
 
 #include "ogn.h"
 
 typedef struct {
 
-  /* Dummy type definition. Actual Tx/Rx packet format is defined in ogn.h */ 
+  /* Dummy type definition. Actual Tx/Rx packet format is defined in ogn.h */
 
 } ogntp_packet_t;
 

@@ -53,7 +53,10 @@ const rf_proto_desc_t fanet_proto_desc = {
   .bitrate          = DR_SF7B /* CR_5 BW_250 SF_7 */,
   .deviation        = 0 /* INVALID FOR LORA */,
   .whitening        = RF_WHITENING_NONE,
-  .bandwidth        = 0 /* INVALID FOR LORA */
+  .bandwidth        = 0, /* INVALID FOR LORA */
+
+  .tx_interval_min  = FANET_TX_INTERVAL_MIN,
+  .tx_interval_max  = FANET_TX_INTERVAL_MAX
 };
 
 const uint8_t aircraft_type_to_fanet[] PROGMEM = {

@@ -107,8 +107,11 @@ typedef struct RF_PROTOCOL {
 
     uint8_t   bitrate;
     uint8_t   deviation;
-    uint8_t   whitening;   
-    uint8_t   bandwidth;                    
+    uint8_t   whitening;
+    uint8_t   bandwidth;
+
+    uint16_t  tx_interval_min;
+    uint16_t  tx_interval_max;
 } rf_proto_desc_t;
 
 #endif /* PROTOCOL_H */
