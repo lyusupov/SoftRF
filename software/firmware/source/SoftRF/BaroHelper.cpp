@@ -140,29 +140,10 @@ void Baro_setup()
 
 #if defined(SOFTRF_LORA_PCB_1_2_PROTO)
 
-  baro_chip = &bmp180_ops;
+  if ( (baro_chip = &bmp180_ops,    baro_chip->probe()) ||
+       (baro_chip = &bmp280_ops,    baro_chip->probe()) ||
+       (baro_chip = &mpl3115a2_ops, baro_chip->probe()) ) {
 
-  if (baro_chip->probe()) {
-    Serial.print(baro_chip->name);
-    Serial.println(F(" barometric pressure sensor is detected."));
-
-    baro_chip->setup();
-    return;
-  }
-
-  baro_chip = &bmp280_ops;
-
-  if (baro_chip->probe()) {
-    Serial.print(baro_chip->name);
-    Serial.println(F(" barometric pressure sensor is detected."));
-
-    baro_chip->setup();
-    return;
-  }
-
-  baro_chip = &mpl3115a2_ops;
-
-  if (baro_chip->probe()) {
     Serial.print(baro_chip->name);
     Serial.println(F(" barometric pressure sensor is detected."));
 
