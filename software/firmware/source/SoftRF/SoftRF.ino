@@ -118,6 +118,15 @@ void setup()
     Baro_setup();
   }
 
+  LED_setup();
+
+  WiFi_setup();
+  OTA_setup();
+  Web_setup();
+  NMEA_setup();
+
+  delay(1000);
+
   if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
     Serial.begin(57600);
     MAVLink_setup();
@@ -127,13 +136,6 @@ void setup()
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
   ThisAircraft.protocol = settings->rf_protocol;
-
-  LED_setup();
-
-  WiFi_setup();
-  OTA_setup();
-  Web_setup();
-  NMEA_setup();
 
   /* expedite restart on WDT reset */
   if (resetInfo->reason != REASON_WDT_RST) {

@@ -63,6 +63,8 @@
  */
 
 // Default mode is AP with
+// SSID: SoftRF-XXXXXX
+// KEY:  12345678
 // IP: 192.168.1.1
 // NETMASK: 255.255.255.0
 #define MY_ACCESSPOINT_SSID ""
