@@ -55,20 +55,28 @@ void espShow(
   }
 #endif
 
+#if defined(ESP32)
+		delay(1); // required
+
+		portMUX_TYPE updateMux = portMUX_INITIALIZER_UNLOCKED;
+
+		taskENTER_CRITICAL(&updateMux);
+#endif
+
   for(t = time0;; t = time0) {
     if(pix & mask) t = time1;                             // Bit high duration
     while(((c = _getCycleCount()) - startTime) < period); // Wait for bit start
 #ifdef ESP8266
     GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinMask);       // Set high
 #else
-    gpio_set_level(pin, HIGH);
+    GPIO.out_w1ts = pinMask;
 #endif
     startTime = c;                                        // Save start time
     while(((c = _getCycleCount()) - startTime) < t);      // Wait high duration
 #ifdef ESP8266
     GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinMask);       // Set low
 #else
-    gpio_set_level(pin, LOW);
+    GPIO.out_w1tc = pinMask;
 #endif
     if(!(mask >>= 1)) {                                   // Next bit/byte
       if(p >= end) break;
@@ -76,6 +84,11 @@ void espShow(
       mask = 0x80;
     }
   }
+
+#if defined(ESP32)
+		taskEXIT_CRITICAL(&updateMux);
+#endif
+
   while((_getCycleCount() - startTime) < period); // Wait for last bit
 }
 
