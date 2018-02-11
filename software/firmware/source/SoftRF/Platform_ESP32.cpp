@@ -47,6 +47,9 @@ static void ESP32_setup()
 {
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
   ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+
+  analogReadResolution(10);
+  analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
 }
 
 static uint32_t ESP32_getChipId()
@@ -234,6 +237,11 @@ static void ESP32_swSer_begin(unsigned long baud)
   swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 }
 
+static void ESP32_swSer_enableRx(boolean arg)
+{
+
+}
+
 SoC_ops_t ESP32_ops = {
   "ESP32",
   ESP32_setup,
@@ -253,7 +261,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_WiFi_hostname,
   ESP32_EEPROM_begin,
   ESP32_SPI_begin,
-  ESP32_swSer_begin
+  ESP32_swSer_begin,
+  ESP32_swSer_enableRx
 };
 
 #endif /* ESP32 */

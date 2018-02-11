@@ -18,6 +18,7 @@
 
 #include <Arduino.h>
 
+#include "SoCHelper.h"
 #include "BatteryHelper.h"
 
 void Battery_setup()
@@ -27,5 +28,5 @@ void Battery_setup()
 
 float Battery_voltage()
 {
-  return analogRead (A0) /* ESP.getVcc() */ / 950.0 /* 1024.0 */ * 3.2 ;
+  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
 }

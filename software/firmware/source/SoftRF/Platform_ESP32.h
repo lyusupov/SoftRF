@@ -30,11 +30,14 @@
 #define SoftwareSerial HardwareSerial
 #define swSer Serial1
 
+#define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.9)
+
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
 #define SOC_GPIO_PIN_GNSS_TX  2 /* OLED: Heltec - 4 & 15 ; TTGO V2 - 21 & 22 */
 #define SOC_GPIO_PIN_LED      25
 #define SOC_GPIO_PIN_BUZZER   13
+#define SOC_GPIO_PIN_BATTERY  36
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI     27
