@@ -28,12 +28,14 @@
 #include <SoftwareSerial.h>
 #include <ESP8266FtpServer.h>
 
+#define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
+
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX D3
-#define SOC_GPIO_PIN_SWSER_TX 9  /* not in use */
+#define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
 #define SOC_GPIO_PIN_LED      D1
 #define SOC_GPIO_PIN_BUZZER   10
-#define SOC_GPIO_PIN_BATTERY  AD0
+#define SOC_GPIO_PIN_BATTERY  A0
 
 /* SPI */
 #define SOC_GPIO_PIN_MOSI     D7

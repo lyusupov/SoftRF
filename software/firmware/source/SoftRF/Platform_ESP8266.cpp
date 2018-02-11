@@ -97,7 +97,7 @@ static long ESP8266_random(long howsmall, long howBig)
 static void ESP8266_Sound_test(int var)
 {
   if (settings->volume != BUZZER_OFF) {
-    swSer.enableRx(false);
+//    swSer.enableRx(false);
 
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
@@ -119,7 +119,7 @@ static void ESP8266_Sound_test(int var)
     }
     delay(600);
 
-    swSer.enableRx(true);
+//    swSer.enableRx(true);
   }
 }
 
@@ -144,7 +144,7 @@ static IPAddress ESP8266_WiFi_get_broadcast()
     wifi_get_ip_info(SOFTAP_IF, &ipinfo);
   }
   broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
-//  Serial.println(broadcastIp.toString());
+
   return broadcastIp;
 }
 
@@ -158,13 +158,17 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
  * But it is still disabled due to detected instability of
  * NodeMCU & unicast UDPs which I have not not resolved yet.
  */
-  if (true) {
-//  if (WiFi.getMode() == WIFI_STA) {
+//  if (true) {
+  if (WiFi.getMode() == WIFI_STA) {
     ClientIP = ESP8266_WiFi_get_broadcast();
+
+    swSer.enableRx(false);
 
     Uni_Udp.beginPacket(ClientIP, port);
     Uni_Udp.write(buf, size);
     Uni_Udp.endPacket();
+
+    swSer.enableRx(true);
 
   } else {
     struct station_info *stat_info = wifi_softap_get_station_info();
@@ -172,9 +176,13 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     while (stat_info != NULL) {
       ClientIP = stat_info->ip.addr;
 
+      swSer.enableRx(false);
+
       Uni_Udp.beginPacket(ClientIP, port);
       Uni_Udp.write(buf, size);
       Uni_Udp.endPacket();
+
+      swSer.enableRx(true);
 
       stat_info = STAILQ_NEXT(stat_info, next);
     }
@@ -207,6 +215,11 @@ static void ESP8266_swSer_begin(unsigned long baud)
   swSer.begin(baud);
 }
 
+static void ESP8266_swSer_enableRx(boolean arg)
+{
+  swSer.enableRx(arg);
+}
+
 SoC_ops_t ESP8266_ops = {
   "ESP8266",
   ESP8266_setup,
@@ -226,7 +239,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_WiFi_hostname,
   ESP8266_EEPROM_begin,
   ESP8266_SPI_begin,
-  ESP8266_swSer_begin
+  ESP8266_swSer_begin,
+  ESP8266_swSer_enableRx
 };
 
 #endif /* ESP8266 */

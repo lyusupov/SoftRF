@@ -43,6 +43,7 @@ typedef struct SoC_ops_struct {
   bool (*EEPROM_begin)(size_t);
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);
+  void (*swSer_enableRx)(boolean);
 } SoC_ops_t;
 
 extern SoC_ops_t *SoC;

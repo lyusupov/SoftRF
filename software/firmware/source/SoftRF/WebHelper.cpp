@@ -57,12 +57,12 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char *temp = (char *) malloc(3400);
-  if (temp == NULL) {
+  char *Settings_temp = (char *) malloc(3400);
+  if (Settings_temp == NULL) {
     return;
   }
 
-  snprintf_P ( temp, 3400,
+  snprintf_P ( Settings_temp, 3400,
     PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -245,15 +245,16 @@ void handleSettings() {
   (settings->gdl90 == 0 ? "checked" : "") , (settings->gdl90 == 1 ? "checked" : ""),
   (settings->d1090 == 0 ? "checked" : "") , (settings->d1090 == 1 ? "checked" : "")
   );
+  SoC->swSer_enableRx(false);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");
-  server.send ( 200, "text/html", temp );
-  free(temp);
+  server.send ( 200, "text/html", Settings_temp );
+  SoC->swSer_enableRx(true);
+  free(Settings_temp);
 }
 
 void handleRoot() {
-  char Root_temp[2048];
   int sec = millis() / 1000;
   int min = sec / 60;
   int hr = min / 60;
@@ -266,6 +267,11 @@ void handleRoot() {
   char str_lon[16];
   char str_alt[16];
   char str_Vcc[8];
+
+  char *Root_temp = (char *) malloc(2048);
+  if (Root_temp == NULL) {
+    return;
+  }
 
   dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
@@ -315,18 +321,23 @@ void handleRoot() {
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
+  SoC->swSer_enableRx(false);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");
   server.send ( 200, "text/html", Root_temp );
-
+  SoC->swSer_enableRx(true);
+  free(Root_temp);
 }
 
 #define BOOL_STR(x) (x ? "true":"false")
 
 void handleInput() {
 
-  char temp[1200];
+  char *Input_temp = (char *) malloc(1200);
+  if (Input_temp == NULL) {
+    return;
+  }
 
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if (server.argName(i).equals("mode")) {
@@ -357,7 +368,7 @@ void handleInput() {
       settings->d1090 = server.arg(i).toInt();
     }
   }
-  snprintf_P ( temp, 1200,
+  snprintf_P ( Input_temp, 1200,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'/>\
@@ -391,7 +402,10 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_u),
   BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090)
   );
-  server.send ( 200, "text/html", temp );
+  SoC->swSer_enableRx(false);
+  server.send ( 200, "text/html", Input_temp );
+  SoC->swSer_enableRx(true);
+  free(Input_temp);
   EEPROM_store();
   delay(3000);
   ESP.restart();
@@ -425,6 +439,7 @@ void Web_setup()
     server.send ( 200, "text/plain", "this works as well" );
   } );
   server.on("/firmware", HTTP_GET, [](){
+    SoC->swSer_enableRx(false);
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send_P(200,
@@ -449,13 +464,16 @@ void Web_setup()
 </body>\
 </html>")
     );
+  SoC->swSer_enableRx(true);
   });
   server.onNotFound ( handleNotFound );
 
   server.on("/update", HTTP_POST, [](){
+    SoC->swSer_enableRx(false);
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+    SoC->swSer_enableRx(true);
     ESP.restart();
   },[](){
     HTTPUpload& upload = server.upload();
