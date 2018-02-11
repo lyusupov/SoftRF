@@ -236,17 +236,11 @@ size_t Raw_Receive_UDP(uint8_t *buf)
   }
 }
 
-char misc_hexdata[2 * PKT_SIZE + 1] ;
 void Raw_Transmit_UDP()
 {
-    Uni_Udp.beginPacket(SoC->WiFi_get_broadcast(), RELAY_DST_PORT);
-    fo.raw.toCharArray(misc_hexdata, sizeof(misc_hexdata));
-    snprintf(UDPpacketBuffer, sizeof(UDPpacketBuffer), "%s\n", misc_hexdata );
-
-#if 0
-    Serial.println(UDPpacketBuffer);
-#endif
-
-    Uni_Udp.write((uint8_t *) UDPpacketBuffer, strlen(UDPpacketBuffer));
-    Uni_Udp.endPacket();
+    size_t num = fo.raw.length();
+    // ASSERT(sizeof(UDPpacketBuffer) > 2 * PKT_SIZE + 1)
+    fo.raw.toCharArray(UDPpacketBuffer, sizeof(UDPpacketBuffer));
+    UDPpacketBuffer[num] = '\n';
+    SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, num + 1);
 }
