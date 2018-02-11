@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Arduino.h>
 #include <TimeLib.h>
 
 #include "GNSSHelper.h"
@@ -26,63 +27,99 @@
 
 #include "SoftRF.h"
 
+#if !defined(DO_GNSS_DEBUG)
+#define GNSS_DEBUG_PRINT
+#define GNSS_DEBUG_PRINTLN
+#else
+#define GNSS_DEBUG_PRINT    Serial.print
+#define GNSS_DEBUG_PRINTLN  Serial.println
+#endif
+
+extern char UDPpacketBuffer[256];
+
 unsigned long GNSSTimeSyncMarker = 0;
 
-byte gnss_set_sucess = 0 ;
+boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
 uint8_t GNSSbuf[160]; // 2 lines of 80 characters each
 int GNSS_cnt = 0;
 
-#if 0
-// Send a byte array of UBX protocol to the GPS
-void sendUBX(uint8_t *MSG, uint8_t len) {
-  for (int i = 0; i < len; i++) {
-    swSer.write(MSG[i]);
-    Serial.print(MSG[i], HEX);
+uint8_t UBXbuf[32];
+
+ /* CFG-MSG */
+const uint8_t setGLL[] = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+const uint8_t setGSV[] = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+const uint8_t setVTG[] = {0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+#if !defined(AIRCONNECT_IS_ACTIVE)
+const uint8_t setGSA[] = {0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+#endif
+ /* CFG-PRT */
+uint8_t setBR[] = {0x01, 0x00, 0x00, 0x00, 0xD0, 0x08, 0x00, 0x00, 0x00, 0x96,
+                   0x00, 0x00, 0x07, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
+{
+  if (msglen > (sizeof(UBXbuf) - 8) ) {
+    msglen = sizeof(UBXbuf) - 8;
   }
-  swSer.println();
+
+  // Construct the UBX packet
+  UBXbuf[0] = 0xB5;   // header
+  UBXbuf[1] = 0x62;   // header
+  UBXbuf[2] = cl;  // class
+  UBXbuf[3] = id;     // id
+  UBXbuf[4] = msglen; // length
+  UBXbuf[5] = 0x00;
+
+  UBXbuf[6+msglen] = 0x00; // CK_A
+  UBXbuf[7+msglen] = 0x00; // CK_B
+
+  for (int i = 2; i < 6; i++) {
+    UBXbuf[6+msglen] += UBXbuf[i];
+    UBXbuf[7+msglen] += UBXbuf[6+msglen];
+  }
+
+  for (int i = 0; i < msglen; i++) {
+    UBXbuf[6+i] = msg[i];
+    UBXbuf[6+msglen] += UBXbuf[6+i];
+    UBXbuf[7+msglen] += UBXbuf[6+msglen];
+  }
+  return (msglen + 8);
 }
 
+// Send a byte array of UBX protocol to the GPS
+void sendUBX(const uint8_t *MSG, uint8_t len) {
+  for (int i = 0; i < len; i++) {
+    swSer.write( MSG[i]);
+    GNSS_DEBUG_PRINT(MSG[i], HEX);
+  }
+//  swSer.println();
+}
 
 // Calculate expected UBX ACK packet and parse UBX response from GPS
-boolean getUBX_ACK(uint8_t *MSG) {
+boolean getUBX_ACK(uint8_t cl, uint8_t id) {
   uint8_t b;
   uint8_t ackByteID = 0;
-  uint8_t ackPacket[10];
+  uint8_t ackPacket[2] = {cl, id};
   unsigned long startTime = millis();
-  Serial.print(" * Reading ACK response: ");
+  GNSS_DEBUG_PRINT(F(" * Reading ACK response: "));
 
   // Construct the expected ACK packet
-  ackPacket[0] = 0xB5;  // header
-  ackPacket[1] = 0x62;  // header
-  ackPacket[2] = 0x05;  // class
-  ackPacket[3] = 0x01;  // id
-  ackPacket[4] = 0x02;  // length
-  ackPacket[5] = 0x00;
-  ackPacket[6] = MSG[2];  // ACK class
-  ackPacket[7] = MSG[3];  // ACK id
-  ackPacket[8] = 0;   // CK_A
-  ackPacket[9] = 0;   // CK_B
-
-  // Calculate the checksums
-  for (uint8_t i = 2; i < 8; i++) {
-    ackPacket[8] = ackPacket[8] + ackPacket[i];
-    ackPacket[9] = ackPacket[9] + ackPacket[8];
-  }
+  makeUBXCFG(0x05, 0x01, 2, ackPacket);
 
   while (1) {
 
     // Test for success
     if (ackByteID > 9) {
       // All packets in order!
-      Serial.println(" (SUCCESS!)");
+      GNSS_DEBUG_PRINTLN(F(" (SUCCESS!)"));
       return true;
     }
 
     // Timeout if no valid response in 3 seconds
     if (millis() - startTime > 3000) {
-      Serial.println(" (FAILED!)");
+      GNSS_DEBUG_PRINTLN(F(" (FAILED!)"));
       return false;
     }
 
@@ -91,47 +128,111 @@ boolean getUBX_ACK(uint8_t *MSG) {
       b = swSer.read();
 
       // Check that bytes arrive in sequence as per expected ACK packet
-      if (b == ackPacket[ackByteID]) {
+      if (b == UBXbuf[ackByteID]) {
         ackByteID++;
-        Serial.print(b, HEX);
+        GNSS_DEBUG_PRINT(b, HEX);
       }
       else {
         ackByteID = 0;  // Reset and look again, invalid order
       }
-
     }
+    yield();
   }
 }
-#endif
 
+static void setup_UBX()
+{
+  uint8_t msglen;
+  unsigned int baudrate = 38400;
 
-void GNSS_setup() {
+  setBR[ 8] = (baudrate      ) & 0xFF;
+  setBR[ 9] = (baudrate >>  8) & 0xFF;
+  setBR[10] = (baudrate >> 16) & 0xFF;
 
   SoC->swSer_begin(9600);
 
-#if 0
-  gnss_set_sucess = 0;
-  Serial.println("Switching off NMEA GLL: ");
-  uint8_t setGLL[] = {
-    0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x2B
-  };
-  while (!gnss_set_sucess)
-  {
-    sendUBX(setGLL, sizeof(setGLL) / sizeof(uint8_t));
-    gnss_set_sucess = getUBX_ACK(setGLL);
+  Serial.print(F("Switching baud rate onto "));
+  Serial.println(baudrate);
+
+  msglen = makeUBXCFG(0x06, 0x00, sizeof(setBR), setBR);
+  sendUBX(UBXbuf, msglen);
+  gnss_set_sucess = getUBX_ACK(0x06, 0x00);
+
+  if (!gnss_set_sucess) {
+    Serial.print(F("WARNING: Unable to set baud rate onto "));
+    Serial.println(baudrate); 
   }
-  gnss_set_sucess = 0;
-  Serial.println("Switching off NMEA GSA: ");
-  uint8_t setGSA[] = {
-    0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x32
-  };
-  while (!gnss_set_sucess)
-  {
-    sendUBX(setGSA, sizeof(setGSA) / sizeof(uint8_t));
-    gnss_set_sucess = getUBX_ACK(setGSA);
+  swSer.flush();
+  SoC->swSer_begin(baudrate);
+
+  GNSS_DEBUG_PRINTLN(F("Switching off NMEA GLL: "));
+
+  msglen = makeUBXCFG(0x06, 0x01, sizeof(setGLL), setGLL);
+  sendUBX(UBXbuf, msglen);
+  gnss_set_sucess = getUBX_ACK(0x06, 0x01);
+
+  if (!gnss_set_sucess) {
+    Serial.println(F("WARNING: Unable to disable NMEA GLL."));
   }
-  gnss_set_sucess = 0;
+
+  GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSV: "));
+
+  msglen = makeUBXCFG(0x06, 0x01, sizeof(setGSV), setGSV);
+  sendUBX(UBXbuf, msglen);
+  gnss_set_sucess = getUBX_ACK(0x06, 0x01);
+
+  if (!gnss_set_sucess) {
+    Serial.println(F("WARNING: Unable to disable NMEA GSV."));
+  }
+
+  GNSS_DEBUG_PRINTLN(F("Switching off NMEA VTG: "));
+
+  msglen = makeUBXCFG(0x06, 0x01, sizeof(setVTG), setVTG);
+  sendUBX(UBXbuf, msglen);
+  gnss_set_sucess = getUBX_ACK(0x06, 0x01);
+
+  if (!gnss_set_sucess) {
+    Serial.println(F("WARNING: Unable to disable NMEA VTG."));
+  }
+
+#if !defined(AIRCONNECT_IS_ACTIVE)
+
+  GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSA: "));
+
+  msglen = makeUBXCFG(0x06, 0x01, sizeof(setGSA), setGSA);
+  sendUBX(UBXbuf, msglen);
+  gnss_set_sucess = getUBX_ACK(0x06, 0x01);
+
+  if (!gnss_set_sucess) {
+    Serial.println(F("WARNING: Unable to disable NMEA GSA."));
+  }
+
 #endif
+}
+
+static void setup_NMEA()
+{
+  SoC->swSer_begin(9600);
+
+  //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
+  swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
+
+  swSer.flush();
+  SoC->swSer_begin(38400);
+
+  // Turning off some GPS NMEA strings on the uBlox modules
+  swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n");
+  swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n");
+  swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n");
+#if !defined(AIRCONNECT_IS_ACTIVE)
+  swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n");
+#endif
+}
+
+void GNSS_setup() {
+  //setup_UBX();
+  //setup_NMEA();
+  SoC->swSer_begin(9600);
 }
 
 void GNSSTimeSync()
@@ -160,7 +261,6 @@ void GNSSTimeSync()
 void PickGNSSFix()
 {
   bool isValidSentence = false;
-  IPAddress broadcastIP = SoC->WiFi_get_broadcast();
   int ndx;
 
   /*
@@ -184,10 +284,11 @@ void PickGNSSFix()
           Serial.write('\n');
 
           if (settings->nmea_u) {
-            Uni_Udp.beginPacket(broadcastIP, NMEA_DST_PORT);
-            Uni_Udp.write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
-            Uni_Udp.write('\n');
-            Uni_Udp.endPacket();
+            size_t num = GNSS_cnt - ndx + 1;
+            // ASSERT(sizeof(UDPpacketBuffer) > sizeof(GNSSbuf))
+            memcpy(UDPpacketBuffer, &GNSSbuf[ndx], num);
+            UDPpacketBuffer[num] = '\n';
+            SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *)UDPpacketBuffer, num + 1);
           }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
