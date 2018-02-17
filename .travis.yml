@@ -1,7 +1,7 @@
 language: c
 env:
   - BOARD1=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
-  - BOARD2=espressif:esp32:esp32doit-devkit-v1:FlashFreq=80
+#  - BOARD2=espressif:esp32:esp32doit-devkit-v1:FlashFreq=80
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -32,7 +32,7 @@ install:
   
 script:
   - arduino --verify --verbose-build --board $BOARD1 $PWD/software/firmware/source/SoftRF/SoftRF.ino
-  - arduino --verify --verbose-build --board $BOARD2 $PWD/software/firmware/source/SoftRF/SoftRF.ino
+#  - arduino --verify --verbose-build --board $BOARD2 $PWD/software/firmware/source/SoftRF/SoftRF.ino
 
 notifications:
   email:
