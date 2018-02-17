@@ -1,0 +1,34 @@
+language: c
+env:
+  - BD=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
+before_install:
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
+  - sleep 3
+  - export DISPLAY=:1.0
+  - wget http://downloads.arduino.cc/arduino-1.8.5-linux64.tar.xz
+  - tar xf arduino-1.8.5-linux64.tar.xz
+  - sudo mv arduino-1.8.5 /usr/local/share/arduino
+  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+install:
+  - mkdir $HOME/Arduino
+  - ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries
+  - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
+  - arduino --install-boards esp8266:esp8266
+  - arduino --board $BD --save-prefs
+  - arduino --pref "compiler.warning_level=all" --save-prefs
+  
+  # install lib
+  # add your libs here, example:
+  #- git clone https://github.com/squix78/esp8266-oled-ssd1306 /usr/local/share/arduino/libraries/esp8266-oled-ssd1306
+  
+script:
+  - "echo $PWD"
+  - "echo $HOME"
+  - "ls $PWD"
+  - arduino --verify --verbose-build --board $BD $PWD/software/firmware/source/SoftRF/SoftRF.ino
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
