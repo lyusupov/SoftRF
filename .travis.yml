@@ -12,7 +12,7 @@ before_install:
   - wget http://downloads.arduino.cc/arduino-$IDE_VERSION-linux64.tar.xz
   - tar xf arduino-$IDE_VERSION-linux64.tar.xz
   - rm arduino-$IDE_VERSION-linux64.tar.xz
-  - sudo mv arduino-$IDE_VERSION/usr/local/share/arduino
+  - sudo mv arduino-$IDE_VERSION /usr/local/share/arduino
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
   - mkdir $HOME/Arduino
