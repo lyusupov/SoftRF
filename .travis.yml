@@ -1,6 +1,7 @@
 language: c
 env:
   - BOARD1=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
+  - BOARD2=espressif:esp32:esp32doit-devkit-v1:FlashFreq=80
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -18,13 +19,20 @@ install:
   - arduino --board $BOARD1 --save-prefs
   - arduino --pref "compiler.warning_level=all" --save-prefs
   - arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs
-  
-  # install lib
-  # add your libs here, example:
-  #- git clone https://github.com/squix78/esp8266-oled-ssd1306 /usr/local/share/arduino/libraries/esp8266-oled-ssd1306
+  - mkdir -p $HOME/Arduino/hardware/espressif
+  - cd $HOME/Arduino/hardware/espressif
+  - git clone https://github.com/espressif/arduino-esp32.git esp32
+  - cd esp32
+  - git submodule update --init --recursive
+  - cd tools
+  - python get.py
+  - cd $HOME/Arduino/hardware/espressif/esp32/libraries
+  - git clone https://github.com/bbx10/WebServer_tng.git WebServer
+  - cd $TRAVIS_BUILD_DIR
   
 script:
   - arduino --verify --verbose-build --board $BOARD1 $PWD/software/firmware/source/SoftRF/SoftRF.ino
+  - arduino --verify --verbose-build --board $BOARD2 $PWD/software/firmware/source/SoftRF/SoftRF.ino
 
 notifications:
   email:
