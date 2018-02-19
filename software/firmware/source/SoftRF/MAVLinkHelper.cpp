@@ -22,8 +22,10 @@
 #include "MAVLinkHelper.h"
 #include "GDL90Helper.h"
 #include "SoCHelper.h"
+#include "WiFiHelper.h"
 
-unsigned long MAVLinkTimeSyncMarker = 0;
+static unsigned long MAVLinkTimeSyncMarker = 0;
+static bool MAVLinkAPisArmed = false;
 
 void MAVLink_setup()
 {
@@ -66,4 +68,22 @@ void MAVLinkShareTraffic()
 
       }
     }
+}
+
+void MAVLinkSetWiFiPower()
+{
+  if (get_num_heartbeats() == 0) {
+    return;
+  }
+
+  if (!MAVLinkAPisArmed && (the_aircraft.nav_mode & MAV_MODE_FLAG_SAFETY_ARMED)) {
+    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MIN);
+    MAVLinkAPisArmed = true;
+    return;
+  }
+
+  if (MAVLinkAPisArmed && !(the_aircraft.nav_mode & MAV_MODE_FLAG_SAFETY_ARMED)) {
+    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED);
+    MAVLinkAPisArmed = false;
+  }
 }

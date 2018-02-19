@@ -48,10 +48,7 @@ void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 }
 
 namespace {
-
-  
    uint32_t  num_heartbeats = 0U;
-   
 }
 
 // return number of heartbeats since boot
@@ -204,7 +201,7 @@ namespace {
       apm_mav_type      = mavlink_msg_heartbeat_get_type(pmsg);
 #ifdef MAVLINK10             
       the_aircraft.custom_mode = mavlink_msg_heartbeat_get_custom_mode(pmsg);
-      the_aircraft.nav_mode = 0;
+      the_aircraft.nav_mode = mavlink_msg_heartbeat_get_base_mode(pmsg);
 #endif            
      ++num_heartbeats;
    }

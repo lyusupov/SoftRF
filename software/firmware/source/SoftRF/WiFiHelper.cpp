@@ -233,7 +233,7 @@ void WiFi_setup()
     
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
-    SoC->WiFi_setOutputPower(10); // 10 dB
+    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED); // 10 dB
     // WiFi.setOutputPower(0); // 0 dB
     //system_phy_set_max_tpw(4 * 0); // 0 dB
     delay(10);

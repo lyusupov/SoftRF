@@ -25,6 +25,13 @@
 
 #define HOSTNAME "SoftRF-"
 
+enum
+{
+    WIFI_TX_POWER_MIN = 0,  /* 0  dBm */
+    WIFI_TX_POWER_MED = 10, /* 10 dBm */
+    WIFI_TX_POWER_MAX = 18  /* 18 dBm */
+};
+
 void WiFi_setup(void);
 void WiFi_loop(void);
 IPAddress WiFi_get_broadcast(void);

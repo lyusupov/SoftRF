@@ -99,8 +99,8 @@ struct aircraft{
    float                               battery_current;
    float                               battery_remaining; 
 
-   uint16_t                            nav_mode;
-   uint8_t                             custom_mode;
+   uint8_t                             nav_mode;
+   uint32_t                            custom_mode;
    gps_t                               gps;
                                           
    aircraft():

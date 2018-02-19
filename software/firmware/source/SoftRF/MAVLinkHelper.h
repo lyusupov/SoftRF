@@ -32,6 +32,7 @@ void MAVLink_setup();
 void PickMAVLinkFix();
 void MAVLinkTimeSync();
 void MAVLinkShareTraffic();
+void MAVLinkSetWiFiPower();
 
 extern ufo_t Container[ /*MAX_TRACKING_OBJECTS*/];
 

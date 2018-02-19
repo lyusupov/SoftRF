@@ -256,6 +256,7 @@ void uav_loop()
   PickMAVLinkFix();
 
   MAVLinkTimeSync();
+  MAVLinkSetWiFiPower();
 
   ThisAircraft.timestamp = now();
 
