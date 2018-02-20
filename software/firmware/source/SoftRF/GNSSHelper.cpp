@@ -305,7 +305,7 @@ void PickGNSSFix()
       GNSS_cnt = 0;
     } else {
       GNSS_cnt++;
-      delay(0);
+      yield();
     }
   }
 }

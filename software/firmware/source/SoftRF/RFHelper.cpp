@@ -348,7 +348,7 @@ bool nrf905_receive()
 #endif
       break;
     }
-    delay(0);
+    yield();
   }
 
   return success;
@@ -365,7 +365,7 @@ void nrf905_transmit()
 
     // Send payload (send fails if other transmissions are going on, keep trying until success)
     while (!nRF905_send()) {
-      delay(0);
+      yield();
     } ;
 }
 
@@ -511,7 +511,7 @@ bool sx1276_receive()
         break;
       }
 
-    delay(0);
+    yield();
   };
 
   os_radio(RADIO_RST);
@@ -539,7 +539,7 @@ void sx1276_transmit()
     while (sx1276_transmit_complete == false) {
       // execute scheduled jobs and events
       os_runloop_once();
-      delay(0);
+      yield();
     } ;
 }
 

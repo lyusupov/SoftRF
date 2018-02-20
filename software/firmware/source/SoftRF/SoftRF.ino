@@ -201,7 +201,7 @@ void loop()
   Logger_loop();
 #endif /* LOGGER_IS_ENABLED */
 
-  delay(0);
+  yield();
 }
 
 void normal_loop()

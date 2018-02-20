@@ -144,7 +144,7 @@ void *WiFi_relay_from_android()
 
     // Send payload (send fails if other transmissions are going on, keep trying until success)
     while (!nRF905_send()) {
-      delay(0);
+      yield();
     } ;
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFO,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) data));
