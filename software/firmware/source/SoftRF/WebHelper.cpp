@@ -80,6 +80,7 @@ void handleSettings() {
 <option %s value='%d'>Tx/Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
+<option %s value='%d'>WatchOut</option>\
 </select>\
 </td>\
 </tr>\
@@ -209,7 +210,8 @@ void handleSettings() {
   (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
-  (settings->mode == SOFTRF_MODE_UAV_BEACON ? "selected" : ""), SOFTRF_MODE_UAV_BEACON,
+  (settings->mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV,
+  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT,
   (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
   (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
   (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,

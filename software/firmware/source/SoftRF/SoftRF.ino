@@ -116,7 +116,7 @@ void setup()
     Baro_setup();
   }
 
-  if (settings->mode == SOFTRF_MODE_UAV_BEACON) {
+  if (settings->mode == SOFTRF_MODE_UAV) {
     Serial.begin(57600);
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
@@ -147,12 +147,13 @@ void setup()
   switch (settings->mode)
   {
   case SOFTRF_MODE_TXRX_TEST:
+  case SOFTRF_MODE_WATCHOUT:
     Time_setup();
     break;
   case SOFTRF_MODE_BRIDGE:
     break;
   case SOFTRF_MODE_NORMAL:
-  case SOFTRF_MODE_UAV_BEACON:
+  case SOFTRF_MODE_UAV:
   default:
     SoC->swSer_enableRx(true);
     break;
@@ -169,11 +170,14 @@ void loop()
   case SOFTRF_MODE_TXRX_TEST:
     txrx_test_loop();
     break;
-  case SOFTRF_MODE_UAV_BEACON:
+  case SOFTRF_MODE_UAV:
     uav_loop();
     break;
   case SOFTRF_MODE_BRIDGE:
     bridge_loop();
+    break;
+  case SOFTRF_MODE_WATCHOUT:
+    watchout_loop();
     break;
   case SOFTRF_MODE_NORMAL:
   default:
@@ -282,6 +286,56 @@ void uav_loop()
   ClearExpired();
 }
 
+void bridge_loop()
+{
+  bool success;
+
+  size_t tx_size = Raw_Receive_UDP(&TxPkt[0]);
+
+  if (tx_size > 0) {
+    RF_Transmit(tx_size);
+  }
+
+  success = RF_Receive();
+
+  if(success)
+  {
+
+    fo.raw = Bin2Hex(RxBuffer);
+
+    if (settings->nmea_p) {
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+    }
+
+    Raw_Transmit_UDP();
+  }
+
+  if (isTimeToDisplay()) {
+    LED_Clear();
+    LEDTimeMarker = millis();
+  }
+}
+
+void watchout_loop()
+{
+  bool success;
+
+  success = RF_Receive();
+
+  if (success) {
+    fo.raw = Bin2Hex(RxBuffer);
+
+    if (settings->nmea_p) {
+      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+    }
+  }
+
+  if (isTimeToDisplay()) {
+    LED_Clear();
+    LEDTimeMarker = millis();
+  }
+}
+
 unsigned int pos_ndx = 0;
 unsigned long TxPosUpdMarker = 0;
 
@@ -384,34 +438,4 @@ void txrx_test_loop()
 #endif
 
   ClearExpired();
-}
-
-void bridge_loop()
-{
-  bool success;
-
-  size_t tx_size = Raw_Receive_UDP(&TxPkt[0]);
-
-  if (tx_size > 0) {
-    RF_Transmit(tx_size);
-  }
-
-  success = RF_Receive();
-
-  if(success)
-  {
-
-    fo.raw = Bin2Hex(RxBuffer);
-
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
-    }
-
-    Raw_Transmit_UDP();
-  }
-
-  if (isTimeToDisplay()) {
-    LED_Clear();  
-    LEDTimeMarker = millis();
-  }
 }
