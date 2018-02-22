@@ -48,27 +48,11 @@
 #define SOC_GPIO_PIN_CE       D4
 #define SOC_GPIO_PIN_PWR      D2
 
-#define SOFTRF_LORA_PCB_1_1
-//#define SOFTRF_LORA_PCB_1_2_PROTO
-
 /* SX1276 (RFM95W) */
-#if defined(SOFTRF_LORA_PCB_1_1)
-/*
- * Errata:
- * - SX1276's RST pin is not connected yet ;
- * - D0 (GPIO16) is not IRQ sensitive on ESP8266 ;
- * - make use spare pins for an I2C port.
- */
-#define SOC_GPIO_PIN_DIO0     D0
-
-#elif defined(SOFTRF_LORA_PCB_1_2_PROTO)
-
 #define SOC_GPIO_PIN_RST      D2
 #define SOC_GPIO_PIN_DIO0     D0
 #define SOC_GPIO_PIN_SDA      D2
 #define SOC_GPIO_PIN_SCL      D4
-
-#endif /* SOFTRF_LORA_PCB */
 
 extern "C" {
 #include <user_interface.h>

@@ -112,7 +112,10 @@ void setup()
   RF_setup();
   delay(100);
 
-  if (rf_chip && (rf_chip->type == RF_IC_SX1276)) {
+  if (rf_chip && (rf_chip->type == RF_IC_SX1276) && !RF_SX1276_RST_is_connected) {
+#if DEBUG
+    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
+#endif
     Baro_setup();
   }
 

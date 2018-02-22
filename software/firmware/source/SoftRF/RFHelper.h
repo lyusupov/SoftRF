@@ -97,6 +97,7 @@ extern byte TxPkt[MAX_PKT_SIZE];
 extern ufo_t ThisAircraft;
 
 extern rfchip_ops_t *rf_chip;
+extern bool RF_SX1276_RST_is_connected;
 extern size_t (*protocol_encode)(void *, ufo_t *);
 extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 

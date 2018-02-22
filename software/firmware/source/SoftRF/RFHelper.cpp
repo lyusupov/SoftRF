@@ -47,6 +47,7 @@ static size_t RF_tx_size = 0;
 static long TxRandomValue = 0;
 
 rfchip_ops_t *rf_chip = NULL;
+bool RF_SX1276_RST_is_connected = true;
 
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
@@ -402,13 +403,31 @@ static u1_t sx1276_readReg (u1_t addr) {
 
 bool sx1276_probe()
 {
-  u1_t v;
+  u1_t v, v_reset;
 
   hal_init();
+
+  hal_disableIRQs();
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  v_reset = sx1276_readReg(SX1276_RegVersion);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  hal_enableIRQs();
   
   v = sx1276_readReg(SX1276_RegVersion);
 
   if (v == 0x12) {
+
+    if (v_reset == 0x12) {
+      RF_SX1276_RST_is_connected = false;
+    }
+
     return true;
   } else {
     return false;  
