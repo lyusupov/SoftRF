@@ -32,7 +32,8 @@
 #define LEGACY_TX_INTERVAL_MIN 600 /* in ms */
 #define LEGACY_TX_INTERVAL_MAX 1400
 
-#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b }
+#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, \
+                      0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 }
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
 
