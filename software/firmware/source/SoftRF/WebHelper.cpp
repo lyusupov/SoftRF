@@ -80,7 +80,6 @@ void handleSettings() {
 <option %s value='%d'>Tx/Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
-<option %s value='%d'>WatchOut</option>\
 </select>\
 </td>\
 </tr>\
@@ -211,7 +210,7 @@ void handleSettings() {
   (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
   (settings->mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV,
-  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT,
+/*  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT, */
   (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
   (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
   (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
@@ -240,12 +239,12 @@ void handleSettings() {
   (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->pointer == LED_OFF ? "selected" : ""), LED_OFF,
-  (settings->nmea_g == 0 ? "checked" : "") , (settings->nmea_g == 1 ? "checked" : ""),
-  (settings->nmea_p == 0 ? "checked" : "") , (settings->nmea_p == 1 ? "checked" : ""),
-  (settings->nmea_l == 0 ? "checked" : "") , (settings->nmea_l == 1 ? "checked" : ""),
-  (settings->nmea_u == 0 ? "checked" : "") , (settings->nmea_u == 1 ? "checked" : ""),
-  (settings->gdl90 == 0 ? "checked" : "") , (settings->gdl90 == 1 ? "checked" : ""),
-  (settings->d1090 == 0 ? "checked" : "") , (settings->d1090 == 1 ? "checked" : "")
+  (!settings->nmea_g ? "checked" : "") , (settings->nmea_g ? "checked" : ""),
+  (!settings->nmea_p ? "checked" : "") , (settings->nmea_p ? "checked" : ""),
+  (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
+  (!settings->nmea_u ? "checked" : "") , (settings->nmea_u ? "checked" : ""),
+  (!settings->gdl90 ? "checked" : "") , (settings->gdl90 ? "checked" : ""),
+  (!settings->d1090 ? "checked" : "") , (settings->d1090 ? "checked" : "")
   );
   SoC->swSer_enableRx(false);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
