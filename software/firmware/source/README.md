@@ -35,7 +35,7 @@
   to install Arduino IDE and latest Arduino ESP32 Core
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
-int ledPin = 5;
+int ledPin = 2;
 
 void setup()
 {
