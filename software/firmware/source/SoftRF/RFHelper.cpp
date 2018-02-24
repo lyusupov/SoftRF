@@ -407,8 +407,6 @@ bool sx1276_probe()
 
   hal_init();
 
-  hal_disableIRQs();
-
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
   hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
@@ -417,8 +415,6 @@ bool sx1276_probe()
 
   hal_pin_rst(2); // configure RST pin floating!
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
-
-  hal_enableIRQs();
   
   v = sx1276_readReg(SX1276_RegVersion);
 
