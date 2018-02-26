@@ -158,8 +158,8 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
  * But it is still disabled due to detected instability of
  * NodeMCU & unicast UDPs which I have not not resolved yet.
  */
-//  if (true) {
-  if (WiFi.getMode() == WIFI_STA) {
+  if (true) {
+//  if (WiFi.getMode() == WIFI_STA) {
     ClientIP = ESP8266_WiFi_get_broadcast();
 
     swSer.enableRx(false);
