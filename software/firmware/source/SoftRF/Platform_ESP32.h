@@ -30,7 +30,7 @@
 #define SoftwareSerial HardwareSerial
 #define swSer Serial1
 
-#define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.9)
+#define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.5 /* 3.9 */)
 
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
