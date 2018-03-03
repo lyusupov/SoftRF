@@ -44,6 +44,9 @@ typedef struct SoC_ops_struct {
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);
   void (*swSer_enableRx)(boolean);
+  int (*BltnBT_available)(void);
+  int (*BltnBT_read)(void);
+  size_t (*BltnBT_write)(const uint8_t *buffer, size_t size);
 } SoC_ops_t;
 
 extern SoC_ops_t *SoC;

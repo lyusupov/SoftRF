@@ -43,6 +43,22 @@ HardwareSerial Serial1(1);
 
 WebServer server ( 80 );
 
+/* Pending for ESP32 Arduino core's BT SPP to settle down */
+#define ESP32_USE_BUILTIN_BLUETOOTH 0
+
+#if ESP32_USE_BUILTIN_BLUETOOTH
+
+#include <BluetoothSerial.h>
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+BluetoothSerial SerialBT;
+String BT_name = HOSTNAME;
+
+#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
+
 static void ESP32_setup()
 {
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
@@ -50,6 +66,13 @@ static void ESP32_setup()
 
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
+
+#if ESP32_USE_BUILTIN_BLUETOOTH
+
+  BT_name += String(((uint32_t) ESP.getEfuseMac() & 0xFFFFFF), HEX);
+  SerialBT.begin(BT_name.c_str());
+
+#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
 }
 
 static uint32_t ESP32_getChipId()
@@ -242,6 +265,33 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 }
 
+static int ESP32_BltnBT_available()
+{
+  int rval = 0;
+#if ESP32_USE_BUILTIN_BLUETOOTH
+  rval = SerialBT.available();
+#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
+  return rval;
+}
+
+static int ESP32_BltnBT_read()
+{
+  int rval = -1;
+#if ESP32_USE_BUILTIN_BLUETOOTH
+  rval = SerialBT.read();
+#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
+  return rval;
+}
+
+static size_t ESP32_BltnBT_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+#if ESP32_USE_BUILTIN_BLUETOOTH
+  rval = SerialBT.write(buffer, size);
+#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
+  return rval;
+}
+
 SoC_ops_t ESP32_ops = {
   "ESP32",
   ESP32_setup,
@@ -262,7 +312,10 @@ SoC_ops_t ESP32_ops = {
   ESP32_EEPROM_begin,
   ESP32_SPI_begin,
   ESP32_swSer_begin,
-  ESP32_swSer_enableRx
+  ESP32_swSer_enableRx,
+  ESP32_BltnBT_available,
+  ESP32_BltnBT_read,
+  ESP32_BltnBT_write
 };
 
 #endif /* ESP32 */

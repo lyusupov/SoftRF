@@ -264,15 +264,19 @@ void PickGNSSFix()
   int ndx;
 
   /*
-   * Check both SW and HW UARTs for data
+   * Check SW, HW and BT UARTs for data
    * WARNING! Make use only one input source at a time.
    */
-  while (swSer.available() > 0 || Serial.available() > 0) {
+  while (swSer.available() > 0   ||
+         Serial.available() > 0  ||
+         SoC->BltnBT_available() > 0) {
 
     if (swSer.available() > 0) {
       GNSSbuf[GNSS_cnt] = swSer.read();
-    } else {
+    } else if (Serial.available()) {
       GNSSbuf[GNSS_cnt] = Serial.read();
+    } else {
+      GNSSbuf[GNSS_cnt] = SoC->BltnBT_read();
     }
 
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
@@ -282,6 +286,9 @@ void PickGNSSFix()
 
           Serial.write((uint8_t *) &GNSSbuf[ndx], GNSS_cnt - ndx + 1);
           Serial.write('\n');
+
+          SoC->BltnBT_write((uint8_t *) &GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+          SoC->BltnBT_write((uint8_t *) "\n", 1);
 
           if (settings->nmea_u) {
             size_t num = GNSS_cnt - ndx + 1;
