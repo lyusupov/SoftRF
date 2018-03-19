@@ -63,7 +63,9 @@ void loop()
 
 7. take **WebServer_tng** library from [this location](https://github.com/bbx10/WebServer_tng)<br>
     and deploy into ``<My Documents>``/Arduino/hardware/espressif/esp32/libraries
-8. start **Arduino** application again
-9. open **SoftRF** sketch from _File_ -> _Open_ menu
-10. Select _Tools_ -> _Board_ -> _DOIT_ _ESP32_ _DEVKIT_ _V1_
-11. _Sketch_ -> _Upload_
+8. take **libbt.a** binary from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/misc)<br>
+    and overwrite existing one in ``<My Documents>``/Arduino/hardware/espressif/esp32/tools/sdk/lib
+9. start **Arduino** application again
+10. open **SoftRF** sketch from _File_ -> _Open_ menu
+11. Select _Tools_ -> _Board_ -> _DOIT_ _ESP32_ _DEVKIT_ _V1_
+12. _Sketch_ -> _Upload_

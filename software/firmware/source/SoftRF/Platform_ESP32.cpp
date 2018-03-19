@@ -44,7 +44,7 @@ HardwareSerial Serial1(1);
 WebServer server ( 80 );
 
 /* Pending for ESP32 Arduino core's BT SPP to settle down */
-#define ESP32_USE_BUILTIN_BLUETOOTH 0
+#define ESP32_USE_BUILTIN_BLUETOOTH 1
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
