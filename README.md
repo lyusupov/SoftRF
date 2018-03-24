@@ -1,5 +1,5 @@
-# SoftRF  [![Join the chat at https://gitter.im/lyusupov/SoftRF](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lyusupov/SoftRF?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/lyusupov/SoftRF.png?branch=master)](https://travis-ci.org/lyusupov/SoftRF "Build Status")
-
+# <p align="right"> [![Join the chat at https://gitter.im/lyusupov/SoftRF](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lyusupov/SoftRF?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/lyusupov/SoftRF.png?branch=master)](https://travis-ci.org/lyusupov/SoftRF "Build Status") </p>
+# SoftRF 
 Multifunctional DIY IoT-based general aviation proximity awareness system.
 
 Features:
@@ -31,6 +31,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
     * [Modules](https://github.com/lyusupov/SoftRF/wiki/Standalone-Modules)
+    * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
@@ -48,12 +49,12 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * Applications
         * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
 * Extras
-    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
     * Protocols
-        * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-        * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
+        * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
         * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
     * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 # Highlights
@@ -75,3 +76,4 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 * **UAV appliance**
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/softrrf-case-uav-ext.jpg )
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)
