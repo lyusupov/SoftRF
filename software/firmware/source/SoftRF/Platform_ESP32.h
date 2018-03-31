@@ -79,6 +79,11 @@ struct rst_info {
   uint32_t depc;
 };
 
+#define ESP32_USE_BUILTIN_BLUETOOTH 1
+
+/* Disable brownout detection (avoid unexpected reset on some boards) */
+#define ESP32_DISABLE_BROWNOUT_DETECTOR 0
+
 #endif /* ESP32HELPER_H */
 
 #endif /* ESP32 */

@@ -20,6 +20,7 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
+#include <soc/rtc_cntl_reg.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -43,9 +44,6 @@ HardwareSerial Serial1(1);
 
 WebServer server ( 80 );
 
-/* Pending for ESP32 Arduino core's BT SPP to settle down */
-#define ESP32_USE_BUILTIN_BLUETOOTH 1
-
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
 #include <BluetoothSerial.h>
@@ -61,6 +59,10 @@ String BT_name = HOSTNAME;
 
 static void ESP32_setup()
 {
+#if ESP32_DISABLE_BROWNOUT_DETECTOR
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+#endif
+
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
   ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
 
