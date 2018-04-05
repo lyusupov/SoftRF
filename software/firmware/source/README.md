@@ -26,7 +26,7 @@
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. Select _Tools_ -> _Board_ -> _NodeMCU_ _1.0_
-10. in _Tools_ -> _lwIP_ ... select _1.4...._
+10. in _Tools_ -> _lwIP Variant_  -> _v2 Higher Bandwidth_
 11. _Sketch_ -> _Upload_
 
 ## ESP32
