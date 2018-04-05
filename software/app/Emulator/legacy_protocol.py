@@ -32,7 +32,7 @@ def obscure_key(key, seed):
     return m2 ^ (m2 >> 16)
 
 def make_key(time, address):
-    if (time >> 27) & 4 == 0:
+    if (time >> 23) & 1 == 0:
         table = [ 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b ]
     else:
         table = [ 0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 ]
