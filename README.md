@@ -34,7 +34,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
-    * [Wiring and pin-out](https://github.com/lyusupov/SoftRF/wiki/UAV-Wiring)
+    * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
 * [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
