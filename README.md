@@ -32,10 +32,11 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Modules](https://github.com/lyusupov/SoftRF/wiki/Standalone-Modules)
     * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
+    * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
-    * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
+    * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
-    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
     * [Wiring](https://github.com/lyusupov/SoftRF/wiki/Prime-Wiring)
@@ -52,9 +53,9 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * Protocols
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
         * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
-        * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility)
     * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
-    * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers)
 
 # Highlights
 
