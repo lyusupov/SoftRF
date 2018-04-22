@@ -59,9 +59,16 @@ String BT_name = HOSTNAME;
 
 static void ESP32_setup()
 {
+  union {
+    uint8_t efuse_mac[6];
+    uint64_t chipmacid;
+  };
+
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
+
+  chipmacid = ESP.getEfuseMac();
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
   ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
@@ -71,7 +78,8 @@ static void ESP32_setup()
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
-  BT_name += String(((uint32_t) ESP.getEfuseMac() & 0xFFFFFF), HEX);
+  BT_name += String((uint32_t) efuse_mac[5] | (efuse_mac[4] << 8) | \
+                              (efuse_mac[3] << 16), HEX);
   SerialBT.begin(BT_name.c_str());
 
 #endif /* ESP32_USE_BUILTIN_BLUETOOTH */
@@ -79,7 +87,14 @@ static void ESP32_setup()
 
 static uint32_t ESP32_getChipId()
 {
-  return ESP.getEfuseMac() & 0xFFFFFFFF;
+  union {
+    uint8_t efuse_mac[6];
+    uint64_t chipmacid;
+  };
+  chipmacid = ESP.getEfuseMac();
+
+  return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
+                   (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
 }
 
 static uint32_t ESP32_getFlashChipId()
