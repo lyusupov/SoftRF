@@ -87,7 +87,7 @@
 #elif defined(ESP32)
 
 // DOIT ESP32
-#define TRX_EN    12  // Enable/standby pin
+#define TRX_EN    2  // Enable/standby pin
 #define PWR_MODE  14  // Power mode pin
 #define TX_EN     26  // TX / RX mode pin
 #define CSN       18  // SPI slave select pin
