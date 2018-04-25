@@ -42,7 +42,13 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
 
   if (_cs == -1) {
     // i2c
+#if defined(ESP32)
+#define SOC_GPIO_PIN_SDA      14
+#define SOC_GPIO_PIN_SCL      2
+    Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL, 100000);
+#else
     Wire.begin();
+#endif
   } else {
     digitalWrite(_cs, HIGH);
     pinMode(_cs, OUTPUT);

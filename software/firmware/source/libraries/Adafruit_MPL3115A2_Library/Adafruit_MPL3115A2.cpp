@@ -56,7 +56,13 @@ Adafruit_MPL3115A2::Adafruit_MPL3115A2() {
 /**************************************************************************/
 boolean Adafruit_MPL3115A2::begin(TwoWire *twoWire) {
   _i2c = twoWire;
+#if defined(ESP32)
+#define SOC_GPIO_PIN_SDA      14
+#define SOC_GPIO_PIN_SCL      2
+  _i2c->begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL, 100000);
+#else
   _i2c->begin();
+#endif
   uint8_t whoami = read8(MPL3115A2_WHOAMI);
   if (whoami != 0xC4) {
     return false;

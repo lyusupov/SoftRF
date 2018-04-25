@@ -34,7 +34,7 @@
 
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
-#define SOC_GPIO_PIN_GNSS_TX  2 /* OLED: Heltec - 4 & 15 ; TTGO V2 - 21 & 22 */
+#define SOC_GPIO_PIN_GNSS_TX  12 /* OLED: Heltec - 4 & 15 ; TTGO V2 - 21 & 22 */
 #define SOC_GPIO_PIN_LED      25
 #define SOC_GPIO_PIN_BUZZER   13
 #define SOC_GPIO_PIN_BATTERY  36
@@ -47,14 +47,14 @@
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      26
-#define SOC_GPIO_PIN_CE       12
+#define SOC_GPIO_PIN_CE       2
 #define SOC_GPIO_PIN_PWR      14
 
 /* SX1276 [RFM95W] (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_RST      14
 #define SOC_GPIO_PIN_DIO0     26
 #define SOC_GPIO_PIN_SDA      14
-#define SOC_GPIO_PIN_SCL      12
+#define SOC_GPIO_PIN_SCL      2
 
 extern WebServer server;
 extern HardwareSerial Serial1;
