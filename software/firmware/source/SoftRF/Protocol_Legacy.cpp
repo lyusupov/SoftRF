@@ -172,7 +172,7 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     fop->latitude = (float)lat / 1e7;
     fop->longitude = (float)lon / 1e7;
     fop->altitude = (float) alt;
-    fop->vs = vs;
+    fop->vs = 0;
     fop->aircraft_type = pkt->aircraft_type;
     fop->stealth = pkt->stealth;
     fop->no_track = pkt->no_track;

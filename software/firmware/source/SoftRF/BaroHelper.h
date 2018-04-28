@@ -33,10 +33,12 @@ typedef struct barochip_ops_struct {
   const char name[10];
   bool (*probe)();
   void (*setup)();
+  float (*altitude)(float);
 } barochip_ops_t;
 
 extern barochip_ops_t *baro_chip;
 
 void Baro_setup(void);
+void Baro_loop(void);
 
 #endif /* BAROHELPER_H */

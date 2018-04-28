@@ -346,6 +346,7 @@ void txrx_test_loop()
 {
   bool success = false;
 #if DEBUG_TIMING
+  unsigned long baro_start_ms, baro_end_ms;
   unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
   unsigned long parse_start_ms, parse_end_ms, led_start_ms, led_end_ms;
   unsigned long export_start_ms, export_end_ms;
@@ -361,6 +362,15 @@ void txrx_test_loop()
   ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
   ThisAircraft.course = TXRX_TEST_COURSE;
   ThisAircraft.speed = TXRX_TEST_SPEED;
+
+#if DEBUG_TIMING
+  baro_start_ms = millis();
+#endif
+  Baro_loop();
+#if DEBUG_TIMING
+  baro_end_ms = millis();
+#endif
+
 #if DEBUG_TIMING
   tx_start_ms = millis();
 #endif
@@ -408,6 +418,12 @@ void txrx_test_loop()
 #endif
 
 #if DEBUG_TIMING
+  if (baro_start_ms - baro_end_ms) {
+    Serial.print(F("Baro start: "));
+    Serial.print(baro_start_ms);
+    Serial.print(F(" Baro stop: "));
+    Serial.println(baro_end_ms);
+  }
   if (tx_end_ms - tx_start_ms) {
     Serial.print(F("TX start: "));
     Serial.print(tx_start_ms);

@@ -23,6 +23,8 @@
 #include "SoCHelper.h"
 #include "BaroHelper.h"
 
+extern ufo_t ThisAircraft;
+
 barochip_ops_t *baro_chip = NULL;
 
 #if defined(SOFTRF_LORA_PCB_1_2_PROTO)
@@ -30,6 +32,9 @@ barochip_ops_t *baro_chip = NULL;
 Adafruit_BMP085 bmp180;
 Adafruit_BMP280 bmp280;
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
+
+static unsigned long BaroTimeMarker = 0;
+static float prev_pressure_altitude = 0;
 
 static bool bmp180_probe()
 {
@@ -68,11 +73,17 @@ static void bmp180_setup()
   delay(500);
 }
 
+static float bmp180_altitude(float sealevelPressure)
+{
+  return bmp180.readAltitude(sealevelPressure * 100);
+}
+
 barochip_ops_t bmp180_ops = {
   BARO_MODULE_BMP180,
   "BMP180",
   bmp180_probe,
-  bmp180_setup
+  bmp180_setup,
+  bmp180_altitude
 };
 
 static bool bmp280_probe()
@@ -98,11 +109,17 @@ static void bmp280_setup()
     delay(500);
 }
 
+static float bmp280_altitude(float sealevelPressure)
+{
+    return bmp280.readAltitude(sealevelPressure);
+}
+
 barochip_ops_t bmp280_ops = {
   BARO_MODULE_BMP280,
   "BMP280",
   bmp280_probe,
-  bmp280_setup
+  bmp280_setup,
+  bmp280_altitude
 };
 
 static bool mpl3115a2_probe()
@@ -126,11 +143,18 @@ static void mpl3115a2_setup()
   delay(250);
 }
 
+static float mpl3115a2_altitude(float sealevelPressure)
+{
+  mpl3115a2.setSeaPressure(sealevelPressure * 100);
+  return mpl3115a2.getAltitude();
+}
+
 barochip_ops_t mpl3115a2_ops = {
   BARO_MODULE_MPL3115A2,
   "MPL3115A2",
   mpl3115a2_probe,
-  mpl3115a2_setup
+  mpl3115a2_setup,
+  mpl3115a2_altitude
 };
 
 #endif /* SOFTRF_LORA_PCB_1_2_PROTO */
@@ -148,9 +172,28 @@ void Baro_setup()
     Serial.println(F(" barometric pressure sensor is detected."));
 
     baro_chip->setup();
+
+    prev_pressure_altitude = baro_chip->altitude(1013.25);
+    BaroTimeMarker = millis();
   } else {
     baro_chip = NULL;
     Serial.println(F("WARNING! Barometric pressure sensor is NOT detected."));
+  }
+
+#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
+}
+
+void Baro_loop()
+{
+#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
+
+  if (baro_chip) {
+    ThisAircraft.pressure_altitude = baro_chip->altitude(1013.25);
+
+    ThisAircraft.vs = (ThisAircraft.pressure_altitude - prev_pressure_altitude) / \
+      (millis() - BaroTimeMarker) * 1000;
+    prev_pressure_altitude = ThisAircraft.pressure_altitude;
+    BaroTimeMarker = millis();
   }
 
 #endif /* SOFTRF_LORA_PCB_1_2_PROTO */
