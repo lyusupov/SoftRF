@@ -34,7 +34,7 @@
 
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
-#define SOC_GPIO_PIN_GNSS_TX  12 /* OLED: Heltec - 4 & 15 ; TTGO V2 - 21 & 22 */
+#define SOC_GPIO_PIN_GNSS_TX  12
 #define SOC_GPIO_PIN_LED      25
 #define SOC_GPIO_PIN_BUZZER   13
 #define SOC_GPIO_PIN_BATTERY  36
@@ -55,6 +55,11 @@
 #define SOC_GPIO_PIN_DIO0     26
 #define SOC_GPIO_PIN_SDA      14
 #define SOC_GPIO_PIN_SCL      2
+
+// Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
+#define SOC_GPIO_PIN_OLED_RST U8X8_PIN_NONE // connected to CPU RST/EN
+#define SOC_GPIO_PIN_OLED_SDA 21
+#define SOC_GPIO_PIN_OLED_SCL 22
 
 extern WebServer server;
 extern HardwareSerial Serial1;

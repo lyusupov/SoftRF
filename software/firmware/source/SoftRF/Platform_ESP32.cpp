@@ -22,6 +22,8 @@
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
 
+#include <U8x8lib.h>
+
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
 #include "SoundHelper.h"
@@ -43,6 +45,10 @@ const lmic_pinmap lmic_pins = {
 HardwareSerial Serial1(1);
 
 WebServer server ( 80 );
+
+U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(SOC_GPIO_PIN_OLED_RST,
+                                       SOC_GPIO_PIN_OLED_SCL,
+                                       SOC_GPIO_PIN_OLED_SDA);
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
@@ -75,6 +81,11 @@ static void ESP32_setup()
 
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
+
+  u8x8.begin();
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.clear();
+  u8x8.draw2x2String(2, 3, "SoftRF");
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
