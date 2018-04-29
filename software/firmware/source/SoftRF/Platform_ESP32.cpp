@@ -21,8 +21,7 @@
 #include <esp_err.h>
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
-
-#include <U8x8lib.h>
+#include <Wire.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -30,6 +29,8 @@
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 #include "WiFiHelper.h"
+
+#include <U8x8lib.h>
 
 #define LEDC_CHANNEL_BUZZER     0
 #define LEDC_RESOLUTION_BUZZER  8
@@ -43,19 +44,20 @@ const lmic_pinmap lmic_pins = {
 };
 
 HardwareSerial Serial1(1);
+TwoWire Wire1 = TwoWire(1);
 
 WebServer server ( 80 );
 
-U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8(SOC_GPIO_PIN_OLED_RST,
-                                       SOC_GPIO_PIN_OLED_SCL,
-                                       SOC_GPIO_PIN_OLED_SDA);
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8(SOC_GPIO_PIN_OLED_RST,
+                                           SOC_GPIO_PIN_OLED_SCL,
+                                           SOC_GPIO_PIN_OLED_SDA);
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
 #include <BluetoothSerial.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#error Bluetooth is not enabled!
 #endif
 
 BluetoothSerial SerialBT;

@@ -611,7 +611,20 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       Wire1.write((uint8_t *)arg_ptr, (int)arg_int);
       break;
     case U8X8_MSG_BYTE_INIT:
+#if defined(ARDUINO_ARCH_ESP32)
+      /* for ESP32, Wire.begin has two more arguments: clock and data */
+      if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+      {
+        // second argument for the wire lib is the clock pin. In u8g2, the first argument of the  clock pin in the clock/data pair
+        Wire1.begin(u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+      }
+      else
+      {
+        Wire1.begin();
+      }
+#else
       Wire1.begin();
+#endif
       break;
     case U8X8_MSG_BYTE_SET_DC:
       break;
