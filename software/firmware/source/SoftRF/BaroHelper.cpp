@@ -36,6 +36,10 @@ Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
 static unsigned long BaroTimeMarker = 0;
 static float prev_pressure_altitude = 0;
 
+#define VS_AVERAGING_FACTOR   4
+static float Baro_VS[VS_AVERAGING_FACTOR];
+static int avg_ndx = 0;
+
 static bool bmp180_probe()
 {
   return bmp180.begin();
@@ -175,6 +179,11 @@ void Baro_setup()
 
     prev_pressure_altitude = baro_chip->altitude(1013.25);
     BaroTimeMarker = millis();
+
+    for (int i=0; i<VS_AVERAGING_FACTOR; i++) {
+      Baro_VS[i] = 0;
+    }
+
   } else {
     baro_chip = NULL;
     Serial.println(F("WARNING! Barometric pressure sensor is NOT detected."));
@@ -188,12 +197,31 @@ void Baro_loop()
 #if defined(SOFTRF_LORA_PCB_1_2_PROTO)
 
   if (baro_chip) {
+
+    /* Draft of pressure altitude and vertical speed calculation */
     ThisAircraft.pressure_altitude = baro_chip->altitude(1013.25);
 
-    ThisAircraft.vs = (ThisAircraft.pressure_altitude - prev_pressure_altitude) / \
-      (millis() - BaroTimeMarker) * 1000;
+    Baro_VS[avg_ndx] = (ThisAircraft.pressure_altitude - prev_pressure_altitude) /
+      (millis() - BaroTimeMarker) * 1000;  /* in m/s */
+
+    ThisAircraft.vs = 0;
+    for (int i=0; i<VS_AVERAGING_FACTOR; i++) {
+      ThisAircraft.vs += Baro_VS[i];
+    }
+    ThisAircraft.vs /= VS_AVERAGING_FACTOR;
+
+    if (ThisAircraft.vs > -0.1 && ThisAircraft.vs < 0.1) {
+      ThisAircraft.vs = 0;
+    }
+
     prev_pressure_altitude = ThisAircraft.pressure_altitude;
     BaroTimeMarker = millis();
+    avg_ndx = (avg_ndx + 1) % VS_AVERAGING_FACTOR;
+
+#if 0
+    Serial.print(F("P.Alt. = ")); Serial.print(ThisAircraft.pressure_altitude);
+    Serial.print(F(" , VS avg. = ")); Serial.println(ThisAircraft.vs);
+#endif
   }
 
 #endif /* SOFTRF_LORA_PCB_1_2_PROTO */
