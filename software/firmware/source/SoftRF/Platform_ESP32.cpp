@@ -48,9 +48,13 @@ TwoWire Wire1 = TwoWire(1);
 
 WebServer server ( 80 );
 
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8(SOC_GPIO_PIN_OLED_RST,
-                                           SOC_GPIO_PIN_OLED_SCL,
-                                           SOC_GPIO_PIN_OLED_SDA);
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
+                                                TTGO_V2_OLED_PIN_SCL,
+                                                TTGO_V2_OLED_PIN_SDA);
+
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
+                                                  HELTEC_OLED_PIN_SCL,
+                                                  HELTEC_OLED_PIN_SDA);
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
@@ -72,6 +76,8 @@ static void ESP32_setup()
     uint64_t chipmacid;
   };
 
+  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
+
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
@@ -84,10 +90,33 @@ static void ESP32_setup()
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
 
-  u8x8.begin();
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.clear();
-  u8x8.draw2x2String(2, 3, "SoftRF");
+  /* Pre-init 1st ESP32 I2C bus to stick on these pins */
+  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+
+  /* SSD1306 I2C OLED probing */
+  Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+  Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+  if (Wire1.endTransmission() == 0) {
+    u8x8 = &u8x8_ttgo;
+  } else {
+    /*
+     * This does NOT work well with "stock" ESP32 Arduino Core's TwoWire implementation yet.
+     * Use I2C code (lib and hal) from Chuck Todd's repo instead:
+     * https://github.com/stickbreaker/arduino-esp32
+     */
+    Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    if (Wire1.endTransmission() == 0) {
+      u8x8 = &u8x8_heltec;
+    }
+  }
+
+  if (u8x8) {
+    u8x8->begin();
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+    u8x8->clear();
+    u8x8->draw2x2String(2, 3, "SoftRF");
+  }
 
 #if ESP32_USE_BUILTIN_BLUETOOTH
 

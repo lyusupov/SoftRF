@@ -56,10 +56,16 @@
 #define SOC_GPIO_PIN_SDA      14
 #define SOC_GPIO_PIN_SCL      2
 
+#define SSD1306_OLED_I2C_ADDR 0x3C
+
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
-#define SOC_GPIO_PIN_OLED_RST U8X8_PIN_NONE // connected to CPU RST/EN
-#define SOC_GPIO_PIN_OLED_SDA 21
-#define SOC_GPIO_PIN_OLED_SCL 22
+#define TTGO_V2_OLED_PIN_RST  U8X8_PIN_NONE // connected to CPU RST/EN
+#define TTGO_V2_OLED_PIN_SDA  21
+#define TTGO_V2_OLED_PIN_SCL  22
+// Hardware pin definitions for Heltec and TTGO-V1 LoRa-32 Boards with OLED SSD1306 I2C Display
+#define HELTEC_OLED_PIN_RST   U8X8_PIN_NONE // 16
+#define HELTEC_OLED_PIN_SDA   4
+#define HELTEC_OLED_PIN_SCL   15
 
 extern WebServer server;
 extern HardwareSerial Serial1;
