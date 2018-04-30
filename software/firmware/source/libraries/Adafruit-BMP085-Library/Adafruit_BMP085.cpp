@@ -26,13 +26,7 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
     mode = BMP085_ULTRAHIGHRES;
   oversampling = mode;
 
-#if defined(ESP32)
-#define SOC_GPIO_PIN_SDA      14
-#define SOC_GPIO_PIN_SCL      2
-  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL, 100000);
-#else
   Wire.begin();
-#endif
 
   if (read8(0xD0) != 0x55) return false;
 
