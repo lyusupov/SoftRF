@@ -143,8 +143,8 @@
 
 #endif
 
-#define P3I_TX_INTERVAL_MIN 1500 /* in ms */
-#define P3I_TX_INTERVAL_MAX 2500
+#define P3I_TX_INTERVAL_MIN 1600 /* in ms */
+#define P3I_TX_INTERVAL_MAX 1800
 
 #define ADDR_TYPE_PILOTAWARE  0
 
@@ -167,12 +167,13 @@ typedef struct {
     uint32_t  icao:24;   // 24bit identifier 
     float    longitude; // IEEE-754 
     float    latitude;  // IEEE-754 
-    uint16_t altitude;  // metres
+    uint16_t altitude;  // Geo altitude (GNSS) in metres
     uint16_t track;     // degrees Relative to true north
     uint8_t  msd[4];    // sequencer
     uint16_t knots;     //  ground speed of the aircraft in knots
     uint8_t  aircraft;  //  aircraft type
     uint8_t  crc;
+    /* No vertical speed available */
 } __attribute__((packed)) p3i_packet_t;
 
 extern const rf_proto_desc_t p3i_proto_desc;
