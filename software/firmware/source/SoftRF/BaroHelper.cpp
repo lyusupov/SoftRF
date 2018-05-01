@@ -19,6 +19,7 @@
 #include <Adafruit_BMP085.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MPL3115A2.h>
+#include <TinyGPS++.h>
 
 #include "SoCHelper.h"
 #include "BaroHelper.h"
@@ -213,6 +214,8 @@ void Baro_loop()
     if (ThisAircraft.vs > -0.1 && ThisAircraft.vs < 0.1) {
       ThisAircraft.vs = 0;
     }
+
+    ThisAircraft.vs *= (_GPS_FEET_PER_METER * 60.0) ; /* feet per minute */
 
     prev_pressure_altitude = ThisAircraft.pressure_altitude;
     BaroTimeMarker = millis();

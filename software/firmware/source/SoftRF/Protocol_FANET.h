@@ -69,8 +69,9 @@ typedef struct {
   unsigned int longitude      :24;
 #endif
 
-  unsigned int altitude_lsb   :8;
-  unsigned int altitude_msb   :3;
+	/* units are degrees, seconds, and meter */
+  unsigned int altitude_lsb   :8; /* FANET+ reported alt. comes from ext. source */
+  unsigned int altitude_msb   :3; /* I assume that it is geo (GNSS) altitude */
   unsigned int altitude_scale :1;
   unsigned int aircraft_type  :3;
   unsigned int track_online   :1;
@@ -91,8 +92,9 @@ typedef struct {
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
 #define FANET_HEADER_SIZE     4
 
-#define FANET_TX_INTERVAL_MIN 1500 /* in ms */
-#define FANET_TX_INTERVAL_MAX 2500
+/* Declared air time of FANET+ is 20-40 ms */
+#define FANET_TX_INTERVAL_MIN 2500 /* in ms */
+#define FANET_TX_INTERVAL_MAX 3500
 
 extern const rf_proto_desc_t fanet_proto_desc;
 

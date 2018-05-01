@@ -97,7 +97,7 @@ typedef struct UFO {
     float     speed;      /* ground speed in knots */
     uint8_t   aircraft_type;
 
-    float     vs;
+    float     vs; /* feet per minute */
 
     bool      stealth;
     bool      no_track;

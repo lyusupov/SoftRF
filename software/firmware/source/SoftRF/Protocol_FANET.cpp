@@ -202,7 +202,9 @@ static void payload_absolut2coord(float *lat, float *lon, uint8_t *buf)
 bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
-  unsigned int altitude, speed;
+  unsigned int altitude;
+  uint8_t speed_byte, climb_byte;
+  int speed_int, climb_int;
 
   if (pkt->ext_header == 0 && pkt->type == 1 ) {  /* Tracking  */
 
@@ -227,16 +229,25 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     fop->aircraft_type = AT_FROM_FANET(pkt->aircraft_type);
     fop->course = (float) pkt->heading * 360.0 / 256.0;
 
-    speed = pkt->speed;
+    speed_byte = pkt->speed;
+    speed_int = (int) (speed_byte | (speed_byte & (1<<6) ? 0xFFFFFF80U : 0));
+
     if (pkt->speed_scale) {
-      speed =  speed * 5 /* -2 */;
+      speed_int *= 5 /* -2 */;
     }
-    fop->speed = ((float) speed) / (2 * _GPS_KMPH_PER_KNOT);
+    fop->speed = ((float) speed_int) / (2 * _GPS_KMPH_PER_KNOT);
+
+    climb_byte = pkt->climb;
+    climb_int = (int) (climb_byte | (climb_byte & (1<<6) ? 0xFFFFFF80U : 0));
+
+    if (pkt->climb_scale) {
+      climb_int *= 5 /* +-2 */;
+    }
+    fop->vs = ((float)climb_int) * (_GPS_FEET_PER_METER * 6.0);
 
     fop->addr_type = 0;
     fop->timestamp = this_aircraft->timestamp;
 
-    fop->vs = 0;
     fop->stealth = 0;
     fop->no_track = !(pkt->track_online);
 
@@ -275,7 +286,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   int16_t alt = (int16_t) this_aircraft->altitude;
   unsigned int aircraft_type =  this_aircraft->aircraft_type;
   float speed = this_aircraft->speed * _GPS_KMPH_PER_KNOT;
-  float climb = 0;
+  float climb = this_aircraft->vs / (_GPS_FEET_PER_METER * 60.0);
   float heading = this_aircraft->course;
   float turnrate = 0;
 

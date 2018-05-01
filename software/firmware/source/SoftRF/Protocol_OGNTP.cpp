@@ -87,14 +87,15 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->latitude = ogn_rx_pkt.Packet.DecodeLatitude() * 0.0001/60;
   fop->longitude = ogn_rx_pkt.Packet.DecodeLongitude() * 0.0001/60;
   fop->altitude = (float) ogn_rx_pkt.Packet.DecodeAltitude();
+  fop->pressure_altitude = (float) ogn_rx_pkt.Packet.DecodeStdAltitude();
   fop->aircraft_type = ogn_rx_pkt.Packet.Position.AcftType;
-  fop->course = ogn_rx_pkt.Packet.Position.Heading * 0.1;
-  fop->speed = (ogn_rx_pkt.Packet.Position.Speed * 0.1) / _GPS_MPS_PER_KNOT;
+  fop->course = ogn_rx_pkt.Packet.DecodeHeading() * 0.1;
+  fop->speed = (ogn_rx_pkt.Packet.DecodeSpeed() * 0.1) / _GPS_MPS_PER_KNOT;
+  fop->vs = (ogn_rx_pkt.Packet.DecodeClimbRate() * 0.1) * (_GPS_FEET_PER_METER * 60.0);
 
   fop->addr_type = ogn_rx_pkt.Packet.Header.AddrType;
   fop->timestamp = this_aircraft->timestamp;
 
-  fop->vs = 0;
   fop->stealth = ogn_rx_pkt.Packet.Position.Stealth;
   fop->no_track = 0;
   fop->ns[0] = 0; fop->ns[1] = 0;
@@ -110,6 +111,10 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Latitude = (int32_t) (this_aircraft->latitude * 600000);
   pos.Longitude = (int32_t) (this_aircraft->longitude * 600000);
   pos.Altitude = (int32_t) (this_aircraft->altitude * 10);
+  if (this_aircraft->pressure_altitude) {
+    pos.StdAltitude = (int32_t) (this_aircraft->pressure_altitude * 10);
+    pos.ClimbRate = (int32_t) (this_aircraft->vs / (_GPS_FEET_PER_METER * 6.0));
+  }
   pos.Heading = (int16_t) (this_aircraft->course * 10);
   pos.Speed = (int16_t) (this_aircraft->speed * 10 * _GPS_MPS_PER_KNOT);
 
