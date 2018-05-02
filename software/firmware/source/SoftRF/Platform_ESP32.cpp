@@ -56,6 +56,8 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
                                                   HELTEC_OLED_PIN_SCL,
                                                   HELTEC_OLED_PIN_SDA);
 
+static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
+
 #if ESP32_USE_BUILTIN_BLUETOOTH
 
 #include <BluetoothSerial.h>
@@ -76,8 +78,6 @@ static void ESP32_setup()
     uint64_t chipmacid;
   };
 
-  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
-
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
@@ -90,8 +90,10 @@ static void ESP32_setup()
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
 
+#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
   /* Pre-init 1st ESP32 I2C bus to stick on these pins */
   Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
 
   /* SSD1306 I2C OLED probing */
   Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -351,6 +353,64 @@ static size_t ESP32_BltnBT_write(const uint8_t *buffer, size_t size)
   return rval;
 }
 
+static bool OLED_display_frontpage = false;
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+extern uint32_t tx_packets_counter, rx_packets_counter;
+
+const char *OLED_Protocol_ID[] = {
+  [RF_PROTOCOL_LEGACY]    = "L",
+  [RF_PROTOCOL_OGNTP]     = "O",
+  [RF_PROTOCOL_P3I]       = "P",
+  [RF_PROTOCOL_ADSB_1090] = "A",
+  [RF_PROTOCOL_ADSB_UAT]  = "U",
+  [RF_PROTOCOL_FANET]     = "F"
+};
+
+static void ESP32_OLED_loop()
+{
+  char buf[16];
+
+  if (u8x8) {
+    if (!OLED_display_frontpage) {
+
+      u8x8->clear();
+
+      u8x8->drawString(1, 1, "ID");
+
+      itoa(ThisAircraft.addr, buf, 16);
+      u8x8->draw2x2String(0, 2, buf);
+
+      u8x8->drawString(7, 1, "PROTOCOL");
+
+      u8x8->draw2x2String(13, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+
+      u8x8->drawString(1, 5, "RX");
+
+      itoa(rx_packets_counter, buf, 10);
+      u8x8->draw2x2String(0, 6, buf);
+
+      u8x8->drawString(9, 5, "TX");
+
+      itoa(tx_packets_counter, buf, 10);
+      u8x8->draw2x2String(8, 6, buf);
+
+      OLED_display_frontpage = true;
+    } else {
+      if (rx_packets_counter > prev_rx_packets_counter) {
+        itoa(rx_packets_counter, buf, 10);
+        u8x8->draw2x2String(0, 6, buf);
+        prev_rx_packets_counter = rx_packets_counter;
+      }
+      if (tx_packets_counter > prev_tx_packets_counter) {
+        itoa(tx_packets_counter, buf, 10);
+        u8x8->draw2x2String(8, 6, buf);
+        prev_tx_packets_counter = tx_packets_counter;
+      }
+    }
+  }
+}
+
 SoC_ops_t ESP32_ops = {
   "ESP32",
   ESP32_setup,
@@ -374,7 +434,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_swSer_enableRx,
   ESP32_BltnBT_available,
   ESP32_BltnBT_read,
-  ESP32_BltnBT_write
+  ESP32_BltnBT_write,
+  ESP32_OLED_loop
 };
 
 #endif /* ESP32 */

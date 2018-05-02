@@ -47,6 +47,7 @@ typedef struct SoC_ops_struct {
   int (*BltnBT_available)(void);
   int (*BltnBT_read)(void);
   size_t (*BltnBT_write)(const uint8_t *buffer, size_t size);
+  void (*OLED_loop)();
 } SoC_ops_t;
 
 extern SoC_ops_t *SoC;

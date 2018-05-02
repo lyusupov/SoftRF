@@ -350,6 +350,7 @@ void txrx_test_loop()
   unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
   unsigned long parse_start_ms, parse_end_ms, led_start_ms, led_end_ms;
   unsigned long export_start_ms, export_end_ms;
+  unsigned long oled_start_ms, oled_end_ms;
 #endif
   ThisAircraft.timestamp = now();
 
@@ -418,6 +419,14 @@ void txrx_test_loop()
 #endif
 
 #if DEBUG_TIMING
+  oled_start_ms = millis();
+#endif
+  SoC->OLED_loop();
+#if DEBUG_TIMING
+  oled_end_ms = millis();
+#endif
+
+#if DEBUG_TIMING
   if (baro_start_ms - baro_end_ms) {
     Serial.print(F("Baro start: "));
     Serial.print(baro_start_ms);
@@ -453,6 +462,12 @@ void txrx_test_loop()
     Serial.print(export_start_ms);
     Serial.print(F(" Export stop: "));
     Serial.println(export_end_ms);
+  }
+  if (oled_end_ms - oled_start_ms) {
+    Serial.print(F("OLED start: "));
+    Serial.print(oled_start_ms);
+    Serial.print(F(" OLED stop: "));
+    Serial.println(oled_end_ms);
   }
 #endif
 

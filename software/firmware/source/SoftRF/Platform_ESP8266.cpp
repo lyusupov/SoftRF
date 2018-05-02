@@ -236,6 +236,11 @@ static size_t ESP8266_BltnBT_write(const uint8_t *buffer, size_t size)
   return size;
 }
 
+static void ESP8266_OLED_loop()
+{
+
+}
+
 SoC_ops_t ESP8266_ops = {
   "ESP8266",
   ESP8266_setup,
@@ -259,7 +264,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_swSer_enableRx,
   ESP8266_BltnBT_available,
   ESP8266_BltnBT_read,
-  ESP8266_BltnBT_write
+  ESP8266_BltnBT_write,
+  ESP8266_OLED_loop
 };
 
 #endif /* ESP8266 */
