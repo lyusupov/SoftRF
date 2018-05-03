@@ -53,10 +53,23 @@ void D1090_Export()
 
         if (distance < EXPORT_DISTANCE_FAR) {
 
+          double altitude;
+          /* If the aircraft's data has standard pressure altitude - make use it */
+          if (Container[i].pressure_altitude != 0.0) {
+            altitude = (double) Container[i].pressure_altitude;
+          } else if (ThisAircraft.pressure_altitude != 0.0) {
+            /* If this SoftRF unit is equiped with baro sensor - try to make an adjustment */
+            float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
+            altitude = (double)(Container[i].altitude + altDiff);
+          } else {
+            /* If no other choice - report GNSS altitude as pressure altitude */
+            altitude = (double) Container[i].altitude;
+          }
+          altitude *= _GPS_FEET_PER_METER;
+
           df17 = make_air_position_frame(11, Container[i].addr,
             Container[i].latitude, Container[i].longitude,
-            Container[i].altitude * _GPS_FEET_PER_METER,
-            CPR_EVEN, DF17);
+            altitude, CPR_EVEN, DF17);
 
           str = "*";
           DF17_FRAME_TO_HEX_STR(str);
@@ -64,8 +77,7 @@ void D1090_Export()
 
           df17 = make_air_position_frame(11, Container[i].addr,
             Container[i].latitude, Container[i].longitude,
-            Container[i].altitude * _GPS_FEET_PER_METER,
-            CPR_ODD, DF17);
+            altitude, CPR_ODD, DF17);
 
           DF17_FRAME_TO_HEX_STR(str);
           str += ";\r\n*";
@@ -90,7 +102,7 @@ void D1090_Export()
           df17 = make_velocity_frame(Container[i].addr,
             Container[i].speed * cos(Container[i].course * PI / 180),
             Container[i].speed * sin(Container[i].course * PI / 180),
-            0 /* climb rate */,
+            Container[i].vs,
             DF17);
 
           DF17_FRAME_TO_HEX_STR(str);

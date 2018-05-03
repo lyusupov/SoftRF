@@ -179,7 +179,21 @@ void *msgHeartbeat()
 
 void *msgType10and20(ufo_t *aircraft)
 {
-  int altitude = ((int)(aircraft->altitude * _GPS_FEET_PER_METER) + 1000) / 25;
+  int altitude;
+
+  /* If the aircraft's data has standard pressure altitude - make use it */
+  if (aircraft->pressure_altitude != 0.0) {
+    altitude = (int)(aircraft->pressure_altitude * _GPS_FEET_PER_METER);
+  } else if (ThisAircraft.pressure_altitude != 0.0) {
+    /* If this SoftRF unit is equiped with baro sensor - try to make an adjustment */
+    float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
+    altitude = (int)((aircraft->altitude + altDiff) * _GPS_FEET_PER_METER);
+  } else {
+    /* If no other choice - report GNSS altitude as pressure altitude */
+    altitude = (int)(aircraft->altitude * _GPS_FEET_PER_METER);
+  }
+  altitude = (altitude + 1000) / 25; /* Resolution = 25 feet */
+
   int trackHeading = (int)(aircraft->course / (360.0 / 256)); /* convert to 1.4 deg single byte */
 
   if (altitude < 0) {
@@ -193,7 +207,7 @@ void *msgType10and20(ufo_t *aircraft)
   //altitude = 0x678;
   
   uint16_t horiz_vel = (uint16_t) aircraft->speed /* 0x123 */ ; /*  in knots */
-  uint16_t vert_vel = 0 /* 0x456 */;
+  uint16_t vert_vel = (uint16_t) ((int16_t) (aircraft->vs / 64.0)) /* 0x456 */; /* in units of 64 fpm */
 
   Traffic.alert_status  = 0 /* 0x1 */;
   Traffic.addr_type     = 0 /* 0x2 */;

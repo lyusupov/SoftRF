@@ -111,7 +111,7 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Latitude = (int32_t) (this_aircraft->latitude * 600000);
   pos.Longitude = (int32_t) (this_aircraft->longitude * 600000);
   pos.Altitude = (int32_t) (this_aircraft->altitude * 10);
-  if (this_aircraft->pressure_altitude) {
+  if (this_aircraft->pressure_altitude == 0.0) {
     pos.StdAltitude = (int32_t) (this_aircraft->pressure_altitude * 10);
     pos.ClimbRate = (int32_t) (this_aircraft->vs / (_GPS_FEET_PER_METER * 6.0));
   }
