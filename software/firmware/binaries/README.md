@@ -35,3 +35,6 @@
 
 
 3. Press **START** button and wait for completion.
+
+For some boards you may need to push **BOOT** button in order to activate flash download mode.<br>
+"Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.    
