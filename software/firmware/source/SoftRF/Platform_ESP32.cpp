@@ -378,32 +378,32 @@ static void ESP32_OLED_loop()
 
       u8x8->drawString(1, 1, "ID");
 
-      itoa(ThisAircraft.addr, buf, 16);
+      itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
       u8x8->draw2x2String(0, 2, buf);
 
-      u8x8->drawString(7, 1, "PROTOCOL");
+      u8x8->drawString(8, 1, "PROTOCOL");
 
-      u8x8->draw2x2String(13, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+      u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
 
       u8x8->drawString(1, 5, "RX");
 
-      itoa(rx_packets_counter, buf, 10);
+      itoa(rx_packets_counter % 1000, buf, 10);
       u8x8->draw2x2String(0, 6, buf);
 
       u8x8->drawString(9, 5, "TX");
 
-      itoa(tx_packets_counter, buf, 10);
+      itoa(tx_packets_counter % 1000, buf, 10);
       u8x8->draw2x2String(8, 6, buf);
 
       OLED_display_frontpage = true;
     } else {
       if (rx_packets_counter > prev_rx_packets_counter) {
-        itoa(rx_packets_counter, buf, 10);
+        itoa(rx_packets_counter % 1000, buf, 10);
         u8x8->draw2x2String(0, 6, buf);
         prev_rx_packets_counter = rx_packets_counter;
       }
       if (tx_packets_counter > prev_tx_packets_counter) {
-        itoa(tx_packets_counter, buf, 10);
+        itoa(tx_packets_counter % 1000, buf, 10);
         u8x8->draw2x2String(8, 6, buf);
         prev_tx_packets_counter = tx_packets_counter;
       }

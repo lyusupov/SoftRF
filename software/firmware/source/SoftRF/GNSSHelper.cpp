@@ -36,6 +36,7 @@
 #endif
 
 extern char UDPpacketBuffer[256];
+extern ufo_t ThisAircraft;
 
 unsigned long GNSSTimeSyncMarker = 0;
 
@@ -284,18 +285,46 @@ void PickGNSSFix()
       for (ndx = GNSS_cnt - 4; ndx >= 0; ndx--) { // skip CS and *
         if ((GNSSbuf[ndx] == '$') && (GNSSbuf[ndx+1] == 'G')) {
 
-          Serial.write((uint8_t *) &GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+          size_t write_size = GNSS_cnt - ndx + 1;
+
+          /* try to append pressure altitude (PGRMZ) next to each RMC sentence */
+          if (ThisAircraft.pressure_altitude != 0.0 &&
+              !strncmp((char *) &GNSSbuf[ndx+3], "RMC,", strlen("RMC,")) &&
+              /* Assume that space of 24 bytes is sufficient for PGRMZ */
+              (sizeof(GNSSbuf) - GNSS_cnt > 24) ) {
+
+            int altitude = constrain(
+                    (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
+                    -1000, 60000);
+
+            snprintf((char *) &GNSSbuf[GNSS_cnt+1], 24, "\n$PGRMZ,%d,f,3*",
+                    altitude ); /* feet , 3D fix */
+
+            size_t sentence_size = strlen((char *) &GNSSbuf[GNSS_cnt+1]);
+
+            //calculate the checksum
+            unsigned char cs = 0;
+            for (unsigned int n = 1; n < sentence_size - 1; n++) {
+              cs ^= GNSSbuf[(GNSS_cnt+1) + n];
+            }
+
+            char *csum_ptr = (char *) GNSSbuf + ((GNSS_cnt+1) + sentence_size);
+            snprintf(csum_ptr, 8, "%02X\r", cs);
+
+            write_size += sentence_size + strlen(csum_ptr);
+          }
+
+          Serial.write((uint8_t *) &GNSSbuf[ndx], write_size);
           Serial.write('\n');
 
-          SoC->BltnBT_write((uint8_t *) &GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+          SoC->BltnBT_write((uint8_t *) &GNSSbuf[ndx], write_size);
           SoC->BltnBT_write((uint8_t *) "\n", 1);
 
           if (settings->nmea_u) {
-            size_t num = GNSS_cnt - ndx + 1;
             // ASSERT(sizeof(UDPpacketBuffer) > sizeof(GNSSbuf))
-            memcpy(UDPpacketBuffer, &GNSSbuf[ndx], num);
-            UDPpacketBuffer[num] = '\n';
-            SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *)UDPpacketBuffer, num + 1);
+            memcpy(UDPpacketBuffer, &GNSSbuf[ndx], write_size);
+            UDPpacketBuffer[write_size] = '\n';
+            SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *)UDPpacketBuffer, write_size + 1);
           }
 
 #if defined(AIRCONNECT_IS_ACTIVE)

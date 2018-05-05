@@ -292,6 +292,31 @@ void NMEA_Position()
     size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
       (NMEALIB_SENTENCE_GPGGA | NMEALIB_SENTENCE_GPGSA | NMEALIB_SENTENCE_GPRMC));
 
+    if (ThisAircraft.pressure_altitude != 0.0 &&
+        /* Assume that space of 24 bytes is sufficient for PGRMZ */
+        nmealib_buf.bufferSize - gen_sz > 24) {
+
+      int altitude = constrain(
+                    (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
+                    -1000, 60000);
+
+      snprintf(nmealib_buf.buffer + gen_sz, 24, "$PGRMZ,%d,f,3*",
+              altitude ); /* feet , 3D fix */
+
+      size_t sentence_size = strlen(nmealib_buf.buffer + gen_sz);
+
+      //calculate the checksum
+      unsigned char cs = 0;
+      for (unsigned int n = 1; n < sentence_size - 1; n++) {
+        cs ^= nmealib_buf.buffer[gen_sz + n];
+      }
+
+      char *csum_ptr = nmealib_buf.buffer + (gen_sz + sentence_size);
+      snprintf(csum_ptr, 8, "%02X\r\n", cs);
+
+      gen_sz += sentence_size + strlen(csum_ptr);
+    }
+
     if (gen_sz) {
       Serial.write((uint8_t *) nmealib_buf.buffer, gen_sz);
       SoC->BltnBT_write((uint8_t *) nmealib_buf.buffer, gen_sz);
