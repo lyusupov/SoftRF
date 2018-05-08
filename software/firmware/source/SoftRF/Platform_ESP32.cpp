@@ -29,6 +29,7 @@
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 #include "WiFiHelper.h"
+#include "BluetoothHelper.h"
 
 #include <U8x8lib.h>
 
@@ -58,31 +59,13 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
 
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 
-#if ESP32_USE_BUILTIN_BLUETOOTH
-
-#include <BluetoothSerial.h>
-
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled!
-#endif
-
-BluetoothSerial SerialBT;
-String BT_name = HOSTNAME;
-
-#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
 
 static void ESP32_setup()
 {
-  union {
-    uint8_t efuse_mac[6];
-    uint64_t chipmacid;
-  };
 
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
-
-  chipmacid = ESP.getEfuseMac();
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
   ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
@@ -119,14 +102,6 @@ static void ESP32_setup()
     u8x8->clear();
     u8x8->draw2x2String(2, 3, "SoftRF");
   }
-
-#if ESP32_USE_BUILTIN_BLUETOOTH
-
-  BT_name += String((uint32_t) efuse_mac[5] | (efuse_mac[4] << 8) | \
-                              (efuse_mac[3] << 16), HEX);
-  SerialBT.begin(BT_name.c_str());
-
-#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
 }
 
 static uint32_t ESP32_getChipId()
@@ -326,33 +301,6 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 }
 
-static int ESP32_BltnBT_available()
-{
-  int rval = 0;
-#if ESP32_USE_BUILTIN_BLUETOOTH
-  rval = SerialBT.available();
-#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
-  return rval;
-}
-
-static int ESP32_BltnBT_read()
-{
-  int rval = -1;
-#if ESP32_USE_BUILTIN_BLUETOOTH
-  rval = SerialBT.read();
-#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
-  return rval;
-}
-
-static size_t ESP32_BltnBT_write(const uint8_t *buffer, size_t size)
-{
-  size_t rval = size;
-#if ESP32_USE_BUILTIN_BLUETOOTH
-  rval = SerialBT.write(buffer, size);
-#endif /* ESP32_USE_BUILTIN_BLUETOOTH */
-  return rval;
-}
-
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -412,6 +360,7 @@ static void ESP32_OLED_loop()
 }
 
 SoC_ops_t ESP32_ops = {
+  SOC_ESP32,
   "ESP32",
   ESP32_setup,
   ESP32_getChipId,
@@ -432,9 +381,7 @@ SoC_ops_t ESP32_ops = {
   ESP32_SPI_begin,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
-  ESP32_BltnBT_available,
-  ESP32_BltnBT_read,
-  ESP32_BltnBT_write,
+  &ESP32_Bluetooth_ops,
   ESP32_OLED_loop
 };
 

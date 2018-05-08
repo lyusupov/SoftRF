@@ -45,6 +45,7 @@ typedef struct Settings {
     bool     resvd1:1;
     bool     resvd2:1;
 
+    uint8_t  bluetooth; /* ESP32 built-in Bluetooth */
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;
@@ -59,7 +60,6 @@ typedef struct Settings {
     uint8_t  resvd14;
     uint8_t  resvd15;
     uint8_t  resvd16;
-    uint8_t  resvd17;
 } settings_t;
 
 typedef struct EEPROM_S {

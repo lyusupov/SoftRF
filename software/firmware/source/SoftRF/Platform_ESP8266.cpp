@@ -220,28 +220,13 @@ static void ESP8266_swSer_enableRx(boolean arg)
   swSer.enableRx(arg);
 }
 
-/* ESP8266 has no built-in Bluetooth */
-static int ESP8266_BltnBT_available()
-{
-  return 0;
-}
-
-static int ESP8266_BltnBT_read()
-{
-  return -1;
-}
-
-static size_t ESP8266_BltnBT_write(const uint8_t *buffer, size_t size)
-{
-  return size;
-}
-
 static void ESP8266_OLED_loop()
 {
 
 }
 
 SoC_ops_t ESP8266_ops = {
+  SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
   ESP8266_getChipId,
@@ -262,9 +247,7 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_SPI_begin,
   ESP8266_swSer_begin,
   ESP8266_swSer_enableRx,
-  ESP8266_BltnBT_available,
-  ESP8266_BltnBT_read,
-  ESP8266_BltnBT_write,
+  NULL, /* ESP8266 has no built-in Bluetooth */
   ESP8266_OLED_loop
 };
 

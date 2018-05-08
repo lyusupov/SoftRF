@@ -22,8 +22,10 @@
 #include "SoftRF.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
+#include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
+  uint8_t id;
   const char name[16];
   void (*setup)();
   uint32_t (*getChipId)();
@@ -44,11 +46,15 @@ typedef struct SoC_ops_struct {
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);
   void (*swSer_enableRx)(boolean);
-  int (*BltnBT_available)(void);
-  int (*BltnBT_read)(void);
-  size_t (*BltnBT_write)(const uint8_t *buffer, size_t size);
+  Bluetooth_ops_t *Bluetooth;
   void (*OLED_loop)();
 } SoC_ops_t;
+
+enum
+{
+	SOC_ESP8266,
+	SOC_ESP32
+};
 
 extern SoC_ops_t *SoC;
 #if defined(ESP8266)

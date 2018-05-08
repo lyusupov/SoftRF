@@ -174,7 +174,10 @@ void NMEA_Export()
             snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
 
             Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            SoC->BltnBT_write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+
+            if (SoC->Bluetooth) {
+              SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+            }
 
             if (settings->nmea_u) {
               SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
@@ -202,7 +205,9 @@ void NMEA_Export()
             snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
 
             Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            SoC->BltnBT_write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+            if (SoC->Bluetooth) {
+              SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+            }
 
             if (settings->nmea_u) {
               SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
@@ -319,8 +324,9 @@ void NMEA_Position()
 
     if (gen_sz) {
       Serial.write((uint8_t *) nmealib_buf.buffer, gen_sz);
-      SoC->BltnBT_write((uint8_t *) nmealib_buf.buffer, gen_sz);
-
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->write((uint8_t *) nmealib_buf.buffer, gen_sz);
+      }
       if (settings->nmea_u) {
         SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
       }

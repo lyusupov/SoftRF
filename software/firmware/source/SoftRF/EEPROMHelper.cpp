@@ -19,6 +19,9 @@
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
+#include "LEDHelper.h"
+#include "SoundHelper.h"
+#include "BluetoothHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 
@@ -61,6 +64,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
   eeprom_block.field.settings.volume = BUZZER_VOLUME_FULL;
   eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
+  eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
 
   eeprom_block.field.settings.nmea_g = false;
   eeprom_block.field.settings.nmea_p = false;

@@ -55,6 +55,13 @@
 #define LED_DISTANCE_NEAR   1500
 #define LED_DISTANCE_FAR    10000
 
+enum
+{
+	DIRECTION_TRACK_UP,
+	DIRECTION_NORTH_UP,
+	LED_OFF
+};
+
 void LED_setup();
 void LED_test();
 void LED_DisplayTraffic();

@@ -117,20 +117,6 @@ enum
 	SOFTRF_MODE_UAV
 };
 
-enum
-{
-	DIRECTION_TRACK_UP,
-	DIRECTION_NORTH_UP,
-	LED_OFF
-};
-
-enum
-{
-	BUZZER_VOLUME_FULL,
-	BUZZER_VOLUME_LOW,
-	BUZZER_OFF
-};
-
 extern void Misc_info(void);
 extern void ParseData(void);
 extern void ClearExpired(void);

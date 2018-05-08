@@ -270,14 +270,14 @@ void PickGNSSFix()
    */
   while (swSer.available() > 0   ||
          Serial.available() > 0  ||
-         SoC->BltnBT_available() > 0) {
+         (SoC->Bluetooth && SoC->Bluetooth->available() > 0) ) {
 
     if (swSer.available() > 0) {
       GNSSbuf[GNSS_cnt] = swSer.read();
     } else if (Serial.available()) {
       GNSSbuf[GNSS_cnt] = Serial.read();
     } else {
-      GNSSbuf[GNSS_cnt] = SoC->BltnBT_read();
+      GNSSbuf[GNSS_cnt] = SoC->Bluetooth->read();
     }
 
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
@@ -317,8 +317,10 @@ void PickGNSSFix()
           Serial.write((uint8_t *) &GNSSbuf[ndx], write_size);
           Serial.write('\n');
 
-          SoC->BltnBT_write((uint8_t *) &GNSSbuf[ndx], write_size);
-          SoC->BltnBT_write((uint8_t *) "\n", 1);
+          if (SoC->Bluetooth) {
+            SoC->Bluetooth->write((uint8_t *) &GNSSbuf[ndx], write_size);
+            SoC->Bluetooth->write((uint8_t *) "\n", 1);
+          }
 
           if (settings->nmea_u) {
             // ASSERT(sizeof(UDPpacketBuffer) > sizeof(GNSSbuf))

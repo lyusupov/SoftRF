@@ -23,6 +23,9 @@
 #include "SoCHelper.h"
 #include "WebHelper.h"
 #include "BaroHelper.h"
+#include "LEDHelper.h"
+#include "SoundHelper.h"
+#include "BluetoothHelper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -57,12 +60,19 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  char *Settings_temp = (char *) malloc(3400);
+  size_t size = 3600;
+  char *offset;
+  size_t len = 0;
+  char *Settings_temp = (char *) malloc(size);
+
   if (Settings_temp == NULL) {
     return;
   }
 
-  snprintf_P ( Settings_temp, 3400,
+  offset = Settings_temp;
+
+  /* Common part 1 */
+  snprintf_P ( offset, size,
     PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -82,7 +92,22 @@ void handleSettings() {
 <option %s value='%d'>UAV</option>\
 </select>\
 </td>\
-</tr>\
+</tr>"),
+  (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
+  (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
+  (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
+  (settings->mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV
+/*  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT, */
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* Radio specific part */
+  if (rf_chip && (rf_chip->type == RF_IC_SX1276)) {
+    snprintf_P ( offset, size,
+      PSTR("\
 <tr>\
 <th align=left>Protocol</th>\
 <td align=right>\
@@ -93,7 +118,21 @@ void handleSettings() {
 <option %s value='%d'>FANET</option>\
 </select>\
 </td>\
-</tr>\
+</tr>"),
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
+    (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
+    (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
+    (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""), RF_PROTOCOL_FANET
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 2 */
+  snprintf_P ( offset, size,
+    PSTR("\
 <tr>\
 <th align=left>Region</th>\
 <td align=right>\
@@ -155,7 +194,64 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 </select>\
 </td>\
-</tr>\
+</tr>"),
+  (settings->band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
+  (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
+  (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
+  (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
+  (settings->band == RF_BAND_US ? "selected" : ""),  RF_BAND_US,
+  (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
+  (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
+  (settings->band == RF_BAND_AU ? "selected" : ""),  RF_BAND_AU,
+  (settings->aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
+  (settings->aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
+  (settings->aircraft_type == AIRCRAFT_TYPE_HELICOPTER ? "selected" : ""),  AIRCRAFT_TYPE_HELICOPTER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_UAV ? "selected" : ""),  AIRCRAFT_TYPE_UAV,
+  (settings->aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
+  (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
+  (settings->txpower == RF_TX_POWER_FULL ? "selected" : ""),  RF_TX_POWER_FULL,
+  (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
+  (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
+  (settings->volume == BUZZER_VOLUME_FULL ? "selected" : ""), BUZZER_VOLUME_FULL,
+  (settings->volume == BUZZER_VOLUME_LOW ? "selected" : ""), BUZZER_VOLUME_LOW,
+  (settings->volume == BUZZER_OFF ? "selected" : ""), BUZZER_OFF,
+  (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
+  (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+  (settings->pointer == LED_OFF ? "selected" : ""), LED_OFF
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Built-in Bluetooth</th>\
+<td align=right>\
+<select name='bluetooth'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>SPP</option>\
+<option %s value='%d'>LE</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 3 */
+  snprintf_P ( offset, size,
+    PSTR("\
 <tr>\
 <th align=left>NMEA:</th>\
 </tr>\
@@ -206,39 +302,6 @@ void handleSettings() {
 </form>\
 </body>\
 </html>"),
-  (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
-  (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
-  (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
-  (settings->mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV,
-/*  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT, */
-  (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
-  (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
-  (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
-  (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""), RF_PROTOCOL_FANET,
-  (settings->band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
-  (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
-  (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
-  (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
-  (settings->band == RF_BAND_US ? "selected" : ""),  RF_BAND_US,
-  (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
-  (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
-  (settings->band == RF_BAND_AU ? "selected" : ""),  RF_BAND_AU,
-  (settings->aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
-  (settings->aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
-  (settings->aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
-  (settings->aircraft_type == AIRCRAFT_TYPE_HELICOPTER ? "selected" : ""),  AIRCRAFT_TYPE_HELICOPTER,
-  (settings->aircraft_type == AIRCRAFT_TYPE_UAV ? "selected" : ""),  AIRCRAFT_TYPE_UAV,
-  (settings->aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
-  (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
-  (settings->txpower == RF_TX_POWER_FULL ? "selected" : ""),  RF_TX_POWER_FULL,
-  (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
-  (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
-  (settings->volume == BUZZER_VOLUME_FULL ? "selected" : ""), BUZZER_VOLUME_FULL,
-  (settings->volume == BUZZER_VOLUME_LOW ? "selected" : ""), BUZZER_VOLUME_LOW,
-  (settings->volume == BUZZER_OFF ? "selected" : ""), BUZZER_OFF,
-  (settings->pointer == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
-  (settings->pointer == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
-  (settings->pointer == LED_OFF ? "selected" : ""), LED_OFF,
   (!settings->nmea_g ? "checked" : "") , (settings->nmea_g ? "checked" : ""),
   (!settings->nmea_p ? "checked" : "") , (settings->nmea_p ? "checked" : ""),
   (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
@@ -246,6 +309,7 @@ void handleSettings() {
   (!settings->gdl90 ? "checked" : "") , (settings->gdl90 ? "checked" : ""),
   (!settings->d1090 ? "checked" : "") , (settings->d1090 ? "checked" : "")
   );
+
   SoC->swSer_enableRx(false);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
@@ -355,6 +419,8 @@ void handleInput() {
       settings->volume = server.arg(i).toInt();
     } else if (server.argName(i).equals("pointer")) {
       settings->pointer = server.arg(i).toInt();
+    } else if (server.argName(i).equals("bluetooth")) {
+      settings->bluetooth = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_g")) {
       settings->nmea_g = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_p")) {
@@ -386,6 +452,7 @@ PSTR("<html>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
 <tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
+<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
@@ -398,7 +465,7 @@ PSTR("<html>\
 </body>\
 </html>"),
   settings->mode, settings->rf_protocol, settings->band, settings->aircraft_type,
-  settings->txpower, settings->volume, settings->pointer,
+  settings->txpower, settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_u),
   BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090)

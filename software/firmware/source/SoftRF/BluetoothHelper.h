@@ -1,6 +1,6 @@
 /*
- * SoundHelper.h
- * Copyright (C) 2016-2018 Linar Yusupov
+ * BluetoothHelper.h
+ * Copyright (C) 2018 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,21 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SOUNDHELPER_H
-#define SOUNDHELPER_H
+#ifndef BLUETOOTHHELPER_H
+#define BLUETOOTHHELPER_H
 
-#include "SoftRF.h"
+#include <stddef.h>
+
+typedef struct Bluetooth_ops_struct {
+  const char name[16];
+  void (*setup)();
+  void (*loop)();
+  int (*available)(void);
+  int (*read)(void);
+  size_t (*write)(const uint8_t *buffer, size_t size);
+} Bluetooth_ops_t;
 
 enum
 {
-	BUZZER_VOLUME_FULL,
-	BUZZER_VOLUME_LOW,
-	BUZZER_OFF
+	BLUETOOTH_OFF,
+	BLUETOOTH_SPP,
+	BLUETOOTH_LE_HM10_SERIAL
 };
 
-void Sound_setup(void);
-#if 0
-void Sound_test(int var);
-#endif
+#if defined(ESP32)
 
-#endif /* SOUNDHELPER_H */
+extern Bluetooth_ops_t ESP32_Bluetooth_ops;
+
+#endif /* ESP32 */
+
+#endif /* BLUETOOTHHELPER_H */

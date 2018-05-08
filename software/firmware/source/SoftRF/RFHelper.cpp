@@ -349,6 +349,10 @@ bool nrf905_receive()
 #endif
       break;
     }
+
+    if (SoC->Bluetooth) {
+      SoC->Bluetooth->loop();
+    }
     yield();
   }
 
@@ -526,6 +530,9 @@ bool sx1276_receive()
         break;
       }
 
+    if (SoC->Bluetooth) {
+      SoC->Bluetooth->loop();
+    }
     yield();
   };
 

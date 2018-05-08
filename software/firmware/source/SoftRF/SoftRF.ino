@@ -133,6 +133,10 @@ void setup()
 
   LED_setup();
 
+  if (SoC->Bluetooth) {
+     SoC->Bluetooth->setup();
+  }
+
   WiFi_setup();
   OTA_setup();
   Web_setup();
