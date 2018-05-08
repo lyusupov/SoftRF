@@ -67,5 +67,9 @@ void loop()
     and overwrite existing one in ``<My Documents>``/Arduino/hardware/espressif/esp32/tools/sdk/lib
 9. start **Arduino** application again
 10. open **SoftRF** sketch from _File_ -> _Open_ menu
-11. Select _Tools_ -> _Board_ -> _DOIT_ _ESP32_ _DEVKIT_ _V1_
-12. _Sketch_ -> _Upload_
+11. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
+12. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
+13. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
+14. Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_
+15. Select _Tools_ -> _Flash_ _Frequency_ ->  _80MHz_
+16. _Sketch_ -> _Upload_
