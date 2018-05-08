@@ -28,8 +28,6 @@ extern ufo_t ThisAircraft;
 
 barochip_ops_t *baro_chip = NULL;
 
-#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
-
 Adafruit_BMP085 bmp180;
 Adafruit_BMP280 bmp280;
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
@@ -162,13 +160,8 @@ barochip_ops_t mpl3115a2_ops = {
   mpl3115a2_altitude
 };
 
-#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
-
 void Baro_setup()
 {
-
-#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
-
   if ( (baro_chip = &bmp180_ops,    baro_chip->probe()) ||
        (baro_chip = &bmp280_ops,    baro_chip->probe()) ||
        (baro_chip = &mpl3115a2_ops, baro_chip->probe()) ) {
@@ -189,14 +182,10 @@ void Baro_setup()
     baro_chip = NULL;
     Serial.println(F("WARNING! Barometric pressure sensor is NOT detected."));
   }
-
-#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
 }
 
 void Baro_loop()
 {
-#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
-
   if (baro_chip) {
 
     /* Draft of pressure altitude and vertical speed calculation */
@@ -226,6 +215,4 @@ void Baro_loop()
     Serial.print(F(" , VS avg. = ")); Serial.println(ThisAircraft.vs);
 #endif
   }
-
-#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
 }

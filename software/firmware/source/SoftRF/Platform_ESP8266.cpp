@@ -54,9 +54,7 @@ void ICACHE_FLASH_ATTR user_init()
 
 static void ESP8266_setup()
 {
-#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
   Wire.pins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
 }
 
 static uint32_t ESP8266_getChipId()

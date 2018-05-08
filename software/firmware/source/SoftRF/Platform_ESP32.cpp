@@ -73,10 +73,8 @@ static void ESP32_setup()
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
 
-#if defined(SOFTRF_LORA_PCB_1_2_PROTO)
   /* Pre-init 1st ESP32 I2C bus to stick on these pins */
   Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-#endif /* SOFTRF_LORA_PCB_1_2_PROTO */
 
   /* SSD1306 I2C OLED probing */
   Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);

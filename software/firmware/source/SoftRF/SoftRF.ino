@@ -215,6 +215,8 @@ void normal_loop()
 {
   bool success;
 
+  Baro_loop();
+
   PickGNSSFix();
 
   GNSSTimeSync();
