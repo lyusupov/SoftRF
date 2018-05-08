@@ -75,33 +75,28 @@ class MyCallbacks: public BLECharacteristicCallbacks {
       std::string rxValue = pCharacteristic->getValue();
 
       if (rxValue.length() > 0) {
-#if 0
-        Serial.println("*********");
-        Serial.print("Received Value: ");
-        for (int i = 0; i < rxValue.length(); i++)
-          Serial.print(rxValue[i]);
-
-        Serial.println();
-        Serial.println("*********");
-#else
         BLE_FIFO_RX->write(rxValue.c_str(),
                       (BLE_FIFO_RX->room() > rxValue.length() ?
                       rxValue.length() : BLE_FIFO_RX->room()));
-#endif
       }
     }
 };
 
 static void ESP32_Bluetooth_setup()
 {
+#if !defined(SOFTRF_ADDRESS)
   union {
     uint8_t efuse_mac[6];
     uint64_t chipmacid;
   };
 
   chipmacid = ESP.getEfuseMac();
+
   BT_name += String((uint32_t) efuse_mac[5] | (efuse_mac[4] << 8) | \
                               (efuse_mac[3] << 16), HEX);
+#else
+  BT_name += String(SOFTRF_ADDRESS & 0x00FFFFFFU, HEX);
+#endif
 
   switch(settings->bluetooth)
   {

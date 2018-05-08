@@ -104,6 +104,7 @@ static void ESP32_setup()
 
 static uint32_t ESP32_getChipId()
 {
+#if !defined(SOFTRF_ADDRESS)
   union {
     uint8_t efuse_mac[6];
     uint64_t chipmacid;
@@ -112,6 +113,9 @@ static uint32_t ESP32_getChipId()
 
   return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
                    (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
+#else
+  return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
+#endif
 }
 
 static uint32_t ESP32_getFlashChipId()

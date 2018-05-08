@@ -201,7 +201,14 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     unsigned int aircraft_type =  this_aircraft->aircraft_type;
 
     pkt->addr = id & 0x00FFFFFF;
+
+#if !defined(SOFTRF_ADDRESS)
     pkt->addr_type = ADDR_TYPE_FLARM;
+#else
+    pkt->addr_type = (pkt->addr == SOFTRF_ADDRESS ?
+                      ADDR_TYPE_ICAO : ADDR_TYPE_FLARM);
+#endif
+
     pkt->parity = 0;
     pkt->vs = 0;
     pkt->vsmult = 0;

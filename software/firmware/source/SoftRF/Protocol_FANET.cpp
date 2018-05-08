@@ -341,7 +341,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
 
   pkt->heading        = constrain((int)roundf(heading * 256.0f)/360.0f, 0, 255);
 
-  int turnr4          = constrain((int)roundf(turnrate * 4.0f), 0, 255);
+  int turnr4          = constrain((int)roundf(turnrate * 4.0f), -255, 255);
   if(abs(turnr4) > 63) {
     pkt->turn_scale   = 1;
     pkt->turn_rate    = ((turnr4 + (turnr4 >= 0 ? 2 : -2)) / 4);

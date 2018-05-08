@@ -59,7 +59,11 @@ static void ESP8266_setup()
 
 static uint32_t ESP8266_getChipId()
 {
+#if !defined(SOFTRF_ADDRESS)
   return ESP.getChipId();
+#else
+  return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
+#endif
 }
 
 static uint32_t ESP8266_getFlashChipId()

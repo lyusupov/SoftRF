@@ -379,7 +379,11 @@ void handleRoot() {
  </table>\
 </body>\
 </html>"),
-    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION,
+    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
+#if defined(SOFTRF_ADDRESS)
+    "I"
+#endif
+    ,
     (SoC == NULL ? "NONE" : SoC->name),
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
