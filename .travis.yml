@@ -37,6 +37,9 @@ install:
       cd $HOME/Arduino/hardware/espressif/esp32/tools/sdk/lib ;
       rm -f libbt.a ;
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libbt.a . ;
+      cd $HOME/Arduino/hardware/espressif/esp32 ;
+      sed -i 's/esp32.upload.maximum_size=1310720/esp32.upload.maximum_size=1966080/g' boards.txt ;
+      arduino --pref "custom_PartitionScheme=esp32_min_spiffs" --save-prefs ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   
