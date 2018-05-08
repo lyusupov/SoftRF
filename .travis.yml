@@ -4,7 +4,7 @@ env:
     - IDE_VERSION=1.8.5
   matrix:
   - BOARD=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
-  - BOARD=espressif:esp32:esp32doit-devkit-v1:FlashFreq=80
+  - BOARD=espressif:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -39,7 +39,6 @@ install:
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libbt.a . ;
       cd $HOME/Arduino/hardware/espressif/esp32 ;
       sed -i 's/esp32.upload.maximum_size=1310720/esp32.upload.maximum_size=1966080/g' boards.txt ;
-      arduino --pref "custom_PartitionScheme=esp32_min_spiffs" --save-prefs ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   
