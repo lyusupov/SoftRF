@@ -192,6 +192,9 @@ void loop()
     break;
   }
 
+  // Show status info on tiny OLED display
+  SoC->OLED_loop();
+
   // Handle Air Connect
   NMEA_loop();
 
@@ -427,7 +430,7 @@ void txrx_test_loop()
 #if DEBUG_TIMING
   oled_start_ms = millis();
 #endif
-  SoC->OLED_loop();
+//  SoC->OLED_loop();
 #if DEBUG_TIMING
   oled_end_ms = millis();
 #endif
