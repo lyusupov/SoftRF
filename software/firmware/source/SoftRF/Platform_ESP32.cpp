@@ -189,7 +189,7 @@ static void ESP32_Sound_test(int var)
 
 static uint32_t ESP32_maxSketchSpace()
 {
-  return 0x140000;
+  return 0x1E0000;
 }
 
 static const int8_t ESP32_dB_to_power_level[21] = {
