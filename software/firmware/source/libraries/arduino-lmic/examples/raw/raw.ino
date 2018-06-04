@@ -18,11 +18,20 @@
 #include <SPI.h>
 #include "lib_crc.h"
 
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266WebServer.h>
+#endif
+
+#if defined(ESP32)
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WebServer.h>
+#endif
+
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <ESP8266WebServer.h>
 #include <DNSServer.h>
 
 #include <protocol.h>
@@ -43,22 +52,61 @@ const char* password = "";
        config.h in the lmic library to set it.
 #endif
 
+#define DO_FREQ_SWEEP
+
+#if defined(DO_FREQ_SWEEP)
+#include <TimeLib.h>
+#define SWEEP_START 820000000 /* 820 MHz */
+#define NTP_TIME_SYNC
+#define RECEIVE_ONLY
+#endif
+
+//#define  USE_P3I
+#define  USE_FANET
+//#define  USE_LEGACY
+//#define  USE_OGNTP
+
+
 // How often to send a packet. Note that this sketch bypasses the normal
 // LMIC duty cycle limiting, so when you change anything in this sketch
 // (payload length, frequency, spreading factor), be sure to check if
 // this interval should not also be increased.
 // See this spreadsheet for an easy airtime and duty cycle calculator:
 // https://docs.google.com/spreadsheets/d/1voGAtQAjC1qBmaVuP1ApNKs1ekgUjavHuVQIXyYSvNc 
-#define TX_INTERVAL /* 200 */ 2000
+#define TX_INTERVAL 200 /* 2000 */
 
 // Pin mapping
+#if defined(ESP8266)
 const lmic_pinmap lmic_pins = {
     .nss = /* 15 */ D8 ,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = LMIC_UNUSED_PIN,
     .dio = {/* 16 */ D0 , LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
+#endif
 
+#if defined(ESP32)
+
+#define SOC_GPIO_PIN_MOSI     27
+#define SOC_GPIO_PIN_MISO     19
+#define SOC_GPIO_PIN_SCK      5
+#define SOC_GPIO_PIN_SS       18
+#define SOC_GPIO_PIN_DIO0     26
+#define SOC_GPIO_PIN_RST      14
+
+#define LED_BUILTIN           2 /* DoIt */
+
+const lmic_pinmap lmic_pins = {
+    .nss = SOC_GPIO_PIN_SS,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = SOC_GPIO_PIN_RST,
+    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+};
+#endif
+
+#if defined(NTP_TIME_SYNC)
+extern void Time_setup(void);
+#endif
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -74,15 +122,27 @@ osjob_t txjob;
 osjob_t timeoutjob;
 static void tx_func (osjob_t* job);
 
-#if 0  /* P3I */
+#if defined(USE_P3I)   /* P3I */
 unsigned char tx_data[] = {
   0x24, 0x81, 0x47, 0x37, 0x9a, 0x99, 0x1b, 0x42, 0x00, 0x00, 0x62, 0x42,
   0x8a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x3a
 };
-#else /* FANET */
+#elif defined(USE_FANET) /* FANET */
 unsigned char tx_data[] = {
-  0x41, 0xAA, 0xBC, 0xBB, 0x00, 0x80, 0x00, 0x00, 0x64, 0x00, 0x14, 0x00, 0x00
+  0x41, 0xAA, 0xBC, 0xBB, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x64, 0x00, 0x14, 0x00, 0x00
 };
+#elif defined(USE_LEGACY) /* LEGACY */
+unsigned char tx_data[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+#elif defined(USE_OGNTP) /* OGNTP */
+unsigned char tx_data[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+#else
+#error "RF protocol is not defined"
 #endif
 
 #define LEGACY_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_55
@@ -113,10 +173,7 @@ unsigned char tx_data[] = {
 #define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_0000
 #define P3I_CRC_SIZE        2
 
-#define FANET_PAYLOAD_SIZE    13
-
-//#define  PILOTAWARE
-#define  FANET
+#define FANET_PAYLOAD_SIZE    15
 
 const rf_proto_desc_t legacy_proto_desc  = {
   .type             = RF_PROTOCOL_LEGACY,
@@ -183,8 +240,8 @@ const rf_proto_desc_t fanet_proto_desc = {
   .modulation_type  = RF_MODULATION_TYPE_LORA,
   .preamble_type    = 0 /* INVALID FOR LORA */,
   .preamble_size    = 0 /* INVALID FOR LORA */,
-  .syncword         = { 0x12 },  // sx127x default value, valid for FANET
-//  .syncword       = { 0xF1 },  // FANET+
+//  .syncword         = { 0x12 },  // sx127x default value, valid for FANET
+  .syncword       = { 0xF1 },  // FANET+
   .syncword_size    = 1,
   .net_id           = 0x0000, /* not in use */
   .payload_type     = RF_PAYLOAD_DIRECT,
@@ -380,7 +437,9 @@ void tx(unsigned char *buf, size_t size, osjobcb_t func) {
 
   LMIC.osjob.func = func;
   os_radio(RADIO_TX);
+#if !defined(DO_FREQ_SWEEP)
   Serial.println("TX");
+#endif
 }
 
 // Enable rx mode and call func when a packet is received
@@ -392,7 +451,9 @@ void rx(osjobcb_t func) {
   os_radio(LMIC.protocol &&
            LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA ?
           RADIO_RXON : RADIO_RX);
+#if !defined(DO_FREQ_SWEEP)
   Serial.println("RX");
+#endif
 }
 
 static void rxtimeout_func(osjob_t *job) {
@@ -427,13 +488,17 @@ static void rx_func (osjob_t* job) {
   // Timeout RX (i.e. update led status) after 3 periods without RX
   os_setTimedCallback(&timeoutjob, os_getTime() + ms2osticks(3*TX_INTERVAL), rxtimeout_func);
 
+#if !defined(DO_FREQ_SWEEP)
   // Reschedule TX so that it should not collide with the other side's
   // next TX
   os_setTimedCallback(&txjob, os_getTime() + ms2osticks(TX_INTERVAL/2), tx_func);
+#endif
 
+#if !defined(DO_FREQ_SWEEP)
   Serial.print("Got ");
   Serial.print(LMIC.dataLen);
   Serial.println(" bytes");
+#endif
 
   switch (LMIC.protocol->type)
   {
@@ -476,8 +541,9 @@ static void rx_func (osjob_t* job) {
     default:
       break;
     }
-
+#if !defined(DO_FREQ_SWEEP)
     Serial.printf("%02x", (u1_t)(LMIC.frame[i]));
+#endif
   }
 
   switch (LMIC.protocol->crc_type)
@@ -486,9 +552,11 @@ static void rx_func (osjob_t* job) {
     break;
   case RF_CHECKSUM_TYPE_GALLAGER:
     if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
+#if !defined(DO_FREQ_SWEEP)
       Serial.printf(" %02x%02x%02x%02x%02x%02x is wrong FCS",
         LMIC.frame[i], LMIC.frame[i+1], LMIC.frame[i+2],
         LMIC.frame[i+3], LMIC.frame[i+4], LMIC.frame[i+5]);
+#endif
     };
     break;
   case RF_CHECKSUM_TYPE_CCITT_FFFF:
@@ -503,7 +571,23 @@ static void rx_func (osjob_t* job) {
     break;
   }
 
+  int rssi = (LMIC.rssi - 64 + 125) - 157;
+	uint8_t value = LMIC.snr;	// 0x19;
+  int8_t snr;
+
+  if( value & 0x80 ) {                      // The SNR sign bit is 1
+    value = ( ( ~value + 1 ) & 0xFF ) >> 2; // Invert and divide by 4
+    snr = -value;
+  } else {
+    // Divide by 4
+    snr = ( value & 0xFF ) >> 2;
+  }
+
+  Serial.printf(" RSSI: %d SNR: %d ", rssi, snr);
+
+#if !defined(DO_FREQ_SWEEP)
   Serial.println();
+#endif
 
   // Restart RX
   rx(rx_func);
@@ -513,6 +597,7 @@ static void txdone_func (osjob_t* job) {
   rx(rx_func);
 }
 
+#if !defined(DO_FREQ_SWEEP)
 // log text to USART and toggle LED
 static void tx_func (osjob_t* job) {
 
@@ -523,9 +608,29 @@ static void tx_func (osjob_t* job) {
   // will reschedule at half this time.
   os_setTimedCallback(job, os_getTime() + ms2osticks(TX_INTERVAL + random(500)), tx_func);
 }
+#else
+static void tx_func (osjob_t* job) {
+
+  LMIC.freq = SWEEP_START + second() * 1000000;
+  Serial.printf("FREQ: %d", LMIC.freq);
+  Serial.println();
+
+#if !defined(RECEIVE_ONLY)
+  tx(tx_data, sizeof(tx_data), txdone_func);
+#else
+  rx(rx_func);
+#endif
+
+  // reschedule job every TX_INTERVAL (plus a bit of random to prevent
+  // systematic collisions), unless packets are received, then rx_func
+  // will reschedule at half this time.
+  os_setTimedCallback(job, os_getTime() + ms2osticks(TX_INTERVAL), tx_func);
+}
+#endif
 
 // application entry point
 void setup() {
+
   Serial.begin(115200);
   Serial.println("Starting");
 
@@ -568,6 +673,10 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  #if defined(NTP_TIME_SYNC)
+  Time_setup();
+  #endif
+
   #ifdef VCC_ENABLE
   // For Pinoccio Scout boards
   pinMode(VCC_ENABLE, OUTPUT);
@@ -580,10 +689,17 @@ void setup() {
   // initialize runtime env
   os_init();
 
-  //LMIC.protocol = &ogntp_proto_desc;
-  //LMIC.protocol = &p3i_proto_desc;
-  //LMIC.protocol = &legacy_proto_desc;
+#if defined(USE_OGNTP)
+  LMIC.protocol = &ogntp_proto_desc;
+#elif defined(USE_P3I)
+  LMIC.protocol = &p3i_proto_desc;
+#elif defined(USE_LEGACY)
+  LMIC.protocol = &legacy_proto_desc;
+#elif defined(USE_FANET)
   LMIC.protocol = &fanet_proto_desc;
+#else
+#error "RF protocol is not defined"
+#endif
 
   // Set up these settings once, and use them for both TX and RX
 
@@ -612,7 +728,7 @@ void setup() {
 //  LMIC.txpow = 27;
 //  LMIC.txpow = 15;
 //  LMIC.txpow = 5;
-  LMIC.txpow = 1;
+  LMIC.txpow = 2;
 
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
