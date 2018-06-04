@@ -41,7 +41,7 @@ const lmic_pinmap lmic_pins = {
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
-SoftwareSerial swSer(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);
+Exp_SoftwareSerial swSer(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);
 
 ESP8266WebServer server ( 80 );
 

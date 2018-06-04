@@ -25,7 +25,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
-#include <SoftwareSerial.h>
+#include <Exp_SoftwareSerial.h>
 #include <ESP8266FtpServer.h>
 
 #define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
@@ -59,7 +59,7 @@ extern "C" {
 }
 
 extern ESP8266WebServer server;
-extern SoftwareSerial swSer;
+extern Exp_SoftwareSerial swSer;
 
 #endif /* ESP8266HELPER_H */
 
