@@ -104,6 +104,8 @@ typedef struct UFO {
 
     int8_t ns[4];
     int8_t ew[4];
+
+    int8_t rssi; /* SX1276 only */
 } ufo_t;
 
 enum

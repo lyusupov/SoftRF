@@ -146,10 +146,16 @@ void ParseData()
     fo.raw = Bin2Hex(RxBuffer);
 
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+      StdOut.print(F("$PSRFI,"));
+      StdOut.print(now()); StdOut.print(F(","));
+      StdOut.print(RF_last_rssi); StdOut.print(F(","));
+      StdOut.println(fo.raw);
     }
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
+
+      fo.rssi = RF_last_rssi;
+
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
         int max_dist_ndx = 0;
 

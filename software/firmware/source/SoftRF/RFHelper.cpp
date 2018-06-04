@@ -40,6 +40,8 @@ byte TxPkt[MAX_PKT_SIZE];
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
+int8_t RF_last_rssi = 0;
+
 static FreqPlan RF_FreqPlan;
 static bool RF_ready = false;
 
@@ -546,6 +548,7 @@ bool sx1276_receive()
         RxBuffer[i] = LMIC.frame[i + LMIC.protocol->payload_offset];
     }
 
+    RF_last_rssi = LMIC.rssi;
     rx_packets_counter++;
     success = true;
   }
