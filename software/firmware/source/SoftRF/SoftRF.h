@@ -102,10 +102,11 @@ typedef struct UFO {
     bool      stealth;
     bool      no_track;
 
-    int8_t ns[4];
-    int8_t ew[4];
+    int8_t    ns[4];
+    int8_t    ew[4];
 
-    int8_t rssi; /* SX1276 only */
+    uint16_t  hdop; /* cm */
+    int8_t    rssi; /* SX1276 only */
 } ufo_t;
 
 enum

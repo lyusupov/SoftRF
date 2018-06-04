@@ -231,7 +231,8 @@ void normal_loop()
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
     ThisAircraft.course = gnss.course.deg();
-    ThisAircraft.speed = gnss.speed.knots() ;
+    ThisAircraft.speed = gnss.speed.knots();
+    ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
 
     RF_Transmit(RF_Encode());
   }
@@ -282,7 +283,9 @@ void uav_loop()
     ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
     ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
     ThisAircraft.course = the_aircraft.location.gps_cog;
-    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT ;
+    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT;
+    ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
+    ThisAircraft.hdop = the_aircraft.location.gps_hdop;
 
     RF_Transmit(RF_Encode());
   }
