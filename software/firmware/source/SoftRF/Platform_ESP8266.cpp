@@ -38,7 +38,7 @@ const lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = SOC_GPIO_PIN_RST,
-    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .dio = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
 Exp_SoftwareSerial swSer(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);

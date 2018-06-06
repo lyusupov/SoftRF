@@ -856,7 +856,7 @@ static void rxfsk (u1_t rxmode) {
     }
 
     // set preamble timeout
-    writeReg(FSKRegRxTimeout2, 0xFF);//(LMIC.rxsyms+1)/2);
+    //writeReg(FSKRegRxTimeout2, 0xFF);
 
     switch (LMIC.protocol->bitrate)
     {

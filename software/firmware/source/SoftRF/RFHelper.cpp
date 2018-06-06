@@ -395,7 +395,10 @@ static void sx1276_rx_func (osjob_t* job);
 void sx1276_rx(osjobcb_t func);
 
 static bool sx1276_receive_complete = false;
+static bool sx1276_receive_active = false;
 static bool sx1276_transmit_complete = false;
+
+static uint8_t sx1276_channel_prev = (uint8_t) -1;
 
 #define SX1276_RegVersion          0x42 // common
 
@@ -438,20 +441,26 @@ bool sx1276_probe()
 
 void sx1276_channel(uint8_t channel)
 {
-  uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+  if (channel != sx1276_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
 
-  /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
-  LMIC.freq = frequency;
-//LMIC.freq = 868200000UL;
+    if (sx1276_receive_active) {
+      os_radio(RADIO_RST);
+      sx1276_receive_active = false;
+    }
+
+    /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
+    LMIC.freq = frequency;
+    //LMIC.freq = 868200000UL;
+
+    sx1276_channel_prev = channel;
+  }
 }
 
 void sx1276_setup()
 {
   // initialize runtime env
   os_init();
-
-  /* Channel selection is now part of RF_loop() */
-//  sx1276_channel(channel);
 
   switch (settings->rf_protocol)
   {
@@ -519,7 +528,10 @@ bool sx1276_receive()
 
   sx1276_receive_complete = false;
 
-  sx1276_rx(sx1276_rx_func);
+  if (!sx1276_receive_active) {
+    sx1276_rx(sx1276_rx_func);
+    sx1276_receive_active = true;
+  }
 
   while (sx1276_receive_complete == false) {
       // execute scheduled jobs and events
@@ -537,8 +549,6 @@ bool sx1276_receive()
     }
     yield();
   };
-
-  os_radio(RADIO_RST);
 
   if (sx1276_receive_complete == true) {
 
@@ -559,6 +569,7 @@ bool sx1276_receive()
 void sx1276_transmit()
 {
     sx1276_transmit_complete = false;
+    sx1276_receive_active = false;
     os_setCallback(&sx1276_txjob, sx1276_tx_func);
 
     while (sx1276_transmit_complete == false) {
@@ -586,6 +597,9 @@ static void sx1276_rx_func (osjob_t* job) {
   u1_t crc8, pkt_crc8;
   u2_t crc16, pkt_crc16;
   u1_t i;
+
+  // SX1276 is in SLEEP after IRQ handler, Force it to enter RX mode
+  sx1276_receive_active = false;
 
   /* FANET (LoRa) LMIC IRQ handler may deliver empty packets here when CRC is invalid. */
   if (LMIC.dataLen == 0) {

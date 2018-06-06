@@ -38,7 +38,7 @@
 /* Max. paket's payload size for all supported RF protocols */
 #define MAX_PKT_SIZE  32 
 
-#define TIMEOUT   500
+#define TIMEOUT   100
 
 #define RRB_SIZE  10
 #define MAX_TRACKING_OBJECTS    8
