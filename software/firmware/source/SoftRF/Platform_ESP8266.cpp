@@ -154,14 +154,7 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   IPAddress ClientIP;
 
-/*
- * Unicast UDP transfer gives much better reception quality
- * for Android clients rather than broadcast one.
- * But it is still disabled due to detected instability of
- * NodeMCU & unicast UDPs which I have not not resolved yet.
- */
-  if (true) {
-//  if (WiFi.getMode() == WIFI_STA) {
+  if (WiFi.getMode() == WIFI_STA) {
     ClientIP = ESP8266_WiFi_get_broadcast();
 
     swSer.enableRx(false);
@@ -188,6 +181,7 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
       stat_info = STAILQ_NEXT(stat_info, next);
     }
+    wifi_softap_free_station_info();
   }
 }
 
