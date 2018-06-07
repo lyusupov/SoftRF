@@ -65,6 +65,7 @@
 #include "WiFiHelper.h"
 #include "WebHelper.h"
 #include "BaroHelper.h"
+#include "TTNHelper.h"
 
 #include "SoftRF.h"
 
@@ -142,6 +143,10 @@ void setup()
   OTA_setup();
   Web_setup();
   NMEA_setup();
+
+#if defined(ENABLE_TTN)
+  TTN_setup();
+#endif
 
   delay(1000);
 
@@ -244,6 +249,10 @@ void normal_loop()
 #endif
 
   if (success && isValidFix()) ParseData();
+
+#if defined(ENABLE_TTN)
+  TTN_loop();
+#endif
 
   if (isTimeToDisplay()) {
     if (isValidFix()) {
@@ -404,6 +413,10 @@ void txrx_test_loop()
   if (success) ParseData();
 #if DEBUG_TIMING
   parse_end_ms = millis();
+#endif
+
+#if defined(ENABLE_TTN)
+  TTN_loop();
 #endif
 
 #if DEBUG_TIMING
