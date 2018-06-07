@@ -2287,6 +2287,7 @@ void LMIC_reset (void) {
     LMIC.ping.freq    =  FREQ_PING; // defaults for ping
     LMIC.ping.dr      =  DR_PING;   // ditto
     LMIC.ping.intvExp =  0xFF;
+    LMIC.preamble     =  0x34; // LORA_MAC_PREAMBLE
 #endif // !DISABLE_PING
 #if defined(CFG_us915)
     initDefaultChannels();

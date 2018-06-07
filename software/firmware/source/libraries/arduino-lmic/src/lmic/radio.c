@@ -596,13 +596,7 @@ static void txlora () {
     configPower();
 
     // set sync word
-    if (LMIC.protocol &&
-        LMIC.protocol->type == RF_PROTOCOL_FANET &&
-        LMIC.protocol->syncword_size == 1) {
-      writeReg(LORARegSyncWord, LMIC.protocol->syncword[0]);
-    } else {
-      writeReg(LORARegSyncWord, LORA_MAC_PREAMBLE);
-    }
+    writeReg(LORARegSyncWord, LMIC.preamble);
 
     // set the IRQ mapping DIO0=TxDone DIO1=NOP DIO2=NOP
     writeReg(RegDioMapping1, MAP_DIO0_LORA_TXDONE|MAP_DIO1_LORA_NOP|MAP_DIO2_LORA_NOP);
@@ -694,13 +688,7 @@ static void rxlora (u1_t rxmode) {
     writeReg(LORARegSymbTimeoutLsb, LMIC.rxsyms);
 
     // set sync word
-    if (LMIC.protocol &&
-        LMIC.protocol->type == RF_PROTOCOL_FANET &&
-        LMIC.protocol->syncword_size == 1) {
-      writeReg(LORARegSyncWord, LMIC.protocol->syncword[0]);
-    } else {
-      writeReg(LORARegSyncWord, LORA_MAC_PREAMBLE);
-    }
+    writeReg(LORARegSyncWord, LMIC.preamble);
 
     // configure DIO mapping DIO0=RxDone DIO1=RxTout DIO2=NOP
     writeReg(RegDioMapping1, MAP_DIO0_LORA_RXDONE|MAP_DIO1_LORA_RXTOUT|MAP_DIO2_LORA_NOP);

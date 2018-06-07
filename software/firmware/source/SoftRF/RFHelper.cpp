@@ -395,7 +395,7 @@ static void sx1276_rx_func (osjob_t* job);
 void sx1276_rx(osjobcb_t func);
 
 static bool sx1276_receive_complete = false;
-static bool sx1276_receive_active = false;
+bool sx1276_receive_active = false;
 static bool sx1276_transmit_complete = false;
 
 static uint8_t sx1276_channel_prev = (uint8_t) -1;
@@ -461,6 +461,8 @@ void sx1276_setup()
 {
   // initialize runtime env
   os_init();
+  // Reset the MAC state. Session and pending data transfers will be discarded.
+  LMIC_reset();
 
   switch (settings->rf_protocol)
   {
@@ -503,9 +505,13 @@ void sx1276_setup()
     LMIC.txpow = 2; /* 2 dBm is minimum for RFM95W on PA_BOOST pin */
     break;
   }
+}
 
+void sx1276_setvars()
+{
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
+    LMIC.preamble = LMIC.protocol->syncword[0];
   } else {
     LMIC.datarate = DR_FSK;
   }
@@ -515,7 +521,7 @@ void sx1276_setup()
 
   if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
     /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
-    setCr(LMIC.rps, CR_4_8);
+    LMIC.rps = setCr(LMIC.rps, CR_4_8);
   }
 }
 
@@ -523,32 +529,22 @@ bool sx1276_receive()
 {
   bool success = false;
 
-  // Wait for reply with timeout
-  unsigned long sendStartTime = millis();
-
   sx1276_receive_complete = false;
 
   if (!sx1276_receive_active) {
+    sx1276_setvars();
     sx1276_rx(sx1276_rx_func);
     sx1276_receive_active = true;
   }
 
-  while (sx1276_receive_complete == false) {
-      // execute scheduled jobs and events
-      os_runloop_once();
-      // Timeout
-      if (millis() - sendStartTime > TIMEOUT) {
-#if DEBUG
-        Serial.println(F("Timeout"));
-#endif
-        break;
-      }
-
-    if (SoC->Bluetooth) {
-      SoC->Bluetooth->loop();
-    }
-    yield();
+  if (sx1276_receive_complete == false) {
+    // execute scheduled jobs and events
+    os_runloop_once();
   };
+
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->loop();
+  }
 
   if (sx1276_receive_complete == true) {
 
@@ -570,13 +566,15 @@ void sx1276_transmit()
 {
     sx1276_transmit_complete = false;
     sx1276_receive_active = false;
+
+    sx1276_setvars();
     os_setCallback(&sx1276_txjob, sx1276_tx_func);
 
     while (sx1276_transmit_complete == false) {
       // execute scheduled jobs and events
       os_runloop_once();
       yield();
-    } ;
+    };
 }
 
 // Enable rx mode and call func when a packet is received
