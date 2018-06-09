@@ -307,7 +307,7 @@ void ttn_tx(osjobcb_t func) {
         delay(1); // Wait a bit, without this os_radio below asserts, apparently because the state hasn't changed yet
 
         // Prepare upstream data transmission at the next possible time.
-        TTN_setTxData2(1, (uint8_t*) coords, sizeof(coords), 0);
+        TTN_setTxData2(2, (uint8_t*) coords, sizeof(coords), 0);
 
         // Check for ongoing state: scan or TX/RX transaction
         if( (LMIC.opmode & (OP_SCAN|OP_TXRXPEND|OP_SHUTDOWN)) != 0 )
@@ -391,7 +391,7 @@ void TTN_loop()
 
       int32_t lat         = ThisAircraft.latitude * 10000;
       int32_t lon         = ThisAircraft.longitude * 10000;
-      int16_t altitudeGPS = ThisAircraft.altitude * 100;
+      int16_t altitudeGPS = ThisAircraft.altitude;
       int8_t hdopGPS      = ThisAircraft.hdop; 
     
       // Pad 2 int32_t to 6 8uint_t, big endian (24 bit each, having 11 meter precision)
