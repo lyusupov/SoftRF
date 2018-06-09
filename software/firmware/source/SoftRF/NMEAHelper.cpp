@@ -83,6 +83,16 @@ int CalcBearing(double lat1, double lon1, double lat2, double lon2)
   return ((int) bearing + 360) % 360;
 }
 
+static char *ltrim(char *s)
+{
+  if(s) {
+    while(*s && isspace(*s))
+      ++s;
+  }
+
+  return s;
+}
+
 void NMEA_setup()
 {
 #if defined(AIRCONNECT_IS_ACTIVE)
@@ -116,6 +126,12 @@ void NMEA_Export()
     int alarm_level = ALARM_LEVEL_NONE;
     time_t this_moment = now();
 
+    /* High priority object (most relevant target) */
+    int HP_bearing = 0;
+    int HP_alt_diff = 0;
+    int HP_alarm_level = ALARM_LEVEL_NONE;
+    float HP_distance = 2147483647;
+
     /* account for all detected objects at first */
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
@@ -125,9 +141,6 @@ void NMEA_Export()
 
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
-
-        char *csum_ptr;
-        unsigned char cs = 0; //clear any old checksum
 
 #if 0
         Serial.println(fo.addr);
@@ -146,24 +159,39 @@ void NMEA_Export()
             Container[i].latitude,
             Container[i].longitude);
 
-          if (distance < EXPORT_DISTANCE_FAR) {
+          if (distance < ALARM_ZONE_NONE) {
 
-            if (distance < EXPORT_DISTANCE_CLOSE) {
+            char *csum_ptr;
+            unsigned char cs = 0;
+            char str_climb_rate[8] = "";
+
+            if (distance < ALARM_ZONE_URGENT) {
               alarm_level = ALARM_LEVEL_URGENT;
-            } else if (distance < EXPORT_DISTANCE_NEAR) {
+            } else if (distance < ALARM_ZONE_IMPORTANT) {
               alarm_level = ALARM_LEVEL_IMPORTANT;
-            } else {
+            } else if (distance < ALARM_ZONE_LOW) {
               alarm_level = ALARM_LEVEL_LOW;
+            } else {
+              alarm_level = ALARM_LEVEL_NONE;
             }
 
             bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude,
                                 Container[i].latitude, Container[i].longitude);
             alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
-            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
-                    total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING,
-                    POWER_STATUS_GOOD, alarm_level,
-                    (bearing < 180 ? bearing : bearing - 360),
-                    ALARM_TYPE_AIRCRAFT, alt_diff, (int) distance );
+
+            if (!Container[i].stealth && !ThisAircraft.stealth) {
+              dtostrf(
+                constrain(Container[i].vs / (_GPS_FEET_PER_METER * 60.0), -32.7, 32.7),
+                5, 1, str_climb_rate);
+            }
+
+            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*",
+                    alarm_level,
+                    (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))),
+                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
+                    NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
+                    (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
+                    ltrim(str_climb_rate), Container[i].aircraft_type);
 
             //calculate the checksum
             for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
@@ -174,7 +202,6 @@ void NMEA_Export()
             snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
 
             Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-
             if (SoC->Bluetooth) {
               SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
             }
@@ -188,39 +215,55 @@ void NMEA_Export()
               AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
             }
 #endif
-            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%X!%s_%X,%d,,%d,,%d*",
-                    alarm_level,
-                    (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))),
-                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
-                    NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
-                    (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
-                    AIRCRAFT_TYPE_GLIDER);
 
-            cs = 0; //clear any old checksum
-            for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
-              cs ^= NMEABuffer[n]; //calculates the checksum
+            /* Most close traffic is treated as highest priority target */
+            if (distance < HP_distance) {
+              HP_bearing = bearing;
+              HP_alt_diff = alt_diff;
+              HP_alarm_level = alarm_level;
+              HP_distance = distance;
             }
 
-            csum_ptr = NMEABuffer + strlen(NMEABuffer);
-            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
-
-            Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            if (SoC->Bluetooth) {
-              SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            }
-
-            if (settings->nmea_u) {
-              SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
-            }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-            if (AirConnectClient && AirConnectClient.connected()){
-              AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
-            }
-#endif
           }
         }
       }
+    }
+
+    /* One PFLAU NMEA sentence is mandatory regardless of traffic reception status */
+    if (settings->nmea_l) {
+
+      char *csum_ptr;
+      unsigned char cs = 0;
+
+      snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
+              total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING,
+              POWER_STATUS_GOOD, HP_alarm_level,
+              (HP_bearing < 180 ? HP_bearing : HP_bearing - 360),
+              ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance );
+
+      //calculate the checksum
+      for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
+        cs ^= NMEABuffer[n];
+      }
+
+      csum_ptr = NMEABuffer + strlen(NMEABuffer);
+      snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
+
+      Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
+      }
+
+      if (settings->nmea_u) {
+        SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
+      }
+
+#if defined(AIRCONNECT_IS_ACTIVE)
+      if (AirConnectClient && AirConnectClient.connected()){
+        AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
+      }
+#endif
     }
 }
 

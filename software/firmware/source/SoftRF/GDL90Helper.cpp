@@ -352,7 +352,7 @@ void GDL90_Export()
 
         distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
 
-        if (distance < EXPORT_DISTANCE_FAR) {
+        if (distance < ALARM_ZONE_NONE) {
           size = makeTrafficReport(buf, &Container[i]);
           SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
         }

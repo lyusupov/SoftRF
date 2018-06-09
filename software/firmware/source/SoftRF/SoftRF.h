@@ -77,9 +77,10 @@
 #define NMEA_DST_PORT     10110
 #define AIR_CONNECT_PORT  2000
 
-#define EXPORT_DISTANCE_CLOSE  500
-#define EXPORT_DISTANCE_NEAR   1500
-#define EXPORT_DISTANCE_FAR    10000
+#define ALARM_ZONE_NONE       10000 /* zone range is 1000m <-> 10000m */
+#define ALARM_ZONE_LOW        1000  /* zone range is  700m <->  1000m */
+#define ALARM_ZONE_IMPORTANT  700   /* zone range is  400m <->   700m */
+#define ALARM_ZONE_URGENT     400   /* zone range is    0m <->   400m */
 
 typedef struct UFO {
     String    raw;

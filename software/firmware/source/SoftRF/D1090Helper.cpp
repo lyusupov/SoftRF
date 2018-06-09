@@ -51,7 +51,7 @@ void D1090_Export()
 
         distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
 
-        if (distance < EXPORT_DISTANCE_FAR) {
+        if (distance < ALARM_ZONE_NONE) {
 
           double altitude;
           /* If the aircraft's data has standard pressure altitude - make use it */
