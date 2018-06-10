@@ -271,7 +271,6 @@ void NMEA_Position()
 {
   NmeaInfo info;
   size_t i;
-  IPAddress broadcastIP = SoC->WiFi_get_broadcast();
   struct timeval tv;
 
   if (settings->nmea_g) {

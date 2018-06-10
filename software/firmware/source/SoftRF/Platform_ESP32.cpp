@@ -68,7 +68,6 @@ static void ESP32_setup()
 #endif
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
-  ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
 
   analogReadResolution(10);
   analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
@@ -161,6 +160,8 @@ static void ESP32_Sound_test(int var)
 {
   if (settings->volume != BUZZER_OFF) {
 
+    ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+
     ledcWrite(LEDC_CHANNEL_BUZZER, 125); // high volume
 
     if (var == REASON_DEFAULT_RST ||
@@ -184,6 +185,9 @@ static void ESP32_Sound_test(int var)
     delay(600);
 
     ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
+
+    ledcDetachPin(SOC_GPIO_PIN_BUZZER);
+    pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
 }
 
