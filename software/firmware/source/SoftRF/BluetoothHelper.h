@@ -39,6 +39,15 @@ enum
 
 #if defined(ESP32)
 
+#define SERVICE_UUID        "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define CHARACTERISTIC_UUID "0000ffe1-0000-1000-8000-00805f9b34fb"
+
+/* (FLAA x MAX_TRACKING_OBJECTS + GNGGA + GNRMC + FLAU) x 80 symbols */
+#define BLE_FIFO_TX_SIZE          1024
+#define BLE_FIFO_RX_SIZE          256
+
+#define BLE_MAX_WRITE_CHUNK_SIZE  20
+
 extern Bluetooth_ops_t ESP32_Bluetooth_ops;
 
 #endif /* ESP32 */

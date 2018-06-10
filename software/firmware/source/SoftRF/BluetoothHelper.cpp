@@ -39,12 +39,6 @@
 
 #include "WiFiHelper.h"   // HOSTNAME
 
-#define SERVICE_UUID        "0000ffe0-0000-1000-8000-00805f9b34fb"
-#define CHARACTERISTIC_UUID "0000ffe1-0000-1000-8000-00805f9b34fb"
-
-#define BLE_FIFO_SIZE             256
-#define BLE_MAX_WRITE_CHUNK_SIZE  20
-
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
@@ -107,8 +101,8 @@ static void ESP32_Bluetooth_setup()
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
     {
-      BLE_FIFO_RX = new cbuf(BLE_FIFO_SIZE);
-      BLE_FIFO_TX = new cbuf(BLE_FIFO_SIZE);
+      BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
+      BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
 
       // Create the BLE Device
       BLEDevice::init((BT_name+"-LE").c_str());
@@ -158,7 +152,7 @@ static void ESP32_Bluetooth_loop()
     {
       // notify changed value
       // bluetooth stack will go into congestion, if too many packets are sent
-      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 40)) { /* < 6000 baud */
+      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 30)) { /* < 6000 baud */
 
           uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
           size_t size = (BLE_FIFO_TX->available() < BLE_MAX_WRITE_CHUNK_SIZE ?
