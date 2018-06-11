@@ -40,6 +40,11 @@ extern ufo_t ThisAircraft;
 
 unsigned long GNSSTimeSyncMarker = 0;
 
+#if 0
+unsigned long GGA_Start_Time_Marker = 0;
+unsigned long GGA_Stop_Time_Marker = 0;
+#endif
+
 boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
@@ -280,12 +285,39 @@ void PickGNSSFix()
       GNSSbuf[GNSS_cnt] = SoC->Bluetooth->read();
     }
 
+#if 0
+    if ( (GNSS_cnt >= 5) &&
+         (GNSSbuf[GNSS_cnt-5] == '$') &&
+         (GNSSbuf[GNSS_cnt-4] == 'G') &&
+        ((GNSSbuf[GNSS_cnt-3] == 'P') || (GNSSbuf[GNSS_cnt-3] == 'N')) &&
+         (GNSSbuf[GNSS_cnt-2] == 'G') &&
+         (GNSSbuf[GNSS_cnt-1] == 'G') &&
+         (GNSSbuf[GNSS_cnt-0] == 'A')
+       ) {
+      GGA_Start_Time_Marker = millis();
+    }
+#endif
+
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
       for (ndx = GNSS_cnt - 4; ndx >= 0; ndx--) { // skip CS and *
         if ((GNSSbuf[ndx] == '$') && (GNSSbuf[ndx+1] == 'G')) {
 
           size_t write_size = GNSS_cnt - ndx + 1;
+
+#if 0
+          if (!strncmp((char *) &GNSSbuf[ndx+3], "GGA,", strlen("GGA,"))) {
+            GGA_Stop_Time_Marker = millis();
+
+            Serial.print("GGA Start: ");
+            Serial.print(GGA_Start_Time_Marker);
+            Serial.print(" Stop: ");
+            Serial.print(GGA_Stop_Time_Marker);
+            Serial.print(" gnss.time.age: ");
+            Serial.println(gnss.time.age());
+
+          }
+#endif
 
           /* try to append pressure altitude (PGRMZ) next to each RMC sentence */
           if (ThisAircraft.pressure_altitude != 0.0 &&

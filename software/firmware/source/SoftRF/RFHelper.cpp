@@ -25,6 +25,7 @@
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "WebHelper.h"
+#include "MAVLinkHelper.h"
 
 #include <freqplan.h>
 
@@ -117,14 +118,38 @@ void RF_setup(void)
 
 void RF_SetChannel(void)
 {
-  uint32_t Time = (uint32_t) now(); // ThisAircraft.timestamp ;
-  /* stick EU freq. on 868.4 MHz for now */
-  uint8_t Slot = 1; /* only #1 "400ms" timeslot is currently in use */
+  tmElements_t tm;
+  time_t Time;
+
+  switch (settings->mode)
+  {
+  case SOFTRF_MODE_TXRX_TEST:
+    Time = now();
+    break;
+  case SOFTRF_MODE_UAV:
+    Time = the_aircraft.location.gps_time_stamp / 1000000;
+    break;
+  case SOFTRF_MODE_NORMAL:
+  default:
+    int yr = gnss.date.year();
+    if( yr > 99)
+        yr = yr - 1970;
+    else
+        yr += 30;
+    tm.Year = yr;
+    tm.Month = gnss.date.month();
+    tm.Day = gnss.date.day();
+    tm.Hour = gnss.time.hour();
+    tm.Minute = gnss.time.minute();
+    tm.Second = gnss.time.second();
+
+    Time = makeTime(tm) + gnss.time.age() / 1000;
+    break;
+  }
+
+  uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
   uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
 
-#if 1  /* Temporarily force both OGN and Legacy to live on the same channel */
-  OGN = 0;
-#endif
   /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
   if (settings->rf_protocol == RF_PROTOCOL_FANET) {
     Slot = 0;
@@ -443,6 +468,8 @@ void sx1276_channel(uint8_t channel)
 {
   if (channel != sx1276_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+
+    //Serial.print("frequency: "); Serial.println(frequency);
 
     if (sx1276_receive_active) {
       os_radio(RADIO_RST);
