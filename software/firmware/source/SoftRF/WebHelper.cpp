@@ -138,10 +138,10 @@ void handleSettings() {
 <td align=right>\
 <select name='band'>\
 <option %s value='%d'>AUTO</option>\
-<option %s value='%d'>EU (868.4 MHz)</option>\
+<option %s value='%d'>EU (868.2 MHz)</option>\
 <option %s value='%d'>RU (868.8 MHz)</option>\
 <option %s value='%d'>CN (433 MHz)</option>\
-<option %s value='%d'>US (915 MHz)</option>\
+<option %s value='%d'>US/CA (915 MHz)</option>\
 <option %s value='%d'>NZ (869.25 MHz)</option>\
 <option %s value='%d'>UK (869.52 MHz)</option>\
 <option %s value='%d'>AU (921 MHz)</option>\
@@ -476,10 +476,11 @@ PSTR("<html>\
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );
-  SoC->swSer_enableRx(true);
+//  SoC->swSer_enableRx(true);
+  delay(1000);
   free(Input_temp);
   EEPROM_store();
-  delay(3000);
+  delay(1000);
   ESP.restart();
 }
 
@@ -545,7 +546,8 @@ void Web_setup()
     server.sendHeader("Connection", "close");
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
-    SoC->swSer_enableRx(true);
+//    SoC->swSer_enableRx(true);
+    delay(1000);
     ESP.restart();
   },[](){
     HTTPUpload& upload = server.upload();
