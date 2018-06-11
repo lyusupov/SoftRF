@@ -878,7 +878,7 @@ static void rxfsk (u1_t rxmode) {
     }
 
     // I hope that 256 samples will cover full Rx packet
-    writeReg(FSKRegRssiConfig, 0x07);
+    // writeReg(FSKRegRssiConfig, 0x07);
 
     // configure DIO mapping DIO0=PayloadReady DIO1=NOP DIO2=TimeOut
     writeReg(RegDioMapping1, MAP_DIO0_FSK_READY|MAP_DIO1_FSK_NOP|MAP_DIO2_FSK_TIMEOUT);
@@ -1010,7 +1010,7 @@ u1_t radio_has_irq (void) {
         if ( flags & ( IRQ_FSK2_PACKETSENT_MASK | IRQ_FSK2_PAYLOADREADY_MASK) ) 
             return 1;
         flags = readReg(FSKRegIrqFlags1);
-        if ( flags & IRQ_FSK1_TIMEOUT_MASK ) 
+        if ( flags & ( IRQ_FSK1_TIMEOUT_MASK | IRQ_FSK1_SYNCADDRESSMATCH_MASK ) )
             return 1;
     }
     return 0;
@@ -1096,12 +1096,18 @@ void radio_irq_handler (u1_t dio) {
               break;
             }
             // read rx quality parameters
-            LMIC.snr  = 0; // determine snr
+            // LMIC.snr  = 0; // determine snr
             // Average RSSI [dBm] for prev. 256 samples
-            LMIC.rssi = - readReg(FSKRegRssiValue) / 2;
+            // LMIC.rssi = - readReg(FSKRegRssiValue) / 2;
         } else if( flags1 & IRQ_FSK1_TIMEOUT_MASK ) {
             // indicate timeout
             LMIC.dataLen = 0;
+        } else if( flags1 & IRQ_FSK1_SYNCADDRESSMATCH_MASK ) {
+            // read rx quality parameters
+            LMIC.snr  = 0; // determine snr
+            // RSSI [dBm]
+            LMIC.rssi = - readReg(FSKRegRssiValue) / 2;
+            return;
         } else {
             ASSERT(0);
         }
