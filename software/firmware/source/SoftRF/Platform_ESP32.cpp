@@ -59,6 +59,7 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
 
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 
+static int esp32_board = ESP32_DEVKIT; /* default */
 
 static void ESP32_setup()
 {
@@ -80,6 +81,7 @@ static void ESP32_setup()
   Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
   if (Wire1.endTransmission() == 0) {
     u8x8 = &u8x8_ttgo;
+    esp32_board = ESP32_TTGO_V2_OLED;
   } else {
     /*
      * This does NOT work well with "stock" ESP32 Arduino Core's TwoWire implementation yet.
@@ -90,6 +92,7 @@ static void ESP32_setup()
     Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
     if (Wire1.endTransmission() == 0) {
       u8x8 = &u8x8_heltec;
+      esp32_board = ESP32_HELTEC_OLED;
     }
   }
 
@@ -299,6 +302,54 @@ static void ESP32_SPI_begin()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
+  if ((esp32_board != ESP32_TTGO_V2_OLED) && (esp32_board != ESP32_HELTEC_OLED)) {
+
+    unsigned long startTime = millis();
+    char c1, c2;
+    c1 = c2 = 0;
+
+    /* try to detect TTGO T-Beam built-in GPS module */
+    swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_RX, SOC_GPIO_PIN_TBEAM_TX);
+
+    // clean any leftovers
+    swSer.flush();
+
+    // Serial.println(F("INFO: Waiting for NMEA data from TTGO T-Beam GPS module..."));
+
+    // Timeout if no valid response in 3 seconds
+    while (millis() - startTime < 3000) {
+
+      if (swSer.available() > 0) {
+        c1 = swSer.read();
+        if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
+        if ((c2 == '$') && (c1 == 'G')) {
+          /* got $G */
+          Serial.println(F("INFO: TTGO T-Beam GPS module is detected."));
+
+          esp32_board = ESP32_TTGO_T_BEAM;
+
+          /* leave the function with TTGO port opened */
+          return;
+        } else {
+          c2 = 0;
+        }
+      }
+
+      delay(1);
+    }
+
+    /* release UART and pins */
+    swSer.end();
+  }
+
+#if 0
+  if (esp32_board == ESP32_TTGO_V2_OLED) Serial.println(F("INFO: TTGO+OLED is detected."));
+  if (esp32_board == ESP32_HELTEC_OLED) Serial.println(F("INFO: HELTEC+OLED is detected."));
+  Serial.print(F("INFO: esp32_board = "));
+  Serial.println(esp32_board, HEX);
+#endif
+
+  /* open Standalone's GNSS port */
   swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 }
 

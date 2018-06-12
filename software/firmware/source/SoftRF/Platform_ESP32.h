@@ -56,6 +56,10 @@
 #define SOC_GPIO_PIN_SDA      14
 #define SOC_GPIO_PIN_SCL      2
 
+/* TTGO T-BEAM GPS module */
+#define SOC_GPIO_PIN_TBEAM_RX 12
+#define SOC_GPIO_PIN_TBEAM_TX 15
+
 #define SSD1306_OLED_I2C_ADDR 0x3C
 
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
@@ -78,6 +82,13 @@ enum rst_reason {
   REASON_SOFT_RESTART     = 4,  /* software restart ,system_restart , GPIO status won't change */
   REASON_DEEP_SLEEP_AWAKE = 5,  /* wake up from deep-sleep */
   REASON_EXT_SYS_RST      = 6   /* external system reset */
+};
+
+enum esp32_board_id {
+  ESP32_DEVKIT,
+  ESP32_TTGO_V2_OLED,
+  ESP32_HELTEC_OLED,
+  ESP32_TTGO_T_BEAM
 };
 
 struct rst_info {
