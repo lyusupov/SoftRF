@@ -79,7 +79,7 @@ const char* password = "";
 #if defined(ESP8266)
 const lmic_pinmap lmic_pins = {
     .nss = /* 15 */ D8 ,
-    .rxtx = LMIC_UNUSED_PIN,
+    .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = LMIC_UNUSED_PIN,
     .dio = {/* 16 */ D0 , LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };

@@ -33,8 +33,10 @@ static void hal_io_init () {
     //ASSERT(lmic_pins.dio[1] != LMIC_UNUSED_PIN || lmic_pins.dio[2] != LMIC_UNUSED_PIN);
 
     pinMode(lmic_pins.nss, OUTPUT);
-    if (lmic_pins.rxtx != LMIC_UNUSED_PIN)
-        pinMode(lmic_pins.rxtx, OUTPUT);
+    if (lmic_pins.rxtx[0] != LMIC_UNUSED_PIN)
+        pinMode(lmic_pins.rxtx[0], OUTPUT);
+    if (lmic_pins.rxtx[1] != LMIC_UNUSED_PIN)
+        pinMode(lmic_pins.rxtx[1], OUTPUT);
     if (lmic_pins.rst != LMIC_UNUSED_PIN)
         pinMode(lmic_pins.rst, OUTPUT);
 
@@ -43,8 +45,10 @@ static void hal_io_init () {
 
 // val == 1  => tx 1
 void hal_pin_rxtx (u1_t val) {
-    if (lmic_pins.rxtx != LMIC_UNUSED_PIN)
-        digitalWrite(lmic_pins.rxtx, val);
+    if (lmic_pins.rxtx[0] != LMIC_UNUSED_PIN)
+        digitalWrite(lmic_pins.rxtx[0], val);
+    if (lmic_pins.rxtx[1] != LMIC_UNUSED_PIN)
+        digitalWrite(lmic_pins.rxtx[1], !val);
 }
 
 // set radio RST pin to given value (or keep floating!)

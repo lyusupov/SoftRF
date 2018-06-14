@@ -11,10 +11,11 @@
 #define _hal_hal_h_
 
 static const int NUM_DIO = 3;
+static const int NUM_RXTX = 2;
 
 struct lmic_pinmap {
     u1_t nss;
-    u1_t rxtx;
+    u1_t rxtx[NUM_RXTX];
     u1_t rst;
     u1_t dio[NUM_DIO];
 };
