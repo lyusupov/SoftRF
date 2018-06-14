@@ -306,7 +306,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   coord2payload_absolut(lat, lon, ((uint8_t *) pkt) + FANET_HEADER_SIZE);
 #endif
 
-  pkt->track_online   = 0;
+  pkt->track_online   = (this_aircraft->no_track ? 0 : 1);
   pkt->aircraft_type  = AT_TO_FANET(aircraft_type);
 
   int altitude        = constrain(alt, 0, 8190);
