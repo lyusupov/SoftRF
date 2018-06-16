@@ -43,7 +43,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v1)
 * Software
     * Firmware
-        * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
         * [Binary](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries)
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
     * Applications
