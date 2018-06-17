@@ -39,6 +39,9 @@ static float prev_pressure_altitude = 0;
 static float Baro_VS[VS_AVERAGING_FACTOR];
 static int avg_ndx = 0;
 
+/* 4 baro sensor readings per second */
+#define isTimeToBaro() ((millis() - BaroTimeMarker) > (1000 / VS_AVERAGING_FACTOR))
+
 static bool bmp180_probe()
 {
   return bmp180.begin();
@@ -186,7 +189,7 @@ void Baro_setup()
 
 void Baro_loop()
 {
-  if (baro_chip) {
+  if (baro_chip && isTimeToBaro()) {
 
     /* Draft of pressure altitude and vertical speed calculation */
     ThisAircraft.pressure_altitude = baro_chip->altitude(1013.25);
