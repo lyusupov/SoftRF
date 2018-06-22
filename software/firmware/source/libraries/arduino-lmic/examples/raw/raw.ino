@@ -56,13 +56,13 @@ const char* password = "";
 
 #if defined(DO_FREQ_SWEEP)
 #include <TimeLib.h>
-#define SWEEP_START 820000000 /* 820 MHz */
+#define SWEEP_START 810000000 /* 810 MHz */
 #define NTP_TIME_SYNC
-#define RECEIVE_ONLY
+//#define RECEIVE_ONLY
 #endif
 
-//#define  USE_P3I
-#define  USE_FANET
+#define  USE_P3I
+//#define  USE_FANET
 //#define  USE_LEGACY
 //#define  USE_OGNTP
 
@@ -81,7 +81,7 @@ const lmic_pinmap lmic_pins = {
     .nss = /* 15 */ D8 ,
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = LMIC_UNUSED_PIN,
-    .dio = {/* 16 */ D0 , LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .dio = {/* D0 */ LMIC_UNUSED_PIN , LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 #endif
 
@@ -98,9 +98,9 @@ const lmic_pinmap lmic_pins = {
 
 const lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
-    .rxtx = LMIC_UNUSED_PIN,
+    .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = SOC_GPIO_PIN_RST,
-    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .dio = { /* SOC_GPIO_PIN_DIO0 */ LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 #endif
 
@@ -563,15 +563,18 @@ static void rx_func (osjob_t* job) {
   case RF_CHECKSUM_TYPE_CCITT_0000:
   default:
     u2_t pkt_crc = (LMIC.frame[i] << 8 | LMIC.frame[i+1]);
+#if !defined(DO_FREQ_SWEEP)
     if (crc16 == pkt_crc ) {
       Serial.printf(" %04x is valid crc", pkt_crc);
     } else {
       Serial.printf(" %04x is wrong crc", pkt_crc);
     }
+#endif
     break;
   }
 
-  int rssi = (LMIC.rssi - 64 + 125) - 157;
+#if 0
+  int rssi = LMIC.rssi ; // (LMIC.rssi - 64 + 125) - 157;
 	uint8_t value = LMIC.snr;	// 0x19;
   int8_t snr;
 
@@ -582,10 +585,13 @@ static void rx_func (osjob_t* job) {
     // Divide by 4
     snr = ( value & 0xFF ) >> 2;
   }
-
-  Serial.printf(" RSSI: %d SNR: %d ", rssi, snr);
+#endif
 
 #if !defined(DO_FREQ_SWEEP)
+  Serial.printf(" RSSI: %d SNR: %d ", LMIC.rssi, LMIC.snr);
+  Serial.println();
+#else
+  Serial.printf("RX FREQ: %d RSSI: %d SNR: %d ", LMIC.freq / 1000000, LMIC.rssi, LMIC.snr);
   Serial.println();
 #endif
 
@@ -611,11 +617,12 @@ static void tx_func (osjob_t* job) {
 #else
 static void tx_func (osjob_t* job) {
 
-  LMIC.freq = SWEEP_START + second() * 1000000;
-  Serial.printf("FREQ: %d", LMIC.freq);
-  Serial.println();
+  LMIC.freq = SWEEP_START + ((minute() & 1) * 60 + second()) * 1000000;
 
 #if !defined(RECEIVE_ONLY)
+  Serial.printf("TX FREQ: %d", LMIC.freq / 1000000);
+  Serial.println();
+
   tx(tx_data, sizeof(tx_data), txdone_func);
 #else
   rx(rx_func);
@@ -631,7 +638,7 @@ static void tx_func (osjob_t* job) {
 // application entry point
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(38400);
   Serial.println("Starting");
 
   WiFi.mode(WIFI_STA);
