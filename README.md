@@ -37,10 +37,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
-* [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
-    * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
-    * [Wiring](https://github.com/lyusupov/SoftRF/wiki/Prime-Wiring)
-    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v1)
+* [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * Software
     * Firmware
         * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
@@ -56,6 +53,11 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility)
     * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
     * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers)
+* Archive
+    * [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
+        * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
+        * [Wiring](https://github.com/lyusupov/SoftRF/wiki/Prime-Wiring)
+        * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v1)
 
 # Highlights
 
