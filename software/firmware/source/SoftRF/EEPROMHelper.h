@@ -24,7 +24,7 @@
 #include "SoftRF.h"
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
-#define SOFTRF_EEPROM_VERSION 0x0000005A
+#define SOFTRF_EEPROM_VERSION 0x0000005B
 
 typedef struct Settings {
     uint8_t  mode;
@@ -45,7 +45,11 @@ typedef struct Settings {
     bool     resvd1:1;
     bool     resvd2:1;
 
-    uint8_t  bluetooth; /* ESP32 built-in Bluetooth */
+    uint8_t  bluetooth:3; /* ESP32 built-in Bluetooth */
+    uint8_t  alarm:3;
+    bool     stealth:1;
+    bool     no_track:1;
+
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;

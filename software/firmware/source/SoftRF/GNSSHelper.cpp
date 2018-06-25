@@ -35,9 +35,6 @@
 #define GNSS_DEBUG_PRINTLN  Serial.println
 #endif
 
-extern char UDPpacketBuffer[256];
-extern ufo_t ThisAircraft;
-
 unsigned long GNSSTimeSyncMarker = 0;
 
 #if 0

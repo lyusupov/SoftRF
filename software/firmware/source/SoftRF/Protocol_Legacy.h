@@ -68,9 +68,9 @@ enum
 enum
 {
 	ALARM_LEVEL_NONE,
-	ALARM_LEVEL_LOW,
-	ALARM_LEVEL_IMPORTANT,
-	ALARM_LEVEL_URGENT
+	ALARM_LEVEL_LOW,       /* 13-18 seconds to impact */
+	ALARM_LEVEL_IMPORTANT, /*  9-12 seconds to impact */
+	ALARM_LEVEL_URGENT     /*   0-8 seconds to impact */
 };
 
 enum

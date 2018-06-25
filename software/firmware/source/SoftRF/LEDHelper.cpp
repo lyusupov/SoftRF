@@ -19,6 +19,7 @@
 #include "LEDHelper.h"
 #include "BatteryHelper.h"
 #include "SoCHelper.h"
+#include "TrafficHelper.h"
 
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -148,13 +149,14 @@ void LED_DisplayTraffic() {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
 
       if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
-        bearing = (int) gnss.courseTo(ThisAircraft.latitude,
-          ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
-        distance = (int) gnss.distanceBetween(ThisAircraft.latitude,
-          ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+
+        bearing  = (int) Container[i].bearing;
+        distance = (int) Container[i].distance;
+
         if (settings->pointer == DIRECTION_TRACK_UP) {
           bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
         }
+
         led_num = ((bearing + LED_ROTATE_ANGLE + SECTOR_PER_LED/2) % 360) / SECTOR_PER_LED;
 //      Serial.print(bearing);
 //      Serial.print(" , ");

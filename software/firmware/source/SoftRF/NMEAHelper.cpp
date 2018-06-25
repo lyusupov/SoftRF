@@ -25,6 +25,7 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "EEPROMHelper.h"
+#include "TrafficHelper.h"
 
 #if defined(AIRCONNECT_IS_ACTIVE)
 WiFiServer AirConnectServer(AIR_CONNECT_PORT);
@@ -33,9 +34,6 @@ WiFiClient AirConnectClient;
 
 char NMEABuffer[128]; //buffer for NMEA data
 NmeaMallocedBuffer nmealib_buf;
-
-extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
-extern ufo_t ThisAircraft;
 
 const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_LEGACY]    = "FLR",
@@ -50,37 +48,6 @@ const char *NMEA_CallSign_Prefix[] = {
 double dtor(double fdegrees)
 {
   return(fdegrees * PI / 180);
-}
-
-//Convert radians to degrees
-double rtod(double fradians)
-{
-  return(fradians * 180.0 / PI);
-}
-
-/*
- * arbarnhart
- * 
- * http://forum.arduino.cc/index.php?topic=45760.msg332012#msg332012
- */
-//Calculate bearing from lat1/lon1 to lat2/lon2
-//Note lat1/lon1/lat2/lon2 must be in radians
-//Returns bearing in degrees
-int CalcBearing(double lat1, double lon1, double lat2, double lon2)
-{
-  lat1 = dtor(lat1);
-  lon1 = dtor(lon1);
-  lat2 = dtor(lat2);
-  lon2 = dtor(lon2);
-  
-  //determine angle
-  double bearing = atan2(sin(lon2-lon1)*cos(lat2), (cos(lat1)*sin(lat2))-(sin(lat1)*cos(lat2)*cos(lon2-lon1)));
-  //convert to degrees
-  bearing = rtod(bearing);
-  //use mod to turn -90 = 270
-  //bearing = fmod((bearing + 360.0), 360);
-  //return (int) bearing + 0.5;
-  return ((int) bearing + 360) % 360;
 }
 
 static char *ltrim(char *s)
@@ -154,10 +121,7 @@ void NMEA_Export()
         Serial.println(fo.no_track);
 #endif
         if (settings->nmea_l) {
-          distance = gnss.distanceBetween(ThisAircraft.latitude,
-            ThisAircraft.longitude,
-            Container[i].latitude,
-            Container[i].longitude);
+          distance = Container[i].distance;
 
           if (distance < ALARM_ZONE_NONE) {
 
@@ -165,18 +129,8 @@ void NMEA_Export()
             unsigned char cs = 0;
             char str_climb_rate[8] = "";
 
-            if (distance < ALARM_ZONE_URGENT) {
-              alarm_level = ALARM_LEVEL_URGENT;
-            } else if (distance < ALARM_ZONE_IMPORTANT) {
-              alarm_level = ALARM_LEVEL_IMPORTANT;
-            } else if (distance < ALARM_ZONE_LOW) {
-              alarm_level = ALARM_LEVEL_LOW;
-            } else {
-              alarm_level = ALARM_LEVEL_NONE;
-            }
-
-            bearing = gnss.courseTo(ThisAircraft.latitude, ThisAircraft.longitude,
-                                Container[i].latitude, Container[i].longitude);
+            bearing = Container[i].bearing;
+            alarm_level = Container[i].alarm_level;
             alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
 
             if (!Container[i].stealth && !ThisAircraft.stealth) {

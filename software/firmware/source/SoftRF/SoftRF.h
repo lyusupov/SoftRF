@@ -77,11 +77,6 @@
 #define NMEA_DST_PORT     10110
 #define AIR_CONNECT_PORT  2000
 
-#define ALARM_ZONE_NONE       10000 /* zone range is 1000m <-> 10000m */
-#define ALARM_ZONE_LOW        1000  /* zone range is  700m <->  1000m */
-#define ALARM_ZONE_IMPORTANT  700   /* zone range is  400m <->   700m */
-#define ALARM_ZONE_URGENT     400   /* zone range is    0m <->   400m */
-
 typedef struct UFO {
     String    raw;
     time_t    timestamp;
@@ -108,6 +103,10 @@ typedef struct UFO {
 
     uint16_t  hdop; /* cm */
     int8_t    rssi; /* SX1276 only */
+
+    float     distance;
+    float     bearing;
+    int8_t    alarm_level;
 } ufo_t;
 
 enum
@@ -122,11 +121,7 @@ enum
 };
 
 extern void Misc_info(void);
-extern void ParseData(void);
-extern void ClearExpired(void);
-extern size_t Raw_Receive_UDP(uint8_t *);
-extern void Raw_Transmit_UDP(void);
-
+extern ufo_t ThisAircraft;
 extern const float txrx_test_positions[90][2] PROGMEM;
 
 #define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)

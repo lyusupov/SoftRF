@@ -34,10 +34,12 @@ enum
 
 void WiFi_setup(void);
 void WiFi_loop(void);
-IPAddress WiFi_get_broadcast(void);
-void WiFi_transmit_UDP(int, byte *, size_t);
+size_t Raw_Receive_UDP(uint8_t *);
+void Raw_Transmit_UDP(void);
 
 extern String host_name;
 extern WiFiUDP Uni_Udp;
+
+extern char UDPpacketBuffer[256];
 
 #endif /* WIFIHELPER_H */

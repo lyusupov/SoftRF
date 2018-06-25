@@ -24,6 +24,7 @@
 #include "EEPROMHelper.h"
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "TrafficHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
@@ -52,6 +53,8 @@ bool dns_active = false;
 WiFiUDP Uni_Udp;
 
 unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
+
+char UDPpacketBuffer[256]; //buffer to hold incoming and outgoing packets
 
 /**
  * @brief Read WiFi connection information from file system.
@@ -148,6 +151,32 @@ bool saveConfig(String *ssid, String *pass)
   return true;
 } // saveConfig
 
+size_t Raw_Receive_UDP(uint8_t *buf)
+{
+  int noBytes = Uni_Udp.parsePacket();
+  if ( noBytes ) {
+
+    if (noBytes > MAX_PKT_SIZE) {
+      noBytes = MAX_PKT_SIZE;
+    }
+
+    // We've received a packet, read the data from it
+    Uni_Udp.read(buf,noBytes); // read the packet into the buffer
+
+    return (size_t) noBytes;
+  } else {
+    return 0;
+  }
+}
+
+void Raw_Transmit_UDP()
+{
+    size_t num = fo.raw.length();
+    // ASSERT(sizeof(UDPpacketBuffer) > 2 * PKT_SIZE + 1)
+    fo.raw.toCharArray(UDPpacketBuffer, sizeof(UDPpacketBuffer));
+    UDPpacketBuffer[num] = '\n';
+    SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, num + 1);
+}
 
 /**
  * @brief Arduino setup function.

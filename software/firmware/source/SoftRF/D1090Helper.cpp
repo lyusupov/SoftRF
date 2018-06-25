@@ -23,6 +23,7 @@
 #include "GNSSHelper.h"
 #include "GDL90Helper.h"
 #include "EEPROMHelper.h"
+#include "TrafficHelper.h"
 #include "SoftRF.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
@@ -35,9 +36,6 @@
         }                                               \
       })
 
-extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
-extern ufo_t ThisAircraft;
-
 void D1090_Export()
 {
   frame_data_t df17;
@@ -49,7 +47,7 @@ void D1090_Export()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+        distance = Container[i].distance;
 
         if (distance < ALARM_ZONE_NONE) {
 

@@ -68,8 +68,6 @@ void LED_DisplayTraffic();
 void LED_Clear();
 
 extern Adafruit_NeoPixel strip;
-extern ufo_t Container[MAX_TRACKING_OBJECTS];
 extern uint32_t tx_packets_counter, rx_packets_counter;
-extern ufo_t ThisAircraft;
 
 #endif /* LEDHELPER_H */

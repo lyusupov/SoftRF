@@ -26,6 +26,7 @@
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
+#include "TrafficHelper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -163,6 +164,16 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Alarm trigger</th>\
+<td align=right>\
+<select name='alarm'>\
+<option %s value='%d'>None</option>\
+<option %s value='%d'>Distance</option>\
+<option %s value='%d'>Vector</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Tx Power</th>\
 <td align=right>\
 <select name='txpower'>\
@@ -183,10 +194,7 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
-<tr>\
-<th align=left>LED ring:</th>\
-</tr>\
-<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Direction</th>\
+<th align=left>LED ring direction</th>\
 <td align=right>\
 <select name='pointer'>\
 <option %s value='%d'>CoG Up</option>\
@@ -210,6 +218,9 @@ void handleSettings() {
   (settings->aircraft_type == AIRCRAFT_TYPE_UAV ? "selected" : ""),  AIRCRAFT_TYPE_UAV,
   (settings->aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
+  (settings->alarm == TRAFFIC_ALARM_NONE ? "selected" : ""),  TRAFFIC_ALARM_NONE,
+  (settings->alarm == TRAFFIC_ALARM_DISTANCE ? "selected" : ""),  TRAFFIC_ALARM_DISTANCE,
+  (settings->alarm == TRAFFIC_ALARM_VECTOR ? "selected" : ""),  TRAFFIC_ALARM_VECTOR,
   (settings->txpower == RF_TX_POWER_FULL ? "selected" : ""),  RF_TX_POWER_FULL,
   (settings->txpower == RF_TX_POWER_LOW ? "selected" : ""),  RF_TX_POWER_LOW,
   (settings->txpower == RF_TX_POWER_OFF ? "selected" : ""),  RF_TX_POWER_OFF,
@@ -297,6 +308,20 @@ void handleSettings() {
 <input type='radio' name='d1090' value='1' %s>On\
 </td>\
 </tr>\
+<tr>\
+<th align=left>Stealth</th>\
+<td align=right>\
+<input type='radio' name='stealth' value='0' %s>Off\
+<input type='radio' name='stealth' value='1' %s>On\
+</td>\
+</tr>\
+<tr>\
+<th align=left>No track</th>\
+<td align=right>\
+<input type='radio' name='no_track' value='0' %s>Off\
+<input type='radio' name='no_track' value='1' %s>On\
+</td>\
+</tr>\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'><p>\
 </form>\
@@ -307,7 +332,9 @@ void handleSettings() {
   (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
   (!settings->nmea_u ? "checked" : "") , (settings->nmea_u ? "checked" : ""),
   (!settings->gdl90 ? "checked" : "") , (settings->gdl90 ? "checked" : ""),
-  (!settings->d1090 ? "checked" : "") , (settings->d1090 ? "checked" : "")
+  (!settings->d1090 ? "checked" : "") , (settings->d1090 ? "checked" : ""),
+  (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
+  (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
   );
 
   SoC->swSer_enableRx(false);
@@ -407,7 +434,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1200);
+  char *Input_temp = (char *) malloc(1400);
   if (Input_temp == NULL) {
     return;
   }
@@ -421,6 +448,8 @@ void handleInput() {
       settings->band = server.arg(i).toInt();
     } else if (server.argName(i).equals("acft_type")) {
       settings->aircraft_type = server.arg(i).toInt();
+    } else if (server.argName(i).equals("alarm")) {
+      settings->alarm = server.arg(i).toInt();
     } else if (server.argName(i).equals("txpower")) {
       settings->txpower = server.arg(i).toInt();
     } else if (server.argName(i).equals("volume")) {
@@ -441,9 +470,13 @@ void handleInput() {
       settings->gdl90 = server.arg(i).toInt();
     } else if (server.argName(i).equals("d1090")) {
       settings->d1090 = server.arg(i).toInt();
+    } else if (server.argName(i).equals("stealth")) {
+      settings->stealth = server.arg(i).toInt();
+    } else if (server.argName(i).equals("no_track")) {
+      settings->no_track = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1200,
+  snprintf_P ( Input_temp, 1400,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'/>\
@@ -457,6 +490,7 @@ PSTR("<html>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
 <tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
+<tr><th align=left>Alarm trigger</th><td align=right>%d</td></tr>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
 <tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
@@ -467,16 +501,20 @@ PSTR("<html>\
 <tr><th align=left>NMEA UDP</th><td align=right>%s</td></tr>\
 <tr><th align=left>GDL90</th><td align=right>%s</td></tr>\
 <tr><th align=left>DUMP1090</th><td align=right>%s</td></tr>\
+<tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
+<tr><th align=left>No track</th><td align=right>%s</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1>\<p>\
 </body>\
 </html>"),
-  settings->mode, settings->rf_protocol, settings->band, settings->aircraft_type,
-  settings->txpower, settings->volume, settings->pointer, settings->bluetooth,
+  settings->mode, settings->rf_protocol, settings->band,
+  settings->aircraft_type, settings->alarm, settings->txpower,
+  settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_u),
-  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090)
+  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090),
+  BOOL_STR(settings->stealth), BOOL_STR(settings->no_track)
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );

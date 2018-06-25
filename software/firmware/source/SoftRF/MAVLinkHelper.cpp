@@ -23,6 +23,7 @@
 #include "GDL90Helper.h"
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "TrafficHelper.h"
 
 static unsigned long MAVLinkTimeSyncMarker = 0;
 static bool MAVLinkAPisArmed = false;

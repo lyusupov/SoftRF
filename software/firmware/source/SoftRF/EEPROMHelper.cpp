@@ -22,6 +22,7 @@
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
+#include "TrafficHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 
@@ -46,10 +47,16 @@ void EEPROM_setup()
     Serial.println(F("Warning! EEPROM magic mismatch! Loading defaults..."));
 
     EEPROM_defaults();
-  }
-  Serial.print(F("EEPROM version: "));
-  Serial.println(eeprom_block.field.version);
+  } else {
+    Serial.print(F("EEPROM version: "));
+    Serial.println(eeprom_block.field.version);
 
+    if (eeprom_block.field.version != SOFTRF_EEPROM_VERSION) {
+      Serial.println(F("Warning! EEPROM version mismatch! Loading defaults..."));
+
+      EEPROM_defaults();
+    }
+  }
   settings = &eeprom_block.field.settings;
 }
 
@@ -65,13 +72,16 @@ void EEPROM_defaults()
   eeprom_block.field.settings.volume = BUZZER_VOLUME_FULL;
   eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
   eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
+  eeprom_block.field.settings.alarm = TRAFFIC_ALARM_DISTANCE;
 
-  eeprom_block.field.settings.nmea_g = false;
-  eeprom_block.field.settings.nmea_p = false;
-  eeprom_block.field.settings.nmea_l = false;
-  eeprom_block.field.settings.nmea_u = false;
-  eeprom_block.field.settings.gdl90  = false;
-  eeprom_block.field.settings.d1090  = false;
+  eeprom_block.field.settings.nmea_g   = false;
+  eeprom_block.field.settings.nmea_p   = false;
+  eeprom_block.field.settings.nmea_l   = false;
+  eeprom_block.field.settings.nmea_u   = false;
+  eeprom_block.field.settings.gdl90    = false;
+  eeprom_block.field.settings.d1090    = false;
+  eeprom_block.field.settings.stealth  = false;
+  eeprom_block.field.settings.no_track = false;
 }
 
 void EEPROM_store()

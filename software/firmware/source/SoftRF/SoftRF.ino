@@ -35,20 +35,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
-
-   NodeMCU 1.0 GPIO pins:
-   2 -> CE
-   4 -> PWR
-   16 -> TXE
-   0 -> CD
-   5 -> DR
-   15 -> CSN
-   12 -> SO
-   13 -> SI
-   14 -> SCK
-*/
-
 #include "OTAHelper.h"
 #include "TimeHelper.h"
 #include "LEDHelper.h"
@@ -66,6 +52,7 @@
 #include "WebHelper.h"
 #include "BaroHelper.h"
 #include "TTNHelper.h"
+#include "TrafficHelper.h"
 
 #include "SoftRF.h"
 
@@ -79,6 +66,7 @@
 #define isTimeToDisplay() (millis() - LEDTimeMarker > 1000)
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
+#define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
 
 ufo_t ThisAircraft;
 
@@ -129,6 +117,10 @@ void setup()
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
   ThisAircraft.protocol = settings->rf_protocol;
+  ThisAircraft.stealth  = settings->stealth;
+  ThisAircraft.no_track = settings->no_track;
+
+  Traffic_setup();
 
   SoC->swSer_enableRx(false);
 
@@ -254,6 +246,10 @@ void normal_loop()
   TTN_loop();
 #endif
 
+  if (isValidFix()) {
+    Traffic_loop();
+  }
+
   if (isTimeToDisplay()) {
     if (isValidFix()) {
       LED_DisplayTraffic();
@@ -273,8 +269,6 @@ void normal_loop()
   ClearExpired();
 
 }
-
-#define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
 
 void uav_loop()
 {
@@ -418,6 +412,8 @@ void txrx_test_loop()
 #if defined(ENABLE_TTN)
   TTN_loop();
 #endif
+
+  Traffic_loop();
 
 #if DEBUG_TIMING
   led_start_ms = millis();

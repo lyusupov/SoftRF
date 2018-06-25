@@ -249,3 +249,16 @@ void rx_test_loop()
   ClearExpired();
 }
 #endif
+
+#if 0
+#define take_degrees(x) ( (int) x )
+#define take_minutes(x) ( fabs(x - (float) take_degrees(x)) * 60.00)
+
+char * dtostrf_workaround(double number, signed char width, unsigned char prec, char *s) {
+  char * rval = dtostrf(number, width, prec, s);
+  if (number < 10.0) {
+    s[0] = '0';
+  }
+  return rval;
+}
+#endif

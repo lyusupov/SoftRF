@@ -94,7 +94,6 @@ void sx1276_transmit(void);
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 extern unsigned long TxTimeMarker;
 extern byte TxPkt[MAX_PKT_SIZE];
-extern ufo_t ThisAircraft;
 
 extern rfchip_ops_t *rf_chip;
 extern bool RF_SX1276_RST_is_connected;

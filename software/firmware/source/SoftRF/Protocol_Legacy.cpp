@@ -198,7 +198,6 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     float lon = this_aircraft->longitude;
     int16_t alt = (int16_t) this_aircraft->altitude;
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
-    unsigned int aircraft_type =  this_aircraft->aircraft_type;
 
     pkt->addr = id & 0x00FFFFFF;
 
@@ -212,10 +211,10 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->parity = 0;
     pkt->vs = 0;
     pkt->vsmult = 0;
-    pkt->stealth = 0;
-    pkt->no_track = 0;
+    pkt->stealth = this_aircraft->stealth;
+    pkt->no_track = this_aircraft->no_track;
 
-    pkt->aircraft_type = aircraft_type;
+    pkt->aircraft_type = this_aircraft->aircraft_type;
 
     pkt->gps = 323;
 

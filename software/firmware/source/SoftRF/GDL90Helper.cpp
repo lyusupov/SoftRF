@@ -29,6 +29,7 @@
 #include "SoftRF.h"
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "TrafficHelper.h"
 
 #define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
 #define ADDR_TO_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
@@ -36,10 +37,6 @@
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
 static GDL90_Msg_OwnershipGeometricAltitude_t GeometricAltitude;
-
-extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
-extern ufo_t ThisAircraft;
-extern char UDPpacketBuffer[256];
 
 const char *GDL90_CallSign_Prefix[] = {
   [RF_PROTOCOL_LEGACY]    = "FL",
@@ -350,7 +347,7 @@ void GDL90_Export()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        distance = gnss.distanceBetween(ThisAircraft.latitude, ThisAircraft.longitude, Container[i].latitude, Container[i].longitude);
+        distance = Container[i].distance;
 
         if (distance < ALARM_ZONE_NONE) {
           size = makeTrafficReport(buf, &Container[i]);

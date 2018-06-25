@@ -16,25 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "RFHelper.h"
 #include "SoCHelper.h"
-#include "WiFiHelper.h"
-#include "WebHelper.h"
-
-#include "SoftRF.h"
-
-#if LOGGER_IS_ENABLED
-#include "LogHelper.h"
-#endif /* LOGGER_IS_ENABLED */
-
-char UDPpacketBuffer[256]; //buffer to hold incoming and outgoing packets
-
-void WiFi_forward_to_argus(void);
-void WiFi_forward_to_cloud(void);
-void *WiFi_relay_from_android(void);
-
-ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
-extern ufo_t ThisAircraft;
 
 #if DEBUG
 String TxDataTemplate = "0282dd204901f981798a85b69764bdf99ed77fd3c2300000";
@@ -136,50 +118,6 @@ const float txrx_test_positions[90][2] PROGMEM = {
       };
 #endif
 
-void ParseData()
-{
-
-#if DEBUG
-    Hex2Bin(TxDataTemplate, RxBuffer);
-#endif
-
-    fo.raw = Bin2Hex(RxBuffer);
-
-    if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,"));
-      StdOut.print(now()); StdOut.print(F(","));
-      StdOut.print(RF_last_rssi); StdOut.print(F(","));
-      StdOut.println(fo.raw);
-    }
-
-    if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
-
-      fo.rssi = RF_last_rssi;
-
-      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        int max_dist_ndx = 0;
-
-        if (Container[i].addr == fo.addr) {
-          Container[i] = fo;
-           break;
-        } else {
-          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-            Container[i] = fo;
-            break;
-          }
-#if 0
-          if  (Container[i].distance > Container[max_dist_ndx].distance)  {
-            max_dist_ndx = i;
-          }
-          if ((i == (MAX_TRACKING_OBJECTS-1)) && (Container[max_dist_ndx].distance > fo.distance) ) {
-            Container[max_dist_ndx] = fo; 
-          }
-#endif
-        }
-      }
-    }
-}
-
 void Misc_info()
 {
   Serial.println("\r\n");
@@ -202,51 +140,4 @@ void Misc_info()
   } else {
     Serial.println(F("Flash Chip configuration ok.\n"));
   }
-}
-
-void ClearExpired()
-{
-  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (Container[i].addr && (now() - Container[i].timestamp) > LED_EXPIRATION_TIME) {
-      Container[i] = EmptyFO;
-    }
-  }
-}
-
-#define take_degrees(x) ( (int) x )
-#define take_minutes(x) ( fabs(x - (float) take_degrees(x)) * 60.00)
-
-char * dtostrf_workaround(double number, signed char width, unsigned char prec, char *s) {
-  char * rval = dtostrf(number, width, prec, s);
-  if (number < 10.0) {
-    s[0] = '0';
-  }
-  return rval;
-}
-
-size_t Raw_Receive_UDP(uint8_t *buf)
-{
-  int noBytes = Uni_Udp.parsePacket();
-  if ( noBytes ) {
-
-    if (noBytes > MAX_PKT_SIZE) {
-      noBytes = MAX_PKT_SIZE;
-    }
-
-    // We've received a packet, read the data from it
-    Uni_Udp.read(buf,noBytes); // read the packet into the buffer
-
-    return (size_t) noBytes;
-  } else {
-    return 0;
-  }
-}
-
-void Raw_Transmit_UDP()
-{
-    size_t num = fo.raw.length();
-    // ASSERT(sizeof(UDPpacketBuffer) > 2 * PKT_SIZE + 1)
-    fo.raw.toCharArray(UDPpacketBuffer, sizeof(UDPpacketBuffer));
-    UDPpacketBuffer[num] = '\n';
-    SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, num + 1);
 }
