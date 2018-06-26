@@ -95,7 +95,7 @@ static int8_t Alarm_Vector(ufo_t *this_aircraft, ufo_t *fop)
                                                 450.0 - V_rel_direction);
 
     /* +- 10 degrees tolerance for collision course */
-    if (fabs(V_rel_direction - fop->bearing) < 10.0) {
+    if (V_rel_magnitude > 0.1 && fabs(V_rel_direction - fop->bearing) < 10.0) {
 
       /* time is seconds prior to impact */
       float t = fop->distance / V_rel_magnitude;
