@@ -65,7 +65,7 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  size_t size = 3600;
+  size_t size = 4096;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
