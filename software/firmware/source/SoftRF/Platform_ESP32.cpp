@@ -30,6 +30,7 @@
 #include "RFHelper.h"
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
+#include "LEDHelper.h"
 
 #include <U8x8lib.h>
 
@@ -48,6 +49,20 @@ HardwareSerial Serial1(1);
 TwoWire Wire1 = TwoWire(1);
 
 WebServer server ( 80 );
+
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PIX_NUM, SOC_GPIO_PIN_LED);
+#else /* USE_ADAFRUIT_NEO_LIBRARY */
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = Arduino pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
+                              NEO_GRB + NEO_KHZ800);
+#endif /* USE_NEOPIXELBUS_LIBRARY */
 
 U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
                                                 TTGO_V2_OLED_PIN_SCL,

@@ -30,6 +30,39 @@
 #define SoftwareSerial HardwareSerial
 #define swSer Serial1
 
+/* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
+#define USE_ADAFRUIT_NEO_LIBRARY
+
+/*
+ * NeoPixelBus is already "flickering-free" on ESP32 (with I2S)
+ * but the "Core" needs update onto the most recent one
+ */
+//#define USE_NEOPIXELBUS_LIBRARY
+
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+#include <NeoPixelBus.h>
+
+#define uni_begin()             strip.Begin()
+#define uni_show()              strip.Show()
+#define uni_setPixelColor(i, c) strip.SetPixelColor(i, c)
+#define uni_numPixels()         strip.PixelCount()
+#define uni_Color(r,g,b)        RgbColor(r,g,b)
+#define color_t                 RgbColor
+
+extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
+#else /* USE_ADAFRUIT_NEO_LIBRARY */
+#include <Adafruit_NeoPixel.h>
+
+#define uni_begin()             strip.begin()
+#define uni_show()              strip.show()
+#define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
+#define uni_numPixels()         strip.numPixels()
+#define uni_Color(r,g,b)        strip.Color(r,g,b)
+#define color_t                 uint32_t
+
+extern Adafruit_NeoPixel strip;
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+
 #define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.5 /* 3.9 */)
 
 /* Peripherals */

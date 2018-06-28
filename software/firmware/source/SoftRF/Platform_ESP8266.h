@@ -27,6 +27,14 @@
 
 #include <Exp_SoftwareSerial.h>
 #include <ESP8266FtpServer.h>
+#include <Adafruit_NeoPixel.h>
+
+#define uni_begin()             strip.begin()
+#define uni_show()              strip.show()
+#define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
+#define uni_numPixels()         strip.numPixels()
+#define uni_Color(r,g,b)        strip.Color(r,g,b)
+#define color_t                 uint32_t
 
 #define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
 
@@ -60,6 +68,7 @@ extern "C" {
 
 extern ESP8266WebServer server;
 extern Exp_SoftwareSerial swSer;
+extern Adafruit_NeoPixel strip;
 
 #endif /* ESP8266HELPER_H */
 

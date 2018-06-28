@@ -24,16 +24,6 @@
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
-                              NEO_GRB + NEO_KHZ800);
-
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
 // and minimize distance between Arduino and first pixel.  Avoid connecting
@@ -41,33 +31,33 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 
 void LED_setup() {
   if (settings->pointer != LED_OFF) {
-    strip.begin();
-    strip.show(); // Initialize all pixels to 'off'
+    uni_begin();
+    uni_show(); // Initialize all pixels to 'off'
   }
 }
 
 // Fill the dots one after the other with a color
-static void colorWipe(uint32_t c, uint8_t wait) {
-  for (uint16_t i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
+static void colorWipe(color_t c, uint8_t wait) {
+  for (uint16_t i = 0; i < uni_numPixels(); i++) {
+    uni_setPixelColor(i, c);
+    uni_show();
     delay(wait);
   }
 }
 
 //Theatre-style crawling lights.
-static void theaterChase(uint32_t c, uint8_t wait) {
+static void theaterChase(color_t c, uint8_t wait) {
   for (int j = 0; j < 10; j++) { //do 10 cycles of chasing
     for (int q = 0; q < 3; q++) {
-      for (int i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, c);  //turn every third pixel on
+      for (int i = 0; i < uni_numPixels(); i = i + 3) {
+        uni_setPixelColor(i + q, c);  //turn every third pixel on
       }
-      strip.show();
+      uni_show();
 
       delay(wait);
 
-      for (int i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
+      for (int i = 0; i < uni_numPixels(); i = i + 3) {
+        uni_setPixelColor(i + q, 0);      //turn every third pixel off
       }
     }
   }
@@ -76,54 +66,54 @@ static void theaterChase(uint32_t c, uint8_t wait) {
 void LED_test() {
   if (settings->pointer != LED_OFF) {
     // Some example procedures showing how to display to the pixels:
-    colorWipe(strip.Color(255, 0, 0), 50); // Red
-    colorWipe(strip.Color(0, 255, 0), 50); // Green
-    colorWipe(strip.Color(0, 0, 255), 50); // Blue
+    colorWipe(uni_Color(255, 0, 0), 50); // Red
+    colorWipe(uni_Color(0, 255, 0), 50); // Green
+    colorWipe(uni_Color(0, 0, 255), 50); // Blue
     // Send a theater pixel chase in...
-    theaterChase(strip.Color(127, 127, 127), 50); // White
-    theaterChase(strip.Color(127, 0, 0), 50); // Red
-    theaterChase(strip.Color(0, 0, 127), 50); // Blue
+    theaterChase(uni_Color(127, 127, 127), 50); // White
+    theaterChase(uni_Color(127, 0, 0), 50); // Red
+    theaterChase(uni_Color(0, 0, 127), 50); // Blue
 
     //  rainbow(20);
     //  rainbowCycle(20);
     //  theaterChaseRainbow(50);
-    colorWipe(strip.Color(0, 0, 0), 50); // clear
+    colorWipe(uni_Color(0, 0, 0), 50); // clear
   }
 }
 
 static void LED_Clear_noflush() {
     for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-      strip.setPixelColor(i, LED_COLOR_BACKLIT);
+      uni_setPixelColor(i, LED_COLOR_BACKLIT);
     }
 
     if (rx_packets_counter > prev_rx_packets_counter) {
-      strip.setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
+      uni_setPixelColor(LED_STATUS_RX, LED_COLOR_MI_GREEN);
       prev_rx_packets_counter = rx_packets_counter;
 
       if (settings->mode == SOFTRF_MODE_WATCHOUT) {
         for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-          strip.setPixelColor(i, LED_COLOR_RED);
+          uni_setPixelColor(i, LED_COLOR_RED);
         }
       } else if (settings->mode == SOFTRF_MODE_BRIDGE) {
         for (uint16_t i = 0; i < RING_LED_NUM; i++) {
-          strip.setPixelColor(i, LED_COLOR_MI_RED);
+          uni_setPixelColor(i, LED_COLOR_MI_RED);
         }
       }
 
     }  else {
-      strip.setPixelColor(LED_STATUS_RX, LED_COLOR_BLACK);
+      uni_setPixelColor(LED_STATUS_RX, LED_COLOR_BLACK);
     }
 
     if (tx_packets_counter > prev_tx_packets_counter) {
-      strip.setPixelColor(LED_STATUS_TX, LED_COLOR_MI_GREEN);
+      uni_setPixelColor(LED_STATUS_TX, LED_COLOR_MI_GREEN);
       prev_tx_packets_counter = tx_packets_counter;
     } else {
-      strip.setPixelColor(LED_STATUS_TX, LED_COLOR_BLACK);
+      uni_setPixelColor(LED_STATUS_TX, LED_COLOR_BLACK);
     }
 
-    strip.setPixelColor(LED_STATUS_POWER,
+    uni_setPixelColor(LED_STATUS_POWER,
       Battery_voltage() > 2.3 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
-    strip.setPixelColor(LED_STATUS_SAT,
+    uni_setPixelColor(LED_STATUS_SAT,
       gnss.location.isValid() && (gnss.location.age()) <= 3000 ?
       LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
 }
@@ -133,7 +123,7 @@ void LED_Clear() {
     LED_Clear_noflush();
 
     SoC->swSer_enableRx(false);
-    strip.show();
+    uni_show();
     SoC->swSer_enableRx(true);
   }
 }
@@ -141,7 +131,7 @@ void LED_Clear() {
 void LED_DisplayTraffic() {
   int bearing, distance;
   int led_num;
-  uint32_t color;
+  color_t color;
 
   if (settings->pointer != LED_OFF) {
     LED_Clear_noflush();
@@ -170,13 +160,13 @@ void LED_DisplayTraffic() {
           } else if (distance > LED_DISTANCE_NEAR && distance <= LED_DISTANCE_FAR) {
             color =  LED_COLOR_BLUE;
           }
-          strip.setPixelColor(led_num, color);
+          uni_setPixelColor(led_num, color);
         }
       }
     }
 
     SoC->swSer_enableRx(false);
-    strip.show();
+    uni_show();
     SoC->swSer_enableRx(true);
 
   }
