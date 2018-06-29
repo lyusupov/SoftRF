@@ -37,8 +37,11 @@ install:
       cd $HOME/Arduino/hardware/espressif/esp32/tools/sdk/lib ;
       rm -f libbt.a ;
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libbt.a . ;
+      rm -f libesp32.a ;
+      cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libesp32.a.80MHz libesp32.a ;
       cd $HOME/Arduino/hardware/espressif/esp32 ;
       sed -i 's/esp32.upload.maximum_size=1310720/esp32.upload.maximum_size=1966080/g' boards.txt ;
+      sed -i 's/esp32.build.f_cpu=240000000L/esp32.build.f_cpu=80000000L/g' boards.txt ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   
