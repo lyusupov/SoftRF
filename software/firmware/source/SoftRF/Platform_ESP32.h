@@ -31,13 +31,13 @@
 #define swSer Serial1
 
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
-#define USE_ADAFRUIT_NEO_LIBRARY
+//#define USE_ADAFRUIT_NEO_LIBRARY
 
 /*
  * NeoPixelBus is already "flickering-free" on ESP32 (with I2S)
  * but the "Core" needs update onto the most recent one
  */
-//#define USE_NEOPIXELBUS_LIBRARY
+#define USE_NEOPIXELBUS_LIBRARY
 
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 #include <NeoPixelBus.h>
