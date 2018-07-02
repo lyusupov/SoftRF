@@ -98,11 +98,6 @@ static void ESP32_setup()
     u8x8 = &u8x8_ttgo;
     esp32_board = ESP32_TTGO_V2_OLED;
   } else {
-    /*
-     * This does NOT work well with "stock" ESP32 Arduino Core's TwoWire implementation yet.
-     * Use I2C code (lib and hal) from Chuck Todd's repo instead:
-     * https://github.com/stickbreaker/arduino-esp32
-     */
     Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
     Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
     if (Wire1.endTransmission() == 0) {
