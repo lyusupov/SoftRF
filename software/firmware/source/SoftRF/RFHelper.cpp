@@ -252,6 +252,7 @@ bool RF_Receive(void)
  */
 
 static uint8_t nrf905_channel_prev = (uint8_t) -1;
+bool nrf905_receive_active = false;
 
 bool nrf905_probe()
 {
@@ -311,6 +312,8 @@ void nrf905_channel(uint8_t channel)
     nRF905_setFrequency(band , frequency);
 
     nrf905_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    nrf905_receive_active = false;
   }
 }
 
@@ -357,30 +360,18 @@ bool nrf905_receive()
   bool success = false;
 
   // Put into receive mode
-  nRF905_receive();
+  if (!nrf905_receive_active) {
+    nRF905_receive();
+    nrf905_receive_active = true;
+  }
 
-  // Wait for reply with timeout
-  unsigned long sendStartTime = millis();
-  while (1)
-  {
-    success = nRF905_getData(RxBuffer, sizeof(RxBuffer));
-    if (success) { // Got data
-      rx_packets_counter++;
-      break;        
-    }
+  success = nRF905_getData(RxBuffer, sizeof(RxBuffer));
+  if (success) { // Got data
+    rx_packets_counter++;
+  }
 
-    // Timeout
-    if (millis() - sendStartTime > TIMEOUT) {
-#if DEBUG
-      Serial.println(F("Timeout"));
-#endif
-      break;
-    }
-
-    if (SoC->Bluetooth) {
-      SoC->Bluetooth->loop();
-    }
-    yield();
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->loop();
   }
 
   return success;
@@ -388,6 +379,8 @@ bool nrf905_receive()
 
 void nrf905_transmit()
 {
+    nrf905_receive_active = false;
+
     // Set address of device to send to
     byte addr[] = TXADDR;
     nRF905_setTXAddress(addr);
