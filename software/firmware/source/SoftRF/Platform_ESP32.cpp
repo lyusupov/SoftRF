@@ -45,8 +45,10 @@ const lmic_pinmap lmic_pins = {
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
+#if 0 /* No longer need this with updated ESP32 Arduino Core */
 HardwareSerial Serial1(1);
 TwoWire Wire1 = TwoWire(1);
+#endif
 
 WebServer server ( 80 );
 
