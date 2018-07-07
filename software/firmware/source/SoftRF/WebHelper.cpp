@@ -409,6 +409,7 @@ void handleRoot() {
  <table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
+    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
   </tr>\
  </table>\
@@ -548,10 +549,64 @@ void handleNotFound() {
   server.send ( 404, "text/plain", message );
 }
 
+void handleAbout() {
+
+  char *About_temp = (char *) malloc(2048);
+  if (About_temp == NULL) {
+    return;
+  }
+
+  snprintf_P ( About_temp, 2048,
+    PSTR("<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>About</title>\
+  </head>\
+<body>\
+<h1 align=center>About</h1>\
+<p>This firmware is a part of open SoftRF project</p>\
+<p>URL: http://github.com/lyusupov/SoftRF</p>\
+<p>Author: Linar Yusupov</p>\
+<p>E-mail: linar.r.yusupov@gmail.com</p>\
+<h2 align=center>Credits</h2>\
+Arduino core for ESP8266 is developed and supported by ESP8266 Community<br>\
+nRF905 library is developed by Zak Kemble<br>\
+flarm_decode is developed by Stanislaw Pusep<br>\
+Arduino Time Library is developed by Paul Stoffregen<br>\
+Aircraft and MAVLink Libraries are developed by Andy Little<br>\
+TinyGPS++ and PString Libraries are developed by Mikal Hart<br>\
+Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others<br>\
+TrueRandom Library is developed by Peter Knight<br>\
+IBM LMIC framework is maintained by Matthijs Kooijman<br>\
+ESP8266FtpServer is developed by David Paiva<br>\
+Lib_crc is developed by Lammert Bies<br>\
+OGN library is developed by Pawel Jalocha<br>\
+NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts<br>\
+ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)<br>\
+Adafruit BMP085 library is developed by Limor Fried and Ladyada<br>\
+Adafruit BMP280 library is developed by Kevin Townsend<br>\
+Adafruit MPL3115A2 library is developed by Limor Fried and Kevin Townsend<br>\
+U8g2 monochrome LCD, OLED and eInk library is developed by Oliver Kraus<br>\
+NeoPixelBus library is developed by Michael Miller<br>\
+<hr>\
+Copyright (C) 2015-2018 Linar Yusupov\
+</body>\
+</html>")
+  );
+  SoC->swSer_enableRx(false);
+  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server.sendHeader("Pragma", "no-cache");
+  server.sendHeader("Expires", "-1");
+  server.send ( 200, "text/html", About_temp );
+  SoC->swSer_enableRx(true);
+  free(About_temp);
+}
+
 void Web_setup()
 {
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );
+  server.on ( "/about", handleAbout );
   
   server.on ( "/input", handleInput );
   server.on ( "/inline", []() {
