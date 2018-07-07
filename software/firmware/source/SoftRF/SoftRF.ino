@@ -6,20 +6,26 @@
  *
  * Web: http://github.com/lyusupov/SoftRF
  *
- * Arduino core for ESP8266 is developed/supported by ESP8266 Community (support-esp8266@esp8266.com)
- * AVR/Arduino nRF905 Library/Driver is developed by Zak Kemble, contact@zakkemble.co.uk
- * flarm_decode is developed by Stanislaw Pusep, http://github.com/creaktive
- * Arduino Time Library is developed by Paul Stoffregen, http://github.com/PaulStoffregen
- * "Aircraft" and MAVLink Libraries are developed by Andy Little
- * TinyGPS++ and PString Libraries are developed by Mikal Hart
- * Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
- * TrueRandom Library is developed by Peter Knight
- * IBM LMIC framework is maintained by Matthijs Kooijman
- * ESP8266FtpServer is developed by David Paiva
- * Lib_crc is developed by Lammert Bies
- * OGN library is developed by Pawel Jalocha
- * NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
- * ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)
+ * Credits:
+ *   Arduino core for ESP8266 is developed/supported by ESP8266 Community (support-esp8266@esp8266.com)
+ *   AVR/Arduino nRF905 Library/Driver is developed by Zak Kemble, contact@zakkemble.co.uk
+ *   flarm_decode is developed by Stanislaw Pusep, http://github.com/creaktive
+ *   Arduino Time Library is developed by Paul Stoffregen, http://github.com/PaulStoffregen
+ *   "Aircraft" and MAVLink Libraries are developed by Andy Little
+ *   TinyGPS++ and PString Libraries are developed by Mikal Hart
+ *   Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
+ *   TrueRandom Library is developed by Peter Knight
+ *   IBM LMIC framework is maintained by Matthijs Kooijman
+ *   ESP8266FtpServer is developed by David Paiva
+ *   Lib_crc is developed by Lammert Bies
+ *   OGN library is developed by Pawel Jalocha
+ *   NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
+ *   ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)
+ *   Adafruit BMP085 library is developed by Limor Fried and Ladyada
+ *   Adafruit BMP280 library is developed by Kevin Townsend
+ *   Adafruit MPL3115A2 library is developed by Limor Fried and Kevin Townsend
+ *   U8g2 monochrome LCD, OLED and eInk library is developed by Oliver Kraus
+ *   NeoPixelBus library is developed by Michael Miller
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
