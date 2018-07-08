@@ -16,11 +16,11 @@ class FreqPlan
   public:
    void setPlan(uint8_t NewPlan=0) // preset for a given frequency plan
    { Plan=NewPlan;
-          if(Plan==2) { BaseFreq=902200000; ChanSepar=400000; Channels=65; } // USA
+          if(Plan==2) { BaseFreq=902200000; ChanSepar=400000; Channels=65; } // USA, 902-928 MHz
      else if(Plan==3) { BaseFreq=917000000; ChanSepar=400000; Channels=24; } // Australia and South America
      else if(Plan==4) { BaseFreq=869250000; ChanSepar=200000; Channels= 1; } // New Zealand
      else if(Plan==5) { BaseFreq=868800000; ChanSepar=200000; Channels= 1; } // Russia
-     else if(Plan==6) { BaseFreq=433200000; ChanSepar=200000; Channels= 1; } // China
+     else if(Plan==6) { BaseFreq=470200000; ChanSepar=400000; Channels= 1 /* 100 */; } // China, 470-510 MHz
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
      else if(Plan==7) { BaseFreq=869525000; ChanSepar=200000; Channels= 1; } // PilotAware (UK)
 #else
