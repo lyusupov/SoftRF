@@ -34,9 +34,6 @@
 
 #include <U8x8lib.h>
 
-#define LEDC_CHANNEL_BUZZER     0
-#define LEDC_RESOLUTION_BUZZER  8
-
 // RFM95W pin mapping
 const lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -44,11 +41,6 @@ const lmic_pinmap lmic_pins = {
     .rst = SOC_GPIO_PIN_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
-
-#if 0 /* No longer need this with updated ESP32 Arduino Core */
-HardwareSerial Serial1(1);
-TwoWire Wire1 = TwoWire(1);
-#endif
 
 WebServer server ( 80 );
 

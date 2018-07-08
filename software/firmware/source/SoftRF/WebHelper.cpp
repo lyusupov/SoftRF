@@ -145,7 +145,7 @@ void handleSettings() {
 <option %s value='%d'>AUTO</option>\
 <option %s value='%d'>EU (868.2 MHz)</option>\
 <option %s value='%d'>RU (868.8 MHz)</option>\
-<option %s value='%d'>CN (433 MHz)</option>\
+<option %s value='%d'>CN (470 MHz)</option>\
 <option %s value='%d'>US/CA (915 MHz)</option>\
 <option %s value='%d'>NZ (869.25 MHz)</option>\
 <option %s value='%d'>UK (869.52 MHz)</option>\

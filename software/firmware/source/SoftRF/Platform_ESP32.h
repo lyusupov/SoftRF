@@ -65,6 +65,9 @@ extern Adafruit_NeoPixel strip;
 
 #define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.5 /* 3.9 */)
 
+#define LEDC_CHANNEL_BUZZER     0
+#define LEDC_RESOLUTION_BUZZER  8
+
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
 #define SOC_GPIO_PIN_GNSS_TX  12
@@ -105,7 +108,6 @@ extern Adafruit_NeoPixel strip;
 #define HELTEC_OLED_PIN_SCL   15
 
 extern WebServer server;
-extern HardwareSerial Serial1;
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */

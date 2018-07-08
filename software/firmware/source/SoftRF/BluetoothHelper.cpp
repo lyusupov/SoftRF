@@ -98,15 +98,7 @@ static void ESP32_Bluetooth_setup()
   {
   case BLUETOOTH_SPP:
     {
-      esp_bt_cod_t cod;
-
       SerialBT.begin(BT_name.c_str());
-
-      cod.minor = 0b000101;
-      cod.major = 0b00001;
-      cod.service = 0b00000010000;
-
-      esp_bt_gap_set_cod(cod, ESP_BT_INIT_COD);
     }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
