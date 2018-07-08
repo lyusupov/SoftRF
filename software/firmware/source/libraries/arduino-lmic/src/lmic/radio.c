@@ -195,6 +195,13 @@
 #endif
 
 
+//-----------------------------------------
+// Parameters for RSSI monitoring
+#define SX127X_FREQ_LF_MAX      525000000       // per datasheet 6.3
+
+// per datasheet 5.5.3:
+#define SX127X_RSSI_ADJUST_LF   -164            // add to rssi value to get dB (LF)
+#define SX127X_RSSI_ADJUST_HF   -157            // add to rssi value to get dB (HF)
 
 // ----------------------------------------
 // Constants for radio registers
@@ -338,7 +345,7 @@ static void opmode (u1_t mode) {
 static void opmodeLora() {
     u1_t u = OPMODE_LORA;
 #ifdef CFG_sx1276_radio
-//    u |= 0x8;   // TBD: sx1276 high freq
+    u |= 0x8;   // TBD: sx1276 high freq
 #endif
     writeReg(RegOpMode, u);
 }
@@ -346,7 +353,7 @@ static void opmodeLora() {
 static void opmodeFSK() {
     u1_t u = 0;
 #ifdef CFG_sx1276_radio
-//    u |= 0x8;   // TBD: sx1276 high freq
+    u |= 0x8;   // TBD: sx1276 high freq
 #endif
     writeReg(RegOpMode, u);
 }
@@ -1059,8 +1066,26 @@ void radio_irq_handler (u1_t dio) {
               // now read the FIFO
               readBuf(RegFifo, LMIC.frame, LMIC.dataLen);
               // read rx quality parameters
-              LMIC.snr  = readReg(LORARegPktSnrValue); // SNR [dB] * 4
-              LMIC.rssi = readReg(LORARegPktRssiValue) - 125 + 64; // RSSI [dBm] (-196...+63)
+              //LMIC.snr  = readReg(LORARegPktSnrValue); // SNR [dB] * 4
+              //LMIC.rssi = readReg(LORARegPktRssiValue) - 125 + 64; // RSSI [dBm] (-196...+63)
+              uint8_t value = readReg(LORARegPktSnrValue);
+
+              if( value & 0x80 ) {                      // The SNR sign bit is 1
+                value = ( ( ~value + 1 ) & 0xFF ) >> 2; // Invert and divide by 4
+                LMIC.snr = -value;
+              } else {
+                // Divide by 4
+                LMIC.snr = ( value & 0xFF ) >> 2;
+              }
+
+              int rssiAdjust = LMIC.freq > SX127X_FREQ_LF_MAX ?
+                SX127X_RSSI_ADJUST_HF : SX127X_RSSI_ADJUST_LF;
+
+              if (LMIC.snr < 0) {
+                LMIC.rssi = rssiAdjust + readReg(LORARegPktRssiValue) + LMIC.snr;
+              } else {
+                LMIC.rssi = rssiAdjust + (16 * readReg(LORARegPktRssiValue)) / 15;
+              }
             } else {
               // indicate CRC error
               LMIC.dataLen = 0;
@@ -1109,7 +1134,9 @@ void radio_irq_handler (u1_t dio) {
             LMIC.rssi = - readReg(FSKRegRssiValue) / 2;
             return;
         } else {
+          if( ! (flags2 & IRQ_FSK2_FIFOEMPTY_MASK) ) {
             ASSERT(0);
+          }
         }
     }
     // go from stanby to sleep
