@@ -65,7 +65,7 @@ void EEPROM_defaults()
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_LEGACY;
+  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
@@ -74,9 +74,9 @@ void EEPROM_defaults()
   eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
   eeprom_block.field.settings.alarm = TRAFFIC_ALARM_DISTANCE;
 
-  eeprom_block.field.settings.nmea_g   = false;
+  eeprom_block.field.settings.nmea_g   = true;
   eeprom_block.field.settings.nmea_p   = false;
-  eeprom_block.field.settings.nmea_l   = false;
+  eeprom_block.field.settings.nmea_l   = true;
   eeprom_block.field.settings.nmea_u   = false;
   eeprom_block.field.settings.gdl90    = false;
   eeprom_block.field.settings.d1090    = false;
