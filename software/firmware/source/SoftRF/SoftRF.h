@@ -128,5 +128,6 @@ extern const float txrx_test_positions[90][2] PROGMEM;
 #define TXRX_TEST_SPEED       50.0
 
 //#define ENABLE_TTN
+//#define ENABLE_BT_VOICE
 
 #endif /* SOFTRF_H */
