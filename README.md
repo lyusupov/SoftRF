@@ -44,8 +44,6 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
         * [Binary](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries)
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
-    * Applications
-        * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * Protocols
@@ -59,6 +57,8 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
         * [Wiring](https://github.com/lyusupov/SoftRF/wiki/Prime-Wiring)
         * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v1)
+    * Applications
+        * [Emulator](https://github.com/lyusupov/SoftRF/tree/master/software/app/Emulator)
 
 # Highlights
 
