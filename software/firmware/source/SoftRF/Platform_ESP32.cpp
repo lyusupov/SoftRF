@@ -31,6 +31,7 @@
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
 #include "LEDHelper.h"
+#include "GNSSHelper.h"
 
 #include <U8x8lib.h>
 
@@ -69,6 +70,8 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
+
+static portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
 
 static void ESP32_setup()
 {
@@ -420,6 +423,20 @@ static void ESP32_OLED_loop()
   }
 }
 
+static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler() {
+  portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
+  PPS_TimeMarker = millis();    /* millis() has IRAM_ATTR */
+  portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
+}
+
+static unsigned long ESP32_get_PPS_TimeMarker() {
+  unsigned long rval;
+  portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
+  rval = PPS_TimeMarker;
+  portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
+  return rval;
+}
+
 SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -443,15 +460,9 @@ SoC_ops_t ESP32_ops = {
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
   &ESP32_Bluetooth_ops,
-  ESP32_OLED_loop
+  ESP32_OLED_loop,
+  ESP32_GNSS_PPS_Interrupt_handler,
+  ESP32_get_PPS_TimeMarker
 };
-
-portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
-
-void IRAM_ATTR GNSS_PPS_Interrupt_handler() {
-  portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
-  PPS_TimeMarker = millis();
-  portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
-}
 
 #endif /* ESP32 */

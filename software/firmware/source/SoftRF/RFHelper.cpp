@@ -131,6 +131,20 @@ void RF_SetChannel(void)
     break;
   case SOFTRF_MODE_NORMAL:
   default:
+    unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
+    unsigned long time_corr_pos = 0;
+    unsigned long time_corr_neg = 0;
+
+    if (pps_btime_ms) {
+      unsigned long lastCommitTime = millis() - gnss.time.age();
+      if (pps_btime_ms <= lastCommitTime) {
+        time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
+      } else {
+        time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
+      }
+      time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
+    }
+
     int yr = gnss.date.year();
     if( yr > 99)
         yr = yr - 1970;
@@ -143,7 +157,7 @@ void RF_SetChannel(void)
     tm.Minute = gnss.time.minute();
     tm.Second = gnss.time.second();
 
-    Time = makeTime(tm) + gnss.time.age() / 1000;
+    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
     break;
   }
 

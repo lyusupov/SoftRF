@@ -26,6 +26,7 @@
 void GNSS_setup();
 
 extern TinyGPSPlus gnss;
+extern volatile unsigned long PPS_TimeMarker;
 
 void GNSSTimeSync(void);
 void PickGNSSFix(void);

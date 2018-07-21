@@ -38,8 +38,6 @@
 unsigned long GNSSTimeSyncMarker = 0;
 volatile unsigned long PPS_TimeMarker = 0;
 
-extern void IRAM_ATTR GNSS_PPS_Interrupt_handler(void);
-
 #if 0
 unsigned long GGA_Start_Time_Marker = 0;
 unsigned long GGA_Stop_Time_Marker = 0;
@@ -241,9 +239,9 @@ void GNSS_setup() {
   SoC->swSer_begin(9600);
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
-    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT /* INPUT_PULLDOWN */ );
+    pinMode(SOC_GPIO_PIN_GNSS_PPS, SOC_GPIO_PIN_MODE_PULLDOWN);
     attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS),
-                    GNSS_PPS_Interrupt_handler, RISING);
+                    SoC->GNSS_PPS_handler, RISING);
   }
 }
 

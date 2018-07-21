@@ -28,6 +28,7 @@
 #include "RFHelper.h"
 #include "WiFiHelper.h"
 #include "LEDHelper.h"
+#include "GNSSHelper.h"
 
 #include <ets_sys.h>
 #include <osapi.h>
@@ -232,6 +233,14 @@ static void ESP8266_OLED_loop()
 
 }
 
+void ESP8266_GNSS_PPS_Interrupt_handler() {
+  PPS_TimeMarker = millis();
+}
+
+static unsigned long ESP8266_get_PPS_TimeMarker() {
+  return PPS_TimeMarker;
+}
+
 SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
@@ -255,11 +264,9 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_swSer_begin,
   ESP8266_swSer_enableRx,
   NULL, /* ESP8266 has no built-in Bluetooth */
-  ESP8266_OLED_loop
+  ESP8266_OLED_loop,
+  ESP8266_GNSS_PPS_Interrupt_handler,
+  ESP8266_get_PPS_TimeMarker
 };
-
-void GNSS_PPS_Interrupt_handler() {
-  PPS_TimeMarker = millis();
-}
 
 #endif /* ESP8266 */

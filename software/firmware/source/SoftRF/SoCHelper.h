@@ -50,6 +50,8 @@ typedef struct SoC_ops_struct {
   void (*swSer_enableRx)(boolean);
   Bluetooth_ops_t *Bluetooth;
   void (*OLED_loop)();
+  void (*GNSS_PPS_handler)();
+  unsigned long (*get_PPS_TimeMarker)();
 } SoC_ops_t;
 
 enum
@@ -65,8 +67,6 @@ extern SoC_ops_t ESP8266_ops;
 #if defined(ESP32)
 extern SoC_ops_t ESP32_ops;
 #endif
-
-extern volatile unsigned long PPS_TimeMarker;
 
 void SoC_setup(void);
 

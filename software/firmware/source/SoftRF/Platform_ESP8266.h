@@ -41,10 +41,12 @@
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX D3
 #define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED      D1
 #define SOC_GPIO_PIN_BUZZER   10
 #define SOC_GPIO_PIN_BATTERY  A0
+
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
 
 /* SPI */
 #define SOC_GPIO_PIN_MOSI     D7
@@ -66,8 +68,6 @@
 extern "C" {
 #include <user_interface.h>
 }
-
-#define IRAM_ATTR
 
 extern ESP8266WebServer server;
 extern Exp_SoftwareSerial swSer;
