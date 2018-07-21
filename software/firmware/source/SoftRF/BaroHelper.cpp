@@ -92,7 +92,12 @@ barochip_ops_t bmp180_ops = {
 
 static bool bmp280_probe()
 {
-  return bmp280.begin() || bmp280.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);
+  return (
+          bmp280.begin(BMP280_ADDRESS,     BMP280_CHIPID) ||
+          bmp280.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID) ||
+          bmp280.begin(BMP280_ADDRESS,     BME280_CHIPID) ||
+          bmp280.begin(BMP280_ADDRESS_ALT, BME280_CHIPID)
+         );
 }
 
 static void bmp280_setup()
