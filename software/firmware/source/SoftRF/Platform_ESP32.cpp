@@ -446,4 +446,12 @@ SoC_ops_t ESP32_ops = {
   ESP32_OLED_loop
 };
 
+portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
+
+void IRAM_ATTR GNSS_PPS_Interrupt_handler() {
+  portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
+  PPS_TimeMarker = millis();
+  portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
+}
+
 #endif /* ESP32 */

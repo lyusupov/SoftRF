@@ -258,4 +258,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_OLED_loop
 };
 
+void GNSS_PPS_Interrupt_handler() {
+  PPS_TimeMarker = millis();
+}
+
 #endif /* ESP8266 */

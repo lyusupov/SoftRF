@@ -19,6 +19,8 @@
 #ifndef SOCHELPER_H
 #define SOCHELPER_H
 
+#define SOC_UNUSED_PIN 255
+
 #include "SoftRF.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
@@ -63,6 +65,8 @@ extern SoC_ops_t ESP8266_ops;
 #if defined(ESP32)
 extern SoC_ops_t ESP32_ops;
 #endif
+
+extern volatile unsigned long PPS_TimeMarker;
 
 void SoC_setup(void);
 

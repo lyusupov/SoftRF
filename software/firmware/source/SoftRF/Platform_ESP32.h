@@ -71,6 +71,7 @@ extern Adafruit_NeoPixel strip;
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX  23
 #define SOC_GPIO_PIN_GNSS_TX  12
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED      25
 #define SOC_GPIO_PIN_BUZZER   13
 #define SOC_GPIO_PIN_BATTERY  36
