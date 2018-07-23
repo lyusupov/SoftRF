@@ -340,7 +340,7 @@ void PickGNSSFix()
 
             //calculate the checksum
             unsigned char cs = 0;
-            for (unsigned int n = 1; n < sentence_size - 1; n++) {
+            for (unsigned int n = 2; n < sentence_size - 1; n++) {
               cs ^= GNSSbuf[(GNSS_cnt+1) + n];
             }
 
