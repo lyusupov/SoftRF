@@ -23,10 +23,10 @@
 
 void Battery_setup()
 {
-
+  SoC->Battery_setup();
 }
 
 float Battery_voltage()
 {
-  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+  return SoC->Battery_voltage();
 }

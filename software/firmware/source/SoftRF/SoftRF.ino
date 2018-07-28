@@ -100,7 +100,6 @@ void setup()
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
-  Battery_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
@@ -126,6 +125,7 @@ void setup()
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
+  Battery_setup();
   Traffic_setup();
 
   SoC->swSer_enableRx(false);

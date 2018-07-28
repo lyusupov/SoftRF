@@ -233,6 +233,16 @@ static void ESP8266_OLED_loop()
 
 }
 
+static void ESP8266_Battery_setup()
+{
+
+}
+
+static float ESP8266_Battery_voltage()
+{
+  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+}
+
 void ESP8266_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
@@ -265,6 +275,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_swSer_enableRx,
   NULL, /* ESP8266 has no built-in Bluetooth */
   ESP8266_OLED_loop,
+  ESP8266_Battery_setup,
+  ESP8266_Battery_voltage,
   ESP8266_GNSS_PPS_Interrupt_handler,
   ESP8266_get_PPS_TimeMarker
 };

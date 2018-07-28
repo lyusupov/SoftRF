@@ -50,6 +50,8 @@ typedef struct SoC_ops_struct {
   void (*swSer_enableRx)(boolean);
   Bluetooth_ops_t *Bluetooth;
   void (*OLED_loop)();
+  void (*Battery_setup)();
+  float (*Battery_voltage)();
   void (*GNSS_PPS_handler)();
   unsigned long (*get_PPS_TimeMarker)();
 } SoC_ops_t;

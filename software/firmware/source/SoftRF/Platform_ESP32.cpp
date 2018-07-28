@@ -33,6 +33,7 @@
 #include "LEDHelper.h"
 #include "GNSSHelper.h"
 
+#include <battery.h>
 #include <U8x8lib.h>
 
 // RFM95W pin mapping
@@ -81,9 +82,6 @@ static void ESP32_setup()
 #endif
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
-
-  analogReadResolution(10);
-  analogSetPinAttenuation(SOC_GPIO_PIN_BATTERY, ADC_11db);
 
   /* Pre-init 1st ESP32 I2C bus to stick on these pins */
   Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
@@ -423,6 +421,20 @@ static void ESP32_OLED_loop()
   }
 }
 
+static void ESP32_Battery_setup()
+{
+  calibrate_voltage(esp32_board == ESP32_TTGO_T_BEAM ?
+                    ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+}
+
+static float ESP32_Battery_voltage()
+{
+  float voltage = ((float) read_voltage()) * 0.001 ;
+
+  /* T-Beam has voltage divider 100k/100k on board */
+  return (esp32_board == ESP32_TTGO_T_BEAM ? 2 * voltage : voltage);
+}
+
 static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
   PPS_TimeMarker = millis();    /* millis() has IRAM_ATTR */
@@ -461,6 +473,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_swSer_enableRx,
   &ESP32_Bluetooth_ops,
   ESP32_OLED_loop,
+  ESP32_Battery_setup,
+  ESP32_Battery_voltage,
   ESP32_GNSS_PPS_Interrupt_handler,
   ESP32_get_PPS_TimeMarker
 };

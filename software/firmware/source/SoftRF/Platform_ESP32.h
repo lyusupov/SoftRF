@@ -63,8 +63,6 @@ extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
 extern Adafruit_NeoPixel strip;
 #endif /* USE_NEOPIXELBUS_LIBRARY */
 
-#define SOC_A0_VOLTAGE_DIVIDER  (1023.0 / 3.5 /* 3.9 */)
-
 #define LEDC_CHANNEL_BUZZER     0
 #define LEDC_RESOLUTION_BUZZER  8
 
@@ -98,6 +96,8 @@ extern Adafruit_NeoPixel strip;
 /* TTGO T-BEAM GPS module */
 #define SOC_GPIO_PIN_TBEAM_RX 12
 #define SOC_GPIO_PIN_TBEAM_TX 15
+/* TTGO T-BEAM battery voltage */
+#define SOC_GPIO_PIN_TBEAM_BATTERY  35
 
 #define SSD1306_OLED_I2C_ADDR 0x3C
 
