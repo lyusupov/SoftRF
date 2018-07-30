@@ -36,9 +36,9 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
-    * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
+    * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
-    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
 * Software
     * Firmware
         * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
@@ -47,7 +47,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-(Web-method)) (Web method) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
 * Extras
-    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
+    * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
     * Protocols
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
         * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
