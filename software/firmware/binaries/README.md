@@ -26,8 +26,10 @@
 ## ESP32
 
 1. Take ESP32 flash download tool from this location: https://www.espressif.com/en/support/download/other-tools <br>
-You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the ESP32 tool.
-2. Select COM port, enter partition files and addresses, select options.<br>
+You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the ESP32 tool ;
+2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ; 
+
+3. Select COM port, enter partition files and addresses, select options ;<br>
 
    Here is an example:<br>
 
@@ -35,7 +37,7 @@ You might also need to install a [driver for the CP210X USB to UART bridge from 
 
 
 
-3. Press **START** button and wait for completion.
+4. Press **START** button and wait for completion.
 
 For some boards you may need to push **BOOT** button in order to activate flash download mode.<br>
 "Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.    
