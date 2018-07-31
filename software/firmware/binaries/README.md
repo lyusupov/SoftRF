@@ -25,7 +25,8 @@
 
 ## ESP32
 
-1. Take ESP32 flash download tool from this location: https://www.espressif.com/en/support/download/other-tools
+1. Take ESP32 flash download tool from this location: https://www.espressif.com/en/support/download/other-tools <br>
+You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the ESP32 tool.
 2. Select COM port, enter partition files and addresses, select options.<br>
 
    Here is an example:<br>
