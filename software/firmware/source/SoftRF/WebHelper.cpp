@@ -34,6 +34,8 @@ static const char Logo[] PROGMEM = {
 #include "Logo.h"
     } ;
 
+#include "jquery_min_js.h"
+
 byte getVal(char c)
 {
    if(c >= '0' && c <= '9')
@@ -435,8 +437,6 @@ void handleRoot() {
   free(Root_temp);
 }
 
-#define BOOL_STR(x) (x ? "true":"false")
-
 void handleInput() {
 
   char *Input_temp = (char *) malloc(1400);
@@ -631,7 +631,41 @@ void Web_setup()
  <table width=100%%>\
   <tr>\
     <td align=left>\
-    <form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>\
+<script src='/jquery.min.js'></script>\
+<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>\
+    <input type='file' name='update'>\
+    <input type='submit' value='Update'>\
+</form>\
+<div id='prg'>progress: 0%</div>\
+<script>\
+$('form').submit(function(e){\
+    e.preventDefault();\
+      var form = $('#upload_form')[0];\
+      var data = new FormData(form);\
+       $.ajax({\
+            url: '/update',\
+            type: 'POST',\
+            data: data,\
+            contentType: false,\
+            processData:false,\
+            xhr: function() {\
+                var xhr = new window.XMLHttpRequest();\
+                xhr.upload.addEventListener('progress', function(evt) {\
+                    if (evt.lengthComputable) {\
+                        var per = evt.loaded / evt.total;\
+                        $('#prg').html('progress: ' + Math.round(per*100) + '%');\
+                    }\
+               }, false);\
+               return xhr;\
+            },\
+            success:function(d, s) {\
+                console.log('success!')\
+           },\
+            error: function (a, b, c) {\
+            }\
+          });\
+});\
+</script>\
     </td>\
   </tr>\
  </table>\
@@ -677,6 +711,24 @@ void Web_setup()
 
   server.on ( "/logo.png", []() {
     server.send_P ( 200, "image/png", Logo, sizeof(Logo) );
+  } );
+
+  server.on ( "/jquery.min.js", []() {
+
+    PGM_P content = jquery_min_js;
+    size_t bytes_left = jquery_min_js_len;
+    size_t chunk_size;
+
+    server.setContentLength(bytes_left);
+    server.send(200, "application/javascript", "");
+
+    do {
+      chunk_size = bytes_left > JS_MAX_CHUNK_SIZE ? JS_MAX_CHUNK_SIZE : bytes_left;
+      server.sendContent_P(content, chunk_size);
+      content += chunk_size;
+      bytes_left -= chunk_size;
+    } while (bytes_left > 0) ;
+
   } );
 
   server.begin();

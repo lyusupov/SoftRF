@@ -26,6 +26,9 @@
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 
+#define BOOL_STR(x) (x ? "true":"false")
+#define JS_MAX_CHUNK_SIZE 4096
+
 void Web_setup(void);
 void Web_loop(void);
 
