@@ -28,6 +28,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * [Part 2](https://github.com/lyusupov/SoftRF/raw/master/documents/SoftRF-release-2.pdf) (PDF, March 2017) <!--![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
 * [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII.-Quick-start) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v5) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
@@ -64,13 +65,17 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 
 # Highlights
 
-* **Standalone**
+* **Prime Edition Mark II**
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
+
+* **Standalone Edition**
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v4/SoftRF-Case-v4-Exterior.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/first-five-units.jpg)
 
-* **Software driven**
+* **Software driven emulation**
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/softrf-emulation.jpg)
 
