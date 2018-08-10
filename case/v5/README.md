@@ -12,7 +12,8 @@ This type of enclosure is built around [TTGO T-Beam](https://www.aliexpress.com/
 
 # Instructions
 
-3D print three STL files from this folder. You may pick some printing advisories on [my Thingiverse page](http://www.thingiverse.com/thing:3041339).
+3D print three STL files from this folder. You may pick some printing advisories on [my Thingiverse page](http://www.thingiverse.com/thing:3041339).<br>
+If you are unable to print the parts by yourself - you may consider to find an appropriate local 3D service provider and place an order with assistance of [3DHubs portal](http://www.3dhubs.com/).
 
 At first insert printed face panel into front rails. Place T-Beam board into the enclosure's main body. Put lid on top of the assembly. Fasten the lid with four 2.5x10 mm screws.
 
