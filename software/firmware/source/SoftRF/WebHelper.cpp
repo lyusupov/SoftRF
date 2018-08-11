@@ -678,9 +678,9 @@ $('form').submit(function(e){\
 
   server.on("/update", HTTP_POST, [](){
     SoC->swSer_enableRx(false);
-    server.sendHeader("Connection", "close");
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+    server.sendHeader(String(F("Connection")), String(F("close")));
+    server.sendHeader(String(F("Access-Control-Allow-Origin")), "*");
+    server.send(200, String(F("text/plain")), (Update.hasError())?"FAIL":"OK");
 //    SoC->swSer_enableRx(true);
     delay(1000);
     ESP.restart();
@@ -715,12 +715,13 @@ $('form').submit(function(e){\
 
   server.on ( "/jquery.min.js", []() {
 
-    PGM_P content = jquery_min_js;
-    size_t bytes_left = jquery_min_js_len;
+    PGM_P content = jquery_min_js_gz;
+    size_t bytes_left = jquery_min_js_gz_len;
     size_t chunk_size;
 
     server.setContentLength(bytes_left);
-    server.send(200, "application/javascript", "");
+    server.sendHeader(String(F("Content-Encoding")),String(F("gzip")));
+    server.send(200, String(F("application/javascript")), "");
 
     do {
       chunk_size = bytes_left > JS_MAX_CHUNK_SIZE ? JS_MAX_CHUNK_SIZE : bytes_left;
