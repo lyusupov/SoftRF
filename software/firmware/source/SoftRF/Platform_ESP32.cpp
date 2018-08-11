@@ -328,7 +328,8 @@ static void ESP32_SPI_begin()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  if ((esp32_board != ESP32_TTGO_V2_OLED) && (esp32_board != ESP32_HELTEC_OLED)) {
+  /* Temporary workaround until issues with PSRAM will settle down */
+  if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
 
     unsigned long startTime = millis();
     char c1, c2;
