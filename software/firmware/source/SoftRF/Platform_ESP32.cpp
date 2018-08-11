@@ -74,8 +74,35 @@ static int esp32_board = ESP32_DEVKIT; /* default */
 
 static portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
 
+static union {
+  uint8_t efuse_mac[6];
+  uint64_t chipmacid;
+};
+
 static void ESP32_setup()
 {
+#if !defined(SOFTRF_ADDRESS)
+
+  esp_err_t ret = ESP_OK;
+  uint8_t null_mac[6] = {0};
+
+  ret = esp_efuse_mac_get_custom(efuse_mac);
+  if (ret != ESP_OK) {
+      ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
+    /* If get custom base MAC address error, the application developer can decide what to do:
+     * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
+     * nothing.
+     */
+
+    ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+    chipmacid = ESP.getEfuseMac();
+  } else {
+    if (memcmp(efuse_mac, null_mac, 6) == 0) {
+      ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+      chipmacid = ESP.getEfuseMac();
+    }
+  }
+#endif /* SOFTRF_ADDRESS */
 
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
@@ -112,17 +139,11 @@ static void ESP32_setup()
 static uint32_t ESP32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  union {
-    uint8_t efuse_mac[6];
-    uint64_t chipmacid;
-  };
-  chipmacid = ESP.getEfuseMac();
-
   return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
                    (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
-#endif
+#endif /* SOFTRF_ADDRESS */
 }
 
 static uint32_t ESP32_getFlashChipId()

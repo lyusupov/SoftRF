@@ -18,6 +18,7 @@
 #if defined(ESP32)
 
 #include "Platform_ESP32.h"
+#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "BluetoothHelper.h"
 
@@ -80,19 +81,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 static void ESP32_Bluetooth_setup()
 {
-#if !defined(SOFTRF_ADDRESS)
-  union {
-    uint8_t efuse_mac[6];
-    uint64_t chipmacid;
-  };
 
-  chipmacid = ESP.getEfuseMac();
-
-  BT_name += String((uint32_t) efuse_mac[5] | (efuse_mac[4] << 8) | \
-                              (efuse_mac[3] << 16), HEX);
-#else
-  BT_name += String(SOFTRF_ADDRESS & 0x00FFFFFFU, HEX);
-#endif
+  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   switch(settings->bluetooth)
   {
