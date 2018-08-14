@@ -49,7 +49,7 @@ TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 uint8_t GNSSbuf[160]; // 2 lines of 80 characters each
 int GNSS_cnt = 0;
 
-uint8_t UBXbuf[32];
+uint8_t UBXbuf[48];
 
  /* CFG-MSG */
 const uint8_t setGLL[] = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};

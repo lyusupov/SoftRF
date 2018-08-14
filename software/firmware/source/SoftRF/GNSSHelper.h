@@ -25,10 +25,15 @@
 
 void GNSS_setup();
 
-extern TinyGPSPlus gnss;
-extern volatile unsigned long PPS_TimeMarker;
-
 void GNSSTimeSync(void);
 void PickGNSSFix(void);
+
+uint8_t makeUBXCFG(uint8_t, uint8_t, uint8_t, const uint8_t *);
+void sendUBX(const uint8_t *, uint8_t);
+boolean getUBX_ACK(uint8_t, uint8_t);
+
+extern TinyGPSPlus gnss;
+extern volatile unsigned long PPS_TimeMarker;
+extern uint8_t UBXbuf[48];
 
 #endif /* GNSSHELPER_H */

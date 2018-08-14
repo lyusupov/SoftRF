@@ -79,6 +79,12 @@ static union {
   uint64_t chipmacid;
 };
 
+const uint8_t setNav5[] = {0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00,
+                           0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,
+                           0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00,
+                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0x00, 0x00, 0x00};
+
 static void ESP32_setup()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -354,6 +360,11 @@ static void ESP32_swSer_begin(unsigned long baud)
           Serial.println(F("INFO: TTGO T-Beam GPS module is detected."));
 
           esp32_board = ESP32_TTGO_T_BEAM;
+
+          // Set the navigation mode (Airborne, 1G)
+          uint8_t msglen = makeUBXCFG(0x06, 0x24, sizeof(setNav5), setNav5);
+          sendUBX(UBXbuf, msglen);
+          getUBX_ACK(0x06, 0x24);
 
           // Turning off some GPS NMEA strings on the uBlox modules
           swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
