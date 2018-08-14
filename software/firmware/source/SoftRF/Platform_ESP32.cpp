@@ -355,6 +355,13 @@ static void ESP32_swSer_begin(unsigned long baud)
 
           esp32_board = ESP32_TTGO_T_BEAM;
 
+          // Turning off some GPS NMEA strings on the uBlox modules
+          swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
+          swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
+          swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
+#if !defined(AIRCONNECT_IS_ACTIVE)
+          swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
+#endif
           /* leave the function with TTGO port opened */
           return;
         } else {
