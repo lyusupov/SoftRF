@@ -425,6 +425,7 @@ const char *OLED_Protocol_ID[] = {
 static void ESP32_OLED_loop()
 {
   char buf[16];
+  uint32_t disp_value;
 
   if (u8x8) {
     if (!OLED_display_frontpage) {
@@ -453,12 +454,32 @@ static void ESP32_OLED_loop()
       OLED_display_frontpage = true;
     } else {
       if (rx_packets_counter > prev_rx_packets_counter) {
-        itoa(rx_packets_counter % 1000, buf, 10);
+        disp_value = rx_packets_counter % 1000;
+        itoa(disp_value, buf, 10);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
         u8x8->draw2x2String(0, 6, buf);
         prev_rx_packets_counter = rx_packets_counter;
       }
       if (tx_packets_counter > prev_tx_packets_counter) {
-        itoa(tx_packets_counter % 1000, buf, 10);
+        disp_value = tx_packets_counter % 1000;
+        itoa(disp_value, buf, 10);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
         u8x8->draw2x2String(8, 6, buf);
         prev_tx_packets_counter = tx_packets_counter;
       }
