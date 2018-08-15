@@ -85,6 +85,11 @@ const uint8_t setNav5[] = {0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                            0x00, 0x00, 0x00, 0x00};
 
+static const char unsetGLL[] PROGMEM = "$PUBX,40,GLL,0,0,0,0*5C\r\n";
+static const char unsetGSV[] PROGMEM = "$PUBX,40,GSV,0,0,0,0*59\r\n";
+static const char unsetVTG[] PROGMEM = "$PUBX,40,VTG,0,0,0,0*5E\r\n";
+static const char unsetGSA[] PROGMEM = "$PUBX,40,GSA,0,0,0,0*4E\r\n";
+
 static void ESP32_setup()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -367,11 +372,11 @@ static void ESP32_swSer_begin(unsigned long baud)
           getUBX_ACK(0x06, 0x24);
 
           // Turning off some GPS NMEA strings on the uBlox modules
-          swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
-          swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
-          swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
+          swSer.write(FPSTR(unsetGLL)); delay(250);
+          swSer.write(FPSTR(unsetGSV)); delay(250);
+          swSer.write(FPSTR(unsetVTG)); delay(250);
 #if !defined(AIRCONNECT_IS_ACTIVE)
-          swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
+          swSer.write(FPSTR(unsetGSA)); delay(250);
 #endif
           /* leave the function with TTGO port opened */
           return;
