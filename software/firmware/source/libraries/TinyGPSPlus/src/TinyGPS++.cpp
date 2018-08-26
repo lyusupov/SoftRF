@@ -186,6 +186,7 @@ bool TinyGPSPlus::endOfTermHandler()
         {
           location.commit();
           altitude.commit();
+          separation.commit();
         }
         satellites.commit();
         hdop.commit();
@@ -271,6 +272,9 @@ bool TinyGPSPlus::endOfTermHandler()
       break;
     case COMBINE(GPS_SENTENCE_GPGGA, 9): // Altitude (GPGGA)
       altitude.set(term);
+      break;
+    case COMBINE(GPS_SENTENCE_GPGGA, 11): // Geoid Separation (GPGGA)
+      separation.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 12):
       location.newFixMode = (FixMode)term[0];

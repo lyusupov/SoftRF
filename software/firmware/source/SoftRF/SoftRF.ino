@@ -87,7 +87,7 @@ void setup()
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
-  Serial.begin(38400);  
+  Serial.begin(38400);
   //Misc_info();
 
 #if LOGGER_IS_ENABLED
@@ -236,6 +236,7 @@ void normal_loop()
     ThisAircraft.course = gnss.course.deg();
     ThisAircraft.speed = gnss.speed.knots();
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+    ThisAircraft.geoid_separation = gnss.separation.meters();
 
     RF_Transmit(RF_Encode());
   }

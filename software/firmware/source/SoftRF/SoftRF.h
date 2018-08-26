@@ -99,6 +99,7 @@ typedef struct UFO {
     int8_t    ns[4];
     int8_t    ew[4];
 
+    float     geoid_separation; /* metres */
     uint16_t  hdop; /* cm */
     int8_t    rssi; /* SX1276 only */
 

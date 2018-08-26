@@ -191,6 +191,14 @@ struct TinyGPSAltitude : TinyGPSDecimal
    double feet()         { return _GPS_FEET_PER_METER * value() / 100.0; }
 };
 
+struct TinyGPSGeoidSeparation : TinyGPSDecimal
+{
+   double meters()       { return value() / 100.0; }
+   double miles()        { return _GPS_MILES_PER_METER * value() / 100.0; }
+   double kilometers()   { return _GPS_KM_PER_METER * value() / 100.0; }
+   double feet()         { return _GPS_FEET_PER_METER * value() / 100.0; }
+};
+
 struct TinyGPSHDOP : TinyGPSDecimal
 {
    double hdop() { return value() / 100.0; }
@@ -238,6 +246,7 @@ public:
   TinyGPSAltitude altitude;
   TinyGPSInteger satellites;
   TinyGPSHDOP hdop;
+  TinyGPSGeoidSeparation separation;
 
   static const char *libraryVersion() { return _GPS_VERSION; }
 
