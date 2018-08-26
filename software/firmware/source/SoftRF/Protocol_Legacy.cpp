@@ -131,7 +131,7 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
     float ref_lat = this_aircraft->latitude;
     float ref_lon = this_aircraft->longitude;
-    int16_t ref_alt = (int16_t) this_aircraft->altitude;
+    float geo_separ = this_aircraft->geoid_separation;
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
     uint32_t key[4];
@@ -162,7 +162,7 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
     int32_t vs = pkt->vs * (1 << pkt->vsmult);
 
-    int16_t alt = pkt->alt /* - ref_alt */ ;
+    int16_t alt = pkt->alt ; /* relative to WGS84 ellipsoid */
 
     fop->protocol = RF_PROTOCOL_LEGACY;
 
@@ -171,7 +171,7 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     fop->timestamp = timestamp;
     fop->latitude = (float)lat / 1e7;
     fop->longitude = (float)lon / 1e7;
-    fop->altitude = (float) alt;
+    fop->altitude = (float) alt - geo_separ;
     fop->vs = 0;
     fop->aircraft_type = pkt->aircraft_type;
     fop->stealth = pkt->stealth;
@@ -196,7 +196,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     uint32_t id = this_aircraft->addr;
     float lat = this_aircraft->latitude;
     float lon = this_aircraft->longitude;
-    int16_t alt = (int16_t) this_aircraft->altitude;
+    int16_t alt = (int16_t) (this_aircraft->altitude + this_aircraft->geoid_separation);
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
     pkt->addr = id & 0x00FFFFFF;
