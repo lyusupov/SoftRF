@@ -27,6 +27,7 @@ void GNSS_setup();
 
 void GNSSTimeSync(void);
 void PickGNSSFix(void);
+int LookupSeparation(float, float);
 
 uint8_t makeUBXCFG(uint8_t, uint8_t, uint8_t, const uint8_t *);
 void sendUBX(const uint8_t *, uint8_t);

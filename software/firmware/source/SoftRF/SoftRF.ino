@@ -238,6 +238,16 @@ void normal_loop()
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
+    /*
+     * When geoidal separation is zero or not available - use approx. EGM96 value
+     */
+    if (ThisAircraft.geoid_separation == 0.0) {
+      ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                ThisAircraft.latitude,
+                                                ThisAircraft.longitude
+                                              );
+    }
+
     RF_Transmit(RF_Encode());
   }
 

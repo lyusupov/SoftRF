@@ -44,12 +44,6 @@ const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_FANET]     = "FAN"
 };
 
-//convert degrees to radians
-double dtor(double fdegrees)
-{
-  return(fdegrees * PI / 180);
-}
-
 static char *ltrim(char *s)
 {
   if(s) {
@@ -141,7 +135,7 @@ void NMEA_Export()
 
             snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*",
                     alarm_level,
-                    (int) (distance * cos(dtor(bearing))), (int) (distance * sin(dtor(bearing))),
+                    (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
                     alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
                     NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
                     (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),

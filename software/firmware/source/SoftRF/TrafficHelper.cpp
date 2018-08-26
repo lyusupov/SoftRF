@@ -32,12 +32,6 @@ ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 
 static int8_t (*Alarm_Level)(ufo_t *, ufo_t *);
 
-//convert degrees to radians
-static float dtorf(float fdegrees)
-{
-  return(fdegrees * PI / 180.0);
-}
-
 /*
  * No any alarms issued by the firmware.
  * Rely on high-level flight management software.
@@ -82,10 +76,10 @@ static int8_t Alarm_Vector(ufo_t *this_aircraft, ufo_t *fop)
   if (abs(alt_diff) < VERTICAL_SEPARATION) { /* no warnings if too high or too low */
 
     /* Subtract 2D velocity vector of traffic from 2D velocity vector of this aircraft */ 
-    float V_rel_x = this_aircraft->speed * cosf(dtorf(90.0 - this_aircraft->course)) -
-                    fop->speed * cosf(dtorf(90.0 - fop->course)) ;
-    float V_rel_y = this_aircraft->speed * sinf(dtorf(90.0 - this_aircraft->course)) -
-                    fop->speed * sinf(dtorf(90.0 - fop->course)) ;
+    float V_rel_x = this_aircraft->speed * cosf(radians(90.0 - this_aircraft->course)) -
+                    fop->speed * cosf(radians(90.0 - fop->course)) ;
+    float V_rel_y = this_aircraft->speed * sinf(radians(90.0 - this_aircraft->course)) -
+                    fop->speed * sinf(radians(90.0 - fop->course)) ;
 
     float V_rel_magnitude = sqrtf(V_rel_x * V_rel_x + V_rel_y * V_rel_y) * _GPS_MPS_PER_KNOT;
     float V_rel_direction = atan2f(V_rel_y, V_rel_x) * 180.0 / PI;  /* -180 ... 180 */

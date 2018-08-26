@@ -27,6 +27,8 @@
 
 #include "SoftRF.h"
 
+#include <egm96s.h>
+
 #if !defined(DO_GNSS_DEBUG)
 #define GNSS_DEBUG_PRINT
 #define GNSS_DEBUG_PRINTLN
@@ -382,4 +384,39 @@ void PickGNSSFix()
       yield();
     }
   }
+}
+
+/*
+ *  Algorithm of EGM96 conversion was taken from XCSoar
+ */
+
+static float AsBearing(float angle)
+{
+  float retval = angle;
+
+  while (retval < 0)
+    retval += 360.0;
+
+  while (retval >= 360.0)
+    retval -= 360.0;
+
+  return retval;
+}
+
+int LookupSeparation(float lat, float lon)
+{
+  int ilat, ilon;
+
+  ilat = round((90.0 - lat) / 2.0);
+  ilon = round(AsBearing(lon) / 2.0);
+
+  int offset = ilat * 180 + ilon;
+
+  if (offset >= egm96s_dem_len)
+    return 0;
+
+  if (offset < 0)
+    return 0;
+
+  return (int) pgm_read_byte(&egm96s_dem[offset]) - 127;
 }
