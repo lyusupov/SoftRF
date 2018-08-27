@@ -246,6 +246,8 @@ void normal_loop()
                                                 ThisAircraft.latitude,
                                                 ThisAircraft.longitude
                                               );
+      /* we can assume the GPS unit is giving ellipsoid height */
+      ThisAircraft.altitude -= ThisAircraft.geoid_separation;
     }
 
     RF_Transmit(RF_Encode());

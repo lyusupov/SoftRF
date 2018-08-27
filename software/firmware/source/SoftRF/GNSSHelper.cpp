@@ -387,7 +387,7 @@ void PickGNSSFix()
 }
 
 /*
- *  Algorithm of EGM96 conversion was taken from XCSoar
+ *  Algorithm of EGM96 geoid offset approximation was taken from XCSoar
  */
 
 static float AsBearing(float angle)
