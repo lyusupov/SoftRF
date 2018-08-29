@@ -75,6 +75,13 @@
 #define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
 
 ufo_t ThisAircraft;
+hardware_descriptor_t hw = {
+  .model = SOFTRF_MODEL_STANDALONE,
+  .soc   = SOC_NONE,
+  .rf    = RF_IC_NONE,
+  .baro  = BARO_MODULE_NONE,
+  .gnss  = GNSS_MODULE_NONE
+};
 
 unsigned long LEDTimeMarker = 0;
 unsigned long ExportTimeMarker = 0;
@@ -83,7 +90,7 @@ void setup()
 {
   rst_info *resetInfo;
 
-  SoC_setup(); // Has to be very first procedure in the execution order
+  hw.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
@@ -103,14 +110,14 @@ void setup()
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
-  RF_setup();
+  hw.rf = RF_setup();
   delay(100);
 
   if (rf_chip && (rf_chip->type == RF_IC_SX1276) && !RF_SX1276_RST_is_connected) {
 #if DEBUG
     Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
 #endif
-    Baro_setup();
+    hw.baro = Baro_setup();
   }
 
   if (settings->mode == SOFTRF_MODE_UAV) {
@@ -118,7 +125,7 @@ void setup()
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
   }  else {
-    GNSS_setup();
+    hw.gnss = GNSS_setup();
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
   ThisAircraft.protocol = settings->rf_protocol;

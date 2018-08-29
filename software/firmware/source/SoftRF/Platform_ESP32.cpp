@@ -31,7 +31,6 @@
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
 #include "LEDHelper.h"
-#include "GNSSHelper.h"
 
 #include <battery.h>
 #include <U8x8lib.h>
@@ -78,17 +77,6 @@ static union {
   uint8_t efuse_mac[6];
   uint64_t chipmacid;
 };
-
-const uint8_t setNav5[] = {0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00,
-                           0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,
-                           0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00,
-                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                           0x00, 0x00, 0x00, 0x00};
-
-static const char unsetGLL[] PROGMEM = "$PUBX,40,GLL,0,0,0,0*5C\r\n";
-static const char unsetGSV[] PROGMEM = "$PUBX,40,GSV,0,0,0,0*59\r\n";
-static const char unsetVTG[] PROGMEM = "$PUBX,40,VTG,0,0,0,0*5E\r\n";
-static const char unsetGSA[] PROGMEM = "$PUBX,40,GSA,0,0,0,0*4E\r\n";
 
 static void ESP32_setup()
 {
@@ -144,6 +132,12 @@ static void ESP32_setup()
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
     u8x8->draw2x2String(2, 3, "SoftRF");
+  }
+
+  /* Temporary workaround until issues with PSRAM will settle down */
+  if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
+    hw.model = SOFTRF_MODEL_PRIME_MK2;
+    esp32_board = ESP32_TTGO_T_BEAM;
   }
 }
 
@@ -339,57 +333,11 @@ static void ESP32_SPI_begin()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  /* Temporary workaround until issues with PSRAM will settle down */
-  if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
-
-    unsigned long startTime = millis();
-    char c1, c2;
-    c1 = c2 = 0;
-
-    /* try to detect TTGO T-Beam built-in GPS module */
+  if (hw.model == SOFTRF_MODEL_PRIME_MK2) {
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_RX, SOC_GPIO_PIN_TBEAM_TX);
-
-    // clean any leftovers
-    swSer.flush();
-
-    // Serial.println(F("INFO: Waiting for NMEA data from TTGO T-Beam GPS module..."));
-
-    // Timeout if no valid response in 3 seconds
-    while (millis() - startTime < 3000) {
-
-      if (swSer.available() > 0) {
-        c1 = swSer.read();
-        if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
-        if ((c2 == '$') && (c1 == 'G')) {
-          /* got $G */
-          Serial.println(F("INFO: TTGO T-Beam GPS module is detected."));
-
-          esp32_board = ESP32_TTGO_T_BEAM;
-
-          // Set the navigation mode (Airborne, 1G)
-          uint8_t msglen = makeUBXCFG(0x06, 0x24, sizeof(setNav5), setNav5);
-          sendUBX(UBXbuf, msglen);
-          getUBX_ACK(0x06, 0x24);
-
-          // Turning off some GPS NMEA strings on the uBlox modules
-          swSer.write(FPSTR(unsetGLL)); delay(250);
-          swSer.write(FPSTR(unsetGSV)); delay(250);
-          swSer.write(FPSTR(unsetVTG)); delay(250);
-#if !defined(AIRCONNECT_IS_ACTIVE)
-          swSer.write(FPSTR(unsetGSA)); delay(250);
-#endif
-          /* leave the function with TTGO port opened */
-          return;
-        } else {
-          c2 = 0;
-        }
-      }
-
-      delay(1);
-    }
-
-    /* release UART and pins */
-    swSer.end();
+  } else {
+    /* open Standalone's GNSS port */
+    swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   }
 
 #if 0
@@ -399,8 +347,6 @@ static void ESP32_swSer_begin(unsigned long baud)
   Serial.println(esp32_board, HEX);
 #endif
 
-  /* open Standalone's GNSS port */
-  swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

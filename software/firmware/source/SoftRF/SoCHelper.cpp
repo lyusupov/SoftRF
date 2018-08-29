@@ -20,9 +20,8 @@
 
 SoC_ops_t *SoC;
 
-void SoC_setup()
+byte SoC_setup()
 {
-
 #if defined(ESP8266)
   SoC = &ESP8266_ops;
 #elif defined(ESP32)
@@ -33,5 +32,11 @@ void SoC_setup()
 
   if (SoC && SoC->setup) {
     SoC->setup();
+  }
+
+  if (SoC) {
+    return SoC->id;
+  } else {
+    return SOC_NONE;
   }
 }

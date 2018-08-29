@@ -58,6 +58,7 @@ typedef struct SoC_ops_struct {
 
 enum
 {
+	SOC_NONE,
 	SOC_ESP8266,
 	SOC_ESP32
 };
@@ -70,6 +71,6 @@ extern SoC_ops_t ESP8266_ops;
 extern SoC_ops_t ESP32_ops;
 #endif
 
-void SoC_setup(void);
+byte SoC_setup(void);
 
 #endif /* SOCHELPER_H */

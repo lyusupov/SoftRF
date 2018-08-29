@@ -23,18 +23,22 @@
 
 #include "SoftRF.h"
 
-void GNSS_setup();
+enum
+{
+  GNSS_MODULE_NONE,
+  GNSS_MODULE_UNKNOWN,
+  GNSS_MODULE_U6,
+  GNSS_MODULE_U7,
+  GNSS_MODULE_U8
+};
+
+byte GNSS_setup();
 
 void GNSSTimeSync(void);
 void PickGNSSFix(void);
 int LookupSeparation(float, float);
 
-uint8_t makeUBXCFG(uint8_t, uint8_t, uint8_t, const uint8_t *);
-void sendUBX(const uint8_t *, uint8_t);
-boolean getUBX_ACK(uint8_t, uint8_t);
-
 extern TinyGPSPlus gnss;
 extern volatile unsigned long PPS_TimeMarker;
-extern uint8_t UBXbuf[48];
 
 #endif /* GNSSHELPER_H */

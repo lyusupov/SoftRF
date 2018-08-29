@@ -108,6 +108,14 @@ typedef struct UFO {
     int8_t    alarm_level;
 } ufo_t;
 
+typedef struct hardware_descriptor {
+    byte  model;
+    byte  soc;
+    byte  rf;
+    byte  baro;
+    byte  gnss;
+} hardware_descriptor_t;
+
 enum
 {
 	SOFTRF_MODE_NORMAL,
@@ -119,8 +127,17 @@ enum
 	SOFTRF_MODE_UAV
 };
 
+enum
+{
+	SOFTRF_MODEL_STANDALONE,
+	SOFTRF_MODEL_PRIME,
+	SOFTRF_MODEL_UAV,
+	SOFTRF_MODEL_PRIME_MK2
+};
+
 extern void Misc_info(void);
 extern ufo_t ThisAircraft;
+extern hardware_descriptor_t hw;
 extern const float txrx_test_positions[90][2] PROGMEM;
 
 #define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)

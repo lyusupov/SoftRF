@@ -166,7 +166,7 @@ barochip_ops_t mpl3115a2_ops = {
   mpl3115a2_altitude
 };
 
-void Baro_setup()
+byte Baro_setup()
 {
   if ( (baro_chip = &bmp180_ops,    baro_chip->probe()) ||
        (baro_chip = &bmp280_ops,    baro_chip->probe()) ||
@@ -184,9 +184,13 @@ void Baro_setup()
       Baro_VS[i] = 0;
     }
 
+    return baro_chip->type;
+
   } else {
     baro_chip = NULL;
     Serial.println(F("WARNING! Barometric pressure sensor is NOT detected."));
+
+    return BARO_MODULE_NONE;
   }
 }
 

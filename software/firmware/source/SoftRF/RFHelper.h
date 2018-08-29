@@ -46,6 +46,7 @@ enum
 
 enum
 {
+  RF_IC_NONE,
   RF_IC_NRF905,
   RF_IC_SX1276
 };
@@ -72,7 +73,7 @@ typedef struct rfchip_ops_struct {
 
 uint8_t parity(uint32_t);
 
-void RF_setup(void);
+byte RF_setup(void);
 void RF_SetChannel(void);
 void RF_loop(void);
 size_t RF_Encode(void);

@@ -86,7 +86,7 @@ uint8_t parity(uint32_t x) {
     return (parity % 2);
 }
  
-void RF_setup(void)
+byte RF_setup(void)
 {
 
   if (rf_chip == NULL) {
@@ -113,6 +113,9 @@ void RF_setup(void)
 
   if (rf_chip) {
     rf_chip->setup();
+    return rf_chip->type;
+  } else {
+    return RF_IC_NONE;
   }
 }
 

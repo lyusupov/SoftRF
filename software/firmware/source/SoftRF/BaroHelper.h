@@ -23,6 +23,7 @@
 
 enum
 {
+  BARO_MODULE_NONE,
   BARO_MODULE_BMP180,
   BARO_MODULE_BMP280,
   BARO_MODULE_MPL3115A2
@@ -38,7 +39,7 @@ typedef struct barochip_ops_struct {
 
 extern barochip_ops_t *baro_chip;
 
-void Baro_setup(void);
+byte Baro_setup(void);
 void Baro_loop(void);
 
 #endif /* BAROHELPER_H */
