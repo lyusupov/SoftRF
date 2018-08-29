@@ -112,7 +112,7 @@ void handleSettings() {
   size -= len;
 
   /* Radio specific part */
-  if (rf_chip && (rf_chip->type == RF_IC_SX1276)) {
+  if (hw_info.rf == RF_IC_SX1276) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -391,8 +391,15 @@ void handleRoot() {
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
-  <tr><th align=left>Radio</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Baro</th><td align=right>%s</td></tr>\
+ </table>\
+ <table width=100%%>\
+   <tr>\
+    <td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+    <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+    <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  </tr>\
+ </table>\
+ <table width=100%%>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
   <tr><th align=left>Packets:</th></tr>\
@@ -423,6 +430,7 @@ void handleRoot() {
 #endif
     ,
     (SoC == NULL ? "NONE" : SoC->name),
+    GNSS_NAME[hw_info.gnss],
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,

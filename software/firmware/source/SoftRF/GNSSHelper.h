@@ -40,5 +40,6 @@ int LookupSeparation(float, float);
 
 extern TinyGPSPlus gnss;
 extern volatile unsigned long PPS_TimeMarker;
+extern const char *GNSS_NAME[];
 
 #endif /* GNSSHELPER_H */

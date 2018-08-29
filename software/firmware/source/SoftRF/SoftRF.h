@@ -108,13 +108,13 @@ typedef struct UFO {
     int8_t    alarm_level;
 } ufo_t;
 
-typedef struct hardware_descriptor {
+typedef struct hardware_info {
     byte  model;
     byte  soc;
     byte  rf;
     byte  baro;
     byte  gnss;
-} hardware_descriptor_t;
+} hardware_info_t;
 
 enum
 {
@@ -137,7 +137,7 @@ enum
 
 extern void Misc_info(void);
 extern ufo_t ThisAircraft;
-extern hardware_descriptor_t hw;
+extern hardware_info_t hw_info;
 extern const float txrx_test_positions[90][2] PROGMEM;
 
 #define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)

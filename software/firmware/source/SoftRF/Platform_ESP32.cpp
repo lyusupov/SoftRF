@@ -136,7 +136,7 @@ static void ESP32_setup()
 
   /* Temporary workaround until issues with PSRAM will settle down */
   if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
-    hw.model = SOFTRF_MODEL_PRIME_MK2;
+    hw_info.model = SOFTRF_MODEL_PRIME_MK2;
     esp32_board = ESP32_TTGO_T_BEAM;
   }
 }
@@ -333,7 +333,7 @@ static void ESP32_SPI_begin()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  if (hw.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_RX, SOC_GPIO_PIN_TBEAM_TX);
   } else {
     /* open Standalone's GNSS port */

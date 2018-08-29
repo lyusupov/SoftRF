@@ -68,6 +68,14 @@ const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x0
                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00};
 
+const char *GNSS_NAME[] = {
+  [GNSS_MODULE_NONE]    = "NONE",
+  [GNSS_MODULE_UNKNOWN] = "UNK",
+  [GNSS_MODULE_U6]      = "U6",
+  [GNSS_MODULE_U7]      = "U7",
+  [GNSS_MODULE_U8]      = "U8"
+};
+
 static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
 {
   if (msglen > (sizeof(GNSSbuf) - 8) ) {
@@ -450,7 +458,7 @@ byte GNSS_setup() {
 
   rval = GNSS_MODULE_UNKNOWN;
 
-  if (hw.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 
     Serial.println(F("INFO: TTGO T-Beam GPS module is detected."));
 
