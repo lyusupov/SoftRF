@@ -105,6 +105,7 @@ PixelsSize	KEYWORD2
 PixelCount	KEYWORD2
 SetPixelColor	KEYWORD2
 GetPixelColor	KEYWORD2
+SwapPixelColor	KEYWORD2
 CalculateBrightness	KEYWORD2
 Darken	KEYWORD2
 Lighten	KEYWORD2
@@ -117,6 +118,7 @@ StopAnimation	KEYWORD2
 RestartAnimation	KEYWORD2
 IsAnimationActive	KEYWORD2
 AnimationDuration	KEYWORD2
+ChangeAnimationDuration	KEYWORD2
 UpdateAnimations	KEYWORD2
 IsPaused	KEYWORD2
 Pause	KEYWORD2
@@ -149,6 +151,8 @@ Map	KEYWORD2
 MapProbe	KEYWORD2
 getWidth	KEYWORD2
 getHeight	KEYWORD2
+RingPixelShift	KEYWORD2
+RingPixelRotate	KEYWORD2
 getCountOfRings	KEYWORD2
 getPixelCountAtRing	KEYWORD2
 getPixelCount	KEYWORD2
