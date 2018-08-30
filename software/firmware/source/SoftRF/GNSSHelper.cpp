@@ -73,7 +73,8 @@ const char *GNSS_NAME[] = {
   [GNSS_MODULE_UNKNOWN] = "UNK",
   [GNSS_MODULE_U6]      = "U6",
   [GNSS_MODULE_U7]      = "U7",
-  [GNSS_MODULE_U8]      = "U8"
+  [GNSS_MODULE_U8]      = "U8",
+  [GNSS_MODULE_MAV]     = "MAV"
 };
 
 static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
