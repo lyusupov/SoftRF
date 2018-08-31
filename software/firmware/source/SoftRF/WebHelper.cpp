@@ -432,7 +432,7 @@ void handleRoot() {
 #endif
     ,
     (SoC == NULL ? "NONE" : SoC->name),
-    GNSS_NAME[hw_info.gnss],
+    GNSS_name[hw_info.gnss],
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
     hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,

@@ -68,9 +68,9 @@ const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x0
                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00};
 
-const char *GNSS_NAME[] = {
+const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
-  [GNSS_MODULE_UNKNOWN] = "UNK",
+  [GNSS_MODULE_NMEA]    = "NMEA",
   [GNSS_MODULE_U6]      = "U6",
   [GNSS_MODULE_U7]      = "U7",
   [GNSS_MODULE_U8]      = "U8",
@@ -262,39 +262,6 @@ static void setup_NMEA()
 #endif
 }
 
-static boolean GNSS_probe() {
-
-  unsigned long startTime = millis();
-  char c1, c2;
-  c1 = c2 = 0;
-
-  // clean any leftovers
-  swSer.flush();
-
-  // Serial.println(F("INFO: Waiting for NMEA data from GNSS module..."));
-
-    // Timeout if no valid response in 3 seconds
-  while (millis() - startTime < 3000) {
-
-    if (swSer.available() > 0) {
-      c1 = swSer.read();
-      if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
-      if ((c2 == '$') && (c1 == 'G')) {
-        /* got $G */
-
-        /* leave the function with GNSS port opened */
-        return true;
-      } else {
-        c2 = 0;
-      }
-    }
-
-    delay(1);
-  }
-
-  return false;
-}
-
 /* ------ BEGIN -----------  https://github.com/Black-Thunder/FPV-Tracker */
 
 enum ubloxState{ WAIT_SYNC1, WAIT_SYNC2, GET_CLASS, GET_ID, GET_LL, GET_LH, GET_DATA, GET_CKA, GET_CKB };
@@ -398,8 +365,41 @@ static int ubloxProcessData(unsigned char data) {
 
 /* ------ END -----------  https://github.com/Black-Thunder/FPV-Tracker */
 
+static boolean GNSS_probe() {
+
+  unsigned long startTime = millis();
+  char c1, c2;
+  c1 = c2 = 0;
+
+  // clean any leftovers
+  swSer.flush();
+
+  // Serial.println(F("INFO: Waiting for NMEA data from GNSS module..."));
+
+    // Timeout if no valid response in 3 seconds
+  while (millis() - startTime < 3000) {
+
+    if (swSer.available() > 0) {
+      c1 = swSer.read();
+      if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
+      if ((c2 == '$') && (c1 == 'G')) {
+        /* got $G */
+
+        /* leave the function with GNSS port opened */
+        return true;
+      } else {
+        c2 = 0;
+      }
+    }
+
+    delay(1);
+  }
+
+  return false;
+}
+
 static byte GNSS_version() {
-  byte rval = GNSS_MODULE_UNKNOWN;
+  byte rval = GNSS_MODULE_NMEA;
   unsigned long startTime = millis();
 
   uint8_t msglen = makeUBXCFG(0x0A, 0x04, 0, NULL); // MON-VER
@@ -457,7 +457,7 @@ byte GNSS_setup() {
   if (!GNSS_probe())
     return rval;
 
-  rval = GNSS_MODULE_UNKNOWN;
+  rval = GNSS_MODULE_NMEA;
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 

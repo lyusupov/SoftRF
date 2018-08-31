@@ -26,11 +26,11 @@
 enum
 {
   GNSS_MODULE_NONE,
-  GNSS_MODULE_UNKNOWN,
-  GNSS_MODULE_U6,
-  GNSS_MODULE_U7,
-  GNSS_MODULE_U8,
-  GNSS_MODULE_MAV
+  GNSS_MODULE_NMEA, /* generic NMEA */
+  GNSS_MODULE_U6,   /* Ublox 6 */
+  GNSS_MODULE_U7,   /* Ublox 7 */
+  GNSS_MODULE_U8,   /* Ublox 8 */
+  GNSS_MODULE_MAV   /* MAVLink */
 };
 
 byte GNSS_setup();
@@ -41,6 +41,6 @@ int LookupSeparation(float, float);
 
 extern TinyGPSPlus gnss;
 extern volatile unsigned long PPS_TimeMarker;
-extern const char *GNSS_NAME[];
+extern const char *GNSS_name[];
 
 #endif /* GNSSHELPER_H */
