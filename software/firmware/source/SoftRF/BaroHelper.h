@@ -39,6 +39,7 @@ typedef struct barochip_ops_struct {
 
 extern barochip_ops_t *baro_chip;
 
+bool Baro_probe(void);
 byte Baro_setup(void);
 void Baro_loop(void);
 

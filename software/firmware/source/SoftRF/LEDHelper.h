@@ -62,10 +62,18 @@ enum
 	LED_OFF
 };
 
+enum
+{
+	DISPLAY_NONE,
+	DISPLAY_OLED_HELTEC,
+	DISPLAY_OLED_TTGO
+};
+
 void LED_setup();
 void LED_test();
 void LED_DisplayTraffic();
 void LED_Clear();
+void LED_loop();
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
 

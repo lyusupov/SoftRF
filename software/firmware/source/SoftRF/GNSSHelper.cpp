@@ -461,8 +461,6 @@ byte GNSS_setup() {
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 
-    Serial.println(F("INFO: TTGO T-Beam GPS module is detected."));
-
     rval = GNSS_version();
 
     if (rval == GNSS_MODULE_U6 ||

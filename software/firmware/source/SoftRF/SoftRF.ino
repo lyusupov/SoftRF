@@ -76,11 +76,13 @@
 
 ufo_t ThisAircraft;
 hardware_info_t hw_info = {
-  .model = SOFTRF_MODEL_STANDALONE,
-  .soc   = SOC_NONE,
-  .rf    = RF_IC_NONE,
-  .baro  = BARO_MODULE_NONE,
-  .gnss  = GNSS_MODULE_NONE
+  .model    = SOFTRF_MODEL_STANDALONE,
+  .revision = 0,
+  .soc      = SOC_NONE,
+  .rf       = RF_IC_NONE,
+  .gnss     = GNSS_MODULE_NONE,
+  .baro     = BARO_MODULE_NONE,
+  .display  = DISPLAY_NONE
 };
 
 unsigned long LEDTimeMarker = 0;
@@ -111,14 +113,14 @@ void setup()
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
   hw_info.rf = RF_setup();
+
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && RF_SX1276_RST_is_connected)
+      hw_info.revision = 5;
+
   delay(100);
 
-  if (rf_chip && (rf_chip->type == RF_IC_SX1276) && !RF_SX1276_RST_is_connected) {
-#if DEBUG
-    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
-#endif
-    hw_info.baro = Baro_setup();
-  }
+  hw_info.baro = Baro_setup();
+  hw_info.display = SoC->Display_setup();
 
   if (settings->mode == SOFTRF_MODE_UAV) {
     Serial.begin(57600);
@@ -204,7 +206,10 @@ void loop()
   }
 
   // Show status info on tiny OLED display
-  SoC->OLED_loop();
+  SoC->Display_loop();
+
+  // battery status LED
+  LED_loop();
 
   // Handle Air Connect
   NMEA_loop();
@@ -469,7 +474,7 @@ void txrx_test_loop()
 #if DEBUG_TIMING
   oled_start_ms = millis();
 #endif
-//  SoC->OLED_loop();
+//  SoC->Display_loop();
 #if DEBUG_TIMING
   oled_end_ms = millis();
 #endif

@@ -24,6 +24,10 @@
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 
+#define isTimeToToggle() (millis() - status_LED_TimeMarker > 300)
+static int status_LED = SOC_UNUSED_PIN;
+static unsigned long status_LED_TimeMarker = 0;
+
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
 // and minimize distance between Arduino and first pixel.  Avoid connecting
@@ -33,6 +37,13 @@ void LED_setup() {
   if (settings->pointer != LED_OFF) {
     uni_begin();
     uni_show(); // Initialize all pixels to 'off'
+  }
+
+  status_LED = SOC_GPIO_PIN_STATUS;
+
+  if (status_LED != SOC_UNUSED_PIN) {
+    pinMode(status_LED, OUTPUT);
+    digitalWrite(status_LED, LOW);
   }
 }
 
@@ -169,5 +180,20 @@ void LED_DisplayTraffic() {
     uni_show();
     SoC->swSer_enableRx(true);
 
+  }
+}
+
+void LED_loop() {
+  if (status_LED != SOC_UNUSED_PIN) {
+    if (Battery_voltage() > 3.5 ) {
+      if (digitalRead(status_LED)) {
+        digitalWrite(status_LED, LOW);
+      }
+    } else {
+      if (isTimeToToggle()) {
+        digitalWrite(status_LED, !digitalRead(status_LED));  // toggle state
+        status_LED_TimeMarker = millis();
+      }
+    }
   }
 }

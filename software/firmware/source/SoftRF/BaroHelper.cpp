@@ -166,11 +166,16 @@ barochip_ops_t mpl3115a2_ops = {
   mpl3115a2_altitude
 };
 
+bool Baro_probe()
+{
+  return ( (baro_chip = &bmp180_ops,    baro_chip->probe()) ||
+           (baro_chip = &bmp280_ops,    baro_chip->probe()) ||
+           (baro_chip = &mpl3115a2_ops, baro_chip->probe()) );
+}
+
 byte Baro_setup()
 {
-  if ( (baro_chip = &bmp180_ops,    baro_chip->probe()) ||
-       (baro_chip = &bmp280_ops,    baro_chip->probe()) ||
-       (baro_chip = &mpl3115a2_ops, baro_chip->probe()) ) {
+  if ( SoC->Baro_setup() && Baro_probe() ) {
 
     Serial.print(baro_chip->name);
     Serial.println(F(" barometric pressure sensor is detected."));

@@ -76,6 +76,12 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
+#define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
+                                SOC_UNUSED_PIN :                        \
+                                (hw_info.revision == 2 ?                \
+                                  SOC_GPIO_PIN_TBEAM_LED_V02 :          \
+                                  SOC_GPIO_PIN_TBEAM_LED_V05))
+
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI     27
 #define SOC_GPIO_PIN_MISO     19
@@ -93,11 +99,21 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_SDA      14
 #define SOC_GPIO_PIN_SCL      2
 
-/* TTGO T-BEAM GPS module */
+/* TTGO T-BEAM section */
+// GPS module
 #define SOC_GPIO_PIN_TBEAM_RX 12
 #define SOC_GPIO_PIN_TBEAM_TX 15
-/* TTGO T-BEAM battery voltage */
+// battery voltage
 #define SOC_GPIO_PIN_TBEAM_BATTERY  35
+// status LED
+#define SOC_GPIO_PIN_TBEAM_LED_V02  21
+#define SOC_GPIO_PIN_TBEAM_LED_V05  14
+// SX1276 RESET
+#define SOC_GPIO_PIN_TBEAM_RF_RST_V02  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TBEAM_RF_RST_V05  23
+// 1st I2C bus on the T-Beam
+#define SOC_GPIO_PIN_TBEAM_SDA  13
+#define SOC_GPIO_PIN_TBEAM_SCL  2
 
 #define SSD1306_OLED_I2C_ADDR 0x3C
 

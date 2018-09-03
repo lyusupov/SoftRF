@@ -110,10 +110,12 @@ typedef struct UFO {
 
 typedef struct hardware_info {
     byte  model;
+    byte  revision;
     byte  soc;
     byte  rf;
-    byte  baro;
     byte  gnss;
+    byte  baro;
+    byte  display;
 } hardware_info_t;
 
 enum

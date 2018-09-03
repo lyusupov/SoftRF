@@ -36,7 +36,7 @@
 #include <os_type.h>
 
 // RFM95W pin mapping
-const lmic_pinmap lmic_pins = {
+lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = SOC_GPIO_PIN_RST,
@@ -66,7 +66,7 @@ void ICACHE_FLASH_ATTR user_init()
 
 static void ESP8266_setup()
 {
-  Wire.pins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+
 }
 
 static uint32_t ESP8266_getChipId()
@@ -228,7 +228,12 @@ static void ESP8266_swSer_enableRx(boolean arg)
   swSer.enableRx(arg);
 }
 
-static void ESP8266_OLED_loop()
+static byte ESP8266_Display_setup()
+{
+  return DISPLAY_NONE;
+}
+
+static void ESP8266_Display_loop()
 {
 
 }
@@ -249,6 +254,19 @@ void ESP8266_GNSS_PPS_Interrupt_handler() {
 
 static unsigned long ESP8266_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
+}
+
+static bool ESP8266_Baro_setup() {
+  if (hw_info.rf != RF_IC_SX1276 || RF_SX1276_RST_is_connected)
+    return false;
+
+#if DEBUG
+    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
+#endif
+
+  Wire.pins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+
+  return true;
 }
 
 SoC_ops_t ESP8266_ops = {
@@ -274,11 +292,13 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_swSer_begin,
   ESP8266_swSer_enableRx,
   NULL, /* ESP8266 has no built-in Bluetooth */
-  ESP8266_OLED_loop,
+  ESP8266_Display_setup,
+  ESP8266_Display_loop,
   ESP8266_Battery_setup,
   ESP8266_Battery_voltage,
   ESP8266_GNSS_PPS_Interrupt_handler,
-  ESP8266_get_PPS_TimeMarker
+  ESP8266_get_PPS_TimeMarker,
+  ESP8266_Baro_setup
 };
 
 #endif /* ESP8266 */

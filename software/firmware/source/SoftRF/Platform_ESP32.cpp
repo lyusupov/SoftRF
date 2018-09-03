@@ -31,12 +31,13 @@
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
 #include "LEDHelper.h"
+#include "BaroHelper.h"
 
 #include <battery.h>
 #include <U8x8lib.h>
 
 // RFM95W pin mapping
-const lmic_pinmap lmic_pins = {
+lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = SOC_GPIO_PIN_RST,
@@ -73,6 +74,8 @@ static int esp32_board = ESP32_DEVKIT; /* default */
 
 static portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
 
+static bool GPIO_21_22_are_busy = false;
+
 static union {
   uint8_t efuse_mac[6];
   uint64_t chipmacid;
@@ -107,37 +110,17 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
-  ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
-
-  /* Pre-init 1st ESP32 I2C bus to stick on these pins */
-  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-
-  /* SSD1306 I2C OLED probing */
-  Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
-  Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-  if (Wire1.endTransmission() == 0) {
-    u8x8 = &u8x8_ttgo;
-    esp32_board = ESP32_TTGO_V2_OLED;
-  } else {
-    Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-    if (Wire1.endTransmission() == 0) {
-      u8x8 = &u8x8_heltec;
-      esp32_board = ESP32_HELTEC_OLED;
-    }
-  }
-
-  if (u8x8) {
-    u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(2, 3, "SoftRF");
-  }
-
   /* Temporary workaround until issues with PSRAM will settle down */
   if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
     hw_info.model = SOFTRF_MODEL_PRIME_MK2;
+  }
+
+  ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
+    hw_info.revision = 2;
+    lmic_pins.rst = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
   }
 }
 
@@ -334,19 +317,16 @@ static void ESP32_SPI_begin()
 static void ESP32_swSer_begin(unsigned long baud)
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+
+    Serial.print(F("INFO: TTGO T-Beam GPS module (rev. 0"));
+    Serial.print(hw_info.revision);
+    Serial.println(F(") is detected."));
+
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_RX, SOC_GPIO_PIN_TBEAM_TX);
   } else {
     /* open Standalone's GNSS port */
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   }
-
-#if 0
-  if (esp32_board == ESP32_TTGO_V2_OLED) Serial.println(F("INFO: TTGO+OLED is detected."));
-  if (esp32_board == ESP32_HELTEC_OLED) Serial.println(F("INFO: HELTEC+OLED is detected."));
-  Serial.print(F("INFO: esp32_board = "));
-  Serial.println(esp32_board, HEX);
-#endif
-
 }
 
 static void ESP32_swSer_enableRx(boolean arg)
@@ -368,7 +348,48 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_FANET]     = "F"
 };
 
-static void ESP32_OLED_loop()
+static byte ESP32_Display_setup()
+{
+  byte rval = DISPLAY_NONE;
+
+  /* SSD1306 I2C OLED probing */
+  if (GPIO_21_22_are_busy) {
+    Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    if (Wire1.endTransmission() == 0) {
+      u8x8 = &u8x8_heltec;
+      esp32_board = ESP32_HELTEC_OLED;
+      rval = DISPLAY_OLED_HELTEC;
+    }
+  } else {
+    Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    if (Wire1.endTransmission() == 0) {
+      u8x8 = &u8x8_ttgo;
+      esp32_board = ESP32_TTGO_V2_OLED;
+      rval = DISPLAY_OLED_TTGO;
+    } else {
+      Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      if (Wire1.endTransmission() == 0) {
+        u8x8 = &u8x8_heltec;
+        esp32_board = ESP32_HELTEC_OLED;
+        rval = DISPLAY_OLED_HELTEC;
+      }
+    }
+  }
+
+  if (u8x8) {
+    u8x8->begin();
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+    u8x8->clear();
+    u8x8->draw2x2String(2, 3, "SoftRF");
+  }
+
+  return rval;
+}
+
+static void ESP32_Display_loop()
 {
   char buf[16];
   uint32_t disp_value;
@@ -433,18 +454,31 @@ static void ESP32_OLED_loop()
   }
 }
 
-static void ESP32_Battery_setup()
-{
-  calibrate_voltage(esp32_board == ESP32_TTGO_T_BEAM ?
-                    ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
-}
-
 static float ESP32_Battery_voltage()
 {
   float voltage = ((float) read_voltage()) * 0.001 ;
 
   /* T-Beam has voltage divider 100k/100k on board */
-  return (esp32_board == ESP32_TTGO_T_BEAM ? 2 * voltage : voltage);
+  return (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? 2 * voltage : voltage);
+}
+
+static void ESP32_Battery_setup()
+{
+  calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+                    ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+#if 0
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+    float voltage = ESP32_Battery_voltage();
+    // Serial.println(voltage);
+    if (voltage < 2.0) {
+
+      /* work around https://github.com/LilyGO/TTGO-T-Beam/issues/3 */
+      WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+      Serial.println(F("WARNING: Low battery voltage is detected!"
+                       " Brownout control is disabled."));
+    }
+  }
+#endif
 }
 
 static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler() {
@@ -459,6 +493,41 @@ static unsigned long ESP32_get_PPS_TimeMarker() {
   rval = PPS_TimeMarker;
   portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
   return rval;
+}
+
+static bool ESP32_Baro_setup() {
+
+  if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
+
+    if (hw_info.rf != RF_IC_SX1276 || RF_SX1276_RST_is_connected)
+      return false;
+
+#if DEBUG
+    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
+#endif
+
+    /* Pre-init 1st ESP32 I2C bus to stick on these pins */
+    Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+
+  } else {
+
+    /* Start from 1st I2C bus */
+    Wire.begin(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
+    if (Baro_probe())
+      return true;
+
+    if (hw_info.revision == 2)
+      return false;
+
+    /* Try out OLED I2C bus */
+    Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
+    if (!Baro_probe())
+      return false;
+
+    GPIO_21_22_are_busy = true;
+  }
+
+  return true;
 }
 
 SoC_ops_t ESP32_ops = {
@@ -484,11 +553,13 @@ SoC_ops_t ESP32_ops = {
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
   &ESP32_Bluetooth_ops,
-  ESP32_OLED_loop,
+  ESP32_Display_setup,
+  ESP32_Display_loop,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
   ESP32_GNSS_PPS_Interrupt_handler,
-  ESP32_get_PPS_TimeMarker
+  ESP32_get_PPS_TimeMarker,
+  ESP32_Baro_setup
 };
 
 #endif /* ESP32 */
