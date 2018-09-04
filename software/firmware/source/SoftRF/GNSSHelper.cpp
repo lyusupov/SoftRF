@@ -604,9 +604,11 @@ void PickGNSSFix()
           }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-          if (AirConnectClient && AirConnectClient.connected()){
-            AirConnectClient.write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
-            AirConnectClient.write('\n');
+          for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+            if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+              AirConnectClient[acc_ndx].write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
+              AirConnectClient[acc_ndx].write('\n');
+            }
           }
 #endif
           break;

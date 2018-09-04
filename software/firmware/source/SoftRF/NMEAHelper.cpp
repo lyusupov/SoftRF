@@ -29,7 +29,7 @@
 
 #if defined(AIRCONNECT_IS_ACTIVE)
 WiFiServer AirConnectServer(AIR_CONNECT_PORT);
-WiFiClient AirConnectClient;
+WiFiClient AirConnectClient[MAX_AIRCONNECT_CLIENTS];
 #endif
 
 char NMEABuffer[128]; //buffer for NMEA data
@@ -69,10 +69,20 @@ void NMEA_setup()
 void NMEA_loop()
 {
 #if defined(AIRCONNECT_IS_ACTIVE)
+  uint8_t i;
+
   if (AirConnectServer.hasClient()){
-    if (!AirConnectClient || !AirConnectClient.connected()){
-      if(AirConnectClient) AirConnectClient.stop();
-      AirConnectClient = AirConnectServer.available();
+    for(i = 0; i < MAX_AIRCONNECT_CLIENTS; i++){
+      // find free/disconnected spot
+      if (!AirConnectClient[i] || !AirConnectClient[i].connected()){
+        if(AirConnectClient[i]) AirConnectClient[i].stop();
+        AirConnectClient[i] = AirConnectServer.available();
+        break;
+      }
+    }
+    if (i >= MAX_AIRCONNECT_CLIENTS) {
+      // no free/disconnected spot so reject
+      AirConnectServer.available().stop();
     }
   }
 #endif
@@ -159,8 +169,10 @@ void NMEA_Export()
             }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-            if (AirConnectClient && AirConnectClient.connected()){
-              AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
+            for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+              if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+                AirConnectClient[acc_ndx].write(NMEABuffer, strlen(NMEABuffer));
+              }
             }
 #endif
 
@@ -208,8 +220,10 @@ void NMEA_Export()
       }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-      if (AirConnectClient && AirConnectClient.connected()){
-        AirConnectClient.write(NMEABuffer, strlen(NMEABuffer));
+      for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+          AirConnectClient[acc_ndx].write(NMEABuffer, strlen(NMEABuffer));
+        }
       }
 #endif
     }
@@ -322,8 +336,10 @@ void NMEA_Position()
       }
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-      if (AirConnectClient && AirConnectClient.connected()){
-        AirConnectClient.write((char *) nmealib_buf.buffer, gen_sz);
+      for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+          AirConnectClient[acc_ndx].write((char *) nmealib_buf.buffer, gen_sz);
+        }
       }
 #endif
     }

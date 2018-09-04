@@ -28,7 +28,8 @@ void NMEA_Export(void);
 void NMEA_Position(void);
 
 #if defined(AIRCONNECT_IS_ACTIVE)
-extern WiFiClient AirConnectClient;
+#define MAX_AIRCONNECT_CLIENTS    2
+extern WiFiClient AirConnectClient[MAX_AIRCONNECT_CLIENTS];
 #endif
 
 #endif /* NMEAHELPER_H */
