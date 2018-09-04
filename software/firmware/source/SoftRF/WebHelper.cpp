@@ -368,7 +368,7 @@ void handleRoot() {
   char str_alt[16];
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2048);
+  char *Root_temp = (char *) malloc(2200);
   if (Root_temp == NULL) {
     return;
   }
@@ -378,7 +378,7 @@ void handleRoot() {
   dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2048,
+  snprintf_P ( Root_temp, 2200,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -386,9 +386,9 @@ void handleRoot() {
   </head>\
 <body>\
  <table width=100%%>\
- <tr><td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td>\
- <td align=center><h1>SoftRF status</h1></td>\
- <td align=right><img src='/logo.png'></td></tr>\
+  <tr><!-- <td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td> -->\
+  <td align=center><h1>SoftRF status</h1></td>\
+  <!-- <td align=right><img src='/logo.png'></td> --></tr>\
  </table>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
@@ -403,10 +403,15 @@ void handleRoot() {
  </table>\
  <table width=100%%>\
   <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
+  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Packets:</th></tr>\
-  <tr><th align=left>&nbsp;&nbsp;&nbsp;&nbsp;- transmitted</th><td align=right>%u</td></tr>\
-  <tr><th align=left>&nbsp;&nbsp;&nbsp;&nbsp;- received</th><td align=right>%u</td></tr>\
+ </table>\
+ <table width=100%%>\
+   <tr><th align=left>Packets</th>\
+    <td align=right><table><tr>\
+     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
+     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
+   </tr></table>\</td></tr>\
  </table>\
  <h2 align=center>Most recent GNSS fix</h2>\
  <table width=100%%>\
@@ -435,7 +440,8 @@ void handleRoot() {
     GNSS_name[hw_info.gnss],
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
-    hr, min % 60, sec % 60, str_Vcc, tx_packets_counter, rx_packets_counter,
+    hr, min % 60, sec % 60, ESP.getFreeHeap(),
+    str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
   SoC->swSer_enableRx(false);

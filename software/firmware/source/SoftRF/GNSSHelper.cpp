@@ -74,6 +74,7 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_U6]      = "U6",
   [GNSS_MODULE_U7]      = "U7",
   [GNSS_MODULE_U8]      = "U8",
+  [GNSS_MODULE_U9]      = "U9",
   [GNSS_MODULE_MAV]     = "MAV"
 };
 
