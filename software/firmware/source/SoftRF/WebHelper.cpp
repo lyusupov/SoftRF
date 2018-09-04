@@ -416,7 +416,7 @@ void handleRoot() {
  <h2 align=center>Most recent GNSS fix</h2>\
  <table width=100%%>\
   <tr><th align=left>Time</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Sattelites</th><td align=right>%d</td></tr>\
+  <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Altitude</th><td align=right>%s</td></tr>\
