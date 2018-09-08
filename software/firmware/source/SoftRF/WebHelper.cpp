@@ -567,12 +567,12 @@ void handleNotFound() {
 
 void handleAbout() {
 
-  char *About_temp = (char *) malloc(2048);
+  char *About_temp = (char *) malloc(2400);
   if (About_temp == NULL) {
     return;
   }
 
-  snprintf_P ( About_temp, 2048,
+  snprintf_P ( About_temp, 2400,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -582,30 +582,35 @@ void handleAbout() {
 <h1 align=center>About</h1>\
 <p>This firmware is a part of open SoftRF project</p>\
 <p>URL: http://github.com/lyusupov/SoftRF</p>\
-<p>Author: Linar Yusupov</p>\
+<p>Author: <b>Linar Yusupov</b></p>\
 <p>E-mail: linar.r.yusupov@gmail.com</p>\
 <h2 align=center>Credits</h2>\
-Arduino core for ESP8266 is developed and supported by ESP8266 Community<br>\
-nRF905 library is developed by Zak Kemble<br>\
-flarm_decode is developed by Stanislaw Pusep<br>\
-Arduino Time Library is developed by Paul Stoffregen<br>\
-Aircraft and MAVLink Libraries are developed by Andy Little<br>\
-TinyGPS++ and PString Libraries are developed by Mikal Hart<br>\
-Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others<br>\
-TrueRandom Library is developed by Peter Knight<br>\
-IBM LMIC framework is maintained by Matthijs Kooijman<br>\
-ESP8266FtpServer is developed by David Paiva<br>\
-Lib_crc is developed by Lammert Bies<br>\
-OGN library is developed by Pawel Jalocha<br>\
-NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts<br>\
-ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)<br>\
-Adafruit BMP085 library is developed by Limor Fried and Ladyada<br>\
-Adafruit BMP280 library is developed by Kevin Townsend<br>\
-Adafruit MPL3115A2 library is developed by Limor Fried and Kevin Townsend<br>\
-U8g2 monochrome LCD, OLED and eInk library is developed by Oliver Kraus<br>\
-NeoPixelBus library is developed by Michael Miller<br>\
+<p align=center>(in historical order)</p>\
+<table width=100%%>\
+<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
+<tr><th align=left>Zak Kemble</th><td align=left>nRF905 library</td></tr>\
+<tr><th align=left>Stanislaw Pusep</th><td align=left>flarm_decode</td></tr>\
+<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
+<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString Libraries</td></tr>\
+<tr><th align=left>Phil Burgess</th><td align=left>Adafruit NeoPixel Library</td></tr>\
+<tr><th align=left>Andy Little</th><td align=left>Aircraft and MAVLink Libraries</td></tr>\
+<tr><th align=left>Peter Knight</th><td align=left>TrueRandom Library</td></tr>\
+<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC framework for Arduino</td></tr>\
+<tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
+<tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
+<tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
+<tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
+<tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
+<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino core for ESP32</td></tr>\
+<tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
+<tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
+<tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
+<tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
+<tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
+<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam board</td></tr>\
+</table>\
 <hr>\
-Copyright (C) 2015-2018 Linar Yusupov\
+Copyright (C) 2015-2018 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>")
   );
