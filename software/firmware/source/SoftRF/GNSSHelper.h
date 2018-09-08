@@ -34,6 +34,19 @@ enum
   GNSS_MODULE_MAV   /* MAVLink */
 };
 
+/*
+ * Both GGA and RMC NMEA sentences are required.
+ * No fix when any of them is missing or lost.
+ * Valid date is critical for legacy protocol (only).
+ */
+#define NMEA_EXP_TIME  3500 /* 3.5 seconds */
+#define isValidFix() ( gnss.location.isValid()               && \
+                       gnss.altitude.isValid()               && \
+                       gnss.date.isValid()                   && \
+                      (gnss.location.age() <= NMEA_EXP_TIME) && \
+                      (gnss.altitude.age() <= NMEA_EXP_TIME) && \
+                      (gnss.date.age()     <= NMEA_EXP_TIME))
+
 byte GNSS_setup();
 
 void GNSSTimeSync(void);

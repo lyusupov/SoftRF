@@ -71,8 +71,6 @@
 
 #define isTimeToDisplay() (millis() - LEDTimeMarker > 1000)
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
-#define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
-#define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
 
 ufo_t ThisAircraft;
 hardware_info_t hw_info = {

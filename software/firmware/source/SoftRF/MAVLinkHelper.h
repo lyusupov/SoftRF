@@ -28,6 +28,8 @@
 
 #include "SoftRF.h"
 
+#define MAVisValidFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
+
 void MAVLink_setup();
 void PickMAVLinkFix();
 void MAVLinkTimeSync();

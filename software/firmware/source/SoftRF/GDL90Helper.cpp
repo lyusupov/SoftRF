@@ -31,7 +31,6 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 
-#define isValidFix() (gnss.location.isValid() && (gnss.location.age() <= 3000))
 #define ADDR_TO_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
