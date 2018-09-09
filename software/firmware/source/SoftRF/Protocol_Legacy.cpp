@@ -28,6 +28,7 @@
 #include "SoftRF.h"
 #include "RFHelper.h"
 #include "Protocol_Legacy.h"
+#include "EEPROMHelper.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
   .type            = RF_PROTOCOL_LEGACY,
@@ -96,19 +97,6 @@ void btea(uint32_t *v, int8_t n, const uint32_t key[4]) {
     }
 }
 
-/* https://metacpan.org/source/GRAY/Geo-Distance-XS-0.13/XS.xs */
-const float DEG_RADS = M_PI / 180.;
-const float KILOMETER_RHO = 6371.64;
-float haversine(float lat1, float lon1, float lat2, float lon2) {
-    lat1 *= DEG_RADS; lon1 *= DEG_RADS;
-    lat2 *= DEG_RADS; lon2 *= DEG_RADS;
-    float a = sin(0.5 * (lat2 - lat1));
-    float b = sin(0.5 * (lon2 - lon1));
-    float c = a * a + cos(lat1) * cos(lat2) * b * b;
-    float d = 2. * atan2(sqrt(c), sqrt(fabs(1. - c)));
-    return d;
-}
-
 /* http://pastebin.com/YK2f8bfm */
 long obscure(uint32_t key, uint32_t seed) {
     uint32_t m1 = seed * (key ^ (key >> 16));
@@ -145,8 +133,10 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
       pkt_parity += parity(*(((unsigned char *) pkt) + ndx));
     }
     if (pkt_parity % 2) {
-        Serial.print(F("bad parity of decoded packet: "));
-        Serial.println(pkt_parity % 2, HEX);
+        if (settings->nmea_p) {
+          StdOut.print(F("$PSRFE,bad parity of decoded packet: "));
+          StdOut.println(pkt_parity % 2, HEX);
+        }
         return false;
     }
 
