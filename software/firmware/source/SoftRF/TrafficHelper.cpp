@@ -26,7 +26,6 @@
 #include "SoftRF.h"
 
 unsigned long UpdateTrafficTimeMarker = 0;
-#define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > 1000)
 
 ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 
@@ -120,6 +119,23 @@ static int8_t Alarm_Legacy(ufo_t *this_aircraft, ufo_t *fop)
   return rval;
 }
 
+static void Traffic_Update(int ndx)
+{
+  Container[ndx].distance = gnss.distanceBetween( ThisAircraft.latitude,
+                                                  ThisAircraft.longitude,
+                                                  Container[ndx].latitude,
+                                                  Container[ndx].longitude);
+
+  Container[ndx].bearing = gnss.courseTo( ThisAircraft.latitude,
+                                          ThisAircraft.longitude,
+                                          Container[ndx].latitude,
+                                          Container[ndx].longitude);
+
+  if (Alarm_Level) {
+    Container[ndx].alarm_level = (*Alarm_Level)(&ThisAircraft, &Container[ndx]);
+  }
+}
+
 void ParseData()
 {
 
@@ -144,10 +160,12 @@ void ParseData()
 
         if (Container[i].addr == fo.addr) {
           Container[i] = fo;
-           break;
+          Traffic_Update(i);
+          break;
         } else {
           if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
             Container[i] = fo;
+            Traffic_Update(i);
             break;
           }
         }
@@ -182,21 +200,8 @@ void Traffic_loop()
 
       if (Container[i].addr &&
           (ThisAircraft.timestamp - Container[i].timestamp) <= ENTRY_EXPIRATION_TIME) {
-
-        Container[i].distance = gnss.distanceBetween( ThisAircraft.latitude,
-                                                      ThisAircraft.longitude,
-                                                      Container[i].latitude,
-                                                      Container[i].longitude);
-
-        Container[i].bearing = gnss.courseTo( ThisAircraft.latitude,
-                                              ThisAircraft.longitude,
-                                              Container[i].latitude,
-                                              Container[i].longitude);
-
-        if (Alarm_Level) {
-          Container[i].alarm_level = (*Alarm_Level)(&ThisAircraft, &Container[i]);
-        }
-
+        if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL)
+          Traffic_Update(i);
       } else {
         Container[i] = EmptyFO;
       }
