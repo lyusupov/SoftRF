@@ -419,7 +419,7 @@ void handleRoot() {
   <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Altitude</th><td align=left>&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
+  <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
  </table>\
  <hr>\
  <table width=100%%>\
