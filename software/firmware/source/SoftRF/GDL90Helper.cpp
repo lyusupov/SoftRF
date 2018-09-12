@@ -177,6 +177,15 @@ void *msgType10and20(ufo_t *aircraft)
 {
   int altitude;
 
+  /*
+   * The Altitude field "ddd" contains the pressure altitude
+   * (referenced to 29.92 inches Hg), encoded using 25-foot resolution,
+   * offset by 1,000 feet.
+   * The 0xFFF value represents that the pressure altitude is invalid.
+   * The minimum altitude that can be represented is -1,000 feet.
+   * The maximum valid altitude is +101,350 feet.
+   */
+
   /* If the aircraft's data has standard pressure altitude - make use it */
   if (aircraft->pressure_altitude != 0.0) {
     altitude = (int)(aircraft->pressure_altitude * _GPS_FEET_PER_METER);
@@ -185,7 +194,7 @@ void *msgType10and20(ufo_t *aircraft)
     float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
     altitude = (int)((aircraft->altitude + altDiff) * _GPS_FEET_PER_METER);
   } else {
-    /* If no other choice - report GNSS altitude as pressure altitude */
+    /* If there are no any choice - report GNSS AMSL altitude as pressure altitude */
     altitude = (int)(aircraft->altitude * _GPS_FEET_PER_METER);
   }
   altitude = (altitude + 1000) / 25; /* Resolution = 25 feet */
@@ -253,8 +262,15 @@ void *msgType10and20(ufo_t *aircraft)
 
 void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
 {
-  uint16_t altitude = (int16_t)(aircraft->altitude * _GPS_FEET_PER_METER / 5);
   uint16_t vfom = 0x000A;
+
+  /*
+   * The Geo Altitude field is a 16-bit signed integer that represents
+   * the geometric altitude (height above WGS-84 ellipsoid),
+   * encoded using 5-foot resolution
+   */
+  uint16_t altitude = (int16_t)((aircraft->altitude + aircraft->geoid_separation) *
+                        _GPS_FEET_PER_METER / 5);
 
   GeometricAltitude.geo_altitude  = ((altitude & 0x00FF) << 8) | ((altitude & 0xFF00) >> 8) ;
   GeometricAltitude.VFOM          = ((vfom & 0x00FF) << 8) | ((vfom & 0xFF00) >> 8);
