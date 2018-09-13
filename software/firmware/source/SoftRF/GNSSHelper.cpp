@@ -588,29 +588,18 @@ void PickGNSSFix()
             write_size += sentence_size + strlen(csum_ptr);
           }
 
-          Serial.write((uint8_t *) &GNSSbuf[ndx], write_size);
-          Serial.write('\n');
-
-          if (SoC->Bluetooth) {
-            SoC->Bluetooth->write((uint8_t *) &GNSSbuf[ndx], write_size);
-            SoC->Bluetooth->write((uint8_t *) "\n", 1);
+          /*
+           * Work around issue with "always 0.0,M" GGA geoid separation value
+           * given by some Chinese GNSS chipsets
+           */
+          if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
+              !strncmp((char *) &GNSSbuf[ndx+3], "GGA,", strlen("GGA,")) &&
+              gnss.separation.meters() == 0.0) {
+            NMEA_GGA();
+          } else {
+            NMEA_Out(&GNSSbuf[ndx], write_size, true);
           }
 
-          if (settings->nmea_u) {
-            // ASSERT(sizeof(UDPpacketBuffer) > sizeof(GNSSbuf))
-            memcpy(UDPpacketBuffer, &GNSSbuf[ndx], write_size);
-            UDPpacketBuffer[write_size] = '\n';
-            SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *)UDPpacketBuffer, write_size + 1);
-          }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-          for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-            if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-              AirConnectClient[acc_ndx].write(&GNSSbuf[ndx], GNSS_cnt - ndx + 1);
-              AirConnectClient[acc_ndx].write('\n');
-            }
-          }
-#endif
           break;
         }
       }

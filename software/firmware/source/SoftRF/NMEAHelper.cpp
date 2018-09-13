@@ -88,6 +88,43 @@ void NMEA_loop()
 #endif
 }
 
+void NMEA_Out(byte *buf, size_t size, bool nl)
+{
+  Serial.write(buf, size);
+  if (nl)
+    Serial.write('\n');
+
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->write(buf, size);
+    if (nl)
+      SoC->Bluetooth->write((byte *) "\n", 1);
+  }
+
+  if (settings->nmea_u) {
+    size_t udp_size = size;
+
+    if (size >= sizeof(UDPpacketBuffer))
+      udp_size = sizeof(UDPpacketBuffer) - 1;
+    memcpy(UDPpacketBuffer, buf, udp_size);
+
+    if (nl)
+      UDPpacketBuffer[udp_size] = '\n';
+
+    SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) UDPpacketBuffer,
+                            nl ? udp_size + 1 : udp_size);
+  }
+
+#if defined(AIRCONNECT_IS_ACTIVE)
+  for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+    if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+      AirConnectClient[acc_ndx].write(buf, size);
+      if (nl)
+        AirConnectClient[acc_ndx].write('\n');
+    }
+  }
+#endif
+}
+
 void NMEA_Export()
 {
     int bearing;
@@ -159,22 +196,7 @@ void NMEA_Export()
             csum_ptr = NMEABuffer + strlen(NMEABuffer);
             snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
 
-            Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            if (SoC->Bluetooth) {
-              SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-            }
-
-            if (settings->nmea_u) {
-              SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
-            }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-            for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-              if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-                AirConnectClient[acc_ndx].write(NMEABuffer, strlen(NMEABuffer));
-              }
-            }
-#endif
+            NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
 
             /* Most close traffic is treated as highest priority target */
             if (distance < HP_distance) {
@@ -209,23 +231,7 @@ void NMEA_Export()
       csum_ptr = NMEABuffer + strlen(NMEABuffer);
       snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
 
-      Serial.write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write((uint8_t *) NMEABuffer, strlen(NMEABuffer));
-      }
-
-      if (settings->nmea_u) {
-        SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) NMEABuffer, strlen(NMEABuffer));
-      }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-      for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-          AirConnectClient[acc_ndx].write(NMEABuffer, strlen(NMEABuffer));
-        }
-      }
-#endif
+      NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
     }
 }
 
@@ -252,7 +258,8 @@ void NMEA_Position()
     info.longitude = ((int) ThisAircraft.longitude) * 100.0;
     info.longitude += (ThisAircraft.longitude - (int) ThisAircraft.longitude) * 60.0;
     info.speed = ThisAircraft.speed * _GPS_KMPH_PER_KNOT;
-    info.elevation = ThisAircraft.altitude;
+    info.elevation = ThisAircraft.altitude; /* above MSL */
+    info.height = LookupSeparation(ThisAircraft.latitude, ThisAircraft.longitude);
     info.track = ThisAircraft.course;
 
 #if 0
@@ -269,6 +276,7 @@ void NMEA_Position()
     nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LON);
     nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SPEED);
     nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_ELV);
+    nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HEIGHT);
 
     nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_TRACK);
 #if 0
@@ -327,21 +335,57 @@ void NMEA_Position()
     }
 
     if (gen_sz) {
-      Serial.write((uint8_t *) nmealib_buf.buffer, gen_sz);
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write((uint8_t *) nmealib_buf.buffer, gen_sz);
-      }
-      if (settings->nmea_u) {
-        SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) nmealib_buf.buffer, gen_sz);
-      }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-      for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-          AirConnectClient[acc_ndx].write((char *) nmealib_buf.buffer, gen_sz);
-        }
-      }
-#endif
+      NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);
     }
+  }
+}
+
+void NMEA_GGA()
+{
+  NmeaInfo info;
+
+  float latitude = gnss.location.lat();
+  float longitude = gnss.location.lng();
+
+  nmeaInfoClear(&info);
+
+  info.utc.hour = gnss.time.hour();
+  info.utc.min = gnss.time.minute();
+  info.utc.sec = gnss.time.second();
+  info.utc.hsec = gnss.time.centisecond();
+
+  info.latitude = ((int) latitude) * 100.0;
+  info.latitude += (latitude - (int) latitude) * 60.0;
+  info.longitude = ((int) longitude) * 100.0;
+  info.longitude += (longitude - (int) longitude) * 60.0;
+
+  info.sig = (NmeaSignal) gnss.location.Quality();
+  info.satellites.inViewCount = gnss.satellites.value();
+
+  info.hdop = gnss.hdop.hdop();
+
+  info.elevation = gnss.altitude.meters(); /* above MSL */
+  info.height = gnss.separation.meters();
+
+  if (info.height == 0.0) {
+    info.height = LookupSeparation(latitude, longitude);
+    info.elevation -= info.height;
+  }
+
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_UTCTIME);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LAT);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LON);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SIG);
+  /* Should be SATINUSECOUNT, but it seems to be a bug in NMEALib */
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SATINVIEWCOUNT);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HDOP);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_ELV);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HEIGHT);
+
+  size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
+                                        NMEALIB_SENTENCE_GPGGA );
+
+  if (gen_sz) {
+    NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);
   }
 }
