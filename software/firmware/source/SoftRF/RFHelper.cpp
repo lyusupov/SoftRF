@@ -27,8 +27,6 @@
 #include "WebHelper.h"
 #include "MAVLinkHelper.h"
 
-#include <freqplan.h>
-
 #if LOGGER_IS_ENABLED
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */

@@ -26,23 +26,12 @@
 #include <hal/hal.h>
 #include <lib_crc.h>
 #include <protocol.h>
+#include <freqplan.h>
 
 #include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "Protocol_Legacy.h"
 #include "Protocol_P3I.h"
-
-enum
-{
-	RF_BAND_AUTO,
-	RF_BAND_EU,	 /* 868.4 MHz band */
-	RF_BAND_US,	 /* 915 MHz band */
-	RF_BAND_AU,	 /* 921 MHz band */
-	RF_BAND_NZ,	 /* 869.250 MHz band */
-	RF_BAND_RU,	 /* 868.8 MHz band */
-	RF_BAND_CN,	 /* 433 MHz band */
-	RF_BAND_UK 	 /* 869.52 MHz band */
-};
 
 enum
 {

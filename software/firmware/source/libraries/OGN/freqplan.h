@@ -5,6 +5,18 @@
 
 //#define TEST_PAW_ON_NICERF_SV610_FW466
 
+enum
+{
+	RF_BAND_AUTO = 0,
+	RF_BAND_EU   = 1,	/* 868.4 MHz band */
+	RF_BAND_US   = 2,	/* 915 MHz band */
+	RF_BAND_AU   = 3,	/* 921 MHz band */
+	RF_BAND_NZ   = 4,	/* 869.250 MHz band */
+	RF_BAND_RU   = 5,	/* 868.8 MHz band */
+	RF_BAND_CN   = 6,	/* 470 MHz band */
+	RF_BAND_UK   = 7  /* 869.52 MHz band */
+};
+
 class FreqPlan
 { public:
    uint8_t  Plan;        // 1=Europe, 2=USA/Canada, 3=Australia/Chile, 4=New Zealand
@@ -12,21 +24,41 @@ class FreqPlan
    uint32_t BaseFreq;    // [Hz] base channel (#0) frequency
    uint32_t ChanSepar;   // [Hz] channel spacing
    static const uint8_t MaxChannels=65;
+   uint8_t  MaxTxPower;  // max. EIRP in dBm
 
   public:
    void setPlan(uint8_t NewPlan=0) // preset for a given frequency plan
-   { Plan=NewPlan;
-          if(Plan==2) { BaseFreq=902200000; ChanSepar=400000; Channels=65; } // USA, 902-928 MHz
-     else if(Plan==3) { BaseFreq=917000000; ChanSepar=400000; Channels=24; } // Australia and South America
-     else if(Plan==4) { BaseFreq=869250000; ChanSepar=200000; Channels= 1; } // New Zealand
-     else if(Plan==5) { BaseFreq=868800000; ChanSepar=200000; Channels= 1; } // Russia
-     else if(Plan==6) { BaseFreq=470100000; ChanSepar=200000; Channels= 1 /* 18 */; } // China, 470-473.6 MHz
+   {  Plan=NewPlan;
+
+      switch (Plan)
+      {
+        case RF_BAND_US:
+          { BaseFreq=902200000; ChanSepar=400000; Channels=65; MaxTxPower = 30; } // USA, 902-928 MHz
+          break;
+        case RF_BAND_AU:
+          { BaseFreq=917000000; ChanSepar=400000; Channels=24; MaxTxPower = 30; } // Australia and South America
+          break;
+        case RF_BAND_NZ:
+          { BaseFreq=869250000; ChanSepar=200000; Channels= 1; MaxTxPower = 10; } // New Zealand
+          break;
+        case RF_BAND_RU:
+          { BaseFreq=868800000; ChanSepar=200000; Channels= 1; MaxTxPower = 14; } // Russia
+          break;
+        case RF_BAND_CN:
+          { BaseFreq=470100000; ChanSepar=200000; Channels= 1 /* 18 */; MaxTxPower = 17; } // China, 470-473.6 MHz
+          break;
+        case RF_BAND_UK:
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
-     else if(Plan==7) { BaseFreq=869525000; ChanSepar=200000; Channels= 1; } // PilotAware (UK)
+          { BaseFreq=869525000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // PilotAware (UK)0
 #else
-     else if(Plan==7) { BaseFreq=869920000; ChanSepar=200000; Channels= 1; } // Test PAW on NiceRF SV6X0
+          { BaseFreq=869920000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // Test PAW on NiceRF SV6X0
 #endif
-     else             { BaseFreq=868200000; ChanSepar=200000; Channels= 2; } // Europe
+          break;
+        case RF_BAND_EU:
+        default:
+          { BaseFreq=868200000; ChanSepar=200000; Channels= 2; MaxTxPower = 14; } // Europe
+          break;
+      }
    }
 
    void setPlan(int32_t Latitude, int32_t Longitude)
@@ -38,7 +70,7 @@ class FreqPlan
    { static const char *Name[8] = { "Default", "Europe/Africa",
        "USA/Canada", "Australia/South America", "New Zealand",
        "Russia", "China", "PilotAware (UK)" } ;
-     if(Plan>4) return 0;
+     if(Plan>RF_BAND_UK) return 0;
      return Name[Plan]; }
 
    uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or FLARM, UTC time, slot: 0 or 1
@@ -62,11 +94,11 @@ class FreqPlan
    { uint8_t Channel=getChannel(Time, Slot, OGN); return BaseFreq+ChanSepar*Channel; } // return frequency [Hz] for given UTC time and slot
 
    uint8_t static calcPlan(int32_t Latitude, int32_t Longitude) // get the frequency plan from Lat/Lon: 1 = Europe + Africa, 2 = USA/CAnada, 3 = Australia + South America, 4$
-   { if( (Longitude>=(-20*600000)) && (Longitude<=(60*600000)) ) return 1; // between -20 and 60 deg Lat => Europe + Africa: 868MHz band
+   { if( (Longitude>=(-20*600000)) && (Longitude<=(60*600000)) ) return RF_BAND_EU; // between -20 and 60 deg Lat => Europe + Africa: 868MHz band
      if( Latitude<(20*600000) )                                            // below 20deg latitude
-     { if( ( Longitude>(164*600000)) && (Latitude<(-30*600000)) && (Latitude>(-48*600000)) ) return 4;  // => New Zealand
-       return 3; }                                                         // => Australia + South America: upper half of 915MHz band
-     return 2; }                                                           // => USA/Canada: full 915MHz band
+     { if( ( Longitude>(164*600000)) && (Latitude<(-30*600000)) && (Latitude>(-48*600000)) ) return RF_BAND_NZ;  // => New Zealand
+       return RF_BAND_AU; }                                                // => Australia + South America: upper half of 915MHz band
+     return RF_BAND_US; }                                                  // => USA/Canada: full 915MHz band
 
   private:
    static uint32_t FreqHopHash(uint32_t Time)
