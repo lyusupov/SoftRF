@@ -277,6 +277,13 @@ static u1_t randbuf[16];
 
 #ifdef CFG_sx1276_radio
 #define LNA_RX_GAIN (0x20|0x1)
+// PA config
+#define PA_BOOST            0x80
+#define DAC_HIGH_POWER      0x07    // use for +20 dBm power output
+#define DAC_DEFAULT_POWER   0x04    // use for +17 dBm or lower output
+// over current config
+#define DEFAULT_CURRENT     0x2b    // default over current setting (100 mA)
+#define HIGHPOWER_CURRENT   0x31    // setting for +20 dBm output (140 mA)
 #elif CFG_sx1272_radio
 #define LNA_RX_GAIN (0x20|0x03)
 #else
@@ -450,15 +457,30 @@ static void configChannel () {
 static void configPower () {
 #ifdef CFG_sx1276_radio
     // set PA config (2-17 dBm using PA_BOOST)
-    s1_t pw = (s1_t)LMIC.txpow;
-    if(pw > 17) {
-        pw = 17;
-    } else if(pw < 2) {
-        pw = 2;
+    s1_t pw = (s1_t) LMIC.txpow;
+
+    if (pw < 2) {
+      pw = 2;
     }
+
+    u1_t dac = (readReg(RegPaDac) & 0xF8) | \
+                (pw > 17 ? DAC_HIGH_POWER : DAC_DEFAULT_POWER);
+
+    /*
+     * set current limit to:
+     * 140 mA for >17 dBm
+     * 100 mA - by default
+     */
+    u1_t ocp = (pw > 17 ? HIGHPOWER_CURRENT : DEFAULT_CURRENT);
+
+    if (pw > 17) {
+      pw = 17;
+    }
+
     // check board type for BOOST pin
-    writeReg(RegPaConfig, (u1_t)(0x80|((pw-2)&0xf)));
-    writeReg(RegPaDac, readReg(RegPaDac)|0x4);
+    writeReg(RegOcp, ocp);
+    writeReg(RegPaDac, dac);
+    writeReg(RegPaConfig, (u1_t)(PA_BOOST|((pw-2)&0xf)));
 
 #elif CFG_sx1272_radio
     // set PA config (2-17 dBm using PA_BOOST)
