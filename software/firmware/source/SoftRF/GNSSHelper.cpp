@@ -510,23 +510,35 @@ void PickGNSSFix()
 {
   bool isValidSentence = false;
   int ndx;
+  int c = -1;
 
   /*
    * Check SW, HW and BT UARTs for data
    * WARNING! Make use only one input source at a time.
    */
-  while (swSer.available() > 0   ||
-         Serial.available() > 0  ||
-         (SoC->Bluetooth && SoC->Bluetooth->available() > 0) ) {
-
+  while (true) {
     if (swSer.available() > 0) {
-      GNSSbuf[GNSS_cnt] = swSer.read();
-    } else if (Serial.available()) {
-      GNSSbuf[GNSS_cnt] = Serial.read();
+      c = swSer.read();
+    } else if (Serial.available() > 0) {
+      c = Serial.read();
+    } else if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
+      c = SoC->Bluetooth->read();
     } else {
-      GNSSbuf[GNSS_cnt] = SoC->Bluetooth->read();
+      /* return back if no input data */
+      break;
     }
 
+    if (c == -1) {
+      /* retry */
+      continue;
+    }
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      GNSSbuf[GNSS_cnt] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
 #if 0
     if ( (GNSS_cnt >= 5) &&
          (GNSSbuf[GNSS_cnt-5] == '$') &&
