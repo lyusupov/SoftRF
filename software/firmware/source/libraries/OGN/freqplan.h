@@ -23,8 +23,8 @@ class FreqPlan
    uint8_t  Channels;    // number of channels
    uint32_t BaseFreq;    // [Hz] base channel (#0) frequency
    uint32_t ChanSepar;   // [Hz] channel spacing
-   static const uint8_t MaxChannels=65;
    uint8_t  MaxTxPower;  // max. EIRP in dBm
+   static const uint8_t MaxChannels=65;
 
   public:
    void setPlan(uint8_t NewPlan=0) // preset for a given frequency plan

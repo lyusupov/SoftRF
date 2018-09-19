@@ -346,6 +346,12 @@ void nrf905_setup()
   switch(settings->txpower)
   {
   case RF_TX_POWER_FULL:
+
+    /*
+     * NRF905 is unable to give more than 10 dBm
+     * 10 dBm is legal everywhere in the world
+     */
+
     nRF905_setTransmitPower((nRF905_pwr_t)NRF905_PWR_10);
     break;
   case RF_TX_POWER_OFF:
@@ -527,12 +533,22 @@ void sx1276_setup()
   switch(settings->txpower)
   {
   case RF_TX_POWER_FULL:
-    if (RF_FreqPlan.Plan == RF_BAND_US || RF_FreqPlan.Plan == RF_BAND_UK) {
-      LMIC.txpow = 17; /* 17 dBm for NA and PilotAware/UK */
-    } else {
-      /* EU and other regions */
-      LMIC.txpow = 14; /* 14 dBm */
-    }
+
+    /* Load regional max. EIRP at first */
+    LMIC.txpow = RF_FreqPlan.MaxTxPower;
+
+    /* SX1276 is unable to give more than 20 dBm */
+    if (LMIC.txpow > 20)
+      LMIC.txpow = 20;
+
+    /*
+     * Enforce Tx power limit until confirmation
+     * that RFM95W is doing well
+     * when antenna is not connected
+     */
+    if (LMIC.txpow > 17)
+      LMIC.txpow = 17;
+
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
