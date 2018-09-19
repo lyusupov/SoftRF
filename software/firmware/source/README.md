@@ -31,8 +31,8 @@
 
 ## ESP32
 
-1. Follow [these official instructions](https://github.com/espressif/arduino-esp32#installation-instructions)
-  to install Arduino IDE and latest Arduino ESP32 Core
+1. Follow [these official instructions](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
+  to install Arduino IDE and [latest **stable** Arduino ESP32 Core](https://github.com/espressif/arduino-esp32/releases/tag/1.0.0) (1.0.0)
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
 int ledPin = 2;
@@ -61,15 +61,14 @@ void loop()
     [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) **-->** ``<My Documents>``/Arduino/SoftRF <br>
     [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
 
-7. take **WebServer_tng** library from [this location](https://github.com/bbx10/WebServer_tng)<br>
-    and deploy into ``<My Documents>``/Arduino/hardware/espressif/esp32/libraries
-8. take **libbt.a** binary from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/misc)<br>
+7. take **libbt.a** binary from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/misc)<br>
     and overwrite existing one in ``<My Documents>``/Arduino/hardware/espressif/esp32/tools/sdk/lib
-9. start **Arduino** application again
-10. open **SoftRF** sketch from _File_ -> _Open_ menu
-11. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
-12. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
-13. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
-14. Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_
-15. Select _Tools_ -> _Flash_ _Frequency_ ->  _80MHz_
+8. start **Arduino** application again
+9. open **SoftRF** sketch from _File_ -> _Open_ menu
+10. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
+11. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
+12. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
+13. Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_
+14. Select _Tools_ -> _Flash_ _Frequency_ ->  _80MHz_
+15. Select _Tools_ -> _PSRAM_ ->  _Enabled_
 16. _Sketch_ -> _Upload_
