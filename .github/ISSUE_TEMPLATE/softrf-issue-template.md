@@ -12,26 +12,31 @@ ATTENTION !
 - "Enhancements" of existing features are allowed only when you are ready to implement them by yourself ;
 
 Recommended:
-- screenshot width - from 600 to 800 pixels ;
+- screenshot or photo width - from 600 to 800 pixels ;
 - aspect ratio - 4:3, 3:4, 16:9 or 9:16.
 
 --------------------
 
-## Hardware:
+## Hardware
 
       - [ ]   Prime Mark II
       - [ ]   Standalone
       - [ ]   UAV
 
-## Firmware version:
+< photo of your hardware > (optional)
 
-<  screenshot of WebUI status page >
+## Firmware version
 
-## Firmware settings:
+<  screenshot of WebUI status page > (**required**)
 
-<  screenshot of WebUI settings page >
+## Firmware settings
 
-## Description of your issue:
+<  screenshot of WebUI settings page > (**required**)
+
+## Describe the bug
 
 
-## Reproducing instructions:
+## To Reproduce
+
+
+## Expected behavior
