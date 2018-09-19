@@ -8,13 +8,14 @@ about: This template helps to report issues related to SoftRF hardware, software
 **ATTENTION** ! 
 
 - Use this form to report bugs in released SoftRF firmware, hardware and web pages only ;
+- Prior to asking a question, look into ["Closed issues"](https://github.com/lyusupov/SoftRF/issues?q=is%3Aissue+is%3Aclosed) area to see if it was answered before ;
 - No any "ideas" or new feature requests, please ! New feature requests do not subject for taking into consideration unless they come from co-developers ;
 - "Enhancements" of existing features are allowed only when you are ready to implement them by yourself ;
 
 Recommended:
 - screenshot or photo width - from 600 to 800 pixels ;
 - aspect ratio - 4:3, 3:4, 16:9 or 9:16.
-- substitute 'space' by 'x' character to mark checkbox
+- substitute 'space' by 'x' character to mark a hardware checkbox
 
 --------------------
 
@@ -34,7 +35,7 @@ Recommended:
 
 <  screenshot of WebUI settings page > (**required**)
 
-## Describe the bug
+## Describe the bug (or ask a question)
 
 
 ## To Reproduce
