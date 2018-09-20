@@ -30,6 +30,7 @@
 #if defined(AIRCONNECT_IS_ACTIVE)
 WiFiServer AirConnectServer(AIR_CONNECT_PORT);
 WiFiClient AirConnectClient[MAX_AIRCONNECT_CLIENTS];
+int AirConnectAuthenticated[MAX_AIRCONNECT_CLIENTS];
 #endif
 
 char NMEABuffer[128]; //buffer for NMEA data
@@ -71,12 +72,33 @@ void NMEA_loop()
 #if defined(AIRCONNECT_IS_ACTIVE)
   uint8_t i;
 
+  for(i = 0; i < MAX_AIRCONNECT_CLIENTS; i++){
+    if (AirConnectClient[i] && AirConnectClient[i].connected() && (AirConnectAuthenticated[i] > 0)){
+      if (AirConnectClient[i].available()) {
+        char c = AirConnectClient[i].read();
+        if (c == '\n') {
+          AirConnectAuthenticated[i] = 0;
+        } else {
+          AirConnectAuthenticated[i] = AirConnectAuthenticated[i] - 1;
+          if (AirConnectAuthenticated[i] < 0) {
+            AirConnectAuthenticated[i] = 0;
+          }
+        }
+        if (AirConnectAuthenticated[i] == 0) {
+          AirConnectClient[i].print("AOK");
+        }
+      }
+    }
+  }
+
   if (AirConnectServer.hasClient()){
     for(i = 0; i < MAX_AIRCONNECT_CLIENTS; i++){
       // find free/disconnected spot
       if (!AirConnectClient[i] || !AirConnectClient[i].connected()){
         if(AirConnectClient[i]) AirConnectClient[i].stop();
         AirConnectClient[i] = AirConnectServer.available();
+        AirConnectAuthenticated[i] = 4;
+        AirConnectClient[i].print("PASS?");
         break;
       }
     }
@@ -118,7 +140,7 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
     {
 #if defined(AIRCONNECT_IS_ACTIVE)
       for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected() && (AirConnectAuthenticated[acc_ndx] == 0)){
           AirConnectClient[acc_ndx].write(buf, size);
           if (nl)
             AirConnectClient[acc_ndx].write('\n');
