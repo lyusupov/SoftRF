@@ -80,6 +80,9 @@ void NMEA_loop()
           AirConnectAuthenticated[i] = 0;
         } else {
           AirConnectAuthenticated[i] = AirConnectAuthenticated[i] - 1;
+          if (AirConnectAuthenticated[i] < 0) {
+            AirConnectAuthenticated[i] = 0;
+          }
         }
         if (AirConnectAuthenticated[i] == 0) {
           AirConnectClient[i].print("AOK");
