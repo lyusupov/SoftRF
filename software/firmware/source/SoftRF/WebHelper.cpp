@@ -27,6 +27,9 @@
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
 #include "TrafficHelper.h"
+#include "NMEAHelper.h"
+#include "GDL90Helper.h"
+#include "D1090Helper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -67,7 +70,7 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  size_t size = 4096;
+  size_t size = 4224;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -272,7 +275,7 @@ void handleSettings() {
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
-<th align=left>NMEA:</th>\
+<th align=left>NMEA sentences:</th>\
 </tr>\
 <tr>\
 <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GNSS</th>\
@@ -296,24 +299,35 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
-<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UDP</th>\
+<th align=left>NMEA output</th>\
 <td align=right>\
-<input type='radio' name='nmea_u' value='0' %s>Off\
-<input type='radio' name='nmea_u' value='1' %s>On\
+<select name='nmea_out'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>UDP</option>\
+<option %s value='%d'>Bluetooth</option>\
+</select>\
 </td>\
 </tr>\
 <tr>\
 <th align=left>GDL90</th>\
 <td align=right>\
-<input type='radio' name='gdl90' value='0' %s>Off\
-<input type='radio' name='gdl90' value='1' %s>On\
+<select name='gdl90'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>UDP</option>\
+<option %s value='%d'>Bluetooth</option>\
+</select>\
 </td>\
 </tr>\
 <tr>\
 <th align=left>Dump1090</th>\
 <td align=right>\
-<input type='radio' name='d1090' value='0' %s>Off\
-<input type='radio' name='d1090' value='1' %s>On\
+<select name='d1090'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>Bluetooth</option>\
+</select>\
 </td>\
 </tr>\
 <tr>\
@@ -338,9 +352,17 @@ void handleSettings() {
   (!settings->nmea_g ? "checked" : "") , (settings->nmea_g ? "checked" : ""),
   (!settings->nmea_p ? "checked" : "") , (settings->nmea_p ? "checked" : ""),
   (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
-  (!settings->nmea_u ? "checked" : "") , (settings->nmea_u ? "checked" : ""),
-  (!settings->gdl90 ? "checked" : "") , (settings->gdl90 ? "checked" : ""),
-  (!settings->d1090 ? "checked" : "") , (settings->d1090 ? "checked" : ""),
+  (settings->nmea_out == NMEA_OFF ? "selected" : ""), NMEA_OFF,
+  (settings->nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
+  (settings->nmea_out == NMEA_UDP ? "selected" : ""), NMEA_UDP,
+  (settings->nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH,
+  (settings->gdl90 == GDL90_OFF ? "selected" : ""), GDL90_OFF,
+  (settings->gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
+  (settings->gdl90 == GDL90_UDP ? "selected" : ""), GDL90_UDP,
+  (settings->gdl90 == GDL90_BLUETOOTH ? "selected" : ""), GDL90_BLUETOOTH,
+  (settings->d1090 == D1090_OFF ? "selected" : ""), D1090_OFF,
+  (settings->d1090 == D1090_UART ? "selected" : ""), D1090_UART,
+  (settings->d1090 == D1090_BLUETOOTH ? "selected" : ""), D1090_BLUETOOTH,
   (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
   (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
   );
@@ -485,8 +507,8 @@ void handleInput() {
       settings->nmea_p = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_l")) {
       settings->nmea_l = server.arg(i).toInt();
-    } else if (server.argName(i).equals("nmea_u")) {
-      settings->nmea_u = server.arg(i).toInt();
+    } else if (server.argName(i).equals("nmea_out")) {
+      settings->nmea_out = server.arg(i).toInt();
     } else if (server.argName(i).equals("gdl90")) {
       settings->gdl90 = server.arg(i).toInt();
     } else if (server.argName(i).equals("d1090")) {
@@ -519,9 +541,9 @@ PSTR("<html>\
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
-<tr><th align=left>NMEA UDP</th><td align=right>%s</td></tr>\
-<tr><th align=left>GDL90</th><td align=right>%s</td></tr>\
-<tr><th align=left>DUMP1090</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Out</th><td align=right>%d</td></tr>\
+<tr><th align=left>GDL90</th><td align=right>%d</td></tr>\
+<tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
 <tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
 </table>\
@@ -533,8 +555,8 @@ PSTR("<html>\
   settings->aircraft_type, settings->alarm, settings->txpower,
   settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
-  BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_u),
-  BOOL_STR(settings->gdl90), BOOL_STR(settings->d1090),
+  BOOL_STR(settings->nmea_l), settings->nmea_out,
+  settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track)
   );
   SoC->swSer_enableRx(false);

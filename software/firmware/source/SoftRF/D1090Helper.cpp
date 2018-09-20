@@ -23,6 +23,7 @@
 #include "GNSSHelper.h"
 #include "GDL90Helper.h"
 #include "EEPROMHelper.h"
+#include "SoCHelper.h"
 #include "TrafficHelper.h"
 #include "SoftRF.h"
 
@@ -36,6 +37,30 @@
         }                                               \
       })
 
+static void D1090_Out(byte *buf, size_t size)
+{
+  switch(settings->d1090)
+  {
+  case D1090_UART:
+    {
+      Serial.write(buf, size);
+    }
+    break;
+  case D1090_BLUETOOTH:
+    {
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->write(buf, size);
+      }
+    }
+    break;
+  case D1090_UDP:
+  case D1090_TCP:
+  case D1090_OFF:
+  default:
+    break;
+  }
+}
+
 void D1090_Export()
 {
   frame_data_t df17;
@@ -43,7 +68,7 @@ void D1090_Export()
   String str;
   time_t this_moment = now();
 
-  if (settings->d1090) {
+  if (settings->d1090 != D1090_OFF) {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
@@ -107,7 +132,7 @@ void D1090_Export()
           str.toUpperCase();
           str += ";\r\n";
 
-          Serial.print(str);
+          D1090_Out((byte *) str.c_str(), str.length());
         }
       }
     }

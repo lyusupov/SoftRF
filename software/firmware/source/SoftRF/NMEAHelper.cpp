@@ -90,39 +90,56 @@ void NMEA_loop()
 
 void NMEA_Out(byte *buf, size_t size, bool nl)
 {
-  Serial.write(buf, size);
-  if (nl)
-    Serial.write('\n');
-
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->write(buf, size);
-    if (nl)
-      SoC->Bluetooth->write((byte *) "\n", 1);
-  }
-
-  if (settings->nmea_u) {
-    size_t udp_size = size;
-
-    if (size >= sizeof(UDPpacketBuffer))
-      udp_size = sizeof(UDPpacketBuffer) - 1;
-    memcpy(UDPpacketBuffer, buf, udp_size);
-
-    if (nl)
-      UDPpacketBuffer[udp_size] = '\n';
-
-    SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) UDPpacketBuffer,
-                            nl ? udp_size + 1 : udp_size);
-  }
-
-#if defined(AIRCONNECT_IS_ACTIVE)
-  for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-    if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-      AirConnectClient[acc_ndx].write(buf, size);
+  switch(settings->nmea_out)
+  {
+  case NMEA_UART:
+    {
+      Serial.write(buf, size);
       if (nl)
-        AirConnectClient[acc_ndx].write('\n');
+        Serial.write('\n');
     }
-  }
+    break;
+  case NMEA_UDP:
+    {
+      size_t udp_size = size;
+
+      if (size >= sizeof(UDPpacketBuffer))
+        udp_size = sizeof(UDPpacketBuffer) - 1;
+      memcpy(UDPpacketBuffer, buf, udp_size);
+
+      if (nl)
+        UDPpacketBuffer[udp_size] = '\n';
+
+      SoC->WiFi_transmit_UDP(NMEA_DST_PORT, (byte *) UDPpacketBuffer,
+                              nl ? udp_size + 1 : udp_size);
+    }
+    break;
+  case NMEA_TCP:
+    {
+#if defined(AIRCONNECT_IS_ACTIVE)
+      for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
+        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
+          AirConnectClient[acc_ndx].write(buf, size);
+          if (nl)
+            AirConnectClient[acc_ndx].write('\n');
+        }
+      }
 #endif
+    }
+    break;
+  case NMEA_BLUETOOTH:
+    {
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->write(buf, size);
+        if (nl)
+          SoC->Bluetooth->write((byte *) "\n", 1);
+      }
+    }
+    break;
+  case NMEA_OFF:
+  default:
+    break;
+  }
 }
 
 void NMEA_Export()

@@ -22,6 +22,15 @@
 #include "SoCHelper.h"
 #include "SoftRF.h"
 
+enum
+{
+	NMEA_OFF,
+	NMEA_UART,
+	NMEA_UDP,
+	NMEA_TCP,
+	NMEA_BLUETOOTH
+};
+
 void NMEA_setup(void);
 void NMEA_loop(void);
 void NMEA_Export(void);

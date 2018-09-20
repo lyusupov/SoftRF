@@ -23,6 +23,9 @@
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
 #include "TrafficHelper.h"
+#include "NMEAHelper.h"
+#include "GDL90Helper.h"
+#include "D1090Helper.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 
@@ -77,9 +80,9 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_g   = true;
   eeprom_block.field.settings.nmea_p   = false;
   eeprom_block.field.settings.nmea_l   = true;
-  eeprom_block.field.settings.nmea_u   = false;
-  eeprom_block.field.settings.gdl90    = false;
-  eeprom_block.field.settings.d1090    = false;
+  eeprom_block.field.settings.nmea_out = NMEA_UART;
+  eeprom_block.field.settings.gdl90    = GDL90_OFF;
+  eeprom_block.field.settings.d1090    = D1090_OFF;
   eeprom_block.field.settings.stealth  = false;
   eeprom_block.field.settings.no_track = false;
 }

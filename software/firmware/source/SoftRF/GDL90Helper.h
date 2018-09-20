@@ -41,6 +41,15 @@ enum
 	GDL90_EMITTER_CATEGORY_SPACESHIP
 };
 
+enum
+{
+	GDL90_OFF,
+	GDL90_UART,
+	GDL90_UDP,
+	GDL90_TCP,
+	GDL90_BLUETOOTH
+};
+
 typedef struct GDL90_Message {
   uint8_t   flag_start;
   uint8_t   message_id;

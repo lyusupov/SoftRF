@@ -342,6 +342,34 @@ size_t makeGeometricAltitude(uint8_t *buf, ufo_t *aircraft)
 #define makeOwnershipReport(b,a)  makeType10and20(b, GDL90_OWNSHIP_MSG_ID, a)
 #define makeTrafficReport(b,a)    makeType10and20(b, GDL90_TRAFFIC_MSG_ID, a)
 
+static void GDL90_Out(byte *buf, size_t size)
+{
+  switch(settings->gdl90)
+  {
+  case GDL90_UART:
+    {
+      Serial.write(buf, size);
+    }
+    break;
+  case GDL90_UDP:
+    {
+      SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    }
+    break;
+  case GDL90_BLUETOOTH:
+    {
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->write(buf, size);
+      }
+    }
+    break;
+  case GDL90_TCP:
+  case GDL90_OFF:
+  default:
+    break;
+  }
+}
+
 void GDL90_Export()
 {
   size_t size;
@@ -349,15 +377,15 @@ void GDL90_Export()
   time_t this_moment = now();
   uint8_t *buf = (uint8_t *) UDPpacketBuffer;
 
-  if (settings->gdl90) {
+  if (settings->gdl90 != GDL90_OFF) {
     size = makeHeartbeat(buf);
-    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    GDL90_Out(buf, size);
 
     size = makeOwnershipReport(buf, &ThisAircraft);
-    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    GDL90_Out(buf, size);
 
     size = makeGeometricAltitude(buf, &ThisAircraft);
-    SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+    GDL90_Out(buf, size);
 
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
@@ -366,7 +394,7 @@ void GDL90_Export()
 
         if (distance < ALARM_ZONE_NONE) {
           size = makeTrafficReport(buf, &Container[i]);
-          SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+          GDL90_Out(buf, size);
         }
       }
     }
