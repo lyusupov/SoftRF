@@ -131,8 +131,8 @@ typedef struct GDL90_Msg_OwnershipGeometricAltitude {
 
 } __attribute__((packed)) GDL90_Msg_OwnershipGeometricAltitude_t;
 
-#define AT_TO_GDL90(x)  (x > 15 ? \
-   GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[x]))
+#define AT_TO_GDL90(x)  ((x) > 15 ? \
+   GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[(x)]))
 
 extern const uint8_t aircraft_type_to_gdl90[] PROGMEM;
 extern const char *GDL90_CallSign_Prefix[];

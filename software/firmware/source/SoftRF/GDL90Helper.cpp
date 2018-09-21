@@ -31,7 +31,7 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 
-#define ADDR_TO_HEX_STR(s, c) (s += (c < 0x10 ? "0" : "") + String(c, HEX))
+#define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
 static GGDL90_Msg_Traffic_t Traffic;
