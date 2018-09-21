@@ -72,8 +72,8 @@
 #define RELAY_SRC_PORT  (RELAY_DST_PORT - 1)
 
 #define GDL90_DST_PORT    4000
-#define NMEA_DST_PORT     10110
-#define AIR_CONNECT_PORT  2000
+#define NMEA_UDP_PORT     10110
+#define NMEA_TCP_PORT     2000
 
 typedef struct UFO {
     String    raw;

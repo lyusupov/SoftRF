@@ -55,7 +55,7 @@ int GNSS_cnt = 0;
 const uint8_t setGLL[] PROGMEM = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t setGSV[] PROGMEM = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t setVTG[] PROGMEM = {0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-#if !defined(AIRCONNECT_IS_ACTIVE)
+#if !defined(NMEA_TCP_SERVICE)
 const uint8_t setGSA[] PROGMEM = {0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 #endif
  /* CFG-PRT */
@@ -229,7 +229,7 @@ static void setup_UBX()
     GNSS_DEBUG_PRINTLN(F("WARNING: Unable to disable NMEA VTG."));
   }
 
-#if !defined(AIRCONNECT_IS_ACTIVE)
+#if !defined(NMEA_TCP_SERVICE)
 
   GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSA: "));
 
@@ -258,7 +258,7 @@ static void setup_NMEA()
   swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
   swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
   swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
-#if !defined(AIRCONNECT_IS_ACTIVE)
+#if !defined(NMEA_TCP_SERVICE)
   swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
 #endif
 }
