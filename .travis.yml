@@ -28,7 +28,6 @@ install:
       arduino --pref "boardsmanager.additional.urls=https://dl.espressif.com/dl/package_esp32_index.json" --save-prefs ;
       arduino --install-boards esp32:esp32 ;
       arduino --board $BOARD --save-prefs ;
-      arduino --pref "compiler.warning_level=all" --save-prefs ;
       cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.0/tools/sdk/lib ;
       rm -f libbt.a ;
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libbt.a . ;
