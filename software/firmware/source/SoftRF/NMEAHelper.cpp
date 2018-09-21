@@ -29,7 +29,7 @@
 
 #if defined(AIRCONNECT_IS_ACTIVE)
 WiFiServer AirConnectServer(AIR_CONNECT_PORT);
-WiFiClient AirConnectClient[MAX_AIRCONNECT_CLIENTS];
+AirConnect_t AirConnect[MAX_AIRCONNECT_CLIENTS];
 #endif
 
 char NMEABuffer[128]; //buffer for NMEA data
@@ -57,11 +57,13 @@ static char *ltrim(char *s)
 void NMEA_setup()
 {
 #if defined(AIRCONNECT_IS_ACTIVE)
-  AirConnectServer.begin();
-  Serial.print(F("AirConnect server has started at port: "));
-  Serial.println(AIR_CONNECT_PORT);
+  if (settings->nmea_out == NMEA_TCP) {
+    AirConnectServer.begin();
+    Serial.print(F("AirConnect server has started at port: "));
+    Serial.println(AIR_CONNECT_PORT);
 
-  AirConnectServer.setNoDelay(true);
+    AirConnectServer.setNoDelay(true);
+  }
 #endif
   memset(&nmealib_buf, 0, sizeof(nmealib_buf));
 }
@@ -71,12 +73,18 @@ void NMEA_loop()
 #if defined(AIRCONNECT_IS_ACTIVE)
   uint8_t i;
 
-  if (AirConnectServer.hasClient()){
+  if (settings->nmea_out == NMEA_TCP && AirConnectServer.hasClient()){
     for(i = 0; i < MAX_AIRCONNECT_CLIENTS; i++){
       // find free/disconnected spot
-      if (!AirConnectClient[i] || !AirConnectClient[i].connected()){
-        if(AirConnectClient[i]) AirConnectClient[i].stop();
-        AirConnectClient[i] = AirConnectServer.available();
+      if (!AirConnect[i].client || !AirConnect[i].client.connected()){
+        if(AirConnect[i].client) {
+          AirConnect[i].client.stop();
+          AirConnect[i].connect_ts = 0;
+        }
+        AirConnect[i].client = AirConnectServer.available();
+        AirConnect[i].connect_ts = now();
+        AirConnect[i].ack = false;
+        AirConnect[i].client.print("PASS?");
         break;
       }
     }
@@ -118,10 +126,24 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
     {
 #if defined(AIRCONNECT_IS_ACTIVE)
       for (uint8_t acc_ndx = 0; acc_ndx < MAX_AIRCONNECT_CLIENTS; acc_ndx++) {
-        if (AirConnectClient[acc_ndx] && AirConnectClient[acc_ndx].connected()){
-          AirConnectClient[acc_ndx].write(buf, size);
-          if (nl)
-            AirConnectClient[acc_ndx].write('\n');
+        if (AirConnect[acc_ndx].client && AirConnect[acc_ndx].client.connected()){
+          if (!AirConnect[acc_ndx].ack && AirConnect[acc_ndx].connect_ts > 0 &&
+              (now() - AirConnect[acc_ndx].connect_ts) > AIRCONNECT_ACK_TIMEOUT) {
+
+            /* Clean TCP input buffer from any pass codes sent by client */
+            while (AirConnect[acc_ndx].client.available()) {
+              char c = AirConnect[acc_ndx].client.read();
+              yield();
+            }
+            /* send acknowledge */
+            AirConnect[acc_ndx].client.print("AOK");
+            AirConnect[acc_ndx].ack = true;
+          }
+          if (AirConnect[acc_ndx].ack) {
+            AirConnect[acc_ndx].client.write(buf, size);
+            if (nl)
+              AirConnect[acc_ndx].client.write('\n');
+          }
         }
       }
 #endif

@@ -70,7 +70,7 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  size_t size = 4224;
+  size_t size = 4256;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -305,6 +305,7 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>UDP</option>\
+<!-- <option %s value='%d'>TCP</option> -->\
 <option %s value='%d'>Bluetooth</option>\
 </select>\
 </td>\
@@ -355,6 +356,7 @@ void handleSettings() {
   (settings->nmea_out == NMEA_OFF ? "selected" : ""), NMEA_OFF,
   (settings->nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
   (settings->nmea_out == NMEA_UDP ? "selected" : ""), NMEA_UDP,
+  (settings->nmea_out == NMEA_TCP ? "selected" : ""), NMEA_TCP,
   (settings->nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH,
   (settings->gdl90 == GDL90_OFF ? "selected" : ""), GDL90_OFF,
   (settings->gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
