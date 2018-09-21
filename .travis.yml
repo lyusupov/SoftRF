@@ -4,7 +4,7 @@ env:
     - IDE_VERSION=1.8.5
   matrix:
   - BOARD=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
-  - BOARD=espressif:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
+  - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -24,7 +24,7 @@ install:
       arduino --pref "compiler.warning_level=all" --save-prefs ;
       arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs ;
     fi
-  - if [[ "$BOARD" =~ "espressif:esp32:" ]]; then
+  - if [[ "$BOARD" =~ "esp32:esp32:" ]]; then
       arduino --pref "boardsmanager.additional.urls=https://dl.espressif.com/dl/package_esp32_index.json" --save-prefs ;
       arduino --install-boards esp32:esp32 ;
       arduino --board $BOARD --save-prefs ;
