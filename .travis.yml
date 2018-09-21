@@ -25,21 +25,16 @@ install:
       arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs ;
     fi
   - if [[ "$BOARD" =~ "espressif:esp32:" ]]; then
-      mkdir -p $HOME/Arduino/hardware/espressif;
-      cd $HOME/Arduino/hardware/espressif ;
-      git clone https://github.com/espressif/arduino-esp32.git esp32 ;
-      cd esp32 ;
-      git submodule update --init --recursive ;
-      cd tools ;
-      python get.py ;
-      cd $HOME/Arduino/hardware/espressif/esp32/libraries ;
-      git clone https://github.com/bbx10/WebServer_tng.git WebServer ;
-      cd $HOME/Arduino/hardware/espressif/esp32/tools/sdk/lib ;
+      arduino --pref "boardsmanager.additional.urls=https://dl.espressif.com/dl/package_esp32_index.json" --save-prefs ;
+      arduino --install-boards espressif:esp32 ;
+      arduino --board $BOARD --save-prefs ;
+      arduino --pref "compiler.warning_level=all" --save-prefs ;
+      cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.0//tools/sdk/lib ;
       rm -f libbt.a ;
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libbt.a . ;
       rm -f libesp32.a ;
       cp $TRAVIS_BUILD_DIR/software/firmware/binaries/ESP32/misc/libesp32.a.80MHz libesp32.a ;
-      cd $HOME/Arduino/hardware/espressif/esp32 ;
+      cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.0/ ;
       sed -i 's/esp32.upload.maximum_size=1310720/esp32.upload.maximum_size=1966080/g' boards.txt ;
       sed -i 's/esp32.build.f_cpu=240000000L/esp32.build.f_cpu=80000000L/g' boards.txt ;
       cd $TRAVIS_BUILD_DIR ;
