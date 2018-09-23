@@ -34,7 +34,7 @@
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
-static GGDL90_Msg_Traffic_t Traffic;
+static GDL90_Msg_Traffic_t Traffic;
 static GDL90_Msg_OwnershipGeometricAltitude_t GeometricAltitude;
 
 const char *GDL90_CallSign_Prefix[] = {
@@ -64,6 +64,21 @@ const uint8_t aircraft_type_to_gdl90[] PROGMEM = {
 	GDL90_EMITTER_CATEGORY_UNASSIGNED1,
 	GDL90_EMITTER_CATEGORY_NONE
 };
+
+#if defined(DO_GDL90_FF_EXT)
+/*
+ * See https://www.foreflight.com/connect/spec/ for details
+ */
+const GDL90_Msg_FF_ID_t msgFFid = {
+  .Sub_Id       = 0, /* 0 for ID, 1 for AHRS */
+  .Version      = 1, /* Must be 1 */
+  /* Device serial number is 0xFFFFFFFFFFFFFFFF for invalid */
+  .SerialNum    = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+  .ShortName    = {'S', 'o', 'f', 't', 'R', 'F' },
+  .LongName     = {'S', 'o', 'f', 't', 'R', 'F' },
+  .Capabilities = {0x00, 0x00, 0x00, 0x00}, /* WGS-84 ellipsoid */
+};
+#endif
 
 /* convert a signed latitude to 2s complement ready for 24-bit packing */
 uint32_t makeLatitude(float latitude)
@@ -303,7 +318,7 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 {
   uint8_t *ptr = buf;
   uint8_t *msg = (uint8_t *) msgType10and20(aircraft);
-  uint16_t fcs = calcFCS(id, msg, sizeof(GGDL90_Msg_Traffic_t));
+  uint16_t fcs = calcFCS(id, msg, sizeof(GDL90_Msg_Traffic_t));
   uint8_t fcs_lsb, fcs_msb;
   
   fcs_lsb = fcs        & 0xFF;
@@ -311,7 +326,7 @@ size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
 
   *ptr++ = 0x7E; /* Start flag */
   *ptr++ = id;
-  ptr = EscapeFilter(ptr, msg, sizeof(GGDL90_Msg_Traffic_t));
+  ptr = EscapeFilter(ptr, msg, sizeof(GDL90_Msg_Traffic_t));
   ptr = EscapeFilter(ptr, &fcs_lsb, 1);
   ptr = EscapeFilter(ptr, &fcs_msb, 1);
   *ptr++ = 0x7E; /* Stop flag */
@@ -338,6 +353,29 @@ size_t makeGeometricAltitude(uint8_t *buf, ufo_t *aircraft)
 
   return(ptr-buf);
 }
+
+#if defined(DO_GDL90_FF_EXT)
+
+size_t makeFFid(uint8_t *buf)
+{
+  uint8_t *ptr = buf;
+  uint8_t *msg = (uint8_t *) &msgFFid;
+  uint16_t fcs = calcFCS(GDL90_FFEXT_MSG_ID, msg, sizeof(GDL90_Msg_FF_ID_t));
+  uint8_t fcs_lsb, fcs_msb;
+
+  fcs_lsb = fcs        & 0xFF;
+  fcs_msb = (fcs >> 8) & 0xFF;
+
+  *ptr++ = 0x7E; /* Start flag */
+  *ptr++ = GDL90_FFEXT_MSG_ID;
+  ptr = EscapeFilter(ptr, msg, sizeof(GDL90_Msg_FF_ID_t));
+  ptr = EscapeFilter(ptr, &fcs_lsb, 1);
+  ptr = EscapeFilter(ptr, &fcs_msb, 1);
+  *ptr++ = 0x7E; /* Stop flag */
+
+  return(ptr-buf);
+}
+#endif
 
 #define makeOwnershipReport(b,a)  makeType10and20(b, GDL90_OWNSHIP_MSG_ID, a)
 #define makeTrafficReport(b,a)    makeType10and20(b, GDL90_TRAFFIC_MSG_ID, a)
@@ -380,6 +418,11 @@ void GDL90_Export()
   if (settings->gdl90 != GDL90_OFF) {
     size = makeHeartbeat(buf);
     GDL90_Out(buf, size);
+
+#if defined(DO_GDL90_FF_EXT)
+    size = makeFFid(buf);
+    GDL90_Out(buf, size);
+#endif
 
     size = makeOwnershipReport(buf, &ThisAircraft);
     GDL90_Out(buf, size);

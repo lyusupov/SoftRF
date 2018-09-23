@@ -118,7 +118,7 @@ typedef struct GDL90_Msg_Traffic {
   unsigned int reserved:4;
   unsigned int emerg_code:4;
 
-} __attribute__((packed)) GGDL90_Msg_Traffic_t;
+} __attribute__((packed)) GDL90_Msg_Traffic_t;
 
 #define GDL90_OWNGEOMALT_MSG_ID  11
 
@@ -130,6 +130,24 @@ typedef struct GDL90_Msg_OwnershipGeometricAltitude {
   unsigned int vert_warning :1;
 
 } __attribute__((packed)) GDL90_Msg_OwnershipGeometricAltitude_t;
+
+#if defined(DO_GDL90_FF_EXT)
+
+#define GDL90_FFEXT_MSG_ID  0x65
+
+typedef struct GDL90_Msg_FF_ID {
+
+  uint8_t   Sub_Id; /* 0 for ID, 1 for AHRS */
+  uint8_t   Version;
+
+  uint8_t   SerialNum[8];
+  char      ShortName[8];
+  uint8_t   LongName[16];
+
+  uint8_t   Capabilities[4];
+} GDL90_Msg_FF_ID_t;
+
+#endif
 
 #define AT_TO_GDL90(x)  ((x) > 15 ? \
    GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[(x)]))
