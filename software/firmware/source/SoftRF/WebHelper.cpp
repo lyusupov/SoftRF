@@ -70,7 +70,7 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  size_t size = 4256;
+  size_t size = 4300;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -155,6 +155,7 @@ void handleSettings() {
 <option %s value='%d'>NZ (869.25 MHz)</option>\
 <option %s value='%d'>UK (869.52 MHz)</option>\
 <option %s value='%d'>AU (921 MHz)</option>\
+<option %s value='%d'>IN (866 MHz)</option>\
 </select>\
 </td>\
 </tr>\
@@ -217,10 +218,11 @@ void handleSettings() {
   (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
   (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
   (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
-  (settings->band == RF_BAND_US ? "selected" : ""),  RF_BAND_US,
+  (settings->band == RF_BAND_US ? "selected" : ""), RF_BAND_US,
   (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
   (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
-  (settings->band == RF_BAND_AU ? "selected" : ""),  RF_BAND_AU,
+  (settings->band == RF_BAND_AU ? "selected" : ""), RF_BAND_AU,
+  (settings->band == RF_BAND_IN ? "selected" : ""), RF_BAND_IN,
   (settings->aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
   (settings->aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
