@@ -209,9 +209,6 @@ void loop()
   // battery status LED
   LED_loop();
 
-  // Handle Air Connect
-  NMEA_loop();
-
   // Handle DNS
   WiFi_loop();
 
@@ -294,6 +291,9 @@ void normal_loop()
     D1090_Export();
     ExportTimeMarker = millis();
   }
+
+  // Handle Air Connect
+  NMEA_loop();
 
   ClearExpired();
 
@@ -521,6 +521,9 @@ void txrx_test_loop()
     Serial.println(oled_end_ms);
   }
 #endif
+
+  // Handle Air Connect
+  NMEA_loop();
 
   ClearExpired();
 }

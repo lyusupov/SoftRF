@@ -572,7 +572,7 @@ void PickGNSSFix()
 
           }
 #endif
-
+#if 0
           /* try to append pressure altitude (PGRMZ) next to each RMC sentence */
           if (ThisAircraft.pressure_altitude != 0.0 &&
               !strncmp((char *) &GNSSbuf[ndx+3], "RMC,", strlen("RMC,")) &&
@@ -599,7 +599,7 @@ void PickGNSSFix()
 
             write_size += sentence_size + strlen(csum_ptr);
           }
-
+#endif
           /*
            * Work around issue with "always 0.0,M" GGA geoid separation value
            * given by some Chinese GNSS chipsets

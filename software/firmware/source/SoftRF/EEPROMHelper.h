@@ -39,8 +39,8 @@ typedef struct Settings {
     bool     nmea_g:1;
     bool     nmea_p:1;
     bool     nmea_l:1;
+    bool     nmea_s:1;
     bool     resvd1:1;
-    bool     resvd2:1;
     uint8_t  nmea_out:3;
 
     uint8_t  bluetooth:3; /* ESP32 built-in Bluetooth */
@@ -50,7 +50,7 @@ typedef struct Settings {
 
     uint8_t  gdl90:3;
     uint8_t  d1090:3;
-    uint8_t  resvd3:2;
+    uint8_t  resvd23:2;
 
     uint8_t  resvd4;
     uint8_t  resvd5;

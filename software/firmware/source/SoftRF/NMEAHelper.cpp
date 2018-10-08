@@ -32,6 +32,8 @@ WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
+#define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
+
 char NMEABuffer[128]; //buffer for NMEA data
 NmeaMallocedBuffer nmealib_buf;
 
@@ -43,6 +45,8 @@ const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_ADSB_UAT]  = "UAT",
   [RF_PROTOCOL_FANET]     = "FAN"
 };
+
+unsigned long PGRMZ_TimeMarker = 0;
 
 static char *ltrim(char *s)
 {
@@ -66,10 +70,37 @@ void NMEA_setup()
   }
 #endif
   memset(&nmealib_buf, 0, sizeof(nmealib_buf));
+  PGRMZ_TimeMarker = millis();
 }
 
 void NMEA_loop()
 {
+
+  if (settings->nmea_s && ThisAircraft.pressure_altitude != 0.0 && isTimeToPGRMZ()) {
+
+    int altitude = constrain(
+            (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
+            -1000, 60000);
+
+    snprintf(NMEABuffer, sizeof(NMEABuffer), "$PGRMZ,%d,f,3*",
+            altitude ); /* feet , 3D fix */
+
+    size_t sentence_size = strlen(NMEABuffer);
+
+    //calculate the checksum
+    unsigned char cs = 0;
+    for (unsigned int n = 1; n < sentence_size - 1; n++) {
+      cs ^= NMEABuffer[n];
+    }
+
+    char *csum_ptr = NMEABuffer + sentence_size;
+    snprintf(csum_ptr, 8, "%02X\r", cs);
+
+    NMEA_Out((byte *) NMEABuffer, sentence_size + strlen(csum_ptr), true);
+
+    PGRMZ_TimeMarker = millis();
+  }
+
 #if defined(NMEA_TCP_SERVICE)
   uint8_t i;
 
