@@ -158,6 +158,8 @@ struct rst_info {
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
+#define  NMEA_TCP_SERVICE
+
 #endif /* ESP32HELPER_H */
 
 #endif /* ESP32 */

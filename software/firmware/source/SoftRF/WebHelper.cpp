@@ -322,7 +322,7 @@ void handleSettings() {
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
       PSTR("\
-<!-- <option %s value='%d'>TCP</option> -->\
+<option %s value='%d'>TCP</option>\
 <option %s value='%d'>Bluetooth</option>"),
     (settings->nmea_out == NMEA_TCP ? "selected" : ""), NMEA_TCP,
     (settings->nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH);

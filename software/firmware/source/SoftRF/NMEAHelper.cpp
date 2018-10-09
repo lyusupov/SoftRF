@@ -58,6 +58,20 @@ static char *ltrim(char *s)
   return s;
 }
 
+static void NMEA_add_checksum(char *buf, size_t limit)
+{
+  size_t sentence_size = strlen(buf);
+
+  //calculate the checksum
+  unsigned char cs = 0;
+  for (unsigned int n = 1; n < sentence_size - 1; n++) {
+    cs ^= buf[n];
+  }
+
+  char *csum_ptr = buf + sentence_size;
+  snprintf_P(csum_ptr, limit, PSTR("%02X\r\n"), cs);
+}
+
 void NMEA_setup()
 {
 #if defined(NMEA_TCP_SERVICE)
@@ -82,21 +96,12 @@ void NMEA_loop()
             (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
             -1000, 60000);
 
-    snprintf(NMEABuffer, sizeof(NMEABuffer), "$PGRMZ,%d,f,3*",
+    snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PGRMZ,%d,f,3*"),
             altitude ); /* feet , 3D fix */
 
-    size_t sentence_size = strlen(NMEABuffer);
+    NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
-    //calculate the checksum
-    unsigned char cs = 0;
-    for (unsigned int n = 1; n < sentence_size - 1; n++) {
-      cs ^= NMEABuffer[n];
-    }
-
-    char *csum_ptr = NMEABuffer + sentence_size;
-    snprintf(csum_ptr, 8, "%02X\r", cs);
-
-    NMEA_Out((byte *) NMEABuffer, sentence_size + strlen(csum_ptr), true);
+    NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
 
     PGRMZ_TimeMarker = millis();
   }
@@ -117,7 +122,7 @@ void NMEA_loop()
           NmeaTCP[i].client = NmeaTCPServer.available();
           NmeaTCP[i].connect_ts = now();
           NmeaTCP[i].ack = false;
-          NmeaTCP[i].client.print("PASS?");
+          NmeaTCP[i].client.print(F("PASS?"));
           break;
         }
       }
@@ -130,7 +135,7 @@ void NMEA_loop()
     for (i = 0; i < MAX_NMEATCP_CLIENTS; i++) {
       if (NmeaTCP[i].client && NmeaTCP[i].client.connected() &&
          !NmeaTCP[i].ack && NmeaTCP[i].connect_ts > 0 &&
-         (now() - NmeaTCP[i].connect_ts) > NMEATCP_ACK_TIMEOUT) {
+         (now() - NmeaTCP[i].connect_ts) >= NMEATCP_ACK_TIMEOUT) {
 
           /* Clean TCP input buffer from any pass codes sent by client */
           while (NmeaTCP[i].client.available()) {
@@ -138,7 +143,7 @@ void NMEA_loop()
             yield();
           }
           /* send acknowledge */
-          NmeaTCP[i].client.print("AOK");
+          NmeaTCP[i].client.print(F("AOK"));
           NmeaTCP[i].ack = true;
       }
     }
@@ -243,8 +248,6 @@ void NMEA_Export()
 
           if (distance < ALARM_ZONE_NONE) {
 
-            char *csum_ptr;
-            unsigned char cs = 0;
             char str_climb_rate[8] = "";
 
             bearing = Container[i].bearing;
@@ -257,7 +260,7 @@ void NMEA_Export()
                 5, 1, str_climb_rate);
             }
 
-            snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*",
+            snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*"),
                     alarm_level,
                     (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
                     alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
@@ -265,13 +268,7 @@ void NMEA_Export()
                     (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
                     ltrim(str_climb_rate), Container[i].aircraft_type);
 
-            //calculate the checksum
-            for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
-              cs ^= NMEABuffer[n];
-            }
-
-            csum_ptr = NMEABuffer + strlen(NMEABuffer);
-            snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
+            NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
             NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
 
@@ -291,22 +288,13 @@ void NMEA_Export()
     /* One PFLAU NMEA sentence is mandatory regardless of traffic reception status */
     if (settings->nmea_l) {
 
-      char *csum_ptr;
-      unsigned char cs = 0;
-
-      snprintf(NMEABuffer, sizeof(NMEABuffer), "$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*",
+      snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*"),
               total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING,
               POWER_STATUS_GOOD, HP_alarm_level,
               (HP_bearing < 180 ? HP_bearing : HP_bearing - 360),
               ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance );
 
-      //calculate the checksum
-      for (unsigned int n = 1; n < strlen(NMEABuffer) - 1; n++) {
-        cs ^= NMEABuffer[n];
-      }
-
-      csum_ptr = NMEABuffer + strlen(NMEABuffer);
-      snprintf(csum_ptr, sizeof(NMEABuffer) - strlen(NMEABuffer), "%02X\r\n", cs);
+      NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
       NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
     }
@@ -385,31 +373,6 @@ void NMEA_Position()
 
     size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
       (NMEALIB_SENTENCE_GPGGA | NMEALIB_SENTENCE_GPGSA | NMEALIB_SENTENCE_GPRMC));
-
-    if (ThisAircraft.pressure_altitude != 0.0 &&
-        /* Assume that space of 24 bytes is sufficient for PGRMZ */
-        nmealib_buf.bufferSize - gen_sz > 24) {
-
-      int altitude = constrain(
-                    (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
-                    -1000, 60000);
-
-      snprintf(nmealib_buf.buffer + gen_sz, 24, "$PGRMZ,%d,f,3*",
-              altitude ); /* feet , 3D fix */
-
-      size_t sentence_size = strlen(nmealib_buf.buffer + gen_sz);
-
-      //calculate the checksum
-      unsigned char cs = 0;
-      for (unsigned int n = 1; n < sentence_size - 1; n++) {
-        cs ^= nmealib_buf.buffer[gen_sz + n];
-      }
-
-      char *csum_ptr = nmealib_buf.buffer + (gen_sz + sentence_size);
-      snprintf(csum_ptr, 8, "%02X\r\n", cs);
-
-      gen_sz += sentence_size + strlen(csum_ptr);
-    }
 
     if (gen_sz) {
       NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);

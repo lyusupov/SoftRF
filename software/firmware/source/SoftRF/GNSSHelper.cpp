@@ -572,34 +572,7 @@ void PickGNSSFix()
 
           }
 #endif
-#if 0
-          /* try to append pressure altitude (PGRMZ) next to each RMC sentence */
-          if (ThisAircraft.pressure_altitude != 0.0 &&
-              !strncmp((char *) &GNSSbuf[ndx+3], "RMC,", strlen("RMC,")) &&
-              /* Assume that space of 24 bytes is sufficient for PGRMZ */
-              (sizeof(GNSSbuf) - GNSS_cnt > 24) ) {
 
-            int altitude = constrain(
-                    (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
-                    -1000, 60000);
-
-            snprintf((char *) &GNSSbuf[GNSS_cnt+1], 24, "\n$PGRMZ,%d,f,3*",
-                    altitude ); /* feet , 3D fix */
-
-            size_t sentence_size = strlen((char *) &GNSSbuf[GNSS_cnt+1]);
-
-            //calculate the checksum
-            unsigned char cs = 0;
-            for (unsigned int n = 2; n < sentence_size - 1; n++) {
-              cs ^= GNSSbuf[(GNSS_cnt+1) + n];
-            }
-
-            char *csum_ptr = (char *) GNSSbuf + ((GNSS_cnt+1) + sentence_size);
-            snprintf(csum_ptr, 8, "%02X\r", cs);
-
-            write_size += sentence_size + strlen(csum_ptr);
-          }
-#endif
           /*
            * Work around issue with "always 0.0,M" GGA geoid separation value
            * given by some Chinese GNSS chipsets

@@ -49,21 +49,21 @@ static void bmp180_setup()
 {
   Serial.print(F("Temperature = "));
   Serial.print(bmp180.readTemperature());
-  Serial.println(" *C");
+  Serial.println(F(" *C"));
   
   Serial.print(F("Pressure = "));
   Serial.print(bmp180.readPressure());
-  Serial.println(" Pa");
+  Serial.println(F(" Pa"));
   
   // Calculate altitude assuming 'standard' barometric
   // pressure of 1013.25 millibar = 101325 Pascal
   Serial.print(F("Altitude = "));
   Serial.print(bmp180.readAltitude());
-  Serial.println(" meters");
+  Serial.println(F(" meters"));
 
   Serial.print(F("Pressure at sealevel (calculated) = "));
   Serial.print(bmp180.readSealevelPressure());
-  Serial.println(" Pa");
+  Serial.println(F(" Pa"));
 
 // you can get a more precise measurement of altitude
 // if you know the current sea level pressure which will
@@ -71,7 +71,7 @@ static void bmp180_setup()
 // that is equal to 101500 Pascals.
   Serial.print(F("Real altitude = "));
   Serial.print(bmp180.readAltitude(101500));
-  Serial.println(" meters");
+  Serial.println(F(" meters"));
   
   Serial.println();
   delay(500);
@@ -104,15 +104,15 @@ static void bmp280_setup()
 {
     Serial.print(F("Temperature = "));
     Serial.print(bmp280.readTemperature());
-    Serial.println(" *C");
+    Serial.println(F(" *C"));
     
     Serial.print(F("Pressure = "));
     Serial.print(bmp280.readPressure());
-    Serial.println(" Pa");
+    Serial.println(F(" Pa"));
 
     Serial.print(F("Approx altitude = "));
     Serial.print(bmp280.readAltitude(1013.25)); // this should be adjusted to your local forcase
-    Serial.println(" m");
+    Serial.println(F(" m"));
     
     Serial.println();
     delay(500);
@@ -144,10 +144,10 @@ static void mpl3115a2_setup()
   Serial.print(pascals/3377); Serial.println(F(" Inches (Hg)"));
 
   float altm = mpl3115a2.getAltitude();
-  Serial.print(altm); Serial.println(" meters");
+  Serial.print(altm); Serial.println(F(" meters"));
 
   float tempC = mpl3115a2.getTemperature();
-  Serial.print(tempC); Serial.println("*C");
+  Serial.print(tempC); Serial.println(F("*C"));
 
   delay(250);
 }
