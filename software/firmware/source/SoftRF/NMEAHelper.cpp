@@ -32,8 +32,6 @@ WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
-#define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
-
 char NMEABuffer[128]; //buffer for NMEA data
 NmeaMallocedBuffer nmealib_buf;
 
@@ -46,7 +44,15 @@ const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_FANET]     = "FAN"
 };
 
+#define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
 unsigned long PGRMZ_TimeMarker = 0;
+
+#if defined(ENABLE_AHRS)
+#include "AHRSHelper.h"
+
+#define isTimeToAHRS()  (millis() - AHRS_TimeMarker > AHRS_INTERVAL)
+unsigned long AHRS_TimeMarker = 0;
+#endif /* ENABLE_AHRS */
 
 static char *ltrim(char *s)
 {
@@ -85,6 +91,10 @@ void NMEA_setup()
 #endif
   memset(&nmealib_buf, 0, sizeof(nmealib_buf));
   PGRMZ_TimeMarker = millis();
+
+#if defined(ENABLE_AHRS)
+  AHRS_TimeMarker = millis();
+#endif /* ENABLE_AHRS */
 }
 
 void NMEA_loop()
@@ -105,6 +115,15 @@ void NMEA_loop()
 
     PGRMZ_TimeMarker = millis();
   }
+
+#if defined(ENABLE_AHRS)
+  if (settings->nmea_s && isTimeToAHRS()) {
+
+    AHRS_NMEA();
+
+    AHRS_TimeMarker = millis();
+  }
+#endif /* ENABLE_AHRS */
 
 #if defined(NMEA_TCP_SERVICE)
   uint8_t i;

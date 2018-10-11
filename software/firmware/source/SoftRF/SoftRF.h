@@ -75,6 +75,10 @@
 #define NMEA_UDP_PORT     10110
 #define NMEA_TCP_PORT     2000
 
+#if defined(PREMIUM_PACKAGE)
+#define ENABLE_AHRS
+#endif /* PREMIUM_PACKAGE */
+
 typedef struct UFO {
     String    raw;
     time_t    timestamp;
@@ -116,6 +120,9 @@ typedef struct hardware_info {
     byte  gnss;
     byte  baro;
     byte  display;
+#if defined(ENABLE_AHRS)
+    byte  ahrs;
+#endif /* ENABLE_AHRS */
 } hardware_info_t;
 
 enum

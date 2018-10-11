@@ -31,6 +31,10 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 
+#if defined(ENABLE_AHRS)
+#include "AHRSHelper.h"
+#endif /* ENABLE_AHRS */
+
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
 static GDL90_Msg_HeartBeat_t HeartBeat;
@@ -422,7 +426,12 @@ void GDL90_Export()
 #if defined(DO_GDL90_FF_EXT)
     size = makeFFid(buf);
     GDL90_Out(buf, size);
-#endif
+
+#if defined(ENABLE_AHRS)
+    AHRS_GDL90();
+#endif /* ENABLE_AHRS */
+
+#endif /* DO_GDL90_FF_EXT */
 
     size = makeOwnershipReport(buf, &ThisAircraft);
     GDL90_Out(buf, size);
