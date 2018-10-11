@@ -32,7 +32,7 @@ WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
-char NMEABuffer[128]; //buffer for NMEA data
+char NMEABuffer[NMEA_BUFFER_SIZE]; //buffer for NMEA data
 NmeaMallocedBuffer nmealib_buf;
 
 const char *NMEA_CallSign_Prefix[] = {
@@ -64,7 +64,7 @@ static char *ltrim(char *s)
   return s;
 }
 
-static void NMEA_add_checksum(char *buf, size_t limit)
+void NMEA_add_checksum(char *buf, size_t limit)
 {
   size_t sentence_size = strlen(buf);
 
