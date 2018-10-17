@@ -50,8 +50,8 @@ unsigned long PGRMZ_TimeMarker = 0;
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"
 
-#define isTimeToAHRS()  (millis() - AHRS_TimeMarker > AHRS_INTERVAL)
-unsigned long AHRS_TimeMarker = 0;
+#define isTimeToRPYL()  (millis() - RPYL_TimeMarker > AHRS_INTERVAL)
+unsigned long RPYL_TimeMarker = 0;
 #endif /* ENABLE_AHRS */
 
 static char *ltrim(char *s)
@@ -93,7 +93,7 @@ void NMEA_setup()
   PGRMZ_TimeMarker = millis();
 
 #if defined(ENABLE_AHRS)
-  AHRS_TimeMarker = millis();
+  RPYL_TimeMarker = millis();
 #endif /* ENABLE_AHRS */
 }
 
@@ -117,11 +117,11 @@ void NMEA_loop()
   }
 
 #if defined(ENABLE_AHRS)
-  if (settings->nmea_s && isTimeToAHRS()) {
+  if (settings->nmea_s && isTimeToRPYL()) {
 
     AHRS_NMEA();
 
-    AHRS_TimeMarker = millis();
+    RPYL_TimeMarker = millis();
   }
 #endif /* ENABLE_AHRS */
 

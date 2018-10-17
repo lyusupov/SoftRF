@@ -31,6 +31,10 @@
 #include "GDL90Helper.h"
 #include "D1090Helper.h"
 
+#if defined(ENABLE_AHRS)
+#include "AHRSHelper.h"
+#endif /* ENABLE_AHRS */
+
 static uint32_t prev_rx_pkt_cnt = 0;
 
 static const char Logo[] PROGMEM = {
@@ -70,7 +74,7 @@ String Bin2Hex(byte *buffer)
 
 void handleSettings() {
 
-  size_t size = 4300;
+  size_t size = 4500;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -301,6 +305,13 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sensors</th>\
+<td align=right>\
+<input type='radio' name='nmea_s' value='0' %s>Off\
+<input type='radio' name='nmea_s' value='1' %s>On\
+</td>\
+</tr>\
+<tr>\
 <th align=left>NMEA output</th>\
 <td align=right>\
 <select name='nmea_out'>\
@@ -310,6 +321,7 @@ void handleSettings() {
   (!settings->nmea_g ? "checked" : "") , (settings->nmea_g ? "checked" : ""),
   (!settings->nmea_p ? "checked" : "") , (settings->nmea_p ? "checked" : ""),
   (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
+  (!settings->nmea_s ? "checked" : "") , (settings->nmea_s ? "checked" : ""),
   (settings->nmea_out == NMEA_OFF ? "selected" : ""), NMEA_OFF,
   (settings->nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
   (settings->nmea_out == NMEA_UDP ? "selected" : ""), NMEA_UDP);
@@ -448,7 +460,7 @@ void handleRoot() {
   char str_alt[16];
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2200);
+  char *Root_temp = (char *) malloc(2300);
   if (Root_temp == NULL) {
     return;
   }
@@ -458,7 +470,7 @@ void handleRoot() {
   dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2200,
+  snprintf_P ( Root_temp, 2300,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -472,17 +484,20 @@ void handleRoot() {
  </table>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
- </table>\
- <table width=100%%>\
-   <tr>\
-    <td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-    <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-    <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  </tr>\
- </table>\
- <table width=100%%>\
-  <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
+  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
+#if !defined(ENABLE_AHRS)
+ "</table><table width=100%%>\
+  <tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
+  </table><table width=100%%>"
+#else
+ "<tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
+  <tr><td align=left><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>AHRS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>"
+#endif /* ENABLE_AHRS */
+ "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
  </table>\
@@ -520,6 +535,9 @@ void handleRoot() {
     GNSS_name[hw_info.gnss],
     (rf_chip == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
+#if defined(ENABLE_AHRS)
+    (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
+#endif /* ENABLE_AHRS */
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
     str_Vcc, tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
@@ -535,7 +553,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1400);
+  char *Input_temp = (char *) malloc(1450);
   if (Input_temp == NULL) {
     return;
   }
@@ -565,6 +583,8 @@ void handleInput() {
       settings->nmea_p = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_l")) {
       settings->nmea_l = server.arg(i).toInt();
+    } else if (server.argName(i).equals("nmea_s")) {
+      settings->nmea_s = server.arg(i).toInt();
     } else if (server.argName(i).equals("nmea_out")) {
       settings->nmea_out = server.arg(i).toInt();
     } else if (server.argName(i).equals("gdl90")) {
@@ -577,7 +597,7 @@ void handleInput() {
       settings->no_track = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1400,
+  snprintf_P ( Input_temp, 1450,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -599,6 +619,7 @@ PSTR("<html>\
 <tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Sensors</th><td align=right>%s</td></tr>\
 <tr><th align=left>NMEA Out</th><td align=right>%d</td></tr>\
 <tr><th align=left>GDL90</th><td align=right>%d</td></tr>\
 <tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
@@ -613,8 +634,8 @@ PSTR("<html>\
   settings->aircraft_type, settings->alarm, settings->txpower,
   settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
-  BOOL_STR(settings->nmea_l), settings->nmea_out,
-  settings->gdl90, settings->d1090,
+  BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
+  settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track)
   );
   SoC->swSer_enableRx(false);

@@ -388,29 +388,31 @@ static size_t makeFFid(uint8_t *buf)
 
 static void GDL90_Out(byte *buf, size_t size)
 {
-  switch(settings->gdl90)
-  {
-  case GDL90_UART:
+  if (size > 0) {
+    switch(settings->gdl90)
     {
-      Serial.write(buf, size);
-    }
-    break;
-  case GDL90_UDP:
-    {
-      SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
-    }
-    break;
-  case GDL90_BLUETOOTH:
-    {
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write(buf, size);
+    case GDL90_UART:
+      {
+        Serial.write(buf, size);
       }
+      break;
+    case GDL90_UDP:
+      {
+        SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+      }
+      break;
+    case GDL90_BLUETOOTH:
+      {
+        if (SoC->Bluetooth) {
+          SoC->Bluetooth->write(buf, size);
+        }
+      }
+      break;
+    case GDL90_TCP:
+    case GDL90_OFF:
+    default:
+      break;
     }
-    break;
-  case GDL90_TCP:
-  case GDL90_OFF:
-  default:
-    break;
   }
 }
 
@@ -428,13 +430,12 @@ void GDL90_Export()
 #if defined(DO_GDL90_FF_EXT)
     size = makeFFid(buf);
     GDL90_Out(buf, size);
+#endif /* DO_GDL90_FF_EXT */
 
 #if defined(ENABLE_AHRS)
     size = AHRS_GDL90(buf);
     GDL90_Out(buf, size);
 #endif /* ENABLE_AHRS */
-
-#endif /* DO_GDL90_FF_EXT */
 
     size = makeOwnershipReport(buf, &ThisAircraft);
     GDL90_Out(buf, size);

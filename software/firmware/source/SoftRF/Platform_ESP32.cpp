@@ -519,12 +519,16 @@ static bool ESP32_Baro_setup() {
     if (hw_info.revision == 2)
       return false;
 
+#if !defined(ENABLE_AHRS)
     /* Try out OLED I2C bus */
     Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
     if (!Baro_probe())
       return false;
 
     GPIO_21_22_are_busy = true;
+#else
+    return false;
+#endif
   }
 
   return true;

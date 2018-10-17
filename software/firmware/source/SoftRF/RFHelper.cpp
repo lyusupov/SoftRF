@@ -540,7 +540,7 @@ void sx1276_setup()
     /* SX1276 is unable to give more than 20 dBm */
     if (LMIC.txpow > 20)
       LMIC.txpow = 20;
-
+#if 1
     /*
      * Enforce Tx power limit until confirmation
      * that RFM95W is doing well
@@ -548,7 +548,7 @@ void sx1276_setup()
      */
     if (LMIC.txpow > 17)
       LMIC.txpow = 17;
-
+#endif
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
