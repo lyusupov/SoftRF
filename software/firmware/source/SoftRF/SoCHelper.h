@@ -31,8 +31,6 @@ typedef struct SoC_ops_struct {
   const char name[16];
   void (*setup)();
   uint32_t (*getChipId)();
-  uint32_t (*getFlashChipId)();
-  uint32_t (*getFlashChipRealSize)();
   void* (*getResetInfoPtr)();
   String (*getResetInfo)();
   String (*getResetReason)();

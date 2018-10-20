@@ -18,10 +18,8 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 &nbsp;|<p align="center">MAVLINK</p>|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/check-mark_32.png)</p>|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/check-mark_32.png)</p>|||<p align="center">![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/check-mark_32.png)</p>
 &nbsp;|<p align="center">Dump1090 &nbsp;<sup>3</sup></p>|||||<p align="center">![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/check-mark_32.png)</p>
 
-<sup>1</sup> - it is necessary for a reader to distinguish the difference between statement "**compatible**"
-and statement "**fully compatible**".<br>
-&nbsp;&nbsp;&nbsp;&nbsp; SoftRF implements only a minimum or "close to minimum" protocols support.
-No "bells and whistles" so far.<br>
+<sup>1</sup> - it is necessary for a reader to distinguish the difference between statement "**compatible**" and statement "**fully compatible**".<br>
+&nbsp;&nbsp;&nbsp;&nbsp; SoftRF implements only a reasonable minimum of the protocols specs. No "bells and whistles" so far.<br>
 <sup>2</sup> - valid for [Prime Edition Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ; valid for **Standalone** and **UAV** **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
 <sup>3</sup> - also known as "raw ADS-B"<br>
 

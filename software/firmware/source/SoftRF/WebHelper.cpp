@@ -644,6 +644,7 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   EEPROM_store();
+  RF_Shutdown();
   delay(1000);
   ESP.restart();
 }
@@ -804,6 +805,7 @@ $('form').submit(function(e){\
     server.sendHeader(String(F("Access-Control-Allow-Origin")), "*");
     server.send(200, String(F("text/plain")), (Update.hasError())?"FAIL":"OK");
 //    SoC->swSer_enableRx(true);
+    RF_Shutdown();
     delay(1000);
     ESP.restart();
   },[](){

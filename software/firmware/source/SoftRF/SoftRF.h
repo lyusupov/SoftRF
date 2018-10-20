@@ -144,7 +144,6 @@ enum
 	SOFTRF_MODEL_PRIME_MK2
 };
 
-extern void Misc_info(void);
 extern ufo_t ThisAircraft;
 extern hardware_info_t hw_info;
 extern const float txrx_test_positions[90][2] PROGMEM;

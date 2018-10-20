@@ -78,16 +78,6 @@ static uint32_t ESP8266_getChipId()
 #endif
 }
 
-static uint32_t ESP8266_getFlashChipId()
-{
-  return ESP.getFlashChipId();
-}
-
-static uint32_t ESP8266_getFlashChipRealSize()
-{
-  return ESP.getFlashChipRealSize();
-}
-
 static void* ESP8266_getResetInfoPtr()
 {
   return (void *) ESP.getResetInfoPtr();
@@ -274,8 +264,6 @@ SoC_ops_t ESP8266_ops = {
   "ESP8266",
   ESP8266_setup,
   ESP8266_getChipId,
-  ESP8266_getFlashChipId,
-  ESP8266_getFlashChipRealSize,
   ESP8266_getResetInfoPtr,
   ESP8266_getResetInfo,
   ESP8266_getResetReason,

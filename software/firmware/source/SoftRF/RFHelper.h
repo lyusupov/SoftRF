@@ -58,6 +58,7 @@ typedef struct rfchip_ops_struct {
   void (*channel)(uint8_t);
   bool (*receive)();
   void (*transmit)();
+  void (*shutdown)();
 } rfchip_ops_t;
 
 uint8_t parity(uint32_t);
@@ -68,18 +69,21 @@ void RF_loop(void);
 size_t RF_Encode(void);
 void RF_Transmit(size_t);
 bool RF_Receive(void);
+void RF_Shutdown(void);
 
 bool nrf905_probe(void);
 void nrf905_setup(void);
 void nrf905_channel(uint8_t);
 bool nrf905_receive(void);
 void nrf905_transmit(void);
+void nrf905_shutdown(void);
 
 bool sx1276_probe(void);
 void sx1276_setup(void);
 void sx1276_channel(uint8_t);
 bool sx1276_receive(void);
 void sx1276_transmit(void);
+void sx1276_shutdown(void);
 
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 extern unsigned long TxTimeMarker;

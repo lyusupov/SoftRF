@@ -60,7 +60,8 @@ rfchip_ops_t nrf905_ops = {
   nrf905_setup,
   nrf905_channel,
   nrf905_receive,
-  nrf905_transmit
+  nrf905_transmit,
+  nrf905_shutdown
 };
 
 rfchip_ops_t sx1276_ops = {
@@ -70,7 +71,8 @@ rfchip_ops_t sx1276_ops = {
   sx1276_setup,
   sx1276_channel,
   sx1276_receive,
-  sx1276_transmit
+  sx1276_transmit,
+  sx1276_shutdown
 };
 
 uint8_t parity(uint32_t x) {
@@ -260,6 +262,13 @@ bool RF_Receive(void)
   return rval;
 }
 
+void RF_Shutdown(void)
+{
+  if (rf_chip) {
+    rf_chip->shutdown();
+  }
+}
+
 /*
  * NRF905-specific code
  *
@@ -413,6 +422,11 @@ void nrf905_transmit()
     while (!nRF905_send()) {
       yield();
     } ;
+}
+
+void nrf905_shutdown()
+{
+
 }
 
 /*
@@ -626,6 +640,11 @@ void sx1276_transmit()
       os_runloop_once();
       yield();
     };
+}
+
+void sx1276_shutdown()
+{
+  LMIC_shutdown();
 }
 
 // Enable rx mode and call func when a packet is received

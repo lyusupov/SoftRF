@@ -22,6 +22,7 @@
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
 #include <Wire.h>
+#include <rom/rtc.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -134,38 +135,80 @@ static uint32_t ESP32_getChipId()
 #endif /* SOFTRF_ADDRESS */
 }
 
-static uint32_t ESP32_getFlashChipId()
-{
-/* not implemented yet */
-  return 0;
-}
-
-static uint32_t ESP32_getFlashChipRealSize()
-{
-/* not implemented yet */
-  return 0;
-}
-
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
 static void* ESP32_getResetInfoPtr()
 {
-/* not implemented yet */
+  switch (rtc_get_reset_reason(0))
+  {
+    case POWERON_RESET          : reset_info.reason = REASON_DEFAULT_RST; break;
+    case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
+    case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
+    case DEEPSLEEP_RESET        : reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
+    case SDIO_RESET             : reset_info.reason = REASON_EXCEPTION_RST; break;
+    case TG0WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
+    case TGWDT_CPU_RESET        : reset_info.reason = REASON_WDT_RST; break;
+    case SW_CPU_RESET           : reset_info.reason = REASON_SOFT_RESTART; break;
+    case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
+    case RTCWDT_BROWN_OUT_RESET : reset_info.reason = REASON_EXT_SYS_RST; break;
+    case RTCWDT_RTC_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    default                     : reset_info.reason = REASON_DEFAULT_RST;
+  }
+
   return (void *) &reset_info;
 }
 
 static String ESP32_getResetInfo()
 {
-/* not implemented yet */
-  return "No reset information available.";
+  switch (rtc_get_reset_reason(0))
+  {
+    case POWERON_RESET          : return F("Vbat power on reset");
+    case SW_RESET               : return F("Software reset digital core");
+    case OWDT_RESET             : return F("Legacy watch dog reset digital core");
+    case DEEPSLEEP_RESET        : return F("Deep Sleep reset digital core");
+    case SDIO_RESET             : return F("Reset by SLC module, reset digital core");
+    case TG0WDT_SYS_RESET       : return F("Timer Group0 Watch dog reset digital core");
+    case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
+    case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
+    case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
+    case TGWDT_CPU_RESET        : return F("Time Group reset CPU");
+    case SW_CPU_RESET           : return F("Software reset CPU");
+    case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
+    case EXT_CPU_RESET          : return F("for APP CPU, reseted by PRO CPU");
+    case RTCWDT_BROWN_OUT_RESET : return F("Reset when the vdd voltage is not stable");
+    case RTCWDT_RTC_RESET       : return F("RTC Watch dog reset digital core and rtc module");
+    default                     : return F("No reset information available");
+  }
 }
 
 static String ESP32_getResetReason()
 {
-/* not implemented yet */
-  return "No reset reason.";
+
+  switch (rtc_get_reset_reason(0))
+  {
+    case POWERON_RESET          : return F("POWERON_RESET");
+    case SW_RESET               : return F("SW_RESET");
+    case OWDT_RESET             : return F("OWDT_RESET");
+    case DEEPSLEEP_RESET        : return F("DEEPSLEEP_RESET");
+    case SDIO_RESET             : return F("SDIO_RESET");
+    case TG0WDT_SYS_RESET       : return F("TG0WDT_SYS_RESET");
+    case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
+    case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
+    case INTRUSION_RESET        : return F("INTRUSION_RESET");
+    case TGWDT_CPU_RESET        : return F("TGWDT_CPU_RESET");
+    case SW_CPU_RESET           : return F("SW_CPU_RESET");
+    case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
+    case EXT_CPU_RESET          : return F("EXT_CPU_RESET");
+    case RTCWDT_BROWN_OUT_RESET : return F("RTCWDT_BROWN_OUT_RESET");
+    case RTCWDT_RTC_RESET       : return F("RTCWDT_RTC_RESET");
+    default                     : return F("NO_MEAN");
+  }
 }
 
 static long ESP32_random(long howsmall, long howBig)
@@ -539,8 +582,6 @@ SoC_ops_t ESP32_ops = {
   "ESP32",
   ESP32_setup,
   ESP32_getChipId,
-  ESP32_getFlashChipId,
-  ESP32_getFlashChipRealSize,
   ESP32_getResetInfoPtr,
   ESP32_getResetInfo,
   ESP32_getResetReason,
