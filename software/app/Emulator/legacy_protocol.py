@@ -205,6 +205,11 @@ def pack_values(icao, vs, status, typ, lat, lon, alt, vsmult, no_track, stealth)
     #ew = [b if b < 0x80 else (b - 0x100) for b in bytes[20:24]]
     #unk = ((bytes[5] & 0b00011100) << 8) | ((bytes[14] & 0b11110000) << 2) | (bytes[15] & 0b00111111)
     bytes.extend([0,0,0,0,0,0,0,0])
+    parity = 0
+    for sym in bytes:
+      parity ^= parityOf(sym)
+    if (parity & 0x1) == 1:
+      bytes[3] = bytes[3] | (1 << 1)
     return bytes
 
 def pack_lat(float_lat):
