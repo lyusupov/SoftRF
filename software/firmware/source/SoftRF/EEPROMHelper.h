@@ -19,7 +19,9 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
+#if !defined(RASPBERRY_PI)
 #include <EEPROM.h>
+#endif /* RASPBERRY_PI */
 
 #include "SoftRF.h"
 

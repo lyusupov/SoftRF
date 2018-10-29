@@ -11,6 +11,9 @@
 
 #ifndef ARDUINO
 #include <stdbool.h>
+#if defined(RASPBERRY_PI)
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 #endif
 #include "nRF905_config.h"
 /*

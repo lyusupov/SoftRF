@@ -19,7 +19,9 @@
 #ifndef MAVLINKHELPER_H
 #define MAVLINKHELPER_H
 
+#if !defined(RASPBERRY_PI)
 #include <Arduino.h>  // uint32_t definition is required for mavlink.h
+#endif /* RASPBERRY_PI */
 
 #define MAVLINK10
 

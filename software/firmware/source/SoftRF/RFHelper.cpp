@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#if !defined(RASPBERRY_PI)
 #include <SPI.h>
+#endif /* RASPBERRY_PI */
 
 #include "RFHelper.h"
 #include "Protocol_Legacy.h"
@@ -237,7 +239,10 @@ void RF_Transmit(size_t size)
       rf_chip->transmit();
 
       if (settings->nmea_p) {
-        StdOut.print(F("$PSRFO,")); StdOut.print(timestamp); StdOut.print(F(",")); StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
+        StdOut.print(F("$PSRFO,"));
+        StdOut.print((unsigned long) timestamp);
+        StdOut.print(F(","));
+        StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
       }
       tx_packets_counter++;
       RF_tx_size = 0;
@@ -287,7 +292,10 @@ bool nrf905_probe()
   pinMode(CSN, OUTPUT);
 
   SoC->SPI_begin();
+
+#if !defined(RASPBERRY_PI)
   SPI.setClockDivider(SPI_CLOCK_DIV2);
+#endif /* RASPBERRY_PI */
 
   digitalWrite(CSN, LOW);
 

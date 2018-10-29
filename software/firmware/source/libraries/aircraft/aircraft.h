@@ -18,7 +18,10 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
+#if !defined(RASPBERRY_PI)
 #include <Arduino.h>
+#endif /* RASPBERRY_PI */
+
 // Arduino is like a box of chocolates.
 // You never know what you're going to get.
 #if __cplusplus < 201103L

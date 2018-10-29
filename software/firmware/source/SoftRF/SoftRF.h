@@ -19,7 +19,11 @@
 #ifndef SOFTRF_H
 #define SOFTRF_H
 
+#if !defined(RASPBERRY_PI)
 #include <Arduino.h>
+#else
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 
 #define SOFTRF_FIRMWARE_VERSION "1.0-rc5"
 

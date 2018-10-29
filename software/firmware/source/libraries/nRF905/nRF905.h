@@ -340,7 +340,7 @@ bool nRF905_receiveBusy(void);
 */
 inline bool nRF905_airwayBusy(void)
 {
-#ifdef ARDUINO
+#if defined(ARDUINO) || defined(RASPBERRY_PI)
 	return digitalRead(CD);
 #else
 	return (CD_PORT & _BV(CD_BIT));

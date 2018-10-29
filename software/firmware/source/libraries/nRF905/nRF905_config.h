@@ -21,7 +21,7 @@
 
 // Use pin interrupt for data ready
 // NOTE: If you have other devices connected that use the SPI bus then you will need to call nRF905_interrupt_off() before using SPI comms and then RF905_interrupt_on() once you've finished.
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -42,7 +42,7 @@
 
 // Use software to get address match state instead of reading pin for high/low state
 // Not used in this library yet
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -53,7 +53,7 @@
 #define NRF905_DR_SW		1
 
 // Don't transmit if airway is busy (other transmissions are going on)
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -116,8 +116,10 @@
 // blah
 //#define AM			4
 
-#else
+#else /* ARDUINO */
 // Non-Arduino pins
+
+#if !defined(RASPBERRY_PI)
 
 // Enable/standby pin
 #define CFG_TRX_EN_PORT		D
@@ -149,6 +151,23 @@
 // SPI slave select pin
 #define CFG_CSN_PORT		B
 #define CFG_CSN_BIT			2
+
+#else /* RASPBERRY_PI */
+
+#include "bcm2835.h"
+
+#define TRX_EN    (23)  // Enable/standby pin
+#define PWR_MODE  (22)  // Power mode pin
+#define TX_EN     (27)  // TX / RX mode pin
+#define CSN       (BCM2835_SPI_CS0)  // SPI slave select pin
+
+#define CD			  (24)	// Carrier detect pin (for collision avoidance, if enabled)
+#define DR			  (25)
+
+// Address match pin (not used by library)
+//#define AM        (7)
+
+#endif /* RASPBERRY_PI */
 
 #endif
 

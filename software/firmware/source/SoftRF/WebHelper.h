@@ -20,7 +20,10 @@
 #define WEBHELPER_H
 
 #include <TinyGPS++.h>
+
+#if !defined(RASPBERRY_PI)
 #include <WiFiClient.h>
+#endif /* RASPBERRY_PI */
 
 #include "SoftRF.h"
 #include "EEPROMHelper.h"
@@ -38,7 +41,9 @@ String Bin2Hex(byte *);
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
+#if !defined(RASPBERRY_PI)
 extern WiFiClient client;
+#endif /* RASPBERRY_PI */
 extern TinyGPSPlus gps;
 
 #endif /* WEBHELPER_H */
