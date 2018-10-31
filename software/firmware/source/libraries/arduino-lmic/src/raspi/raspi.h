@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
+#include <netinet/in.h>
 
 #include <lmic.h>
 #include "hal/hal.h"
@@ -83,6 +84,7 @@ void randomSeed(unsigned long);
 
 typedef unsigned char byte;
 typedef bool boolean;
+typedef in_addr_t IPAddress;
 
 class SPISettings 
 {

@@ -19,9 +19,9 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
-#if !defined(RASPBERRY_PI)
+#if defined(ARDUINO)
 #include <EEPROM.h>
-#endif /* RASPBERRY_PI */
+#endif /* ARDUINO */
 
 #include "SoftRF.h"
 

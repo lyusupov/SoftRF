@@ -19,9 +19,11 @@
 #ifndef SOFTRF_H
 #define SOFTRF_H
 
-#if !defined(RASPBERRY_PI)
+#if defined(ARDUINO)
 #include <Arduino.h>
-#else
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 

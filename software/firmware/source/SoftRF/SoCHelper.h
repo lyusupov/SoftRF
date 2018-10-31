@@ -38,9 +38,7 @@ typedef struct SoC_ops_struct {
   void (*Sound_test)(int);
   uint32_t (*maxSketchSpace)();
   void (*WiFi_setOutputPower)(int);
-#if !defined(RASPBERRY_PI)
   IPAddress (*WiFi_get_broadcast)();
-#endif /* RASPBERRY_PI */
   void (*WiFi_transmit_UDP)(int, byte *, size_t);
   void (*WiFiUDP_stopAll)();
   bool (*WiFi_hostname)(String);

@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if !defined(RASPBERRY_PI)
+#if defined(ARDUINO)
 #include <SPI.h>
-#endif /* RASPBERRY_PI */
+#endif /* ARDUINO */
 
 #include "RFHelper.h"
 #include "Protocol_Legacy.h"
@@ -293,9 +293,9 @@ bool nrf905_probe()
 
   SoC->SPI_begin();
 
-#if !defined(RASPBERRY_PI)
+#if defined(ARDUINO)
   SPI.setClockDivider(SPI_CLOCK_DIV2);
-#endif /* RASPBERRY_PI */
+#endif /* ARDUINO */
 
   digitalWrite(CSN, LOW);
 

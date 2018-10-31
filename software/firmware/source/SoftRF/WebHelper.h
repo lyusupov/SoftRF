@@ -21,9 +21,9 @@
 
 #include <TinyGPS++.h>
 
-#if !defined(RASPBERRY_PI)
+#if defined(ARDUINO)
 #include <WiFiClient.h>
-#endif /* RASPBERRY_PI */
+#endif /* ARDUINO */
 
 #include "SoftRF.h"
 #include "EEPROMHelper.h"
@@ -41,9 +41,11 @@ String Bin2Hex(byte *);
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
-#if !defined(RASPBERRY_PI)
+
+#if defined(ARDUINO)
 extern WiFiClient client;
-#endif /* RASPBERRY_PI */
+#endif /* ARDUINO */
+
 extern TinyGPSPlus gps;
 
 #endif /* WEBHELPER_H */

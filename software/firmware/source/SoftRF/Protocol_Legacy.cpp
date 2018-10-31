@@ -19,9 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined(RASPBERRY_PI)
-#include <Arduino.h>
-#endif /* RASPBERRY_PI */
 #include <math.h>
 #include <stdint.h>
 
