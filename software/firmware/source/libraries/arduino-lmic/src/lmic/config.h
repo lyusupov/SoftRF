@@ -125,6 +125,14 @@
 # define USE_IDEETRON_AES
 #endif
 
+// Force Original AES on RPI
+#ifdef RASPBERRY_PI
+#ifdef USE_IDEETRON_AES
+#undef USE_IDEETRON_AES
+#define USE_ORIGINAL_AES
+#endif
+#endif
+
 #if defined(USE_ORIGINAL_AES) && defined(USE_IDEETRON_AES)
 # error "You may define at most one of USE_ORIGINAL_AES and USE_IDEETRON_AES"
 #endif

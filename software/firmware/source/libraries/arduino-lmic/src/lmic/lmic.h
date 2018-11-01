@@ -34,6 +34,10 @@
 #include "oslmic.h"
 #include "lorabase.h"
 
+#ifdef RASPBERRY_PI
+#include "raspi/raspi.h"
+#endif
+
 #include <protocol.h>
 
 #ifdef __cplusplus

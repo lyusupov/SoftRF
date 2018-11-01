@@ -8,8 +8,15 @@
  * This the HAL to run LMIC on top of the Arduino environment.
  *******************************************************************************/
 
+#if defined(ARDUINO)
 #include <Arduino.h>
 #include <SPI.h>
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI)
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
+
 #include "../lmic.h"
 #include "hal.h"
 #include <stdio.h>
@@ -72,6 +79,13 @@ static void hal_interrupt_init() {
             // we need to check at least one DIO line 
             check_dio = 1; 
             pinMode(lmic_pins.dio[i], INPUT);
+
+#ifdef RASPBERRY_PI
+            // Enable pull down an rising edge detection on this one
+            bcm2835_gpio_set_pud(lmic_pins.dio[i], BCM2835_GPIO_PUD_DOWN);
+            bcm2835_gpio_ren(lmic_pins.dio[i]);
+#endif
+
         }
     }
 }
@@ -85,11 +99,22 @@ static void hal_io_check() {
             if (lmic_pins.dio[i] == LMIC_UNUSED_PIN)
                 continue;
 
+#ifdef RASPBERRY_PI
+            // Rising edge fired ?
+            if (bcm2835_gpio_eds(lmic_pins.dio[i])) {
+                // Now clear the eds flag by setting it to 1
+                bcm2835_gpio_set_eds(lmic_pins.dio[i]);
+                // Handle pseudo interrupt
+                radio_irq_handler(i);
+            }
+#else
             if (dio_states[i] != digitalRead(lmic_pins.dio[i])) {
                 dio_states[i] = !dio_states[i];
-                if (dio_states[i])
+                if (dio_states[i]) {
                     radio_irq_handler(i);
+                }
             }
+#endif
         }
     } else {
         // Check IRQ flags in radio module
@@ -143,7 +168,12 @@ static void hal_io_check() {
 // -----------------------------------------------------------------------------
 // SPI
 
+#ifdef RASPBERRY_PI
+// Clock divider / 32 = 8MHz
+static const SPISettings settings(BCM2835_SPI_CLOCK_DIVIDER_32 , BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0);
+#else
 static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
+#endif
 
 static void hal_spi_init () {
     SPI.begin(
