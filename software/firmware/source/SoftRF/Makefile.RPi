@@ -1,0 +1,72 @@
+#
+# Makefile.RPi
+# Copyright (C) 2018 Linar Yusupov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+CXX           = g++
+CFLAGS        = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+                -D__BASEFILE__=\"$*\"
+
+LMIC_PATH     = ../libraries/arduino-lmic/src
+NRF905_PATH   = ../libraries/nRF905
+TIMELIB_PATH  = ../libraries/Time
+CRCLIB_PATH   = ../libraries/CRC
+OGNLIB_PATH   = ../libraries/OGN
+GNSSLIB_PATH  = ../libraries/TinyGPSPlus/src
+BCMLIB_PATH   = ../libraries/bcm2835/src
+MAVLINK_PATH  = ../libraries/mavlink
+AIRCRAFT_PATH = ../libraries/aircraft
+
+INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH) \
+                -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH) \
+                -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH)
+
+OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
+                 Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
+                 $(CRCLIB_PATH)/lib_crc.o \
+                 $(LMIC_PATH)/raspi/raspi.o $(LMIC_PATH)/raspi/WString.o \
+                 $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
+                 $(LMIC_PATH)/lmic/lmic.o $(LMIC_PATH)/hal/hal.o \
+                 $(OGNLIB_PATH)/ldpc.o \
+                 $(GNSSLIB_PATH)/TinyGPS++.o \
+                 $(TIMELIB_PATH)/Time.o \
+                 $(NRF905_PATH)/nRF905.o
+
+LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+
+PROGRAM       := SoftRF
+
+all: bcm $(PROGRAM)
+
+%.o: %.cpp
+				$(CXX) -c $(CFLAGS) $*.cpp -o $*.o $(INCLUDE)
+
+%.o: %.c
+				$(CXX) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+
+aes.o: $(LMIC_PATH)/aes/lmic.c
+				$(CXX) $(CFLAGS) -c $(LMIC_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
+
+bcm:
+				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+
+$(PROGRAM): $(OBJS) aes.o
+				$(CXX) $(OBJS) aes.o $(LIBS) -o $(PROGRAM)
+
+bcm-clean:
+				(cd $(BCMLIB_PATH)/../ ; make distclean)
+
+clean: bcm-clean
+				rm -f $(OBJS) aes.o $(PROGRAM)

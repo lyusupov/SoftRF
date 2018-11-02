@@ -110,8 +110,6 @@
 #define DR			3
 #endif
 
-
-
 // Address match pin (not used by library)
 // blah
 //#define AM			4

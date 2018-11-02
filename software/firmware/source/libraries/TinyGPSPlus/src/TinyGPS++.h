@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #else
 #if !defined(RASPBERRY_PI)
 #include "WProgram.h"
+#else
+#include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 #endif
 #include <limits.h>

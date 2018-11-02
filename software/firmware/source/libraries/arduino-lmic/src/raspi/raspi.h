@@ -56,7 +56,7 @@
 
 // Delay macros
 #define delay(x) bcm2835_delay(x)
-//#define delayMicroseconds(m) bcm2835_delayMicroseconds(m)
+#define delayMicroseconds(m) bcm2835_delayMicroseconds(m)
 
 #include <pthread.h>
 #define yield() pthread_yield()
@@ -81,6 +81,15 @@
 long random(long);
 long random(long, long);
 void randomSeed(unsigned long);
+
+#define TWO_PI 6.283185307179586476925286766559
+#define DEG_TO_RAD 0.017453292519943295769236907684886
+#define RAD_TO_DEG 57.295779513082320876798154814105
+#define radians(deg) ((deg)*DEG_TO_RAD)
+#define degrees(rad) ((rad)*RAD_TO_DEG)
+#define sq(x) ((x)*(x))
+
+#define _BV(bit) (1 << (bit))
 
 typedef unsigned char byte;
 typedef bool boolean;

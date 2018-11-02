@@ -1,5 +1,5 @@
 /*
- * SoCHelper.cpp
+ * Platform_RPi.h
  * Copyright (C) 2018 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,29 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#if defined(RASPBERRY_PI)
 
-SoC_ops_t *SoC;
+#ifndef RPIHELPER_H
+#define RPIHELPER_H
 
-byte SoC_setup()
-{
-#if defined(ESP8266)
-  SoC = &ESP8266_ops;
-#elif defined(ESP32)
-  SoC = &ESP32_ops;
-#elif defined(RASPBERRY_PI)
-  SoC = &RPi_ops;
-#else
-#error "This hardware platform is not supported!"
-#endif
+/* Dragino LoRa/GPS HAT */
+#define SOC_GPIO_PIN_MOSI     12
+#define SOC_GPIO_PIN_MISO     13
+#define SOC_GPIO_PIN_SCK      14
+#define SOC_GPIO_PIN_SS       6
+#define SOC_GPIO_PIN_RST      0
+#define SOC_GPIO_PIN_DIO0     7
 
-  if (SoC && SoC->setup) {
-    SoC->setup();
-  }
+#endif /* RPIHELPER_H */
 
-  if (SoC) {
-    return SoC->id;
-  } else {
-    return SOC_NONE;
-  }
-}
+#endif /* RASPBERRY_PI */

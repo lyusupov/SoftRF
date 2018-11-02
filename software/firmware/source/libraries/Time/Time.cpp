@@ -30,7 +30,11 @@
 #if ARDUINO >= 100
 #include <Arduino.h> 
 #else
-#include <WProgram.h> 
+#if !defined(RASPBERRY_PI)
+#include <WProgram.h>
+#else
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 #endif
 
 #include "Time.h"

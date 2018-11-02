@@ -24,6 +24,7 @@
 #include "SoftRF.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
+#include "Platform_RPi.h"
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -60,7 +61,8 @@ enum
 {
 	SOC_NONE,
 	SOC_ESP8266,
-	SOC_ESP32
+	SOC_ESP32,
+  SOC_RPi
 };
 
 extern SoC_ops_t *SoC;
@@ -69,6 +71,9 @@ extern SoC_ops_t ESP8266_ops;
 #endif
 #if defined(ESP32)
 extern SoC_ops_t ESP32_ops;
+#endif
+#if defined(RASPBERRY_PI)
+extern SoC_ops_t RPi_ops;
 #endif
 
 byte SoC_setup(void);

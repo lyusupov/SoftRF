@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#if !defined(ESP8266) && !defined(ESP32)
+#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI)
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -19,12 +19,20 @@
 #include <Arduino.h>
 #include <SPI.h>
 #else
+#if !defined(RASPBERRY_PI)
 #include "nRF905_spi.h"
+#else
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 #endif
 #include "nRF905.h"
 #include "nRF905_config.h"
 #include "nRF905_defs.h"
 #include "nRF905_types.h"
+
+#if defined(RASPBERRY_PI)
+#define ARDUINO
+#endif /* RASPBERRY_PI */
 
 #define noinline __attribute__ ((__noinline__))
 
@@ -162,7 +170,9 @@ void nRF905_init()
 #endif
 		);
 
+#if !defined(RASPBERRY_PI)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
+#endif /* RASPBERRY_PI */
 #else
 	TRX_EN_DDR |= _BV(TRX_EN_BIT);
 	PWR_MODE_DDR |= _BV(PWR_MODE_BIT);
