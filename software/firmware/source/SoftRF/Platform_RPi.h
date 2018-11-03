@@ -22,12 +22,21 @@
 #define RPIHELPER_H
 
 /* Dragino LoRa/GPS HAT */
+#if 0 /* WiringPi */
 #define SOC_GPIO_PIN_MOSI     12
 #define SOC_GPIO_PIN_MISO     13
 #define SOC_GPIO_PIN_SCK      14
 #define SOC_GPIO_PIN_SS       6
 #define SOC_GPIO_PIN_RST      0
 #define SOC_GPIO_PIN_DIO0     7
+#else /* BCM */
+#define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_19
+#define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_21
+#define SOC_GPIO_PIN_SCK      RPI_V2_GPIO_P1_23
+#define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_22 // Slave Select on GPIO25 so P1 connector pin #22
+#define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
+#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_7  // IRQ on GPIO4 so P1 connector pin #7
+#endif /* GPIO */
 
 #endif /* RPIHELPER_H */
 
