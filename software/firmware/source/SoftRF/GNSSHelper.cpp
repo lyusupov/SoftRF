@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(ARDUINO)
 #include <Arduino.h>
+#endif
 #include <TimeLib.h>
 
 #include "GNSSHelper.h"

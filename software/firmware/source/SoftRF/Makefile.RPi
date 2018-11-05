@@ -15,8 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+CC            = gcc
 CXX           = g++
-CFLAGS        = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+
+CFLAGS        = -g -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+                -D__BASEFILE__=\"$*\"
+
+CXXFLAGS      = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
@@ -28,13 +33,18 @@ GNSSLIB_PATH  = ../libraries/TinyGPSPlus/src
 BCMLIB_PATH   = ../libraries/bcm2835/src
 MAVLINK_PATH  = ../libraries/mavlink
 AIRCRAFT_PATH = ../libraries/aircraft
+ADSB_PATH     = ../libraries/adsb_encoder
+NMEALIB_PATH  = ../libraries/nmealib/src
+GEOID_PATH    = ../libraries/Geoid
 
-INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH) \
-                -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH) \
-                -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH)
+INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
+                -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
+                -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
+                -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)
 
 OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
                  Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
+                 TrafficHelper.o D1090Helper.o GDL90Helper.o NMEAHelper.o GNSSHelper.o \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(LMIC_PATH)/raspi/raspi.o $(LMIC_PATH)/raspi/WString.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
@@ -42,7 +52,14 @@ OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
                  $(OGNLIB_PATH)/ldpc.o \
                  $(GNSSLIB_PATH)/TinyGPS++.o \
                  $(TIMELIB_PATH)/Time.o \
-                 $(NRF905_PATH)/nRF905.o
+                 $(NRF905_PATH)/nRF905.o \
+                 $(ADSB_PATH)/adsb_encoder.o \
+                 $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
+                 $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
+                 $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \
+                 $(NMEALIB_PATH)/gpgga.o $(NMEALIB_PATH)/gprmc.o \
+                 $(NMEALIB_PATH)/gpvtg.o $(NMEALIB_PATH)/gpgsv.o \
+                 $(NMEALIB_PATH)/gpgsa.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
@@ -51,13 +68,16 @@ PROGRAM       := SoftRF
 all: bcm $(PROGRAM)
 
 %.o: %.cpp
-				$(CXX) -c $(CFLAGS) $*.cpp -o $*.o $(INCLUDE)
+				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
 
 %.o: %.c
-				$(CXX) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
 
 aes.o: $(LMIC_PATH)/aes/lmic.c
-				$(CXX) $(CFLAGS) -c $(LMIC_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
+				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
+
+$(LMIC_PATH)/lmic/%.o: $(LMIC_PATH)/lmic/%.c
+				$(CXX) -c $(CXXFLAGS) $(LMIC_PATH)/lmic/$*.c -o $(LMIC_PATH)/lmic/$*.o $(INCLUDE)
 
 bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)

@@ -53,6 +53,12 @@
 // We don't have IRQ on Raspberry PI
 #define interrupts()   {}
 #define noInterrupts() {}
+#define digitalPinToInterrupt(p)             (p)
+#define attachInterrupt(pin, userFunc, mode) {}
+
+#define CHANGE 3
+#define FALLING 1
+#define RISING 2
 
 // Delay macros
 #define delay(x) bcm2835_delay(x)
@@ -70,8 +76,13 @@
 #define PROGMEM
 #endif
 
+#ifndef snprintf_P
+#define snprintf_P snprintf
+#endif
+
 // F() Macro
-#define F(s)  (s)
+#define F(s)     (s)
+#define PSTR(s)  (s)
 
 //#define random(x) (rand() % x)
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
@@ -82,6 +93,7 @@ long random(long);
 long random(long, long);
 void randomSeed(unsigned long);
 
+#define PI 3.1415926535897932384626433832795
 #define TWO_PI 6.283185307179586476925286766559
 #define DEG_TO_RAD 0.017453292519943295769236907684886
 #define RAD_TO_DEG 57.295779513082320876798154814105
@@ -94,6 +106,13 @@ void randomSeed(unsigned long);
 typedef unsigned char byte;
 typedef bool boolean;
 typedef in_addr_t IPAddress;
+
+char *dtostrf(double val, signed char width, unsigned char prec, char *sout);
+
+// Checks for any printable character including space.
+inline boolean isPrintable(int c){
+  return ( isprint (c) == 0 ? false : true);
+}
 
 class SPISettings 
 {
@@ -155,6 +174,9 @@ class SerialSimulator {
     static size_t println(unsigned char ch, int base = DEC);
     static size_t write(char ch);
     static size_t write(unsigned char * s, size_t len);
+    static size_t write(const char * s);
+    static size_t available(void);
+    static size_t read(void);
     static void   flush(void);
 
 };

@@ -26,6 +26,7 @@
 #include "RFHelper.h"
 #include "LEDHelper.h"
 #include "SoundHelper.h"
+#include "BaroHelper.h"
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
@@ -50,10 +51,20 @@ void onEvent (ev_t ev) { }
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
-ufo_t ThisAircraft, fo;
-TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
+ufo_t ThisAircraft;
 aircraft the_aircraft;
-volatile unsigned long PPS_TimeMarker = 0;
+
+char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
+
+hardware_info_t hw_info = {
+  .model    = SOFTRF_MODEL_STANDALONE,
+  .revision = 0,
+  .soc      = SOC_NONE,
+  .rf       = RF_IC_NONE,
+  .gnss     = GNSS_MODULE_NONE,
+  .baro     = BARO_MODULE_NONE,
+  .display  = DISPLAY_NONE
+};
 
 String Bin2Hex(byte *buffer)
 {
@@ -153,9 +164,9 @@ int main()
 
   Serial.begin(38400);
 
-  byte soc_id = SoC_setup(); // Has to be very first procedure in the execution order
+  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  byte rf_chip_id = RF_setup();
+  hw_info.rf = RF_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;

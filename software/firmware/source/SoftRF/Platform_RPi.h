@@ -18,8 +18,10 @@
 
 #if defined(RASPBERRY_PI)
 
-#ifndef RPIHELPER_H
-#define RPIHELPER_H
+#ifndef PLATFORM_RPI_H
+#define PLATFORM_RPI_H
+
+#define swSer Serial
 
 /* Dragino LoRa/GPS HAT */
 #if 0 /* WiringPi */
@@ -38,6 +40,9 @@
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_7  // IRQ on GPIO4 so P1 connector pin #7
 #endif /* GPIO */
 
-#endif /* RPIHELPER_H */
+#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+
+#endif /* PLATFORM_RPI_H */
 
 #endif /* RASPBERRY_PI */

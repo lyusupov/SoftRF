@@ -348,6 +348,20 @@ size_t SerialSimulator::write(unsigned char* s, size_t len) {
   }
 }
 
+size_t SerialSimulator::write(const char* s) {
+  for (int i=0; i<strlen(s); i++) {
+    fprintf(stdout, "%c", s[i]);
+  }
+}
+
+size_t SerialSimulator::available(void) {
+  return 0;
+}
+
+size_t SerialSimulator::read(void) {
+  return -1;
+}
+
 void SerialSimulator::flush(void) {
   fflush(stdout);
 }

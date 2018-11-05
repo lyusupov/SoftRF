@@ -19,7 +19,9 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
+#if defined(ARDUINO)
 #include <WiFiUdp.h>
+#endif
 
 #include "SoftRF.h"
 
@@ -38,7 +40,9 @@ size_t Raw_Receive_UDP(uint8_t *);
 void Raw_Transmit_UDP(void);
 
 extern String host_name;
+#if defined(ARDUINO)
 extern WiFiUDP Uni_Udp;
+#endif
 
 extern char UDPpacketBuffer[256];
 

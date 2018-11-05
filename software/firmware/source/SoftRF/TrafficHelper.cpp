@@ -147,7 +147,7 @@ void ParseData()
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,"));
-      StdOut.print(now()); StdOut.print(F(","));
+      StdOut.print((unsigned long) now()); StdOut.print(F(","));
       StdOut.print(RF_last_rssi); StdOut.print(F(","));
       StdOut.println(fo.raw);
     }
