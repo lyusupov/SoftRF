@@ -16,6 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Usage example:
+ *
+ *  pi@raspberrypi $ make -f Makefile.RPi
+ *
+ *     < ... skipped ... >
+ *
+ *  pi@raspberrypi $ cat /dev/ttyUSB0 | sudo ./SoftRF
+ *  SX1276 RFIC is detected.
+ *  $GPGSA,A,3,02,30,05,06,07,09,,,,,,,5.09,3.19,3.97*04
+ *  $GPRMC,145750.00,A,5XXX.XXX68,N,03XXX.XXX33,E,0.701,,051118,,,A*7E
+ *  $GPGGA,145750.00,5XXX.XXX68,N,03XXX.XXX33,E,1,06,3.19,179.2,M,12.5,M,,*5E
+ *  $PFLAA,3,0,0,0,2,C5D804!OGN_C5D804,0,,0,00000.0,1*60
+ *  $PFLAU,1,1,2,1,3,-30,2,0,0*4E
+ *
+ *     < ... skipped ... >
+ *
+ */
+
 #if defined(RASPBERRY_PI)
 
 #include "Platform_RPi.h"
@@ -66,6 +85,9 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+#define isTimeToExport() (millis() - ExportTimeMarker > 1000)
+unsigned long ExportTimeMarker = 0;
+
 String Bin2Hex(byte *buffer)
 {
   String str = "";
@@ -111,9 +133,14 @@ static long RPi_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
+static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+{
+  /* TBD */
+}
+
 static void RPi_SPI_begin()
 {
-
+  /* TBD */
 }
 
 void RPi_GNSS_PPS_Interrupt_handler() {
@@ -137,7 +164,7 @@ SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
+  RPi_WiFi_transmit_UDP,
   NULL,
   NULL,
   NULL,
@@ -153,6 +180,41 @@ SoC_ops_t RPi_ops = {
   RPi_get_PPS_TimeMarker,
   NULL
 };
+
+#include <stdio.h>
+#include <sys/select.h>
+
+bool inputAvailable()
+{
+  struct timeval tv;
+  fd_set fds;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  FD_ZERO(&fds);
+  FD_SET(STDIN_FILENO, &fds);
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+  return (FD_ISSET(0, &fds));
+}
+
+#include <iostream>
+#include <string>
+
+std::string input_line;
+
+static void RPi_PickGNSSFix()
+{
+  if (inputAvailable()) {
+    std::getline(std::cin, input_line);
+    const char *str = input_line.c_str();
+    int len = input_line.length();
+    for (int i=0; i < len; i++) {
+      gnss.encode(str[i]);
+    }
+    if (settings->nmea_g) {
+      NMEA_Out((byte *) str, len, true);
+    }
+  }
+}
 
 int main()
 {
@@ -174,21 +236,45 @@ int main()
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
-  ThisAircraft.latitude = gnss.location.lat();
-  ThisAircraft.longitude = gnss.location.lng();
-  ThisAircraft.altitude = gnss.altitude.meters();
-  ThisAircraft.course = gnss.course.deg();
-  ThisAircraft.speed = gnss.speed.knots();
-  ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
-  ThisAircraft.geoid_separation = gnss.separation.meters();
+  Traffic_setup();
+  NMEA_setup();
 
   while (true) {
     // Do common RF stuff first
     RF_loop();
 
-    RF_Transmit(RF_Encode());
+    RPi_PickGNSSFix();
+
+    GNSSTimeSync();
+
+    ThisAircraft.timestamp = now();
+    if (isValidFix()) {
+      ThisAircraft.latitude = gnss.location.lat();
+      ThisAircraft.longitude = gnss.location.lng();
+      ThisAircraft.altitude = gnss.altitude.meters();
+      ThisAircraft.course = gnss.course.deg();
+      ThisAircraft.speed = gnss.speed.knots();
+      ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+      ThisAircraft.geoid_separation = gnss.separation.meters();
+
+      /*
+       * When geoidal separation is zero or not available - use approx. EGM96 value
+       */
+      if (ThisAircraft.geoid_separation == 0.0) {
+        ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                  ThisAircraft.latitude,
+                                                  ThisAircraft.longitude
+                                                );
+        /* we can assume the GPS unit is giving ellipsoid height */
+        ThisAircraft.altitude -= ThisAircraft.geoid_separation;
+      }
+
+      RF_Transmit(RF_Encode());
+    }
 
     bool success = RF_Receive();
+
+#if 0
     if (success) {
       fo.raw = Bin2Hex(RxBuffer);
       if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
@@ -199,6 +285,25 @@ int main()
                                          fo.altitude, fo.speed, fo.course);
       }
     }
+#else
+    if (success && isValidFix()) ParseData();
+
+    if (isValidFix()) {
+      Traffic_loop();
+    }
+
+    if (isTimeToExport() && isValidFix()) {
+      NMEA_Export();
+      GDL90_Export();
+      D1090_Export();
+      ExportTimeMarker = millis();
+    }
+
+    // Handle Air Connect
+    NMEA_loop();
+
+    ClearExpired();
+#endif
   }
 
   return 0;
