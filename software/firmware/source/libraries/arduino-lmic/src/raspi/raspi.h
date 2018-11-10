@@ -80,6 +80,10 @@
 #define snprintf_P snprintf
 #endif
 
+#ifndef strcmp_P
+#define strcmp_P strcmp
+#endif
+
 // F() Macro
 #define F(s)     (s)
 #define PSTR(s)  (s)
@@ -87,6 +91,7 @@
 //#define random(x) (rand() % x)
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+#define pgm_read_byte_near(addr) pgm_read_byte(addr)
 
 // WMath prototypes
 long random(long);

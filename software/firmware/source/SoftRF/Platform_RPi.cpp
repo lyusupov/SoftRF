@@ -197,9 +197,17 @@ bool inputAvailable()
 }
 
 #include <iostream>
+#include <sstream>
 #include <string>
+#include <locale>
+#include <iomanip>
+
+#include <ArduinoJson.h>
 
 std::string input_line;
+StaticJsonBuffer<4096> jsonBuffer;
+
+bool isValidGPSDFix = false;
 
 static void RPi_PickGNSSFix()
 {
@@ -207,11 +215,116 @@ static void RPi_PickGNSSFix()
     std::getline(std::cin, input_line);
     const char *str = input_line.c_str();
     int len = input_line.length();
-    for (int i=0; i < len; i++) {
-      gnss.encode(str[i]);
-    }
-    if (settings->nmea_g) {
-      NMEA_Out((byte *) str, len, true);
+
+    if (str[0] == '$' && str[1] == 'G') {
+      // NMEA input
+      for (int i=0; i < len; i++) {
+        gnss.encode(str[i]);
+      }
+      if (settings->nmea_g) {
+        NMEA_Out((byte *) str, len, true);
+      }
+
+      GNSSTimeSync();
+
+      if (isValidFix()) {
+        ThisAircraft.latitude = gnss.location.lat();
+        ThisAircraft.longitude = gnss.location.lng();
+        ThisAircraft.altitude = gnss.altitude.meters();
+        ThisAircraft.course = gnss.course.deg();
+        ThisAircraft.speed = gnss.speed.knots();
+        ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+        ThisAircraft.geoid_separation = gnss.separation.meters();
+
+        /*
+         * When geoidal separation is zero or not available - use approx. EGM96 value
+         */
+        if (ThisAircraft.geoid_separation == 0.0) {
+          ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                    ThisAircraft.latitude,
+                                                    ThisAircraft.longitude
+                                                  );
+          /* we can assume the GPS unit is giving ellipsoid height */
+          ThisAircraft.altitude -= ThisAircraft.geoid_separation;
+        }
+      }
+
+    } else if (str[0] == '{') {
+      // JSON input
+
+      JsonObject& root = jsonBuffer.parseObject(str);
+
+      const char* msg_class = root["class"]; // "TPV"
+
+      if (msg_class && !strcmp(msg_class,"TPV")) {
+
+        int mode = 0;
+        bool hasmode = root.containsKey("mode");
+        if (hasmode) {
+          mode = root["mode"]; // 3
+        }
+
+        if (mode == 3) {
+
+          std::tm t = {};
+
+          bool hastime = root.containsKey("time");
+          time_t epoch = 0;
+          if (hastime) {
+
+            const char *time_s = root["time"]; // "2018-11-06T09:16:39.196Z"
+            std::istringstream ss(time_s);
+            ss.imbue(std::locale("en_US.UTF-8"));
+            ss >> std::get_time(&t, "%Y-%m-%dT%H:%M:%S");
+            if (ss.fail()) {
+                std::cout << "Parse failed\n";
+            }
+
+            epoch = mktime(&t);
+
+            setTime(t.tm_hour, t.tm_min, t.tm_sec, t.tm_mday,
+                    t.tm_mon + 1, t.tm_year + 1900);
+
+            isValidGPSDFix = true;
+          }
+
+          float lat = root["lat"];
+          float lon = root["lon"];
+          float alt = root["alt"];
+
+          bool hastrack = root.containsKey("track");
+          int track = 0;
+          if (hastrack) {
+             track = root["track"];
+          }
+
+          int speed = root["speed"];
+
+          ThisAircraft.latitude = lat;
+          ThisAircraft.longitude = lon;
+          ThisAircraft.altitude = alt;
+          if (hastrack) {
+            ThisAircraft.course = track;
+          }
+          ThisAircraft.speed = speed / _GPS_MPS_PER_KNOT;
+          //ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+          //ThisAircraft.geoid_separation = gnss.separation.meters();
+#if 0
+          if (hastrack) {
+            printf("%X %ld %f %f %f %d %d\n", mode, epoch, lat, lon, alt, speed, track);
+          } else {
+            printf("%X %ld %f %f %f %d\n", mode, epoch, lat, lon, alt, speed);
+          }
+#endif
+        }
+
+      }
+
+      jsonBuffer.clear();
+
+      if ((time(NULL) - now()) > 3) {
+        isValidGPSDFix = false;
+      }
     }
   }
 }
@@ -245,30 +358,9 @@ int main()
 
     RPi_PickGNSSFix();
 
-    GNSSTimeSync();
-
     ThisAircraft.timestamp = now();
-    if (isValidFix()) {
-      ThisAircraft.latitude = gnss.location.lat();
-      ThisAircraft.longitude = gnss.location.lng();
-      ThisAircraft.altitude = gnss.altitude.meters();
-      ThisAircraft.course = gnss.course.deg();
-      ThisAircraft.speed = gnss.speed.knots();
-      ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
-      ThisAircraft.geoid_separation = gnss.separation.meters();
 
-      /*
-       * When geoidal separation is zero or not available - use approx. EGM96 value
-       */
-      if (ThisAircraft.geoid_separation == 0.0) {
-        ThisAircraft.geoid_separation = (float) LookupSeparation(
-                                                  ThisAircraft.latitude,
-                                                  ThisAircraft.longitude
-                                                );
-        /* we can assume the GPS unit is giving ellipsoid height */
-        ThisAircraft.altitude -= ThisAircraft.geoid_separation;
-      }
-
+    if (isValidFix() || isValidGPSDFix) {
       RF_Transmit(RF_Encode());
     }
 
@@ -286,13 +378,13 @@ int main()
       }
     }
 #else
-    if (success && isValidFix()) ParseData();
+    if (success && (isValidFix() || isValidGPSDFix)) ParseData();
 
-    if (isValidFix()) {
+    if (isValidFix() || isValidGPSDFix) {
       Traffic_loop();
     }
 
-    if (isTimeToExport() && isValidFix()) {
+    if (isTimeToExport() && (isValidFix() || isValidGPSDFix)) {
       NMEA_Export();
       GDL90_Export();
       D1090_Export();

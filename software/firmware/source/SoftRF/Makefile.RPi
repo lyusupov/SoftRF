@@ -36,11 +36,13 @@ AIRCRAFT_PATH = ../libraries/aircraft
 ADSB_PATH     = ../libraries/adsb_encoder
 NMEALIB_PATH  = ../libraries/nmealib/src
 GEOID_PATH    = ../libraries/Geoid
+JSON_PATH     = ../libraries/ArduinoJson/src
 
 INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
-                -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)
+                -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
+                -I$(JSON_PATH)
 
 OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
                  Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
