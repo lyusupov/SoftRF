@@ -207,7 +207,10 @@ bool inputAvailable()
 std::string input_line;
 StaticJsonBuffer<4096> jsonBuffer;
 
-bool isValidGPSDFix = false;
+bool hasValidGPSDFix = false;
+
+#define isValidGPSDFix() (hasValidGPSDFix)
+#define isValidFix() (isValidGNSSFix() || isValidGPSDFix())
 
 static void RPi_PickGNSSFix()
 {
@@ -227,7 +230,7 @@ static void RPi_PickGNSSFix()
 
       GNSSTimeSync();
 
-      if (isValidFix()) {
+      if (isValidGNSSFix()) {
         ThisAircraft.latitude = gnss.location.lat();
         ThisAircraft.longitude = gnss.location.lng();
         ThisAircraft.altitude = gnss.altitude.meters();
@@ -288,7 +291,7 @@ static void RPi_PickGNSSFix()
               setTime(t.tm_hour, t.tm_min, t.tm_sec, t.tm_mday,
                       t.tm_mon + 1, t.tm_year + 1900);
 
-              isValidGPSDFix = true;
+              hasValidGPSDFix = true;
             }
 
             float lat = root["lat"];
@@ -506,7 +509,7 @@ static void RPi_PickGNSSFix()
       jsonBuffer.clear();
 
       if ((time(NULL) - now()) > 3) {
-        isValidGPSDFix = false;
+        hasValidGPSDFix = false;
       }
     }
   }
@@ -543,19 +546,19 @@ int main()
 
     ThisAircraft.timestamp = now();
 
-    if (isValidFix() || isValidGPSDFix) {
+    if (isValidFix()) {
       RF_Transmit(RF_Encode());
     }
 
     bool success = RF_Receive();
 
-    if (success && (isValidFix() || isValidGPSDFix)) ParseData();
+    if (success && isValidFix()) ParseData();
 
-    if (isValidFix() || isValidGPSDFix) {
+    if (isValidFix()) {
       Traffic_loop();
     }
 
-    if (isTimeToExport() && (isValidFix() || isValidGPSDFix)) {
+    if (isTimeToExport() && isValidFix()) {
       NMEA_Export();
       GDL90_Export();
       D1090_Export();

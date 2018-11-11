@@ -40,12 +40,12 @@ enum
  * Valid date is critical for legacy protocol (only).
  */
 #define NMEA_EXP_TIME  3500 /* 3.5 seconds */
-#define isValidFix() ( gnss.location.isValid()               && \
-                       gnss.altitude.isValid()               && \
-                       gnss.date.isValid()                   && \
-                      (gnss.location.age() <= NMEA_EXP_TIME) && \
-                      (gnss.altitude.age() <= NMEA_EXP_TIME) && \
-                      (gnss.date.age()     <= NMEA_EXP_TIME))
+#define isValidGNSSFix()  ( gnss.location.isValid()               && \
+                            gnss.altitude.isValid()               && \
+                            gnss.date.isValid()                   && \
+                           (gnss.location.age() <= NMEA_EXP_TIME) && \
+                           (gnss.altitude.age() <= NMEA_EXP_TIME) && \
+                           (gnss.date.age()     <= NMEA_EXP_TIME))
 
 byte GNSS_setup();
 

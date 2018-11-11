@@ -125,7 +125,7 @@ static void LED_Clear_noflush() {
     uni_setPixelColor(LED_STATUS_POWER,
       Battery_voltage() > 2.3 ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
     uni_setPixelColor(LED_STATUS_SAT,
-      isValidFix() ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
+      isValidGNSSFix() ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
 }
 
 void LED_Clear() {

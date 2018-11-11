@@ -246,7 +246,7 @@ void normal_loop()
   GNSSTimeSync();
 
   ThisAircraft.timestamp = now();
-  if (isValidFix()) {
+  if (isValidGNSSFix()) {
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
@@ -276,18 +276,18 @@ void normal_loop()
   success = true;
 #endif
 
-  if (success && isValidFix()) ParseData();
+  if (success && isValidGNSSFix()) ParseData();
 
 #if defined(ENABLE_TTN)
   TTN_loop();
 #endif
 
-  if (isValidFix()) {
+  if (isValidGNSSFix()) {
     Traffic_loop();
   }
 
   if (isTimeToDisplay()) {
-    if (isValidFix()) {
+    if (isValidGNSSFix()) {
       LED_DisplayTraffic();
     } else {
       LED_Clear();
@@ -295,7 +295,7 @@ void normal_loop()
     LEDTimeMarker = millis();
   }
 
-  if (isTimeToExport() && isValidFix()) {
+  if (isTimeToExport() && isValidGNSSFix()) {
     NMEA_Export();
     GDL90_Export();
     D1090_Export();
@@ -320,7 +320,7 @@ void uav_loop()
 
   ThisAircraft.timestamp = now();
 
-  if (MAVisValidFix()) {
+  if (isValidMAVFix()) {
     ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
     ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
     ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
@@ -334,9 +334,9 @@ void uav_loop()
 
   success = RF_Receive();
 
-  if (success && MAVisValidFix()) ParseData();
+  if (success && isValidMAVFix()) ParseData();
 
-  if (isTimeToExport() && MAVisValidFix()) {
+  if (isTimeToExport() && isValidMAVFix()) {
     MAVLinkShareTraffic();
     ExportTimeMarker = millis();
   }
