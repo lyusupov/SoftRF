@@ -46,7 +46,8 @@ INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
 
 OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
                  Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
-                 TrafficHelper.o D1090Helper.o GDL90Helper.o NMEAHelper.o GNSSHelper.o \
+                 D1090Helper.o GDL90Helper.o NMEAHelper.o JSONHelper.o \
+                 TrafficHelper.o  GNSSHelper.o \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(LMIC_PATH)/raspi/raspi.o $(LMIC_PATH)/raspi/WString.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \

@@ -81,7 +81,7 @@
 #define NMEA_UDP_PORT     10110
 #define NMEA_TCP_PORT     2000
 
-#if defined(PREMIUM_PACKAGE)
+#if defined(PREMIUM_PACKAGE) && !defined(RASPBERRY_PI)
 #define ENABLE_AHRS
 #endif /* PREMIUM_PACKAGE */
 
