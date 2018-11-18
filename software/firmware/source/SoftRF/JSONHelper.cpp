@@ -177,8 +177,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
     } else if (!strcmp(mode_s,"BRIDGE")) {
       eeprom_block.field.settings.mode = SOFTRF_MODE_BRIDGE;
-    } else if (!strcmp(mode_s,"UAV")) {
-      eeprom_block.field.settings.mode = SOFTRF_MODE_UAV;
+    } else if (!strcmp(mode_s,"RELAY")) {
+      eeprom_block.field.settings.mode = SOFTRF_MODE_RELAY;
     }
   }
 

@@ -241,6 +241,11 @@ static void parseNMEA(const char *str, int len)
   }
 }
 
+static void parseD1090(const char *str, int len)
+{
+  /* TBD */
+}
+
 static void RPi_PickGNSSFix()
 {
   if (inputAvailable()) {
@@ -278,31 +283,49 @@ static void RPi_PickGNSSFix()
   }
 }
 
-int main()
+static void RPi_ReadTraffic()
 {
-  // Init GPIO bcm
-  if (!bcm2835_init()) {
-      fprintf( stderr, "bcm2835_init() Failed\n\n" );
-      return 1;
+  if (inputAvailable()) {
+    std::getline(std::cin, input_line);
+    const char *str = input_line.c_str();
+    int len = input_line.length();
+
+    if (str[0] == '*') {
+      // D1090 input
+      parseD1090(str, len);
+
+    } else if (str[0] == '{') {
+      // JSON input
+
+      JsonObject& root = jsonBuffer.parseObject(str);
+
+      JsonVariant msg_class = root["class"];
+
+      if (msg_class.success()) {
+        const char *msg_class_s = msg_class.as<char*>();
+
+        if (!strcmp(msg_class_s,"SOFTRF")) {
+          parseSettings(root);
+        }
+      }
+
+      JsonVariant aircraft_array = root["aircraft"];
+      if (aircraft_array.success()) {
+        /* TBD */
+      }
+
+      JsonVariant rawdata = root["rawdata"];
+      if (rawdata.success()) {
+        /* TBD */
+      }
+
+      jsonBuffer.clear();
+    }
   }
+}
 
-  Serial.begin(38400);
-
-  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
-
-  hw_info.rf = RF_setup();
-
-  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
-  ThisAircraft.aircraft_type = settings->aircraft_type;
-  ThisAircraft.protocol = settings->rf_protocol;
-  ThisAircraft.stealth  = settings->stealth;
-  ThisAircraft.no_track = settings->no_track;
-
-  Traffic_setup();
-  NMEA_setup();
-
-  while (true) {
-
+void normal_loop()
+{
     RPi_PickGNSSFix();
 
     RF_loop();
@@ -333,6 +356,63 @@ int main()
     NMEA_loop();
 
     ClearExpired();
+}
+
+void relay_loop()
+{
+    RPi_ReadTraffic();
+
+    RF_loop();
+
+    ThisAircraft.timestamp = now();
+
+#if 1
+    RF_Transmit(RF_Encode());
+#else
+    // Raw data
+    // TBD
+    if (tx_size > 0) {
+      RF_Transmit(tx_size);
+    }
+#endif
+}
+
+int main()
+{
+  // Init GPIO bcm
+  if (!bcm2835_init()) {
+      fprintf( stderr, "bcm2835_init() Failed\n\n" );
+      return 1;
+  }
+
+  Serial.begin(38400);
+
+  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  hw_info.rf = RF_setup();
+
+  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+  ThisAircraft.aircraft_type = settings->aircraft_type;
+  ThisAircraft.protocol = settings->rf_protocol;
+  ThisAircraft.stealth  = settings->stealth;
+  ThisAircraft.no_track = settings->no_track;
+
+  Traffic_setup();
+  NMEA_setup();
+
+  while (true) {
+
+    switch (settings->mode)
+    {
+    case SOFTRF_MODE_RELAY:
+      relay_loop();
+      break;
+    case SOFTRF_MODE_NORMAL:
+    default:
+      normal_loop();
+      break;
+    }
+
   }
 
   return 0;
