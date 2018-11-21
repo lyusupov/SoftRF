@@ -78,9 +78,10 @@ const GDL90_Msg_FF_ID_t msgFFid = {
   .Version      = 1, /* Must be 1 */
   /* Device serial number is 0xFFFFFFFFFFFFFFFF for invalid */
   .SerialNum    = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-  .ShortName    = {'S', 'o', 'f', 't', 'R', 'F' },
-  .LongName     = {'S', 'o', 'f', 't', 'R', 'F' },
-  .Capabilities = {0x00, 0x00, 0x00, 0x00}, /* WGS-84 ellipsoid */
+  .ShortName    = {'S', 'o', 'f', 't', 'R', 'F', ' ', ' ' },
+  .LongName     = {'S', 'o', 'f', 't', 'R', 'F',
+                    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
+  .Capabilities = {0x00, 0x00, 0x00, 0x01}, /* MSL altitude for Ownship Geometric report */
 };
 #endif
 
@@ -283,6 +284,7 @@ static void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
 {
   uint16_t vfom = 0x000A;
 
+#if 0
   /*
    * The Geo Altitude field is a 16-bit signed integer that represents
    * the geometric altitude (height above WGS-84 ellipsoid),
@@ -290,6 +292,14 @@ static void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
    */
   uint16_t altitude = (int16_t)((aircraft->altitude + aircraft->geoid_separation) *
                         _GPS_FEET_PER_METER / 5);
+#else
+  /*
+   * Vast majority of EFBs deviates from Rev A of GDL90 ICD (2007) specs
+   * and uses MSL altitude here.
+   * SkyDemon is the only known exception which uses WGS-84 altitude still.
+   */
+  uint16_t altitude = (int16_t)(aircraft->altitude * _GPS_FEET_PER_METER / 5);
+#endif
 
   GeometricAltitude.geo_altitude  = ((altitude & 0x00FF) << 8) | ((altitude & 0xFF00) >> 8) ;
   GeometricAltitude.VFOM          = ((vfom & 0x00FF) << 8) | ((vfom & 0xFF00) >> 8);
