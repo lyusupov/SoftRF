@@ -44,7 +44,7 @@ void EEPROM_setup()
   }
 
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    eeprom_block.raw[i] = EEPROM.read(i);  
+    eeprom_block.raw[i] = EEPROM.read(i);
   }
 
   if (eeprom_block.field.magic != SOFTRF_EEPROM_MAGIC) {
@@ -69,7 +69,7 @@ void EEPROM_defaults()
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_OGNTP;
+  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_LEGACY;
   eeprom_block.field.settings.band = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
@@ -93,7 +93,7 @@ void EEPROM_defaults()
 void EEPROM_store()
 {
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    EEPROM.write(i, eeprom_block.raw[i]);  
+    EEPROM.write(i, eeprom_block.raw[i]);
   }
 
   EEPROM.commit();
