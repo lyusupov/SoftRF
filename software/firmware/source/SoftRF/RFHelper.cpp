@@ -385,12 +385,15 @@ void nrf905_setup()
   byte addr[] = RXADDR;
   nRF905_setRXAddress(addr);
 
-  // Put into receive mode
-  nRF905_receive();
+  /* Enforce radio settings to follow "Legacy" protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_LEGACY;
 
+  /* Enforce encoder and decoder to process "Legacy" frames only */
   protocol_encode = &legacy_encode;
   protocol_decode = &legacy_decode;
 
+  /* Put IC into receive mode */
+  nRF905_receive();
 }
 
 bool nrf905_receive()
