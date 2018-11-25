@@ -22,7 +22,7 @@ CFLAGS        = -g -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\"
+                -D__BASEFILE__=\"$*\" # -DUSE_SPI1
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
 NRF905_PATH   = ../libraries/nRF905

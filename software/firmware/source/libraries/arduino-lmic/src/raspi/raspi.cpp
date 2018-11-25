@@ -16,23 +16,37 @@ static uint64_t epochMicro ;
 
 void SPIClass::begin() {
   initialiseEpoch();
-  
+
+#if defined(USE_SPI1)
+  if (!bcm2835_aux_spi_begin()) {
+#else
   if (!bcm2835_spi_begin()) {
+#endif
     printf( "bcm2835_spi_begin() failed. Are you running as root??\n");
   } else {
 		// LMIC Library code control CS line
-		bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);  
+#if !defined(USE_SPI1)
+		bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
+#endif
 	}
 }
 
 void SPIClass::end() {
   //End the SPI
+#if defined(USE_SPI1)
+  bcm2835_aux_spi_end();
+#else
   bcm2835_spi_end();
+#endif
 }
 
 void SPIClass::beginTransaction(SPISettings settings) {
   //Set SPI clock divider
+#if defined(USE_SPI1)
+  bcm2835_aux_spi_setClockDivider(settings.divider);
+#else
   bcm2835_spi_setClockDivider(settings.divider);
+#endif
   //Set the SPI bit Order
   bcm2835_spi_setBitOrder(settings.bitOrder);
   //Set SPI data mode
@@ -63,7 +77,12 @@ void SPIClass::endTransaction() {
   
 byte SPIClass::transfer(byte _data) {
   byte data;
+#if defined(USE_SPI1)
+  data = _data;
+  bcm2835_aux_spi_transfern((char *) &data, 1);
+#else
   data= bcm2835_spi_transfer((uint8_t)_data);
+#endif
   return data;
 }
  
