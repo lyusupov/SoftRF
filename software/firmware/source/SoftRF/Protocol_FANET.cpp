@@ -30,6 +30,7 @@
 
 #include "SoftRF.h"
 #include "Protocol_FANET.h"
+#include "Protocol_Legacy.h"
 #include "RFHelper.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
@@ -245,7 +246,7 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     }
     fop->vs = ((float)climb_int) * (_GPS_FEET_PER_METER * 6.0);
 
-    fop->addr_type = 0;
+    fop->addr_type = ADDR_TYPE_FANET;
     fop->timestamp = this_aircraft->timestamp;
 
     fop->stealth = 0;

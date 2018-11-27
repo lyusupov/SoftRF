@@ -268,6 +268,8 @@ void NMEA_Export()
           if (distance < ALARM_ZONE_NONE) {
 
             char str_climb_rate[8] = "";
+            uint8_t addr_type = Container[i].addr_type > ADDR_TYPE_ANONYMOUS ?
+                                ADDR_TYPE_ANONYMOUS : Container[i].addr_type;
 
             bearing = Container[i].bearing;
             alarm_level = Container[i].alarm_level;
@@ -282,7 +284,7 @@ void NMEA_Export()
             snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*"),
                     alarm_level,
                     (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
-                    alt_diff, ADDR_TYPE_FLARM, Container[i].addr,
+                    alt_diff, addr_type, Container[i].addr,
                     NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
                     (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
                     ltrim(str_climb_rate), Container[i].aircraft_type);

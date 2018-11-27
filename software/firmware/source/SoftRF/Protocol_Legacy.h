@@ -37,12 +37,15 @@
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
 
+/* FTD-12 Version: 7.00 */
 enum
 {
 	ADDR_TYPE_RANDOM,
 	ADDR_TYPE_ICAO,
 	ADDR_TYPE_FLARM,
-	ADDR_TYPE_OGN
+	ADDR_TYPE_ANONYMOUS, /* FLARM stealth, OGN */
+	ADDR_TYPE_P3I,
+	ADDR_TYPE_FANET
 };
 
 enum
@@ -128,8 +131,6 @@ typedef struct {
     int8_t ew[4];
     /********************/
 } legacy_packet_t;
-
-//#define MYADDR  Device_Id
 
 bool legacy_decode(void *, ufo_t *, ufo_t *);
 size_t legacy_encode(void *, ufo_t *);

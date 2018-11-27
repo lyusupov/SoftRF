@@ -146,8 +146,6 @@
 #define P3I_TX_INTERVAL_MIN 1600 /* in ms */
 #define P3I_TX_INTERVAL_MAX 1800
 
-#define ADDR_TYPE_PILOTAWARE  0
-
 /*
  * Example:
  * --------
