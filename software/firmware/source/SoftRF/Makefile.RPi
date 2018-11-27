@@ -22,7 +22,7 @@ CFLAGS        = -g -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\" # -DUSE_SPI1
+                -D__BASEFILE__=\"$*\"
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
 NRF905_PATH   = ../libraries/nRF905
@@ -44,12 +44,12 @@ INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
                 -I$(JSON_PATH)
 
-OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
+OBJS          := RFHelper.o SoCHelper.o \
                  Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
                  D1090Helper.o GDL90Helper.o NMEAHelper.o JSONHelper.o \
                  TrafficHelper.o  GNSSHelper.o \
                  $(CRCLIB_PATH)/lib_crc.o \
-                 $(LMIC_PATH)/raspi/raspi.o $(LMIC_PATH)/raspi/WString.o \
+                 $(LMIC_PATH)/raspi/WString.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
                  $(LMIC_PATH)/lmic/lmic.o $(LMIC_PATH)/hal/hal.o \
                  $(OGNLIB_PATH)/ldpc.o \
@@ -66,15 +66,27 @@ OBJS          := RFHelper.o SoCHelper.o Platform_RPi.o \
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
-PROGRAM       := SoftRF
+PROGNAME      := SoftRF
 
-all: bcm $(PROGRAM)
+all: bcm $(PROGNAME) $(PROGNAME)-aux
 
 %.o: %.cpp
 				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
 
 %.o: %.c
 				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+
+raspi.o: $(LMIC_PATH)/raspi/raspi.cpp
+				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/raspi/raspi.cpp $(INCLUDE) -o raspi.o
+
+raspi-aux.o: $(LMIC_PATH)/raspi/raspi.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(LMIC_PATH)/raspi/raspi.cpp $(INCLUDE) -o raspi-aux.o
+
+Platform_RPi.o: Platform_RPi.cpp
+				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
+
+Platform_RPi-aux.o: Platform_RPi.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi-aux.o
 
 aes.o: $(LMIC_PATH)/aes/lmic.c
 				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
@@ -85,11 +97,15 @@ $(LMIC_PATH)/lmic/%.o: $(LMIC_PATH)/lmic/%.c
 bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
-$(PROGRAM): $(OBJS) aes.o
-				$(CXX) $(OBJS) aes.o $(LIBS) -o $(PROGRAM)
+$(PROGNAME): $(OBJS) aes.o raspi.o Platform_RPi.o
+				$(CXX) $(OBJS) aes.o raspi.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
+
+$(PROGNAME)-aux: $(OBJS) aes.o raspi-aux.o Platform_RPi-aux.o
+				$(CXX) $(OBJS) aes.o raspi-aux.o Platform_RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
 				(cd $(BCMLIB_PATH)/../ ; make distclean)
 
 clean: bcm-clean
-				rm -f $(OBJS) aes.o $(PROGRAM)
+				rm -f $(OBJS) aes.o raspi.o raspi-aux.o \
+        Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux
