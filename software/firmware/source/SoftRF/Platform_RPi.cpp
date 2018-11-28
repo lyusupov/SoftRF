@@ -23,7 +23,7 @@
  *
  *     < ... skipped ... >
  *
- *  pi@raspberrypi $ { echo "{\"class\":\"SOFTRF\",\"protocol\":\"OGNTP\"}" ; cat /dev/ttyUSB0 ; } | sudo ./SoftRF
+ *  pi@raspberrypi $ { echo "{class:SOFTRF,protocol:OGNTP}" ; cat /dev/ttyUSB0 ; } | sudo ./SoftRF
  *  SX1276 RFIC is detected.
  *  $GPGSA,A,3,02,30,05,06,07,09,,,,,,,5.09,3.19,3.97*04
  *  $GPRMC,145750.00,A,5XXX.XXX68,N,03XXX.XXX33,E,0.701,,051118,,,A*7E
@@ -108,6 +108,14 @@ String Bin2Hex(byte *buffer)
     str += (c < 0x10 ? "0" : "") + String(c, HEX);
   }
   return str;
+}
+
+static byte getVal(char c)
+{
+   if(c >= '0' && c <= '9')
+     return (byte)(c - '0');
+   else
+     return (byte)(toupper(c)-'A'+10);
 }
 
 static void RPi_setup()
@@ -241,11 +249,6 @@ static void parseNMEA(const char *str, int len)
   }
 }
 
-static void parseD1090(const char *str, int len)
-{
-  /* TBD */
-}
-
 static void RPi_PickGNSSFix()
 {
   if (inputAvailable()) {
@@ -290,11 +293,7 @@ static void RPi_ReadTraffic()
     const char *str = input_line.c_str();
     int len = input_line.length();
 
-    if (str[0] == '*') {
-      // D1090 input
-      parseD1090(str, len);
-
-    } else if (str[0] == '{') {
+    if (str[0] == '{') {
       // JSON input
 
       JsonObject& root = jsonBuffer.parseObject(str);
@@ -309,9 +308,14 @@ static void RPi_ReadTraffic()
         }
       }
 
-      JsonVariant aircraft_array = root["aircraft"];
-      if (aircraft_array.success()) {
-        /* TBD */
+      if (root.containsKey("now") &&
+          root.containsKey("messages") &&
+          root.containsKey("aircraft")) {
+        /* 'aircraft.json' output from 'dump1090' application */
+        parseD1090(root);
+      } else if (root.containsKey("aircraft")) {
+        /* uAvionix PingStation */
+        parsePING(root);
       }
 
       JsonVariant rawdata = root["rawdata"];
@@ -364,17 +368,52 @@ void relay_loop()
 
     RF_loop();
 
-    ThisAircraft.timestamp = now();
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
 
-#if 1
-    RF_Transmit(RF_Encode());
-#else
-    // Raw data
-    // TBD
-    if (tx_size > 0) {
-      RF_Transmit(tx_size);
-    }
+      size_t str_len = Container[i].raw.length();
+
+      if (str_len > 0) {
+        // Raw data
+        char hexdata[2 * MAX_PKT_SIZE + 1];
+
+        Container[i].raw.toCharArray(hexdata, sizeof(hexdata));
+        for(int j = 0; j < str_len ; j+=2)
+        {
+          TxPkt[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
+        }
+
+        size_t tx_size = str_len / 2;
+
+        if (tx_size > 0) {
+          if (RF_Transmit(tx_size)) {
+            Container[i] = EmptyFO;
+          }
+        }
+      } else if (Container[i].addr &&
+                 Container[i].latitude  != 0.0 &&
+                 Container[i].longitude != 0.0 &&
+                 Container[i].altitude  != 0.0) {
+
+        ThisAircraft = Container[i];
+        ThisAircraft.timestamp = now();
+
+        if (RF_Transmit(RF_Encode())) {
+#if 0
+          printf("%06X %f %f %f %d %d %d\n",
+              ThisAircraft.addr,
+              ThisAircraft.latitude,
+              ThisAircraft.longitude,
+              ThisAircraft.altitude,
+              ThisAircraft.addr_type,
+              (int) ThisAircraft.vs,
+              ThisAircraft.aircraft_type);
 #endif
+          Container[i] = EmptyFO;
+        }
+
+        break;
+      }
+    }
 }
 
 int main()

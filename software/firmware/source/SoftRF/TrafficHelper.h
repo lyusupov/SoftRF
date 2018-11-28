@@ -47,6 +47,6 @@ void Traffic_setup(void);
 void Traffic_loop(void);
 void ClearExpired(void);
 
-extern ufo_t fo, Container[MAX_TRACKING_OBJECTS];
+extern ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 
 #endif /* TRAFFICHELPER_H */

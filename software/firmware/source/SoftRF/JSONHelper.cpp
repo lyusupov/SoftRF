@@ -39,7 +39,7 @@
 #include <locale>
 #include <iomanip>
 
-StaticJsonBuffer<4096> jsonBuffer;
+StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
 bool hasValidGPSDFix = false;
 
@@ -364,5 +364,124 @@ void parseSettings(JsonObject& root)
     eeprom_block.field.settings.no_track = no_track.as<bool>();
   }
 }
+
+void parseD1090(JsonObject& root)
+{
+  dump1090_aircraft_t *aircraft_array;
+
+  float var_now = root["now"];
+  int var_messages = root["messages"];
+
+  JsonArray& aircraft = root["aircraft"];
+
+  int size = aircraft.size();
+
+  if (size > 0) {
+    aircraft_array = (dump1090_aircraft_t *)
+                      malloc(sizeof(dump1090_aircraft_t) * size);
+
+    if (aircraft_array == NULL) {
+      return;
+    }
+
+    for (int i=0; i < size; i++) {
+      JsonObject& aircraft_obj = aircraft[i];
+
+      aircraft_array[i].hex = aircraft_obj["hex"];
+      aircraft_array[i].squawk = aircraft_obj["squawk"];
+      aircraft_array[i].flight = aircraft_obj["flight"];
+      aircraft_array[i].lat = aircraft_obj["lat"];
+      aircraft_array[i].lon = aircraft_obj["lon"];
+      aircraft_array[i].nucp = aircraft_obj["nucp"];
+      aircraft_array[i].seen_pos = aircraft_obj["seen_pos"];
+      aircraft_array[i].altitude = aircraft_obj["altitude"];
+      aircraft_array[i].vert_rate = aircraft_obj["vert_rate"];
+      aircraft_array[i].track = aircraft_obj["track"];
+      aircraft_array[i].speed = aircraft_obj["speed"];
+      aircraft_array[i].messages = aircraft_obj["messages"];
+      aircraft_array[i].seen = aircraft_obj["seen"];
+      aircraft_array[i].rssi = aircraft_obj["rssi"];
+    }
+
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        Container[i] = EmptyFO;
+    }
+
+    int j=0;
+
+    for (int i=0; i < size; i++) {
+
+      if (aircraft_array[i].hex &&
+          aircraft_array[i].lat != 0.0 &&
+          aircraft_array[i].lon != 0.0 &&
+          aircraft_array[i].altitude != 0.0) {
+
+        Container[j].raw = "";
+        Container[j].timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
+        Container[j].protocol = RF_PROTOCOL_ADSB_1090;
+
+        if (aircraft_array[i].hex[0] == '~') {
+          Container[j].addr = strtoul (&aircraft_array[i].hex[1], NULL, 16);
+          Container[j].addr_type = ADDR_TYPE_ANONYMOUS;
+        } else {
+          Container[j].addr = strtoul (&aircraft_array[i].hex[0], NULL, 16);
+          Container[j].addr_type = ADDR_TYPE_ICAO;
+        }
+
+        Container[j].latitude = aircraft_array[i].lat;
+        Container[j].longitude = aircraft_array[i].lon;
+        Container[j].pressure_altitude = aircraft_array[i].altitude / _GPS_FEET_PER_METER;
+
+        /* TBD */
+        Container[j].altitude = Container[j].pressure_altitude;
+
+        Container[j].course = aircraft_array[i].track;
+        Container[j].speed = aircraft_array[i].speed;
+        Container[j].aircraft_type = AIRCRAFT_TYPE_JET;
+        Container[j].vs = aircraft_array[i].vert_rate;
+        Container[j].stealth = false;
+        Container[j].no_track = false;
+        Container[j].rssi = aircraft_array[i].rssi;
+
+        Container[j].distance = 0;
+        Container[j].bearing = 0;
+        Container[j].alarm_level = ALARM_LEVEL_NONE;
+
+        j++;
+
+        if (j >= MAX_TRACKING_OBJECTS) {
+            break;
+        }
+      }
+    }
+
+#if 0
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr &&
+          Container[i].latitude  != 0.0 &&
+          Container[i].longitude != 0.0 &&
+          Container[i].altitude  != 0.0) {
+
+        printf("%06X %f %f %f %d %d %d\n",
+            Container[i].addr,
+            Container[i].latitude,
+            Container[i].longitude,
+            Container[i].altitude,
+            Container[i].addr_type,
+            (int) Container[i].vs,
+            Container[i].aircraft_type);
+      }
+    }
+#endif
+
+    free(aircraft_array);
+  }
+}
+
+void parsePING(JsonObject& root)
+{
+  /* TBD */
+}
+
 
 #endif /* RASPBERRY_PI */

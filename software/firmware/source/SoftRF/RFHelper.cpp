@@ -223,13 +223,13 @@ size_t RF_Encode(void)
   return size;
 }
 
-void RF_Transmit(size_t size)
+bool RF_Transmit(size_t size)
 {
   if (RF_ready && rf_chip && (size > 0)) {
     RF_tx_size = size;
 
     if (settings->txpower == RF_TX_POWER_OFF ) {
-      return;
+      return true;
     }
 
     if ((millis() - TxTimeMarker) > TxRandomValue) {
@@ -252,8 +252,11 @@ void RF_Transmit(size_t size)
         SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
 
       TxTimeMarker = millis();
+
+      return true;
     }
   }
+  return false;
 }
 
 bool RF_Receive(void)

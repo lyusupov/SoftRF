@@ -108,4 +108,4 @@ bcm-clean:
 
 clean: bcm-clean
 				rm -f $(OBJS) aes.o raspi.o raspi-aux.o \
-        Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux
+				Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux
