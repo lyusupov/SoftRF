@@ -46,6 +46,7 @@ void ParseData(void);
 void Traffic_setup(void);
 void Traffic_loop(void);
 void ClearExpired(void);
+void Traffic_Update(int);
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 

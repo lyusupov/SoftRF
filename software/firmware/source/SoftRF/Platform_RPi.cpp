@@ -277,6 +277,13 @@ static void RPi_PickGNSSFix()
         }
       }
 
+      if (root.containsKey("now") &&
+          root.containsKey("messages") &&
+          root.containsKey("aircraft")) {
+        /* 'aircraft.json' output from 'dump1090' application */
+        parseD1090(root);
+      }
+
       jsonBuffer.clear();
 
       if ((time(NULL) - now()) > 3) {
@@ -377,6 +384,11 @@ void relay_loop()
         char hexdata[2 * MAX_PKT_SIZE + 1];
 
         Container[i].raw.toCharArray(hexdata, sizeof(hexdata));
+
+        if (str_len > 2 * MAX_PKT_SIZE) {
+          str_len = 2 * MAX_PKT_SIZE;
+        }
+
         for(int j = 0; j < str_len ; j+=2)
         {
           TxPkt[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
@@ -395,7 +407,7 @@ void relay_loop()
                  Container[i].altitude  != 0.0) {
 
         ThisAircraft = Container[i];
-        ThisAircraft.timestamp = now();
+        ThisAircraft.timestamp = time(NULL);
 
         if (RF_Transmit(RF_Encode())) {
 #if 0

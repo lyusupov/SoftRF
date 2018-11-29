@@ -69,6 +69,8 @@ void JSON_Export()
 
         char hexbuf[8];
         char callsign[8+1];
+        char timebuf[32];
+        time_t now;
 
         snprintf(hexbuf, sizeof(hexbuf), "%06X", Container[i].addr);
 
@@ -96,7 +98,9 @@ void JSON_Export()
         aircraft["emitterType"] = AT_TO_GDL90(Container[i].aircraft_type); // Category type of the emitter
         aircraft["utcSync"] = 1; // UTC time flag
         /* Time packet was received at the pingStation ISO 8601 format: YYYY-MM-DDTHH:mm:ss:ffffffffZ */
-        aircraft["timeStamp"] = "NONE"; // TBD
+        time(&now);
+        strftime(timebuf, sizeof(timebuf), "%FT%T:00000000Z", gmtime(&now));
+        aircraft["timeStamp"] = timebuf;
 
         has_aircraft = true;
       }
@@ -223,7 +227,7 @@ void parseSettings(JsonObject& root)
   JsonVariant aircraft_type = root["aircraft_type"];
   if (aircraft_type.success()) {
     const char * aircraft_type_s = aircraft_type.as<char*>();
-    if (!strcmp(aircraft_type_s,"GLDER")) {
+    if (!strcmp(aircraft_type_s,"GLIDER")) {
       eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
     } else if (!strcmp(aircraft_type_s,"TOWPLANE")) {
       eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_TOWPLANE;
@@ -375,6 +379,7 @@ void parseD1090(JsonObject& root)
   JsonArray& aircraft = root["aircraft"];
 
   int size = aircraft.size();
+  time_t timestamp = (settings->mode == SOFTRF_MODE_RELAY ? time(NULL) : now());
 
   if (size > 0) {
     aircraft_array = (dump1090_aircraft_t *)
@@ -403,12 +408,6 @@ void parseD1090(JsonObject& root)
       aircraft_array[i].rssi = aircraft_obj["rssi"];
     }
 
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        Container[i] = EmptyFO;
-    }
-
-    int j=0;
-
     for (int i=0; i < size; i++) {
 
       if (aircraft_array[i].hex &&
@@ -416,41 +415,73 @@ void parseD1090(JsonObject& root)
           aircraft_array[i].lon != 0.0 &&
           aircraft_array[i].altitude != 0.0) {
 
-        Container[j].raw = "";
-        Container[j].timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
-        Container[j].protocol = RF_PROTOCOL_ADSB_1090;
+        fo = EmptyFO;
+        fo.raw = "";
+#if 0
+        fo.timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
+#else
+        fo.timestamp = timestamp;
+#endif
+        fo.protocol = RF_PROTOCOL_ADSB_1090;
 
         if (aircraft_array[i].hex[0] == '~') {
-          Container[j].addr = strtoul (&aircraft_array[i].hex[1], NULL, 16);
-          Container[j].addr_type = ADDR_TYPE_ANONYMOUS;
+          fo.addr = strtoul (&aircraft_array[i].hex[1], NULL, 16);
+          fo.addr_type = ADDR_TYPE_ANONYMOUS;
         } else {
-          Container[j].addr = strtoul (&aircraft_array[i].hex[0], NULL, 16);
-          Container[j].addr_type = ADDR_TYPE_ICAO;
+          fo.addr = strtoul (&aircraft_array[i].hex[0], NULL, 16);
+          fo.addr_type = ADDR_TYPE_ICAO;
         }
 
-        Container[j].latitude = aircraft_array[i].lat;
-        Container[j].longitude = aircraft_array[i].lon;
-        Container[j].pressure_altitude = aircraft_array[i].altitude / _GPS_FEET_PER_METER;
+        fo.latitude = aircraft_array[i].lat;
+        fo.longitude = aircraft_array[i].lon;
+        fo.pressure_altitude = aircraft_array[i].altitude / _GPS_FEET_PER_METER;
 
         /* TBD */
-        Container[j].altitude = Container[j].pressure_altitude;
+        fo.altitude = fo.pressure_altitude;
 
-        Container[j].course = aircraft_array[i].track;
-        Container[j].speed = aircraft_array[i].speed;
-        Container[j].aircraft_type = AIRCRAFT_TYPE_JET;
-        Container[j].vs = aircraft_array[i].vert_rate;
-        Container[j].stealth = false;
-        Container[j].no_track = false;
-        Container[j].rssi = aircraft_array[i].rssi;
+        fo.course = aircraft_array[i].track;
+        fo.speed = aircraft_array[i].speed;
+        fo.aircraft_type = AIRCRAFT_TYPE_JET;
+        fo.vs = aircraft_array[i].vert_rate;
+        fo.stealth = false;
+        fo.no_track = false;
+        fo.rssi = aircraft_array[i].rssi;
 
-        Container[j].distance = 0;
-        Container[j].bearing = 0;
-        Container[j].alarm_level = ALARM_LEVEL_NONE;
+        int j;
 
-        j++;
-
-        if (j >= MAX_TRACKING_OBJECTS) {
+        /* Try to find and update an entry with the same aircraft ID */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
+            Container[j] = fo;
+            Traffic_Update(j);
             break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Fill a free entry if able */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+            Container[j] = fo;
+            Traffic_Update(j);
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Overwrite expired entry */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[j] = fo;
+            Traffic_Update(j);
+            break;
+          }
         }
       }
     }

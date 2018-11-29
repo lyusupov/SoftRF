@@ -119,7 +119,7 @@ static int8_t Alarm_Legacy(ufo_t *this_aircraft, ufo_t *fop)
   return rval;
 }
 
-static void Traffic_Update(int ndx)
+void Traffic_Update(int ndx)
 {
   Container[ndx].distance = gnss.distanceBetween( ThisAircraft.latitude,
                                                   ThisAircraft.longitude,
