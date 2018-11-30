@@ -207,7 +207,7 @@ void RF_loop()
   }
 }
 
-size_t RF_Encode(void)
+size_t RF_Encode(ufo_t *fop)
 {
   size_t size = 0;
   if (RF_ready && protocol_encode) {
@@ -217,7 +217,7 @@ size_t RF_Encode(void)
     }
 
     if ((millis() - TxTimeMarker) > TxRandomValue) {
-      size = (*protocol_encode)((void *) &TxPkt[0], &ThisAircraft);
+      size = (*protocol_encode)((void *) &TxPkt[0], fop);
     }
   }
   return size;

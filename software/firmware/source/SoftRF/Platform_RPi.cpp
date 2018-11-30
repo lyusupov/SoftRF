@@ -344,7 +344,7 @@ void normal_loop()
     ThisAircraft.timestamp = now();
 
     if (isValidFix()) {
-      RF_Transmit(RF_Encode());
+      RF_Transmit(RF_Encode(&ThisAircraft));
     }
 
     bool success = RF_Receive();
@@ -406,19 +406,19 @@ void relay_loop()
                  Container[i].longitude != 0.0 &&
                  Container[i].altitude  != 0.0) {
 
-        ThisAircraft = Container[i];
-        ThisAircraft.timestamp = time(NULL);
+        fo = Container[i];
+        fo.timestamp = time(NULL); /* system clock */
 
-        if (RF_Transmit(RF_Encode())) {
-#if 0
+        if (RF_Transmit(RF_Encode(&fo))) {
+#if 1
           printf("%06X %f %f %f %d %d %d\n",
-              ThisAircraft.addr,
-              ThisAircraft.latitude,
-              ThisAircraft.longitude,
-              ThisAircraft.altitude,
-              ThisAircraft.addr_type,
-              (int) ThisAircraft.vs,
-              ThisAircraft.aircraft_type);
+              fo.addr,
+              fo.latitude,
+              fo.longitude,
+              fo.altitude,
+              fo.addr_type,
+              (int) fo.vs,
+              fo.aircraft_type);
 #endif
           Container[i] = EmptyFO;
         }

@@ -70,7 +70,7 @@ void JSON_Export()
         char hexbuf[8];
         char callsign[8+1];
         char timebuf[32];
-        time_t now;
+        time_t timestamp = now(); /* GNSS date&time */
 
         snprintf(hexbuf, sizeof(hexbuf), "%06X", Container[i].addr);
 
@@ -98,8 +98,7 @@ void JSON_Export()
         aircraft["emitterType"] = AT_TO_GDL90(Container[i].aircraft_type); // Category type of the emitter
         aircraft["utcSync"] = 1; // UTC time flag
         /* Time packet was received at the pingStation ISO 8601 format: YYYY-MM-DDTHH:mm:ss:ffffffffZ */
-        time(&now);
-        strftime(timebuf, sizeof(timebuf), "%FT%T:00000000Z", gmtime(&now));
+        strftime(timebuf, sizeof(timebuf), "%FT%T:00000000Z", gmtime(&timestamp));
         aircraft["timeStamp"] = timebuf;
 
         has_aircraft = true;
@@ -113,6 +112,156 @@ void JSON_Export()
   }
 
   jsonBuffer.clear();
+}
+
+void parsePING(JsonObject& root)
+{
+  ping_aircraft_t *aircraft_array;
+
+  JsonArray& aircraft = root["aircraft"];
+
+  int size = aircraft.size();
+  time_t timestamp = (settings->mode == SOFTRF_MODE_RELAY ? time(NULL) : now());
+
+  if (size > 0) {
+    aircraft_array = (ping_aircraft_t *)
+                      malloc(sizeof(ping_aircraft_t) * size);
+
+    if (aircraft_array == NULL) {
+      return;
+    }
+
+    for (int i=0; i < size; i++) {
+      JsonObject& aircraft_obj = aircraft[i];
+
+      aircraft_array[i].icaoAddress = aircraft_obj["icaoAddress"];
+      aircraft_array[i].trafficSource = aircraft_obj["trafficSource"];
+      aircraft_array[i].latDD = aircraft_obj["latDD"];
+      aircraft_array[i].lonDD = aircraft_obj["lonDD"];
+      aircraft_array[i].altitudeMM = aircraft_obj["altitudeMM"];
+      aircraft_array[i].headingDE2 = aircraft_obj["headingDE2"];
+      aircraft_array[i].horVelocityCMS = aircraft_obj["horVelocityCMS"];
+      aircraft_array[i].verVelocityCMS = aircraft_obj["verVelocityCMS"];
+      aircraft_array[i].squawk = aircraft_obj["squawk"];
+      aircraft_array[i].altitudeType = aircraft_obj["altitudeType"];
+      aircraft_array[i].Callsign = aircraft_obj["Callsign"];
+      aircraft_array[i].emitterType = aircraft_obj["emitterType"];
+      aircraft_array[i].utcSync = aircraft_obj["utcSync"];
+      aircraft_array[i].timeStamp = aircraft_obj["timeStamp"];
+    }
+
+    for (int i=0; i < size; i++) {
+
+      if (aircraft_array[i].icaoAddress &&
+          aircraft_array[i].latDD != 0.0 &&
+          aircraft_array[i].lonDD != 0.0 &&
+          aircraft_array[i].altitudeMM != 0) {
+
+        fo = EmptyFO;
+        fo.raw = "";
+
+#if 0
+        std::tm t = {};
+        std::istringstream ss(aircraft_array[i].timeStamp);
+        ss.imbue(std::locale("en_US.UTF-8"));
+        ss >> std::get_time(&t, "%Y-%m-%dT%H:%M:%S");
+        if (ss.fail()) {
+            std::cout << "Parse failed\n";
+        }
+
+        if (aircraft_array[i].utcSync) {
+          fo.timestamp = mktime(&t);
+        } else {
+          fo.timestamp = timestamp;
+        }
+#else
+        fo.timestamp = timestamp;
+#endif
+        fo.protocol = RF_PROTOCOL_ADSB_1090;
+
+        fo.addr = strtoul (&aircraft_array[i].icaoAddress[0], NULL, 16);
+        fo.addr_type = ADDR_TYPE_ICAO;
+
+        fo.latitude = aircraft_array[i].latDD;
+        fo.longitude = aircraft_array[i].lonDD;
+
+        if (aircraft_array[i].altitudeType == 0) {
+          fo.pressure_altitude = aircraft_array[i].altitudeMM / 1000.0;
+
+          /* TBD */
+          fo.altitude = fo.pressure_altitude;
+        } else if (aircraft_array[i].altitudeType == 1) {
+          fo.altitude = aircraft_array[i].altitudeMM / 1000.0;
+        }
+
+        fo.course = (float) aircraft_array[i].headingDE2 / 100.0;
+        fo.speed = (float) aircraft_array[i].horVelocityCMS / (_GPS_MPS_PER_KNOT * 100);
+        fo.aircraft_type = GDL90_TO_AT(aircraft_array[i].emitterType);
+        fo.vs = (float) aircraft_array[i].verVelocityCMS * (_GPS_FEET_PER_METER * 60.0) / 100;
+        fo.stealth = false;
+        fo.no_track = false;
+        fo.rssi = 0;
+
+        int j;
+
+        /* Try to find and update an entry with the same aircraft ID */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
+            Container[j] = fo;
+            Traffic_Update(j);
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Fill a free entry if able */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+            Container[j] = fo;
+            Traffic_Update(j);
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Overwrite expired entry */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[j] = fo;
+            Traffic_Update(j);
+            break;
+          }
+        }
+      }
+    }
+
+#if 0
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr &&
+          Container[i].latitude  != 0.0 &&
+          Container[i].longitude != 0.0 &&
+          Container[i].altitude  != 0.0) {
+
+        printf("%06X %f %f %f %d %d %d\n",
+            Container[i].addr,
+            Container[i].latitude,
+            Container[i].longitude,
+            Container[i].altitude,
+            Container[i].addr_type,
+            (int) Container[i].vs,
+            Container[i].aircraft_type);
+      }
+    }
+#endif
+
+    free(aircraft_array);
+  }
 }
 
 void parseTPV(JsonObject& root)
@@ -508,11 +657,5 @@ void parseD1090(JsonObject& root)
     free(aircraft_array);
   }
 }
-
-void parsePING(JsonObject& root)
-{
-  /* TBD */
-}
-
 
 #endif /* RASPBERRY_PI */

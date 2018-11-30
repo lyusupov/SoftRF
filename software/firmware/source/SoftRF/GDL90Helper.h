@@ -152,7 +152,11 @@ typedef struct GDL90_Msg_FF_ID {
 #define AT_TO_GDL90(x)  ((x) > 15 ? \
    GDL90_EMITTER_CATEGORY_NONE : pgm_read_byte(&aircraft_type_to_gdl90[(x)]))
 
+#define GDL90_TO_AT(x)  ((x) > 15 ? \
+   AIRCRAFT_TYPE_UNKNOWN : pgm_read_byte(&gdl90_to_aircraft_type[(x)]))
+
 extern const uint8_t aircraft_type_to_gdl90[] PROGMEM;
+extern const uint8_t gdl90_to_aircraft_type[] PROGMEM;
 extern const char *GDL90_CallSign_Prefix[];
 
 void GDL90_Export(void);

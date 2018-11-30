@@ -47,7 +47,25 @@ struct dump1090_aircraft_struct {
   float       rssi;
 };
 
+struct ping_aircraft_struct {
+  const char* icaoAddress;
+  int         trafficSource;
+  float       latDD;
+  float       lonDD;
+  long        altitudeMM;
+  int         headingDE2;
+  int         horVelocityCMS;
+  int         verVelocityCMS;
+  int         squawk;
+  int         altitudeType;
+  const char* Callsign;
+  int         emitterType;
+  int         utcSync;
+  const char* timeStamp;
+};
+
 typedef  struct dump1090_aircraft_struct dump1090_aircraft_t;
+typedef  struct ping_aircraft_struct ping_aircraft_t;
 
 extern StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 extern bool hasValidGPSDFix;
