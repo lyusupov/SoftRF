@@ -121,7 +121,7 @@ void parsePING(JsonObject& root)
   JsonArray& aircraft = root["aircraft"];
 
   int size = aircraft.size();
-  time_t timestamp = (settings->mode == SOFTRF_MODE_RELAY ? time(NULL) : now());
+  time_t timestamp = now();
 
   if (size > 0) {
     aircraft_array = (ping_aircraft_t *)
@@ -528,7 +528,7 @@ void parseD1090(JsonObject& root)
   JsonArray& aircraft = root["aircraft"];
 
   int size = aircraft.size();
-  time_t timestamp = (settings->mode == SOFTRF_MODE_RELAY ? time(NULL) : now());
+  time_t timestamp = now();
 
   if (size > 0) {
     aircraft_array = (dump1090_aircraft_t *)

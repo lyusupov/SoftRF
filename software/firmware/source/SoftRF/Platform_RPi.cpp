@@ -33,6 +33,16 @@
  *
  *     < ... skipped ... >
  *
+ *  Concurrent shell session:
+ *
+ *  pi@raspberrypi $ ps -ax | grep dump1090
+ *  2381 pts/1    Sl+    1:53 dump1090 --interactive --net
+ *
+ *  pi@raspberrypi $ wget http://localhost:8080/data/aircraft.json
+ *
+ *     < ... skipped ... >
+ * 
+ *  pi@raspberrypi $ cat aircraft.json | nc -N localhost 30007
  */
 
 #if defined(RASPBERRY_PI)
@@ -51,6 +61,8 @@
 #include "GDL90Helper.h"
 #include "D1090Helper.h"
 #include "JSONHelper.h"
+
+#include "TCPServer.h"
 
 #include <stdio.h>
 #include <sys/select.h>
@@ -97,6 +109,8 @@ hardware_info_t hw_info = {
 unsigned long ExportTimeMarker = 0;
 
 std::string input_line;
+
+TCPServer Traffic_TCP_Server;
 
 #define isValidFix() (isValidGNSSFix() || isValidGPSDFix())
 
@@ -282,6 +296,9 @@ static void RPi_PickGNSSFix()
           root.containsKey("aircraft")) {
         /* 'aircraft.json' output from 'dump1090' application */
         parseD1090(root);
+      } else if (root.containsKey("aircraft")) {
+        /* uAvionix PingStation */
+        parsePING(root);
       }
 
       jsonBuffer.clear();
@@ -295,13 +312,15 @@ static void RPi_PickGNSSFix()
 
 static void RPi_ReadTraffic()
 {
-  if (inputAvailable()) {
-    std::getline(std::cin, input_line);
-    const char *str = input_line.c_str();
-    int len = input_line.length();
+  string traffic_input = Traffic_TCP_Server.getMessage();
+  if (traffic_input != "") {
+    const char *str = traffic_input.c_str();
+    int len = traffic_input.length();
 
     if (str[0] == '{') {
       // JSON input
+
+//    cout << "Traffic message:" << traffic_input << endl;
 
       JsonObject& root = jsonBuffer.parseObject(str);
 
@@ -332,12 +351,16 @@ static void RPi_ReadTraffic()
 
       jsonBuffer.clear();
     }
+
+    Traffic_TCP_Server.clean();
   }
 }
 
 void normal_loop()
 {
     RPi_PickGNSSFix();
+
+    RPi_ReadTraffic();
 
     RF_loop();
 
@@ -371,6 +394,12 @@ void normal_loop()
 
 void relay_loop()
 {
+    RPi_PickGNSSFix();
+
+    if (!isValidFix()) {
+      return;
+    }
+
     RPi_ReadTraffic();
 
     RF_loop();
@@ -404,13 +433,14 @@ void relay_loop()
       } else if (Container[i].addr &&
                  Container[i].latitude  != 0.0 &&
                  Container[i].longitude != 0.0 &&
-                 Container[i].altitude  != 0.0) {
+                 Container[i].altitude  != 0.0 &&
+                 Container[i].distance < (ALARM_ZONE_NONE * 2) ) {
 
         fo = Container[i];
-        fo.timestamp = time(NULL); /* system clock */
+        fo.timestamp = now(); /* GNSS date&time */
 
         if (RF_Transmit(RF_Encode(&fo))) {
-#if 1
+#if 0
           printf("%06X %f %f %f %d %d %d\n",
               fo.addr,
               fo.latitude,
@@ -428,6 +458,12 @@ void relay_loop()
     }
 }
 
+void * traffic_tcpserv_loop(void * m)
+{
+  pthread_detach(pthread_self());
+  Traffic_TCP_Server.receive();
+}
+
 int main()
 {
   // Init GPIO bcm
@@ -442,6 +478,10 @@ int main()
 
   hw_info.rf = RF_setup();
 
+  if (hw_info.rf == RF_IC_NONE) {
+      return 1;
+  }
+
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;
   ThisAircraft.protocol = settings->rf_protocol;
@@ -451,8 +491,15 @@ int main()
   Traffic_setup();
   NMEA_setup();
 
-  while (true) {
+  Traffic_TCP_Server.setup(JSON_SRV_TCP_PORT);
 
+  pthread_t traffic_tcpserv_thread;
+	if( pthread_create(&traffic_tcpserv_thread, NULL, traffic_tcpserv_loop, (void *)0) != 0) {
+    fprintf( stderr, "pthread_create(traffic_tcpserv_thread) Failed\n\n" );
+    return 1;
+  }
+
+  while (true) {
     switch (settings->mode)
     {
     case SOFTRF_MODE_RELAY:
@@ -463,9 +510,9 @@ int main()
       normal_loop();
       break;
     }
-
   }
 
+  Traffic_TCP_Server.detach();
   return 0;
 }
 

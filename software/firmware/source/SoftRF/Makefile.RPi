@@ -21,8 +21,7 @@ CXX           = g++
 CFLAGS        = -g -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
-CXXFLAGS      = -g -std=c++11 -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\"
+CXXFLAGS      = -std=c++11 $(CFLAGS)
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
 NRF905_PATH   = ../libraries/nRF905
@@ -37,12 +36,13 @@ ADSB_PATH     = ../libraries/adsb_encoder
 NMEALIB_PATH  = ../libraries/nmealib/src
 GEOID_PATH    = ../libraries/Geoid
 JSON_PATH     = ../libraries/ArduinoJson/src
+TCPSRV_PATH   = ../libraries/SimpleNetwork/src
 
 INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
-                -I$(JSON_PATH)
+                -I$(JSON_PATH)   -I$(TCPSRV_PATH)
 
 OBJS          := RFHelper.o SoCHelper.o \
                  Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
@@ -62,7 +62,8 @@ OBJS          := RFHelper.o SoCHelper.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \
                  $(NMEALIB_PATH)/gpgga.o $(NMEALIB_PATH)/gprmc.o \
                  $(NMEALIB_PATH)/gpvtg.o $(NMEALIB_PATH)/gpgsv.o \
-                 $(NMEALIB_PATH)/gpgsa.o
+                 $(NMEALIB_PATH)/gpgsa.o \
+                 $(TCPSRV_PATH)/TCPServer.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
