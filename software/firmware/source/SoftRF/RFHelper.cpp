@@ -223,7 +223,7 @@ size_t RF_Encode(ufo_t *fop)
   return size;
 }
 
-bool RF_Transmit(size_t size)
+bool RF_Transmit(size_t size, bool wait)
 {
   if (RF_ready && rf_chip && (size > 0)) {
     RF_tx_size = size;
@@ -232,7 +232,7 @@ bool RF_Transmit(size_t size)
       return true;
     }
 
-    if ((millis() - TxTimeMarker) > TxRandomValue) {
+    if (!wait || (millis() - TxTimeMarker) > TxRandomValue) {
 
       time_t timestamp = now();
 

@@ -658,4 +658,61 @@ void parseD1090(JsonObject& root)
   }
 }
 
+void parseRAW(JsonObject& root)
+{
+
+  JsonArray& rawdata = root["rawdata"];
+
+  int size = rawdata.size();
+  time_t timestamp = now();
+
+  if (size > 0) {
+
+    for (int i=0; i < size; i++) {
+      const char* data = rawdata[i];
+
+      if (strlen(data) > 0) {
+
+        fo = EmptyFO;
+        fo.raw = data;
+
+        fo.timestamp = timestamp;
+        fo.protocol = RF_PROTOCOL_ADSB_1090;
+
+        int j;
+
+        /* Fill a free entry if able */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+            Container[j] = fo;
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Overwrite expired entry */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[j] = fo;
+            break;
+          }
+        }
+      }
+    }
+
+#if 0
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].raw.length() > 0) {
+        printf("%s\n", Container[i].raw.c_str());
+      }
+    }
+#endif
+
+  }
+}
+
+
 #endif /* RASPBERRY_PI */

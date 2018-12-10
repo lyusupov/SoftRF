@@ -156,8 +156,9 @@ extern const float txrx_test_positions[90][2] PROGMEM;
 
 #define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)
 #define TXRX_TEST_ALTITUDE    438.0
-#define TXRX_TEST_COURSE      0.0
+#define TXRX_TEST_COURSE      280.0
 #define TXRX_TEST_SPEED       50.0
+#define TXRX_TEST_VS          -300.0
 
 //#define ENABLE_TTN
 //#define ENABLE_BT_VOICE

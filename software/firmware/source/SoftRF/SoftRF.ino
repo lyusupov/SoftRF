@@ -267,7 +267,7 @@ void normal_loop()
       ThisAircraft.altitude -= ThisAircraft.geoid_separation;
     }
 
-    RF_Transmit(RF_Encode(&ThisAircraft));
+    RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
 
   success = RF_Receive();
@@ -329,7 +329,7 @@ void uav_loop()
     ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
     ThisAircraft.hdop = the_aircraft.location.gps_hdop;
 
-    RF_Transmit(RF_Encode(&ThisAircraft));
+    RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
 
   success = RF_Receive();
@@ -351,7 +351,7 @@ void bridge_loop()
   size_t tx_size = Raw_Receive_UDP(&TxPkt[0]);
 
   if (tx_size > 0) {
-    RF_Transmit(tx_size);
+    RF_Transmit(tx_size, true);
   }
 
   success = RF_Receive();
@@ -418,6 +418,7 @@ void txrx_test_loop()
   ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
   ThisAircraft.course = TXRX_TEST_COURSE;
   ThisAircraft.speed = TXRX_TEST_SPEED;
+  ThisAircraft.vs = TXRX_TEST_VS;
 
 #if DEBUG_TIMING
   baro_start_ms = millis();
@@ -434,7 +435,7 @@ void txrx_test_loop()
 #if DEBUG_TIMING
   tx_start_ms = millis();
 #endif
-  RF_Transmit(RF_Encode(&ThisAircraft));
+  RF_Transmit(RF_Encode(&ThisAircraft), true);
 #if DEBUG_TIMING
   tx_end_ms = millis();
   rx_start_ms = millis();

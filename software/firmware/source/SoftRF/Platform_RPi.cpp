@@ -38,11 +38,8 @@
  *  pi@raspberrypi $ ps -ax | grep dump1090
  *  2381 pts/1    Sl+    1:53 dump1090 --interactive --net
  *
- *  pi@raspberrypi $ wget http://localhost:8080/data/aircraft.json
+ *  pi@raspberrypi $ wget -q -O - http://localhost:8080/data/aircraft.json | nc -N localhost 30007
  *
- *     < ... skipped ... >
- * 
- *  pi@raspberrypi $ cat aircraft.json | nc -N localhost 30007
  */
 
 #if defined(RASPBERRY_PI)
@@ -338,18 +335,28 @@ static void RPi_ReadTraffic()
           root.containsKey("messages") &&
           root.containsKey("aircraft")) {
         /* 'aircraft.json' output from 'dump1090' application */
-        parseD1090(root);
+        if (isValidFix()) {
+          parseD1090(root);
+        }
       } else if (root.containsKey("aircraft")) {
         /* uAvionix PingStation */
-        parsePING(root);
+        if (isValidFix()) {
+          parsePING(root);
+        }
       }
 
       JsonVariant rawdata = root["rawdata"];
       if (rawdata.success()) {
-        /* TBD */
+        parseRAW(root);
       }
 
       jsonBuffer.clear();
+    } else if (str[0] == 'q') {
+      if (len >= 4 && str[1] == 'u' && str[2] == 'i' && str[3] == 't') {
+        Traffic_TCP_Server.detach();
+        fprintf( stderr, "Program termination.\n" );
+        exit(EXIT_SUCCESS);
+      }
     }
 
     Traffic_TCP_Server.clean();
@@ -367,7 +374,7 @@ void normal_loop()
     ThisAircraft.timestamp = now();
 
     if (isValidFix()) {
-      RF_Transmit(RF_Encode(&ThisAircraft));
+      RF_Transmit(RF_Encode(&ThisAircraft), true);
     }
 
     bool success = RF_Receive();
@@ -396,10 +403,6 @@ void relay_loop()
 {
     RPi_PickGNSSFix();
 
-    if (!isValidFix()) {
-      return;
-    }
-
     RPi_ReadTraffic();
 
     RF_loop();
@@ -426,11 +429,16 @@ void relay_loop()
         size_t tx_size = str_len / 2;
 
         if (tx_size > 0) {
-          if (RF_Transmit(tx_size)) {
+          /* Follow duty cycle rule */
+          if (RF_Transmit(tx_size, true /* false */)) {
+#if 0
+            printf("%s\n", Container[i].raw.c_str());
+#endif
             Container[i] = EmptyFO;
           }
         }
-      } else if (Container[i].addr &&
+      } else if (isValidFix() &&
+                 Container[i].addr &&
                  Container[i].latitude  != 0.0 &&
                  Container[i].longitude != 0.0 &&
                  Container[i].altitude  != 0.0 &&
@@ -439,7 +447,8 @@ void relay_loop()
         fo = Container[i];
         fo.timestamp = now(); /* GNSS date&time */
 
-        if (RF_Transmit(RF_Encode(&fo))) {
+        /* Follow duty cycle rule */
+        if (RF_Transmit(RF_Encode(&fo), true /* false */)) {
 #if 0
           printf("%06X %f %f %f %d %d %d\n",
               fo.addr,
@@ -452,8 +461,6 @@ void relay_loop()
 #endif
           Container[i] = EmptyFO;
         }
-
-        break;
       }
     }
 }
@@ -469,7 +476,7 @@ int main()
   // Init GPIO bcm
   if (!bcm2835_init()) {
       fprintf( stderr, "bcm2835_init() Failed\n\n" );
-      return 1;
+      exit(EXIT_FAILURE);
   }
 
   Serial.begin(38400);
@@ -479,7 +486,7 @@ int main()
   hw_info.rf = RF_setup();
 
   if (hw_info.rf == RF_IC_NONE) {
-      return 1;
+      exit(EXIT_FAILURE);
   }
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
@@ -496,7 +503,7 @@ int main()
   pthread_t traffic_tcpserv_thread;
 	if( pthread_create(&traffic_tcpserv_thread, NULL, traffic_tcpserv_loop, (void *)0) != 0) {
     fprintf( stderr, "pthread_create(traffic_tcpserv_thread) Failed\n\n" );
-    return 1;
+    exit(EXIT_FAILURE);
   }
 
   while (true) {

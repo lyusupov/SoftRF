@@ -67,7 +67,7 @@ byte RF_setup(void);
 void RF_SetChannel(void);
 void RF_loop(void);
 size_t RF_Encode(ufo_t *);
-bool RF_Transmit(size_t);
+bool RF_Transmit(size_t, bool);
 bool RF_Receive(void);
 void RF_Shutdown(void);
 
