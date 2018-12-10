@@ -113,7 +113,8 @@ typedef struct {
     // unsigned int magic:8;
     /********************/
     int vs:10;
-    unsigned int _unk2:3;
+    unsigned int _unk2:2;
+    unsigned int airborne:1;
     unsigned int stealth:1;
     unsigned int no_track:1;
     unsigned int _unk3:1;
@@ -125,7 +126,7 @@ typedef struct {
     /********************/
     unsigned int lon:20;
     unsigned int _unk4:10;
-    unsigned int vsmult:2;
+    unsigned int smult:2;
     /********************/
     int8_t ns[4];
     int8_t ew[4];
