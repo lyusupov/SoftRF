@@ -160,6 +160,8 @@ struct rst_info {
 
 #define  NMEA_TCP_SERVICE
 
+#define MakeFlashId(v,d)  ((v << 16) | d)
+
 #endif /* ESP32HELPER_H */
 
 #endif /* ESP32 */

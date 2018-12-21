@@ -23,6 +23,8 @@
 #include <soc/rtc_cntl_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
+#include <rom/spi_flash.h>
+#include <flashchips.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -82,6 +84,11 @@ static union {
   uint64_t chipmacid;
 };
 
+static uint32_t ESP32_getFlashId()
+{
+  return g_rom_flashchip.device_id;
+}
+
 static void ESP32_setup()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -113,7 +120,23 @@ static void ESP32_setup()
 
   /* Temporary workaround until issues with PSRAM will settle down */
   if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
-    hw_info.model = SOFTRF_MODEL_PRIME_MK2;
+
+    uint32_t flash_id = ESP32_getFlashId();
+
+    /*
+     *    Board          |    Module    |    Flash memory IC
+     *  -----------------+--------------+--------------------
+     *  DoIt ESP32       | WROOM        |  GIGADEVICE_GD25Q32
+     *  TTGO LoRa32 V2.0 | PICO-D4 IC   |  GIGADEVICE_GD25Q32
+     *  TTGO T-Beam V06  |              |  WINBOND_NEX_W25Q32_V
+     *  TTGO T8 V1.8     | WROVER       |  GIGADEVICE_GD25LQ32
+     */
+
+    if (flash_id == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32))
+      /* ESP32-WROVER module with ESP32-NODEMCU-ADAPTER */
+      hw_info.model = SOFTRF_MODEL_STANDALONE;
+    else
+      hw_info.model = SOFTRF_MODEL_PRIME_MK2;
   }
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);

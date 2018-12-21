@@ -33,7 +33,7 @@ static int8_t (*Alarm_Level)(ufo_t *, ufo_t *);
 
 /*
  * No any alarms issued by the firmware.
- * Rely on high-level flight management software.
+ * Rely upon high-level flight management software.
  */
 static int8_t Alarm_None(ufo_t *this_aircraft, ufo_t *fop)
 {
@@ -107,7 +107,7 @@ static int8_t Alarm_Vector(ufo_t *this_aircraft, ufo_t *fop)
 }
 
 /*
- * "Legacy" method is based on short history of 2D velocty vectors (NS/EW)
+ * "Legacy" method is based on short history of 2D velocity vectors (NS/EW)
  */
 static int8_t Alarm_Legacy(ufo_t *this_aircraft, ufo_t *fop)
 {
