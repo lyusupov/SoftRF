@@ -3,7 +3,7 @@ env:
   global:
     - IDE_VERSION=1.8.5
   matrix:
-  - BOARD=esp8266:esp8266:nodemcuv2
+  - BOARD=esp8266:esp8266:nodemcuv2:CpuFrequency=80,FlashSize=4M3M
   - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
@@ -18,7 +18,7 @@ install:
   - mkdir $HOME/Arduino
   - ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries
   - if [[ "$BOARD" =~ "esp8266:esp8266:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=http://github.com/esp8266/Arduino/releases/download/2.4.2/package_esp8266com_index.json" --save-prefs ;
       arduino --install-boards esp8266:esp8266 ;
       arduino --board $BOARD --save-prefs ;
       arduino --pref "compiler.warning_level=all" --save-prefs ;
