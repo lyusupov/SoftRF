@@ -56,6 +56,9 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
         * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility)
     * [Garmin GDL90 datalink](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility)
+        * [SkyDemon](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility#skydemon)
+        * [Avare](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility#avare)
+        * [ForeFlight](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility#foreflight)
     * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers)
 * Archive
     * [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
