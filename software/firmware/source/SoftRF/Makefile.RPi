@@ -18,7 +18,7 @@
 CC            = gcc
 CXX           = g++
 
-CFLAGS        = -g -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
@@ -44,10 +44,12 @@ INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)
 
-OBJS          := RFHelper.o SoCHelper.o \
-                 Protocol_Legacy.o Protocol_P3I.o Protocol_FANET.o Protocol_OGNTP.o \
-                 D1090Helper.o GDL90Helper.o NMEAHelper.o JSONHelper.o \
-                 TrafficHelper.o  GNSSHelper.o \
+CPPS          := RFHelper.cpp SoCHelper.cpp \
+                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp Protocol_OGNTP.cpp \
+                 D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
+                 TrafficHelper.cpp  GNSSHelper.cpp
+
+OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(LMIC_PATH)/raspi/WString.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
@@ -68,6 +70,8 @@ OBJS          := RFHelper.o SoCHelper.o \
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
 PROGNAME      := SoftRF
+
+DEPS          := $(OBJS:.o=.d)
 
 all: bcm $(PROGNAME) $(PROGNAME)-aux
 
@@ -108,5 +112,5 @@ bcm-clean:
 				(cd $(BCMLIB_PATH)/../ ; make distclean)
 
 clean: bcm-clean
-				rm -f $(OBJS) aes.o raspi.o raspi-aux.o \
-				Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux
+				rm -f $(OBJS) $(DEPS) aes.o raspi.o raspi-aux.o \
+				Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d
