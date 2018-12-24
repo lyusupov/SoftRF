@@ -180,7 +180,13 @@ static void* ESP32_getResetInfoPtr()
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
     case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
     case RTCWDT_BROWN_OUT_RESET : reset_info.reason = REASON_EXT_SYS_RST; break;
-    case RTCWDT_RTC_RESET       : reset_info.reason = REASON_WDT_RST; break;
+    case RTCWDT_RTC_RESET       :
+      /* Slow start of GD25LQ32 causes one read fault at boot time with current ESP-IDF */
+      if (ESP32_getFlashId() == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32))
+                                  reset_info.reason = REASON_DEFAULT_RST;
+      else
+                                  reset_info.reason = REASON_WDT_RST;
+                                  break;
     default                     : reset_info.reason = REASON_DEFAULT_RST;
   }
 
