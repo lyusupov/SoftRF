@@ -285,6 +285,9 @@ static void RPi_PickGNSSFix()
           parseTPV(root);
         } else if (!strcmp(msg_class_s,"SOFTRF")) {
           parseSettings(root);
+
+          RF_setup();
+          Traffic_setup();
         }
       }
 
@@ -328,6 +331,9 @@ static void RPi_ReadTraffic()
 
         if (!strcmp(msg_class_s,"SOFTRF")) {
           parseSettings(root);
+
+          RF_setup();
+          Traffic_setup();
         }
       }
 
