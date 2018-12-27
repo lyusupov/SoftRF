@@ -47,7 +47,7 @@ INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
 CPPS          := RFHelper.cpp SoCHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp Protocol_OGNTP.cpp \
                  D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
-                 TrafficHelper.cpp  GNSSHelper.cpp
+                 TrafficHelper.cpp  GNSSHelper.cpp Library.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \

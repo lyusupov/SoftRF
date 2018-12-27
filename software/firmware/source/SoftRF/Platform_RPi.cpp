@@ -471,6 +471,112 @@ void relay_loop()
     }
 }
 
+unsigned int pos_ndx = 0;
+unsigned long TxPosUpdMarker = 0;
+
+void txrx_test_loop()
+{
+  bool success = false;
+#if DEBUG_TIMING
+  unsigned long baro_start_ms, baro_end_ms;
+  unsigned long tx_start_ms, tx_end_ms, rx_start_ms, rx_end_ms;
+  unsigned long parse_start_ms, parse_end_ms, led_start_ms, led_end_ms;
+  unsigned long export_start_ms, export_end_ms;
+  unsigned long oled_start_ms, oled_end_ms;
+#endif
+
+  setTime(time(NULL));
+
+  RF_loop();
+
+  ThisAircraft.timestamp = now();
+
+  if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
+    ThisAircraft.latitude =  pgm_read_float( &txrx_test_positions[pos_ndx][0]);
+    ThisAircraft.longitude =  pgm_read_float( &txrx_test_positions[pos_ndx][1]);
+    pos_ndx = (pos_ndx + 1) % TXRX_TEST_NUM_POSITIONS;
+    TxPosUpdMarker = millis();
+  }
+
+  ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
+  ThisAircraft.course = TXRX_TEST_COURSE;
+  ThisAircraft.speed = TXRX_TEST_SPEED;
+  ThisAircraft.vs = TXRX_TEST_VS;
+
+#if DEBUG_TIMING
+  tx_start_ms = millis();
+#endif
+
+  RF_Transmit(RF_Encode(&ThisAircraft), true);
+
+#if DEBUG_TIMING
+  tx_end_ms = millis();
+  rx_start_ms = millis();
+#endif
+  success = RF_Receive();
+#if DEBUG_TIMING
+  rx_end_ms = millis();
+#endif
+
+#if DEBUG_TIMING
+  parse_start_ms = millis();
+#endif
+  if (success) ParseData();
+#if DEBUG_TIMING
+  parse_end_ms = millis();
+#endif
+
+  Traffic_loop();
+
+#if DEBUG_TIMING
+  export_start_ms = millis();
+#endif
+  if (isTimeToExport()) {
+    NMEA_Position();
+    NMEA_Export();
+    GDL90_Export();
+    D1090_Export();
+    ExportTimeMarker = millis();
+  }
+#if DEBUG_TIMING
+  export_end_ms = millis();
+#endif
+
+#if DEBUG_TIMING
+  if (tx_end_ms - tx_start_ms) {
+    Serial.print(F("TX start: "));
+    Serial.print(tx_start_ms);
+    Serial.print(F(" TX stop: "));
+    Serial.println(tx_end_ms);
+  }
+  if (rx_end_ms - rx_start_ms) {
+    Serial.print(F("RX start: "));
+    Serial.print(rx_start_ms);
+    Serial.print(F(" RX stop: "));
+    Serial.println(rx_end_ms);
+  }
+  if (parse_end_ms - parse_start_ms) {
+    Serial.print(F("Parse start: "));
+    Serial.print(parse_start_ms);
+    Serial.print(F(" Parse stop: "));
+    Serial.println(parse_end_ms);
+  }
+
+  if (export_end_ms - export_start_ms) {
+    Serial.print(F("Export start: "));
+    Serial.print(export_start_ms);
+    Serial.print(F(" Export stop: "));
+    Serial.println(export_end_ms);
+  }
+#endif
+
+  // Handle Air Connect
+  NMEA_loop();
+
+  ClearExpired();
+}
+
+
 void * traffic_tcpserv_loop(void * m)
 {
   pthread_detach(pthread_self());
@@ -515,6 +621,9 @@ int main()
   while (true) {
     switch (settings->mode)
     {
+    case SOFTRF_MODE_TXRX_TEST:
+      txrx_test_loop();
+      break;
     case SOFTRF_MODE_RELAY:
       relay_loop();
       break;
