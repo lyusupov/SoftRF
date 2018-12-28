@@ -107,6 +107,9 @@ void setup()
   Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
   Serial.println(SoC->getResetReason());
   Serial.print(F("Free heap size: ")); Serial.println(ESP.getFreeHeap());
+#if defined(ESP32_DEVEL_CORE)
+  Serial.print(F("PSRAM: ")); Serial.println(psramFound() ? F("found") : F("not found"));
+#endif
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();

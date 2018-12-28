@@ -155,12 +155,13 @@ struct rst_info {
   uint32_t depc;
 };
 
+#define MakeFlashId(v,d)  ((v << 16) | d)
+
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
 #define  NMEA_TCP_SERVICE
-
-#define MakeFlashId(v,d)  ((v << 16) | d)
+//#define ESP32_DEVEL_CORE
 
 #endif /* ESP32HELPER_H */
 

@@ -118,8 +118,12 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
+#if defined(ESP32_DEVEL_CORE)
+  if (psramFound()) {
+#else
   /* Temporary workaround until issues with PSRAM will settle down */
-  if (ESP.getFreeHeap() > 4000000 /* psramFound() */) {
+  if (ESP.getFreeHeap() > 4000000) {
+#endif
 
     uint32_t flash_id = ESP32_getFlashId();
 
