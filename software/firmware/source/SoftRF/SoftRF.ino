@@ -1,6 +1,6 @@
 /*
  * SoftRF(.ino) firmware
- * Copyright (C) 2016-2018 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * Author: Linar Yusupov, linar.r.yusupov@gmail.com
  *
