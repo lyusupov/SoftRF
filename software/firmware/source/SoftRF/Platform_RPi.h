@@ -21,6 +21,9 @@
 #ifndef PLATFORM_RPI_H
 #define PLATFORM_RPI_H
 
+/* Maximum of tracked flying objects is now SoC-specific constant */
+#define MAX_TRACKING_OBJECTS    8
+
 #define swSer Serial
 
 /* Dragino LoRa/GPS HAT */

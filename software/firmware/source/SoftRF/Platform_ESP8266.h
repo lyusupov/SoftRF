@@ -17,8 +17,8 @@
  */
 #if defined(ESP8266)
 
-#ifndef ESP8266HELPER_H
-#define ESP8266HELPER_H
+#ifndef PLATFORM_ESP8266_H
+#define PLATFORM_ESP8266_H
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -28,6 +28,9 @@
 #include <Exp_SoftwareSerial.h>
 #include <ESP8266FtpServer.h>
 #include <Adafruit_NeoPixel.h>
+
+/* Maximum of tracked flying objects is now SoC-specific constant */
+#define MAX_TRACKING_OBJECTS    8
 
 #define uni_begin()             strip.begin()
 #define uni_show()              strip.show()
@@ -75,6 +78,6 @@ extern ESP8266WebServer server;
 extern Exp_SoftwareSerial swSer;
 extern Adafruit_NeoPixel strip;
 
-#endif /* ESP8266HELPER_H */
+#endif /* PLATFORM_ESP8266_H */
 
 #endif /* ESP8266 */

@@ -17,8 +17,8 @@
  */
 #if defined(ESP32)
 
-#ifndef ESP32HELPER_H
-#define ESP32HELPER_H
+#ifndef PLATFORM_ESP32_H
+#define PLATFORM_ESP32_H
 
 #include <WiFi.h>
 #include <WebServer.h>
@@ -26,6 +26,9 @@
 #include <Update.h>
 #include <WiFiClient.h>
 #include <SPIFFS.h>
+
+/* Maximum of tracked flying objects is now SoC-specific constant */
+#define MAX_TRACKING_OBJECTS    8
 
 #define SoftwareSerial HardwareSerial
 #define swSer Serial1
@@ -163,6 +166,6 @@ struct rst_info {
 #define  NMEA_TCP_SERVICE
 //#define ESP32_DEVEL_CORE
 
-#endif /* ESP32HELPER_H */
+#endif /* PLATFORM_ESP32_H */
 
 #endif /* ESP32 */

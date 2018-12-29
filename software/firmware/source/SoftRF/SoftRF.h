@@ -29,24 +29,6 @@
 
 #define SOFTRF_FIRMWARE_VERSION "1.0-rc5"
 
-//#define TEST_PAW_ON_NICERF_SV610_FW466
-
-#define LOGGER_IS_ENABLED 0
-
-#if LOGGER_IS_ENABLED
-#define StdOut  LogFile
-#else
-#define StdOut  Serial
-#endif /* LOGGER_IS_ENABLED */
-
-#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
-
-/* Max. paket's payload size for all supported RF protocols */
-#define MAX_PKT_SIZE  32 
-
-#define RRB_SIZE  10
-#define MAX_TRACKING_OBJECTS    8
-
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
 #define LED_EXPIRATION_TIME     5 /* seconds */
 #define EXPORT_EXPIRATION_TIME  5 /* seconds */
@@ -80,6 +62,10 @@
 #define GDL90_DST_PORT    4000
 #define NMEA_UDP_PORT     10110
 #define NMEA_TCP_PORT     2000
+
+/* Max. paket's payload size for all supported RF protocols */
+#define MAX_PKT_SIZE  32
+#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
 
 #if defined(PREMIUM_PACKAGE) && !defined(RASPBERRY_PI)
 #define ENABLE_AHRS
@@ -162,5 +148,14 @@ extern const float txrx_test_positions[90][2] PROGMEM;
 
 //#define ENABLE_TTN
 //#define ENABLE_BT_VOICE
+//#define TEST_PAW_ON_NICERF_SV610_FW466
+
+#define LOGGER_IS_ENABLED 0
+
+#if LOGGER_IS_ENABLED
+#define StdOut  LogFile
+#else
+#define StdOut  Serial
+#endif /* LOGGER_IS_ENABLED */
 
 #endif /* SOFTRF_H */
