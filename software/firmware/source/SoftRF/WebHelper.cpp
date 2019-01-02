@@ -72,6 +72,47 @@ String Bin2Hex(byte *buffer)
   return str;
 }
 
+static const char about_html[] PROGMEM = "<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>About</title>\
+  </head>\
+<body>\
+<h1 align=center>About</h1>\
+<p>This firmware is a part of open SoftRF project</p>\
+<p>URL: http://github.com/lyusupov/SoftRF</p>\
+<p>Author: <b>Linar Yusupov</b></p>\
+<p>E-mail: linar.r.yusupov@gmail.com</p>\
+<h2 align=center>Credits</h2>\
+<p align=center>(in historical order)</p>\
+<table width=100%%>\
+<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
+<tr><th align=left>Zak Kemble</th><td align=left>nRF905 library</td></tr>\
+<tr><th align=left>Stanislaw Pusep</th><td align=left>flarm_decode</td></tr>\
+<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
+<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString Libraries</td></tr>\
+<tr><th align=left>Phil Burgess</th><td align=left>Adafruit NeoPixel Library</td></tr>\
+<tr><th align=left>Andy Little</th><td align=left>Aircraft and MAVLink Libraries</td></tr>\
+<tr><th align=left>Peter Knight</th><td align=left>TrueRandom Library</td></tr>\
+<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC framework for Arduino</td></tr>\
+<tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
+<tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
+<tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
+<tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
+<tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
+<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino core for ESP32</td></tr>\
+<tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
+<tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
+<tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
+<tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
+<tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
+<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam board</td></tr>\
+</table>\
+<hr>\
+Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+</body>\
+</html>";
+
 void handleSettings() {
 
   size_t size = 4500;
@@ -438,9 +479,9 @@ void handleSettings() {
   );
 
   SoC->swSer_enableRx(false);
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
+  server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+  server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+  server.sendHeader(String(F("Expires")), String(F("-1")));
   server.send ( 200, "text/html", Settings_temp );
   SoC->swSer_enableRx(true);
   free(Settings_temp);
@@ -543,9 +584,9 @@ void handleRoot() {
     timestamp, sats, str_lat, str_lon, str_alt
   );
   SoC->swSer_enableRx(false);
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
+  server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+  server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+  server.sendHeader(String(F("Expires")), String(F("-1")));
   server.send ( 200, "text/html", Root_temp );
   SoC->swSer_enableRx(true);
   free(Root_temp);
@@ -667,78 +708,27 @@ void handleNotFound() {
   server.send ( 404, "text/plain", message );
 }
 
-void handleAbout() {
-
-  char *About_temp = (char *) malloc(2400);
-  if (About_temp == NULL) {
-    return;
-  }
-
-  snprintf_P ( About_temp, 2400,
-    PSTR("<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>About</title>\
-  </head>\
-<body>\
-<h1 align=center>About</h1>\
-<p>This firmware is a part of open SoftRF project</p>\
-<p>URL: http://github.com/lyusupov/SoftRF</p>\
-<p>Author: <b>Linar Yusupov</b></p>\
-<p>E-mail: linar.r.yusupov@gmail.com</p>\
-<h2 align=center>Credits</h2>\
-<p align=center>(in historical order)</p>\
-<table width=100%%>\
-<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
-<tr><th align=left>Zak Kemble</th><td align=left>nRF905 library</td></tr>\
-<tr><th align=left>Stanislaw Pusep</th><td align=left>flarm_decode</td></tr>\
-<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
-<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString Libraries</td></tr>\
-<tr><th align=left>Phil Burgess</th><td align=left>Adafruit NeoPixel Library</td></tr>\
-<tr><th align=left>Andy Little</th><td align=left>Aircraft and MAVLink Libraries</td></tr>\
-<tr><th align=left>Peter Knight</th><td align=left>TrueRandom Library</td></tr>\
-<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC framework for Arduino</td></tr>\
-<tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
-<tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
-<tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
-<tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
-<tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
-<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino core for ESP32</td></tr>\
-<tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
-<tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
-<tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
-<tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
-<tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
-<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam board</td></tr>\
-</table>\
-<hr>\
-Copyright (C) 2015-2018 &nbsp;&nbsp;&nbsp; Linar Yusupov\
-</body>\
-</html>")
-  );
-  SoC->swSer_enableRx(false);
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send ( 200, "text/html", About_temp );
-  SoC->swSer_enableRx(true);
-  free(About_temp);
-}
-
 void Web_setup()
 {
   server.on ( "/", handleRoot );
   server.on ( "/settings", handleSettings );
-  server.on ( "/about", handleAbout );
-  
+  server.on ( "/about", []() {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send_P ( 200, PSTR("text/html"), about_html);
+    SoC->swSer_enableRx(true);
+  } );
+
   server.on ( "/input", handleInput );
   server.on ( "/inline", []() {
     server.send ( 200, "text/plain", "this works as well" );
   } );
   server.on("/firmware", HTTP_GET, [](){
     SoC->swSer_enableRx(false);
-    server.sendHeader("Connection", "close");
-    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.sendHeader(String(F("Connection")), String(F("close")));
+    server.sendHeader(String(F("Access-Control-Allow-Origin")), String(F("*")));
     server.send_P(200,
       PSTR("text/html"),
       PSTR("\
