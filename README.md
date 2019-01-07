@@ -60,6 +60,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
         * [Avare](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility#avare)
         * [ForeFlight](https://github.com/lyusupov/SoftRF/wiki/Garmin-GDL90-compatibility#foreflight)
     * [Integration with airborne (Stratux, PilotAware,...) and groundstation (FlightRadar24, FlightAware,...) ADS-B receivers](https://github.com/lyusupov/SoftRF/wiki/Integration-with-RTL%E2%80%90SDR-based-ADS%E2%80%90B-receivers)
+    * [Combined use of multiple SoftRF units](https://github.com/lyusupov/SoftRF/tree/master/software/app/XCSoar7_preview12_plus) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * Archive
     * [Prime Edition](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
         * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/Prime-BOM)
