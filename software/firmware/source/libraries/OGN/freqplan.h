@@ -43,7 +43,7 @@ class FreqPlan
           { BaseFreq=869250000; ChanSepar=200000; Channels= 1; MaxTxPower = 10; } // New Zealand
           break;
         case RF_BAND_RU:
-          { BaseFreq=868800000; ChanSepar=200000; Channels= 1; MaxTxPower = 14; } // Russia
+          { BaseFreq=868800000; ChanSepar=200000; Channels= 1; MaxTxPower = 20; } // Russia
           break;
         case RF_BAND_CN:
           { BaseFreq=470100000; ChanSepar=200000; Channels= 1 /* 18 */; MaxTxPower = 17; } // China, 470-473.6 MHz
