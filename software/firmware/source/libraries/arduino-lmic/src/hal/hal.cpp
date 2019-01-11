@@ -17,6 +17,10 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
+#if defined(ENERGIA_ARCH_CC13XX)
+#include <cc13xx/cc13xx.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+
 #include "../lmic.h"
 #include "hal.h"
 #include <stdio.h>
@@ -184,10 +188,13 @@ static void hal_spi_init () {
 }
 
 void hal_pin_nss (u1_t val) {
+
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (!val)
         SPI.beginTransaction(settings);
     else
         SPI.endTransaction();
+#endif
 
     //Serial.println(val?">>":"<<");
     digitalWrite(lmic_pins.nss, val);

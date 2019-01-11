@@ -61,7 +61,8 @@ static void os_aes_cmac(xref2u1_t buf, u2_t len, u1_t prepend_aux) {
 
     while (len > 0) {
         u1_t need_padding = 0;
-        for (u1_t i = 0; i < 16; ++i, ++buf, --len) {
+        u1_t i = 0;
+        for (i = 0; i < 16; ++i, ++buf, --len) {
             if (len == 0) {
                 // The message is padded with 0x80 and then zeroes.
                 // Since zeroes are no-op for xor, we can just skip them
@@ -96,7 +97,7 @@ static void os_aes_cmac(xref2u1_t buf, u2_t len, u1_t prepend_aux) {
             }
 
             // Xor with K1 or K2
-            for (u1_t i = 0; i < sizeof(final_key); ++i)
+            for (i = 0; i < sizeof(final_key); ++i)
                 AESaux[i] ^= final_key[i];
         }
 
@@ -114,8 +115,9 @@ static void os_aes_ctr (xref2u1_t buf, u2_t len) {
         memcpy(ctr, AESaux, sizeof(ctr));
         lmic_aes_encrypt(ctr, AESkey);
 
+        u1_t i = 0;
         // Xor the payload with the resulting ciphertext
-        for (u1_t i = 0; i < 16 && len > 0; i++, len--, buf++)
+        for (i = 0; i < 16 && len > 0; i++, len--, buf++)
             *buf ^= ctr[i];
 
         // Increment the block index byte
@@ -124,6 +126,7 @@ static void os_aes_ctr (xref2u1_t buf, u2_t len) {
 }
 
 u4_t os_aes (u1_t mode, xref2u1_t buf, u2_t len) {
+    u1_t i = 0;
     switch (mode & ~AES_MICNOAUX) {
         case AES_MIC:
             os_aes_cmac(buf, len, /* prepend_aux */ !(mode & AES_MICNOAUX));
@@ -131,7 +134,7 @@ u4_t os_aes (u1_t mode, xref2u1_t buf, u2_t len) {
 
         case AES_ENC:
             // TODO: Check / handle when len is not a multiple of 16
-            for (u1_t i = 0; i < len; i += 16)
+            for (i = 0; i < len; i += 16)
                 lmic_aes_encrypt(buf+i, AESkey);
             break;
 

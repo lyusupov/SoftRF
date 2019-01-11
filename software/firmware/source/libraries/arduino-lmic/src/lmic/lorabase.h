@@ -360,6 +360,8 @@ typedef u4_t devaddr_t;
 // RX quality (device)
 enum { RSSI_OFF=64, SNR_SCALEUP=4 };
 
+#if !defined(ENERGIA_ARCH_CC13XX) || defined(__cplusplus)
+
 inline sf_t  getSf   (rps_t params)            { return   (sf_t)(params &  0x7); }
 inline rps_t setSf   (rps_t params, sf_t sf)   { return (rps_t)((params & ~0x7) | sf); }
 inline bw_t  getBw   (rps_t params)            { return  (bw_t)((params >> 3) & 0x3); }
@@ -373,11 +375,40 @@ inline rps_t setIh   (rps_t params, int ih)    { return (rps_t)((params & ~0xFF0
 inline rps_t makeRps (sf_t sf, bw_t bw, cr_t cr, int ih, int nocrc) {
     return sf | (bw<<3) | (cr<<5) | (nocrc?(1<<7):0) | ((ih&0xFF)<<8);
 }
+
+#else /* ENERGIA_ARCH_CC13XX */
+
+extern inline sf_t  getSf    (rps_t params);
+extern inline rps_t setSf    (rps_t params, sf_t sf);
+extern inline bw_t  getBw    (rps_t params);
+extern inline rps_t setBw    (rps_t params, bw_t cr);
+extern inline cr_t  getCr    (rps_t params);
+extern inline rps_t setCr    (rps_t params, cr_t cr);
+extern inline int   getNocrc (rps_t params);
+extern inline rps_t setNocrc (rps_t params, int nocrc);
+extern inline int   getIh    (rps_t params);
+extern inline rps_t setIh    (rps_t params, int ih);
+extern inline rps_t makeRps  (sf_t sf, bw_t bw, cr_t cr, int ih, int nocrc);
+
+#endif /* ENERGIA_ARCH_CC13XX */
+
 #define MAKERPS(sf,bw,cr,ih,nocrc) ((rps_t)((sf) | ((bw)<<3) | ((cr)<<5) | ((nocrc)?(1<<7):0) | ((ih&0xFF)<<8)))
+
+#if !defined(ENERGIA_ARCH_CC13XX)
+
 // Two frames with params r1/r2 would interfere on air: same SFx + BWx
 inline int sameSfBw(rps_t r1, rps_t r2) { return ((r1^r2)&0x1F) == 0; }
 
+#else /* ENERGIA_ARCH_CC13XX */
+
+extern inline int   sameSfBw (rps_t r1, rps_t r2);
+
+#endif /* ENERGIA_ARCH_CC13XX */
+
 extern CONST_TABLE(u1_t, _DR2RPS_CRC)[];
+
+#if !defined(ENERGIA_ARCH_CC13XX) || defined(__cplusplus)
+
 inline rps_t updr2rps (dr_t dr) { return (rps_t)TABLE_GET_U1(_DR2RPS_CRC, dr+1); }
 inline rps_t dndr2rps (dr_t dr) { return setNocrc(updr2rps(dr),1); }
 inline int isFasterDR (dr_t dr1, dr_t dr2) { return dr1 > dr2; }
@@ -387,6 +418,20 @@ inline dr_t  decDR    (dr_t dr) { return TABLE_GET_U1(_DR2RPS_CRC, dr  )==ILLEGA
 inline dr_t  assertDR (dr_t dr) { return TABLE_GET_U1(_DR2RPS_CRC, dr+1)==ILLEGAL_RPS ? DR_DFLTMIN : dr; }   // force into a valid DR
 inline bit_t validDR  (dr_t dr) { return TABLE_GET_U1(_DR2RPS_CRC, dr+1)!=ILLEGAL_RPS; } // in range
 inline dr_t  lowerDR  (dr_t dr, u1_t n) { while(n--){dr=decDR(dr);} return dr; } // decrease data rate by n steps
+
+#else /* ENERGIA_ARCH_CC13XX */
+
+extern inline rps_t updr2rps (dr_t dr);
+extern inline rps_t dndr2rps (dr_t dr);
+extern inline int isFasterDR (dr_t dr1, dr_t dr2);
+extern inline int isSlowerDR (dr_t dr1, dr_t dr2);
+extern inline dr_t  incDR    (dr_t dr);
+extern inline dr_t  decDR    (dr_t dr);
+extern inline dr_t  assertDR (dr_t dr);
+extern inline dr_t  validDR  (dr_t dr);
+extern inline dr_t  lowerDR  (dr_t dr, u1_t n);
+
+#endif /* ENERGIA_ARCH_CC13XX */
 
 //
 // BEG: Keep in sync with lorabase.hpp

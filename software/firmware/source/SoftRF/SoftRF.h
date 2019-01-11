@@ -23,6 +23,10 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
+#if defined(ENERGIA_ARCH_CC13XX)
+#include <TimeLib.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+
 #if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */

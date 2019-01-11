@@ -25,6 +25,9 @@
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
 #include "Platform_RPi.h"
+#if defined(ENERGIA_ARCH_CC13XX)
+#include "Platform_CC13XX.h"
+#endif /* ENERGIA_ARCH_CC13XX */
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {

@@ -311,7 +311,8 @@ static u1_t readReg (u1_t addr) {
 static void writeBuf (u1_t addr, xref2u1_t buf, u1_t len) {
     hal_pin_nss(0);
     hal_spi(addr | 0x80);
-    for (u1_t i=0; i<len; i++) {
+    u1_t i = 0;
+    for (i=0; i<len; i++) {
         hal_spi(buf[i]);
     }
     hal_pin_nss(1);
@@ -320,7 +321,8 @@ static void writeBuf (u1_t addr, xref2u1_t buf, u1_t len) {
 static void writeBuf_Inv (u1_t addr, xref2u1_t buf, u1_t len) {
     hal_pin_nss(0);
     hal_spi(addr | 0x80);
-    for (u1_t i=0; i<len; i++) {
+    u1_t i = 0;
+    for (i=0; i<len; i++) {
         hal_spi(~buf[i]);
     }
     hal_pin_nss(1);
@@ -329,7 +331,8 @@ static void writeBuf_Inv (u1_t addr, xref2u1_t buf, u1_t len) {
 static void readBuf (u1_t addr, xref2u1_t buf, u1_t len) {
     hal_pin_nss(0);
     hal_spi(addr & 0x7F);
-    for (u1_t i=0; i<len; i++) {
+    u1_t i=0;
+    for (i=0; i<len; i++) {
         buf[i] = hal_spi(0x00);
     }
     hal_pin_nss(1);
@@ -338,7 +341,8 @@ static void readBuf (u1_t addr, xref2u1_t buf, u1_t len) {
 static void readBuf_Inv (u1_t addr, xref2u1_t buf, u1_t len) {
     hal_pin_nss(0);
     hal_spi(addr & 0x7F);
-    for (u1_t i=0; i<len; i++) {
+    u1_t i=0;
+    for (i=0; i<len; i++) {
         buf[i] = ~(hal_spi(0x00));
     }
     hal_pin_nss(1);
@@ -570,7 +574,8 @@ static void txfsk () {
     }
     writeReg(FSKRegPacketConfig2, 0x40);
 
-    for (int i=0; i < LMIC.protocol->syncword_size; i++) {
+    int i=0;
+    for (i=0; i < LMIC.protocol->syncword_size; i++) {
       writeReg((FSKRegSyncValue1 + i), LMIC.protocol->syncword[i]);
     }
 
@@ -868,7 +873,8 @@ static void rxfsk (u1_t rxmode) {
       LMIC.protocol->crc_size);
 
     // set sync value
-    for (int i=0; i < LMIC.protocol->syncword_size; i++) {
+    int i=0;
+    for (i=0; i < LMIC.protocol->syncword_size; i++) {
       writeReg((FSKRegSyncValue1 + i), LMIC.protocol->syncword[i]);
     }
 
@@ -960,8 +966,10 @@ void radio_init () {
     // seed 15-byte randomness via noise rssi
     rxlora(RXMODE_RSSI);
     while( (readReg(RegOpMode) & OPMODE_MASK) != OPMODE_RX ); // continuous rx
-    for(int i=1; i<16; i++) {
-        for(int j=0; j<8; j++) {
+    int i=1;
+    for(i=1; i<16; i++) {
+        int j=0;
+        for(j=0; j<8; j++) {
             u1_t b; // wait for two non-identical subsequent least-significant bits
             while( (b = readReg(LORARegRssiWideband) & 0x01) == (readReg(LORARegRssiWideband) & 0x01) );
             randbuf[i] = (randbuf[i] << 1) | b;

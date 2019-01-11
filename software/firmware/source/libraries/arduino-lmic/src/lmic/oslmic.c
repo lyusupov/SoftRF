@@ -124,3 +124,18 @@ void os_runloop_once() {
         j->func(j);
     }
 }
+
+#if !defined(ENERGIA_ARCH_CC13XX)
+
+
+#else /* ENERGIA_ARCH_CC13XX */
+
+    inline u1_t table_get_u1(const u1_t *table, size_t index) { return table[index]; }
+    inline s1_t table_get_s1(const s1_t *table, size_t index) { return table[index]; }
+    inline u2_t table_get_u2(const u2_t *table, size_t index) { return table[index]; }
+    inline s2_t table_get_s2(const s2_t *table, size_t index) { return table[index]; }
+    inline u4_t table_get_u4(const u4_t *table, size_t index) { return table[index]; }
+    inline s4_t table_get_s4(const s4_t *table, size_t index) { return table[index]; }
+    inline ostime_t table_get_ostime(const ostime_t *table, size_t index) { return table[index]; }
+
+#endif /* ENERGIA_ARCH_CC13XX */

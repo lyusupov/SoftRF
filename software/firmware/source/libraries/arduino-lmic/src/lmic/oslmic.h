@@ -263,6 +263,9 @@ u2_t os_crc16 (xref2u1_t d, uint len);
     // For AVR, store constants in PROGMEM, saving on RAM usage
     #define CONST_TABLE(type, name) const type PROGMEM RESOLVE_TABLE(name)
 #else
+
+#if !defined(ENERGIA_ARCH_CC13XX) || defined(__cplusplus)
+
     inline u1_t table_get_u1(const u1_t *table, size_t index) { return table[index]; }
     inline s1_t table_get_s1(const s1_t *table, size_t index) { return table[index]; }
     inline u2_t table_get_u2(const u2_t *table, size_t index) { return table[index]; }
@@ -270,6 +273,12 @@ u2_t os_crc16 (xref2u1_t d, uint len);
     inline u4_t table_get_u4(const u4_t *table, size_t index) { return table[index]; }
     inline s4_t table_get_s4(const s4_t *table, size_t index) { return table[index]; }
     inline ostime_t table_get_ostime(const ostime_t *table, size_t index) { return table[index]; }
+
+#else /* ENERGIA_ARCH_CC13XX */
+
+extern inline u1_t table_get_u1(const u1_t *table, size_t index);
+
+#endif /* ENERGIA_ARCH_CC13XX */
 
     // Declare a table
     #define CONST_TABLE(type, name) const type RESOLVE_TABLE(name)
