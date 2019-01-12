@@ -93,7 +93,7 @@ aircraft the_aircraft;
 char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
 
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_STANDALONE,
+  .model    = SOFTRF_MODEL_RASPBERRY,
   .revision = 0,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,

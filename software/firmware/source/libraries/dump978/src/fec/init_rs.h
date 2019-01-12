@@ -8,7 +8,7 @@
 {
   int i, j, sr,root,iprim;
 
-  rs = NULL;
+  rs = (struct rs *) NULL;
   /* Check parameter ranges */
   if(symsize < 0 || symsize > 8*sizeof(data_t)){
     goto done;
@@ -24,7 +24,7 @@
     goto done; /* Too much padding */
 
   rs = (struct rs *)calloc(1,sizeof(struct rs));
-  if(rs == NULL)
+  if(rs == (struct rs *) NULL)
     goto done;
 
   rs->mm = symsize;
@@ -34,14 +34,14 @@
   rs->alpha_to = (data_t *)malloc(sizeof(data_t)*(rs->nn+1));
   if(rs->alpha_to == NULL){
     free(rs);
-    rs = NULL;
+    rs = (struct rs *) NULL;
     goto done;
   }
   rs->index_of = (data_t *)malloc(sizeof(data_t)*(rs->nn+1));
   if(rs->index_of == NULL){
     free(rs->alpha_to);
     free(rs);
-    rs = NULL;
+    rs = (struct rs *) NULL;
     goto done;
   }
 
@@ -62,7 +62,7 @@
     free(rs->alpha_to);
     free(rs->index_of);
     free(rs);
-    rs = NULL;
+    rs = (struct rs *) NULL;
     goto done;
   }
 
@@ -72,7 +72,7 @@
     free(rs->alpha_to);
     free(rs->index_of);
     free(rs);
-    rs = NULL;
+    rs = (struct rs *) NULL;
     goto done;
   }
   rs->fcr = fcr;

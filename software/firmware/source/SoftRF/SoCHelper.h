@@ -25,9 +25,7 @@
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
 #include "Platform_RPi.h"
-#if defined(ENERGIA_ARCH_CC13XX)
 #include "Platform_CC13XX.h"
-#endif /* ENERGIA_ARCH_CC13XX */
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -65,7 +63,8 @@ enum
 	SOC_NONE,
 	SOC_ESP8266,
 	SOC_ESP32,
-  SOC_RPi
+	SOC_RPi,
+	SOC_CC13XX
 };
 
 extern SoC_ops_t *SoC;
@@ -77,6 +76,9 @@ extern SoC_ops_t ESP32_ops;
 #endif
 #if defined(RASPBERRY_PI)
 extern SoC_ops_t RPi_ops;
+#endif
+#if defined(ENERGIA_ARCH_CC13XX)
+extern SoC_ops_t CC13XX_ops;
 #endif
 
 byte SoC_setup(void);

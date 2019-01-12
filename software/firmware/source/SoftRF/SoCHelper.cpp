@@ -28,6 +28,8 @@ byte SoC_setup()
   SoC = &ESP32_ops;
 #elif defined(RASPBERRY_PI)
   SoC = &RPi_ops;
+#elif defined(ENERGIA_ARCH_CC13XX)
+  SoC = &CC13XX_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

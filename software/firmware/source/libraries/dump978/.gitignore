@@ -1,0 +1,7 @@
+*~
+*.o
+dump978
+extract_nexrad
+uat2esnt
+uat2json
+uat2text
