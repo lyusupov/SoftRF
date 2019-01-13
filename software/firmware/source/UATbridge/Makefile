@@ -18,7 +18,7 @@
 SKETCH        = UATbridge.ino
 
 BIN_ELF       := $(SKETCH:.ino=.ino.elf)
-BIN_IHEX      := $(BIN_ELF:.elf=.ino.ihex)
+BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
 
 SOFTRF_DIR    = ../SoftRF
 BINDIR        = /tmp/energia

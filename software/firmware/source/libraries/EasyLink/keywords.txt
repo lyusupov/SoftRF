@@ -1,0 +1,39 @@
+#######################################
+# Syntax Coloring Map For EasyLink
+#######################################
+
+#######################################
+# Library (KEYWORD1)
+#######################################
+
+EasyLink	KEYWORD1	EasyLink
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+EasyLink_Status	KEYWORD1
+EasyLink_RxPacket	KEYWORD1
+EasyLink_TxPacket	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+version	KEYWORD2
+transmit	KEYWORD2
+receive	KEYWORD2
+getStatusString	KEYWORD2
+beginTransmission	KEYWORD2
+endTransmission	KEYWORD2
+available	KEYWORD2
+write	KEYWORD2
+peek	KEYWORD2
+read	KEYWORD2
+flush	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
