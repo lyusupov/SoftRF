@@ -36,6 +36,7 @@
 
 #include "SoftRF.h"
 #include "EasyLink.h"
+#include "Protocol_UAT978.h"
 
 #include <uat.h>
 #include <fec/char.h>
@@ -165,39 +166,7 @@ void loop() {
 
     if (hw_info.rf != RF_IC_NONE) {
 
-      int rs_errors;
-      int frame_type = correct_adsb_frame((uint8_t *) &rxPacket.payload, &rs_errors);
-
-#if defined(DEBUG_UAT)
-  Serial.print("Frame type: ");
-  Serial.println(frame_type);
-#endif
-
-      if (frame_type != -1) {
-
-        uat_decode_adsb_mdb((uint8_t *) &rxPacket.payload, &mdb);
-
-        fo.timestamp = now();
-
-        fo.addr = mdb.address;
-        fo.addr_type = ADDR_TYPE_ICAO;
-        fo.protocol = RF_PROTOCOL_ADSB_UAT;
-
-        fo.latitude = mdb.lat;
-        fo.longitude = mdb.lon;
-
-        if (mdb.altitude_type == ALT_GEO) {
-          fo.altitude = mdb.altitude / _GPS_FEET_PER_METER;
-        }
-        if (mdb.altitude_type == ALT_BARO) {
-          fo.pressure_altitude = mdb.altitude / _GPS_FEET_PER_METER;
-        }
-
-        fo.course = mdb.track;
-        fo.speed = mdb.speed;
-        fo.vs = mdb.vert_rate;
-
-        fo.aircraft_type = GDL90_TO_AT(mdb.emitter_category);
+      if (uat978_decode((void *) &rxPacket.payload, &ThisAircraft, &fo)) {
 
 #if defined(DEBUG_UAT)
         Serial.print(fo.addr, HEX);
@@ -218,6 +187,7 @@ void loop() {
         Serial.println();
         Serial.flush();
 #endif
+
 #ifdef ENABLE_LORA
         if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
           /*

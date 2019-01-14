@@ -34,7 +34,8 @@ SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C
 
 CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \
-                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp Protocol_OGNTP.cpp \
+                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
+                 Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  GDL90Helper.cpp
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
