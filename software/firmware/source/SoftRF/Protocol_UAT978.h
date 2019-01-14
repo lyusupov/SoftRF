@@ -1,7 +1,7 @@
 /*
  *
  * Protocol_UAT978.h
- * Encoder and decoder for Open Glider Network tracker radio protocol
+ * Decoder for UAT 978 MHz ADS-B radio protocol
  * Copyright (C) 2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
