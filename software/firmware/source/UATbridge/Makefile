@@ -23,19 +23,19 @@ BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
 SOFTRF_DIR    = ../SoftRF
 BINDIR        = /tmp/energia
 
-
 ENERGIA       = energia
 LN            = ln -s
 RM            = rm -f
 TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin
-OBJCOPY       = arm-none-eabi-objcopy -O ihex
-
+OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
+                 -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
+                 -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
+SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C50DFEC5FFFFFFFF00FFFFFFC500C5FF02/'
 
 CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp Protocol_OGNTP.cpp \
                  GDL90Helper.cpp
-
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h Platform_RPi.h \
@@ -62,6 +62,6 @@ upload:
 #
 ihex:
 				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
-
+				$(SED) $(BINDIR)/$(BIN_IHEX)
 clean:
 				$(RM) $(CPPS) $(HFILES)
