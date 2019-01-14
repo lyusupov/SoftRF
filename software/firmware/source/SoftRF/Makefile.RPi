@@ -37,15 +37,17 @@ NMEALIB_PATH  = ../libraries/nmealib/src
 GEOID_PATH    = ../libraries/Geoid
 JSON_PATH     = ../libraries/ArduinoJson/src
 TCPSRV_PATH   = ../libraries/SimpleNetwork/src
+DUMP978_PATH  = ../libraries/dump978/src
 
 INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
-                -I$(JSON_PATH)   -I$(TCPSRV_PATH)
+                -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)
 
 CPPS          := RFHelper.cpp SoCHelper.cpp \
-                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp Protocol_OGNTP.cpp \
+                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
+                 Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
                  TrafficHelper.cpp  GNSSHelper.cpp Library.cpp
 
@@ -65,7 +67,9 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(NMEALIB_PATH)/gpgga.o $(NMEALIB_PATH)/gprmc.o \
                  $(NMEALIB_PATH)/gpvtg.o $(NMEALIB_PATH)/gpgsv.o \
                  $(NMEALIB_PATH)/gpgsa.o \
-                 $(TCPSRV_PATH)/TCPServer.o
+                 $(TCPSRV_PATH)/TCPServer.o \
+                 $(DUMP978_PATH)/fec.o $(DUMP978_PATH)/fec/init_rs_char.o \
+                 $(DUMP978_PATH)/uat_decode.o $(DUMP978_PATH)/fec/decode_rs_char.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 

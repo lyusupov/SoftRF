@@ -24,6 +24,7 @@
 #include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
 #include "Protocol_FANET.h"
+#include "Protocol_UAT978.h"
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "WebHelper.h"
@@ -549,6 +550,11 @@ void sx1276_setup()
     LMIC.protocol = &fanet_proto_desc;
     protocol_encode = &fanet_encode;
     protocol_decode = &fanet_decode;
+    break;
+  case RF_PROTOCOL_ADSB_UAT:
+    LMIC.protocol = &uat978_proto_desc;  /* Caution: not applicable for LMIC */
+    protocol_encode = &uat978_encode;
+    protocol_decode = &uat978_decode;
     break;
   case RF_PROTOCOL_LEGACY:
   default:

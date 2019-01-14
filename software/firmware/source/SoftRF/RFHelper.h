@@ -37,7 +37,8 @@ enum
 {
   RF_IC_NONE,
   RF_IC_NRF905,
-  RF_IC_SX1276
+  RF_IC_SX1276,
+  RF_IC_CC13XX
 };
 
 enum

@@ -1,6 +1,6 @@
 /*
  * Protocol.h
- * Copyright (C) 2017-2018 Linar Yusupov
+ * Copyright (C) 2017-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,14 +59,16 @@ enum
 enum
 {
 	RF_BITRATE_100KBPS,
-	RF_BITRATE_38400
+	RF_BITRATE_38400,
+	RF_BITRATE_1042KBPS
 };
 
 enum
 {
 	RF_FREQUENCY_DEVIATION_19_2KHZ,
 	RF_FREQUENCY_DEVIATION_25KHZ,
-	RF_FREQUENCY_DEVIATION_50KHZ
+	RF_FREQUENCY_DEVIATION_50KHZ,
+	RF_FREQUENCY_DEVIATION_625KHZ
 };
 
 enum
@@ -90,7 +92,8 @@ enum
 	RF_RX_BANDWIDTH_SS_125KHZ,
 	RF_RX_BANDWIDTH_SS_166KHZ,
 	RF_RX_BANDWIDTH_SS_200KHZ,
-	RF_RX_BANDWIDTH_SS_250KHZ
+	RF_RX_BANDWIDTH_SS_250KHZ,
+	RF_RX_BANDWIDTH_SS_1567KHZ
 };
 
 #define RF_MAX_SYNC_WORD_SIZE  8
