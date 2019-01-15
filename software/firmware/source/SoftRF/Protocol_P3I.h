@@ -59,8 +59,6 @@
  * data rate of 38.4kb/s
  */
 
-#include "RFHelper.h"
-
 #if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
 /* Valid for NiceRF SV650 firmware revision: "SV650_PA_VER1.1" */
 /*

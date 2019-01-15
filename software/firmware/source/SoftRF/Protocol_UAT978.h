@@ -36,6 +36,25 @@
 #define UAT978_TX_INTERVAL_MIN 900 /* in ms */ /* TBD */
 #define UAT978_TX_INTERVAL_MAX 1000            /* TBD */
 
+#define STRATUX_UATRADIO_MAGIC_1   0x0a
+#define STRATUX_UATRADIO_MAGIC_2   0xb0
+#define STRATUX_UATRADIO_MAGIC_3   0xcd
+#define STRATUX_UATRADIO_MAGIC_4   0xe0
+
+typedef struct __attribute__ ((packed)) Stratux_LPUATRadio_UART_frame {
+  byte      magic1;
+  byte      magic2;
+  byte      magic3;
+  byte      magic4;
+
+  uint16_t  msgLen;
+
+  int8_t    rssi;
+  uint32_t  timestamp;
+
+  uint8_t   data[LONG_FRAME_BYTES];
+} Stratux_frame_t;
+
 typedef struct {
 
   /* Dummy type definition. Actual Rx packet format is defined in uat_decode.h */
@@ -44,7 +63,7 @@ typedef struct {
 
 extern const rf_proto_desc_t uat978_proto_desc;
 
-bool uat978_decode(void *, ufo_t *, ufo_t *);
+bool   uat978_decode(void *, ufo_t *, ufo_t *);
 size_t uat978_encode(void *, ufo_t *);
 
 #endif /* PROTOCOL_UAT978_H */

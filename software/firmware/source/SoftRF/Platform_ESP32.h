@@ -30,8 +30,9 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define SoftwareSerial HardwareSerial
-#define swSer Serial1
+#define SoftwareSerial  HardwareSerial
+#define swSer           Serial1
+#define UATSerial       Serial /* TBD */
 
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
 //#define USE_ADAFRUIT_NEO_LIBRARY

@@ -70,6 +70,8 @@
 #define SOC_GPIO_PIN_SDA      D2
 #define SOC_GPIO_PIN_SCL      D4
 
+#define UATSerial             Serial /* TBD */
+
 extern "C" {
 #include <user_interface.h>
 }

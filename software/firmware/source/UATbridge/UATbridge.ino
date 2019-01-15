@@ -67,10 +67,10 @@ hardware_info_t hw_info = {
 };
 
 Stratux_frame_t LPUATRadio_frame = {
-  .magic1     = 0x0a,
-  .magic2     = 0xb0,
-  .magic3     = 0xcd,
-  .magic4     = 0xe0,
+  .magic1     = STRATUX_UATRADIO_MAGIC_1,
+  .magic2     = STRATUX_UATRADIO_MAGIC_2,
+  .magic3     = STRATUX_UATRADIO_MAGIC_3,
+  .magic4     = STRATUX_UATRADIO_MAGIC_4,
 
   .msgLen     = LONG_FRAME_BYTES,
   .rssi       = 0,

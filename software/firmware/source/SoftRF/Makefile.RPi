@@ -51,9 +51,14 @@ CPPS          := RFHelper.cpp SoCHelper.cpp \
                  D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
                  TrafficHelper.cpp  GNSSHelper.cpp Library.cpp
 
+#                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
+#                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
+#                 $(LMIC_PATH)/raspi/wiring.o $(LMIC_PATH)/raspi/raspberry_pi_revision.o \
+
 OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(LMIC_PATH)/raspi/WString.o \
+                 $(LMIC_PATH)/raspi/USBSerial.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
                  $(LMIC_PATH)/lmic/lmic.o $(LMIC_PATH)/hal/hal.o \
                  $(OGNLIB_PATH)/ldpc.o \

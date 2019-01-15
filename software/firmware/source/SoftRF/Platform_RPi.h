@@ -24,7 +24,11 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define swSer Serial
+//#include <raspi/HardwareSerial.h>
+#include <raspi/USBSerial.h>
+
+#define swSer     Serial
+#define UATSerial Serial1
 
 /* Dragino LoRa/GPS HAT */
 #if 0 /* WiringPi */
@@ -57,6 +61,8 @@
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 
 #define JSON_SRV_TCP_PORT     30007
+
+extern HardwareSerial Serial1;
 
 #endif /* PLATFORM_RPI_H */
 

@@ -29,6 +29,7 @@
 #include "EEPROMHelper.h"
 #include "WebHelper.h"
 #include "MAVLinkHelper.h"
+#include <fec.h>
 
 #if LOGGER_IS_ENABLED
 #include "LogHelper.h"
@@ -78,6 +79,17 @@ rfchip_ops_t sx1276_ops = {
   sx1276_shutdown
 };
 
+rfchip_ops_t cc13xx_ops = {
+  RF_IC_CC13XX,
+  "CC13XX",
+  cc13xx_probe,
+  cc13xx_setup,
+  cc13xx_channel,
+  cc13xx_receive,
+  cc13xx_transmit,
+  cc13xx_shutdown
+};
+
 uint8_t parity(uint32_t x) {
     uint8_t parity=0;
     while (x > 0) {
@@ -99,8 +111,11 @@ byte RF_setup(void)
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
       Serial.println(F("NRF905 RFIC is detected."));
+    } else if (cc13xx_ops.probe()) {
+      rf_chip = &cc13xx_ops;
+      Serial.println(F("CC13XX RFIC is detected."));
     } else {
-      Serial.println(F("WARNING! Neither SX1276 nor NRF905 RFIC is detected!"));    
+      Serial.println(F("WARNING! Neither SX1276, NRF905 or CC13XX RFIC is detected!"));
     }
   }  
 
@@ -551,11 +566,6 @@ void sx1276_setup()
     protocol_encode = &fanet_encode;
     protocol_decode = &fanet_decode;
     break;
-  case RF_PROTOCOL_ADSB_UAT:
-    LMIC.protocol = &uat978_proto_desc;  /* Caution: not applicable for LMIC */
-    protocol_encode = &uat978_encode;
-    protocol_decode = &uat978_decode;
-    break;
   case RF_PROTOCOL_LEGACY:
   default:
     LMIC.protocol = &legacy_proto_desc;
@@ -634,6 +644,10 @@ bool sx1276_receive()
   if (sx1276_receive_complete == true) {
 
     u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
+
+    if (size >sizeof(RxBuffer)) {
+      size = sizeof(RxBuffer);
+    }
 
     for (u1_t i=0; i < size; i++) {
         RxBuffer[i] = LMIC.frame[i + LMIC.protocol->payload_offset];
@@ -942,4 +956,98 @@ static void sx1276_tx_func (osjob_t* job) {
   if (RF_tx_size > 0) {
     sx1276_tx((unsigned char *) &TxPkt[0], RF_tx_size, sx1276_txdone_func);
   }
+}
+
+/*
+ * CC13XX-specific code
+ *
+ *
+ */
+
+#define UAT_RINGBUF_SIZE  (sizeof(Stratux_frame_t) * 2)
+
+static unsigned char uat_ringbuf[UAT_RINGBUF_SIZE];
+static unsigned int uatbuf_head = 0;
+Stratux_frame_t uatradio_frame;
+
+
+bool cc13xx_probe()
+{
+  bool success = false;
+
+  /* TBD */
+
+  return success;
+}
+
+void cc13xx_channel(uint8_t channel)
+{
+  /* Nothing to do */
+}
+
+void cc13xx_setup()
+{
+  UATSerial.begin(2000000);
+
+  init_fec();
+
+  protocol_encode = &uat978_encode;
+  protocol_decode = &uat978_decode;
+}
+
+bool cc13xx_receive()
+{
+  bool success = false;
+  unsigned int uatbuf_tail;
+  int rs_errors;
+
+  while (UATSerial.available()) {
+    unsigned char c = UATSerial.read();
+
+    uat_ringbuf[uatbuf_head % UAT_RINGBUF_SIZE] = c;
+
+    uatbuf_tail = uatbuf_head - sizeof(Stratux_frame_t);
+    uatbuf_head++;
+
+    if (uat_ringbuf[ uatbuf_tail      % UAT_RINGBUF_SIZE] == STRATUX_UATRADIO_MAGIC_1 &&
+        uat_ringbuf[(uatbuf_tail + 1) % UAT_RINGBUF_SIZE] == STRATUX_UATRADIO_MAGIC_2 &&
+        uat_ringbuf[(uatbuf_tail + 2) % UAT_RINGBUF_SIZE] == STRATUX_UATRADIO_MAGIC_3 &&
+        uat_ringbuf[(uatbuf_tail + 3) % UAT_RINGBUF_SIZE] == STRATUX_UATRADIO_MAGIC_4) {
+
+      unsigned char *pre_fec_buf = (unsigned char *) &uatradio_frame;
+      for (u1_t i=0; i < sizeof(Stratux_frame_t); i++) {
+          pre_fec_buf[i] = uat_ringbuf[(uatbuf_tail + i) % UAT_RINGBUF_SIZE];
+      }
+
+      int frame_type = correct_adsb_frame(uatradio_frame.data, &rs_errors);
+
+      if (frame_type == -1) {
+        continue;
+      }
+
+      u1_t size = uatradio_frame.msgLen > sizeof(RxBuffer) ?
+                        sizeof(RxBuffer) : uatradio_frame.msgLen;
+
+      for (u1_t i=0; i < size; i++) {
+          RxBuffer[i] = uatradio_frame.data[i];
+      }
+
+      RF_last_rssi = uatradio_frame.rssi;
+      rx_packets_counter++;
+
+      success = true;
+      break;
+    }
+  }
+  return success;
+}
+
+void cc13xx_transmit()
+{
+  /* Nothing to do */
+}
+
+void cc13xx_shutdown()
+{
+  /* Nothing to do */
 }

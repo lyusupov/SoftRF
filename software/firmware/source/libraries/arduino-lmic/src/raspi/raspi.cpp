@@ -311,7 +311,7 @@ size_t SerialSimulator::println(const char* s) {
 }
 
 size_t SerialSimulator::println(String s) {
-  fprintf( stdout, "%s\n",s);
+  fprintf( stdout, "%s\n",s.c_str());
 }
 
 size_t SerialSimulator::print(const char* s) {
@@ -323,11 +323,11 @@ size_t SerialSimulator::println(u2_t n) {
 }
 
 size_t SerialSimulator::print(ostime_t n) {
-  fprintf(stdout, "%d\n", n);
+  fprintf(stdout, "%d", n);
 }
 
 size_t SerialSimulator::print(unsigned long n) {
-  fprintf(stdout, "%lu\n", n);
+  fprintf(stdout, "%lu", n);
 }
 
 size_t SerialSimulator::print(unsigned int n, int base) {

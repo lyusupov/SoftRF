@@ -31,7 +31,25 @@
 #include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "Protocol_Legacy.h"
+#include "Protocol_OGNTP.h"
 #include "Protocol_P3I.h"
+#include "Protocol_FANET.h"
+#include "Protocol_UAT978.h"
+
+#define maxof2(a,b)       (a > b ? a : b)
+#define maxof3(a,b,c)     maxof2(maxof2(a,b),c)
+#define maxof5(a,b,c,d,e) maxof2(maxof2(a,b),maxof3(c,d,e))
+
+/* Max. paket's payload size for all supported RF protocols */
+//#define MAX_PKT_SIZE  32 /* 48 = UAT LONG_FRAME_DATA_BYTES */
+#define MAX_PKT_SIZE  maxof5(LEGACY_PAYLOAD_SIZE, OGNTP_PAYLOAD_SIZE, \
+                             P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
+                             UAT978_PAYLOAD_SIZE)
+
+#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
+
+#define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
+#define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
 
 enum
 {
@@ -47,9 +65,6 @@ enum
   RF_TX_POWER_LOW,
   RF_TX_POWER_OFF
 };
-
-#define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
-#define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
 
 typedef struct rfchip_ops_struct {
   byte type;
@@ -85,6 +100,13 @@ void sx1276_channel(uint8_t);
 bool sx1276_receive(void);
 void sx1276_transmit(void);
 void sx1276_shutdown(void);
+
+bool cc13xx_probe(void);
+void cc13xx_setup(void);
+void cc13xx_channel(uint8_t);
+bool cc13xx_receive(void);
+void cc13xx_transmit(void);
+void cc13xx_shutdown(void);
 
 extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
 extern unsigned long TxTimeMarker;

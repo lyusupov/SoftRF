@@ -25,6 +25,7 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
+#include "RFHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
@@ -80,7 +81,7 @@ bool loadConfig(String *ssid, String *pass)
   // Read content from config file.
   String content = configFile.readString();
   configFile.close();
-  
+
   content.trim();
 
   // Check if ther is a second line available.
@@ -147,7 +148,7 @@ bool saveConfig(String *ssid, String *pass)
   configFile.println(*pass);
 
   configFile.close();
-  
+
   return true;
 } // saveConfig
 
@@ -293,8 +294,7 @@ void WiFi_loop()
 {
 #if defined(USE_DNS_SERVER)
   if (dns_active) {
-    dnsServer.processNextRequest();  
+    dnsServer.processNextRequest();
   }
 #endif
 }
-

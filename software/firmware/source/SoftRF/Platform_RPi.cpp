@@ -76,6 +76,8 @@ lmic_pinmap lmic_pins = {
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
+HardwareSerial Serial1("/dev/ttyUSB0");
+
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
 // DISABLE_JOIN is set in config.h, otherwise the linker will complain).

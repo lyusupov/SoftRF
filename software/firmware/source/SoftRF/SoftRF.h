@@ -67,10 +67,6 @@
 #define NMEA_UDP_PORT     10110
 #define NMEA_TCP_PORT     2000
 
-/* Max. paket's payload size for all supported RF protocols */
-#define MAX_PKT_SIZE  32
-#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
-
 #if defined(PREMIUM_PACKAGE) && !defined(RASPBERRY_PI)
 #define ENABLE_AHRS
 #endif /* PREMIUM_PACKAGE */

@@ -25,8 +25,6 @@
 #include <ti/devices/cc13x0/driverlib/ioc.h>
 //#include "Board.h"
 
-#include <uat.h>
-
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -53,20 +51,6 @@
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-
-typedef struct __attribute__ ((packed)) Stratux_LPUATRadio_UART_frame {
-  byte      magic1;
-  byte      magic2;
-  byte      magic3;
-  byte      magic4;
-
-  uint16_t  msgLen;
-
-  int8_t    rssi;
-  uint32_t  timestamp;
-
-  uint8_t   data[LONG_FRAME_BYTES];
-} Stratux_frame_t;
 
 #endif /* PLATFORM_CC13XX_H */
 

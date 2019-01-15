@@ -348,6 +348,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_P3I;
     } else if (!strcmp(protocol_s,"FANET")) {
       eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_FANET;
+    } else if (!strcmp(protocol_s,"UAT")) {
+      eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_ADSB_UAT;
     }
   }
 

@@ -21,7 +21,6 @@
 #include <stdint.h>
 
 #include <protocol.h>
-#include <fec.h>
 
 #include "SoftRF.h"
 #include "Protocol_UAT978.h"
@@ -55,12 +54,14 @@ static struct uat_adsb_mdb mdb;
 
 bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
+#if 0
   int rs_errors;
   int frame_type = correct_adsb_frame((uint8_t *) pkt, &rs_errors);
 
   if (frame_type == -1) {
     return false;
   }
+#endif
 
   uat_decode_adsb_mdb((uint8_t *) pkt, &mdb);
 
