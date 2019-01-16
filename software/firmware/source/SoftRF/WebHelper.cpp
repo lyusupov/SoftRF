@@ -51,6 +51,7 @@ byte getVal(char c)
      return (byte)(toupper(c)-'A'+10);
 }
 
+#if DEBUG
 void Hex2Bin(String str, byte *buffer)
 {
   char hexdata[2 * PKT_SIZE + 1];
@@ -61,16 +62,7 @@ void Hex2Bin(String str, byte *buffer)
     buffer[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
   }
 }
-
-String Bin2Hex(byte *buffer)
-{
-  String str = "";
-  for (int i=0; i < PKT_SIZE; i++) {
-    byte c = buffer[i];
-    str += (c < 0x10 ? "0" : "") + String(c, HEX);
-  }
-  return str;
-}
+#endif
 
 static const char about_html[] PROGMEM = "<html>\
   <head>\

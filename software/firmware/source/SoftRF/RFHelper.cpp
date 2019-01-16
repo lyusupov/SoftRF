@@ -35,10 +35,11 @@
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
 
-byte RxBuffer[PKT_SIZE];
+byte RxBuffer[MAX_PKT_SIZE];
 unsigned long TxTimeMarker = 0;
 
-byte TxPkt[MAX_PKT_SIZE];
+//byte TxPkt[MAX_PKT_SIZE];
+byte TxBuffer[MAX_PKT_SIZE];
 
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
@@ -89,6 +90,16 @@ rfchip_ops_t cc13xx_ops = {
   cc13xx_transmit,
   cc13xx_shutdown
 };
+
+String Bin2Hex(byte *buffer, size_t size)
+{
+  String str = "";
+  for (int i=0; i < size; i++) {
+    byte c = buffer[i];
+    str += (c < 0x10 ? "0" : "") + String(c, HEX);
+  }
+  return str;
+}
 
 uint8_t parity(uint32_t x) {
     uint8_t parity=0;
@@ -233,7 +244,7 @@ size_t RF_Encode(ufo_t *fop)
     }
 
     if ((millis() - TxTimeMarker) > TxRandomValue) {
-      size = (*protocol_encode)((void *) &TxPkt[0], fop);
+      size = (*protocol_encode)((void *) &TxBuffer[0], fop);
     }
   }
   return size;
@@ -258,7 +269,7 @@ bool RF_Transmit(size_t size, bool wait)
         StdOut.print(F("$PSRFO,"));
         StdOut.print((unsigned long) timestamp);
         StdOut.print(F(","));
-        StdOut.println(Bin2Hex((byte *) &TxPkt[0]));
+        StdOut.println(Bin2Hex((byte *) &TxBuffer[0], sizeof(TxBuffer)));
       }
       tx_packets_counter++;
       RF_tx_size = 0;
@@ -425,7 +436,7 @@ bool nrf905_receive()
     nrf905_receive_active = true;
   }
 
-  success = nRF905_getData(RxBuffer, sizeof(RxBuffer));
+  success = nRF905_getData(RxBuffer, LEGACY_PAYLOAD_SIZE);
   if (success) { // Got data
     rx_packets_counter++;
   }
@@ -446,7 +457,7 @@ void nrf905_transmit()
     nRF905_setTXAddress(addr);
 
     // Set payload data
-    nRF905_setData(&TxPkt[0], NRF905_PAYLOAD_SIZE );
+    nRF905_setData(&TxBuffer[0], LEGACY_PAYLOAD_SIZE );
 
     // Send payload (send fails if other transmissions are going on, keep trying until success)
     while (!nRF905_send()) {
@@ -954,7 +965,7 @@ static void sx1276_txdone_func (osjob_t* job) {
 static void sx1276_tx_func (osjob_t* job) {
 
   if (RF_tx_size > 0) {
-    sx1276_tx((unsigned char *) &TxPkt[0], RF_tx_size, sx1276_txdone_func);
+    sx1276_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx1276_txdone_func);
   }
 }
 

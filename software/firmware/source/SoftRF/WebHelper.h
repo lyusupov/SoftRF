@@ -35,11 +35,12 @@
 void Web_setup(void);
 void Web_loop(void);
 
+#if DEBUG
 void Hex2Bin(String, byte *);
-String Bin2Hex(byte *);
+#endif
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
-extern byte TxBuffer[PKT_SIZE];
+//extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 
 #if defined(ARDUINO)

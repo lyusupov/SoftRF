@@ -46,7 +46,7 @@
                              P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
                              UAT978_PAYLOAD_SIZE)
 
-#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
+//#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
 
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
@@ -77,6 +77,7 @@ typedef struct rfchip_ops_struct {
   void (*shutdown)();
 } rfchip_ops_t;
 
+String Bin2Hex(byte *, size_t);
 uint8_t parity(uint32_t);
 
 byte RF_setup(void);
@@ -108,9 +109,9 @@ bool cc13xx_receive(void);
 void cc13xx_transmit(void);
 void cc13xx_shutdown(void);
 
-extern byte TxBuffer[PKT_SIZE], RxBuffer[PKT_SIZE];
+extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;
-extern byte TxPkt[MAX_PKT_SIZE];
+//extern byte TxPkt[MAX_PKT_SIZE];
 
 extern rfchip_ops_t *rf_chip;
 extern bool RF_SX1276_RST_is_connected;

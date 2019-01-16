@@ -79,21 +79,6 @@ Stratux_frame_t LPUATRadio_frame = {
 
 struct uat_adsb_mdb mdb;
 
-static String __Bin2Hex(byte *buffer, size_t size)
-{
-  String str = "";
-  for (int i=0; i < size; i++) {
-    byte c = buffer[i];
-    str += (c < 0x10 ? "0" : "") + String(c, HEX);
-  }
-  return str;
-}
-
-String Bin2Hex(byte *buffer)
-{
-  return __Bin2Hex(buffer, PKT_SIZE);
-}
-
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
@@ -161,7 +146,7 @@ void loop() {
     Serial.print(" RSSI ");
     Serial.print(rxPacket.rssi);
     Serial.println(" and value:");
-    Serial.println(__Bin2Hex((byte *) rxPacket.payload,rxPacket.len));
+    Serial.println(Bin2Hex((byte *) rxPacket.payload, rxPacket.len));
 #endif
 
     if (hw_info.rf != RF_IC_NONE) {

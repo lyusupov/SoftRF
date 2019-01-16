@@ -143,7 +143,7 @@ void ParseData()
     Hex2Bin(TxDataTemplate, RxBuffer);
 #endif
 
-    fo.raw = Bin2Hex(RxBuffer);
+    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,"));

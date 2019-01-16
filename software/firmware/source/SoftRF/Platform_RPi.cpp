@@ -113,16 +113,6 @@ TCPServer Traffic_TCP_Server;
 
 #define isValidFix() (isValidGNSSFix() || isValidGPSDFix())
 
-String Bin2Hex(byte *buffer)
-{
-  String str = "";
-  for (int i=0; i < PKT_SIZE; i++) {
-    byte c = buffer[i];
-    str += (c < 0x10 ? "0" : "") + String(c, HEX);
-  }
-  return str;
-}
-
 static byte getVal(char c)
 {
    if(c >= '0' && c <= '9')
@@ -431,7 +421,7 @@ void relay_loop()
 
         for(int j = 0; j < str_len ; j+=2)
         {
-          TxPkt[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
+          TxBuffer[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
         }
 
         size_t tx_size = str_len / 2;

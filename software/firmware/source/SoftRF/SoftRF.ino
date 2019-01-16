@@ -351,7 +351,7 @@ void bridge_loop()
 {
   bool success;
 
-  size_t tx_size = Raw_Receive_UDP(&TxPkt[0]);
+  size_t tx_size = Raw_Receive_UDP(&TxBuffer[0]);
 
   if (tx_size > 0) {
     RF_Transmit(tx_size, true);
@@ -362,7 +362,7 @@ void bridge_loop()
   if(success)
   {
 
-    fo.raw = Bin2Hex(RxBuffer);
+    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
@@ -384,7 +384,7 @@ void watchout_loop()
   success = RF_Receive();
 
   if (success) {
-    fo.raw = Bin2Hex(RxBuffer);
+    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
