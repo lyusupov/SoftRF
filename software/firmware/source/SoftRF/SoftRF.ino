@@ -362,10 +362,13 @@ void bridge_loop()
   if(success)
   {
 
-    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
+    fo.raw = Bin2Hex(RxBuffer, RF_Payload_Size(settings->rf_protocol));
 
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+      StdOut.print(F("$PSRFI,"));
+      StdOut.print((unsigned long) now()); StdOut.print(F(","));
+      StdOut.print(fo.raw); StdOut.print(F(","));
+      StdOut.println(RF_last_rssi);
     }
 
     Raw_Transmit_UDP();
@@ -384,10 +387,13 @@ void watchout_loop()
   success = RF_Receive();
 
   if (success) {
-    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
+    fo.raw = Bin2Hex(RxBuffer, RF_Payload_Size(settings->rf_protocol));
 
     if (settings->nmea_p) {
-      StdOut.print(F("$PSRFI,")); StdOut.print(now()); StdOut.print(F(",")); StdOut.println(fo.raw);
+      StdOut.print(F("$PSRFI,"));
+      StdOut.print((unsigned long) now()); StdOut.print(F(","));
+      StdOut.print(fo.raw); StdOut.print(F(","));
+      StdOut.println(RF_last_rssi);
     }
   }
 

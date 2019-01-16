@@ -269,7 +269,8 @@ bool RF_Transmit(size_t size, bool wait)
         StdOut.print(F("$PSRFO,"));
         StdOut.print((unsigned long) timestamp);
         StdOut.print(F(","));
-        StdOut.println(Bin2Hex((byte *) &TxBuffer[0], sizeof(TxBuffer)));
+        StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
+                               RF_Payload_Size(settings->rf_protocol)));
       }
       tx_packets_counter++;
       RF_tx_size = 0;
@@ -301,6 +302,19 @@ void RF_Shutdown(void)
 {
   if (rf_chip) {
     rf_chip->shutdown();
+  }
+}
+
+uint8_t RF_Payload_Size(uint8_t protocol)
+{
+  switch (protocol)
+  {
+    case RF_PROTOCOL_LEGACY:    return legacy_proto_desc.payload_size;
+    case RF_PROTOCOL_OGNTP:     return ogntp_proto_desc.payload_size;
+    case RF_PROTOCOL_P3I:       return p3i_proto_desc.payload_size;
+    case RF_PROTOCOL_FANET:     return fanet_proto_desc.payload_size;
+    case RF_PROTOCOL_ADSB_UAT:  return uat978_proto_desc.payload_size;
+    default:                    return 0;
   }
 }
 

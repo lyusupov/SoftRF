@@ -118,13 +118,15 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
-#if defined(ESP32_DEVEL_CORE)
+#if defined(ESP32_CORE_DEVEL) || defined(ESP32_CORE_1_0_1)
   if (psramFound()) {
-#else
+#endif /* ESP32_CORE_DEVEL */
+#if defined (ESP32_CORE_1_0_0)
   /* Temporary workaround until issues with PSRAM will settle down */
   if (ESP.getFreeHeap() > 4000000) {
-#endif
+#endif /* ESP32_CORE_1_0_0 */
 
+#if defined (ESP32_CORE_DEVEL)
     uint32_t flash_id = ESP32_getFlashId();
 
     /*
@@ -140,6 +142,7 @@ static void ESP32_setup()
       /* ESP32-WROVER module with ESP32-NODEMCU-ADAPTER */
       hw_info.model = SOFTRF_MODEL_STANDALONE;
     else
+#endif /* ESP32_CORE_DEVEL */
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
   }
 

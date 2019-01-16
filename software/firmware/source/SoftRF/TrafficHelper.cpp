@@ -143,13 +143,13 @@ void ParseData()
     Hex2Bin(TxDataTemplate, RxBuffer);
 #endif
 
-    fo.raw = Bin2Hex(RxBuffer, sizeof(RxBuffer));
+    fo.raw = Bin2Hex(RxBuffer, RF_Payload_Size(settings->rf_protocol));
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,"));
       StdOut.print((unsigned long) now()); StdOut.print(F(","));
-      StdOut.print(RF_last_rssi); StdOut.print(F(","));
-      StdOut.println(fo.raw);
+      StdOut.print(fo.raw); StdOut.print(F(","));
+      StdOut.println(RF_last_rssi);
     }
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {

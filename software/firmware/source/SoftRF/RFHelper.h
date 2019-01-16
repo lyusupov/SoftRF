@@ -80,13 +80,14 @@ typedef struct rfchip_ops_struct {
 String Bin2Hex(byte *, size_t);
 uint8_t parity(uint32_t);
 
-byte RF_setup(void);
-void RF_SetChannel(void);
-void RF_loop(void);
-size_t RF_Encode(ufo_t *);
-bool RF_Transmit(size_t, bool);
-bool RF_Receive(void);
-void RF_Shutdown(void);
+byte    RF_setup(void);
+void    RF_SetChannel(void);
+void    RF_loop(void);
+size_t  RF_Encode(ufo_t *);
+bool    RF_Transmit(size_t, bool);
+bool    RF_Receive(void);
+void    RF_Shutdown(void);
+uint8_t RF_Payload_Size(uint8_t);
 
 bool nrf905_probe(void);
 void nrf905_setup(void);

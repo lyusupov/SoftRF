@@ -189,7 +189,6 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     return true;
 }
 
-extern String Bin2Hex(byte *);
 size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     legacy_packet_t *pkt = (legacy_packet_t *) legacy_pkt;
@@ -269,7 +268,6 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
      
     pkt->parity = (pkt_parity % 2);
 
-    //Serial.println(Bin2Hex((byte *) pkt));
     make_key(key, timestamp , (pkt->addr << 8) & 0xffffff);
 
 #if 0
