@@ -54,15 +54,6 @@ static struct uat_adsb_mdb mdb;
 
 bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-#if 0
-  int rs_errors;
-  int frame_type = correct_adsb_frame((uint8_t *) pkt, &rs_errors);
-
-  if (frame_type == -1) {
-    return false;
-  }
-#endif
-
   uat_decode_adsb_mdb((uint8_t *) pkt, &mdb);
 
   fop->protocol = RF_PROTOCOL_ADSB_UAT;
@@ -99,7 +90,7 @@ bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
 size_t uat978_encode(void *pkt, ufo_t *this_aircraft) {
 
-  /* No Tx on 978 MHz until it gets certified */
+  /* No Tx on 978 MHz until the system will eventually become certified */
 
   return (0);
 }

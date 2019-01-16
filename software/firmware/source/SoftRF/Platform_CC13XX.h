@@ -28,7 +28,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define swSer Serial
+#define swSer       Serial
+#define UATSerial   Serial /* TBD */
 #define yield() ({ })
 
 #define SOC_GPIO_PIN_MOSI     IOID_9  // Board_SPI0_MOSI

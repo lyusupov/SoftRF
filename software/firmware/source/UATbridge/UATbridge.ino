@@ -161,12 +161,18 @@ void loop() {
     Serial.print(" RSSI ");
     Serial.print(rxPacket.rssi);
     Serial.println(" and value:");
-    Serial.println(__Bin2Hex((byte *) &rxPacket.payload,rxPacket.len));
+    Serial.println(__Bin2Hex((byte *) rxPacket.payload,rxPacket.len));
 #endif
 
     if (hw_info.rf != RF_IC_NONE) {
 
-      if (uat978_decode((void *) &rxPacket.payload, &ThisAircraft, &fo)) {
+      int rs_errors;
+      ThisAircraft.timestamp = now();
+
+      int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+      if (frame_type != -1 &&
+          uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
 
 #if defined(DEBUG_UAT)
         Serial.print(fo.addr, HEX);
@@ -215,7 +221,7 @@ void loop() {
       LPUATRadio_frame.rssi = rxPacket.rssi;
       LPUATRadio_frame.msgLen = rxPacket.len;
 
-      memcpy(&LPUATRadio_frame.data, &rxPacket.payload, rxPacket.len);
+      memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
 
       Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
     }
