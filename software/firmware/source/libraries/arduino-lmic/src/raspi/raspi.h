@@ -168,6 +168,7 @@ class SerialSimulator {
     static void begin(int baud);
     static size_t println(void);
     static size_t println(const char* s);
+    static size_t print(String s);
     static size_t println(String s);
     static size_t print(const char* s);
     static size_t println(u2_t n); 
@@ -176,6 +177,7 @@ class SerialSimulator {
     static size_t print(unsigned int n, int base = DEC);
     static size_t print(char ch);
     static size_t println(char ch);
+    static size_t println(int8_t n);
     static size_t print(unsigned char ch, int base = DEC);
     static size_t println(unsigned char ch, int base = DEC);
     static size_t write(char ch);

@@ -310,6 +310,10 @@ size_t SerialSimulator::println(const char* s) {
   fprintf( stdout, "%s\n",s);
 }
 
+size_t SerialSimulator::print(String s) {
+  fprintf( stdout, "%s",s.c_str());
+}
+
 size_t SerialSimulator::println(String s) {
   fprintf( stdout, "%s\n",s.c_str());
 }
@@ -346,6 +350,10 @@ size_t SerialSimulator::print(char ch) {
 
 size_t SerialSimulator::println(char ch) {
   fprintf(stdout, "%c\n", ch);
+}
+
+size_t SerialSimulator::println(int8_t n) {
+  fprintf(stdout, "%d\n", n);
 }
 
 size_t SerialSimulator::print(unsigned char ch, int base) {
