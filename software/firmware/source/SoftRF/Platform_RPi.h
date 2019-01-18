@@ -60,7 +60,11 @@
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 
+#if defined(USE_SPI1)
+#define JSON_SRV_TCP_PORT     30008
+#else
 #define JSON_SRV_TCP_PORT     30007
+#endif
 
 extern HardwareSerial Serial1;
 
