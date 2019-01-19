@@ -151,6 +151,7 @@ extern const float txrx_test_positions[90][2] PROGMEM;
 //#define ENABLE_TTN
 //#define ENABLE_BT_VOICE
 //#define TEST_PAW_ON_NICERF_SV610_FW466
+#define  DO_GDL90_FF_EXT
 
 #define LOGGER_IS_ENABLED 0
 

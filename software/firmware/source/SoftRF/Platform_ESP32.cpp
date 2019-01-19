@@ -406,6 +406,10 @@ static void ESP32_swSer_begin(unsigned long baud)
     /* open Standalone's GNSS port */
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   }
+
+  /* Need to gather some statistics on variety of flash IC usage */
+  Serial.print(F("Flash memory ID: "));
+  Serial.println(ESP32_getFlashId(), HEX);
 }
 
 static void ESP32_swSer_enableRx(boolean arg)
