@@ -70,8 +70,14 @@ void hal_pin_rst (u1_t val) {
     if(val == 0 || val == 1) { // drive pin
         pinMode(lmic_pins.rst, OUTPUT);
         digitalWrite(lmic_pins.rst, val);
-    } else { // keep pin floating
+    } else {
         pinMode(lmic_pins.rst, INPUT);
+#if defined(RASPBERRY_PI)
+        //  with a pullup
+        bcm2835_gpio_set_pud(lmic_pins.rst, BCM2835_GPIO_PUD_UP);
+#else
+        // keep pin floating
+#endif
     }
 }
 
