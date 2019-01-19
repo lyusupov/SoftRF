@@ -428,7 +428,7 @@ void NMEA_GGA()
   info.elevation = gnss.altitude.meters(); /* above MSL */
   info.height = gnss.separation.meters();
 
-  if (info.height == 0.0) {
+  if (info.height == 0.0 && info.sig != Invalid) {
     info.height = LookupSeparation(latitude, longitude);
     info.elevation -= info.height;
   }
