@@ -63,6 +63,11 @@ static unsigned long CC13XX_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static void CC13XX_restart()
+{
+  /* Nothing to do */
+}
+
 SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
@@ -90,7 +95,8 @@ SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   CC13XX_get_PPS_TimeMarker,
-  NULL
+  NULL,
+  CC13XX_restart
 };
 
 #endif /* ENERGIA_ARCH_CC13XX */

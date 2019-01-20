@@ -76,7 +76,8 @@ lmic_pinmap lmic_pins = {
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
-HardwareSerial Serial1("/dev/ttyUSB0");
+TTYSerial Serial1("/dev/ttyAMA0");
+TTYSerial Serial2("/dev/ttyUSB0");
 
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
@@ -167,12 +168,38 @@ static void RPi_SPI_begin()
   /* TBD */
 }
 
+static void RPi_swSer_begin(unsigned long baud)
+{
+  swSer.begin(baud);
+}
+
 void RPi_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
 
 static unsigned long RPi_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
+}
+
+static void RPi_CC13XX_restart()
+{
+  UATSerial.dtr(false);
+
+  delay(100);
+
+#if DEBUG
+  Serial.println("RTS on");
+#endif
+
+  UATSerial.rts(true);
+
+  delay(100);
+
+#if DEBUG
+  Serial.println("RTS off");
+#endif
+
+  UATSerial.rts(false);
 }
 
 SoC_ops_t RPi_ops = {
@@ -193,7 +220,7 @@ SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   RPi_SPI_begin,
-  NULL,
+  RPi_swSer_begin,
   NULL,
   NULL,
   NULL,
@@ -202,7 +229,8 @@ SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   RPi_get_PPS_TimeMarker,
-  NULL
+  NULL,
+  RPi_CC13XX_restart
 };
 
 static bool inputAvailable()
@@ -363,7 +391,11 @@ static void RPi_ReadTraffic()
 
 void normal_loop()
 {
+    /* Read GNSS data from standard input */
     RPi_PickGNSSFix();
+
+    /* Read NMEA data from GNSS module on GPIO pins */
+//    PickGNSSFix();
 
     RPi_ReadTraffic();
 
@@ -399,7 +431,11 @@ void normal_loop()
 
 void relay_loop()
 {
+    /* Read GNSS data from standard input */
     RPi_PickGNSSFix();
+
+    /* Read NMEA data from GNSS module on GPIO pins */
+//    PickGNSSFix();
 
     RPi_ReadTraffic();
 
@@ -598,6 +634,8 @@ int main()
   ThisAircraft.protocol = settings->rf_protocol;
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
+
+//  hw_info.gnss = GNSS_setup();
 
   Traffic_setup();
   NMEA_setup();

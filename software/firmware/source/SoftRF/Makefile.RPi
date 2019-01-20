@@ -58,7 +58,7 @@ CPPS          := RFHelper.cpp SoCHelper.cpp \
 OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(LMIC_PATH)/raspi/WString.o \
-                 $(LMIC_PATH)/raspi/USBSerial.o \
+                 $(LMIC_PATH)/raspi/TTYSerial.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
                  $(LMIC_PATH)/lmic/lmic.o $(LMIC_PATH)/hal/hal.o \
                  $(OGNLIB_PATH)/ldpc.o \

@@ -2,8 +2,8 @@
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2015 Mike McCauley
 // $Id: HardwareSerial.h,v 1.3 2015/08/13 02:45:47 mikem Exp mikem $
-#ifndef HardwareSerial_h
-#define HardwareSerial_h
+#ifndef TTYSerial_h
+#define TTYSerial_h
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,12 +27,12 @@
 /// \par errors
 ///
 /// A number of these methods print error messages to stderr in the event of an IO error.
-class HardwareSerial
+class TTYSerial
 {
 public:
     /// Constructor
     // \param [in] deviceName Name of the derial port device to connect to
-    HardwareSerial(const char* deviceName);
+    TTYSerial(const char* deviceName);
 
     /// Open and configure the port.
     /// The named port is opened, and the given baud rate is set.
@@ -75,7 +75,10 @@ public:
     /// \return 1 if successful else 0
     size_t write(uint8_t ch);
 
-    // These are not usually in HardwareSerial but we 
+    size_t write(unsigned char* s, size_t len);
+    size_t write(const char* s);
+
+    // These are not usually in TTYSerial but we
     // need them in a Unix environment
 
     /// Wait until a character is available from the port.
@@ -86,6 +89,9 @@ public:
     /// \param[in] timeout The maximum time to wait in milliseconds. 0 means wait forever.
     /// \return true if a message is available as reported by available()
     bool waitAvailableTimeout(uint16_t timeout);
+
+    bool rts(bool value);
+    bool dtr(bool value);
 
 protected:
     bool openDevice();

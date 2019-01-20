@@ -25,10 +25,10 @@
 #define MAX_TRACKING_OBJECTS    8
 
 //#include <raspi/HardwareSerial.h>
-#include <raspi/USBSerial.h>
+#include <raspi/TTYSerial.h>
 
-#define swSer     Serial
-#define UATSerial Serial1
+#define swSer     Serial1
+#define UATSerial Serial2
 
 /* Dragino LoRa/GPS HAT */
 #if 0 /* WiringPi */
@@ -66,7 +66,8 @@
 #define JSON_SRV_TCP_PORT     30007
 #endif
 
-extern HardwareSerial Serial1;
+extern TTYSerial Serial1;
+extern TTYSerial Serial2;
 
 #endif /* PLATFORM_RPI_H */
 

@@ -116,15 +116,15 @@ byte RF_setup(void)
 {
 
   if (rf_chip == NULL) {
-    if (sx1276_ops.probe()) {
+    if (cc13xx_ops.probe()) {
+      rf_chip = &cc13xx_ops;
+      Serial.println(F("CC13XX RFIC is detected."));
+    } else if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;  
       Serial.println(F("SX1276 RFIC is detected."));
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
       Serial.println(F("NRF905 RFIC is detected."));
-    } else if (cc13xx_ops.probe()) {
-      rf_chip = &cc13xx_ops;
-      Serial.println(F("CC13XX RFIC is detected."));
     } else {
       Serial.println(F("WARNING! Neither SX1276, NRF905 or CC13XX RFIC is detected!"));
     }
@@ -995,12 +995,57 @@ static unsigned char uat_ringbuf[UAT_RINGBUF_SIZE];
 static unsigned int uatbuf_head = 0;
 Stratux_frame_t uatradio_frame;
 
+const char UAT_ident[] PROGMEM = SOFTRF_UAT_IDENT;
 
 bool cc13xx_probe()
 {
   bool success = false;
+  unsigned long startTime;
+  unsigned int uatbuf_tail;
+  u1_t keylen = strlen_P(UAT_ident);
+  u1_t i=0;
 
-  /* TBD */
+  /* Do not probe on itself and ESP8266 */
+  if (SoC->id == SOC_CC13XX ||
+      SoC->id == SOC_ESP8266) {
+    return false;
+  }
+
+  UATSerial.begin(2000000);
+
+  SoC->CC13XX_restart();
+
+  startTime = millis();
+
+  // Timeout if no valid response in 1 second
+  while (millis() - startTime < 1000) {
+
+    if (UATSerial.available() > 0) {
+      unsigned char c = UATSerial.read();
+#if DEBUG
+      Serial.println(c, HEX);
+#endif
+      uat_ringbuf[uatbuf_head % UAT_RINGBUF_SIZE] = c;
+
+      uatbuf_tail = uatbuf_head - keylen;
+      uatbuf_head++;
+
+      for (i=0; i < keylen; i++) {
+        if (pgm_read_byte(&UAT_ident[i]) != uat_ringbuf[(uatbuf_tail + i) % UAT_RINGBUF_SIZE]) {
+          break;
+        }
+      }
+
+      if (i >= keylen) {
+        success = true;
+        break;
+      }
+    }
+  }
+
+  /* cleanup UAT data buffer */
+  uatbuf_head = 0;
+  memset(uat_ringbuf, 0, sizeof(uat_ringbuf));
 
   return success;
 }

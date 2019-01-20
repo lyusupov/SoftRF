@@ -85,7 +85,7 @@ void setup() {
   Serial.begin( 2000000 );  /* 921600 */
 
   Serial.println();
-  Serial.println("SoftRF-UAT FW.REV.# " SOFTRF_FIRMWARE_VERSION);
+  Serial.println(SOFTRF_UAT_IDENT " FW.REV.# " SOFTRF_FIRMWARE_VERSION);
 
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version = SOFTRF_EEPROM_VERSION;

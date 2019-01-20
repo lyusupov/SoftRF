@@ -259,6 +259,11 @@ static bool ESP8266_Baro_setup() {
   return true;
 }
 
+static void ESP8266_CC13XX_restart()
+{
+  /* TBD */
+}
+
 SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
@@ -286,7 +291,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_Battery_voltage,
   ESP8266_GNSS_PPS_Interrupt_handler,
   ESP8266_get_PPS_TimeMarker,
-  ESP8266_Baro_setup
+  ESP8266_Baro_setup,
+  ESP8266_CC13XX_restart
 };
 
 #endif /* ESP8266 */

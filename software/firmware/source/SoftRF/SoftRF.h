@@ -32,6 +32,7 @@
 #endif /* RASPBERRY_PI */
 
 #define SOFTRF_FIRMWARE_VERSION "1.0-rc5"
+#define SOFTRF_UAT_IDENT  "SoftRF-UAT"
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
 #define LED_EXPIRATION_TIME     5 /* seconds */

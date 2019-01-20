@@ -14,78 +14,101 @@
 #include <sys/select.h>
 #include <stdlib.h>
 
-#include "USBSerial.h"
+#include "TTYSerial.h"
 
-HardwareSerial::HardwareSerial(const char* deviceName)
+TTYSerial::TTYSerial(const char* deviceName)
     : _deviceName(deviceName),
       _device(-1)
 {
     // Override device name from environment
-    char* e = getenv("HARDWARESERIAL_DEVICE_NAME");
+    char* e = getenv("TTYSERIAL_DEVICE_NAME");
     if (e)
 	_deviceName = e;
 }
 
-void HardwareSerial::begin(int baud)
+void TTYSerial::begin(int baud)
 {
     if (openDevice())
 	setBaud(baud);
 }
 
-void HardwareSerial::end()
+void TTYSerial::end()
 {
     closeDevice();
 }
 
-void HardwareSerial::flush()
+void TTYSerial::flush()
 {
     tcdrain(_device);
 }
 
-int HardwareSerial::peek(void)
+int TTYSerial::peek(void)
 {
-    printf("HardwareSerial::peek not implemented\n");
+    printf("TTYSerial::peek not implemented\n");
     return 0;
 }
 
-int HardwareSerial::available()
+int TTYSerial::available()
 {
     int bytes;
 
     if (ioctl(_device, FIONREAD, &bytes) != 0)
     {
-	fprintf(stderr, "HardwareSerial::available ioctl failed: %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::available ioctl failed: %s\n", strerror(errno));
 	return 0;
     }
     return bytes;
 }
 
-int HardwareSerial::read()
+int TTYSerial::read()
 {
     uint8_t data;
     ssize_t result = ::read(_device, &data, 1);
     if (result != 1)
     {
-	fprintf(stderr, "HardwareSerial::read read failed: %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::read read failed: %s\n", strerror(errno));
 	return 0;
     }
 //    printf("got: %02x\n", data);
     return data;
 }
 
-size_t HardwareSerial::write(uint8_t ch)
+size_t TTYSerial::write(uint8_t ch)
 {
     size_t result = ::write(_device, &ch, 1);
     if (result != 1)
     {
-	fprintf(stderr, "HardwareSerial::write failed: %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::write failed: %s\n", strerror(errno));
 	return 0;
     }
 //    printf("sent: %02x\n", ch);
     return 1; // OK
 }
 
-bool HardwareSerial::openDevice()
+size_t TTYSerial::write(unsigned char* s, size_t len) {
+    size_t result = ::write(_device, s, len);
+    if (result != len)
+    {
+	fprintf(stderr, "TTYSerial::write failed: %s\n", strerror(errno));
+	return 0;
+    }
+//    printf("sent: %02x\n", ch);
+    return result; // OK
+}
+
+size_t TTYSerial::write(const char* s) {
+    size_t len = strlen(s);
+    size_t result = ::write(_device, s, len);
+    if (result != len)
+    {
+	fprintf(stderr, "TTYSerial::write failed: %s\n", strerror(errno));
+	return 0;
+    }
+//    printf("sent: %02x\n", ch);
+    return result; // OK
+}
+
+bool TTYSerial::openDevice()
 {
     if (_device == -1)
 	closeDevice();
@@ -93,7 +116,7 @@ bool HardwareSerial::openDevice()
     if (_device == -1)
     {
 	// Could not open the port.
-	fprintf(stderr, "HardwareSerial::openDevice could not open %s: %s\n", _deviceName, strerror(errno));
+	fprintf(stderr, "TTYSerial::openDevice could not open %s: %s\n", _deviceName, strerror(errno));
 	return false;
     }
 
@@ -102,7 +125,7 @@ bool HardwareSerial::openDevice()
     return true;
 }
 
-bool HardwareSerial::closeDevice()
+bool TTYSerial::closeDevice()
 {
     if (_device != -1)
 	close(_device);
@@ -110,7 +133,7 @@ bool HardwareSerial::closeDevice()
     return true;
 }
 
-bool HardwareSerial::setBaud(int baud)
+bool TTYSerial::setBaud(int baud)
 {
     speed_t speed;
 
@@ -181,7 +204,7 @@ bool HardwareSerial::setBaud(int baud)
 #endif
     else 
     {
-	fprintf(stderr, "HardwareSerial::setBaud: unsupported baud rate %d\n", baud);
+	fprintf(stderr, "TTYSerial::setBaud: unsupported baud rate %d\n", baud);
 	return false;
     }
 
@@ -189,7 +212,7 @@ bool HardwareSerial::setBaud(int baud)
     // Get current options
     if (tcgetattr(_device, &options) != 0)
     {
-	fprintf(stderr, "HardwareSerial::setBaud: could not tcgetattr %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::setBaud: could not tcgetattr %s\n", strerror(errno));
 	return false;
     }
 
@@ -200,7 +223,7 @@ bool HardwareSerial::setBaud(int baud)
     options.c_cflag |= (CLOCAL | CREAD);
 
     // Force mode to 8,N,1
-    // to be compatible with Arduino HardwareSerial
+    // to be compatible with Arduino TTYSerial
     // Should this be configurable? Prob not, must have 8 bits, dont need parity.
     options.c_cflag &= ~(PARENB | CSTOPB | CSIZE);
     options.c_cflag |= CS8;
@@ -217,7 +240,7 @@ bool HardwareSerial::setBaud(int baud)
     // Set the options in the port
     if (tcsetattr(_device, TCSANOW, &options) != 0)
     {
-	fprintf(stderr, "HardwareSerial::setBaud: could not tcsetattr %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::setBaud: could not tcsetattr %s\n", strerror(errno));
 	return false;
     }
 
@@ -225,14 +248,40 @@ bool HardwareSerial::setBaud(int baud)
     return true;
 }
 
+bool TTYSerial::rts(bool value)
+{
+    int RTS_flag = TIOCM_RTS;
+    int err;
+
+    if (value)
+      err = ioctl(_device,TIOCMBIS,&RTS_flag);
+    else
+      err = ioctl(_device,TIOCMBIC,&RTS_flag);
+
+    return (err == -1 ? false : true);
+}
+
+bool TTYSerial::dtr(bool value)
+{
+    int DTR_flag = TIOCM_DTR;
+    int err;
+
+    if (value)
+      err = ioctl(_device,TIOCMBIS,&DTR_flag);
+    else
+      err = ioctl(_device,TIOCMBIC,&DTR_flag);
+
+    return (err == -1 ? false : true);
+}
+
 // Block until something is available
-void HardwareSerial::waitAvailable()
+void TTYSerial::waitAvailable()
 {
     waitAvailableTimeout(0); // 0 = Wait forever
 }
 
 // Block until something is available or timeout expires
-bool HardwareSerial::waitAvailableTimeout(uint16_t timeout)
+bool TTYSerial::waitAvailableTimeout(uint16_t timeout)
 {
     int            max_fd;
     fd_set         input;
@@ -255,7 +304,7 @@ bool HardwareSerial::waitAvailableTimeout(uint16_t timeout)
 	result = select(max_fd, &input, NULL, NULL, NULL);
     }
     if (result < 0)
-	fprintf(stderr, "HardwareSerial::waitAvailableTimeout: select failed %s\n", strerror(errno));
+	fprintf(stderr, "TTYSerial::waitAvailableTimeout: select failed %s\n", strerror(errno));
     return result > 0;
 }
 

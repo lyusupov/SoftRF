@@ -32,7 +32,7 @@
 
 #define SoftwareSerial  HardwareSerial
 #define swSer           Serial1
-#define UATSerial       Serial /* TBD */
+#define UATSerial       Serial2
 
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
 //#define USE_ADAFRUIT_NEO_LIBRARY

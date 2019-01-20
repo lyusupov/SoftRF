@@ -462,7 +462,8 @@ byte GNSS_setup() {
 
   rval = GNSS_MODULE_NMEA;
 
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_RASPBERRY ) {
 
     rval = GNSS_version();
 

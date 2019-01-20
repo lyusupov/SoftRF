@@ -617,6 +617,11 @@ static bool ESP32_Baro_setup() {
   return true;
 }
 
+static void ESP32_CC13XX_restart()
+{
+  /* TBD */
+}
+
 SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -644,7 +649,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_Battery_voltage,
   ESP32_GNSS_PPS_Interrupt_handler,
   ESP32_get_PPS_TimeMarker,
-  ESP32_Baro_setup
+  ESP32_Baro_setup,
+  ESP32_CC13XX_restart
 };
 
 #endif /* ESP32 */
