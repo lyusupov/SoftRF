@@ -619,7 +619,16 @@ static bool ESP32_Baro_setup() {
 
 static void ESP32_CC13XX_restart()
 {
-  /* TBD */
+  digitalWrite(SOC_GPIO_PIN_TXE, LOW);
+  pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
+
+  delay(100);
+
+  digitalWrite(SOC_GPIO_PIN_TXE, HIGH);
+
+  delay(100);
+
+  pinMode(SOC_GPIO_PIN_TXE, INPUT);
 }
 
 SoC_ops_t ESP32_ops = {

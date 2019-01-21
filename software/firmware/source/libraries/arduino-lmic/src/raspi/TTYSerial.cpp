@@ -52,6 +52,9 @@ int TTYSerial::available()
 {
     int bytes;
 
+    if (_device == -1)
+      return 0;
+
     if (ioctl(_device, FIONREAD, &bytes) != 0)
     {
 	fprintf(stderr, "TTYSerial::available ioctl failed: %s\n", strerror(errno));
@@ -63,6 +66,10 @@ int TTYSerial::available()
 int TTYSerial::read()
 {
     uint8_t data;
+
+    if (_device == -1)
+      return 0;
+
     ssize_t result = ::read(_device, &data, 1);
     if (result != 1)
     {
@@ -75,6 +82,9 @@ int TTYSerial::read()
 
 size_t TTYSerial::write(uint8_t ch)
 {
+    if (_device == -1)
+      return 0;
+
     size_t result = ::write(_device, &ch, 1);
     if (result != 1)
     {
@@ -86,6 +96,10 @@ size_t TTYSerial::write(uint8_t ch)
 }
 
 size_t TTYSerial::write(unsigned char* s, size_t len) {
+
+    if (_device == -1)
+      return 0;
+
     size_t result = ::write(_device, s, len);
     if (result != len)
     {
@@ -98,6 +112,10 @@ size_t TTYSerial::write(unsigned char* s, size_t len) {
 
 size_t TTYSerial::write(const char* s) {
     size_t len = strlen(s);
+
+    if (_device == -1)
+      return 0;
+
     size_t result = ::write(_device, s, len);
     if (result != len)
     {
@@ -136,6 +154,9 @@ bool TTYSerial::closeDevice()
 bool TTYSerial::setBaud(int baud)
 {
     speed_t speed;
+
+    if (_device == -1)
+      return false;
 
     // This is kind of ugly, but its prob better than a case
     if (baud == 50)
@@ -253,6 +274,9 @@ bool TTYSerial::rts(bool value)
     int RTS_flag = TIOCM_RTS;
     int err;
 
+    if (_device == -1)
+      return false;
+
     if (value)
       err = ioctl(_device,TIOCMBIS,&RTS_flag);
     else
@@ -265,6 +289,9 @@ bool TTYSerial::dtr(bool value)
 {
     int DTR_flag = TIOCM_DTR;
     int err;
+
+    if (_device == -1)
+      return false;
 
     if (value)
       err = ioctl(_device,TIOCMBIS,&DTR_flag);

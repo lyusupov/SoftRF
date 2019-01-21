@@ -1008,7 +1008,7 @@ bool cc13xx_probe()
   /* Do not probe on itself and ESP8266 */
   if (SoC->id == SOC_CC13XX ||
       SoC->id == SOC_ESP8266) {
-    return false;
+    return success;
   }
 
   UATSerial.begin(2000000);
@@ -1046,6 +1046,8 @@ bool cc13xx_probe()
   /* cleanup UAT data buffer */
   uatbuf_head = 0;
   memset(uat_ringbuf, 0, sizeof(uat_ringbuf));
+
+  UATSerial.end();
 
   return success;
 }
