@@ -134,7 +134,7 @@ void handleSettings() {
 <td align=right>\
 <select name='mode'>\
 <option %s value='%d'>Normal</option>\
-<option %s value='%d'>Tx/Rx Test</option>\
+<!-- <option %s value='%d'>Tx/Rx Test</option> -->\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
 </select>\
