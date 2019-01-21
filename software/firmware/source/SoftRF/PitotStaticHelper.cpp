@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PitotStaticHelper.h>
+#include "PitotStaticHelper.h"
 #include "Arduino.h"
 
 long pitotOffset;
@@ -43,7 +43,7 @@ int GetAirspeedKph()
     long sensorValue;
 
     // Read from the ADC and convert dynamic pressure to airspeed in kph 
-    for(int i = 0; i < sampleCount)
+    for(int i = 0; i < sampleCount; i++)
         sensorValue += analogRead(PITOT_GPIO_INPUT);
 
     // Average it out
@@ -103,5 +103,5 @@ AttitudeTempBaro GetAttitudeTempBaro()
             return _atbT;
     }
 
-    return;
+    return _atbT;
 }

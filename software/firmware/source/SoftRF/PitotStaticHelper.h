@@ -19,6 +19,8 @@
 #ifndef PITOTSTATICHELPER_H
 #define PITOTSTATICHELPER_H
 
+#define PITOT_GPIO_INPUT 16
+
 struct AttitudeTempBaro
 {
     int Pitch;
