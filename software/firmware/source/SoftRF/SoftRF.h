@@ -102,6 +102,12 @@ typedef struct UFO {
     float     distance;
     float     bearing;
     int8_t    alarm_level;
+
+    int     indicatedAirspeed;
+    int     pitch;
+    int     roll;
+    int     yaw;
+    int     temperature;
 } ufo_t;
 
 typedef struct hardware_info {
