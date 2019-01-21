@@ -63,6 +63,11 @@ static unsigned long CC13XX_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static void CC13XX_UATSerial_begin(unsigned long baud)
+{
+  UATSerial.begin(baud);
+}
+
 static void CC13XX_restart()
 {
   /* Nothing to do */
@@ -96,6 +101,7 @@ SoC_ops_t CC13XX_ops = {
   NULL,
   CC13XX_get_PPS_TimeMarker,
   NULL,
+  CC13XX_UATSerial_begin,
   CC13XX_restart
 };
 

@@ -134,7 +134,7 @@ void handleSettings() {
 <td align=right>\
 <select name='mode'>\
 <option %s value='%d'>Normal</option>\
-<!-- <option %s value='%d'>Tx/Rx Test</option> -->\
+<option %s value='%d'>Tx/Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
 </select>\
@@ -171,11 +171,20 @@ void handleSettings() {
     (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
     (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""), RF_PROTOCOL_FANET
     );
-
-    len = strlen(offset);
-    offset += len;
-    size -= len;
+  } else {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Protocol</th>\
+<td align=right>%s\
+</td>\
+</tr>"),
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "Legacy" : "UAT")
+    );
   }
+  len = strlen(offset);
+  offset += len;
+  size -= len;
 
   /* Common part 2 */
   snprintf_P ( offset, size,

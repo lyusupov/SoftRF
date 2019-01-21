@@ -56,6 +56,7 @@ typedef struct SoC_ops_struct {
   void (*GNSS_PPS_handler)();
   unsigned long (*get_PPS_TimeMarker)();
   bool (*Baro_setup)();
+  void (*UATSerial_begin)(unsigned long);
   void (*CC13XX_restart)();
 } SoC_ops_t;
 

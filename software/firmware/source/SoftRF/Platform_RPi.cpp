@@ -181,6 +181,11 @@ static unsigned long RPi_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static void RPi_UATSerial_begin(unsigned long baud)
+{
+  UATSerial.begin(baud);
+}
+
 static void RPi_CC13XX_restart()
 {
   UATSerial.dtr(false);
@@ -230,6 +235,7 @@ SoC_ops_t RPi_ops = {
   NULL,
   RPi_get_PPS_TimeMarker,
   NULL,
+  RPi_UATSerial_begin,
   RPi_CC13XX_restart
 };
 

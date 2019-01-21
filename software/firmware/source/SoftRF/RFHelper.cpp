@@ -1011,7 +1011,7 @@ bool cc13xx_probe()
     return success;
   }
 
-  UATSerial.begin(2000000);
+  SoC->UATSerial_begin(2000000);
 
   SoC->CC13XX_restart();
 
@@ -1047,7 +1047,10 @@ bool cc13xx_probe()
   uatbuf_head = 0;
   memset(uat_ringbuf, 0, sizeof(uat_ringbuf));
 
-  UATSerial.end();
+  /* Current ESP32 Core has a bug with Serial2.end()+Serial2.begin() cycle */
+  if (SoC->id != SOC_ESP32) {
+    UATSerial.end();
+  }
 
   return success;
 }
@@ -1059,9 +1062,15 @@ void cc13xx_channel(uint8_t channel)
 
 void cc13xx_setup()
 {
-  UATSerial.begin(2000000);
+  /* Current ESP32 Core has a bug with Serial2.end()+Serial2.begin() cycle */
+  if (SoC->id != SOC_ESP32) {
+    SoC->UATSerial_begin(2000000);
+  }
 
   init_fec();
+
+  /* Enforce radio settings to follow UAT978 protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
 
   protocol_encode = &uat978_encode;
   protocol_decode = &uat978_decode;

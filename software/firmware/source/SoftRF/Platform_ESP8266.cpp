@@ -259,6 +259,11 @@ static bool ESP8266_Baro_setup() {
   return true;
 }
 
+static void ESP8266_UATSerial_begin(unsigned long baud)
+{
+  UATSerial.begin(baud);
+}
+
 static void ESP8266_CC13XX_restart()
 {
   /* TBD */
@@ -292,6 +297,7 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_GNSS_PPS_Interrupt_handler,
   ESP8266_get_PPS_TimeMarker,
   ESP8266_Baro_setup,
+  ESP8266_UATSerial_begin,
   ESP8266_CC13XX_restart
 };
 

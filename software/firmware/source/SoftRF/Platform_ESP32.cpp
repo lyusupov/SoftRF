@@ -617,6 +617,12 @@ static bool ESP32_Baro_setup() {
   return true;
 }
 
+static void ESP32_UATSerial_begin(unsigned long baud)
+{
+  /* open Standalone's I2C/UATSerial port */
+  UATSerial.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
+}
+
 static void ESP32_CC13XX_restart()
 {
   digitalWrite(SOC_GPIO_PIN_TXE, LOW);
@@ -659,6 +665,7 @@ SoC_ops_t ESP32_ops = {
   ESP32_GNSS_PPS_Interrupt_handler,
   ESP32_get_PPS_TimeMarker,
   ESP32_Baro_setup,
+  ESP32_UATSerial_begin,
   ESP32_CC13XX_restart
 };
 
