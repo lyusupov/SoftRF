@@ -179,7 +179,8 @@ void handleSettings() {
 <td align=right>%s\
 </td>\
 </tr>"),
-    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "Legacy" : "UAT")
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? "Legacy" :
+    (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ?  "UAT" : "UNK"))
     );
   }
   len = strlen(offset);

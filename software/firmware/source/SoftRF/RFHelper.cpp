@@ -596,6 +596,11 @@ void sx1276_setup()
     LMIC.protocol = &legacy_proto_desc;
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
+    /*
+     * Enforce legacy protocol setting for SX1276
+     * if other value (UAT) left in EEPROM from other (CC13XX) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_LEGACY;
     break;
   }
 
