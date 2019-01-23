@@ -48,8 +48,8 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
     * Firmware
         * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
         * [Binary](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries)
-        * [Settings](https://github.com/lyusupov/SoftRF/wiki/Settings) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-        * [Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-(Web-method)) (Web method) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [Settings](https://github.com/lyusupov/SoftRF/wiki/Settings) <!-- ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
+        * [Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-(Web-method)) (Web method) <!-- ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)

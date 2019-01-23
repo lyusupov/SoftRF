@@ -521,6 +521,8 @@ void txrx_test_loop()
 
   setTime(time(NULL));
 
+  RPi_ReadTraffic();
+
   RF_loop();
 
   ThisAircraft.timestamp = now();
