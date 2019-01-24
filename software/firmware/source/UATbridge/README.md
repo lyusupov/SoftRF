@@ -3,8 +3,8 @@
 This folder contains source code of **UAT Bridge** firmware for Texas Instruments CC1310 RF SoC. <sup>1</sup><br>
 The code is essential part of [SoftRF project](https://github.com/lyusupov/SoftRF).<br>
 
-<sup>1</sup> - _mass production of CC1312R IC (direct successor of CC1310) is scheduled on Q1 of 2019_.<br>
- _Announced specs of the CC1312R are promising to make **1090ES** <sub>(worldwide ADS-B standard)</sub> reception possible as well_.<br>
+<sup>1</sup> - _mass production of CC1312R IC (direct successor of CC1310) is scheduled by TI on Q1 of 2019_.<br>
+&nbsp;&nbsp;&nbsp; _Announced specs of the CC1312R are promising to make **1090ES** <sub>(worldwide ADS-B standard)</sub> reception possible as well_.<br>
 
 ## Purpose
 
@@ -18,7 +18,7 @@ the aircraft, equipped with the **UAT Bridge**. Other aircrafts nearby, such as 
 
 The "**bridge**" is one-way only. No re-broadcasting from ISM into UAT is allowed. Thus, it does **not** transmit anything on 978 MHz.<br>
 
-For the benefit of most of pilots, receiving device is not necessarily has to be one of [SoftRF](https://github.com/lyusupov/SoftRF) units.<br>
+For the benefit of most of pilots, **receiving device is not necessarily has to be one of [SoftRF](https://github.com/lyusupov/SoftRF) units**.<br>
 Other make and models, such as SkyTraxx, OGN Tracker, PilotAware or FLARM should suffice.<br> 
 
 ## Hardware
@@ -37,7 +37,7 @@ The data rate and format of the packets was choosen to be compatible with [Strat
 
 ## Build instructions
 
-To build firmware binary from source code, please, use [these instructions](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#cc13xx).
+To build firmware binary from source code, please, follow [these instructions](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#cc13xx).
 
 ## Validation
 
@@ -59,7 +59,7 @@ Reception capability of the **UAT Receiver** mode was validated both with:
 
 ## Known limitations
 
-1. **brige** mode is not well tested right now. **receiver** mode is known to be Ok ;
+1. **bridge** mode is not well tested right now. **receiver** mode is known to be Ok ;
 2. reception of UAT signals is currently limited to "downlink" (air-to-air) frames only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
 3. due to limited maximum speed of ESP8266's UART, this platform is not able to use **UAT receiver** right now. ESP32 and Raspberry Pi are Ok ;
 4. RF settings of CC1310 IC are sub-optimal yet. This causes 20-30% packets loss ratio ;
