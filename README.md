@@ -23,6 +23,14 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 <sup>2</sup> - valid for [Prime Edition Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ; valid for **Standalone** and **UAV** **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
 <sup>3</sup> - also known as "raw ADS-B"<br>
 
+# Models
+Model|Platform|First appearance|Status|Comment
+---|:---:|:---:|:---:|---
+[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|
+[Prime Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|
+[Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)|[Broadcom<br>BCM283X<br>(Raspberry Pi)](https://en.wikipedia.org/wiki/Raspberry_Pi)|Q4 2018|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|
+[UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|[Texas Instruments<br>CC13XX](http://www.ti.com/product/cc1310)|Q1 2019|![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)|
+
 # Documentation
 
 * SoftRF overview
