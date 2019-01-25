@@ -116,15 +116,15 @@ byte RF_setup(void)
 {
 
   if (rf_chip == NULL) {
-    if (cc13xx_ops.probe()) {
-      rf_chip = &cc13xx_ops;
-      Serial.println(F("CC13XX RFIC is detected."));
-    } else if (sx1276_ops.probe()) {
+    if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;  
       Serial.println(F("SX1276 RFIC is detected."));
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
       Serial.println(F("NRF905 RFIC is detected."));
+    } else if (cc13xx_ops.probe()) {
+      rf_chip = &cc13xx_ops;
+      Serial.println(F("CC13XX RFIC is detected."));
     } else {
       Serial.println(F("WARNING! Neither SX1276, NRF905 or CC13XX RFIC is detected!"));
     }

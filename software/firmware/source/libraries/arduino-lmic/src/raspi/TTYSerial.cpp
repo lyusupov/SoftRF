@@ -134,7 +134,7 @@ bool TTYSerial::openDevice()
     if (_device == -1)
     {
 	// Could not open the port.
-	fprintf(stderr, "TTYSerial::openDevice could not open %s: %s\n", _deviceName, strerror(errno));
+	fprintf(stderr, "WARNING! TTYSerial::openDevice could not open %s: %s\n", _deviceName, strerror(errno));
 	return false;
     }
 
