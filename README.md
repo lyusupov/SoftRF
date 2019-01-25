@@ -24,7 +24,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 <sup>3</sup> - also known as "raw ADS-B"<br>
 
 # Models
-Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;|Comment
+Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
 ---|:---:|:---:|:---:|---
 [Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition) model is no longer supported - use [Prime MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) instead.<br>ESP8266 platform will be phased out through year 2019 in favour of ESP32. 
 [Prime Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
