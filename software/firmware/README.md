@@ -40,3 +40,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Adafruit MPL3115A2 library is developed by **Limor Fried** and **Kevin Townsend**
  * U8g2 monochrome LCD, OLED and eInk library is developed by **Oliver Kraus**
  * NeoPixelBus library is developed by **Michael Miller**
+ * jQuery library is developed by **JS Foundation**
+ * EGM96 data is developed by **XCSoar team**
+ * BCM2835 C library is developed by **Mike McCauley**
+ * SimpleNetwork library is developed by **Dario Longobardi**
+ * ArduinoJson library is developed by **Benoit Blanchon**
+ * Flashrom library is part of the **flashrom.org project**
+ * EasyLink library is developed by **Robert Wessels** and **Tony Cave**
+ * Dump978 library is developed by **Oliver Jowett**
+ * FEC library is developed by **Phil Karn**
