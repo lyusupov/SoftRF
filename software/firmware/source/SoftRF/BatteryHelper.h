@@ -19,7 +19,12 @@
 #ifndef BATTERYHELPER_H
 #define BATTERYHELPER_H
 
-void Battery_setup(void);
+#define BATTERY_THRESHOLD_NIMHX2  2.3
+#define BATTERY_THRESHOLD_LIPO    3.5
+#define BATTERY_THRESHOLD_LIFE    3.0
+
+void  Battery_setup(void);
 float Battery_voltage(void);
+float Battery_threshold(void);
 
 #endif /* BATTERYHELPER_H */

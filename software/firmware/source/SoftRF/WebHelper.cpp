@@ -504,6 +504,7 @@ void handleRoot() {
   int hr = min / 60;
 
   float vdd = Battery_voltage() ;
+  bool low_voltage = (Battery_voltage() <= Battery_threshold());
 
   time_t timestamp = ThisAircraft.timestamp;
   unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
@@ -551,7 +552,7 @@ void handleRoot() {
 #endif /* ENABLE_AHRS */
  "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
  </table>\
  <table width=100%%>\
    <tr><th align=left>Packets</th>\
@@ -591,7 +592,8 @@ void handleRoot() {
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
 #endif /* ENABLE_AHRS */
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
-    str_Vcc, tx_packets_counter, rx_packets_counter,
+    low_voltage ? "red" : "green", str_Vcc,
+    tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
   SoC->swSer_enableRx(false);

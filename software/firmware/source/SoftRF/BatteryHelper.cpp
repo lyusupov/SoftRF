@@ -30,3 +30,10 @@ float Battery_voltage()
 {
   return SoC->Battery_voltage();
 }
+
+/* low battery voltage threshold */
+float Battery_threshold()
+{
+  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+                          BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
+}

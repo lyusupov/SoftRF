@@ -115,7 +115,7 @@ As a result of the build, two program binaries will become created:
 
 ## CC13XX
 
-The firmware is to be built on a Linux i686 host.<br>
+The firmware is to be built on a Linux x86_64 host.<br>
 [Energia](http://energia.nu/download/) IDE has to be pre-installed first.<br>
 
 1. open ``<Home>`` directory
@@ -139,7 +139,15 @@ Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
 < ... skipped ... >
 ```
 
-6. build the firmware down to ELF binary code:
+6. start **Energia** application
+7. open **UATbridge** sketch from _File_ -> _Open_ menu
+8. [install support](http://energia.nu/guide/boards/) for TI CC13XX familiy with _Tools_ -> _Board_ ->  _Boards_ _Manager..._
+9. Select _Tools_ -> _Board_ ->  _LaunchPad_ _w/_ _CC1310_ _EMT_ _(48MHz)_
+10. Select _Tools_ -> _Port_ ->  ``<your XDS110 port device name>``
+11. Select _Tools_ -> _Programmer_ ->  _dslite_
+12. try to build build and upload using _Sketch_ -> _Upload_
+
+12a. or, to build the firmware using shell prompt, do:
 
 ```
 $ make build
@@ -153,12 +161,10 @@ Verifying...
 < ... skipped ... >
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp; or do regular build procedure using Energia's UI.<br>
+13a. inspect **/tmp** directory and sub-folders, take **UATbridge.ino.elf** file and use it with TI's **Uniflash** or **Flash Programmer 2**.<br>
 
-7. inspect **/tmp** directory and sub-folders, take **UATbridge.ino.elf** file and use it with TI's **Uniflash** or **Flash Programmer 2**.<br>
-   Or try to use built-in **Energia**'s uploading capability. 
 
-8. (Optional) if you want to use [**cc2538-bsl.py**](https://github.com/JelmerT/cc2538-bsl) tool to put the firmware into flash memory of CC1310 IC via **boot loader**, run **make ihex**:
+14a. (Optional) if you want to use [**cc2538-bsl.py**](https://github.com/JelmerT/cc2538-bsl) tool to put the firmware into flash memory of CC1310 IC via **boot loader**, run **make ihex**:
 
 ```
 $ make ihex
