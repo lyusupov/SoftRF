@@ -44,7 +44,7 @@
 #include <uat_decode.h>
 
 //#define DEBUG_UAT
-//#define ENABLE_LORA
+#define ENABLE_LORA
 
 #define isValidFix() isValidGNSSFix()
 
@@ -79,13 +79,82 @@ Stratux_frame_t LPUATRadio_frame = {
 
 struct uat_adsb_mdb mdb;
 
+
+#if defined(DEBUG_UAT)
+#include <xdc/std.h>
+
+#include <xdc/runtime/System.h>
+#include <xdc/runtime/Memory.h>
+#include <xdc/runtime/Types.h>
+
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/utils/Load.h>
+#include <ti/sysbios/hal/Hwi.h>
+
+static void printUtilization()
+{
+    xdc_UInt i;
+    Memory_Stats memStat;
+    Hwi_StackInfo hwiStackStat;
+    Load_Stat loadStat;
+    Task_Handle tsk;
+    float idleLoad;
+    uint32_t idleLoadInt, idleLoadFrac;
+
+    /* collect current stats */
+    Load_update();
+
+    /* use time NOT spent in idle task for Total CPU Load */
+    Load_getTaskLoad(Task_getIdleTask(), &loadStat);
+    idleLoad = 100.0 - 100.0*(float)loadStat.threadTime/(float)loadStat.totalTime;
+    idleLoadInt = idleLoad;
+    idleLoadFrac = 10.0*idleLoad - 10.0*idleLoadInt;
+
+    Serial.write("Total CPU Load: ");
+    Serial.print(idleLoadInt);
+    Serial.print(".");
+    Serial.println(idleLoadFrac);
+    Serial.println("");
+#if 0
+    /* collect stats on all statically Created tasks */
+    Serial.println("Task info:");
+    for (i = 0; i < Task_Object_count(); i++) {
+        tsk = Task_Object_get(NULL, i);
+        printTaskInfo(tsk);
+    }
+
+    /* collect stats on all dynamically Created tasks */
+    tsk = Task_Object_first();
+    while (tsk) {
+        printTaskInfo(tsk);
+        tsk = Task_Object_next(tsk);
+    }
+    Serial.println("");
+#endif
+    Hwi_getStackInfo(&hwiStackStat, TRUE);
+    Serial.print(F("Hwi stack usage: "));
+    Serial.print(hwiStackStat.hwiStackPeak);
+    Serial.print("/");
+    Serial.println(hwiStackStat.hwiStackSize);
+    Serial.println("");
+
+    Memory_getStats(NULL, &memStat);
+    Serial.print(F("Heap usage: "));
+    Serial.print(memStat.totalSize - memStat.totalFreeSize);
+    Serial.print("/");
+    Serial.println(memStat.totalSize);
+}
+#endif /* DEBUG_UAT */
+
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  Serial.begin( 2000000 );  /* 921600 */
+  Serial.begin( 2000000 );
 
   Serial.println();
-  Serial.println(SOFTRF_UAT_IDENT " FW.REV.# " SOFTRF_FIRMWARE_VERSION);
+  Serial.print(F(SOFTRF_UAT_IDENT " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
 
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
@@ -94,16 +163,16 @@ void setup() {
   eeprom_block.field.settings.band = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower = RF_TX_POWER_LOW;
-  eeprom_block.field.settings.volume = BUZZER_VOLUME_FULL;
-  eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
+  eeprom_block.field.settings.volume = BUZZER_OFF;
+  eeprom_block.field.settings.pointer = LED_OFF;
   eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
-  eeprom_block.field.settings.alarm = TRAFFIC_ALARM_DISTANCE;
+  eeprom_block.field.settings.alarm = TRAFFIC_ALARM_NONE;
 
-  eeprom_block.field.settings.nmea_g   = true;
+  eeprom_block.field.settings.nmea_g   = false;
   eeprom_block.field.settings.nmea_p   = false;
-  eeprom_block.field.settings.nmea_l   = true;
-  eeprom_block.field.settings.nmea_s   = true;
-  eeprom_block.field.settings.nmea_out = NMEA_UART;
+  eeprom_block.field.settings.nmea_l   = false;
+  eeprom_block.field.settings.nmea_s   = false;
+  eeprom_block.field.settings.nmea_out = NMEA_OFF;
   eeprom_block.field.settings.gdl90    = GDL90_OFF;
   eeprom_block.field.settings.d1090    = D1090_OFF;
   eeprom_block.field.settings.stealth  = false;

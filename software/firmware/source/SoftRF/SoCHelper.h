@@ -58,6 +58,7 @@ typedef struct SoC_ops_struct {
   bool (*Baro_setup)();
   void (*UATSerial_begin)(unsigned long);
   void (*CC13XX_restart)();
+  void (*WDT_setup)();
 } SoC_ops_t;
 
 enum
@@ -69,18 +70,18 @@ enum
 	SOC_CC13XX
 };
 
-extern SoC_ops_t *SoC;
+extern const SoC_ops_t *SoC;
 #if defined(ESP8266)
-extern SoC_ops_t ESP8266_ops;
+extern const SoC_ops_t ESP8266_ops;
 #endif
 #if defined(ESP32)
-extern SoC_ops_t ESP32_ops;
+extern const SoC_ops_t ESP32_ops;
 #endif
 #if defined(RASPBERRY_PI)
-extern SoC_ops_t RPi_ops;
+extern const SoC_ops_t RPi_ops;
 #endif
 #if defined(ENERGIA_ARCH_CC13XX)
-extern SoC_ops_t CC13XX_ops;
+extern const SoC_ops_t CC13XX_ops;
 #endif
 
 byte SoC_setup(void);

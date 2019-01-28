@@ -52,13 +52,13 @@ static bool RF_ready = false;
 static size_t RF_tx_size = 0;
 static long TxRandomValue = 0;
 
-rfchip_ops_t *rf_chip = NULL;
+const rfchip_ops_t *rf_chip = NULL;
 bool RF_SX1276_RST_is_connected = true;
 
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
-rfchip_ops_t nrf905_ops = {
+const rfchip_ops_t nrf905_ops = {
   RF_IC_NRF905,
   "NRF905",
   nrf905_probe,
@@ -69,7 +69,7 @@ rfchip_ops_t nrf905_ops = {
   nrf905_shutdown
 };
 
-rfchip_ops_t sx1276_ops = {
+const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
   "SX1276",
   sx1276_probe,
@@ -80,7 +80,7 @@ rfchip_ops_t sx1276_ops = {
   sx1276_shutdown
 };
 
-rfchip_ops_t cc13xx_ops = {
+const rfchip_ops_t cc13xx_ops = {
   RF_IC_CC13XX,
   "CC13XX",
   cc13xx_probe,
@@ -126,7 +126,11 @@ byte RF_setup(void)
       rf_chip = &cc13xx_ops;
       Serial.println(F("CC13XX RFIC is detected."));
     } else {
-      Serial.println(F("WARNING! Neither SX1276, NRF905 or CC13XX RFIC is detected!"));
+      Serial.println(F("WARNING! Neither SX1276"
+#if !defined(ENERGIA_ARCH_CC13XX)
+      ", CC13XX"
+#endif
+        " or NRF905 RFIC is detected!"));
     }
   }  
 

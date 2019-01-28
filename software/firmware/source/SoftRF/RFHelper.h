@@ -114,7 +114,7 @@ extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;
 //extern byte TxPkt[MAX_PKT_SIZE];
 
-extern rfchip_ops_t *rf_chip;
+extern const rfchip_ops_t *rf_chip;
 extern bool RF_SX1276_RST_is_connected;
 extern size_t (*protocol_encode)(void *, ufo_t *);
 extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);

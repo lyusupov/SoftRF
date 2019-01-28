@@ -194,6 +194,8 @@ void setup()
     SoC->swSer_enableRx(true);
     break;
   }
+
+  SoC->WDT_setup();
 }
 
 void loop()

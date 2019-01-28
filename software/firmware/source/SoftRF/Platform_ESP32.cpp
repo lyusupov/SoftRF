@@ -641,7 +641,14 @@ static void ESP32_CC13XX_restart()
   pinMode(SOC_GPIO_PIN_TXE, INPUT);
 }
 
-SoC_ops_t ESP32_ops = {
+static void ESP32_WDT_setup()
+{
+#if defined(ESP32_CORE_DEVEL) || defined(ESP32_CORE_1_0_1)
+  enableLoopWDT();
+#endif /* ESP32_CORE_DEVEL */
+}
+
+const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
   ESP32_setup,
@@ -670,7 +677,8 @@ SoC_ops_t ESP32_ops = {
   ESP32_get_PPS_TimeMarker,
   ESP32_Baro_setup,
   ESP32_UATSerial_begin,
-  ESP32_CC13XX_restart
+  ESP32_CC13XX_restart,
+  ESP32_WDT_setup
 };
 
 #endif /* ESP32 */

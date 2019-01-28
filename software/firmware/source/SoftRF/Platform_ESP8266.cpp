@@ -269,7 +269,12 @@ static void ESP8266_CC13XX_restart()
   /* TBD */
 }
 
-SoC_ops_t ESP8266_ops = {
+static void ESP8266_WDT_setup()
+{
+  /* TBD */
+}
+
+const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
@@ -298,7 +303,8 @@ SoC_ops_t ESP8266_ops = {
   ESP8266_get_PPS_TimeMarker,
   ESP8266_Baro_setup,
   ESP8266_UATSerial_begin,
-  ESP8266_CC13XX_restart
+  ESP8266_CC13XX_restart,
+  ESP8266_WDT_setup
 };
 
 #endif /* ESP8266 */

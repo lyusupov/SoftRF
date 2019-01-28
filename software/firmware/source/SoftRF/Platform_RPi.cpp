@@ -207,7 +207,12 @@ static void RPi_CC13XX_restart()
   UATSerial.rts(false);
 }
 
-SoC_ops_t RPi_ops = {
+static void RPi_WDT_setup()
+{
+  /* TBD */
+}
+
+const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
   RPi_setup,
@@ -236,7 +241,8 @@ SoC_ops_t RPi_ops = {
   RPi_get_PPS_TimeMarker,
   NULL,
   RPi_UATSerial_begin,
-  RPi_CC13XX_restart
+  RPi_CC13XX_restart,
+  RPi_WDT_setup
 };
 
 static bool inputAvailable()

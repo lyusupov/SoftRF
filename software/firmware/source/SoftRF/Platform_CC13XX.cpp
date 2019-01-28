@@ -21,6 +21,8 @@
 #include "SoCHelper.h"
 #include "RFHelper.h"
 
+#include <easylink/EasyLink.h>
+
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -29,15 +31,17 @@ lmic_pinmap lmic_pins = {
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 };
 
+static uint8_t ieeeAddr[8];
+
 static void CC13XX_setup()
 {
-  /* TBD */
+  EasyLink_getIeeeAddr(ieeeAddr);
 }
 
 static uint32_t CC13XX_getChipId()
 {
-  /* TBD */
-  return 0;
+  return (uint32_t) ieeeAddr[7]        | (ieeeAddr[6] << 8) | \
+                   (ieeeAddr[5] << 16) | (ieeeAddr[4] << 24);
 }
 
 static long CC13XX_random(long howsmall, long howBig)
@@ -73,7 +77,12 @@ static void CC13XX_restart()
   /* Nothing to do */
 }
 
-SoC_ops_t CC13XX_ops = {
+static void CC13XX_WDT_setup()
+{
+  /* TBD */
+}
+
+const SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
   CC13XX_setup,
@@ -102,7 +111,8 @@ SoC_ops_t CC13XX_ops = {
   CC13XX_get_PPS_TimeMarker,
   NULL,
   CC13XX_UATSerial_begin,
-  CC13XX_restart
+  CC13XX_restart,
+  CC13XX_WDT_setup
 };
 
 #endif /* ENERGIA_ARCH_CC13XX */

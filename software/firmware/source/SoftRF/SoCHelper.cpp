@@ -18,7 +18,7 @@
 
 #include "SoCHelper.h"
 
-SoC_ops_t *SoC;
+const SoC_ops_t *SoC;
 
 byte SoC_setup()
 {
