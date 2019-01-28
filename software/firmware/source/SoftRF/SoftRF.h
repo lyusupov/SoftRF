@@ -73,7 +73,7 @@
 #endif /* PREMIUM_PACKAGE */
 
 typedef struct UFO {
-    String    raw;
+    uint8_t   raw[34];
     time_t    timestamp;
 
     uint8_t   protocol;

@@ -76,5 +76,6 @@ extern void parseSettings(JsonObject&);
 extern void parseD1090(JsonObject&);
 extern void parsePING(JsonObject&);
 extern void parseRAW(JsonObject&);
+extern byte getVal(char);
 
 #endif /* JSONHELPER_H */

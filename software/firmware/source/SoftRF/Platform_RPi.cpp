@@ -114,14 +114,6 @@ TCPServer Traffic_TCP_Server;
 
 #define isValidFix() (isValidGNSSFix() || isValidGPSDFix())
 
-static byte getVal(char c)
-{
-   if(c >= '0' && c <= '9')
-     return (byte)(c - '0');
-   else
-     return (byte)(toupper(c)-'A'+10);
-}
-
 static void RPi_setup()
 {
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
@@ -454,14 +446,16 @@ void relay_loop()
     RF_loop();
 
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-
-      size_t str_len = Container[i].raw.length();
+      size_t size = RF_Payload_Size(settings->rf_protocol);
+      size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
+      String str = Bin2Hex(Container[i].raw, size);
+      size_t str_len = str.length();
 
       if (str_len > 0) {
         // Raw data
         char hexdata[2 * MAX_PKT_SIZE + 1];
 
-        Container[i].raw.toCharArray(hexdata, sizeof(hexdata));
+        str.toCharArray(hexdata, sizeof(hexdata));
 
         if (str_len > 2 * MAX_PKT_SIZE) {
           str_len = 2 * MAX_PKT_SIZE;
@@ -478,7 +472,7 @@ void relay_loop()
           /* Follow duty cycle rule */
           if (RF_Transmit(tx_size, true /* false */)) {
 #if 0
-            printf("%s\n", Container[i].raw.c_str());
+            printf("%s\n", str.c_str());
 #endif
             Container[i] = EmptyFO;
           }

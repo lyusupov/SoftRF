@@ -36,9 +36,8 @@
 #endif /* LOGGER_IS_ENABLED */
 
 byte RxBuffer[MAX_PKT_SIZE];
-unsigned long TxTimeMarker = 0;
 
-//byte TxPkt[MAX_PKT_SIZE];
+unsigned long TxTimeMarker = 0;
 byte TxBuffer[MAX_PKT_SIZE];
 
 uint32_t tx_packets_counter = 0;

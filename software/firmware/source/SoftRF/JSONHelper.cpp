@@ -46,6 +46,14 @@ bool hasValidGPSDFix = false;
 extern eeprom_t eeprom_block;
 extern settings_t *settings;
 
+byte getVal(char c)
+{
+   if(c >= '0' && c <= '9')
+     return (byte)(c - '0');
+   else
+     return (byte)(toupper(c)-'A'+10);
+}
+
 void JSON_Export()
 {
   if (settings->json != JSON_PING) {
@@ -158,7 +166,7 @@ void parsePING(JsonObject& root)
           aircraft_array[i].altitudeMM != 0) {
 
         fo = EmptyFO;
-        fo.raw = "";
+        memset(fo.raw, 0, sizeof(fo.raw));
 
 #if 0
         std::tm t = {};
@@ -219,7 +227,8 @@ void parsePING(JsonObject& root)
 
         /* Fill a free entry if able */
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+          if (Container[j].addr == 0 &&
+             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
             Container[j] = fo;
             Traffic_Update(j);
             break;
@@ -569,7 +578,7 @@ void parseD1090(JsonObject& root)
           aircraft_array[i].altitude != 0.0) {
 
         fo = EmptyFO;
-        fo.raw = "";
+        memset(fo.raw, 0, sizeof(fo.raw));
 #if 0
         fo.timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
 #else
@@ -617,7 +626,8 @@ void parseD1090(JsonObject& root)
 
         /* Fill a free entry if able */
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+          if (Container[j].addr == 0 &&
+             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
             Container[j] = fo;
             Traffic_Update(j);
             break;
@@ -674,11 +684,23 @@ void parseRAW(JsonObject& root)
 
     for (int i=0; i < size; i++) {
       const char* data = rawdata[i];
-
-      if (strlen(data) > 0) {
+      size_t data_len = strlen(data);
+      if (data_len > 0) {
 
         fo = EmptyFO;
-        fo.raw = data;
+
+        if (data_len > 2 * MAX_PKT_SIZE) {
+          data_len = 2 * MAX_PKT_SIZE;
+        }
+
+        if (data_len > 2 * sizeof(fo.raw)) {
+          data_len = 2 * sizeof(fo.raw);
+        }
+
+        for(int j = 0; j < data_len ; j+=2)
+        {
+          fo.raw[j>>1] = getVal(data[j+1]) + (getVal(data[j]) << 4);
+        }
 
         fo.timestamp = timestamp;
         fo.protocol = RF_PROTOCOL_ADSB_1090;
@@ -687,7 +709,8 @@ void parseRAW(JsonObject& root)
 
         /* Fill a free entry if able */
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == 0 && Container[j].raw.length() == 0) {
+          if (Container[j].addr == 0 &&
+             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
             Container[j] = fo;
             break;
           }
@@ -709,8 +732,11 @@ void parseRAW(JsonObject& root)
 
 #if 0
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].raw.length() > 0) {
-        printf("%s\n", Container[i].raw.c_str());
+      if (memcmp(Container[i].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) != 0) {
+        size_t size = RF_Payload_Size(settings->rf_protocol);
+        size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
+        String str = Bin2Hex(Container[i].raw, size);
+        printf("%s\n", str.c_str());
       }
     }
 #endif

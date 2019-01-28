@@ -138,17 +138,20 @@ void Traffic_Update(int ndx)
 
 void ParseData()
 {
+    size_t rx_size = RF_Payload_Size(settings->rf_protocol);
+    rx_size = rx_size > sizeof(fo.raw) ? sizeof(fo.raw) : rx_size;
 
 #if DEBUG
     Hex2Bin(TxDataTemplate, RxBuffer);
 #endif
 
-    fo.raw = Bin2Hex(RxBuffer, RF_Payload_Size(settings->rf_protocol));
+    memset(fo.raw, 0, sizeof(fo.raw));
+    memcpy(fo.raw, RxBuffer, rx_size);
 
     if (settings->nmea_p) {
       StdOut.print(F("$PSRFI,"));
       StdOut.print((unsigned long) now()); StdOut.print(F(","));
-      StdOut.print(fo.raw); StdOut.print(F(","));
+      StdOut.print(Bin2Hex(fo.raw, rx_size)); StdOut.print(F(","));
       StdOut.println(RF_last_rssi);
     }
 

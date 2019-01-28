@@ -46,8 +46,6 @@
                              P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
                              UAT978_PAYLOAD_SIZE)
 
-//#define PKT_SIZE  24  /* LEGACY_PAYLOAD_SIZE */
-
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
 
