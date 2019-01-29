@@ -13,10 +13,10 @@ then to re-broadcast the data using one of supported RF ISM band protocols.<br>
 
 For the list of the ISM protocols, please, read [SoftRF specs](https://github.com/lyusupov/SoftRF#compatibility-1).<br>
 
-Traffic information is re-broadcasted at very low power setting, so reception coverage is limited to close vicinity of
-the aircraft, equipped with the **UAT Bridge**. Other aircrafts nearby, such as gliders on the grid, have a chance to receive the data as well.<br>  
+Traffic information is re-broadcasted at very low power setting, so reception coverage is limited to a close vicinity of
+the aircraft, equipped with the **UAT Bridge**. Other aircrafts nearby, such as gliders on the grid, have a chance to receive the information as well.<br>  
 
-The "**bridge**" is one-way only. No re-broadcasting from ISM into UAT is allowed. Thus, it does **not** transmit anything on 978 MHz.<br>
+The "**bridge**" is one-way only. No re-broadcasting from ISM band into aviation band (UAT) is allowed. Thus, it does **not** transmit anything on 978 MHz.<br>
 
 For the benefit of most of pilots, **receiving device is not necessarily has to be one of [SoftRF](https://github.com/lyusupov/SoftRF) units**.<br>
 Other make and models, such as SkyTraxx, OGN Tracker, PilotAware or FLARM should suffice.<br> 
@@ -32,8 +32,8 @@ DIY **UAT bridge** hardware consists of:
 The firmware auto-senses presence of connected [SoftRF-LoRa](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) daughterboard.<br>
 When the daughterboard is not attached - remaining [SoftRF-UAT](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced) board fallbacks into **UAT Receiver** operation mode automatically.<br>
 
-**UAT Receiver** makes reception of UAT signals, then transmits serial data packets over UART @ 2 Mbps.<br>
-The data rate and format of the packets was choosen to be compatible with [Stratux UATRadio, Low Power v3](https://www.amazon.com/dp/B07JNSHCLQ/).
+**UAT Receiver** makes reception of UAT signals, then transmits serial data frames over UART @ 2 Mbps.<br>
+This data rate and format of the frames were choosen to be compatible with [Stratux UATRadio, Low Power v3](https://www.amazon.com/dp/B07JNSHCLQ/).
 
 ## Build instructions
 
@@ -60,7 +60,7 @@ Reception capability of the **UAT Receiver** mode was validated both with:
 ## Known limitations
 
 1. **bridge** mode is not well tested right now. **receiver** mode is known to be Ok ;
-2. reception of UAT signals is currently limited to "downlink" (air-to-air) frames only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
+2. reception of UAT signals is currently limited to "downlink" (air-to-air) packets only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
 3. due to limited maximum speed of ESP8266's UART, this platform is not able to use **UAT receiver** right now. ESP32 and Raspberry Pi are Ok ;
-4. RF settings of CC1310 IC are sub-optimal yet. This causes 20-30% packets loss ratio ;
-5. Stock E70 module has built-in passive HF filter to meet FCC compliance. Because of that, sensitivity on 978 MHz is reduced on 10-15 dB. To achieve full performance, you need to open the shield and solder a bypass.  
+4. RF settings of CC1310 IC are not optimal yet. This causes average 20-30% packets loss ratio at this time ;
+5. "Stock" EByte E70 module has built-in passive HF filter to meet FCC compliance. Because of that, sensitivity @ 978 MHz is reduced by 10-15 dB. To achieve full performance, you need to open the shield and solder a bypass.  
