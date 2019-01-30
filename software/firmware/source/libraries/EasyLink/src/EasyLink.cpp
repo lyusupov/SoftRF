@@ -20,11 +20,9 @@
 #define DEBUGLN(l)
 #endif
 
-#define EASYLINK_MAX_DATA_LENGHT 128
-
 struct ring_buffer
 {
-	unsigned char buffer[EASYLINK_MAX_DATA_LENGHT];
+	unsigned char buffer[EASYLINK_MAX_DATA_LENGTH];
 	volatile unsigned int head;
 	volatile unsigned int tail;
 };
@@ -59,7 +57,7 @@ void EasyLink::beginTransmission(uint8_t dst) {
 EasyLink_Status EasyLink::transmit(EasyLink_TxPacket *txPacket, EasyLink_TxDoneCb handle)
 {
 
-    if(txPacket == NULL || txPacket->len > EASYLINK_MAX_DATA_LENGHT) {
+    if(txPacket == NULL || txPacket->len > EASYLINK_MAX_DATA_LENGTH) {
         return EasyLink_Status_Param_Error;
     }
 
@@ -131,7 +129,7 @@ void EasyLink::flush()
 size_t EasyLink::write(uint8_t c)
 {
     /* If the buffer is full, indicate this by returning 0 bytes written */
-    if(_tx_buffer->head + 1 > EASYLINK_MAX_DATA_LENGHT) {
+    if(_tx_buffer->head + 1 > EASYLINK_MAX_DATA_LENGTH) {
         return 0;
     }
 
@@ -141,7 +139,7 @@ size_t EasyLink::write(uint8_t c)
 
 int EasyLink::available(void)
 {
-    return (unsigned int)(EASYLINK_MAX_DATA_LENGHT + _rx_buffer->head - _rx_buffer->tail) % EASYLINK_MAX_DATA_LENGHT;
+    return (unsigned int)(EASYLINK_MAX_DATA_LENGTH + _rx_buffer->head - _rx_buffer->tail) % EASYLINK_MAX_DATA_LENGTH;
 }
 
 int EasyLink::peek(void)
@@ -160,7 +158,7 @@ int EasyLink::read(void)
         return -1;
     } else {
         unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-        _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % EASYLINK_MAX_DATA_LENGHT;
+        _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % EASYLINK_MAX_DATA_LENGTH;
         return c;
     }
 }

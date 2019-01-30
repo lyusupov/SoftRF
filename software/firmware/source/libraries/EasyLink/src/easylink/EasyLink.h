@@ -145,10 +145,12 @@ extern "C"
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <uat.h>
+
 #define EASYLINK_API_VERSION "EasyLink-v2.00.00"
 
 /// \brief defines the largest Tx/Rx payload that the interface can support
-#define EASYLINK_MAX_DATA_LENGTH        128
+#define EASYLINK_MAX_DATA_LENGTH        UPLINK_BLOCK_BYTES
 
 /// \brief defines the Tx/Rx Max Address Size
 #define EASYLINK_MAX_ADDR_SIZE        8

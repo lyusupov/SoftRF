@@ -168,17 +168,21 @@ void handleSettings() {
 <th align=left>Protocol</th>\
 <td align=right>\
 <select name='protocol'>\
-<option %s value='%d'>Legacy</option>\
-<option %s value='%d'>OGNTP</option>\
-<option %s value='%d'>P3I</option>\
-<option %s value='%d'>FANET</option>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
 </select>\
 </td>\
 </tr>"),
-    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : "") , RF_PROTOCOL_LEGACY,
-    (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""), RF_PROTOCOL_OGNTP,
-    (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""), RF_PROTOCOL_P3I,
-    (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""), RF_PROTOCOL_FANET
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : ""),
+     RF_PROTOCOL_LEGACY, legacy_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""),
+     RF_PROTOCOL_OGNTP, ogntp_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""),
+     RF_PROTOCOL_P3I, p3i_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""),
+     RF_PROTOCOL_FANET, fanet_proto_desc.name
     );
   } else {
     snprintf_P ( offset, size,
@@ -188,8 +192,9 @@ void handleSettings() {
 <td align=right>%s\
 </td>\
 </tr>"),
-    (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? "Legacy" :
-    (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ?  "UAT" : "UNK"))
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? legacy_proto_desc.name :
+    (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ? uat978_proto_desc.name :
+     "UNK"))
     );
   }
   len = strlen(offset);
