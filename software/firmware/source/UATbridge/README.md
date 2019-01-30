@@ -27,6 +27,11 @@ DIY **UAT bridge** hardware consists of:
 1. [SoftRF-UAT](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced) main board, and
 2. [SoftRF-LoRa](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) daughterboard.
 
+<br>
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-UAT-2.jpg" height="199" width="400"><br>
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-UAT-3.jpg" height="234" width="400">
+
+
 ## Alternative use
 
 The firmware auto-senses presence of connected [SoftRF-LoRa](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module) daughterboard.<br>
