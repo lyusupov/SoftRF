@@ -64,8 +64,7 @@ Reception capability of the **UAT Receiver** mode was validated both with:
 
 ## Known limitations
 
-1. **bridge** mode is not well tested right now. **receiver** mode is known to be Ok ;
-2. reception of UAT signals is currently limited to "downlink" (air-to-air) packets only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
-3. due to limited maximum speed of ESP8266's UART, this platform is not able to use **UAT receiver** right now. ESP32 and Raspberry Pi are Ok ;
-4. RF settings of CC1310 IC are not optimal yet. This causes average 20-30% packets loss ratio at this time ;
-5. "Stock" EByte E70 module has built-in passive HF filter to meet FCC compliance. Because of that, sensitivity @ 978 MHz is reduced by 10-15 dB. To achieve full performance, you need to open the shield and solder a bypass.  
+1. reception of UAT signals is currently limited to "downlink" (air-to-air) packets only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
+2. due to limited maximum speed of ESP8266's UART, this platform is not able to use **UAT receiver** right now. ESP32 and Raspberry Pi are Ok ;
+3. RF settings of CC1310 IC are not optimal yet. This causes average 20-30% packets loss ratio at this time ;
+4. "Stock" EByte E70 module has built-in passive HF filter to meet FCC compliance. Because of that, sensitivity @ 978 MHz is reduced by 10-15 dB. To achieve full performance, you need to open the shield and solder a bypass.

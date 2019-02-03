@@ -186,6 +186,9 @@ static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
 #endif
 
 static void hal_spi_init () {
+#if defined(ENERGIA_ARCH_CC13XX)
+    SPI.setClockDivider(SPI_CLOCK_MAX / LMIC_SPI_FREQ);
+#endif
     SPI.begin(
 #if defined(ESP32)
         5, 19, 27, 18
@@ -216,6 +219,78 @@ u1_t hal_spi (u1_t out) {
     Serial.println(res, HEX);
     */
     return res;
+}
+
+static u1_t spi_buf[MAX_LEN_FRAME + 1];
+
+u1_t hal_spi_read_reg (u1_t addr) {
+    hal_pin_nss(0);
+#if !defined(ENERGIA_ARCH_CC13XX)
+    hal_spi(addr & 0x7F);
+    u1_t val = hal_spi(0x00);
+#else
+    spi_buf[0] = addr & 0x7F;
+    spi_buf[1] = 0;
+    SPI.transfer(spi_buf, 2);
+    u1_t val = spi_buf[1];
+#endif
+    hal_pin_nss(1);
+    return val;
+}
+
+void hal_spi_write_reg (u1_t addr, u1_t data) {
+    hal_pin_nss(0);
+#if !defined(ENERGIA_ARCH_CC13XX)
+    hal_spi(addr | 0x80);
+    hal_spi(data);
+#else
+    spi_buf[0] = addr | 0x80;
+    spi_buf[1] = data;
+    SPI.transfer(spi_buf, 2);
+#endif
+    hal_pin_nss(1);
+}
+
+void hal_spi_read_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv) {
+    hal_pin_nss(0);
+#if !defined(ENERGIA_ARCH_CC13XX)
+    hal_spi(addr & 0x7F);
+    u1_t i=0;
+    for (i=0; i<len; i++) {
+        buf[i] = (inv == 0 ? hal_spi(0x00) : ~(hal_spi(0x00)));
+    }
+#else
+    spi_buf[0] = addr & 0x7F;
+    u1_t i = 0;
+    for (i=0; i<len; i++) {
+        spi_buf[i+1] = 0;
+    }
+    SPI.transfer(spi_buf, len+1);
+    for (i=0; i<len; i++) {
+        buf[i] = (inv == 0 ? spi_buf[i+1] : ~spi_buf[i+1]);
+    }
+#endif
+    hal_pin_nss(1);
+}
+
+
+void hal_spi_write_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv) {
+    hal_pin_nss(0);
+#if !defined(ENERGIA_ARCH_CC13XX)
+    hal_spi(addr | 0x80);
+    u1_t i = 0;
+    for (i=0; i<len; i++) {
+        hal_spi(inv == 0 ? buf[i] : ~buf[i]);
+    }
+#else
+    spi_buf[0] = addr | 0x80;
+    u1_t i = 0;
+    for (i=0; i<len; i++) {
+        spi_buf[i+1] = (inv == 0 ? buf[i] : ~buf[i]);
+    }
+    SPI.transfer(spi_buf, len+1);
+#endif
+    hal_pin_nss(1);
 }
 
 // -----------------------------------------------------------------------------

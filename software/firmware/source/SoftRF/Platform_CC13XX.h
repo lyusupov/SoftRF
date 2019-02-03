@@ -22,9 +22,6 @@
 
 #include "IPAddress.h"
 
-#include <ti/devices/cc13x0/driverlib/ioc.h>
-//#include "Board.h"
-
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -32,22 +29,15 @@
 #define UATSerial   Serial /* TBD */
 #define yield() ({ })
 
-#define SOC_GPIO_PIN_MOSI     IOID_9  // Board_SPI0_MOSI
-#define SOC_GPIO_PIN_MISO     IOID_8  // Board_SPI0_MISO
-#define SOC_GPIO_PIN_SCK      IOID_10 // Board_SPI0_CLK
-#define SOC_GPIO_PIN_SS       IOID_11
-#define SOC_GPIO_PIN_RST      IOID_2
-#define SOC_GPIO_PIN_DIO0     PIN_UNASSIGNED
-
-#define SOC_GPIO_PIN_SDA      IOID_5  // Board_I2C0_SDA0
-#define SOC_GPIO_PIN_SCL      IOID_4  // Board_I2C0_SCL0
+#define SOC_GPIO_PIN_SS       18               // GPIO 11
+#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
 
 /* 
- *  UART pins used by driver
+ *  UART pins
  *
- * Board_UART_TX               IOID_3
- * Board_UART_RX               IOID_2
- * BootLoader                  IOID_13
+ * Board_UART_TX               GPIO 3
+ * Board_UART_RX               GPIO 2
+ * BootLoader                  GPIO 1
  */
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN

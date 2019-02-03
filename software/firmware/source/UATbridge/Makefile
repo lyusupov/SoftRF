@@ -30,7 +30,7 @@ TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.
 OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
                  -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
                  -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
-SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C50DFEC5FFFFFFFF00FFFFFFC500C5FF02/'
+SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
 
 CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \

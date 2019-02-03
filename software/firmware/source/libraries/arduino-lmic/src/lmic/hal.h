@@ -60,6 +60,26 @@ void hal_pin_rst (u1_t val);
 u1_t hal_spi (u1_t outval);
 
 /*
+ * TBD
+ */
+u1_t hal_spi_read_reg (u1_t addr);
+
+/*
+ * TBD
+ */
+void hal_spi_write_reg (u1_t addr, u1_t data);
+
+/*
+ * TBD
+ */
+void hal_spi_read_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv);
+
+/*
+ * TBD
+ */
+void hal_spi_write_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv);
+
+/*
  * disable all CPU interrupts.
  *   - might be invoked nested
  *   - will be followed by matching call to hal_enableIRQs()

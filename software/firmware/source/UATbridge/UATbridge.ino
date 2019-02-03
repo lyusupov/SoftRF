@@ -44,7 +44,6 @@
 #include <uat_decode.h>
 
 //#define DEBUG_UAT
-#define ENABLE_LORA
 
 #define isValidFix() isValidGNSSFix()
 
@@ -156,17 +155,17 @@ void setup() {
   Serial.print(F(SOFTRF_UAT_IDENT " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
 
-  eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
-  eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_OGNTP;
-  eeprom_block.field.settings.band = RF_BAND_EU;
+  eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
+  eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
+  eeprom_block.field.settings.mode          = SOFTRF_MODE_RECEIVER;
+  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
+  eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower = RF_TX_POWER_LOW;
-  eeprom_block.field.settings.volume = BUZZER_OFF;
-  eeprom_block.field.settings.pointer = LED_OFF;
-  eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
-  eeprom_block.field.settings.alarm = TRAFFIC_ALARM_NONE;
+  eeprom_block.field.settings.txpower       = RF_TX_POWER_LOW;
+  eeprom_block.field.settings.volume        = BUZZER_OFF;
+  eeprom_block.field.settings.pointer       = LED_OFF;
+  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
+  eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_NONE;
 
   eeprom_block.field.settings.nmea_g   = false;
   eeprom_block.field.settings.nmea_p   = false;
@@ -178,26 +177,104 @@ void setup() {
   eeprom_block.field.settings.stealth  = false;
   eeprom_block.field.settings.no_track = false;
 
-#ifdef ENABLE_LORA
   hw_info.rf = RF_setup();
-#endif
 
 #if defined(DEBUG_UAT)
   Serial.print("SPI radio ID: ");
   Serial.println(hw_info.rf);
 #endif
 
-  init_fec();
+  if (hw_info.rf != RF_IC_NONE) {
+    settings->mode = SOFTRF_MODE_BRIDGE;
+  }
+
+  switch (settings->mode)
+  {
+#if 0
+  case SOFTRF_MODE_NORMAL:
+    hw_info.gnss = GNSS_setup();
+    break;
+#endif
+  case SOFTRF_MODE_BRIDGE:
+    init_fec();
+    Serial.println("Bridge mode.");
+    break;
+  case SOFTRF_MODE_RECEIVER:
+  default:
+    Serial.println("Receiver mode.");
+    break;
+  }
 
   myLink.begin(EasyLink_Phy_Custom);
   Serial.println("Listening...");
 }
 
-void loop() {
+void receiver()
+{
+  /*
+   * If SoftRF-LoRa radio is not found -
+   * fallback to Stratux LowPower UAT radio compatible
+   * data output
+   */
+  LPUATRadio_frame.timestamp = now();
+  LPUATRadio_frame.rssi = rxPacket.rssi;
+  LPUATRadio_frame.msgLen = rxPacket.len;
 
-  if (hw_info.rf != RF_IC_NONE) {
-    RF_loop();
+  memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
+
+  Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
+}
+
+void bridge()
+{
+  RF_loop();
+
+  int rs_errors;
+  ThisAircraft.timestamp = now();
+
+  int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+  if (frame_type != -1 &&
+      uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+    Serial.print(fo.addr, HEX);
+    Serial.print(',');
+    Serial.print(fo.aircraft_type, HEX);
+    Serial.print(',');
+    Serial.print(fo.latitude, 6);
+    Serial.print(',');
+    Serial.print(fo.longitude, 6);
+    Serial.print(',');
+    Serial.print(fo.altitude);
+    Serial.print(',');
+    Serial.print(fo.speed);
+    Serial.print(',');
+    Serial.print(fo.course);
+    Serial.print(',');
+    Serial.print(fo.vs);
+    Serial.println();
+    Serial.flush();
+#endif
+
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      /*
+       * "Legacy" needs some accurate timing for proper operation
+       */
+      if (isValidFix()) {
+        RF_Transmit(RF_Encode(&fo), false /* true */);
+      }
+    } else {
+      RF_Transmit(RF_Encode(&fo), false /* true */);
+    }
+  } else {
+#if defined(DEBUG_UAT)
+    Serial.println("FEC error");
+#endif
   }
+}
+
+void loop() {
 
   // rxTimeout is in Radio time and needs to be converted from miliseconds to Radio Time
   rxPacket.rxTimeout = EasyLink_ms_To_RadioTime(2000);
@@ -214,71 +291,25 @@ void loop() {
     Serial.print(rxPacket.len);
     Serial.print(" RSSI ");
     Serial.print(rxPacket.rssi);
+#if 0
     Serial.println(" and value:");
     Serial.println(Bin2Hex((byte *) rxPacket.payload, rxPacket.len));
+#else
+    Serial.println();
+#endif
 #endif
 
-    if (hw_info.rf != RF_IC_NONE) {
-
-      int rs_errors;
-      ThisAircraft.timestamp = now();
-
-      int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-      if (frame_type != -1 &&
-          uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-        Serial.print(fo.addr, HEX);
-        Serial.print(',');
-        Serial.print(fo.aircraft_type, HEX);
-        Serial.print(',');
-        Serial.print(fo.latitude, 6);
-        Serial.print(',');
-        Serial.print(fo.longitude, 6);
-        Serial.print(',');
-        Serial.print(fo.altitude);
-        Serial.print(',');
-        Serial.print(fo.speed);
-        Serial.print(',');
-        Serial.print(fo.course);
-        Serial.print(',');
-        Serial.print(fo.vs);
-        Serial.println();
-        Serial.flush();
-#endif
-
-#ifdef ENABLE_LORA
-        if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-          /*
-           * "Legacy" needs some accurate timing for proper operation
-           */
-          if (isValidFix()) {
-            RF_Transmit(RF_Encode(&fo), false /* true */);
-          }
-        } else {
-          RF_Transmit(RF_Encode(&fo), false /* true */);
-        }
-#endif
-      } else {
-#if defined(DEBUG_UAT)
-        Serial.println("FEC error");
-#endif
-      }
-    } else {
-      /*
-       * If SoftRF-LoRa radio is not found -
-       * fallback to Stratux LowPower UAT radio compatible
-       * data output
-       */
-      LPUATRadio_frame.timestamp = now();
-      LPUATRadio_frame.rssi = rxPacket.rssi;
-      LPUATRadio_frame.msgLen = rxPacket.len;
-
-      memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
-
-      Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
+    switch (settings->mode)
+    {
+    case SOFTRF_MODE_BRIDGE:
+      bridge();
+      break;
+    case SOFTRF_MODE_RECEIVER:
+    default:
+      receiver();
+      break;
     }
+
   } else {
 #if defined(DEBUG_UAT)
     Serial.print("Error receiving packet with status code: ");

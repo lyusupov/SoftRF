@@ -290,65 +290,19 @@ static u1_t randbuf[16];
 #error Missing CFG_sx1272_radio/CFG_sx1276_radio
 #endif
 
+#define readReg(addr)                 hal_spi_read_reg (addr)
+#define writeReg(addr, data)          hal_spi_write_reg(addr, data)
+#define readBuf(addr, buf, len)       hal_spi_read_buf (addr, buf, len, 0)
+#define readBuf_Inv(addr, buf, len)   hal_spi_read_buf (addr, buf, len, 1)
+#define writeBuf(addr, buf, len)      hal_spi_write_buf(addr, buf, len, 0)
+#define writeBuf_Inv(addr, buf, len)  hal_spi_write_buf(addr, buf, len, 1)
 
-static void writeReg (u1_t addr, u1_t data ) {
-    hal_pin_nss(0);
-    hal_spi(addr | 0x80);
-    hal_spi(data);
-    hal_pin_nss(1);
-}
-
-#define FIFO_Push_Inv(x)      writeReg(RegFifo, (u1_t)~(x))
-
-static u1_t readReg (u1_t addr) {
-    hal_pin_nss(0);
-    hal_spi(addr & 0x7F);
-    u1_t val = hal_spi(0x00);
-    hal_pin_nss(1);
-    return val;
-}
-
-static void writeBuf (u1_t addr, xref2u1_t buf, u1_t len) {
-    hal_pin_nss(0);
-    hal_spi(addr | 0x80);
-    u1_t i = 0;
-    for (i=0; i<len; i++) {
-        hal_spi(buf[i]);
-    }
-    hal_pin_nss(1);
-}
-
-static void writeBuf_Inv (u1_t addr, xref2u1_t buf, u1_t len) {
-    hal_pin_nss(0);
-    hal_spi(addr | 0x80);
-    u1_t i = 0;
-    for (i=0; i<len; i++) {
-        hal_spi(~buf[i]);
-    }
-    hal_pin_nss(1);
-}
-
-static void readBuf (u1_t addr, xref2u1_t buf, u1_t len) {
-    hal_pin_nss(0);
-    hal_spi(addr & 0x7F);
-    u1_t i=0;
-    for (i=0; i<len; i++) {
-        buf[i] = hal_spi(0x00);
-    }
-    hal_pin_nss(1);
-}
-
-static void readBuf_Inv (u1_t addr, xref2u1_t buf, u1_t len) {
-    hal_pin_nss(0);
-    hal_spi(addr & 0x7F);
-    u1_t i=0;
-    for (i=0; i<len; i++) {
-        buf[i] = ~(hal_spi(0x00));
-    }
-    hal_pin_nss(1);
-}
+//#define FIFO_Push_Inv(x)              writeReg(RegFifo, (u1_t)~(x))
 
 static void opmode (u1_t mode) {
+#if defined(ENERGIA_ARCH_CC13XX)
+    delay(1);
+#endif
     writeReg(RegOpMode, (readReg(RegOpMode) & ~OPMODE_MASK) | mode);
     delay(1);
 }
@@ -1185,6 +1139,9 @@ void os_radio (u1_t mode) {
         break;
 
       case RADIO_TX:
+#if defined(ENERGIA_ARCH_CC13XX)
+        delay(1);
+#endif
         // transmit frame now
         starttx(); // buf=LMIC.frame, len=LMIC.dataLen
         break;
