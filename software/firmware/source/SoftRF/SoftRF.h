@@ -86,6 +86,16 @@ typedef struct UFO {
     float     course;     /* CoG */
     float     speed;      /* ground speed in knots */
     uint8_t   aircraft_type;
+    
+    int       roll;
+    int       pitch;
+    int       heading;      /* gyro stabalized based on magnetic heading w/variatio correction for true north */
+    float     side_slip;    /* slip-skid... latteral accelleration */
+    float     yaw_rate;
+    float     G;            /* G force on aircraft vertical */
+    int       airspeed;     /* indicated airspeed in knots */
+
+    int       temperature;  /* OAT - for computing density altitude and true airspeed */
 
     float     vs; /* feet per minute */
 
@@ -102,12 +112,6 @@ typedef struct UFO {
     float     distance;
     float     bearing;
     int8_t    alarm_level;
-
-    int     indicatedAirspeed;
-    int     pitch;
-    int     roll;
-    int     yaw;
-    int     temperature;
 } ufo_t;
 
 typedef struct hardware_info {
