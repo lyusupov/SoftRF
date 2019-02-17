@@ -27,6 +27,7 @@
 #include "GDL90Helper.h"
 #include "D1090Helper.h"
 #include "JSONHelper.h"
+#include "WiFiHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 
@@ -88,6 +89,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.json     = JSON_OFF;
   eeprom_block.field.settings.stealth  = false;
   eeprom_block.field.settings.no_track = false;
+
+  memcpy(eeprom_block.field.settings.device_name, HOSTNAME, sizeof(HOSTNAME));
 }
 
 void EEPROM_store()

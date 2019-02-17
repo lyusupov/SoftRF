@@ -116,7 +116,7 @@ Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4500;
+  size_t size = 4600;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -139,6 +139,12 @@ void handleSettings() {
 <form action='/input' method='GET'>\
 <table width=100%%>\
 <tr>\
+<th align=left>Device Name</th>\
+<td align=right>\
+<input type='text' name='deviceName', value='%s'>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Mode</th>\
 <td align=right>\
 <select name='mode'>\
@@ -149,6 +155,7 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
+   settings->device_name,
   (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
@@ -515,20 +522,23 @@ void handleRoot() {
   unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
   char str_lat[16];
   char str_lon[16];
+  char str_spd[16];
   char str_alt[16];
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2300);
+  const int size = 2400;
+  char *Root_temp = (char *) malloc(size);
   if (Root_temp == NULL) {
     return;
   }
 
   dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
+  dtostrf(ThisAircraft.speed, 3, 1, str_spd);
   dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2300,
+  snprintf_P ( Root_temp, size,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -542,6 +552,7 @@ void handleRoot() {
  </table>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
+  <tr><th align=left>Device Name</th><td align=right>%s</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
 #if !defined(ENABLE_AHRS)
  "</table><table width=100%%>\
@@ -572,6 +583,7 @@ void handleRoot() {
   <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Speed</th><td align=right>%s</td></tr>\
   <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
  </table>\
  <hr>\
@@ -584,7 +596,9 @@ void handleRoot() {
  </table>\
 </body>\
 </html>"),
-    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
+    ThisAircraft.addr, 
+    settings->device_name,
+    SOFTRF_FIRMWARE_VERSION
 #if defined(SOFTRF_ADDRESS)
     "I"
 #endif
@@ -612,13 +626,20 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1450);
+  const int size = 1500;
+  char *Input_temp = (char *) malloc(size);
   if (Input_temp == NULL) {
     return;
   }
 
   for ( uint8_t i = 0; i < server.args(); i++ ) {
-    if (server.argName(i).equals("mode")) {
+    if (server.argName(i).equals("deviceName")) {
+      // copy first 7 or fewer characters into settings->device_name
+      uint8_t len = server.arg(i).length();
+      len = ((len > 7)?7:len) + 1;
+      memcpy(settings->device_name,server.arg(i).c_str(), len);
+      settings->device_name[7] = '\0';
+    } else if (server.argName(i).equals("mode")) {
       settings->mode = server.arg(i).toInt();
     } else if (server.argName(i).equals("protocol")) {
       settings->rf_protocol = server.arg(i).toInt();
@@ -656,7 +677,7 @@ void handleInput() {
       settings->no_track = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1450,
+  snprintf_P ( Input_temp, size,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -666,6 +687,7 @@ PSTR("<html>\
 <body>\
 <h1 align=center>New settings:</h1>\
 <table width=100%%>\
+<tr><th align=left>Device Name</th><td align=right>%s</td></tr>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
@@ -689,7 +711,7 @@ PSTR("<html>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
 </body>\
 </html>"),
-  settings->mode, settings->rf_protocol, settings->band,
+  settings->device_name, settings->mode, settings->rf_protocol, settings->band,
   settings->aircraft_type, settings->alarm, settings->txpower,
   settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),

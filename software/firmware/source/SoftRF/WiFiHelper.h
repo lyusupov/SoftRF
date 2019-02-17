@@ -25,7 +25,7 @@
 
 #include "SoftRF.h"
 
-#define HOSTNAME "SoftRF-"
+#define HOSTNAME "SoftRF"
 
 enum
 {

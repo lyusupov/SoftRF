@@ -26,7 +26,7 @@
 #include "SoftRF.h"
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
-#define SOFTRF_EEPROM_VERSION 0x0000005C
+#define SOFTRF_EEPROM_VERSION 0x0000005D
 
 typedef struct Settings {
     uint8_t  mode;
@@ -54,12 +54,7 @@ typedef struct Settings {
     uint8_t  d1090:3;
     uint8_t  json:2;
 
-    uint8_t  resvd234;
-    uint8_t  resvd5;
-    uint8_t  resvd6;
-    uint8_t  resvd7;
-    uint8_t  resvd8;
-    uint8_t  resvd9;
+    char     device_name[8];
     uint8_t  resvd10;
     uint8_t  resvd11;
     uint8_t  resvd12;
