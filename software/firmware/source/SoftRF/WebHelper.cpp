@@ -872,5 +872,8 @@ $('form').submit(function(e){\
 
 void Web_loop()
 {
-  server.handleClient();
+  // Let's not let anyone configure anything while we're flying
+  if (ThisAircraft.speed < 20.0){
+    server.handleClient();
+  }
 }
