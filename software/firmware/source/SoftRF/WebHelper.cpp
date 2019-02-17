@@ -497,20 +497,23 @@ void handleRoot() {
   unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
   char str_lat[16];
   char str_lon[16];
+  char str_spd[16];
   char str_alt[16];
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2300);
+  const int size = 2400;
+  char *Root_temp = (char *) malloc(size);
   if (Root_temp == NULL) {
     return;
   }
 
   dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
+  dtostrf(ThisAircraft.speed, 3, 1, str_spd);
   dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2300,
+  snprintf_P ( Root_temp, size,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -555,6 +558,7 @@ void handleRoot() {
   <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
   <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
   <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Speed</th><td align=right>%s</td></tr>\
   <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
  </table>\
  <hr>\
@@ -583,7 +587,7 @@ void handleRoot() {
 #endif /* ENABLE_AHRS */
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
     str_Vcc, tx_packets_counter, rx_packets_counter,
-    timestamp, sats, str_lat, str_lon, str_alt
+    timestamp, sats, str_lat, str_lon, str_spd, str_alt
   );
   SoC->swSer_enableRx(false);
   server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
@@ -596,7 +600,8 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1450);
+  const int size = 1500;
+  char *Input_temp = (char *) malloc(size);
   if (Input_temp == NULL) {
     return;
   }
@@ -646,7 +651,7 @@ void handleInput() {
       settings->no_track = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1450,
+  snprintf_P ( Input_temp, size,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -863,5 +868,8 @@ $('form').submit(function(e){\
 
 void Web_loop()
 {
-  server.handleClient();
+  // Let's not let anyone configure anything while we're flying
+  if (ThisAircraft.speed < 20.0){
+    server.handleClient();
+  }
 }
