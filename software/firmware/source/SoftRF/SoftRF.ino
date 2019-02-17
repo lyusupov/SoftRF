@@ -234,24 +234,6 @@ void loop()
   yield();
 }
 
-#if defined(ENABLE_AHRS)
-void AHRS_loop()
-{
-    // Pitot/Static/ADHRS Feed
-    ThisAircraft.airspeed = GetAirspeed();
-    auto attitudeTempBaro = GetAttitudeTempBaro();
-    if (attitudeTempBaro.IsValid)
-    {
-      ThisAircraft.pitch = attitudeTempBaro.Pitch;
-      ThisAircraft.roll = attitudeTempBaro.Roll;
-      ThisAircraft.yaw = attitudeTempBaro.Yaw;
-      ThisAircraft.temperature = attitudeTempBaro.Temperature;
-      ThisAircraft.pressure = attitude.Pressure;
-    }
-}
-#endif /* ENABLE_AHRS */
-
-
 void normal_loop()
 {
   bool success;
