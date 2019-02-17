@@ -107,7 +107,7 @@ Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4500;
+  size_t size = 4600;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -130,6 +130,12 @@ void handleSettings() {
 <form action='/input' method='GET'>\
 <table width=100%%>\
 <tr>\
+<th align=left>Device Name</th>\
+<td align=right>\
+<input type='text' name='deviceName', value='%s'>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Mode</th>\
 <td align=right>\
 <select name='mode'>\
@@ -140,6 +146,7 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
+   settings->device_name,
   (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
@@ -517,6 +524,7 @@ void handleRoot() {
  </table>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
+  <tr><th align=left>Device Name</th><td align=right>%s</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
 #if !defined(ENABLE_AHRS)
  "</table><table width=100%%>\
@@ -559,7 +567,9 @@ void handleRoot() {
  </table>\
 </body>\
 </html>"),
-    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
+    ThisAircraft.addr, 
+    settings->device_name,
+    SOFTRF_FIRMWARE_VERSION
 #if defined(SOFTRF_ADDRESS)
     "I"
 #endif
@@ -592,7 +602,13 @@ void handleInput() {
   }
 
   for ( uint8_t i = 0; i < server.args(); i++ ) {
-    if (server.argName(i).equals("mode")) {
+    if (server.argName(i).equals("deviceName")) {
+      // copy first 7 or fewer characters into settings->device_name
+      uint8_t len = server.arg(i).length();
+      len = ((len > 7)?7:len) + 1;
+      memcpy(settings->device_name,server.arg(i).c_str(), len);
+      settings->device_name[7] = '\0';
+    } else if (server.argName(i).equals("mode")) {
       settings->mode = server.arg(i).toInt();
     } else if (server.argName(i).equals("protocol")) {
       settings->rf_protocol = server.arg(i).toInt();
@@ -640,6 +656,7 @@ PSTR("<html>\
 <body>\
 <h1 align=center>New settings:</h1>\
 <table width=100%%>\
+<tr><th align=left>Device Name</th><td align=right>%s</td></tr>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
@@ -663,7 +680,7 @@ PSTR("<html>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
 </body>\
 </html>"),
-  settings->mode, settings->rf_protocol, settings->band,
+  settings->device_name, settings->mode, settings->rf_protocol, settings->band,
   settings->aircraft_type, settings->alarm, settings->txpower,
   settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),

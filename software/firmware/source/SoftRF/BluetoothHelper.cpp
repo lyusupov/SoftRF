@@ -81,8 +81,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 static void ESP32_Bluetooth_setup()
 {
-
-  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+  BT_name = String(settings->device_name) + String("-") + String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   switch(settings->bluetooth)
   {
