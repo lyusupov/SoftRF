@@ -19,13 +19,14 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#if defined(ARDUINO)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
 #include <WiFiUdp.h>
 #endif
 
 #include "SoftRF.h"
 
-#define HOSTNAME "SoftRF-"
+#define HOSTNAME            "SoftRF-"
+#define UDP_PACKET_BUFSIZE  256
 
 enum
 {
@@ -40,10 +41,10 @@ size_t Raw_Receive_UDP(uint8_t *);
 void Raw_Transmit_UDP(void);
 
 extern String host_name;
-#if defined(ARDUINO)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
 extern WiFiUDP Uni_Udp;
 #endif
 
-extern char UDPpacketBuffer[256];
+extern char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 
 #endif /* WIFIHELPER_H */

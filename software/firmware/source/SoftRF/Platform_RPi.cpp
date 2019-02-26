@@ -93,7 +93,7 @@ settings_t *settings = &eeprom_block.field.settings;
 ufo_t ThisAircraft;
 aircraft the_aircraft;
 
-char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
 
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_RASPBERRY,

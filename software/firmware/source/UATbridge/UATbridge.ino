@@ -43,9 +43,20 @@
 #include <fec.h>
 #include <uat_decode.h>
 
+/*
+ * Built-in 128K flash memory of the CC1310F128 (7x7)
+ * does fit for either:
+ * - RECEIVER & BRIDGE modes, or
+ * - NORMAL mode
+ * but not both at the same time.
+ * Hope that the things will change with appearance of production CC1312 silicon.
+ */
+//#define NORMAL_MODE
+
 //#define DEBUG_UAT
 
-#define isValidFix() isValidGNSSFix()
+#define isValidFix()      isValidGNSSFix()
+#define isTimeToExport()  (millis() - ExportTimeMarker > 1000)
 
 EasyLink_RxPacket rxPacket;
 EasyLink myLink;
@@ -53,7 +64,7 @@ EasyLink myLink;
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 
-ufo_t ThisAircraft, fo;
+ufo_t ThisAircraft;
 
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_UAT,
@@ -64,6 +75,8 @@ hardware_info_t hw_info = {
   .baro     = BARO_MODULE_NONE,
   .display  = DISPLAY_NONE
 };
+
+unsigned long ExportTimeMarker = 0;
 
 Stratux_frame_t LPUATRadio_frame = {
   .magic1     = STRATUX_UATRADIO_MAGIC_1,
@@ -149,15 +162,13 @@ static void printUtilization()
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  Serial.begin( 2000000 );
-
-  Serial.println();
-  Serial.print(F(SOFTRF_UAT_IDENT " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
-  Serial.println(String(SoC->getChipId(), HEX));
-
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
+#if !defined(NORMAL_MODE)
   eeprom_block.field.settings.mode          = SOFTRF_MODE_RECEIVER;
+#else /* NORMAL_MODE */
+  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
+#endif /* NORMAL_MODE */
   eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
@@ -177,29 +188,91 @@ void setup() {
   eeprom_block.field.settings.stealth  = false;
   eeprom_block.field.settings.no_track = false;
 
-  hw_info.rf = RF_setup();
+  switch (settings->mode)
+  {
+  case SOFTRF_MODE_NORMAL:
+    Serial.begin( 9600 );
+    break;
 
-#if defined(DEBUG_UAT)
-  Serial.print("SPI radio ID: ");
-  Serial.println(hw_info.rf);
-#endif
-
-  if (hw_info.rf != RF_IC_NONE) {
-    settings->mode = SOFTRF_MODE_BRIDGE;
+  case SOFTRF_MODE_BRIDGE:
+  case SOFTRF_MODE_RECEIVER:
+  default:
+    Serial.begin( 2000000 );
+    break;
   }
+
+  Serial.println();
+  Serial.print(F(SOFTRF_UAT_IDENT " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
 
   switch (settings->mode)
   {
-#if 0
+
+#if defined(NORMAL_MODE)
+
   case SOFTRF_MODE_NORMAL:
-    hw_info.gnss = GNSS_setup();
-    break;
+
+    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+    ThisAircraft.aircraft_type = settings->aircraft_type;
+    ThisAircraft.protocol = settings->rf_protocol;
+    ThisAircraft.stealth  = settings->stealth;
+    ThisAircraft.no_track = settings->no_track;
+
+    hw_info.baro = Baro_setup();
+
+#if defined(DEBUG_UAT)
+    Serial.print("Baro module ID: ");
+    Serial.println(hw_info.baro);
 #endif
-  case SOFTRF_MODE_BRIDGE:
+
+    hw_info.gnss = GNSS_setup();
+
+#if defined(DEBUG_UAT)
+    Serial.print("GNSS module ID: ");
+    Serial.println(hw_info.gnss);
+#endif
+
+    if (hw_info.gnss == GNSS_MODULE_NONE) {
+      Serial.println("WARNING! GNSS module is not detected!");
+    } else {
+      settings->nmea_g   = true;
+      settings->nmea_l   = true;
+      settings->nmea_s   = true;
+      settings->nmea_out = NMEA_UART;
+    }
+
     init_fec();
-    Serial.println("Bridge mode.");
+    Traffic_setup();
+    NMEA_setup();
+    Serial.println("Normal mode.");
     break;
+
+#else /* NORMAL_MODE */
+
   case SOFTRF_MODE_RECEIVER:
+    hw_info.rf = RF_setup();
+
+#if defined(DEBUG_UAT)
+    Serial.print("SPI radio ID: ");
+    Serial.println(hw_info.rf);
+#endif
+
+    if (hw_info.rf != RF_IC_NONE) {
+      settings->mode = SOFTRF_MODE_BRIDGE;
+
+      init_fec();
+#if 0
+      hw_info.gnss = GNSS_setup();
+      NMEA_setup();
+#endif
+      Serial.println("Bridge mode.");
+    } else {
+      Serial.println("Receiver mode.");
+    }
+    break;
+
+#endif /* NORMAL_MODE */
+
   default:
     Serial.println("Receiver mode.");
     break;
@@ -209,73 +282,28 @@ void setup() {
   Serial.println("Listening...");
 }
 
-void receiver()
-{
-  /*
-   * If SoftRF-LoRa radio is not found -
-   * fallback to Stratux LowPower UAT radio compatible
-   * data output
-   */
-  LPUATRadio_frame.timestamp = now();
-  LPUATRadio_frame.rssi = rxPacket.rssi;
-  LPUATRadio_frame.msgLen = rxPacket.len;
-
-  memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
-
-  Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
-}
-
-void bridge()
-{
-  RF_loop();
-
-  int rs_errors;
-  ThisAircraft.timestamp = now();
-
-  int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-  if (frame_type != -1 &&
-      uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-    Serial.print(fo.addr, HEX);
-    Serial.print(',');
-    Serial.print(fo.aircraft_type, HEX);
-    Serial.print(',');
-    Serial.print(fo.latitude, 6);
-    Serial.print(',');
-    Serial.print(fo.longitude, 6);
-    Serial.print(',');
-    Serial.print(fo.altitude);
-    Serial.print(',');
-    Serial.print(fo.speed);
-    Serial.print(',');
-    Serial.print(fo.course);
-    Serial.print(',');
-    Serial.print(fo.vs);
-    Serial.println();
-    Serial.flush();
-#endif
-
-    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-      /*
-       * "Legacy" needs some accurate timing for proper operation
-       */
-      if (isValidFix()) {
-        RF_Transmit(RF_Encode(&fo), false /* true */);
-      }
-    } else {
-      RF_Transmit(RF_Encode(&fo), false /* true */);
-    }
-  } else {
-#if defined(DEBUG_UAT)
-    Serial.println("FEC error");
-#endif
-  }
-}
-
 void loop() {
 
+    switch (settings->mode)
+    {
+#if defined(NORMAL_MODE)
+    case SOFTRF_MODE_NORMAL:
+      normal();
+      break;
+#else /* NORMAL_MODE */
+    case SOFTRF_MODE_BRIDGE:
+      bridge();
+      break;
+    case SOFTRF_MODE_RECEIVER:
+    default:
+      receiver();
+      break;
+#endif /* NORMAL_MODE */
+    }
+}
+
+static bool UAT_Receive_Sync()
+{
   // rxTimeout is in Radio time and needs to be converted from miliseconds to Radio Time
   rxPacket.rxTimeout = EasyLink_ms_To_RadioTime(2000);
 
@@ -298,18 +326,7 @@ void loop() {
     Serial.println();
 #endif
 #endif
-
-    switch (settings->mode)
-    {
-    case SOFTRF_MODE_BRIDGE:
-      bridge();
-      break;
-    case SOFTRF_MODE_RECEIVER:
-    default:
-      receiver();
-      break;
-    }
-
+    return(true);
   } else {
 #if defined(DEBUG_UAT)
     Serial.print("Error receiving packet with status code: ");
@@ -318,5 +335,216 @@ void loop() {
     Serial.print(myLink.getStatusString(status));
     Serial.println(")");
 #endif
+    return(false);
   }
+}
+
+static bool UAT_receive_complete  = false;
+static bool UAT_receive_active    = false;
+
+void UAT_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status status)
+{
+  UAT_receive_active = false;
+
+  if (status == EasyLink_Status_Success) {
+    memcpy(&rxPacket, rxPacket_ptr, sizeof(rxPacket));
+    UAT_receive_complete  = true;
+  }
+}
+
+static bool UAT_Receive_Async()
+{
+  bool success = false;
+  EasyLink_Status status;
+
+  if (!UAT_receive_active) {
+    status = myLink.receive(&UAT_Receive_callback);
+
+    if (status == EasyLink_Status_Success) {
+      UAT_receive_active = true;
+    }
+  }
+
+  if (UAT_receive_complete == true) {
+
+    success = true;
+    UAT_receive_complete = false;
+  }
+
+  return success;
+}
+
+#define UAT_Receive UAT_Receive_Async
+
+void receiver()
+{
+  bool success = UAT_Receive();
+
+  if (success) {
+    /*
+     * If SoftRF-LoRa radio is not found -
+     * fallback to Stratux LowPower UAT radio compatible
+     * data output
+     */
+    LPUATRadio_frame.timestamp = now();
+    LPUATRadio_frame.rssi = rxPacket.rssi;
+    LPUATRadio_frame.msgLen = rxPacket.len;
+
+    memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
+
+    Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
+  }
+}
+
+void bridge()
+{
+  RF_loop();
+
+#if 0
+  PickGNSSFix();
+
+  GNSSTimeSync();
+#endif
+
+  bool success = UAT_Receive();
+
+  if (success) {
+
+    int rs_errors;
+    ThisAircraft.timestamp = now();
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1 &&
+        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+      Serial.print(fo.addr, HEX);
+      Serial.print(',');
+      Serial.print(fo.aircraft_type, HEX);
+      Serial.print(',');
+      Serial.print(fo.latitude, 6);
+      Serial.print(',');
+      Serial.print(fo.longitude, 6);
+      Serial.print(',');
+      Serial.print(fo.altitude);
+      Serial.print(',');
+      Serial.print(fo.speed);
+      Serial.print(',');
+      Serial.print(fo.course);
+      Serial.print(',');
+      Serial.print(fo.vs);
+      Serial.println();
+      Serial.flush();
+#endif
+
+      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+        /*
+         * "Legacy" needs some accurate timing for proper operation
+         */
+        if (isValidFix()) {
+          RF_Transmit(RF_Encode(&fo), false /* true */);
+        }
+      } else {
+        RF_Transmit(RF_Encode(&fo), false /* true */);
+      }
+    } else {
+#if defined(DEBUG_UAT)
+      Serial.println("FEC error");
+#endif
+    }
+  }
+}
+
+void normal()
+{
+  bool success;
+
+  Baro_loop();
+
+  PickGNSSFix();
+
+  GNSSTimeSync();
+
+  ThisAircraft.timestamp = now();
+
+  if (isValidGNSSFix()) {
+    ThisAircraft.latitude = gnss.location.lat();
+    ThisAircraft.longitude = gnss.location.lng();
+    ThisAircraft.altitude = gnss.altitude.meters();
+    ThisAircraft.course = gnss.course.deg();
+    ThisAircraft.speed = gnss.speed.knots();
+    ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+    ThisAircraft.geoid_separation = gnss.separation.meters();
+  }
+
+  success = UAT_Receive();
+
+  if (success) {
+    int rs_errors;
+    ThisAircraft.timestamp = now();
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1 &&
+        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+      Serial.print(fo.addr, HEX);
+      Serial.print(',');
+      Serial.print(fo.aircraft_type, HEX);
+      Serial.print(',');
+      Serial.print(fo.latitude, 6);
+      Serial.print(',');
+      Serial.print(fo.longitude, 6);
+      Serial.print(',');
+      Serial.print(fo.altitude);
+      Serial.print(',');
+      Serial.print(fo.speed);
+      Serial.print(',');
+      Serial.print(fo.course);
+      Serial.print(',');
+      Serial.print(fo.vs);
+      Serial.println();
+      Serial.flush();
+#endif
+
+      fo.rssi = rxPacket.rssi;
+
+      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+
+        if (Container[i].addr == fo.addr) {
+          Container[i] = fo;
+          Traffic_Update(i);
+          break;
+        } else {
+          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[i] = fo;
+            Traffic_Update(i);
+            break;
+          }
+        }
+      }
+
+    } else {
+#if defined(DEBUG_UAT)
+      Serial.println("FEC error");
+#endif
+    }
+  }
+
+  if (isValidGNSSFix()) {
+    Traffic_loop();
+  }
+
+  if (isTimeToExport() && isValidGNSSFix()) {
+    NMEA_Export();
+    GDL90_Export();
+    D1090_Export();
+    ExportTimeMarker = millis();
+  }
+
+  NMEA_loop();
+
+  ClearExpired();
 }

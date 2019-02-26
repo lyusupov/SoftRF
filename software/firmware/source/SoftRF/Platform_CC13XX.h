@@ -27,7 +27,8 @@
 
 #define swSer       Serial
 #define UATSerial   Serial /* TBD */
-#define yield() ({ })
+#define yield()     ({ })
+#define snprintf_P  snprintf
 
 #define SOC_GPIO_PIN_SS       18               // GPIO 11
 #define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN

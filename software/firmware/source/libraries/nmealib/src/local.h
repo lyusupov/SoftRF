@@ -1,7 +1,12 @@
 /* local header used by libc/time routines */
 #include <_ansi.h>
 #include <time.h>
+
+#if !defined(ENERGIA_ARCH_CC13XX)
 #include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
+#endif
 
 #define SECSPERMIN	60L
 #define MINSPERHOUR	60L

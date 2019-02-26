@@ -80,6 +80,8 @@ extern ESP8266WebServer server;
 extern Exp_SoftwareSerial swSer;
 extern Adafruit_NeoPixel strip;
 
+#define  USE_NMEALIB
+
 #endif /* PLATFORM_ESP8266_H */
 
 #endif /* ESP8266 */

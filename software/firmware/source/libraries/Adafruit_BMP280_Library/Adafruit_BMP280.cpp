@@ -97,14 +97,18 @@ void Adafruit_BMP280::write8(byte reg, byte value)
     Wire.write((uint8_t)value);
     Wire.endTransmission();
   } else {
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
+#endif
     digitalWrite(_cs, LOW);
     spixfer(reg & ~0x80); // write, bit 7 low
     spixfer(value);
     digitalWrite(_cs, HIGH);
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
+#endif
   }
 }
 
@@ -125,14 +129,18 @@ uint8_t Adafruit_BMP280::read8(byte reg)
     value = Wire.read();
 
   } else {
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
+#endif
     digitalWrite(_cs, LOW);
     spixfer(reg | 0x80); // read, bit 7 high
     value = spixfer(0);
     digitalWrite(_cs, HIGH);
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
+#endif
   }
   return value;
 }
@@ -154,14 +162,18 @@ uint16_t Adafruit_BMP280::read16(byte reg)
     value = (Wire.read() << 8) | Wire.read();
 
   } else {
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
+#endif
     digitalWrite(_cs, LOW);
     spixfer(reg | 0x80); // read, bit 7 high
     value = (spixfer(0) << 8) | spixfer(0);
     digitalWrite(_cs, HIGH);
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
+#endif
   }
 
   return value;
@@ -213,8 +225,10 @@ uint32_t Adafruit_BMP280::read24(byte reg)
     value |= Wire.read();
 
   } else {
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
+#endif
     digitalWrite(_cs, LOW);
     spixfer(reg | 0x80); // read, bit 7 high
     
@@ -225,8 +239,10 @@ uint32_t Adafruit_BMP280::read24(byte reg)
     value |= spixfer(0);
 
     digitalWrite(_cs, HIGH);
+#if !defined(ENERGIA_ARCH_CC13XX)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
+#endif
   }
 
   return value;

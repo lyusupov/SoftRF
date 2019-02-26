@@ -33,6 +33,8 @@ lmic_pinmap lmic_pins = {
 
 static uint8_t ieeeAddr[8];
 
+char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+
 static void CC13XX_setup()
 {
   EasyLink_getIeeeAddr(ieeeAddr);
@@ -59,12 +61,21 @@ static void CC13XX_SPI_begin()
   /* TBD */
 }
 
+static void CC13XX_swSer_begin(unsigned long baud)
+{
+  swSer.begin(baud);
+}
+
 void CC13XX_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
 
 static unsigned long CC13XX_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
+}
+
+static bool CC13XX_Baro_setup() {
+  return true;
 }
 
 static void CC13XX_UATSerial_begin(unsigned long baud)
@@ -100,7 +111,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   CC13XX_SPI_begin,
-  NULL,
+  CC13XX_swSer_begin,
   NULL,
   NULL,
   NULL,
@@ -109,7 +120,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   CC13XX_get_PPS_TimeMarker,
-  NULL,
+  CC13XX_Baro_setup,
   CC13XX_UATSerial_begin,
   CC13XX_restart,
   CC13XX_WDT_setup

@@ -31,6 +31,7 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 #include "Protocol_Legacy.h"
+#include "NMEAHelper.h"
 
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"
@@ -451,7 +452,8 @@ void GDL90_Export()
   size_t size;
   float distance;
   time_t this_moment = now();
-  uint8_t *buf = (uint8_t *) UDPpacketBuffer;
+  uint8_t *buf = (uint8_t *) (sizeof(UDPpacketBuffer) < UDP_PACKET_BUFSIZE ?
+                              NMEABuffer : UDPpacketBuffer);
 
   if (settings->gdl90 != GDL90_OFF) {
     size = makeHeartbeat(buf);

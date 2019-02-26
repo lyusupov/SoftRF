@@ -17,7 +17,6 @@
  */
 
 #include <TimeLib.h>
-#include <nmealib.h>
 
 #include "NMEAHelper.h"
 #include "GNSSHelper.h"
@@ -33,7 +32,12 @@ NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
 char NMEABuffer[NMEA_BUFFER_SIZE]; //buffer for NMEA data
+
+#if defined(USE_NMEALIB)
+#include <nmealib.h>
+
 NmeaMallocedBuffer nmealib_buf;
+#endif /* USE_NMEALIB */
 
 const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_LEGACY]    = "FLR",
@@ -88,8 +92,12 @@ void NMEA_setup()
 
     NmeaTCPServer.setNoDelay(true);
   }
-#endif
+#endif /* NMEA_TCP_SERVICE */
+
+#if defined(USE_NMEALIB)
   memset(&nmealib_buf, 0, sizeof(nmealib_buf));
+#endif /* USE_NMEALIB */
+
   PGRMZ_TimeMarker = millis();
 
 #if defined(ENABLE_AHRS)
@@ -321,6 +329,8 @@ void NMEA_Export()
     }
 }
 
+#if defined(USE_NMEALIB)
+
 void NMEA_Position()
 {
   NmeaInfo info;
@@ -450,3 +460,5 @@ void NMEA_GGA()
     NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);
   }
 }
+
+#endif /* USE_NMEALIB */

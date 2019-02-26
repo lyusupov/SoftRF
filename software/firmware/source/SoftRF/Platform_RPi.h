@@ -69,6 +69,8 @@
 extern TTYSerial Serial1;
 extern TTYSerial Serial2;
 
+#define  USE_NMEALIB
+
 #endif /* PLATFORM_RPI_H */
 
 #endif /* RASPBERRY_PI */

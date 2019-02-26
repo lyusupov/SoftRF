@@ -165,6 +165,7 @@ struct rst_info {
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
 #define  NMEA_TCP_SERVICE
+#define  USE_NMEALIB
 
 //#define ESP32_CORE_DEVEL
 #define ESP32_CORE_1_0_1

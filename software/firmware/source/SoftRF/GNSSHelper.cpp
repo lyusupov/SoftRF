@@ -580,11 +580,15 @@ void PickGNSSFix()
            * Work around issue with "always 0.0,M" GGA geoid separation value
            * given by some Chinese GNSS chipsets
            */
+#if defined(ESP32)
           if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
               !strncmp((char *) &GNSSbuf[ndx+3], "GGA,", strlen("GGA,")) &&
               gnss.separation.meters() == 0.0) {
             NMEA_GGA();
-          } else {
+          }
+          else
+#endif
+          {
             NMEA_Out(&GNSSbuf[ndx], write_size, true);
           }
 
