@@ -28,8 +28,8 @@
 #include <aircraft.h>
 
 #if defined ESP8266
-#include <SoftwareSerial.h>
-extern SoftwareSerial swSer;
+#include <Exp_SoftwareSerial.h>
+extern Exp_SoftwareSerial swSer;
 #elif defined ESP32
 extern HardwareSerial Serial1;
 #endif
