@@ -300,7 +300,7 @@ static u1_t randbuf[16];
 //#define FIFO_Push_Inv(x)              writeReg(RegFifo, (u1_t)~(x))
 
 static void opmode (u1_t mode) {
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(RASPBERRY_PI)
     delay(1);
 #endif
     writeReg(RegOpMode, (readReg(RegOpMode) & ~OPMODE_MASK) | mode);
@@ -1139,7 +1139,7 @@ void os_radio (u1_t mode) {
         break;
 
       case RADIO_TX:
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(RASPBERRY_PI)
         delay(1);
 #endif
         // transmit frame now

@@ -58,6 +58,7 @@
 #include "GDL90Helper.h"
 #include "D1090Helper.h"
 #include "JSONHelper.h"
+#include "WiFiHelper.h"
 
 #include "TCPServer.h"
 
