@@ -37,13 +37,13 @@ CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
-                 NMEAHelper.cpp D1090Helper.cpp
+                 NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h Platform_RPi.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
                  LEDHelper.h EEPROMHelper.h SoundHelper.h \
-                 MAVLinkHelper.h TimeHelper.h WiFiHelper.h
+                 TimeHelper.h WiFiHelper.h
 
 links:  $(foreach f, $(CPPS) $(HFILES), link-file-$(f))
 

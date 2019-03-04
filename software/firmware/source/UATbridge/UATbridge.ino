@@ -33,6 +33,7 @@
 #include "BaroHelper.h"
 #include "SoCHelper.h"
 #include "TrafficHelper.h"
+#include "MAVLinkHelper.h"
 
 #include "SoftRF.h"
 #include "EasyLink.h"
@@ -190,14 +191,15 @@ void setup() {
 
   switch (settings->mode)
   {
-  case SOFTRF_MODE_NORMAL:
-    Serial.begin( 9600 );
+  case SOFTRF_MODE_UAV:
+    MAVLink_setup();
     break;
 
+  case SOFTRF_MODE_NORMAL:
   case SOFTRF_MODE_BRIDGE:
   case SOFTRF_MODE_RECEIVER:
   default:
-    Serial.begin( 2000000 );
+    Serial.begin( 9600 );
     break;
   }
 
@@ -249,7 +251,20 @@ void setup() {
 
 #else /* NORMAL_MODE */
 
+  case SOFTRF_MODE_UAV:
+
+    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;
+    ThisAircraft.protocol = settings->rf_protocol;
+
+    init_fec();
+    Traffic_setup();
+
+    Serial.println("UAV mode.");
+    break;
+
   case SOFTRF_MODE_RECEIVER:
+
     hw_info.rf = RF_setup();
 
 #if defined(DEBUG_UAT)
@@ -261,13 +276,22 @@ void setup() {
       settings->mode = SOFTRF_MODE_BRIDGE;
 
       init_fec();
-#if 0
-      hw_info.gnss = GNSS_setup();
-      NMEA_setup();
+
+      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+        hw_info.gnss = GNSS_setup();
+
+#if defined(DEBUG_UAT)
+        Serial.print("GNSS module ID: ");
+        Serial.println(hw_info.gnss);
 #endif
+      }
+
       Serial.println("Bridge mode.");
     } else {
       Serial.println("Receiver mode.");
+      Serial.flush();
+      Serial.end();
+      Serial.begin( 2000000 );
     }
     break;
 
@@ -291,6 +315,9 @@ void loop() {
       normal();
       break;
 #else /* NORMAL_MODE */
+    case SOFTRF_MODE_UAV:
+      uav();
+      break;
     case SOFTRF_MODE_BRIDGE:
       bridge();
       break;
@@ -400,11 +427,10 @@ void bridge()
 {
   RF_loop();
 
-#if 0
-  PickGNSSFix();
-
-  GNSSTimeSync();
-#endif
+  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+    PickGNSSFix();
+    GNSSTimeSync();
+  }
 
   bool success = UAT_Receive();
 
@@ -545,6 +571,94 @@ void normal()
   }
 
   NMEA_loop();
+
+  ClearExpired();
+}
+
+void uav()
+{
+  bool success;
+
+  PickMAVLinkFix();
+
+  MAVLinkTimeSync();
+  MAVLinkSetWiFiPower();
+
+  ThisAircraft.timestamp = now();
+
+  if (isValidMAVFix()) {
+    ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
+    ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
+    ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
+    ThisAircraft.course = the_aircraft.location.gps_cog;
+    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT;
+    ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
+    ThisAircraft.hdop = the_aircraft.location.gps_hdop;
+  }
+
+  success = UAT_Receive();
+
+  if (success) {
+    int rs_errors;
+    ThisAircraft.timestamp = now();
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1 &&
+        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+      Serial.print(fo.addr, HEX);
+      Serial.print(',');
+      Serial.print(fo.aircraft_type, HEX);
+      Serial.print(',');
+      Serial.print(fo.latitude, 6);
+      Serial.print(',');
+      Serial.print(fo.longitude, 6);
+      Serial.print(',');
+      Serial.print(fo.altitude);
+      Serial.print(',');
+      Serial.print(fo.speed);
+      Serial.print(',');
+      Serial.print(fo.course);
+      Serial.print(',');
+      Serial.print(fo.vs);
+      Serial.println();
+      Serial.flush();
+#endif
+
+      fo.rssi = rxPacket.rssi;
+
+      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+
+        if (Container[i].addr == fo.addr) {
+          Container[i] = fo;
+          Traffic_Update(i);
+          break;
+        } else {
+          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[i] = fo;
+            Traffic_Update(i);
+            break;
+          }
+        }
+      }
+
+    } else {
+#if defined(DEBUG_UAT)
+      Serial.println("FEC error");
+#endif
+    }
+  }
+
+  if (isValidMAVFix()) {
+    Traffic_loop();
+  }
+
+  if (isTimeToExport() && isValidMAVFix()) {
+    MAVLinkShareTraffic();
+    ExportTimeMarker = millis();
+  }
 
   ClearExpired();
 }

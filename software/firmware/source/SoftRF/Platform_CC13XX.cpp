@@ -51,6 +51,11 @@ static long CC13XX_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
+static void CC13XX_WiFi_setOutputPower(int dB)
+{
+  /* NONE */
+}
+
 static void CC13XX_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   /* NONE */
@@ -104,7 +109,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_random,
   NULL,
   NULL,
-  NULL,
+  CC13XX_WiFi_setOutputPower,
   NULL,
   CC13XX_WiFi_transmit_UDP,
   NULL,
