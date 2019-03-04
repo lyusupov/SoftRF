@@ -108,7 +108,9 @@ namespace{
      void do_mavlink_vfr_hud(mavlink_message_t * pmsg);
      void do_mavlink_attitude(mavlink_message_t * pmsg);
      void do_mavlink_adsb(uint32_t addr, float latitude, float longtitude,
-        float altitude, float course, float speed, uint8_t emitter_type);
+                          float altitude, float course, float h_speed,
+                          float v_speed, uint16_t squawk, char *callsign,
+                          uint8_t emitter_type);
      void do_mavlink_traffic(mavlink_message_t * pmsg);
 } // ~namespace
 
@@ -186,10 +188,12 @@ void read_mavlink()
   parse_error += status.parse_error;
 }
 
-void write_mavlink(uint32_t addr, float latitude, float longtitude,
-      float altitude, float course, float speed, uint8_t emitter_type)
+void write_mavlink( uint32_t addr, float latitude, float longtitude,
+                    float altitude, float course, float h_speed, float v_speed,
+                    uint16_t squawk, char *callsign, uint8_t emitter_type)
 {
-    do_mavlink_adsb(addr, latitude, longtitude, altitude, course, speed, emitter_type);
+    do_mavlink_adsb(addr, latitude, longtitude, altitude, course,
+                    h_speed, v_speed, squawk, callsign, emitter_type);
 }
 
 namespace {
@@ -308,23 +312,32 @@ namespace {
    }
 
    void do_mavlink_adsb(uint32_t addr, float latitude, float longtitude,
-      float altitude, float course, float speed, uint8_t emitter_type )
+      float altitude, float course, float h_speed, float v_speed,
+      uint16_t squawk, char *callsign, uint8_t emitter_type )
    {
       uint8_t system_id = mavlink_system.sysid;
       uint8_t component_id = mavlink_system.compid;
       uint32_t ICAO_address = addr ;
-      int32_t lat = int32_t(latitude * 10000000) ;  
+      int32_t lat = int32_t(latitude * 10000000) ;
       int32_t lon = int32_t(longtitude * 10000000) ;
       uint8_t altitude_type = ADSB_ALTITUDE_TYPE_GEOMETRIC;
-      int32_t alt = altitude * 1000; /*< Altitude(ASL) in millimeters*/
-      uint16_t heading = course * 100; /*< Course over ground in centidegrees*/
-      uint16_t hor_velocity = speed * 100; /*< The horizontal velocity in centimeters/second*/
-      int16_t ver_velocity = 0;
-      const char *callsign = "FLARM";
+      int32_t alt = altitude * 1000; /* Altitude(ASL) in millimeters */
+      uint16_t heading = course * 100; /* Course over ground in centidegrees */
+
+      /* The horizontal velocity in centimeters/second */
+      uint16_t hor_velocity = h_speed * 100;
+
+      /* The vertical velocity in centimeters/second, positive is up */
+      int16_t ver_velocity  = v_speed * 100;
+
       uint8_t tslc = 1;
-      uint16_t flags = ADSB_FLAGS_VALID_COORDS | ADSB_FLAGS_VALID_ALTITUDE ;
-      uint16_t squawk = 0;   
-   
+      uint16_t flags =  ADSB_FLAGS_VALID_COORDS   |
+                        ADSB_FLAGS_VALID_ALTITUDE |
+                        ADSB_FLAGS_VALID_HEADING  |
+                        ADSB_FLAGS_VALID_VELOCITY |
+                        ADSB_FLAGS_VALID_CALLSIGN |
+                        ADSB_FLAGS_VALID_SQUAWK   ;
+
       mavlink_msg_adsb_vehicle_send(MAVLINK_COMM_0, ICAO_address, lat, lon,
                                 altitude_type, alt, heading,
                                 hor_velocity, ver_velocity, callsign,

@@ -24,6 +24,8 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
+#include "EEPROMHelper.h"
+#include "RFHelper.h"
 
 static unsigned long MAVLinkTimeSyncMarker = 0;
 static bool MAVLinkAPisArmed = false;
@@ -59,13 +61,25 @@ void MAVLinkShareTraffic()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        write_mavlink(Container[i].addr,
-          Container[i].latitude,
-          Container[i].longitude,
-          Container[i].altitude,
-          Container[i].course,
-          Container[i].speed * _GPS_MPS_PER_KNOT, /* m/s */
-          AT_TO_GDL90(Container[i].aircraft_type));
+        char hexbuf[8];
+        char callsign[8+1];
+
+        snprintf(hexbuf, sizeof(hexbuf), "%06X", Container[i].addr);
+        memcpy(callsign, GDL90_CallSign_Prefix[Container[i].protocol],
+          strlen(GDL90_CallSign_Prefix[Container[i].protocol]));
+        memcpy(callsign + strlen(GDL90_CallSign_Prefix[Container[i].protocol]),
+          hexbuf, strlen(hexbuf) + 1);
+
+        write_mavlink(  Container[i].addr,
+                        Container[i].latitude,
+                        Container[i].longitude,
+                        Container[i].altitude,
+                        Container[i].course,
+                        Container[i].speed * _GPS_MPS_PER_KNOT, /* m/s */
+                        Container[i].vs / (_GPS_FEET_PER_METER * 60.0), /* m/s */
+                        (settings->band == RF_BAND_US ? 1200 : 7000),
+                        callsign,
+                        AT_TO_GDL90(Container[i].aircraft_type));
 
       }
     }
