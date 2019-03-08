@@ -92,6 +92,18 @@ Stratux_frame_t LPUATRadio_frame = {
 
 struct uat_adsb_mdb mdb;
 
+#if defined(NORMAL_MODE)
+#include <WS2812.h>
+
+#define uni_Color(r,g,b)  {r, g, b}
+
+WS2812 strip(RING_LED_NUM);
+
+uint8_t ring  [RING_LED_NUM][3] = { LED_COLOR_GREEN, LED_COLOR_GREEN,
+                                    LED_COLOR_GREEN, LED_COLOR_GREEN,
+                                    LED_COLOR_GREEN, LED_COLOR_GREEN,
+                                    LED_COLOR_GREEN, LED_COLOR_GREEN };
+#endif /* NORMAL_MODE */
 
 #if defined(DEBUG_UAT)
 #include <xdc/std.h>
@@ -246,6 +258,17 @@ void setup() {
     init_fec();
     Traffic_setup();
     NMEA_setup();
+
+    strip.begin();
+    strip.sendBuffer(ring, RING_LED_NUM);
+    delay(1000);
+    for(int i=0; i < RING_LED_NUM; i++) {
+      ring[i][0] = 0;
+      ring[i][1] = 0;
+      ring[i][2] = 0;
+    }
+    strip.sendBuffer(ring,   RING_LED_NUM);
+
     Serial.println("Normal mode.");
     break;
 
@@ -281,10 +304,24 @@ void setup() {
         hw_info.gnss = GNSS_setup();
 
 #if defined(DEBUG_UAT)
-        Serial.print("GNSS module ID: ");
-        Serial.println(hw_info.gnss);
+        if (hw_info.gnss != GNSS_MODULE_NONE) {
+          settings->nmea_g   = true;
+          settings->nmea_out = NMEA_UART;
+        }
 #endif
       }
+
+      Serial.print("Protocol: ");
+      Serial.println(
+        settings->rf_protocol == RF_PROTOCOL_LEGACY ? legacy_proto_desc.name :
+        settings->rf_protocol == RF_PROTOCOL_OGNTP  ? ogntp_proto_desc.name  :
+        settings->rf_protocol == RF_PROTOCOL_P3I    ? p3i_proto_desc.name    :
+        settings->rf_protocol == RF_PROTOCOL_FANET  ? fanet_proto_desc.name  :
+        "UNK"
+      );
+
+      Serial.print("GNSS: ");
+      Serial.println(GNSS_name[hw_info.gnss]);
 
       Serial.println("Bridge mode.");
     } else {
