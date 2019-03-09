@@ -20,6 +20,7 @@
 
 #include "SoCHelper.h"
 #include "RFHelper.h"
+#include "LEDHelper.h"
 
 #include <easylink/EasyLink.h>
 
@@ -32,6 +33,8 @@ lmic_pinmap lmic_pins = {
 };
 
 static uint8_t ieeeAddr[8];
+WS2812 strip(PIX_NUM);
+uint8_t LEDs[PIX_NUM][3];
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
@@ -69,6 +72,22 @@ static void CC13XX_SPI_begin()
 static void CC13XX_swSer_begin(unsigned long baud)
 {
   swSer.begin(baud);
+}
+
+static void CC13XX_swSer_enableRx(boolean arg)
+{
+
+}
+
+static void CC13XX_Battery_setup()
+{
+
+}
+
+static float CC13XX_Battery_voltage()
+{
+  /* TBD */
+  return 0 ;
 }
 
 void CC13XX_GNSS_PPS_Interrupt_handler() {
@@ -117,13 +136,13 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   CC13XX_SPI_begin,
   CC13XX_swSer_begin,
+  CC13XX_swSer_enableRx,
   NULL,
   NULL,
   NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
+  CC13XX_Battery_setup,
+  CC13XX_Battery_voltage,
+  CC13XX_GNSS_PPS_Interrupt_handler,
   CC13XX_get_PPS_TimeMarker,
   CC13XX_Baro_setup,
   CC13XX_UATSerial_begin,

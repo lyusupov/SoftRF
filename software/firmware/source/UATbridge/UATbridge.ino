@@ -57,6 +57,7 @@
 //#define DEBUG_UAT
 
 #define isValidFix()      isValidGNSSFix()
+#define isTimeToDisplay() (millis() - LEDTimeMarker    > 1000)
 #define isTimeToExport()  (millis() - ExportTimeMarker > 1000)
 
 EasyLink_RxPacket rxPacket;
@@ -77,6 +78,7 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+unsigned long LEDTimeMarker    = 0;
 unsigned long ExportTimeMarker = 0;
 
 Stratux_frame_t LPUATRadio_frame = {
@@ -91,19 +93,6 @@ Stratux_frame_t LPUATRadio_frame = {
 };
 
 struct uat_adsb_mdb mdb;
-
-#if defined(NORMAL_MODE)
-#include <WS2812.h>
-
-#define uni_Color(r,g,b)  {r, g, b}
-
-WS2812 strip(RING_LED_NUM);
-
-uint8_t ring  [RING_LED_NUM][3] = { LED_COLOR_GREEN, LED_COLOR_GREEN,
-                                    LED_COLOR_GREEN, LED_COLOR_GREEN,
-                                    LED_COLOR_GREEN, LED_COLOR_GREEN,
-                                    LED_COLOR_GREEN, LED_COLOR_GREEN };
-#endif /* NORMAL_MODE */
 
 #if defined(DEBUG_UAT)
 #include <xdc/std.h>
@@ -259,15 +248,8 @@ void setup() {
     Traffic_setup();
     NMEA_setup();
 
-    strip.begin();
-    strip.sendBuffer(ring, RING_LED_NUM);
-    delay(1000);
-    for(int i=0; i < RING_LED_NUM; i++) {
-      ring[i][0] = 0;
-      ring[i][1] = 0;
-      ring[i][2] = 0;
-    }
-    strip.sendBuffer(ring,   RING_LED_NUM);
+    LED_setup();
+    LED_test();
 
     Serial.println("Normal mode.");
     break;
@@ -598,6 +580,15 @@ void normal()
 
   if (isValidGNSSFix()) {
     Traffic_loop();
+  }
+
+  if (isTimeToDisplay()) {
+    if (isValidGNSSFix()) {
+      LED_DisplayTraffic();
+    } else {
+      LED_Clear();
+    }
+    LEDTimeMarker = millis();
   }
 
   if (isTimeToExport() && isValidGNSSFix()) {

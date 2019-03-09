@@ -68,7 +68,7 @@ static void theaterChase(color_t c, uint8_t wait) {
       delay(wait);
 
       for (int i = 0; i < uni_numPixels(); i = i + 3) {
-        uni_setPixelColor(i + q, 0);      //turn every third pixel off
+        uni_setPixelColor(i + q, LED_COLOR_BLACK);      //turn every third pixel off
       }
     }
   }

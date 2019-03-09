@@ -20,8 +20,10 @@ class WS2812 {
   void begin();
   void sendPixel(uint8_t r, uint8_t g, uint8_t b);
   void sendBuffer(uint8_t (*ptr)[3], uint8_t len);
-  void color(uint8_t r, uint8_t g, uint8_t b);
-  void off(){ color(0, 0, 0); };
+  void fill(uint8_t r, uint8_t g, uint8_t b);
+  void off(){ fill(0, 0, 0); };
+  uint16_t numPixels(void) const;
+  uint32_t Color(uint8_t r, uint8_t g, uint8_t b);
   private:
   uint16_t _pixels;
 };

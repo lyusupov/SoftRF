@@ -101,7 +101,7 @@ inline void WS2812::sendPixel(uint8_t r, uint8_t g, uint8_t b)
   SPI.transfer(buf, 24);
 }
 
-void WS2812::color(uint8_t r, uint8_t g, uint8_t b)
+void WS2812::fill(uint8_t r, uint8_t g, uint8_t b)
 {
   uint8_t color[_pixels][3];
   uint8_t i;
@@ -112,4 +112,14 @@ void WS2812::color(uint8_t r, uint8_t g, uint8_t b)
       color[i][2] = b;
   }
   sendBuffer(color, _pixels);
+}
+
+uint16_t WS2812::numPixels(void) const {
+  return _pixels;
+}
+
+// Convert separate R,G,B into packed 32-bit RGB color.
+// Packed format is always RGB, regardless of LED strand color order.
+uint32_t WS2812::Color(uint8_t r, uint8_t g, uint8_t b) {
+  return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
 }

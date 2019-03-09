@@ -21,9 +21,22 @@
 #define PLATFORM_CC13XX_H
 
 #include "IPAddress.h"
+#include <WS2812.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
+
+#define uni_begin()             strip.begin()
+#define uni_show()              strip.sendBuffer(LEDs, strip.numPixels())
+#define uni_setPixelColor(i, c) ({ uint32_t temp = c;          \
+                                   LEDs[i][2] = (temp & 0xff); \
+                                   temp = temp >> 8;           \
+                                   LEDs[i][1] = (temp & 0xff); \
+                                   temp = temp >> 8;           \
+                                   LEDs[i][0] = (temp & 0xff); })
+#define uni_numPixels()         strip.numPixels()
+#define uni_Color(r,g,b)        strip.Color(r,g,b)
+#define color_t                 uint32_t
 
 #define swSer       Serial
 #define UATSerial   Serial /* TBD */
@@ -43,6 +56,10 @@
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+
+extern WS2812 strip;
+extern uint8_t LEDs[][3];
 
 #endif /* PLATFORM_CC13XX_H */
 
