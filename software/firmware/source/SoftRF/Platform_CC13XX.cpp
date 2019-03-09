@@ -21,6 +21,7 @@
 #include "SoCHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
+#include "SoundHelper.h"
 
 #include <easylink/EasyLink.h>
 
@@ -52,6 +53,23 @@ static uint32_t CC13XX_getChipId()
 static long CC13XX_random(long howsmall, long howBig)
 {
   return random(howsmall, howBig);
+}
+
+static void CC13XX_Sound_test(int var)
+{
+  if (settings->volume != BUZZER_OFF) {
+//    swSer.enableRx(false);
+
+#if 0
+    tone(SOC_GPIO_PIN_BUZZER, 440, 500);delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 640, 500);delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 840, 500);delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 1040, 500);
+
+    delay(600);
+#endif
+//    swSer.enableRx(true);
+  }
 }
 
 static void CC13XX_WiFi_setOutputPower(int dB)
@@ -126,7 +144,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   CC13XX_random,
-  NULL,
+  CC13XX_Sound_test,
   NULL,
   CC13XX_WiFi_setOutputPower,
   NULL,

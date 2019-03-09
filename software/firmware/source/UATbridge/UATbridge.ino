@@ -34,6 +34,7 @@
 #include "SoCHelper.h"
 #include "TrafficHelper.h"
 #include "MAVLinkHelper.h"
+#include "BatteryHelper.h"
 
 #include "SoftRF.h"
 #include "EasyLink.h"
@@ -245,11 +246,14 @@ void setup() {
     }
 
     init_fec();
+
+    Battery_setup();
     Traffic_setup();
+    LED_setup();
     NMEA_setup();
 
-    LED_setup();
     LED_test();
+    SoC->Sound_test(0);
 
     Serial.println("Normal mode.");
     break;

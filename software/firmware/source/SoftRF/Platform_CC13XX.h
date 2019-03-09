@@ -45,6 +45,7 @@
 
 #define SOC_GPIO_PIN_SS       18               // GPIO 11
 #define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUZZER   GREEN_LED        // GPIO 7
 
 /* 
  *  UART pins
