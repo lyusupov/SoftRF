@@ -38,18 +38,21 @@ GEOID_PATH    = ../libraries/Geoid
 JSON_PATH     = ../libraries/ArduinoJson/src
 TCPSRV_PATH   = ../libraries/SimpleNetwork/src
 DUMP978_PATH  = ../libraries/dump978/src
+GFX_PATH      = ../libraries/Adafruit-GFX-Library
+EPD2_PATH     = ../libraries/GxEPD2/src
 
 INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
-                -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)
+                -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH) \
+                -I$(GFX_PATH)    -I$(EPD2_PATH)
 
 CPPS          := RFHelper.cpp SoCHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
-                 TrafficHelper.cpp  GNSSHelper.cpp Library.cpp
+                 TrafficHelper.cpp GNSSHelper.cpp EPDHelper.cpp Library.cpp
 
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
@@ -57,10 +60,11 @@ CPPS          := RFHelper.cpp SoCHelper.cpp \
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
+                 $(LMIC_PATH)/raspi/raspi.o \
                  $(LMIC_PATH)/raspi/WString.o \
                  $(LMIC_PATH)/raspi/TTYSerial.o \
                  $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
-                 $(LMIC_PATH)/lmic/lmic.o $(LMIC_PATH)/hal/hal.o \
+                 $(LMIC_PATH)/lmic/lmic.o \
                  $(OGNLIB_PATH)/ldpc.o \
                  $(GNSSLIB_PATH)/TinyGPS++.o \
                  $(TIMELIB_PATH)/Time.o \
@@ -74,7 +78,9 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(NMEALIB_PATH)/gpgsa.o \
                  $(TCPSRV_PATH)/TCPServer.o \
                  $(DUMP978_PATH)/fec.o $(DUMP978_PATH)/fec/init_rs_char.o \
-                 $(DUMP978_PATH)/uat_decode.o $(DUMP978_PATH)/fec/decode_rs_char.o
+                 $(DUMP978_PATH)/uat_decode.o $(DUMP978_PATH)/fec/decode_rs_char.o \
+                 $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
+                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
@@ -90,11 +96,11 @@ all: bcm $(PROGNAME) $(PROGNAME)-aux
 %.o: %.c
 				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
 
-raspi.o: $(LMIC_PATH)/raspi/raspi.cpp
-				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/raspi/raspi.cpp $(INCLUDE) -o raspi.o
+hal.o: $(LMIC_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
 
-raspi-aux.o: $(LMIC_PATH)/raspi/raspi.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(LMIC_PATH)/raspi/raspi.cpp $(INCLUDE) -o raspi-aux.o
+hal-aux.o: $(LMIC_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
 Platform_RPi.o: Platform_RPi.cpp
 				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
@@ -111,15 +117,15 @@ $(LMIC_PATH)/lmic/%.o: $(LMIC_PATH)/lmic/%.c
 bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
-$(PROGNAME): $(OBJS) aes.o raspi.o Platform_RPi.o
-				$(CXX) $(OBJS) aes.o raspi.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
+$(PROGNAME): $(OBJS) aes.o hal.o Platform_RPi.o
+				$(CXX) $(OBJS) aes.o hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
 
-$(PROGNAME)-aux: $(OBJS) aes.o raspi-aux.o Platform_RPi-aux.o
-				$(CXX) $(OBJS) aes.o raspi-aux.o Platform_RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
+$(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o Platform_RPi-aux.o
+				$(CXX) $(OBJS) aes.o hal-aux.o Platform_RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
 				(cd $(BCMLIB_PATH)/../ ; make distclean)
 
 clean: bcm-clean
-				rm -f $(OBJS) $(DEPS) aes.o raspi.o raspi-aux.o \
+				rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
 				Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d

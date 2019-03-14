@@ -120,6 +120,10 @@ inline boolean isPrintable(int c){
   return ( isprint (c) == 0 ? false : true);
 }
 
+#define SPI_PRI 0
+#define SPI_AUX 1
+#define SPI_HAS_TRANSACTION
+
 class SPISettings 
 {
   public:
@@ -144,18 +148,31 @@ class SPISettings
 
 class SPIClass {
   public:
-    static byte transfer(byte _data);
+    SPIClass(uint8_t spi_bus=SPI_PRI);
+    byte transfer(byte _data);
     // SPI Configuration methods
-    static void begin(); // Default
-    static void end();
-    static void beginTransaction(SPISettings settings);
-    static void endTransaction();
-    static void setBitOrder(uint8_t);
-    static void setDataMode(uint8_t);
-    static void setClockDivider(uint16_t);
+    void begin(); // Default
+    void end();
+    void beginTransaction(SPISettings settings);
+    void endTransaction();
+    void setBitOrder(uint8_t);
+    void setDataMode(uint8_t);
+    void setClockDivider(uint16_t);
+private:
+    int8_t _spi_num;
 };
 
-extern SPIClass SPI; 
+#if defined(USE_SPI1)
+extern SPIClass SPI1;
+#if !defined(SPI)
+#define SPI SPI1
+#endif
+#else
+extern SPIClass SPI0;
+#if !defined(SPI)
+#define SPI SPI0
+#endif
+#endif
 
 class SerialSimulator {
   public:
@@ -174,6 +191,7 @@ class SerialSimulator {
     static size_t println(u2_t n); 
     static size_t print(ostime_t n);
     static size_t print(unsigned long n);
+    static size_t println(unsigned long n);
     static size_t print(unsigned int n, int base = DEC);
     static size_t print(char ch);
     static size_t println(char ch);

@@ -59,6 +59,7 @@
 #include "D1090Helper.h"
 #include "JSONHelper.h"
 #include "WiFiHelper.h"
+#include "EPDHelper.h"
 
 #include "TCPServer.h"
 
@@ -166,6 +167,17 @@ static void RPi_swSer_begin(unsigned long baud)
   swSer.begin(baud);
 }
 
+static byte RPi_Display_setup()
+{
+  byte rval = DISPLAY_NONE;
+
+  if (EPD_setup()) {
+    rval = DISPLAY_EPD_2_7;
+  }
+
+  return rval;
+}
+
 void RPi_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
@@ -226,7 +238,7 @@ const SoC_ops_t RPi_ops = {
   RPi_swSer_begin,
   NULL,
   NULL,
-  NULL,
+  RPi_Display_setup,
   NULL,
   NULL,
   NULL,
@@ -636,6 +648,15 @@ int main()
 
   if (hw_info.rf == RF_IC_NONE) {
       exit(EXIT_FAILURE);
+  }
+
+  Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
+  Serial.flush();
+  hw_info.display = SoC->Display_setup();
+  if (hw_info.display != DISPLAY_NONE) {
+    Serial.println(" done.");
+  } else {
+    Serial.println(" failed!");
   }
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;

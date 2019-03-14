@@ -200,7 +200,7 @@ static void hal_spi_init () {
 
 void hal_pin_nss (u1_t val) {
 
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if defined(SPI_HAS_TRANSACTION)
     if (!val)
         SPI.beginTransaction(settings);
     else

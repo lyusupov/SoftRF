@@ -25,6 +25,7 @@
 #if !defined(RASPBERRY_PI)
 #include "nRF905_spi.h"
 #else
+#define SPI SPI0
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 #endif

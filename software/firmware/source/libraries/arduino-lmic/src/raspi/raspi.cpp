@@ -14,39 +14,47 @@
 static uint64_t epochMilli ;
 static uint64_t epochMicro ;
 
+SPIClass::SPIClass(uint8_t spi_bus)
+    :_spi_num(spi_bus)
+{}
+
 void SPIClass::begin() {
+  int rval;
+
   initialiseEpoch();
 
-#if defined(USE_SPI1)
-  if (!bcm2835_aux_spi_begin()) {
-#else
-  if (!bcm2835_spi_begin()) {
-#endif
+  if (_spi_num == SPI_AUX) {
+    rval = bcm2835_aux_spi_begin();
+  } else {
+    rval = bcm2835_spi_begin();
+  }
+
+  if (!rval) {
     printf( "bcm2835_spi_begin() failed. Are you running as root??\n");
   } else {
-		// LMIC Library code control CS line
-#if !defined(USE_SPI1)
-		bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
-#endif
-	}
+    // LMIC Library code control CS line
+    if (_spi_num != SPI_AUX) {
+      bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
+    }
+  }
 }
 
 void SPIClass::end() {
   //End the SPI
-#if defined(USE_SPI1)
-  bcm2835_aux_spi_end();
-#else
-  bcm2835_spi_end();
-#endif
+  if (_spi_num == SPI_AUX) {
+    bcm2835_aux_spi_end();
+  } else {
+    bcm2835_spi_end();
+  }
 }
 
 void SPIClass::beginTransaction(SPISettings settings) {
   //Set SPI clock divider
-#if defined(USE_SPI1)
-  bcm2835_aux_spi_setClockDivider(settings.divider);
-#else
-  bcm2835_spi_setClockDivider(settings.divider);
-#endif
+  if (_spi_num == SPI_AUX) {
+    bcm2835_aux_spi_setClockDivider(settings.divider);
+  } else {
+    bcm2835_spi_setClockDivider(settings.divider);
+  }
   //Set the SPI bit Order
   bcm2835_spi_setBitOrder(settings.bitOrder);
   //Set SPI data mode
@@ -77,14 +85,17 @@ void SPIClass::endTransaction() {
   
 byte SPIClass::transfer(byte _data) {
   byte data;
-#if defined(USE_SPI1)
-  data = _data;
-  bcm2835_aux_spi_transfern((char *) &data, 1);
-#else
-  data= bcm2835_spi_transfer((uint8_t)_data);
-#endif
+  if (_spi_num == SPI_AUX) {
+    data = _data;
+    bcm2835_aux_spi_transfern((char *) &data, 1);
+  } else {
+    data = bcm2835_spi_transfer((uint8_t)_data);
+  }
   return data;
 }
+
+SPIClass SPI0(SPI_PRI);
+SPIClass SPI1(SPI_AUX);
  
 void pinMode(unsigned char pin, unsigned char mode) {
   if (pin == LMIC_UNUSED_PIN) {
@@ -332,6 +343,10 @@ size_t SerialSimulator::print(ostime_t n) {
 
 size_t SerialSimulator::print(unsigned long n) {
   fprintf(stdout, "%lu", n);
+}
+
+size_t SerialSimulator::println(unsigned long n) {
+  fprintf(stdout, "%lu\n", n);
 }
 
 size_t SerialSimulator::print(unsigned int n, int base) {
