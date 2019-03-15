@@ -178,6 +178,13 @@ static byte RPi_Display_setup()
   return rval;
 }
 
+static void RPi_Display_loop()
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+    EPD_loop();
+  }
+}
+
 void RPi_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
@@ -239,7 +246,7 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   RPi_Display_setup,
-  NULL,
+  RPi_Display_loop,
   NULL,
   NULL,
   NULL,
@@ -442,6 +449,8 @@ void normal_loop()
 
     // Handle Air Connect
     NMEA_loop();
+
+    SoC->Display_loop();
 
     ClearExpired();
 }

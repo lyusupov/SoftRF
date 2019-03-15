@@ -188,7 +188,8 @@ class SerialSimulator {
     static size_t print(String s);
     static size_t println(String s);
     static size_t print(const char* s);
-    static size_t println(u2_t n); 
+    static size_t println(short signed int n);
+    static size_t println(short unsigned int n);
     static size_t print(ostime_t n);
     static size_t print(unsigned long n);
     static size_t println(unsigned long n);

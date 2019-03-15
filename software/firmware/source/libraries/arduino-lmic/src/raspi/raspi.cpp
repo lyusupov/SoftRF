@@ -333,8 +333,12 @@ size_t SerialSimulator::print(const char* s) {
   fprintf( stdout, "%s",s);
 }
 
-size_t SerialSimulator::println(u2_t n) {
+size_t SerialSimulator::println(short signed int n) {
   fprintf(stdout, "%d\n", n);
+}
+
+size_t SerialSimulator::println(short unsigned int n) {
+  fprintf(stdout, "%u\n", n);
 }
 
 size_t SerialSimulator::print(ostime_t n) {

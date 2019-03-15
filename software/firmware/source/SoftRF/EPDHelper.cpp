@@ -63,8 +63,105 @@ bool EPD_setup()
   return display.epd2.probe();
 }
 
+static bool EPD_display_frontpage = false;
+
 void EPD_loop()
 {
+  if (!EPD_display_frontpage) {
+    int16_t  tbx, tby;
+    uint16_t tbw, tbh;
+
+    display.getTextBounds(SoftRF_text, 0, 0, &tbx, &tby, &tbw, &tbh);
+    uint16_t x = (display.width() - tbw) / 2;
+    uint16_t y = (display.height() + tbh) / 2;
+    display.setFullWindow();
+//    display.setPartialWindow(x + tbx, y + tby, tbw, tbh);
+
+#if 0
+Serial.print("tbx = "); Serial.println(tbx);
+Serial.print("tby = "); Serial.println(tby);
+Serial.print("tbw = "); Serial.println(tbw);
+Serial.print("tbh = "); Serial.println(tbh);
+#endif
+
+    display.firstPage();
+    do
+    {
+      display.fillScreen(GxEPD_WHITE);
+//      display.fillRect(x + tbx, y + tby, tbw, tbh, GxEPD_WHITE);
+    }
+    while (display.nextPage());
+
+    uint16_t radar_x = 0;
+    uint16_t radar_y = (display.height() - display.width()) / 2;
+    uint16_t radar_w = display.width();
+
+    display.setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+
+    uint16_t radar_center_x = radar_w / 2;
+    uint16_t radar_center_y = radar_y + radar_w / 2;
+    uint16_t radius = radar_w / 2 - 2;
+
+    display.firstPage();
+    do
+    {
+      display.drawCircle(radar_center_x, radar_center_y,
+                         radius, GxEPD_BLACK);
+      display.drawCircle(radar_center_x, radar_center_y,
+                         radius / 2, GxEPD_BLACK);
+      display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                           radar_center_x    , radar_center_y - 5,
+                           radar_center_x + 7, radar_center_y + 5,
+                           GxEPD_BLACK);
+      display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                           radar_center_x    , radar_center_y + 2,
+                           radar_center_x + 7, radar_center_y + 5,
+                           GxEPD_WHITE);
+    }
+    while (display.nextPage());
+
+    uint16_t top_navboxes_x = 0;
+    uint16_t top_navboxes_y = 0;
+    uint16_t top_navboxes_w = display.width();
+    uint16_t top_navboxes_h = radar_y;
+
+    display.setPartialWindow(top_navboxes_x, top_navboxes_y,
+                            top_navboxes_w, top_navboxes_h);
+
+    display.firstPage();
+    do
+    {
+      display.drawRoundRect(top_navboxes_x + 2, top_navboxes_y + 2,
+                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                            4, GxEPD_BLACK);
+      display.drawRoundRect(top_navboxes_x + top_navboxes_w / 2 + 2,
+                            top_navboxes_y + 2,
+                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                            4, GxEPD_BLACK);
+    }
+    while (display.nextPage());
+
+    top_navboxes_y = radar_y + radar_w;
+
+    display.setPartialWindow(top_navboxes_x, top_navboxes_y,
+                            top_navboxes_w, top_navboxes_h);
+
+    display.firstPage();
+    do
+    {
+      display.drawRoundRect(top_navboxes_x + 2, top_navboxes_y + 2,
+                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                            4, GxEPD_BLACK);
+      display.drawRoundRect(top_navboxes_x + top_navboxes_w / 2 + 2,
+                            top_navboxes_y + 2,
+                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                            4, GxEPD_BLACK);
+    }
+    while (display.nextPage());
+
+    display.powerOff();
+    EPD_display_frontpage = true;
+  }
 }
 
 #endif /* RASPBERRY_PI */
