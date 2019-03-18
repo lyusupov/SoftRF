@@ -1,0 +1,87 @@
+#
+# Makefile.RPi
+# Copyright (C) 2019 Linar Yusupov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+CC            = gcc
+CXX           = g++
+
+CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+                -D__BASEFILE__=\"$*\"
+
+CXXFLAGS      = -std=c++11 $(CFLAGS)
+
+LMIC_PATH     = ../libraries/arduino-lmic/src
+TIMELIB_PATH  = ../libraries/Time
+GNSSLIB_PATH  = ../libraries/TinyGPSPlus/src
+BCMLIB_PATH   = ../libraries/bcm2835/src
+NMEALIB_PATH  = ../libraries/nmealib/src
+GEOID_PATH    = ../libraries/Geoid
+JSON_PATH     = ../libraries/ArduinoJson/src
+TCPSRV_PATH   = ../libraries/SimpleNetwork/src
+GFX_PATH      = ../libraries/Adafruit-GFX-Library
+EPD2_PATH     = ../libraries/GxEPD2/src
+
+INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
+                -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
+                -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
+                -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
+                -I$(GFX_PATH)     -I$(EPD2_PATH)
+
+CPPS          := SoCHelper.cpp \
+                 NMEAHelper.cpp TrafficHelper.cpp \
+                 EPDHelper.cpp
+
+OBJS          := $(CPPS:.cpp=.o) \
+                 $(LMIC_PATH)/raspi/raspi.o \
+                 $(LMIC_PATH)/raspi/WString.o \
+                 $(LMIC_PATH)/raspi/TTYSerial.o \
+                 $(GNSSLIB_PATH)/TinyGPS++.o \
+                 $(TIMELIB_PATH)/Time.o \
+                 $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
+                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o
+
+LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+
+PROGNAME      := SkyView
+
+DEPS          := $(OBJS:.o=.d)
+
+all: bcm $(PROGNAME)
+
+%.o: %.cpp
+				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
+
+%.o: %.c
+				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+
+hal.o: $(LMIC_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
+
+Platform_RPi.o: Platform_RPi.cpp
+				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
+
+bcm:
+				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+
+$(PROGNAME): $(OBJS) hal.o Platform_RPi.o
+				$(CXX) $(OBJS) hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
+
+bcm-clean:
+				(cd $(BCMLIB_PATH)/../ ; make distclean)
+
+clean: bcm-clean
+				rm -f $(OBJS) $(DEPS) hal.o \
+				Platform_RPi.o $(PROGNAME) *.d

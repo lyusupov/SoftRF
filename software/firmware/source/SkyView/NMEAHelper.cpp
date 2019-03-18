@@ -1,0 +1,227 @@
+/*
+ * NMEAHelper.cpp
+ * Copyright (C) 2019 Linar Yusupov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <TinyGPS++.h>
+#include <TimeLib.h>
+
+#include "SoCHelper.h"
+#include "NMEAHelper.h"
+#include "TrafficHelper.h"
+
+static const uint32_t SerialBaud = 38400;
+
+TinyGPSPlus nmea;
+
+TinyGPSCustom T_AlarmLevel      (nmea, "PFLAA", 1);
+TinyGPSCustom T_RelativeNorth   (nmea, "PFLAA", 2);
+TinyGPSCustom T_RelativeEast    (nmea, "PFLAA", 3);
+TinyGPSCustom T_RelativeVertical(nmea, "PFLAA", 4);
+TinyGPSCustom T_IDType          (nmea, "PFLAA", 5);
+TinyGPSCustom T_ID              (nmea, "PFLAA", 6);
+TinyGPSCustom T_Track           (nmea, "PFLAA", 7);
+TinyGPSCustom T_TurnRate        (nmea, "PFLAA", 8);
+TinyGPSCustom T_GroundSpeed     (nmea, "PFLAA", 9);
+TinyGPSCustom T_ClimbRate       (nmea, "PFLAA", 10);
+TinyGPSCustom T_AcftType        (nmea, "PFLAA", 11);
+
+TinyGPSCustom S_RX              (nmea, "PFLAU", 1);
+TinyGPSCustom S_TX              (nmea, "PFLAU", 2);
+TinyGPSCustom S_GPS             (nmea, "PFLAU", 3);
+TinyGPSCustom S_Power           (nmea, "PFLAU", 4);
+TinyGPSCustom S_AlarmLevel      (nmea, "PFLAU", 5);
+TinyGPSCustom S_RelativeBearing (nmea, "PFLAU", 6);
+TinyGPSCustom S_AlarmType       (nmea, "PFLAU", 7);
+TinyGPSCustom S_RelativeVertical(nmea, "PFLAU", 8);
+TinyGPSCustom S_RelativeDistance(nmea, "PFLAU", 9);
+TinyGPSCustom S_ID              (nmea, "PFLAU", 10);
+
+status_t NMEA_Status;
+
+void NMEA_setup()
+{
+  SerialInput.begin(SerialBaud);
+}
+
+void NMEA_loop()
+{
+  bool isValidSentence = false;
+
+  if (SerialInput.available() > 0)
+  {
+    isValidSentence = nmea.encode(SerialInput.read());
+    if (isValidSentence) {
+      if (T_ID.isUpdated())
+      {
+        fo = EmptyFO;
+
+//        Serial.print(F(" ID=")); Serial.print(ID.value());
+
+        fo.ID = strtol(T_ID.value(), NULL, 16);
+
+#if 0
+        Serial.print(F(" ID="));
+        Serial.print((fo.ID >> 16) & 0xFF, HEX);
+        Serial.print((fo.ID >>  8) & 0xFF, HEX);
+        Serial.print((fo.ID      ) & 0xFF, HEX);
+        Serial.println();
+#endif
+
+        if (T_AlarmLevel.isUpdated())
+        {
+//          Serial.print(F(" AlarmLevel=")); Serial.print(T_AlarmLevel.value());
+          fo.AlarmLevel = atoi(T_AlarmLevel.value());
+//          Serial.print(F(" AlarmLevel=")); Serial.println(fo.AlarmLevel);
+        }
+        if (T_RelativeNorth.isUpdated())
+        {
+//          Serial.print(F(" RelativeNorth=")); Serial.print(T_RelativeNorth.value());
+          fo.RelativeNorth = atoi(T_RelativeNorth.value());
+//          Serial.print(F(" RelativeNorth=")); Serial.println(fo.RelativeNorth);
+        }
+        if (T_RelativeEast.isUpdated())
+        {
+//          Serial.print(F(" RelativeEast=")); Serial.print(T_RelativeEast.value());
+          fo.RelativeEast = atoi(T_RelativeEast.value());
+//          Serial.print(F(" RelativeEast=")); Serial.println(fo.RelativeEast);
+        }
+        if (T_RelativeVertical.isUpdated())
+        {
+//          Serial.print(F(" RelativeVertical=")); Serial.print(T_RelativeVertical.value());
+          fo.RelativeVertical = atoi(T_RelativeVertical.value());
+//          Serial.print(F(" RelativeVertical=")); Serial.println(fo.RelativeVertical);
+        }
+        if (T_IDType.isUpdated())
+        {
+//          Serial.print(F(" IDType=")); Serial.print(T_IDType.value());
+          fo.IDType = atoi(T_IDType.value());
+//          Serial.print(F(" IDType=")); Serial.println(fo.IDType);
+        }
+        if (T_Track.isUpdated())
+        {
+//          Serial.print(F(" Track=")); Serial.print(T_Track.value());
+          fo.Track = atoi(T_Track.value());
+//          Serial.print(F(" Track=")); Serial.println(fo.Track);
+        }
+        if (T_TurnRate.isUpdated())
+        {
+//          Serial.print(F(" TurnRate=")); Serial.print(T_TurnRate.value());
+          fo.TurnRate = atoi(T_TurnRate.value());
+//          Serial.print(F(" TurnRate=")); Serial.println(fo.TurnRate);
+        }
+        if (T_GroundSpeed.isUpdated())
+        {
+//          Serial.print(F(" GroundSpeed=")); Serial.print(T_GroundSpeed.value());
+          fo.GroundSpeed = atoi(T_GroundSpeed.value());
+//          Serial.print(F(" GroundSpeed=")); Serial.println(fo.GroundSpeed);
+        }
+        if (T_ClimbRate.isUpdated())
+        {
+//          Serial.print(F(" ClimbRate=")); Serial.println(T_ClimbRate.value());
+          /* TBD */
+        }
+        if (T_AcftType.isUpdated())
+        {
+//          Serial.print(F(" AcftType=")); Serial.print(T_AcftType.value());
+          fo.AcftType = atoi(T_AcftType.value());
+//          Serial.print(F(" AcftType=")); Serial.println(fo.AcftType);
+        }
+
+        fo.timestamp = now();
+
+        for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+
+          if (Container[i].ID == fo.ID) {
+            Container[i] = fo;
+            break;
+          } else {
+            if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+              Container[i] = fo;
+              break;
+            }
+          }
+        }
+
+      } else if (S_RX.isUpdated()) {
+
+        NMEA_Status.timestamp = now();
+        NMEA_Status.RX = atoi(S_RX.value());      
+
+        if (S_TX.isUpdated())
+        {
+//          Serial.print(F(" TX=")); Serial.print(S_TX.value());
+          NMEA_Status.TX = atoi(S_TX.value());
+//          Serial.print(F(" TX=")); Serial.println(NMEA_Status.TX);
+        }
+        if (S_GPS.isUpdated())
+        {
+//          Serial.print(F(" GPS=")); Serial.print(S_GPS.value());
+          NMEA_Status.GPS = atoi(S_GPS.value());
+//          Serial.print(F(" GPS=")); Serial.println(NMEA_Status.GPS);
+        }
+        if (S_Power.isUpdated())
+        {
+//          Serial.print(F(" Power=")); Serial.print(S_Power.value());
+          NMEA_Status.Power = atoi(S_Power.value());
+//          Serial.print(F(" Power=")); Serial.println(NMEA_Status.Power);
+        }
+        if (S_AlarmLevel.isUpdated())
+        {
+//          Serial.print(F(" AlarmLevel=")); Serial.print(S_AlarmLevel.value());
+          NMEA_Status.AlarmLevel = atoi(S_AlarmLevel.value());
+//          Serial.print(F(" AlarmLevel=")); Serial.println(NMEA_Status.AlarmLevel);
+        }
+        if (S_RelativeBearing.isUpdated())
+        {
+//          Serial.print(F(" RelativeBearing=")); Serial.print(S_RelativeBearing.value());
+          NMEA_Status.RelativeBearing = atoi(S_RelativeBearing.value());
+//          Serial.print(F(" RelativeBearing=")); Serial.println(NMEA_Status.RelativeBearing);
+        }
+        if (S_AlarmType.isUpdated())
+        {
+//          Serial.print(F(" AlarmType=")); Serial.print(S_AlarmType.value());
+          NMEA_Status.AlarmType = atoi(S_AlarmType.value());
+//          Serial.print(F(" AlarmType=")); Serial.println(NMEA_Status.AlarmType);
+        }
+        if (S_RelativeVertical.isUpdated())
+        {
+//          Serial.print(F(" RelativeVertical=")); Serial.print(S_RelativeVertical.value());
+          NMEA_Status.RelativeVertical = atoi(S_RelativeVertical.value());
+//          Serial.print(F(" RelativeVertical=")); Serial.println(NMEA_Status.RelativeVertical);
+        }
+        if (S_RelativeDistance.isUpdated())
+        {
+//          Serial.print(F(" RelativeDistance=")); Serial.print(S_RelativeDistance.value());
+          NMEA_Status.RelativeDistance = strtol(S_RelativeDistance.value(), NULL, 10);
+//          Serial.print(F(" RelativeDistance=")); Serial.println(NMEA_Status.RelativeDistance);
+        }
+        if (S_ID.isUpdated())
+        {
+//          Serial.print(F(" ID=")); Serial.print(S_ID.value());
+          NMEA_Status.ID = strtol(S_ID.value(), NULL, 16);
+#if 0
+          Serial.print(F(" ID="));
+          Serial.print((NMEA_Status.ID >> 16) & 0xFF, HEX);
+          Serial.print((NMEA_Status.ID >>  8) & 0xFF, HEX);
+          Serial.print((NMEA_Status.ID      ) & 0xFF, HEX);
+          Serial.println();
+#endif
+        }
+      }
+    }
+  }
+}
