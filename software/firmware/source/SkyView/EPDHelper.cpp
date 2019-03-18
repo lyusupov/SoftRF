@@ -196,7 +196,7 @@ void EPD_loop()
             int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
             int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
             display.fillCircle(radar_center_x + x,
-                               radar_center_y + y,
+                               radar_center_y - y,
                                5, GxEPD_BLACK);
           }
         }
