@@ -125,7 +125,11 @@ void GxEPD2_EPD::_waitWhileBusy(const char* comment, uint16_t busy_time)
     if (micros() - start < 20) {
       _timeout_expired = true;
     }
-#endif /* ESP8266 */
+#elif defined(ESP32)
+    if (micros() - start < 15000) {
+      _timeout_expired = true;
+    }
+#endif /* ESP8266 or ESP32 */
     if (comment)
     {
 #if !defined(DISABLE_DIAGNOSTIC_OUTPUT)
