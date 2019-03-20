@@ -1,5 +1,5 @@
 /*
- * Platform_ESP32.h
+ * BatteryHelper.cpp
  * Copyright (C) 2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,35 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ESP32)
 
-#ifndef PLATFORM_ESP32_H
-#define PLATFORM_ESP32_H
-
-#if defined(ARDUINO)
 #include <Arduino.h>
-#endif /* ARDUINO */
 
-#include <WiFi.h>
-#include <WebServer.h>
-#include <Update.h>
+#include "SoCHelper.h"
+#include "BatteryHelper.h"
+#include "SkyView.h"
 
-/* Maximum of tracked flying objects is now SoC-specific constant */
-#define MAX_TRACKING_OBJECTS    8
+void Battery_setup()
+{
+  SoC->Battery_setup();
+}
 
-#define SerialInput           Serial1
+float Battery_voltage()
+{
+  return SoC->Battery_voltage();
+}
 
-/* Peripherals */
-#define SOC_GPIO_PIN_GNSS_RX  21 /* TBD */
-#define SOC_GPIO_PIN_GNSS_TX  22 /* TBD */
-
-#define SOC_GPIO_PIN_MOSI     23 /* TBD */
-#define SOC_GPIO_PIN_MISO     19 /* TBD */
-#define SOC_GPIO_PIN_SCK      18 /* TBD */
-#define SOC_GPIO_PIN_SS       5  /* TBD */
-
-extern WebServer server;
-
-#endif /* PLATFORM_ESP32_H */
-
-#endif /* ESP32 */
+/* low battery voltage threshold */
+float Battery_threshold()
+{
+  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+                          BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
+}

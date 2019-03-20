@@ -26,6 +26,7 @@
 
 #include "SoCHelper.h"
 #include "TrafficHelper.h"
+#include "SkyView.h"
 
 const char SkyView_text1[] = "Sky";
 const char SkyView_text2[] = "View";
@@ -35,9 +36,11 @@ const char SkyView_text4[] = "SoftRF project";
 #define isTimeToDisplay() (millis() - EPDTimeMarker > 2000)
 unsigned long EPDTimeMarker = 0;
 
-bool EPD_setup()
+static bool EPD_display_frontpage = false;
+
+byte EPD_setup()
 {
-  bool rval;
+  byte rval = DISPLAY_NONE;
   int16_t  tbx1, tby1;
   uint16_t tbw1, tbh1;
   int16_t  tbx2, tby2;
@@ -88,137 +91,140 @@ bool EPD_setup()
 //  display.powerOff();
 //  display.hibernate();
 
-  rval = display.epd2.probe();
+  if (display.epd2.probe()) {
+    rval = DISPLAY_EPD_2_7;
+  }
 
-  if (rval) delay(5000); /* display SkyView logo for 5 seconds */
+  if (rval == DISPLAY_EPD_2_7) delay(5000); /* display SkyView logo for 5 seconds */
 
   return rval;
 }
 
-static bool EPD_display_frontpage = false;
-
 void EPD_loop()
 {
-  if (!EPD_display_frontpage) {
-    int16_t  tbx, tby;
-    uint16_t tbw, tbh;
+  if (hw_info.display == DISPLAY_EPD_2_7) {
 
-    display.setFullWindow();;
+    if (!EPD_display_frontpage) {
+      int16_t  tbx, tby;
+      uint16_t tbw, tbh;
 
-    display.firstPage();
-    do
-    {
-      display.fillScreen(GxEPD_WHITE);
-    }
-    while (display.nextPage());
+      display.setFullWindow();;
 
-    uint16_t radar_x = 0;
-    uint16_t radar_y = (display.height() - display.width()) / 2;
-    uint16_t radar_w = display.width();
-
-    uint16_t top_navboxes_x = 0;
-    uint16_t top_navboxes_y = 0;
-    uint16_t top_navboxes_w = display.width();
-    uint16_t top_navboxes_h = radar_y;
-
-    display.setPartialWindow(top_navboxes_x, top_navboxes_y,
-                             top_navboxes_w, top_navboxes_h);
-
-    display.firstPage();
-    do
-    {
-      display.drawRoundRect(top_navboxes_x + 2, top_navboxes_y + 2,
-                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
-                            4, GxEPD_BLACK);
-      display.drawRoundRect(top_navboxes_x + top_navboxes_w / 2 + 2,
-                            top_navboxes_y + 2,
-                            top_navboxes_w / 2 - 4, top_navboxes_h - 4,
-                            4, GxEPD_BLACK);
-    }
-    while (display.nextPage());
-
-    uint16_t bottom_navboxes_x = 0;
-    uint16_t bottom_navboxes_y = radar_y + radar_w;
-    uint16_t bottom_navboxes_w = display.width();
-    uint16_t bottom_navboxes_h = radar_y;
-
-
-    display.setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
-                             bottom_navboxes_w, bottom_navboxes_h);
-
-    display.firstPage();
-    do
-    {
-      display.drawRoundRect(bottom_navboxes_x + 2, bottom_navboxes_y + 2,
-                            bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
-                            4, GxEPD_BLACK);
-      display.drawRoundRect(bottom_navboxes_x + bottom_navboxes_w / 2 + 2,
-                            bottom_navboxes_y + 2,
-                            bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
-                            4, GxEPD_BLACK);
-    }
-    while (display.nextPage());
-
-//    display.powerOff();
-    display.hibernate();
-
-    EPD_display_frontpage = true;
-
-  } else {
-
-    if (isTimeToDisplay()) {
+      display.firstPage();
+      do
+      {
+        display.fillScreen(GxEPD_WHITE);
+      }
+      while (display.nextPage());
 
       uint16_t radar_x = 0;
       uint16_t radar_y = (display.height() - display.width()) / 2;
       uint16_t radar_w = display.width();
 
-      display.setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+      uint16_t top_navboxes_x = 0;
+      uint16_t top_navboxes_y = 0;
+      uint16_t top_navboxes_w = display.width();
+      uint16_t top_navboxes_h = radar_y;
 
-      uint16_t radar_center_x = radar_w / 2;
-      uint16_t radar_center_y = radar_y + radar_w / 2;
-      uint16_t radius = radar_w / 2 - 2;
+      display.setPartialWindow(top_navboxes_x, top_navboxes_y,
+                               top_navboxes_w, top_navboxes_h);
 
       display.firstPage();
       do
       {
-        for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-          if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
-#if 0
-            Serial.print(F(" ID="));
-            Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
-            Serial.print((Container[i].ID >>  8) & 0xFF, HEX);
-            Serial.print((Container[i].ID      ) & 0xFF, HEX);
-            Serial.println();
-
-            Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
-            Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
-#endif
-            int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
-            int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
-            display.fillCircle(radar_center_x + x,
-                               radar_center_y - y,
-                               5, GxEPD_BLACK);
-          }
-        }
-
-        display.drawCircle(  radar_center_x, radar_center_y,
-                             radius, GxEPD_BLACK);
-        display.drawCircle(  radar_center_x, radar_center_y,
-                             radius / 2, GxEPD_BLACK);
-        display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                             radar_center_x    , radar_center_y - 5,
-                             radar_center_x + 7, radar_center_y + 5,
-                             GxEPD_BLACK);
-        display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                             radar_center_x    , radar_center_y + 2,
-                             radar_center_x + 7, radar_center_y + 5,
-                             GxEPD_WHITE);
+        display.drawRoundRect(top_navboxes_x + 2, top_navboxes_y + 2,
+                              top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                              4, GxEPD_BLACK);
+        display.drawRoundRect(top_navboxes_x + top_navboxes_w / 2 + 2,
+                              top_navboxes_y + 2,
+                              top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                              4, GxEPD_BLACK);
       }
       while (display.nextPage());
 
+      uint16_t bottom_navboxes_x = 0;
+      uint16_t bottom_navboxes_y = radar_y + radar_w;
+      uint16_t bottom_navboxes_w = display.width();
+      uint16_t bottom_navboxes_h = radar_y;
+
+
+      display.setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
+                               bottom_navboxes_w, bottom_navboxes_h);
+
+      display.firstPage();
+      do
+      {
+        display.drawRoundRect(bottom_navboxes_x + 2, bottom_navboxes_y + 2,
+                              bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
+                              4, GxEPD_BLACK);
+        display.drawRoundRect(bottom_navboxes_x + bottom_navboxes_w / 2 + 2,
+                              bottom_navboxes_y + 2,
+                              bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
+                              4, GxEPD_BLACK);
+      }
+      while (display.nextPage());
+
+//    display.powerOff();
       display.hibernate();
 
-      EPDTimeMarker = millis();
+      EPD_display_frontpage = true;
+
+    } else {
+
+      if (isTimeToDisplay()) {
+
+        uint16_t radar_x = 0;
+        uint16_t radar_y = (display.height() - display.width()) / 2;
+        uint16_t radar_w = display.width();
+
+        display.setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+
+        uint16_t radar_center_x = radar_w / 2;
+        uint16_t radar_center_y = radar_y + radar_w / 2;
+        uint16_t radius = radar_w / 2 - 2;
+
+        display.firstPage();
+        do
+        {
+          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+            if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
+#if 0
+              Serial.print(F(" ID="));
+              Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
+              Serial.print((Container[i].ID >>  8) & 0xFF, HEX);
+              Serial.print((Container[i].ID      ) & 0xFF, HEX);
+              Serial.println();
+
+              Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
+              Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
+#endif
+              int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
+              int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
+              display.fillCircle(radar_center_x + x,
+                                 radar_center_y - y,
+                                 5, GxEPD_BLACK);
+            }
+          }
+
+          display.drawCircle(  radar_center_x, radar_center_y,
+                               radius, GxEPD_BLACK);
+          display.drawCircle(  radar_center_x, radar_center_y,
+                               radius / 2, GxEPD_BLACK);
+          display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                               radar_center_x    , radar_center_y - 5,
+                               radar_center_x + 7, radar_center_y + 5,
+                               GxEPD_BLACK);
+          display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                               radar_center_x    , radar_center_y + 2,
+                               radar_center_x + 7, radar_center_y + 5,
+                               GxEPD_WHITE);
+        }
+        while (display.nextPage());
+
+        display.hibernate();
+
+        EPDTimeMarker = millis();
+      }
     }
   }
 }

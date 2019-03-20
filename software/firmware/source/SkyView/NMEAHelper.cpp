@@ -22,8 +22,9 @@
 #include "SoCHelper.h"
 #include "NMEAHelper.h"
 #include "TrafficHelper.h"
+#include "EEPROMHelper.h"
 
-static const uint32_t SerialBaud = 38400;
+#include "SkyView.h"
 
 TinyGPSPlus nmea;
 
@@ -54,7 +55,35 @@ status_t NMEA_Status;
 
 void NMEA_setup()
 {
-  SerialInput.begin(SerialBaud);
+  uint32_t SerialBaud;
+
+  switch (settings->baudrate)
+  {
+  case B4800:
+    SerialBaud = 4800;
+    break;
+  case B9600:
+    SerialBaud = 9600;
+    break;
+  case B19200:
+    SerialBaud = 19200;
+    break;
+  case B57600:
+    SerialBaud = 57600;
+    break;
+  case B115200:
+    SerialBaud = 115200;
+    break;
+  case B2000000:
+    SerialBaud = 2000000;
+    break;
+  case B38400:
+  default:
+    SerialBaud = 38400;
+    break;
+  }
+
+  SoC->swSer_begin(SerialBaud);
 }
 
 void NMEA_loop()

@@ -27,6 +27,16 @@ typedef struct SoC_ops_struct {
   uint8_t id;
   const char name[16];
   void (*setup)();
+  uint32_t (*getChipId)();
+  bool (*EEPROM_begin)(size_t);
+  void (*WiFi_setOutputPower)(int);
+  bool (*WiFi_hostname)(String);
+  void (*swSer_begin)(unsigned long);
+  void (*swSer_enableRx)(boolean);
+  uint32_t (*maxSketchSpace)();
+  void (*WiFiUDP_stopAll)();
+  void (*Battery_setup)();
+  float (*Battery_voltage)();
 } SoC_ops_t;
 
 enum

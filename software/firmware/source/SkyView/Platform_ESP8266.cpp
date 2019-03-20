@@ -19,21 +19,89 @@
 
 #include "SoCHelper.h"
 #include "EPDHelper.h"
+#include "EEPROMHelper.h"
+#include "WiFiHelper.h"
 
 Exp_SoftwareSerial SerialInput(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);
 
+ESP8266WebServer server ( 80 );
+
 /* Waveshare E-Paper ESP8266 Driver Board */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
+//GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
+
+/* NodeMCU */
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D4*/ D4, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
 
 static void ESP8266_setup()
 {
 
 }
 
+static uint32_t ESP8266_getChipId()
+{
+  return ESP.getChipId();
+}
+
+static bool ESP8266_EEPROM_begin(size_t size)
+{
+  EEPROM.begin(size);
+  return true;
+}
+
+static void ESP8266_WiFi_setOutputPower(int dB)
+{
+  WiFi.setOutputPower(dB);
+}
+
+static bool ESP8266_WiFi_hostname(String aHostname)
+{
+  return WiFi.hostname(aHostname);
+}
+
+static void ESP8266_swSer_begin(unsigned long baud)
+{
+  SerialInput.begin(baud);
+}
+
+static void ESP8266_swSer_enableRx(boolean arg)
+{
+  SerialInput.enableRx(arg);
+}
+
+static uint32_t ESP8266_maxSketchSpace()
+{
+  return (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+}
+
+static void ESP8266_WiFiUDP_stopAll()
+{
+  WiFiUDP::stopAll();
+}
+
+static void ESP8266_Battery_setup()
+{
+
+}
+
+static float ESP8266_Battery_voltage()
+{
+  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+}
+
 const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
-  ESP8266_setup
+  ESP8266_setup,
+  ESP8266_getChipId,
+  ESP8266_EEPROM_begin,
+  ESP8266_WiFi_setOutputPower,
+  ESP8266_WiFi_hostname,
+  ESP8266_swSer_begin,
+  ESP8266_swSer_enableRx,
+  ESP8266_maxSketchSpace,
+  ESP8266_WiFiUDP_stopAll,
+  ESP8266_Battery_setup,
+  ESP8266_Battery_voltage
 };
 
 #endif /* ESP8266 */

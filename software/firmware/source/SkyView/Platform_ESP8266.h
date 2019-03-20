@@ -24,19 +24,28 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+
 #include <Exp_SoftwareSerial.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
+
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX D3
 #define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
+#define SOC_GPIO_PIN_BATTERY  A0
 
 extern "C" {
 #include <user_interface.h>
 }
 
+extern ESP8266WebServer server;
 extern Exp_SoftwareSerial SerialInput;
 
 #endif /* PLATFORM_ESP8266_H */

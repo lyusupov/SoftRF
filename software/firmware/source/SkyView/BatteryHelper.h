@@ -1,5 +1,5 @@
 /*
- * EPDHelper.h
+ * BatteryHelper.h
  * Copyright (C) 2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,18 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPDHELPER_H
-#define EPDHELPER_H
+#ifndef BATTERYHELPER_H
+#define BATTERYHELPER_H
 
-#define ENABLE_GxEPD2_GFX 0
+#define BATTERY_THRESHOLD_NIMHX2  2.3
+#define BATTERY_THRESHOLD_LIPO    3.5
+#define BATTERY_THRESHOLD_LIFE    3.0
 
-#include <GxEPD2_BW.h>
+void  Battery_setup(void);
+float Battery_voltage(void);
+float Battery_threshold(void);
 
-#define EPD_EXPIRATION_TIME     5 /* seconds */
-
-byte EPD_setup();
-void EPD_loop();
-
-extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display;
-
-#endif /* EPDHELPER_H */
+#endif /* BATTERYHELPER_H */

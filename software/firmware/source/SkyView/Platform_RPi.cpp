@@ -34,6 +34,8 @@
 #include "NMEAHelper.h"
 #include "EPDHelper.h"
 #include "TrafficHelper.h"
+#include "EEPROMHelper.h"
+#include "SkyView.h"
 
 TTYSerial SerialInput("/dev/ttyUSB1");
 
@@ -59,15 +61,59 @@ u1_t radio_has_irq (void) {
     return 0;
 }
 
+eeprom_t eeprom_block;
+settings_t *settings = &eeprom_block.field.settings;
+
 static void RPi_setup()
 {
 
+  eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7;
+
+  eeprom_block.field.settings.connection      = CON_SERIAL;
+  eeprom_block.field.settings.baudrate        = B38400;
+  eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
+  eeprom_block.field.settings.map_orientation = DIRECTION_NORTH_UP;
+
+  strcpy(eeprom_block.field.settings.ssid,      DEFAULT_AP_SSID);
+  strcpy(eeprom_block.field.settings.psk,       DEFAULT_AP_PSK);
+
+  eeprom_block.field.settings.bluetooth       = BLUETOOTH_OFF;
+
+  strcpy(eeprom_block.field.settings.bt_name,   DEFAULT_BT_NAME);
+  strcpy(eeprom_block.field.settings.bt_key,    DEFAULT_BT_KEY);
+}
+
+static uint32_t RPi_getChipId()
+{
+  return gethostid();
+}
+
+static void RPi_swSer_begin(unsigned long baud)
+{
+  SerialInput.begin(baud);
 }
 
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
-  RPi_setup
+  RPi_setup,
+  RPi_getChipId,
+  NULL,
+  NULL,
+  NULL,
+  RPi_swSer_begin,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
+
+hardware_info_t hw_info = {
+  .model    = SOFTRF_MODEL_RASPBERRY,
+  .revision = 0,
+  .soc      = SOC_NONE,
+  .display  = DISPLAY_NONE
 };
 
 int main()
@@ -80,7 +126,17 @@ int main()
 
   Serial.begin(38400);
 
-  EPD_setup();
+  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
+  Serial.flush();
+  hw_info.display = EPD_setup();
+  if (hw_info.display != DISPLAY_NONE) {
+    Serial.println(F(" done."));
+  } else {
+    Serial.println(F(" failed!"));
+  }
+
   NMEA_setup();
 
   while (true) {

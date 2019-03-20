@@ -14,6 +14,7 @@
  *   TinyGPS++ and PString Libraries are developed by Mikal Hart
  *   Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
  *   NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
+ *   Arduino core for ESP32 is developed/supported by Hristo Gochkov
  *   U8g2 monochrome LCD, OLED and eInk library is developed by Oliver Kraus
  *   NeoPixelBus library is developed by Michael Miller
  *   jQuery library is developed by JS Foundation
@@ -37,16 +38,43 @@
  */
 
 #include "SoCHelper.h"
+#include "EEPROMHelper.h"
 #include "NMEAHelper.h"
 #include "EPDHelper.h"
 #include "TrafficHelper.h"
+#include "WiFiHelper.h"
+#include "WebHelper.h"
+
+#include "SkyView.h"
+
+hardware_info_t hw_info = {
+  .model    = SOFTRF_MODEL_SKYVIEW,
+  .revision = 0,
+  .soc      = SOC_NONE,
+  .display  = DISPLAY_NONE
+};
 
 void setup()
 {
+  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  delay(300);
   Serial.begin(38400);
 
-  EPD_setup();
+  EEPROM_setup();
+
+  Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
+  Serial.flush();
+  hw_info.display = EPD_setup();
+  if (hw_info.display != DISPLAY_NONE) {
+    Serial.println(F(" done."));
+  } else {
+    Serial.println(F(" failed!"));
+  }
+
+  WiFi_setup();
   NMEA_setup();
+  Web_setup();
 }
 
 void loop()
@@ -54,4 +82,10 @@ void loop()
   NMEA_loop();
   EPD_loop();
   ClearExpired();
+
+  // Handle DNS
+  WiFi_loop();
+
+  // Handle Web
+  Web_loop();
 }

@@ -121,6 +121,11 @@ void GxEPD2_EPD::_waitWhileBusy(const char* comment, uint16_t busy_time)
         break;
       }
     }
+#if defined(ESP8266)
+    if (micros() - start < 20) {
+      _timeout_expired = true;
+    }
+#endif /* ESP8266 */
     if (comment)
     {
 #if !defined(DISABLE_DIAGNOSTIC_OUTPUT)
