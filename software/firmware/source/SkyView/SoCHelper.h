@@ -37,7 +37,7 @@ typedef struct SoC_ops_struct {
   void (*WiFiUDP_stopAll)();
   void (*Battery_setup)();
   float (*Battery_voltage)();
-  void (*SPI_setup)();
+  void (*EPD_setup)();
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
 } SoC_ops_t;
 

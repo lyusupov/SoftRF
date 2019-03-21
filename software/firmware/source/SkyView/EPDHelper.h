@@ -28,6 +28,6 @@
 byte EPD_setup();
 void EPD_loop();
 
-extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display;
+extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 
 #endif /* EPDHELPER_H */

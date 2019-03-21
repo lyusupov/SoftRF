@@ -27,10 +27,10 @@ Exp_SoftwareSerial SerialInput(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , fa
 ESP8266WebServer server ( 80 );
 
 /* Waveshare E-Paper ESP8266 Driver Board */
-//GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
+//GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
 
 /* NodeMCU */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D4*/ D4, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_nodemcu(GxEPD2_270(/*CS=D4*/ D4, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
 
 static void ESP8266_setup()
 {
@@ -88,9 +88,9 @@ static float ESP8266_Battery_voltage()
   return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
 }
 
-static void ESP8266_SPI_setup()
+static void ESP8266_EPD_setup()
 {
-
+  display = &epd_nodemcu;
 }
 
 static size_t ESP8266_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
@@ -112,7 +112,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_WiFiUDP_stopAll,
   ESP8266_Battery_setup,
   ESP8266_Battery_voltage,
-  ESP8266_SPI_setup,
+  ESP8266_EPD_setup,
   ESP8266_WiFi_Receive_UDP
 };
 

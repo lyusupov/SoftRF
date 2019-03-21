@@ -42,7 +42,8 @@ TTYSerial SerialInput("/dev/ttyUSB1");
 
 static const uint8_t SS    = 8; // pin 24
 
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=5*/ SS,
+/* Waveshare Pi HAT 2.7" */
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=5*/ SS,
                                        /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
 
 lmic_pinmap lmic_pins = {
@@ -103,9 +104,9 @@ static void RPi_swSer_begin(unsigned long baud)
   SerialInput.begin(baud);
 }
 
-static void RPi_SPI_setup()
+static void RPi_EPD_setup()
 {
-  /* TBD */
+  display = &epd_waveshare;
 }
 
 static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
@@ -127,7 +128,7 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  RPi_SPI_setup,
+  RPi_EPD_setup,
   RPi_WiFi_Receive_UDP
 };
 

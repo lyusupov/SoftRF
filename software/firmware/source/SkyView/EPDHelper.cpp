@@ -28,6 +28,8 @@
 #include "TrafficHelper.h"
 #include "SkyView.h"
 
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
+
 const char SkyView_text1[] = "Sky";
 const char SkyView_text2[] = "View";
 const char SkyView_text3[] = "Presented by";
@@ -50,50 +52,53 @@ byte EPD_setup()
   int16_t  tbx4, tby4;
   uint16_t tbw4, tbh4;
 
-  SoC->SPI_setup();
+  SoC->EPD_setup();
 
-  display.init();
+  if (!display)
+    return rval;
+
+  display->init();
 
   // first update should be full refresh
-  display.setRotation(0);
-  display.setFont(&FreeMonoBold24pt7b);
-  display.setTextColor(GxEPD_BLACK);
+  display->setRotation(0);
+  display->setFont(&FreeMonoBold24pt7b);
+  display->setTextColor(GxEPD_BLACK);
 
-  display.getTextBounds(SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-  display.getTextBounds(SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
-  display.setFullWindow();
-  display.firstPage();
+  display->getTextBounds(SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  display->getTextBounds(SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  display->setFullWindow();
+  display->firstPage();
   do
   {
-    display.fillScreen(GxEPD_WHITE);
-    uint16_t x = (display.width() - tbw1) / 2;
-    uint16_t y = (display.height() + tbh1) / 2;
-    display.setCursor(x - (tbw1 / 3), y - tbh1);
-    display.print(SkyView_text1);
-    x = (display.width() - tbw2) / 2;
-    y = (display.height() + tbh2) / 2;
-    display.setCursor(x + (tbw2 / 7), y - (tbh2 - tbh1) );
-    display.print(SkyView_text2);
+    display->fillScreen(GxEPD_WHITE);
+    uint16_t x = (display->width() - tbw1) / 2;
+    uint16_t y = (display->height() + tbh1) / 2;
+    display->setCursor(x - (tbw1 / 3), y - tbh1);
+    display->print(SkyView_text1);
+    x = (display->width() - tbw2) / 2;
+    y = (display->height() + tbh2) / 2;
+    display->setCursor(x + (tbw2 / 7), y - (tbh2 - tbh1) );
+    display->print(SkyView_text2);
 
-    display.setFont(&FreeMonoOblique9pt7b);
-    display.getTextBounds(SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
-    x = (display.width() - tbw3) / 2;
-    y = (display.height() + tbh3) * 3 / 4;
-    display.setCursor(x, y);
-    display.print(SkyView_text3);
-    display.setFont(&FreeMonoBoldOblique9pt7b);
-    display.getTextBounds(SkyView_text4, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
-    x = (display.width() - tbw4) / 2;
-    y = ((display.height() + tbh4) * 3 / 4) + tbh3;
-    display.setCursor(x, y);
-    display.print(SkyView_text4);
+    display->setFont(&FreeMonoOblique9pt7b);
+    display->getTextBounds(SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+    x = (display->width() - tbw3) / 2;
+    y = (display->height() + tbh3) * 3 / 4;
+    display->setCursor(x, y);
+    display->print(SkyView_text3);
+    display->setFont(&FreeMonoBoldOblique9pt7b);
+    display->getTextBounds(SkyView_text4, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
+    x = (display->width() - tbw4) / 2;
+    y = ((display->height() + tbh4) * 3 / 4) + tbh3;
+    display->setCursor(x, y);
+    display->print(SkyView_text4);
   }
-  while (display.nextPage());
+  while (display->nextPage());
 
-//  display.powerOff();
-//  display.hibernate();
+//  display->powerOff();
+//  display->hibernate();
 
-  if (display.epd2.probe()) {
+  if (display->epd2.probe()) {
     rval = DISPLAY_EPD_2_7;
   }
 
@@ -110,64 +115,64 @@ void EPD_loop()
       int16_t  tbx, tby;
       uint16_t tbw, tbh;
 
-      display.setFullWindow();;
+      display->setFullWindow();;
 
-      display.firstPage();
+      display->firstPage();
       do
       {
-        display.fillScreen(GxEPD_WHITE);
+        display->fillScreen(GxEPD_WHITE);
       }
-      while (display.nextPage());
+      while (display->nextPage());
 
       uint16_t radar_x = 0;
-      uint16_t radar_y = (display.height() - display.width()) / 2;
-      uint16_t radar_w = display.width();
+      uint16_t radar_y = (display->height() - display->width()) / 2;
+      uint16_t radar_w = display->width();
 
       uint16_t top_navboxes_x = 0;
       uint16_t top_navboxes_y = 0;
-      uint16_t top_navboxes_w = display.width();
+      uint16_t top_navboxes_w = display->width();
       uint16_t top_navboxes_h = radar_y;
 
-      display.setPartialWindow(top_navboxes_x, top_navboxes_y,
-                               top_navboxes_w, top_navboxes_h);
+      display->setPartialWindow(top_navboxes_x, top_navboxes_y,
+                                top_navboxes_w, top_navboxes_h);
 
-      display.firstPage();
+      display->firstPage();
       do
       {
-        display.drawRoundRect(top_navboxes_x + 2, top_navboxes_y + 2,
-                              top_navboxes_w / 2 - 4, top_navboxes_h - 4,
-                              4, GxEPD_BLACK);
-        display.drawRoundRect(top_navboxes_x + top_navboxes_w / 2 + 2,
-                              top_navboxes_y + 2,
-                              top_navboxes_w / 2 - 4, top_navboxes_h - 4,
-                              4, GxEPD_BLACK);
+        display->drawRoundRect( top_navboxes_x + 2, top_navboxes_y + 2,
+                                top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                                4, GxEPD_BLACK);
+        display->drawRoundRect( top_navboxes_x + top_navboxes_w / 2 + 2,
+                                top_navboxes_y + 2,
+                                top_navboxes_w / 2 - 4, top_navboxes_h - 4,
+                                4, GxEPD_BLACK);
       }
-      while (display.nextPage());
+      while (display->nextPage());
 
       uint16_t bottom_navboxes_x = 0;
       uint16_t bottom_navboxes_y = radar_y + radar_w;
-      uint16_t bottom_navboxes_w = display.width();
+      uint16_t bottom_navboxes_w = display->width();
       uint16_t bottom_navboxes_h = radar_y;
 
 
-      display.setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
-                               bottom_navboxes_w, bottom_navboxes_h);
+      display->setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
+                                bottom_navboxes_w, bottom_navboxes_h);
 
-      display.firstPage();
+      display->firstPage();
       do
       {
-        display.drawRoundRect(bottom_navboxes_x + 2, bottom_navboxes_y + 2,
-                              bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
-                              4, GxEPD_BLACK);
-        display.drawRoundRect(bottom_navboxes_x + bottom_navboxes_w / 2 + 2,
-                              bottom_navboxes_y + 2,
-                              bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
-                              4, GxEPD_BLACK);
+        display->drawRoundRect( bottom_navboxes_x + 2, bottom_navboxes_y + 2,
+                                bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
+                                4, GxEPD_BLACK);
+        display->drawRoundRect( bottom_navboxes_x + bottom_navboxes_w / 2 + 2,
+                                bottom_navboxes_y + 2,
+                                bottom_navboxes_w / 2 - 4, bottom_navboxes_h - 4,
+                                4, GxEPD_BLACK);
       }
-      while (display.nextPage());
+      while (display->nextPage());
 
-//    display.powerOff();
-      display.hibernate();
+//    display->powerOff();
+      display->hibernate();
 
       EPD_display_frontpage = true;
 
@@ -176,16 +181,16 @@ void EPD_loop()
       if (isTimeToDisplay()) {
 
         uint16_t radar_x = 0;
-        uint16_t radar_y = (display.height() - display.width()) / 2;
-        uint16_t radar_w = display.width();
+        uint16_t radar_y = (display->height() - display->width()) / 2;
+        uint16_t radar_w = display->width();
 
-        display.setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+        display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
 
         uint16_t radar_center_x = radar_w / 2;
         uint16_t radar_center_y = radar_y + radar_w / 2;
         uint16_t radius = radar_w / 2 - 2;
 
-        display.firstPage();
+        display->firstPage();
         do
         {
           for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -202,28 +207,28 @@ void EPD_loop()
 #endif
               int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
               int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
-              display.fillCircle(radar_center_x + x,
-                                 radar_center_y - y,
-                                 5, GxEPD_BLACK);
+              display->fillCircle(radar_center_x + x,
+                                  radar_center_y - y,
+                                  5, GxEPD_BLACK);
             }
           }
 
-          display.drawCircle(  radar_center_x, radar_center_y,
-                               radius, GxEPD_BLACK);
-          display.drawCircle(  radar_center_x, radar_center_y,
-                               radius / 2, GxEPD_BLACK);
-          display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                               radar_center_x    , radar_center_y - 5,
-                               radar_center_x + 7, radar_center_y + 5,
-                               GxEPD_BLACK);
-          display.fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                               radar_center_x    , radar_center_y + 2,
-                               radar_center_x + 7, radar_center_y + 5,
-                               GxEPD_WHITE);
+          display->drawCircle(  radar_center_x, radar_center_y,
+                                radius, GxEPD_BLACK);
+          display->drawCircle(  radar_center_x, radar_center_y,
+                                radius / 2, GxEPD_BLACK);
+          display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                                radar_center_x    , radar_center_y - 5,
+                                radar_center_x + 7, radar_center_y + 5,
+                                GxEPD_BLACK);
+          display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                                radar_center_x    , radar_center_y + 2,
+                                radar_center_x + 7, radar_center_y + 5,
+                                GxEPD_WHITE);
         }
-        while (display.nextPage());
+        while (display->nextPage());
 
-        display.hibernate();
+        display->hibernate();
 
         EPDTimeMarker = millis();
       }

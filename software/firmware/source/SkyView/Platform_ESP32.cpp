@@ -68,7 +68,7 @@ P2                      0
                         34
                         35
  */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_ttgo_t5s(GxEPD2_270(/*CS=5*/ 5, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
 /*
  * Waveshare E-Paper ESP32 Driver Board
@@ -87,7 +87,7 @@ RX0, TX0                3,1
 
 P                       0,2,4,5,12,13,14,15,16,17,18,19,21,22,23,25,26,27,32,33,34,35
  */
-// GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=15*/ SS, /*DC=*/ 27, /*RST=*/ 26, /*BUSY=*/ 25));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=15*/ 15, /*DC=*/ 27, /*RST=*/ 26, /*BUSY=*/ 25));
 
 static union {
   uint8_t efuse_mac[6];
@@ -204,11 +204,12 @@ static float ESP32_Battery_voltage()
   return (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? 2 * voltage : voltage);
 }
 
-static void ESP32_SPI_setup()
+static void ESP32_EPD_setup()
 {
   switch(settings->adapter)
   {
   case ADAPTER_WAVESHARE_ESP32:
+    display = &epd_waveshare;
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
@@ -216,6 +217,7 @@ static void ESP32_SPI_setup()
     break;
   case ADAPTER_TTGO_T5S:
   default:
+    display = &epd_ttgo_t5s;
     SPI.begin(SOC_GPIO_PIN_SCK_T5S,
               SOC_GPIO_PIN_MISO_T5S,
               SOC_GPIO_PIN_MOSI_T5S,
@@ -243,7 +245,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFiUDP_stopAll,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
-  ESP32_SPI_setup,
+  ESP32_EPD_setup,
   ESP32_WiFi_Receive_UDP
 };
 

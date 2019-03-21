@@ -213,6 +213,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if 0
   /* SoC specific part 2 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -247,6 +248,7 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif
 
   /* Common part 3 */
   snprintf_P ( offset, size,
