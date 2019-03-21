@@ -119,12 +119,12 @@ void handleSettings() {
 <th align=left>e-Paper adapter</th>\
 <td align=right>\
 <select name='adapter'>\
-<option %s value='%d'>TTGO T5</option>\
+<option %s value='%d'>TTGO T5S</option>\
 <option %s value='%d'>Waveshare ESP32</option>\
 </select>\
 </td>\
 </tr>"),
-    (settings->adapter == ADAPTER_TTGO_T5         ? "selected" : ""), ADAPTER_TTGO_T5,
+    (settings->adapter == ADAPTER_TTGO_T5S        ? "selected" : ""), ADAPTER_TTGO_T5S,
     (settings->adapter == ADAPTER_WAVESHARE_ESP32 ? "selected" : ""), ADAPTER_WAVESHARE_ESP32
     );
   } else if (SoC->id == SOC_ESP8266) {

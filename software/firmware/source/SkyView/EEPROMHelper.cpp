@@ -68,7 +68,7 @@ void EEPROM_defaults()
   if (SoC->id == SOC_ESP8266)
     eeprom_block.field.settings.adapter       = ADAPTER_NODEMCU;
   else
-    eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5;
+    eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5S;
 
   eeprom_block.field.settings.connection      = CON_SERIAL;
   eeprom_block.field.settings.baudrate        = B38400;

@@ -115,8 +115,6 @@ static void ESP32_setup()
       chipmacid = ESP.getEfuseMac();
     }
   }
-
-  SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
 }
 
 static uint32_t ESP32_getChipId()
@@ -206,9 +204,29 @@ static float ESP32_Battery_voltage()
   return (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? 2 * voltage : voltage);
 }
 
-static void ESP32_SPI_begin()
+static void ESP32_SPI_setup()
 {
-  SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
+  switch(settings->adapter)
+  {
+  case ADAPTER_WAVESHARE_ESP32:
+    SPI.begin(SOC_GPIO_PIN_SCK_WS,
+              SOC_GPIO_PIN_MISO_WS,
+              SOC_GPIO_PIN_MOSI_WS,
+              SOC_GPIO_PIN_SS_WS);
+    break;
+  case ADAPTER_TTGO_T5S:
+  default:
+    SPI.begin(SOC_GPIO_PIN_SCK_T5S,
+              SOC_GPIO_PIN_MISO_T5S,
+              SOC_GPIO_PIN_MOSI_T5S,
+              SOC_GPIO_PIN_SS_T5S);
+    break;
+  }
+}
+
+static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
+{
+  return WiFi_Receive_UDP(buf, max_size);
 }
 
 const SoC_ops_t ESP32_ops = {
@@ -224,7 +242,9 @@ const SoC_ops_t ESP32_ops = {
   ESP32_maxSketchSpace,
   ESP32_WiFiUDP_stopAll,
   ESP32_Battery_setup,
-  ESP32_Battery_voltage
+  ESP32_Battery_voltage,
+  ESP32_SPI_setup,
+  ESP32_WiFi_Receive_UDP
 };
 
 #endif /* ESP32 */

@@ -19,7 +19,7 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
 #include <WiFiUdp.h>
 #endif
 
@@ -33,11 +33,12 @@ enum
     WIFI_TX_POWER_MAX = 18  /* 18 dBm */
 };
 
-void WiFi_setup(void);
-void WiFi_loop(void);
+void    WiFi_setup(void);
+void    WiFi_loop(void);
+size_t  WiFi_Receive_UDP(uint8_t *, size_t);
 
 extern String host_name;
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
 extern WiFiUDP Uni_Udp;
 #endif
 

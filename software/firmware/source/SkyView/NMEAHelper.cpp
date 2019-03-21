@@ -23,6 +23,7 @@
 #include "NMEAHelper.h"
 #include "TrafficHelper.h"
 #include "EEPROMHelper.h"
+#include "WiFiHelper.h"
 
 #include "SkyView.h"
 
@@ -53,46 +54,9 @@ TinyGPSCustom S_ID              (nmea, "PFLAU", 10);
 
 status_t NMEA_Status;
 
-void NMEA_setup()
+static void NMEA_Parse_Character(char c)
 {
-  uint32_t SerialBaud;
-
-  switch (settings->baudrate)
-  {
-  case B4800:
-    SerialBaud = 4800;
-    break;
-  case B9600:
-    SerialBaud = 9600;
-    break;
-  case B19200:
-    SerialBaud = 19200;
-    break;
-  case B57600:
-    SerialBaud = 57600;
-    break;
-  case B115200:
-    SerialBaud = 115200;
-    break;
-  case B2000000:
-    SerialBaud = 2000000;
-    break;
-  case B38400:
-  default:
-    SerialBaud = 38400;
-    break;
-  }
-
-  SoC->swSer_begin(SerialBaud);
-}
-
-void NMEA_loop()
-{
-  bool isValidSentence = false;
-
-  if (SerialInput.available() > 0)
-  {
-    isValidSentence = nmea.encode(SerialInput.read());
+    bool isValidSentence = nmea.encode(c);
     if (isValidSentence) {
       if (T_ID.isUpdated())
       {
@@ -188,7 +152,7 @@ void NMEA_loop()
       } else if (S_RX.isUpdated()) {
 
         NMEA_Status.timestamp = now();
-        NMEA_Status.RX = atoi(S_RX.value());      
+        NMEA_Status.RX = atoi(S_RX.value());
 
         if (S_TX.isUpdated())
         {
@@ -252,5 +216,69 @@ void NMEA_loop()
         }
       }
     }
+}
+
+void NMEA_setup()
+{
+  if (settings->protocol == PROTOCOL_NMEA) {
+    if (settings->connection == CON_SERIAL) {
+      uint32_t SerialBaud;
+
+      switch (settings->baudrate)
+      {
+      case B4800:
+        SerialBaud = 4800;
+        break;
+      case B9600:
+        SerialBaud = 9600;
+        break;
+      case B19200:
+        SerialBaud = 19200;
+        break;
+      case B57600:
+        SerialBaud = 57600;
+        break;
+      case B115200:
+        SerialBaud = 115200;
+        break;
+      case B2000000:
+        SerialBaud = 2000000;
+        break;
+      case B38400:
+      default:
+        SerialBaud = 38400;
+        break;
+      }
+
+      SoC->swSer_begin(SerialBaud);
+    }
+  }
+}
+
+void NMEA_loop()
+{
+  size_t size;
+
+  switch (settings->connection)
+  {
+  case CON_SERIAL:
+    while (SerialInput.available() > 0) {
+      char c = SerialInput.read();
+      Serial.print(c);
+      NMEA_Parse_Character(c);
+    }
+    break;
+  case CON_WIFI_UDP:
+    size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
+    if (size > 0) {
+      for (size_t i=0; i < size; i++) {
+        Serial.print(UDPpacketBuffer[i]);
+        NMEA_Parse_Character(UDPpacketBuffer[i]);
+      }
+    }
+    break;
+  case CON_NONE:
+  default:
+    break;
   }
 }

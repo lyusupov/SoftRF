@@ -60,7 +60,7 @@ enum
 	ADAPTER_WAVESHARE_PI_HAT_2_7,
 	ADAPTER_WAVESHARE_ESP8266,
 	ADAPTER_WAVESHARE_ESP32,
-	ADAPTER_TTGO_T5,
+	ADAPTER_TTGO_T5S,
 	ADAPTER_NODEMCU
 };
 
@@ -105,6 +105,9 @@ enum
 	BLUETOOTH_OFF,
 	BLUETOOTH_SPP
 };
+
+/* Move to GDL90Helper.h when able */
+#define GDL90_DST_PORT    4000
 
 extern hardware_info_t hw_info;
 

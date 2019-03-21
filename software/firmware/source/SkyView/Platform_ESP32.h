@@ -37,10 +37,17 @@
 #define SOC_GPIO_PIN_GNSS_RX  21 /* TBD */
 #define SOC_GPIO_PIN_GNSS_TX  22 /* TBD */
 
-#define SOC_GPIO_PIN_MOSI     23 /* TBD */
-#define SOC_GPIO_PIN_MISO     19 /* TBD */
-#define SOC_GPIO_PIN_SCK      18 /* TBD */
-#define SOC_GPIO_PIN_SS       5  /* TBD */
+/* TTGO T5 and T5S SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_T5S 23
+#define SOC_GPIO_PIN_MISO_T5S 19
+#define SOC_GPIO_PIN_SCK_T5S  18
+#define SOC_GPIO_PIN_SS_T5S   5
+
+/* Waveshare ESP32 SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  14
+#define SOC_GPIO_PIN_MISO_WS  12
+#define SOC_GPIO_PIN_SCK_WS   13
+#define SOC_GPIO_PIN_SS_WS    15
 
 extern WebServer server;
 

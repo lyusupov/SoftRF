@@ -50,6 +50,8 @@ byte EPD_setup()
   int16_t  tbx4, tby4;
   uint16_t tbw4, tbh4;
 
+  SoC->SPI_setup();
+
   display.init();
 
   // first update should be full refresh

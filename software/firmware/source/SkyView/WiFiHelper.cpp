@@ -24,6 +24,7 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
+#include "NMEAHelper.h"
 
 #include "SkyView.h"
 
@@ -50,12 +51,30 @@ bool dns_active = false;
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Uni_Udp;
 
-unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
+unsigned int UDP_Data_Port = 0;           // local port to listen for UDP packets
 
-char UDPpacketBuffer[256]; //buffer to hold incoming and outgoing packets
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming packets
 
 static unsigned long WiFi_STA_TimeMarker = 0;
 static bool WiFi_STA_connected = false;
+
+size_t WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
+{
+  int noBytes = Uni_Udp.parsePacket();
+  if ( noBytes ) {
+
+    if (noBytes > max_size) {
+      noBytes = max_size;
+    }
+
+    // We've received a packet, read the data from it
+    Uni_Udp.read(buf,noBytes); // read the packet into the buffer
+
+    return (size_t) noBytes;
+  } else {
+    return 0;
+  }
+}
 
 /**
  * @brief Arduino setup function.
@@ -96,10 +115,26 @@ void WiFi_setup()
   Serial.print(F("IP address: "));
   Serial.println(WiFi.softAPIP());
 
+  if (settings->connection == CON_WIFI_UDP) {
+    switch (settings->protocol)
+    {
+    case PROTOCOL_NMEA:
+      UDP_Data_Port = NMEA_UDP_PORT;
+      break;
+    case PROTOCOL_GDL90:
+      UDP_Data_Port = GDL90_DST_PORT;
+      break;
+    default:
+      UDP_Data_Port = 0;
+      break;
+    }
 
-  Uni_Udp.begin(RFlocalPort);
-  Serial.print(F("UDP server has started at port: "));
-  Serial.println(RFlocalPort);
+    if (UDP_Data_Port) {
+      Uni_Udp.begin(UDP_Data_Port);
+      Serial.print(F("UDP server has started at port: "));
+      Serial.println(UDP_Data_Port);
+    }
+  }
 
   if (settings->connection == CON_WIFI_UDP ||
       settings->connection == CON_WIFI_TCP ) {

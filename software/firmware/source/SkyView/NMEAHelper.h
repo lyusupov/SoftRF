@@ -36,6 +36,9 @@ typedef struct nmea_status_struct {
     uint32_t  ID;
 } status_t;
 
+#define NMEA_UDP_PORT     10110
+#define NMEA_TCP_PORT     2000
+
 /*
  * Both GGA and RMC NMEA sentences are required.
  * No fix when any of them is missing or lost.

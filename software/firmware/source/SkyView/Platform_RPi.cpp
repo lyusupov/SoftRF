@@ -35,6 +35,7 @@
 #include "EPDHelper.h"
 #include "TrafficHelper.h"
 #include "EEPROMHelper.h"
+#include "WiFiHelper.h"
 #include "SkyView.h"
 
 TTYSerial SerialInput("/dev/ttyUSB1");
@@ -63,6 +64,15 @@ u1_t radio_has_irq (void) {
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming packets
+
+hardware_info_t hw_info = {
+  .model    = SOFTRF_MODEL_RASPBERRY,
+  .revision = 0,
+  .soc      = SOC_NONE,
+  .display  = DISPLAY_NONE
+};
 
 static void RPi_setup()
 {
@@ -93,6 +103,16 @@ static void RPi_swSer_begin(unsigned long baud)
   SerialInput.begin(baud);
 }
 
+static void RPi_SPI_setup()
+{
+  /* TBD */
+}
+
+static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
+{
+  return 0; /* TBD */
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
@@ -106,14 +126,9 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  NULL
-};
-
-hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_RASPBERRY,
-  .revision = 0,
-  .soc      = SOC_NONE,
-  .display  = DISPLAY_NONE
+  NULL,
+  RPi_SPI_setup,
+  RPi_WiFi_Receive_UDP
 };
 
 int main()
