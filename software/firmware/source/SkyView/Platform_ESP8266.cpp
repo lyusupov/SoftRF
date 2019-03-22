@@ -22,14 +22,16 @@
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
 
+#include "SkyView.h"
+
 Exp_SoftwareSerial SerialInput(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);
 
 ESP8266WebServer server ( 80 );
 
 /* Waveshare E-Paper ESP8266 Driver Board */
-//GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=D8*/ SS, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
 
-/* NodeMCU */
+/* NodeMCU, D8 does not work for me as CS pin for 2.7" e-Paper Pi HAT  */
 GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_nodemcu(GxEPD2_270(/*CS=D4*/ D4, /*DC=D2*/ 4, /*RST=D1*/ 5, /*BUSY=D0*/ 16));
 
 static void ESP8266_setup()
@@ -90,7 +92,16 @@ static float ESP8266_Battery_voltage()
 
 static void ESP8266_EPD_setup()
 {
-  display = &epd_nodemcu;
+  switch(settings->adapter)
+  {
+  case ADAPTER_WAVESHARE_ESP8266:
+    display = &epd_waveshare;
+    break;
+  case ADAPTER_NODEMCU:
+  default:
+    display = &epd_nodemcu;
+    break;
+  }
 }
 
 static size_t ESP8266_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
