@@ -44,6 +44,8 @@
 #include "TrafficHelper.h"
 #include "WiFiHelper.h"
 #include "WebHelper.h"
+#include "BatteryHelper.h"
+#include "GDL90Helper.h"
 
 #include "SkyView.h"
 
@@ -72,14 +74,36 @@ void setup()
     Serial.println(F(" failed!"));
   }
 
+  Battery_setup();
   WiFi_setup();
-  NMEA_setup();
+
+  switch (settings->protocol)
+  {
+  case PROTOCOL_GDL90:
+    GDL90_setup();
+    break;
+  case PROTOCOL_NMEA:
+  default:
+    NMEA_setup();
+    break;
+  }
+
   Web_setup();
 }
 
 void loop()
 {
-  NMEA_loop();
+  switch (settings->protocol)
+  {
+  case PROTOCOL_GDL90:
+    GDL90_loop();
+    break;
+  case PROTOCOL_NMEA:
+  default:
+    NMEA_loop();
+    break;
+  }
+
   EPD_loop();
   ClearExpired();
 

@@ -111,7 +111,7 @@
 
 #elif defined(ARDUINO)
 
-#   include <endian.h>
+#   include <machine/endian.h>
 
 #else
 

@@ -1,5 +1,5 @@
 /*
- * BatteryHelper.cpp
+ * GDL90Helper.h
  * Copyright (C) 2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,24 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Arduino.h>
+#ifndef GDL90HELPER_H
+#define GDL90HELPER_H
 
-#include "SoCHelper.h"
-#include "BatteryHelper.h"
-#include "SkyView.h"
+#define GDL90_DST_PORT    4000
 
-void Battery_setup()
-{
-  SoC->Battery_setup();
-}
+void GDL90_setup(void);
+void GDL90_loop(void);
 
-float Battery_voltage()
-{
-  return SoC->Battery_voltage();
-}
-
-/* low battery voltage threshold */
-float Battery_threshold()
-{
-  return BATTERY_THRESHOLD_LIPO;
-}
+#endif /* GDL90HELPER_H */

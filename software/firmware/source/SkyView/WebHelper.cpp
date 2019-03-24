@@ -76,6 +76,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
 <tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
 <tr><th align=left>Jean-Marc Zingg</th><td align=left>GxEPD2 library</td></tr>\
+<tr><th align=left>Ryan David</th><td align=left>GDL90 decoder</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
@@ -84,7 +85,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4500;
+  size_t size = 2300;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -177,9 +178,39 @@ void handleSettings() {
 <option %s value='%d'>9600</option>\
 <option %s value='%d'>19200</option>\
 <option %s value='%d'>38400</option>\
-<option %s value='%d'>57600</option>\
+<option %s value='%d'>57600</option>"),
+  (settings->connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
+  (settings->connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
+  (settings->protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
+  (settings->protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
+  (settings->baudrate   == B4800          ? "selected" : ""), B4800,
+  (settings->baudrate   == B9600          ? "selected" : ""), B9600,
+  (settings->baudrate   == B19200         ? "selected" : ""), B19200,
+  (settings->baudrate   == B38400         ? "selected" : ""), B38400,
+  (settings->baudrate   == B57600         ? "selected" : ""), B57600
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 2 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
 <option %s value='%d'>115200</option>\
-<option %s value='%d'>2000000</option>\
+<option %s value='%d'>2000000</option>"),
+    (settings->baudrate   == B115200        ? "selected" : ""), B115200,
+    (settings->baudrate   == B2000000       ? "selected" : ""), B2000000
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+    /* Common part 3 */
+  snprintf_P ( offset, size,
+    PSTR("\
 </select>\
 </td>\
 </tr>\
@@ -196,17 +227,6 @@ void handleSettings() {
 <INPUT type='text' name='psk' maxlength='15' size='15' value='%s'>\
 </td>\
 </tr>"),
-  (settings->connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
-  (settings->connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
-  (settings->protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
-  (settings->protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
-  (settings->baudrate   == B4800          ? "selected" : ""), B4800,
-  (settings->baudrate   == B9600          ? "selected" : ""), B9600,
-  (settings->baudrate   == B19200         ? "selected" : ""), B19200,
-  (settings->baudrate   == B38400         ? "selected" : ""), B38400,
-  (settings->baudrate   == B57600         ? "selected" : ""), B57600,
-  (settings->baudrate   == B115200        ? "selected" : ""), B115200,
-  (settings->baudrate   == B2000000       ? "selected" : ""), B2000000,
    settings->ssid, settings->psk);
 
   len = strlen(offset);
@@ -214,7 +234,7 @@ void handleSettings() {
   size -= len;
 
 #if 0
-  /* SoC specific part 2 */
+  /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
       PSTR("\
@@ -250,7 +270,7 @@ void handleSettings() {
   }
 #endif
 
-  /* Common part 3 */
+  /* Common part 4 */
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
@@ -291,14 +311,19 @@ void handleRoot() {
   time_t timestamp = now();
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2300);
+  size_t size = 2300;
+  char *offset;
+  size_t len = 0;
+
+  char *Root_temp = (char *) malloc(size);
   if (Root_temp == NULL) {
     return;
   }
+  offset = Root_temp;
 
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2300,
+  snprintf_P ( offset, size,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -312,11 +337,64 @@ void handleRoot() {
  </table>\
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
- "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
+  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
+  <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
- </table>\
+  <tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>\
+  <tr><th align=left>Display</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
+    SoC->getChipId() & 0xFFFFFF, SKYVIEW_FIRMWARE_VERSION,
+    (SoC == NULL ? "NONE" : SoC->name),
+    hr, min % 60, sec % 60, ESP.getFreeHeap(),
+    low_voltage ? "red" : "green", str_Vcc,
+    hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
+    hw_info.display      == DISPLAY_OLED_2_4 ? "OLED" : "NONE",
+    settings->connection == CON_SERIAL       ? "Serial" :
+    settings->connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  switch (settings->connection)
+  {
+  case CON_WIFI_UDP:
+    snprintf_P ( offset, size,
+      PSTR("\
+  <tr><th align=left>Link partner</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Link status</th><td align=right>%s established</td></tr>\
+  <tr><th align=left>Assigned IP address</th><td align=right>%s</td></tr>"),
+      settings->ssid && strlen(settings->ssid) > 0 ? settings->ssid : "NOT SET",
+      WiFi.status() == WL_CONNECTED ? "" : "not",
+      WiFi.localIP().toString().c_str()
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  case CON_SERIAL:
+    snprintf_P ( offset, size,
+      PSTR("\
+  <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
+  <tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
+  "),
+      NMEA_isConnected() ? "" : "not",
+      NMEA_isConnected() && !(NMEA_hasGNSS() || NMEA_hasFLARM()) ? "UNK" : "",
+      NMEA_hasGNSS()     ? "GNSS"  : "",
+      NMEA_hasFLARM()    ? "FLARM" : ""
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+    break;
+  case CON_NONE:
+  default:
+    break;
+  }
+
+  snprintf_P ( offset, size,
+    PSTR(" </table>\
  <hr>\
  <table width=100%%>\
   <tr>\
@@ -326,11 +404,7 @@ void handleRoot() {
   </tr>\
  </table>\
 </body>\
-</html>"),
-    SoC->getChipId() & 0xFFFFFF, SKYVIEW_FIRMWARE_VERSION,
-    (SoC == NULL ? "NONE" : SoC->name),
-    hr, min % 60, sec % 60, ESP.getFreeHeap(),
-    low_voltage ? "red" : "green", str_Vcc 
+</html>")
   );
 
   SoC->swSer_enableRx(false);

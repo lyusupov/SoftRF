@@ -54,6 +54,8 @@ TinyGPSCustom S_ID              (nmea, "PFLAU", 10);
 
 status_t NMEA_Status;
 
+static unsigned long NMEA_TimeMarker = 0;
+
 static void NMEA_Parse_Character(char c)
 {
     bool isValidSentence = nmea.encode(c);
@@ -266,6 +268,7 @@ void NMEA_loop()
       char c = SerialInput.read();
       Serial.print(c);
       NMEA_Parse_Character(c);
+      NMEA_TimeMarker = millis();
     }
     break;
   case CON_WIFI_UDP:
@@ -275,10 +278,27 @@ void NMEA_loop()
         Serial.print(UDPpacketBuffer[i]);
         NMEA_Parse_Character(UDPpacketBuffer[i]);
       }
+      NMEA_TimeMarker = millis();
     }
     break;
   case CON_NONE:
   default:
     break;
   }
+}
+
+bool NMEA_isConnected()
+{
+  return (NMEA_TimeMarker > NMEA_EXP_TIME &&
+         (millis() - NMEA_TimeMarker) < NMEA_EXP_TIME);
+}
+
+bool NMEA_hasGNSS()
+{
+  return (nmea.time.isValid() && nmea.time.age() < NMEA_EXP_TIME);
+}
+
+bool NMEA_hasFLARM()
+{
+  return (S_RX.isValid() && S_RX.age() < NMEA_EXP_TIME);
 }

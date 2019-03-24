@@ -25,6 +25,7 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
+#include "GDL90Helper.h"
 
 #include "SkyView.h"
 
@@ -156,10 +157,12 @@ void WiFi_loop()
   if (settings->connection == CON_WIFI_UDP ||
       settings->connection == CON_WIFI_TCP ) {
     if (WiFi.status() != WL_CONNECTED) {
-      if (millis() - WiFi_STA_TimeMarker > 1000) {
+#if 0
+      if (millis() - WiFi_STA_TimeMarker > 2000) {
         Serial.print(".");
         WiFi_STA_TimeMarker = millis();
       }
+#endif
       if (WiFi_STA_connected == true) {
         WiFi_STA_connected = false;
         Serial.print(F("Disconnected from WiFi AP "));

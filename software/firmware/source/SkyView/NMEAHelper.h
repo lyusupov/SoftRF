@@ -55,6 +55,10 @@ typedef struct nmea_status_struct {
 void NMEA_setup(void);
 void NMEA_loop(void);
 
+bool NMEA_isConnected(void);
+bool NMEA_hasGNSS(void);
+bool NMEA_hasFLARM(void);
+
 extern status_t NMEA_Status;
 
 #endif /* NMEAHELPER_H */

@@ -33,16 +33,18 @@ JSON_PATH     = ../libraries/ArduinoJson/src
 TCPSRV_PATH   = ../libraries/SimpleNetwork/src
 GFX_PATH      = ../libraries/Adafruit-GFX-Library
 EPD2_PATH     = ../libraries/GxEPD2/src
+GDL90_PATH    = ../libraries/rotobox
 
 INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
                 -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
                 -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
-                -I$(GFX_PATH)     -I$(EPD2_PATH)
+                -I$(GFX_PATH)     -I$(EPD2_PATH) \
+                -I$(GDL90_PATH)
 
 CPPS          := SoCHelper.cpp \
                  NMEAHelper.cpp TrafficHelper.cpp \
-                 EPDHelper.cpp
+                 EPDHelper.cpp GDL90Helper.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(LMIC_PATH)/raspi/raspi.o \
@@ -51,7 +53,8 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(GNSSLIB_PATH)/TinyGPS++.o \
                  $(TIMELIB_PATH)/Time.o \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
-                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o
+                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
+                 $(GDL90_PATH)/gdl90.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 

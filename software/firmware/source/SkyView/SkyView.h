@@ -106,9 +106,6 @@ enum
 	BLUETOOTH_SPP
 };
 
-/* Move to GDL90Helper.h when able */
-#define GDL90_DST_PORT    4000
-
 extern hardware_info_t hw_info;
 
 #endif /* SKYVIEW_H */

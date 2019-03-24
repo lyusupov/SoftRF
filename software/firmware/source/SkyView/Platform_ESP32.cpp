@@ -44,13 +44,13 @@ WebServer server ( 80 );
 #define MOSI_PIN        23
 
 P1-1                    21
-P1-2                    22
+P1-2                    22 (LED)
 
 I2S                     27
                         32
                         33
 
-B0                      0?
+B0                      RST
 B1                      38
 B2                      37
 B3                      39
@@ -66,7 +66,7 @@ P2                      0
                         RXD
                         TXD
                         34
-                        35
+                        35 (BAT)
  */
 GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_ttgo_t5s(GxEPD2_270(/*CS=5*/ 5, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 
@@ -192,7 +192,7 @@ static void ESP32_WiFiUDP_stopAll()
 
 static void ESP32_Battery_setup()
 {
-  calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+  calibrate_voltage(settings->adapter == ADAPTER_TTGO_T5S ?
                     ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
 }
 
@@ -200,8 +200,8 @@ static float ESP32_Battery_voltage()
 {
   float voltage = ((float) read_voltage()) * 0.001 ;
 
-  /* T-Beam has voltage divider 100k/100k on board */
-  return (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? 2 * voltage : voltage);
+  /* T5 has voltage divider 100k/100k on board */
+  return (settings->adapter == ADAPTER_TTGO_T5S ? 2 * voltage : voltage);
 }
 
 static void ESP32_EPD_setup()

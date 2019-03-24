@@ -1,6 +1,7 @@
 #ifndef GDL90_H_
 #define GDL90_H_
 
+#if defined(RASPBERRY_PI)
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -8,6 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#endif /* RASPBERRY_PI */
+
+#if defined(ARDUINO)
+#include <Arduino.h>
+#endif /* ARDUINO */
 
 #include "portable_endian.h"
 
@@ -246,12 +252,12 @@ void gdl90_insertCrc(gdl_message_t *rawMsg, uint32_t length);
 
 void decode_gdl90_message(gdl_message_t *rawMsg);
 void print_gdl90_traffic_report(gdl90_msg_traffic_report_t *decodedMsg);
-void decode_gdl90_traffic_report(gdl_message_t *rawMsg, gdl90_msg_traffic_report_t *decodedMsg);
+bool decode_gdl90_traffic_report(gdl_message_t *rawMsg, gdl90_msg_traffic_report_t *decodedMsg);
 void encode_gdl90_traffic_report(gdl_message_t *rawMsg, gdl90_msg_traffic_report_t *decodedMsg);
-void decode_gdl90_ownship_geo_altitude(gdl_message_t *rawMsg, gdl90_msg_ownship_geo_altitude *decodedMsg);
+bool decode_gdl90_ownship_geo_altitude(gdl_message_t *rawMsg, gdl90_msg_ownship_geo_altitude *decodedMsg);
 void encode_gdl90_ownship_geo_altitude(gdl_message_t *rawMsg, gdl90_msg_ownship_geo_altitude *decodedMsg);
 void print_gdl90_ownship_geo_altitude(gdl90_msg_ownship_geo_altitude *decodedMsg);
-void decode_gdl90_heartbeat(gdl_message_t *rawMsg, gdl90_msg_heartbeat *decodedMsg);
+bool decode_gdl90_heartbeat(gdl_message_t *rawMsg, gdl90_msg_heartbeat *decodedMsg);
 void print_gdl90_heartbeat(gdl90_msg_heartbeat *decodedMsg);
 void encode_gdl90_heartbeat(gdl_message_t *rawMsg, gdl90_msg_heartbeat *decodedMsg);
 void encode_gdl90_uplink_data(gdl_message_t *rawMsg, uint8_t *payload, uint16_t payload_size);

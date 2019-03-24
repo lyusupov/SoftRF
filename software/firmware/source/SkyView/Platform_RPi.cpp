@@ -36,9 +36,11 @@
 #include "TrafficHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
+#include "GDL90Helper.h"
+
 #include "SkyView.h"
 
-TTYSerial SerialInput("/dev/ttyUSB1");
+TTYSerial SerialInput("/dev/ttyUSB0");
 
 static const uint8_t SS    = 8; // pin 24
 
@@ -153,10 +155,30 @@ int main()
     Serial.println(F(" failed!"));
   }
 
-  NMEA_setup();
+  switch (settings->protocol)
+  {
+  case PROTOCOL_GDL90:
+    GDL90_setup();
+    break;
+  case PROTOCOL_NMEA:
+  default:
+    NMEA_setup();
+    break;
+  }
 
   while (true) {
-    NMEA_loop();
+
+    switch (settings->protocol)
+    {
+    case PROTOCOL_GDL90:
+      GDL90_loop();
+      break;
+    case PROTOCOL_NMEA:
+    default:
+      NMEA_loop();
+      break;
+    }
+
     EPD_loop();
     ClearExpired();
   }
