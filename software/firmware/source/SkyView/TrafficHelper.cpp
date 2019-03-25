@@ -20,8 +20,53 @@
 
 #include "SoCHelper.h"
 #include "TrafficHelper.h"
+#include "NMEAHelper.h"
 
-traffic_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
+traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
+
+unsigned long UpdateTrafficTimeMarker = 0;
+
+void Traffic_Update(int ndx)
+{
+  float distance = nmea.distanceBetween( ThisAircraft.latitude,
+                                         ThisAircraft.longitude,
+                                         Container[ndx].latitude,
+                                         Container[ndx].longitude);
+
+  float bearing  = nmea.courseTo( ThisAircraft.latitude,
+                                  ThisAircraft.longitude,
+                                  Container[ndx].latitude,
+                                  Container[ndx].longitude);
+
+  float RelativeNorth     = constrain(distance * cos(radians(bearing)),
+                                       -32768, 32768);
+  float RelativeEast      = constrain(distance * sin(radians(bearing)),
+                                       -32768, 32768);
+  float RelativeVertical  = constrain(Container[ndx].altitude - ThisAircraft.altitude,
+                                       -32768, 32768);
+
+  Container[ndx].RelativeNorth    = (int16_t) RelativeNorth;
+  Container[ndx].RelativeEast     = (int16_t) RelativeEast;
+  Container[ndx].RelativeVertical = (int16_t) RelativeVertical;
+}
+
+void Traffic_loop()
+{
+  if (isTimeToUpdateTraffic()) {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+
+      if (Container[i].ID &&
+          (ThisAircraft.timestamp - Container[i].timestamp) <= ENTRY_EXPIRATION_TIME) {
+        if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL)
+          Traffic_Update(i);
+      } else {
+        Container[i] = EmptyFO;
+      }
+    }
+
+    UpdateTrafficTimeMarker = millis();
+  }
+}
 
 void ClearExpired()
 {

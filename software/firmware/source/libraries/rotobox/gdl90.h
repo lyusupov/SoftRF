@@ -9,11 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#endif /* RASPBERRY_PI */
-
-#if defined(ARDUINO)
+#elif defined(ARDUINO)
 #include <Arduino.h>
-#endif /* ARDUINO */
+#endif /* RASPBERRY_PI || ARDUINO */
 
 #include "portable_endian.h"
 

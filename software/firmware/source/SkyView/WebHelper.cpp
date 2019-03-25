@@ -25,6 +25,7 @@
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
+#include "GDL90Helper.h"
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -374,16 +375,34 @@ void handleRoot() {
     offset += len;
     size -= len;
   case CON_SERIAL:
-    snprintf_P ( offset, size,
-      PSTR("\
+    switch (settings->protocol)
+    {
+    case PROTOCOL_GDL90:
+      snprintf_P ( offset, size,
+        PSTR("\
+  <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
+  <tr><th align=left>Data type</th><td align=right>%s %s</td></tr>\
+  "),
+        GDL90_isConnected()  ? "" : "not",
+        GDL90_isConnected()  && !GDL90_hasHeartBeat() ? "UNK" : "",
+        GDL90_hasHeartBeat() ? "GDL90"  : ""
+      );
+      break;
+    case PROTOCOL_NMEA:
+    default:
+      snprintf_P ( offset, size,
+        PSTR("\
   <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
   <tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
   "),
-      NMEA_isConnected() ? "" : "not",
-      NMEA_isConnected() && !(NMEA_hasGNSS() || NMEA_hasFLARM()) ? "UNK" : "",
-      NMEA_hasGNSS()     ? "GNSS"  : "",
-      NMEA_hasFLARM()    ? "FLARM" : ""
-    );
+        NMEA_isConnected() ? "" : "not",
+        NMEA_isConnected() && !(NMEA_hasGNSS() || NMEA_hasFLARM()) ? "UNK" : "",
+        NMEA_hasGNSS()     ? "GNSS"  : "",
+        NMEA_hasFLARM()    ? "FLARM" : ""
+      );
+      break;
+    }
+
     len = strlen(offset);
     offset += len;
     size -= len;

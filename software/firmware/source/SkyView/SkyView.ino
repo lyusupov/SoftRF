@@ -97,6 +97,7 @@ void loop()
   {
   case PROTOCOL_GDL90:
     GDL90_loop();
+    Traffic_loop();
     break;
   case PROTOCOL_NMEA:
   default:

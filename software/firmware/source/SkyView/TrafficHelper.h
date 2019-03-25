@@ -21,26 +21,49 @@
 
 #include "SoCHelper.h"
 
+extern "C" {
+#include <gdl90.h>
+}
+
+
 typedef struct traffic_struct {
     time_t    timestamp;
 
-    int8_t    AlarmLevel;
+/* -------------------------------+------------------------------ */
+/*            FLARM FTD-12        |      GDL90 equivalent         */
+/* -------------------------------+------------------------------ */
+    int8_t    AlarmLevel;         // trafficAlertStatus
+                                  //
+    int8_t    IDType;             // addressType
+    uint32_t  ID;                 // address
+    uint16_t  Track;              // trackOrHeading
+    int16_t   TurnRate;
+    uint16_t  GroundSpeed;        // horizontalVelocity
+    float     ClimbRate;          // verticalVelocity
+    int8_t    AcftType;           // emitterCategory
+
+/*            Legacy              */
     int16_t   RelativeNorth;
     int16_t   RelativeEast;
     int16_t   RelativeVertical;
-    int8_t    IDType;
-    uint32_t  ID;
-    uint16_t  Track;
-    int16_t   TurnRate;
-    uint16_t  GroundSpeed;
-    float     ClimbRate;
-    int8_t    AcftType;
+
+/*            GDL90      */
+    float     latitude;
+    float     longitude;
+    float     altitude;
+    uint8_t   callsign [GDL90_TRAFFICREPORT_MSG_CALLSIGN_SIZE];
 } traffic_t;
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
+#define TRAFFIC_VECTOR_UPDATE_INTERVAL 2 /* seconds */
+#define TRAFFIC_UPDATE_INTERVAL_MS (TRAFFIC_VECTOR_UPDATE_INTERVAL * 1000)
+#define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > \
+                                  TRAFFIC_UPDATE_INTERVAL_MS)
 
+void Traffic_Update(int);
+void Traffic_loop(void);
 void ClearExpired(void);
 
-extern traffic_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
+extern traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
 
 #endif /* TRAFFICHELPER_H */

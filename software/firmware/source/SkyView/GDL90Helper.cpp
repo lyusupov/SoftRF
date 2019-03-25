@@ -16,10 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <TinyGPS++.h>
+#include <TimeLib.h>
 
 #include "SoCHelper.h"
 #include "GDL90Helper.h"
 #include "EEPROMHelper.h"
+#include "NMEAHelper.h"
+#include "TrafficHelper.h"
+#include "WiFiHelper.h"
 
 #include "SkyView.h"
 
@@ -29,6 +34,8 @@ extern "C" {
 
 #define GDL90_RINGBUF_SIZE  sizeof(gdl_message_escaped_t)
 
+static unsigned long GDL90_TimeMarker = 0;
+static unsigned long GDL90_HeartBeat_TimeMarker = 0;
 static unsigned char gdl90_ringbuf[GDL90_RINGBUF_SIZE];
 static unsigned int gdl90buf_head = 0;
 static unsigned char prev_c = 0;
@@ -39,6 +46,169 @@ gdl90_msg_heartbeat heartbeat;
 gdl90_msg_traffic_report_t traffic;
 gdl90_msg_traffic_report_t ownship;
 gdl90_msg_ownship_geo_altitude geo_altitude;
+
+const uint8_t gdl90_to_aircraft_type[] PROGMEM = {
+	AIRCRAFT_TYPE_UNKNOWN,
+	AIRCRAFT_TYPE_POWERED,
+	AIRCRAFT_TYPE_POWERED,
+	AIRCRAFT_TYPE_JET,
+	AIRCRAFT_TYPE_JET,
+	AIRCRAFT_TYPE_JET,
+	AIRCRAFT_TYPE_POWERED,
+	AIRCRAFT_TYPE_HELICOPTER,
+	AIRCRAFT_TYPE_RESERVED,
+	AIRCRAFT_TYPE_GLIDER,
+	AIRCRAFT_TYPE_BALLOON,
+	AIRCRAFT_TYPE_PARACHUTE,
+	AIRCRAFT_TYPE_HANGGLIDER,
+	AIRCRAFT_TYPE_RESERVED,
+	AIRCRAFT_TYPE_UAV,
+	AIRCRAFT_TYPE_RESERVED
+};
+
+static void GDL90_Parse_Character(char c)
+{
+    unsigned int gdl90buf_tail;
+    size_t msg_size;
+
+    if (c == GDL90_CONTROL_ESCAPE) {
+      prev_c = c;
+      return;
+    } else if (prev_c == GDL90_CONTROL_ESCAPE) {
+      prev_c = c;
+      c ^= GDL90_ESCAPE_BYTE;
+    } else {
+      prev_c = c;
+    }
+
+    gdl90_ringbuf[gdl90buf_head % GDL90_RINGBUF_SIZE] = c;
+    gdl90buf_head++;
+
+    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_HEARTBEAT + 2 /* FC */ + 1 /* flag */;
+    gdl90buf_tail = gdl90buf_head - msg_size;
+    if (c == GDL90_FLAG_BYTE && 
+        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_HEARTBEAT) {
+
+      unsigned char *buf = (unsigned char *) &message;
+      for (uint8_t i=0; i < msg_size; i++) {
+          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+      }
+
+      if (decode_gdl90_heartbeat(&message, &heartbeat)) {
+
+//      print_gdl90_heartbeat(&heartbeat);
+
+        GDL90_HeartBeat_TimeMarker = millis();
+      }
+    }
+
+    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_GEOMETRIC + 2 /* FC */ + 1 /* flag */;
+    gdl90buf_tail = gdl90buf_head - msg_size;
+    if (c == GDL90_FLAG_BYTE && 
+        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_GEOMETRIC) {
+
+      unsigned char *buf = (unsigned char *) &message;
+      for (uint8_t i=0; i < msg_size; i++) {
+          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+      }
+
+      decode_gdl90_ownship_geo_altitude(&message, &geo_altitude);
+//    print_gdl90_ownship_geo_altitude(&geo_altitude);
+    }
+
+    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_TRAFFIC_REPORT + 2 /* FC */ + 1 /* flag */;
+    gdl90buf_tail = gdl90buf_head - msg_size;
+    if (c == GDL90_FLAG_BYTE && 
+        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_TRAFFIC_REPORT) {
+
+      unsigned char *buf = (unsigned char *) &message;
+      for (uint8_t i=0; i < msg_size; i++) {
+          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+      }
+
+      if (decode_gdl90_traffic_report(&message, &traffic)) {
+
+//      print_gdl90_traffic_report(&traffic);
+
+        fo = EmptyFO;
+
+        fo.ID          = traffic.address;
+        fo.IDType      = traffic.addressType == ADS_B_WITH_ICAO_ADDRESS ?
+                                          ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
+
+        fo.latitude    = traffic.latitude;
+        fo.longitude   = traffic.longitude;
+        fo.altitude    = traffic.altitude  / _GPS_FEET_PER_METER;
+
+        fo.AlarmLevel  = traffic.trafficAlertStatus == TRAFFIC_ALERT ?
+                                            ALARM_LEVEL_LOW : ALARM_LEVEL_NONE;
+        fo.Track       = traffic.trackOrHeading;           // degrees
+        fo.ClimbRate   = traffic.verticalVelocity/ (_GPS_FEET_PER_METER * 60.0);
+        fo.TurnRate    = 0;
+        fo.GroundSpeed = traffic.horizontalVelocity * _GPS_MPS_PER_KNOT;
+        fo.AcftType    = GDL90_TO_AT(traffic.emitterCategory);
+
+        memcpy(fo.callsign, traffic.callsign, sizeof(fo.callsign));
+
+        fo.timestamp   = now();
+
+        for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+
+          if (Container[i].ID == fo.ID) {
+            Container[i] = fo;
+            Traffic_Update(i);
+            break;
+          } else {
+            if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+              Container[i] = fo;
+              Traffic_Update(i);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_REPORT + 2 /* FC */ + 1 /* flag */;
+    gdl90buf_tail = gdl90buf_head - msg_size;
+    if (c == GDL90_FLAG_BYTE && 
+        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_REPORT) {
+
+      unsigned char *buf = (unsigned char *) &message;
+      for (uint8_t i=0; i < msg_size; i++) {
+          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+      }
+
+      if (decode_gdl90_traffic_report(&message, &ownship)) {
+
+//      print_gdl90_traffic_report(&ownship);
+
+        ThisAircraft.ID          = ownship.address;
+        ThisAircraft.IDType      = ownship.addressType == ADS_B_WITH_ICAO_ADDRESS ?
+                                          ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
+
+        ThisAircraft.latitude    = ownship.latitude;
+        ThisAircraft.longitude   = ownship.longitude;
+        ThisAircraft.altitude    = ownship.altitude  / _GPS_FEET_PER_METER;
+
+        ThisAircraft.AlarmLevel  = ownship.trafficAlertStatus == TRAFFIC_ALERT ?
+                                            ALARM_LEVEL_LOW : ALARM_LEVEL_NONE;
+        ThisAircraft.Track       = ownship.trackOrHeading;           // degrees
+        ThisAircraft.ClimbRate   = ownship.verticalVelocity/ (_GPS_FEET_PER_METER * 60.0);
+        ThisAircraft.TurnRate    = 0;
+        ThisAircraft.GroundSpeed = ownship.horizontalVelocity * _GPS_MPS_PER_KNOT;
+        ThisAircraft.AcftType    = GDL90_TO_AT(ownship.emitterCategory);
+
+        memcpy(ThisAircraft.callsign, ownship.callsign, sizeof(ThisAircraft.callsign));
+
+        ThisAircraft.timestamp   = now();
+      }
+    }
+}
 
 void GDL90_setup()
 {
@@ -77,88 +247,49 @@ void GDL90_setup()
 
       SoC->swSer_begin(SerialBaud);
     }
+
+    GDL90_HeartBeat_TimeMarker = GDL90_TimeMarker = millis();
   }
 }
 
 void GDL90_loop()
 {
-  unsigned int gdl90buf_tail;
-  size_t msg_size;
+  size_t size;
 
-  while (SerialInput.available()) {
-    unsigned char c = SerialInput.read();
-
-    if (c == GDL90_CONTROL_ESCAPE) {
-      prev_c = c;
-      continue;
-    } else if (prev_c == GDL90_CONTROL_ESCAPE) {
-      prev_c = c;
-      c ^= GDL90_ESCAPE_BYTE;
-    } else {
-      prev_c = c;
+  switch (settings->connection)
+  {
+  case CON_SERIAL:
+    while (SerialInput.available() > 0) {
+      char c = SerialInput.read();
+//      Serial.print(c);
+      GDL90_Parse_Character(c);
+      GDL90_TimeMarker = millis();
     }
-
-    gdl90_ringbuf[gdl90buf_head % GDL90_RINGBUF_SIZE] = c;
-    gdl90buf_head++;
-
-    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_HEARTBEAT + 2 /* FC */ + 1 /* flag */;
-    gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
-        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
-        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_HEARTBEAT) {
-
-      unsigned char *buf = (unsigned char *) &message;
-      for (uint8_t i=0; i < msg_size; i++) {
-          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+    break;
+  case CON_WIFI_UDP:
+    size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
+    if (size > 0) {
+      for (size_t i=0; i < size; i++) {
+//        Serial.print(UDPpacketBuffer[i]);
+        GDL90_Parse_Character(UDPpacketBuffer[i]);
       }
-
-      decode_gdl90_heartbeat(&message, &heartbeat);
-//    print_gdl90_heartbeat(&heartbeat);
+      GDL90_TimeMarker = millis();
     }
-
-    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_GEOMETRIC + 2 /* FC */ + 1 /* flag */;
-    gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
-        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
-        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_GEOMETRIC) {
-
-      unsigned char *buf = (unsigned char *) &message;
-      for (uint8_t i=0; i < msg_size; i++) {
-          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
-      }
-
-      decode_gdl90_ownship_geo_altitude(&message, &geo_altitude);
-//    print_gdl90_ownship_geo_altitude(&geo_altitude);
-    }
-
-    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_TRAFFIC_REPORT + 2 /* FC */ + 1 /* flag */;
-    gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
-        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
-        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_TRAFFIC_REPORT) {
-
-      unsigned char *buf = (unsigned char *) &message;
-      for (uint8_t i=0; i < msg_size; i++) {
-          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
-      }
-
-      decode_gdl90_traffic_report(&message, &traffic);
-//    print_gdl90_traffic_report(&traffic);
-    }
-
-    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_REPORT + 2 /* FC */ + 1 /* flag */;
-    gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
-        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
-        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_REPORT) {
-
-      unsigned char *buf = (unsigned char *) &message;
-      for (uint8_t i=0; i < msg_size; i++) {
-          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
-      }
-
-      decode_gdl90_traffic_report(&message, &ownship);
-//    print_gdl90_traffic_report(&ownship);
-    }
+    break;
+  case CON_NONE:
+  default:
+    break;
   }
+}
+
+bool GDL90_isConnected()
+{
+  return (GDL90_TimeMarker > GDL90_EXP_TIME &&
+         (millis() - GDL90_TimeMarker) < GDL90_EXP_TIME);
+}
+
+bool GDL90_hasHeartBeat()
+{
+  return (GDL90_HeartBeat_TimeMarker > GDL90_EXP_TIME &&
+         (millis() - GDL90_HeartBeat_TimeMarker) < GDL90_EXP_TIME);
 }

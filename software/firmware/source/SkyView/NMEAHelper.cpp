@@ -254,6 +254,8 @@ void NMEA_setup()
 
       SoC->swSer_begin(SerialBaud);
     }
+
+    NMEA_TimeMarker = millis();
   }
 }
 
