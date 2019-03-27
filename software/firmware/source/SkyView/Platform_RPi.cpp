@@ -37,6 +37,7 @@
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
 #include "GDL90Helper.h"
+#include "BatteryHelper.h"
 
 #include "SkyView.h"
 
@@ -106,6 +107,16 @@ static void RPi_swSer_begin(unsigned long baud)
   SerialInput.begin(baud);
 }
 
+static void RPi_Battery_setup()
+{
+  /* TBD */
+}
+
+static float RPi_Battery_voltage()
+{
+  return 0.0;  /* TBD */
+}
+
 static void RPi_EPD_setup()
 {
   display = &epd_waveshare;
@@ -128,8 +139,8 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
-  NULL,
+  RPi_Battery_setup,
+  RPi_Battery_voltage,
   RPi_EPD_setup,
   RPi_WiFi_Receive_UDP
 };
@@ -145,6 +156,8 @@ int main()
   Serial.begin(38400);
 
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  Battery_setup();
 
   Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
   Serial.flush();
@@ -180,7 +193,7 @@ int main()
     }
 
     EPD_loop();
-    ClearExpired();
+    Traffic_ClearExpired();
   }
 
   return 0;

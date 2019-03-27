@@ -25,6 +25,35 @@
 
 #define EPD_EXPIRATION_TIME     5 /* seconds */
 
+#define NO_DATA_TEXT "NO DATA"
+#define NO_FIX_TEXT  "NO FIX"
+
+#define NAVBOX1_TITLE "ACFTS"
+#define NAVBOX2_TITLE "DATA"
+#define NAVBOX3_TITLE "SCALE"
+#define NAVBOX4_TITLE "BAT"
+
+#define maxof2(a,b)   (a > b ? a : b)
+
+typedef struct navbox_struct
+{
+  char      title[8];
+  uint16_t  x;
+  uint16_t  y;
+  uint16_t  width;
+  uint16_t  height;
+  int       value;
+  int       prev_value;
+  uint32_t  timestamp;
+} navbox_t;
+
+enum
+{
+	EPD_SCALE_2KM,
+	EPD_SCALE_4KM,
+	EPD_SCALE_8KM
+};
+
 byte EPD_setup();
 void EPD_loop();
 

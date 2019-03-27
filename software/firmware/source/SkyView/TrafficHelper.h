@@ -60,9 +60,10 @@ typedef struct traffic_struct {
 #define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > \
                                   TRAFFIC_UPDATE_INTERVAL_MS)
 
-void Traffic_Update(int);
-void Traffic_loop(void);
-void ClearExpired(void);
+void Traffic_Update       (int);
+void Traffic_loop         (void);
+void Traffic_ClearExpired (void);
+int  Traffic_Count        (void);
 
 extern traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
 

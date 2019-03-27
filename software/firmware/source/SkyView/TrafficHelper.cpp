@@ -68,11 +68,24 @@ void Traffic_loop()
   }
 }
 
-void ClearExpired()
+void Traffic_ClearExpired()
 {
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
     if (Container[i].ID && (now() - Container[i].timestamp) > ENTRY_EXPIRATION_TIME) {
       Container[i] = EmptyFO;
     }
   }
+}
+
+int Traffic_Count()
+{
+  int count = 0;
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].ID) {
+      count++;
+    }
+  }
+
+  return count;
 }

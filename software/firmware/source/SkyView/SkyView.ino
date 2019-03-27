@@ -64,6 +64,7 @@ void setup()
   Serial.begin(38400); Serial.println();
 
   EEPROM_setup();
+  Battery_setup();
 
   Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
   Serial.flush();
@@ -74,7 +75,6 @@ void setup()
     Serial.println(F(" failed!"));
   }
 
-  Battery_setup();
   WiFi_setup();
 
   switch (settings->protocol)
@@ -106,7 +106,7 @@ void loop()
   }
 
   EPD_loop();
-  ClearExpired();
+  Traffic_ClearExpired();
 
   // Handle DNS
   WiFi_loop();

@@ -34,8 +34,9 @@ extern "C" {
 
 #define GDL90_RINGBUF_SIZE  sizeof(gdl_message_escaped_t)
 
-static unsigned long GDL90_TimeMarker = 0;
+static unsigned long GDL90_Data_TimeMarker = 0;
 static unsigned long GDL90_HeartBeat_TimeMarker = 0;
+static unsigned long GDL90_OwnShip_TimeMarker = 0;
 static unsigned char gdl90_ringbuf[GDL90_RINGBUF_SIZE];
 static unsigned int gdl90buf_head = 0;
 static unsigned char prev_c = 0;
@@ -206,6 +207,8 @@ static void GDL90_Parse_Character(char c)
         memcpy(ThisAircraft.callsign, ownship.callsign, sizeof(ThisAircraft.callsign));
 
         ThisAircraft.timestamp   = now();
+
+        GDL90_OwnShip_TimeMarker = millis();
       }
     }
 }
@@ -248,7 +251,7 @@ void GDL90_setup()
       SoC->swSer_begin(SerialBaud);
     }
 
-    GDL90_HeartBeat_TimeMarker = GDL90_TimeMarker = millis();
+    GDL90_HeartBeat_TimeMarker = GDL90_Data_TimeMarker = millis();
   }
 }
 
@@ -263,7 +266,7 @@ void GDL90_loop()
       char c = SerialInput.read();
 //      Serial.print(c);
       GDL90_Parse_Character(c);
-      GDL90_TimeMarker = millis();
+      GDL90_Data_TimeMarker = millis();
     }
     break;
   case CON_WIFI_UDP:
@@ -273,7 +276,7 @@ void GDL90_loop()
 //        Serial.print(UDPpacketBuffer[i]);
         GDL90_Parse_Character(UDPpacketBuffer[i]);
       }
-      GDL90_TimeMarker = millis();
+      GDL90_Data_TimeMarker = millis();
     }
     break;
   case CON_NONE:
@@ -284,12 +287,18 @@ void GDL90_loop()
 
 bool GDL90_isConnected()
 {
-  return (GDL90_TimeMarker > GDL90_EXP_TIME &&
-         (millis() - GDL90_TimeMarker) < GDL90_EXP_TIME);
+  return (GDL90_Data_TimeMarker > GDL90_EXP_TIME &&
+         (millis() - GDL90_Data_TimeMarker) < GDL90_EXP_TIME);
 }
 
 bool GDL90_hasHeartBeat()
 {
   return (GDL90_HeartBeat_TimeMarker > GDL90_EXP_TIME &&
          (millis() - GDL90_HeartBeat_TimeMarker) < GDL90_EXP_TIME);
+}
+
+bool GDL90_hasOwnShip()
+{
+  return (GDL90_OwnShip_TimeMarker > GDL90_EXP_TIME &&
+         (millis() - GDL90_OwnShip_TimeMarker) < GDL90_EXP_TIME);
 }
