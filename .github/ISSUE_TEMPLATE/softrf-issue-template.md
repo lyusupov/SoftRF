@@ -24,8 +24,10 @@ Recommended:
 - [ ]   Prime Mark II
 - [ ]   Standalone
 - [ ]   UAV
+- [ ]   UAT module
+- [ ]   SkyView
 
-< photo of your hardware > (optional)
+< photo of your hardware > (**required**)
 
 ## Firmware version
 
