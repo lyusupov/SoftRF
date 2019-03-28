@@ -29,6 +29,8 @@
 #define RELAY_DST_PORT  12390
 #define RELAY_SRC_PORT  (RELAY_DST_PORT - 1)
 
+#define DATA_TIMEOUT  2000 /* 2.0 seconds */
+
 typedef struct hardware_info {
     byte  model;
     byte  revision;

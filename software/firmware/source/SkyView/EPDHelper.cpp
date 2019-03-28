@@ -20,6 +20,7 @@
 
 #include <Fonts/Picopixel.h>
 
+#include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMonoOblique9pt7b.h>
 #include <Fonts/FreeMonoBoldOblique9pt7b.h>
 #include <Fonts/FreeSerifBold12pt7b.h>
@@ -191,6 +192,14 @@ static void EPD_Draw_Message(const char *msg)
 
 static void EPD_Draw_Radar()
 {
+        int16_t  tbx, tby;
+        uint16_t tbw, tbh;
+        uint16_t x;
+        uint16_t y;
+
+        display->setFont(&FreeMono9pt7b);
+        display->getTextBounds("N", 0, 0, &tbx, &tby, &tbw, &tbh);
+
         uint16_t radar_x = 0;
         uint16_t radar_y = (display->height() - display->width()) / 2;
         uint16_t radar_w = display->width();
@@ -236,6 +245,33 @@ static void EPD_Draw_Radar()
                                 radar_center_x    , radar_center_y + 2,
                                 radar_center_x + 7, radar_center_y + 5,
                                 GxEPD_WHITE);
+
+          switch (settings->map_orientation)
+          {
+          case DIRECTION_NORTH_UP:
+            x = radar_x + radar_w / 2 - radius + tbw/2;
+            y = radar_y + (radar_w + tbh) / 2;
+            display->setCursor(x , y);
+            display->print("W");
+            x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
+            y = radar_y + (radar_w + tbh) / 2;
+            display->setCursor(x , y);
+            display->print("E");
+            x = radar_x + (radar_w - tbw) / 2;
+            y = radar_y + radar_w/2 - radius + (3 * tbh)/2;
+            display->setCursor(x , y);
+            display->print("N");
+            x = radar_x + (radar_w - tbw) / 2;
+            y = radar_y + radar_w/2 + radius - tbh/2;
+            display->setCursor(x , y);
+            display->print("S");
+            break;
+          case DIRECTION_TRACK_UP:
+          default:
+            /* TBD */
+            break;
+          }
+
         }
         while (display->nextPage());
 
@@ -263,7 +299,7 @@ static void EPD_Update_NavBoxes()
     }
     while (display->nextPage());
 
-    navbox1.prev_value == navbox1.value;
+    navbox1.prev_value = navbox1.value;
   }
 
   if (navbox2.value != navbox2.prev_value) {
@@ -283,7 +319,7 @@ static void EPD_Update_NavBoxes()
     }
     while (display->nextPage());
 
-    navbox2.prev_value == navbox2.value;
+    navbox2.prev_value = navbox2.value;
   }
 
   if (navbox4.value != navbox4.prev_value) {
@@ -302,7 +338,7 @@ static void EPD_Update_NavBoxes()
     }
     while (display->nextPage());
 
-    navbox4.prev_value == navbox4.value;
+    navbox4.prev_value = navbox4.value;
   }
 
   display->hibernate();
@@ -454,11 +490,13 @@ void EPD_loop()
         switch (settings->protocol)
         {
         case PROTOCOL_GDL90:
-          navbox2.value = GDL90_hasHeartBeat() ? PROTOCOL_GDL90 : PROTOCOL_NONE;
+          navbox2.value = GDL90_hasHeartBeat() ?
+                          PROTOCOL_GDL90 : PROTOCOL_NONE;
           break;
         case PROTOCOL_NMEA:
         default:
-          navbox2.value = NMEA_hasFLARM()      ? PROTOCOL_NMEA  : PROTOCOL_NONE;
+          navbox2.value = NMEA_hasFLARM() || NMEA_hasGNSS ?
+                          PROTOCOL_NMEA  : PROTOCOL_NONE;
           break;
         }
 

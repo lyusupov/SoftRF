@@ -287,8 +287,8 @@ void GDL90_loop()
 
 bool GDL90_isConnected()
 {
-  return (GDL90_Data_TimeMarker > GDL90_EXP_TIME &&
-         (millis() - GDL90_Data_TimeMarker) < GDL90_EXP_TIME);
+  return (GDL90_Data_TimeMarker > DATA_TIMEOUT &&
+         (millis() - GDL90_Data_TimeMarker) < DATA_TIMEOUT);
 }
 
 bool GDL90_hasHeartBeat()

@@ -291,8 +291,8 @@ void NMEA_loop()
 
 bool NMEA_isConnected()
 {
-  return (NMEA_TimeMarker > NMEA_EXP_TIME &&
-         (millis() - NMEA_TimeMarker) < NMEA_EXP_TIME);
+  return (NMEA_TimeMarker > DATA_TIMEOUT &&
+         (millis() - NMEA_TimeMarker) < DATA_TIMEOUT);
 }
 
 bool NMEA_hasGNSS()

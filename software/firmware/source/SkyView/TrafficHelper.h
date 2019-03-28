@@ -54,7 +54,7 @@ typedef struct traffic_struct {
     uint8_t   callsign [GDL90_TRAFFICREPORT_MSG_CALLSIGN_SIZE];
 } traffic_t;
 
-#define ENTRY_EXPIRATION_TIME   10 /* seconds */
+#define ENTRY_EXPIRATION_TIME   5 /* seconds */
 #define TRAFFIC_VECTOR_UPDATE_INTERVAL 2 /* seconds */
 #define TRAFFIC_UPDATE_INTERVAL_MS (TRAFFIC_VECTOR_UPDATE_INTERVAL * 1000)
 #define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > \
