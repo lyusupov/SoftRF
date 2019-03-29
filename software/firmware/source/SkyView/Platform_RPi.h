@@ -25,7 +25,7 @@
 #include <raspi/raspi.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
-#define MAX_TRACKING_OBJECTS    8
+#define MAX_TRACKING_OBJECTS    12
 
 extern TTYSerial SerialInput;
 

@@ -495,7 +495,7 @@ void EPD_loop()
           break;
         case PROTOCOL_NMEA:
         default:
-          navbox2.value = NMEA_hasFLARM() || NMEA_hasGNSS ?
+          navbox2.value = (NMEA_hasFLARM() || NMEA_hasGNSS()) ?
                           PROTOCOL_NMEA  : PROTOCOL_NONE;
           break;
         }
