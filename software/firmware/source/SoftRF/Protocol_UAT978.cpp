@@ -86,6 +86,9 @@ bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->ew[0] = 0; fop->ew[1] = 0;
   fop->ew[2] = 0; fop->ew[3] = 0;
 
+  /* sizeof(mdb.callsign) = 9 ; sizeof(fop->callsign) = 8 */
+  memcpy(fop->callsign, mdb.callsign, sizeof(fop->callsign));
+
   return true;
 }
 

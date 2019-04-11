@@ -595,10 +595,12 @@ void normal()
     LEDTimeMarker = millis();
   }
 
-  if (isTimeToExport() && isValidGNSSFix()) {
-    NMEA_Export();
+  if (isTimeToExport()) {
+    if (isValidGNSSFix()) {
+      NMEA_Export();
+    }
     GDL90_Export();
-    D1090_Export();
+//    D1090_Export();
     ExportTimeMarker = millis();
   }
 

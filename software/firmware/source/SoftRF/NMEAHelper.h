@@ -31,7 +31,8 @@ enum
 	NMEA_BLUETOOTH
 };
 
-#define NMEA_BUFFER_SIZE  128
+#define NMEA_BUFFER_SIZE    128
+#define NMEA_CALLSIGN_SIZE  (3 /* prefix */ + 1 /* _ */ + 6 /* ICAO */ + 1 /* EOL */)
 
 void NMEA_setup(void);
 void NMEA_loop(void);

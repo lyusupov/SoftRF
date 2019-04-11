@@ -26,12 +26,16 @@
 #include "EEPROMHelper.h"
 #include "TrafficHelper.h"
 
+#define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
+
 #if defined(NMEA_TCP_SERVICE)
 WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
 char NMEABuffer[NMEA_BUFFER_SIZE]; //buffer for NMEA data
+
+static char NMEA_Callsign[NMEA_CALLSIGN_SIZE];
 
 #if defined(USE_NMEALIB)
 #include <nmealib.h>
@@ -239,6 +243,7 @@ void NMEA_Export()
     int bearing;
     int alt_diff;
     float distance;
+
     int total_objects = 0;
     int alarm_level = ALARM_LEVEL_NONE;
     time_t this_moment = now();
@@ -289,11 +294,34 @@ void NMEA_Export()
                 5, 1, str_climb_rate);
             }
 
-            snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s_%06X,%d,,%d,%s,%d*"),
+            /*
+             * When callsign is available - send it to a NMEA client.
+             * If it is not - generate a callsign substitute,
+             * based upon a protocol ID and the ICAO address
+             */
+            memset((void *) NMEA_Callsign, 0, sizeof(NMEA_Callsign));
+
+            if (strnlen((char *) Container[i].callsign, sizeof(Container[i].callsign)) > 0) {
+              memcpy(NMEA_Callsign, Container[i].callsign, sizeof(Container[i].callsign));
+            } else {
+              memcpy(NMEA_Callsign, NMEA_CallSign_Prefix[Container[i].protocol],
+                strlen(NMEA_CallSign_Prefix[Container[i].protocol]));
+
+              String str = "_";
+
+              ADDR_TO_HEX_STR(str, (Container[i].addr >> 16) & 0xFF);
+              ADDR_TO_HEX_STR(str, (Container[i].addr >>  8) & 0xFF);
+              ADDR_TO_HEX_STR(str, (Container[i].addr      ) & 0xFF);
+
+              str.toUpperCase();
+              memcpy(NMEA_Callsign + strlen(NMEA_CallSign_Prefix[Container[i].protocol]),
+                str.c_str(), str.length());
+            }
+
+            snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d*"),
                     alarm_level,
                     (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
-                    alt_diff, addr_type, Container[i].addr,
-                    NMEA_CallSign_Prefix[Container[i].protocol], Container[i].addr,
+                    alt_diff, addr_type, Container[i].addr, NMEA_Callsign,
                     (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
                     ltrim(str_climb_rate), Container[i].aircraft_type);
 

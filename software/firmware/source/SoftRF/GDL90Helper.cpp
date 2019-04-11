@@ -282,18 +282,27 @@ static void *msgType10and20(ufo_t *aircraft)
   Traffic.track         = (trackHeading & 0xFF) /* 0x03 */;
   Traffic.emit_cat      = AT_TO_GDL90(aircraft->aircraft_type) /* 0x4 */;
 
-  memcpy((char *)Traffic.callsign, GDL90_CallSign_Prefix[aircraft->protocol],
-    strlen(GDL90_CallSign_Prefix[aircraft->protocol]));
+  /*
+   * When callsign is available - send it to a GDL90 client.
+   * If it is not - generate a callsign substitute,
+   * based upon a protocol ID and the ICAO address
+   */
+  if (strnlen((char *) aircraft->callsign, sizeof(aircraft->callsign)) > 0) {
+    memcpy(Traffic.callsign, aircraft->callsign, sizeof(Traffic.callsign));
+  } else {
+    memcpy((char *)Traffic.callsign, GDL90_CallSign_Prefix[aircraft->protocol],
+      strlen(GDL90_CallSign_Prefix[aircraft->protocol]));
 
-  String str = "";
+    String str = "";
 
-  ADDR_TO_HEX_STR(str, (aircraft->addr >> 16) & 0xFF);
-  ADDR_TO_HEX_STR(str, (aircraft->addr >>  8) & 0xFF);
-  ADDR_TO_HEX_STR(str, (aircraft->addr      ) & 0xFF);
+    ADDR_TO_HEX_STR(str, (aircraft->addr >> 16) & 0xFF);
+    ADDR_TO_HEX_STR(str, (aircraft->addr >>  8) & 0xFF);
+    ADDR_TO_HEX_STR(str, (aircraft->addr      ) & 0xFF);
 
-  str.toUpperCase();
-  memcpy((char *)Traffic.callsign + strlen(GDL90_CallSign_Prefix[aircraft->protocol]),
-    str.c_str(), str.length());
+    str.toUpperCase();
+    memcpy((char *)Traffic.callsign + strlen(GDL90_CallSign_Prefix[aircraft->protocol]),
+      str.c_str(), str.length());
+  }
 
   Traffic.emerg_code    = 0 /* 0x5 */;
 //Traffic.reserved      = 0;
@@ -469,11 +478,13 @@ void GDL90_Export()
     GDL90_Out(buf, size);
 #endif /* ENABLE_AHRS */
 
-    size = makeOwnershipReport(buf, &ThisAircraft);
-    GDL90_Out(buf, size);
+    if (isValidGNSSFix()) {
+      size = makeOwnershipReport(buf, &ThisAircraft);
+      GDL90_Out(buf, size);
 
-    size = makeGeometricAltitude(buf, &ThisAircraft);
-    GDL90_Out(buf, size);
+      size = makeGeometricAltitude(buf, &ThisAircraft);
+      GDL90_Out(buf, size);
+    }
 
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
