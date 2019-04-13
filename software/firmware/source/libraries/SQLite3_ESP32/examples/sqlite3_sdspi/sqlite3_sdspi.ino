@@ -60,48 +60,46 @@ int db_exec(sqlite3 *db, const char *sql) {
    return rc;
 }
 
+#define SOC_GPIO_PIN_MOSI_T5S 15
+#define SOC_GPIO_PIN_MISO_T5S 2
+#define SOC_GPIO_PIN_SCK_T5S  14
+#define SOC_GPIO_PIN_SS_T5S   13
+
 void setup() {
-   Serial.begin(115200);
+   Serial.begin(38400);
    sqlite3 *db1;
    sqlite3 *db2;
    char *zErrMsg = 0;
    int rc;
 
-   SPI.begin();
+   SPI.begin(SOC_GPIO_PIN_SCK_T5S,
+             SOC_GPIO_PIN_MISO_T5S,
+             SOC_GPIO_PIN_MOSI_T5S,
+             SOC_GPIO_PIN_SS_T5S);
    SD.begin();
 
    sqlite3_initialize();
 
    // Open database 1
-   if (openDb("/sd/census2000names.db", &db1))
+   if (openDb("/sd/fln.db", &db1))
        return;
-   if (openDb("/sd/mdr512.db", &db2))
+   if (openDb("/sd/paw.db", &db2))
        return;
 
-   rc = db_exec(db1, "Select * from surnames where name = 'MICHELLE'");
+   rc = db_exec(db1, "Select * from aircrafts where id = 16222051");
    if (rc != SQLITE_OK) {
        sqlite3_close(db1);
        sqlite3_close(db2);
        return;
    }
-   rc = db_exec(db2, "Select * from domain_rank where domain between 'google.com' and 'google.com.z'");
+
+   rc = db_exec(db2, "Select * from aircrafts where id = 10624196");
    if (rc != SQLITE_OK) {
        sqlite3_close(db1);
        sqlite3_close(db2);
        return;
    }
-   rc = db_exec(db1, "Select * from surnames where name = 'SPRINGER'");
-   if (rc != SQLITE_OK) {
-       sqlite3_close(db1);
-       sqlite3_close(db2);
-       return;
-   }
-   rc = db_exec(db2, "Select * from domain_rank where domain = 'zoho.com'");
-   if (rc != SQLITE_OK) {
-       sqlite3_close(db1);
-       sqlite3_close(db2);
-       return;
-   }
+
 
    sqlite3_close(db1);
    sqlite3_close(db2);
