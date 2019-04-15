@@ -96,6 +96,28 @@ byte SPIClass::transfer(byte _data) {
 
 SPIClass SPI0(SPI_PRI);
 SPIClass SPI1(SPI_AUX);
+
+/* I2C is not implemented yet */
+TwoWire::TwoWire()
+{}
+
+void TwoWire::begin() {
+}
+
+void TwoWire::setClock(uint32_t clock) {
+}
+
+void TwoWire::beginTransmission(uint8_t byte) {
+}
+
+uint8_t TwoWire::endTransmission() {
+  return 0;
+}
+
+size_t TwoWire::write(uint8_t byte) {
+}
+
+TwoWire Wire;
  
 void pinMode(unsigned char pin, unsigned char mode) {
   if (pin == LMIC_UNUSED_PIN) {

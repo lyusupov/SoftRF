@@ -162,6 +162,19 @@ private:
     int8_t _spi_num;
 };
 
+class TwoWire {
+
+  public:
+    TwoWire();
+    void begin();
+    void setClock(uint32_t);
+    void beginTransmission(uint8_t);
+    uint8_t endTransmission(void);
+    size_t write(uint8_t);
+};
+
+extern TwoWire Wire;
+
 #if defined(USE_SPI1)
 extern SPIClass SPI1;
 #if !defined(SPI)

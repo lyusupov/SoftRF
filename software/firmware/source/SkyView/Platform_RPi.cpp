@@ -38,6 +38,7 @@
 #include "WiFiHelper.h"
 #include "GDL90Helper.h"
 #include "BatteryHelper.h"
+#include "OLEDHelper.h"
 
 #include "SkyView.h"
 
@@ -46,8 +47,11 @@ TTYSerial SerialInput("/dev/ttyUSB0");
 static const uint8_t SS    = 8; // pin 24
 
 /* Waveshare Pi HAT 2.7" */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=5*/ SS,
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=*/ SS,
                                        /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
+
+Adafruit_SSD1306 odisplay(SCREEN_WIDTH, SCREEN_HEIGHT,
+  &SPI, /*DC=*/ 25, /*RST=*/ 17, /*CS=*/ SS);
 
 lmic_pinmap lmic_pins = {
     .nss = LMIC_UNUSED_PIN,
@@ -168,6 +172,11 @@ int main()
     Serial.println(F(" failed!"));
   }
 
+  if (hw_info.display == DISPLAY_NONE) {
+    OLED_setup();
+    hw_info.display = DISPLAY_OLED_2_4;
+  }
+
   switch (settings->protocol)
   {
   case PROTOCOL_GDL90:
@@ -192,7 +201,18 @@ int main()
       break;
     }
 
-    EPD_loop();
+    switch (hw_info.display)
+    {
+    case DISPLAY_EPD_2_7:
+      EPD_loop();
+      break;
+    case DISPLAY_OLED_2_4:
+      OLED_loop();
+      break;
+    default:
+      break;
+    }
+
     Traffic_ClearExpired();
   }
 
