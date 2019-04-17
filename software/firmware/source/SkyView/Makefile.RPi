@@ -59,7 +59,7 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
                  $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o
 
-LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread -lsqlite3
 
 PROGNAME      := SkyView
 

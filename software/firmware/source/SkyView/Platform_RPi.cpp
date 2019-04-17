@@ -29,6 +29,8 @@
 #if defined(RASPBERRY_PI)
 
 #include <stdio.h>
+#include <string.h>
+#include <sqlite3.h>
 
 #include "SoCHelper.h"
 #include "NMEAHelper.h"
@@ -82,6 +84,8 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+static sqlite3 *fln_db;
+
 static void RPi_setup()
 {
 
@@ -131,6 +135,60 @@ static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
   return 0; /* TBD */
 }
 
+static bool RPi_DB_init()
+{
+  sqlite3_open("fln.db", &fln_db);
+
+  if (fln_db == NULL)
+  {
+    printf("Failed to open FlarmNet DB\n");
+    return false;
+  }
+
+  return true;
+}
+
+static bool RPi_DB_query(uint32_t id, char *buf, size_t size)
+{
+  sqlite3_stmt *stmt;
+  char *query = NULL;
+  int error;
+  bool rval = false;
+
+  error = asprintf(&query, "select registration from aircrafts where id = %d", id);
+
+  if (error == -1) {
+    return rval;
+  }
+
+  sqlite3_prepare_v2(fln_db, query, strlen(query), &stmt, NULL);
+
+  while (sqlite3_step(stmt) != SQLITE_DONE) {
+    if (sqlite3_column_type(stmt, 0) == SQLITE3_TEXT) {
+
+      size_t len = strlen((char *) sqlite3_column_text(stmt, 0));
+
+      if (len > 0) {
+        len = len > size ? size : len;
+        strncpy(buf, (char *) sqlite3_column_text(stmt, 0), len);
+        rval = true;
+      }
+    }
+  }
+
+  sqlite3_finalize(stmt);
+  free(query);
+
+  return rval;
+}
+
+static void RPi_DB_fini()
+{
+  if (fln_db != NULL) {
+    sqlite3_close(fln_db);
+  }
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
@@ -146,7 +204,9 @@ const SoC_ops_t RPi_ops = {
   RPi_Battery_setup,
   RPi_Battery_voltage,
   RPi_EPD_setup,
-  RPi_WiFi_Receive_UDP
+  RPi_WiFi_Receive_UDP,
+  RPi_DB_init,
+  RPi_DB_query
 };
 
 int main()
@@ -188,6 +248,16 @@ int main()
     break;
   }
 
+  if (!SoC->DB_init()) {
+      fprintf( stderr, "Unable to open aircrafts database\n\n" );
+      exit(EXIT_FAILURE);
+  }
+/*
+  char registration[9];
+  if (SoC->DB_query(14619344, registration, sizeof(registration) - 1)) {
+    printf("registration of 0x%X is %s\n", 14619344, registration);
+  }
+*/
   while (true) {
 
     switch (settings->protocol)

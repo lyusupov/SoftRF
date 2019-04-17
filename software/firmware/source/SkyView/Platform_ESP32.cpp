@@ -231,6 +231,16 @@ static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
   return WiFi_Receive_UDP(buf, max_size);
 }
 
+static bool ESP32_DB_init()
+{
+  return false;
+}
+
+static bool ESP32_DB_query(uint32_t id, char *buf, size_t size)
+{
+  return false;
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -246,7 +256,9 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
   ESP32_EPD_setup,
-  ESP32_WiFi_Receive_UDP
+  ESP32_WiFi_Receive_UDP,
+  ESP32_DB_init,
+  ESP32_DB_query
 };
 
 #endif /* ESP32 */

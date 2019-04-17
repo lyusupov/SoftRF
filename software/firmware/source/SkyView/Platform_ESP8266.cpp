@@ -109,6 +109,16 @@ static size_t ESP8266_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
   return WiFi_Receive_UDP(buf, max_size);
 }
 
+static bool ESP8266_DB_init()
+{
+  return false;
+}
+
+static bool ESP8266_DB_query(uint32_t id, char *buf, size_t size)
+{
+  return false;
+}
+
 const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
@@ -124,7 +134,9 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Battery_setup,
   ESP8266_Battery_voltage,
   ESP8266_EPD_setup,
-  ESP8266_WiFi_Receive_UDP
+  ESP8266_WiFi_Receive_UDP,
+  ESP8266_DB_init,
+  ESP8266_DB_query
 };
 
 #endif /* ESP8266 */
