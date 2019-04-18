@@ -40,7 +40,7 @@ typedef struct SoC_ops_struct {
   void (*EPD_setup)();
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
   bool (*DB_init)();
-  bool (*DB_query)(uint32_t, char *, size_t);
+  bool (*DB_query)(uint8_t, uint32_t, char *, size_t);
 } SoC_ops_t;
 
 enum

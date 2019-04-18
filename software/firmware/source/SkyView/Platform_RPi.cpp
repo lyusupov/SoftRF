@@ -23,6 +23,7 @@
  *
  *     < ... skipped ... >
  *
+ *  pi@raspberrypi $ sudo ./SkyView
  *
  */
 
@@ -85,6 +86,8 @@ hardware_info_t hw_info = {
 };
 
 static sqlite3 *fln_db;
+static sqlite3 *ogn_db;
+static sqlite3 *paw_db;
 
 static void RPi_setup()
 {
@@ -137,7 +140,7 @@ static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 
 static bool RPi_DB_init()
 {
-  sqlite3_open("fln.db", &fln_db);
+  sqlite3_open("Aircrafts/fln.db", &fln_db);
 
   if (fln_db == NULL)
   {
@@ -145,23 +148,64 @@ static bool RPi_DB_init()
     return false;
   }
 
+  sqlite3_open("Aircrafts/ogn.db", &ogn_db);
+
+  if (ogn_db == NULL)
+  {
+    printf("Failed to open OGN DB\n");
+    sqlite3_close(fln_db);
+    return false;
+  }
+
+  sqlite3_open("Aircrafts/paw.db", &paw_db);
+
+  if (paw_db == NULL)
+  {
+    printf("Failed to open PilotAware DB\n");
+    sqlite3_close(fln_db);
+    sqlite3_close(ogn_db);
+    return false;
+  }
+
   return true;
 }
 
-static bool RPi_DB_query(uint32_t id, char *buf, size_t size)
+static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
   sqlite3_stmt *stmt;
   char *query = NULL;
   int error;
   bool rval = false;
+  const char *reg_key, *db_key;
+  sqlite3 *db;
 
-  error = asprintf(&query, "select registration from aircrafts where id = %d", id);
+  switch(type)
+  {
+  case DB_OGN:
+    reg_key = "acreg";
+    db_key  = "devices";
+    db      = ogn_db;
+    break;
+  case DB_PAW:
+    reg_key = "registration";
+    db_key  = "aircrafts";
+    db      = paw_db;
+    break;
+  case DB_FLN:
+  default:
+    reg_key = "registration";
+    db_key  = "aircrafts";
+    db      = fln_db;
+    break;
+  }
+
+  error = asprintf(&query, "select %s from %s where id = %d",reg_key, db_key, id);
 
   if (error == -1) {
     return rval;
   }
 
-  sqlite3_prepare_v2(fln_db, query, strlen(query), &stmt, NULL);
+  sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 
   while (sqlite3_step(stmt) != SQLITE_DONE) {
     if (sqlite3_column_type(stmt, 0) == SQLITE3_TEXT) {
@@ -186,6 +230,14 @@ static void RPi_DB_fini()
 {
   if (fln_db != NULL) {
     sqlite3_close(fln_db);
+  }
+
+  if (ogn_db != NULL) {
+    sqlite3_close(ogn_db);
+  }
+
+  if (paw_db != NULL) {
+    sqlite3_close(paw_db);
   }
 }
 
@@ -249,15 +301,32 @@ int main()
   }
 
   if (!SoC->DB_init()) {
-      fprintf( stderr, "Unable to open aircrafts database\n\n" );
+      fprintf( stderr, "Unable to open aircrafts database(s)\n\n" );
       exit(EXIT_FAILURE);
   }
-/*
+#if 0
   char registration[9];
-  if (SoC->DB_query(14619344, registration, sizeof(registration) - 1)) {
-    printf("registration of 0x%X is %s\n", 14619344, registration);
+  long start = micros();
+  if (SoC->DB_query(DB_FLN, 14619344, registration, sizeof(registration) - 1)) {
+    printf("(FLN) registration of 0x%X is %s\n", 14619344, registration);
   }
-*/
+   Serial.print(F("Time taken:"));
+   Serial.println(micros()-start);
+
+  start = micros();
+  if (SoC->DB_query(DB_OGN, 14619344, registration, sizeof(registration) - 1)) {
+    printf("(OGN) registration of 0x%X is %s\n", 14619344, registration);
+  }
+   Serial.print(F("Time taken:"));
+   Serial.println(micros()-start);
+
+  start = micros();
+  if (SoC->DB_query(DB_PAW, 14619344, registration, sizeof(registration) - 1)) {
+    printf("(PAW) registration of 0x%X is %s\n", 14619344, registration);
+  }
+   Serial.print(F("Time taken:"));
+   Serial.println(micros()-start);
+#endif
   while (true) {
 
     switch (settings->protocol)

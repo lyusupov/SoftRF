@@ -236,7 +236,7 @@ static bool ESP32_DB_init()
   return false;
 }
 
-static bool ESP32_DB_query(uint32_t id, char *buf, size_t size)
+static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
   return false;
 }

@@ -109,6 +109,13 @@ enum
 	BLUETOOTH_SPP
 };
 
+enum
+{
+	DB_FLN,
+	DB_OGN,
+	DB_PAW
+};
+
 extern hardware_info_t hw_info;
 
 #endif /* SKYVIEW_H */

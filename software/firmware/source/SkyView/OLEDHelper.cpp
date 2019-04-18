@@ -63,13 +63,13 @@ void OLED_setup() {
   odisplay.getTextBounds(SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
   x = (odisplay.width()  - tbw2) / 2;
   y = (odisplay.height() + tbh2) / 2;
-  odisplay.setCursor(x, y);
+  odisplay.setCursor(x, y + tbh2);
   odisplay.print(SkyView_text2);
   odisplay.setFont(&Org_01);
   odisplay.getTextBounds(SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
   x = (odisplay.width()  - tbw3) / 2;
   y = (odisplay.height() + tbh3) / 2;
-  odisplay.setCursor(x, y + tbh2);
+  odisplay.setCursor(x, y + tbh2 + tbh3);
   odisplay.print(SkyView_text3);
 
   odisplay.display();
