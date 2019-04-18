@@ -133,8 +133,9 @@ static void ESP32_setup()
      *  -----------------+------------+--------------------
      *  DoIt ESP32       | WROOM      | GIGADEVICE_GD25Q32
      *  TTGO LoRa32 V2.0 | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V (confirmed by LilyGO)
-     *  TTGO T8 V1.8     | WROVER     | GIGADEVICE_GD25LQ32
+     *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
+     *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
      */
 
     switch(flash_id)

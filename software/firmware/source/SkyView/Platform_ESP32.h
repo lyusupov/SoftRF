@@ -49,6 +49,12 @@
 #define SOC_GPIO_PIN_SCK_WS   13
 #define SOC_GPIO_PIN_SS_WS    15
 
+/* TTGO T5S microSD pins mapping */
+#define SOC_SD_PIN_MOSI_T5S   15
+#define SOC_SD_PIN_MISO_T5S   2
+#define SOC_SD_PIN_SCK_T5S    14
+#define SOC_SD_PIN_SS_T5S     13
+
 extern WebServer server;
 
 #endif /* PLATFORM_ESP32_H */

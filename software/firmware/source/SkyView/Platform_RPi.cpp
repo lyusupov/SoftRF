@@ -308,29 +308,40 @@ int main()
       fprintf( stderr, "Unable to open aircrafts database(s)\n\n" );
       exit(EXIT_FAILURE);
   }
+
 #if 0
   char registration[9];
   long start = micros();
   if (SoC->DB_query(DB_FLN, 14619344, registration, sizeof(registration) - 1)) {
-    printf("(FLN) registration of 0x%X is %s\n", 14619344, registration);
+    Serial.print(F("(FLN) registration of "));
+    Serial.print(14619344);
+    Serial.print(F(" is "));
+    Serial.println(registration);
   }
    Serial.print(F("Time taken:"));
    Serial.println(micros()-start);
 
   start = micros();
   if (SoC->DB_query(DB_OGN, 14619344, registration, sizeof(registration) - 1)) {
-    printf("(OGN) registration of 0x%X is %s\n", 14619344, registration);
+    Serial.print(F("(OGN) registration of "));
+    Serial.print(14619344);
+    Serial.print(F(" is "));
+    Serial.println(registration);
   }
    Serial.print(F("Time taken:"));
    Serial.println(micros()-start);
 
   start = micros();
   if (SoC->DB_query(DB_PAW, 14619344, registration, sizeof(registration) - 1)) {
-    printf("(PAW) registration of 0x%X is %s\n", 14619344, registration);
+    Serial.print(F("(PAW) registration of "));
+    Serial.print(14619344);
+    Serial.print(F(" is "));
+    Serial.println(registration);
   }
    Serial.print(F("Time taken:"));
    Serial.println(micros()-start);
 #endif
+
   while (true) {
 
     switch (settings->protocol)

@@ -88,6 +88,8 @@ void setup()
     break;
   }
 
+  SoC->DB_init();
+
   Web_setup();
 }
 

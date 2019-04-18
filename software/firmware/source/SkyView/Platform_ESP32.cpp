@@ -30,6 +30,8 @@
 #include "SkyView.h"
 
 #include <battery.h>
+#include <sqlite3.h>
+#include <SD.h>
 
 WebServer server ( 80 );
 
@@ -94,6 +96,12 @@ static union {
   uint64_t chipmacid;
 };
 
+static sqlite3 *fln_db;
+static sqlite3 *ogn_db;
+static sqlite3 *paw_db;
+
+SPIClass SPI1(HSPI);
+
 static void ESP32_setup()
 {
   esp_err_t ret = ESP_OK;
@@ -115,6 +123,11 @@ static void ESP32_setup()
       chipmacid = ESP.getEfuseMac();
     }
   }
+
+  SPI1.begin(SOC_SD_PIN_SCK_T5S,
+             SOC_SD_PIN_MISO_T5S,
+             SOC_SD_PIN_MOSI_T5S,
+             SOC_SD_PIN_SS_T5S);
 }
 
 static uint32_t ESP32_getChipId()
@@ -233,12 +246,119 @@ static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 
 static bool ESP32_DB_init()
 {
-  return false;
+  if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1)) {
+    Serial.println("ERROR: Failed to mount microSD card.");
+    return false;
+  }
+
+  sqlite3_initialize();
+
+  sqlite3_open("/sd/Aircrafts/fln.db", &fln_db);
+
+  if (fln_db == NULL)
+  {
+    printf("Failed to open FlarmNet DB\n");
+    return false;
+  }
+
+  sqlite3_open("/sd/Aircrafts/ogn.db", &ogn_db);
+
+  if (ogn_db == NULL)
+  {
+    printf("Failed to open OGN DB\n");
+    sqlite3_close(fln_db);
+    return false;
+  }
+
+  sqlite3_open("/sd/Aircrafts/paw.db", &paw_db);
+
+  if (paw_db == NULL)
+  {
+    printf("Failed to open PilotAware DB\n");
+    sqlite3_close(fln_db);
+    sqlite3_close(ogn_db);
+    return false;
+  }
+
+  return true;
 }
 
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
-  return false;
+  sqlite3_stmt *stmt;
+  char *query = NULL;
+  int error;
+  bool rval = false;
+  const char *reg_key, *db_key;
+  sqlite3 *db;
+
+  switch(type)
+  {
+  case DB_OGN:
+    reg_key = "acreg";
+    db_key  = "devices";
+    db      = ogn_db;
+    break;
+  case DB_PAW:
+    reg_key = "registration";
+    db_key  = "aircrafts";
+    db      = paw_db;
+    break;
+  case DB_FLN:
+  default:
+    reg_key = "registration";
+    db_key  = "aircrafts";
+    db      = fln_db;
+    break;
+  }
+
+  if (db == NULL) {
+    return false;
+  }
+
+  error = asprintf(&query, "select %s from %s where id = %d",reg_key, db_key, id);
+
+  if (error == -1) {
+    return false;
+  }
+
+  sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
+
+  while (sqlite3_step(stmt) != SQLITE_DONE) {
+    if (sqlite3_column_type(stmt, 0) == SQLITE3_TEXT) {
+
+      size_t len = strlen((char *) sqlite3_column_text(stmt, 0));
+
+      if (len > 0) {
+        len = len > size ? size : len;
+        strncpy(buf, (char *) sqlite3_column_text(stmt, 0), len);
+        rval = true;
+      }
+    }
+  }
+
+  sqlite3_finalize(stmt);
+
+  free(query);
+
+  return rval;
+}
+
+static void ESP32_DB_fini()
+{
+  if (fln_db != NULL) {
+    sqlite3_close(fln_db);
+  }
+
+  if (ogn_db != NULL) {
+    sqlite3_close(ogn_db);
+  }
+
+  if (paw_db != NULL) {
+    sqlite3_close(paw_db);
+  }
+
+  sqlite3_shutdown();
 }
 
 const SoC_ops_t ESP32_ops = {
