@@ -26,6 +26,15 @@
 
 #define maxof2(a,b)   (a > b ? a : b)
 
+#define OLED_EXPIRATION_TIME     5 /* seconds */
+
+#define COLUMN1_TITLE "  ID  "
+#define COLUMN2_TITLE " DIST "
+#define COLUMN3_TITLE " BRG  "
+#define COLUMN4_TITLE " ELEV "
+
+#define OLED_LINES_PER_PAGE  5
+
 void OLED_setup();
 void OLED_loop();
 

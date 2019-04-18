@@ -192,90 +192,90 @@ static void EPD_Draw_Message(const char *msg)
 
 static void EPD_Draw_Radar()
 {
-        int16_t  tbx, tby;
-        uint16_t tbw, tbh;
-        uint16_t x;
-        uint16_t y;
+  int16_t  tbx, tby;
+  uint16_t tbw, tbh;
+  uint16_t x;
+  uint16_t y;
 
-        display->setFont(&FreeMono9pt7b);
-        display->getTextBounds("N", 0, 0, &tbx, &tby, &tbw, &tbh);
+  display->setFont(&FreeMono9pt7b);
+  display->getTextBounds("N", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-        uint16_t radar_x = 0;
-        uint16_t radar_y = (display->height() - display->width()) / 2;
-        uint16_t radar_w = display->width();
+  uint16_t radar_x = 0;
+  uint16_t radar_y = (display->height() - display->width()) / 2;
+  uint16_t radar_w = display->width();
 
-        display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+  display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
 
-        uint16_t radar_center_x = radar_w / 2;
-        uint16_t radar_center_y = radar_y + radar_w / 2;
-        uint16_t radius = radar_w / 2 - 2;
+  uint16_t radar_center_x = radar_w / 2;
+  uint16_t radar_center_y = radar_y + radar_w / 2;
+  uint16_t radius = radar_w / 2 - 2;
 
-        display->firstPage();
-        do
-        {
-          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-            if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
+  display->firstPage();
+  do
+  {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
 #if 0
-              Serial.print(F(" ID="));
-              Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
-              Serial.print((Container[i].ID >>  8) & 0xFF, HEX);
-              Serial.print((Container[i].ID      ) & 0xFF, HEX);
-              Serial.println();
+        Serial.print(F(" ID="));
+        Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
+        Serial.print((Container[i].ID >>  8) & 0xFF, HEX);
+        Serial.print((Container[i].ID      ) & 0xFF, HEX);
+        Serial.println();
 
-              Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
-              Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
+        Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
+        Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
 #endif
-              int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
-              int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
-              display->fillCircle(radar_center_x + x,
-                                  radar_center_y - y,
-                                  5, GxEPD_BLACK);
-            }
-          }
+        int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / 2000;
+        int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / 2000;
+        display->fillCircle(radar_center_x + x,
+                            radar_center_y - y,
+                            5, GxEPD_BLACK);
+      }
+    }
 
-          display->drawCircle(  radar_center_x, radar_center_y,
-                                radius, GxEPD_BLACK);
-          display->drawCircle(  radar_center_x, radar_center_y,
-                                radius / 2, GxEPD_BLACK);
-          display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                                radar_center_x    , radar_center_y - 5,
-                                radar_center_x + 7, radar_center_y + 5,
-                                GxEPD_BLACK);
-          display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                                radar_center_x    , radar_center_y + 2,
-                                radar_center_x + 7, radar_center_y + 5,
-                                GxEPD_WHITE);
+    display->drawCircle(  radar_center_x, radar_center_y,
+                          radius, GxEPD_BLACK);
+    display->drawCircle(  radar_center_x, radar_center_y,
+                          radius / 2, GxEPD_BLACK);
+    display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                          radar_center_x    , radar_center_y - 5,
+                          radar_center_x + 7, radar_center_y + 5,
+                          GxEPD_BLACK);
+    display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                          radar_center_x    , radar_center_y + 2,
+                          radar_center_x + 7, radar_center_y + 5,
+                          GxEPD_WHITE);
 
-          switch (settings->map_orientation)
-          {
-          case DIRECTION_NORTH_UP:
-            x = radar_x + radar_w / 2 - radius + tbw/2;
-            y = radar_y + (radar_w + tbh) / 2;
-            display->setCursor(x , y);
-            display->print("W");
-            x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
-            y = radar_y + (radar_w + tbh) / 2;
-            display->setCursor(x , y);
-            display->print("E");
-            x = radar_x + (radar_w - tbw) / 2;
-            y = radar_y + radar_w/2 - radius + (3 * tbh)/2;
-            display->setCursor(x , y);
-            display->print("N");
-            x = radar_x + (radar_w - tbw) / 2;
-            y = radar_y + radar_w/2 + radius - tbh/2;
-            display->setCursor(x , y);
-            display->print("S");
-            break;
-          case DIRECTION_TRACK_UP:
-          default:
-            /* TBD */
-            break;
-          }
+    switch (settings->map_orientation)
+    {
+    case DIRECTION_NORTH_UP:
+      x = radar_x + radar_w / 2 - radius + tbw/2;
+      y = radar_y + (radar_w + tbh) / 2;
+      display->setCursor(x , y);
+      display->print("W");
+      x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
+      y = radar_y + (radar_w + tbh) / 2;
+      display->setCursor(x , y);
+      display->print("E");
+      x = radar_x + (radar_w - tbw) / 2;
+      y = radar_y + radar_w/2 - radius + (3 * tbh)/2;
+      display->setCursor(x , y);
+      display->print("N");
+      x = radar_x + (radar_w - tbw) / 2;
+      y = radar_y + radar_w/2 + radius - tbh/2;
+      display->setCursor(x , y);
+      display->print("S");
+      break;
+    case DIRECTION_TRACK_UP:
+    default:
+      /* TBD */
+      break;
+    }
 
-        }
-        while (display->nextPage());
+  }
+  while (display->nextPage());
 
-        display->hibernate();
+  display->hibernate();
 }
 
 static void EPD_Update_NavBoxes()
@@ -447,6 +447,8 @@ byte EPD_setup()
   navbox4.timestamp  = millis();
 
   if (rval == DISPLAY_EPD_2_7) delay(5000); /* display SkyView logo for 5 seconds */
+
+  EPDTimeMarker = millis();
 
   return rval;
 }

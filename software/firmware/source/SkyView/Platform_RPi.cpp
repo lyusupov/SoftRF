@@ -199,10 +199,14 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     break;
   }
 
+  if (db == NULL) {
+    return false;
+  }
+
   error = asprintf(&query, "select %s from %s where id = %d",reg_key, db_key, id);
 
   if (error == -1) {
-    return rval;
+    return false;
   }
 
   sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
