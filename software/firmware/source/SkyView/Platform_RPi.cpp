@@ -45,6 +45,15 @@
 
 #include "SkyView.h"
 
+#include <alsa/asoundlib.h>
+#include <sndfile.h>
+#include <string.h>
+
+#define MAX_FILENAME_LEN  64
+#define PCM_DEVICE        "default"
+#define FILE_PREFIX       "Audio/voice1/"
+#define FILE_SUFFIX       ".wav"
+
 TTYSerial SerialInput("/dev/ttyUSB0");
 
 static const uint8_t SS    = 8; // pin 24
@@ -245,6 +254,81 @@ static void RPi_DB_fini()
   }
 }
 
+static void play_file(snd_pcm_t *pcm_handle, char *filename, short int* buf, snd_pcm_uframes_t frames) {
+
+    int pcmrc;
+    int readcount;
+
+    SF_INFO sfinfo;
+    SNDFILE *infile = NULL;
+
+    infile = sf_open(filename, SFM_READ, &sfinfo);
+
+    while ((readcount = sf_readf_short(infile, buf, frames))>0) {
+
+        pcmrc = snd_pcm_writei(pcm_handle, buf, readcount);
+        if (pcmrc == -EPIPE) {
+            fprintf(stderr, "Underrun!\n");
+            snd_pcm_prepare(pcm_handle);
+        }
+        else if (pcmrc < 0) {
+            fprintf(stderr, "Error writing to PCM device: %s\n", snd_strerror(pcmrc));
+        }
+        else if (pcmrc != readcount) {
+            fprintf(stderr,"PCM write difffers from file read.\n");
+        }
+    }
+
+    sf_close(infile);
+}
+
+static void RPi_TTS (char *message) {
+
+  snd_pcm_t *pcm_handle;
+  snd_pcm_hw_params_t *params;
+  snd_pcm_uframes_t frames;
+  short int* buf = NULL;
+  int dir;
+  int channels = 1;
+
+  char filename[MAX_FILENAME_LEN];
+
+  /* Open the PCM device in playback mode */
+  snd_pcm_open(&pcm_handle, PCM_DEVICE, SND_PCM_STREAM_PLAYBACK, 0);
+
+  /* Allocate parameters object and fill it with default values*/
+  snd_pcm_hw_params_alloca(&params);
+  snd_pcm_hw_params_any(pcm_handle, params);
+  /* Set parameters */
+  snd_pcm_hw_params_set_access(pcm_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
+  snd_pcm_hw_params_set_format(pcm_handle, params, SND_PCM_FORMAT_S16_LE);
+  snd_pcm_hw_params_set_channels(pcm_handle, params, 1);
+  snd_pcm_hw_params_set_rate(pcm_handle, params, 44100, 0);
+
+  /* Write parameters */
+  snd_pcm_hw_params(pcm_handle, params);
+
+  /* Allocate buffer to hold single period */
+  snd_pcm_hw_params_get_period_size(params, &frames, &dir);
+
+  buf = (short int *) malloc(frames * channels * sizeof(short int));
+
+  char *word = strtok (message, " ");
+
+  while (word != NULL)
+  {
+      strcpy(filename, FILE_PREFIX);
+      strcat(filename, word);
+      strcat(filename, FILE_SUFFIX);
+      play_file(pcm_handle, filename, buf, frames);
+      word = strtok (NULL, " ");
+  }
+
+  snd_pcm_drain(pcm_handle);
+  snd_pcm_close(pcm_handle);
+  free(buf);
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
@@ -340,6 +424,11 @@ int main()
   }
    Serial.print(F("Time taken:"));
    Serial.println(micros()-start);
+#endif
+
+#if 0
+  char sentence[] = "traffic 3oclock 7 kms 5 hundred feet high";
+  RPi_TTS(sentence);
 #endif
 
   while (true) {
