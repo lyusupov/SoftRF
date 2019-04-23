@@ -33,6 +33,8 @@
 #include <sqlite3.h>
 #include <SD.h>
 
+#include "driver/i2s.h"
+
 WebServer server ( 80 );
 
 /*
@@ -48,7 +50,11 @@ WebServer server ( 80 );
 P1-1                    21
 P1-2                    22 (LED)
 
-I2S                     27
+I2S MAX98357A           26
+                        25
+                        19
+
+I2S MIC                 27
                         32
                         33
 
@@ -101,6 +107,29 @@ static sqlite3 *ogn_db;
 static sqlite3 *paw_db;
 
 SPIClass SPI1(HSPI);
+
+/* variables hold file, state of process wav file and wav file properties */
+wavProperties_t wavProps;
+
+//i2s configuration
+int i2s_num = 0; // i2s port number
+i2s_config_t i2s_config = {
+     .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
+     .sample_rate          = 22050,
+     .bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT,
+     .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
+     .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+     .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1, // high interrupt priority
+     .dma_buf_count        = 8,
+     .dma_buf_len          = 128   //Interrupt level 1
+    };
+
+i2s_pin_config_t pin_config = {
+    .bck_io_num   = SOC_GPIO_PIN_BCLK,
+    .ws_io_num    = SOC_GPIO_PIN_LRCLK,
+    .data_out_num = SOC_GPIO_PIN_DOUT,
+    .data_in_num  = -1  // Not used
+};
 
 static void ESP32_setup()
 {
@@ -361,6 +390,120 @@ static void ESP32_DB_fini()
   sqlite3_shutdown();
 }
 
+/* write sample data to I2S */
+int i2s_write_sample_nb(uint32_t sample){
+  return i2s_write_bytes((i2s_port_t)i2s_num, (const char *)&sample, sizeof(uint32_t), 100);
+}
+
+/* read 4 bytes of data from wav file */
+int read4bytes(File file, uint32_t *chunkId){
+  int n = file.read((uint8_t *)chunkId, sizeof(uint32_t));
+  return n;
+}
+
+/* these are function to process wav file */
+int readRiff(File file, wavRiff_t *wavRiff){
+  int n = file.read((uint8_t *)wavRiff, sizeof(wavRiff_t));
+  return n;
+}
+
+int readProps(File file, wavProperties_t *wavProps){
+  int n = file.read((uint8_t *)wavProps, sizeof(wavProperties_t));
+  return n;
+}
+
+static void play_file(char *filename)
+{
+  headerState_t state = HEADER_RIFF;
+
+  File wavfile = SD.open(filename);
+
+  if (wavfile) {
+    int c = 0;
+    int n;
+    while (wavfile.available()) {
+      switch(state){
+        case HEADER_RIFF:
+        wavRiff_t wavRiff;
+        n = readRiff(wavfile, &wavRiff);
+        if(n == sizeof(wavRiff_t)){
+          if(wavRiff.chunkID == CCCC('R', 'I', 'F', 'F') && wavRiff.format == CCCC('W', 'A', 'V', 'E')){
+            state = HEADER_FMT;
+//            Serial.println("HEADER_RIFF");
+          }
+        }
+        break;
+        case HEADER_FMT:
+        n = readProps(wavfile, &wavProps);
+        if(n == sizeof(wavProperties_t)){
+          state = HEADER_DATA;
+#if 0
+            Serial.print("chunkID = "); Serial.println(wavProps.chunkID);
+            Serial.print("chunkSize = "); Serial.println(wavProps.chunkSize);
+            Serial.print("audioFormat = "); Serial.println(wavProps.audioFormat);
+            Serial.print("numChannels = "); Serial.println(wavProps.numChannels);
+            Serial.print("sampleRate = "); Serial.println(wavProps.sampleRate);
+            Serial.print("byteRate = "); Serial.println(wavProps.byteRate);
+            Serial.print("blockAlign = "); Serial.println(wavProps.blockAlign);
+            Serial.print("bitsPerSample = "); Serial.println(wavProps.bitsPerSample);
+#endif
+        }
+        break;
+        case HEADER_DATA:
+        uint32_t chunkId, chunkSize;
+        n = read4bytes(wavfile, &chunkId);
+        if(n == 4){
+          if(chunkId == CCCC('d', 'a', 't', 'a')){
+//            Serial.println("HEADER_DATA");
+          }
+        }
+        n = read4bytes(wavfile, &chunkSize);
+        if(n == 4){
+//          Serial.println("prepare data");
+          state = DATA;
+        }
+        //initialize i2s with configurations above
+        i2s_driver_install((i2s_port_t)i2s_num, &i2s_config, 0, NULL);
+        i2s_set_pin((i2s_port_t)i2s_num, &pin_config);
+        //set sample rates of i2s to sample rate of wav file
+        i2s_set_sample_rates((i2s_port_t)i2s_num, wavProps.sampleRate);
+        break;
+        /* after processing wav file, it is time to process music data */
+        case DATA:
+        uint32_t data;
+        n = read4bytes(wavfile, &data);
+        i2s_write_sample_nb(data);
+        break;
+      }
+    }
+    wavfile.close();
+  } else {
+    Serial.println("error opening WAV file");
+  }
+  if (state == DATA)
+    i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
+//  Serial.println("done!");
+}
+
+static void ESP32_TTS(char *message)
+{
+  char filename[MAX_FILENAME_LEN];
+
+  if (SD.cardType() == CARD_NONE)
+    return;
+
+  char *word = strtok (message, " ");
+
+  while (word != NULL)
+  {
+      strcpy(filename, FILE_PREFIX);
+      strcat(filename, word);
+      strcat(filename, FILE_SUFFIX);
+      play_file(filename);
+      word = strtok (NULL, " ");
+  }
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -378,7 +521,8 @@ const SoC_ops_t ESP32_ops = {
   ESP32_EPD_setup,
   ESP32_WiFi_Receive_UDP,
   ESP32_DB_init,
-  ESP32_DB_query
+  ESP32_DB_query,
+  ESP32_TTS
 };
 
 #endif /* ESP32 */

@@ -254,8 +254,8 @@ static void RPi_DB_fini()
   }
 }
 
-static void play_file(snd_pcm_t *pcm_handle, char *filename, short int* buf, snd_pcm_uframes_t frames) {
-
+static void play_file(snd_pcm_t *pcm_handle, char *filename, short int* buf, snd_pcm_uframes_t frames)
+{
     int pcmrc;
     int readcount;
 
@@ -282,8 +282,8 @@ static void play_file(snd_pcm_t *pcm_handle, char *filename, short int* buf, snd
     sf_close(infile);
 }
 
-static void RPi_TTS (char *message) {
-
+static void RPi_TTS(char *message)
+{
   snd_pcm_t *pcm_handle;
   snd_pcm_hw_params_t *params;
   snd_pcm_uframes_t frames;
@@ -303,7 +303,7 @@ static void RPi_TTS (char *message) {
   snd_pcm_hw_params_set_access(pcm_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
   snd_pcm_hw_params_set_format(pcm_handle, params, SND_PCM_FORMAT_S16_LE);
   snd_pcm_hw_params_set_channels(pcm_handle, params, 1);
-  snd_pcm_hw_params_set_rate(pcm_handle, params, 44100, 0);
+  snd_pcm_hw_params_set_rate(pcm_handle, params, 22050, 0);
 
   /* Write parameters */
   snd_pcm_hw_params(pcm_handle, params);
@@ -346,7 +346,8 @@ const SoC_ops_t RPi_ops = {
   RPi_EPD_setup,
   RPi_WiFi_Receive_UDP,
   RPi_DB_init,
-  RPi_DB_query
+  RPi_DB_query,
+  RPi_TTS
 };
 
 int main()
@@ -427,8 +428,8 @@ int main()
 #endif
 
 #if 0
-  char sentence[] = "traffic 3oclock 7 kms 5 hundred feet high";
-  RPi_TTS(sentence);
+  char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";
+  SoC->TTS(sentence);
 #endif
 
   while (true) {

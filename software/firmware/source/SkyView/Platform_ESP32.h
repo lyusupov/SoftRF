@@ -39,7 +39,7 @@
 
 /* TTGO T5 and T5S SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_T5S 23
-#define SOC_GPIO_PIN_MISO_T5S 19
+#define SOC_GPIO_PIN_MISO_T5S 12
 #define SOC_GPIO_PIN_SCK_T5S  18
 #define SOC_GPIO_PIN_SS_T5S   5
 
@@ -54,6 +54,39 @@
 #define SOC_SD_PIN_MISO_T5S   2
 #define SOC_SD_PIN_SCK_T5S    14
 #define SOC_SD_PIN_SS_T5S     13
+
+/* TTGO T5S I2S-out pins mapping */
+#define SOC_GPIO_PIN_BCLK     26
+#define SOC_GPIO_PIN_LRCLK    25
+#define SOC_GPIO_PIN_DOUT     19
+
+#define CCCC(c1, c2, c3, c4)    ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
+
+#define MAX_FILENAME_LEN  64
+#define FILE_PREFIX       "/Audio/voice1/"
+#define FILE_SUFFIX       ".wav"
+
+/* these are data structures to process wav file */
+typedef enum headerState_e {
+    HEADER_RIFF, HEADER_FMT, HEADER_DATA, DATA
+} headerState_t;
+
+typedef struct wavRiff_s {
+    uint32_t chunkID;
+    uint32_t chunkSize;
+    uint32_t format;
+} wavRiff_t;
+
+typedef struct wavProperties_s {
+    uint32_t chunkID;
+    uint32_t chunkSize;
+    uint16_t audioFormat;
+    uint16_t numChannels;
+    uint32_t sampleRate;
+    uint32_t byteRate;
+    uint16_t blockAlign;
+    uint16_t bitsPerSample;
+} wavProperties_t;
 
 extern WebServer server;
 
