@@ -610,7 +610,7 @@ void onModeButtonEvent() {
 }
 
 void onUpButtonEvent() {
-  button_mode.check();
+  button_up.check();
 }
 
 void onDownButtonEvent() {
