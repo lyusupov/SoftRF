@@ -39,6 +39,11 @@ static void ESP8266_setup()
 
 }
 
+static void ESP8266_fini()
+{
+
+}
+
 static uint32_t ESP8266_getChipId()
 {
   return ESP.getChipId();
@@ -119,7 +124,27 @@ static bool ESP8266_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   return false;
 }
 
+static void ESP8266_DB_fini()
+{
+
+}
+
 static void ESP8266_TTS(char *message)
+{
+
+}
+
+static void ESP8266_Button_setup()
+{
+
+}
+
+static void ESP8266_Button_loop()
+{
+
+}
+
+static void ESP8266_Button_fini()
 {
 
 }
@@ -128,6 +153,7 @@ const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
+  ESP8266_fini,
   ESP8266_getChipId,
   ESP8266_EEPROM_begin,
   ESP8266_WiFi_setOutputPower,
@@ -142,7 +168,11 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_WiFi_Receive_UDP,
   ESP8266_DB_init,
   ESP8266_DB_query,
-  ESP8266_TTS
+  ESP8266_DB_fini,
+  ESP8266_TTS,
+  ESP8266_Button_setup,
+  ESP8266_Button_loop,
+  ESP8266_Button_fini
 };
 
 #endif /* ESP8266 */

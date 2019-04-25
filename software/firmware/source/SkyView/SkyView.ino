@@ -65,6 +65,7 @@ void setup()
 
   EEPROM_setup();
   Battery_setup();
+  SoC->Button_setup();
 
   Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
   Serial.flush();
@@ -120,4 +121,21 @@ void loop()
 
   // Handle Web
   Web_loop();
+
+  SoC->Button_loop();
+}
+
+void shutdown()
+{
+  Web_fini();
+
+  SoC->DB_fini();
+
+  WiFi_fini();
+
+  EPD_fini();
+
+  SoC->Button_fini();
+
+  SoC_fini();
 }

@@ -671,3 +671,8 @@ void Web_loop()
 {
   server.handleClient();
 }
+
+void Web_fini()
+{
+  server.stop();
+}

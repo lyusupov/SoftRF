@@ -27,6 +27,7 @@ typedef struct SoC_ops_struct {
   uint8_t id;
   const char name[16];
   void (*setup)();
+  void (*fini)();
   uint32_t (*getChipId)();
   bool (*EEPROM_begin)(size_t);
   void (*WiFi_setOutputPower)(int);
@@ -41,7 +42,11 @@ typedef struct SoC_ops_struct {
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
   bool (*DB_init)();
   bool (*DB_query)(uint8_t, uint32_t, char *, size_t);
+  void (*DB_fini)();
   void (*TTS)(char *);
+  void (*Button_setup)();
+  void (*Button_loop)();
+  void (*Button_fini)();
 } SoC_ops_t;
 
 enum
@@ -68,5 +73,6 @@ extern const SoC_ops_t CC13XX_ops;
 #endif
 
 byte SoC_setup(void);
+void SoC_fini(void);
 
 #endif /* SOCHELPER_H */

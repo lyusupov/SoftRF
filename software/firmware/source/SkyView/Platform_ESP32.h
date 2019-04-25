@@ -60,6 +60,14 @@
 #define SOC_GPIO_PIN_LRCLK    25
 #define SOC_GPIO_PIN_DOUT     19
 
+/* TTGO T5S buttons mapping */
+#define SOC_BUTTON_MODE_T5S   37
+#define SOC_BUTTON_UP_T5S     38
+#define SOC_BUTTON_DOWN_T5S   39
+
+/* TTGO T5S green LED mapping */
+#define SOC_GPIO_PIN_LED_T5S  22
+
 #define CCCC(c1, c2, c3, c4)    ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
 
 #define MAX_FILENAME_LEN  64
@@ -89,6 +97,8 @@ typedef struct wavProperties_s {
 } wavProperties_t;
 
 extern WebServer server;
+
+#define USE_IP5306_WORKAROUND 0
 
 #endif /* PLATFORM_ESP32_H */
 

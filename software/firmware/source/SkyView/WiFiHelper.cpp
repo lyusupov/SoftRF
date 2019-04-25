@@ -185,3 +185,12 @@ void WiFi_loop()
   }
 #endif
 }
+
+void WiFi_fini()
+{
+  if (settings->connection == CON_WIFI_UDP && UDP_Data_Port) {
+    Uni_Udp.stop();
+  }
+
+  WiFi.mode(WIFI_OFF);
+}

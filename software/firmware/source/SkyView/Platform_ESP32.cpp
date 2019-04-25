@@ -131,10 +131,62 @@ i2s_pin_config_t pin_config = {
     .data_in_num  = -1  // Not used
 };
 
+RTC_DATA_ATTR int bootCount = 0;
+
+#include <esp_bt.h>
+
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
+
+static void ESP32_fini()
+{
+  SPI1.end();
+
+  esp_wifi_stop();
+  esp_bt_controller_disable();
+
+  esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_BUTTON_MODE_T5S, 0); // 1 = High, 0 = Low
+
+#if USE_IP5306_WORKAROUND
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+#endif /* USE_IP5306_WORKAROUND */
+
+//  Serial.println("Going to sleep now");
+//  Serial.flush();
+
+  esp_deep_sleep_start();
+}
+
 static void ESP32_setup()
 {
   esp_err_t ret = ESP_OK;
   uint8_t null_mac[6] = {0};
+
+  ++bootCount;
+
+#if USE_IP5306_WORKAROUND
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER)
+  {
+//    Serial.begin(38400); Serial.println();
+//    Serial.println("Boot number: " + String(bootCount));
+
+//    pinMode(SOC_GPIO_PIN_LED_T5S, OUTPUT);
+//    digitalWrite(SOC_GPIO_PIN_LED_T5S, LOW);
+
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP("DEEP_SLEEP_TEST","88888888");
+
+    delay(600);
+
+//    digitalWrite(SOC_GPIO_PIN_LED_T5S, HIGH);
+//    pinMode(SOC_GPIO_PIN_LED_T5S, INPUT);
+
+    ESP32_fini();
+    /* should never reach this point */
+  }
+#endif /* USE_IP5306_WORKAROUND */
 
   ret = esp_efuse_mac_get_custom(efuse_mac);
   if (ret != ESP_OK) {
@@ -276,7 +328,7 @@ static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 static bool ESP32_DB_init()
 {
   if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1)) {
-    Serial.println("ERROR: Failed to mount microSD card.");
+    Serial.println(F("ERROR: Failed to mount microSD card."));
     return false;
   }
 
@@ -286,7 +338,7 @@ static bool ESP32_DB_init()
 
   if (fln_db == NULL)
   {
-    printf("Failed to open FlarmNet DB\n");
+    Serial.println(F("Failed to open FlarmNet DB\n"));
     return false;
   }
 
@@ -294,7 +346,7 @@ static bool ESP32_DB_init()
 
   if (ogn_db == NULL)
   {
-    printf("Failed to open OGN DB\n");
+    Serial.println(F("Failed to open OGN DB\n"));
     sqlite3_close(fln_db);
     return false;
   }
@@ -303,7 +355,7 @@ static bool ESP32_DB_init()
 
   if (paw_db == NULL)
   {
-    printf("Failed to open PilotAware DB\n");
+    Serial.println(F("Failed to open PilotAware DB\n"));
     sqlite3_close(fln_db);
     sqlite3_close(ogn_db);
     return false;
@@ -388,26 +440,32 @@ static void ESP32_DB_fini()
   }
 
   sqlite3_shutdown();
+
+  SD.end();
 }
 
 /* write sample data to I2S */
-int i2s_write_sample_nb(uint32_t sample){
-  return i2s_write_bytes((i2s_port_t)i2s_num, (const char *)&sample, sizeof(uint32_t), 100);
+int i2s_write_sample_nb(uint32_t sample)
+{
+  return i2s_write_bytes((i2s_port_t)i2s_num, (const char *)&sample,
+                          sizeof(uint32_t), 100);
 }
 
 /* read 4 bytes of data from wav file */
-int read4bytes(File file, uint32_t *chunkId){
+int read4bytes(File file, uint32_t *chunkId)
+{
   int n = file.read((uint8_t *)chunkId, sizeof(uint32_t));
   return n;
 }
 
-/* these are function to process wav file */
-int readRiff(File file, wavRiff_t *wavRiff){
+/* these are functions to process wav file */
+int readRiff(File file, wavRiff_t *wavRiff)
+{
   int n = file.read((uint8_t *)wavRiff, sizeof(wavRiff_t));
   return n;
 }
-
-int readProps(File file, wavProperties_t *wavProps){
+int readProps(File file, wavProperties_t *wavProps)
+{
   int n = file.read((uint8_t *)wavProps, sizeof(wavProperties_t));
   return n;
 }
@@ -478,11 +536,11 @@ static void play_file(char *filename)
     }
     wavfile.close();
   } else {
-    Serial.println("error opening WAV file");
+    Serial.println(F("error opening WAV file"));
   }
-  if (state == DATA)
+  if (state == DATA) {
     i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
-//  Serial.println("done!");
+  }
 }
 
 static void ESP32_TTS(char *message)
@@ -504,10 +562,117 @@ static void ESP32_TTS(char *message)
   }
 }
 
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_mode(SOC_BUTTON_MODE_T5S);
+AceButton button_up  (SOC_BUTTON_UP_T5S);
+AceButton button_down(SOC_BUTTON_DOWN_T5S);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+#if 0
+  // Print out a message for all events.
+  if        (button == &button_mode) {
+    Serial.print(F("MODE "));
+  } else if (button == &button_up) {
+    Serial.print(F("UP   "));
+  } else if (button == &button_down) {
+    Serial.print(F("DOWN "));
+  }
+
+  Serial.print(F("handleEvent(): eventType: "));
+  Serial.print(eventType);
+  Serial.print(F("; buttonState: "));
+  Serial.println(buttonState);
+#endif
+
+  switch (eventType) {
+    case AceButton::kEventPressed:
+      /* TBD */
+      break;
+    case AceButton::kEventReleased:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_mode) {
+        shutdown();
+        Serial.println(F("This will never be printed."));
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onModeButtonEvent() {
+  button_mode.check();
+}
+
+void onUpButtonEvent() {
+  button_mode.check();
+}
+
+void onDownButtonEvent() {
+  button_down.check();
+}
+
+static void ESP32_Button_setup()
+{
+  // Button(s)) uses external pull up register.
+  pinMode(SOC_BUTTON_MODE_T5S, INPUT);
+  pinMode(SOC_BUTTON_UP_T5S,   INPUT);
+  pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
+
+  // Configure the ButtonConfig with the event handler, and enable all higher
+  // level events.
+  ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
+  ModeButtonConfig->setEventHandler(handleEvent);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  ModeButtonConfig->setDebounceDelay(15);
+  ModeButtonConfig->setClickDelay(100);
+  ModeButtonConfig->setDoubleClickDelay(1000);
+  ModeButtonConfig->setLongPressDelay(2000);
+
+  ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
+  UpButtonConfig->setEventHandler(handleEvent);
+  UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  UpButtonConfig->setDebounceDelay(15);
+  UpButtonConfig->setClickDelay(100);
+  UpButtonConfig->setDoubleClickDelay(1000);
+  UpButtonConfig->setLongPressDelay(2000);
+
+  ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
+  DownButtonConfig->setEventHandler(handleEvent);
+  DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  DownButtonConfig->setDebounceDelay(15);
+  DownButtonConfig->setClickDelay(100);
+  DownButtonConfig->setDoubleClickDelay(1000);
+  DownButtonConfig->setLongPressDelay(2000);
+
+  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S), onModeButtonEvent, CHANGE );
+  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE );
+  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE );
+}
+
+static void ESP32_Button_loop()
+{
+  button_mode.check();
+  button_up.check();
+  button_down.check();
+}
+
+static void ESP32_Button_fini()
+{
+
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
   ESP32_setup,
+  ESP32_fini,
   ESP32_getChipId,
   ESP32_EEPROM_begin,
   ESP32_WiFi_setOutputPower,
@@ -522,7 +687,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFi_Receive_UDP,
   ESP32_DB_init,
   ESP32_DB_query,
-  ESP32_TTS
+  ESP32_DB_fini,
+  ESP32_TTS,
+  ESP32_Button_setup,
+  ESP32_Button_loop,
+  ESP32_Button_fini
 };
 
 #endif /* ESP32 */

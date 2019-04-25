@@ -1,0 +1,90 @@
+#######################################
+# Syntax Coloring Map for AceButton library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+AceButton	KEYWORD1
+EventHandler	KEYWORD1
+ButtonConfig	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# public methods from AceButton.h
+init	KEYWORD2
+getButtonConfig	KEYWORD2
+setButtonConfig	KEYWORD2
+setEventHandler	KEYWORD2
+getPin	KEYWORD2
+getId	KEYWORD2
+getDefaultReleasedState	KEYWORD2
+getLastButtonState	KEYWORD2
+check	KEYWORD2
+isReleased	KEYWORD2
+isPressedRaw	KEYWORD2
+
+# methods from ButtonConfig.h
+getDebounceDelay	KEYWORD2
+getClickDelay	KEYWORD2
+getDoubleClickDelay	KEYWORD2
+getLongPressDelay	KEYWORD2
+getRepeatPressDelay	KEYWORD2
+getRepeatPressInterval	KEYWORD2
+getClock	KEYWORD2
+readButton	KEYWORD2
+#
+isFeature	KEYWORD2
+setFeature	KEYWORD2
+clearFeature	KEYWORD2
+#
+getEventHandler	KEYWORD2
+setEventHandler	KEYWORD2
+getSystemButtonConfig	KEYWORD2
+
+# methods from AdjustableButtonConfig.h
+setDebounceDelay	KEYWORD2
+setClickDelay	KEYWORD2
+setDoubleClickDelay	KEYWORD2
+setLongPressDelay	KEYWORD2
+setRepeatPressDelay	KEYWORD2
+setRepeatPressInterval	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+# public constants from AceButton.h
+kEventPressed	LITERAL1
+kEventReleased	LITERAL1
+kEventClicked	LITERAL1
+kEventDoubleClicked	LITERAL1
+kEventLongPressed	LITERAL1
+kEventRepeatPressed	LITERAL1
+kButtonStateUnknown	LITERAL1
+
+# public constants from ButtonConfig.h
+kDebounceDelay	LITERAL1
+kClickDelay	LITERAL1
+kDoubleClickDelay	LITERAL1
+kLongPressDelay	LITERAL1
+kRepeatPressDelay	LITERAL1
+kRepeatPressInterval	LITERAL1
+#
+kFeatureClick	LITERAL1
+kFeatureDoubleClick	LITERAL1
+kFeatureLongPress	LITERAL1
+kFeatureRepeatPress	LITERAL1
+kFeatureSuppressAfterClick	LITERAL1
+kFeatureSuppressAfterDoubleClick	LITERAL1
+kFeatureSuppressAfterLongPress	LITERAL1
+kFeatureSuppressAfterRepeatPress	LITERAL1
+kFeatureSuppressClickBeforeDoubleClick	LITERAL1
+kFeatureSuppressAll	LITERAL1

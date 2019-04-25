@@ -1,0 +1,82 @@
+// See https://github.com/bxparks/AUniter/tree/develop/jenkins for
+// a description of AUniter integration with Jenkins.
+//
+// The following variables are used:
+//
+//  * AUNITER_ARDUINO_BINARY - defined in the Jenkins system configuration
+//  * WORKSPACE - automatically filled in by Jenkins
+//  * BOARDS - defined in the "This project is parameterized" section of the
+//    Jenkins Pipeline configuration
+//  * BADGE_BUCKET - defined in "This project is parameterized" section.
+//
+pipeline {
+    agent { label 'master' }
+    stages {
+        stage('Setup') {
+            steps {
+                dir('AUniter') {
+                    git url: 'https://github.com/bxparks/AUniter',
+                        branch: 'develop'
+                }
+                dir('libraries/AUnit') {
+                    git url: 'https://github.com/bxparks/AUnit',
+                        branch: 'develop'
+                }
+                dir('libraries/CapacitiveSensor') {
+                    git url:
+                          'https://github.com/PaulStoffregen/CapacitiveSensor',
+                        branch: 'master'
+                }
+            }
+        }
+        stage('Verify Examples') {
+            steps {
+                sh "AUniter/tools/auniter.sh \
+                    --config libraries/AceButton/tests/auniter.ini \
+                    verify \
+                    --sketchbook $WORKSPACE \
+                    $BOARDS \
+                    libraries/AceButton/examples/*"
+            }
+        }
+        stage('Verify Tests') {
+            steps {
+                sh "AUniter/tools/auniter.sh \
+                    --config libraries/AceButton/tests/auniter.ini \
+                    verify \
+                    --sketchbook $WORKSPACE \
+                    $BOARDS \
+                    libraries/AceButton/tests/AceButtonTest"
+            }
+        }
+        stage('Test') {
+            steps {
+                sh "AUniter/tools/auniter.sh \
+                    --config libraries/AceButton/tests/auniter.ini \
+                    test \
+                    --skip_missing_port \
+                    --sketchbook $WORKSPACE \
+                    $BOARDS \
+                    libraries/AceButton/tests/AceButtonTest"
+            }
+        }
+    }
+    post {
+        failure {
+            script {
+                if (env.BADGE_BUCKET?.trim()) {
+                    sh "AUniter/BadgeService/set-badge-status.sh \
+                        $BADGE_BUCKET AceButton FAILED"
+                }
+            }
+        }
+        success {
+            script {
+                if (env.BADGE_BUCKET?.trim()) {
+                    sh "AUniter/BadgeService/set-badge-status.sh \
+                        $BADGE_BUCKET AceButton PASSED"
+                }
+            }
+        }
+    }
+}

@@ -55,7 +55,6 @@ static navbox_t navbox4;
 
 static bool EPD_display_frontpage = false;
 
-
 static void EPD_Clear_Screen()
 {
   display->setFullWindow();
@@ -510,5 +509,23 @@ void EPD_loop()
         EPDTimeMarker = millis();
       }
     }
+  }
+}
+
+void EPD_fini()
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+    display->setFullWindow();
+    display->firstPage();
+    do
+    {
+      display->fillScreen(GxEPD_WHITE);
+      uint16_t x = (display->width()  - 128) / 2;
+      uint16_t y = (display->height() - 128) / 2;
+      display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+    }
+    while (display->nextPage());
+
+    display->powerOff();
   }
 }

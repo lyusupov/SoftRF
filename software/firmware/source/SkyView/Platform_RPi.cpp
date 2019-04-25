@@ -117,6 +117,11 @@ static void RPi_setup()
   strcpy(eeprom_block.field.settings.bt_key,    DEFAULT_BT_KEY);
 }
 
+static void RPi_fini()
+{
+
+}
+
 static uint32_t RPi_getChipId()
 {
   return gethostid();
@@ -329,10 +334,26 @@ static void RPi_TTS(char *message)
   free(buf);
 }
 
+static void RPi_Button_setup()
+{
+
+}
+
+static void RPi_Button_loop()
+{
+
+}
+
+static void RPi_Button_fini()
+{
+
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
   RPi_setup,
+  RPi_fini,
   RPi_getChipId,
   NULL,
   NULL,
@@ -347,7 +368,11 @@ const SoC_ops_t RPi_ops = {
   RPi_WiFi_Receive_UDP,
   RPi_DB_init,
   RPi_DB_query,
-  RPi_TTS
+  RPi_DB_fini,
+  RPi_TTS,
+  RPi_Button_setup,
+  RPi_Button_loop,
+  RPi_Button_fini
 };
 
 int main()
@@ -363,6 +388,7 @@ int main()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   Battery_setup();
+  SoC->Button_setup();
 
   Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
   Serial.flush();

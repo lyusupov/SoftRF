@@ -44,3 +44,10 @@ byte SoC_setup()
     return SOC_NONE;
   }
 }
+
+void SoC_fini()
+{
+  if (SoC && SoC->fini) {
+    SoC->fini();
+  }
+}

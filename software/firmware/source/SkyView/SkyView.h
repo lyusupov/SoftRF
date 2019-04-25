@@ -118,4 +118,6 @@ enum
 
 extern hardware_info_t hw_info;
 
+extern void shutdown(void);
+
 #endif /* SKYVIEW_H */

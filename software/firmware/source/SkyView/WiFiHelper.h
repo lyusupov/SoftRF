@@ -36,6 +36,7 @@ enum
 void    WiFi_setup(void);
 void    WiFi_loop(void);
 size_t  WiFi_Receive_UDP(uint8_t *, size_t);
+void    WiFi_fini(void);
 
 extern String host_name;
 #if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
