@@ -352,22 +352,26 @@ static IPAddress ESP32_WiFi_get_broadcast()
 static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   IPAddress ClientIP;
+  WiFiMode_t mode = WiFi.getMode();
+  int i = 0;
 
-  if (WiFi.getMode() == WIFI_STA) {
+  switch (mode)
+  {
+  case WIFI_STA:
     ClientIP = ESP32_WiFi_get_broadcast();
 
     Uni_Udp.beginPacket(ClientIP, port);
     Uni_Udp.write(buf, size);
     Uni_Udp.endPacket();
 
-  } else {
+    break;
+  case WIFI_AP:
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
-    int i = 0;
     while(i < infoList.num) {
       ClientIP = infoList.sta[i++].ip.addr;
 
@@ -375,6 +379,10 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
       Uni_Udp.write(buf, size);
       Uni_Udp.endPacket();
     }
+    break;
+  case WIFI_OFF:
+  default:
+    break;
   }
 }
 
@@ -386,6 +394,26 @@ static void ESP32_WiFiUDP_stopAll()
 static bool ESP32_WiFi_hostname(String aHostname)
 {
   return WiFi.setHostname(aHostname.c_str());
+}
+
+static int ESP32_WiFi_clients_count()
+{
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+  case WIFI_AP:
+    wifi_sta_list_t stations;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
+
+    tcpip_adapter_sta_list_t infoList;
+    ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
+
+    return infoList.num;
+  case WIFI_STA:
+  default:
+    return -1; /* error */
+  }
 }
 
 static bool ESP32_EEPROM_begin(size_t size)
@@ -661,10 +689,10 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Sound_test,
   ESP32_maxSketchSpace,
   ESP32_WiFi_setOutputPower,
-  ESP32_WiFi_get_broadcast,
   ESP32_WiFi_transmit_UDP,
   ESP32_WiFiUDP_stopAll,
   ESP32_WiFi_hostname,
+  ESP32_WiFi_clients_count,
   ESP32_EEPROM_begin,
   ESP32_SPI_begin,
   ESP32_swSer_begin,

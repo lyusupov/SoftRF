@@ -36,6 +36,7 @@ enum
 
 void NMEA_setup(void);
 void NMEA_loop(void);
+void NMEA_fini();
 void NMEA_Export(void);
 void NMEA_Position(void);
 void NMEA_Out(byte *, size_t, bool);

@@ -182,6 +182,15 @@ void NMEA_loop()
 #endif
 }
 
+void NMEA_fini()
+{
+#if defined(NMEA_TCP_SERVICE)
+  if (settings->nmea_out == NMEA_TCP) {
+    NmeaTCPServer.stop();
+  }
+#endif /* NMEA_TCP_SERVICE */
+}
+
 void NMEA_Out(byte *buf, size_t size, bool nl)
 {
   switch(settings->nmea_out)

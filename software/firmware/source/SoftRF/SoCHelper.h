@@ -40,10 +40,10 @@ typedef struct SoC_ops_struct {
   void (*Sound_test)(int);
   uint32_t (*maxSketchSpace)();
   void (*WiFi_setOutputPower)(int);
-  IPAddress (*WiFi_get_broadcast)();
   void (*WiFi_transmit_UDP)(int, byte *, size_t);
   void (*WiFiUDP_stopAll)();
   bool (*WiFi_hostname)(String);
+  int  (*WiFi_clients_count)();
   bool (*EEPROM_begin)(size_t);
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);

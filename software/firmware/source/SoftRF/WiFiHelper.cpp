@@ -26,6 +26,9 @@
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 #include "RFHelper.h"
+#include "WebHelper.h"
+#include "NMEAHelper.h"
+#include "BatteryHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
@@ -55,7 +58,11 @@ WiFiUDP Uni_Udp;
 
 unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
 
-char UDPpacketBuffer[256]; //buffer to hold incoming and outgoing packets
+char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+static unsigned long WiFi_No_Clients_Time_ms = 0;
+#endif
 
 /**
  * @brief Read WiFi connection information from file system.
@@ -288,9 +295,13 @@ void WiFi_setup()
     Serial.println(WiFi.softAPIP());
   }
 
-    Uni_Udp.begin(RFlocalPort);
-    Serial.print(F("UDP server has started at port: "));
-    Serial.println(RFlocalPort);
+  Uni_Udp.begin(RFlocalPort);
+  Serial.print(F("UDP server has started at port: "));
+  Serial.println(RFlocalPort);
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+  WiFi_No_Clients_Time_ms = millis();
+#endif
 }
 
 void WiFi_loop()
@@ -300,4 +311,29 @@ void WiFi_loop()
     dnsServer.processNextRequest();
   }
 #endif
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+  if (settings->power_save == POWER_SAVE_WIFI && WiFi.getMode() == WIFI_AP) {
+    if (SoC->WiFi_clients_count() == 0) {
+      if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT) {
+        NMEA_fini();
+        Web_fini();
+        WiFi_fini();
+
+        if (settings->nmea_p) {
+          StdOut.println(F("$PSRFS,WIFI_OFF"));
+        }
+      }
+    } else {
+      WiFi_No_Clients_Time_ms = millis();
+    }
+  }
+#endif
+}
+
+void WiFi_fini()
+{
+  Uni_Udp.stop();
+
+  WiFi.mode(WIFI_OFF);
 }

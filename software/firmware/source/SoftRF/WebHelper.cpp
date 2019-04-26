@@ -116,7 +116,7 @@ Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4500;
+  size_t size = 4700;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -472,6 +472,15 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Power save</th>\
+<td align=right>\
+<select name='power_save'>\
+<option %s value='%d'>Disabled</option>\
+<option %s value='%d'>WiFi OFF (10 min.)</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Stealth</th>\
 <td align=right>\
 <input type='radio' name='stealth' value='0' %s>Off\
@@ -490,6 +499,8 @@ void handleSettings() {
 </form>\
 </body>\
 </html>"),
+  (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
+  (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
   (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
   (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
   );
@@ -612,7 +623,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1450);
+  char *Input_temp = (char *) malloc(1520);
   if (Input_temp == NULL) {
     return;
   }
@@ -654,9 +665,11 @@ void handleInput() {
       settings->stealth = server.arg(i).toInt();
     } else if (server.argName(i).equals("no_track")) {
       settings->no_track = server.arg(i).toInt();
+    } else if (server.argName(i).equals("power_save")) {
+      settings->power_save = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1450,
+  snprintf_P ( Input_temp, 1520,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -684,6 +697,7 @@ PSTR("<html>\
 <tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
 <tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
+<tr><th align=left>Power save</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -695,7 +709,8 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
   settings->nmea_out, settings->gdl90, settings->d1090,
-  BOOL_STR(settings->stealth), BOOL_STR(settings->no_track)
+  BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
+  settings->power_save
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );
@@ -873,4 +888,9 @@ $('form').submit(function(e){\
 void Web_loop()
 {
   server.handleClient();
+}
+
+void Web_fini()
+{
+  server.stop();
 }

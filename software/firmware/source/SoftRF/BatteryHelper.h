@@ -23,6 +23,12 @@
 #define BATTERY_THRESHOLD_LIPO    3.5
 #define BATTERY_THRESHOLD_LIFE    3.0
 
+enum
+{
+	POWER_SAVE_NONE,
+	POWER_SAVE_WIFI
+};
+
 void  Battery_setup(void);
 float Battery_voltage(void);
 float Battery_threshold(void);

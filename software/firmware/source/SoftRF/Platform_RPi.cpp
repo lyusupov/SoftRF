@@ -60,6 +60,7 @@
 #include "JSONHelper.h"
 #include "WiFiHelper.h"
 #include "EPDHelper.h"
+#include "BatteryHelper.h"
 
 #include "TCPServer.h"
 
@@ -130,16 +131,17 @@ static void RPi_setup()
   eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
   eeprom_block.field.settings.alarm = TRAFFIC_ALARM_DISTANCE;
 
-  eeprom_block.field.settings.nmea_g   = true;
-  eeprom_block.field.settings.nmea_p   = false;
-  eeprom_block.field.settings.nmea_l   = true;
-  eeprom_block.field.settings.nmea_s   = true;
-  eeprom_block.field.settings.nmea_out = NMEA_UART;
-  eeprom_block.field.settings.gdl90    = GDL90_OFF;
-  eeprom_block.field.settings.d1090    = D1090_OFF;
-  eeprom_block.field.settings.json     = JSON_OFF;
-  eeprom_block.field.settings.stealth  = false;
-  eeprom_block.field.settings.no_track = false;
+  eeprom_block.field.settings.nmea_g     = true;
+  eeprom_block.field.settings.nmea_p     = false;
+  eeprom_block.field.settings.nmea_l     = true;
+  eeprom_block.field.settings.nmea_s     = true;
+  eeprom_block.field.settings.nmea_out   = NMEA_UART;
+  eeprom_block.field.settings.gdl90      = GDL90_OFF;
+  eeprom_block.field.settings.d1090      = D1090_OFF;
+  eeprom_block.field.settings.json       = JSON_OFF;
+  eeprom_block.field.settings.stealth    = false;
+  eeprom_block.field.settings.no_track   = false;
+  eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
 }
 
 static uint32_t RPi_getChipId()
@@ -236,8 +238,8 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
   RPi_WiFi_transmit_UDP,
+  NULL,
   NULL,
   NULL,
   NULL,

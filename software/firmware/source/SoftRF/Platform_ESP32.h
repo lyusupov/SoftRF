@@ -171,6 +171,8 @@ struct rst_info {
 #define ESP32_CORE_1_0_1
 //#define ESP32_CORE_1_0_0
 
+#define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
+
 #endif /* PLATFORM_ESP32_H */
 
 #endif /* ESP32 */

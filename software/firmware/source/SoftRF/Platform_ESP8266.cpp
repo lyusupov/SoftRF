@@ -155,8 +155,12 @@ static IPAddress ESP8266_WiFi_get_broadcast()
 static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   IPAddress ClientIP;
+  struct station_info *stat_info;
+  WiFiMode_t mode = WiFi.getMode();
 
-  if (WiFi.getMode() == WIFI_STA) {
+  switch (mode)
+  {
+  case WIFI_STA:
     ClientIP = ESP8266_WiFi_get_broadcast();
 
     swSer.enableRx(false);
@@ -167,8 +171,9 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
     swSer.enableRx(true);
 
-  } else {
-    struct station_info *stat_info = wifi_softap_get_station_info();
+    break;
+  case WIFI_AP:
+    stat_info = wifi_softap_get_station_info();
 
     while (stat_info != NULL) {
       ClientIP = stat_info->ip.addr;
@@ -184,6 +189,10 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
       stat_info = STAILQ_NEXT(stat_info, next);
     }
     wifi_softap_free_station_info();
+    break;
+  case WIFI_OFF:
+  default:
+    break;
   }
 }
 
@@ -195,6 +204,31 @@ static void ESP8266_WiFiUDP_stopAll()
 static bool ESP8266_WiFi_hostname(String aHostname)
 {
   return WiFi.hostname(aHostname);
+}
+
+static int ESP8266_WiFi_clients_count()
+{
+  struct station_info *stat_info;
+  int clients = 0;
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+  case WIFI_AP:
+    stat_info = wifi_softap_get_station_info();
+
+    while (stat_info != NULL) {
+      clients++;
+
+      stat_info = STAILQ_NEXT(stat_info, next);
+    }
+    wifi_softap_free_station_info();
+
+    return clients;
+  case WIFI_STA:
+  default:
+    return -1; /* error */
+  }
 }
 
 static bool ESP8266_EEPROM_begin(size_t size)
@@ -286,10 +320,10 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Sound_test,
   ESP8266_maxSketchSpace,
   ESP8266_WiFi_setOutputPower,
-  ESP8266_WiFi_get_broadcast,
   ESP8266_WiFi_transmit_UDP,
   ESP8266_WiFiUDP_stopAll,
   ESP8266_WiFi_hostname,
+  ESP8266_WiFi_clients_count,
   ESP8266_EEPROM_begin,
   ESP8266_SPI_begin,
   ESP8266_swSer_begin,

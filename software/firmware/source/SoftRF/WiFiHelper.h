@@ -39,6 +39,7 @@ void WiFi_setup(void);
 void WiFi_loop(void);
 size_t Raw_Receive_UDP(uint8_t *);
 void Raw_Transmit_UDP(void);
+void WiFi_fini(void);
 
 extern String host_name;
 #if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
