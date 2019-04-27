@@ -21,7 +21,6 @@
 
 #include "SoCHelper.h"
 #include "WebHelper.h"
-//#include "BluetoothHelper.h"
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
@@ -86,7 +85,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 2300;
+  size_t size = 3400;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -118,26 +117,28 @@ void handleSettings() {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
-<th align=left>e-Paper adapter</th>\
+<th align=left>Display adapter</th>\
 <td align=right>\
 <select name='adapter'>\
-<option %s value='%d'>TTGO T5S</option>\
-<option %s value='%d'>Waveshare ESP32</option>\
+<option %s value='%d'>e-Paper TTGO T5S</option>\
+<option %s value='%d'>e-Paper Waveshare ESP32</option>\
+<option %s value='%d'>OLED</option>\
 </select>\
 </td>\
 </tr>"),
     (settings->adapter == ADAPTER_TTGO_T5S        ? "selected" : ""), ADAPTER_TTGO_T5S,
-    (settings->adapter == ADAPTER_WAVESHARE_ESP32 ? "selected" : ""), ADAPTER_WAVESHARE_ESP32
+    (settings->adapter == ADAPTER_WAVESHARE_ESP32 ? "selected" : ""), ADAPTER_WAVESHARE_ESP32,
+    (settings->adapter == ADAPTER_OLED            ? "selected" : ""), ADAPTER_OLED
     );
   } else if (SoC->id == SOC_ESP8266) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
-<th align=left>e-Paper adapter</th>\
+<th align=left>Display adapter</th>\
 <td align=right>\
 <select name='adapter'>\
 <option %s value='%d'>NodeMCU</option>\
-<option %s value='%d'>Waveshare ESP8266</option>\
+<option %s value='%d'>e-Paper Waveshare ESP8266</option>\
 </select>\
 </td>\
 </tr>"),
@@ -275,7 +276,26 @@ void handleSettings() {
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
-<th align=left>Traffic map orientation</th>\
+<th align=left>Units</th>\
+<td align=right>\
+<select name='units'>\
+<option %s value='%d'>Metric</option>\
+<option %s value='%d'>Imperial</option>\
+<option %s value='%d'>Mixed</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>View mode</th>\
+<td align=right>\
+<select name='vmode'>\
+<option %s value='%d'>Radar</option>\
+<option %s value='%d'>Text</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Radar orientation</th>\
 <td align=right>\
 <select name='orientation'>\
 <option %s value='%d'>CoG Up</option>\
@@ -283,13 +303,79 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>\
+<tr>\
+<th align=left>Zoom level</th>\
+<td align=right>\
+<select name='zoom'>\
+<option %s value='%d'>Low</option>\
+<option %s value='%d'>Medium</option>\
+<option %s value='%d'>High</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>ID preference</th>\
+<td align=right>\
+<select name='idpref'>\
+<option %s value='%d'>Registration</option>\
+<option %s value='%d'>Tail/CN</option>\
+<option %s value='%d'>Make & Model</option>\
+</select>\
+</td>\
+</tr>"),
+  (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
+  (settings->units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
+  (settings->units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
+  (settings->vmode == VIEW_MODE_RADAR ? "selected" : ""), VIEW_MODE_RADAR,
+  (settings->vmode == VIEW_MODE_TEXT  ? "selected" : ""), VIEW_MODE_TEXT,
+  (settings->orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
+  (settings->orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+  (settings->zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
+  (settings->zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
+  (settings->zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
+  (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
+  (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
+  (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 4 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Voice</th>\
+<td align=right>\
+<select name='voice'>\
+<option %s value='%d'>OFF</option>\
+<option %s value='%d'>Voice 1</option>\
+<option %s value='%d'>Voice 2</option>\
+<option %s value='%d'>Voice 3</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->voice == VOICE_OFF  ? "selected" : ""), VOICE_OFF,
+    (settings->voice == VOICE_1    ? "selected" : ""), VOICE_1,
+    (settings->voice == VOICE_2    ? "selected" : ""), VOICE_2,
+    (settings->voice == VOICE_3    ? "selected" : ""), VOICE_3
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 5 */
+  snprintf_P ( offset, size,
+    PSTR("\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'><p>\
 </form>\
 </body>\
-</html>"),
-  (settings->map_orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
-  (settings->map_orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP
+</html>")
   );
 
   SoC->swSer_enableRx(false);
@@ -437,7 +523,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1450);
+  char *Input_temp = (char *) malloc(1750);
   if (Input_temp == NULL) {
     return;
   }
@@ -455,8 +541,18 @@ void handleInput() {
       server.arg(i).toCharArray(settings->ssid, sizeof(settings->ssid));
     } else if (server.argName(i).equals("psk")) {
       server.arg(i).toCharArray(settings->psk, sizeof(settings->psk));
+    } else if (server.argName(i).equals("units")) {
+      settings->units = server.arg(i).toInt();
+    } else if (server.argName(i).equals("vmode")) {
+      settings->vmode = server.arg(i).toInt();
     } else if (server.argName(i).equals("orientation")) {
-      settings->map_orientation = server.arg(i).toInt();
+      settings->orientation = server.arg(i).toInt();
+    } else if (server.argName(i).equals("zoom")) {
+      settings->zoom = server.arg(i).toInt();
+    } else if (server.argName(i).equals("idpref")) {
+      settings->idpref = server.arg(i).toInt();
+    } else if (server.argName(i).equals("voice")) {
+      settings->voice = server.arg(i).toInt();
     } else if (server.argName(i).equals("bluetooth")) {
       settings->bluetooth = server.arg(i).toInt();
     } else if (server.argName(i).equals("bt_name")) {
@@ -465,7 +561,7 @@ void handleInput() {
       server.arg(i).toCharArray(settings->bt_key, sizeof(settings->bt_key));
     }
   }
-  snprintf_P ( Input_temp, 1450,
+  snprintf_P ( Input_temp, 1750,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -481,7 +577,12 @@ PSTR("<html>\
 <tr><th align=left>Baud rate</th><td align=right>%d</td></tr>\
 <tr><th align=left>WiFi SSID</th><td align=right>%s</td></tr>\
 <tr><th align=left>WiFi PSK</th><td align=right>%s</td></tr>\
-<tr><th align=left>Traffic map orientation</th><td align=right>%d</td></tr>\
+<tr><th align=left>Units</th><td align=right>%d</td></tr>\
+<tr><th align=left>View mode</th><td align=right>%d</td></tr>\
+<tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
+<tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
+<tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
+<tr><th align=left>Voice</th><td align=right>%d</td></tr>\
 <tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
 <tr><th align=left>BT Name</th><td align=right>%s</td></tr>\
 <tr><th align=left>BT Key</th><td align=right>%s</td></tr>\
@@ -492,8 +593,9 @@ PSTR("<html>\
 </html>"),
   settings->adapter, settings->connection, settings->protocol,
   settings->baudrate, settings->ssid, settings->psk,
-  settings->map_orientation, settings->bluetooth,
-  settings->bt_name, settings->bt_key
+  settings->units, settings->vmode, settings->orientation,
+  settings->zoom, settings->idpref, settings->voice,
+  settings->bluetooth, settings->bt_name, settings->bt_key
   );
 
   SoC->swSer_enableRx(false);

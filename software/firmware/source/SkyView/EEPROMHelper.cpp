@@ -73,7 +73,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.connection      = CON_SERIAL;
   eeprom_block.field.settings.baudrate        = B38400;
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
-  eeprom_block.field.settings.map_orientation = DIRECTION_NORTH_UP;
+  eeprom_block.field.settings.orientation     = DIRECTION_NORTH_UP;
 
   strcpy(eeprom_block.field.settings.ssid,      DEFAULT_AP_SSID);
   strcpy(eeprom_block.field.settings.psk,       DEFAULT_AP_PSK);
@@ -82,6 +82,12 @@ void EEPROM_defaults()
 
   strcpy(eeprom_block.field.settings.bt_name,   DEFAULT_BT_NAME);
   strcpy(eeprom_block.field.settings.bt_key,    DEFAULT_BT_KEY);
+
+  eeprom_block.field.settings.units           = UNITS_METRIC;
+  eeprom_block.field.settings.vmode           = VIEW_MODE_RADAR;
+  eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
+  eeprom_block.field.settings.idpref          = ID_REG;
+  eeprom_block.field.settings.voice           = VOICE_OFF;
 }
 
 void EEPROM_store()

@@ -245,7 +245,7 @@ static void EPD_Draw_Radar()
                           radar_center_x + 7, radar_center_y + 5,
                           GxEPD_WHITE);
 
-    switch (settings->map_orientation)
+    switch (settings->orientation)
     {
     case DIRECTION_NORTH_UP:
       x = radar_x + radar_w / 2 - radius + tbw/2;

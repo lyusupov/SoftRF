@@ -133,6 +133,7 @@ i2s_pin_config_t pin_config = {
 
 RTC_DATA_ATTR int bootCount = 0;
 
+#include <esp_wifi.h>
 #include <esp_bt.h>
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
