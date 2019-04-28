@@ -27,6 +27,10 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    12
 
+#define MAX_FILENAME_LEN  64
+#define PCM_DEVICE        "default"
+#define WAV_FILE_PREFIX   "Audio/"
+
 extern TTYSerial SerialInput;
 
 #endif /* PLATFORM_RPI_H */

@@ -31,6 +31,11 @@
 
 #define DATA_TIMEOUT  2000 /* 2.0 seconds */
 
+#define WAV_FILE_SUFFIX   ".wav"
+#define VOICE1_SUBDIR     "voice1/"
+#define VOICE2_SUBDIR     "voice2/"
+#define VOICE3_SUBDIR     "voice3/"
+
 typedef struct hardware_info {
     byte  model;
     byte  revision;
@@ -102,7 +107,7 @@ enum
 {
 	UNITS_METRIC,
 	UNITS_IMPERIAL,
-	UNITS_MIXED
+	UNITS_MIXED     // same as metric, but all the altitudes are in feet
 };
 
 enum
@@ -117,6 +122,19 @@ enum
 	DIRECTION_NORTH_UP
 };
 
+/*
+ * 'Radar view' scale factor (outer circle diameter)
+ *
+ * Metric an Mixed:
+ *  LOW    - 10 KM diameter (5 KM radius)
+ *  MEDIUM -  4 KM diameter (2 KM radius)
+ *  HIGH   -  2 KM diameter (1 KM radius)
+ *
+ * Imperial:
+ *  LOW    -  5 NM diameter (2.5 NM radius)
+ *  MEDIUM -  2 NM diameter (  1 NM radius)
+ *  HIGH   -  1 NM diameter (0.5 NM radius)
+ */
 enum
 {
 	ZOOM_LOW,

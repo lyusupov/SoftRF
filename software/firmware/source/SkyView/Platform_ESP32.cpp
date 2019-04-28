@@ -548,18 +548,25 @@ static void ESP32_TTS(char *message)
 {
   char filename[MAX_FILENAME_LEN];
 
-  if (SD.cardType() == CARD_NONE)
-    return;
+  if (settings->voice != VOICE_OFF) {
 
-  char *word = strtok (message, " ");
+    if (SD.cardType() == CARD_NONE)
+      return;
 
-  while (word != NULL)
-  {
-      strcpy(filename, FILE_PREFIX);
-      strcat(filename, word);
-      strcat(filename, FILE_SUFFIX);
-      play_file(filename);
-      word = strtok (NULL, " ");
+    char *word = strtok (message, " ");
+
+    while (word != NULL)
+    {
+        strcpy(filename, WAV_FILE_PREFIX);
+        strcat(filename,  settings->voice == VOICE_1 ? VOICE1_SUBDIR :
+                         (settings->voice == VOICE_2 ? VOICE2_SUBDIR :
+                         (settings->voice == VOICE_3 ? VOICE3_SUBDIR :
+                          "" )));
+        strcat(filename, word);
+        strcat(filename, WAV_FILE_SUFFIX);
+        play_file(filename);
+        word = strtok (NULL, " ");
+    }
   }
 }
 

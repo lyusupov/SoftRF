@@ -33,6 +33,7 @@
 #define NAVBOX3_TITLE "SCALE"
 #define NAVBOX4_TITLE "BAT"
 
+#define isTimeToDisplay() (millis() - EPDTimeMarker > 2000)
 #define maxof2(a,b)   (a > b ? a : b)
 
 typedef struct navbox_struct
@@ -47,18 +48,17 @@ typedef struct navbox_struct
   uint32_t  timestamp;
 } navbox_t;
 
-enum
-{
-	EPD_SCALE_2KM,
-	EPD_SCALE_4KM,
-	EPD_SCALE_8KM
-};
-
 byte EPD_setup();
 void EPD_loop();
 void EPD_fini();
 
+void EPD_Clear_Screen();
+void EPD_do_radar_setup();
+void EPD_do_radar_loop();
+
 extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
+extern unsigned long EPDTimeMarker;
+extern bool EPD_display_frontpage;
 
 static uint8_t sleep_icon_128x128[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

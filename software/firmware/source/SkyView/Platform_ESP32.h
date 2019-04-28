@@ -71,8 +71,7 @@
 #define CCCC(c1, c2, c3, c4)    ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
 
 #define MAX_FILENAME_LEN  64
-#define FILE_PREFIX       "/Audio/voice1/"
-#define FILE_SUFFIX       ".wav"
+#define WAV_FILE_PREFIX   "/Audio/"
 
 /* these are data structures to process wav file */
 typedef enum headerState_e {
