@@ -25,16 +25,18 @@
 
 #define EPD_EXPIRATION_TIME     5 /* seconds */
 
-#define NO_DATA_TEXT "NO DATA"
-#define NO_FIX_TEXT  "NO FIX"
+#define NO_DATA_TEXT            "NO DATA"
+#define NO_FIX_TEXT             "NO FIX"
 
-#define NAVBOX1_TITLE "ACFTS"
-#define NAVBOX2_TITLE "DATA"
-#define NAVBOX3_TITLE "SCALE"
-#define NAVBOX4_TITLE "BAT"
+#define NAVBOX1_TITLE           "ACFTS"
+#define NAVBOX2_TITLE           "DATA"
+#define NAVBOX3_TITLE           "SCALE"
+#define NAVBOX4_TITLE           "BAT"
 
-#define isTimeToDisplay() (millis() - EPDTimeMarker > 2000)
-#define maxof2(a,b)   (a > b ? a : b)
+#define isTimeToDisplay()       (millis() - EPDTimeMarker > 2000)
+#define maxof2(a,b)             (a > b ? a : b)
+
+#define EPD_RADAR_V_THRESHOLD   50      /* metres */
 
 typedef struct navbox_struct
 {

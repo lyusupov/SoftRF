@@ -240,9 +240,22 @@ static void EPD_Draw_Radar()
 #endif
         int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / divider;
         int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / divider;
-        display->fillCircle(radar_center_x + x,
-                            radar_center_y - y,
-                            5, GxEPD_BLACK);
+
+        if        (Container[i].RelativeVertical >   EPD_RADAR_V_THRESHOLD) {
+          display->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
+                                radar_center_x + x    , radar_center_y - y - 5,
+                                radar_center_x + x + 4, radar_center_y - y + 3,
+                                GxEPD_BLACK);
+        } else if (Container[i].RelativeVertical < - EPD_RADAR_V_THRESHOLD) {
+          display->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
+                                radar_center_x + x    , radar_center_y - y + 5,
+                                radar_center_x + x + 4, radar_center_y - y - 3,
+                                GxEPD_BLACK);
+        } else {
+          display->fillCircle(radar_center_x + x,
+                              radar_center_y - y,
+                              5, GxEPD_BLACK);
+        }
       }
     }
 
