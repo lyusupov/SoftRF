@@ -169,3 +169,49 @@ void EPD_fini()
     display->powerOff();
   }
 }
+
+void EPD_Mode()
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+
+    if (EPD_view_mode == VIEW_MODE_RADAR) {
+      EPD_view_mode = VIEW_MODE_TEXT;
+    }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
+      EPD_view_mode = VIEW_MODE_RADAR;
+    }
+  }
+}
+
+void EPD_Up()
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+    switch (EPD_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      EPD_radar_unzoom();
+      break;
+    case VIEW_MODE_TEXT:
+//      EPD_text_up();
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void EPD_Down()
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+    switch (EPD_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      EPD_radar_zoom();
+      break;
+    case VIEW_MODE_TEXT:
+//      EPD_text_down();
+      break;
+    default:
+      break;
+    }
+  }
+}

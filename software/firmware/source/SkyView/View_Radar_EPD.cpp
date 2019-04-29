@@ -118,7 +118,7 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeSerifBold12pt7b);
 
-    display->setCursor(navbox3.x + 12, navbox3.y + 30);
+    display->setCursor(navbox3.x + 10, navbox3.y + 30);
 
     if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
       display->print(navbox3.value == ZOOM_LOW    ? "10 KM" :
@@ -335,6 +335,34 @@ static void EPD_Update_NavBoxes()
     navbox2.prev_value = navbox2.value;
   }
 
+  if (navbox3.value != navbox3.prev_value) {
+
+    display->setFont(&FreeSerifBold12pt7b);
+    display->getTextBounds("10 KM", 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setPartialWindow(navbox3.x + 11, navbox3.y + 31 - tbh,
+                              tbw, tbh + 1);
+    display->firstPage();
+    do
+    {
+      display->fillRect(navbox3.x + 10, navbox3.y + 31 - tbh,
+                        tbw, tbh + 1, GxEPD_WHITE);
+      display->setCursor(navbox3.x + 10, navbox3.y + 30);
+
+      if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
+        display->print(navbox3.value == ZOOM_LOW    ? "10 KM" :
+                       navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
+                       navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
+      } else {
+        display->print(navbox3.value == ZOOM_LOW    ? " 5 NM" :
+                       navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
+                       navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
+      }
+    }
+    while (display->nextPage());
+
+    navbox3.prev_value = navbox3.value;
+  }
+
   if (navbox4.value != navbox4.prev_value) {
 
     display->setFont(&FreeMonoBold18pt7b);
@@ -457,4 +485,14 @@ void EPD_do_radar_loop()
       EPDTimeMarker = millis();
     }
   }
+}
+
+void EPD_radar_zoom()
+{
+  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++;
+}
+
+void EPD_radar_unzoom()
+{
+  if (EPD_zoom > ZOOM_LOW) EPD_zoom--;
 }

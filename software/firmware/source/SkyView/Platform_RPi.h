@@ -27,9 +27,14 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    12
 
-#define MAX_FILENAME_LEN  64
-#define PCM_DEVICE        "default"
-#define WAV_FILE_PREFIX   "Audio/"
+#define PCM_DEVICE              "default"
+#define WAV_FILE_PREFIX         "Audio/"
+
+/* Waveshare Pi HAT 2.7" buttons mapping */
+#define SOC_GPIO_BUTTON_MODE    5
+#define SOC_GPIO_BUTTON_UP      6
+#define SOC_GPIO_BUTTON_DOWN    13
+#define SOC_GPIO_BUTTON_4       19   /* not assigned yet */
 
 extern TTYSerial SerialInput;
 

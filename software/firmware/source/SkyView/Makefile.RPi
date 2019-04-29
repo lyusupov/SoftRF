@@ -36,13 +36,15 @@ EPD2_PATH     = ../libraries/GxEPD2/src
 GDL90_PATH    = ../libraries/rotobox
 GDL90_PATH    = ../libraries/rotobox
 SSD1306_PATH  = ../libraries/Adafruit_SSD1306
+BUTTON_PATH   = ../libraries/AceButton/src
 
 INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
                 -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
                 -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
                 -I$(GFX_PATH)     -I$(EPD2_PATH) \
-                -I$(GDL90_PATH)   -I$(SSD1306_PATH)
+                -I$(GDL90_PATH)   -I$(SSD1306_PATH) \
+                -I$(BUTTON_PATH)
 
 CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  TrafficHelper.cpp EPDHelper.cpp  \
@@ -57,7 +59,9 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(TIMELIB_PATH)/Time.o \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
                  $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
-                 $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o
+                 $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o \
+                 $(BUTTON_PATH)/ace_button/AceButton.o \
+                 $(BUTTON_PATH)/ace_button/ButtonConfig.o
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread -lsqlite3 -lasound -lsndfile
 

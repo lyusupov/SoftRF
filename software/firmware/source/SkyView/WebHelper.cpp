@@ -244,7 +244,7 @@ void handleSettings() {
 <th align=left>Built-in Bluetooth</th>\
 <td align=right>\
 <select name='bluetooth'>\
-<option %s value='%d'>Off</option>\
+<option %s value='%d'>off</option>\
 <option %s value='%d'>SPP</option>\
 </select>\
 </td>\
@@ -279,9 +279,9 @@ void handleSettings() {
 <th align=left>Units</th>\
 <td align=right>\
 <select name='units'>\
-<option %s value='%d'>Metric</option>\
-<option %s value='%d'>Imperial</option>\
-<option %s value='%d'>Mixed</option>\
+<option %s value='%d'>metric</option>\
+<option %s value='%d'>imperial</option>\
+<option %s value='%d'>mixed</option>\
 </select>\
 </td>\
 </tr>\
@@ -289,8 +289,8 @@ void handleSettings() {
 <th align=left>View mode</th>\
 <td align=right>\
 <select name='vmode'>\
-<option %s value='%d'>Radar</option>\
-<option %s value='%d'>Text</option>\
+<option %s value='%d'>radar</option>\
+<option %s value='%d'>text</option>\
 </select>\
 </td>\
 </tr>\
@@ -307,9 +307,9 @@ void handleSettings() {
 <th align=left>Zoom level</th>\
 <td align=right>\
 <select name='zoom'>\
-<option %s value='%d'>Low</option>\
-<option %s value='%d'>Medium</option>\
-<option %s value='%d'>High</option>\
+<option %s value='%d'>low</option>\
+<option %s value='%d'>medium</option>\
+<option %s value='%d'>high</option>\
 </select>\
 </td>\
 </tr>\
@@ -317,9 +317,9 @@ void handleSettings() {
 <th align=left>ID preference</th>\
 <td align=right>\
 <select name='idpref'>\
-<option %s value='%d'>Registration</option>\
-<option %s value='%d'>Tail/CN</option>\
-<option %s value='%d'>Make & Model</option>\
+<option %s value='%d'>registration</option>\
+<option %s value='%d'>tail/CN</option>\
+<option %s value='%d'>make & model</option>\
 </select>\
 </td>\
 </tr>"),
@@ -350,10 +350,10 @@ void handleSettings() {
 <th align=left>Voice</th>\
 <td align=right>\
 <select name='voice'>\
-<option %s value='%d'>OFF</option>\
-<option %s value='%d'>Voice 1</option>\
-<option %s value='%d'>Voice 2</option>\
-<option %s value='%d'>Voice 3</option>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>voice 1</option>\
+<option %s value='%d'>voice 2</option>\
+<option %s value='%d'>voice 3</option>\
 </select>\
 </td>\
 </tr>"),

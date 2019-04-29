@@ -21,16 +21,17 @@
 
 #define SKYVIEW_FIRMWARE_VERSION  "0.8"
 
-#define DEFAULT_AP_SSID       "SoftRF-abc123"
-#define DEFAULT_AP_PSK        "12345678"
-#define DEFAULT_BT_NAME       "SoftRF-abc123"
-#define DEFAULT_BT_KEY        "1234"
+#define DEFAULT_AP_SSID   "SoftRF-abc123"
+#define DEFAULT_AP_PSK    "12345678"
+#define DEFAULT_BT_NAME   "SoftRF-abc123"
+#define DEFAULT_BT_KEY    "1234"
 
-#define RELAY_DST_PORT  12390
-#define RELAY_SRC_PORT  (RELAY_DST_PORT - 1)
+#define RELAY_DST_PORT    12390
+#define RELAY_SRC_PORT    (RELAY_DST_PORT - 1)
 
-#define DATA_TIMEOUT  2000 /* 2.0 seconds */
+#define DATA_TIMEOUT      2000 /* 2.0 seconds */
 
+#define MAX_FILENAME_LEN  64
 #define WAV_FILE_SUFFIX   ".wav"
 #define VOICE1_SUBDIR     "voice1/"
 #define VOICE2_SUBDIR     "voice2/"
@@ -107,7 +108,7 @@ enum
 {
 	UNITS_METRIC,
 	UNITS_IMPERIAL,
-	UNITS_MIXED     // same as metric, but all the altitudes are in feet
+	UNITS_MIXED     // almost the same as metric, but all the altitudes are in feet
 };
 
 enum
@@ -125,7 +126,7 @@ enum
 /*
  * 'Radar view' scale factor (outer circle diameter)
  *
- * Metric an Mixed:
+ * Metric and Mixed:
  *  LOW    - 10 KM diameter (5 KM radius)
  *  MEDIUM -  4 KM diameter (2 KM radius)
  *  HIGH   -  2 KM diameter (1 KM radius)

@@ -599,7 +599,13 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
   switch (eventType) {
     case AceButton::kEventPressed:
-      /* TBD */
+      if (button == &button_mode) {
+        EPD_Mode();
+      } else if (button == &button_up) {
+        EPD_Up();
+      } else if (button == &button_down) {
+        EPD_Down();
+      }
       break;
     case AceButton::kEventReleased:
       break;
