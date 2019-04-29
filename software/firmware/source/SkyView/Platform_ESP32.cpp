@@ -21,6 +21,8 @@
 #include <esp_err.h>
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
+#include <rom/spi_flash.h>
+#include <flashchips.h>
 
 #include "SoCHelper.h"
 #include "EPDHelper.h"
@@ -139,6 +141,11 @@ RTC_DATA_ATTR int bootCount = 0;
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
+static uint32_t ESP32_getFlashId()
+{
+  return g_rom_flashchip.device_id;
+}
+
 static void ESP32_fini()
 {
   SPI1.end();
@@ -206,6 +213,45 @@ static void ESP32_setup()
     }
   }
 
+  uint32_t flash_id = ESP32_getFlashId();
+
+  /*
+   *    Board          |   Module   |  Flash memory IC
+   *  -----------------+------------+--------------------
+   *  DoIt ESP32       | WROOM      | GIGADEVICE_GD25Q32
+   *  TTGO LoRa32 V2.0 | PICO-D4 IC | GIGADEVICE_GD25Q32
+   *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
+   *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
+   *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
+   */
+
+  if (psramFound()) {
+    switch(flash_id)
+    {
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
+      /* ESP32-WROVER module */
+      hw_info.revision = HW_REV_T8_1_8;
+      break;
+    default:
+      hw_info.revision = HW_REV_UNKNOWN;
+      break;
+    }
+  } else {
+    switch(flash_id)
+    {
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q32):
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
+      hw_info.revision = HW_REV_T5S_1_9;
+      break;
+    default:
+      hw_info.revision = HW_REV_UNKNOWN;
+      break;
+    }
+  }
+
+  /* SD-SPI init */
   SPI1.begin(SOC_SD_PIN_SCK_T5S,
              SOC_SD_PIN_MISO_T5S,
              SOC_SD_PIN_MOSI_T5S,

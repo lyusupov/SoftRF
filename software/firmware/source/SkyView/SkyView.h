@@ -58,6 +58,14 @@ enum
 
 enum
 {
+	HW_REV_UNKNOWN,
+	HW_REV_DEVKIT,
+	HW_REV_T5S_1_9,
+	HW_REV_T8_1_8
+};
+
+enum
+{
 	DISPLAY_NONE,
 	DISPLAY_EPD_2_7,
 	DISPLAY_OLED_2_4

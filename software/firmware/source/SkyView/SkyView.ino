@@ -12,15 +12,18 @@
  *   Arduino core for ESP8266 is developed/supported by ESP8266 Community (support-esp8266@esp8266.com)
  *   Arduino Time Library is developed by Paul Stoffregen, http://github.com/PaulStoffregen
  *   TinyGPS++ and PString Libraries are developed by Mikal Hart
- *   Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
- *   NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
  *   Arduino core for ESP32 is developed/supported by Hristo Gochkov
- *   U8g2 monochrome LCD, OLED and eInk library is developed by Oliver Kraus
- *   NeoPixelBus library is developed by Michael Miller
  *   jQuery library is developed by JS Foundation
  *   BCM2835 C library is developed by Mike McCauley
- *   SimpleNetwork library is developed by Dario Longobardi
- *   ArduinoJson library is developed by Benoit Blanchon
+ *   GxEPD2 library is developed by Jean-Marc Zingg
+ *   Adafruit GFX library is developed by Adafruit Industries
+ *   GDL90 decoder is developed by Ryan David
+ *   Sqlite3 Arduino library for ESP32 is developed by Arundale Ramanathan
+ *   FLN/OGN/PAW aircrafts data is courtesy of FlarmNet/GliderNet/PilotAware
+ *   Adafruit SSD1306 library is developed by Adafruit Industries
+ *   ESP32 I2S WAV player example is developed by Tuan Nha
+ *   PAW voice files are courtesy of PilotAware Ltd
+ *   AceButton library is developed by Brian Park
  *   Flashrom library is part of the flashrom.org project
  *
  * This program is free software: you can redistribute it and/or modify
@@ -51,7 +54,7 @@
 
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_SKYVIEW,
-  .revision = 0,
+  .revision = HW_REV_UNKNOWN,
   .soc      = SOC_NONE,
   .display  = DISPLAY_NONE
 };

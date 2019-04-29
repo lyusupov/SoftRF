@@ -29,7 +29,7 @@
 #include <Update.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
-#define MAX_TRACKING_OBJECTS    12
+#define MAX_TRACKING_OBJECTS  12
 
 #define SerialInput           Serial1
 
@@ -68,10 +68,11 @@
 /* TTGO T5S green LED mapping */
 #define SOC_GPIO_PIN_LED_T5S  22
 
-#define CCCC(c1, c2, c3, c4)    ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
+#define MakeFlashId(v,d)      ((v  << 16) | d)
+#define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
 
-#define MAX_FILENAME_LEN  64
-#define WAV_FILE_PREFIX   "/Audio/"
+#define MAX_FILENAME_LEN      64
+#define WAV_FILE_PREFIX       "/Audio/"
 
 /* these are data structures to process wav file */
 typedef enum headerState_e {

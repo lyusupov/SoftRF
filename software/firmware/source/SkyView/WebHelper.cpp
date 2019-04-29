@@ -70,13 +70,21 @@ static const char about_html[] PROGMEM = "<html>\
 <p align=center>(in historical order)</p>\
 <table width=100%%>\
 <tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
-<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
-<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString Libraries</td></tr>\
+<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time library</td></tr>\
+<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString libraries</td></tr>\
 <tr><th align=left>Hristo Gochkov</th><td align=left>Arduino core for ESP32</td></tr>\
 <tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
 <tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
 <tr><th align=left>Jean-Marc Zingg</th><td align=left>GxEPD2 library</td></tr>\
+<tr><th align=left>Adafruit Industries</th><td align=left>SSD1306 and GFX libraries</td></tr>\
 <tr><th align=left>Ryan David</th><td align=left>GDL90 decoder</td></tr>\
+<tr><th align=left>Arundale Ramanathan</th><td align=left>Sqlite3 Arduino library</td></tr>\
+<tr><th align=left>FlarmNet/GliderNet/PilotAware</th><td align=left>aircrafts data</td></tr>\
+<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T5S V1.9 board</td></tr>\
+<tr><th align=left>Tuan Nha</th><td align=left>ESP32 I2S WAV player</td></tr>\
+<tr><th align=left>PilotAware Ltd</th><td align=left>voice files</td></tr>\
+<tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
+<tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
