@@ -25,7 +25,12 @@ SOFTWARE.
 #ifndef ACE_BUTTON_ACE_BUTTON_H
 #define ACE_BUTTON_ACE_BUTTON_H
 
+#if !defined(RASPBERRY_PI)
 #include <Arduino.h>
+#else
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
+
 #include "ButtonConfig.h"
 
 namespace ace_button {

@@ -25,7 +25,11 @@ SOFTWARE.
 #ifndef ACE_BUTTON_BUTTON_CONFIG_H
 #define ACE_BUTTON_BUTTON_CONFIG_H
 
+#if !defined(RASPBERRY_PI)
 #include <Arduino.h>
+#else
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 
 // TODO: Verify if this is actually needed. The program size seems to be
 // identical with or without it on the Arduino IDE (which uses gcc).
