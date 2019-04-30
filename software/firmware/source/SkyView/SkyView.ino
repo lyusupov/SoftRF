@@ -100,6 +100,8 @@ void setup()
 #endif
 
   Web_setup();
+
+  SoC->WDT_setup();
 }
 
 void loop()

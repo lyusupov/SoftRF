@@ -456,6 +456,11 @@ static void RPi_Button_fini()
   }
 }
 
+static void RPi_WDT_setup()
+{
+  /* TBD */
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
@@ -479,7 +484,8 @@ const SoC_ops_t RPi_ops = {
   RPi_TTS,
   RPi_Button_setup,
   RPi_Button_loop,
-  RPi_Button_fini
+  RPi_Button_fini,
+  RPi_WDT_setup
 };
 
 int main()
@@ -572,6 +578,8 @@ int main()
   char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";
   SoC->TTS(sentence);
 #endif
+
+  SoC->WDT_setup();
 
   while (true) {
 
