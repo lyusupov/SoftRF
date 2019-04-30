@@ -60,8 +60,20 @@ static void NMEA_Parse_Character(char c)
 {
     bool isValidSentence = nmea.encode(c);
     if (isValidSentence) {
-      if (T_ID.isUpdated())
-      {
+      if (nmea.location.isUpdated()) {
+        ThisAircraft.latitude  = nmea.location.lat();
+        ThisAircraft.longitude = nmea.location.lng();
+      }
+      if (nmea.altitude.isUpdated()) {
+        ThisAircraft.altitude = nmea.altitude.meters();
+      }
+      if (nmea.course.isUpdated()) {
+        ThisAircraft.Track = nmea.course.deg();
+      }
+      if (nmea.speed.isUpdated()) {
+        ThisAircraft.GroundSpeed = nmea.speed.knots();
+      }
+      if (T_ID.isUpdated()) {
         fo = EmptyFO;
 
 //        Serial.print(F(" ID=")); Serial.print(ID.value());

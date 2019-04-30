@@ -116,6 +116,7 @@ static void RPi_setup()
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
   eeprom_block.field.settings.idpref          = ID_REG;
   eeprom_block.field.settings.voice           = VOICE_1;
+  eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
 }
 
 static void RPi_fini()
@@ -393,75 +394,66 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
 static void RPi_Button_setup()
 {
-  // Sets the pins as input.
-  bcm2835_gpio_fsel(SOC_GPIO_BUTTON_MODE,     BCM2835_GPIO_FSEL_INPT);
-  bcm2835_gpio_fsel(SOC_GPIO_BUTTON_UP,       BCM2835_GPIO_FSEL_INPT);
-  bcm2835_gpio_fsel(SOC_GPIO_BUTTON_DOWN,     BCM2835_GPIO_FSEL_INPT);
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+    // Sets the pins as input.
+    bcm2835_gpio_fsel(SOC_GPIO_BUTTON_MODE,     BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(SOC_GPIO_BUTTON_UP,       BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(SOC_GPIO_BUTTON_DOWN,     BCM2835_GPIO_FSEL_INPT);
 //  bcm2835_gpio_fsel(SOC_GPIO_BUTTON_4,        BCM2835_GPIO_FSEL_INPT);
 
-  // Sets the Pull-up mode for the pins.
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_UP);
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_UP);
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_UP);
+    // Sets the Pull-up mode for the pins.
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_UP);
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_UP);
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_UP);
 //  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_4,     BCM2835_GPIO_PUD_UP);
 
-  // Configure the ButtonConfig with the event handler, and enable all higher
-  // level events.
-  ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
-  ModeButtonConfig->setEventHandler(handleEvent);
-  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
-  ModeButtonConfig->setDebounceDelay(15);
-  ModeButtonConfig->setClickDelay(100);
-  ModeButtonConfig->setDoubleClickDelay(1000);
-  ModeButtonConfig->setLongPressDelay(2000);
+    // Configure the ButtonConfig with the event handler, and enable all higher
+    // level events.
+    ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
+    ModeButtonConfig->setEventHandler(handleEvent);
+    ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+    ModeButtonConfig->setDebounceDelay(15);
+    ModeButtonConfig->setClickDelay(100);
+    ModeButtonConfig->setDoubleClickDelay(1000);
+    ModeButtonConfig->setLongPressDelay(2000);
 
-  ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
-  UpButtonConfig->setEventHandler(handleEvent);
-  UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  UpButtonConfig->setDebounceDelay(15);
-  UpButtonConfig->setClickDelay(100);
-  UpButtonConfig->setDoubleClickDelay(1000);
-  UpButtonConfig->setLongPressDelay(2000);
+    ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
+    UpButtonConfig->setEventHandler(handleEvent);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    UpButtonConfig->setDebounceDelay(15);
+    UpButtonConfig->setClickDelay(100);
+    UpButtonConfig->setDoubleClickDelay(1000);
+    UpButtonConfig->setLongPressDelay(2000);
 
-  ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
-  DownButtonConfig->setEventHandler(handleEvent);
-  DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  DownButtonConfig->setDebounceDelay(15);
-  DownButtonConfig->setClickDelay(100);
-  DownButtonConfig->setDoubleClickDelay(1000);
-  DownButtonConfig->setLongPressDelay(2000);
+    ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
+    DownButtonConfig->setEventHandler(handleEvent);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    DownButtonConfig->setDebounceDelay(15);
+    DownButtonConfig->setClickDelay(100);
+    DownButtonConfig->setDoubleClickDelay(1000);
+    DownButtonConfig->setLongPressDelay(2000);
+  }
 }
 
 static void RPi_Button_loop()
 {
-#if 0
-  if(bcm2835_gpio_lev(SOC_GPIO_BUTTON_MODE) == LOW)
-  {
-    Serial.println(F("MODE"));
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+    button_mode.check();
+    button_up.check();
+    button_down.check();
   }
-  if(bcm2835_gpio_lev(SOC_GPIO_BUTTON_UP) == LOW)
-  {
-    Serial.println(F("UP"));
-  }
-  if(bcm2835_gpio_lev(SOC_GPIO_BUTTON_DOWN) == LOW)
-  {
-    Serial.println(F("DOWN"));
-  }
-#else
-  button_mode.check();
-  button_up.check();
-  button_down.check();
-#endif
 }
 
 static void RPi_Button_fini()
 {
-  // Clears the Pull-up mode for the pins.
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_OFF);
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_OFF);
-  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_OFF);
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+    // Clears the Pull-up mode for the pins.
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_OFF);
 //  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_4,     BCM2835_GPIO_PUD_OFF);
+  }
 }
 
 const SoC_ops_t RPi_ops = {

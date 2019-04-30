@@ -39,11 +39,11 @@ void Traffic_Update(int ndx)
                                   Container[ndx].longitude);
 
   float RelativeNorth     = constrain(distance * cos(radians(bearing)),
-                                       -32768, 32768);
+                                       -32768, 32767);
   float RelativeEast      = constrain(distance * sin(radians(bearing)),
-                                       -32768, 32768);
+                                       -32768, 32767);
   float RelativeVertical  = constrain(Container[ndx].altitude - ThisAircraft.altitude,
-                                       -32768, 32768);
+                                       -32768, 32767);
 
   Container[ndx].RelativeNorth    = (int16_t) RelativeNorth;
   Container[ndx].RelativeEast     = (int16_t) RelativeEast;

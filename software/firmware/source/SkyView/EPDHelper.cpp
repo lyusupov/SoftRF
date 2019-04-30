@@ -24,6 +24,7 @@
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
+#include "TrafficHelper.h"
 
 #include "SkyView.h"
 
@@ -38,6 +39,7 @@ unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
 
 static int  EPD_view_mode = 0;
+static unsigned long EPD_anti_ghosting_timer = 0;
 
 void EPD_Clear_Screen()
 {
@@ -130,6 +132,7 @@ byte EPD_setup()
   if (rval == DISPLAY_EPD_2_7) delay(5000); /* display SkyView logo for 5 seconds */
 
   EPDTimeMarker = millis();
+  EPD_anti_ghosting_timer = millis();
 
   return rval;
 }
@@ -146,6 +149,38 @@ void EPD_loop()
     case VIEW_MODE_TEXT:
 //      EPD_do_text_loop();
       break;
+    default:
+      break;
+    }
+
+    switch (settings->aghost)
+    {
+    case ANTI_GHOSTING_2MIN:
+      if (millis() - EPD_anti_ghosting_timer > 2 * 60000UL) {
+        EPD_display_frontpage   = false;
+        EPD_anti_ghosting_timer = millis();
+      }
+      break;
+    case ANTI_GHOSTING_5MIN:
+      if (millis() - EPD_anti_ghosting_timer > 5 * 60000UL) {
+        EPD_display_frontpage   = false;
+        EPD_anti_ghosting_timer = millis();
+      }
+      break;
+    case ANTI_GHOSTING_10MIN:
+      if (millis() - EPD_anti_ghosting_timer > 10 * 60000UL) {
+        EPD_display_frontpage   = false;
+        EPD_anti_ghosting_timer = millis();
+      }
+      break;
+    case ANTI_GHOSTING_AUTO:
+      if (millis() - EPD_anti_ghosting_timer > 5 * 60000UL &&
+          Traffic_Count() == 0) {
+        EPD_display_frontpage   = false;
+        EPD_anti_ghosting_timer = millis();
+      }
+      break;
+    case ANTI_GHOSTING_OFF:
     default:
       break;
     }

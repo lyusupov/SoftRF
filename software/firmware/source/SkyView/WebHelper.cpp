@@ -93,7 +93,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 3400;
+  size_t size = 3750;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -379,11 +379,28 @@ void handleSettings() {
   /* Common part 5 */
   snprintf_P ( offset, size,
     PSTR("\
+<tr>\
+<th align=left>e-Paper 'ghosts' removal</th>\
+<td align=right>\
+<select name='aghost'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>auto</option>\
+<option %s value='%d'> 2 minutes</option>\
+<option %s value='%d'> 5 minutes</option>\
+<option %s value='%d'>10 minutes</option>\
+</select>\
+</td>\
+</tr>\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'><p>\
 </form>\
 </body>\
-</html>")
+</html>"),
+    (settings->aghost == ANTI_GHOSTING_OFF   ? "selected" : ""), ANTI_GHOSTING_OFF,
+    (settings->aghost == ANTI_GHOSTING_AUTO  ? "selected" : ""), ANTI_GHOSTING_AUTO,
+    (settings->aghost == ANTI_GHOSTING_2MIN  ? "selected" : ""), ANTI_GHOSTING_2MIN,
+    (settings->aghost == ANTI_GHOSTING_5MIN  ? "selected" : ""), ANTI_GHOSTING_5MIN,
+    (settings->aghost == ANTI_GHOSTING_10MIN ? "selected" : ""), ANTI_GHOSTING_10MIN
   );
 
   SoC->swSer_enableRx(false);
@@ -531,7 +548,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1750);
+  char *Input_temp = (char *) malloc(1830);
   if (Input_temp == NULL) {
     return;
   }
@@ -561,6 +578,8 @@ void handleInput() {
       settings->idpref = server.arg(i).toInt();
     } else if (server.argName(i).equals("voice")) {
       settings->voice = server.arg(i).toInt();
+    } else if (server.argName(i).equals("aghost")) {
+      settings->aghost = server.arg(i).toInt();
     } else if (server.argName(i).equals("bluetooth")) {
       settings->bluetooth = server.arg(i).toInt();
     } else if (server.argName(i).equals("bt_name")) {
@@ -569,7 +588,7 @@ void handleInput() {
       server.arg(i).toCharArray(settings->bt_key, sizeof(settings->bt_key));
     }
   }
-  snprintf_P ( Input_temp, 1750,
+  snprintf_P ( Input_temp, 1830,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -591,6 +610,7 @@ PSTR("<html>\
 <tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
 <tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
 <tr><th align=left>Voice</th><td align=right>%d</td></tr>\
+<tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
 <tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
 <tr><th align=left>BT Name</th><td align=right>%s</td></tr>\
 <tr><th align=left>BT Key</th><td align=right>%s</td></tr>\
@@ -602,7 +622,7 @@ PSTR("<html>\
   settings->adapter, settings->connection, settings->protocol,
   settings->baudrate, settings->ssid, settings->psk,
   settings->units, settings->vmode, settings->orientation,
-  settings->zoom, settings->idpref, settings->voice,
+  settings->zoom, settings->idpref, settings->voice, settings->aghost,
   settings->bluetooth, settings->bt_name, settings->bt_key
   );
 

@@ -20,6 +20,7 @@
 
 #include <Fonts/Picopixel.h>
 #include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
 #include <Fonts/FreeSerifBold12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
 
@@ -176,6 +177,7 @@ static void EPD_Draw_Radar()
   uint16_t tbw, tbh;
   uint16_t x;
   uint16_t y;
+  char cog_text[6];
 
   /* divider is a half of full scale */
   int32_t divider = 2000; 
@@ -228,6 +230,11 @@ static void EPD_Draw_Radar()
   {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
+
+        int16_t rel_x;
+        int16_t rel_y;
+        float distance;
+        float bearing;
 #if 0
         Serial.print(F(" ID="));
         Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
@@ -238,8 +245,37 @@ static void EPD_Draw_Radar()
         Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
         Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
 #endif
-        int16_t x = ((int32_t) Container[i].RelativeEast  * (int32_t) radius) / divider;
-        int16_t y = ((int32_t) Container[i].RelativeNorth * (int32_t) radius) / divider;
+        switch (settings->orientation)
+        {
+        case DIRECTION_NORTH_UP:
+          rel_x = Container[i].RelativeEast;
+          rel_y = Container[i].RelativeNorth;
+          break;
+        case DIRECTION_TRACK_UP:
+          distance = sqrtf(Container[i].RelativeNorth * Container[i].RelativeNorth +
+                           Container[i].RelativeEast  * Container[i].RelativeEast);
+
+          bearing = atan2f(Container[i].RelativeNorth,
+                           Container[i].RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+
+          /* convert from math angle into course relative to north */
+          bearing = (bearing <= 90.0 ? 90.0 - bearing :
+                                      450.0 - bearing);
+
+          bearing -= ThisAircraft.Track;
+
+          rel_x = constrain(distance * sin(radians(bearing)),
+                                       -32768, 32767);
+          rel_y = constrain(distance * cos(radians(bearing)),
+                                       -32768, 32767);
+          break;
+        default:
+          /* TBD */
+          break;
+        }
+
+        int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
+        int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
 
         if        (Container[i].RelativeVertical >   EPD_RADAR_V_THRESHOLD) {
           display->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
@@ -293,6 +329,31 @@ static void EPD_Draw_Radar()
       display->print("S");
       break;
     case DIRECTION_TRACK_UP:
+      x = radar_x + radar_w / 2 - radius + tbw/2;
+      y = radar_y + (radar_w + tbh) / 2;
+      display->setCursor(x , y);
+      display->print("L");
+      x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
+      y = radar_y + (radar_w + tbh) / 2;
+      display->setCursor(x , y);
+      display->print("R");
+      x = radar_x + (radar_w - tbw) / 2;
+      y = radar_y + radar_w/2 + radius - tbh/2;
+      display->setCursor(x , y);
+      display->print("B");
+
+      display->setFont(&FreeMonoBold9pt7b);
+      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
+      display->getTextBounds(cog_text, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+      x = radar_x + (radar_w - tbw) / 2;
+      y = radar_y + radar_w/2 - radius + (3 * tbh)/2;
+      display->setCursor(x , y);
+      display->print(cog_text);
+      display->drawRoundRect( x - 2, y - tbh - 2,
+                              tbw + 8, tbh + 6,
+                              4, GxEPD_BLACK);
+      break;
     default:
       /* TBD */
       break;

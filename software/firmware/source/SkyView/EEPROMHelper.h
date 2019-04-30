@@ -45,8 +45,11 @@ typedef struct Settings {
     char     bt_name [16];
     char     bt_key  [16];
 
-    uint8_t  voice;
-    uint8_t  resvd12;
+    uint8_t  voice:3;
+    uint8_t  aghost:3;
+    uint8_t  resvd1:2;
+
+    uint8_t  resvd2;
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;

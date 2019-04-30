@@ -374,6 +374,10 @@ static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 
 static bool ESP32_DB_init()
 {
+  if (settings->adapter != ADAPTER_TTGO_T5S) {
+    return false;
+  }
+
   if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
     return false;
@@ -419,6 +423,10 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   bool rval = false;
   const char *reg_key, *db_key;
   sqlite3 *db;
+
+  if (settings->adapter != ADAPTER_TTGO_T5S) {
+    return false;
+  }
 
   switch(type)
   {
@@ -474,21 +482,24 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 
 static void ESP32_DB_fini()
 {
-  if (fln_db != NULL) {
-    sqlite3_close(fln_db);
+  if (settings->adapter == ADAPTER_TTGO_T5S) {
+
+    if (fln_db != NULL) {
+      sqlite3_close(fln_db);
+    }
+
+    if (ogn_db != NULL) {
+      sqlite3_close(ogn_db);
+    }
+
+    if (paw_db != NULL) {
+      sqlite3_close(paw_db);
+    }
+
+    sqlite3_shutdown();
+
+    SD.end();
   }
-
-  if (ogn_db != NULL) {
-    sqlite3_close(ogn_db);
-  }
-
-  if (paw_db != NULL) {
-    sqlite3_close(paw_db);
-  }
-
-  sqlite3_shutdown();
-
-  SD.end();
 }
 
 /* write sample data to I2S */
@@ -594,7 +605,7 @@ static void ESP32_TTS(char *message)
 {
   char filename[MAX_FILENAME_LEN];
 
-  if (settings->voice != VOICE_OFF) {
+  if (settings->voice != VOICE_OFF && settings->adapter == ADAPTER_TTGO_T5S) {
 
     if (SD.cardType() == CARD_NONE)
       return;
@@ -679,48 +690,52 @@ void onDownButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-  // Button(s)) uses external pull up register.
-  pinMode(SOC_BUTTON_MODE_T5S, INPUT);
-  pinMode(SOC_BUTTON_UP_T5S,   INPUT);
-  pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
+  if (settings->adapter == ADAPTER_TTGO_T5S) {
+    // Button(s)) uses external pull up register.
+    pinMode(SOC_BUTTON_MODE_T5S, INPUT);
+    pinMode(SOC_BUTTON_UP_T5S,   INPUT);
+    pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
 
-  // Configure the ButtonConfig with the event handler, and enable all higher
-  // level events.
-  ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
-  ModeButtonConfig->setEventHandler(handleEvent);
-  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
-  ModeButtonConfig->setDebounceDelay(15);
-  ModeButtonConfig->setClickDelay(100);
-  ModeButtonConfig->setDoubleClickDelay(1000);
-  ModeButtonConfig->setLongPressDelay(2000);
+    // Configure the ButtonConfig with the event handler, and enable all higher
+    // level events.
+    ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
+    ModeButtonConfig->setEventHandler(handleEvent);
+    ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+    ModeButtonConfig->setDebounceDelay(15);
+    ModeButtonConfig->setClickDelay(100);
+    ModeButtonConfig->setDoubleClickDelay(1000);
+    ModeButtonConfig->setLongPressDelay(2000);
 
-  ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
-  UpButtonConfig->setEventHandler(handleEvent);
-  UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  UpButtonConfig->setDebounceDelay(15);
-  UpButtonConfig->setClickDelay(100);
-  UpButtonConfig->setDoubleClickDelay(1000);
-  UpButtonConfig->setLongPressDelay(2000);
+    ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
+    UpButtonConfig->setEventHandler(handleEvent);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    UpButtonConfig->setDebounceDelay(15);
+    UpButtonConfig->setClickDelay(100);
+    UpButtonConfig->setDoubleClickDelay(1000);
+    UpButtonConfig->setLongPressDelay(2000);
 
-  ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
-  DownButtonConfig->setEventHandler(handleEvent);
-  DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  DownButtonConfig->setDebounceDelay(15);
-  DownButtonConfig->setClickDelay(100);
-  DownButtonConfig->setDoubleClickDelay(1000);
-  DownButtonConfig->setLongPressDelay(2000);
+    ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
+    DownButtonConfig->setEventHandler(handleEvent);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    DownButtonConfig->setDebounceDelay(15);
+    DownButtonConfig->setClickDelay(100);
+    DownButtonConfig->setDoubleClickDelay(1000);
+    DownButtonConfig->setLongPressDelay(2000);
 
-  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S), onModeButtonEvent, CHANGE );
-  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE );
-  attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE );
+    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S), onModeButtonEvent, CHANGE );
+    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE );
+    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE );
+  }
 }
 
 static void ESP32_Button_loop()
 {
-  button_mode.check();
-  button_up.check();
-  button_down.check();
+  if (settings->adapter == ADAPTER_TTGO_T5S) {
+    button_mode.check();
+    button_up.check();
+    button_down.check();
+  }
 }
 
 static void ESP32_Button_fini()
