@@ -299,6 +299,9 @@ static void EPD_Draw_Radar()
                           radius, GxEPD_BLACK);
     display->drawCircle(  radar_center_x, radar_center_y,
                           radius / 2, GxEPD_BLACK);
+
+#if 0
+    /* arrow tip */
     display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
                           radar_center_x    , radar_center_y - 5,
                           radar_center_x + 7, radar_center_y + 5,
@@ -307,6 +310,17 @@ static void EPD_Draw_Radar()
                           radar_center_x    , radar_center_y + 2,
                           radar_center_x + 7, radar_center_y + 5,
                           GxEPD_WHITE);
+#else
+    /* little airplane */
+    display->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, GxEPD_BLACK);
+    display->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, GxEPD_BLACK);
+
+    display->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, GxEPD_BLACK);
+    display->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, GxEPD_BLACK);
+
+    display->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, GxEPD_BLACK);
+    display->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, GxEPD_BLACK);
+#endif
 
     switch (settings->orientation)
     {

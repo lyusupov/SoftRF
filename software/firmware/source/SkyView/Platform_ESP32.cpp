@@ -256,6 +256,8 @@ static void ESP32_setup()
              SOC_SD_PIN_MISO_T5S,
              SOC_SD_PIN_MOSI_T5S,
              SOC_SD_PIN_SS_T5S);
+
+  enableLoopWDT();
 }
 
 static uint32_t ESP32_getChipId()
