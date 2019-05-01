@@ -59,10 +59,14 @@ void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 
-void EPD_do_radar_setup();
-void EPD_do_radar_loop();
+void EPD_radar_setup();
+void EPD_radar_loop();
 void EPD_radar_zoom();
 void EPD_radar_unzoom();
+void EPD_text_setup();
+void EPD_text_loop();
+void EPD_text_next();
+void EPD_text_prev();
 
 extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;

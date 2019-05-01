@@ -428,21 +428,57 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     return false;
   }
 
-  switch(type)
+  switch (type)
   {
   case DB_OGN:
-    reg_key = "acreg";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "accn";
+      break;
+    case ID_MAM:
+      reg_key = "acmodel";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "acreg";
+      break;
+    }
     db_key  = "devices";
     db      = ogn_db;
     break;
   case DB_PAW:
-    reg_key = "registration";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "owner";
+      break;
+    case ID_MAM:
+      reg_key = "type";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "registration";
+      break;
+    }
     db_key  = "aircrafts";
     db      = paw_db;
     break;
   case DB_FLN:
   default:
-    reg_key = "registration";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "tail";
+      break;
+    case ID_MAM:
+      reg_key = "type";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "registration";
+      break;
+    }
     db_key  = "aircrafts";
     db      = fln_db;
     break;
@@ -468,6 +504,9 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
       if (len > 0) {
         len = len > size ? size : len;
         strncpy(buf, (char *) sqlite3_column_text(stmt, 0), len);
+        if (len < size) {
+          buf[len] = 0;
+        }
         rval = true;
       }
     }

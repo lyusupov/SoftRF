@@ -142,7 +142,7 @@ static void EPD_Draw_NavBoxes()
   display->hibernate();
 }
 
-static void EPD_Draw_Message(const char *msg)
+static void EPD_radar_Draw_Message(const char *msg)
 {
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
@@ -473,7 +473,7 @@ static void EPD_Update_NavBoxes()
   display->hibernate();
 }
 
-void EPD_do_radar_setup()
+void EPD_radar_setup()
 {
   EPD_zoom = settings->zoom;
 
@@ -518,7 +518,7 @@ void EPD_do_radar_setup()
   navbox4.timestamp  = millis();
 }
 
-void EPD_do_radar_loop()
+void EPD_radar_loop()
 {
   if (!EPD_display_frontpage) {
 
@@ -544,10 +544,10 @@ void EPD_do_radar_loop()
         if (hasFix) {
           EPD_Draw_Radar();
         } else {
-          EPD_Draw_Message(NO_FIX_TEXT);
+          EPD_radar_Draw_Message(NO_FIX_TEXT);
         }
       } else {
-        EPD_Draw_Message(NO_DATA_TEXT);
+        EPD_radar_Draw_Message(NO_DATA_TEXT);
       }
 
       navbox1.value = Traffic_Count();

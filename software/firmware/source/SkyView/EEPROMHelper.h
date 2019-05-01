@@ -36,7 +36,7 @@ typedef struct Settings {
     char     psk     [16];
 
     uint8_t  units:2;
-    uint8_t  vmode:1;
+    uint8_t  resvd1:1;
     uint8_t  orientation:1;
     uint8_t  zoom:2;
     uint8_t  idpref:2;
@@ -45,9 +45,9 @@ typedef struct Settings {
     char     bt_name [16];
     char     bt_key  [16];
 
+    uint8_t  vmode:2;
     uint8_t  voice:3;
     uint8_t  aghost:3;
-    uint8_t  resvd1:2;
 
     uint8_t  resvd2;
     uint8_t  resvd3;

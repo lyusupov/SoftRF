@@ -196,21 +196,57 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   const char *reg_key, *db_key;
   sqlite3 *db;
 
-  switch(type)
+  switch (type)
   {
   case DB_OGN:
-    reg_key = "acreg";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "accn";
+      break;
+    case ID_MAM:
+      reg_key = "acmodel";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "acreg";
+      break;
+    }
     db_key  = "devices";
     db      = ogn_db;
     break;
   case DB_PAW:
-    reg_key = "registration";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "owner";
+      break;
+    case ID_MAM:
+      reg_key = "type";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "registration";
+      break;
+    }
     db_key  = "aircrafts";
     db      = paw_db;
     break;
   case DB_FLN:
   default:
-    reg_key = "registration";
+    switch (settings->idpref)
+    {
+    case ID_TAIL:
+      reg_key = "tail";
+      break;
+    case ID_MAM:
+      reg_key = "type";
+      break;
+    case ID_REG:
+    default:
+      reg_key = "registration";
+      break;
+    }
     db_key  = "aircrafts";
     db      = fln_db;
     break;
@@ -236,6 +272,9 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
       if (len > 0) {
         len = len > size ? size : len;
         strncpy(buf, (char *) sqlite3_column_text(stmt, 0), len);
+        if (len < size) {
+          buf[len] = 0;
+        }
         rval = true;
       }
     }
@@ -540,39 +579,6 @@ int main()
       fprintf( stderr, "Unable to open aircrafts database(s)\n\n" );
       exit(EXIT_FAILURE);
   }
-
-#if 0
-  char registration[9];
-  long start = micros();
-  if (SoC->DB_query(DB_FLN, 14619344, registration, sizeof(registration) - 1)) {
-    Serial.print(F("(FLN) registration of "));
-    Serial.print(14619344);
-    Serial.print(F(" is "));
-    Serial.println(registration);
-  }
-   Serial.print(F("Time taken:"));
-   Serial.println(micros()-start);
-
-  start = micros();
-  if (SoC->DB_query(DB_OGN, 14619344, registration, sizeof(registration) - 1)) {
-    Serial.print(F("(OGN) registration of "));
-    Serial.print(14619344);
-    Serial.print(F(" is "));
-    Serial.println(registration);
-  }
-   Serial.print(F("Time taken:"));
-   Serial.println(micros()-start);
-
-  start = micros();
-  if (SoC->DB_query(DB_PAW, 14619344, registration, sizeof(registration) - 1)) {
-    Serial.print(F("(PAW) registration of "));
-    Serial.print(14619344);
-    Serial.print(F(" is "));
-    Serial.println(registration);
-  }
-   Serial.print(F("Time taken:"));
-   Serial.println(micros()-start);
-#endif
 
 #if 0
   char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";

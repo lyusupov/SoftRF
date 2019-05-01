@@ -120,10 +120,10 @@ byte EPD_setup()
   switch (EPD_view_mode)
   {
   case VIEW_MODE_RADAR:
-    EPD_do_radar_setup();
+    EPD_radar_setup();
     break;
   case VIEW_MODE_TEXT:
-//      EPD_do_text_setup();
+    EPD_text_setup();
     break;
   default:
     break;
@@ -144,10 +144,10 @@ void EPD_loop()
     switch (EPD_view_mode)
     {
     case VIEW_MODE_RADAR:
-      EPD_do_radar_loop();
+      EPD_radar_loop();
       break;
     case VIEW_MODE_TEXT:
-//      EPD_do_text_loop();
+      EPD_text_loop();
       break;
     default:
       break;
@@ -211,8 +211,10 @@ void EPD_Mode()
 
     if (EPD_view_mode == VIEW_MODE_RADAR) {
       EPD_view_mode = VIEW_MODE_TEXT;
+      EPD_display_frontpage = false;
     }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
       EPD_view_mode = VIEW_MODE_RADAR;
+      EPD_display_frontpage = false;
     }
   }
 }
@@ -226,7 +228,7 @@ void EPD_Up()
       EPD_radar_unzoom();
       break;
     case VIEW_MODE_TEXT:
-//      EPD_text_up();
+      EPD_text_prev();
       break;
     default:
       break;
@@ -243,7 +245,7 @@ void EPD_Down()
       EPD_radar_zoom();
       break;
     case VIEW_MODE_TEXT:
-//      EPD_text_down();
+      EPD_text_next();
       break;
     default:
       break;
