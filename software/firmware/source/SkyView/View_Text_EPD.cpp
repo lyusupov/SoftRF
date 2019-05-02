@@ -113,7 +113,7 @@ static void EPD_Draw_Text()
     {
     case UNITS_IMPERIAL:
       u_dist = "nm";
-      u_alt  = "ft";
+      u_alt  = "f";
       u_spd  = "kts";
       disp_dist = (traffic[EPD_current - 1].distance * _GPS_MILES_PER_METER) /
                   _GPS_MPH_PER_KNOT;
@@ -123,7 +123,7 @@ static void EPD_Draw_Text()
       break;
     case UNITS_MIXED:
       u_dist = "km";
-      u_alt  = "ft";
+      u_alt  = "f";
       u_spd  = "kph";
       disp_dist = traffic[EPD_current - 1].distance / 1000.0;
       disp_alt  = abs((int) (traffic[EPD_current - 1].fop->RelativeVertical *
@@ -186,9 +186,9 @@ static void EPD_Draw_Text()
       y += tbh;
 
       if (oclock == 0) {
-        strcpy(info_line, "  ahead"); 
+        strcpy(info_line, "   ahead");
       } else {
-        snprintf(info_line, sizeof(info_line), "%d o'clock", oclock);
+        snprintf(info_line, sizeof(info_line), " %2d o'clock", oclock);
       }
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;
@@ -207,7 +207,7 @@ static void EPD_Draw_Text()
 
       y += tbh;
 
-      snprintf(info_line, sizeof(info_line), "%d %s ", disp_alt, u_alt);
+      snprintf(info_line, sizeof(info_line), "%4d %s ", disp_alt, u_alt);
 
       if (traffic[EPD_current - 1].fop->RelativeVertical > 50) {
         strcat(info_line, "above");
@@ -225,7 +225,7 @@ static void EPD_Draw_Text()
 
       y += tbh;
 
-      snprintf(info_line, sizeof(info_line), "CoG %d deg",
+      snprintf(info_line, sizeof(info_line), "CoG %3d deg",
                traffic[EPD_current - 1].fop->Track);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;
@@ -235,7 +235,7 @@ static void EPD_Draw_Text()
 
       y += tbh;
 
-      snprintf(info_line, sizeof(info_line), "GS %d %s", disp_spd, u_spd);
+      snprintf(info_line, sizeof(info_line), "GS  %3d %s", disp_spd, u_spd);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;
       display->setCursor(x, y);
