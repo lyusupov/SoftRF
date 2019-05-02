@@ -44,7 +44,7 @@ static unsigned char prev_c = 0;
 gdl_message_t message;
 
 gdl90_msg_heartbeat heartbeat;
-gdl90_msg_traffic_report_t traffic;
+gdl90_msg_traffic_report_t gdl_traffic;
 gdl90_msg_traffic_report_t ownship;
 gdl90_msg_ownship_geo_altitude geo_altitude;
 
@@ -130,29 +130,29 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
-      if (decode_gdl90_traffic_report(&message, &traffic)) {
+      if (decode_gdl90_traffic_report(&message, &gdl_traffic)) {
 
-//      print_gdl90_traffic_report(&traffic);
+//      print_gdl90_traffic_report(&gdl_traffic);
 
         fo = EmptyFO;
 
-        fo.ID          = traffic.address;
-        fo.IDType      = traffic.addressType == ADS_B_WITH_ICAO_ADDRESS ?
+        fo.ID          = gdl_traffic.address;
+        fo.IDType      = gdl_traffic.addressType == ADS_B_WITH_ICAO_ADDRESS ?
                                           ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
 
-        fo.latitude    = traffic.latitude;
-        fo.longitude   = traffic.longitude;
-        fo.altitude    = traffic.altitude  / _GPS_FEET_PER_METER;
+        fo.latitude    = gdl_traffic.latitude;
+        fo.longitude   = gdl_traffic.longitude;
+        fo.altitude    = gdl_traffic.altitude  / _GPS_FEET_PER_METER;
 
-        fo.AlarmLevel  = traffic.trafficAlertStatus == TRAFFIC_ALERT ?
+        fo.AlarmLevel  = gdl_traffic.trafficAlertStatus == TRAFFIC_ALERT ?
                                             ALARM_LEVEL_LOW : ALARM_LEVEL_NONE;
-        fo.Track       = traffic.trackOrHeading;           // degrees
-        fo.ClimbRate   = traffic.verticalVelocity/ (_GPS_FEET_PER_METER * 60.0);
+        fo.Track       = gdl_traffic.trackOrHeading;           // degrees
+        fo.ClimbRate   = gdl_traffic.verticalVelocity/ (_GPS_FEET_PER_METER * 60.0);
         fo.TurnRate    = 0;
-        fo.GroundSpeed = traffic.horizontalVelocity * _GPS_MPS_PER_KNOT;
-        fo.AcftType    = GDL90_TO_AT(traffic.emitterCategory);
+        fo.GroundSpeed = gdl_traffic.horizontalVelocity * _GPS_MPS_PER_KNOT;
+        fo.AcftType    = GDL90_TO_AT(gdl_traffic.emitterCategory);
 
-        memcpy(fo.callsign, traffic.callsign, sizeof(fo.callsign));
+        memcpy(fo.callsign, gdl_traffic.callsign, sizeof(fo.callsign));
 
         fo.timestamp   = now();
 

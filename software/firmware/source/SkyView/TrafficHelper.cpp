@@ -23,6 +23,7 @@
 #include "NMEAHelper.h"
 
 traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
+traffic_by_dist_t traffic[MAX_TRACKING_OBJECTS];
 
 unsigned long UpdateTrafficTimeMarker = 0;
 
@@ -88,4 +89,14 @@ int Traffic_Count()
   }
 
   return count;
+}
+
+int traffic_cmp_by_distance(const void *a, const void *b)
+{
+  traffic_by_dist_t *ta = (traffic_by_dist_t *)a;
+  traffic_by_dist_t *tb = (traffic_by_dist_t *)b;
+
+  if (ta->distance >  tb->distance) return  1;
+  if (ta->distance == tb->distance) return  0;
+  if (ta->distance <  tb->distance) return -1;
 }

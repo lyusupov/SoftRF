@@ -132,6 +132,8 @@ void loop()
 
 void shutdown()
 {
+  SoC->WDT_fini();
+
   Web_fini();
 
   SoC->DB_fini();

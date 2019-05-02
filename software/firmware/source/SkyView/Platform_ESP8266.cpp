@@ -154,6 +154,11 @@ static void ESP8266_WDT_setup()
   /* TBD */
 }
 
+static void ESP8266_WDT_fini()
+{
+  /* TBD */
+}
+
 const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
@@ -178,7 +183,8 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Button_setup,
   ESP8266_Button_loop,
   ESP8266_Button_fini,
-  ESP8266_WDT_setup
+  ESP8266_WDT_setup,
+  ESP8266_WDT_fini
 };
 
 #endif /* ESP8266 */

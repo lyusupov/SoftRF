@@ -54,6 +54,11 @@ typedef struct traffic_struct {
     uint8_t   callsign [GDL90_TRAFFICREPORT_MSG_CALLSIGN_SIZE];
 } traffic_t;
 
+typedef struct traffic_by_dist_struct {
+  traffic_t *fop;
+  float     distance;
+} traffic_by_dist_t;
+
 #define ENTRY_EXPIRATION_TIME   5 /* seconds */
 #define TRAFFIC_VECTOR_UPDATE_INTERVAL 2 /* seconds */
 #define TRAFFIC_UPDATE_INTERVAL_MS (TRAFFIC_VECTOR_UPDATE_INTERVAL * 1000)
@@ -64,7 +69,9 @@ void Traffic_Update       (int);
 void Traffic_loop         (void);
 void Traffic_ClearExpired (void);
 int  Traffic_Count        (void);
+int traffic_cmp_by_distance(const void *, const void *);
 
 extern traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
+extern traffic_by_dist_t traffic[MAX_TRACKING_OBJECTS];
 
 #endif /* TRAFFICHELPER_H */

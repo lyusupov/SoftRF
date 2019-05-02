@@ -34,16 +34,11 @@
 #define isTimeToDisplay() (millis() - OLEDTimeMarker > 2000)
 unsigned long OLEDTimeMarker = 0;
 
-const char SkyView_text1[] = "SkyView";
-const char SkyView_text2[] = "Presented by";
-const char SkyView_text3[] = "SoftRF project";
+const char OLED_SkyView_text1[] = "SkyView";
+const char OLED_SkyView_text2[] = "Presented by";
+const char OLED_SkyView_text3[] = "SoftRF project";
 
 static bool OLED_display_frontpage = false;
-
-typedef struct traffic_table_struct {
-  traffic_t *fop;
-  float     distance;
-} traffic_table_t;
 
 void OLED_setup() {
 
@@ -66,26 +61,26 @@ void OLED_setup() {
   odisplay.setFont(&FreeMonoBold12pt7b);
   odisplay.setTextColor(WHITE);
 
-  odisplay.getTextBounds(SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  odisplay.getTextBounds(OLED_SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
 
   odisplay.fillScreen(BLACK);
   uint16_t x = (odisplay.width()  - tbw1) / 2;
   uint16_t y = (odisplay.height() + tbh1) / 2;
   odisplay.setCursor(x, y - tbh1);
-  odisplay.print(SkyView_text1);
+  odisplay.print(OLED_SkyView_text1);
 
   odisplay.setFont(&Picopixel);
-  odisplay.getTextBounds(SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  odisplay.getTextBounds(OLED_SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
   x = (odisplay.width()  - tbw2) / 2;
   y = (odisplay.height() + tbh2) / 2;
   odisplay.setCursor(x, y + tbh2);
-  odisplay.print(SkyView_text2);
+  odisplay.print(OLED_SkyView_text2);
   odisplay.setFont(&Org_01);
-  odisplay.getTextBounds(SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+  odisplay.getTextBounds(OLED_SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
   x = (odisplay.width()  - tbw3) / 2;
   y = (odisplay.height() + tbh3) / 2;
   odisplay.setCursor(x, y + tbh2 + tbh3);
-  odisplay.print(SkyView_text3);
+  odisplay.print(OLED_SkyView_text3);
 
   odisplay.display();
 
@@ -95,16 +90,6 @@ void OLED_setup() {
   odisplay.display();
 
   OLEDTimeMarker = millis();
-}
-
-static int traffic_cmp_by_distance(const void *a, const void *b)
-{
-  traffic_table_t *ta = (traffic_table_t *)a;
-  traffic_table_t *tb = (traffic_table_t *)b;
-
-  if (ta->distance >  tb->distance) return  1;
-  if (ta->distance == tb->distance) return  0;
-  if (ta->distance <  tb->distance) return -1;
 }
 
 void OLED_loop()
@@ -155,7 +140,6 @@ void OLED_loop()
         int j=0;
         uint16_t x = 0;
         uint16_t y = 9;
-        traffic_table_t traffic[MAX_TRACKING_OBJECTS];
         char id_str  [9];
         char dist_str[5];
         char brg_str [4];
@@ -171,7 +155,7 @@ void OLED_loop()
           }
         }
 
-        qsort(traffic, j, sizeof(traffic_table_t), traffic_cmp_by_distance);
+        qsort(traffic, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
 
         odisplay.fillRect(x, y, odisplay.width(), odisplay.height() - y, BLACK);
 

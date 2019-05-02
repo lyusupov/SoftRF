@@ -30,10 +30,10 @@
 
 GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 
-const char SkyView_text1[] = "Sky";
-const char SkyView_text2[] = "View";
-const char SkyView_text3[] = "Presented by";
-const char SkyView_text4[] = "SoftRF project";
+const char EPD_SkyView_text1[] = "Sky";
+const char EPD_SkyView_text2[] = "View";
+const char EPD_SkyView_text3[] = "Presented by";
+const char EPD_SkyView_text4[] = "SoftRF project";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -79,8 +79,8 @@ byte EPD_setup()
   display->setFont(&FreeMonoBold24pt7b);
   display->setTextColor(GxEPD_BLACK);
 
-  display->getTextBounds(SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-  display->getTextBounds(SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  display->getTextBounds(EPD_SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  display->getTextBounds(EPD_SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
   display->setFullWindow();
   display->firstPage();
   do
@@ -89,24 +89,24 @@ byte EPD_setup()
     uint16_t x = (display->width() - tbw1) / 2;
     uint16_t y = (display->height() + tbh1) / 2;
     display->setCursor(x - (tbw1 / 3), y - tbh1);
-    display->print(SkyView_text1);
+    display->print(EPD_SkyView_text1);
     x = (display->width() - tbw2) / 2;
     y = (display->height() + tbh2) / 2;
     display->setCursor(x + (tbw2 / 7), y - (tbh2 - tbh1) );
-    display->print(SkyView_text2);
+    display->print(EPD_SkyView_text2);
 
     display->setFont(&FreeMonoOblique9pt7b);
-    display->getTextBounds(SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+    display->getTextBounds(EPD_SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
     x = (display->width() - tbw3) / 2;
     y = (display->height() + tbh3) * 3 / 4;
     display->setCursor(x, y);
-    display->print(SkyView_text3);
+    display->print(EPD_SkyView_text3);
     display->setFont(&FreeMonoBoldOblique9pt7b);
-    display->getTextBounds(SkyView_text4, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
+    display->getTextBounds(EPD_SkyView_text4, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
     x = (display->width() - tbw4) / 2;
     y = ((display->height() + tbh4) * 3 / 4) + tbh3;
     display->setCursor(x, y);
-    display->print(SkyView_text4);
+    display->print(EPD_SkyView_text4);
   }
   while (display->nextPage());
 
@@ -117,17 +117,8 @@ byte EPD_setup()
     rval = DISPLAY_EPD_2_7;
   }
 
-  switch (EPD_view_mode)
-  {
-  case VIEW_MODE_RADAR:
-    EPD_radar_setup();
-    break;
-  case VIEW_MODE_TEXT:
-    EPD_text_setup();
-    break;
-  default:
-    break;
-  }
+  EPD_radar_setup();
+  EPD_text_setup();
 
   if (rval == DISPLAY_EPD_2_7) delay(5000); /* display SkyView logo for 5 seconds */
 

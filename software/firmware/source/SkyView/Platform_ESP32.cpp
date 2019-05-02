@@ -787,6 +787,11 @@ static void ESP32_WDT_setup()
   enableLoopWDT();
 }
 
+static void ESP32_WDT_fini()
+{
+  disableLoopWDT();
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -811,7 +816,8 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_setup,
   ESP32_Button_loop,
   ESP32_Button_fini,
-  ESP32_WDT_setup
+  ESP32_WDT_setup,
+  ESP32_WDT_fini
 };
 
 #endif /* ESP32 */

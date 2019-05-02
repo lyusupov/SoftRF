@@ -48,6 +48,7 @@ typedef struct SoC_ops_struct {
   void (*Button_loop)();
   void (*Button_fini)();
   void (*WDT_setup)();
+  void (*WDT_fini)();
 } SoC_ops_t;
 
 enum
