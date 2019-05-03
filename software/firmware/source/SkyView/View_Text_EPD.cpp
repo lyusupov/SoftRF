@@ -262,7 +262,7 @@ static void EPD_Draw_Text()
   }
 }
 
-static void EPD_Draw_Message(const char *msg1, const char *msg2)
+void EPD_text_Draw_Message(const char *msg1, const char *msg2)
 {
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
@@ -339,13 +339,13 @@ void EPD_text_loop()
           if (Traffic_Count() > 0) {
             EPD_Draw_Text();
           } else {
-            EPD_Draw_Message("NO", "TRAFFIC");
+            EPD_text_Draw_Message("NO", "TRAFFIC");
           }
         } else {
-          EPD_Draw_Message(NO_FIX_TEXT, NULL);
+          EPD_text_Draw_Message(NO_FIX_TEXT, NULL);
         }
       } else {
-        EPD_Draw_Message(NO_DATA_TEXT, NULL);
+        EPD_text_Draw_Message(NO_DATA_TEXT, NULL);
       }
 
       EPDTimeMarker = millis();

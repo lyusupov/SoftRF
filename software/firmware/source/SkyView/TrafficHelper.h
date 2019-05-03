@@ -66,6 +66,7 @@ typedef struct traffic_by_dist_struct {
                                   TRAFFIC_UPDATE_INTERVAL_MS)
 
 void Traffic_Update       (int);
+void Traffic_setup        (void);
 void Traffic_loop         (void);
 void Traffic_ClearExpired (void);
 int  Traffic_Count        (void);

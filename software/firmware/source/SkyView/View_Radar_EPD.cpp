@@ -142,33 +142,50 @@ static void EPD_Draw_NavBoxes()
   display->hibernate();
 }
 
-static void EPD_Draw_Message(const char *msg)
+void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
 {
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
+  uint16_t x, y;
 
-  uint16_t radar_x = 0;
-  uint16_t radar_y = (display->height() - display->width()) / 2;
-  uint16_t radar_w = display->width();
+  if (msg1 != NULL && strlen(msg1) != 0) {
+    uint16_t radar_x = 0;
+    uint16_t radar_y = (display->height() - display->width()) / 2;
+    uint16_t radar_w = display->width();
 
-  display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+    display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
 
-  display->setFont(&FreeMonoBold18pt7b);
+    display->setFont(&FreeMonoBold18pt7b);
 
-  display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->firstPage();
+    do
+    {
+      display->fillScreen(GxEPD_WHITE);
 
-  display->firstPage();
-  do
-  {
-    display->fillScreen(GxEPD_WHITE);
-    uint16_t x = (radar_w - tbw) / 2;
-    uint16_t y = radar_y + (radar_w + tbh) / 2;
-    display->setCursor(x, y);
-    display->print(msg);
+      if (msg2 == NULL) {
+        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (radar_w - tbw) / 2;
+        y = radar_y + (radar_w + tbh) / 2;
+        display->setCursor(x, y);
+        display->print(msg1);
+      } else {
+        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (radar_w - tbw) / 2;
+        y = radar_y + radar_w / 2 - tbh;
+        display->setCursor(x, y);
+        display->print(msg1);
+
+        display->getTextBounds(msg2, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (radar_w - tbw) / 2;
+        y = radar_y + radar_w / 2 + tbh;
+        display->setCursor(x, y);
+        display->print(msg2);
+      }
+    }
+    while (display->nextPage());
+
+    display->hibernate();
   }
-  while (display->nextPage());
-
-  display->hibernate();
 }
 
 static void EPD_Draw_Radar()
@@ -547,10 +564,10 @@ void EPD_radar_loop()
         if (hasFix) {
           EPD_Draw_Radar();
         } else {
-          EPD_Draw_Message(NO_FIX_TEXT);
+          EPD_radar_Draw_Message(NO_FIX_TEXT, NULL);
         }
       } else {
-        EPD_Draw_Message(NO_DATA_TEXT);
+        EPD_radar_Draw_Message(NO_DATA_TEXT, NULL);
       }
 
       yield();

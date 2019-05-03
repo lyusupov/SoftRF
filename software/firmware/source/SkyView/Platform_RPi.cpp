@@ -592,12 +592,10 @@ int main()
       exit(EXIT_FAILURE);
   }
 
-#if 0
-  char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";
+  char sentence[] = "POST";
   SoC->TTS(sentence);
-#else
-  SoC->TTS("POST");
-#endif
+
+  Traffic_setup();
 
   SoC->WDT_setup();
 
@@ -615,6 +613,8 @@ int main()
       NMEA_loop();
       break;
     }
+
+    Traffic_loop();
 
     switch (hw_info.display)
     {

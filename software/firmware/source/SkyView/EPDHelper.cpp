@@ -34,6 +34,7 @@ const char EPD_SkyView_text1[] = "Sky";
 const char EPD_SkyView_text2[] = "View";
 const char EPD_SkyView_text3[] = "Presented by";
 const char EPD_SkyView_text4[] = "SoftRF project";
+const char EPD_SkyView_text5[] = "and LilyGO";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -64,6 +65,8 @@ byte EPD_setup()
   uint16_t tbw3, tbh3;
   int16_t  tbx4, tby4;
   uint16_t tbw4, tbh4;
+  int16_t  tbx5, tby5;
+  uint16_t tbw5, tbh5;
 
   EPD_view_mode = settings->vmode;
 
@@ -104,9 +107,19 @@ byte EPD_setup()
     display->setFont(&FreeMonoBoldOblique9pt7b);
     display->getTextBounds(EPD_SkyView_text4, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
     x = (display->width() - tbw4) / 2;
-    y = ((display->height() + tbh4) * 3 / 4) + tbh3;
+    y += tbh3;
+    y += 3;
     display->setCursor(x, y);
     display->print(EPD_SkyView_text4);
+
+    if (hw_info.revision == HW_REV_T5S_1_9) {
+      display->getTextBounds(EPD_SkyView_text5, 0, 0, &tbx5, &tby5, &tbw5, &tbh5);
+      x = (display->width() - tbw5) / 2;
+      y += tbh4;
+      y += 3;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text5);
+    }
   }
   while (display->nextPage());
 
@@ -235,6 +248,23 @@ void EPD_Down()
       break;
     case VIEW_MODE_TEXT:
       EPD_text_next();
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void EPD_Message(const char *msg1, const char *msg2)
+{
+  if (hw_info.display == DISPLAY_EPD_2_7) {
+    switch (EPD_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      EPD_radar_Draw_Message(msg1, msg2);
+      break;
+    case VIEW_MODE_TEXT:
+      EPD_text_Draw_Message(msg1, msg2);
       break;
     default:
       break;

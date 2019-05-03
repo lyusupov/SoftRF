@@ -97,6 +97,7 @@ void setup()
   SoC->TTS("POST");
 
   Web_setup();
+  Traffic_setup();
 
   SoC->WDT_setup();
 }
@@ -107,7 +108,6 @@ void loop()
   {
   case PROTOCOL_GDL90:
     GDL90_loop();
-    Traffic_loop();
     break;
   case PROTOCOL_NMEA:
   default:
@@ -115,7 +115,10 @@ void loop()
     break;
   }
 
+  Traffic_loop();
+
   EPD_loop();
+
   Traffic_ClearExpired();
 
   // Handle DNS
