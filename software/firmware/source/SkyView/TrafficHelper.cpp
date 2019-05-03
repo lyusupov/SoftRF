@@ -166,7 +166,7 @@ static void Traffic_Voice()
     case UNITS_METRIC:
     default:
       u_dist = "kms";
-      u_alt  = "meters";
+      u_alt  = "metres";
       voc_dist = traffic[0].distance / 1000.0;
       voc_alt  = abs((int) traffic[0].fop->RelativeVertical);
       break;

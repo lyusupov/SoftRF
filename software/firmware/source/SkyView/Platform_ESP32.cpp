@@ -708,6 +708,12 @@ static void ESP32_TTS(char *message)
       if (SD.cardType() == CARD_NONE)
         return;
 
+      bool wdt_status = loopTaskWDTEnabled;
+
+      if (wdt_status) {
+        disableLoopWDT();
+      }
+
       char *word = strtok (message, " ");
 
       while (word != NULL)
@@ -721,6 +727,12 @@ static void ESP32_TTS(char *message)
           strcat(filename, WAV_FILE_SUFFIX);
           play_file(filename);
           word = strtok (NULL, " ");
+
+          yield();
+      }
+
+      if (wdt_status) {
+        enableLoopWDT();
       }
     }
   } else {

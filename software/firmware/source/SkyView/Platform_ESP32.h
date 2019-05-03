@@ -96,6 +96,8 @@ typedef struct wavProperties_s {
     uint16_t bitsPerSample;
 } wavProperties_t;
 
+extern bool loopTaskWDTEnabled;
+
 extern WebServer server;
 
 #define USE_IP5306_WORKAROUND 0
