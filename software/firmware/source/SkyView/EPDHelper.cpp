@@ -120,8 +120,6 @@ byte EPD_setup()
   EPD_radar_setup();
   EPD_text_setup();
 
-  if (rval == DISPLAY_EPD_2_7) delay(5000); /* display SkyView logo for 5 seconds */
-
   EPDTimeMarker = millis();
   EPD_anti_ghosting_timer = millis();
 

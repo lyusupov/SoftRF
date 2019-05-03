@@ -80,33 +80,37 @@ static void EPD_Draw_Text()
 
     int oclock = ((bearing + 15) % 360) / 30;
 
-    switch (traffic[EPD_current - 1].fop->IDType)
-    {
-    case ADDR_TYPE_RANDOM:
-      db = DB_OGN;
-      break;
-    case ADDR_TYPE_ICAO:
-      db = DB_PAW;
-      break;
-    case ADDR_TYPE_FLARM:
-      db = DB_FLN;
-      break;
-    case ADDR_TYPE_ANONYMOUS:
-      db = DB_OGN;
-      break;
-    case ADDR_TYPE_P3I:
-      db = DB_PAW;
-      break;
-    case ADDR_TYPE_FANET:
-      db = DB_OGN;
-      break;
-    default:
-      if (settings->protocol == PROTOCOL_GDL90) {
+    if (settings->adb == DB_AUTO) {
+      switch (traffic[EPD_current - 1].fop->IDType)
+      {
+      case ADDR_TYPE_RANDOM:
+        db = DB_OGN;
+        break;
+      case ADDR_TYPE_ICAO:
         db = DB_PAW;
-      } else {
+        break;
+      case ADDR_TYPE_FLARM:
         db = DB_FLN;
+        break;
+      case ADDR_TYPE_ANONYMOUS:
+        db = DB_OGN;
+        break;
+      case ADDR_TYPE_P3I:
+        db = DB_PAW;
+        break;
+      case ADDR_TYPE_FANET:
+        db = DB_OGN;
+        break;
+      default:
+        if (settings->protocol == PROTOCOL_GDL90) {
+          db = DB_PAW;
+        } else {
+          db = DB_FLN;
+        }
+        break;
       }
-      break;
+    } else {
+      db = settings->adb;
     }
 
     switch (settings->units)

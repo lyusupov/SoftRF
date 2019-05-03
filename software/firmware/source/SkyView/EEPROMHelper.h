@@ -29,16 +29,19 @@
 
 typedef struct Settings {
     uint8_t  adapter;
-    uint8_t  connection;
+
+    uint8_t  connection:4;
+    uint8_t  units:2;
+    uint8_t  zoom:2;
+
     uint8_t  protocol;
     uint8_t  baudrate;
     char     ssid    [16];
     char     psk     [16];
 
-    uint8_t  units:2;
-    uint8_t  resvd1:1;
+    uint8_t  resvd1:3;
     uint8_t  orientation:1;
-    uint8_t  zoom:2;
+    uint8_t  adb:2;
     uint8_t  idpref:2;
 
     uint8_t  bluetooth; /* ESP32 built-in Bluetooth */

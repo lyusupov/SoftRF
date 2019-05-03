@@ -94,10 +94,7 @@ void setup()
 
   SoC->DB_init();
 
-#if 0
-  char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";
-  SoC->TTS(sentence);
-#endif
+  SoC->TTS("POST");
 
   Web_setup();
 

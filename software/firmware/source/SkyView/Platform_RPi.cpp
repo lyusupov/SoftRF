@@ -114,6 +114,7 @@ static void RPi_setup()
   eeprom_block.field.settings.units           = UNITS_METRIC;
   eeprom_block.field.settings.vmode           = VIEW_MODE_RADAR;
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
+  eeprom_block.field.settings.adb             = DB_AUTO;
   eeprom_block.field.settings.idpref          = ID_REG;
   eeprom_block.field.settings.voice           = VOICE_1;
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
@@ -340,7 +341,12 @@ static void RPi_TTS(char *message)
 
   char filename[MAX_FILENAME_LEN];
 
-  if (settings->voice != VOICE_OFF) {
+  if (!strcmp(message, "POST")) {
+    if (hw_info.display == DISPLAY_EPD_2_7) {
+      /* keep boot-time SkyView logo on the screen for 7 seconds */
+      delay(7000);
+    }
+  } else if (settings->voice != VOICE_OFF) {
 
     /* Open the PCM device in playback mode */
     snd_pcm_open(&pcm_handle, PCM_DEVICE, SND_PCM_STREAM_PLAYBACK, 0);
@@ -589,6 +595,8 @@ int main()
 #if 0
   char sentence[] = "traffic 3oclock 7 kms distance 5 hundred feet high";
   SoC->TTS(sentence);
+#else
+  SoC->TTS("POST");
 #endif
 
   SoC->WDT_setup();

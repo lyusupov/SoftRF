@@ -131,7 +131,12 @@ static void ESP8266_DB_fini()
 
 static void ESP8266_TTS(char *message)
 {
-
+  if (!strcmp(message, "POST")) {
+    if (hw_info.display == DISPLAY_EPD_2_7) {
+      /* keep boot-time SkyView logo on the screen for 7 seconds */
+      delay(7000);
+    }
+  }
 }
 
 static void ESP8266_Button_setup()

@@ -184,6 +184,7 @@ enum
 
 enum
 {
+	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
 	DB_PAW

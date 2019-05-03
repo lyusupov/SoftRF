@@ -93,7 +93,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 3750;
+  size_t size = 4050;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -322,6 +322,17 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Aircrafts data</th>\
+<td align=right>\
+<select name='adb'>\
+<option %s value='%d'>auto</option>\
+<option %s value='%d'>FlarmNet</option>\
+<option %s value='%d'>GliderNet</option>\
+<option %s value='%d'>PilotAware</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>ID preference</th>\
 <td align=right>\
 <select name='idpref'>\
@@ -341,6 +352,10 @@ void handleSettings() {
   (settings->zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
   (settings->zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
   (settings->zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
+  (settings->adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
+  (settings->adb == DB_FLN       ? "selected" : ""), DB_FLN,
+  (settings->adb == DB_OGN       ? "selected" : ""), DB_OGN,
+  (settings->adb == DB_PAW       ? "selected" : ""), DB_PAW,
   (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
   (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
   (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM
@@ -548,7 +563,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1830);
+  char *Input_temp = (char *) malloc(1900);
   if (Input_temp == NULL) {
     return;
   }
@@ -574,6 +589,8 @@ void handleInput() {
       settings->orientation = server.arg(i).toInt();
     } else if (server.argName(i).equals("zoom")) {
       settings->zoom = server.arg(i).toInt();
+    } else if (server.argName(i).equals("adb")) {
+      settings->adb = server.arg(i).toInt();
     } else if (server.argName(i).equals("idpref")) {
       settings->idpref = server.arg(i).toInt();
     } else if (server.argName(i).equals("voice")) {
@@ -588,7 +605,7 @@ void handleInput() {
       server.arg(i).toCharArray(settings->bt_key, sizeof(settings->bt_key));
     }
   }
-  snprintf_P ( Input_temp, 1830,
+  snprintf_P ( Input_temp, 1900,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -608,6 +625,7 @@ PSTR("<html>\
 <tr><th align=left>View mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
 <tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
+<tr><th align=left>Aircrafts data</th><td align=right>%d</td></tr>\
 <tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
 <tr><th align=left>Voice</th><td align=right>%d</td></tr>\
 <tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
@@ -621,8 +639,8 @@ PSTR("<html>\
 </html>"),
   settings->adapter, settings->connection, settings->protocol,
   settings->baudrate, settings->ssid, settings->psk,
-  settings->units, settings->vmode, settings->orientation,
-  settings->zoom, settings->idpref, settings->voice, settings->aghost,
+  settings->units, settings->vmode, settings->orientation, settings->zoom,
+  settings->adb, settings->idpref, settings->voice, settings->aghost,
   settings->bluetooth, settings->bt_name, settings->bt_key
   );
 
