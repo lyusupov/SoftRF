@@ -65,6 +65,9 @@ typedef struct traffic_by_dist_struct {
 #define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > \
                                   TRAFFIC_UPDATE_INTERVAL_MS)
 
+#define isTimeToVoice()         (millis() - Traffic_Voice_TimeMarker > 2000)
+#define VOICE_EXPIRATION_TIME   5 /* seconds */
+
 void Traffic_Update       (int);
 void Traffic_setup        (void);
 void Traffic_loop         (void);

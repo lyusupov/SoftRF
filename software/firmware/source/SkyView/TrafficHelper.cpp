@@ -26,15 +26,12 @@
 
 #include "SkyView.h"
 
-#define isTimeToVoice()       (millis() - Traffic_Voice_TimeMarker > 2000)
-#define VOICE_EXPIRATION_TIME     5 /* seconds */
-
 traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
 traffic_by_dist_t traffic[MAX_TRACKING_OBJECTS];
 
-unsigned long UpdateTrafficTimeMarker = 0;
-unsigned long Traffic_Voice_TimeMarker = 0;
-uint32_t Traffic_Voice_ID_prev = 0;
+static unsigned long UpdateTrafficTimeMarker = 0;
+static unsigned long Traffic_Voice_TimeMarker = 0;
+static uint32_t Traffic_Voice_ID_prev = 0;
 
 void Traffic_Update(int ndx)
 {
@@ -78,7 +75,6 @@ static void Traffic_Voice()
 
   if (j > 0 && traffic[0].fop->ID != Traffic_Voice_ID_prev) {
 
-    uint8_t db;
     const char *u_dist, *u_alt;
     float voc_dist;
     int   voc_alt;
@@ -88,8 +84,8 @@ static void Traffic_Voice()
 
     qsort(traffic, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
 
-    bearing = (int) atan2f(traffic[0].fop->RelativeNorth,
-                           traffic[0].fop->RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+    bearing = (int) (atan2f(traffic[0].fop->RelativeNorth,
+                            traffic[0].fop->RelativeEast) * 180.0 / PI);  /* -180 ... 180 */
 
     /* convert from math angle into course relative to north */
     bearing = (bearing <= 90 ? 90 - bearing :

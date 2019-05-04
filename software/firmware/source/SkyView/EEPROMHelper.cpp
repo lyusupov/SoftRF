@@ -88,7 +88,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
   eeprom_block.field.settings.adb             = DB_AUTO;
   eeprom_block.field.settings.idpref          = ID_REG;
-  eeprom_block.field.settings.voice           = VOICE_OFF;
+  eeprom_block.field.settings.voice           = VOICE_1;
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
 }
 

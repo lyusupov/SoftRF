@@ -121,13 +121,14 @@ void loop()
 
   Traffic_ClearExpired();
 
-  // Handle DNS
   WiFi_loop();
 
   // Handle Web
   Web_loop();
 
   SoC->Button_loop();
+
+  Battery_loop();
 }
 
 void shutdown(const char *msg)

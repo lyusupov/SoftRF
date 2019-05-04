@@ -24,10 +24,8 @@
 #include "BatteryHelper.h"
 #include "SkyView.h"
 
-void Battery_setup()
-{
-  SoC->Battery_setup();
-}
+static unsigned long Battery_TimeMarker = 0;
+static int Battery_cutoff_count = 0;
 
 float Battery_voltage()
 {
@@ -38,4 +36,37 @@ float Battery_voltage()
 float Battery_threshold()
 {
   return BATTERY_THRESHOLD_LIPO;
+}
+
+/* Battery is empty */
+float Battery_cutoff()
+{
+  return BATTERY_CUTOFF_LIPO;
+}
+void Battery_setup()
+{
+  SoC->Battery_setup();
+
+  Battery_TimeMarker = millis();
+}
+
+void Battery_loop()
+{
+  if (hw_info.model    == SOFTRF_MODEL_SKYVIEW &&
+      hw_info.revision == HW_REV_T5S_1_9) {
+    if (isTimeToBattery()) {
+      float voltage = Battery_voltage();
+
+      if (voltage > 2.0 && voltage < Battery_cutoff()) {
+        if (Battery_cutoff_count > 3) {
+          shutdown("LOW BATTERY");
+        } else {
+          Battery_cutoff_count++;
+        }
+      } else {
+        Battery_cutoff_count = 0;
+      }
+      Battery_TimeMarker = millis();
+    }
+  }
 }
