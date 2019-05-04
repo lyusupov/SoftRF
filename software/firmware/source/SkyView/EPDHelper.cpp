@@ -20,7 +20,9 @@
 
 #include <Fonts/FreeMonoOblique9pt7b.h>
 #include <Fonts/FreeMonoBoldOblique9pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeSerif9pt7b.h>
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
@@ -35,6 +37,10 @@ const char EPD_SkyView_text2[] = "View";
 const char EPD_SkyView_text3[] = "Presented by";
 const char EPD_SkyView_text4[] = "SoftRF project";
 const char EPD_SkyView_text5[] = "and LilyGO";
+const char EPD_SkyView_text6[] = "SkyView";
+const char EPD_SkyView_text7[] = "Author:";
+const char EPD_SkyView_text8[] = "Linar Yusupov";
+const char EPD_SkyView_text9[] = "Copyright (C) 2019";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -189,17 +195,54 @@ void EPD_loop()
   }
 }
 
-void EPD_fini()
+void EPD_fini(const char *msg)
 {
   if (hw_info.display == DISPLAY_EPD_2_7) {
+    int16_t  tbx, tby;
+    uint16_t tbw, tbh;
+
     display->setFullWindow();
     display->firstPage();
     do
     {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width()  - 128) / 2;
-      uint16_t y = (display->height() - 128) / 2;
+      uint16_t y = (display->height() - 128) / 6;
       display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+
+      display->setFont(&FreeMonoOblique9pt7b);
+      display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      display->setCursor(x, y - tbh);
+      display->print(msg);
+
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds(EPD_SkyView_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += (128 + 35);
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text6);
+
+      display->setFont(&FreeMonoOblique9pt7b);
+      display->getTextBounds(EPD_SkyView_text7, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x =  15;
+      y += 32;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text7);
+
+      display->setFont(&FreeMonoBoldOblique9pt7b);
+      display->getTextBounds(EPD_SkyView_text8, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x =  15;
+      y += 15;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text8);
+
+      display->setFont(&FreeSerif9pt7b);
+      display->getTextBounds(EPD_SkyView_text9, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += 25;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text9);
     }
     while (display->nextPage());
 

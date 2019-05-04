@@ -430,7 +430,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_mode) {
-        shutdown();
+        shutdown("NORMAL OFF");
         Serial.println(F("This will never be printed."));
       }
       break;
@@ -634,13 +634,13 @@ int main()
   return 0;
 }
 
-void shutdown()
+void shutdown(const char *msg)
 {
   SoC->WDT_fini();
 
   SoC->DB_fini();
 
-  EPD_fini();
+  EPD_fini(msg);
 
   SoC->Button_fini();
 

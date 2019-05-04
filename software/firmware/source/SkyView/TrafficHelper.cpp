@@ -171,7 +171,7 @@ static void Traffic_Voice()
       voc_alt  = abs((int) traffic[0].fop->RelativeVertical);
       break;
     }
-    voc_dist = 2;
+
     if (voc_dist < 1.0) {
       strcpy(how_far, "near");
     } else {

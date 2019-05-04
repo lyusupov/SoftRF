@@ -130,7 +130,7 @@ void loop()
   SoC->Button_loop();
 }
 
-void shutdown()
+void shutdown(const char *msg)
 {
   SoC->WDT_fini();
 
@@ -140,7 +140,7 @@ void shutdown()
 
   WiFi_fini();
 
-  EPD_fini();
+  EPD_fini(msg);
 
   SoC->Button_fini();
 

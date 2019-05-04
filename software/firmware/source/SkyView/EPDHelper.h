@@ -52,7 +52,7 @@ typedef struct navbox_struct
 
 byte EPD_setup();
 void EPD_loop();
-void EPD_fini();
+void EPD_fini(const char *);
 
 void EPD_Clear_Screen();
 void EPD_Mode();
