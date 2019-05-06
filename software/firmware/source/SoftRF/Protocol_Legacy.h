@@ -106,8 +106,7 @@ enum
 typedef struct {
     /********************/
     unsigned int addr:24;
-    unsigned int _unk0:1;
-    unsigned int parity:3;
+    unsigned int _unk0:4;
     unsigned int addr_type:3;
     unsigned int _unk1:1;
     // unsigned int magic:8;
@@ -117,7 +116,7 @@ typedef struct {
     unsigned int airborne:1;
     unsigned int stealth:1;
     unsigned int no_track:1;
-    unsigned int _unk3:1;
+    unsigned int parity:1;
     unsigned int gps:12;
     unsigned int aircraft_type:4;
     /********************/
@@ -125,7 +124,7 @@ typedef struct {
     unsigned int alt:13;
     /********************/
     unsigned int lon:20;
-    unsigned int _unk4:10;
+    unsigned int _unk3:10;
     unsigned int smult:2;
     /********************/
     int8_t ns[4];

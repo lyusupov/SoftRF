@@ -19,9 +19,14 @@
 #ifndef BATTERYHELPER_H
 #define BATTERYHELPER_H
 
+#define isTimeToBattery()         (millis() - Battery_TimeMarker > 5000)
+
 #define BATTERY_THRESHOLD_NIMHX2  2.3
 #define BATTERY_THRESHOLD_LIPO    3.5
 #define BATTERY_THRESHOLD_LIFE    3.0
+
+#define BATTERY_CUTOFF_NIMHX2     2.1
+#define BATTERY_CUTOFF_LIPO       3.2
 
 enum
 {
@@ -30,7 +35,9 @@ enum
 };
 
 void  Battery_setup(void);
+void  Battery_loop(void);
 float Battery_voltage(void);
 float Battery_threshold(void);
+float Battery_cutoff(void);
 
 #endif /* BATTERYHELPER_H */

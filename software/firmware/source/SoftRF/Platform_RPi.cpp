@@ -144,6 +144,11 @@ static void RPi_setup()
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
 }
 
+static void RPi_fini()
+{
+
+}
+
 static uint32_t RPi_getChipId()
 {
   return gethostid();
@@ -187,6 +192,11 @@ static void RPi_Display_loop()
   }
 }
 
+static void RPi_Display_fini(const char *msg)
+{
+
+}
+
 void RPi_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
@@ -226,10 +236,16 @@ static void RPi_WDT_setup()
   /* TBD */
 }
 
+static void RPi_WDT_fini()
+{
+  /* TBD */
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
   RPi_setup,
+  RPi_fini,
   RPi_getChipId,
   NULL,
   NULL,
@@ -249,6 +265,7 @@ const SoC_ops_t RPi_ops = {
   NULL,
   RPi_Display_setup,
   RPi_Display_loop,
+  RPi_Display_fini,
   NULL,
   NULL,
   NULL,
@@ -256,7 +273,8 @@ const SoC_ops_t RPi_ops = {
   NULL,
   RPi_UATSerial_begin,
   RPi_CC13XX_restart,
-  RPi_WDT_setup
+  RPi_WDT_setup,
+  RPi_WDT_fini
 };
 
 static bool inputAvailable()

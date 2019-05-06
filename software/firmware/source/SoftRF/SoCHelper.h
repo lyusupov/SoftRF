@@ -32,6 +32,7 @@ typedef struct SoC_ops_struct {
   uint8_t id;
   const char name[16];
   void (*setup)();
+  void (*fini)();
   uint32_t (*getChipId)();
   void* (*getResetInfoPtr)();
   String (*getResetInfo)();
@@ -51,6 +52,7 @@ typedef struct SoC_ops_struct {
   Bluetooth_ops_t *Bluetooth;
   byte (*Display_setup)();
   void (*Display_loop)();
+  void (*Display_fini)(const char *);
   void (*Battery_setup)();
   float (*Battery_voltage)();
   void (*GNSS_PPS_handler)();
@@ -59,6 +61,7 @@ typedef struct SoC_ops_struct {
   void (*UATSerial_begin)(unsigned long);
   void (*CC13XX_restart)();
   void (*WDT_setup)();
+  void (*WDT_fini)();
 } SoC_ops_t;
 
 enum
@@ -85,5 +88,6 @@ extern const SoC_ops_t CC13XX_ops;
 #endif
 
 byte SoC_setup(void);
+void SoC_fini(void);
 
 #endif /* SOCHELPER_H */

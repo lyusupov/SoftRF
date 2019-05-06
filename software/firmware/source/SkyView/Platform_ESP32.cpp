@@ -37,6 +37,12 @@
 
 #include "driver/i2s.h"
 
+#include <esp_wifi.h>
+#include <esp_bt.h>
+
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
+
 WebServer server ( 80 );
 
 /*
@@ -134,12 +140,6 @@ i2s_pin_config_t pin_config = {
 };
 
 RTC_DATA_ATTR int bootCount = 0;
-
-#include <esp_wifi.h>
-#include <esp_bt.h>
-
-#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
 static uint32_t ESP32_getFlashId()
 {

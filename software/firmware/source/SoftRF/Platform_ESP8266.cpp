@@ -69,6 +69,11 @@ static void ESP8266_setup()
 
 }
 
+static void ESP8266_fini()
+{
+
+}
+
 static uint32_t ESP8266_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -262,6 +267,11 @@ static void ESP8266_Display_loop()
 
 }
 
+static void ESP8266_Display_fini(const char *msg)
+{
+
+}
+
 static void ESP8266_Battery_setup()
 {
 
@@ -308,10 +318,16 @@ static void ESP8266_WDT_setup()
   /* TBD */
 }
 
+static void ESP8266_WDT_fini()
+{
+  /* TBD */
+}
+
 const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
+  ESP8266_fini,
   ESP8266_getChipId,
   ESP8266_getResetInfoPtr,
   ESP8266_getResetInfo,
@@ -331,6 +347,7 @@ const SoC_ops_t ESP8266_ops = {
   NULL, /* ESP8266 has no built-in Bluetooth */
   ESP8266_Display_setup,
   ESP8266_Display_loop,
+  ESP8266_Display_fini,
   ESP8266_Battery_setup,
   ESP8266_Battery_voltage,
   ESP8266_GNSS_PPS_Interrupt_handler,
@@ -338,7 +355,8 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Baro_setup,
   ESP8266_UATSerial_begin,
   ESP8266_CC13XX_restart,
-  ESP8266_WDT_setup
+  ESP8266_WDT_setup,
+  ESP8266_WDT_fini
 };
 
 #endif /* ESP8266 */

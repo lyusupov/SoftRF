@@ -242,7 +242,32 @@ void loop()
   Logger_loop();
 #endif /* LOGGER_IS_ENABLED */
 
+  Battery_loop();
+
   yield();
+}
+
+void shutdown(const char *msg)
+{
+  SoC->WDT_fini();
+
+  SoC->swSer_enableRx(false);
+
+  NMEA_fini();
+
+  Web_fini();
+
+  WiFi_fini();
+
+  if (settings->mode != SOFTRF_MODE_UAV) {
+    GNSS_fini();
+  }
+
+  SoC->Display_fini(msg);
+
+  RF_Shutdown();
+
+  SoC_fini();
 }
 
 void normal_loop()

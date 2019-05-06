@@ -70,6 +70,13 @@ const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x07, 0x03, 0x00, 0x00, 0x00, 0x0
                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00};
 
+const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
+                                       0x00, 0x01, 0x00, 0x0F, 0x66};
+
+const uint8_t RXM_PMREQ[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00,
+                                       0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
+                                       0x4d, 0x3b};
+
 const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
   [GNSS_MODULE_NMEA]    = "NMEA",
@@ -484,6 +491,28 @@ byte GNSS_setup() {
   }
 
   return rval;
+}
+
+void GNSS_fini()
+{
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+    if (hw_info.gnss == GNSS_MODULE_U6 ||
+        hw_info.gnss == GNSS_MODULE_U7 ||
+        hw_info.gnss == GNSS_MODULE_U8) {
+
+      // Controlled Software reset
+      for (int i = 0; i < sizeof(CFG_RST); i++) {
+        swSer.write(pgm_read_byte(&CFG_RST[i]));
+      }
+
+      delay(600);
+
+      // power off until wakeup call
+      for (int i = 0; i < sizeof(RXM_PMREQ); i++) {
+        swSer.write(pgm_read_byte(&RXM_PMREQ[i]));
+      }
+    }
+  }
 }
 
 void GNSSTimeSync()

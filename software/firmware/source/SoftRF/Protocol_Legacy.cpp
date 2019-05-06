@@ -261,7 +261,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->_unk1 = 0;
     pkt->_unk2 = 0;
     pkt->_unk3 = 0;
-    pkt->_unk4 = 0;
+//    pkt->_unk4 = 0;
 
     for (ndx = 0; ndx < sizeof (legacy_packet_t); ndx++) {
       pkt_parity += parity(*(((unsigned char *) pkt) + ndx));

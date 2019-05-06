@@ -29,7 +29,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
 ---|:---:|:---:|:---:|---
 1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition) model is no longer supported - use [Prime MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) instead.<br>ESP8266 platform will be phased out through year 2019 in favour of ESP32.
-1&nbsp;[Prime Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;SkyView EZ|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
+1&nbsp;[Prime Mark II](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;[SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
 1&nbsp;[Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;SkyView Pi|[Broadcom<br>BCM283X<br>(Raspberry Pi)](https://en.wikipedia.org/wiki/Raspberry_Pi)|Q4 2018|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|Good for use together with RTL-SDR dongles to achieve additional 1090ES (and 978UAT) ADS-B air traffic reception.
 [UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|[Texas Instruments<br>CC13XX](http://www.ti.com/product/cc1310)|Q1 2019|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|Resources of this platform are not sufficient to fit full SoftRF firmware.<br>Unique RF radio specs are useful for [UAT reception](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge).
 
@@ -52,7 +52,10 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
-* [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+* [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 * Software
     * Firmware

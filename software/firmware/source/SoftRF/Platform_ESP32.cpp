@@ -20,6 +20,7 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
+#include <esp_bt.h>
 #include <soc/rtc_cntl_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
@@ -84,6 +85,20 @@ static union {
   uint64_t chipmacid;
 };
 
+static bool OLED_display_frontpage = false;
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+extern uint32_t tx_packets_counter, rx_packets_counter;
+
+const char *OLED_Protocol_ID[] = {
+  [RF_PROTOCOL_LEGACY]    = "L",
+  [RF_PROTOCOL_OGNTP]     = "O",
+  [RF_PROTOCOL_P3I]       = "P",
+  [RF_PROTOCOL_ADSB_1090] = "A",
+  [RF_PROTOCOL_ADSB_UAT]  = "U",
+  [RF_PROTOCOL_FANET]     = "F"
+};
+
 static uint32_t ESP32_getFlashId()
 {
   return g_rom_flashchip.device_id;
@@ -118,13 +133,7 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
-#if defined(ESP32_CORE_DEVEL) || defined(ESP32_CORE_1_0_1)
   if (psramFound()) {
-#endif /* ESP32_CORE_DEVEL */
-#if defined (ESP32_CORE_1_0_0)
-  /* Temporary workaround until issues with PSRAM will settle down */
-  if (ESP.getFreeHeap() > 4000000) {
-#endif /* ESP32_CORE_1_0_0 */
 
     uint32_t flash_id = ESP32_getFlashId();
 
@@ -158,6 +167,16 @@ static void ESP32_setup()
     hw_info.revision = 2;
     lmic_pins.rst = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
   }
+}
+
+static void ESP32_fini()
+{
+  SPI.end();
+
+  esp_wifi_stop();
+  esp_bt_controller_disable();
+
+  esp_deep_sleep_start();
 }
 
 static uint32_t ESP32_getChipId()
@@ -450,20 +469,6 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 }
 
-static bool OLED_display_frontpage = false;
-static uint32_t prev_tx_packets_counter = 0;
-static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
-const char *OLED_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "L",
-  [RF_PROTOCOL_OGNTP]     = "O",
-  [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
-  [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
-};
-
 static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -570,6 +575,16 @@ static void ESP32_Display_loop()
   }
 }
 
+static void ESP32_Display_fini(const char *msg)
+{
+  if (u8x8) {
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+    u8x8->clear();
+    u8x8->draw2x2String(1, 3, msg);
+//    u8x8->noDisplay();
+  }
+}
+
 static float ESP32_Battery_voltage()
 {
   float voltage = ((float) read_voltage()) * 0.001 ;
@@ -672,15 +687,19 @@ static void ESP32_CC13XX_restart()
 
 static void ESP32_WDT_setup()
 {
-#if defined(ESP32_CORE_DEVEL) || defined(ESP32_CORE_1_0_1)
   enableLoopWDT();
-#endif /* ESP32_CORE_DEVEL */
+}
+
+static void ESP32_WDT_fini()
+{
+  disableLoopWDT();
 }
 
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
   ESP32_setup,
+  ESP32_fini,
   ESP32_getChipId,
   ESP32_getResetInfoPtr,
   ESP32_getResetInfo,
@@ -700,6 +719,7 @@ const SoC_ops_t ESP32_ops = {
   &ESP32_Bluetooth_ops,
   ESP32_Display_setup,
   ESP32_Display_loop,
+  ESP32_Display_fini,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
   ESP32_GNSS_PPS_Interrupt_handler,
@@ -707,7 +727,8 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Baro_setup,
   ESP32_UATSerial_begin,
   ESP32_CC13XX_restart,
-  ESP32_WDT_setup
+  ESP32_WDT_setup,
+  ESP32_WDT_fini
 };
 
 #endif /* ESP32 */

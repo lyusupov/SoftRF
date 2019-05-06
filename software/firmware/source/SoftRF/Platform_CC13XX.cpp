@@ -44,6 +44,11 @@ static void CC13XX_setup()
   EasyLink_getIeeeAddr(ieeeAddr);
 }
 
+static void CC13XX_fini()
+{
+
+}
+
 static uint32_t CC13XX_getChipId()
 {
   return (uint32_t) ieeeAddr[7]        | (ieeeAddr[6] << 8) | \
@@ -135,10 +140,16 @@ static void CC13XX_WDT_setup()
   /* TBD */
 }
 
+static void CC13XX_WDT_fini()
+{
+  /* TBD */
+}
+
 const SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
   CC13XX_setup,
+  CC13XX_fini,
   CC13XX_getChipId,
   NULL,
   NULL,
@@ -158,6 +169,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   NULL,
+  NULL,
   CC13XX_Battery_setup,
   CC13XX_Battery_voltage,
   CC13XX_GNSS_PPS_Interrupt_handler,
@@ -165,7 +177,8 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_Baro_setup,
   CC13XX_UATSerial_begin,
   CC13XX_restart,
-  CC13XX_WDT_setup
+  CC13XX_WDT_setup,
+  CC13XX_WDT_fini
 };
 
 #endif /* ENERGIA_ARCH_CC13XX */

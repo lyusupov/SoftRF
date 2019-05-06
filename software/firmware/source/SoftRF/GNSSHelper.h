@@ -47,11 +47,11 @@ enum
                            (gnss.altitude.age() <= NMEA_EXP_TIME) && \
                            (gnss.date.age()     <= NMEA_EXP_TIME))
 
-byte GNSS_setup();
-
-void GNSSTimeSync(void);
-void PickGNSSFix(void);
-int LookupSeparation(float, float);
+byte GNSS_setup      (void);
+void GNSS_fini       (void);
+void GNSSTimeSync    (void);
+void PickGNSSFix     (void);
+int LookupSeparation (float, float);
 
 extern TinyGPSPlus gnss;
 extern volatile unsigned long PPS_TimeMarker;
