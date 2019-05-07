@@ -36,8 +36,8 @@ static void EPD_Draw_Text()
 {
   int j=0;
   int bearing;
-  char info_line[13];
-  char id_text[13];
+  char info_line [TEXT_VIEW_LINE_LENGTH];
+  char id_text   [TEXT_VIEW_LINE_LENGTH];
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
     if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
@@ -148,7 +148,7 @@ static void EPD_Draw_Text()
     uint32_t id = traffic[EPD_current - 1].fop->ID;
 
     long start = micros();
-    if (SoC->DB_query(db, id, id_text, sizeof(id_text) - 1)) {
+    if (SoC->DB_query(db, id, id_text, sizeof(id_text))) {
 #if 0
       Serial.print(F("Registration of "));
       Serial.print(id);
@@ -187,7 +187,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       if (oclock == 0) {
         strcpy(info_line, "   ahead");
@@ -200,7 +200,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "%4.1f %s out", disp_dist, u_dist);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -209,7 +209,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "%4d %s ", disp_alt, u_alt);
 
@@ -227,7 +227,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "CoG %3d deg",
                traffic[EPD_current - 1].fop->Track);
@@ -237,7 +237,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "GS  %3d %s", disp_spd, u_spd);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -246,7 +246,7 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
-      y += tbh;
+      y += TEXT_VIEW_LINE_SPACING;
 
       display->getTextBounds(id_text, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;

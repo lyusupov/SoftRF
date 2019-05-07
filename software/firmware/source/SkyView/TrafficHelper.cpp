@@ -227,7 +227,9 @@ void Traffic_loop()
   }
 
   if (isTimeToVoice()) {
-    Traffic_Voice();
+    if (settings->voice != VOICE_OFF) {
+      Traffic_Voice();
+    }
 
     Traffic_Voice_TimeMarker = millis();
   }

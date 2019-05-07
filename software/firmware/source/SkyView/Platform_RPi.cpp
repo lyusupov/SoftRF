@@ -275,6 +275,8 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
         strncpy(buf, (char *) sqlite3_column_text(stmt, 0), len);
         if (len < size) {
           buf[len] = 0;
+        } else if (len == size) {
+          buf[len-1] = 0;
         }
         rval = true;
       }

@@ -38,6 +38,9 @@
 
 #define EPD_RADAR_V_THRESHOLD   50      /* metres */
 
+#define TEXT_VIEW_LINE_LENGTH   13      /* characters */
+#define TEXT_VIEW_LINE_SPACING  15      /* pixels */
+
 typedef struct navbox_struct
 {
   char      title[8];
