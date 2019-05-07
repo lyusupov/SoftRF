@@ -189,8 +189,6 @@ static void Traffic_Voice()
         traffic[0].fop->RelativeVertical > 0 ? "above" : "below");
     }
 
-    EPD_Message("VOICE", "ALERT");
-
     snprintf(message, sizeof(message),
                 "traffic %s distance %s altitude %s",
                 where, how_far, elev);
