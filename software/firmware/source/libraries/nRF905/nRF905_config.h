@@ -154,10 +154,10 @@
 
 #include "bcm2835.h"
 
-#define TRX_EN    (23)  // Enable/standby pin
-#define PWR_MODE  (22)  // Power mode pin
-#define TX_EN     (27)  // TX / RX mode pin
-#define CSN       (BCM2835_SPI_CS0)  // SPI slave select pin
+#define TRX_EN    (RPI_V2_GPIO_P1_18)  // Enable/standby pin
+#define PWR_MODE  (RPI_V2_GPIO_P1_11)  // Power mode pin
+#define TX_EN     (RPI_V2_GPIO_P1_07)  // TX / RX mode pin
+#define CSN       (RPI_V2_GPIO_P1_22)  // SPI slave select pin
 
 #define CD			  (24)	// Carrier detect pin (for collision avoidance, if enabled)
 #define DR			  (25)
@@ -210,7 +210,7 @@
 ///////////////////
 
 // Frequency
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -220,7 +220,7 @@
 // NRF905_BAND_433
 // NRF905_BAND_868
 // NRF905_BAND_915
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -264,7 +264,7 @@
 // Number of bytes for address
 // NRF905_ADDR_SIZE_1
 // NRF905_ADDR_SIZE_4
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -272,7 +272,7 @@
 #endif
 
 // Payload size (1 - 32)
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

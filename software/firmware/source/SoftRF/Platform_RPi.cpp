@@ -679,6 +679,7 @@ int main()
       exit(EXIT_FAILURE);
   }
 
+#if 0
   Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
   Serial.flush();
   hw_info.display = SoC->Display_setup();
@@ -687,6 +688,7 @@ int main()
   } else {
     Serial.println(" failed!");
   }
+#endif
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;
