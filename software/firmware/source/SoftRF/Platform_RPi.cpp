@@ -164,7 +164,7 @@ static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static void RPi_SPI_begin()
 {
-  /* TBD */
+  SPI.begin();
 }
 
 static void RPi_swSer_begin(unsigned long baud)

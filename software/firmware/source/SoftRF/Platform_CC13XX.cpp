@@ -89,7 +89,7 @@ static void CC13XX_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static void CC13XX_SPI_begin()
 {
-  /* TBD */
+  SPI.begin();
 }
 
 static void CC13XX_swSer_begin(unsigned long baud)
