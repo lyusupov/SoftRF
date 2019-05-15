@@ -191,11 +191,7 @@ static void hal_spi_init () {
 #if defined(ENERGIA_ARCH_CC13XX)
     SPI.setClockDivider(SPI_CLOCK_MAX / LMIC_SPI_FREQ);
 #endif
-    SPI.begin(
-#if defined(ESP32)
-        5, 19, 27, 18
-#endif
-    );
+    SPI.begin();
 }
 
 void hal_pin_nss (u1_t val) {

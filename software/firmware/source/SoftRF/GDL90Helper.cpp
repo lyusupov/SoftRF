@@ -478,7 +478,7 @@ void GDL90_Export()
     GDL90_Out(buf, size);
 #endif /* ENABLE_AHRS */
 
-    if (isValidGNSSFix()) {
+    if (isValidFix()) {
       size = makeOwnershipReport(buf, &ThisAircraft);
       GDL90_Out(buf, size);
 

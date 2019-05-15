@@ -168,11 +168,7 @@ void nRF905_init()
 	digitalWrite(CSN, HIGH);
 	pinMode(CSN, OUTPUT);
 
-	SPI.begin(
-#if defined(ESP32)
-		5, 19, 27, 18
-#endif
-		);
+	SPI.begin();
 
 #if !defined(RASPBERRY_PI)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);

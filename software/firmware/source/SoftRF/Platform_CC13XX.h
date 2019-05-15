@@ -26,6 +26,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define isValidFix()            isValidGNSSFix()
+
 #define uni_begin()             strip.begin()
 #define uni_show()              strip.sendBuffer(LEDs, strip.numPixels())
 #define uni_setPixelColor(i, c) ({ uint32_t temp = c;          \
@@ -38,14 +40,14 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define swSer       Serial
-#define UATSerial   Serial /* TBD */
-#define yield()     ({ })
-#define snprintf_P  snprintf
+#define swSer                   Serial
+#define UATSerial               Serial /* TBD */
+#define yield()                 ({ })
+#define snprintf_P              snprintf
 
-#define SOC_GPIO_PIN_SS       18               // GPIO 11
-#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUZZER   GREEN_LED        // GPIO 7
+#define SOC_GPIO_PIN_SS         18               // GPIO 11
+#define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
 
 /* 
  *  UART pins
@@ -56,8 +58,8 @@
  */
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
 
 extern WS2812 strip;
 extern uint8_t LEDs[][3];

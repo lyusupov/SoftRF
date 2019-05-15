@@ -30,9 +30,11 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define SoftwareSerial  HardwareSerial
-#define swSer           Serial1
-#define UATSerial       Serial2
+#define SoftwareSerial          HardwareSerial
+#define swSer                   Serial1
+#define UATSerial               Serial2
+
+#define isValidFix()            isValidGNSSFix()
 
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
 //#define USE_ADAFRUIT_NEO_LIBRARY
@@ -71,13 +73,13 @@ extern Adafruit_NeoPixel strip;
 #define LEDC_RESOLUTION_BUZZER  8
 
 /* Peripherals */
-#define SOC_GPIO_PIN_GNSS_RX  23
-#define SOC_GPIO_PIN_GNSS_TX  12
-#define SOC_GPIO_PIN_LED      25
-#define SOC_GPIO_PIN_BUZZER   13
-#define SOC_GPIO_PIN_BATTERY  36
+#define SOC_GPIO_PIN_GNSS_RX    23
+#define SOC_GPIO_PIN_GNSS_TX    12
+#define SOC_GPIO_PIN_LED        25
+#define SOC_GPIO_PIN_BUZZER     13
+#define SOC_GPIO_PIN_BATTERY    36
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
 #define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
@@ -87,48 +89,48 @@ extern Adafruit_NeoPixel strip;
                                   SOC_GPIO_PIN_TBEAM_LED_V05))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
-#define SOC_GPIO_PIN_MOSI     27
-#define SOC_GPIO_PIN_MISO     19
-#define SOC_GPIO_PIN_SCK      5
-#define SOC_GPIO_PIN_SS       18
+#define SOC_GPIO_PIN_MOSI       27
+#define SOC_GPIO_PIN_MISO       19
+#define SOC_GPIO_PIN_SCK        5
+#define SOC_GPIO_PIN_SS         18
 
 /* NRF905 */
-#define SOC_GPIO_PIN_TXE      26
-#define SOC_GPIO_PIN_CE       2
-#define SOC_GPIO_PIN_PWR      14
+#define SOC_GPIO_PIN_TXE        26
+#define SOC_GPIO_PIN_CE         2
+#define SOC_GPIO_PIN_PWR        14
 
 /* SX1276 [RFM95W] (does match Heltec & TTGO LoRa32 pins mapping) */
-#define SOC_GPIO_PIN_RST      14
-#define SOC_GPIO_PIN_DIO0     26
-#define SOC_GPIO_PIN_SDA      14
-#define SOC_GPIO_PIN_SCL      2
+#define SOC_GPIO_PIN_RST        14
+#define SOC_GPIO_PIN_DIO0       26
+#define SOC_GPIO_PIN_SDA        14
+#define SOC_GPIO_PIN_SCL        2
 
 /* TTGO T-BEAM section */
 // GPS module
-#define SOC_GPIO_PIN_TBEAM_RX 12
-#define SOC_GPIO_PIN_TBEAM_TX 15
+#define SOC_GPIO_PIN_TBEAM_RX   12
+#define SOC_GPIO_PIN_TBEAM_TX   15
 // battery voltage
-#define SOC_GPIO_PIN_TBEAM_BATTERY  35
+#define SOC_GPIO_PIN_TBEAM_BATTERY      35
 // status LED
-#define SOC_GPIO_PIN_TBEAM_LED_V02  21
-#define SOC_GPIO_PIN_TBEAM_LED_V05  14
+#define SOC_GPIO_PIN_TBEAM_LED_V02      21
+#define SOC_GPIO_PIN_TBEAM_LED_V05      14
 // SX1276 RESET
-#define SOC_GPIO_PIN_TBEAM_RF_RST_V02  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TBEAM_RF_RST_V05  23
+#define SOC_GPIO_PIN_TBEAM_RF_RST_V02   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TBEAM_RF_RST_V05   23
 // 1st I2C bus on the T-Beam
 #define SOC_GPIO_PIN_TBEAM_SDA  13
 #define SOC_GPIO_PIN_TBEAM_SCL  2
 
-#define SSD1306_OLED_I2C_ADDR 0x3C
+#define SSD1306_OLED_I2C_ADDR   0x3C
 
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
-#define TTGO_V2_OLED_PIN_RST  U8X8_PIN_NONE // connected to CPU RST/EN
-#define TTGO_V2_OLED_PIN_SDA  21
-#define TTGO_V2_OLED_PIN_SCL  22
+#define TTGO_V2_OLED_PIN_RST    U8X8_PIN_NONE // connected to CPU RST/EN
+#define TTGO_V2_OLED_PIN_SDA    21
+#define TTGO_V2_OLED_PIN_SCL    22
 // Hardware pin definitions for Heltec and TTGO-V1 LoRa-32 Boards with OLED SSD1306 I2C Display
-#define HELTEC_OLED_PIN_RST   U8X8_PIN_NONE // 16
-#define HELTEC_OLED_PIN_SDA   4
-#define HELTEC_OLED_PIN_SCL   15
+#define HELTEC_OLED_PIN_RST     U8X8_PIN_NONE // 16
+#define HELTEC_OLED_PIN_SDA     4
+#define HELTEC_OLED_PIN_SCL     15
 
 extern WebServer server;
 
@@ -159,7 +161,7 @@ struct rst_info {
   uint32_t depc;
 };
 
-#define MakeFlashId(v,d)  ((v << 16) | d)
+#define MakeFlashId(v,d)        ((v << 16) | d)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0

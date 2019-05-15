@@ -115,8 +115,6 @@ std::string input_line;
 
 TCPServer Traffic_TCP_Server;
 
-#define isValidFix() (isValidGNSSFix() || isValidGPSDFix())
-
 static void RPi_setup()
 {
   eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;

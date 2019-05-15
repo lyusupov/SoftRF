@@ -398,6 +398,8 @@ void nrf905_channel(uint8_t channel)
 
 void nrf905_setup()
 {
+  SoC->SPI_begin();
+
   // Start up
   nRF905_init();
 
@@ -484,7 +486,8 @@ void nrf905_transmit()
 
 void nrf905_shutdown()
 {
-
+  nRF905_powerDown();
+  SPI.end();
 }
 
 /*
@@ -525,6 +528,8 @@ bool sx1276_probe()
 {
   u1_t v, v_reset;
 
+  SoC->SPI_begin();
+
   hal_init();
 
   // manually reset radio
@@ -537,6 +542,8 @@ bool sx1276_probe()
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
   
   v = sx1276_readReg(SX1276_RegVersion);
+
+  SPI.end();
 
   if (v == 0x12) {
 
@@ -572,6 +579,8 @@ void sx1276_channel(uint8_t channel)
 
 void sx1276_setup()
 {
+  SoC->SPI_begin();
+
   // initialize runtime env
   os_init();
   // Reset the MAC state. Session and pending data transfers will be discarded.
@@ -712,6 +721,7 @@ void sx1276_transmit()
 void sx1276_shutdown()
 {
   LMIC_shutdown();
+  SPI.end();
 }
 
 // Enable rx mode and call func when a packet is received

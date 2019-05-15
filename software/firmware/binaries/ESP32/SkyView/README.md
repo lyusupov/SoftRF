@@ -12,7 +12,8 @@
 - 'anti-ghosting' full screen refresh may cause 2-3 seconds of '**NO DATA**' or '**NO FIX**' warning ;
 - '**NO DATA**' or '**NO FIX**' warning may appear right after voice traffic alert message ;
 - **VOICE2** and **VOICE3** may have some WAV files missing ;
-- Wi-Fi re-connect may fail sometimes. Reset of SoftRF server and/or SkyView client does typically help.
+- Wi-Fi re-connect may fail sometimes. Reset of SoftRF server and/or SkyView client does typically help ;
+- does not work with Stratux yet due to issues with DHCP leases and GDL90 data (over-)flow.
 
 ### revision 0.8
 

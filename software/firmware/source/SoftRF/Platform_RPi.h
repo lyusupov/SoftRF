@@ -22,13 +22,15 @@
 #define PLATFORM_RPI_H
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
-#define MAX_TRACKING_OBJECTS    8
+#define MAX_TRACKING_OBJECTS  8
 
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
 
-#define swSer     Serial1
-#define UATSerial Serial2
+#define swSer                 Serial1
+#define UATSerial             Serial2
+
+#define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
 /* Dragino LoRa/GPS HAT */
 #if 0 /* WiringPi */

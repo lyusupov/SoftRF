@@ -285,7 +285,7 @@ void normal_loop()
   GNSSTimeSync();
 
   ThisAircraft.timestamp = now();
-  if (isValidGNSSFix()) {
+  if (isValidFix()) {
     ThisAircraft.latitude = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
     ThisAircraft.altitude = gnss.altitude.meters();
@@ -315,18 +315,18 @@ void normal_loop()
   success = true;
 #endif
 
-  if (success && isValidGNSSFix()) ParseData();
+  if (success && isValidFix()) ParseData();
 
 #if defined(ENABLE_TTN)
   TTN_loop();
 #endif
 
-  if (isValidGNSSFix()) {
+  if (isValidFix()) {
     Traffic_loop();
   }
 
   if (isTimeToDisplay()) {
-    if (isValidGNSSFix()) {
+    if (isValidFix()) {
       LED_DisplayTraffic();
     } else {
       LED_Clear();
@@ -334,7 +334,7 @@ void normal_loop()
     LEDTimeMarker = millis();
   }
 
-  if (isTimeToExport() && isValidGNSSFix()) {
+  if (isTimeToExport() && isValidFix()) {
     NMEA_Export();
     GDL90_Export();
     D1090_Export();

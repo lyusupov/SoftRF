@@ -87,15 +87,19 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 
 # Highlights
 
-* **Prime Edition Mark II**
+* [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
 
-* **Standalone Edition**
+* [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v4/SoftRF-Case-v4-Exterior.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/first-five-units.jpg)
+
+* [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
 
 * **Software driven emulation**
 

@@ -32,6 +32,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define isValidFix()            isValidGNSSFix()
+
 #define uni_begin()             strip.begin()
 #define uni_show()              strip.show()
 #define uni_setPixelColor(i, c) strip.setPixelColor(i, c)

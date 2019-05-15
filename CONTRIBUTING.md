@@ -15,3 +15,4 @@ Areas where contributions are welcomed by the project's developer:
     - create and maintain goTenna Mesh radio protocol implementaton
     - create and maintain [OGNTP-2](https://github.com/pjalocha/esp32-ogn-tracker/blob/master/main/ogn2.h) radio protocol implementaton
     - create and maintain MAVLINK **V2** data link protocol implementaton
+    - create and maintain data logger (in IGC format) for [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
