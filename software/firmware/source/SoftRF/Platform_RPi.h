@@ -27,6 +27,8 @@
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
 
+#include "JSONHelper.h"
+
 #define swSer                 Serial1
 #define UATSerial             Serial2
 

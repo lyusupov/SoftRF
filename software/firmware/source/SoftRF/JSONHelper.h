@@ -20,6 +20,7 @@
 #define JSONHELPER_H
 
 #include <ArduinoJson.h>
+#include "SoftRF.h"
 
 #define JSON_BUFFER_SIZE  65536
 #define isValidGPSDFix() (hasValidGPSDFix)

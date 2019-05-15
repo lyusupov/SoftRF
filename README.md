@@ -101,7 +101,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
 
-* **Software driven emulation**
+* [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/softrf-emulation.jpg)
 
@@ -109,6 +109,6 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v1/SoftRF-Case-v1-Exterior.jpg)
 
-* **UAV appliance**
+* [**UAV appliance**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)
