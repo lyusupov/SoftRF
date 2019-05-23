@@ -50,7 +50,8 @@ unsigned long GGA_Stop_Time_Marker = 0;
 boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
-uint8_t GNSSbuf[240]; // 3 lines of 80 characters each
+uint8_t GNSSbuf[250]; // at least 3 lines of 80 characters each
+                      // and 40+30*N bytes for "UBX-MON-VER" payload
 int GNSS_cnt = 0;
 
  /* CFG-MSG */
@@ -276,7 +277,7 @@ static void setup_NMEA()
 
 enum ubloxState{ WAIT_SYNC1, WAIT_SYNC2, GET_CLASS, GET_ID, GET_LL, GET_LH, GET_DATA, GET_CKA, GET_CKB };
 
-ubloxState ubloxProcessDataState;
+ubloxState ubloxProcessDataState = WAIT_SYNC1;
 
 unsigned short ubloxExpectedDataLength;
 unsigned short ubloxDataLength;
@@ -284,6 +285,8 @@ unsigned short ubloxClass, ubloxId;
 unsigned char  ubloxCKA, ubloxCKB;
 
 // process serial data
+// data is stored inside #GNSSbuf, data size inside #GNSS_cnt
+// warning : if #GNSSbuf is too short, data is truncated.
 static int ubloxProcessData(unsigned char data) {
 	int parsed = 0;
 
@@ -329,24 +332,19 @@ static int ubloxProcessData(unsigned char data) {
 	case GET_LH:
 		ubloxExpectedDataLength += data << 8;
 		ubloxDataLength = 0;
+		GNSS_cnt = 0;
 		ubloxCKA += data;
 		ubloxCKB += ubloxCKA;
-		if (ubloxExpectedDataLength <= sizeof(GNSSbuf)) {
-			ubloxProcessDataState = GET_DATA;
-		}
-		else {
-			// discard overlong message
-			ubloxProcessDataState = WAIT_SYNC1;
-		}
+		ubloxProcessDataState = GET_DATA;
 		break;
 
 	case GET_DATA:
 		ubloxCKA += data;
 		ubloxCKB += ubloxCKA;
-		// next will discard data if it exceeds our biggest known msg
-		if (ubloxDataLength < sizeof(GNSSbuf)) {
-			GNSSbuf[ubloxDataLength++] = data;
+		if (GNSS_cnt < sizeof(GNSSbuf)) {
+			GNSSbuf[GNSS_cnt++] = data;
 		}
+		ubloxDataLength++;
 		if (ubloxDataLength >= ubloxExpectedDataLength) {
 			ubloxProcessDataState = GET_CKA;
 		}
@@ -433,11 +431,21 @@ static byte GNSS_version() {
         if (ubloxClass == 0x0A) { // MON
           if (ubloxId == 0x04) {  // VER
 
+            // UBX-MON-VER data description
+            // uBlox 6  - page 166 : https://www.u-blox.com/sites/default/files/products/documents/u-blox6_ReceiverDescrProtSpec_%28GPS.G6-SW-10018%29_Public.pdf
+            // uBlox 7  - page 153 : https://www.u-blox.com/sites/default/files/products/documents/u-blox7-V14_ReceiverDescriptionProtocolSpec_%28GPS.G7-SW-12001%29_Public.pdf
+            // uBlox M8 - page 300 : https://www.u-blox.com/sites/default/files/products/documents/u-blox8-M8_ReceiverDescrProtSpec_%28UBX-13003221%29_Public.pdf
+
             Serial.print(F("INFO: GNSS module HW version: "));
             Serial.println((char *) &GNSSbuf[30]);
 
             Serial.print(F("INFO: GNSS module FW version: "));
             Serial.println((char *) &GNSSbuf[0]);
+
+            for(unsigned i = 30 + 10; i < GNSS_cnt; i+=30) {
+              Serial.print(F("INFO: GNSS module extension: "));
+              Serial.println((char *) &GNSSbuf[i]);
+            }
 
             if (GNSSbuf[33] == '4')
               rval = GNSS_MODULE_U6;
