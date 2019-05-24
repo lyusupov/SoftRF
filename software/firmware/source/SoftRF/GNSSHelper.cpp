@@ -280,7 +280,6 @@ enum ubloxState{ WAIT_SYNC1, WAIT_SYNC2, GET_CLASS, GET_ID, GET_LL, GET_LH, GET_
 ubloxState ubloxProcessDataState = WAIT_SYNC1;
 
 unsigned short ubloxExpectedDataLength;
-unsigned short ubloxDataLength;
 unsigned short ubloxClass, ubloxId;
 unsigned char  ubloxCKA, ubloxCKB;
 
@@ -331,7 +330,6 @@ static int ubloxProcessData(unsigned char data) {
 
 	case GET_LH:
 		ubloxExpectedDataLength += data << 8;
-		ubloxDataLength = 0;
 		GNSS_cnt = 0;
 		ubloxCKA += data;
 		ubloxCKB += ubloxCKA;
@@ -344,8 +342,7 @@ static int ubloxProcessData(unsigned char data) {
 		if (GNSS_cnt < sizeof(GNSSbuf)) {
 			GNSSbuf[GNSS_cnt++] = data;
 		}
-		ubloxDataLength++;
-		if (ubloxDataLength >= ubloxExpectedDataLength) {
+		if ((--ubloxExpectedDataLength) == 0) {
 			ubloxProcessDataState = GET_CKA;
 		}
 		break;
