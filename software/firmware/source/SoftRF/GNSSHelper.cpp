@@ -442,10 +442,12 @@ static byte GNSS_version() {
             Serial.print(F("INFO: GNSS module FW version: "));
             Serial.println((char *) &GNSSbuf[0]);
 
+#ifdef DO_GNSS_DEBUG
             for(unsigned i = 30 + 10; i < GNSS_cnt; i+=30) {
               Serial.print(F("INFO: GNSS module extension: "));
               Serial.println((char *) &GNSSbuf[i]);
             }
+#endif
 
             if (GNSSbuf[33] == '4')
               rval = GNSS_MODULE_U6;
