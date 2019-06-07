@@ -36,3 +36,13 @@ Fasten the mount to the enclosure's main body with four 2.5x8 mm screws.
 <br>
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-26.jpg)
+
+<br>
+
+# Instrument panel mount
+
+<br>
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-27-mount.jpg" height="395" width="400">
+
+<br>
