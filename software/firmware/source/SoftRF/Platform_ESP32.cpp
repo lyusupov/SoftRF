@@ -26,6 +26,7 @@
 #include <rom/rtc.h>
 #include <rom/spi_flash.h>
 #include <flashchips.h>
+#include <axp20x.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -71,6 +72,8 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
 U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
                                                   HELTEC_OLED_PIN_SCL,
                                                   HELTEC_OLED_PIN_SDA);
+
+AXP20X_Class axp;
 
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 
@@ -164,7 +167,26 @@ static void ESP32_setup()
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
-    hw_info.revision = 2;
+
+    Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+    Wire1.beginTransmission(AXP192_I2C_ADDR);
+    if (Wire1.endTransmission() == 0) {
+      hw_info.revision = 8;
+
+      axp.begin(Wire1, AXP192_I2C_ADDR);
+
+      // axp.setChgLEDMode(AXP202_LED_BLINK_4HZ);
+
+      axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
+      axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
+      axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
+      axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
+      axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
+      axp.setDCDC1Voltage(3300);
+
+    } else {
+      hw_info.revision = 2;
+    }
     lmic_pins.rst = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
   }
 }
@@ -175,6 +197,29 @@ static void ESP32_fini()
 
   esp_wifi_stop();
   esp_bt_controller_disable();
+
+  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+      hw_info.revision == 8) {
+    axp.setChgLEDMode(AXP20X_LED_OFF);
+    axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+    axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+    axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
+    axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+
+#if 0
+    pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT_PULLUP);
+    attachInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, [] {
+//        pmu_irq = true;
+    }, FALLING);
+
+    axp.adc1Enable(AXP202_BATT_CUR_ADC1, 1);
+    axp.enableIRQ(AXP202_VBUS_REMOVED_IRQ | AXP202_VBUS_CONNECT_IRQ | AXP202_BATT_REMOVED_IRQ | AXP202_BATT_CONNECT_IRQ, 1);
+    axp.clearIRQ();
+#endif
+
+    delay(20);
+  }
 
   esp_deep_sleep_start();
 }
@@ -453,7 +498,11 @@ static void ESP32_swSer_begin(unsigned long baud)
     Serial.print(hw_info.revision);
     Serial.println(F(") is detected."));
 
-    swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_RX, SOC_GPIO_PIN_TBEAM_TX);
+    if (hw_info.revision == 8) {
+      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V08_RX, SOC_GPIO_PIN_TBEAM_V08_TX);
+    } else {
+      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V05_RX, SOC_GPIO_PIN_TBEAM_V05_TX);
+    }
   } else {
     /* open Standalone's GNSS port */
     swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
@@ -587,29 +636,39 @@ static void ESP32_Display_fini(const char *msg)
 
 static float ESP32_Battery_voltage()
 {
-  float voltage = ((float) read_voltage()) * 0.001 ;
+  float voltage = 0.0;
 
-  /* T-Beam has voltage divider 100k/100k on board */
-  return (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? 2 * voltage : voltage);
+  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+      hw_info.revision == 8) {
+
+    /* T-Beam v08 has PMU */
+    if (axp.isBatteryConnect()) {
+      voltage = axp.getBattVoltage();
+    }
+  } else {
+    voltage = (float) read_voltage();
+
+    /* T-Beam v02-v07 has voltage divider 100k/100k on board */
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+      voltage += voltage;
+    }
+  }
+
+  return (voltage * 0.001);
 }
 
 static void ESP32_Battery_setup()
 {
-  calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
-                    ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
-#if 0
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
-    float voltage = ESP32_Battery_voltage();
-    // Serial.println(voltage);
-    if (voltage < 2.0) {
+  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+      hw_info.revision == 8) {
 
-      /* work around https://github.com/LilyGO/TTGO-T-Beam/issues/3 */
-      WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-      Serial.println(F("WARNING: Low battery voltage is detected!"
-                       " Brownout control is disabled."));
-    }
+    /* T-Beam v08 has PMU */
+
+    /* TBD */
+  } else {
+    calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+                      ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
   }
-#endif
 }
 
 static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler() {

@@ -127,8 +127,12 @@ void setup()
 
   hw_info.rf = RF_setup();
 
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && RF_SX1276_RST_is_connected)
-      hw_info.revision = 5;
+  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+      hw_info.revision == 2                      &&
+      RF_SX1276_RST_is_connected)
+  {
+    hw_info.revision = 5;
+  }
 
   delay(100);
 
