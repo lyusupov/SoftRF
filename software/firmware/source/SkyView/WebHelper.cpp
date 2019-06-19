@@ -93,7 +93,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4050;
+  size_t size = 4450;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -168,6 +168,7 @@ void handleSettings() {
 <select name='connection'>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>WiFi UDP</option>\
+<option %s value='%d'>Bluetooth SPP</option>\
 </select>\
 </td>\
 </tr>\
@@ -191,6 +192,7 @@ void handleSettings() {
 <option %s value='%d'>57600</option>"),
   (settings->connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
   (settings->connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
+  (settings->connection == CON_BLUETOOTH  ? "selected" : ""), CON_BLUETOOTH,
   (settings->protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
   (settings->protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
   (settings->baudrate   == B4800          ? "selected" : ""), B4800,
@@ -243,11 +245,8 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-#if 0
-  /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
-    snprintf_P ( offset, size,
-      PSTR("\
+/*
+
 <tr>\
 <th align=left>Built-in Bluetooth</th>\
 <td align=right>\
@@ -257,6 +256,17 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>\
+
+    (settings->bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+
+ */
+
+#if 1
+  /* SoC specific part 3 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
 <tr>\
 <th align=left>Source BT Name</th>\
 <td align=right>\
@@ -270,8 +280,6 @@ void handleSettings() {
 <INPUT type='text' name='bt_key' maxlength='15' size='15' value='%s'>\
 </td>\
 </tr>"),
-    (settings->bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
      settings->bt_name, settings->bt_key);
 
     len = strlen(offset);
@@ -478,6 +486,7 @@ void handleRoot() {
     hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
     hw_info.display      == DISPLAY_OLED_2_4 ? "OLED" : "NONE",
     settings->connection == CON_SERIAL       ? "Serial" :
+    settings->connection == CON_BLUETOOTH    ? "Bluetooth" :
     settings->connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
   );
 
@@ -501,6 +510,7 @@ void handleRoot() {
     offset += len;
     size -= len;
   case CON_SERIAL:
+  case CON_BLUETOOTH:
     switch (settings->protocol)
     {
     case PROTOCOL_GDL90:
@@ -597,8 +607,8 @@ void handleInput() {
       settings->voice = server.arg(i).toInt();
     } else if (server.argName(i).equals("aghost")) {
       settings->aghost = server.arg(i).toInt();
-    } else if (server.argName(i).equals("bluetooth")) {
-      settings->bluetooth = server.arg(i).toInt();
+//    } else if (server.argName(i).equals("bluetooth")) {
+//      settings->bluetooth = server.arg(i).toInt();
     } else if (server.argName(i).equals("bt_name")) {
       server.arg(i).toCharArray(settings->bt_name, sizeof(settings->bt_name));
     } else if (server.argName(i).equals("bt_key")) {

@@ -219,7 +219,9 @@ void GDL90_setup()
 
     gdl90_crcInit();
 
-    if (settings->connection == CON_SERIAL) {
+    switch (settings->connection)
+    {
+    case CON_SERIAL:
       uint32_t SerialBaud;
 
       switch (settings->baudrate)
@@ -249,6 +251,16 @@ void GDL90_setup()
       }
 
       SoC->swSer_begin(SerialBaud);
+      break;
+    case CON_BLUETOOTH:
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->setup();
+      }
+      break;
+    case CON_NONE:
+    case CON_WIFI_UDP:
+    default:
+      break;
     }
 
     GDL90_HeartBeat_TimeMarker = GDL90_Data_TimeMarker = millis();
@@ -277,6 +289,16 @@ void GDL90_loop()
         GDL90_Parse_Character(UDPpacketBuffer[i]);
       }
       GDL90_Data_TimeMarker = millis();
+    }
+    break;
+  case CON_BLUETOOTH:
+    if (SoC->Bluetooth) {
+      while (SoC->Bluetooth->available() > 0) {
+        char c = SoC->Bluetooth->read();
+//        Serial.print(c);
+        GDL90_Parse_Character(c);
+        GDL90_Data_TimeMarker = millis();
+      }
     }
     break;
   case CON_NONE:

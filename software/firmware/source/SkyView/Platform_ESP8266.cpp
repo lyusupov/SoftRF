@@ -189,7 +189,8 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Button_loop,
   ESP8266_Button_fini,
   ESP8266_WDT_setup,
-  ESP8266_WDT_fini
+  ESP8266_WDT_fini,
+  NULL
 };
 
 #endif /* ESP8266 */

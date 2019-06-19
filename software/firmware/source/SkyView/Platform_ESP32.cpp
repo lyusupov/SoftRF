@@ -28,6 +28,7 @@
 #include "EPDHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
+#include "BluetoothHelper.h"
 
 #include "SkyView.h"
 
@@ -902,7 +903,8 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_loop,
   ESP32_Button_fini,
   ESP32_WDT_setup,
-  ESP32_WDT_fini
+  ESP32_WDT_fini,
+  &ESP32_Bluetooth_ops
 };
 
 #endif /* ESP32 */

@@ -235,7 +235,9 @@ static void NMEA_Parse_Character(char c)
 void NMEA_setup()
 {
   if (settings->protocol == PROTOCOL_NMEA) {
-    if (settings->connection == CON_SERIAL) {
+    switch (settings->connection)
+    {
+    case CON_SERIAL:
       uint32_t SerialBaud;
 
       switch (settings->baudrate)
@@ -265,6 +267,16 @@ void NMEA_setup()
       }
 
       SoC->swSer_begin(SerialBaud);
+      break;
+    case CON_BLUETOOTH:
+      if (SoC->Bluetooth) {
+        SoC->Bluetooth->setup();
+      }
+      break;
+    case CON_NONE:
+    case CON_WIFI_UDP:
+    default:
+      break;
     }
 
     NMEA_TimeMarker = millis();
@@ -293,6 +305,16 @@ void NMEA_loop()
         NMEA_Parse_Character(UDPpacketBuffer[i]);
       }
       NMEA_TimeMarker = millis();
+    }
+    break;
+  case CON_BLUETOOTH:
+    if (SoC->Bluetooth) {
+      while (SoC->Bluetooth->available() > 0) {
+        char c = SoC->Bluetooth->read();
+        Serial.print(c);
+        NMEA_Parse_Character(c);
+        NMEA_TimeMarker = millis();
+      }
     }
     break;
   case CON_NONE:
