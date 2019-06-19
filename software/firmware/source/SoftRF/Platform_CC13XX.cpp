@@ -44,6 +44,11 @@ static void CC13XX_setup()
   EasyLink_getIeeeAddr(ieeeAddr);
 }
 
+static void CC13XX_loop()
+{
+
+}
+
 static void CC13XX_fini()
 {
 
@@ -149,6 +154,7 @@ const SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
   CC13XX_setup,
+  CC13XX_loop,
   CC13XX_fini,
   CC13XX_getChipId,
   NULL,

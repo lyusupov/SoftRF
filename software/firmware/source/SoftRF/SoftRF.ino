@@ -248,6 +248,8 @@ void loop()
 
   Battery_loop();
 
+  SoC->loop();
+
   yield();
 }
 

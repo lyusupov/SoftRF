@@ -137,7 +137,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TBEAM_SCL          2
 
 #define SSD1306_OLED_I2C_ADDR   0x3C
-#define AXP192_I2C_ADDR         0x34
 
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
 #define TTGO_V2_OLED_PIN_RST    U8X8_PIN_NONE // connected to CPU RST/EN

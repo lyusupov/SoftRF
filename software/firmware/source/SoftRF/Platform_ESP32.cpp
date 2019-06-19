@@ -80,6 +80,8 @@ static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 static int esp32_board = ESP32_DEVKIT; /* default */
 
 static portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
+static portMUX_TYPE PMU_mutex      = portMUX_INITIALIZER_UNLOCKED;
+volatile bool PMU_Irq = false;
 
 static bool GPIO_21_22_are_busy = false;
 
@@ -101,6 +103,12 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_ADSB_UAT]  = "U",
   [RF_PROTOCOL_FANET]     = "F"
 };
+
+static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
+  portENTER_CRITICAL_ISR(&PMU_mutex);
+  PMU_Irq = true;
+  portEXIT_CRITICAL_ISR(&PMU_mutex);
+}
 
 static uint32_t ESP32_getFlashId()
 {
@@ -169,13 +177,13 @@ static void ESP32_setup()
     esp32_board = ESP32_TTGO_T_BEAM;
 
     Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
-    Wire1.beginTransmission(AXP192_I2C_ADDR);
+    Wire1.beginTransmission(AXP192_SLAVE_ADDRESS);
     if (Wire1.endTransmission() == 0) {
       hw_info.revision = 8;
 
-      axp.begin(Wire1, AXP192_I2C_ADDR);
+      axp.begin(Wire1, AXP192_SLAVE_ADDRESS);
 
-      // axp.setChgLEDMode(AXP202_LED_BLINK_4HZ);
+      axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
 
       axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
       axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
@@ -184,10 +192,61 @@ static void ESP32_setup()
       axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
       axp.setDCDC1Voltage(3300);
 
+      pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT_PULLUP);
+
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ),
+                      ESP32_PMU_Interrupt_handler, FALLING);
+
+      axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
+      axp.clearIRQ();
     } else {
       hw_info.revision = 2;
     }
     lmic_pins.rst = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
+  }
+}
+
+static void ESP32_loop()
+{
+  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+      hw_info.revision == 8) {
+
+    bool is_irq = false;
+    bool down = false;
+
+    portENTER_CRITICAL_ISR(&PMU_mutex);
+    is_irq = PMU_Irq;
+    portEXIT_CRITICAL_ISR(&PMU_mutex);
+
+    if (is_irq) {
+
+      if (axp.readIRQ() == AXP_PASS) {
+
+        if (axp.isPEKLongtPressIRQ()) {
+          down = true;
+#if 0
+          Serial.println(F("Longt Press IRQ"));
+          Serial.flush();
+#endif
+        }
+        if (axp.isPEKShortPressIRQ()) {
+#if 0
+          Serial.println(F("Short Press IRQ"));
+          Serial.flush();
+#endif
+        }
+
+        axp.clearIRQ();
+      }
+
+      portENTER_CRITICAL_ISR(&PMU_mutex);
+      PMU_Irq = false;
+      portEXIT_CRITICAL_ISR(&PMU_mutex);
+
+      if (down) {
+        shutdown("  OFF  ");
+      }
+    }
   }
 }
 
@@ -200,25 +259,20 @@ static void ESP32_fini()
 
   if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
       hw_info.revision == 8) {
+
     axp.setChgLEDMode(AXP20X_LED_OFF);
+
+    delay(2000); /* Keep 'OFF' message on OLED for 2 seconds */
+
     axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
     axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
     axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
     axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
     axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
 
-#if 0
-    pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT_PULLUP);
-    attachInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, [] {
-//        pmu_irq = true;
-    }, FALLING);
-
-    axp.adc1Enable(AXP202_BATT_CUR_ADC1, 1);
-    axp.enableIRQ(AXP202_VBUS_REMOVED_IRQ | AXP202_VBUS_CONNECT_IRQ | AXP202_BATT_REMOVED_IRQ | AXP202_BATT_CONNECT_IRQ, 1);
-    axp.clearIRQ();
-#endif
-
     delay(20);
+
+    esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, 0); // 1 = High, 0 = Low
   }
 
   esp_deep_sleep_start();
@@ -758,6 +812,7 @@ const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
   ESP32_setup,
+  ESP32_loop,
   ESP32_fini,
   ESP32_getChipId,
   ESP32_getResetInfoPtr,

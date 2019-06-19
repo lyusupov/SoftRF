@@ -142,6 +142,11 @@ static void RPi_setup()
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
 }
 
+static void RPi_loop()
+{
+
+}
+
 static void RPi_fini()
 {
 
@@ -243,6 +248,7 @@ const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
   RPi_setup,
+  RPi_loop,
   RPi_fini,
   RPi_getChipId,
   NULL,
