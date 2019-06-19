@@ -37,6 +37,7 @@
 #include "BluetoothHelper.h"
 #include "LEDHelper.h"
 #include "BaroHelper.h"
+#include "BatteryHelper.h"
 
 #include <battery.h>
 #include <U8x8lib.h>
@@ -245,6 +246,14 @@ static void ESP32_loop()
 
       if (down) {
         shutdown("  OFF  ");
+      }
+    }
+
+    if (isTimeToBattery()) {
+      if (Battery_voltage() > Battery_threshold()) {
+        axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
+      } else {
+        axp.setChgLEDMode(AXP20X_LED_BLINK_1HZ);
       }
     }
   }

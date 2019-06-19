@@ -40,4 +40,6 @@ float Battery_voltage(void);
 float Battery_threshold(void);
 float Battery_cutoff(void);
 
+extern unsigned long Battery_TimeMarker;
+
 #endif /* BATTERYHELPER_H */

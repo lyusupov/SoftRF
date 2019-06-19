@@ -186,8 +186,9 @@ void LED_DisplayTraffic() {
 void LED_loop() {
   if (status_LED != SOC_UNUSED_PIN) {
     if (Battery_voltage() > Battery_threshold() ) {
-      if (digitalRead(status_LED)) {
-        digitalWrite(status_LED, LOW);
+      /* Indicate positive power supply */
+      if (digitalRead(status_LED) == LOW) {
+        digitalWrite(status_LED, HIGH);
       }
     } else {
       if (isTimeToToggle()) {

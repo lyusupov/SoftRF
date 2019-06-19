@@ -246,9 +246,9 @@ void loop()
   Logger_loop();
 #endif /* LOGGER_IS_ENABLED */
 
-  Battery_loop();
-
   SoC->loop();
+
+  Battery_loop();
 
   yield();
 }
