@@ -837,6 +837,7 @@ $('form').submit(function(e){\
     if(upload.status == UPLOAD_FILE_START){
       Serial.setDebugOutput(true);
       SoC->WiFiUDP_stopAll();
+      SoC->WDT_fini();
       Serial.printf("Update: %s\n", upload.filename.c_str());
       uint32_t maxSketchSpace = SoC->maxSketchSpace();
       if(!Update.begin(maxSketchSpace)){//start with max available size
