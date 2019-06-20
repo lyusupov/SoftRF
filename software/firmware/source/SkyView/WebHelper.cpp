@@ -85,6 +85,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>PilotAware Ltd</th><td align=left>voice files</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
+<tr><th align=left>Evandro Copercini and German Martin</th><td align=left>ESP32 BT SPP library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\

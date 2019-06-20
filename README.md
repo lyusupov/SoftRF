@@ -56,6 +56,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 * [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 * Software
     * Firmware

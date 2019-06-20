@@ -20,7 +20,7 @@ This type of enclosure is built around [TTGO T5S](http://s.click.aliexpress.com/
 
 # Instructions
 
-3D print two STL files from this folder: **Body** and **Face**.<br>
+3D print two STL files from this folder: **Body** and **Face**. You may pick some printing advisories on [my Thingiverse page](http://www.thingiverse.com/thing:3702447).<br>
 If you are unable to print the parts by yourself - you may consider to find an appropriate local 3D service provider and place an order with assistance of [3DHubs portal](http://www.3dhubs.com/).
 
 Fasten the T5S board to the enclosure's main body with four 2.5x10 mm screws.

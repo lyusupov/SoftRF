@@ -98,7 +98,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
 <tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
 <tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
-<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam board</td></tr>\
+<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam boards</td></tr>\
 <tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
 <tr><th align=left>XCSoar team</th><td align=left>EGM96 data</td></tr>\
 <tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
@@ -108,6 +108,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Robert Wessels and Tony Cave</th><td align=left>EasyLink library</td></tr>\
 <tr><th align=left>Oliver Jowett</th><td align=left>Dump978 library</td></tr>\
 <tr><th align=left>Phil Karn</th><td align=left>FEC library</td></tr>\
+<tr><th align=left>Lewis He</th><td align=left>AXP202X library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
