@@ -602,12 +602,15 @@ static byte ESP32_Display_setup()
       esp32_board = ESP32_TTGO_V2_OLED;
       rval = DISPLAY_OLED_TTGO;
     } else {
-      Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      if (Wire1.endTransmission() == 0) {
-        u8x8 = &u8x8_heltec;
-        esp32_board = ESP32_HELTEC_OLED;
-        rval = DISPLAY_OLED_HELTEC;
+      if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+            hw_info.revision == 8)) {
+        Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+        Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+        if (Wire1.endTransmission() == 0) {
+          u8x8 = &u8x8_heltec;
+          esp32_board = ESP32_HELTEC_OLED;
+          rval = DISPLAY_OLED_HELTEC;
+        }
       }
     }
   }
