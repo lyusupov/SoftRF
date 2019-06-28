@@ -255,8 +255,7 @@ static void setup_UBX()
 
 static void setup_NMEA()
 {
-  SoC->swSer_begin(9600);
-
+#if 0
   //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
   swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
 
@@ -270,6 +269,20 @@ static void setup_NMEA()
 #if !defined(NMEA_TCP_SERVICE)
   swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
 #endif
+#endif
+
+#if defined(USE_AT6558_SETUP)
+  /* Assume that we deal with fake NEO module (AT6558 based) */
+  swSer.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
+#if defined(NMEA_TCP_SERVICE)
+  /* GGA,RMC and GSA */
+  swSer.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
+#else
+  /* GGA and RMC */
+  swSer.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
+#endif
+  swSer.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
+#endif /* USE_AT6558_SETUP */
 }
 
 /* ------ BEGIN -----------  https://github.com/Black-Thunder/FPV-Tracker */
@@ -460,8 +473,6 @@ byte GNSS_setup() {
 
   byte rval = GNSS_MODULE_NONE;
 
-  //setup_NMEA();
-
   SoC->swSer_begin(9600);
 
   if (!GNSS_probe())
@@ -481,6 +492,8 @@ byte GNSS_setup() {
       // Set the navigation mode (Airborne, 1G)
       // Turning off some GPS NMEA sentences on the uBlox modules
       setup_UBX();
+    } else {
+      setup_NMEA();
     }
   }
 

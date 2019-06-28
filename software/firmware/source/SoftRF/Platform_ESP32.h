@@ -183,6 +183,7 @@ struct rst_info {
 
 #define  NMEA_TCP_SERVICE
 #define  USE_NMEALIB
+//#define USE_AT6558_SETUP
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 
