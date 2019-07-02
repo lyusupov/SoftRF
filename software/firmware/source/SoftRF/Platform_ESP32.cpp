@@ -567,8 +567,13 @@ static void ESP32_swSer_begin(unsigned long baud)
       swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V05_RX, SOC_GPIO_PIN_TBEAM_V05_TX);
     }
   } else {
-    /* open Standalone's GNSS port */
-    swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+    if (esp32_board == ESP32_TTGO_V2_OLED) {
+      /* 'Mini' (TTGO LoRa V2 + GNSS) */
+      swSer.begin(baud, SERIAL_8N1, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+    } else {
+      /* open Standalone's GNSS port */
+      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+    }
   }
 
   /* Need to gather some statistics on variety of flash IC usage */
