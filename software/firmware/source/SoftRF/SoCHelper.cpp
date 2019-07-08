@@ -30,6 +30,8 @@ byte SoC_setup()
   SoC = &RPi_ops;
 #elif defined(ENERGIA_ARCH_CC13XX)
   SoC = &CC13XX_ops;
+#elif defined(ARDUINO_ARCH_STM32)
+  SoC = &STM32_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

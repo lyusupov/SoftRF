@@ -60,6 +60,7 @@
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 extern WS2812 strip;
 extern uint8_t LEDs[][3];

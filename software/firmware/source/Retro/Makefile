@@ -15,34 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SKETCH        = UATbridge.ino
+SKETCH        = Retro.ino
 
 BIN_ELF       := $(SKETCH:.ino=.ino.elf)
 BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
 
 SOFTRF_DIR    = ../SoftRF
-BINDIR        = /tmp/energia
+BINDIR        = /tmp/arduino
 
-ENERGIA       = energia
+ARDUINO       = arduino
 LN            = ln -s
 RM            = rm -f
-TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin
-OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
-                 -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
-                 -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
-SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
 
-CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
+CPPS          := Platform_STM32.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
                  NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
-                 LEDHelper.cpp BatteryHelper.cpp
+                 LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h \
-                 Platform_RPi.h  Platform_STM32.h \
+                 Platform_RPi.h Platform_CC13XX.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
                  EEPROMHelper.h SoundHelper.h TimeHelper.h \
                  WiFiHelper.h
@@ -54,17 +49,10 @@ link-file-%: $(SOFTRF_DIR)/%
 				  else echo "Creating symlink" $* " --> " $< ; $(LN) $< ; fi
 
 build:
-				$(ENERGIA) --verify --verbose-build $(SKETCH)
+				$(ARDUINO) --verify --verbose-build $(SKETCH)
 
 upload:
-				$(ENERGIA) --upload --verbose-build --verbose-upload  $(SKETCH)
+				$(ARDUINO) --upload --verbose-build --verbose-upload  $(SKETCH)
 
-#
-# "Intel HEX" type of the firmware binary is necessary input format
-#    for cc2538-bsl.py serial firmware uploader. 
-#
-ihex:
-				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
-				$(SED) $(BINDIR)/$(BIN_IHEX)
 clean:
 				$(RM) $(CPPS) $(HFILES)

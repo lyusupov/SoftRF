@@ -98,5 +98,5 @@ void EEPROM_store()
     EEPROM.write(i, eeprom_block.raw[i]);  
   }
 
-  EEPROM.commit();
+  EEPROM_commit();
 }

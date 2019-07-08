@@ -33,6 +33,7 @@
 #define SoftwareSerial          HardwareSerial
 #define swSer                   Serial1
 #define UATSerial               Serial2
+#define EEPROM_commit()         EEPROM.commit()
 
 #define isValidFix()            isValidGNSSFix()
 

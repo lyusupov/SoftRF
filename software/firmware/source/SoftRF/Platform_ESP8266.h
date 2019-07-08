@@ -32,6 +32,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define EEPROM_commit()         EEPROM.commit()
+
 #define isValidFix()            isValidGNSSFix()
 
 #define uni_begin()             strip.begin()

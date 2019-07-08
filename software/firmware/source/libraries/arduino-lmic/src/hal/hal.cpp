@@ -367,6 +367,31 @@ u1_t hal_checkTimer (u4_t time) {
     return delta_time(time) <= 0;
 }
 
+#if defined(ARDUINO_ARCH_STM32)
+
+// Fix for STM32 HAL based cores.
+
+// ARDUINO_ARCH_STM32 appears to be defined for these Arduino cores:
+// - Arduino_Core_STM32 (aka stm32duino)
+// - STM32GENERIC
+// - BSFrance-stm32
+
+// This fix solves an issue with STM32 HAL based Arduino cores where
+// a call to os_init() hangs the MCU. The fix prevents LMIC-Arduino from
+// disabling and re-enabling interrupts.
+// While the exact cause is not known, it is assumed that disabling interrupts
+// may conflict with interrupts required for the STM32 HAL core.
+// (Possible side-effects on LMIC timing have not been checked.)
+
+void hal_disableIRQs () {
+}
+
+void hal_enableIRQs () {
+    hal_io_check();
+}
+
+#else /* ARDUINO_ARCH_STM32 */
+
 static uint8_t irqlevel = 0;
 
 void hal_disableIRQs () {
@@ -389,6 +414,8 @@ void hal_enableIRQs () {
         hal_io_check();
     }
 }
+
+#endif /* ARDUINO_ARCH_STM32 */
 
 void hal_sleep () {
     // Not implemented

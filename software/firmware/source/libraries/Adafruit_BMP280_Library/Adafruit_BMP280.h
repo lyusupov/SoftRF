@@ -22,7 +22,7 @@
  #include "WProgram.h"
 #endif
 
-#if !(defined(ESP8266) || defined(ESP32) || defined(ENERGIA_ARCH_CC13XX))
+#if !(defined(ESP8266) || defined(ESP32) || defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32))
 #include <Adafruit_Sensor.h>
 #endif
 

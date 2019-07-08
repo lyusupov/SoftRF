@@ -26,6 +26,7 @@
 #include "Platform_ESP32.h"
 #include "Platform_RPi.h"
 #include "Platform_CC13XX.h"
+#include "Platform_STM32.h"
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -71,7 +72,8 @@ enum
 	SOC_ESP8266,
 	SOC_ESP32,
 	SOC_RPi,
-	SOC_CC13XX
+	SOC_CC13XX,
+	SOC_STM32
 };
 
 extern const SoC_ops_t *SoC;
@@ -86,6 +88,9 @@ extern const SoC_ops_t RPi_ops;
 #endif
 #if defined(ENERGIA_ARCH_CC13XX)
 extern const SoC_ops_t CC13XX_ops;
+#endif
+#if defined(ARDUINO_ARCH_STM32)
+extern const SoC_ops_t STM32_ops;
 #endif
 
 byte SoC_setup(void);

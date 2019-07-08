@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ARDUINO_ARCH_STM32)
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
