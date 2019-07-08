@@ -296,6 +296,15 @@ void NMEA_loop()
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
+    /* read data from microUSB port */
+    if (Serial != SerialInput)  {
+      while (Serial.available() > 0) {
+        char c = Serial.read();
+        Serial.print(c);
+        NMEA_Parse_Character(c);
+        NMEA_TimeMarker = millis();
+      }
+    }
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));

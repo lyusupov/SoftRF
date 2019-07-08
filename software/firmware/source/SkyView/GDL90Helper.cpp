@@ -280,6 +280,15 @@ void GDL90_loop()
       GDL90_Parse_Character(c);
       GDL90_Data_TimeMarker = millis();
     }
+    /* read data from microUSB port */
+    if (Serial != SerialInput)  {
+      while (Serial.available() > 0) {
+        char c = Serial.read();
+//        Serial.print(c);
+        GDL90_Parse_Character(c);
+        GDL90_Data_TimeMarker = millis();
+      }
+    }
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
