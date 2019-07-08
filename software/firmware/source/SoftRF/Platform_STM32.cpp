@@ -93,7 +93,7 @@ static uint32_t STM32_getChipId()
 
   HAL_GetUID(UniqueID);
 
-  /* Some method as STM32 OGN tracker does */ 
+  /* Same method as STM32 OGN tracker does */
   return UniqueID[0] ^ UniqueID[1] ^ UniqueID[2];
 }
 
