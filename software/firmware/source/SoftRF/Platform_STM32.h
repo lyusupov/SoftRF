@@ -49,11 +49,14 @@
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103C8)
 
+#define SOC_ADC9_VOLTAGE_DIVIDER  (4096.0 / 3.3)
+
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX PA3
 #define SOC_GPIO_PIN_SWSER_TX PA2
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
 #define SOC_GPIO_PIN_BUZZER   PB8
+#define SOC_GPIO_PIN_BATTERY  PB1
 
 #define SOC_GPIO_PIN_RX3      PB11
 #define SOC_GPIO_PIN_TX3      PB10

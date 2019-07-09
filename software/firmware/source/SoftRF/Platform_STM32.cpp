@@ -246,13 +246,12 @@ static void STM32_Display_fini(const char *msg)
 
 static void STM32_Battery_setup()
 {
-  /* TBD */
+
 }
 
 static float STM32_Battery_voltage()
 {
-  /* TBD */
-  return 0 ;
+  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_ADC9_VOLTAGE_DIVIDER ;
 }
 
 void STM32_GNSS_PPS_Interrupt_handler() {
