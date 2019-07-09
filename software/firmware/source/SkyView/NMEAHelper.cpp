@@ -297,10 +297,13 @@ void NMEA_loop()
       NMEA_TimeMarker = millis();
     }
     /* read data from microUSB port */
-    if (Serial != SerialInput)  {
+#if !defined(RASPBERRY_PI)
+    if (Serial != SerialInput)
+#endif
+    {
       while (Serial.available() > 0) {
         char c = Serial.read();
-        Serial.print(c);
+//        Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }

@@ -281,7 +281,10 @@ void GDL90_loop()
       GDL90_Data_TimeMarker = millis();
     }
     /* read data from microUSB port */
-    if (Serial != SerialInput)  {
+#if !defined(RASPBERRY_PI)
+    if (Serial != SerialInput)
+#endif
+    {
       while (Serial.available() > 0) {
         char c = Serial.read();
 //        Serial.print(c);
