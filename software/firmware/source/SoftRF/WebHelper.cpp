@@ -721,7 +721,7 @@ PSTR("<html>\
   EEPROM_store();
   RF_Shutdown();
   delay(1000);
-  ESP.restart();
+  SoC->reset();
 }
 
 void handleNotFound() {
@@ -831,7 +831,7 @@ $('form').submit(function(e){\
 //    SoC->swSer_enableRx(true);
     RF_Shutdown();
     delay(1000);
-    ESP.restart();
+    SoC->reset();
   },[](){
     HTTPUpload& upload = server.upload();
     if(upload.status == UPLOAD_FILE_START){

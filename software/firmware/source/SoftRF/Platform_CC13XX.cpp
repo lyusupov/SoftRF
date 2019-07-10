@@ -54,6 +54,11 @@ static void CC13XX_fini()
 
 }
 
+static void CC13XX_reset()
+{
+
+}
+
 static uint32_t CC13XX_getChipId()
 {
   return (uint32_t) ieeeAddr[7]        | (ieeeAddr[6] << 8) | \
@@ -156,6 +161,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_setup,
   CC13XX_loop,
   CC13XX_fini,
+  CC13XX_reset,
   CC13XX_getChipId,
   NULL,
   NULL,

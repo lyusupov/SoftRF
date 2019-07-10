@@ -89,6 +89,15 @@
 
 #define SSD1306_OLED_I2C_ADDR 0x3C
 
+/* Component                         Cost */
+/* -------------------------------------- */
+/* USB Serial */                 //  + 10 kb
+//#define USE_OLED               //  +3.5 kb
+#define USE_NMEA_CFG             //  +2.5 kb
+//#define EXCLUDE_BMP180         //  -  1 kb
+//#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_MPL3115A2        //  -  1 kb
+
 #else
 #error "This hardware platform is not supported!"
 #endif

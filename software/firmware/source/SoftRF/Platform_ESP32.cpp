@@ -287,6 +287,11 @@ static void ESP32_fini()
   esp_deep_sleep_start();
 }
 
+static void ESP32_reset()
+{
+  ESP.restart();
+}
+
 static uint32_t ESP32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -831,6 +836,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_setup,
   ESP32_loop,
   ESP32_fini,
+  ESP32_reset,
   ESP32_getChipId,
   ESP32_getResetInfoPtr,
   ESP32_getResetInfo,

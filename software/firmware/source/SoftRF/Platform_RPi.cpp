@@ -152,6 +152,11 @@ static void RPi_fini()
 
 }
 
+static void RPi_reset()
+{
+
+}
+
 static uint32_t RPi_getChipId()
 {
   return gethostid();
@@ -250,6 +255,7 @@ const SoC_ops_t RPi_ops = {
   RPi_setup,
   RPi_loop,
   RPi_fini,
+  RPi_reset,
   RPi_getChipId,
   NULL,
   NULL,

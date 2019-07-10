@@ -35,6 +35,7 @@ typedef struct SoC_ops_struct {
   void (*setup)();
   void (*loop)();
   void (*fini)();
+  void (*reset)();
   uint32_t (*getChipId)();
   void* (*getResetInfoPtr)();
   String (*getResetInfo)();

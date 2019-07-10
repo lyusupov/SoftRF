@@ -51,7 +51,9 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3, SOC_GPIO_PIN_TX3);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 
+#if defined(USE_OLED)
 U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
+#endif /* USE_OLED */
 
 static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
 
@@ -85,6 +87,11 @@ static void STM32_loop()
 static void STM32_fini()
 {
   /* TBD */
+}
+
+static void STM32_reset()
+{
+  HAL_NVIC_SystemReset();
 }
 
 static uint32_t STM32_getChipId()
@@ -152,6 +159,7 @@ static byte STM32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
+#if defined(USE_OLED)
   /* SSD1306 I2C OLED probing */
   Wire.begin();
   Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
@@ -166,12 +174,14 @@ static byte STM32_Display_setup()
     u8x8->clear();
     u8x8->draw2x2String(2, 3, "SoftRF");
   }
+#endif /* USE_OLED */
 
   return rval;
 }
 
 static void STM32_Display_loop()
 {
+#if defined(USE_OLED)
   char buf[16];
   uint32_t disp_value;
 
@@ -233,15 +243,18 @@ static void STM32_Display_loop()
       }
     }
   }
+#endif /* USE_OLED */
 }
 
 static void STM32_Display_fini(const char *msg)
 {
+#if defined(USE_OLED)
   if (u8x8) {
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
     u8x8->draw2x2String(1, 3, msg);
   }
+#endif /* USE_OLED */
 }
 
 static void STM32_Battery_setup()
@@ -343,6 +356,7 @@ const SoC_ops_t STM32_ops = {
   STM32_setup,
   STM32_loop,
   STM32_fini,
+  STM32_reset,
   STM32_getChipId,
   NULL,
   NULL,

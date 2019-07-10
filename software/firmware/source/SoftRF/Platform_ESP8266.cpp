@@ -79,6 +79,11 @@ static void ESP8266_fini()
 
 }
 
+static void ESP8266_reset()
+{
+  ESP.restart();
+}
+
 static uint32_t ESP8266_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -334,6 +339,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_setup,
   ESP8266_loop,
   ESP8266_fini,
+  ESP8266_reset,
   ESP8266_getChipId,
   ESP8266_getResetInfoPtr,
   ESP8266_getResetInfo,
