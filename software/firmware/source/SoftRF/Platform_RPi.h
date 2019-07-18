@@ -74,7 +74,13 @@
 extern TTYSerial Serial1;
 extern TTYSerial Serial2;
 
-#define  USE_NMEALIB
+#define USE_NMEALIB
+
+//#define USE_OGN_RF_DRIVER
+//#define WITH_RFM95
+//#define WITH_RFM69
+//#define WITH_SX1272
+//#define WITH_SI4X32
 
 #endif /* PLATFORM_RPI_H */
 

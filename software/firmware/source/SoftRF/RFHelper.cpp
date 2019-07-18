@@ -90,6 +90,28 @@ const rfchip_ops_t cc13xx_ops = {
   cc13xx_shutdown
 };
 
+#if defined(USE_OGN_RF_DRIVER)
+
+#define vTaskDelay  delay
+
+#if defined(WITH_SI4X32)
+#include <rf/si4x32/rfm.h>
+#else
+#include <rf/combo/rfm.h>
+#endif /* WITH_SI4X32 */
+
+const rfchip_ops_t ognrf_ops = {
+  RF_DRV_OGN,
+  "OGNDRV",
+  ognrf_probe,
+  ognrf_setup,
+  ognrf_channel,
+  ognrf_receive,
+  ognrf_transmit,
+  ognrf_shutdown
+};
+#endif /* USE_OGN_RF_DRIVER */
+
 String Bin2Hex(byte *buffer, size_t size)
 {
   String str = "";
@@ -115,6 +137,7 @@ byte RF_setup(void)
 {
 
   if (rf_chip == NULL) {
+#if !defined(USE_OGN_RF_DRIVER)
     if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;  
       Serial.println(F("SX1276 RFIC is detected."));
@@ -128,10 +151,18 @@ byte RF_setup(void)
       Serial.println(F("WARNING! Neither SX1276"
 #if !defined(ENERGIA_ARCH_CC13XX)
       ", CC13XX"
-#endif
+#endif /* ENERGIA_ARCH_CC13XX */
         " or NRF905 RFIC is detected!"));
     }
-  }  
+#else
+    if (ognrf_ops.probe()) {
+      rf_chip = &ognrf_ops;
+      Serial.println(F("OGN_DRV: RFIC is detected."));
+    } else {
+      Serial.println(F("WARNING! RFIC is NOT detected."));
+    }
+#endif /* USE_OGN_RF_DRIVER */
+  }
 
   /* "AUTO" freq. will set the plan upon very first valid GNSS fix */
   if (settings->band == RF_BAND_AUTO) {
@@ -1150,3 +1181,150 @@ void cc13xx_shutdown()
 {
   /* Nothing to do */
 }
+
+
+#if defined(USE_OGN_RF_DRIVER)
+
+static RFM_TRX  TRX;
+
+void RFM_Select  (void) { hal_pin_nss(0); }
+void RFM_Deselect(void) { hal_pin_nss(1); }
+uint8_t RFM_TransferByte(uint8_t Byte) { return hal_spi(Byte); }
+
+#ifdef WITH_RFM95                     // RESET is active LOW
+void RFM_RESET(uint8_t On)
+{ if(On) hal_pin_rst(0);
+    else hal_pin_rst(1); }
+#endif
+
+#if defined(WITH_RFM69) || defined(WITH_SX1272) // RESET is active HIGH
+void RFM_RESET(uint8_t On)
+{ if(On) hal_pin_rst(1);
+    else hal_pin_rst(0); }
+#endif
+
+bool ognrf_probe()
+{
+  bool success = false;
+
+  TRX.Select       = RFM_Select;
+  TRX.Deselect     = RFM_Deselect;
+  TRX.TransferByte = RFM_TransferByte;
+  TRX.RESET        = RFM_RESET;
+
+  SoC->SPI_begin();
+  hal_init();
+
+  TRX.RESET(1);                      // RESET active
+  vTaskDelay(10);                    // wait 10ms
+  TRX.RESET(0);                      // RESET released
+  vTaskDelay(10);                    // wait 10ms
+
+  uint8_t ChipVersion = TRX.ReadVersion();
+
+  SPI.end();
+
+#if defined(WITH_RFM95)
+  if (ChipVersion == 0x12) success = true;
+#endif /* WITH_RFM95 */
+#if defined(WITH_RFM69)
+  if (ChipVersion == 0x24) success = true;
+#endif /* WITH_RFM69 */
+#if defined(WITH_SX1272)
+  if (ChipVersion == 0x22) success = true;
+#endif /* WITH_SX1272 */
+#if defined(WITH_SI4X32)
+  if (ChipVersion == 0x06 /* 4032 */ ||
+      ChipVersion == 0x08 /* 4432 */ ) success = true;
+#endif /* WITH_SI4X32 */
+
+  return success;
+}
+
+void ognrf_channel(uint8_t channel)
+{
+  /* TBD */
+}
+
+void ognrf_setup()
+{
+
+  /* Enforce radio settings to follow OGNTP protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_OGNTP;
+
+  protocol_encode = &ogntp_encode;
+  protocol_decode = &ogntp_decode;
+
+  SoC->SPI_begin();
+  hal_init();
+
+  TRX.RESET(1);                      // RESET active
+  vTaskDelay(10);                    // wait 10ms
+  TRX.RESET(0);                      // RESET released
+  vTaskDelay(10);                    // wait 10ms
+
+  // set TRX base frequency and channel separation
+  TRX.setBaseFrequency(RF_FreqPlan.BaseFreq);
+  TRX.setChannelSpacing(RF_FreqPlan.ChanSepar);
+  TRX.setFrequencyCorrection(0);
+
+  TRX.Configure(0, ogntp_proto_desc.syncword);  // setup RF chip parameters and set to channel #0
+  TRX.WriteMode(RF_OPMODE_STANDBY);             // set RF chip mode to STANDBY
+
+  /* TBD */
+
+}
+
+bool ognrf_receive()
+{
+  bool success = false;
+
+  /* TBD */
+
+  return success;
+}
+
+void ognrf_transmit()
+{
+#if defined(WITH_SI4X32)
+
+  TRX.WritePacket((uint8_t *) &TxBuffer[0]);
+  TRX.Transmit();
+  vTaskDelay(6);
+
+#else
+
+#ifdef WITH_RFM69
+  TRX.TriggerRSSI();
+#endif
+
+  TRX.WriteMode(RF_OPMODE_STANDBY);
+  vTaskDelay(1);
+
+  TRX.ClearIrqFlags();
+  TRX.WritePacket((uint8_t *) &TxBuffer[0]);
+
+  TRX.WriteMode(RF_OPMODE_TRANSMITTER);
+  vTaskDelay(5);
+
+  uint8_t Break=0;
+  for(uint16_t Wait=400; Wait; Wait--)        // wait for transmission to end
+  {
+    uint16_t Flags=TRX.ReadIrqFlags();
+    if(Flags&RF_IRQ_PacketSent) Break++;
+    if(Break>=2) break;
+  }
+
+  TRX.WriteMode(RF_OPMODE_STANDBY);
+
+  TRX.WriteMode(RF_OPMODE_RECEIVER);
+
+#endif /* WITH_SI4X32 */
+}
+
+void ognrf_shutdown()
+{
+  /* Nothing to do */
+}
+
+#endif /* USE_OGN_RF_DRIVER */

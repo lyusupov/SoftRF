@@ -54,7 +54,8 @@ enum
   RF_IC_NONE,
   RF_IC_NRF905,
   RF_IC_SX1276,
-  RF_IC_CC13XX
+  RF_IC_CC13XX,
+  RF_DRV_OGN
 };
 
 enum
@@ -107,6 +108,13 @@ void cc13xx_channel(uint8_t);
 bool cc13xx_receive(void);
 void cc13xx_transmit(void);
 void cc13xx_shutdown(void);
+
+bool ognrf_probe(void);
+void ognrf_setup(void);
+void ognrf_channel(uint8_t);
+bool ognrf_receive(void);
+void ognrf_transmit(void);
+void ognrf_shutdown(void);
 
 extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;

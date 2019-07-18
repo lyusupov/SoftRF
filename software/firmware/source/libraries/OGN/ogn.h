@@ -805,16 +805,21 @@ class OGN_RxPacket                                        // OGN packet with FEC
 
    uint32_t FEC[2];       // Gallager code: 48 check bits for 160 user bits
 
-   uint8_t State;         //
+   union
+   { uint8_t State;       //
+     struct
+     { bool      :1;      //
+       bool Ready:1;      // is ready for transmission
+       bool Sent :1;      // has already been transmitted out
+       bool Corr :1;      // correctly received or corrected by FEC
+       uint8_t RxErr:4;   // number of bit errors corrected upon reception
+     } ;
+   } ;
+
+   uint8_t RxChan;        // RF channel where the packet was received
    uint8_t RxRSSI;        // [-0.5dBm]
-   // int8_t RxFreqOfs;     // not used for now
-   uint8_t RxErr;         // number of bit errors corrected upon reception
    uint8_t Rank;          // rank: low altitude and weak signal => high rank
 
-/*                        // for relay decision:
-    int16_t AltDelta;     // [m] altitude difference
-   uint16_t Distance;     // [m] distance
-*/
   public:
 
    OGN_RxPacket() { Clear(); }
