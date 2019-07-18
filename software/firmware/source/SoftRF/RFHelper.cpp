@@ -1187,9 +1187,12 @@ void cc13xx_shutdown()
 
 static RFM_TRX  TRX;
 
-void RFM_Select  (void) { hal_pin_nss(0); }
-void RFM_Deselect(void) { hal_pin_nss(1); }
-uint8_t RFM_TransferByte(uint8_t Byte) { return hal_spi(Byte); }
+static uint8_t ognrf_channel_prev = (uint8_t) -1;
+bool ognrf_receive_active         = false;
+
+void RFM_Select  (void)                 { hal_pin_nss(0); }
+void RFM_Deselect(void)                 { hal_pin_nss(1); }
+uint8_t RFM_TransferByte(uint8_t Byte)  { return hal_spi(Byte); }
 
 #ifdef WITH_RFM95                     // RESET is active LOW
 void RFM_RESET(uint8_t On)
@@ -1243,17 +1246,31 @@ bool ognrf_probe()
 
 void ognrf_channel(uint8_t channel)
 {
-  /* TBD */
+  if (channel != ognrf_channel_prev) {
+    TRX.setChannel(channel & 0x7F);
+
+    ognrf_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    ognrf_receive_active = false;
+  }
 }
 
 void ognrf_setup()
 {
+  uint8_t TxPower = 0;
 
   /* Enforce radio settings to follow OGNTP protocol's RF specs */
   settings->rf_protocol = RF_PROTOCOL_OGNTP;
 
+  LMIC.protocol = &ogntp_proto_desc;
+
   protocol_encode = &ogntp_encode;
   protocol_decode = &ogntp_decode;
+
+  TRX.Select       = RFM_Select;
+  TRX.Deselect     = RFM_Deselect;
+  TRX.TransferByte = RFM_TransferByte;
+  TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
   hal_init();
@@ -1271,8 +1288,27 @@ void ognrf_setup()
   TRX.Configure(0, ogntp_proto_desc.syncword);  // setup RF chip parameters and set to channel #0
   TRX.WriteMode(RF_OPMODE_STANDBY);             // set RF chip mode to STANDBY
 
-  /* TBD */
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
 
+    /* Load regional max. EIRP at first */
+    TxPower = RF_FreqPlan.MaxTxPower;
+
+    if (TxPower > 20)
+      TxPower = 20;
+#if 1
+    if (TxPower > 17)
+      TxPower = 17;
+#endif
+    TRX.WriteTxPower(TxPower);
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    TRX.WriteTxPowerMin();
+    break;
+  }
 }
 
 bool ognrf_receive()
@@ -1300,6 +1336,8 @@ void ognrf_transmit()
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
   vTaskDelay(1);
+
+  TRX.WriteSYNC(8, 7, ogntp_proto_desc.syncword);            // Full SYNC for TX
 
   TRX.ClearIrqFlags();
   TRX.WritePacket((uint8_t *) &TxBuffer[0]);
