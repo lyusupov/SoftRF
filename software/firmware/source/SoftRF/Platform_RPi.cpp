@@ -76,7 +76,11 @@ lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
     .rst = SOC_GPIO_PIN_RST,
+#if !defined(USE_OGN_RF_DRIVER)
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#else
+    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#endif
 };
 
 TTYSerial Serial1("/dev/ttyAMA0");

@@ -1187,12 +1187,16 @@ void cc13xx_shutdown()
 
 static RFM_TRX  TRX;
 
-static uint8_t ognrf_channel_prev = (uint8_t) -1;
-bool ognrf_receive_active         = false;
+static uint8_t ognrf_channel_prev  = (uint8_t) -1;
+static bool ognrf_receive_complete = false;
+bool ognrf_receive_active          = false;
 
 void RFM_Select  (void)                 { hal_pin_nss(0); }
 void RFM_Deselect(void)                 { hal_pin_nss(1); }
 uint8_t RFM_TransferByte(uint8_t Byte)  { return hal_spi(Byte); }
+
+bool RFM_IRQ_isOn(void)   { return lmic_pins.dio[0] == LMIC_UNUSED_PIN ? \
+                                  false : digitalRead(lmic_pins.dio[0]); }
 
 #ifdef WITH_RFM95                     // RESET is active LOW
 void RFM_RESET(uint8_t On)
@@ -1270,6 +1274,7 @@ void ognrf_setup()
   TRX.Select       = RFM_Select;
   TRX.Deselect     = RFM_Deselect;
   TRX.TransferByte = RFM_TransferByte;
+  TRX.DIO0_isOn    = RFM_IRQ_isOn;
   TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
@@ -1309,19 +1314,59 @@ void ognrf_setup()
     TRX.WriteTxPowerMin();
     break;
   }
+
+  /* Put IC into receive mode */
+  TRX.WriteSYNC(7, 7, ogntp_proto_desc.syncword);   // Shorter SYNC for RX
+  TRX.WriteMode(RF_OPMODE_RECEIVER);
 }
 
 bool ognrf_receive()
 {
   bool success = false;
+  uint8_t RxRSSI = 0;
+  uint8_t Err [OGNTP_PAYLOAD_SIZE + OGNTP_CRC_SIZE];
 
-  /* TBD */
+  ognrf_receive_complete = false;
+
+  // Put into receive mode
+  if (!ognrf_receive_active) {
+
+//    TRX.ClearIrqFlags();
+
+    TRX.WriteSYNC(7, 7, ogntp_proto_desc.syncword); // Shorter SYNC for RX
+    TRX.WriteMode(RF_OPMODE_RECEIVER);
+    vTaskDelay(1);
+
+    ognrf_receive_active = true;
+  }
+
+  if(TRX.DIO0_isOn()) {
+    RxRSSI = TRX.ReadRSSI();
+
+    TRX.ReadPacket(RxBuffer, Err);
+    if (LDPC_Check((uint8_t  *) RxBuffer) == 0) {
+
+      ognrf_receive_complete = true;
+      success = true;
+    }
+  }
+
+  if (success) {
+    RF_last_rssi = RxRSSI;
+    rx_packets_counter++;
+  }
+
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->loop();
+  }
 
   return success;
 }
 
 void ognrf_transmit()
 {
+  ognrf_receive_active = false;
+
 #if defined(WITH_SI4X32)
 
   TRX.WritePacket((uint8_t *) &TxBuffer[0]);
@@ -1354,15 +1399,13 @@ void ognrf_transmit()
   }
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
-
-  TRX.WriteMode(RF_OPMODE_RECEIVER);
-
 #endif /* WITH_SI4X32 */
 }
 
 void ognrf_shutdown()
 {
-  /* Nothing to do */
+  TRX.WriteMode(RF_OPMODE_STANDBY);
+  SPI.end();
 }
 
 #endif /* USE_OGN_RF_DRIVER */

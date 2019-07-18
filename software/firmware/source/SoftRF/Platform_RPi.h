@@ -50,14 +50,14 @@
 #define SOC_GPIO_PIN_SCK      RPI_V2_GPIO_P1_40
 #define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_36
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_37
-#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_7  // IRQ on GPIO4 so P1 connector pin #7
+#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_33  // IRQ on GPIO13 so P1 connector pin #33
 #else
 #define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_19
 #define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_21
 #define SOC_GPIO_PIN_SCK      RPI_V2_GPIO_P1_23
 #define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_22 // Slave Select on GPIO25 so P1 connector pin #22
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
-#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_7  // IRQ on GPIO4 so P1 connector pin #7
+#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
 #endif
 #endif /* GPIO */
 
