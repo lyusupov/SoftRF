@@ -97,6 +97,11 @@
 //#define EXCLUDE_BMP180         //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+//#define USE_OGN_RF_DRIVER
+//#define WITH_RFM95
+//#define WITH_RFM69
+//#define WITH_SX1272
+//#define WITH_SI4X32
 
 #else
 #error "This hardware platform is not supported!"

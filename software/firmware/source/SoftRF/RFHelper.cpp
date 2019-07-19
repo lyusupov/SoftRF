@@ -1188,7 +1188,6 @@ void cc13xx_shutdown()
 static RFM_TRX  TRX;
 
 static uint8_t ognrf_channel_prev  = (uint8_t) -1;
-static bool ognrf_receive_complete = false;
 bool ognrf_receive_active          = false;
 
 void RFM_Select  (void)                 { hal_pin_nss(0); }
@@ -1251,11 +1250,19 @@ bool ognrf_probe()
 void ognrf_channel(uint8_t channel)
 {
   if (channel != ognrf_channel_prev) {
+
+    if (ognrf_receive_active) {
+
+      TRX.WriteMode(RF_OPMODE_STANDBY);
+      vTaskDelay(1);
+
+      /* restart Rx upon a channel switch */
+      ognrf_receive_active = false;
+    }
+
     TRX.setChannel(channel & 0x7F);
 
     ognrf_channel_prev = channel;
-    /* restart Rx upon a channel switch */
-    ognrf_receive_active = false;
   }
 }
 
@@ -1315,18 +1322,17 @@ void ognrf_setup()
     break;
   }
 
-  /* Put IC into receive mode */
-  TRX.WriteSYNC(7, 7, ogntp_proto_desc.syncword);   // Shorter SYNC for RX
-  TRX.WriteMode(RF_OPMODE_RECEIVER);
+  /* Leave IC in standby mode */
 }
 
 bool ognrf_receive()
 {
   bool success = false;
+
+#if !defined(WITH_SI4X32)
+
   uint8_t RxRSSI = 0;
   uint8_t Err [OGNTP_PAYLOAD_SIZE + OGNTP_CRC_SIZE];
-
-  ognrf_receive_complete = false;
 
   // Put into receive mode
   if (!ognrf_receive_active) {
@@ -1345,8 +1351,6 @@ bool ognrf_receive()
 
     TRX.ReadPacket(RxBuffer, Err);
     if (LDPC_Check((uint8_t  *) RxBuffer) == 0) {
-
-      ognrf_receive_complete = true;
       success = true;
     }
   }
@@ -1355,6 +1359,8 @@ bool ognrf_receive()
     RF_last_rssi = RxRSSI;
     rx_packets_counter++;
   }
+
+#endif /* WITH_SI4X32 */
 
   if (SoC->Bluetooth) {
     SoC->Bluetooth->loop();
@@ -1374,10 +1380,6 @@ void ognrf_transmit()
   vTaskDelay(6);
 
 #else
-
-#ifdef WITH_RFM69
-  TRX.TriggerRSSI();
-#endif
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
   vTaskDelay(1);
@@ -1399,6 +1401,7 @@ void ognrf_transmit()
   }
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
+
 #endif /* WITH_SI4X32 */
 }
 

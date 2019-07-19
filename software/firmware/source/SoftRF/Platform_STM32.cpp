@@ -34,8 +34,13 @@
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
+#if !defined(USE_OGN_RF_DRIVER)
     .rst = LMIC_UNUSED_PIN,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#else
+    .rst = SOC_GPIO_PIN_RST,
+    .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#endif
 };
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
