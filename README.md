@@ -55,9 +55,9 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
 * [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
+    * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
 * [Retro Edition](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 * Software
