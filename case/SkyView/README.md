@@ -43,6 +43,6 @@ Fasten the mount to the enclosure's main body with four 2.5x8 mm screws.
 
 <br>
 
-<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-27-holder.jpg" height="395" width="400">
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-27-holder.jpg" height="395" width="400">&nbsp;&nbsp;&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-29-holder.jpg" height="395" width="325"></p>
 
 <br>
