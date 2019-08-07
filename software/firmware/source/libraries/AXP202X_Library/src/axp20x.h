@@ -39,6 +39,14 @@ github:https://github.com/lewisxhe/AXP202X_Libraries
 #define AXP_DEBUG(...)
 #endif
 
+#ifndef RISING
+#define RISING    0x01
+#endif
+
+#ifndef FALLING
+#define FALLING   0x02
+#endif
+
 //! Error Code
 #define AXP_PASS                      0
 #define AXP_FAIL                     -1
@@ -393,6 +401,43 @@ typedef enum {
     AXP20X_LED_LOW_LEVEL,
 } axp_chgled_mode_t;
 
+
+typedef enum {
+    AXP202_GPIO_1V8,
+    AXP202_GPIO_2V5,
+    AXP202_GPIO_2V8,
+    AXP202_GPIO_3V0,
+    AXP202_GPIO_3V1,
+    AXP202_GPIO_3V3,
+    AXP202_GPIO_3V4,
+    AXP202_GPIO_3V5,
+} axp_gpio_voltage_t;
+
+typedef enum {
+    AXP202_GPIO2_OUTPUT_LOW,
+    AXP202_GPIO2_FLOATING,
+    AXP202_GPIO3_INPUT,
+} axp202_gpio2_mode_t;
+
+typedef enum {
+    AXP202_GPIO3_DIGITAL_INPUT,
+    AXP202_GPIO3_OPEN_DRAIN_OUTPUT,
+} axp202_gpio3_mode_t;
+
+typedef enum {
+    AXP202_GPIO3_OUTPUT_LOW,
+    AXP202_GPIO3_FLOATING,
+} axp202_gpio3_output_t;
+
+
+typedef enum {
+    AXP202_GPIO0,
+    AXP202_GPIO1,
+    AXP202_GPIO2,
+    AXP202_GPIO3,
+} axp202_gpio_t;
+
+
 class AXP20X_Class
 {
 public:
@@ -466,6 +511,8 @@ public:
     int setShutdownTime(uint8_t param);
     int setTimeOutShutdown(bool en);
 
+    int shutdown();
+
     int enableIRQ(uint32_t params, bool en);
     int readIRQ();
     void clearIRQ();
@@ -488,6 +535,93 @@ public:
 
     int debugCharging();
     int debugStatus();
+    int limitingOff();
+    /**
+     * @brief  setGPIO0Voltage
+     * @note
+     * @param  mv:  axp_gpio_voltage_t enum
+     * @retval
+     */
+    int setGPIO0Voltage(uint8_t mv);
+
+    /**
+     * @brief   setGPIO0Level
+     * @note
+     * @param  level:   0 or 1
+     * @retval
+     */
+    int setGPIO0Level(uint8_t level);
+
+    /**
+     * @brief   setGPIO1Level
+     * @note
+     * @param  level:   0 or 1
+     * @retval
+     */
+    int setGPIO1Level(uint8_t level);
+
+    /**
+     * @brief   readGpioStatus
+     * @note
+     * @retval
+     */
+    int readGpioStatus();
+
+    /**
+     * @brief   readGpio0Level
+     * @note
+     * @retval
+     */
+    int readGpio0Level();
+
+    /**
+     * @brief   readGpio1Level
+     * @note
+     * @retval
+     */
+    int readGpio1Level();
+
+    /**
+     * @brief   readGpio2Level
+     * @note
+     * @retval
+     */
+    int readGpio2Level();
+
+    /**
+     * @brief  setGpio2Mode
+     * @note
+     * @param  mode:  axp202_gpio2_mode_t enum
+     * @retval
+     */
+    int setGpio2Mode(uint8_t mode);
+
+    /**
+     * @brief  setGpio3Mode
+     * @note   Set GPIO3 mode, can only be set to output low level, floating, can not output high level
+     * @param  mode:    axp202_gpio3_mode_t enum
+     * @retval
+     */
+    int setGpio3Mode(uint8_t mode);
+
+    /**
+     * @brief   setGpio3Level
+     * @note    Can only be set when GPIO3 is configured as output mode
+     * @param  level:   axp202_gpio3_output_t enum
+     * @retval
+     */
+    int setGpio3Level(uint8_t level);
+
+
+    /**
+     * @brief   setGpioInterruptMode
+     * @note    Interrupt can only be set when GPIO is configured as input mode
+     * @param  gpio:    axp202_gpio_t enum
+     * @param  mode:    RISING or FALLING
+     * @param  en:      true or false
+     * @retval
+     */
+    int setGpioInterruptMode(uint8_t gpio, int mode, bool en);
 
 private:
 
@@ -528,6 +662,7 @@ private:
         _i2cPort->endTransmission();
     }
 
+    int _setGpioInterrupt(uint8_t *val, int mode, bool en);
     static const uint8_t startupParams[];
     static const uint8_t longPressParams[];
     static const uint8_t shutdownParams[];
@@ -539,4 +674,5 @@ private:
     TwoWire *_i2cPort;
     uint8_t _irq[5];
     uint8_t _chip_id;
+    uint8_t _gpio[4];
 };

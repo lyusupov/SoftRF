@@ -1,0 +1,58 @@
+#######################################
+# Syntax Coloring Map For Arduino library for NXP-PCF8563 By lewis He
+# github:https://github.com/lewisxhe
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+RTC_Date	KEYWORD1
+RTC_Alarm	KEYWORD1
+PCF8563_Class	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin  KEYWORD2
+setDateTime	KEYWORD2
+getDateTime	KEYWORD2
+getAlarm	KEYWORD2
+enableAlarm	KEYWORD2
+disableAlarm	KEYWORD2
+alarmActive	KEYWORD2
+resetAlarm	KEYWORD2
+setAlarm	KEYWORD2
+setAlarmByWeekDay	KEYWORD2
+setAlarmByHours	KEYWORD2
+setAlarmByDays	KEYWORD2
+setAlarmByMinutes	KEYWORD2
+isTimerEnable	KEYWORD2
+isTimerActive	KEYWORD2
+enableTimer	KEYWORD2
+disableTimer	KEYWORD2
+setTimer	KEYWORD2
+clearTimer	KEYWORD2
+enableCLK	KEYWORD2
+disableCLK	KEYWORD2
+formatDateTime	KEYWORD2
+getDayOfWeek	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+PCF8563_CLK_32_768KHZ	LITERAL1
+PCF8563_CLK_1024KHZ	LITERAL1
+PCF8563_CLK_32HZ	LITERAL1
+PCF8563_CLK_1HZ	LITERAL1
+PCF_TIMEFORMAT_HM	LITERAL1
+PCF_TIMEFORMAT_HMS	LITERAL1
+PCF_TIMEFORMAT_YYYY_MM_DD	LITERAL1
+PCF_TIMEFORMAT_MM_DD_YYYY	LITERAL1
+PCF_TIMEFORMAT_DD_MM_YYYY	LITERAL1
+PCF_TIMEFORMAT_YYYY_MM_DD_H_M_S	LITERAL1
