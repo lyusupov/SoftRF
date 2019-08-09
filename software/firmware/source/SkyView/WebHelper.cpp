@@ -94,7 +94,7 @@ Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4450;
+  size_t size = 4500;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -324,6 +324,7 @@ void handleSettings() {
 <th align=left>Zoom level</th>\
 <td align=right>\
 <select name='zoom'>\
+<option %s value='%d'>lowest</option>\
 <option %s value='%d'>low</option>\
 <option %s value='%d'>medium</option>\
 <option %s value='%d'>high</option>\
@@ -358,6 +359,7 @@ void handleSettings() {
   (settings->vmode == VIEW_MODE_TEXT  ? "selected" : ""), VIEW_MODE_TEXT,
   (settings->orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+  (settings->zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,
   (settings->zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
   (settings->zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
   (settings->zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,

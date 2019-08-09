@@ -122,11 +122,13 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox3.x + 10, navbox3.y + 30);
 
     if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
-      display->print(navbox3.value == ZOOM_LOW    ? "10 KM" :
+      display->print(navbox3.value == ZOOM_LOWEST ? "20 KM" :
+                     navbox3.value == ZOOM_LOW    ? "10 KM" :
                      navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
                      navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
     } else {
-      display->print(navbox3.value == ZOOM_LOW    ? " 5 NM" :
+      display->print(navbox3.value == ZOOM_LOWEST ? "10 NM" :
+                     navbox3.value == ZOOM_LOW    ? " 5 NM" :
                      navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
                      navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
     }
@@ -215,27 +217,33 @@ static void EPD_Draw_Radar()
   if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
     switch(EPD_zoom)
     {
+    case ZOOM_LOWEST:
+      divider = 10000; /* 20 KM */
+      break;
     case ZOOM_LOW:
-      divider = 5000; /* 10 KM */
+      divider =  5000; /* 10 KM */
       break;
     case ZOOM_HIGH:
-      divider = 1000; /*  2 KM */
+      divider =  1000; /*  2 KM */
       break;
     case ZOOM_MEDIUM:
     default:
-      divider = 2000;  /* 4 KM */
+      divider =  2000;  /* 4 KM */
       break;
     }
   } else {
     switch(EPD_zoom)
     {
+    case ZOOM_LOWEST:
+      divider = 9260;  /* 10 NM */
+      break;
     case ZOOM_LOW:
-      divider = 4630;  /* 5 NM */
+      divider = 4630;  /*  5 NM */
       break;
     case ZOOM_HIGH:
-      divider =  926;  /* 1 NM */
+      divider =  926;  /*  1 NM */
       break;
-    case ZOOM_MEDIUM:  /* 2 NM */
+    case ZOOM_MEDIUM:  /*  2 NM */
     default:
       divider = 1852;
       break;
@@ -454,11 +462,13 @@ static void EPD_Update_NavBoxes()
       display->setCursor(navbox3.x + 10, navbox3.y + 30);
 
       if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
-        display->print(navbox3.value == ZOOM_LOW    ? "10 KM" :
+        display->print(navbox3.value == ZOOM_LOWEST ? "20 KM" :
+                       navbox3.value == ZOOM_LOW    ? "10 KM" :
                        navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
                        navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
       } else {
-        display->print(navbox3.value == ZOOM_LOW    ? " 5 NM" :
+        display->print(navbox3.value == ZOOM_LOWEST ? "10 NM" :
+                       navbox3.value == ZOOM_LOW    ? " 5 NM" :
                        navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
                        navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
       }
@@ -604,5 +614,5 @@ void EPD_radar_zoom()
 
 void EPD_radar_unzoom()
 {
-  if (EPD_zoom > ZOOM_LOW) EPD_zoom--;
+  if (EPD_zoom > ZOOM_LOWEST) EPD_zoom--;
 }
