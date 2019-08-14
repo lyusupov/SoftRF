@@ -498,4 +498,53 @@ void NMEA_GGA()
   }
 }
 
+#if defined(USE_S7XG_DRIVER)
+
+#include <s7xg.h>
+
+void NMEA_RMCGGA(char *dest, GPS_Class data)
+{
+  NmeaInfo info;
+
+  float latitude  = data.lat();
+  float longitude = data.lng();
+
+  nmeaInfoClear(&info);
+
+  info.utc.year   = data.year();
+  info.utc.mon    = data.month();
+  info.utc.day    = data.day();
+  info.utc.hour   = data.hour();
+  info.utc.min    = data.minute();
+  info.utc.sec    = data.second();
+  info.utc.hsec   = 0;
+
+  info.latitude   = ((int) latitude) * 100.0;
+  info.latitude  += (latitude - (int) latitude) * 60.0;
+  info.longitude  = ((int) longitude) * 100.0;
+  info.longitude += (longitude - (int) longitude) * 60.0;
+
+  info.elevation  = 0;
+  info.height     = LookupSeparation(latitude, longitude);
+  info.sig        = (NmeaSignal) 1;
+
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_UTCDATE);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_UTCTIME);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LAT);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LON);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_ELV);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SIG);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HEIGHT);
+
+  size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
+                                        (NMEALIB_SENTENCE_GPRMC |
+                                         NMEALIB_SENTENCE_GPGGA));
+
+  if (gen_sz) {
+    memcpy(dest, nmealib_buf.buffer, gen_sz);
+    dest[gen_sz] = 0;
+  }
+}
+#endif /* USE_S7XG_DRIVER */
+
 #endif /* USE_NMEALIB */

@@ -27,6 +27,8 @@
 #include <rom/spi_flash.h>
 #include <flashchips.h>
 #include <axp20x.h>
+#include <pcf8563.h>
+#include <TFT_eSPI.h>
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -75,8 +77,10 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
                                                   HELTEC_OLED_PIN_SDA);
 
 AXP20X_Class axp;
+PCF8563_Class rtc;
 
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
+static TFT_eSPI *tft = NULL;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
 
@@ -104,6 +108,12 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_ADSB_UAT]  = "U",
   [RF_PROTOCOL_FANET]     = "F"
 };
+
+const char SoftRF_text[]   = "SoftRF";
+const char ID_text[]       = "ID";
+const char PROTOCOL_text[] = "PROTOCOL";
+const char RX_text[]       = "RX";
+const char TX_text[]       = "TX";
 
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
@@ -157,6 +167,7 @@ static void ESP32_setup()
      *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
      *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
      *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T-Watch     |            | WINBOND_NEX_W25Q128_V
      */
 
     switch(flash_id)
@@ -165,16 +176,53 @@ static void ESP32_setup()
       /* ESP32-WROVER module with ESP32-NODEMCU-ADAPTER */
       hw_info.model = SOFTRF_MODEL_STANDALONE;
       break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
+      hw_info.model = SOFTRF_MODEL_WATCH;
+      break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
       break;
     }
+  } else {
+    if (ESP32_getFlashId() == MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V)) {
+      hw_info.model = SOFTRF_MODEL_WATCH;
+    }
   }
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_WATCH) {
+    esp32_board = ESP32_TTGO_T_WATCH;
+
+    Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
+    Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
+    if (Wire1.endTransmission() == 0) {
+
+      axp.begin(Wire1, AXP202_SLAVE_ADDRESS);
+
+      axp.enableIRQ(AXP202_ALL_IRQ, AXP202_OFF);
+      axp.adc1Enable(0xFF, AXP202_OFF);
+
+      axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
+
+      axp.setPowerOutPut(AXP202_LDO2, AXP202_ON);
+      axp.setLDO4Voltage(AXP202_LDO4_1800MV);
+      axp.setPowerOutPut(AXP202_LDO4, AXP202_ON);
+
+      pinMode(SOC_GPIO_PIN_TWATCH_PMU_IRQ, INPUT_PULLUP);
+
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWATCH_PMU_IRQ),
+                      ESP32_PMU_Interrupt_handler, FALLING);
+
+      axp.adc1Enable(AXP202_BATT_VOL_ADC1, AXP202_ON);
+      axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
+      axp.clearIRQ();
+    }
+
+    rtc.begin(Wire1);
+
+  } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
 
     Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -209,8 +257,9 @@ static void ESP32_setup()
 
 static void ESP32_loop()
 {
-  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-      hw_info.revision == 8) {
+  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+       hw_info.revision == 8)                     ||
+       hw_info.model    == SOFTRF_MODEL_WATCH) {
 
     bool is_irq = false;
     bool down = false;
@@ -266,8 +315,19 @@ static void ESP32_fini()
   esp_wifi_stop();
   esp_bt_controller_disable();
 
-  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-      hw_info.revision == 8) {
+  if (hw_info.model    == SOFTRF_MODEL_WATCH) {
+
+    axp.setChgLEDMode(AXP20X_LED_OFF);
+
+    axp.setPowerOutPut(AXP202_LDO2, AXP202_OFF);
+    axp.setPowerOutPut(AXP202_LDO4, AXP202_OFF);
+
+    delay(20);
+
+    esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
+
+  } else if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+             hw_info.revision == 8) {
 
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
@@ -555,7 +615,12 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 static void ESP32_SPI_begin()
 {
-  SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
+  if (esp32_board != ESP32_TTGO_T_WATCH) {
+    SPI.begin(SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
+  } else {
+    SPI.begin(SOC_GPIO_PIN_TWATCH_TFT_SCK, SOC_GPIO_PIN_TWATCH_TFT_MISO,
+              SOC_GPIO_PIN_TWATCH_TFT_MOSI, -1);
+  }
 }
 
 static void ESP32_swSer_begin(unsigned long baud)
@@ -572,7 +637,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V05_RX, SOC_GPIO_PIN_TBEAM_V05_TX);
     }
   } else {
-    if (esp32_board == ESP32_TTGO_V2_OLED) {
+    if (esp32_board == ESP32_TTGO_T_WATCH) {
+      Serial.println(F("INFO: TTGO T-Watch is detected."));
+      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TWATCH_RX, SOC_GPIO_PIN_TWATCH_TX);
+    } else if (esp32_board == ESP32_TTGO_V2_OLED) {
       /* 'Mini' (TTGO LoRa V2 + GNSS) */
       swSer.begin(baud, SERIAL_8N1, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
     } else {
@@ -595,41 +663,72 @@ static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  /* SSD1306 I2C OLED probing */
-  if (GPIO_21_22_are_busy) {
-    Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-    if (Wire1.endTransmission() == 0) {
-      u8x8 = &u8x8_heltec;
-      esp32_board = ESP32_HELTEC_OLED;
-      rval = DISPLAY_OLED_HELTEC;
-    }
-  } else {
-    Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
-    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-    if (Wire1.endTransmission() == 0) {
-      u8x8 = &u8x8_ttgo;
-      esp32_board = ESP32_TTGO_V2_OLED;
-      rval = DISPLAY_OLED_TTGO;
+  if (esp32_board != ESP32_TTGO_T_WATCH) {
+
+    /* SSD1306 I2C OLED probing */
+    if (GPIO_21_22_are_busy) {
+      Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      if (Wire1.endTransmission() == 0) {
+        u8x8 = &u8x8_heltec;
+        esp32_board = ESP32_HELTEC_OLED;
+        rval = DISPLAY_OLED_HELTEC;
+      }
     } else {
-      if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-            hw_info.revision == 8)) {
-        Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-        Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-        if (Wire1.endTransmission() == 0) {
-          u8x8 = &u8x8_heltec;
-          esp32_board = ESP32_HELTEC_OLED;
-          rval = DISPLAY_OLED_HELTEC;
+      Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      if (Wire1.endTransmission() == 0) {
+        u8x8 = &u8x8_ttgo;
+        esp32_board = ESP32_TTGO_V2_OLED;
+        rval = DISPLAY_OLED_TTGO;
+      } else {
+        if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+              hw_info.revision == 8)) {
+          Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+          Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+          if (Wire1.endTransmission() == 0) {
+            u8x8 = &u8x8_heltec;
+            esp32_board = ESP32_HELTEC_OLED;
+            rval = DISPLAY_OLED_HELTEC;
+          }
         }
       }
     }
-  }
 
-  if (u8x8) {
-    u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(2, 3, "SoftRF");
+    if (u8x8) {
+      u8x8->begin();
+      u8x8->setFont(u8x8_font_chroma48medium8_r);
+      u8x8->clear();
+      u8x8->draw2x2String(2, 3, SoftRF_text);
+    }
+
+  } else {  /* ESP32_TTGO_T_WATCH */
+
+    ESP32_SPI_begin();
+
+    tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
+    tft->init();
+    tft->setRotation(0);
+    tft->fillScreen(TFT_NAVY);
+
+    ledcAttachPin(SOC_GPIO_PIN_TWATCH_TFT_BL, 1);
+    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+
+    for (int level = 0; level < 255; level += 25) {
+      ledcWrite(BACKLIGHT_CHANNEL, level);
+      delay(100);
+    }
+
+    tft->setTextFont(4);
+    tft->setTextSize(2);
+    tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+    uint16_t tbw = tft->textWidth(SoftRF_text);
+    uint16_t tbh = tft->fontHeight();
+    tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+    tft->println(SoftRF_text);
+
+    rval = DISPLAY_TFT_TTGO;
   }
 
   return rval;
@@ -640,63 +739,186 @@ static void ESP32_Display_loop()
   char buf[16];
   uint32_t disp_value;
 
-  if (u8x8) {
-    if (!OLED_display_frontpage) {
+  uint16_t tbw;
+  uint16_t tbh;
 
-      u8x8->clear();
+  switch (hw_info.display)
+  {
+  case DISPLAY_TFT_TTGO:
+    if (tft) {
+      if (!OLED_display_frontpage) {
+        tft->fillScreen(TFT_NAVY);
 
-      u8x8->drawString(1, 1, "ID");
+        tft->setTextFont(2);
+        tft->setTextSize(2);
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
 
-      itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
-      u8x8->draw2x2String(0, 2, buf);
+        tbw = tft->textWidth(ID_text);
+        tbh = tft->fontHeight();
 
-      u8x8->drawString(8, 1, "PROTOCOL");
+        tft->setCursor(tft->textWidth(" "), tft->height()/6 - tbh);
+        tft->print(ID_text);
 
-      u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+        tbw = tft->textWidth(PROTOCOL_text);
 
-      u8x8->drawString(1, 5, "RX");
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/6 - tbh);
+        tft->print(PROTOCOL_text);
 
-      itoa(rx_packets_counter % 1000, buf, 10);
-      u8x8->draw2x2String(0, 6, buf);
+        tbw = tft->textWidth(RX_text);
+        tbh = tft->fontHeight();
 
-      u8x8->drawString(9, 5, "TX");
+        tft->setCursor(tft->textWidth("   "), tft->height()/2 - tbh);
+        tft->print(RX_text);
 
-      itoa(tx_packets_counter % 1000, buf, 10);
-      u8x8->draw2x2String(8, 6, buf);
+        tbw = tft->textWidth(TX_text);
 
-      OLED_display_frontpage = true;
-    } else {
-      if (rx_packets_counter > prev_rx_packets_counter) {
-        disp_value = rx_packets_counter % 1000;
-        itoa(disp_value, buf, 10);
+        tft->setCursor(tft->width()/2 + tft->textWidth("   "),
+                       tft->height()/2 - tbh);
+        tft->print(TX_text);
 
-        if (disp_value < 10) {
-          strcat_P(buf,PSTR("  "));
-        } else {
-          if (disp_value < 100) {
-            strcat_P(buf,PSTR(" "));
-          };
+        tft->setTextFont(4);
+        tft->setTextSize(2);
+
+        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
+
+        tbw = tft->textWidth(buf);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth(" "), tft->height()/6);
+        tft->print(buf);
+
+        tbw = tft->textWidth(OLED_Protocol_ID[ThisAircraft.protocol]);
+
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/6);
+        tft->print(OLED_Protocol_ID[ThisAircraft.protocol]);
+
+        itoa(rx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->textWidth(" "), tft->height()/2);
+        tft->print(buf);
+
+        itoa(tx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
+        tft->print(buf);
+
+        OLED_display_frontpage = true;
+
+      } else { /* OLED_display_frontpage */
+
+        if (rx_packets_counter > prev_rx_packets_counter) {
+          disp_value = rx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          tft->setTextFont(4);
+          tft->setTextSize(2);
+
+          tft->setCursor(tft->textWidth(" "), tft->height()/2);
+          tft->print(buf);
+
+          prev_rx_packets_counter = rx_packets_counter;
         }
+        if (tx_packets_counter > prev_tx_packets_counter) {
+          disp_value = tx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
 
-        u8x8->draw2x2String(0, 6, buf);
-        prev_rx_packets_counter = rx_packets_counter;
-      }
-      if (tx_packets_counter > prev_tx_packets_counter) {
-        disp_value = tx_packets_counter % 1000;
-        itoa(disp_value, buf, 10);
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
 
-        if (disp_value < 10) {
-          strcat_P(buf,PSTR("  "));
-        } else {
-          if (disp_value < 100) {
-            strcat_P(buf,PSTR(" "));
-          };
+          tft->setTextFont(4);
+          tft->setTextSize(2);
+
+          tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
+          tft->print(buf);
+
+          prev_tx_packets_counter = tx_packets_counter;
         }
-
-        u8x8->draw2x2String(8, 6, buf);
-        prev_tx_packets_counter = tx_packets_counter;
       }
     }
+
+    break;
+
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    if (u8x8) {
+      if (!OLED_display_frontpage) {
+
+        u8x8->clear();
+
+        u8x8->drawString(1, 1, ID_text);
+
+        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
+        u8x8->draw2x2String(0, 2, buf);
+
+        u8x8->drawString(8, 1, PROTOCOL_text);
+
+        u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+
+        u8x8->drawString(1, 5, RX_text);
+
+        itoa(rx_packets_counter % 1000, buf, 10);
+        u8x8->draw2x2String(0, 6, buf);
+
+        u8x8->drawString(9, 5, TX_text);
+
+        itoa(tx_packets_counter % 1000, buf, 10);
+        u8x8->draw2x2String(8, 6, buf);
+
+        OLED_display_frontpage = true;
+
+      } else {  /* OLED_display_frontpage */
+
+        if (rx_packets_counter > prev_rx_packets_counter) {
+          disp_value = rx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          u8x8->draw2x2String(0, 6, buf);
+          prev_rx_packets_counter = rx_packets_counter;
+        }
+        if (tx_packets_counter > prev_tx_packets_counter) {
+          disp_value = tx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          u8x8->draw2x2String(8, 6, buf);
+          prev_tx_packets_counter = tx_packets_counter;
+        }
+      }
+    }
+
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
   }
 }
 
@@ -714,10 +936,11 @@ static float ESP32_Battery_voltage()
 {
   float voltage = 0.0;
 
-  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-      hw_info.revision == 8) {
+  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+       hw_info.revision == 8)                     ||
+       hw_info.model    == SOFTRF_MODEL_WATCH) {
 
-    /* T-Beam v08 has PMU */
+    /* T-Beam v08 and T-Watch have PMU */
     if (axp.isBatteryConnect()) {
       voltage = axp.getBattVoltage();
     }
@@ -735,10 +958,11 @@ static float ESP32_Battery_voltage()
 
 static void ESP32_Battery_setup()
 {
-  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-      hw_info.revision == 8) {
+  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+       hw_info.revision == 8)                     ||
+       hw_info.model    == SOFTRF_MODEL_WATCH) {
 
-    /* T-Beam v08 has PMU */
+    /* T-Beam v08 and T-Watch have PMU */
 
     /* TBD */
   } else {
@@ -763,7 +987,11 @@ static unsigned long ESP32_get_PPS_TimeMarker() {
 
 static bool ESP32_Baro_setup() {
 
-  if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_WATCH) {
+
+    return false;
+
+  } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if (hw_info.rf != RF_IC_SX1276 || RF_SX1276_RST_is_connected)
       return false;

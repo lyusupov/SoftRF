@@ -95,6 +95,7 @@ void setup() {
   Serial.println();
   Serial.print(F("SoftRF FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
+  Serial.flush();
 
   EEPROM_setup();
 

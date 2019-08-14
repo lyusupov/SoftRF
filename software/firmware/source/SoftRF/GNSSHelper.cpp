@@ -26,6 +26,7 @@
 #include "NMEAHelper.h"
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
+#include "RFHelper.h"
 
 #include "SoftRF.h"
 
@@ -85,7 +86,8 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_U7]      = "U7",
   [GNSS_MODULE_U8]      = "U8",
   [GNSS_MODULE_U9]      = "U9",
-  [GNSS_MODULE_MAV]     = "MAV"
+  [GNSS_MODULE_MAV]     = "MAV",
+  [GNSS_MODULE_S7XG]    = "S7XG"
 };
 
 #if defined(USE_NMEA_CFG)
@@ -112,6 +114,17 @@ TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
 
 #endif /* USE_NMEA_CFG */
+
+#if defined(USE_S7XG_DRIVER)
+
+#include <s7xg.h>
+
+extern S7XG_Class s7xg;
+extern bool s7xg_receive_active;
+extern void NMEA_RMCGGA(char *, GPS_Class);
+
+unsigned long S7XG_Time_Marker = 0;
+#endif /* USE_S7XG_DRIVER */
 
 static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
 {
@@ -505,6 +518,23 @@ byte GNSS_setup() {
 
   byte rval = GNSS_MODULE_NONE;
 
+#if defined(USE_S7XG_DRIVER)
+  if (hw_info.model == SOFTRF_MODEL_WATCH &&
+      hw_info.rf    == RF_IC_S7XG ) {
+
+    s7xg.gpsStop();
+    s7xg.gpsReset();
+    s7xg.gpsSetLevelShift(true);
+    s7xg.gpsSetSystem(GPS_STATE_SYS_GPS_GLONASS);
+    s7xg.gpsSetPositioningCycle(1000);
+    s7xg.gpsSetMode(GPS_MODE_MANUAL);
+
+    S7XG_Time_Marker = millis();
+
+    return GNSS_MODULE_S7XG;
+  }
+#endif /* USE_S7XG_DRIVER */
+
   SoC->swSer_begin(9600);
 
   if (!GNSS_probe())
@@ -588,6 +618,36 @@ void PickGNSSFix()
   bool isValidSentence = false;
   int ndx;
   int c = -1;
+
+#if defined(USE_S7XG_DRIVER)
+  if (hw_info.model == SOFTRF_MODEL_WATCH &&
+      hw_info.rf    == RF_IC_S7XG ) {
+
+    if ((millis() - S7XG_Time_Marker) > 1000 ) {
+      if (s7xg_receive_active) {
+        s7xg.loraReceiveContinuous(false);
+      }
+
+      GPS_Class gnss_data = s7xg.gpsGetData(GPS_DATA_TYPE_DD);
+
+      if (s7xg_receive_active) {
+        s7xg.loraReceiveContinuous(true);
+      }
+
+      if (gnss_data.isVaild()) {
+        NMEA_RMCGGA((char *) GNSSbuf, gnss_data);
+        for (int i=0; i < strlen((char *) GNSSbuf); i++) {
+          gnss.encode(GNSSbuf[i]);
+        }
+        NMEA_Out(GNSSbuf, strlen((char *) GNSSbuf), false);
+      }
+
+      S7XG_Time_Marker = millis();
+    }
+
+    return;
+  }
+#endif /* USE_S7XG_DRIVER */
 
   /*
    * Check SW, HW and BT UARTs for data

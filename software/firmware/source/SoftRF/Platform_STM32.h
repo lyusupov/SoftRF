@@ -44,7 +44,23 @@
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-/* TBD */
+/* Peripherals */
+#define SOC_GPIO_PIN_SWSER_RX PA_3
+#define SOC_GPIO_PIN_SWSER_TX PA_2
+
+/* SPI */
+#define SOC_GPIO_PIN_MOSI     PB_15
+#define SOC_GPIO_PIN_MISO     PB_14
+#define SOC_GPIO_PIN_SCK      PB_13
+#define SOC_GPIO_PIN_SS       PB_12
+
+/* SX1276 */
+#define SOC_GPIO_PIN_RST      PB_10
+#define SOC_GPIO_PIN_DIO0     PB_11
+
+/* I2C */
+#define SOC_GPIO_PIN_SDA      PB_7
+#define SOC_GPIO_PIN_SCL      PB_6
 
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103C8)
@@ -100,6 +116,7 @@
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69
+#define RFM69_POWER_RATING  1 /* 0 - RFM69xx , 1 - RFM69Hxx */
 //#define WITH_SX1272
 //#define WITH_SI4X32
 

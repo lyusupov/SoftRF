@@ -27,7 +27,7 @@ Created by Lewis he on April 1, 2019.
 github:https://github.com/lewisxhe/PCF8563_Library
 */
 /////////////////////////////////////////////////////////////////
-#pragma onec
+#pragma once
 
 #include <Arduino.h>
 #include <Wire.h>

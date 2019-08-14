@@ -71,6 +71,7 @@ extern Adafruit_NeoPixel strip;
 #endif /* USE_NEOPIXELBUS_LIBRARY */
 
 #define LEDC_CHANNEL_BUZZER     0
+#define BACKLIGHT_CHANNEL       ((uint8_t)1)
 #define LEDC_RESOLUTION_BUZZER  8
 
 /* Peripherals */
@@ -137,6 +138,32 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TBEAM_SDA          13
 #define SOC_GPIO_PIN_TBEAM_SCL          2
 
+/* TTGO T-Watch section */
+// GPS module
+#define SOC_GPIO_PIN_TWATCH_RX          34
+#define SOC_GPIO_PIN_TWATCH_TX          33
+// button
+#define SOC_GPIO_PIN_TWATCH_BUTTON      36
+
+// PMU
+#define SOC_GPIO_PIN_TWATCH_PMU_IRQ     35
+
+// TFT
+#define SOC_GPIO_PIN_TWATCH_TFT_MOSI    19
+#define SOC_GPIO_PIN_TWATCH_TFT_MISO    SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TWATCH_TFT_SCK     18
+#define SOC_GPIO_PIN_TWATCH_TFT_SS      5
+#define SOC_GPIO_PIN_TWATCH_TFT_DC      27
+#define SOC_GPIO_PIN_TWATCH_TFT_RST     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TWATCH_TFT_BL      12
+
+#define LV_HOR_RES                      (240) //Horizontal
+#define LV_VER_RES                      (240) //vertical
+
+// 1st I2C bus on the T-Watch
+#define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
+#define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
+
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
@@ -168,7 +195,8 @@ enum esp32_board_id {
   ESP32_DEVKIT,
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
-  ESP32_TTGO_T_BEAM
+  ESP32_TTGO_T_BEAM,
+  ESP32_TTGO_T_WATCH
 };
 
 struct rst_info {
@@ -186,9 +214,10 @@ struct rst_info {
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
-#define  NMEA_TCP_SERVICE
-#define  USE_NMEALIB
+#define NMEA_TCP_SERVICE
+#define USE_NMEALIB
 //#define USE_AT6558_SETUP
+//#define USE_S7XG_DRIVER
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 

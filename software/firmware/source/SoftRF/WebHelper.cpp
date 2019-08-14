@@ -195,7 +195,8 @@ void handleSettings() {
 </tr>"),
     (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? legacy_proto_desc.name :
     (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ? uat978_proto_desc.name :
-     "UNK"))
+    (settings->rf_protocol == RF_PROTOCOL_FANET    ? fanet_proto_desc.name  :
+     "UNK")))
     );
   }
   len = strlen(offset);

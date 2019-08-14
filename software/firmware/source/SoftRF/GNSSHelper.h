@@ -31,7 +31,8 @@ enum
   GNSS_MODULE_U7,   /* Ublox 7 */
   GNSS_MODULE_U8,   /* Ublox 8 */
   GNSS_MODULE_U9,   /* reserved for Ublox 9 */
-  GNSS_MODULE_MAV   /* MAVLink */
+  GNSS_MODULE_MAV,  /* MAVLink */
+  GNSS_MODULE_S7XG  /* S7XG */
 };
 
 /*
