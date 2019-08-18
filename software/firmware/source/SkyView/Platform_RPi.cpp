@@ -91,7 +91,7 @@ hardware_info_t hw_info = {
 
 static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
-static sqlite3 *paw_db;
+static sqlite3 *icao_db;
 
 static void RPi_setup()
 {
@@ -175,11 +175,11 @@ static bool RPi_DB_init()
     return false;
   }
 
-  sqlite3_open("Aircrafts/paw.db", &paw_db);
+  sqlite3_open("Aircrafts/icao.db", &icao_db);
 
-  if (paw_db == NULL)
+  if (icao_db == NULL)
   {
-    printf("Failed to open PilotAware DB\n");
+    printf("Failed to open ICAO DB\n");
     sqlite3_close(fln_db);
     sqlite3_close(ogn_db);
     return false;
@@ -216,7 +216,7 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     db_key  = "devices";
     db      = ogn_db;
     break;
-  case DB_PAW:
+  case DB_ICAO:
     switch (settings->idpref)
     {
     case ID_TAIL:
@@ -231,7 +231,7 @@ static bool RPi_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
       break;
     }
     db_key  = "aircrafts";
-    db      = paw_db;
+    db      = icao_db;
     break;
   case DB_FLN:
   default:
@@ -299,8 +299,8 @@ static void RPi_DB_fini()
     sqlite3_close(ogn_db);
   }
 
-  if (paw_db != NULL) {
-    sqlite3_close(paw_db);
+  if (icao_db != NULL) {
+    sqlite3_close(icao_db);
   }
 }
 

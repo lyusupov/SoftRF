@@ -79,10 +79,9 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Adafruit Industries</th><td align=left>SSD1306 and GFX libraries</td></tr>\
 <tr><th align=left>Ryan David</th><td align=left>GDL90 decoder</td></tr>\
 <tr><th align=left>Arundale Ramanathan</th><td align=left>Sqlite3 Arduino library</td></tr>\
-<tr><th align=left>FlarmNet<br>GliderNet<br>PilotAware</th><td align=left>aircrafts data</td></tr>\
+<tr><th align=left>FlarmNet<br>GliderNet</th><td align=left>aircrafts data</td></tr>\
 <tr><th align=left>Shenzhen Xin Yuan<br>(LilyGO) ET company</th><td align=left>TTGO T5S V1.9 board</td></tr>\
 <tr><th align=left>Tuan Nha</th><td align=left>ESP32 I2S WAV player</td></tr>\
-<tr><th align=left>PilotAware Ltd</th><td align=left>voice files</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
 <tr><th align=left>Evandro Copercini and German Martin</th><td align=left>ESP32 BT SPP library</td></tr>\
@@ -338,7 +337,7 @@ void handleSettings() {
 <option %s value='%d'>auto</option>\
 <option %s value='%d'>FlarmNet</option>\
 <option %s value='%d'>GliderNet</option>\
-<option %s value='%d'>PilotAware</option>\
+<option %s value='%d'>ICAO</option>\
 </select>\
 </td>\
 </tr>\
@@ -366,7 +365,7 @@ void handleSettings() {
   (settings->adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
   (settings->adb == DB_FLN       ? "selected" : ""), DB_FLN,
   (settings->adb == DB_OGN       ? "selected" : ""), DB_OGN,
-  (settings->adb == DB_PAW       ? "selected" : ""), DB_PAW,
+  (settings->adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
   (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
   (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
   (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM

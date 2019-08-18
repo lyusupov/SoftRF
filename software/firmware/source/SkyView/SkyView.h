@@ -190,7 +190,7 @@ enum
 	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
-	DB_PAW
+	DB_ICAO
 };
 
 extern hardware_info_t hw_info;

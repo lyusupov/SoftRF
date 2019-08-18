@@ -19,10 +19,9 @@
  *   Adafruit GFX library is developed by Adafruit Industries
  *   GDL90 decoder is developed by Ryan David
  *   Sqlite3 Arduino library for ESP32 is developed by Arundale Ramanathan
- *   FLN/OGN/PAW aircrafts data is courtesy of FlarmNet/GliderNet/PilotAware
+ *   FLN/OGN aircrafts data is courtesy of FlarmNet/GliderNet
  *   Adafruit SSD1306 library is developed by Adafruit Industries
  *   ESP32 I2S WAV player example is developed by Tuan Nha
- *   PAW voice files are courtesy of PilotAware Ltd
  *   AceButton library is developed by Brian Park
  *   Flashrom library is part of the flashrom.org project
  *
