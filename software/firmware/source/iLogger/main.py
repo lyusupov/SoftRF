@@ -78,18 +78,6 @@ def do_connect():
             pass
     print('network config:', sta_if.ifconfig())
 
-def bmevalues():
-    t, p, h = bme.read_compensated_data()
-
-    p = p // 256
-    pi = p // 100
-    pd = p - pi * 100
-
-    hi = h // 1024
-    hd = h * 100 // 1024 - hi * 100
-
-    return "[{}] T={}C  ".format(time.strftime("%H:%M:%S",time.localtime()), t / 100) + "P={}.{:02d}hPa  ".format(pi, pd) + "H={}.{:02d}%".format(hi, hd)
-
 def bl_range(start, end, step):
     while start <= end:
         yield start
@@ -187,7 +175,7 @@ if GNSS_present:
     gps.startservice()
 
 if BME_present:
-    i2c1=machine.I2C(id=1, scl=machine.Pin(26),sda=machine.Pin(25),speed=400000)
+    i2c1=machine.I2C(id=1, scl=machine.Pin(I2C1_PIN_SCL),sda=machine.Pin(I2C1_PIN_SDA),speed=400000)
     bme=bme280.BME280(i2c=i2c1)
 
 # Waiting for valid GNSS fix
@@ -223,6 +211,11 @@ while True:
         if RTC_present:
           rtc.init((gnss_year, gnss_month, gnss_mday, gnss_hour, gnss_minutes, gnss_seconds))
 
+        if BME_present:
+          p_sensor = info['pressure']
+        else:
+          p_sensor = 'NA'
+
         igc_writer.write_headers({
             'manufacturer_code': info['manufacturer'],
             'logger_id': info['id'],
@@ -236,7 +229,7 @@ while True:
             'hardware_version': info['version']['hardware'],
             'logger_type': info['type'],
             'gps_receiver': info['gps'],
-            'pressure_sensor': info['pressure'],
+            'pressure_sensor': p_sensor,
             'competition_id': info['competition']['id'],
             'competition_class': info['competition']['_class'],
         })
@@ -282,7 +275,7 @@ while True:
 
         if BME_present:
           t, p, h = bme.read_compensated_data()
-          baro_alt = pressure_altitude(p)
+          baro_alt = pressure_altitude(float(p) / 25600)
         else:
           baro_alt = 0
 
@@ -297,8 +290,6 @@ while True:
 
     else:
       break
-    #if BME_present:
-    #  print(bmevalues())
 
     sleep(INTERVAL)
 
