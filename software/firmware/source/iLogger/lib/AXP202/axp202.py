@@ -26,10 +26,7 @@ Created by Lewis he on June 24, 2019.
 github:https://github.com/lewisxhe/AXP202X_Libraries
 '''
 
-
-import gc
 from machine import Pin, I2C
-import micropython
 from ustruct import unpack
 
 from AXP202.constants import *

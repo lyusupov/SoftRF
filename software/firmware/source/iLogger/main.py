@@ -17,14 +17,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import network
-import datetime
-import machine, display, time
-import bme280
-import uos
-import errno
-
 INTERVAL     = const(1)
 
 I2C0_PIN_SCL = const(22)
@@ -60,14 +52,81 @@ ICON_REC       = 'icons/rec.jpg'
 ICON_OFF       = 'icons/off.jpg'
 ICON_LOWBAT    = 'icons/lowbat.jpg'
 
+from machine import I2C, Pin, PWM
+from display import TFT
+from time    import sleep, sleep_ms
+
+from AXP202   import axp202
+from AXP202.constants     import AXP202_SLAVE_ADDRESS
+
+i2c0=I2C(id=0, scl=Pin(I2C0_PIN_SCL),sda=Pin(I2C0_PIN_SDA),speed=400000)
+if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
+    AXP202_present = True
+    TFT_present    = True
+    RTC_present    = True
+
+i2c0.deinit()
+
+def bl_range(start, end, step):
+    while start <= end:
+        yield start
+        start += step
+
+if AXP202_present:
+    a = axp202.PMU()
+    a.setChgLEDMode(axp202.AXP20X_LED_BLINK_1HZ)
+    # power-up TFT
+    a.enablePower(axp202.AXP202_LDO2)
+    a.setLDO2Voltage(3300)
+    # power-up GNSS
+    a.setLDO3Mode(1)
+    a.enablePower(axp202.AXP202_LDO3)
+    a.setLDO3Voltage(3300)
+
+if TFT_present:
+    pwm = PWM(TFT_PIN_BL, freq=12000, duty=0)
+
+    tft = TFT()
+    tft.init(
+      tft.ST7789, miso=TFT_PIN_MISO, mosi=TFT_PIN_MOSI,
+      clk=TFT_PIN_CLK, cs=TFT_PIN_SS, dc=TFT_PIN_DC,
+      rot=tft.PORTRAIT_FLIP, color_bits=tft.COLOR_BITS16,
+      splash=False, height=240
+    )
+
+    tft.tft_writecmd(ST7789_INVON)
+
+    tft.clear(tft.NAVY)
+
+    tft.image(0, 0, ICON_LOGO)
+    width, height = tft.screensize()
+    tft.rect(1, 1, width-1, height-1, tft.WHITE)
+
+    for level in bl_range(0, 100, 10):        
+      # print("level = ", level)
+      pwm.duty(level)
+      sleep_ms(100)
+
+    # tft.font(tft.FONT_Tooney, rotate=0)
+    # tft.text(tft.CENTER, tft.CENTER, "SoftRF", tft.WHITE, transparent=True)
+    sleep(3)
+
+from sys import stdout
+import network
+import datetime
+
+import bme280
+import uos
+import errno
+
 from settings import info
 from settings import wifi
-from AXP202   import axp202
-from time     import sleep
+
+from machine  import RTC, UART, GPS
 from bme280   import BME280_I2CADDR
 from aerofiles.igc.writer import Writer
 from AXP202.constants     import AXP202_SLAVE_ADDRESS
- 
+
 def do_connect():
     sta_if = network.WLAN(network.STA_IF)
     if not sta_if.isconnected():
@@ -78,24 +137,12 @@ def do_connect():
             pass
     print('network config:', sta_if.ifconfig())
 
-def bl_range(start, end, step):
-    while start <= end:
-        yield start
-        start += step
 
 def pressure_altitude(pressure, qnh=1013.25):
     altitude = 44330.0 * (1.0 - pow(pressure / qnh, (1.0 / 5.255)))
     return altitude
 
-i2c0=machine.I2C(id=0, scl=machine.Pin(I2C0_PIN_SCL),sda=machine.Pin(I2C0_PIN_SDA),speed=400000)
-if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
-    AXP202_present = True
-    TFT_present    = True
-    RTC_present    = True
-
-i2c0.deinit()
-
-i2c1=machine.I2C(id=1, scl=machine.Pin(I2C1_PIN_SCL),sda=machine.Pin(I2C1_PIN_SDA),speed=400000)
+i2c1=I2C(id=1, scl=Pin(I2C1_PIN_SCL),sda=Pin(I2C1_PIN_SDA),speed=400000)
 if i2c1.is_ready(BME280_I2CADDR):
     BME_present = True
 
@@ -118,46 +165,7 @@ if SD_present:
 # with open('/sd/sample.igc', 'w') as fp:
 # igc_writer = Writer(fp)
 
-igc_writer = Writer(sys.stdout)
-
-if AXP202_present:
-    a = axp202.PMU()
-    a.setChgLEDMode(axp202.AXP20X_LED_BLINK_1HZ)
-    # power-up TFT
-    a.enablePower(axp202.AXP202_LDO2)
-    a.setLDO2Voltage(3300)
-    # power-up GNSS
-    a.setLDO3Mode(1)
-    a.enablePower(axp202.AXP202_LDO3)
-    a.setLDO3Voltage(3300)
-
-if TFT_present:
-    pwm = machine.PWM(TFT_PIN_BL, freq=12000, duty=0)
-
-    tft = display.TFT()
-    tft.init(
-      tft.ST7789, miso=TFT_PIN_MISO, mosi=TFT_PIN_MOSI,
-      clk=TFT_PIN_CLK, cs=TFT_PIN_SS, dc=TFT_PIN_DC,
-      rot=tft.PORTRAIT_FLIP, color_bits=tft.COLOR_BITS16,
-      splash=False, height=240
-    )
-
-    tft.tft_writecmd(ST7789_INVON)
-
-    tft.clear(tft.NAVY)
-
-    tft.image(0, 0, ICON_LOGO)
-    width, height = tft.screensize()
-    tft.rect(1, 1, width-1, height-1, tft.WHITE)
-
-    for level in bl_range(0, 100, 10):        
-      # print("level = ", level)
-      pwm.duty(level)
-      time.sleep_ms(100)
-
-    # tft.font(tft.FONT_Tooney, rotate=0)
-    # tft.text(tft.CENTER, tft.CENTER, "SoftRF", tft.WHITE, transparent=True)
-    sleep(3)
+igc_writer = Writer(stdout)
 
 if wifi['ssid'] != '':
     WiFi_active = True
@@ -165,17 +173,17 @@ if wifi['ssid'] != '':
     network.ftp.start()
 
 if RTC_present:
-    rtc  = machine.RTC()
+    rtc  = RTC()
     # print("RTC = ", rtc.now())
 
-uart = machine.UART(1, tx=GNSS_PIN_TX, rx=GNSS_PIN_RX, timeout=1000,  buffer_size=256, baudrate=9600)
+uart = UART(1, tx=GNSS_PIN_TX, rx=GNSS_PIN_RX, timeout=1000,  buffer_size=256, baudrate=9600)
 
 if GNSS_present:
-    gps  = machine.GPS(uart)
+    gps  = GPS(uart)
     gps.startservice()
 
 if BME_present:
-    i2c1=machine.I2C(id=1, scl=machine.Pin(I2C1_PIN_SCL),sda=machine.Pin(I2C1_PIN_SDA),speed=400000)
+    i2c1=I2C(id=1, scl=Pin(I2C1_PIN_SCL),sda=Pin(I2C1_PIN_SDA),speed=400000)
     bme=bme280.BME280(i2c=i2c1)
 
 # Waiting for valid GNSS fix
