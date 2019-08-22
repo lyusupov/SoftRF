@@ -52,6 +52,12 @@ Power_Button   = False
 Battery_Low    = False
 Backlight      = False
 
+DebugMode      = True
+
+SDFolder       = '/sd'
+LogFolder      = '/Flights'
+IGCSUFFIX      = '.IGC'
+
 ICON_LOGO      = 'icons/logo.bmp'
 ICON_NOSD      = 'icons/nosd.jpg'
 ICON_NOFIX     = 'icons/nofix.jpg'
@@ -202,25 +208,6 @@ if i2c1.is_ready(BME280_I2CADDR):
 
 i2c1.deinit()
 
-uos.sdconfig(uos.SDMODE_1LINE)
-SD_present = True
-try:
-  uos.mountsd()
-except OSError as e:
-  if e.args[0] == errno.EIO:
-    SD_present = False
-  pass
-
-# SD is temporary not in use yet
-if SD_present:
-    uos.umountsd()
-    SD_present = False
-
-# with open('/sd/sample.igc', 'w') as fp:
-# igc_writer = Writer(fp)
-
-igc_writer = Writer(stdout)
-
 if wifi['ssid'] != '':
     WiFi_active = True
     do_connect()
@@ -251,9 +238,40 @@ if TFT_present and GNSS_present:
       width, height = tft.screensize()
       tft.rect(1, 1, width-1, height-1, tft.WHITE)
 
-# Waiting for valid GNSS fix
-print("")
-print("Waiting for very first valid GNSS fix...", end = '')
+uos.sdconfig(uos.SDMODE_1LINE)
+SD_present = True
+try:
+  uos.mountsd()
+except OSError as e:
+  if e.args[0] == errno.EIO:
+    SD_present = False
+  pass
+
+if not SD_present:
+    if TFT_present:
+        bl_timer.reshoot()
+        tft.image(0, 0, ICON_NOSD)
+        width, height = tft.screensize()
+        tft.rect(1, 1, width-1, height-1, tft.WHITE)
+        if not Backlight:
+          Backlight = True
+          backlight(Backlight)
+        sleep(5)
+    Power_Button = True
+else:
+    dirname = SDFolder + LogFolder
+    try:
+      uos.stat(dirname)
+    except OSError as e:
+      if e.args[0] == errno.ENOENT:
+        uos.mkdir(dirname)
+      pass
+
+    # Waiting for valid GNSS fix
+    print("")
+    print("Waiting for very first valid GNSS fix...", end = '')
+
+Serial_writer = Writer(stdout)
 
 while True:
     if Power_Button:
@@ -290,23 +308,58 @@ while True:
         else:
           p_sensor = 'NA'
 
-        igc_writer.write_headers({
-            'manufacturer_code': info['manufacturer'],
-            'logger_id': info['id'],
-            'date': datetime.date(gnss_year, gnss_month, gnss_mday),
-            'fix_accuracy': 50,
-            'pilot': info['pilot'],
-            'copilot': info['copilot'],
-            'glider_type': info['glider']['type'],
-            'glider_id': info['glider']['id'],
-            'firmware_version': info['version']['firmware'],
-            'hardware_version': info['version']['hardware'],
-            'logger_type': info['type'],
-            'gps_receiver': info['gps'],
-            'pressure_sensor': p_sensor,
-            'competition_id': info['competition']['id'],
-            'competition_class': info['competition']['_class'],
-        })
+        if DebugMode:
+          Serial_writer.write_headers({
+              'manufacturer_code': info['manufacturer'],
+              'logger_id': info['id'],
+              'date': datetime.date(gnss_year, gnss_month, gnss_mday),
+              'fix_accuracy': 50,
+              'pilot': info['pilot'],
+              'copilot': info['copilot'],
+              'glider_type': info['glider']['type'],
+              'glider_id': info['glider']['id'],
+              'firmware_version': info['version']['firmware'],
+              'hardware_version': info['version']['hardware'],
+              'logger_type': info['type'],
+              'gps_receiver': info['gps'],
+              'pressure_sensor': p_sensor,
+              'competition_id': info['competition']['id'],
+              'competition_class': info['competition']['_class'],
+          })
+
+        pre_filename  = SDFolder + LogFolder + '/'
+        pre_filename += str(gnss_year) + '-' + str(gnss_month) + '-' + str(gnss_mday)
+        pre_filename += '-' + info['manufacturer'] + '-' + info['id'] + '-'
+        for n in list(range(1, 100, 1)):
+          file = pre_filename + "%02d" % n + IGCSUFFIX
+          try:
+            uos.stat(file)
+          except OSError as e:
+            if e.args[0] == errno.ENOENT:
+              break
+            pass
+        # print("File = ", file)
+
+        with open(file, 'w') as fp:
+          SD_writer = Writer(fp)
+          SD_writer.write_headers({
+              'manufacturer_code': info['manufacturer'],
+              'logger_id': info['id'],
+              'date': datetime.date(gnss_year, gnss_month, gnss_mday),
+              'fix_accuracy': 50,
+              'pilot': info['pilot'],
+              'copilot': info['copilot'],
+              'glider_type': info['glider']['type'],
+              'glider_id': info['glider']['id'],
+              'firmware_version': info['version']['firmware'],
+              'hardware_version': info['version']['hardware'],
+              'logger_type': info['type'],
+              'gps_receiver': info['gps'],
+              'pressure_sensor': p_sensor,
+              'competition_id': info['competition']['id'],
+              'competition_class': info['competition']['_class'],
+          })
+
         break
     else:
       break
@@ -360,14 +413,26 @@ while True:
         else:
           baro_alt = 0
 
-        igc_writer.write_fix(
-            datetime.time(gnss_hour, gnss_minutes, gnss_seconds),
-            latitude     = gnss_lat,
-            longitude    = gnss_lon,
-            valid        = True,
-            pressure_alt = baro_alt,
-            gps_alt      = gnss_alt,
-        )
+        if DebugMode:
+          Serial_writer.write_fix(
+              datetime.time(gnss_hour, gnss_minutes, gnss_seconds),
+              latitude     = gnss_lat,
+              longitude    = gnss_lon,
+              valid        = True,
+              pressure_alt = baro_alt,
+              gps_alt      = gnss_alt,
+          )
+
+        with open(file, 'a') as fp:
+          SD_writer = Writer(fp)
+          SD_writer.write_fix(
+              datetime.time(gnss_hour, gnss_minutes, gnss_seconds),
+              latitude     = gnss_lat,
+              longitude    = gnss_lon,
+              valid        = True,
+              pressure_alt = baro_alt,
+              gps_alt      = gnss_alt,
+          )
 
         if TFT_present:
             if flip:
@@ -382,6 +447,7 @@ while True:
     sleep(INTERVAL)
 
 if SD_present:
+    # uos.sync()
     uos.umountsd()
 
 if TFT_present:
