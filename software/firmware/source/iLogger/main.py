@@ -18,11 +18,15 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 INTERVAL     = const(1)
+BL_OFF_TIME  = const(30000)
 
 I2C0_PIN_SCL = const(22)
 I2C0_PIN_SDA = const(21)
 I2C1_PIN_SCL = const(26)
 I2C1_PIN_SDA = const(25)
+
+PMU_PIN_IRQ  = const(35)
+BUTTON_PIN   = const(36)
 
 GNSS_PIN_RX  = const(34)
 GNSS_PIN_TX  = const(33)
@@ -44,20 +48,26 @@ SD_present     = False
 RTC_present    = False
 
 WiFi_active    = False
+Power_Button   = False
+Battery_Low    = False
+Backlight      = False
 
-ICON_LOGO      = 'icons/logo.jpg'
+ICON_LOGO      = 'icons/logo.bmp'
 ICON_NOSD      = 'icons/nosd.jpg'
 ICON_NOFIX     = 'icons/nofix.jpg'
-ICON_REC       = 'icons/rec.jpg'
+ICON_REC1      = 'icons/rec1.bmp'
+ICON_REC2      = 'icons/rec2.bmp'
 ICON_OFF       = 'icons/off.jpg'
 ICON_LOWBAT    = 'icons/lowbat.jpg'
 
-from machine import I2C, Pin, PWM
+from machine import I2C, Pin, PWM, Timer
 from display import TFT
 from time    import sleep, sleep_ms
 
-from AXP202   import axp202
-from AXP202.constants     import AXP202_SLAVE_ADDRESS
+from AXP202.axp202    import PMU
+from AXP202.constants import AXP202_SLAVE_ADDRESS, AXP202_PEK_SHORTPRESS_IRQ
+from AXP202.constants import AXP20X_LED_OFF, AXP202_LDO2
+from AXP202.constants import AXP202_LDO3, AXP202_ADC1, AXP202_BATT_VOL_ADC1
 
 i2c0=I2C(id=0, scl=Pin(I2C0_PIN_SCL),sda=Pin(I2C0_PIN_SDA),speed=400000)
 if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
@@ -67,21 +77,62 @@ if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
 
 i2c0.deinit()
 
-def bl_range(start, end, step):
-    while start <= end:
-        yield start
-        start += step
+def backlight(bl):
+    if bl:
+      bl_range = list(range(10, 101, 10))
+    else:
+      bl_range = list(range(90, -1, -10))
+    for level in bl_range:
+      # print("level = ", level)
+      pwm.duty(level)
+      sleep_ms(100)
+
+def power_button_handler(pin):
+    global Power_Button, a, bl_timer, Backlight
+    if pin.irqvalue() == 0:
+      if Backlight:
+        Power_Button = True
+      else:
+        a.clearIRQ()
+        bl_timer.reshoot()
+        Backlight = True
+        backlight(Backlight)
+
+#def user_button_handler(pin):
+#    global Backlight, bl_timer
+#    if pin.irqvalue() == 0 and TFT_present:
+#      if not Backlight:
+#        bl_timer.reshoot()
+#      Backlight = not Backlight
+#      backlight(Backlight)
+
+def bl_timer_cb(timer):
+    global Backlight
+    # print(timer)
+    if Backlight:
+      Backlight = False
+      backlight(Backlight)
 
 if AXP202_present:
-    a = axp202.PMU()
-    a.setChgLEDMode(axp202.AXP20X_LED_BLINK_1HZ)
+    a = PMU()
+    a.disableIRQ(AXP202_PEK_SHORTPRESS_IRQ)
+    a.clearIRQ()
+    a.setChgLEDMode(AXP20X_LED_OFF)
     # power-up TFT
-    a.enablePower(axp202.AXP202_LDO2)
+    a.enablePower(AXP202_LDO2)
     a.setLDO2Voltage(3300)
     # power-up GNSS
     a.setLDO3Mode(1)
-    a.enablePower(axp202.AXP202_LDO3)
+    a.enablePower(AXP202_LDO3)
     a.setLDO3Voltage(3300)
+    pmu_pin = Pin(
+      PMU_PIN_IRQ, Pin.IN, trigger=Pin.IRQ_FALLING, handler=power_button_handler
+    )
+    #user_button = Pin(
+    #  BUTTON_PIN, Pin.IN, trigger=Pin.IRQ_FALLING, handler=user_button_handler
+    #)
+    a.enableADC(AXP202_ADC1, AXP202_BATT_VOL_ADC1)
+    a.enableIRQ(AXP202_PEK_SHORTPRESS_IRQ)
 
 if TFT_present:
     pwm = PWM(TFT_PIN_BL, freq=12000, duty=0)
@@ -102,14 +153,15 @@ if TFT_present:
     width, height = tft.screensize()
     tft.rect(1, 1, width-1, height-1, tft.WHITE)
 
-    for level in bl_range(0, 100, 10):        
-      # print("level = ", level)
-      pwm.duty(level)
-      sleep_ms(100)
+    Backlight = True
+    backlight(Backlight)
+
+    bl_timer = Timer(2)
+    bl_timer.init(period=BL_OFF_TIME, mode=bl_timer.ONE_SHOT, callback=bl_timer_cb)
 
     # tft.font(tft.FONT_Tooney, rotate=0)
     # tft.text(tft.CENTER, tft.CENTER, "SoftRF", tft.WHITE, transparent=True)
-    sleep(3)
+    # sleep(3)
 
 from sys import stdout
 import network
@@ -122,10 +174,12 @@ import errno
 from settings import info
 from settings import wifi
 
-from machine  import RTC, UART, GPS
+from machine  import RTC, UART, GPS, deepsleep
 from bme280   import BME280_I2CADDR
 from aerofiles.igc.writer import Writer
 from AXP202.constants     import AXP202_SLAVE_ADDRESS
+
+BATTERY_CUTOFF_LIPO = 3.2
 
 def do_connect():
     sta_if = network.WLAN(network.STA_IF)
@@ -186,36 +240,48 @@ if BME_present:
     i2c1=I2C(id=1, scl=Pin(I2C1_PIN_SCL),sda=Pin(I2C1_PIN_SDA),speed=400000)
     bme=bme280.BME280(i2c=i2c1)
 
+if TFT_present and GNSS_present:
+    # wait for some NMEA data to enter into GPS buffer
+    sleep_ms(1500)
+
+    gnss_data = gps.getdata()
+    gnss_quality = gnss_data[5]
+    if gnss_quality == 0:
+      tft.image(0, 0, ICON_NOFIX)
+      width, height = tft.screensize()
+      tft.rect(1, 1, width-1, height-1, tft.WHITE)
+
 # Waiting for valid GNSS fix
-if TFT_present:
-    tft.image(0, 0, ICON_NOFIX)
-    width, height = tft.screensize()
-    tft.rect(1, 1, width-1, height-1, tft.WHITE)
+print("")
+print("Waiting for very first valid GNSS fix...", end = '')
 
 while True:
+    if Power_Button:
+      break
+
+    if AXP202_present:
+      voltage = a.getBattVoltage() / 1000
+      if voltage < BATTERY_CUTOFF_LIPO:
+        Battery_Low = True
+        break
+
     if GNSS_present:
       gnss_data = gps.getdata()
 
-      gnss_year    = gnss_data[0][0]
-      gnss_month   = gnss_data[0][1]
-      gnss_mday    = gnss_data[0][2]
-      gnss_hour    = gnss_data[0][3]
-      gnss_minutes = gnss_data[0][4]
-      gnss_seconds = gnss_data[0][5]
-
-      gnss_lat     = gnss_data[1]
-      gnss_lon     = gnss_data[2]
-      gnss_alt     = gnss_data[3]
-    
-      gnss_nsats   = gnss_data[4]
       gnss_quality = gnss_data[5]
 
-      gnss_speed   = gnss_data[6]
-      gnss_course  = gnss_data[7]
-
-      gnss_dop     = gnss_data[8]
-
       if gnss_quality > 0:
+
+        print(" done")
+        print("")
+
+        gnss_year    = gnss_data[0][0]
+        gnss_month   = gnss_data[0][1]
+        gnss_mday    = gnss_data[0][2]
+        gnss_hour    = gnss_data[0][3]
+        gnss_minutes = gnss_data[0][4]
+        gnss_seconds = gnss_data[0][5]
+
         if RTC_present:
           rtc.init((gnss_year, gnss_month, gnss_mday, gnss_hour, gnss_minutes, gnss_seconds))
 
@@ -247,39 +313,46 @@ while True:
     #str = gps.read()
     #if str != '':
     #  print(str, end = '')
-    print("Waiting for very first valid GNSS fix...")
+    print(".", end = '')
     sleep(1)
 
 # Make periodic position reports
-if TFT_present:
-    tft.image(0, 0, ICON_REC)
-    width, height = tft.screensize()
-    tft.rect(1, 1, width-1, height-1, tft.WHITE)
-
+flip = True
 while True:
+
+    if Power_Button or Battery_Low:
+      break
+
+    if AXP202_present:
+      voltage = a.getBattVoltage() / 1000
+      # print(voltage)
+      if voltage < BATTERY_CUTOFF_LIPO:
+        Battery_Low = True
+        break
+
     if GNSS_present:
       gnss_data = gps.getdata()
 
-      gnss_year    = gnss_data[0][0]
-      gnss_month   = gnss_data[0][1]
-      gnss_mday    = gnss_data[0][2]
-      gnss_hour    = gnss_data[0][3]
-      gnss_minutes = gnss_data[0][4]
-      gnss_seconds = gnss_data[0][5]
-
-      gnss_lat     = gnss_data[1]
-      gnss_lon     = gnss_data[2]
-      gnss_alt     = gnss_data[3]
-    
-      gnss_nsats   = gnss_data[4]
       gnss_quality = gnss_data[5]
 
-      gnss_speed   = gnss_data[6]
-      gnss_course  = gnss_data[7]
-
-      gnss_dop     = gnss_data[8]
-
       if gnss_quality > 0:
+
+        gnss_year    = gnss_data[0][0]
+        gnss_month   = gnss_data[0][1]
+        gnss_mday    = gnss_data[0][2]
+        gnss_hour    = gnss_data[0][3]
+        gnss_minutes = gnss_data[0][4]
+        gnss_seconds = gnss_data[0][5]
+
+        gnss_lat     = gnss_data[1]
+        gnss_lon     = gnss_data[2]
+        gnss_alt     = gnss_data[3]
+
+        gnss_speed   = gnss_data[6]
+        gnss_course  = gnss_data[7]
+
+        gnss_nsats   = gnss_data[4]
+        gnss_dop     = gnss_data[8]
 
         if BME_present:
           t, p, h = bme.read_compensated_data()
@@ -296,21 +369,36 @@ while True:
             gps_alt      = gnss_alt,
         )
 
+        if TFT_present:
+            if flip:
+              recfile = ICON_REC1
+            else:
+              recfile = ICON_REC2
+            flip = not flip
+            tft.image(0, 0, recfile)
     else:
       break
 
     sleep(INTERVAL)
 
-if TFT_present:
-    tft.image(0, 0, ICON_OFF)
-    width, height = tft.screensize()
-    tft.rect(1, 1, width-1, height-1, tft.WHITE)
-    sleep(5)
-    tft.clear()
-    tft.deinit()
-
 if SD_present:
     uos.umountsd()
+
+if TFT_present:
+    bl_timer.deinit()
+    if Battery_Low:
+      offname = ICON_LOWBAT
+    else:
+      offname = ICON_OFF
+    tft.image(0, 0, offname)
+    width, height = tft.screensize()
+    tft.rect(1, 1, width-1, height-1, tft.WHITE)
+    if not Backlight:
+      backlight(True)
+    sleep(2)
+    backlight(False)
+    tft.clear()
+    tft.deinit()
 
 if WiFi_active:
     sta_if = network.WLAN(network.STA_IF)
@@ -318,3 +406,16 @@ if WiFi_active:
       network.ftp.stop()
       sta_if.disconnect()
     sta_if.active(False)
+
+if AXP202_present:
+    a.clearIRQ()
+    # power-down TFT
+    a.disablePower(AXP202_LDO2)
+    # power-down GNSS
+    a.disablePower(AXP202_LDO3)
+    sleep_ms(20);
+
+if RTC_present:
+    rtc.wake_on_ext0(PMU_PIN_IRQ, 0)
+
+deepsleep()

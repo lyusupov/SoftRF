@@ -36,7 +36,6 @@ default_pin_sda = 21
 default_pin_intr = 35
 default_chip_type = AXP202_CHIP_ID
 
-
 class PMU(object):
     def __init__(self, scl=None, sda=None,
                  intr=None, address=None):
@@ -57,12 +56,12 @@ class PMU(object):
         self.init_device()
 
     def init_i2c(self):
-        print('* initializing i2c')
+        # print('* initializing i2c')
         self.bus = I2C(scl=self.pin_scl,
                        sda=self.pin_sda)
 
     def init_pins(self):
-        print('* initializing pins')
+        # print('* initializing pins')
         self.pin_sda = Pin(self.sda)
         self.pin_scl = Pin(self.scl)
         self.pin_intr = Pin(self.intr, mode=Pin.IN)
@@ -84,7 +83,7 @@ class PMU(object):
         return unpack('>h', self.wordbuf)[0]
 
     def init_device(self):
-        print('* initializing mpu')
+        # print('* initializing pmu')
         self.chip = self.read_byte(AXP202_IC_TYPE)
         if(self.chip == AXP202_CHIP_ID):
             print("Detect PMU Type is AXP202")
