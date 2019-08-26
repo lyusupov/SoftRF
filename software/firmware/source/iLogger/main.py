@@ -20,6 +20,13 @@
 INTERVAL     = const(1)
 BL_OFF_TIME  = const(30000)
 
+MF_CODE      = 'XSR'
+FR_FW_ID     = '0.9'
+RF_HW_ID     = '1.0'
+FR_TYPE      = 'SOFTRF,LOGGER'
+FR_GPS       = 'uBLOX NEO-M8N'
+FR_PRESSURE  = 'BMP280'
+
 I2C0_PIN_SCL = const(22)
 I2C0_PIN_SDA = const(21)
 I2C1_PIN_SCL = const(26)
@@ -42,29 +49,31 @@ ST7789_INVON = const(0x21)
 
 AXP202_present = False
 TFT_present    = False
-GNSS_present   = True
 BME_present    = False
 SD_present     = False
-RTC_present    = False
+GNSS_present   = True
+RTC_present    = True
 
 WiFi_active    = False
 Power_Button   = False
 Battery_Low    = False
 Backlight      = False
 
-DebugMode      = True
+DebugMode      = False
 
 SDFolder       = '/sd'
 LogFolder      = '/Flights'
 IGCSUFFIX      = '.IGC'
 
-ICON_LOGO      = 'icons/logo.bmp'
-ICON_NOSD      = 'icons/nosd.jpg'
-ICON_NOFIX     = 'icons/nofix.jpg'
-ICON_REC1      = 'icons/rec1.bmp'
-ICON_REC2      = 'icons/rec2.bmp'
-ICON_OFF       = 'icons/off.jpg'
-ICON_LOWBAT    = 'icons/lowbat.jpg'
+SETTINGS       = 'settings.py'
+
+ICON_LOGO      = '/flash/icons/logo.bmp'
+ICON_NOSD      = '/flash/icons/nosd.jpg'
+ICON_NOFIX     = '/flash/icons/nofix.jpg'
+ICON_REC1      = '/flash/icons/rec1.bmp'
+ICON_REC2      = '/flash/icons/rec2.bmp'
+ICON_OFF       = '/flash/icons/off.jpg'
+ICON_LOWBAT    = '/flash/icons/lowbat.jpg'
 
 from machine import I2C, Pin, PWM, Timer
 from display import TFT
@@ -79,7 +88,8 @@ i2c0=I2C(id=0, scl=Pin(I2C0_PIN_SCL),sda=Pin(I2C0_PIN_SDA),speed=400000)
 if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
     AXP202_present = True
     TFT_present    = True
-    RTC_present    = True
+else:
+    print("No AXP202 PMU detected")
 
 i2c0.deinit()
 
@@ -168,8 +178,10 @@ if TFT_present:
     # tft.font(tft.FONT_Tooney, rotate=0)
     # tft.text(tft.CENTER, tft.CENTER, "SoftRF", tft.WHITE, transparent=True)
     # sleep(3)
+else:
+    print("No TFT")
 
-from sys import stdout
+from sys import path, stdout
 import network
 import datetime
 
@@ -177,10 +189,7 @@ import bme280
 import uos
 import errno
 
-from settings import info
-from settings import wifi
-
-from machine  import RTC, UART, GPS, deepsleep
+from machine  import RTC, UART, GPS, deepsleep, unique_id
 from bme280   import BME280_I2CADDR
 from aerofiles.igc.writer import Writer
 from AXP202.constants     import AXP202_SLAVE_ADDRESS
@@ -208,14 +217,11 @@ if i2c1.is_ready(BME280_I2CADDR):
 
 i2c1.deinit()
 
-if wifi['ssid'] != '':
-    WiFi_active = True
-    do_connect()
-    network.ftp.start()
-
 if RTC_present:
     rtc  = RTC()
     # print("RTC = ", rtc.now())
+else:
+    print("No RTC")
 
 uart = UART(1, tx=GNSS_PIN_TX, rx=GNSS_PIN_RX, timeout=1000,  buffer_size=256, baudrate=9600)
 
@@ -226,17 +232,8 @@ if GNSS_present:
 if BME_present:
     i2c1=I2C(id=1, scl=Pin(I2C1_PIN_SCL),sda=Pin(I2C1_PIN_SDA),speed=400000)
     bme=bme280.BME280(i2c=i2c1)
-
-if TFT_present and GNSS_present:
-    # wait for some NMEA data to enter into GPS buffer
-    sleep_ms(1500)
-
-    gnss_data = gps.getdata()
-    gnss_quality = gnss_data[5]
-    if gnss_quality == 0:
-      tft.image(0, 0, ICON_NOFIX)
-      width, height = tft.screensize()
-      tft.rect(1, 1, width-1, height-1, tft.WHITE)
+else:
+    print("No BMx280 sensor")
 
 uos.sdconfig(uos.SDMODE_1LINE)
 SD_present = True
@@ -247,7 +244,46 @@ except OSError as e:
     SD_present = False
   pass
 
+DefaultSettings = True
+if SD_present:
+    DefaultSettings = False
+    settings_file = SDFolder + '/' + SETTINGS
+    try:
+      uos.stat(settings_file)
+    except OSError as e:
+      if e.args[0] == errno.ENOENT:
+        DefaultSettings = True
+      pass
+
+if not DefaultSettings:
+    path[0] = SDFolder
+    uos.chdir(SDFolder)
+else:
+    print("No settings found on SD card. Loading defaults...")
+
+from settings import wifi
+
+if wifi['ssid'] != '':
+    WiFi_active = True
+    do_connect()
+    network.ftp.start()
+else:
+    print("No WiFi")
+
+if TFT_present and GNSS_present and SD_present:
+    # wait for some NMEA data to enter into GPS buffer
+    sleep_ms(1500)
+
+    gnss_data = gps.getdata()
+    gnss_quality = gnss_data[5]
+    if gnss_quality == 0:
+      bl_timer.reshoot()
+      tft.image(0, 0, ICON_NOFIX)
+      width, height = tft.screensize()
+      tft.rect(1, 1, width-1, height-1, tft.WHITE)
+
 if not SD_present:
+    print("No SD card")
     if TFT_present:
         bl_timer.reshoot()
         tft.image(0, 0, ICON_NOSD)
@@ -272,6 +308,12 @@ else:
     print("Waiting for very first valid GNSS fix...", end = '')
 
 Serial_writer = Writer(stdout)
+
+uid_raw = unique_id()
+uid = "%03X" % (((uid_raw[4] & 0xf) << 8) | uid_raw[5])
+
+from settings import info
+from settings import DebugMode
 
 while True:
     if Power_Button:
@@ -304,24 +346,25 @@ while True:
           rtc.init((gnss_year, gnss_month, gnss_mday, gnss_hour, gnss_minutes, gnss_seconds))
 
         if BME_present:
-          p_sensor = info['pressure']
+          p_sensor = FR_PRESSURE
+          prev_p = 0
         else:
           p_sensor = 'NA'
 
         if DebugMode:
           Serial_writer.write_headers({
-              'manufacturer_code': info['manufacturer'],
-              'logger_id': info['id'],
+              'manufacturer_code': MF_CODE,
+              'logger_id': uid,
               'date': datetime.date(gnss_year, gnss_month, gnss_mday),
               'fix_accuracy': 50,
               'pilot': info['pilot'],
               'copilot': info['copilot'],
               'glider_type': info['glider']['type'],
               'glider_id': info['glider']['id'],
-              'firmware_version': info['version']['firmware'],
-              'hardware_version': info['version']['hardware'],
-              'logger_type': info['type'],
-              'gps_receiver': info['gps'],
+              'firmware_version': FR_FW_ID,
+              'hardware_version': RF_HW_ID,
+              'logger_type': FR_TYPE,
+              'gps_receiver': FR_GPS,
               'pressure_sensor': p_sensor,
               'competition_id': info['competition']['id'],
               'competition_class': info['competition']['_class'],
@@ -329,7 +372,7 @@ while True:
 
         pre_filename  = SDFolder + LogFolder + '/'
         pre_filename += str(gnss_year) + '-' + str(gnss_month) + '-' + str(gnss_mday)
-        pre_filename += '-' + info['manufacturer'] + '-' + info['id'] + '-'
+        pre_filename += '-' + MF_CODE + '-' + uid + '-'
         for n in list(range(1, 100, 1)):
           file = pre_filename + "%02d" % n + IGCSUFFIX
           try:
@@ -340,25 +383,26 @@ while True:
             pass
         # print("File = ", file)
 
-        with open(file, 'w') as fp:
-          SD_writer = Writer(fp)
-          SD_writer.write_headers({
-              'manufacturer_code': info['manufacturer'],
-              'logger_id': info['id'],
-              'date': datetime.date(gnss_year, gnss_month, gnss_mday),
-              'fix_accuracy': 50,
-              'pilot': info['pilot'],
-              'copilot': info['copilot'],
-              'glider_type': info['glider']['type'],
-              'glider_id': info['glider']['id'],
-              'firmware_version': info['version']['firmware'],
-              'hardware_version': info['version']['hardware'],
-              'logger_type': info['type'],
-              'gps_receiver': info['gps'],
-              'pressure_sensor': p_sensor,
-              'competition_id': info['competition']['id'],
-              'competition_class': info['competition']['_class'],
-          })
+        if not DebugMode:
+          with open(file, 'w') as fp:
+            SD_writer = Writer(fp)
+            SD_writer.write_headers({
+                'manufacturer_code': MF_CODE,
+                'logger_id': uid,
+                'date': datetime.date(gnss_year, gnss_month, gnss_mday),
+                'fix_accuracy': 50,
+                'pilot': info['pilot'],
+                'copilot': info['copilot'],
+                'glider_type': info['glider']['type'],
+                'glider_id': info['glider']['id'],
+                'firmware_version': FR_FW_ID,
+                'hardware_version': RF_HW_ID,
+                'logger_type': FR_TYPE,
+                'gps_receiver': FR_GPS,
+                'pressure_sensor': p_sensor,
+                'competition_id': info['competition']['id'],
+                'competition_class': info['competition']['_class'],
+            })
 
         break
     else:
@@ -408,8 +452,17 @@ while True:
         gnss_dop     = gnss_data[8]
 
         if BME_present:
-          t, p, h = bme.read_compensated_data()
+
+          try:
+            t, p, h = bme.read_compensated_data()
+          except OSError as e:
+            if e.args[0] == 263 or e.args[0] == 6: # I2C bus error
+              if DebugMode:
+                print("I2C bus error ", e.args[0])
+              t, p, h = 0, prev_p, 0
+            pass
           baro_alt = pressure_altitude(float(p) / 25600)
+          prev_p = p
         else:
           baro_alt = 0
 
@@ -423,16 +476,17 @@ while True:
               gps_alt      = gnss_alt,
           )
 
-        with open(file, 'a') as fp:
-          SD_writer = Writer(fp)
-          SD_writer.write_fix(
-              datetime.time(gnss_hour, gnss_minutes, gnss_seconds),
-              latitude     = gnss_lat,
-              longitude    = gnss_lon,
-              valid        = True,
-              pressure_alt = baro_alt,
-              gps_alt      = gnss_alt,
-          )
+        if not DebugMode:
+          with open(file, 'a') as fp:
+            SD_writer = Writer(fp)
+            SD_writer.write_fix(
+                datetime.time(gnss_hour, gnss_minutes, gnss_seconds),
+                latitude     = gnss_lat,
+                longitude    = gnss_lon,
+                valid        = True,
+                pressure_alt = baro_alt,
+                gps_alt      = gnss_alt,
+            )
 
         if TFT_present:
             if flip:
@@ -446,9 +500,14 @@ while True:
 
     sleep(INTERVAL)
 
+print("Shutdown")
+
 if SD_present:
     # uos.sync()
     uos.umountsd()
+
+if GNSS_present:
+    gps.stopservice()
 
 if TFT_present:
     bl_timer.deinit()
@@ -480,8 +539,7 @@ if AXP202_present:
     # power-down GNSS
     a.disablePower(AXP202_LDO3)
     sleep_ms(20);
-
-if RTC_present:
-    rtc.wake_on_ext0(PMU_PIN_IRQ, 0)
+    if RTC_present:
+      rtc.wake_on_ext0(PMU_PIN_IRQ, 0)
 
 deepsleep()

@@ -26,6 +26,7 @@ Recommended:
 - [ ]   UAV
 - [ ]   UAT module
 - [ ]   SkyView
+- [ ]   Flight Recorder
 
 < photo of your hardware > (**required**)
 
