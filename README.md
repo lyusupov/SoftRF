@@ -108,7 +108,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 
 * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 
-![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg)
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg" width="215" height="300">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-SeeYou.JPG" width="572" height="300"></p>
 
 * [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
 
