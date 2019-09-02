@@ -319,7 +319,7 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
     pkt->altitude_lsb   = (alt_s & 0x0FF);
   } else {
     pkt->altitude_scale = 0;
-    pkt->altitude_msb   = (altitude & 0x700) >> 16;
+    pkt->altitude_msb   = (altitude & 0x700) >> 8;
     pkt->altitude_lsb   = (altitude & 0x0FF);
   }
 
