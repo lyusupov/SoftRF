@@ -1411,7 +1411,8 @@ void s7xg_transmit()
 
 void s7xg_shutdown()
 {
-  /* Nothing to do */
+  s7xg.loraReceiveContinuous(false);
+  s7xg.gpsSetMode(GPS_MODE_IDLE);
 }
 #endif /* USE_S7XG_DRIVER */
 
