@@ -312,16 +312,9 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   pkt->aircraft_type  = AT_TO_FANET(aircraft_type);
 
   int altitude        = constrain(alt, 0, 8190);
-  if(altitude > 2047) {
-    int alt_s = ((altitude + 2) / 4);
-    pkt->altitude_scale = 1;
-    pkt->altitude_msb   = (alt_s & 0x700) >> 16;
-    pkt->altitude_lsb   = (alt_s & 0x0FF);
-  } else {
-    pkt->altitude_scale = 0;
-    pkt->altitude_msb   = (altitude & 0x700) >> 16;
-    pkt->altitude_lsb   = (altitude & 0x0FF);
-  }
+  pkt->altitude_scale = altitude > 2047 ? (altitude = (altitude + 2) / 4, 1) : 0;
+  pkt->altitude_msb   = (altitude & 0x700) >> 8;
+  pkt->altitude_lsb   = (altitude & 0x0FF);
 
   int speed2          = constrain((int)roundf(speed * 2.0f), 0, 635);
   if(speed2 > 127) {
