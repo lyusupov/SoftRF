@@ -47,6 +47,9 @@ TFT_PIN_BL   = const(12)
 
 ST7789_INVON = const(0x21)
 
+CPU_FREQ_240 = const(240000000)
+CPU_FREQ_80  = const(80000000)
+
 AXP202_present = False
 TFT_present    = False
 BME_present    = False
@@ -75,7 +78,7 @@ ICON_REC2      = '/flash/icons/rec2.bmp'
 ICON_OFF       = '/flash/icons/off.jpg'
 ICON_LOWBAT    = '/flash/icons/lowbat.jpg'
 
-from machine import I2C, Pin, PWM, Timer
+from machine import I2C, Pin, PWM, Timer, freq
 from display import TFT
 from time    import sleep, sleep_ms
 
@@ -83,6 +86,10 @@ from AXP202.axp202    import PMU
 from AXP202.constants import AXP202_SLAVE_ADDRESS, AXP202_PEK_SHORTPRESS_IRQ
 from AXP202.constants import AXP20X_LED_OFF, AXP202_LDO2
 from AXP202.constants import AXP202_LDO3, AXP202_ADC1, AXP202_BATT_VOL_ADC1
+
+print("CPU frequency =", freq(), "Hz")
+if freq() != CPU_FREQ_240:
+    freq(CPU_FREQ_240)
 
 i2c0=I2C(id=0, scl=Pin(I2C0_PIN_SCL),sda=Pin(I2C0_PIN_SDA),speed=400000)
 if i2c0.is_ready(AXP202_SLAVE_ADDRESS):
@@ -140,7 +147,7 @@ if AXP202_present:
     # power-up GNSS
     a.setLDO3Mode(1)
     a.enablePower(AXP202_LDO3)
-    a.setLDO3Voltage(3300)
+    a.setLDO3Voltage(3000)
     pmu_pin = Pin(
       PMU_PIN_IRQ, Pin.IN, trigger=Pin.IRQ_FALLING, handler=power_button_handler
     )
@@ -225,7 +232,41 @@ else:
 
 uart = UART(1, tx=GNSS_PIN_TX, rx=GNSS_PIN_RX, timeout=1000,  buffer_size=256, baudrate=9600)
 
+# Max Performance Mode (default)
+ubx_cont = bytearray([0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21, 0x91])
+
+# Power Save Mode
+ubx_psm  = bytearray([0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92])
+
+# NEO-6 'Eco' Mode
+ubx_eco  = bytearray([0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x04, 0x25, 0x95])
+
+# NMEA filters
+ubx_gsv_off = bytearray([0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x03, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x03, 0x39])
+ubx_vtg_off = bytearray([0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x05, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x46])
+ubx_gll_off = bytearray([0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x2B])
+
+nmea_gll_off = "$PUBX,40,GLL,0,0,0,0*5C\r\n"
+nmea_gsv_off = "$PUBX,40,GSV,0,0,0,0*59\r\n"
+nmea_vtg_off = "$PUBX,40,VTG,0,0,0,0*5E\r\n"
+nmea_gsa_off = "$PUBX,40,GSA,0,0,0,0*4E\r\n"
+
 if GNSS_present:
+    sleep_ms(100)
+    uart.write(nmea_gsv_off)
+    sleep_ms(200)
+    uart.write(nmea_gll_off)
+    sleep_ms(200)
+    uart.write(nmea_vtg_off)
+    sleep_ms(200)
+    uart.write(nmea_gsa_off)
+    sleep_ms(200)
+    uart.write(ubx_psm)
+    sleep_ms(200)
+
     gps  = GPS(uart)
     gps.startservice()
 
@@ -270,13 +311,15 @@ if wifi['ssid'] != '':
 else:
     print("No WiFi")
 
-if TFT_present and GNSS_present and SD_present:
+from settings import DebugMode
+
+if TFT_present and GNSS_present:
     # wait for some NMEA data to enter into GPS buffer
     sleep_ms(1500)
 
     gnss_data = gps.getdata()
     gnss_quality = gnss_data[5]
-    if gnss_quality == 0:
+    if gnss_quality == 0 and SD_present:
       bl_timer.reshoot()
       tft.image(0, 0, ICON_NOFIX)
       width, height = tft.screensize()
@@ -293,7 +336,8 @@ if not SD_present:
           Backlight = True
           backlight(Backlight)
         sleep(5)
-    Power_Button = True
+    if not DebugMode:
+        Power_Button = True
 else:
     dirname = SDFolder + LogFolder
     try:
@@ -303,7 +347,8 @@ else:
         uos.mkdir(dirname)
       pass
 
-    # Waiting for valid GNSS fix
+# Waiting for valid GNSS fix
+if not Power_Button:
     print("")
     print("Waiting for very first valid GNSS fix...", end = '')
 
@@ -312,8 +357,10 @@ Serial_writer = Writer(stdout)
 uid_raw = unique_id()
 uid = "%03X" % (((uid_raw[4] & 0xf) << 8) | uid_raw[5])
 
+# Slow down to 80 MHz
+freq(CPU_FREQ_80)
+
 from settings import info
-from settings import DebugMode
 
 while True:
     if Power_Button:
@@ -324,6 +371,10 @@ while True:
       if voltage < BATTERY_CUTOFF_LIPO:
         Battery_Low = True
         break
+      #if DebugMode:
+      #  print("ACInC =", a.getAcinCurrent(),
+      #    "VbusC =", a.getVbusCurrent(),
+      #    "BchgC =", a.getBattChargeCurrent())
 
     if GNSS_present:
       gnss_data = gps.getdata()
@@ -411,6 +462,7 @@ while True:
     #if str != '':
     #  print(str, end = '')
     print(".", end = '')
+
     sleep(1)
 
 # Make periodic position reports
@@ -426,6 +478,12 @@ while True:
       if voltage < BATTERY_CUTOFF_LIPO:
         Battery_Low = True
         break
+      #if DebugMode:
+      #  print("ACInC =", a.getAcinCurrent(),
+      #    "VbusC =", a.getVbusCurrent(),
+      #    "Bvolt =", a.getBattVoltage(),
+      #    "BdisC =", a.getBattDischargeCurrent(),
+      #    "BchgC =", a.getBattChargeCurrent())
 
     if GNSS_present:
       gnss_data = gps.getdata()
@@ -461,8 +519,14 @@ while True:
                 print("I2C bus error ", e.args[0])
               t, p, h = 0, prev_p, 0
             pass
-          baro_alt = pressure_altitude(float(p) / 25600)
-          prev_p = p
+
+          # sanity check
+          if p > 0:
+            baro_alt = pressure_altitude(float(p) / 25600)
+            prev_p = p
+          else:
+            baro_alt = 0
+
         else:
           baro_alt = 0
 
@@ -538,7 +602,7 @@ if AXP202_present:
     a.disablePower(AXP202_LDO2)
     # power-down GNSS
     a.disablePower(AXP202_LDO3)
-    sleep_ms(20);
+    sleep_ms(20)
     if RTC_present:
       rtc.wake_on_ext0(PMU_PIN_IRQ, 0)
 
