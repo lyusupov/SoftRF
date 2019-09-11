@@ -24,6 +24,7 @@ Recommended:
 - [ ]   Prime Mark II
 - [ ]   Standalone
 - [ ]   UAV
+- [ ]   Raspberry Edition
 - [ ]   UAT module
 - [ ]   SkyView
 - [ ]   Flight Recorder
