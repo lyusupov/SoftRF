@@ -43,7 +43,14 @@ lmic_pinmap lmic_pins = {
 #endif
 };
 
+#if defined(ARDUINO_BLUEPILL_F103C8)
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
+#elif defined(ARDUINO_NUCLEO_L073RZ)
+HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+#else
+#error "This hardware platform is not supported!"
+#endif
+
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3, SOC_GPIO_PIN_TX3);
 
 // Parameter 1 = number of pixels in strip
@@ -147,6 +154,11 @@ static bool STM32_EEPROM_begin(size_t size)
 
 static void STM32_SPI_begin()
 {
+  SPI.setMISO(SOC_GPIO_PIN_MISO);
+  SPI.setMOSI(SOC_GPIO_PIN_MOSI);
+  SPI.setSCLK(SOC_GPIO_PIN_SCK);
+  SPI.setSSEL(SOC_GPIO_PIN_SS);
+
   SPI.begin();
 }
 
