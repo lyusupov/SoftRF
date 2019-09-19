@@ -43,15 +43,19 @@ lmic_pinmap lmic_pins = {
 #endif
 };
 
-#if defined(ARDUINO_BLUEPILL_F103C8)
+#if defined(ARDUINO_NUCLEO_L073RZ)
+
+HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
+HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
+
+#elif defined(ARDUINO_BLUEPILL_F103C8)
+
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
-#elif defined(ARDUINO_NUCLEO_L073RZ)
-HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
+
 #else
 #error "This hardware platform is not supported!"
 #endif
-
-HardwareSerial Serial3(SOC_GPIO_PIN_RX3, SOC_GPIO_PIN_TX3);
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -164,7 +168,38 @@ static void STM32_SPI_begin()
 
 static void STM32_swSer_begin(unsigned long baud)
 {
+#if !defined(ARDUINO_NUCLEO_L073RZ)
   swSer.begin(baud);
+#else
+  /* drive GNSS RST pin low */
+  pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_GNSS_RST, LOW);
+
+  /* activate 1.8V<->3.3V level shifters */
+  pinMode(SOC_GPIO_PIN_GNSS_LS,  OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_GNSS_LS,  HIGH);
+
+  /* keep RST to ensure proper IC reset */
+  delay(200);
+  digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
+
+  /* give Sony GNSS few ms to warm up */
+  delay(100);
+
+  /* S76G GNSS is operating at 115200 baud by default */
+  swSer.begin(115200);
+
+  // swSer.write("@VER\r\n");
+
+  /* Idle */
+  swSer.write("@GSTP\r\n");      delay(250);
+  /* GGA + GSA + RMC */
+  swSer.write("@BSSL 0x25\r\n"); delay(250);
+  /* GPS + GLONASS */
+  swSer.write("@GNS 0x3\r\n");   delay(250);
+  /* hot start */
+  swSer.write("@GSR\r\n");       delay(250);
+#endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
 static void STM32_swSer_enableRx(boolean arg)

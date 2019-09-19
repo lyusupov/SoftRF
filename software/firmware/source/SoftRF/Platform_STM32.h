@@ -35,8 +35,6 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define swSer                   Serial2
-#define UATSerial               Serial3
 #define yield()                 ({ })
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
@@ -44,7 +42,9 @@
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-#define Serial                   Serial1
+#define Serial                  Serial1
+#define swSer                   Serial4
+#define UATSerial               Serial2  /* PA3, PA2 */
 
 #define SOC_ADC9_VOLTAGE_DIVIDER  (4096.0 / 3.3)
 
@@ -59,19 +59,18 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_CONS_RX  PA10
 #define SOC_GPIO_PIN_CONS_TX  PA9
 
-#define SOC_GPIO_PIN_SWSER_RX PA3  // TBD
-#define SOC_GPIO_PIN_SWSER_TX PA2  // TBD
-
-#define SOC_GPIO_PIN_RX3      PD2
-#define SOC_GPIO_PIN_TX3      PC12
+#define SOC_GPIO_PIN_SWSER_RX PC11
+#define SOC_GPIO_PIN_SWSER_TX PC10
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
+#define SOC_GPIO_PIN_GNSS_RST PB2
+#define SOC_GPIO_PIN_GNSS_LS  PC6
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PB5
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_BUZZER   PA5  // NC
-#define SOC_GPIO_PIN_BATTERY  PA0  // NC
+#define SOC_GPIO_PIN_BUZZER   PA0  // NC
+#define SOC_GPIO_PIN_BATTERY  PB1  // NC
 
 /* SPI */
 #define SOC_GPIO_PIN_MOSI     PB15
@@ -87,21 +86,24 @@ static inline void HAL_GetUID(uint32_t *UID)
 /* SX1276 */
 #define SOC_GPIO_PIN_RST      PB10
 #define SOC_GPIO_PIN_DIO0     PB11
+#define SOC_GPIO_PIN_DIO1     PC13
+#define SOC_GPIO_PIN_DIO2     PB9
+#define SOC_GPIO_PIN_DIO3     PB4
+#define SOC_GPIO_PIN_DIO4     PB3
+#define SOC_GPIO_PIN_DIO5     PA15
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7  // NC
 #define SOC_GPIO_PIN_SCL      PB6  // NC
 
-#define USE_TEST_MODE            //  +  1 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 
-#if defined(USE_TEST_MODE)
-//#define USE_NMEALIB
-#endif /* USE_TEST_MODE */
-
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103C8)
+
+#define swSer                   Serial2
+#define UATSerial               Serial3
 
 #define SOC_ADC9_VOLTAGE_DIVIDER  (4096.0 / 3.3)
 
