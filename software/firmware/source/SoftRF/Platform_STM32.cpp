@@ -33,7 +33,7 @@
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
-    .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
+    .rxtx = { LMIC_UNUSED_PIN, SOC_GPIO_PIN_ANT_RXTX },
 #if !defined(USE_OGN_RF_DRIVER)
     .rst = LMIC_UNUSED_PIN,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
@@ -179,8 +179,10 @@ static void STM32_swSer_begin(unsigned long baud)
   pinMode(SOC_GPIO_PIN_GNSS_LS,  OUTPUT);
   digitalWrite(SOC_GPIO_PIN_GNSS_LS,  HIGH);
 
-  /* keep RST to ensure proper IC reset */
+  /* keep RST low to ensure proper IC reset */
   delay(200);
+
+  /* release */
   digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
 
   /* give Sony GNSS few ms to warm up */
@@ -197,6 +199,10 @@ static void STM32_swSer_begin(unsigned long baud)
   swSer.write("@BSSL 0x25\r\n"); delay(250);
   /* GPS + GLONASS */
   swSer.write("@GNS 0x3\r\n");   delay(250);
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  /* Enable 1PPS output */
+  swSer.write("@GPPS 0x1\r\n");   delay(250);
+#endif
   /* hot start */
   swSer.write("@GSR\r\n");       delay(250);
 #endif /* ARDUINO_NUCLEO_L073RZ */

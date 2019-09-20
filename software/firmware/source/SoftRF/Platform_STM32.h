@@ -39,14 +39,20 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
+#define SSD1306_OLED_I2C_ADDR   0x3C
+
+#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
+#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
+
+// button
+#define SOC_GPIO_PIN_BUTTON     USER_BTN
+
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
 #define Serial                  Serial1
 #define swSer                   Serial4
 #define UATSerial               Serial2  /* PA3, PA2 */
-
-#define SOC_ADC9_VOLTAGE_DIVIDER  (4096.0 / 3.3)
 
 static inline void HAL_GetUID(uint32_t *UID)
 {
@@ -63,7 +69,7 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_SWSER_TX PC10
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
+
 #define SOC_GPIO_PIN_GNSS_RST PB2
 #define SOC_GPIO_PIN_GNSS_LS  PC6
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PB5
@@ -92,6 +98,9 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_DIO4     PB3
 #define SOC_GPIO_PIN_DIO5     PA15
 
+/* RF antenna switch */
+#define SOC_GPIO_PIN_ANT_RXTX PA1 // 1:Rx, 0:Tx
+
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7  // NC
 #define SOC_GPIO_PIN_SCL      PB6  // NC
@@ -105,8 +114,6 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define swSer                   Serial2
 #define UATSerial               Serial3
 
-#define SOC_ADC9_VOLTAGE_DIVIDER  (4096.0 / 3.3)
-
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX PA3
 #define SOC_GPIO_PIN_SWSER_TX PA2
@@ -117,7 +124,6 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_RX3      PB11
 #define SOC_GPIO_PIN_TX3      PB10
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PA1
 #define SOC_GPIO_PIN_STATUS   LED_GREEN
 
@@ -136,14 +142,12 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_RST      PB5
 #define SOC_GPIO_PIN_DIO0     PB4
 
+/* RF antenna switch */
+#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
+
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7
 #define SOC_GPIO_PIN_SCL      PB6
-
-// button
-#define SOC_GPIO_PIN_BUTTON   USER_BTN
-
-#define SSD1306_OLED_I2C_ADDR 0x3C
 
 /* Component                         Cost */
 /* -------------------------------------- */
