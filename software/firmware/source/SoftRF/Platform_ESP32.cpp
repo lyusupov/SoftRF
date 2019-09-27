@@ -177,7 +177,7 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_STANDALONE;
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
-      hw_info.model = SOFTRF_MODEL_WATCH;
+      hw_info.model = SOFTRF_MODEL_SKYWATCH;
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
     default:
@@ -186,13 +186,13 @@ static void ESP32_setup()
     }
   } else {
     if (ESP32_getFlashId() == MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V)) {
-      hw_info.model = SOFTRF_MODEL_WATCH;
+      hw_info.model = SOFTRF_MODEL_SKYWATCH;
     }
   }
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 
-  if (hw_info.model == SOFTRF_MODEL_WATCH) {
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
     esp32_board = ESP32_TTGO_T_WATCH;
 
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
@@ -206,9 +206,10 @@ static void ESP32_setup()
 
       axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
 
-      axp.setPowerOutPut(AXP202_LDO2, AXP202_ON);
+      axp.setPowerOutPut(AXP202_LDO2, AXP202_ON); // BL
+      axp.setPowerOutPut(AXP202_LDO3, AXP202_ON); // S76G (MCU + LoRa)
       axp.setLDO4Voltage(AXP202_LDO4_1800MV);
-      axp.setPowerOutPut(AXP202_LDO4, AXP202_ON);
+      axp.setPowerOutPut(AXP202_LDO4, AXP202_ON); // S76G (Sony GNSS)
 
       pinMode(SOC_GPIO_PIN_TWATCH_PMU_IRQ, INPUT_PULLUP);
 
@@ -259,7 +260,7 @@ static void ESP32_loop()
 {
   if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
        hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_WATCH) {
+       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
     bool is_irq = false;
     bool down = false;
@@ -315,12 +316,13 @@ static void ESP32_fini()
   esp_wifi_stop();
   esp_bt_controller_disable();
 
-  if (hw_info.model    == SOFTRF_MODEL_WATCH) {
+  if (hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
-    axp.setPowerOutPut(AXP202_LDO2, AXP202_OFF);
-    axp.setPowerOutPut(AXP202_LDO4, AXP202_OFF);
+    axp.setPowerOutPut(AXP202_LDO2, AXP202_OFF); // BL
+    axp.setPowerOutPut(AXP202_LDO4, AXP202_OFF); // S76G (Sony GNSS)
+    axp.setPowerOutPut(AXP202_LDO3, AXP202_OFF); // S76G (MCU + LoRa)
 
     delay(20);
 
@@ -938,7 +940,7 @@ static float ESP32_Battery_voltage()
 
   if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
        hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_WATCH) {
+       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
     /* T-Beam v08 and T-Watch have PMU */
     if (axp.isBatteryConnect()) {
@@ -960,7 +962,7 @@ static void ESP32_Battery_setup()
 {
   if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
        hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_WATCH) {
+       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
     /* T-Beam v08 and T-Watch have PMU */
 
@@ -987,7 +989,7 @@ static unsigned long ESP32_get_PPS_TimeMarker() {
 
 static bool ESP32_Baro_setup() {
 
-  if (hw_info.model == SOFTRF_MODEL_WATCH) {
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
     return false;
 

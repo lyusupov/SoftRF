@@ -519,7 +519,7 @@ byte GNSS_setup() {
   byte rval = GNSS_MODULE_NONE;
 
 #if defined(USE_S7XG_DRIVER)
-  if (hw_info.model == SOFTRF_MODEL_WATCH &&
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH &&
       hw_info.rf    == RF_IC_S7XG ) {
 
     s7xg.gpsStop();
@@ -620,7 +620,7 @@ void PickGNSSFix()
   int c = -1;
 
 #if defined(USE_S7XG_DRIVER)
-  if (hw_info.model == SOFTRF_MODEL_WATCH &&
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH &&
       hw_info.rf    == RF_IC_S7XG ) {
 
     if ((millis() - S7XG_Time_Marker) > 1000 ) {

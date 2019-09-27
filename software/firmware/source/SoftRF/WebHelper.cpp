@@ -497,7 +497,7 @@ void handleSettings() {
 </td>\
 </tr>\
 </table>\
-<p align=center><INPUT type='submit' value='Save and restart'><p>\
+<p align=center><INPUT type='submit' value='Save and restart'></p>\
 </form>\
 </body>\
 </html>"),

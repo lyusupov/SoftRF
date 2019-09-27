@@ -156,7 +156,7 @@ byte RF_setup(void)
 
   if (rf_chip == NULL) {
 #if !defined(USE_OGN_RF_DRIVER)
-    if (hw_info.model != SOFTRF_MODEL_WATCH) {
+    if (hw_info.model != SOFTRF_MODEL_SKYWATCH) {
       if (sx1276_ops.probe()) {
         rf_chip = &sx1276_ops;
         Serial.println(F("SX1276 RFIC is detected."));

@@ -75,11 +75,10 @@ typedef struct EEPROM_S {
     settings_t settings;
 } eeprom_struct_t;
 
-
 typedef union EEPROM_U {
    eeprom_struct_t field;
    uint8_t raw[sizeof(eeprom_struct_t)];
-} eeprom_t;  
+} eeprom_t;
 
 void EEPROM_setup(void);
 void EEPROM_defaults(void);

@@ -69,51 +69,63 @@
 
 #if defined(ARDUINO_ESP8266_NODEMCU)
 // NodeMCU 1.0 GPIO pins
-#define TRX_EN    D4  // GPIO 2   // Enable/standby pin
-#define PWR_MODE  D2  // GPIO 4   // Power mode pin
-#define TX_EN     D0  // GPIO 16  // TX / RX mode pin
-#define CSN       D8  // GPIO 15  // SPI slave select pin
+#define TRX_EN    D4   // GPIO 2   // Enable/standby pin
+#define PWR_MODE  D2   // GPIO 4   // Power mode pin
+#define TX_EN     D0   // GPIO 16  // TX / RX mode pin
+#define CSN       D8   // GPIO 15  // SPI slave select pin
 #else
 /* Generic ESP8266 */
-#define TRX_EN    2   // Enable/standby pin
-#define PWR_MODE  4   // Power mode pin
-#define TX_EN     16  // TX / RX mode pin
-#define CSN       15  // SPI slave select pin
+#define TRX_EN    2    // Enable/standby pin
+#define PWR_MODE  4    // Power mode pin
+#define TX_EN     16   // TX / RX mode pin
+#define CSN       15   // SPI slave select pin
 #endif /* ARDUINO_ESP8266_NODEMCU */
 
-#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
+#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
 #define DR			5
 
 #elif defined(ESP32)
 
 // DOIT ESP32
-#define TRX_EN    2  // Enable/standby pin
-#define PWR_MODE  14  // Power mode pin
-#define TX_EN     26  // TX / RX mode pin
-#define CSN       18  // SPI slave select pin
+#define TRX_EN    2    // Enable/standby pin
+#define PWR_MODE  14   // Power mode pin
+#define TX_EN     26   // TX / RX mode pin
+#define CSN       18   // SPI slave select pin
 
-#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
+#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
 #define DR			5
 
 #elif defined(ARDUINO_ARCH_STM32)
 
+#if defined(ARDUINO_NUCLEO_L073RZ)
+/* L073RZ */
+#define TRX_EN    PB8  // Enable/standby pin
+#define PWR_MODE  PB10 // Power mode pin
+#define TX_EN     PB11 // TX / RX mode pin
+#define CSN       PB12 // SPI slave select pin
+
+#elif defined(ARDUINO_BLUEPILL_F103C8)
 // Blue Pill
 #define TRX_EN    PB3  // Enable/standby pin
 #define PWR_MODE  PB5  // Power mode pin
 #define TX_EN     PB4  // TX / RX mode pin
 #define CSN       PA4  // SPI slave select pin
 
-#define CD			0	// Carrier detect pin (for collision avoidance, if enabled)
+#else
+#error "This hardware platform is not supported!"
+#endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103C8 */
+
+#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
 #define DR			5
 
 #else
 
 // Arduino pins
-#define TRX_EN		7	// Enable/standby pin
-#define PWR_MODE	8	// Power mode pin
-#define TX_EN		9	// TX / RX mode pin
-#define CD			2	// Carrier detect pin (for collision avoidance, if enabled)
-#define CSN			10	// SPI slave select pin
+#define TRX_EN		7	   // Enable/standby pin
+#define PWR_MODE	8	   // Power mode pin
+#define TX_EN		9	     // TX / RX mode pin
+#define CD			2	     // Carrier detect pin (for collision avoidance, if enabled)
+#define CSN			10	   // SPI slave select pin
 
 // Data ready pin
 // If using interrupts (NRF905_INTERRUPTS 1) then this must be
