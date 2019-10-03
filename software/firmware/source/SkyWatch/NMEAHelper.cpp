@@ -51,6 +51,11 @@ TinyGPSCustom S_AlarmType       (nmea, "PFLAU", 7);
 TinyGPSCustom S_RelativeVertical(nmea, "PFLAU", 8);
 TinyGPSCustom S_RelativeDistance(nmea, "PFLAU", 9);
 TinyGPSCustom S_ID              (nmea, "PFLAU", 10);
+/* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
+TinyGPSCustom S_Addr            (nmea, "PFLAU", 11);
+TinyGPSCustom S_Protocol        (nmea, "PFLAU", 12);
+TinyGPSCustom S_RxCnt           (nmea, "PFLAU", 13);
+TinyGPSCustom S_TxCnt           (nmea, "PFLAU", 14);
 
 status_t NMEA_Status;
 
@@ -64,8 +69,26 @@ WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
-uint8_t NMEABuffer[NMEA_BUFFER_SIZE]; // buffer for NMEA data
+char NMEABuffer[NMEA_BUFFER_SIZE]; // buffer for NMEA data
 int NMEA_cnt = 0;
+
+#define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
+unsigned long PGRMZ_TimeMarker = 0;
+char PGRMZBuffer[32];
+
+void NMEA_add_checksum(char *buf, size_t limit)
+{
+  size_t sentence_size = strlen(buf);
+
+  //calculate the checksum
+  unsigned char cs = 0;
+  for (unsigned int n = 1; n < sentence_size - 1; n++) {
+    cs ^= buf[n];
+  }
+
+  char *csum_ptr = buf + sentence_size;
+  snprintf_P(csum_ptr, limit, PSTR("%02X\r\n"), cs);
+}
 
 static void NMEA_Parse_Character(char c)
 {
@@ -92,7 +115,7 @@ static void NMEA_Parse_Character(char c)
             (NMEABuffer[ndx+1] == 'G' || NMEABuffer[ndx+1] == 'P')) {
 
           size_t write_size = NMEA_cnt - ndx + 1;
-          NMEA_Out(&NMEABuffer[ndx], write_size, true);
+          NMEA_Out((byte *) &NMEABuffer[ndx], write_size, true);
           break;
         }
       }
@@ -127,51 +150,35 @@ static void NMEA_Parse_Character(char c)
 
         if (T_AlarmLevel.isUpdated())
         {
-//          Serial.print(F(" AlarmLevel=")); Serial.print(T_AlarmLevel.value());
           fo.AlarmLevel = atoi(T_AlarmLevel.value());
-//          Serial.print(F(" AlarmLevel=")); Serial.println(fo.AlarmLevel);
         }
         if (T_RelativeNorth.isUpdated())
         {
-//          Serial.print(F(" RelativeNorth=")); Serial.print(T_RelativeNorth.value());
           fo.RelativeNorth = atoi(T_RelativeNorth.value());
-//          Serial.print(F(" RelativeNorth=")); Serial.println(fo.RelativeNorth);
         }
         if (T_RelativeEast.isUpdated())
         {
-//          Serial.print(F(" RelativeEast=")); Serial.print(T_RelativeEast.value());
           fo.RelativeEast = atoi(T_RelativeEast.value());
-//          Serial.print(F(" RelativeEast=")); Serial.println(fo.RelativeEast);
         }
         if (T_RelativeVertical.isUpdated())
         {
-//          Serial.print(F(" RelativeVertical=")); Serial.print(T_RelativeVertical.value());
           fo.RelativeVertical = atoi(T_RelativeVertical.value());
-//          Serial.print(F(" RelativeVertical=")); Serial.println(fo.RelativeVertical);
         }
         if (T_IDType.isUpdated())
         {
-//          Serial.print(F(" IDType=")); Serial.print(T_IDType.value());
           fo.IDType = atoi(T_IDType.value());
-//          Serial.print(F(" IDType=")); Serial.println(fo.IDType);
         }
         if (T_Track.isUpdated())
         {
-//          Serial.print(F(" Track=")); Serial.print(T_Track.value());
           fo.Track = atoi(T_Track.value());
-//          Serial.print(F(" Track=")); Serial.println(fo.Track);
         }
         if (T_TurnRate.isUpdated())
         {
-//          Serial.print(F(" TurnRate=")); Serial.print(T_TurnRate.value());
           fo.TurnRate = atoi(T_TurnRate.value());
-//          Serial.print(F(" TurnRate=")); Serial.println(fo.TurnRate);
         }
         if (T_GroundSpeed.isUpdated())
         {
-//          Serial.print(F(" GroundSpeed=")); Serial.print(T_GroundSpeed.value());
           fo.GroundSpeed = atoi(T_GroundSpeed.value());
-//          Serial.print(F(" GroundSpeed=")); Serial.println(fo.GroundSpeed);
         }
         if (T_ClimbRate.isUpdated())
         {
@@ -180,9 +187,7 @@ static void NMEA_Parse_Character(char c)
         }
         if (T_AcftType.isUpdated())
         {
-//          Serial.print(F(" AcftType=")); Serial.print(T_AcftType.value());
           fo.AcftType = atoi(T_AcftType.value());
-//          Serial.print(F(" AcftType=")); Serial.println(fo.AcftType);
         }
 
         fo.timestamp = now();
@@ -207,63 +212,57 @@ static void NMEA_Parse_Character(char c)
 
         if (S_TX.isUpdated())
         {
-//          Serial.print(F(" TX=")); Serial.print(S_TX.value());
           NMEA_Status.TX = atoi(S_TX.value());
-//          Serial.print(F(" TX=")); Serial.println(NMEA_Status.TX);
         }
         if (S_GPS.isUpdated())
         {
-//          Serial.print(F(" GPS=")); Serial.print(S_GPS.value());
           NMEA_Status.GPS = atoi(S_GPS.value());
-//          Serial.print(F(" GPS=")); Serial.println(NMEA_Status.GPS);
         }
         if (S_Power.isUpdated())
         {
-//          Serial.print(F(" Power=")); Serial.print(S_Power.value());
           NMEA_Status.Power = atoi(S_Power.value());
-//          Serial.print(F(" Power=")); Serial.println(NMEA_Status.Power);
         }
         if (S_AlarmLevel.isUpdated())
         {
-//          Serial.print(F(" AlarmLevel=")); Serial.print(S_AlarmLevel.value());
           NMEA_Status.AlarmLevel = atoi(S_AlarmLevel.value());
-//          Serial.print(F(" AlarmLevel=")); Serial.println(NMEA_Status.AlarmLevel);
         }
         if (S_RelativeBearing.isUpdated())
         {
-//          Serial.print(F(" RelativeBearing=")); Serial.print(S_RelativeBearing.value());
           NMEA_Status.RelativeBearing = atoi(S_RelativeBearing.value());
-//          Serial.print(F(" RelativeBearing=")); Serial.println(NMEA_Status.RelativeBearing);
         }
         if (S_AlarmType.isUpdated())
         {
-//          Serial.print(F(" AlarmType=")); Serial.print(S_AlarmType.value());
           NMEA_Status.AlarmType = atoi(S_AlarmType.value());
-//          Serial.print(F(" AlarmType=")); Serial.println(NMEA_Status.AlarmType);
         }
         if (S_RelativeVertical.isUpdated())
         {
-//          Serial.print(F(" RelativeVertical=")); Serial.print(S_RelativeVertical.value());
           NMEA_Status.RelativeVertical = atoi(S_RelativeVertical.value());
-//          Serial.print(F(" RelativeVertical=")); Serial.println(NMEA_Status.RelativeVertical);
         }
         if (S_RelativeDistance.isUpdated())
         {
-//          Serial.print(F(" RelativeDistance=")); Serial.print(S_RelativeDistance.value());
           NMEA_Status.RelativeDistance = strtol(S_RelativeDistance.value(), NULL, 10);
-//          Serial.print(F(" RelativeDistance=")); Serial.println(NMEA_Status.RelativeDistance);
         }
         if (S_ID.isUpdated())
         {
-//          Serial.print(F(" ID=")); Serial.print(S_ID.value());
           NMEA_Status.ID = strtol(S_ID.value(), NULL, 16);
-#if 0
-          Serial.print(F(" ID="));
-          Serial.print((NMEA_Status.ID >> 16) & 0xFF, HEX);
-          Serial.print((NMEA_Status.ID >>  8) & 0xFF, HEX);
-          Serial.print((NMEA_Status.ID      ) & 0xFF, HEX);
-          Serial.println();
-#endif
+        }
+
+        /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
+        if (S_Addr.isUpdated())
+        {
+          ThisDevice.addr = strtol(S_Addr.value(), NULL, 16);
+        }
+        if (S_Protocol.isUpdated())
+        {
+          ThisDevice.protocol = atoi(S_Protocol.value());
+        }
+        if (S_RxCnt.isUpdated())
+        {
+          rx_packets_counter = strtol(S_RxCnt.value(), NULL, 10);
+        }
+        if (S_TxCnt.isUpdated())
+        {
+          tx_packets_counter = strtol(S_TxCnt.value(), NULL, 10);
         }
       }
     }
@@ -322,41 +321,42 @@ void NMEA_setup()
       break;
     }
 
-    NMEA_TimeMarker = millis();
-  }
-
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->s.nmea_out == NMEA_TCP) {
-    NmeaTCPServer.begin();
-    Serial.print(F("NMEA TCP server has started at port: "));
-    Serial.println(NMEA_TCP_PORT);
+    if (settings->s.nmea_out == NMEA_TCP) {
+      NmeaTCPServer.begin();
+      Serial.print(F("NMEA TCP server has started at port: "));
+      Serial.println(NMEA_TCP_PORT);
 
-    NmeaTCPServer.setNoDelay(true);
-  }
+      NmeaTCPServer.setNoDelay(true);
+    }
 #endif /* NMEA_TCP_SERVICE */
 
+    NMEA_TimeMarker  = millis();
+    PGRMZ_TimeMarker = millis();
+  }
 }
 
 void NMEA_loop()
 {
+  char c;
   size_t size;
 
   switch (settings->m.connection)
   {
   case CON_SERIAL:
     while (SerialInput.available() > 0) {
-      char c = SerialInput.read();
+      c = SerialInput.read();
 //      Serial.print(c);
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
-    /* read data from microUSB port */
+    /* read data from Type-C USB port */
 #if !defined(RASPBERRY_PI)
-    if (Serial != SerialInput)
+    if ((void *) &Serial != (void *) &SerialInput)
 #endif
     {
       while (Serial.available() > 0) {
-        char c = Serial.read();
+        c = Serial.read();
 //        Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
@@ -376,7 +376,7 @@ void NMEA_loop()
   case CON_BLUETOOTH:
     if (SoC->Bluetooth) {
       while (SoC->Bluetooth->available() > 0) {
-        char c = SoC->Bluetooth->read();
+        c = SoC->Bluetooth->read();
         Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
@@ -387,6 +387,66 @@ void NMEA_loop()
   default:
     break;
   }
+
+  if (settings->s.nmea_s && ThisDevice.pressure_altitude != 0.0 && isTimeToPGRMZ()) {
+
+    int altitude = constrain(
+            (int) (ThisDevice.pressure_altitude * _GPS_FEET_PER_METER),
+            -1000, 60000);
+
+    snprintf_P(PGRMZBuffer, sizeof(PGRMZBuffer), PSTR("$PGRMZ,%d,f,3*"),
+            altitude ); /* feet , 3D fix */
+
+    NMEA_add_checksum(PGRMZBuffer, sizeof(PGRMZBuffer) - strlen(PGRMZBuffer));
+
+    NMEA_Out((byte *) PGRMZBuffer, strlen(PGRMZBuffer), false);
+
+    PGRMZ_TimeMarker = millis();
+  }
+
+#if defined(NMEA_TCP_SERVICE)
+  uint8_t i;
+
+  if (settings->s.nmea_out == NMEA_TCP) {
+
+    if (NmeaTCPServer.hasClient()) {
+      for(i = 0; i < MAX_NMEATCP_CLIENTS; i++) {
+        // find free/disconnected spot
+        if (!NmeaTCP[i].client || !NmeaTCP[i].client.connected()) {
+          if(NmeaTCP[i].client) {
+            NmeaTCP[i].client.stop();
+            NmeaTCP[i].connect_ts = 0;
+          }
+          NmeaTCP[i].client = NmeaTCPServer.available();
+          NmeaTCP[i].connect_ts = now();
+          NmeaTCP[i].ack = false;
+          NmeaTCP[i].client.print(F("PASS?"));
+          break;
+        }
+      }
+      if (i >= MAX_NMEATCP_CLIENTS) {
+        // no free/disconnected spot so reject
+        NmeaTCPServer.available().stop();
+      }
+    }
+
+    for (i = 0; i < MAX_NMEATCP_CLIENTS; i++) {
+      if (NmeaTCP[i].client && NmeaTCP[i].client.connected() &&
+         !NmeaTCP[i].ack && NmeaTCP[i].connect_ts > 0 &&
+         (now() - NmeaTCP[i].connect_ts) >= NMEATCP_ACK_TIMEOUT) {
+
+          /* Clean TCP input buffer from any pass codes sent by client */
+          while (NmeaTCP[i].client.available()) {
+            char c = NmeaTCP[i].client.read();
+            yield();
+          }
+          /* send acknowledge */
+          NmeaTCP[i].client.print(F("AOK"));
+          NmeaTCP[i].ack = true;
+      }
+    }
+  }
+#endif
 }
 
 bool NMEA_isConnected()

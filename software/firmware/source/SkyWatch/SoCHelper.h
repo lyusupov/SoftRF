@@ -50,6 +50,7 @@ typedef struct SoC_ops_struct {
   void (*Button_setup)();
   void (*Button_loop)();
   void (*Button_fini)();
+  bool (*Baro_setup)();
   void (*WDT_setup)();
   void (*WDT_fini)();
   Bluetooth_ops_t *Bluetooth;

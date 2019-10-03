@@ -43,6 +43,7 @@
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
 #include "TFTHelper.h"
+#include "BaroHelper.h"
 
 #include "SkyWatch.h"
 
@@ -66,7 +67,7 @@ void setup()
 
   EEPROM_setup();
 
-  ThisDevice.addr = SoC->getChipId() & 0x00FFFFFF;
+  ThisDevice.addr = 0 /* SoC->getChipId() & 0x00FFFFFF */;
   ThisDevice.aircraft_type = settings->s.aircraft_type;
   ThisDevice.protocol = settings->s.rf_protocol;
   ThisDevice.stealth  = settings->s.stealth;
@@ -76,6 +77,7 @@ void setup()
   SoC->Button_setup();
 
   hw_info.rf = RF_IC_SX1276;
+  hw_info.baro = Baro_setup();
   hw_info.display = TFT_setup();
 
   WiFi_setup();
@@ -105,6 +107,8 @@ void setup()
 
 void loop()
 {
+  Baro_loop();
+
   switch (settings->m.protocol)
   {
   case PROTOCOL_GDL90:
@@ -133,7 +137,11 @@ void loop()
 
   SoC->Button_loop();
 
+  SoC->loop();
+
   Battery_loop();
+
+  yield();
 }
 
 void shutdown(const char *msg)

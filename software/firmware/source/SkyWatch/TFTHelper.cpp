@@ -34,6 +34,9 @@ unsigned long TFTTimeMarker = 0;
 static bool TFT_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
+static uint8_t  prev_protocol = 0;
+static uint32_t prev_addr = 0;
+
 static int FT_view_mode = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
@@ -142,26 +145,57 @@ void TFT_loop()
 
         tft->setCursor(tft->textWidth(" "), tft->height()/6);
         tft->print(buf);
+        prev_addr = ThisDevice.addr;
 
         tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
 
         tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
                        tft->height()/6);
         tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
+        prev_protocol = ThisDevice.protocol;
 
         itoa(rx_packets_counter % 1000, buf, 10);
         tft->setCursor(tft->textWidth(" "), tft->height()/2);
         tft->print(buf);
+        prev_rx_packets_counter = rx_packets_counter;
 
         itoa(tx_packets_counter % 1000, buf, 10);
         tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
         tft->print(buf);
+        prev_tx_packets_counter = tx_packets_counter;
 
         TFT_display_frontpage = true;
 
       } else { /* TFT_display_frontpage */
 
-        if (rx_packets_counter > prev_rx_packets_counter) {
+        if (ThisDevice.addr != prev_addr) {
+          itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
+
+          tft->setTextFont(4);
+          tft->setTextSize(2);
+
+          tbw = tft->textWidth(buf);
+          tbh = tft->fontHeight();
+
+          tft->setCursor(tft->textWidth(" "), tft->height()/6);
+          tft->print(buf);
+          prev_addr = ThisDevice.addr;
+        }
+
+        if (ThisDevice.protocol != prev_protocol) {
+
+          tft->setTextFont(4);
+          tft->setTextSize(2);
+
+          tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
+
+          tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                         tft->height()/6);
+          tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
+          prev_protocol = ThisDevice.protocol;
+        }
+
+        if (rx_packets_counter != prev_rx_packets_counter) {
           disp_value = rx_packets_counter % 1000;
           itoa(disp_value, buf, 10);
 
@@ -181,7 +215,7 @@ void TFT_loop()
 
           prev_rx_packets_counter = rx_packets_counter;
         }
-        if (tx_packets_counter > prev_tx_packets_counter) {
+        if (tx_packets_counter != prev_tx_packets_counter) {
           disp_value = tx_packets_counter % 1000;
           itoa(disp_value, buf, 10);
 
@@ -214,5 +248,49 @@ void TFT_loop()
 
 void TFT_fini(const char *msg)
 {
+  switch (hw_info.display)
+  {
+  case DISPLAY_TFT_TTGO:
+    if (tft) {
+        int level;
 
+        for (level = 255; level > 0; level -= 25) {
+          ledcWrite(BACKLIGHT_CHANNEL, level);
+          delay(100);
+        }
+
+        tft->fillScreen(TFT_NAVY);
+
+        tft->setTextFont(4);
+        tft->setTextSize(2);
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        uint16_t tbw = tft->textWidth(msg);
+        uint16_t tbh = tft->fontHeight();
+
+        tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+        tft->print(msg);
+
+        for (level = 0; level < 255; level += 25) {
+          ledcWrite(BACKLIGHT_CHANNEL, level);
+          delay(100);
+        }
+
+        delay(2000);
+
+        for (level = 255; level > 0; level -= 25) {
+          ledcWrite(BACKLIGHT_CHANNEL, level);
+          delay(100);
+        }
+
+        ledcWrite(BACKLIGHT_CHANNEL, 0);
+        tft->writecommand(0x10);
+        SPI.end();
+    }
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }

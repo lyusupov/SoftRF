@@ -874,6 +874,21 @@ static void ESP32_Button_fini()
 
 }
 
+static bool ESP32_Baro_setup() {
+
+  bool rval = false;
+
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
+
+    /* Pre-init 2nd ESP32 I2C bus to stick on these pins */
+    Wire.begin(SOC_GPIO_PIN_TWATCH_EXT_SDA, SOC_GPIO_PIN_TWATCH_EXT_SCL);
+
+    rval = true;
+  }
+
+  return rval;
+}
+
 static void ESP32_WDT_setup()
 {
   enableLoopWDT();
@@ -910,6 +925,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_setup,
   ESP32_Button_loop,
   ESP32_Button_fini,
+  ESP32_Baro_setup,
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   &ESP32_Bluetooth_ops

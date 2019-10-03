@@ -114,17 +114,17 @@ void handleSettings() {
 <h1 align=center>Settings</h1>\
 <form action='/input' method='GET'>\
 <table width=100%%>\
-<tr>\
+<!-- <tr>\
 <th align=left>Mode</th>\
 <td align=right>\
 <select name='mode'>\
 <option %s value='%d'>Normal</option>\
-<!-- <option %s value='%d'>Tx/Rx Test</option>\
+<option %s value='%d'>Tx/Rx Test</option>\
 <option %s value='%d'>Bridge</option>\
-<option %s value='%d'>UAV</option> -->\
+<option %s value='%d'>UAV</option>\
 </select>\
 </td>\
-</tr>"),
+</tr> -->"),
   (settings->s.mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->s.mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->s.mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
@@ -512,9 +512,7 @@ void handleSettings() {
 <input type='radio' name='no_track' value='1' %s>On\
 </td>\
 </tr>\
-</table>\
- <hr>\
- <table width=100%%>\
+<tr><th>&nbsp;</th><td>&nbsp;</td></tr>\
 <!-- <tr>\
 <th align=left>Connection type</th>\
 <td align=right>\
@@ -533,7 +531,7 @@ void handleSettings() {
 <option %s value='%d'>GDL90</option>\
 </select>\
 </td>\
-</tr> -->\
+</tr>\
 <tr>\
 <th align=left>Baud rate</th>\
 <td align=right>\
@@ -650,6 +648,9 @@ void handleSettings() {
   /* Common part 8 */
   snprintf_P ( offset, size,
     PSTR("\
+</select>\
+</td>\
+</tr> -->\
 <tr>\
 <th align=left>Units</th>\
 <td align=right>\

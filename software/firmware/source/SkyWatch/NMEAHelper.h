@@ -134,7 +134,7 @@ void NMEA_fini();
 extern status_t NMEA_Status;
 extern TinyGPSPlus nmea;
 
-extern uint8_t NMEABuffer[NMEA_BUFFER_SIZE];
+extern char NMEABuffer[NMEA_BUFFER_SIZE];
 
 #if defined(NMEA_TCP_SERVICE)
 
