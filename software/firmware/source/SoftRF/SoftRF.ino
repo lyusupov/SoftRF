@@ -341,10 +341,13 @@ void normal_loop()
     LEDTimeMarker = millis();
   }
 
-  if (isTimeToExport() && isValidFix()) {
+  if (isTimeToExport()) {
     NMEA_Export();
-    GDL90_Export();
-    D1090_Export();
+
+    if (isValidFix()) {
+      GDL90_Export();
+      D1090_Export();
+    }
     ExportTimeMarker = millis();
   }
 

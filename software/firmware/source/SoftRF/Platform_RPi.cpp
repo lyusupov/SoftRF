@@ -473,11 +473,14 @@ void normal_loop()
       Traffic_loop();
     }
 
-    if (isTimeToExport() && isValidFix()) {
+    if (isTimeToExport()) {
       NMEA_Export();
-      GDL90_Export();
-      D1090_Export();
-      JSON_Export();
+
+      if (isValidFix()) {
+        GDL90_Export();
+        D1090_Export();
+        JSON_Export();
+      }
       ExportTimeMarker = millis();
     }
 

@@ -58,4 +58,12 @@ typedef struct NmeaTCP_struct {
 
 #endif
 
+#if !defined(PFLAU_EXT1_FMT)
+#define PFLAU_EXT1_FMT  ""
+#endif /* PFLAU_EXT1_FMT */
+
+#if !defined(PFLAU_EXT1_ARGS)
+#define PFLAU_EXT1_ARGS
+#endif /* PFLAU_EXT1_ARGS */
+
 #endif /* NMEAHELPER_H */

@@ -55,6 +55,8 @@ const char *NMEA_CallSign_Prefix[] = {
 #define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
 unsigned long PGRMZ_TimeMarker = 0;
 
+extern uint32_t tx_packets_counter, rx_packets_counter;
+
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"
 
@@ -262,90 +264,91 @@ void NMEA_Export()
     int HP_alt_diff = 0;
     int HP_alarm_level = ALARM_LEVEL_NONE;
     float HP_distance = 2147483647;
+    uint32_t HP_addr = 0;
 
-    /* account for all detected objects at first */
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
-        total_objects++;
-      }
-    }
+    bool has_Fix = isValidFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
 
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+    if (has_Fix) {
+      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
 #if 0
-        Serial.println(fo.addr);
-        Serial.println(fo.latitude, 4);
-        Serial.println(fo.longitude, 4);
-        Serial.println(fo.altitude);
-        Serial.println(fo.addr_type);
-        Serial.println(fo.vs);
-        Serial.println(fo.aircraft_type);
-        Serial.println(fo.stealth);
-        Serial.println(fo.no_track);
+          Serial.println(fo.addr);
+          Serial.println(fo.latitude, 4);
+          Serial.println(fo.longitude, 4);
+          Serial.println(fo.altitude);
+          Serial.println(fo.addr_type);
+          Serial.println(fo.vs);
+          Serial.println(fo.aircraft_type);
+          Serial.println(fo.stealth);
+          Serial.println(fo.no_track);
 #endif
-        if (settings->nmea_l) {
-          distance = Container[i].distance;
+          if (settings->nmea_l) {
+            distance = Container[i].distance;
 
-          if (distance < ALARM_ZONE_NONE) {
+            if (distance < ALARM_ZONE_NONE) {
 
-            char str_climb_rate[8] = "";
-            uint8_t addr_type = Container[i].addr_type > ADDR_TYPE_ANONYMOUS ?
-                                ADDR_TYPE_ANONYMOUS : Container[i].addr_type;
+              total_objects++;
 
-            bearing = Container[i].bearing;
-            alarm_level = Container[i].alarm_level;
-            alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
+              char str_climb_rate[8] = "";
+              uint8_t addr_type = Container[i].addr_type > ADDR_TYPE_ANONYMOUS ?
+                                  ADDR_TYPE_ANONYMOUS : Container[i].addr_type;
 
-            if (!Container[i].stealth && !ThisAircraft.stealth) {
-              dtostrf(
-                constrain(Container[i].vs / (_GPS_FEET_PER_METER * 60.0), -32.7, 32.7),
-                5, 1, str_climb_rate);
+              bearing = Container[i].bearing;
+              alarm_level = Container[i].alarm_level;
+              alt_diff = (int) (Container[i].altitude - ThisAircraft.altitude);
+
+              if (!Container[i].stealth && !ThisAircraft.stealth) {
+                dtostrf(
+                  constrain(Container[i].vs / (_GPS_FEET_PER_METER * 60.0), -32.7, 32.7),
+                  5, 1, str_climb_rate);
+              }
+
+              /*
+               * When callsign is available - send it to a NMEA client.
+               * If it is not - generate a callsign substitute,
+               * based upon a protocol ID and the ICAO address
+               */
+              memset((void *) NMEA_Callsign, 0, sizeof(NMEA_Callsign));
+
+              if (strnlen((char *) Container[i].callsign, sizeof(Container[i].callsign)) > 0) {
+                memcpy(NMEA_Callsign, Container[i].callsign, sizeof(Container[i].callsign));
+              } else {
+                memcpy(NMEA_Callsign, NMEA_CallSign_Prefix[Container[i].protocol],
+                  strlen(NMEA_CallSign_Prefix[Container[i].protocol]));
+
+                String str = "_";
+
+                ADDR_TO_HEX_STR(str, (Container[i].addr >> 16) & 0xFF);
+                ADDR_TO_HEX_STR(str, (Container[i].addr >>  8) & 0xFF);
+                ADDR_TO_HEX_STR(str, (Container[i].addr      ) & 0xFF);
+
+                str.toUpperCase();
+                memcpy(NMEA_Callsign + strlen(NMEA_CallSign_Prefix[Container[i].protocol]),
+                  str.c_str(), str.length());
+              }
+
+              snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d*"),
+                      alarm_level,
+                      (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
+                      alt_diff, addr_type, Container[i].addr, NMEA_Callsign,
+                      (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
+                      ltrim(str_climb_rate), Container[i].aircraft_type);
+
+              NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
+
+              NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
+
+              /* Most close traffic is treated as highest priority target */
+              if (distance < HP_distance) {
+                HP_bearing = bearing;
+                HP_alt_diff = alt_diff;
+                HP_alarm_level = alarm_level;
+                HP_distance = distance;
+                HP_addr = Container[i].addr;
+              }
+
             }
-
-            /*
-             * When callsign is available - send it to a NMEA client.
-             * If it is not - generate a callsign substitute,
-             * based upon a protocol ID and the ICAO address
-             */
-            memset((void *) NMEA_Callsign, 0, sizeof(NMEA_Callsign));
-
-            if (strnlen((char *) Container[i].callsign, sizeof(Container[i].callsign)) > 0) {
-              memcpy(NMEA_Callsign, Container[i].callsign, sizeof(Container[i].callsign));
-            } else {
-              memcpy(NMEA_Callsign, NMEA_CallSign_Prefix[Container[i].protocol],
-                strlen(NMEA_CallSign_Prefix[Container[i].protocol]));
-
-              String str = "_";
-
-              ADDR_TO_HEX_STR(str, (Container[i].addr >> 16) & 0xFF);
-              ADDR_TO_HEX_STR(str, (Container[i].addr >>  8) & 0xFF);
-              ADDR_TO_HEX_STR(str, (Container[i].addr      ) & 0xFF);
-
-              str.toUpperCase();
-              memcpy(NMEA_Callsign + strlen(NMEA_CallSign_Prefix[Container[i].protocol]),
-                str.c_str(), str.length());
-            }
-
-            snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d*"),
-                    alarm_level,
-                    (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
-                    alt_diff, addr_type, Container[i].addr, NMEA_Callsign,
-                    (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
-                    ltrim(str_climb_rate), Container[i].aircraft_type);
-
-            NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
-
-            NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
-
-            /* Most close traffic is treated as highest priority target */
-            if (distance < HP_distance) {
-              HP_bearing = bearing;
-              HP_alt_diff = alt_diff;
-              HP_alarm_level = alarm_level;
-              HP_distance = distance;
-            }
-
           }
         }
       }
@@ -354,11 +357,25 @@ void NMEA_Export()
     /* One PFLAU NMEA sentence is mandatory regardless of traffic reception status */
     if (settings->nmea_l) {
 
-      snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u*"),
-              total_objects, TX_STATUS_ON, GNSS_STATUS_3D_MOVING,
-              POWER_STATUS_GOOD, HP_alarm_level,
-              (HP_bearing < 180 ? HP_bearing : HP_bearing - 360),
-              ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance );
+      if (total_objects > 0) {
+        snprintf_P(NMEABuffer, sizeof(NMEABuffer),
+                PSTR("$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u,%06X" PFLAU_EXT1_FMT "*"),
+                total_objects,
+                settings->txpower == RF_TX_POWER_OFF ? TX_STATUS_OFF : TX_STATUS_ON,
+                GNSS_STATUS_3D_MOVING,
+                POWER_STATUS_GOOD, HP_alarm_level,
+                (HP_bearing < 180 ? HP_bearing : HP_bearing - 360),
+                ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance, HP_addr
+                PFLAU_EXT1_ARGS );
+      } else {
+        snprintf_P(NMEABuffer, sizeof(NMEABuffer),
+                PSTR("$PFLAU,0,%d,%d,%d,%d,,0,,," PFLAU_EXT1_FMT "*"),
+                has_Fix && (settings->txpower != RF_TX_POWER_OFF) ?
+                  TX_STATUS_ON : TX_STATUS_OFF,
+                has_Fix ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE,
+                POWER_STATUS_GOOD, HP_alarm_level
+                PFLAU_EXT1_ARGS );
+      }
 
       NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 

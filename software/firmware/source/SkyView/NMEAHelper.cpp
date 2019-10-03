@@ -298,7 +298,7 @@ void NMEA_loop()
     }
     /* read data from microUSB port */
 #if !defined(RASPBERRY_PI)
-    if (Serial != SerialInput)
+    if ((void *) &Serial != (void *) &SerialInput)
 #endif
     {
       while (Serial.available() > 0) {

@@ -596,9 +596,7 @@ void normal()
   }
 
   if (isTimeToExport()) {
-    if (isValidGNSSFix()) {
-      NMEA_Export();
-    }
+    NMEA_Export();
     GDL90_Export();
 //    D1090_Export();
     ExportTimeMarker = millis();
