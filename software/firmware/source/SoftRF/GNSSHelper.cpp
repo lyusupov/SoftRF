@@ -654,10 +654,18 @@ void PickGNSSFix()
    * WARNING! Make use only one input source at a time.
    */
   while (true) {
+#if !defined(USE_NMEA_CFG)
     if (swSer.available() > 0) {
       c = swSer.read();
     } else if (Serial.available() > 0) {
       c = Serial.read();
+#else
+    /* Give priority to 'control' channel on STM32-based 'Retro' platform */
+    if (Serial.available() > 0) {
+      c = Serial.read();
+    } else if (swSer.available() > 0) {
+      c = swSer.read();
+#endif /* USE_NMEA_CFG */
     } else if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
       c = SoC->Bluetooth->read();
     } else {
@@ -730,7 +738,7 @@ void PickGNSSFix()
         }
       }
 #if defined(USE_NMEA_CFG)
-      if (C_Version.isUpdated() && atoi(C_Version.value()) == 1) {
+      if (C_Version.isUpdated() && atoi(C_Version.value()) == PSRFC_VERSION) {
         bool cfg_is_updated = false;
 
         if (C_Mode.isUpdated())

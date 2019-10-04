@@ -122,8 +122,12 @@ typedef struct nmea_status_struct {
 
 #define NMEA_BUFFER_SIZE    128
 
+#define PSRFC_VERSION       1
+
 void NMEA_setup(void);
 void NMEA_loop(void);
+
+bool NMEA_Save_Settings(void);
 
 bool NMEA_isConnected(void);
 bool NMEA_hasGNSS(void);

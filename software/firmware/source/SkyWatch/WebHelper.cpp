@@ -810,7 +810,7 @@ void handleRoot() {
   time_t timestamp = now();
   char str_Vcc[8];
 
-  size_t size = 2300;
+  size_t size = 2500;
   char *offset;
   size_t len = 0;
 
@@ -848,7 +848,8 @@ void handleRoot() {
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
     hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
-    hw_info.display      == DISPLAY_OLED_2_4 ? "OLED" : "NONE",
+    hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
+    hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
     settings->m.connection == CON_SERIAL       ? "Serial" :
     settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
     settings->m.connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
@@ -894,11 +895,26 @@ void handleRoot() {
         PSTR("\
   <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
   <tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
+  <tr><th align=left>Slave Id</th><td align=right>%X</td></tr>\
+  <tr><th align=left>RF protocol</th><td align=right>%s</td></tr>\
+  </table>\
+  <table width=100%%>\
+   <tr><th align=left>Packets</th>\
+    <td align=right><table><tr>\
+     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
+     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
+   </tr></table></td></tr>\
   "),
         NMEA_isConnected() ? "" : "not",
         NMEA_isConnected() && !(NMEA_hasGNSS() || NMEA_hasFLARM()) ? "UNK" : "",
         NMEA_hasGNSS()     ? "GNSS"  : "",
-        NMEA_hasFLARM()    ? "FLARM" : ""
+        NMEA_hasFLARM()    ? "FLARM" : "",
+        ThisDevice.addr,
+        ThisDevice.protocol == RF_PROTOCOL_LEGACY ? "Legacy" :
+        ThisDevice.protocol == RF_PROTOCOL_OGNTP  ? "OGNTP"  :
+        ThisDevice.protocol == RF_PROTOCOL_P3I    ? "P3I"    :
+        ThisDevice.protocol == RF_PROTOCOL_FANET  ? "FANET"  : "UNK",
+        tx_packets_counter, rx_packets_counter
       );
       break;
     }
@@ -1088,6 +1104,7 @@ PSTR("<html>\
 //  SoC->swSer_enableRx(true);
   delay(1000);
   free(Input_temp);
+  NMEA_Save_Settings();
   EEPROM_store();
   delay(1000);
   ESP.restart();

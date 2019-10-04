@@ -449,6 +449,22 @@ void NMEA_loop()
 #endif
 }
 
+bool NMEA_Save_Settings()
+{
+    snprintf_P(NMEABuffer, sizeof(NMEABuffer),
+            PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
+            PSRFC_VERSION, settings->s.mode, settings->s.rf_protocol,
+            settings->s.band, settings->s.aircraft_type, settings->s.alarm,
+            settings->s.txpower, BUZZER_OFF, LED_OFF,
+            settings->s.nmea_g, settings->s.nmea_p, settings->s.nmea_l,
+            settings->s.nmea_s, NMEA_UART, GDL90_OFF,
+            D1090_OFF, settings->s.stealth, settings->s.no_track );
+
+    NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
+
+    SerialInput.write((byte *) NMEABuffer, strlen(NMEABuffer));
+}
+
 bool NMEA_isConnected()
 {
   return (NMEA_TimeMarker > DATA_TIMEOUT &&

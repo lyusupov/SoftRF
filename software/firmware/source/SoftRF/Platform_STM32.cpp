@@ -89,8 +89,41 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_FANET]     = "F"
 };
 
+static struct rst_info reset_info = {
+  .reason = REASON_DEFAULT_RST,
+};
+
 static void STM32_setup()
 {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
+    {
+        reset_info.reason = REASON_WDT_RST; // "LOW_POWER_RESET"
+    }
+    else if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST))
+    {
+        reset_info.reason = REASON_WDT_RST; // "WINDOW_WATCHDOG_RESET"
+    }
+    else if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))
+    {
+        reset_info.reason = REASON_SOFT_WDT_RST; // "INDEPENDENT_WATCHDOG_RESET"
+    }
+    else if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST))
+    {
+        // This reset is induced by calling the ARM CMSIS `NVIC_SystemReset()` function!
+        reset_info.reason = REASON_SOFT_RESTART; // "SOFTWARE_RESET"
+    }
+    else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
+    {
+        reset_info.reason = REASON_DEFAULT_RST; // "POWER-ON_RESET (POR) / POWER-DOWN_RESET (PDR)"
+    }
+    else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
+    {
+        reset_info.reason = REASON_EXT_SYS_RST; // "EXTERNAL_RESET_PIN_RESET"
+    }
+
+    // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+
   /* TBD */
 }
 
@@ -118,6 +151,26 @@ static uint32_t STM32_getChipId()
 
   /* Same method as STM32 OGN tracker does */
   return UniqueID[0] ^ UniqueID[1] ^ UniqueID[2];
+}
+
+static void* STM32_getResetInfoPtr()
+{
+  return (void *) &reset_info;
+}
+
+static String STM32_getResetReason()
+{
+  switch (reset_info.reason)
+  {
+    case REASON_DEFAULT_RST       : return F("DEFAULT");
+    case REASON_WDT_RST           : return F("WDT");
+    case REASON_EXCEPTION_RST     : return F("EXCEPTION");
+    case REASON_SOFT_WDT_RST      : return F("SOFT_WDT");
+    case REASON_SOFT_RESTART      : return F("SOFT_RESTART");
+    case REASON_DEEP_SLEEP_AWAKE  : return F("DEEP_SLEEP_AWAKE");
+    case REASON_EXT_SYS_RST       : return F("EXT_SYS");
+    default                       : return F("NO_MEAN");
+  }
 }
 
 static long STM32_random(long howsmall, long howBig)
@@ -193,18 +246,20 @@ static void STM32_swSer_begin(unsigned long baud)
 
   // swSer.write("@VER\r\n");
 
-  /* Idle */
-  swSer.write("@GSTP\r\n");      delay(250);
-  /* GGA + GSA + RMC */
-  swSer.write("@BSSL 0x25\r\n"); delay(250);
-  /* GPS + GLONASS */
-  swSer.write("@GNS 0x3\r\n");   delay(250);
+  if (reset_info.reason == REASON_DEFAULT_RST) {
+    /* Idle */
+    swSer.write("@GSTP\r\n");      delay(250);
+    /* GGA + GSA + RMC */
+    swSer.write("@BSSL 0x25\r\n"); delay(250);
+    /* GPS + GLONASS */
+    swSer.write("@GNS 0x3\r\n");   delay(250);
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
-  /* Enable 1PPS output */
-  swSer.write("@GPPS 0x1\r\n");   delay(250);
+    /* Enable 1PPS output */
+    swSer.write("@GPPS 0x1\r\n");   delay(250);
 #endif
-  /* hot start */
-  swSer.write("@GSR\r\n");       delay(250);
+    /* hot start */
+    swSer.write("@GSR\r\n");       delay(250);
+  }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
@@ -416,9 +471,9 @@ const SoC_ops_t STM32_ops = {
   STM32_fini,
   STM32_reset,
   STM32_getChipId,
+  STM32_getResetInfoPtr,
   NULL,
-  NULL,
-  NULL,
+  STM32_getResetReason,
   STM32_random,
   STM32_Sound_test,
   NULL,
