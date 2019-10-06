@@ -211,6 +211,19 @@ byte RF_setup(void)
   }
 }
 
+#define DELAY_PPS_GPSTIME 200  // approx msec between PPS and time in NMEA sentence
+#define SLOT1_START       400  // slot1 start msec after PPS
+#define SLOT1_ADVANCE     100  // advance slot1 to mid of dead time between slots
+#define SLOT2_START       800  // slot2 start msec after PPS
+#define SLOT_DURATION     400  // slot msec duration
+
+static long TimeReference =   0;  // Hop reference timing
+static long TimeReference_2 = 0; 
+static long Now_millis =      0;
+static long prev_TimeCommit = 0;
+uint8_t Slot = 0;
+time_t slotTime = 0;
+
 void RF_SetChannel(void)
 {
   tmElements_t tm;
@@ -227,19 +240,75 @@ void RF_SetChannel(void)
   case SOFTRF_MODE_NORMAL:
   default:
     unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
-    unsigned long time_corr_pos = 0;
+//    unsigned long time_corr_pos = 0;
     unsigned long time_corr_neg = 0;
-
+    unsigned long timeAge = 0;
+    unsigned long lastCommitTime = (Now_millis = millis()) - (timeAge = gnss.time.age());
+	
+    // HOP Testing - NMEA sentence time commit
+    //Serial.printf("Commit: %d, %d, %d\r\n", lastCommitTime, prev_TimeCommit, pps_btime_ms);
+	
+	// Time could be in GGA or RMC. For consistency must pick only first one
+	// problem is that the second commit is 450 msec after the first or only 550 before next !
+	// not needed if PPS is available
+	if (lastCommitTime - prev_TimeCommit < 500) {
+	  lastCommitTime = prev_TimeCommit;
+      timeAge = Now_millis - lastCommitTime;
+	} else {
+	  prev_TimeCommit = lastCommitTime;
+	}
+    
+    // if PPS available, reference time is PPS relative for accuracy
     if (pps_btime_ms) {
-      unsigned long lastCommitTime = millis() - gnss.time.age();
+      // calculate delta time from millis() to PPS reference
       if (pps_btime_ms <= lastCommitTime) {
         time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
       } else {
         time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
       }
-      time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
+    } else {  // no PPS, approximate reference delay
+      time_corr_neg = DELAY_PPS_GPSTIME;
     }
 
+    // only frequency hop with legacy and OGN protocols
+    switch (settings->rf_protocol) {
+      case RF_PROTOCOL_LEGACY: 
+      case RF_PROTOCOL_OGNTP: 
+        if ((Now_millis - TimeReference) >= 1000) {   
+	      if (pps_btime_ms) {
+	        TimeReference = pps_btime_ms +SLOT1_START -SLOT1_ADVANCE -0; // allow for latency ?
+		  } else {
+            TimeReference = lastCommitTime -time_corr_neg +SLOT1_START -SLOT1_ADVANCE;
+		  }
+          Slot = 0;
+          if ((Now_millis - TimeReference) >= 1000) { // has PPS stopped ?
+		    TxTimeMarker = Now_millis;                // if so no Tx
+			return;
+		  } else {
+            TxTimeMarker = TimeReference;
+		  }
+          TxRandomValue = SoC->random(0, SLOT_DURATION -10) +SLOT1_ADVANCE;  // allow some margin
+        } else {
+          if ((Now_millis - TimeReference_2) >= 1000) {
+	        TimeReference_2 = TimeReference +SLOT_DURATION +SLOT1_ADVANCE;
+            Slot = 1;
+            TxTimeMarker = TimeReference_2;
+            TxRandomValue = SoC->random(10, SLOT_DURATION -0);  //  allow some margin
+          } else {
+ 	        return;	  
+          }
+	    }
+        break;
+      default:
+        /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
+        Slot = 0;
+        break;
+    }
+
+    // HOP Testing - slot timing 400 and 800 msec after PPS
+    //Serial.printf("Timing: %d, %d, %d, %d, %d, %d, %d\r\n", Now_millis, pps_btime_ms, timeAge, time_corr_neg, TimeReference, TxRandomValue, Slot);
+
+    // latest time from GPS
     int yr = gnss.date.year();
     if( yr > 99)
         yr = yr - 1970;
@@ -252,20 +321,18 @@ void RF_SetChannel(void)
     tm.Minute = gnss.time.minute();
     tm.Second = gnss.time.second();
 
-    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
+    // time right now is:
+    slotTime = Time = makeTime(tm) + (timeAge + time_corr_neg)/ 1000;
     break;
   }
 
-  uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
   uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-  /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
-  if (settings->rf_protocol == RF_PROTOCOL_FANET) {
-    Slot = 0;
-  }
 
   uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
 
+  // HOP Testing - time and channel
+  //Serial.printf("Time: %d, %d\r\n", Time,chan);
+  
 #if DEBUG
   Serial.print("Plan: "); Serial.println(RF_FreqPlan.Plan);
   Serial.print("Slot: "); Serial.println(Slot);
@@ -307,6 +374,12 @@ size_t RF_Encode(ufo_t *fop)
     }
 
     if ((millis() - TxTimeMarker) > TxRandomValue) {
+      switch (settings->rf_protocol) {
+        case RF_PROTOCOL_LEGACY: 
+        case RF_PROTOCOL_OGNTP: 
+          fop->timestamp = slotTime;
+		  break;  
+	    }
       size = (*protocol_encode)((void *) &TxBuffer[0], fop);
     }
   }
@@ -338,11 +411,22 @@ bool RF_Transmit(size_t size, bool wait)
       tx_packets_counter++;
       RF_tx_size = 0;
 
-      TxRandomValue = (LMIC.protocol ?
-        SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
-        SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
-
-      TxTimeMarker = millis();
+      switch (settings->rf_protocol) {
+        case RF_PROTOCOL_LEGACY: 
+        case RF_PROTOCOL_OGNTP: 
+          TxRandomValue = 2000;   // HOP - stop any re-trigger for now until next channel change
+          TxTimeMarker = millis();
+          break;
+      default:
+        TxRandomValue = (LMIC.protocol ?
+          SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
+          SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
+        TxTimeMarker = millis();
+        break;
+      }
+      
+      // HOP testing - transmit time
+      //Serial.printf("Tx: %d, %d, %d\r\n", millis(), TxTimeMarker, TxRandomValue);
 
       return true;
     }
@@ -776,6 +860,8 @@ void sx1276_transmit()
       os_runloop_once();
       yield();
     };
+    // HOP - LED pulse
+    digitalWrite(14, HIGH);  // HOP - high only, reset to 0 by LED loop
 }
 
 void sx1276_shutdown()
