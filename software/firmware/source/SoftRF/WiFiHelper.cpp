@@ -29,6 +29,7 @@
 #include "WebHelper.h"
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
+#include "tcpip_adapter.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
@@ -189,6 +190,24 @@ void Raw_Transmit_UDP()
     SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, len + 1);
 }
 
+// DHCP Lease time check and set
+void printLeaseTime(){
+  uint32_t leaseTime = 0;
+  if(!tcpip_adapter_dhcps_option(TCPIP_ADAPTER_OP_GET,TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,(void*)&leaseTime, 4)){
+    Serial.printf("DHCPS Lease Time: %u\r\n", leaseTime);
+  }
+}
+void setLeaseTime(){
+  uint32_t lease_time = 24*60; // 24 hours
+  tcpip_adapter_dhcps_stop(TCPIP_ADAPTER_IF_AP);
+  tcpip_adapter_dhcps_option(
+    (tcpip_adapter_option_mode_t)TCPIP_ADAPTER_OP_SET,
+    (tcpip_adapter_option_id_t)TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
+    (void*)&lease_time, sizeof(uint32_t)
+  );
+  tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP);
+}
+
 /**
  * @brief Arduino setup function.
  */
@@ -293,6 +312,10 @@ void WiFi_setup()
 #endif
     Serial.print(F("IP address: "));
     Serial.println(WiFi.softAPIP());
+	  // DHCP lease time
+    //printLeaseTime(); // show before
+    setLeaseTime();
+    printLeaseTime();   // show after 
   }
 
   Uni_Udp.begin(RFlocalPort);
