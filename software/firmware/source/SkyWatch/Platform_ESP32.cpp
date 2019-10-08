@@ -37,6 +37,7 @@
 #include <battery.h>
 #include <sqlite3.h>
 #include <SD.h>
+#include <bma.h>
 
 #include "driver/i2s.h"
 
@@ -50,6 +51,8 @@ WebServer server ( 80 );
 
 AXP20X_Class  axp;
 PCF8563_Class rtc;
+BMA *bma = nullptr;
+I2CBus *i2c = nullptr;
 
 static union {
   uint8_t efuse_mac[6];
@@ -87,7 +90,9 @@ i2s_pin_config_t pin_config = {
 
 RTC_DATA_ATTR int bootCount   = 0;
 static portMUX_TYPE PMU_mutex = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE BMA_mutex = portMUX_INITIALIZER_UNLOCKED;
 volatile bool PMU_Irq         = false;
+volatile bool BMA_Irq         = false;
 
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
@@ -95,9 +100,27 @@ static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portEXIT_CRITICAL_ISR(&PMU_mutex);
 }
 
+static void IRAM_ATTR ESP32_BMA_Interrupt_handler() {
+  portENTER_CRITICAL_ISR(&BMA_mutex);
+  BMA_Irq = true;
+  portEXIT_CRITICAL_ISR(&BMA_mutex);
+}
+
 static uint32_t ESP32_getFlashId()
 {
   return g_rom_flashchip.device_id;
+}
+
+static uint8_t ESP32_I2C_readBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
+{
+    if (!i2c) return 0xFF;
+    return i2c->readBytes(devAddress, regAddress, data, len);
+}
+
+static uint8_t ESP32_I2C_writeBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
+{
+    if (!i2c) return 0xFF;
+    return i2c->writeBytes(devAddress, regAddress, data, len);
 }
 
 static void ESP32_setup()
@@ -163,14 +186,24 @@ static void ESP32_setup()
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
+    bool axp_present = false;
+    bool bma_present = false;
+
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
-    if (Wire1.endTransmission() == 0) {
+    axp_present = (Wire1.endTransmission() == 0);
 
-      axp.begin(Wire1, AXP202_SLAVE_ADDRESS);
+    Wire1.beginTransmission(BMA4_I2C_ADDR_SECONDARY);
+    bma_present = (Wire1.endTransmission() == 0);
+
+    i2c = new I2CBus(Wire1, SOC_GPIO_PIN_TWATCH_SEN_SDA, SOC_GPIO_PIN_TWATCH_SEN_SCL);
+
+    if (axp_present && (i2c != nullptr)) {
+      axp.begin(ESP32_I2C_readBytes, ESP32_I2C_writeBytes, AXP202_SLAVE_ADDRESS);
 
       axp.enableIRQ(AXP202_ALL_IRQ, AXP202_OFF);
       axp.adc1Enable(0xFF, AXP202_OFF);
+      axp.adc2Enable(0xFF, AXP202_OFF);
 
       axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
 
@@ -184,12 +217,27 @@ static void ESP32_setup()
       attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWATCH_PMU_IRQ),
                       ESP32_PMU_Interrupt_handler, FALLING);
 
+#if DEBUG_POWER
+      axp.adc1Enable(AXP202_BATT_VOL_ADC1 | AXP202_BATT_CUR_ADC1 |
+                     AXP202_VBUS_VOL_ADC1 | AXP202_VBUS_CUR_ADC1, AXP202_ON);
+#else
       axp.adc1Enable(AXP202_BATT_VOL_ADC1, AXP202_ON);
+#endif
+
+
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
     }
 
-    rtc.begin(Wire1);
+    if (bma_present && (i2c != nullptr)) {
+      bma = new BMA(*i2c);
+
+      pinMode(SOC_GPIO_PIN_TWATCH_BMA_IRQ, INPUT);
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWATCH_BMA_IRQ),
+                      ESP32_BMA_Interrupt_handler, RISING);
+    }
+
+//    rtc.begin(Wire1);
   }
 
   /* SD-SPI init */
@@ -339,7 +387,6 @@ static void ESP32_WiFiUDP_stopAll()
 /* not implemented yet */
 }
 
-
 static IPAddress ESP32_WiFi_get_broadcast()
 {
   tcpip_adapter_ip_info_t info;
@@ -395,6 +442,26 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
   return 0; // WiFi_Receive_UDP(buf, max_size);
+}
+
+static int ESP32_WiFi_clients_count()
+{
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+  case WIFI_AP:
+    wifi_sta_list_t stations;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
+
+    tcpip_adapter_sta_list_t infoList;
+    ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
+
+    return infoList.num;
+  case WIFI_STA:
+  default:
+    return -1; /* error */
+  }
 }
 
 static void ESP32_swSer_begin(unsigned long baud)
@@ -913,6 +980,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFiUDP_stopAll,
   ESP32_WiFi_transmit_UDP,
   ESP32_WiFi_Receive_UDP,
+  ESP32_WiFi_clients_count,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
   ESP32_maxSketchSpace,

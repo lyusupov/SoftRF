@@ -38,6 +38,7 @@ typedef struct SoC_ops_struct {
   void (*WiFiUDP_stopAll)();
   void (*WiFi_transmit_UDP)(int, byte *, size_t);
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
+  int  (*WiFi_clients_count)();
   void (*swSer_begin)(unsigned long);
   void (*swSer_enableRx)(boolean);
   uint32_t (*maxSketchSpace)();

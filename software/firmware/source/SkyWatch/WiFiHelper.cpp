@@ -291,7 +291,7 @@ void WiFi_loop()
         WiFi_fini();
 
         if (settings->s.nmea_p) {
-          StdOut.println(F("$PSRFS,WIFI_OFF"));
+          Serial.println(F("$PSRFS,WIFI_OFF"));
         }
       }
     } else {

@@ -494,7 +494,7 @@ void handleSettings() {
 <td align=right>\
 <select name='power_save'>\
 <option %s value='%d'>Disabled</option>\
-<option %s value='%d'>WiFi OFF (10 min.)</option>\
+<option %s value='%d'>WiFi OFF (5 min.)</option>\
 </select>\
 </td>\
 </tr>\

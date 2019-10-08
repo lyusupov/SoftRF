@@ -19,15 +19,18 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <protocol.h>
+#include <FT5206.h>
 
 #include "SoCHelper.h"
 #include "TFTHelper.h"
 #include "EEPROMHelper.h"
 #include "TrafficHelper.h"
+#include "BaroHelper.h"
 
 #include "SkyWatch.h"
 
 static TFT_eSPI *tft = NULL;
+static FT5206_Class *tp = NULL;
 
 unsigned long TFTTimeMarker = 0;
 
@@ -55,6 +58,61 @@ const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";
 const char TX_text[]       = "TX";
 
+void TFT_off()
+{
+    tft->writecommand(TFT_DISPOFF);
+    tft->writecommand(TFT_SLPIN);
+    if (tp) {
+      tp->enterSleepMode();
+    }
+}
+
+void TFT_sleep()
+{
+    tft->writecommand(TFT_DISPOFF);
+    tft->writecommand(TFT_SLPIN);
+    if (tp) {
+      tp->enterMonitorMode();
+    }
+}
+
+void TFT_wakeup()
+{
+    tft->writecommand(TFT_SLPOUT);
+    tft->writecommand(TFT_DISPON);
+}
+
+void TFT_backlight_init(void)
+{
+    ledcAttachPin(SOC_GPIO_PIN_TWATCH_TFT_BL, 1);
+    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+}
+
+uint8_t TFT_backlight_getLevel()
+{
+    return ledcRead(BACKLIGHT_CHANNEL);
+}
+
+void TFT_backlight_adjust(uint8_t level)
+{
+    ledcWrite(BACKLIGHT_CHANNEL, level);
+}
+
+bool TFT_isBacklightOn()
+{
+    return (bool)ledcRead(BACKLIGHT_CHANNEL);
+}
+
+void TFT_backlight_off()
+{
+    ledcWrite(BACKLIGHT_CHANNEL, 0);
+}
+
+void TFT_backlight_on()
+{
+    ledcWrite(BACKLIGHT_CHANNEL, 250);
+}
+
 byte TFT_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -67,13 +125,25 @@ byte TFT_setup()
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
     tft->setRotation(0);
+
+    if (hw_info.baro == BARO_MODULE_NONE) {
+      pinMode(SOC_GPIO_PIN_TWATCH_TP_IRQ, INPUT);
+      Wire.begin(SOC_GPIO_PIN_TWATCH_TP_SDA, SOC_GPIO_PIN_TWATCH_TP_SCL);
+      tp = new FT5206_Class();
+      if (! tp->begin(Wire)) {
+          Serial.println("Couldn't start FT5206 touchscreen controller");
+      }
+
+      bma->begin();
+      bma->attachInterrupt();
+    }
+
     tft->fillScreen(TFT_NAVY);
 
-    ledcAttachPin(SOC_GPIO_PIN_TWATCH_TFT_BL, 1);
-    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+    TFT_backlight_init();
 
-    for (int level = 0; level < 255; level += 25) {
-      ledcWrite(BACKLIGHT_CHANNEL, level);
+    for (int level = 0; level <= 250; level += 25) {
+      TFT_backlight_adjust(level);
       delay(100);
     }
 
@@ -236,6 +306,31 @@ void TFT_loop()
           prev_tx_packets_counter = tx_packets_counter;
         }
       }
+
+      bool is_bma_irq = false;
+
+      portENTER_CRITICAL_ISR(&BMA_mutex);
+      is_bma_irq = BMA_Irq;
+      portEXIT_CRITICAL_ISR(&BMA_mutex);
+
+      if (is_bma_irq) {
+        bool  rlst;
+        do {
+            rlst =  bma->readInterrupt();
+        } while (!rlst);
+
+        if (bma->isDoubleClick()) {
+          if(TFT_isBacklightOn()) {
+            TFT_backlight_off();
+          } else {
+            TFT_backlight_on();
+          }
+        }
+
+        portENTER_CRITICAL_ISR(&BMA_mutex);
+        BMA_Irq = false;
+        portEXIT_CRITICAL_ISR(&BMA_mutex);
+      }
     }
 
     break;
@@ -254,8 +349,8 @@ void TFT_fini(const char *msg)
     if (tft) {
         int level;
 
-        for (level = 255; level > 0; level -= 25) {
-          ledcWrite(BACKLIGHT_CHANNEL, level);
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(level);
           delay(100);
         }
 
@@ -271,20 +366,20 @@ void TFT_fini(const char *msg)
         tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
         tft->print(msg);
 
-        for (level = 0; level < 255; level += 25) {
-          ledcWrite(BACKLIGHT_CHANNEL, level);
+        for (level = 0; level <= 250; level += 25) {
+          TFT_backlight_adjust(level);
           delay(100);
         }
 
         delay(2000);
 
-        for (level = 255; level > 0; level -= 25) {
-          ledcWrite(BACKLIGHT_CHANNEL, level);
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(level);
           delay(100);
         }
 
-        ledcWrite(BACKLIGHT_CHANNEL, 0);
-        tft->writecommand(0x10);
+        TFT_backlight_off();
+        TFT_off();
         SPI.end();
     }
     break;
