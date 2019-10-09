@@ -39,7 +39,7 @@
 #include <SD.h>
 #include <bma.h>
 
-#include "driver/i2s.h"
+//#include "driver/i2s.h"
 
 #include <esp_wifi.h>
 #include <esp_bt.h>
@@ -65,6 +65,7 @@ static sqlite3 *icao_db;
 
 SPIClass SPI1(HSPI);
 
+#if 0
 /* variables hold file, state of process wav file and wav file properties */
 wavProperties_t wavProps;
 
@@ -87,6 +88,7 @@ i2s_pin_config_t pin_config = {
     .data_out_num = SOC_GPIO_PIN_DOUT,
     .data_in_num  = -1  // Not used
 };
+#endif
 
 RTC_DATA_ATTR int bootCount   = 0;
 static portMUX_TYPE PMU_mutex = portMUX_INITIALIZER_UNLOCKED;
@@ -667,6 +669,7 @@ static void ESP32_DB_fini()
     SD.end();
 }
 
+#if 0
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
 {
@@ -718,16 +721,6 @@ static void play_file(char *filename)
         n = readProps(wavfile, &wavProps);
         if(n == sizeof(wavProperties_t)){
           state = HEADER_DATA;
-#if 0
-            Serial.print("chunkID = "); Serial.println(wavProps.chunkID);
-            Serial.print("chunkSize = "); Serial.println(wavProps.chunkSize);
-            Serial.print("audioFormat = "); Serial.println(wavProps.audioFormat);
-            Serial.print("numChannels = "); Serial.println(wavProps.numChannels);
-            Serial.print("sampleRate = "); Serial.println(wavProps.sampleRate);
-            Serial.print("byteRate = "); Serial.println(wavProps.byteRate);
-            Serial.print("blockAlign = "); Serial.println(wavProps.blockAlign);
-            Serial.print("bitsPerSample = "); Serial.println(wavProps.bitsPerSample);
-#endif
         }
         break;
         case HEADER_DATA:
@@ -823,6 +816,7 @@ static void play_memory(const unsigned char *data, int size)
 }
 
 #include "Melody.h"
+#endif
 
 static void ESP32_TTS(char *message)
 {

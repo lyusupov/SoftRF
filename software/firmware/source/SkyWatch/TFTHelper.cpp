@@ -18,7 +18,7 @@
 
 #include <SPI.h>
 #include <TFT_eSPI.h>
-#include <protocol.h>
+
 #include <FT5206.h>
 
 #include "SoCHelper.h"
@@ -29,37 +29,17 @@
 
 #include "SkyWatch.h"
 
-static TFT_eSPI *tft = NULL;
+TFT_eSPI *tft = NULL;
 static FT5206_Class *tp = NULL;
 
+bool TFT_display_frontpage = false;
 unsigned long TFTTimeMarker = 0;
 
-static bool TFT_display_frontpage = false;
-static uint32_t prev_tx_packets_counter = 0;
-static uint32_t prev_rx_packets_counter = 0;
-static uint8_t  prev_protocol = 0;
-static uint32_t prev_addr = 0;
-
-static int FT_view_mode = 0;
+static int TFT_view_mode = 0;
 
 static Gesture_t gesture = { false, {0,0}, {0,0} };
 
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
-const char *TFT_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "L",
-  [RF_PROTOCOL_OGNTP]     = "O",
-  [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
-  [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
-};
-
 const char SoftRF_text[]   = "SoftRF";
-const char ID_text[]       = "ID";
-const char PROTOCOL_text[] = "PROTOCOL";
-const char RX_text[]       = "RX";
-const char TX_text[]       = "TX";
 
 void TFT_off()
 {
@@ -120,6 +100,8 @@ byte TFT_setup()
 {
   byte rval = DISPLAY_NONE;
 
+  TFT_view_mode = settings->m.vmode;
+
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
     SPI.begin(SOC_GPIO_PIN_TWATCH_TFT_SCK, SOC_GPIO_PIN_TWATCH_TFT_MISO,
@@ -162,152 +144,31 @@ byte TFT_setup()
     rval = DISPLAY_TFT_TTGO;
   }
 
+//  TFT_radar_setup();
+  TFT_status_setup();
+
   return rval;
 }
 
 void TFT_loop()
 {
-  char buf[16];
-  uint32_t disp_value;
-
-  uint16_t tbw;
-  uint16_t tbh;
-
   switch (hw_info.display)
   {
   case DISPLAY_TFT_TTGO:
     if (tft) {
-      if (!TFT_display_frontpage) {
-        tft->fillScreen(TFT_NAVY);
 
-        tft->setTextFont(2);
-        tft->setTextSize(2);
-        tft->setTextColor(TFT_WHITE, TFT_NAVY);
-
-        tbw = tft->textWidth(ID_text);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth(" "), tft->height()/6 - tbh);
-        tft->print(ID_text);
-
-        tbw = tft->textWidth(PROTOCOL_text);
-
-        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                       tft->height()/6 - tbh);
-        tft->print(PROTOCOL_text);
-
-        tbw = tft->textWidth(RX_text);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth("   "), tft->height()/2 - tbh);
-        tft->print(RX_text);
-
-        tbw = tft->textWidth(TX_text);
-
-        tft->setCursor(tft->width()/2 + tft->textWidth("   "),
-                       tft->height()/2 - tbh);
-        tft->print(TX_text);
-
-        tft->setTextFont(4);
-        tft->setTextSize(2);
-
-        itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
-
-        tbw = tft->textWidth(buf);
-        tbh = tft->fontHeight();
-
-        tft->setCursor(tft->textWidth(" "), tft->height()/6);
-        tft->print(buf);
-        prev_addr = ThisDevice.addr;
-
-        tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
-
-        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                       tft->height()/6);
-        tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
-        prev_protocol = ThisDevice.protocol;
-
-        itoa(rx_packets_counter % 1000, buf, 10);
-        tft->setCursor(tft->textWidth(" "), tft->height()/2);
-        tft->print(buf);
-        prev_rx_packets_counter = rx_packets_counter;
-
-        itoa(tx_packets_counter % 1000, buf, 10);
-        tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-        tft->print(buf);
-        prev_tx_packets_counter = tx_packets_counter;
-
-        TFT_display_frontpage = true;
-
-      } else { /* TFT_display_frontpage */
-
-        if (ThisDevice.addr != prev_addr) {
-          itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tbw = tft->textWidth(buf);
-          tbh = tft->fontHeight();
-
-          tft->setCursor(tft->textWidth(" "), tft->height()/6);
-          tft->print(buf);
-          prev_addr = ThisDevice.addr;
-        }
-
-        if (ThisDevice.protocol != prev_protocol) {
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
-
-          tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                         tft->height()/6);
-          tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
-          prev_protocol = ThisDevice.protocol;
-        }
-
-        if (rx_packets_counter != prev_rx_packets_counter) {
-          disp_value = rx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tft->setCursor(tft->textWidth(" "), tft->height()/2);
-          tft->print(buf);
-
-          prev_rx_packets_counter = rx_packets_counter;
-        }
-        if (tx_packets_counter != prev_tx_packets_counter) {
-          disp_value = tx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          tft->setTextFont(4);
-          tft->setTextSize(2);
-
-          tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-          tft->print(buf);
-
-          prev_tx_packets_counter = tx_packets_counter;
-        }
+      switch (TFT_view_mode)
+      {
+      case VIEW_MODE_RADAR:
+//        TFT_radar_loop();
+        break;
+      case VIEW_MODE_TEXT:
+//        TFT_text_loop();
+        break;
+      case VIEW_MODE_STATUS:
+      default:
+        TFT_status_loop();
+        break;
       }
 
       bool is_bma_irq = false;
@@ -378,19 +239,30 @@ void TFT_loop()
         switch (tp_action)
         {
         case SWIPE_LEFT:
+          if (TFT_view_mode < VIEW_MODE_TEXT) {
+#if 0
+            TFT_view_mode++;
+            TFT_display_frontpage = false;
+#endif
+          }
           break;
         case SWIPE_RIGHT:
+          if (TFT_view_mode > VIEW_MODE_STATUS) {
+            TFT_view_mode--;
+            TFT_display_frontpage = false;
+          }
           break;
         case SWIPE_DOWN:
+          TFT_Up();
           break;
         case SWIPE_UP:
+          TFT_Down();
           break;
         case NO_GESTURE:
         default:
           break;
         }
       }
-
     }
 
     break;
@@ -447,5 +319,43 @@ void TFT_fini(const char *msg)
   case DISPLAY_NONE:
   default:
     break;
+  }
+}
+
+void TFT_Up()
+{
+  if (hw_info.display == DISPLAY_TFT_TTGO) {
+    switch (TFT_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+//      TFT_radar_unzoom();
+      break;
+    case VIEW_MODE_TEXT:
+//      TFT_text_prev();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      TFT_status_prev();
+      break;
+    }
+  }
+}
+
+void TFT_Down()
+{
+  if (hw_info.display == DISPLAY_TFT_TTGO) {
+    switch (TFT_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+//      TFT_radar_zoom();
+      break;
+    case VIEW_MODE_TEXT:
+//      TFT_text_next();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      TFT_status_next();
+      break;
+    }
   }
 }

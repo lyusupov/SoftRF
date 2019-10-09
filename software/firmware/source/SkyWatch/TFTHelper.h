@@ -19,6 +19,7 @@
 #ifndef TFTHELPER_H
 #define TFTHELPER_H
 
+#include <TFT_eSPI.h>
 #include <FT5206.h>
 
 #define TFT_EXPIRATION_TIME     5 /* seconds */
@@ -49,7 +50,16 @@ enum {
 byte TFT_setup();
 void TFT_loop();
 void TFT_fini(const char *);
+void TFT_Up();
+void TFT_Down();
 
+void TFT_status_setup();
+void TFT_status_loop();
+void TFT_status_next();
+void TFT_status_prev();
+
+extern TFT_eSPI *tft;
+extern bool TFT_display_frontpage;
 extern unsigned long TFTTimeMarker;
 
 #endif /* TFTHELPER_H */

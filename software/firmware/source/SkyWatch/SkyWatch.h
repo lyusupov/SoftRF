@@ -198,18 +198,11 @@ enum
 
 enum
 {
+	VIEW_MODE_STATUS,
 	VIEW_MODE_RADAR,
-	VIEW_MODE_TABLE,
-	VIEW_MODE_TEXT
+	VIEW_MODE_TEXT,
+	VIEW_MODE_TABLE
 };
-
-#if 0
-enum
-{
-	DIRECTION_TRACK_UP,
-	DIRECTION_NORTH_UP
-};
-#endif
 
 /*
  * 'Radar view' scale factor (outer circle diameter)
