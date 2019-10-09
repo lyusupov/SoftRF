@@ -329,6 +329,13 @@ static void ESP32_reset()
   ESP.restart();
 }
 
+static void ESP32_sleep_ms(int ms)
+{
+  esp_sleep_enable_timer_wakeup(ms * 1000);
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,ESP_PD_OPTION_ON);
+  esp_light_sleep_start();
+}
+
 static uint32_t ESP32_getChipId()
 {
   return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
@@ -973,6 +980,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_loop,
   ESP32_fini,
   ESP32_reset,
+  ESP32_sleep_ms,
   ESP32_getChipId,
   ESP32_EEPROM_begin,
   ESP32_WiFi_setOutputPower,

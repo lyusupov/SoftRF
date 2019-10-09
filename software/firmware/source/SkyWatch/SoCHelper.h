@@ -31,6 +31,7 @@ typedef struct SoC_ops_struct {
   void (*loop)();
   void (*fini)();
   void (*reset)();
+  void (*sleep_ms)(int);
   uint32_t (*getChipId)();
   bool (*EEPROM_begin)(size_t);
   void (*WiFi_setOutputPower)(int);

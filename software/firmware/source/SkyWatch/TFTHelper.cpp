@@ -41,6 +41,9 @@ static uint8_t  prev_protocol = 0;
 static uint32_t prev_addr = 0;
 
 static int FT_view_mode = 0;
+
+static Gesture_t gesture = { false, {0,0}, {0,0} };
+
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
 const char *TFT_Protocol_ID[] = {
@@ -331,6 +334,63 @@ void TFT_loop()
         BMA_Irq = false;
         portEXIT_CRITICAL_ISR(&BMA_mutex);
       }
+
+      if (tp) {
+        int tp_action = NO_GESTURE;
+
+        if (tp->touched()) {
+            TP_Point p =  tp->getPoint();
+            p.x = map(p.x, 0, TP_MAX_X, 0, LV_HOR_RES);
+            p.y = map(p.y, 0, TP_MAX_Y, 0, LV_VER_RES);
+
+            if (gesture.touched) {
+              gesture.d_loc = p;
+            } else {
+              gesture.t_loc = p; gesture.d_loc = p;
+              gesture.touched = true;
+            }
+        } else {
+            if (gesture.touched) {
+              int16_t threshold_x = tft->width() / 10;
+              int16_t threshold_y = tft->height() / 10;
+              int16_t limit_xl = tft->width()/2 - threshold_x;
+              int16_t limit_xr = tft->width()/2 + threshold_x;
+              int16_t limit_yt = tft->height()/2 - threshold_y;
+              int16_t limit_yb = tft->height()/2 + threshold_y;
+
+              if (gesture.d_loc.x < limit_xl && gesture.t_loc.x > limit_xr) {
+                tp_action = SWIPE_LEFT;
+              } else if (gesture.d_loc.x > limit_xr && gesture.t_loc.x < limit_xl) {
+                tp_action = SWIPE_RIGHT;
+              } else if (gesture.d_loc.y > limit_yb && gesture.t_loc.y < limit_yt) {
+                tp_action = SWIPE_DOWN;
+              } else if (gesture.d_loc.y < limit_yt && gesture.t_loc.y > limit_yb) {
+                tp_action = SWIPE_UP;
+              }
+
+              gesture.touched = false;
+              gesture.t_loc = gesture.d_loc = {0,0};
+            } else {
+               /* TBD */
+            }
+        }
+
+        switch (tp_action)
+        {
+        case SWIPE_LEFT:
+          break;
+        case SWIPE_RIGHT:
+          break;
+        case SWIPE_DOWN:
+          break;
+        case SWIPE_UP:
+          break;
+        case NO_GESTURE:
+        default:
+          break;
+        }
+      }
+
     }
 
     break;
