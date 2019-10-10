@@ -107,7 +107,7 @@ void EEPROM_defaults()
   strcpy(eeprom_block.field.settings.m.bt_key,    DEFAULT_BT_KEY);
 
   eeprom_block.field.settings.m.units           = UNITS_METRIC;
-  eeprom_block.field.settings.m.vmode           = VIEW_MODE_RADAR;
+  eeprom_block.field.settings.m.vmode           = VIEW_MODE_STATUS;
   eeprom_block.field.settings.m.zoom            = ZOOM_MEDIUM;
   eeprom_block.field.settings.m.adb             = DB_AUTO;
   eeprom_block.field.settings.m.idpref          = ID_REG;

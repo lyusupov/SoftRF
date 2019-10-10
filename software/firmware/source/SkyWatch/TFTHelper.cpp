@@ -96,6 +96,11 @@ void TFT_backlight_on()
     ledcWrite(BACKLIGHT_CHANNEL, 250);
 }
 
+void TFT_Clear_Screen()
+{
+  tft->fillScreen(TFT_NAVY);
+}
+
 byte TFT_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -144,8 +149,9 @@ byte TFT_setup()
     rval = DISPLAY_TFT_TTGO;
   }
 
-//  TFT_radar_setup();
   TFT_status_setup();
+  TFT_radar_setup();
+  TFT_text_setup();
 
   return rval;
 }
@@ -160,10 +166,10 @@ void TFT_loop()
       switch (TFT_view_mode)
       {
       case VIEW_MODE_RADAR:
-//        TFT_radar_loop();
+        TFT_radar_loop();
         break;
       case VIEW_MODE_TEXT:
-//        TFT_text_loop();
+        TFT_text_loop();
         break;
       case VIEW_MODE_STATUS:
       default:
@@ -240,10 +246,8 @@ void TFT_loop()
         {
         case SWIPE_LEFT:
           if (TFT_view_mode < VIEW_MODE_TEXT) {
-#if 0
             TFT_view_mode++;
             TFT_display_frontpage = false;
-#endif
           }
           break;
         case SWIPE_RIGHT:
@@ -328,10 +332,10 @@ void TFT_Up()
     switch (TFT_view_mode)
     {
     case VIEW_MODE_RADAR:
-//      TFT_radar_unzoom();
+      TFT_radar_unzoom();
       break;
     case VIEW_MODE_TEXT:
-//      TFT_text_prev();
+      TFT_text_prev();
       break;
     case VIEW_MODE_STATUS:
     default:
@@ -347,10 +351,10 @@ void TFT_Down()
     switch (TFT_view_mode)
     {
     case VIEW_MODE_RADAR:
-//      TFT_radar_zoom();
+      TFT_radar_zoom();
       break;
     case VIEW_MODE_TEXT:
-//      TFT_text_next();
+      TFT_text_next();
       break;
     case VIEW_MODE_STATUS:
     default:

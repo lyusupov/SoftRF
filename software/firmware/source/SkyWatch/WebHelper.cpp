@@ -665,6 +665,7 @@ void handleSettings() {
 <th align=left>View mode</th>\
 <td align=right>\
 <select name='vmode'>\
+<option %s value='%d'>status</option>\
 <option %s value='%d'>radar</option>\
 <option %s value='%d'>text</option>\
 </select>\
@@ -711,11 +712,12 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
-  (settings->m.units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
-  (settings->m.units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
-  (settings->m.units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
-  (settings->m.vmode == VIEW_MODE_RADAR ? "selected" : ""), VIEW_MODE_RADAR,
-  (settings->m.vmode == VIEW_MODE_TEXT  ? "selected" : ""), VIEW_MODE_TEXT,
+  (settings->m.units == UNITS_METRIC     ? "selected" : ""), UNITS_METRIC,
+  (settings->m.units == UNITS_IMPERIAL   ? "selected" : ""), UNITS_IMPERIAL,
+  (settings->m.units == UNITS_MIXED      ? "selected" : ""), UNITS_MIXED,
+  (settings->m.vmode == VIEW_MODE_STATUS ? "selected" : ""), VIEW_MODE_STATUS,
+  (settings->m.vmode == VIEW_MODE_RADAR  ? "selected" : ""), VIEW_MODE_RADAR,
+  (settings->m.vmode == VIEW_MODE_TEXT   ? "selected" : ""), VIEW_MODE_TEXT,
   (settings->m.orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->m.orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->m.zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,

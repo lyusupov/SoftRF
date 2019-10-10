@@ -33,6 +33,11 @@
 #define isTimeToDisplay()       (millis() - TFTTimeMarker > 2000)
 #define maxof2(a,b)             (a > b ? a : b)
 
+#define TFT_RADAR_V_THRESHOLD   50      /* metres */
+
+#define TEXT_VIEW_LINE_LENGTH   13      /* characters */
+#define TEXT_VIEW_LINE_SPACING  8      /* pixels */
+
 typedef struct Gesture_struct {
   bool     touched;
   TP_Point t_loc;
@@ -47,6 +52,7 @@ enum {
   SWIPE_DOWN
 };
 
+void TFT_Clear_Screen();
 byte TFT_setup();
 void TFT_loop();
 void TFT_fini(const char *);
@@ -57,6 +63,18 @@ void TFT_status_setup();
 void TFT_status_loop();
 void TFT_status_next();
 void TFT_status_prev();
+
+void TFT_radar_setup();
+void TFT_radar_loop();
+void TFT_radar_zoom();
+void TFT_radar_unzoom();
+void TFT_radar_Draw_Message(const char *, const char *);
+
+void TFT_text_setup();
+void TFT_text_loop();
+void TFT_text_next();
+void TFT_text_prev();
+void TFT_text_Draw_Message(const char *, const char *);
 
 extern TFT_eSPI *tft;
 extern bool TFT_display_frontpage;
