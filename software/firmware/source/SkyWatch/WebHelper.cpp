@@ -25,15 +25,18 @@
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
+#include "BaroHelper.h"
 
 #include <protocol.h>
 #include <freqplan.h>
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
+#if 0
 static const char Logo[] PROGMEM = {
 #include "Logo.h"
     } ;
+#endif
 
 #include "jquery_min_js.h"
 
@@ -84,6 +87,8 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
 <tr><th align=left>Evandro Copercini and German Martin</th><td align=left>ESP32 BT SPP library</td></tr>\
+<tr><th align=left>Lewis He</th><td align=left>AXP20X, BMA423, FT5206 and PCF8563 libraries</td></tr>\
+<tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
@@ -668,6 +673,7 @@ void handleSettings() {
 <option %s value='%d'>status</option>\
 <option %s value='%d'>radar</option>\
 <option %s value='%d'>text</option>\
+<option %s value='%d'>time</option>\
 </select>\
 </td>\
 </tr>\
@@ -718,6 +724,7 @@ void handleSettings() {
   (settings->m.vmode == VIEW_MODE_STATUS ? "selected" : ""), VIEW_MODE_STATUS,
   (settings->m.vmode == VIEW_MODE_RADAR  ? "selected" : ""), VIEW_MODE_RADAR,
   (settings->m.vmode == VIEW_MODE_TEXT   ? "selected" : ""), VIEW_MODE_TEXT,
+  (settings->m.vmode == VIEW_MODE_TIME   ? "selected" : ""), VIEW_MODE_TIME,
   (settings->m.orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->m.orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->m.zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,
@@ -812,7 +819,7 @@ void handleRoot() {
   time_t timestamp = now();
   char str_Vcc[8];
 
-  size_t size = 2500;
+  size_t size = 2600;
   char *offset;
   size_t len = 0;
 
@@ -844,6 +851,7 @@ void handleRoot() {
   <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
   <tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>\
   <tr><th align=left>Display</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Baro</th><td align=right>%s</td></tr>\
   <tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
     SoC->getChipId() & 0xFFFFFF, SKYWATCH_FIRMWARE_VERSION,
     (SoC == NULL ? "NONE" : SoC->name),
@@ -852,6 +860,7 @@ void handleRoot() {
     hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
     hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
     hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
+    (baro_chip == NULL ? "NONE" : baro_chip->name),
     settings->m.connection == CON_SERIAL       ? "Serial" :
     settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
     settings->m.connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
@@ -1245,9 +1254,11 @@ $('form').submit(function(e){\
     yield();
   });
 
+#if 0
   server.on ( "/logo.png", []() {
     server.send_P ( 200, "image/png", Logo, sizeof(Logo) );
   } );
+#endif
 
   server.on ( "/jquery.min.js", []() {
 

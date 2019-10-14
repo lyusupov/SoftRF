@@ -30,12 +30,13 @@
 #include "SkyWatch.h"
 
 TFT_eSPI *tft = NULL;
+TFT_eSprite *sprite = NULL;
 static FT5206_Class *tp = NULL;
 
-bool TFT_display_frontpage = false;
 unsigned long TFTTimeMarker = 0;
 
 static int TFT_view_mode = 0;
+bool TFT_vmode_updated = true;
 
 static Gesture_t gesture = { false, {0,0}, {0,0} };
 
@@ -115,6 +116,9 @@ byte TFT_setup()
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
     tft->setRotation(0);
+
+    sprite = new TFT_eSprite(tft);
+    sprite->setColorDepth(1);
 
     if (hw_info.baro == BARO_MODULE_NONE) {
       pinMode(SOC_GPIO_PIN_TWATCH_TP_IRQ, INPUT);
@@ -247,13 +251,13 @@ void TFT_loop()
         case SWIPE_LEFT:
           if (TFT_view_mode < VIEW_MODE_TEXT) {
             TFT_view_mode++;
-            TFT_display_frontpage = false;
+            TFT_vmode_updated = true;
           }
           break;
         case SWIPE_RIGHT:
           if (TFT_view_mode > VIEW_MODE_STATUS) {
             TFT_view_mode--;
-            TFT_display_frontpage = false;
+            TFT_vmode_updated = true;
           }
           break;
         case SWIPE_DOWN:
@@ -360,6 +364,47 @@ void TFT_Down()
     default:
       TFT_status_next();
       break;
+    }
+  }
+}
+
+void TFT_Message(const char *msg1, const char *msg2)
+{
+  int16_t  tbx, tby;
+  uint16_t tbw, tbh;
+  uint16_t x, y;
+
+  if (msg1 != NULL && strlen(msg1) != 0) {
+
+    tft->setTextFont(4);
+    tft->setTextSize(2);
+
+    {
+      tft->fillScreen(TFT_NAVY);
+
+      if (msg2 == NULL) {
+        tbw = tft->textWidth(msg1);
+        tbh = tft->fontHeight();
+        x = (tft->width() - tbw) / 2;
+        y = (tft->height() - tbh) / 2;
+        tft->setCursor(x, y);
+        tft->print(msg1);
+
+      } else {
+        tbw = tft->textWidth(msg1);
+        tbh = tft->fontHeight();
+        x = (tft->width() - tbw) / 2;
+        y = tft->height() / 2 - tbh;
+        tft->setCursor(x, y);
+        tft->print(msg1);
+
+        tbw = tft->textWidth(msg2);
+        tbh = tft->fontHeight();
+        x = (tft->width() - tbw) / 2;
+        y = tft->height() / 2;
+        tft->setCursor(x, y);
+        tft->print(msg2);
+      }
     }
   }
 }

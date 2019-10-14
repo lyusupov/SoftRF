@@ -30,7 +30,7 @@
 #define NO_DATA_TEXT            "NO DATA"
 #define NO_FIX_TEXT             "NO FIX"
 
-#define isTimeToDisplay()       (millis() - TFTTimeMarker > 2000)
+#define isTimeToDisplay()       (millis() - TFTTimeMarker > 1000)
 #define maxof2(a,b)             (a > b ? a : b)
 
 #define TFT_RADAR_V_THRESHOLD   50      /* metres */
@@ -58,6 +58,7 @@ void TFT_loop();
 void TFT_fini(const char *);
 void TFT_Up();
 void TFT_Down();
+void TFT_Message(const char *, const char *);
 
 void TFT_status_setup();
 void TFT_status_loop();
@@ -68,16 +69,15 @@ void TFT_radar_setup();
 void TFT_radar_loop();
 void TFT_radar_zoom();
 void TFT_radar_unzoom();
-void TFT_radar_Draw_Message(const char *, const char *);
 
 void TFT_text_setup();
 void TFT_text_loop();
 void TFT_text_next();
 void TFT_text_prev();
-void TFT_text_Draw_Message(const char *, const char *);
 
 extern TFT_eSPI *tft;
-extern bool TFT_display_frontpage;
+extern TFT_eSprite *sprite;
+extern bool TFT_vmode_updated;
 extern unsigned long TFTTimeMarker;
 
 #endif /* TFTHELPER_H */

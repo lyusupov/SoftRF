@@ -17,6 +17,8 @@
  */
 
 #include "TFTHelper.h"
+#include "TrafficHelper.h"
+#include "BatteryHelper.h"
 #include <protocol.h>
 
 #include "SkyWatch.h"
@@ -25,6 +27,8 @@ static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 static uint8_t  prev_protocol = 0;
 static uint32_t prev_addr = 0;
+static int      prev_traffic_counter = 0;
+static int      prev_voltage = 0;
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
@@ -41,6 +45,8 @@ const char ID_text[]       = "ID";
 const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";
 const char TX_text[]       = "TX";
+const char ACFTS_text[]    = "ACFTS";
+const char BAT_text[]      = "BAT";
 
 void TFT_status_setup()
 {
@@ -55,7 +61,10 @@ void TFT_status_loop()
   uint16_t tbw;
   uint16_t tbh;
 
-  if (!TFT_display_frontpage) {
+  int acfts;
+  int voltage;
+
+  if (TFT_vmode_updated) {
     tft->fillScreen(TFT_NAVY);
 
     tft->setTextFont(2);
@@ -75,7 +84,6 @@ void TFT_status_loop()
     tft->print(PROTOCOL_text);
 
     tbw = tft->textWidth(RX_text);
-    tbh = tft->fontHeight();
 
     tft->setCursor(tft->textWidth("   "), tft->height()/2 - tbh);
     tft->print(RX_text);
@@ -85,6 +93,17 @@ void TFT_status_loop()
     tft->setCursor(tft->width()/2 + tft->textWidth("   "),
                    tft->height()/2 - tbh);
     tft->print(TX_text);
+
+    tbw = tft->textWidth(ACFTS_text);
+
+    tft->setCursor(tft->textWidth(" "), (5 * tft->height()/6) - tbh);
+    tft->print(ACFTS_text);
+
+    tbw = tft->textWidth(BAT_text);
+
+    tft->setCursor(tft->width()/2 + tft->textWidth("   "),
+                   (5 * tft->height()/6) - tbh);
+    tft->print(BAT_text);
 
     tft->setTextFont(4);
     tft->setTextSize(2);
@@ -115,18 +134,25 @@ void TFT_status_loop()
     tft->print(buf);
     prev_tx_packets_counter = tx_packets_counter;
 
-    TFT_display_frontpage = true;
+    acfts = Traffic_Count();
+    tft->setCursor(tft->textWidth("  "), (5 * tft->height())/6);
+    tft->print(acfts);
+    prev_traffic_counter = acfts;
 
-  } else { /* TFT_display_frontpage */
+    voltage = (int) (Battery_voltage() * 10.0);
+    tft->setCursor(tft->width()/2 + tft->textWidth("  "), (5 * tft->height())/6);
+    tft->print((float) voltage / 10, 1);
+    prev_voltage = voltage;
+
+    TFT_vmode_updated = false;
+
+  } else { /* TFT_vmode_updated */
 
     if (ThisDevice.addr != prev_addr) {
       itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
 
       tft->setTextFont(4);
       tft->setTextSize(2);
-
-      tbw = tft->textWidth(buf);
-      tbh = tft->fontHeight();
 
       tft->setCursor(tft->textWidth(" "), tft->height()/6);
       tft->print(buf);
@@ -185,6 +211,28 @@ void TFT_status_loop()
       tft->print(buf);
 
       prev_tx_packets_counter = tx_packets_counter;
+    }
+
+    acfts = Traffic_Count();
+    if (acfts != prev_traffic_counter) {
+      tft->setTextFont(4);
+      tft->setTextSize(2);
+
+      tft->setCursor(tft->textWidth("  "), (5 * tft->height())/6);
+      tft->print(acfts);
+
+      prev_traffic_counter = acfts;
+    }
+
+    voltage = (int) (Battery_voltage() * 10.0);
+    if (voltage != prev_voltage) {
+      tft->setTextFont(4);
+      tft->setTextSize(2);
+
+      tft->setCursor(tft->width()/2 + tft->textWidth("  "), (5 * tft->height())/6);
+      tft->print((float) voltage / 10, 1);
+
+      prev_voltage = voltage;
     }
   }
 }

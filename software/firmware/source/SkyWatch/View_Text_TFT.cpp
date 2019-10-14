@@ -29,6 +29,17 @@
 
 static int TFT_current = 1;
 
+enum {
+   STATE_TVIEW_NONE,
+   STATE_TVIEW_TEXT,
+   STATE_TVIEW_NOFIX,
+   STATE_TVIEW_NODATA,
+   STATE_TVIEW_NOTRAFFIC
+};
+
+static int view_state_curr = STATE_TVIEW_NONE;
+static int view_state_prev = STATE_TVIEW_NONE;
+
 static void TFT_Draw_Text()
 {
   int j=0;
@@ -160,8 +171,13 @@ static void TFT_Draw_Text()
      Serial.println(micros()-start);
 #endif
 
-    tft->setTextFont(4);
-    tft->setTextSize(1);
+    sprite->createSprite(tft->width(), tft->height());
+
+    sprite->fillSprite(TFT_BLACK);
+    sprite->setTextColor(TFT_WHITE);
+
+    sprite->setTextFont(4);
+    sprite->setTextSize(1);
 
     {
       uint16_t x = 0;
@@ -170,15 +186,13 @@ static void TFT_Draw_Text()
       int16_t  tbx, tby;
       uint16_t tbw, tbh;
 
-      tft->fillScreen(TFT_NAVY);
-
       snprintf(info_line, sizeof(info_line), "Traffic %d/%d", TFT_current, j);
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh / 3;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
@@ -187,22 +201,22 @@ static void TFT_Draw_Text()
       } else {
         snprintf(info_line, sizeof(info_line), " %2d o'clock", oclock);
       }
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "%4.1f %s out", disp_dist, u_dist);
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
@@ -216,84 +230,47 @@ static void TFT_Draw_Text()
         strcpy(info_line, "  same alt."); 
       }
 
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "CoG %3d deg",
                traffic[TFT_current - 1].fop->Track);
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "GS  %3d %s", disp_spd, u_spd);
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(info_line);
+      sprite->setCursor(x, y);
+      sprite->print(info_line);
 
       y += TEXT_VIEW_LINE_SPACING;
 
-      tbw = tft->textWidth(info_line);
-      tbh = tft->fontHeight();
-      x = (tft->width() - tbw) / 2;
+      tbw = sprite->textWidth(info_line);
+      tbh = sprite->fontHeight();
+      x = (sprite->width() - tbw) / 2;
       y += tbh;
-      tft->setCursor(x, y);
-      tft->print(id_text);
+      sprite->setCursor(x, y);
+      sprite->print(id_text);
     }
-  }
-}
 
-void TFT_text_Draw_Message(const char *msg1, const char *msg2)
-{
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
-  uint16_t x, y;
-
-  if (msg1 != NULL && strlen(msg1) != 0) {
-
-    tft->setTextFont(4);
-    tft->setTextSize(2);
-
-    {
-      tft->fillScreen(TFT_NAVY);
-
-      if (msg2 == NULL) {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = (tft->height() - tbh) / 2;
-        tft->setCursor(x, y);
-        tft->print(msg1);
-
-      } else {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = tft->height() / 2 - tbh;
-        tft->setCursor(x, y);
-        tft->print(msg1);
-
-        tbw = tft->textWidth(msg2);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = tft->height() / 2;
-        tft->setCursor(x, y);
-        tft->print(msg2);
-      }
-    }
+    tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
+    sprite->pushSprite(0, 0);
+    sprite->deleteSprite();
   }
 }
 
@@ -304,41 +281,66 @@ void TFT_text_setup()
 
 void TFT_text_loop()
 {
-  if (!TFT_display_frontpage) {
+  if (isTimeToDisplay()) {
 
-    TFT_Clear_Screen();
+    bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                   settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                   false;
 
-    TFT_display_frontpage = true;
+    if (hasData) {
 
-  } else {
+      bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+                    settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+                    false;
 
-    if (isTimeToDisplay()) {
-
-      bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                     settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                     false;
-
-      if (hasData) {
-
-        bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                      settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                      false;
-
-        if (hasFix) {
+      if (hasFix) {
           if (Traffic_Count() > 0) {
-            TFT_Draw_Text();
+            view_state_curr = STATE_TVIEW_TEXT;
           } else {
-            TFT_text_Draw_Message("NO", "TRAFFIC");
+            view_state_curr = STATE_TVIEW_NOTRAFFIC;
           }
-        } else {
-          TFT_text_Draw_Message(NO_FIX_TEXT, NULL);
-        }
       } else {
-        TFT_text_Draw_Message(NO_DATA_TEXT, NULL);
+        view_state_curr = STATE_TVIEW_NOFIX;
       }
-
-      TFTTimeMarker = millis();
+    } else {
+      view_state_curr = STATE_TVIEW_NODATA;
     }
+
+    if (TFT_vmode_updated) {
+      view_state_prev = STATE_TVIEW_NONE;
+      TFT_vmode_updated = false;
+    }
+
+    if (view_state_curr != view_state_prev &&
+        view_state_curr == STATE_TVIEW_NOFIX) {
+      TFT_Clear_Screen();
+      TFT_Message(NO_FIX_TEXT, NULL);
+      view_state_prev = view_state_curr;
+    }
+
+    if (view_state_curr != view_state_prev &&
+        view_state_curr == STATE_TVIEW_NODATA) {
+      TFT_Clear_Screen();
+      TFT_Message(NO_DATA_TEXT, NULL);
+      view_state_prev = view_state_curr;
+    }
+
+    if (view_state_curr != view_state_prev &&
+        view_state_curr == STATE_TVIEW_NOTRAFFIC) {
+      TFT_Clear_Screen();
+      TFT_Message("NO", "TRAFFIC");
+      view_state_prev = view_state_curr;
+    }
+
+    if (view_state_curr == STATE_TVIEW_TEXT) {
+      if (view_state_curr != view_state_prev) {
+         TFT_Clear_Screen();
+         view_state_prev = view_state_curr;
+      }
+      TFT_Draw_Text();
+    }
+
+    TFTTimeMarker = millis();
   }
 }
 

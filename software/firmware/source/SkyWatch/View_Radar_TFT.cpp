@@ -30,48 +30,15 @@
 
 static int TFT_zoom = ZOOM_MEDIUM;
 
-void TFT_radar_Draw_Message(const char *msg1, const char *msg2)
-{
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
-  uint16_t x, y;
+enum {
+   STATE_RVIEW_NONE,
+   STATE_RVIEW_RADAR,
+   STATE_RVIEW_NOFIX,
+   STATE_RVIEW_NODATA
+};
 
-  if (msg1 != NULL && strlen(msg1) != 0) {
-    uint16_t radar_x = 0;
-    uint16_t radar_y = (tft->height() - tft->width()) / 2;
-    uint16_t radar_w = tft->width();
-
-    tft->setTextFont(4);
-    tft->setTextSize(2);
-
-    {
-      tft->fillScreen(TFT_NAVY);
-
-      if (msg2 == NULL) {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (radar_w - tbw) / 2;
-        y = radar_y + (radar_w - tbh) / 2;
-        tft->setCursor(x, y);
-        tft->print(msg1);
-      } else {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (radar_w - tbw) / 2;
-        y = radar_y + radar_w / 2 - tbh;
-        tft->setCursor(x, y);
-        tft->print(msg1);
-
-        tbw = tft->textWidth(msg2);
-        tbh = tft->fontHeight();
-        x = (radar_w - tbw) / 2;
-        y = radar_y + radar_w / 2;
-        tft->setCursor(x, y);
-        tft->print(msg2);
-      }
-    }
-  }
-}
+static int view_state_curr = STATE_RVIEW_NONE;
+static int view_state_prev = STATE_RVIEW_NONE;
 
 static void TFT_Draw_Radar()
 {
@@ -84,15 +51,20 @@ static void TFT_Draw_Radar()
   /* divider is a half of full scale */
   int32_t divider = 2000; 
 
-  tft->setTextFont(4);
-  tft->setTextSize(1);
+  sprite->createSprite(tft->width(), tft->height());
 
-  tbw = tft->textWidth("N");
-  tbh = tft->fontHeight();
+  sprite->fillSprite(TFT_BLACK);
+  sprite->setTextColor(TFT_WHITE);
+
+  sprite->setTextFont(4);
+  sprite->setTextSize(1);
+
+  tbw = sprite->textWidth("N");
+  tbh = sprite->fontHeight();
 
   uint16_t radar_x = 0;
-  uint16_t radar_y = (tft->height() - tft->width()) / 2;
-  uint16_t radar_w = tft->width();
+  uint16_t radar_y = 0;
+  uint16_t radar_w = sprite->width();
 
   uint16_t radar_center_x = radar_w / 2;
   uint16_t radar_center_y = radar_y + radar_w / 2;
@@ -134,153 +106,166 @@ static void TFT_Draw_Radar()
     }
   }
 
-  {
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].ID && (now() - Container[i].timestamp) <= TFT_EXPIRATION_TIME) {
+  sprite->drawCircle(  radar_center_x, radar_center_y,
+                        radius, TFT_WHITE);
+  sprite->drawCircle(  radar_center_x, radar_center_y,
+                        radius / 2, TFT_WHITE);
 
-        int16_t rel_x;
-        int16_t rel_y;
-        float distance;
-        float bearing;
 #if 0
-        Serial.print(F(" ID="));
-        Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
-        Serial.print((Container[i].ID >>  8) & 0xFF, HEX);
-        Serial.print((Container[i].ID      ) & 0xFF, HEX);
-        Serial.println();
+  /* arrow tip */
+  sprite->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                        radar_center_x    , radar_center_y - 5,
+                        radar_center_x + 7, radar_center_y + 5,
+                        TFT_WHITE);
+  sprite->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                        radar_center_x    , radar_center_y + 2,
+                        radar_center_x + 7, radar_center_y + 5,
+                        TFT_NAVY);
+#else
+  /* little airplane */
+  sprite->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, TFT_WHITE);
+  sprite->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, TFT_WHITE);
 
-        Serial.print(F(" RelativeNorth=")); Serial.println(Container[i].RelativeNorth);
-        Serial.print(F(" RelativeEast="));  Serial.println(Container[i].RelativeEast);
+  sprite->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, TFT_WHITE);
+  sprite->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, TFT_WHITE);
+
+  sprite->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, TFT_WHITE);
+  sprite->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, TFT_WHITE);
 #endif
-        switch (settings->m.orientation)
-        {
-        case DIRECTION_NORTH_UP:
-          rel_x = Container[i].RelativeEast;
-          rel_y = Container[i].RelativeNorth;
-          break;
-        case DIRECTION_TRACK_UP:
-          distance = sqrtf(Container[i].RelativeNorth * Container[i].RelativeNorth +
-                           Container[i].RelativeEast  * Container[i].RelativeEast);
 
-          bearing = atan2f(Container[i].RelativeNorth,
-                           Container[i].RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+  switch (settings->m.orientation)
+  {
+  case DIRECTION_NORTH_UP:
+    x = radar_x + radar_w / 2 - radius + tbw/2;
+    y = radar_y + (radar_w - tbh) / 2;
+    sprite->setCursor(x , y);
+    sprite->print("W");
+    x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
+    y = radar_y + (radar_w - tbh) / 2;
+    sprite->setCursor(x , y);
+    sprite->print("E");
+    x = radar_x + (radar_w - tbw) / 2;
+    y = radar_y + radar_w/2 - radius + tbh/2;
+    sprite->setCursor(x , y);
+    sprite->print("N");
+    x = radar_x + (radar_w - tbw) / 2;
+    y = radar_y + radar_w/2 + radius - tbh;
+    sprite->setCursor(x , y);
+    sprite->print("S");
+    break;
+  case DIRECTION_TRACK_UP:
+    x = radar_x + radar_w / 2 - radius + tbw/2;
+    y = radar_y + (radar_w - tbh) / 2;
+    sprite->setCursor(x , y);
+    sprite->print("L");
+    x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
+    y = radar_y + (radar_w - tbh) / 2;
+    sprite->setCursor(x , y);
+    sprite->print("R");
+    x = radar_x + (radar_w - tbw) / 2;
+    y = radar_y + radar_w/2 + radius - tbh;
+    sprite->setCursor(x , y);
+    sprite->print("B");
 
-          /* convert from math angle into course relative to north */
-          bearing = (bearing <= 90.0 ? 90.0 - bearing :
-                                      450.0 - bearing);
+    snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
+    tbw = sprite->textWidth(cog_text);
+    tbh = sprite->fontHeight();
+    x = radar_x + (radar_w - tbw) / 2;
+    y = radar_y + radar_w/2 - radius + tbh/2;
+    sprite->setCursor(x , y);
+    sprite->print(cog_text);
+#if 0
+    sprite->drawRoundRect( x - 2, y - tbh - 2,
+                            tbw + 8, tbh + 6,
+                            4, TFT_WHITE);
+#endif
+    break;
+  default:
+    /* TBD */
+    break;
+  }
 
-          bearing -= ThisAircraft.Track;
+  sprite->setTextColor(TFT_WHITE, TFT_BLACK);
+  x = radar_x;
+  y = radar_y + radar_w - tbh;
+  sprite->setCursor(x, y);
 
-          rel_x = constrain(distance * sin(radians(bearing)),
-                                       -32768, 32767);
-          rel_y = constrain(distance * cos(radians(bearing)),
-                                       -32768, 32767);
-          break;
-        default:
-          /* TBD */
-          break;
-        }
+  if (settings->m.units == UNITS_METRIC || settings->m.units == UNITS_MIXED) {
+    sprite->print(TFT_zoom == ZOOM_LOWEST ? "20 KM" :
+                  TFT_zoom == ZOOM_LOW    ? "10 KM" :
+                  TFT_zoom == ZOOM_MEDIUM ? " 4 KM" :
+                  TFT_zoom == ZOOM_HIGH   ? " 2 KM" : "");
+  } else {
+    sprite->print(TFT_zoom == ZOOM_LOWEST ? "10 NM" :
+                  TFT_zoom == ZOOM_LOW    ? " 5 NM" :
+                  TFT_zoom == ZOOM_MEDIUM ? " 2 NM" :
+                  TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "");
+  }
 
-        int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
-        int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
+  tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
+  sprite->pushSprite(0, 0);
+  sprite->deleteSprite();
 
-        if        (Container[i].RelativeVertical >   TFT_RADAR_V_THRESHOLD) {
-          tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
-                                radar_center_x + x    , radar_center_y - y - 5,
-                                radar_center_x + x + 4, radar_center_y - y + 3,
-                                TFT_WHITE);
-        } else if (Container[i].RelativeVertical < - TFT_RADAR_V_THRESHOLD) {
-          tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
-                                radar_center_x + x    , radar_center_y - y + 5,
-                                radar_center_x + x + 4, radar_center_y - y - 3,
-                                TFT_WHITE);
-        } else {
-          tft->fillCircle(radar_center_x + x,
-                              radar_center_y - y,
-                              5, TFT_WHITE);
-        }
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].ID && (now() - Container[i].timestamp) <= TFT_EXPIRATION_TIME) {
+
+      int16_t rel_x;
+      int16_t rel_y;
+      float distance;
+      float bearing;
+
+      switch (settings->m.orientation)
+      {
+      case DIRECTION_NORTH_UP:
+        rel_x = Container[i].RelativeEast;
+        rel_y = Container[i].RelativeNorth;
+        break;
+      case DIRECTION_TRACK_UP:
+        distance = sqrtf(Container[i].RelativeNorth * Container[i].RelativeNorth +
+                         Container[i].RelativeEast  * Container[i].RelativeEast);
+
+        bearing = atan2f(Container[i].RelativeNorth,
+                         Container[i].RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+
+        /* convert from math angle into course relative to north */
+        bearing = (bearing <= 90.0 ? 90.0 - bearing :
+                                    450.0 - bearing);
+
+        bearing -= ThisAircraft.Track;
+
+        rel_x = constrain(distance * sin(radians(bearing)),
+                                     -32768, 32767);
+        rel_y = constrain(distance * cos(radians(bearing)),
+                                     -32768, 32767);
+        break;
+      default:
+        /* TBD */
+        break;
+      }
+
+      int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
+      int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
+
+      uint32_t color = Container[i].AlarmLevel == ALARM_LEVEL_URGENT ? TFT_RED :
+                      (Container[i].AlarmLevel == ALARM_LEVEL_IMPORTANT ?
+                       TFT_YELLOW : TFT_GREEN);
+
+      if        (Container[i].RelativeVertical >   TFT_RADAR_V_THRESHOLD) {
+        tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
+                          radar_center_x + x    , radar_center_y - y - 5,
+                          radar_center_x + x + 4, radar_center_y - y + 3,
+                          color);
+      } else if (Container[i].RelativeVertical < - TFT_RADAR_V_THRESHOLD) {
+        tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
+                          radar_center_x + x    , radar_center_y - y + 5,
+                          radar_center_x + x + 4, radar_center_y - y - 3,
+                          color);
+      } else {
+        tft->fillCircle(radar_center_x + x,
+                        radar_center_y - y,
+                        5, color);
       }
     }
-
-    tft->drawCircle(  radar_center_x, radar_center_y,
-                          radius, TFT_WHITE);
-    tft->drawCircle(  radar_center_x, radar_center_y,
-                          radius / 2, TFT_WHITE);
-
-#if 0
-    /* arrow tip */
-    tft->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                          radar_center_x    , radar_center_y - 5,
-                          radar_center_x + 7, radar_center_y + 5,
-                          TFT_WHITE);
-    tft->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                          radar_center_x    , radar_center_y + 2,
-                          radar_center_x + 7, radar_center_y + 5,
-                          TFT_NAVY);
-#else
-    /* little airplane */
-    tft->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, TFT_WHITE);
-    tft->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, TFT_WHITE);
-
-    tft->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, TFT_WHITE);
-    tft->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, TFT_WHITE);
-
-    tft->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, TFT_WHITE);
-    tft->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, TFT_WHITE);
-#endif
-
-    switch (settings->m.orientation)
-    {
-    case DIRECTION_NORTH_UP:
-      x = radar_x + radar_w / 2 - radius + tbw/2;
-      y = radar_y + (radar_w - tbh) / 2;
-      tft->setCursor(x , y);
-      tft->print("W");
-      x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
-      y = radar_y + (radar_w - tbh) / 2;
-      tft->setCursor(x , y);
-      tft->print("E");
-      x = radar_x + (radar_w - tbw) / 2;
-      y = radar_y + radar_w/2 - radius + tbh/2;
-      tft->setCursor(x , y);
-      tft->print("N");
-      x = radar_x + (radar_w - tbw) / 2;
-      y = radar_y + radar_w/2 + radius - tbh;
-      tft->setCursor(x , y);
-      tft->print("S");
-      break;
-    case DIRECTION_TRACK_UP:
-      x = radar_x + radar_w / 2 - radius + tbw/2;
-      y = radar_y + (radar_w - tbh) / 2;
-      tft->setCursor(x , y);
-      tft->print("L");
-      x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
-      y = radar_y + (radar_w - tbh) / 2;
-      tft->setCursor(x , y);
-      tft->print("R");
-      x = radar_x + (radar_w - tbw) / 2;
-      y = radar_y + radar_w/2 + radius - tbh;
-      tft->setCursor(x , y);
-      tft->print("B");
-
-      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
-      tbw = tft->textWidth(cog_text);
-      tbh = tft->fontHeight();
-      x = radar_x + (radar_w - tbw) / 2;
-      y = radar_y + radar_w/2 - radius + tbh/2;
-      tft->setCursor(x , y);
-      tft->print(cog_text);
-#if 0
-      tft->drawRoundRect( x - 2, y - tbh - 2,
-                              tbw + 8, tbh + 6,
-                              4, TFT_WHITE);
-#endif
-      break;
-    default:
-      /* TBD */
-      break;
-    }
-
   }
 }
 
@@ -295,43 +280,55 @@ void TFT_radar_setup()
 
 void TFT_radar_loop()
 {
-  if (!TFT_display_frontpage) {
+  if (isTimeToDisplay()) {
 
-    TFT_Clear_Screen();
+    bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                   settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                   false;
 
-    yield();
+    if (hasData) {
 
-    TFT_display_frontpage = true;
+      bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+                    settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+                    false;
 
-  } else {
-
-    if (isTimeToDisplay()) {
-
-//      TFT_Clear_Screen();
-
-      bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                     settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                     false;
-
-      if (hasData) {
-
-        bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                      settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                      false;
-
-        if (hasFix) {
-          TFT_Draw_Radar();
-        } else {
-          TFT_radar_Draw_Message(NO_FIX_TEXT, NULL);
-        }
+      if (hasFix) {
+        view_state_curr = STATE_RVIEW_RADAR;
       } else {
-        TFT_radar_Draw_Message(NO_DATA_TEXT, NULL);
+        view_state_curr = STATE_RVIEW_NOFIX;
       }
-
-      yield();
-
-      TFTTimeMarker = millis();
+    } else {
+      view_state_curr = STATE_RVIEW_NODATA;
     }
+
+    if (TFT_vmode_updated) {
+      view_state_prev = STATE_RVIEW_NONE;
+      TFT_vmode_updated = false;
+    }
+
+    if (view_state_curr != view_state_prev &&
+        view_state_curr == STATE_RVIEW_NOFIX) {
+      TFT_Clear_Screen();
+      TFT_Message(NO_FIX_TEXT, NULL);
+      view_state_prev = view_state_curr;
+    }
+
+    if (view_state_curr != view_state_prev &&
+        view_state_curr == STATE_RVIEW_NODATA) {
+      TFT_Clear_Screen();
+      TFT_Message(NO_DATA_TEXT, NULL);
+      view_state_prev = view_state_curr;
+    }
+
+    if (view_state_curr == STATE_RVIEW_RADAR) {
+      if (view_state_curr != view_state_prev) {
+         TFT_Clear_Screen();
+         view_state_prev = view_state_curr;
+      }
+      TFT_Draw_Radar();
+    }
+
+    TFTTimeMarker = millis();
   }
 }
 
