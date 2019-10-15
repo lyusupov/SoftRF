@@ -64,6 +64,8 @@ uint32_t rx_packets_counter = 0;
 
 static unsigned long NMEA_TimeMarker = 0;
 
+static bool RTC_sync = false;
+
 #if defined(NMEA_TCP_SERVICE)
 WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
@@ -402,6 +404,18 @@ void NMEA_loop()
     NMEA_Out((byte *) PGRMZBuffer, strlen(PGRMZBuffer), false);
 
     PGRMZ_TimeMarker = millis();
+  }
+
+  if (!RTC_sync) {
+    if (rtc &&
+        nmea.date.isValid() &&
+        nmea.time.isValid() &&
+        nmea.date.year() > 2018) {
+      rtc->setDateTime(nmea.date.year(),   nmea.date.month(),
+                       nmea.date.day(),    nmea.time.hour(),
+                       nmea.time.minute(), nmea.time.second());
+      RTC_sync = true;
+    }
   }
 
 #if defined(NMEA_TCP_SERVICE)

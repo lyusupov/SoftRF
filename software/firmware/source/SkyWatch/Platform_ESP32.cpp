@@ -24,7 +24,6 @@
 #include <rom/spi_flash.h>
 #include <flashchips.h>
 #include <axp20x.h>
-#include <pcf8563.h>
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
@@ -37,7 +36,6 @@
 #include <battery.h>
 #include <sqlite3.h>
 #include <SD.h>
-#include <bma.h>
 
 //#include "driver/i2s.h"
 
@@ -50,9 +48,9 @@
 WebServer server ( 80 );
 
 AXP20X_Class  axp;
-PCF8563_Class rtc;
-BMA *bma = nullptr;
-I2CBus *i2c = nullptr;
+PCF8563_Class *rtc = nullptr;
+BMA           *bma = nullptr;
+I2CBus        *i2c = nullptr;
 
 static union {
   uint8_t efuse_mac[6];
@@ -190,6 +188,7 @@ static void ESP32_setup()
 
     bool axp_present = false;
     bool bma_present = false;
+    bool rtc_present = false;
 
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
@@ -197,6 +196,9 @@ static void ESP32_setup()
 
     Wire1.beginTransmission(BMA4_I2C_ADDR_SECONDARY);
     bma_present = (Wire1.endTransmission() == 0);
+
+    Wire1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    rtc_present = (Wire1.endTransmission() == 0);
 
     i2c = new I2CBus(Wire1, SOC_GPIO_PIN_TWATCH_SEN_SDA, SOC_GPIO_PIN_TWATCH_SEN_SCL);
 
@@ -226,7 +228,6 @@ static void ESP32_setup()
       axp.adc1Enable(AXP202_BATT_VOL_ADC1, AXP202_ON);
 #endif
 
-
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
     }
@@ -239,7 +240,9 @@ static void ESP32_setup()
                       ESP32_BMA_Interrupt_handler, RISING);
     }
 
-//    rtc.begin(Wire1);
+    if (rtc_present && (i2c != nullptr)) {
+      rtc = new PCF8563_Class(*i2c);
+    }
   }
 
   /* SD-SPI init */

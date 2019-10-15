@@ -28,11 +28,28 @@ github:https://github.com/lewisxhe/PCF8563_Library
 */
 /////////////////////////////////////////////////////////////////
 #include "pcf8563.h"
+#include <time.h>
+#include <sys/time.h>
 
-int PCF8563_Class::begin(TwoWire &port, uint8_t addr)
+PCF8563_Class::PCF8563_Class(I2CBus &bus, uint8_t addr)
 {
-    _i2cPort = &port;
+    _bus = &bus;
     _address = addr;
+}
+
+void PCF8563_Class::check()
+{
+    RTC_Date now = getDateTime();
+    RTC_Date compiled = RTC_Date(__DATE__, __TIME__);
+
+    // Serial.printf("%d:%d:%d - %d:%d:%d\n", compiled.year, compiled.month, compiled.day, compiled.hour, compiled.minute, compiled.second);
+
+    if (now.year < compiled.year ||
+            (now.year == compiled.year && now.month < compiled.month ) ||
+            (now.year == compiled.year && now.month == compiled.month && now.day < compiled.day)) {
+        setDateTime(compiled);
+        log_i("reset rtc date time");
+    }
 }
 
 void PCF8563_Class::setDateTime(RTC_Date date)
@@ -283,28 +300,57 @@ const char *PCF8563_Class::formatDateTime(uint8_t sytle)
     RTC_Date t = getDateTime();
     switch (sytle) {
     case PCF_TIMEFORMAT_HM:
-        snprintf(format, sizeof(format), "%d:%d", t.hour, t.minute);
+        snprintf(format, sizeof(format), "%02d:%02d", t.hour, t.minute);
         break;
     case PCF_TIMEFORMAT_HMS:
-        snprintf(format, sizeof(format), "%d:%d:%d", t.hour, t.minute, t.second);
+        snprintf(format, sizeof(format), "%02d:%02d:%02d", t.hour, t.minute, t.second);
         break;
     case PCF_TIMEFORMAT_YYYY_MM_DD:
-        snprintf(format, sizeof(format), "%d-%d-%d", t.year, t.month, t.day);
+        snprintf(format, sizeof(format), "%02d-%02d-%02d", t.year, t.month, t.day);
         break;
     case PCF_TIMEFORMAT_MM_DD_YYYY:
-        snprintf(format, sizeof(format), "%d-%d-%d", t.month, t.day, t.year);
+        snprintf(format, sizeof(format), "%02d-%02d-%02d", t.month, t.day, t.year);
         break;
     case PCF_TIMEFORMAT_DD_MM_YYYY:
-        snprintf(format, sizeof(format), "%d-%d-%d", t.day, t.month, t.year);
+        snprintf(format, sizeof(format), "%02d-%02d-%02d", t.day, t.month, t.year);
         break;
     case PCF_TIMEFORMAT_YYYY_MM_DD_H_M_S:
-        snprintf(format, sizeof(format), "%d-%d-%d/%d:%d:%d", t.year, t.month, t.day, t.hour, t.minute, t.second);
+        snprintf(format, sizeof(format), "%02d-%02d-%02d/%02d:%02d:%02d", t.year, t.month, t.day, t.hour, t.minute, t.second);
         break;
     default:
-        snprintf(format, sizeof(format), "%d:%d", t.hour, t.minute);
+        snprintf(format, sizeof(format), "%02d:%02d", t.hour, t.minute);
         break;
     }
     return format;
+}
+
+
+void PCF8563_Class::syncToSystem()
+{
+    struct tm t_tm;
+    struct timeval val;
+    RTC_Date dt = getDateTime();
+    log_i("syncToSystem: %d %d %d - %d %d %d \n",  dt.year, dt.month, dt.day,  dt.hour, dt.minute, dt.second);
+    t_tm.tm_hour = dt.hour;
+    t_tm.tm_min = dt.minute;
+    t_tm.tm_sec = dt.second;
+    t_tm.tm_year = dt.year - 1900;    //Year, whose value starts from 1900
+    t_tm.tm_mon = dt.month - 1;       //Month (starting from January, 0 for January) - Value range is [0,11]
+    t_tm.tm_mday = dt.day;
+    val.tv_sec = mktime(&t_tm);
+    val.tv_usec = 0;
+    settimeofday(&val, NULL);
+    log_i("syncToSystem: %d %d %d - %d %d %d \n", t_tm.tm_year, t_tm.tm_mon + 1, t_tm.tm_mday, t_tm.tm_hour, t_tm.tm_min, t_tm.tm_sec);
+}
+
+void PCF8563_Class::syncToRtc()
+{
+    time_t now;
+    struct tm  info;
+    time(&now);
+    localtime_r(&now, &info);
+    setDateTime(info.tm_year, info.tm_mon + 1, info.tm_mday, info.tm_hour, info.tm_min, info.tm_sec);
+    Serial.printf("syncToRtc: %d %d %d - %d %d %d \n", info.tm_year, info.tm_mon + 1, info.tm_mday, info.tm_hour, info.tm_min, info.tm_sec);
 }
 
 RTC_Date::RTC_Date(
@@ -324,6 +370,70 @@ RTC_Date::RTC_Date(uint16_t y,
 {
 
 }
+
+
+
+uint8_t RTC_Date::StringToUint8(const char *pString)
+{
+    uint8_t value = 0;
+
+    // skip leading 0 and spaces
+    while ('0' == *pString || *pString == ' ') {
+        pString++;
+    }
+
+    // calculate number until we hit non-numeral char
+    while ('0' <= *pString && *pString <= '9') {
+        value *= 10;
+        value += *pString - '0';
+        pString++;
+    }
+    return value;
+}
+
+
+RTC_Date::RTC_Date(const char *date, const char *time)
+{
+    // sample input: date = "Dec 26 2009", time = "12:34:56"
+    year = 2000 + StringToUint8(date + 9);
+    // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+    switch (date[0]) {
+    case 'J':
+        if ( date[1] == 'a' )
+            month = 1;
+        else if ( date[2] == 'n' )
+            month = 6;
+        else
+            month = 7;
+        break;
+    case 'F':
+        month = 2;
+        break;
+    case 'A':
+        month = date[1] == 'p' ? 4 : 8;
+        break;
+    case 'M':
+        month = date[2] == 'r' ? 3 : 5;
+        break;
+    case 'S':
+        month = 9;
+        break;
+    case 'O':
+        month = 10;
+        break;
+    case 'N':
+        month = 11;
+        break;
+    case 'D':
+        month = 12;
+        break;
+    }
+    day = StringToUint8(date + 4);
+    hour = StringToUint8(time);
+    minute = StringToUint8(time + 3);
+    second = StringToUint8(time + 6);
+}
+
 
 RTC_Alarm::RTC_Alarm(
     uint8_t m,

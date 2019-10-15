@@ -281,66 +281,61 @@ void TFT_text_setup()
 
 void TFT_text_loop()
 {
-  if (isTimeToDisplay()) {
+  bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                 settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                 false;
 
-    bool hasData = settings->m.protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                   settings->m.protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                   false;
+  if (hasData) {
 
-    if (hasData) {
+    bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+                  settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+                  false;
 
-      bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                    settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                    false;
-
-      if (hasFix) {
-          if (Traffic_Count() > 0) {
-            view_state_curr = STATE_TVIEW_TEXT;
-          } else {
-            view_state_curr = STATE_TVIEW_NOTRAFFIC;
-          }
-      } else {
-        view_state_curr = STATE_TVIEW_NOFIX;
-      }
+    if (hasFix) {
+        if (Traffic_Count() > 0) {
+          view_state_curr = STATE_TVIEW_TEXT;
+        } else {
+          view_state_curr = STATE_TVIEW_NOTRAFFIC;
+        }
     } else {
-      view_state_curr = STATE_TVIEW_NODATA;
+      view_state_curr = STATE_TVIEW_NOFIX;
     }
+  } else {
+    view_state_curr = STATE_TVIEW_NODATA;
+  }
 
-    if (TFT_vmode_updated) {
-      view_state_prev = STATE_TVIEW_NONE;
-      TFT_vmode_updated = false;
+  if (TFT_vmode_updated) {
+    view_state_prev = STATE_TVIEW_NONE;
+    TFT_vmode_updated = false;
+  }
+
+  if (view_state_curr != view_state_prev &&
+      view_state_curr == STATE_TVIEW_NOFIX) {
+    TFT_Clear_Screen();
+    TFT_Message(NO_FIX_TEXT, NULL);
+    view_state_prev = view_state_curr;
+  }
+
+  if (view_state_curr != view_state_prev &&
+      view_state_curr == STATE_TVIEW_NODATA) {
+    TFT_Clear_Screen();
+    TFT_Message(NO_DATA_TEXT, NULL);
+    view_state_prev = view_state_curr;
+  }
+
+  if (view_state_curr != view_state_prev &&
+      view_state_curr == STATE_TVIEW_NOTRAFFIC) {
+    TFT_Clear_Screen();
+    TFT_Message("NO", "TRAFFIC");
+    view_state_prev = view_state_curr;
+  }
+
+  if (view_state_curr == STATE_TVIEW_TEXT) {
+    if (view_state_curr != view_state_prev) {
+       TFT_Clear_Screen();
+       view_state_prev = view_state_curr;
     }
-
-    if (view_state_curr != view_state_prev &&
-        view_state_curr == STATE_TVIEW_NOFIX) {
-      TFT_Clear_Screen();
-      TFT_Message(NO_FIX_TEXT, NULL);
-      view_state_prev = view_state_curr;
-    }
-
-    if (view_state_curr != view_state_prev &&
-        view_state_curr == STATE_TVIEW_NODATA) {
-      TFT_Clear_Screen();
-      TFT_Message(NO_DATA_TEXT, NULL);
-      view_state_prev = view_state_curr;
-    }
-
-    if (view_state_curr != view_state_prev &&
-        view_state_curr == STATE_TVIEW_NOTRAFFIC) {
-      TFT_Clear_Screen();
-      TFT_Message("NO", "TRAFFIC");
-      view_state_prev = view_state_curr;
-    }
-
-    if (view_state_curr == STATE_TVIEW_TEXT) {
-      if (view_state_curr != view_state_prev) {
-         TFT_Clear_Screen();
-         view_state_prev = view_state_curr;
-      }
-      TFT_Draw_Text();
-    }
-
-    TFTTimeMarker = millis();
+    TFT_Draw_Text();
   }
 }
 

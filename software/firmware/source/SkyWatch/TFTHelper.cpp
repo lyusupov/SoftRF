@@ -33,7 +33,7 @@ TFT_eSPI *tft = NULL;
 TFT_eSprite *sprite = NULL;
 static FT5206_Class *tp = NULL;
 
-unsigned long TFTTimeMarker = 0;
+static unsigned long TFTTimeMarker = 0;
 
 static int TFT_view_mode = 0;
 bool TFT_vmode_updated = true;
@@ -156,6 +156,7 @@ byte TFT_setup()
   TFT_status_setup();
   TFT_radar_setup();
   TFT_text_setup();
+  TFT_time_setup();
 
   return rval;
 }
@@ -167,18 +168,25 @@ void TFT_loop()
   case DISPLAY_TFT_TTGO:
     if (tft) {
 
-      switch (TFT_view_mode)
-      {
-      case VIEW_MODE_RADAR:
-        TFT_radar_loop();
-        break;
-      case VIEW_MODE_TEXT:
-        TFT_text_loop();
-        break;
-      case VIEW_MODE_STATUS:
-      default:
-        TFT_status_loop();
-        break;
+      if (isTimeToDisplay()) {
+        switch (TFT_view_mode)
+        {
+        case VIEW_MODE_RADAR:
+          TFT_radar_loop();
+          break;
+        case VIEW_MODE_TEXT:
+          TFT_text_loop();
+          break;
+        case VIEW_MODE_TIME:
+          TFT_time_loop();
+          break;
+        case VIEW_MODE_STATUS:
+        default:
+          TFT_status_loop();
+          break;
+        }
+
+        TFTTimeMarker = millis();
       }
 
       bool is_bma_irq = false;
@@ -249,7 +257,7 @@ void TFT_loop()
         switch (tp_action)
         {
         case SWIPE_LEFT:
-          if (TFT_view_mode < VIEW_MODE_TEXT) {
+          if (TFT_view_mode < VIEW_MODE_TIME) {
             TFT_view_mode++;
             TFT_vmode_updated = true;
           }
@@ -341,6 +349,9 @@ void TFT_Up()
     case VIEW_MODE_TEXT:
       TFT_text_prev();
       break;
+    case VIEW_MODE_TIME:
+      TFT_time_prev();
+      break;
     case VIEW_MODE_STATUS:
     default:
       TFT_status_prev();
@@ -360,6 +371,9 @@ void TFT_Down()
     case VIEW_MODE_TEXT:
       TFT_text_next();
       break;
+    case VIEW_MODE_TIME:
+      TFT_time_next();
+      break;
     case VIEW_MODE_STATUS:
     default:
       TFT_status_next();
@@ -375,36 +389,24 @@ void TFT_Message(const char *msg1, const char *msg2)
   uint16_t x, y;
 
   if (msg1 != NULL && strlen(msg1) != 0) {
-
     tft->setTextFont(4);
     tft->setTextSize(2);
 
-    {
-      tft->fillScreen(TFT_NAVY);
+    tft->fillScreen(TFT_NAVY);
 
-      if (msg2 == NULL) {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = (tft->height() - tbh) / 2;
-        tft->setCursor(x, y);
-        tft->print(msg1);
+    tbw = tft->textWidth(msg1);
+    tbh = tft->fontHeight();
+    x = (tft->width() - tbw) / 2;
+    y = msg2 == NULL ? (tft->height() - tbh) / 2 : tft->height() / 2 - tbh;
+    tft->setCursor(x, y);
+    tft->print(msg1);
 
-      } else {
-        tbw = tft->textWidth(msg1);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = tft->height() / 2 - tbh;
-        tft->setCursor(x, y);
-        tft->print(msg1);
-
-        tbw = tft->textWidth(msg2);
-        tbh = tft->fontHeight();
-        x = (tft->width() - tbw) / 2;
-        y = tft->height() / 2;
-        tft->setCursor(x, y);
-        tft->print(msg2);
-      }
+    if (msg2 != NULL && strlen(msg2) != 0) {
+      tbw = tft->textWidth(msg2);
+      x = (tft->width() - tbw) / 2;
+      y = tft->height() / 2;
+      tft->setCursor(x, y);
+      tft->print(msg2);
     }
   }
 }

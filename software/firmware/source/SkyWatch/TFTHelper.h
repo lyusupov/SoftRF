@@ -75,9 +75,13 @@ void TFT_text_loop();
 void TFT_text_next();
 void TFT_text_prev();
 
+void TFT_time_setup();
+void TFT_time_loop();
+void TFT_time_next();
+void TFT_time_prev();
+
 extern TFT_eSPI *tft;
 extern TFT_eSprite *sprite;
 extern bool TFT_vmode_updated;
-extern unsigned long TFTTimeMarker;
 
 #endif /* TFTHELPER_H */

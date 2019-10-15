@@ -28,6 +28,7 @@
 #include <WebServer.h>
 #include <Update.h>
 #include <SPIFFS.h>
+#include <pcf8563.h>
 #include <bma.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -123,6 +124,7 @@ extern WebServer server;
 extern BMA *bma;
 extern portMUX_TYPE BMA_mutex;
 extern volatile bool BMA_Irq;
+extern PCF8563_Class *rtc;
 
 #define NMEA_TCP_SERVICE
 

@@ -31,6 +31,7 @@ github:https://github.com/lewisxhe/PCF8563_Library
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <i2c_bus.h>
 
 #define PCF8563_SLAVE_ADDRESS   (0x51) //7-bit I2C Address
 
@@ -91,6 +92,7 @@ class RTC_Date
 {
 public:
     RTC_Date();
+    RTC_Date(const char* date, const char* time);
     RTC_Date(uint16_t year,
              uint8_t month,
              uint8_t day,
@@ -105,6 +107,8 @@ public:
     uint8_t minute;
     uint8_t second;
     bool operator==(RTC_Date d);
+    private:
+    uint8_t StringToUint8(const char* pString);
 };
 
 class RTC_Alarm
@@ -127,13 +131,17 @@ public:
 class PCF8563_Class
 {
 public:
-    int begin(TwoWire &port = Wire, uint8_t addr = PCF8563_SLAVE_ADDRESS);
+    PCF8563_Class(I2CBus &bus , uint8_t addr = PCF8563_SLAVE_ADDRESS);
+
+    void check();
+
     void setDateTime(uint16_t year,
                      uint8_t month,
                      uint8_t day,
                      uint8_t hour,
                      uint8_t minute,
                      uint8_t second);
+
     void setDateTime(RTC_Date date);
     RTC_Date getDateTime();
     RTC_Alarm getAlarm();
@@ -160,6 +168,9 @@ public:
     bool enableCLK(uint8_t freq);
     void disableCLK();
 
+    void syncToSystem();
+    void syncToRtc();
+
     const char *formatDateTime(uint8_t sytle = PCF_TIMEFORMAT_HMS);
     uint32_t getDayOfWeek(uint32_t day, uint32_t month, uint32_t year);
     uint8_t status2();
@@ -175,22 +186,25 @@ private:
     }
     int _readByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
     {
-        _i2cPort->beginTransmission(_address);
-        _i2cPort->write(reg);
-        _i2cPort->endTransmission();
-        _i2cPort->requestFrom(_address, nbytes);
-        uint8_t index = 0;
-        while (_i2cPort->available())
-            data[index++] = _i2cPort->read();
+        return (int)_bus->readBytes(_address, reg, data, nbytes);
+        // _i2cPort->beginTransmission(_address);
+        // _i2cPort->write(reg);
+        // _i2cPort->endTransmission();
+        // _i2cPort->requestFrom(_address, nbytes);
+        // uint8_t index = 0;
+        // while (_i2cPort->available())
+        //     data[index++] = _i2cPort->read();
     }
+
     int _writeByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
     {
-        _i2cPort->beginTransmission(_address);
-        _i2cPort->write(reg);
-        for (uint8_t i = 0; i < nbytes; i++) {
-            _i2cPort->write(data[i]);
-        }
-        _i2cPort->endTransmission();
+        return (int)_bus->writeBytes(_address, reg, data, nbytes);
+        // _i2cPort->beginTransmission(_address);
+        // _i2cPort->write(reg);
+        // for (uint8_t i = 0; i < nbytes; i++) {
+        //     _i2cPort->write(data[i]);
+        // }
+        // _i2cPort->endTransmission();
     }
 
     uint8_t _isVaild = false;
@@ -200,4 +214,5 @@ private:
     uint8_t _data[16];
     bool _voltageLow;
     char format[128];
+    I2CBus *_bus = nullptr;
 };

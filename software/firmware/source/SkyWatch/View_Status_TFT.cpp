@@ -23,13 +23,6 @@
 
 #include "SkyWatch.h"
 
-static uint32_t prev_tx_packets_counter = 0;
-static uint32_t prev_rx_packets_counter = 0;
-static uint8_t  prev_protocol = 0;
-static uint32_t prev_addr = 0;
-static int      prev_traffic_counter = 0;
-static int      prev_voltage = 0;
-
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
 const char *TFT_Protocol_ID[] = {
@@ -61,180 +54,100 @@ void TFT_status_loop()
   uint16_t tbw;
   uint16_t tbh;
 
-  int acfts;
-  int voltage;
+  sprite->createSprite(tft->width(), tft->height());
 
-  if (TFT_vmode_updated) {
-    tft->fillScreen(TFT_NAVY);
+  sprite->fillSprite(TFT_BLACK);
+  sprite->setTextColor(TFT_WHITE);
 
-    tft->setTextFont(2);
-    tft->setTextSize(2);
-    tft->setTextColor(TFT_WHITE, TFT_NAVY);
+  sprite->setTextFont(2);
+  sprite->setTextSize(2);
 
-    tbw = tft->textWidth(ID_text);
-    tbh = tft->fontHeight();
+  tbw = sprite->textWidth(ID_text);
+  tbh = sprite->fontHeight();
 
-    tft->setCursor(tft->textWidth(" "), tft->height()/6 - tbh);
-    tft->print(ID_text);
+  sprite->setCursor(sprite->textWidth(" "), sprite->height()/6 - tbh);
+  sprite->print(ID_text);
 
-    tbw = tft->textWidth(PROTOCOL_text);
+  tbw = sprite->textWidth(PROTOCOL_text);
 
-    tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                   tft->height()/6 - tbh);
-    tft->print(PROTOCOL_text);
+  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                    sprite->height()/6 - tbh);
+  sprite->print(PROTOCOL_text);
 
-    tbw = tft->textWidth(RX_text);
+  tbw = sprite->textWidth(RX_text);
 
-    tft->setCursor(tft->textWidth("   "), tft->height()/2 - tbh);
-    tft->print(RX_text);
+  sprite->setCursor(sprite->textWidth("   "), sprite->height()/2 - tbh);
+  sprite->print(RX_text);
 
-    tbw = tft->textWidth(TX_text);
+  tbw = sprite->textWidth(TX_text);
 
-    tft->setCursor(tft->width()/2 + tft->textWidth("   "),
-                   tft->height()/2 - tbh);
-    tft->print(TX_text);
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                    sprite->height()/2 - tbh);
+  sprite->print(TX_text);
 
-    tbw = tft->textWidth(ACFTS_text);
+  tbw = sprite->textWidth(ACFTS_text);
 
-    tft->setCursor(tft->textWidth(" "), (5 * tft->height()/6) - tbh);
-    tft->print(ACFTS_text);
+  sprite->setCursor(sprite->textWidth(" "), (5 * sprite->height()/6) - tbh);
+  sprite->print(ACFTS_text);
 
-    tbw = tft->textWidth(BAT_text);
+  tbw = sprite->textWidth(BAT_text);
 
-    tft->setCursor(tft->width()/2 + tft->textWidth("   "),
-                   (5 * tft->height()/6) - tbh);
-    tft->print(BAT_text);
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                    (5 * sprite->height()/6) - tbh);
+  sprite->print(BAT_text);
 
-    tft->setTextFont(4);
-    tft->setTextSize(2);
+  itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
 
-    itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
+  sprite->setTextFont(4);
+  sprite->setTextSize(2);
 
-    tbw = tft->textWidth(buf);
-    tbh = tft->fontHeight();
+  sprite->setCursor(sprite->textWidth(" "), sprite->height()/6);
+  sprite->print(buf);
 
-    tft->setCursor(tft->textWidth(" "), tft->height()/6);
-    tft->print(buf);
-    prev_addr = ThisDevice.addr;
+  tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
 
-    tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
+  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                    sprite->height()/6);
+  sprite->print(TFT_Protocol_ID[ThisDevice.protocol]);
 
-    tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                   tft->height()/6);
-    tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
-    prev_protocol = ThisDevice.protocol;
 
-    itoa(rx_packets_counter % 1000, buf, 10);
-    tft->setCursor(tft->textWidth(" "), tft->height()/2);
-    tft->print(buf);
-    prev_rx_packets_counter = rx_packets_counter;
+  disp_value = rx_packets_counter % 1000;
+  itoa(disp_value, buf, 10);
 
-    itoa(tx_packets_counter % 1000, buf, 10);
-    tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-    tft->print(buf);
-    prev_tx_packets_counter = tx_packets_counter;
-
-    acfts = Traffic_Count();
-    tft->setCursor(tft->textWidth("  "), (5 * tft->height())/6);
-    tft->print(acfts);
-    prev_traffic_counter = acfts;
-
-    voltage = (int) (Battery_voltage() * 10.0);
-    tft->setCursor(tft->width()/2 + tft->textWidth("  "), (5 * tft->height())/6);
-    tft->print((float) voltage / 10, 1);
-    prev_voltage = voltage;
-
-    TFT_vmode_updated = false;
-
-  } else { /* TFT_vmode_updated */
-
-    if (ThisDevice.addr != prev_addr) {
-      itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
-
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tft->setCursor(tft->textWidth(" "), tft->height()/6);
-      tft->print(buf);
-      prev_addr = ThisDevice.addr;
-    }
-
-    if (ThisDevice.protocol != prev_protocol) {
-
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tbw = tft->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
-
-      tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
-                     tft->height()/6);
-      tft->print(TFT_Protocol_ID[ThisDevice.protocol]);
-      prev_protocol = ThisDevice.protocol;
-    }
-
-    if (rx_packets_counter != prev_rx_packets_counter) {
-      disp_value = rx_packets_counter % 1000;
-      itoa(disp_value, buf, 10);
-
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR("  "));
-      } else {
-        if (disp_value < 100) {
-          strcat_P(buf,PSTR(" "));
-        };
-      }
-
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tft->setCursor(tft->textWidth(" "), tft->height()/2);
-      tft->print(buf);
-
-      prev_rx_packets_counter = rx_packets_counter;
-    }
-    if (tx_packets_counter != prev_tx_packets_counter) {
-      disp_value = tx_packets_counter % 1000;
-      itoa(disp_value, buf, 10);
-
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR("  "));
-      } else {
-        if (disp_value < 100) {
-          strcat_P(buf,PSTR(" "));
-        };
-      }
-
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
-      tft->print(buf);
-
-      prev_tx_packets_counter = tx_packets_counter;
-    }
-
-    acfts = Traffic_Count();
-    if (acfts != prev_traffic_counter) {
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tft->setCursor(tft->textWidth("  "), (5 * tft->height())/6);
-      tft->print(acfts);
-
-      prev_traffic_counter = acfts;
-    }
-
-    voltage = (int) (Battery_voltage() * 10.0);
-    if (voltage != prev_voltage) {
-      tft->setTextFont(4);
-      tft->setTextSize(2);
-
-      tft->setCursor(tft->width()/2 + tft->textWidth("  "), (5 * tft->height())/6);
-      tft->print((float) voltage / 10, 1);
-
-      prev_voltage = voltage;
-    }
+  if (disp_value < 10) {
+    strcat_P(buf,PSTR("  "));
+  } else {
+    if (disp_value < 100) {
+      strcat_P(buf,PSTR(" "));
+    };
   }
+
+  sprite->setCursor(sprite->textWidth(" "), sprite->height()/2);
+  sprite->print(buf);
+
+  disp_value = tx_packets_counter % 1000;
+  itoa(disp_value, buf, 10);
+
+  if (disp_value < 10) {
+    strcat_P(buf,PSTR("  "));
+  } else {
+    if (disp_value < 100) {
+      strcat_P(buf,PSTR(" "));
+    };
+  }
+
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), sprite->height()/2);
+  sprite->print(buf);
+
+  sprite->setCursor(sprite->textWidth("  "), (5 * sprite->height())/6);
+  sprite->print(Traffic_Count());
+
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth("  "), (5 * sprite->height())/6);
+  sprite->print(Battery_voltage(), 1);
+
+  tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
+  sprite->pushSprite(0, 0);
+  sprite->deleteSprite();
 }
 
 void TFT_status_next()
