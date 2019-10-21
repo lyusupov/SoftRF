@@ -27,7 +27,6 @@
 #include <rom/spi_flash.h>
 #include <flashchips.h>
 #include <axp20x.h>
-#include <pcf8563.h>
 #include <TFT_eSPI.h>
 
 #include "Platform_ESP32.h"
@@ -77,7 +76,6 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
                                                   HELTEC_OLED_PIN_SDA);
 
 AXP20X_Class axp;
-PCF8563_Class rtc;
 
 static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
 static TFT_eSPI *tft = NULL;
@@ -220,8 +218,6 @@ static void ESP32_setup()
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
     }
-
-    rtc.begin(Wire1);
 
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;

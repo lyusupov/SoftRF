@@ -45,7 +45,7 @@ void TFT_time_loop()
     now = rtc->getDateTime();
   }
 
-  if (now.year < 2019) {
+  if (now.year < 2019 || now.year > 2029) {
     strcpy(buf, NOTIME_text);
   } else {
     snprintf(buf, sizeof(buf), "%2d : %02d : %02d",

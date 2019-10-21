@@ -246,20 +246,19 @@ static void STM32_swSer_begin(unsigned long baud)
 
   // swSer.write("@VER\r\n");
 
-  if (reset_info.reason == REASON_DEFAULT_RST) {
-    /* Idle */
-    swSer.write("@GSTP\r\n");      delay(250);
-    /* GGA + GSA + RMC */
-    swSer.write("@BSSL 0x25\r\n"); delay(250);
-    /* GPS + GLONASS */
-    swSer.write("@GNS 0x3\r\n");   delay(250);
+  /* Idle */
+  // swSer.write("@GSTP\r\n");      delay(250);
+
+  /* GGA + GSA + RMC */
+  swSer.write("@BSSL 0x25\r\n"); delay(250);
+  /* GPS + GLONASS */
+  swSer.write("@GNS 0x3\r\n");   delay(250);
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
-    /* Enable 1PPS output */
-    swSer.write("@GPPS 0x1\r\n");   delay(250);
+  /* Enable 1PPS output */
+  swSer.write("@GPPS 0x1\r\n");  delay(250);
 #endif
-    /* hot start */
-    swSer.write("@GSR\r\n");       delay(250);
-  }
+  /* hot start */
+  swSer.write("@GSR\r\n");       delay(250);
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 

@@ -408,9 +408,10 @@ void NMEA_loop()
 
   if (!RTC_sync) {
     if (rtc &&
-        nmea.date.isValid() &&
-        nmea.time.isValid() &&
-        nmea.date.year() > 2018) {
+        nmea.date.isValid()     &&
+        nmea.time.isValid()     &&
+        nmea.date.year() > 2018 &&
+        nmea.date.year() < 2030 ) {
       rtc->setDateTime(nmea.date.year(),   nmea.date.month(),
                        nmea.date.day(),    nmea.time.hour(),
                        nmea.time.minute(), nmea.time.second());

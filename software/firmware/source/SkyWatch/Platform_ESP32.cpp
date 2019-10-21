@@ -172,9 +172,10 @@ static void ESP32_setup()
       break;
     }
   } else {
+#if defined(EB_S76G_1_3)
+    /* PSRAM IC does not respond on probing requests for one of my T-Watch boards */
     switch(flash_id)
     {
-    /* workaround for AC 1.0.1 */
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
       hw_info.model = SOFTRF_MODEL_SKYWATCH;
       hw_info.revision = HW_REV_T_WATCH;
@@ -182,6 +183,7 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_UNKNOWN;
       break;
     }
+#endif
   }
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
@@ -315,7 +317,9 @@ static void ESP32_fini()
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
     axp.setPowerOutPut(AXP202_LDO2, AXP202_OFF); // BL
+#if !defined(EB_S76G_1_3)
     axp.setPowerOutPut(AXP202_LDO4, AXP202_OFF); // S76G (Sony GNSS)
+#endif
     axp.setPowerOutPut(AXP202_LDO3, AXP202_OFF); // S76G (MCU + LoRa)
 
     delay(20);

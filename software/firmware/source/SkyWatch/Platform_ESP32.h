@@ -132,6 +132,8 @@ extern PCF8563_Class *rtc;
 
 #define DEBUG_POWER 0
 
+#define EB_S76G_1_3
+
 #endif /* PLATFORM_ESP32_H */
 
 #endif /* ESP32 */
