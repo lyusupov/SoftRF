@@ -93,7 +93,9 @@ void setup() {
   Serial.begin(38400);
 
   Serial.println();
-  Serial.print(F("SoftRF FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.flush();
 

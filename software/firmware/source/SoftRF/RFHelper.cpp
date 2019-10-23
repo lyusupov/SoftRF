@@ -1073,7 +1073,7 @@ static unsigned char uat_ringbuf[UAT_RINGBUF_SIZE];
 static unsigned int uatbuf_head = 0;
 Stratux_frame_t uatradio_frame;
 
-const char UAT_ident[] PROGMEM = SOFTRF_UAT_IDENT;
+const char UAT_ident[] PROGMEM = SOFTRF_IDENT;
 
 bool cc13xx_probe()
 {

@@ -690,6 +690,13 @@ int main()
 
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
+  Serial.println();
+  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
+  Serial.flush();
+
   hw_info.rf = RF_setup();
 
   if (hw_info.rf == RF_IC_NONE) {
