@@ -19,55 +19,7 @@
 #include "SoundHelper.h"
 #include "EEPROMHelper.h"
 
-#if 0
-#include <ets_sys.h>
-#include <osapi.h>
-#include <gpio.h>
-#include <os_type.h>
-extern "C" {
-#include <user_interface.h>
-}
-
-void ICACHE_FLASH_ATTR user_init()
-{   
-  // init gpio subsytem
-  gpio_init();
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA3_U, FUNC_GPIO10);
-}
-#endif
-
 void Sound_setup(void)
 {
 
 }
-
-#if 0
-void Sound_test(int var)
-{
-  if (settings->volume != BUZZER_OFF) {
-    swSer.enableRx(false);
-
-    if (var == REASON_DEFAULT_RST ||
-        var == REASON_EXT_SYS_RST ||
-        var == REASON_SOFT_RESTART) {
-      tone(10, 440, 500);delay(500);
-      tone(10, 640, 500);delay(500);
-      tone(10, 840, 500);delay(500);
-      tone(10, 1040, 500);
-    } else if (var == REASON_WDT_RST) {
-      tone(10, 440, 500);delay(500);
-      tone(10, 1040, 500);delay(500);
-      tone(10, 440, 500);delay(500);
-      tone(10, 1040, 500);
-    } else {
-      tone(10, 1040, 500);delay(500);
-      tone(10, 840, 500);delay(500);
-      tone(10, 640, 500);delay(500);
-      tone(10, 440, 500);
-    }
-    delay(600);
-
-    swSer.enableRx(true);
-  }
-}
-#endif

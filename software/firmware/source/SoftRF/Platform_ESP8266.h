@@ -86,6 +86,10 @@ extern Adafruit_NeoPixel strip;
 
 #define  USE_NMEALIB
 
+#if defined(pgm_read_float_aligned)
+#define pgm_read_float(addr)  pgm_read_float_aligned(addr)
+#endif
+
 #endif /* PLATFORM_ESP8266_H */
 
 #endif /* ESP8266 */
