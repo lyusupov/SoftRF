@@ -89,6 +89,8 @@ static void ESP32_Bluetooth_setup()
   {
   case BLUETOOTH_SPP:
     {
+      esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+
       SerialBT.begin(BT_name.c_str());
     }
     break;
@@ -97,8 +99,16 @@ static void ESP32_Bluetooth_setup()
       BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
       BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
 
+      esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+
       // Create the BLE Device
       BLEDevice::init((BT_name+"-LE").c_str());
+
+      /*
+       * Set the MTU of the packets sent,
+       * maximum is 500, Apple needs 23 apparently.
+       */
+      // BLEDevice::setMTU(23);
 
       // Create the BLE Server
       pServer = BLEDevice::createServer();
@@ -156,7 +166,7 @@ static void ESP32_Bluetooth_loop()
     {
       // notify changed value
       // bluetooth stack will go into congestion, if too many packets are sent
-      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 15)) { /* < 12000 baud */
+      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 10)) { /* < 18000 baud */
 
           uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
           size_t size = (BLE_FIFO_TX->available() < BLE_MAX_WRITE_CHUNK_SIZE ?

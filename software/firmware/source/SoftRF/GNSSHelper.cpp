@@ -668,6 +668,18 @@ void PickGNSSFix()
 #endif /* USE_NMEA_CFG */
     } else if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
       c = SoC->Bluetooth->read();
+
+      /*
+       * Don't forget to disable echo:
+       *
+       * stty raw -echo -F /dev/rfcomm0
+       *
+       * GNSS input becomes garbled otherwise
+       */
+
+      // Serial.write((char) c);
+      /* Ignore Bluetooth input for a while */
+      // break;
     } else {
       /* return back if no input data */
       break;

@@ -35,6 +35,8 @@ String BT_name = HOSTNAME;
 
 static void ESP32_Bluetooth_setup()
 {
+  esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   SerialBT.begin(BT_name.c_str(), ESP_SPP_ROLE_MASTER, settings->bt_name);

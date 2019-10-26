@@ -647,6 +647,9 @@ static void ESP32_swSer_begin(unsigned long baud)
     }
   }
 
+  /* Default Rx buffer size (256 bytes) is sometimes not big enough */
+  // swSer.setRxBufferSize(512);
+
   /* Need to gather some statistics on variety of flash IC usage */
   Serial.print(F("Flash memory ID: "));
   Serial.println(ESP32_getFlashId(), HEX);
