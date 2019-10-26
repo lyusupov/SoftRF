@@ -87,7 +87,8 @@ void setup()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   delay(300);
-  Serial.begin(38400); Serial.println();
+  Serial.begin(SERIAL_OUT_BR);
+  Serial.println();
 
   EEPROM_setup();
 

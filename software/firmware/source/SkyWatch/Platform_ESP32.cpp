@@ -482,7 +482,7 @@ static int ESP32_WiFi_clients_count()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  SerialInput.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

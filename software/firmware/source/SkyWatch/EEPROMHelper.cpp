@@ -94,7 +94,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.m.adapter         = ADAPTER_NONE;
 
   eeprom_block.field.settings.m.connection      = CON_SERIAL;
-  eeprom_block.field.settings.m.baudrate        = B38400;
+  eeprom_block.field.settings.m.baudrate        = B115200; /* S76G AN3155 BR */
   eeprom_block.field.settings.m.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.m.orientation     = DIRECTION_NORTH_UP;
 

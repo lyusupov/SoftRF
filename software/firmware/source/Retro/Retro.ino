@@ -90,7 +90,7 @@ unsigned long ExportTimeMarker = 0;
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  Serial.begin(38400);
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
@@ -98,6 +98,10 @@ void setup() {
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.flush();
+
+  Serial.println();
+  Serial.print(F("Reset reason: "));
+  Serial.println(SoC->getResetReason());
 
   EEPROM_setup();
 

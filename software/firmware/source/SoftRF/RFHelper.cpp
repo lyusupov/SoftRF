@@ -1089,7 +1089,7 @@ bool cc13xx_probe()
     return success;
   }
 
-  SoC->UATSerial_begin(2000000);
+  SoC->UATSerial_begin(UAT_BOOT_BR);
 
   SoC->CC13XX_restart();
 
@@ -1142,7 +1142,7 @@ void cc13xx_setup()
 {
   /* Current ESP32 Core has a bug with Serial2.end()+Serial2.begin() cycle */
   if (SoC->id != SOC_ESP32) {
-    SoC->UATSerial_begin(2000000);
+    SoC->UATSerial_begin(UAT_RECEIVER_BR);
   }
 
   init_fec();

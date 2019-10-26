@@ -29,6 +29,10 @@
 #define RELAY_DST_PORT    12390
 #define RELAY_SRC_PORT    (RELAY_DST_PORT - 1)
 
+/* SoftRF serial output defaults */
+#define SERIAL_OUT_BR     38400
+#define SERIAL_OUT_BITS   SERIAL_8N1
+
 #define DATA_TIMEOUT      2000 /* 2.0 seconds */
 
 #define MAX_FILENAME_LEN  64

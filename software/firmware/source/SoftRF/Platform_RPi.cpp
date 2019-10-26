@@ -686,7 +686,7 @@ int main()
       exit(EXIT_FAILURE);
   }
 
-  Serial.begin(38400);
+  Serial.begin(SERIAL_OUT_BR);
 
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 

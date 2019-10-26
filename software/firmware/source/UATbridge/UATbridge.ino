@@ -201,7 +201,7 @@ void setup() {
   case SOFTRF_MODE_BRIDGE:
   case SOFTRF_MODE_RECEIVER:
   default:
-    Serial.begin( 9600 );
+    Serial.begin(UAT_BOOT_BR);
     break;
   }
 
@@ -317,7 +317,7 @@ void setup() {
       Serial.println("Receiver mode.");
       Serial.flush();
       Serial.end();
-      Serial.begin( 2000000 );
+      Serial.begin(UAT_RECEIVER_BR);
     }
     break;
 

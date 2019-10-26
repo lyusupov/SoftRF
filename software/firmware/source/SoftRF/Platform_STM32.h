@@ -44,6 +44,9 @@
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
 
+#define AN3155_BR               115200
+#define AN3155_BITS             SERIAL_8E1
+
 // button
 #define SOC_GPIO_PIN_BUTTON     USER_BTN
 
@@ -73,6 +76,9 @@ struct rst_info {
 #define Serial                  Serial1
 #define swSer                   Serial4
 #define UATSerial               Serial2  /* PA3, PA2 */
+
+#define SERIAL_OUT_BR           AN3155_BR
+#define SERIAL_OUT_BITS         AN3155_BITS
 
 static inline void HAL_GetUID(uint32_t *UID)
 {

@@ -108,7 +108,7 @@ void setup()
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
-  Serial.begin(38400);
+  Serial.begin(SERIAL_OUT_BR);
 
 #if LOGGER_IS_ENABLED
   Logger_setup();

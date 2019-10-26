@@ -630,20 +630,20 @@ static void ESP32_swSer_begin(unsigned long baud)
     Serial.println(F(") is detected."));
 
     if (hw_info.revision == 8) {
-      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V08_RX, SOC_GPIO_PIN_TBEAM_V08_TX);
+      swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_TBEAM_V08_RX, SOC_GPIO_PIN_TBEAM_V08_TX);
     } else {
-      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TBEAM_V05_RX, SOC_GPIO_PIN_TBEAM_V05_TX);
+      swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_TBEAM_V05_RX, SOC_GPIO_PIN_TBEAM_V05_TX);
     }
   } else {
     if (esp32_board == ESP32_TTGO_T_WATCH) {
       Serial.println(F("INFO: TTGO T-Watch is detected."));
-      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TWATCH_RX, SOC_GPIO_PIN_TWATCH_TX);
+      swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_TWATCH_RX, SOC_GPIO_PIN_TWATCH_TX);
     } else if (esp32_board == ESP32_TTGO_V2_OLED) {
       /* 'Mini' (TTGO LoRa V2 + GNSS) */
-      swSer.begin(baud, SERIAL_8N1, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+      swSer.begin(baud, SERIAL_IN_BITS, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
-      swSer.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+      swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
     }
   }
 
@@ -1029,7 +1029,7 @@ static bool ESP32_Baro_setup() {
 static void ESP32_UATSerial_begin(unsigned long baud)
 {
   /* open Standalone's I2C/UATSerial port */
-  UATSerial.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
+  UATSerial.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
 }
 
 static void ESP32_CC13XX_restart()

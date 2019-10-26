@@ -68,6 +68,26 @@
 #define NMEA_UDP_PORT     10110
 #define NMEA_TCP_PORT     2000
 
+/*
+ * Serial I/O default values.
+ * Can be overridden by platfrom-specific code.
+ */
+#if !defined(SERIAL_IN_BR)
+#define SERIAL_IN_BR      9600
+#endif
+#if !defined(SERIAL_IN_BITS)
+#define SERIAL_IN_BITS    SERIAL_8N1
+#endif
+#if !defined(SERIAL_OUT_BR)
+#define SERIAL_OUT_BR     38400
+#endif
+#if !defined(SERIAL_OUT_BITS)
+#define SERIAL_OUT_BITS   SERIAL_8N1
+#endif
+
+#define UAT_BOOT_BR       9600
+#define UAT_RECEIVER_BR   2000000
+
 #if defined(PREMIUM_PACKAGE) && !defined(RASPBERRY_PI)
 #define ENABLE_AHRS
 #endif /* PREMIUM_PACKAGE */

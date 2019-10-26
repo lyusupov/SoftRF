@@ -535,7 +535,7 @@ byte GNSS_setup() {
   }
 #endif /* USE_S7XG_DRIVER */
 
-  SoC->swSer_begin(9600);
+  SoC->swSer_begin(SERIAL_IN_BR);
 
   if (!GNSS_probe())
     return rval;
