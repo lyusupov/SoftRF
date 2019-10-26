@@ -121,13 +121,17 @@ static void ESP32_Bluetooth_setup()
 
       pCharacteristic->setCallbacks(new MyCallbacks());
 
-      pServer->getAdvertising()->addServiceUUID(SERVICE_UUID);
-
       // Start the service
       pService->start();
 
       // Start advertising
-      pServer->getAdvertising()->start();
+      BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+      pAdvertising->addServiceUUID(SERVICE_UUID);
+      pAdvertising->setScanResponse(true);
+      pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+      pAdvertising->setMaxPreferred(0x12);
+      BLEDevice::startAdvertising();
+
       BLE_Advertising_TimeMarker = millis();
     }
     break;
@@ -152,7 +156,7 @@ static void ESP32_Bluetooth_loop()
     {
       // notify changed value
       // bluetooth stack will go into congestion, if too many packets are sent
-      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 30)) { /* < 6000 baud */
+      if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 15)) { /* < 12000 baud */
 
           uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
           size_t size = (BLE_FIFO_TX->available() < BLE_MAX_WRITE_CHUNK_SIZE ?
