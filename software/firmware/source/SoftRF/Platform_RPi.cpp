@@ -220,6 +220,8 @@ static unsigned long RPi_get_PPS_TimeMarker() {
 static void RPi_UATSerial_begin(unsigned long baud)
 {
   UATSerial.begin(baud);
+  UATSerial.dtr(false);
+  UATSerial.rts(false);
 }
 
 static void RPi_CC13XX_restart()

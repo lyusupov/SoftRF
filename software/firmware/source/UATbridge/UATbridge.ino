@@ -199,9 +199,11 @@ void setup() {
 
   case SOFTRF_MODE_NORMAL:
   case SOFTRF_MODE_BRIDGE:
+    Serial.begin(UAT_BOOT_BR);
+    break;
   case SOFTRF_MODE_RECEIVER:
   default:
-    Serial.begin(UAT_BOOT_BR);
+    Serial.begin(UAT_RECEIVER_BR);
     break;
   }
 
@@ -275,7 +277,7 @@ void setup() {
     Serial.println("UAV mode.");
     break;
 
-  case SOFTRF_MODE_RECEIVER:
+  case SOFTRF_MODE_BRIDGE:
 
     hw_info.rf = RF_setup();
 
@@ -285,7 +287,6 @@ void setup() {
 #endif
 
     if (hw_info.rf != RF_IC_NONE) {
-      settings->mode = SOFTRF_MODE_BRIDGE;
 
       init_fec();
 
@@ -313,18 +314,19 @@ void setup() {
       Serial.println(GNSS_name[hw_info.gnss]);
 
       Serial.println("Bridge mode.");
+      break;
     } else {
-      Serial.println("Receiver mode.");
-      Serial.flush();
-      Serial.end();
-      Serial.begin(UAT_RECEIVER_BR);
+      settings->mode = SOFTRF_MODE_RECEIVER;
     }
-    break;
 
+  case SOFTRF_MODE_RECEIVER:
 #endif /* NORMAL_MODE */
 
   default:
     Serial.println("Receiver mode.");
+    Serial.flush();
+    Serial.end();
+    Serial.begin(UAT_RECEIVER_BR);
     break;
   }
 
@@ -333,7 +335,6 @@ void setup() {
 }
 
 void loop() {
-
     switch (settings->mode)
     {
 #if defined(NORMAL_MODE)

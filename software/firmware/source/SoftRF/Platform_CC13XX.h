@@ -65,6 +65,9 @@
 extern WS2812 strip;
 extern uint8_t LEDs[][3];
 
+#define EXCLUDE_BMP180
+#define EXCLUDE_MPL3115A2
+
 #endif /* PLATFORM_CC13XX_H */
 
 #endif /* ENERGIA_ARCH_CC13XX */

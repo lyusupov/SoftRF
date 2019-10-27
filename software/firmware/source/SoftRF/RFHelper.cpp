@@ -1089,7 +1089,7 @@ bool cc13xx_probe()
     return success;
   }
 
-  SoC->UATSerial_begin(UAT_BOOT_BR);
+  SoC->UATSerial_begin(UAT_RECEIVER_BR);
 
   SoC->CC13XX_restart();
 

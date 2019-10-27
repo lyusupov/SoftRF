@@ -1035,6 +1035,11 @@ static void ESP32_UATSerial_begin(unsigned long baud)
   UATSerial.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
 }
 
+static void ESP32_UATSerial_updateBaudRate(unsigned long baud)
+{
+  UATSerial.updateBaudRate(baud);
+}
+
 static void ESP32_CC13XX_restart()
 {
   digitalWrite(SOC_GPIO_PIN_TXE, LOW);
