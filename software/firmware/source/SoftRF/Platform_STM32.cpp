@@ -214,8 +214,9 @@ static void STM32_SPI_begin()
   SPI.setMISO(SOC_GPIO_PIN_MISO);
   SPI.setMOSI(SOC_GPIO_PIN_MOSI);
   SPI.setSCLK(SOC_GPIO_PIN_SCK);
+#if defined(ARDUINO_NUCLEO_L073RZ)
   SPI.setSSEL(SOC_GPIO_PIN_SS);
-
+#endif
   SPI.begin();
 }
 
