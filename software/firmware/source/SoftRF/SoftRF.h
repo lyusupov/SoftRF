@@ -73,12 +73,24 @@
  * Can be overridden by platfrom-specific code.
  */
 #if !defined(SERIAL_IN_BR)
+/*
+ * 9600 is default value of NMEA baud rate
+ * for most of GNSS modules
+ * being used in SoftRF project
+ */
 #define SERIAL_IN_BR      9600
 #endif
 #if !defined(SERIAL_IN_BITS)
 #define SERIAL_IN_BITS    SERIAL_8N1
 #endif
 #if !defined(SERIAL_OUT_BR)
+/*
+ * 38400 is known as maximum baud rate
+ * that HC-05 Bluetooth module
+ * can handle without symbols loss.
+ *
+ * Applicable for Standalone Edition. Inherited by most of other SoftRF platforms.
+ */
 #define SERIAL_OUT_BR     38400
 #endif
 #if !defined(SERIAL_OUT_BITS)
@@ -164,7 +176,8 @@ enum
 	SOFTRF_MODEL_UAT,
 	SOFTRF_MODEL_SKYVIEW,
 	SOFTRF_MODEL_RETRO,
-	SOFTRF_MODEL_SKYWATCH
+	SOFTRF_MODEL_SKYWATCH,
+	SOFTRF_MODEL_DONGLE
 };
 
 extern ufo_t ThisAircraft;

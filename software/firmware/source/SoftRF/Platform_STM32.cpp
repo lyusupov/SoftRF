@@ -214,17 +214,17 @@ static void STM32_SPI_begin()
   SPI.setMISO(SOC_GPIO_PIN_MISO);
   SPI.setMOSI(SOC_GPIO_PIN_MOSI);
   SPI.setSCLK(SOC_GPIO_PIN_SCK);
-#if defined(ARDUINO_NUCLEO_L073RZ)
-  SPI.setSSEL(SOC_GPIO_PIN_SS);
-#endif
+  // Slave Select pin is driven by RF driver
+
   SPI.begin();
 }
 
 static void STM32_swSer_begin(unsigned long baud)
 {
-#if !defined(ARDUINO_NUCLEO_L073RZ)
+
   swSer.begin(baud);
-#else
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
   /* drive GNSS RST pin low */
   pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_GNSS_RST, LOW);
@@ -241,9 +241,6 @@ static void STM32_swSer_begin(unsigned long baud)
 
   /* give Sony GNSS few ms to warm up */
   delay(100);
-
-  /* S76G GNSS is operating at 115200 baud by default */
-  swSer.begin(115200);
 
   // swSer.write("@VER\r\n");
 
@@ -422,7 +419,7 @@ static void STM32_WDT_fini()
   /* once emabled - there is no way to disable WDT on STM32 */
 }
 
-#if defined(USBD_USE_CDC) && defined(ARDUINO_BLUEPILL_F103C8)
+#if defined(USBD_USE_CDC)
 
 #include <USBSerial.h>
 #include "BluetoothHelper.h"
@@ -461,7 +458,7 @@ Bluetooth_ops_t STM32_USBSerial_ops = {
   STM32_USB_write
 };
 
-#endif /* ARDUINO_BLUEPILL_F103C8 */
+#endif /* USBD_USE_CDC */
 
 const SoC_ops_t STM32_ops = {
   SOC_STM32,
@@ -486,7 +483,7 @@ const SoC_ops_t STM32_ops = {
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,
-#if defined(USBD_USE_CDC) && defined(ARDUINO_BLUEPILL_F103C8)
+#if defined(USBD_USE_CDC)
   &STM32_USBSerial_ops,
 #else
   NULL,

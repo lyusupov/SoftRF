@@ -77,6 +77,15 @@ struct rst_info {
 #define swSer                   Serial4
 #define UATSerial               Serial2  /* PA3, PA2 */
 
+/* S76G GNSS is operating at 115200 baud (by default) */
+#define SERIAL_IN_BR            115200
+#define SERIAL_IN_BITS          SERIAL_8N1
+
+/*
+ * Make use of AN3155 specs for S76G (valid for SkyWatch only)
+ * to simplify SoftRF firmware installation
+ * via ESP32 UART bypass code
+ */
 #define SERIAL_OUT_BR           AN3155_BR
 #define SERIAL_OUT_BITS         AN3155_BITS
 
