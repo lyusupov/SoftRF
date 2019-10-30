@@ -103,17 +103,17 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_SWSER_RX PC11
 #define SOC_GPIO_PIN_SWSER_TX PC10
 
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
 
 #define SOC_GPIO_PIN_GNSS_RST PB2
 #define SOC_GPIO_PIN_GNSS_LS  PC6
-#define SOC_GPIO_PIN_GNSS_PPS PB5  // SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS PB5
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // PB0
 
-#define SOC_GPIO_PIN_BUZZER   PA0  // NC
-#define SOC_GPIO_PIN_BATTERY  PB1  // NC
+#define SOC_GPIO_PIN_BUZZER   PA0
+#define SOC_GPIO_PIN_BATTERY  PB1
 
-/* SPI */
+/* SPI0 */
 #define SOC_GPIO_PIN_MOSI     PB15
 #define SOC_GPIO_PIN_MISO     PB14
 #define SOC_GPIO_PIN_SCK      PB13
@@ -137,9 +137,16 @@ static inline void HAL_GetUID(uint32_t *UID)
 #define SOC_GPIO_PIN_ANT_RXTX PA1 // 1:Rx, 0:Tx
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      PB7  // NC
-#define SOC_GPIO_PIN_SCL      PB6  // NC
+#define SOC_GPIO_PIN_SDA      PB7
+#define SOC_GPIO_PIN_SCL      PB6
 
+/* SPI1 */
+#define SOC_GPIO_SPI1_MOSI    PA7
+#define SOC_GPIO_SPI1_MISO    PA6
+#define SOC_GPIO_SPI1_SCK     PA5
+#define SOC_GPIO_SPI1_SS      PA4
+
+#define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 

@@ -217,11 +217,8 @@ Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _BluePill_ _F103C8_ _(128k)_<br>
 12. Select _Tools_ -> _C_ _Runtime_ _library_ ->  _Newlib_ _Nano_ _(default)_
 13. Select _Tools_ -> _USB_ _speed_ _(if available)_ ->  _Low/Full_ _Speed_
-14. For S76G:<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _USB_ _support_ _(if available)_ ->  _None_<br>
-    For STM32F103C8 "Blue Pill":<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _USB_ _support_ _(if available)_ ->  _CDC_ _(no_ _generic_ _'Serial')_<br>
+14. Select _Tools_ -> _USB_ _support_ _(if available)_ ->  _CDC_ _(no_ _generic_ _'Serial')_
 15. Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(generic_ _'Serial')_
 16. Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(SWD)_
 17. Select _Tools_ -> _Port_ ->  ``<your ST-LINK/V2 port device name>``
-18. try to build and upload using _Sketch_ -> _Upload_    
+18. try to build and upload using _Sketch_ -> _Upload_
