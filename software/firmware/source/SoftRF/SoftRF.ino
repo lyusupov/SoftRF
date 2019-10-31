@@ -21,6 +21,8 @@
  *   OGN library is developed by Pawel Jalocha
  *   NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
  *   ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)
+ *   Arduino Core for ESP32 is developed by Hristo Gochkov
+ *   ESP32 BT SPP library is developed by Evandro Copercini
  *   Adafruit BMP085 library is developed by Limor Fried and Ladyada
  *   Adafruit BMP280 library is developed by Kevin Townsend
  *   Adafruit MPL3115A2 library is developed by Limor Fried and Kevin Townsend
@@ -32,10 +34,13 @@
  *   SimpleNetwork library is developed by Dario Longobardi
  *   ArduinoJson library is developed by Benoit Blanchon
  *   Flashrom library is part of the flashrom.org project
+ *   Arduino Core for TI CC13X0 is developed by Energia team
  *   EasyLink library is developed by Robert Wessels and Tony Cave
  *   Dump978 library is developed by Oliver Jowett
  *   FEC library is developed by Phil Karn
- *   AXP202X library is developed by Lewis He
+ *   AXP202X and S7XG libraries are developed by Lewis He
+ *   Arduino Core for STM32 is developed by Frederic Pillon
+ *   TFT library is developed by Bodmer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
