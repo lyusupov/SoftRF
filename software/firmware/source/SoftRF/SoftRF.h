@@ -83,7 +83,7 @@
 #if !defined(SERIAL_IN_BITS)
 #define SERIAL_IN_BITS    SERIAL_8N1
 #endif
-#if !defined(SERIAL_OUT_BR)
+
 /*
  * 38400 is known as maximum baud rate
  * that HC-05 Bluetooth module
@@ -91,10 +91,14 @@
  *
  * Applicable for Standalone Edition. Inherited by most of other SoftRF platforms.
  */
-#define SERIAL_OUT_BR     38400
+#define STD_OUT_BR        38400
+#define STD_OUT_BITS      SERIAL_8N1
+
+#if !defined(SERIAL_OUT_BR)
+#define SERIAL_OUT_BR     STD_OUT_BR
 #endif
 #if !defined(SERIAL_OUT_BITS)
-#define SERIAL_OUT_BITS   SERIAL_8N1
+#define SERIAL_OUT_BITS   STD_OUT_BITS
 #endif
 
 #define UAT_BOOT_BR       9600

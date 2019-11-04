@@ -95,8 +95,8 @@ struct rst_info {
  * to simplify SoftRF firmware installation
  * via ESP32 UART bypass code
  */
-#define SERIAL_OUT_BR           AN3155_BR
-#define SERIAL_OUT_BITS         AN3155_BITS
+#define SERIAL_OUT_BR   (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BR   : AN3155_BR)
+#define SERIAL_OUT_BITS (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BITS : AN3155_BITS)
 
 static inline void HAL_GetUID(uint32_t *UID)
 {

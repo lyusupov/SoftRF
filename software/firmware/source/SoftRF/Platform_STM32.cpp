@@ -138,6 +138,7 @@ static void STM32_setup()
     // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
     __HAL_RCC_CLEAR_RESET_FLAGS();
 
+    hw_info.model = SOFTRF_MODEL_RETRO;
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
     stm32_board = STM32_TTGO_TWATCH_EB_1_3;
@@ -148,7 +149,8 @@ static void STM32_setup()
                     STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH  &&
         (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH)) {
 
-      stm32_board = STM32_TTGO_T_MOTION_1_1;
+      hw_info.model = SOFTRF_MODEL_DONGLE;
+      stm32_board   = STM32_TTGO_T_MOTION_1_1;
     }
 #elif defined(ARDUINO_BLUEPILL_F103C8)
     stm32_board = STM32_BLUE_PILL;
