@@ -92,7 +92,7 @@ void setup() {
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-#if defined(USBCON)
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
 #endif

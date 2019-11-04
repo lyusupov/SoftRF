@@ -80,7 +80,7 @@ struct rst_info {
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-#if !defined(USBCON)
+#if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
 #define Serial                  Serial1
 #endif
 #define swSer                   Serial4

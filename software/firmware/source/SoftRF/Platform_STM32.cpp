@@ -452,7 +452,7 @@ static void STM32_WDT_fini()
   /* once emabled - there is no way to disable WDT on STM32 */
 }
 
-#if defined(USBD_USE_CDC) && !defined(USBCON)
+#if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)
 
 #include <USBSerial.h>
 #include "BluetoothHelper.h"
@@ -516,7 +516,7 @@ const SoC_ops_t STM32_ops = {
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,
-#if defined(USBD_USE_CDC) && !defined(USBCON)
+#if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)
   &STM32_USBSerial_ops,
 #else
   NULL,
