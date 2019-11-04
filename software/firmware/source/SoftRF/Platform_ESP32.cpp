@@ -182,10 +182,6 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
       break;
     }
-  } else {
-    if (ESP32_getFlashId() == MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V)) {
-      hw_info.model = SOFTRF_MODEL_SKYWATCH;
-    }
   }
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);

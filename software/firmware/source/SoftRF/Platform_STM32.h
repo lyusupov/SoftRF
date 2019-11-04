@@ -60,6 +60,13 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum stm32_board_id {
+  STM32_BLUE_PILL,
+  STM32_TTGO_TWATCH_EB_1_3,
+  STM32_TTGO_TWATCH_EB_1_6,
+  STM32_TTGO_T_MOTION_1_1
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -73,7 +80,9 @@ struct rst_info {
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
+#if !defined(USBCON)
 #define Serial                  Serial1
+#endif
 #define swSer                   Serial4
 #define UATSerial               Serial2  /* PA3, PA2 */
 

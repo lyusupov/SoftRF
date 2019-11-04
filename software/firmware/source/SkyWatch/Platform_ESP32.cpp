@@ -171,19 +171,6 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_UNKNOWN;
       break;
     }
-  } else {
-#if defined(EB_S76G_1_3)
-    /* PSRAM IC does not respond on probing requests for one of my T-Watch boards */
-    switch(flash_id)
-    {
-    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
-      hw_info.model = SOFTRF_MODEL_SKYWATCH;
-      hw_info.revision = HW_REV_T_WATCH;
-      break;
-      hw_info.revision = HW_REV_UNKNOWN;
-      break;
-    }
-#endif
   }
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {

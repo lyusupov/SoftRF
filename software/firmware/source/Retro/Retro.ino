@@ -92,6 +92,11 @@ void setup() {
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
+#if defined(USBCON)
+  /* Let host's USB and console drivers to warm-up */
+  delay(2000);
+#endif
+
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
   Serial.print(SoC->name);

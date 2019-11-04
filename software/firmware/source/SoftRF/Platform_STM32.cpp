@@ -73,6 +73,8 @@ U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
 
 static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
 
+static int stm32_board = STM32_BLUE_PILL; /* default */
+
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
 static bool OLED_display_frontpage = false;
@@ -92,6 +94,18 @@ const char *OLED_Protocol_ID[] = {
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
+
+static int STM32_probe_pin(uint32_t pin, uint32_t mode)
+{
+  int rval;
+
+  pinMode(pin, mode);
+  delay(20);
+  rval = digitalRead(pin);
+  pinMode(pin, INPUT);
+
+  return rval;
+}
 
 static void STM32_setup()
 {
@@ -124,7 +138,24 @@ static void STM32_setup()
     // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
     __HAL_RCC_CLEAR_RESET_FLAGS();
 
-  /* TBD */
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
+    stm32_board = STM32_TTGO_TWATCH_EB_1_3;
+
+    /* Probe on presence of external pull-up resistors connected to I2C bus */
+    if (            STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH  &&
+        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH) &&
+                    STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH  &&
+        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH)) {
+
+      stm32_board = STM32_TTGO_T_MOTION_1_1;
+    }
+#elif defined(ARDUINO_BLUEPILL_F103C8)
+    stm32_board = STM32_BLUE_PILL;
+#else
+#error "This hardware platform is not supported!"
+#endif
+
 }
 
 static void STM32_loop()
@@ -419,7 +450,7 @@ static void STM32_WDT_fini()
   /* once emabled - there is no way to disable WDT on STM32 */
 }
 
-#if defined(USBD_USE_CDC)
+#if defined(USBD_USE_CDC) && !defined(USBCON)
 
 #include <USBSerial.h>
 #include "BluetoothHelper.h"
@@ -483,7 +514,7 @@ const SoC_ops_t STM32_ops = {
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,
-#if defined(USBD_USE_CDC)
+#if defined(USBD_USE_CDC) && !defined(USBCON)
   &STM32_USBSerial_ops,
 #else
   NULL,
