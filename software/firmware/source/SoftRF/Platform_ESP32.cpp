@@ -229,10 +229,13 @@ static void ESP32_setup()
 
       axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
       axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
-      axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
-      axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
       axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
-      axp.setDCDC1Voltage(3300);
+      axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON); // NC
+      axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
+
+      axp.setDCDC1Voltage(3300); //       AXP192 power-on value: 3300
+      axp.setLDO2Voltage (3300); // LoRa, AXP192 power-on value: 3300
+      axp.setLDO3Voltage (3000); // GPS,  AXP192 power-on value: 2800
 
       pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT_PULLUP);
 
