@@ -405,6 +405,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_PARAGLIDER;
     } else if (!strcmp(aircraft_type_s,"BALLOON")) {
       eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_BALLOON;
+    } else if (!strcmp(aircraft_type_s,"STATIC")) {
+      eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_STATIC;
     }
   }
 
