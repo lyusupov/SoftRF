@@ -33,7 +33,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;[**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)<br>5&nbsp;[Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
 1&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;SkyView Pi|[Broadcom<br>BCM283X<br>(Raspberry Pi)](https://en.wikipedia.org/wiki/Raspberry_Pi)|Q4 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Good for use together with RTL-SDR dongles to achieve additional 1090ES (and 978UAT) ADS-B air traffic reception.
 [UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|[Texas Instruments<br>CC13XX](http://www.ti.com/product/cc1310)|Q1 2019|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|Resources of this platform are not sufficient to fit full SoftRF firmware.<br>Unique RF radio specs are useful for [UAT reception](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge) [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-7.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-8.jpg) , [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-6.jpg) ].
-[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|[STMicroelectronics<br>STM32](https://en.wikipedia.org/wiki/STM32)|Q3 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|STM32F103C8 "**Blue Pill**" (same MCU that [STM32 OGN tracker](http://wiki.glidernet.org/stm32-ogn-tracker) uses) **is doing good** [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_breadboard.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_ognweb_1.JPG) ] .<br> As well as [AcSiP **S76G**](http://www.acsip.com.tw/index.php?action=products-detail&fid1=19&fid2=&fid3=&id=41) "3-in-1" system-in-package [ [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/watch-1.jpg) ] .
+[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|[STMicroelectronics<br>STM32](https://en.wikipedia.org/wiki/STM32)|Q3 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|STM32F103C8 "**Blue Pill**" (same MCU that [STM32 OGN tracker](http://wiki.glidernet.org/stm32-ogn-tracker) uses) **is doing good** [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_breadboard.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_ognweb_1.JPG) ] .<br> As well as [AcSiP **S76G**](http://www.acsip.com.tw/index.php?action=products-detail&fid1=19&fid2=&fid3=&id=41) "3-in-1" system-in-package [ [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/watch-1.jpg) , [4](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-4.jpg) , [5](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-5.jpg) ] .
 
 # Documentation
 
@@ -55,7 +55,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
 * [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-* [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
@@ -67,13 +67,13 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * Firmware
         * [Release information](https://github.com/lyusupov/SoftRF/releases) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
         * [Binary](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries)
-        * [Settings](https://github.com/lyusupov/SoftRF/wiki/Settings) <!-- ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
-        * [Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-(Web-method)) (Web method) <!-- ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
+        * [Settings](https://github.com/lyusupov/SoftRF/wiki/Settings)
+        * [Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-(Web-method)) (Web method)
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
     * Protocols
-        * [UAT](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)    
+        * [UAT](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge)    
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
         * [P3I Open (PilotAware)](https://github.com/lyusupov/SoftRF/wiki/PilotAware-compatibility)
         * [FANET (Skytraxx)](https://github.com/lyusupov/SoftRF/wiki/FANET-compatibility)
