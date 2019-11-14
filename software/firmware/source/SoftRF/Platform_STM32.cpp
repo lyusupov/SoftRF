@@ -27,6 +27,8 @@
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 #include "EEPROMHelper.h"
+#include "GNSSHelper.h"
+#include "BaroHelper.h"
 
 #include <U8x8lib.h>
 
@@ -47,6 +49,10 @@ lmic_pinmap lmic_pins = {
 
 HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
 HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+HardwareSerial Serial2(PA3, PA2);
+#endif
 
 #elif defined(ARDUINO_BLUEPILL_F103C8)
 
@@ -77,6 +83,7 @@ static int stm32_board = STM32_BLUE_PILL; /* default */
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
+static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -158,6 +165,8 @@ static void STM32_setup()
 #error "This hardware platform is not supported!"
 #endif
 
+    Wire.setSCL(SOC_GPIO_PIN_SCL);
+    Wire.setSDA(SOC_GPIO_PIN_SDA);
 }
 
 static void STM32_loop()
@@ -315,7 +324,14 @@ static byte STM32_Display_setup()
     u8x8->begin();
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
-    u8x8->draw2x2String(2, 3, "SoftRF");
+
+    if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+      u8x8->draw2x2String(2, 1, "SoftRF");
+      u8x8->drawString   (6, 4, "and");
+      u8x8->draw2x2String(2, 6, "LilyGO");
+    } else {
+      u8x8->draw2x2String(2, 3, "SoftRF");
+    }
   }
 #endif /* USE_OLED */
 
@@ -329,7 +345,23 @@ static void STM32_Display_loop()
   uint32_t disp_value;
 
   if (u8x8) {
-    if (!OLED_display_frontpage) {
+    if (!OLED_display_probe_status) {
+      u8x8->clear();
+
+      u8x8->draw2x2String(0, 0, "RADIO");
+      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+      u8x8->draw2x2String(0, 2, "GNSS");
+      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+      u8x8->draw2x2String(0, 4, "OLED");
+      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+      u8x8->draw2x2String(0, 6, "BMx280");
+      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+      delay(3000);
+      IWatchdog.reload();
+
+      OLED_display_probe_status = true;
+    } else if (!OLED_display_frontpage) {
 
       u8x8->clear();
 

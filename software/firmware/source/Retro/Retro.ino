@@ -112,12 +112,12 @@ void setup() {
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
+  hw_info.display = SoC->Display_setup();
   hw_info.rf = RF_setup();
 
   delay(100);
 
   hw_info.baro = Baro_setup();
-  hw_info.display = SoC->Display_setup();
 
   if (settings->mode == SOFTRF_MODE_UAV) {
     Serial.begin(57600);
