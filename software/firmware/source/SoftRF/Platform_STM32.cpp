@@ -167,6 +167,8 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+
+    pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
 }
 
 static void STM32_loop()

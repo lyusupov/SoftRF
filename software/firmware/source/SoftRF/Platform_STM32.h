@@ -42,7 +42,6 @@
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
 
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
@@ -104,6 +103,8 @@ static inline void HAL_GetUID(uint32_t *UID)
   UID[1] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE +  4U))));
   UID[2] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 14U))));
 }
+
+#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 29.8)
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  PA10
@@ -175,6 +176,8 @@ static inline void HAL_GetUID(uint32_t *UID)
   UID[1] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 4U))));
   UID[2] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 8U))));
 }
+
+#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
 
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX PA3
