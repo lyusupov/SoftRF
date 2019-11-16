@@ -97,13 +97,6 @@ struct rst_info {
 #define SERIAL_OUT_BR   (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BR   : AN3155_BR)
 #define SERIAL_OUT_BITS (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BITS : AN3155_BITS)
 
-static inline void HAL_GetUID(uint32_t *UID)
-{
-  UID[0] = (uint32_t)(READ_REG(*((uint32_t *)UID_BASE)));
-  UID[1] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE +  4U))));
-  UID[2] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 14U))));
-}
-
 #define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 29.8)
 
 /* Peripherals */
@@ -169,13 +162,6 @@ static inline void HAL_GetUID(uint32_t *UID)
 
 #define swSer                   Serial2
 #define UATSerial               Serial3
-
-static inline void HAL_GetUID(uint32_t *UID)
-{
-  UID[0] = (uint32_t)(READ_REG(*((uint32_t *)UID_BASE)));
-  UID[1] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 4U))));
-  UID[2] = (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 8U))));
-}
 
 #define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
 

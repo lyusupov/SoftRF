@@ -189,12 +189,8 @@ static void STM32_reset()
 
 static uint32_t STM32_getChipId()
 {
-  uint32_t UniqueID[3];
-
-  HAL_GetUID(UniqueID);
-
   /* Same method as STM32 OGN tracker does */
-  return UniqueID[0] ^ UniqueID[1] ^ UniqueID[2];
+  return HAL_GetUIDw0() ^ HAL_GetUIDw1() ^ HAL_GetUIDw2();
 }
 
 static void* STM32_getResetInfoPtr()
