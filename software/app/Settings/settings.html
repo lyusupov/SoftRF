@@ -1,0 +1,443 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>On-line SoftRF settings tool</title>
+<meta name=keywords content="SoftRF, NMEA, checksum, settings, javascript, GNSS">
+<style type="text/css"><!--
+
+p.warn {
+    border-style: solid;
+    border-width: thin;
+    border-color: red;
+    padding:      0.5em;
+}
+
+--></style>
+<script><!--
+
+const version = 1;
+const volume  = 0;
+const pointer = 0;
+
+// Compute NMEA checksum and display it
+function UpdateChecksum()
+{
+  var cmd = "PSRFC,"
+      + version + ","
+      + document.getElementById("mode").value + ","
+      + document.getElementById("protocol").value + ","
+      + document.getElementById("region").value + ","
+      + document.getElementById("actype").value + ","
+      + document.getElementById("alarm").value + ","
+      + document.getElementById("power").value + ","
+      + volume  + ","
+      + pointer + ","
+      + document.getElementById("gnss").value + ","
+      + document.getElementById("priv").value + ","
+      + document.getElementById("legacy").value + ","
+      + document.getElementById("sens").value + ","
+      + document.getElementById("nmea").value + ","
+      + document.getElementById("gdl90").value + ","
+      + document.getElementById("d1090").value + ","
+      + document.getElementById("stealth").value + ","
+      + document.getElementById("no_track").value;
+
+
+  // Compute the checksum by XORing all the character values in the string.
+  var checksum = 0;
+  for(var i = 0; i < cmd.length; i++) {
+    checksum = checksum ^ cmd.charCodeAt(i);
+  }
+
+  // Convert it to hexadecimal (base-16, upper case, most significant nybble first).
+  var hexsum = Number(checksum).toString(16).toUpperCase();
+  if (hexsum.length < 2) {
+    hexsum = ("00" + hexsum).slice(-2);
+  }
+  
+  // Display the result
+  settext(document.getElementById("output"), "$" + cmd + "*" + hexsum);
+}
+
+// Helper function to set the contents of the SPAN to some text
+function settext(span, text)
+{
+  if (!span.hasChildNodes()) {
+    span.appendChild(span.ownerDocument.createTextNode(text));
+    return;
+  } else {
+    span.firstChild.nodeValue = text;
+  }
+}
+
+function SelMode()
+{
+  var mode = document.getElementById("Modes");
+  document.getElementById("mode").value = mode.options[mode.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelProtocol()
+{
+  var proto = document.getElementById("Protocols");
+  document.getElementById("protocol").value = proto.options[proto.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelRegion()
+{
+  var band = document.getElementById("Regions");
+  document.getElementById("region").value = band.options[band.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelACType()
+{
+  var act = document.getElementById("ACTypes");
+  document.getElementById("actype").value = act.options[act.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelAlarm()
+{
+  var alarm = document.getElementById("Alarms");
+  document.getElementById("alarm").value = alarm.options[alarm.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelPower()
+{
+  var power = document.getElementById("Powers");
+  document.getElementById("power").value = power.options[power.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelGNSS()
+{
+  var gnss = document.getElementsByName('nmea_g');
+  for (var i = 0; i < gnss.length; i++) {
+      if (gnss[i].type == "radio" && gnss[i].checked) {
+        document.getElementById("gnss").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function SelPriv()
+{
+  var priv = document.getElementsByName('nmea_p');
+  for (var i = 0; i < priv.length; i++) {
+      if (priv[i].type == "radio" && priv[i].checked) {
+        document.getElementById("priv").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function SelLegacy()
+{
+  var legacy = document.getElementsByName('nmea_l');
+  for (var i = 0; i < legacy.length; i++) {
+      if (legacy[i].type == "radio" && legacy[i].checked) {
+        document.getElementById("legacy").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function SelSens()
+{
+  var sens = document.getElementsByName('nmea_s');
+  for (var i = 0; i < sens.length; i++) {
+      if (sens[i].type == "radio" && sens[i].checked) {
+        document.getElementById("sens").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function SelNMEA()
+{
+  var nmea = document.getElementById("NMEAs");
+  document.getElementById("nmea").value = nmea.options[nmea.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelGDL()
+{
+  var gdl90 = document.getElementById("GDLs");
+  document.getElementById("gdl90").value = gdl90.options[gdl90.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelD1090()
+{
+  var d1090 = document.getElementById("D1090s");
+  document.getElementById("d1090").value = d1090.options[d1090.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelStealth()
+{
+  var stealth = document.getElementsByName('stealth');
+  for (var i = 0; i < stealth.length; i++) {
+      if (stealth[i].type == "radio" && stealth[i].checked) {
+        document.getElementById("stealth").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function SelTrack()
+{
+  var no_track = document.getElementsByName('no_track');
+  for (var i = 0; i < no_track.length; i++) {
+      if (no_track[i].type == "radio" && no_track[i].checked) {
+        document.getElementById("no_track").value = i;
+      }
+  }
+  UpdateChecksum();
+}
+
+function InitSettings()
+{
+//  document.getElementById("ver").value      = 1;
+  document.getElementById("mode").value     = 0;
+  document.getElementById("protocol").value = 1;
+  document.getElementById("region").value   = 1;
+  document.getElementById("actype").value   = 1;
+  document.getElementById("alarm").value    = 1;
+  document.getElementById("power").value    = 0;
+
+//  document.getElementById("volume").value   = 0;
+//  document.getElementById("pointer").value  = 0;
+
+  document.getElementById("gnss").value     = 1;
+  document.getElementById("priv").value     = 0;
+  document.getElementById("legacy").value   = 1;
+  document.getElementById("sens").value     = 1;
+  document.getElementById("nmea").value     = 1;
+  document.getElementById("gdl90").value    = 0;
+  document.getElementById("d1090").value    = 0;
+  document.getElementById("stealth").value  = 0;
+  document.getElementById("no_track").value = 0;
+
+  UpdateChecksum();
+}
+
+--></script>
+</head>
+<body  onload="InitSettings()">
+
+<h1>On-line SoftRF settings tool</h1>
+
+<p>NOTICE! Your browser should have support for JavaScript and DHTML (most modern browsers do).</p>
+<hr>
+<!-- <div style="margin:1em; padding: 2em; background: white;"> -->
+
+<h1 align=center>Settings</h1>
+<form>
+<table width=100%%>
+<tr>
+<th align=left>Mode</th>
+<td align=right>
+<select id="Modes" onchange="SelMode()">
+<option selected value=0>Normal</option>
+<option value=6>UAV</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Protocol</th>
+<td align=right>
+<select id="Protocols" onchange="SelProtocol()">
+<option value=0>Legacy</option>
+<option selected value=1>OGNTP</option>
+<option value=2>P3I</option>
+<option value=3>FANET</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Region</th>
+<td align=right>
+<select id="Regions" onchange="SelRegion()">
+<option value='0'>AUTO</option>
+<option selected value='1'>EU (868.2 MHz)</option>
+<option value='5'>RU (868.8 MHz)</option>
+<option value='6'>CN (470 MHz)</option>
+<option value='2'>US/CA (915 MHz)</option>
+<option value='4'>NZ (869.25 MHz)</option>
+<option value='7'>UK (869.52 MHz)</option>
+<option value='3'>AU (921 MHz)</option>
+<option value='8'>IN (866 MHz)</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Aircraft type</th>
+<td align=right>
+<select id="ACTypes" onchange="SelACType()">
+<option selected value='1'>Glider</option>
+<option value='2'>Towplane</option>
+<option value='8'>Powered</option>
+<option value='3'>Helicopter</option>
+<option value='13'>UAV</option>
+<option value='6'>Hangglider</option>
+<option value='7'>Paraglider</option>
+<option value='11'>Balloon</option>
+<option value='15'>Static</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Alarm trigger</th>
+<td align=right>
+<select id="Alarms" onchange="SelAlarm()">
+<option value='0'>None</option>
+<option selected value='1'>Distance</option>
+<option value='2'>Vector</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Tx Power</th>
+<td align=right>
+<select id="Powers" onchange="SelPower()">
+<option selected value='0'>Full</option>
+<option value='1'>Low</option>
+<option value='2'>Off</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>NMEA sentences:</th>
+</tr>
+<tr>
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GNSS</th>
+<td align=right>
+<input type='radio' name='nmea_g' value='0' onchange="SelGNSS()">Off
+<input type='radio' name='nmea_g' value='1' onchange="SelGNSS()" checked>On
+</td>
+</tr>
+<tr>
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Private</th>
+<td align=right>
+<input type='radio' name='nmea_p' value='0' onchange="SelPriv()" checked>Off
+<input type='radio' name='nmea_p' value='1' onchange="SelPriv()">On
+</td>
+</tr>
+<tr>
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Legacy</th>
+<td align=right>
+<input type='radio' name='nmea_l' value='0' onchange="SelLegacy()">Off
+<input type='radio' name='nmea_l' value='1' onchange="SelLegacy()" checked>On
+</td>
+</tr>
+<tr>
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sensors</th>
+<td align=right>
+<input type='radio' name='nmea_s' value='0' onchange="SelSens()">Off
+<input type='radio' name='nmea_s' value='1' onchange="SelSens()" checked>On
+</td>
+</tr>
+
+<tr>
+<th align=left>NMEA output</th>
+<td align=right>
+<select id="NMEAs" onchange="SelNMEA()">
+<option value='0'>Off</option>
+<option selected value='1'>Serial</option>
+<option value='4'>USB</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>GDL90</th>
+<td align=right>
+<select id="GDLs" onchange="SelGDL()">
+<option selected value='0'>Off</option>
+<option value='1'>Serial</option>
+<option value='4'>USB</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Dump1090</th>
+<td align=right>
+<select id="D1090s" onchange="SelD1090()">
+<option selected value='0'>Off</option>
+<option value='1'>Serial</option>
+<option value='4'>USB</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Stealth</th>
+<td align=right>
+<input type='radio' name='stealth' value='0' onchange="SelStealth()" checked>Off
+<input type='radio' name='stealth' value='1' onchange="SelStealth()">On
+</td>
+</tr>
+<tr>
+<th align=left>No track</th>
+<td align=right>
+<input type='radio' name='no_track' value='0' onchange="SelTrack()" checked>Off
+<input type='radio' name='no_track' value='1' onchange="SelTrack()">On
+</td>
+</tr>
+
+</table>
+<!--
+<p>mode: <input type="text" id="mode" size="1">&nbsp;
+protocol: <input type="text" id="protocol" size="1">&nbsp;
+region: <input type="text" id="region" size="1">&nbsp;
+A/C type: <input type="text" id="actype" size="2">&nbsp;
+Alarm: <input type="text" id="alarm" size="1">&nbsp;</p>
+<p>Tx power: <input type="text" id="power" size="1">&nbsp;
+GNSS: <input type="text" id="gnss" size="1">&nbsp;
+Private: <input type="text" id="priv" size="1">&nbsp;
+Legacy: <input type="text" id="legacy" size="1">&nbsp;
+Sensors: <input type="text" id="sens" size="1"></p>
+<p>NMEA: <input type="text" id="nmea" size="1">&nbsp;
+GDL90: <input type="text" id="gdl90" size="1">&nbsp;
+D1090: <input type="text" id="d1090" size="1">&nbsp;
+Stealth: <input type="text" id="stealth" size="1">&nbsp;
+No track: <input type="text" id="no_track" size="1"></p>
+-->
+<!--<p> mode: --><input type="hidden" id="mode" size="1">&nbsp;
+<!-- protocol:  --><input type="hidden" id="protocol" size="1">&nbsp;
+<!-- region:  --><input type="hidden" id="region" size="1">&nbsp;
+<!-- A/C type:  --><input type="hidden" id="actype" size="2">&nbsp;
+<!-- Alarm:  --><input type="hidden" id="alarm" size="1">&nbsp;<!--</p>-->
+<!--<p> Tx power:  --><input hidden="text" id="power" size="1">&nbsp;
+<!-- GNSS:  --><input type="hidden" id="gnss" size="1">&nbsp;
+<!-- Private:  --><input type="hidden" id="priv" size="1">&nbsp;
+<!-- Legacy:  --><input type="hidden" id="legacy" size="1">&nbsp;
+<!-- Sensors:  --><input type="hidden" id="sens" size="1"><!--</p>-->
+<!--<p> NMEA:  --><input type="hidden" id="nmea" size="1">&nbsp;
+<!-- GDL90:  --><input type="hidden" id="gdl90" size="1">&nbsp;
+<!-- D1090:  --><input type="hidden" id="d1090" size="1">&nbsp;
+<!-- Stealth:  --><input type="hidden" id="stealth" size="1">&nbsp;
+<!-- No track:  --><input type="hidden" id="no_track" size="1"><!--</p>-->
+</form>
+<!--
+<table>
+<tr><th align=right>Command:&nbsp;&nbsp;&nbsp;</th><td><tt><span id="output" style="font-family: monospace;"></span></tt></td></tr>
+</table>
+-->
+<h2 align=center>NMEA control sentence:</h2>
+<hr>
+<h1 align=center><tt><span id="output" style="font-family: monospace;"></span></tt></h1>
+<!-- </div> -->
+</body>
+</html>
