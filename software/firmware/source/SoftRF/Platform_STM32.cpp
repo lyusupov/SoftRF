@@ -282,6 +282,9 @@ static void STM32_swSer_begin(unsigned long baud)
   /* give Sony GNSS few ms to warm up */
   delay(100);
 
+  /* Leave pin floating */
+  pinMode(SOC_GPIO_PIN_GNSS_RST, INPUT);
+
   // swSer.write("@VER\r\n");
 
   /* Idle */
