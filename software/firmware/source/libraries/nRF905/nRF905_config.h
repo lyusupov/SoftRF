@@ -81,8 +81,8 @@
 #define CSN       15   // SPI slave select pin
 #endif /* ARDUINO_ESP8266_NODEMCU */
 
-#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
-#define DR			5
+#define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    5
 
 #elif defined(ESP32)
 
@@ -92,8 +92,8 @@
 #define TX_EN     26   // TX / RX mode pin
 #define CSN       18   // SPI slave select pin
 
-#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
-#define DR			5
+#define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    5
 
 #elif defined(ARDUINO_ARCH_STM32)
 
@@ -115,22 +115,22 @@
 #error "This hardware platform is not supported!"
 #endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103C8 */
 
-#define CD			0	     // Carrier detect pin (for collision avoidance, if enabled)
-#define DR			5
+#define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    5
 
 #else
 
 // Arduino pins
-#define TRX_EN		7	   // Enable/standby pin
-#define PWR_MODE	8	   // Power mode pin
-#define TX_EN		9	     // TX / RX mode pin
-#define CD			2	     // Carrier detect pin (for collision avoidance, if enabled)
-#define CSN			10	   // SPI slave select pin
+#define TRX_EN    7	   // Enable/standby pin
+#define PWR_MODE  8	   // Power mode pin
+#define TX_EN     9	   // TX / RX mode pin
+#define CD        2	   // Carrier detect pin (for collision avoidance, if enabled)
+#define CSN       10	 // SPI slave select pin
 
 // Data ready pin
 // If using interrupts (NRF905_INTERRUPTS 1) then this must be
 // an external interrupt pin that matches the interrupt register settings below.
-#define DR			3
+#define DREADY    3
 #endif
 
 // Address match pin (not used by library)
@@ -151,12 +151,12 @@
 #define CFG_PWR_MODE_BIT	0
 
 // TX / RX mode pin
-#define CFG_TX_EN_PORT		B
-#define CFG_TX_EN_BIT		1
+#define CFG_TX_EN_PORT    B
+#define CFG_TX_EN_BIT     1
 
 // Carrier detect pin (for collision avoidance, if enabled)
-#define CFG_CD_PORT			D
-#define CFG_CD_BIT			2
+#define CFG_CD_PORT       D
+#define CFG_CD_BIT        2
 
 // Address match pin (not used by library)
 // blah
@@ -166,12 +166,12 @@
 // Data ready pin
 // If using interrupts (NRF905_INTERRUPTS 1) then this must be
 // an external interrupt pin that matches the interrupt register settings below.
-#define CFG_DR_PORT			D
-#define CFG_DR_BIT			3
+#define CFG_DR_PORT       D
+#define CFG_DR_BIT        3
 
 // SPI slave select pin
-#define CFG_CSN_PORT		B
-#define CFG_CSN_BIT			2
+#define CFG_CSN_PORT      B
+#define CFG_CSN_BIT       2
 
 #else /* RASPBERRY_PI */
 
@@ -183,7 +183,7 @@
 #define CSN       (RPI_V2_GPIO_P1_22)  // SPI slave select pin
 
 #define CD			  (24)	// Carrier detect pin (for collision avoidance, if enabled)
-#define DR			  (25)
+#define DREADY		(25)
 
 // Address match pin (not used by library)
 //#define AM        (7)

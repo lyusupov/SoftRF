@@ -162,7 +162,7 @@ void nRF905_init()
 #endif
 
 #if !NRF905_DR_SW
-	pinMode(DR, INPUT);
+	pinMode(DREADY, INPUT);
 #endif
 
 	digitalWrite(CSN, HIGH);
@@ -428,7 +428,7 @@ static bool dataReady()
 #if NRF905_DR_SW
 	return (readStatus() & _BV(NRF905_STATUS_DR));
 #elif defined(ARDUINO)
-	return digitalRead(DR);
+	return digitalRead(DREADY);
 #else
 	return (DR_PORT & _BV(DR_BIT));
 #endif

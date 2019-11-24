@@ -440,7 +440,17 @@ static void STM32_Battery_setup()
 
 static float STM32_Battery_voltage()
 {
-  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_ADC9_VOLTAGE_DIVIDER ;
+#ifdef __LL_ADC_CALC_VREFANALOG_VOLTAGE
+  int32_t Vref = (__LL_ADC_CALC_VREFANALOG_VOLTAGE(analogRead(AVREF), LL_ADC_RESOLUTION));
+#else
+  int32_t Vref = (VREFINT * ADC_RANGE / analogRead(AVREF)); // ADC sample to mV
+#endif
+
+  int32_t mV = (__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref,
+                                              analogRead(SOC_GPIO_PIN_BATTERY),
+                                              LL_ADC_RESOLUTION));
+
+  return mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
 }
 
 void STM32_GNSS_PPS_Interrupt_handler() {

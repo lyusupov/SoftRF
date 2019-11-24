@@ -21,6 +21,7 @@
 #define PLATFORM_STM32_H
 
 #include "IPAddress.h"
+#include "stm32yyxx_ll_adc.h"
 #include <Adafruit_NeoPixel.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -48,6 +49,15 @@
 
 // button
 #define SOC_GPIO_PIN_BUTTON     USER_BTN
+
+/* Analog read resolution */
+#if ADC_RESOLUTION == 10
+#define LL_ADC_RESOLUTION LL_ADC_RESOLUTION_10B
+#define ADC_RANGE 1024
+#else
+#define LL_ADC_RESOLUTION LL_ADC_RESOLUTION_12B
+#define ADC_RANGE 4096
+#endif
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -97,7 +107,8 @@ struct rst_info {
 #define SERIAL_OUT_BR   (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BR   : AN3155_BR)
 #define SERIAL_OUT_BITS (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BITS : AN3155_BITS)
 
-#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 29.8)
+#define SOC_ADC_VOLTAGE_DIV   2     // T-Motion has 100k/100k voltage divider
+#define VREFINT               1224  // mV, STM32L073 datasheet value
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  PA10
@@ -163,7 +174,8 @@ struct rst_info {
 #define swSer                   Serial2
 #define UATSerial               Serial3
 
-#define SOC_ADC9_VOLTAGE_DIVIDER   (4096.0 / 3.3)
+#define SOC_ADC_VOLTAGE_DIV   1
+#define VREFINT               1200  // mV, STM32F103x8 datasheet value
 
 /* Peripherals */
 #define SOC_GPIO_PIN_SWSER_RX PA3

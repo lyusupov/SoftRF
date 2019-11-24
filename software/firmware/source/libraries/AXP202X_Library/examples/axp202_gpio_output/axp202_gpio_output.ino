@@ -40,7 +40,10 @@ void setup()
         Serial.println("AXP Power begin failed");
         while (1);
     }
-        Serial.println("AXP Power begin Ok");
+    
+    axp.setGPIOMode(AXP_GPIO_0, AXP_IO_OUTPUT_HIGH_MODE);
+    axp.setGPIOMode(AXP_GPIO_1, AXP_IO_OUTPUT_HIGH_MODE);
+
     //! GPIO2, GPIO3 is only allowed to be configured to output low
     axp.gpioWrite(AXP_GPIO_2, LOW);
     axp.gpioWrite(AXP_GPIO_3, LOW);
@@ -50,15 +53,11 @@ void setup()
 void loop()
 {
     //! GPIO0, GPIO1 allows output high and low
-//    axp.gpioWrite(AXP_GPIO_0, HIGH);
-//    axp.gpioWrite(AXP_GPIO_1, HIGH);
-axp.setGPIOMode(AXP_GPIO_0, AXP_IO_OUTPUT_HIGH_MODE);
-axp.setGPIOMode(AXP_GPIO_1, AXP_IO_OUTPUT_HIGH_MODE);
+    axp.gpioWrite(AXP_GPIO_0, HIGH);
+    axp.gpioWrite(AXP_GPIO_1, HIGH);
     delay(1000);
-#if 0
     axp.gpioWrite(AXP_GPIO_0, LOW);
     axp.gpioWrite(AXP_GPIO_1, LOW);
     delay(1000);
-#endif
 }
 
