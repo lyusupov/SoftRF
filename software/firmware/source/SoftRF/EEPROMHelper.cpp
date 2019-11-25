@@ -49,7 +49,7 @@ void EEPROM_setup()
   }
 
   if (eeprom_block.field.magic != SOFTRF_EEPROM_MAGIC) {
-    Serial.println(F("Warning! EEPROM magic mismatch! Loading defaults..."));
+    Serial.println(F("Warning! User defined settings are not initialized yet. Loading defaults..."));
 
     EEPROM_defaults();
   } else {
@@ -57,7 +57,7 @@ void EEPROM_setup()
     Serial.println(eeprom_block.field.version);
 
     if (eeprom_block.field.version != SOFTRF_EEPROM_VERSION) {
-      Serial.println(F("Warning! EEPROM version mismatch! Loading defaults..."));
+      Serial.println(F("Warning! Version mismatch of user defined settings. Loading defaults..."));
 
       EEPROM_defaults();
     }
