@@ -857,12 +857,12 @@ void PickGNSSFix()
         }
 
         if (cfg_is_updated) {
-          EEPROM_store();
           Serial.println();
           Serial.println(F("Restart is in progress. Please, wait..."));
           Serial.println();
+          Serial.flush();
+          EEPROM_store();
           RF_Shutdown();
-          delay(1000);
           SoC->reset();
         }
       }

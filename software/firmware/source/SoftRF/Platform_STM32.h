@@ -107,7 +107,7 @@ struct rst_info {
 #define SERIAL_OUT_BR   (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BR   : AN3155_BR)
 #define SERIAL_OUT_BITS (hw_info.model == SOFTRF_MODEL_DONGLE ? STD_OUT_BITS : AN3155_BITS)
 
-#define SOC_ADC_VOLTAGE_DIV   2     // T-Motion has 100k/100k voltage divider
+#define SOC_ADC_VOLTAGE_DIV   2.3   // T-Motion has 100k/100k voltage divider
 #define VREFINT               1224  // mV, STM32L073 datasheet value
 
 /* Peripherals */
