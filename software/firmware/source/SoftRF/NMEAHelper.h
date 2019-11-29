@@ -35,6 +35,7 @@ enum
 #define NMEA_CALLSIGN_SIZE  (3 /* prefix */ + 1 /* _ */ + 6 /* ICAO */ + 1 /* EOL */)
 
 #define PSRFC_VERSION       1
+#define MAX_PSRFC_LEN       64
 
 void NMEA_setup(void);
 void NMEA_loop(void);

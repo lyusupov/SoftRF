@@ -299,11 +299,18 @@ static void STM32_swSer_begin(unsigned long baud)
   swSer.write("@GPPS 0x1\r\n");  delay(250);
 #endif
 
-  // swSer.write("@GCD\r\n"); /* cold start */
   // swSer.write("@GSW\r\n"); /* warm start */
 
-  /* hot start */
-  swSer.write("@GSR\r\n");       delay(250);
+  rst_info *resetInfo = (rst_info *) SoC->getResetInfoPtr();
+
+  if (resetInfo->reason == REASON_DEFAULT_RST) {
+    swSer.write("@GCD\r\n"); /* cold start */
+  } else {
+    swSer.write("@GSR\r\n"); /* hot  start */
+  }
+
+  delay(250);
+
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
