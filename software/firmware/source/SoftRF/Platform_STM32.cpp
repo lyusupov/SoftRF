@@ -29,6 +29,7 @@
 #include "EEPROMHelper.h"
 #include "GNSSHelper.h"
 #include "BaroHelper.h"
+#include "BatteryHelper.h"
 
 #include <U8x8lib.h>
 
@@ -145,6 +146,8 @@ static void STM32_setup()
     // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
     __HAL_RCC_CLEAR_RESET_FLAGS();
 
+    pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
+
     hw_info.model = SOFTRF_MODEL_RETRO;
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
@@ -158,6 +161,15 @@ static void STM32_setup()
 
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_T_MOTION_1_1;
+
+      /* Work around an issue that WDT (once enabled) is active in deep sleep */
+      if (reset_info.reason == REASON_SOFT_WDT_RST) {
+        float voltage = SoC->Battery_voltage();
+
+        if (voltage > 2.0 && voltage < Battery_cutoff() + 0.1) {
+          LowPower_shutdown();
+        }
+      }
     }
 #elif defined(ARDUINO_BLUEPILL_F103C8)
     stm32_board = STM32_BLUE_PILL;
@@ -167,8 +179,6 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
-
-    pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
 }
 
 static void STM32_loop()
@@ -179,7 +189,19 @@ static void STM32_loop()
 
 static void STM32_fini()
 {
-  /* TBD */
+#if defined(ARDUINO_NUCLEO_L073RZ)
+
+  /* Idle */
+  swSer.write("@GSTP\r\n");
+  swSer.flush();
+
+#endif /* ARDUINO_NUCLEO_L073RZ */
+
+  swSer.end();
+  SPI.end();
+  Wire.end();
+
+  LowPower_shutdown();
 }
 
 static void STM32_reset()
@@ -504,6 +526,10 @@ static void STM32_WDT_setup()
 static void STM32_WDT_fini()
 {
   /* once emabled - there is no way to disable WDT on STM32 */
+
+  if (IWatchdog.isEnabled()) {
+    IWatchdog.set(IWDG_TIMEOUT_MAX);
+  }
 }
 
 #if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)

@@ -39,20 +39,23 @@ float Battery_voltage()
 /* low battery voltage threshold */
 float Battery_threshold()
 {
-  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+         hw_info.model == SOFTRF_MODEL_DONGLE    ?
                           BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
 }
 
 /* Battery is empty */
 float Battery_cutoff()
 {
-  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
+  return hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+         hw_info.model == SOFTRF_MODEL_DONGLE    ?
                           BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
 }
 
 void Battery_loop()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_DONGLE ) {
     if (isTimeToBattery()) {
       float voltage = Battery_voltage();
 
