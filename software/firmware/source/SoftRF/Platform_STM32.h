@@ -73,7 +73,7 @@ enum stm32_board_id {
   STM32_BLUE_PILL,
   STM32_TTGO_TWATCH_EB_1_3,
   STM32_TTGO_TWATCH_EB_1_6,
-  STM32_TTGO_T_MOTION_1_1
+  STM32_TTGO_TMOTION_1_1
 };
 
 struct rst_info {

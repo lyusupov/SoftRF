@@ -160,7 +160,7 @@ static void STM32_setup()
         (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH)) {
 
       hw_info.model = SOFTRF_MODEL_DONGLE;
-      stm32_board   = STM32_TTGO_T_MOTION_1_1;
+      stm32_board   = STM32_TTGO_TMOTION_1_1;
 
       /* Work around an issue that WDT (once enabled) is active in deep sleep */
       if (reset_info.reason == REASON_SOFT_WDT_RST) {
@@ -388,7 +388,7 @@ static void STM32_Display_loop()
       u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
       u8x8->draw2x2String(0, 4, "OLED");
       u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BMx280");
+      u8x8->draw2x2String(0, 6, "BARO");
       u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
 
       delay(3000);
