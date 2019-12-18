@@ -211,8 +211,12 @@ static void STM32_reset()
 
 static uint32_t STM32_getChipId()
 {
+#if !defined(SOFTRF_ADDRESS)
   /* Same method as STM32 OGN tracker does */
   return HAL_GetUIDw0() ^ HAL_GetUIDw1() ^ HAL_GetUIDw2();
+#else
+  return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
+#endif
 }
 
 static void* STM32_getResetInfoPtr()

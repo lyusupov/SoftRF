@@ -28,6 +28,8 @@
 
 #include <BTSPP.h>
 
+#include <BLEDevice.h>
+
 #include "WiFiHelper.h"   // HOSTNAME
 
 BluetoothSerial SerialBT;
