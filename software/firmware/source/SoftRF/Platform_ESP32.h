@@ -30,6 +30,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define SerialOutput            Serial
 #define SoftwareSerial          HardwareSerial
 #define swSer                   Serial1
 #define UATSerial               Serial2

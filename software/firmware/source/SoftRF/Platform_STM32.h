@@ -44,6 +44,8 @@
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
+#define SerialOutput            Serial1
+
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
 

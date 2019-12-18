@@ -43,7 +43,7 @@ static void D1090_Out(byte *buf, size_t size)
   {
   case D1090_UART:
     {
-      Serial.write(buf, size);
+      SerialOutput.write(buf, size);
     }
     break;
   case D1090_BLUETOOTH:

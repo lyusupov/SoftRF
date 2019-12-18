@@ -216,7 +216,7 @@ function InitSettings()
   document.getElementById("priv").value     = 0;
   document.getElementById("legacy").value   = 1;
   document.getElementById("sens").value     = 1;
-  document.getElementById("nmea").value     = 1;
+  document.getElementById("nmea").value     = 4;
   document.getElementById("gdl90").value    = 0;
   document.getElementById("d1090").value    = 0;
   document.getElementById("stealth").value  = 0;
@@ -353,8 +353,8 @@ function InitSettings()
 <td align=right>
 <select id="NMEAs" onchange="SelNMEA()">
 <option value='0'>Off</option>
-<option selected value='1'>Serial</option>
-<option value='4'>USB</option>
+<option value='1'>Serial</option>
+<option selected value='4'>USB</option>
 </select>
 </td>
 </tr>

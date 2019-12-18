@@ -91,7 +91,13 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_p     = false;
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+  eeprom_block.field.settings.nmea_out   = NMEA_BLUETOOTH;  /* STM32 USB */
+#else
   eeprom_block.field.settings.nmea_out   = NMEA_UART;
+#endif
+
   eeprom_block.field.settings.gdl90      = GDL90_OFF;
   eeprom_block.field.settings.d1090      = D1090_OFF;
   eeprom_block.field.settings.json       = JSON_OFF;

@@ -74,6 +74,7 @@
 #define SOC_GPIO_PIN_SDA      D2
 #define SOC_GPIO_PIN_SCL      D4
 
+#define SerialOutput          Serial
 #define UATSerial             Serial /* TBD */
 
 extern "C" {
@@ -84,7 +85,7 @@ extern ESP8266WebServer server;
 extern Exp_SoftwareSerial swSer;
 extern Adafruit_NeoPixel strip;
 
-#define  USE_NMEALIB
+#define USE_NMEALIB
 
 #if defined(pgm_read_float_aligned)
 #define pgm_read_float(addr)  pgm_read_float_aligned(addr)

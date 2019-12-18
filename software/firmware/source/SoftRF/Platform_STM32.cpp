@@ -532,7 +532,7 @@ static void STM32_WDT_fini()
   }
 }
 
-#if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)
+#if defined(USBD_USE_CDC)
 
 #include <USBSerial.h>
 #include "BluetoothHelper.h"
@@ -596,7 +596,7 @@ const SoC_ops_t STM32_ops = {
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,
-#if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)
+#if defined(USBD_USE_CDC)
   &STM32_USBSerial_ops,
 #else
   NULL,

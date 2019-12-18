@@ -48,7 +48,7 @@
   EXAMPLE OF NMEA SENTENCE
   ------------------------
 
-  $PSRFC,1,0,1,1,1,1,0,0,0,1,0,1,1,1,0,0,0,0*55
+  $PSRFC,1,0,1,1,1,1,0,0,0,1,0,1,1,4,0,0,0,0*50
 
 
   LIST OF SETTINGS AVAILABLE

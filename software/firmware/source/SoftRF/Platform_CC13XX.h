@@ -40,6 +40,7 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
+#define SerialOutput            Serial
 #define swSer                   Serial
 #define UATSerial               Serial /* TBD */
 #define yield()                 ({ })

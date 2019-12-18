@@ -433,7 +433,7 @@ static void GDL90_Out(byte *buf, size_t size)
     {
     case GDL90_UART:
       {
-        Serial.write(buf, size);
+        SerialOutput.write(buf, size);
       }
       break;
     case GDL90_UDP:
