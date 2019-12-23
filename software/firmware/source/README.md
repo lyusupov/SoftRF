@@ -182,7 +182,7 @@ You can try to build it under Windows but you will have to manually set all the 
 You will also need to get and connect ST-LINK/V2 USB adapter in order to put the firmware into your hardware's flash memory.<br>
 
 1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
-  to install Arduino IDE and [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.7.0) (1.7.0)
+  to install Arduino IDE and [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.8.0) (1.8.0)
 2. open ``<Home>`` directory
 3. create **Arduino** sub-directory
 4. transfer full content of **Retro**, **SoftRF** and **libraries** GitHub folders into the sub-directory:

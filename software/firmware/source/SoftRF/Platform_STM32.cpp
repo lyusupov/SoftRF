@@ -52,7 +52,7 @@ HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
 HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-HardwareSerial Serial2(PA3, PA2);
+HardwareSerial Serial2(USART2);
 #endif
 
 #elif defined(ARDUINO_BLUEPILL_F103C8)
