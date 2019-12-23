@@ -179,12 +179,18 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif
 }
 
 static void STM32_loop()
 {
   // Reload the watchdog
-  IWatchdog.reload();
+  if (IWatchdog.isEnabled()) {
+    IWatchdog.reload();
+  }
 }
 
 static void STM32_fini()

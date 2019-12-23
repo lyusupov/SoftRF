@@ -137,6 +137,13 @@ void setup() {
   SoC->swSer_enableRx(false);
 
   LED_setup();
+
+#if defined(USBD_USE_CDC) && defined(DISABLE_GENERIC_SERIALUSB)
+  if (SoC->Bluetooth) {
+     SoC->Bluetooth->setup();
+  }
+#endif
+
   NMEA_setup();
 
 //  LED_test();
