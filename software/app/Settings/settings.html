@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>On-line SoftRF settings tool</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
 <meta name=keywords content="SoftRF, NMEA, checksum, settings, javascript, GNSS">
 <style type="text/css"><!--
 
@@ -228,13 +229,9 @@ function InitSettings()
 --></script>
 </head>
 <body  onload="InitSettings()">
-
-<h1>On-line SoftRF settings tool</h1>
-
-<p>NOTICE! Your browser should have support for JavaScript and DHTML (most modern browsers do).</p>
+<h3 align=left>On-line SoftRF settings tool</h3>
+<b>NOTICE!</b> <small>Your browser should have support for JavaScript and DHTML (most modern browsers do).</small>
 <hr>
-<!-- <div style="margin:1em; padding: 2em; background: white;"> -->
-
 <h1 align=center>Settings</h1>
 <form>
 <table width=100%%>
@@ -255,7 +252,7 @@ function InitSettings()
 <option value=0>Legacy</option>
 <option selected value=1>OGNTP</option>
 <option value=2>P3I</option>
-<option value=3>FANET</option>
+<option value=5>FANET</option>
 </select>
 </td>
 </tr>
@@ -395,49 +392,25 @@ function InitSettings()
 <input type='radio' name='no_track' value='1' onchange="SelTrack()">On
 </td>
 </tr>
-
 </table>
-<!--
-<p>mode: <input type="text" id="mode" size="1">&nbsp;
-protocol: <input type="text" id="protocol" size="1">&nbsp;
-region: <input type="text" id="region" size="1">&nbsp;
-A/C type: <input type="text" id="actype" size="2">&nbsp;
-Alarm: <input type="text" id="alarm" size="1">&nbsp;</p>
-<p>Tx power: <input type="text" id="power" size="1">&nbsp;
-GNSS: <input type="text" id="gnss" size="1">&nbsp;
-Private: <input type="text" id="priv" size="1">&nbsp;
-Legacy: <input type="text" id="legacy" size="1">&nbsp;
-Sensors: <input type="text" id="sens" size="1"></p>
-<p>NMEA: <input type="text" id="nmea" size="1">&nbsp;
-GDL90: <input type="text" id="gdl90" size="1">&nbsp;
-D1090: <input type="text" id="d1090" size="1">&nbsp;
-Stealth: <input type="text" id="stealth" size="1">&nbsp;
-No track: <input type="text" id="no_track" size="1"></p>
--->
-<!--<p> mode: --><input type="hidden" id="mode" size="1">&nbsp;
-<!-- protocol:  --><input type="hidden" id="protocol" size="1">&nbsp;
-<!-- region:  --><input type="hidden" id="region" size="1">&nbsp;
-<!-- A/C type:  --><input type="hidden" id="actype" size="2">&nbsp;
-<!-- Alarm:  --><input type="hidden" id="alarm" size="1">&nbsp;<!--</p>-->
-<!--<p> Tx power:  --><input hidden="text" id="power" size="1">&nbsp;
-<!-- GNSS:  --><input type="hidden" id="gnss" size="1">&nbsp;
-<!-- Private:  --><input type="hidden" id="priv" size="1">&nbsp;
-<!-- Legacy:  --><input type="hidden" id="legacy" size="1">&nbsp;
-<!-- Sensors:  --><input type="hidden" id="sens" size="1"><!--</p>-->
-<!--<p> NMEA:  --><input type="hidden" id="nmea" size="1">&nbsp;
-<!-- GDL90:  --><input type="hidden" id="gdl90" size="1">&nbsp;
-<!-- D1090:  --><input type="hidden" id="d1090" size="1">&nbsp;
-<!-- Stealth:  --><input type="hidden" id="stealth" size="1">&nbsp;
-<!-- No track:  --><input type="hidden" id="no_track" size="1"><!--</p>-->
-</form>
-<!--
-<table>
-<tr><th align=right>Command:&nbsp;&nbsp;&nbsp;</th><td><tt><span id="output" style="font-family: monospace;"></span></tt></td></tr>
-</table>
--->
-<h2 align=center>NMEA control sentence:</h2>
+<!--<p> mode: --><input type="hidden" id="mode" size="1">
+<!-- protocol:  --><input type="hidden" id="protocol" size="1">
+<!-- region:  --><input type="hidden" id="region" size="1">
+<!-- A/C type:  --><input type="hidden" id="actype" size="2">
+<!-- Alarm:  --><input type="hidden" id="alarm" size="1">
+<!--<p> Tx power:  --><input hidden="text" id="power" size="1">
+<!-- GNSS:  --><input type="hidden" id="gnss" size="1">
+<!-- Private:  --><input type="hidden" id="priv" size="1">
+<!-- Legacy:  --><input type="hidden" id="legacy" size="1">
+<!-- Sensors:  --><input type="hidden" id="sens" size="1">
+<!--<p> NMEA:  --><input type="hidden" id="nmea" size="1">
+<!-- GDL90:  --><input type="hidden" id="gdl90" size="1">
+<!-- D1090:  --><input type="hidden" id="d1090" size="1">
+<!-- Stealth:  --><input type="hidden" id="stealth" size="1">
+<!-- No track:  --><input type="hidden" id="no_track" size="1">
+<h3 align=center>NMEA control sentence:</h3>
 <hr>
-<h1 align=center><tt><span id="output" style="font-family: monospace;"></span><br><br></tt></h1>
-<!-- </div> -->
+<h4 align=center><tt><span id="output" style="font-family: monospace;"></span><br><br></tt></h4>
+</form>
 </body>
 </html>
