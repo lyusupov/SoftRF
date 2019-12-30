@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  iLogger.py (main.py)
-#  Copyright (C) 2019 Linar Yusupov
+#  Copyright (C) 2019-2020 Linar Yusupov
 # 
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
