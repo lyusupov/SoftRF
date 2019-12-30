@@ -1,6 +1,6 @@
 /*
  * GNSSHelper.cpp
- * Copyright (C) 2016-2019 Linar Yusupov
+ * Copyright (C) 2016-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -667,6 +667,12 @@ void PickGNSSFix()
     /* Give priority to 'control' channel on STM32-based 'Retro' platform */
     if (Serial.available() > 0) {
       c = Serial.read();
+#if 0
+      /* This makes possible to configure S76x's built-in SONY GNSS from aside */
+      if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+        swSer.write(c);
+      }
+#endif
     } else if (swSer.available() > 0) {
       c = swSer.read();
 #endif /* USE_NMEA_CFG */
