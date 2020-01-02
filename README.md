@@ -29,11 +29,11 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 # Models
 Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
 ---|:---:|:---:|:---:|---
-1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition) model is no longer supported - use [Prime MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) instead.<br>ESP8266 platform will be phased out through year 2019 in favour of ESP32.
+1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition) model is no longer supported - use [Prime MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) instead.<br>ESP8266 platform will be phased out through year 2020 in favour of ESP32.
 1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;[**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)<br>5&nbsp;[Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
 1&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;SkyView Pi|[Broadcom<br>BCM283X<br>(Raspberry Pi)](https://en.wikipedia.org/wiki/Raspberry_Pi)|Q4 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Good for use together with RTL-SDR dongles to achieve additional 1090ES (and 978UAT) ADS-B air traffic reception.
 [UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|[Texas Instruments<br>CC13XX](http://www.ti.com/product/cc1310)|Q1 2019|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|Resources of this platform are not sufficient to fit full SoftRF firmware.<br>Unique RF radio specs are useful for [UAT reception](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge) [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-7.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-8.jpg) , [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-6.jpg) ].
-[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|[STMicroelectronics<br>STM32](https://en.wikipedia.org/wiki/STM32)|Q3 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|STM32F103C8 "**Blue Pill**" (same MCU that [STM32 OGN tracker](http://wiki.glidernet.org/stm32-ogn-tracker) uses) **is doing good** [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_breadboard.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_ognweb_1.JPG) ] .<br> As well as [AcSiP **S76G**](http://www.acsip.com.tw/index.php?action=products-detail&fid1=19&fid2=&fid3=&id=41) "3-in-1" system-in-package [ [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/watch-1.jpg) , [4](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-4.jpg) , [5](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-5.jpg) ] .
+1&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|[STMicroelectronics<br>STM32](https://en.wikipedia.org/wiki/STM32)|Q3 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|[AcSiP **S76G**](http://www.acsip.com.tw/index.php?action=products-detail&fid1=19&fid2=&fid3=&id=41&lang=3) "3-in-1" system-in-package **is doing good** [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/watch-1.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-4.jpg) , [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-5.jpg) ] .<br>As well as STM32F103C8 "**Blue Pill**" (same MCU that [STM32 OGN tracker](http://wiki.glidernet.org/stm32-ogn-tracker) uses) [ [4](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_breadboard.jpg) , [5](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_ognweb_1.JPG) ] .
 
 # Documentation
 
@@ -50,6 +50,11 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
+* [Dongle Edition](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition.-Quick-start)
+    * [Settings](https://github.com/lyusupov/SoftRF/wiki/Dongle-settings)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Dongle)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
@@ -59,7 +64,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
-* [Retro Edition](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Retro Edition](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)
 * [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder.-Quick-Start)
 
@@ -103,14 +108,23 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/first-five-units.jpg)
 
+* [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/t-motion-22.jpg)
+
 * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
+
+* [**UAV appliance**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)
 
 * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg" width="215" height="300">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-SeeYou.JPG" width="572" height="300"></p>
 
+<!--
 * [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/softrf-emulation.jpg)
@@ -118,7 +132,5 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/LK8000-emu.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v1/SoftRF-Case-v1-Exterior.jpg)
+-->
 
-* [**UAV appliance**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
-
-![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)

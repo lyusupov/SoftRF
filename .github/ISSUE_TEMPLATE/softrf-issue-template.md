@@ -21,13 +21,15 @@ Recommended:
 
 ## Hardware
 
-- [ ]   Prime Mark II
 - [ ]   Standalone
-- [ ]   UAV
+- [ ]   Prime Mark II
+- [ ]   Dongle
+- [ ]   SkyView EZ
 - [ ]   Raspberry Edition
-- [ ]   UAT module
-- [ ]   SkyView
+- [ ]   UAV
+- [ ]   UAT978 module
 - [ ]   Flight Recorder
+
 
 < photo of your hardware > (**required**)
 

@@ -1,8 +1,8 @@
 # Dongle enclosure 
 
-This type of enclosure is built around LilyGO&#174; & SoftRF **T-Motion** LoRaWAN GNSS tracker board.<br>
+This type of enclosure is built around LilyGO&#174; & SoftRF [**T-Motion**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition#required) LoRaWAN GNSS tracker board.<br>
 
-**NOTICE**: This design is applicable for revision V1.1 (pre-production sample) of the T-Motion. Other revisions may not match.
+**NOTICE**: This design is applicable for revision V1.1 (pre-production sample) of the T-Motion. Other revisions may or may not match.
 
 # Exterior
 
