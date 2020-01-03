@@ -119,31 +119,109 @@ std::string input_line;
 
 TCPServer Traffic_TCP_Server;
 
+//-------------------------------------------------------------------------
+//
+// The MIT License (MIT)
+//
+// Copyright (c) 2015 Andrew Duncan
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//-------------------------------------------------------------------------
+
+#include <fcntl.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/ioctl.h>
+
+static uint32_t SerialNumber = 0;
+
+void RPi_SerialNumber(void)
+{
+    int fd = open("/dev/vcio", 0);
+    if (fd == -1)
+    {
+        perror("open /dev/vcio");
+        exit(EXIT_FAILURE);
+    }
+
+    uint32_t property[32] =
+    {
+        0x00000000,
+        0x00000000,
+        0x00010004,
+        0x00000010,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000
+    };
+
+    property[0] = 10 * sizeof(property[0]);
+
+    if (ioctl(fd, _IOWR(100, 0, char *), property) == -1)
+    {
+        perror("ioctl");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
+
+    SerialNumber = property[5];
+}
+
+//----- end of MIT License ------------------------------------------------
+
 static void RPi_setup()
 {
-  eeprom_block.field.magic = SOFTRF_EEPROM_MAGIC;
-  eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_OGNTP;
-  eeprom_block.field.settings.band = RF_BAND_EU;
+  eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
+  eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
+  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
+  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
+  eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower = RF_TX_POWER_FULL;
-  eeprom_block.field.settings.volume = BUZZER_VOLUME_FULL;
-  eeprom_block.field.settings.pointer = DIRECTION_NORTH_UP;
-  eeprom_block.field.settings.bluetooth = BLUETOOTH_OFF;
-  eeprom_block.field.settings.alarm = TRAFFIC_ALARM_DISTANCE;
+  eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
+  eeprom_block.field.settings.volume        = BUZZER_VOLUME_FULL;
+  eeprom_block.field.settings.pointer       = DIRECTION_NORTH_UP;
+  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
+  eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
-  eeprom_block.field.settings.nmea_g     = true;
-  eeprom_block.field.settings.nmea_p     = false;
-  eeprom_block.field.settings.nmea_l     = true;
-  eeprom_block.field.settings.nmea_s     = true;
-  eeprom_block.field.settings.nmea_out   = NMEA_UART;
-  eeprom_block.field.settings.gdl90      = GDL90_OFF;
-  eeprom_block.field.settings.d1090      = D1090_OFF;
-  eeprom_block.field.settings.json       = JSON_OFF;
-  eeprom_block.field.settings.stealth    = false;
-  eeprom_block.field.settings.no_track   = false;
-  eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
+  eeprom_block.field.settings.nmea_g        = true;
+  eeprom_block.field.settings.nmea_p        = false;
+  eeprom_block.field.settings.nmea_l        = true;
+  eeprom_block.field.settings.nmea_s        = true;
+  eeprom_block.field.settings.nmea_out      = NMEA_UART;
+  eeprom_block.field.settings.gdl90         = GDL90_OFF;
+  eeprom_block.field.settings.d1090         = D1090_OFF;
+  eeprom_block.field.settings.json          = JSON_OFF;
+  eeprom_block.field.settings.stealth       = false;
+  eeprom_block.field.settings.no_track      = false;
+  eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
+
+  RPi_SerialNumber();
 }
 
 static void RPi_loop()
@@ -163,7 +241,7 @@ static void RPi_reset()
 
 static uint32_t RPi_getChipId()
 {
-  return gethostid();
+  return SerialNumber ? SerialNumber : gethostid();
 }
 
 static long RPi_random(long howsmall, long howBig)
