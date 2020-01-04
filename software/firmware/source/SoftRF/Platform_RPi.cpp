@@ -590,7 +590,7 @@ void relay_loop()
       String str = Bin2Hex(Container[i].raw, size);
       size_t str_len = str.length();
 
-      if (str_len > 0) {
+      if (memcmp (Container[i].raw, EmptyFO.raw, size) && str_len > 0) {
         // Raw data
         char hexdata[2 * MAX_PKT_SIZE + 1];
 
