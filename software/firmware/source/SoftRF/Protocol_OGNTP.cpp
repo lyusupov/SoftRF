@@ -76,7 +76,14 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 //    return false;
 //  }
 
-  if( ogn_rx_pkt.Packet.Header.Other || ogn_rx_pkt.Packet.Header.Encrypted ) {
+  if ( ogn_rx_pkt.Packet.Header.Other || ogn_rx_pkt.Packet.Header.Encrypted ) {
+    return false;
+  }
+
+  /* ignore this device own (relayed) packets */
+  if ((ogn_rx_pkt.Packet.Header.Address    == this_aircraft->addr     ) &&
+      (ogn_rx_pkt.Packet.Header.AddrType   == this_aircraft->addr_type) &&
+      (ogn_rx_pkt.Packet.Header.RelayCount > 0 )) {
     return false;
   }
 
