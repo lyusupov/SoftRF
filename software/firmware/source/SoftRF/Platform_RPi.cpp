@@ -587,30 +587,17 @@ void relay_loop()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       size_t size = RF_Payload_Size(settings->rf_protocol);
       size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
-      String str = Bin2Hex(Container[i].raw, size);
-      size_t str_len = str.length();
 
-      if (memcmp (Container[i].raw, EmptyFO.raw, size) && str_len > 0) {
+      if (memcmp (Container[i].raw, EmptyFO.raw, size) != 0) {
         // Raw data
-        char hexdata[2 * MAX_PKT_SIZE + 1];
-
-        str.toCharArray(hexdata, sizeof(hexdata));
-
-        if (str_len > 2 * MAX_PKT_SIZE) {
-          str_len = 2 * MAX_PKT_SIZE;
-        }
-
-        for(int j = 0; j < str_len ; j+=2)
-        {
-          TxBuffer[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
-        }
-
-        size_t tx_size = str_len / 2;
+        size_t tx_size = sizeof(TxBuffer) > size ? size : sizeof(TxBuffer);
+        memcpy(TxBuffer, Container[i].raw, tx_size);
 
         if (tx_size > 0) {
           /* Follow duty cycle rule */
           if (RF_Transmit(tx_size, true /* false */)) {
 #if 0
+            String str = Bin2Hex(TxBuffer, tx_size);
             printf("%s\n", str.c_str());
 #endif
             Container[i] = EmptyFO;
@@ -775,6 +762,7 @@ int main()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
+  Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   hw_info.rf = RF_setup();
