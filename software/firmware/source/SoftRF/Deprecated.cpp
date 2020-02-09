@@ -338,3 +338,353 @@ void Sound_test(int var)
   }
 }
 #endif
+
+/* Platform_ESP32.h */
+
+//#define USE_S7XG_DRIVER
+
+/* RFHelper.cpp */
+
+#if defined(USE_S7XG_DRIVER)
+
+#include <s7xg.h>
+
+S7XG_Class s7xg;
+
+const rfchip_ops_t s7xg_ops = {
+  RF_IC_S7XG,
+  "S7XG",
+  s7xg_probe,
+  s7xg_setup,
+  s7xg_channel,
+  s7xg_receive,
+  s7xg_transmit,
+  s7xg_shutdown
+};
+#endif /* USE_S7XG_DRIVER */
+
+#if defined(USE_S7XG_DRIVER)
+    else
+    {
+      if (s7xg_ops.probe()) {
+        rf_chip = &s7xg_ops;
+        Serial.println(F("S7XG SoC is detected."));
+      }
+    }
+#endif /* USE_S7XG_DRIVER */
+
+#if defined(USE_S7XG_DRIVER)
+/*
+ * S7XG-specific code
+ *
+ *
+ */
+
+static uint8_t s7xg_channel_prev = (uint8_t) -1;
+bool s7xg_receive_active         = false;
+
+#define Serial_S7XG         swSer
+#define S7XG_UART_BAUD_RATE 115200
+
+extern byte getVal(char);
+
+bool s7xg_probe()
+{
+  bool success = false;
+
+  /* Do not probe on CC13XX, ESP8266, RPi and STM32 */
+  if (SoC->id == SOC_CC13XX ||
+      SoC->id == SOC_RPi    ||
+      SoC->id == SOC_STM32  ||
+      SoC->id == SOC_ESP8266) {
+    return success;
+  }
+
+  SoC->swSer_begin(S7XG_UART_BAUD_RATE);
+
+  s7xg.begin(Serial_S7XG);
+
+  s7xg.loraReceiveContinuous(false);
+  s7xg.reset();
+
+  delay(1000);
+
+  /* get rid of residual input garbage */
+  while (Serial_S7XG.available() > 0) {
+    Serial_S7XG.read();
+  }
+
+  String model = s7xg.getHardWareModel();
+
+  if ( model == "S76G" || model == "S78G") {
+      success = true;
+  }
+
+  /* Current ESP32 Core has a bug with Serial1.end()+Serial1.begin() cycle */
+  if (SoC->id != SOC_ESP32) {
+    Serial_S7XG.end();
+  }
+
+  return success;
+}
+
+void s7xg_channel(uint8_t channel)
+{
+  if (channel != s7xg_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+
+    if (s7xg_receive_active) {
+      s7xg.loraReceiveContinuous(false);
+
+      /* restart Rx upon a channel switch */
+      s7xg_receive_active = false;
+    }
+
+    s7xg.loraSetFrequency(frequency);
+
+    s7xg_channel_prev = channel;
+  }
+}
+
+void s7xg_setup()
+{
+  /* Current ESP32 Core has a bug with Serial1.end()+Serial1.begin() cycle */
+  if (SoC->id != SOC_ESP32) {
+    SoC->swSer_begin(S7XG_UART_BAUD_RATE);
+  }
+
+  /* Enforce radio settings to follow FANET protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_FANET;
+
+  LMIC.protocol   = &fanet_proto_desc;
+
+  protocol_encode = &fanet_encode;
+  protocol_decode = &fanet_decode;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    /* Load regional max. EIRP at first */
+    LMIC.txpow = RF_FreqPlan.MaxTxPower;
+
+    /* SX1276 is unable to give more than 20 dBm */
+    if (LMIC.txpow > 20)
+      LMIC.txpow = 20;
+#if 1
+    /*
+     * Enforce Tx power limit until confirmation
+     * that RFM95W is doing well
+     * when antenna is not connected
+     */
+    if (LMIC.txpow > 17)
+      LMIC.txpow = 17;
+#endif
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    LMIC.txpow = 2; /* 2 dBm is minimum for RFM95W on PA_BOOST pin */
+    break;
+  }
+
+  s7xg.loraSetPower(LMIC.txpow);
+
+  s7xg.loraSetSpreadingFactor(7);   /* SF_7 */
+  s7xg.loraSetBandWidth      (250); /* BW_250 */
+
+  /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
+  s7xg.loraSetCodingRate     (8);   /* CR_4_8 */
+
+  s7xg.loraSetPreambleLength(12); /* default value */
+  s7xg.loraSetSyncWord(LMIC.protocol->syncword[0]);
+  s7xg.loraSetCRC(true);
+  s7xg.loraSetIQInvert(false);
+}
+
+char hex_rx_buf[2 * MAX_PKT_SIZE + 1];
+
+bool s7xg_receive()
+{
+  bool success = false;
+  const char *s;
+  int8_t rssi, snr;
+
+
+  if (!s7xg_receive_active) {
+    s7xg.loraReceiveContinuous(true);
+    s7xg_receive_active = true;
+  }
+
+  if (Serial_S7XG.available()) {
+    s =  Serial_S7XG.readStringUntil('\r').c_str();
+
+    if (strlen(s) < 3) {
+      s =  Serial_S7XG.readStringUntil('\r').c_str();
+    }
+
+    sscanf(s, ">> radio_rx %s %d %d\n", hex_rx_buf, &rssi, &snr);  /* overflow - TBD */
+    if (strlen(hex_rx_buf) > 0) {
+      for(int j = 0; j < LMIC.protocol->payload_size * 2 ; j+=2)
+      {
+        RxBuffer[j>>1] = getVal(hex_rx_buf[j+1]) + (getVal(hex_rx_buf[j]) << 4);
+      }
+
+      success = true;
+    }
+  }
+
+  if (success) {
+    RF_last_rssi = rssi;
+    rx_packets_counter++;
+  }
+
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->loop();
+  }
+
+  return success;
+}
+
+void s7xg_transmit()
+{
+  char hex_tx_buf[2 * MAX_PKT_SIZE + 1];
+  uint8_t tmp;
+  int i;
+
+  if (RF_tx_size > 0) {
+
+    if (s7xg_receive_active) {
+      s7xg.loraReceiveContinuous(false);
+      s7xg_receive_active = false;
+    }
+
+    for (i=0; i < RF_tx_size; i++) {
+      tmp = (TxBuffer[i] >> 4) & 0x0F;
+      hex_tx_buf[i+i]   = tmp > 9 ? 'a' + (tmp - 10) : '0' + tmp;
+      tmp =  TxBuffer[i]       & 0x0F;
+      hex_tx_buf[i+i+1] = tmp > 9 ? 'a' + (tmp - 10) : '0' + tmp;
+    }
+    hex_tx_buf[i+i] = 0;
+
+    s7xg.loraTransmit(hex_tx_buf);
+  }
+}
+
+void s7xg_shutdown()
+{
+  s7xg.loraReceiveContinuous(false);
+  s7xg.gpsSetMode(GPS_MODE_IDLE);
+}
+#endif /* USE_S7XG_DRIVER */
+
+/* GNSSHelper.cpp */
+
+#if defined(USE_S7XG_DRIVER)
+
+#include <s7xg.h>
+
+extern S7XG_Class s7xg;
+extern bool s7xg_receive_active;
+extern void NMEA_RMCGGA(char *, GPS_Class);
+
+unsigned long S7XG_Time_Marker = 0;
+#endif /* USE_S7XG_DRIVER */
+
+#if defined(USE_S7XG_DRIVER)
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH &&
+      hw_info.rf    == RF_IC_S7XG ) {
+
+    s7xg.gpsStop();
+    s7xg.gpsReset();
+    s7xg.gpsSetLevelShift(true);
+    s7xg.gpsSetSystem(GPS_STATE_SYS_GPS_GLONASS);
+    s7xg.gpsSetPositioningCycle(1000);
+    s7xg.gpsSetMode(GPS_MODE_MANUAL);
+
+    S7XG_Time_Marker = millis();
+
+    return GNSS_MODULE_S7XG;
+  }
+#endif /* USE_S7XG_DRIVER */
+
+#if defined(USE_S7XG_DRIVER)
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH &&
+      hw_info.rf    == RF_IC_S7XG ) {
+
+    if ((millis() - S7XG_Time_Marker) > 1000 ) {
+      if (s7xg_receive_active) {
+        s7xg.loraReceiveContinuous(false);
+      }
+
+      GPS_Class gnss_data = s7xg.gpsGetData(GPS_DATA_TYPE_DD);
+
+      if (s7xg_receive_active) {
+        s7xg.loraReceiveContinuous(true);
+      }
+
+      if (gnss_data.isVaild()) {
+        NMEA_RMCGGA((char *) GNSSbuf, gnss_data);
+        for (int i=0; i < strlen((char *) GNSSbuf); i++) {
+          gnss.encode(GNSSbuf[i]);
+        }
+        NMEA_Out(GNSSbuf, strlen((char *) GNSSbuf), false);
+      }
+
+      S7XG_Time_Marker = millis();
+    }
+
+    return;
+  }
+#endif /* USE_S7XG_DRIVER */
+
+/* NMEAHelper.cpp */
+
+#if defined(USE_S7XG_DRIVER)
+
+#include <s7xg.h>
+
+void NMEA_RMCGGA(char *dest, GPS_Class data)
+{
+  NmeaInfo info;
+
+  float latitude  = data.lat();
+  float longitude = data.lng();
+
+  nmeaInfoClear(&info);
+
+  info.utc.year   = data.year();
+  info.utc.mon    = data.month();
+  info.utc.day    = data.day();
+  info.utc.hour   = data.hour();
+  info.utc.min    = data.minute();
+  info.utc.sec    = data.second();
+  info.utc.hsec   = 0;
+
+  info.latitude   = ((int) latitude) * 100.0;
+  info.latitude  += (latitude - (int) latitude) * 60.0;
+  info.longitude  = ((int) longitude) * 100.0;
+  info.longitude += (longitude - (int) longitude) * 60.0;
+
+  info.elevation  = 0;
+  info.height     = LookupSeparation(latitude, longitude);
+  info.sig        = (NmeaSignal) 1;
+
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_UTCDATE);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_UTCTIME);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LAT);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_LON);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_ELV);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_SIG);
+  nmeaInfoSetPresent(&info.present, NMEALIB_PRESENT_HEIGHT);
+
+  size_t gen_sz = nmeaSentenceFromInfo(&nmealib_buf, &info, (NmeaSentence)
+                                        (NMEALIB_SENTENCE_GPRMC |
+                                         NMEALIB_SENTENCE_GPGGA));
+
+  if (gen_sz) {
+    memcpy(dest, nmealib_buf.buffer, gen_sz);
+    dest[gen_sz] = 0;
+  }
+}
+#endif /* USE_S7XG_DRIVER */
