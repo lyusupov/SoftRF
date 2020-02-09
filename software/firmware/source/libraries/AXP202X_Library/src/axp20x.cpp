@@ -1053,6 +1053,8 @@ int AXP20X_Class::getBattPercentage()
 {
     if (!_init)
         return AXP_NOT_INIT;
+    if (_chip_id != AXP202_CHIP_ID)
+        return AXP_NOT_SUPPORT;
     uint8_t val;
     if (!isBatteryConnect())
         return 0;

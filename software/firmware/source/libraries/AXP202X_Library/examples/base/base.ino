@@ -60,7 +60,7 @@ uint8_t writeBytes(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len)
         Wire.write(data[i]);
     }
     ret =  Wire.endTransmission();
-    return ret ? 0xFF : ret;
+    return ret ? ret : 0xFF;
 }
 
 void setup()
