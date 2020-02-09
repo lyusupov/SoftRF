@@ -72,6 +72,8 @@ int db_open() {
   int rc = sqlite3_open(db_file_name, &db);
   if (rc) {
     Serial.print(F("Can't open database: "));
+    Serial.print(sqlite3_extended_errcode(db));
+    Serial.print(" ");
     Serial.println(sqlite3_errmsg(db));
     return rc;
   } else
@@ -91,6 +93,8 @@ int db_exec(const char *sql) {
   int rc = sqlite3_exec(db, sql, callback, (void*)data, &zErrMsg);
   if (rc != SQLITE_OK) {
     Serial.print(F("SQL error: "));
+    Serial.print(sqlite3_extended_errcode(db));
+    Serial.print(" ");
     Serial.println(zErrMsg);
     sqlite3_free(zErrMsg);
   } else
@@ -183,7 +187,7 @@ void deleteFile(fs::FS &fs, const char *path) {
 }
 
 enum {CHOICE_OPEN_DB = 1, CHOICE_EXEC_SQL, CHOICE_EXEC_MULTI_SQL, CHOICE_CLOSE_DB,
-    CHOICE_LIST_FOLDER, CHOICE_RENAME_FILE, CHOICE_DELETE_FILE};
+    CHOICE_LIST_FOLDER, CHOICE_RENAME_FILE, CHOICE_DELETE_FILE, CHOICE_SHOW_FREE_MEM};
 int askChoice() {
   Serial.println();
   Serial.println(F("Welcome to SQLite console!!"));
@@ -199,6 +203,7 @@ int askChoice() {
   Serial.println(F("5. List folder contents"));
   Serial.println(F("6. Rename file"));
   Serial.println(F("7. Delete file"));
+  Serial.println(F("8. Show free memory"));
   Serial.println();
   Serial.print(F("Enter choice: "));
   return input_num();
@@ -305,6 +310,12 @@ void loop() {
             }
           }
         }
+        break;
+      case CHOICE_SHOW_FREE_MEM:
+        Serial.printf("\nHeap size: %d\n", ESP.getHeapSize());
+        Serial.printf("Free Heap: %d\n", esp_get_free_heap_size());
+        Serial.printf("Min Free Heap: %d\n", esp_get_minimum_free_heap_size());
+        Serial.printf("Largest Free block: %d\n", heap_caps_get_largest_free_block());
         break;
       default:
         Serial.println(F("Invalid choice. Try again."));
