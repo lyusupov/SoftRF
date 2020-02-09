@@ -425,7 +425,11 @@ static void STM32_Display_loop()
 
       u8x8->drawString(9, 5, "TX");
 
-      itoa(tx_packets_counter % 1000, buf, 10);
+      if (settings->txpower == RF_TX_POWER_OFF ) {
+        strcpy(buf, "OFF");
+      } else {
+        itoa(tx_packets_counter % 1000, buf, 10);
+      }
       u8x8->draw2x2String(8, 6, buf);
 
       OLED_display_frontpage = true;
