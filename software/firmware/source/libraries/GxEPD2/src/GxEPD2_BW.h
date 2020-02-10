@@ -15,14 +15,21 @@
 #include <Adafruit_GFX.h>
 #include "GxEPD2_EPD.h"
 #include "epd/GxEPD2_154.h"
+#include "epd/GxEPD2_154_D67.h"
 #include "epd/GxEPD2_213.h"
+#include "epd/GxEPD2_213_B72.h"
+#include "epd/GxEPD2_213_B73.h"
 #include "epd/GxEPD2_213_flex.h"
+#include "epd/GxEPD2_260.h"
 #include "epd/GxEPD2_290.h"
 #include "epd/GxEPD2_290_T5.h"
 #include "epd/GxEPD2_270.h"
+#include "epd/GxEPD2_371.h"
 #include "epd/GxEPD2_420.h"
 #include "epd/GxEPD2_583.h"
 #include "epd/GxEPD2_750.h"
+#include "epd/GxEPD2_750_T7.h"
+#include "it8951/GxEPD2_it60.h"
 
 #ifndef ENABLE_GxEPD2_GFX
 // default is off
@@ -118,7 +125,7 @@ class GxEPD2_BW : public Adafruit_GFX
     }
 
     // init method with additional parameters:
-    // initial true for re-init after processor deep sleep wake up, if display power supply was kept
+    // initial false for re-init after processor deep sleep wake up, if display power supply was kept
     // this can be used to avoid the repeated initial full refresh on displays with fast partial update
     // NOTE: garbage will result on fast partial update displays, if initial full update is omitted after power loss
     // pulldown_rst_mode true for alternate RST handling to avoid feeding 5V through RST pin
@@ -142,8 +149,35 @@ class GxEPD2_BW : public Adafruit_GFX
     // display buffer content to screen, useful for full screen buffer
     void display(bool partial_update_mode = false)
     {
-      epd2.writeImage(_buffer, 0, 0, WIDTH, HEIGHT);
+      epd2.writeImage(_buffer, 0, 0, WIDTH, _page_height);
       epd2.refresh(partial_update_mode);
+      if (epd2.hasFastPartialUpdate)
+      {
+        epd2.writeImageAgain(_buffer, 0, 0, WIDTH, _page_height);
+      }
+      if (!partial_update_mode) epd2.powerOff();
+    }
+
+    // display part of buffer content to screen, useful for full screen buffer
+    // displayWindow, use parameters according to actual rotation.
+    // x and w should be multiple of 8, for rotation 0 or 2,
+    // y and h should be multiple of 8, for rotation 1 or 3,
+    // else window is increased as needed,
+    // this is an addressing limitation of the e-paper controllers
+    void displayWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+    {
+      x = gx_uint16_min(x, width());
+      y = gx_uint16_min(y, height());
+      w = gx_uint16_min(w, width() - x);
+      h = gx_uint16_min(h, height() - y);
+      _rotate(x, y, w, h);
+      uint16_t y_part = _reverse ? HEIGHT - h - y : y;
+      epd2.writeImagePart(_buffer, x, y_part, WIDTH, _page_height, x, y, w, h);
+      epd2.refresh(x, y, w, h);
+      if (epd2.hasFastPartialUpdate)
+      {
+        epd2.writeImagePartAgain(_buffer, x, y_part, WIDTH, _page_height, x, y, w, h);
+      }
     }
 
     void setFullWindow()
@@ -162,12 +196,12 @@ class GxEPD2_BW : public Adafruit_GFX
     // this is an addressing limitation of the e-paper controllers
     void setPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
     {
-      _rotate(x, y, w, h);
+      _pw_x = gx_uint16_min(x, width());
+      _pw_y = gx_uint16_min(y, height());
+      _pw_w = gx_uint16_min(w, width() - _pw_x);
+      _pw_h = gx_uint16_min(h, height() - _pw_y);
+      _rotate(_pw_x, _pw_y, _pw_w, _pw_h);
       _using_partial_mode = true;
-      _pw_x = gx_uint16_min(x, WIDTH);
-      _pw_y = gx_uint16_min(y, HEIGHT);
-      _pw_w = gx_uint16_min(w, WIDTH - _pw_x);
-      _pw_h = gx_uint16_min(h, HEIGHT - _pw_y);
       // make _pw_x, _pw_w multiple of 8
       _pw_w += _pw_x % 8;
       if (_pw_w % 8 > 0) _pw_w += 8 - _pw_w % 8;
@@ -204,8 +238,8 @@ class GxEPD2_BW : public Adafruit_GFX
           {
             epd2.writeImageAgain(_buffer, 0, 0, WIDTH, HEIGHT);
             //epd2.refresh(true); // not needed
-            epd2.powerOff();
           }
+          epd2.powerOff();
         }
         return false;
       }
@@ -399,6 +433,11 @@ class GxEPD2_BW : public Adafruit_GFX
     {
       epd2.writeImage(bitmap, x, y, w, h, invert, mirror_y, pgm);
     }
+    void writeImagePart(const uint8_t bitmap[], int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                        int16_t x, int16_t y, int16_t w, int16_t h, bool invert = false, bool mirror_y = false, bool pgm = false)
+    {
+      epd2.writeImagePart(bitmap, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, invert, mirror_y, pgm);
+    }
     void writeImage(const uint8_t* black, const uint8_t* color, int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
     {
       epd2.writeImage(black, color, x, y, w, h, invert, mirror_y, pgm);
@@ -406,6 +445,16 @@ class GxEPD2_BW : public Adafruit_GFX
     void writeImage(const uint8_t* black, const uint8_t* color, int16_t x, int16_t y, int16_t w, int16_t h)
     {
       epd2.writeImage(black, color, x, y, w, h, false, false, false);
+    }
+    void writeImagePart(const uint8_t* black, const uint8_t* color, int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                        int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
+    {
+      epd2.writeImagePart(black, color, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, invert, mirror_y, pgm);
+    }
+    void writeImagePart(const uint8_t* black, const uint8_t* color, int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                        int16_t x, int16_t y, int16_t w, int16_t h)
+    {
+      epd2.writeImagePart(black, color, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, false, false, false);
     }
     // write sprite of native data to controller memory, without screen refresh; x and w should be multiple of 8
     void writeNative(const uint8_t* data1, const uint8_t* data2, int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
@@ -417,6 +466,11 @@ class GxEPD2_BW : public Adafruit_GFX
     {
       epd2.drawImage(bitmap, x, y, w, h, invert, mirror_y, pgm);
     }
+    void drawImagePart(const uint8_t bitmap[], int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                       int16_t x, int16_t y, int16_t w, int16_t h, bool invert = false, bool mirror_y = false, bool pgm = false)
+    {
+      epd2.drawImagePart(bitmap, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, invert, mirror_y, pgm);
+    }
     void drawImage(const uint8_t* black, const uint8_t* color, int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
     {
       epd2.drawImage(black, color, x, y, w, h, invert, mirror_y, pgm);
@@ -424,6 +478,16 @@ class GxEPD2_BW : public Adafruit_GFX
     void drawImage(const uint8_t* black, const uint8_t* color, int16_t x, int16_t y, int16_t w, int16_t h)
     {
       epd2.drawImage(black, color, x, y, w, h, false, false, false);
+    }
+    void drawImagePart(const uint8_t* black, const uint8_t* color, int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                       int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
+    {
+      epd2.drawImagePart(black, color, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, invert, mirror_y, pgm);
+    }
+    void drawImagePart(const uint8_t* black, const uint8_t* color, int16_t x_part, int16_t y_part, int16_t w_bitmap, int16_t h_bitmap,
+                       int16_t x, int16_t y, int16_t w, int16_t h)
+    {
+      epd2.drawImagePart(black, color, x_part, y_part, w_bitmap, h_bitmap, x, y, w, h, false, false, false);
     }
     // write sprite of native data to controller memory, with screen refresh; x and w should be multiple of 8
     void drawNative(const uint8_t* data1, const uint8_t* data2, int16_t x, int16_t y, int16_t w, int16_t h, bool invert, bool mirror_y, bool pgm)
@@ -433,6 +497,7 @@ class GxEPD2_BW : public Adafruit_GFX
     void refresh(bool partial_update_mode = false) // screen refresh from controller memory to full screen
     {
       epd2.refresh(partial_update_mode);
+      if (!partial_update_mode) epd2.powerOff();
     }
     void refresh(int16_t x, int16_t y, int16_t w, int16_t h) // screen refresh from controller memory, partial screen
     {

@@ -30,6 +30,8 @@ GxEPD2_EPD::GxEPD2_EPD(int8_t cs, int8_t dc, int8_t rst, int8_t busy, int8_t bus
   _spi_settings(4000000, MSBFIRST, SPI_MODE0)
 #endif
 {
+  _initial_write = true;
+  _initial_refresh = true;
   _power_is_on = false;
   _using_partial_mode = false;
   _hibernating = false;
@@ -43,7 +45,8 @@ void GxEPD2_EPD::init(uint32_t serial_diag_bitrate)
 
 void GxEPD2_EPD::init(uint32_t serial_diag_bitrate, bool initial, bool pulldown_rst_mode)
 {
-  _initial = initial;
+  _initial_write = initial;
+  _initial_refresh = initial;
   _pulldown_rst_mode = pulldown_rst_mode;
   _power_is_on = false;
   _using_partial_mode = false;
@@ -171,7 +174,7 @@ void GxEPD2_EPD::_writeData(const uint8_t* data, uint16_t n)
 {
   SPI.beginTransaction(_spi_settings);
   if (_cs >= 0) digitalWrite(_cs, LOW);
-  for (uint8_t i = 0; i < n; i++)
+  for (uint16_t i = 0; i < n; i++)
   {
     SPI.transfer(*data++);
   }
@@ -179,15 +182,39 @@ void GxEPD2_EPD::_writeData(const uint8_t* data, uint16_t n)
   SPI.endTransaction();
 }
 
-void GxEPD2_EPD::_writeDataPGM(const uint8_t* data, uint16_t n)
+void GxEPD2_EPD::_writeDataPGM(const uint8_t* data, uint16_t n, int16_t fill_with_zeroes)
 {
   SPI.beginTransaction(_spi_settings);
   if (_cs >= 0) digitalWrite(_cs, LOW);
-  for (uint8_t i = 0; i < n; i++)
+  for (uint16_t i = 0; i < n; i++)
   {
     SPI.transfer(pgm_read_byte(&*data++));
   }
+  while (fill_with_zeroes > 0)
+  {
+    SPI.transfer(0x00);
+    fill_with_zeroes--;
+  }
   if (_cs >= 0) digitalWrite(_cs, HIGH);
+  SPI.endTransaction();
+}
+
+void GxEPD2_EPD::_writeDataPGM_sCS(const uint8_t* data, uint16_t n, int16_t fill_with_zeroes)
+{
+  SPI.beginTransaction(_spi_settings);
+  for (uint8_t i = 0; i < n; i++)
+  {
+    if (_cs >= 0) digitalWrite(_cs, LOW);
+    SPI.transfer(pgm_read_byte(&*data++));
+    if (_cs >= 0) digitalWrite(_cs, HIGH);
+  }
+  while (fill_with_zeroes > 0)
+  {
+    if (_cs >= 0) digitalWrite(_cs, LOW);
+    SPI.transfer(0x00);
+    fill_with_zeroes--;
+    if (_cs >= 0) digitalWrite(_cs, HIGH);
+  }
   SPI.endTransaction();
 }
 

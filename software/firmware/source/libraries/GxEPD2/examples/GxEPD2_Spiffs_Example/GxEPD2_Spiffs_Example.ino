@@ -1,7 +1,7 @@
 // GxEPD2_Spiffs_Example : Display Library example for SPI e-paper panels from Dalian Good Display and boards from Waveshare.
-// Requires HW SPI and Adafruit_GFX. Caution: these e-papers require 3.3V supply AND data lines!
+// Requires HW SPI and Adafruit_GFX. Caution: the e-paper panels require 3.3V supply AND data lines!
 //
-// Display Library based on Demo Example from Good Display: http://www.good-display.com/download_list/downloadcategoryid=34&isMode=false.html
+// Display Library based on Demo Example from Good Display: http://www.e-paper-display.com/download_list/downloadcategoryid=34&isMode=false.html
 //
 // BMP handling code extracts taken from: https://github.com/prenticedavid/MCUFRIEND_kbv/tree/master/examples/showBMP_kbv_Uno
 //
@@ -13,7 +13,7 @@
 
 // Supporting Arduino Forum Topics:
 // Waveshare e-paper displays with SPI: http://forum.arduino.cc/index.php?topic=487007.0
-// Good Dispay ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
+// Good Display ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
 
 // mapping suggestion from Waveshare SPI e-Paper to Wemos D1 mini
 // BUSY -> D2, RST -> D4, DC -> D3, CS -> D8, CLK -> D5, DIN -> D7, GND -> GND, 3.3V -> 3.3V
@@ -49,7 +49,8 @@
 
 #if defined (ESP8266)
 // select one and adapt to your mapping, can use full buffer size (full HEIGHT)
-//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
+//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4)); // GDEP015OC1 no longer available
+//GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4)); // GDEH0154D67
 //GxEPD2_BW<GxEPD2_213, GxEPD2_213::HEIGHT> display(GxEPD2_213(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 //GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 //GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=D8*/ EPD_CS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
@@ -70,7 +71,8 @@
 
 // ***** for mapping of Waveshare e-Paper ESP8266 Driver Board *****
 // select one , can use full buffer size (full HEIGHT)
-//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16));
+//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16)); // GDEP015OC1 no longer available
+//GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16)); // GDEH0154D67
 //GxEPD2_BW<GxEPD2_213, GxEPD2_213::HEIGHT> display(GxEPD2_213(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16));
 //GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16));
 //GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=15*/ SS, /*DC=4*/ 4, /*RST=5*/ 5, /*BUSY=16*/ 16));
@@ -92,7 +94,8 @@
 
 #if defined(ESP32)
 // select one and adapt to your mapping, can use full buffer size (full HEIGHT)
-//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+//GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEP015OC1 no longer available
+//GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEH0154D67
 //GxEPD2_BW<GxEPD2_213, GxEPD2_213::HEIGHT> display(GxEPD2_213(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=5*/ EPD_CS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
@@ -136,6 +139,7 @@ void setup()
   {
     drawBitmaps_200x200();
     drawBitmaps_other();
+    //drawBitmaps_test();
   }
 
   Serial.println("GxEPD2_Spiffs_Example done");
@@ -195,6 +199,26 @@ void drawBitmaps_other()
   delay(2000);
 }
 
+void drawBitmaps_test()
+{
+  drawBitmapFromSpiffs("output5.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("output6.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_1.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_4.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_8.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_11.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_44.bmp", 0, 0);
+  delay(2000);
+  drawBitmapFromSpiffs("tractor_88.bmp", 0, 0);
+  delay(2000);
+}
+
 void drawBitmapsBuffered_200x200()
 {
   int16_t x = (display.width() - 200) / 2;
@@ -245,9 +269,9 @@ void drawBitmapsBuffered_other()
   delay(2000);
 }
 
-static const uint16_t input_buffer_pixels = 640; // may affect performance
+static const uint16_t input_buffer_pixels = 800; // may affect performance
 
-static const uint16_t max_row_width = 640; // for up to 7.5" display
+static const uint16_t max_row_width = 800; // for up to 7.5" display 800x480
 static const uint16_t max_palette_pixels = 256; // for depth <= 8
 
 uint8_t input_buffer[3 * input_buffer_pixels]; // up to depth 24
@@ -322,7 +346,8 @@ void drawBitmapFromSpiffs(const char *filename, int16_t x, int16_t y, bool with_
         if (depth <= 8)
         {
           if (depth < 8) bitmask >>= depth;
-          file.seek(54); //palette is always @ 54
+          //file.seek(54); //palette is always @ 54
+          file.seek(imageOffset - (4 << depth)); // 54 for regular, diff for colorsimportant
           for (uint16_t pn = 0; pn < (1 << depth); pn++)
           {
             blue  = file.read();
@@ -346,8 +371,8 @@ void drawBitmapFromSpiffs(const char *filename, int16_t x, int16_t y, bool with_
           uint32_t in_bytes = 0;
           uint8_t in_byte = 0; // for depth <= 8
           uint8_t in_bits = 0; // for depth <= 8
-          uint8_t out_byte = 0xFF; // white (for w%8!=0 boarder)
-          uint8_t out_color_byte = 0xFF; // white (for w%8!=0 boarder)
+          uint8_t out_byte = 0xFF; // white (for w%8!=0 border)
+          uint8_t out_color_byte = 0xFF; // white (for w%8!=0 border)
           uint32_t out_idx = 0;
           file.seek(rowPosition);
           for (uint16_t col = 0; col < w; col++) // for each pixel
@@ -417,12 +442,12 @@ void drawBitmapFromSpiffs(const char *filename, int16_t x, int16_t y, bool with_
             {
               out_byte &= ~(0x80 >> col % 8); // black
             }
-            if ((7 == col % 8) || (col == w - 1)) // write that last byte! (for w%8!=0 boarder)
+            if ((7 == col % 8) || (col == w - 1)) // write that last byte! (for w%8!=0 border)
             {
               output_row_color_buffer[out_idx] = out_color_byte;
               output_row_mono_buffer[out_idx++] = out_byte;
-              out_byte = 0xFF; // white (for w%8!=0 boarder)
-              out_color_byte = 0xFF; // white (for w%8!=0 boarder)
+              out_byte = 0xFF; // white (for w%8!=0 border)
+              out_color_byte = 0xFF; // white (for w%8!=0 border)
             }
           } // end pixel
           uint16_t yrow = y + (flip ? h - row - 1 : row);
@@ -506,7 +531,8 @@ void drawBitmapFromSpiffs_Buffered(const char *filename, int16_t x, int16_t y, b
         if (depth <= 8)
         {
           if (depth < 8) bitmask >>= depth;
-          file.seek(54); //palette is always @ 54
+          //file.seek(54); //palette is always @ 54
+          file.seek(imageOffset - (4 << depth)); // 54 for regular, diff for colorsimportant
           for (uint16_t pn = 0; pn < (1 << depth); pn++)
           {
             blue  = file.read();
@@ -640,4 +666,3 @@ uint32_t read32(fs::File& f)
   ((uint8_t *)&result)[3] = f.read(); // MSB
   return result;
 }
-

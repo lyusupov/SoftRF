@@ -1,7 +1,7 @@
 // GxEPD2_Spiffs_Loader : Display Library example for SPI e-paper panels from Dalian Good Display and boards from Waveshare.
-// Requires HW SPI and Adafruit_GFX. Caution: these e-papers require 3.3V supply AND data lines!
+// Requires HW SPI and Adafruit_GFX. Caution: the e-paper panels require 3.3V supply AND data lines!
 //
-// Display Library based on Demo Example from Good Display: http://www.good-display.com/download_list/downloadcategoryid=34&isMode=false.html
+// Display Library based on Demo Example from Good Display: http://www.e-paper-display.com/download_list/downloadcategoryid=34&isMode=false.html
 //
 // Author: Jean-Marc Zingg
 //
@@ -11,7 +11,7 @@
 
 // Supporting Arduino Forum Topics:
 // Waveshare e-paper displays with SPI: http://forum.arduino.cc/index.php?topic=487007.0
-// Good Dispay ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
+// Good Display ePaper for Arduino : https://forum.arduino.cc/index.php?topic=436411.0
 
 #if defined(ESP32)
 #include "SPIFFS.h"
@@ -99,6 +99,7 @@ void setup()
   //deleteFiles();
   downloadBitmaps_200x200();
   downloadBitmaps_other();
+  //downloadBitmaps_test();
   listFiles();
 }
 
@@ -133,6 +134,18 @@ void downloadBitmaps_other()
   downloadFile_HTTPS(host_rawcontent, path_prenticedavid, "tiger_320x200x24.bmp", fp_rawcontent, "tiger_320x200x24.bmp");
   //downloadFile_HTTPS(host_rawcontent, path_prenticedavid, "tiger16T.bmp", fp_rawcontent, "tiger16T.bmp");
   downloadFile_HTTPS(host_rawcontent, path_prenticedavid, "woof.bmp", fp_rawcontent, "woof.bmp");
+}
+
+void downloadBitmaps_test()
+{
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "output5.bmp", fp_rawcontent, "output5.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "output6.bmp", fp_rawcontent, "output6.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_1.bmp", fp_rawcontent, "tractor_1.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_4.bmp", fp_rawcontent, "tractor_4.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_8.bmp", fp_rawcontent, "tractor_8.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_11.bmp", fp_rawcontent, "tractor_11.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_44.bmp", fp_rawcontent, "tractor_44.bmp");
+  downloadFile_HTTPS(host_rawcontent, path_rawcontent, "tractor_88.bmp", fp_rawcontent, "tractor_88.bmp");
 }
 
 void deleteFiles()
@@ -178,7 +191,7 @@ void downloadFile_HTTP(const char* host, const char* path, const char* filename,
                "Connection: close\r\n\r\n");
   Serial.println("request sent");
   bool ok = false;
-  while (client.connected())
+  while (client.connected() || client.available())
   {
     String line = client.readStringUntil('\n');
     if (!ok)
@@ -212,7 +225,7 @@ void downloadFile_HTTP(const char* host, const char* path, const char* filename,
     Serial.print(target); Serial.println(" open failed");
     return;
   }
-  while (client.connected())
+  while (client.connected() || client.available())
   {
     size_t available = client.available();
     size_t fetch = available <= sizeof(buffer) ? available : sizeof(buffer);
@@ -268,7 +281,7 @@ void downloadFile_HTTPS(const char* host, const char* path, const char* filename
                "Connection: close\r\n\r\n");
   Serial.println("request sent");
   bool ok = false;
-  while (client.connected())
+  while (client.connected() || client.available())
   {
     String line = client.readStringUntil('\n');
     if (!ok)
@@ -302,17 +315,17 @@ void downloadFile_HTTPS(const char* host, const char* path, const char* filename
     Serial.print(target); Serial.println(" open failed");
     return;
   }
-  while (client.connected())
+  while (client.connected() || client.available())
   {
     // this doesn't work as expected, but it helps for long downloads
     int32_t start = millis();
     for (int16_t t = 0, dly = 50; t < 20; t++, dly += 50)
     {
-      if (!client.connected()) break;
+      if (!(client.connected() || client.available())) break;
       if (client.available()) break; // read would not recover after having returned 0
       delay(dly);
     }
-    if (!client.connected()) break;
+    if (!(client.connected() || client.available())) break;
     int32_t elapsed = millis() - start;
     if (elapsed > 250)
     {
