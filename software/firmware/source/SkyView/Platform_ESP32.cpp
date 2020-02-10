@@ -570,9 +570,10 @@ int readProps(File file, wavProperties_t *wavProps)
   return n;
 }
 
-static void play_file(char *filename)
+static bool play_file(char *filename)
 {
   headerState_t state = HEADER_RIFF;
+  bool rval = false;
 
   File wavfile = SD.open(filename);
 
@@ -635,12 +636,15 @@ static void play_file(char *filename)
       }
     }
     wavfile.close();
+    rval = true;
   } else {
     Serial.println(F("error opening WAV file"));
   }
   if (state == DATA) {
     i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
   }
+
+  return rval;
 }
 
 static void play_memory(const unsigned char *data, int size)
@@ -742,7 +746,17 @@ static void ESP32_TTS(char *message)
     }
   } else {
     if (settings->voice != VOICE_OFF && settings->adapter == ADAPTER_TTGO_T5S) {
-      play_memory(melody_wav, (int) melody_wav_len);
+
+//      play_memory(melody_wav, (int) melody_wav_len);
+
+      strcpy(filename, WAV_FILE_PREFIX);
+      strcat(filename, "POST");
+      strcat(filename, WAV_FILE_SUFFIX);
+
+      if (SD.cardType() == CARD_NONE || !play_file(filename)) {
+        /* keep boot-time SkyView logo on the screen for 7 seconds */
+        delay(7000);
+      }
     } else {
       if (hw_info.display == DISPLAY_EPD_2_7) {
         /* keep boot-time SkyView logo on the screen for 7 seconds */

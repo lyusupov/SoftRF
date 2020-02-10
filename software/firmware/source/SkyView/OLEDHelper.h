@@ -19,6 +19,8 @@
 #ifndef OLEDHELPER_H
 #define OLEDHELPER_H
 
+#if defined(RASPBERRY_PI)
+
 #include <Adafruit_SSD1306.h>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -39,5 +41,7 @@ void OLED_setup();
 void OLED_loop();
 
 extern Adafruit_SSD1306 odisplay;
+
+#endif /* RASPBERRY_PI */
 
 #endif /* OLEDHELPER_H */

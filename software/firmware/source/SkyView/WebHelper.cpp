@@ -26,11 +26,15 @@
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
 
+#define NOLOGO
+
 static uint32_t prev_rx_pkt_cnt = 0;
 
+#if !defined(NOLOGO)
 static const char Logo[] PROGMEM = {
 #include "Logo.h"
     } ;
+#endif
 
 #include "jquery_min_js.h"
 
@@ -799,9 +803,11 @@ $('form').submit(function(e){\
     yield();
   });
 
+#if !defined(NOLOGO)
   server.on ( "/logo.png", []() {
     server.send_P ( 200, "image/png", Logo, sizeof(Logo) );
   } );
+#endif
 
   server.on ( "/jquery.min.js", []() {
 
