@@ -6,7 +6,7 @@ dnl (C) 2012 Mike McCauley (mikem@airspayce.com)
 
 dnl Dont forget to update  BCM2835_VERSION and .tar.gz in bcm2835.h
 dnl and the zip file.
-AC_INIT([bcm2835], [1.57], [mikem@airspayce.com])
+AC_INIT([bcm2835], [1.62], [mikem@airspayce.com])
 
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()

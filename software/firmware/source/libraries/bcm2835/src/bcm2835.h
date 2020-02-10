@@ -4,7 +4,7 @@
   
    Author: Mike McCauley
    Copyright (C) 2011-2013 Mike McCauley
-   $Id: bcm2835.h,v 1.24 2018/08/27 20:45:57 mikem Exp mikem $
+   $Id: bcm2835.h,v 1.26 2020/01/11 05:07:13 mikem Exp mikem $
 */
 
 /*! \mainpage C library for Broadcom BCM 2835 as used in Raspberry Pi
@@ -17,13 +17,16 @@
   It provides functions for reading digital inputs and setting digital outputs, using SPI and I2C,
   and for accessing the system timers.
   Pin event detection is supported by polling (interrupts are not supported).
+
+  Works on all versions upt to and including RPI 4. 
+  Works with all versions of Debian up to and including Debian Buster 10.
   
   It is C++ compatible, and installs as a header file and non-shared library on 
   any Linux-based distro (but clearly is no use except on Raspberry Pi or another board with 
   BCM 2835).
   
   The version of the package that this documentation refers to can be downloaded 
-  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.57.tar.gz
+  from http://www.airspayce.com/mikem/bcm2835/bcm2835-1.62.tar.gz
   You can find the latest version at http://www.airspayce.com/mikem/bcm2835
   
   Several example programs are provided.
@@ -285,6 +288,15 @@
   mlockall(MCL_CURRENT | MCL_FUTURE);
   \endcode
   
+  \par Crashing on some versions of Raspbian
+  Some people have reported that various versions of Rasbian will crash or hang 
+  if certain GPIO pins are toggled: https://github.com/raspberrypi/linux/issues/2550
+  when using bcm2835.
+  A workaround is to add this line to your /boot/config.txt:
+  \code
+    dtoverlay=gpio-no-irq
+  \endcode
+
   \par Bindings to other languages
   
   mikem has made Perl bindings available at CPAN:
@@ -517,7 +529,28 @@
   \version 1.57 2018-08-28
   Added SPI function bcm2835_spi_set_speed_hz(uint32_t speed_hz);
   Contributed by Arjan van Vught (http://www.raspberrypi-dmx.org/)
+
+  \version 1.58 2018-11-29
+  Added examples/spiram, which shows how to use the included little library (spiram.c and spiram.h)
+  to read and write SPI RAM chips such as 23K256-I/P
+
+  \version 1.59 2019-05-22
+  Fixed a bug in bcm2835_i2c_read reported by Charles Hayward where a noisy I2C line cold cause a seg fault by
+  reading too many characters.
   
+  \version 1.60 2019-07-23
+  Applied patch from Mark Dootson for RPi 4 compatibility. Thanks Mark. Not tested here on RPi4, but others report it works.
+  Tested as still working correctly on earlier RPi models. Tested with Debian Buster on earlier models
+
+  \version 1.61 2020-01-11
+  Fixed errors in the documentation for bcm2835_spi_write.
+  Fixes issue seen on Raspberry Pi 4 boards where 64-bit off_t is used by
+  default via -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64.  The offset was
+  being incorrectly converted, this way is clearer and fixes the problem. Contributed by Jonathan Perkin.
+
+  \version 1.62 2020-01-12
+  Fixed a problem that could cause compile failures with size_t and off_t
+
   \author  Mike McCauley (mikem@airspayce.com) DO NOT CONTACT THE AUTHOR DIRECTLY: USE THE LISTS
 */
 
@@ -528,7 +561,7 @@
 
 #include <stdint.h>
 
-#define BCM2835_VERSION 10057 /* Version 1.57 */
+#define BCM2835_VERSION 10062 /* Version 1.62 */
 
 /* RPi 2 is ARM v7, and has DMB instruction for memory barriers.
    Older RPis are ARM v6 and don't, so a coprocessor instruction must be used instead.
@@ -557,12 +590,8 @@
 /*! Speed of the core clock core_clk */
 #define BCM2835_CORE_CLK_HZ		250000000	/*!< 250 MHz */
 
-/*! On RPi2 with BCM2836, and all recent OSs, the base of the peripherals is read from a /proc file */
+/*! On all recent OSs, the base of the peripherals is read from a /proc file */
 #define BMC2835_RPI2_DT_FILENAME "/proc/device-tree/soc/ranges"
-/*! Offset into BMC2835_RPI2_DT_FILENAME for the peripherals base address */
-#define BMC2835_RPI2_DT_PERI_BASE_ADDRESS_OFFSET 4
-/*! Offset into BMC2835_RPI2_DT_FILENAME for the peripherals size address */
-#define BMC2835_RPI2_DT_PERI_SIZE_OFFSET 8
 
 /*! Physical addresses for various peripheral register sets
   Base Physical Address of the BCM 2835 peripheral registers
@@ -574,6 +603,12 @@
 #define BCM2835_PERI_BASE               0x20000000
 /*! Size of the peripherals block on RPi 1 */
 #define BCM2835_PERI_SIZE               0x01000000
+/*! Alternate base address for RPI  2 / 3 */
+#define BCM2835_RPI2_PERI_BASE          0x3F000000
+/*! Alternate base address for RPI  4 */
+#define BCM2835_RPI4_PERI_BASE          0xFE000000
+/*! Alternate size for RPI  4 */
+#define BCM2835_RPI4_PERI_SIZE          0x01800000
 
 /*! Offsets for the bases of various peripherals within the peripherals block
   /   Base Address of the System Timer registers
@@ -600,13 +635,14 @@
 /*! Base Address of the BSC1 registers */
 #define BCM2835_BSC1_BASE				0x804000
 
+#include <stdlib.h>
 
 /*! Physical address and size of the peripherals block
   May be overridden on RPi2
 */
-extern uint32_t *bcm2835_peripherals_base;
+extern off_t bcm2835_peripherals_base;
 /*! Size of the peripherals block to be mapped */
-extern uint32_t bcm2835_peripherals_size;
+extern size_t bcm2835_peripherals_size;
 
 /*! Virtual memory address of the mapped peripherals block */
 extern uint32_t *bcm2835_peripherals;
@@ -722,6 +758,12 @@ typedef enum
 #define BCM2835_GPPUDCLK0                    0x0098 /*!< GPIO Pin Pull-up/down Enable Clock 0 */
 #define BCM2835_GPPUDCLK1                    0x009c /*!< GPIO Pin Pull-up/down Enable Clock 1 */
 
+/* 2711 has a different method for pin pull-up/down/enable  */
+#define BCM2835_GPPUPPDN0                    0x00e4 /* Pin pull-up/down for pins 15:0  */
+#define BCM2835_GPPUPPDN1                    0x00e8 /* Pin pull-up/down for pins 31:16 */
+#define BCM2835_GPPUPPDN2                    0x00ec /* Pin pull-up/down for pins 47:32 */
+#define BCM2835_GPPUPPDN3                    0x00f0 /* Pin pull-up/down for pins 57:48 */
+
 /*!   \brief bcm2835PortFunction
   Port function select modes for bcm2835_gpio_fsel()
 */
@@ -747,6 +789,9 @@ typedef enum
     BCM2835_GPIO_PUD_DOWN    = 0x01,   /*!< Enable Pull Down control 0b01 */
     BCM2835_GPIO_PUD_UP      = 0x02    /*!< Enable Pull Up control 0b10  */
 } bcm2835PUDControl;
+
+/* need a value for pud functions that can't work unless RPI 4 */
+#define BCM2835_GPIO_PUD_ERROR  0x08 
 
 /*! Pad control register offsets from BCM2835_GPIO_PADS */
 #define BCM2835_PADS_GPIO_0_27               0x002c /*!< Pad control register for pads 0 to 27 */
@@ -1458,6 +1503,8 @@ extern "C" {
       used with bcm2835_gpio_pudclk() to set the  Pull-up/down resistor for the given pin.
       However, it is usually more convenient to use bcm2835_gpio_set_pud().
       \param[in] pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from bcm2835PUDControl
+      On the RPI 4, although this function and bcm2835_gpio_pudclk() are supported for backward
+      compatibility, new code should always use bcm2835_gpio_set_pud().
       \sa bcm2835_gpio_set_pud()
     */
     extern void bcm2835_gpio_pud(uint8_t pud);
@@ -1466,6 +1513,10 @@ extern "C" {
       \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
       \param[in] on HIGH to clock the value from bcm2835_gpio_pud() into the pin. 
       LOW to remove the clock. 
+      
+      On the RPI 4, although this function and bcm2835_gpio_pud() are supported for backward
+      compatibility, new code should always use bcm2835_gpio_set_pud().
+      
       \sa bcm2835_gpio_set_pud()
     */
     extern void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on);
@@ -1537,6 +1588,14 @@ extern "C" {
       \param[in] pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from bcm2835PUDControl
     */
     extern void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud);
+
+    /*! On the BCM2711 based RPI 4, gets the current Pull-up/down mode for the specified pin.
+      Returns one of BCM2835_GPIO_PUD_* from bcm2835PUDControl.
+      On earlier RPI versions not based on the BCM2711, returns BCM2835_GPIO_PUD_ERROR
+      \param[in] pin GPIO number, or one of RPI_GPIO_P1_* from \ref RPiGPIOPin.
+    */
+    
+    extern uint8_t bcm2835_gpio_get_pud(uint8_t pin);
 
     /*! @}  */
 
@@ -1651,11 +1710,10 @@ extern "C" {
     */
     extern void bcm2835_spi_writenb(const char* buf, uint32_t len);
 
-    /*! Transfers half-word to and from the currently selected SPI slave.
+    /*! Transfers half-word to the currently selected SPI slave.
       Asserts the currently selected CS pins (as previously set by bcm2835_spi_chipSelect)
       during the transfer.
       Clocks the 8 bit value out on MOSI, and simultaneously clocks in data from MISO.
-      Returns the read data byte from the slave.
       Uses polled transfer as per section 10.6.1 of the BCM 2835 ARM Peripherls manual
       \param[in] data The 8 bit data byte to write to MOSI
       \sa bcm2835_spi_writenb()
@@ -1905,4 +1963,9 @@ Broadcom bcm2835. Contributed by Shahrooz Shahparnia.
 /*! example gpio.c
   Command line utility for executing gpio commands with the 
   Broadcom bcm2835. Contributed by Shahrooz Shahparnia.
+*/
+
+/*! example spimem_test.c
+  Shows how to use the included little library (spiram.c and spiram.h)
+  to read and write SPI RAM chips such as 23K256-I/P
 */

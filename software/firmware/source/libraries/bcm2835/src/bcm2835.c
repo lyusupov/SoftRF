@@ -5,7 +5,7 @@
 //
 // Author: Mike McCauley
 // Copyright (C) 2011-2013 Mike McCauley
-// $Id: bcm2835.c,v 1.26 2018/08/27 20:45:57 mikem Exp mikem $
+// $Id: bcm2835.c,v 1.28 2020/01/11 05:07:13 mikem Exp mikem $
 */
 
 
@@ -38,8 +38,8 @@
 /* Physical address and size of the peripherals block
 // May be overridden on RPi2
 */
-uint32_t *bcm2835_peripherals_base = (uint32_t *)BCM2835_PERI_BASE;
-uint32_t bcm2835_peripherals_size = BCM2835_PERI_SIZE;
+off_t bcm2835_peripherals_base = BCM2835_PERI_BASE;
+size_t bcm2835_peripherals_size = BCM2835_PERI_SIZE;
 
 /* Virtual memory address of the mapped peripherals block 
  */
@@ -59,11 +59,20 @@ volatile uint32_t *bcm2835_aux	       = (uint32_t *)MAP_FAILED;
 volatile uint32_t *bcm2835_spi1        = (uint32_t *)MAP_FAILED;
 
 
+
 /* This variable allows us to test on hardware other than RPi.
 // It prevents access to the kernel memory, and does not do any peripheral access
 // Instead it prints out what it _would_ do if debug were 0
  */
 static uint8_t debug = 0;
+
+/* RPI 4 has different pullup registers - we need to know if we have that type */
+
+static uint8_t pud_type_rpi4 = 0;
+
+/* RPI 4 has different pullup operation - make backwards compat */
+
+static uint8_t pud_compat_setting = BCM2835_GPIO_PUD_OFF;
 
 /* I2C The time needed to transmit one byte. In microseconds.
  */
@@ -444,8 +453,14 @@ void bcm2835_gpio_clr_afen(uint8_t pin)
 /* Set pullup/down */
 void bcm2835_gpio_pud(uint8_t pud)
 {
+    if( pud_type_rpi4 )
+    {
+        pud_compat_setting = pud;
+    }
+    else {
     volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPPUD/4;
     bcm2835_peri_write(paddr, pud);
+}
 }
 
 /* Pullup/down clock
@@ -453,9 +468,17 @@ void bcm2835_gpio_pud(uint8_t pud)
 */
 void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on)
 {
+    if( pud_type_rpi4 )
+    {
+        if( on )
+            bcm2835_gpio_set_pud( pin, pud_compat_setting);
+    }
+    else
+    {
     volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPPUDCLK0/4 + pin/32;
     uint8_t shift = pin % 32;
     bcm2835_peri_write(paddr, (on ? 1 : 0) << shift);
+}
 }
 
 /* Read GPIO pad behaviour for groups of GPIOs */
@@ -576,9 +599,36 @@ void bcm2835_gpio_write_mask(uint32_t value, uint32_t mask)
 // 6. Write to GPPUDCLK0/1 to remove the clock
 //
 // RPi has P1-03 and P1-05 with 1k8 pullup resistor
+//
+// RPI 4 uses a different PUD method - no clock
+
 */
 void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
 {
+    if( pud_type_rpi4 )
+    {
+        int shiftbits = (pin & 0xf) << 1;
+        uint32_t bits;
+        uint32_t pull;
+        
+        switch (pud)
+        {
+           case BCM2835_GPIO_PUD_OFF:  pull = 0; break;
+           case BCM2835_GPIO_PUD_UP:   pull = 1; break;
+           case BCM2835_GPIO_PUD_DOWN: pull = 2; break;
+           default: return;
+        }
+                
+        volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPPUPPDN0/4 + (pin >> 4);
+        
+        bits = bcm2835_peri_read_nb( paddr );
+        bits &= ~(3 << shiftbits);
+        bits |= (pull << shiftbits);
+        
+        bcm2835_peri_write_nb( paddr, bits );
+        
+    } else
+    {
     bcm2835_gpio_pud(pud);
     delayMicroseconds(10);
     bcm2835_gpio_pudclk(pin, 1);
@@ -586,6 +636,32 @@ void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud)
     bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
     bcm2835_gpio_pudclk(pin, 0);
 }
+
+}
+
+
+uint8_t bcm2835_gpio_get_pud(uint8_t pin)
+{
+    uint8_t ret = BCM2835_GPIO_PUD_ERROR;
+    
+    if( pud_type_rpi4 )
+    {
+        uint32_t bits;
+        volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPPUPPDN0/4 + (pin >> 4);
+        bits = (bcm2835_peri_read_nb( paddr ) >> ((pin & 0xf)<<1)) & 0x3;
+        
+        switch (bits)
+        {
+            case 0: ret = BCM2835_GPIO_PUD_OFF; break;
+            case 1: ret = BCM2835_GPIO_PUD_UP; break;
+            case 2: ret = BCM2835_GPIO_PUD_DOWN; break;
+            default: ret = BCM2835_GPIO_PUD_ERROR;
+        }   
+    }
+    
+    return ret;
+}
+
 
 int bcm2835_spi_begin(void)
 {
@@ -1252,7 +1328,7 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
     while (!(bcm2835_peri_read_nb(status) & BCM2835_BSC_S_DONE))
     {
         /* we must empty the FIFO as it is populated and not use any delay */
-        while (bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD)
+        while (remaining && bcm2835_peri_read_nb(status) & BCM2835_BSC_S_RXD)
     	{
 	    /* Read from FIFO, no barrier */
 	    buf[i] = bcm2835_peri_read_nb(fifo);
@@ -1666,17 +1742,55 @@ int bcm2835_init(void)
     }
 
     /* Figure out the base and size of the peripheral address block
-    // using the device-tree. Required for RPi2, optional for RPi 1
+    // using the device-tree. Required for RPi2/3/4, optional for RPi 1
     */
     if ((fp = fopen(BMC2835_RPI2_DT_FILENAME , "rb")))
     {
-        unsigned char buf[4];
-	fseek(fp, BMC2835_RPI2_DT_PERI_BASE_ADDRESS_OFFSET, SEEK_SET);
-	if (fread(buf, 1, sizeof(buf), fp) == sizeof(buf))
-	    bcm2835_peripherals_base = (uint32_t *)((long)buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0);
-	fseek(fp, BMC2835_RPI2_DT_PERI_SIZE_OFFSET, SEEK_SET);
-	if (fread(buf, 1, sizeof(buf), fp) == sizeof(buf))
-	  bcm2835_peripherals_size = (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0);
+        unsigned char buf[16];
+        uint32_t base_address;
+        uint32_t peri_size;
+        if (fread(buf, 1, sizeof(buf), fp) >= 8)
+        {
+            base_address = (buf[4] << 24) |
+              (buf[5] << 16) |
+              (buf[6] << 8) |
+              (buf[7] << 0);
+            
+            peri_size = (buf[8] << 24) |
+              (buf[9] << 16) |
+              (buf[10] << 8) |
+              (buf[11] << 0);
+            
+            if (!base_address)
+            {
+                /* looks like RPI 4 */
+                base_address = (buf[8] << 24) |
+                      (buf[9] << 16) |
+                      (buf[10] << 8) |
+                      (buf[11] << 0);
+                      
+                peri_size = (buf[12] << 24) |
+                (buf[13] << 16) |
+                (buf[14] << 8) |
+                (buf[15] << 0);
+            }
+            /* check for valid known range formats */
+            if ((buf[0] == 0x7e) &&
+                    (buf[1] == 0x00) &&
+                    (buf[2] == 0x00) &&
+                    (buf[3] == 0x00) &&
+                    ((base_address == BCM2835_PERI_BASE) || (base_address == BCM2835_RPI2_PERI_BASE) || (base_address == BCM2835_RPI4_PERI_BASE)))
+            {
+                bcm2835_peripherals_base = (off_t)base_address;
+                bcm2835_peripherals_size = (size_t)peri_size;
+                if( base_address == BCM2835_RPI4_PERI_BASE )
+                {
+                    pud_type_rpi4 = 1;
+                }
+            }
+        
+        }
+        
 	fclose(fp);
     }
     /* else we are prob on RPi 1 with BCM2835, and use the hardwired defaults */
@@ -1699,7 +1813,7 @@ int bcm2835_init(void)
 	}
       
       /* Base of the peripherals block is mapped to VM */
-      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, (off_t)bcm2835_peripherals_base);
+      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, bcm2835_peripherals_base);
       if (bcm2835_peripherals == MAP_FAILED) goto exit;
       
       /* Now compute the base addresses of various peripherals, 
@@ -1732,7 +1846,7 @@ int bcm2835_init(void)
       
       /* Base of the peripherals block is mapped to VM */
       bcm2835_peripherals_base = 0;
-      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, (off_t)bcm2835_peripherals_base);
+      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, bcm2835_peripherals_base);
       if (bcm2835_peripherals == MAP_FAILED) goto exit;
       bcm2835_gpio = bcm2835_peripherals;
       ok = 1;
