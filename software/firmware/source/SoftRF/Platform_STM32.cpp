@@ -32,6 +32,7 @@
 #include "BatteryHelper.h"
 
 #include <U8x8lib.h>
+#include <STM32LowPower.h>
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -103,6 +104,8 @@ static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
+static uint32_t bootCount = 0;
+
 static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 {
   int rval;
@@ -114,6 +117,8 @@ static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 
   return rval;
 }
+
+static void STM32_SerialWakeup() { }
 
 static void STM32_setup()
 {
@@ -146,6 +151,43 @@ static void STM32_setup()
     // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
     __HAL_RCC_CLEAR_RESET_FLAGS();
 
+    LowPower.begin();
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif
+
+    uint32_t boot_action = getBackupRegister(BOOT_ACTION_INDEX);
+
+    switch (boot_action)
+    {
+#if defined(USE_SERIAL_DEEP_SLEEP)
+    case STM32_BOOT_SERIAL_DEEP_SLEEP:
+#if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif
+      LowPower.enableWakeupFrom(&SerialOutput, STM32_SerialWakeup);
+
+      LowPower.deepSleep();
+
+      // Empty Serial Rx
+      while(SerialOutput.available()) {
+        char c = SerialOutput.read();
+      }
+      break;
+#endif
+    case STM32_BOOT_SHUTDOWN:
+      LowPower_shutdown();
+      break;
+    case STM32_BOOT_NORMAL:
+    default:
+      break;
+    }
+
+    bootCount = getBackupRegister(BOOT_COUNT_INDEX);
+    bootCount++;
+    setBackupRegister(BOOT_COUNT_INDEX, bootCount);
+
     pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
 
     hw_info.model = SOFTRF_MODEL_RETRO;
@@ -161,15 +203,6 @@ static void STM32_setup()
 
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
-
-      /* Work around an issue that WDT (once enabled) is active in deep sleep */
-      if (reset_info.reason == REASON_SOFT_WDT_RST) {
-        float voltage = SoC->Battery_voltage();
-
-        if (voltage > 2.0 && voltage < Battery_cutoff() + 0.1) {
-          LowPower_shutdown();
-        }
-      }
     }
 #elif defined(ARDUINO_BLUEPILL_F103C8)
     stm32_board = STM32_BLUE_PILL;
@@ -179,10 +212,6 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
-
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-#endif
 }
 
 static void STM32_loop()
@@ -207,7 +236,18 @@ static void STM32_fini()
   SPI.end();
   Wire.end();
 
-  LowPower_shutdown();
+  /*
+   * Work around an issue that
+   * WDT (once enabled) is active all the time
+   * until hardware restart
+   */
+#if defined(USE_SERIAL_DEEP_SLEEP)
+  setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_SERIAL_DEEP_SLEEP);
+#else
+  setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_SHUTDOWN);
+#endif
+
+  HAL_NVIC_SystemReset();
 }
 
 static void STM32_reset()

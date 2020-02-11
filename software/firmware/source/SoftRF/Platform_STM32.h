@@ -78,6 +78,12 @@ enum stm32_board_id {
   STM32_TTGO_TMOTION_1_1
 };
 
+enum stm32_boot_action {
+  STM32_BOOT_NORMAL,
+  STM32_BOOT_SHUTDOWN,
+  STM32_BOOT_SERIAL_DEEP_SLEEP
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -88,18 +94,30 @@ struct rst_info {
   uint32_t depc;
 };
 
+typedef struct stm32_backup_struct {
+    uint32_t   dr0;         /* not in use ? */
+    uint32_t   rtc;         /* in use by AC */
+    uint32_t   boot_count;
+    uint32_t   boot_action;
+    uint32_t   bootloader;  /* in use by AC */
+} stm32_backup_t;
+
+#define STM32_BKP_REG_NUM     5 /* L0 has 5, F1 has 10 */
+#define BOOT_COUNT_INDEX      2
+#define BOOT_ACTION_INDEX     3
+
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
 #if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
-#define Serial                  Serial1
+#define Serial                Serial1
 #endif
-#define swSer                   Serial4
-#define UATSerial               Serial2  /* PA3, PA2 */
+#define swSer                 Serial4
+#define UATSerial             Serial2  /* PA3, PA2 */
 
 /* S76G GNSS is operating at 115200 baud (by default) */
-#define SERIAL_IN_BR            115200
-#define SERIAL_IN_BITS          SERIAL_8N1
+#define SERIAL_IN_BR          115200
+#define SERIAL_IN_BITS        SERIAL_8N1
 
 /*
  * Make use of AN3155 specs for S76G (valid for SkyWatch only)
@@ -165,6 +183,7 @@ struct rst_info {
 #define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+//#define USE_SERIAL_DEEP_SLEEP  //  + 12 kb
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
@@ -173,8 +192,8 @@ struct rst_info {
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103C8)
 
-#define swSer                   Serial2
-#define UATSerial               Serial3
+#define swSer                 Serial2
+#define UATSerial             Serial3
 
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV, STM32F103x8 datasheet value

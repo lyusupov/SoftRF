@@ -605,19 +605,6 @@ void PickGNSSFix()
       c = swSer.read();
     } else if (Serial.available() > 0) {
       c = Serial.read();
-#else
-    /* Give priority to 'control' channel on STM32-based 'Retro' platform */
-    if (Serial.available() > 0) {
-      c = Serial.read();
-#if 0
-      /* This makes possible to configure S76x's built-in SONY GNSS from aside */
-      if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-        swSer.write(c);
-      }
-#endif
-    } else if (swSer.available() > 0) {
-      c = swSer.read();
-#endif /* USE_NMEA_CFG */
     } else if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
       c = SoC->Bluetooth->read();
 
@@ -632,6 +619,31 @@ void PickGNSSFix()
       // Serial.write((char) c);
       /* Ignore Bluetooth input for a while */
       // break;
+#else
+    /*
+     * Give priority to control channels on STM32-based
+     * 'Dongle' and 'Retro' Editions
+     */
+
+    /* USB input is first */
+    if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
+      c = SoC->Bluetooth->read();
+
+#if 0
+      /* This makes possible to configure S76x's built-in SONY GNSS from aside */
+      if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+        swSer.write(c);
+      }
+#endif
+
+    /* Serial input is second */
+    } else if (SerialOutput.available() > 0) {
+      c = SerialOutput.read();
+
+    /* Built-in GNSS input */
+    } else if (swSer.available() > 0) {
+      c = swSer.read();
+#endif /* USE_NMEA_CFG */
     } else {
       /* return back if no input data */
       break;
@@ -703,7 +715,9 @@ void PickGNSSFix()
       }
 #if defined(USE_NMEA_CFG)
       if (C_Version.isUpdated()) {
-        if (strncmp(C_Version.value(), "?", 1) == 0) {
+        if (strncmp(C_Version.value(), "OFF", 3) == 0) {
+          shutdown("  OFF  ");
+        } else if (strncmp(C_Version.value(), "?", 1) == 0) {
           char psrfc_buf[MAX_PSRFC_LEN];
 
           snprintf_P(psrfc_buf, sizeof(psrfc_buf),
