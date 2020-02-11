@@ -647,64 +647,6 @@ static bool play_file(char *filename)
   return rval;
 }
 
-static void play_memory(const unsigned char *data, int size)
-{
-  headerState_t state = HEADER_RIFF;
-  wavRiff_t *wavRiff;
-  wavProperties_t *props;
-
-  while (size > 0) {
-    switch(state){
-    case HEADER_RIFF:
-      wavRiff = (wavRiff_t *) data;
-
-      if(wavRiff->chunkID == CCCC('R', 'I', 'F', 'F') && wavRiff->format == CCCC('W', 'A', 'V', 'E')){
-        state = HEADER_FMT;
-      }
-      data += sizeof(wavRiff_t);
-      size -= sizeof(wavRiff_t);
-      break;
-
-    case HEADER_FMT:
-      props = (wavProperties_t *) data;
-      state = HEADER_DATA;
-      data += sizeof(wavProperties_t);
-      size -= sizeof(wavProperties_t);
-      break;
-
-    case HEADER_DATA:
-      uint32_t chunkId, chunkSize;
-      chunkId = *((uint32_t *) data);
-      data += sizeof(uint32_t);
-      size -= sizeof(uint32_t);
-      chunkSize = *((uint32_t *) data);
-      state = DATA;
-      data += sizeof(uint32_t);
-      size -= sizeof(uint32_t);
-
-      //initialize i2s with configurations above
-      i2s_driver_install((i2s_port_t)i2s_num, &i2s_config, 0, NULL);
-      i2s_set_pin((i2s_port_t)i2s_num, &pin_config);
-      //set sample rates of i2s to sample rate of wav file
-      i2s_set_sample_rates((i2s_port_t)i2s_num, props->sampleRate);
-      break;
-
-      /* after processing wav file, it is time to process music data */
-    case DATA:
-      i2s_write_sample_nb(*((uint32_t *) data));
-      data += sizeof(uint32_t);
-      size -= sizeof(uint32_t);
-      break;
-    }
-  }
-
-  if (state == DATA) {
-    i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
-  }
-}
-
-#include "Melody.h"
-
 static void ESP32_TTS(char *message)
 {
   char filename[MAX_FILENAME_LEN];
@@ -746,8 +688,6 @@ static void ESP32_TTS(char *message)
     }
   } else {
     if (settings->voice != VOICE_OFF && settings->adapter == ADAPTER_TTGO_T5S) {
-
-//      play_memory(melody_wav, (int) melody_wav_len);
 
       strcpy(filename, WAV_FILE_PREFIX);
       strcat(filename, "POST");

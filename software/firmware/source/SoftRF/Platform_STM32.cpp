@@ -170,6 +170,9 @@ static void STM32_setup()
 
       LowPower.deepSleep();
 
+      /* reset onto default value */
+      setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_NORMAL);
+
       // Empty Serial Rx
       while(SerialOutput.available()) {
         char c = SerialOutput.read();

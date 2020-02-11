@@ -93,6 +93,82 @@ static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
 
+//-------------------------------------------------------------------------
+//
+// The MIT License (MIT)
+//
+// Copyright (c) 2015 Andrew Duncan
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//-------------------------------------------------------------------------
+
+#include <fcntl.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/ioctl.h>
+
+static uint32_t SerialNumber = 0;
+
+void RPi_SerialNumber(void)
+{
+    int fd = open("/dev/vcio", 0);
+    if (fd == -1)
+    {
+        perror("open /dev/vcio");
+        exit(EXIT_FAILURE);
+    }
+
+    uint32_t property[32] =
+    {
+        0x00000000,
+        0x00000000,
+        0x00010004,
+        0x00000010,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000
+    };
+
+    property[0] = 10 * sizeof(property[0]);
+
+    if (ioctl(fd, _IOWR(100, 0, char *), property) == -1)
+    {
+        perror("ioctl");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
+
+    SerialNumber = property[5];
+}
+
+//----- end of MIT License ------------------------------------------------
+
 static void RPi_setup()
 {
 
@@ -118,6 +194,8 @@ static void RPi_setup()
   eeprom_block.field.settings.idpref          = ID_REG;
   eeprom_block.field.settings.voice           = VOICE_1;
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
+
+  RPi_SerialNumber();
 }
 
 static void RPi_fini()
@@ -128,7 +206,7 @@ static void RPi_fini()
 
 static uint32_t RPi_getChipId()
 {
-  return gethostid();
+  return SerialNumber ? SerialNumber : gethostid();
 }
 
 static void RPi_swSer_begin(unsigned long baud)
@@ -553,6 +631,14 @@ int main()
   Serial.begin(SERIAL_OUT_BR);
 
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  Serial.println();
+  Serial.print(F("SkyView-"));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
+  Serial.println(F("Copyright (C) 2019-2020 Linar Yusupov. All rights reserved."));
+  Serial.flush();
 
   Battery_setup();
   SoC->Button_setup();
