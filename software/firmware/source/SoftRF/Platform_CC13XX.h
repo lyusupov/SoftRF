@@ -68,6 +68,7 @@ extern uint8_t LEDs[][3];
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_MPL3115A2
+#define EXCLUDE_NRF905
 
 #endif /* PLATFORM_CC13XX_H */
 

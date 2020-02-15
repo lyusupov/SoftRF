@@ -61,6 +61,10 @@ HardwareSerial Serial2(USART2);
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
 
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+HardwareSerial Serial1(USART1);
+#endif
+
 #else
 #error "This hardware platform is not supported!"
 #endif

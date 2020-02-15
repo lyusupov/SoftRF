@@ -57,6 +57,7 @@ bool RF_SX1276_RST_is_connected = true;
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
+#if !defined(EXCLUDE_NRF905)
 const rfchip_ops_t nrf905_ops = {
   RF_IC_NRF905,
   "NRF905",
@@ -67,6 +68,7 @@ const rfchip_ops_t nrf905_ops = {
   nrf905_transmit,
   nrf905_shutdown
 };
+#endif
 
 const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
@@ -142,9 +144,11 @@ byte RF_setup(void)
       if (sx1276_ops.probe()) {
         rf_chip = &sx1276_ops;
         Serial.println(F("SX1276 RFIC is detected."));
+#if !defined(EXCLUDE_NRF905)
       } else if (nrf905_ops.probe()) {
         rf_chip = &nrf905_ops;
         Serial.println(F("NRF905 RFIC is detected."));
+#endif /* EXCLUDE_NRF905 */
       } else if (cc13xx_ops.probe()) {
         rf_chip = &cc13xx_ops;
         Serial.println(F("CC13XX RFIC is detected."));
@@ -169,7 +173,11 @@ byte RF_setup(void)
   /* "AUTO" freq. will set the plan upon very first valid GNSS fix */
   if (settings->band == RF_BAND_AUTO) {
     /* Supersede EU plan with UK when PAW is selected */
-    if (rf_chip && rf_chip != &nrf905_ops && settings->rf_protocol == RF_PROTOCOL_P3I) {
+    if (rf_chip                &&
+#if !defined(EXCLUDE_NRF905)
+        rf_chip != &nrf905_ops &&
+#endif
+        settings->rf_protocol == RF_PROTOCOL_P3I) {
       RF_FreqPlan.setPlan(RF_BAND_UK);
     }
   } else {
@@ -354,6 +362,7 @@ uint8_t RF_Payload_Size(uint8_t protocol)
   }
 }
 
+#if !defined(EXCLUDE_NRF905)
 /*
  * NRF905-specific code
  *
@@ -522,6 +531,8 @@ void nrf905_shutdown()
   nRF905_powerDown();
   SPI.end();
 }
+
+#endif /* EXCLUDE_NRF905 */
 
 /*
  * SX1276-specific code
