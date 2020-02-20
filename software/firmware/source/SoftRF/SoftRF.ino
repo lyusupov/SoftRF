@@ -38,7 +38,7 @@
  *   EasyLink library is developed by Robert Wessels and Tony Cave
  *   Dump978 library is developed by Oliver Jowett
  *   FEC library is developed by Phil Karn
- *   AXP202X and S7XG libraries are developed by Lewis He
+ *   AXP202X library is developed by Lewis He
  *   Arduino Core for STM32 is developed by Frederic Pillon
  *   TFT library is developed by Bodmer
  *

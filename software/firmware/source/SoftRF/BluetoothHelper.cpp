@@ -26,7 +26,7 @@
 #error Bluetooth is not enabled!
 #endif
 
-#include <BTSPP.h>  // <BluetoothSerial.h>
+#include <BluetoothSerial.h>
 
 /*
     BLE code is based on Neil Kolban example for IDF:
