@@ -41,6 +41,7 @@ typedef struct SoC_ops_struct {
   float (*Battery_voltage)();
   void (*EPD_setup)();
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
+  int  (*WiFi_clients_count)();
   bool (*DB_init)();
   bool (*DB_query)(uint8_t, uint32_t, char *, size_t);
   void (*DB_fini)();

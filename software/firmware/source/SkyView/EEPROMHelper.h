@@ -25,7 +25,7 @@
 
 
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE
-#define SKYVIEW_EEPROM_VERSION 0x0000001B
+#define SKYVIEW_EEPROM_VERSION 0x0000001C
 
 typedef struct Settings {
     uint8_t  adapter;
@@ -36,21 +36,20 @@ typedef struct Settings {
 
     uint8_t  protocol;
     uint8_t  baudrate;
-    char     ssid    [16];
-    char     psk     [16];
+    char     server  [18];
+    char     key     [18];
 
     uint8_t  resvd1:3;
     uint8_t  orientation:1;
     uint8_t  adb:2;
     uint8_t  idpref:2;
 
-    uint8_t  bluetooth; /* ESP32 built-in Bluetooth */
-    char     bt_name [16];
-    char     bt_key  [16];
-
     uint8_t  vmode:2;
     uint8_t  voice:3;
     uint8_t  aghost:3;
+
+    uint8_t  filter:4;
+    uint8_t  power_save:4;
 
     uint8_t  resvd2;
     uint8_t  resvd3;

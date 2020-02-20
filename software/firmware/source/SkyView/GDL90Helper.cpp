@@ -156,17 +156,23 @@ static void GDL90_Parse_Character(char c)
 
         fo.timestamp   = now();
 
-        for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        float RelativeVertical = fo.altitude - ThisAircraft.altitude;
 
-          if (Container[i].ID == fo.ID) {
-            Container[i] = fo;
-            Traffic_Update(i);
-            break;
-          } else {
-            if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+        if ( settings->filter == TRAFFIC_FILTER_OFF  ||
+            (settings->filter == TRAFFIC_FILTER_500M &&
+                             RelativeVertical > -500 &&
+                             RelativeVertical <  500) ) {
+          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+            if (Container[i].ID == fo.ID) {
               Container[i] = fo;
               Traffic_Update(i);
               break;
+            } else {
+              if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+                Container[i] = fo;
+                Traffic_Update(i);
+                break;
+              }
             }
           }
         }
@@ -252,7 +258,8 @@ void GDL90_setup()
 
       SoC->swSer_begin(SerialBaud);
       break;
-    case CON_BLUETOOTH:
+    case CON_BLUETOOTH_SPP:
+    case CON_BLUETOOTH_LE:
       if (SoC->Bluetooth) {
         SoC->Bluetooth->setup();
       }
@@ -303,7 +310,8 @@ void GDL90_loop()
       GDL90_Data_TimeMarker = millis();
     }
     break;
-  case CON_BLUETOOTH:
+  case CON_BLUETOOTH_SPP:
+  case CON_BLUETOOTH_LE:
     if (SoC->Bluetooth) {
       while (SoC->Bluetooth->available() > 0) {
         char c = SoC->Bluetooth->read();

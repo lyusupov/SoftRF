@@ -40,7 +40,7 @@ const char EPD_SkyView_text5[] = "and LilyGO";
 const char EPD_SkyView_text6[] = "SkyView";
 const char EPD_SkyView_text7[] = "Author:";
 const char EPD_SkyView_text8[] = "Linar Yusupov";
-const char EPD_SkyView_text9[] = "Copyright (C) 2019";
+const char EPD_SkyView_text9[] = "(C) 2019-2020";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;

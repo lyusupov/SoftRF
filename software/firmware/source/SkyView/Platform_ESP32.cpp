@@ -373,6 +373,26 @@ static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
   return WiFi_Receive_UDP(buf, max_size);
 }
 
+static int ESP32_WiFi_clients_count()
+{
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+  case WIFI_AP:
+    wifi_sta_list_t stations;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
+
+    tcpip_adapter_sta_list_t infoList;
+    ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
+
+    return infoList.num;
+  case WIFI_STA:
+  default:
+    return -1; /* error */
+  }
+}
+
 static bool ESP32_DB_init()
 {
   if (settings->adapter != ADAPTER_TTGO_T5S) {
@@ -849,6 +869,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Battery_voltage,
   ESP32_EPD_setup,
   ESP32_WiFi_Receive_UDP,
+  ESP32_WiFi_clients_count,
   ESP32_DB_init,
   ESP32_DB_query,
   ESP32_DB_fini,

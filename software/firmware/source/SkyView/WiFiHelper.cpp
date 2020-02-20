@@ -26,6 +26,7 @@
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
+#include "WebHelper.h"
 
 #include "SkyView.h"
 
@@ -58,6 +59,10 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming packets
 
 static unsigned long WiFi_STA_TimeMarker = 0;
 static bool WiFi_STA_connected = false;
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+static unsigned long WiFi_No_Clients_Time_ms = 0;
+#endif
 
 size_t WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
@@ -139,17 +144,21 @@ void WiFi_setup()
 
   if (settings->connection == CON_WIFI_UDP ||
       settings->connection == CON_WIFI_TCP ) {
-    if (strnlen(settings->ssid, sizeof(settings->ssid)) > 0 &&
-        strnlen(settings->psk,  sizeof(settings->psk))  > 0) {
-      WiFi.begin(settings->ssid, settings->psk);
+    if (strnlen(settings->server, sizeof(settings->server)) > 0 &&
+        strnlen(settings->key,  sizeof(settings->key))  > 0) {
+      WiFi.begin(settings->server, settings->key);
 
       Serial.print(F("Wait for WiFi connection to "));
-      Serial.print(settings->ssid);
+      Serial.print(settings->server);
       Serial.println(F(" AP..."));
     }
 
     WiFi_STA_TimeMarker = millis();
   }
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+  WiFi_No_Clients_Time_ms = millis();
+#endif
 }
 
 void WiFi_loop()
@@ -166,13 +175,13 @@ void WiFi_loop()
       if (WiFi_STA_connected == true) {
         WiFi_STA_connected = false;
         Serial.print(F("Disconnected from WiFi AP "));
-        Serial.println(settings->ssid);
+        Serial.println(settings->server);
       }
     } else {
       if (WiFi_STA_connected == false) {
         Serial.println("");
         Serial.print(F("Connected to WiFi AP "));
-        Serial.println(settings->ssid);
+        Serial.println(settings->server);
         Serial.print(F("IP address: "));
         Serial.println(WiFi.localIP());
         WiFi_STA_connected = true;
@@ -182,6 +191,23 @@ void WiFi_loop()
 #if defined(USE_DNS_SERVER)
   if (dns_active) {
     dnsServer.processNextRequest();
+  }
+#endif
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+  if (settings->power_save == POWER_SAVE_WIFI && WiFi.getMode() == WIFI_AP) {
+    if (SoC->WiFi_clients_count() == 0) {
+      if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT) {
+        Web_fini();
+        WiFi_fini();
+
+        if (settings->protocol == PROTOCOL_NMEA) {
+          Serial.println(F("$PSRFS,WIFI_OFF"));
+        }
+      }
+    } else {
+      WiFi_No_Clients_Time_ms = millis();
+    }
   }
 #endif
 }

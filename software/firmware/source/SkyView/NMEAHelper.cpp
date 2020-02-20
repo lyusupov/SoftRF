@@ -150,19 +150,22 @@ static void NMEA_Parse_Character(char c)
 
         fo.timestamp = now();
 
-        for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-
-          if (Container[i].ID == fo.ID) {
-            Container[i] = fo;
-            break;
-          } else {
-            if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+        if ( settings->filter == TRAFFIC_FILTER_OFF  ||
+            (settings->filter == TRAFFIC_FILTER_500M &&
+                          fo.RelativeVertical > -500 &&
+                          fo.RelativeVertical <  500) ) {
+          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+            if (Container[i].ID == fo.ID) {
               Container[i] = fo;
               break;
+            } else {
+              if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+                Container[i] = fo;
+                break;
+              }
             }
           }
         }
-
       } else if (S_RX.isUpdated()) {
 
         NMEA_Status.timestamp = now();
@@ -268,7 +271,8 @@ void NMEA_setup()
 
       SoC->swSer_begin(SerialBaud);
       break;
-    case CON_BLUETOOTH:
+    case CON_BLUETOOTH_SPP:
+    case CON_BLUETOOTH_LE:
       if (SoC->Bluetooth) {
         SoC->Bluetooth->setup();
       }
@@ -319,7 +323,8 @@ void NMEA_loop()
       NMEA_TimeMarker = millis();
     }
     break;
-  case CON_BLUETOOTH:
+  case CON_BLUETOOTH_SPP:
+  case CON_BLUETOOTH_LE:
     if (SoC->Bluetooth) {
       while (SoC->Bluetooth->available() > 0) {
         char c = SoC->Bluetooth->read();

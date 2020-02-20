@@ -88,7 +88,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Tuan Nha</th><td align=left>ESP32 I2S WAV player</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
-<tr><th align=left>Evandro Copercini and German Martin</th><td align=left>ESP32 BT SPP library</td></tr>\
+<tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
@@ -97,7 +97,7 @@ Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4500;
+  size_t size = 4550;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -134,7 +134,7 @@ void handleSettings() {
 <select name='adapter'>\
 <option %s value='%d'>e-Paper TTGO T5S</option>\
 <option %s value='%d'>e-Paper Waveshare ESP32</option>\
-<option %s value='%d'>OLED</option>\
+<!-- <option %s value='%d'>OLED</option> -->\
 </select>\
 </td>\
 </tr>"),
@@ -173,6 +173,7 @@ void handleSettings() {
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>WiFi UDP</option>\
 <option %s value='%d'>Bluetooth SPP</option>\
+<option %s value='%d'>Bluetooth LE</option>\
 </select>\
 </td>\
 </tr>\
@@ -194,16 +195,17 @@ void handleSettings() {
 <option %s value='%d'>19200</option>\
 <option %s value='%d'>38400</option>\
 <option %s value='%d'>57600</option>"),
-  (settings->connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
-  (settings->connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
-  (settings->connection == CON_BLUETOOTH  ? "selected" : ""), CON_BLUETOOTH,
-  (settings->protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
-  (settings->protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
-  (settings->baudrate   == B4800          ? "selected" : ""), B4800,
-  (settings->baudrate   == B9600          ? "selected" : ""), B9600,
-  (settings->baudrate   == B19200         ? "selected" : ""), B19200,
-  (settings->baudrate   == B38400         ? "selected" : ""), B38400,
-  (settings->baudrate   == B57600         ? "selected" : ""), B57600
+  (settings->connection == CON_SERIAL        ? "selected" : ""), CON_SERIAL,
+  (settings->connection == CON_WIFI_UDP      ? "selected" : ""), CON_WIFI_UDP,
+  (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP,
+  (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE,
+  (settings->protocol   == PROTOCOL_NMEA     ? "selected" : ""), PROTOCOL_NMEA,
+  (settings->protocol   == PROTOCOL_GDL90    ? "selected" : ""), PROTOCOL_GDL90,
+  (settings->baudrate   == B4800             ? "selected" : ""), B4800,
+  (settings->baudrate   == B9600             ? "selected" : ""), B9600,
+  (settings->baudrate   == B19200            ? "selected" : ""), B19200,
+  (settings->baudrate   == B38400            ? "selected" : ""), B38400,
+  (settings->baudrate   == B57600            ? "selected" : ""), B57600
   );
 
   len = strlen(offset);
@@ -231,19 +233,19 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
-<th align=left>Source WiFi SSID</th>\
+<th align=left>Source Id</th>\
 <td align=right>\
-<INPUT type='text' name='ssid' maxlength='15' size='15' value='%s'>\
+<INPUT type='text' name='server' maxlength='17' size='17' value='%s'>\
 </td>\
 </tr>\
 <tr>\
 <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PSK</th>\
+&nbsp;&nbsp;Key</th>\
 <td align=right>\
-<INPUT type='text' name='psk' maxlength='15' size='15' value='%s'>\
+<INPUT type='text' name='key' maxlength='17' size='17' value='%s'>\
 </td>\
 </tr>"),
-   settings->ssid, settings->psk);
+   settings->server, settings->key);
 
   len = strlen(offset);
   offset += len;
@@ -266,7 +268,7 @@ void handleSettings() {
 
  */
 
-#if 1
+#if 0
   /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -274,14 +276,14 @@ void handleSettings() {
 <tr>\
 <th align=left>Source BT Name</th>\
 <td align=right>\
-<INPUT type='text' name='bt_name' maxlength='15' size='15' value='%s'>\
+<INPUT type='text' name='bt_name' maxlength='17' size='17' value='%s'>\
 </td>\
 </tr>\
 <tr>\
 <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Key</th>\
+&nbsp;&nbsp;&nbsp;Key</th>\
 <td align=right>\
-<INPUT type='text' name='bt_key' maxlength='15' size='15' value='%s'>\
+<INPUT type='text' name='bt_key' maxlength='17' size='17' value='%s'>\
 </td>\
 </tr>"),
      settings->bt_name, settings->bt_key);
@@ -420,16 +422,38 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>\
+<tr>\
+<th align=left>Traffic filter</th>\
+<td align=right>\
+<select name='filter'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>by Altitude (&#177; 500 m)</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Power save</th>\
+<td align=right>\
+<select name='power_save'>\
+<option %s value='%d'>Disabled</option>\
+<option %s value='%d'>WiFi OFF (10 min.)</option>\
+</select>\
+</td>\
+</tr>\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'></p>\
 </form>\
 </body>\
 </html>"),
-    (settings->aghost == ANTI_GHOSTING_OFF   ? "selected" : ""), ANTI_GHOSTING_OFF,
-    (settings->aghost == ANTI_GHOSTING_AUTO  ? "selected" : ""), ANTI_GHOSTING_AUTO,
-    (settings->aghost == ANTI_GHOSTING_2MIN  ? "selected" : ""), ANTI_GHOSTING_2MIN,
-    (settings->aghost == ANTI_GHOSTING_5MIN  ? "selected" : ""), ANTI_GHOSTING_5MIN,
-    (settings->aghost == ANTI_GHOSTING_10MIN ? "selected" : ""), ANTI_GHOSTING_10MIN
+    (settings->aghost     == ANTI_GHOSTING_OFF   ? "selected" : ""), ANTI_GHOSTING_OFF,
+    (settings->aghost     == ANTI_GHOSTING_AUTO  ? "selected" : ""), ANTI_GHOSTING_AUTO,
+    (settings->aghost     == ANTI_GHOSTING_2MIN  ? "selected" : ""), ANTI_GHOSTING_2MIN,
+    (settings->aghost     == ANTI_GHOSTING_5MIN  ? "selected" : ""), ANTI_GHOSTING_5MIN,
+    (settings->aghost     == ANTI_GHOSTING_10MIN ? "selected" : ""), ANTI_GHOSTING_10MIN,
+    (settings->filter     == TRAFFIC_FILTER_OFF  ? "selected" : ""), TRAFFIC_FILTER_OFF,
+    (settings->filter     == TRAFFIC_FILTER_500M ? "selected" : ""), TRAFFIC_FILTER_500M,
+    (settings->power_save == POWER_SAVE_NONE     ? "selected" : ""), POWER_SAVE_NONE,
+    (settings->power_save == POWER_SAVE_WIFI     ? "selected" : ""), POWER_SAVE_WIFI
   );
 
   SoC->swSer_enableRx(false);
@@ -489,11 +513,12 @@ void handleRoot() {
     (SoC == NULL ? "NONE" : SoC->name),
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
-    hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
-    hw_info.display      == DISPLAY_OLED_2_4 ? "OLED" : "NONE",
-    settings->connection == CON_SERIAL       ? "Serial" :
-    settings->connection == CON_BLUETOOTH    ? "Bluetooth" :
-    settings->connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
+    hw_info.display      == DISPLAY_EPD_2_7   ? "e-Paper" :
+    hw_info.display      == DISPLAY_OLED_2_4  ? "OLED" : "NONE",
+    settings->connection == CON_SERIAL        ? "Serial" :
+    settings->connection == CON_BLUETOOTH_SPP ? "Bluetooth SPP" :
+    settings->connection == CON_BLUETOOTH_LE  ? "Bluetooth LE" :
+    settings->connection == CON_WIFI_UDP      ? "WiFi" : "NONE"
   );
 
   len = strlen(offset);
@@ -508,7 +533,7 @@ void handleRoot() {
   <tr><th align=left>Link partner</th><td align=right>%s</td></tr>\
   <tr><th align=left>Link status</th><td align=right>%s established</td></tr>\
   <tr><th align=left>Assigned IP address</th><td align=right>%s</td></tr>"),
-      settings->ssid && strlen(settings->ssid) > 0 ? settings->ssid : "NOT SET",
+      settings->server && strlen(settings->server) > 0 ? settings->server : "NOT SET",
       WiFi.status() == WL_CONNECTED ? "" : "not",
       WiFi.localIP().toString().c_str()
     );
@@ -516,7 +541,8 @@ void handleRoot() {
     offset += len;
     size -= len;
   case CON_SERIAL:
-  case CON_BLUETOOTH:
+  case CON_BLUETOOTH_SPP:
+  case CON_BLUETOOTH_LE:
     switch (settings->protocol)
     {
     case PROTOCOL_GDL90:
@@ -593,10 +619,10 @@ void handleInput() {
       settings->protocol = server.arg(i).toInt();
     } else if (server.argName(i).equals("baudrate")) {
       settings->baudrate = server.arg(i).toInt();
-    } else if (server.argName(i).equals("ssid")) {
-      server.arg(i).toCharArray(settings->ssid, sizeof(settings->ssid));
-    } else if (server.argName(i).equals("psk")) {
-      server.arg(i).toCharArray(settings->psk, sizeof(settings->psk));
+    } else if (server.argName(i).equals("server")) {
+      server.arg(i).toCharArray(settings->server, sizeof(settings->server));
+    } else if (server.argName(i).equals("key")) {
+      server.arg(i).toCharArray(settings->key, sizeof(settings->key));
     } else if (server.argName(i).equals("units")) {
       settings->units = server.arg(i).toInt();
     } else if (server.argName(i).equals("vmode")) {
@@ -613,12 +639,10 @@ void handleInput() {
       settings->voice = server.arg(i).toInt();
     } else if (server.argName(i).equals("aghost")) {
       settings->aghost = server.arg(i).toInt();
-//    } else if (server.argName(i).equals("bluetooth")) {
-//      settings->bluetooth = server.arg(i).toInt();
-    } else if (server.argName(i).equals("bt_name")) {
-      server.arg(i).toCharArray(settings->bt_name, sizeof(settings->bt_name));
-    } else if (server.argName(i).equals("bt_key")) {
-      server.arg(i).toCharArray(settings->bt_key, sizeof(settings->bt_key));
+    } else if (server.argName(i).equals("filter")) {
+      settings->filter = server.arg(i).toInt();
+    } else if (server.argName(i).equals("power_save")) {
+      settings->power_save = server.arg(i).toInt();
     }
   }
   snprintf_P ( Input_temp, 1900,
@@ -635,8 +659,8 @@ PSTR("<html>\
 <tr><th align=left>Connection</th><td align=right>%d</td></tr>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Baud rate</th><td align=right>%d</td></tr>\
-<tr><th align=left>WiFi SSID</th><td align=right>%s</td></tr>\
-<tr><th align=left>WiFi PSK</th><td align=right>%s</td></tr>\
+<tr><th align=left>Server</th><td align=right>%s</td></tr>\
+<tr><th align=left>Key</th><td align=right>%s</td></tr>\
 <tr><th align=left>Units</th><td align=right>%d</td></tr>\
 <tr><th align=left>View mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
@@ -645,19 +669,18 @@ PSTR("<html>\
 <tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
 <tr><th align=left>Voice</th><td align=right>%d</td></tr>\
 <tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
-<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
-<tr><th align=left>BT Name</th><td align=right>%s</td></tr>\
-<tr><th align=left>BT Key</th><td align=right>%s</td></tr>\
+<tr><th align=left>Filter</th><td align=right>%d</td></tr>\
+<tr><th align=left>Power Save</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
 </body>\
 </html>"),
   settings->adapter, settings->connection, settings->protocol,
-  settings->baudrate, settings->ssid, settings->psk,
+  settings->baudrate, settings->server, settings->key,
   settings->units, settings->vmode, settings->orientation, settings->zoom,
   settings->adb, settings->idpref, settings->voice, settings->aghost,
-  settings->bluetooth, settings->bt_name, settings->bt_key
+  settings->filter, settings->power_save
   );
 
   SoC->swSer_enableRx(false);

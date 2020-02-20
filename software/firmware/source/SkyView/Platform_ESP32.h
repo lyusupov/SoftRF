@@ -74,6 +74,8 @@
 #define MAX_FILENAME_LEN      64
 #define WAV_FILE_PREFIX       "/Audio/"
 
+#define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
+
 /* these are data structures to process wav file */
 typedef enum headerState_e {
     HEADER_RIFF, HEADER_FMT, HEADER_DATA, DATA

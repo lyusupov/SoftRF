@@ -119,6 +119,10 @@ void setup()
 
 void loop()
 {
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->loop();
+  }
+
   switch (settings->protocol)
   {
   case PROTOCOL_GDL90:
@@ -155,6 +159,10 @@ void shutdown(const char *msg)
       settings->protocol   == PROTOCOL_NMEA) {
     SerialInput.write("$PSRFC,OFF*37\r\n");
     SerialInput.flush();
+  }
+
+  if (SoC->Bluetooth) {
+    SoC->Bluetooth->fini();
   }
 
   Web_fini();

@@ -171,7 +171,6 @@ void RPi_SerialNumber(void)
 
 static void RPi_setup()
 {
-
   eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7;
 
   eeprom_block.field.settings.connection      = CON_SERIAL;
@@ -179,13 +178,8 @@ static void RPi_setup()
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.orientation     = DIRECTION_NORTH_UP;
 
-  strcpy(eeprom_block.field.settings.ssid,      DEFAULT_AP_SSID);
-  strcpy(eeprom_block.field.settings.psk,       DEFAULT_AP_PSK);
-
-  eeprom_block.field.settings.bluetooth       = BLUETOOTH_OFF;
-
-  strcpy(eeprom_block.field.settings.bt_name,   DEFAULT_BT_NAME);
-  strcpy(eeprom_block.field.settings.bt_key,    DEFAULT_BT_KEY);
+  strcpy(eeprom_block.field.settings.server,    DEFAULT_AP_SSID);
+  strcpy(eeprom_block.field.settings.key,       DEFAULT_AP_PSK);
 
   eeprom_block.field.settings.units           = UNITS_METRIC;
   eeprom_block.field.settings.vmode           = VIEW_MODE_RADAR;
@@ -194,6 +188,9 @@ static void RPi_setup()
   eeprom_block.field.settings.idpref          = ID_REG;
   eeprom_block.field.settings.voice           = VOICE_1;
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
+
+  eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
+  eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
 
   RPi_SerialNumber();
 }
@@ -232,6 +229,11 @@ static void RPi_EPD_setup()
 static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
   return 0; /* TBD */
+}
+
+static int RPi_WiFi_clients_count()
+{
+  return 0;
 }
 
 static bool RPi_DB_init()
@@ -608,6 +610,7 @@ const SoC_ops_t RPi_ops = {
   RPi_Battery_voltage,
   RPi_EPD_setup,
   RPi_WiFi_Receive_UDP,
+  RPi_WiFi_clients_count,
   RPi_DB_init,
   RPi_DB_query,
   RPi_DB_fini,
