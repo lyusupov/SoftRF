@@ -234,8 +234,19 @@ static void STM32_fini()
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
   /* Idle */
-  swSer.write("@GSTP\r\n");
-  swSer.flush();
+  swSer.write("@GSTP\r\n"); delay(250);
+
+  /* GNSS sleep level 0-2 */
+//  swSer.write("@SLP 0\r\n");
+  swSer.write("@SLP 1\r\n");
+//  swSer.write("@SLP 2\r\n");
+
+  swSer.flush(); delay(100);
+
+  /* De-activate 1.8V<->3.3V level shifters */
+  digitalWrite(SOC_GPIO_PIN_GNSS_LS, LOW);
+  delay(100);
+  pinMode(SOC_GPIO_PIN_GNSS_LS, INPUT);
 
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
