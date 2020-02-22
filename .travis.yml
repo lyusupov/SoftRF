@@ -5,7 +5,7 @@ env:
   matrix:
   - BOARD=esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M
   - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
-  - BOARD=STM32:stm32:Nucleo_64:pnum=Nucleo_64_NUCLEO_L073RZ,opt=Nucleo_64_o1std,rtlib=Nucleo_64_nano,usb=Nucleo_64_CDCgen,xserial=Nucleo_64_none,xusb=Nucleo_64_FS
+  - BOARD=STM32:stm32:Nucleo_64
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -43,6 +43,12 @@ install:
       arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json" --save-prefs ;
       arduino --install-boards STM32:stm32 ;
       arduino --board $BOARD --save-prefs ;
+      arduino --pref "custom_pnum=Nucleo_64_NUCLEO_L073RZ"  --save-prefs ;
+      arduino --pref "custom_opt=Nucleo_64_o1std"           --save-prefs ;
+      arduino --pref "custom_rtlib=Nucleo_64_nano"          --save-prefs ;
+      arduino --pref "custom_usb=Nucleo_64_CDCgen"          --save-prefs ;
+      arduino --pref "custom_xserial=Nucleo_64_none"        --save-prefs ;
+      arduino --pref "custom_xusb=Nucleo_64_FS"             --save-prefs ;
       cd $TRAVIS_BUILD_DIR/software/firmware/source/Retro ;
       make links ;
       cd $TRAVIS_BUILD_DIR ;
