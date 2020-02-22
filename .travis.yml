@@ -52,7 +52,7 @@ install:
         arduino --pref "custom_xserial=Nucleo_64_none"        --save-prefs ;
         arduino --pref "custom_xusb=Nucleo_64_FS"             --save-prefs ;
       fi ;
-      if [[ "$BOARD" =~ "BOARD=STM32:stm32:GenF1" ]]; then
+      if [[ "$BOARD" =~ "STM32:stm32:GenF1" ]]; then
         arduino --pref "custom_pnum=GenF1_BLUEPILL_F103C8B"  --save-prefs ;
         arduino --pref "custom_opt=GenF1_osstd"              --save-prefs ;
         arduino --pref "custom_rtlib=GenF1_nano"             --save-prefs ;
