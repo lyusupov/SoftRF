@@ -220,7 +220,7 @@ static void ESP32_Bluetooth_setup()
       SerialBT.setPin(settings->key);
       SerialBT.begin(BT_name.c_str(), true);
 
-      xTaskCreate(ESP32_BT_SPP_Connection_Manager, "BT SPP ConMgr Task", 1500, NULL, tskIDLE_PRIORITY, NULL);
+      xTaskCreate(ESP32_BT_SPP_Connection_Manager, "BT SPP ConMgr Task", 1024, NULL, tskIDLE_PRIORITY, NULL);
 
       BT_TimeMarker = millis();
     }
@@ -289,6 +289,7 @@ static void ESP32_Bluetooth_loop()
           portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
           ESP32_BT_ctl.command = BT_CMD_DISCONNECT;
           portEXIT_CRITICAL(&ESP32_BT_ctl.mutex);
+
           BT_TimeMarker = millis();
         }
       }

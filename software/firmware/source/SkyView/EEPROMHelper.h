@@ -39,9 +39,9 @@ typedef struct Settings {
     char     server  [18];
     char     key     [18];
 
-    uint8_t  resvd1:3;
+    uint8_t  resvd1:2;
     uint8_t  orientation:1;
-    uint8_t  adb:2;
+    uint8_t  adb:3;
     uint8_t  idpref:2;
 
     uint8_t  vmode:2;
@@ -50,6 +50,8 @@ typedef struct Settings {
 
     uint8_t  filter:4;
     uint8_t  power_save:4;
+
+    uint32_t team;
 
     uint8_t  resvd2;
     uint8_t  resvd3;

@@ -340,7 +340,8 @@ void handleSettings() {
 <th align=left>Aircrafts data</th>\
 <td align=right>\
 <select name='adb'>\
-<option %s value='%d'>auto</option>\
+<option %s value='%d'>off</option>\
+<!-- <option %s value='%d'>auto</option> -->\
 <option %s value='%d'>FlarmNet</option>\
 <option %s value='%d'>GliderNet</option>\
 <option %s value='%d'>ICAO</option>\
@@ -368,6 +369,7 @@ void handleSettings() {
   (settings->zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
   (settings->zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
   (settings->zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
+  (settings->adb == DB_NONE      ? "selected" : ""), DB_NONE,
   (settings->adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
   (settings->adb == DB_FLN       ? "selected" : ""), DB_FLN,
   (settings->adb == DB_OGN       ? "selected" : ""), DB_OGN,

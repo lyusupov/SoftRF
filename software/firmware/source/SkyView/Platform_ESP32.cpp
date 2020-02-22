@@ -111,9 +111,11 @@ static union {
   uint64_t chipmacid;
 };
 
-static sqlite3 *fln_db;
-static sqlite3 *ogn_db;
-static sqlite3 *icao_db;
+static sqlite3 *fln_db  = NULL;
+static sqlite3 *ogn_db  = NULL;
+static sqlite3 *icao_db = NULL;
+
+static uint8_t sdcard_files_to_open = 0;
 
 SPIClass SPI1(HSPI);
 
@@ -395,45 +397,62 @@ static int ESP32_WiFi_clients_count()
 
 static bool ESP32_DB_init()
 {
+  bool rval = false;
+
   if (settings->adapter != ADAPTER_TTGO_T5S) {
-    return false;
+    return rval;
   }
 
-  if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1)) {
+  sdcard_files_to_open += (settings->adb   == DB_FLN    ? 1 : 0);
+  sdcard_files_to_open += (settings->adb   == DB_OGN    ? 1 : 0);
+  sdcard_files_to_open += (settings->adb   == DB_ICAO   ? 1 : 0);
+  sdcard_files_to_open += (settings->voice != VOICE_OFF ? 1 : 0);
+
+  if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1, 4000000, "/sd", sdcard_files_to_open)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
-    return false;
+    return rval;
+  }
+
+  if (settings->adb == DB_NONE) {
+    return rval;
   }
 
   sqlite3_initialize();
 
-  sqlite3_open("/sd/Aircrafts/fln.db", &fln_db);
+  if (settings->adb == DB_FLN) {
+    sqlite3_open("/sd/Aircrafts/fln.db", &fln_db);
 
-  if (fln_db == NULL)
-  {
-    Serial.println(F("Failed to open FlarmNet DB\n"));
-    return false;
+    if (fln_db == NULL)
+    {
+      Serial.println(F("Failed to open FlarmNet DB\n"));
+    }  else {
+      rval = true;
+    }
   }
 
-  sqlite3_open("/sd/Aircrafts/ogn.db", &ogn_db);
+  if (settings->adb == DB_OGN) {
+    sqlite3_open("/sd/Aircrafts/ogn.db", &ogn_db);
 
-  if (ogn_db == NULL)
-  {
-    Serial.println(F("Failed to open OGN DB\n"));
-    sqlite3_close(fln_db);
-    return false;
+    if (ogn_db == NULL)
+    {
+      Serial.println(F("Failed to open OGN DB\n"));
+    }  else {
+      rval = true;
+    }
   }
 
-  sqlite3_open("/sd/Aircrafts/icao.db", &icao_db);
+  if (settings->adb == DB_ICAO) {
+    sqlite3_open("/sd/Aircrafts/icao.db", &icao_db);
 
-  if (icao_db == NULL)
-  {
-    Serial.println(F("Failed to open ICAO DB\n"));
-    sqlite3_close(fln_db);
-    sqlite3_close(ogn_db);
-    return false;
+    if (icao_db == NULL)
+    {
+      Serial.println(F("Failed to open ICAO DB\n"));
+    }  else {
+      rval = true;
+    }
   }
 
-  return true;
+  return rval;
 }
 
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
@@ -546,19 +565,21 @@ static void ESP32_DB_fini()
 {
   if (settings->adapter == ADAPTER_TTGO_T5S) {
 
-    if (fln_db != NULL) {
-      sqlite3_close(fln_db);
-    }
+    if (settings->adb != DB_NONE) {
+      if (fln_db != NULL) {
+        sqlite3_close(fln_db);
+      }
 
-    if (ogn_db != NULL) {
-      sqlite3_close(ogn_db);
-    }
+      if (ogn_db != NULL) {
+        sqlite3_close(ogn_db);
+      }
 
-    if (icao_db != NULL) {
-      sqlite3_close(icao_db);
-    }
+      if (icao_db != NULL) {
+        sqlite3_close(icao_db);
+      }
 
-    sqlite3_shutdown();
+      sqlite3_shutdown();
+    }
 
     SD.end();
   }

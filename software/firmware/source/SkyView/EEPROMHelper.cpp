@@ -82,13 +82,14 @@ void EEPROM_defaults()
   eeprom_block.field.settings.units           = UNITS_METRIC;
   eeprom_block.field.settings.vmode           = VIEW_MODE_RADAR;
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
-  eeprom_block.field.settings.adb             = DB_AUTO;
+  eeprom_block.field.settings.adb             = DB_NONE;
   eeprom_block.field.settings.idpref          = ID_REG;
   eeprom_block.field.settings.voice           = VOICE_1;
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
 
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
   eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
+  eeprom_block.field.settings.team            = 0;
 }
 
 void EEPROM_store()

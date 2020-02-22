@@ -199,6 +199,7 @@ enum
 
 enum
 {
+	DB_NONE,
 	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
