@@ -4,10 +4,10 @@ env:
     - ARDUINO_IDE_VERSION=1.8.5
     - ENERGIA_IDE_VERSION=1.8.10E23
   matrix:
-  - BOARD=esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M
-  - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
-  - BOARD=STM32:stm32:Nucleo_64
-  - BOARD=STM32:stm32:GenF1
+#  - BOARD=esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M
+#  - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
+#  - BOARD=STM32:stm32:Nucleo_64
+#  - BOARD=STM32:stm32:GenF1
   - BOARD=energia:cc13xx:LAUNCHXL_CC1310
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
@@ -100,11 +100,10 @@ script:
       arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/Retro/Retro.ino ;
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
-      echo $PWD ;
-      echo $BOARD ;
-      ls -l  $PWD ;
-      ls -l  $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
-      ls -l $PWD/software/firmware/source/UATbridge/ ;
+      echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++" ;
+      ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
+      echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/" ;
+      ls -l ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/ ;
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
     fi ;
 
