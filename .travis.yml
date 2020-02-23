@@ -13,6 +13,8 @@ before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
   - export DISPLAY=:1.0
+  - sudo dpkg --add-architecture i386
+  - sudo apt-get update
   - if [[ "$BOARD" =~ "energia:" ]]; then
       wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
@@ -103,12 +105,8 @@ script:
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
       echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++" ;
       ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
-      echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/" ;
-      ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/ ;
-      echo "ls -l //tmp/energia*" ;
-      ls -l /tmp/energia* ;
-      echo "ls -l /tmp/energia*/sketch" ;
-      ls -l /tmp/energia*/sketch ;
+      echo "ldd /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++" ;
+      ldd /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
     fi ;
 
