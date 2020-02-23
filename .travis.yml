@@ -15,6 +15,7 @@ before_install:
   - export DISPLAY=:1.0
   - if [[ "$BOARD" =~ "energia:" ]]; then
       wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+      mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       tar xf energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       rm energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       sudo mv energia-$ENERGIA_IDE_VERSION /usr/local/share/energia ;
