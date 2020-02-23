@@ -39,7 +39,8 @@ install:
       mkdir $HOME/Energia ;
       ln -s $PWD/software/firmware/source/libraries $HOME/Energia/libraries ;
     else if [[ "$BOARD" =~ "raspberry:" ]]; then
-        sleep 1 ;
+        sudo ln -s /usr/bin/aclocal /usr/local/bin/aclocal-1.16 ;
+        sudo ln -s /usr/bin/automake /usr/local/bin/automake-1.16 ;
       else
         mkdir $HOME/Arduino ;
         ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries ;
