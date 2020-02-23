@@ -15,6 +15,7 @@ before_install:
   - export DISPLAY=:1.0
   - sudo dpkg --add-architecture i386
   - sudo apt-get update
+  - sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
   - if [[ "$BOARD" =~ "energia:" ]]; then
       wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
