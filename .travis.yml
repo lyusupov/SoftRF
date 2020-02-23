@@ -104,10 +104,10 @@ script:
       ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
       echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/" ;
       ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/ ;
-      echo "ls -l /tmp/arduino_build_*" ;
-      ls -l /tmp/arduino_build_* ;
-      echo "ls -l /tmp/arduino_build_*/sketch" ;
-      ls -l /tmp/arduino_build_*/sketch ;
+      echo "ls -l /tmp/arduino_build*" ;
+      ls -l /tmp/arduino_build* ;
+      echo "ls -l /tmp/arduino_build*/sketch" ;
+      ls -l /tmp/arduino_build*/sketch ;
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
     fi ;
 
