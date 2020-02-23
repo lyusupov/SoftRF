@@ -9,6 +9,7 @@ env:
   - BOARD=STM32:stm32:Nucleo_64
   - BOARD=STM32:stm32:GenF1
   - BOARD=energia:cc13xx:LAUNCHXL_CC1310
+  - BOARD=raspberry
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -23,20 +24,26 @@ before_install:
       rm energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       sudo mv energia-$ENERGIA_IDE_VERSION /usr/local/share/energia ;
       sudo ln -s /usr/local/share/energia/energia /usr/local/bin/energia ;
-    else
-      wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-      tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-      rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-      sudo mv arduino-$ARDUINO_IDE_VERSION /usr/local/share/arduino ;
-      sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+    else if [[ "$BOARD" =~ "raspberry:" ]]; then
+        sleep 1 ;
+      else
+        wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+        tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+        rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+        sudo mv arduino-$ARDUINO_IDE_VERSION /usr/local/share/arduino ;
+        sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+      fi
     fi
 install:
   - if [[ "$BOARD" =~ "energia:" ]]; then
       mkdir $HOME/Energia ;
       ln -s $PWD/software/firmware/source/libraries $HOME/Energia/libraries ;
-    else
-      mkdir $HOME/Arduino ;
-      ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries ;
+    else if [[ "$BOARD" =~ "raspberry:" ]]; then
+        sleep 1 ;
+      else
+        mkdir $HOME/Arduino ;
+        ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries ;
+      fi
     fi
   - if [[ "$BOARD" =~ "esp8266:esp8266:" ]]; then
       arduino --pref "boardsmanager.additional.urls=http://github.com/esp8266/Arduino/releases/download/2.5.0/package_esp8266com_index.json" --save-prefs ;
@@ -105,6 +112,10 @@ script:
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
+    fi ;
+  - if [[ "$BOARD" =~ "raspberry" ]]; then
+      cd $TRAVIS_BUILD_DIR/software/firmware/source/SoftRF ;
+      make -f Makefile.RPi ;
     fi ;
 
 notifications:
