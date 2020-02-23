@@ -83,6 +83,7 @@ install:
   - if [[ "$BOARD" =~ "energia:cc13xx:" ]]; then
       energia --install-boards energia:cc13xx ;
       energia --board $BOARD --save-prefs ;
+      ln -s $PWD/software/firmware/source/UATbridge $HOME/Energia/UATbridge ;
       cd $TRAVIS_BUILD_DIR/software/firmware/source/UATbridge ;
       make links ;
       cd $TRAVIS_BUILD_DIR ;
@@ -99,6 +100,11 @@ script:
       arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/Retro/Retro.ino ;
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+      echo $PWD ;
+      echo $BOARD ;
+      ls -l  $PWD ;
+      ls -l  $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
+      ls -l $PWD/software/firmware/source/UATbridge/ ;
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
     fi ;
 
