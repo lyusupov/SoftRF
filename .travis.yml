@@ -4,19 +4,19 @@ env:
     - ARDUINO_IDE_VERSION=1.8.5
     - ENERGIA_IDE_VERSION=1.8.10E23
   matrix:
-#  - BOARD=esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M
-#  - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
-#  - BOARD=STM32:stm32:Nucleo_64
-#  - BOARD=STM32:stm32:GenF1
+  - BOARD=esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M
+  - BOARD=esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none
+  - BOARD=STM32:stm32:Nucleo_64
+  - BOARD=STM32:stm32:GenF1
   - BOARD=energia:cc13xx:LAUNCHXL_CC1310
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
   - export DISPLAY=:1.0
-  - sudo dpkg --add-architecture i386
-  - sudo apt-get update
-  - sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
   - if [[ "$BOARD" =~ "energia:" ]]; then
+      sudo dpkg --add-architecture i386 ;
+      sudo apt-get update ;
+      sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 ;
       wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
       tar xf energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
@@ -86,7 +86,6 @@ install:
   - if [[ "$BOARD" =~ "energia:cc13xx:" ]]; then
       energia --install-boards energia:cc13xx ;
       energia --board $BOARD --save-prefs ;
-      energia --pref "build.path=/tmp/energia" --save-prefs ;
       ln -s $PWD/software/firmware/source/UATbridge $HOME/Energia/UATbridge ;
       cd $TRAVIS_BUILD_DIR/software/firmware/source/UATbridge ;
       make links ;
@@ -104,10 +103,6 @@ script:
       arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/Retro/Retro.ino ;
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
-      echo "ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++" ;
-      ls -l /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
-      echo "ldd /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++" ;
-      ldd /home/travis/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin/arm-none-eabi-g++ ;
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
     fi ;
 
