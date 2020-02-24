@@ -44,7 +44,7 @@
   (*(const unsigned char *)(addr)) ///< PROGMEM workaround for non-AVR
 #endif
 
-#if !defined(__ARM_ARCH) && !defined(ENERGIA) && !defined(ESP8266) && !defined(ESP32) && !defined(__arc__)
+#if !defined(__ARM_ARCH) && !defined(ENERGIA) && !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && !defined(__arc__)
  #include <util/delay.h>
 #endif
 

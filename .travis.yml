@@ -1,5 +1,4 @@
 language: c
-dist: bionic
 env:
   global:
     - ARDUINO_IDE_VERSION=1.8.5
@@ -26,7 +25,7 @@ before_install:
       sudo mv energia-$ENERGIA_IDE_VERSION /usr/local/share/energia ;
       sudo ln -s /usr/local/share/energia/energia /usr/local/bin/energia ;
     else if [[ "$BOARD" =~ "raspberry" ]]; then
-        sleep 1 ;
+        sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
       else
         wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
         tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
@@ -40,8 +39,8 @@ install:
       mkdir $HOME/Energia ;
       ln -s $PWD/software/firmware/source/libraries $HOME/Energia/libraries ;
     else if [[ "$BOARD" =~ "raspberry" ]]; then
-        sudo ln -s /usr/bin/aclocal /usr/local/bin/aclocal-1.16 ;
-        sudo ln -s /usr/bin/automake /usr/local/bin/automake-1.16 ;
+        cd $TRAVIS_BUILD_DIR/software/firmware/source/libraries/bcm2835 ;
+        autoreconf -f ;
       else
         mkdir $HOME/Arduino ;
         ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries ;
@@ -117,6 +116,10 @@ script:
     fi ;
   - if [[ "$BOARD" =~ "raspberry" ]]; then
       cd $TRAVIS_BUILD_DIR/software/firmware/source/SoftRF ;
+      make -f Makefile.RPi ;
+    fi ;
+  - if [[ "$BOARD" =~ "raspberry" ]]; then
+      cd $TRAVIS_BUILD_DIR/software/firmware/source/SkyView ;
       make -f Makefile.RPi ;
     fi ;
 
