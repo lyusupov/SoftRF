@@ -97,7 +97,7 @@ Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4550;
+  size_t size = 4700;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -244,59 +244,7 @@ void handleSettings() {
 <td align=right>\
 <INPUT type='text' name='key' maxlength='17' size='17' value='%s'>\
 </td>\
-</tr>"),
-   settings->server, settings->key);
-
-  len = strlen(offset);
-  offset += len;
-  size -= len;
-
-/*
-
-<tr>\
-<th align=left>Built-in Bluetooth</th>\
-<td align=right>\
-<select name='bluetooth'>\
-<option %s value='%d'>off</option>\
-<option %s value='%d'>SPP</option>\
-</select>\
-</td>\
 </tr>\
-
-    (settings->bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
-
- */
-
-#if 0
-  /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
-    snprintf_P ( offset, size,
-      PSTR("\
-<tr>\
-<th align=left>Source BT Name</th>\
-<td align=right>\
-<INPUT type='text' name='bt_name' maxlength='17' size='17' value='%s'>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
-&nbsp;&nbsp;&nbsp;Key</th>\
-<td align=right>\
-<INPUT type='text' name='bt_key' maxlength='17' size='17' value='%s'>\
-</td>\
-</tr>"),
-     settings->bt_name, settings->bt_key);
-
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-#endif
-
-  /* Common part 4 */
-  snprintf_P ( offset, size,
-    PSTR("\
 <tr>\
 <th align=left>Units</th>\
 <td align=right>\
@@ -358,6 +306,7 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
+  settings->server, settings->key,
   (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
   (settings->units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
   (settings->units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
@@ -383,7 +332,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* SoC specific part 4 */
+  /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
       PSTR("\
@@ -409,7 +358,7 @@ void handleSettings() {
     size -= len;
   }
 
-  /* Common part 5 */
+  /* Common part 4 */
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
@@ -442,6 +391,12 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>\
+<tr>\
+<th align=left>Team Member Id</th>\
+<td align=right>\
+<INPUT type='text' name='team' maxlength='6' size='6' value='%06X'>\
+</td>\
+</tr>\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'></p>\
 </form>\
@@ -455,7 +410,8 @@ void handleSettings() {
     (settings->filter     == TRAFFIC_FILTER_OFF  ? "selected" : ""), TRAFFIC_FILTER_OFF,
     (settings->filter     == TRAFFIC_FILTER_500M ? "selected" : ""), TRAFFIC_FILTER_500M,
     (settings->power_save == POWER_SAVE_NONE     ? "selected" : ""), POWER_SAVE_NONE,
-    (settings->power_save == POWER_SAVE_WIFI     ? "selected" : ""), POWER_SAVE_WIFI
+    (settings->power_save == POWER_SAVE_WIFI     ? "selected" : ""), POWER_SAVE_WIFI,
+     settings->team
   );
 
   SoC->swSer_enableRx(false);
@@ -645,9 +601,13 @@ void handleInput() {
       settings->filter = server.arg(i).toInt();
     } else if (server.argName(i).equals("power_save")) {
       settings->power_save = server.arg(i).toInt();
+    } else if (server.argName(i).equals("team")) {
+      char buf[7];
+      server.arg(i).toCharArray(buf, sizeof(buf));
+      settings->team = strtoul(buf, NULL, 16);
     }
   }
-  snprintf_P ( Input_temp, 1900,
+  snprintf_P ( Input_temp, 2000,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -673,6 +633,7 @@ PSTR("<html>\
 <tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
 <tr><th align=left>Filter</th><td align=right>%d</td></tr>\
 <tr><th align=left>Power Save</th><td align=right>%d</td></tr>\
+<tr><th align=left>Team</th><td align=right>%06X</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -682,7 +643,7 @@ PSTR("<html>\
   settings->baudrate, settings->server, settings->key,
   settings->units, settings->vmode, settings->orientation, settings->zoom,
   settings->adb, settings->idpref, settings->voice, settings->aghost,
-  settings->filter, settings->power_save
+  settings->filter, settings->power_save, settings->team
   );
 
   SoC->swSer_enableRx(false);

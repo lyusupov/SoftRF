@@ -260,6 +260,9 @@ static void EPD_Draw_Radar()
         int16_t rel_y;
         float distance;
         float bearing;
+
+        bool isTeam = (Container[i].ID == settings->team) ;
+
 #if 0
         Serial.print(F(" ID="));
         Serial.print((Container[i].ID >> 16) & 0xFF, HEX);
@@ -303,19 +306,50 @@ static void EPD_Draw_Radar()
         int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
 
         if        (Container[i].RelativeVertical >   EPD_RADAR_V_THRESHOLD) {
-          display->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
-                                radar_center_x + x    , radar_center_y - y - 5,
-                                radar_center_x + x + 4, radar_center_y - y + 3,
-                                GxEPD_BLACK);
+          if (isTeam) {
+            display->drawTriangle(radar_center_x + x - 5, radar_center_y - y + 4,
+                                  radar_center_x + x    , radar_center_y - y - 6,
+                                  radar_center_x + x + 5, radar_center_y - y + 4,
+                                  GxEPD_BLACK);
+            display->drawTriangle(radar_center_x + x - 6, radar_center_y - y + 5,
+                                  radar_center_x + x    , radar_center_y - y - 7,
+                                  radar_center_x + x + 6, radar_center_y - y + 5,
+                                  GxEPD_BLACK);
+          } else {
+            display->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
+                                  radar_center_x + x    , radar_center_y - y - 5,
+                                  radar_center_x + x + 4, radar_center_y - y + 3,
+                                  GxEPD_BLACK);
+          }
         } else if (Container[i].RelativeVertical < - EPD_RADAR_V_THRESHOLD) {
-          display->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
-                                radar_center_x + x    , radar_center_y - y + 5,
-                                radar_center_x + x + 4, radar_center_y - y - 3,
-                                GxEPD_BLACK);
+          if (isTeam) {
+            display->drawTriangle(radar_center_x + x - 5, radar_center_y - y - 4,
+                                  radar_center_x + x    , radar_center_y - y + 6,
+                                  radar_center_x + x + 5, radar_center_y - y - 4,
+                                  GxEPD_BLACK);
+            display->drawTriangle(radar_center_x + x - 6, radar_center_y - y - 5,
+                                  radar_center_x + x    , radar_center_y - y + 7,
+                                  radar_center_x + x + 6, radar_center_y - y - 5,
+                                  GxEPD_BLACK);
+          } else {
+            display->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
+                                  radar_center_x + x    , radar_center_y - y + 5,
+                                  radar_center_x + x + 4, radar_center_y - y - 3,
+                                  GxEPD_BLACK);
+          }
         } else {
-          display->fillCircle(radar_center_x + x,
-                              radar_center_y - y,
-                              5, GxEPD_BLACK);
+          if (isTeam) {
+            display->drawCircle(radar_center_x + x,
+                                radar_center_y - y,
+                                6, GxEPD_BLACK);
+            display->drawCircle(radar_center_x + x,
+                                radar_center_y - y,
+                                7, GxEPD_BLACK);
+           } else {
+            display->fillCircle(radar_center_x + x,
+                                radar_center_y - y,
+                                5, GxEPD_BLACK);
+          }
         }
       }
     }
