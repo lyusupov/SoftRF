@@ -21,7 +21,7 @@
 
 #define GDL90_DST_PORT    4000
 
-#define GDL90_EXP_TIME  3500 /* 3.5 seconds */
+#define GDL90_EXP_TIME  4500 /* 4.5 seconds */
 
 void GDL90_setup(void);
 void GDL90_loop(void);

@@ -463,6 +463,9 @@ static void RPi_TTS(char *message)
         strcat(filename, WAV_FILE_SUFFIX);
         play_file(pcm_handle, filename, buf, frames);
         word = strtok (NULL, " ");
+
+        /* Poll input source(s) */
+        Input_loop();
     }
 
     snd_pcm_drain(pcm_handle);
@@ -623,6 +626,20 @@ const SoC_ops_t RPi_ops = {
   NULL
 };
 
+/* Poll input source(s) */
+void Input_loop() {
+  switch (settings->protocol)
+  {
+  case PROTOCOL_GDL90:
+    GDL90_loop();
+    break;
+  case PROTOCOL_NMEA:
+  default:
+    NMEA_loop();
+    break;
+  }
+}
+
 int main()
 {
   // Init GPIO bcm
@@ -695,16 +712,7 @@ int main()
 
     SoC->Button_loop();
 
-    switch (settings->protocol)
-    {
-    case PROTOCOL_GDL90:
-      GDL90_loop();
-      break;
-    case PROTOCOL_NMEA:
-    default:
-      NMEA_loop();
-      break;
-    }
+    Input_loop();
 
     Traffic_loop();
 

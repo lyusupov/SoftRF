@@ -58,6 +58,20 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+/* Poll input source(s) */
+void Input_loop() {
+  switch (settings->protocol)
+  {
+  case PROTOCOL_GDL90:
+    GDL90_loop();
+    break;
+  case PROTOCOL_NMEA:
+  default:
+    NMEA_loop();
+    break;
+  }
+}
+
 void setup()
 {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
@@ -123,16 +137,7 @@ void loop()
     SoC->Bluetooth->loop();
   }
 
-  switch (settings->protocol)
-  {
-  case PROTOCOL_GDL90:
-    GDL90_loop();
-    break;
-  case PROTOCOL_NMEA:
-  default:
-    NMEA_loop();
-    break;
-  }
+  Input_loop();
 
   Traffic_loop();
 

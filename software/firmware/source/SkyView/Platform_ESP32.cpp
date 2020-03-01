@@ -721,6 +721,9 @@ static void ESP32_TTS(char *message)
           word = strtok (NULL, " ");
 
           yield();
+
+          /* Poll input source(s) */
+          Input_loop();
       }
 
       if (wdt_status) {

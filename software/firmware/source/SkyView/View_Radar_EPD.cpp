@@ -88,6 +88,11 @@ static void EPD_Draw_NavBoxes()
   }
   while (display->nextPage());
 
+  yield();
+
+  /* Poll input source */
+  Input_loop();
+
   uint16_t bottom_navboxes_x = navbox3.x;
   uint16_t bottom_navboxes_y = navbox3.y;
   uint16_t bottom_navboxes_w = navbox3.width + navbox4.width;
@@ -586,6 +591,9 @@ void EPD_radar_loop()
     EPD_Clear_Screen();
 
     yield();
+
+    /* Poll input source(s) */
+    Input_loop();
 
     EPD_Draw_NavBoxes();
 
