@@ -1,6 +1,25 @@
 
 ## Release notes
 
+### revision 0.10
+
+#### New features
+
+- Bluetooth SPP and LE connection methods. Mostly applicable for a 'SoftRF on ESP32' partner - other devices may or may not work ;
+- serial data input over EZ built-in micro-USB port ;
+- one more radar view's zoom level ;
+- 'Wi-Fi off' timer option ;
+- traffic filter (by altitude) ;
+- team member's aircraft (if any) is depicted in a bit different manner ;
+- dual boot option ( demo application is [iArradio](https://github.com/TioRuben/iArradio) ).
+
+#### Known issues and limitations
+
+- same as in 0.9, plus
+- first Bluetooth SPP connection may cause restart of a partner SoftRF data source device ;
+- due to high RAM memory usage, Bluetooth SPP may coexist with either voice or aircraft's data option but not both ;
+- only Bluetooth 'Simple Pairing' (no key) method is currently supported.
+
 ### revision 0.9
 
 #### Known issues and limitations
@@ -18,4 +37,3 @@
 ### revision 0.8
 
 Very first deployment of SkyView's firmware binaries.
-
