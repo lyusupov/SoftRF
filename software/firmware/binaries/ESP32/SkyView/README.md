@@ -20,6 +20,17 @@
 - due to high RAM memory usage, Bluetooth SPP may coexist with either voice or aircraft's data option but not both ;
 - only Bluetooth 'Simple Pairing' (no key) method is currently supported.
 
+#### Flashing instructions
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Regular:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Web Update' UI feature does not work in previous 0.9 revision. Use generic ('cable') method instead.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Follow **Step 1** and **Step 2** of this [**Quick start**](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) guidance.
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Dual boot:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Follow [these instructions](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**NOTICE!**: [**iArradio**](https://github.com/TioRuben/iArradio) firmware that comes with it is a DEMO. I will reject your every claim or question.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If you need a custom weather, playlist or timezone - build your own firmware file by yourself.<br>
+
 ### revision 0.9
 
 #### Known issues and limitations

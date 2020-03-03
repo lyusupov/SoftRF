@@ -64,6 +64,7 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
+    * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Retro Edition](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)
 * [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder.-Quick-Start)
