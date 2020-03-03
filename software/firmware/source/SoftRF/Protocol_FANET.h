@@ -33,7 +33,7 @@
  * Parameters: BW_250 SF_7 CR_5
  */
 
-#define SOFRF_FANET_VENDOR_ID       0x07  /* https://github.com/3s1d/fanet-stm32/pull/2 */
+#define SOFRF_FANET_VENDOR_ID       0x07
 
 enum
 {
