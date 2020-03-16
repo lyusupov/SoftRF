@@ -74,12 +74,21 @@
 // Dragino LoRa/GPS HAT or compatible SX1276 pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
+#if defined(USE_BASICMAC)
+    .tx = LMIC_UNUSED_PIN,
+    .rx = LMIC_UNUSED_PIN,
+#else
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
+#endif
     .rst = SOC_GPIO_PIN_RST,
 #if !defined(USE_OGN_RF_DRIVER)
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #else
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#endif
+#if defined(USE_BASICMAC)
+    .busy = LMIC_UNUSED_PIN,
+    .tcxo = LMIC_UNUSED_PIN,
 #endif
 };
 
@@ -89,11 +98,24 @@ TTYSerial Serial2("/dev/ttyUSB0");
 // These callbacks are only used in over-the-air activation, so they are
 // left empty here (we cannot leave them out completely unless
 // DISABLE_JOIN is set in config.h, otherwise the linker will complain).
+#if defined(USE_BASICMAC)
+void os_getJoinEui (u1_t* buf) { }
+//void os_getDevEui (u1_t* buf) { }
+void os_getNwkKey (u1_t* buf) { }
+//u1_t os_getRegion (void) { return REGCODE_EU868; }
+#else
 void os_getArtEui (u1_t* buf) { }
 void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
+#endif
 
-void onEvent (ev_t ev) { }
+#if defined(USE_BASICMAC)
+extern "C" void onLmicEvent (ev_t ev);
+void onLmicEvent (ev_t ev) {
+#else
+void onEvent (ev_t ev) {
+#endif
+}
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
@@ -246,7 +268,7 @@ static uint32_t RPi_getChipId()
 
 static long RPi_random(long howsmall, long howBig)
 {
-  return random(howsmall, howBig);
+  return howsmall + random() % (howBig - howsmall);
 }
 
 static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)

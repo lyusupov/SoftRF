@@ -25,6 +25,8 @@
 #include <math.h>
 #include <netinet/in.h>
 
+#include <ctype.h>
+
 #include <lmic.h>
 #include "hal/hal.h"
 
@@ -95,8 +97,8 @@
 #define pgm_read_float(addr) (*(const float *)(addr))
 
 // WMath prototypes
-long random(long);
-long random(long, long);
+//long random(long);
+//long random(long, long);
 void randomSeed(unsigned long);
 
 #define PI 3.1415926535897932384626433832795
@@ -123,6 +125,8 @@ inline boolean isPrintable(int c){
 #define SPI_PRI 0
 #define SPI_AUX 1
 #define SPI_HAS_TRANSACTION
+
+#ifdef __cplusplus
 
 class SPISettings 
 {
@@ -221,6 +225,8 @@ class SerialSimulator {
 
 };
 extern SerialSimulator Serial;
+
+#endif /* __cplusplus */
 
 #ifdef __cplusplus
 extern "C"{

@@ -28,9 +28,18 @@
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
+#if defined(USE_BASICMAC)
+    .tx = LMIC_UNUSED_PIN,
+    .rx = LMIC_UNUSED_PIN,
+#else
     .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
+#endif
     .rst = SOC_GPIO_PIN_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+#if defined(USE_BASICMAC)
+    .busy = LMIC_UNUSED_PIN,
+    .tcxo = LMIC_UNUSED_PIN,
+#endif
 };
 
 static uint8_t ieeeAddr[8];

@@ -558,13 +558,26 @@ static bool sx1276_transmit_complete = false;
 
 static uint8_t sx1276_channel_prev = (uint8_t) -1;
 
+#if defined(USE_BASICMAC)
+void os_getDevEui (u1_t* buf) { }
+u1_t os_getRegion (void) { return REGCODE_EU868; }
+#endif
+
 #define SX1276_RegVersion          0x42 // common
 
 static u1_t sx1276_readReg (u1_t addr) {
+#if defined(USE_BASICMAC)
+    hal_spi_select(1);
+#else
     hal_pin_nss(0);
+#endif
     hal_spi(addr & 0x7F);
     u1_t val = hal_spi(0x00);
+#if defined(USE_BASICMAC)
+    hal_spi_select(0);
+#else
     hal_pin_nss(1);
+#endif
     return val;
 }
 
@@ -574,7 +587,11 @@ bool sx1276_probe()
 
   SoC->SPI_begin();
 
-  hal_init();
+  hal_init(
+#if defined(USE_BASICMAC)
+    nullptr
+#endif
+  );
 
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
@@ -626,7 +643,11 @@ void sx1276_setup()
   SoC->SPI_begin();
 
   // initialize runtime env
-  os_init();
+  os_init(
+#if defined(USE_BASICMAC)
+    nullptr
+#endif
+  );
   // Reset the MAC state. Session and pending data transfers will be discarded.
   LMIC_reset();
 
@@ -690,6 +711,21 @@ void sx1276_setup()
 
 void sx1276_setvars()
 {
+#if defined(USE_BASICMAC)
+  _sf_t sf;
+
+  if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
+    sf = (_sf_t) LMIC.protocol->bitrate;
+    LMIC.preamble = LMIC.protocol->syncword[0];
+  } else {
+    sf = FSK;
+  }
+
+  // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
+  LMIC.rps = MAKERPS(sf, BW250, CR_4_5, 0, 0);
+
+  LMIC.rxsyms = 255;
+#else
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
     LMIC.preamble = LMIC.protocol->syncword[0];
@@ -699,6 +735,7 @@ void sx1276_setvars()
 
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = updr2rps(LMIC.datarate);
+#endif /* USE_BASICMAC */
 
   if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
     /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
@@ -720,7 +757,11 @@ bool sx1276_receive()
 
   if (sx1276_receive_complete == false) {
     // execute scheduled jobs and events
-    os_runloop_once();
+#if defined(USE_BASICMAC)
+      os_runstep();
+#else
+      os_runloop_once();
+#endif
   };
 
   if (SoC->Bluetooth) {
@@ -757,7 +798,11 @@ void sx1276_transmit()
 
     while (sx1276_transmit_complete == false) {
       // execute scheduled jobs and events
+#if defined(USE_BASICMAC)
+      os_runstep();
+#else
       os_runloop_once();
+#endif
       yield();
     };
 }

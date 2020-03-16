@@ -34,11 +34,8 @@
 // You should not, however, change the lmic.[hc]
 
 #include "config.h"
+#include <stdbool.h>
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C"{
-#endif
 
 //================================================================================
 //================================================================================
@@ -61,6 +58,10 @@ typedef const char* str_t;
 #define ASSERT(cond) if(!(cond)) hal_failed(__FILE__, __LINE__)
 #else
 #define ASSERT(cond) /**/
+#endif
+
+#ifdef __cplusplus
+extern "C"{
 #endif
 
 #define os_clearMem(a,b)   memset(a,0,b)
@@ -264,15 +265,15 @@ u2_t os_crc16 (xref2u1_t d, uint len);
     #define CONST_TABLE(type, name) const type PROGMEM RESOLVE_TABLE(name)
 #else
 
-#if !defined(ENERGIA_ARCH_CC13XX) || defined(__cplusplus)
+#if !defined(ENERGIA_ARCH_CC13XX)
 
     inline u1_t table_get_u1(const u1_t *table, size_t index) { return table[index]; }
-    inline s1_t table_get_s1(const s1_t *table, size_t index) { return table[index]; }
-    inline u2_t table_get_u2(const u2_t *table, size_t index) { return table[index]; }
+    inline s1_t __attribute__((always_inline)) table_get_s1(const s1_t *table, size_t index) { return table[index]; }
+    inline u2_t __attribute__((always_inline)) table_get_u2(const u2_t *table, size_t index) { return table[index]; }
     inline s2_t table_get_s2(const s2_t *table, size_t index) { return table[index]; }
-    inline u4_t table_get_u4(const u4_t *table, size_t index) { return table[index]; }
+    inline u4_t __attribute__((always_inline)) table_get_u4(const u4_t *table, size_t index) { return table[index]; }
     inline s4_t table_get_s4(const s4_t *table, size_t index) { return table[index]; }
-    inline ostime_t table_get_ostime(const ostime_t *table, size_t index) { return table[index]; }
+    inline ostime_t __attribute__((always_inline)) table_get_ostime(const ostime_t *table, size_t index) { return table[index]; }
 
 #else /* ENERGIA_ARCH_CC13XX */
 

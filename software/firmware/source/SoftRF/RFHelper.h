@@ -22,7 +22,13 @@
 #include <nRF905.h>
 #include <TimeLib.h>
 
+#include "SoCHelper.h"
+
+#if defined(USE_BASICMAC)
+#include <basicmac.h>
+#else
 #include <lmic.h>
+#endif
 #include <hal/hal.h>
 #include <lib_crc.h>
 #include <protocol.h>
@@ -56,7 +62,8 @@ enum
   RF_IC_SX1276,
   RF_IC_CC13XX,
   RF_IC_S7XG,
-  RF_DRV_OGN
+  RF_DRV_OGN,
+  RF_IC_SX1262
 };
 
 enum

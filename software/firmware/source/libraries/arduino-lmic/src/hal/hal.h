@@ -10,6 +10,8 @@
 #ifndef _hal_hal_h_
 #define _hal_hal_h_
 
+#ifdef __cplusplus
+
 static const int NUM_DIO = 3;
 static const int NUM_RXTX = 2;
 
@@ -22,6 +24,21 @@ struct lmic_pinmap {
 
 // Use this for any unused pins.
 const u1_t LMIC_UNUSED_PIN = 0xff;
+
+#else /* __cplusplus */
+
+#define NUM_DIO         3
+#define NUM_RXTX        2
+#define LMIC_UNUSED_PIN 0xff
+
+typedef struct lmic_pinmap_struct {
+    u1_t nss;
+    u1_t rxtx[NUM_RXTX];
+    u1_t rst;
+    u1_t dio[NUM_DIO];
+} lmic_pinmap;
+
+#endif /* __cplusplus */
 
 // Declared here, to be defined an initialized by the application
 extern lmic_pinmap lmic_pins;

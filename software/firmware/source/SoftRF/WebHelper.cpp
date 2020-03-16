@@ -164,7 +164,7 @@ void handleSettings() {
   size -= len;
 
   /* Radio specific part */
-  if (hw_info.rf == RF_IC_SX1276) {
+  if (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\

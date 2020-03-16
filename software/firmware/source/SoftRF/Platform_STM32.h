@@ -184,6 +184,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 //#define USE_SERIAL_DEEP_SLEEP  //  + 12 kb
+//#define USE_BASICMAC           //  +3.5 kb
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"

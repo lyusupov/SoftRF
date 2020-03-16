@@ -18,12 +18,15 @@
 CC            = gcc
 CXX           = g++
 
-CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\"
+# BASICMAC      = -DUSE_BASICMAC
+
+CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
+                -D__BASEFILE__=\"$*\" $(BASICMAC)
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
+BASICMAC_PATH = ../libraries/arduino-basicmac/src
 NRF905_PATH   = ../libraries/nRF905
 TIMELIB_PATH  = ../libraries/Time
 CRCLIB_PATH   = ../libraries/CRC
@@ -41,7 +44,13 @@ DUMP978_PATH  = ../libraries/dump978/src
 GFX_PATH      = ../libraries/Adafruit-GFX-Library
 EPD2_PATH     = ../libraries/GxEPD2/src
 
-INCLUDE       = -I$(LMIC_PATH)   -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
+ifdef BASICMAC
+RADIO_PATH    = $(BASICMAC_PATH)
+else
+RADIO_PATH    = $(LMIC_PATH)
+endif
+
+INCLUDE       = -I$(RADIO_PATH)  -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
@@ -60,11 +69,11 @@ CPPS          := RFHelper.cpp SoCHelper.cpp \
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
-                 $(LMIC_PATH)/raspi/raspi.o \
-                 $(LMIC_PATH)/raspi/WString.o \
-                 $(LMIC_PATH)/raspi/TTYSerial.o \
-                 $(LMIC_PATH)/lmic/radio.o $(LMIC_PATH)/lmic/oslmic.o \
-                 $(LMIC_PATH)/lmic/lmic.o \
+                 $(RADIO_PATH)/raspi/raspi.o \
+                 $(RADIO_PATH)/raspi/WString.o \
+                 $(RADIO_PATH)/raspi/TTYSerial.o \
+                 $(RADIO_PATH)/lmic/radio.o $(RADIO_PATH)/lmic/oslmic.o \
+                 $(RADIO_PATH)/lmic/lmic.o \
                  $(OGNLIB_PATH)/ldpc.o \
                  $(GNSSLIB_PATH)/TinyGPS++.o \
                  $(TIMELIB_PATH)/Time.o \
@@ -82,6 +91,11 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
                  $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o
 
+ifdef BASICMAC
+OBJS          += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
+                 $(RADIO_PATH)/lmic/debug.o $(RADIO_PATH)/lmic/lce.o
+endif
+
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
 PROGNAME      := SoftRF
@@ -96,11 +110,11 @@ all: bcm $(PROGNAME) $(PROGNAME)-aux
 %.o: %.c
 				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
 
-hal.o: $(LMIC_PATH)/hal/hal.cpp
-				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
+hal.o: $(RADIO_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
 
-hal-aux.o: $(LMIC_PATH)/hal/hal.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
+hal-aux.o: $(RADIO_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
 Platform_RPi.o: Platform_RPi.cpp
 				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
@@ -108,11 +122,11 @@ Platform_RPi.o: Platform_RPi.cpp
 Platform_RPi-aux.o: Platform_RPi.cpp
 				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi-aux.o
 
-aes.o: $(LMIC_PATH)/aes/lmic.c
-				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
+aes.o: $(RADIO_PATH)/aes/lmic.c
+				$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
 
-$(LMIC_PATH)/lmic/%.o: $(LMIC_PATH)/lmic/%.c
-				$(CXX) -c $(CXXFLAGS) $(LMIC_PATH)/lmic/$*.c -o $(LMIC_PATH)/lmic/$*.o $(INCLUDE)
+$(RADIO_PATH)/lmic/%.o: $(RADIO_PATH)/lmic/%.c
+				$(CC) -c $(CFLAGS) $(RADIO_PATH)/lmic/$*.c -o $(RADIO_PATH)/lmic/$*.o $(INCLUDE)
 
 bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)

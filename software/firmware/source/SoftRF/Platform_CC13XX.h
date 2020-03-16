@@ -70,6 +70,8 @@ extern uint8_t LEDs[][3];
 #define EXCLUDE_MPL3115A2
 #define EXCLUDE_NRF905
 
+//#define USE_BASICMAC
+
 #endif /* PLATFORM_CC13XX_H */
 
 #endif /* ENERGIA_ARCH_CC13XX */
