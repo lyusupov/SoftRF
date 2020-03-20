@@ -104,6 +104,7 @@ void nrf905_transmit(void);
 void nrf905_shutdown(void);
 
 bool sx1276_probe(void);
+bool sx1262_probe(void);
 void sx1276_setup(void);
 void sx1276_channel(uint8_t);
 bool sx1276_receive(void);

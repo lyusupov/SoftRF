@@ -87,7 +87,11 @@ lmic_pinmap lmic_pins = {
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #endif
 #if defined(USE_BASICMAC)
+#if !defined(USE_SX1262)
     .busy = LMIC_UNUSED_PIN,
+#else
+    .busy = SOC_GPIO_PIN_DIO0,
+#endif
     .tcxo = LMIC_UNUSED_PIN,
 #endif
 };

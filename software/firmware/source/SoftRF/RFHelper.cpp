@@ -70,6 +70,7 @@ const rfchip_ops_t nrf905_ops = {
 };
 #endif
 
+#if !defined(USE_SX1262)
 const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
   "SX1276",
@@ -80,6 +81,18 @@ const rfchip_ops_t sx1276_ops = {
   sx1276_transmit,
   sx1276_shutdown
 };
+#else
+const rfchip_ops_t sx1276_ops = {
+  RF_IC_SX1262,
+  "SX1262",
+  sx1262_probe,
+  sx1276_setup,
+  sx1276_channel,
+  sx1276_receive,
+  sx1276_transmit,
+  sx1276_shutdown
+};
+#endif
 
 const rfchip_ops_t cc13xx_ops = {
   RF_IC_CC13XX,
@@ -601,7 +614,7 @@ bool sx1276_probe()
 
   hal_pin_rst(2); // configure RST pin floating!
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
-  
+
   v = sx1276_readReg(SX1276_RegVersion);
 
   SPI.end();
@@ -614,9 +627,69 @@ bool sx1276_probe()
 
     return true;
   } else {
-    return false;  
+    return false;
   }
 }
+
+#if defined(USE_BASICMAC) && defined(USE_SX1262)
+
+#define CMD_READREGISTER    0x1D
+#define REG_LORASYNCWORDLSB 0x0741
+
+static void ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
+    hal_spi_select(1);
+    hal_pin_busy_wait();
+    hal_spi(CMD_READREGISTER);
+    hal_spi(addr >> 8);
+    hal_spi(addr);
+    hal_spi(0x00); // NOP
+    for (uint8_t i = 0; i < len; i++) {
+        data[i] = hal_spi(0x00);
+    }
+    hal_spi_select(0);
+}
+
+static uint8_t ReadReg (uint16_t addr) {
+    uint8_t val;
+    ReadRegs(addr, &val, 1);
+    return val;
+}
+
+bool sx1262_probe()
+{
+  u1_t v, v_reset;
+
+  SoC->SPI_begin();
+
+  hal_init(
+    nullptr
+  );
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  v_reset = ReadReg(REG_LORASYNCWORDLSB);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  v = ReadReg(REG_LORASYNCWORDLSB);
+
+  SPI.end();
+
+  if (v == 0x24) {
+
+    if (v_reset == 0x24) {
+      RF_SX1276_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+}
+#endif
 
 void sx1276_channel(uint8_t channel)
 {
@@ -724,7 +797,8 @@ void sx1276_setvars()
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = MAKERPS(sf, BW250, CR_4_5, 0, 0);
 
-  LMIC.rxsyms = 255;
+  LMIC.noRXIQinversion = true;
+  LMIC.rxsyms = 100;
 #else
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;

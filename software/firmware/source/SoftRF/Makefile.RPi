@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#SX1262        = -DUSE_SX1262
+#BASICMAC      = -DUSE_BASICMAC $(SX1262)
+
 CC            = gcc
 CXX           = g++
-
-# BASICMAC      = -DUSE_BASICMAC
 
 CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\" $(BASICMAC)
