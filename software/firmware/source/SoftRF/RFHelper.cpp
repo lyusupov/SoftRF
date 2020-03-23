@@ -70,30 +70,28 @@ const rfchip_ops_t nrf905_ops = {
 };
 #endif
 
-#if !defined(USE_SX1262)
 const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
   "SX1276",
   sx1276_probe,
-  sx1276_setup,
-  sx1276_channel,
-  sx1276_receive,
-  sx1276_transmit,
-  sx1276_shutdown
+  sx12xx_setup,
+  sx12xx_channel,
+  sx12xx_receive,
+  sx12xx_transmit,
+  sx12xx_shutdown
 };
-#else
-const rfchip_ops_t sx1276_ops = {
+#if defined(USE_BASICMAC)
+const rfchip_ops_t sx1262_ops = {
   RF_IC_SX1262,
   "SX1262",
   sx1262_probe,
-  sx1276_setup,
-  sx1276_channel,
-  sx1276_receive,
-  sx1276_transmit,
-  sx1276_shutdown
+  sx12xx_setup,
+  sx12xx_channel,
+  sx12xx_receive,
+  sx12xx_transmit,
+  sx12xx_shutdown
 };
 #endif
-
 const rfchip_ops_t cc13xx_ops = {
   RF_IC_CC13XX,
   "CC13XX",
@@ -153,25 +151,26 @@ byte RF_setup(void)
 
   if (rf_chip == NULL) {
 #if !defined(USE_OGN_RF_DRIVER)
-    if (hw_info.model != SOFTRF_MODEL_SKYWATCH) {
-      if (sx1276_ops.probe()) {
-        rf_chip = &sx1276_ops;
-        Serial.println(F("SX1276 RFIC is detected."));
+    if (sx1276_ops.probe()) {
+      rf_chip = &sx1276_ops;
+#if defined(USE_BASICMAC)
+      SX12XX_LL = &sx127x_ll_ops;
+    } else if (sx1262_ops.probe()) {
+      rf_chip = &sx1262_ops;
+      SX12XX_LL = &sx126x_ll_ops;
+#endif
 #if !defined(EXCLUDE_NRF905)
-      } else if (nrf905_ops.probe()) {
-        rf_chip = &nrf905_ops;
-        Serial.println(F("NRF905 RFIC is detected."));
+    } else if (nrf905_ops.probe()) {
+      rf_chip = &nrf905_ops;
 #endif /* EXCLUDE_NRF905 */
-      } else if (cc13xx_ops.probe()) {
-        rf_chip = &cc13xx_ops;
-        Serial.println(F("CC13XX RFIC is detected."));
-      } else {
-        Serial.println(F("WARNING! Neither SX1276"
-#if !defined(ENERGIA_ARCH_CC13XX)
-        ", CC13XX"
-#endif /* ENERGIA_ARCH_CC13XX */
-          " or NRF905 RFIC is detected!"));
-      }
+    } else if (cc13xx_ops.probe()) {
+      rf_chip = &cc13xx_ops;
+    }
+    if (rf_chip && rf_chip->name) {
+      Serial.print(rf_chip->name);
+      Serial.println(F(" RFIC is detected."));
+    } else {
+      Serial.println(F("WARNING! None of supported RFICs is detected!"));
     }
 #else /* USE_OGN_RF_DRIVER */
     if (ognrf_ops.probe()) {
@@ -548,32 +547,32 @@ void nrf905_shutdown()
 #endif /* EXCLUDE_NRF905 */
 
 /*
- * SX1276-specific code
+ * SX12XX-specific code
  *
  *
  */
 
-#if !defined(DISABLE_INVERT_IQ_ON_RX)
-#error This example requires DISABLE_INVERT_IQ_ON_RX to be set. Update \
-       config.h in the lmic library to set it.
-#endif
+osjob_t sx12xx_txjob;
+osjob_t sx12xx_timeoutjob;
 
-osjob_t sx1276_txjob;
-osjob_t sx1276_timeoutjob;
+static void sx12xx_tx_func (osjob_t* job);
+static void sx12xx_rx_func (osjob_t* job);
+void sx12xx_rx(osjobcb_t func);
 
-static void sx1276_tx_func (osjob_t* job);
-static void sx1276_rx_func (osjob_t* job);
-void sx1276_rx(osjobcb_t func);
+static bool sx12xx_receive_complete = false;
+bool sx12xx_receive_active = false;
+static bool sx12xx_transmit_complete = false;
 
-static bool sx1276_receive_complete = false;
-bool sx1276_receive_active = false;
-static bool sx1276_transmit_complete = false;
-
-static uint8_t sx1276_channel_prev = (uint8_t) -1;
+static uint8_t sx12xx_channel_prev = (uint8_t) -1;
 
 #if defined(USE_BASICMAC)
 void os_getDevEui (u1_t* buf) { }
 u1_t os_getRegion (void) { return REGCODE_EU868; }
+#else
+#if !defined(DISABLE_INVERT_IQ_ON_RX)
+#error This example requires DISABLE_INVERT_IQ_ON_RX to be set. Update \
+       config.h in the lmic library to set it.
+#endif
 #endif
 
 #define SX1276_RegVersion          0x42 // common
@@ -600,11 +599,7 @@ bool sx1276_probe()
 
   SoC->SPI_begin();
 
-  hal_init(
-#if defined(USE_BASICMAC)
-    nullptr
-#endif
-  );
+  hal_init (nullptr);
 
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
@@ -631,12 +626,13 @@ bool sx1276_probe()
   }
 }
 
-#if defined(USE_BASICMAC) && defined(USE_SX1262)
+#if defined(USE_BASICMAC)
 
-#define CMD_READREGISTER    0x1D
-#define REG_LORASYNCWORDLSB 0x0741
+#define CMD_READREGISTER		        0x1D
+#define REG_LORASYNCWORDLSB	        0x0741
+#define SX126X_DEF_LORASYNCWORDLSB  0x24
 
-static void ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
+static void sx1262_ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
     hal_spi_select(1);
     hal_pin_busy_wait();
     hal_spi(CMD_READREGISTER);
@@ -649,9 +645,9 @@ static void ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
     hal_spi_select(0);
 }
 
-static uint8_t ReadReg (uint16_t addr) {
+static uint8_t sx1262_ReadReg (uint16_t addr) {
     uint8_t val;
-    ReadRegs(addr, &val, 1);
+    sx1262_ReadRegs(addr, &val, 1);
     return val;
 }
 
@@ -661,26 +657,25 @@ bool sx1262_probe()
 
   SoC->SPI_begin();
 
-  hal_init(
-    nullptr
-  );
+  hal_init (nullptr);
 
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
   hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
 
-  v_reset = ReadReg(REG_LORASYNCWORDLSB);
+  v_reset = sx1262_ReadReg(REG_LORASYNCWORDLSB);
 
   hal_pin_rst(2); // configure RST pin floating!
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
 
-  v = ReadReg(REG_LORASYNCWORDLSB);
+  v = sx1262_ReadReg(REG_LORASYNCWORDLSB);
 
   SPI.end();
 
-  if (v == 0x24) {
+  u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
+  if (v == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
 
-    if (v_reset == 0x24) {
+    if (v_reset == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
       RF_SX1276_RST_is_connected = false;
     }
 
@@ -691,36 +686,33 @@ bool sx1262_probe()
 }
 #endif
 
-void sx1276_channel(uint8_t channel)
+void sx12xx_channel(uint8_t channel)
 {
-  if (channel != sx1276_channel_prev) {
+  if (channel != sx12xx_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
 
     //Serial.print("frequency: "); Serial.println(frequency);
 
-    if (sx1276_receive_active) {
+    if (sx12xx_receive_active) {
       os_radio(RADIO_RST);
-      sx1276_receive_active = false;
+      sx12xx_receive_active = false;
     }
 
     /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
     LMIC.freq = frequency;
     //LMIC.freq = 868200000UL;
 
-    sx1276_channel_prev = channel;
+    sx12xx_channel_prev = channel;
   }
 }
 
-void sx1276_setup()
+void sx12xx_setup()
 {
   SoC->SPI_begin();
 
   // initialize runtime env
-  os_init(
-#if defined(USE_BASICMAC)
-    nullptr
-#endif
-  );
+  os_init (nullptr);
+
   // Reset the MAC state. Session and pending data transfers will be discarded.
   LMIC_reset();
 
@@ -761,9 +753,16 @@ void sx1276_setup()
     /* Load regional max. EIRP at first */
     LMIC.txpow = RF_FreqPlan.MaxTxPower;
 
-    /* SX1276 is unable to give more than 20 dBm */
-    if (LMIC.txpow > 20)
-      LMIC.txpow = 20;
+    if (rf_chip->type == RF_IC_SX1262) {
+      /* SX1262 is unable to give more than 22 dBm */
+      if (LMIC.txpow > 22)
+        LMIC.txpow = 22;
+    } else {
+      /* SX1276 is unable to give more than 20 dBm */
+      if (LMIC.txpow > 20)
+        LMIC.txpow = 20;
+    }
+
 #if 1
     /*
      * Enforce Tx power limit until confirmation
@@ -782,7 +781,7 @@ void sx1276_setup()
   }
 }
 
-void sx1276_setvars()
+void sx12xx_setvars()
 {
 #if defined(USE_BASICMAC)
   _sf_t sf;
@@ -817,32 +816,28 @@ void sx1276_setvars()
   }
 }
 
-bool sx1276_receive()
+bool sx12xx_receive()
 {
   bool success = false;
 
-  sx1276_receive_complete = false;
+  sx12xx_receive_complete = false;
 
-  if (!sx1276_receive_active) {
-    sx1276_setvars();
-    sx1276_rx(sx1276_rx_func);
-    sx1276_receive_active = true;
+  if (!sx12xx_receive_active) {
+    sx12xx_setvars();
+    sx12xx_rx(sx12xx_rx_func);
+    sx12xx_receive_active = true;
   }
 
-  if (sx1276_receive_complete == false) {
+  if (sx12xx_receive_complete == false) {
     // execute scheduled jobs and events
-#if defined(USE_BASICMAC)
-      os_runstep();
-#else
-      os_runloop_once();
-#endif
+    os_runstep();
   };
 
   if (SoC->Bluetooth) {
     SoC->Bluetooth->loop();
   }
 
-  if (sx1276_receive_complete == true) {
+  if (sx12xx_receive_complete == true) {
 
     u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
 
@@ -862,33 +857,30 @@ bool sx1276_receive()
   return success;
 }
 
-void sx1276_transmit()
+void sx12xx_transmit()
 {
-    sx1276_transmit_complete = false;
-    sx1276_receive_active = false;
+    sx12xx_transmit_complete = false;
+    sx12xx_receive_active = false;
 
-    sx1276_setvars();
-    os_setCallback(&sx1276_txjob, sx1276_tx_func);
+    sx12xx_setvars();
+    os_setCallback(&sx12xx_txjob, sx12xx_tx_func);
 
-    while (sx1276_transmit_complete == false) {
+    while (sx12xx_transmit_complete == false) {
       // execute scheduled jobs and events
-#if defined(USE_BASICMAC)
       os_runstep();
-#else
-      os_runloop_once();
-#endif
+
       yield();
     };
 }
 
-void sx1276_shutdown()
+void sx12xx_shutdown()
 {
   LMIC_shutdown();
   SPI.end();
 }
 
 // Enable rx mode and call func when a packet is received
-void sx1276_rx(osjobcb_t func) {
+void sx12xx_rx(osjobcb_t func) {
   LMIC.osjob.func = func;
   LMIC.rxtime = os_getTime(); // RX _now_
   // Enable "continuous" RX for LoRa only (e.g. without a timeout,
@@ -900,14 +892,14 @@ void sx1276_rx(osjobcb_t func) {
 }
 
 
-static void sx1276_rx_func (osjob_t* job) {
+static void sx12xx_rx_func (osjob_t* job) {
 
   u1_t crc8, pkt_crc8;
   u2_t crc16, pkt_crc16;
   u1_t i;
 
   // SX1276 is in SLEEP after IRQ handler, Force it to enter RX mode
-  sx1276_receive_active = false;
+  sx12xx_receive_active = false;
 
   /* FANET (LoRa) LMIC IRQ handler may deliver empty packets here when CRC is invalid. */
   if (LMIC.dataLen == 0) {
@@ -989,7 +981,7 @@ static void sx1276_rx_func (osjob_t* job) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_NONE:
-    sx1276_receive_complete = true;
+    sx12xx_receive_complete = true;
     break;
   case RF_CHECKSUM_TYPE_GALLAGER:
     if (LDPC_Check((uint8_t  *) &LMIC.frame[0])) {
@@ -998,9 +990,9 @@ static void sx1276_rx_func (osjob_t* job) {
         LMIC.frame[i], LMIC.frame[i+1], LMIC.frame[i+2],
         LMIC.frame[i+3], LMIC.frame[i+4], LMIC.frame[i+5]);
 #endif
-      sx1276_receive_complete = false;
+      sx12xx_receive_complete = false;
     } else {
-      sx1276_receive_complete = true;
+      sx12xx_receive_complete = true;
     }
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:
@@ -1013,9 +1005,9 @@ static void sx1276_rx_func (osjob_t* job) {
     }
 #endif
     if (crc8 == pkt_crc8) {
-      sx1276_receive_complete = true;
+      sx12xx_receive_complete = true;
     } else {
-      sx1276_receive_complete = false;
+      sx12xx_receive_complete = false;
     }
     break;
   case RF_CHECKSUM_TYPE_CCITT_FFFF:
@@ -1030,9 +1022,9 @@ static void sx1276_rx_func (osjob_t* job) {
     }
 #endif
     if (crc16 == pkt_crc16) {
-      sx1276_receive_complete = true;
+      sx12xx_receive_complete = true;
     } else {
-      sx1276_receive_complete = false;
+      sx12xx_receive_complete = false;
     }
     break;
   }
@@ -1044,7 +1036,7 @@ static void sx1276_rx_func (osjob_t* job) {
 }
 
 // Transmit the given string and call the given function afterwards
-void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
+void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 
   u1_t crc8;
   u2_t crc16;
@@ -1153,14 +1145,14 @@ void sx1276_tx(unsigned char *buf, size_t size, osjobcb_t func) {
   //Serial.println("TX");
 }
 
-static void sx1276_txdone_func (osjob_t* job) {
-  sx1276_transmit_complete = true;
+static void sx12xx_txdone_func (osjob_t* job) {
+  sx12xx_transmit_complete = true;
 }
 
-static void sx1276_tx_func (osjob_t* job) {
+static void sx12xx_tx_func (osjob_t* job) {
 
   if (RF_tx_size > 0) {
-    sx1276_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx1276_txdone_func);
+    sx12xx_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx12xx_txdone_func);
   }
 }
 
@@ -1355,7 +1347,7 @@ bool ognrf_probe()
   TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
-  hal_init();
+  hal_init (nullptr);
 
   TRX.RESET(1);                      // RESET active
   vTaskDelay(10);                    // wait 10ms
@@ -1421,7 +1413,7 @@ void ognrf_setup()
   TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
-  hal_init();
+  hal_init (nullptr);
 
   TRX.RESET(1);                      // RESET active
   vTaskDelay(10);                    // wait 10ms

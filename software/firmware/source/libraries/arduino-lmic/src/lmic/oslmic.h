@@ -100,9 +100,9 @@ u1_t radio_rand1 (void);
 void radio_init (void);
 u1_t radio_has_irq (void);
 void radio_irq_handler (u1_t dio);
-void os_init (void);
+void os_init (void* bootarg);
 void os_runloop (void);
-void os_runloop_once (void);
+void os_runstep (void);
 
 //================================================================================
 

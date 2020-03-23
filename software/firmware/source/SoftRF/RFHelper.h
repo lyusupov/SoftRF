@@ -105,11 +105,11 @@ void nrf905_shutdown(void);
 
 bool sx1276_probe(void);
 bool sx1262_probe(void);
-void sx1276_setup(void);
-void sx1276_channel(uint8_t);
-bool sx1276_receive(void);
-void sx1276_transmit(void);
-void sx1276_shutdown(void);
+void sx12xx_setup(void);
+void sx12xx_channel(uint8_t);
+bool sx12xx_receive(void);
+void sx12xx_transmit(void);
+void sx12xx_shutdown(void);
 
 bool cc13xx_probe(void);
 void cc13xx_setup(void);

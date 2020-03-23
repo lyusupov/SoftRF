@@ -43,23 +43,30 @@ static void hal_io_init () {
     //ASSERT(lmic_pins.dio[0] != LMIC_UNUSED_PIN);
     //ASSERT(lmic_pins.dio[1] != LMIC_UNUSED_PIN || lmic_pins.dio[2] != LMIC_UNUSED_PIN);
 
+    // Write HIGH to deselect (NSS is active low). Do this before
+    // setting output, to prevent a moment of OUTPUT LOW on e.g. AVR.
+    digitalWrite(lmic_pins.nss, HIGH);
     pinMode(lmic_pins.nss, OUTPUT);
-    if (lmic_pins.rxtx[0] != LMIC_UNUSED_PIN)
-        pinMode(lmic_pins.rxtx[0], OUTPUT);
-    if (lmic_pins.rxtx[1] != LMIC_UNUSED_PIN)
-        pinMode(lmic_pins.rxtx[1], OUTPUT);
+    // Write HIGH again after setting output, for architectures that
+    // reset to LOW when setting OUTPUT (e.g. arduino-STM32L4).
+    digitalWrite(lmic_pins.nss, HIGH);
+
+    if (lmic_pins.txe != LMIC_UNUSED_PIN)
+        pinMode(lmic_pins.txe, OUTPUT);
+    if (lmic_pins.rxe != LMIC_UNUSED_PIN)
+        pinMode(lmic_pins.rxe, OUTPUT);
     if (lmic_pins.rst != LMIC_UNUSED_PIN)
         pinMode(lmic_pins.rst, OUTPUT);
 
     hal_interrupt_init();
 }
 
-// val == 1  => tx 1
-void hal_pin_rxtx (u1_t val) {
-    if (lmic_pins.rxtx[0] != LMIC_UNUSED_PIN)
-        digitalWrite(lmic_pins.rxtx[0], val);
-    if (lmic_pins.rxtx[1] != LMIC_UNUSED_PIN)
-        digitalWrite(lmic_pins.rxtx[1], !val);
+// rx = 0, tx = 1, off = -1
+void hal_pin_rxtx (s1_t val) {
+    if (lmic_pins.txe != LMIC_UNUSED_PIN)
+        digitalWrite(lmic_pins.txe, val == 1);
+    if (lmic_pins.rxe != LMIC_UNUSED_PIN)
+        digitalWrite(lmic_pins.rxe, val == 0);
 }
 
 // set radio RST pin to given value (or keep floating!)
@@ -435,7 +442,7 @@ void hal_printf(char *fmt, ... )
 }
 #endif
 
-void hal_init () {
+void hal_init (void *bootarg) {
     // configure radio I/O and interrupt handler
     hal_io_init();
     // configure radio SPI

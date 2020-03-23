@@ -1,5 +1,15 @@
+#ifndef __MANCHESTER_H__
+#define __MANCHESTER_H__
 
-const uint8_t ManchesterEncode[0x10] =  // lookup table for 4-bit nibbles for quick Manchester encoding
+#if defined(__AVR__) || defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32)
+#include <avr/pgmspace.h>
+#endif
+
+#if defined(ESP8266) || defined(ESP32)
+#include <pgmspace.h>
+#endif
+
+const uint8_t PROGMEM ManchesterEncode[0x10] =  // lookup table for 4-bit nibbles for quick Manchester encoding
 {
    0xAA, // hex: 0, bin: 0000, manch: 10101010
    0xA9, // hex: 1, bin: 0001, manch: 10101001
@@ -19,7 +29,7 @@ const uint8_t ManchesterEncode[0x10] =  // lookup table for 4-bit nibbles for qu
    0x55  // hex: F, bin: 1111, manch: 01010101
 };
 
-const uint8_t ManchesterDecode[0x100] =  // lookup table for quick Manchester decoding
+const uint8_t PROGMEM ManchesterDecode[0x100] =  // lookup table for quick Manchester decoding
 {                                        // lower nibble has the data bits and the upper nibble the error pattern
   0xF0, 0xE1, 0xE0, 0xF1, 0xD2, 0xC3, 0xC2, 0xD3, 0xD0, 0xC1, 0xC0, 0xD1, 0xF2, 0xE3, 0xE2, 0xF3,
   0xB4, 0xA5, 0xA4, 0xB5, 0x96, 0x87, 0x86, 0x97, 0x94, 0x85, 0x84, 0x95, 0xB6, 0xA7, 0xA6, 0xB7,
@@ -39,4 +49,4 @@ const uint8_t ManchesterDecode[0x100] =  // lookup table for quick Manchester de
   0xFC, 0xED, 0xEC, 0xFD, 0xDE, 0xCF, 0xCE, 0xDF, 0xDC, 0xCD, 0xCC, 0xDD, 0xFE, 0xEF, 0xEE, 0xFF
 } ;
 
-
+#endif // __MANCHESTER_H__

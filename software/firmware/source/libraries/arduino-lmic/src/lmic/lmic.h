@@ -38,6 +38,10 @@
 #include "raspi/raspi.h"
 #endif
 
+#if defined(ENERGIA_ARCH_CC13XX)
+#include <cc13xx/cc13xx.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+
 #include <protocol.h>
 
 #ifdef __cplusplus

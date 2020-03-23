@@ -33,9 +33,9 @@ static struct {
     osjob_t* runnablejobs;
 } OS;
 
-void os_init () {
+void os_init (void* bootarg) {
     memset(&OS, 0x00, sizeof(OS));
-    hal_init();
+    hal_init(bootarg);
     radio_init();
     LMIC_init();
 }
@@ -102,11 +102,11 @@ void os_setTimedCallback (osjob_t* job, ostime_t time, osjobcb_t cb) {
 // execute jobs from timer and from run queue
 void os_runloop () {
     while(1) {
-        os_runloop_once();
+        os_runstep();
     }
 }
 
-void os_runloop_once() {
+void os_runstep() {
     osjob_t* j = NULL;
     hal_disableIRQs();
     // check for runnable jobs

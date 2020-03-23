@@ -35,7 +35,7 @@ extern "C"{
 /*
  * initialize hardware (IO, SPI, TIMER, IRQ).
  */
-void hal_init (void);
+void hal_init (void *);
 
 /*
  * drive radio NSS pin (0=low, 1=high).
@@ -45,7 +45,7 @@ void hal_pin_nss (u1_t val);
 /*
  * drive radio RX/TX pins (0=rx, 1=tx).
  */
-void hal_pin_rxtx (u1_t val);
+void hal_pin_rxtx (s1_t val);
 
 /*
  * control radio RST pin (0=low, 1=high, 2=floating)

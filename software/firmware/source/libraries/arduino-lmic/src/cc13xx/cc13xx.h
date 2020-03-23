@@ -5,6 +5,12 @@
 
 #define static_assert(x,y) ({ })
 
+#ifndef nullptr
+#define nullptr            ((u1_t *) 0)
+#endif
+
+#ifdef __cplusplus
+
 class SPISettings {
 public:
   SPISettings() :_clock(1000000), _bitOrder(LSBFIRST), _dataMode(SPI_MODE0){}
@@ -13,6 +19,8 @@ public:
   uint8_t  _bitOrder;
   uint8_t  _dataMode;
 };
+
+#endif /* __cplusplus */
 
 #endif // CC13XX_H
 #endif // ENERGIA_ARCH_CC13XX

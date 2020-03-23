@@ -37,12 +37,8 @@
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
-#if defined(USE_BASICMAC)
-    .tx = LMIC_UNUSED_PIN,
-    .rx = LMIC_UNUSED_PIN,
-#else
-    .rxtx = { LMIC_UNUSED_PIN, SOC_GPIO_PIN_ANT_RXTX },
-#endif
+    .txe = LMIC_UNUSED_PIN,
+    .rxe = LMIC_UNUSED_PIN,
 #if !defined(USE_OGN_RF_DRIVER)
     .rst = LMIC_UNUSED_PIN,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
@@ -50,10 +46,8 @@ lmic_pinmap lmic_pins = {
     .rst = SOC_GPIO_PIN_RST,
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #endif
-#if defined(USE_BASICMAC)
     .busy = LMIC_UNUSED_PIN,
     .tcxo = LMIC_UNUSED_PIN,
-#endif
 };
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
