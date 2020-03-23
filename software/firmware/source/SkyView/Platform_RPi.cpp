@@ -61,10 +61,13 @@ Adafruit_SSD1306 odisplay(SCREEN_WIDTH, SCREEN_HEIGHT,
   &SPI, /*DC=*/ 25, /*RST=*/ 17, /*CS=*/ SS);
 
 lmic_pinmap lmic_pins = {
-    .nss = LMIC_UNUSED_PIN,
-    .rxtx = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN },
-    .rst = LMIC_UNUSED_PIN,
-    .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .nss  = LMIC_UNUSED_PIN,
+    .txe  = LMIC_UNUSED_PIN,
+    .rxe  = LMIC_UNUSED_PIN,
+    .rst  = LMIC_UNUSED_PIN,
+    .dio  = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .busy = LMIC_UNUSED_PIN,
+    .tcxo = LMIC_UNUSED_PIN,
 };
 
 void os_getArtEui (u1_t* buf) { }
