@@ -406,6 +406,7 @@ bool nrf905_probe()
   }
 
   digitalWrite(CSN, HIGH);
+  pinMode(CSN, INPUT);
 
   SPI.end();
 
@@ -440,7 +441,7 @@ void nrf905_channel(uint8_t channel)
     nRF905_band_t band;
 
     frequency = RF_FreqPlan.getChanFrequency(channel);
-    band = (frequency >= 868000000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+    band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
 
     nRF905_setFrequency(band , frequency);
 
@@ -612,6 +613,7 @@ bool sx1276_probe()
 
   v = sx1276_readReg(SX1276_RegVersion);
 
+  pinMode(lmic_pins.nss, INPUT);
   SPI.end();
 
   if (v == 0x12) {
@@ -670,6 +672,7 @@ bool sx1262_probe()
 
   v = sx1262_ReadReg(REG_LORASYNCWORDLSB);
 
+  pinMode(lmic_pins.nss, INPUT);
   SPI.end();
 
   u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
@@ -1356,6 +1359,7 @@ bool ognrf_probe()
 
   uint8_t ChipVersion = TRX.ReadVersion();
 
+  pinMode(lmic_pins.nss, INPUT);
   SPI.end();
 
 #if defined(WITH_RFM95)
