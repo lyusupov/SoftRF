@@ -119,7 +119,7 @@ Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4700;
+  size_t size = 4860;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -163,7 +163,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* Radio specific part */
+  /* Radio specific part 1 */
   if (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262) {
     snprintf_P ( offset, size,
       PSTR("\
@@ -499,16 +499,42 @@ void handleSettings() {
 <input type='radio' name='no_track' value='0' %s>Off\
 <input type='radio' name='no_track' value='1' %s>On\
 </td>\
-</tr>\
-</table>\
-<p align=center><INPUT type='submit' value='Save and restart'></p>\
-</form>\
-</body>\
-</html>"),
+</tr>"),
   (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
   (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
   (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
   (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* Radio specific part 2 */
+  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Radio CF correction (&#177;, kHz)</th>\
+<td align=right>\
+<INPUT type='number' name='rfc' min='-30' max='30' value='%d'>\
+</td>\
+</tr>"),
+    settings->freq_corr);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 7 */
+  snprintf_P ( offset, size,
+    PSTR("\
+</table>\
+<p align=center><INPUT type='submit' value='Save and restart'></p>\
+</form>\
+</body>\
+</html>")
   );
 
   SoC->swSer_enableRx(false);
@@ -629,7 +655,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1520);
+  char *Input_temp = (char *) malloc(1600);
   if (Input_temp == NULL) {
     return;
   }
@@ -673,9 +699,11 @@ void handleInput() {
       settings->no_track = server.arg(i).toInt();
     } else if (server.argName(i).equals("power_save")) {
       settings->power_save = server.arg(i).toInt();
+    } else if (server.argName(i).equals("rfc")) {
+      settings->freq_corr = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1520,
+  snprintf_P ( Input_temp, 1600,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -704,6 +732,7 @@ PSTR("<html>\
 <tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
 <tr><th align=left>Power save</th><td align=right>%d</td></tr>\
+<tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -716,7 +745,7 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
   settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
-  settings->power_save
+  settings->power_save, settings->freq_corr
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );

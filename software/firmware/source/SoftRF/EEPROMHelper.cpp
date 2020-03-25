@@ -104,6 +104,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.stealth    = false;
   eeprom_block.field.settings.no_track   = false;
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
+  eeprom_block.field.settings.freq_corr  = 0;
 }
 
 void EEPROM_store()

@@ -693,6 +693,7 @@ void sx12xx_channel(uint8_t channel)
 {
   if (channel != sx12xx_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+    int8_t fc = settings->freq_corr;
 
     //Serial.print("frequency: "); Serial.println(frequency);
 
@@ -701,8 +702,20 @@ void sx12xx_channel(uint8_t channel)
       sx12xx_receive_active = false;
     }
 
+    if (rf_chip->type == RF_IC_SX1276) {
+      /* correction of not more than 30 kHz is allowed */
+      if (fc > 30) {
+        fc = 30;
+      } else if (fc < -30) {
+        fc = -30;
+      };
+    } else {
+      /* Most of SX1262 designs use TCXO */
+      fc = 0;
+    }
+
     /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
-    LMIC.freq = frequency;
+    LMIC.freq = frequency + (fc * 1000);
     //LMIC.freq = 868200000UL;
 
     sx12xx_channel_prev = channel;
