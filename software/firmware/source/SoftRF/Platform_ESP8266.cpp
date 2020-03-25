@@ -42,7 +42,7 @@ lmic_pinmap lmic_pins = {
     .rxe = LMIC_UNUSED_PIN,
     .rst = SOC_GPIO_PIN_RST,
     .dio = { LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
-    .busy = LMIC_UNUSED_PIN,
+    .busy = SOC_GPIO_PIN_TXE,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
