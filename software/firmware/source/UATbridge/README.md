@@ -62,6 +62,12 @@ Reception capability of the **UAT Receiver** mode was validated both with:
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/UATbridge_Stratux.JPG)
 
+Reception capability of real life UAT traffic in **Normal** mode had been validated on **Sun-n-Fun** (2019) Fly-In & Expo in Lakeland, FL:
+
+![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-8.jpg)
+
+<p><img src="https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-7.jpg" height="710" width="400">&nbsp;<img src="https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-6.jpg" height="710" width="400"></p>
+
 ## Known limitations
 
 1. reception of UAT signals is currently limited to "downlink" (air-to-air) packets only. So, realtime weather and other "bells and whistles" of the UAT protocol are not available ;
