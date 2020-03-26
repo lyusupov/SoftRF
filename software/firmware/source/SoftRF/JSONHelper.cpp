@@ -531,6 +531,17 @@ void parseSettings(JsonObject& root)
   if (no_track.success()) {
     eeprom_block.field.settings.no_track = no_track.as<bool>();
   }
+
+  JsonVariant fcorr = root["fcorr"];
+  if (fcorr.success()) {
+    int fc = fcorr.as<signed int>();
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+    eeprom_block.field.settings.freq_corr = fc;
+  }
 }
 
 void parseD1090(JsonObject& root)

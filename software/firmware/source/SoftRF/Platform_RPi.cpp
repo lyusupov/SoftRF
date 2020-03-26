@@ -832,6 +832,26 @@ int main()
       normal_loop();
       break;
     }
+
+    /* take care of millis() rollover on a long term run */
+    if (millis() > (47 * 24 * 3600 * 1000UL)) {
+      time_t current_time = time(NULL);
+      struct tm timebuf;
+
+      if (current_time == ((time_t)-1) ||
+          localtime_r(&current_time, &timebuf) == NULL) {
+        Traffic_TCP_Server.detach();
+        fprintf(stderr, "Failure to obtain the current time.\n");
+        exit(EXIT_FAILURE);
+      }
+
+      /* shut SoftRF down at night time only */
+      if (timebuf.tm_hour >= 2 && timebuf.tm_hour <= 5) {
+        Traffic_TCP_Server.detach();
+        fprintf( stderr, "Program termination: millis() rollover prevention.\n" );
+        exit(EXIT_SUCCESS);
+      }
+    }
   }
 
   Traffic_TCP_Server.detach();
