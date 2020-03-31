@@ -584,7 +584,7 @@ static void txlora () {
     configPower();
 
     // set sync word
-    writeReg(LORARegSyncWord, LMIC.preamble);
+    writeReg(LORARegSyncWord, LMIC.syncword);
 
     // set the IRQ mapping DIO0=TxDone DIO1=NOP DIO2=NOP
     writeReg(RegDioMapping1, MAP_DIO0_LORA_TXDONE|MAP_DIO1_LORA_NOP|MAP_DIO2_LORA_NOP);
@@ -676,7 +676,7 @@ static void rxlora (u1_t rxmode) {
     writeReg(LORARegSymbTimeoutLsb, LMIC.rxsyms);
 
     // set sync word
-    writeReg(LORARegSyncWord, LMIC.preamble);
+    writeReg(LORARegSyncWord, LMIC.syncword);
 
     // configure DIO mapping DIO0=RxDone DIO1=RxTout DIO2=NOP
     writeReg(RegDioMapping1, MAP_DIO0_LORA_RXDONE|MAP_DIO1_LORA_RXTOUT|MAP_DIO2_LORA_NOP);

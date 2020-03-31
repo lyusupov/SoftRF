@@ -532,9 +532,9 @@ void parseSettings(JsonObject& root)
     eeprom_block.field.settings.no_track = no_track.as<bool>();
   }
 
-  JsonVariant fcorr = root["fcorr"];
-  if (fcorr.success()) {
-    int fc = fcorr.as<signed int>();
+  JsonVariant fcor = root["fcor"];
+  if (fcor.success()) {
+    int fc = fcor.as<signed int>();
     if (fc > 30) {
       fc = 30;
     } else if (fc < -30) {

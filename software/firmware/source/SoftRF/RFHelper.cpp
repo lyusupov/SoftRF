@@ -799,32 +799,27 @@ void sx12xx_setup()
 
 void sx12xx_setvars()
 {
-#if defined(USE_BASICMAC)
-  _sf_t sf;
-
-  if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
-    sf = (_sf_t) LMIC.protocol->bitrate;
-    LMIC.preamble = LMIC.protocol->syncword[0];
-  } else {
-    sf = FSK;
-  }
-
-  // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
-  LMIC.rps = MAKERPS(sf, BW250, CR_4_5, 0, 0);
-
-  LMIC.noRXIQinversion = true;
-  LMIC.rxsyms = 100;
-#else
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
-    LMIC.preamble = LMIC.protocol->syncword[0];
+    LMIC.syncword = LMIC.protocol->syncword[0];
   } else {
     LMIC.datarate = DR_FSK;
   }
 
+#if defined(USE_BASICMAC)
+
+#define updr2rps  LMIC_updr2rps
+
+  // LMIC.rps = MAKERPS(sf, BW250, CR_4_5, 0, 0);
+
+  LMIC.noRXIQinversion = true;
+  LMIC.rxsyms = 100;
+
+#endif /* USE_BASICMAC */
+
   // This sets CR 4/5, BW125 (except for DR_SF7B, which uses BW250)
   LMIC.rps = updr2rps(LMIC.datarate);
-#endif /* USE_BASICMAC */
+
 
   if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
     /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */

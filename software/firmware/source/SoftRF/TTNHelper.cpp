@@ -64,7 +64,7 @@ extern bool sx1276_receive_active;
 u1_t saved_datarate = DR_SF7B;
 s1_t saved_txpow = 14;
 u4_t saved_freq = 868200000UL;
-u1_t saved_preamble = 0xF1; // FANET+
+u1_t saved_syncword = 0xF1; // FANET+
 
 /* ------------------ BEGIN OF LMIC CODE ------------------------------------- */
 
@@ -320,7 +320,7 @@ void ttn_tx(osjobcb_t func) {
         saved_datarate  = LMIC.datarate;
         saved_txpow     = LMIC.txpow;
         saved_freq      = LMIC.freq;
-        saved_preamble  = LMIC.preamble;
+        saved_syncword  = LMIC.syncword;
   
         LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
   
@@ -333,7 +333,7 @@ void ttn_tx(osjobcb_t func) {
         // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
         LMIC_setDrTxpow(DR_SF7,14);
 
-        LMIC.preamble = 0x34; // LORA_MAC_PREAMBLE
+        LMIC.syncword = 0x34;
 
         // We could send right now!
         txbeg = now;
@@ -358,7 +358,7 @@ static void ttn_txdone_func (osjob_t* job) {
   LMIC.datarate         = saved_datarate;
   LMIC.txpow            = saved_txpow;
   LMIC.freq             = saved_freq;
-  LMIC.preamble         = saved_preamble;
+  LMIC.syncword         = saved_syncword;
 
   LMIC.opmode           &= ~(OP_TXDATA|OP_TXRXPEND);
 

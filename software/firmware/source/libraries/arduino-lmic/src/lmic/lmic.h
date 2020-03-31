@@ -287,7 +287,7 @@ struct lmic_t {
 #endif
 
     const rf_proto_desc_t  *protocol;
-    u1_t        preamble;
+    u1_t        syncword;
 
     u1_t        noRXIQinversion;
 };
