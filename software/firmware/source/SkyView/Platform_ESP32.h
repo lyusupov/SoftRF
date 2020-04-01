@@ -34,8 +34,10 @@
 #define SerialInput           Serial1
 
 /* Peripherals */
-#define SOC_GPIO_PIN_GNSS_RX  21 /* TBD */
-#define SOC_GPIO_PIN_GNSS_TX  22 /* TBD */
+#define SOC_GPIO_PIN_GNSS_RX  21
+#define SOC_GPIO_PIN_GNSS_TX  22
+
+#define SOC_BUTTON_MODE_DEF   0
 
 /* TTGO T5 and T5S SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_T5S 23

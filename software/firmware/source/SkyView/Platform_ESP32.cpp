@@ -151,12 +151,18 @@ static uint32_t ESP32_getFlashId()
 
 static void ESP32_fini()
 {
-  SPI1.end();
+  int mode_button_pin = SOC_BUTTON_MODE_DEF;
+
+  if (settings && (settings->adapter == ADAPTER_TTGO_T5S)) {
+    SPI1.end();
+
+    mode_button_pin = SOC_BUTTON_MODE_T5S;
+  }
 
   esp_wifi_stop();
   esp_bt_controller_disable();
 
-  esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_BUTTON_MODE_T5S, 0); // 1 = High, 0 = Low
+  esp_sleep_enable_ext0_wakeup((gpio_num_t) mode_button_pin, 0); // 1 = High, 0 = Low
 
 #if USE_IP5306_WORKAROUND
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
@@ -253,12 +259,6 @@ static void ESP32_setup()
       break;
     }
   }
-
-  /* SD-SPI init */
-  SPI1.begin(SOC_SD_PIN_SCK_T5S,
-             SOC_SD_PIN_MISO_T5S,
-             SOC_SD_PIN_MOSI_T5S,
-             SOC_SD_PIN_SS_T5S);
 }
 
 static uint32_t ESP32_getChipId()
@@ -366,6 +366,12 @@ static void ESP32_EPD_setup()
               SOC_GPIO_PIN_MISO_T5S,
               SOC_GPIO_PIN_MOSI_T5S,
               SOC_GPIO_PIN_SS_T5S);
+
+    /* SD-SPI init */
+    SPI1.begin(SOC_SD_PIN_SCK_T5S,
+               SOC_SD_PIN_MISO_T5S,
+               SOC_SD_PIN_MOSI_T5S,
+               SOC_SD_PIN_SS_T5S);
     break;
   }
 }
@@ -813,22 +819,32 @@ void onDownButtonEvent() {
 
 static void ESP32_Button_setup()
 {
+  int mode_button_pin = settings->adapter == ADAPTER_TTGO_T5S ?
+                        SOC_BUTTON_MODE_T5S : SOC_BUTTON_MODE_DEF;
+
+  // Button(s) uses external pull up register.
+  pinMode(mode_button_pin, INPUT);
+
+  button_mode.init(mode_button_pin);
+
+  // Configure the ButtonConfig with the event handler, and enable all higher
+  // level events.
+  ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
+  ModeButtonConfig->setEventHandler(handleEvent);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  ModeButtonConfig->setDebounceDelay(15);
+  ModeButtonConfig->setClickDelay(100);
+  ModeButtonConfig->setDoubleClickDelay(1000);
+  ModeButtonConfig->setLongPressDelay(2000);
+
+  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
+
   if (settings->adapter == ADAPTER_TTGO_T5S) {
-    // Button(s)) uses external pull up register.
-    pinMode(SOC_BUTTON_MODE_T5S, INPUT);
+
+    // Button(s) uses external pull up register.
     pinMode(SOC_BUTTON_UP_T5S,   INPUT);
     pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
-
-    // Configure the ButtonConfig with the event handler, and enable all higher
-    // level events.
-    ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
-    ModeButtonConfig->setEventHandler(handleEvent);
-    ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-    ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
-    ModeButtonConfig->setDebounceDelay(15);
-    ModeButtonConfig->setClickDelay(100);
-    ModeButtonConfig->setDoubleClickDelay(1000);
-    ModeButtonConfig->setLongPressDelay(2000);
 
     ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
     UpButtonConfig->setEventHandler(handleEvent);
@@ -846,7 +862,6 @@ static void ESP32_Button_setup()
     DownButtonConfig->setDoubleClickDelay(1000);
     DownButtonConfig->setLongPressDelay(2000);
 
-    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S), onModeButtonEvent, CHANGE );
     attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE );
     attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE );
   }
@@ -854,8 +869,9 @@ static void ESP32_Button_setup()
 
 static void ESP32_Button_loop()
 {
+  button_mode.check();
+
   if (settings->adapter == ADAPTER_TTGO_T5S) {
-    button_mode.check();
     button_up.check();
     button_down.check();
   }
