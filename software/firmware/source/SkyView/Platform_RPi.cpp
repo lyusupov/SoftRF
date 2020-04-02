@@ -49,7 +49,7 @@
 #include <sndfile.h>
 #include <string.h>
 
-TTYSerial SerialInput("/dev/ttyUSB0");
+TTYSerial SerialInput("/dev/ttyACM0");
 
 static const uint8_t SS    = 8; // pin 24
 
