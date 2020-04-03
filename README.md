@@ -60,13 +60,17 @@ Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/UAV)
 * [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-* [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
-    * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
-    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
-    * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Retro Edition](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)
-* [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+* SkyView
+    * [EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+        * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
+        * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
+        * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
+        * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+* [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder.-Quick-Start)
 
 * Software
