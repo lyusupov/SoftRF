@@ -1,5 +1,5 @@
 /*
- * Platform_RPi.h
+ * JSONHelper.h
  * Copyright (C) 2018-2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI)
+#ifndef JSONHELPER_H
+#define JSONHELPER_H
 
-#ifndef PLATFORM_RPI_H
-#define PLATFORM_RPI_H
+#include <ArduinoJson.h>
+#include "SkyView.h"
 
-#include <raspi/TTYSerial.h>
-#include <raspi/raspi.h>
+#define JSON_BUFFER_SIZE  65536
 
-/* Maximum of tracked flying objects is now SoC-specific constant */
-#define MAX_TRACKING_OBJECTS    9
+extern StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
-#define PCM_DEVICE              "default"
-#define WAV_FILE_PREFIX         "Audio/"
+extern void parseSettings(JsonObject&);
 
-/* Waveshare Pi HAT 2.7" buttons mapping */
-#define SOC_GPIO_BUTTON_MODE    RPI_V2_GPIO_P1_29
-#define SOC_GPIO_BUTTON_UP      RPI_V2_GPIO_P1_31
-#define SOC_GPIO_BUTTON_DOWN    RPI_V2_GPIO_P1_33
-#define SOC_GPIO_BUTTON_4       RPI_V2_GPIO_P1_35
-
-extern TTYSerial SerialInput;
-
-#endif /* PLATFORM_RPI_H */
-
-#endif /* RASPBERRY_PI */
+#endif /* JSONHELPER_H */

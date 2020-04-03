@@ -22,6 +22,7 @@ CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
+#STATIC        = -static-libstdc++
 
 LMIC_PATH     = ../libraries/arduino-lmic/src
 TIMELIB_PATH  = ../libraries/Time
@@ -33,7 +34,6 @@ JSON_PATH     = ../libraries/ArduinoJson/src
 TCPSRV_PATH   = ../libraries/SimpleNetwork/src
 GFX_PATH      = ../libraries/Adafruit-GFX-Library
 EPD2_PATH     = ../libraries/GxEPD2/src
-GDL90_PATH    = ../libraries/rotobox
 GDL90_PATH    = ../libraries/rotobox
 SSD1306_PATH  = ../libraries/Adafruit_SSD1306
 BUTTON_PATH   = ../libraries/AceButton/src
@@ -50,7 +50,7 @@ CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  TrafficHelper.cpp EPDHelper.cpp  \
                  GDL90Helper.cpp   BatteryHelper.cpp \
                  OLEDHelper.cpp    View_Radar_EPD.cpp \
-                 View_Text_EPD.cpp
+                 View_Text_EPD.cpp JSONHelper.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(LMIC_PATH)/raspi/raspi.o \
@@ -88,7 +88,7 @@ bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
 $(PROGNAME): $(OBJS) hal.o Platform_RPi.o
-				$(CXX) $(OBJS) hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
+				$(CXX) $(STATIC) $(OBJS) hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
 
 bcm-clean:
 				(cd $(BCMLIB_PATH)/../ ; make distclean)

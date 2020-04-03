@@ -33,14 +33,17 @@
 #include <string.h>
 #include <sqlite3.h>
 
+#include <ArduinoJson.h>
+
 #include "SoCHelper.h"
 #include "NMEAHelper.h"
-#include "EPDHelper.h"
 #include "TrafficHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
 #include "GDL90Helper.h"
 #include "BatteryHelper.h"
+#include "JSONHelper.h"
+#include "EPDHelper.h"
 #include "OLEDHelper.h"
 
 #include "SkyView.h"
@@ -48,6 +51,8 @@
 #include <alsa/asoundlib.h>
 #include <sndfile.h>
 #include <string.h>
+
+#include <iostream>
 
 TTYSerial SerialInput("/dev/ttyACM0");
 
@@ -95,6 +100,8 @@ hardware_info_t hw_info = {
 static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
+
+std::string input_line;
 
 //-------------------------------------------------------------------------
 //
@@ -629,6 +636,45 @@ const SoC_ops_t RPi_ops = {
   NULL
 };
 
+static bool inputAvailable()
+{
+  struct timeval tv;
+  fd_set fds;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  FD_ZERO(&fds);
+  FD_SET(STDIN_FILENO, &fds);
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+  return (FD_ISSET(0, &fds));
+}
+
+static void RPi_ParseSettings()
+{
+  if (inputAvailable()) {
+    std::getline(std::cin, input_line);
+    const char *str = input_line.c_str();
+    int len = input_line.length();
+
+    if (str[0] == '{') {
+      // JSON input
+
+      JsonObject& root = jsonBuffer.parseObject(str);
+
+      JsonVariant msg_class = root["class"];
+
+      if (msg_class.success()) {
+        const char *msg_class_s = msg_class.as<char*>();
+
+        if (!strcmp(msg_class_s,"SKYVIEW")) {
+          parseSettings(root);
+        }
+      }
+
+      jsonBuffer.clear();
+    }
+  }
+}
+
 /* Poll input source(s) */
 void Input_loop() {
   switch (settings->protocol)
@@ -656,12 +702,14 @@ int main()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   Serial.println();
-  Serial.print(F("SkyView-"));
+  Serial.print(F(SKYVIEW_IDENT));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2019-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
+
+  RPi_ParseSettings();
 
   Battery_setup();
   SoC->Button_setup();
