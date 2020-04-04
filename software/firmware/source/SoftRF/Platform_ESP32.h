@@ -135,6 +135,8 @@ extern Adafruit_NeoPixel strip;
 // SX1276 RESET
 #define SOC_GPIO_PIN_TBEAM_RF_RST_V02   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TBEAM_RF_RST_V05   23
+// SX1262 BUSY
+#define SOC_GPIO_PIN_TBEAM_RF_BUSY_V08  32
 // 1st I2C bus on the T-Beam
 #define SOC_GPIO_PIN_TBEAM_SDA          13
 #define SOC_GPIO_PIN_TBEAM_SCL          2

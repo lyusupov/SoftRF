@@ -250,7 +250,8 @@ static void ESP32_setup()
     } else {
       hw_info.revision = 2;
     }
-    lmic_pins.rst = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
+    lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
+    lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
   }
 }
 
