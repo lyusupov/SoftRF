@@ -112,7 +112,7 @@ void setup()
   Serial.println();
   Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
   Serial.flush();
-  hw_info.display = EPD_setup();
+  hw_info.display = EPD_setup(true);
   if (hw_info.display != DISPLAY_NONE) {
     Serial.println(F(" done."));
   } else {

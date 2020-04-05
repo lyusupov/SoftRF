@@ -53,7 +53,7 @@ typedef struct navbox_struct
   uint32_t  timestamp;
 } navbox_t;
 
-byte EPD_setup();
+byte EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);
 

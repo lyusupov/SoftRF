@@ -689,8 +689,18 @@ void Input_loop() {
   }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  bool isSysVinit = false;
+  int opt;
+
+  while ((opt = getopt(argc, argv, "b")) != -1) {
+      switch (opt) {
+      case 'b': isSysVinit = true; break;
+      default: break;
+      }
+  }
+
   // Init GPIO bcm
   if (!bcm2835_init()) {
       fprintf( stderr, "bcm2835_init() Failed\n\n" );
@@ -720,7 +730,7 @@ int main()
     Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
     Serial.flush();
 
-    hw_info.display = EPD_setup();
+    hw_info.display = EPD_setup(!isSysVinit);
     if (hw_info.display != DISPLAY_NONE) {
       Serial.println(F(" done."));
     } else {
@@ -734,6 +744,15 @@ int main()
     break;
   default:
     break;
+  }
+
+  if (isSysVinit) {
+    if (hw_info.display == DISPLAY_EPD_2_7) {
+      EPD_text_Draw_Message("PLEASE,", "WAIT");
+    }
+
+    SoC->Button_fini();
+    SoC_fini();
   }
 
   switch (settings->protocol)
