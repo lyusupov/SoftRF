@@ -212,6 +212,12 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.filter = TRAFFIC_FILTER_1500M;
     }
   }
+
+  JsonVariant team = root["team"];
+  if (team.success()) {
+    const char * team_s = team.as<char*>();
+    eeprom_block.field.settings.team = strtol(team_s, NULL, 0); /* try to autodetect base */
+  }
 }
 
 #endif /* RASPBERRY_PI */

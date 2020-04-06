@@ -201,6 +201,7 @@ static void RPi_setup()
 
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
   eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
+  eeprom_block.field.settings.team            = 0;
 
   RPi_SerialNumber();
 }

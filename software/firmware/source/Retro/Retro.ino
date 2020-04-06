@@ -100,7 +100,11 @@ void setup() {
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
   Serial.print(SoC->name);
-  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION
+#if defined(SOFTRF_ADDRESS)
+    "I"
+#endif
+    " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
