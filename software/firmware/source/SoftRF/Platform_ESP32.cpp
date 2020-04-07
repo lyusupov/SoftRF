@@ -96,10 +96,12 @@ static union {
   uint64_t chipmacid;
 };
 
+static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
+extern bool loopTaskWDTEnabled;
 
 const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_LEGACY]    = "L",
@@ -865,7 +867,26 @@ static void ESP32_Display_loop()
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
     if (u8x8) {
-      if (!OLED_display_frontpage) {
+      if (!OLED_display_probe_status) {
+        u8x8->clear();
+
+        u8x8->draw2x2String(0, 0, "RADIO");
+        u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+        u8x8->draw2x2String(0, 2, "GNSS");
+        u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+        u8x8->draw2x2String(0, 4, "OLED");
+        u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+        u8x8->draw2x2String(0, 6, "BARO");
+        u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+        delay(3000);
+
+        if (loopTaskWDTEnabled) {
+          feedLoopWDT();
+        }
+
+        OLED_display_probe_status = true;
+      } else if (!OLED_display_frontpage) {
 
         u8x8->clear();
 
