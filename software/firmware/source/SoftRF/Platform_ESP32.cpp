@@ -356,8 +356,15 @@ static void ESP32_reset()
 static uint32_t ESP32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
-                   (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
+  uint8_t mac3 = efuse_mac[3];
+
+  /* remap address to avoid overlapping with congested FLARM range */
+  if ((mac3 >= 0xDD) && (mac3 <= 0xDF)) {
+    mac3 += 0x10;
+  }
+
+  return (uint32_t) efuse_mac[5]  | ((uint32_t) efuse_mac[4] << 8) | \
+        ((uint32_t)  mac3 << 16)  | ((uint32_t) efuse_mac[2] << 24);
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
 #endif /* SOFTRF_ADDRESS */
