@@ -25,7 +25,13 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
+//#define USE_EXP_SW_SERIAL
+
+#if defined(USE_EXP_SW_SERIAL)
 #include <Exp_SoftwareSerial.h>
+#else
+#include <SoftwareSerial.h>
+#endif
 #include <ESP8266FtpServer.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -82,7 +88,11 @@ extern "C" {
 }
 
 extern ESP8266WebServer server;
+#if defined(USE_EXP_SW_SERIAL)
 extern Exp_SoftwareSerial swSer;
+#else
+extern SoftwareSerial swSer;
+#endif
 extern Adafruit_NeoPixel strip;
 
 #define USE_NMEALIB

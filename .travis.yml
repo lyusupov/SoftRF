@@ -47,7 +47,7 @@ install:
       fi
     fi
   - if [[ "$BOARD" =~ "esp8266:esp8266:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=http://github.com/esp8266/Arduino/releases/download/2.5.0/package_esp8266com_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=http://github.com/esp8266/Arduino/releases/download/2.6.3/package_esp8266com_index.json" --save-prefs ;
       arduino --install-boards esp8266:esp8266 ;
       arduino --board $BOARD --save-prefs ;
       arduino --pref "compiler.warning_level=all" --save-prefs ;

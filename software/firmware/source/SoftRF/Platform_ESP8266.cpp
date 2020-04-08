@@ -46,7 +46,11 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
-Exp_SoftwareSerial swSer(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX , false, 256);
+#if defined(USE_EXP_SW_SERIAL)
+Exp_SoftwareSerial swSer(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX, false, 256);
+#else
+SoftwareSerial swSer;
+#endif
 
 ESP8266WebServer server ( 80 );
 
@@ -262,7 +266,11 @@ static void ESP8266_SPI_begin()
 
 static void ESP8266_swSer_begin(unsigned long baud)
 {
+#if defined(USE_EXP_SW_SERIAL)
   swSer.begin(baud);
+#else
+  swSer.begin(baud, SWSERIAL_8N1, SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX, false, 256);
+#endif
 }
 
 static void ESP8266_swSer_enableRx(boolean arg)
