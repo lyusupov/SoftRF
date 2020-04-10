@@ -109,9 +109,6 @@ typedef struct stm32_backup_struct {
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-#if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
-#define Serial                Serial1
-#endif
 #define swSer                 Serial4
 #define UATSerial             Serial2  /* PA3, PA2 */
 
@@ -200,17 +197,22 @@ typedef struct stm32_backup_struct {
 #define VREFINT               1200  // mV, STM32F103x8 datasheet value
 
 /* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX  PA10
+#define SOC_GPIO_PIN_CONS_TX  PA9
+
 #define SOC_GPIO_PIN_SWSER_RX PA3
 #define SOC_GPIO_PIN_SWSER_TX PA2
+
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
+
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PA1
+#define SOC_GPIO_PIN_STATUS   LED_GREEN
+
 #define SOC_GPIO_PIN_BUZZER   PB8
 #define SOC_GPIO_PIN_BATTERY  PB1
 
 #define SOC_GPIO_PIN_RX3      PB11
 #define SOC_GPIO_PIN_TX3      PB10
-
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PA1
-#define SOC_GPIO_PIN_STATUS   LED_GREEN
 
 /* SPI */
 #define SOC_GPIO_PIN_MOSI     PA7

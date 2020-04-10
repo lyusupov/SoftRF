@@ -50,23 +50,19 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
+#endif
+
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
-HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
-
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
 HardwareSerial Serial2(USART2);
-#endif
+HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
 #elif defined(ARDUINO_BLUEPILL_F103C8)
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
-
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-HardwareSerial Serial1(USART1);
-#endif
 
 #else
 #error "This hardware platform is not supported!"
