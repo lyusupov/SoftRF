@@ -17,8 +17,8 @@ p.warn {
 <script><!--
 
 const version = 1;
-const volume  = 0;
-const pointer = 0;
+const volume  = 2;
+const pointer = 2;
 
 // Compute NMEA checksum and display it
 function UpdateChecksum()
@@ -231,6 +231,14 @@ function InitSettings()
 <body  onload="InitSettings()">
 <h3 align=left>On-line SoftRF settings tool</h3>
 <b>NOTICE!</b> <small>Your browser should have support for JavaScript and DHTML (most modern browsers do).</small>
+<!--
+<br><br>
+<font color="red">WARNING</font>: <a href="https://gitter.im/lyusupov/SoftRF?at=5e38a8f3594a0517c265cfa8">There were reports</a>
+that <b>T-Motion</b> boards been shipped out in January or February of year 2020
+may have wrong factory pre-installed SoftRF firmware revision. Settings change may cause the board's unexpected behaviour.<br>
+If you are affected - please, consider to update
+<a href="https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/STM32/S76G/SoftRF-firmware-v1.0-rc7-S76G.dfu">the firmware</a> first. Use <a href="https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions">these instructions</a>.
+-->
 <hr>
 <h1 align=center>Settings</h1>
 <form>

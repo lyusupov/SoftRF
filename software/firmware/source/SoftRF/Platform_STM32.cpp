@@ -156,6 +156,26 @@ static void STM32_setup()
 
     LowPower.begin();
 
+    hw_info.model = SOFTRF_MODEL_RETRO;
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
+    stm32_board = STM32_TTGO_TWATCH_EB_1_3;
+
+    /* Probe on presence of external pull-up resistors connected to I2C bus */
+    if (            STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH  &&
+        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH) &&
+                    STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH  &&
+        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH)) {
+
+      hw_info.model = SOFTRF_MODEL_DONGLE;
+      stm32_board   = STM32_TTGO_TMOTION_1_1;
+    }
+#elif defined(ARDUINO_BLUEPILL_F103C8)
+    stm32_board = STM32_BLUE_PILL;
+#else
+#error "This hardware platform is not supported!"
+#endif
+
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
@@ -195,26 +215,6 @@ static void STM32_setup()
     setBackupRegister(BOOT_COUNT_INDEX, bootCount);
 
     pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
-
-    hw_info.model = SOFTRF_MODEL_RETRO;
-
-#if defined(ARDUINO_NUCLEO_L073RZ)
-    stm32_board = STM32_TTGO_TWATCH_EB_1_3;
-
-    /* Probe on presence of external pull-up resistors connected to I2C bus */
-    if (            STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH  &&
-        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SCL, INPUT_PULLDOWN) == HIGH) &&
-                    STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH  &&
-        (delay(50), STM32_probe_pin(SOC_GPIO_PIN_SDA, INPUT_PULLDOWN) == HIGH)) {
-
-      hw_info.model = SOFTRF_MODEL_DONGLE;
-      stm32_board   = STM32_TTGO_TMOTION_1_1;
-    }
-#elif defined(ARDUINO_BLUEPILL_F103C8)
-    stm32_board = STM32_BLUE_PILL;
-#else
-#error "This hardware platform is not supported!"
-#endif
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);

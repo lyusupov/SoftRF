@@ -715,6 +715,17 @@ void PickGNSSFix()
       }
 #if defined(USE_NMEA_CFG)
       if (C_Version.isUpdated()) {
+#if 0
+        if (strncmp(C_Version.value(), "RST", 3) == 0) {
+            SoC->WDT_fini();
+            Serial.println();
+            Serial.println(F("Restart is in progress. Please, wait..."));
+            Serial.println();
+            Serial.flush();
+            RF_Shutdown();
+            SoC->reset();
+        } else
+#endif
         if (strncmp(C_Version.value(), "OFF", 3) == 0) {
           shutdown("  OFF  ");
         } else if (strncmp(C_Version.value(), "?", 1) == 0) {
@@ -724,10 +735,10 @@ void PickGNSSFix()
               PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
               PSRFC_VERSION, settings->mode, settings->rf_protocol,
               settings->band, settings->aircraft_type, settings->alarm,
-              settings->txpower, BUZZER_OFF, LED_OFF,
-              settings->nmea_g, settings->nmea_p, settings->nmea_l,
-              settings->nmea_s, NMEA_UART, GDL90_OFF,
-              D1090_OFF, settings->stealth, settings->no_track );
+              settings->txpower, settings->volume,   settings->pointer,
+              settings->nmea_g,  settings->nmea_p,   settings->nmea_l,
+              settings->nmea_s,  settings->nmea_out, settings->gdl90,
+              settings->d1090,   settings->stealth,  settings->no_track );
 
           NMEA_add_checksum(psrfc_buf, sizeof(psrfc_buf) - strlen(psrfc_buf));
           NMEA_Out((byte *) psrfc_buf, strlen(psrfc_buf), false);
