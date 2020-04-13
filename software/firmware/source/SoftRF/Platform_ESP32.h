@@ -219,6 +219,7 @@ struct rst_info {
 
 #define NMEA_TCP_SERVICE
 #define USE_NMEALIB
+//#define USE_NMEA_CFG
 //#define USE_AT6558_SETUP
 //#define USE_BASICMAC
 
