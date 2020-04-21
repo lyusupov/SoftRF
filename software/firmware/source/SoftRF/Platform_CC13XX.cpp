@@ -64,8 +64,15 @@ static void CC13XX_reset()
 
 static uint32_t CC13XX_getChipId()
 {
-  return (uint32_t) ieeeAddr[7]        | (ieeeAddr[6] << 8) | \
-                   (ieeeAddr[5] << 16) | (ieeeAddr[4] << 24);
+  uint32_t id = (uint32_t) ieeeAddr[7]        | ((uint32_t) ieeeAddr[6] << 8) | \
+               ((uint32_t) ieeeAddr[5] << 16) | ((uint32_t) ieeeAddr[4] << 24);
+
+  /* remap address to avoid overlapping with congested FLARM range */
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDF0000)) {
+    id += 0x100000;
+  }
+
+  return id;
 }
 
 static long CC13XX_random(long howsmall, long howBig)

@@ -94,7 +94,14 @@ static void ESP8266_reset()
 static uint32_t ESP8266_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  return ESP.getChipId();
+  uint32_t id = ESP.getChipId();
+
+  /* remap address to avoid overlapping with congested FLARM range */
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDF0000)) {
+    id += 0x100000;
+  }
+
+  return id;
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
 #endif
