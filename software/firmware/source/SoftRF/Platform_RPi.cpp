@@ -261,7 +261,7 @@ static uint32_t RPi_getChipId()
   uint32_t id = SerialNumber ? SerialNumber : gethostid();
 
   /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDF0000)) {
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
     id += 0x100000;
   }
 

@@ -68,7 +68,7 @@ static uint32_t CC13XX_getChipId()
                ((uint32_t) ieeeAddr[5] << 16) | ((uint32_t) ieeeAddr[4] << 24);
 
   /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDF0000)) {
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
     id += 0x100000;
   }
 
