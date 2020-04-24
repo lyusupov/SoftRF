@@ -284,6 +284,9 @@ static u1_t randbuf[16];
 // over current config
 #define DEFAULT_CURRENT     0x2b    // default over current setting (100 mA)
 #define HIGHPOWER_CURRENT   0x31    // setting for +20 dBm output (140 mA)
+
+#define OPMODE_FSK_SX1276_LowFrequencyModeOn        (1u << 3)
+#define OPMODE_LORA_SX1276_LowFrequencyModeOn       (1u << 3)
 #elif CFG_sx1272_radio
 #define LNA_RX_GAIN (0x20|0x03)
 #else
@@ -310,7 +313,9 @@ static void opmode (u1_t mode) {
 static void opmodeLora() {
     u1_t u = OPMODE_LORA;
 #ifdef CFG_sx1276_radio
-    u |= 0x8;   // TBD: sx1276 high freq
+    if (LMIC.freq <= SX127X_FREQ_LF_MAX) {
+        u |= OPMODE_LORA_SX1276_LowFrequencyModeOn;
+    }
 #endif
     writeReg(RegOpMode, u);
 }
@@ -318,7 +323,9 @@ static void opmodeLora() {
 static void opmodeFSK() {
     u1_t u = 0;
 #ifdef CFG_sx1276_radio
-    u |= 0x8;   // TBD: sx1276 high freq
+    if (LMIC.freq <= SX127X_FREQ_LF_MAX) {
+        u |= OPMODE_FSK_SX1276_LowFrequencyModeOn;
+    }
 #endif
     writeReg(RegOpMode, u);
 }

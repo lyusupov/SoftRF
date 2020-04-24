@@ -19,7 +19,7 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(__ASR6501__)
 #include <WiFiUdp.h>
 #endif
 
@@ -42,7 +42,7 @@ void Raw_Transmit_UDP(void);
 void WiFi_fini(void);
 
 extern String host_name;
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(__ASR6501__)
 extern WiFiUDP Uni_Udp;
 #endif
 

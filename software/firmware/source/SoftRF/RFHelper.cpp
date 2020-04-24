@@ -151,10 +151,16 @@ byte RF_setup(void)
 
   if (rf_chip == NULL) {
 #if !defined(USE_OGN_RF_DRIVER)
+#if !defined(EXCLUDE_SX1276)
     if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;
+#else
+    if (false) {
+#endif
 #if defined(USE_BASICMAC)
+#if !defined(EXCLUDE_SX1276)
       SX12XX_LL = &sx127x_ll_ops;
+#endif
     } else if (sx1262_ops.probe()) {
       rf_chip = &sx1262_ops;
       SX12XX_LL = &sx126x_ll_ops;

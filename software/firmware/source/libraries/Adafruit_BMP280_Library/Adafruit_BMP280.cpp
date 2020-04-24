@@ -76,7 +76,7 @@ uint8_t Adafruit_BMP280::spixfer(uint8_t x) {
   for (int i=7; i>=0; i--) {
     reply <<= 1;
     digitalWrite(_sck, LOW);
-    digitalWrite(_mosi, x & (1<<i));
+    digitalWrite(_mosi, x & (1<<i) ? HIGH : LOW);
     digitalWrite(_sck, HIGH);
     if (digitalRead(_miso))
       reply |= 1;

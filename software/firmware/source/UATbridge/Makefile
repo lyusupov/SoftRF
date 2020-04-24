@@ -42,7 +42,7 @@ CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h \
-                 Platform_RPi.h  Platform_STM32.h \
+                 Platform_RPi.h  Platform_STM32.h Platform_PSoC4.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
                  EEPROMHelper.h SoundHelper.h TimeHelper.h \
                  WiFiHelper.h

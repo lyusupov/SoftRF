@@ -19,7 +19,7 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(__ASR6501__)
 #include <EEPROM.h>
 #endif /* ARDUINO */
 

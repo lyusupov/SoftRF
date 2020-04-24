@@ -35,6 +35,7 @@
 #include "TrafficHelper.h"
 #include "MAVLinkHelper.h"
 #include "BatteryHelper.h"
+#include "JSONHelper.h"
 
 #include "SoftRF.h"
 #include "EasyLink.h"
@@ -181,15 +182,18 @@ void setup() {
   eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_NONE;
 
-  eeprom_block.field.settings.nmea_g   = false;
-  eeprom_block.field.settings.nmea_p   = false;
-  eeprom_block.field.settings.nmea_l   = false;
-  eeprom_block.field.settings.nmea_s   = false;
-  eeprom_block.field.settings.nmea_out = NMEA_OFF;
-  eeprom_block.field.settings.gdl90    = GDL90_OFF;
-  eeprom_block.field.settings.d1090    = D1090_OFF;
-  eeprom_block.field.settings.stealth  = false;
-  eeprom_block.field.settings.no_track = false;
+  eeprom_block.field.settings.nmea_g        = false;
+  eeprom_block.field.settings.nmea_p        = false;
+  eeprom_block.field.settings.nmea_l        = false;
+  eeprom_block.field.settings.nmea_s        = false;
+  eeprom_block.field.settings.nmea_out      = NMEA_OFF;
+  eeprom_block.field.settings.gdl90         = GDL90_OFF;
+  eeprom_block.field.settings.d1090         = D1090_OFF;
+  eeprom_block.field.settings.json          = JSON_OFF;
+  eeprom_block.field.settings.stealth       = false;
+  eeprom_block.field.settings.no_track      = false;
+  eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
+  eeprom_block.field.settings.freq_corr     = 0;
 
   switch (settings->mode)
   {

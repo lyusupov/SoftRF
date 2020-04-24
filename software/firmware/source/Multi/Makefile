@@ -1,6 +1,6 @@
 #
 # Makefile
-# Copyright (C) 2019-2020 Linar Yusupov
+# Copyright (C) 2020 Linar Yusupov
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SKETCH        = Retro.ino
+SKETCH        = Multi.ino
 
 BIN_ELF       := $(SKETCH:.ino=.ino.elf)
 BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
@@ -27,20 +27,20 @@ ARDUINO       = arduino
 LN            = ln -s
 RM            = rm -f
 
-CPPS          := Platform_STM32.cpp SoCHelper.cpp \
+CPPS          := Platform_PSoC4.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
-                 GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
-                 NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
-                 LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp
+                 TrafficHelper.cpp NMEAHelper.cpp GDL90Helper.cpp \
+                 MAVLinkHelper.cpp D1090Helper.cpp \
+                 BatteryHelper.cpp BaroHelper.cpp
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h \
-                 Platform_RPi.h Platform_CC13XX.h Platform_PSoC4.h \
+                 Platform_RPi.h Platform_CC13XX.h Platform_STM32.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
                  EEPROMHelper.h SoundHelper.h TimeHelper.h \
-                 WiFiHelper.h
+                 WiFiHelper.h LEDHelper.h 
 
 links:  $(foreach f, $(CPPS) $(HFILES), link-file-$(f))
 

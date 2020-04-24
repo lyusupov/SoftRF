@@ -64,9 +64,9 @@ static void hal_io_init () {
 // rx = 0, tx = 1, off = -1
 void hal_pin_rxtx (s1_t val) {
     if (lmic_pins.txe != LMIC_UNUSED_PIN)
-        digitalWrite(lmic_pins.txe, val == 1);
+        digitalWrite(lmic_pins.txe, val == 1 ? HIGH : LOW);
     if (lmic_pins.rxe != LMIC_UNUSED_PIN)
-        digitalWrite(lmic_pins.rxe, val == 0);
+        digitalWrite(lmic_pins.rxe, val == 0 ? HIGH : LOW);
 }
 
 // set radio RST pin to given value (or keep floating!)
@@ -76,7 +76,7 @@ void hal_pin_rst (u1_t val) {
 
     if(val == 0 || val == 1) { // drive pin
         pinMode(lmic_pins.rst, OUTPUT);
-        digitalWrite(lmic_pins.rst, val);
+        digitalWrite(lmic_pins.rst, val == 1 ? HIGH : LOW);
     } else {
         pinMode(lmic_pins.rst, INPUT);
 #if defined(RASPBERRY_PI)
@@ -190,6 +190,8 @@ static void hal_io_check() {
 //    BCM2835_CORE_CLK_HZ = 250000000
 //    Clock divider / 64 = 3.906 MHz
 static const SPISettings settings(BCM2835_SPI_CLOCK_DIVIDER_64, BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0);
+#elif defined(__ASR6501__)
+/* nothing to do */
 #else
 static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
 #endif
@@ -211,7 +213,7 @@ void hal_pin_nss (u1_t val) {
 #endif
 
     //Serial.println(val?">>":"<<");
-    digitalWrite(lmic_pins.nss, val);
+    digitalWrite(lmic_pins.nss, val ? HIGH : LOW);
 }
 
 // perform SPI transaction with radio

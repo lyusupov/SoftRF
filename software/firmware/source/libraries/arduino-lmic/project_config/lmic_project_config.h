@@ -5,11 +5,6 @@
 // even adding #include "lora_project_config.h" at top of the sketch
 // so put all in this file and it works all time
 
-// Arduino Zero remap Serial to SerialUSB
-#ifdef ARDUINO_ARCH_SAMD          
-#define Serial SerialUSB
-#endif
-
 //#define CFG_us915 1
 #define CFG_eu868 1
 #define CFG_sx1276_radio 1
