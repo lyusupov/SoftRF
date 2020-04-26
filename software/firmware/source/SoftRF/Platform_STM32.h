@@ -180,6 +180,8 @@ typedef struct stm32_backup_struct {
 #define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_NRF905           //  -  2 kb
+#define EXCLUDE_EGM96            //  - 16 kb
 //#define USE_SERIAL_DEEP_SLEEP  //  + 12 kb
 //#define USE_BASICMAC           //  +  7 kb
 
@@ -239,12 +241,13 @@ typedef struct stm32_backup_struct {
 /* Component                         Cost */
 /* -------------------------------------- */
 /* USB Serial */                 //  + 10 kb
-//#define USE_OLED               //  +3.5 kb
+#define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 //#define EXCLUDE_BMP180         //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
-#define EXCLUDE_NRF905           //  -  2 kb
+//#define EXCLUDE_NRF905         //  -  2 kb
+#define EXCLUDE_EGM96            //  - 16 kb
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69

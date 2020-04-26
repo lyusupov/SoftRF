@@ -122,13 +122,20 @@ void setup() {
 
   delay(100);
 
+#if !(defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2))
   hw_info.baro = Baro_setup();
+#endif
 
+#if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {
     Serial.begin(57600);
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
-  }  else {
+  }  else
+#else
+  settings->mode = SOFTRF_MODE_NORMAL;
+#endif /* EXCLUDE_MAVLINK */
+  {
     hw_info.gnss = GNSS_setup();
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
@@ -166,9 +173,11 @@ void loop() {
 
   switch (settings->mode)
   {
+#if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     uav_loop();
     break;
+#endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_NORMAL:
   default:
     normal_loop();
@@ -211,7 +220,9 @@ void normal_loop()
 {
   bool success;
 
+#if !(defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2))
   Baro_loop();
+#endif
 
   PickGNSSFix();
 
@@ -227,6 +238,7 @@ void normal_loop()
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
+#if !defined(EXCLUDE_EGM96)
     /*
      * When geoidal separation is zero or not available - use approx. EGM96 value
      */
@@ -238,6 +250,7 @@ void normal_loop()
       /* we can assume the GPS unit is giving ellipsoid height */
       ThisAircraft.altitude -= ThisAircraft.geoid_separation;
     }
+#endif /* EXCLUDE_EGM96 */
 
     RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
@@ -278,6 +291,7 @@ void normal_loop()
   ClearExpired();
 }
 
+#if !defined(EXCLUDE_MAVLINK)
 void uav_loop()
 {
   bool success = false;
@@ -312,3 +326,4 @@ void uav_loop()
 
   ClearExpired();
 }
+#endif /* EXCLUDE_MAVLINK */

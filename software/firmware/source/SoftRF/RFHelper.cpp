@@ -92,6 +92,7 @@ const rfchip_ops_t sx1262_ops = {
   sx12xx_shutdown
 };
 #endif
+#if !defined(EXCLUDE_CC13XX)
 const rfchip_ops_t cc13xx_ops = {
   RF_IC_CC13XX,
   "CC13XX",
@@ -102,7 +103,7 @@ const rfchip_ops_t cc13xx_ops = {
   cc13xx_transmit,
   cc13xx_shutdown
 };
-
+#endif
 #if defined(USE_OGN_RF_DRIVER)
 
 #define vTaskDelay  delay
@@ -169,8 +170,10 @@ byte RF_setup(void)
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
 #endif /* EXCLUDE_NRF905 */
+#if !defined(EXCLUDE_CC13XX)
     } else if (cc13xx_ops.probe()) {
       rf_chip = &cc13xx_ops;
+#endif /* EXCLUDE_CC13XX */
     }
     if (rf_chip && rf_chip->name) {
       Serial.print(rf_chip->name);
@@ -1173,6 +1176,7 @@ static void sx12xx_tx_func (osjob_t* job) {
   }
 }
 
+#if !defined(EXCLUDE_CC13XX)
 /*
  * CC13XX-specific code
  *
@@ -1322,6 +1326,7 @@ void cc13xx_shutdown()
 {
   /* Nothing to do */
 }
+#endif /* EXCLUDE_CC13XX */
 
 #if defined(USE_OGN_RF_DRIVER)
 /*

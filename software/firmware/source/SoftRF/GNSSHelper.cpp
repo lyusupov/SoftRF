@@ -30,7 +30,9 @@
 
 #include "SoftRF.h"
 
+#if !defined(EXCLUDE_EGM96)
 #include <egm96s.h>
+#endif /* EXCLUDE_EGM96 */
 
 #if !defined(DO_GNSS_DEBUG)
 #define GNSS_DEBUG_PRINT
@@ -872,6 +874,7 @@ void PickGNSSFix()
   }
 }
 
+#if !defined(EXCLUDE_EGM96)
 /*
  *  Algorithm of EGM96 geoid offset approximation was taken from XCSoar
  */
@@ -906,3 +909,4 @@ int LookupSeparation(float lat, float lon)
 
   return (int) pgm_read_byte(&egm96s_dem[offset]) - 127;
 }
+#endif /* EXCLUDE_EGM96 */

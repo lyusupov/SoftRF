@@ -244,6 +244,7 @@ void normal_loop()
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
+#if !defined(EXCLUDE_EGM96)
     /*
      * When geoidal separation is zero or not available - use approx. EGM96 value
      */
@@ -255,6 +256,7 @@ void normal_loop()
       /* we can assume the GPS unit is giving ellipsoid height */
       ThisAircraft.altitude -= ThisAircraft.geoid_separation;
     }
+#endif /* EXCLUDE_EGM96 */
 
     RF_Transmit(RF_Encode(&ThisAircraft), true);
   }

@@ -112,15 +112,17 @@ struct rst_info {
 
 /* Component                         Cost */
 /* -------------------------------------- */
-//#define USE_NMEA_CFG           //  +    kb
+#define USE_NMEA_CFG             //  +    kb
 #define EXCLUDE_BMP180           //  -    kb
-#define EXCLUDE_BMP280           //  -    kb
+//#define EXCLUDE_BMP280         //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb
 #define EXCLUDE_NRF905           //  -    kb
+#define EXCLUDE_CC13XX           //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
+#define EXCLUDE_EGM96            //  - 16 kb
 
-//#define USE_BASICMAC
-//#define EXCLUDE_SX1276           //  -  3 kb
+#define USE_BASICMAC
+#define EXCLUDE_SX1276           //  -  3 kb
 
 #endif /* PLATFORM_PSOC4_H */
 

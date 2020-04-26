@@ -26,7 +26,7 @@
 #include "EEPROMHelper.h"
 #include "GNSSHelper.h"
 
-// RFM95W pin mapping
+// SX1262 pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
@@ -38,12 +38,6 @@ lmic_pinmap lmic_pins = {
 };
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
-
-static bool OLED_display_probe_status = false;
-static bool OLED_display_frontpage = false;
-static uint32_t prev_tx_packets_counter = 0;
-static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
