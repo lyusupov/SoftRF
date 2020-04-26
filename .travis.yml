@@ -110,13 +110,10 @@ install:
       arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-Module_0"  --save-prefs ;
       cd $TRAVIS_BUILD_DIR/software/firmware/source/Multi ;
       make links ;
-      cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/0.0.5 ;
-      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/4a73a44df64fa117790230be028532e1d94abc07/patch-1.txt ;
+      cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/0.0.6 ;
+      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/45f5503b7541b632e0733386563559b773001f16/patch-1.txt ;
       cat patch-1.txt | patch -p0 ;
       mv cores/asr650x/port/include/hal/hal.h cores/asr650x/port/include/hal/hal.h.ex ;
-      cd cores/asr650x/projects ;
-      rm -f CubeCellLib.a ;
-      cp $TRAVIS_BUILD_DIR/software/firmware/binaries/PSoC4/misc/CubeCellLib.a . ;
       cd $TRAVIS_BUILD_DIR ;
     fi
 

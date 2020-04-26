@@ -5,6 +5,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#if defined(__ASR6501__)
+#undef min
+#undef max
+#endif
+
 #include <limits>
 
 #include "bitcount.h"
