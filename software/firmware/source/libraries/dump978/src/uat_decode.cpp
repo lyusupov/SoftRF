@@ -22,6 +22,10 @@
 #include "uat.h"
 #include "uat_decode.h"
 
+#ifndef M_PI
+#define M_PI       3.14159265358979323846   // pi
+#endif
+
 static void uat_decode_hdr(uint8_t *frame, struct uat_adsb_mdb *mdb)
 {
     mdb->mdb_type = (frame[0] >> 3) & 0x1f;

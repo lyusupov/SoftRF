@@ -89,7 +89,7 @@ extern const SoC_ops_t ESP32_ops;
 #if defined(RASPBERRY_PI)
 extern const SoC_ops_t RPi_ops;
 #endif
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 extern const SoC_ops_t CC13XX_ops;
 #endif
 #if defined(ARDUINO_ARCH_STM32)

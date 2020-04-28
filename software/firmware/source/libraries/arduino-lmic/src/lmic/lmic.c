@@ -334,7 +334,7 @@ ostime_t calcAirTime (rps_t rps, u1_t plen) {
     return (((ostime_t)tmp << sfx) * OSTICKS_PER_SEC + div/2) / div;
 }
 
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 
 extern inline rps_t updr2rps (dr_t dr);
 extern inline rps_t dndr2rps (dr_t dr);
@@ -359,7 +359,7 @@ extern inline rps_t setIh    (rps_t params, int ih);
 extern inline rps_t makeRps  (sf_t sf, bw_t bw, cr_t cr, int ih, int nocrc);
 extern inline int   sameSfBw (rps_t r1, rps_t r2);
 
-#else /* ENERGIA_ARCH_CC13XX */
+#else /* ENERGIA_ARCH_CC13XX & ENERGIA_ARCH_CC13X2 */
 
 inline rps_t updr2rps (dr_t dr) { return (rps_t)TABLE_GET_U1(_DR2RPS_CRC, dr+1); }
 inline rps_t dndr2rps (dr_t dr) { return setNocrc(updr2rps(dr),1); }
@@ -388,7 +388,7 @@ inline rps_t makeRps (sf_t sf, bw_t bw, cr_t cr, int ih, int nocrc) {
 // Two frames with params r1/r2 would interfere on air: same SFx + BWx
 inline int sameSfBw(rps_t r1, rps_t r2) { return ((r1^r2)&0x1F) == 0; }
 
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX & ENERGIA_ARCH_CC13X2 */
 
 
 // END LORA

@@ -15,13 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 
 #ifndef PLATFORM_CC13XX_H
 #define PLATFORM_CC13XX_H
 
 #include "IPAddress.h"
 #include <WS2812.h>
+
+#if defined(ENERGIA_ARCH_CC13X2)
+extern size_t  strnlen (const char *, size_t);
+#endif /* ENERGIA_ARCH_CC13X2 */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -74,4 +78,4 @@ extern uint8_t LEDs[][3];
 
 #endif /* PLATFORM_CC13XX_H */
 
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */

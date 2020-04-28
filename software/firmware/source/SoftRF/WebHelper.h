@@ -21,7 +21,8 @@
 
 #include <TinyGPS++.h>
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(__ASR6501__)
+#if defined(ARDUINO) && !defined(__ASR6501__) && \
+   !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 
@@ -44,7 +45,8 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 //extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(__ASR6501__)
+#if defined(ARDUINO) && !defined(__ASR6501__) && \
+   !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 extern WiFiClient client;
 #endif /* ARDUINO */
 

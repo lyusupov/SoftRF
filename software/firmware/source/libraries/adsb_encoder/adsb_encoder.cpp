@@ -11,7 +11,8 @@
 
 #define MODES_GENERATOR_POLY 0xfff409U
 
-#if !defined(ESP8266) && !defined(ESP32) && !defined(ENERGIA_ARCH_CC13XX) && \
+#if !defined(ESP8266) && !defined(ESP32) && \
+    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32)
 static unsigned int crc_table[256];
 #else
@@ -19,7 +20,8 @@ static unsigned int crc_table[256];
 #include <pgmspace.h>
 #endif
 
-#if defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)
 #include <avr/pgmspace.h>
 #endif
 
@@ -71,7 +73,8 @@ unsigned int modes_crc(unsigned char *buf, size_t  len)
 	unsigned int rem = 0;
 	size_t  i;
 	for (rem = 0, i = len; i > 0; --i) {
-#if !defined(ESP8266) && !defined(ESP32)  && !defined(ENERGIA_ARCH_CC13XX) && \
+#if !defined(ESP8266) && !defined(ESP32) && \
+    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32)
 		rem = ((rem & 0x00ffff) << 8) ^ crc_table[*buf++ ^ ((rem & 0xff0000) >> 16)];
 #else
@@ -628,7 +631,8 @@ frame_data_t make_velocity_frame(unsigned int addr,
 
 int modescrc_module_init()
 {
-#if !defined(ESP8266) && !defined(ESP32) && !defined(ENERGIA_ARCH_CC13XX) && \
+#if !defined(ESP8266) && !defined(ESP32) && \
+    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32)
 	int i;
 

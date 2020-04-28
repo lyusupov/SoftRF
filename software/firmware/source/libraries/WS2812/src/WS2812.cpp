@@ -13,7 +13,7 @@
 #define SPIDIV     3                    // 16 MHz/2 gives 125 ns for each on bit in byte
 #define SPILONG    0b00001111           // 750 ns (acceptable "on" range 550 to 850 ns)
 #define SPISHORT   0b00000011           // 375 ns (acceptable "on" range 200 to 500 ns)
-#elif defined(BOARD_CC1310_LAUNCHXL)
+#elif defined(BOARD_CC1310_LAUNCHXL) || defined(BOARD_CC1352R1_LAUNCHXL)
 #define SPIDIV     3                    // 16 MHz/2 gives 125 ns for each on bit in byte
 #define SPILONG    0b00001111           // 750 ns (acceptable "on" range 550 to 850 ns)
 #define SPISHORT   0b00000011           // 375 ns (acceptable "on" range 200 to 500 ns)

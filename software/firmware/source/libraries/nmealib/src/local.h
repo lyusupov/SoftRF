@@ -2,7 +2,7 @@
 #include <_ansi.h>
 #include <time.h>
 
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 #include <pgmspace.h>
 #if defined(ARDUINO_ARCH_STM32)
 #define	_AND		,

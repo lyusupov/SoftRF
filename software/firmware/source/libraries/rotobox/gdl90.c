@@ -4,12 +4,12 @@
 #include <pgmspace.h>
 #endif
 
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #include <avr/pgmspace.h>
 #endif
 
 // Copied from the GDL90 ICD
-#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 uint16_t crc16table[256];
 #else
 uint16_t crc16table[256] PROGMEM = {
@@ -715,7 +715,7 @@ void encode_gdl90_uplink_data(gdl_message_t *rawMsg, uint8_t *payload, uint16_t 
 
 // Copied from the GDL90 ICD
 void gdl90_crcInit() {
-#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
     uint32_t i, bitctr, crc;
 
     for (i = 0; i < 256; i++) {
@@ -734,7 +734,7 @@ uint16_t gdl90_crcCompute(uint8_t *block, uint32_t length) {
     uint16_t crc = 0;
 
     for (i = 0; i < length; i++) {
-#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
         crc = crc16table[crc >> 8] ^ (crc << 8) ^ block[i];
 #else
         crc = pgm_read_word(&crc16table[crc >> 8]) ^ (crc << 8) ^ block[i];

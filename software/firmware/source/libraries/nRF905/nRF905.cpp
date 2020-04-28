@@ -8,8 +8,8 @@
 
 #include <string.h>
 #if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && \
-    !defined(ENERGIA_ARCH_CC13XX) && !defined(ARDUINO_ARCH_STM32)  && \
-    !defined(__ASR6501__)
+    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
+    !defined(ARDUINO_ARCH_STM32)  && !defined(__ASR6501__)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -21,9 +21,9 @@
 #ifdef ARDUINO
 #include <Arduino.h>
 #include <SPI.h>
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #define _BV(bit) (1 << (bit))
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
 #else
 #if !defined(RASPBERRY_PI)
 #include "nRF905_spi.h"

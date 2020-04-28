@@ -38,9 +38,9 @@
 #include "raspi/raspi.h"
 #endif
 
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #include <cc13xx/cc13xx.h>
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
 
 #include <protocol.h>
 

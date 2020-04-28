@@ -16,14 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 
 #include "SoCHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 
+#if defined(ENERGIA_ARCH_CC13XX)
 #include <easylink/EasyLink.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+#if defined(ENERGIA_ARCH_CC13X2)
+#include <easylink/EasyLinkv2.h>
+#endif /* ENERGIA_ARCH_CC13X2 */
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -203,4 +208,4 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_WDT_fini
 };
 
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */

@@ -36,7 +36,7 @@ void init_fec(void)
 {
     rs_adsb_short = init_rs_char(8, /* gfpoly */ ADSB_POLY, /* fcr */ 120, /* prim */ 1, /* nroots */ 12, /* pad */ 225);
     rs_adsb_long  = init_rs_char(8, /* gfpoly */ ADSB_POLY, /* fcr */ 120, /* prim */ 1, /* nroots */ 14, /* pad */ 207);
-#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && \
+#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32)
     rs_uplink     = init_rs_char(8, /* gfpoly */ UPLINK_POLY, /* fcr */ 120, /* prim */ 1, /* nroots */ 20, /* pad */ 163);
 #endif
@@ -67,7 +67,7 @@ int correct_adsb_frame(uint8_t *to, int *rs_errors)
     return -1;
 }
 
-#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && \
+#if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32)
 int correct_uplink_frame(uint8_t *from, uint8_t *to, int *rs_errors)
 {

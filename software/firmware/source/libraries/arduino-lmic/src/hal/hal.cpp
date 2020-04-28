@@ -17,9 +17,9 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #include <cc13xx/cc13xx.h>
-#endif /* ENERGIA_ARCH_CC13XX */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
 
 #include "../lmic.h"
 #include "hal.h"
@@ -197,7 +197,7 @@ static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
 #endif
 
 static void hal_spi_init () {
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
     SPI.setClockDivider(SPI_CLOCK_MAX / LMIC_SPI_FREQ);
 #endif
     SPI.begin();
@@ -232,7 +232,7 @@ static u1_t spi_buf[MAX_LEN_FRAME + 1];
 
 u1_t hal_spi_read_reg (u1_t addr) {
     hal_pin_nss(0);
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
     hal_spi(addr & 0x7F);
     u1_t val = hal_spi(0x00);
 #else
@@ -247,7 +247,7 @@ u1_t hal_spi_read_reg (u1_t addr) {
 
 void hal_spi_write_reg (u1_t addr, u1_t data) {
     hal_pin_nss(0);
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
     hal_spi(addr | 0x80);
     hal_spi(data);
 #else
@@ -260,7 +260,7 @@ void hal_spi_write_reg (u1_t addr, u1_t data) {
 
 void hal_spi_read_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv) {
     hal_pin_nss(0);
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
     hal_spi(addr & 0x7F);
     u1_t i=0;
     for (i=0; i<len; i++) {
@@ -283,7 +283,7 @@ void hal_spi_read_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv) {
 
 void hal_spi_write_buf (u1_t addr, u1_t* buf, u1_t len, u1_t inv) {
     hal_pin_nss(0);
-#if !defined(ENERGIA_ARCH_CC13XX)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
     hal_spi(addr | 0x80);
     u1_t i = 0;
     for (i=0; i<len; i++) {

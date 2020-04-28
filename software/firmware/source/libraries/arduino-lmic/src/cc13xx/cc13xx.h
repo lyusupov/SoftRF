@@ -1,4 +1,4 @@
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 
 #ifndef CC13XX_H
 #define CC13XX_H
@@ -23,4 +23,4 @@ public:
 #endif /* __cplusplus */
 
 #endif // CC13XX_H
-#endif // ENERGIA_ARCH_CC13XX
+#endif // ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2

@@ -22,8 +22,8 @@
 // Use pin interrupt for data ready
 // NOTE: If you have other devices connected that use the SPI bus then you will need to call nRF905_interrupt_off() before using SPI comms and then RF905_interrupt_on() once you've finished.
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32) || \
-    defined(__ASR6501__)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)  || defined(__ASR6501__)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -45,8 +45,8 @@
 // Use software to get address match state instead of reading pin for high/low state
 // Not used in this library yet
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32) || \
-    defined(__ASR6501__)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)  || defined(__ASR6501__)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -58,8 +58,8 @@
 
 // Don't transmit if airway is busy (other transmissions are going on)
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ARDUINO_ARCH_STM32) || \
-    defined(__ASR6501__)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)  || defined(__ASR6501__)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
