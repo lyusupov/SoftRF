@@ -185,9 +185,9 @@ unsigned short update_crc_ccitt( unsigned short crc, char c ) {
     if ( ! crc_tabccitt_init ) init_crcccitt_tab();
 
     tmp = (crc >> 8) ^ short_c;
-#if !defined(ESP8266) && !defined(__ASR6501__) && \
-    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_STM32)
+#if defined(ESP8266) || defined(__ASR6501__) || \
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)
     crc = (crc << 8) ^ pgm_read_word(&crc_tabccitt[tmp]);
 #else
     crc = (crc << 8) ^ crc_tabccitt[tmp];
@@ -525,9 +525,9 @@ unsigned short update_crc_gdl90( unsigned short crc, char c ) {
     if ( ! crc_tabccitt_init ) init_crcccitt_tab();
 
     tmp = (crc >> 8) ;
-#if !defined(ESP8266) && !defined(__ASR6501__) && \
-    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_STM32)
+#if defined(ESP8266) || defined(__ASR6501__) || \
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)
     crc = pgm_read_word(&crc_tabccitt[tmp]) ^ (crc << 8) ^  short_c;
 #else
     crc = crc_tabccitt[tmp] ^ (crc << 8) ^  short_c;
