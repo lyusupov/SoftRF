@@ -1,3 +1,4 @@
+#ifdef ENERGIA_ARCH_CC13XX
 /*
  * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
@@ -30,7 +31,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #define DEVICE_FAMILY cc13x0
 /* Include drivers */
 #include <ti/drivers/rf/RF.h>
@@ -42,4 +42,4 @@ const RFCC26XX_HWAttrs RFCC26XX_hwAttrs = {
     .swiCpe0Priority =  0,
     .swiHwPriority   =  0,
 };
-
+#endif // DEVICE_FAMILY == cc13x0

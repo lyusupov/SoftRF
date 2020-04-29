@@ -1,3 +1,4 @@
+#ifdef ENERGIA_ARCH_CC13XX
 /*
  * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
@@ -30,7 +31,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define DEVICE_FAMILY cc13x0
 /***** Includes *****/
 #include "EasyLink.h"
 
@@ -1114,3 +1114,4 @@ EasyLink_Status EasyLink_getIeeeAddr(uint8_t *ieeeAddr)
 
     return status;
 }
+#endif //DEVICE_FAMILY == cc13x0

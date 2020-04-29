@@ -9,7 +9,12 @@
 #define EasyLink_h
 
 #include "Energia.h"
+#ifdef ENERGIA_ARCH_CC13XX
 #include <easylink/EasyLink.h>
+#else
+#include <easylink/EasyLinkv2.h>
+#endif
+
 struct ring_buffer;
 
 static const char * status_codes[] = {
@@ -38,7 +43,7 @@ class EasyLink : public Stream
         EasyLink_Status begin(EasyLink_PhyType mode=EasyLink_Phy_50kbps2gfsk);
         EasyLink_Status transmit(EasyLink_TxPacket *txPacket, EasyLink_TxDoneCb handle=NULL);
         EasyLink_Status receive(EasyLink_ReceiveCb handle);
-        EasyLink_Status receive(EasyLink_RxPacket *rxPacket);
+        EasyLink_Status receive(EasyLink_RxPacket *rxPacket, uint32_t timeout=0);
         EasyLink_Status receive(void (*userFunc)(void) = NULL);
         inline const char *getStatusString(EasyLink_Status s) { return status_codes[s]; };
         void beginTransmission(uint8_t dst);

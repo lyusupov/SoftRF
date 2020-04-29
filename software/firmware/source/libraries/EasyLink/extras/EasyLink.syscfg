@@ -1,0 +1,36 @@
+// These arguments were used when this file was generated. They will be automatically applied on subsequent loads 
+// via the GUI or CLI invocations. Run CLI with '--help' for additional information on how to override these arguments.
+// @cliArgs --board "/ti/boards/CC1312R1_LAUNCHXL" --product "simplelink_cc13x2_26x2_sdk@3.40.00.02"
+// @versions {"data":"2019103101","timestamp":"2019103101","tool":"1.3.1030","templates":"2019103101"}
+
+var RF = scripting.addModule("/ti/drivers/RF");
+var CCFG = scripting.addModule("/ti/devices/CCFG");
+var easylink = scripting.addModule("/ti/easylink/easylink");
+var DriverLib = scripting.addModule("/ti/devices/DriverLib", {}, false);
+// Enable Bootloader - Enable ROM Bootloader, for flashing from external host
+CCFG.enableBootloader = true;
+// Enable Bootloader Backdoor - When enabling the Bootloader Backdoor, the Bootloader can be activated externally by pulling a pin, even when a valid flash image is present. Note, enabling the backdoor allows an external host to read back a flash image from the device
+CCFG.enableBootloaderBackdoor = true;
+// Bootloader Backdoor DIO - DIO (pin) to trigger Bootloader backdoor, this pin is only needed at boot
+CCFG.dioBootloaderBackdoor = 15;
+// Trigger Level of Bootloader Backdoor - Active high or low on selected DIO to open boot loader backdoor
+CCFG.levelBootloaderBackdoor = "Active low";
+// Name
+CCFG.ccfgTemplate.$name = "ti_devices_CCFGTemplate0";
+// 50 kbps, 2-GFSK
+easylink.EasyLink_Phy_50kbps2gfsk = true;
+// Default PHY - The default PHY modulation to be used when EasyLink_init() is called
+easylink.defaultPhy = "EasyLink_Phy_50kbps2gfsk";
+// 5 kbps, SimpleLink Long Range
+easylink.EasyLink_Phy_5kbpsSlLr = true;
+// 200 kbps, 2-GFSK
+easylink.EasyLink_Phy_200kbps2gfsk = true;
+var multi_stack_validate = scripting.addModule("/ti/easylink/multi_stack_validate", {}, false);
+// Name
+easylink.radioConfigEasylinkPhy50kbps2gfsk.codeExportConfig.$name = "ti_devices_radioconfig_code_export_param1";
+// Name
+easylink.radioConfigEasylinkPhyCustom.codeExportConfig.$name = "ti_devices_radioconfig_code_export_param0";
+// Name
+easylink.radioConfigEasylinkPhy5kbpssllr.codeExportConfig.$name = "ti_devices_radioconfig_code_export_param2";
+// Name
+easylink.radioConfigEasylinkPhy200kbps2gfsk.codeExportConfig.$name = "ti_devices_radioconfig_code_export_param3";

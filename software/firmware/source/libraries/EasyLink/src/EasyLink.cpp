@@ -44,7 +44,14 @@ const char * EasyLink::version()
 
 EasyLink_Status EasyLink::begin(EasyLink_PhyType mode)
 {
+#ifdef ENERGIA_ARCH_CC13X2
+   EasyLink_Params easyLink_params;
+   EasyLink_Params_init(&easyLink_params);
+   easyLink_params.ui32ModType = mode;
+   return EasyLink_init(&easyLink_params);
+#else
    return EasyLink_init(mode);
+#endif
 }
 
 void EasyLink::beginTransmission(uint8_t dst) {
@@ -93,11 +100,18 @@ EasyLink_Status EasyLink::receive(EasyLink_ReceiveCb handle)
      return EasyLink_Status_Param_Error;
 }
 
-EasyLink_Status EasyLink::receive(EasyLink_RxPacket *rxPacket)
+EasyLink_Status EasyLink::receive(EasyLink_RxPacket *rxPacket, uint32_t timeout)
 {
-    if(rxPacket != NULL) {
-        return EasyLink_receive(rxPacket);
+    if(rxPacket == NULL) {
+        return EasyLink_Status_Param_Error;
     }
+
+    if(timeout) {
+        rxPacket->rxTimeout = EasyLink_ms_To_RadioTime(2000);
+        rxPacket->absTime = EasyLink_ms_To_RadioTime(0);
+    }
+
+    return EasyLink_receive(rxPacket);
 }
 
 EasyLink_Status EasyLink::receive(void (*userFunc)(void))
@@ -116,6 +130,8 @@ EasyLink_Status EasyLink::receive(void (*userFunc)(void))
         _rx_buffer->head = rxPacket.len;
         return status;
     }
+
+    return EasyLink_Status_Success;
 }
 /*
  * Stream class virtual functions implementations
@@ -135,6 +151,7 @@ size_t EasyLink::write(uint8_t c)
 
     _tx_buffer->buffer[_tx_buffer->head] = c;
     _tx_buffer->head++;
+    return 1;
 }
 
 int EasyLink::available(void)
