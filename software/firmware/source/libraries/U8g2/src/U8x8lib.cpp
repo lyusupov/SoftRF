@@ -417,7 +417,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
 	case 3: internal_spi_mode = SPI_MODE3; break;
       }
       
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
       SPI.beginTransaction(SPISettings(u8x8->display_info->sck_clock_hz, MSBFIRST, internal_spi_mode));
 #else
       SPI.begin();
@@ -440,7 +440,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
       u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, NULL);
       u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
 
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
       SPI.endTransaction();
 #else
       SPI.end();
@@ -513,7 +513,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
 	case 3: internal_spi_mode = SPI_MODE3; break;
       }
       
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
       SPI1.beginTransaction(SPISettings(u8x8->display_info->sck_clock_hz, MSBFIRST, internal_spi_mode));
 #else
       SPI1.begin();
@@ -536,7 +536,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, NULL);
       u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
 
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
       SPI1.endTransaction();
 #else
       SPI1.end();
@@ -582,7 +582,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
     case U8X8_MSG_BYTE_SET_DC:
       break;
     case U8X8_MSG_BYTE_START_TRANSFER:
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
       /* if there is any error with Wire.setClock() just remove this function call */
       if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )

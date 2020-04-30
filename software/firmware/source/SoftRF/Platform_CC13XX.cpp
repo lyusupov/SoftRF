@@ -18,10 +18,13 @@
 
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 
+#include <Wire.h>
+
 #include "SoCHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
 #include "SoundHelper.h"
+#include "BaroHelper.h"
 
 #if defined(ENERGIA_ARCH_CC13XX)
 #include <easylink/EasyLink.h>
@@ -44,6 +47,29 @@ lmic_pinmap lmic_pins = {
 static uint8_t ieeeAddr[8];
 WS2812 strip(PIX_NUM);
 uint8_t LEDs[PIX_NUM][3];
+
+#if defined(USE_OLED)
+#include <U8x8lib.h>
+
+U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
+
+static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
+
+static bool OLED_display_probe_status = false;
+static bool OLED_display_frontpage = false;
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+extern uint32_t tx_packets_counter, rx_packets_counter;
+
+const char *OLED_Protocol_ID[] = {
+  [RF_PROTOCOL_LEGACY]    = "L",
+  [RF_PROTOCOL_OGNTP]     = "O",
+  [RF_PROTOCOL_P3I]       = "P",
+  [RF_PROTOCOL_ADSB_1090] = "A",
+  [RF_PROTOCOL_ADSB_UAT]  = "U",
+  [RF_PROTOCOL_FANET]     = "F"
+};
+#endif /* USE_OLED */
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
@@ -127,6 +153,135 @@ static void CC13XX_swSer_enableRx(boolean arg)
 
 }
 
+static byte CC13XX_Display_setup()
+{
+  byte rval = DISPLAY_NONE;
+
+#if defined(USE_OLED)
+/*
+ * BUG:
+ * return value of Wire.endTransmission() is always '4' with Arduino Core for CCC13X2
+ */
+#if 0
+  /* SSD1306 I2C OLED probing */
+  Wire.begin();
+  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+  if (Wire.endTransmission() == 0)
+#endif
+  {
+    u8x8 = &u8x8_i2c;
+    rval = DISPLAY_OLED_TTGO;
+  }
+
+  if (u8x8) {
+    u8x8->begin();
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+    u8x8->clear();
+
+    u8x8->draw2x2String(2, 3, "SoftRF");
+  }
+#endif /* USE_OLED */
+
+  return rval;
+}
+
+static void CC13XX_Display_loop()
+{
+#if defined(USE_OLED)
+  char buf[16];
+  uint32_t disp_value;
+
+  if (u8x8) {
+    if (!OLED_display_probe_status) {
+      u8x8->clear();
+
+      u8x8->draw2x2String(0, 0, "RADIO");
+      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+      u8x8->draw2x2String(0, 2, "GNSS");
+      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+      u8x8->draw2x2String(0, 4, "OLED");
+      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+      u8x8->draw2x2String(0, 6, "BARO");
+      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+      delay(3000);
+
+      OLED_display_probe_status = true;
+    } else if (!OLED_display_frontpage) {
+
+      u8x8->clear();
+
+      u8x8->drawString(1, 1, "ID");
+
+      sprintf(buf, "%x", ThisAircraft.addr & 0xFFFFFF);
+      u8x8->draw2x2String(0, 2, buf);
+
+      u8x8->drawString(8, 1, "PROTOCOL");
+
+      u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+
+      u8x8->drawString(1, 5, "RX");
+
+      sprintf(buf, "%d", rx_packets_counter % 1000);
+      u8x8->draw2x2String(0, 6, buf);
+
+      u8x8->drawString(9, 5, "TX");
+
+      if (settings->txpower == RF_TX_POWER_OFF ) {
+        strcpy(buf, "OFF");
+      } else {
+        sprintf(buf, "%d", tx_packets_counter % 1000);
+      }
+      u8x8->draw2x2String(8, 6, buf);
+
+      OLED_display_frontpage = true;
+    } else {
+      if (rx_packets_counter > prev_rx_packets_counter) {
+        disp_value = rx_packets_counter % 1000;
+        sprintf(buf, "%d", disp_value);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
+        u8x8->draw2x2String(0, 6, buf);
+        prev_rx_packets_counter = rx_packets_counter;
+      }
+      if (tx_packets_counter > prev_tx_packets_counter) {
+        disp_value = tx_packets_counter % 1000;
+        sprintf(buf, "%d", disp_value);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
+        u8x8->draw2x2String(8, 6, buf);
+        prev_tx_packets_counter = tx_packets_counter;
+      }
+    }
+  }
+#endif /* USE_OLED */
+}
+
+static void CC13XX_Display_fini(const char *msg)
+{
+#if defined(USE_OLED)
+  if (u8x8) {
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+    u8x8->clear();
+    u8x8->draw2x2String(1, 3, msg);
+  }
+#endif /* USE_OLED */
+}
+
 static void CC13XX_Battery_setup()
 {
 
@@ -194,9 +349,9 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_swSer_begin,
   CC13XX_swSer_enableRx,
   NULL,
-  NULL,
-  NULL,
-  NULL,
+  CC13XX_Display_setup,
+  CC13XX_Display_loop,
+  CC13XX_Display_fini,
   CC13XX_Battery_setup,
   CC13XX_Battery_voltage,
   CC13XX_GNSS_PPS_Interrupt_handler,

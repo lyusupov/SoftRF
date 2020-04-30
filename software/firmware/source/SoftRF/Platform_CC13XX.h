@@ -54,6 +54,8 @@ static inline size_t strnlen (const char *string, size_t length)
 #define yield()                 ({ })
 #define snprintf_P              snprintf
 
+#define SSD1306_OLED_I2C_ADDR   0x3C
+
 #define SOC_GPIO_PIN_SS         18               // GPIO 11
 #define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
@@ -95,6 +97,8 @@ extern uint8_t LEDs[][3];
 #define ENABLE_NORMAL_MODE
 #define ENABLE_OTHER_MODES
 
+#define USE_OLED                 //  +5.5 kb
+#define USE_NMEA_CFG             //  +3.3 kb
 #define EXCLUDE_NRF905
 
 //#define USE_BASICMAC

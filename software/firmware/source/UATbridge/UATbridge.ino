@@ -67,6 +67,11 @@ EasyLink myLink;
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 
+void EEPROM_store()
+{
+
+}
+
 ufo_t ThisAircraft;
 
 hardware_info_t hw_info = {
@@ -231,6 +236,7 @@ void setup() {
     ThisAircraft.stealth  = settings->stealth;
     ThisAircraft.no_track = settings->no_track;
 
+    hw_info.display = SoC->Display_setup();
     hw_info.baro = Baro_setup();
 
 #if defined(DEBUG_UAT)
@@ -362,6 +368,15 @@ void loop() {
       break;
 #endif /* ENABLE_OTHER_MODES */
     }
+
+  // Show status info on tiny OLED display
+  SoC->Display_loop();
+
+  SoC->loop();
+
+  Battery_loop();
+
+  yield();
 }
 
 static bool UAT_Receive_Sync()
@@ -705,4 +720,23 @@ void uav()
   }
 
   ClearExpired();
+}
+
+void shutdown(const char *msg)
+{
+  SoC->WDT_fini();
+
+  SoC->swSer_enableRx(false);
+
+  NMEA_fini();
+
+  if (settings->mode != SOFTRF_MODE_UAV) {
+    GNSS_fini();
+  }
+
+  SoC->Display_fini(msg);
+
+  RF_Shutdown();
+
+  SoC_fini();
 }
