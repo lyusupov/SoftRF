@@ -54,7 +54,6 @@
  * but not both at the same time.
  * Hope that the things will change with appearance of production CC1312 silicon.
  */
-//#define NORMAL_MODE
 
 //#define DEBUG_UAT
 
@@ -168,11 +167,11 @@ void setup() {
 
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-#if !defined(NORMAL_MODE)
+#if !defined(ENABLE_NORMAL_MODE)
   eeprom_block.field.settings.mode          = SOFTRF_MODE_RECEIVER;
-#else /* NORMAL_MODE */
+#else /* ENABLE_NORMAL_MODE */
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-#endif /* NORMAL_MODE */
+#endif /* ENABLE_NORMAL_MODE */
   eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
@@ -222,7 +221,7 @@ void setup() {
   switch (settings->mode)
   {
 
-#if defined(NORMAL_MODE)
+#if defined(ENABLE_NORMAL_MODE)
 
   case SOFTRF_MODE_NORMAL:
 
@@ -268,7 +267,9 @@ void setup() {
     Serial.println("Normal mode.");
     break;
 
-#else /* NORMAL_MODE */
+#endif /* ENABLE_NORMAL_MODE */
+
+#if defined(ENABLE_OTHER_MODES)
 
   case SOFTRF_MODE_UAV:
 
@@ -325,7 +326,7 @@ void setup() {
     }
 
   case SOFTRF_MODE_RECEIVER:
-#endif /* NORMAL_MODE */
+#endif /* ENABLE_OTHER_MODES */
 
   default:
     Serial.println("Receiver mode.");
@@ -342,11 +343,13 @@ void setup() {
 void loop() {
     switch (settings->mode)
     {
-#if defined(NORMAL_MODE)
+#if defined(ENABLE_NORMAL_MODE)
     case SOFTRF_MODE_NORMAL:
       normal();
       break;
-#else /* NORMAL_MODE */
+#endif /* ENABLE_NORMAL_MODE */
+
+#if defined(ENABLE_OTHER_MODES)
     case SOFTRF_MODE_UAV:
       uav();
       break;
@@ -357,7 +360,7 @@ void loop() {
     default:
       receiver();
       break;
-#endif /* NORMAL_MODE */
+#endif /* ENABLE_OTHER_MODES */
     }
 }
 

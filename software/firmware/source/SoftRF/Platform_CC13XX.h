@@ -24,7 +24,11 @@
 #include <WS2812.h>
 
 #if defined(ENERGIA_ARCH_CC13X2)
-extern size_t  strnlen (const char *, size_t);
+static inline size_t strnlen (const char *string, size_t length)
+{
+   char *ret = (char *) memchr ((const void *) string, 0, length);
+   return ret ? ret - string : length;
+}
 #endif /* ENERGIA_ARCH_CC13X2 */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -54,14 +58,6 @@ extern size_t  strnlen (const char *, size_t);
 #define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
 
-/* 
- *  UART pins
- *
- * Board_UART_TX               GPIO 3
- * Board_UART_RX               GPIO 2
- * BootLoader                  GPIO 1
- */
-
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 #define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
@@ -70,12 +66,43 @@ extern size_t  strnlen (const char *, size_t);
 extern WS2812 strip;
 extern uint8_t LEDs[][3];
 
+#if defined(ENERGIA_ARCH_CC13XX)
+
+/*
+ *  UART pins
+ *
+ * Board_UART_TX               GPIO 3
+ * Board_UART_RX               GPIO 2
+ * BootLoader                  GPIO 1
+ */
+
+#define ENABLE_OTHER_MODES
+
 #define EXCLUDE_BMP180
 #define EXCLUDE_MPL3115A2
 #define EXCLUDE_NRF905
 
+#elif defined(ENERGIA_ARCH_CC13X2)
+
+/*
+ *  UART pins
+ *
+ * Board_UART_TX               GPIO 13
+ * Board_UART_RX               GPIO 12
+ * BootLoader                  GPIO 15
+ */
+
+#define ENABLE_NORMAL_MODE
+#define ENABLE_OTHER_MODES
+
+#define EXCLUDE_NRF905
+
 //#define USE_BASICMAC
+
+#else
+#error "This hardware platform is not supported!"
+#endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
 
 #endif /* PLATFORM_CC13XX_H */
 
-#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
+#endif /* ENERGIA_ARCH_CC13X0 || ENERGIA_ARCH_CC13X2 */
