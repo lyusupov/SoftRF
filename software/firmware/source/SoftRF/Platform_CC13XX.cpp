@@ -73,6 +73,74 @@ const char *OLED_Protocol_ID[] = {
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
+#if defined(ENERGIA_ARCH_CC13X2)
+void EEPROM_store()
+{
+
+}
+
+size_t strnlen (const char *string, size_t length)
+{
+   char *ret = (char *) memchr ((const void *) string, 0, length);
+   return ret ? ret - string : length;
+}
+
+char* ltoa( long value, char *string, int radix )
+{
+  char tmp[33];
+  char *tp = tmp;
+  long i;
+  unsigned long v;
+  int sign;
+  char *sp;
+
+  if ( string == NULL )
+  {
+    return 0 ;
+  }
+
+  if (radix > 36 || radix <= 1)
+  {
+    return 0 ;
+  }
+
+  sign = (radix == 10 && value < 0);
+  if (sign)
+  {
+    v = -value;
+  }
+  else
+  {
+    v = (unsigned long)value;
+  }
+
+  while (v || tp == tmp)
+  {
+    i = v % radix;
+    v = v / radix;
+    if (i < 10)
+      *tp++ = i+'0';
+    else
+      *tp++ = i + 'a' - 10;
+  }
+
+  sp = string;
+
+  if (sign)
+    *sp++ = '-';
+  while (tp > tmp)
+    *sp++ = *--tp;
+  *sp = 0;
+
+  return string;
+}
+
+char* itoa( int value, char *string, int radix )
+{
+  return ltoa( value, string, radix ) ;
+}
+#endif
+
 static void CC13XX_setup()
 {
   EasyLink_getIeeeAddr(ieeeAddr);
@@ -213,7 +281,7 @@ static void CC13XX_Display_loop()
 
       u8x8->drawString(1, 1, "ID");
 
-      sprintf(buf, "%x", ThisAircraft.addr & 0xFFFFFF);
+      itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
       u8x8->draw2x2String(0, 2, buf);
 
       u8x8->drawString(8, 1, "PROTOCOL");
@@ -222,15 +290,17 @@ static void CC13XX_Display_loop()
 
       u8x8->drawString(1, 5, "RX");
 
-      sprintf(buf, "%d", rx_packets_counter % 1000);
+      itoa(rx_packets_counter % 1000, buf, 10);
       u8x8->draw2x2String(0, 6, buf);
 
       u8x8->drawString(9, 5, "TX");
 
-      if (settings->txpower == RF_TX_POWER_OFF ) {
+      if (settings->mode != SOFTRF_MODE_BRIDGE ||
+          (settings->mode == SOFTRF_MODE_BRIDGE &&
+           settings->txpower == RF_TX_POWER_OFF)) {
         strcpy(buf, "OFF");
       } else {
-        sprintf(buf, "%d", tx_packets_counter % 1000);
+        itoa(tx_packets_counter % 1000, buf, 10);
       }
       u8x8->draw2x2String(8, 6, buf);
 
@@ -238,7 +308,7 @@ static void CC13XX_Display_loop()
     } else {
       if (rx_packets_counter > prev_rx_packets_counter) {
         disp_value = rx_packets_counter % 1000;
-        sprintf(buf, "%d", disp_value);
+        itoa(disp_value, buf, 10);
 
         if (disp_value < 10) {
           strcat_P(buf,PSTR("  "));
@@ -253,7 +323,7 @@ static void CC13XX_Display_loop()
       }
       if (tx_packets_counter > prev_tx_packets_counter) {
         disp_value = tx_packets_counter % 1000;
-        sprintf(buf, "%d", disp_value);
+        itoa(disp_value, buf, 10);
 
         if (disp_value < 10) {
           strcat_P(buf,PSTR("  "));

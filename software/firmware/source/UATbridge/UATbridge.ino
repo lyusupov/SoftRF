@@ -46,15 +46,6 @@
 #include <fec.h>
 #include <uat_decode.h>
 
-/*
- * Built-in 128K flash memory of the CC1310F128 (7x7)
- * does fit for either:
- * - RECEIVER & BRIDGE modes, or
- * - NORMAL mode
- * but not both at the same time.
- * Hope that the things will change with appearance of production CC1312 silicon.
- */
-
 //#define DEBUG_UAT
 
 #define isValidFix()      isValidGNSSFix()
@@ -66,11 +57,6 @@ EasyLink myLink;
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
-
-void EEPROM_store()
-{
-
-}
 
 ufo_t ThisAircraft;
 
@@ -223,6 +209,11 @@ void setup() {
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
+
+  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+
+  hw_info.display = SoC->Display_setup();
+
   switch (settings->mode)
   {
 
@@ -230,13 +221,10 @@ void setup() {
 
   case SOFTRF_MODE_NORMAL:
 
-    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
     ThisAircraft.aircraft_type = settings->aircraft_type;
-    ThisAircraft.protocol = settings->rf_protocol;
     ThisAircraft.stealth  = settings->stealth;
     ThisAircraft.no_track = settings->no_track;
 
-    hw_info.display = SoC->Display_setup();
     hw_info.baro = Baro_setup();
 
 #if defined(DEBUG_UAT)
@@ -279,9 +267,7 @@ void setup() {
 
   case SOFTRF_MODE_UAV:
 
-    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;
-    ThisAircraft.protocol = settings->rf_protocol;
 
     init_fec();
     Traffic_setup();
@@ -342,8 +328,17 @@ void setup() {
     break;
   }
 
+  /*
+   * Display 'U' (UAT) on OLED for Rx only modes.
+   * Indicate Tx protocol otherwise (say, in 'bridge' mode)
+   */
+  ThisAircraft.protocol = settings->mode == SOFTRF_MODE_BRIDGE ?
+                          settings->rf_protocol : RF_PROTOCOL_ADSB_UAT ;
+
   myLink.begin(EasyLink_Phy_Custom);
   Serial.println("Listening...");
+
+  SoC->WDT_setup();
 }
 
 void loop() {
@@ -403,6 +398,9 @@ static bool UAT_Receive_Sync()
     Serial.println();
 #endif
 #endif
+
+    rx_packets_counter++;
+
     return(true);
   } else {
 #if defined(DEBUG_UAT)
@@ -446,6 +444,8 @@ static bool UAT_Receive_Async()
 
     success = true;
     UAT_receive_complete = false;
+
+    rx_packets_counter++;
   }
 
   return success;
@@ -554,6 +554,20 @@ void normal()
     ThisAircraft.geoid_separation = gnss.separation.meters();
   }
 
+#if !defined(EXCLUDE_EGM96)
+    /*
+     * When geoidal separation is zero or not available - use approx. EGM96 value
+     */
+    if (ThisAircraft.geoid_separation == 0.0) {
+      ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                ThisAircraft.latitude,
+                                                ThisAircraft.longitude
+                                              );
+      /* we can assume the GPS unit is giving ellipsoid height */
+      ThisAircraft.altitude -= ThisAircraft.geoid_separation;
+    }
+#endif /* EXCLUDE_EGM96 */
+
   success = UAT_Receive();
 
   if (success) {
@@ -625,7 +639,9 @@ void normal()
   if (isTimeToExport()) {
     NMEA_Export();
     GDL90_Export();
-//    D1090_Export();
+#if !defined(EXCLUDE_D1090)
+    D1090_Export();
+#endif
     ExportTimeMarker = millis();
   }
 

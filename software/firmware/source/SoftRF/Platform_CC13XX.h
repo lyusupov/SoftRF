@@ -24,11 +24,7 @@
 #include <WS2812.h>
 
 #if defined(ENERGIA_ARCH_CC13X2)
-static inline size_t strnlen (const char *string, size_t length)
-{
-   char *ret = (char *) memchr ((const void *) string, 0, length);
-   return ret ? ret - string : length;
-}
+extern size_t strnlen (const char *string, size_t length);
 #endif /* ENERGIA_ARCH_CC13X2 */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -78,11 +74,20 @@ extern uint8_t LEDs[][3];
  * BootLoader                  GPIO 1
  */
 
+/*
+ * Built-in 128K flash memory of the CC1310F128 (7x7)
+ * does fit for either:
+ * - RECEIVER & BRIDGE modes, or
+ * - NORMAL mode
+ * but not both at the same time.
+ */
 #define ENABLE_OTHER_MODES
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_MPL3115A2
 #define EXCLUDE_NRF905
+#define EXCLUDE_D1090
+#define EXCLUDE_EGM96
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 
@@ -100,6 +105,7 @@ extern uint8_t LEDs[][3];
 #define USE_OLED                 //  +5.5 kb
 #define USE_NMEA_CFG             //  +3.3 kb
 #define EXCLUDE_NRF905
+#define EXCLUDE_EGM96
 
 //#define USE_BASICMAC
 
