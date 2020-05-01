@@ -33,13 +33,13 @@ CPPS          := Platform_PSoC4.cpp SoCHelper.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
                  TrafficHelper.cpp NMEAHelper.cpp GDL90Helper.cpp \
                  MAVLinkHelper.cpp D1090Helper.cpp \
-                 BatteryHelper.cpp BaroHelper.cpp
+                 BatteryHelper.cpp BaroHelper.cpp EEPROMHelper.cpp
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h \
                  Platform_RPi.h Platform_CC13XX.h Platform_STM32.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
-                 EEPROMHelper.h SoundHelper.h TimeHelper.h \
+                 SoundHelper.h TimeHelper.h \
                  WiFiHelper.h LEDHelper.h 
 
 links:  $(foreach f, $(CPPS) $(HFILES), link-file-$(f))

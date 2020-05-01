@@ -111,7 +111,7 @@ install:
       cd $TRAVIS_BUILD_DIR/software/firmware/source/Multi ;
       make links ;
       cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/0.0.6 ;
-      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/45f5503b7541b632e0733386563559b773001f16/patch-1.txt ;
+      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/527160a438ba7a36b841f5f76e3c753388f2eab0/patch-1.txt ;
       cat patch-1.txt | patch -p0 ;
       mv cores/asr650x/port/include/hal/hal.h cores/asr650x/port/include/hal/hal.h.ex ;
       cd $TRAVIS_BUILD_DIR ;

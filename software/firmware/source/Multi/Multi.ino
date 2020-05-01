@@ -61,14 +61,6 @@
 #define isValidFix()      isValidGNSSFix()
 #define isTimeToExport()  (millis() - ExportTimeMarker > 1000)
 
-eeprom_t eeprom_block;
-settings_t *settings = &eeprom_block.field.settings;
-
-void EEPROM_store()
-{
-
-}
-
 ufo_t ThisAircraft;
 
 hardware_info_t hw_info = {
@@ -106,30 +98,7 @@ void setup() {
   Serial.print(F("Reset reason: "));
   Serial.println(SoC->getResetReason());
 
-  eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
-  eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
-  eeprom_block.field.settings.band          = RF_BAND_EU;
-  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower       = RF_TX_POWER_LOW;
-  eeprom_block.field.settings.volume        = BUZZER_OFF;
-  eeprom_block.field.settings.pointer       = LED_OFF;
-  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
-  eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_NONE;
-
-  eeprom_block.field.settings.nmea_g        = true;
-  eeprom_block.field.settings.nmea_p        = false;
-  eeprom_block.field.settings.nmea_l        = true;
-  eeprom_block.field.settings.nmea_s        = false;
-  eeprom_block.field.settings.nmea_out      = NMEA_UART;
-  eeprom_block.field.settings.gdl90         = GDL90_OFF;
-  eeprom_block.field.settings.d1090         = D1090_OFF;
-  eeprom_block.field.settings.json          = JSON_OFF;
-  eeprom_block.field.settings.stealth       = false;
-  eeprom_block.field.settings.no_track      = false;
-  eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
-  eeprom_block.field.settings.freq_corr     = 0;
+  EEPROM_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
