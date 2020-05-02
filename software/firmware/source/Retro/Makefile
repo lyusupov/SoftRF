@@ -27,7 +27,7 @@ ARDUINO       = arduino
 LN            = ln -s
 RM            = rm -f
 
-CPPS          := Platform_STM32.cpp SoCHelper.cpp \
+CPPS          := Platform_STM32.cpp Platform_PSoC4.cpp SoCHelper.cpp \
                  RFHelper.cpp GNSSHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
@@ -37,7 +37,7 @@ CPPS          := Platform_STM32.cpp SoCHelper.cpp \
 
 HFILES        := SoftRF.h $(CPPS:.cpp=.h) \
                  Platform_ESP8266.h Platform_ESP32.h \
-                 Platform_RPi.h Platform_CC13XX.h Platform_PSoC4.h \
+                 Platform_RPi.h Platform_CC13XX.h \
                  WebHelper.h BluetoothHelper.h JSONHelper.h \
                  SoundHelper.h TimeHelper.h \
                  WiFiHelper.h

@@ -192,7 +192,7 @@ void LED_loop() {
       }
     } else {
       if (isTimeToToggle()) {
-        digitalWrite(status_LED, !digitalRead(status_LED));  // toggle state
+        digitalWrite(status_LED, !digitalRead(status_LED) ? HIGH : LOW);  // toggle state
         status_LED_TimeMarker = millis();
       }
     }

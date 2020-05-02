@@ -21,11 +21,19 @@
 #define PLATFORM_PSOC4_H
 
 #include <board-config.h>
+#include <Adafruit_NeoPixel.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
 #define isValidFix()            isValidGNSSFix()
+
+#define uni_begin()             strip.begin()
+#define uni_show()              strip.show()
+#define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
+#define uni_numPixels()         strip.numPixels()
+#define uni_Color(r,g,b)        strip.Color(r,g,b)
+#define color_t                 uint32_t
 
 #define yield()                 ({ })
 #define snprintf_P              snprintf
@@ -66,6 +74,9 @@ struct rst_info {
 #define swSer                 Serial
 #define UATSerial             Serial
 
+#define SERIAL_OUT_BR         STD_OUT_BR
+#define SERIAL_OUT_BITS       -1
+
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV
 
@@ -79,7 +90,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS   LED_GREEN
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
@@ -123,6 +134,8 @@ struct rst_info {
 
 //#define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
+
+extern Adafruit_NeoPixel strip;
 
 #endif /* PLATFORM_PSOC4_H */
 
