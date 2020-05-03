@@ -55,8 +55,10 @@
 EasyLink_RxPacket rxPacket;
 EasyLink myLink;
 
+#if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#endif /* EXCLUDE_EEPROM */
 
 ufo_t ThisAircraft;
 
@@ -156,6 +158,18 @@ static void printUtilization()
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
+#if !defined(EXCLUDE_EEPROM)
+
+#if !defined(ENABLE_NORMAL_MODE)
+  Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
+#else /* ENABLE_NORMAL_MODE */
+  Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
+#endif /* ENABLE_NORMAL_MODE */
+
+  EEPROM_setup();
+
+#else
+
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
 #if !defined(ENABLE_NORMAL_MODE)
@@ -184,6 +198,7 @@ void setup() {
   eeprom_block.field.settings.no_track      = false;
   eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr     = 0;
+#endif /* EXCLUDE_EEPROM */
 
   switch (settings->mode)
   {

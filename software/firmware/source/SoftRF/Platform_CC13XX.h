@@ -57,6 +57,7 @@ extern size_t strnlen (const char *string, size_t length);
 
 #define yield()                 ({ })
 #define snprintf_P              snprintf
+#define EEPROM_commit()         EEPROM.commit()
 
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
@@ -111,7 +112,6 @@ extern uint8_t LEDs[][3];
  */
 
 #define EXCLUDE_WIFI
-#define EXCLUDE_EEPROM
 
 #define ENABLE_NORMAL_MODE
 #define ENABLE_OTHER_MODES

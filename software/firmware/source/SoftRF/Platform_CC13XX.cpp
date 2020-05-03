@@ -27,9 +27,11 @@
 #include "BaroHelper.h"
 
 #if defined(ENERGIA_ARCH_CC13XX)
+#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
 #include <easylink/EasyLink.h>
 #endif /* ENERGIA_ARCH_CC13XX */
 #if defined(ENERGIA_ARCH_CC13X2)
+#include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
 #include <easylink/EasyLinkv2.h>
 #endif /* ENERGIA_ARCH_CC13X2 */
 
@@ -138,6 +140,8 @@ char* itoa( int value, char *string, int radix )
 
 static void CC13XX_setup()
 {
+//  uint32_t  reset_source = SysCtrlResetSourceGet();
+
   EasyLink_getIeeeAddr(ieeeAddr);
 }
 
@@ -149,11 +153,12 @@ static void CC13XX_loop()
 static void CC13XX_fini()
 {
 
+  SysCtrlSystemReset();
 }
 
 static void CC13XX_reset()
 {
-
+  SysCtrlSystemReset();
 }
 
 static uint32_t CC13XX_getChipId()
@@ -204,6 +209,14 @@ static void CC13XX_WiFi_setOutputPower(int dB)
 static void CC13XX_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   /* NONE */
+}
+
+static bool CC13XX_EEPROM_begin(size_t size)
+{
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM.begin(size);
+#endif
+  return true;
 }
 
 static void CC13XX_SPI_begin()
@@ -415,7 +428,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
+  CC13XX_EEPROM_begin,
   CC13XX_SPI_begin,
   CC13XX_swSer_begin,
   CC13XX_swSer_enableRx,
