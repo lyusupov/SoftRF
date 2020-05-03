@@ -20,7 +20,14 @@
 #define JSONHELPER_H
 
 #include <ArduinoJson.h>
-#include "SoftRF.h"
+
+#if defined(ARDUINO)
+#include <Arduino.h>
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI)
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
 
 #define JSON_BUFFER_SIZE  65536
 #define isValidGPSDFix() (hasValidGPSDFix)

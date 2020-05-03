@@ -19,12 +19,9 @@
 #ifndef LEDHELPER_H
 #define LEDHELPER_H
 
-#include <TimeLib.h>
-
-#include "SoftRF.h"
+#include "SoCHelper.h"
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
-#include "SoCHelper.h"
 
 #define STATUS_LED_NUM  4
 //#define RING_LED_NUM (ESP.getChipId() == 0xeacdd ? 12 : 8)

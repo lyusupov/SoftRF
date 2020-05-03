@@ -23,8 +23,6 @@
 #include "WebHelper.h"
 #include "Protocol_Legacy.h"
 
-#include "SoftRF.h"
-
 unsigned long UpdateTrafficTimeMarker = 0;
 
 ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;

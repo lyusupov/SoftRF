@@ -23,11 +23,10 @@
 #include <lib_crc.h>
 #include <protocol.h>
 
+#include "SoCHelper.h"
 #include "GDL90Helper.h"
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
-#include "SoftRF.h"
-#include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 #include "Protocol_Legacy.h"

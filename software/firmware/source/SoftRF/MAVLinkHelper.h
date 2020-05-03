@@ -28,8 +28,6 @@
 #include <mavlink.h>        // Mavlink interface
 #include <aircraft.h>
 
-#include "SoftRF.h"
-
 #define isValidMAVFix() (the_aircraft.gps.fix_type == 3 /* 3D fix */ )
 
 void MAVLink_setup();

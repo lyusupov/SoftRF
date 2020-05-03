@@ -30,6 +30,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_STANDALONE
+
 #define SerialOutput            Serial
 #define SoftwareSerial          HardwareSerial
 #define swSer                   Serial1

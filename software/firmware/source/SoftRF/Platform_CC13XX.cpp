@@ -74,11 +74,6 @@ const char *OLED_Protocol_ID[] = {
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
 #if defined(ENERGIA_ARCH_CC13X2)
-void EEPROM_store()
-{
-
-}
-
 size_t strnlen (const char *string, size_t length)
 {
    char *ret = (char *) memchr ((const void *) string, 0, length);
@@ -172,6 +167,11 @@ static uint32_t CC13XX_getChipId()
   }
 
   return id;
+}
+
+static uint32_t CC13XX_getFreeHeap()
+{
+  return 0; /* TBD */
 }
 
 static long CC13XX_random(long howsmall, long howBig)
@@ -406,6 +406,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   NULL,
+  CC13XX_getFreeHeap,
   CC13XX_random,
   CC13XX_Sound_test,
   NULL,

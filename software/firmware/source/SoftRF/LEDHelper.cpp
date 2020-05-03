@@ -16,9 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if defined(EXCLUDE_LED_RING)
+void LED_setup()              {}
+void LED_test()               {}
+void LED_DisplayTraffic()     {}
+void LED_Clear()              {}
+void LED_loop()               {}
+#else
+
+#include <TimeLib.h>
+
 #include "LEDHelper.h"
 #include "BatteryHelper.h"
-#include "SoCHelper.h"
 #include "TrafficHelper.h"
 
 static uint32_t prev_tx_packets_counter = 0;
@@ -198,3 +209,5 @@ void LED_loop() {
     }
   }
 }
+
+#endif /* EXCLUDE_LED_RING */

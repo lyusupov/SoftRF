@@ -119,7 +119,7 @@ aircraft the_aircraft;
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
 
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_RASPBERRY,
+  .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
@@ -365,6 +365,7 @@ const SoC_ops_t RPi_ops = {
   RPi_fini,
   RPi_reset,
   RPi_getChipId,
+  NULL,
   NULL,
   NULL,
   NULL,
@@ -863,6 +864,13 @@ int main()
 
   Traffic_TCP_Server.detach();
   return 0;
+}
+
+void shutdown(const char *msg)
+{
+    Traffic_TCP_Server.detach();
+    fprintf( stderr, "Program termination: %s.\n", msg );
+    exit(EXIT_SUCCESS);
 }
 
 #endif /* RASPBERRY_PI */

@@ -83,8 +83,6 @@ install:
         arduino --pref "custom_xserial=GenF1_none"           --save-prefs ;
         arduino --pref "custom_xusb=GenF1_FS"                --save-prefs ;
       fi ;
-      cd $TRAVIS_BUILD_DIR/software/firmware/source/Retro ;
-      make links ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "energia:cc13xx:" ]]; then
@@ -108,8 +106,6 @@ install:
       arduino --pref "custom_LORAWAN_REGION=CubeCell-Module_433EU"  --save-prefs ;
       arduino --pref "custom_LORAWAN_RGB=CubeCell-Module_0"         --save-prefs ;
       arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-Module_0"  --save-prefs ;
-      cd $TRAVIS_BUILD_DIR/software/firmware/source/Retro ;
-      make links ;
       cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/0.0.6 ;
       wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/527160a438ba7a36b841f5f76e3c753388f2eab0/patch-1.txt ;
       cat patch-1.txt | patch -p0 ;
@@ -131,7 +127,7 @@ script:
       arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
     fi ;
   - if [[ "$BOARD" =~ "STM32:stm32:"     ]]; then
-      arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/Retro/Retro.ino ;
+      arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
@@ -145,7 +141,7 @@ script:
       make -f Makefile.RPi ;
     fi ;
   - if [[ "$BOARD" =~ "CubeCell:CubeCell:"     ]]; then
-      arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/Retro/Retro.ino ;
+      arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
     fi ;
 
 notifications:

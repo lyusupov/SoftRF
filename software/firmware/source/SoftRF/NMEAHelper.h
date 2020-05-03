@@ -20,7 +20,6 @@
 #define NMEAHELPER_H
 
 #include "SoCHelper.h"
-#include "SoftRF.h"
 
 enum
 {

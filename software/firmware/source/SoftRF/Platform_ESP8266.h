@@ -38,6 +38,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_STANDALONE
+
 #define EEPROM_commit()         EEPROM.commit()
 
 #define isValidFix()            isValidGNSSFix()

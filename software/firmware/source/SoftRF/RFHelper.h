@@ -34,7 +34,6 @@
 #include <protocol.h>
 #include <freqplan.h>
 
-#include "SoftRF.h"
 #include "GNSSHelper.h"
 #include "Protocol_Legacy.h"
 #include "Protocol_OGNTP.h"

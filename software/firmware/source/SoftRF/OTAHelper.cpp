@@ -16,11 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if defined(EXCLUDE_WIFI)
+void OTA_setup()    {}
+void OTA_loop()     {}
+#else
+
 #include <FS.h>
 #include <ArduinoOTA.h>
 
 #include "OTAHelper.h"
-#include "SoCHelper.h"
 #include "WiFiHelper.h"
 
 void OTA_setup()
@@ -62,3 +68,4 @@ void OTA_loop()
   ArduinoOTA.handle();
 }
 
+#endif /* EXCLUDE_WIFI */

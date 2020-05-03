@@ -19,8 +19,6 @@
 #ifndef SOUNDHELPER_H
 #define SOUNDHELPER_H
 
-#include "SoftRF.h"
-
 enum
 {
 	BUZZER_VOLUME_FULL,

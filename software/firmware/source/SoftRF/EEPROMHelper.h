@@ -19,11 +19,11 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
-#include <EEPROM.h>
-#endif /* ARDUINO */
+#include "SoCHelper.h"
 
-#include "SoftRF.h"
+#if !defined(EXCLUDE_EEPROM)
+#include <EEPROM.h>
+#endif /* EXCLUDE_EEPROM */
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
 #define SOFTRF_EEPROM_VERSION 0x0000005D

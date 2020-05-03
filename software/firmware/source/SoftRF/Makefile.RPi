@@ -57,11 +57,18 @@ INCLUDE       = -I$(RADIO_PATH)  -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH) \
                 -I$(GFX_PATH)    -I$(EPD2_PATH)
 
-CPPS          := RFHelper.cpp SoCHelper.cpp \
+CPPS          := SoCHelper.cpp \
+                 RFHelper.cpp GNSSHelper.cpp \
                  Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
                  Protocol_OGNTP.cpp Protocol_UAT978.cpp \
-                 D1090Helper.cpp GDL90Helper.cpp NMEAHelper.o JSONHelper.cpp \
-                 TrafficHelper.cpp GNSSHelper.cpp EPDHelper.cpp Library.cpp
+                 GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
+                 NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
+                 LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp \
+                 Platform_ESP8266.cpp Platform_ESP32.cpp \
+                 Platform_STM32.cpp Platform_PSoC4.cpp  Platform_CC13XX.cpp \
+                 JSONHelper.cpp BluetoothHelper.cpp SoundHelper.cpp \
+                 TimeHelper.cpp WebHelper.cpp WiFiHelper.cpp OTAHelper.cpp \
+                 EPDHelper.cpp Library.cpp
 
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
@@ -79,6 +86,7 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(TIMELIB_PATH)/Time.o \
                  $(NRF905_PATH)/nRF905.o \
                  $(ADSB_PATH)/adsb_encoder.o \
+                 $(MAVLINK_PATH)/mavlink.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \

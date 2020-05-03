@@ -24,6 +24,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_RASPBERRY
+
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
 
@@ -75,7 +77,16 @@
 extern TTYSerial Serial1;
 extern TTYSerial Serial2;
 
+#define EXCLUDE_WIFI
+#define EXCLUDE_LED_RING
+#define EXCLUDE_EEPROM
+
 #define USE_NMEALIB
+
+#define EXCLUDE_BMP180
+#define EXCLUDE_BMP280
+#define EXCLUDE_MPL3115A2
+#define EXCLUDE_MAVLINK
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95

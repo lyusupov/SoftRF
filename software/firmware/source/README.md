@@ -66,8 +66,6 @@ void loop()
     [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
     [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
 
-<!-- 7. take **libbt.a** binary from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/misc)<br>
-    and overwrite existing one in ``<My Documents>``/Arduino/hardware/espressif/esp32/tools/sdk/lib -->
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
@@ -177,36 +175,20 @@ $ make ihex
 
 ## STM32
 
-The firmware is to be built on a Linux x86_64 host.<br>
-You can try to build it under Windows but you will have to manually set all the file links in this case.<br>
 You will also need to get and connect ST-LINK/V2 USB adapter in order to put the firmware into your hardware's flash memory.<br>
 
 1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
   to install Arduino IDE and [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.8.0) (1.8.0)
-2. open ``<Home>`` directory
+2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
 3. create **Arduino** sub-directory
-4. transfer full content of **Retro**, **SoftRF** and **libraries** GitHub folders into the sub-directory:
+4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
 
-    [Retro](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/Retro) &nbsp;&nbsp;&nbsp;**-->** ``<Home>``/Arduino/Retro <br>
-    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<Home>``/Arduino/SoftRF <br>
-    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<Home>``/Arduino/libraries <br>
-5. change directory on ``<Home>``/Arduino/Retro
-6. create all necessary symbolic links by doing **make links**:
-
-```
-$ make links
-Creating symlink Platform_STM32.cpp  -->  ../SoftRF/Platform_STM32.cpp
-Creating symlink SoCHelper.cpp  -->  ../SoftRF/SoCHelper.cpp
-Creating symlink RFHelper.cpp  -->  ../SoftRF/RFHelper.cpp
-Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
-
-< ... skipped ... >
-```
-
-7. start **Arduino** application
-8. open **Retro** sketch from _File_ -> _Open_ menu
-9. For S76G:<br>
+5. start **Arduino** application
+6. open **SoftRF** sketch from _File_ -> _Open_ menu
+7. For S76G:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _Nucleo_64_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Optimize_ ->  _Fast_ _(-O1)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _Nucleo_ _L073RZ_<br>
@@ -214,9 +196,9 @@ Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _Generic_ _STM32F1_ _series_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Optimize_ ->  _Smallest_ _(-Os_ _default)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _BluePill_ _F103C8_ _(128k)_<br>
-10. Select _Tools_ -> _C_ _Runtime_ _library_ ->  _Newlib_ _Nano_ _(default)_
-11. Select _Tools_ -> _USB_ _speed_ _(if available)_ ->  _Low/Full_ _Speed_
-12. For S76G "Dongle":<br>
+8. Select _Tools_ -> _C_ _Runtime_ _library_ ->  _Newlib_ _Nano_ _(default)_
+9. Select _Tools_ -> _USB_ _speed_ _(if available)_ ->  _Low/Full_ _Speed_
+10. For S76G "Dongle":<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _USB_ _support_ _(if available)_ ->  _CDC_ _(generic_ _'Serial'_ _supersede_ _U(S)ART)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(no_ _generic_ _'Serial')_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(DFU)_<br>
@@ -226,4 +208,4 @@ Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(generic_ _'Serial')_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(SWD)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Port_ ->  ``<your ST-LINK/V2 port device name>``<br>
-13. try to build and upload using _Sketch_ -> _Upload_
+11. try to build and upload using _Sketch_ -> _Upload_

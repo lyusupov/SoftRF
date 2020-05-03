@@ -21,6 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
 #include "TimeHelper.h"
 #include "LEDHelper.h"
 #include "GNSSHelper.h"
@@ -31,7 +32,6 @@
 #include "NMEAHelper.h"
 #include "D1090Helper.h"
 #include "BaroHelper.h"
-#include "SoCHelper.h"
 #include "TrafficHelper.h"
 #include "MAVLinkHelper.h"
 #include "BatteryHelper.h"
@@ -61,7 +61,7 @@ settings_t *settings = &eeprom_block.field.settings;
 ufo_t ThisAircraft;
 
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_UAT,
+  .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
@@ -193,11 +193,11 @@ void setup() {
 
   case SOFTRF_MODE_NORMAL:
   case SOFTRF_MODE_BRIDGE:
-    Serial.begin(UAT_BOOT_BR);
+    Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
     break;
   case SOFTRF_MODE_RECEIVER:
   default:
-    Serial.begin(UAT_RECEIVER_BR);
+    Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
     break;
   }
 
@@ -324,7 +324,7 @@ void setup() {
     Serial.println("Receiver mode.");
     Serial.flush();
     Serial.end();
-    Serial.begin(UAT_RECEIVER_BR);
+    Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
     break;
   }
 

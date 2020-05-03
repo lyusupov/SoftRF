@@ -26,6 +26,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_MULTI
+
 #define isValidFix()            isValidGNSSFix()
 
 #define uni_begin()             strip.begin()
@@ -120,6 +122,9 @@ struct rst_info {
 /* I2C */
 #define SOC_GPIO_PIN_SDA      SDA         // P0_1
 #define SOC_GPIO_PIN_SCL      SCL         // P0_0
+
+#define EXCLUDE_WIFI
+#define EXCLUDE_TEST_MODE
 
 /* Component                         Cost */
 /* -------------------------------------- */

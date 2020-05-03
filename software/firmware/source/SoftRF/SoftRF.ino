@@ -41,6 +41,9 @@
  *   AXP202X library is developed by Lewis He
  *   Arduino Core for STM32 is developed by Frederic Pillon
  *   TFT library is developed by Bodmer
+ *   Basic MAC library is developed by Michael Kuyper
+ *   port of Basic MAC library for Arduino is developed by Matthijs Kooijman
+ *   Arduino core for ASR650x is developed by Aaron Lee (HelTec Automation)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,8 +78,6 @@
 #include "TTNHelper.h"
 #include "TrafficHelper.h"
 
-#include "SoftRF.h"
-
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"
 #endif /* ENABLE_AHRS */
@@ -93,7 +94,7 @@
 
 ufo_t ThisAircraft;
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_STANDALONE,
+  .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
@@ -113,7 +114,12 @@ void setup()
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
-  Serial.begin(SERIAL_OUT_BR);
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+  /* Let host's USB and console drivers to warm-up */
+  delay(2000);
+#endif
 
 #if LOGGER_IS_ENABLED
   Logger_setup();
@@ -127,9 +133,11 @@ void setup()
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
-  Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
+  if (resetInfo) {
+    Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
+  }
   Serial.println(SoC->getResetReason());
-  Serial.print(F("Free heap size: ")); Serial.println(ESP.getFreeHeap());
+  Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
@@ -153,11 +161,14 @@ void setup()
 #endif /* ENABLE_AHRS */
   hw_info.display = SoC->Display_setup();
 
+#if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {
     Serial.begin(57600);
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
-  }  else {
+  }  else
+#endif /* EXCLUDE_MAVLINK */
+  {
     hw_info.gnss = GNSS_setup();
     ThisAircraft.aircraft_type = settings->aircraft_type;
   }
@@ -220,15 +231,21 @@ void loop()
 
   switch (settings->mode)
   {
+#if !defined(EXCLUDE_TEST_MODE)
   case SOFTRF_MODE_TXRX_TEST:
     txrx_test_loop();
     break;
+#endif /* EXCLUDE_TEST_MODE */
+#if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     uav_loop();
     break;
+#endif /* EXCLUDE_MAVLINK */
+#if !defined(EXCLUDE_WIFI)
   case SOFTRF_MODE_BRIDGE:
     bridge_loop();
     break;
+#endif /* EXCLUDE_WIFI */
   case SOFTRF_MODE_WATCHOUT:
     watchout_loop();
     break;
@@ -311,6 +328,7 @@ void normal_loop()
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
+#if !defined(EXCLUDE_EGM96)
     /*
      * When geoidal separation is zero or not available - use approx. EGM96 value
      */
@@ -322,6 +340,7 @@ void normal_loop()
       /* we can assume the GPS unit is giving ellipsoid height */
       ThisAircraft.altitude -= ThisAircraft.geoid_separation;
     }
+#endif /* EXCLUDE_EGM96 */
 
     RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
@@ -368,6 +387,7 @@ void normal_loop()
 
 }
 
+#if !defined(EXCLUDE_MAVLINK)
 void uav_loop()
 {
   bool success = false;
@@ -402,7 +422,9 @@ void uav_loop()
 
   ClearExpired();
 }
+#endif /* EXCLUDE_MAVLINK */
 
+#if !defined(EXCLUDE_WIFI)
 void bridge_loop()
 {
   bool success;
@@ -438,6 +460,7 @@ void bridge_loop()
     LEDTimeMarker = millis();
   }
 }
+#endif /* EXCLUDE_WIFI */
 
 void watchout_loop()
 {
@@ -465,6 +488,8 @@ void watchout_loop()
     LEDTimeMarker = millis();
   }
 }
+
+#if !defined(EXCLUDE_TEST_MODE)
 
 unsigned int pos_ndx = 0;
 unsigned long TxPosUpdMarker = 0;
@@ -546,7 +571,9 @@ void txrx_test_loop()
   export_start_ms = millis();
 #endif
   if (isTimeToExport()) {
+#if defined(USE_NMEALIB)
     NMEA_Position();
+#endif
     NMEA_Export();
     GDL90_Export();
     D1090_Export();
@@ -614,3 +641,5 @@ void txrx_test_loop()
 
   ClearExpired();
 }
+
+#endif /* EXCLUDE_TEST_MODE */

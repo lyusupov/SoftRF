@@ -27,6 +27,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_RETRO
+
 #define isValidFix()            isValidGNSSFix()
 
 #define uni_begin()             strip.begin()
@@ -177,6 +179,9 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SCK     PA5
 #define SOC_GPIO_SPI1_SS      PA4
 
+#define EXCLUDE_WIFI
+#define EXCLUDE_TEST_MODE
+
 #define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -237,6 +242,9 @@ typedef struct stm32_backup_struct {
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7
 #define SOC_GPIO_PIN_SCL      PB6
+
+#define EXCLUDE_WIFI
+#define EXCLUDE_TEST_MODE
 
 /* Component                         Cost */
 /* -------------------------------------- */

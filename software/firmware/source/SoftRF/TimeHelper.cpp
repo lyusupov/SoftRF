@@ -16,9 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <TimeLib.h>
-
 #include "SoCHelper.h"
+
+#if defined(EXCLUDE_WIFI)
+void Time_setup()     {}
+#else
+
+#include <TimeLib.h>
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
@@ -152,3 +156,5 @@ void Time_setup()
   }
   Serial.println(epoch % 60); // print the second
 }
+
+#endif /* EXCLUDE_WIFI */

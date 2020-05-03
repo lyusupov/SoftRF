@@ -23,7 +23,14 @@
  
 */
 
+#if defined(ARDUINO)
 #include <Arduino.h>
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI)
+#include <raspi/raspi.h>
+#endif /* RASPBERRY_PI */
+
 #include <mavlink.h>
 #include <aircraft.h>
 

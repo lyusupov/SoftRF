@@ -19,8 +19,6 @@
 #ifndef D1090HELPER_H
 #define D1090HELPER_H
 
-#include "SoftRF.h"
-
 enum
 {
 	D1090_OFF,

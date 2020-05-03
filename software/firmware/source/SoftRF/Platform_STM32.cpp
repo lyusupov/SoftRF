@@ -294,6 +294,14 @@ static void* STM32_getResetInfoPtr()
   return (void *) &reset_info;
 }
 
+static String STM32_getResetInfo()
+{
+  switch (reset_info.reason)
+  {
+    default                     : return F("No reset information available");
+  }
+}
+
 static String STM32_getResetReason()
 {
   switch (reset_info.reason)
@@ -307,6 +315,23 @@ static String STM32_getResetReason()
     case REASON_EXT_SYS_RST       : return F("EXT_SYS");
     default                       : return F("NO_MEAN");
   }
+}
+
+#include <malloc.h>
+extern "C" char *sbrk(int);
+/* Use linker definition */
+extern char _estack;
+extern char _Min_Stack_Size;
+
+static char *minSP = (char*)(&_estack - &_Min_Stack_Size);
+
+static uint32_t STM32_getFreeHeap()
+{
+  char *heapend = (char*)sbrk(0);
+  char * stack_ptr = (char*)__get_MSP();
+  struct mallinfo mi = mallinfo();
+
+  return ((stack_ptr < minSP) ? stack_ptr : minSP) - heapend + mi.fordblks ;
 }
 
 static long STM32_random(long howsmall, long howBig)
@@ -617,7 +642,9 @@ static void STM32_WDT_fini()
 
 static void STM32_USB_setup()
 {
+#if defined(DISABLE_GENERIC_SERIALUSB)
   SerialUSB.begin();
+#endif
 }
 
 static void STM32_USB_loop()
@@ -660,8 +687,9 @@ const SoC_ops_t STM32_ops = {
   STM32_reset,
   STM32_getChipId,
   STM32_getResetInfoPtr,
-  NULL,
+  STM32_getResetInfo,
   STM32_getResetReason,
+  STM32_getFreeHeap,
   STM32_random,
   STM32_Sound_test,
   NULL,

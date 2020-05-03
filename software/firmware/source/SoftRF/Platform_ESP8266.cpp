@@ -122,6 +122,11 @@ static String ESP8266_getResetReason()
   return ESP.getResetReason();
 }
 
+static uint32_t ESP8266_getFreeHeap()
+{
+  return ESP.getFreeHeap();
+}
+
 static long ESP8266_random(long howsmall, long howBig)
 {
   return ESP8266TrueRandom.random(howsmall, howBig);
@@ -362,6 +367,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_getResetInfoPtr,
   ESP8266_getResetInfo,
   ESP8266_getResetReason,
+  ESP8266_getFreeHeap,
   ESP8266_random,
   ESP8266_Sound_test,
   ESP8266_maxSketchSpace,

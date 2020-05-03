@@ -30,6 +30,8 @@ extern size_t strnlen (const char *string, size_t length);
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_UAT
+
 #define isValidFix()            isValidGNSSFix()
 
 #define uni_begin()             strip.begin()
@@ -47,6 +49,12 @@ extern size_t strnlen (const char *string, size_t length);
 #define SerialOutput            Serial
 #define swSer                   Serial
 #define UATSerial               Serial /* TBD */
+
+#if defined(SERIAL_OUT_BITS)
+#undef SERIAL_OUT_BITS
+#endif
+#define SERIAL_OUT_BITS         false
+
 #define yield()                 ({ })
 #define snprintf_P              snprintf
 
@@ -74,6 +82,9 @@ extern uint8_t LEDs[][3];
  * BootLoader                  GPIO 1
  */
 
+#define EXCLUDE_WIFI
+#define EXCLUDE_EEPROM
+
 /*
  * Built-in 128K flash memory of the CC1310F128 (7x7)
  * does fit for either:
@@ -98,6 +109,9 @@ extern uint8_t LEDs[][3];
  * Board_UART_RX               GPIO 12
  * BootLoader                  GPIO 15
  */
+
+#define EXCLUDE_WIFI
+#define EXCLUDE_EEPROM
 
 #define ENABLE_NORMAL_MODE
 #define ENABLE_OTHER_MODES

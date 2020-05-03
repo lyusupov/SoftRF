@@ -454,6 +454,11 @@ static String ESP32_getResetReason()
   }
 }
 
+static uint32_t ESP32_getFreeHeap()
+{
+  return ESP.getFreeHeap();
+}
+
 static long ESP32_random(long howsmall, long howBig)
 {
   return random(howsmall, howBig);
@@ -1110,6 +1115,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_getResetInfoPtr,
   ESP32_getResetInfo,
   ESP32_getResetReason,
+  ESP32_getFreeHeap,
   ESP32_random,
   ESP32_Sound_test,
   ESP32_maxSketchSpace,

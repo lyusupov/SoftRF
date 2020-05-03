@@ -19,7 +19,6 @@
 #ifndef TRAFFICHELPER_H
 #define TRAFFICHELPER_H
 
-#include "SoftRF.h"
 #include "SoCHelper.h"
 
 #define ALARM_ZONE_NONE       10000 /* zone range is 1000m <-> 10000m */

@@ -41,6 +41,7 @@ typedef struct SoC_ops_struct {
   void* (*getResetInfoPtr)();
   String (*getResetInfo)();
   String (*getResetReason)();
+  uint32_t (*getFreeHeap)();
   long (*random)(long, long);
   void (*Sound_test)(int);
   uint32_t (*maxSketchSpace)();

@@ -17,6 +17,12 @@
  */
 
 #include "SoCHelper.h"
+
+#if defined(EXCLUDE_EEPROM)
+void EEPROM_setup()    {}
+void EEPROM_store()    {}
+#else
+
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
@@ -115,3 +121,5 @@ void EEPROM_store()
 
   EEPROM_commit();
 }
+
+#endif /* EXCLUDE_EEPROM */

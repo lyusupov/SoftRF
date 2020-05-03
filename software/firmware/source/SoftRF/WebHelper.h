@@ -19,14 +19,14 @@
 #ifndef WEBHELPER_H
 #define WEBHELPER_H
 
-#include <TinyGPS++.h>
+#include "SoCHelper.h"
 
-#if defined(ARDUINO) && !defined(__ASR6501__) && \
-   !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 
-#include "SoftRF.h"
+#include <TinyGPS++.h>
+
 #include "EEPROMHelper.h"
 #include "RFHelper.h"
 
@@ -45,8 +45,7 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 //extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 
-#if defined(ARDUINO) && !defined(__ASR6501__) && \
-   !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 extern WiFiClient client;
 #endif /* ARDUINO */
 

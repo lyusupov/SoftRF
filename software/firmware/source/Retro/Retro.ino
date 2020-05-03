@@ -69,7 +69,7 @@
 ufo_t ThisAircraft;
 
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_RETRO,
+  .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
@@ -116,9 +116,7 @@ void setup() {
 
   delay(100);
 
-#if !(defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2))
   hw_info.baro = Baro_setup();
-#endif
 
 #if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {
@@ -214,9 +212,7 @@ void normal_loop()
 {
   bool success;
 
-#if !(defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2))
   Baro_loop();
-#endif
 
   PickGNSSFix();
 

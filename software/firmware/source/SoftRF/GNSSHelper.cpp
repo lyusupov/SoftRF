@@ -28,8 +28,6 @@
 #include "WiFiHelper.h"
 #include "RFHelper.h"
 
-#include "SoftRF.h"
-
 #if !defined(EXCLUDE_EGM96)
 #include <egm96s.h>
 #endif /* EXCLUDE_EGM96 */

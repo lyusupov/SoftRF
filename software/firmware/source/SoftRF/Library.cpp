@@ -22,6 +22,8 @@
 String TxDataTemplate = "0282dd204901f981798a85b69764bdf99ed77fd3c2300000";
 #endif
 
+#if !defined(EXCLUDE_TEST_MODE)
+
 //const float txrx_test_positions[][2] PROGMEM = { { 56.0092, 38.3710 } };
 #if 1 /* 2017 */
 const float txrx_test_positions[90][2] PROGMEM = {
@@ -117,3 +119,5 @@ const float txrx_test_positions[90][2] PROGMEM = {
          { 56.014016950163 , 38.353615314669 }
       };
 #endif
+
+#endif /* EXCLUDE_TEST_MODE */

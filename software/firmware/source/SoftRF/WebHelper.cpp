@@ -16,11 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if defined(EXCLUDE_WIFI)
+void Web_setup()    {}
+void Web_loop()     {}
+void Web_fini()     {}
+#else
+
 #include <Arduino.h>
 
 #include "BatteryHelper.h"
 #include "RFHelper.h"
-#include "SoCHelper.h"
 #include "WebHelper.h"
 #include "BaroHelper.h"
 #include "LEDHelper.h"
@@ -930,3 +937,5 @@ void Web_fini()
 {
   server.stop();
 }
+
+#endif /* EXCLUDE_WIFI */

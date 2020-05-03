@@ -21,8 +21,6 @@
 
 #include <TinyGPS++.h>
 
-#include "SoftRF.h"
-
 enum
 {
   GNSS_MODULE_NONE,

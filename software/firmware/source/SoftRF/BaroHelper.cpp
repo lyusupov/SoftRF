@@ -16,13 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#include "BaroHelper.h"
+
+#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2)
+byte Baro_setup()    {return BARO_MODULE_NONE;}
+void Baro_loop()     {}
+#else
+
 #include <Adafruit_BMP085.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_MPL3115A2.h>
 #include <TinyGPS++.h>
-
-#include "SoCHelper.h"
-#include "BaroHelper.h"
 
 barochip_ops_t *baro_chip = NULL;
 
@@ -247,3 +253,5 @@ void Baro_loop()
 #endif
   }
 }
+
+#endif /* EXCLUDE_BMP180 && EXCLUDE_BMP280 EXCLUDE_MPL3115A2 */
