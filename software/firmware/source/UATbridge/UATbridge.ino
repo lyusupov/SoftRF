@@ -37,7 +37,6 @@
 #include "BatteryHelper.h"
 #include "JSONHelper.h"
 
-#include "SoftRF.h"
 #include "EasyLink.h"
 #include "Protocol_UAT978.h"
 

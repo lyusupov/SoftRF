@@ -93,6 +93,7 @@
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
 
 ufo_t ThisAircraft;
+
 hardware_info_t hw_info = {
   .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
@@ -105,6 +106,11 @@ hardware_info_t hw_info = {
 
 unsigned long LEDTimeMarker = 0;
 unsigned long ExportTimeMarker = 0;
+
+#if defined(EXCLUDE_EEPROM)
+eeprom_t eeprom_block;
+settings_t *settings = &eeprom_block.field.settings;
+#endif /* EXCLUDE_EEPROM */
 
 void setup()
 {
@@ -140,7 +146,35 @@ void setup()
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
+#if !defined(EXCLUDE_EEPROM)
+
   EEPROM_setup();
+
+#else
+  eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
+  eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
+  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
+  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
+  eeprom_block.field.settings.band          = RF_BAND_EU;
+  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
+  eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
+  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
+  eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
+  eeprom_block.field.settings.volume        = BUZZER_OFF;
+  eeprom_block.field.settings.pointer       = LED_OFF;
+  eeprom_block.field.settings.nmea_g        = true;
+  eeprom_block.field.settings.nmea_p        = false;
+  eeprom_block.field.settings.nmea_l        = true;
+  eeprom_block.field.settings.nmea_s        = true;
+  eeprom_block.field.settings.nmea_out      = NMEA_UART;
+  eeprom_block.field.settings.gdl90         = GDL90_OFF;
+  eeprom_block.field.settings.d1090         = D1090_OFF;
+//  eeprom_block.field.settings.json          = JSON_OFF;
+  eeprom_block.field.settings.stealth       = false;
+  eeprom_block.field.settings.no_track      = false;
+  eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
+  eeprom_block.field.settings.freq_corr     = 0;
+#endif /* EXCLUDE_EEPROM */
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
@@ -233,25 +267,25 @@ void loop()
   {
 #if !defined(EXCLUDE_TEST_MODE)
   case SOFTRF_MODE_TXRX_TEST:
-    txrx_test_loop();
+    txrx_test();
     break;
 #endif /* EXCLUDE_TEST_MODE */
 #if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
-    uav_loop();
+    uav();
     break;
 #endif /* EXCLUDE_MAVLINK */
 #if !defined(EXCLUDE_WIFI)
   case SOFTRF_MODE_BRIDGE:
-    bridge_loop();
+    bridge();
     break;
 #endif /* EXCLUDE_WIFI */
   case SOFTRF_MODE_WATCHOUT:
-    watchout_loop();
+    watchout();
     break;
   case SOFTRF_MODE_NORMAL:
   default:
-    normal_loop();
+    normal();
     break;
   }
 
@@ -304,7 +338,7 @@ void shutdown(const char *msg)
   SoC_fini();
 }
 
-void normal_loop()
+void normal()
 {
   bool success;
 
@@ -388,7 +422,7 @@ void normal_loop()
 }
 
 #if !defined(EXCLUDE_MAVLINK)
-void uav_loop()
+void uav()
 {
   bool success = false;
 
@@ -425,7 +459,7 @@ void uav_loop()
 #endif /* EXCLUDE_MAVLINK */
 
 #if !defined(EXCLUDE_WIFI)
-void bridge_loop()
+void bridge()
 {
   bool success;
 
@@ -462,7 +496,7 @@ void bridge_loop()
 }
 #endif /* EXCLUDE_WIFI */
 
-void watchout_loop()
+void watchout()
 {
   bool success;
 
@@ -494,7 +528,7 @@ void watchout_loop()
 unsigned int pos_ndx = 0;
 unsigned long TxPosUpdMarker = 0;
 
-void txrx_test_loop()
+void txrx_test()
 {
   bool success = false;
 #if DEBUG_TIMING

@@ -20,20 +20,20 @@
 
 #include <Wire.h>
 
+#if defined(ENERGIA_ARCH_CC13XX)
+#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+#if defined(ENERGIA_ARCH_CC13X2)
+#include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
+#endif /* ENERGIA_ARCH_CC13X2 */
+
 #include "SoCHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 #include "BaroHelper.h"
 
-#if defined(ENERGIA_ARCH_CC13XX)
-#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
-#include <easylink/EasyLink.h>
-#endif /* ENERGIA_ARCH_CC13XX */
-#if defined(ENERGIA_ARCH_CC13X2)
-#include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
-#include <easylink/EasyLinkv2.h>
-#endif /* ENERGIA_ARCH_CC13X2 */
+#include "EasyLink.h"
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -74,6 +74,12 @@ const char *OLED_Protocol_ID[] = {
 #endif /* USE_OLED */
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+
+static struct rst_info reset_info = {
+  .reason = REASON_DEFAULT_RST,
+};
+
+static uint32_t bootCount = 0;
 
 #if defined(ENERGIA_ARCH_CC13X2)
 size_t strnlen (const char *string, size_t length)
@@ -172,6 +178,24 @@ static uint32_t CC13XX_getChipId()
   }
 
   return id;
+}
+
+static void* CC13XX_getResetInfoPtr()
+{
+  return 0;
+}
+
+static String CC13XX_getResetInfo()
+{
+  switch (reset_info.reason)
+  {
+    default                     : return F("No reset information available");
+  }
+}
+
+static String CC13XX_getResetReason()
+{
+  return F("DEFAULT");
 }
 
 static uint32_t CC13XX_getFreeHeap()
@@ -416,9 +440,9 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_fini,
   CC13XX_reset,
   CC13XX_getChipId,
-  NULL,
-  NULL,
-  NULL,
+  CC13XX_getResetInfoPtr,
+  CC13XX_getResetInfo,
+  CC13XX_getResetReason,
   CC13XX_getFreeHeap,
   CC13XX_random,
   CC13XX_Sound_test,

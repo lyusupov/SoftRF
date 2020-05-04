@@ -70,6 +70,26 @@ extern size_t strnlen (const char *string, size_t length);
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
+enum rst_reason {
+  REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
+  REASON_WDT_RST          = 1,  /* hardware watch dog reset */
+  REASON_EXCEPTION_RST    = 2,  /* exception reset, GPIO status won't change */
+  REASON_SOFT_WDT_RST     = 3,  /* software watch dog reset, GPIO status won't change */
+  REASON_SOFT_RESTART     = 4,  /* software restart ,system_restart , GPIO status won't change */
+  REASON_DEEP_SLEEP_AWAKE = 5,  /* wake up from deep-sleep */
+  REASON_EXT_SYS_RST      = 6   /* external system reset */
+};
+
+struct rst_info {
+  uint32_t reason;
+  uint32_t exccause;
+  uint32_t epc1;
+  uint32_t epc2;
+  uint32_t epc3;
+  uint32_t excvaddr;
+  uint32_t depc;
+};
+
 extern WS2812 strip;
 extern uint8_t LEDs[][3];
 
