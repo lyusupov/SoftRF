@@ -104,7 +104,7 @@ extern uint8_t LEDs[][3];
  */
 
 #define EXCLUDE_WIFI
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_EEPROM
 
 /*
  * Built-in 128K flash memory of the CC1310F128 (7x7)
@@ -113,13 +113,20 @@ extern uint8_t LEDs[][3];
  * - NORMAL mode
  * but not both at the same time.
  */
+//#define ENABLE_NORMAL_MODE
 #define ENABLE_OTHER_MODES
 
+#define USE_NMEA_CFG
 #define EXCLUDE_BMP180
-#define EXCLUDE_MPL3115A2
-#define EXCLUDE_NRF905
+#define EXCLUDE_BMP280
+//#define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
 #define EXCLUDE_EGM96
+
+#define EXCLUDE_NRF905
+#define EXCLUDE_CC13XX
+#define EXCLUDE_MAVLINK
+#define EXCLUDE_LED_RING
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 

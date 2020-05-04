@@ -201,10 +201,11 @@ void setup() {
 
   switch (settings->mode)
   {
+#if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     MAVLink_setup();
     break;
-
+#endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_NORMAL:
   case SOFTRF_MODE_BRIDGE:
     Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
@@ -278,7 +279,7 @@ void setup() {
 #endif /* ENABLE_NORMAL_MODE */
 
 #if defined(ENABLE_OTHER_MODES)
-
+#if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
 
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;
@@ -288,7 +289,7 @@ void setup() {
 
     Serial.println("UAV mode.");
     break;
-
+#endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_BRIDGE:
 
     hw_info.rf = RF_setup();
@@ -365,9 +366,11 @@ void loop() {
 #endif /* ENABLE_NORMAL_MODE */
 
 #if defined(ENABLE_OTHER_MODES)
+#if !defined(EXCLUDE_MAVLINK)
     case SOFTRF_MODE_UAV:
       uav();
       break;
+#endif /* EXCLUDE_MAVLINK */
     case SOFTRF_MODE_BRIDGE:
       bridge();
       break;
@@ -664,6 +667,7 @@ void normal()
   ClearExpired();
 }
 
+#if !defined(EXCLUDE_MAVLINK)
 void uav()
 {
   bool success;
@@ -751,6 +755,7 @@ void uav()
 
   ClearExpired();
 }
+#endif /* EXCLUDE_MAVLINK */
 
 void shutdown(const char *msg)
 {

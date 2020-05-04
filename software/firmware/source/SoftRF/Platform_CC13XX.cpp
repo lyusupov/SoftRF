@@ -146,7 +146,7 @@ char* itoa( int value, char *string, int radix )
 
 static void CC13XX_setup()
 {
-//  uint32_t  reset_source = SysCtrlResetSourceGet();
+  uint32_t  reset_source = SysCtrlResetSourceGet();
 
   EasyLink_getIeeeAddr(ieeeAddr);
 }

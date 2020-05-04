@@ -55,7 +55,7 @@ install:
       arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs ;
     fi
   - if [[ "$BOARD" =~ "esp32:esp32:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=https://dl.espressif.com/dl/package_esp32_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=https://github.com/espressif/arduino-esp32/releases/download/1.0.4/package_esp32_index.json" --save-prefs ;
       arduino --install-boards esp32:esp32 ;
       arduino --board $BOARD --save-prefs ;
       cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.4/tools/sdk/lib ;
@@ -64,7 +64,7 @@ install:
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/dev/STM32/package_stm_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/de937bccd4f64c78c8bfe6fb984b75f1157b06c6/STM32/package_stm_index.json" --save-prefs ;
       arduino --install-boards STM32:stm32 ;
       arduino --board $BOARD --save-prefs ;
       if [[ "$BOARD" =~ "STM32:stm32:Nucleo_64" ]]; then
@@ -128,6 +128,9 @@ script:
     fi ;
   - if [[ "$BOARD" =~ "STM32:stm32:"     ]]; then
       arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+    fi ;
+  - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+      energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
     fi ;
   - if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
       energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;

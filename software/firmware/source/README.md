@@ -114,43 +114,28 @@ As a result of the build, two program binaries will become created:
 
 ## CC13XX
 
-The firmware is to be built on a Linux x86_64 host.<br>
 [Energia](http://energia.nu/download/) IDE has to be pre-installed first.<br>
 
 1. open ``<Home>`` directory
 2. create **Energia** sub-directory
-3. transfer full content of **UATbridge**, **SoftRF** and **libraries** GitHub folders into the sub-directory:
+3. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
-    [UATbridge](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge) **-->** ``<Home>``/Energia/UATbridge <br>
-    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**-->** ``<Home>``/Energia/SoftRF <br>
-    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) &nbsp;&nbsp;&nbsp;&nbsp;**-->** ``<Home>``/Energia/libraries <br>
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Energia/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Energia/libraries <br>
 
-4. change directory on ``<Home>``/Energia/UATbridge
-5. create all necessary symbolic links by doing **make links**:
+4. start **Energia** application
+5. open **SoftRF** sketch from _File_ -> _Open_ menu
+6. [install support](http://energia.nu/guide/boards/) for TI CC13XX familiy with _Tools_ -> _Board_ ->  _Boards_ _Manager..._
+7. Select _Tools_ -> _Board_ ->  _LaunchPad_ _w/_ _CC1310_ _EMT_ _(48MHz)_
+8. Select _Tools_ -> _Port_ ->  ``<your XDS110 port device name>``
+9. Select _Tools_ -> _Programmer_ ->  _dslite_
+10. try to build and upload using _Sketch_ -> _Upload_
 
-```
-$ make links
-Creating symlink Platform_CC13XX.cpp  -->  ../SoftRF/Platform_CC13XX.cpp
-Creating symlink SoCHelper.cpp  -->  ../SoftRF/SoCHelper.cpp
-Creating symlink RFHelper.cpp  -->  ../SoftRF/RFHelper.cpp
-Creating symlink GNSSHelper.cpp  -->  ../SoftRF/GNSSHelper.cpp
-
-< ... skipped ... >
-```
-
-6. start **Energia** application
-7. open **UATbridge** sketch from _File_ -> _Open_ menu
-8. [install support](http://energia.nu/guide/boards/) for TI CC13XX familiy with _Tools_ -> _Board_ ->  _Boards_ _Manager..._
-9. Select _Tools_ -> _Board_ ->  _LaunchPad_ _w/_ _CC1310_ _EMT_ _(48MHz)_
-10. Select _Tools_ -> _Port_ ->  ``<your XDS110 port device name>``
-11. Select _Tools_ -> _Programmer_ ->  _dslite_
-12. try to build and upload using _Sketch_ -> _Upload_
-
-12a. or, to build the firmware using shell prompt, do:
+10a. or, to build the firmware using shell prompt, do:
 
 ```
 $ make build
-energia --verify --verbose-build UATbridge.ino
+energia --verify --verbose-build SoftRF.ino
 Picked up JAVA_TOOL_OPTIONS:
 Loading configuration...
 Initializing packages...
@@ -160,10 +145,10 @@ Verifying...
 < ... skipped ... >
 ```
 
-13a. inspect **/tmp** directory and sub-folders, take **UATbridge.ino.elf** file and use it with TI's **Uniflash** or **Flash Programmer 2**.<br>
+11a. inspect **/tmp** directory and sub-folders, take **SoftRF.ino.elf** file and use it with TI's **Uniflash** or **Flash Programmer 2**.<br>
 
 
-14a. (Optional) if you want to use [**cc2538-bsl.py**](https://github.com/JelmerT/cc2538-bsl) tool to put the firmware into flash memory of CC1310 IC via **boot loader**, run **make ihex**:
+12a. (Optional) if you want to use [**cc2538-bsl.py**](https://github.com/JelmerT/cc2538-bsl) tool to put the firmware into flash memory of CC1310 IC via **boot loader**, run **make ihex**:
 
 ```
 $ make ihex

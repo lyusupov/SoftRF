@@ -39,13 +39,33 @@
 
 #if defined(ENERGIA_ARCH_CC13XX)
 
-#define NVS_REGIONS_BASE 0x1A000
+#define NVS_REGIONS_BASE 0x1E000
 #define SECTORSIZE       4096
 #define REGIONSIZE       (SECTORSIZE * 1)
 
 #define CONFIG_NVS_COUNT 1
 
 __attribute__ ((section (".nvs"))) static char flashBuf[REGIONSIZE];
+
+/*
+
+    This patch is to be applied onto Energia GNU ld script
+
+--- ./system/energia/linker.cmd.orig    2017-09-13 18:50:07.000000000 +0300
++++ ./system/energia/linker.cmd 2020-05-04 15:39:22.000000000 +0300
+@@ -50,6 +50,10 @@
+     _vtable_base_address = 536870912;
+ ti_sysbios_family_arm_m3_Hwi_nvic = 0xe000e000;
+
++    .nvs (0x1e000) (NOLOAD) : AT (0x1e000) {
++        *(.nvs)
++    } > REGION_TEXT
++
+
+     __TI_STACK_BASE = __stack;
+ }
+
+*/
 
 NVSCC26XX_Object nvsCC26xxObjects[CONFIG_NVS_COUNT];
 
