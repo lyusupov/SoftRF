@@ -133,6 +133,7 @@ struct rst_info {
 //#define EXCLUDE_BMP280         //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb
 #define EXCLUDE_NRF905           //  -    kb
+#define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_CC13XX           //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  - 16 kb

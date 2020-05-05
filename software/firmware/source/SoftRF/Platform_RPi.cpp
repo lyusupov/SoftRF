@@ -326,7 +326,7 @@ static void RPi_UATSerial_begin(unsigned long baud)
   UATSerial.rts(false);
 }
 
-static void RPi_CC13XX_restart()
+static void RPi_UATModule_restart()
 {
   UATSerial.dtr(false);
 
@@ -391,7 +391,7 @@ const SoC_ops_t RPi_ops = {
   RPi_get_PPS_TimeMarker,
   NULL,
   RPi_UATSerial_begin,
-  RPi_CC13XX_restart,
+  RPi_UATModule_restart,
   RPi_WDT_setup,
   RPi_WDT_fini
 };

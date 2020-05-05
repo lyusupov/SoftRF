@@ -59,8 +59,8 @@ enum
   RF_IC_NONE,
   RF_IC_NRF905,
   RF_IC_SX1276,
+  RF_IC_UATM,
   RF_IC_CC13XX,
-  RF_IC_S7XG,
   RF_DRV_OGN,
   RF_IC_SX1262
 };
@@ -94,42 +94,6 @@ bool    RF_Transmit(size_t, bool);
 bool    RF_Receive(void);
 void    RF_Shutdown(void);
 uint8_t RF_Payload_Size(uint8_t);
-
-bool nrf905_probe(void);
-void nrf905_setup(void);
-void nrf905_channel(uint8_t);
-bool nrf905_receive(void);
-void nrf905_transmit(void);
-void nrf905_shutdown(void);
-
-bool sx1276_probe(void);
-bool sx1262_probe(void);
-void sx12xx_setup(void);
-void sx12xx_channel(uint8_t);
-bool sx12xx_receive(void);
-void sx12xx_transmit(void);
-void sx12xx_shutdown(void);
-
-bool cc13xx_probe(void);
-void cc13xx_setup(void);
-void cc13xx_channel(uint8_t);
-bool cc13xx_receive(void);
-void cc13xx_transmit(void);
-void cc13xx_shutdown(void);
-
-bool s7xg_probe(void);
-void s7xg_setup(void);
-void s7xg_channel(uint8_t);
-bool s7xg_receive(void);
-void s7xg_transmit(void);
-void s7xg_shutdown(void);
-
-bool ognrf_probe(void);
-void ognrf_setup(void);
-void ognrf_channel(uint8_t);
-bool ognrf_receive(void);
-void ognrf_transmit(void);
-void ognrf_shutdown(void);
 
 extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;

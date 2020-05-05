@@ -417,7 +417,7 @@ static void CC13XX_UATSerial_begin(unsigned long baud)
   UATSerial.begin(baud);
 }
 
-static void CC13XX_restart()
+static void CC13XX_UATModule_restart()
 {
   /* Nothing to do */
 }
@@ -466,7 +466,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_get_PPS_TimeMarker,
   CC13XX_Baro_setup,
   CC13XX_UATSerial_begin,
-  CC13XX_restart,
+  CC13XX_UATModule_restart,
   CC13XX_WDT_setup,
   CC13XX_WDT_fini
 };

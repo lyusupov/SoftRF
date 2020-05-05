@@ -606,7 +606,7 @@ static void STM32_UATSerial_begin(unsigned long baud)
   UATSerial.begin(baud);
 }
 
-static void STM32_restart()
+static void STM32_UATModule_restart()
 {
   digitalWrite(SOC_GPIO_PIN_TXE, LOW);
   pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
@@ -716,7 +716,7 @@ const SoC_ops_t STM32_ops = {
   STM32_get_PPS_TimeMarker,
   STM32_Baro_setup,
   STM32_UATSerial_begin,
-  STM32_restart,
+  STM32_UATModule_restart,
   STM32_WDT_setup,
   STM32_WDT_fini
 };

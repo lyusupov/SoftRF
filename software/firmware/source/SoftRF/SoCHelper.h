@@ -64,7 +64,7 @@ typedef struct SoC_ops_struct {
   unsigned long (*get_PPS_TimeMarker)();
   bool (*Baro_setup)();
   void (*UATSerial_begin)(unsigned long);
-  void (*CC13XX_restart)();
+  void (*UATModule_restart)();
   void (*WDT_setup)();
   void (*WDT_fini)();
 } SoC_ops_t;

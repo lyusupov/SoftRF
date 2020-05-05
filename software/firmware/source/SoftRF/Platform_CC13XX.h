@@ -93,6 +93,16 @@ struct rst_info {
 extern WS2812 strip;
 extern uint8_t LEDs[][3];
 
+#define USE_NMEA_CFG
+#define EXCLUDE_WIFI
+//#define EXCLUDE_EEPROM
+#define EXCLUDE_LED_RING
+#define EXCLUDE_EGM96
+#define EXCLUDE_NRF905
+#define EXCLUDE_UATM
+
+#include "hal_conf_extra.h"   // Sketch-specific definitions are located there
+
 #if defined(ENERGIA_ARCH_CC13XX)
 
 /*
@@ -103,30 +113,12 @@ extern uint8_t LEDs[][3];
  * BootLoader                  GPIO 1
  */
 
-#define EXCLUDE_WIFI
-//#define EXCLUDE_EEPROM
-
-/*
- * Built-in 128K flash memory of the CC1310F128 (7x7)
- * does fit for either:
- * - RECEIVER & BRIDGE modes, or
- * - NORMAL mode
- * but not both at the same time.
- */
-//#define ENABLE_NORMAL_MODE
-#define ENABLE_OTHER_MODES
-
-#define USE_NMEA_CFG
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
 //#define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
-#define EXCLUDE_EGM96
 
-#define EXCLUDE_NRF905
-#define EXCLUDE_CC13XX
 #define EXCLUDE_MAVLINK
-#define EXCLUDE_LED_RING
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 
@@ -138,15 +130,7 @@ extern uint8_t LEDs[][3];
  * BootLoader                  GPIO 15
  */
 
-#define EXCLUDE_WIFI
-
-#define ENABLE_NORMAL_MODE
-#define ENABLE_OTHER_MODES
-
 #define USE_OLED                 //  +5.5 kb
-#define USE_NMEA_CFG             //  +3.3 kb
-#define EXCLUDE_NRF905
-#define EXCLUDE_EGM96
 
 //#define USE_BASICMAC
 

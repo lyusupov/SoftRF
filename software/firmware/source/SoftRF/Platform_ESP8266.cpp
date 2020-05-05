@@ -341,7 +341,7 @@ static void ESP8266_UATSerial_begin(unsigned long baud)
   UATSerial.begin(baud);
 }
 
-static void ESP8266_CC13XX_restart()
+static void ESP8266_UATModule_restart()
 {
   /* TBD */
 }
@@ -390,7 +390,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_get_PPS_TimeMarker,
   ESP8266_Baro_setup,
   ESP8266_UATSerial_begin,
-  ESP8266_CC13XX_restart,
+  ESP8266_UATModule_restart,
   ESP8266_WDT_setup,
   ESP8266_WDT_fini
 };

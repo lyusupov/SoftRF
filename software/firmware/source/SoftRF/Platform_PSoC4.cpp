@@ -197,7 +197,7 @@ static void PSoC4_UATSerial_begin(unsigned long baud)
 
 }
 
-static void PSoC4_restart()
+static void PSoC4_UATModule_restart()
 {
 
 }
@@ -246,7 +246,7 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_get_PPS_TimeMarker,
   PSoC4_Baro_setup,
   PSoC4_UATSerial_begin,
-  PSoC4_restart,
+  PSoC4_UATModule_restart,
   PSoC4_WDT_setup,
   PSoC4_WDT_fini
 };

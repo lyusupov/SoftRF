@@ -16,26 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef HAL_CONF_EXTRA_H
 #define HAL_CONF_EXTRA_H
-
-/*
- * Override NUCLEO-L073RZ default Serial (2) assignment with S76G one's (1)
- */
-#if defined(ARDUINO_NUCLEO_L073RZ)
-#if SERIAL_UART_INSTANCE == 2
-
-#undef  SERIAL_UART_INSTANCE
-#undef  PIN_SERIAL_RX
-#undef  PIN_SERIAL_TX
-
-#define SERIAL_UART_INSTANCE    1
-#define PIN_SERIAL_RX           PA10
-#define PIN_SERIAL_TX           PA9
-
-#endif /* SERIAL_UART_INSTANCE */
-#endif /* ARDUINO_NUCLEO_L073RZ */
 
 #if defined(ENERGIA_ARCH_CC13XX)
 
@@ -46,17 +28,17 @@
  * - NORMAL mode
  * but not both at the same time.
  */
-#define ENABLE_NORMAL_MODE
+#define ENABLE_OTHER_MODES
 #define EXCLUDE_TEST_MODE
 
-#define EXCLUDE_SX12XX
+#define EXCLUDE_CC13XX
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 
-#define ENABLE_NORMAL_MODE
+#define ENABLE_OTHER_MODES
 #define EXCLUDE_TEST_MODE
 
-#define EXCLUDE_SX12XX
+#define EXCLUDE_CC13XX
 
 #else
 #error "This hardware platform is not supported!"

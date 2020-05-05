@@ -57,6 +57,42 @@ bool RF_SX1276_RST_is_connected = true;
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
+static bool nrf905_probe(void);
+static void nrf905_setup(void);
+static void nrf905_channel(uint8_t);
+static bool nrf905_receive(void);
+static void nrf905_transmit(void);
+static void nrf905_shutdown(void);
+
+static bool sx1276_probe(void);
+static bool sx1262_probe(void);
+static void sx12xx_setup(void);
+static void sx12xx_channel(uint8_t);
+static bool sx12xx_receive(void);
+static void sx12xx_transmit(void);
+static void sx12xx_shutdown(void);
+
+static bool uatm_probe(void);
+static void uatm_setup(void);
+static void uatm_channel(uint8_t);
+static bool uatm_receive(void);
+static void uatm_transmit(void);
+static void uatm_shutdown(void);
+
+static bool cc13xx_probe(void);
+static void cc13xx_setup(void);
+static void cc13xx_channel(uint8_t);
+static bool cc13xx_receive(void);
+static void cc13xx_transmit(void);
+static void cc13xx_shutdown(void);
+
+static bool ognrf_probe(void);
+static void ognrf_setup(void);
+static void ognrf_channel(uint8_t);
+static bool ognrf_receive(void);
+static void ognrf_transmit(void);
+static void ognrf_shutdown(void);
+
 #if !defined(EXCLUDE_NRF905)
 const rfchip_ops_t nrf905_ops = {
   RF_IC_NRF905,
@@ -69,7 +105,7 @@ const rfchip_ops_t nrf905_ops = {
   nrf905_shutdown
 };
 #endif
-
+#if !defined(EXCLUDE_SX12XX)
 const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
   "SX1276",
@@ -91,7 +127,20 @@ const rfchip_ops_t sx1262_ops = {
   sx12xx_transmit,
   sx12xx_shutdown
 };
-#endif
+#endif /* USE_BASICMAC */
+#endif /*EXCLUDE_SX12XX */
+#if !defined(EXCLUDE_UATM)
+const rfchip_ops_t uatm_ops = {
+  RF_IC_UATM,
+  "UATM",
+  uatm_probe,
+  uatm_setup,
+  uatm_channel,
+  uatm_receive,
+  uatm_transmit,
+  uatm_shutdown
+};
+#endif /* EXCLUDE_UATM */
 #if !defined(EXCLUDE_CC13XX)
 const rfchip_ops_t cc13xx_ops = {
   RF_IC_CC13XX,
@@ -103,7 +152,7 @@ const rfchip_ops_t cc13xx_ops = {
   cc13xx_transmit,
   cc13xx_shutdown
 };
-#endif
+#endif /* EXCLUDE_CC13XX */
 #if defined(USE_OGN_RF_DRIVER)
 
 #define vTaskDelay  delay
@@ -152,6 +201,7 @@ byte RF_setup(void)
 
   if (rf_chip == NULL) {
 #if !defined(USE_OGN_RF_DRIVER)
+#if !defined(EXCLUDE_SX12XX)
 #if !defined(EXCLUDE_SX1276)
     if (sx1276_ops.probe()) {
       rf_chip = &sx1276_ops;
@@ -165,11 +215,18 @@ byte RF_setup(void)
     } else if (sx1262_ops.probe()) {
       rf_chip = &sx1262_ops;
       SX12XX_LL = &sx126x_ll_ops;
-#endif
+#endif /* USE_BASICMAC */
+#else
+    if (false) {
+#endif /* EXCLUDE_SX12XX */
 #if !defined(EXCLUDE_NRF905)
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
 #endif /* EXCLUDE_NRF905 */
+#if !defined(EXCLUDE_UATM)
+    } else if (uatm_ops.probe()) {
+      rf_chip = &uatm_ops;
+#endif /* EXCLUDE_UATM */
 #if !defined(EXCLUDE_CC13XX)
     } else if (cc13xx_ops.probe()) {
       rf_chip = &cc13xx_ops;
@@ -393,7 +450,7 @@ uint8_t RF_Payload_Size(uint8_t protocol)
 static uint8_t nrf905_channel_prev = (uint8_t) -1;
 static bool nrf905_receive_active  = false;
 
-bool nrf905_probe()
+static bool nrf905_probe()
 {
   uint8_t addr[4];
   uint8_t ref[] = TXADDR;
@@ -442,7 +499,7 @@ bool nrf905_probe()
   return false;
 }
 
-void nrf905_channel(uint8_t channel)
+static void nrf905_channel(uint8_t channel)
 {
   if (channel != nrf905_channel_prev) {
 
@@ -460,7 +517,7 @@ void nrf905_channel(uint8_t channel)
   }
 }
 
-void nrf905_setup()
+static void nrf905_setup()
 {
   SoC->SPI_begin();
 
@@ -509,7 +566,7 @@ void nrf905_setup()
   nRF905_receive();
 }
 
-bool nrf905_receive()
+static bool nrf905_receive()
 {
   bool success = false;
 
@@ -531,7 +588,7 @@ bool nrf905_receive()
   return success;
 }
 
-void nrf905_transmit()
+static void nrf905_transmit()
 {
     nrf905_receive_active = false;
 
@@ -548,7 +605,7 @@ void nrf905_transmit()
     } ;
 }
 
-void nrf905_shutdown()
+static void nrf905_shutdown()
 {
   nRF905_powerDown();
   SPI.end();
@@ -556,6 +613,7 @@ void nrf905_shutdown()
 
 #endif /* EXCLUDE_NRF905 */
 
+#if !defined(EXCLUDE_SX12XX)
 /*
  * SX12XX-specific code
  *
@@ -567,7 +625,7 @@ osjob_t sx12xx_timeoutjob;
 
 static void sx12xx_tx_func (osjob_t* job);
 static void sx12xx_rx_func (osjob_t* job);
-void sx12xx_rx(osjobcb_t func);
+static void sx12xx_rx(osjobcb_t func);
 
 static bool sx12xx_receive_complete = false;
 bool sx12xx_receive_active = false;
@@ -603,7 +661,7 @@ static u1_t sx1276_readReg (u1_t addr) {
     return val;
 }
 
-bool sx1276_probe()
+static bool sx1276_probe()
 {
   u1_t v, v_reset;
 
@@ -662,7 +720,7 @@ static uint8_t sx1262_ReadReg (uint16_t addr) {
     return val;
 }
 
-bool sx1262_probe()
+static bool sx1262_probe()
 {
   u1_t v, v_reset;
 
@@ -698,7 +756,7 @@ bool sx1262_probe()
 }
 #endif
 
-void sx12xx_channel(uint8_t channel)
+static void sx12xx_channel(uint8_t channel)
 {
   if (channel != sx12xx_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
@@ -731,7 +789,7 @@ void sx12xx_channel(uint8_t channel)
   }
 }
 
-void sx12xx_setup()
+static void sx12xx_setup()
 {
   SoC->SPI_begin();
 
@@ -765,7 +823,7 @@ void sx12xx_setup()
     protocol_decode = &legacy_decode;
     /*
      * Enforce legacy protocol setting for SX1276
-     * if other value (UAT) left in EEPROM from other (CC13XX) radio
+     * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
     break;
@@ -806,7 +864,7 @@ void sx12xx_setup()
   }
 }
 
-void sx12xx_setvars()
+static void sx12xx_setvars()
 {
   if (LMIC.protocol && LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
     LMIC.datarate = LMIC.protocol->bitrate;
@@ -836,7 +894,7 @@ void sx12xx_setvars()
   }
 }
 
-bool sx12xx_receive()
+static bool sx12xx_receive()
 {
   bool success = false;
 
@@ -877,7 +935,7 @@ bool sx12xx_receive()
   return success;
 }
 
-void sx12xx_transmit()
+static void sx12xx_transmit()
 {
     sx12xx_transmit_complete = false;
     sx12xx_receive_active = false;
@@ -893,14 +951,14 @@ void sx12xx_transmit()
     };
 }
 
-void sx12xx_shutdown()
+static void sx12xx_shutdown()
 {
   LMIC_shutdown();
   SPI.end();
 }
 
 // Enable rx mode and call func when a packet is received
-void sx12xx_rx(osjobcb_t func) {
+static void sx12xx_rx(osjobcb_t func) {
   LMIC.osjob.func = func;
   LMIC.rxtime = os_getTime(); // RX _now_
   // Enable "continuous" RX for LoRa only (e.g. without a timeout,
@@ -910,7 +968,6 @@ void sx12xx_rx(osjobcb_t func) {
           RADIO_RXON : RADIO_RX);
   //Serial.println("RX");
 }
-
 
 static void sx12xx_rx_func (osjob_t* job) {
 
@@ -1056,7 +1113,7 @@ static void sx12xx_rx_func (osjob_t* job) {
 }
 
 // Transmit the given string and call the given function afterwards
-void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
+static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
 
   u1_t crc8;
   u2_t crc16;
@@ -1175,10 +1232,11 @@ static void sx12xx_tx_func (osjob_t* job) {
     sx12xx_tx((unsigned char *) &TxBuffer[0], RF_tx_size, sx12xx_txdone_func);
   }
 }
+#endif /* EXCLUDE_SX12XX */
 
-#if !defined(EXCLUDE_CC13XX)
+#if !defined(EXCLUDE_UATM)
 /*
- * CC13XX-specific code
+ * UATM-specific code
  *
  *
  */
@@ -1191,7 +1249,7 @@ Stratux_frame_t uatradio_frame;
 
 const char UAT_ident[] PROGMEM = SOFTRF_IDENT;
 
-bool cc13xx_probe()
+static bool uatm_probe()
 {
   bool success = false;
   unsigned long startTime;
@@ -1207,7 +1265,7 @@ bool cc13xx_probe()
 
   SoC->UATSerial_begin(UAT_RECEIVER_BR);
 
-  SoC->CC13XX_restart();
+  SoC->UATModule_restart();
 
   startTime = millis();
 
@@ -1249,12 +1307,12 @@ bool cc13xx_probe()
   return success;
 }
 
-void cc13xx_channel(uint8_t channel)
+static void uatm_channel(uint8_t channel)
 {
   /* Nothing to do */
 }
 
-void cc13xx_setup()
+static void uatm_setup()
 {
   /* Current ESP32 Core has a bug with Serial2.end()+Serial2.begin() cycle */
   if (SoC->id != SOC_ESP32) {
@@ -1270,7 +1328,7 @@ void cc13xx_setup()
   protocol_decode = &uat978_decode;
 }
 
-bool cc13xx_receive()
+static bool uatm_receive()
 {
   bool success = false;
   unsigned int uatbuf_tail;
@@ -1317,12 +1375,55 @@ bool cc13xx_receive()
   return success;
 }
 
-void cc13xx_transmit()
+static void uatm_transmit()
 {
   /* Nothing to do */
 }
 
-void cc13xx_shutdown()
+static void uatm_shutdown()
+{
+  /* Nothing to do */
+}
+#endif /* EXCLUDE_UATM */
+
+#if !defined(EXCLUDE_CC13XX)
+/*
+ * CC13XX-specific code
+ *
+ *
+ */
+
+static bool cc13xx_probe()
+{
+  bool success = false;
+
+
+  return success;
+}
+
+static void cc13xx_channel(uint8_t channel)
+{
+  /* Nothing to do */
+}
+
+static void cc13xx_setup()
+{
+
+}
+
+static bool cc13xx_receive()
+{
+  bool success = false;
+
+  return success;
+}
+
+static void cc13xx_transmit()
+{
+  /* Nothing to do */
+}
+
+static void cc13xx_shutdown()
 {
   /* Nothing to do */
 }
@@ -1359,7 +1460,7 @@ void RFM_RESET(uint8_t On)
     else hal_pin_rst(0); }
 #endif
 
-bool ognrf_probe()
+static bool ognrf_probe()
 {
   bool success = false;
 
@@ -1398,7 +1499,7 @@ bool ognrf_probe()
   return success;
 }
 
-void ognrf_channel(uint8_t channel)
+static void ognrf_channel(uint8_t channel)
 {
   if (channel != ognrf_channel_prev) {
 
@@ -1417,7 +1518,7 @@ void ognrf_channel(uint8_t channel)
   }
 }
 
-void ognrf_setup()
+static void ognrf_setup()
 {
   uint8_t TxPower = 0;
 
@@ -1481,7 +1582,7 @@ void ognrf_setup()
   /* Leave IC in standby mode */
 }
 
-bool ognrf_receive()
+static bool ognrf_receive()
 {
   bool success = false;
 
@@ -1525,7 +1626,7 @@ bool ognrf_receive()
   return success;
 }
 
-void ognrf_transmit()
+static void ognrf_transmit()
 {
   ognrf_receive_active = false;
 
@@ -1561,7 +1662,7 @@ void ognrf_transmit()
 #endif /* WITH_SI4X32 */
 }
 
-void ognrf_shutdown()
+static void ognrf_shutdown()
 {
   TRX.WriteMode(RF_OPMODE_STANDBY);
   SPI.end();

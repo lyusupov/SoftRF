@@ -1080,7 +1080,7 @@ static void ESP32_UATSerial_updateBaudRate(unsigned long baud)
   UATSerial.updateBaudRate(baud);
 }
 
-static void ESP32_CC13XX_restart()
+static void ESP32_UATModule_restart()
 {
   digitalWrite(SOC_GPIO_PIN_TXE, LOW);
   pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
@@ -1138,7 +1138,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_get_PPS_TimeMarker,
   ESP32_Baro_setup,
   ESP32_UATSerial_begin,
-  ESP32_CC13XX_restart,
+  ESP32_UATModule_restart,
   ESP32_WDT_setup,
   ESP32_WDT_fini
 };
