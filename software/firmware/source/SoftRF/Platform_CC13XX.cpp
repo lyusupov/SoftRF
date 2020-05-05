@@ -35,6 +35,7 @@
 
 #include "EasyLink.h"
 
+#if !defined(EXCLUDE_SX12XX)
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -45,10 +46,14 @@ lmic_pinmap lmic_pins = {
     .busy = LMIC_UNUSED_PIN,
     .tcxo = LMIC_UNUSED_PIN,
 };
+#endif
 
 static uint8_t ieeeAddr[8];
+
+#if !defined(EXCLUDE_LED_RING)
 WS2812 strip(PIX_NUM);
 uint8_t LEDs[PIX_NUM][3];
+#endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
 #include <U8x8lib.h>
@@ -210,19 +215,7 @@ static long CC13XX_random(long howsmall, long howBig)
 
 static void CC13XX_Sound_test(int var)
 {
-  if (settings->volume != BUZZER_OFF) {
-//    swSer.enableRx(false);
 
-#if 0
-    tone(SOC_GPIO_PIN_BUZZER, 440, 500);delay(500);
-    tone(SOC_GPIO_PIN_BUZZER, 640, 500);delay(500);
-    tone(SOC_GPIO_PIN_BUZZER, 840, 500);delay(500);
-    tone(SOC_GPIO_PIN_BUZZER, 1040, 500);
-
-    delay(600);
-#endif
-//    swSer.enableRx(true);
-  }
 }
 
 static void CC13XX_WiFi_setOutputPower(int dB)

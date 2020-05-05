@@ -180,6 +180,7 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SS      PA4
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
 #define USE_OLED                 //  +3.5 kb
@@ -244,6 +245,7 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_SCL      PB6
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
 /* Component                         Cost */

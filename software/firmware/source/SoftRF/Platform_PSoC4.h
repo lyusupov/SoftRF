@@ -124,6 +124,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL      SCL         // P0_0
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
 /* Component                         Cost */
@@ -134,7 +135,6 @@ struct rst_info {
 #define EXCLUDE_MPL3115A2        //  -    kb
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
-#define EXCLUDE_CC13XX           //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  - 16 kb
 

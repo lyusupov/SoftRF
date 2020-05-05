@@ -96,7 +96,7 @@ Make sure that basic development packages (such as: binutils, g++, GNU make & et
 2. change directory on ``<your path>``/SoftRF and execute **make** as follows:<br>
 
 ```
-pi@raspberrypi: $ make -f Makefile.RPi
+pi@raspberrypi: $ make pi
 (cd ../libraries/bcm2835/src/../ ; ./configure ; make)
 checking for a BSD-compatible install... /usr/bin/install -c
 checking whether build environment is sane... yes

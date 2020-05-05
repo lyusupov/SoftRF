@@ -137,7 +137,7 @@ script:
     fi ;
   - if [[ "$BOARD" =~ "raspberry" ]]; then
       cd $TRAVIS_BUILD_DIR/software/firmware/source/SoftRF ;
-      make ;
+      make pi;
     fi ;
   - if [[ "$BOARD" =~ "raspberry" ]]; then
       cd $TRAVIS_BUILD_DIR/software/firmware/source/SkyView ;

@@ -100,6 +100,8 @@ extern Adafruit_NeoPixel strip;
 #define USE_NMEALIB
 //#define USE_BASICMAC
 
+#define EXCLUDE_CC13XX
+
 #if defined(pgm_read_float_aligned)
 #define pgm_read_float(addr)  pgm_read_float_aligned(addr)
 #endif

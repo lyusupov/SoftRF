@@ -25,16 +25,29 @@ byte Baro_setup()    {return BARO_MODULE_NONE;}
 void Baro_loop()     {}
 #else
 
+#if !defined(EXCLUDE_BMP180)
 #include <Adafruit_BMP085.h>
+#endif /* EXCLUDE_BMP180 */
+#if !defined(EXCLUDE_BMP280)
 #include <Adafruit_BMP280.h>
+#endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_MPL3115A2)
 #include <Adafruit_MPL3115A2.h>
+#endif /* EXCLUDE_MPL3115A2 */
+
 #include <TinyGPS++.h>
 
 barochip_ops_t *baro_chip = NULL;
 
+#if !defined(EXCLUDE_BMP180)
 Adafruit_BMP085 bmp180;
+#endif /* EXCLUDE_BMP180 */
+#if !defined(EXCLUDE_BMP280)
 Adafruit_BMP280 bmp280;
+#endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_MPL3115A2)
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
+#endif /* EXCLUDE_MPL3115A2 */
 
 static unsigned long BaroTimeMarker = 0;
 static float prev_pressure_altitude = 0;
@@ -46,6 +59,7 @@ static int avg_ndx = 0;
 /* 4 baro sensor readings per second */
 #define isTimeToBaro() ((millis() - BaroTimeMarker) > (1000 / VS_AVERAGING_FACTOR))
 
+#if !defined(EXCLUDE_BMP180)
 static bool bmp180_probe()
 {
   return bmp180.begin();
@@ -95,7 +109,9 @@ barochip_ops_t bmp180_ops = {
   bmp180_setup,
   bmp180_altitude
 };
+#endif /* EXCLUDE_BMP180 */
 
+#if !defined(EXCLUDE_BMP280)
 static bool bmp280_probe()
 {
   return (
@@ -136,7 +152,9 @@ barochip_ops_t bmp280_ops = {
   bmp280_setup,
   bmp280_altitude
 };
+#endif /* EXCLUDE_BMP280 */
 
+#if !defined(EXCLUDE_MPL3115A2)
 static bool mpl3115a2_probe()
 {
   return mpl3115a2.begin();
@@ -171,6 +189,7 @@ barochip_ops_t mpl3115a2_ops = {
   mpl3115a2_setup,
   mpl3115a2_altitude
 };
+#endif /* EXCLUDE_MPL3115A2 */
 
 bool Baro_probe()
 {

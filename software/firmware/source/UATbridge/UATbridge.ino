@@ -157,56 +157,12 @@ static void printUtilization()
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-#if !defined(EXCLUDE_EEPROM)
-
-#if !defined(ENABLE_NORMAL_MODE)
   Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
-#else /* ENABLE_NORMAL_MODE */
-  Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
-#endif /* ENABLE_NORMAL_MODE */
 
   EEPROM_setup();
 
-#else
-
-  eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
-  eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-#if !defined(ENABLE_NORMAL_MODE)
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_RECEIVER;
-#else /* ENABLE_NORMAL_MODE */
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-#endif /* ENABLE_NORMAL_MODE */
-  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
-  eeprom_block.field.settings.band          = RF_BAND_EU;
-  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower       = RF_TX_POWER_LOW;
-  eeprom_block.field.settings.volume        = BUZZER_OFF;
-  eeprom_block.field.settings.pointer       = LED_OFF;
-  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
-  eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_NONE;
-
-  eeprom_block.field.settings.nmea_g        = false;
-  eeprom_block.field.settings.nmea_p        = false;
-  eeprom_block.field.settings.nmea_l        = false;
-  eeprom_block.field.settings.nmea_s        = false;
-  eeprom_block.field.settings.nmea_out      = NMEA_OFF;
-  eeprom_block.field.settings.gdl90         = GDL90_OFF;
-  eeprom_block.field.settings.d1090         = D1090_OFF;
-  eeprom_block.field.settings.json          = JSON_OFF;
-  eeprom_block.field.settings.stealth       = false;
-  eeprom_block.field.settings.no_track      = false;
-  eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
-  eeprom_block.field.settings.freq_corr     = 0;
-#endif /* EXCLUDE_EEPROM */
-
   switch (settings->mode)
   {
-#if !defined(EXCLUDE_MAVLINK)
-  case SOFTRF_MODE_UAV:
-    MAVLink_setup();
-    break;
-#endif /* EXCLUDE_MAVLINK */
-  case SOFTRF_MODE_NORMAL:
   case SOFTRF_MODE_BRIDGE:
     Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
     break;
@@ -224,72 +180,13 @@ void setup() {
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
-
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
   hw_info.display = SoC->Display_setup();
 
   switch (settings->mode)
   {
-
-#if defined(ENABLE_NORMAL_MODE)
-
-  case SOFTRF_MODE_NORMAL:
-
-    ThisAircraft.aircraft_type = settings->aircraft_type;
-    ThisAircraft.stealth  = settings->stealth;
-    ThisAircraft.no_track = settings->no_track;
-
-    hw_info.baro = Baro_setup();
-
-#if defined(DEBUG_UAT)
-    Serial.print("Baro module ID: ");
-    Serial.println(hw_info.baro);
-#endif
-
-    hw_info.gnss = GNSS_setup();
-
-#if defined(DEBUG_UAT)
-    Serial.print("GNSS module ID: ");
-    Serial.println(hw_info.gnss);
-#endif
-
-    if (hw_info.gnss == GNSS_MODULE_NONE) {
-      Serial.println("WARNING! GNSS module is not detected!");
-    } else {
-      settings->nmea_g   = true;
-      settings->nmea_l   = true;
-      settings->nmea_s   = true;
-      settings->nmea_out = NMEA_UART;
-    }
-
-    init_fec();
-
-    Battery_setup();
-    Traffic_setup();
-    LED_setup();
-    NMEA_setup();
-
-    LED_test();
-    SoC->Sound_test(0);
-
-    Serial.println("Normal mode.");
-    break;
-
-#endif /* ENABLE_NORMAL_MODE */
-
 #if defined(ENABLE_OTHER_MODES)
-#if !defined(EXCLUDE_MAVLINK)
-  case SOFTRF_MODE_UAV:
-
-    ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;
-
-    init_fec();
-    Traffic_setup();
-
-    Serial.println("UAV mode.");
-    break;
-#endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_BRIDGE:
 
     hw_info.rf = RF_setup();
@@ -359,18 +256,7 @@ void setup() {
 void loop() {
     switch (settings->mode)
     {
-#if defined(ENABLE_NORMAL_MODE)
-    case SOFTRF_MODE_NORMAL:
-      normal();
-      break;
-#endif /* ENABLE_NORMAL_MODE */
-
 #if defined(ENABLE_OTHER_MODES)
-#if !defined(EXCLUDE_MAVLINK)
-    case SOFTRF_MODE_UAV:
-      uav();
-      break;
-#endif /* EXCLUDE_MAVLINK */
     case SOFTRF_MODE_BRIDGE:
       bridge();
       break;
@@ -666,96 +552,6 @@ void normal()
 
   ClearExpired();
 }
-
-#if !defined(EXCLUDE_MAVLINK)
-void uav()
-{
-  bool success;
-
-  PickMAVLinkFix();
-
-  MAVLinkTimeSync();
-  MAVLinkSetWiFiPower();
-
-  ThisAircraft.timestamp = now();
-
-  if (isValidMAVFix()) {
-    ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
-    ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
-    ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
-    ThisAircraft.course = the_aircraft.location.gps_cog;
-    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT;
-    ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
-    ThisAircraft.hdop = the_aircraft.location.gps_hdop;
-  }
-
-  success = UAT_Receive();
-
-  if (success) {
-    int rs_errors;
-    ThisAircraft.timestamp = now();
-
-    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-    if (frame_type != -1 &&
-        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-      Serial.print(fo.addr, HEX);
-      Serial.print(',');
-      Serial.print(fo.aircraft_type, HEX);
-      Serial.print(',');
-      Serial.print(fo.latitude, 6);
-      Serial.print(',');
-      Serial.print(fo.longitude, 6);
-      Serial.print(',');
-      Serial.print(fo.altitude);
-      Serial.print(',');
-      Serial.print(fo.speed);
-      Serial.print(',');
-      Serial.print(fo.course);
-      Serial.print(',');
-      Serial.print(fo.vs);
-      Serial.println();
-      Serial.flush();
-#endif
-
-      fo.rssi = rxPacket.rssi;
-
-      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-
-        if (Container[i].addr == fo.addr) {
-          Container[i] = fo;
-          Traffic_Update(i);
-          break;
-        } else {
-          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-            Container[i] = fo;
-            Traffic_Update(i);
-            break;
-          }
-        }
-      }
-
-    } else {
-#if defined(DEBUG_UAT)
-      Serial.println("FEC error");
-#endif
-    }
-  }
-
-  if (isValidMAVFix()) {
-    Traffic_loop();
-  }
-
-  if (isTimeToExport() && isValidMAVFix()) {
-    MAVLinkShareTraffic();
-    ExportTimeMarker = millis();
-  }
-
-  ClearExpired();
-}
-#endif /* EXCLUDE_MAVLINK */
 
 void shutdown(const char *msg)
 {

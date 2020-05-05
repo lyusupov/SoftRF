@@ -397,8 +397,11 @@ bool RF_Transmit(size_t size, bool wait)
       tx_packets_counter++;
       RF_tx_size = 0;
 
-      TxRandomValue = (LMIC.protocol ?
+      TxRandomValue = (
+#if !defined(EXCLUDE_SX12XX)
+        LMIC.protocol ?
         SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
+#endif
         SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
 
       TxTimeMarker = millis();
@@ -1393,10 +1396,60 @@ static void uatm_shutdown()
  *
  */
 
+#include "EasyLink.h"
+
+#include <uat.h>
+#include <fec/char.h>
+#include <fec.h>
+#include <uat_decode.h>
+
+EasyLink_RxPacket rxPacket;
+EasyLink myLink;
+
+static bool UAT_receive_complete  = false;
+static bool UAT_receive_active    = false;
+
+void UAT_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status status)
+{
+  UAT_receive_active = false;
+
+  if (status == EasyLink_Status_Success) {
+    memcpy(&rxPacket, rxPacket_ptr, sizeof(rxPacket));
+    UAT_receive_complete  = true;
+  }
+}
+
+static bool UAT_Receive_Async()
+{
+  bool success = false;
+  EasyLink_Status status;
+
+  if (!UAT_receive_active) {
+    status = myLink.receive(&UAT_Receive_callback);
+
+    if (status == EasyLink_Status_Success) {
+      UAT_receive_active = true;
+    }
+  }
+
+  if (UAT_receive_complete == true) {
+
+    success = true;
+    UAT_receive_complete = false;
+
+    rx_packets_counter++;
+  }
+
+  return success;
+}
+
 static bool cc13xx_probe()
 {
   bool success = false;
 
+  if (SoC->id == SOC_CC13XX) {
+    success = true;
+  }
 
   return success;
 }
@@ -1408,12 +1461,42 @@ static void cc13xx_channel(uint8_t channel)
 
 static void cc13xx_setup()
 {
+  init_fec();
 
+  /* Enforce radio settings to follow UAT978 protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
+
+  protocol_encode = &uat978_encode;
+  protocol_decode = &uat978_decode;
+
+  myLink.begin(EasyLink_Phy_Custom);
 }
 
 static bool cc13xx_receive()
 {
   bool success = false;
+
+  success = UAT_Receive_Async();
+
+  if (success) {
+    int rs_errors;
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1) {
+      u1_t size = rxPacket.len;
+
+      if (size > sizeof(RxBuffer)) {
+        size = sizeof(RxBuffer);
+      }
+
+      memcpy(RxBuffer, rxPacket.payload, size);
+
+      RF_last_rssi = rxPacket.rssi;
+      rx_packets_counter++;
+      success = true;
+    }
+  }
 
   return success;
 }

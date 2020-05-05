@@ -25,6 +25,24 @@ CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
+SKETCH        = SoftRF.ino
+
+BIN_ELF       := $(SKETCH:.ino=.ino.elf)
+BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
+
+SOFTRF_DIR    = ../SoftRF
+BINDIR        = /tmp/energia
+
+ARDUINO       = arduino
+ENERGIA       = energia
+LN            = ln -s
+RM            = rm -f
+TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin
+OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
+                 -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
+                 -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
+SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
+
 LMIC_PATH     = ../libraries/arduino-lmic/src
 BASICMAC_PATH = ../libraries/arduino-basicmac/src
 NRF905_PATH   = ../libraries/nRF905
@@ -110,7 +128,24 @@ PROGNAME      := SoftRF
 
 DEPS          := $(OBJS:.o=.d)
 
-all: bcm $(PROGNAME) $(PROGNAME)-aux
+all:
+				$(ARDUINO) --verify --verbose-build $(SKETCH)
+
+cc:
+				$(ENERGIA) --verify --verbose-build $(SKETCH)
+
+upload:
+				$(ARDUINO) --upload --verbose-build --verbose-upload  $(SKETCH)
+
+#
+# "Intel HEX" type of the firmware binary is necessary input format
+#    for cc2538-bsl.py serial firmware uploader.
+#
+ihex:
+				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
+				$(SED) $(BINDIR)/$(BIN_IHEX)
+
+pi: bcm $(PROGNAME) $(PROGNAME)-aux
 
 %.o: %.cpp
 				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)

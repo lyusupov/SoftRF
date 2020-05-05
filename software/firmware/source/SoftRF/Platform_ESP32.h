@@ -225,6 +225,8 @@ struct rst_info {
 //#define USE_AT6558_SETUP
 //#define USE_BASICMAC
 
+#define EXCLUDE_CC13XX
+
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 
 #endif /* PLATFORM_ESP32_H */

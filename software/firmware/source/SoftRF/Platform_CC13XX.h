@@ -20,9 +20,6 @@
 #ifndef PLATFORM_CC13XX_H
 #define PLATFORM_CC13XX_H
 
-#include "IPAddress.h"
-#include <WS2812.h>
-
 #if defined(ENERGIA_ARCH_CC13X2)
 extern size_t strnlen (const char *string, size_t length);
 #endif /* ENERGIA_ARCH_CC13X2 */
@@ -90,9 +87,6 @@ struct rst_info {
   uint32_t depc;
 };
 
-extern WS2812 strip;
-extern uint8_t LEDs[][3];
-
 #define USE_NMEA_CFG
 #define EXCLUDE_WIFI
 //#define EXCLUDE_EEPROM
@@ -115,7 +109,7 @@ extern uint8_t LEDs[][3];
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
-//#define EXCLUDE_MPL3115A2
+#define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
 
 #define EXCLUDE_MAVLINK
@@ -137,6 +131,12 @@ extern uint8_t LEDs[][3];
 #else
 #error "This hardware platform is not supported!"
 #endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
+
+#if !defined(EXCLUDE_LED_RING)
+#include <WS2812.h>
+extern WS2812 strip;
+extern uint8_t LEDs[][3];
+#endif /* EXCLUDE_LED_RING */
 
 #endif /* PLATFORM_CC13XX_H */
 
