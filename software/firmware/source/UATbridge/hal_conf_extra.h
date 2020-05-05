@@ -40,8 +40,6 @@
 
 #define EXCLUDE_CC13XX
 
-#else
-#error "This hardware platform is not supported!"
 #endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
 
 #endif /* HAL_CONF_EXTRA_H */

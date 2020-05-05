@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef HAL_CONF_EXTRA_H
 #define HAL_CONF_EXTRA_H
 
@@ -58,8 +57,6 @@
 
 #define EXCLUDE_SX12XX
 
-#else
-#error "This hardware platform is not supported!"
 #endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
 
 #endif /* HAL_CONF_EXTRA_H */
