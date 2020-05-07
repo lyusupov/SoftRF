@@ -1,10 +1,7 @@
 ## UAT Bridge
 
-This folder contains source code of **UAT Bridge** firmware for Texas Instruments CC1310 RF SoC. <sup>1</sup><br>
+This folder contains source code of **UAT Bridge** firmware for Texas Instruments **CC1310** and **CC1352R** RF SoCs.<br>
 The code is essential part of [SoftRF project](https://github.com/lyusupov/SoftRF).<br>
-
-<sup>1</sup> - _mass production of CC1312R IC (direct successor of CC1310) is scheduled by TI on Q1 of 2019_.<br>
-&nbsp;&nbsp;&nbsp; _Announced specs of the CC1312R are promising to make **1090ES** <sub>(worldwide ADS-B standard)</sub> reception possible as well_.<br>
 
 ## Purpose
 

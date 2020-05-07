@@ -17,13 +17,13 @@
 #include <ti/drivers/rf/RF.h>
 
 // TI-RTOS RF Mode Object
-extern RF_Mode RF_prop;
+extern const RF_Mode RF_prop;
 
 // RF Core API commands
-extern rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup;
-extern rfc_CMD_FS_t RF_cmdFs;
-extern rfc_CMD_PROP_TX_t RF_cmdPropTx;
-extern rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv;
+extern const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup;
+extern const rfc_CMD_FS_t RF_cmdFs;
+extern const rfc_CMD_PROP_TX_t RF_cmdPropTx;
+extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv;
 
 // RF Core API Overrides
 extern uint32_t pOverrides[];

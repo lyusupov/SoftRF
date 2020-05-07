@@ -40,7 +40,7 @@
 #include "smartrf_settings.h"
 
 // TI-RTOS RF Mode Object
-RF_Mode RF_prop =
+const RF_Mode RF_prop =
 {
     .rfMode = RF_MODE_PROPRIETARY_SUB_1,
     .cpePatchFxn = &rf_patch_cpe_genfsk,
@@ -77,7 +77,7 @@ uint32_t pOverrides[] =
 
 // CMD_PROP_RADIO_DIV_SETUP
 // Proprietary Mode Radio Setup Command for All Frequency Bands
-rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
+const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
 {
     .commandNo = 0x3807,
     .status = 0x0000,
@@ -114,7 +114,7 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
 
 // CMD_FS
 // Frequency Synthesizer Programming Command
-rfc_CMD_FS_t RF_cmdFs =
+const rfc_CMD_FS_t RF_cmdFs =
 {
     .commandNo = 0x0803,
     .status = 0x0000,
@@ -138,7 +138,7 @@ rfc_CMD_FS_t RF_cmdFs =
 
 // CMD_PROP_TX
 // Proprietary Mode Transmit Command
-rfc_CMD_PROP_TX_t RF_cmdPropTx =
+const rfc_CMD_PROP_TX_t RF_cmdPropTx =
 {
     .commandNo = 0x3801,
     .status = 0x0000,
@@ -160,7 +160,7 @@ rfc_CMD_PROP_TX_t RF_cmdPropTx =
 
 // CMD_PROP_RX_ADV
 // Proprietary Mode Advanced Receive Command
-rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv =
+const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv =
 {
     .commandNo = 0x3804,
     .status = 0x0000,

@@ -1244,6 +1244,8 @@ static void sx12xx_tx_func (osjob_t* job) {
  *
  */
 
+#include <uat.h>
+
 #define UAT_RINGBUF_SIZE  (sizeof(Stratux_frame_t) * 2)
 
 static unsigned char uat_ringbuf[UAT_RINGBUF_SIZE];
@@ -1361,20 +1363,30 @@ static bool uatm_receive()
         continue;
       }
 
-      u1_t size = uatradio_frame.msgLen > sizeof(RxBuffer) ?
-                        sizeof(RxBuffer) : uatradio_frame.msgLen;
+      u1_t size = 0;
 
-      for (u1_t i=0; i < size; i++) {
-          RxBuffer[i] = uatradio_frame.data[i];
+      if (frame_type == 1) {
+        size = SHORT_FRAME_DATA_BYTES;
+      } else if (frame_type == 2) {
+        size = LONG_FRAME_DATA_BYTES;
       }
 
-      RF_last_rssi = uatradio_frame.rssi;
-      rx_packets_counter++;
+      if (size > sizeof(RxBuffer)) {
+        size = sizeof(RxBuffer);
+      }
 
-      success = true;
-      break;
+      if (size > 0) {
+        memcpy(RxBuffer, uatradio_frame.data, size);
+
+        RF_last_rssi = uatradio_frame.rssi;
+        rx_packets_counter++;
+        success = true;
+
+        break;
+      }
     }
   }
+
   return success;
 }
 
@@ -1433,11 +1445,8 @@ static bool UAT_Receive_Async()
   }
 
   if (UAT_receive_complete == true) {
-
     success = true;
     UAT_receive_complete = false;
-
-    rx_packets_counter++;
   }
 
   return success;
@@ -1484,17 +1493,25 @@ static bool cc13xx_receive()
     int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
 
     if (frame_type != -1) {
-      u1_t size = rxPacket.len;
+      u1_t size = 0;
+
+      if (frame_type == 1) {
+        size = SHORT_FRAME_DATA_BYTES;
+      } else if (frame_type == 2) {
+        size = LONG_FRAME_DATA_BYTES;
+      }
 
       if (size > sizeof(RxBuffer)) {
         size = sizeof(RxBuffer);
       }
 
-      memcpy(RxBuffer, rxPacket.payload, size);
+      if (size > 0) {
+        memcpy(RxBuffer, rxPacket.payload, size);
 
-      RF_last_rssi = rxPacket.rssi;
-      rx_packets_counter++;
-      success = true;
+        RF_last_rssi = rxPacket.rssi;
+        rx_packets_counter++;
+        success = true;
+      }
     }
   }
 
