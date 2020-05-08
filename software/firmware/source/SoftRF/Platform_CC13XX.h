@@ -44,7 +44,6 @@ extern size_t strnlen (const char *string, size_t length);
 #define color_t                 uint32_t
 
 #define SerialOutput            Serial
-#define swSer                   Serial
 #define UATSerial               Serial /* TBD */
 
 #if defined(SERIAL_OUT_BITS)
@@ -106,10 +105,12 @@ struct rst_info {
 /*
  *  UART pins
  *
- * Board_UART_TX               GPIO 3
- * Board_UART_RX               GPIO 2
- * BootLoader                  GPIO 1
+ * Board_UART_TX                GPIO 3
+ * Board_UART_RX                GPIO 2
+ * BootLoader                   GPIO 1
  */
+
+#define swSer                   Serial
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
@@ -123,10 +124,15 @@ struct rst_info {
 /*
  *  UART pins
  *
- * Board_UART_TX               GPIO 13
- * Board_UART_RX               GPIO 12
- * BootLoader                  GPIO 15
+ * Board_UART0_TX               GPIO 13
+ * Board_UART0_RX               GPIO 12
+ * BootLoader                   GPIO 15
+ *
+ * Board_UART1_TX               GPIO 18
+ * Board_UART1_RX               GPIO 19
  */
+
+#define swSer                   Serial2
 
 #define USE_OLED                 //  +5.5 kb
 

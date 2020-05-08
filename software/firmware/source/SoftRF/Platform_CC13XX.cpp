@@ -87,6 +87,19 @@ static struct rst_info reset_info = {
 static uint32_t bootCount = 0;
 
 #if defined(ENERGIA_ARCH_CC13X2)
+
+static void Uart2_ReadCallback(UART_Handle uart, void *buf, size_t count)
+{
+    Serial2.readCallback(uart, buf, count);
+}
+
+static void Uart2_WriteCallback(UART_Handle uart, void *buf, size_t count)
+{
+    Serial2.writeCallback(uart, buf, count);
+}
+
+HardwareSerial Serial2(1, Uart2_ReadCallback, Uart2_WriteCallback, true);
+
 size_t strnlen (const char *string, size_t length)
 {
    char *ret = (char *) memchr ((const void *) string, 0, length);
@@ -147,7 +160,7 @@ char* itoa( int value, char *string, int radix )
 {
   return ltoa( value, string, radix ) ;
 }
-#endif
+#endif /* ENERGIA_ARCH_CC13X2 */
 
 static void CC13XX_setup()
 {
