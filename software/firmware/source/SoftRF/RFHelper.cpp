@@ -1414,39 +1414,43 @@ static void uatm_shutdown()
 #include <fec/char.h>
 #include <fec.h>
 #include <uat_decode.h>
+#include <manchester.h>
 
+const rf_proto_desc_t  *cc13xx_protocol = &uat978_proto_desc;
 EasyLink_RxPacket rxPacket;
 EasyLink myLink;
 
-static bool UAT_receive_complete  = false;
-static bool UAT_receive_active    = false;
+static uint8_t cc13xx_channel_prev = (uint8_t) -1;
 
-void UAT_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status status)
+static bool cc13xx_receive_complete  = false;
+static bool cc13xx_receive_active    = false;
+
+void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status status)
 {
-  UAT_receive_active = false;
+  cc13xx_receive_active = false;
 
   if (status == EasyLink_Status_Success) {
     memcpy(&rxPacket, rxPacket_ptr, sizeof(rxPacket));
-    UAT_receive_complete  = true;
+    cc13xx_receive_complete  = true;
   }
 }
 
-static bool UAT_Receive_Async()
+static bool cc13xx_Receive_Async()
 {
   bool success = false;
   EasyLink_Status status;
 
-  if (!UAT_receive_active) {
-    status = myLink.receive(&UAT_Receive_callback);
+  if (!cc13xx_receive_active) {
+    status = myLink.receive(&cc13xx_Receive_callback);
 
     if (status == EasyLink_Status_Success) {
-      UAT_receive_active = true;
+      cc13xx_receive_active = true;
     }
   }
 
-  if (UAT_receive_complete == true) {
+  if (cc13xx_receive_complete == true) {
     success = true;
-    UAT_receive_complete = false;
+    cc13xx_receive_complete = false;
   }
 
   return success;
@@ -1465,54 +1469,224 @@ static bool cc13xx_probe()
 
 static void cc13xx_channel(uint8_t channel)
 {
-  /* Nothing to do */
+#if !defined(EXCLUDE_OGLEP3)
+  if (settings->rf_protocol != RF_PROTOCOL_ADSB_UAT &&
+      channel != cc13xx_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+
+    EasyLink_setFrequency(frequency);
+
+    cc13xx_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    cc13xx_receive_active = false;
+  }
+#endif /* EXCLUDE_OGLEP3 */
 }
 
 static void cc13xx_setup()
 {
-  init_fec();
+  switch (settings->rf_protocol)
+  {
+#if !defined(EXCLUDE_OGLEP3)
+  case RF_PROTOCOL_OGNTP:
+    cc13xx_protocol = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
 
-  /* Enforce radio settings to follow UAT978 protocol's RF specs */
-  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
+    myLink.begin(EasyLink_Phy_100kbps2gfsk_ogntp);
+    break;
+  case RF_PROTOCOL_P3I:
+    cc13xx_protocol = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
 
-  protocol_encode = &uat978_encode;
-  protocol_decode = &uat978_decode;
+    myLink.begin(EasyLink_Phy_38400bps2gfsk_p3i);
+    break;
+  case RF_PROTOCOL_LEGACY:
+    cc13xx_protocol = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
 
-  myLink.begin(EasyLink_Phy_Custom);
+    myLink.begin(EasyLink_Phy_100kbps2gfsk_legacy);
+    break;
+#endif /* EXCLUDE_OGLEP3 */
+  case RF_PROTOCOL_ADSB_UAT:
+  default:
+    cc13xx_protocol = &uat978_proto_desc;
+    protocol_encode = &uat978_encode;
+    protocol_decode = &uat978_decode;
+    /*
+     * Enforce UAT protocol setting
+     * if other value (FANET) left in EEPROM from other (SX12XX) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
+
+    init_fec();
+    myLink.begin(EasyLink_Phy_Custom);
+    break;
+  }
 }
 
 static bool cc13xx_receive()
 {
   bool success = false;
+  size_t size = 0;
+  uint8_t offset;
 
-  success = UAT_Receive_Async();
+  u1_t crc8, pkt_crc8;
+  u2_t crc16, pkt_crc16;
 
-  if (success) {
-    int rs_errors;
+#if !defined(EXCLUDE_OGLEP3)
+  switch (cc13xx_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
 
-    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+  switch (cc13xx_protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+  case RF_PROTOCOL_OGNTP:
+  default:
+    break;
+  }
+#endif /* EXCLUDE_OGLEP3 */
 
-    if (frame_type != -1) {
-      u1_t size = 0;
-
-      if (frame_type == 1) {
-        size = SHORT_FRAME_DATA_BYTES;
-      } else if (frame_type == 2) {
-        size = LONG_FRAME_DATA_BYTES;
+  if (cc13xx_Receive_Async()) {
+    switch (cc13xx_protocol->type)
+    {
+#if !defined(EXCLUDE_OGLEP3)
+    case RF_PROTOCOL_P3I:
+      uint8_t i;
+      offset = cc13xx_protocol->payload_offset;
+      for (i = 0; i < cc13xx_protocol->payload_size; i++)
+      {
+        update_crc8(&crc8, (u1_t)(rxPacket.payload[i + offset]));
+        if (i < sizeof(RxBuffer)) {
+          RxBuffer[i] = rxPacket.payload[i + offset] ^
+                        pgm_read_byte(&whitening_pattern[i]);
+        }
       }
 
-      if (size > sizeof(RxBuffer)) {
-        size = sizeof(RxBuffer);
-      }
+      pkt_crc8 = rxPacket.payload[i + offset];
 
-      if (size > 0) {
-        memcpy(RxBuffer, rxPacket.payload, size);
+      if (crc8 == pkt_crc8) {
 
-        RF_last_rssi = rxPacket.rssi;
-        rx_packets_counter++;
         success = true;
       }
+      break;
+    case RF_PROTOCOL_OGNTP:
+    case RF_PROTOCOL_LEGACY:
+      offset = cc13xx_protocol->syncword_size - 4;
+      size =  cc13xx_protocol->payload_offset +
+              cc13xx_protocol->payload_size +
+              cc13xx_protocol->payload_size +
+              cc13xx_protocol->crc_size +
+              cc13xx_protocol->crc_size;
+      if (rxPacket.len >= size + offset &&
+          rxPacket.payload[0] == cc13xx_protocol->syncword[4] &&
+          rxPacket.payload[1] == cc13xx_protocol->syncword[5] &&
+          rxPacket.payload[2] == cc13xx_protocol->syncword[6] &&
+          (offset > 3 ? (rxPacket.payload[3] == cc13xx_protocol->syncword[7]) : true)) {
+
+        uint8_t i, val1, val2;
+        for (i = 0; i < size; i++) {
+          val1 = pgm_read_byte(&ManchesterDecode[rxPacket.payload[i + offset]]);
+          i++;
+          val2 = pgm_read_byte(&ManchesterDecode[rxPacket.payload[i + offset]]);
+          if ((i>>1) < sizeof(RxBuffer)) {
+            RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
+
+            if (i < size - (cc13xx_protocol->crc_size + cc13xx_protocol->crc_size)) {
+              switch (cc13xx_protocol->crc_type)
+              {
+              case RF_CHECKSUM_TYPE_GALLAGER:
+              case RF_CHECKSUM_TYPE_NONE:
+                break;
+              case RF_CHECKSUM_TYPE_CCITT_FFFF:
+              case RF_CHECKSUM_TYPE_CCITT_0000:
+              default:
+                crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
+                break;
+              }
+            }
+          }
+        }
+
+        switch (cc13xx_protocol->crc_type)
+        {
+        case RF_CHECKSUM_TYPE_GALLAGER:
+          if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
+
+            success = true;
+          }
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_FFFF:
+        case RF_CHECKSUM_TYPE_CCITT_0000:
+          offset = cc13xx_protocol->payload_offset + cc13xx_protocol->payload_size;
+          if (offset + 1 < sizeof(RxBuffer)) {
+            pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
+            if (crc16 == pkt_crc16) {
+
+              success = true;
+            }
+          }
+          break;
+        default:
+          break;
+        }
+      }
+      break;
+#endif /* EXCLUDE_OGLEP3 */
+    case RF_PROTOCOL_ADSB_UAT:
+    default:
+      int rs_errors;
+      int frame_type;
+      frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+      if (frame_type != -1) {
+
+        if (frame_type == 1) {
+          size = SHORT_FRAME_DATA_BYTES;
+        } else if (frame_type == 2) {
+          size = LONG_FRAME_DATA_BYTES;
+        }
+
+        if (size > sizeof(RxBuffer)) {
+          size = sizeof(RxBuffer);
+        }
+
+        if (size > 0) {
+          memcpy(RxBuffer, rxPacket.payload, size);
+
+          success = true;
+        }
+      }
+      break;
     }
+  }
+
+  if (success) {
+    RF_last_rssi = rxPacket.rssi;
+    rx_packets_counter++;
   }
 
   return success;

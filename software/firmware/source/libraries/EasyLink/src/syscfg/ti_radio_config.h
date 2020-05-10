@@ -44,6 +44,37 @@ extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv;
 // RF Core API Overrides
 extern uint32_t pOverrides[];
 
+#define OGNTP_SYNCWORD_SIZE   8
+#define OGNTP_PAYLOAD_SIZE    20
+#define OGNTP_CRC_SIZE        6
+
+// RF Core API commands
+extern const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk_100kbps_ogntp;
+extern const rfc_CMD_FS_t RF_cmdFs_fsk_100kbps_ogntp;
+extern const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_100kbps_ogntp;
+extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_100kbps_ogntp;
+
+#define LEGACY_SYNCWORD_SIZE  7
+#define LEGACY_PAYLOAD_SIZE   24
+#define LEGACY_CRC_SIZE       2
+
+// RF Core API commands
+extern const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk_100kbps_legacy;
+extern const rfc_CMD_FS_t RF_cmdFs_fsk_100kbps_legacy;
+extern const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_100kbps_legacy;
+extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_100kbps_legacy;
+
+#define P3I_SYNCWORD_SIZE     2
+#define P3I_PAYLOAD_SIZE      24
+#define P3I_PAYLOAD_OFFSET    6
+#define P3I_CRC_SIZE          1
+
+// RF Core API commands
+extern const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk_38400bps_p3i;
+extern const rfc_CMD_FS_t RF_cmdFs_fsk_38400bps_p3i;
+extern const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_38400bps_p3i;
+extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_38400bps_p3i;
+
 //*********************************************************************************
 //  RF Setting:   50 kbps, 2-GFSK, 25 kHz deviation
 //

@@ -49,6 +49,7 @@
 #define EXCLUDE_TEST_MODE
 
 #define EXCLUDE_SX12XX
+#define EXCLUDE_OGLEP3
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 

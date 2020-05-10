@@ -207,6 +207,9 @@ typedef enum
 #define EasyLink_PHY_2_4_100KBPS2GFSK   5
 #define EasyLink_PHY_2_4_250KBPS2GFSK   6
 #define EasyLink_PHY_200KBPS2GFSK       7
+#define EasyLink_PHY_100KBPS2GFSK_OGN   8
+#define EasyLink_PHY_100KBPS2GFSK_LEG   9
+#define EasyLink_PHY_38400BPS2GFSK_P3I  10
 
 //! \brief Phy Type passed to EasyLink_init()
 typedef enum
@@ -219,6 +222,9 @@ typedef enum
     EasyLink_Phy_2_4_100kbps2gfsk = EasyLink_PHY_2_4_100KBPS2GFSK,   //!< Phy settings for 2.4Ghz 100kbps data rate, IEEE 802.15.4g GFSK.
     EasyLink_Phy_2_4_250kbps2gfsk = EasyLink_PHY_2_4_250KBPS2GFSK,   //!< Phy settings for 2.4Ghz 250kbps data rate, IEEE 802.15.4g GFSK.
     EasyLink_Phy_200kbps2gfsk = EasyLink_PHY_200KBPS2GFSK,   //!< Phy settings for 200kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_100kbps2gfsk_ogntp = EasyLink_PHY_100KBPS2GFSK_OGN,   //!< Phy settings for 100kbps data rate
+    EasyLink_Phy_100kbps2gfsk_legacy = EasyLink_PHY_100KBPS2GFSK_LEG,   //!< Phy settings for 100kbps data rate
+    EasyLink_Phy_38400bps2gfsk_p3i = EasyLink_PHY_38400BPS2GFSK_P3I,   //!< Phy settings for 38400 bps data rate
     EasyLink_Num_Phy_Settings,
 } EasyLink_PhyType;
 

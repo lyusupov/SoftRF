@@ -189,6 +189,9 @@ typedef enum
     EasyLink_Phy_50kbps2gfsk = 1, ///Phy settings for Sub1G 50kbps data rate, IEEE 802.15.4g GFSK.
     EasyLink_Phy_625bpsLrm = 2, ///Phy settings for Sub1G 625bps data rate, Long Range Mode.
     EasyLink_Phy_2_4_200kbps2gfsk = 3, ///Phy settings for 2.4Ghz 200kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_100kbps2gfsk_ogntp = 4,    //!< Phy settings for 100kbps data rate
+    EasyLink_Phy_100kbps2gfsk_legacy = 5,   //!< Phy settings for 100kbps data rate
+    EasyLink_Phy_38400bps2gfsk_p3i = 6,     //!< Phy settings for 38400 bps data rate
 } EasyLink_PhyType;
 
 /// \brief Advance configuration options

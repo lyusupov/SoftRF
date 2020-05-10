@@ -560,7 +560,16 @@ static void rxDoneCallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
                 //copy payload
                 memcpy(&rxPacket.payload, (&pDataEntry->data + hdrSize + addrSize), rxPacket.len);
 #else
-                rxPacket.len = LONG_FRAME_BYTES;
+                if (EasyLink_params.ui32ModType == EasyLink_Phy_Custom) {
+                  rxPacket.len = LONG_FRAME_BYTES;
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_ogntp) {
+                  rxPacket.len = (OGNTP_PAYLOAD_SIZE + OGNTP_CRC_SIZE) * 2 + (OGNTP_SYNCWORD_SIZE - 4);
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_legacy) {
+                  rxPacket.len = (LEGACY_PAYLOAD_SIZE + LEGACY_CRC_SIZE) * 2 + (LEGACY_SYNCWORD_SIZE - 4);
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_38400bps2gfsk_p3i) {
+                  rxPacket.len = P3I_PAYLOAD_OFFSET + P3I_PAYLOAD_SIZE + P3I_CRC_SIZE;
+                }
+
                 //copy payload
                 memcpy(&rxPacket.payload, (&pDataEntry->data), rxPacket.len);
 #endif
@@ -936,6 +945,19 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
             }
             break;
 
+        case EasyLink_Phy_100kbps2gfsk_ogntp:
+        case EasyLink_Phy_100kbps2gfsk_legacy:
+        case EasyLink_Phy_38400bps2gfsk_p3i:
+            if((ChipInfo_GetChipType() == CHIP_TYPE_CC1312) || (ChipInfo_GetChipType() == CHIP_TYPE_CC1352) ||
+               (ChipInfo_GetChipType() == CHIP_TYPE_CC1352P))
+            {
+#if !defined(CONFIG_CC1352P_4_LAUNCHXL)
+                // This mode is not supported in the 433 MHz band
+                useDivRadioSetup= true;
+                rfConfigOk = true;
+#endif
+            }
+            break;
 
         default:  // Invalid PHY setting
             rfConfigOk = false;
@@ -1082,8 +1104,6 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
     EasyLink_cmdPropRxAdv.pAddr = addrFilterTable;
     EasyLink_cmdPropRxAdv.pQueue = &dataQueue;
     EasyLink_cmdPropRxAdv.pOutput = (uint8_t*)&rxStatistics;
-#else
-    EasyLink_cmdPropRxAdv.maxPktLen = LONG_FRAME_BYTES;
 #endif
 
     //Set the frequency
@@ -1886,7 +1906,15 @@ EasyLink_Status EasyLink_receive(EasyLink_RxPacket *rxPacket)
                 //copy payload
                 memcpy(&rxPacket->payload, (&pDataEntry->data + hdrSize + addrSize), (rxPacket->len));
 #else
-                rxPacket->len = LONG_FRAME_BYTES;
+                if (EasyLink_params.ui32ModType == EasyLink_Phy_Custom) {
+                  rxPacket->len = LONG_FRAME_BYTES;
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_ogntp) {
+                  rxPacket->len = (OGNTP_PAYLOAD_SIZE + OGNTP_CRC_SIZE) * 2 + (OGNTP_SYNCWORD_SIZE - 4);
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_legacy) {
+                  rxPacket->len = (LEGACY_PAYLOAD_SIZE + LEGACY_CRC_SIZE) * 2 + (LEGACY_SYNCWORD_SIZE - 4);
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_38400bps2gfsk_p3i) {
+                  rxPacket->len = P3I_PAYLOAD_OFFSET + P3I_PAYLOAD_SIZE + P3I_CRC_SIZE;
+                }
                 memcpy(&rxPacket->payload, (&pDataEntry->data), (rxPacket->len));
 #endif
                 rxPacket->rssi = rxStatistics.lastRssi;
