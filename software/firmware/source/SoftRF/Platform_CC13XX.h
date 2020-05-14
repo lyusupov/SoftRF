@@ -76,6 +76,13 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum esp32_board_id {
+  SOFTRF_UAT_MODULE_19,
+  SOFTRF_UAT_MODULE_20,
+  TI_CC1352R1_LAUNCHXL,
+  TI_LPSTK_CC1352R
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -133,6 +140,11 @@ struct rst_info {
  */
 
 #define swSer                   Serial2
+
+#define SOC_GPIO_PIN_ADXL_SS    18               // GPIO 11
+#define SOC_GPIO_PIN_MX25_SS    38               // GPIO 20
+
+#define MACRONIX_MX25R8035F     0xC228
 
 #define USE_OLED                 //  +5.5 kb
 
