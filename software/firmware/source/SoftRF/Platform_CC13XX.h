@@ -55,15 +55,11 @@ extern size_t strnlen (const char *string, size_t length);
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-
-#define SOC_GPIO_PIN_SS         18               // GPIO 11
+#define SOC_GPIO_PIN_SS         18 // GPIO 11
 #define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-#define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
+
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 enum rst_reason {
@@ -119,6 +115,10 @@ struct rst_info {
 
 #define swSer                   Serial
 
+#define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
+
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
 //#define EXCLUDE_MPL3115A2
@@ -135,15 +135,22 @@ struct rst_info {
  * Board_UART0_RX               GPIO 12
  * BootLoader                   GPIO 15
  *
- * Board_UART1_TX               GPIO 18
- * Board_UART1_RX               GPIO 19
  */
 
 #define swSer                   Serial2
 
-#define SOC_GPIO_PIN_ADXL_SS    18               // GPIO 11
-#define SOC_GPIO_PIN_MX25_SS    38               // GPIO 20
+#define SOC_GPIO_PIN_SWSER_RX   23  // GPIO 25
+#define SOC_GPIO_PIN_SWSER_TX   24  // GPIO 26
 
+#define SOC_GPIO_PIN_GNSS_PPS   25  // GPIO 27
+
+#define SOC_GPIO_PIN_ADXL_SS    SOC_GPIO_PIN_SS  // GPIO 11
+#define SOC_GPIO_PIN_MX25_SS    38  // GPIO 20
+
+#define SOC_GPIO_PIN_STATUS     GREEN_LED  // GPIO 7
+#define SOC_GPIO_PIN_BUZZER     SOC_UNUSED_PIN
+
+#define SSD1306_OLED_I2C_ADDR   0x3C
 #define MACRONIX_MX25R8035F     0xC228
 
 #define USE_OLED                 //  +5.5 kb

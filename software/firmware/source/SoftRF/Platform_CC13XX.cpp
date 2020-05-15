@@ -180,41 +180,39 @@ static void CC13XX_setup()
 
 #if defined(ENERGIA_ARCH_CC13X2)
 
+  bool has_spiflash = false;
+  uint16_t flash_id = 0;
   int16_t XValue = 0, YValue = 0, ZValue = 0, Temperature = 0;
 
-  bool spiflash_detected = flash.initialize();
+  has_spiflash = flash.initialize();
 
-  if (spiflash_detected) {
-    uint16_t flash_id = 0;
-    uint8_t *UniqueId = NULL;
-
+  if (has_spiflash) {
     flash_id = flash.readDeviceId();
-    UniqueId = flash.readUniqueId();
+    flash.sleep();
   }
+  flash.end();
 
   adxl.begin(SOC_GPIO_PIN_ADXL_SS);
   adxl.beginMeasure();
 
   adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
+  /* no .end() method for adxl */
 
-  if (spiflash_detected) {
+  if (has_spiflash && flash_id == MACRONIX_MX25R8035F) {
+
+    hw_info.model = SOFTRF_MODEL_UNI;
+
     if (XValue == 0 && YValue == 0 && ZValue == 0 && Temperature == 0) {
       cc13xx_board = TI_CC1352R1_LAUNCHXL;
     } else {
       cc13xx_board = TI_LPSTK_CC1352R;
     }
-
-    hw_info.model = SOFTRF_MODEL_UNI;
-    hw_info.revision = cc13xx_board;
-
   } else {
-
     cc13xx_board  = SOFTRF_UAT_MODULE_20;
-    hw_info.model = SOFTRF_MODEL_UAT;
   }
+#endif /* ENERGIA_ARCH_CC13X2 */
 
   hw_info.revision = cc13xx_board;
-#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 static void CC13XX_loop()

@@ -1576,7 +1576,7 @@ EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket)
     {
         return EasyLink_Status_Busy_Error;
     }
-
+#if 0
     if(useIeeeHeader)
     {
         uint16_t ieeeHdr = EASYLINK_IEEE_HDR_CREATE(EASYLINK_IEEE_HDR_CRC_2BYTE, EASYLINK_IEEE_HDR_WHTNG_EN, (txPacket->len + addrSize + sizeof(ieeeHdr)));
@@ -1605,6 +1605,13 @@ EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket)
 
     //packet length to Tx includes address and length field
     EasyLink_cmdPropTxAdv.pktLen = txPacket->len + addrSize + hdrSize;
+#else
+    memcpy(&txBuffer[0], txPacket->payload, txPacket->len);
+
+    //packet length to Tx
+    EasyLink_cmdPropTxAdv.pktLen = txPacket->len;
+#endif
+
     EasyLink_cmdPropTxAdv.pPkt = txBuffer;
 
     cmdTime = calculateCmdTime(txPacket);
@@ -1696,7 +1703,7 @@ EasyLink_Status EasyLink_transmitAsync(EasyLink_TxPacket *txPacket, EasyLink_TxD
 
     //store application callback
     txCb = cb;
-
+#if 0
     if(useIeeeHeader)
     {
         uint16_t ieeeHdr = EASYLINK_IEEE_HDR_CREATE(EASYLINK_IEEE_HDR_CRC_2BYTE, EASYLINK_IEEE_HDR_WHTNG_EN, (txPacket->len + addrSize + sizeof(ieeeHdr)));
@@ -1725,6 +1732,13 @@ EasyLink_Status EasyLink_transmitAsync(EasyLink_TxPacket *txPacket, EasyLink_TxD
 
     //packet length to Tx includes address and length field
     EasyLink_cmdPropTxAdv.pktLen = txPacket->len + addrSize + hdrSize;
+#else
+    memcpy(&txBuffer[0], txPacket->payload, txPacket->len);
+
+    //packet length to Tx
+    EasyLink_cmdPropTxAdv.pktLen = txPacket->len;
+#endif
+
     EasyLink_cmdPropTxAdv.pPkt = txBuffer;
 
     cmdTime = calculateCmdTime(txPacket);
@@ -1809,7 +1823,7 @@ EasyLink_Status EasyLink_transmitCcaAsync(EasyLink_TxPacket *txPacket, EasyLink_
 
     //store application callback
     txCb = cb;
-
+#if 0
     if(useIeeeHeader)
     {
         uint16_t ieeeHdr = EASYLINK_IEEE_HDR_CREATE(EASYLINK_IEEE_HDR_CRC_2BYTE, EASYLINK_IEEE_HDR_WHTNG_EN, (txPacket->len + addrSize + sizeof(ieeeHdr)));
@@ -1836,13 +1850,20 @@ EasyLink_Status EasyLink_transmitCcaAsync(EasyLink_TxPacket *txPacket, EasyLink_
 
     memcpy(&txBuffer[addrSize + hdrSize], txPacket->payload, txPacket->len);
 
+    //packet length to Tx includes address and length field
+    EasyLink_cmdPropTxAdv.pktLen = txPacket->len + addrSize + hdrSize;
+#else
+    memcpy(&txBuffer[0], txPacket->payload, txPacket->len);
+
+    //packet length to Tx
+    EasyLink_cmdPropTxAdv.pktLen = txPacket->len;
+#endif
+
+    EasyLink_cmdPropTxAdv.pPkt = txBuffer;
+
     // Set the Carrier Sense command attributes
     // Chain the TX command to run after the CS command
     EasyLink_cmdPropCs.pNextOp        = (rfc_radioOp_t *)&EasyLink_cmdPropTxAdv;
-
-    //packet length to Tx includes address and length field
-    EasyLink_cmdPropTxAdv.pktLen = txPacket->len + addrSize + hdrSize;
-    EasyLink_cmdPropTxAdv.pPkt = txBuffer;
 
     cmdTime = calculateCmdTime(txPacket);
 
