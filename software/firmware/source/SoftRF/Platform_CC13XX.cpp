@@ -210,6 +210,18 @@ static void CC13XX_setup()
   } else {
     cc13xx_board  = SOFTRF_UAT_MODULE_20;
   }
+
+  if (SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN) {
+    pinMode(SOC_GPIO_PIN_STATUS, OUTPUT);
+    /* Indicate positive power supply */
+    digitalWrite(SOC_GPIO_PIN_STATUS, HIGH);
+  }
+
+  if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
+    pinMode(RED_LED, OUTPUT);
+    /* Indicate GNSS PPS signal */
+    digitalWrite(RED_LED, LOW);
+  }
 #endif /* ENERGIA_ARCH_CC13X2 */
 
   hw_info.revision = cc13xx_board;
@@ -217,7 +229,14 @@ static void CC13XX_setup()
 
 static void CC13XX_loop()
 {
-
+#if defined(ENERGIA_ARCH_CC13X2)
+  if ((SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) &&
+      (millis() - PPS_TimeMarker) < 100) {
+    digitalWrite(RED_LED, HIGH);
+  } else {
+    digitalWrite(RED_LED, LOW);
+  }
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 static void CC13XX_fini()
