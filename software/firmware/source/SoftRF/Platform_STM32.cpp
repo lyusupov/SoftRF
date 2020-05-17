@@ -411,8 +411,8 @@ static void STM32_swSer_begin(unsigned long baud)
   /* Idle */
   // swSer.write("@GSTP\r\n");      delay(250);
 
-  /* GGA + GSA + RMC */
-  swSer.write("@BSSL 0x25\r\n"); delay(250);
+  /* GGA + GSA + GSV + RMC */
+  swSer.write("@BSSL 0x2D\r\n"); delay(250);
   /* GPS + GLONASS */
   swSer.write("@GNS 0x3\r\n");   delay(250);
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
