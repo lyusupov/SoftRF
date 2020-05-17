@@ -1850,6 +1850,7 @@ static void cc13xx_transmit()
   // Transmit immediately
   txPacket.absTime = EasyLink_ms_To_RadioTime(0);
 
+#if 0
   status = myLink.transmit(&txPacket, &cc13xx_Transmit_callback);
 
   if (status == EasyLink_Status_Success) {
@@ -1857,12 +1858,16 @@ static void cc13xx_transmit()
       yield();
     };
   }
+#else
+  myLink.transmit(&txPacket);
+#endif
+
 #endif /* EXCLUDE_OGLEP3 */
 }
 
 static void cc13xx_shutdown()
 {
-  /* Nothing to do */
+  EasyLink_abort();
 }
 #endif /* EXCLUDE_CC13XX */
 

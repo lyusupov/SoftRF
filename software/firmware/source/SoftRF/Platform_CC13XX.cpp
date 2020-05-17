@@ -19,12 +19,17 @@
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 
 #include <Wire.h>
+#include <ti/drivers/Power.h>
+#include <ti/drivers/Watchdog.h>
+#include <xdc/runtime/Memory.h>
 
 #if defined(ENERGIA_ARCH_CC13XX)
 #include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
+#include <ti/devices/cc13x0/driverlib/aon_batmon.h>
 #endif /* ENERGIA_ARCH_CC13XX */
 #if defined(ENERGIA_ARCH_CC13X2)
 #include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
+#include <ti/devices/cc13x2_cc26x2/driverlib/aon_batmon.h>
 
 #include <SPIFlash.h>
 #include <ADXL362.h>
@@ -89,8 +94,15 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 static int cc13xx_board = SOFTRF_UAT_MODULE_19; /* default */
+static uint32_t cc13xx_vdd = 0;
 
 #if defined(ENERGIA_ARCH_CC13X2)
+
+SPIFlash flash(SOC_GPIO_PIN_MX25_SS); // MACRONIX_MX25R8035F
+
+ADXL362 adxl;
+
+static Watchdog_Handle cc13xx_watchdogHandle;
 
 static void Uart2_ReadCallback(UART_Handle uart, void *buf, size_t count)
 {
@@ -103,11 +115,6 @@ static void Uart2_WriteCallback(UART_Handle uart, void *buf, size_t count)
 }
 
 HardwareSerial Serial2(1, Uart2_ReadCallback, Uart2_WriteCallback, true);
-
-SPIFlash flash(SOC_GPIO_PIN_MX25_SS); // MACRONIX_MX25R8035F
-
-ADXL362 adxl;
-
 
 size_t strnlen (const char *string, size_t length)
 {
@@ -174,7 +181,32 @@ char* itoa( int value, char *string, int radix )
 
 static void CC13XX_setup()
 {
-  uint32_t  reset_source = SysCtrlResetSourceGet();
+  uint32_t reset_source = SysCtrlResetSourceGet();
+
+  switch (reset_source)
+  {
+    case RSTSRC_PIN_RESET:
+      reset_info.reason = REASON_EXT_SYS_RST; break;
+    case RSTSRC_VDDS_LOSS:
+      reset_info.reason = REASON_WDT_RST; break;
+    case RSTSRC_VDDR_LOSS:
+      reset_info.reason = REASON_WDT_RST; break;
+    case RSTSRC_CLK_LOSS:
+      reset_info.reason = REASON_WDT_RST; break;
+    case RSTSRC_SYSRESET:
+      reset_info.reason = REASON_SOFT_RESTART; break;
+    case RSTSRC_WARMRESET:
+      reset_info.reason = REASON_SOFT_RESTART; break;
+    case RSTSRC_WAKEUP_FROM_SHUTDOWN:
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
+#if defined(ENERGIA_ARCH_CC13X2)
+    case RSTSRC_WAKEUP_FROM_TCK_NOISE:
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
+#endif /* ENERGIA_ARCH_CC13X2 */
+    case RSTSRC_PWR_ON:
+    default:
+      reset_info.reason = REASON_DEFAULT_RST; break;
+  }
 
   EasyLink_getIeeeAddr(ieeeAddr);
 
@@ -197,6 +229,7 @@ static void CC13XX_setup()
 
   adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
   /* no .end() method for adxl */
+  SPI.end(SOC_GPIO_PIN_ADXL_SS);
 
   if (has_spiflash && flash_id == MACRONIX_MX25R8035F) {
 
@@ -209,12 +242,6 @@ static void CC13XX_setup()
     }
   } else {
     cc13xx_board  = SOFTRF_UAT_MODULE_20;
-  }
-
-  if (SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN) {
-    pinMode(SOC_GPIO_PIN_STATUS, OUTPUT);
-    /* Indicate positive power supply */
-    digitalWrite(SOC_GPIO_PIN_STATUS, HIGH);
   }
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
@@ -230,6 +257,12 @@ static void CC13XX_setup()
 static void CC13XX_loop()
 {
 #if defined(ENERGIA_ARCH_CC13X2)
+
+  if (cc13xx_watchdogHandle) {
+    // Reload the watchdog
+    Watchdog_clear(cc13xx_watchdogHandle);
+  }
+
   if ((SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) &&
       (millis() - PPS_TimeMarker) < 100) {
     digitalWrite(RED_LED, HIGH);
@@ -241,18 +274,22 @@ static void CC13XX_loop()
 
 static void CC13XX_fini()
 {
-#if defined(ENERGIA_ARCH_CC13XX)
-    SysCtrlSystemReset();
-#elif defined(ENERGIA_ARCH_CC13X2)
-    /* Disable interrupts */
-    IntMasterDisable();
+  // Disable battery monitoring
+  AONBatMonDisable();
 
-    SysCtrlStandby(false,
-                   VIMS_ON_CPU_ON_MODE,
-                   SYSCTRL_PREFERRED_RECHARGE_MODE);
+#if defined(ENERGIA_ARCH_CC13X2)
 
-    /* Should never return from SysCtrlStandby */
-#endif /* ENERGIA_ARCH_CC13XX or ENERGIA_ARCH_CC13X2 */
+  if (SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN) {
+    digitalWrite(SOC_GPIO_PIN_STATUS, LOW);
+  }
+
+  if ((SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN)) {
+    digitalWrite(RED_LED, LOW);
+  }
+
+#endif /* ENERGIA_ARCH_CC13X2 */
+
+  Power_shutdown(0, 0);
 }
 
 static void CC13XX_reset()
@@ -275,7 +312,7 @@ static uint32_t CC13XX_getChipId()
 
 static void* CC13XX_getResetInfoPtr()
 {
-  return 0;
+  return (void *) &reset_info;
 }
 
 static String CC13XX_getResetInfo()
@@ -288,12 +325,26 @@ static String CC13XX_getResetInfo()
 
 static String CC13XX_getResetReason()
 {
-  return F("DEFAULT");
+  switch (reset_info.reason)
+  {
+    case REASON_DEFAULT_RST       : return F("DEFAULT");
+    case REASON_WDT_RST           : return F("WDT");
+    case REASON_EXCEPTION_RST     : return F("EXCEPTION");
+    case REASON_SOFT_WDT_RST      : return F("SOFT_WDT");
+    case REASON_SOFT_RESTART      : return F("SOFT_RESTART");
+    case REASON_DEEP_SLEEP_AWAKE  : return F("DEEP_SLEEP_AWAKE");
+    case REASON_EXT_SYS_RST       : return F("EXT_SYS");
+    default                       : return F("NO_MEAN");
+  }
 }
 
 static uint32_t CC13XX_getFreeHeap()
 {
-  return 0; /* TBD */
+  Memory_Stats memStat;
+
+  Memory_getStats(NULL, &memStat);
+
+  return memStat.totalFreeSize;
 }
 
 static long CC13XX_random(long howsmall, long howBig)
@@ -326,7 +377,8 @@ static bool CC13XX_EEPROM_begin(size_t size)
 
 static void CC13XX_SPI_begin()
 {
-  SPI.begin();
+  /* init SPI bus of LoRa radio */
+  SPI.begin(SOC_GPIO_PIN_SS);
 }
 
 static void CC13XX_swSer_begin(unsigned long baud)
@@ -472,13 +524,18 @@ static void CC13XX_Display_fini(const char *msg)
 
 static void CC13XX_Battery_setup()
 {
-
+  // Enable battery monitoring
+  AONBatMonEnable();
 }
 
 static float CC13XX_Battery_voltage()
 {
-  /* TBD */
-  return 0 ;
+  if (AONBatMonNewBatteryMeasureReady()) {
+    // Get the VDDS voltage
+    cc13xx_vdd = AONBatMonBatteryVoltageGet();
+  }
+
+  return ((cc13xx_vdd >> 8) & 0x7) + (float) (cc13xx_vdd & 0xFF) / 256.0;
 }
 
 void CC13XX_GNSS_PPS_Interrupt_handler() {
@@ -505,12 +562,51 @@ static void CC13XX_UATModule_restart()
 
 static void CC13XX_WDT_setup()
 {
-  /* TBD */
+#if defined(ENERGIA_ARCH_CC13X2)
+  Watchdog_Params params;
+  uint32_t        reloadValue;
+
+  Watchdog_init();
+
+  /* Open a Watchdog driver instance */
+  Watchdog_Params_init(&params);
+  params.callbackFxn = (Watchdog_Callback) NULL;
+  params.debugStallMode = Watchdog_DEBUG_STALL_ON;
+  params.resetMode = Watchdog_RESET_ON;
+
+  cc13xx_watchdogHandle = Watchdog_open(Board_WATCHDOG, &params);
+  if (cc13xx_watchdogHandle) {
+    /*
+     * The watchdog reload value is initialized during the
+     * Watchdog_open() call. The reload value can also be
+     * set dynamically during runtime.
+     *
+     * Converts TIMEOUT_MS to watchdog clock ticks.
+     * This API is not applicable for all devices.
+     * See the device specific watchdog driver documentation
+     * for your device.
+     */
+    reloadValue = Watchdog_convertMsToTicks(cc13xx_watchdogHandle, WD_TIMEOUT_MS);
+  
+    /*
+     * A value of zero (0) indicates the converted value exceeds 32 bits
+     * OR that the API is not applicable for this specific device.
+     */
+    if (reloadValue != 0) {
+        Watchdog_setReload(cc13xx_watchdogHandle, reloadValue);
+    }
+  }
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 static void CC13XX_WDT_fini()
 {
-  /* TBD */
+#if defined(ENERGIA_ARCH_CC13X2)
+  if (cc13xx_watchdogHandle) {
+    Watchdog_clear(cc13xx_watchdogHandle);
+    Watchdog_close(cc13xx_watchdogHandle);
+  }
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 const SoC_ops_t CC13XX_ops = {

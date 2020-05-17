@@ -110,7 +110,7 @@
 #define TX_EN     PB11 // TX / RX mode pin
 #define CSN       PB12 // SPI slave select pin
 
-#elif defined(ARDUINO_BLUEPILL_F103C8)
+#elif defined(ARDUINO_BLUEPILL_F103CB)
 // Blue Pill
 #define TRX_EN    PB3  // Enable/standby pin
 #define PWR_MODE  PB5  // Power mode pin
@@ -119,7 +119,7 @@
 
 #else
 #error "This hardware platform is not supported!"
-#endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103C8 */
+#endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103CB */
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5

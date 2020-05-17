@@ -18,14 +18,6 @@
 
 #include "SoCHelper.h"
 
-#if defined(EXCLUDE_LED_RING)
-void LED_setup()              {}
-void LED_test()               {}
-void LED_DisplayTraffic()     {}
-void LED_Clear()              {}
-void LED_loop()               {}
-#else
-
 #include <TimeLib.h>
 
 #include "LEDHelper.h"
@@ -45,10 +37,12 @@ static unsigned long status_LED_TimeMarker = 0;
 // on a live circuit...if you must, connect GND first.
 
 void LED_setup() {
+#if !defined(EXCLUDE_LED_RING)
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
     uni_begin();
     uni_show(); // Initialize all pixels to 'off'
   }
+#endif /* EXCLUDE_LED_RING */
 
   status_LED = SOC_GPIO_PIN_STATUS;
 
@@ -59,6 +53,7 @@ void LED_setup() {
   }
 }
 
+#if !defined(EXCLUDE_LED_RING)
 // Fill the dots one after the other with a color
 static void colorWipe(color_t c, uint8_t wait) {
   for (uint16_t i = 0; i < uni_numPixels(); i++) {
@@ -85,8 +80,10 @@ static void theaterChase(color_t c, uint8_t wait) {
     }
   }
 }
+#endif /* EXCLUDE_LED_RING */
 
 void LED_test() {
+#if !defined(EXCLUDE_LED_RING)
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
     // Some example procedures showing how to display to the pixels:
     colorWipe(uni_Color(255, 0, 0), 50); // Red
@@ -102,8 +99,10 @@ void LED_test() {
     //  theaterChaseRainbow(50);
     colorWipe(uni_Color(0, 0, 0), 50); // clear
   }
+#endif /* EXCLUDE_LED_RING */
 }
 
+#if !defined(EXCLUDE_LED_RING)
 static void LED_Clear_noflush() {
     for (uint16_t i = 0; i < RING_LED_NUM; i++) {
       uni_setPixelColor(i, LED_COLOR_BACKLIT);
@@ -139,8 +138,10 @@ static void LED_Clear_noflush() {
     uni_setPixelColor(LED_STATUS_SAT,
       isValidFix() ? LED_COLOR_MI_GREEN : LED_COLOR_MI_RED);
 }
+#endif /* EXCLUDE_LED_RING */
 
 void LED_Clear() {
+#if !defined(EXCLUDE_LED_RING)
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
     LED_Clear_noflush();
 
@@ -148,9 +149,11 @@ void LED_Clear() {
     uni_show();
     SoC->swSer_enableRx(true);
   }
+#endif /* EXCLUDE_LED_RING */
 }
 
 void LED_DisplayTraffic() {
+#if !defined(EXCLUDE_LED_RING)
   int bearing, distance;
   int led_num;
   color_t color;
@@ -192,6 +195,7 @@ void LED_DisplayTraffic() {
     SoC->swSer_enableRx(true);
 
   }
+#endif /* EXCLUDE_LED_RING */
 }
 
 void LED_loop() {
@@ -209,5 +213,3 @@ void LED_loop() {
     }
   }
 }
-
-#endif /* EXCLUDE_LED_RING */

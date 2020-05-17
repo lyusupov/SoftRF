@@ -57,11 +57,12 @@ float Battery_cutoff()
 void Battery_loop()
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_DONGLE ) {
+      hw_info.model == SOFTRF_MODEL_DONGLE    ||
+      hw_info.model == SOFTRF_MODEL_UNI       ) {
     if (isTimeToBattery()) {
       float voltage = Battery_voltage();
 
-      if (voltage > 2.0 && voltage < Battery_cutoff()) {
+      if (voltage > 1.8 && voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 2) {
           shutdown("LOW BAT");
         } else {

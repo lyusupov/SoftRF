@@ -55,8 +55,7 @@ extern size_t strnlen (const char *string, size_t length);
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
-#define SOC_GPIO_PIN_SS         18 // GPIO 11
-#define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+#define WD_TIMEOUT_MS           4000
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
@@ -119,6 +118,10 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER     GREEN_LED        // GPIO 7
 
+/* Optional SX1276 SPI radio */
+#define SOC_GPIO_PIN_SS         18 // GPIO 11
+#define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
 //#define EXCLUDE_MPL3115A2
@@ -144,7 +147,13 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_GNSS_PPS   25  // GPIO 27
 
-#define SOC_GPIO_PIN_ADXL_SS    SOC_GPIO_PIN_SS  // GPIO 11
+/* Optional SX12XX SPI radio */
+#define SOC_GPIO_PIN_SS         36  // GPIO 18 'RTS'
+#define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUSY       37  // GPIO 19 'CTS'
+
+/* Built-in TI SensorTag components */
+#define SOC_GPIO_PIN_ADXL_SS    18  // GPIO 11
 #define SOC_GPIO_PIN_MX25_SS    38  // GPIO 20
 
 #define SOC_GPIO_PIN_STATUS     GREEN_LED  // GPIO 7

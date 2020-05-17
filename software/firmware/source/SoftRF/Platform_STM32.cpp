@@ -59,7 +59,7 @@ HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
 HardwareSerial Serial2(USART2);
 HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
-#elif defined(ARDUINO_BLUEPILL_F103C8)
+#elif defined(ARDUINO_BLUEPILL_F103CB)
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
@@ -170,7 +170,7 @@ static void STM32_setup()
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
     }
-#elif defined(ARDUINO_BLUEPILL_F103C8)
+#elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
 #else
 #error "This hardware platform is not supported!"

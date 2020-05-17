@@ -196,7 +196,7 @@ typedef struct stm32_backup_struct {
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
 /* Secondary target ("Blue pill") */
-#elif defined(ARDUINO_BLUEPILL_F103C8)
+#elif defined(ARDUINO_BLUEPILL_F103CB)
 
 #define swSer                 Serial2
 #define UATSerial             Serial3
