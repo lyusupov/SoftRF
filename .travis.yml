@@ -64,7 +64,7 @@ install:
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/de937bccd4f64c78c8bfe6fb984b75f1157b06c6/STM32/package_stm_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/07bcfb337e4c9abe83a029b39e33ddff5a6df2ef/STM32/package_stm_index.json" --save-prefs ;
       arduino --install-boards STM32:stm32 ;
       arduino --board $BOARD --save-prefs ;
       if [[ "$BOARD" =~ "STM32:stm32:Nucleo_64" ]]; then
@@ -76,7 +76,7 @@ install:
         arduino --pref "custom_xusb=Nucleo_64_FS"             --save-prefs ;
       fi ;
       if [[ "$BOARD" =~ "STM32:stm32:GenF1" ]]; then
-        arduino --pref "custom_pnum=GenF1_BLUEPILL_F103C8B"  --save-prefs ;
+        arduino --pref "custom_pnum=GenF1_BLUEPILL_F103CB"   --save-prefs ;
         arduino --pref "custom_opt=GenF1_osstd"              --save-prefs ;
         arduino --pref "custom_rtlib=GenF1_nano"             --save-prefs ;
         arduino --pref "custom_usb=GenF1_CDCgen"             --save-prefs ;
