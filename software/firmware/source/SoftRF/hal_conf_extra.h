@@ -33,6 +33,20 @@
 #define PIN_SERIAL_RX           PA10
 #define PIN_SERIAL_TX           PA9
 
+// (Few) pre-production SoftRF Dongles had 1.5k D+ external pullup resistor
+// If you have one of these, then either:
+// - brake or un-solder the D+ pullup resistor, or
+// - keep using Arduino Core 1.8.0 for STM32, or
+// - unomment #define USBD_FIXED_PULLUP line below then re-build and re-install SoftRF firmware, or
+// - unplug then plug in the Dongle into a USB slot each time after you've done a settings change
+//
+// This indicates that there is an external and fixed 1.5k pullup
+// on the D+ line. This define is only needed on boards that have
+// internal pullups *and* an external pullup. Note that it would have
+// been better to omit the pullup and exclusively use the internal
+// pullups instead.
+//#define USBD_FIXED_PULLUP
+
 #endif /* SERIAL_UART_INSTANCE */
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
