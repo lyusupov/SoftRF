@@ -603,7 +603,6 @@ static void CC13XX_WDT_fini()
 {
 #if defined(ENERGIA_ARCH_CC13X2)
   if (cc13xx_watchdogHandle) {
-    Watchdog_clear(cc13xx_watchdogHandle);
     Watchdog_close(cc13xx_watchdogHandle);
   }
 #endif /* ENERGIA_ARCH_CC13X2 */

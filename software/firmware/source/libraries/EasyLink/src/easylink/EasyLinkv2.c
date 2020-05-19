@@ -159,6 +159,7 @@ union setupCmd_t{
 /* Packet overhead in terms of bits */
 #define PKT_OVHD_2GFSK_200K     (10U)
 
+#define SECURITY
 #include <ti/common/cc26xx/oad/oad_image_header.h>
 
 #define VECTOR_TB_SIZE       0x40 //!< Interrupt vector table entry size */

@@ -35,10 +35,10 @@
 
 // (Few) pre-production SoftRF Dongles had 1.5k D+ external pullup resistor
 // If you have one of these, then either:
-// - brake or un-solder the D+ pullup resistor, or
+// - break down or un-solder the D+ pullup resistor, or
 // - keep using Arduino Core 1.8.0 for STM32, or
-// - unomment #define USBD_FIXED_PULLUP line below then re-build and re-install SoftRF firmware, or
-// - unplug then plug in the Dongle into a USB slot each time after you've done a settings change
+// - uncomment #define USBD_FIXED_PULLUP line below then re-build and re-install SoftRF firmware, or
+// - unplug then plug in the Dongle again into a USB slot every time after you've done a settings change
 //
 // This indicates that there is an external and fixed 1.5k pullup
 // on the D+ line. This define is only needed on boards that have
