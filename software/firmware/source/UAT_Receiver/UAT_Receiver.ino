@@ -1,5 +1,5 @@
 /*
- * UATbridge(.ino) firmware
+ * UAT_Receiver(.ino) firmware
  * Copyright (C) 2019-2020 Linar Yusupov
  *
  * Author: Linar Yusupov, linar.r.yusupov@gmail.com
@@ -24,24 +24,16 @@
 #include "SoCHelper.h"
 #include "TimeHelper.h"
 #include "LEDHelper.h"
-#include "GNSSHelper.h"
 #include "RFHelper.h"
 #include "EEPROMHelper.h"
+#include "GDL90Helper.h"
+#include "D1090Helper.h"
 #include "BaroHelper.h"
-#include "TrafficHelper.h"
 #include "BatteryHelper.h"
 
 #include "EasyLink.h"
-#include "Protocol_UAT978.h"
-
-#include <uat.h>
-#include <fec/char.h>
-#include <fec.h>
-#include <uat_decode.h>
 
 //#define DEBUG_UAT
-
-#define isValidFix()      isValidGNSSFix()
 
 EasyLink_RxPacket rxPacket;
 EasyLink myLink;
@@ -218,11 +210,12 @@ static bool UAT_Receive_Async()
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
+  Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
 
   EEPROM_setup();
 
-  settings->mode = SOFTRF_MODE_BRIDGE;
+  settings->mode        = SOFTRF_MODE_RECEIVER;
+  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
 
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
@@ -236,50 +229,14 @@ void setup() {
 
   hw_info.display = SoC->Display_setup();
 
-  hw_info.rf = RF_setup();
-
-#if defined(DEBUG_UAT)
-  Serial.print("SPI radio ID: ");
-  Serial.println(hw_info.rf);
-#endif
-
-  if (hw_info.rf != RF_IC_NONE) {
-
-    init_fec();
-
-    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-      hw_info.gnss = GNSS_setup();
-
-#if defined(DEBUG_UAT)
-      if (hw_info.gnss != GNSS_MODULE_NONE) {
-        settings->nmea_g   = true;
-        settings->nmea_out = NMEA_UART;
-      }
-#endif
-    }
-
-    Serial.print("Protocol: ");
-    Serial.println(
-      settings->rf_protocol == RF_PROTOCOL_LEGACY ? legacy_proto_desc.name :
-      settings->rf_protocol == RF_PROTOCOL_OGNTP  ? ogntp_proto_desc.name  :
-      settings->rf_protocol == RF_PROTOCOL_P3I    ? p3i_proto_desc.name    :
-      settings->rf_protocol == RF_PROTOCOL_FANET  ? fanet_proto_desc.name  :
-      "UNK"
-    );
-
-    Serial.print("GNSS: ");
-    Serial.println(GNSS_name[hw_info.gnss]);
-  }
-
   Battery_setup();
 
   /*
    * Display 'U' (UAT) on OLED for Rx only modes.
-   * Indicate Tx protocol otherwise
    */
-  ThisAircraft.protocol = settings->rf_protocol;
+  ThisAircraft.protocol = RF_PROTOCOL_ADSB_UAT ;
 
-  Serial.println("Bridge mode.");
+  Serial.println("Receiver mode.");
 
   myLink.begin(EasyLink_Phy_Custom);
   Serial.println("Listening...");
@@ -289,60 +246,16 @@ void setup() {
 
 void loop() {
 
-  RF_loop();
-
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    PickGNSSFix();
-    GNSSTimeSync();
-  }
-
   bool success = UAT_Receive();
 
   if (success) {
+    LPUATRadio_frame.timestamp  = now();
+    LPUATRadio_frame.rssi       = rxPacket.rssi;
+    LPUATRadio_frame.msgLen     = rxPacket.len;
 
-    int rs_errors;
-    ThisAircraft.timestamp = now();
+    memcpy(LPUATRadio_frame.data, rxPacket.payload, rxPacket.len);
 
-    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-    if (frame_type != -1 &&
-        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-      Serial.print(fo.addr, HEX);
-      Serial.print(',');
-      Serial.print(fo.aircraft_type, HEX);
-      Serial.print(',');
-      Serial.print(fo.latitude, 6);
-      Serial.print(',');
-      Serial.print(fo.longitude, 6);
-      Serial.print(',');
-      Serial.print(fo.altitude);
-      Serial.print(',');
-      Serial.print(fo.speed);
-      Serial.print(',');
-      Serial.print(fo.course);
-      Serial.print(',');
-      Serial.print(fo.vs);
-      Serial.println();
-      Serial.flush();
-#endif
-
-      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-        /*
-         * "Legacy" needs some accurate timing for proper operation
-         */
-        if (isValidFix()) {
-          RF_Transmit(RF_Encode(&fo), false /* true */);
-        }
-      } else {
-        RF_Transmit(RF_Encode(&fo), false /* true */);
-      }
-    } else {
-#if defined(DEBUG_UAT)
-      Serial.println("FEC error");
-#endif
-    }
+    Serial.write((uint8_t *) &LPUATRadio_frame, sizeof(LPUATRadio_frame));
   }
 
   // Show status info on tiny OLED display
@@ -359,13 +272,7 @@ void shutdown(const char *msg)
 {
   SoC->WDT_fini();
 
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    GNSS_fini();
-  }
-
   SoC->Display_fini(msg);
-
-  RF_Shutdown();
 
   SoC_fini();
 }

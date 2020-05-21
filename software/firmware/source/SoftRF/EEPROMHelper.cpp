@@ -76,11 +76,7 @@ void EEPROM_defaults()
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-#if !defined(ENABLE_OTHER_MODES)
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-#else
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_RECEIVER;
-#endif
   eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
