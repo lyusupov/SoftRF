@@ -104,6 +104,8 @@ struct rst_info {
 
 #if defined(ENERGIA_ARCH_CC13XX)
 
+#include <SCSerial.h>
+
 /*
  *  UART pins
  *
@@ -112,7 +114,7 @@ struct rst_info {
  * BootLoader                   GPIO 1
  */
 
-#define swSer                   Serial
+#define swSer                   scSerial
 
 #define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
@@ -124,10 +126,12 @@ struct rst_info {
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
-//#define EXCLUDE_MPL3115A2
+#define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
 
 #define EXCLUDE_MAVLINK
+
+extern SCSerial                 scSerial;
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 

@@ -26,6 +26,7 @@
 #if defined(ENERGIA_ARCH_CC13XX)
 #include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
 #include <ti/devices/cc13x0/driverlib/aon_batmon.h>
+#include <SCSerial.h>
 #endif /* ENERGIA_ARCH_CC13XX */
 #if defined(ENERGIA_ARCH_CC13X2)
 #include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
@@ -96,7 +97,11 @@ static uint32_t bootCount = 0;
 static int cc13xx_board = SOFTRF_UAT_MODULE_19; /* default */
 static uint32_t cc13xx_vdd = 0;
 
-#if defined(ENERGIA_ARCH_CC13X2)
+#if defined(ENERGIA_ARCH_CC13XX)
+
+SCSerial scSerial;
+
+#elif defined(ENERGIA_ARCH_CC13X2)
 
 SPIFlash flash(SOC_GPIO_PIN_MX25_SS); // MACRONIX_MX25R8035F
 
@@ -177,7 +182,9 @@ char* itoa( int value, char *string, int radix )
   return ltoa( value, string, radix ) ;
 }
 
-#endif /* ENERGIA_ARCH_CC13X2 */
+#else
+#error "This hardware platform is not supported!"
+#endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
 
 static void CC13XX_setup()
 {
@@ -388,7 +395,9 @@ static void CC13XX_swSer_begin(unsigned long baud)
 
 static void CC13XX_swSer_enableRx(boolean arg)
 {
-
+#if defined(ENERGIA_ARCH_CC13XX)
+  swSer.enableRx(arg);
+#endif /* ENERGIA_ARCH_CC13XX */
 }
 
 static byte CC13XX_Display_setup()

@@ -1,5 +1,5 @@
 /* 
-  EEPROM.cpp - TI CC13X0 and TI CC13X2 EEPROM emulation
+  EEPROM.h - TI CC13X0 and TI CC13X2 EEPROM emulation
 
   Copyright (c) 2014 Ivan Grokhotkov. All rights reserved.
   This file is part of the esp8266 core for Arduino environment.
