@@ -44,7 +44,8 @@
 #define isValidFix()      isValidGNSSFix()
 
 EasyLink_RxPacket rxPacket;
-EasyLink myLink;
+extern EasyLink myLink;
+extern FreqPlan RF_FreqPlan;
 
 ufo_t ThisAircraft;
 
@@ -195,6 +196,14 @@ static bool UAT_Receive_Async()
   EasyLink_Status status;
 
   if (!UAT_receive_active) {
+    status = myLink.begin(EasyLink_Phy_Custom);
+
+#if defined(DEBUG_UAT)
+    if (status != EasyLink_Status_Success) {
+      Serial.println(F("myLink.begin(EasyLink_Phy_Custom) failure."));
+    }
+#endif
+
     status = myLink.receive(&UAT_Receive_callback);
 
     if (status == EasyLink_Status_Success) {
@@ -215,86 +224,9 @@ static bool UAT_Receive_Async()
 
 #define UAT_Receive UAT_Receive_Async
 
-void setup() {
-  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
-
-  Serial.begin(UAT_BOOT_BR, SERIAL_OUT_BITS);
-
-  EEPROM_setup();
-
-  settings->mode = SOFTRF_MODE_BRIDGE;
-
-  Serial.println();
-  Serial.print(F(SOFTRF_IDENT));
-  Serial.print(SoC->name);
-  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
-  Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
-  Serial.flush();
-
-  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
-
-  hw_info.display = SoC->Display_setup();
-
-  hw_info.rf = RF_setup();
-
-#if defined(DEBUG_UAT)
-  Serial.print("SPI radio ID: ");
-  Serial.println(hw_info.rf);
-#endif
-
-  if (hw_info.rf != RF_IC_NONE) {
-
-    init_fec();
-
-    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-      hw_info.gnss = GNSS_setup();
-
-#if defined(DEBUG_UAT)
-      if (hw_info.gnss != GNSS_MODULE_NONE) {
-        settings->nmea_g   = true;
-        settings->nmea_out = NMEA_UART;
-      }
-#endif
-    }
-
-    Serial.print("Protocol: ");
-    Serial.println(
-      settings->rf_protocol == RF_PROTOCOL_LEGACY ? legacy_proto_desc.name :
-      settings->rf_protocol == RF_PROTOCOL_OGNTP  ? ogntp_proto_desc.name  :
-      settings->rf_protocol == RF_PROTOCOL_P3I    ? p3i_proto_desc.name    :
-      settings->rf_protocol == RF_PROTOCOL_FANET  ? fanet_proto_desc.name  :
-      "UNK"
-    );
-
-    Serial.print("GNSS: ");
-    Serial.println(GNSS_name[hw_info.gnss]);
-  }
-
-  Battery_setup();
-
-  /*
-   * Display 'U' (UAT) on OLED for Rx only modes.
-   * Indicate Tx protocol otherwise
-   */
-  ThisAircraft.protocol = settings->rf_protocol;
-
-  Serial.println("Bridge mode.");
-
-  myLink.begin(EasyLink_Phy_Custom);
-  Serial.println("Listening...");
-
-  SoC->WDT_setup();
-}
-
-void loop() {
-
+static void dual_radio_bridge()
+{
   RF_loop();
-
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    PickGNSSFix();
-    GNSSTimeSync();
-  }
 
   bool success = UAT_Receive();
 
@@ -344,6 +276,224 @@ void loop() {
 #endif
     }
   }
+}
+
+static void single_radio_bridge()
+{
+  bool success = UAT_Receive();
+
+  if (success) {
+
+    int rs_errors;
+    ThisAircraft.timestamp = now();
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1 &&
+        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+      Serial.print(fo.addr, HEX);
+      Serial.print(',');
+      Serial.print(fo.aircraft_type, HEX);
+      Serial.print(',');
+      Serial.print(fo.latitude, 6);
+      Serial.print(',');
+      Serial.print(fo.longitude, 6);
+      Serial.print(',');
+      Serial.print(fo.altitude);
+      Serial.print(',');
+      Serial.print(fo.speed);
+      Serial.print(',');
+      Serial.print(fo.course);
+      Serial.print(',');
+      Serial.print(fo.vs);
+      Serial.println();
+      Serial.flush();
+#endif
+
+      EasyLink_Status status = EasyLink_abort();
+
+#if defined(DEBUG_UAT)
+      Serial.print(F("EasyLink_abort() return value: "));
+      Serial.println(status);
+#endif
+
+      switch (settings->rf_protocol)
+      {
+      case RF_PROTOCOL_OGNTP:
+        status = myLink.begin(EasyLink_Phy_100kbps2gfsk_ogntp);
+        break;
+      case RF_PROTOCOL_P3I:
+        status = myLink.begin(EasyLink_Phy_38400bps2gfsk_p3i);
+        break;
+      case RF_PROTOCOL_LEGACY:
+        status = myLink.begin(EasyLink_Phy_100kbps2gfsk_legacy);
+        break;
+      case RF_PROTOCOL_ADSB_UAT:
+      default:
+        break;
+      }
+
+#if defined(DEBUG_UAT)
+      if (status != EasyLink_Status_Success) {
+        Serial.println(F("myLink.begin() failure."));
+      }
+#endif
+
+      unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
+      unsigned long time_corr_pos = 0;
+      unsigned long time_corr_neg = 0;
+
+      if (pps_btime_ms) {
+        unsigned long lastCommitTime = millis() - gnss.time.age();
+        if (pps_btime_ms <= lastCommitTime) {
+          time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
+        } else {
+          time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
+        }
+        time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
+      }
+
+      tmElements_t tm;
+      time_t Time;
+
+      int yr = gnss.date.year();
+      if( yr > 99)
+          yr = yr - 1970;
+      else
+          yr += 30;
+      tm.Year = yr;
+      tm.Month = gnss.date.month();
+      tm.Day = gnss.date.day();
+      tm.Hour = gnss.time.hour();
+      tm.Minute = gnss.time.minute();
+      tm.Second = gnss.time.second();
+
+      Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
+
+      uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
+      uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
+
+      uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
+
+      uint32_t frequency = RF_FreqPlan.getChanFrequency(chan);
+
+      status = EasyLink_setFrequency(frequency);
+
+#if defined(DEBUG_UAT)
+      if (status != EasyLink_Status_Success) {
+        Serial.println(F("EasyLink_setFrequency() failure."));
+      }
+#endif
+
+      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+        /*
+         * "Legacy" needs some accurate timing for proper operation
+         */
+        if (isValidFix()) {
+          RF_Transmit(RF_Encode(&fo), false /* true */);
+        }
+      } else {
+        RF_Transmit(RF_Encode(&fo), false /* true */);
+      }
+    } else {
+#if defined(DEBUG_UAT)
+      Serial.println(F("FEC error"));
+#endif
+    }
+  }
+}
+
+void setup() {
+  hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  Serial.begin(STD_OUT_BR, SERIAL_OUT_BITS);
+
+  EEPROM_setup();
+
+  settings->mode = SOFTRF_MODE_BRIDGE;
+
+  Serial.println();
+  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
+  Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
+  Serial.flush();
+
+  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+
+  hw_info.display = SoC->Display_setup();
+
+  hw_info.rf = RF_setup();
+
+#if defined(DEBUG_UAT)
+  Serial.print(F("SPI radio ID: "));
+  Serial.println(hw_info.rf);
+#endif
+
+  init_fec();
+
+  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+    hw_info.gnss = GNSS_setup();
+
+#if defined(DEBUG_UAT)
+    if (hw_info.gnss != GNSS_MODULE_NONE) {
+      settings->nmea_g   = true;
+      settings->nmea_out = NMEA_UART;
+    }
+#endif
+  }
+
+  Serial.print(F("Protocol: "));
+  Serial.println(
+    settings->rf_protocol == RF_PROTOCOL_LEGACY ? legacy_proto_desc.name :
+    settings->rf_protocol == RF_PROTOCOL_OGNTP  ? ogntp_proto_desc.name  :
+    settings->rf_protocol == RF_PROTOCOL_P3I    ? p3i_proto_desc.name    :
+    settings->rf_protocol == RF_PROTOCOL_FANET  ? fanet_proto_desc.name  :
+    "UNK"
+  );
+
+  Serial.print(F("GNSS: "));
+  Serial.println(GNSS_name[hw_info.gnss]);
+
+  Battery_setup();
+
+  /*
+   * Display 'U' (UAT) on OLED for Rx only modes.
+   * Indicate Tx protocol otherwise
+   */
+  ThisAircraft.protocol = settings->rf_protocol;
+
+  Serial.print(hw_info.rf == RF_IC_CC13XX ? F("Single") : F("Dual"));
+  Serial.println(F(" radio bridge mode."));
+
+  RF_loop();
+
+  Serial.println(F("Listening..."));
+
+  SoC->WDT_setup();
+}
+
+void loop() {
+
+  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+    PickGNSSFix();
+    GNSSTimeSync();
+  }
+
+  switch (hw_info.rf)
+  {
+  case RF_IC_SX1276:
+  case RF_IC_SX1262:
+    dual_radio_bridge();
+    break;
+  case RF_IC_CC13XX:
+  default:
+    single_radio_bridge();
+    break;
+  }
 
   // Show status info on tiny OLED display
   SoC->Display_loop();
@@ -361,6 +511,8 @@ void shutdown(const char *msg)
 
   if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
     GNSS_fini();
+
+    SoC->swSer_enableRx(false);
   }
 
   SoC->Display_fini(msg);

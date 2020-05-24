@@ -101,7 +101,6 @@
 #define SERIAL_OUT_BITS   STD_OUT_BITS
 #endif
 
-#define UAT_BOOT_BR       9600
 #define UAT_RECEIVER_BR   2000000
 
 #if defined(PREMIUM_PACKAGE) && !defined(RASPBERRY_PI)

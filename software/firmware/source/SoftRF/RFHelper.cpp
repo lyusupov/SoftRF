@@ -45,7 +45,7 @@ uint32_t rx_packets_counter = 0;
 
 int8_t RF_last_rssi = 0;
 
-static FreqPlan RF_FreqPlan;
+FreqPlan RF_FreqPlan;
 static bool RF_ready = false;
 
 static size_t RF_tx_size = 0;
