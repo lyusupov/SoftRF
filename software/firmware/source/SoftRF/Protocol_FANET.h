@@ -35,6 +35,8 @@
 
 #define SOFRF_FANET_VENDOR_ID       0x07
 
+//#define FANET_NEXT
+
 enum
 {
 	FANET_AIRCRAFT_TYPE_OTHER,
@@ -87,6 +89,10 @@ typedef struct {
   unsigned int turn_rate      :7;
   unsigned int turn_scale     :1;
 
+#if defined(FANET_NEXT)
+  unsigned int qne_offset     :7;
+  unsigned int qne_scale      :1;
+#endif
 } __attribute__((packed)) fanet_packet_t;
 
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)

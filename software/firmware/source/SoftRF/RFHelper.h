@@ -105,8 +105,4 @@ extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 extern int8_t RF_last_rssi;
 
-#if !defined(EXCLUDE_CC13XX)
-extern const rfchip_ops_t cc13xx_ops;
-#endif /* EXCLUDE_CC13XX */
-
 #endif /* RFHELPER_H */

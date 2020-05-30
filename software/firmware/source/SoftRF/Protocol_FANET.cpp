@@ -205,8 +205,8 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
   unsigned int altitude;
-  uint8_t speed_byte, climb_byte;
-  int speed_int, climb_int;
+  uint8_t speed_byte, climb_byte, offset_byte;
+  int speed_int, climb_int, offset_int;
   bool rval = false;
 
   if (pkt->ext_header == 0 && pkt->type == 1 ) {  /* Tracking  */
@@ -254,6 +254,17 @@ bool fanet_decode(void *fanet_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     }
     fop->vs = ((float)climb_int) * (_GPS_FEET_PER_METER * 6.0);
 
+#if defined(FANET_NEXT)
+    offset_byte = pkt->qne_offset;
+    offset_int = (int) (offset_byte | (offset_byte & (1<<6) ? 0xFFFFFF80U : 0));
+
+    if (pkt->qne_scale) {
+      offset_int *= 4;
+    }
+
+    fop->pressure_altitude = fop->altitude + (float) offset_int;
+#endif
+
     fop->addr_type = ADDR_TYPE_FANET;
     fop->timestamp = this_aircraft->timestamp;
 
@@ -298,6 +309,8 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
   float climb = this_aircraft->vs / (_GPS_FEET_PER_METER * 60.0);
   float heading = this_aircraft->course;
   float turnrate = 0;
+  int16_t alt_diff = this_aircraft->pressure_altitude == 0 ? 0 :
+          (int16_t) (this_aircraft->pressure_altitude - this_aircraft->altitude);
 
   fanet_packet_t *pkt = (fanet_packet_t *) fanet_pkt;
 
@@ -351,6 +364,17 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
     pkt->turn_scale   = 0;
     pkt->turn_rate    = turnr4 & 0x7F;
   }
+
+#if defined(FANET_NEXT)
+  int16_t offset      = constrain(alt_diff, -254, 254);
+  if(abs(offset) > 63) {
+    pkt->qne_scale    = 1;
+    pkt->qne_offset   = ((offset + (offset >= 0 ? 2 : -2)) / 4);
+  } else {
+    pkt->qne_scale    = 0;
+    pkt->qne_offset   = offset & 0x7F;
+  }
+#endif
 
   return sizeof(fanet_packet_t);
 }
