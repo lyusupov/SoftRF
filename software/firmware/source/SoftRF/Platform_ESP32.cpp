@@ -1104,6 +1104,21 @@ static void ESP32_WDT_fini()
   disableLoopWDT();
 }
 
+static void ESP32_Button_setup()
+{
+  /* TODO */
+}
+
+static void ESP32_Button_loop()
+{
+  /* TODO */
+}
+
+static void ESP32_Button_fini()
+{
+  /* TODO */
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -1140,7 +1155,10 @@ const SoC_ops_t ESP32_ops = {
   ESP32_UATSerial_begin,
   ESP32_UATModule_restart,
   ESP32_WDT_setup,
-  ESP32_WDT_fini
+  ESP32_WDT_fini,
+  ESP32_Button_setup,
+  ESP32_Button_loop,
+  ESP32_Button_fini
 };
 
 #endif /* ESP32 */

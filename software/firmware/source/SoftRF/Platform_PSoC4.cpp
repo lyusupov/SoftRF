@@ -212,6 +212,21 @@ static void PSoC4_WDT_fini()
 
 }
 
+static void PSoC4_Button_setup()
+{
+  /* TODO */
+}
+
+static void PSoC4_Button_loop()
+{
+  /* TODO */
+}
+
+static void PSoC4_Button_fini()
+{
+  /* TODO */
+}
+
 const SoC_ops_t PSoC4_ops = {
   SOC_PSOC4,
   "PSoC4",
@@ -248,7 +263,10 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_UATSerial_begin,
   PSoC4_UATModule_restart,
   PSoC4_WDT_setup,
-  PSoC4_WDT_fini
+  PSoC4_WDT_fini,
+  PSoC4_Button_setup,
+  PSoC4_Button_loop,
+  PSoC4_Button_fini
 };
 
 #endif /* __ASR6501__ */

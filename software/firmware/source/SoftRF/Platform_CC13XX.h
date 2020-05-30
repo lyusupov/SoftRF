@@ -163,6 +163,9 @@ extern SCSerial                 scSerial;
 #define SOC_GPIO_PIN_STATUS     GREEN_LED  // GPIO 7
 #define SOC_GPIO_PIN_BUZZER     SOC_UNUSED_PIN
 
+// button
+#define SOC_GPIO_PIN_BUTTON     PUSH1 // GPIO 15
+
 #define SSD1306_OLED_I2C_ADDR   0x3C
 #define MACRONIX_MX25R8035F     0xC228
 

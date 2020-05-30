@@ -67,6 +67,9 @@ typedef struct SoC_ops_struct {
   void (*UATModule_restart)();
   void (*WDT_setup)();
   void (*WDT_fini)();
+  void (*Button_setup)();
+  void (*Button_loop)();
+  void (*Button_fini)();
 } SoC_ops_t;
 
 enum

@@ -635,6 +635,21 @@ static void STM32_WDT_fini()
   }
 }
 
+static void STM32_Button_setup()
+{
+  /* TODO */
+}
+
+static void STM32_Button_loop()
+{
+  /* TODO */
+}
+
+static void STM32_Button_fini()
+{
+  /* TODO */
+}
+
 #if defined(USBD_USE_CDC)
 
 #include <USBSerial.h>
@@ -718,7 +733,10 @@ const SoC_ops_t STM32_ops = {
   STM32_UATSerial_begin,
   STM32_UATModule_restart,
   STM32_WDT_setup,
-  STM32_WDT_fini
+  STM32_WDT_fini,
+  STM32_Button_setup,
+  STM32_Button_loop,
+  STM32_Button_fini
 };
 
 #endif /* ARDUINO_ARCH_STM32 */

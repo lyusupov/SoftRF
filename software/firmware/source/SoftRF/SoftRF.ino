@@ -143,6 +143,8 @@ void setup()
 
   EEPROM_setup();
 
+  SoC->Button_setup();
+
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
   hw_info.rf = RF_setup();
@@ -279,6 +281,8 @@ void loop()
 
   Battery_loop();
 
+  SoC->Button_loop();
+
   yield();
 }
 
@@ -301,6 +305,8 @@ void shutdown(const char *msg)
   SoC->Display_fini(msg);
 
   RF_Shutdown();
+
+  SoC->Button_fini();
 
   SoC_fini();
 }

@@ -357,6 +357,21 @@ static void RPi_WDT_fini()
   /* TBD */
 }
 
+static void RPi_Button_setup()
+{
+  /* TODO */
+}
+
+static void RPi_Button_loop()
+{
+  /* TODO */
+}
+
+static void RPi_Button_fini()
+{
+  /* TODO */
+}
+
 const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
@@ -393,7 +408,10 @@ const SoC_ops_t RPi_ops = {
   RPi_UATSerial_begin,
   RPi_UATModule_restart,
   RPi_WDT_setup,
-  RPi_WDT_fini
+  RPi_WDT_fini,
+  RPi_Button_setup,
+  RPi_Button_loop,
+  RPi_Button_fini
 };
 
 static bool inputAvailable()

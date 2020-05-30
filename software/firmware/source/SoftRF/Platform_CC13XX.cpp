@@ -121,6 +121,94 @@ static void Uart2_WriteCallback(UART_Handle uart, void *buf, size_t count)
 
 HardwareSerial Serial2(1, Uart2_ReadCallback, Uart2_WriteCallback, true);
 
+#include <ti/common/cc26xx/oad/oad_image_header.h>
+#include <ti/drivers/dpl/HwiP.h>
+#include <ti/devices/cc13x2_cc26x2/driverlib/flash.h>
+
+// Boot check timings in milliseconds
+#define BOOTCHECK_SLEEP_DURATION_MS       5000
+#define BOOTCHECK_SLEEP_INTERVAL_MS        200
+
+static void RevertToFactoryImage(void)
+{
+    extern const imgHdr_t _imgHdr;
+
+    uint32_t key = HwiP_disable();
+
+    uint8_t invalidCrc = CRC_INVALID;
+    // Invalidate  CRC in current image header
+    uint32_t retVal = FlashProgram(&invalidCrc,
+                                 (uint32_t)&_imgHdr.fixedHdr.crcStat,
+                                 sizeof(invalidCrc));
+    if (retVal == FAPI_STATUS_SUCCESS)
+    {
+      Serial.println(F("CRC Status invalidated. Rebooting into BIM."));
+      Serial.flush();
+
+      SysCtrlSystemReset();
+      // We never reach here.
+    }
+    else
+    {
+      Serial.print(F("CRC Invalidate write failed. Status 0x"));
+      Serial.println(retVal, HEX);
+      Serial.println(F("Continuing with on-chip application"));
+    }
+
+    HwiP_restore(key);
+}
+
+static void BootManagerCheck(void)
+{
+  bool revertIoInit;
+  uint8_t CurrentLed;
+
+  // Check if button is held on reset
+  revertIoInit = (digitalRead(PUSH1) == LOW);
+
+  uint8_t leds[] = {RED_LED, GREEN_LED, BLUE_LED};
+  uint8_t LED_count = (cc13xx_board == TI_LPSTK_CC1352R ? 3 : 2);
+
+  if (revertIoInit)
+  {
+    Serial.println(F("Left button was held on reset."));
+    Serial.println(F("Continue holding for 5 seconds to revert to factory image."));
+    Serial.flush();
+
+    if (RED_LED)   pinMode(RED_LED,   OUTPUT);
+    if (GREEN_LED) pinMode(GREEN_LED, OUTPUT);
+    if (BLUE_LED)  pinMode(BLUE_LED,  OUTPUT);
+
+    // Check to see if button is continued to be held
+    for (uint32_t i = 0; i < BOOTCHECK_SLEEP_DURATION_MS / BOOTCHECK_SLEEP_INTERVAL_MS; ++i)
+    {
+      CurrentLed = leds[i % LED_count];
+
+      if (CurrentLed) digitalWrite(CurrentLed, HIGH);
+
+      delay(BOOTCHECK_SLEEP_INTERVAL_MS);
+
+      if (CurrentLed) digitalWrite(CurrentLed, LOW);
+
+      if (digitalRead(PUSH1) == HIGH)
+      {
+        revertIoInit = false;
+        Serial.println(F("Left button released"));
+        Serial.println(F("Continuing with boot"));
+        Serial.flush();
+        break;
+      }
+    }
+  }
+
+  if(revertIoInit)
+  {
+      RevertToFactoryImage();
+  }
+
+  return;
+}
+
 size_t strnlen (const char *string, size_t length)
 {
    char *ret = (char *) memchr ((const void *) string, 0, length);
@@ -617,6 +705,40 @@ static void CC13XX_WDT_fini()
 #endif /* ENERGIA_ARCH_CC13X2 */
 }
 
+static void CC13XX_Button_setup()
+{
+#if defined(ENERGIA_ARCH_CC13X2)
+  pinMode(PUSH1, INPUT_PULLUP);
+  pinMode(PUSH2, INPUT_PULLUP);
+
+  BootManagerCheck();
+#endif
+}
+
+static void CC13XX_Button_loop()
+{
+#if 0
+  if (digitalRead(PUSH1) == LOW) {
+    Serial.println(F("PUSH1 PRESSED"));
+    Serial.flush();
+  }
+  if (digitalRead(PUSH2) == LOW) {
+    Serial.println(F("PUSH2 PRESSED"));
+    Serial.flush();
+  }
+#endif
+
+  /* TODO */
+}
+
+static void CC13XX_Button_fini()
+{
+#if defined(ENERGIA_ARCH_CC13X2)
+  pinMode(PUSH1, INPUT);
+  pinMode(PUSH2, INPUT);
+#endif
+}
+
 const SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
@@ -653,7 +775,10 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_UATSerial_begin,
   CC13XX_UATModule_restart,
   CC13XX_WDT_setup,
-  CC13XX_WDT_fini
+  CC13XX_WDT_fini,
+  CC13XX_Button_setup,
+  CC13XX_Button_loop,
+  CC13XX_Button_fini
 };
 
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
