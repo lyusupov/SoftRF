@@ -212,11 +212,6 @@ void setup() {
 
   Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
 
-  EEPROM_setup();
-
-  settings->mode        = SOFTRF_MODE_RECEIVER;
-  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
-
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
   Serial.print(SoC->name);
@@ -224,6 +219,13 @@ void setup() {
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
+
+  EEPROM_setup();
+
+  settings->mode        = SOFTRF_MODE_RECEIVER;
+  settings->rf_protocol = RF_PROTOCOL_ADSB_UAT;
+
+  SoC->Button_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
@@ -265,6 +267,8 @@ void loop() {
 
   Battery_loop();
 
+  SoC->Button_loop();
+
   yield();
 }
 
@@ -273,6 +277,8 @@ void shutdown(const char *msg)
   SoC->WDT_fini();
 
   SoC->Display_fini(msg);
+
+  SoC->Button_fini();
 
   SoC_fini();
 }

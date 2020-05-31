@@ -166,7 +166,7 @@ static void BootManagerCheck(void)
   // Check if button is held on reset
   revertIoInit = (digitalRead(PUSH1) == LOW);
 
-  uint8_t leds[] = {RED_LED, GREEN_LED, BLUE_LED};
+  uint8_t leds[] = {RED_LED, GREEN_LED, SOC_GPIO_PIN_LED_BLUE};
   uint8_t LED_count = (cc13xx_board == TI_LPSTK_CC1352R ? 3 : 2);
 
   if (revertIoInit)
@@ -175,9 +175,9 @@ static void BootManagerCheck(void)
     Serial.println(F("Continue holding for 5 seconds to revert to factory image."));
     Serial.flush();
 
-    if (RED_LED)   pinMode(RED_LED,   OUTPUT);
-    if (GREEN_LED) pinMode(GREEN_LED, OUTPUT);
-    if (BLUE_LED)  pinMode(BLUE_LED,  OUTPUT);
+    if (RED_LED)                          pinMode(RED_LED,   OUTPUT);
+    if (GREEN_LED)                        pinMode(GREEN_LED, OUTPUT);
+    if (cc13xx_board == TI_LPSTK_CC1352R) pinMode(SOC_GPIO_PIN_LED_BLUE,  OUTPUT);
 
     // Check to see if button is continued to be held
     for (uint32_t i = 0; i < BOOTCHECK_SLEEP_DURATION_MS / BOOTCHECK_SLEEP_INTERVAL_MS; ++i)
@@ -340,9 +340,11 @@ static void CC13XX_setup()
   }
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
-    pinMode(RED_LED, OUTPUT);
+    uint8_t pps_led = (cc13xx_board == TI_LPSTK_CC1352R ? SOC_GPIO_PIN_LED_BLUE : RED_LED);
+
+    pinMode(pps_led, OUTPUT);
     /* Indicate GNSS PPS signal */
-    digitalWrite(RED_LED, LOW);
+    digitalWrite(pps_led, LOW);
   }
 #endif /* ENERGIA_ARCH_CC13X2 */
 
@@ -358,11 +360,12 @@ static void CC13XX_loop()
     Watchdog_clear(cc13xx_watchdogHandle);
   }
 
+  uint8_t pps_led = (cc13xx_board == TI_LPSTK_CC1352R ? SOC_GPIO_PIN_LED_BLUE : RED_LED);
   if ((SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) &&
       (millis() - PPS_TimeMarker) < 100) {
-    digitalWrite(RED_LED, HIGH);
+    digitalWrite(pps_led, HIGH);
   } else {
-    digitalWrite(RED_LED, LOW);
+    digitalWrite(pps_led, LOW);
   }
 #endif /* ENERGIA_ARCH_CC13X2 */
 }
@@ -376,10 +379,13 @@ static void CC13XX_fini()
 
   if (SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN) {
     digitalWrite(SOC_GPIO_PIN_STATUS, LOW);
+    pinMode(SOC_GPIO_PIN_STATUS, INPUT);
   }
 
   if ((SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN)) {
-    digitalWrite(RED_LED, LOW);
+    uint8_t pps_led = (cc13xx_board == TI_LPSTK_CC1352R ? SOC_GPIO_PIN_LED_BLUE : RED_LED);
+    digitalWrite(pps_led, LOW);
+    pinMode(pps_led, INPUT);
   }
 
 #endif /* ENERGIA_ARCH_CC13X2 */

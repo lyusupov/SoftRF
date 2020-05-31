@@ -1700,6 +1700,30 @@ static void cc13xx_setup()
     myLink.begin(EasyLink_Phy_Custom);
     break;
   }
+
+  /* -10 dBm is a minumum for CC1310 ; CC1352 can operate down to -20 dBm */
+  int8_t TxPower = -10;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    if (settings->rf_protocol != RF_PROTOCOL_ADSB_UAT) {
+      /* Load regional max. EIRP at first */
+      TxPower = RF_FreqPlan.MaxTxPower;
+    }
+
+    if (TxPower > 14)
+      TxPower = 14; /* 'high power' CC13XXP (up to 20 dBm) is not supported yet */
+
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    break;
+  }
+
+  EasyLink_setRfPwr(TxPower);
 }
 
 static bool cc13xx_receive()

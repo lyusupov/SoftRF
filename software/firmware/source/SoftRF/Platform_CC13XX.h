@@ -146,6 +146,8 @@ extern SCSerial                 scSerial;
 
 #define swSer                   Serial2
 
+#define EasyLink_setRfPwr       EasyLink_setRfPower
+
 #define SOC_GPIO_PIN_SWSER_RX   23  // GPIO 25
 #define SOC_GPIO_PIN_SWSER_TX   24  // GPIO 26
 
@@ -159,6 +161,7 @@ extern SCSerial                 scSerial;
 /* Built-in TI SensorTag components */
 #define SOC_GPIO_PIN_ADXL_SS    18  // GPIO 11
 #define SOC_GPIO_PIN_MX25_SS    38  // GPIO 20
+#define SOC_GPIO_PIN_LED_BLUE   8   // GPIO 21
 
 #define SOC_GPIO_PIN_STATUS     GREEN_LED  // GPIO 7
 #define SOC_GPIO_PIN_BUZZER     SOC_UNUSED_PIN

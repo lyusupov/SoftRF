@@ -379,11 +379,29 @@ static void single_radio_bridge()
 
       uint32_t frequency = RF_FreqPlan.getChanFrequency(chan);
 
-      status = EasyLink_setFrequency(frequency);
+      if (frequency != EasyLink_getFrequency()) {
+        status = EasyLink_setFrequency(frequency);
+
+#if defined(DEBUG_UAT)
+        if (status != EasyLink_Status_Success) {
+          Serial.println(F("EasyLink_setFrequency() failure."));
+        }
+#endif
+      }
+
+      /*
+       * -10 dBm is a minumum for CC1310 ; CC1352 can operate down to -20 dBm
+       *
+       * When more than one UAT traffic is around - Tx on the 868.2(4) MHz
+       * will likely violate 1% duty cycle rule for this ISM band.
+       * We keep Tx power setting on a bare minimum in order to reduce service volume
+       * down to a few meters around the 'bridge'.
+       */
+      status = EasyLink_setRfPwr(-10);
 
 #if defined(DEBUG_UAT)
       if (status != EasyLink_Status_Success) {
-        Serial.println(F("EasyLink_setFrequency() failure."));
+        Serial.println(F("EasyLink_setRfPwr() failure."));
       }
 #endif
 
@@ -410,10 +428,6 @@ void setup() {
 
   Serial.begin(STD_OUT_BR, SERIAL_OUT_BITS);
 
-  EEPROM_setup();
-
-  settings->mode = SOFTRF_MODE_BRIDGE;
-
   Serial.println();
   Serial.print(F(SOFTRF_IDENT));
   Serial.print(SoC->name);
@@ -421,6 +435,12 @@ void setup() {
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
+
+  EEPROM_setup();
+
+  settings->mode = SOFTRF_MODE_BRIDGE;
+
+  SoC->Button_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
@@ -502,6 +522,8 @@ void loop() {
 
   Battery_loop();
 
+  SoC->Button_loop();
+
   yield();
 }
 
@@ -518,6 +540,8 @@ void shutdown(const char *msg)
   SoC->Display_fini(msg);
 
   RF_Shutdown();
+
+  SoC->Button_fini();
 
   SoC_fini();
 }
