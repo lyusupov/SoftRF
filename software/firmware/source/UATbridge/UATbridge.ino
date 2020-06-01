@@ -59,17 +59,6 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
-Stratux_frame_t LPUATRadio_frame = {
-  .magic1     = STRATUX_UATRADIO_MAGIC_1,
-  .magic2     = STRATUX_UATRADIO_MAGIC_2,
-  .magic3     = STRATUX_UATRADIO_MAGIC_3,
-  .magic4     = STRATUX_UATRADIO_MAGIC_4,
-
-  .msgLen     = LONG_FRAME_BYTES,
-  .rssi       = 0,
-  .timestamp  = 0UL,
-};
-
 #if defined(DEBUG_UAT)
 #include <xdc/std.h>
 
@@ -224,205 +213,6 @@ static bool UAT_Receive_Async()
 
 #define UAT_Receive UAT_Receive_Async
 
-static void dual_radio_bridge()
-{
-  RF_loop();
-
-  bool success = UAT_Receive();
-
-  if (success) {
-
-    int rs_errors;
-    ThisAircraft.timestamp = now();
-
-    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-    if (frame_type != -1 &&
-        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-      Serial.print(fo.addr, HEX);
-      Serial.print(',');
-      Serial.print(fo.aircraft_type, HEX);
-      Serial.print(',');
-      Serial.print(fo.latitude, 6);
-      Serial.print(',');
-      Serial.print(fo.longitude, 6);
-      Serial.print(',');
-      Serial.print(fo.altitude);
-      Serial.print(',');
-      Serial.print(fo.speed);
-      Serial.print(',');
-      Serial.print(fo.course);
-      Serial.print(',');
-      Serial.print(fo.vs);
-      Serial.println();
-      Serial.flush();
-#endif
-
-      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-        /*
-         * "Legacy" needs some accurate timing for proper operation
-         */
-        if (isValidFix()) {
-          RF_Transmit(RF_Encode(&fo), false /* true */);
-        }
-      } else {
-        RF_Transmit(RF_Encode(&fo), false /* true */);
-      }
-    } else {
-#if defined(DEBUG_UAT)
-      Serial.println("FEC error");
-#endif
-    }
-  }
-}
-
-static void single_radio_bridge()
-{
-  bool success = UAT_Receive();
-
-  if (success) {
-
-    int rs_errors;
-    ThisAircraft.timestamp = now();
-
-    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
-
-    if (frame_type != -1 &&
-        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
-
-#if defined(DEBUG_UAT)
-      Serial.print(fo.addr, HEX);
-      Serial.print(',');
-      Serial.print(fo.aircraft_type, HEX);
-      Serial.print(',');
-      Serial.print(fo.latitude, 6);
-      Serial.print(',');
-      Serial.print(fo.longitude, 6);
-      Serial.print(',');
-      Serial.print(fo.altitude);
-      Serial.print(',');
-      Serial.print(fo.speed);
-      Serial.print(',');
-      Serial.print(fo.course);
-      Serial.print(',');
-      Serial.print(fo.vs);
-      Serial.println();
-      Serial.flush();
-#endif
-
-      EasyLink_Status status = EasyLink_abort();
-
-#if defined(DEBUG_UAT)
-      Serial.print(F("EasyLink_abort() return value: "));
-      Serial.println(status);
-#endif
-
-      switch (settings->rf_protocol)
-      {
-      case RF_PROTOCOL_OGNTP:
-        status = myLink.begin(EasyLink_Phy_100kbps2gfsk_ogntp);
-        break;
-      case RF_PROTOCOL_P3I:
-        status = myLink.begin(EasyLink_Phy_38400bps2gfsk_p3i);
-        break;
-      case RF_PROTOCOL_LEGACY:
-        status = myLink.begin(EasyLink_Phy_100kbps2gfsk_legacy);
-        break;
-      case RF_PROTOCOL_ADSB_UAT:
-      default:
-        break;
-      }
-
-#if defined(DEBUG_UAT)
-      if (status != EasyLink_Status_Success) {
-        Serial.println(F("myLink.begin() failure."));
-      }
-#endif
-
-      unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
-      unsigned long time_corr_pos = 0;
-      unsigned long time_corr_neg = 0;
-
-      if (pps_btime_ms) {
-        unsigned long lastCommitTime = millis() - gnss.time.age();
-        if (pps_btime_ms <= lastCommitTime) {
-          time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
-        } else {
-          time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
-        }
-        time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
-      }
-
-      tmElements_t tm;
-      time_t Time;
-
-      int yr = gnss.date.year();
-      if( yr > 99)
-          yr = yr - 1970;
-      else
-          yr += 30;
-      tm.Year = yr;
-      tm.Month = gnss.date.month();
-      tm.Day = gnss.date.day();
-      tm.Hour = gnss.time.hour();
-      tm.Minute = gnss.time.minute();
-      tm.Second = gnss.time.second();
-
-      Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
-
-      uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
-      uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-      uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
-
-      uint32_t frequency = RF_FreqPlan.getChanFrequency(chan);
-
-      if (frequency != EasyLink_getFrequency()) {
-        status = EasyLink_setFrequency(frequency);
-
-#if defined(DEBUG_UAT)
-        if (status != EasyLink_Status_Success) {
-          Serial.println(F("EasyLink_setFrequency() failure."));
-        }
-#endif
-      }
-
-      /*
-       * -10 dBm is a minumum for CC1310 ; CC1352 can operate down to -20 dBm
-       *
-       * When more than one UAT traffic is around - Tx on the 868.2(4) MHz
-       * will likely violate 1% duty cycle rule for this ISM band.
-       * We keep Tx power setting on a bare minimum in order to reduce service volume
-       * down to a few meters around the 'bridge'.
-       */
-      status = EasyLink_setRfPwr(-10);
-
-#if defined(DEBUG_UAT)
-      if (status != EasyLink_Status_Success) {
-        Serial.println(F("EasyLink_setRfPwr() failure."));
-      }
-#endif
-
-      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-        /*
-         * "Legacy" needs some accurate timing for proper operation
-         */
-        if (isValidFix()) {
-          RF_Transmit(RF_Encode(&fo), false /* true */);
-        }
-      } else {
-        RF_Transmit(RF_Encode(&fo), false /* true */);
-      }
-    } else {
-#if defined(DEBUG_UAT)
-      Serial.println(F("FEC error"));
-#endif
-    }
-  }
-}
-
 void setup() {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
@@ -503,16 +293,153 @@ void loop() {
     GNSSTimeSync();
   }
 
-  switch (hw_info.rf)
-  {
-  case RF_IC_SX1276:
-  case RF_IC_SX1262:
-    dual_radio_bridge();
-    break;
-  case RF_IC_CC13XX:
-  default:
-    single_radio_bridge();
-    break;
+  if (hw_info.rf != RF_IC_CC13XX) {
+    RF_loop();
+  }
+
+  bool success = UAT_Receive();
+
+  if (success) {
+
+    int rs_errors;
+    ThisAircraft.timestamp = now();
+
+    int frame_type = correct_adsb_frame(rxPacket.payload, &rs_errors);
+
+    if (frame_type != -1 &&
+        uat978_decode((void *) rxPacket.payload, &ThisAircraft, &fo) ) {
+
+#if defined(DEBUG_UAT)
+      Serial.print(fo.addr, HEX);
+      Serial.print(',');
+      Serial.print(fo.aircraft_type, HEX);
+      Serial.print(',');
+      Serial.print(fo.latitude, 6);
+      Serial.print(',');
+      Serial.print(fo.longitude, 6);
+      Serial.print(',');
+      Serial.print(fo.altitude);
+      Serial.print(',');
+      Serial.print(fo.speed);
+      Serial.print(',');
+      Serial.print(fo.course);
+      Serial.print(',');
+      Serial.print(fo.vs);
+      Serial.println();
+      Serial.flush();
+#endif
+
+      if (hw_info.rf == RF_IC_CC13XX) {
+
+        EasyLink_Status status = EasyLink_abort();
+
+#if defined(DEBUG_UAT)
+        Serial.print(F("EasyLink_abort() return value: "));
+        Serial.println(status);
+#endif
+
+        switch (settings->rf_protocol)
+        {
+        case RF_PROTOCOL_OGNTP:
+          status = myLink.begin(EasyLink_Phy_100kbps2gfsk_ogntp);
+          break;
+        case RF_PROTOCOL_P3I:
+          status = myLink.begin(EasyLink_Phy_38400bps2gfsk_p3i);
+          break;
+        case RF_PROTOCOL_LEGACY:
+          status = myLink.begin(EasyLink_Phy_100kbps2gfsk_legacy);
+          break;
+        case RF_PROTOCOL_ADSB_UAT:
+        default:
+          break;
+        }
+
+#if defined(DEBUG_UAT)
+        if (status != EasyLink_Status_Success) {
+          Serial.println(F("myLink.begin() failure."));
+        }
+#endif
+
+        unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
+        unsigned long time_corr_pos = 0;
+        unsigned long time_corr_neg = 0;
+
+        if (pps_btime_ms) {
+          unsigned long lastCommitTime = millis() - gnss.time.age();
+          if (pps_btime_ms <= lastCommitTime) {
+            time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
+          } else {
+            time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
+          }
+          time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
+        }
+
+        tmElements_t tm;
+        time_t Time;
+
+        int yr = gnss.date.year();
+        if( yr > 99)
+            yr = yr - 1970;
+        else
+            yr += 30;
+        tm.Year = yr;
+        tm.Month = gnss.date.month();
+        tm.Day = gnss.date.day();
+        tm.Hour = gnss.time.hour();
+        tm.Minute = gnss.time.minute();
+        tm.Second = gnss.time.second();
+
+        Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
+
+        uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
+        uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
+
+        uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
+
+        uint32_t frequency = RF_FreqPlan.getChanFrequency(chan);
+
+        if (frequency != EasyLink_getFrequency()) {
+          status = EasyLink_setFrequency(frequency);
+
+#if defined(DEBUG_UAT)
+          if (status != EasyLink_Status_Success) {
+            Serial.println(F("EasyLink_setFrequency() failure."));
+          }
+#endif
+        }
+
+        /*
+         * -10 dBm is a minumum for CC1310 ; CC1352 can operate down to -20 dBm
+         *
+         * When more than one UAT traffic is around - Tx on the 868.2(4) MHz
+         * will likely violate 1% duty cycle rule for this ISM band.
+         * We keep Tx power setting on a bare minimum in order to reduce service volume
+         * down to a few meters around the 'bridge'.
+         */
+        status = EasyLink_setRfPwr(-10);
+
+#if defined(DEBUG_UAT)
+        if (status != EasyLink_Status_Success) {
+          Serial.println(F("EasyLink_setRfPwr() failure."));
+        }
+#endif
+      }
+
+      if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+        /*
+         * "Legacy" needs some accurate timing for proper operation
+         */
+        if (isValidFix()) {
+          RF_Transmit(RF_Encode(&fo), false /* true */);
+        }
+      } else {
+        RF_Transmit(RF_Encode(&fo), false /* true */);
+      }
+    } else {
+#if defined(DEBUG_UAT)
+      Serial.println(F("FEC error"));
+#endif
+    }
   }
 
   // Show status info on tiny OLED display
@@ -538,6 +465,10 @@ void shutdown(const char *msg)
   }
 
   SoC->Display_fini(msg);
+
+  if (hw_info.rf == RF_IC_CC13XX) {
+    EasyLink_abort();
+  }
 
   RF_Shutdown();
 
