@@ -30,9 +30,13 @@
 #include <protocol.h>
 #include <freqplan.h>
 
+extern String host_name;
+
+#define NOLOGO
+
 static uint32_t prev_rx_pkt_cnt = 0;
 
-#if 0
+#if !defined(NOLOGO)
 static const char Logo[] PROGMEM = {
 #include "Logo.h"
     } ;
@@ -86,7 +90,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Shenzhen Xin Yuan<br>(LilyGO) ET company</th><td align=left>TTGO T-Watch</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
-<tr><th align=left>Evandro Copercini and German Martin</th><td align=left>ESP32 BT SPP library</td></tr>\
+<tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
 <tr><th align=left>Lewis He</th><td align=left>AXP20X, BMA423, FT5206 and PCF8563 libraries</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 </table>\
@@ -94,6 +98,92 @@ static const char about_html[] PROGMEM = "<html>\
 Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
+
+static const char service_html[] PROGMEM = "<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>Service Mode</title>\
+  </head>\
+<body>\
+<h1 align=center>Service Mode</h1>\
+<br><br><p align=center>You've entered service mode.</p>\
+<p align=center><input type=button onClick=\"location.href='/leave'\" value='Leave'></p>\
+</body>\
+</html>";
+
+static const char leave_html[] PROGMEM = "<html>\
+  <head>\
+    <meta http-equiv='refresh' content='12; url=/'>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>Service Mode</title>\
+  </head>\
+<body>\
+<h1 align=center>Service Mode</h1>\
+<br><br><p align=center>You are leaving service mode. Please, wait...</p>\
+</body>\
+</html>";
+
+static const char root_html[] PROGMEM = "<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>SkyWatch</title>\
+  </head>\
+<body>\
+<h1 align=center>SkyWatch</h1>\
+<br><br><p align=center>Welcome to SkyWatch !</p>\
+<p align=center><input type=button onClick=\"location.href='http://192.168.1.1/status'\" value='Continue'></p>\
+</body>\
+</html>";
+
+/** Is this an IP? */
+boolean isIp(String str) {
+  for (size_t i = 0; i < str.length(); i++) {
+    int c = str.charAt(i);
+    if (c != '.' && (c < '0' || c > '9')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** IP to String? */
+String toStringIp(IPAddress ip) {
+  String res = "";
+  for (int i = 0; i < 3; i++) {
+    res += String((ip >> (8 * i)) & 0xFF) + ".";
+  }
+  res += String(((ip >> 8 * 3)) & 0xFF);
+  return res;
+}
+
+/*
+ * Redirect to captive portal if we got a request for another domain.
+ * Return true in that case so the page handler do not try to handle the request again.
+ */
+bool captivePortal() {
+  if (!isIp(server.hostHeader()) && server.hostHeader() != (String(host_name) + ".local")) {
+//    Serial.println("Request redirected to captive portal");
+    server.sendHeader(String(F("Location")), String("http://") + toStringIp(server.client().localIP()), true);
+    server.send(302, "text/plain", "");   // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server.client().stop(); // Stop is needed because we sent no content length
+    return true;
+  }
+  return false;
+}
+
+void handleRoot() {
+
+  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+    return;
+  }
+
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send_P ( 200, PSTR("text/html"), root_html);
+    SoC->swSer_enableRx(true);
+}
 
 void handleSettings() {
 
@@ -810,7 +900,7 @@ void handleSettings() {
   free(Settings_temp);
 }
 
-void handleRoot() {
+void handleStatus() {
   int sec = millis() / 1000;
   int min = sec / 60;
   int hr = min / 60;
@@ -821,7 +911,7 @@ void handleRoot() {
   time_t timestamp = now();
   char str_Vcc[8];
 
-  size_t size = 2600;
+  size_t size = 2700;
   char *offset;
   size_t len = 0;
 
@@ -853,6 +943,7 @@ void handleRoot() {
   <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
   <tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>\
   <tr><th align=left>Display</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Storage</th><td align=right>%s</td></tr>\
   <tr><th align=left>Baro</th><td align=right>%s</td></tr>\
   <tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
     SoC->getChipId() & 0xFFFFFF, SKYWATCH_FIRMWARE_VERSION,
@@ -862,6 +953,7 @@ void handleRoot() {
     hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
     hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
     hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
+    hw_info.storage      == STORAGE_uSD      ? "uSD"     : "NONE",
     (baro_chip == NULL ? "NONE" : baro_chip->name),
     settings->m.connection == CON_SERIAL       ? "Serial" :
     settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
@@ -1125,6 +1217,10 @@ PSTR("<html>\
 
 void handleNotFound() {
 
+  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+    return;
+  }
+
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -1144,6 +1240,9 @@ void handleNotFound() {
 void Web_setup()
 {
   server.on ( "/", handleRoot );
+//  server.on ( "/generate_204", handleRoot); // Android captive portal.
+  server.on ( "/fwlink", handleRoot);       // Microsoft captive portal.
+  server.on ( "/status", handleStatus );
   server.on ( "/settings", handleSettings );
   server.on ( "/about", []() {
     SoC->swSer_enableRx(false);
@@ -1152,6 +1251,24 @@ void Web_setup()
     server.sendHeader(String(F("Expires")), String(F("-1")));
     server.send_P ( 200, PSTR("text/html"), about_html);
     SoC->swSer_enableRx(true);
+  } );
+  server.on ( "/service", []() {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send_P ( 200, PSTR("text/html"), service_html);
+    SoC->swSer_enableRx(true);
+    SoC->Service_Mode(true);
+  } );
+  server.on ( "/leave", []() {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send_P ( 200, PSTR("text/html"), leave_html);
+    SoC->swSer_enableRx(true);
+    SoC->Service_Mode(false);
   } );
 
   server.on ( "/input", handleInput );
@@ -1173,6 +1290,7 @@ void Web_setup()
 <body>\
 <body>\
  <h1 align=center>Firmware update</h1>\
+ <p align=center>(main board)</p>\
  <hr>\
  <table width=100%%>\
   <tr>\
@@ -1215,6 +1333,9 @@ $('form').submit(function(e){\
     </td>\
   </tr>\
  </table>\
+ <hr>\
+ <h1 align=center>Radio/GNSS board</h1>\
+ <p align=center><input type=button onClick=\"location.href='/service'\" value='Service Mode'></p>\
 </body>\
 </html>")
     );
@@ -1256,7 +1377,7 @@ $('form').submit(function(e){\
     yield();
   });
 
-#if 0
+#if !defined(NOLOGO)
   server.on ( "/logo.png", []() {
     server.send_P ( 200, "image/png", Logo, sizeof(Logo) );
   } );

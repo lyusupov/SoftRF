@@ -127,6 +127,7 @@ extern volatile bool BMA_Irq;
 extern PCF8563_Class *rtc;
 
 #define NMEA_TCP_SERVICE
+//#define USE_DNS_SERVER
 
 #define POWER_SAVING_WIFI_TIMEOUT 300000UL /* 5 minutes */
 

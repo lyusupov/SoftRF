@@ -113,7 +113,7 @@ typedef struct hardware_info {
     byte  gnss;
     byte  baro;
     byte  display;
-
+    byte  storage;
 } hardware_info_t;
 
 enum
@@ -261,6 +261,12 @@ enum
 
 enum
 {
+	STORAGE_NONE,
+	STORAGE_uSD
+};
+
+enum
+{
 	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
@@ -357,6 +363,7 @@ enum
 
 extern ufo_t ThisDevice;
 extern hardware_info_t hw_info;
+extern bool inServiceMode;
 
 extern void shutdown(const char *);
 

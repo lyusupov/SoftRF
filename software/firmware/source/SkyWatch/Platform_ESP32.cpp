@@ -961,6 +961,36 @@ static void ESP32_WDT_fini()
   disableLoopWDT();
 }
 
+static void ESP32_Service_Mode(boolean arg)
+{
+  if (arg) {
+//    Serial.begin(SERIAL_IN_BR, SERIAL_IN_BITS);
+     Serial.updateBaudRate(SERIAL_IN_BR);
+  WiFi_fini();
+    axp.setGPIOMode(AXP_GPIO_2, AXP_IO_OUTPUT_LOW_MODE);  // MCU_reset
+    delay(10);
+    axp.setGPIOMode(AXP_GPIO_1, AXP_IO_OUTPUT_HIGH_MODE); // BOOT0 high
+    delay(100);
+    axp.setGPIOMode(AXP_GPIO_2, AXP_IO_FLOATING_MODE);    // release MCU_reset (it has pull-up)
+    delay(500);
+    axp.setGPIOMode(AXP_GPIO_1, AXP_IO_FLOATING_MODE);    // release BOOT0 (it has pull-down)
+
+    inServiceMode = true;
+  } else {
+//    Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+    Serial.updateBaudRate(SERIAL_OUT_BR);
+    axp.setGPIOMode(AXP_GPIO_2, AXP_IO_OUTPUT_LOW_MODE);  // MCU_reset
+    delay(10);
+    axp.setGPIOMode(AXP_GPIO_1, AXP_IO_OUTPUT_LOW_MODE);  // BOOT0 low
+    delay(100);
+    axp.setGPIOMode(AXP_GPIO_2, AXP_IO_FLOATING_MODE);    // release MCU_reset (it has pull-up)
+    delay(500);
+    axp.setGPIOMode(AXP_GPIO_1, AXP_IO_FLOATING_MODE);    // release BOOT0 (it has pull-down)
+
+    inServiceMode = false;
+  }
+}
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
@@ -992,6 +1022,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Baro_setup,
   ESP32_WDT_setup,
   ESP32_WDT_fini,
+  ESP32_Service_Mode,
   &ESP32_Bluetooth_ops
 };
 

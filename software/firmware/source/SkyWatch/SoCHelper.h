@@ -55,6 +55,7 @@ typedef struct SoC_ops_struct {
   bool (*Baro_setup)();
   void (*WDT_setup)();
   void (*WDT_fini)();
+  void (*Service_Mode)(boolean);
   Bluetooth_ops_t *Bluetooth;
 } SoC_ops_t;
 

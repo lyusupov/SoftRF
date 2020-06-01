@@ -55,7 +55,8 @@ hardware_info_t hw_info = {
   .rf       = RF_IC_NONE,
   .gnss     = GNSS_MODULE_NONE,
   .baro     = BARO_MODULE_NONE,
-  .display  = DISPLAY_NONE
+  .display  = DISPLAY_NONE,
+  .storage  = STORAGE_NONE
 };
 
 #if DEBUG_POWER
@@ -82,12 +83,14 @@ void print_current(const char *s, bool d)
 }
 #endif
 
+bool inServiceMode = false;
+
 void setup()
 {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   delay(300);
-  Serial.begin(SERIAL_OUT_BR);
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   Serial.println();
 
   EEPROM_setup();
@@ -122,7 +125,9 @@ void setup()
     break;
   }
 
-  SoC->DB_init();
+  if (SoC->DB_init()) {
+    hw_info.storage = STORAGE_uSD;
+  }
 
   Web_setup();
   Traffic_setup();
@@ -131,6 +136,15 @@ void setup()
 }
 
 void loop()
+{
+  if (inServiceMode) {
+    service_loop();
+  } else {
+    normal_loop();
+  }
+}
+
+void normal_loop()
 {
   Baro_loop();
 
@@ -167,6 +181,36 @@ void loop()
   Battery_loop();
 
   yield();
+}
+
+void service_loop()
+{
+  bool bypass_inactive = true;
+
+  while (Serial.available() > 0) {
+    SerialInput.write(Serial.read());
+    bypass_inactive = false;
+  }
+  while (SerialInput.available() > 0) {
+    Serial.write(SerialInput.read());
+    bypass_inactive = false;
+  }
+  if (bypass_inactive) {
+//    TFT_loop();
+
+//    Traffic_ClearExpired();
+
+//    WiFi_loop();
+
+    // Handle Web
+//    Web_loop();
+
+    SoC->Button_loop();
+
+    SoC->loop();
+
+//    Battery_loop();
+  }
 }
 
 void shutdown(const char *msg)
