@@ -151,12 +151,12 @@ byte TFT_setup()
     tft->println(SoftRF_text);
 
     rval = DISPLAY_TFT_TTGO;
-  }
 
-  TFT_status_setup();
-  TFT_radar_setup();
-  TFT_text_setup();
-  TFT_time_setup();
+    TFT_status_setup();
+    TFT_radar_setup();
+    TFT_text_setup();
+    TFT_time_setup();
+  }
 
   return rval;
 }

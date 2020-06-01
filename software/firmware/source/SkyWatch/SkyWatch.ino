@@ -49,7 +49,7 @@
 
 ufo_t ThisDevice;
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_SKYWATCH,
+  .model    = SOFTRF_MODEL_WEBTOP,
   .revision = HW_REV_UNKNOWN,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
@@ -92,6 +92,14 @@ void setup()
   delay(300);
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   Serial.println();
+
+  Serial.println();
+  Serial.print(F(SKYWATCH_IDENT));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SKYWATCH_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
+  Serial.println(F("Copyright (C) 2019-2020 Linar Yusupov. All rights reserved."));
+  Serial.flush();
 
   EEPROM_setup();
 

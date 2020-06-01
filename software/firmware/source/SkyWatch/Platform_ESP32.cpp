@@ -165,9 +165,26 @@ static void ESP32_setup()
     {
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
       hw_info.model = SOFTRF_MODEL_SKYWATCH;
-      hw_info.revision = HW_REV_T_WATCH;
+      hw_info.revision = HW_REV_T_WATCH_19;
+      break;
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
+      hw_info.revision = HW_REV_T8;
       break;
     default:
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
+      hw_info.revision = HW_REV_UNKNOWN;
+      break;
+    }
+  } else {
+    switch(flash_id)
+    {
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q32):
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
+    default:
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_UNKNOWN;
       break;
     }
@@ -469,7 +486,11 @@ static int ESP32_WiFi_clients_count()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  SerialInput.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  SerialInput.begin(
+      baud,
+      hw_info.model == SOFTRF_MODEL_SKYWATCH ? SERIAL_IN_BITS : SERIAL_8N1,
+      SOC_GPIO_PIN_GNSS_RX,
+      SOC_GPIO_PIN_GNSS_TX);
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

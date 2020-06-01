@@ -208,7 +208,86 @@ void handleSettings() {
 <body>\
 <h1 align=center>Settings</h1>\
 <form action='/input' method='GET'>\
-<table width=100%%>\
+<table width=100%%>"));
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  if (hw_info.model == SOFTRF_MODEL_WEBTOP) {
+    /* SoC specific part 6 */
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Connection type</th>\
+<td align=right>\
+<select name='connection'>\
+<option %s value='%d'>Serial</option>\
+<!-- <option %s value='%d'>WiFi UDP</option>\
+<option %s value='%d'>Bluetooth SPP</option> -->\
+</select>\
+</td>\
+</tr>\
+<!-- <tr>\
+<th align=left>Protocol</th>\
+<td align=right>\
+<select name='protocol'>\
+<option %s value='%d'>NMEA</option>\
+<option %s value='%d'>GDL90</option>\
+</select>\
+</td>\
+</tr> -->\
+<tr>\
+<th align=left>Baud rate</th>\
+<td align=right>\
+<select name='baudrate'>\
+<option %s value='%d'>4800</option>\
+<option %s value='%d'>9600</option>\
+<option %s value='%d'>19200</option>\
+<option %s value='%d'>38400</option>\
+<option %s value='%d'>57600</option>"),
+    (settings->m.connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
+    (settings->m.connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
+    (settings->m.connection == CON_BLUETOOTH  ? "selected" : ""), CON_BLUETOOTH,
+    (settings->m.protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
+    (settings->m.protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
+    (settings->m.baudrate   == B4800          ? "selected" : ""), B4800,
+    (settings->m.baudrate   == B9600          ? "selected" : ""), B9600,
+    (settings->m.baudrate   == B19200         ? "selected" : ""), B19200,
+    (settings->m.baudrate   == B38400         ? "selected" : ""), B38400,
+    (settings->m.baudrate   == B57600         ? "selected" : ""), B57600
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+
+    /* SoC specific part 7 */
+    if (SoC->id == SOC_ESP32) {
+      snprintf_P ( offset, size,
+        PSTR("\
+<option %s value='%d'>115200</option>\
+<option %s value='%d'>2000000</option>"),
+      (settings->m.baudrate   == B115200        ? "selected" : ""), B115200,
+      (settings->m.baudrate   == B2000000       ? "selected" : ""), B2000000
+      );
+      len = strlen(offset);
+      offset += len;
+      size -= len;
+    }
+
+    snprintf_P ( offset, size,
+      PSTR("</select></td></tr><tr><th>&nbsp;</th><td>&nbsp;</td></tr>"));
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+#if 0
+  /* Common part 2 */
+  snprintf_P ( offset, size,
+    PSTR("\
 <!-- <tr>\
 <th align=left>Mode</th>\
 <td align=right>\
@@ -230,6 +309,7 @@ void handleSettings() {
   len = strlen(offset);
   offset += len;
   size -= len;
+#endif
 
   /* Radio specific part */
   if (hw_info.rf == RF_IC_SX1276) {
@@ -608,69 +688,16 @@ void handleSettings() {
 <input type='radio' name='no_track' value='0' %s>Off\
 <input type='radio' name='no_track' value='1' %s>On\
 </td>\
-</tr>\
-<tr><th>&nbsp;</th><td>&nbsp;</td></tr>\
-<!-- <tr>\
-<th align=left>Connection type</th>\
-<td align=right>\
-<select name='connection'>\
-<option %s value='%d'>Serial</option>\
-<option %s value='%d'>WiFi UDP</option>\
-<option %s value='%d'>Bluetooth SPP</option>\
-</select>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>Protocol</th>\
-<td align=right>\
-<select name='protocol'>\
-<option %s value='%d'>NMEA</option>\
-<option %s value='%d'>GDL90</option>\
-</select>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>Baud rate</th>\
-<td align=right>\
-<select name='baudrate'>\
-<option %s value='%d'>4800</option>\
-<option %s value='%d'>9600</option>\
-<option %s value='%d'>19200</option>\
-<option %s value='%d'>38400</option>\
-<option %s value='%d'>57600</option>"),
+</tr>"),
   (settings->s.power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
   (settings->s.power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
   (!settings->s.stealth ? "checked" : "") , (settings->s.stealth ? "checked" : ""),
-  (!settings->s.no_track ? "checked" : "") , (settings->s.no_track ? "checked" : ""),
-  (settings->m.connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
-  (settings->m.connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
-  (settings->m.connection == CON_BLUETOOTH  ? "selected" : ""), CON_BLUETOOTH,
-  (settings->m.protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
-  (settings->m.protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
-  (settings->m.baudrate   == B4800          ? "selected" : ""), B4800,
-  (settings->m.baudrate   == B9600          ? "selected" : ""), B9600,
-  (settings->m.baudrate   == B19200         ? "selected" : ""), B19200,
-  (settings->m.baudrate   == B38400         ? "selected" : ""), B38400,
-  (settings->m.baudrate   == B57600         ? "selected" : ""), B57600
+  (!settings->s.no_track ? "checked" : "") , (settings->s.no_track ? "checked" : "")
   );
 
   len = strlen(offset);
   offset += len;
   size -= len;
-
-  /* SoC specific part 6 */
-  if (SoC->id == SOC_ESP32) {
-    snprintf_P ( offset, size,
-      PSTR("\
-<option %s value='%d'>115200</option>\
-<option %s value='%d'>2000000</option>"),
-    (settings->m.baudrate   == B115200        ? "selected" : ""), B115200,
-    (settings->m.baudrate   == B2000000       ? "selected" : ""), B2000000
-    );
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
 
 #if 0
     /* Common part 7 */
@@ -717,7 +744,7 @@ void handleSettings() {
  */
 
 #if 0
-  /* SoC specific part 7 */
+  /* SoC specific part 8 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
       PSTR("\
@@ -742,12 +769,11 @@ void handleSettings() {
   }
 #endif
 
-  /* Common part 8 */
-  snprintf_P ( offset, size,
-    PSTR("\
-</select>\
-</td>\
-</tr> -->\
+  if (hw_info.display != DISPLAY_NONE) {
+    /* SoC specific part 9 */
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr><th>&nbsp;</th><td>&nbsp;</td></tr>\
 <tr>\
 <th align=left>Units</th>\
 <td align=right>\
@@ -810,37 +836,37 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
-  (settings->m.units == UNITS_METRIC     ? "selected" : ""), UNITS_METRIC,
-  (settings->m.units == UNITS_IMPERIAL   ? "selected" : ""), UNITS_IMPERIAL,
-  (settings->m.units == UNITS_MIXED      ? "selected" : ""), UNITS_MIXED,
-  (settings->m.vmode == VIEW_MODE_STATUS ? "selected" : ""), VIEW_MODE_STATUS,
-  (settings->m.vmode == VIEW_MODE_RADAR  ? "selected" : ""), VIEW_MODE_RADAR,
-  (settings->m.vmode == VIEW_MODE_TEXT   ? "selected" : ""), VIEW_MODE_TEXT,
-  (settings->m.vmode == VIEW_MODE_TIME   ? "selected" : ""), VIEW_MODE_TIME,
-  (settings->m.orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
-  (settings->m.orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
-  (settings->m.zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,
-  (settings->m.zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
-  (settings->m.zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
-  (settings->m.zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
-  (settings->m.adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
-  (settings->m.adb == DB_FLN       ? "selected" : ""), DB_FLN,
-  (settings->m.adb == DB_OGN       ? "selected" : ""), DB_OGN,
-  (settings->m.adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
-  (settings->m.idpref == ID_REG    ? "selected" : ""), ID_REG,
-  (settings->m.idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
-  (settings->m.idpref == ID_MAM    ? "selected" : ""), ID_MAM
-  );
+    (settings->m.units == UNITS_METRIC     ? "selected" : ""), UNITS_METRIC,
+    (settings->m.units == UNITS_IMPERIAL   ? "selected" : ""), UNITS_IMPERIAL,
+    (settings->m.units == UNITS_MIXED      ? "selected" : ""), UNITS_MIXED,
+    (settings->m.vmode == VIEW_MODE_STATUS ? "selected" : ""), VIEW_MODE_STATUS,
+    (settings->m.vmode == VIEW_MODE_RADAR  ? "selected" : ""), VIEW_MODE_RADAR,
+    (settings->m.vmode == VIEW_MODE_TEXT   ? "selected" : ""), VIEW_MODE_TEXT,
+    (settings->m.vmode == VIEW_MODE_TIME   ? "selected" : ""), VIEW_MODE_TIME,
+    (settings->m.orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
+    (settings->m.orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+    (settings->m.zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,
+    (settings->m.zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
+    (settings->m.zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
+    (settings->m.zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
+    (settings->m.adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
+    (settings->m.adb == DB_FLN       ? "selected" : ""), DB_FLN,
+    (settings->m.adb == DB_OGN       ? "selected" : ""), DB_OGN,
+    (settings->m.adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
+    (settings->m.idpref == ID_REG    ? "selected" : ""), ID_REG,
+    (settings->m.idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
+    (settings->m.idpref == ID_MAM    ? "selected" : ""), ID_MAM
+    );
 
-  len = strlen(offset);
-  offset += len;
-  size -= len;
+    len = strlen(offset);
+    offset += len;
+    size -= len;
 
 #if 0
-  /* SoC specific part 8 */
-  if (SoC->id == SOC_ESP32) {
-    snprintf_P ( offset, size,
-      PSTR("\
+    /* SoC specific part 10 */
+    if (SoC->id == SOC_ESP32) {
+      snprintf_P ( offset, size,
+        PSTR("\
 <tr>\
 <th align=left>Voice</th>\
 <td align=right>\
@@ -852,19 +878,21 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
-    (settings->m.voice == VOICE_OFF  ? "selected" : ""), VOICE_OFF,
-    (settings->m.voice == VOICE_1    ? "selected" : ""), VOICE_1,
-    (settings->m.voice == VOICE_2    ? "selected" : ""), VOICE_2,
-    (settings->m.voice == VOICE_3    ? "selected" : ""), VOICE_3
-    );
+      (settings->m.voice == VOICE_OFF  ? "selected" : ""), VOICE_OFF,
+      (settings->m.voice == VOICE_1    ? "selected" : ""), VOICE_1,
+      (settings->m.voice == VOICE_2    ? "selected" : ""), VOICE_2,
+      (settings->m.voice == VOICE_3    ? "selected" : ""), VOICE_3
+      );
 
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
+      len = strlen(offset);
+      offset += len;
+      size -= len;
+    }
 #endif
 
-  /* Common part 9 */
+  } /* hw_info.display != DISPLAY_NONE */
+
+  /* Common part 8 */
   snprintf_P ( offset, size,
     PSTR("\
 <!-- <tr>\
