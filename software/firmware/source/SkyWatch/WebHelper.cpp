@@ -99,6 +99,7 @@ Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
+#if defined(EXPERIMENTAL)
 static const char service_html[] PROGMEM = "<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -184,6 +185,7 @@ void handleRoot() {
     server.send_P ( 200, PSTR("text/html"), root_html);
     SoC->swSer_enableRx(true);
 }
+#endif /* EXPERIMENTAL */
 
 void handleSettings() {
 
@@ -219,11 +221,12 @@ void handleSettings() {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
-<th align=left>Connection type</th>\
+<th align=left>Connection port</th>\
 <td align=right>\
 <select name='connection'>\
-<option %s value='%d'>Serial</option>\
-<!-- <option %s value='%d'>WiFi UDP</option>\
+<option %s value='%d'>MAIN</option>\
+<option %s value='%d'>AUX</option>\
+<!--<option %s value='%d'>WiFi UDP</option>\
 <option %s value='%d'>Bluetooth SPP</option> -->\
 </select>\
 </td>\
@@ -246,16 +249,17 @@ void handleSettings() {
 <option %s value='%d'>19200</option>\
 <option %s value='%d'>38400</option>\
 <option %s value='%d'>57600</option>"),
-    (settings->m.connection == CON_SERIAL     ? "selected" : ""), CON_SERIAL,
-    (settings->m.connection == CON_WIFI_UDP   ? "selected" : ""), CON_WIFI_UDP,
-    (settings->m.connection == CON_BLUETOOTH  ? "selected" : ""), CON_BLUETOOTH,
-    (settings->m.protocol   == PROTOCOL_NMEA  ? "selected" : ""), PROTOCOL_NMEA,
-    (settings->m.protocol   == PROTOCOL_GDL90 ? "selected" : ""), PROTOCOL_GDL90,
-    (settings->m.baudrate   == B4800          ? "selected" : ""), B4800,
-    (settings->m.baudrate   == B9600          ? "selected" : ""), B9600,
-    (settings->m.baudrate   == B19200         ? "selected" : ""), B19200,
-    (settings->m.baudrate   == B38400         ? "selected" : ""), B38400,
-    (settings->m.baudrate   == B57600         ? "selected" : ""), B57600
+    (settings->m.connection == CON_SERIAL_MAIN  ? "selected" : ""), CON_SERIAL_MAIN,
+    (settings->m.connection == CON_SERIAL_AUX   ? "selected" : ""), CON_SERIAL_AUX,
+    (settings->m.connection == CON_WIFI_UDP     ? "selected" : ""), CON_WIFI_UDP,
+    (settings->m.connection == CON_BLUETOOTH    ? "selected" : ""), CON_BLUETOOTH,
+    (settings->m.protocol   == PROTOCOL_NMEA    ? "selected" : ""), PROTOCOL_NMEA,
+    (settings->m.protocol   == PROTOCOL_GDL90   ? "selected" : ""), PROTOCOL_GDL90,
+    (settings->m.baudrate   == B4800            ? "selected" : ""), B4800,
+    (settings->m.baudrate   == B9600            ? "selected" : ""), B9600,
+    (settings->m.baudrate   == B19200           ? "selected" : ""), B19200,
+    (settings->m.baudrate   == B38400           ? "selected" : ""), B38400,
+    (settings->m.baudrate   == B57600           ? "selected" : ""), B57600
     );
 
     len = strlen(offset);
@@ -985,7 +989,8 @@ void handleStatus() {
     hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
     hw_info.storage      == STORAGE_uSD      ? "uSD"     : "NONE",
     (baro_chip == NULL ? "NONE" : baro_chip->name),
-    settings->m.connection == CON_SERIAL       ? "Serial" :
+    settings->m.connection == CON_SERIAL_MAIN  ? "Main Serial" :
+    settings->m.connection == CON_SERIAL_AUX   ? "AUX Serial" :
     settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
     settings->m.connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
   );
@@ -1009,7 +1014,8 @@ void handleStatus() {
     len = strlen(offset);
     offset += len;
     size -= len;
-  case CON_SERIAL:
+  case CON_SERIAL_MAIN:
+  case CON_SERIAL_AUX:
   case CON_BLUETOOTH:
     switch (settings->m.protocol)
     {
@@ -1246,11 +1252,11 @@ PSTR("<html>\
 }
 
 void handleNotFound() {
-
+#if defined(EXPERIMENTAL)
   if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
     return;
   }
-
+#endif /* EXPERIMENTAL */
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -1269,10 +1275,14 @@ void handleNotFound() {
 
 void Web_setup()
 {
+#if defined(EXPERIMENTAL)
   server.on ( "/", handleRoot );
 //  server.on ( "/generate_204", handleRoot); // Android captive portal.
   server.on ( "/fwlink", handleRoot);       // Microsoft captive portal.
   server.on ( "/status", handleStatus );
+#else
+  server.on ( "/", handleStatus );
+#endif /* EXPERIMENTAL */
   server.on ( "/settings", handleSettings );
   server.on ( "/about", []() {
     SoC->swSer_enableRx(false);
@@ -1282,6 +1292,7 @@ void Web_setup()
     server.send_P ( 200, PSTR("text/html"), about_html);
     SoC->swSer_enableRx(true);
   } );
+#if defined(EXPERIMENTAL)
   server.on ( "/service", []() {
     SoC->swSer_enableRx(false);
     server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
@@ -1300,7 +1311,7 @@ void Web_setup()
     SoC->swSer_enableRx(true);
     SoC->Service_Mode(false);
   } );
-
+#endif /* EXPERIMENTAL */
   server.on ( "/input", handleInput );
   server.on ( "/inline", []() {
     server.send ( 200, "text/plain", "this works as well" );
@@ -1320,7 +1331,7 @@ void Web_setup()
 <body>\
 <body>\
  <h1 align=center>Firmware update</h1>\
- <p align=center>(main board)</p>\
+ <!--<p align=center>(main board)</p>-->\
  <hr>\
  <table width=100%%>\
   <tr>\
@@ -1363,9 +1374,9 @@ $('form').submit(function(e){\
     </td>\
   </tr>\
  </table>\
- <hr>\
+<!--<hr>\
  <h1 align=center>Radio/GNSS board</h1>\
- <p align=center><input type=button onClick=\"location.href='/service'\" value='Service Mode'></p>\
+ <p align=center><input type=button onClick=\"location.href='/service'\" value='Service Mode'></p>-->\
 </body>\
 </html>")
     );

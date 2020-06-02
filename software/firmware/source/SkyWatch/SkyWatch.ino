@@ -120,6 +120,15 @@ void setup()
      SoC->Bluetooth->setup();
   }
 
+  if (SoC->DB_init()) {
+    hw_info.storage = STORAGE_uSD;
+  }
+
+  Web_setup();
+  Traffic_setup();
+
+  Serial.flush();
+
   switch (settings->m.protocol)
   {
   case PROTOCOL_GDL90:
@@ -130,13 +139,6 @@ void setup()
     NMEA_setup();
     break;
   }
-
-  if (SoC->DB_init()) {
-    hw_info.storage = STORAGE_uSD;
-  }
-
-  Web_setup();
-  Traffic_setup();
 
   SoC->WDT_setup();
 }

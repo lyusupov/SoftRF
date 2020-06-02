@@ -167,6 +167,10 @@ static int ESP8266_WiFi_clients_count()
 static void ESP8266_swSer_begin(unsigned long baud)
 {
   SerialInput.begin(baud, SERIAL_8N1);
+
+  if (settings->m.connection == CON_SERIAL_AUX) {
+    SerialInput.swap();
+  }
 }
 
 static void ESP8266_swSer_enableRx(boolean arg)

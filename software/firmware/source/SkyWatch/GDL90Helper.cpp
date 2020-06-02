@@ -219,7 +219,8 @@ void GDL90_setup()
 
     switch (settings->m.connection)
     {
-    case CON_SERIAL:
+    case CON_SERIAL_MAIN:
+    case CON_SERIAL_AUX:
       uint32_t SerialBaud;
 
       switch (settings->m.baudrate)
@@ -271,24 +272,21 @@ void GDL90_loop()
 
   switch (settings->m.connection)
   {
-  case CON_SERIAL:
+  case CON_SERIAL_MAIN:
     while (SerialInput.available() > 0) {
       char c = SerialInput.read();
 //      Serial.print(c);
       GDL90_Parse_Character(c);
       GDL90_Data_TimeMarker = millis();
     }
+    break;
+  case CON_SERIAL_AUX:
     /* read data from microUSB port */
-#if !defined(RASPBERRY_PI)
-    if (Serial != SerialInput)
-#endif
-    {
-      while (Serial.available() > 0) {
-        char c = Serial.read();
+    while (Serial.available() > 0) {
+      char c = Serial.read();
 //        Serial.print(c);
-        GDL90_Parse_Character(c);
-        GDL90_Data_TimeMarker = millis();
-      }
+      GDL90_Parse_Character(c);
+      GDL90_Data_TimeMarker = millis();
     }
     break;
   case CON_WIFI_UDP:

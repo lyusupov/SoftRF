@@ -484,11 +484,15 @@ static int ESP32_WiFi_clients_count()
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  SerialInput.begin(
-      baud,
-      hw_info.model == SOFTRF_MODEL_SKYWATCH ? SERIAL_IN_BITS : SERIAL_8N1,
-      SOC_GPIO_PIN_GNSS_RX,
-      SOC_GPIO_PIN_GNSS_TX);
+  if (settings->m.connection == CON_SERIAL_MAIN) {
+    SerialInput.begin(
+        baud,
+        hw_info.model == SOFTRF_MODEL_SKYWATCH ? SERIAL_IN_BITS : SERIAL_8N1,
+        SOC_GPIO_PIN_GNSS_RX,
+        SOC_GPIO_PIN_GNSS_TX);
+  } else {
+    Serial.updateBaudRate(baud);
+  }
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

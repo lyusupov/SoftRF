@@ -92,7 +92,7 @@ void EEPROM_defaults()
   /* SkyView defaults */
   eeprom_block.field.settings.m.adapter         = ADAPTER_NONE;
 
-  eeprom_block.field.settings.m.connection      = CON_SERIAL;
+  eeprom_block.field.settings.m.connection      = CON_SERIAL_MAIN;
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
     eeprom_block.field.settings.m.baudrate      = B115200; /* S76G AN3155 BR */
   } else {

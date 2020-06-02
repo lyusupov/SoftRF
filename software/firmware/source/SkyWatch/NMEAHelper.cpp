@@ -279,7 +279,8 @@ void NMEA_setup()
   if (settings->m.protocol == PROTOCOL_NMEA) {
     switch (settings->m.connection)
     {
-    case CON_SERIAL:
+    case CON_SERIAL_MAIN:
+    case CON_SERIAL_AUX:
       uint32_t SerialBaud;
 
       switch (settings->m.baudrate)
@@ -343,24 +344,21 @@ void NMEA_loop()
 
   switch (settings->m.connection)
   {
-  case CON_SERIAL:
+  case CON_SERIAL_MAIN:
     while (SerialInput.available() > 0) {
       c = SerialInput.read();
 //      Serial.print(c);
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
+    break;
+  case CON_SERIAL_AUX:
     /* read data from Type-C USB port */
-#if !defined(RASPBERRY_PI)
-    if ((void *) &Serial != (void *) &SerialInput)
-#endif
-    {
-      while (Serial.available() > 0) {
-        c = Serial.read();
+    while (Serial.available() > 0) {
+      c = Serial.read();
 //        Serial.print(c);
-        NMEA_Parse_Character(c);
-        NMEA_TimeMarker = millis();
-      }
+      NMEA_Parse_Character(c);
+      NMEA_TimeMarker = millis();
     }
     break;
   case CON_WIFI_UDP:
