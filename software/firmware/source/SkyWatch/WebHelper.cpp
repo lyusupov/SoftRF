@@ -312,13 +312,14 @@ void handleSettings() {
 #endif
 
   /* Radio specific part */
-  if (hw_info.rf == RF_IC_SX1276) {
+  if (hw_info.rf == RF_IC_SX1276) {  /* + RF_IC_CC13XX */
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
 <th align=left>Protocol</th>\
 <td align=right>\
 <select name='protocol'>\
+<option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
@@ -332,6 +333,8 @@ void handleSettings() {
      RF_PROTOCOL_OGNTP, "OGNTP",
     (settings->s.rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""),
      RF_PROTOCOL_P3I, "P3I",
+    (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT ? "selected" : ""),
+     RF_PROTOCOL_ADSB_UAT, "UAT",
     (settings->s.rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""),
      RF_PROTOCOL_FANET, "FANET"
     );
@@ -345,8 +348,7 @@ void handleSettings() {
 </tr>"),
     (settings->s.rf_protocol == RF_PROTOCOL_LEGACY   ? "Legacy" :
     (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT ? "UAT" :
-    (settings->s.rf_protocol == RF_PROTOCOL_FANET    ? "FANET"  :
-     "UNK")))
+     "UNK"))
     );
   }
   len = strlen(offset);

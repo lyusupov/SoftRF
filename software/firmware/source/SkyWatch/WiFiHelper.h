@@ -23,7 +23,7 @@
 #include <WiFiUdp.h>
 #endif
 
-#include "SkyWatch.h"
+#include "SoCHelper.h"
 
 #define HOSTNAME            "SkyWatch-"
 #define UDP_PACKET_BUFSIZE  256

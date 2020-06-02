@@ -26,8 +26,6 @@
 #include "TrafficHelper.h"
 #include "WiFiHelper.h"
 
-#include "SkyWatch.h"
-
 extern "C" {
 #include <gdl90.h>
 }

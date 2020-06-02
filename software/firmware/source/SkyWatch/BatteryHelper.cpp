@@ -16,13 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO)
-#include <Arduino.h>
-#endif /* ARDUINO */
-
 #include "SoCHelper.h"
 #include "BatteryHelper.h"
-#include "SkyWatch.h"
 
 unsigned long Battery_TimeMarker = 0;
 static int Battery_cutoff_count = 0;

@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if !defined(EXCLUDE_TFT)
+
 #include "TFTHelper.h"
 
 #include <TimeLib.h>
@@ -24,8 +28,6 @@
 #include "EEPROMHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
-
-#include "SkyWatch.h"
 
 static int TFT_current = 1;
 
@@ -352,3 +354,4 @@ void TFT_text_prev()
     TFT_current--;
   }
 }
+#endif /* EXCLUDE_TFT */

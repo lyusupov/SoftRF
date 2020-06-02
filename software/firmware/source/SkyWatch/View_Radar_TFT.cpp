@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if !defined(EXCLUDE_TFT)
+
 #include "TFTHelper.h"
 
 #include <TimeLib.h>
@@ -25,8 +29,6 @@
 #include "EEPROMHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
-
-#include "SkyWatch.h"
 
 static int TFT_zoom = ZOOM_MEDIUM;
 
@@ -336,3 +338,4 @@ void TFT_radar_unzoom()
 {
   if (TFT_zoom > ZOOM_LOWEST) TFT_zoom--;
 }
+#endif /* EXCLUDE_TFT */

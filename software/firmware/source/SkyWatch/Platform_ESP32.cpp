@@ -31,8 +31,6 @@
 #include "BluetoothHelper.h"
 #include "BatteryHelper.h"
 
-#include "SkyWatch.h"
-
 #include <battery.h>
 #include <sqlite3.h>
 #include <SD.h>

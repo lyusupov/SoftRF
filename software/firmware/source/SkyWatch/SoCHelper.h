@@ -21,6 +21,8 @@
 
 #define SOC_UNUSED_PIN 255
 
+#include "SkyWatch.h"
+#include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
 #include "BluetoothHelper.h"
 

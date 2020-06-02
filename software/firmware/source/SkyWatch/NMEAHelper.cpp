@@ -25,8 +25,6 @@
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
 
-#include "SkyWatch.h"
-
 TinyGPSPlus nmea;
 
 TinyGPSCustom T_AlarmLevel      (nmea, "PFLAA", 1);
@@ -406,6 +404,7 @@ void NMEA_loop()
     PGRMZ_TimeMarker = millis();
   }
 
+#if !defined(EXCLUDE_RTC)
   if (!RTC_sync) {
     if (rtc &&
         nmea.date.isValid()     &&
@@ -418,6 +417,7 @@ void NMEA_loop()
       RTC_sync = true;
     }
   }
+#endif /* EXCLUDE_RTC */
 
 #if defined(NMEA_TCP_SERVICE)
   uint8_t i;

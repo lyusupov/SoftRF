@@ -25,8 +25,6 @@
 #include <protocol.h>
 #include <freqplan.h>
 
-#include "SkyWatch.h"
-
 // start reading from the first byte (address 0) of the EEPROM
 
 eeprom_t eeprom_block;
@@ -95,7 +93,11 @@ void EEPROM_defaults()
   eeprom_block.field.settings.m.adapter         = ADAPTER_NONE;
 
   eeprom_block.field.settings.m.connection      = CON_SERIAL;
-  eeprom_block.field.settings.m.baudrate        = B115200; /* S76G AN3155 BR */
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
+    eeprom_block.field.settings.m.baudrate      = B115200; /* S76G AN3155 BR */
+  } else {
+    eeprom_block.field.settings.m.baudrate      = B38400;
+  }
   eeprom_block.field.settings.m.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.m.orientation     = DIRECTION_NORTH_UP;
 

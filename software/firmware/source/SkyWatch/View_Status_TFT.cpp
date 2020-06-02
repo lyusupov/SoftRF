@@ -16,12 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if !defined(EXCLUDE_TFT)
+
 #include "TFTHelper.h"
 #include "TrafficHelper.h"
 #include "BatteryHelper.h"
 #include <protocol.h>
-
-#include "SkyWatch.h"
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
@@ -159,3 +161,4 @@ void TFT_status_prev()
 {
 
 }
+#endif /* EXCLUDE_TFT */

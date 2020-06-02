@@ -23,8 +23,6 @@
 #include "NMEAHelper.h"
 #include "EEPROMHelper.h"
 
-#include "SkyWatch.h"
-
 traffic_t ThisAircraft, Container[MAX_TRACKING_OBJECTS], fo, EmptyFO;
 traffic_by_dist_t traffic[MAX_TRACKING_OBJECTS];
 

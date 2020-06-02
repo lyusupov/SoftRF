@@ -24,8 +24,6 @@
 #include "SoCHelper.h"
 #include "BaroHelper.h"
 
-#include "SkyWatch.h"
-
 barochip_ops_t *baro_chip = NULL;
 
 Adafruit_BMP085 bmp180;

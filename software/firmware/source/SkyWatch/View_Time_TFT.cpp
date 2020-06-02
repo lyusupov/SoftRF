@@ -16,12 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if !defined(EXCLUDE_TFT)
+
 #include "TFTHelper.h"
 #include "TrafficHelper.h"
 #include "BatteryHelper.h"
 #include <protocol.h>
 
-#include "SkyWatch.h"
 
 const char NOTIME_text[] = "-- : -- : --";
 const char TZ_text[]     = "UTC";
@@ -88,3 +91,4 @@ void TFT_time_prev()
 {
 
 }
+#endif /* EXCLUDE_TFT */

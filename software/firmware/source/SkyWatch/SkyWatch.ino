@@ -45,8 +45,6 @@
 #include "TFTHelper.h"
 #include "BaroHelper.h"
 
-#include "SkyWatch.h"
-
 ufo_t ThisDevice;
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_WEBTOP,

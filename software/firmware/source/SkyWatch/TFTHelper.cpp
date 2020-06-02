@@ -16,18 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SoCHelper.h"
+
+#if defined(EXCLUDE_TFT)
+byte TFT_setup()                  {return DISPLAY_NONE;}
+void TFT_loop()                   {}
+void TFT_fini(const char *msg)    {}
+#else
+
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
 #include <FT5206.h>
 
-#include "SoCHelper.h"
 #include "TFTHelper.h"
 #include "EEPROMHelper.h"
 #include "TrafficHelper.h"
 #include "BaroHelper.h"
-
-#include "SkyWatch.h"
 
 TFT_eSPI *tft = NULL;
 TFT_eSprite *sprite = NULL;
@@ -410,3 +415,4 @@ void TFT_Message(const char *msg1, const char *msg2)
     }
   }
 }
+#endif /* EXCLUDE_TFT */

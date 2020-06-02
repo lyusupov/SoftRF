@@ -19,6 +19,10 @@
 #ifndef SKYWATCH_H
 #define SKYWATCH_H
 
+#if defined(ARDUINO)
+#include <Arduino.h>
+#endif /* ARDUINO */
+
 #define SKYWATCH_FIRMWARE_VERSION  "0.9"
 #define SKYWATCH_IDENT    "SkyWatch-"
 

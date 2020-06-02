@@ -25,7 +25,7 @@
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 
-#include "SkyWatch.h"
+#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 
 #define BOOL_STR(x) (x ? "true":"false")
