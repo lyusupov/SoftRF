@@ -25,7 +25,6 @@
 
 #include "SoCHelper.h"
 
-#define HOSTNAME            "SkyWatch-"
 #define UDP_PACKET_BUFSIZE  256
 
 enum
@@ -39,7 +38,6 @@ void WiFi_setup(void);
 void WiFi_loop(void);
 void WiFi_fini(void);
 
-extern String host_name;
 #if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
 extern WiFiUDP Uni_Udp;
 #endif

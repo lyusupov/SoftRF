@@ -33,7 +33,7 @@
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;
 
-String host_name = HOSTNAME;
+String host_name;
 
 IPAddress local_IP(192,168,1,1);
 IPAddress gateway(192,168,1,1);
@@ -212,6 +212,9 @@ void WiFi_setup()
   }
 
   // Set Hostname.
+  host_name += hw_info.model == SOFTRF_MODEL_SKYWATCH ?
+                                SKYWATCH_IDENT : SOFTRF_IDENT;
+  host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
   SoC->WiFi_hostname(host_name);
 

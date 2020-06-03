@@ -41,8 +41,6 @@
 
 #include "esp_gap_bt_api.h"
 
-#include "WiFiHelper.h"   // HOSTNAME
-
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
@@ -50,7 +48,7 @@ bool oldDeviceConnected = false;
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
 BluetoothSerial SerialBT;
-String BT_name = HOSTNAME;
+String BT_name;
 
 static unsigned long BLE_Notify_TimeMarker = 0;
 static unsigned long BLE_Advertising_TimeMarker = 0;
@@ -83,6 +81,9 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 static void ESP32_Bluetooth_setup()
 {
 
+  BT_name += hw_info.model == SOFTRF_MODEL_SKYWATCH ?
+                                SKYWATCH_IDENT : SOFTRF_IDENT;
+  BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   switch(settings->s.bluetooth)

@@ -494,6 +494,13 @@ bool NMEA_hasFLARM()
   return (S_RX.isValid() && S_RX.age() < NMEA_EXP_TIME);
 }
 
+bool NMEA_has3DFix()
+{
+  return (S_GPS.isValid()                       &&
+          S_GPS.age() < NMEA_EXP_TIME           &&
+          NMEA_Status.GPS == GNSS_STATUS_3D_MOVING);
+}
+
 void NMEA_Out(byte *buf, size_t size, bool nl)
 {
   switch(settings->s.nmea_out)

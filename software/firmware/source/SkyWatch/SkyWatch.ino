@@ -92,7 +92,8 @@ void setup()
   Serial.println();
 
   Serial.println();
-  Serial.print(F(SKYWATCH_IDENT));
+  Serial.print(hw_info.model == SOFTRF_MODEL_SKYWATCH ?
+                                F(SKYWATCH_IDENT "-") : F(SOFTRF_IDENT "-"));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYWATCH_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
@@ -145,9 +146,12 @@ void setup()
 
 void loop()
 {
+#if defined(EXPERIMENTAL)
   if (inServiceMode) {
     service_loop();
-  } else {
+  } else
+#endif /* EXPERIMENTAL */
+  {
     normal_loop();
   }
 }
@@ -191,6 +195,7 @@ void normal_loop()
   yield();
 }
 
+#if defined(EXPERIMENTAL)
 void service_loop()
 {
   bool bypass_inactive = true;
@@ -220,6 +225,7 @@ void service_loop()
 //    Battery_loop();
   }
 }
+#endif /* EXPERIMENTAL */
 
 void shutdown(const char *msg)
 {

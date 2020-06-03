@@ -959,36 +959,56 @@ void handleStatus() {
 
   snprintf_P ( offset, size,
     PSTR("<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>SkyWatch status</title>\
-  </head>\
+<head>\
+  <meta name='viewport' content='width=device-width, initial-scale=1'>\
+  <title>%s status</title>\
+</head>\
 <body>\
- <table width=100%%>\
+<table width=100%%>\
   <tr><!-- <td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td> -->\
-  <td align=center><h1>SkyWatch status</h1></td>\
+  <td align=center><h1>%s status</h1></td>\
   <!-- <td align=right><img src='/logo.png'></td> --></tr>\
- </table>\
- <table width=100%%>\
-  <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
-  <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
-  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
-  <tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>\
-  <tr><th align=left>Display</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Storage</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Baro</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
+</table>\
+<table width=100%%>\
+<tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
+<tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
+<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
+<tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
+<tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
+<tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>"),
+    hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
+    hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
     SoC->getChipId() & 0xFFFFFF, SKYWATCH_FIRMWARE_VERSION,
     (SoC == NULL ? "NONE" : SoC->name),
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
-    low_voltage ? "red" : "green", str_Vcc,
-    hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
-    hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
-    hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
-    hw_info.storage      == STORAGE_uSD      ? "uSD"     : "NONE",
-    (baro_chip == NULL ? "NONE" : baro_chip->name),
+    low_voltage ? "red" : "green", str_Vcc
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
+
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr><th align=left>Display</th><td align=right>%s</td></tr>\
+<tr><th align=left>Storage</th><td align=right>%s</td></tr>\
+<tr><th align=left>Baro</th><td align=right>%s</td></tr>"),
+      hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
+      hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
+      hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
+      hw_info.storage      == STORAGE_uSD      ? "uSD"     : "NONE",
+      (baro_chip == NULL ? "NONE" : baro_chip->name)
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  snprintf_P ( offset, size,
+    PSTR("<tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
     settings->m.connection == CON_SERIAL_MAIN  ? "Main Serial" :
     settings->m.connection == CON_SERIAL_AUX   ? "AUX Serial" :
     settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
@@ -1004,9 +1024,9 @@ void handleStatus() {
   case CON_WIFI_UDP:
     snprintf_P ( offset, size,
       PSTR("\
-  <tr><th align=left>Link partner</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Link status</th><td align=right>%s established</td></tr>\
-  <tr><th align=left>Assigned IP address</th><td align=right>%s</td></tr>"),
+<tr><th align=left>Link partner</th><td align=right>%s</td></tr>\
+<tr><th align=left>Link status</th><td align=right>%s established</td></tr>\
+<tr><th align=left>Assigned IP address</th><td align=right>%s</td></tr>"),
       settings->m.ssid && strlen(settings->m.ssid) > 0 ? settings->m.ssid : "NOT SET",
       WiFi.status() == WL_CONNECTED ? "" : "not",
       WiFi.localIP().toString().c_str()
@@ -1022,9 +1042,8 @@ void handleStatus() {
     case PROTOCOL_GDL90:
       snprintf_P ( offset, size,
         PSTR("\
-  <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
-  <tr><th align=left>Data type</th><td align=right>%s %s</td></tr>\
-  "),
+<tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
+<tr><th align=left>Data type</th><td align=right>%s %s</td></tr>"),
         GDL90_isConnected()  ? "" : "not",
         GDL90_isConnected()  && !GDL90_hasHeartBeat() ? "UNK" : "",
         GDL90_hasHeartBeat() ? "GDL90"  : ""
@@ -1034,22 +1053,23 @@ void handleStatus() {
     default:
       snprintf_P ( offset, size,
         PSTR("\
-  <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
-  <tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
-  <tr><th align=left>Slave Id</th><td align=right>%X</td></tr>\
-  <tr><th align=left>RF protocol</th><td align=right>%s</td></tr>\
-  </table>\
-  <table width=100%%>\
-   <tr><th align=left>Packets</th>\
-    <td align=right><table><tr>\
-     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
-     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
-   </tr></table></td></tr>\
-  "),
+<tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
+<tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
+<tr><th align=left>GNSS fix</th><td align=right>%s</td></tr>\
+<tr><th align=left>Slave Id</th><td align=right>%X</td></tr>\
+<tr><th align=left>RF protocol</th><td align=right>%s</td></tr>\
+</table>\
+<table width=100%%>\
+<tr><th align=left>Packets</th>\
+  <td align=right><table><tr>\
+   <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
+   <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
+  </tr></table></td></tr>"),
         NMEA_isConnected() ? "" : "not",
         NMEA_isConnected() && !(NMEA_hasGNSS() || NMEA_hasFLARM()) ? "UNK" : "",
         NMEA_hasGNSS()     ? "GNSS"  : "",
         NMEA_hasFLARM()    ? "FLARM" : "",
+        NMEA_has3DFix()    ? "3D" : "NONE",
         ThisDevice.addr,
         ThisDevice.protocol == RF_PROTOCOL_LEGACY ? "Legacy" :
         ThisDevice.protocol == RF_PROTOCOL_OGNTP  ? "OGNTP"  :
@@ -1071,14 +1091,14 @@ void handleStatus() {
 
   snprintf_P ( offset, size,
     PSTR(" </table>\
- <hr>\
- <table width=100%%>\
+<hr>\
+<table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
     <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
   </tr>\
- </table>\
+</table>\
 </body>\
 </html>")
   );
@@ -1179,7 +1199,7 @@ PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
-<title>SkyWatch Settings</title>\
+<title>%s Settings</title>\
 </head>\
 <body>\
 <h1 align=center>New settings:</h1>\
@@ -1225,6 +1245,7 @@ PSTR("<html>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
 </body>\
 </html>"),
+  hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
   settings->s.mode, settings->s.rf_protocol, settings->s.band,
   settings->s.aircraft_type, settings->s.alarm, settings->s.txpower,
   settings->s.volume, settings->s.pointer, settings->s.bluetooth,

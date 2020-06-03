@@ -23,8 +23,9 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#define SKYWATCH_FIRMWARE_VERSION  "0.9"
-#define SKYWATCH_IDENT    "SkyWatch-"
+#define SKYWATCH_FIRMWARE_VERSION  "1.0-rc7"
+#define SKYWATCH_IDENT    "SkyWatch"
+#define SOFTRF_IDENT      "SoftRF"
 
 #define DEFAULT_AP_SSID   "SoftRF-abc123"
 #define DEFAULT_AP_PSK    "12345678"

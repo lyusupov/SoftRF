@@ -132,6 +132,7 @@ bool NMEA_Save_Settings(void);
 bool NMEA_isConnected(void);
 bool NMEA_hasGNSS(void);
 bool NMEA_hasFLARM(void);
+bool NMEA_has3DFix(void);
 void NMEA_Out(byte *, size_t, bool);
 void NMEA_fini();
 
