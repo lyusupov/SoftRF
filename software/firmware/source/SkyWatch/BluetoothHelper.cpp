@@ -82,7 +82,7 @@ static void ESP32_Bluetooth_setup()
 {
 
   BT_name += hw_info.model == SOFTRF_MODEL_SKYWATCH ?
-                                SKYWATCH_IDENT : SOFTRF_IDENT;
+                              SKYWATCH_IDENT : SOFTRF_IDENT;
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
