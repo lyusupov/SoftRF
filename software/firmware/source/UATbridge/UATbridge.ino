@@ -243,18 +243,12 @@ void setup() {
   Serial.println(hw_info.rf);
 #endif
 
-  init_fec();
-
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    hw_info.gnss = GNSS_setup();
-
-#if defined(DEBUG_UAT)
-    if (hw_info.gnss != GNSS_MODULE_NONE) {
-      settings->nmea_g   = true;
-      settings->nmea_out = NMEA_UART;
-    }
-#endif
+  if ( hw_info.rf != RF_IC_CC13XX ||
+      (hw_info.rf == RF_IC_CC13XX && settings->rf_protocol != RF_PROTOCOL_ADSB_UAT)) {
+    init_fec();
   }
+
+  hw_info.gnss = GNSS_setup();
 
   Serial.print(F("Protocol: "));
   Serial.println(
@@ -288,10 +282,8 @@ void setup() {
 
 void loop() {
 
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    PickGNSSFix();
-    GNSSTimeSync();
-  }
+  PickGNSSFix();
+  GNSSTimeSync();
 
   if (hw_info.rf != RF_IC_CC13XX) {
     RF_loop();
@@ -458,11 +450,9 @@ void shutdown(const char *msg)
 {
   SoC->WDT_fini();
 
-  if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
-    GNSS_fini();
+  GNSS_fini();
 
-    SoC->swSer_enableRx(false);
-  }
+  SoC->swSer_enableRx(false);
 
   SoC->Display_fini(msg);
 

@@ -125,14 +125,14 @@ HardwareSerial Serial2(1, Uart2_ReadCallback, Uart2_WriteCallback, true);
 #include <ti/drivers/dpl/HwiP.h>
 #include <ti/devices/cc13x2_cc26x2/driverlib/flash.h>
 
+extern const imgHdr_t _imgHdr;
+
 // Boot check timings in milliseconds
 #define BOOTCHECK_SLEEP_DURATION_MS       5000
 #define BOOTCHECK_SLEEP_INTERVAL_MS        200
 
 static void RevertToFactoryImage(void)
 {
-    extern const imgHdr_t _imgHdr;
-
     uint32_t key = HwiP_disable();
 
     uint8_t invalidCrc = CRC_INVALID;
@@ -169,7 +169,7 @@ static void BootManagerCheck(void)
   uint8_t leds[] = {RED_LED, GREEN_LED, SOC_GPIO_PIN_LED_BLUE};
   uint8_t LED_count = (cc13xx_board == TI_LPSTK_CC1352R ? 3 : 2);
 
-  if (revertIoInit)
+  if (&_imgHdr == NULL && revertIoInit)
   {
     Serial.println(F("Left button was held on reset."));
     Serial.println(F("Continue holding for 5 seconds to revert to factory image."));
