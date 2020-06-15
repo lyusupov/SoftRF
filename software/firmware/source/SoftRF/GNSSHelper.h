@@ -47,6 +47,7 @@ enum
                            (gnss.date.age()     <= NMEA_EXP_TIME))
 
 byte GNSS_setup      (void);
+void GNSS_loop       (void);
 void GNSS_fini       (void);
 void GNSSTimeSync    (void);
 void PickGNSSFix     (void);

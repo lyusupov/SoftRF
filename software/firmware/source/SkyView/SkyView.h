@@ -188,7 +188,8 @@ enum
 enum
 {
 	POWER_SAVE_NONE,
-	POWER_SAVE_WIFI
+	POWER_SAVE_WIFI,
+	POWER_SAVE_GNSS
 };
 
 enum

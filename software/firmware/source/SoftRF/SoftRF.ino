@@ -321,9 +321,7 @@ void normal()
   AHRS_loop();
 #endif /* ENABLE_AHRS */
 
-  PickGNSSFix();
-
-  GNSSTimeSync();
+  GNSS_loop();
 
   ThisAircraft.timestamp = now();
   if (isValidFix()) {

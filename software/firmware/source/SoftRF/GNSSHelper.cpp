@@ -27,6 +27,7 @@
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "RFHelper.h"
+#include "BatteryHelper.h"
 
 #if !defined(EXCLUDE_EGM96)
 #include <egm96s.h>
@@ -78,6 +79,17 @@ const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
 const uint8_t RXM_PMREQ[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00,
                                        0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
                                        0x4d, 0x3b};
+
+
+#if defined(USE_GNSS_PSM)
+static bool gnss_psm_active = false;
+
+/* Max Performance Mode (default) */
+const uint8_t RXM_MAXP[] PROGMEM = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21, 0x91};
+
+/* Power Save Mode */
+const uint8_t RXM_PSM[] PROGMEM  = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
+#endif /* USE_GNSS_PSM */
 
 const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
@@ -519,7 +531,8 @@ byte GNSS_setup() {
   rval = GNSS_MODULE_NMEA;
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_RASPBERRY ) {
+      hw_info.model == SOFTRF_MODEL_RASPBERRY ||
+      hw_info.model == SOFTRF_MODEL_UNI)        {
 
     rval = GNSS_version();
 
@@ -544,9 +557,48 @@ byte GNSS_setup() {
   return rval;
 }
 
+void GNSS_loop()
+{
+  PickGNSSFix();
+
+  GNSSTimeSync();
+
+#if defined(USE_GNSS_PSM)
+  if (settings->power_save == POWER_SAVE_GNSS) {
+    if (hw_info.model == SOFTRF_MODEL_UNI) {
+      if (hw_info.gnss == GNSS_MODULE_U6 ||
+          hw_info.gnss == GNSS_MODULE_U7 ||
+          hw_info.gnss == GNSS_MODULE_U8) {
+
+        if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
+          // Setup for Power Save Mode (Default Cyclic 1s)
+          for (int i = 0; i < sizeof(RXM_PSM); i++) {
+            swSer.write(pgm_read_byte(&RXM_PSM[i]));
+          }
+
+          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
+          gnss_psm_active = true;
+        } else if (  gnss_psm_active &&
+                   ((gnss.satellites.isValid() && gnss.satellites.value() <= 5) ||
+                     gnss.satellites.age() > NMEA_EXP_TIME)) {
+          // Setup for Continuous Mode
+          for (int i = 0; i < sizeof(RXM_MAXP); i++) {
+            swSer.write(pgm_read_byte(&RXM_MAXP[i]));
+          }
+
+          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
+          gnss_psm_active = false;
+        }
+      }
+    }
+  }
+#endif /* USE_GNSS_PSM */
+}
+
 void GNSS_fini()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_UNI)        {
     if (hw_info.gnss == GNSS_MODULE_U6 ||
         hw_info.gnss == GNSS_MODULE_U7 ||
         hw_info.gnss == GNSS_MODULE_U8) {

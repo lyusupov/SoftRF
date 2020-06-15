@@ -282,8 +282,7 @@ void setup() {
 
 void loop() {
 
-  PickGNSSFix();
-  GNSSTimeSync();
+  GNSS_loop();
 
   if (hw_info.rf != RF_IC_CC13XX) {
     RF_loop();
