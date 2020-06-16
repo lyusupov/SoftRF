@@ -320,7 +320,7 @@ void WiFi_loop()
 #endif
 
 #if defined(POWER_SAVING_WIFI_TIMEOUT)
-  if (settings->power_save == POWER_SAVE_WIFI && WiFi.getMode() == WIFI_AP) {
+  if ((settings->power_save & POWER_SAVE_WIFI) && WiFi.getMode() == WIFI_AP) {
     if (SoC->WiFi_clients_count() == 0) {
       if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT) {
         NMEA_fini();

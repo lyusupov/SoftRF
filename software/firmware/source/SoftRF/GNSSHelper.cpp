@@ -564,7 +564,7 @@ void GNSS_loop()
   GNSSTimeSync();
 
 #if defined(USE_GNSS_PSM)
-  if (settings->power_save == POWER_SAVE_GNSS) {
+  if (settings->power_save & POWER_SAVE_GNSS) {
     if (hw_info.model == SOFTRF_MODEL_UNI) {
       if (hw_info.gnss == GNSS_MODULE_U6 ||
           hw_info.gnss == GNSS_MODULE_U7 ||
