@@ -80,7 +80,6 @@ const uint8_t RXM_PMREQ[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00,
                                        0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
                                        0x4d, 0x3b};
 
-
 #if defined(USE_GNSS_PSM)
 static bool gnss_psm_active = false;
 
@@ -608,7 +607,7 @@ void GNSS_fini()
         swSer.write(pgm_read_byte(&CFG_RST[i]));
       }
 
-      delay(600);
+      delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
 
       // power off until wakeup call
       for (int i = 0; i < sizeof(RXM_PMREQ); i++) {
