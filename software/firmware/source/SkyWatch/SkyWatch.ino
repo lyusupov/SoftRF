@@ -141,6 +141,26 @@ void setup()
     break;
   }
 
+  /* If a Dongle is connected - try to wake it up */
+  if (settings->m.protocol == PROTOCOL_NMEA) {
+    const char *on_msg = "$PSRFC,?*47\r\n";
+
+    switch (settings->m.connection)
+    {
+    case CON_SERIAL_MAIN:
+      SerialInput.write(on_msg);
+      SerialInput.flush();
+      break;
+    case CON_SERIAL_AUX:
+      Serial.write(on_msg);
+      Serial.flush();
+      break;
+    case CON_NONE:
+    default:
+      break;
+    }
+  }
+
   SoC->WDT_setup();
 }
 
@@ -230,6 +250,26 @@ void service_loop()
 void shutdown(const char *msg)
 {
   SoC->WDT_fini();
+
+  /* If a Dongle is connected - try to shut it down */
+  if (settings->m.protocol == PROTOCOL_NMEA) {
+    const char *off_msg = "$PSRFC,OFF*37\r\n";
+
+    switch (settings->m.connection)
+    {
+    case CON_SERIAL_MAIN:
+      SerialInput.write(off_msg);
+      SerialInput.flush();
+      break;
+    case CON_SERIAL_AUX:
+      Serial.write(off_msg);
+      Serial.flush();
+      break;
+    case CON_NONE:
+    default:
+      break;
+    }
+  }
 
   NMEA_fini();
 
