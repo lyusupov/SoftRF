@@ -76,9 +76,9 @@ const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x07, 0x03, 0x00, 0x00, 0x00, 0x0
 const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
                                        0x00, 0x01, 0x00, 0x0F, 0x66};
 
-const uint8_t RXM_PMREQ[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00, 0x00,
-                                       0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
-                                       0x4d, 0x3b};
+const uint8_t RXM_PMREQ_OFF[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00,
+                                           0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
+                                           0x00, 0x00, 0x4d, 0x3b};
 
 #if defined(USE_GNSS_PSM)
 static bool gnss_psm_active = false;
@@ -524,6 +524,13 @@ byte GNSS_setup() {
 
   SoC->swSer_begin(SERIAL_IN_BR);
 
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_UNI)        {
+
+    // power on by wakeup call
+    swSer.write((uint8_t) 0); swSer.flush(); delay(500);
+  }
+
   if (!GNSS_probe())
     return rval;
 
@@ -610,8 +617,8 @@ void GNSS_fini()
       delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
 
       // power off until wakeup call
-      for (int i = 0; i < sizeof(RXM_PMREQ); i++) {
-        swSer.write(pgm_read_byte(&RXM_PMREQ[i]));
+      for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
+        swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
       }
     }
   }
