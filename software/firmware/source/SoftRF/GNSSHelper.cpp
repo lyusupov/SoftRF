@@ -773,7 +773,6 @@ void PickGNSSFix()
       }
 #if defined(USE_NMEA_CFG)
       if (C_Version.isUpdated()) {
-#if 0
         if (strncmp(C_Version.value(), "RST", 3) == 0) {
             SoC->WDT_fini();
             Serial.println();
@@ -782,9 +781,7 @@ void PickGNSSFix()
             Serial.flush();
             RF_Shutdown();
             SoC->reset();
-        } else
-#endif
-        if (strncmp(C_Version.value(), "OFF", 3) == 0) {
+        } else if (strncmp(C_Version.value(), "OFF", 3) == 0) {
           shutdown("  OFF  ");
         } else if (strncmp(C_Version.value(), "?", 1) == 0) {
           char psrfc_buf[MAX_PSRFC_LEN];

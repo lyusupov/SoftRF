@@ -67,6 +67,8 @@
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 
+//#define USE_SERIAL_DEEP_SLEEP
+
 #define ENABLE_NORMAL_MODE
 #define EXCLUDE_TEST_MODE
 

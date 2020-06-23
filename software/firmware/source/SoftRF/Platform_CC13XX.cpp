@@ -23,19 +23,6 @@
 #include <ti/drivers/Watchdog.h>
 #include <xdc/runtime/Memory.h>
 
-#if defined(ENERGIA_ARCH_CC13XX)
-#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
-#include <ti/devices/cc13x0/driverlib/aon_batmon.h>
-#include <SCSerial.h>
-#endif /* ENERGIA_ARCH_CC13XX */
-#if defined(ENERGIA_ARCH_CC13X2)
-#include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
-#include <ti/devices/cc13x2_cc26x2/driverlib/aon_batmon.h>
-
-#include <SPIFlash.h>
-#include <ADXL362.h>
-#endif /* ENERGIA_ARCH_CC13X2 */
-
 #include "SoCHelper.h"
 #include "RFHelper.h"
 #include "LEDHelper.h"
@@ -43,6 +30,24 @@
 #include "BaroHelper.h"
 
 #include "EasyLink.h"
+
+#if defined(ASSERT)
+#undef ASSERT
+#endif
+
+#if defined(ENERGIA_ARCH_CC13XX)
+#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
+#include <ti/devices/cc13x0/driverlib/aon_batmon.h>
+#include <SCSerial.h>
+#endif /* ENERGIA_ARCH_CC13XX */
+
+#if defined(ENERGIA_ARCH_CC13X2)
+#include <ti/devices/cc13x2_cc26x2/driverlib/sys_ctrl.h>
+#include <ti/devices/cc13x2_cc26x2/driverlib/aon_batmon.h>
+
+#include <SPIFlash.h>
+#include <ADXL362.h>
+#endif /* ENERGIA_ARCH_CC13X2 */
 
 #if !defined(EXCLUDE_SX12XX)
 // RFM95W pin mapping
@@ -370,6 +375,18 @@ static void CC13XX_loop()
 #endif /* ENERGIA_ARCH_CC13X2 */
 }
 
+#if defined(USE_SERIAL_DEEP_SLEEP)
+
+#include <ti/drivers/PIN.h>
+#include <ti/drivers/pin/PINCC26XX.h>
+
+/* Wake-up UART0 pin table */
+PIN_Config UART0_TableWakeUp[] = {
+    IOID_12 | PIN_INPUT_EN | PIN_PULLUP | PINCC26XX_WAKEUP_NEGEDGE,
+    PIN_TERMINATE                         /* Terminate list */
+};
+#endif
+
 static void CC13XX_fini()
 {
   // Disable battery monitoring
@@ -389,6 +406,13 @@ static void CC13XX_fini()
   }
 
 #endif /* ENERGIA_ARCH_CC13X2 */
+
+#if defined(USE_SERIAL_DEEP_SLEEP)
+  Serial.end();
+
+  /* Configure DIO for wake up from shutdown */
+  PINCC26XX_setWakeup(UART0_TableWakeUp);
+#endif
 
   Power_shutdown(0, 0);
 }
