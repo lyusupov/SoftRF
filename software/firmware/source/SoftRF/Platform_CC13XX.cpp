@@ -596,9 +596,9 @@ static void CC13XX_Display_loop()
 
       u8x8->drawString(9, 5, "TX");
 
-      if (settings->mode != SOFTRF_MODE_BRIDGE ||
-          (settings->mode == SOFTRF_MODE_BRIDGE &&
-           settings->txpower == RF_TX_POWER_OFF)) {
+      if (settings->mode        == SOFTRF_MODE_RECEIVER ||
+          settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+          settings->txpower     == RF_TX_POWER_OFF) {
         strcpy(buf, "OFF");
       } else {
         itoa(tx_packets_counter % 1000, buf, 10);
