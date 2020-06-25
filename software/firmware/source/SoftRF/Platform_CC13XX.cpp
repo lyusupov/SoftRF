@@ -168,13 +168,17 @@ static void BootManagerCheck(void)
   bool revertIoInit;
   uint8_t CurrentLed;
 
+  uint32_t addr = (uint32_t) &_imgHdr;
+
+  if (addr) return;
+
   // Check if button is held on reset
   revertIoInit = (digitalRead(PUSH1) == LOW);
 
   uint8_t leds[] = {RED_LED, GREEN_LED, SOC_GPIO_PIN_LED_BLUE};
   uint8_t LED_count = (cc13xx_board == TI_LPSTK_CC1352R ? 3 : 2);
 
-  if (&_imgHdr == NULL && revertIoInit)
+  if (revertIoInit)
   {
     Serial.println(F("Left button was held on reset."));
     Serial.println(F("Continue holding for 5 seconds to revert to factory image."));
