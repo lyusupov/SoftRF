@@ -189,7 +189,7 @@ void handleRoot() {
 
 void handleSettings() {
 
-  size_t size = 7000;
+  size_t size = 7040;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -668,6 +668,7 @@ void handleSettings() {
 <select name='power_save'>\
 <option %s value='%d'>Disabled</option>\
 <option %s value='%d'>WiFi OFF (5 min.)</option>\
+<option %s value='%d'>GNSS</option>\
 </select>\
 </td>\
 </tr>\
@@ -687,6 +688,7 @@ void handleSettings() {
 </tr>"),
   (settings->s.power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
   (settings->s.power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
+  (settings->s.power_save == POWER_SAVE_GNSS ? "selected" : ""), POWER_SAVE_GNSS,
   (!settings->s.stealth ? "checked" : "") , (settings->s.stealth ? "checked" : ""),
   (!settings->s.no_track ? "checked" : "") , (settings->s.no_track ? "checked" : "")
   );

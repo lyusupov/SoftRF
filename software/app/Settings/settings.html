@@ -30,7 +30,7 @@ function UpdateChecksum()
       + document.getElementById("region").value + ","
       + document.getElementById("actype").value + ","
       + document.getElementById("alarm").value + ","
-      + document.getElementById("power").value + ","
+      + document.getElementById("txpower").value + ","
       + volume  + ","
       + pointer + ","
       + document.getElementById("gnss").value + ","
@@ -106,10 +106,10 @@ function SelAlarm()
   UpdateChecksum();
 }
 
-function SelPower()
+function SelTxPower()
 {
-  var power = document.getElementById("Powers");
-  document.getElementById("power").value = power.options[power.selectedIndex].value;
+  var txpower = document.getElementById("TxPowers");
+  document.getElementById("txpower").value = txpower.options[txpower.selectedIndex].value;
   UpdateChecksum();
 }
 
@@ -178,6 +178,13 @@ function SelD1090()
   UpdateChecksum();
 }
 
+function SelPowerSave()
+{
+  var powersave = document.getElementById("PowerSaves");
+  document.getElementById("powersave").value = powersave.options[powersave.selectedIndex].value;
+  UpdateChecksum();
+}
+
 function SelStealth()
 {
   var stealth = document.getElementsByName('stealth');
@@ -203,25 +210,26 @@ function SelTrack()
 function InitSettings()
 {
 //  document.getElementById("ver").value      = 1;
-  document.getElementById("mode").value     = 0;
-  document.getElementById("protocol").value = 1;
-  document.getElementById("region").value   = 1;
-  document.getElementById("actype").value   = 1;
-  document.getElementById("alarm").value    = 1;
-  document.getElementById("power").value    = 0;
+  document.getElementById("mode").value       = 0;
+  document.getElementById("protocol").value   = 1;
+  document.getElementById("region").value     = 1;
+  document.getElementById("actype").value     = 1;
+  document.getElementById("alarm").value      = 1;
+  document.getElementById("txpower").value    = 0;
 
 //  document.getElementById("volume").value   = 0;
 //  document.getElementById("pointer").value  = 0;
 
-  document.getElementById("gnss").value     = 1;
-  document.getElementById("priv").value     = 0;
-  document.getElementById("legacy").value   = 1;
-  document.getElementById("sens").value     = 1;
-  document.getElementById("nmea").value     = 4;
-  document.getElementById("gdl90").value    = 0;
-  document.getElementById("d1090").value    = 0;
-  document.getElementById("stealth").value  = 0;
-  document.getElementById("no_track").value = 0;
+  document.getElementById("gnss").value       = 1;
+  document.getElementById("priv").value       = 0;
+  document.getElementById("legacy").value     = 1;
+  document.getElementById("sens").value       = 1;
+  document.getElementById("nmea").value       = 4;
+  document.getElementById("gdl90").value      = 0;
+  document.getElementById("d1090").value      = 0;
+  document.getElementById("powersave").value  = 0;
+  document.getElementById("stealth").value    = 0;
+  document.getElementById("no_track").value   = 0;
 
   UpdateChecksum();
 }
@@ -314,7 +322,7 @@ If you are affected - please, consider to update
 <tr>
 <th align=left>Tx Power</th>
 <td align=right>
-<select id="Powers" onchange="SelPower()">
+<select id="TxPowers" onchange="SelTxPower()">
 <option selected value='0'>Full</option>
 <option value='1'>Low</option>
 <option value='2'>Off</option>
@@ -388,6 +396,16 @@ If you are affected - please, consider to update
 </tr>
 
 <tr>
+<th align=left>Power save</th>
+<td align=right>
+<select id="PowerSaves" onchange="SelPowerSave()">
+<option selected value='0'>Disabled</option>
+<option value='2'>GNSS</option>
+</select>
+</td>
+</tr>
+
+<tr>
 <th align=left>Stealth</th>
 <td align=right>
 <input type='radio' name='stealth' value='0' onchange="SelStealth()" checked>Off
@@ -407,7 +425,7 @@ If you are affected - please, consider to update
 <!-- region:  --><input type="hidden" id="region" size="1">
 <!-- A/C type:  --><input type="hidden" id="actype" size="2">
 <!-- Alarm:  --><input type="hidden" id="alarm" size="1">
-<!--<p> Tx power:  --><input hidden="text" id="power" size="1">
+<!--<p> Tx power:  --><input hidden="text" id="txpower" size="1">
 <!-- GNSS:  --><input type="hidden" id="gnss" size="1">
 <!-- Private:  --><input type="hidden" id="priv" size="1">
 <!-- Legacy:  --><input type="hidden" id="legacy" size="1">
@@ -415,6 +433,7 @@ If you are affected - please, consider to update
 <!--<p> NMEA:  --><input type="hidden" id="nmea" size="1">
 <!-- GDL90:  --><input type="hidden" id="gdl90" size="1">
 <!-- D1090:  --><input type="hidden" id="d1090" size="1">
+<!-- Power save:  --><input type="hidden" id="powersave" size="1">
 <!-- Stealth:  --><input type="hidden" id="stealth" size="1">
 <!-- No track:  --><input type="hidden" id="no_track" size="1">
 <h3 align=center>NMEA control sentence:</h3>

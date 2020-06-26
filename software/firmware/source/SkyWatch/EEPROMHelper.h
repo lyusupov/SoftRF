@@ -54,8 +54,8 @@ typedef struct SoftRF_Settings {
     uint8_t  json:2;
 
     uint8_t  power_save;
-    uint8_t  resvd2345;
-    uint8_t  resvd6;
+    int8_t   freq_corr; /* +/-, kHz */
+    uint8_t  resvd23456;
     uint8_t  resvd7;
     uint8_t  resvd8;
     uint8_t  resvd9;

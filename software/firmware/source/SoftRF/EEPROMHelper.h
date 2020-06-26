@@ -26,7 +26,7 @@
 #endif /* EXCLUDE_EEPROM */
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
-#define SOFTRF_EEPROM_VERSION 0x0000005D
+#define SOFTRF_EEPROM_VERSION 0x0000005E
 
 typedef struct Settings {
     uint8_t  mode;

@@ -126,7 +126,7 @@ Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4860;
+  size_t size = 4900;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -490,6 +490,7 @@ void handleSettings() {
 <select name='power_save'>\
 <option %s value='%d'>Disabled</option>\
 <option %s value='%d'>WiFi OFF (10 min.)</option>\
+<option %s value='%d'>GNSS</option>\
 </select>\
 </td>\
 </tr>\
@@ -509,6 +510,7 @@ void handleSettings() {
 </tr>"),
   (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
   (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
+  (settings->power_save == POWER_SAVE_GNSS ? "selected" : ""), POWER_SAVE_GNSS,
   (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
   (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
   );
