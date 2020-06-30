@@ -22,6 +22,7 @@
 #include <esp_wifi.h>
 #include <esp_bt.h>
 #include <soc/rtc_cntl_reg.h>
+#include <soc/efuse_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
 #include <rom/spi_flash.h>
@@ -163,14 +164,15 @@ static void ESP32_setup()
     uint32_t flash_id = ESP32_getFlashId();
 
     /*
-     *    Board          |   Module   |  Flash memory IC
-     *  -----------------+------------+--------------------
-     *  DoIt ESP32       | WROOM      | GIGADEVICE_GD25Q32
-     *  TTGO LoRa32 V2.0 | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
-     *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T-Watch     |            | WINBOND_NEX_W25Q128_V
+     *    Board            |   Module   |  Flash memory IC
+     *  -------------------+------------+--------------------
+     *  DoIt ESP32         | WROOM      | GIGADEVICE_GD25Q32
+     *  TTGO LoRa32 V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
+     *  TTGO LoRa32 V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
+     *  TTGO T-Beam V06    |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T8  V1.8      | WROVER     | GIGADEVICE_GD25LQ32
+     *  TTGO T5S V1.9      |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T-Watch       |            | WINBOND_NEX_W25Q128_V
      */
 
     switch(flash_id)
@@ -186,6 +188,14 @@ static void ESP32_setup()
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
       break;
+    }
+  } else {
+    uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
+    uint32_t pkg_ver  = chip_ver & 0x7;
+    if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4) {
+      esp32_board    = ESP32_TTGO_V2_OLED;
+      lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
+      lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
     }
   }
 
