@@ -127,6 +127,7 @@ TinyGPSCustom C_GDL90_Output (gnss, "PSRFC", 15);
 TinyGPSCustom C_D1090_Output (gnss, "PSRFC", 16);
 TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
+TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
 #endif /* USE_NMEA_CFG */
 
@@ -787,13 +788,14 @@ void PickGNSSFix()
           char psrfc_buf[MAX_PSRFC_LEN];
 
           snprintf_P(psrfc_buf, sizeof(psrfc_buf),
-              PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
-              PSRFC_VERSION, settings->mode, settings->rf_protocol,
-              settings->band, settings->aircraft_type, settings->alarm,
-              settings->txpower, settings->volume,   settings->pointer,
-              settings->nmea_g,  settings->nmea_p,   settings->nmea_l,
-              settings->nmea_s,  settings->nmea_out, settings->gdl90,
-              settings->d1090,   settings->stealth,  settings->no_track );
+              PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
+              PSRFC_VERSION,        settings->mode,     settings->rf_protocol,
+              settings->band,       settings->aircraft_type, settings->alarm,
+              settings->txpower,    settings->volume,   settings->pointer,
+              settings->nmea_g,     settings->nmea_p,   settings->nmea_l,
+              settings->nmea_s,     settings->nmea_out, settings->gdl90,
+              settings->d1090,      settings->stealth,  settings->no_track,
+              settings->power_save );
 
           NMEA_add_checksum(psrfc_buf, sizeof(psrfc_buf) - strlen(psrfc_buf));
           NMEA_Out((byte *) psrfc_buf, strlen(psrfc_buf), false);
@@ -901,6 +903,12 @@ void PickGNSSFix()
           {
             settings->no_track = atoi(C_noTrack.value());
             Serial.print(F("noTrack = ")); Serial.println(settings->no_track);
+            cfg_is_updated = true;
+          }
+          if (C_PowerSave.isUpdated())
+          {
+            settings->power_save = atoi(C_PowerSave.value());
+            Serial.print(F("PowerSave = ")); Serial.println(settings->power_save);
             cfg_is_updated = true;
           }
 

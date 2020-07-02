@@ -41,7 +41,8 @@ function UpdateChecksum()
       + document.getElementById("gdl90").value + ","
       + document.getElementById("d1090").value + ","
       + document.getElementById("stealth").value + ","
-      + document.getElementById("no_track").value;
+      + document.getElementById("no_track").value + ","
+      + document.getElementById("powersave").value;
 
 
   // Compute the checksum by XORing all the character values in the string.
@@ -399,7 +400,7 @@ If you are affected - please, consider to update
 <th align=left>Power save</th>
 <td align=right>
 <select id="PowerSaves" onchange="SelPowerSave()">
-<option selected value='0'>Disabled</option>
+<option selected value='0'>Off</option>
 <option value='2'>GNSS</option>
 </select>
 </td>

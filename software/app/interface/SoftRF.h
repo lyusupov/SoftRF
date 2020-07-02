@@ -31,7 +31,7 @@
                     <alarm>,<tx power>,<buzzer>,<leds>,
                     <NMEA GNSS>,<NMEA private>,<NMEA legacy>,<NMEA sensors>,
                     <NMEA output>,<GDL90 output>,<D1090 output>,
-                    <stealth>,<no track>*<checksum><CR><LF>"
+                    <stealth>,<no track>,<power save>*<checksum><CR><LF>"
 
   TO APPLY SETTINGS
   -----------------
@@ -41,14 +41,14 @@
                     <alarm>,<tx power>,<buzzer>,<leds>,
                     <NMEA GNSS>,<NMEA private>,<NMEA legacy>,<NMEA sensors>,
                     <NMEA output>,<GDL90 output>,<D1090 output>,
-                    <stealth>,<no track>*<checksum><CR><LF>"
+                    <stealth>,<no track>,<power save>*<checksum><CR><LF>"
 
   Response: dump of new settings followed by system restart
 
   EXAMPLE OF NMEA SENTENCE
   ------------------------
 
-  $PSRFC,1,0,1,1,1,1,0,0,0,1,0,1,1,4,0,0,0,0*50
+  $PSRFC,1,0,1,1,1,1,0,0,0,1,0,1,1,4,0,0,0,0,0*4C
 
 
   LIST OF SETTINGS AVAILABLE
@@ -78,6 +78,8 @@
   Stealth:        On, Off
   No track:       On, Off
 
+  Power save:     Off, GNSS
+
   RECOMMENDED DEFAULT SETTINGS
   ----------------------------
 
@@ -98,6 +100,8 @@
 
   Stealth:        Off
   No track:       Off
+
+  Power save:     Off
 
   OTHER INFORMATION
   -----------------
@@ -260,6 +264,13 @@ enum
 {
 	SOFTRF_NOTRACK_OFF,
 	SOFTRF_NOTRACK_ON
+};
+
+enum
+{
+	SOFTRF_POWER_SAVE_NONE = 0,
+	SOFTRF_POWER_SAVE_WIFI = 1,
+	SOFTRF_POWER_SAVE_GNSS = 2
 };
 
 #endif /* SOFTRF_H */
