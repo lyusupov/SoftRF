@@ -66,6 +66,7 @@ enum
 	HW_REV_UNKNOWN,
 	HW_REV_DEVKIT,
 	HW_REV_T5S_1_9,
+	HW_REV_T5S_2_8,
 	HW_REV_T8_1_8
 };
 

@@ -174,6 +174,7 @@ static void ESP32_setup()
      *  TTGO T22 V11    |            | BOYA_BY25Q32AL
      *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
      *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
      *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
      */
 
@@ -1067,7 +1068,7 @@ static bool ESP32_Baro_setup()
     }
 
 #if DEBUG
-    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
+    Serial.println(F("INFO: RESET pin of SX12xx radio is not connected to MCU."));
 #endif
 
     /* Pre-init 1st ESP32 I2C bus to stick on these pins */

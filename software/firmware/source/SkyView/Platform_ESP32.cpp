@@ -225,13 +225,18 @@ static void ESP32_setup()
   uint32_t flash_id = ESP32_getFlashId();
 
   /*
-   *    Board          |   Module   |  Flash memory IC
-   *  -----------------+------------+--------------------
-   *  DoIt ESP32       | WROOM      | GIGADEVICE_GD25Q32
-   *  TTGO LoRa32 V2.0 | PICO-D4 IC | GIGADEVICE_GD25Q32
-   *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
-   *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
+   *    Board         |   Module   |  Flash memory IC
+   *  ----------------+------------+--------------------
+   *  DoIt ESP32      | WROOM      | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
+   *  TTGO T22 V06    |            | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V08    |            | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V11    |            | BOYA_BY25Q32AL
+   *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
+   *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
+   *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
    */
 
   if (psramFound()) {
@@ -253,6 +258,9 @@ static void ESP32_setup()
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
       hw_info.revision = HW_REV_T5S_1_9;
+      break;
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
+      hw_info.revision = HW_REV_T5S_2_8;
       break;
     default:
       hw_info.revision = HW_REV_UNKNOWN;

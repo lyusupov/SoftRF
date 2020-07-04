@@ -120,7 +120,7 @@ byte EPD_setup(bool splash_screen)
       display->setCursor(x, y);
       display->print(EPD_SkyView_text4);
 
-      if (hw_info.revision == HW_REV_T5S_1_9) {
+      if (hw_info.revision == HW_REV_T5S_1_9 || hw_info.revision == HW_REV_T5S_2_8) {
         display->getTextBounds(EPD_SkyView_text5, 0, 0, &tbx5, &tby5, &tbw5, &tbh5);
         x = (display->width() - tbw5) / 2;
         y += tbh4;
