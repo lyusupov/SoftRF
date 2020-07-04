@@ -315,20 +315,26 @@ static float ESP8266_Battery_voltage()
   return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
 }
 
-void ESP8266_GNSS_PPS_Interrupt_handler() {
+void ESP8266_GNSS_PPS_Interrupt_handler()
+{
   PPS_TimeMarker = millis();
 }
 
-static unsigned long ESP8266_get_PPS_TimeMarker() {
+static unsigned long ESP8266_get_PPS_TimeMarker()
+{
   return PPS_TimeMarker;
 }
 
-static bool ESP8266_Baro_setup() {
-  if (hw_info.rf != RF_IC_SX1276 || RF_SX1276_RST_is_connected)
+static bool ESP8266_Baro_setup()
+{
+
+  if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+      RF_SX12XX_RST_is_connected) {
     return false;
+  }
 
 #if DEBUG
-    Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
+    Serial.println(F("INFO: RESET pin of SX12xx radio is not connected to MCU."));
 #endif
 
   Wire.pins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);

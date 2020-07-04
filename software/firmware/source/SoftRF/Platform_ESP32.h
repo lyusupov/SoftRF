@@ -217,6 +217,10 @@ struct rst_info {
   uint32_t depc;
 };
 
+/* Boya Microelectronics Inc. */
+#define BOYA_ID                 0x68
+#define BOYA_BY25Q32AL          0x4016
+
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */

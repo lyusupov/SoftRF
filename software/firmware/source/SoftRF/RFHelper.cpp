@@ -52,7 +52,7 @@ static size_t RF_tx_size = 0;
 static long TxRandomValue = 0;
 
 const rfchip_ops_t *rf_chip = NULL;
-bool RF_SX1276_RST_is_connected = true;
+bool RF_SX12XX_RST_is_connected = true;
 
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
@@ -689,7 +689,7 @@ static bool sx1276_probe()
   if (v == 0x12) {
 
     if (v_reset == 0x12) {
-      RF_SX1276_RST_is_connected = false;
+      RF_SX12XX_RST_is_connected = false;
     }
 
     return true;
@@ -749,7 +749,7 @@ static bool sx1262_probe()
   if (v == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
 
     if (v_reset == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
-      RF_SX1276_RST_is_connected = false;
+      RF_SX12XX_RST_is_connected = false;
     }
 
     return true;

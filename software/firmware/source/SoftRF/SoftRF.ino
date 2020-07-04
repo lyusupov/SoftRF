@@ -151,7 +151,7 @@ void setup()
 
   if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
       hw_info.revision == 2                      &&
-      RF_SX1276_RST_is_connected)
+      RF_SX12XX_RST_is_connected)
   {
     hw_info.revision = 5;
   }

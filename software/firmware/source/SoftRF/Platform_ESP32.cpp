@@ -164,15 +164,17 @@ static void ESP32_setup()
     uint32_t flash_id = ESP32_getFlashId();
 
     /*
-     *    Board            |   Module   |  Flash memory IC
-     *  -------------------+------------+--------------------
-     *  DoIt ESP32         | WROOM      | GIGADEVICE_GD25Q32
-     *  TTGO LoRa32 V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO LoRa32 V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO T-Beam V06    |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T8  V1.8      | WROVER     | GIGADEVICE_GD25LQ32
-     *  TTGO T5S V1.9      |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T-Watch       |            | WINBOND_NEX_W25Q128_V
+     *    Board         |   Module   |  Flash memory IC
+     *  ----------------+------------+--------------------
+     *  DoIt ESP32      | WROOM      | GIGADEVICE_GD25Q32
+     *  TTGO T3  V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
+     *  TTGO T3  V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
+     *  TTGO T22 V06    |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T22 V08    |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T22 V11    |            | BOYA_BY25Q32AL
+     *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
+     *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
+     *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
      */
 
     switch(flash_id)
@@ -185,6 +187,7 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_SKYWATCH;
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
       break;
@@ -652,9 +655,9 @@ static void ESP32_swSer_begin(unsigned long baud)
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 
-    Serial.print(F("INFO: TTGO T-Beam GPS module (rev. 0"));
+    Serial.print(F("INFO: TTGO T-Beam rev. 0"));
     Serial.print(hw_info.revision);
-    Serial.println(F(") is detected."));
+    Serial.println(F(" is detected."));
 
     if (hw_info.revision == 8) {
       swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_TBEAM_V08_RX, SOC_GPIO_PIN_TBEAM_V08_TX);
@@ -666,7 +669,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: TTGO T-Watch is detected."));
       swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_TWATCH_RX, SOC_GPIO_PIN_TWATCH_TX);
     } else if (esp32_board == ESP32_TTGO_V2_OLED) {
-      /* 'Mini' (TTGO LoRa V2 + GNSS) */
+      /* 'Mini' (TTGO T3 + GNSS) */
+      Serial.print(F("INFO: TTGO T3 rev. "));
+      Serial.print(hw_info.revision);
+      Serial.println(F(" is detected."));
       swSer.begin(baud, SERIAL_IN_BITS, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
@@ -708,6 +714,13 @@ static byte ESP32_Display_setup()
       if (Wire1.endTransmission() == 0) {
         u8x8 = &u8x8_ttgo;
         esp32_board = ESP32_TTGO_V2_OLED;
+
+        if (RF_SX12XX_RST_is_connected) {
+          hw_info.revision = 16;
+        } else {
+          hw_info.revision = 11;
+        }
+
         rval = DISPLAY_OLED_TTGO;
       } else {
         if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
@@ -983,6 +996,22 @@ static void ESP32_Display_fini(const char *msg)
   }
 }
 
+static void ESP32_Battery_setup()
+{
+  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+       hw_info.revision == 8)                     ||
+       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
+
+    /* T-Beam v08 and T-Watch have PMU */
+
+    /* TBD */
+  } else {
+    calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+                     (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
+                      ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+  }
+}
+
 static float ESP32_Battery_voltage()
 {
   float voltage = 0.0;
@@ -998,8 +1027,9 @@ static float ESP32_Battery_voltage()
   } else {
     voltage = (float) read_voltage();
 
-    /* T-Beam v02-v07 has voltage divider 100k/100k on board */
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+    /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
+       (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16)) {
       voltage += voltage;
     }
   }
@@ -1007,28 +1037,15 @@ static float ESP32_Battery_voltage()
   return (voltage * 0.001);
 }
 
-static void ESP32_Battery_setup()
+static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler()
 {
-  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-       hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
-
-    /* T-Beam v08 and T-Watch have PMU */
-
-    /* TBD */
-  } else {
-    calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?
-                      ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
-  }
-}
-
-static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
   PPS_TimeMarker = millis();    /* millis() has IRAM_ATTR */
   portEXIT_CRITICAL_ISR(&GNSS_PPS_mutex);
 }
 
-static unsigned long ESP32_get_PPS_TimeMarker() {
+static unsigned long ESP32_get_PPS_TimeMarker()
+{
   unsigned long rval;
   portENTER_CRITICAL_ISR(&GNSS_PPS_mutex);
   rval = PPS_TimeMarker;
@@ -1036,16 +1053,18 @@ static unsigned long ESP32_get_PPS_TimeMarker() {
   return rval;
 }
 
-static bool ESP32_Baro_setup() {
-
+static bool ESP32_Baro_setup()
+{
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
     return false;
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
-    if (hw_info.rf != RF_IC_SX1276 || RF_SX1276_RST_is_connected)
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
       return false;
+    }
 
 #if DEBUG
     Serial.println(F("INFO: RESET pin of SX1276 radio is not connected to MCU."));
