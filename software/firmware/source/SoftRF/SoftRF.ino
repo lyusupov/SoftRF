@@ -15,7 +15,7 @@
  *   TinyGPS++ and PString Libraries are developed by Mikal Hart
  *   Adafruit NeoPixel Library is developed by Phil Burgess, Michael Miller and others
  *   TrueRandom Library is developed by Peter Knight
- *   IBM LMIC framework is maintained by Matthijs Kooijman
+ *   IBM LMIC and Semtech Basic MAC frameworks for Arduino are maintained by Matthijs Kooijman
  *   ESP8266FtpServer is developed by David Paiva
  *   Lib_crc is developed by Lammert Bies
  *   OGN library is developed by Pawel Jalocha
@@ -34,15 +34,16 @@
  *   SimpleNetwork library is developed by Dario Longobardi
  *   ArduinoJson library is developed by Benoit Blanchon
  *   Flashrom library is part of the flashrom.org project
- *   Arduino Core for TI CC13X0 is developed by Energia team
+ *   Arduino Core for TI CC13X0 and CC13X2 is developed by Robert Wessels
  *   EasyLink library is developed by Robert Wessels and Tony Cave
  *   Dump978 library is developed by Oliver Jowett
  *   FEC library is developed by Phil Karn
  *   AXP202X library is developed by Lewis He
  *   Arduino Core for STM32 is developed by Frederic Pillon
  *   TFT library is developed by Bodmer
+ *   STM32duino Low Power and RTC libraries are developed by Wi6Labs
  *   Basic MAC library is developed by Michael Kuyper
- *   port of Basic MAC library for Arduino is developed by Matthijs Kooijman
+ *   LowPowerLab SPIFlash library is maintained by Felix Rusu
  *   Arduino core for ASR650x is developed by Aaron Lee (HelTec Automation)
  *
  * This program is free software: you can redistribute it and/or modify

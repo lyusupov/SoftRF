@@ -93,7 +93,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Phil Burgess</th><td align=left>Adafruit NeoPixel Library</td></tr>\
 <tr><th align=left>Andy Little</th><td align=left>Aircraft and MAVLink Libraries</td></tr>\
 <tr><th align=left>Peter Knight</th><td align=left>TrueRandom Library</td></tr>\
-<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC framework for Arduino</td></tr>\
+<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC and Semtech Basic MAC frameworks for Arduino</td></tr>\
 <tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
 <tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
 <tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
@@ -118,6 +118,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Phil Karn</th><td align=left>FEC library</td></tr>\
 <tr><th align=left>Lewis He</th><td align=left>AXP20X library</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
+<tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
