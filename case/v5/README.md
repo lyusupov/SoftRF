@@ -19,7 +19,9 @@ If you are unable to print the parts by yourself - you may consider to find an a
 
 At first, insert printed face panel into front rails. Place T-Beam board into the enclosure's main body. Put lid on top of the assembly. Fasten the lid with four 2.5x10 mm screws.
 
-# GoPro mount option
+# Options
+
+## GoPro mount
 
 Two variants of main body are available. One is with GoPro mount and another one is without it.
 
@@ -27,7 +29,16 @@ Two variants of main body are available. One is with GoPro mount and another one
 
 <br>
 
-# OLED display option
+## Antenna protector
+
+If you, by any reason, keep using your small T-Beam 'stock' 868 MHz antenna - you may think about to 3D print an alternative lid that has a cone 'bumper'. And it looks nicer, isn't it?
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-bumper.jpg)
+
+<br>
+
+
+## OLED display
 
 You may opt for 0.96" front I2C OLED display panel.<br>
 Be aware that average 0.96" OLED does not perform well against sun light.<br>
