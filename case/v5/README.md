@@ -13,7 +13,10 @@ This type of enclosure is built around [TTGO T-Beam](https://www.aliexpress.com/
 # Instructions
 
 3D print three STL files from this folder: **Body**, **Lid** and **Face**. You may pick some printing advisories on [my Thingiverse page](http://www.thingiverse.com/thing:3041339).<br>
-Files that have **-V08** suffix are best suited for most recent **V08** (20190423) and **V10** (20190612) revisions of the TTGO T-Beam board.
+Files that have:
+* no suffix are either universal or best suited for older **V02-V07** revisions of the TTGO T-Beam board ;
+* **-V08** suffix are best suited for revisions **V08** (20190423) and **V10** (20190612) of the T-Beam ;
+* **-V11** suffix are best suited for most recent **V11** (20191212) revision of this board ;
 
 If you are unable to print the parts by yourself - you may consider to find an appropriate local 3D service provider and place an order with assistance of [Treatstock](http://www.treatstock.com) or [3DHubs](http://www.3dhubs.com/) portals.
 
@@ -31,7 +34,9 @@ Two variants of main body are available. One is with GoPro mount and another one
 
 ## Antenna protector
 
-If you, by any reason, keep using your small T-Beam 'stock' 868 MHz antenna - you may think about to 3D print an alternative lid that has a cone 'bumper'. And it looks nicer, isn't it?
+If you, by any reason, keep using your small T-Beam 'stock' 868 MHz antenna - you may think about to 3D print an alternative lid that has a cone 'bumper'.<br>
+This little 'feature' may help for the antenna to survive if the device will experience an upside down free fall.<br> 
+And it looks nicer, isn't it?
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-bumper.jpg)
 
