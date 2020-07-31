@@ -50,3 +50,14 @@ Fasten the mount to the enclosure's main body with four 2.5x8 mm screws.
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-27-holder.jpg" height="395" width="400">&nbsp;&nbsp;&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-29-holder.jpg" height="395" width="325"></p>
 
 <br>
+
+# GoPro mount option
+
+3D print **GoPro** STL file from this folder.<br>
+Fasten the mount to the enclosure's main body with four 2.5x8 mm screws.
+
+<br>
+
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-39-gopro.jpg" height="395" width="270">&nbsp;&nbsp;&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-40-gopro.jpg" height="395" width="466"></p>
+
+<br>
