@@ -716,10 +716,12 @@ static byte ESP32_Display_setup()
         u8x8 = &u8x8_ttgo;
         esp32_board = ESP32_TTGO_V2_OLED;
 
-        if (RF_SX12XX_RST_is_connected) {
-          hw_info.revision = 16;
-        } else {
-          hw_info.revision = 11;
+        if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
+          if (RF_SX12XX_RST_is_connected) {
+            hw_info.revision = 16;
+          } else {
+            hw_info.revision = 11;
+          }
         }
 
         rval = DISPLAY_OLED_TTGO;
