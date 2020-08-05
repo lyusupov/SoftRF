@@ -140,6 +140,11 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
         }
         return false;
     }
+  
+    /* ignore this device own (relayed) packets */
+    if (pkt->addr == this_aircraft->addr) {
+      return false;
+    }
 
     int32_t round_lat = (int32_t) (ref_lat * 1e7) >> 7;
     int32_t lat = (pkt->lat - round_lat) % (uint32_t) 0x080000;
