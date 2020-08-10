@@ -340,7 +340,7 @@ void NMEA_Export()
               NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
 
               /* Most close traffic is treated as highest priority target */
-              if (distance < HP_distance) {
+              if (distance < HP_distance && abs(alt_diff) < VERTICAL_VISIBILITY_RANGE) {
                 HP_bearing = bearing;
                 HP_alt_diff = alt_diff;
                 HP_alarm_level = alarm_level;
@@ -358,13 +358,15 @@ void NMEA_Export()
     if (settings->nmea_l) {
 
       if (total_objects > 0) {
+        int rel_bearing = HP_bearing - ThisAircraft.course;
+        rel_bearing += (rel_bearing < -180 ? 360 : (rel_bearing > 180 ? -360 : 0));
+
         snprintf_P(NMEABuffer, sizeof(NMEABuffer),
                 PSTR("$PFLAU,%d,%d,%d,%d,%d,%d,%d,%d,%u,%06X" PFLAU_EXT1_FMT "*"),
                 total_objects,
                 settings->txpower == RF_TX_POWER_OFF ? TX_STATUS_OFF : TX_STATUS_ON,
                 GNSS_STATUS_3D_MOVING,
-                POWER_STATUS_GOOD, HP_alarm_level,
-                (HP_bearing < 180 ? HP_bearing : HP_bearing - 360),
+                POWER_STATUS_GOOD, HP_alarm_level, rel_bearing,
                 ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance, HP_addr
                 PFLAU_EXT1_ARGS );
       } else {
