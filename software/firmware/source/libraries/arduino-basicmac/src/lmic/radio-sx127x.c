@@ -1229,6 +1229,8 @@ static bool sx127x_radio_irq_process (ostime_t irqtime, u1_t diomask) {
           // RSSI [dBm]
           LMIC.rssi = - readReg(FSKRegRssiValue) / 2;
 
+          return false;
+
     	} else if( irqflags2 & IRQ_FSK2_FIFOEMPTY_MASK ) { // FIFOEMPTY (TX)
     	    BACKTRACE();
 
