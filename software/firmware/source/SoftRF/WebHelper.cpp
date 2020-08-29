@@ -594,7 +594,7 @@ void handleRoot() {
   <!-- <td align=right><img src='/logo.png'></td> --></tr>\
  </table>\
  <table width=100%%>\
-  <tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
+  <tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
 #if !defined(ENABLE_AHRS)
  "</table><table width=100%%>\
