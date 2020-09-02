@@ -73,7 +73,11 @@ struct rst_info {
   uint32_t depc;
 };
 
+#if defined(CubeCell_GPS)
+#define swSer                 Serial1
+#else
 #define swSer                 Serial
+#endif
 #define UATSerial             Serial
 
 #define SERIAL_OUT_BR         STD_OUT_BR
@@ -123,6 +127,13 @@ struct rst_info {
 #define SOC_GPIO_PIN_SDA      SDA         // P0_1
 #define SOC_GPIO_PIN_SCL      SCL         // P0_0
 
+#if defined(CubeCell_GPS)
+/* GNSS */
+#define SOC_GPIO_PIN_GNSS_PWR GPIO14      // P0_7
+/* OLED */
+#define SOC_GPIO_PIN_OLED_RST GPIO10      // P7_2
+#endif
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
@@ -140,6 +151,13 @@ struct rst_info {
 
 #define USE_BASICMAC
 #define EXCLUDE_SX1276           //  -  3 kb
+
+#if defined(CubeCell_GPS)
+#define USE_OLED                 //  +    kb
+#endif
+
+#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
+#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
 extern Adafruit_NeoPixel strip;
 

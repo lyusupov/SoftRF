@@ -29,7 +29,9 @@
 #define US_PER_OSTICK (1 << US_PER_OSTICK_EXPONENT)
 #define OSTICKS_PER_SEC (1000000 / US_PER_OSTICK)
 
-//#define CFG_DEBUG
+#if defined(__ASR6501__)
+#define CFG_DEBUG
+#endif
 //#define CFG_DEBUG_VERBOSE
 //#define DEBUG_TX
 //#define DEBUG_RX
@@ -85,6 +87,10 @@ enum _dr_eu868_t { DR_SF12=0, DR_SF11, DR_SF10, DR_SF9, DR_SF8, DR_SF7, DR_SF7B,
 
 #if defined(ESP32) || defined(ESP8266)
 #include <pgmspace.h>
+#endif
+
+#if defined(__ASR6501__)
+#include <cores/pgmspace.h>
 #endif
 
 #endif // _lmic_arduino_hal_config_h_

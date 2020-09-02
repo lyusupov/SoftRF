@@ -950,7 +950,7 @@ static bool sx126x_radio_irq_process (ostime_t irqtime, u1_t diomask) {
 	    // unexpected irq
 	    debug_printf("UNEXPECTED RADIO IRQ %04x (after %d ticks, %.1Fms)\r\n", irqflags, irqtime - LMIC.rxtime, osticks2us(irqtime - LMIC.rxtime), 3);
 	    TRACE_VAL(irqflags);
-	    ASSERT(0);
+	    if (irqflags) ASSERT(0);
 	}
     } else { // LORA modem
 	if (irqflags & IRQ_TXDONE) { // TXDONE
@@ -992,7 +992,7 @@ static bool sx126x_radio_irq_process (ostime_t irqtime, u1_t diomask) {
 	    // unexpected irq
 	    debug_printf("UNEXPECTED RADIO IRQ %04x\r\n", irqflags);
 	    TRACE_VAL(irqflags);
-	    ASSERT(0);
+	    if (irqflags) ASSERT(0);
 	}
     }
 
