@@ -113,6 +113,10 @@ typedef uint16_t neoPixelType;
 typedef uint8_t  neoPixelType;
 #endif
 
+#ifdef __ASR6501__
+#define yield()  ({ })
+#endif
+
 class Adafruit_NeoPixel {
 
  public:

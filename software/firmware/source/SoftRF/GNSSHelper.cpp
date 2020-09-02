@@ -98,7 +98,10 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_U8]      = "U8",
   [GNSS_MODULE_U9]      = "U9",
   [GNSS_MODULE_MAV]     = "MAV",
-  [GNSS_MODULE_S7XG]    = "S7XG"
+  [GNSS_MODULE_SONY]    = "SONY",
+  [GNSS_MODULE_AT65]    = "AT65",
+  [GNSS_MODULE_MTK]     = "MTK",
+  [GNSS_MODULE_GOKE]    = "GOKE"
 };
 
 #if defined(USE_NMEA_CFG)

@@ -604,7 +604,7 @@ unsigned long S7XG_Time_Marker = 0;
 
     S7XG_Time_Marker = millis();
 
-    return GNSS_MODULE_S7XG;
+    return GNSS_MODULE_SONY;
   }
 #endif /* USE_S7XG_DRIVER */
 

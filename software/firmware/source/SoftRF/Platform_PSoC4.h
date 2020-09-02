@@ -21,7 +21,6 @@
 #define PLATFORM_PSOC4_H
 
 #include <board-config.h>
-#include <Adafruit_NeoPixel.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -77,14 +76,14 @@ struct rst_info {
 #define swSer                 Serial1
 #else
 #define swSer                 Serial
-#endif
+#endif /* CubeCell_GPS */
 #define UATSerial             Serial
 
 #define SERIAL_OUT_BR         STD_OUT_BR
 #define SERIAL_OUT_BITS       -1
 
 #define SOC_ADC_VOLTAGE_DIV   1
-#define VREFINT               1200  // mV
+#define VREFINT               1200         // mV
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  UART_RX
@@ -93,22 +92,17 @@ struct rst_info {
 #define SOC_GPIO_PIN_SWSER_RX UART_RX2
 #define SOC_GPIO_PIN_SWSER_TX UART_TX2
 
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
-
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     RADIO_MOSI  // P4_0
-#define SOC_GPIO_PIN_MISO     RADIO_MISO  // P4_1
-#define SOC_GPIO_PIN_SCK      RADIO_SCLK  // P4_2
-#define SOC_GPIO_PIN_SS       RADIO_NSS   // P4_3
+#define SOC_GPIO_PIN_MOSI     RADIO_MOSI   // P4_0
+#define SOC_GPIO_PIN_MISO     RADIO_MISO   // P4_1
+#define SOC_GPIO_PIN_SCK      RADIO_SCLK   // P4_2
+#define SOC_GPIO_PIN_SS       RADIO_NSS    // P4_3
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      RADIO_BUSY
@@ -116,23 +110,32 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      RADIO_RESET
 
 /* SX1262 */
-#define SOC_GPIO_PIN_RST      RADIO_RESET // P5_7
-#define SOC_GPIO_PIN_BUSY     RADIO_BUSY  // P4_7
-#define SOC_GPIO_PIN_DIO1     RADIO_DIO_1 // P4_6
+#define SOC_GPIO_PIN_RST      RADIO_RESET  // P5_7
+#define SOC_GPIO_PIN_BUSY     RADIO_BUSY   // P4_7
+#define SOC_GPIO_PIN_DIO1     RADIO_DIO_1  // P4_6
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX RADIO_ANT_SWITCH_POWER  // P6_1
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      SDA         // P0_1
-#define SOC_GPIO_PIN_SCL      SCL         // P0_0
+#define SOC_GPIO_PIN_SDA      SDA          // P0_1
+#define SOC_GPIO_PIN_SCL      SCL          // P0_0
 
 #if defined(CubeCell_GPS)
-/* GNSS */
-#define SOC_GPIO_PIN_GNSS_PWR GPIO14      // P0_7
-/* OLED */
-#define SOC_GPIO_PIN_OLED_RST GPIO10      // P7_2
-#endif
+#define SOC_GPIO_PIN_LED      RGB          // P0_6
+#define SOC_GPIO_PIN_GNSS_PPS GPIO8
+#define SOC_GPIO_PIN_BATTERY  ADC1         // P2_0
+
+#define SOC_GPIO_PIN_GNSS_PWR GPIO14       // P0_7
+#define SOC_GPIO_PIN_OLED_RST GPIO10       // P7_2
+#define SOC_GPIO_PIN_BAT_CTL  VBAT_ADC_CTL // P3_3
+#define SOC_GPIO_PIN_BUTTON   USER_KEY     // P3_3
+#else /* CubeCell_GPS */
+
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#endif /* CubeCell_GPS */
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -148,6 +151,7 @@ struct rst_info {
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  - 16 kb
+#define EXCLUDE_LED_RING         //  -    kb
 
 #define USE_BASICMAC
 #define EXCLUDE_SX1276           //  -  3 kb
@@ -156,10 +160,15 @@ struct rst_info {
 #define USE_OLED                 //  +    kb
 #endif
 
+/* SoftRF/PSoC PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
+#if !defined(EXCLUDE_LED_RING)
+#include <Adafruit_NeoPixel.h>
+
 extern Adafruit_NeoPixel strip;
+#endif /* EXCLUDE_LED_RING */
 
 #endif /* PLATFORM_PSOC4_H */
 

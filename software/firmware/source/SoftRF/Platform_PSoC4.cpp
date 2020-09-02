@@ -41,6 +41,18 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
+#if !defined(EXCLUDE_LED_RING)
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = Arduino pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
+                              NEO_GRB + NEO_KHZ800);
+#endif /* EXCLUDE_LED_RING */
+
 #if defined(USE_OLED)
 U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(SOC_GPIO_PIN_OLED_RST);
 #endif /* USE_OLED */

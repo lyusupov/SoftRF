@@ -30,7 +30,10 @@ enum
   GNSS_MODULE_U8,   /* Ublox 8 */
   GNSS_MODULE_U9,   /* reserved for Ublox 9 */
   GNSS_MODULE_MAV,  /* MAVLink */
-  GNSS_MODULE_S7XG  /* S7XG */
+  GNSS_MODULE_SONY, /* S7XG */
+  GNSS_MODULE_AT65, /* AT6558 */
+  GNSS_MODULE_MTK,  /* L80 */
+  GNSS_MODULE_GOKE  /* Air530 */
 };
 
 /*
