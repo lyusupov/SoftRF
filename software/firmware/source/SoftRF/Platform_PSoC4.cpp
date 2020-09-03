@@ -29,6 +29,7 @@
 #include "LEDHelper.h"
 
 #include <U8x8lib.h>
+#include <innerWdt.h>
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -49,7 +50,7 @@ lmic_pinmap lmic_pins = {
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
+CubeCell_NeoPixel strip = CubeCell_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
@@ -91,6 +92,20 @@ static void PSoC4_SerialWakeup() { }
 
 static void PSoC4_setup()
 {
+  uint32 reset_reason = CySysGetResetReason(0);
+
+  switch (reset_reason)
+  {
+    case CY_SYS_RESET_WDT:
+      reset_info.reason = REASON_WDT_RST; break;
+    case CY_SYS_RESET_PROTFAULT:
+      reset_info.reason = REASON_EXCEPTION_RST; break;
+
+    case CY_SYS_RESET_SW:
+    default:
+      reset_info.reason = REASON_DEFAULT_RST; break;
+  }
+
 #if defined(CubeCell_GPS)
   pinMode(Vext, OUTPUT);
   digitalWrite(Vext, LOW);
@@ -111,21 +126,23 @@ static void PSoC4_loop()
 static void PSoC4_fini()
 {
 #if defined(CubeCell_GPS)
-  pinMode(SOC_GPIO_PIN_OLED_RST, INPUT);
+  pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
 
   digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
-  pinMode(SOC_GPIO_PIN_GNSS_PWR, INPUT);
+  pinMode(SOC_GPIO_PIN_GNSS_PWR, ANALOG);
 
   digitalWrite(Vext, HIGH);
-  pinMode(Vext, INPUT);
+  pinMode(Vext, ANALOG);
+
+  pinMode(SOC_GPIO_PIN_BATTERY, ANALOG);
 #endif /* CubeCell_GPS */
 
-//  BoardDeInitMcu();
+  CyHalt(0);
 }
 
 static void PSoC4_reset()
 {
-//  BoardResetMcu();
+  CySoftwareReset();
 }
 
 static uint32_t PSoC4_getChipId()
@@ -146,7 +163,7 @@ static uint32_t PSoC4_getChipId()
 
 static void* PSoC4_getResetInfoPtr()
 {
-  return 0;
+  return (void *) &reset_info;
 }
 
 static String PSoC4_getResetInfo()
@@ -159,7 +176,17 @@ static String PSoC4_getResetInfo()
 
 static String PSoC4_getResetReason()
 {
-  return F("DEFAULT");
+  switch (reset_info.reason)
+  {
+    case REASON_DEFAULT_RST       : return F("DEFAULT");
+    case REASON_WDT_RST           : return F("WDT");
+    case REASON_EXCEPTION_RST     : return F("EXCEPTION");
+    case REASON_SOFT_WDT_RST      : return F("SOFT_WDT");
+    case REASON_SOFT_RESTART      : return F("SOFT_RESTART");
+    case REASON_DEEP_SLEEP_AWAKE  : return F("DEEP_SLEEP_AWAKE");
+    case REASON_EXT_SYS_RST       : return F("EXT_SYS");
+    default                       : return F("NO_MEAN");
+  }
 }
 
 static uint32_t PSoC4_getFreeHeap()
@@ -169,8 +196,12 @@ static uint32_t PSoC4_getFreeHeap()
 
 static long PSoC4_random(long howsmall, long howBig)
 {
-//  return howsmall + BoardGetRandomSeed() % (howBig - howsmall);
-  return 0;
+  if(howsmall >= howBig) {
+      return howsmall;
+  }
+  long diff = howBig - howsmall;
+
+  return random(diff) + howsmall;
 }
 
 static void PSoC4_Sound_test(int var)
@@ -253,8 +284,12 @@ static void PSoC4_Display_loop()
       u8x8->draw2x2String(0, 6, "BARO");
       u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
 
-      delay(3000);
-//      IWatchdog.reload();
+      delay(1000);
+      feedInnerWdt();
+      delay(1000);
+      feedInnerWdt();
+      delay(1000);
+      feedInnerWdt();
 
       OLED_display_probe_status = true;
     } else if (!OLED_display_frontpage) {
@@ -367,12 +402,21 @@ static void PSoC4_UATModule_restart()
 
 static void PSoC4_WDT_setup()
 {
+  /* Enable the WDT.
+  * The wdt about every 1.4 seconds generates an interruption,
+  * Two unserviced interrupts lead to a system reset(i.e. at the third match).
+  * The max feed time shoud be 2.8 seconds.
+  * autoFeed = false: do not auto feed wdt.
+  * autoFeed = true : it auto feed the wdt in every interrupt.
+  */
 
+  /* Enable the WDT, autofeed	*/
+  innerWdtEnable(true);
 }
 
 static void PSoC4_WDT_fini()
 {
-
+  CySysWdtDisable();
 }
 
 static void PSoC4_Button_setup()

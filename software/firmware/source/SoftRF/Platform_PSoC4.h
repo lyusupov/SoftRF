@@ -165,9 +165,9 @@ struct rst_info {
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
 #if !defined(EXCLUDE_LED_RING)
-#include <Adafruit_NeoPixel.h>
+#include <CubeCell_NeoPixel.h>
 
-extern Adafruit_NeoPixel strip;
+extern CubeCell_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
 
 #endif /* PLATFORM_PSOC4_H */

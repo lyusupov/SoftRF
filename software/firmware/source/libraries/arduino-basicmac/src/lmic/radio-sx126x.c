@@ -777,6 +777,12 @@ debug_printf("+++ rxfsk +++ %02x %d\r\n", rxcontinuous, LMIC.dataLen);
   	if (LMIC.rxtime - now < 0) {
   	    debug_printf("WARNING: rxtime is %d ticks in the past! (ramp-up time %d ms / %d ticks)\r\n",
   			 now - LMIC.rxtime, osticks2ms(now - t0), now - t0);
+
+  	    /* workaround against Rx issue on ASR650x target */
+#if !defined(CFG_DEBUG) && defined(__ASR6501__)
+  	    delay(1);
+#endif /* __ASR6501__ */
+
   	}
 
     // now receive (lock interrupts only for final fine tuned rx timing...)
@@ -828,6 +834,12 @@ debug_printf("+++ rxlora +++ %02x\r\n", rxcontinuous);
   	if (LMIC.rxtime - now < 0) {
   	    debug_printf("WARNING: rxtime is %d ticks in the past! (ramp-up time %d ms / %d ticks)\r\n",
   			 now - LMIC.rxtime, osticks2ms(now - t0), now - t0);
+
+  	    /* workaround against Rx issue on ASR650x target */
+#if !defined(CFG_DEBUG) && defined(__ASR6501__)
+  	    delay(1);
+#endif /* __ASR6501__ */
+
   	}
 
     // now receive (lock interrupts only for final fine tuned rx timing...)
