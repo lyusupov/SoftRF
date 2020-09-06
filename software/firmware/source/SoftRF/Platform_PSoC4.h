@@ -128,6 +128,7 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_GNSS_PWR GPIO14       // P0_7
 #define SOC_GPIO_PIN_OLED_RST GPIO10       // P7_2
+#define SOC_GPIO_PIN_OLED_PWR Vext         // P3_2
 #define SOC_GPIO_PIN_BAT_CTL  VBAT_ADC_CTL // P3_3
 #define SOC_GPIO_PIN_BUTTON   USER_KEY     // P3_3
 #else /* CubeCell_GPS */

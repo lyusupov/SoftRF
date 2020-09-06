@@ -702,6 +702,13 @@ void PickGNSSFix()
     } else if (SerialOutput.available() > 0) {
       c = SerialOutput.read();
 
+#if 0
+      /* This makes possible to configure HTCC-AB02S built-in GOKE GNSS from aside */
+      if (hw_info.model == SOFTRF_MODEL_MINI) {
+        swSer.write(c);
+      }
+#endif
+
     /* Built-in GNSS input */
     } else if (swSer.available() > 0) {
       c = swSer.read();

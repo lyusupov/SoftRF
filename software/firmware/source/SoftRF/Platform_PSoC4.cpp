@@ -30,6 +30,7 @@
 
 #include <U8x8lib.h>
 #include <innerWdt.h>
+#include <lorawan_port.h>
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -106,16 +107,34 @@ static void PSoC4_setup()
       reset_info.reason = REASON_DEFAULT_RST; break;
   }
 
-#if defined(CubeCell_GPS)
-  pinMode(Vext, OUTPUT);
-  digitalWrite(Vext, LOW);
-
-  pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
-  digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
+  pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
 
   pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
-#endif /* CubeCell_GPS */
+
+  delay(200);
+
+  /* SSD1306 I2C OLED probing */
+  Wire.begin();
+  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+  if (Wire.endTransmission() == 0) {
+    hw_info.model = SOFTRF_MODEL_MINI;
+  }
+
+  pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
+  pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
+
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
+
+    pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
+
+    pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
+  }
 }
 
 static void PSoC4_loop()
@@ -125,19 +144,24 @@ static void PSoC4_loop()
 
 static void PSoC4_fini()
 {
-#if defined(CubeCell_GPS)
-  pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
+    pinMode(SOC_GPIO_PIN_GNSS_PWR, ANALOG);
 
-  digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
-  pinMode(SOC_GPIO_PIN_GNSS_PWR, ANALOG);
+    delay(2000);
 
-  digitalWrite(Vext, HIGH);
-  pinMode(Vext, ANALOG);
+    pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
 
-  pinMode(SOC_GPIO_PIN_BATTERY, ANALOG);
-#endif /* CubeCell_GPS */
+    digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
+    pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
+
+    pinMode(SOC_GPIO_PIN_BATTERY, ANALOG);
+  }
 
   CyHalt(0);
+//  lowPowerHandler();
+//  aos_lrwan_chg_mode.enter_stop_mode();
+//  aos_lrwan_chg_mode.enter_sleep_mode();
 }
 
 static void PSoC4_reset()
@@ -189,9 +213,14 @@ static String PSoC4_getResetReason()
   }
 }
 
+extern void * _sbrk_r (int);
+extern int _end;
+
 static uint32_t PSoC4_getFreeHeap()
 {
-  return 0; /* TBD */
+//  uint8 *heapend = (uint8 *) _sbrk_r(0);
+//  return CYDEV_HEAP_SIZE - (heapend - (uint8 *) &_end);
+  return 0;
 }
 
 static long PSoC4_random(long howsmall, long howBig)
@@ -233,6 +262,34 @@ static void PSoC4_SPI_begin()
 static void PSoC4_swSer_begin(unsigned long baud)
 {
   swSer.begin(baud);
+
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+
+    /* 'Cold' restart */
+//    swSer.write("$PGKC030,3,1*2E\r\n");
+//    swSer.flush(); delay(250);
+
+    /* give GOKE GNSS few ms to warm up */
+    delay(500);
+
+    /* Firmware version request */
+    swSer.write("$PGKC462*2F\r\n");
+    swSer.flush(); delay(250);
+
+    /* GPS + GLONASS */
+    swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+    swSer.flush(); delay(250);
+
+    /* RMC + GGA + GSA */
+    swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
+    swSer.flush(); delay(250);
+
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+    /* Enable 3D fix 1PPS output */
+//  swSer.write("$PGKC161,2,100,1000*07\r\n");
+//  swSer.flush(); delay(250);
+#endif
+  }
 }
 
 static void PSoC4_swSer_enableRx(boolean arg)
@@ -245,20 +302,36 @@ static byte PSoC4_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  /* SSD1306 I2C OLED probing */
-  Wire.begin();
-  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
-  if (Wire.endTransmission() == 0) {
-    u8x8 = &u8x8_i2c;
-    rval = DISPLAY_OLED_TTGO;
-  }
 
-  if (u8x8) {
-    u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
 
-    u8x8->draw2x2String(2, 3, "SoftRF");
+#if 0
+    pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
+
+    delay(10);
+
+    pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
+
+    delay(500);
+#endif
+
+    /* SSD1306 I2C OLED probing */
+    Wire.begin();
+    Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    if (Wire.endTransmission() == 0) {
+      u8x8 = &u8x8_i2c;
+      rval = DISPLAY_OLED_TTGO;
+    }
+
+    if (u8x8) {
+      u8x8->begin();
+      u8x8->setFont(u8x8_font_chroma48medium8_r);
+      u8x8->clear();
+
+      u8x8->draw2x2String(2, 3, "SoftRF");
+    }
   }
 #endif /* USE_OLED */
 
@@ -271,7 +344,7 @@ static void PSoC4_Display_loop()
   char buf[16];
   uint32_t disp_value;
 
-  if (u8x8) {
+  if (hw_info.model == SOFTRF_MODEL_MINI && u8x8) {
     if (!OLED_display_probe_status) {
       u8x8->clear();
 
@@ -359,10 +432,19 @@ static void PSoC4_Display_loop()
 static void PSoC4_Display_fini(const char *msg)
 {
 #if defined(USE_OLED)
-  if (u8x8) {
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(1, 3, msg);
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    if (u8x8) {
+      u8x8->setFont(u8x8_font_chroma48medium8_r);
+      u8x8->clear();
+      u8x8->draw2x2String(1, 3, msg);
+    }
+
+#if 0
+    pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
+
+    digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
+    pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
+#endif
   }
 #endif /* USE_OLED */
 }
@@ -421,17 +503,26 @@ static void PSoC4_WDT_fini()
 
 static void PSoC4_Button_setup()
 {
-  /* TODO */
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+  }
 }
 
 static void PSoC4_Button_loop()
 {
-  /* TODO */
+  if (hw_info.model == SOFTRF_MODEL_MINI &&
+      digitalRead(SOC_GPIO_PIN_BUTTON) == LOW) {
+//  Serial.println(F("BUTTON PRESSED")); Serial.flush();
+    shutdown("  OFF  ");
+  }
 }
 
 static void PSoC4_Button_fini()
 {
-  /* TODO */
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    /* leave it in input mode to allow further wakeup from deep sleep */
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+  }
 }
 
 const SoC_ops_t PSoC4_ops = {
