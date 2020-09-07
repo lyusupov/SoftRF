@@ -189,7 +189,7 @@ void handleRoot() {
 
 void handleSettings() {
 
-  size_t size = 7040;
+  size_t size = 7160;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -365,6 +365,8 @@ void handleSettings() {
 <option %s value='%d'>UK (869.52 MHz)</option>\
 <option %s value='%d'>AU (921 MHz)</option>\
 <option %s value='%d'>IN (866 MHz)</option>\
+<option %s value='%d'>KR (920.9 MHz)</option>\
+<option %s value='%d'>IL (916.2 MHz)</option>\
 </select>\
 </td>\
 </tr>\
@@ -433,6 +435,8 @@ void handleSettings() {
   (settings->s.band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
   (settings->s.band == RF_BAND_AU ? "selected" : ""), RF_BAND_AU,
   (settings->s.band == RF_BAND_IN ? "selected" : ""), RF_BAND_IN,
+  (settings->s.band == RF_BAND_KR ? "selected" : ""), RF_BAND_KR,
+  (settings->s.band == RF_BAND_IL ? "selected" : ""), RF_BAND_IL,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,

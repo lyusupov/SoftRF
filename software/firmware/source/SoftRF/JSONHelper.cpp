@@ -383,6 +383,10 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.band = RF_BAND_UK;
     } else if (!strcmp(band_s,"IN")) {
       eeprom_block.field.settings.band = RF_BAND_IN;
+    } else if (!strcmp(band_s,"IL")) {
+      eeprom_block.field.settings.band = RF_BAND_IL;
+    } else if (!strcmp(band_s,"KR")) {
+      eeprom_block.field.settings.band = RF_BAND_KR;
     }
   }
 
