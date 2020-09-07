@@ -82,8 +82,7 @@ struct rst_info {
 #define SERIAL_OUT_BR         STD_OUT_BR
 #define SERIAL_OUT_BITS       -1
 
-#define SOC_ADC_VOLTAGE_DIV   1
-#define VREFINT               1200         // mV
+#define SOC_ADC_VOLTAGE_DIV   2 // HTCC-AB02S has Vbat 100k/100k voltage divider
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  UART_RX
@@ -162,8 +161,8 @@ struct rst_info {
 #endif
 
 /* SoftRF/PSoC PFLAU NMEA sentence extension(s) */
-#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
-#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
+#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
+#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(SoC->Battery_voltage()*100)
 
 #if !defined(EXCLUDE_LED_RING)
 #include <CubeCell_NeoPixel.h>

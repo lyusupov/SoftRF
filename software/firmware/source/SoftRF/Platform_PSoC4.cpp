@@ -304,19 +304,6 @@ static byte PSoC4_Display_setup()
 #if defined(USE_OLED)
 
   if (hw_info.model == SOFTRF_MODEL_MINI) {
-
-#if 0
-    pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
-
-    delay(10);
-
-    pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
-
-    delay(500);
-#endif
-
     /* SSD1306 I2C OLED probing */
     Wire.begin();
     Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
@@ -438,13 +425,6 @@ static void PSoC4_Display_fini(const char *msg)
       u8x8->clear();
       u8x8->draw2x2String(1, 3, msg);
     }
-
-#if 0
-    pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
-
-    digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
-    pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
-#endif
   }
 #endif /* USE_OLED */
 }
@@ -456,8 +436,27 @@ static void PSoC4_Battery_setup()
 
 static float PSoC4_Battery_voltage()
 {
+  /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
+  int user_key_state = digitalRead(USER_KEY);
 
-  return 0;
+  /* if the key is not pressed down - activate VBAT_ADC_CTL */
+  if (user_key_state == HIGH) {
+    pinMode(VBAT_ADC_CTL,OUTPUT);
+    digitalWrite(VBAT_ADC_CTL,LOW);
+  }
+
+  uint16_t mV = analogRead(SOC_GPIO_PIN_BATTERY);
+
+  /* restore previous state of VBAT_ADC_CTL pin */
+  if (user_key_state == HIGH) {
+    /*
+     * CubeCell-GPS has external 10K VDD pullup resistor
+     * connected to GPIO7 (USER_KEY / VBAT_ADC_CTL) pin
+     */
+    pinMode(VBAT_ADC_CTL, INPUT);
+  }
+
+  return mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
 }
 
 void PSoC4_GNSS_PPS_Interrupt_handler() {

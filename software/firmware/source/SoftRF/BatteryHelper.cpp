@@ -43,7 +43,8 @@ float Battery_threshold()
 {
   return hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
         (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-         hw_info.model == SOFTRF_MODEL_DONGLE    ? BATTERY_THRESHOLD_LIPO   :
+         hw_info.model == SOFTRF_MODEL_DONGLE                                ||
+         hw_info.model == SOFTRF_MODEL_MINI      ? BATTERY_THRESHOLD_LIPO   :
          hw_info.model == SOFTRF_MODEL_UNI       ? BATTERY_THRESHOLD_NIZNX2 :
                                                    BATTERY_THRESHOLD_NIMHX2;
 }
@@ -53,7 +54,8 @@ float Battery_cutoff()
 {
   return hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
         (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-         hw_info.model == SOFTRF_MODEL_DONGLE    ? BATTERY_CUTOFF_LIPO   :
+         hw_info.model == SOFTRF_MODEL_DONGLE                                ||
+         hw_info.model == SOFTRF_MODEL_MINI      ? BATTERY_CUTOFF_LIPO   :
          hw_info.model == SOFTRF_MODEL_UNI       ? BATTERY_CUTOFF_NIZNX2 :
                                                    BATTERY_CUTOFF_NIMHX2;
 }
@@ -63,6 +65,7 @@ void Battery_loop()
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
      (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
       hw_info.model == SOFTRF_MODEL_DONGLE                                ||
+      hw_info.model == SOFTRF_MODEL_MINI                                  ||
       hw_info.model == SOFTRF_MODEL_UNI       ) {
     if (isTimeToBattery()) {
       float voltage = Battery_voltage();
