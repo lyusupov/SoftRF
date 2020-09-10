@@ -49,9 +49,6 @@
 
 #define SerialOutput            Serial
 
-// button
-#define SOC_GPIO_PIN_BUTTON     USER_BTN
-
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -135,6 +132,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 #endif /* CubeCell_GPS */
 
 #define EXCLUDE_WIFI

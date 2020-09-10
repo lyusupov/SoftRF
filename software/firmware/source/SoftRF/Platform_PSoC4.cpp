@@ -84,12 +84,46 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
+typedef enum
+{
+  PSOC4_LOW_POWER,
+  PSOC4_ACTIVE
+} PSoC4_states_t;
+
+static PSoC4_states_t PSoC4_state = PSOC4_ACTIVE;
+
 static int PSoC4_probe_pin(uint32_t pin, uint32_t mode)
 {
   return 0;
 }
 
-static void PSoC4_SerialWakeup() { }
+static void PSoC4_SerialWakeup()
+{
+  if (hw_info.model == SOFTRF_MODEL_MINI &&
+      PSoC4_state   == PSOC4_LOW_POWER) {
+    detachInterrupt(SOC_GPIO_PIN_CONS_RX);
+    PSoC4_state = PSOC4_ACTIVE;
+    CySoftwareReset();
+  }
+}
+
+static void PSoC4_User_Key_Wakeup()
+{
+  if (hw_info.model == SOFTRF_MODEL_MINI &&
+      PSoC4_state   == PSOC4_LOW_POWER) {
+
+    delay(10);
+
+    if (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW) {
+      detachInterrupt(SOC_GPIO_PIN_BUTTON);
+      PSoC4_state = PSOC4_ACTIVE;
+
+      while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
+      delay(100);
+      CySoftwareReset();
+    }
+  }
+}
 
 static void PSoC4_setup()
 {
@@ -139,7 +173,9 @@ static void PSoC4_setup()
 
 static void PSoC4_loop()
 {
-
+  if (PSoC4_state == PSOC4_LOW_POWER) {
+    lowPowerHandler();
+  }
 }
 
 static void PSoC4_fini()
@@ -156,12 +192,21 @@ static void PSoC4_fini()
     pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
 
     pinMode(SOC_GPIO_PIN_BATTERY, ANALOG);
+
+//    settings->nmea_l = false;
+//    settings->nmea_s = false;
+
+    Serial.end();
+
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+    attachInterrupt(SOC_GPIO_PIN_BUTTON, PSoC4_User_Key_Wakeup, FALLING);
+
+    pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
+    attachInterrupt(SOC_GPIO_PIN_CONS_RX, PSoC4_SerialWakeup, FALLING);
   }
 
-  CyHalt(0);
-//  lowPowerHandler();
-//  aos_lrwan_chg_mode.enter_stop_mode();
-//  aos_lrwan_chg_mode.enter_sleep_mode();
+  PSoC4_state = PSOC4_LOW_POWER;
+//  CyHalt(0);
 }
 
 static void PSoC4_reset()
@@ -436,24 +481,29 @@ static void PSoC4_Battery_setup()
 
 static float PSoC4_Battery_voltage()
 {
-  /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
-  int user_key_state = digitalRead(USER_KEY);
+  uint16_t mV = 0;
 
-  /* if the key is not pressed down - activate VBAT_ADC_CTL */
-  if (user_key_state == HIGH) {
-    pinMode(VBAT_ADC_CTL,OUTPUT);
-    digitalWrite(VBAT_ADC_CTL,LOW);
-  }
+  if (hw_info.model == SOFTRF_MODEL_MINI &&
+      PSoC4_state   == PSOC4_ACTIVE) {
+    /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
+    int user_key_state = digitalRead(USER_KEY);
 
-  uint16_t mV = analogRead(SOC_GPIO_PIN_BATTERY);
+    /* if the key is not pressed down - activate VBAT_ADC_CTL */
+    if (user_key_state == HIGH) {
+      pinMode(VBAT_ADC_CTL,OUTPUT);
+      digitalWrite(VBAT_ADC_CTL,LOW);
+    }
 
-  /* restore previous state of VBAT_ADC_CTL pin */
-  if (user_key_state == HIGH) {
-    /*
-     * CubeCell-GPS has external 10K VDD pullup resistor
-     * connected to GPIO7 (USER_KEY / VBAT_ADC_CTL) pin
-     */
-    pinMode(VBAT_ADC_CTL, INPUT);
+    mV = analogRead(SOC_GPIO_PIN_BATTERY);
+
+    /* restore previous state of VBAT_ADC_CTL pin */
+    if (user_key_state == HIGH) {
+      /*
+       * CubeCell-GPS has external 10K VDD pullup resistor
+       * connected to GPIO7 (USER_KEY / VBAT_ADC_CTL) pin
+       */
+      pinMode(VBAT_ADC_CTL, INPUT);
+    }
   }
 
   return mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
@@ -519,8 +569,7 @@ static void PSoC4_Button_loop()
 static void PSoC4_Button_fini()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI) {
-    /* leave it in input mode to allow further wakeup from deep sleep */
-    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 }
 
