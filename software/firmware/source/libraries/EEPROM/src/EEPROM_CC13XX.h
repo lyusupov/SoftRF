@@ -22,6 +22,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+
 #ifndef EEPROM_h
 #define EEPROM_h
 
@@ -83,3 +85,4 @@ extern EEPROMClass EEPROM;
 
 #endif /* EEPROM_h */
 
+#endif /* CC13XX) or CC13X2 */

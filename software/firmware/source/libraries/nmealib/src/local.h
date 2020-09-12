@@ -2,7 +2,8 @@
 #include <_ansi.h>
 #include <time.h>
 
-#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
+    !defined(ARDUINO_ARCH_NRF5)
 #include <pgmspace.h>
 #if defined(ARDUINO_ARCH_STM32)
 #define	_AND		,
@@ -12,6 +13,12 @@
 #endif
 #else
 #include <avr/pgmspace.h>
+#if defined(ARDUINO_ARCH_NRF5)
+#define	_AND		,
+#define	_CONST		const
+#define	_EXFUN(name, proto)		name proto
+#define	_DEFUN(name, arglist, args)	name(args)
+#endif
 #endif
 
 #define SECSPERMIN	60L

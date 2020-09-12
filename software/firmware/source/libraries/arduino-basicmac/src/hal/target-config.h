@@ -85,6 +85,8 @@ enum _dr_eu868_t { DR_SF12=0, DR_SF11, DR_SF10, DR_SF9, DR_SF8, DR_SF7, DR_SF7B,
 
 #if defined(ESP32) || defined(ESP8266) || defined(__ASR6501__)
 #include <pgmspace.h>
+#elif defined(ARDUINO_ARCH_NRF5)
+#include <avr/pgmspace.h>
 #endif
 
 #endif // _lmic_arduino_hal_config_h_

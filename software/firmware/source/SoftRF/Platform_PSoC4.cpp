@@ -486,7 +486,7 @@ static float PSoC4_Battery_voltage()
   if (hw_info.model == SOFTRF_MODEL_MINI &&
       PSoC4_state   == PSOC4_ACTIVE) {
     /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
-    int user_key_state = digitalRead(USER_KEY);
+    int user_key_state = digitalRead(SOC_GPIO_PIN_BUTTON);
 
     /* if the key is not pressed down - activate VBAT_ADC_CTL */
     if (user_key_state == HIGH) {

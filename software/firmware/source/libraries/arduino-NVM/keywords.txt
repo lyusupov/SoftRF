@@ -1,0 +1,66 @@
+#######################################
+# Syntax Coloring Map For EEPROM
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+NVRAM	      KEYWORD1
+EEPROM	    KEYWORD1
+VirtualPage	KEYWORD1
+Flash	      KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# Flash/VirtualPage/EEPROM
+length	    KEYWORD2
+page_count	KEYWORD2
+
+# Flash/NVRAM/EEPROM
+write	      KEYWORD2
+write_block	KEYWORD2
+clean_up	  KEYWORD2
+
+# Flash
+size	                  KEYWORD2
+page_size	              KEYWORD2
+page_size_bits	        KEYWORD2
+page_count	            KEYWORD2
+specified_erase_cycles	KEYWORD2
+page_address	          KEYWORD2
+erase		                KEYWORD2
+erase_all	              KEYWORD2
+
+# VirtualPage
+wear_level	    KEYWORD2
+get	            KEYWORD2
+allocate	      KEYWORD2
+release_prepare	KEYWORD2
+release	        KEYWORD2
+release_started	KEYWORD2
+fail	          KEYWORD2
+format	        KEYWORD2
+
+# NVRAM
+read_block	  KEYWORD2
+read	        KEYWORD2
+write_prepare	KEYWORD2
+
+# EEPROM
+read	  KEYWORD2
+update	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+# Flash.h
+FLASH_ERASE_CYCLES	        LITERAL1
+FLASH_PAGE_SIZE	            LITERAL1
+FLASH_ERASE_PAGE_TIME	      LITERAL1
+FLASH_SUPPORTS_RANDOM_WRITE	LITERAL1
+FLASH_WRITES_PER_WORD	      LITERAL1
+FLASH_WRITES_PER_PAGE	      LITERAL1

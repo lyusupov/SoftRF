@@ -22,8 +22,10 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+
 #include "Arduino.h"
-#include "EEPROM.h"
+#include "EEPROM_CC13XX.h"
 #include "debug.h"
 
 #ifdef DEBUG_ASR_CORE
@@ -275,3 +277,5 @@ uint8_t const * EEPROMClass::getConstDataPtr() const {
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EEPROM)
 EEPROMClass EEPROM;
 #endif
+
+#endif /* CC13XX) or CC13X2 */
