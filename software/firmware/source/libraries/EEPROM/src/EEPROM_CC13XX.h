@@ -85,4 +85,4 @@ extern EEPROMClass EEPROM;
 
 #endif /* EEPROM_h */
 
-#endif /* CC13XX) or CC13X2 */
+#endif /* CC13XX or CC13X2 */

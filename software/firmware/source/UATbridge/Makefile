@@ -39,8 +39,8 @@ CPPS          := Platform_CC13XX.cpp SoCHelper.cpp \
                  GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
                  NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
                  LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp \
-                 Platform_ESP8266.cpp Platform_ESP32.cpp \
-                 Platform_RPi.cpp Platform_STM32.cpp Platform_PSoC4.cpp \
+                 Platform_ESP8266.cpp Platform_ESP32.cpp Platform_RPi.cpp \
+                 Platform_STM32.cpp Platform_PSoC4.cpp  Platform_nRF5.cpp \
                  JSONHelper.cpp BluetoothHelper.cpp SoundHelper.cpp \
                  TimeHelper.cpp WebHelper.cpp WiFiHelper.cpp OTAHelper.cpp
 

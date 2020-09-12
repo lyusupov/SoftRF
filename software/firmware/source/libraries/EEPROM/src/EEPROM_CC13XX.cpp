@@ -278,4 +278,4 @@ uint8_t const * EEPROMClass::getConstDataPtr() const {
 EEPROMClass EEPROM;
 #endif
 
-#endif /* CC13XX) or CC13X2 */
+#endif /* CC13XX or CC13X2 */
