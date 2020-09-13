@@ -348,16 +348,25 @@ static void ESP32_fini()
 
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
-    delay(2000); /* Keep 'OFF' message on OLED for 2 seconds */
-
     axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
     axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
     axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
-    axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+
+    /* workaround against AXP I2C access blocking by 'noname' OLED */
+    if (u8x8 == NULL) {
+      axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    }
     axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
 
     delay(20);
 
+    /*
+     * When driven by SoftRF the V08+ T-Beam takes:
+     * in 'full power' - 160 - 180 mA
+     * in 'stand by'   -   2 -   3 mA
+     * in 'power off'  -  90 - 100 uA
+     * of current from 3.7V battery
+     */
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, 0); // 1 = High, 0 = Low
   }
 
@@ -995,7 +1004,10 @@ static void ESP32_Display_fini(const char *msg)
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
     u8x8->draw2x2String(1, 3, msg);
-//    u8x8->noDisplay();
+
+    delay(3000); /* Keep shutdown message on OLED for 3 seconds */
+
+    u8x8->noDisplay();
   }
 }
 

@@ -26,7 +26,7 @@
 #include <EEPROM_CC13XX.h>
 #else
 #include <EEPROM.h>
-#endif /* CC13XX) or CC13X2 */
+#endif /* CC13XX or CC13X2 */
 #endif /* EXCLUDE_EEPROM */
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
