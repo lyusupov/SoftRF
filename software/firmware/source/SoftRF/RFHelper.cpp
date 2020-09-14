@@ -35,10 +35,10 @@
 #include "LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
 
-byte RxBuffer[MAX_PKT_SIZE];
+byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
 
 unsigned long TxTimeMarker = 0;
-byte TxBuffer[MAX_PKT_SIZE];
+byte TxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
 
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;

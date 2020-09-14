@@ -130,7 +130,7 @@ typedef struct {
     int8_t ns[4];
     int8_t ew[4];
     /********************/
-} legacy_packet_t;
+} __attribute__((packed)) legacy_packet_t;
 
 bool legacy_decode(void *, ufo_t *, ufo_t *);
 size_t legacy_encode(void *, ufo_t *);
