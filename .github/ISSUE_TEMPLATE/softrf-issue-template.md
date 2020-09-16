@@ -24,6 +24,7 @@ Recommended:
 
 - [ ]   Standalone
 - [ ]   Prime Mark II
+- [ ]   Uni
 - [ ]   Dongle
 - [ ]   SkyView EZ
 - [ ]   Raspberry Edition
