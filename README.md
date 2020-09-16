@@ -120,7 +120,7 @@ Mini|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 
 
 * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
 
-<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="340" width="467"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="340" width="263"</p>
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="310" width="426"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="310" width="240"</p>
 
 * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
 
@@ -136,7 +136,7 @@ Mini|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 
 
 * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 
-<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg" width="215" height="300">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-SeeYou.JPG" width="572" height="300"></p>
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg" width="186" height="260">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-SeeYou.JPG" width="494" height="260"></p>
 
 <!--
 * [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
