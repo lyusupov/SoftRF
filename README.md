@@ -120,7 +120,7 @@ Mini|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 
 
 * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
 
-<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="360" width="495">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="360" width="278"</p>
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="340" width="467"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="340" width="263"</p>
 
 * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
 
