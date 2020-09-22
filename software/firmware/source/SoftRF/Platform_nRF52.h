@@ -1,5 +1,5 @@
 /*
- * Platform_nRF5.h
+ * Platform_nRF52.h
  * Copyright (C) 2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ARDUINO_ARCH_NRF5)
+#if defined(ARDUINO_ARCH_NRF52)
 
-#ifndef PLATFORM_NRF5_H
-#define PLATFORM_NRF5_H
+#ifndef PLATFORM_NRF52_H
+#define PLATFORM_NRF52_H
 
 #include <avr/dtostrf.h>
 
@@ -147,6 +147,6 @@ struct rst_info {
 extern Adafruit_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
 
-#endif /* PLATFORM_NRF5_H */
+#endif /* PLATFORM_NRF52_H */
 
-#endif /* ARDUINO_ARCH_NRF5 */
+#endif /* ARDUINO_ARCH_NRF52 */

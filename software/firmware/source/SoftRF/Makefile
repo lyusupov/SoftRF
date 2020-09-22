@@ -83,7 +83,7 @@ CPPS          := SoCHelper.cpp \
                  NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
                  LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp \
                  Platform_ESP8266.cpp Platform_ESP32.cpp Platform_STM32.cpp \
-                 Platform_PSoC4.cpp  Platform_CC13XX.cpp Platform_nRF5.cpp \
+                 Platform_PSoC4.cpp  Platform_CC13XX.cpp Platform_nRF52.cpp \
                  JSONHelper.cpp BluetoothHelper.cpp SoundHelper.cpp \
                  TimeHelper.cpp WebHelper.cpp WiFiHelper.cpp OTAHelper.cpp \
                  EPDHelper.cpp Library.cpp

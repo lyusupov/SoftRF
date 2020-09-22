@@ -23,7 +23,7 @@
 // NOTE: If you have other devices connected that use the SPI bus then you will need to call nRF905_interrupt_off() before using SPI comms and then RF905_interrupt_on() once you've finished.
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)   || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
     defined(__ASR6501__)
 #define NRF905_INTERRUPTS	0
 #else
@@ -47,7 +47,7 @@
 // Not used in this library yet
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)   || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
     defined(__ASR6501__)
 #define NRF905_AM_SW		1
 #else
@@ -61,7 +61,7 @@
 // Don't transmit if airway is busy (other transmissions are going on)
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)   || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
     defined(__ASR6501__)
 #define NRF905_COLLISION_AVOID	0
 #else
@@ -255,7 +255,7 @@
 
 // Frequency
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)  || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
     defined(__ASR6501__)
 #define NRF905_FREQ			868400000UL
 #else
@@ -267,7 +267,7 @@
 // NRF905_BAND_868
 // NRF905_BAND_915
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)  || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
     defined(__ASR6501__)
 #define NRF905_BAND			NRF905_BAND_868
 #else
@@ -313,7 +313,7 @@
 // NRF905_ADDR_SIZE_1
 // NRF905_ADDR_SIZE_4
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)  || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
     defined(__ASR6501__)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
@@ -323,7 +323,7 @@
 
 // Payload size (1 - 32)
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF5)  || \
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
     defined(__ASR6501__)
 #define NRF905_PAYLOAD_SIZE	24
 #else

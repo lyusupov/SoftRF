@@ -28,7 +28,7 @@
 #include "Platform_CC13XX.h"
 #include "Platform_STM32.h"
 #include "Platform_PSoC4.h"
-#include "Platform_nRF5.h"
+#include "Platform_nRF52.h"
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -82,7 +82,7 @@ enum
 	SOC_CC13XX,
 	SOC_STM32,
 	SOC_PSOC4,
-	SOC_NRF5
+	SOC_NRF52
 };
 
 extern const SoC_ops_t *SoC;
@@ -104,8 +104,8 @@ extern const SoC_ops_t STM32_ops;
 #if defined(__ASR6501__)
 extern const SoC_ops_t PSoC4_ops;
 #endif
-#if defined(ARDUINO_ARCH_NRF5)
-extern const SoC_ops_t nRF5_ops;
+#if defined(ARDUINO_ARCH_NRF52)
+extern const SoC_ops_t nRF52_ops;
 #endif
 
 byte SoC_setup(void);

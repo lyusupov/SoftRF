@@ -1,5 +1,5 @@
 /*
- * Platform_nRF5.cpp
+ * Platform_nRF52.cpp
  * Copyright (C) 2020 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_NRF5)
+#if defined(ARDUINO_ARCH_NRF52)
 
 #include <SPI.h>
 #include <Wire.h>
@@ -71,207 +71,207 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
-static int nRF5_probe_pin(uint32_t pin, uint32_t mode)
+static int nRF52_probe_pin(uint32_t pin, uint32_t mode)
 {
   return 0;
 }
 
-static void nRF5_SerialWakeup() { }
+static void nRF52_SerialWakeup() { }
 
-static void nRF5_setup()
+static void nRF52_setup()
 {
 
 }
 
-static void nRF5_loop()
+static void nRF52_loop()
 {
 
 }
 
-static void nRF5_fini()
+static void nRF52_fini()
 {
 
 }
 
-static void nRF5_reset()
+static void nRF52_reset()
 {
 
 }
 
-static uint32_t nRF5_getChipId()
-{
-  return 0;
-}
-
-static void* nRF5_getResetInfoPtr()
+static uint32_t nRF52_getChipId()
 {
   return 0;
 }
 
-static String nRF5_getResetReason()
+static void* nRF52_getResetInfoPtr()
+{
+  return 0;
+}
+
+static String nRF52_getResetReason()
 {
   return F("DEFAULT");
 }
 
-static uint32_t nRF5_getFreeHeap()
+static uint32_t nRF52_getFreeHeap()
 {
   return 0 ;
 }
 
-static long nRF5_random(long howsmall, long howBig)
+static long nRF52_random(long howsmall, long howBig)
 {
   return 0;
 }
 
-static void nRF5_Sound_test(int var)
+static void nRF52_Sound_test(int var)
 {
 
 }
 
-static void nRF5_WiFi_setOutputPower(int dB)
-{
-  /* NONE */
-}
-
-static void nRF5_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+static void nRF52_WiFi_setOutputPower(int dB)
 {
   /* NONE */
 }
 
-static bool nRF5_EEPROM_begin(size_t size)
+static void nRF52_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+{
+  /* NONE */
+}
+
+static bool nRF52_EEPROM_begin(size_t size)
 {
   return true;
 }
 
-static void nRF5_SPI_begin()
+static void nRF52_SPI_begin()
 {
 
 }
 
-static void nRF5_swSer_begin(unsigned long baud)
+static void nRF52_swSer_begin(unsigned long baud)
 {
 
 }
 
-static void nRF5_swSer_enableRx(boolean arg)
+static void nRF52_swSer_enableRx(boolean arg)
 {
   /* NONE */
 }
 
-static byte nRF5_Display_setup()
+static byte nRF52_Display_setup()
 {
 
   return 0;
 }
 
-static void nRF5_Display_loop()
+static void nRF52_Display_loop()
 {
 
 }
 
-static void nRF5_Display_fini(const char *msg)
+static void nRF52_Display_fini(const char *msg)
 {
 
 }
 
-static void nRF5_Battery_setup()
+static void nRF52_Battery_setup()
 {
 
 }
 
-static float nRF5_Battery_voltage()
+static float nRF52_Battery_voltage()
 {
 
   return 0;
 }
 
-void nRF5_GNSS_PPS_Interrupt_handler() {
+void nRF52_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
 
-static unsigned long nRF5_get_PPS_TimeMarker() {
+static unsigned long nRF52_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
-static bool nRF5_Baro_setup() {
+static bool nRF52_Baro_setup() {
   return true;
 }
 
-static void nRF5_UATSerial_begin(unsigned long baud)
+static void nRF52_UATSerial_begin(unsigned long baud)
 {
 
 }
 
-static void nRF5_restart()
+static void nRF52_restart()
 {
 
 }
 
-static void nRF5_WDT_setup()
+static void nRF52_WDT_setup()
 {
 
 }
 
-static void nRF5_WDT_fini()
+static void nRF52_WDT_fini()
 {
 
 }
 
-static void nRF5_Button_setup()
-{
-  /* TODO */
-}
-
-static void nRF5_Button_loop()
+static void nRF52_Button_setup()
 {
   /* TODO */
 }
 
-static void nRF5_Button_fini()
+static void nRF52_Button_loop()
 {
   /* TODO */
 }
 
-const SoC_ops_t nRF5_ops = {
-  SOC_NRF5,
-  "nRF5",
-  nRF5_setup,
-  nRF5_loop,
-  nRF5_fini,
-  nRF5_reset,
-  nRF5_getChipId,
-  nRF5_getResetInfoPtr,
+static void nRF52_Button_fini()
+{
+  /* TODO */
+}
+
+const SoC_ops_t nRF52_ops = {
+  SOC_NRF52,
+  "nRF52",
+  nRF52_setup,
+  nRF52_loop,
+  nRF52_fini,
+  nRF52_reset,
+  nRF52_getChipId,
+  nRF52_getResetInfoPtr,
   NULL,
-  nRF5_getResetReason,
-  nRF5_getFreeHeap,
-  nRF5_random,
-  nRF5_Sound_test,
+  nRF52_getResetReason,
+  nRF52_getFreeHeap,
+  nRF52_random,
+  nRF52_Sound_test,
   NULL,
-  nRF5_WiFi_setOutputPower,
-  nRF5_WiFi_transmit_UDP,
+  nRF52_WiFi_setOutputPower,
+  nRF52_WiFi_transmit_UDP,
   NULL,
   NULL,
   NULL,
-  nRF5_EEPROM_begin,
-  nRF5_SPI_begin,
-  nRF5_swSer_begin,
-  nRF5_swSer_enableRx,
+  nRF52_EEPROM_begin,
+  nRF52_SPI_begin,
+  nRF52_swSer_begin,
+  nRF52_swSer_enableRx,
   NULL,
-  nRF5_Display_setup,
-  nRF5_Display_loop,
-  nRF5_Display_fini,
-  nRF5_Battery_setup,
-  nRF5_Battery_voltage,
-  nRF5_GNSS_PPS_Interrupt_handler,
-  nRF5_get_PPS_TimeMarker,
-  nRF5_Baro_setup,
-  nRF5_UATSerial_begin,
-  nRF5_restart,
-  nRF5_WDT_setup,
-  nRF5_WDT_fini,
-  nRF5_Button_setup,
-  nRF5_Button_loop,
-  nRF5_Button_fini
+  nRF52_Display_setup,
+  nRF52_Display_loop,
+  nRF52_Display_fini,
+  nRF52_Battery_setup,
+  nRF52_Battery_voltage,
+  nRF52_GNSS_PPS_Interrupt_handler,
+  nRF52_get_PPS_TimeMarker,
+  nRF52_Baro_setup,
+  nRF52_UATSerial_begin,
+  nRF52_restart,
+  nRF52_WDT_setup,
+  nRF52_WDT_fini,
+  nRF52_Button_setup,
+  nRF52_Button_loop,
+  nRF52_Button_fini
 };
 
-#endif /* ARDUINO_ARCH_NRF5 */
+#endif /* ARDUINO_ARCH_NRF52 */

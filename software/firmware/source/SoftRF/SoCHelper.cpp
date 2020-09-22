@@ -34,8 +34,8 @@ byte SoC_setup()
   SoC = &STM32_ops;
 #elif defined(__ASR6501__)
   SoC = &PSoC4_ops;
-#elif defined(ARDUINO_ARCH_NRF5)
-  SoC = &nRF5_ops;
+#elif defined(ARDUINO_ARCH_NRF52)
+  SoC = &nRF52_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif
