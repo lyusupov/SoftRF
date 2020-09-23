@@ -189,8 +189,12 @@ void setup()
 
   WiFi_setup();
 
-  if (SoC->Bluetooth) {
-     SoC->Bluetooth->setup();
+  if (SoC->USB_ops) {
+     SoC->USB_ops->setup();
+  }
+
+  if (SoC->Bluetooth_ops) {
+     SoC->Bluetooth_ops->setup();
   }
 
   OTA_setup();

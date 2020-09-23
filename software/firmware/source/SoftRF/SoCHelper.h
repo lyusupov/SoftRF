@@ -29,7 +29,6 @@
 #include "Platform_STM32.h"
 #include "Platform_PSoC4.h"
 #include "Platform_nRF52.h"
-#include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -55,7 +54,8 @@ typedef struct SoC_ops_struct {
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);
   void (*swSer_enableRx)(boolean);
-  Bluetooth_ops_t *Bluetooth;
+  IODev_ops_t *Bluetooth_ops;
+  IODev_ops_t *USB_ops;
   byte (*Display_setup)();
   void (*Display_loop)();
   void (*Display_fini)(const char *);

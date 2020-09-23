@@ -1188,6 +1188,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
   &ESP32_Bluetooth_ops,
+  NULL,
   ESP32_Display_setup,
   ESP32_Display_loop,
   ESP32_Display_fini,

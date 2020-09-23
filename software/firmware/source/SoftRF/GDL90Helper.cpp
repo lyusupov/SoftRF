@@ -440,10 +440,17 @@ static void GDL90_Out(byte *buf, size_t size)
         SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
       }
       break;
+    case GDL90_USB:
+      {
+        if (SoC->USB_ops) {
+          SoC->USB_ops->write(buf, size);
+        }
+      }
+      break;
     case GDL90_BLUETOOTH:
       {
-        if (SoC->Bluetooth) {
-          SoC->Bluetooth->write(buf, size);
+        if (SoC->Bluetooth_ops) {
+          SoC->Bluetooth_ops->write(buf, size);
         }
       }
       break;

@@ -597,7 +597,8 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_SPI_begin,
   PSoC4_swSer_begin,
   PSoC4_swSer_enableRx,
-  NULL,
+  NULL, /* PSoC4 has no built-in Bluetooth */
+  NULL, /* PSoC4 has no built-in USB */
   PSoC4_Display_setup,
   PSoC4_Display_loop,
   PSoC4_Display_fini,

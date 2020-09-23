@@ -45,10 +45,17 @@ static void D1090_Out(byte *buf, size_t size)
       SerialOutput.write(buf, size);
     }
     break;
+  case D1090_USB:
+    {
+      if (SoC->USB_ops) {
+        SoC->USB_ops->write(buf, size);
+      }
+    }
+    break;
   case D1090_BLUETOOTH:
     {
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write(buf, size);
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->write(buf, size);
       }
     }
     break;

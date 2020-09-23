@@ -658,7 +658,7 @@ void PickGNSSFix()
   int c = -1;
 
   /*
-   * Check SW, HW and BT UARTs for data
+   * Check SW/HW UARTs, USB and BT for data
    * WARNING! Make use only one input source at a time.
    */
   while (true) {
@@ -667,8 +667,8 @@ void PickGNSSFix()
       c = swSer.read();
     } else if (Serial.available() > 0) {
       c = Serial.read();
-    } else if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
-      c = SoC->Bluetooth->read();
+    } else if (SoC->Bluetooth_ops && SoC->Bluetooth_ops->available() > 0) {
+      c = SoC->Bluetooth_ops->read();
 
       /*
        * Don't forget to disable echo:
@@ -688,8 +688,8 @@ void PickGNSSFix()
      */
 
     /* USB input is first */
-    if (SoC->Bluetooth && SoC->Bluetooth->available() > 0) {
-      c = SoC->Bluetooth->read();
+    if (SoC->USB_ops && SoC->USB_ops->available() > 0) {
+      c = SoC->USB_ops->read();
 
 #if 0
       /* This makes possible to configure S76x's built-in SONY GNSS from aside */

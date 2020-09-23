@@ -402,6 +402,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_swSer_begin,
   ESP8266_swSer_enableRx,
   NULL, /* ESP8266 has no built-in Bluetooth */
+  NULL, /* ESP8266 has no built-in USB */
   ESP8266_Display_setup,
   ESP8266_Display_loop,
   ESP8266_Display_fini,

@@ -653,7 +653,6 @@ static void STM32_Button_fini()
 #if defined(USBD_USE_CDC)
 
 #include <USBSerial.h>
-#include "BluetoothHelper.h"
 
 static void STM32_USB_setup()
 {
@@ -665,6 +664,11 @@ static void STM32_USB_setup()
 static void STM32_USB_loop()
 {
 
+}
+
+static void STM32_USB_fini()
+{
+  /* TBD */
 }
 
 static int STM32_USB_available()
@@ -682,10 +686,11 @@ static size_t STM32_USB_write(const uint8_t *buffer, size_t size)
   return SerialUSB.write(buffer, size);
 }
 
-Bluetooth_ops_t STM32_USBSerial_ops = {
+IODev_ops_t STM32_USBSerial_ops = {
   "STM32 USBSerial",
   STM32_USB_setup,
   STM32_USB_loop,
+  STM32_USB_fini,
   STM32_USB_available,
   STM32_USB_read,
   STM32_USB_write
@@ -717,6 +722,7 @@ const SoC_ops_t STM32_ops = {
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,
+  NULL, /* STM32 has no built-in Bluetooth */
 #if defined(USBD_USE_CDC)
   &STM32_USBSerial_ops,
 #else

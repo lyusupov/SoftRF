@@ -157,6 +157,16 @@ typedef struct hardware_info {
 #endif /* ENABLE_AHRS */
 } hardware_info_t;
 
+typedef struct IODev_ops_struct {
+  const char name[16];
+  void (*setup)();
+  void (*loop)();
+  void (*fini)();
+  int (*available)(void);
+  int (*read)(void);
+  size_t (*write)(const uint8_t *buffer, size_t size);
+} IODev_ops_t;
+
 enum
 {
 	SOFTRF_MODE_NORMAL,

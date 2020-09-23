@@ -257,6 +257,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
   NULL,
+  NULL,
   nRF52_Display_setup,
   nRF52_Display_loop,
   nRF52_Display_fini,

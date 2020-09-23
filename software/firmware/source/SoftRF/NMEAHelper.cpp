@@ -234,12 +234,21 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
 #endif
     }
     break;
+  case NMEA_USB:
+    {
+      if (SoC->USB_ops) {
+        SoC->USB_ops->write(buf, size);
+        if (nl)
+          SoC->USB_ops->write((byte *) "\n", 1);
+      }
+    }
+    break;
   case NMEA_BLUETOOTH:
     {
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write(buf, size);
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->write(buf, size);
         if (nl)
-          SoC->Bluetooth->write((byte *) "\n", 1);
+          SoC->Bluetooth_ops->write((byte *) "\n", 1);
       }
     }
     break;

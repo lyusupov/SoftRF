@@ -798,6 +798,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_swSer_begin,
   CC13XX_swSer_enableRx,
   NULL,
+  NULL, /* CC13XX has no built-in USB */
   CC13XX_Display_setup,
   CC13XX_Display_loop,
   CC13XX_Display_fini,

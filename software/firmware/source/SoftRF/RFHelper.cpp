@@ -584,8 +584,12 @@ static bool nrf905_receive()
     rx_packets_counter++;
   }
 
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->loop();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
   }
 
   return success;
@@ -914,8 +918,12 @@ static bool sx12xx_receive()
     os_runstep();
   };
 
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->loop();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
   }
 
   if (sx12xx_receive_complete == true) {
@@ -2085,8 +2093,12 @@ static bool ognrf_receive()
 
 #endif /* WITH_SI4X32 */
 
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->loop();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
   }
 
   return success;
