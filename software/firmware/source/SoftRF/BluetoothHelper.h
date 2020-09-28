@@ -19,8 +19,6 @@
 #ifndef BLUETOOTHHELPER_H
 #define BLUETOOTHHELPER_H
 
-//#include <stddef.h>
-
 enum
 {
 	BLUETOOTH_OFF,

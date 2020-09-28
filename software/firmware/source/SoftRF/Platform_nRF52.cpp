@@ -30,6 +30,12 @@
 
 #include <U8x8lib.h>
 
+typedef volatile uint32_t REG32;
+#define pREG32 (REG32 *)
+
+#define DEVICE_ID_HIGH    (*(pREG32 (0x10000060)))
+#define DEVICE_ID_LOW     (*(pREG32 (0x10000064)))
+
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -95,12 +101,23 @@ static void nRF52_fini()
 
 static void nRF52_reset()
 {
-
+  NVIC_SystemReset();
 }
 
 static uint32_t nRF52_getChipId()
 {
-  return 0;
+#if !defined(SOFTRF_ADDRESS)
+  uint32_t id = DEVICE_ID_LOW;
+
+  /* remap address to avoid overlapping with congested FLARM range */
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
+    id += 0x100000;
+  }
+
+  return id;
+#else
+  return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
+#endif
 }
 
 static void* nRF52_getResetInfoPtr()
@@ -115,17 +132,17 @@ static String nRF52_getResetReason()
 
 static uint32_t nRF52_getFreeHeap()
 {
-  return 0 ;
+  return dbgHeapTotal() - dbgHeapUsed();
 }
 
 static long nRF52_random(long howsmall, long howBig)
 {
-  return 0;
+  return random(howsmall, howBig);
 }
 
 static void nRF52_Sound_test(int var)
 {
-
+  /* NONE */
 }
 
 static void nRF52_WiFi_setOutputPower(int dB)
@@ -140,17 +157,48 @@ static void nRF52_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool nRF52_EEPROM_begin(size_t size)
 {
+  if (size > EEPROM.length()) {
+    return false;
+  }
+
+  EEPROM.begin();
+
   return true;
 }
 
 static void nRF52_SPI_begin()
 {
-
+  /* TBD */
 }
 
 static void nRF52_swSer_begin(unsigned long baud)
 {
+  swSer.begin(baud);
 
+  /* 'Cold' restart */
+//  swSer.write("$PGKC030,3,1*2E\r\n");
+//  swSer.flush(); delay(250);
+
+  /* give GOKE GNSS few ms to warm up */
+  delay(500);
+
+  /* Firmware version request */
+  swSer.write("$PGKC462*2F\r\n");
+  swSer.flush(); delay(250);
+
+  /* GPS + GLONASS */
+  swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+  swSer.flush(); delay(250);
+
+  /* RMC + GGA + GSA */
+  swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
+  swSer.flush(); delay(250);
+
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  /* Enable 3D fix 1PPS output */
+//  swSer.write("$PGKC161,2,100,1000*07\r\n");
+//  swSer.flush(); delay(250);
+#endif
 }
 
 static void nRF52_swSer_enableRx(boolean arg)
@@ -166,22 +214,22 @@ static byte nRF52_Display_setup()
 
 static void nRF52_Display_loop()
 {
-
+  /* TBD */
 }
 
 static void nRF52_Display_fini(const char *msg)
 {
-
+  /* TBD */
 }
 
 static void nRF52_Battery_setup()
 {
-
+  /* TBD */
 }
 
 static float nRF52_Battery_voltage()
 {
-
+  /* TBD */
   return 0;
 }
 
@@ -202,7 +250,7 @@ static void nRF52_UATSerial_begin(unsigned long baud)
 
 }
 
-static void nRF52_restart()
+static void nRF52_UATModule_restart()
 {
 
 }
@@ -267,7 +315,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_get_PPS_TimeMarker,
   nRF52_Baro_setup,
   nRF52_UATSerial_begin,
-  nRF52_restart,
+  nRF52_UATModule_restart,
   nRF52_WDT_setup,
   nRF52_WDT_fini,
   nRF52_Button_setup,
