@@ -151,7 +151,7 @@ struct rst_info {
 
 #define USE_OLED                   //  +    kb
 
-/* SoftRF/PSoC PFLAU NMEA sentence extension(s) */
+/* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(SoC->Battery_voltage()*100)
 
@@ -160,6 +160,10 @@ struct rst_info {
 
 extern Adafruit_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
+
+#if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
+extern Uart Serial2;
+#endif
 
 #endif /* PLATFORM_NRF52_H */
 

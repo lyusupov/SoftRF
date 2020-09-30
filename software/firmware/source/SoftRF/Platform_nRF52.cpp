@@ -77,6 +77,18 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
+#if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
+Uart Serial2( NRF_UARTE1, UARTE1_IRQn, SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX );
+
+extern "C"
+{
+  void UARTE1_IRQHandler()
+  {
+    Serial2.IrqHandler();
+  }
+}
+#endif
+
 static int nRF52_probe_pin(uint32_t pin, uint32_t mode)
 {
   return 0;
