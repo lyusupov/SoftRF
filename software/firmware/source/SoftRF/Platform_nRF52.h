@@ -49,9 +49,6 @@
 
 #define SerialOutput            Serial
 
-// button
-#define SOC_GPIO_PIN_BUTTON     SOC_UNUSED_PIN
-
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -72,35 +69,38 @@ struct rst_info {
   uint32_t depc;
 };
 
-#define swSer                 Serial
-#define UATSerial             Serial
+#define swSer                 Serial2
+#define UATSerial             Serial1
 
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV
 
-/* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_CONS_TX  SOC_UNUSED_PIN
+#define _PINNUM(port, pin)     ((port)*32 + (pin))
 
-#define SOC_GPIO_PIN_SWSER_RX SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SWSER_TX SOC_UNUSED_PIN
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX  _PINNUM(0, 8) // P0.08
+#define SOC_GPIO_PIN_CONS_TX  _PINNUM(0, 6) // P0.06
+
+#define SOC_GPIO_PIN_SWSER_RX _PINNUM(1, 9) // P1.09
+#define SOC_GPIO_PIN_SWSER_TX _PINNUM(1, 8) // P1.08
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS _PINNUM(1, 4) // P1.04
+#define SOC_GPIO_PIN_GNSS_WKE _PINNUM(1, 2) // P1.02
+#define SOC_GPIO_PIN_STATUS   _PINNUM(0, 13) // P0.13 (Green)
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCK      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_MOSI     _PINNUM(0, 22) // P0.22
+#define SOC_GPIO_PIN_MISO     _PINNUM(0, 23) // P0.23
+#define SOC_GPIO_PIN_SCK      _PINNUM(0, 19) // P0.19
+#define SOC_GPIO_PIN_SS       _PINNUM(0, 24) // P0.24
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -108,16 +108,26 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1262 */
-#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_RST      _PINNUM(0, 25) // P0.25
+#define SOC_GPIO_PIN_BUSY     _PINNUM(0, 17) // P0.17
+#define SOC_GPIO_PIN_DIO1     _PINNUM(0, 20) // P0.20
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCL      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SDA      _PINNUM(0, 26) // P0.26
+#define SOC_GPIO_PIN_SCL      _PINNUM(0, 27) // P0.27
+
+/* button */
+#define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 18) // P1.10
+
+/* E-paper */
+#define SOC_GPIO_PIN_EINK_EN  _PINNUM(1, 11) // P1.11
+#define SOC_GPIO_PIN_EINK_DC  _PINNUM(0, 28) // P0.28
+#define SOC_GPIO_PIN_EINK_RST _PINNUM(0,  2) // P0.02
+#define SOC_GPIO_PIN_EINK_BSY _PINNUM(0,  3) // P0.03
+#define SOC_GPIO_PIN_EINK_PWR _PINNUM(0, 12) // P0.12
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -140,6 +150,10 @@ struct rst_info {
 //#define EXCLUDE_SX1276           //  -  3 kb
 
 #define USE_OLED                   //  +    kb
+
+/* SoftRF/PSoC PFLAU NMEA sentence extension(s) */
+#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
+#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(SoC->Battery_voltage()*100)
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

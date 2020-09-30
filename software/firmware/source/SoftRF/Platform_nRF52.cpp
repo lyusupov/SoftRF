@@ -122,12 +122,30 @@ static uint32_t nRF52_getChipId()
 
 static void* nRF52_getResetInfoPtr()
 {
-  return 0;
+  return (void *) &reset_info;
+}
+
+static String nRF52_getResetInfo()
+{
+  switch (reset_info.reason)
+  {
+    default                     : return F("No reset information available");
+  }
 }
 
 static String nRF52_getResetReason()
 {
-  return F("DEFAULT");
+  switch (reset_info.reason)
+  {
+    case REASON_DEFAULT_RST       : return F("DEFAULT");
+    case REASON_WDT_RST           : return F("WDT");
+    case REASON_EXCEPTION_RST     : return F("EXCEPTION");
+    case REASON_SOFT_WDT_RST      : return F("SOFT_WDT");
+    case REASON_SOFT_RESTART      : return F("SOFT_RESTART");
+    case REASON_DEEP_SLEEP_AWAKE  : return F("DEEP_SLEEP_AWAKE");
+    case REASON_EXT_SYS_RST       : return F("EXT_SYS");
+    default                       : return F("NO_MEAN");
+  }
 }
 
 static uint32_t nRF52_getFreeHeap()
@@ -168,7 +186,7 @@ static bool nRF52_EEPROM_begin(size_t size)
 
 static void nRF52_SPI_begin()
 {
-  /* TBD */
+  SPI.begin();
 }
 
 static void nRF52_swSer_begin(unsigned long baud)
@@ -289,7 +307,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_reset,
   nRF52_getChipId,
   nRF52_getResetInfoPtr,
-  NULL,
+  nRF52_getResetInfo,
   nRF52_getResetReason,
   nRF52_getFreeHeap,
   nRF52_random,

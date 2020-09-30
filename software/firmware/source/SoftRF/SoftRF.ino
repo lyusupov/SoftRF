@@ -121,6 +121,8 @@ void setup()
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
+#elif defined(USE_TINYUSB) && defined(USBCON)
+  while ( !Serial ) delay(10);
 #endif
 
 #if LOGGER_IS_ENABLED

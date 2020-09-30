@@ -38,6 +38,7 @@ before_install:
           sudo apt-get install python3-pip ;
           pip3 install setuptools --user ;
           pip3 install adafruit-nrfutil --user ;
+          pip3 install intelhex --user ;
         fi
       fi
     fi
