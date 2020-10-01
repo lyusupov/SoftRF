@@ -293,7 +293,7 @@ static byte RPi_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (EPD_setup()) {
+  if (EPD_setup(true)) {
     rval = DISPLAY_EPD_2_7;
   }
 

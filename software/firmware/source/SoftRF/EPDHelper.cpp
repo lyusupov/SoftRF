@@ -16,7 +16,99 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI)
+#include "SoCHelper.h"
+
+#if defined(USE_EPAPER)
+
+#if defined(ARDUINO_ARCH_NRF52)
+
+#define ENABLE_GxEPD2_GFX 0
+
+#include <GxEPD2_BW.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include "LEDHelper.h"
+
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(
+                                                            SOC_GPIO_PIN_EPD_SS,
+                                                            SOC_GPIO_PIN_EPD_DC,
+                                                            SOC_GPIO_PIN_EPD_RST,
+                                                            SOC_GPIO_PIN_EPD_BUSY));
+
+const char EPD_SoftRF_text1[] = "SoftRF";
+const char EPD_SoftRF_text2[] = "and";
+const char EPD_SoftRF_text3[] = "LilyGO";
+
+bool EPD_setup(bool splash_screen)
+{
+  int16_t  tbx1, tby1;
+  uint16_t tbw1, tbh1;
+  int16_t  tbx2, tby2;
+  uint16_t tbw2, tbh2;
+  int16_t  tbx3, tby3;
+  uint16_t tbw3, tbh3;
+  uint16_t x, y;
+
+  display.init( /* 38400 */ );
+
+  // first update should be full refresh
+  display.setRotation(0);
+  display.setFont(&FreeMonoBold24pt7b);
+  display.setTextColor(GxEPD_BLACK);
+
+  display.getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  display.getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  display.getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+  display.setFullWindow();
+  display.firstPage();
+  do
+  {
+    display.fillScreen(GxEPD_WHITE);
+
+    if (hw_info.model == SOFTRF_MODEL_BADGE) {
+      x = (display.width() - tbw1) / 2;
+      y = (display.height() + tbh1) / 2 - tbh3;
+      display.setCursor(x, y);
+      display.print(EPD_SoftRF_text1);
+      x = (display.width() - tbw2) / 2;
+      y = (display.height() + tbh2) / 2;
+      display.setCursor(x, y);
+      display.print(EPD_SoftRF_text2);
+      x = (display.width() - tbw3) / 2;
+      y = (display.height() + tbh3) / 2 + tbh3;
+      display.setCursor(x, y);
+      display.print(EPD_SoftRF_text3);
+    } else {
+      x = (display.width() - tbw1) / 2;
+      y = (display.height() + tbh1) / 2;
+      display.setCursor(x, y);
+      display.print(EPD_SoftRF_text1);
+    }
+  }
+  while (display.nextPage());
+
+  delay(1000);
+
+//  display.powerOff();
+//  display.hibernate();
+
+  return display.epd2.probe();
+}
+
+void EPD_loop()
+{
+  if (hw_info.display == DISPLAY_EPD_1_54) {
+    /* TODO */
+  }
+}
+
+void EPD_fini(const char *msg)
+{
+  if (hw_info.display == DISPLAY_EPD_1_54) {
+    /* TODO */
+  }
+}
+
+#elif defined(RASPBERRY_PI)
 
 #define ENABLE_GxEPD2_GFX 0
 
@@ -30,7 +122,7 @@ GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=5*/ SS,
 
 const char SoftRF_text[] = "SoftRF";
 
-bool EPD_setup()
+bool EPD_setup(bool splash_screen)
 {
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
@@ -165,3 +257,5 @@ Serial.print("tbh = "); Serial.println(tbh);
 }
 
 #endif /* RASPBERRY_PI */
+
+#endif /* USE_EPAPER */

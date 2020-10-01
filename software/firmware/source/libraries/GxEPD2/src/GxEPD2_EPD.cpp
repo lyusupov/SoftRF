@@ -16,6 +16,9 @@
 #else
 #if !defined(RASPBERRY_PI)
 #include <avr/pgmspace.h>
+#if defined(ARDUINO_ARCH_NRF52) && (SPI_INTERFACES_COUNT >= 2)
+#define SPI SPI1
+#endif /* ARDUINO_ARCH_NRF52 */
 #endif /* RASPBERRY_PI */
 #endif
 
@@ -124,7 +127,7 @@ void GxEPD2_EPD::_waitWhileBusy(const char* comment, uint16_t busy_time)
         break;
       }
     }
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_NRF52)
     if (micros() - start < 20) {
       _timeout_expired = true;
     }

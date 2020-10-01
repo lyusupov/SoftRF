@@ -84,6 +84,7 @@ extern TTYSerial Serial2;
 #define EXCLUDE_CC13XX
 
 #define USE_NMEALIB
+#define USE_EPAPER
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280

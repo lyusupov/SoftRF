@@ -25,7 +25,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_PRIME_MK3
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_BADGE
 
 #define isValidFix()            isValidGNSSFix()
 
@@ -36,16 +36,12 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define yield()                 ({ })
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-#define digitalPinToInterrupt(p) p
-#define isPrintable(c)          (isprint(c) == 0 ? false : true)
-
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
+#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
 #define SerialOutput            Serial
 
@@ -75,7 +71,9 @@ struct rst_info {
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV
 
+#if !defined(_PINNUM)
 #define _PINNUM(port, pin)     ((port)*32 + (pin))
+#endif
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  _PINNUM(0, 8) // P0.08
@@ -107,10 +105,11 @@ struct rst_info {
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
-/* SX1262 */
+/* SX1262 or SX1276 */
 #define SOC_GPIO_PIN_RST      _PINNUM(0, 25) // P0.25
-#define SOC_GPIO_PIN_BUSY     _PINNUM(0, 17) // P0.17
+#define SOC_GPIO_PIN_DIO0     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO1     _PINNUM(0, 20) // P0.20
+#define SOC_GPIO_PIN_BUSY     _PINNUM(0, 17) // P0.17
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
@@ -123,11 +122,15 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 18) // P1.10
 
 /* E-paper */
-#define SOC_GPIO_PIN_EINK_EN  _PINNUM(1, 11) // P1.11
-#define SOC_GPIO_PIN_EINK_DC  _PINNUM(0, 28) // P0.28
-#define SOC_GPIO_PIN_EINK_RST _PINNUM(0,  2) // P0.02
-#define SOC_GPIO_PIN_EINK_BSY _PINNUM(0,  3) // P0.03
-#define SOC_GPIO_PIN_EINK_PWR _PINNUM(0, 12) // P0.12
+#define SOC_GPIO_PIN_EPD_MISO _PINNUM(1,  7) // P1.07
+#define SOC_GPIO_PIN_EPD_MOSI _PINNUM(0, 29) // P0.29
+#define SOC_GPIO_PIN_EPD_SCK  _PINNUM(0, 31) // P0.31
+#define SOC_GPIO_PIN_EPD_SS   _PINNUM(0, 30) // P0.30
+#define SOC_GPIO_PIN_EPD_EN   _PINNUM(1, 11) // P1.11
+#define SOC_GPIO_PIN_EPD_DC   _PINNUM(0, 28) // P0.28
+#define SOC_GPIO_PIN_EPD_RST  _PINNUM(0,  2) // P0.02
+#define SOC_GPIO_PIN_EPD_BUSY _PINNUM(0,  3) // P0.03
+#define SOC_GPIO_PIN_EPD_PWR  _PINNUM(0, 12) // P0.12
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -149,7 +152,8 @@ struct rst_info {
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
 
-#define USE_OLED                   //  +    kb
+//#define USE_OLED                 //  +    kb
+#define USE_EPAPER                 //  +    kb
 
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"

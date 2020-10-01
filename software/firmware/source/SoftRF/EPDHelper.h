@@ -19,7 +19,8 @@
 #ifndef EPDHELPER_H
 #define EPDHELPER_H
 
-bool EPD_setup();
+bool EPD_setup(bool);
 void EPD_loop();
+void EPD_fini(const char *);
 
 #endif /* EPDHELPER_H */

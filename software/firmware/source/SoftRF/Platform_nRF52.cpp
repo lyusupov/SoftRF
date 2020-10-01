@@ -28,7 +28,9 @@
 #include "BaroHelper.h"
 #include "LEDHelper.h"
 
-#include <U8x8lib.h>
+#if defined(USE_EPAPER)
+#include "EPDHelper.h"
+#endif /* USE_EPAPER */
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -57,16 +59,8 @@ lmic_pinmap lmic_pins = {
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 
-#if defined(USE_OLED)
-U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
-#endif /* USE_OLED */
-
-static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
-
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
-static bool OLED_display_probe_status = false;
-static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
@@ -238,18 +232,29 @@ static void nRF52_swSer_enableRx(boolean arg)
 
 static byte nRF52_Display_setup()
 {
+  byte rval = DISPLAY_NONE;
 
-  return 0;
+#if defined(USE_EPAPER)
+  if (EPD_setup(true)) {
+    rval = DISPLAY_EPD_1_54;
+  }
+#endif /* USE_EPAPER */
+
+  return rval;
 }
 
 static void nRF52_Display_loop()
 {
-  /* TBD */
+#if defined(USE_EPAPER)
+  EPD_loop();
+#endif /* USE_EPAPER */
 }
 
 static void nRF52_Display_fini(const char *msg)
 {
-  /* TBD */
+#if defined(USE_EPAPER)
+  EPD_fini(msg);
+#endif /* USE_EPAPER */
 }
 
 static void nRF52_Battery_setup()
