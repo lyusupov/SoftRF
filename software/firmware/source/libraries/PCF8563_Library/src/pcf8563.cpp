@@ -31,6 +31,10 @@ github:https://github.com/lewisxhe/PCF8563_Library
 #include <time.h>
 #include <sys/time.h>
 
+#if !defined(ESP32)
+#define log_i
+#endif
+
 PCF8563_Class::PCF8563_Class(I2CBus &bus, uint8_t addr)
 {
     _bus = &bus;

@@ -2,15 +2,24 @@
 #define TTGO_I2CBUF_H
 
 #include <Wire.h>
+#if defined(ESP32)
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#else
+#include "rtos.h"
+#endif
+
 class I2CBus
 {
 public:
     I2CBus(TwoWire &port = Wire, int sda = 21, int scl = 22)
     {
         _port = &port;
+#if defined(ESP32)
         _port->begin(sda, scl);
+#else
+        _port->begin();
+#endif
         _i2c_mux = xSemaphoreCreateRecursiveMutex();
     };
     void scan();

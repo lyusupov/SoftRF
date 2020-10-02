@@ -39,8 +39,6 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
 #define SerialOutput            Serial
@@ -68,8 +66,10 @@ struct rst_info {
 #define swSer                 Serial2
 #define UATSerial             Serial1
 
-#define SOC_ADC_VOLTAGE_DIV   1
-#define VREFINT               1200  // mV
+#define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
+#define VBAT_DIVIDER          (0.5F)          // 150K + 150K voltage divider on VBAT
+#define VBAT_DIVIDER_COMP     (2.0F)          // Compensation factor for the VBAT divider
+#define REAL_VBAT_MV_PER_LSB  (VBAT_DIVIDER_COMP * VBAT_MV_PER_LSB)
 
 #if !defined(_PINNUM)
 #define _PINNUM(port, pin)     ((port)*32 + (pin))
@@ -131,6 +131,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_EPD_RST  _PINNUM(0,  2) // P0.02
 #define SOC_GPIO_PIN_EPD_BUSY _PINNUM(0,  3) // P0.03
 #define SOC_GPIO_PIN_EPD_PWR  _PINNUM(0, 12) // P0.12
+
+/* MX25R1635F SPI flash */
+#define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P0.12
+#define SOC_GPIO_PIN_SFL_MISO _PINNUM(1, 13) // P1.13
+#define SOC_GPIO_PIN_SFL_SCK  _PINNUM(1, 14) // P1.14
+#define SOC_GPIO_PIN_SFL_SS   _PINNUM(1, 15) // P1.15
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX

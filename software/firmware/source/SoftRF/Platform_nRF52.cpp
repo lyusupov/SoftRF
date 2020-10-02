@@ -20,6 +20,11 @@
 
 #include <SPI.h>
 #include <Wire.h>
+#include <pcf8563.h>
+#include <SoftSPI.h>
+#include <SerialFlash.h>
+#include <Adafruit_SleepyDog.h>
+#include "nrf_wdt.h"
 
 #include "SoCHelper.h"
 #include "RFHelper.h"
@@ -71,6 +76,11 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
+PCF8563_Class *rtc = nullptr;
+I2CBus        *i2c = nullptr;
+
+SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
+
 #if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
 Uart Serial2( NRF_UARTE1, UARTE1_IRQn, SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX );
 
@@ -92,12 +102,41 @@ static void nRF52_SerialWakeup() { }
 
 static void nRF52_setup()
 {
+  bool has_rtc      = false;
+  bool has_spiflash = false ;
 
+  has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
+
+  if (has_spiflash) {
+    unsigned char buf[8];
+
+    SerialFlash.readID(buf);
+
+    uint32_t flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+
+    SerialFlash.sleep();
+  }
+
+  Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+
+  Wire.begin();
+  Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+  has_rtc = (Wire.endTransmission() == 0);
+  Wire.end();
+
+  i2c = new I2CBus(Wire);
+
+  if (has_rtc && (i2c != nullptr)) {
+    rtc = new PCF8563_Class(*i2c);
+  }
 }
 
 static void nRF52_loop()
 {
-
+  // Reload the watchdog
+  if (nrf_wdt_started(NRF_WDT)) {
+    Watchdog.reset();
+  }
 }
 
 static void nRF52_fini()
@@ -259,13 +298,33 @@ static void nRF52_Display_fini(const char *msg)
 
 static void nRF52_Battery_setup()
 {
-  /* TBD */
+
 }
 
 static float nRF52_Battery_voltage()
 {
-  /* TBD */
-  return 0;
+  float raw;
+
+  // Set the analog reference to 3.0V (default = 3.6V)
+  analogReference(AR_INTERNAL_3_0);
+
+  // Set the resolution to 12-bit (0..4095)
+  analogReadResolution(12); // Can be 8, 10, 12 or 14
+
+  // Let the ADC settle
+  delay(1);
+
+  // Get the raw 12-bit, 0..3000mV ADC value
+  raw = analogRead(SOC_GPIO_PIN_BATTERY);
+
+  // Set the ADC back to the default settings
+  analogReference(AR_DEFAULT);
+  analogReadResolution(10);
+
+  // Convert the raw value to compensated mv, taking the resistor-
+  // divider into account (providing the actual LIPO voltage)
+  // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
+  return raw * REAL_VBAT_MV_PER_LSB * 0.001;
 }
 
 void nRF52_GNSS_PPS_Interrupt_handler() {
@@ -292,12 +351,15 @@ static void nRF52_UATModule_restart()
 
 static void nRF52_WDT_setup()
 {
-
+  Watchdog.enable(5000);
 }
 
 static void nRF52_WDT_fini()
 {
-
+  // cannot disable nRF's WDT
+  if (nrf_wdt_started(NRF_WDT)) {
+    Watchdog.reset();
+  }
 }
 
 static void nRF52_Button_setup()

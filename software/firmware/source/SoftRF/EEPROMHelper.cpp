@@ -99,7 +99,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_s     = true;
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-  eeprom_block.field.settings.nmea_out   = NMEA_BLUETOOTH;  /* STM32 USB */
+  eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
   eeprom_block.field.settings.nmea_out   = NMEA_UART;
 #endif
