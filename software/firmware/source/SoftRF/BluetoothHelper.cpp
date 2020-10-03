@@ -17,7 +17,6 @@
  */
 #if defined(ESP32)
 
-#include "Platform_ESP32.h"
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "BluetoothHelper.h"
@@ -953,4 +952,175 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 
 #endif /* ENABLE_BT_VOICE */
 
-#endif /* ESP32 */
+#elif defined(ARDUINO_ARCH_NRF52)
+
+#include "SoCHelper.h"
+#include "BluetoothHelper.h"
+
+/*********************************************************************
+ This is an example for our nRF52 based Bluefruit LE modules
+
+ Pick one up today in the adafruit shop!
+
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+#include <bluefruit.h>
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+#include <BLEUart_HM10.h>
+
+#include "WiFiHelper.h"   // HOSTNAME
+
+// BLE Service
+BLEDfu        bledfu;  // OTA DFU service
+BLEDis        bledis;  // device information
+BLEUart_HM10  bleuart; // uart over ble
+BLEBas        blebas;  // battery
+
+String BT_name = HOSTNAME;
+
+void startAdv(void)
+{
+  // Advertising packet
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+
+  // Include bleuart 128-bit uuid
+  Bluefruit.Advertising.addService(bleuart);
+
+  // Secondary Scan Response packet (optional)
+  // Since there is no room for 'Name' in Advertising packet
+  Bluefruit.ScanResponse.addName();
+
+  /* Start Advertising
+   * - Enable auto advertising if disconnected
+   * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
+   * - Timeout for fast mode is 30 seconds
+   * - Start(timeout) with timeout = 0 will advertise forever (until connected)
+   *
+   * For recommended advertising interval
+   * https://developer.apple.com/library/content/qa/qa1931/_index.html
+   */
+  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
+}
+
+// callback invoked when central connects
+void connect_callback(uint16_t conn_handle)
+{
+#if DEBUG_BLE
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
+  char central_name[32] = { 0 };
+  connection->getPeerName(central_name, sizeof(central_name));
+
+  Serial.print("Connected to ");
+  Serial.println(central_name);
+#endif
+}
+
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle connection where this event happens
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ */
+void disconnect_callback(uint16_t conn_handle, uint8_t reason)
+{
+#if DEBUG_BLE
+  (void) conn_handle;
+  (void) reason;
+
+  Serial.println();
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
+#endif
+}
+
+void nRF52_Bluetooth_setup()
+{
+  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+
+  // Setup the BLE LED to be enabled on CONNECT
+  // Note: This is actually the default behavior, but provided
+  // here in case you want to control this LED manually via PIN 19
+  Bluefruit.autoConnLed(false);
+
+  // Config the peripheral connection with maximum bandwidth
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+
+  Bluefruit.begin();
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
+  Bluefruit.setName((BT_name+"-LE").c_str());
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
+
+  // Configure and Start Device Information Service
+  bledis.setManufacturer("SoftRF");
+  bledis.setModel("Badge Edition");
+  bledis.begin();
+
+  // Configure and Start BLE Uart Service
+  bleuart.begin();
+
+  // Start BLE Battery Service
+  blebas.begin();
+  blebas.write(100);
+
+  // Set up and start advertising
+  startAdv();
+
+#if DEBUG_BLE
+  Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
+  Serial.println("Once connected, enter character(s) that you wish to send");
+#endif
+}
+
+static void nRF52_Bluetooth_loop()
+{
+
+}
+
+static void nRF52_Bluetooth_fini()
+{
+  /* TBD */
+}
+
+static int nRF52_Bluetooth_available()
+{
+  return bleuart.available();
+}
+
+static int nRF52_Bluetooth_read()
+{
+  return bleuart.read();
+}
+
+static size_t nRF52_Bluetooth_write(const uint8_t *buffer, size_t size)
+{
+  return bleuart.write(buffer, size);
+}
+
+IODev_ops_t nRF52_Bluetooth_ops = {
+  "nRF52 Bluetooth",
+  nRF52_Bluetooth_setup,
+  nRF52_Bluetooth_loop,
+  nRF52_Bluetooth_fini,
+  nRF52_Bluetooth_available,
+  nRF52_Bluetooth_read,
+  nRF52_Bluetooth_write
+};
+
+#endif /* ESP32 or ARDUINO_ARCH_NRF52 */

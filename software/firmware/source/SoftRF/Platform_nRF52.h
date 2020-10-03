@@ -67,9 +67,8 @@ struct rst_info {
 #define UATSerial             Serial1
 
 #define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
-#define VBAT_DIVIDER          (0.5F)          // 150K + 150K voltage divider on VBAT
-#define VBAT_DIVIDER_COMP     (2.0F)          // Compensation factor for the VBAT divider
-#define REAL_VBAT_MV_PER_LSB  (VBAT_DIVIDER_COMP * VBAT_MV_PER_LSB)
+#define SOC_ADC_VOLTAGE_DIV   (2.0F)          // 100K + 100K voltage divider on VBAT
+#define REAL_VBAT_MV_PER_LSB  (SOC_ADC_VOLTAGE_DIV * VBAT_MV_PER_LSB)
 
 #if !defined(_PINNUM)
 #define _PINNUM(port, pin)     ((port)*32 + (pin))
@@ -86,7 +85,12 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_GNSS_PPS _PINNUM(1, 4) // P1.04
 #define SOC_GPIO_PIN_GNSS_WKE _PINNUM(1, 2) // P1.02
-#define SOC_GPIO_PIN_STATUS   _PINNUM(0, 13) // P0.13 (Green)
+
+#define SOC_GPIO_LED_GREEN    _PINNUM(0, 13) // P0.13 (Green)
+#define SOC_GPIO_LED_RED      _PINNUM(0, 14) // P0.14 (Red)
+#define SOC_GPIO_LED_BLUE     _PINNUM(0, 15) // P0.15 (Blue)
+
+#define SOC_GPIO_PIN_STATUS  SOC_GPIO_LED_GREEN
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
@@ -126,11 +130,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_EPD_MOSI _PINNUM(0, 29) // P0.29
 #define SOC_GPIO_PIN_EPD_SCK  _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_EPD_SS   _PINNUM(0, 30) // P0.30
-#define SOC_GPIO_PIN_EPD_EN   _PINNUM(1, 11) // P1.11
 #define SOC_GPIO_PIN_EPD_DC   _PINNUM(0, 28) // P0.28
 #define SOC_GPIO_PIN_EPD_RST  _PINNUM(0,  2) // P0.02
 #define SOC_GPIO_PIN_EPD_BUSY _PINNUM(0,  3) // P0.03
-#define SOC_GPIO_PIN_EPD_PWR  _PINNUM(0, 12) // P0.12
+#define SOC_GPIO_PIN_EPD_BLGT _PINNUM(1, 11) // P1.11
+
+#define SOC_GPIO_PIN_PWR      _PINNUM(0, 12) // P0.12
 
 /* MX25R1635F SPI flash */
 #define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P0.12

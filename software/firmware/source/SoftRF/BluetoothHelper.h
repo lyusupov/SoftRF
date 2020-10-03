@@ -92,6 +92,10 @@ void bt_app_task_shut_down(void);
 
 #endif /* ENABLE_BT_VOICE */
 
-#endif /* ESP32 */
+#elif defined(ARDUINO_ARCH_NRF52)
+
+extern IODev_ops_t nRF52_Bluetooth_ops;
+
+#endif /* ESP32 or ARDUINO_ARCH_NRF52 */
 
 #endif /* BLUETOOTHHELPER_H */

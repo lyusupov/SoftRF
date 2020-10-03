@@ -105,7 +105,7 @@
 #define DIRECT_WRITE_LOW(base, mask)    ((*((base)+5)) = (mask))
 #define DIRECT_WRITE_HIGH(base, mask)   ((*((base)+6)) = (mask))
 
-#elif defined(RBL_NRF51822)
+#elif defined(RBL_NRF51822) || defined(NRF52840_XXAA)
 #define PIN_TO_BASEREG(pin)             (0)
 #define PIN_TO_BITMASK(pin)             (pin)
 #define IO_REG_TYPE uint32_t

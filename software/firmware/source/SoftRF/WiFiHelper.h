@@ -25,7 +25,7 @@
 #include <WiFiUdp.h>
 #endif
 
-#define HOSTNAME            "SoftRF-"
+#define HOSTNAME            SOFTRF_IDENT
 #define UDP_PACKET_BUFSIZE  256
 
 enum

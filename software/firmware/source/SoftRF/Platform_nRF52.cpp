@@ -32,6 +32,7 @@
 #include "GNSSHelper.h"
 #include "BaroHelper.h"
 #include "LEDHelper.h"
+#include "BluetoothHelper.h"
 
 #if defined(USE_EPAPER)
 #include "EPDHelper.h"
@@ -105,6 +106,21 @@ static void nRF52_setup()
   bool has_rtc      = false;
   bool has_spiflash = false ;
 
+//  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
+//  reset_info.reason = u32Reset_reason;
+
+  /* supposed to be control of power supply */
+//  pinMode(SOC_GPIO_PIN_PWR,  OUTPUT);
+//  digitalWrite(SOC_GPIO_PIN_PWR, HIGH);
+
+  pinMode(SOC_GPIO_LED_GREEN, OUTPUT);
+  pinMode(SOC_GPIO_LED_RED,   OUTPUT);
+  pinMode(SOC_GPIO_LED_BLUE,  OUTPUT);
+
+  ledOn(SOC_GPIO_LED_GREEN);
+  ledOff(SOC_GPIO_LED_RED);
+  ledOff(SOC_GPIO_LED_BLUE);
+
   has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
 
   if (has_spiflash) {
@@ -141,7 +157,13 @@ static void nRF52_loop()
 
 static void nRF52_fini()
 {
+  ledOff(SOC_GPIO_LED_GREEN);
+  ledOff(SOC_GPIO_LED_RED);
+  ledOff(SOC_GPIO_LED_BLUE);
 
+  pinMode(SOC_GPIO_LED_GREEN, INPUT);
+  pinMode(SOC_GPIO_LED_RED,   INPUT);
+  pinMode(SOC_GPIO_LED_BLUE,  INPUT);
 }
 
 static void nRF52_reset()
@@ -277,6 +299,10 @@ static byte nRF52_Display_setup()
   if (EPD_setup(true)) {
     rval = DISPLAY_EPD_1_54;
   }
+
+  /* EPD back light */
+//  pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
+//  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
 #endif /* USE_EPAPER */
 
   return rval;
@@ -292,6 +318,9 @@ static void nRF52_Display_loop()
 static void nRF52_Display_fini(const char *msg)
 {
 #if defined(USE_EPAPER)
+  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+  pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
+
   EPD_fini(msg);
 #endif /* USE_EPAPER */
 }
@@ -401,7 +430,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_SPI_begin,
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
-  NULL,
+  &nRF52_Bluetooth_ops,
   NULL,
   nRF52_Display_setup,
   nRF52_Display_loop,
