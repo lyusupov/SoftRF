@@ -380,7 +380,7 @@ static void nRF52_UATModule_restart()
 
 static void nRF52_WDT_setup()
 {
-  Watchdog.enable(5000);
+  Watchdog.enable(8000);
 }
 
 static void nRF52_WDT_fini()

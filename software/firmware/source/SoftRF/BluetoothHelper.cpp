@@ -978,10 +978,11 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include "WiFiHelper.h"   // HOSTNAME
 
 // BLE Service
-BLEDfu        bledfu;  // OTA DFU service
-BLEDis        bledis;  // device information
-BLEUart_HM10  bleuart; // uart over ble
-BLEBas        blebas;  // battery
+BLEDfu        bledfu;       // OTA DFU service
+BLEDis        bledis;       // device information
+BLEUart_HM10  bleuart_HM10; // TI UART over BLE
+BLEUart       bleuart_NUS;  // Nordic UART over BLE
+BLEBas        blebas;       // battery
 
 String BT_name = HOSTNAME;
 
@@ -992,7 +993,8 @@ void startAdv(void)
   Bluefruit.Advertising.addTxPower();
 
   // Include bleuart 128-bit uuid
-  Bluefruit.Advertising.addService(bleuart);
+  Bluefruit.Advertising.addService(bleuart_HM10);
+  Bluefruit.Advertising.addService(bleuart_NUS);
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
@@ -1070,10 +1072,15 @@ void nRF52_Bluetooth_setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("SoftRF");
   bledis.setModel("Badge Edition");
+  bledis.setHardwareRev("2020-08-15");
+  bledis.setSoftwareRev(SOFTRF_FIRMWARE_VERSION);
   bledis.begin();
 
   // Configure and Start BLE Uart Service
-  bleuart.begin();
+  bleuart_HM10.begin();
+  bleuart_HM10.bufferTXD(true);
+  bleuart_NUS.begin();
+  bleuart_NUS.bufferTXD(true);
 
   // Start BLE Battery Service
   blebas.begin();
@@ -1088,6 +1095,10 @@ void nRF52_Bluetooth_setup()
 #endif
 }
 
+/*********************************************************************
+ End of Adafruit license text
+*********************************************************************/
+
 static void nRF52_Bluetooth_loop()
 {
 
@@ -1095,22 +1106,77 @@ static void nRF52_Bluetooth_loop()
 
 static void nRF52_Bluetooth_fini()
 {
-  /* TBD */
+  if ( Bluefruit.connected() ) {
+    if ( bleuart_HM10.notifyEnabled() ) {
+      // flush TXD since we use bufferTXD()
+      bleuart_HM10.flushTXD();
+    }
+
+    if ( bleuart_NUS.notifyEnabled() ) {
+      // flush TXD since we use bufferTXD()
+      bleuart_NUS.flushTXD();
+    }
+  }
 }
 
 static int nRF52_Bluetooth_available()
 {
-  return bleuart.available();
+  int rval = 0;
+
+  if ( !Bluefruit.connected() ) {
+    return rval;
+  }
+
+  /* Give priority to HM-10 input */
+  if ( bleuart_HM10.notifyEnabled() ) {
+    return bleuart_HM10.available();
+  }
+
+  if ( bleuart_NUS.notifyEnabled() ) {
+    rval = bleuart_NUS.available();
+  }
+
+  return rval;
 }
 
 static int nRF52_Bluetooth_read()
 {
-  return bleuart.read();
+  int rval = -1;
+
+  if ( !Bluefruit.connected() ) {
+    return rval;
+  }
+
+  /* Give priority to HM-10 input */
+  if ( bleuart_HM10.notifyEnabled() ) {
+    return bleuart_HM10.read();
+  }
+
+  if ( bleuart_NUS.notifyEnabled() ) {
+    rval = bleuart_NUS.read();
+  }
+
+  return rval;
 }
 
 static size_t nRF52_Bluetooth_write(const uint8_t *buffer, size_t size)
 {
-  return bleuart.write(buffer, size);
+  size_t rval = size;
+
+  if ( !Bluefruit.connected() ) {
+    return rval;
+  }
+
+  /* Give priority to HM-10 output */
+  if ( bleuart_HM10.notifyEnabled() ) {
+    return bleuart_HM10.write(buffer, size);
+  }
+
+  if ( bleuart_NUS.notifyEnabled() ) {
+    rval = bleuart_NUS.write(buffer, size);
+  }
+
+  return rval;
 }
 
 IODev_ops_t nRF52_Bluetooth_ops = {
