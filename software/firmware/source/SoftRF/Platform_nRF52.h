@@ -21,6 +21,7 @@
 #define PLATFORM_NRF52_H
 
 #include <avr/dtostrf.h>
+#include <pcf8563.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -71,7 +72,7 @@ struct rst_info {
 #define REAL_VBAT_MV_PER_LSB  (SOC_ADC_VOLTAGE_DIV * VBAT_MV_PER_LSB)
 
 #if !defined(_PINNUM)
-#define _PINNUM(port, pin)     ((port)*32 + (pin))
+#define _PINNUM(port, pin)    ((port)*32 + (pin))
 #endif
 
 /* Peripherals */
@@ -90,7 +91,7 @@ struct rst_info {
 #define SOC_GPIO_LED_RED      _PINNUM(0, 14) // P0.14 (Red)
 #define SOC_GPIO_LED_BLUE     _PINNUM(0, 15) // P0.15 (Blue)
 
-#define SOC_GPIO_PIN_STATUS  SOC_GPIO_LED_GREEN
+#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_GREEN
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
@@ -179,6 +180,44 @@ extern Adafruit_NeoPixel strip;
 #if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
 extern Uart Serial2;
 #endif
+
+typedef struct UI_Settings {
+    uint8_t  adapter;
+
+    uint8_t  connection:4;
+    uint8_t  units:2;
+    uint8_t  zoom:2;
+
+    uint8_t  protocol;
+    uint8_t  baudrate;
+    char     server  [18];
+    char     key     [18];
+
+    uint8_t  resvd1:2;
+    uint8_t  orientation:1;
+    uint8_t  adb:3;
+    uint8_t  idpref:2;
+
+    uint8_t  vmode:2;
+    uint8_t  voice:3;
+    uint8_t  aghost:3;
+
+    uint8_t  filter:4;
+    uint8_t  power_save:4;
+
+    uint32_t team;
+
+    uint8_t  resvd2;
+    uint8_t  resvd3;
+    uint8_t  resvd4;
+    uint8_t  resvd5;
+    uint8_t  resvd6;
+    uint8_t  resvd7;
+    uint8_t  resvd8;
+    uint8_t  resvd9;
+} __attribute__((packed)) ui_settings_t;
+
+extern PCF8563_Class *rtc;
 
 #endif /* PLATFORM_NRF52_H */
 

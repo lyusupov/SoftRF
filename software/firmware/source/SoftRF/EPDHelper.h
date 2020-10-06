@@ -19,8 +19,169 @@
 #ifndef EPDHELPER_H
 #define EPDHELPER_H
 
+#define ENABLE_GxEPD2_GFX       0
+
+#include <GxEPD2_BW.h>
+
+#define EPD_EXPIRATION_TIME     5 /* seconds */
+
+#define NO_DATA_TEXT            "NO DATA"
+#define NO_FIX_TEXT             "NO FIX"
+
+#define NAVBOX1_TITLE           "ACFTS"
+#define NAVBOX2_TITLE           "BAT"
+#define NAVBOX3_TITLE           "ID"
+#define NAVBOX4_TITLE           "PROTOCOL"
+#define NAVBOX5_TITLE           "RX"
+#define NAVBOX6_TITLE           "TX"
+
+#define isTimeToDisplay()       (millis() - EPDTimeMarker > 1000)
+#define maxof2(a,b)             (a > b ? a : b)
+
+#define EPD_RADAR_V_THRESHOLD   50      /* metres */
+
+#define TEXT_VIEW_LINE_LENGTH   13      /* characters */
+#define TEXT_VIEW_LINE_SPACING  5      /* pixels */
+
+enum
+{
+	VIEW_MODE_STATUS,
+	VIEW_MODE_RADAR,
+	VIEW_MODE_TEXT,
+	VIEW_MODE_TIME
+};
+
+/*
+ * 'Radar view' scale factor (outer circle diameter)
+ *
+ * Metric and Mixed:
+ *  LOWEST - 20 KM diameter (10 KM radius)
+ *  LOW    - 10 KM diameter ( 5 KM radius)
+ *  MEDIUM -  4 KM diameter ( 2 KM radius)
+ *  HIGH   -  2 KM diameter ( 1 KM radius)
+ *
+ * Imperial:
+ *  LOWEST - 10 NM diameter (  5 NM radius)
+ *  LOW    -  5 NM diameter (2.5 NM radius)
+ *  MEDIUM -  2 NM diameter (  1 NM radius)
+ *  HIGH   -  1 NM diameter (0.5 NM radius)
+ */
+enum
+{
+	ZOOM_LOWEST,
+	ZOOM_LOW,
+	ZOOM_MEDIUM,
+	ZOOM_HIGH
+};
+
+enum
+{
+	UNITS_METRIC,
+	UNITS_IMPERIAL,
+	UNITS_MIXED     // almost the same as metric, but all the altitudes are in feet
+};
+
+enum
+{
+	PROTOCOL_NONE,
+	PROTOCOL_NMEA, /* FTD-12 */
+	PROTOCOL_GDL90,
+	PROTOCOL_MAVLINK_1,
+	PROTOCOL_MAVLINK_2,
+	PROTOCOL_D1090,
+	PROTOCOL_UATRADIO
+};
+
+enum
+{
+	ID_REG,
+	ID_TAIL,
+	ID_MAM
+};
+
+enum
+{
+	VOICE_OFF,
+	VOICE_1,
+	VOICE_2,
+	VOICE_3
+};
+
+enum
+{
+	ANTI_GHOSTING_OFF,
+	ANTI_GHOSTING_AUTO,
+	ANTI_GHOSTING_2MIN,
+	ANTI_GHOSTING_5MIN,
+	ANTI_GHOSTING_10MIN
+};
+
+enum
+{
+	TRAFFIC_FILTER_OFF,
+	TRAFFIC_FILTER_500M,
+	TRAFFIC_FILTER_1500M
+};
+
+enum
+{
+	DB_NONE,
+	DB_AUTO,
+	DB_FLN,
+	DB_OGN,
+	DB_ICAO
+};
+
+typedef struct navbox_struct
+{
+  char      title[9];
+  uint16_t  x;
+  uint16_t  y;
+  uint16_t  width;
+  uint16_t  height;
+  int32_t   value;
+  int32_t   prev_value;
+  uint32_t  timestamp;
+} navbox_t;
+
+void EPD_Clear_Screen();
 bool EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);
+
+void EPD_Up();
+void EPD_Down();
+void EPD_Message(const char *, const char *);
+
+void EPD_status_setup();
+void EPD_status_loop();
+void EPD_status_next();
+void EPD_status_prev();
+
+void EPD_radar_setup();
+void EPD_radar_loop();
+void EPD_radar_zoom();
+void EPD_radar_unzoom();
+
+void EPD_text_setup();
+void EPD_text_loop();
+void EPD_text_next();
+void EPD_text_prev();
+
+void EPD_time_setup();
+void EPD_time_loop();
+void EPD_time_next();
+void EPD_time_prev();
+
+extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+extern unsigned long EPDTimeMarker;
+extern bool EPD_display_frontpage;
+extern bool EPD_vmode_updated;
+
+#include "SoCHelper.h"
+
+#if defined(ARDUINO_ARCH_NRF52)
+extern ui_settings_t *ui;
+#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* EPDHELPER_H */

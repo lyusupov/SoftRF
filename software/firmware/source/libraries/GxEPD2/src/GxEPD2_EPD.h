@@ -16,7 +16,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #else
-#define SPI SPI0
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 

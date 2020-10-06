@@ -22,24 +22,46 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#define ENABLE_GxEPD2_GFX 0
-
-#include <GxEPD2_BW.h>
-#include <Fonts/FreeMonoBold24pt7b.h>
+#include "EPDHelper.h"
 #include "LEDHelper.h"
 
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_txx(GxEPD2_154_D67(
                                                             SOC_GPIO_PIN_EPD_SS,
                                                             SOC_GPIO_PIN_EPD_DC,
                                                             SOC_GPIO_PIN_EPD_RST,
                                                             SOC_GPIO_PIN_EPD_BUSY));
 
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+
 const char EPD_SoftRF_text1[] = "SoftRF";
 const char EPD_SoftRF_text2[] = "and";
 const char EPD_SoftRF_text3[] = "LilyGO";
 
+unsigned long EPDTimeMarker = 0;
+bool EPD_display_frontpage = false;
+
+static int EPD_view_mode = 0;
+bool EPD_vmode_updated = true;
+
+void EPD_Clear_Screen()
+{
+  display->setFullWindow();
+
+  display->firstPage();
+  do
+  {
+    display->fillScreen(GxEPD_WHITE);
+  }
+  while (display->nextPage());
+}
+
 bool EPD_setup(bool splash_screen)
 {
+  bool rval = false;
+
   int16_t  tbx1, tby1;
   uint16_t tbw1, tbh1;
   int16_t  tbx2, tby2;
@@ -48,63 +70,221 @@ bool EPD_setup(bool splash_screen)
   uint16_t tbw3, tbh3;
   uint16_t x, y;
 
-  display.init( /* 38400 */ );
+  display = &epd_ttgo_txx;
+
+  display->init( /* 38400 */ );
 
   // first update should be full refresh
-  display.setRotation(0);
-  display.setFont(&FreeMonoBold24pt7b);
-  display.setTextColor(GxEPD_BLACK);
+  display->setRotation(0);
+  display->setFont(&FreeMonoBold24pt7b);
+  display->setTextColor(GxEPD_BLACK);
+  display->setTextWrap(false);
 
-  display.getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-  display.getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
-  display.getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
-  display.setFullWindow();
-  display.firstPage();
+  display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  display->getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+  display->setFullWindow();
+  display->firstPage();
   do
   {
-    display.fillScreen(GxEPD_WHITE);
+    display->fillScreen(GxEPD_WHITE);
 
     if (hw_info.model == SOFTRF_MODEL_BADGE) {
-      x = (display.width() - tbw1) / 2;
-      y = (display.height() + tbh1) / 2 - tbh3;
-      display.setCursor(x, y);
-      display.print(EPD_SoftRF_text1);
-      x = (display.width() - tbw2) / 2;
-      y = (display.height() + tbh2) / 2;
-      display.setCursor(x, y);
-      display.print(EPD_SoftRF_text2);
-      x = (display.width() - tbw3) / 2;
-      y = (display.height() + tbh3) / 2 + tbh3;
-      display.setCursor(x, y);
-      display.print(EPD_SoftRF_text3);
+      x = (display->width() - tbw1) / 2;
+      y = (display->height() + tbh1) / 2 - tbh3;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text1);
+      x = (display->width() - tbw2) / 2;
+      y = (display->height() + tbh2) / 2;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text2);
+      x = (display->width() - tbw3) / 2;
+      y = (display->height() + tbh3) / 2 + tbh3;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text3);
     } else {
-      x = (display.width() - tbw1) / 2;
-      y = (display.height() + tbh1) / 2;
-      display.setCursor(x, y);
-      display.print(EPD_SoftRF_text1);
+      x = (display->width() - tbw1) / 2;
+      y = (display->height() + tbh1) / 2;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text1);
     }
   }
-  while (display.nextPage());
+  while (display->nextPage());
 
   delay(1000);
 
-//  display.powerOff();
-//  display.hibernate();
+//  display->powerOff();
+//  display->hibernate();
 
-  return display.epd2.probe();
+  rval = display->epd2.probe();
+
+  EPD_view_mode = ui->vmode;;
+
+  EPD_status_setup();
+  EPD_radar_setup();
+  EPD_text_setup();
+  EPD_time_setup();
+
+  EPDTimeMarker = millis();
+
+  return rval;
 }
 
 void EPD_loop()
 {
-  if (hw_info.display == DISPLAY_EPD_1_54) {
-    /* TODO */
+  switch (hw_info.display)
+  {
+  case DISPLAY_EPD_1_54:
+
+    if (isTimeToDisplay()) {
+      switch (EPD_view_mode)
+      {
+      case VIEW_MODE_RADAR:
+        EPD_radar_loop();
+        break;
+      case VIEW_MODE_TEXT:
+        EPD_text_loop();
+        break;
+      case VIEW_MODE_TIME:
+        EPD_time_loop();
+        break;
+      case VIEW_MODE_STATUS:
+      default:
+        EPD_status_loop();
+        break;
+      }
+
+      EPDTimeMarker = millis();
+    }
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
   }
 }
 
 void EPD_fini(const char *msg)
 {
+  int16_t  tbx1, tby1;
+  uint16_t tbw1, tbh1;
+  uint16_t x, y;
+
+  switch (hw_info.display)
+  {
+  case DISPLAY_EPD_1_54:
+
+    display->getTextBounds(msg, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+
+    display->setFullWindow();
+    display->firstPage();
+    do
+    {
+      display->fillScreen(GxEPD_WHITE);
+
+      x = (display->width() - tbw1) / 2;
+      y = (display->height() + tbh1) / 2;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text1);
+    }
+    while (display->nextPage());
+
+    display->powerOff();
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+void EPD_Up()
+{
   if (hw_info.display == DISPLAY_EPD_1_54) {
-    /* TODO */
+    switch (EPD_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      EPD_radar_unzoom();
+      break;
+    case VIEW_MODE_TEXT:
+      EPD_text_prev();
+      break;
+    case VIEW_MODE_TIME:
+      EPD_time_prev();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      EPD_status_prev();
+      break;
+    }
+  }
+}
+
+void EPD_Down()
+{
+  if (hw_info.display == DISPLAY_EPD_1_54) {
+    switch (EPD_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      EPD_radar_zoom();
+      break;
+    case VIEW_MODE_TEXT:
+      EPD_text_next();
+      break;
+    case VIEW_MODE_TIME:
+      EPD_time_next();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      EPD_status_next();
+      break;
+    }
+  }
+}
+
+void EPD_Message(const char *msg1, const char *msg2)
+{
+  int16_t  tbx, tby;
+  uint16_t tbw, tbh;
+  uint16_t x, y;
+
+  if (msg1 != NULL && strlen(msg1) != 0) {
+
+    display->setPartialWindow(0, 0, display->width(), display->height());
+
+    display->setFont(&FreeMonoBold18pt7b);
+
+    display->firstPage();
+    do
+    {
+      display->fillScreen(GxEPD_WHITE);
+
+      if (msg2 == NULL) {
+
+        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (display->width() - tbw) / 2;
+        y = (display->height() + tbh) / 2;
+        display->setCursor(x, y);
+        display->print(msg1);
+
+      } else {
+
+        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (display->width() - tbw) / 2;
+        y = display->height() / 2 - tbh;
+        display->setCursor(x, y);
+        display->print(msg1);
+
+        display->getTextBounds(msg2, 0, 0, &tbx, &tby, &tbw, &tbh);
+        x = (display->width() - tbw) / 2;
+        y = display->height() / 2 + tbh;
+        display->setCursor(x, y);
+        display->print(msg2);
+      }
+    }
+    while (display->nextPage());
+
+    display->hibernate();
   }
 }
 

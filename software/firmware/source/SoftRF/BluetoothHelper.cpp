@@ -1096,7 +1096,7 @@ void nRF52_Bluetooth_setup()
 }
 
 /*********************************************************************
- End of Adafruit license text
+ End of Adafruit licensed text
 *********************************************************************/
 
 static void nRF52_Bluetooth_loop()

@@ -19,6 +19,8 @@
 #if defined(ARDUINO_ARCH_NRF52) && (SPI_INTERFACES_COUNT >= 2)
 #define SPI SPI1
 #endif /* ARDUINO_ARCH_NRF52 */
+#else
+#define SPI SPI0
 #endif /* RASPBERRY_PI */
 #endif
 

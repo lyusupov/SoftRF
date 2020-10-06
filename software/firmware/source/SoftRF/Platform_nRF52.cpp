@@ -82,6 +82,22 @@ I2CBus        *i2c = nullptr;
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
+ui_settings_t ui_settings = {
+    .units        = UNITS_METRIC,
+    .zoom         = ZOOM_MEDIUM,
+    .protocol     = PROTOCOL_NMEA,
+    .orientation  = DIRECTION_NORTH_UP,
+    .adb          = DB_NONE,
+    .idpref       = ID_REG,
+    .vmode        = VIEW_MODE_STATUS,
+    .voice        = VOICE_OFF,
+    .aghost       = ANTI_GHOSTING_OFF,
+    .filter       = TRAFFIC_FILTER_OFF,
+    .team         = 0
+};
+
+ui_settings_t *ui;
+
 #if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
 Uart Serial2( NRF_UARTE1, UARTE1_IRQn, SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX );
 
@@ -105,6 +121,8 @@ static void nRF52_setup()
 {
   bool has_rtc      = false;
   bool has_spiflash = false ;
+
+  ui = &ui_settings;
 
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;

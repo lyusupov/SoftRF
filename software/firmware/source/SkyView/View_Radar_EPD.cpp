@@ -96,7 +96,7 @@ static void EPD_Draw_NavBoxes()
   uint16_t bottom_navboxes_x = navbox3.x;
   uint16_t bottom_navboxes_y = navbox3.y;
   uint16_t bottom_navboxes_w = navbox3.width + navbox4.width;
-  uint16_t bottom_navboxes_h = maxof2(navbox3.height, navbox3.height);
+  uint16_t bottom_navboxes_h = maxof2(navbox3.height, navbox4.height);
 
 
   display->setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,

@@ -26,6 +26,7 @@
 unsigned long UpdateTrafficTimeMarker = 0;
 
 ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
+traffic_by_dist_t traffic_by_dist[MAX_TRACKING_OBJECTS];
 
 static int8_t (*Alarm_Level)(ufo_t *, ufo_t *);
 
@@ -219,4 +220,27 @@ void ClearExpired()
       Container[i] = EmptyFO;
     }
   }
+}
+
+int Traffic_Count()
+{
+  int count = 0;
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].addr) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+int traffic_cmp_by_distance(const void *a, const void *b)
+{
+  traffic_by_dist_t *ta = (traffic_by_dist_t *)a;
+  traffic_by_dist_t *tb = (traffic_by_dist_t *)b;
+
+  if (ta->distance >  tb->distance) return  1;
+  if (ta->distance == tb->distance) return  0;
+  if (ta->distance <  tb->distance) return -1;
 }

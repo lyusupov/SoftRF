@@ -77,6 +77,12 @@
 #endif
 #endif
 
+#if defined(ARDUINO_ARCH_NRF52)
+#ifdef CFG_DEBUG
+#undef CFG_DEBUG
+#endif
+#endif
+
 #if defined(CFG_eu868)
 
 enum _dr_eu868_t { DR_SF12=0, DR_SF11, DR_SF10, DR_SF9, DR_SF8, DR_SF7, DR_SF7B, DR_FSK, DR_NONE };

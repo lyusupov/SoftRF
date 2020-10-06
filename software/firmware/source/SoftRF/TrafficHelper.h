@@ -34,6 +34,11 @@
 #define isTimeToUpdateTraffic() (millis() - UpdateTrafficTimeMarker > \
                                   TRAFFIC_UPDATE_INTERVAL_MS)
 
+typedef struct traffic_by_dist_struct {
+  ufo_t *fop;
+  float distance;
+} traffic_by_dist_t;
+
 enum
 {
 	TRAFFIC_ALARM_NONE,
@@ -47,7 +52,11 @@ void Traffic_setup(void);
 void Traffic_loop(void);
 void ClearExpired(void);
 void Traffic_Update(int);
+int  Traffic_Count(void);
+
+int  traffic_cmp_by_distance(const void *, const void *);
 
 extern ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
+extern traffic_by_dist_t traffic_by_dist[MAX_TRACKING_OBJECTS];
 
 #endif /* TRAFFICHELPER_H */
