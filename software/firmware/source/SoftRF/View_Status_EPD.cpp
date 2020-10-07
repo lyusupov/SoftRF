@@ -25,6 +25,7 @@
 #include "EPDHelper.h"
 #include "TrafficHelper.h"
 #include "BatteryHelper.h"
+#include "EEPROMHelper.h"
 #include <protocol.h>
 
 #include <Fonts/FreeMono9pt7b.h>
@@ -90,7 +91,7 @@ void EPD_status_setup()
   navbox4.y = navbox3.y;
   navbox4.width  = navbox3.width;
   navbox4.height = navbox3.height;
-  navbox4.value      = ThisAircraft.protocol;
+  navbox4.value      = settings->rf_protocol;
   navbox4.prev_value = navbox4.value;
   navbox4.timestamp  = millis();
 
@@ -247,7 +248,7 @@ static void EPD_Draw_NavBoxes()
   }
   while (display->nextPage());
 
-  display->hibernate();
+  EPD_HIBERNATE;
 }
 
 static void EPD_Update_NavBoxes()
@@ -356,7 +357,7 @@ static void EPD_Update_NavBoxes()
 
   if (navbox6.value != navbox6.prev_value) {
 
-    display->setFont(&FreeSerifBold12pt7b);
+    display->setFont(&FreeMonoBold18pt7b);
     display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
     display->setPartialWindow(navbox6.x + 26, navbox6.y + 51 - tbh,
                               tbw, tbh + 1);
@@ -373,7 +374,7 @@ static void EPD_Update_NavBoxes()
     navbox6.prev_value = navbox6.value;
   }
 
-  display->hibernate();
+  EPD_HIBERNATE;
 }
 
 void EPD_status_loop()

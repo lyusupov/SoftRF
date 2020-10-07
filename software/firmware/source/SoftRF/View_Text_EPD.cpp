@@ -221,7 +221,7 @@ static void EPD_Draw_Text()
     }
     while (display->nextPage());
 
-    display->hibernate();
+    EPD_HIBERNATE;
   }
 }
 

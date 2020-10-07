@@ -86,7 +86,7 @@ ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
-    .orientation  = DIRECTION_NORTH_UP,
+    .orientation  = DIRECTION_TRACK_UP,
     .adb          = DB_NONE,
     .idpref       = ID_REG,
     .vmode        = VIEW_MODE_STATUS,
@@ -128,8 +128,8 @@ static void nRF52_setup()
 //  reset_info.reason = u32Reset_reason;
 
   /* supposed to be control of power supply */
-//  pinMode(SOC_GPIO_PIN_PWR,  OUTPUT);
-//  digitalWrite(SOC_GPIO_PIN_PWR, HIGH);
+  pinMode(SOC_GPIO_PIN_PWR,  OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_PWR, HIGH);
 
   pinMode(SOC_GPIO_LED_GREEN, OUTPUT);
   pinMode(SOC_GPIO_LED_RED,   OUTPUT);
@@ -448,7 +448,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_SPI_begin,
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
-  &nRF52_Bluetooth_ops,
+  NULL, // &nRF52_Bluetooth_ops,
   NULL,
   nRF52_Display_setup,
   nRF52_Display_loop,

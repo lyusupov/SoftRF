@@ -258,7 +258,7 @@ static void EPD_Draw_Radar()
       display->print("B");
 
       display->setFont(&FreeMonoBold9pt7b);
-      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.course);
+      snprintf(cog_text, sizeof(cog_text), "%03d", (int) ThisAircraft.course);
       display->getTextBounds(cog_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
       x = radar_x + (radar_w - tbw) / 2;
@@ -295,7 +295,7 @@ static void EPD_Draw_Radar()
   }
   while (display->nextPage());
 
-//  display->hibernate();
+  EPD_HIBERNATE;
 }
 
 void EPD_radar_setup()
@@ -305,7 +305,7 @@ void EPD_radar_setup()
 
 void EPD_radar_loop()
 {
-  bool hasFix = true; // isValidGNSSFix();
+  bool hasFix = isValidGNSSFix();
 
   if (hasFix) {
     view_state_curr = STATE_RVIEW_RADAR;

@@ -77,7 +77,7 @@ void EPD_time_loop()
   }
   while (display->nextPage());
 
-  display->hibernate();
+  EPD_HIBERNATE;
 }
 
 void EPD_time_next()

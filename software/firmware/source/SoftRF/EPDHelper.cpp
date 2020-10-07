@@ -113,8 +113,7 @@ bool EPD_setup(bool splash_screen)
 
   delay(1000);
 
-//  display->powerOff();
-//  display->hibernate();
+  EPD_HIBERNATE;
 
   rval = display->epd2.probe();
 
@@ -189,7 +188,7 @@ void EPD_fini(const char *msg)
     }
     while (display->nextPage());
 
-    display->powerOff();
+    EPD_POWEROFF;
     break;
 
   case DISPLAY_NONE:
@@ -284,7 +283,7 @@ void EPD_Message(const char *msg1, const char *msg2)
     }
     while (display->nextPage());
 
-    display->hibernate();
+    EPD_HIBERNATE;
   }
 }
 

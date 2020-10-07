@@ -43,6 +43,12 @@
 #define TEXT_VIEW_LINE_LENGTH   13      /* characters */
 #define TEXT_VIEW_LINE_SPACING  5      /* pixels */
 
+//#define EPD_HIBERNATE         {}
+#define EPD_HIBERNATE           display->hibernate()
+//#define EPD_HIBERNATE         display->powerOff()
+
+#define EPD_POWEROFF            display->powerOff()
+
 enum
 {
 	VIEW_MODE_STATUS,

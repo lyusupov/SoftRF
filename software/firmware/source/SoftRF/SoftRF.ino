@@ -122,7 +122,7 @@ void setup()
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
 #elif defined(USE_TINYUSB) && defined(USBCON)
-  while ( !Serial ) delay(10);
+  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #endif
 
 #if LOGGER_IS_ENABLED
