@@ -76,7 +76,6 @@ U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
 
 static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
 
-static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -360,6 +359,26 @@ static void CC13XX_setup()
   hw_info.revision = cc13xx_board;
 }
 
+static void CC13XX_post_init()
+{
+#if defined(USE_OLED)
+  if (u8x8) {
+    u8x8->clear();
+
+    u8x8->draw2x2String(0, 0, "RADIO");
+    u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+    u8x8->draw2x2String(0, 2, "GNSS");
+    u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+    u8x8->draw2x2String(0, 4, "OLED");
+    u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+    u8x8->draw2x2String(0, 6, "BARO");
+    u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+    delay(3000);
+  }
+#endif /* USE_OLED */
+}
+
 static void CC13XX_loop()
 {
 #if defined(ENERGIA_ARCH_CC13X2)
@@ -561,22 +580,7 @@ static void CC13XX_Display_loop()
   uint32_t disp_value;
 
   if (u8x8) {
-    if (!OLED_display_probe_status) {
-      u8x8->clear();
-
-      u8x8->draw2x2String(0, 0, "RADIO");
-      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-      u8x8->draw2x2String(0, 2, "GNSS");
-      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-      u8x8->draw2x2String(0, 4, "OLED");
-      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BARO");
-      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-      delay(3000);
-
-      OLED_display_probe_status = true;
-    } else if (!OLED_display_frontpage) {
+    if (!OLED_display_frontpage) {
 
       u8x8->clear();
 
@@ -777,6 +781,7 @@ const SoC_ops_t CC13XX_ops = {
   SOC_CC13XX,
   "CC13XX",
   CC13XX_setup,
+  CC13XX_post_init,
   CC13XX_loop,
   CC13XX_fini,
   CC13XX_reset,

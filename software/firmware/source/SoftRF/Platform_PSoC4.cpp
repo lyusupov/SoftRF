@@ -63,7 +63,6 @@ static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
-static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -169,6 +168,27 @@ static void PSoC4_setup()
     pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
   }
+}
+
+static void PSoC4_post_init()
+{
+#if defined(USE_OLED)
+  if (hw_info.model == SOFTRF_MODEL_MINI && u8x8) {
+
+    u8x8->clear();
+
+    u8x8->draw2x2String(0, 0, "RADIO");
+    u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+    u8x8->draw2x2String(0, 2, "GNSS");
+    u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+    u8x8->draw2x2String(0, 4, "OLED");
+    u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+    u8x8->draw2x2String(0, 6, "BARO");
+    u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+    delay(3000);
+  }
+#endif /* USE_OLED */
 }
 
 static void PSoC4_loop()
@@ -377,27 +397,7 @@ static void PSoC4_Display_loop()
   uint32_t disp_value;
 
   if (hw_info.model == SOFTRF_MODEL_MINI && u8x8) {
-    if (!OLED_display_probe_status) {
-      u8x8->clear();
-
-      u8x8->draw2x2String(0, 0, "RADIO");
-      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-      u8x8->draw2x2String(0, 2, "GNSS");
-      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-      u8x8->draw2x2String(0, 4, "OLED");
-      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BARO");
-      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-      delay(1000);
-      feedInnerWdt();
-      delay(1000);
-      feedInnerWdt();
-      delay(1000);
-      feedInnerWdt();
-
-      OLED_display_probe_status = true;
-    } else if (!OLED_display_frontpage) {
+    if (!OLED_display_frontpage) {
 
       u8x8->clear();
 
@@ -577,6 +577,7 @@ const SoC_ops_t PSoC4_ops = {
   SOC_PSOC4,
   "PSoC4",
   PSoC4_setup,
+  PSoC4_post_init,
   PSoC4_loop,
   PSoC4_fini,
   PSoC4_reset,

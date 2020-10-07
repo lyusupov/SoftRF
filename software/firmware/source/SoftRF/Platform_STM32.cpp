@@ -88,7 +88,6 @@ static int stm32_board = STM32_BLUE_PILL; /* default */
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 
-static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -218,6 +217,27 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+}
+
+static void STM32_post_init()
+{
+#if defined(USE_OLED)
+  if (u8x8) {
+
+    u8x8->clear();
+
+    u8x8->draw2x2String(0, 0, "RADIO");
+    u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+    u8x8->draw2x2String(0, 2, "GNSS");
+    u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+    u8x8->draw2x2String(0, 4, "OLED");
+    u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+    u8x8->draw2x2String(0, 6, "BARO");
+    u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+    delay(3000);
+  }
+#endif /* USE_OLED */
 }
 
 static void STM32_loop()
@@ -478,23 +498,7 @@ static void STM32_Display_loop()
   uint32_t disp_value;
 
   if (u8x8) {
-    if (!OLED_display_probe_status) {
-      u8x8->clear();
-
-      u8x8->draw2x2String(0, 0, "RADIO");
-      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-      u8x8->draw2x2String(0, 2, "GNSS");
-      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-      u8x8->draw2x2String(0, 4, "OLED");
-      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BARO");
-      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-      delay(3000);
-      IWatchdog.reload();
-
-      OLED_display_probe_status = true;
-    } else if (!OLED_display_frontpage) {
+    if (!OLED_display_frontpage) {
 
       u8x8->clear();
 
@@ -702,6 +706,7 @@ const SoC_ops_t STM32_ops = {
   SOC_STM32,
   "STM32",
   STM32_setup,
+  STM32_post_init,
   STM32_loop,
   STM32_fini,
   STM32_reset,

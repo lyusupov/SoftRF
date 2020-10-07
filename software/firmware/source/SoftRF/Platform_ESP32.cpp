@@ -97,7 +97,6 @@ static union {
   uint64_t chipmacid;
 };
 
-static bool OLED_display_probe_status = false;
 static bool OLED_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -268,6 +267,35 @@ static void ESP32_setup()
     }
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
     lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
+  }
+}
+
+static void ESP32_post_init()
+{
+  switch (hw_info.display)
+  {
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    if (u8x8) {
+
+      u8x8->clear();
+
+      u8x8->draw2x2String(0, 0, "RADIO");
+      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+      u8x8->draw2x2String(0, 2, "GNSS");
+      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+      u8x8->draw2x2String(0, 4, "OLED");
+      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+      u8x8->draw2x2String(0, 6, "BARO");
+      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+      delay(3000);
+    }
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
   }
 }
 
@@ -907,26 +935,7 @@ static void ESP32_Display_loop()
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
     if (u8x8) {
-      if (!OLED_display_probe_status) {
-        u8x8->clear();
-
-        u8x8->draw2x2String(0, 0, "RADIO");
-        u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-        u8x8->draw2x2String(0, 2, "GNSS");
-        u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-        u8x8->draw2x2String(0, 4, "OLED");
-        u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-        u8x8->draw2x2String(0, 6, "BARO");
-        u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-        delay(3000);
-
-        if (loopTaskWDTEnabled) {
-          feedLoopWDT();
-        }
-
-        OLED_display_probe_status = true;
-      } else if (!OLED_display_frontpage) {
+      if (!OLED_display_frontpage) {
 
         u8x8->clear();
 
@@ -1167,6 +1176,7 @@ const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32",
   ESP32_setup,
+  ESP32_post_init,
   ESP32_loop,
   ESP32_fini,
   ESP32_reset,

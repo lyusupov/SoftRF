@@ -231,6 +231,8 @@ void setup()
     break;
   }
 
+  SoC->post_init();
+
   SoC->WDT_setup();
 }
 

@@ -165,6 +165,13 @@ static void nRF52_setup()
   }
 }
 
+static void nRF52_post_init()
+{
+#if defined(USE_EPAPER)
+  /* TBD */
+#endif /* USE_EPAPER */
+}
+
 static void nRF52_loop()
 {
   // Reload the watchdog
@@ -428,6 +435,7 @@ const SoC_ops_t nRF52_ops = {
   SOC_NRF52,
   "nRF52",
   nRF52_setup,
+  nRF52_post_init,
   nRF52_loop,
   nRF52_fini,
   nRF52_reset,
