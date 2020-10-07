@@ -40,8 +40,8 @@
 
 #define EPD_RADAR_V_THRESHOLD   50      /* metres */
 
-#define TEXT_VIEW_LINE_LENGTH   13      /* characters */
-#define TEXT_VIEW_LINE_SPACING  5      /* pixels */
+#define TEXT_VIEW_LINE_LENGTH   13     /* characters */
+#define TEXT_VIEW_LINE_SPACING  7      /* pixels */
 
 //#define EPD_HIBERNATE         {}
 #define EPD_HIBERNATE           display->hibernate()
@@ -154,6 +154,7 @@ void EPD_Clear_Screen();
 bool EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);
+void EPD_info1(bool, bool);
 
 void EPD_Up();
 void EPD_Down();

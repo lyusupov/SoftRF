@@ -80,6 +80,9 @@ static uint32_t bootCount = 0;
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 
+static bool nRF52_has_rtc      = false;
+static bool nRF52_has_spiflash = false ;
+
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
 ui_settings_t ui_settings = {
@@ -119,9 +122,6 @@ static void nRF52_SerialWakeup() { }
 
 static void nRF52_setup()
 {
-  bool has_rtc      = false;
-  bool has_spiflash = false ;
-
   ui = &ui_settings;
 
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
@@ -139,9 +139,9 @@ static void nRF52_setup()
   ledOff(SOC_GPIO_LED_RED);
   ledOff(SOC_GPIO_LED_BLUE);
 
-  has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
+  nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
 
-  if (has_spiflash) {
+  if (nRF52_has_spiflash) {
     unsigned char buf[8];
 
     SerialFlash.readID(buf);
@@ -155,20 +155,42 @@ static void nRF52_setup()
 
   Wire.begin();
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-  has_rtc = (Wire.endTransmission() == 0);
+  nRF52_has_rtc = (Wire.endTransmission() == 0);
   Wire.end();
 
   i2c = new I2CBus(Wire);
 
-  if (has_rtc && (i2c != nullptr)) {
+  if (nRF52_has_rtc && (i2c != nullptr)) {
     rtc = new PCF8563_Class(*i2c);
   }
 }
 
 static void nRF52_post_init()
 {
+  Serial.println();
+  Serial.println(F("LilyGO T-xx nRF52840 board Power-on Self Test"));
+  Serial.println();
+  Serial.flush();
+
+  Serial.println(F("Built-in components:"));
+
+  Serial.print(F("RADIO   : ")); Serial.println(hw_info.rf      != RF_IC_NONE       ? F("PASS") : F("FAIL"));
+  Serial.print(F("GNSS    : ")); Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
+  Serial.print(F("DISPLAY : ")); Serial.println(hw_info.display != DISPLAY_NONE     ? F("PASS") : F("FAIL"));
+  Serial.print(F("RTC     : ")); Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
+  Serial.print(F("FLASH   : ")); Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
+
+  Serial.println();
+  Serial.println(F("External components:"));
+  Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("FAIL"));
+
+  Serial.println();
+  Serial.println(F("Power-on Self Test is completed."));
+  Serial.println();
+  Serial.flush();
+
 #if defined(USE_EPAPER)
-  /* TBD */
+  EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
 #endif /* USE_EPAPER */
 }
 
@@ -325,9 +347,9 @@ static byte nRF52_Display_setup()
     rval = DISPLAY_EPD_1_54;
   }
 
-  /* EPD back light */
-//  pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
-//  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+  /* EPD back light off */
+  pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
 #endif /* USE_EPAPER */
 
   return rval;
@@ -343,7 +365,7 @@ static void nRF52_Display_loop()
 static void nRF52_Display_fini(const char *msg)
 {
 #if defined(USE_EPAPER)
-  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+  /* EPD back light */
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
   EPD_fini(msg);

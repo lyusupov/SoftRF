@@ -24,6 +24,8 @@
 
 #include "EPDHelper.h"
 #include "LEDHelper.h"
+#include "RFHelper.h"
+#include "BaroHelper.h"
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
@@ -39,6 +41,13 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 const char EPD_SoftRF_text1[] = "SoftRF";
 const char EPD_SoftRF_text2[] = "and";
 const char EPD_SoftRF_text3[] = "LilyGO";
+
+const char EPD_Radio_text[]   = "RADIO   ";
+const char EPD_GNSS_text[]    = "GNSS    ";
+const char EPD_Display_text[] = "DISPLAY ";
+const char EPD_RTC_text[]     = "RTC     ";
+const char EPD_Flash_text[]   = "FLASH   ";
+const char EPD_Baro_text[]    = "BARO    ";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -127,6 +136,81 @@ bool EPD_setup(bool splash_screen)
   EPDTimeMarker = millis();
 
   return rval;
+}
+
+void EPD_info1(bool rtc, bool spiflash)
+{
+  switch (hw_info.display)
+  {
+  case DISPLAY_EPD_1_54:
+    int16_t  tbx, tby;
+    uint16_t tbw, tbh;
+
+    uint16_t x, y;
+
+    /* EPD back light on */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+
+    display->setFont(&FreeMonoBold18pt7b);
+    display->getTextBounds(EPD_Radio_text, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    display->setPartialWindow(0, 0, display->width(), display->height());
+
+    display->firstPage();
+    do
+    {
+      display->fillScreen(GxEPD_WHITE);
+
+      x = 0;
+      y = (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_Radio_text);
+      display->print(hw_info.rf != RF_IC_NONE ? "+" : "-");
+
+      y += (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_GNSS_text);
+      display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+
+      y += (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_Display_text);
+      display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
+
+      y += (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_RTC_text);
+      display->print(rtc ? "+" : "-");
+
+      y += (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_Flash_text);
+      display->print(spiflash ? "+" : "-");
+
+      y += (tbh + TEXT_VIEW_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_Baro_text);
+      display->print(hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+    }
+    while (display->nextPage());
+
+    EPD_HIBERNATE;
+
+    delay(4000);
+
+    /* EPD back light off */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 void EPD_loop()
