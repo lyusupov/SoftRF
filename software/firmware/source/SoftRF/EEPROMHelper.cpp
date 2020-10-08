@@ -98,7 +98,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
 
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+#if (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)) ||\
+    (defined(USE_TINYUSB) && defined(USBCON))
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
   eeprom_block.field.settings.nmea_out   = NMEA_UART;

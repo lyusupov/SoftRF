@@ -156,8 +156,8 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox1.x + 60, navbox1.y + 52);
     display->print(navbox1.value);
 
-    display->setCursor(navbox2.x + 5, navbox2.y + 52);
-    display->print((float) navbox2.value / 10);
+    display->setCursor(navbox2.x + 15, navbox2.y + 52);
+    display->print((float) navbox2.value / 10, 1);
 
   }
   while (display->nextPage());
@@ -279,16 +279,16 @@ static void EPD_Update_NavBoxes()
   if (navbox2.value != navbox2.prev_value) {
 
     display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("0.00", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox2.x + 5, navbox2.y + 53 - tbh,
+    display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setPartialWindow(navbox2.x + 15, navbox2.y + 53 - tbh,
                               tbw, tbh + 1);
     display->firstPage();
     do
     {
-      display->fillRect(navbox2.x + 5, navbox2.y + 53 - tbh,
+      display->fillRect(navbox2.x + 15, navbox2.y + 53 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox2.x + 5, navbox2.y + 52);
-      display->print((float) navbox2.value / 10);
+      display->setCursor(navbox2.x + 15, navbox2.y + 52);
+      display->print((float) navbox2.value / 10, 1);
     }
     while (display->nextPage());
 

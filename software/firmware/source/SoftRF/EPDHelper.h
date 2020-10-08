@@ -156,6 +156,7 @@ void EPD_loop();
 void EPD_fini(const char *);
 void EPD_info1(bool, bool);
 
+void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);

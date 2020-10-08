@@ -35,6 +35,8 @@
 
 #include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/Picopixel.h>
 
 static int EPD_zoom = ZOOM_MEDIUM;
 
@@ -274,7 +276,7 @@ static void EPD_Draw_Radar()
       break;
     }
 
-    display->setFont(&FreeMonoBold9pt7b);
+    display->setFont(&FreeMonoBold12pt7b);
     display->getTextBounds("00 NM", 0, 0, &tbx, &tby, &tbw, &tbh);
 
     x = radar_x;
@@ -282,15 +284,19 @@ static void EPD_Draw_Radar()
     display->setCursor(x, y);
 
     if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
-      display->print(EPD_zoom == ZOOM_LOWEST ? "20 KM" :
-                     EPD_zoom == ZOOM_LOW    ? "10 KM" :
-                     EPD_zoom == ZOOM_MEDIUM ? " 4 KM" :
-                     EPD_zoom == ZOOM_HIGH   ? " 2 KM" : "");
+      display->print(EPD_zoom == ZOOM_LOWEST ? "20" :
+                     EPD_zoom == ZOOM_LOW    ? "10" :
+                     EPD_zoom == ZOOM_MEDIUM ? " 4" :
+                     EPD_zoom == ZOOM_HIGH   ? " 2" : "");
+      display->setFont(&Picopixel);
+      display->print(" KM");
     } else {
-      display->print(EPD_zoom == ZOOM_LOWEST ? "10 NM" :
-                     EPD_zoom == ZOOM_LOW    ? " 5 NM" :
-                     EPD_zoom == ZOOM_MEDIUM ? " 2 NM" :
-                     EPD_zoom == ZOOM_HIGH   ? " 1 NM" : "");
+      display->print(EPD_zoom == ZOOM_LOWEST ? "10" :
+                     EPD_zoom == ZOOM_LOW    ? " 5" :
+                     EPD_zoom == ZOOM_MEDIUM ? " 2" :
+                     EPD_zoom == ZOOM_HIGH   ? " 1" : "");
+      display->setFont(&Picopixel);
+      display->print(" NM");
     }
   }
   while (display->nextPage());

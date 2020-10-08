@@ -182,7 +182,7 @@ static void nRF52_post_init()
 
   Serial.println();
   Serial.println(F("External components:"));
-  Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("FAIL"));
+  Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
 
   Serial.println();
   Serial.println(F("Power-on Self Test is completed."));
@@ -438,20 +438,121 @@ static void nRF52_WDT_fini()
   }
 }
 
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_1(SOC_GPIO_PIN_BUTTON);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+#if 0
+  // Print out a message for all events.
+  if (button == &button_1) {
+    Serial.print(F("BUTTON "));
+  }
+
+  Serial.print(F("handleEvent(): eventType: "));
+  Serial.print(eventType);
+  Serial.print(F("; buttonState: "));
+  Serial.println(buttonState);
+#endif
+
+  switch (eventType) {
+    case AceButton::kEventPressed:
+      if (button == &button_1) {
+        EPD_Mode();
+      }
+      break;
+    case AceButton::kEventReleased:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_1) {
+        shutdown("OFF");
+        Serial.println(F("This will never be printed."));
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onModeButtonEvent() {
+  button_1.check();
+}
+
 static void nRF52_Button_setup()
 {
-  /* TODO */
+  int mode_button_pin = SOC_GPIO_PIN_BUTTON;
+
+  // Button(s) uses external pull up register.
+  pinMode(mode_button_pin, INPUT);
+
+  button_1.init(mode_button_pin);
+
+  // Configure the ButtonConfig with the event handler, and enable all higher
+  // level events.
+  ButtonConfig* ModeButtonConfig = button_1.getButtonConfig();
+  ModeButtonConfig->setEventHandler(handleEvent);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  ModeButtonConfig->setDebounceDelay(15);
+  ModeButtonConfig->setClickDelay(100);
+  ModeButtonConfig->setDoubleClickDelay(1000);
+  ModeButtonConfig->setLongPressDelay(2000);
+
+  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
 }
 
 static void nRF52_Button_loop()
 {
-  /* TODO */
+  button_1.check();
 }
 
 static void nRF52_Button_fini()
 {
-  /* TODO */
+
 }
+
+static void nRF52_USB_setup()
+{
+
+}
+
+static void nRF52_USB_loop()
+{
+
+}
+
+static void nRF52_USB_fini()
+{
+  /* TBD */
+}
+
+static int nRF52_USB_available()
+{
+  return Serial.available();
+}
+
+static int nRF52_USB_read()
+{
+  return Serial.read();
+}
+
+static size_t nRF52_USB_write(const uint8_t *buffer, size_t size)
+{
+  return Serial.write(buffer, size);
+}
+
+IODev_ops_t nRF52_USBSerial_ops = {
+  "nRF52 USBSerial",
+  nRF52_USB_setup,
+  nRF52_USB_loop,
+  nRF52_USB_fini,
+  nRF52_USB_available,
+  nRF52_USB_read,
+  nRF52_USB_write
+};
 
 const SoC_ops_t nRF52_ops = {
   SOC_NRF52,
@@ -479,7 +580,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
   NULL, // &nRF52_Bluetooth_ops,
-  NULL,
+  &nRF52_USBSerial_ops,
   nRF52_Display_setup,
   nRF52_Display_loop,
   nRF52_Display_fini,

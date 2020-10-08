@@ -42,7 +42,7 @@
 
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
-#define SerialOutput            Serial
+#define SerialOutput            Serial1
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -124,7 +124,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL      _PINNUM(0, 27) // P0.27
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 18) // P1.10
+#define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 10) // P1.10
 
 /* E-paper */
 #define SOC_GPIO_PIN_EPD_MISO _PINNUM(1,  7) // P1.07
