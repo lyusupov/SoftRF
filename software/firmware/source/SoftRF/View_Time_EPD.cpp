@@ -29,8 +29,9 @@
 #include <pcf8563.h>
 
 #include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
 
-const char NOTIME_text[] = "-- : -- : --";
+const char NOTIME_text[] = "--:--:--";
 const char TZ_text[]     = "UTC";
 
 void EPD_time_setup()
@@ -54,25 +55,27 @@ void EPD_time_loop()
   if (now.year < 2019 || now.year > 2029) {
     strcpy(buf, NOTIME_text);
   } else {
-    snprintf(buf, sizeof(buf), "%2d : %02d : %02d",
+    snprintf(buf, sizeof(buf), "%2d:%02d:%02d",
              now.hour, now.minute, now.second);
   }
 
   display->setPartialWindow(0, 0, display->width(), display->height());
-  display->setFont(&FreeMonoBold12pt7b);
-  display->getTextBounds(buf, 0, 0, &tbx, &tby, &tbw, &tbh);
 
   display->firstPage();
   do
   {
     display->fillScreen(GxEPD_WHITE);
 
+    display->setFont(&FreeMonoBold18pt7b);
+    display->getTextBounds(buf, 0, 0, &tbx, &tby, &tbw, &tbh);
+
     display->setCursor((display->width() - tbw) / 2, (display->height() - tbh) / 2);
     display->print(buf);
 
+    display->setFont(&FreeMonoBold12pt7b);
     display->getTextBounds(TZ_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setCursor((display->width() - tbw) / 2, (2 * display->height()) / 3);
+    display->setCursor((display->width() - tbw) / 2, (3 * display->height()) / 4);
     display->print(TZ_text);
   }
   while (display->nextPage());

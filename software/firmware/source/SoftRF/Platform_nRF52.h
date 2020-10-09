@@ -123,8 +123,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_SDA      _PINNUM(0, 26) // P0.26
 #define SOC_GPIO_PIN_SCL      _PINNUM(0, 27) // P0.27
 
-/* button */
+/* buttons */
 #define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 10) // P1.10
+#define SOC_GPIO_PIN_PAD      _PINNUM(0, 11) // P0.11
 
 /* E-paper */
 #define SOC_GPIO_PIN_EPD_MISO _PINNUM(1,  7) // P1.07
@@ -139,7 +140,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_IO_PWR   _PINNUM(0, 12) // P0.12
 
 /* MX25R1635F SPI flash */
-#define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P0.12
+#define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P1.12
 #define SOC_GPIO_PIN_SFL_MISO _PINNUM(1, 13) // P1.13
 #define SOC_GPIO_PIN_SFL_SCK  _PINNUM(1, 14) // P1.14
 #define SOC_GPIO_PIN_SFL_SS   _PINNUM(1, 15) // P1.15

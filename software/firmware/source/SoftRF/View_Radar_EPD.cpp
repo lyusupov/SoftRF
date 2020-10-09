@@ -342,7 +342,8 @@ void EPD_radar_loop()
 
 void EPD_radar_zoom()
 {
-  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++;
+//  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++;
+  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++; else EPD_zoom = ZOOM_LOWEST;
 }
 
 void EPD_radar_unzoom()

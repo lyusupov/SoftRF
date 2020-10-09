@@ -82,6 +82,7 @@ I2CBus        *i2c = nullptr;
 
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false ;
+static bool RTC_sync           = false;
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
@@ -127,11 +128,9 @@ static void nRF52_setup()
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
 
-#if 0
   /* Wake up Air530 GNSS */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
-#endif
 
   pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
@@ -205,17 +204,28 @@ static void nRF52_loop()
   if (nrf_wdt_started(NRF_WDT)) {
     Watchdog.reset();
   }
+
+  if (!RTC_sync) {
+    if (rtc &&
+        gnss.date.isValid()     &&
+        gnss.time.isValid()     &&
+        gnss.date.year() > 2018 &&
+        gnss.date.year() < 2030 ) {
+      rtc->setDateTime(gnss.date.year(),   gnss.date.month(),
+                       gnss.date.day(),    gnss.time.hour(),
+                       gnss.time.minute(), gnss.time.second());
+      RTC_sync = true;
+    }
+  }
 }
 
 static void nRF52_fini()
 {
-#if 0
   /* Air530 GNSS ultra-low power tracking mode */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
   swSer.write("$PGKC105,4*33\r\n");
   swSer.flush(); delay(250);
-#endif
 
   Wire.end();
 
@@ -467,6 +477,7 @@ static void nRF52_WDT_fini()
 using namespace ace_button;
 
 AceButton button_1(SOC_GPIO_PIN_BUTTON);
+AceButton button_2(SOC_GPIO_PIN_PAD);
 
 // The event handler for the button.
 void handleEvent(AceButton* button, uint8_t eventType,
@@ -476,6 +487,8 @@ void handleEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventPressed:
       if (button == &button_1) {
         EPD_Mode();
+      } else if (button == &button_2) {
+        EPD_Up();
       }
       break;
     case AceButton::kEventReleased:
@@ -494,14 +507,22 @@ void onModeButtonEvent() {
   button_1.check();
 }
 
+/* Callbacks for touch button interrupt */
+void onUpButtonEvent() {
+  button_2.check();
+}
+
 static void nRF52_Button_setup()
 {
   int mode_button_pin = SOC_GPIO_PIN_BUTTON;
+  int up_button_pin   = SOC_GPIO_PIN_PAD;
 
   // Button(s) uses external pull up register.
   pinMode(mode_button_pin, INPUT);
+  pinMode(up_button_pin, INPUT);
 
   button_1.init(mode_button_pin);
+  button_2.init(up_button_pin);
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
@@ -514,12 +535,22 @@ static void nRF52_Button_setup()
   ModeButtonConfig->setDoubleClickDelay(1000);
   ModeButtonConfig->setLongPressDelay(2000);
 
+  ButtonConfig* UpButtonConfig = button_2.getButtonConfig();
+  UpButtonConfig->setEventHandler(handleEvent);
+  UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  UpButtonConfig->setDebounceDelay(15);
+  UpButtonConfig->setClickDelay(100);
+  UpButtonConfig->setDoubleClickDelay(1000);
+  UpButtonConfig->setLongPressDelay(2000);
+
   attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
+  attachInterrupt(digitalPinToInterrupt(up_button_pin),   onUpButtonEvent,   CHANGE );
 }
 
 static void nRF52_Button_loop()
 {
   button_1.check();
+  button_2.check();
 }
 
 static void nRF52_Button_fini()
