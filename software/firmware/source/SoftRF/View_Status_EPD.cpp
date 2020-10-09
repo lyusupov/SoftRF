@@ -379,7 +379,7 @@ static void EPD_Update_NavBoxes()
 
 void EPD_status_loop()
 {
-  if (!EPD_display_frontpage) {
+  if (EPD_vmode_updated) {
 
     EPD_Clear_Screen();
 
@@ -387,7 +387,7 @@ void EPD_status_loop()
 
     EPD_Draw_NavBoxes();
 
-    EPD_display_frontpage = true;
+    EPD_vmode_updated = false;
 
   } else {
 

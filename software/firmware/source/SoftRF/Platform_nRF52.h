@@ -136,7 +136,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_EPD_BUSY _PINNUM(0,  3) // P0.03
 #define SOC_GPIO_PIN_EPD_BLGT _PINNUM(1, 11) // P1.11
 
-#define SOC_GPIO_PIN_PWR      _PINNUM(0, 12) // P0.12
+#define SOC_GPIO_PIN_IO_PWR   _PINNUM(0, 12) // P0.12
 
 /* MX25R1635F SPI flash */
 #define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P0.12

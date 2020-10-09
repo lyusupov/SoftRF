@@ -127,15 +127,20 @@ static void nRF52_setup()
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
 
-  /* supposed to be control of power supply */
-  pinMode(SOC_GPIO_PIN_PWR,  OUTPUT);
-  digitalWrite(SOC_GPIO_PIN_PWR, HIGH);
+#if 0
+  /* Wake up Air530 GNSS */
+  digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+  pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+#endif
+
+  pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
 
   pinMode(SOC_GPIO_LED_GREEN, OUTPUT);
   pinMode(SOC_GPIO_LED_RED,   OUTPUT);
   pinMode(SOC_GPIO_LED_BLUE,  OUTPUT);
 
-  ledOn(SOC_GPIO_LED_GREEN);
+  ledOn (SOC_GPIO_LED_GREEN);
   ledOff(SOC_GPIO_LED_RED);
   ledOff(SOC_GPIO_LED_BLUE);
 
@@ -204,6 +209,16 @@ static void nRF52_loop()
 
 static void nRF52_fini()
 {
+#if 0
+  /* Air530 GNSS ultra-low power tracking mode */
+  digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
+  pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+  swSer.write("$PGKC105,4*33\r\n");
+  swSer.flush(); delay(250);
+#endif
+
+  Wire.end();
+
   ledOff(SOC_GPIO_LED_GREEN);
   ledOff(SOC_GPIO_LED_RED);
   ledOff(SOC_GPIO_LED_BLUE);
@@ -211,6 +226,14 @@ static void nRF52_fini()
   pinMode(SOC_GPIO_LED_GREEN, INPUT);
   pinMode(SOC_GPIO_LED_RED,   INPUT);
   pinMode(SOC_GPIO_LED_BLUE,  INPUT);
+
+  pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+
+  pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+  while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
+  delay(100);
+
+  systemOff(SOC_GPIO_PIN_BUTTON, LOW);
 }
 
 static void nRF52_reset()
@@ -369,6 +392,8 @@ static void nRF52_Display_fini(const char *msg)
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
   EPD_fini(msg);
+
+  SPI1.end();
 #endif /* USE_EPAPER */
 }
 
@@ -446,18 +471,6 @@ AceButton button_1(SOC_GPIO_PIN_BUTTON);
 // The event handler for the button.
 void handleEvent(AceButton* button, uint8_t eventType,
     uint8_t buttonState) {
-
-#if 0
-  // Print out a message for all events.
-  if (button == &button_1) {
-    Serial.print(F("BUTTON "));
-  }
-
-  Serial.print(F("handleEvent(): eventType: "));
-  Serial.print(eventType);
-  Serial.print(F("; buttonState: "));
-  Serial.println(buttonState);
-#endif
 
   switch (eventType) {
     case AceButton::kEventPressed:

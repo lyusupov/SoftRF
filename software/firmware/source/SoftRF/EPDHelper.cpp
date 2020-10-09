@@ -51,7 +51,6 @@ const char EPD_Flash_text[]   = "FLASH   ";
 const char EPD_Baro_text[]    = "BARO  ";
 
 unsigned long EPDTimeMarker = 0;
-bool EPD_display_frontpage = false;
 
 static int EPD_view_mode = 0;
 bool EPD_vmode_updated = true;
@@ -255,36 +254,9 @@ void EPD_loop()
 
 void EPD_fini(const char *msg)
 {
-  int16_t  tbx1, tby1;
-  uint16_t tbw1, tbh1;
-  uint16_t x, y;
+  EPD_Message(msg, NULL);
 
-  switch (hw_info.display)
-  {
-  case DISPLAY_EPD_1_54:
-
-    display->getTextBounds(msg, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-
-    display->setFullWindow();
-    display->firstPage();
-    do
-    {
-      display->fillScreen(GxEPD_WHITE);
-
-      x = (display->width() - tbw1) / 2;
-      y = (display->height() + tbh1) / 2;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text1);
-    }
-    while (display->nextPage());
-
-    EPD_POWEROFF;
-    break;
-
-  case DISPLAY_NONE:
-  default:
-    break;
-  }
+  EPD_POWEROFF;
 }
 
 void EPD_Mode()
@@ -292,19 +264,15 @@ void EPD_Mode()
   if (hw_info.display == DISPLAY_EPD_1_54) {
     if (EPD_view_mode == VIEW_MODE_STATUS) {
       EPD_view_mode = VIEW_MODE_RADAR;
-      EPD_display_frontpage = false;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_RADAR) {
       EPD_view_mode = VIEW_MODE_TEXT;
-      EPD_display_frontpage = false;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
       EPD_view_mode = VIEW_MODE_TIME;
-      EPD_display_frontpage = false;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_TIME) {
       EPD_view_mode = VIEW_MODE_STATUS;
-      EPD_display_frontpage = false;
       EPD_vmode_updated = true;
     }
   }

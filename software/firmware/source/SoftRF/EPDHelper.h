@@ -183,7 +183,6 @@ void EPD_time_prev();
 
 extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;
-extern bool EPD_display_frontpage;
 extern bool EPD_vmode_updated;
 
 #include "SoCHelper.h"
