@@ -403,7 +403,10 @@ static void nRF52_Display_fini(const char *msg)
 
   EPD_fini(msg);
 
+#if SPI_INTERFACES_COUNT >= 2
   SPI1.end();
+#endif /* SPI_INTERFACES_COUNT */
+
 #endif /* USE_EPAPER */
 }
 
