@@ -21,18 +21,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
-#include "TimeHelper.h"
-#include "LEDHelper.h"
-#include "GNSSHelper.h"
-#include "RFHelper.h"
-#include "EEPROMHelper.h"
-#include "BaroHelper.h"
-#include "TrafficHelper.h"
-#include "BatteryHelper.h"
+#include "src/SoCHelper.h"
+#include "src/TimeHelper.h"
+#include "src/LEDHelper.h"
+#include "src/GNSSHelper.h"
+#include "src/RFHelper.h"
+#include "src/EEPROMHelper.h"
+#include "src/BaroHelper.h"
+#include "src/TrafficHelper.h"
+#include "src/BatteryHelper.h"
 
 #include "EasyLink.h"
-#include "Protocol_UAT978.h"
+#include "src/protocol/radio/Protocol_UAT978.h"
 
 #include <uat.h>
 #include <fec/char.h>

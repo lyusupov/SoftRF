@@ -21,15 +21,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
-#include "TimeHelper.h"
-#include "LEDHelper.h"
-#include "RFHelper.h"
-#include "EEPROMHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
-#include "BaroHelper.h"
-#include "BatteryHelper.h"
+#include "src/SoCHelper.h"
+#include "src/TimeHelper.h"
+#include "src/LEDHelper.h"
+#include "src/RFHelper.h"
+#include "src/EEPROMHelper.h"
+#include "src/protocol/data/GDL90Helper.h"
+#include "src/protocol/data/D1090Helper.h"
+#include "src/BaroHelper.h"
+#include "src/BatteryHelper.h"
 
 #include "EasyLink.h"
 
