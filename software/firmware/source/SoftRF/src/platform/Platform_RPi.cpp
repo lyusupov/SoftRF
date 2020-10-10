@@ -45,23 +45,23 @@
 #if defined(RASPBERRY_PI)
 
 #include "Platform_RPi.h"
-#include "SoCHelper.h"
-#include "EEPROMHelper.h"
+#include "../SoCHelper.h"
+#include "../EEPROMHelper.h"
 #include <TinyGPS++.h>
 #include <aircraft.h>
-#include "RFHelper.h"
-#include "LEDHelper.h"
-#include "SoundHelper.h"
-#include "BaroHelper.h"
-#include "TrafficHelper.h"
-#include "NMEAHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
-#include "JSONHelper.h"
-#include "WiFiHelper.h"
-#include "EPDHelper.h"
-#include "BatteryHelper.h"
-#include "BluetoothHelper.h"
+#include "../RFHelper.h"
+#include "../LEDHelper.h"
+#include "../SoundHelper.h"
+#include "../BaroHelper.h"
+#include "../TrafficHelper.h"
+#include "../protocol/data/NMEAHelper.h"
+#include "../protocol/data/GDL90Helper.h"
+#include "../protocol/data/D1090Helper.h"
+#include "../protocol/data/JSONHelper.h"
+#include "../WiFiHelper.h"
+#include "../EPDHelper.h"
+#include "../BatteryHelper.h"
+#include "../BluetoothHelper.h"
 
 #include "TCPServer.h"
 

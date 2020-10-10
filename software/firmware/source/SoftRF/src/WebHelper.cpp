@@ -34,9 +34,9 @@ void Web_fini()     {}
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
 #include "TrafficHelper.h"
-#include "NMEAHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
+#include "protocol/data/NMEAHelper.h"
+#include "protocol/data/GDL90Helper.h"
+#include "protocol/data/D1090Helper.h"
 
 #if defined(ENABLE_AHRS)
 #include "AHRSHelper.h"

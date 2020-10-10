@@ -29,10 +29,10 @@ void EEPROM_store()    {}
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
 #include "TrafficHelper.h"
-#include "NMEAHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
-#include "JSONHelper.h"
+#include "protocol/data/NMEAHelper.h"
+#include "protocol/data/GDL90Helper.h"
+#include "protocol/data/D1090Helper.h"
+#include "protocol/data/JSONHelper.h"
 #include "BatteryHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM

@@ -34,7 +34,7 @@ void WiFi_fini()    {}
 #include "TrafficHelper.h"
 #include "RFHelper.h"
 #include "WebHelper.h"
-#include "NMEAHelper.h"
+#include "protocol/data/NMEAHelper.h"
 #include "BatteryHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;

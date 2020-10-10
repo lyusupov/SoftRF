@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoftRF.h"
+#include "../SoftRF.h"
 #if defined(ENABLE_TTN)
 
 #include <lmic.h>

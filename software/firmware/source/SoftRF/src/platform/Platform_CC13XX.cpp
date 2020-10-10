@@ -23,11 +23,11 @@
 #include <ti/drivers/Watchdog.h>
 #include <xdc/runtime/Memory.h>
 
-#include "SoCHelper.h"
-#include "RFHelper.h"
-#include "LEDHelper.h"
-#include "SoundHelper.h"
-#include "BaroHelper.h"
+#include "../SoCHelper.h"
+#include "../RFHelper.h"
+#include "../LEDHelper.h"
+#include "../SoundHelper.h"
+#include "../BaroHelper.h"
 
 #include "EasyLink.h"
 

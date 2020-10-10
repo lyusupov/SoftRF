@@ -22,13 +22,13 @@
 #include <SPI.h>
 
 #include "Platform_ESP8266.h"
-#include "SoCHelper.h"
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "WiFiHelper.h"
-#include "LEDHelper.h"
-#include "GNSSHelper.h"
+#include "../SoCHelper.h"
+#include "../SoundHelper.h"
+#include "../EEPROMHelper.h"
+#include "../RFHelper.h"
+#include "../WiFiHelper.h"
+#include "../LEDHelper.h"
+#include "../GNSSHelper.h"
 
 #include <ets_sys.h>
 #include <osapi.h>

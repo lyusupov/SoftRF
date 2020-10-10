@@ -100,7 +100,7 @@ struct rst_info {
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(SoC->Battery_voltage()*100)
 
-#include "hal_conf_extra.h"   // Sketch-specific definitions are located there
+#include "../../hal_conf_extra.h"   // Sketch-specific definitions are located there
 
 #if defined(ENERGIA_ARCH_CC13XX)
 

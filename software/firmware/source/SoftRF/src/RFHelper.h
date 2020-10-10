@@ -35,11 +35,11 @@
 #include <freqplan.h>
 
 #include "GNSSHelper.h"
-#include "Protocol_Legacy.h"
-#include "Protocol_OGNTP.h"
-#include "Protocol_P3I.h"
-#include "Protocol_FANET.h"
-#include "Protocol_UAT978.h"
+#include "protocol/radio/Protocol_Legacy.h"
+#include "protocol/radio/Protocol_OGNTP.h"
+#include "protocol/radio/Protocol_P3I.h"
+#include "protocol/radio/Protocol_FANET.h"
+#include "protocol/radio/Protocol_UAT978.h"
 
 #define maxof2(a,b)       (a > b ? a : b)
 #define maxof3(a,b,c)     maxof2(maxof2(a,b),c)

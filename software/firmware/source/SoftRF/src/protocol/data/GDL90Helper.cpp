@@ -23,17 +23,17 @@
 #include <lib_crc.h>
 #include <protocol.h>
 
-#include "SoCHelper.h"
+#include "../../SoCHelper.h"
 #include "GDL90Helper.h"
-#include "GNSSHelper.h"
-#include "EEPROMHelper.h"
-#include "WiFiHelper.h"
-#include "TrafficHelper.h"
-#include "Protocol_Legacy.h"
+#include "../../GNSSHelper.h"
+#include "../../EEPROMHelper.h"
+#include "../../WiFiHelper.h"
+#include "../../TrafficHelper.h"
+#include "../radio/Protocol_Legacy.h"
 #include "NMEAHelper.h"
 
 #if defined(ENABLE_AHRS)
-#include "AHRSHelper.h"
+#include "../../AHRSHelper.h"
 #endif /* ENABLE_AHRS */
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))

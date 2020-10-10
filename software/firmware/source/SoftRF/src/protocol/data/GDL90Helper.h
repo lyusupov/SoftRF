@@ -19,7 +19,7 @@
 #ifndef GDL90HELPER_H
 #define GDL90HELPER_H
 
-#include "SoftRF.h"
+#include "../../../SoftRF.h"
 
 enum
 {

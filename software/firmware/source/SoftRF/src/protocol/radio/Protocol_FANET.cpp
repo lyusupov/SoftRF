@@ -28,10 +28,10 @@
 #include <protocol.h>
 #include <TimeLib.h>
 
-#include "SoftRF.h"
+#include "../../../SoftRF.h"
 #include "Protocol_FANET.h"
 #include "Protocol_Legacy.h"
-#include "RFHelper.h"
+#include "../../RFHelper.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
   "FANET",

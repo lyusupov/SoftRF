@@ -22,14 +22,14 @@
 #include <Wire.h>
 #include <IWatchdog.h>
 
-#include "SoCHelper.h"
-#include "RFHelper.h"
-#include "LEDHelper.h"
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
-#include "GNSSHelper.h"
-#include "BaroHelper.h"
-#include "BatteryHelper.h"
+#include "../SoCHelper.h"
+#include "../RFHelper.h"
+#include "../LEDHelper.h"
+#include "../SoundHelper.h"
+#include "../EEPROMHelper.h"
+#include "../GNSSHelper.h"
+#include "../BaroHelper.h"
+#include "../BatteryHelper.h"
 
 #include <U8x8lib.h>
 #include <STM32LowPower.h>

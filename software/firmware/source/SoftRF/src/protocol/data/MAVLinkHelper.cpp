@@ -19,13 +19,13 @@
 #include <TimeLib.h>
 #include <TinyGPS++.h>
 
-#include "SoCHelper.h"
+#include "../../SoCHelper.h"
 #include "MAVLinkHelper.h"
 #include "GDL90Helper.h"
-#include "WiFiHelper.h"
-#include "TrafficHelper.h"
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
+#include "../../WiFiHelper.h"
+#include "../../TrafficHelper.h"
+#include "../../EEPROMHelper.h"
+#include "../../RFHelper.h"
 
 static unsigned long MAVLinkTimeSyncMarker = 0;
 static bool MAVLinkAPisArmed = false;

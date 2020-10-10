@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(USE_EPAPER)
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "EPDHelper.h"
-#include "TrafficHelper.h"
-#include "BatteryHelper.h"
+#include "../EPDHelper.h"
+#include "../TrafficHelper.h"
+#include "../BatteryHelper.h"
 #include <protocol.h>
 #include <pcf8563.h>
 

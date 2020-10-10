@@ -20,15 +20,10 @@
 #endif /* ARDUINO */
 
 #include "RFHelper.h"
-#include "Protocol_Legacy.h"
-#include "Protocol_OGNTP.h"
-#include "Protocol_P3I.h"
-#include "Protocol_FANET.h"
-#include "Protocol_UAT978.h"
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "WebHelper.h"
-#include "MAVLinkHelper.h"
+#include "protocol/data/MAVLinkHelper.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED

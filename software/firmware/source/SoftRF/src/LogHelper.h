@@ -19,7 +19,7 @@
 #ifndef LOGHELPER_H
 #define LOGHELPER_H
 
-#include "SoftRF.h"
+#include "../SoftRF.h"
 
 #if LOGGER_IS_ENABLED
 

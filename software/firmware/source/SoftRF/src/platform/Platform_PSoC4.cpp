@@ -21,12 +21,12 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "SoCHelper.h"
-#include "RFHelper.h"
-#include "EEPROMHelper.h"
-#include "GNSSHelper.h"
-#include "BaroHelper.h"
-#include "LEDHelper.h"
+#include "../SoCHelper.h"
+#include "../RFHelper.h"
+#include "../EEPROMHelper.h"
+#include "../GNSSHelper.h"
+#include "../BaroHelper.h"
+#include "../LEDHelper.h"
 
 #include <U8x8lib.h>
 #include <innerWdt.h>

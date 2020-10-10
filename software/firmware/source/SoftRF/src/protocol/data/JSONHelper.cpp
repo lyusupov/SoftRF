@@ -20,14 +20,14 @@
 
 #include <ArduinoJson.h>
 
-#include "SoCHelper.h"
+#include "../../SoCHelper.h"
 #include <TinyGPS++.h>
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "LEDHelper.h"
-#include "SoundHelper.h"
-#include "BaroHelper.h"
-#include "TrafficHelper.h"
+#include "../../EEPROMHelper.h"
+#include "../../RFHelper.h"
+#include "../../LEDHelper.h"
+#include "../../SoundHelper.h"
+#include "../../BaroHelper.h"
+#include "../../TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
 #include "D1090Helper.h"

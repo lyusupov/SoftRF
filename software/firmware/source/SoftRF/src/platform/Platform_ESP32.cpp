@@ -31,15 +31,15 @@
 #include <TFT_eSPI.h>
 
 #include "Platform_ESP32.h"
-#include "SoCHelper.h"
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "WiFiHelper.h"
-#include "BluetoothHelper.h"
-#include "LEDHelper.h"
-#include "BaroHelper.h"
-#include "BatteryHelper.h"
+#include "../SoCHelper.h"
+#include "../SoundHelper.h"
+#include "../EEPROMHelper.h"
+#include "../RFHelper.h"
+#include "../WiFiHelper.h"
+#include "../BluetoothHelper.h"
+#include "../LEDHelper.h"
+#include "../BaroHelper.h"
+#include "../BatteryHelper.h"
 
 #include <battery.h>
 #include <U8x8lib.h>

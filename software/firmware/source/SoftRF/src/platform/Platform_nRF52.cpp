@@ -26,16 +26,16 @@
 #include <Adafruit_SleepyDog.h>
 #include "nrf_wdt.h"
 
-#include "SoCHelper.h"
-#include "RFHelper.h"
-#include "EEPROMHelper.h"
-#include "GNSSHelper.h"
-#include "BaroHelper.h"
-#include "LEDHelper.h"
-#include "BluetoothHelper.h"
+#include "../SoCHelper.h"
+#include "../RFHelper.h"
+#include "../EEPROMHelper.h"
+#include "../GNSSHelper.h"
+#include "../BaroHelper.h"
+#include "../LEDHelper.h"
+#include "../BluetoothHelper.h"
 
 #if defined(USE_EPAPER)
-#include "EPDHelper.h"
+#include "../EPDHelper.h"
 #endif /* USE_EPAPER */
 
 typedef volatile uint32_t REG32;

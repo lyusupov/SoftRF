@@ -19,7 +19,7 @@
 #ifndef TTNHELPER_H
 #define TTNHELPER_H
 
-#include "SoftRF.h"
+#include "../SoftRF.h"
 #if defined(ENABLE_TTN)
 
 void TTN_setup(void);

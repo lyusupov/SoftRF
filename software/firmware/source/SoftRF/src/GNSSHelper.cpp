@@ -23,7 +23,7 @@
 
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
-#include "NMEAHelper.h"
+#include "protocol/data/NMEAHelper.h"
 #include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "RFHelper.h"
@@ -109,8 +109,8 @@ const char *GNSS_name[] = {
 #include "RFHelper.h"       /* RF_Shutdown() */
 #include "SoundHelper.h"
 #include "LEDHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
+#include "protocol/data/GDL90Helper.h"
+#include "protocol/data/D1090Helper.h"
 
 TinyGPSCustom C_Version      (gnss, "PSRFC", 1);
 TinyGPSCustom C_Mode         (gnss, "PSRFC", 2);

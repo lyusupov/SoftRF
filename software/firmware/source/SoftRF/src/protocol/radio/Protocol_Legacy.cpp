@@ -24,10 +24,10 @@
 
 #include <protocol.h>
 
-#include "SoftRF.h"
-#include "RFHelper.h"
+#include "../../../SoftRF.h"
+#include "../../RFHelper.h"
 #include "Protocol_Legacy.h"
-#include "EEPROMHelper.h"
+#include "../../EEPROMHelper.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
   "Legacy",

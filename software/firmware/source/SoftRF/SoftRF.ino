@@ -60,31 +60,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "OTAHelper.h"
-#include "TimeHelper.h"
-#include "LEDHelper.h"
-#include "GNSSHelper.h"
-#include "RFHelper.h"
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
-#include "BatteryHelper.h"
-#include "MAVLinkHelper.h"
-#include "GDL90Helper.h"
-#include "NMEAHelper.h"
-#include "D1090Helper.h"
-#include "SoCHelper.h"
-#include "WiFiHelper.h"
-#include "WebHelper.h"
-#include "BaroHelper.h"
-#include "TTNHelper.h"
-#include "TrafficHelper.h"
+#include "src/OTAHelper.h"
+#include "src/TimeHelper.h"
+#include "src/LEDHelper.h"
+#include "src/GNSSHelper.h"
+#include "src/RFHelper.h"
+#include "src/SoundHelper.h"
+#include "src/EEPROMHelper.h"
+#include "src/BatteryHelper.h"
+#include "src/protocol/data/MAVLinkHelper.h"
+#include "src/protocol/data/GDL90Helper.h"
+#include "src/protocol/data/NMEAHelper.h"
+#include "src/protocol/data/D1090Helper.h"
+#include "src/SoCHelper.h"
+#include "src/WiFiHelper.h"
+#include "src/WebHelper.h"
+#include "src/BaroHelper.h"
+#include "src/TTNHelper.h"
+#include "src/TrafficHelper.h"
 
 #if defined(ENABLE_AHRS)
-#include "AHRSHelper.h"
+#include "src/AHRSHelper.h"
 #endif /* ENABLE_AHRS */
 
 #if LOGGER_IS_ENABLED
-#include "LogHelper.h"
+#include "src/LogHelper.h"
 #endif /* LOGGER_IS_ENABLED */
 
 #define DEBUG 0

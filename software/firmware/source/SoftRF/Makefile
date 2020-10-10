@@ -43,24 +43,31 @@ OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
                  -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
 SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
 
-LMIC_PATH     = ../libraries/arduino-lmic/src
-BASICMAC_PATH = ../libraries/arduino-basicmac/src
-NRF905_PATH   = ../libraries/nRF905
-TIMELIB_PATH  = ../libraries/Time
-CRCLIB_PATH   = ../libraries/CRC
-OGNLIB_PATH   = ../libraries/OGN
-GNSSLIB_PATH  = ../libraries/TinyGPSPlus/src
-BCMLIB_PATH   = ../libraries/bcm2835/src
-MAVLINK_PATH  = ../libraries/mavlink
-AIRCRAFT_PATH = ../libraries/aircraft
-ADSB_PATH     = ../libraries/adsb_encoder
-NMEALIB_PATH  = ../libraries/nmealib/src
-GEOID_PATH    = ../libraries/Geoid
-JSON_PATH     = ../libraries/ArduinoJson/src
-TCPSRV_PATH   = ../libraries/SimpleNetwork/src
-DUMP978_PATH  = ../libraries/dump978/src
-GFX_PATH      = ../libraries/Adafruit-GFX-Library
-EPD2_PATH     = ../libraries/GxEPD2/src
+SRC_PATH      = src
+LIB_PATH      = ../libraries
+
+PRODAT_PATH   = $(SRC_PATH)/protocol/data
+PRORAD_PATH   = $(SRC_PATH)/protocol/radio
+PLATFORM_PATH = $(SRC_PATH)/platform
+
+LMIC_PATH     = $(LIB_PATH)/arduino-lmic/src
+BASICMAC_PATH = $(LIB_PATH)/arduino-basicmac/src
+NRF905_PATH   = $(LIB_PATH)/nRF905
+TIMELIB_PATH  = $(LIB_PATH)/Time
+CRCLIB_PATH   = $(LIB_PATH)/CRC
+OGNLIB_PATH   = $(LIB_PATH)/OGN
+GNSSLIB_PATH  = $(LIB_PATH)/TinyGPSPlus/src
+BCMLIB_PATH   = $(LIB_PATH)/bcm2835/src
+MAVLINK_PATH  = $(LIB_PATH)/mavlink
+AIRCRAFT_PATH = $(LIB_PATH)/aircraft
+ADSB_PATH     = $(LIB_PATH)/adsb_encoder
+NMEALIB_PATH  = $(LIB_PATH)/nmealib/src
+GEOID_PATH    = $(LIB_PATH)/Geoid
+JSON_PATH     = $(LIB_PATH)/ArduinoJson/src
+TCPSRV_PATH   = $(LIB_PATH)/SimpleNetwork/src
+DUMP978_PATH  = $(LIB_PATH)/dump978/src
+GFX_PATH      = $(LIB_PATH)/Adafruit-GFX-Library
+EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 
 ifdef BASICMAC
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -68,31 +75,50 @@ else
 RADIO_PATH    = $(LMIC_PATH)
 endif
 
-INCLUDE       = -I$(RADIO_PATH)  -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
+INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
+                -I$(RADIO_PATH)  -I$(NRF905_PATH)  -I$(TIMELIB_PATH)  \
                 -I$(CRCLIB_PATH) -I$(OGNLIB_PATH)  -I$(GNSSLIB_PATH)  \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
-                -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
-                -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH) \
+                -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
+                -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(EPD2_PATH)
 
-CPPS          := SoCHelper.cpp \
-                 RFHelper.cpp GNSSHelper.cpp \
-                 Protocol_Legacy.cpp Protocol_P3I.cpp Protocol_FANET.cpp \
-                 Protocol_OGNTP.cpp Protocol_UAT978.cpp \
-                 GDL90Helper.cpp BaroHelper.cpp TrafficHelper.cpp \
-                 NMEAHelper.cpp D1090Helper.cpp MAVLinkHelper.cpp \
-                 LEDHelper.cpp BatteryHelper.cpp EEPROMHelper.cpp \
-                 Platform_ESP8266.cpp Platform_ESP32.cpp Platform_STM32.cpp \
-                 Platform_PSoC4.cpp  Platform_CC13XX.cpp Platform_nRF52.cpp \
-                 JSONHelper.cpp BluetoothHelper.cpp SoundHelper.cpp \
-                 TimeHelper.cpp WebHelper.cpp WiFiHelper.cpp OTAHelper.cpp \
-                 EPDHelper.cpp Library.cpp
+SRC_CPPS      := $(SRC_PATH)/SoCHelper.cpp $(SRC_PATH)/RFHelper.cpp           \
+                 $(SRC_PATH)/GNSSHelper.cpp $(SRC_PATH)/BaroHelper.cpp        \
+                 $(SRC_PATH)/TrafficHelper.cpp $(SRC_PATH)/LEDHelper.cpp      \
+                 $(SRC_PATH)/BatteryHelper.cpp $(SRC_PATH)/EEPROMHelper.cpp   \
+                 $(SRC_PATH)/BluetoothHelper.cpp $(SRC_PATH)/SoundHelper.cpp  \
+                 $(SRC_PATH)/TimeHelper.cpp $(SRC_PATH)/WebHelper.cpp         \
+                 $(SRC_PATH)/WiFiHelper.cpp $(SRC_PATH)/OTAHelper.cpp         \
+                 $(SRC_PATH)/EPDHelper.cpp $(SRC_PATH)/Library.cpp
+
+PRORAD_CPPS   := $(PRORAD_PATH)/Protocol_Legacy.cpp \
+                 $(PRORAD_PATH)/Protocol_P3I.cpp    \
+                 $(PRORAD_PATH)/Protocol_FANET.cpp  \
+                 $(PRORAD_PATH)/Protocol_OGNTP.cpp  \
+                 $(PRORAD_PATH)/Protocol_UAT978.cpp
+
+PRODAT_CPPS   := $(PRODAT_PATH)/NMEAHelper.cpp    \
+                 $(PRODAT_PATH)/GDL90Helper.cpp   \
+                 $(PRODAT_PATH)/D1090Helper.cpp   \
+                 $(PRODAT_PATH)/MAVLinkHelper.cpp \
+                 $(PRODAT_PATH)/JSONHelper.cpp
+
+PLAT_CPPS     := $(PLATFORM_PATH)/Platform_ESP8266.cpp  \
+                 $(PLATFORM_PATH)/Platform_ESP32.cpp    \
+                 $(PLATFORM_PATH)/Platform_STM32.cpp    \
+                 $(PLATFORM_PATH)/Platform_PSoC4.cpp    \
+                 $(PLATFORM_PATH)/Platform_CC13XX.cpp   \
+                 $(PLATFORM_PATH)/Platform_nRF52.cpp
 
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
 #                 $(LMIC_PATH)/raspi/wiring.o $(LMIC_PATH)/raspi/raspberry_pi_revision.o \
 
-OBJS          := $(CPPS:.cpp=.o) \
+OBJS          := $(SRC_CPPS:.cpp=.o) \
+                 $(PRORAD_CPPS:.cpp=.o) \
+                 $(PRODAT_CPPS:.cpp=.o) \
+                 $(PLAT_CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(RADIO_PATH)/raspi/raspi.o \
                  $(RADIO_PATH)/raspi/WString.o \
@@ -159,11 +185,11 @@ hal.o: $(RADIO_PATH)/hal/hal.cpp
 hal-aux.o: $(RADIO_PATH)/hal/hal.cpp
 				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
-Platform_RPi.o: Platform_RPi.cpp
-				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
+Platform_RPi.o: $(PLATFORM_PATH)/Platform_RPi.cpp
+				$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
 
-Platform_RPi-aux.o: Platform_RPi.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi-aux.o
+Platform_RPi-aux.o: $(PLATFORM_PATH)/Platform_RPi.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/Platform_RPi.cpp $(INCLUDE) -o Platform_RPi-aux.o
 
 aes.o: $(RADIO_PATH)/aes/lmic.c
 				$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o

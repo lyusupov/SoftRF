@@ -22,10 +22,10 @@
 
 #include <protocol.h>
 
-#include "SoftRF.h"
+#include "../../../SoftRF.h"
 #include "Protocol_P3I.h"
 #include "Protocol_Legacy.h"
-#include "RFHelper.h"
+#include "../../RFHelper.h"
 
 const rf_proto_desc_t p3i_proto_desc = {
   "P3I",

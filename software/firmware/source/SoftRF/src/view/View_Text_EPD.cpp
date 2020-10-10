@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(USE_EPAPER)
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "EPDHelper.h"
+#include "../EPDHelper.h"
 
 #include <TimeLib.h>
 
-#include "TrafficHelper.h"
-#include "EEPROMHelper.h"
-#include "NMEAHelper.h"
-#include "GDL90Helper.h"
-#include "GNSSHelper.h"
-#include "LEDHelper.h"
+#include "../TrafficHelper.h"
+#include "../EEPROMHelper.h"
+#include "../protocol/data/NMEAHelper.h"
+#include "../protocol/data/GDL90Helper.h"
+#include "../GNSSHelper.h"
+#include "../LEDHelper.h"
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 

@@ -19,12 +19,12 @@
 #include <adsb_encoder.h>
 #include <TimeLib.h>
 
-#include "SoCHelper.h"
+#include "../../SoCHelper.h"
 #include "D1090Helper.h"
-#include "GNSSHelper.h"
+#include "../../GNSSHelper.h"
 #include "GDL90Helper.h"
-#include "EEPROMHelper.h"
-#include "TrafficHelper.h"
+#include "../../EEPROMHelper.h"
+#include "../../TrafficHelper.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
