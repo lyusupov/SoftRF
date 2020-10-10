@@ -32,7 +32,7 @@
 #include "src/BatteryHelper.h"
 
 #include "EasyLink.h"
-#include "src/protocol/radio/Protocol_UAT978.h"
+#include "src/protocol/radio/UAT978.h"
 
 #include <uat.h>
 #include <fec/char.h>

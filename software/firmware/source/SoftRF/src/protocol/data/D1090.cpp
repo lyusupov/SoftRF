@@ -20,9 +20,9 @@
 #include <TimeLib.h>
 
 #include "../../SoCHelper.h"
-#include "D1090Helper.h"
+#include "D1090.h"
 #include "../../GNSSHelper.h"
-#include "GDL90Helper.h"
+#include "GDL90.h"
 #include "../../EEPROMHelper.h"
 #include "../../TrafficHelper.h"
 

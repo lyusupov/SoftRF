@@ -18,7 +18,7 @@
 
 #include <TimeLib.h>
 
-#include "NMEAHelper.h"
+#include "NMEA.h"
 #include "../../GNSSHelper.h"
 #include "../../RFHelper.h"
 #include "../../SoCHelper.h"
@@ -58,7 +58,7 @@ unsigned long PGRMZ_TimeMarker = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
 #if defined(ENABLE_AHRS)
-#include "AHRSHelper.h"
+#include "../../AHRSHelper.h"
 
 #define isTimeToRPYL()  (millis() - RPYL_TimeMarker > AHRS_INTERVAL)
 unsigned long RPYL_TimeMarker = 0;

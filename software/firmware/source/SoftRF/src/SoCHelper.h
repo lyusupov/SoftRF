@@ -22,13 +22,13 @@
 #define SOC_UNUSED_PIN 255
 
 #include "../SoftRF.h"
-#include "platform/Platform_ESP8266.h"
-#include "platform/Platform_ESP32.h"
-#include "platform/Platform_RPi.h"
-#include "platform/Platform_CC13XX.h"
-#include "platform/Platform_STM32.h"
-#include "platform/Platform_PSoC4.h"
-#include "platform/Platform_nRF52.h"
+#include "platform/ESP8266.h"
+#include "platform/ESP32.h"
+#include "platform/RPi.h"
+#include "platform/CC13XX.h"
+#include "platform/STM32.h"
+#include "platform/PSoC4.h"
+#include "platform/nRF52.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;

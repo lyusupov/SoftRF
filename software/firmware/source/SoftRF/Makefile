@@ -92,24 +92,24 @@ SRC_CPPS      := $(SRC_PATH)/SoCHelper.cpp $(SRC_PATH)/RFHelper.cpp           \
                  $(SRC_PATH)/WiFiHelper.cpp $(SRC_PATH)/OTAHelper.cpp         \
                  $(SRC_PATH)/EPDHelper.cpp $(SRC_PATH)/Library.cpp
 
-PRORAD_CPPS   := $(PRORAD_PATH)/Protocol_Legacy.cpp \
-                 $(PRORAD_PATH)/Protocol_P3I.cpp    \
-                 $(PRORAD_PATH)/Protocol_FANET.cpp  \
-                 $(PRORAD_PATH)/Protocol_OGNTP.cpp  \
-                 $(PRORAD_PATH)/Protocol_UAT978.cpp
+PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
+                 $(PRORAD_PATH)/P3I.cpp    \
+                 $(PRORAD_PATH)/FANET.cpp  \
+                 $(PRORAD_PATH)/OGNTP.cpp  \
+                 $(PRORAD_PATH)/UAT978.cpp
 
-PRODAT_CPPS   := $(PRODAT_PATH)/NMEAHelper.cpp    \
-                 $(PRODAT_PATH)/GDL90Helper.cpp   \
-                 $(PRODAT_PATH)/D1090Helper.cpp   \
-                 $(PRODAT_PATH)/MAVLinkHelper.cpp \
-                 $(PRODAT_PATH)/JSONHelper.cpp
+PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
+                 $(PRODAT_PATH)/GDL90.cpp   \
+                 $(PRODAT_PATH)/D1090.cpp   \
+                 $(PRODAT_PATH)/MAVLink.cpp \
+                 $(PRODAT_PATH)/JSON.cpp
 
-PLAT_CPPS     := $(PLATFORM_PATH)/Platform_ESP8266.cpp  \
-                 $(PLATFORM_PATH)/Platform_ESP32.cpp    \
-                 $(PLATFORM_PATH)/Platform_STM32.cpp    \
-                 $(PLATFORM_PATH)/Platform_PSoC4.cpp    \
-                 $(PLATFORM_PATH)/Platform_CC13XX.cpp   \
-                 $(PLATFORM_PATH)/Platform_nRF52.cpp
+PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
+                 $(PLATFORM_PATH)/ESP32.cpp    \
+                 $(PLATFORM_PATH)/STM32.cpp    \
+                 $(PLATFORM_PATH)/PSoC4.cpp    \
+                 $(PLATFORM_PATH)/CC13XX.cpp   \
+                 $(PLATFORM_PATH)/nRF52.cpp
 
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
@@ -185,11 +185,11 @@ hal.o: $(RADIO_PATH)/hal/hal.cpp
 hal-aux.o: $(RADIO_PATH)/hal/hal.cpp
 				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
-Platform_RPi.o: $(PLATFORM_PATH)/Platform_RPi.cpp
-				$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
+RPi.o: $(PLATFORM_PATH)/RPi.cpp
+				$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi.o
 
-Platform_RPi-aux.o: $(PLATFORM_PATH)/Platform_RPi.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/Platform_RPi.cpp $(INCLUDE) -o Platform_RPi-aux.o
+RPi-aux.o: $(PLATFORM_PATH)/RPi.cpp
+				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi-aux.o
 
 aes.o: $(RADIO_PATH)/aes/lmic.c
 				$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
@@ -200,15 +200,15 @@ $(RADIO_PATH)/lmic/%.o: $(RADIO_PATH)/lmic/%.c
 bcm:
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
-$(PROGNAME): $(OBJS) aes.o hal.o Platform_RPi.o
-				$(CXX) $(OBJS) aes.o hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
+$(PROGNAME): $(OBJS) aes.o hal.o RPi.o
+				$(CXX) $(OBJS) aes.o hal.o RPi.o $(LIBS) -o $(PROGNAME)
 
-$(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o Platform_RPi-aux.o
-				$(CXX) $(OBJS) aes.o hal-aux.o Platform_RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
+$(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o RPi-aux.o
+				$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
 				(cd $(BCMLIB_PATH)/../ ; make distclean)
 
 clean: bcm-clean
 				rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
-				Platform_RPi.o Platform_RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d
+				RPi.o RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d

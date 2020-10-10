@@ -29,7 +29,7 @@
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
 
-#include "JSONHelper.h"
+#include "JSON.h"
 
 #define SerialOutput          Serial
 #define swSer                 Serial1

@@ -24,8 +24,6 @@
 #include <TimeLib.h>
 
 #include "../../../SoftRF.h"
-#include "Protocol_OGNTP.h"
-#include "Protocol_Legacy.h"
 #include "../../RFHelper.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {

@@ -23,9 +23,8 @@
 #include <protocol.h>
 
 #include "../../../SoftRF.h"
-#include "Protocol_UAT978.h"
 #include "../../RFHelper.h"
-#include "../data/GDL90Helper.h"
+#include "../data/GDL90.h"
 
 const rf_proto_desc_t uat978_proto_desc = {
   "UAT",

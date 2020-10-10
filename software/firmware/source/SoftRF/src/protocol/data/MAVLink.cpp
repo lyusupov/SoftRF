@@ -20,8 +20,8 @@
 #include <TinyGPS++.h>
 
 #include "../../SoCHelper.h"
-#include "MAVLinkHelper.h"
-#include "GDL90Helper.h"
+#include "MAVLink.h"
+#include "GDL90.h"
 #include "../../WiFiHelper.h"
 #include "../../TrafficHelper.h"
 #include "../../EEPROMHelper.h"

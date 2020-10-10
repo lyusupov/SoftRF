@@ -23,7 +23,7 @@
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "WebHelper.h"
-#include "protocol/data/MAVLinkHelper.h"
+#include "protocol/data/MAVLink.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED

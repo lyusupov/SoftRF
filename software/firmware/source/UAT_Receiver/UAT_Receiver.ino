@@ -26,8 +26,8 @@
 #include "src/LEDHelper.h"
 #include "src/RFHelper.h"
 #include "src/EEPROMHelper.h"
-#include "src/protocol/data/GDL90Helper.h"
-#include "src/protocol/data/D1090Helper.h"
+#include "src/protocol/data/GDL90.h"
+#include "src/protocol/data/D1090.h"
 #include "src/BaroHelper.h"
 #include "src/BatteryHelper.h"
 

@@ -44,7 +44,6 @@
 
 #if defined(RASPBERRY_PI)
 
-#include "Platform_RPi.h"
 #include "../SoCHelper.h"
 #include "../EEPROMHelper.h"
 #include <TinyGPS++.h>
@@ -54,10 +53,10 @@
 #include "../SoundHelper.h"
 #include "../BaroHelper.h"
 #include "../TrafficHelper.h"
-#include "../protocol/data/NMEAHelper.h"
-#include "../protocol/data/GDL90Helper.h"
-#include "../protocol/data/D1090Helper.h"
-#include "../protocol/data/JSONHelper.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
+#include "../protocol/data/JSON.h"
 #include "../WiFiHelper.h"
 #include "../EPDHelper.h"
 #include "../BatteryHelper.h"

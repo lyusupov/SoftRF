@@ -21,7 +21,7 @@
 #include "RFHelper.h"
 #include "GNSSHelper.h"
 #include "WebHelper.h"
-#include "protocol/radio/Protocol_Legacy.h"
+#include "protocol/radio/Legacy.h"
 
 unsigned long UpdateTrafficTimeMarker = 0;
 

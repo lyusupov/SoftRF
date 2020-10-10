@@ -24,13 +24,13 @@
 #include <protocol.h>
 
 #include "../../SoCHelper.h"
-#include "GDL90Helper.h"
+#include "GDL90.h"
 #include "../../GNSSHelper.h"
 #include "../../EEPROMHelper.h"
 #include "../../WiFiHelper.h"
 #include "../../TrafficHelper.h"
-#include "../radio/Protocol_Legacy.h"
-#include "NMEAHelper.h"
+#include "../radio/Legacy.h"
+#include "NMEA.h"
 
 #if defined(ENABLE_AHRS)
 #include "../../AHRSHelper.h"

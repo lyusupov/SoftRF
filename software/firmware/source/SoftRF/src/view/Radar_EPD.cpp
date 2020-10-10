@@ -29,8 +29,8 @@
 #include "../TrafficHelper.h"
 #include "../BatteryHelper.h"
 #include "../EEPROMHelper.h"
-#include "../protocol/data/NMEAHelper.h"
-#include "../protocol/data/GDL90Helper.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
 #include "../LEDHelper.h"
 
 #include <Fonts/FreeMono9pt7b.h>

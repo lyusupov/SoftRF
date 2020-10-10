@@ -30,7 +30,6 @@
 #include <axp20x.h>
 #include <TFT_eSPI.h>
 
-#include "Platform_ESP32.h"
 #include "../SoCHelper.h"
 #include "../SoundHelper.h"
 #include "../EEPROMHelper.h"

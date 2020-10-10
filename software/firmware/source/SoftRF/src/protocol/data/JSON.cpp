@@ -28,10 +28,10 @@
 #include "../../SoundHelper.h"
 #include "../../BaroHelper.h"
 #include "../../TrafficHelper.h"
-#include "NMEAHelper.h"
-#include "GDL90Helper.h"
-#include "D1090Helper.h"
-#include "JSONHelper.h"
+#include "NMEA.h"
+#include "GDL90.h"
+#include "D1090.h"
+#include "JSON.h"
 
 #include <iostream>
 #include <sstream>

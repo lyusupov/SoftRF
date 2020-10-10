@@ -21,7 +21,6 @@
 #include <ESP8266TrueRandom.h>
 #include <SPI.h>
 
-#include "Platform_ESP8266.h"
 #include "../SoCHelper.h"
 #include "../SoundHelper.h"
 #include "../EEPROMHelper.h"
