@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #include <TimeLib.h>
 
 #include "LEDHelper.h"
 #include "BatteryHelper.h"
-#include "TrafficHelper.h"
+#include "../TrafficHelper.h"
 
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;

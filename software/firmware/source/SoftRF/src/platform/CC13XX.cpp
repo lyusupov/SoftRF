@@ -24,10 +24,10 @@
 #include <xdc/runtime/Memory.h>
 
 #include "../SoCHelper.h"
-#include "../RFHelper.h"
-#include "../LEDHelper.h"
-#include "../SoundHelper.h"
-#include "../BaroHelper.h"
+#include "../driver/RFHelper.h"
+#include "../driver/LEDHelper.h"
+#include "../driver/SoundHelper.h"
+#include "../driver/BaroHelper.h"
 
 #include "EasyLink.h"
 

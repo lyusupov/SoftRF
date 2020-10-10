@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(EXCLUDE_WIFI)
 void WiFi_setup()    {}
@@ -27,14 +27,14 @@ void WiFi_fini()    {}
 #include <FS.h>
 #include <TimeLib.h>
 
-#include "OTAHelper.h"
+#include "../OTAHelper.h"
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
-#include "TrafficHelper.h"
+#include "../TrafficHelper.h"
 #include "RFHelper.h"
-#include "WebHelper.h"
-#include "protocol/data/NMEA.h"
+#include "../WebHelper.h"
+#include "../protocol/data/NMEA.h"
 #include "BatteryHelper.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;

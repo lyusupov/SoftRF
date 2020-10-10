@@ -20,7 +20,7 @@
 #include <Arduino.h>
 #endif
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 #include "BatteryHelper.h"
 
 unsigned long Battery_TimeMarker = 0;

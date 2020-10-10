@@ -22,12 +22,12 @@
 #include <SPI.h>
 
 #include "../SoCHelper.h"
-#include "../SoundHelper.h"
-#include "../EEPROMHelper.h"
-#include "../RFHelper.h"
-#include "../WiFiHelper.h"
-#include "../LEDHelper.h"
-#include "../GNSSHelper.h"
+#include "../driver/SoundHelper.h"
+#include "../driver/EEPROMHelper.h"
+#include "../driver/RFHelper.h"
+#include "../driver/WiFiHelper.h"
+#include "../driver/LEDHelper.h"
+#include "../driver/GNSSHelper.h"
 
 #include <ets_sys.h>
 #include <osapi.h>

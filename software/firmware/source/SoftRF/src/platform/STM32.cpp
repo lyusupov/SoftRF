@@ -23,13 +23,13 @@
 #include <IWatchdog.h>
 
 #include "../SoCHelper.h"
-#include "../RFHelper.h"
-#include "../LEDHelper.h"
-#include "../SoundHelper.h"
-#include "../EEPROMHelper.h"
-#include "../GNSSHelper.h"
-#include "../BaroHelper.h"
-#include "../BatteryHelper.h"
+#include "../driver/RFHelper.h"
+#include "../driver/LEDHelper.h"
+#include "../driver/SoundHelper.h"
+#include "../driver/EEPROMHelper.h"
+#include "../driver/GNSSHelper.h"
+#include "../driver/BaroHelper.h"
+#include "../driver/BatteryHelper.h"
 
 #include <U8x8lib.h>
 #include <STM32LowPower.h>

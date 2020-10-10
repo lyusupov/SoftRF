@@ -185,7 +185,7 @@ extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(ARDUINO_ARCH_NRF52)
 extern ui_settings_t *ui;

@@ -19,7 +19,7 @@
 #ifndef LEDHELPER_H
 #define LEDHELPER_H
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 #include "GNSSHelper.h"
 #include "EEPROMHelper.h"
 

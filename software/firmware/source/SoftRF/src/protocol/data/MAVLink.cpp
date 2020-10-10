@@ -22,10 +22,10 @@
 #include "../../SoCHelper.h"
 #include "MAVLink.h"
 #include "GDL90.h"
-#include "../../WiFiHelper.h"
+#include "../../driver/WiFiHelper.h"
 #include "../../TrafficHelper.h"
-#include "../../EEPROMHelper.h"
-#include "../../RFHelper.h"
+#include "../../driver/EEPROMHelper.h"
+#include "../../driver/RFHelper.h"
 
 static unsigned long MAVLinkTimeSyncMarker = 0;
 static bool MAVLinkAPisArmed = false;

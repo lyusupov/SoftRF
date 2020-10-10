@@ -23,13 +23,13 @@
 
 #include "src/SoCHelper.h"
 #include "src/TimeHelper.h"
-#include "src/LEDHelper.h"
-#include "src/RFHelper.h"
-#include "src/EEPROMHelper.h"
+#include "src/driver/LEDHelper.h"
+#include "src/driver/RFHelper.h"
+#include "src/driver/EEPROMHelper.h"
 #include "src/protocol/data/GDL90.h"
 #include "src/protocol/data/D1090.h"
-#include "src/BaroHelper.h"
-#include "src/BatteryHelper.h"
+#include "src/driver/BaroHelper.h"
+#include "src/driver/BatteryHelper.h"
 
 #include "EasyLink.h"
 

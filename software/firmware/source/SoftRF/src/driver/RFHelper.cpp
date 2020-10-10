@@ -20,10 +20,10 @@
 #endif /* ARDUINO */
 
 #include "RFHelper.h"
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 #include "EEPROMHelper.h"
-#include "WebHelper.h"
-#include "protocol/data/MAVLink.h"
+#include "../WebHelper.h"
+#include "../protocol/data/MAVLink.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED

@@ -49,6 +49,7 @@ LIB_PATH      = ../libraries
 PRODAT_PATH   = $(SRC_PATH)/protocol/data
 PRORAD_PATH   = $(SRC_PATH)/protocol/radio
 PLATFORM_PATH = $(SRC_PATH)/platform
+DRIVER_PATH   = $(SRC_PATH)/driver
 
 LMIC_PATH     = $(LIB_PATH)/arduino-lmic/src
 BASICMAC_PATH = $(LIB_PATH)/arduino-basicmac/src
@@ -83,14 +84,9 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(EPD2_PATH)
 
-SRC_CPPS      := $(SRC_PATH)/SoCHelper.cpp $(SRC_PATH)/RFHelper.cpp           \
-                 $(SRC_PATH)/GNSSHelper.cpp $(SRC_PATH)/BaroHelper.cpp        \
-                 $(SRC_PATH)/TrafficHelper.cpp $(SRC_PATH)/LEDHelper.cpp      \
-                 $(SRC_PATH)/BatteryHelper.cpp $(SRC_PATH)/EEPROMHelper.cpp   \
-                 $(SRC_PATH)/BluetoothHelper.cpp $(SRC_PATH)/SoundHelper.cpp  \
-                 $(SRC_PATH)/TimeHelper.cpp $(SRC_PATH)/WebHelper.cpp         \
-                 $(SRC_PATH)/WiFiHelper.cpp $(SRC_PATH)/OTAHelper.cpp         \
-                 $(SRC_PATH)/EPDHelper.cpp $(SRC_PATH)/Library.cpp
+SRC_CPPS      := $(SRC_PATH)/SoCHelper.cpp  $(SRC_PATH)/TrafficHelper.cpp \
+                 $(SRC_PATH)/TimeHelper.cpp $(SRC_PATH)/WebHelper.cpp     \
+                 $(SRC_PATH)/OTAHelper.cpp  $(SRC_PATH)/Library.cpp
 
 PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
                  $(PRORAD_PATH)/P3I.cpp    \
@@ -111,6 +107,17 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/CC13XX.cpp   \
                  $(PLATFORM_PATH)/nRF52.cpp
 
+DRV_CPPS      := $(DRIVER_PATH)/RFHelper.cpp        \
+                 $(DRIVER_PATH)/GNSSHelper.cpp      \
+                 $(DRIVER_PATH)/BaroHelper.cpp      \
+                 $(DRIVER_PATH)/LEDHelper.cpp       \
+                 $(DRIVER_PATH)/BatteryHelper.cpp   \
+                 $(DRIVER_PATH)/EEPROMHelper.cpp    \
+                 $(DRIVER_PATH)/BluetoothHelper.cpp \
+                 $(DRIVER_PATH)/SoundHelper.cpp     \
+                 $(DRIVER_PATH)/WiFiHelper.cpp      \
+                 $(DRIVER_PATH)/EPDHelper.cpp
+
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
 #                 $(LMIC_PATH)/raspi/wiring.o $(LMIC_PATH)/raspi/raspberry_pi_revision.o \
@@ -119,6 +126,7 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(PRORAD_CPPS:.cpp=.o) \
                  $(PRODAT_CPPS:.cpp=.o) \
                  $(PLAT_CPPS:.cpp=.o) \
+                 $(DRV_CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(RADIO_PATH)/raspi/raspi.o \
                  $(RADIO_PATH)/raspi/WString.o \

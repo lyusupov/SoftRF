@@ -22,16 +22,16 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "../EPDHelper.h"
+#include "../driver/EPDHelper.h"
 
 #include <TimeLib.h>
 
 #include "../TrafficHelper.h"
-#include "../EEPROMHelper.h"
+#include "../driver/EEPROMHelper.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
-#include "../GNSSHelper.h"
-#include "../LEDHelper.h"
+#include "../driver/GNSSHelper.h"
+#include "../driver/LEDHelper.h"
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(EXCLUDE_EEPROM)
 void EEPROM_setup()    {}
@@ -28,11 +28,11 @@ void EEPROM_store()    {}
 #include "LEDHelper.h"
 #include "SoundHelper.h"
 #include "BluetoothHelper.h"
-#include "TrafficHelper.h"
-#include "protocol/data/NMEA.h"
-#include "protocol/data/GDL90.h"
-#include "protocol/data/D1090.h"
-#include "protocol/data/JSON.h"
+#include "../TrafficHelper.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
+#include "../protocol/data/JSON.h"
 #include "BatteryHelper.h"
 
 // start reading from the first byte (address 0) of the EEPROM

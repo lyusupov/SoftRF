@@ -19,11 +19,11 @@
 #include <TimeLib.h>
 
 #include "NMEA.h"
-#include "../../GNSSHelper.h"
-#include "../../RFHelper.h"
+#include "../../driver/GNSSHelper.h"
+#include "../../driver/RFHelper.h"
 #include "../../SoCHelper.h"
-#include "../../WiFiHelper.h"
-#include "../../EEPROMHelper.h"
+#include "../../driver/WiFiHelper.h"
+#include "../../driver/EEPROMHelper.h"
 #include "../../TrafficHelper.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
@@ -58,7 +58,7 @@ unsigned long PGRMZ_TimeMarker = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
 #if defined(ENABLE_AHRS)
-#include "../../AHRSHelper.h"
+#include "../../driver/AHRSHelper.h"
 
 #define isTimeToRPYL()  (millis() - RPYL_TimeMarker > AHRS_INTERVAL)
 unsigned long RPYL_TimeMarker = 0;

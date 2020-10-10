@@ -17,9 +17,9 @@
  */
 
 #include "TrafficHelper.h"
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "GNSSHelper.h"
+#include "driver/EEPROMHelper.h"
+#include "driver/RFHelper.h"
+#include "driver/GNSSHelper.h"
 #include "WebHelper.h"
 #include "protocol/radio/Legacy.h"
 

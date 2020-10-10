@@ -31,14 +31,14 @@
 #include <TFT_eSPI.h>
 
 #include "../SoCHelper.h"
-#include "../SoundHelper.h"
-#include "../EEPROMHelper.h"
-#include "../RFHelper.h"
-#include "../WiFiHelper.h"
-#include "../BluetoothHelper.h"
-#include "../LEDHelper.h"
-#include "../BaroHelper.h"
-#include "../BatteryHelper.h"
+#include "../driver/SoundHelper.h"
+#include "../driver/EEPROMHelper.h"
+#include "../driver/RFHelper.h"
+#include "../driver/WiFiHelper.h"
+#include "../driver/BluetoothHelper.h"
+#include "../driver/LEDHelper.h"
+#include "../driver/BaroHelper.h"
+#include "../driver/BatteryHelper.h"
 
 #include <battery.h>
 #include <U8x8lib.h>

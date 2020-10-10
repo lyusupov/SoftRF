@@ -27,8 +27,8 @@
 
 #include <TinyGPS++.h>
 
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
+#include "driver/EEPROMHelper.h"
+#include "driver/RFHelper.h"
 
 #define BOOL_STR(x) (x ? "true":"false")
 #define JS_MAX_CHUNK_SIZE 4096

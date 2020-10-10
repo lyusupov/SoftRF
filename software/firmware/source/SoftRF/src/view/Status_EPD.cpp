@@ -22,10 +22,10 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "../EPDHelper.h"
+#include "../driver/EPDHelper.h"
 #include "../TrafficHelper.h"
-#include "../BatteryHelper.h"
-#include "../EEPROMHelper.h"
+#include "../driver/BatteryHelper.h"
+#include "../driver/EEPROMHelper.h"
 #include <protocol.h>
 
 #include <Fonts/FreeMono9pt7b.h>

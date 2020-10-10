@@ -25,9 +25,9 @@
 
 #include "../../SoCHelper.h"
 #include "GDL90.h"
-#include "../../GNSSHelper.h"
-#include "../../EEPROMHelper.h"
-#include "../../WiFiHelper.h"
+#include "../../driver/GNSSHelper.h"
+#include "../../driver/EEPROMHelper.h"
+#include "../../driver/WiFiHelper.h"
 #include "../../TrafficHelper.h"
 #include "../radio/Legacy.h"
 #include "NMEA.h"

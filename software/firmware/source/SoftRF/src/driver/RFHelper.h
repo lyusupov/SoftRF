@@ -22,7 +22,7 @@
 #include <nRF905.h>
 #include <TimeLib.h>
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(USE_BASICMAC)
 #include <basicmac.h>
@@ -35,11 +35,11 @@
 #include <freqplan.h>
 
 #include "GNSSHelper.h"
-#include "protocol/radio/Legacy.h"
-#include "protocol/radio/OGNTP.h"
-#include "protocol/radio/P3I.h"
-#include "protocol/radio/FANET.h"
-#include "protocol/radio/UAT978.h"
+#include "../protocol/radio/Legacy.h"
+#include "../protocol/radio/OGNTP.h"
+#include "../protocol/radio/P3I.h"
+#include "../protocol/radio/FANET.h"
+#include "../protocol/radio/UAT978.h"
 
 #define maxof2(a,b)       (a > b ? a : b)
 #define maxof3(a,b,c)     maxof2(maxof2(a,b),c)

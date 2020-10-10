@@ -23,7 +23,7 @@
 #include <protocol.h>
 
 #include "../../../SoftRF.h"
-#include "../../RFHelper.h"
+#include "../../driver/RFHelper.h"
 
 const rf_proto_desc_t p3i_proto_desc = {
   "P3I",
