@@ -29,7 +29,7 @@
 #include <TimeLib.h>
 
 #include "../../../SoftRF.h"
-#include "../../driver/RFHelper.h"
+#include "../../driver/RF.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
   "FANET",

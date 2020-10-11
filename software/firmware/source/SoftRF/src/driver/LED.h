@@ -20,8 +20,8 @@
 #define LEDHELPER_H
 
 #include "../SoCHelper.h"
-#include "GNSSHelper.h"
-#include "EEPROMHelper.h"
+#include "GNSS.h"
+#include "EEPROM.h"
 
 #define STATUS_LED_NUM  4
 //#define RING_LED_NUM (ESP.getChipId() == 0xeacdd ? 12 : 8)

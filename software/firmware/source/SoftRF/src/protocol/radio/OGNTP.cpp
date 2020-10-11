@@ -24,7 +24,7 @@
 #include <TimeLib.h>
 
 #include "../../../SoftRF.h"
-#include "../../driver/RFHelper.h"
+#include "../../driver/RF.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {
   "OGNTP",

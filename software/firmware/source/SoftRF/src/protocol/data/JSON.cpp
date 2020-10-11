@@ -22,11 +22,11 @@
 
 #include "../../SoCHelper.h"
 #include <TinyGPS++.h>
-#include "../../driver/EEPROMHelper.h"
-#include "../../driver/RFHelper.h"
-#include "../../driver/LEDHelper.h"
-#include "../../driver/SoundHelper.h"
-#include "../../driver/BaroHelper.h"
+#include "../../driver/EEPROM.h"
+#include "../../driver/RF.h"
+#include "../../driver/LED.h"
+#include "../../driver/Sound.h"
+#include "../../driver/Baro.h"
 #include "../../TrafficHelper.h"
 #include "NMEA.h"
 #include "GDL90.h"

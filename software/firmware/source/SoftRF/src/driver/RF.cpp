@@ -19,9 +19,9 @@
 #include <SPI.h>
 #endif /* ARDUINO */
 
-#include "RFHelper.h"
+#include "RF.h"
 #include "../SoCHelper.h"
-#include "EEPROMHelper.h"
+#include "EEPROM.h"
 #include "../WebHelper.h"
 #include "../protocol/data/MAVLink.h"
 #include <fec.h>

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoundHelper.h"
-#include "EEPROMHelper.h"
+#include "Sound.h"
+#include "EEPROM.h"
 
 void Sound_setup(void)
 {

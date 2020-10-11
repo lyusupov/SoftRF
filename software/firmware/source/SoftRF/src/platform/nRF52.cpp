@@ -27,15 +27,15 @@
 #include "nrf_wdt.h"
 
 #include "../SoCHelper.h"
-#include "../driver/RFHelper.h"
-#include "../driver/EEPROMHelper.h"
-#include "../driver/GNSSHelper.h"
-#include "../driver/BaroHelper.h"
-#include "../driver/LEDHelper.h"
-#include "../driver/BluetoothHelper.h"
+#include "../driver/RF.h"
+#include "../driver/EEPROM.h"
+#include "../driver/GNSS.h"
+#include "../driver/Baro.h"
+#include "../driver/LED.h"
+#include "../driver/Bluetooth.h"
 
 #if defined(USE_EPAPER)
-#include "../driver/EPDHelper.h"
+#include "../driver/EPD.h"
 #endif /* USE_EPAPER */
 
 typedef volatile uint32_t REG32;

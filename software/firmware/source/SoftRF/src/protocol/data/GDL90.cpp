@@ -25,15 +25,15 @@
 
 #include "../../SoCHelper.h"
 #include "GDL90.h"
-#include "../../driver/GNSSHelper.h"
-#include "../../driver/EEPROMHelper.h"
-#include "../../driver/WiFiHelper.h"
+#include "../../driver/GNSS.h"
+#include "../../driver/EEPROM.h"
+#include "../../driver/WiFi.h"
 #include "../../TrafficHelper.h"
 #include "../radio/Legacy.h"
 #include "NMEA.h"
 
 #if defined(ENABLE_AHRS)
-#include "../../AHRSHelper.h"
+#include "../../AHRS.h"
 #endif /* ENABLE_AHRS */
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))

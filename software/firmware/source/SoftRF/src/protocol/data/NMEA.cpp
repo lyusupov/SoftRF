@@ -19,11 +19,11 @@
 #include <TimeLib.h>
 
 #include "NMEA.h"
-#include "../../driver/GNSSHelper.h"
-#include "../../driver/RFHelper.h"
+#include "../../driver/GNSS.h"
+#include "../../driver/RF.h"
 #include "../../SoCHelper.h"
-#include "../../driver/WiFiHelper.h"
-#include "../../driver/EEPROMHelper.h"
+#include "../../driver/WiFi.h"
+#include "../../driver/EEPROM.h"
 #include "../../TrafficHelper.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))

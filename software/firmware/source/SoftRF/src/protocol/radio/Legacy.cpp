@@ -25,8 +25,8 @@
 #include <protocol.h>
 
 #include "../../../SoftRF.h"
-#include "../../driver/RFHelper.h"
-#include "../../driver/EEPROMHelper.h"
+#include "../../driver/RF.h"
+#include "../../driver/EEPROM.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
   "Legacy",

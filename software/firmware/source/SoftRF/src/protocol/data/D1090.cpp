@@ -21,9 +21,9 @@
 
 #include "../../SoCHelper.h"
 #include "D1090.h"
-#include "../../driver/GNSSHelper.h"
+#include "../../driver/GNSS.h"
 #include "GDL90.h"
-#include "../../driver/EEPROMHelper.h"
+#include "../../driver/EEPROM.h"
 #include "../../TrafficHelper.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))

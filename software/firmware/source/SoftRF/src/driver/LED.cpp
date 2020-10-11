@@ -20,8 +20,8 @@
 
 #include <TimeLib.h>
 
-#include "LEDHelper.h"
-#include "BatteryHelper.h"
+#include "LED.h"
+#include "Battery.h"
 #include "../TrafficHelper.h"
 
 static uint32_t prev_tx_packets_counter = 0;

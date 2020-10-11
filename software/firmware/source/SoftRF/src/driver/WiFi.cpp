@@ -28,14 +28,14 @@ void WiFi_fini()    {}
 #include <TimeLib.h>
 
 #include "../OTAHelper.h"
-#include "GNSSHelper.h"
-#include "EEPROMHelper.h"
-#include "WiFiHelper.h"
+#include "GNSS.h"
+#include "EEPROM.h"
+#include "WiFi.h"
 #include "../TrafficHelper.h"
-#include "RFHelper.h"
+#include "RF.h"
 #include "../WebHelper.h"
 #include "../protocol/data/NMEA.h"
-#include "BatteryHelper.h"
+#include "Battery.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
 String station_psk  = MY_ACCESSPOINT_PSK ;

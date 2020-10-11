@@ -21,13 +21,13 @@
 #endif
 #include <TimeLib.h>
 
-#include "GNSSHelper.h"
-#include "EEPROMHelper.h"
+#include "GNSS.h"
+#include "EEPROM.h"
 #include "../protocol/data/NMEA.h"
 #include "../SoCHelper.h"
-#include "WiFiHelper.h"
-#include "RFHelper.h"
-#include "BatteryHelper.h"
+#include "WiFi.h"
+#include "RF.h"
+#include "Battery.h"
 
 #if !defined(EXCLUDE_EGM96)
 #include <egm96s.h>
@@ -106,9 +106,9 @@ const char *GNSS_name[] = {
 
 #if defined(USE_NMEA_CFG)
 
-#include "RFHelper.h"       /* RF_Shutdown() */
-#include "SoundHelper.h"
-#include "LEDHelper.h"
+#include "RF.h"       /* RF_Shutdown() */
+#include "Sound.h"
+#include "LED.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 

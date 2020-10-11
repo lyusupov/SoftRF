@@ -34,7 +34,7 @@
 #include <protocol.h>
 #include <freqplan.h>
 
-#include "GNSSHelper.h"
+#include "GNSS.h"
 #include "../protocol/radio/Legacy.h"
 #include "../protocol/radio/OGNTP.h"
 #include "../protocol/radio/P3I.h"

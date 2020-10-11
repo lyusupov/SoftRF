@@ -23,17 +23,17 @@ void EEPROM_setup()    {}
 void EEPROM_store()    {}
 #else
 
-#include "EEPROMHelper.h"
-#include "RFHelper.h"
-#include "LEDHelper.h"
-#include "SoundHelper.h"
-#include "BluetoothHelper.h"
+#include "EEPROM.h"
+#include "RF.h"
+#include "LED.h"
+#include "Sound.h"
+#include "Bluetooth.h"
 #include "../TrafficHelper.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 #include "../protocol/data/JSON.h"
-#include "BatteryHelper.h"
+#include "Battery.h"
 
 // start reading from the first byte (address 0) of the EEPROM
 

@@ -21,7 +21,7 @@
 #endif
 
 #include "../SoCHelper.h"
-#include "BatteryHelper.h"
+#include "Battery.h"
 
 unsigned long Battery_TimeMarker = 0;
 static int Battery_cutoff_count  = 0;

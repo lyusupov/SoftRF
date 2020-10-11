@@ -23,7 +23,7 @@
 #include <protocol.h>
 
 #include "../../../SoftRF.h"
-#include "../../driver/RFHelper.h"
+#include "../../driver/RF.h"
 #include "../data/GDL90.h"
 
 const rf_proto_desc_t uat978_proto_desc = {

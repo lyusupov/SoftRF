@@ -27,7 +27,7 @@ void OTA_loop()     {}
 #include <ArduinoOTA.h>
 
 #include "OTAHelper.h"
-#include "driver/WiFiHelper.h"
+#include "driver/WiFi.h"
 
 void OTA_setup()
 {

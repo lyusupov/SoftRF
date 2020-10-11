@@ -107,16 +107,16 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/CC13XX.cpp   \
                  $(PLATFORM_PATH)/nRF52.cpp
 
-DRV_CPPS      := $(DRIVER_PATH)/RFHelper.cpp        \
-                 $(DRIVER_PATH)/GNSSHelper.cpp      \
-                 $(DRIVER_PATH)/BaroHelper.cpp      \
-                 $(DRIVER_PATH)/LEDHelper.cpp       \
-                 $(DRIVER_PATH)/BatteryHelper.cpp   \
-                 $(DRIVER_PATH)/EEPROMHelper.cpp    \
-                 $(DRIVER_PATH)/BluetoothHelper.cpp \
-                 $(DRIVER_PATH)/SoundHelper.cpp     \
-                 $(DRIVER_PATH)/WiFiHelper.cpp      \
-                 $(DRIVER_PATH)/EPDHelper.cpp
+DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
+                 $(DRIVER_PATH)/GNSS.cpp      \
+                 $(DRIVER_PATH)/Baro.cpp      \
+                 $(DRIVER_PATH)/LED.cpp       \
+                 $(DRIVER_PATH)/Battery.cpp   \
+                 $(DRIVER_PATH)/EEPROM.cpp    \
+                 $(DRIVER_PATH)/Bluetooth.cpp \
+                 $(DRIVER_PATH)/Sound.cpp     \
+                 $(DRIVER_PATH)/WiFi.cpp      \
+                 $(DRIVER_PATH)/EPD.cpp
 
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \

@@ -22,9 +22,9 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "../driver/EPDHelper.h"
+#include "../driver/EPD.h"
 #include "../TrafficHelper.h"
-#include "../driver/BatteryHelper.h"
+#include "../driver/Battery.h"
 #include <protocol.h>
 #include <pcf8563.h>
 

@@ -22,10 +22,10 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 
-#include "EPDHelper.h"
-#include "LEDHelper.h"
-#include "RFHelper.h"
-#include "BaroHelper.h"
+#include "EPD.h"
+#include "LED.h"
+#include "RF.h"
+#include "Baro.h"
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMono18pt7b.h>

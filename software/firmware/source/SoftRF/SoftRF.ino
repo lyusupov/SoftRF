@@ -62,25 +62,25 @@
 
 #include "src/OTAHelper.h"
 #include "src/TimeHelper.h"
-#include "src/driver/LEDHelper.h"
-#include "src/driver/GNSSHelper.h"
-#include "src/driver/RFHelper.h"
-#include "src/driver/SoundHelper.h"
-#include "src/driver/EEPROMHelper.h"
-#include "src/driver/BatteryHelper.h"
+#include "src/driver/LED.h"
+#include "src/driver/GNSS.h"
+#include "src/driver/RF.h"
+#include "src/driver/Sound.h"
+#include "src/driver/EEPROM.h"
+#include "src/driver/Battery.h"
 #include "src/protocol/data/MAVLink.h"
 #include "src/protocol/data/GDL90.h"
 #include "src/protocol/data/NMEA.h"
 #include "src/protocol/data/D1090.h"
 #include "src/SoCHelper.h"
-#include "src/driver/WiFiHelper.h"
+#include "src/driver/WiFi.h"
 #include "src/WebHelper.h"
-#include "src/driver/BaroHelper.h"
+#include "src/driver/Baro.h"
 #include "src/TTNHelper.h"
 #include "src/TrafficHelper.h"
 
 #if defined(ENABLE_AHRS)
-#include "src/driver/AHRSHelper.h"
+#include "src/driver/AHRS.h"
 #endif /* ENABLE_AHRS */
 
 #if LOGGER_IS_ENABLED

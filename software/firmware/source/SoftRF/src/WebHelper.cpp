@@ -26,20 +26,20 @@ void Web_fini()     {}
 
 #include <Arduino.h>
 
-#include "driver/BatteryHelper.h"
-#include "driver/RFHelper.h"
+#include "driver/Battery.h"
+#include "driver/RF.h"
 #include "WebHelper.h"
-#include "driver/BaroHelper.h"
-#include "driver/LEDHelper.h"
-#include "driver/SoundHelper.h"
-#include "driver/BluetoothHelper.h"
+#include "driver/Baro.h"
+#include "driver/LED.h"
+#include "driver/Sound.h"
+#include "driver/Bluetooth.h"
 #include "TrafficHelper.h"
 #include "protocol/data/NMEA.h"
 #include "protocol/data/GDL90.h"
 #include "protocol/data/D1090.h"
 
 #if defined(ENABLE_AHRS)
-#include "driver/AHRSHelper.h"
+#include "driver/AHRS.h"
 #endif /* ENABLE_AHRS */
 
 static uint32_t prev_rx_pkt_cnt = 0;

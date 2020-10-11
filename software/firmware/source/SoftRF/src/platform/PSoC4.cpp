@@ -22,11 +22,11 @@
 #include <Wire.h>
 
 #include "../SoCHelper.h"
-#include "../driver/RFHelper.h"
-#include "../driver/EEPROMHelper.h"
-#include "../driver/GNSSHelper.h"
-#include "../driver/BaroHelper.h"
-#include "../driver/LEDHelper.h"
+#include "../driver/RF.h"
+#include "../driver/EEPROM.h"
+#include "../driver/GNSS.h"
+#include "../driver/Baro.h"
+#include "../driver/LED.h"
 
 #include <U8x8lib.h>
 #include <innerWdt.h>

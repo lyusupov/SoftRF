@@ -18,8 +18,8 @@
 #if defined(ESP32)
 
 #include "../SoCHelper.h"
-#include "EEPROMHelper.h"
-#include "BluetoothHelper.h"
+#include "EEPROM.h"
+#include "Bluetooth.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled!
@@ -40,7 +40,7 @@
 
 #include "esp_gap_bt_api.h"
 
-#include "WiFiHelper.h"   // HOSTNAME
+#include "WiFi.h"   // HOSTNAME
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -955,7 +955,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #elif defined(ARDUINO_ARCH_NRF52)
 
 #include "../SoCHelper.h"
-#include "BluetoothHelper.h"
+#include "Bluetooth.h"
 
 /*********************************************************************
  This is an example for our nRF52 based Bluefruit LE modules
@@ -975,7 +975,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <InternalFileSystem.h>
 #include <BLEUart_HM10.h>
 
-#include "WiFiHelper.h"   // HOSTNAME
+#include "WiFi.h"   // HOSTNAME
 
 // BLE Service
 BLEDfu        bledfu;       // OTA DFU service

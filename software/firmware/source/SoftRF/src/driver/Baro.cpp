@@ -18,7 +18,7 @@
 
 #include "../SoCHelper.h"
 
-#include "BaroHelper.h"
+#include "Baro.h"
 
 #if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2)
 byte Baro_setup()    {return BARO_MODULE_NONE;}
