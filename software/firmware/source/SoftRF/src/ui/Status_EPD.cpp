@@ -122,17 +122,16 @@ static void EPD_Draw_NavBoxes()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-  uint16_t top_navboxes_x = navbox1.x;
-  uint16_t top_navboxes_y = navbox1.y;
-  uint16_t top_navboxes_w = navbox1.width + navbox2.width;
-  uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
+  if (!EPD_ready_to_display) {
 
-  display->setPartialWindow(top_navboxes_x, top_navboxes_y,
-                            top_navboxes_w, top_navboxes_h);
+    display->setPartialWindow(0, 0,
+                              display->width(), display->height());
 
-  display->firstPage();
-  do
-  {
+    uint16_t top_navboxes_x = navbox1.x;
+    uint16_t top_navboxes_y = navbox1.y;
+    uint16_t top_navboxes_w = navbox1.width + navbox2.width;
+    uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
+
     display->drawRoundRect( navbox1.x + 1, navbox1.y + 1,
                             navbox1.width - 2, navbox1.height - 2,
                             4, GxEPD_BLACK);
@@ -153,29 +152,17 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
-    display->setCursor(navbox1.x + 60, navbox1.y + 52);
+    display->setCursor(navbox1.x + 25, navbox1.y + 52);
     display->print(navbox1.value);
 
     display->setCursor(navbox2.x + 15, navbox2.y + 52);
     display->print((float) navbox2.value / 10, 1);
 
-  }
-  while (display->nextPage());
+    uint16_t middle_navboxes_x = navbox3.x;
+    uint16_t middle_navboxes_y = navbox3.y;
+    uint16_t middle_navboxes_w = navbox3.width + navbox4.width;
+    uint16_t middle_navboxes_h = maxof2(navbox3.height, navbox4.height);
 
-  yield();
-
-  uint16_t middle_navboxes_x = navbox3.x;
-  uint16_t middle_navboxes_y = navbox3.y;
-  uint16_t middle_navboxes_w = navbox3.width + navbox4.width;
-  uint16_t middle_navboxes_h = maxof2(navbox3.height, navbox4.height);
-
-
-  display->setPartialWindow(middle_navboxes_x, middle_navboxes_y,
-                            middle_navboxes_w, middle_navboxes_h);
-
-  display->firstPage();
-  do
-  {
     display->drawRoundRect( navbox3.x + 1, navbox3.y + 1,
                             navbox3.width - 2, navbox3.height - 2,
                             4, GxEPD_BLACK);
@@ -205,22 +192,12 @@ static void EPD_Draw_NavBoxes()
 
     display->setCursor(navbox4.x + 15, navbox4.y + 50);
     display->print(EPD_Protocol_ID[navbox4.value]);
-  }
-  while (display->nextPage());
 
-  yield();
+    uint16_t bottom_navboxes_x = navbox5.x;
+    uint16_t bottom_navboxes_y = navbox5.y;
+    uint16_t bottom_navboxes_w = navbox5.width + navbox4.width;
+    uint16_t bottom_navboxes_h = maxof2(navbox5.height, navbox6.height);
 
-  uint16_t bottom_navboxes_x = navbox5.x;
-  uint16_t bottom_navboxes_y = navbox5.y;
-  uint16_t bottom_navboxes_w = navbox5.width + navbox4.width;
-  uint16_t bottom_navboxes_h = maxof2(navbox5.height, navbox6.height);
-
-  display->setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
-                            bottom_navboxes_w, bottom_navboxes_h);
-
-  display->firstPage();
-  do
-  {
     display->drawRoundRect( navbox5.x + 1, navbox5.y + 1,
                             navbox5.width - 2, navbox5.height - 2,
                             4, GxEPD_BLACK);
@@ -245,10 +222,12 @@ static void EPD_Draw_NavBoxes()
 
     display->setCursor(navbox6.x + 25, navbox6.y + 50);
     display->print(navbox6.value);
-  }
-  while (display->nextPage());
 
-  EPD_HIBERNATE;
+    EPD_ready_to_display = true;
+  }
+
+//  display->display(true);
+//  EPD_POWEROFF;
 }
 
 static void EPD_Update_NavBoxes()
@@ -257,53 +236,46 @@ static void EPD_Update_NavBoxes()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-  if (navbox1.value != navbox1.prev_value) {
+  if (!EPD_ready_to_display) {
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("00", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox1.x + 60, navbox1.y + 53 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
-      display->fillRect(navbox1.x + 60, navbox1.y + 53 - tbh,
+    bool updated = false;
+
+    display->setPartialWindow(0, 0,
+                              display->width(), display->height());
+
+    if (navbox1.value != navbox1.prev_value) {
+
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds("00", 0, 0, &tbx, &tby, &tbw, &tbh);
+
+      display->fillRect(navbox1.x + 25, navbox1.y + 53 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox1.x + 60, navbox1.y + 52);
+      display->setCursor(navbox1.x + 25, navbox1.y + 52);
       display->print(navbox1.value);
+
+      navbox1.prev_value = navbox1.value;
+      updated = true;
     }
-    while (display->nextPage());
 
-    navbox1.prev_value = navbox1.value;
-  }
+    if (navbox2.value != navbox2.prev_value) {
 
-  if (navbox2.value != navbox2.prev_value) {
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox2.x + 15, navbox2.y + 53 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
       display->fillRect(navbox2.x + 15, navbox2.y + 53 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox2.x + 15, navbox2.y + 52);
       display->print((float) navbox2.value / 10, 1);
+
+      navbox2.prev_value = navbox2.value;
+      updated = true;
     }
-    while (display->nextPage());
 
-    navbox2.prev_value = navbox2.value;
-  }
+    if (navbox3.value != navbox3.prev_value) {
 
-  if (navbox3.value != navbox3.prev_value) {
+      display->setFont(&FreeSerifBold12pt7b);
+      display->getTextBounds("FFFFFF", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFont(&FreeSerifBold12pt7b);
-    display->getTextBounds("FFFFFF", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox3.x + 11, navbox3.y + 51 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
       display->fillRect(navbox3.x + 10, navbox3.y + 51 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox3.x + 10, navbox3.y + 50);
@@ -311,70 +283,59 @@ static void EPD_Update_NavBoxes()
       snprintf(buf, sizeof(buf), "%06X", navbox3.value);
 
       display->print(buf);
+
+      navbox3.prev_value = navbox3.value;
+      updated = true;
     }
-    while (display->nextPage());
 
-    navbox3.prev_value = navbox3.value;
-  }
+    if (navbox4.value != navbox4.prev_value) {
 
-  if (navbox4.value != navbox4.prev_value) {
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds("UUU", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("UUU", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox4.x + 16, navbox4.y + 51 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
       display->fillRect (navbox4.x + 15, navbox4.y + 51 - tbh,
                          tbw, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox4.x + 15, navbox4.y + 50);
       display->print(EPD_Protocol_ID[navbox4.value]);
+
+      navbox4.prev_value = navbox4.value;
+      updated = true;
     }
-    while (display->nextPage());
 
-    navbox4.prev_value = navbox4.value;
-  }
+    if (navbox5.value != navbox5.prev_value) {
 
-  if (navbox5.value != navbox5.prev_value) {
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox5.x + 26, navbox5.y + 51 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
       display->fillRect (navbox5.x + 25, navbox5.y + 51 - tbh,
                          tbw, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox5.x + 25, navbox5.y + 50);
       display->print(navbox5.value);
+
+      navbox5.prev_value = navbox5.value;
+      updated = true;
     }
-    while (display->nextPage());
 
-    navbox5.prev_value = navbox5.value;
-  }
+    if (navbox6.value != navbox6.prev_value) {
 
-  if (navbox6.value != navbox6.prev_value) {
+      display->setFont(&FreeMonoBold18pt7b);
+      display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox6.x + 26, navbox6.y + 51 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
       display->fillRect(navbox6.x + 25, navbox6.y + 51 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox6.x + 25, navbox6.y + 50);
       display->print(navbox6.value);
-    }
-    while (display->nextPage());
 
-    navbox6.prev_value = navbox6.value;
+      navbox6.prev_value = navbox6.value;
+      updated = true;
+    }
+
+    /* a signal to background EPD update task */
+    if (updated) EPD_ready_to_display = true;
   }
 
-  EPD_HIBERNATE;
+//  if (updated) display->display(true);
+//  EPD_POWEROFF;
 }
 
 void EPD_status_loop()

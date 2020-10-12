@@ -33,7 +33,7 @@ void WiFi_fini()    {}
 #include "WiFi.h"
 #include "../TrafficHelper.h"
 #include "RF.h"
-#include "../WebHelper.h"
+#include "../ui/Web.h"
 #include "../protocol/data/NMEA.h"
 #include "Battery.h"
 

@@ -19,7 +19,7 @@
 #ifndef WEBHELPER_H
 #define WEBHELPER_H
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiClient.h>
@@ -27,8 +27,8 @@
 
 #include <TinyGPS++.h>
 
-#include "driver/EEPROM.h"
-#include "driver/RF.h"
+#include "../driver/EEPROM.h"
+#include "../driver/RF.h"
 
 #define BOOL_STR(x) (x ? "true":"false")
 #define JS_MAX_CHUNK_SIZE 4096

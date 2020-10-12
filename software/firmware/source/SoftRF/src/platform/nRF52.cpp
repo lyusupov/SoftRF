@@ -44,6 +44,8 @@ typedef volatile uint32_t REG32;
 #define DEVICE_ID_HIGH    (*(pREG32 (0x10000060)))
 #define DEVICE_ID_LOW     (*(pREG32 (0x10000064)))
 
+#define EPD_STACK_SZ      (256*4)
+
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -83,6 +85,8 @@ I2CBus        *i2c = nullptr;
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false ;
 static bool RTC_sync           = false;
+
+static TaskHandle_t EPD_Task_Handle = NULL;
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
@@ -377,12 +381,16 @@ static byte nRF52_Display_setup()
 
 #if defined(USE_EPAPER)
   if (EPD_setup(true)) {
+
+    xTaskCreate(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, TASK_PRIO_LOW, &EPD_Task_Handle);
+
     rval = DISPLAY_EPD_1_54;
   }
 
   /* EPD back light off */
   pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+
 #endif /* USE_EPAPER */
 
   return rval;
@@ -398,6 +406,11 @@ static void nRF52_Display_loop()
 static void nRF52_Display_fini(const char *msg)
 {
 #if defined(USE_EPAPER)
+  if( EPD_Task_Handle != NULL )
+  {
+    vTaskDelete( EPD_Task_Handle );
+  }
+
   /* EPD back light */
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
@@ -573,22 +586,42 @@ static void nRF52_USB_loop()
 
 static void nRF52_USB_fini()
 {
-  /* TBD */
+  if (USBSerial) {
+    USBSerial.end();
+  }
 }
 
 static int nRF52_USB_available()
 {
-  return Serial.available();
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
 }
 
 static int nRF52_USB_read()
 {
-  return Serial.read();
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
 }
 
 static size_t nRF52_USB_write(const uint8_t *buffer, size_t size)
 {
-  return Serial.write(buffer, size);
+  size_t rval = size;
+
+  if (USBSerial && USBSerial.availableForWrite()) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
 }
 
 IODev_ops_t nRF52_USBSerial_ops = {

@@ -74,7 +74,7 @@
 #include "src/protocol/data/D1090.h"
 #include "src/SoCHelper.h"
 #include "src/driver/WiFi.h"
-#include "src/WebHelper.h"
+#include "src/ui/Web.h"
 #include "src/driver/Baro.h"
 #include "src/TTNHelper.h"
 #include "src/TrafficHelper.h"
@@ -90,8 +90,8 @@
 #define DEBUG 0
 #define DEBUG_TIMING 0
 
-#define isTimeToDisplay() (millis() - LEDTimeMarker > 1000)
-#define isTimeToExport() (millis() - ExportTimeMarker > 1000)
+#define isTimeToDisplay() (millis() - LEDTimeMarker     > 1000)
+#define isTimeToExport()  (millis() - ExportTimeMarker  > 1000)
 
 ufo_t ThisAircraft;
 
@@ -151,13 +151,6 @@ void setup()
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
 
   hw_info.rf = RF_setup();
-
-  if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-      hw_info.revision == 2                      &&
-      RF_SX12XX_RST_is_connected)
-  {
-    hw_info.revision = 5;
-  }
 
   delay(100);
 

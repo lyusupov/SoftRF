@@ -20,7 +20,7 @@
 #include "driver/EEPROM.h"
 #include "driver/RF.h"
 #include "driver/GNSS.h"
-#include "WebHelper.h"
+#include "ui/Web.h"
 #include "protocol/radio/Legacy.h"
 
 unsigned long UpdateTrafficTimeMarker = 0;

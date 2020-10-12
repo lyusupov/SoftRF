@@ -50,6 +50,7 @@ PRODAT_PATH   = $(SRC_PATH)/protocol/data
 PRORAD_PATH   = $(SRC_PATH)/protocol/radio
 PLATFORM_PATH = $(SRC_PATH)/platform
 DRIVER_PATH   = $(SRC_PATH)/driver
+UI_PATH       = $(SRC_PATH)/ui
 
 LMIC_PATH     = $(LIB_PATH)/arduino-lmic/src
 BASICMAC_PATH = $(LIB_PATH)/arduino-basicmac/src
@@ -85,8 +86,8 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(GFX_PATH)    -I$(EPD2_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/SoCHelper.cpp  $(SRC_PATH)/TrafficHelper.cpp \
-                 $(SRC_PATH)/TimeHelper.cpp $(SRC_PATH)/WebHelper.cpp     \
-                 $(SRC_PATH)/OTAHelper.cpp  $(SRC_PATH)/Library.cpp
+                 $(SRC_PATH)/TimeHelper.cpp $(SRC_PATH)/OTAHelper.cpp     \
+                 $(SRC_PATH)/Library.cpp
 
 PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
                  $(PRORAD_PATH)/P3I.cpp    \
@@ -118,6 +119,8 @@ DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/WiFi.cpp      \
                  $(DRIVER_PATH)/EPD.cpp
 
+UI_CPPS       := $(UI_PATH)/Web.cpp
+
 #                 $(LMIC_PATH)/raspi/HardwareSerial.o $(LMIC_PATH)/raspi/cbuf.o \
 #                 $(LMIC_PATH)/raspi/Print.o $(LMIC_PATH)/raspi/Stream.o \
 #                 $(LMIC_PATH)/raspi/wiring.o $(LMIC_PATH)/raspi/raspberry_pi_revision.o \
@@ -127,6 +130,7 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(PRODAT_CPPS:.cpp=.o) \
                  $(PLAT_CPPS:.cpp=.o) \
                  $(DRV_CPPS:.cpp=.o) \
+                 $(UI_CPPS:.cpp=.o) \
                  $(CRCLIB_PATH)/lib_crc.o \
                  $(RADIO_PATH)/raspi/raspi.o \
                  $(RADIO_PATH)/raspi/WString.o \

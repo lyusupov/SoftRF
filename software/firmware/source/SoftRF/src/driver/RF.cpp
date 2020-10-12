@@ -22,7 +22,7 @@
 #include "RF.h"
 #include "../SoCHelper.h"
 #include "EEPROM.h"
-#include "../WebHelper.h"
+#include "../ui/Web.h"
 #include "../protocol/data/MAVLink.h"
 #include <fec.h>
 

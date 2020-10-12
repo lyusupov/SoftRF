@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "../SoCHelper.h"
 
 #if defined(EXCLUDE_WIFI)
 void Web_setup()    {}
@@ -26,26 +26,26 @@ void Web_fini()     {}
 
 #include <Arduino.h>
 
-#include "driver/Battery.h"
-#include "driver/RF.h"
-#include "WebHelper.h"
-#include "driver/Baro.h"
-#include "driver/LED.h"
-#include "driver/Sound.h"
-#include "driver/Bluetooth.h"
-#include "TrafficHelper.h"
-#include "protocol/data/NMEA.h"
-#include "protocol/data/GDL90.h"
-#include "protocol/data/D1090.h"
+#include "../driver/Battery.h"
+#include "../driver/RF.h"
+#include "Web.h"
+#include "../driver/Baro.h"
+#include "../driver/LED.h"
+#include "../driver/Sound.h"
+#include "../driver/Bluetooth.h"
+#include "../TrafficHelper.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 #if defined(ENABLE_AHRS)
-#include "driver/AHRS.h"
+#include "../driver/AHRS.h"
 #endif /* ENABLE_AHRS */
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
 static const char Logo[] PROGMEM = {
-#include "Logo.h"
+#include "../Logo.h"
     } ;
 
 #include "jquery_min_js.h"

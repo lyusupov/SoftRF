@@ -130,8 +130,6 @@ static void EPD_Draw_Text()
 
     display->setFont(&FreeMonoBold12pt7b);
 
-    display->firstPage();
-    do
     {
       uint16_t x = 5;
       uint16_t y = 5;
@@ -219,9 +217,10 @@ static void EPD_Draw_Text()
 
 //      Serial.println();
     }
-    while (display->nextPage());
 
-    EPD_HIBERNATE;
+    display->display(true);
+
+    EPD_POWEROFF;
   }
 }
 

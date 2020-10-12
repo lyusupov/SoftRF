@@ -55,6 +55,8 @@ unsigned long EPDTimeMarker = 0;
 static int EPD_view_mode = 0;
 bool EPD_vmode_updated = true;
 
+volatile bool EPD_ready_to_display = false;
+
 void EPD_Clear_Screen()
 {
   display->setFullWindow();
@@ -122,7 +124,7 @@ bool EPD_setup(bool splash_screen)
 
   delay(1000);
 
-  EPD_HIBERNATE;
+  EPD_POWEROFF;
 
   rval = display->epd2.probe();
 
@@ -205,7 +207,7 @@ void EPD_info1(bool rtc, bool spiflash)
     }
     while (display->nextPage());
 
-    EPD_HIBERNATE;
+    EPD_POWEROFF;
 
     delay(4000);
 
@@ -256,7 +258,7 @@ void EPD_fini(const char *msg)
 {
   EPD_Message(msg, NULL);
 
-  EPD_POWEROFF;
+  EPD_HIBERNATE;
 }
 
 void EPD_Mode()
@@ -364,7 +366,26 @@ void EPD_Message(const char *msg1, const char *msg2)
     }
     while (display->nextPage());
 
-    EPD_HIBERNATE;
+    EPD_POWEROFF;
+  }
+}
+
+void EPD_Task( void * pvParameters )
+{
+  for( ;; )
+  {
+    if (EPD_ready_to_display) {
+
+      display->display(true);
+
+      yield();
+
+      EPD_POWEROFF;
+
+      EPD_ready_to_display = false;
+    }
+
+    yield();
   }
 }
 

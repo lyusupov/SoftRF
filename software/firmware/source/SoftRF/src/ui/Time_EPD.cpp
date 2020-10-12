@@ -46,24 +46,23 @@ void EPD_time_loop()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-  RTC_Date now;
+    RTC_Date now;
 
-  if (rtc) {
-    now = rtc->getDateTime();
-  }
+  if (!EPD_ready_to_display) {
 
-  if (now.year < 2019 || now.year > 2029) {
-    strcpy(buf, NOTIME_text);
-  } else {
-    snprintf(buf, sizeof(buf), "%2d:%02d:%02d",
-             now.hour, now.minute, now.second);
-  }
+    if (rtc) {
+      now = rtc->getDateTime();
+    }
 
-  display->setPartialWindow(0, 0, display->width(), display->height());
+    if (now.year < 2019 || now.year > 2029) {
+      strcpy(buf, NOTIME_text);
+    } else {
+      snprintf(buf, sizeof(buf), "%2d:%02d:%02d",
+               now.hour, now.minute, now.second);
+    }
 
-  display->firstPage();
-  do
-  {
+    display->setPartialWindow(0, 0, display->width(), display->height());
+
     display->fillScreen(GxEPD_WHITE);
 
     display->setFont(&FreeMonoBold18pt7b);
@@ -77,10 +76,13 @@ void EPD_time_loop()
 
     display->setCursor((display->width() - tbw) / 2, (3 * display->height()) / 4);
     display->print(TZ_text);
-  }
-  while (display->nextPage());
 
-  EPD_HIBERNATE;
+    /* a signal to background EPD update task */
+    EPD_ready_to_display = true;
+  }
+
+//  display->display(true);
+//  EPD_POWEROFF;
 }
 
 void EPD_time_next()

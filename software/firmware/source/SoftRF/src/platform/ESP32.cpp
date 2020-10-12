@@ -1098,6 +1098,10 @@ static bool ESP32_Baro_setup()
 
   } else {
 
+    if (hw_info.revision == 2 && RF_SX12XX_RST_is_connected) {
+      hw_info.revision = 5;
+    }
+
     /* Start from 1st I2C bus */
     Wire.begin(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
     if (Baro_probe())

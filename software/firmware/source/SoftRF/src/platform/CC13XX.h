@@ -71,7 +71,7 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
-enum esp32_board_id {
+enum cc13xx_board_id {
   SOFTRF_UAT_MODULE_19,
   SOFTRF_UAT_MODULE_20,
   TI_CC1352R1_LAUNCHXL,

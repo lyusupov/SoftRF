@@ -43,6 +43,9 @@
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
 #define SerialOutput            Serial1
+#define USBSerial               Serial
+#define swSer                   Serial2
+#define UATSerial               Serial1
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -63,9 +66,6 @@ struct rst_info {
   uint32_t excvaddr;
   uint32_t depc;
 };
-
-#define swSer                 Serial2
-#define UATSerial             Serial1
 
 #define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
 #define SOC_ADC_VOLTAGE_DIV   (2.0F)          // 100K + 100K voltage divider on VBAT

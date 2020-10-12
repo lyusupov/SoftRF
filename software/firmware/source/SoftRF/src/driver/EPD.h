@@ -160,6 +160,7 @@ void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);
+void EPD_Task(void *);
 
 void EPD_status_setup();
 void EPD_status_loop();
@@ -184,6 +185,7 @@ void EPD_time_prev();
 extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
+extern volatile bool EPD_ready_to_display;
 
 #include "../SoCHelper.h"
 
