@@ -223,6 +223,7 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox6.x + 25, navbox6.y + 50);
     display->print(navbox6.value);
 
+    /* a signal to background EPD update task */
     EPD_ready_to_display = true;
   }
 

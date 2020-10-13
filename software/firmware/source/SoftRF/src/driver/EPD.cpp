@@ -94,9 +94,9 @@ bool EPD_setup(bool splash_screen)
   display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
   display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
   display->getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+
   display->setFullWindow();
-  display->firstPage();
-  do
+
   {
     display->fillScreen(GxEPD_WHITE);
 
@@ -120,9 +120,8 @@ bool EPD_setup(bool splash_screen)
       display->print(EPD_SoftRF_text1);
     }
   }
-  while (display->nextPage());
 
-  delay(1000);
+  display->display(false);
 
   EPD_POWEROFF;
 
@@ -156,46 +155,44 @@ void EPD_info1(bool rtc, bool spiflash)
     display->setFont(&FreeMonoBold18pt7b);
     display->getTextBounds(EPD_Radio_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
+    display->setFullWindow();
 
-    display->firstPage();
-    do
     {
       display->fillScreen(GxEPD_WHITE);
 
       x = 0;
-      y = (tbh + TEXT_VIEW_LINE_SPACING);
+      y = (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_Radio_text);
       display->print(hw_info.rf != RF_IC_NONE ? "+" : "-");
 
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_GNSS_text);
       display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
 
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_Display_text);
       display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
 
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_RTC_text);
       display->print(rtc ? "+" : "-");
 
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_Flash_text);
       display->print(spiflash ? "+" : "-");
 
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
-      y += (tbh + TEXT_VIEW_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
 
       if (hw_info.baro == BARO_MODULE_NONE) {
         display->setFont(&FreeMono18pt7b);
@@ -205,7 +202,8 @@ void EPD_info1(bool rtc, bool spiflash)
       display->print(EPD_Baro_text);
       display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
     }
-    while (display->nextPage());
+
+    display->display(false);
 
     EPD_POWEROFF;
 
@@ -256,7 +254,11 @@ void EPD_loop()
 
 void EPD_fini(const char *msg)
 {
+  while (EPD_ready_to_display) delay(100);
+
   EPD_Message(msg, NULL);
+
+  while (EPD_ready_to_display) delay(100);
 
   EPD_HIBERNATE;
 }
@@ -330,14 +332,12 @@ void EPD_Message(const char *msg1, const char *msg2)
   uint16_t tbw, tbh;
   uint16_t x, y;
 
-  if (msg1 != NULL && strlen(msg1) != 0) {
+  if (msg1 != NULL && strlen(msg1) != 0 && !EPD_ready_to_display) {
 
     display->setPartialWindow(0, 0, display->width(), display->height());
 
     display->setFont(&FreeMonoBold18pt7b);
 
-    display->firstPage();
-    do
     {
       display->fillScreen(GxEPD_WHITE);
 
@@ -364,9 +364,9 @@ void EPD_Message(const char *msg1, const char *msg2)
         display->print(msg2);
       }
     }
-    while (display->nextPage());
 
-    EPD_POWEROFF;
+    /* a signal to background EPD update task */
+    EPD_ready_to_display = true;
   }
 }
 

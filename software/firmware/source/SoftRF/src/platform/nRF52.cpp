@@ -44,7 +44,7 @@ typedef volatile uint32_t REG32;
 #define DEVICE_ID_HIGH    (*(pREG32 (0x10000060)))
 #define DEVICE_ID_LOW     (*(pREG32 (0x10000064)))
 
-#define EPD_STACK_SZ      (256*4)
+#define EPD_STACK_SZ      (256*3)
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -406,15 +406,16 @@ static void nRF52_Display_loop()
 static void nRF52_Display_fini(const char *msg)
 {
 #if defined(USE_EPAPER)
-  if( EPD_Task_Handle != NULL )
-  {
-    vTaskDelete( EPD_Task_Handle );
-  }
 
   /* EPD back light */
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
   EPD_fini(msg);
+
+  if( EPD_Task_Handle != NULL )
+  {
+    vTaskDelete( EPD_Task_Handle );
+  }
 
 #if SPI_INTERFACES_COUNT >= 2
   SPI1.end();

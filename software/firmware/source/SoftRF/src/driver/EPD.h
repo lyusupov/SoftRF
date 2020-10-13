@@ -41,7 +41,9 @@
 #define EPD_RADAR_V_THRESHOLD   50      /* metres */
 
 #define TEXT_VIEW_LINE_LENGTH   13     /* characters */
-#define TEXT_VIEW_LINE_SPACING  7      /* pixels */
+#define TEXT_VIEW_LINE_SPACING  12     /* pixels */
+#define INFO_1_LINE_SPACING     7      /* pixels */
+
 
 //#define EPD_HIBERNATE         {}
 #define EPD_HIBERNATE           display->hibernate()

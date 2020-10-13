@@ -64,7 +64,7 @@ static void EPD_Draw_Text()
     }
   }
 
-  if (j > 0) {
+  if (j > 0 && !EPD_ready_to_display) {
 
     uint8_t db;
     const char *u_dist, *u_alt, *u_spd;
@@ -131,8 +131,8 @@ static void EPD_Draw_Text()
     display->setFont(&FreeMonoBold12pt7b);
 
     {
-      uint16_t x = 5;
-      uint16_t y = 5;
+      uint16_t x = 20;
+      uint16_t y = 0;
 
       int16_t  tbx, tby;
       uint16_t tbw, tbh;
@@ -191,7 +191,7 @@ static void EPD_Draw_Text()
       y += TEXT_VIEW_LINE_SPACING;
 
       snprintf(info_line, sizeof(info_line), "CoG %3d deg",
-               traffic_by_dist[EPD_current - 1].fop->course);
+               (int) traffic_by_dist[EPD_current - 1].fop->course);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;
       display->setCursor(x, y);
@@ -218,9 +218,8 @@ static void EPD_Draw_Text()
 //      Serial.println();
     }
 
-    display->display(true);
-
-    EPD_POWEROFF;
+    /* a signal to background EPD update task */
+    EPD_ready_to_display = true;
   }
 }
 
@@ -244,27 +243,26 @@ void EPD_text_loop()
   }
 
   if (EPD_vmode_updated) {
+    EPD_Clear_Screen();
     view_state_prev = STATE_TVIEW_NONE;
     EPD_vmode_updated = false;
   }
 
   if (view_state_curr != view_state_prev &&
       view_state_curr == STATE_TVIEW_NOFIX) {
-    EPD_Clear_Screen();
     EPD_Message(NO_FIX_TEXT, NULL);
     view_state_prev = view_state_curr;
   }
 
   if (view_state_curr != view_state_prev &&
       view_state_curr == STATE_TVIEW_NOTRAFFIC) {
-    EPD_Clear_Screen();
     EPD_Message("NO", "TRAFFIC");
     view_state_prev = view_state_curr;
   }
 
   if (view_state_curr == STATE_TVIEW_TEXT) {
     if (view_state_curr != view_state_prev) {
-       EPD_Clear_Screen();
+//       EPD_Clear_Screen();
        view_state_prev = view_state_curr;
     }
     EPD_Draw_Text();

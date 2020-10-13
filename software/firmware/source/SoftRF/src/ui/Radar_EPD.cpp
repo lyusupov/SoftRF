@@ -324,20 +324,21 @@ void EPD_radar_loop()
   }
 
   if (EPD_vmode_updated) {
+    EPD_Clear_Screen();
     view_state_prev = STATE_RVIEW_NONE;
     EPD_vmode_updated = false;
   }
 
   if (view_state_curr != view_state_prev &&
       view_state_curr == STATE_RVIEW_NOFIX) {
-    EPD_Clear_Screen();
+
     EPD_Message(NO_FIX_TEXT, NULL);
     view_state_prev = view_state_curr;
   }
 
   if (view_state_curr == STATE_RVIEW_RADAR) {
     if (view_state_curr != view_state_prev) {
-       EPD_Clear_Screen();
+//       EPD_Clear_Screen();
        view_state_prev = view_state_curr;
     }
     EPD_Draw_Radar();

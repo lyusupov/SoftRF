@@ -46,7 +46,15 @@ void EPD_time_loop()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-    RTC_Date now;
+  if (EPD_vmode_updated) {
+    EPD_Clear_Screen();
+
+    yield();
+
+    EPD_vmode_updated = false;
+  }
+
+  RTC_Date now;
 
   if (!EPD_ready_to_display) {
 
