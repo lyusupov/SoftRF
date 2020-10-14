@@ -59,14 +59,13 @@ volatile bool EPD_ready_to_display = false;
 
 void EPD_Clear_Screen()
 {
-  display->setFullWindow();
+  while (EPD_ready_to_display) delay(100);
 
-  display->firstPage();
-  do
-  {
-    display->fillScreen(GxEPD_WHITE);
-  }
-  while (display->nextPage());
+  display->setFullWindow();
+  display->fillScreen(GxEPD_WHITE);
+  display->display(false);
+
+  EPD_POWEROFF;
 }
 
 bool EPD_setup(bool splash_screen)

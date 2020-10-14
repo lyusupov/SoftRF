@@ -793,6 +793,8 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
   switch (eventType) {
     case AceButton::kEventPressed:
+      break;
+    case AceButton::kEventReleased:
       if (button == &button_mode) {
         EPD_Mode();
       } else if (button == &button_up) {
@@ -800,8 +802,6 @@ void handleEvent(AceButton* button, uint8_t eventType,
       } else if (button == &button_down) {
         EPD_Down();
       }
-      break;
-    case AceButton::kEventReleased:
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_mode) {
@@ -830,7 +830,7 @@ static void ESP32_Button_setup()
   int mode_button_pin = settings->adapter == ADAPTER_TTGO_T5S ?
                         SOC_BUTTON_MODE_T5S : SOC_BUTTON_MODE_DEF;
 
-  // Button(s) uses external pull up register.
+  // Button(s) uses external pull up resistor.
   pinMode(mode_button_pin, INPUT);
 
   button_mode.init(mode_button_pin);
@@ -850,7 +850,7 @@ static void ESP32_Button_setup()
 
   if (settings->adapter == ADAPTER_TTGO_T5S) {
 
-    // Button(s) uses external pull up register.
+    // Button(s) uses external pull up resistor.
     pinMode(SOC_BUTTON_UP_T5S,   INPUT);
     pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
 

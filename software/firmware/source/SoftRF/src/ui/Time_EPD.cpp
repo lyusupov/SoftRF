@@ -88,9 +88,6 @@ void EPD_time_loop()
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;
   }
-
-//  display->display(true);
-//  EPD_POWEROFF;
 }
 
 void EPD_time_next()

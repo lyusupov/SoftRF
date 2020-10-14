@@ -303,9 +303,6 @@ static void EPD_Draw_Radar()
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;
   }
-
-//  display->display(true);
-//  EPD_POWEROFF;
 }
 
 void EPD_radar_setup()
@@ -347,13 +344,12 @@ void EPD_radar_loop()
 
 void EPD_radar_zoom()
 {
-//  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++;
-  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++; else EPD_zoom = ZOOM_LOWEST;
+  if (EPD_zoom < ZOOM_HIGH) EPD_zoom++;
 }
 
 void EPD_radar_unzoom()
 {
-  if (EPD_zoom > ZOOM_LOWEST) EPD_zoom--;
+  if (EPD_zoom > ZOOM_LOWEST) EPD_zoom--; else EPD_zoom = ZOOM_HIGH;
 }
 
 #endif /* ARDUINO_ARCH_NRF52 */

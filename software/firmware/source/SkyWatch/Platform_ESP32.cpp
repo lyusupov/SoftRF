@@ -931,7 +931,7 @@ void onModeButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-  // Button(s)) uses external pull up register.
+  // Button(s)) uses external pull up resistor.
   pinMode(SOC_GPIO_PIN_TWATCH_BUTTON, INPUT);
 
   // Configure the ButtonConfig with the event handler, and enable all higher

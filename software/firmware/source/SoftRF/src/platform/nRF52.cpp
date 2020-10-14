@@ -502,13 +502,13 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
   switch (eventType) {
     case AceButton::kEventPressed:
+      break;
+    case AceButton::kEventReleased:
       if (button == &button_1) {
         EPD_Mode();
       } else if (button == &button_2) {
         EPD_Up();
       }
-      break;
-    case AceButton::kEventReleased:
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
@@ -534,7 +534,7 @@ static void nRF52_Button_setup()
   int mode_button_pin = SOC_GPIO_PIN_BUTTON;
   int up_button_pin   = SOC_GPIO_PIN_PAD;
 
-  // Button(s) uses external pull up register.
+  // Button(s) uses external pull up resistor.
   pinMode(mode_button_pin, INPUT);
   pinMode(up_button_pin, INPUT);
 

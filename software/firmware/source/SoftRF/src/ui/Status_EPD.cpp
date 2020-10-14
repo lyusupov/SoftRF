@@ -226,9 +226,6 @@ static void EPD_Draw_NavBoxes()
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;
   }
-
-//  display->display(true);
-//  EPD_POWEROFF;
 }
 
 static void EPD_Update_NavBoxes()
@@ -334,9 +331,6 @@ static void EPD_Update_NavBoxes()
     /* a signal to background EPD update task */
     if (updated) EPD_ready_to_display = true;
   }
-
-//  if (updated) display->display(true);
-//  EPD_POWEROFF;
 }
 
 void EPD_status_loop()
