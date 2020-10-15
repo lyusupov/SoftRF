@@ -21,7 +21,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/RF.h"
 #include "../driver/EEPROM.h"
 #include "../driver/LED.h"

@@ -23,7 +23,7 @@
 #include <ti/drivers/Watchdog.h>
 #include <xdc/runtime/Memory.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/RF.h"
 #include "../driver/LED.h"
 #include "../driver/Sound.h"

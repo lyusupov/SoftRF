@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
-#include "LogHelper.h"
+#include "SoC.h"
+#include "Log.h"
 
 #if LOGGER_IS_ENABLED
 

@@ -21,7 +21,7 @@
 #include "NMEA.h"
 #include "../../driver/GNSS.h"
 #include "../../driver/RF.h"
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 #include "../../driver/WiFi.h"
 #include "../../driver/EEPROM.h"
 #include "../../TrafficHelper.h"

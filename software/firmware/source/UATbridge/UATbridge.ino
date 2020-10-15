@@ -21,8 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/SoCHelper.h"
-#include "src/TimeHelper.h"
+#include "src/system/SoC.h"
+#include "src/system/Time.h"
 #include "src/driver/LED.h"
 #include "src/driver/GNSS.h"
 #include "src/driver/RF.h"

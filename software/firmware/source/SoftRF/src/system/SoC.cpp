@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "SoC.h"
 
 const SoC_ops_t *SoC;
 

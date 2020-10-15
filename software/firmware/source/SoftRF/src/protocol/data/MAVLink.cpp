@@ -19,7 +19,7 @@
 #include <TimeLib.h>
 #include <TinyGPS++.h>
 
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 #include "MAVLink.h"
 #include "GDL90.h"
 #include "../../driver/WiFi.h"

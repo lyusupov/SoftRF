@@ -26,7 +26,7 @@
 #include <Adafruit_SleepyDog.h>
 #include "nrf_wdt.h"
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/RF.h"
 #include "../driver/EEPROM.h"
 #include "../driver/GNSS.h"

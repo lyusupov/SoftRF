@@ -22,7 +22,7 @@
 #include <Wire.h>
 #include <IWatchdog.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/RF.h"
 #include "../driver/LED.h"
 #include "../driver/Sound.h"

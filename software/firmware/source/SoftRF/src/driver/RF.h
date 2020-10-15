@@ -22,7 +22,7 @@
 #include <nRF905.h>
 #include <TimeLib.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if defined(USE_BASICMAC)
 #include <basicmac.h>

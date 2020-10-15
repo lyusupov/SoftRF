@@ -17,7 +17,7 @@
  */
 #if defined(ESP32)
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "EEPROM.h"
 #include "Bluetooth.h"
 
@@ -954,7 +954,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 
 #elif defined(ARDUINO_ARCH_NRF52)
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "Bluetooth.h"
 
 /*********************************************************************

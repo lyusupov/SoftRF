@@ -19,7 +19,7 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiUdp.h>

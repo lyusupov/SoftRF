@@ -60,8 +60,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/OTAHelper.h"
-#include "src/TimeHelper.h"
+#include "src/system/OTA.h"
+#include "src/system/Time.h"
 #include "src/driver/LED.h"
 #include "src/driver/GNSS.h"
 #include "src/driver/RF.h"
@@ -72,7 +72,7 @@
 #include "src/protocol/data/GDL90.h"
 #include "src/protocol/data/NMEA.h"
 #include "src/protocol/data/D1090.h"
-#include "src/SoCHelper.h"
+#include "src/system/SoC.h"
 #include "src/driver/WiFi.h"
 #include "src/ui/Web.h"
 #include "src/driver/Baro.h"
@@ -84,7 +84,7 @@
 #endif /* ENABLE_AHRS */
 
 #if LOGGER_IS_ENABLED
-#include "src/LogHelper.h"
+#include "src/system/Log.h"
 #endif /* LOGGER_IS_ENABLED */
 
 #define DEBUG 0

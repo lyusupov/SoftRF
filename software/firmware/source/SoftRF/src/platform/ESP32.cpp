@@ -30,7 +30,7 @@
 #include <axp20x.h>
 #include <TFT_eSPI.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/Sound.h"
 #include "../driver/EEPROM.h"
 #include "../driver/RF.h"

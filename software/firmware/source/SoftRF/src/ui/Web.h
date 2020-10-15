@@ -19,7 +19,7 @@
 #ifndef WEBHELPER_H
 #define WEBHELPER_H
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiClient.h>

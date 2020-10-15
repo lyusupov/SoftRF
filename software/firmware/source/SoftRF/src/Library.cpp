@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "system/SoC.h"
 
 #if DEBUG
 String TxDataTemplate = "0282dd204901f981798a85b69764bdf99ed77fd3c2300000";

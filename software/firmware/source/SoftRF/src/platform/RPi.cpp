@@ -44,7 +44,7 @@
 
 #if defined(RASPBERRY_PI)
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/EEPROM.h"
 #include <TinyGPS++.h>
 #include <aircraft.h>

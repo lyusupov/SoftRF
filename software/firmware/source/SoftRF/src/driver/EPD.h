@@ -189,7 +189,7 @@ extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
 extern volatile bool EPD_ready_to_display;
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if defined(ARDUINO_ARCH_NRF52)
 extern ui_settings_t *ui;

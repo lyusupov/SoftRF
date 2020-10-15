@@ -24,7 +24,7 @@
 #include "GNSS.h"
 #include "EEPROM.h"
 #include "../protocol/data/NMEA.h"
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "WiFi.h"
 #include "RF.h"
 #include "Battery.h"

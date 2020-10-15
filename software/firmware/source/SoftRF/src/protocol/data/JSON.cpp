@@ -20,7 +20,7 @@
 
 #include <ArduinoJson.h>
 
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 #include <TinyGPS++.h>
 #include "../../driver/EEPROM.h"
 #include "../../driver/RF.h"

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #include "Baro.h"
 

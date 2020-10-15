@@ -23,7 +23,7 @@
 #include <lib_crc.h>
 #include <protocol.h>
 
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 #include "GDL90.h"
 #include "../../driver/GNSS.h"
 #include "../../driver/EEPROM.h"

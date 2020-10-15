@@ -21,7 +21,7 @@
 #include <ESP8266TrueRandom.h>
 #include <SPI.h>
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "../driver/Sound.h"
 #include "../driver/EEPROM.h"
 #include "../driver/RF.h"

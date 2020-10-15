@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if defined(EXCLUDE_WIFI)
 void WiFi_setup()    {}
@@ -27,7 +27,7 @@ void WiFi_fini()    {}
 #include <FS.h>
 #include <TimeLib.h>
 
-#include "../OTAHelper.h"
+#include "../system/OTA.h"
 #include "GNSS.h"
 #include "EEPROM.h"
 #include "WiFi.h"

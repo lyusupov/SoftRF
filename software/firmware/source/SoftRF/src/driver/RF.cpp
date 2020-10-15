@@ -20,14 +20,14 @@
 #endif /* ARDUINO */
 
 #include "RF.h"
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 #include "EEPROM.h"
 #include "../ui/Web.h"
 #include "../protocol/data/MAVLink.h"
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED
-#include "LogHelper.h"
+#include "../system/Log.h"
 #endif /* LOGGER_IS_ENABLED */
 
 byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoCHelper.h"
+#include "SoC.h"
 
 #if defined(EXCLUDE_WIFI)
 void Time_setup()     {}

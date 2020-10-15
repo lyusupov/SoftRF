@@ -19,7 +19,7 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
-#include "../SoCHelper.h"
+#include "../system/SoC.h"
 
 #if !defined(EXCLUDE_EEPROM)
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)

@@ -19,7 +19,7 @@
 #ifndef NMEAHELPER_H
 #define NMEAHELPER_H
 
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 
 enum
 {

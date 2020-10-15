@@ -19,7 +19,7 @@
 #include <adsb_encoder.h>
 #include <TimeLib.h>
 
-#include "../../SoCHelper.h"
+#include "../../system/SoC.h"
 #include "D1090.h"
 #include "../../driver/GNSS.h"
 #include "GDL90.h"
