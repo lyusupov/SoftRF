@@ -42,8 +42,6 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
 
 #define SerialOutput            Serial1
@@ -270,6 +268,10 @@ typedef struct stm32_backup_struct {
 #endif
 
 extern Adafruit_NeoPixel strip;
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_STM32_H */
 

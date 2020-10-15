@@ -33,10 +33,7 @@
 #include "../driver/Baro.h"
 #include "../driver/LED.h"
 #include "../driver/Bluetooth.h"
-
-#if defined(USE_EPAPER)
 #include "../driver/EPD.h"
-#endif /* USE_EPAPER */
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -504,11 +501,13 @@ void handleEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventPressed:
       break;
     case AceButton::kEventReleased:
+#if defined(USE_EPAPER)
       if (button == &button_1) {
         EPD_Mode();
       } else if (button == &button_2) {
         EPD_Up();
       }
+#endif
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {

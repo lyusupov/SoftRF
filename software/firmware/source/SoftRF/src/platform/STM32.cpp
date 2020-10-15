@@ -27,11 +27,9 @@
 #include "../driver/LED.h"
 #include "../driver/Sound.h"
 #include "../driver/EEPROM.h"
-#include "../driver/GNSS.h"
-#include "../driver/Baro.h"
 #include "../driver/Battery.h"
+#include "../driver/OLED.h"
 
-#include <U8x8lib.h>
 #include <STM32LowPower.h>
 
 // RFM95W pin mapping
@@ -78,29 +76,9 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 
-#if defined(USE_OLED)
-U8X8_SSD1306_128X64_NONAME_HW_I2C u8x8_i2c(U8X8_PIN_NONE);
-#endif /* USE_OLED */
-
-static U8X8_SSD1306_128X64_NONAME_HW_I2C *u8x8 = NULL;
-
 static int stm32_board = STM32_BLUE_PILL; /* default */
 
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
-
-static bool OLED_display_frontpage = false;
-static uint32_t prev_tx_packets_counter = 0;
-static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
-const char *OLED_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "L",
-  [RF_PROTOCOL_OGNTP]     = "O",
-  [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
-  [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
-};
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
@@ -222,21 +200,7 @@ static void STM32_setup()
 static void STM32_post_init()
 {
 #if defined(USE_OLED)
-  if (u8x8) {
-
-    u8x8->clear();
-
-    u8x8->draw2x2String(0, 0, "RADIO");
-    u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-    u8x8->draw2x2String(0, 2, "GNSS");
-    u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-    u8x8->draw2x2String(0, 4, "OLED");
-    u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-    u8x8->draw2x2String(0, 6, "BARO");
-    u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-    delay(3000);
-  }
+  OLED_info1();
 #endif /* USE_OLED */
 }
 
@@ -465,27 +429,7 @@ static byte STM32_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  /* SSD1306 I2C OLED probing */
-  Wire.begin();
-  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
-  if (Wire.endTransmission() == 0) {
-    u8x8 = &u8x8_i2c;
-    rval = DISPLAY_OLED_TTGO;
-  }
-
-  if (u8x8) {
-    u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-
-    if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-      u8x8->draw2x2String(2, 1, "SoftRF");
-      u8x8->drawString   (6, 4, "and");
-      u8x8->draw2x2String(2, 6, "LilyGO");
-    } else {
-      u8x8->draw2x2String(2, 3, "SoftRF");
-    }
-  }
+  rval = OLED_setup();
 #endif /* USE_OLED */
 
   return rval;
@@ -494,82 +438,14 @@ static byte STM32_Display_setup()
 static void STM32_Display_loop()
 {
 #if defined(USE_OLED)
-  char buf[16];
-  uint32_t disp_value;
-
-  if (u8x8) {
-    if (!OLED_display_frontpage) {
-
-      u8x8->clear();
-
-      u8x8->drawString(1, 1, "ID");
-
-      itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
-      u8x8->draw2x2String(0, 2, buf);
-
-      u8x8->drawString(8, 1, "PROTOCOL");
-
-      u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
-
-      u8x8->drawString(1, 5, "RX");
-
-      itoa(rx_packets_counter % 1000, buf, 10);
-      u8x8->draw2x2String(0, 6, buf);
-
-      u8x8->drawString(9, 5, "TX");
-
-      if (settings->txpower == RF_TX_POWER_OFF ) {
-        strcpy(buf, "OFF");
-      } else {
-        itoa(tx_packets_counter % 1000, buf, 10);
-      }
-      u8x8->draw2x2String(8, 6, buf);
-
-      OLED_display_frontpage = true;
-    } else {
-      if (rx_packets_counter > prev_rx_packets_counter) {
-        disp_value = rx_packets_counter % 1000;
-        itoa(disp_value, buf, 10);
-
-        if (disp_value < 10) {
-          strcat_P(buf,PSTR("  "));
-        } else {
-          if (disp_value < 100) {
-            strcat_P(buf,PSTR(" "));
-          };
-        }
-
-        u8x8->draw2x2String(0, 6, buf);
-        prev_rx_packets_counter = rx_packets_counter;
-      }
-      if (tx_packets_counter > prev_tx_packets_counter) {
-        disp_value = tx_packets_counter % 1000;
-        itoa(disp_value, buf, 10);
-
-        if (disp_value < 10) {
-          strcat_P(buf,PSTR("  "));
-        } else {
-          if (disp_value < 100) {
-            strcat_P(buf,PSTR(" "));
-          };
-        }
-
-        u8x8->draw2x2String(8, 6, buf);
-        prev_tx_packets_counter = tx_packets_counter;
-      }
-    }
-  }
+  OLED_loop();
 #endif /* USE_OLED */
 }
 
 static void STM32_Display_fini(const char *msg)
 {
 #if defined(USE_OLED)
-  if (u8x8) {
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(1, 3, msg);
-  }
+  OLED_fini(msg);
 #endif /* USE_OLED */
 }
 

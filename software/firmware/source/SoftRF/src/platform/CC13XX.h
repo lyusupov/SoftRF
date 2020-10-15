@@ -22,6 +22,7 @@
 
 #if defined(ENERGIA_ARCH_CC13X2)
 extern size_t strnlen (const char *string, size_t length);
+extern char *itoa(int, char *, int);
 #endif /* ENERGIA_ARCH_CC13X2 */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -169,7 +170,6 @@ extern SCSerial                 scSerial;
 // button
 #define SOC_GPIO_PIN_BUTTON     PUSH1 // GPIO 15
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
 #define MACRONIX_MX25R8035F     0xC228
 
 #define USE_OLED                 //  +5.5 kb
@@ -186,6 +186,10 @@ extern SCSerial                 scSerial;
 extern WS2812 strip;
 extern uint8_t LEDs[][3];
 #endif /* EXCLUDE_LED_RING */
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_CC13XX_H */
 

@@ -172,8 +172,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
 #define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-
 // Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
 #define TTGO_V2_OLED_PIN_RST    U8X8_PIN_NONE // connected to CPU RST/EN
 #define TTGO_V2_OLED_PIN_SDA    21
@@ -228,6 +226,7 @@ struct rst_info {
 
 #define NMEA_TCP_SERVICE
 #define USE_NMEALIB
+#define USE_OLED
 //#define USE_NMEA_CFG
 //#define USE_AT6558_SETUP
 #define USE_BASICMAC
@@ -235,6 +234,10 @@ struct rst_info {
 #define EXCLUDE_CC13XX
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_ESP32_H */
 

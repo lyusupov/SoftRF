@@ -39,9 +39,9 @@
 #include "../driver/LED.h"
 #include "../driver/Baro.h"
 #include "../driver/Battery.h"
+#include "../driver/OLED.h"
 
 #include <battery.h>
-#include <U8x8lib.h>
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -80,7 +80,7 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
 
 AXP20X_Class axp;
 
-static U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C *u8x8 = NULL;
+extern U8X8_OLED_I2C_BUS_TYPE *u8x8;
 static TFT_eSPI *tft = NULL;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
@@ -96,26 +96,11 @@ static union {
   uint64_t chipmacid;
 };
 
-static bool OLED_display_frontpage = false;
+static bool TFT_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
-
-const char *OLED_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "L",
-  [RF_PROTOCOL_OGNTP]     = "O",
-  [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
-  [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
-};
-
-const char SoftRF_text[]   = "SoftRF";
-const char ID_text[]       = "ID";
-const char PROTOCOL_text[] = "PROTOCOL";
-const char RX_text[]       = "RX";
-const char TX_text[]       = "TX";
 
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
@@ -275,21 +260,7 @@ static void ESP32_post_init()
   {
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
-    if (u8x8) {
-
-      u8x8->clear();
-
-      u8x8->draw2x2String(0, 0, "RADIO");
-      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-      u8x8->draw2x2String(0, 2, "GNSS");
-      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-      u8x8->draw2x2String(0, 4, "OLED");
-      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BARO");
-      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-
-      delay(3000);
-    }
+    OLED_info1();
     break;
 
   case DISPLAY_NONE:
@@ -826,7 +797,7 @@ static void ESP32_Display_loop()
   {
   case DISPLAY_TFT_TTGO:
     if (tft) {
-      if (!OLED_display_frontpage) {
+      if (!TFT_display_frontpage) {
         tft->fillScreen(TFT_NAVY);
 
         tft->setTextFont(2);
@@ -882,9 +853,9 @@ static void ESP32_Display_loop()
         tft->setCursor(tft->width()/2 + tft->textWidth(" "), tft->height()/2);
         tft->print(buf);
 
-        OLED_display_frontpage = true;
+        TFT_display_frontpage = true;
 
-      } else { /* OLED_display_frontpage */
+      } else { /* TFT_display_frontpage */
 
         if (rx_packets_counter > prev_rx_packets_counter) {
           disp_value = rx_packets_counter % 1000;
@@ -933,71 +904,7 @@ static void ESP32_Display_loop()
 
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
-    if (u8x8) {
-      if (!OLED_display_frontpage) {
-
-        u8x8->clear();
-
-        u8x8->drawString(1, 1, ID_text);
-
-        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
-        u8x8->draw2x2String(0, 2, buf);
-
-        u8x8->drawString(8, 1, PROTOCOL_text);
-
-        u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
-
-        u8x8->drawString(1, 5, RX_text);
-
-        itoa(rx_packets_counter % 1000, buf, 10);
-        u8x8->draw2x2String(0, 6, buf);
-
-        u8x8->drawString(9, 5, TX_text);
-
-        if (settings->txpower == RF_TX_POWER_OFF ) {
-          strcpy(buf, "OFF");
-        } else {
-          itoa(tx_packets_counter % 1000, buf, 10);
-        }
-        u8x8->draw2x2String(8, 6, buf);
-
-        OLED_display_frontpage = true;
-
-      } else {  /* OLED_display_frontpage */
-
-        if (rx_packets_counter > prev_rx_packets_counter) {
-          disp_value = rx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          u8x8->draw2x2String(0, 6, buf);
-          prev_rx_packets_counter = rx_packets_counter;
-        }
-        if (tx_packets_counter > prev_tx_packets_counter) {
-          disp_value = tx_packets_counter % 1000;
-          itoa(disp_value, buf, 10);
-
-          if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
-          } else {
-            if (disp_value < 100) {
-              strcat_P(buf,PSTR(" "));
-            };
-          }
-
-          u8x8->draw2x2String(8, 6, buf);
-          prev_tx_packets_counter = tx_packets_counter;
-        }
-      }
-    }
-
+    OLED_loop();
     break;
 
   case DISPLAY_NONE:
@@ -1008,10 +915,9 @@ static void ESP32_Display_loop()
 
 static void ESP32_Display_fini(const char *msg)
 {
+  OLED_fini(msg);
+
   if (u8x8) {
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(1, 3, msg);
 
     delay(3000); /* Keep shutdown message on OLED for 3 seconds */
 

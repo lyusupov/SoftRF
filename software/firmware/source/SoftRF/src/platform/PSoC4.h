@@ -43,8 +43,6 @@
 #define digitalPinToInterrupt(p) p
 #define isPrintable(c)          (isprint(c) == 0 ? false : true)
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-
 #define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
 
 #define SerialOutput            Serial
@@ -167,6 +165,10 @@ struct rst_info {
 
 extern CubeCell_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_PSOC4_H */
 

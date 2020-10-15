@@ -112,6 +112,7 @@ DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/GNSS.cpp      \
                  $(DRIVER_PATH)/Baro.cpp      \
                  $(DRIVER_PATH)/LED.cpp       \
+                 $(DRIVER_PATH)/OLED.cpp      \
                  $(DRIVER_PATH)/Battery.cpp   \
                  $(DRIVER_PATH)/EEPROM.cpp    \
                  $(DRIVER_PATH)/Bluetooth.cpp \
