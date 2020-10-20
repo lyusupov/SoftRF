@@ -46,7 +46,7 @@ void PCF8563_Class::check()
     RTC_Date now = getDateTime();
     RTC_Date compiled = RTC_Date(__DATE__, __TIME__);
 
-    // Serial.printf("%d:%d:%d - %d:%d:%d\n", compiled.year, compiled.month, compiled.day, compiled.hour, compiled.minute, compiled.second);
+    log_i("%d:%d:%d - %d:%d:%d\n", compiled.year, compiled.month, compiled.day, compiled.hour, compiled.minute, compiled.second);
 
     if (now.year < compiled.year ||
             (now.year == compiled.year && now.month < compiled.month ) ||
@@ -354,7 +354,7 @@ void PCF8563_Class::syncToRtc()
     time(&now);
     localtime_r(&now, &info);
     setDateTime(info.tm_year, info.tm_mon + 1, info.tm_mday, info.tm_hour, info.tm_min, info.tm_sec);
-    Serial.printf("syncToRtc: %d %d %d - %d %d %d \n", info.tm_year, info.tm_mon + 1, info.tm_mday, info.tm_hour, info.tm_min, info.tm_sec);
+    log_i("syncToRtc: %d %d %d - %d %d %d \n", info.tm_year, info.tm_mon + 1, info.tm_mday, info.tm_hour, info.tm_min, info.tm_sec);
 }
 
 RTC_Date::RTC_Date(

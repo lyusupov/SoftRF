@@ -2,6 +2,14 @@
 #include "Wire.h"
 #include <Arduino.h>
 
+#if !defined(ESP32)
+#define Serial_print
+#define Serial_println
+#else
+#define Serial_print    Serial.print
+#define Serial_println  Serial.println
+#endif
+
 void I2CBus::scan(void)
 {
     uint8_t err, addr;
@@ -10,23 +18,23 @@ void I2CBus::scan(void)
         _port->beginTransmission(addr);
         err = _port->endTransmission();
         if (err == 0) {
-            Serial.print("I2C device found at address 0x");
+            Serial_print("I2C device found at address 0x");
             if (addr < 16)
-                Serial.print("0");
-            Serial.print(addr, HEX);
-            Serial.println(" !");
+                Serial_print("0");
+            Serial_print(addr, HEX);
+            Serial_println(" !");
             nDevices++;
         } else if (err == 4) {
-            Serial.print("Unknow error at address 0x");
+            Serial_print("Unknow error at address 0x");
             if (addr < 16)
-                Serial.print("0");
-            Serial.println(addr, HEX);
+                Serial_print("0");
+            Serial_println(addr, HEX);
         }
     }
     if (nDevices == 0)
-        Serial.println("No I2C devices found\n");
+        Serial_println("No I2C devices found\n");
     else
-        Serial.println("done\n");
+        Serial_println("done\n");
 }
 
 

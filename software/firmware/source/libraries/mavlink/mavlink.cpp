@@ -34,11 +34,13 @@
 #include <mavlink.h>
 #include <aircraft.h>
 
-#if defined ESP8266
+#if defined(ESP8266)
 #include <Exp_SoftwareSerial.h>
 extern Exp_SoftwareSerial swSer;
-#elif defined ESP32
+#elif defined(ESP32)
 extern HardwareSerial Serial1;
+#elif defined(ARDUINO_ARCH_NRF52)
+extern Uart Serial1;
 #endif
 
 mavlink_system_t mavlink_system = {12, MAV_COMP_ID_ADSB};
@@ -49,6 +51,8 @@ void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
   Serial1.write(ch);
 #elif defined(ESP8266) || defined(ESP32)
   Serial.write(ch);
+#elif defined(ARDUINO_ARCH_NRF52)
+  Serial1.write(ch);
 #else
   Serial.write(ch);
 #endif
@@ -134,10 +138,13 @@ void read_mavlink()
  #if defined __AVR_ATmega32U4_  
    while (Serial1.available() > 0) {
             uint8_t ch = Serial1.read();
-#elif defined ESP8266
+#elif defined(ESP8266)
    while (swSer.available() > 0) {
             uint8_t ch = swSer.read();
-#elif defined ESP32
+#elif defined(ESP32)
+   while (Serial1.available() > 0) {
+            uint8_t ch = Serial1.read();
+#elif defined(ARDUINO_ARCH_NRF52)
    while (Serial1.available() > 0) {
             uint8_t ch = Serial1.read();
 #else

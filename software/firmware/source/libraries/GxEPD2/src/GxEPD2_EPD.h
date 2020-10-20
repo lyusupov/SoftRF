@@ -15,6 +15,9 @@
 #if !defined(RASPBERRY_PI)
 #include <Arduino.h>
 #include <SPI.h>
+#if defined(NRF52840_XXAA) && !defined(USE_TINYUSB)
+#define Serial  Serial1
+#endif /* ! USE_TINYUSB */
 #else
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */

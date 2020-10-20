@@ -48,9 +48,9 @@ lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
     .rxe = LMIC_UNUSED_PIN,
-    .rst = LMIC_UNUSED_PIN,
+    .rst = SOC_GPIO_PIN_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
-    .busy = LMIC_UNUSED_PIN,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -143,6 +143,10 @@ static void nRF52_setup()
   ledOn (SOC_GPIO_LED_GREEN);
   ledOff(SOC_GPIO_LED_RED);
   ledOff(SOC_GPIO_LED_BLUE);
+
+#if defined(USE_TINYUSB)
+  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif
 
   nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
 
@@ -659,7 +663,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_SPI_begin,
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
-  NULL, // &nRF52_Bluetooth_ops,
+  &nRF52_Bluetooth_ops,
   &nRF52_USBSerial_ops,
   nRF52_Display_setup,
   nRF52_Display_loop,

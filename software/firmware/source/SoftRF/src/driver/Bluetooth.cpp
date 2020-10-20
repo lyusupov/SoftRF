@@ -993,8 +993,7 @@ void startAdv(void)
   Bluefruit.Advertising.addTxPower();
 
   // Include bleuart 128-bit uuid
-  Bluefruit.Advertising.addService(bleuart_HM10);
-  Bluefruit.Advertising.addService(bleuart_NUS);
+  Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
@@ -1106,6 +1105,9 @@ static void nRF52_Bluetooth_loop()
 
 static void nRF52_Bluetooth_fini()
 {
+  uint8_t sd_en = 0;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
   if ( Bluefruit.connected() ) {
     if ( bleuart_HM10.notifyEnabled() ) {
       // flush TXD since we use bufferTXD()
@@ -1117,6 +1119,8 @@ static void nRF52_Bluetooth_fini()
       bleuart_NUS.flushTXD();
     }
   }
+
+  if (sd_en) sd_softdevice_disable();
 }
 
 static int nRF52_Bluetooth_available()

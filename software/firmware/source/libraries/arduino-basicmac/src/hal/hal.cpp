@@ -373,7 +373,7 @@ u1_t hal_checkTimer (u4_t time) {
     return delta_time(time) <= 0;
 }
 
-#if defined(ARDUINO_ARCH_STM32)
+#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_NRF52)
 
 // Fix for STM32 HAL based cores.
 
@@ -526,7 +526,11 @@ void hal_init (void *bootarg) {
 }
 
 void hal_failed () {
+#if defined(NRF52840_XXAA) && !defined(USE_TINYUSB)
+    Serial1.flush();
+#else
     Serial.flush();
+#endif
     // keep IRQs enabled, to allow e.g. USB to continue to run and allow
     // firmware uploads on boards with native USB.
     while(1);

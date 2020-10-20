@@ -924,6 +924,7 @@ void PickGNSSFix()
 
           if (cfg_is_updated) {
             SoC->WDT_fini();
+            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
             Serial.println();
             Serial.println(F("Restart is in progress. Please, wait..."));
             Serial.println();
