@@ -229,7 +229,11 @@ static void nRF52_fini()
   /* Air530 GNSS ultra-low power tracking mode */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+#if 0
   swSer.write("$PGKC105,4*33\r\n");
+#else
+  swSer.write("$PGKC051,1*36\r\n");
+#endif
   swSer.flush(); delay(250);
 
   Wire.end();
@@ -411,6 +415,7 @@ static void nRF52_Display_fini(const char *msg)
   /* EPD back light */
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
+  EPD_Clear_Screen();
   EPD_fini(msg);
 
   if( EPD_Task_Handle != NULL )

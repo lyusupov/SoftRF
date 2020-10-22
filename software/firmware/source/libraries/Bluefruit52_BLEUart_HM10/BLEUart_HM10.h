@@ -43,7 +43,10 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-#define BLE_UART_HM10_DEFAULT_FIFO_DEPTH   256
+#define BLE_UART_HM10_DEFAULT_RX_FIFO_DEPTH   256
+#define BLE_UART_HM10_DEFAULT_TX_FIFO_DEPTH   1024
+
+#define BLE_MAX_WRITE_CHUNK_SIZE              20
 
 extern const uint8_t BLEUART_HM10_UUID_SERVICE[];
 extern const uint8_t BLEUART_HM10_UUID_CHR_RW[];
@@ -55,7 +58,8 @@ class BLEUart_HM10 : public BLEService, public Stream
     typedef void (*notify_callback_t)(uint16_t conn_hdl, bool enabled);
     typedef void (*rx_overflow_callback_t) (uint16_t conn_hdl, uint16_t leftover);
 
-    BLEUart_HM10(uint16_t fifo_depth = BLE_UART_HM10_DEFAULT_FIFO_DEPTH);
+    BLEUart_HM10(uint16_t rx_fifo_depth = BLE_UART_HM10_DEFAULT_RX_FIFO_DEPTH,
+                 uint16_t tx_fifo_depth = BLE_UART_HM10_DEFAULT_TX_FIFO_DEPTH);
     virtual ~BLEUart_HM10();
 
     virtual err_t begin(void);
@@ -67,15 +71,11 @@ class BLEUart_HM10 : public BLEService, public Stream
     void setRxOverflowCallback(rx_overflow_callback_t fp);
     void setNotifyCallback(notify_callback_t fp);
 
-    void bufferTXD(bool enable);
-
     bool flushTXD (void);
     bool flushTXD (uint16_t conn_hdl);
 
     // Read helper
     uint8_t  read8 (void);
-    uint16_t read16(void);
-    uint32_t read32(void);
 
     // Stream API
     virtual int       read       ( void );
@@ -104,7 +104,7 @@ class BLEUart_HM10 : public BLEService, public Stream
 
     // TXD
     Adafruit_FIFO* _tx_fifo;
-    bool           _tx_buffered; // default is false
+    uint16_t       _tx_fifo_depth;
 
     // Callbacks
     rx_callback_t           _rx_cb;

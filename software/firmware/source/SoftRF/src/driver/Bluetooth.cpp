@@ -976,6 +976,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <BLEUart_HM10.h>
 
 #include "WiFi.h"   // HOSTNAME
+#include "Battery.h"
 
 // BLE Service
 BLEDfu        bledfu;       // OTA DFU service
@@ -1077,7 +1078,6 @@ void nRF52_Bluetooth_setup()
 
   // Configure and Start BLE Uart Service
   bleuart_HM10.begin();
-  bleuart_HM10.bufferTXD(true);
   bleuart_NUS.begin();
   bleuart_NUS.bufferTXD(true);
 
@@ -1098,9 +1098,39 @@ void nRF52_Bluetooth_setup()
  End of Adafruit licensed text
 *********************************************************************/
 
+static unsigned long BLE_Notify_TimeMarker = 0;
+
+uint8_t VoltsToPercent(float volts) {
+  if (volts < Battery_cutoff())
+    return 0;
+
+  if (volts > 4.2)
+    return 100;
+
+  if (volts < 3.6) {
+    volts -= 3.3;
+    return (volts * 100) / 3;
+  }
+
+  volts -= 3.6;
+  return 10 + (volts * 150 );
+}
+
 static void nRF52_Bluetooth_loop()
 {
+  // notify changed value
+  // bluetooth stack will go into congestion, if too many packets are sent
+  if ( Bluefruit.connected()              &&
+       bleuart_HM10.notifyEnabled()       &&
+       (millis() - BLE_Notify_TimeMarker > 10)) { /* < 18000 baud */
+    bleuart_HM10.flushTXD();
 
+    BLE_Notify_TimeMarker = millis();
+  }
+
+  if (isTimeToBattery()) {
+    blebas.write(VoltsToPercent(Battery_voltage()));
+  }
 }
 
 static void nRF52_Bluetooth_fini()

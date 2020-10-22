@@ -56,18 +56,18 @@ const uint8_t BLEUART_HM10_UUID_CHR_RW[] =
 };
 
 // Constructor
-BLEUart_HM10::BLEUart_HM10(uint16_t fifo_depth)
+BLEUart_HM10::BLEUart_HM10(uint16_t rx_fifo_depth, uint16_t tx_fifo_depth)
   : BLEService(BLEUART_HM10_UUID_SERVICE), _rtxd(BLEUART_HM10_UUID_CHR_RW)
 {
   _rx_fifo       = NULL;
-  _rx_fifo_depth = fifo_depth;
+  _rx_fifo_depth = rx_fifo_depth;
+
+  _tx_fifo       = NULL;
+  _tx_fifo_depth = tx_fifo_depth;
 
   _rx_cb         = NULL;
   _notify_cb     = NULL;
   _overflow_cb   = NULL;
-
-  _tx_fifo       = NULL;
-  _tx_buffered   = false;
 }
 
 // Destructor
@@ -124,33 +124,13 @@ void BLEUart_HM10::setNotifyCallback(notify_callback_t fp)
   _rtxd.setCccdWriteCallback( fp ? BLEUart_HM10::bleuart_txd_cccd_cb : NULL );
 }
 
-/**
- * Enable packet buffered for TXD
- * Note: packet is sent right away if it reach MTU bytes
- * @param enable true or false
- */
-void BLEUart_HM10::bufferTXD(bool enable)
-{
-  _tx_buffered = enable;
-
-  if ( enable )
-  {
-    // Create FIFO for TXD
-    if ( _tx_fifo == NULL )
-    {
-      _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin( Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH) );
-    }
-  }else
-  {
-    if ( _tx_fifo ) delete _tx_fifo;
-  }
-}
-
 err_t BLEUart_HM10::begin(void)
 {
   _rx_fifo = new Adafruit_FIFO(1);
   _rx_fifo->begin(_rx_fifo_depth);
+
+  _tx_fifo = new Adafruit_FIFO(1);
+  _tx_fifo->begin(_tx_fifo_depth);
 
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -198,18 +178,6 @@ uint8_t BLEUart_HM10::read8 (void)
   return read(&num, sizeof(num)) ? num : 0;
 }
 
-uint16_t BLEUart_HM10::read16(void)
-{
-  uint16_t num;
-  return read((uint8_t*) &num, sizeof(num)) ? num : 0;
-}
-
-uint32_t BLEUart_HM10::read32(void)
-{
-  uint32_t num;
-  return read((uint8_t*) &num, sizeof(num)) ? num : 0;
-}
-
 size_t BLEUart_HM10::write(uint8_t b)
 {
   return this->write(Bluefruit.connHandle(), &b, 1);
@@ -233,33 +201,10 @@ size_t BLEUart_HM10::write(uint16_t conn_hdl, const uint8_t *content, size_t len
   // skip if not enabled
   if ( !notifyEnabled(conn_hdl) ) return 0;
 
-  // notify right away if txd buffered is not enabled
-  if ( !(_tx_buffered && _tx_fifo) )
-  {
-    return _rtxd.notify(conn_hdl, content, len) ? len : 0;
-  }else
-  {
-    uint16_t written = _tx_fifo->write(content, len);
+  uint16_t written = _tx_fifo->write(content,
+                        _tx_fifo->remaining() > len ? len : _tx_fifo->remaining());
 
-    // Not up to GATT MTU, notify will be sent later by TXD timer handler
-    if ( _tx_fifo->count() < (conn->getMtu() - 3) )
-    {
-      return len;
-    }
-    else
-    {
-      // TX fifo has enough data, send notify right away
-      VERIFY( flushTXD(conn_hdl), 0);
-
-      // still more data left, send them all
-      if ( written < len )
-      {
-        VERIFY(_rtxd.notify(conn_hdl, content+written, len-written), written);
-      }
-
-      return len;
-    }
-  }
+  return written;
 }
 
 int BLEUart_HM10::available (void)
@@ -288,23 +233,17 @@ bool BLEUart_HM10::flushTXD(uint16_t conn_hdl)
   BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   VERIFY(conn);
 
-  uint16_t const gatt_mtu = conn->getMtu() - 3;
-  uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
-  VERIFY(ff_data);
+  uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
+  size_t size = (_tx_fifo->count() < BLE_MAX_WRITE_CHUNK_SIZE ?
+                 _tx_fifo->count() : BLE_MAX_WRITE_CHUNK_SIZE);
 
-  uint16_t len = _tx_fifo->read(ff_data, gatt_mtu);
+  uint16_t len = _tx_fifo->read(chunk, size);
   bool result = true;
 
   if ( len )
   {
-    result = _rtxd.notify(conn_hdl, ff_data, len);
+    result = _rtxd.notify(conn_hdl, chunk, len);
   }
-
-  rtos_free(ff_data);
 
   return result;
 }
-
-
-
-

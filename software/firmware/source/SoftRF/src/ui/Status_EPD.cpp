@@ -182,7 +182,7 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeSerifBold12pt7b);
 
-    display->setCursor(navbox3.x + 10, navbox3.y + 50);
+    display->setCursor(navbox3.x + 5, navbox3.y + 50);
 
     snprintf(buf, sizeof(buf), "%06X", navbox3.value);
 
@@ -261,7 +261,7 @@ static void EPD_Update_NavBoxes()
       display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
 
       display->fillRect(navbox2.x + 15, navbox2.y + 53 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
+                        tbw + 5, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox2.x + 15, navbox2.y + 52);
       display->print((float) navbox2.value / 10, 1);
 
@@ -274,9 +274,9 @@ static void EPD_Update_NavBoxes()
       display->setFont(&FreeSerifBold12pt7b);
       display->getTextBounds("FFFFFF", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-      display->fillRect(navbox3.x + 10, navbox3.y + 51 - tbh,
+      display->fillRect(navbox3.x + 5, navbox3.y + 51 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox3.x + 10, navbox3.y + 50);
+      display->setCursor(navbox3.x + 5, navbox3.y + 50);
 
       snprintf(buf, sizeof(buf), "%06X", navbox3.value);
 
@@ -306,7 +306,7 @@ static void EPD_Update_NavBoxes()
       display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
 
       display->fillRect (navbox5.x + 25, navbox5.y + 51 - tbh,
-                         tbw, tbh + 1, GxEPD_WHITE);
+                         tbw + 5, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox5.x + 25, navbox5.y + 50);
       display->print(navbox5.value);
 
@@ -320,7 +320,7 @@ static void EPD_Update_NavBoxes()
       display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
 
       display->fillRect(navbox6.x + 25, navbox6.y + 51 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
+                        tbw + 5, tbh + 1, GxEPD_WHITE);
       display->setCursor(navbox6.x + 25, navbox6.y + 50);
       display->print(navbox6.value);
 
