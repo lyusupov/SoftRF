@@ -165,8 +165,16 @@ static void PSoC4_loop()
 static void PSoC4_fini()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI) {
+
+#if 1
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
     pinMode(SOC_GPIO_PIN_GNSS_PWR, ANALOG);
+#else
+    swSer.write("$PGKC051,0*37\r\n");
+    // swSer.write("$PGKC051,1*36\r\n");
+    swSer.flush(); delay(250);
+#endif
+    swSer.end();
 
     delay(2000);
 

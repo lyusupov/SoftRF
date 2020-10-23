@@ -34,6 +34,9 @@
 #include "../driver/LED.h"
 #include "../driver/Bluetooth.h"
 #include "../driver/EPD.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -129,9 +132,11 @@ static void nRF52_setup()
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
 
+#if 0
   /* Wake up Air530 GNSS */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+#endif
 
   pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
@@ -201,6 +206,41 @@ static void nRF52_post_init()
 #if defined(USE_EPAPER)
   EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
 #endif /* USE_EPAPER */
+
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART"));          break;
+    case NMEA_USB        :  Serial.println(F("USB CDC"));       break;
+    case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth LE"));  break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART"));          break;
+    case GDL90_USB       :  Serial.println(F("USB CDC"));       break;
+    case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth LE"));  break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART"));          break;
+    case D1090_USB       :  Serial.println(F("USB CDC"));       break;
+    case D1090_BLUETOOTH :  Serial.println(F("Bluetooth LE"));  break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.println();
+  Serial.flush();
 }
 
 static void nRF52_loop()
@@ -226,17 +266,41 @@ static void nRF52_loop()
 
 static void nRF52_fini()
 {
+  uint8_t sd_en;
+
+#if 0
   /* Air530 GNSS ultra-low power tracking mode */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
-#if 0
+
   swSer.write("$PGKC105,4*33\r\n");
 #else
-  swSer.write("$PGKC051,1*36\r\n");
+  swSer.write("$PGKC051,0*37\r\n");
+  // swSer.write("$PGKC051,1*36\r\n");
 #endif
   swSer.flush(); delay(250);
 
-  Wire.end();
+  swSer.end();
+
+  // pinMode(SOC_GPIO_PIN_SWSER_RX, INPUT);
+  // pinMode(SOC_GPIO_PIN_SWSER_TX, INPUT);
+
+  // pinMode(SOC_GPIO_PIN_BATTERY, INPUT);
+
+  if (i2c != nullptr) Wire.end();
+
+  // pinMode(SOC_GPIO_PIN_SDA,  INPUT);
+  // pinMode(SOC_GPIO_PIN_SCL,  INPUT);
+
+  SPI2.end(); /* SoftSPI */
+  pinMode(SOC_GPIO_PIN_SFL_SS, INPUT);
+
+  // pinMode(SOC_GPIO_PIN_MOSI, INPUT);
+  // pinMode(SOC_GPIO_PIN_MISO, INPUT);
+  // pinMode(SOC_GPIO_PIN_SCK,  INPUT);
+  pinMode(SOC_GPIO_PIN_SS,   INPUT);
+  // pinMode(SOC_GPIO_PIN_BUSY, INPUT);
+  pinMode(SOC_GPIO_PIN_RST,  INPUT);
 
   ledOff(SOC_GPIO_LED_GREEN);
   ledOff(SOC_GPIO_LED_RED);
@@ -248,11 +312,32 @@ static void nRF52_fini()
 
   pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 
+  // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
   pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
   while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
   delay(100);
 
-  systemOff(SOC_GPIO_PIN_BUTTON, LOW);
+#if defined(USE_TINYUSB)
+  SerialOutput.end();
+
+  // pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
+  // pinMode(SOC_GPIO_PIN_CONS_TX, INPUT);
+#endif
+
+  // setup wake-up pins
+  pinMode(SOC_GPIO_PIN_BUTTON, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+  // pinMode(SOC_GPIO_PIN_CONS_RX, INPUT_SENSE_LOW);
+
+  Serial.end();
+
+  (void) sd_softdevice_is_enabled(&sd_en);
+
+  // Enter System OFF state
+  if ( sd_en ) {
+    sd_power_system_off();
+  } else {
+    NRF_POWER->SYSTEMOFF = 1;
+  }
 }
 
 static void nRF52_reset()
@@ -412,9 +497,6 @@ static void nRF52_Display_fini(const char *msg)
 {
 #if defined(USE_EPAPER)
 
-  /* EPD back light */
-  pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
-
   EPD_Clear_Screen();
   EPD_fini(msg);
 
@@ -426,6 +508,15 @@ static void nRF52_Display_fini(const char *msg)
 #if SPI_INTERFACES_COUNT >= 2
   SPI1.end();
 #endif /* SPI_INTERFACES_COUNT */
+
+  // pinMode(SOC_GPIO_PIN_EPD_MISO, INPUT);
+  // pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
+  // pinMode(SOC_GPIO_PIN_EPD_SCK,  INPUT);
+  pinMode(SOC_GPIO_PIN_EPD_SS,   INPUT);
+  pinMode(SOC_GPIO_PIN_EPD_DC,   INPUT);
+  pinMode(SOC_GPIO_PIN_EPD_RST,  INPUT);
+  // pinMode(SOC_GPIO_PIN_EPD_BUSY, INPUT);
+  pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
 #endif /* USE_EPAPER */
 }
@@ -595,9 +686,11 @@ static void nRF52_USB_loop()
 
 static void nRF52_USB_fini()
 {
+#if 0
   if (USBSerial) {
     USBSerial.end();
   }
+#endif
 }
 
 static int nRF52_USB_available()

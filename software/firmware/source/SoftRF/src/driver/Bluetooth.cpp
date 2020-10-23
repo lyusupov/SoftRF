@@ -1150,6 +1150,10 @@ static void nRF52_Bluetooth_fini()
     }
   }
 
+  if (Bluefruit.Advertising.isRunning()) {
+    Bluefruit.Advertising.stop();
+  }
+
   if (sd_en) sd_softdevice_disable();
 }
 

@@ -298,6 +298,14 @@ void shutdown(const char *msg)
 
   Web_fini();
 
+  if (SoC->Bluetooth_ops) {
+     SoC->Bluetooth_ops->fini();
+  }
+
+  if (SoC->USB_ops) {
+     SoC->USB_ops->fini();
+  }
+
   WiFi_fini();
 
   if (settings->mode != SOFTRF_MODE_UAV) {
