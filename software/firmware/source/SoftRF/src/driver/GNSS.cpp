@@ -609,7 +609,6 @@ void GNSS_fini()
 {
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
     detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
-    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
   }
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||

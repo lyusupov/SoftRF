@@ -89,6 +89,18 @@ static bool RTC_sync           = false;
 static TaskHandle_t EPD_Task_Handle = NULL;
 
 #if SPI_INTERFACES_COUNT == 1
+#if SPI_32MHZ_INTERFACE == 0
+  #define _SPI_DEV    NRF_SPIM3 // 32 Mhz
+  #define _SPI1_DEV   NRF_SPIM2
+
+#elif SPI_32MHZ_INTERFACE == 1
+  #define _SPI_DEV    NRF_SPIM2
+  #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
+
+#else
+  #error "not supported yet"
+#endif
+
 SPIClass SPI1(_SPI1_DEV, SOC_GPIO_PIN_EPD_MISO, SOC_GPIO_PIN_EPD_SCK, SOC_GPIO_PIN_EPD_MISO);
 #endif
 

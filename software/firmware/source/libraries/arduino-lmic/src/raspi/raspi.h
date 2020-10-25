@@ -56,7 +56,8 @@
 #define interrupts()   {}
 #define noInterrupts() {}
 #define digitalPinToInterrupt(p)             (p)
-#define attachInterrupt(pin, userFunc, mode) {}
+#define attachInterrupt(irq, userFunc, mode) {}
+#define detachInterrupt(irq)                 {}
 
 #define CHANGE 3
 #define FALLING 1
