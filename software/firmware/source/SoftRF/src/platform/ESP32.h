@@ -84,8 +84,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_BUZZER     13
 #define SOC_GPIO_PIN_BATTERY    36
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-
 #define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \

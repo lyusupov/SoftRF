@@ -78,7 +78,7 @@ static void PSoC4_SerialWakeup()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI &&
       PSoC4_state   == PSOC4_LOW_POWER) {
-    detachInterrupt(SOC_GPIO_PIN_CONS_RX);
+    detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_CONS_RX));
     PSoC4_state = PSOC4_ACTIVE;
     CySoftwareReset();
   }
@@ -92,7 +92,7 @@ static void PSoC4_User_Key_Wakeup()
     delay(10);
 
     if (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW) {
-      detachInterrupt(SOC_GPIO_PIN_BUTTON);
+      detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
       PSoC4_state = PSOC4_ACTIVE;
 
       while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
@@ -191,10 +191,10 @@ static void PSoC4_fini()
     Serial.end();
 
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
-    attachInterrupt(SOC_GPIO_PIN_BUTTON, PSoC4_User_Key_Wakeup, FALLING);
+    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON), PSoC4_User_Key_Wakeup, FALLING);
 
     pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
-    attachInterrupt(SOC_GPIO_PIN_CONS_RX, PSoC4_SerialWakeup, FALLING);
+    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_CONS_RX), PSoC4_SerialWakeup, FALLING);
   }
 
   PSoC4_state = PSOC4_LOW_POWER;

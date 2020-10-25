@@ -83,10 +83,14 @@ PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 
 static bool nRF52_has_rtc      = false;
-static bool nRF52_has_spiflash = false ;
+static bool nRF52_has_spiflash = false;
 static bool RTC_sync           = false;
 
 static TaskHandle_t EPD_Task_Handle = NULL;
+
+#if SPI_INTERFACES_COUNT == 1
+SPIClass SPI1(_SPI1_DEV, SOC_GPIO_PIN_EPD_MISO, SOC_GPIO_PIN_EPD_SCK, SOC_GPIO_PIN_EPD_MISO);
+#endif
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
@@ -132,11 +136,9 @@ static void nRF52_setup()
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
 
-#if 0
   /* Wake up Air530 GNSS */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
   pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
-#endif
 
   pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
@@ -150,8 +152,11 @@ static void nRF52_setup()
   ledOff(SOC_GPIO_LED_BLUE);
 
 #if defined(USE_TINYUSB)
-  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+  Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
+
+  Serial2.setPins(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
   nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
 
@@ -275,6 +280,8 @@ static void nRF52_fini()
 
   swSer.write("$PGKC105,4*33\r\n");
 #else
+  pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
+
   swSer.write("$PGKC051,0*37\r\n");
   // swSer.write("$PGKC051,1*36\r\n");
 #endif
@@ -427,6 +434,9 @@ static bool nRF52_EEPROM_begin(size_t size)
 
 static void nRF52_SPI_begin()
 {
+#if 0 /* pending for next release of nRF52 Arduino Core */
+  SPI.setPins(SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MOSI);
+#endif
   SPI.begin();
 }
 
@@ -671,12 +681,15 @@ static void nRF52_Button_loop()
 
 static void nRF52_Button_fini()
 {
-
+  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
+  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
 }
 
 static void nRF52_USB_setup()
 {
-
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  }
 }
 
 static void nRF52_USB_loop()
@@ -686,11 +699,9 @@ static void nRF52_USB_loop()
 
 static void nRF52_USB_fini()
 {
-#if 0
-  if (USBSerial) {
+  if (USBSerial && USBSerial != Serial) {
     USBSerial.end();
   }
-#endif
 }
 
 static int nRF52_USB_available()

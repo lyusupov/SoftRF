@@ -58,8 +58,6 @@ extern char *itoa(int, char *, int);
 
 #define WD_TIMEOUT_MS           4000
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 enum rst_reason {

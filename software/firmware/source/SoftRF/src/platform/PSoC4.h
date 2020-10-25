@@ -40,10 +40,11 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
-#define digitalPinToInterrupt(p) p
-#define isPrintable(c)          (isprint(c) == 0 ? false : true)
+#if !defined(digitalPinToInterrupt)
+#define digitalPinToInterrupt(p) ( p )
+#endif
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT
+#define isPrintable(c)          (isprint(c) == 0 ? false : true)
 
 #define SerialOutput            Serial
 

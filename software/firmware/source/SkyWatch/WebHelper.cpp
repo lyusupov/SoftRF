@@ -966,7 +966,7 @@ void handleStatus() {
   <!-- <td align=right><img src='/logo.png'></td> --></tr>\
 </table>\
 <table width=100%%>\
-<tr><th align=left>Device Id</th><td align=right>%X</td></tr>\
+<tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
 <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
 <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
 <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
@@ -1052,7 +1052,7 @@ void handleStatus() {
 <tr><th align=left>Connection status</th><td align=right>%s connected</td></tr>\
 <tr><th align=left>Data type</th><td align=right>%s %s %s</td></tr>\
 <tr><th align=left>GNSS fix</th><td align=right>%s</td></tr>\
-<tr><th align=left>Slave Id</th><td align=right>%X</td></tr>\
+<tr><th align=left>Slave Id</th><td align=right>%06X</td></tr>\
 <tr><th align=left>RF protocol</th><td align=right>%s</td></tr>\
 </table>\
 <table width=100%%>\

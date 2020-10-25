@@ -42,8 +42,6 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-#define SOC_GPIO_PIN_MODE_PULLDOWN INPUT_PULLDOWN
-
 #define SerialOutput            Serial1
 
 #define AN3155_BR               115200

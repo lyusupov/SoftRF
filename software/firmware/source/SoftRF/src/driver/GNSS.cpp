@@ -559,7 +559,7 @@ byte GNSS_setup() {
   }
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
-    pinMode(SOC_GPIO_PIN_GNSS_PPS, SOC_GPIO_PIN_MODE_PULLDOWN);
+    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
     attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS),
                     SoC->GNSS_PPS_handler, RISING);
   }
@@ -607,6 +607,11 @@ void GNSS_loop()
 
 void GNSS_fini()
 {
+  if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
+    detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
+    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
+  }
+
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_UNI)        {
     if (hw_info.gnss == GNSS_MODULE_U6 ||
