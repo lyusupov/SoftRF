@@ -133,6 +133,14 @@
 #endif
 #endif
 
+#if defined(ARDUINO_ARCH_NRF52)
+#ifdef __cplusplus
+#include <SPI.h>
+extern SPIClass SPI0;
+#define SPI SPI0
+#endif
+#endif /* ARDUINO_ARCH_NRF52 */
+
 #if defined(USE_ORIGINAL_AES) && defined(USE_IDEETRON_AES)
 # error "You may define at most one of USE_ORIGINAL_AES and USE_IDEETRON_AES"
 #endif

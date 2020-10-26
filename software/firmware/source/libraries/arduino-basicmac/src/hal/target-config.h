@@ -78,10 +78,18 @@
 #endif
 
 #if defined(ARDUINO_ARCH_NRF52)
+
+#ifdef __cplusplus
+#include <SPI.h>
+extern SPIClass SPI0;
+#define SPI SPI0
+#endif
+
 #ifdef CFG_DEBUG
 #undef CFG_DEBUG
 #endif
-#endif
+
+#endif /* ARDUINO_ARCH_NRF52 */
 
 #if defined(CFG_eu868)
 

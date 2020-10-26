@@ -11,7 +11,7 @@ env:
   - BOARD=energia:cc13xx:LAUNCHXL_CC1310
   - BOARD=raspberry
   - BOARD=CubeCell:CubeCell:CubeCell-GPS
-  - BOARD=adafruit:nrf52:feather52840
+  - BOARD=adafruit:nrf52:pca10056
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -126,8 +126,8 @@ install:
       arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs ;
       arduino --install-boards adafruit:nrf52 ;
       arduino --board $BOARD --save-prefs ;
-      arduino --pref "custom_debug=feather52840_l0"                 --save-prefs ;
-      arduino --pref "custom_softdevice=feather52840_s140v6"        --save-prefs ;
+      arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
+      arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
       cd $TRAVIS_BUILD_DIR ;
     fi
 

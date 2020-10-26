@@ -453,8 +453,8 @@ static bool nrf905_probe()
   uint8_t addr[4];
   uint8_t ref[] = TXADDR;
 
-  digitalWrite(CSN, HIGH);
-  pinMode(CSN, OUTPUT);
+  digitalWrite(CS_N, HIGH);
+  pinMode(CS_N, OUTPUT);
 
   SoC->SPI_begin();
 
@@ -462,15 +462,15 @@ static bool nrf905_probe()
   SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* ARDUINO */
 
-  digitalWrite(CSN, LOW);
+  digitalWrite(CS_N, LOW);
 
   SPI.transfer(NRF905_CMD_R_TX_ADDRESS);
   for(uint8_t i=4;i--;) {
     addr[i] = SPI.transfer(NRF905_CMD_NOP);
   }
 
-  digitalWrite(CSN, HIGH);
-  pinMode(CSN, INPUT);
+  digitalWrite(CS_N, HIGH);
+  pinMode(CS_N, INPUT);
 
   SPI.end();
 

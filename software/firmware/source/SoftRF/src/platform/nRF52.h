@@ -143,6 +143,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_SFL_SCK  _PINNUM(1, 14) // P1.14
 #define SOC_GPIO_PIN_SFL_SS   _PINNUM(1, 15) // P1.15
 
+/* RTC */
+#define SOC_GPIO_PIN_R_INT    _PINNUM(0, 16) // P0.16
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 //#define EXCLUDE_TEST_MODE

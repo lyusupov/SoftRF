@@ -81,13 +81,13 @@
 #define TRX_EN    D4   // GPIO 2   // Enable/standby pin
 #define PWR_MODE  D2   // GPIO 4   // Power mode pin
 #define TX_EN     D0   // GPIO 16  // TX / RX mode pin
-#define CSN       D8   // GPIO 15  // SPI slave select pin
+#define CS_N      D8   // GPIO 15  // SPI slave select pin
 #else
 /* Generic ESP8266 */
 #define TRX_EN    2    // Enable/standby pin
 #define PWR_MODE  4    // Power mode pin
 #define TX_EN     16   // TX / RX mode pin
-#define CSN       15   // SPI slave select pin
+#define CS_N      15   // SPI slave select pin
 #endif /* ARDUINO_ESP8266_NODEMCU */
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
@@ -99,7 +99,7 @@
 #define TRX_EN    2    // Enable/standby pin
 #define PWR_MODE  14   // Power mode pin
 #define TX_EN     26   // TX / RX mode pin
-#define CSN       18   // SPI slave select pin
+#define CS_N      18   // SPI slave select pin
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5
@@ -111,14 +111,14 @@
 #define TRX_EN    PB8  // Enable/standby pin
 #define PWR_MODE  PB10 // Power mode pin
 #define TX_EN     PB11 // TX / RX mode pin
-#define CSN       PB12 // SPI slave select pin
+#define CS_N      PB12 // SPI slave select pin
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 // Blue Pill
 #define TRX_EN    PB3  // Enable/standby pin
 #define PWR_MODE  PB5  // Power mode pin
 #define TX_EN     PB4  // TX / RX mode pin
-#define CSN       PA4  // SPI slave select pin
+#define CS_N      PA4  // SPI slave select pin
 
 #else
 #error "This hardware platform is not supported!"
@@ -134,10 +134,23 @@
 #define TRX_EN    SCL         // Enable/standby pin
 #define PWR_MODE  RADIO_RESET // Power mode pin
 #define TX_EN     RADIO_BUSY  // TX / RX mode pin
-#define CSN       RADIO_NSS   // SPI slave select pin
+#define CS_N      RADIO_NSS   // SPI slave select pin
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5
+
+#elif defined(ARDUINO_ARCH_NRF52)
+
+#if !defined(_PINNUM)
+#define _PINNUM(port, pin)    ((port)*32 + (pin))
+#endif
+
+#define TRX_EN    _PINNUM(0, 27) // Enable/standby pin
+#define PWR_MODE  _PINNUM(0, 25) // Power mode pin
+#define TX_EN     _PINNUM(0, 17) // TX / RX mode pin
+#define CS_N      _PINNUM(0, 24) // SPI slave select pin
+
+#define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 
 #else
 
@@ -146,7 +159,7 @@
 #define PWR_MODE  8	   // Power mode pin
 #define TX_EN     9	   // TX / RX mode pin
 #define CD        2	   // Carrier detect pin (for collision avoidance, if enabled)
-#define CSN       10	 // SPI slave select pin
+#define CS_N      10	 // SPI slave select pin
 
 // Data ready pin
 // If using interrupts (NRF905_INTERRUPTS 1) then this must be
@@ -201,7 +214,7 @@
 #define TRX_EN    (RPI_V2_GPIO_P1_18)  // Enable/standby pin
 #define PWR_MODE  (RPI_V2_GPIO_P1_11)  // Power mode pin
 #define TX_EN     (RPI_V2_GPIO_P1_07)  // TX / RX mode pin
-#define CSN       (RPI_V2_GPIO_P1_22)  // SPI slave select pin
+#define CS_N      (RPI_V2_GPIO_P1_22)  // SPI slave select pin
 
 #define CD			  (24)	// Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY		(25)

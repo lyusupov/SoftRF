@@ -25,7 +25,11 @@
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_NRF52)
 #define _BV(bit) (1 << (bit))
-#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
+#if defined(ARDUINO_ARCH_NRF52)
+extern SPIClass SPI0;
+#define SPI SPI0
+#endif /* ARDUINO_ARCH_NRF52 */
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else
 #if !defined(RASPBERRY_PI)
 #include "nRF905_spi.h"
@@ -57,8 +61,8 @@
 #define powerDown()				(digitalWrite(PWR_MODE, LOW))
 #define disableStandbyMode()	(digitalWrite(TRX_EN, HIGH))
 #define enableStandbyMode()		(digitalWrite(TRX_EN, LOW))
-#define spiSelect()				(digitalWrite(CSN, LOW))
-#define spiDeselect()			(digitalWrite(CSN, HIGH))
+#define spiSelect()				(digitalWrite(CS_N, LOW))
+#define spiDeselect()			(digitalWrite(CS_N, HIGH))
 #define receiveMode()			(digitalWrite(TX_EN, LOW))
 #define transmitMode()			(digitalWrite(TX_EN, HIGH))
 #define spi_transfer(data)		(SPI.transfer(data))
@@ -170,8 +174,8 @@ void nRF905_init()
 	pinMode(DREADY, INPUT);
 #endif
 
-	digitalWrite(CSN, HIGH);
-	pinMode(CSN, OUTPUT);
+	digitalWrite(CS_N, HIGH);
+	pinMode(CS_N, OUTPUT);
 
 	SPI.begin();
 

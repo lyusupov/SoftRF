@@ -88,21 +88,21 @@ static bool RTC_sync           = false;
 
 static TaskHandle_t EPD_Task_Handle = NULL;
 
-#if SPI_INTERFACES_COUNT == 1
-#if SPI_32MHZ_INTERFACE == 0
-  #define _SPI_DEV    NRF_SPIM3 // 32 Mhz
-  #define _SPI1_DEV   NRF_SPIM2
-
-#elif SPI_32MHZ_INTERFACE == 1
-  #define _SPI_DEV    NRF_SPIM2
-  #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
-
-#else
-  #error "not supported yet"
+#if !defined(ARDUINO_NRF52840_PCA10056)
+#error "This nRF52 build variant is not supported!"
 #endif
 
-SPIClass SPI1(_SPI1_DEV, SOC_GPIO_PIN_EPD_MISO, SOC_GPIO_PIN_EPD_SCK, SOC_GPIO_PIN_EPD_MISO);
-#endif
+#define _SPI_DEV    NRF_SPIM2
+#define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
+
+SPIClass SPI0(_SPI_DEV,
+              SOC_GPIO_PIN_MISO,
+              SOC_GPIO_PIN_SCK,
+              SOC_GPIO_PIN_MOSI);
+SPIClass SPI1(_SPI1_DEV,
+              SOC_GPIO_PIN_EPD_MISO,
+              SOC_GPIO_PIN_EPD_SCK,
+              SOC_GPIO_PIN_EPD_MOSI);
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
@@ -122,31 +122,14 @@ ui_settings_t ui_settings = {
 
 ui_settings_t *ui;
 
-#if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
-Uart Serial2( NRF_UARTE1, UARTE1_IRQn, SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX );
-
-extern "C"
-{
-  void UARTE1_IRQHandler()
-  {
-    Serial2.IrqHandler();
-  }
-}
-#endif
-
-static int nRF52_probe_pin(uint32_t pin, uint32_t mode)
-{
-  return 0;
-}
-
-static void nRF52_SerialWakeup() { }
-
 static void nRF52_setup()
 {
   ui = &ui_settings;
 
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
+
+  pinMode(SOC_GPIO_PIN_R_INT, INPUT);
 
   /* Wake up Air530 GNSS */
   digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
@@ -167,8 +150,6 @@ static void nRF52_setup()
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
-
-  Serial2.setPins(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
   nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
 
@@ -337,7 +318,7 @@ static void nRF52_fini()
   delay(100);
 
 #if defined(USE_TINYUSB)
-  SerialOutput.end();
+  Serial1.end();
 
   // pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
   // pinMode(SOC_GPIO_PIN_CONS_TX, INPUT);
@@ -446,14 +427,12 @@ static bool nRF52_EEPROM_begin(size_t size)
 
 static void nRF52_SPI_begin()
 {
-#if 0 /* pending for next release of nRF52 Arduino Core */
-  SPI.setPins(SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MOSI);
-#endif
-  SPI.begin();
+  SPI0.begin();
 }
 
 static void nRF52_swSer_begin(unsigned long baud)
 {
+  swSer.setPins(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
   swSer.begin(baud);
 
   /* 'Cold' restart */
@@ -527,9 +506,7 @@ static void nRF52_Display_fini(const char *msg)
     vTaskDelete( EPD_Task_Handle );
   }
 
-#if SPI_INTERFACES_COUNT >= 2
   SPI1.end();
-#endif /* SPI_INTERFACES_COUNT */
 
   // pinMode(SOC_GPIO_PIN_EPD_MISO, INPUT);
   // pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);

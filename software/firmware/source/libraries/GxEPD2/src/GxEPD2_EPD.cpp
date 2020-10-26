@@ -16,7 +16,8 @@
 #else
 #if !defined(RASPBERRY_PI)
 #include <avr/pgmspace.h>
-#if defined(ARDUINO_ARCH_NRF52) && (SPI_INTERFACES_COUNT >= 2)
+#if defined(ARDUINO_ARCH_NRF52)
+extern SPIClass SPI1;
 #define SPI SPI1
 #endif /* ARDUINO_ARCH_NRF52 */
 #else
