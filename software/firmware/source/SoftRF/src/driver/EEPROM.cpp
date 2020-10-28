@@ -98,11 +98,11 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
 
-#if (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)) ||\
-    (defined(USE_TINYUSB) && defined(USBCON))
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
-  eeprom_block.field.settings.nmea_out   = NMEA_UART;
+  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE ?
+                                           NMEA_BLUETOOTH : NMEA_UART;
 #endif
 
   eeprom_block.field.settings.gdl90      = GDL90_OFF;
