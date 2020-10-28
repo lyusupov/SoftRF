@@ -597,14 +597,29 @@ void handleEvent(AceButton* button, uint8_t eventType,
     uint8_t buttonState) {
 
   switch (eventType) {
-    case AceButton::kEventPressed:
-      break;
+    case AceButton::kEventClicked:
     case AceButton::kEventReleased:
 #if defined(USE_EPAPER)
       if (button == &button_1) {
+#if 0
+        if (eventType == AceButton::kEventClicked) {
+          Serial.println(F("kEventClicked."));
+        } else if (eventType == AceButton::kEventReleased) {
+          Serial.println(F("kEventReleased."));
+        }
+#endif
         EPD_Mode();
       } else if (button == &button_2) {
         EPD_Up();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+#if defined(USE_EPAPER)
+      if (button == &button_1) {
+//        Serial.println(F("kEventDoubleClicked."));
+        digitalWrite(SOC_GPIO_PIN_EPD_BLGT,
+                     digitalRead(SOC_GPIO_PIN_EPD_BLGT) == LOW);
       }
 #endif
       break;
@@ -643,22 +658,26 @@ static void nRF52_Button_setup()
   // level events.
   ButtonConfig* ModeButtonConfig = button_1.getButtonConfig();
   ModeButtonConfig->setEventHandler(handleEvent);
-  ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
   ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
-  ModeButtonConfig->setDebounceDelay(15);
-  ModeButtonConfig->setClickDelay(100);
-  ModeButtonConfig->setDoubleClickDelay(1000);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+  ModeButtonConfig->setFeature(
+                    ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+//  ModeButtonConfig->setDebounceDelay(15);
+  ModeButtonConfig->setClickDelay(600);
+  ModeButtonConfig->setDoubleClickDelay(1500);
   ModeButtonConfig->setLongPressDelay(2000);
 
   ButtonConfig* UpButtonConfig = button_2.getButtonConfig();
   UpButtonConfig->setEventHandler(handleEvent);
   UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-  UpButtonConfig->setDebounceDelay(15);
-  UpButtonConfig->setClickDelay(100);
-  UpButtonConfig->setDoubleClickDelay(1000);
+//  UpButtonConfig->setDebounceDelay(15);
+  UpButtonConfig->setClickDelay(600);
+  UpButtonConfig->setDoubleClickDelay(1500);
   UpButtonConfig->setLongPressDelay(2000);
 
-  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
+//  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
   attachInterrupt(digitalPinToInterrupt(up_button_pin),   onUpButtonEvent,   CHANGE );
 }
 
@@ -670,7 +689,7 @@ static void nRF52_Button_loop()
 
 static void nRF52_Button_fini()
 {
-  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
+//  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
   detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
 }
 

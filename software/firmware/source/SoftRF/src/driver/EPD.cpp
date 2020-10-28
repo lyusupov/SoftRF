@@ -85,7 +85,7 @@ bool EPD_setup(bool splash_screen)
   display->init( /* 38400 */ );
 
   // first update should be full refresh
-  display->setRotation(0);
+  display->setRotation(1);
   display->setFont(&FreeMonoBold24pt7b);
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);
