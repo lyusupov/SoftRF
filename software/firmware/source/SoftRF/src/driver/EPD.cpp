@@ -253,13 +253,22 @@ void EPD_loop()
 
 void EPD_fini(const char *msg)
 {
-  while (EPD_ready_to_display) delay(100);
+  switch (hw_info.display)
+  {
+  case DISPLAY_EPD_1_54:
+    while (EPD_ready_to_display) delay(100);
 
-  EPD_Message(msg, NULL);
+    EPD_Message(msg, NULL);
 
-  while (EPD_ready_to_display) delay(100);
+    while (EPD_ready_to_display) delay(100);
 
-  EPD_HIBERNATE;
+    EPD_HIBERNATE;
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 void EPD_Mode()
