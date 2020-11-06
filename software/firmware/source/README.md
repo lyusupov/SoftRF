@@ -5,6 +5,8 @@
 [Raspberry Pi](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#raspberry-pi)<br>
 [CC13XX](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#cc13xx)<br>
 [STM32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#stm32)<br>
+[ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#asr650x)<br>
+[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#nrf52840)<br>
 
 <br>
 
@@ -33,6 +35,8 @@
 9. Select _Tools_ -> _Board_ -> _NodeMCU_ _1.0_
 10. in _Tools_ -> _lwIP Variant_  -> _v2 Higher Bandwidth_
 11. _Sketch_ -> _Upload_
+
+<br>
 
 ## ESP32
 
@@ -160,7 +164,7 @@ $ make ihex
 
 ## STM32
 
-You will also need to get and connect ST-LINK/V2 USB adapter in order to put the firmware into your hardware's flash memory.<br>
+You will need to have an ST-LINK/V2 USB adapter connected in order to put the firmware into your hardware's flash memory.<br>
 
 1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
   to install Arduino IDE and [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0) (1.9.0)
@@ -193,4 +197,53 @@ You will also need to get and connect ST-LINK/V2 USB adapter in order to put the
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(generic_ _'Serial')_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(SWD)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Port_ ->  ``<your ST-LINK/V2 port device name>``<br>
+11. try to build and upload using _Sketch_ -> _Upload_
+
+<br>
+
+## ASR650x
+
+1. Follow [these official instructions](https://heltec-automation-docs.readthedocs.io/en/latest/cubecell/quick_start.html)
+  to install Arduino IDE and [latest **stable** Heltec CubeCell (ASR650X) Arduino Support](https://github.com/HelTecAutomation/ASR650x-Arduino/releases/tag/V1.1.0) (1.1.0)
+2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+3. create **Arduino** sub-directory
+4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
+
+5. start **Arduino** application
+6. open **SoftRF** sketch from _File_ -> _Open_ menu
+7. Select _Tools_ -> _Board_ ->  _CubeCell-GPS_ _(_ _HTC-AB02S_ _)_
+8. Select _Tools_ -> _LORAWAN_AT_SUPPORT_ ->  _OFF_
+9. Select _Tools_ -> _LORAWAN_RGB_ ->  _DEACTIVE_
+10. Select _Tools_ -> _LORAWAN_CLASS_ ->  _CLASS_A_
+11. Select _Tools_ -> _LORAWAN_ADR_ ->  _OFF_
+12. Select _Tools_ -> _LORAWAN_NETMODE_ ->  _ABP_
+13. Select _Tools_ -> _LORAWAN_Net_Reservation_ ->  _OFF_
+14. Select _Tools_ -> _LORAWAN_UPLINKMODE_ ->  _UNCONFIRMED_
+15. Select _Tools_ -> _LoRaWan_ _Debug_ _Level_ ->  _None_
+16. Select _Tools_ -> _LORAWAN_REGION_ ->  _REGION_EU433_
+17. Select _Tools_ -> _Port_ ->  ``<your CubeCell port device name>``
+18. try to build and upload using _Sketch_ -> _Upload_
+
+<br>
+
+## nRF52840
+
+1. Follow [these official instructions](https://github.com/adafruit/Adafruit_nRF52_Arduino#recommended-adafruit-nrf52-bsp-via-the-arduino-board-manager)
+  to install Arduino IDE and [latest **stable** Arduino Core for Adafruit Bluefruit nRF52 Boards](https://github.com/adafruit/Adafruit_nRF52_Arduino/releases/tag/0.21.0) (0.21.0)
+2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+3. create **Arduino** sub-directory
+4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
+
+5. start **Arduino** application
+6. open **SoftRF** sketch from _File_ -> _Open_ menu
+7. Select _Tools_ -> _Board_ ->  _Nordic_ _nRF52840DK_ _(PCA10056)_
+8. Select _Tools_ -> _Bootloader_ ->  _0.3.2_  _SoftDevice_  _s140_  _6.1.1_
+9. Select _Tools_ -> _Debug_ ->   _Level_ _0_  _(Release)_
+10. Select _Tools_ -> _Port_ ->  ``<your nRF52840 port device name>``
 11. try to build and upload using _Sketch_ -> _Upload_
