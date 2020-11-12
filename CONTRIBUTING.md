@@ -24,7 +24,7 @@ Areas where contributions are welcomed by the project's developer:
         - display
         - Wi-Fi/BT/LE/USB adapter
         - pressure sensor
-    - create and maintain cross-platform (Flutter) smartphone/tablet app to monitor status and change settings of the following SoftRF Editions
+    - create and maintain cross-platform (Android and iOS) smartphone/tablet app to monitor status and change settings of the following SoftRF Editions
         - Badge
         - [Uni](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
         - [Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
