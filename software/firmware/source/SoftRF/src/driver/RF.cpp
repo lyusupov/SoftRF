@@ -23,7 +23,9 @@
 #include "../system/SoC.h"
 #include "EEPROM.h"
 #include "../ui/Web.h"
+#if !defined(EXCLUDE_MAVLINK)
 #include "../protocol/data/MAVLink.h"
+#endif /* EXCLUDE_MAVLINK */
 #include <fec.h>
 
 #if LOGGER_IS_ENABLED
@@ -275,9 +277,11 @@ void RF_SetChannel(void)
   case SOFTRF_MODE_TXRX_TEST:
     Time = now();
     break;
+#if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     Time = the_aircraft.location.gps_time_stamp / 1000000;
     break;
+#endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_NORMAL:
   default:
     unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();

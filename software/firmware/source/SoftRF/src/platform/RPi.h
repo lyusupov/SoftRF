@@ -88,7 +88,7 @@ extern TTYSerial Serial2;
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
 #define EXCLUDE_MPL3115A2
-#define EXCLUDE_MAVLINK
+//#define EXCLUDE_MAVLINK
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95

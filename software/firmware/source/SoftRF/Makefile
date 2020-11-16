@@ -16,12 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #BASICMAC      = -DUSE_BASICMAC
+#NOMAVLINK     = -DEXCLUDE_MAVLINK
 
 CC            = gcc
 CXX           = g++
 
 CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\" $(BASICMAC)
+                -D__BASEFILE__=\"$*\" $(BASICMAC) $(NOMAVLINK)
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
@@ -98,8 +99,11 @@ PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
 PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
                  $(PRODAT_PATH)/GDL90.cpp   \
                  $(PRODAT_PATH)/D1090.cpp   \
-                 $(PRODAT_PATH)/MAVLink.cpp \
                  $(PRODAT_PATH)/JSON.cpp
+
+ifndef NOMAVLINK
+PRODAT_CPPS   += $(PRODAT_PATH)/MAVLink.cpp
+endif
 
 PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/ESP32.cpp    \
@@ -148,7 +152,6 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(TIMELIB_PATH)/Time.o \
                  $(NRF905_PATH)/nRF905.o \
                  $(ADSB_PATH)/adsb_encoder.o \
-                 $(MAVLINK_PATH)/mavlink.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \
@@ -164,6 +167,10 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
 ifdef BASICMAC
 OBJS          += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
                  $(RADIO_PATH)/lmic/debug.o $(RADIO_PATH)/lmic/lce.o
+endif
+
+ifndef NOMAVLINK
+OBJS          += $(MAVLINK_PATH)/mavlink.o
 endif
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
