@@ -21,8 +21,6 @@
 
 #define ENABLE_GxEPD2_GFX       0
 
-#include <GxEPD2_BW.h>
-
 #define EPD_EXPIRATION_TIME     5 /* seconds */
 
 #define NO_DATA_TEXT            "NO DATA"
@@ -162,7 +160,7 @@ void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);
-void EPD_Task(void *);
+EPD_Task_t EPD_Task(void *);
 
 void EPD_status_setup();
 void EPD_status_loop();
@@ -184,15 +182,8 @@ void EPD_time_loop();
 void EPD_time_next();
 void EPD_time_prev();
 
-extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
 extern volatile bool EPD_ready_to_display;
-
-#include "../system/SoC.h"
-
-#if defined(ARDUINO_ARCH_NRF52)
-extern ui_settings_t *ui;
-#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* EPDHELPER_H */

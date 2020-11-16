@@ -462,7 +462,7 @@ static bool nrf905_probe()
 
   SoC->SPI_begin();
 
-#if defined(ARDUINO)
+#if defined(ARDUINO) && !defined(RASPBERRY_PI)
   SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* ARDUINO */
 

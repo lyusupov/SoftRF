@@ -221,6 +221,16 @@ typedef struct UI_Settings {
 
 extern PCF8563_Class *rtc;
 
+#if defined(USE_EPAPER)
+#include <GxEPD2_BW.h>
+
+typedef void EPD_Task_t;
+
+extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+#endif /* USE_EPAPER */
+
+extern ui_settings_t *ui;
+
 #endif /* PLATFORM_NRF52_H */
 
 #endif /* ARDUINO_ARCH_NRF52 */

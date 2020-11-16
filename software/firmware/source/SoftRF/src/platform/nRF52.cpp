@@ -106,6 +106,16 @@ SPIClass SPI1(_SPI1_DEV,
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
+#if defined(USE_EPAPER)
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_txx(GxEPD2_154_D67(
+                                                            SOC_GPIO_PIN_EPD_SS,
+                                                            SOC_GPIO_PIN_EPD_DC,
+                                                            SOC_GPIO_PIN_EPD_RST,
+                                                            SOC_GPIO_PIN_EPD_BUSY));
+
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+#endif /* USE_EPAPER */
+
 ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
@@ -202,7 +212,13 @@ static void nRF52_post_init()
   Serial.flush();
 
 #if defined(USE_EPAPER)
+  /* EPD back light on */
+  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+
   EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
+
+  /* EPD back light off */
+  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
 #endif /* USE_EPAPER */
 
   Serial.println(F("Data output device(s):"));
@@ -471,6 +487,8 @@ static byte nRF52_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_EPAPER)
+  display = &epd_ttgo_txx;
+
   if (EPD_setup(true)) {
 
     xTaskCreate(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, TASK_PRIO_LOW, &EPD_Task_Handle);

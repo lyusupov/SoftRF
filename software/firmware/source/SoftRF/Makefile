@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#BASICMAC      = -DUSE_BASICMAC
-#NOMAVLINK     = -DEXCLUDE_MAVLINK
+BASICMAC      = -DUSE_BASICMAC
+#NOMAVLINK    = -DEXCLUDE_MAVLINK
 
 CC            = gcc
 CXX           = g++
@@ -124,7 +124,11 @@ DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/WiFi.cpp      \
                  $(DRIVER_PATH)/EPD.cpp
 
-UI_CPPS       := $(UI_PATH)/Web.cpp
+UI_CPPS       := $(UI_PATH)/Web.cpp        \
+                 $(UI_PATH)/Radar_EPD.cpp  \
+                 $(UI_PATH)/Status_EPD.cpp \
+                 $(UI_PATH)/Text_EPD.cpp   \
+                 $(UI_PATH)/Time_EPD.cpp
 
 SYSTEM_CPPS   := $(SYSTEM_PATH)/SoC.cpp    \
                  $(SYSTEM_PATH)/Time.cpp   \

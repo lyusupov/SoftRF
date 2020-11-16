@@ -20,8 +20,6 @@
 
 #if defined(USE_EPAPER)
 
-#if defined(ARDUINO_ARCH_NRF52)
-
 #include "../driver/EPD.h"
 
 #include <TimeLib.h>
@@ -351,7 +349,5 @@ void EPD_radar_unzoom()
 {
   if (EPD_zoom > ZOOM_LOWEST) EPD_zoom--; else EPD_zoom = ZOOM_HIGH;
 }
-
-#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* USE_EPAPER */

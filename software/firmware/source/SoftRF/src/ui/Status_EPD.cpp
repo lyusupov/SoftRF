@@ -20,8 +20,6 @@
 
 #if defined(USE_EPAPER)
 
-#if defined(ARDUINO_ARCH_NRF52)
-
 #include "../driver/EPD.h"
 #include "../TrafficHelper.h"
 #include "../driver/Battery.h"
@@ -370,7 +368,5 @@ void EPD_status_prev()
 {
 
 }
-
-#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* USE_EPAPER */

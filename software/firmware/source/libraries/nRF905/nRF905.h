@@ -9,7 +9,7 @@
 #ifndef NRF905_H_
 #define NRF905_H_
 
-#ifdef ARDUINO
+#if defined(ARDUINO) && !defined(RASPBERRY_PI)
 #include <Arduino.h>
 #else
 #include "nRF905_types.h"

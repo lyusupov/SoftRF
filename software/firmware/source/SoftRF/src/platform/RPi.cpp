@@ -1,4 +1,4 @@
-/*
+             /*
  * Platform_RPi.cpp
  * Copyright (C) 2018-2020 Linar Yusupov
  *
@@ -47,7 +47,9 @@
 #include "../system/SoC.h"
 #include "../driver/EEPROM.h"
 #include <TinyGPS++.h>
+#if !defined(EXCLUDE_MAVLINK)
 #include <aircraft.h>
+#endif /* EXCLUDE_MAVLINK */
 #include "../driver/RF.h"
 #include "../driver/LED.h"
 #include "../driver/Sound.h"
@@ -114,7 +116,10 @@ void onEvent (ev_t ev) {
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 ufo_t ThisAircraft;
+
+#if !defined(EXCLUDE_MAVLINK)
 aircraft the_aircraft;
+#endif /* EXCLUDE_MAVLINK */
 
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
 
@@ -134,6 +139,35 @@ unsigned long ExportTimeMarker = 0;
 std::string input_line;
 
 TCPServer Traffic_TCP_Server;
+
+#if defined(USE_EPAPER)
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> __attribute__ ((common)) epd_waveshare(GxEPD2_270(/*CS=5*/ 8,
+                                       /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
+#endif /* USE_EPAPER */
+
+ui_settings_t ui_settings = {
+    .adapter      = 0,
+    .connection   = 0,
+    .units        = UNITS_METRIC,
+    .zoom         = ZOOM_MEDIUM,
+    .protocol     = PROTOCOL_NMEA,
+    .baudrate     = 0,
+    .server       = { 0 },
+    .key          = { 0 },
+    .resvd1       = 0,
+    .orientation  = DIRECTION_TRACK_UP,
+    .adb          = DB_NONE,
+    .idpref       = ID_REG,
+    .vmode        = VIEW_MODE_STATUS,
+    .voice        = VOICE_OFF,
+    .aghost       = ANTI_GHOSTING_OFF,
+    .filter       = TRAFFIC_FILTER_OFF,
+    .power_save   = 0,
+    .team         = 0
+};
+
+ui_settings_t *ui;
 
 //-------------------------------------------------------------------------
 //
@@ -238,12 +272,38 @@ static void RPi_setup()
   eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr     = 0;
 
+  ui = &ui_settings;
+
   RPi_SerialNumber();
 }
 
 static void RPi_post_init()
 {
+  Serial.println();
+  Serial.println(F("Raspberry Pi Power-on Self Test"));
+  Serial.println();
+  Serial.flush();
 
+  Serial.println(F("Built-in components:"));
+
+  Serial.print(F("RADIO   : ")); Serial.println(hw_info.rf      != RF_IC_NONE       ? F("PASS") : F("FAIL"));
+  Serial.print(F("GNSS    : ")); Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
+  Serial.print(F("DISPLAY : ")); Serial.println(hw_info.display != DISPLAY_NONE     ? F("PASS") : F("FAIL"));
+
+  Serial.println();
+  Serial.println(F("External components:"));
+  Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
+
+  Serial.println();
+  Serial.println(F("Power-on Self Test is completed."));
+  Serial.println();
+  Serial.flush();
+
+#if defined(USE_EPAPER)
+
+  EPD_info1(false, false);
+
+#endif /* USE_EPAPER */
 }
 
 static void RPi_loop()
@@ -293,27 +353,69 @@ static void RPi_swSer_begin(unsigned long baud)
   swSer.begin(baud);
 }
 
+pthread_t RPi_EPD_update_thread;
+
 static byte RPi_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
+#if defined(USE_EPAPER)
+// GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *epd_waveshare = new GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT>(GxEPD2_270(/*CS=5*/ 8,
+//                                       /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
+
+  display = &epd_waveshare;
+
   if (EPD_setup(true)) {
+
+    if ( pthread_create(&RPi_EPD_update_thread, NULL, &EPD_Task, (void *)0) != 0) {
+      fprintf( stderr, "pthread_create(EPD_Task) Failed\n\n" );
+      exit(EXIT_FAILURE);
+    }
+
+#if 0
+    struct sched_param  param;
+    param.sched_priority = 50;
+    pthread_setschedparam(RPi_EPD_update_thread, SCHED_RR, &param);
+#endif
+
     rval = DISPLAY_EPD_2_7;
   }
+#endif /* USE_EPAPER */
 
   return rval;
 }
 
 static void RPi_Display_loop()
 {
+#if defined(USE_EPAPER)
   if (hw_info.display == DISPLAY_EPD_2_7) {
     EPD_loop();
   }
+#endif /* USE_EPAPER */
 }
 
 static void RPi_Display_fini(const char *msg)
 {
+#if defined(USE_EPAPER)
 
+  EPD_Clear_Screen();
+  EPD_fini(msg);
+
+  if ( RPi_EPD_update_thread != (pthread_t) 0)
+  {
+    pthread_cancel( RPi_EPD_update_thread );
+  }
+#endif /* USE_EPAPER */
+}
+
+static void RPi_Battery_setup()
+{
+  /* TBD */
+}
+
+static float RPi_Battery_voltage()
+{
+  return 0.0;  /* TBD */
 }
 
 void RPi_GNSS_PPS_Interrupt_handler() {
@@ -407,8 +509,8 @@ const SoC_ops_t RPi_ops = {
   RPi_Display_setup,
   RPi_Display_loop,
   RPi_Display_fini,
-  NULL,
-  NULL,
+  RPi_Battery_setup,
+  RPi_Battery_voltage,
   NULL,
   RPi_get_PPS_TimeMarker,
   NULL,
@@ -821,7 +923,6 @@ int main()
       exit(EXIT_FAILURE);
   }
 
-#if 0
   Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
   Serial.flush();
   hw_info.display = SoC->Display_setup();
@@ -830,7 +931,6 @@ int main()
   } else {
     Serial.println(" failed!");
   }
-#endif
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;
@@ -846,10 +946,14 @@ int main()
   Traffic_TCP_Server.setup(JSON_SRV_TCP_PORT);
 
   pthread_t traffic_tcpserv_thread;
-	if( pthread_create(&traffic_tcpserv_thread, NULL, traffic_tcpserv_loop, (void *)0) != 0) {
+  if ( pthread_create(&traffic_tcpserv_thread, NULL, traffic_tcpserv_loop, (void *)0) != 0) {
     fprintf( stderr, "pthread_create(traffic_tcpserv_thread) Failed\n\n" );
     exit(EXIT_FAILURE);
   }
+
+  SoC->post_init();
+
+  SoC->WDT_setup();
 
   while (true) {
     switch (settings->mode)
@@ -893,9 +997,15 @@ int main()
 
 void shutdown(const char *msg)
 {
-    Traffic_TCP_Server.detach();
-    fprintf( stderr, "Program termination: %s.\n", msg );
-    exit(EXIT_SUCCESS);
+  SoC->WDT_fini();
+
+  if (hw_info.display != DISPLAY_NONE) {
+    SoC->Display_fini(msg);
+  }
+
+  Traffic_TCP_Server.detach();
+  fprintf( stderr, "Program termination: %s.\n", msg );
+  exit(EXIT_SUCCESS);
 }
 
 #endif /* RASPBERRY_PI */

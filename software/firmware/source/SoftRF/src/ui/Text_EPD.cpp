@@ -20,8 +20,6 @@
 
 #if defined(USE_EPAPER)
 
-#if defined(ARDUINO_ARCH_NRF52)
-
 #include "../driver/EPD.h"
 
 #include <TimeLib.h>
@@ -282,7 +280,5 @@ void EPD_text_prev()
     EPD_current--;
   }
 }
-
-#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* USE_EPAPER */

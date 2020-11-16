@@ -20,13 +20,14 @@
 
 #if defined(USE_EPAPER)
 
-#if defined(ARDUINO_ARCH_NRF52)
-
 #include "../driver/EPD.h"
 #include "../TrafficHelper.h"
 #include "../driver/Battery.h"
 #include <protocol.h>
+
+#if defined(ARDUINO_ARCH_NRF52)
 #include <pcf8563.h>
+#endif /* ARDUINO_ARCH_NRF52 */
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
@@ -54,9 +55,10 @@ void EPD_time_loop()
     EPD_vmode_updated = false;
   }
 
-  RTC_Date now;
-
   if (!EPD_ready_to_display) {
+
+#if defined(ARDUINO_ARCH_NRF52)
+    RTC_Date now;
 
     if (rtc) {
       now = rtc->getDateTime();
@@ -68,6 +70,9 @@ void EPD_time_loop()
       snprintf(buf, sizeof(buf), "%2d:%02d:%02d",
                now.hour, now.minute, now.second);
     }
+#else
+    strcpy(buf, NOTIME_text);
+#endif /* ARDUINO_ARCH_NRF52 */
 
     display->setPartialWindow(0, 0, display->width(), display->height());
 
@@ -99,7 +104,5 @@ void EPD_time_prev()
 {
 
 }
-
-#endif /* ARDUINO_ARCH_NRF52 */
 
 #endif /* USE_EPAPER */
