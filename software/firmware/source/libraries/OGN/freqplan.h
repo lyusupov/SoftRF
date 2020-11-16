@@ -89,13 +89,13 @@ class FreqPlan
    { if(Channels<=1) return 0;                                         // if single channel (New Zealand) return channel #0
      if(Plan>=2)                                                       // if USA/Canada or Australia/South America
      { uint8_t Channel = FreqHopHash((Time<<1)+Slot) % Channels;       // Flarm hopping channel
-       if(OGN)                                                         // for OGN tracker
-       { if(Slot) { uint8_t Channel1=FreqHopHash((Time<<1)) % Channels; // for 2nd slot choose a channel close to the 1st slot
-                            Channel1++; if(Channel1>=Channels) Channel1-=2; // 
-                    uint8_t Channel2=Channel1+1; if(Channel2>=Channels) Channel2-=2;
-                    if(Channel2==Channel) Channel=Channel1;            // avoid being on same chanel as Flarm
-                                    else  Channel=Channel2; }
-             else { Channel++; if(Channel>=Channels) Channel-=2; }     // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
+       if(OGN)                                                              // OGN Tracker
+       { if(Slot)                                                           // for 2nd slot
+         { uint8_t Channel2 = FreqHopHash((Time<<1)) % Channels;            // use same as Flarm in the 1st slot
+           if(Channel2==Channel) { Channel++; if(Channel>=Channels) Channel-=2; } // but if same then Flarm in the 2nd slot
+                            else Channel=Channel2;
+         }
+         else { Channel++; if(Channel>=Channels) Channel-=2; }              // for 1st slot choose a higher channel (unless already highest, then choose a lower one)
        }
        return Channel; }                                               // return 0..Channels-1 for USA/CA or Australia.
      return Slot^OGN; }                                                // if Europe/South Africa: return 0 or 1 for EU freq. plan
