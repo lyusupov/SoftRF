@@ -1,4 +1,4 @@
-             /*
+/*
  * Platform_RPi.cpp
  * Copyright (C) 2018-2020 Linar Yusupov
  *

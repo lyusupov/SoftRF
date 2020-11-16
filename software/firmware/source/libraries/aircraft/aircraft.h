@@ -18,7 +18,7 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 
-#if defined(ARDUINO)
+#if defined(ARDUINO) && !defined(RASPBERRY_PI)
 #include <Arduino.h>
 #endif /* ARDUINO */
 
