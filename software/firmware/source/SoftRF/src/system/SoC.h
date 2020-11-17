@@ -46,7 +46,7 @@ typedef struct SoC_ops_struct {
   long (*random)(long, long);
   void (*Sound_test)(int);
   uint32_t (*maxSketchSpace)();
-  void (*WiFi_setOutputPower)(int);
+  void (*WiFi_set_param)(int, int);
   void (*WiFi_transmit_UDP)(int, byte *, size_t);
   void (*WiFiUDP_stopAll)();
   bool (*WiFi_hostname)(String);

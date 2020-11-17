@@ -473,7 +473,7 @@ static void CC13XX_Sound_test(int var)
 
 }
 
-static void CC13XX_WiFi_setOutputPower(int dB)
+static void CC13XX_WiFi_set_param(int ndx, int value)
 {
   /* NONE */
 }
@@ -681,7 +681,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_random,
   CC13XX_Sound_test,
   NULL,
-  CC13XX_WiFi_setOutputPower,
+  CC13XX_WiFi_set_param,
   CC13XX_WiFi_transmit_UDP,
   NULL,
   NULL,

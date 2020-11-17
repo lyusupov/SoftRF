@@ -278,7 +278,7 @@ static void PSoC4_Sound_test(int var)
 
 }
 
-static void PSoC4_WiFi_setOutputPower(int dB)
+static void PSoC4_WiFi_set_param(int ndx, int value)
 {
   /* NONE */
 }
@@ -488,7 +488,7 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_random,
   PSoC4_Sound_test,
   NULL,
-  PSoC4_WiFi_setOutputPower,
+  PSoC4_WiFi_set_param,
   PSoC4_WiFi_transmit_UDP,
   NULL,
   NULL,

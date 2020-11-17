@@ -170,9 +170,21 @@ static uint32_t ESP8266_maxSketchSpace()
   return (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
 }
 
-static void ESP8266_WiFi_setOutputPower(int dB)
+static void ESP8266_WiFi_set_param(int ndx, int value)
 {
-  WiFi.setOutputPower(dB);
+  switch (ndx)
+  {
+  case WIFI_PARAM_TX_POWER:
+    WiFi.setOutputPower(value);
+    break;
+  case WIFI_PARAM_DHCP_LEASE_TIME:
+    if (WiFi.getMode() == WIFI_AP) {
+      wifi_softap_set_dhcps_lease_time((uint32) (value * 60)); /* in minutes */
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 static IPAddress ESP8266_WiFi_get_broadcast()
@@ -397,7 +409,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_random,
   ESP8266_Sound_test,
   ESP8266_maxSketchSpace,
-  ESP8266_WiFi_setOutputPower,
+  ESP8266_WiFi_set_param,
   ESP8266_WiFi_transmit_UDP,
   ESP8266_WiFiUDP_stopAll,
   ESP8266_WiFi_hostname,

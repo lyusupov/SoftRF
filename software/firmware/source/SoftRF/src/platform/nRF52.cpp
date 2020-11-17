@@ -420,7 +420,7 @@ static void nRF52_Sound_test(int var)
   /* NONE */
 }
 
-static void nRF52_WiFi_setOutputPower(int dB)
+static void nRF52_WiFi_set_param(int ndx, int value)
 {
   /* NONE */
 }
@@ -789,7 +789,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_random,
   nRF52_Sound_test,
   NULL,
-  nRF52_WiFi_setOutputPower,
+  nRF52_WiFi_set_param,
   nRF52_WiFi_transmit_UDP,
   NULL,
   NULL,

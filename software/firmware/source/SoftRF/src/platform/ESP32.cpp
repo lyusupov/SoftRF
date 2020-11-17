@@ -522,44 +522,59 @@ static void ESP32_Sound_test(int var)
 
 static uint32_t ESP32_maxSketchSpace()
 {
-  return 0x1E0000;
+  return 0x1E0000; /* min_spiffs.csv */
 }
 
-static const int8_t ESP32_dB_to_power_level[21] = {
-  8,  /* 2    dB, #0 */
-  8,  /* 2    dB, #1 */
-  8,  /* 2    dB, #2 */
-  8,  /* 2    dB, #3 */
-  8,  /* 2    dB, #4 */
-  20, /* 5    dB, #5 */
-  20, /* 5    dB, #6 */
-  28, /* 7    dB, #7 */
-  28, /* 7    dB, #8 */
-  34, /* 8.5  dB, #9 */
-  34, /* 8.5  dB, #10 */
-  44, /* 11   dB, #11 */
-  44, /* 11   dB, #12 */
-  52, /* 13   dB, #13 */
-  52, /* 13   dB, #14 */
-  60, /* 15   dB, #15 */
-  60, /* 15   dB, #16 */
-  68, /* 17   dB, #17 */
-  74, /* 18.5 dB, #18 */
-  76, /* 19   dB, #19 */
-  78  /* 19.5 dB, #20 */
+static const int8_t ESP32_dBm_to_power_level[21] = {
+  8,  /* 2    dBm, #0 */
+  8,  /* 2    dBm, #1 */
+  8,  /* 2    dBm, #2 */
+  8,  /* 2    dBm, #3 */
+  8,  /* 2    dBm, #4 */
+  20, /* 5    dBm, #5 */
+  20, /* 5    dBm, #6 */
+  28, /* 7    dBm, #7 */
+  28, /* 7    dBm, #8 */
+  34, /* 8.5  dBm, #9 */
+  34, /* 8.5  dBm, #10 */
+  44, /* 11   dBm, #11 */
+  44, /* 11   dBm, #12 */
+  52, /* 13   dBm, #13 */
+  52, /* 13   dBm, #14 */
+  60, /* 15   dBm, #15 */
+  60, /* 15   dBm, #16 */
+  68, /* 17   dBm, #17 */
+  74, /* 18.5 dBm, #18 */
+  76, /* 19   dBm, #19 */
+  78  /* 19.5 dBm, #20 */
 };
 
-static void ESP32_WiFi_setOutputPower(int dB)
+static void ESP32_WiFi_set_param(int ndx, int value)
 {
-  if (dB > 20) {
-    dB = 20;
-  }
+  uint32_t lt = value * 60; /* in minutes */
 
-  if (dB < 0) {
-    dB = 0;
-  }
+  switch (ndx)
+  {
+  case WIFI_PARAM_TX_POWER:
+    if (value > 20) {
+      value = 20; /* dBm */
+    }
 
-  ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dB_to_power_level[dB]));
+    if (value < 0) {
+      value = 0; /* dBm */
+    }
+
+    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
+    break;
+  case WIFI_PARAM_DHCP_LEASE_TIME:
+    tcpip_adapter_dhcps_option(
+      (tcpip_adapter_option_mode_t) TCPIP_ADAPTER_OP_SET,
+      (tcpip_adapter_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
+      (void*) &lt, sizeof(lt));
+    break;
+  default:
+    break;
+  }
 }
 
 static IPAddress ESP32_WiFi_get_broadcast()
@@ -1097,7 +1112,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_random,
   ESP32_Sound_test,
   ESP32_maxSketchSpace,
-  ESP32_WiFi_setOutputPower,
+  ESP32_WiFi_set_param,
   ESP32_WiFi_transmit_UDP,
   ESP32_WiFiUDP_stopAll,
   ESP32_WiFi_hostname,

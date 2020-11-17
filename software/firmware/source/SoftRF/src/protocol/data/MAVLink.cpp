@@ -92,13 +92,13 @@ void MAVLinkSetWiFiPower()
   }
 
   if (!MAVLinkAPisArmed && (the_aircraft.nav_mode & MAV_MODE_FLAG_SAFETY_ARMED)) {
-    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MIN);
+    SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MIN);
     MAVLinkAPisArmed = true;
     return;
   }
 
   if (MAVLinkAPisArmed && !(the_aircraft.nav_mode & MAV_MODE_FLAG_SAFETY_ARMED)) {
-    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED);
+    SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MED);
     MAVLinkAPisArmed = false;
   }
 }

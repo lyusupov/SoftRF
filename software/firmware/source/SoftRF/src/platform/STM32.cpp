@@ -336,7 +336,7 @@ static void STM32_Sound_test(int var)
   }
 }
 
-static void STM32_WiFi_setOutputPower(int dB)
+static void STM32_WiFi_set_param(int ndx, int value)
 {
   /* NONE */
 }
@@ -619,7 +619,7 @@ const SoC_ops_t STM32_ops = {
   STM32_random,
   STM32_Sound_test,
   NULL,
-  STM32_WiFi_setOutputPower,
+  STM32_WiFi_set_param,
   STM32_WiFi_transmit_UDP,
   NULL,
   NULL,
