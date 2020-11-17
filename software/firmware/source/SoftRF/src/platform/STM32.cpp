@@ -29,6 +29,9 @@
 #include "../driver/EEPROM.h"
 #include "../driver/Battery.h"
 #include "../driver/OLED.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 #include <STM32LowPower.h>
 
@@ -350,6 +353,28 @@ static bool STM32_EEPROM_begin(size_t size)
   }
 
   EEPROM.begin();
+
+  if (settings->nmea_out == NMEA_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->nmea_out = NMEA_USB;
+#else
+    settings->nmea_out = NMEA_UART;
+#endif
+  }
+  if (settings->gdl90 == GDL90_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->gdl90 = GDL90_USB;
+#else
+    settings->gdl90 = GDL90_UART;
+#endif
+  }
+  if (settings->d1090 == D1090_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->d1090 = D1090_USB;
+#else
+    settings->d1090 = D1090_UART;
+#endif
+  }
 
   return true;
 }

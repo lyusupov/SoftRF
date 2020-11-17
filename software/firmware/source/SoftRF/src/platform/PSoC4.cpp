@@ -26,6 +26,9 @@
 #include "../driver/EEPROM.h"
 #include "../driver/LED.h"
 #include "../driver/OLED.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 #include <innerWdt.h>
 #include <lorawan_port.h>
@@ -288,6 +291,17 @@ static void PSoC4_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 static bool PSoC4_EEPROM_begin(size_t size)
 {
   EEPROM.begin(size);
+
+  if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
+    settings->d1090 = D1090_UART;
+  }
+
   return true;
 }
 

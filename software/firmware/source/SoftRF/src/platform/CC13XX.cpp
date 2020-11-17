@@ -28,6 +28,9 @@
 #include "../driver/LED.h"
 #include "../driver/Sound.h"
 #include "../driver/OLED.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 #include "EasyLink.h"
 
@@ -484,6 +487,17 @@ static bool CC13XX_EEPROM_begin(size_t size)
 {
 #if !defined(EXCLUDE_EEPROM)
   EEPROM.begin(size);
+
+  if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
+    settings->d1090 = D1090_UART;
+  }
+
 #endif
   return true;
 }
