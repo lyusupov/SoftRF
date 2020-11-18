@@ -179,6 +179,12 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
+#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+
 #define USE_OLED                 //  +3.5 kb
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -243,6 +249,12 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
 
 /* Component                         Cost */
 /* -------------------------------------- */

@@ -56,6 +56,7 @@ uint8_t GNSSbuf[250]; // at least 3 lines of 80 characters each
                       // and 40+30*N bytes for "UBX-MON-VER" payload
 int GNSS_cnt = 0;
 
+#if !defined(EXCLUDE_GNSS_UBLOX)
  /* CFG-MSG */
 const uint8_t setGLL[] PROGMEM = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t setGSV[] PROGMEM = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
@@ -89,6 +90,7 @@ const uint8_t RXM_MAXP[] PROGMEM = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x
 /* Power Save Mode */
 const uint8_t RXM_PSM[] PROGMEM  = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
 #endif /* USE_GNSS_PSM */
+#endif /* EXCLUDE_GNSS_UBLOX */
 
 const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
@@ -134,6 +136,7 @@ TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
 #endif /* USE_NMEA_CFG */
 
+#if !defined(EXCLUDE_GNSS_UBLOX)
 static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
 {
   if (msglen > (sizeof(GNSSbuf) - 8) ) {
@@ -300,38 +303,6 @@ static void setup_UBX()
 #endif
 }
 
-static void setup_NMEA()
-{
-#if 0
-  //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
-  swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
-
-  swSer.flush();
-  SoC->swSer_begin(38400);
-
-  // Turning off some GPS NMEA strings on the uBlox modules
-  swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
-  swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
-  swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
-#if !defined(NMEA_TCP_SERVICE)
-  swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
-#endif
-#endif
-
-#if defined(USE_AT6558_SETUP)
-  /* Assume that we deal with fake NEO module (AT6558 based) */
-  swSer.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
-#if defined(NMEA_TCP_SERVICE)
-  /* GGA,RMC and GSA */
-  swSer.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
-#else
-  /* GGA and RMC */
-  swSer.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
-#endif
-  swSer.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
-#endif /* USE_AT6558_SETUP */
-}
-
 /* ------ BEGIN -----------  https://github.com/Black-Thunder/FPV-Tracker */
 
 enum ubloxState{ WAIT_SYNC1, WAIT_SYNC2, GET_CLASS, GET_ID, GET_LL, GET_LH, GET_DATA, GET_CKA, GET_CKB };
@@ -429,40 +400,7 @@ static int ubloxProcessData(unsigned char data) {
 
 /* ------ END -----------  https://github.com/Black-Thunder/FPV-Tracker */
 
-static boolean GNSS_probe() {
-
-  unsigned long startTime = millis();
-  char c1, c2;
-  c1 = c2 = 0;
-
-  // clean any leftovers
-  swSer.flush();
-
-  // Serial.println(F("INFO: Waiting for NMEA data from GNSS module..."));
-
-    // Timeout if no valid response in 3 seconds
-  while (millis() - startTime < 3000) {
-
-    if (swSer.available() > 0) {
-      c1 = swSer.read();
-      if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
-      if ((c2 == '$') && (c1 == 'G')) {
-        /* got $G */
-
-        /* leave the function with GNSS port opened */
-        return true;
-      } else {
-        c2 = 0;
-      }
-    }
-
-    delay(1);
-  }
-
-  return false;
-}
-
-static byte GNSS_version() {
+static byte ublox_version() {
   byte rval = GNSS_MODULE_NMEA;
   unsigned long startTime = millis();
 
@@ -522,57 +460,102 @@ static byte GNSS_version() {
   return rval;
 }
 
-byte GNSS_setup() {
+#endif /* EXCLUDE_GNSS_UBLOX */
 
-  byte rval = GNSS_MODULE_NONE;
+static gnss_id_t generic_nmea_probe()
+{
+  unsigned long startTime = millis();
+  char c1, c2;
+  c1 = c2 = 0;
 
-  SoC->swSer_begin(SERIAL_IN_BR);
+  // clean any leftovers
+  swSer.flush();
 
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_UNI)        {
+  // Serial.println(F("INFO: Waiting for NMEA data from GNSS module..."));
 
-    // power on by wakeup call
-    swSer.write((uint8_t) 0); swSer.flush(); delay(500);
+    // Timeout if no valid response in 3 seconds
+  while (millis() - startTime < 3000) {
+
+    if (swSer.available() > 0) {
+      c1 = swSer.read();
+      if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
+      if ((c2 == '$') && (c1 == 'G')) {
+        /* got $G */
+
+        /* leave the function with GNSS port opened */
+        return GNSS_MODULE_NMEA;
+      } else {
+        c2 = 0;
+      }
+    }
+
+    delay(1);
   }
 
-  if (!GNSS_probe())
-    return rval;
+  return GNSS_MODULE_NONE;
+}
 
-  rval = GNSS_MODULE_NMEA;
+static bool generic_nmea_setup()
+{
+  return true;
+}
 
+static void generic_nmea_loop()
+{
+
+}
+
+static void generic_nmea_fini()
+{
+
+}
+
+const gnss_chip_ops_t generic_nmea_ops = {
+  generic_nmea_probe,
+  generic_nmea_setup,
+  generic_nmea_loop,
+  generic_nmea_fini
+};
+
+#if !defined(EXCLUDE_GNSS_UBLOX)
+static gnss_id_t ublox_probe()
+{
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_RASPBERRY ||
       hw_info.model == SOFTRF_MODEL_UNI)        {
-
-    rval = GNSS_version();
-
-    if (rval == GNSS_MODULE_U6 ||
-        rval == GNSS_MODULE_U7 ||
-        rval == GNSS_MODULE_U8) {
-
-      // Set the navigation mode (Airborne, 1G)
-      // Turning off some GPS NMEA sentences on the uBlox modules
-      setup_UBX();
-    } else {
-      setup_NMEA();
-    }
+    return (gnss_id_t) ublox_version();
+  } else {
+    return GNSS_MODULE_NMEA;
   }
-
-  if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
-    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
-    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS),
-                    SoC->GNSS_PPS_handler, RISING);
-  }
-
-  return rval;
 }
 
-void GNSS_loop()
+static bool ublox_setup()
 {
-  PickGNSSFix();
+#if 0
+  //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
+  swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
 
-  GNSSTimeSync();
+  swSer.flush();
+  SoC->swSer_begin(38400);
 
+  // Turning off some GPS NMEA strings on the uBlox modules
+  swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
+  swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
+  swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
+#if !defined(NMEA_TCP_SERVICE)
+  swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
+#endif
+#else
+  // Set the navigation mode (Airborne, 1G)
+  // Turning off some GPS NMEA sentences on the uBlox modules
+  setup_UBX();
+#endif
+
+  return true;
+}
+
+static void ublox_loop()
+{
 #if defined(USE_GNSS_PSM)
   if (settings->power_save & POWER_SAVE_GNSS) {
     if (hw_info.model == SOFTRF_MODEL_UNI) {
@@ -605,12 +588,377 @@ void GNSS_loop()
 #endif /* USE_GNSS_PSM */
 }
 
+static void ublox_fini()
+{
+    if (hw_info.gnss == GNSS_MODULE_U6 ||
+        hw_info.gnss == GNSS_MODULE_U7 ||
+        hw_info.gnss == GNSS_MODULE_U8) {
+
+      // Controlled Software reset
+      for (int i = 0; i < sizeof(CFG_RST); i++) {
+        swSer.write(pgm_read_byte(&CFG_RST[i]));
+      }
+
+      delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
+
+      // power off until wakeup call
+      for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
+        swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
+      }
+    }
+}
+
+const gnss_chip_ops_t ublox_ops = {
+  ublox_probe,
+  ublox_setup,
+  ublox_loop,
+  ublox_fini
+};
+#endif /* EXCLUDE_GNSS_UBLOX */
+
+#if !defined(EXCLUDE_GNSS_SONY)
+static gnss_id_t sony_probe()
+{
+  gnss_id_t rval = GNSS_MODULE_NMEA;
+
+#if 0
+  /* TBD */
+  // swSer.write("@VER\r\n");
+
+  /* Idle */
+  // swSer.write("@GSTP\r\n");      delay(250);
+#else
+  rval = GNSS_MODULE_SONY;
+#endif
+
+  return rval;
+}
+
+static bool sony_setup()
+{
+  /* GGA + GSA + RMC */
+  swSer.write("@BSSL 0x25\r\n"); delay(250);
+  /* GPS + GLONASS */
+  swSer.write("@GNS 0x3\r\n");   delay(250);
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  /* Enable 1PPS output */
+  swSer.write("@GPPS 0x1\r\n");  delay(250);
+#endif
+
+  // swSer.write("@GSW\r\n"); /* warm start */
+
+  rst_info *resetInfo = (rst_info *) SoC->getResetInfoPtr();
+
+  if (resetInfo->reason == REASON_DEFAULT_RST) {
+    swSer.write("@GCD\r\n"); /* cold start */
+  } else {
+    swSer.write("@GSR\r\n"); /* hot  start */
+  }
+
+  delay(250);
+
+  return true;
+}
+
+static void sony_loop()
+{
+
+}
+
+static void sony_fini()
+{
+  if (hw_info.gnss == GNSS_MODULE_SONY) {
+    /* Idle */
+    swSer.write("@GSTP\r\n"); delay(250);
+
+    /* GNSS sleep level 0-2 */
+//  swSer.write("@SLP 0\r\n");
+    swSer.write("@SLP 1\r\n");
+//  swSer.write("@SLP 2\r\n");
+
+    swSer.flush(); delay(100);
+  }
+}
+
+const gnss_chip_ops_t sony_ops = {
+  sony_probe,
+  sony_setup,
+  sony_loop,
+  sony_fini
+};
+#endif /* EXCLUDE_GNSS_SONY */
+
+#if !defined(EXCLUDE_GNSS_MTK)
+static gnss_id_t mtk_probe()
+{
+  gnss_id_t rval = GNSS_MODULE_NMEA;
+
+#if 0
+  /* TBD */
+#else
+  rval = GNSS_MODULE_MTK;
+#endif
+
+  return rval;
+}
+
+static bool mtk_setup()
+{
+  return true;
+}
+
+static void mtk_loop()
+{
+
+}
+
+static void mtk_fini()
+{
+
+}
+
+const gnss_chip_ops_t mtk_ops = {
+  mtk_probe,
+  mtk_setup,
+  mtk_loop,
+  mtk_fini
+};
+#endif /* EXCLUDE_GNSS_MTK */
+
+#if !defined(EXCLUDE_GNSS_GOKE)
+static gnss_id_t goke_probe()
+{
+  gnss_id_t rval = GNSS_MODULE_NMEA;
+
+#if 0
+  /* TBD */
+  /* Firmware version request */
+  swSer.write("$PGKC462*2F\r\n");
+  swSer.flush(); delay(250);
+#else
+  rval = GNSS_MODULE_GOKE;
+#endif
+
+  return rval;
+}
+
+static bool goke_setup()
+{
+  /* GPS + GLONASS */
+  swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+  swSer.flush(); delay(250);
+
+  /* RMC + GGA + GSA */
+  swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
+  swSer.flush(); delay(250);
+
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  /* Enable 3D fix 1PPS output */
+//  swSer.write("$PGKC161,2,100,1000*07\r\n");
+//  swSer.flush(); delay(250);
+#endif
+
+  return true;
+}
+
+static void goke_loop()
+{
+
+}
+
+static void goke_fini()
+{
+  swSer.write("$PGKC051,0*37\r\n");
+  // swSer.write("$PGKC051,1*36\r\n");
+  // swSer.write("$PGKC105,4*33\r\n");
+  swSer.flush(); delay(250);
+}
+
+const gnss_chip_ops_t goke_ops = {
+  goke_probe,
+  goke_setup,
+  goke_loop,
+  goke_fini
+};
+#endif /* EXCLUDE_GNSS_GOKE */
+
+#if !defined(EXCLUDE_GNSS_AT65)
+static gnss_id_t at65_probe()
+{
+  gnss_id_t rval = GNSS_MODULE_NMEA;
+
+#if 0
+  /* TBD */
+#else
+  rval = GNSS_MODULE_AT65;
+#endif
+
+  return rval;
+}
+
+static bool at65_setup()
+{
+  /* Assume that we deal with fake NEO module (AT6558 based) */
+  swSer.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
+#if defined(NMEA_TCP_SERVICE)
+  /* GGA,RMC and GSA */
+  swSer.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
+#else
+  /* GGA and RMC */
+  swSer.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
+#endif
+  swSer.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
+
+  return true;
+}
+
+static void at65_loop()
+{
+
+}
+
+static void at65_fini()
+{
+
+}
+
+const gnss_chip_ops_t at65_ops = {
+  at65_probe,
+  at65_setup,
+  at65_loop,
+  at65_fini
+};
+#endif /* EXCLUDE_GNSS_AT65 */
+
+byte GNSS_setup() {
+
+  gnss_id_t gnss_id = GNSS_MODULE_NONE;
+
+  SoC->swSer_begin(SERIAL_IN_BR);
+
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_UNI)        {
+
+    // power on by wakeup call
+    swSer.write((uint8_t) 0); swSer.flush(); delay(500);
+  }
+
+  gnss_id = generic_nmea_ops.probe();
+
+  if (gnss_id == GNSS_MODULE_NONE) {
+    return (byte) gnss_id;
+  }
+
+#if !defined(EXCLUDE_GNSS_UBLOX)
+  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? ublox_ops.probe() : gnss_id);
+#endif /* EXCLUDE_GNSS_UBLOX */
+#if !defined(EXCLUDE_GNSS_SONY)
+  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? sony_ops.probe()  : gnss_id);
+#endif /* EXCLUDE_GNSS_SONY */
+#if !defined(EXCLUDE_GNSS_MTK)
+  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? mtk_ops.probe()   : gnss_id);
+#endif /* EXCLUDE_GNSS_MTK */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? goke_ops.probe()  : gnss_id);
+#endif /* EXCLUDE_GNSS_GOKE */
+#if !defined(EXCLUDE_GNSS_AT65)
+  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? at65_ops.probe()  : gnss_id);
+#endif /* EXCLUDE_GNSS_AT65 */
+
+  switch (gnss_id)
+  {
+#if !defined(EXCLUDE_GNSS_UBLOX)
+  case GNSS_MODULE_U6:
+  case GNSS_MODULE_U7:
+  case GNSS_MODULE_U8:
+    // Set the navigation mode (Airborne, 1G)
+    // Turning off some GPS NMEA sentences on the uBlox modules
+    ublox_ops.setup();
+    break;
+#endif /* EXCLUDE_GNSS_UBLOX */
+#if !defined(EXCLUDE_GNSS_SONY)
+  case GNSS_MODULE_SONY:
+    sony_ops.setup();
+    break;
+#endif /* EXCLUDE_GNSS_SONY */
+#if !defined(EXCLUDE_GNSS_MTK)
+  case GNSS_MODULE_MTK:
+    mtk_ops.setup();
+    break;
+#endif /* EXCLUDE_GNSS_MTK */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  case GNSS_MODULE_GOKE:
+    goke_ops.setup();
+    break;
+#endif /* EXCLUDE_GNSS_GOKE */
+#if !defined(EXCLUDE_GNSS_AT65)
+  case GNSS_MODULE_AT65:
+    at65_ops.setup();
+    break;
+#endif /* EXCLUDE_GNSS_AT65 */
+  case GNSS_MODULE_NMEA:
+    generic_nmea_ops.setup();
+    break;
+  default:
+    break;
+  }
+
+  if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
+    pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
+    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS),
+                    SoC->GNSS_PPS_handler, RISING);
+  }
+
+  return (byte) gnss_id;
+}
+
+void GNSS_loop()
+{
+  PickGNSSFix();
+
+  GNSSTimeSync();
+
+#if !defined(EXCLUDE_GNSS_UBLOX)
+#if defined(USE_GNSS_PSM)
+  if (settings->power_save & POWER_SAVE_GNSS) {
+    if (hw_info.model == SOFTRF_MODEL_UNI) {
+      if (hw_info.gnss == GNSS_MODULE_U6 ||
+          hw_info.gnss == GNSS_MODULE_U7 ||
+          hw_info.gnss == GNSS_MODULE_U8) {
+
+        if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
+          // Setup for Power Save Mode (Default Cyclic 1s)
+          for (int i = 0; i < sizeof(RXM_PSM); i++) {
+            swSer.write(pgm_read_byte(&RXM_PSM[i]));
+          }
+
+          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
+          gnss_psm_active = true;
+        } else if (  gnss_psm_active &&
+                   ((gnss.satellites.isValid() && gnss.satellites.value() <= 5) ||
+                     gnss.satellites.age() > NMEA_EXP_TIME)) {
+          // Setup for Continuous Mode
+          for (int i = 0; i < sizeof(RXM_MAXP); i++) {
+            swSer.write(pgm_read_byte(&RXM_MAXP[i]));
+          }
+
+          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
+          gnss_psm_active = false;
+        }
+      }
+    }
+  }
+#endif /* USE_GNSS_PSM */
+#endif /* EXCLUDE_GNSS_UBLOX */
+}
+
 void GNSS_fini()
 {
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
     detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
   }
 
+#if !defined(EXCLUDE_GNSS_UBLOX)
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_UNI)        {
     if (hw_info.gnss == GNSS_MODULE_U6 ||
@@ -630,6 +978,7 @@ void GNSS_fini()
       }
     }
   }
+#endif /* EXCLUDE_GNSS_UBLOX */
 }
 
 void GNSSTimeSync()

@@ -37,6 +37,26 @@
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
+enum rst_reason {
+  REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
+  REASON_WDT_RST          = 1,  /* hardware watch dog reset */
+  REASON_EXCEPTION_RST    = 2,  /* exception reset, GPIO status won't change */
+  REASON_SOFT_WDT_RST     = 3,  /* software watch dog reset, GPIO status won't change */
+  REASON_SOFT_RESTART     = 4,  /* software restart ,system_restart , GPIO status won't change */
+  REASON_DEEP_SLEEP_AWAKE = 5,  /* wake up from deep-sleep */
+  REASON_EXT_SYS_RST      = 6   /* external system reset */
+};
+
+struct rst_info {
+  uint32_t reason;
+  uint32_t exccause;
+  uint32_t epc1;
+  uint32_t epc2;
+  uint32_t epc3;
+  uint32_t excvaddr;
+  uint32_t depc;
+};
+
 /* Dragino LoRa/GPS HAT */
 #if 0 /* WiringPi */
 #define SOC_GPIO_PIN_MOSI     12
@@ -84,6 +104,12 @@ extern TTYSerial Serial2;
 
 #define USE_NMEALIB
 #define USE_EPAPER
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280

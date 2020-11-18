@@ -123,6 +123,10 @@ aircraft the_aircraft;
 
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
 
+static struct rst_info reset_info = {
+  .reason = REASON_DEFAULT_RST,
+};
+
 hardware_info_t hw_info = {
   .model    = DEFAULT_SOFTRF_MODEL,
   .revision = 0,
@@ -333,6 +337,11 @@ static uint32_t RPi_getChipId()
   return id;
 }
 
+static void* RPi_getResetInfoPtr()
+{
+  return (void *) &reset_info;
+}
+
 static long RPi_random(long howsmall, long howBig)
 {
   return howsmall + random() % (howBig - howsmall);
@@ -488,7 +497,7 @@ const SoC_ops_t RPi_ops = {
   RPi_fini,
   RPi_reset,
   RPi_getChipId,
-  NULL,
+  RPi_getResetInfoPtr,
   NULL,
   NULL,
   NULL,

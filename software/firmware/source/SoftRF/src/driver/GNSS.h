@@ -21,7 +21,7 @@
 
 #include <TinyGPS++.h>
 
-enum
+typedef enum
 {
   GNSS_MODULE_NONE,
   GNSS_MODULE_NMEA, /* generic NMEA */
@@ -34,7 +34,14 @@ enum
   GNSS_MODULE_AT65, /* AT6558 */
   GNSS_MODULE_MTK,  /* L80 */
   GNSS_MODULE_GOKE  /* Air530 */
-};
+} gnss_id_t;
+
+typedef struct gnss_chip_ops_struct {
+  gnss_id_t (*probe)();
+  bool      (*setup)();
+  void      (*loop)();
+  void      (*fini)();
+} gnss_chip_ops_t;
 
 /*
  * Both GGA and RMC NMEA sentences are required.

@@ -99,6 +99,12 @@ extern Adafruit_NeoPixel strip;
 #define USE_NMEALIB
 //#define USE_BASICMAC
 
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+
 #define EXCLUDE_CC13XX
 
 #if defined(pgm_read_float_aligned)

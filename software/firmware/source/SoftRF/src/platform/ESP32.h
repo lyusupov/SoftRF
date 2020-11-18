@@ -226,8 +226,13 @@ struct rst_info {
 #define USE_NMEALIB
 #define USE_OLED
 //#define USE_NMEA_CFG
-//#define USE_AT6558_SETUP
 #define USE_BASICMAC
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+//#define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_CC13XX
 

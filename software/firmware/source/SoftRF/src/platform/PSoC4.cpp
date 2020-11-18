@@ -323,6 +323,7 @@ static void PSoC4_swSer_begin(unsigned long baud)
     /* give GOKE GNSS few ms to warm up */
     delay(500);
 
+#if 0
     /* Firmware version request */
     swSer.write("$PGKC462*2F\r\n");
     swSer.flush(); delay(250);
@@ -339,6 +340,7 @@ static void PSoC4_swSer_begin(unsigned long baud)
     /* Enable 3D fix 1PPS output */
 //  swSer.write("$PGKC161,2,100,1000*07\r\n");
 //  swSer.flush(); delay(250);
+#endif
 #endif
   }
 }
