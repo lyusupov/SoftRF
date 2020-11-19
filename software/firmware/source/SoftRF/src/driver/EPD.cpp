@@ -164,17 +164,19 @@ void EPD_info1(bool rtc, bool spiflash)
       display->print(EPD_Display_text);
       display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
 
-      y += (tbh + INFO_1_LINE_SPACING);
+      if (hw_info.model == SOFTRF_MODEL_BADGE) {
+        y += (tbh + INFO_1_LINE_SPACING);
 
-      display->setCursor(x, y);
-      display->print(EPD_RTC_text);
-      display->print(rtc ? "+" : "-");
+        display->setCursor(x, y);
+        display->print(EPD_RTC_text);
+        display->print(rtc ? "+" : "-");
 
-      y += (tbh + INFO_1_LINE_SPACING);
+        y += (tbh + INFO_1_LINE_SPACING);
 
-      display->setCursor(x, y);
-      display->print(EPD_Flash_text);
-      display->print(spiflash ? "+" : "-");
+        display->setCursor(x, y);
+        display->print(EPD_Flash_text);
+        display->print(spiflash ? "+" : "-");
+      }
 
       y += (tbh + INFO_1_LINE_SPACING);
       y += (tbh + INFO_1_LINE_SPACING);

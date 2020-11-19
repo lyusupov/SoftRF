@@ -95,12 +95,6 @@ struct rst_info {
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
 
-//#define EXCLUDE_GNSS_UBLOX
-#define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
-#define EXCLUDE_GNSS_GOKE
-#define EXCLUDE_GNSS_AT65
-
 /* SoftRF/CC13XX PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(SoC->Battery_voltage()*100)
@@ -128,6 +122,12 @@ struct rst_info {
 /* Optional SX1276 SPI radio */
 #define SOC_GPIO_PIN_SS         18 // GPIO 11
 #define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+
+#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_BMP180
 #define EXCLUDE_BMP280
@@ -180,6 +180,12 @@ extern SCSerial                 scSerial;
 #define USE_GNSS_PSM
 
 //#define USE_BASICMAC
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+//#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
 
 #else
 #error "This hardware platform is not supported!"

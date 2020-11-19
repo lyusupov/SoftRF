@@ -26,6 +26,13 @@
 #include "SoCHelper.h"
 
 #define UDP_PACKET_BUFSIZE  256
+#define WIFI_DHCP_LEASE_HRS 8
+
+enum
+{
+    WIFI_PARAM_TX_POWER,
+    WIFI_PARAM_DHCP_LEASE_TIME
+};
 
 enum
 {

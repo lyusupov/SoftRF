@@ -24,6 +24,7 @@
 #include "../TrafficHelper.h"
 #include "../driver/Battery.h"
 #include "../driver/EEPROM.h"
+#include "../driver/RF.h"
 #include <protocol.h>
 
 #include <Fonts/FreeMono9pt7b.h>
@@ -219,7 +220,13 @@ static void EPD_Draw_NavBoxes()
     display->print(navbox5.value);
 
     display->setCursor(navbox6.x + 25, navbox6.y + 50);
-    display->print(navbox6.value);
+    if (settings->mode        == SOFTRF_MODE_RECEIVER ||
+        settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+        settings->txpower     == RF_TX_POWER_OFF) {
+      display->print("OFF");
+    } else {
+      display->print(navbox6.value);
+    }
 
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;

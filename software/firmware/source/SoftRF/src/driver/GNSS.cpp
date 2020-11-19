@@ -102,7 +102,7 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_MAV]     = "MAV",
   [GNSS_MODULE_SONY]    = "SONY",
   [GNSS_MODULE_AT65]    = "AT65",
-  [GNSS_MODULE_MTK]     = "MTK",
+  [GNSS_MODULE_MT33]    = "MT33",
   [GNSS_MODULE_GOKE]    = "GOKE"
 };
 
@@ -517,6 +517,66 @@ const gnss_chip_ops_t generic_nmea_ops = {
   generic_nmea_fini
 };
 
+static bool nmea_handshake(const char *req, const char *resp, bool skipline)
+{
+  bool rval = false;
+
+  // clean any leftovers
+  swSer.flush();
+
+  while (swSer.available() > 0) { swSer.read(); }
+
+  unsigned long start_time = millis();
+
+  while (millis() - start_time < 2000) {
+
+    while (swSer.read() != '\n') { yield(); }
+
+    delay(50);
+
+    if (swSer.available() > 0) {
+      continue;
+    } else {
+      swSer.write((uint8_t *) req, strlen(req));
+      swSer.flush();
+
+      if (skipline) {
+        while (swSer.read() != '\n') { yield(); }
+      }
+
+      int i=0;
+      char c;
+
+      do {
+        if (i >= sizeof(GNSSbuf)) break;
+
+        c = swSer.read();
+
+        if (c == -1) {
+          /* retry */
+          continue;
+        }
+
+        if (isPrintable(c) || c == '\r' || c == '\n') {
+          GNSSbuf[i] = c;
+        } else {
+          /* ignore */
+          continue;
+        }
+
+        i++;
+      } while (c != '\n');
+
+      if (!strncmp((char *) &GNSSbuf[0], resp, strlen(resp))) {
+        rval = true;
+        break;
+      }
+    }
+  }
+
+  return rval;
+}
+
 #if !defined(EXCLUDE_GNSS_UBLOX)
 static gnss_id_t ublox_probe()
 {
@@ -559,29 +619,25 @@ static void ublox_loop()
 #if defined(USE_GNSS_PSM)
   if (settings->power_save & POWER_SAVE_GNSS) {
     if (hw_info.model == SOFTRF_MODEL_UNI) {
-      if (hw_info.gnss == GNSS_MODULE_U6 ||
-          hw_info.gnss == GNSS_MODULE_U7 ||
-          hw_info.gnss == GNSS_MODULE_U8) {
 
-        if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
-          // Setup for Power Save Mode (Default Cyclic 1s)
-          for (int i = 0; i < sizeof(RXM_PSM); i++) {
-            swSer.write(pgm_read_byte(&RXM_PSM[i]));
-          }
-
-          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
-          gnss_psm_active = true;
-        } else if (  gnss_psm_active &&
-                   ((gnss.satellites.isValid() && gnss.satellites.value() <= 5) ||
-                     gnss.satellites.age() > NMEA_EXP_TIME)) {
-          // Setup for Continuous Mode
-          for (int i = 0; i < sizeof(RXM_MAXP); i++) {
-            swSer.write(pgm_read_byte(&RXM_MAXP[i]));
-          }
-
-          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
-          gnss_psm_active = false;
+      if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
+        // Setup for Power Save Mode (Default Cyclic 1s)
+        for (int i = 0; i < sizeof(RXM_PSM); i++) {
+          swSer.write(pgm_read_byte(&RXM_PSM[i]));
         }
+
+        GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
+        gnss_psm_active = true;
+      } else if (  gnss_psm_active &&
+                 ((gnss.satellites.isValid() && gnss.satellites.value() <= 5) ||
+                   gnss.satellites.age() > NMEA_EXP_TIME)) {
+        // Setup for Continuous Mode
+        for (int i = 0; i < sizeof(RXM_MAXP); i++) {
+          swSer.write(pgm_read_byte(&RXM_MAXP[i]));
+        }
+
+        GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
+        gnss_psm_active = false;
       }
     }
   }
@@ -590,22 +646,17 @@ static void ublox_loop()
 
 static void ublox_fini()
 {
-    if (hw_info.gnss == GNSS_MODULE_U6 ||
-        hw_info.gnss == GNSS_MODULE_U7 ||
-        hw_info.gnss == GNSS_MODULE_U8) {
+  // Controlled Software reset
+  for (int i = 0; i < sizeof(CFG_RST); i++) {
+    swSer.write(pgm_read_byte(&CFG_RST[i]));
+  }
 
-      // Controlled Software reset
-      for (int i = 0; i < sizeof(CFG_RST); i++) {
-        swSer.write(pgm_read_byte(&CFG_RST[i]));
-      }
+  delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
 
-      delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
-
-      // power off until wakeup call
-      for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
-        swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
-      }
-    }
+  // power off until wakeup call
+  for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
+    swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
+  }
 }
 
 const gnss_chip_ops_t ublox_ops = {
@@ -619,23 +670,16 @@ const gnss_chip_ops_t ublox_ops = {
 #if !defined(EXCLUDE_GNSS_SONY)
 static gnss_id_t sony_probe()
 {
-  gnss_id_t rval = GNSS_MODULE_NMEA;
-
-#if 0
-  /* TBD */
-  // swSer.write("@VER\r\n");
-
-  /* Idle */
-  // swSer.write("@GSTP\r\n");      delay(250);
-#else
-  rval = GNSS_MODULE_SONY;
-#endif
-
-  return rval;
+  /* Firmware version request */
+  return nmea_handshake("@VER\r\n", "[VER] Done", true) ?
+                        GNSS_MODULE_SONY : GNSS_MODULE_NMEA;
 }
 
 static bool sony_setup()
 {
+  /* Idle */
+  // swSer.write("@GSTP\r\n");      delay(250);
+
   /* GGA + GSA + RMC */
   swSer.write("@BSSL 0x25\r\n"); delay(250);
   /* GPS + GLONASS */
@@ -691,19 +735,17 @@ const gnss_chip_ops_t sony_ops = {
 #if !defined(EXCLUDE_GNSS_MTK)
 static gnss_id_t mtk_probe()
 {
-  gnss_id_t rval = GNSS_MODULE_NMEA;
-
-#if 0
-  /* TBD */
-#else
-  rval = GNSS_MODULE_MTK;
-#endif
-
-  return rval;
+  /* Firmware version request */
+  return nmea_handshake("$PMTK605*31\r\n", "$PMTK705", false) ?
+                        GNSS_MODULE_MT33 : GNSS_MODULE_NMEA;
 }
 
 static bool mtk_setup()
 {
+  /* RMC + GGA + GSA */
+  swSer.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
+  swSer.flush(); delay(250);
+
   return true;
 }
 
@@ -728,18 +770,9 @@ const gnss_chip_ops_t mtk_ops = {
 #if !defined(EXCLUDE_GNSS_GOKE)
 static gnss_id_t goke_probe()
 {
-  gnss_id_t rval = GNSS_MODULE_NMEA;
-
-#if 0
-  /* TBD */
   /* Firmware version request */
-  swSer.write("$PGKC462*2F\r\n");
-  swSer.flush(); delay(250);
-#else
-  rval = GNSS_MODULE_GOKE;
-#endif
-
-  return rval;
+  return nmea_handshake("$PGKC462*2F\r\n", "$PGKC463", false) ?
+                        GNSS_MODULE_GOKE : GNSS_MODULE_NMEA;
 }
 
 static bool goke_setup()
@@ -785,15 +818,9 @@ const gnss_chip_ops_t goke_ops = {
 #if !defined(EXCLUDE_GNSS_AT65)
 static gnss_id_t at65_probe()
 {
-  gnss_id_t rval = GNSS_MODULE_NMEA;
-
-#if 0
-  /* TBD */
-#else
-  rval = GNSS_MODULE_AT65;
-#endif
-
-  return rval;
+  /* Firmware version request */
+  return nmea_handshake("$PCAS06,0*1B\r\n", "$GPTXT,01,01,02", false) ?
+                        GNSS_MODULE_AT65 : GNSS_MODULE_NMEA;
 }
 
 static bool at65_setup()
@@ -882,7 +909,7 @@ byte GNSS_setup() {
     break;
 #endif /* EXCLUDE_GNSS_SONY */
 #if !defined(EXCLUDE_GNSS_MTK)
-  case GNSS_MODULE_MTK:
+  case GNSS_MODULE_MT33:
     mtk_ops.setup();
     break;
 #endif /* EXCLUDE_GNSS_MTK */
@@ -918,38 +945,45 @@ void GNSS_loop()
 
   GNSSTimeSync();
 
+  const gnss_chip_ops_t *gnss = NULL;
+
+  switch (hw_info.gnss)
+  {
 #if !defined(EXCLUDE_GNSS_UBLOX)
-#if defined(USE_GNSS_PSM)
-  if (settings->power_save & POWER_SAVE_GNSS) {
-    if (hw_info.model == SOFTRF_MODEL_UNI) {
-      if (hw_info.gnss == GNSS_MODULE_U6 ||
-          hw_info.gnss == GNSS_MODULE_U7 ||
-          hw_info.gnss == GNSS_MODULE_U8) {
-
-        if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
-          // Setup for Power Save Mode (Default Cyclic 1s)
-          for (int i = 0; i < sizeof(RXM_PSM); i++) {
-            swSer.write(pgm_read_byte(&RXM_PSM[i]));
-          }
-
-          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
-          gnss_psm_active = true;
-        } else if (  gnss_psm_active &&
-                   ((gnss.satellites.isValid() && gnss.satellites.value() <= 5) ||
-                     gnss.satellites.age() > NMEA_EXP_TIME)) {
-          // Setup for Continuous Mode
-          for (int i = 0; i < sizeof(RXM_MAXP); i++) {
-            swSer.write(pgm_read_byte(&RXM_MAXP[i]));
-          }
-
-          GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
-          gnss_psm_active = false;
-        }
-      }
-    }
-  }
-#endif /* USE_GNSS_PSM */
+  case GNSS_MODULE_U6:
+  case GNSS_MODULE_U7:
+  case GNSS_MODULE_U8:
+    gnss = &ublox_ops;
+    break;
 #endif /* EXCLUDE_GNSS_UBLOX */
+#if !defined(EXCLUDE_GNSS_SONY)
+  case GNSS_MODULE_SONY:
+    gnss = &sony_ops;
+    break;
+#endif /* EXCLUDE_GNSS_SONY */
+#if !defined(EXCLUDE_GNSS_MTK)
+  case GNSS_MODULE_MT33:
+    gnss = &mtk_ops;
+    break;
+#endif /* EXCLUDE_GNSS_MTK */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  case GNSS_MODULE_GOKE:
+    gnss = &goke_ops;
+    break;
+#endif /* EXCLUDE_GNSS_GOKE */
+#if !defined(EXCLUDE_GNSS_AT65)
+  case GNSS_MODULE_AT65:
+    gnss = &at65_ops;
+    break;
+#endif /* EXCLUDE_GNSS_AT65 */
+  case GNSS_MODULE_NMEA:
+    gnss = &generic_nmea_ops;
+    break;
+  default:
+    break;
+  }
+
+  if (gnss) gnss->loop();
 }
 
 void GNSS_fini()
@@ -958,27 +992,45 @@ void GNSS_fini()
     detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
   }
 
+  const gnss_chip_ops_t *gnss = NULL;
+
+  switch (hw_info.gnss)
+  {
 #if !defined(EXCLUDE_GNSS_UBLOX)
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_UNI)        {
-    if (hw_info.gnss == GNSS_MODULE_U6 ||
-        hw_info.gnss == GNSS_MODULE_U7 ||
-        hw_info.gnss == GNSS_MODULE_U8) {
-
-      // Controlled Software reset
-      for (int i = 0; i < sizeof(CFG_RST); i++) {
-        swSer.write(pgm_read_byte(&CFG_RST[i]));
-      }
-
-      delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
-
-      // power off until wakeup call
-      for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
-        swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
-      }
-    }
-  }
+  case GNSS_MODULE_U6:
+  case GNSS_MODULE_U7:
+  case GNSS_MODULE_U8:
+    gnss = &ublox_ops;
+    break;
 #endif /* EXCLUDE_GNSS_UBLOX */
+#if !defined(EXCLUDE_GNSS_SONY)
+  case GNSS_MODULE_SONY:
+    gnss = &sony_ops;
+    break;
+#endif /* EXCLUDE_GNSS_SONY */
+#if !defined(EXCLUDE_GNSS_MTK)
+  case GNSS_MODULE_MT33:
+    gnss = &mtk_ops;
+    break;
+#endif /* EXCLUDE_GNSS_MTK */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  case GNSS_MODULE_GOKE:
+    gnss = &goke_ops;
+    break;
+#endif /* EXCLUDE_GNSS_GOKE */
+#if !defined(EXCLUDE_GNSS_AT65)
+  case GNSS_MODULE_AT65:
+    gnss = &at65_ops;
+    break;
+#endif /* EXCLUDE_GNSS_AT65 */
+  case GNSS_MODULE_NMEA:
+    gnss = &generic_nmea_ops;
+    break;
+  default:
+    break;
+  }
+
+  if (gnss) gnss->fini();
 }
 
 void GNSSTimeSync()
