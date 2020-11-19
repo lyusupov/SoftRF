@@ -69,7 +69,8 @@ byte OLED_setup() {
 #endif /* ENERGIA_ARCH_CC13X2 */
   {
     u8x8 = &u8x8_i2c;
-    rval = DISPLAY_OLED_TTGO;
+    rval = (hw_info.model == SOFTRF_MODEL_MINI ?
+            DISPLAY_OLED_HELTEC : DISPLAY_OLED_TTGO);
   }
 
   if (u8x8) {

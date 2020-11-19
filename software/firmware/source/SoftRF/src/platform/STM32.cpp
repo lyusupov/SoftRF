@@ -29,6 +29,7 @@
 #include "../driver/EEPROM.h"
 #include "../driver/Battery.h"
 #include "../driver/OLED.h"
+#include "../driver/Baro.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -202,6 +203,31 @@ static void STM32_setup()
 
 static void STM32_post_init()
 {
+  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+    Serial.println();
+    Serial.println(F("TTGO T-Motion (S76G) Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1276        ? F("PASS") : F("FAIL"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    == GNSS_MODULE_SONY    ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display == DISPLAY_OLED_TTGO   ? F("PASS") : F("FAIL"));
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro    == BARO_MODULE_BMP280  ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println();
+    Serial.flush();
+  }
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */
@@ -218,18 +244,6 @@ static void STM32_loop()
 static void STM32_fini()
 {
 #if defined(ARDUINO_NUCLEO_L073RZ)
-
-#if 0
-  /* Idle */
-  swSer.write("@GSTP\r\n"); delay(250);
-
-  /* GNSS sleep level 0-2 */
-//  swSer.write("@SLP 0\r\n");
-  swSer.write("@SLP 1\r\n");
-//  swSer.write("@SLP 2\r\n");
-
-  swSer.flush(); delay(100);
-#endif
 
   /* De-activate 1.8V<->3.3V level shifters */
   digitalWrite(SOC_GPIO_PIN_GNSS_LS, LOW);
@@ -417,33 +431,6 @@ static void STM32_swSer_begin(unsigned long baud)
   /* Leave pin floating */
   pinMode(SOC_GPIO_PIN_GNSS_RST, INPUT);
 
-#if 0
-  // swSer.write("@VER\r\n");
-
-  /* Idle */
-  // swSer.write("@GSTP\r\n");      delay(250);
-
-  /* GGA + GSA + RMC */
-  swSer.write("@BSSL 0x25\r\n"); delay(250);
-  /* GPS + GLONASS */
-  swSer.write("@GNS 0x3\r\n");   delay(250);
-#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
-  /* Enable 1PPS output */
-  swSer.write("@GPPS 0x1\r\n");  delay(250);
-#endif
-
-  // swSer.write("@GSW\r\n"); /* warm start */
-
-  rst_info *resetInfo = (rst_info *) SoC->getResetInfoPtr();
-
-  if (resetInfo->reason == REASON_DEFAULT_RST) {
-    swSer.write("@GCD\r\n"); /* cold start */
-  } else {
-    swSer.write("@GSR\r\n"); /* hot  start */
-  }
-
-  delay(250);
-#endif
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 

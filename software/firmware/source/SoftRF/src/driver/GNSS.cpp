@@ -530,7 +530,7 @@ static bool nmea_handshake(const char *req, const char *resp, bool skipline)
 
   while (millis() - start_time < 2000) {
 
-    while (swSer.read() != '\n') { yield(); }
+    while (swSer.read() != '\n' && millis() - start_time < 2000) { yield(); }
 
     delay(50);
 
@@ -541,7 +541,8 @@ static bool nmea_handshake(const char *req, const char *resp, bool skipline)
       swSer.flush();
 
       if (skipline) {
-        while (swSer.read() != '\n') { yield(); }
+        start_time = millis();
+        while (swSer.read() != '\n' && millis() - start_time < 2000) { yield(); }
       }
 
       int i=0;
@@ -672,7 +673,7 @@ static gnss_id_t sony_probe()
 {
   /* Firmware version request */
   return nmea_handshake("@VER\r\n", "[VER] Done", true) ?
-                        GNSS_MODULE_SONY : GNSS_MODULE_NMEA;
+                        GNSS_MODULE_SONY : GNSS_MODULE_NONE;
 }
 
 static bool sony_setup()
@@ -870,7 +871,11 @@ byte GNSS_setup() {
     swSer.write((uint8_t) 0); swSer.flush(); delay(500);
   }
 
-  gnss_id = generic_nmea_ops.probe();
+#if !defined(EXCLUDE_GNSS_SONY)
+  gnss_id = (gnss_id == GNSS_MODULE_NONE ? sony_ops.probe()  : gnss_id);
+#endif /* EXCLUDE_GNSS_SONY */
+
+  gnss_id = (gnss_id == GNSS_MODULE_NONE ? generic_nmea_ops.probe() : gnss_id);
 
   if (gnss_id == GNSS_MODULE_NONE) {
     return (byte) gnss_id;
@@ -879,9 +884,6 @@ byte GNSS_setup() {
 #if !defined(EXCLUDE_GNSS_UBLOX)
   gnss_id = (gnss_id == GNSS_MODULE_NMEA ? ublox_ops.probe() : gnss_id);
 #endif /* EXCLUDE_GNSS_UBLOX */
-#if !defined(EXCLUDE_GNSS_SONY)
-  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? sony_ops.probe()  : gnss_id);
-#endif /* EXCLUDE_GNSS_SONY */
 #if !defined(EXCLUDE_GNSS_MTK)
   gnss_id = (gnss_id == GNSS_MODULE_NMEA ? mtk_ops.probe()   : gnss_id);
 #endif /* EXCLUDE_GNSS_MTK */
