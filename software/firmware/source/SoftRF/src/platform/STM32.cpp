@@ -219,7 +219,7 @@ static void STM32_post_init()
     Serial.println();
     Serial.println(F("External components:"));
     Serial.print(F("DISPLAY : "));
-    Serial.println(hw_info.display == DISPLAY_OLED_TTGO   ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.display == DISPLAY_OLED_TTGO   ? F("PASS") : F("N/A"));
     Serial.print(F("BMx280  : "));
     Serial.println(hw_info.baro    == BARO_MODULE_BMP280  ? F("PASS") : F("N/A"));
 
@@ -228,9 +228,42 @@ static void STM32_post_init()
     Serial.println();
     Serial.flush();
   }
+
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */
+
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART"));          break;
+    case NMEA_USB        :  Serial.println(F("USB CDC"));       break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART"));          break;
+    case GDL90_USB       :  Serial.println(F("USB CDC"));       break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART"));          break;
+    case D1090_USB       :  Serial.println(F("USB CDC"));       break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL"));          break;
+  }
+
+  Serial.println();
+  Serial.flush();
 }
 
 static void STM32_loop()

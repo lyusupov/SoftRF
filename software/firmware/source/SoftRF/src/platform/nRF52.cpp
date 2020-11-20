@@ -196,15 +196,28 @@ static void nRF52_post_init()
 
   Serial.println(F("Built-in components:"));
 
-  Serial.print(F("RADIO   : ")); Serial.println(hw_info.rf      != RF_IC_NONE       ? F("PASS") : F("FAIL"));
-  Serial.print(F("GNSS    : ")); Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
-  Serial.print(F("DISPLAY : ")); Serial.println(hw_info.display != DISPLAY_NONE     ? F("PASS") : F("FAIL"));
-  Serial.print(F("RTC     : ")); Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
-  Serial.print(F("FLASH   : ")); Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
+  Serial.print(F("RADIO   : "));
+  Serial.println(hw_info.rf      == RF_IC_SX1262 ||
+                 hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
+  Serial.flush();
+  Serial.print(F("GNSS    : "));
+  Serial.println(hw_info.gnss    == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
+  Serial.flush();
+  Serial.print(F("DISPLAY : "));
+  Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
+  Serial.flush();
+  Serial.print(F("RTC     : "));
+  Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
+  Serial.flush();
+  Serial.print(F("FLASH   : "));
+  Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
+  Serial.flush();
 
   Serial.println();
   Serial.println(F("External components:"));
-  Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
+  Serial.print(F("BMx280  : "));
+  Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+  Serial.flush();
 
   Serial.println();
   Serial.println(F("Power-on Self Test is completed."));
@@ -450,33 +463,6 @@ static void nRF52_swSer_begin(unsigned long baud)
 {
   swSer.setPins(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
   swSer.begin(baud);
-
-  /* 'Cold' restart */
-//  swSer.write("$PGKC030,3,1*2E\r\n");
-//  swSer.flush(); delay(250);
-
-  /* give GOKE GNSS few ms to warm up */
-  delay(500);
-
-#if 0
-  /* Firmware version request */
-  swSer.write("$PGKC462*2F\r\n");
-  swSer.flush(); delay(250);
-
-  /* GPS + GLONASS */
-  swSer.write("$PGKC115,1,1,0,0*2A\r\n");
-  swSer.flush(); delay(250);
-
-  /* RMC + GGA + GSA */
-  swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
-  swSer.flush(); delay(250);
-
-#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
-  /* Enable 3D fix 1PPS output */
-//  swSer.write("$PGKC161,2,100,1000*07\r\n");
-//  swSer.flush(); delay(250);
-#endif
-#endif
 }
 
 static void nRF52_swSer_enableRx(boolean arg)

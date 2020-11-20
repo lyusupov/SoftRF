@@ -56,42 +56,6 @@ uint8_t GNSSbuf[250]; // at least 3 lines of 80 characters each
                       // and 40+30*N bytes for "UBX-MON-VER" payload
 int GNSS_cnt = 0;
 
-#if !defined(EXCLUDE_GNSS_UBLOX)
- /* CFG-MSG */
-const uint8_t setGLL[] PROGMEM = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-const uint8_t setGSV[] PROGMEM = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-const uint8_t setVTG[] PROGMEM = {0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-#if !defined(NMEA_TCP_SERVICE)
-const uint8_t setGSA[] PROGMEM = {0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-#endif
- /* CFG-PRT */
-uint8_t setBR[] = {0x01, 0x00, 0x00, 0x00, 0xD0, 0x08, 0x00, 0x00, 0x00, 0x96,
-                   0x00, 0x00, 0x07, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00,
-                                   0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,
-                                   0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00};
-
-const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
-                                       0x00, 0x01, 0x00, 0x0F, 0x66};
-
-const uint8_t RXM_PMREQ_OFF[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00,
-                                           0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
-                                           0x00, 0x00, 0x4d, 0x3b};
-
-#if defined(USE_GNSS_PSM)
-static bool gnss_psm_active = false;
-
-/* Max Performance Mode (default) */
-const uint8_t RXM_MAXP[] PROGMEM = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21, 0x91};
-
-/* Power Save Mode */
-const uint8_t RXM_PSM[] PROGMEM  = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
-#endif /* USE_GNSS_PSM */
-#endif /* EXCLUDE_GNSS_UBLOX */
-
 const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
   [GNSS_MODULE_NMEA]    = "NMEA",
@@ -136,7 +100,140 @@ TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
 #endif /* USE_NMEA_CFG */
 
+bool nmea_handshake(const char *req, const char *resp, bool skipline)
+{
+  bool rval = false;
+
+  if (resp == NULL || strlen(resp) == 0) {
+    return rval;
+  }
+
+  // clean any leftovers
+  swSer.flush();
+
+  while (swSer.available() > 0) { swSer.read(); }
+
+  unsigned long start_time = millis();
+  unsigned long timeout_ms = (req == NULL ? 3000 : 2000) ;
+
+  while ((millis() - start_time) < timeout_ms) {
+
+    while (swSer.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
+
+    delay(50);
+
+    /* wait for pause after NMEA burst */
+    if (swSer.available() > 0) {
+      continue;
+    } else {
+      /* send request */
+      if (req) {
+        swSer.write((uint8_t *) req, strlen(req));
+        swSer.flush();
+      }
+
+      /* skip first line when expected response contains 2 of them */
+      if (skipline) {
+        start_time = millis();
+        while (swSer.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
+      }
+
+      int i=0;
+      char c;
+
+      /* take response into buffer */
+      while ((millis() - start_time) < timeout_ms) {
+
+        c = swSer.read();
+
+        if (c == -1) {
+          /* retry */
+          continue;
+        }
+
+        if (isPrintable(c) || c == '\r' || c == '\n') {
+          if (i >= sizeof(GNSSbuf)) break;
+          GNSSbuf[i++] = c;
+        } else {
+          /* ignore */
+          continue;
+        }
+
+        if (c == '\n') break;
+      }
+
+      if (!strncmp((char *) &GNSSbuf[0], resp, strlen(resp))) {
+        rval = true;
+        break;
+      }
+    }
+  }
+
+  return rval;
+}
+
+static gnss_id_t generic_nmea_probe()
+{
+  return nmea_handshake(NULL, "$G", false) ? GNSS_MODULE_NMEA : GNSS_MODULE_NONE;
+}
+
+static bool generic_nmea_setup()
+{
+  return true;
+}
+
+static void generic_nmea_loop()
+{
+
+}
+
+static void generic_nmea_fini()
+{
+
+}
+
+const gnss_chip_ops_t generic_nmea_ops = {
+  generic_nmea_probe,
+  generic_nmea_setup,
+  generic_nmea_loop,
+  generic_nmea_fini
+};
+
 #if !defined(EXCLUDE_GNSS_UBLOX)
+ /* CFG-MSG */
+const uint8_t setGLL[] PROGMEM = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+const uint8_t setGSV[] PROGMEM = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+const uint8_t setVTG[] PROGMEM = {0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+#if !defined(NMEA_TCP_SERVICE)
+const uint8_t setGSA[] PROGMEM = {0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+#endif
+ /* CFG-PRT */
+uint8_t setBR[] = {0x01, 0x00, 0x00, 0x00, 0xD0, 0x08, 0x00, 0x00, 0x00, 0x96,
+                   0x00, 0x00, 0x07, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00,
+                                   0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,
+                                   0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00,
+                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                   0x00, 0x00, 0x00, 0x00};
+
+const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
+                                       0x00, 0x01, 0x00, 0x0F, 0x66};
+
+const uint8_t RXM_PMREQ_OFF[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00,
+                                           0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
+                                           0x00, 0x00, 0x4d, 0x3b};
+
+#if defined(USE_GNSS_PSM)
+static bool gnss_psm_active = false;
+
+/* Max Performance Mode (default) */
+const uint8_t RXM_MAXP[] PROGMEM = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x00, 0x21, 0x91};
+
+/* Power Save Mode */
+const uint8_t RXM_PSM[] PROGMEM  = {0xB5, 0x62, 0x06, 0x11, 0x02, 0x00, 0x08, 0x01, 0x22, 0x92};
+#endif /* USE_GNSS_PSM */
+
 static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
 {
   if (msglen > (sizeof(GNSSbuf) - 8) ) {
@@ -460,125 +557,6 @@ static byte ublox_version() {
   return rval;
 }
 
-#endif /* EXCLUDE_GNSS_UBLOX */
-
-static gnss_id_t generic_nmea_probe()
-{
-  unsigned long startTime = millis();
-  char c1, c2;
-  c1 = c2 = 0;
-
-  // clean any leftovers
-  swSer.flush();
-
-  // Serial.println(F("INFO: Waiting for NMEA data from GNSS module..."));
-
-    // Timeout if no valid response in 3 seconds
-  while (millis() - startTime < 3000) {
-
-    if (swSer.available() > 0) {
-      c1 = swSer.read();
-      if ((c1 == '$') && (c2 == 0)) { c2 = c1; continue; }
-      if ((c2 == '$') && (c1 == 'G')) {
-        /* got $G */
-
-        /* leave the function with GNSS port opened */
-        return GNSS_MODULE_NMEA;
-      } else {
-        c2 = 0;
-      }
-    }
-
-    delay(1);
-  }
-
-  return GNSS_MODULE_NONE;
-}
-
-static bool generic_nmea_setup()
-{
-  return true;
-}
-
-static void generic_nmea_loop()
-{
-
-}
-
-static void generic_nmea_fini()
-{
-
-}
-
-const gnss_chip_ops_t generic_nmea_ops = {
-  generic_nmea_probe,
-  generic_nmea_setup,
-  generic_nmea_loop,
-  generic_nmea_fini
-};
-
-static bool nmea_handshake(const char *req, const char *resp, bool skipline)
-{
-  bool rval = false;
-
-  // clean any leftovers
-  swSer.flush();
-
-  while (swSer.available() > 0) { swSer.read(); }
-
-  unsigned long start_time = millis();
-
-  while (millis() - start_time < 2000) {
-
-    while (swSer.read() != '\n' && millis() - start_time < 2000) { yield(); }
-
-    delay(50);
-
-    if (swSer.available() > 0) {
-      continue;
-    } else {
-      swSer.write((uint8_t *) req, strlen(req));
-      swSer.flush();
-
-      if (skipline) {
-        start_time = millis();
-        while (swSer.read() != '\n' && millis() - start_time < 2000) { yield(); }
-      }
-
-      int i=0;
-      char c;
-
-      do {
-        if (i >= sizeof(GNSSbuf)) break;
-
-        c = swSer.read();
-
-        if (c == -1) {
-          /* retry */
-          continue;
-        }
-
-        if (isPrintable(c) || c == '\r' || c == '\n') {
-          GNSSbuf[i] = c;
-        } else {
-          /* ignore */
-          continue;
-        }
-
-        i++;
-      } while (c != '\n');
-
-      if (!strncmp((char *) &GNSSbuf[0], resp, strlen(resp))) {
-        rval = true;
-        break;
-      }
-    }
-  }
-
-  return rval;
-}
-
-#if !defined(EXCLUDE_GNSS_UBLOX)
 static gnss_id_t ublox_probe()
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
@@ -592,7 +570,11 @@ static gnss_id_t ublox_probe()
 
 static bool ublox_setup()
 {
-#if 0
+#if 1
+  // Set the navigation mode (Airborne, 1G)
+  // Turning off some GPS NMEA sentences on the uBlox modules
+  setup_UBX();
+#else
   //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
   swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
 
@@ -606,10 +588,6 @@ static bool ublox_setup()
 #if !defined(NMEA_TCP_SERVICE)
   swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
 #endif
-#else
-  // Set the navigation mode (Airborne, 1G)
-  // Turning off some GPS NMEA sentences on the uBlox modules
-  setup_UBX();
 #endif
 
   return true;
@@ -747,6 +725,10 @@ static bool mtk_setup()
   swSer.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
   swSer.flush(); delay(250);
 
+  /* Aviation mode */
+  swSer.write("$PMTK886,2*2A\r\n");
+  swSer.flush(); delay(250);
+
   return true;
 }
 
@@ -757,7 +739,9 @@ static void mtk_loop()
 
 static void mtk_fini()
 {
-
+  /* Stop mode */
+  swSer.write("$PMTK161,0*28\r\n");
+  swSer.flush(); delay(250);
 }
 
 const gnss_chip_ops_t mtk_ops = {
@@ -778,8 +762,14 @@ static gnss_id_t goke_probe()
 
 static bool goke_setup()
 {
-  /* GPS + GLONASS */
-  swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+  /* There are reports that Air530 does not actually work with GALILEO yet */
+  if (settings->band == RF_BAND_CN) {
+    /* GPS + BEIDOU */
+    swSer.write("$PGKC115,1,0,1,0*2A\r\n");
+  } else {
+    /* GPS + GLONASS */
+    swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+  }
   swSer.flush(); delay(250);
 
   /* RMC + GGA + GSA */
@@ -865,7 +855,8 @@ byte GNSS_setup() {
   SoC->swSer_begin(SERIAL_IN_BR);
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_UNI)        {
+      hw_info.model == SOFTRF_MODEL_UNI       ||
+      hw_info.model == SOFTRF_MODEL_BADGE)      {
 
     // power on by wakeup call
     swSer.write((uint8_t) 0); swSer.flush(); delay(500);
