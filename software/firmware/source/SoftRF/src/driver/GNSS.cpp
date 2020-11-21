@@ -217,12 +217,20 @@ const uint8_t setNav5[] PROGMEM = {0xFF, 0xFF, 0x07, 0x03, 0x00, 0x00, 0x00, 0x0
                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00};
 
-const uint8_t CFG_RST[12]   PROGMEM = {0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
-                                       0x00, 0x01, 0x00, 0x0F, 0x66};
+const uint8_t CFG_RST[12] PROGMEM = { 0xb5, 0x62, 0x06, 0x04, 0x04, 0x00, 0x00,
+                                      0x00, 0x01, 0x00, 0x0F, 0x66};
+
+const uint8_t CFG_RST_COLD[12] PROGMEM = { 0xB5, 0x62, 0x06, 0x04, 0x04, 0x00,
+                                           0xFF, 0xB9, 0x00, 0x00, 0xC6, 0x8B };
 
 const uint8_t RXM_PMREQ_OFF[16] PROGMEM = {0xb5, 0x62, 0x02, 0x41, 0x08, 0x00,
                                            0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
                                            0x00, 0x00, 0x4d, 0x3b};
+ /* CFG-CFG */
+const uint8_t factoryUBX[] PROGMEM = { 0xB5, 0x62, 0x06, 0x09, 0x0D, 0x00, 0xFF,
+                                       0xFB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                       0xFF, 0xFF, 0x00, 0x00, 0x17, 0x2B, 0x7E } ;
+
 
 #if defined(USE_GNSS_PSM)
 static bool gnss_psm_active = false;
@@ -644,6 +652,23 @@ const gnss_chip_ops_t ublox_ops = {
   ublox_loop,
   ublox_fini
 };
+
+static void ublox_factory_reset()
+{
+  // reset GPS to factory settings
+  for (int i = 0; i < sizeof(factoryUBX); i++) {
+    swSer.write(pgm_read_byte(&factoryUBX[i]));
+  }
+
+  delay(600);
+
+  // Cold Start (Forced Watchdog)
+  for (int i = 0; i < sizeof(CFG_RST_COLD); i++) {
+    swSer.write(pgm_read_byte(&CFG_RST_COLD[i]));
+  }
+
+  delay(1000);
+}
 #endif /* EXCLUDE_GNSS_UBLOX */
 
 #if !defined(EXCLUDE_GNSS_SONY)
@@ -776,11 +801,11 @@ static bool goke_setup()
   swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
   swSer.flush(); delay(250);
 
-#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+//#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   /* Enable 3D fix 1PPS output */
 //  swSer.write("$PGKC161,2,100,1000*07\r\n");
 //  swSer.flush(); delay(250);
-#endif
+//#endif
 
   return true;
 }
@@ -869,7 +894,35 @@ byte GNSS_setup() {
   gnss_id = (gnss_id == GNSS_MODULE_NONE ? generic_nmea_ops.probe() : gnss_id);
 
   if (gnss_id == GNSS_MODULE_NONE) {
-    return (byte) gnss_id;
+
+#if !defined(EXCLUDE_GNSS_UBLOX) && defined(ENABLE_UBLOX_RFS)
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+
+      byte version = ublox_version();
+
+      if (version == GNSS_MODULE_U6 ||
+          version == GNSS_MODULE_U7 ||
+          version == GNSS_MODULE_U8) {
+
+        Serial.println("WARNING: Misconfigured UBLOX GNSS detected!");
+        Serial.print("Reset to factory default state: ");
+
+        ublox_factory_reset();
+
+        gnss_id = generic_nmea_ops.probe();
+
+        if (gnss_id == GNSS_MODULE_NONE) {
+          Serial.println("FAIL");
+          return (byte) gnss_id;
+        }
+        Serial.println("SUCCESS");
+      } else {
+        return (byte) gnss_id;
+      }
+    } else
+#endif /* EXCLUDE_GNSS_UBLOX && ENABLE_UBLOX_RFS */
+
+        return (byte) gnss_id;
   }
 
 #if !defined(EXCLUDE_GNSS_UBLOX)

@@ -107,7 +107,7 @@ extern TTYSerial Serial2;
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
+//#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 
