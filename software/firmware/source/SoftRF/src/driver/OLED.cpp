@@ -97,11 +97,11 @@ void OLED_loop()
   int calc;
 
   if (u8x8) {
-    if (!OLED_display_frontpage) {
+    if (!OLED_display_frontpage) { /* Modifié par Fab501 */
 
       u8x8->clear();
       
-      u8x8->drawString(0, 0, "I"); /* Ajouté par Fabrice Levis */
+      u8x8->drawString(0, 0, "I"); 
 
       itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
       u8x8->draw2x2String(1, 0, buf);
@@ -115,12 +115,12 @@ void OLED_loop()
       u8x8->drawString(8, 2, "T");
       
       
-      u8x8->drawString(0, 4, "FL"); /* ajouté par Fabrice Levis */
+      u8x8->drawString(0, 4, "FL"); 
       
-      u8x8->drawString(8, 4, "V"); /* ajouté par Fabrice Levis */
+      u8x8->drawString(8, 4, "V"); 
       
-      u8x8->drawString(0, 6, "t"); /* Ajouté par Fabrice Levis */
-      u8x8->drawString(7, 6, "p"); /* Ajouté par Fabrice Levis */
+      u8x8->drawString(0, 6, "t"); 
+      u8x8->drawString(7, 6, "p"); 
       
 
       itoa(rx_packets_counter % 1000, buf, 10);
@@ -143,31 +143,31 @@ void OLED_loop()
       if (calc < 0) {calc = -calc; u8x8->drawString(1, 6, "-"); } else { u8x8->drawString(1, 6, "+"); }
       itoa(calc, buf, 10); /* ajouté par Fabrice Levis */
       if ( calc < 10) { strcat_P(buf,PSTR(" ")); }; 
-      u8x8->draw2x2String(2, 6, buf); /* ajouté par Fabrice Levis */
+      u8x8->draw2x2String(2, 6, buf); 
       
       calc = (int)(ThisAircraft.pressure/100);  //Presure
-      itoa(calc, buf, 10); /* ajouté par Fabrice Levis */
+      itoa(calc, buf, 10); 
       if ( calc < 1000) { strcat_P(buf,PSTR(" ")); };
-      u8x8->draw2x2String(8, 6, buf); /* ajouté par Fabrice Levis */
+      u8x8->draw2x2String(8, 6, buf); 
       
       calc = ((int)(ThisAircraft.pressure_altitude*3.279/100)) % 1000; //Flight Level
       if (calc < 0) {
       		calc = -calc; 
       		u8x8->draw2x2String(2, 4, "-"); 
-      		itoa(calc, buf, 10); /* ajouté par Fabrice Levis */
+      		itoa(calc, buf, 10); 
       		strcat_P(buf,PSTR(" "));
-      		u8x8->draw2x2String(4, 4, buf); /* ajouté par Fabrice Levis */
+      		u8x8->draw2x2String(4, 4, buf); 
       	} else {  
-      		itoa(calc, buf, 10); /* ajouté par Fabrice Levis */
+      		itoa(calc, buf, 10); 
          	if ( calc < 10) { strcat_P(buf,PSTR("  ")); } else { if (calc < 100) { strcat_P(buf,PSTR(" ")); }; }
-      		u8x8->draw2x2String(2, 4, buf); /* ajouté par Fabrice Levis */
+      		u8x8->draw2x2String(2, 4, buf); 
       		}	
       
       calc = ((int)(ThisAircraft.vs/100) ) % 1000;  //Vertical Speed FT/MIN (/100)
       if (calc < 0) {calc = -calc; u8x8->drawString(9, 4, "-"); } else { u8x8->drawString(9, 4, "+"); }
-      itoa(calc, buf, 10); /* ajouté par Fabrice Levis */
+      itoa(calc, buf, 10); 
       if (calc < 10) {strcat_P(buf,PSTR("  "));} else { if (calc < 100 && calc > -100) { strcat_P(buf,PSTR(" ")); }; }
-      u8x8->draw2x2String(10, 4, buf); /* ajouté par Fabrice Levis */
+      u8x8->draw2x2String(10, 4, buf); 
       
       if (rx_packets_counter > prev_rx_packets_counter) {
         disp_value = rx_packets_counter % 1000;
