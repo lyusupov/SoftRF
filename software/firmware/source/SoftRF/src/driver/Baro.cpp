@@ -246,6 +246,8 @@ void Baro_loop()
 
     /* Draft of pressure altitude and vertical speed calculation */
     ThisAircraft.pressure_altitude = baro_chip->altitude(1013.25);
+    ThisAircraft.temperature = bmp280.readTemperature(); /* Ajouté par Fabrice Levis */
+    ThisAircraft.pressure = bmp280.readPressure(); /* Ajouté par Fabrice Levis */
 
     Baro_VS[avg_ndx] = (ThisAircraft.pressure_altitude - prev_pressure_altitude) /
       (millis() - BaroTimeMarker) * 1000;  /* in m/s */
@@ -266,7 +268,7 @@ void Baro_loop()
     BaroTimeMarker = millis();
     avg_ndx = (avg_ndx + 1) % VS_AVERAGING_FACTOR;
 
-#if 0
+#if 0 
     Serial.print(F("P.Alt. = ")); Serial.print(ThisAircraft.pressure_altitude);
     Serial.print(F(" , VS avg. = ")); Serial.println(ThisAircraft.vs);
 #endif
