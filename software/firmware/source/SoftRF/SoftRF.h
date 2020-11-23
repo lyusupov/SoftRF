@@ -117,7 +117,9 @@ typedef struct UFO {
     uint8_t   addr_type;
     float     latitude;
     float     longitude;
-    float     altitude;
+    float     altitude; /* Ajouté par Fabrice Levis */
+    float     temperature; /* Ajouté par Fabrice Levis */
+    float     pressure;
     float     pressure_altitude;
     float     course;     /* CoG */
     float     speed;      /* ground speed in knots */
