@@ -442,25 +442,80 @@ static void PSoC4_WDT_fini()
   CySysWdtDisable();
 }
 
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_1(SOC_GPIO_PIN_BUTTON);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventReleased:
+#if defined(USE_OLED)
+      if (button == &button_1) {
+//        OLED_Next_Page();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_1) {
+        shutdown("  OFF  ");
+//      Serial.println(F("This will never be printed."));
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onPageButtonEvent() {
+  button_1.check();
+}
+
 static void PSoC4_Button_setup()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI) {
-    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+    int button_pin = SOC_GPIO_PIN_BUTTON;
+
+    // Button(s) uses external pull up resistor.
+    pinMode(button_pin, INPUT);
+
+    button_1.init(button_pin);
+
+    // Configure the ButtonConfig with the event handler, and enable all higher
+    // level events.
+    ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
+    PageButtonConfig->setEventHandler(handleEvent);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+    PageButtonConfig->setFeature(
+                      ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+//  ModeButtonConfig->setDebounceDelay(15);
+    PageButtonConfig->setClickDelay(600);
+    PageButtonConfig->setDoubleClickDelay(1500);
+    PageButtonConfig->setLongPressDelay(2000);
+
+//  attachInterrupt(digitalPinToInterrupt(button_pin), onPageButtonEvent, CHANGE );
   }
 }
 
 static void PSoC4_Button_loop()
 {
-  if (hw_info.model == SOFTRF_MODEL_MINI &&
-      digitalRead(SOC_GPIO_PIN_BUTTON) == LOW) {
-//  Serial.println(F("BUTTON PRESSED")); Serial.flush();
-    shutdown("  OFF  ");
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    button_1.check();
   }
 }
 
 static void PSoC4_Button_fini()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI) {
+//  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 }

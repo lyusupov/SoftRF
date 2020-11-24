@@ -904,18 +904,18 @@ byte GNSS_setup() {
           version == GNSS_MODULE_U7 ||
           version == GNSS_MODULE_U8) {
 
-        Serial.println("WARNING: Misconfigured UBLOX GNSS detected!");
-        Serial.print("Reset to factory default state: ");
+        Serial.println(F("WARNING: Misconfigured UBLOX GNSS detected!"));
+        Serial.print(F("Reset to factory default state: "));
 
         ublox_factory_reset();
 
         gnss_id = generic_nmea_ops.probe();
 
         if (gnss_id == GNSS_MODULE_NONE) {
-          Serial.println("FAIL");
+          Serial.println(F("FAILURE"));
           return (byte) gnss_id;
         }
-        Serial.println("SUCCESS");
+        Serial.println(F("SUCCESS"));
       } else {
         return (byte) gnss_id;
       }

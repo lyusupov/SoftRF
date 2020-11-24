@@ -27,14 +27,18 @@ SOFTWARE.
 
 namespace ace_button {
 
+// Macros to perform compile-time assertions. See
+// https://www.embedded.com/electronics-blogs/programming-pointers/4025549/Catching-errors-early-with-compile-time-assertions
+// and https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
+#define CONCAT_(x, y) x##y
+#define CONCAT(x,y) CONCAT_(x,y)
+#define COMPILE_TIME_ASSERT(cond, msg) \
+    extern char CONCAT(compile_time_assert, __LINE__)[(cond) ? 1 : -1];
+
 // Check that the Arduino constants HIGH and LOW are defined to be 1 and 0,
 // respectively. Otherwise, this library won't work.
-#if HIGH != 1
-  #error HIGH must be defined to be 1
-#endif
-#if LOW != 0
-  #error LOW must be defined to be 0
-#endif
+COMPILE_TIME_ASSERT(HIGH == 1, "HIGH must be 1")
+COMPILE_TIME_ASSERT(LOW  == 0, "LOW  must be 0")
 
 AceButton::AceButton(uint8_t pin, uint8_t defaultReleasedState, uint8_t id):
     mButtonConfig(ButtonConfig::getSystemButtonConfig()) {

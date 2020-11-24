@@ -47,6 +47,20 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_FANET]     = "F"
 };
 
+static const char *ISO3166_CC[11] = {
+  [RF_BAND_AUTO] = "--",
+  [RF_BAND_EU]   = "EU",
+  [RF_BAND_US]   = "US",
+  [RF_BAND_AU]   = "AU",
+  [RF_BAND_NZ]   = "NZ",
+  [RF_BAND_RU]   = "RU",
+  [RF_BAND_CN]   = "CN",
+  [RF_BAND_UK]   = "UK",
+  [RF_BAND_IN]   = "IN",
+  [RF_BAND_IL]   = "IL",
+  [RF_BAND_KR]   = "KR"
+};
+
 const char *SoftRF_text   = "SoftRF";
 const char *ID_text       = "ID";
 const char *PROTOCOL_text = "PROTOCOL";
@@ -79,11 +93,13 @@ byte OLED_setup() {
     u8x8->clear();
 
     if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-      u8x8->draw2x2String(2, 1, SoftRF_text);
-      u8x8->drawString   (6, 4, "and");
-      u8x8->draw2x2String(2, 6, "LilyGO");
+      u8x8->draw2x2String( 2, 1, SoftRF_text);
+      u8x8->drawString   ( 6, 4, "and");
+      u8x8->draw2x2String( 2, 6, "LilyGO");
     } else {
-      u8x8->draw2x2String(2, 3, SoftRF_text);
+      u8x8->draw2x2String( 2, 2, SoftRF_text);
+      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
     }
   }
 
