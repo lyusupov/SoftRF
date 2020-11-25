@@ -23,16 +23,19 @@
 
 #define SSD1306_OLED_I2C_ADDR   0x3C
 
+#define isTimeToOLED()          (millis() - OLEDTimeMarker > 500)
+
 byte OLED_setup(void);
 void OLED_loop(void);
 void OLED_fini(const char *);
 void OLED_info1(void);
+void OLED_Next_Page(void);
 
 extern const char *OLED_Protocol_ID[];
-extern const char *SoftRF_text;
-extern const char *ID_text;
-extern const char *PROTOCOL_text;
-extern const char *RX_text;
-extern const char *TX_text;
+extern const char SoftRF_text[];
+extern const char ID_text[];
+extern const char PROTOCOL_text[];
+extern const char RX_text[];
+extern const char TX_text[];
 
 #endif /* OLEDHELPER_H */

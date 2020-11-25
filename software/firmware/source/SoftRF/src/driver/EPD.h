@@ -33,7 +33,7 @@
 #define NAVBOX5_TITLE           "RX"
 #define NAVBOX6_TITLE           "TX"
 
-#define isTimeToDisplay()       (millis() - EPDTimeMarker > 1000)
+#define isTimeToEPD()           (millis() - EPDTimeMarker > 1000)
 #define maxof2(a,b)             (a > b ? a : b)
 
 #define EPD_RADAR_V_THRESHOLD   50      /* metres */

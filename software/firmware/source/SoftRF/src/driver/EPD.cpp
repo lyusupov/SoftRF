@@ -208,7 +208,7 @@ void EPD_loop()
   {
   case DISPLAY_EPD_1_54:
 
-    if (isTimeToDisplay()) {
+    if (isTimeToEPD()) {
       switch (EPD_view_mode)
       {
       case VIEW_MODE_RADAR:

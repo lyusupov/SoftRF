@@ -352,17 +352,12 @@ void EPD_status_loop()
 
   } else {
 
-    if (isTimeToDisplay()) {
+    navbox1.value = Traffic_Count();
+    navbox2.value = (int) (Battery_voltage() * 10.0);
+    navbox5.value      = rx_packets_counter % 1000;
+    navbox6.value      = tx_packets_counter % 1000;
 
-      navbox1.value = Traffic_Count();
-      navbox2.value = (int) (Battery_voltage() * 10.0);
-      navbox5.value      = rx_packets_counter % 1000;
-      navbox6.value      = tx_packets_counter % 1000;
-
-      EPD_Update_NavBoxes();
-
-      EPDTimeMarker = millis();
-    }
+    EPD_Update_NavBoxes();
   }
 }
 

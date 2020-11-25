@@ -28,7 +28,6 @@
 #include <rom/spi_flash.h>
 #include <flashchips.h>
 #include <axp20x.h>
-#include <TFT_eSPI.h>
 
 #include "../system/SoC.h"
 #include "../driver/Sound.h"
@@ -40,6 +39,10 @@
 #include "../driver/Baro.h"
 #include "../driver/Battery.h"
 #include "../driver/OLED.h"
+
+#if defined(USE_TFT)
+#include <TFT_eSPI.h>
+#endif /* USE_TFT */
 
 #include <battery.h>
 
@@ -70,6 +73,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
 
+#if defined(USE_OLED)
 U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
                                                 TTGO_V2_OLED_PIN_SCL,
                                                 TTGO_V2_OLED_PIN_SDA);
@@ -78,10 +82,14 @@ U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
                                                   HELTEC_OLED_PIN_SCL,
                                                   HELTEC_OLED_PIN_SDA);
 
-AXP20X_Class axp;
-
 extern U8X8_OLED_I2C_BUS_TYPE *u8x8;
+#endif /* USE_OLED */
+
+#if defined(USE_TFT)
 static TFT_eSPI *tft = NULL;
+#endif /* USE_TFT */
+
+AXP20X_Class axp;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
 
@@ -258,11 +266,12 @@ static void ESP32_post_init()
 {
   switch (hw_info.display)
   {
+#if defined(USE_OLED)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
     OLED_info1();
     break;
-
+#endif /* USE_OLED */
   case DISPLAY_NONE:
   default:
     break;
@@ -722,6 +731,7 @@ static byte ESP32_Display_setup()
 
   if (esp32_board != ESP32_TTGO_T_WATCH) {
 
+#if defined(USE_OLED)
     /* SSD1306 I2C OLED probing */
     if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
@@ -767,9 +777,11 @@ static byte ESP32_Display_setup()
       u8x8->clear();
       u8x8->draw2x2String(2, 3, SoftRF_text);
     }
+#endif /* USE_OLED */
 
   } else {  /* ESP32_TTGO_T_WATCH */
 
+#if defined(USE_TFT)
     ESP32_SPI_begin();
 
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
@@ -795,6 +807,7 @@ static byte ESP32_Display_setup()
     tft->println(SoftRF_text);
 
     rval = DISPLAY_TFT_TTGO;
+#endif /* USE_TFT */
   }
 
   return rval;
@@ -810,6 +823,8 @@ static void ESP32_Display_loop()
 
   switch (hw_info.display)
   {
+
+#if defined(USE_TFT)
   case DISPLAY_TFT_TTGO:
     if (tft) {
       if (!TFT_display_frontpage) {
@@ -916,11 +931,14 @@ static void ESP32_Display_loop()
     }
 
     break;
+#endif /* USE_TFT */
 
+#if defined(USE_OLED)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
     OLED_loop();
     break;
+#endif /* USE_OLED */
 
   case DISPLAY_NONE:
   default:
@@ -930,6 +948,8 @@ static void ESP32_Display_loop()
 
 static void ESP32_Display_fini(const char *msg)
 {
+#if defined(USE_OLED)
+
   OLED_fini(msg);
 
   if (u8x8) {
@@ -938,6 +958,7 @@ static void ESP32_Display_fini(const char *msg)
 
     u8x8->noDisplay();
   }
+#endif /* USE_OLED */
 }
 
 static void ESP32_Battery_setup()

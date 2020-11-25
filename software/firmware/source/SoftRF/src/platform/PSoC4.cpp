@@ -442,6 +442,7 @@ static void PSoC4_WDT_fini()
   CySysWdtDisable();
 }
 
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
 #include <AceButton.h>
 using namespace ace_button;
 
@@ -456,7 +457,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventReleased:
 #if defined(USE_OLED)
       if (button == &button_1) {
-//        OLED_Next_Page();
+        OLED_Next_Page();
       }
 #endif
       break;
@@ -475,9 +476,11 @@ void handleEvent(AceButton* button, uint8_t eventType,
 void onPageButtonEvent() {
   button_1.check();
 }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 
 static void PSoC4_Button_setup()
 {
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_MINI) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
@@ -490,34 +493,40 @@ static void PSoC4_Button_setup()
     // level events.
     ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
     PageButtonConfig->setEventHandler(handleEvent);
-    PageButtonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+//    PageButtonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-    PageButtonConfig->setFeature(
-                      ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+//    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+//    PageButtonConfig->setFeature(
+//                      ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
 //  ModeButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
-    PageButtonConfig->setDoubleClickDelay(1500);
+//    PageButtonConfig->setDoubleClickDelay(1500);
     PageButtonConfig->setLongPressDelay(2000);
 
 //  attachInterrupt(digitalPinToInterrupt(button_pin), onPageButtonEvent, CHANGE );
   }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void PSoC4_Button_loop()
 {
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_MINI) {
     button_1.check();
   }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void PSoC4_Button_fini()
 {
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_MINI) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 const SoC_ops_t PSoC4_ops = {

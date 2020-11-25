@@ -225,6 +225,7 @@ struct rst_info {
 #define NMEA_TCP_SERVICE
 #define USE_NMEALIB
 #define USE_OLED
+#define USE_TFT
 //#define USE_NMEA_CFG
 #define USE_BASICMAC
 
