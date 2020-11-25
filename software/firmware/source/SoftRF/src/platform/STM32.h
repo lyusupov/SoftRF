@@ -47,9 +47,6 @@
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
 
-// button
-#define SOC_GPIO_PIN_BUTTON     USER_BTN
-
 /* Analog read resolution */
 #if ADC_RESOLUTION == 10
 #define LL_ADC_RESOLUTION LL_ADC_RESOLUTION_10B
@@ -175,6 +172,11 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SCK     PA5
 #define SOC_GPIO_SPI1_SS      PA4
 
+/* button */
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+//#define SOC_GPIO_PIN_BUTTON   PC4
+//#define SOC_GPIO_PIN_BUTTON   PA3
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
@@ -245,6 +247,10 @@ typedef struct stm32_backup_struct {
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7
 #define SOC_GPIO_PIN_SCL      PB6
+
+/* button */
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+//#define SOC_GPIO_PIN_BUTTON   USER_BTN
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX

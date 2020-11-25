@@ -118,15 +118,17 @@ byte OLED_setup() {
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
 
+    uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
+
+    u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text);
+
     if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-      u8x8->draw2x2String( 2, 1, SoftRF_text);
-      u8x8->drawString   ( 6, 4, "and");
-      u8x8->draw2x2String( 2, 6, "LilyGO");
-    } else {
-      u8x8->draw2x2String( 2, 2, SoftRF_text);
-      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
-      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
+      u8x8->drawString   ( 6, 3, "and");
+      u8x8->draw2x2String( 2, 4, "LilyGO");
     }
+
+    u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
+    u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
   }
 
   OLEDTimeMarker = millis();

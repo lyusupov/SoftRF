@@ -563,19 +563,82 @@ static void STM32_WDT_fini()
   }
 }
 
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_1(SOC_GPIO_PIN_BUTTON, LOW);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventReleased:
+#if defined(USE_OLED)
+      if (button == &button_1) {
+        OLED_Next_Page();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_1) {
+        shutdown("  OFF  ");
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onPageButtonEvent() {
+  button_1.check();
+}
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
 static void STM32_Button_setup()
 {
-  /* TODO */
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+    int button_pin = SOC_GPIO_PIN_BUTTON;
+
+    // BOOT0 button(s) uses external pull DOWN resistor.
+    pinMode(button_pin, INPUT);
+
+    button_1.init(button_pin, LOW);
+
+    // Configure the ButtonConfig with the event handler, and enable all higher
+    // level events.
+    ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
+    PageButtonConfig->setEventHandler(handleEvent);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+//  ModeButtonConfig->setDebounceDelay(15);
+    PageButtonConfig->setClickDelay(600);
+    PageButtonConfig->setLongPressDelay(2000);
+  }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void STM32_Button_loop()
 {
-  /* TODO */
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+    button_1.check();
+  }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void STM32_Button_fini()
 {
-  /* TODO */
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT_ANALOG);
+  }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 #if defined(USBD_USE_CDC)
