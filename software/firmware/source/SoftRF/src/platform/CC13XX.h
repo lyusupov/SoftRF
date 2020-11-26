@@ -123,6 +123,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS         18 // GPIO 11
 #define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
 
+// button
+#define SOC_GPIO_PIN_BUTTON     SOC_UNUSED_PIN
+
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
