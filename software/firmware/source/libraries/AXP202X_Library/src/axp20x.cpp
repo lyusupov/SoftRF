@@ -91,6 +91,7 @@ int AXP20X_Class::_axp_probe()
     return AXP_FAIL;
 }
 
+#ifdef ARDUINO
 int AXP20X_Class::begin(TwoWire &port, uint8_t addr, bool isAxp173)
 {
     _i2cPort = &port; //Grab which port the user wants us to use
@@ -99,6 +100,7 @@ int AXP20X_Class::begin(TwoWire &port, uint8_t addr, bool isAxp173)
 
     return _axp_probe();
 }
+#endif
 
 int AXP20X_Class::begin(axp_com_fptr_t read_cb, axp_com_fptr_t write_cb, uint8_t addr, bool isAxp173)
 {
@@ -216,7 +218,10 @@ int AXP20X_Class::setPowerOutPut(uint8_t ch, bool en)
     }
 
     _writeByte(AXP202_LDO234_DC23_CTL, 1, &data);
+
+#ifdef ARDUINO
     delay(1);
+#endif
     _readByte(AXP202_LDO234_DC23_CTL, 1, &val);
     if (data == val) {
         _outputReg = val;
@@ -387,7 +392,7 @@ float AXP20X_Class::getCoulombData()
         return AXP_NOT_INIT;
     uint32_t charge = getBattChargeCoulomb(), discharge = getBattDischargeCoulomb();
     uint8_t rate = getAdcSamplingRate();
-    float result = 65536.0 * 0.5 * (charge - discharge) / 3600.0 / rate;
+    float result = 65536.0 * 0.5 * ((float)charge - (float)discharge) / 3600.0 / rate;
     return result;
 }
 
@@ -1107,7 +1112,7 @@ int AXP20X_Class::enableChargeing(bool en)
     if (!_init)
         return AXP_NOT_INIT;
     _readByte(AXP202_CHARGE1, 1, &val);
-    val |= (1 << 7);
+    val = en ? (val | _BV(7)) : val & (~_BV(7));
     _writeByte(AXP202_CHARGE1, 1, &val);
     return AXP_PASS;
 }
@@ -1260,7 +1265,7 @@ int AXP20X_Class::setTimer(uint8_t minutes)
 {
     if (!_init)
         return AXP_NOT_INIT;
-    if (_chip_id == AXP202_CHIP_ID) {
+    if (_chip_id == AXP202_CHIP_ID || _chip_id == AXP192_CHIP_ID) {
         if (minutes > 63) {
             return AXP_ARG_INVALID;
         }
@@ -1274,7 +1279,7 @@ int AXP20X_Class::offTimer()
 {
     if (!_init)
         return AXP_NOT_INIT;
-    if (_chip_id == AXP202_CHIP_ID) {
+    if (_chip_id == AXP202_CHIP_ID || _chip_id == AXP192_CHIP_ID) {
         uint8_t minutes = 0x80;
         _writeByte(AXP202_TIMER_CTL, 1, &minutes);
         return AXP_PASS;
@@ -1286,12 +1291,24 @@ int AXP20X_Class::clearTimerStatus()
 {
     if (!_init)
         return AXP_NOT_INIT;
-    if (_chip_id == AXP202_CHIP_ID) {
+    if (_chip_id == AXP202_CHIP_ID || _chip_id == AXP192_CHIP_ID) {
         uint8_t val;
         _readByte(AXP202_TIMER_CTL, 1, &val);
         val |= 0x80;
         _writeByte(AXP202_TIMER_CTL, 1, &val);
         return AXP_PASS;
+    }
+    return AXP_NOT_SUPPORT;
+}
+
+bool AXP20X_Class::getTimerStatus()
+{
+    if (!_init)
+        return AXP_NOT_INIT;
+    if (_chip_id == AXP202_CHIP_ID || _chip_id == AXP192_CHIP_ID) {
+        uint8_t val;
+        _readByte(AXP202_TIMER_CTL, 1, &val);
+        return ( val & 0x80 ) >> 7;
     }
     return AXP_NOT_SUPPORT;
 }

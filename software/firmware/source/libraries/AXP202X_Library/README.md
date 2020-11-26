@@ -1,6 +1,7 @@
 AXP202X_Library
 =====================================
-- axp192 partial support, the function is not fully tested, please refer to the manual
+- How to program **AXP20x_Library** with ESP-IDF [ESP_IDF_AXP20x_Library](https://github.com/lewisxhe/ESP_IDF_AXP20x_Library)
+
 - The `setPowerOutPut` function has forced DCDC3 to be turned on and cannot be controlled because T-Watch uses DCDC3 as the esp32 to power the main chip. If it is turned off, the hardware cannot be programmed.
   
   

@@ -29,12 +29,22 @@ github:https://github.com/lewisxhe/AXP202X_Libraries
 /////////////////////////////////////////////////////////////////
 #pragma once
 
+#ifdef ARDUINO
 #include <Arduino.h>
 #include <Wire.h>
+#else
+#include <stdint.h>
+#include <string.h>
+#endif
 
 // #define AXP_DEBUG_PORT  Serial
 #ifdef AXP_DEBUG_PORT
-#define AXP_DEBUG(fmt, ...) AXP_DEBUG_PORT.printf_P((PGM_P)PSTR(fmt), ##__VA_ARGS__)
+#ifdef ARDUINO
+#define AXP_DEBUG(fmt, ...)         AXP_DEBUG_PORT.printf_P((PGM_P)PSTR(fmt), ##__VA_ARGS__)
+#else
+#define AXP_DEBUG(...)              printf(__VA_ARGS__)
+#endif
+
 #else
 #define AXP_DEBUG(...)
 #endif
@@ -567,7 +577,11 @@ typedef uint8_t (*axp_com_fptr_t)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *d
 class AXP20X_Class
 {
 public:
+
+#ifdef ARDUINO
     int begin(TwoWire &port = Wire, uint8_t addr = AXP202_SLAVE_ADDRESS, bool isAxp173 = false);
+#endif
+
     int begin(axp_com_fptr_t read_cb, axp_com_fptr_t write_cb, uint8_t addr = AXP202_SLAVE_ADDRESS, bool isAxp173 = false);
 
     // Power Output Control
@@ -642,6 +656,7 @@ public:
     int setTimer(uint8_t minutes);
     int offTimer();
     int clearTimerStatus();
+    bool getTimerStatus();
     /**
      * param:   axp202_startup_time_t or axp192_startup_time_t
      */
@@ -771,6 +786,7 @@ private:
         if (_read_cb != nullptr) {
             return _read_cb(_address, reg, data, nbytes);
         }
+#ifdef ARDUINO
         if (nbytes == 0 || !data)
             return -1;
         _i2cPort->beginTransmission(_address);
@@ -780,6 +796,7 @@ private:
         uint8_t index = 0;
         while (_i2cPort->available())
             data[index++] = _i2cPort->read();
+#endif
         return 0;
     }
 
@@ -788,6 +805,7 @@ private:
         if (_write_cb != nullptr) {
             return _write_cb(_address, reg, data, nbytes);
         }
+#ifdef ARDUINO
         if (nbytes == 0 || !data)
             return -1;
         _i2cPort->beginTransmission(_address);
@@ -796,6 +814,7 @@ private:
             _i2cPort->write(data[i]);
         }
         _i2cPort->endTransmission();
+#endif
         return 0;
     }
 
@@ -825,6 +844,8 @@ private:
     bool _init = false;
     axp_com_fptr_t _read_cb = nullptr;
     axp_com_fptr_t _write_cb = nullptr;
+#ifdef ARDUINO
     TwoWire *_i2cPort;
+#endif
     bool _isAxp173;
 };
