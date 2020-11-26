@@ -500,7 +500,7 @@ static void PSoC4_Button_setup()
 //    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
 //    PageButtonConfig->setFeature(
 //                      ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-//  ModeButtonConfig->setDebounceDelay(15);
+//  PageButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
 //    PageButtonConfig->setDoubleClickDelay(1500);
     PageButtonConfig->setLongPressDelay(2000);

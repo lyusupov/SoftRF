@@ -298,14 +298,17 @@ static void ESP32_loop()
         if (axp.isPEKLongtPressIRQ()) {
           down = true;
 #if 0
-          Serial.println(F("Longt Press IRQ"));
+          Serial.println(F("Long press IRQ"));
           Serial.flush();
 #endif
         }
         if (axp.isPEKShortPressIRQ()) {
 #if 0
-          Serial.println(F("Short Press IRQ"));
+          Serial.println(F("Short press IRQ"));
           Serial.flush();
+#endif
+#if defined(USE_OLED)
+          OLED_Next_Page();
 #endif
         }
 
@@ -374,7 +377,19 @@ static void ESP32_fini()
      * in 'power off'  -  90 - 100 uA
      * of current from 3.7V battery
      */
+#if 0
+    /* Deep sleep with wakeup by power button click */
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, 0); // 1 = High, 0 = Low
+#else
+    /*
+     * Complete power off
+     *
+     * to power back on either:
+     * - press and hold PWR button for 1-2 seconds then release, or
+     * - cycle micro-USB power
+     */
+    axp.shutdown();
+#endif
   }
 
   esp_deep_sleep_start();
@@ -775,7 +790,9 @@ static byte ESP32_Display_setup()
       u8x8->begin();
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
-      u8x8->draw2x2String(2, 3, SoftRF_text);
+      u8x8->draw2x2String( 2, 3, SoftRF_text);
+      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
     }
 #endif /* USE_OLED */
 
@@ -1102,19 +1119,72 @@ static void ESP32_WDT_fini()
   disableLoopWDT();
 }
 
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_1(SOC_GPIO_PIN_TBEAM_V05_BUTTON);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventReleased:
+#if defined(USE_OLED)
+      if (button == &button_1) {
+        OLED_Next_Page();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_1) {
+        shutdown("  OFF  ");
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onPageButtonEvent() {
+  button_1.check();
+}
+
 static void ESP32_Button_setup()
 {
-  /* TODO */
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision == 5) {
+    int button_pin = SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+
+    // Button(s) uses external pull up resistor.
+    pinMode(button_pin, INPUT);
+
+    button_1.init(button_pin);
+
+    // Configure the ButtonConfig with the event handler, and enable all higher
+    // level events.
+    ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
+    PageButtonConfig->setEventHandler(handleEvent);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+//  PageButtonConfig->setDebounceDelay(15);
+    PageButtonConfig->setClickDelay(600);
+    PageButtonConfig->setLongPressDelay(2000);
+  }
 }
 
 static void ESP32_Button_loop()
 {
-  /* TODO */
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision == 5) {
+    button_1.check();
+  }
 }
 
 static void ESP32_Button_fini()
 {
-  /* TODO */
+
 }
 
 const SoC_ops_t ESP32_ops = {

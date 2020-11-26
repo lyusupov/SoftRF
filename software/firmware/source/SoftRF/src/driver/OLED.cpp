@@ -42,7 +42,7 @@ U8X8_OLED_I2C_BUS_TYPE u8x8_i2c(U8X8_PIN_NONE);
 
 U8X8_OLED_I2C_BUS_TYPE *u8x8 = NULL;
 
-static bool OLED_display_frontpage = false;
+static bool OLED_display_titles = false;
 static uint32_t prev_tx_packets_counter = (uint32_t) -1;
 static uint32_t prev_rx_packets_counter = (uint32_t) -1;
 extern uint32_t tx_packets_counter, rx_packets_counter;
@@ -64,7 +64,7 @@ const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_FANET]     = "F"
 };
 
-static const char *ISO3166_CC[11] = {
+const char *ISO3166_CC[] = {
   [RF_BAND_AUTO] = "--",
   [RF_BAND_EU]   = "EU",
   [RF_BAND_US]   = "US",
@@ -84,8 +84,8 @@ const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";
 const char TX_text[]       = "TX";
 const char ACFTS_text[]    = "ACFTS";
-const char SAT_text[]      = "SATS";
-const char FIX_text[]      = "FIXQ";
+const char SATS_text[]     = "SATS";
+const char FIX_text[]      = "FIX";
 const char UPTIME_text[]   = "UPTIME";
 const char BAT_text[]      = "BAT";
 
@@ -141,7 +141,7 @@ static void OLED_radio()
   char buf[16];
   uint32_t disp_value;
 
-  if (!OLED_display_frontpage) {
+  if (!OLED_display_titles) {
 
     u8x8->clear();
 
@@ -169,38 +169,38 @@ static void OLED_radio()
 
     prev_rx_packets_counter = (uint32_t) -1;
 
-    OLED_display_frontpage = true;
-  } else {
-    if (rx_packets_counter != prev_rx_packets_counter) {
-      disp_value = rx_packets_counter % 1000;
-      itoa(disp_value, buf, 10);
+    OLED_display_titles = true;
+  }
 
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR("  "));
-      } else {
-        if (disp_value < 100) {
-          strcat_P(buf,PSTR(" "));
-        };
-      }
+  if (rx_packets_counter != prev_rx_packets_counter) {
+    disp_value = rx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-      u8x8->draw2x2String(0, 6, buf);
-      prev_rx_packets_counter = rx_packets_counter;
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("  "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
     }
-    if (tx_packets_counter != prev_tx_packets_counter) {
-      disp_value = tx_packets_counter % 1000;
-      itoa(disp_value, buf, 10);
 
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR("  "));
-      } else {
-        if (disp_value < 100) {
-          strcat_P(buf,PSTR(" "));
-        };
-      }
+    u8x8->draw2x2String(0, 6, buf);
+    prev_rx_packets_counter = rx_packets_counter;
+  }
+  if (tx_packets_counter != prev_tx_packets_counter) {
+    disp_value = tx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-      u8x8->draw2x2String(8, 6, buf);
-      prev_tx_packets_counter = tx_packets_counter;
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("  "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
     }
+
+    u8x8->draw2x2String(8, 6, buf);
+    prev_tx_packets_counter = tx_packets_counter;
   }
 }
 
@@ -209,17 +209,17 @@ static void OLED_other()
   char buf[16];
   uint32_t disp_value;
 
-  if (!OLED_display_frontpage) {
+  if (!OLED_display_titles) {
 
     u8x8->clear();
 
-    u8x8->drawString(1, 1, ACFTS_text);
+    u8x8->drawString( 1, 1, ACFTS_text);
 
-    u8x8->drawString(7, 1, SAT_text);
+    u8x8->drawString( 7, 1, SATS_text);
 
     u8x8->drawString(12, 1, FIX_text);
 
-    u8x8->drawString(1, 5, UPTIME_text);
+    u8x8->drawString( 1, 5, UPTIME_text);
 
     u8x8->drawString(12, 5, BAT_text);
 
@@ -234,80 +234,80 @@ static void OLED_other()
     prev_uptime_minutes = (uint32_t) -1;
     prev_voltage        = (uint32_t) -1;
 
-    OLED_display_frontpage = true;
-  } else {
-    uint32_t acrfts_counter = Traffic_Count();
-    uint32_t sats_counter   = gnss.satellites.value();
-    uint8_t  fix            = gnss.location.Quality();
-    uint32_t uptime_minutes = millis() / 60000;
-    int32_t  voltage        = (int) (Battery_voltage() * 10.0);
+    OLED_display_titles = true;
+  }
 
-    if (prev_acrfts_counter != acrfts_counter) {
-      disp_value = acrfts_counter > 99 ? 99 : acrfts_counter;
+  uint32_t acrfts_counter = Traffic_Count();
+  uint32_t sats_counter   = gnss.satellites.value();
+  uint8_t  fix            = gnss.location.Quality();
+  uint32_t uptime_minutes = millis() / 60000;
+  int32_t  voltage        = (int) (Battery_voltage() * 10.0);
+
+  if (prev_acrfts_counter != acrfts_counter) {
+    disp_value = acrfts_counter > 99 ? 99 : acrfts_counter;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR(" "));
+    }
+
+    u8x8->draw2x2String(1, 2, buf);
+    prev_acrfts_counter = acrfts_counter;
+  }
+
+  if (prev_sats_counter != sats_counter) {
+    disp_value = sats_counter > 99 ? 99 : sats_counter;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR(" "));
+    }
+
+    u8x8->draw2x2String(7, 2, buf);
+    prev_sats_counter = sats_counter;
+  }
+
+  if (prev_fix != fix) {
+    u8x8->draw2x2Glyph(12, 2, fix > 0 ? '+' : '-');
+//    u8x8->draw2x2Glyph(12, 2, '0' + fix);
+    prev_fix = fix;
+  }
+
+  if (prev_uptime_minutes != uptime_minutes) {
+    uint32_t uptime_hours = uptime_minutes / 60;
+    disp_value = uptime_hours % 100;
+    if (disp_value < 10) {
+      buf[0] = '0';
+      itoa(disp_value, buf+1, 10);
+    } else {
       itoa(disp_value, buf, 10);
-
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR(" "));
-      }
-
-      u8x8->draw2x2String(1, 2, buf);
-      prev_acrfts_counter = acrfts_counter;
     }
 
-    if (prev_sats_counter != sats_counter) {
-      disp_value = sats_counter > 99 ? 99 : sats_counter;
+    u8x8->draw2x2String(0, 6, buf);
+
+    disp_value = uptime_minutes % 60;
+    if (disp_value < 10) {
+      buf[0] = '0';
+      itoa(disp_value, buf+1, 10);
+    } else {
       itoa(disp_value, buf, 10);
-
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR(" "));
-      }
-
-      u8x8->draw2x2String(7, 2, buf);
-      prev_sats_counter = sats_counter;
     }
 
-    if (prev_fix != fix) {
-//      u8x8->draw2x2Glyph(12, 2, fix > 0 ? '+' : '-');
-      u8x8->draw2x2Glyph(12, 2, '0' + fix);
-      prev_fix = fix;
-    }
+    u8x8->draw2x2String(5, 6, buf);
 
-    if (prev_uptime_minutes != uptime_minutes) {
-      uint32_t uptime_hours = uptime_minutes / 60;
-      disp_value = uptime_hours % 100;
-      if (disp_value < 10) {
-        buf[0] = '0';
-        itoa(disp_value, buf+1, 10);
-      } else {
-        itoa(disp_value, buf, 10);
-      }
+    prev_uptime_minutes = uptime_minutes;
+  }
 
-      u8x8->draw2x2String(0, 6, buf);
+  if (prev_voltage != voltage) {
+    disp_value = voltage / 10;
+    disp_value = disp_value > 9 ? 9 : disp_value;
+    u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
 
-      disp_value = uptime_minutes % 60;
-      if (disp_value < 10) {
-        buf[0] = '0';
-        itoa(disp_value, buf+1, 10);
-      } else {
-        itoa(disp_value, buf, 10);
-      }
+    disp_value = voltage % 10;
 
-      u8x8->draw2x2String(5, 6, buf);
+    u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
 
-      prev_uptime_minutes = uptime_minutes;
-    }
-
-    if (prev_voltage != voltage) {
-      disp_value = voltage / 10;
-      disp_value = disp_value > 9 ? 9 : disp_value;
-      u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
-
-      disp_value = voltage % 10;
-
-      u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
-
-      prev_voltage = voltage;
-    }
+    prev_voltage = voltage;
   }
 }
 
@@ -363,7 +363,7 @@ void OLED_Next_Page()
 {
   if (u8x8) {
     OLED_current_page = (OLED_current_page + 1) % OLED_PAGE_COUNT;
-    OLED_display_frontpage = false;
+    OLED_display_titles = false;
   }
 }
 

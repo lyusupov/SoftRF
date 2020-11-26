@@ -631,38 +631,98 @@ static void CC13XX_WDT_fini()
 #endif /* ENERGIA_ARCH_CC13X2 */
 }
 
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+#include <AceButton.h>
+using namespace ace_button;
+
+AceButton button_1(SOC_GPIO_PIN_BUTTON);
+
+// The event handler for the button.
+void handleEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventReleased:
+#if defined(USE_OLED)
+      if (button == &button_1) {
+        OLED_Next_Page();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+      break;
+    case AceButton::kEventLongPressed:
+      if (button == &button_1) {
+        shutdown("  OFF  ");
+      }
+      break;
+  }
+}
+
+/* Callbacks for push button interrupt */
+void onPageButtonEvent() {
+  button_1.check();
+}
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
 static void CC13XX_Button_setup()
 {
 #if defined(ENERGIA_ARCH_CC13X2)
   pinMode(PUSH1, INPUT_PULLUP);
-  pinMode(PUSH2, INPUT_PULLUP);
 
   BootManagerCheck();
-#endif
+
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  int button_pin = SOC_GPIO_PIN_BUTTON;
+
+  // Button(s) uses external pull up resistor.
+  pinMode(button_pin, INPUT_PULLUP);
+
+  button_1.init(button_pin);
+
+  // Configure the ButtonConfig with the event handler, and enable all higher
+  // level events.
+  ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
+  PageButtonConfig->setEventHandler(handleEvent);
+  PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+  PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+//  PageButtonConfig->setDebounceDelay(15);
+  PageButtonConfig->setClickDelay(600);
+  PageButtonConfig->setLongPressDelay(2000);
+
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 static void CC13XX_Button_loop()
 {
+#if defined(ENERGIA_ARCH_CC13X2)
+
 #if 0
   if (digitalRead(PUSH1) == LOW) {
     Serial.println(F("PUSH1 PRESSED"));
     Serial.flush();
   }
-  if (digitalRead(PUSH2) == LOW) {
-    Serial.println(F("PUSH2 PRESSED"));
-    Serial.flush();
-  }
 #endif
 
-  /* TODO */
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  button_1.check();
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 static void CC13XX_Button_fini()
 {
 #if defined(ENERGIA_ARCH_CC13X2)
   pinMode(PUSH1, INPUT);
-  pinMode(PUSH2, INPUT);
-#endif
+
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+#endif /* ENERGIA_ARCH_CC13X2 */
 }
 
 const SoC_ops_t CC13XX_ops = {

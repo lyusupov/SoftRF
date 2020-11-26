@@ -5,11 +5,11 @@
 
 #define static_assert(x,y) ({ })
 
-#ifndef nullptr
-#define nullptr            ((u1_t *) 0)
-#endif
-
 #ifdef __cplusplus
+
+#ifndef nullptr
+#define nullptr            NULL
+#endif
 
 class SPISettings {
 public:

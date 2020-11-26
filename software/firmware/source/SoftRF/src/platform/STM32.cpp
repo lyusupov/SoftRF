@@ -616,7 +616,7 @@ static void STM32_Button_setup()
     PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-//  ModeButtonConfig->setDebounceDelay(15);
+//  PageButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
     PageButtonConfig->setLongPressDelay(2000);
   }

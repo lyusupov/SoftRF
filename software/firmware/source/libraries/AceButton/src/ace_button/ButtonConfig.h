@@ -27,6 +27,11 @@ SOFTWARE.
 
 #if !defined(RASPBERRY_PI)
 #include <Arduino.h>
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+#ifndef nullptr
+#define nullptr            NULL
+#endif
+#endif // ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2
 #else
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
