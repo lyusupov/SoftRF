@@ -23,19 +23,21 @@
 #include "../system/SoC.h"
 #include "Battery.h"
 
-unsigned long Battery_TimeMarker = 0;
-static int Battery_cutoff_count  = 0;
+static float Battery_voltage_cache      = 0;
+static unsigned long Battery_TimeMarker = 0;
+static int Battery_cutoff_count         = 0;
 
 void Battery_setup()
 {
   SoC->Battery_setup();
 
+  Battery_voltage_cache = SoC->Battery_voltage();
   Battery_TimeMarker = millis();
 }
 
 float Battery_voltage()
 {
-  return SoC->Battery_voltage();
+  return Battery_voltage_cache;
 }
 
 /* low battery voltage threshold */
@@ -64,14 +66,15 @@ float Battery_cutoff()
 
 void Battery_loop()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
-     (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-      hw_info.model == SOFTRF_MODEL_DONGLE                                ||
-      hw_info.model == SOFTRF_MODEL_MINI                                  ||
-      hw_info.model == SOFTRF_MODEL_BADGE                                 ||
-      hw_info.model == SOFTRF_MODEL_UNI       ) {
-    if (isTimeToBattery()) {
-      float voltage = Battery_voltage();
+  if (isTimeToBattery()) {
+    float voltage = SoC->Battery_voltage();
+
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
+       (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
+        hw_info.model == SOFTRF_MODEL_DONGLE                                ||
+        hw_info.model == SOFTRF_MODEL_MINI                                  ||
+        hw_info.model == SOFTRF_MODEL_BADGE                                 ||
+        hw_info.model == SOFTRF_MODEL_UNI       ) {
 
       if (voltage > 1.8 && voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 2) {
@@ -82,7 +85,9 @@ void Battery_loop()
       } else {
         Battery_cutoff_count = 0;
       }
-      Battery_TimeMarker = millis();
     }
+
+    Battery_voltage_cache = voltage;
+    Battery_TimeMarker = millis();
   }
 }
