@@ -720,6 +720,7 @@ const SoC_ops_t STM32_ops = {
 #else
   NULL,
 #endif
+  NULL,
   STM32_Display_setup,
   STM32_Display_loop,
   STM32_Display_fini,

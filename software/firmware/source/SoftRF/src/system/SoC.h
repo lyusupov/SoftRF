@@ -57,6 +57,7 @@ typedef struct SoC_ops_struct {
   void (*swSer_enableRx)(boolean);
   IODev_ops_t *Bluetooth_ops;
   IODev_ops_t *USB_ops;
+  IODev_ops_t *UART_ops;
   byte (*Display_setup)();
   void (*Display_loop)();
   void (*Display_fini)(const char *);

@@ -529,6 +529,69 @@ static void PSoC4_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
+#include "RingBuffer.h"
+
+#define UART1_TX_FIFO_SIZE 512
+
+RingBuffer<uint8_t, UART1_TX_FIFO_SIZE> UART_TX_FIFO =
+                                    RingBuffer<uint8_t, UART1_TX_FIFO_SIZE>();
+
+static void PSoC4_UART_setup()
+{
+
+}
+
+static void PSoC4_UART_loop()
+{
+//  while (SerialOutput.availableForWrite() > 0) {
+  while (UART_1_SpiUartGetTxBufferSize() < UART_1_TX_BUFFER_SIZE) {
+    if (UART_TX_FIFO.empty()) {
+      break;
+    }
+//    SerialOutput.write(UART_TX_FIFO.read());
+    UART_1_UartPutChar(UART_TX_FIFO.read());
+  }
+}
+
+static void PSoC4_UART_fini()
+{
+
+}
+
+static int PSoC4_UART_available()
+{
+  return SerialOutput.available();
+}
+
+static int PSoC4_UART_read()
+{
+  return SerialOutput.read();
+}
+
+static size_t PSoC4_UART_write(const uint8_t *buffer, size_t size)
+{
+  size_t written;
+
+  for (written=0; written < size; written++) {
+    if (!UART_TX_FIFO.full()) {
+      UART_TX_FIFO.write(buffer[written]);
+    } else {
+      break;
+    }
+  }
+  return written;
+}
+
+IODev_ops_t PSoC4_UART_ops = {
+  "PSoC4 UART",
+  PSoC4_UART_setup,
+  PSoC4_UART_loop,
+  PSoC4_UART_fini,
+  PSoC4_UART_available,
+  PSoC4_UART_read,
+  PSoC4_UART_write
+};
+
 const SoC_ops_t PSoC4_ops = {
   SOC_PSOC4,
   "PSoC4",
@@ -556,6 +619,7 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_swSer_enableRx,
   NULL, /* PSoC4 has no built-in Bluetooth */
   NULL, /* PSoC4 has no built-in USB */
+  &PSoC4_UART_ops,
   PSoC4_Display_setup,
   PSoC4_Display_loop,
   PSoC4_Display_fini,

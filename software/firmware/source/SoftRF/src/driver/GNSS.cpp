@@ -797,8 +797,13 @@ static bool goke_setup()
   }
   swSer.flush(); delay(250);
 
+#if defined(NMEA_TCP_SERVICE)
   /* RMC + GGA + GSA */
   swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
+#else
+  /* RMC + GGA */
+  swSer.write("$PGKC242,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*37\r\n");
+#endif
   swSer.flush(); delay(250);
 
 //#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN

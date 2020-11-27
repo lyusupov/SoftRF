@@ -515,6 +515,7 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
+  NULL,
   RPi_Display_setup,
   RPi_Display_loop,
   RPi_Display_fini,

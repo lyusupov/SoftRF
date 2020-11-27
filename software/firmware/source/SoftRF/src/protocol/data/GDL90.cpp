@@ -431,7 +431,9 @@ static void GDL90_Out(byte *buf, size_t size)
     switch(settings->gdl90)
     {
     case GDL90_UART:
-      {
+      if (SoC->UART_ops) {
+        SoC->UART_ops->write(buf, size);
+      } else {
         SerialOutput.write(buf, size);
       }
       break;

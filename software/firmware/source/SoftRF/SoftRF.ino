@@ -251,9 +251,11 @@ void loop()
     bridge();
     break;
 #endif /* EXCLUDE_WIFI */
+#if !defined(EXCLUDE_WATCHOUT_MODE)
   case SOFTRF_MODE_WATCHOUT:
     watchout();
     break;
+#endif /* EXCLUDE_WATCHOUT_MODE */
   case SOFTRF_MODE_NORMAL:
   default:
     normal();
@@ -280,6 +282,18 @@ void loop()
 #endif /* LOGGER_IS_ENABLED */
 
   SoC->loop();
+
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
+  }
+
+  if (SoC->UART_ops) {
+     SoC->UART_ops->loop();
+  }
 
   Battery_loop();
 
@@ -477,6 +491,7 @@ void bridge()
 }
 #endif /* EXCLUDE_WIFI */
 
+#if !defined(EXCLUDE_WATCHOUT_MODE)
 void watchout()
 {
   bool success;
@@ -503,6 +518,7 @@ void watchout()
     LEDTimeMarker = millis();
   }
 }
+#endif /* EXCLUDE_WATCHOUT_MODE */
 
 #if !defined(EXCLUDE_TEST_MODE)
 

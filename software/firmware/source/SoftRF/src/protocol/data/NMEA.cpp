@@ -199,9 +199,15 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
   {
   case NMEA_UART:
     {
-      SerialOutput.write(buf, size);
-      if (nl)
-        SerialOutput.write('\n');
+      if (SoC->UART_ops) {
+        SoC->UART_ops->write(buf, size);
+        if (nl)
+          SoC->UART_ops->write((byte *) "\n", 1);
+      } else {
+        SerialOutput.write(buf, size);
+        if (nl)
+          SerialOutput.write('\n');
+      }
     }
     break;
   case NMEA_UDP:

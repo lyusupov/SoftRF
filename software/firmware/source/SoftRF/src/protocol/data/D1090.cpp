@@ -41,7 +41,9 @@ static void D1090_Out(byte *buf, size_t size)
   switch(settings->d1090)
   {
   case D1090_UART:
-    {
+    if (SoC->UART_ops) {
+      SoC->UART_ops->write(buf, size);
+    } else {
       SerialOutput.write(buf, size);
     }
     break;
