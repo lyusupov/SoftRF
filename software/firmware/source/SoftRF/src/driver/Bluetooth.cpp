@@ -1128,7 +1128,9 @@ static void nRF52_Bluetooth_loop()
     BLE_Notify_TimeMarker = millis();
   }
 
-  blebas.write(VoltsToPercent(Battery_voltage()));
+  if (isTimeToBattery()) {
+    blebas.write(VoltsToPercent(Battery_voltage()));
+  }
 }
 
 static void nRF52_Bluetooth_fini()

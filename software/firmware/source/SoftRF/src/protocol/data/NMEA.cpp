@@ -24,6 +24,7 @@
 #include "../../system/SoC.h"
 #include "../../driver/WiFi.h"
 #include "../../driver/EEPROM.h"
+#include "../../driver/Battery.h"
 #include "../../TrafficHelper.h"
 
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))

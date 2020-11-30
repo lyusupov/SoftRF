@@ -324,10 +324,12 @@ static void ESP32_loop()
       }
     }
 
-    if (Battery_voltage() > Battery_threshold()) {
-      axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
-    } else {
-      axp.setChgLEDMode(AXP20X_LED_BLINK_1HZ);
+    if (isTimeToBattery()) {
+      if (Battery_voltage() > Battery_threshold()) {
+        axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
+      } else {
+        axp.setChgLEDMode(AXP20X_LED_BLINK_1HZ);
+      }
     }
   }
 }

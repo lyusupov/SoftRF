@@ -674,6 +674,9 @@ static void ublox_factory_reset()
 #if !defined(EXCLUDE_GNSS_SONY)
 static gnss_id_t sony_probe()
 {
+  /* Wake-up */
+  swSer.write("@WUP\r\n");       delay(500);
+
   /* Firmware version request */
   return nmea_handshake("@VER\r\n", "[VER] Done", true) ?
                         GNSS_MODULE_SONY : GNSS_MODULE_NONE;
@@ -682,28 +685,39 @@ static gnss_id_t sony_probe()
 static bool sony_setup()
 {
   /* Idle */
-  // swSer.write("@GSTP\r\n");      delay(250);
+  swSer.write("@GSTP\r\n");      delay(1500);
 
   /* GGA + GSA + RMC */
   swSer.write("@BSSL 0x25\r\n"); delay(250);
-  /* GPS + GLONASS */
-  swSer.write("@GNS 0x3\r\n");   delay(250);
+  /* GPS + GLONASS. This command must be issued at “Idle” mode */
+  swSer.write("@GNS 3\r\n");     delay(250);
+  /*  Positioning algorithm. This command must be issued at “Idle” mode */
+  swSer.write("@GUSE 0\r\n");    delay(250);
+
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   /* Enable 1PPS output */
-  swSer.write("@GPPS 0x1\r\n");  delay(250);
+  swSer.write("@GPPS 1\r\n");    delay(250);
 #endif
 
-  // swSer.write("@GSW\r\n"); /* warm start */
-
-  rst_info *resetInfo = (rst_info *) SoC->getResetInfoPtr();
-
-  if (resetInfo->reason == REASON_DEFAULT_RST) {
-    swSer.write("@GCD\r\n"); /* cold start */
-  } else {
-    swSer.write("@GSR\r\n"); /* hot  start */
+#if defined(USE_GNSS_PSM)
+  if (settings->power_save & POWER_SAVE_GNSS) {
+    /*
+     * Low power, 1 second interval, no sleep
+     *
+     * WARNING: use of this mode may cause issues
+     */
+    swSer.write("@GSOP 2 1000 0\r\n"); delay(250);
   }
+#endif /* USE_GNSS_PSM */
 
-  delay(250);
+  /*
+   * Hot start for TTFF
+   * When the conditions for the hot start have not been met,
+   * positioning is started automatically using a warm start or cold start.
+   */
+  swSer.write("@GSR\r\n");
+
+  swSer.flush(); delay(100);
 
   return true;
 }
@@ -715,17 +729,19 @@ static void sony_loop()
 
 static void sony_fini()
 {
-  if (hw_info.gnss == GNSS_MODULE_SONY) {
-    /* Idle */
-    swSer.write("@GSTP\r\n"); delay(250);
+   /* Idle */
+  swSer.write("@GSTP\r\n"); delay(1500);
 
-    /* GNSS sleep level 0-2 */
+  /* Sony GNSS sleep level (0-2)
+   * This command must be issued at Idle state.
+   * When this command is issued at Exec state, error is returned.
+   */
+
 //  swSer.write("@SLP 0\r\n");
-    swSer.write("@SLP 1\r\n");
+  swSer.write("@SLP 1\r\n");
 //  swSer.write("@SLP 2\r\n");
 
-    swSer.flush(); delay(100);
-  }
+  swSer.flush(); delay(100);
 }
 
 const gnss_chip_ops_t sony_ops = {

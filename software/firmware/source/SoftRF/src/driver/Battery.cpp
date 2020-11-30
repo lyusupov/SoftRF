@@ -23,8 +23,9 @@
 #include "../system/SoC.h"
 #include "Battery.h"
 
+unsigned long Battery_TimeMarker        = 0;
+
 static float Battery_voltage_cache      = 0;
-static unsigned long Battery_TimeMarker = 0;
 static int Battery_cutoff_count         = 0;
 
 void Battery_setup()

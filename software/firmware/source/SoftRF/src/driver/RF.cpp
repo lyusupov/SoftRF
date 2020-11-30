@@ -949,6 +949,8 @@ static void sx12xx_shutdown()
 {
   LMIC_shutdown();
   SPI.end();
+
+  pinMode(lmic_pins.nss, INPUT);
 }
 
 // Enable rx mode and call func when a packet is received
@@ -2119,6 +2121,8 @@ static void ognrf_shutdown()
 {
   TRX.WriteMode(RF_OPMODE_STANDBY);
   SPI.end();
+
+  pinMode(lmic_pins.nss, INPUT);
 }
 
 #endif /* USE_OGN_RF_DRIVER */

@@ -176,7 +176,6 @@ struct rst_info {
 #define USE_EPAPER                 //  +    kb
 
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
-extern float Battery_voltage(void);
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 

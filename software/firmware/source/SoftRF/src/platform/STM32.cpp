@@ -286,8 +286,11 @@ static void STM32_fini()
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
   swSer.end();
-  SPI.end();
   Wire.end();
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+  SerialOutput.end();
+#endif
 
   /*
    * Work around an issue that
@@ -659,7 +662,9 @@ static void STM32_USB_loop()
 
 static void STM32_USB_fini()
 {
-  /* TBD */
+#if defined(DISABLE_GENERIC_SERIALUSB)
+  SerialUSB.end();
+#endif
 }
 
 static int STM32_USB_available()

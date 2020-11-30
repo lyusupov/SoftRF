@@ -536,11 +536,6 @@ static void PSoC4_Button_fini()
 RingBuffer<uint8_t, UART1_TX_FIFO_SIZE> UART_TX_FIFO =
                                     RingBuffer<uint8_t, UART1_TX_FIFO_SIZE>();
 
-static void PSoC4_UART_setup()
-{
-
-}
-
 static void PSoC4_UART_loop()
 {
 //  while (SerialOutput.availableForWrite() > 0) {
@@ -551,21 +546,6 @@ static void PSoC4_UART_loop()
 //    SerialOutput.write(UART_TX_FIFO.read());
     UART_1_UartPutChar(UART_TX_FIFO.read());
   }
-}
-
-static void PSoC4_UART_fini()
-{
-
-}
-
-static int PSoC4_UART_available()
-{
-  return SerialOutput.available();
-}
-
-static int PSoC4_UART_read()
-{
-  return SerialOutput.read();
 }
 
 static size_t PSoC4_UART_write(const uint8_t *buffer, size_t size)
@@ -584,11 +564,11 @@ static size_t PSoC4_UART_write(const uint8_t *buffer, size_t size)
 
 IODev_ops_t PSoC4_UART_ops = {
   "PSoC4 UART",
-  PSoC4_UART_setup,
+  NULL,
   PSoC4_UART_loop,
-  PSoC4_UART_fini,
-  PSoC4_UART_available,
-  PSoC4_UART_read,
+  NULL,
+  NULL,
+  NULL,
   PSoC4_UART_write
 };
 

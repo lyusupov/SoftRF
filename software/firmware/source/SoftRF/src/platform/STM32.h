@@ -194,6 +194,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_EGM96            //  - 16 kb
 #define USE_SERIAL_DEEP_SLEEP    //  + 12 kb
 //#define USE_BASICMAC           //  +  7 kb
+//#define USE_GNSS_PSM
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
