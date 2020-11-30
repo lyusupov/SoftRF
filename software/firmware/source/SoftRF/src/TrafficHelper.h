@@ -51,7 +51,7 @@ void ParseData(void);
 void Traffic_setup(void);
 void Traffic_loop(void);
 void ClearExpired(void);
-void Traffic_Update(int);
+void Traffic_Update(ufo_t *);
 int  Traffic_Count(void);
 
 int  traffic_cmp_by_distance(const void *, const void *);

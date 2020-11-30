@@ -118,20 +118,20 @@ static int8_t Alarm_Legacy(ufo_t *this_aircraft, ufo_t *fop)
   return rval;
 }
 
-void Traffic_Update(int ndx)
+void Traffic_Update(ufo_t *fop)
 {
-  Container[ndx].distance = gnss.distanceBetween( ThisAircraft.latitude,
-                                                  ThisAircraft.longitude,
-                                                  Container[ndx].latitude,
-                                                  Container[ndx].longitude);
+  fop->distance = gnss.distanceBetween( ThisAircraft.latitude,
+                                        ThisAircraft.longitude,
+                                        fop->latitude,
+                                        fop->longitude);
 
-  Container[ndx].bearing = gnss.courseTo( ThisAircraft.latitude,
-                                          ThisAircraft.longitude,
-                                          Container[ndx].latitude,
-                                          Container[ndx].longitude);
+  fop->bearing  = gnss.courseTo( ThisAircraft.latitude,
+                                 ThisAircraft.longitude,
+                                 fop->latitude,
+                                 fop->longitude);
 
   if (Alarm_Level) {
-    Container[ndx].alarm_level = (*Alarm_Level)(&ThisAircraft, &Container[ndx]);
+    fop->alarm_level = (*Alarm_Level)(&ThisAircraft, fop);
   }
 }
 
@@ -156,22 +156,49 @@ void ParseData()
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
 
+      int i;
+
       fo.rssi = RF_last_rssi;
 
-      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      Traffic_Update(&fo);
 
+      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
         if (Container[i].addr == fo.addr) {
           Container[i] = fo;
-          Traffic_Update(i);
-          break;
-        } else {
-          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-            Container[i] = fo;
-            Traffic_Update(i);
-            break;
-          }
+          return;
         }
       }
+
+      int max_dist_ndx = 0;
+      int min_level_ndx = 0;
+
+      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+          Container[i] = fo;
+          return;
+        }
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+        if  (Container[i].distance > Container[max_dist_ndx].distance)  {
+          max_dist_ndx = i;
+        }
+        if  (Container[i].alarm_level < Container[min_level_ndx].alarm_level)  {
+          min_level_ndx = i;
+        }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+      }
+
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+      if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
+        Container[min_level_ndx] = fo;
+        return;
+      }
+
+      if (fo.distance < Container[max_dist_ndx].distance) {
+        Container[max_dist_ndx] = fo;
+        return;
+      }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+
     }
 }
 
@@ -203,7 +230,7 @@ void Traffic_loop()
       if (Container[i].addr &&
           (ThisAircraft.timestamp - Container[i].timestamp) <= ENTRY_EXPIRATION_TIME) {
         if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL)
-          Traffic_Update(i);
+          Traffic_Update(&Container[i]);
       } else {
         Container[i] = EmptyFO;
       }
