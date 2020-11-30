@@ -210,13 +210,14 @@ void parsePING(JsonObject& root)
         fo.no_track = false;
         fo.rssi = 0;
 
+        Traffic_Update(&fo);
+
         int j;
 
         /* Try to find and update an entry with the same aircraft ID */
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
           if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
@@ -230,7 +231,6 @@ void parsePING(JsonObject& root)
           if (Container[j].addr == 0 &&
              memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
@@ -243,7 +243,6 @@ void parsePING(JsonObject& root)
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
           if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
@@ -626,13 +625,14 @@ void parseD1090(JsonObject& root)
         fo.no_track = false;
         fo.rssi = aircraft_array[i].rssi;
 
+        Traffic_Update(&fo);
+
         int j;
 
         /* Try to find and update an entry with the same aircraft ID */
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
           if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
@@ -646,7 +646,6 @@ void parseD1090(JsonObject& root)
           if (Container[j].addr == 0 &&
              memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
@@ -659,7 +658,6 @@ void parseD1090(JsonObject& root)
         for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
           if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
             Container[j] = fo;
-            Traffic_Update(j);
             break;
           }
         }
