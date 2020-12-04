@@ -226,6 +226,7 @@ static void STM32_setup()
 
 static void STM32_post_init()
 {
+#if defined(ARDUINO_NUCLEO_L073RZ)
   if (hw_info.model == SOFTRF_MODEL_DONGLE) {
     Serial.println();
     Serial.println(F("TTGO T-Motion (S76G) Power-on Self Test"));
@@ -255,6 +256,7 @@ static void STM32_post_init()
     Serial.println();
     Serial.flush();
   }
+#endif /* ARDUINO_NUCLEO_L073RZ */
 
 #if defined(USE_OLED)
   OLED_info1();
@@ -312,6 +314,15 @@ static void STM32_fini()
 
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, LOW);
   pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT_OPEN_DRAIN);
+
+  if (STM32_has_TCXO) {
+    // for LoRa sx1276 TCXO OE Pin
+    digitalWrite(SOC_GPIO_PIN_TCXO_OE, LOW);
+    pinMode(SOC_GPIO_PIN_TCXO_OE, OUTPUT);
+  } else {
+    // because PC1 = high for LoRa Crystal, need to be careful of leakage current
+    pinMode(SOC_GPIO_PIN_OSC_SEL, INPUT_PULLUP);
+  }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
   swSer.end();
