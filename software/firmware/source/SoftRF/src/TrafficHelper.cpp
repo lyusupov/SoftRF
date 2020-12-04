@@ -193,7 +193,8 @@ void ParseData()
         return;
       }
 
-      if (fo.distance < Container[max_dist_ndx].distance) {
+      if (fo.distance    <  Container[max_dist_ndx].distance &&
+          fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
         Container[max_dist_ndx] = fo;
         return;
       }

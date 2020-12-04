@@ -162,6 +162,10 @@ typedef struct stm32_backup_struct {
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX PA1 // 1:Rx, 0:Tx
 
+/* RF clock source */
+#define SOC_GPIO_PIN_TCXO_OE  PD_7
+#define SOC_GPIO_PIN_OSC_SEL  PC1
+
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7
 #define SOC_GPIO_PIN_SCL      PB6

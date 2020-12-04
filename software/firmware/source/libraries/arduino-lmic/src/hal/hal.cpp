@@ -57,6 +57,8 @@ static void hal_io_init () {
         pinMode(lmic_pins.rxe, OUTPUT);
     if (lmic_pins.rst != LMIC_UNUSED_PIN)
         pinMode(lmic_pins.rst, OUTPUT);
+    if (lmic_pins.tcxo != LMIC_UNUSED_PIN)
+        pinMode(lmic_pins.tcxo, OUTPUT);
 
     hal_interrupt_init();
 }
@@ -181,6 +183,14 @@ static void hal_io_check() {
     }
 }
 #endif // LMIC_USE_INTERRUPTS
+
+bool hal_pin_tcxo (u1_t val) {
+    if (lmic_pins.tcxo == LMIC_UNUSED_PIN)
+        return false;
+
+    digitalWrite(lmic_pins.tcxo, val == 1 ? HIGH : LOW);
+    return true;
+}
 
 // -----------------------------------------------------------------------------
 // SPI

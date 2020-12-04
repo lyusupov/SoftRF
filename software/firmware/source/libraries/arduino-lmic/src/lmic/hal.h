@@ -48,6 +48,12 @@ void hal_pin_nss (u1_t val);
 void hal_pin_rxtx (s1_t val);
 
 /*
+ * control radio TCXO power (0=off, 1=on)
+ * (return if TCXO is present and in use)
+ */
+bool hal_pin_tcxo (u1_t val);
+
+/*
  * control radio RST pin (0=low, 1=high, 2=floating)
  */
 void hal_pin_rst (u1_t val);

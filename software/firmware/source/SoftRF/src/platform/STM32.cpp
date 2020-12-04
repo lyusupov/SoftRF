@@ -61,6 +61,8 @@ HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
 HardwareSerial Serial2(USART2);
 HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
+static bool STM32_has_TCXO = false;
+
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
@@ -151,6 +153,10 @@ static void STM32_setup()
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
     }
+
+    // PC_1 is Low for TCXO or High for Crystal
+    STM32_has_TCXO = (STM32_probe_pin(SOC_GPIO_PIN_OSC_SEL, INPUT) == 0);
+
 #elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
 #else
@@ -199,6 +205,23 @@ static void STM32_setup()
 
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
+    if (STM32_has_TCXO) {
+      lmic_pins.tcxo = SOC_GPIO_PIN_TCXO_OE;
+
+      digitalWrite(SOC_GPIO_PIN_TCXO_OE, LOW);
+      pinMode(SOC_GPIO_PIN_TCXO_OE, OUTPUT);
+      delay(5);
+      digitalWrite(SOC_GPIO_PIN_TCXO_OE, HIGH);
+      delay(10);
+    }
+
+    lmic_pins.rxe = SOC_GPIO_PIN_ANT_RXTX;
+
+    // Set default value at Rx
+    digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
+#endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
 static void STM32_post_init()
@@ -213,6 +236,10 @@ static void STM32_post_init()
 
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1276        ? F("PASS") : F("FAIL"));
+    if (hw_info.rf == RF_IC_SX1276) {
+      Serial.print(F("CLK SRC : "));
+      Serial.println(STM32_has_TCXO                       ? F("TCXO") : F("Crystal"));
+    }
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    == GNSS_MODULE_SONY    ? F("PASS") : F("FAIL"));
 
@@ -283,6 +310,8 @@ static void STM32_fini()
   delay(100);
   pinMode(SOC_GPIO_PIN_GNSS_LS, INPUT);
 
+  digitalWrite(SOC_GPIO_PIN_ANT_RXTX, LOW);
+  pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT_OPEN_DRAIN);
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
   swSer.end();

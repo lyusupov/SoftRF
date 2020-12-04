@@ -134,11 +134,24 @@
 // #define RegAgcThresh3                              0x46 // common
 // #define RegPllHop                                  0x4B // common
 // #define RegTcxo                                    0x58 // common
-#define RegPaDac                                   0x5A // common
+#define SX1272_RegTcxo                             0x58 // common
+#define SX1276_RegTcxo                             0x4B // common
+#define SX1272_RegPaDac                            0x5A // common
+#define SX1276_RegPaDac                            0x4D // common
 // #define RegPll                                     0x5C // common
 // #define RegPllLowPn                                0x5E // common
 // #define RegFormerTemp                              0x6C // common
 // #define RegBitRateFrac                             0x70 // common
+
+#ifdef CFG_sx1276_radio
+#define RADIO_VERSION               0x12
+#define RegPaDac                    SX1276_RegPaDac
+#define RegTcxo                     SX1276_RegTcxo
+#elif CFG_sx1272_radio
+#define RADIO_VERSION               0x22
+#define RegPaDac                    SX1272_RegPaDac
+#define RegTcxo                     SX1272_RegTcxo
+#endif
 
 // ----------------------------------------
 // spread factors and mode for RegModemConfig2
@@ -461,12 +474,23 @@ static void configPower () {
 #endif /* CFG_sx1272_radio */
 }
 
+static void power_tcxo (void) {
+    // power-up TCXO and set tcxo as input
+    if ( hal_pin_tcxo(1) ) {
+      writeReg(RegTcxo, 0b00011001); // reserved=000, tcxo=1, reserved=1001
+    }
+}
+
 #define RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY 0x80
 
 static void txfsk () {
     // select FSK modem (from sleep mode)
     writeReg(RegOpMode, 0x0 /* 0x10 */ ); // FSK, BT=0.5
     ASSERT(readReg(RegOpMode) == 0x0 /* 0x10 */ );
+
+    // power-up tcxo
+    power_tcxo();
+
     // enter standby mode (required for FIFO loading))
     opmode(OPMODE_STANDBY);
 
@@ -580,6 +604,9 @@ static void txlora () {
     opmodeLora();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) != 0);
 
+    // power-up tcxo
+    power_tcxo();
+
     // enter standby mode (required for FIFO loading))
     opmode(OPMODE_STANDBY);
     // configure LoRa modem (cfg1, cfg2)
@@ -653,6 +680,10 @@ static void rxlora (u1_t rxmode) {
     // select LoRa modem (from sleep mode)
     opmodeLora();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) != 0);
+
+    // power-up tcxo
+    power_tcxo();
+
     // enter standby mode (warm up))
     opmode(OPMODE_STANDBY);
     // don't use MAC settings at startup
@@ -729,6 +760,9 @@ static void rxfsk (u1_t rxmode) {
     //writeReg(RegOpMode, 0x00); // (not LoRa)
     opmodeFSK();
     ASSERT((readReg(RegOpMode) & OPMODE_LORA) == 0);
+
+    // power-up tcxo
+    power_tcxo();
 
     // enter standby mode (warm up))
     opmode(OPMODE_STANDBY);
@@ -903,6 +937,9 @@ static void startrx (u1_t rxmode) {
 void radio_init () {
     hal_disableIRQs();
 
+    // power-up tcxo
+    power_tcxo();
+
     // manually reset radio
 #ifdef CFG_sx1276_radio
     hal_pin_rst(0); // drive RST pin low
@@ -913,17 +950,14 @@ void radio_init () {
     hal_pin_rst(2); // configure RST pin floating!
     hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
 
+    // power-down TCXO
+    hal_pin_tcxo(0);
+
     opmode(OPMODE_SLEEP);
 
-    // some sanity checks, e.g., read version number
-    u1_t v = readReg(RegVersion);
-#ifdef CFG_sx1276_radio
-    ASSERT(v == 0x12 );
-#elif CFG_sx1272_radio
-    ASSERT(v == 0x22);
-#else
-#error Missing CFG_sx1272_radio/CFG_sx1276_radio
-#endif
+    // sanity check, read version number
+    ASSERT( readReg(RegVersion) == RADIO_VERSION );
+
     // seed 15-byte randomness via noise rssi
     rxlora(RXMODE_RSSI);
     while( (readReg(RegOpMode) & OPMODE_MASK) != OPMODE_RX ); // continuous rx

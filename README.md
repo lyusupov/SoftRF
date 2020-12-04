@@ -28,7 +28,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 
 # Models
 ## By Processing Unit
-Model|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
+Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;[**WebTop**](https://github.com/lyusupov/SoftRF/wiki/WebTop-WiFi-adapter)|[Espressif<br>ESP8266](https://en.wikipedia.org/wiki/ESP8266)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition) model is no longer supported - use [Prime MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) instead.<br><!-- ESP8266 platform will be phased out through year 2020 in favour of ESP32.-->
 1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) + [adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)<br>4&nbsp;[**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)<br>5&nbsp;[Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)|[Espressif<br>ESP32](https://en.wikipedia.org/wiki/ESP32)|Q1 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Today's best platform
@@ -39,7 +39,7 @@ Mini|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 
 Badge|[Nordic Semiconductor<br>nRF52840](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF52840)|Q4 2020|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|&nbsp;
 
 ## By sub-1 GHz radio
-Radio|Models|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
+Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 [Nordic Semiconductor<br>nRF905](https://infocenter.nordicsemi.com/pdf/nRF905_PS_v1.5.pdf)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition),<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition),<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Semtech<br>SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)|[LoRa module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module),<br>[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII),<br>[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition),<br>[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|Q4 2017|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
@@ -49,7 +49,7 @@ Radio|Models|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&n
 [Texas Instruments<br>CC1352R](http://www.ti.com/product/CC1352R)|[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 
 ## By GNSS chip
-GNSS|Models|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Comment
+GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|Q4 2016|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII),<br>[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition),<br>[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
