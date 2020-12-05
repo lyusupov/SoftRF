@@ -153,7 +153,7 @@ typedef struct navbox_struct
 void EPD_Clear_Screen();
 bool EPD_setup(bool);
 void EPD_loop();
-void EPD_fini(const char *);
+void EPD_fini(int);
 void EPD_info1(bool, bool);
 
 void EPD_Mode();

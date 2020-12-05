@@ -99,7 +99,7 @@ typedef struct stm32_backup_struct {
 
 #define STM32_BKP_REG_NUM     5 /* L0 has 5, F1 has 10 */
 #define BOOT_COUNT_INDEX      2
-#define BOOT_ACTION_INDEX     3
+#define SHUTDOWN_REASON_INDEX 3
 
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)

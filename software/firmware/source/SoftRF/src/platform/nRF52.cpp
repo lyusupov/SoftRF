@@ -291,7 +291,7 @@ static void nRF52_loop()
   }
 }
 
-static void nRF52_fini()
+static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
@@ -500,12 +500,12 @@ static void nRF52_Display_loop()
 #endif /* USE_EPAPER */
 }
 
-static void nRF52_Display_fini(const char *msg)
+static void nRF52_Display_fini(int reason)
 {
 #if defined(USE_EPAPER)
 
   EPD_Clear_Screen();
-  EPD_fini(msg);
+  EPD_fini(reason);
 
   if( EPD_Task_Handle != NULL )
   {
@@ -631,7 +631,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
-        shutdown("OFF");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
         Serial.println(F("This will never be printed."));
       }
       break;

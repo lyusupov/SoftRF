@@ -105,6 +105,7 @@ static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 }
 
 static void STM32_SerialWakeup() { }
+static void STM32_ButtonWakeup() { }
 
 static void STM32_setup()
 {
@@ -167,12 +168,12 @@ static void STM32_setup()
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
 
-    uint32_t boot_action = getBackupRegister(BOOT_ACTION_INDEX);
+    uint32_t shudown_reason = getBackupRegister(SHUTDOWN_REASON_INDEX);
 
-    switch (boot_action)
+    switch (shudown_reason)
     {
 #if defined(USE_SERIAL_DEEP_SLEEP)
-    case STM32_BOOT_SERIAL_DEEP_SLEEP:
+    case SOFTRF_SHUTDOWN_NMEA:
 #if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
       SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
@@ -180,20 +181,26 @@ static void STM32_setup()
 
       LowPower.deepSleep();
 
-      /* reset onto default value */
-      setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_NORMAL);
+      setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
 
       // Empty Serial Rx
-      while(SerialOutput.available()) {
-        char c = SerialOutput.read();
-      }
+      while (SerialOutput.available()) { SerialOutput.read(); }
       break;
 #endif
-    case STM32_BOOT_SHUTDOWN:
-      LowPower_shutdown();
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+    case SOFTRF_SHUTDOWN_BUTTON:
+      LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON, STM32_ButtonWakeup, RISING);
+
+      LowPower.deepSleep();
+
+      setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
       break;
-    case STM32_BOOT_NORMAL:
+#endif
+    case SOFTRF_SHUTDOWN_NONE:
+      break;
+    case SOFTRF_SHUTDOWN_LOWBAT:
     default:
+      LowPower_shutdown();
       break;
     }
 
@@ -303,7 +310,7 @@ static void STM32_loop()
   }
 }
 
-static void STM32_fini()
+static void STM32_fini(int reason)
 {
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
@@ -337,11 +344,7 @@ static void STM32_fini()
    * WDT (once enabled) is active all the time
    * until hardware restart
    */
-#if defined(USE_SERIAL_DEEP_SLEEP)
-  setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_SERIAL_DEEP_SLEEP);
-#else
-  setBackupRegister(BOOT_ACTION_INDEX, STM32_BOOT_SHUTDOWN);
-#endif
+  setBackupRegister(SHUTDOWN_REASON_INDEX, reason);
 
   HAL_NVIC_SystemReset();
 }
@@ -483,7 +486,6 @@ static void STM32_SPI_begin()
 
 static void STM32_swSer_begin(unsigned long baud)
 {
-
   swSer.begin(baud);
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
@@ -533,10 +535,10 @@ static void STM32_Display_loop()
 #endif /* USE_OLED */
 }
 
-static void STM32_Display_fini(const char *msg)
+static void STM32_Display_fini(int reason)
 {
 #if defined(USE_OLED)
-  OLED_fini(msg);
+  OLED_fini(reason);
 #endif /* USE_OLED */
 }
 
@@ -629,7 +631,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
-        shutdown("  OFF  ");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
       }
       break;
   }

@@ -36,7 +36,7 @@ typedef struct SoC_ops_struct {
   void (*setup)();
   void (*post_init)();
   void (*loop)();
-  void (*fini)();
+  void (*fini)(int);
   void (*reset)();
   uint32_t (*getChipId)();
   void* (*getResetInfoPtr)();
@@ -60,7 +60,7 @@ typedef struct SoC_ops_struct {
   IODev_ops_t *UART_ops;
   byte (*Display_setup)();
   void (*Display_loop)();
-  void (*Display_fini)(const char *);
+  void (*Display_fini)(int);
   void (*Battery_setup)();
   float (*Battery_voltage)();
   void (*GNSS_PPS_handler)();
@@ -111,6 +111,6 @@ extern const SoC_ops_t nRF52_ops;
 #endif
 
 byte SoC_setup(void);
-void SoC_fini(void);
+void SoC_fini(int);
 
 #endif /* SOCHELPER_H */

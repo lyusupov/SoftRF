@@ -302,7 +302,7 @@ void loop()
   yield();
 }
 
-void shutdown(const char *msg)
+void shutdown(int reason)
 {
   SoC->WDT_fini();
 
@@ -326,13 +326,13 @@ void shutdown(const char *msg)
     GNSS_fini();
   }
 
-  SoC->Display_fini(msg);
+  SoC->Display_fini(reason);
 
   RF_Shutdown();
 
   SoC->Button_fini();
 
-  SoC_fini();
+  SoC_fini(reason);
 }
 
 void normal()

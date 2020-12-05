@@ -378,7 +378,7 @@ PIN_Config UART0_TableWakeUp[] = {
 };
 #endif
 
-static void CC13XX_fini()
+static void CC13XX_fini(int reason)
 {
   // Disable battery monitoring
   AONBatMonDisable();
@@ -538,10 +538,10 @@ static void CC13XX_Display_loop()
 #endif /* USE_OLED */
 }
 
-static void CC13XX_Display_fini(const char *msg)
+static void CC13XX_Display_fini(int reason)
 {
 #if defined(USE_OLED)
-  OLED_fini(msg);
+  OLED_fini(reason);
 #endif /* USE_OLED */
 }
 
@@ -654,7 +654,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
-        shutdown("  OFF  ");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
       }
       break;
   }

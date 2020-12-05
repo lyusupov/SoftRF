@@ -331,12 +331,13 @@ void OLED_loop()
   }
 }
 
-void OLED_fini(const char *msg)
+void OLED_fini(int reason)
 {
   if (u8x8) {
     u8x8->setFont(u8x8_font_chroma48medium8_r);
     u8x8->clear();
-    u8x8->draw2x2String(1, 3, msg);
+    u8x8->draw2x2String(1, 3, reason == SOFTRF_SHUTDOWN_LOWBAT ?
+                              "LOW BAT" : "  OFF  ");
   }
 }
 

@@ -85,7 +85,7 @@ static void ESP8266_loop()
 
 }
 
-static void ESP8266_fini()
+static void ESP8266_fini(int reason)
 {
 
 }
@@ -316,7 +316,7 @@ static void ESP8266_Display_loop()
 
 }
 
-static void ESP8266_Display_fini(const char *msg)
+static void ESP8266_Display_fini(int reason)
 {
 
 }

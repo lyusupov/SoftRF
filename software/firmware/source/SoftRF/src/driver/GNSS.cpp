@@ -1265,7 +1265,7 @@ void PickGNSSFix()
             RF_Shutdown();
             SoC->reset();
         } else if (strncmp(C_Version.value(), "OFF", 3) == 0) {
-          shutdown("  OFF  ");
+          shutdown(SOFTRF_SHUTDOWN_NMEA);
         } else if (strncmp(C_Version.value(), "?", 1) == 0) {
           char psrfc_buf[MAX_PSRFC_LEN];
 

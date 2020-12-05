@@ -27,7 +27,7 @@
 
 byte OLED_setup(void);
 void OLED_loop(void);
-void OLED_fini(const char *);
+void OLED_fini(int);
 void OLED_info1(void);
 void OLED_Next_Page(void);
 

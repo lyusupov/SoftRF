@@ -197,11 +197,24 @@ enum
 	SOFTRF_MODEL_BADGE
 };
 
+enum
+{
+	SOFTRF_SHUTDOWN_NONE,
+	SOFTRF_SHUTDOWN_DEFAULT,
+	SOFTRF_SHUTDOWN_DEBUG,
+	SOFTRF_SHUTDOWN_ABORT,
+	SOFTRF_SHUTDOWN_WATCHDOG,
+	SOFTRF_SHUTDOWN_NMEA,
+	SOFTRF_SHUTDOWN_BUTTON,
+	SOFTRF_SHUTDOWN_LOWBAT,
+	SOFTRF_SHUTDOWN_SENSOR
+};
+
 extern ufo_t ThisAircraft;
 extern hardware_info_t hw_info;
 extern const float txrx_test_positions[90][2] PROGMEM;
 
-extern void shutdown(const char *);
+extern void shutdown(int);
 
 #define TXRX_TEST_NUM_POSITIONS (sizeof(txrx_test_positions) / sizeof(float) / 2)
 #define TXRX_TEST_ALTITUDE    438.0

@@ -191,7 +191,7 @@ static void PSoC4_loop()
   }
 }
 
-static void PSoC4_fini()
+static void PSoC4_fini(int reason)
 {
   if (hw_info.model == SOFTRF_MODEL_MINI) {
 
@@ -359,10 +359,10 @@ static void PSoC4_Display_loop()
 #endif /* USE_OLED */
 }
 
-static void PSoC4_Display_fini(const char *msg)
+static void PSoC4_Display_fini(int reason)
 {
 #if defined(USE_OLED)
-  OLED_fini(msg);
+  OLED_fini(reason);
 #endif /* USE_OLED */
 }
 
@@ -465,7 +465,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
-        shutdown("  OFF  ");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
 //      Serial.println(F("This will never be printed."));
       }
       break;

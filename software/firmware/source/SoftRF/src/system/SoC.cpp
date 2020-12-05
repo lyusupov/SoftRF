@@ -51,9 +51,9 @@ byte SoC_setup()
   }
 }
 
-void SoC_fini()
+void SoC_fini(int reason)
 {
   if (SoC && SoC->fini) {
-    SoC->fini();
+    SoC->fini(reason);
   }
 }

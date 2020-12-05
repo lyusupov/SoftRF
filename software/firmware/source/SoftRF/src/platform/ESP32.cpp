@@ -320,7 +320,7 @@ static void ESP32_loop()
       portEXIT_CRITICAL_ISR(&PMU_mutex);
 
       if (down) {
-        shutdown("  OFF  ");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
       }
     }
 
@@ -334,7 +334,7 @@ static void ESP32_loop()
   }
 }
 
-static void ESP32_fini()
+static void ESP32_fini(int reason)
 {
   SPI.end();
 
@@ -963,11 +963,11 @@ static void ESP32_Display_loop()
   }
 }
 
-static void ESP32_Display_fini(const char *msg)
+static void ESP32_Display_fini(int reason)
 {
 #if defined(USE_OLED)
 
-  OLED_fini(msg);
+  OLED_fini(reason);
 
   if (u8x8) {
 
@@ -1141,7 +1141,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
-        shutdown("  OFF  ");
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
       }
       break;
   }

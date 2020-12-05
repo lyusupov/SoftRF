@@ -236,14 +236,15 @@ void EPD_loop()
   }
 }
 
-void EPD_fini(const char *msg)
+void EPD_fini(int reason)
 {
   switch (hw_info.display)
   {
   case DISPLAY_EPD_1_54:
     while (EPD_ready_to_display) delay(100);
 
-    EPD_Message(msg, NULL);
+    EPD_Message(reason == SOFTRF_SHUTDOWN_LOWBAT ? "LOW"     : "OFF",
+                reason == SOFTRF_SHUTDOWN_LOWBAT ? "BATTERY" : NULL);
 
     while (EPD_ready_to_display) delay(100);
 

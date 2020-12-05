@@ -79,7 +79,7 @@ void Battery_loop()
 
       if (voltage > 1.8 && voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 2) {
-          shutdown("LOW BAT");
+          shutdown(SOFTRF_SHUTDOWN_LOWBAT);
         } else {
           Battery_cutoff_count++;
         }
