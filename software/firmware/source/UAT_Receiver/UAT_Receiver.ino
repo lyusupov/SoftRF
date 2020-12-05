@@ -272,13 +272,13 @@ void loop() {
   yield();
 }
 
-void shutdown(const char *msg)
+void shutdown(int reason)
 {
   SoC->WDT_fini();
 
-  SoC->Display_fini(msg);
+  SoC->Display_fini(reason);
 
   SoC->Button_fini();
 
-  SoC_fini();
+  SoC_fini(reason);
 }

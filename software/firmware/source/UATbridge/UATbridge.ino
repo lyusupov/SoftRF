@@ -445,7 +445,7 @@ void loop() {
   yield();
 }
 
-void shutdown(const char *msg)
+void shutdown(int reason)
 {
   SoC->WDT_fini();
 
@@ -453,7 +453,7 @@ void shutdown(const char *msg)
 
   SoC->swSer_enableRx(false);
 
-  SoC->Display_fini(msg);
+  SoC->Display_fini(reason);
 
   if (hw_info.rf == RF_IC_CC13XX) {
     EasyLink_abort();
@@ -463,5 +463,5 @@ void shutdown(const char *msg)
 
   SoC->Button_fini();
 
-  SoC_fini();
+  SoC_fini(reason);
 }
