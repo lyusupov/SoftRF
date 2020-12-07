@@ -172,6 +172,8 @@ static void STM32_setup()
 
     switch (shudown_reason)
     {
+    case SOFTRF_SHUTDOWN_NONE:
+      break;
 #if defined(USE_SERIAL_DEEP_SLEEP)
     case SOFTRF_SHUTDOWN_NMEA:
 #if !defined(USBD_USE_CDC) || defined(DISABLE_GENERIC_SERIALUSB)
@@ -181,28 +183,25 @@ static void STM32_setup()
 
       LowPower.deepSleep();
 
-      setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
-
       // Empty Serial Rx
       while (SerialOutput.available()) { SerialOutput.read(); }
       break;
 #endif
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
     case SOFTRF_SHUTDOWN_BUTTON:
-      LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON, STM32_ButtonWakeup, RISING);
+    case SOFTRF_SHUTDOWN_LOWBAT:
+      LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
+                                     STM32_ButtonWakeup, RISING);
 
       LowPower.deepSleep();
-
-      setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
       break;
 #endif
-    case SOFTRF_SHUTDOWN_NONE:
-      break;
-    case SOFTRF_SHUTDOWN_LOWBAT:
     default:
       LowPower_shutdown();
       break;
     }
+
+    setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
 
     bootCount = getBackupRegister(BOOT_COUNT_INDEX);
     bootCount++;

@@ -88,6 +88,7 @@ static void PSoC4_SerialWakeup()
   }
 }
 
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
 static void PSoC4_User_Key_Wakeup()
 {
   if (hw_info.model == SOFTRF_MODEL_MINI &&
@@ -105,6 +106,7 @@ static void PSoC4_User_Key_Wakeup()
     }
   }
 }
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 
 static void PSoC4_setup()
 {
@@ -214,11 +216,24 @@ static void PSoC4_fini(int reason)
 
     Serial.end();
 
-    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
-    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON), PSoC4_User_Key_Wakeup, FALLING);
-
-    pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
-    attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_CONS_RX), PSoC4_SerialWakeup, FALLING);
+    switch (reason)
+    {
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+    case SOFTRF_SHUTDOWN_BUTTON:
+    case SOFTRF_SHUTDOWN_LOWBAT:
+      pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON),
+                      PSoC4_User_Key_Wakeup, FALLING);
+      break;
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+    case SOFTRF_SHUTDOWN_NMEA:
+      pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_CONS_RX),
+                      PSoC4_SerialWakeup, FALLING);
+      break;
+    default:
+      break;
+    }
   }
 
   PSoC4_state = PSOC4_LOW_POWER;

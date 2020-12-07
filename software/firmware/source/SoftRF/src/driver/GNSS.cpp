@@ -123,7 +123,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
     delay(50);
 
     /* wait for pause after NMEA burst */
-    if (swSer.available() > 0) {
+    if (req && swSer.available() > 0) {
       continue;
     } else {
       /* send request */

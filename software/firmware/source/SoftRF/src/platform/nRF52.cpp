@@ -354,8 +354,20 @@ static void nRF52_fini(int reason)
 #endif
 
   // setup wake-up pins
-  pinMode(SOC_GPIO_PIN_BUTTON, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
-  // pinMode(SOC_GPIO_PIN_CONS_RX, INPUT_SENSE_LOW);
+  switch (reason)
+  {
+  case SOFTRF_SHUTDOWN_BUTTON:
+  case SOFTRF_SHUTDOWN_LOWBAT:
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+    break;
+#if defined(USE_SERIAL_DEEP_SLEEP)
+  case SOFTRF_SHUTDOWN_NMEA:
+    pinMode(SOC_GPIO_PIN_CONS_RX, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+    break;
+#endif
+  default:
+    break;
+  }
 
   Serial.end();
 
