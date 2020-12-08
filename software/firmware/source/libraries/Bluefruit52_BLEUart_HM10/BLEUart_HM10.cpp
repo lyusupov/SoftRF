@@ -137,8 +137,9 @@ err_t BLEUart_HM10::begin(void)
 
   uint16_t max_mtu = Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH);
 
-  // Add TXD Characteristic
+  // Add RXD+TXD Characteristic
   _rtxd.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY | CHR_PROPS_WRITE_WO_RESP);
+  _rtxd.setWriteCallback(BLEUart_HM10::bleuart_rxd_cb, true);
   // TODO enable encryption when bonding is enabled
   _rtxd.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _rtxd.setMaxLen( max_mtu );

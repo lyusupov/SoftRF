@@ -1155,12 +1155,16 @@ void PickGNSSFix()
       // break;
 #else
     /*
-     * Give priority to control channels on STM32-based
-     * 'Dongle' and 'Retro' Editions
+     * Give priority to control channels over default GNSS input source on
+     * 'Dongle', 'Retro', 'Uni', 'Mini' and 'Badge' Editions
      */
 
-    /* USB input is first */
-    if (SoC->USB_ops && SoC->USB_ops->available() > 0) {
+    /* Bluetooth input is first */
+    if (SoC->Bluetooth_ops && SoC->Bluetooth_ops->available() > 0) {
+      c = SoC->Bluetooth_ops->read();
+
+    /* USB input is second */
+    } else if (SoC->USB_ops && SoC->USB_ops->available() > 0) {
       c = SoC->USB_ops->read();
 
 #if 0
@@ -1170,7 +1174,7 @@ void PickGNSSFix()
       }
 #endif
 
-    /* Serial input is second */
+    /* Serial input is third */
     } else if (SerialOutput.available() > 0) {
       c = SerialOutput.read();
 
