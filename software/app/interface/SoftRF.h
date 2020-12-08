@@ -71,7 +71,7 @@
         Legacy    On, Off
         Sensors   On, Off
 
-  NMEA  output:   Serial, "Bluetooth" (assigned to USB CDC on STM32)
+  NMEA  output:   Serial, USB, Bluetooth
   GDL90 output:   Off
   D1090 output:   Off
 
@@ -96,7 +96,7 @@
         Legacy    On
         Sensors   On
 
-  NMEA  output:   "Bluetooth" (USB)
+  NMEA  output:   USB
 
   Stealth:        Off
   No track:       Off
