@@ -39,6 +39,9 @@
 #include "../driver/Baro.h"
 #include "../driver/Battery.h"
 #include "../driver/OLED.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 #if defined(USE_TFT)
 #include <TFT_eSPI.h>
@@ -685,7 +688,23 @@ static int ESP32_WiFi_clients_count()
 
 static bool ESP32_EEPROM_begin(size_t size)
 {
-  return EEPROM.begin(size);
+  bool rval = true;
+
+#if !defined(EXCLUDE_EEPROM)
+  rval = EEPROM.begin(size);
+
+  if (settings->nmea_out == NMEA_USB) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB) {
+    settings->d1090 = D1090_UART;
+  }
+#endif
+
+  return rval;
 }
 
 static void ESP32_SPI_begin()
