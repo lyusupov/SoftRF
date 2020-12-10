@@ -552,7 +552,7 @@ static void parseNMEA(const char *str, int len)
     gnss.encode(str[i]);
   }
   if (settings->nmea_g) {
-    NMEA_Out((byte *) str, len, true);
+    NMEA_Out(settings->nmea_out, (byte *) str, len, true);
   }
 
   GNSSTimeSync();

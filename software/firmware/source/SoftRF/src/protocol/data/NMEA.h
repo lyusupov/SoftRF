@@ -42,7 +42,7 @@ void NMEA_loop(void);
 void NMEA_fini();
 void NMEA_Export(void);
 void NMEA_Position(void);
-void NMEA_Out(byte *, size_t, bool);
+void NMEA_Out(uint8_t, byte *, size_t, bool);
 void NMEA_GGA(void);
 void NMEA_add_checksum(char *, size_t);
 

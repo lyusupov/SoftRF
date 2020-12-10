@@ -126,7 +126,7 @@ void NMEA_loop()
 
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
-    NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
+    NMEA_Out(settings->nmea_out, (byte *) NMEABuffer, strlen(NMEABuffer), false);
 
     PGRMZ_TimeMarker = millis();
   }
@@ -194,9 +194,9 @@ void NMEA_fini()
 #endif /* NMEA_TCP_SERVICE */
 }
 
-void NMEA_Out(byte *buf, size_t size, bool nl)
+void NMEA_Out(uint8_t dest, byte *buf, size_t size, bool nl)
 {
-  switch(settings->nmea_out)
+  switch (dest)
   {
   case NMEA_UART:
     {
@@ -353,7 +353,7 @@ void NMEA_Export()
 
               NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
-              NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
+              NMEA_Out(settings->nmea_out, (byte *) NMEABuffer, strlen(NMEABuffer), false);
 
               /* Most close traffic is treated as highest priority target */
               if (distance < HP_distance && abs(alt_diff) < VERTICAL_VISIBILITY_RANGE) {
@@ -397,7 +397,7 @@ void NMEA_Export()
 
       NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
-      NMEA_Out((byte *) NMEABuffer, strlen(NMEABuffer), false);
+      NMEA_Out(settings->nmea_out, (byte *) NMEABuffer, strlen(NMEABuffer), false);
     }
 }
 
@@ -478,7 +478,7 @@ void NMEA_Position()
       (NMEALIB_SENTENCE_GPGGA | NMEALIB_SENTENCE_GPGSA | NMEALIB_SENTENCE_GPRMC));
 
     if (gen_sz) {
-      NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);
+      NMEA_Out(settings->nmea_out, (byte *) nmealib_buf.buffer, gen_sz, false);
     }
   }
 }
@@ -529,7 +529,7 @@ void NMEA_GGA()
                                         NMEALIB_SENTENCE_GPGGA );
 
   if (gen_sz) {
-    NMEA_Out((byte *) nmealib_buf.buffer, gen_sz, false);
+    NMEA_Out(settings->nmea_out, (byte *) nmealib_buf.buffer, gen_sz, false);
   }
 }
 

@@ -98,6 +98,8 @@ TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
 TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
+uint8_t C_NMEA_Source;
+
 #endif /* USE_NMEA_CFG */
 
 bool nmea_handshake(const char *req, const char *resp, bool skipline)
@@ -1003,6 +1005,10 @@ byte GNSS_setup() {
                     SoC->GNSS_PPS_handler, RISING);
   }
 
+#if defined(USE_NMEA_CFG)
+  C_NMEA_Source = settings->nmea_out;
+#endif /* USE_NMEA_CFG */
+
   return (byte) gnss_id;
 }
 
@@ -1163,9 +1169,13 @@ void PickGNSSFix()
     if (SoC->Bluetooth_ops && SoC->Bluetooth_ops->available() > 0) {
       c = SoC->Bluetooth_ops->read();
 
+      C_NMEA_Source = NMEA_BLUETOOTH;
+
     /* USB input is second */
     } else if (SoC->USB_ops && SoC->USB_ops->available() > 0) {
       c = SoC->USB_ops->read();
+
+      C_NMEA_Source = NMEA_USB;
 
 #if 0
       /* This makes possible to configure S76x's built-in SONY GNSS from aside */
@@ -1177,6 +1187,8 @@ void PickGNSSFix()
     /* Serial input is third */
     } else if (SerialOutput.available() > 0) {
       c = SerialOutput.read();
+
+      C_NMEA_Source = NMEA_UART;
 
 #if 0
       /* This makes possible to configure HTCC-AB02S built-in GOKE GNSS from aside */
@@ -1252,7 +1264,7 @@ void PickGNSSFix()
           else
 #endif
           {
-            NMEA_Out(&GNSSbuf[ndx], write_size, true);
+            NMEA_Out(settings->nmea_out, &GNSSbuf[ndx], write_size, true);
           }
 
           break;
@@ -1284,7 +1296,14 @@ void PickGNSSFix()
               settings->power_save );
 
           NMEA_add_checksum(psrfc_buf, sizeof(psrfc_buf) - strlen(psrfc_buf));
-          NMEA_Out((byte *) psrfc_buf, strlen(psrfc_buf), false);
+
+#if !defined(USE_NMEA_CFG)
+          uint8_t dest = settings->nmea_out;
+#else
+          uint8_t dest = C_NMEA_Source;
+#endif /* USE_NMEA_CFG */
+
+          NMEA_Out(dest, (byte *) psrfc_buf, strlen(psrfc_buf), false);
 
         } else if (atoi(C_Version.value()) == PSRFC_VERSION) {
           bool cfg_is_updated = false;
