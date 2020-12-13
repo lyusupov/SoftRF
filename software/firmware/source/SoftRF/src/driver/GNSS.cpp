@@ -98,7 +98,7 @@ TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
 TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
-uint8_t C_NMEA_Source;
+static uint8_t C_NMEA_Source;
 
 #endif /* USE_NMEA_CFG */
 
@@ -815,6 +815,12 @@ static bool goke_setup()
   }
   swSer.flush(); delay(250);
 
+#if 0
+  /* SBAS */
+  swSer.write("$PGKC239,1*3A\r\n");
+  swSer.flush(); delay(250);
+#endif
+
 #if defined(NMEA_TCP_SERVICE)
   /* RMC + GGA + GSA */
   swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
@@ -824,11 +830,11 @@ static bool goke_setup()
 #endif
   swSer.flush(); delay(250);
 
-//#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   /* Enable 3D fix 1PPS output */
-//  swSer.write("$PGKC161,2,100,1000*07\r\n");
-//  swSer.flush(); delay(250);
-//#endif
+  swSer.write("$PGKC161,2,200,1000*04\r\n");
+  swSer.flush(); delay(250);
+#endif
 
   return true;
 }
