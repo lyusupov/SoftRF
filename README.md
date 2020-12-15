@@ -35,28 +35,28 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 1&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**SkyView Pi**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)|[Broadcom<br>BCM283X<br>(Raspberry Pi)](https://en.wikipedia.org/wiki/Raspberry_Pi)|Q4 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|Good for use together with RTL-SDR dongles to achieve additional 1090ES (and 978UAT) ADS-B air traffic reception.
 1&nbsp;[UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|[Texas Instruments<br>CC1310](http://www.ti.com/product/CC1310) and [CC1352R](http://www.ti.com/product/CC1352R)|Q1 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements) --> <!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress) -->|Unique RF radio specs are useful for [UAT reception](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge) [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-7.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-8.jpg) , [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/uat-normal-6.jpg) ].
 1&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|[STMicroelectronics<br>STM32](https://en.wikipedia.org/wiki/STM32)|Q3 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)<!-- ![](https://placehold.it/140x70/FFFF00/000000?text=In+progress)-->|[AcSiP **S76G**](http://www.acsip.com.tw/index.php?action=products-detail&fid1=19&fid2=&fid3=&id=41&lang=3) "3-in-1" system-in-package **is doing good** [ [1](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/watch-1.jpg) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-4.jpg) , [3](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/t-motion-5.jpg) ] .<br>As well as STM32F103C8 "**Blue Pill**" (same MCU that [STM32 OGN tracker](http://wiki.glidernet.org/stm32-ogn-tracker) uses) [ [4](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_breadboard.jpg) , [5](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/stm32_ognweb_1.JPG) ] .
-Mini|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 2020|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|ASR6502 MCU + LoRa combo [ [1](https://user-images.githubusercontent.com/5849637/91968779-d31dc700-ed1d-11ea-85f0-ae8f82ed12e4.png) ] .
+[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 2020|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|good add-on candidate for modded Kobo e-Readers .
 Badge|[Nordic Semiconductor<br>nRF52840](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF52840)|Q4 2020|![](https://placehold.it/140x40/c5f015/000000?text=May+need)<br>![](https://placehold.it/140x40/c5f015/000000?text=improvements)|&nbsp;
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
-[Nordic Semiconductor<br>nRF905](https://infocenter.nordicsemi.com/pdf/nRF905_PS_v1.5.pdf)|[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition),<br>[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition),<br>[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
-[Semtech<br>SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)|[LoRa module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module),<br>[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII),<br>[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition),<br>[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|Q4 2017|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[Nordic Semiconductor<br>nRF905](https://infocenter.nordicsemi.com/pdf/nRF905_PS_v1.5.pdf)|1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|Q4 2015|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[Semtech<br>SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)|1&nbsp;[LoRa module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>2&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>3&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>4&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|Q4 2017|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Texas Instruments<br>CC1310](http://www.ti.com/product/CC1310)|[UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|Q1 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Semtech<br>SX1231](https://www.semtech.com/products/wireless-rf/fsk-transceivers/sx1231)|[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|Q3 2019|![](https://placehold.it/140x70/FFFF00/000000?text=Limited)|operates through OGN driver with OGNTP protocol only
-[Semtech<br>SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)|[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII),<br>Mini,<br>Badge|Q1 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[Semtech<br>SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;Badge|Q1 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Texas Instruments<br>CC1352R](http://www.ti.com/product/CC1352R)|[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 
 ## By GNSS chip
 GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|Q4 2016|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
-[U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII),<br>[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition),<br>[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)<br>3&nbsp;[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2018|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)|Q2 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 [Sony<br>CXD5603GF](https://www.sony-semicon.co.jp/e/products/lsi/gps/product.html)|[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|Q4 2019|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
-[MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition),<br>[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q3 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
-[GOKE](http://www.goke.com/en/)<br>GK9501|Mini,<br>Badge|Q3 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q3 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
+[GOKE](http://www.goke.com/en/)<br>GK9501|1&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>2&nbsp;Badge|Q3 2020|![](https://placehold.it/140x70/00A000/000000?text=Good)|&nbsp;
 
 # Documentation
 
@@ -76,6 +76,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
+* [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Firmware installation](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#cubecell)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition.-Quick-start)
+    * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Mini)
 * [Dongle Edition](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition.-Quick-start)
@@ -93,10 +97,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
         * [Quick start](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)
         * [Settings](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings)
         * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
-        * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-* [WebTop](https://github.com/lyusupov/SoftRF/wiki/WebTop-WiFi-adapter) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-
+        * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot)
+    * [Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)
+* [WebTop](https://github.com/lyusupov/SoftRF/wiki/WebTop-WiFi-adapter)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/WebTop.-Quick-Start)
 * [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder.-Quick-Start)
 
@@ -109,6 +113,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
+        * [Frequency deviation](https://github.com/lyusupov/SoftRF/wiki/Frequency-deviation) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * Protocols
         * [UAT](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge)    
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
@@ -147,6 +152,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/t-motion-22.jpg)
+
+* [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Mini-7.jpg)
 
 * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
 
