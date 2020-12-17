@@ -122,7 +122,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
 
     while (swSer.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
 
-    delay(50);
+    delay(5);
 
     /* wait for pause after NMEA burst */
     if (req && swSer.available() > 0) {
@@ -147,11 +147,6 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
       while ((millis() - start_time) < timeout_ms) {
 
         c = swSer.read();
-
-        if (c == -1) {
-          /* retry */
-          continue;
-        }
 
         if (isPrintable(c) || c == '\r' || c == '\n') {
           if (i >= sizeof(GNSSbuf)) break;
@@ -803,37 +798,41 @@ static gnss_id_t goke_probe()
                         GNSS_MODULE_GOKE : GNSS_MODULE_NMEA;
 }
 
+static void goke_sendcmd(const char *cmd)
+{
+  while (swSer.available() > 0) { while (swSer.read() != '\n') {yield();} }
+  swSer.write(cmd);
+  swSer.flush();
+  delay(250);
+}
+
 static bool goke_setup()
 {
   /* There are reports that Air530 does not actually work with GALILEO yet */
   if (settings->band == RF_BAND_CN) {
     /* GPS + BEIDOU */
-    swSer.write("$PGKC115,1,0,1,0*2A\r\n");
+    goke_sendcmd("$PGKC115,1,0,1,0*2A\r\n");
   } else {
     /* GPS + GLONASS */
-    swSer.write("$PGKC115,1,1,0,0*2A\r\n");
+    goke_sendcmd("$PGKC115,1,1,0,0*2A\r\n");
   }
-  swSer.flush(); delay(250);
 
 #if 0
   /* SBAS */
-  swSer.write("$PGKC239,1*3A\r\n");
-  swSer.flush(); delay(250);
+  goke_sendcmd("$PGKC239,1*3A\r\n");
 #endif
 
 #if defined(NMEA_TCP_SERVICE)
   /* RMC + GGA + GSA */
-  swSer.write("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
+  goke_sendcmd("$PGKC242,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*36\r\n");
 #else
   /* RMC + GGA */
-  swSer.write("$PGKC242,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*37\r\n");
+  goke_sendcmd("$PGKC242,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*37\r\n");
 #endif
-  swSer.flush(); delay(250);
 
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   /* Enable 3D fix 1PPS output */
-  swSer.write("$PGKC161,2,200,1000*04\r\n");
-  swSer.flush(); delay(250);
+  goke_sendcmd("$PGKC161,2,200,1000*04\r\n");
 #endif
 
   return true;
@@ -846,10 +845,9 @@ static void goke_loop()
 
 static void goke_fini()
 {
-  swSer.write("$PGKC051,0*37\r\n");
-  // swSer.write("$PGKC051,1*36\r\n");
-  // swSer.write("$PGKC105,4*33\r\n");
-  swSer.flush(); delay(250);
+  goke_sendcmd("$PGKC051,0*37\r\n");
+  // goke_sendcmd("$PGKC051,1*36\r\n");
+  // goke_sendcmd("$PGKC105,4*33\r\n");
 }
 
 const gnss_chip_ops_t goke_ops = {
