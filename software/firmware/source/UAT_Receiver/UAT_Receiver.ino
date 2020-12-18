@@ -233,6 +233,8 @@ void setup() {
 
   Battery_setup();
 
+  LED_setup();
+
   /*
    * Display 'U' (UAT) on OLED for Rx only modes.
    */
@@ -262,6 +264,9 @@ void loop() {
 
   // Show status info on tiny OLED display
   SoC->Display_loop();
+
+  // battery status LED
+  LED_loop();
 
   SoC->loop();
 

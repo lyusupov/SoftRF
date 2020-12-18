@@ -58,8 +58,6 @@ extern char *itoa(int, char *, int);
 
 #define WD_TIMEOUT_MS           4000
 
-#define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
-
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -125,6 +123,8 @@ struct rst_info {
 
 // button
 #define SOC_GPIO_PIN_BUTTON     SOC_UNUSED_PIN
+
+#define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
