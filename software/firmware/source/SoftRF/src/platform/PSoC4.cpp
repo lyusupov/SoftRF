@@ -546,7 +546,7 @@ static void PSoC4_Button_fini()
 
 #include "RingBuffer.h"
 
-#define UART1_TX_FIFO_SIZE 512
+#define UART1_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
 
 RingBuffer<uint8_t, UART1_TX_FIFO_SIZE> UART_TX_FIFO =
                                     RingBuffer<uint8_t, UART1_TX_FIFO_SIZE>();
