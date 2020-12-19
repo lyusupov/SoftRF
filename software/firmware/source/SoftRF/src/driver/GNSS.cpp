@@ -830,10 +830,10 @@ static bool goke_setup()
   goke_sendcmd("$PGKC242,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*37\r\n");
 #endif
 
-#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
-  /* Enable 3D fix 1PPS output */
-  goke_sendcmd("$PGKC161,2,200,1000*04\r\n");
-#endif
+  if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
+    /* Enable 3D fix 1PPS output */
+    goke_sendcmd("$PGKC161,2,200,1000*04\r\n");
+  }
 
   return true;
 }
