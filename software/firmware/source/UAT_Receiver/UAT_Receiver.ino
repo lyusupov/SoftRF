@@ -242,8 +242,14 @@ void setup() {
 
   Serial.println("Receiver mode.");
 
+  if (hw_info.display != DISPLAY_NONE)  delay(3000);
+
   myLink.begin(EasyLink_Phy_Custom);
   Serial.println("Listening...");
+
+  hw_info.rf = RF_IC_CC13XX;
+
+  SoC->post_init();
 
   SoC->WDT_setup();
 }

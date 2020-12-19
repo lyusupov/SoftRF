@@ -267,6 +267,16 @@ static void ESP32_setup()
 
 static void ESP32_post_init()
 {
+  if (settings->nmea_out == NMEA_USB) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB) {
+    settings->d1090 = D1090_UART;
+  }
+
   switch (hw_info.display)
   {
 #if defined(USE_OLED)
@@ -692,16 +702,6 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 #if !defined(EXCLUDE_EEPROM)
   rval = EEPROM.begin(size);
-
-  if (settings->nmea_out == NMEA_USB) {
-    settings->nmea_out = NMEA_UART;
-  }
-  if (settings->gdl90 == GDL90_USB) {
-    settings->gdl90 = GDL90_UART;
-  }
-  if (settings->d1090 == D1090_USB) {
-    settings->d1090 = D1090_UART;
-  }
 #endif
 
   return rval;

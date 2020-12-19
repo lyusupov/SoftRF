@@ -279,6 +279,8 @@ void setup() {
 
   Serial.println(F("Listening..."));
 
+  SoC->post_init();
+
   SoC->WDT_setup();
 }
 
