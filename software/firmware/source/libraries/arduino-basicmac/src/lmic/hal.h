@@ -36,6 +36,10 @@ void hal_pin_rxtx (s1_t val);
  */
 bool hal_pin_tcxo (u1_t val);
 
+#if defined(ARDUINO_NUCLEO_L073RZ)
+void hal_pin_tcxo_init (void);
+#endif /* ARDUINO_NUCLEO_L073RZ */
+
 /*
  * control radio RST pin (0=low, 1=high, 2=floating)
  */

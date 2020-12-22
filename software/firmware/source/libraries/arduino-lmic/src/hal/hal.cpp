@@ -60,7 +60,7 @@ static void hal_io_init () {
     if (lmic_pins.tcxo != LMIC_UNUSED_PIN)
 #if defined(ARDUINO_NUCLEO_L073RZ)
       if (lmic_pins.tcxo == PD_7)
-          hal_pin_tcxo_init();
+        hal_pin_tcxo_init();
       else
 #endif /* ARDUINO_NUCLEO_L073RZ */
         pinMode(lmic_pins.tcxo, OUTPUT);

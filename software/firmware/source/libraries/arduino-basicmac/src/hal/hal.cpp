@@ -81,6 +81,11 @@ static void hal_io_init () {
     if (lmic_pins.busy != LMIC_UNUSED_PIN)
         pinMode(lmic_pins.busy, INPUT);
     if (lmic_pins.tcxo != LMIC_UNUSED_PIN)
+#if defined(ARDUINO_NUCLEO_L073RZ)
+      if (lmic_pins.tcxo == PD_7)
+        hal_pin_tcxo_init();
+      else
+#endif /* ARDUINO_NUCLEO_L073RZ */
         pinMode(lmic_pins.tcxo, OUTPUT);
 
     for (i = 0; i < NUM_DIO; ++i) {
@@ -218,9 +223,32 @@ void hal_irqmask_set (int mask) {
     // Not implemented
 }
 
+#if defined(ARDUINO_NUCLEO_L073RZ)
+void hal_pin_tcxo_init()
+{
+  GPIO_InitTypeDef GPIO_Struct;
+
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  // for LoRa sx1276 TCXO OE Pin
+  GPIO_Struct.Pin = GPIO_PIN_7;
+  GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_Struct.Pull = GPIO_NOPULL;
+  GPIO_Struct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_Struct);
+}
+#endif /* ARDUINO_NUCLEO_L073RZ */
+
 bool hal_pin_tcxo (u1_t val) {
     if (lmic_pins.tcxo == LMIC_UNUSED_PIN)
         return false;
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
+      if (lmic_pins.tcxo == PD_7)
+          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,
+                            val == 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+      else
+#endif /* ARDUINO_NUCLEO_L073RZ */
 
     digitalWrite(lmic_pins.tcxo, val == 1 ? HIGH : LOW);
     return true;
