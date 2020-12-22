@@ -727,7 +727,8 @@ static void sony_loop()
 static void sony_fini()
 {
    /* Idle */
-  swSer.write("@GSTP\r\n"); delay(1500);
+  swSer.write("@GSTP\r\n");
+  swSer.flush(); delay(1500);
 
   /* Sony GNSS sleep level (0-2)
    * This command must be issued at Idle state.

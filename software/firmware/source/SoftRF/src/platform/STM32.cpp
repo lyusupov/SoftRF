@@ -158,6 +158,12 @@ static void STM32_setup()
     // PC_1 is Low for TCXO or High for Crystal
     STM32_has_TCXO = (STM32_probe_pin(SOC_GPIO_PIN_OSC_SEL, INPUT) == 0);
 
+    if (STM32_has_TCXO) {
+      lmic_pins.tcxo = SOC_GPIO_PIN_TCXO_OE;
+      hal_pin_tcxo_init();
+      hal_pin_tcxo(0); // disable TCXO
+    }
+
 #elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
 #else
@@ -213,16 +219,6 @@ static void STM32_setup()
     Wire.setSDA(SOC_GPIO_PIN_SDA);
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
-    if (STM32_has_TCXO) {
-      lmic_pins.tcxo = SOC_GPIO_PIN_TCXO_OE;
-
-      digitalWrite(SOC_GPIO_PIN_TCXO_OE, LOW);
-      pinMode(SOC_GPIO_PIN_TCXO_OE, OUTPUT);
-      delay(5);
-      digitalWrite(SOC_GPIO_PIN_TCXO_OE, HIGH);
-      delay(10);
-    }
-
     lmic_pins.rxe = SOC_GPIO_PIN_ANT_RXTX;
 
     // Set default value at Rx
@@ -343,11 +339,7 @@ static void STM32_fini(int reason)
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, LOW);
   pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT_OPEN_DRAIN);
 
-  if (STM32_has_TCXO) {
-    // for LoRa sx1276 TCXO OE Pin
-    digitalWrite(SOC_GPIO_PIN_TCXO_OE, LOW);
-    pinMode(SOC_GPIO_PIN_TCXO_OE, OUTPUT);
-  } else {
+  if (!STM32_has_TCXO) {
     // because PC1 = high for LoRa Crystal, need to be careful of leakage current
     pinMode(SOC_GPIO_PIN_OSC_SEL, INPUT_PULLUP);
   }
