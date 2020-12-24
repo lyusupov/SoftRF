@@ -40,7 +40,7 @@ const char EPD_SkyView_text5[] = "and LilyGO";
 const char EPD_SkyView_text6[] = "SkyView";
 const char EPD_SkyView_text7[] = "Author:";
 const char EPD_SkyView_text8[] = "Linar Yusupov";
-const char EPD_SkyView_text9[] = "(C) 2019-2020";
+const char EPD_SkyView_text9[] = "(C) 2019-2021";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -133,9 +133,6 @@ byte EPD_setup(bool splash_screen)
   } else {
     EPD_Clear_Screen();
   }
-
-//  display->powerOff();
-//  display->hibernate();
 
   if (display->epd2.probe()) {
     rval = DISPLAY_EPD_2_7;
@@ -251,7 +248,7 @@ void EPD_fini(const char *msg)
     }
     while (display->nextPage());
 
-    display->powerOff();
+    display->hibernate();
   }
 }
 

@@ -84,7 +84,7 @@ void setup()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2019-2020 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2019-2021 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   EEPROM_setup();

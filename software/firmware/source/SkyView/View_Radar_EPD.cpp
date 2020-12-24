@@ -145,8 +145,7 @@ static void EPD_Draw_NavBoxes()
   }
   while (display->nextPage());
 
-//display->powerOff();
-  display->hibernate();
+  display->powerOff();
 }
 
 void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
@@ -191,7 +190,7 @@ void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
     }
     while (display->nextPage());
 
-    display->hibernate();
+    display->powerOff();
   }
 }
 
@@ -440,7 +439,7 @@ static void EPD_Draw_Radar()
   }
   while (display->nextPage());
 
-  display->hibernate();
+  display->powerOff();
 }
 
 static void EPD_Update_NavBoxes()
@@ -536,7 +535,7 @@ static void EPD_Update_NavBoxes()
     navbox4.prev_value = navbox4.value;
   }
 
-  display->hibernate();
+  display->powerOff();
 }
 
 void EPD_radar_setup()

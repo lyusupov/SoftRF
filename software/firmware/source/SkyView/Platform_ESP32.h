@@ -108,8 +108,6 @@ extern bool loopTaskWDTEnabled;
 
 extern WebServer server;
 
-#define USE_IP5306_WORKAROUND 0
-
 #endif /* PLATFORM_ESP32_H */
 
 #endif /* ESP32 */

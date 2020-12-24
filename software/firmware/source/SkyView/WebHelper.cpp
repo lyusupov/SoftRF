@@ -91,7 +91,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2019-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2019-2021 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
