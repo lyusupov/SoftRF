@@ -240,6 +240,10 @@ struct rst_info {
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 
+//#define PMK2_SLEEP_MODE 1    // 0.6 mA : esp_deep_sleep_start()
+//#define PMK2_SLEEP_MODE 2    // 0.9 mA : axp.setSleep()
+#define PMK2_SLEEP_MODE 3      //  60 uA : axp.shutdown()
+
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
 #endif /* USE_OLED */

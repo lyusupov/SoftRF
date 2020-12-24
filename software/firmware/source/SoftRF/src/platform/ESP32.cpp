@@ -364,12 +364,31 @@ static void ESP32_fini(int reason)
 
     delay(20);
 
-    esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWATCH_PMU_IRQ,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
 
   } else if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
              hw_info.revision == 8) {
 
     axp.setChgLEDMode(AXP20X_LED_OFF);
+
+#if PMK2_SLEEP_MODE == 2
+    int ret;
+    // PEK or GPIO edge wake-up function enable setting in Sleep mode
+    do {
+        // In order to ensure that it is set correctly,
+        // the loop waits for it to return the correct return value
+        ret = axp.setSleep();
+        delay(500);
+    } while (ret != AXP_PASS) ;
+
+    // Turn off all power channels, only use PEK or AXP GPIO to wake up
+
+    // After setting AXP202/AXP192 to sleep,
+    // it will start to record the status of the power channel that was turned off after setting,
+    // it will restore the previously set state after PEK button or GPIO wake up
+
+#endif /* PMK2_SLEEP_MODE */
 
     axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
     axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
@@ -386,13 +405,17 @@ static void ESP32_fini(int reason)
     /*
      * When driven by SoftRF the V08+ T-Beam takes:
      * in 'full power' - 160 - 180 mA
-     * in 'stand by'   -   2 -   3 mA
-     * in 'power off'  -  90 - 100 uA
+     * in 'stand by'   - 600 - 900 uA
+     * in 'power off'  -  50 -  90 uA
      * of current from 3.7V battery
      */
-#if 0
+#if   PMK2_SLEEP_MODE == 1
     /* Deep sleep with wakeup by power button click */
-    esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, 0); // 1 = High, 0 = Low
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#elif PMK2_SLEEP_MODE == 2
+    // Cut MCU power off, PMU remains in sleep until wakeup by PEK button press
+    axp.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
 #else
     /*
      * Complete power off
@@ -402,7 +425,7 @@ static void ESP32_fini(int reason)
      * - cycle micro-USB power
      */
     axp.shutdown();
-#endif
+#endif /* PMK2_SLEEP_MODE */
   }
 
   esp_deep_sleep_start();

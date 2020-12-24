@@ -121,7 +121,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2015-2021 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
