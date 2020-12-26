@@ -166,8 +166,8 @@ void LED_DisplayTraffic() {
 
       if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
 
-        bearing  = (int) Container[i].bearing;
-        alarm_level    = (int) Container[i].alarm_level;
+        alarm_level = (int) Container[i].alarm_level;
+        bearing     = (int) Container[i].bearing;
 
         if (settings->pointer == DIRECTION_TRACK_UP) {
           bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
