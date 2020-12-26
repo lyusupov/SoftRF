@@ -156,26 +156,8 @@ static void GDL90_Parse_Character(char c)
 
         fo.timestamp   = now();
 
-        float RelativeVertical = fo.altitude - ThisAircraft.altitude;
-
-        if ( settings->filter == TRAFFIC_FILTER_OFF  ||
-            (settings->filter == TRAFFIC_FILTER_500M &&
-                             RelativeVertical > -500 &&
-                             RelativeVertical <  500) ) {
-          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-            if (Container[i].ID == fo.ID) {
-              Container[i] = fo;
-              Traffic_Update(i);
-              break;
-            } else {
-              if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-                Container[i] = fo;
-                Traffic_Update(i);
-                break;
-              }
-            }
-          }
-        }
+        Traffic_Update(&fo);
+        Traffic_Add();
       }
     }
 

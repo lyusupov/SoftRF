@@ -150,22 +150,8 @@ static void NMEA_Parse_Character(char c)
 
         fo.timestamp = now();
 
-        if ( settings->filter == TRAFFIC_FILTER_OFF  ||
-            (settings->filter == TRAFFIC_FILTER_500M &&
-                          fo.RelativeVertical > -500 &&
-                          fo.RelativeVertical <  500) ) {
-          for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-            if (Container[i].ID == fo.ID) {
-              Container[i] = fo;
-              break;
-            } else {
-              if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-                Container[i] = fo;
-                break;
-              }
-            }
-          }
-        }
+        Traffic_Add();
+
       } else if (S_RX.isUpdated()) {
 
         NMEA_Status.timestamp = now();

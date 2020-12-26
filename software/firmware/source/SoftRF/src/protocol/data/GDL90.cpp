@@ -188,7 +188,7 @@ static void *msgHeartbeat()
   time_t ts = elapsedSecsToday(now());
 
   /* Status Byte 1 */
-  HeartBeat.gnss_pos_valid  = 1 /* isValidFix() */ ;
+  HeartBeat.gnss_pos_valid  = isValidFix() ;
   HeartBeat.maint_reqd      = 0;
   HeartBeat.ident           = 0;
   HeartBeat.addr_type       = 0;
@@ -492,16 +492,17 @@ void GDL90_Export()
 
       size = makeGeometricAltitude(buf, &ThisAircraft);
       GDL90_Out(buf, size);
-    }
 
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        if (Container[i].addr &&
+           (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-        distance = Container[i].distance;
+          distance = Container[i].distance;
 
-        if (distance < ALARM_ZONE_NONE) {
-          size = makeTrafficReport(buf, &Container[i]);
-          GDL90_Out(buf, size);
+          if (distance < ALARM_ZONE_NONE) {
+            size = makeTrafficReport(buf, &Container[i]);
+            GDL90_Out(buf, size);
+          }
         }
       }
     }

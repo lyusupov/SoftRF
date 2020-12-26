@@ -308,6 +308,7 @@ static bool ESP32_WiFi_hostname(String aHostname)
 static void ESP32_swSer_begin(unsigned long baud)
 {
   SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  SerialInput.setRxBufferSize(baud / 10); /* 1 second */
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

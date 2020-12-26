@@ -68,9 +68,10 @@ typedef struct traffic_by_dist_struct {
 #define isTimeToVoice()         (millis() - Traffic_Voice_TimeMarker > 2000)
 #define VOICE_EXPIRATION_TIME   5 /* seconds */
 
-void Traffic_Update       (int);
 void Traffic_setup        (void);
 void Traffic_loop         (void);
+void Traffic_Add          (void);
+void Traffic_Update       (traffic_t *);
 void Traffic_ClearExpired (void);
 int  Traffic_Count        (void);
 

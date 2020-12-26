@@ -33,28 +33,82 @@ static unsigned long UpdateTrafficTimeMarker = 0;
 static unsigned long Traffic_Voice_TimeMarker = 0;
 static uint32_t Traffic_Voice_ID_prev = 0;
 
-void Traffic_Update(int ndx)
+void Traffic_Add()
+{
+    if ( settings->filter == TRAFFIC_FILTER_OFF  ||
+        (settings->filter == TRAFFIC_FILTER_500M &&
+                      fo.RelativeVertical > -500 &&
+                      fo.RelativeVertical <  500) ) {
+      int i;
+
+      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        if (Container[i].ID == fo.ID) {
+          Container[i] = fo;
+          return;
+        }
+      }
+
+      int max_dist_ndx = 0;
+      int min_level_ndx = 0;
+      int32_t max_distance_sq = Container[max_dist_ndx].RelativeNorth * Container[max_dist_ndx].RelativeNorth +
+                                Container[max_dist_ndx].RelativeEast  * Container[max_dist_ndx].RelativeEast;
+
+      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+        if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+          Container[i] = fo;
+          return;
+        }
+
+        int32_t distance_sq = Container[i].RelativeNorth * Container[i].RelativeNorth +
+                              Container[i].RelativeEast  * Container[i].RelativeEast;
+
+        if  (distance_sq > max_distance_sq) {
+          max_dist_ndx = i;
+          max_distance_sq = distance_sq;
+        }
+        if  (Container[i].AlarmLevel < Container[min_level_ndx].AlarmLevel)  {
+          min_level_ndx = i;
+        }
+      }
+
+      if (fo.AlarmLevel > Container[min_level_ndx].AlarmLevel) {
+        Container[min_level_ndx] = fo;
+        return;
+      }
+
+      int32_t fo_distance_sq = fo.RelativeNorth * fo.RelativeNorth +
+                               fo.RelativeEast  * fo.RelativeEast;
+
+      if (fo_distance_sq <  max_distance_sq &&
+          fo.AlarmLevel  >= Container[max_dist_ndx].AlarmLevel) {
+        Container[max_dist_ndx] = fo;
+        return;
+      }
+    }
+}
+
+void Traffic_Update(traffic_t *fop)
 {
   float distance = nmea.distanceBetween( ThisAircraft.latitude,
                                          ThisAircraft.longitude,
-                                         Container[ndx].latitude,
-                                         Container[ndx].longitude);
+                                         fop->latitude,
+                                         fop->longitude);
 
   float bearing  = nmea.courseTo( ThisAircraft.latitude,
                                   ThisAircraft.longitude,
-                                  Container[ndx].latitude,
-                                  Container[ndx].longitude);
+                                  fop->latitude,
+                                  fop->longitude);
 
   float RelativeNorth     = constrain(distance * cos(radians(bearing)),
                                        -32768, 32767);
   float RelativeEast      = constrain(distance * sin(radians(bearing)),
                                        -32768, 32767);
-  float RelativeVertical  = constrain(Container[ndx].altitude - ThisAircraft.altitude,
+  float RelativeVertical  = constrain(fop->altitude - ThisAircraft.altitude,
                                        -32768, 32767);
 
-  Container[ndx].RelativeNorth    = (int16_t) RelativeNorth;
-  Container[ndx].RelativeEast     = (int16_t) RelativeEast;
-  Container[ndx].RelativeVertical = (int16_t) RelativeVertical;
+  fop->RelativeNorth    = (int16_t) RelativeNorth;
+  fop->RelativeEast     = (int16_t) RelativeEast;
+  fop->RelativeVertical = (int16_t) RelativeVertical;
 }
 
 static void Traffic_Voice()
@@ -214,7 +268,7 @@ void Traffic_loop()
         if (Container[i].ID &&
             (ThisAircraft.timestamp - Container[i].timestamp) <= ENTRY_EXPIRATION_TIME) {
           if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL)
-            Traffic_Update(i);
+            Traffic_Update(&Container[i]);
         } else {
           Container[i] = EmptyFO;
         }
