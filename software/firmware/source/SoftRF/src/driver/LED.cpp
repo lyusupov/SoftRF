@@ -17,9 +17,10 @@
  */
 
 #include "../system/SoC.h"
-
 #include <TimeLib.h>
 
+#include "RF.h"
+#include "../protocol/radio/Legacy.h"
 #include "LED.h"
 #include "Battery.h"
 #include "../TrafficHelper.h"
@@ -154,8 +155,9 @@ void LED_Clear() {
 
 void LED_DisplayTraffic() {
 #if !defined(EXCLUDE_LED_RING)
-  int bearing, distance;
+  int bearing;
   int led_num;
+  int8_t alarm_level = ALARM_LEVEL_NONE;
   color_t color;
 
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
@@ -165,8 +167,8 @@ void LED_DisplayTraffic() {
 
       if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
 
-        bearing  = (int) Container[i].bearing;
-        distance = (int) Container[i].distance;
+        alarm_level = (int8_t) Container[i].alarm_level;
+        bearing     = (int) Container[i].bearing;
 
         if (settings->pointer == DIRECTION_TRACK_UP) {
           bearing = (360 + bearing - (int)ThisAircraft.course) % 360;
@@ -177,13 +179,13 @@ void LED_DisplayTraffic() {
 //      Serial.print(" , ");
 //      Serial.println(led_num);
 //      Serial.println(distance);
-        if (distance < LED_DISTANCE_FAR) {
-          if (distance >= 0 && distance <= LED_DISTANCE_CLOSE) {
-            color =  LED_COLOR_RED;
-          } else if (distance > LED_DISTANCE_CLOSE && distance <= LED_DISTANCE_NEAR) {
-            color =  LED_COLOR_YELLOW;
-          } else if (distance > LED_DISTANCE_NEAR && distance <= LED_DISTANCE_FAR) {
-            color =  LED_COLOR_BLUE;
+        if (alarm_level != ALARM_LEVEL_NONE) {
+          if (alarm_level == ALARM_LEVEL_LOW) {
+            color = LED_COLOR_BLUE;
+          } else if (alarm_level == ALARM_LEVEL_IMPORTANT) {
+            color = LED_COLOR_YELLOW;
+          } else if (alarm_level == ALARM_LEVEL_URGENT) {
+            color = LED_COLOR_RED;
           }
           uni_setPixelColor(led_num, color);
         }
