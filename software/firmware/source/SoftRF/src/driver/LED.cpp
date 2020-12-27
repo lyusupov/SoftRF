@@ -17,10 +17,10 @@
  */
 
 #include "../system/SoC.h"
-#include "RF.h"
-#include "../protocol/radio/Legacy.h"
 #include <TimeLib.h>
 
+#include "RF.h"
+#include "../protocol/radio/Legacy.h"
 #include "LED.h"
 #include "Battery.h"
 #include "../TrafficHelper.h"
@@ -155,8 +155,9 @@ void LED_Clear() {
 
 void LED_DisplayTraffic() {
 #if !defined(EXCLUDE_LED_RING)
-  int bearing, alarm_level;
+  int bearing;
   int led_num;
+  int8_t alarm_level = ALARM_LEVEL_NONE;
   color_t color;
 
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
@@ -166,7 +167,7 @@ void LED_DisplayTraffic() {
 
       if (Container[i].addr && (now() - Container[i].timestamp) <= LED_EXPIRATION_TIME) {
 
-        alarm_level = (int) Container[i].alarm_level;
+        alarm_level = (int8_t) Container[i].alarm_level;
         bearing     = (int) Container[i].bearing;
 
         if (settings->pointer == DIRECTION_TRACK_UP) {
