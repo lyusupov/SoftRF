@@ -2,7 +2,7 @@
  *
  * Protocol_OGNTP.h
  * Encoder and decoder for Open Glider Network tracker radio protocol
- * Copyright (C) 2017-2020 Linar Yusupov
+ * Copyright (C) 2017-2021 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

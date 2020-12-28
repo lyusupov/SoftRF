@@ -1,6 +1,6 @@
 /*
  * SkyView(.ino) firmware
- * Copyright (C) 2019-2020 Linar Yusupov
+ * Copyright (C) 2019-2021 Linar Yusupov
  *
  * This firmware is essential part of the SoftRF project.
  *

@@ -1,6 +1,6 @@
 /*
  * GDL90Helper.cpp
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2021 Linar Yusupov
  *
  * Inspired by Eric's Dey Python GDL-90 encoder:
  * https://github.com/etdey/gdl90
