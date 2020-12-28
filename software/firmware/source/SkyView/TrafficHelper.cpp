@@ -35,6 +35,13 @@ static uint32_t Traffic_Voice_ID_prev = 0;
 
 void Traffic_Add()
 {
+    float fo_distance_sq = fo.RelativeNorth * fo.RelativeNorth +
+                           fo.RelativeEast  * fo.RelativeEast;
+
+    if (fo_distance_sq > ALARM_ZONE_NONE * ALARM_ZONE_NONE) {
+      return;
+    }
+
     if ( settings->filter == TRAFFIC_FILTER_OFF  ||
         (settings->filter == TRAFFIC_FILTER_500M &&
                       fo.RelativeVertical > -500 &&
@@ -50,8 +57,8 @@ void Traffic_Add()
 
       int max_dist_ndx = 0;
       int min_level_ndx = 0;
-      int32_t max_distance_sq = Container[max_dist_ndx].RelativeNorth * Container[max_dist_ndx].RelativeNorth +
-                                Container[max_dist_ndx].RelativeEast  * Container[max_dist_ndx].RelativeEast;
+      float max_distance_sq = Container[max_dist_ndx].RelativeNorth * Container[max_dist_ndx].RelativeNorth +
+                              Container[max_dist_ndx].RelativeEast  * Container[max_dist_ndx].RelativeEast;
 
       for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
         if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
@@ -59,8 +66,8 @@ void Traffic_Add()
           return;
         }
 
-        int32_t distance_sq = Container[i].RelativeNorth * Container[i].RelativeNorth +
-                              Container[i].RelativeEast  * Container[i].RelativeEast;
+        float distance_sq = Container[i].RelativeNorth * Container[i].RelativeNorth +
+                            Container[i].RelativeEast  * Container[i].RelativeEast;
 
         if  (distance_sq > max_distance_sq) {
           max_dist_ndx = i;
@@ -75,9 +82,6 @@ void Traffic_Add()
         Container[min_level_ndx] = fo;
         return;
       }
-
-      int32_t fo_distance_sq = fo.RelativeNorth * fo.RelativeNorth +
-                               fo.RelativeEast  * fo.RelativeEast;
 
       if (fo_distance_sq <  max_distance_sq &&
           fo.AlarmLevel  >= Container[max_dist_ndx].AlarmLevel) {
@@ -99,16 +103,9 @@ void Traffic_Update(traffic_t *fop)
                                   fop->latitude,
                                   fop->longitude);
 
-  float RelativeNorth     = constrain(distance * cos(radians(bearing)),
-                                       -32768, 32767);
-  float RelativeEast      = constrain(distance * sin(radians(bearing)),
-                                       -32768, 32767);
-  float RelativeVertical  = constrain(fop->altitude - ThisAircraft.altitude,
-                                       -32768, 32767);
-
-  fop->RelativeNorth    = (int16_t) RelativeNorth;
-  fop->RelativeEast     = (int16_t) RelativeEast;
-  fop->RelativeVertical = (int16_t) RelativeVertical;
+  fop->RelativeNorth     = distance * cos(radians(bearing));
+  fop->RelativeEast      = distance * sin(radians(bearing));
+  fop->RelativeVertical  = fop->altitude - ThisAircraft.altitude;
 }
 
 static void Traffic_Voice()

@@ -182,7 +182,12 @@ static void GDL90_Parse_Character(char c)
 
         ThisAircraft.latitude    = ownship.latitude;
         ThisAircraft.longitude   = ownship.longitude;
-        ThisAircraft.altitude    = ownship.altitude  / _GPS_FEET_PER_METER;
+
+        if (ownship.altitude != 101375 /* 0xFFF */ ) {
+          ThisAircraft.altitude  = ownship.altitude / _GPS_FEET_PER_METER;
+        } else if (geo_altitude.ownshipGeoAltitude != 0) {
+          ThisAircraft.altitude  = geo_altitude.ownshipGeoAltitude / _GPS_FEET_PER_METER;
+        }
 
         ThisAircraft.AlarmLevel  = ownship.trafficAlertStatus == TRAFFIC_ALERT ?
                                             ALARM_LEVEL_LOW : ALARM_LEVEL_NONE;

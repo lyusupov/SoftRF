@@ -25,7 +25,6 @@ extern "C" {
 #include <gdl90.h>
 }
 
-
 typedef struct traffic_struct {
     time_t    timestamp;
 
@@ -43,9 +42,9 @@ typedef struct traffic_struct {
     int8_t    AcftType;           // emitterCategory
 
 /*            Legacy              */
-    int16_t   RelativeNorth;
-    int16_t   RelativeEast;
-    int16_t   RelativeVertical;
+    float     RelativeNorth;
+    float     RelativeEast;
+    float     RelativeVertical;
 
 /*            GDL90      */
     float     latitude;
@@ -58,6 +57,8 @@ typedef struct traffic_by_dist_struct {
   traffic_t *fop;
   float     distance;
 } traffic_by_dist_t;
+
+#define ALARM_ZONE_NONE         10000 /* zone range is 1000m <-> 10000m */
 
 #define ENTRY_EXPIRATION_TIME   5 /* seconds */
 #define TRAFFIC_VECTOR_UPDATE_INTERVAL 2 /* seconds */

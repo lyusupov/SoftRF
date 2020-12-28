@@ -260,8 +260,8 @@ static void EPD_Draw_Radar()
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
 
-        int16_t rel_x;
-        int16_t rel_y;
+        float rel_x;
+        float rel_y;
         float distance;
         float bearing;
 
@@ -296,18 +296,17 @@ static void EPD_Draw_Radar()
 
           bearing -= ThisAircraft.Track;
 
-          rel_x = constrain(distance * sin(radians(bearing)),
-                                       -32768, 32767);
-          rel_y = constrain(distance * cos(radians(bearing)),
-                                       -32768, 32767);
+          rel_x = distance * sin(radians(bearing));
+          rel_y = distance * cos(radians(bearing));
+
           break;
         default:
           /* TBD */
           break;
         }
 
-        int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
-        int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
+        int16_t x = constrain((rel_x * radius) / divider, -32768, 32767);
+        int16_t y = constrain((rel_y * radius) / divider, -32768, 32767);
 
         if        (Container[i].RelativeVertical >   EPD_RADAR_V_THRESHOLD) {
           if (isTeam) {
