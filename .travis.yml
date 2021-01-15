@@ -115,8 +115,7 @@ install:
       arduino --pref "custom_LORAWAN_RGB=CubeCell-GPS_0"         --save-prefs ;
       arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-GPS_1"  --save-prefs ;
       cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.2.0 ;
-      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/792af19fe93dd259af98afa3c1d404ef425edf24/patch-1.txt ;
-      cat patch-1.txt | patch -p0 ;
+      sed -i 's/-ffunction-sections -ffat-lto-objects/-ffunction-sections -fdata-sections -ffat-lto-objects/g' platform.txt ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
