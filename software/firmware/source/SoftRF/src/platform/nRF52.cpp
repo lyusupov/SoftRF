@@ -358,6 +358,7 @@ static void nRF52_fini(int reason)
   {
   case SOFTRF_SHUTDOWN_BUTTON:
   case SOFTRF_SHUTDOWN_LOWBAT:
+    NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
     break;
 #if defined(USE_SERIAL_DEEP_SLEEP)

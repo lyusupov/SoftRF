@@ -73,6 +73,8 @@ struct rst_info {
 #define _PINNUM(port, pin)    ((port)*32 + (pin))
 #endif
 
+#define DFU_MAGIC_SKIP        0x6d
+
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  _PINNUM(0, 8) // P0.08
 #define SOC_GPIO_PIN_CONS_TX  _PINNUM(0, 6) // P0.06
