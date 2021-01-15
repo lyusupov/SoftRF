@@ -101,25 +101,22 @@ install:
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "CubeCell:CubeCell:" ]]; then
-      arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.1.0/package_CubeCell_index.json" --save-prefs ;
+      arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.2.0/package_CubeCell_index.json" --save-prefs ;
       arduino --install-boards CubeCell:CubeCell ;
       arduino --board $BOARD --save-prefs ;
       arduino --pref "custom_LORAWAN_ADR=CubeCell-GPS_1"         --save-prefs ;
       arduino --pref "custom_LORAWAN_AT_SUPPORT=CubeCell-GPS_1"  --save-prefs ;
       arduino --pref "custom_LORAWAN_CLASS=CubeCell-GPS_0"       --save-prefs ;
+      arduino --pref "custom_LORAWAN_DEVEUI=CubeCell-GPS_0"      --save-prefs ;
       arduino --pref "custom_LORAWAN_DebugLevel=CubeCell-GPS_0"  --save-prefs ;
       arduino --pref "custom_LORAWAN_NETMODE=CubeCell-GPS_1"     --save-prefs ;
       arduino --pref "custom_LORAWAN_Net_Reserve=CubeCell-GPS_0" --save-prefs ;
-      arduino --pref "custom_LORAWAN_REGION=CubeCell-GPS_433EU"  --save-prefs ;
+      arduino --pref "custom_LORAWAN_REGION=CubeCell-GPS_0"      --save-prefs ;
       arduino --pref "custom_LORAWAN_RGB=CubeCell-GPS_0"         --save-prefs ;
       arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-GPS_1"  --save-prefs ;
-      cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.1.0 ;
-      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/6c66f2625de37bfe0c0659556681e7d6850e6245/patch-1.txt ;
+      cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.2.0 ;
+      wget https://gist.githubusercontent.com/lyusupov/8e6edb28fd1961cce8b0b25d0fa840fa/raw/792af19fe93dd259af98afa3c1d404ef425edf24/patch-1.txt ;
       cat patch-1.txt | patch -p0 ;
-      wget https://github.com/HelTecAutomation/ASR650x-Arduino/commit/ba2cf6dd8980ccf1acebee6a103ca4be8e298864.patch ;
-      cat ba2cf6dd8980ccf1acebee6a103ca4be8e298864.patch | patch -p1 ;
-      wget https://github.com/HelTecAutomation/ASR650x-Arduino/commit/254169260978c225bf3b3dc71e0eb65e0d3c3888.patch ;
-      cat 254169260978c225bf3b3dc71e0eb65e0d3c3888.patch | patch -p1 ;
       cd $TRAVIS_BUILD_DIR ;
     fi
   - if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
