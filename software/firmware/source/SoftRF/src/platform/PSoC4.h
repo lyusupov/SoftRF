@@ -165,6 +165,13 @@ struct rst_info {
 #define USE_OLED                 //  +    kb
 #endif
 
+/* trade performance for flash memory usage (-4 Kb) */
+#define cosf(x)                 cos  ((double) (x))
+#define sinf(x)                 sin  ((double) (x))
+/* has no effect yet */
+//#define sqrtf(x)              sqrt ((double) (x))
+//#define atan2f(y,x)           atan2((double) (y), (double) (x))
+
 #if !defined(EXCLUDE_LED_RING)
 #include <CubeCell_NeoPixel.h>
 

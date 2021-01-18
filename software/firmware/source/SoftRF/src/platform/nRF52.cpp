@@ -79,6 +79,8 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
+static nRF52_board_id nRF52_board = NRF52_NORDIC_PCA10059; /* default */
+
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 
@@ -139,22 +141,11 @@ static void nRF52_setup()
 //  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
 //  reset_info.reason = u32Reset_reason;
 
-  pinMode(SOC_GPIO_PIN_R_INT, INPUT);
-
-  /* Wake up Air530 GNSS */
-  digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
-  pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
-
-  pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
-  digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
-
-  pinMode(SOC_GPIO_LED_GREEN, OUTPUT);
-  pinMode(SOC_GPIO_LED_RED,   OUTPUT);
-  pinMode(SOC_GPIO_LED_BLUE,  OUTPUT);
-
-  ledOn (SOC_GPIO_LED_GREEN);
-  ledOff(SOC_GPIO_LED_RED);
-  ledOff(SOC_GPIO_LED_BLUE);
+  /* inactivate initVariant() of PCA10056 */
+  pinMode(PIN_LED1, INPUT);
+  pinMode(PIN_LED2, INPUT);
+  pinMode(PIN_LED3, INPUT);
+  pinMode(PIN_LED4, INPUT);
 
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
@@ -171,6 +162,8 @@ static void nRF52_setup()
     uint32_t flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
 
     SerialFlash.sleep();
+
+    nRF52_board = NRF52_LILYGO_TECHO_REV_0;
   }
 
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
@@ -184,55 +177,91 @@ static void nRF52_setup()
 
   if (nRF52_has_rtc && (i2c != nullptr)) {
     rtc = new PCF8563_Class(*i2c);
+
+    pinMode(SOC_GPIO_PIN_R_INT, INPUT);
+  }
+
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TECHO_REV_0:
+      /* Wake up Air530 GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_RED,   OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_TECHO_REV_0_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_0_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
+      break;
+    case NRF52_NORDIC_PCA10059:
+    default:
+      pinMode(SOC_GPIO_LED_PCA10059_STATUS, OUTPUT);
+//      pinMode(SOC_GPIO_LED_PCA10059_GREEN,  OUTPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_RED,    OUTPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_BLUE,   OUTPUT);
+
+//      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
+      ledOff(SOC_GPIO_LED_PCA10059_RED);
+      ledOff(SOC_GPIO_LED_PCA10059_BLUE);
+      ledOn (SOC_GPIO_LED_PCA10059_STATUS);
+      break;
   }
 }
 
 static void nRF52_post_init()
 {
-  Serial.println();
-  Serial.println(F("LilyGO T-xx nRF52840 board Power-on Self Test"));
-  Serial.println();
-  Serial.flush();
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
+    Serial.println();
+    Serial.println(F("LilyGO T-xx nRF52840 board Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
 
-  Serial.println(F("Built-in components:"));
+    Serial.println(F("Built-in components:"));
 
-  Serial.print(F("RADIO   : "));
-  Serial.println(hw_info.rf      == RF_IC_SX1262 ||
-                 hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
-  Serial.flush();
-  Serial.print(F("GNSS    : "));
-  Serial.println(hw_info.gnss    == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
-  Serial.flush();
-  Serial.print(F("DISPLAY : "));
-  Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
-  Serial.flush();
-  Serial.print(F("RTC     : "));
-  Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
-  Serial.flush();
-  Serial.print(F("FLASH   : "));
-  Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
-  Serial.flush();
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262 ||
+                   hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("RTC     : "));
+    Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("FLASH   : "));
+    Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
+    Serial.flush();
 
-  Serial.println();
-  Serial.println(F("External components:"));
-  Serial.print(F("BMx280  : "));
-  Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
-  Serial.flush();
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+    Serial.flush();
 
-  Serial.println();
-  Serial.println(F("Power-on Self Test is completed."));
-  Serial.println();
-  Serial.flush();
+    Serial.println();
+    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println();
+    Serial.flush();
 
 #if defined(USE_EPAPER)
-  /* EPD back light on */
-  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+    /* EPD back light on */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
 
-  EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
+    EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
 
-  /* EPD back light off */
-  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+    /* EPD back light off */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
 #endif /* USE_EPAPER */
+  }
 
   Serial.println(F("Data output device(s):"));
 
@@ -295,19 +324,47 @@ static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TECHO_REV_0:
 #if 0
-  /* Air530 GNSS ultra-low power tracking mode */
-  digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
-  pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+      /* Air530 GNSS ultra-low power tracking mode */
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
-  //swSer.write("$PGKC105,4*33\r\n");
+    //swSer.write("$PGKC105,4*33\r\n");
 #else
-  pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
 
-  //swSer.write("$PGKC051,0*37\r\n");
-  // swSer.write("$PGKC051,1*36\r\n");
+      //swSer.write("$PGKC051,0*37\r\n");
+      // swSer.write("$PGKC051,1*36\r\n");
 #endif
-  //swSer.flush(); delay(250);
+      //swSer.flush(); delay(250);
+
+      ledOff(SOC_GPIO_LED_TECHO_REV_0_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_0_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_GREEN, INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_RED,   INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  INPUT);
+
+      pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+      break;
+
+    case NRF52_NORDIC_PCA10059:
+    default:
+//      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
+      ledOff(SOC_GPIO_LED_PCA10059_RED);
+      ledOff(SOC_GPIO_LED_PCA10059_BLUE);
+      ledOff(SOC_GPIO_LED_PCA10059_STATUS);
+
+//      pinMode(SOC_GPIO_LED_PCA10059_GREEN,  INPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_RED,    INPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_BLUE,   INPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_STATUS, INPUT);
+      break;
+  }
 
   swSer.end();
 
@@ -330,16 +387,6 @@ static void nRF52_fini(int reason)
   pinMode(SOC_GPIO_PIN_SS,   INPUT);
   // pinMode(SOC_GPIO_PIN_BUSY, INPUT);
   pinMode(SOC_GPIO_PIN_RST,  INPUT);
-
-  ledOff(SOC_GPIO_LED_GREEN);
-  ledOff(SOC_GPIO_LED_RED);
-  ledOff(SOC_GPIO_LED_BLUE);
-
-  pinMode(SOC_GPIO_LED_GREEN, INPUT);
-  pinMode(SOC_GPIO_LED_RED,   INPUT);
-  pinMode(SOC_GPIO_LED_BLUE,  INPUT);
-
-  pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 
   // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
   pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
@@ -392,12 +439,7 @@ static uint32_t nRF52_getChipId()
 #if !defined(SOFTRF_ADDRESS)
   uint32_t id = DEVICE_ID_LOW;
 
-  /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
-    id += 0x100000;
-  }
-
-  return id;
+  return DevID_Mapper(id);
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
 #endif

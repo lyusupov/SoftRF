@@ -84,17 +84,17 @@ void D1090_Export()
 
         if (distance < ALARM_ZONE_NONE) {
 
-          double altitude;
+          float altitude;
           /* If the aircraft's data has standard pressure altitude - make use it */
           if (Container[i].pressure_altitude != 0.0) {
-            altitude = (double) Container[i].pressure_altitude;
+            altitude = Container[i].pressure_altitude;
           } else if (ThisAircraft.pressure_altitude != 0.0) {
             /* If this SoftRF unit is equiped with baro sensor - try to make an adjustment */
             float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
-            altitude = (double)(Container[i].altitude + altDiff);
+            altitude = Container[i].altitude + altDiff;
           } else {
             /* If no other choice - report GNSS altitude as pressure altitude */
-            altitude = (double) Container[i].altitude;
+            altitude = Container[i].altitude;
           }
           altitude *= _GPS_FEET_PER_METER;
 

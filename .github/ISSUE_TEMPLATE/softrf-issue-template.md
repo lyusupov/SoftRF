@@ -44,7 +44,7 @@ Recommended:
 
 <  screenshot of WebUI settings page > (**required**)
 
-## Describe the bug (or ask a question)
+## Describe the bug
 
 
 ## To Reproduce

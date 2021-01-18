@@ -283,6 +283,8 @@ static void RPi_setup()
 
 static void RPi_post_init()
 {
+
+#if 0
   Serial.println();
   Serial.println(F("Raspberry Pi Power-on Self Test"));
   Serial.println();
@@ -302,6 +304,7 @@ static void RPi_post_init()
   Serial.println(F("Power-on Self Test is completed."));
   Serial.println();
   Serial.flush();
+#endif
 
 #if defined(USE_EPAPER)
 
@@ -329,12 +332,7 @@ static uint32_t RPi_getChipId()
 {
   uint32_t id = SerialNumber ? SerialNumber : gethostid();
 
-  /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
-    id += 0x100000;
-  }
-
-  return id;
+  return DevID_Mapper(id);
 }
 
 static void* RPi_getResetInfoPtr()
@@ -980,6 +978,7 @@ int main()
       break;
     }
 
+#if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
     /* take care of millis() rollover on a long term run */
     if (millis() > (47 * 24 * 3600 * 1000UL)) {
       time_t current_time = time(NULL);
@@ -999,6 +998,7 @@ int main()
         exit(EXIT_SUCCESS);
       }
     }
+#endif /* TAKE_CARE_OF_MILLIS_ROLLOVER */
   }
 
   Traffic_TCP_Server.detach();

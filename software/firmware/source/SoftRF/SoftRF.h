@@ -210,6 +210,16 @@ enum
 	SOFTRF_SHUTDOWN_SENSOR
 };
 
+static inline uint32_t DevID_Mapper(uint32_t id)
+{
+  /* remap address to avoid overlapping with congested FLARM range */
+  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
+    id += 0x100000;
+  }
+
+  return id;
+}
+
 extern ufo_t ThisAircraft;
 extern hardware_info_t hw_info;
 extern const float txrx_test_positions[90][2] PROGMEM;

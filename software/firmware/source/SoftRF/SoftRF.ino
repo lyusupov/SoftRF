@@ -299,6 +299,13 @@ void loop()
 
   SoC->Button_loop();
 
+#if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
+  /* restart the device when uptime is more than 47 days */
+  if (millis() > (47 * 24 * 3600 * 1000UL)) {
+    SoC->reset();
+  }
+#endif /* TAKE_CARE_OF_MILLIS_ROLLOVER */
+
   yield();
 }
 

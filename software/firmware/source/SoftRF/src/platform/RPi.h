@@ -105,6 +105,8 @@ extern TTYSerial Serial2;
 #define USE_NMEALIB
 #define USE_EPAPER
 
+#define TAKE_CARE_OF_MILLIS_ROLLOVER
+
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK

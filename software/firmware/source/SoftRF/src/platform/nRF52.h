@@ -55,6 +55,12 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum nRF52_board_id {
+  NRF52_NORDIC_PCA10059,        /* reference low power board */
+  NRF52_LILYGO_TECHO_REV_0,
+  NRF52_LILYGO_TECHO_REV_1
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -87,11 +93,17 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_PPS _PINNUM(1, 4) // P1.04
 #define SOC_GPIO_PIN_GNSS_WKE _PINNUM(1, 2) // P1.02
 
-#define SOC_GPIO_LED_GREEN    _PINNUM(0, 13) // P0.13 (Green)
-#define SOC_GPIO_LED_RED      _PINNUM(0, 14) // P0.14 (Red)
-#define SOC_GPIO_LED_BLUE     _PINNUM(0, 15) // P0.15 (Blue)
+#define SOC_GPIO_LED_TECHO_REV_0_GREEN  _PINNUM(0, 13) // P0.13 (Green)
+#define SOC_GPIO_LED_TECHO_REV_0_RED    _PINNUM(0, 14) // P0.14 (Red)
+#define SOC_GPIO_LED_TECHO_REV_0_BLUE   _PINNUM(0, 15) // P0.15 (Blue)
 
-#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_GREEN
+#define SOC_GPIO_LED_PCA10059_STATUS    _PINNUM(0,  6) // P0.06
+#define SOC_GPIO_LED_PCA10059_GREEN     _PINNUM(1,  9) // P1.09 (Green)
+#define SOC_GPIO_LED_PCA10059_RED       _PINNUM(0,  8) // P0.08 (Red)
+#define SOC_GPIO_LED_PCA10059_BLUE      _PINNUM(0, 12) // P0.12 (Blue)
+
+#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_TECHO_REV_0_GREEN
+//#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_PCA10059_STATUS
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
@@ -124,8 +136,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL      _PINNUM(0, 27) // P0.27
 
 /* buttons */
-#define SOC_GPIO_PIN_BUTTON   _PINNUM(1, 10) // P1.10
-#define SOC_GPIO_PIN_PAD      _PINNUM(0, 11) // P0.11
+#define SOC_GPIO_PIN_TECHO_REV_0_BUTTON _PINNUM(1, 10) // P1.10
+#define SOC_GPIO_PIN_PCA10059_BUTTON    _PINNUM(1,  6) // P1.06
+#define SOC_GPIO_PIN_PAD                _PINNUM(0, 11) // P0.11
+
+#define SOC_GPIO_PIN_BUTTON   SOC_GPIO_PIN_TECHO_REV_0_BUTTON
+//#define SOC_GPIO_PIN_BUTTON   SOC_GPIO_PIN_PCA10059_BUTTON
 
 /* E-paper */
 #define SOC_GPIO_PIN_EPD_MISO _PINNUM(1,  7) // P1.07
@@ -155,8 +171,8 @@ struct rst_info {
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
-//#define EXCLUDE_GNSS_GOKE
-#define EXCLUDE_GNSS_AT65
+//#define EXCLUDE_GNSS_GOKE     /* 'Air530' GK9501 GPS/GLO/BDS (GAL inop.) */
+//#define EXCLUDE_GNSS_AT65     /* Quectel L76K */
 
 /* Component                         Cost */
 /* -------------------------------------- */

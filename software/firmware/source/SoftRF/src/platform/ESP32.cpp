@@ -442,12 +442,7 @@ static uint32_t ESP32_getChipId()
   uint32_t id = (uint32_t) efuse_mac[5]        | ((uint32_t) efuse_mac[4] << 8) | \
                ((uint32_t) efuse_mac[3] << 16) | ((uint32_t) efuse_mac[2] << 24);
 
-  /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
-    id += 0x100000;
-  }
-
-  return id;
+  return DevID_Mapper(id);
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
 #endif /* SOFTRF_ADDRESS */
@@ -920,7 +915,7 @@ static void ESP32_Display_loop()
         tft->setTextFont(4);
         tft->setTextSize(2);
 
-        itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
+        snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
 
         tbw = tft->textWidth(buf);
         tbh = tft->fontHeight();

@@ -81,7 +81,7 @@ void EPD_status_setup()
   navbox3.y = navbox1.y + navbox1.height;
   navbox3.width  = navbox1.width;
   navbox3.height = navbox1.height;
-  navbox3.value      = ThisAircraft.addr & 0xFFFFFF;
+  navbox3.value      = ThisAircraft.addr;
   navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 

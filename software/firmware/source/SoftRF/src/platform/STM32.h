@@ -185,6 +185,8 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
+#define TAKE_CARE_OF_MILLIS_ROLLOVER
+
 #define EXCLUDE_GNSS_UBLOX
 //#define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK

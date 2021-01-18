@@ -29,20 +29,26 @@ CXXFLAGS      = -std=c++11 $(CFLAGS)
 SKETCH        = SoftRF.ino
 
 BIN_ELF       := $(SKETCH:.ino=.ino.elf)
+BIN_HEX       := $(BIN_ELF:.elf=.hex)
 BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
+BIN_UF2       := $(BIN_ELF:.elf=.uf2)
 
 SOFTRF_DIR    = ../SoftRF
-BINDIR        = /tmp/energia
 
 ARDUINO       = arduino
 ENERGIA       = energia
+
+TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin
+BINDIR        = /tmp/$(ENERGIA)
+HEXDIR        = /tmp/$(ARDUINO)
+
 LN            = ln -s
 RM            = rm -f
-TC_PATH       = $(HOME)/.energia15/packages/energia/tools/arm-none-eabi-gcc/4.8.4-20140725/bin
 OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
                  -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
                  -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
 SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
+UF2CONV       = uf2conv.py
 
 SRC_PATH      = src
 LIB_PATH      = ../libraries
@@ -199,6 +205,9 @@ upload:
 ihex:
 				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
 				$(SED) $(BINDIR)/$(BIN_IHEX)
+
+uf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xADA52840 -o $(HEXDIR)/$(BIN_UF2)
 
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 
