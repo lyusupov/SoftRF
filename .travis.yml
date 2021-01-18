@@ -124,6 +124,9 @@ install:
       arduino --board $BOARD --save-prefs ;
       arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
       arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
+      if [[ ! -f ~/.local/bin/adafruit-nrfutil ]]; then
+        ln -s /bin/true ~/.local/bin/adafruit-nrfutil;
+      fi ;
       cd $TRAVIS_BUILD_DIR ;
     fi
 
