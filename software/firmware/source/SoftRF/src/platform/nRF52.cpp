@@ -158,35 +158,19 @@ static void nRF52_setup()
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
 
-  nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
-
-  if (nRF52_has_spiflash) {
-    unsigned char buf[8];
-
-    SerialFlash.readID(buf);
-
-    uint32_t flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
-
-    SerialFlash.sleep();
-
-    nRF52_board = NRF52_LILYGO_TECHO_REV_0;
-  }
-
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
   Wire.begin();
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
+  nRF52_board = nRF52_has_rtc ? NRF52_LILYGO_TECHO_REV_0 : nRF52_board;
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
+    Wire.beginTransmission(BME280_ADDRESS);
+    nRF52_board = Wire.endTransmission() == 0 ? NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
+  }
   Wire.end();
 
-  i2c = new I2CBus(Wire);
-
-  if (nRF52_has_rtc && (i2c != nullptr)) {
-    rtc = new PCF8563_Class(*i2c);
-
-    pinMode(SOC_GPIO_PIN_R_INT, INPUT);
-  }
-
+  /* GPIO pins init */
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
@@ -207,6 +191,36 @@ static void nRF52_setup()
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
       break;
+
+    case NRF52_LILYGO_TECHO_REV_1:
+      /* single SPI I/O */
+      digitalWrite(SOC_GPIO_PIN_SFL_HOLD, HIGH);
+      digitalWrite(SOC_GPIO_PIN_SFL_WP, HIGH);
+      pinMode(SOC_GPIO_PIN_SFL_HOLD, OUTPUT);
+      pinMode(SOC_GPIO_PIN_SFL_WP, OUTPUT);
+
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN */
+      pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);  /* VDD_POWR */
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_RED,   OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_TECHO_REV_1_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_1_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
+
+      lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
+      break;
+
     case NRF52_NORDIC_PCA10059:
     default:
       pinMode(SOC_GPIO_LED_PCA10059_STATUS, OUTPUT);
@@ -219,6 +233,26 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_PCA10059_BLUE);
       ledOn (SOC_GPIO_LED_PCA10059_STATUS);
       break;
+  }
+
+  nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
+
+  if (nRF52_has_spiflash) {
+    unsigned char buf[8];
+
+    SerialFlash.readID(buf);
+
+    uint32_t flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+
+    SerialFlash.sleep();
+  }
+
+  i2c = new I2CBus(Wire);
+
+  if (nRF52_has_rtc && (i2c != nullptr)) {
+    rtc = new PCF8563_Class(*i2c);
+
+    pinMode(SOC_GPIO_PIN_R_INT, INPUT);
   }
 }
 
