@@ -112,10 +112,14 @@ struct rst_info {
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     _PINNUM(0, 22) // P0.22
-#define SOC_GPIO_PIN_MISO     _PINNUM(0, 23) // P0.23
-#define SOC_GPIO_PIN_SCK      _PINNUM(0, 19) // P0.19
-#define SOC_GPIO_PIN_SS       _PINNUM(0, 24) // P0.24
+#define SOC_GPIO_PIN_TECHO_REV_0_MOSI   _PINNUM(0, 22) // P0.22
+#define SOC_GPIO_PIN_TECHO_REV_0_MISO   _PINNUM(0, 23) // P0.23
+#define SOC_GPIO_PIN_TECHO_REV_0_SCK    _PINNUM(0, 19) // P0.19
+#define SOC_GPIO_PIN_SS                 _PINNUM(0, 24) // P0.24
+
+#define SOC_GPIO_PIN_PCA10059_MOSI      _PINNUM(0, 22) // P0.22
+#define SOC_GPIO_PIN_PCA10059_MISO      _PINNUM(0, 13) // P0.13
+#define SOC_GPIO_PIN_PCA10059_SCK       _PINNUM(0, 14) // P1.14
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -123,7 +127,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1262 or SX1276 */
-#define SOC_GPIO_PIN_RST      _PINNUM(0, 25) // P0.25
+#define SOC_GPIO_PIN_TECHO_REV_0_RST    _PINNUM(0, 25) // P0.25
+#define SOC_GPIO_PIN_PCA10059_RST       _PINNUM(0, 15) // P0.15
 #define SOC_GPIO_PIN_DIO0     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO1     _PINNUM(0, 20) // P0.20
 #define SOC_GPIO_PIN_BUSY     _PINNUM(0, 17) // P0.17

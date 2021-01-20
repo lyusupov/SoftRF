@@ -51,7 +51,7 @@ lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
     .rxe = LMIC_UNUSED_PIN,
-    .rst = SOC_GPIO_PIN_RST,
+    .rst = SOC_GPIO_PIN_PCA10059_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
     .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
@@ -98,9 +98,15 @@ static TaskHandle_t EPD_Task_Handle = NULL;
 #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
 
 SPIClass SPI0(_SPI_DEV,
-              SOC_GPIO_PIN_MISO,
-              SOC_GPIO_PIN_SCK,
-              SOC_GPIO_PIN_MOSI);
+              SOC_GPIO_PIN_TECHO_REV_0_MISO,
+              SOC_GPIO_PIN_TECHO_REV_0_SCK,
+              SOC_GPIO_PIN_TECHO_REV_0_MOSI);
+/*
+SPIClass SPI0(_SPI_DEV,
+              SOC_GPIO_PIN_PCA10059_MISO,
+              SOC_GPIO_PIN_PCA10059_SCK,
+              SOC_GPIO_PIN_PCA10059_MOSI);
+*/
 SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MISO,
               SOC_GPIO_PIN_EPD_SCK,
@@ -198,6 +204,8 @@ static void nRF52_setup()
       ledOn (SOC_GPIO_LED_TECHO_REV_0_GREEN);
       ledOff(SOC_GPIO_LED_TECHO_REV_0_RED);
       ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
+
+      lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
       break;
     case NRF52_NORDIC_PCA10059:
     default:
@@ -386,7 +394,7 @@ static void nRF52_fini(int reason)
   // pinMode(SOC_GPIO_PIN_SCK,  INPUT);
   pinMode(SOC_GPIO_PIN_SS,   INPUT);
   // pinMode(SOC_GPIO_PIN_BUSY, INPUT);
-  pinMode(SOC_GPIO_PIN_RST,  INPUT);
+  pinMode(lmic_pins.rst,  INPUT);
 
   // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
   pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
