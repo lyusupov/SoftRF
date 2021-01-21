@@ -685,10 +685,14 @@ static bool sony_setup()
   swSer.write("@GSTP\r\n");      delay(1500);
 
   /* GGA + GSA + RMC */
-  swSer.write("@BSSL 0x25\r\n"); delay(250);
-  /* GPS + GLONASS. This command must be issued at “Idle” mode */
-  swSer.write("@GNS 3\r\n");     delay(250);
-  /*  Positioning algorithm. This command must be issued at “Idle” mode */
+  swSer.write("@BSSL 0x2D\r\n"); delay(250); // Fab501 before @BSSL 025 now @BSSL 0x2D to Activate GSV  0101 = 5  1101 =D
+  //swSer.write("@BSSL 0x25\r\n"); delay(250);
+  
+ /* GPS + GLONASS. This command must be issued at Â“IdleÂ” mode */
+ // swSer.write("@GNS 3\r\n");     delay(250);
+  swSer.write("@GNS 0x7\r\n");   delay(250); // Fab501 before @GNS 0x3 now @GNS 0x7 to Activate SBAS	
+  
+  /*  Positioning algorithm. This command must be issued at Â“IdleÂ” mode */
   swSer.write("@GUSE 0\r\n");    delay(250);
 
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
