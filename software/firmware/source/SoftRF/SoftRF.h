@@ -129,6 +129,8 @@ typedef struct UFO {
     float     latitude;
     float     longitude;
     float     altitude;
+    float     temperature; /* Ajouté par Fab501 */
+    float     pressure; /* Ajouté par Fab501 */
     float     pressure_altitude;
     float     course;     /* CoG */
     float     speed;      /* ground speed in knots */
