@@ -138,6 +138,120 @@ byte OLED_setup() {
 
 static void OLED_radio()
 {
+ /* Fab501 Début des Changements */
+  char buf[16];
+  uint32_t disp_value;
+  int calc; //Fab501
+
+  if (!OLED_display_titles) {
+  
+      u8x8->clear(); //Fab501 here under
+      
+      u8x8->drawString(0, 0, "I"); 
+
+      itoa(ThisAircraft.addr & 0xFFFFFF, buf, 16);
+      u8x8->draw2x2String(1, 0, buf);
+
+      u8x8->drawString(13, 0, "P");
+
+      u8x8->draw2x2String(14, 0, OLED_Protocol_ID[ThisAircraft.protocol]);
+      
+      u8x8->drawString(0, 2, "R");
+      
+      u8x8->drawString(8, 2, "T");
+      
+      
+      u8x8->drawString(0, 4, "F");
+      u8x8->drawString(0, 5, "L"); 
+      
+      u8x8->drawString(7, 4, "V"); 
+      
+      u8x8->drawString(0, 6, "t"); 
+      u8x8->drawString(7, 6, "p"); 
+
+
+    if (settings->mode        == SOFTRF_MODE_RECEIVER ||
+        settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+        settings->txpower     == RF_TX_POWER_OFF) {
+      u8x8->draw2x2String(8, 6, "OFF");
+      prev_tx_packets_counter = tx_packets_counter;
+    } else {
+      prev_tx_packets_counter = (uint32_t) -1;
+    }
+
+    prev_rx_packets_counter = (uint32_t) -1;
+
+    OLED_display_titles = true;
+  }
+
+   
+      calc = ((int)ThisAircraft.temperature) %100; // Temperature
+      if (calc < 0) {calc = -calc; u8x8->drawString(1, 6, "-"); } else { u8x8->drawString(1, 6, "+"); }
+      itoa(calc, buf, 10); /* ajouté par Fab501 */
+      if ( calc < 10) { strcat_P(buf,PSTR(" ")); }; 
+      u8x8->draw2x2String(2, 6, buf); 
+      
+      calc = (int)(ThisAircraft.pressure/100);  //Presure
+      itoa(calc, buf, 10); 
+      if ( calc < 1000) { strcat_P(buf,PSTR(" ")); };
+      u8x8->draw2x2String(8, 6, buf); 
+      
+      calc = ((int)(ThisAircraft.pressure_altitude*3.279/100)) % 100; //Flight Level max FL99
+      if (calc < 0) {
+      		calc = -calc; 
+      		u8x8->drawString(1, 4, "-"); 
+      		itoa(calc, buf, 10); 
+      		strcat_P(buf,PSTR(" "));
+      		u8x8->draw2x2String(2, 4, buf); 
+      	} else {  
+      	        u8x8->drawString(1, 4, "+"); 
+      		itoa(calc, buf, 10); 
+         	if ( calc < 10) { strcat_P(buf,PSTR(" ")); };
+      		u8x8->draw2x2String(2, 4, buf); 
+      		}	
+      
+      calc = (((int)(ThisAircraft.vs/50))*50) % 10000;  //Vertical Speed FT/MIN
+      if (calc < 0) {calc = -calc; u8x8->drawString(7, 5, "-"); } else { u8x8->drawString(7, 5, "+"); }
+      itoa(calc, buf, 10); 
+      if (calc < 10) {strcat_P(buf,PSTR("   "));} 
+      else { if (calc < 100) { strcat_P(buf,PSTR("  ")); } 
+      	     else { if (calc <1000) {strcat_P(buf,PSTR(" "));}; } 
+      	   }
+      u8x8->draw2x2String(8, 4, buf); 
+      
+      if (rx_packets_counter != prev_rx_packets_counter) {
+        disp_value = rx_packets_counter % 1000;
+        itoa(disp_value, buf, 10);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
+        u8x8->draw2x2String(1, 2, buf);
+        prev_rx_packets_counter = rx_packets_counter;
+      }
+      if (tx_packets_counter != prev_tx_packets_counter) {
+        disp_value = tx_packets_counter % 1000;
+        itoa(disp_value, buf, 10);
+
+        if (disp_value < 10) {
+          strcat_P(buf,PSTR("  "));
+        } else {
+          if (disp_value < 100) {
+            strcat_P(buf,PSTR(" "));
+          };
+        }
+
+        u8x8->draw2x2String(9, 2, buf);
+        prev_tx_packets_counter = tx_packets_counter;
+      }
+  /* Fab501 Fin des Changements */
+  
+  /*
   char buf[16];
   uint32_t disp_value;
 
@@ -201,7 +315,7 @@ static void OLED_radio()
 
     u8x8->draw2x2String(8, 6, buf);
     prev_tx_packets_counter = tx_packets_counter;
-  }
+  } */
 }
 
 static void OLED_other()
