@@ -16,6 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#define SOFTRF_ADDRESS 0x00123456 //Fab501 your ID
+
+// Fab501 Change Are, 
+// In STM32.h  to Add U8X8_SH1106 display
+// SoftRF.h Add Pressure and Temperature to This Aircraft
+// Baro.cpp Add Read Pressure and Read Temperature
+// Oled.cpp Change Display to Add Vario, Pressure, Pressure Alt, Temp
+// GNSS.cpp Add GSV and SBAS
+
+// PLEASE COMPIL WITH Smallest -Os if Fast -O1 don't Work !!!
+
 #ifndef SOFTRF_H
 #define SOFTRF_H
 
