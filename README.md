@@ -169,9 +169,9 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-boot.jpg" width="186" height="260">&nbsp;<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/iLogger-SeeYou.JPG" width="494" height="260"></p>
 
-* [**Display Baro Values**](https://github.com/Fab501/SoftRF)
+* [**Display Baro Values**](https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg)
 
-<p><img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg" width="186" height="260">&nbsp;<img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg" width="494" height="260"></p>
+![](https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg)
 
 <!--
 * [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
