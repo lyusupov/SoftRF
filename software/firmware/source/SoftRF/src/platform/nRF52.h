@@ -169,7 +169,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_EPD_BUSY _PINNUM(0,  3) // P0.03
 #define SOC_GPIO_PIN_EPD_BLGT _PINNUM(1, 11) // P1.11
 
-/* Power: EINK, RGB, CN1 (, RF) REV_1: GNSS, SENSOR */
+/* Power: EINK, RGB, CN1 (, RF) REV_1: FLASH, GNSS, SENSOR */
 #define SOC_GPIO_PIN_IO_PWR   _PINNUM(0, 12) // P0.12
 /* REV_1 power: RF */
 #define SOC_GPIO_PIN_3V3_PWR  _PINNUM(0, 13) // P0.13

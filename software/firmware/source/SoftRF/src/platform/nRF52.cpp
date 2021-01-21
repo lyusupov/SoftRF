@@ -115,7 +115,7 @@ SPIClass SPI1(_SPI1_DEV,
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
 #if defined(USE_EPAPER)
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_txx(GxEPD2_154_D67(
+GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
                                                             SOC_GPIO_PIN_EPD_SS,
                                                             SOC_GPIO_PIN_EPD_DC,
                                                             SOC_GPIO_PIN_EPD_RST,
@@ -165,8 +165,19 @@ static void nRF52_setup()
   nRF52_has_rtc = (Wire.endTransmission() == 0);
   nRF52_board = nRF52_has_rtc ? NRF52_LILYGO_TECHO_REV_0 : nRF52_board;
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
+
+    hw_info.model = SOFTRF_MODEL_BADGE;
+
+    pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN */
+    delay(10);
+    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);  /* VDD_POWR */
+    delay(10);
+
     Wire.beginTransmission(BME280_ADDRESS);
-    nRF52_board = Wire.endTransmission() == 0 ? NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
+    nRF52_board = Wire.endTransmission() == 0 /* || true */ ?
+                  NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
   }
   Wire.end();
 
@@ -178,9 +189,6 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
-
       pinMode(SOC_GPIO_LED_TECHO_REV_0_GREEN, OUTPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_0_RED,   OUTPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  OUTPUT);
@@ -190,6 +198,7 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
+      hw_info.revision = 0;
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
@@ -205,11 +214,6 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN */
-      pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);  /* VDD_POWR */
-
       pinMode(SOC_GPIO_LED_TECHO_REV_1_GREEN, OUTPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_1_RED,   OUTPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  OUTPUT);
@@ -219,6 +223,7 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
+      hw_info.revision = 1;
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -258,9 +263,12 @@ static void nRF52_setup()
 
 static void nRF52_post_init()
 {
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
     Serial.println();
-    Serial.println(F("LilyGO T-xx nRF52840 board Power-on Self Test"));
+    Serial.print  (F("LilyGO T-Echo (rev."));
+    Serial.print  (hw_info.revision);
+    Serial.println(F(") Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
@@ -271,7 +279,9 @@ static void nRF52_post_init()
                    hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss    == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.gnss == (hw_info.revision == 0 ?
+                                   GNSS_MODULE_GOKE : GNSS_MODULE_AT65)
+                                   ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("DISPLAY : "));
     Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
@@ -283,8 +293,11 @@ static void nRF52_post_init()
     Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
     Serial.flush();
 
-    Serial.println();
-    Serial.println(F("External components:"));
+    if (hw_info.revision == 0) {
+      Serial.println();
+      Serial.println(F("External components:"));
+    }
+
     Serial.print(F("BMx280  : "));
     Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
     Serial.flush();
@@ -392,6 +405,23 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_1:
+      ledOff(SOC_GPIO_LED_TECHO_REV_1_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_1_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_GREEN, INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_RED,   INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  INPUT);
+
+      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_RST,  INPUT);
+      digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -572,7 +602,7 @@ static byte nRF52_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_EPAPER)
-  display = &epd_ttgo_txx;
+  display = &epd_ttgo_techo;
 
   if (EPD_setup(true)) {
 
