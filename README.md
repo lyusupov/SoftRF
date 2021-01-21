@@ -171,7 +171,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 * [**Display Baro Values**](https://github.com/Fab501/SoftRF)
 
-<p><img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg" width="186" height="260">&nbsp;<img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.JPG" width="494" height="260"></p>
+<p><img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg" width="186" height="260">&nbsp;<img src="https://github.com/Fab501/SoftRF/raw/master/documents/images/Display_Baro_Values.jpg" width="494" height="260"></p>
 
 <!--
 * [**Software driven emulation**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)
