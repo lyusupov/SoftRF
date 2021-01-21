@@ -154,7 +154,7 @@ static void STM32_setup()
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
     }
-
+/* Fab501 Remove to avoid compilation error
     // PC_1 is Low for TCXO or High for Crystal
     STM32_has_TCXO = (STM32_probe_pin(SOC_GPIO_PIN_OSC_SEL, INPUT) == 0);
 
@@ -163,7 +163,7 @@ static void STM32_setup()
       hal_pin_tcxo_init();
       hal_pin_tcxo(0); // disable TCXO
     }
-
+*/
 #elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
 #else
