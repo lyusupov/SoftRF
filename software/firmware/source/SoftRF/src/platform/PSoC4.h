@@ -75,9 +75,6 @@ struct rst_info {
 #endif /* CubeCell_GPS */
 #define UATSerial             Serial
 
-#define SERIAL_OUT_BR         STD_OUT_BR
-#define SERIAL_OUT_BITS       -1
-
 #define SOC_ADC_VOLTAGE_DIV   2 // HTCC-AB02S has Vbat 100k/100k voltage divider
 
 /* Peripherals */

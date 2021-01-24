@@ -204,7 +204,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 ## ASR650x
 
 1. Follow [these official instructions](https://heltec-automation-docs.readthedocs.io/en/latest/cubecell/quick_start.html)
-  to install Arduino IDE and [latest **stable** Heltec CubeCell (ASR650X) Arduino Support](https://github.com/HelTecAutomation/ASR650x-Arduino/releases/tag/V1.1.0) (1.1.0)
+  to install Arduino IDE and [latest **stable** Heltec CubeCell (ASR650X) Arduino Support](https://github.com/HelTecAutomation/ASR650x-Arduino/releases/tag/V1.2.0) (1.2.0)
 2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:

@@ -548,13 +548,13 @@ RingBuffer<uint8_t, UART1_TX_FIFO_SIZE> UART_TX_FIFO =
 
 static void PSoC4_UART_loop()
 {
-//  while (SerialOutput.availableForWrite() > 0) {
-  while (UART_1_SpiUartGetTxBufferSize() < UART_1_TX_BUFFER_SIZE) {
+  while (SerialOutput.availableForWrite() > 0) {
+//  while (UART_1_SpiUartGetTxBufferSize() < UART_1_TX_BUFFER_SIZE) {
     if (UART_TX_FIFO.empty()) {
       break;
     }
-//    SerialOutput.write(UART_TX_FIFO.read());
-    UART_1_UartPutChar(UART_TX_FIFO.read());
+    SerialOutput.write(UART_TX_FIFO.read());
+//    UART_1_UartPutChar(UART_TX_FIFO.read());
   }
 }
 

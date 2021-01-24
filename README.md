@@ -66,6 +66,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII.-Quick-start)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v5)
+    * Firmware update
+        * [USB](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#esp32)
+        * [webUI](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28Web-method%29#esp32)
+        * [programming device](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28hardware-method%29)
 * [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
