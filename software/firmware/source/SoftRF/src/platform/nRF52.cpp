@@ -158,25 +158,42 @@ static void nRF52_setup()
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
 
+  digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
+  digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW); /* PWR_EN is OFF */
+  pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
+  delay(100);
+
+  if (SoC->Battery_voltage() > 2.0) {  /* VBUS is ON */
+    nRF52_board = NRF52_LILYGO_TECHO_REV_0;
+    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
+  } else {
+    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
+    delay(100);
+
+    if (SoC->Battery_voltage() > 2.0) {
+      nRF52_board = NRF52_LILYGO_TECHO_REV_0;
+    } else {
+      digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN is ON */
+      delay(100);
+
+      if (SoC->Battery_voltage() > 2.0) {
+        nRF52_board = NRF52_LILYGO_TECHO_REV_2;
+      }
+    }
+  }
+
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
   Wire.begin();
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
-  nRF52_board = nRF52_has_rtc ? NRF52_LILYGO_TECHO_REV_0 : nRF52_board;
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
-
+  if (nRF52_has_rtc) {
     hw_info.model = SOFTRF_MODEL_BADGE;
+  }
 
-    pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN */
-    delay(10);
-    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);  /* VDD_POWR */
-    delay(10);
-
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
     Wire.beginTransmission(BME280_ADDRESS);
-    nRF52_board = Wire.endTransmission() == 0 /* || true */ ?
+    nRF52_board = Wire.endTransmission() == 0 ?
                   NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
   }
   Wire.end();
@@ -208,9 +225,7 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_SFL_HOLD, OUTPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP, OUTPUT);
 
-      /* Wake up Quectel L76K GNSS */
-      digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
+      /* Wake up Air530 GNSS */
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
@@ -224,6 +239,31 @@ static void nRF52_setup()
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
       hw_info.revision = 1;
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_2:
+      /* single SPI I/O */
+      digitalWrite(SOC_GPIO_PIN_SFL_HOLD, HIGH);
+      digitalWrite(SOC_GPIO_PIN_SFL_WP, HIGH);
+      pinMode(SOC_GPIO_PIN_SFL_HOLD, OUTPUT);
+      pinMode(SOC_GPIO_PIN_SFL_WP, OUTPUT);
+
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_RED,   OUTPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_BLUE,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_TECHO_REV_2_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_2_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_2_BLUE);
+
+      lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_2_RST;
+      hw_info.revision = 2;
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -264,7 +304,8 @@ static void nRF52_setup()
 static void nRF52_post_init()
 {
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
-      nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
+      nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
     Serial.println();
     Serial.print  (F("LilyGO T-Echo (rev."));
     Serial.print  (hw_info.revision);
@@ -279,7 +320,7 @@ static void nRF52_post_init()
                    hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss == (hw_info.revision == 0 ?
+    Serial.println(hw_info.gnss == ((hw_info.revision == 0 || hw_info.revision == 1) ?
                                    GNSS_MODULE_GOKE : GNSS_MODULE_AT65)
                                    ? F("PASS") : F("FAIL"));
     Serial.flush();
@@ -408,6 +449,20 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
+#if 0
+      /* Air530 GNSS ultra-low power tracking mode */
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
+
+    //swSer.write("$PGKC105,4*33\r\n");
+#else
+      pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
+
+      //swSer.write("$PGKC051,0*37\r\n");
+      // swSer.write("$PGKC051,1*36\r\n");
+#endif
+      //swSer.flush(); delay(250);
+
       ledOff(SOC_GPIO_LED_TECHO_REV_1_GREEN);
       ledOff(SOC_GPIO_LED_TECHO_REV_1_RED);
       ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
@@ -415,6 +470,20 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_1_GREEN, INPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_1_RED,   INPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  INPUT);
+
+      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
+      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_2:
+      ledOff(SOC_GPIO_LED_TECHO_REV_2_GREEN);
+      ledOff(SOC_GPIO_LED_TECHO_REV_2_RED);
+      ledOff(SOC_GPIO_LED_TECHO_REV_2_BLUE);
+
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_GREEN, INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_RED,   INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_BLUE,  INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
