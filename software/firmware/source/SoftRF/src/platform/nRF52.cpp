@@ -165,19 +165,24 @@ static void nRF52_setup()
 
   if (SoC->Battery_voltage() > 2.0) {  /* VBUS is ON */
     nRF52_board = NRF52_LILYGO_TECHO_REV_0;
-    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
+    pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
+    pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
   } else {
     pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
     delay(100);
 
     if (SoC->Battery_voltage() > 2.0) {
       nRF52_board = NRF52_LILYGO_TECHO_REV_0;
+      pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
     } else {
       digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN is ON */
       delay(100);
 
       if (SoC->Battery_voltage() > 2.0) {
         nRF52_board = NRF52_LILYGO_TECHO_REV_2;
+      } else {
+        pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
+        pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT);
       }
     }
   }
@@ -334,14 +339,12 @@ static void nRF52_post_init()
     Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
     Serial.flush();
 
-    if (hw_info.revision == 0) {
-      Serial.println();
-      Serial.println(F("External components:"));
+    if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
+        nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+      Serial.print(F("BMx280  : "));
+      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+      Serial.flush();
     }
-
-    Serial.print(F("BMx280  : "));
-    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
-    Serial.flush();
 
     Serial.println();
     Serial.println(F("Power-on Self Test is completed."));
@@ -472,7 +475,7 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
-      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
       break;
 
@@ -556,6 +559,12 @@ static void nRF52_fini(int reason)
 #endif
   default:
     break;
+  }
+
+  /* Cut 3.3V power off on modded REV_1 board */
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 && hw_info.rf == RF_IC_SX1262) {
+    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, LOW);
   }
 
   Serial.end();

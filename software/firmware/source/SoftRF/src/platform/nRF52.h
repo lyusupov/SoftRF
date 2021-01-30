@@ -183,6 +183,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_IO_PWR   _PINNUM(0, 12) // P0.12
 /* REV_2 power: RF */
 #define SOC_GPIO_PIN_3V3_PWR  _PINNUM(0, 13) // P0.13
+/* Modded REV_1 3V3 power */
+#define SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR  SOC_GPIO_PIN_TECHO_REV_1_DIO0
 
 /* MX25R1635F SPI flash */
 #define SOC_GPIO_PIN_SFL_MOSI _PINNUM(1, 12) // P1.12
