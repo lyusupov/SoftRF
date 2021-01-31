@@ -23,6 +23,7 @@
 #include <pcf8563.h>
 #include <SoftSPI.h>
 #include <SerialFlash.h>
+#include <Adafruit_SPIFlash.h>
 #include <Adafruit_SleepyDog.h>
 #include "nrf_wdt.h"
 
@@ -114,6 +115,14 @@ SPIClass SPI1(_SPI1_DEV,
 
 SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
+Adafruit_FlashTransport_QSPI flashTransport(SOC_GPIO_PIN_SFL_SCK,
+                                            SOC_GPIO_PIN_SFL_SS,
+                                            SOC_GPIO_PIN_SFL_MOSI,
+                                            SOC_GPIO_PIN_SFL_MISO,
+                                            SOC_GPIO_PIN_SFL_WP,
+                                            SOC_GPIO_PIN_SFL_HOLD);
+Adafruit_SPIFlash QSPIFlash(&flashTransport);
+
 #if defined(USE_EPAPER)
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
                                                             SOC_GPIO_PIN_EPD_SS,
@@ -139,6 +148,32 @@ ui_settings_t ui_settings = {
 };
 
 ui_settings_t *ui;
+
+#define MX25R1635F                                                             \
+  {                                                                            \
+    .total_size = (1 << 21), /* 2 MiB */                                       \
+        .start_up_time_us = 5000, .manufacturer_id = 0xc2,                     \
+    .memory_type = 0x28, .capacity = 0x15, .max_clock_speed_mhz = 8,           \
+    .quad_enable_bit_mask = 0x40, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = true, .is_fram = false,                              \
+  }
+
+/// List of all possible flash devices used by nRF52840 boards
+static const SPIFlash_Device_t possible_devices[] = {
+    // LilyGO T-Echo
+    MX25R1635F,
+
+    // Nordic PCA10056
+    MX25R6435F,
+};
+
+/// Flash device list count
+enum {
+  EXTERNAL_FLASH_DEVICE_COUNT =
+      sizeof(possible_devices) / sizeof(possible_devices[0])
+};
 
 static void nRF52_setup()
 {
@@ -224,12 +259,6 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
-      /* single SPI I/O */
-      digitalWrite(SOC_GPIO_PIN_SFL_HOLD, HIGH);
-      digitalWrite(SOC_GPIO_PIN_SFL_WP, HIGH);
-      pinMode(SOC_GPIO_PIN_SFL_HOLD, OUTPUT);
-      pinMode(SOC_GPIO_PIN_SFL_WP, OUTPUT);
-
       /* Wake up Air530 GNSS */
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
@@ -247,12 +276,6 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
-      /* single SPI I/O */
-      digitalWrite(SOC_GPIO_PIN_SFL_HOLD, HIGH);
-      digitalWrite(SOC_GPIO_PIN_SFL_WP, HIGH);
-      pinMode(SOC_GPIO_PIN_SFL_HOLD, OUTPUT);
-      pinMode(SOC_GPIO_PIN_SFL_WP, OUTPUT);
-
       /* Wake up Quectel L76K GNSS */
       digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
@@ -285,18 +308,6 @@ static void nRF52_setup()
       break;
   }
 
-  nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
-
-  if (nRF52_has_spiflash) {
-    unsigned char buf[8];
-
-    SerialFlash.readID(buf);
-
-    uint32_t flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
-
-    SerialFlash.sleep();
-  }
-
   i2c = new I2CBus(Wire);
 
   if (nRF52_has_rtc && (i2c != nullptr)) {
@@ -308,6 +319,39 @@ static void nRF52_setup()
 
 static void nRF52_post_init()
 {
+  /* (Q)SPI flash init */
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TECHO_REV_0:
+      nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
+
+      if (nRF52_has_spiflash) {
+        unsigned char buf[8];
+
+        SerialFlash.readID(buf);
+
+        uint32_t spi_flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+
+        SerialFlash.sleep();
+      }
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+      nRF52_has_spiflash = QSPIFlash.begin(possible_devices,
+                                           EXTERNAL_FLASH_DEVICE_COUNT);
+
+      if (nRF52_has_spiflash) {
+        uint32_t qspi_flash_id = QSPIFlash.getJEDECID();
+//        QSPIFlash.end();
+      }
+      break;
+
+    case NRF52_NORDIC_PCA10059:
+    default:
+      break;
+  }
+
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
@@ -342,7 +386,7 @@ static void nRF52_post_init()
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
         nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
       Serial.print(F("BMx280  : "));
-      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
       Serial.flush();
     }
 
@@ -449,6 +493,8 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+      SPI2.end(); /* SoftSPI */
+      pinMode(SOC_GPIO_PIN_SFL_SS, INPUT);
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
@@ -477,6 +523,7 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
@@ -491,6 +538,7 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_WKE,  INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_RST,  INPUT);
       digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
@@ -521,9 +569,6 @@ static void nRF52_fini(int reason)
 
   // pinMode(SOC_GPIO_PIN_SDA,  INPUT);
   // pinMode(SOC_GPIO_PIN_SCL,  INPUT);
-
-  SPI2.end(); /* SoftSPI */
-  pinMode(SOC_GPIO_PIN_SFL_SS, INPUT);
 
   // pinMode(SOC_GPIO_PIN_MOSI, INPUT);
   // pinMode(SOC_GPIO_PIN_MISO, INPUT);
@@ -563,8 +608,7 @@ static void nRF52_fini(int reason)
 
   /* Cut 3.3V power off on modded REV_1 board */
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 && hw_info.rf == RF_IC_SX1262) {
-    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, LOW);
+    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT_PULLDOWN);
   }
 
   Serial.end();
