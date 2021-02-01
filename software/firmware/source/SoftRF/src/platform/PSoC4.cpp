@@ -177,7 +177,7 @@ static void PSoC4_post_init()
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262        ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss    == GNSS_MODULE_GOKE    ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE    ? F("PASS") : F("FAIL"));
     Serial.print(F("DISPLAY : "));
     Serial.println(hw_info.display == DISPLAY_OLED_HELTEC ? F("PASS") : F("FAIL"));
 

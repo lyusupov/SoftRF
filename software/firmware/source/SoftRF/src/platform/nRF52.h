@@ -40,6 +40,10 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
+#if !defined(LED_STATE_ON)
+#define LED_STATE_ON            LOW  // State when LED is litted
+#endif /* LED_STATE_ON */
+
 #define SerialOutput            Serial1
 #define USBSerial               Serial
 #define swSer                   Serial2
@@ -99,9 +103,9 @@ struct rst_info {
 #define SOC_GPIO_LED_TECHO_REV_0_GREEN  _PINNUM(0, 13) // P0.13 (Green)
 #define SOC_GPIO_LED_TECHO_REV_0_RED    _PINNUM(0, 14) // P0.14 (Red)
 #define SOC_GPIO_LED_TECHO_REV_0_BLUE   _PINNUM(0, 15) // P0.15 (Blue)
-#define SOC_GPIO_LED_TECHO_REV_1_GREEN  SOC_GPIO_LED_TECHO_REV_0_GREEN
-#define SOC_GPIO_LED_TECHO_REV_1_RED    SOC_GPIO_LED_TECHO_REV_0_RED
-#define SOC_GPIO_LED_TECHO_REV_1_BLUE   SOC_GPIO_LED_TECHO_REV_0_BLUE
+#define SOC_GPIO_LED_TECHO_REV_1_GREEN  _PINNUM(0, 15)
+#define SOC_GPIO_LED_TECHO_REV_1_RED    _PINNUM(0, 13)
+#define SOC_GPIO_LED_TECHO_REV_1_BLUE   _PINNUM(0, 14)
 #define SOC_GPIO_LED_TECHO_REV_2_GREEN  _PINNUM(1,  3) // P1.03 (Green)
 #define SOC_GPIO_LED_TECHO_REV_2_RED    SOC_GPIO_LED_TECHO_REV_0_RED
 #define SOC_GPIO_LED_TECHO_REV_2_BLUE   _PINNUM(1,  1) // P1.01 (Blue)
@@ -111,8 +115,10 @@ struct rst_info {
 #define SOC_GPIO_LED_PCA10059_RED       _PINNUM(0,  8) // P0.08 (Red)
 #define SOC_GPIO_LED_PCA10059_BLUE      _PINNUM(0, 12) // P0.12 (Blue)
 
-#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_TECHO_REV_0_GREEN
-//#define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_PCA10059_STATUS
+#define SOC_GPIO_PIN_STATUS   (hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
+                               hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_GREEN : \
+                               hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
+                               SOC_GPIO_LED_PCA10059_STATUS)
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
@@ -200,6 +206,7 @@ struct rst_info {
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 //#define EXCLUDE_TEST_MODE
+//#define EXCLUDE_LK8EX1
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

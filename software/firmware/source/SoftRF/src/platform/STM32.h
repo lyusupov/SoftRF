@@ -47,6 +47,8 @@
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
 
+#define LED_STATE_ON            HIGH  // State when LED is litted
+
 /* Analog read resolution */
 #if ADC_RESOLUTION == 10
 #define LL_ADC_RESOLUTION LL_ADC_RESOLUTION_10B
@@ -201,6 +203,7 @@ typedef struct stm32_backup_struct {
 #define USE_SERIAL_DEEP_SLEEP    //  + 12 kb
 //#define USE_BASICMAC           //  +  7 kb
 //#define USE_GNSS_PSM
+#define EXCLUDE_LK8EX1
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
@@ -279,6 +282,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 //#define EXCLUDE_NRF905         //  -  2 kb
 #define EXCLUDE_EGM96            //  - 16 kb
+#define EXCLUDE_LK8EX1
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69

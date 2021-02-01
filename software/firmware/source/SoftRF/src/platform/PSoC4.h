@@ -40,6 +40,8 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
+#define LED_STATE_ON            HIGH  // State when LED is litted
+
 #if !defined(digitalPinToInterrupt)
 #define digitalPinToInterrupt(p) ( p )
 #endif
@@ -136,6 +138,7 @@ struct rst_info {
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
+#define EXCLUDE_LK8EX1
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

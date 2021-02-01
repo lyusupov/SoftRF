@@ -37,6 +37,8 @@
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
+#define LED_STATE_ON          HIGH  // State when LED is litted
+
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -101,6 +103,7 @@ extern TTYSerial Serial2;
 #define EXCLUDE_LED_RING
 #define EXCLUDE_EEPROM
 #define EXCLUDE_CC13XX
+#define EXCLUDE_LK8EX1
 
 #define USE_NMEALIB
 #define USE_EPAPER

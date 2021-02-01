@@ -44,6 +44,8 @@
 
 #define isValidFix()            isValidGNSSFix()
 
+#define LED_STATE_ON            HIGH  // State when LED is litted
+
 #define uni_begin()             strip.begin()
 #define uni_show()              strip.show()
 #define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
@@ -106,6 +108,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_CC13XX
+#define EXCLUDE_LK8EX1
 
 #if defined(pgm_read_float_aligned)
 #define pgm_read_float(addr)  pgm_read_float_aligned(addr)

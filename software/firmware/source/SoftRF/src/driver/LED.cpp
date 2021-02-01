@@ -49,7 +49,7 @@ void LED_setup() {
   if (status_LED != SOC_UNUSED_PIN) {
     pinMode(status_LED, OUTPUT);
     /* Indicate positive power supply */
-    digitalWrite(status_LED, HIGH);
+    digitalWrite(status_LED, LED_STATE_ON);
   }
 }
 
@@ -202,8 +202,8 @@ void LED_loop() {
   if (status_LED != SOC_UNUSED_PIN) {
     if (Battery_voltage() > Battery_threshold() ) {
       /* Indicate positive power supply */
-      if (digitalRead(status_LED) == LOW) {
-        digitalWrite(status_LED, HIGH);
+      if (digitalRead(status_LED) != LED_STATE_ON) {
+        digitalWrite(status_LED, LED_STATE_ON);
       }
     } else {
       if (isTimeToToggle()) {

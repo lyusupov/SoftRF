@@ -56,6 +56,7 @@ extern char *itoa(int, char *, int);
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
+#define LED_STATE_ON            HIGH  // State when LED is litted
 #define WD_TIMEOUT_MS           4000
 
 enum rst_reason {
@@ -92,6 +93,7 @@ struct rst_info {
 #define EXCLUDE_EGM96
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
+#define EXCLUDE_LK8EX1
 
 /* SoftRF/CC13XX PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"

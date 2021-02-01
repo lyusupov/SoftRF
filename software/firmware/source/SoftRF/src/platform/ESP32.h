@@ -40,6 +40,8 @@
 
 #define isValidFix()            isValidGNSSFix()
 
+#define LED_STATE_ON            HIGH  // State when LED is litted
+
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
 //#define USE_ADAFRUIT_NEO_LIBRARY
 
@@ -237,6 +239,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_MTK
 
 #define EXCLUDE_CC13XX
+#define EXCLUDE_LK8EX1
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 
