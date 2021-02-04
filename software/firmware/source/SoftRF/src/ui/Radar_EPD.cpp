@@ -108,7 +108,6 @@ static void EPD_Draw_Radar()
       }
     }
 
-    display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
     display->fillScreen(GxEPD_WHITE);
 
     {

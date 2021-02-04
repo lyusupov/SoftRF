@@ -51,13 +51,8 @@ static unsigned long EPD_anti_ghosting_timer = 0;
 void EPD_Clear_Screen()
 {
   display->setFullWindow();
-
-  display->firstPage();
-  do
-  {
-    display->fillScreen(GxEPD_WHITE);
-  }
-  while (display->nextPage());
+  display->fillScreen(GxEPD_WHITE);
+  display->display(false);
 }
 
 byte EPD_setup(bool splash_screen)
@@ -93,8 +88,6 @@ byte EPD_setup(bool splash_screen)
     display->getTextBounds(EPD_SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
     display->getTextBounds(EPD_SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
     display->setFullWindow();
-    display->firstPage();
-    do
     {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width() - tbw1) / 2;
@@ -129,7 +122,7 @@ byte EPD_setup(bool splash_screen)
         display->print(EPD_SkyView_text5);
       }
     }
-    while (display->nextPage());
+    display->display(false);
   } else {
     EPD_Clear_Screen();
   }
@@ -204,8 +197,6 @@ void EPD_fini(const char *msg)
     uint16_t tbw, tbh;
 
     display->setFullWindow();
-    display->firstPage();
-    do
     {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width()  - 128) / 2;
@@ -246,7 +237,7 @@ void EPD_fini(const char *msg)
       display->setCursor(x, y);
       display->print(EPD_SkyView_text9);
     }
-    while (display->nextPage());
+    display->display(false);
 
     display->hibernate();
   }

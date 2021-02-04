@@ -51,12 +51,11 @@ static void EPD_Draw_NavBoxes()
   uint16_t top_navboxes_w = navbox1.width + navbox2.width;
   uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
 
-  display->setPartialWindow(top_navboxes_x, top_navboxes_y,
-                            top_navboxes_w, top_navboxes_h);
-
-  display->firstPage();
-  do
   {
+    display->fillRect(top_navboxes_x, top_navboxes_y,
+                      top_navboxes_w, top_navboxes_h,
+                      GxEPD_WHITE);
+
     display->drawRoundRect( navbox1.x + 1, navbox1.y + 1,
                             navbox1.width - 2, navbox1.height - 2,
                             4, GxEPD_BLACK);
@@ -86,25 +85,17 @@ static void EPD_Draw_NavBoxes()
     display->print(navbox2.value == PROTOCOL_NMEA  ? "NMEA" :
                    navbox2.value == PROTOCOL_GDL90 ? " GDL" : " UNK" );
   }
-  while (display->nextPage());
-
-  yield();
-
-  /* Poll input source */
-  Input_loop();
 
   uint16_t bottom_navboxes_x = navbox3.x;
   uint16_t bottom_navboxes_y = navbox3.y;
   uint16_t bottom_navboxes_w = navbox3.width + navbox4.width;
   uint16_t bottom_navboxes_h = maxof2(navbox3.height, navbox4.height);
 
-
-  display->setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
-                            bottom_navboxes_w, bottom_navboxes_h);
-
-  display->firstPage();
-  do
   {
+    display->fillRect(bottom_navboxes_x, bottom_navboxes_y,
+                      bottom_navboxes_w, bottom_navboxes_h,
+                      GxEPD_WHITE);
+
     display->drawRoundRect( navbox3.x + 1, navbox3.y + 1,
                             navbox3.width - 2, navbox3.height - 2,
                             4, GxEPD_BLACK);
@@ -143,7 +134,8 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox4.x + 15, navbox4.y + 32);
     display->print((float) navbox4.value / 10);
   }
-  while (display->nextPage());
+
+  display->display(true);
 
   display->powerOff();
 }
@@ -159,14 +151,10 @@ void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
     uint16_t radar_y = (display->height() - display->width()) / 2;
     uint16_t radar_w = display->width();
 
-    display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
-
     display->setFont(&FreeMonoBold18pt7b);
 
-    display->firstPage();
-    do
     {
-      display->fillScreen(GxEPD_WHITE);
+      display->fillRect(radar_x, radar_y, radar_w, radar_w, GxEPD_WHITE);
 
       if (msg2 == NULL) {
         display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -188,7 +176,8 @@ void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
         display->print(msg2);
       }
     }
-    while (display->nextPage());
+
+    display->display(true);
 
     display->powerOff();
   }
@@ -212,7 +201,7 @@ static void EPD_Draw_Radar()
   uint16_t radar_y = (display->height() - display->width()) / 2;
   uint16_t radar_w = display->width();
 
-  display->setPartialWindow(radar_x, radar_y, radar_w, radar_w);
+  display->fillRect(radar_x, radar_y, radar_w, radar_w, GxEPD_WHITE);
 
   uint16_t radar_center_x = radar_w / 2;
   uint16_t radar_center_y = radar_y + radar_w / 2;
@@ -254,8 +243,6 @@ static void EPD_Draw_Radar()
     }
   }
 
-  display->firstPage();
-  do
   {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].ID && (now() - Container[i].timestamp) <= EPD_EXPIRATION_TIME) {
@@ -436,105 +423,39 @@ static void EPD_Draw_Radar()
     }
 
   }
-  while (display->nextPage());
+
+  display->displayWindow(radar_x, radar_y, radar_w, radar_w);
 
   display->powerOff();
 }
 
 static void EPD_Update_NavBoxes()
 {
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
+  bool updated = false;
 
   if (navbox1.value != navbox1.prev_value) {
-
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("00", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox1.x + 40, navbox1.y + 33 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
-      display->fillRect(navbox1.x + 40, navbox1.y + 33 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox1.x + 40, navbox1.y + 32);
-      display->print(navbox1.value);
-    }
-    while (display->nextPage());
-
     navbox1.prev_value = navbox1.value;
+    updated = true;
   }
 
   if (navbox2.value != navbox2.prev_value) {
-
-    display->setFont(&FreeSerifBold12pt7b);
-    display->getTextBounds("NMEA", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox2.x + 8, navbox2.y + 31 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
-      display->fillRect(navbox2.x + 8, navbox2.y + 31 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox2.x + 8, navbox2.y + 30);
-      display->print(navbox2.value == PROTOCOL_NMEA  ? "NMEA" :
-                     navbox2.value == PROTOCOL_GDL90 ? " GDL" : " UNK" );
-    }
-    while (display->nextPage());
-
     navbox2.prev_value = navbox2.value;
+    updated = true;
   }
 
   if (navbox3.value != navbox3.prev_value) {
-
-    display->setFont(&FreeSerifBold12pt7b);
-    display->getTextBounds("10 KM", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox3.x + 11, navbox3.y + 31 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
-      display->fillRect(navbox3.x + 10, navbox3.y + 31 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox3.x + 10, navbox3.y + 30);
-
-      if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
-        display->print(navbox3.value == ZOOM_LOWEST ? "20 KM" :
-                       navbox3.value == ZOOM_LOW    ? "10 KM" :
-                       navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
-                       navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
-      } else {
-        display->print(navbox3.value == ZOOM_LOWEST ? "10 NM" :
-                       navbox3.value == ZOOM_LOW    ? " 5 NM" :
-                       navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
-                       navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
-      }
-    }
-    while (display->nextPage());
-
     navbox3.prev_value = navbox3.value;
+    updated = true;
   }
 
   if (navbox4.value != navbox4.prev_value) {
-
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox4.x + 16, navbox4.y + 33 - tbh,
-                              tbw, tbh + 1);
-    display->firstPage();
-    do
-    {
-      display->fillRect (navbox4.x + 15, navbox4.y + 33 - tbh,
-                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox4.x + 15, navbox4.y + 32);
-      display->print((float) navbox4.value / 10);
-    }
-    while (display->nextPage());
-
     navbox4.prev_value = navbox4.value;
+    updated = true;
   }
 
-  display->powerOff();
+  if (updated) {
+    EPD_Draw_NavBoxes();
+  }
 }
 
 void EPD_radar_setup()

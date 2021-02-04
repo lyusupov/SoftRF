@@ -74,8 +74,6 @@ void EPD_time_loop()
     strcpy(buf, NOTIME_text);
 #endif /* ARDUINO_ARCH_NRF52 */
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
-
     display->fillScreen(GxEPD_WHITE);
 
     display->setFont(&FreeMonoBold18pt7b);

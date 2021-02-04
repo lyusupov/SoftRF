@@ -163,12 +163,8 @@ static void EPD_Draw_Text()
      Serial.println(micros()-start);
 #endif
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
-
     display->setFont(&FreeMonoBold12pt7b);
 
-    display->firstPage();
-    do
     {
       uint16_t x = 5;
       uint16_t y = 5;
@@ -256,7 +252,7 @@ static void EPD_Draw_Text()
 
 //      Serial.println();
     }
-    while (display->nextPage());
+    display->display(true);
 
     display->powerOff();
   }
@@ -270,12 +266,8 @@ void EPD_text_Draw_Message(const char *msg1, const char *msg2)
 
   if (msg1 != NULL && strlen(msg1) != 0) {
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
-
     display->setFont(&FreeMonoBold18pt7b);
 
-    display->firstPage();
-    do
     {
       display->fillScreen(GxEPD_WHITE);
 
@@ -302,7 +294,7 @@ void EPD_text_Draw_Message(const char *msg1, const char *msg2)
         display->print(msg2);
       }
     }
-    while (display->nextPage());
+    display->display(true);
 
     display->powerOff();
   }

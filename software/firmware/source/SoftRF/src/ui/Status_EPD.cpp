@@ -123,9 +123,6 @@ static void EPD_Draw_NavBoxes()
 
   if (!EPD_ready_to_display) {
 
-    display->setPartialWindow(0, 0,
-                              display->width(), display->height());
-
     uint16_t top_navboxes_x = navbox1.x;
     uint16_t top_navboxes_y = navbox1.y;
     uint16_t top_navboxes_w = navbox1.width + navbox2.width;
@@ -242,9 +239,6 @@ static void EPD_Update_NavBoxes()
   if (!EPD_ready_to_display) {
 
     bool updated = false;
-
-    display->setPartialWindow(0, 0,
-                              display->width(), display->height());
 
     if (navbox1.value != navbox1.prev_value) {
 

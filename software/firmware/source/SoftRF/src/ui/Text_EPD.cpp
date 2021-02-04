@@ -124,8 +124,6 @@ static void EPD_Draw_Text()
 
     snprintf(id_text, sizeof(id_text), "ID: %06X", id);
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
-
     display->setFont(&FreeMonoBold12pt7b);
 
     {

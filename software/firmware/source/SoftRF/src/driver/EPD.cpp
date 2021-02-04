@@ -322,8 +322,6 @@ void EPD_Message(const char *msg1, const char *msg2)
 
   if (msg1 != NULL && strlen(msg1) != 0 && !EPD_ready_to_display) {
 
-    display->setPartialWindow(0, 0, display->width(), display->height());
-
     display->setFont(&FreeMonoBold18pt7b);
 
     {
