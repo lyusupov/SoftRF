@@ -45,8 +45,10 @@ const char EPD_SkyView_text9[] = "(C) 2019-2021";
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
 
-static int  EPD_view_mode = 0;
+static int EPD_view_mode = 0;
 static unsigned long EPD_anti_ghosting_timer = 0;
+
+volatile int EPD_task_command = EPD_UPDATE_NONE;
 
 void EPD_Clear_Screen()
 {
@@ -192,6 +194,8 @@ void EPD_loop()
 
 void EPD_fini(const char *msg)
 {
+  SoC->EPD_fini();
+
   if (hw_info.display == DISPLAY_EPD_2_7) {
     int16_t  tbx, tby;
     uint16_t tbw, tbh;
@@ -305,5 +309,43 @@ void EPD_Message(const char *msg1, const char *msg2)
     default:
       break;
     }
+  }
+}
+
+void EPD_Update_Sync(int cmd)
+{
+  uint16_t radar_x, radar_y, radar_w;
+
+  switch (cmd)
+  {
+  case EPD_UPDATE_FULLSCREEN:
+    display->display(true);
+    yield();
+    display->powerOff();
+    EPD_task_command = EPD_UPDATE_NONE;
+    break;
+  case EPD_UPDATE_WINDOW:
+    radar_x = 0;
+    radar_y = (display->height() - display->width()) / 2;
+    radar_w = display->width();
+    display->displayWindow(radar_x, radar_y, radar_w, radar_w);
+    yield();
+    display->powerOff();
+    EPD_task_command = EPD_UPDATE_NONE;
+    break;
+  case EPD_UPDATE_NONE:
+  default:
+    break;
+  }
+}
+
+void EPD_Task( void * pvParameters )
+{
+  for( ;; )
+  {
+    if (hw_info.display == DISPLAY_EPD_2_7) {
+      EPD_Update_Sync(EPD_task_command);
+    }
+    yield();
   }
 }

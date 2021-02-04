@@ -237,6 +237,21 @@ static void RPi_EPD_setup()
   display = &epd_waveshare;
 }
 
+static void RPi_EPD_fini()
+{
+
+}
+
+static bool RPi_EPD_is_ready()
+{
+  return true;
+}
+
+static void RPi_EPD_update(int val)
+{
+  EPD_Update_Sync(val);
+}
+
 static size_t RPi_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
   return 0; /* TBD */
@@ -623,6 +638,9 @@ const SoC_ops_t RPi_ops = {
   RPi_Battery_setup,
   RPi_Battery_voltage,
   RPi_EPD_setup,
+  RPi_EPD_fini,
+  RPi_EPD_is_ready,
+  RPi_EPD_update,
   RPi_WiFi_Receive_UDP,
   RPi_WiFi_clients_count,
   RPi_DB_init,

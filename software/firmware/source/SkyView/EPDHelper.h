@@ -53,6 +53,13 @@ typedef struct navbox_struct
   uint32_t  timestamp;
 } navbox_t;
 
+enum
+{
+	EPD_UPDATE_NONE,
+	EPD_UPDATE_FULLSCREEN,
+	EPD_UPDATE_WINDOW
+};
+
 byte EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);
@@ -62,6 +69,8 @@ void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);
+void EPD_Update_Sync(int);
+void EPD_Task(void *);
 
 void EPD_radar_setup();
 void EPD_radar_loop();
@@ -77,6 +86,7 @@ void EPD_text_Draw_Message(const char *, const char *);
 extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;
 extern bool EPD_display_frontpage;
+extern volatile int EPD_task_command;
 
 static uint8_t sleep_icon_128x128[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

@@ -340,6 +340,9 @@ static float ESP32_Battery_voltage()
   return (settings->adapter == ADAPTER_TTGO_T5S ? 2 * voltage : voltage);
 }
 
+#define EPD_STACK_SZ      (256*4)
+static TaskHandle_t EPD_Task_Handle = NULL;
+
 static void ESP32_EPD_setup()
 {
   switch(settings->adapter)
@@ -366,6 +369,29 @@ static void ESP32_EPD_setup()
                SOC_SD_PIN_SS_T5S);
     break;
   }
+
+  xTaskCreateUniversal(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, 1,
+                       &EPD_Task_Handle, CONFIG_ARDUINO_RUNNING_CORE);
+}
+
+static void ESP32_EPD_fini()
+{
+  if( EPD_Task_Handle != NULL )
+  {
+    vTaskDelete( EPD_Task_Handle );
+  }
+}
+
+static bool ESP32_EPD_is_ready()
+{
+//  return true;
+  return (EPD_task_command == EPD_UPDATE_NONE);
+}
+
+static void ESP32_EPD_update(int val)
+{
+//  EPD_Update_Sync(val);
+  EPD_task_command = val;
 }
 
 static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
@@ -900,6 +926,9 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
   ESP32_EPD_setup,
+  ESP32_EPD_fini,
+  ESP32_EPD_is_ready,
+  ESP32_EPD_update,
   ESP32_WiFi_Receive_UDP,
   ESP32_WiFi_clients_count,
   ESP32_DB_init,

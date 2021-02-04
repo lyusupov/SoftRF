@@ -135,9 +135,7 @@ static void EPD_Draw_NavBoxes()
     display->print((float) navbox4.value / 10);
   }
 
-  display->display(true);
-
-  display->powerOff();
+  SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
 }
 
 void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
@@ -177,9 +175,7 @@ void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
       }
     }
 
-    display->display(true);
-
-    display->powerOff();
+    SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
   }
 }
 
@@ -424,9 +420,7 @@ static void EPD_Draw_Radar()
 
   }
 
-  display->displayWindow(radar_x, radar_y, radar_w, radar_w);
-
-  display->powerOff();
+  SoC->EPD_update(EPD_UPDATE_WINDOW);
 }
 
 static void EPD_Update_NavBoxes()
@@ -505,7 +499,7 @@ void EPD_radar_setup()
 
 void EPD_radar_loop()
 {
-  if (!EPD_display_frontpage) {
+  if (!EPD_display_frontpage && SoC->EPD_is_ready()) {
 
     EPD_Clear_Screen();
 
@@ -520,7 +514,7 @@ void EPD_radar_loop()
 
   } else {
 
-    if (isTimeToDisplay()) {
+    if (isTimeToDisplay() && SoC->EPD_is_ready()) {
 
       bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
                      settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
