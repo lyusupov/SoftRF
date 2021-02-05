@@ -50,13 +50,6 @@ static unsigned long EPD_anti_ghosting_timer = 0;
 
 volatile int EPD_task_command = EPD_UPDATE_NONE;
 
-void EPD_Clear_Screen()
-{
-  display->setFullWindow();
-  display->fillScreen(GxEPD_WHITE);
-  display->display(false);
-}
-
 byte EPD_setup(bool splash_screen)
 {
   byte rval = DISPLAY_NONE;
@@ -82,6 +75,8 @@ byte EPD_setup(bool splash_screen)
 
   display->setRotation(0);
   display->setTextColor(GxEPD_BLACK);
+  display->setFullWindow();
+  display->fillScreen(GxEPD_WHITE);
 
   // first update should be full refresh
   if (splash_screen) {
@@ -89,9 +84,8 @@ byte EPD_setup(bool splash_screen)
 
     display->getTextBounds(EPD_SkyView_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
     display->getTextBounds(EPD_SkyView_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
-    display->setFullWindow();
+
     {
-      display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width() - tbw1) / 2;
       uint16_t y = (display->height() + tbh1) / 2;
       display->setCursor(x - (tbw1 / 3), y - tbh1);
@@ -124,10 +118,9 @@ byte EPD_setup(bool splash_screen)
         display->print(EPD_SkyView_text5);
       }
     }
-    display->display(false);
-  } else {
-    EPD_Clear_Screen();
   }
+
+  display->display(false);
 
   if (display->epd2.probe()) {
     rval = DISPLAY_EPD_2_7;
@@ -145,18 +138,6 @@ byte EPD_setup(bool splash_screen)
 void EPD_loop()
 {
   if (hw_info.display == DISPLAY_EPD_2_7) {
-
-    switch (EPD_view_mode)
-    {
-    case VIEW_MODE_RADAR:
-      EPD_radar_loop();
-      break;
-    case VIEW_MODE_TEXT:
-      EPD_text_loop();
-      break;
-    default:
-      break;
-    }
 
     switch (settings->aghost)
     {
@@ -189,6 +170,27 @@ void EPD_loop()
     default:
       break;
     }
+
+    if (!EPD_display_frontpage) {
+      if (SoC->EPD_is_ready()) {
+        display->fillScreen(GxEPD_WHITE);
+        SoC->EPD_update(EPD_UPDATE_SLOW);
+
+        EPD_display_frontpage = true;
+      }
+    } else {
+      switch (EPD_view_mode)
+      {
+      case VIEW_MODE_RADAR:
+        EPD_radar_loop();
+        break;
+      case VIEW_MODE_TEXT:
+        EPD_text_loop();
+        break;
+      default:
+        break;
+      }
+    }
   }
 }
 
@@ -200,7 +202,6 @@ void EPD_fini(const char *msg)
     int16_t  tbx, tby;
     uint16_t tbw, tbh;
 
-    display->setFullWindow();
     {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width()  - 128) / 2;
@@ -314,21 +315,14 @@ void EPD_Message(const char *msg1, const char *msg2)
 
 void EPD_Update_Sync(int cmd)
 {
-  uint16_t radar_x, radar_y, radar_w;
-
   switch (cmd)
   {
-  case EPD_UPDATE_FULLSCREEN:
-    display->display(true);
-    yield();
-    display->powerOff();
+  case EPD_UPDATE_SLOW:
+    display->display(false);
     EPD_task_command = EPD_UPDATE_NONE;
     break;
-  case EPD_UPDATE_WINDOW:
-    radar_x = 0;
-    radar_y = (display->height() - display->width()) / 2;
-    radar_w = display->width();
-    display->displayWindow(radar_x, radar_y, radar_w, radar_w);
+  case EPD_UPDATE_FAST:
+    display->display(true);
     yield();
     display->powerOff();
     EPD_task_command = EPD_UPDATE_NONE;

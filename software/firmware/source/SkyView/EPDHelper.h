@@ -49,22 +49,20 @@ typedef struct navbox_struct
   uint16_t  width;
   uint16_t  height;
   int       value;
-  int       prev_value;
   uint32_t  timestamp;
 } navbox_t;
 
 enum
 {
 	EPD_UPDATE_NONE,
-	EPD_UPDATE_FULLSCREEN,
-	EPD_UPDATE_WINDOW
+	EPD_UPDATE_SLOW,
+	EPD_UPDATE_FAST
 };
 
 byte EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);
 
-void EPD_Clear_Screen();
 void EPD_Mode();
 void EPD_Up();
 void EPD_Down();

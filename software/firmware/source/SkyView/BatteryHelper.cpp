@@ -25,11 +25,21 @@
 #include "SkyView.h"
 
 static unsigned long Battery_TimeMarker = 0;
-static int Battery_cutoff_count = 0;
+
+static float Battery_voltage_cache      = 0;
+static int Battery_cutoff_count         = 0;
+
+void Battery_setup()
+{
+  SoC->Battery_setup();
+
+  Battery_voltage_cache = SoC->Battery_voltage();
+  Battery_TimeMarker = millis();
+}
 
 float Battery_voltage()
 {
-  return SoC->Battery_voltage();
+  return Battery_voltage_cache;
 }
 
 /* low battery voltage threshold */
@@ -43,19 +53,14 @@ float Battery_cutoff()
 {
   return BATTERY_CUTOFF_LIPO;
 }
-void Battery_setup()
-{
-  SoC->Battery_setup();
-
-  Battery_TimeMarker = millis();
-}
 
 void Battery_loop()
 {
-  if ( hw_info.model    == SOFTRF_MODEL_SKYVIEW &&
-      (hw_info.revision == HW_REV_T5S_1_9 || hw_info.revision == HW_REV_T5S_2_8)) {
-    if (isTimeToBattery()) {
-      float voltage = Battery_voltage();
+  if (isTimeToBattery()) {
+    float voltage = SoC->Battery_voltage();
+
+    if ( hw_info.model    == SOFTRF_MODEL_SKYVIEW &&
+        (hw_info.revision == HW_REV_T5S_1_9 || hw_info.revision == HW_REV_T5S_2_8)) {
 
       if (voltage > 2.0 && voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 3) {
@@ -66,7 +71,9 @@ void Battery_loop()
       } else {
         Battery_cutoff_count = 0;
       }
-      Battery_TimeMarker = millis();
     }
+
+    Battery_voltage_cache = voltage;
+    Battery_TimeMarker = millis();
   }
 }

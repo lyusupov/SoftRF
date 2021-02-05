@@ -252,8 +252,6 @@ static void EPD_Draw_Text()
 
 //      Serial.println();
     }
-
-    SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
   }
 }
 
@@ -293,8 +291,6 @@ void EPD_text_Draw_Message(const char *msg1, const char *msg2)
         display->print(msg2);
       }
     }
-
-    SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
   }
 }
 
@@ -305,41 +301,34 @@ void EPD_text_setup()
 
 void EPD_text_loop()
 {
-  if (!EPD_display_frontpage && SoC->EPD_is_ready()) {
+  if (isTimeToDisplay() && SoC->EPD_is_ready()) {
 
-    EPD_Clear_Screen();
+    bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                   settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                   false;
 
-    EPD_display_frontpage = true;
+    if (hasData) {
 
-  } else {
+      bool hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+                    settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+                    false;
 
-    if (isTimeToDisplay() && SoC->EPD_is_ready()) {
-
-      bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                     settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                     false;
-
-      if (hasData) {
-
-        bool hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                      settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                      false;
-
-        if (hasFix) {
-          if (Traffic_Count() > 0) {
-            EPD_Draw_Text();
-          } else {
-            EPD_text_Draw_Message("NO", "TRAFFIC");
-          }
+      if (hasFix) {
+        if (Traffic_Count() > 0) {
+          EPD_Draw_Text();
         } else {
-          EPD_text_Draw_Message(NO_FIX_TEXT, NULL);
+          EPD_text_Draw_Message("NO", "TRAFFIC");
         }
       } else {
-        EPD_text_Draw_Message(NO_DATA_TEXT, NULL);
+        EPD_text_Draw_Message(NO_FIX_TEXT, NULL);
       }
-
-      EPDTimeMarker = millis();
+    } else {
+      EPD_text_Draw_Message(NO_DATA_TEXT, NULL);
     }
+
+    SoC->EPD_update(EPD_UPDATE_FAST);
+
+    EPDTimeMarker = millis();
   }
 }
 

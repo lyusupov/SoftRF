@@ -134,8 +134,6 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox4.x + 15, navbox4.y + 32);
     display->print((float) navbox4.value / 10);
   }
-
-  SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
 }
 
 void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
@@ -174,8 +172,6 @@ void EPD_radar_Draw_Message(const char *msg1, const char *msg2)
         display->print(msg2);
       }
     }
-
-    SoC->EPD_update(EPD_UPDATE_FULLSCREEN);
   }
 }
 
@@ -417,38 +413,6 @@ static void EPD_Draw_Radar()
       /* TBD */
       break;
     }
-
-  }
-
-  SoC->EPD_update(EPD_UPDATE_WINDOW);
-}
-
-static void EPD_Update_NavBoxes()
-{
-  bool updated = false;
-
-  if (navbox1.value != navbox1.prev_value) {
-    navbox1.prev_value = navbox1.value;
-    updated = true;
-  }
-
-  if (navbox2.value != navbox2.prev_value) {
-    navbox2.prev_value = navbox2.value;
-    updated = true;
-  }
-
-  if (navbox3.value != navbox3.prev_value) {
-    navbox3.prev_value = navbox3.value;
-    updated = true;
-  }
-
-  if (navbox4.value != navbox4.prev_value) {
-    navbox4.prev_value = navbox4.value;
-    updated = true;
-  }
-
-  if (updated) {
-    EPD_Draw_NavBoxes();
   }
 }
 
@@ -466,7 +430,6 @@ void EPD_radar_setup()
   navbox1.width  = display->width() / 2;
   navbox1.height = (display->height() - display->width()) / 2;
   navbox1.value      = 0;
-  navbox1.prev_value = navbox1.value;
   navbox1.timestamp  = millis();
 
   memcpy(navbox2.title, NAVBOX2_TITLE, strlen(NAVBOX2_TITLE));
@@ -475,7 +438,6 @@ void EPD_radar_setup()
   navbox2.width  = navbox1.width;
   navbox2.height = navbox1.height;
   navbox2.value      = PROTOCOL_NONE;
-  navbox2.prev_value = navbox2.value;
   navbox2.timestamp  = millis();
 
   memcpy(navbox3.title, NAVBOX3_TITLE, strlen(NAVBOX3_TITLE));
@@ -484,7 +446,6 @@ void EPD_radar_setup()
   navbox3.width  = navbox1.width;
   navbox3.height = navbox1.height;
   navbox3.value      = EPD_zoom;
-  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 
   memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
@@ -493,72 +454,55 @@ void EPD_radar_setup()
   navbox4.width  = navbox3.width;
   navbox4.height = navbox3.height;
   navbox4.value      = (int) (Battery_voltage() * 10.0);
-  navbox4.prev_value = navbox4.value;
   navbox4.timestamp  = millis();
 }
 
 void EPD_radar_loop()
 {
-  if (!EPD_display_frontpage && SoC->EPD_is_ready()) {
+  if (isTimeToDisplay() && SoC->EPD_is_ready()) {
 
-    EPD_Clear_Screen();
+    bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                   settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                   false;
 
-    yield();
+    if (hasData) {
 
-    /* Poll input source(s) */
-    Input_loop();
+      bool hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+                    settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+                    false;
+
+      if (hasFix) {
+        EPD_Draw_Radar();
+      } else {
+        EPD_radar_Draw_Message(NO_FIX_TEXT, NULL);
+      }
+    } else {
+      EPD_radar_Draw_Message(NO_DATA_TEXT, NULL);
+    }
+
+    navbox1.value = Traffic_Count();
+
+    switch (settings->protocol)
+    {
+    case PROTOCOL_GDL90:
+      navbox2.value = GDL90_hasHeartBeat() ?
+                      PROTOCOL_GDL90 : PROTOCOL_NONE;
+      break;
+    case PROTOCOL_NMEA:
+    default:
+      navbox2.value = (NMEA_hasFLARM() || NMEA_hasGNSS()) ?
+                      PROTOCOL_NMEA  : PROTOCOL_NONE;
+      break;
+    }
+
+    navbox3.value = EPD_zoom;
+    navbox4.value = (int) (Battery_voltage() * 10.0);
 
     EPD_Draw_NavBoxes();
 
-    EPD_display_frontpage = true;
+    SoC->EPD_update(EPD_UPDATE_FAST);
 
-  } else {
-
-    if (isTimeToDisplay() && SoC->EPD_is_ready()) {
-
-      bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                     settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                     false;
-
-      if (hasData) {
-
-        bool hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                      settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                      false;
-
-        if (hasFix) {
-          EPD_Draw_Radar();
-        } else {
-          EPD_radar_Draw_Message(NO_FIX_TEXT, NULL);
-        }
-      } else {
-        EPD_radar_Draw_Message(NO_DATA_TEXT, NULL);
-      }
-
-      yield();
-
-      navbox1.value = Traffic_Count();
-
-      switch (settings->protocol)
-      {
-      case PROTOCOL_GDL90:
-        navbox2.value = GDL90_hasHeartBeat() ?
-                        PROTOCOL_GDL90 : PROTOCOL_NONE;
-        break;
-      case PROTOCOL_NMEA:
-      default:
-        navbox2.value = (NMEA_hasFLARM() || NMEA_hasGNSS()) ?
-                        PROTOCOL_NMEA  : PROTOCOL_NONE;
-        break;
-      }
-
-      navbox3.value = EPD_zoom;
-      navbox4.value = (int) (Battery_voltage() * 10.0);
-
-      EPD_Update_NavBoxes();
-
-      EPDTimeMarker = millis();
-    }
+    EPDTimeMarker = millis();
   }
 }
 
