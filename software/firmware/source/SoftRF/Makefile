@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASICMAC      = -DUSE_BASICMAC
+#BASICMAC      = -DUSE_BASICMAC
 #NOMAVLINK    = -DEXCLUDE_MAVLINK
 
 CC            = gcc
