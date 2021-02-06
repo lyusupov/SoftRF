@@ -22,8 +22,8 @@
 #include <Wire.h>
 #include <pcf8563.h>
 #include <SoftSPI.h>
-#include <SerialFlash.h>
 #include <Adafruit_SPIFlash.h>
+#include "Adafruit_TinyUSB.h"
 #include <Adafruit_SleepyDog.h>
 #include "nrf_wdt.h"
 
@@ -113,16 +113,6 @@ SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_SCK,
               SOC_GPIO_PIN_EPD_MOSI);
 
-SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
-
-Adafruit_FlashTransport_QSPI flashTransport(SOC_GPIO_PIN_SFL_SCK,
-                                            SOC_GPIO_PIN_SFL_SS,
-                                            SOC_GPIO_PIN_SFL_MOSI,
-                                            SOC_GPIO_PIN_SFL_MISO,
-                                            SOC_GPIO_PIN_SFL_WP,
-                                            SOC_GPIO_PIN_SFL_HOLD);
-Adafruit_SPIFlash QSPIFlash(&flashTransport);
-
 #if defined(USE_EPAPER)
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
                                                             SOC_GPIO_PIN_EPD_SS,
@@ -133,21 +123,20 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 #endif /* USE_EPAPER */
 
-ui_settings_t ui_settings = {
-    .units        = UNITS_METRIC,
-    .zoom         = ZOOM_MEDIUM,
-    .protocol     = PROTOCOL_NMEA,
-    .orientation  = DIRECTION_TRACK_UP,
-    .adb          = DB_NONE,
-    .idpref       = ID_REG,
-    .vmode        = VIEW_MODE_STATUS,
-    .voice        = VOICE_OFF,
-    .aghost       = ANTI_GHOSTING_OFF,
-    .filter       = TRAFFIC_FILTER_OFF,
-    .team         = 0
-};
+SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
 
-ui_settings_t *ui;
+Adafruit_FlashTransport_SPI SWFlashTransport (SOC_GPIO_PIN_SFL_SS, &SPI2);
+Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
+                                              SOC_GPIO_PIN_SFL_SS,
+                                              SOC_GPIO_PIN_SFL_MOSI,
+                                              SOC_GPIO_PIN_SFL_MISO,
+                                              SOC_GPIO_PIN_SFL_WP,
+                                              SOC_GPIO_PIN_SFL_HOLD);
+
+Adafruit_SPIFlash SoftSPIFlash(&SWFlashTransport);
+Adafruit_SPIFlash QSPIFlash   (&HWFlashTransport);
+
+static Adafruit_SPIFlash *SPIFlash = NULL;
 
 #define MX25R1635F                                                             \
   {                                                                            \
@@ -174,6 +163,28 @@ enum {
   EXTERNAL_FLASH_DEVICE_COUNT =
       sizeof(possible_devices) / sizeof(possible_devices[0])
 };
+
+// USB Mass Storage object
+Adafruit_USBD_MSC usb_msc;
+
+// file system object from SdFat
+FatFileSystem fatfs;
+
+ui_settings_t ui_settings = {
+    .units        = UNITS_METRIC,
+    .zoom         = ZOOM_MEDIUM,
+    .protocol     = PROTOCOL_NMEA,
+    .orientation  = DIRECTION_TRACK_UP,
+    .adb          = DB_NONE,
+    .idpref       = ID_REG,
+    .vmode        = VIEW_MODE_STATUS,
+    .voice        = VOICE_OFF,
+    .aghost       = ANTI_GHOSTING_OFF,
+    .filter       = TRAFFIC_FILTER_OFF,
+    .team         = 0
+};
+
+ui_settings_t *ui;
 
 static void nRF52_setup()
 {
@@ -317,40 +328,92 @@ static void nRF52_setup()
   }
 }
 
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and
+// return number of copied bytes (must be multiple of block size)
+static int32_t nRF52_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
+{
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->readBlocks(lba, (uint8_t*) buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and
+// return number of written bytes (must be multiple of block size)
+static int32_t nRF52_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
+{
+  ledOn(SOC_GPIO_LED_USBMSC);
+
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->writeBlocks(lba, buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when WRITE10 command is completed (status received and accepted by host).
+// used to flush any pending cache.
+static void nRF52_msc_flush_cb (void)
+{
+  // sync with flash
+  SPIFlash->syncBlocks();
+
+  // clear file system's cache to force refresh
+//  fatfs.cacheClear();
+
+  ledOff(SOC_GPIO_LED_USBMSC);
+}
+
 static void nRF52_post_init()
 {
   /* (Q)SPI flash init */
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
-      nRF52_has_spiflash = SerialFlash.begin(SPI2, SOC_GPIO_PIN_SFL_SS);
-
-      if (nRF52_has_spiflash) {
-        unsigned char buf[8];
-
-        SerialFlash.readID(buf);
-
-        uint32_t spi_flash_id = (buf[0] << 16) | (buf[1] << 8) | buf[2];
-
-        SerialFlash.sleep();
-      }
+      SPIFlash = &SoftSPIFlash;
       break;
-
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
-      nRF52_has_spiflash = QSPIFlash.begin(possible_devices,
-                                           EXTERNAL_FLASH_DEVICE_COUNT);
-
-      if (nRF52_has_spiflash) {
-        uint32_t qspi_flash_id = QSPIFlash.getJEDECID();
-//        QSPIFlash.end();
-      }
+      SPIFlash = &QSPIFlash;
       break;
-
     case NRF52_NORDIC_PCA10059:
     default:
       break;
   }
+
+  if (SPIFlash != NULL) {
+    nRF52_has_spiflash = SPIFlash->begin(possible_devices,
+                                         EXTERNAL_FLASH_DEVICE_COUNT);
+  }
+
+  /* SoftSPI on REV_0 is slow which causes the system crash in main loop */
+  if (nRF52_has_spiflash && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
+    uint32_t spi_flash_id = SPIFlash->getJEDECID();
+
+    // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
+    usb_msc.setID("SoftRF", "External Flash", "1.0");
+
+    // Set callback
+    usb_msc.setReadWriteCallback(nRF52_msc_read_cb,
+                                 nRF52_msc_write_cb,
+                                 nRF52_msc_flush_cb);
+
+    // Set disk size, block size should be 512 regardless of spi flash page size
+    usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+    // MSC is ready for read/write
+    usb_msc.setUnitReady(true);
+
+    usb_msc.begin();
+
+    // Init file system on the flash
+//    fatfs.begin(&flash);
+
+
+//    fatfs.end();
+//    usb_msc.end();
+  }
+
+//    if (SPIFlash != NULL) SPIFlash->end();
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||

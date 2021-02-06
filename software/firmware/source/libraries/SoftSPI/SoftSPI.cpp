@@ -81,6 +81,12 @@ void SoftSPI::transfer(void *buf, size_t count)
     }
 }
 
+/* compatibility with Adafruit_nRF52_Arduino */
+void SoftSPI::transfer(const void *tx_buf, void *rx_buf, size_t count)
+{
+    transfer(rx_buf, count);
+}
+
 void SoftSPI::beginTransaction(SPISettings settings)
 {
 }

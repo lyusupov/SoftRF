@@ -26,11 +26,11 @@
 #define ADAFRUIT_FLASHTRANSPORT_SPI_H_
 
 #include "Arduino.h"
-#include "SPI.h"
+#include "SoftSPI.h"
 
 class Adafruit_FlashTransport_SPI : public Adafruit_FlashTransport {
 private:
-  SPIClass *_spi;
+  SoftSPI *_spi;
   uint8_t _ss;
 
   // SAMD21 M0 can write up to 24 Mhz, but can only read reliably with 12 MHz
@@ -38,8 +38,8 @@ private:
   uint32_t _clock_rd;
 
 public:
-  Adafruit_FlashTransport_SPI(uint8_t ss, SPIClass *spiinterface);
-  Adafruit_FlashTransport_SPI(uint8_t ss, SPIClass &spiinterface);
+  Adafruit_FlashTransport_SPI(uint8_t ss, SoftSPI *spiinterface);
+  Adafruit_FlashTransport_SPI(uint8_t ss, SoftSPI &spiinterface);
 
   virtual void begin(void);
 

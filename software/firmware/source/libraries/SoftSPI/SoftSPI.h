@@ -17,6 +17,8 @@ public:
     uint8_t transfer(uint8_t);
     uint16_t transfer16(uint16_t data);
     void transfer(void *buf, size_t count);
+    /* compatibility with Adafruit_nRF52_Arduino */
+    void transfer(const void *tx_buf, void *rx_buf, size_t count);
     // Transaction Functions
     void beginTransaction(SPISettings settings);
     void endTransaction(void);

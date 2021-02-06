@@ -25,7 +25,7 @@
 #include "Adafruit_FlashTransport.h"
 
 Adafruit_FlashTransport_SPI::Adafruit_FlashTransport_SPI(
-    uint8_t ss, SPIClass *spiinterface) {
+    uint8_t ss, SoftSPI *spiinterface) {
   _cmd_read = SFLASH_CMD_READ;
   _addr_len = 3; // work with most device if not set
   _ss = ss;
@@ -34,7 +34,7 @@ Adafruit_FlashTransport_SPI::Adafruit_FlashTransport_SPI(
 }
 
 Adafruit_FlashTransport_SPI::Adafruit_FlashTransport_SPI(uint8_t ss,
-                                                         SPIClass &spiinterface)
+                                                         SoftSPI &spiinterface)
     : Adafruit_FlashTransport_SPI(ss, &spiinterface) {}
 
 void Adafruit_FlashTransport_SPI::begin(void) {
