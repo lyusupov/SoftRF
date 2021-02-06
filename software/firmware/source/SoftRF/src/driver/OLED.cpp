@@ -54,6 +54,7 @@ static int32_t  prev_voltage        = (uint32_t) -1;
 static int8_t   prev_fix            = (uint8_t)  -1;
 
 unsigned long OLEDTimeMarker = 0;
+unsigned long OLEDAlternate = 0;
 
 const char *OLED_Protocol_ID[] = {
   [RF_PROTOCOL_LEGACY]    = "L",
@@ -131,7 +132,7 @@ byte OLED_setup() {
     u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
   }
 
-  OLEDTimeMarker = millis();
+  OLEDAlternate = OLEDTimeMarker = millis();
 
   return rval;
 }
@@ -327,6 +328,9 @@ void OLED_loop()
       }
 
       OLEDTimeMarker = millis();
+      /* alternate OLED_other() and OLED_radio() on every 20000 mili sec. */
+      if ((millis() - OLEDAlternate) > 20000)
+        OLED_Next_Page();
     }
   }
 }
@@ -364,6 +368,7 @@ void OLED_Next_Page()
 {
   if (u8x8) {
     OLED_current_page = (OLED_current_page + 1) % OLED_PAGE_COUNT;
+    OLEDAlternate = millis();
     OLED_display_titles = false;
   }
 }
