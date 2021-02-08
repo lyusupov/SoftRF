@@ -798,7 +798,9 @@ static long nRF52_random(long howsmall, long howBig)
 
 static void nRF52_Sound_test(int var)
 {
-  /* NONE */
+#if defined(USE_BLE_MIDI)
+  nRF52_BLEMIDI_test();
+#endif /* USE_BLE_MIDI */
 }
 
 static void nRF52_WiFi_set_param(int ndx, int value)

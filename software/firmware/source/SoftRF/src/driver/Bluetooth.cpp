@@ -974,6 +974,9 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <BLEUart_HM10.h>
+#if defined(USE_BLE_MIDI)
+#include <MIDI.h>
+#endif /* USE_BLE_MIDI */
 
 #include "WiFi.h"   // HOSTNAME
 #include "Battery.h"
@@ -985,6 +988,12 @@ BLEUart_HM10  bleuart_HM10; // TI UART over BLE
 BLEUart       bleuart_NUS;  // Nordic UART over BLE
 BLEBas        blebas;       // battery
 
+#if defined(USE_BLE_MIDI)
+BLEMidi       blemidi;
+
+MIDI_CREATE_BLE_INSTANCE(blemidi);
+#endif /* USE_BLE_MIDI */
+
 String BT_name = HOSTNAME;
 
 void startAdv(void)
@@ -995,6 +1004,11 @@ void startAdv(void)
 
   // Include bleuart 128-bit uuid
   Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
+
+#if defined(USE_BLE_MIDI)
+  // Advertise BLE MIDI Service
+  Bluefruit.Advertising.addService(blemidi);
+#endif /* USE_BLE_MIDI */
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
@@ -1046,6 +1060,42 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 #endif
 }
 
+#if defined(USE_BLE_MIDI)
+
+#define MIDI_CHANNEL_TRAFFIC  1
+#define MIDI_CHANNEL_VARIO    2
+
+byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
+
+void nRF52_BLEMIDI_test()
+{
+  // Don't continue if we aren't connected.
+  if (Bluefruit.connected() && blemidi.notifyEnabled()) {
+    unsigned int position = 0;
+    unsigned int current  = 0;
+
+    for (; position <= sizeof(note_sequence); position++) {
+      // Setup variables for the current and previous
+      // positions in the note sequence.
+      current = position;
+      // If we currently are at position 0, set the
+      // previous position to the last note in the sequence.
+      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
+
+      // Send Note On for current position at full velocity (127) on channel 1.
+      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
+
+      // Send Note Off for previous note.
+      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
+
+      delay(286);
+    }
+
+    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
+  }
+}
+#endif /* USE_BLE_MIDI */
+
 void nRF52_Bluetooth_setup()
 {
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
@@ -1084,6 +1134,12 @@ void nRF52_Bluetooth_setup()
   // Start BLE Battery Service
   blebas.begin();
   blebas.write(100);
+
+#if defined(USE_BLE_MIDI)
+  // Initialize MIDI with no any input channels
+  // This will also call blemidi service's begin()
+  MIDI.begin(MIDI_CHANNEL_OFF);
+#endif /* USE_BLE_MIDI */
 
   // Set up and start advertising
   startAdv();

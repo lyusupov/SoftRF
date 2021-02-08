@@ -241,6 +241,7 @@ struct rst_info {
 /* Experimental */
 //#define USE_WEBUSB_SERIAL
 //#define USE_WEBUSB_SETTINGS
+//#define USE_BLE_MIDI
 
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"

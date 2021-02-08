@@ -95,6 +95,7 @@ void bt_app_task_shut_down(void);
 #elif defined(ARDUINO_ARCH_NRF52)
 
 extern IODev_ops_t nRF52_Bluetooth_ops;
+extern void nRF52_BLEMIDI_test(void);
 
 #endif /* ESP32 or ARDUINO_ARCH_NRF52 */
 
