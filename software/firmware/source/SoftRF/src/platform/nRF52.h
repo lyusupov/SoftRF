@@ -238,6 +238,10 @@ struct rst_info {
 //#define USE_OLED                 //  +    kb
 #define USE_EPAPER                 //  +    kb
 
+/* Experimental */
+//#define USE_WEBUSB_SERIAL
+//#define USE_WEBUSB_SETTINGS
+
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
@@ -298,6 +302,7 @@ typedef void EPD_Task_t;
 extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 #endif /* USE_EPAPER */
 
+extern ui_settings_t ui_settings;
 extern ui_settings_t *ui;
 
 #endif /* PLATFORM_NRF52_H */

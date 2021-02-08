@@ -25,6 +25,7 @@
 #include <Adafruit_SPIFlash.h>
 #include "Adafruit_TinyUSB.h"
 #include <Adafruit_SleepyDog.h>
+#include <ArduinoJson.h>
 #include "nrf_wdt.h"
 
 #include "../system/SoC.h"
@@ -38,6 +39,7 @@
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#include "../protocol/data/JSON.h"
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -170,6 +172,25 @@ Adafruit_USBD_MSC usb_msc;
 // file system object from SdFat
 FatFileSystem fatfs;
 
+#define NRF52_JSON_BUFFER_SIZE  1024
+
+StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
+
+#if defined(USE_WEBUSB_SERIAL) || defined(USE_WEBUSB_SETTINGS)
+// USB WebUSB object
+Adafruit_USBD_WebUSB usb_web;
+#endif
+
+#if defined(USE_WEBUSB_SERIAL)
+// Landing Page: scheme (0: http, 1: https), url
+WEBUSB_URL_DEF(landingPage, 1 /*https*/, "adafruit.github.io/Adafruit_TinyUSB_Arduino/examples/webusb-serial/index.html");
+#endif /* USE_WEBUSB_SERIAL */
+
+#if defined(USE_WEBUSB_SETTINGS)
+// Landing Page: scheme (0: http, 1: https), url
+WEBUSB_URL_DEF(landingPage, 1 /*https*/, "lyusupov.github.io/SoftRF/settings.html");
+#endif /* USE_WEBUSB_SETTINGS */
+
 ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
@@ -185,6 +206,41 @@ ui_settings_t ui_settings = {
 };
 
 ui_settings_t *ui;
+
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and
+// return number of copied bytes (must be multiple of block size)
+static int32_t nRF52_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
+{
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->readBlocks(lba, (uint8_t*) buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and
+// return number of written bytes (must be multiple of block size)
+static int32_t nRF52_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
+{
+  ledOn(SOC_GPIO_LED_USBMSC);
+
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->writeBlocks(lba, buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when WRITE10 command is completed (status received and accepted by host).
+// used to flush any pending cache.
+static void nRF52_msc_flush_cb (void)
+{
+  // sync with flash
+  SPIFlash->syncBlocks();
+
+  // clear file system's cache to force refresh
+  fatfs.cacheClear();
+
+  ledOff(SOC_GPIO_LED_USBMSC);
+}
 
 static void nRF52_setup()
 {
@@ -326,45 +382,7 @@ static void nRF52_setup()
 
     pinMode(SOC_GPIO_PIN_R_INT, INPUT);
   }
-}
 
-// Callback invoked when received READ10 command.
-// Copy disk's data to buffer (up to bufsize) and
-// return number of copied bytes (must be multiple of block size)
-static int32_t nRF52_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
-{
-  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
-  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
-  return SPIFlash->readBlocks(lba, (uint8_t*) buffer, bufsize/512) ? bufsize : -1;
-}
-
-// Callback invoked when received WRITE10 command.
-// Process data in buffer to disk's storage and
-// return number of written bytes (must be multiple of block size)
-static int32_t nRF52_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
-{
-  ledOn(SOC_GPIO_LED_USBMSC);
-
-  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
-  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
-  return SPIFlash->writeBlocks(lba, buffer, bufsize/512) ? bufsize : -1;
-}
-
-// Callback invoked when WRITE10 command is completed (status received and accepted by host).
-// used to flush any pending cache.
-static void nRF52_msc_flush_cb (void)
-{
-  // sync with flash
-  SPIFlash->syncBlocks();
-
-  // clear file system's cache to force refresh
-//  fatfs.cacheClear();
-
-  ledOff(SOC_GPIO_LED_USBMSC);
-}
-
-static void nRF52_post_init()
-{
   /* (Q)SPI flash init */
   switch (nRF52_board)
   {
@@ -404,16 +422,17 @@ static void nRF52_post_init()
     usb_msc.setUnitReady(true);
 
     usb_msc.begin();
-
-    // Init file system on the flash
-//    fatfs.begin(&flash);
-
-
-//    fatfs.end();
-//    usb_msc.end();
   }
+}
 
-//    if (SPIFlash != NULL) SPIFlash->end();
+static void nRF52_post_init()
+{
+#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
+
+  usb_web.setLandingPage(&landingPage);
+  usb_web.begin();
+
+#endif /* USE_WEBUSB_SETTINGS */
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
@@ -524,11 +543,48 @@ static void nRF52_loop()
       RTC_sync = true;
     }
   }
+
+#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
+
+  if (USBDevice.mounted() && usb_web.connected() && usb_web.available()) {
+
+    JsonObject &root = nRF52_jsonBuffer.parseObject(usb_web);
+
+    if (root.success()) {
+      JsonVariant msg_class = root["class"];
+
+      if (msg_class.success()) {
+        const char *msg_class_s = msg_class.as<char*>();
+
+        if (!strcmp(msg_class_s,"SOFTRF")) {
+          parseSettings  (root);
+          parseUISettings(root);
+
+          SoC->WDT_fini();
+          if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
+          Serial.println();
+          Serial.println(F("Restart is in progress. Please, wait..."));
+          Serial.println();
+          Serial.flush();
+          EEPROM_store();
+          RF_Shutdown();
+          SoC->reset();
+        }
+      }
+    }
+  }
+
+#endif /* USE_WEBUSB_SETTINGS */
 }
 
 static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
+
+//  if (nRF52_has_spiflash && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
+//    usb_msc.end();
+//  }
+//    if (SPIFlash != NULL) SPIFlash->end();
 
   switch (nRF52_board)
   {
@@ -762,6 +818,32 @@ static bool nRF52_EEPROM_begin(size_t size)
   }
 
   EEPROM.begin();
+
+  if ( nRF52_has_spiflash                       &&
+      (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
+       fatfs.begin(SPIFlash)) {
+    File file = fatfs.open("/settings.txt", FILE_READ);
+
+    if (file) {
+      // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
+
+      JsonObject &root = nRF52_jsonBuffer.parseObject(file);
+
+      if (root.success()) {
+        JsonVariant msg_class = root["class"];
+
+        if (msg_class.success()) {
+          const char *msg_class_s = msg_class.as<char*>();
+
+          if (!strcmp(msg_class_s,"SOFTRF")) {
+            parseSettings  (root);
+            parseUISettings(root);
+          }
+        }
+      }
+      file.close();
+    }
+  }
 
   return true;
 }
@@ -1011,11 +1093,27 @@ static void nRF52_Button_fini()
   detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
 }
 
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+void line_state_callback(bool connected)
+{
+  if ( connected ) usb_web.println("WebUSB Serial example");
+}
+#endif /* USE_WEBUSB_SERIAL */
+
 static void nRF52_USB_setup()
 {
   if (USBSerial && USBSerial != Serial) {
     USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   }
+
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+
+  usb_web.setLandingPage(&landingPage);
+  usb_web.setLineStateCallback(line_state_callback);
+  //usb_web.setStringDescriptor("TinyUSB WebUSB");
+  usb_web.begin();
+
+#endif /* USE_WEBUSB_SERIAL */
 }
 
 static void nRF52_USB_loop()
@@ -1028,6 +1126,12 @@ static void nRF52_USB_fini()
   if (USBSerial && USBSerial != Serial) {
     USBSerial.end();
   }
+
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+
+  /* TBD */
+
+#endif /* USE_WEBUSB_SERIAL */
 }
 
 static int nRF52_USB_available()
@@ -1037,6 +1141,14 @@ static int nRF52_USB_available()
   if (USBSerial) {
     rval = USBSerial.available();
   }
+
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+
+  if ((rval == 0) && USBDevice.mounted() && usb_web.connected()) {
+    rval = usb_web.available();
+  }
+
+#endif /* USE_WEBUSB_SERIAL */
 
   return rval;
 }
@@ -1049,6 +1161,14 @@ static int nRF52_USB_read()
     rval = USBSerial.read();
   }
 
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+
+  if ((rval == -1) && USBDevice.mounted() && usb_web.connected()) {
+    rval = usb_web.read();
+  }
+
+#endif /* USE_WEBUSB_SERIAL */
+
   return rval;
 }
 
@@ -1059,6 +1179,18 @@ static size_t nRF52_USB_write(const uint8_t *buffer, size_t size)
   if (USBSerial && USBSerial.availableForWrite()) {
     rval = USBSerial.write(buffer, size);
   }
+
+#if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
+
+  size_t rval_webusb = size;
+
+  if (USBDevice.mounted() && usb_web.connected()) {
+    rval_webusb = usb_web.write(buffer, size);
+  }
+
+//  rval = min(rval, rval_webusb);
+
+#endif /* USE_WEBUSB_SERIAL */
 
   return rval;
 }

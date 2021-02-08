@@ -81,6 +81,7 @@ extern bool hasValidGPSDFix;
 extern void JSON_Export();
 extern void parseTPV(JsonObject&);
 extern void parseSettings(JsonObject&);
+extern void parseUISettings(JsonObject&);
 extern void parseD1090(JsonObject&);
 extern void parsePING(JsonObject&);
 extern void parseRAW(JsonObject&);

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52)
 
 #include <ArduinoJson.h>
 
@@ -33,6 +33,13 @@
 #include "D1090.h"
 #include "JSON.h"
 
+extern eeprom_t eeprom_block;
+extern settings_t *settings;
+
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
+
+#if defined(RASPBERRY_PI)
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -42,9 +49,6 @@
 StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 
 bool hasValidGPSDFix = false;
-
-extern eeprom_t eeprom_block;
-extern settings_t *settings;
 
 byte getVal(char c)
 {
@@ -329,6 +333,324 @@ void parseTPV(JsonObject& root)
   }
 }
 
+void parseD1090(JsonObject& root)
+{
+  dump1090_aircraft_t *aircraft_array;
+
+  float var_now = root["now"];
+  int var_messages = root["messages"];
+
+  JsonArray& aircraft = root["aircraft"];
+
+  int size = aircraft.size();
+  time_t timestamp = now();
+
+  if (size > 0) {
+    aircraft_array = (dump1090_aircraft_t *)
+                      malloc(sizeof(dump1090_aircraft_t) * size);
+
+    if (aircraft_array == NULL) {
+      return;
+    }
+
+    for (int i=0; i < size; i++) {
+      JsonObject& aircraft_obj = aircraft[i];
+
+      aircraft_array[i].hex = aircraft_obj["hex"];
+      aircraft_array[i].squawk = aircraft_obj["squawk"];
+      aircraft_array[i].flight = aircraft_obj["flight"];
+      aircraft_array[i].lat = aircraft_obj["lat"];
+      aircraft_array[i].lon = aircraft_obj["lon"];
+      aircraft_array[i].nucp = aircraft_obj["nucp"];
+      aircraft_array[i].seen_pos = aircraft_obj["seen_pos"];
+      aircraft_array[i].altitude = aircraft_obj["altitude"];
+      aircraft_array[i].vert_rate = aircraft_obj["vert_rate"];
+      aircraft_array[i].track = aircraft_obj["track"];
+      aircraft_array[i].speed = aircraft_obj["speed"];
+      aircraft_array[i].messages = aircraft_obj["messages"];
+      aircraft_array[i].seen = aircraft_obj["seen"];
+      aircraft_array[i].rssi = aircraft_obj["rssi"];
+    }
+
+    for (int i=0; i < size; i++) {
+
+      if (aircraft_array[i].hex &&
+          aircraft_array[i].lat != 0.0 &&
+          aircraft_array[i].lon != 0.0 &&
+          aircraft_array[i].altitude != 0.0) {
+
+        fo = EmptyFO;
+        memset(fo.raw, 0, sizeof(fo.raw));
+#if 0
+        fo.timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
+#else
+        fo.timestamp = timestamp;
+#endif
+        fo.protocol = RF_PROTOCOL_ADSB_1090;
+
+        if (aircraft_array[i].hex[0] == '~') {
+          fo.addr = strtoul (&aircraft_array[i].hex[1], NULL, 16);
+          fo.addr_type = ADDR_TYPE_ANONYMOUS;
+        } else {
+          fo.addr = strtoul (&aircraft_array[i].hex[0], NULL, 16);
+          fo.addr_type = ADDR_TYPE_ICAO;
+        }
+
+        fo.latitude = aircraft_array[i].lat;
+        fo.longitude = aircraft_array[i].lon;
+        fo.pressure_altitude = aircraft_array[i].altitude / _GPS_FEET_PER_METER;
+
+        /* TBD */
+        fo.altitude = fo.pressure_altitude;
+
+        fo.course = aircraft_array[i].track;
+        fo.speed = aircraft_array[i].speed;
+        fo.aircraft_type = AIRCRAFT_TYPE_JET;
+        fo.vs = aircraft_array[i].vert_rate;
+        fo.stealth = false;
+        fo.no_track = false;
+        fo.rssi = aircraft_array[i].rssi;
+
+        Traffic_Update(&fo);
+
+        int j;
+
+        /* Try to find and update an entry with the same aircraft ID */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
+            Container[j] = fo;
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Fill a free entry if able */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == 0 &&
+             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
+            Container[j] = fo;
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Overwrite expired entry */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[j] = fo;
+            break;
+          }
+        }
+      }
+    }
+
+#if 0
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr &&
+          Container[i].latitude  != 0.0 &&
+          Container[i].longitude != 0.0 &&
+          Container[i].altitude  != 0.0) {
+
+        printf("%06X %f %f %f %d %d %d\n",
+            Container[i].addr,
+            Container[i].latitude,
+            Container[i].longitude,
+            Container[i].altitude,
+            Container[i].addr_type,
+            (int) Container[i].vs,
+            Container[i].aircraft_type);
+      }
+    }
+#endif
+
+    free(aircraft_array);
+  }
+}
+
+void parseRAW(JsonObject& root)
+{
+
+  JsonArray& rawdata = root["rawdata"];
+
+  int size = rawdata.size();
+  time_t timestamp = now();
+
+  if (size > 0) {
+
+    for (int i=0; i < size; i++) {
+      const char* data = rawdata[i];
+      size_t data_len = strlen(data);
+      if (data_len > 0) {
+
+        fo = EmptyFO;
+
+        if (data_len > 2 * MAX_PKT_SIZE) {
+          data_len = 2 * MAX_PKT_SIZE;
+        }
+
+        if (data_len > 2 * sizeof(fo.raw)) {
+          data_len = 2 * sizeof(fo.raw);
+        }
+
+        for(int j = 0; j < data_len ; j+=2)
+        {
+          fo.raw[j>>1] = getVal(data[j+1]) + (getVal(data[j]) << 4);
+        }
+
+        fo.timestamp = timestamp;
+        fo.protocol = RF_PROTOCOL_ADSB_1090;
+
+        int j;
+
+        /* Fill a free entry if able */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (Container[j].addr == 0 &&
+             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
+            Container[j] = fo;
+            break;
+          }
+        }
+
+        if (j < MAX_TRACKING_OBJECTS) {
+            continue;
+        }
+
+        /* Overwrite expired entry */
+        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
+          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[j] = fo;
+            break;
+          }
+        }
+      }
+    }
+
+#if 0
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (memcmp(Container[i].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) != 0) {
+        size_t size = RF_Payload_Size(settings->rf_protocol);
+        size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
+        String str = Bin2Hex(Container[i].raw, size);
+        printf("%s\n", str.c_str());
+      }
+    }
+#endif
+
+  }
+}
+#endif /* RASPBERRY_PI */
+
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52)
+
+#include "../../driver/EPD.h"
+
+void parseUISettings(JsonObject& root)
+{
+  JsonVariant units = root["units"];
+  if (units.success()) {
+    const char * units_s = units.as<char*>();
+    if (!strcmp(units_s,"METRIC")) {
+      ui_settings.units = UNITS_METRIC;
+    } else if (!strcmp(units_s,"IMPERIAL")) {
+      ui_settings.units = UNITS_IMPERIAL;
+    } else if (!strcmp(units_s,"MIXED")) {
+      ui_settings.units = UNITS_MIXED;
+    }
+  }
+
+  JsonVariant zoom = root["zoom"];
+  if (zoom.success()) {
+    const char * zoom_s = zoom.as<char*>();
+    if (!strcmp(zoom_s,"LOWEST")) {
+      ui_settings.zoom = ZOOM_LOWEST;
+    } else if (!strcmp(zoom_s,"LOW")) {
+      ui_settings.zoom = ZOOM_LOW;
+    } else if (!strcmp(zoom_s,"MEDIUM")) {
+      ui_settings.zoom = ZOOM_MEDIUM;
+    } else if (!strcmp(zoom_s,"HIGH")) {
+      ui_settings.zoom = ZOOM_HIGH;
+    }
+  }
+#if 0
+  JsonVariant protocol = root["data"];
+  if (protocol.success()) {
+    const char * protocol_s = protocol.as<char*>();
+    if (!strcmp(protocol_s,"NMEA")) {
+      ui_settings.protocol = PROTOCOL_NMEA;
+    } else if (!strcmp(protocol_s,"GDL90")) {
+      ui_settings.protocol = PROTOCOL_GDL90;
+    } else if (!strcmp(protocol_s,"MAV1")) {
+      ui_settings.protocol = PROTOCOL_MAVLINK_1;
+    } else if (!strcmp(protocol_s,"MAV2")) {
+      ui_settings.protocol = PROTOCOL_MAVLINK_2;
+    } else if (!strcmp(protocol_s,"D1090")) {
+      ui_settings.protocol = PROTOCOL_D1090;
+    }
+  }
+#endif
+  JsonVariant orientation = root["orientation"];
+  if (orientation.success()) {
+    const char * orientation_s = orientation.as<char*>();
+    if (!strcmp(orientation_s,"TRACK")) {
+      ui_settings.orientation = DIRECTION_TRACK_UP;
+    } else if (!strcmp(orientation_s,"NORTH")) {
+      ui_settings.orientation = DIRECTION_NORTH_UP;
+    }
+  }
+
+  JsonVariant vmode = root["vmode"];
+  if (vmode.success()) {
+    const char * vmode_s = vmode.as<char*>();
+    if (!strcmp(vmode_s,"STATUS")) {
+      ui_settings.vmode = VIEW_MODE_STATUS;
+    } else if (!strcmp(vmode_s,"RADAR")) {
+      ui_settings.vmode = VIEW_MODE_RADAR;
+    } else if (!strcmp(vmode_s,"TEXT")) {
+      ui_settings.vmode = VIEW_MODE_TEXT;
+    } else if (!strcmp(vmode_s,"TIME")) {
+      ui_settings.vmode = VIEW_MODE_TIME;
+    }
+  }
+
+  JsonVariant aghost = root["aghost"];
+  if (aghost.success()) {
+    const char * aghost_s = aghost.as<char*>();
+    if (!strcmp(aghost_s,"OFF")) {
+      ui_settings.aghost = ANTI_GHOSTING_OFF;
+    } else if (!strcmp(aghost_s,"2MIN")) {
+      ui_settings.aghost = ANTI_GHOSTING_2MIN;
+    } else if (!strcmp(aghost_s,"5MIN")) {
+      ui_settings.aghost = ANTI_GHOSTING_5MIN;
+    } else if (!strcmp(aghost_s,"10MIN")) {
+      ui_settings.aghost = ANTI_GHOSTING_10MIN;
+    }
+  }
+
+  JsonVariant filter = root["filter"];
+  if (filter.success()) {
+    const char * filter_s = filter.as<char*>();
+    if (!strcmp(filter_s,"OFF")) {
+      ui_settings.filter = TRAFFIC_FILTER_OFF;
+    } else if (!strcmp(filter_s,"500M")) {
+      ui_settings.filter = TRAFFIC_FILTER_500M;
+    } else if (!strcmp(filter_s,"1500M")) {
+      ui_settings.filter = TRAFFIC_FILTER_1500M;
+    }
+  }
+
+  JsonVariant team = root["team"];
+  if (team.success()) {
+    uint32_t team_32 = team.as<unsigned int>();
+    ui_settings.team = team_32;
+  }
+}
+
 void parseSettings(JsonObject& root)
 {
   JsonVariant mode = root["mode"];
@@ -547,217 +869,4 @@ void parseSettings(JsonObject& root)
   }
 }
 
-void parseD1090(JsonObject& root)
-{
-  dump1090_aircraft_t *aircraft_array;
-
-  float var_now = root["now"];
-  int var_messages = root["messages"];
-
-  JsonArray& aircraft = root["aircraft"];
-
-  int size = aircraft.size();
-  time_t timestamp = now();
-
-  if (size > 0) {
-    aircraft_array = (dump1090_aircraft_t *)
-                      malloc(sizeof(dump1090_aircraft_t) * size);
-
-    if (aircraft_array == NULL) {
-      return;
-    }
-
-    for (int i=0; i < size; i++) {
-      JsonObject& aircraft_obj = aircraft[i];
-
-      aircraft_array[i].hex = aircraft_obj["hex"];
-      aircraft_array[i].squawk = aircraft_obj["squawk"];
-      aircraft_array[i].flight = aircraft_obj["flight"];
-      aircraft_array[i].lat = aircraft_obj["lat"];
-      aircraft_array[i].lon = aircraft_obj["lon"];
-      aircraft_array[i].nucp = aircraft_obj["nucp"];
-      aircraft_array[i].seen_pos = aircraft_obj["seen_pos"];
-      aircraft_array[i].altitude = aircraft_obj["altitude"];
-      aircraft_array[i].vert_rate = aircraft_obj["vert_rate"];
-      aircraft_array[i].track = aircraft_obj["track"];
-      aircraft_array[i].speed = aircraft_obj["speed"];
-      aircraft_array[i].messages = aircraft_obj["messages"];
-      aircraft_array[i].seen = aircraft_obj["seen"];
-      aircraft_array[i].rssi = aircraft_obj["rssi"];
-    }
-
-    for (int i=0; i < size; i++) {
-
-      if (aircraft_array[i].hex &&
-          aircraft_array[i].lat != 0.0 &&
-          aircraft_array[i].lon != 0.0 &&
-          aircraft_array[i].altitude != 0.0) {
-
-        fo = EmptyFO;
-        memset(fo.raw, 0, sizeof(fo.raw));
-#if 0
-        fo.timestamp = (time_t) (var_now - aircraft_array[i].seen_pos);
-#else
-        fo.timestamp = timestamp;
-#endif
-        fo.protocol = RF_PROTOCOL_ADSB_1090;
-
-        if (aircraft_array[i].hex[0] == '~') {
-          fo.addr = strtoul (&aircraft_array[i].hex[1], NULL, 16);
-          fo.addr_type = ADDR_TYPE_ANONYMOUS;
-        } else {
-          fo.addr = strtoul (&aircraft_array[i].hex[0], NULL, 16);
-          fo.addr_type = ADDR_TYPE_ICAO;
-        }
-
-        fo.latitude = aircraft_array[i].lat;
-        fo.longitude = aircraft_array[i].lon;
-        fo.pressure_altitude = aircraft_array[i].altitude / _GPS_FEET_PER_METER;
-
-        /* TBD */
-        fo.altitude = fo.pressure_altitude;
-
-        fo.course = aircraft_array[i].track;
-        fo.speed = aircraft_array[i].speed;
-        fo.aircraft_type = AIRCRAFT_TYPE_JET;
-        fo.vs = aircraft_array[i].vert_rate;
-        fo.stealth = false;
-        fo.no_track = false;
-        fo.rssi = aircraft_array[i].rssi;
-
-        Traffic_Update(&fo);
-
-        int j;
-
-        /* Try to find and update an entry with the same aircraft ID */
-        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == fo.addr && Container[j].protocol == fo.protocol) {
-            Container[j] = fo;
-            break;
-          }
-        }
-
-        if (j < MAX_TRACKING_OBJECTS) {
-            continue;
-        }
-
-        /* Fill a free entry if able */
-        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == 0 &&
-             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
-            Container[j] = fo;
-            break;
-          }
-        }
-
-        if (j < MAX_TRACKING_OBJECTS) {
-            continue;
-        }
-
-        /* Overwrite expired entry */
-        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
-            Container[j] = fo;
-            break;
-          }
-        }
-      }
-    }
-
-#if 0
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].addr &&
-          Container[i].latitude  != 0.0 &&
-          Container[i].longitude != 0.0 &&
-          Container[i].altitude  != 0.0) {
-
-        printf("%06X %f %f %f %d %d %d\n",
-            Container[i].addr,
-            Container[i].latitude,
-            Container[i].longitude,
-            Container[i].altitude,
-            Container[i].addr_type,
-            (int) Container[i].vs,
-            Container[i].aircraft_type);
-      }
-    }
-#endif
-
-    free(aircraft_array);
-  }
-}
-
-void parseRAW(JsonObject& root)
-{
-
-  JsonArray& rawdata = root["rawdata"];
-
-  int size = rawdata.size();
-  time_t timestamp = now();
-
-  if (size > 0) {
-
-    for (int i=0; i < size; i++) {
-      const char* data = rawdata[i];
-      size_t data_len = strlen(data);
-      if (data_len > 0) {
-
-        fo = EmptyFO;
-
-        if (data_len > 2 * MAX_PKT_SIZE) {
-          data_len = 2 * MAX_PKT_SIZE;
-        }
-
-        if (data_len > 2 * sizeof(fo.raw)) {
-          data_len = 2 * sizeof(fo.raw);
-        }
-
-        for(int j = 0; j < data_len ; j+=2)
-        {
-          fo.raw[j>>1] = getVal(data[j+1]) + (getVal(data[j]) << 4);
-        }
-
-        fo.timestamp = timestamp;
-        fo.protocol = RF_PROTOCOL_ADSB_1090;
-
-        int j;
-
-        /* Fill a free entry if able */
-        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (Container[j].addr == 0 &&
-             memcmp(Container[j].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) == 0) {
-            Container[j] = fo;
-            break;
-          }
-        }
-
-        if (j < MAX_TRACKING_OBJECTS) {
-            continue;
-        }
-
-        /* Overwrite expired entry */
-        for (j=0; j < MAX_TRACKING_OBJECTS; j++) {
-          if (timestamp - Container[j].timestamp > ENTRY_EXPIRATION_TIME) {
-            Container[j] = fo;
-            break;
-          }
-        }
-      }
-    }
-
-#if 0
-    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (memcmp(Container[i].raw, EmptyFO.raw, sizeof(EmptyFO.raw)) != 0) {
-        size_t size = RF_Payload_Size(settings->rf_protocol);
-        size = size > sizeof(Container[i].raw) ? sizeof(Container[i].raw) : size;
-        String str = Bin2Hex(Container[i].raw, size);
-        printf("%s\n", str.c_str());
-      }
-    }
-#endif
-
-  }
-}
-
-
-#endif /* RASPBERRY_PI */
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
