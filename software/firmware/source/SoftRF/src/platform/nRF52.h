@@ -256,42 +256,6 @@ extern Adafruit_NeoPixel strip;
 extern Uart Serial2;
 #endif
 
-typedef struct UI_Settings {
-    uint8_t  adapter;
-
-    uint8_t  connection:4;
-    uint8_t  units:2;
-    uint8_t  zoom:2;
-
-    uint8_t  protocol;
-    uint8_t  baudrate;
-    char     server  [18];
-    char     key     [18];
-
-    uint8_t  resvd1:2;
-    uint8_t  orientation:1;
-    uint8_t  adb:3;
-    uint8_t  idpref:2;
-
-    uint8_t  vmode:2;
-    uint8_t  voice:3;
-    uint8_t  aghost:3;
-
-    uint8_t  filter:4;
-    uint8_t  power_save:4;
-
-    uint32_t team;
-
-    uint8_t  resvd2;
-    uint8_t  resvd3;
-    uint8_t  resvd4;
-    uint8_t  resvd5;
-    uint8_t  resvd6;
-    uint8_t  resvd7;
-    uint8_t  resvd8;
-    uint8_t  resvd9;
-} __attribute__((packed)) ui_settings_t;
-
 extern PCF8563_Class *rtc;
 
 #if defined(USE_EPAPER)
@@ -301,9 +265,6 @@ typedef void EPD_Task_t;
 
 extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 #endif /* USE_EPAPER */
-
-extern ui_settings_t ui_settings;
-extern ui_settings_t *ui;
 
 #endif /* PLATFORM_NRF52_H */
 

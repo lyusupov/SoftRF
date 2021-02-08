@@ -27,6 +27,7 @@
 #include "../../driver/LED.h"
 #include "../../driver/Sound.h"
 #include "../../driver/Baro.h"
+#include "../../driver/EPD.h"
 #include "../../TrafficHelper.h"
 #include "NMEA.h"
 #include "GDL90.h"
@@ -547,8 +548,6 @@ void parseRAW(JsonObject& root)
 #endif /* RASPBERRY_PI */
 
 #if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52)
-
-#include "../../driver/EPD.h"
 
 void parseUISettings(JsonObject& root)
 {
