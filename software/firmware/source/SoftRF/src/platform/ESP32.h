@@ -231,6 +231,9 @@ struct rst_info {
 //#define USE_NMEA_CFG
 #define USE_BASICMAC
 
+/* Experimental */
+//#define USE_BLE_MIDI
+
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
 #define EXCLUDE_GNSS_GOKE       /* 'Air530' GK9501 GPS/GLO/BDS (GAL inop.)   */

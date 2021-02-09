@@ -573,6 +573,10 @@ static void ESP32_Sound_test(int var)
     ledcDetachPin(SOC_GPIO_PIN_BUZZER);
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
+
+#if defined(USE_BLE_MIDI)
+  ESP32_BLEMIDI_test();
+#endif /* USE_BLE_MIDI */
 }
 
 static uint32_t ESP32_maxSketchSpace()

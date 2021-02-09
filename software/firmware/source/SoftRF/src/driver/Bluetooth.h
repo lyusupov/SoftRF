@@ -29,8 +29,14 @@ enum
 
 #if defined(ESP32)
 
-#define SERVICE_UUID        "0000ffe0-0000-1000-8000-00805f9b34fb"
-#define CHARACTERISTIC_UUID "0000ffe1-0000-1000-8000-00805f9b34fb"
+#define UART_SERVICE_UUID         "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define UART_CHARACTERISTIC_UUID  "0000ffe1-0000-1000-8000-00805f9b34fb"
+
+#define MIDI_SERVICE_UUID         "03b80e5a-ede8-4b33-a751-6ce34ec4c700"
+#define MIDI_CHARACTERISTIC_UUID  "7772e5db-3868-4112-a1a9-f2669d106bf3"
+
+#define UUID16_SVC_BATTERY        ((uint16_t) 0x180F)
+#define UUID16_CHR_BATTERY_LEVEL  ((uint16_t) 0x2A19)
 
 /* (FLAA x MAX_TRACKING_OBJECTS + GNGGA + GNRMC + FLAU) x 80 symbols */
 #define BLE_FIFO_TX_SIZE          1024
@@ -39,6 +45,7 @@ enum
 #define BLE_MAX_WRITE_CHUNK_SIZE  20
 
 extern IODev_ops_t ESP32_Bluetooth_ops;
+extern void ESP32_BLEMIDI_test(void);
 
 #if defined(ENABLE_BT_VOICE)
 

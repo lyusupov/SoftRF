@@ -92,3 +92,19 @@ void Battery_loop()
     Battery_TimeMarker = millis();
   }
 }
+
+uint8_t Battery_VoltsToPercent(float volts) {
+  if (volts < Battery_cutoff())
+    return 0;
+
+  if (volts > 4.2)
+    return 100;
+
+  if (volts < 3.6) {
+    volts -= 3.3;
+    return (volts * 100) / 3;
+  }
+
+  volts -= 3.6;
+  return 10 + (volts * 150 );
+}

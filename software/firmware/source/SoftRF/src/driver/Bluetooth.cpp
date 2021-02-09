@@ -41,11 +41,25 @@
 #include "esp_gap_bt_api.h"
 
 #include "WiFi.h"   // HOSTNAME
+#include "Battery.h"
 
 BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
-bool deviceConnected = false;
+BLECharacteristic* pUARTCharacteristic = NULL;
+BLECharacteristic* pBATCharacteristic  = NULL;
+bool deviceConnected    = false;
 bool oldDeviceConnected = false;
+
+#if defined(USE_BLE_MIDI)
+BLECharacteristic* pMIDICharacteristic = NULL;
+
+uint8_t midiPacket[] = {
+   0x80,  // header
+   0x80,  // timestamp, not implemented
+   0x00,  // status
+   0x3c,  // 0x3c == 60 == middle c
+   0x00   // velocity
+};
+#endif /* USE_BLE_MIDI */
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
 BluetoothSerial SerialBT;
@@ -67,9 +81,9 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
-class MyCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pCharacteristic) {
-      std::string rxValue = pCharacteristic->getValue();
+class UARTCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pUARTCharacteristic) {
+      std::string rxValue = pUARTCharacteristic->getValue();
 
       if (rxValue.length() > 0) {
         BLE_FIFO_RX->write(rxValue.c_str(),
@@ -78,6 +92,56 @@ class MyCallbacks: public BLECharacteristicCallbacks {
       }
     }
 };
+
+#if defined(USE_BLE_MIDI)
+
+byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
+
+void ESP32_BLEMIDI_test()
+{
+  if ((settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL) && deviceConnected) {
+
+    unsigned int position = 0;
+    unsigned int current  = 0;
+
+    for (; position <= sizeof(note_sequence); position++) {
+      // Setup variables for the current and previous
+      // positions in the note sequence.
+      current = position;
+      // If we currently are at position 0, set the
+      // previous position to the last note in the sequence.
+      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
+
+      // Send Note On for current position at full velocity (127) on channel 1.
+      // note down
+      midiPacket[2] = 0x90; // note down, channel 0
+      midiPacket[3] = note_sequence[current];
+      midiPacket[4] = 127;  // velocity
+      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes
+      pMIDICharacteristic->notify();
+
+      // Send Note Off for previous note.
+      // note up
+      midiPacket[2] = 0x80; // note up, channel 0
+      midiPacket[3] = note_sequence[previous];
+      midiPacket[4] = 0;    // velocity
+      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
+      pMIDICharacteristic->notify();
+
+      // play note for 286ms
+      delay(286);
+    }
+
+    // note up
+    midiPacket[2] = 0x80; // note up, channel 0
+    midiPacket[3] = note_sequence[current];
+    midiPacket[4] = 0;    // velocity
+    pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
+    pMIDICharacteristic->notify();
+  }
+}
+#endif /* USE_BLE_MIDI */
+
 
 static void ESP32_Bluetooth_setup()
 {
@@ -114,28 +178,66 @@ static void ESP32_Bluetooth_setup()
       pServer->setCallbacks(new MyServerCallbacks());
 
       // Create the BLE Service
-      BLEService *pService = pServer->createService(SERVICE_UUID);
+      BLEService *pService = pServer->createService(BLEUUID(UART_SERVICE_UUID));
 
       // Create a BLE Characteristic
-      pCharacteristic = pService->createCharacteristic(
-                          CHARACTERISTIC_UUID,
-                          BLECharacteristic::PROPERTY_READ   |
-                          BLECharacteristic::PROPERTY_NOTIFY |
-                          BLECharacteristic::PROPERTY_WRITE_NR
-                        );
+      pUARTCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UART_CHARACTERISTIC_UUID),
+                              BLECharacteristic::PROPERTY_READ   |
+                              BLECharacteristic::PROPERTY_NOTIFY |
+                              BLECharacteristic::PROPERTY_WRITE_NR
+                            );
 
       UserDescriptor.setValue("HMSoft");
-      pCharacteristic->addDescriptor(&UserDescriptor);
-      pCharacteristic->addDescriptor(new BLE2902());
+      pUARTCharacteristic->addDescriptor(&UserDescriptor);
+      pUARTCharacteristic->addDescriptor(new BLE2902());
 
-      pCharacteristic->setCallbacks(new MyCallbacks());
+      pUARTCharacteristic->setCallbacks(new UARTCallbacks());
 
       // Start the service
       pService->start();
 
+      // Create the BLE Service
+      pService = pServer->createService(BLEUUID(UUID16_SVC_BATTERY));
+
+      // Create a BLE Characteristic
+      pBATCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_BATTERY_LEVEL),
+                              BLECharacteristic::PROPERTY_READ   |
+                              BLECharacteristic::PROPERTY_NOTIFY
+                            );
+      pBATCharacteristic->addDescriptor(new BLE2902());
+
+      // Start the service
+      pService->start();
+
+#if defined(USE_BLE_MIDI)
+      // Create the BLE Service
+      pService = pServer->createService(BLEUUID(MIDI_SERVICE_UUID));
+
+      // Create a BLE Characteristic
+      pMIDICharacteristic = pService->createCharacteristic(
+                              BLEUUID(MIDI_CHARACTERISTIC_UUID),
+                              BLECharacteristic::PROPERTY_READ   |
+                              BLECharacteristic::PROPERTY_WRITE  |
+                              BLECharacteristic::PROPERTY_NOTIFY |
+                              BLECharacteristic::PROPERTY_WRITE_NR
+                            );
+
+      // Create a BLE Descriptor
+      pMIDICharacteristic->addDescriptor(new BLE2902());
+
+      // Start the service
+      pService->start();
+#endif /* USE_BLE_MIDI */
+
       // Start advertising
       BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-      pAdvertising->addServiceUUID(SERVICE_UUID);
+      pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID));
+      pAdvertising->addServiceUUID(BLEUUID(UUID16_SVC_BATTERY));
+#if defined(USE_BLE_MIDI)
+      pAdvertising->addServiceUUID(BLEUUID(MIDI_SERVICE_UUID));
+#endif /* USE_BLE_MIDI */
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);
@@ -173,8 +275,8 @@ static void ESP32_Bluetooth_loop()
 
           BLE_FIFO_TX->read((char *) chunk, size);
 
-          pCharacteristic->setValue(chunk, size);
-          pCharacteristic->notify();
+          pUARTCharacteristic->setValue(chunk, size);
+          pUARTCharacteristic->notify();
           BLE_Notify_TimeMarker = millis();
       }
       // disconnecting
@@ -188,6 +290,12 @@ static void ESP32_Bluetooth_loop()
       if (deviceConnected && !oldDeviceConnected) {
           // do stuff here on connecting
           oldDeviceConnected = deviceConnected;
+      }
+      if (deviceConnected && isTimeToBattery()) {
+        uint8_t battery_level = Battery_VoltsToPercent(Battery_voltage());
+
+        pBATCharacteristic->setValue(&battery_level, 1);
+        pBATCharacteristic->notify();
       }
     }
     break;
@@ -1060,42 +1168,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 #endif
 }
 
-#if defined(USE_BLE_MIDI)
-
-#define MIDI_CHANNEL_TRAFFIC  1
-#define MIDI_CHANNEL_VARIO    2
-
-byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
-
-void nRF52_BLEMIDI_test()
-{
-  // Don't continue if we aren't connected.
-  if (Bluefruit.connected() && blemidi.notifyEnabled()) {
-    unsigned int position = 0;
-    unsigned int current  = 0;
-
-    for (; position <= sizeof(note_sequence); position++) {
-      // Setup variables for the current and previous
-      // positions in the note sequence.
-      current = position;
-      // If we currently are at position 0, set the
-      // previous position to the last note in the sequence.
-      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
-
-      // Send Note On for current position at full velocity (127) on channel 1.
-      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
-
-      // Send Note Off for previous note.
-      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
-
-      delay(286);
-    }
-
-    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
-  }
-}
-#endif /* USE_BLE_MIDI */
-
 void nRF52_Bluetooth_setup()
 {
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
@@ -1156,21 +1228,41 @@ void nRF52_Bluetooth_setup()
 
 static unsigned long BLE_Notify_TimeMarker = 0;
 
-uint8_t VoltsToPercent(float volts) {
-  if (volts < Battery_cutoff())
-    return 0;
+#if defined(USE_BLE_MIDI)
 
-  if (volts > 4.2)
-    return 100;
+#define MIDI_CHANNEL_TRAFFIC  1
+#define MIDI_CHANNEL_VARIO    2
 
-  if (volts < 3.6) {
-    volts -= 3.3;
-    return (volts * 100) / 3;
+byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
+
+void nRF52_BLEMIDI_test()
+{
+  // Don't continue if we aren't connected.
+  if (Bluefruit.connected() && blemidi.notifyEnabled()) {
+    unsigned int position = 0;
+    unsigned int current  = 0;
+
+    for (; position <= sizeof(note_sequence); position++) {
+      // Setup variables for the current and previous
+      // positions in the note sequence.
+      current = position;
+      // If we currently are at position 0, set the
+      // previous position to the last note in the sequence.
+      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
+
+      // Send Note On for current position at full velocity (127) on channel 1.
+      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
+
+      // Send Note Off for previous note.
+      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
+
+      delay(286);
+    }
+
+    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
   }
-
-  volts -= 3.6;
-  return 10 + (volts * 150 );
 }
+#endif /* USE_BLE_MIDI */
 
 static void nRF52_Bluetooth_loop()
 {
@@ -1185,7 +1277,7 @@ static void nRF52_Bluetooth_loop()
   }
 
   if (isTimeToBattery()) {
-    blebas.write(VoltsToPercent(Battery_voltage()));
+    blebas.write(Battery_VoltsToPercent(Battery_voltage()));
   }
 }
 

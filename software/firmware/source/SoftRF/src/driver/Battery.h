@@ -37,11 +37,12 @@ enum
 	POWER_SAVE_GNSS = 2
 };
 
-void  Battery_setup(void);
-void  Battery_loop(void);
-float Battery_voltage(void);
-float Battery_threshold(void);
-float Battery_cutoff(void);
+void    Battery_setup(void);
+void    Battery_loop(void);
+float   Battery_voltage(void);
+float   Battery_threshold(void);
+float   Battery_cutoff(void);
+uint8_t Battery_VoltsToPercent(float);
 
 extern unsigned long Battery_TimeMarker;
 
