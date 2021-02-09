@@ -28,4 +28,4 @@ Areas where contributions are welcomed by the project's developer:
         - Badge
         - [Uni](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
         - [Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
-        - Mini
+        - [Mini](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
