@@ -41,6 +41,10 @@
 #include "../protocol/data/D1090.h"
 #include "../protocol/data/JSON.h"
 
+#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#include <MIDI.h>
+#endif /* USE_USB_MIDI */
+
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
 
@@ -190,6 +194,15 @@ WEBUSB_URL_DEF(landingPage, 1 /*https*/, "adafruit.github.io/Adafruit_TinyUSB_Ar
 // Landing Page: scheme (0: http, 1: https), url
 WEBUSB_URL_DEF(landingPage, 1 /*https*/, "lyusupov.github.io/SoftRF/settings.html");
 #endif /* USE_WEBUSB_SETTINGS */
+
+#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+// USB MIDI object
+Adafruit_USBD_MIDI usb_midi;
+
+// Create a new instance of the Arduino MIDI Library,
+// and attach usb_midi as the transport.
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
+#endif /* USE_USB_MIDI */
 
 ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
@@ -423,6 +436,12 @@ static void nRF52_setup()
 
     usb_msc.begin();
   }
+
+#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+  // Initialize MIDI with no any input channels
+  // This will also call usb_midi's begin()
+  MIDI.begin(MIDI_CHANNEL_OFF);
+#endif /* USE_USB_MIDI */
 }
 
 static void nRF52_post_init()
@@ -796,11 +815,46 @@ static long nRF52_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
+#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+
+#define MIDI_CHANNEL_TRAFFIC  1
+#define MIDI_CHANNEL_VARIO    2
+
+byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
+#endif /* USE_USB_MIDI */
+
 static void nRF52_Sound_test(int var)
 {
-#if defined(USE_BLE_MIDI)
-  nRF52_BLEMIDI_test();
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+    nRF52_BLEMIDI_test();
 #endif /* USE_BLE_MIDI */
+
+#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+  if (USBDevice.mounted()) {
+
+    unsigned int position = 0;
+    unsigned int current  = 0;
+
+    for (; position <= sizeof(note_sequence); position++) {
+      // Setup variables for the current and previous
+      // positions in the note sequence.
+      current = position;
+      // If we currently are at position 0, set the
+      // previous position to the last note in the sequence.
+      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
+
+      // Send Note On for current position at full velocity (127) on channel 1.
+      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
+
+      // Send Note Off for previous note.
+      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
+
+      delay(286);
+    }
+
+    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
+  }
+#endif /* USE_USB_MIDI */
 }
 
 static void nRF52_WiFi_set_param(int ndx, int value)

@@ -142,7 +142,6 @@ void ESP32_BLEMIDI_test()
 }
 #endif /* USE_BLE_MIDI */
 
-
 static void ESP32_Bluetooth_setup()
 {
 
@@ -1082,7 +1081,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <BLEUart_HM10.h>
-#if defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
 #include <MIDI.h>
 #endif /* USE_BLE_MIDI */
 
@@ -1096,7 +1095,7 @@ BLEUart_HM10  bleuart_HM10; // TI UART over BLE
 BLEUart       bleuart_NUS;  // Nordic UART over BLE
 BLEBas        blebas;       // battery
 
-#if defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
 BLEMidi       blemidi;
 
 MIDI_CREATE_BLE_INSTANCE(blemidi);
@@ -1113,7 +1112,7 @@ void startAdv(void)
   // Include bleuart 128-bit uuid
   Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
 
-#if defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Advertise BLE MIDI Service
   Bluefruit.Advertising.addService(blemidi);
 #endif /* USE_BLE_MIDI */
@@ -1207,7 +1206,7 @@ void nRF52_Bluetooth_setup()
   blebas.begin();
   blebas.write(100);
 
-#if defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
   // This will also call blemidi service's begin()
   MIDI.begin(MIDI_CHANNEL_OFF);
@@ -1228,7 +1227,7 @@ void nRF52_Bluetooth_setup()
 
 static unsigned long BLE_Notify_TimeMarker = 0;
 
-#if defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
 
 #define MIDI_CHANNEL_TRAFFIC  1
 #define MIDI_CHANNEL_VARIO    2
