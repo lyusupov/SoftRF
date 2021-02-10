@@ -722,7 +722,10 @@ static void ESP32_TTS(char *message)
       if (SD.cardType() == CARD_NONE)
         return;
 
+      while (!SoC->EPD_is_ready()) {yield();}
       EPD_Message("VOICE", "ALERT");
+      SoC->EPD_update(EPD_UPDATE_FAST);
+      while (!SoC->EPD_is_ready()) {yield();}
 
       bool wdt_status = loopTaskWDTEnabled;
 
