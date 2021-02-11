@@ -31,7 +31,6 @@ traffic_by_dist_t traffic[MAX_TRACKING_OBJECTS];
 
 static unsigned long UpdateTrafficTimeMarker = 0;
 static unsigned long Traffic_Voice_TimeMarker = 0;
-static uint32_t Traffic_Voice_ID_prev = 0;
 
 void Traffic_Add()
 {
@@ -50,7 +49,9 @@ void Traffic_Add()
 
       for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
         if (Container[i].ID == fo.ID) {
+          uint8_t alert_bak = Container[i].alert;
           Container[i] = fo;
+          Container[i].alert = alert_bak;
           return;
         }
       }
@@ -110,11 +111,12 @@ void Traffic_Update(traffic_t *fop)
 
 static void Traffic_Voice()
 {
+  int i=0;
   int j=0;
   int bearing;
   char message[80];
 
-  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+  for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
     if (Container[i].ID && (now() - Container[i].timestamp) <= VOICE_EXPIRATION_TIME) {
 
       traffic[j].fop = &Container[i];
@@ -124,129 +126,141 @@ static void Traffic_Voice()
     }
   }
 
-  if (j > 0 && traffic[0].fop->ID != Traffic_Voice_ID_prev) {
+  if (j == 0) { return; }
 
-    const char *u_dist, *u_alt;
-    float voc_dist;
-    int   voc_alt;
-    const char *where;
-    char how_far[32];
-    char elev[32];
+  const char *u_dist, *u_alt;
+  float voc_dist;
+  int   voc_alt;
+  const char *where;
+  char how_far[32];
+  char elev[32];
 
-    qsort(traffic, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
+  qsort(traffic, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
 
-    bearing = (int) (atan2f(traffic[0].fop->RelativeNorth,
-                            traffic[0].fop->RelativeEast) * 180.0 / PI);  /* -180 ... 180 */
+  /*
+   * Issue only one voice alert per each aircraft in the traffic table.
+   * Closest traffic is the first, outmost one is the last.
+   */
+  for (i=0; i < j; i++) {
+    if ((traffic[i].fop->alert & TRAFFIC_ALERT_VOICE) == 0) {
 
-    /* convert from math angle into course relative to north */
-    bearing = (bearing <= 90 ? 90 - bearing :
-                              450 - bearing);
+      bearing = (int) (atan2f(traffic[i].fop->RelativeNorth,
+                              traffic[i].fop->RelativeEast) * 180.0 / PI);  /* -180 ... 180 */
 
-    /* This bearing is always relative to current ground track */
-//  if (settings->orientation == DIRECTION_TRACK_UP) {
-      bearing -= ThisAircraft.Track;
-//  }
+      /* convert from math angle into course relative to north */
+      bearing = (bearing <= 90 ? 90 - bearing :
+                                450 - bearing);
 
-    if (bearing < 0) {
-      bearing += 360;
-    }
+      /* This bearing is always relative to current ground track */
+//    if (settings->orientation == DIRECTION_TRACK_UP) {
+          bearing -= ThisAircraft.Track;
+//    }
 
-    int oclock = ((bearing + 15) % 360) / 30;
-
-    switch (oclock)
-    {
-    case 0:
-      where = "ahead";
-      break;
-    case 1:
-      where = "1oclock";
-      break;
-    case 2:
-      where = "2oclock";
-      break;
-    case 3:
-      where = "3oclock";
-      break;
-    case 4:
-      where = "4oclock";
-      break;
-    case 5:
-      where = "5oclock";
-      break;
-    case 6:
-      where = "6oclock";
-      break;
-    case 7:
-      where = "7oclock";
-      break;
-    case 8:
-      where = "8oclock";
-      break;
-    case 9:
-      where = "9oclock";
-      break;
-    case 10:
-      where = "10oclock";
-      break;
-    case 11:
-      where = "11oclock";
-      break;
-    }
-
-    switch (settings->units)
-    {
-    case UNITS_IMPERIAL:
-      u_dist = "nautical miles";
-      u_alt  = "feet";
-      voc_dist = (traffic[0].distance * _GPS_MILES_PER_METER) /
-                  _GPS_MPH_PER_KNOT;
-      voc_alt  = abs((int) (traffic[0].fop->RelativeVertical *
-                  _GPS_FEET_PER_METER));
-      break;
-    case UNITS_MIXED:
-      u_dist = "kms";
-      u_alt  = "feet";
-      voc_dist = traffic[0].distance / 1000.0;
-      voc_alt  = abs((int) (traffic[0].fop->RelativeVertical *
-                  _GPS_FEET_PER_METER));
-      break;
-    case UNITS_METRIC:
-    default:
-      u_dist = "kms";
-      u_alt  = "metres";
-      voc_dist = traffic[0].distance / 1000.0;
-      voc_alt  = abs((int) traffic[0].fop->RelativeVertical);
-      break;
-    }
-
-    if (voc_dist < 1.0) {
-      strcpy(how_far, "near");
-    } else {
-      if (voc_dist > 9.0) {
-        voc_dist = 9.0;
-      }
-      snprintf(how_far, sizeof(how_far), "%u %s", (int) voc_dist, u_dist);
-    }
-
-    if (voc_alt < 100) {
-      strcpy(elev, "near");
-    } else {
-      if (voc_alt > 500) {
-        voc_alt = 500;
+      if (bearing < 0) {
+        bearing += 360;
       }
 
-      snprintf(elev, sizeof(elev), "%u hundred %s %s",
-        (voc_alt / 100), u_alt,
-        traffic[0].fop->RelativeVertical > 0 ? "above" : "below");
+      int oclock = ((bearing + 15) % 360) / 30;
+
+      switch (oclock)
+      {
+      case 0:
+        where = "ahead";
+        break;
+      case 1:
+        where = "1oclock";
+        break;
+      case 2:
+        where = "2oclock";
+        break;
+      case 3:
+        where = "3oclock";
+        break;
+      case 4:
+        where = "4oclock";
+        break;
+      case 5:
+        where = "5oclock";
+        break;
+      case 6:
+        where = "6oclock";
+        break;
+      case 7:
+        where = "7oclock";
+        break;
+      case 8:
+        where = "8oclock";
+        break;
+      case 9:
+        where = "9oclock";
+        break;
+      case 10:
+        where = "10oclock";
+        break;
+      case 11:
+        where = "11oclock";
+        break;
+      }
+
+      switch (settings->units)
+      {
+      case UNITS_IMPERIAL:
+        u_dist = "nautical miles";
+        u_alt  = "feet";
+        voc_dist = (traffic[i].distance * _GPS_MILES_PER_METER) /
+                    _GPS_MPH_PER_KNOT;
+        voc_alt  = abs((int) (traffic[i].fop->RelativeVertical *
+                    _GPS_FEET_PER_METER));
+        break;
+      case UNITS_MIXED:
+        u_dist = "kms";
+        u_alt  = "feet";
+        voc_dist = traffic[i].distance / 1000.0;
+        voc_alt  = abs((int) (traffic[i].fop->RelativeVertical *
+                    _GPS_FEET_PER_METER));
+        break;
+      case UNITS_METRIC:
+      default:
+        u_dist = "kms";
+        u_alt  = "metres";
+        voc_dist = traffic[i].distance / 1000.0;
+        voc_alt  = abs((int) traffic[i].fop->RelativeVertical);
+        break;
+      }
+
+      if (voc_dist < 1.0) {
+        strcpy(how_far, "near");
+      } else {
+        if (voc_dist > 9.0) {
+          voc_dist = 9.0;
+        }
+        snprintf(how_far, sizeof(how_far), "%u %s", (int) voc_dist, u_dist);
+      }
+
+      if (voc_alt < 100) {
+        strcpy(elev, "near");
+      } else {
+        if (voc_alt > 500) {
+          voc_alt = 500;
+        }
+
+        snprintf(elev, sizeof(elev), "%u hundred %s %s",
+          (voc_alt / 100), u_alt,
+          traffic[i].fop->RelativeVertical > 0 ? "above" : "below");
+      }
+
+      snprintf(message, sizeof(message),
+                  "traffic %s distance %s altitude %s",
+                  where, how_far, elev);
+
+      SoC->TTS(message);
+
+      traffic[i].fop->alert |= TRAFFIC_ALERT_VOICE;
+      traffic[i].fop->timestamp = now();
+
+      /* Speak up of one aircraft at a time */
+      break;
     }
-
-    snprintf(message, sizeof(message),
-                "traffic %s distance %s altitude %s",
-                where, how_far, elev);
-
-    SoC->TTS(message);
-
-    Traffic_Voice_ID_prev = traffic[0].fop->ID;
   }
 }
 

@@ -768,7 +768,7 @@ int main(int argc, char *argv[])
   if (isSysVinit) {
     if (hw_info.display == DISPLAY_EPD_2_7) {
       EPD_text_Draw_Message("PLEASE,", "WAIT");
-      SoC->EPD_update(EPD_UPDATE_FAST);
+      SoC->EPD_update(EPD_UPDATE_SLOW);
     }
 
     SoC->Button_fini();

@@ -51,6 +51,8 @@ typedef struct traffic_struct {
     float     longitude;
     float     altitude;
     uint8_t   callsign [GDL90_TRAFFICREPORT_MSG_CALLSIGN_SIZE];
+
+    uint8_t   alert;              // bitmap of issued voice/tone/ble/... alerts
 } traffic_t;
 
 typedef struct traffic_by_dist_struct {
@@ -68,6 +70,8 @@ typedef struct traffic_by_dist_struct {
 
 #define isTimeToVoice()         (millis() - Traffic_Voice_TimeMarker > 2000)
 #define VOICE_EXPIRATION_TIME   5 /* seconds */
+
+#define TRAFFIC_ALERT_VOICE     1
 
 void Traffic_setup        (void);
 void Traffic_loop         (void);
