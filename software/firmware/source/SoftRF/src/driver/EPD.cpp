@@ -118,6 +118,7 @@ bool EPD_setup(bool splash_screen)
   EPD_status_setup();
   EPD_radar_setup();
   EPD_text_setup();
+  EPD_baro_setup();
   EPD_time_setup();
 
   EPDTimeMarker = millis();
@@ -211,6 +212,9 @@ void EPD_loop()
       case VIEW_MODE_TEXT:
         EPD_text_loop();
         break;
+      case VIEW_MODE_BARO:
+        EPD_baro_loop();
+        break;
       case VIEW_MODE_TIME:
         EPD_time_loop();
         break;
@@ -261,6 +265,9 @@ void EPD_Mode()
       EPD_view_mode = VIEW_MODE_TEXT;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
+      EPD_view_mode = VIEW_MODE_BARO;
+      EPD_vmode_updated = true;
+    }  else if (EPD_view_mode == VIEW_MODE_BARO) {
       EPD_view_mode = VIEW_MODE_TIME;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_TIME) {
@@ -280,6 +287,9 @@ void EPD_Up()
       break;
     case VIEW_MODE_TEXT:
       EPD_text_prev();
+      break;
+    case VIEW_MODE_BARO:
+      EPD_baro_prev();
       break;
     case VIEW_MODE_TIME:
       EPD_time_prev();
@@ -302,6 +312,9 @@ void EPD_Down()
       break;
     case VIEW_MODE_TEXT:
       EPD_text_next();
+      break;
+    case VIEW_MODE_BARO:
+      EPD_baro_next();
       break;
     case VIEW_MODE_TIME:
       EPD_time_next();

@@ -77,7 +77,7 @@ void Battery_loop()
         hw_info.model == SOFTRF_MODEL_BADGE                                 ||
         hw_info.model == SOFTRF_MODEL_UNI       ) {
 
-      if (voltage > 1.8 && voltage < Battery_cutoff()) {
+      if (voltage > BATTERY_THRESHOLD_INVALID && voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 2) {
           shutdown(SOFTRF_SHUTDOWN_LOWBAT);
         } else {

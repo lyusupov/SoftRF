@@ -21,8 +21,11 @@
 #include "Baro.h"
 
 #if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2)
-byte Baro_setup()    {return BARO_MODULE_NONE;}
-void Baro_loop()     {}
+byte  Baro_setup()        {return BARO_MODULE_NONE;}
+void  Baro_loop()         {}
+float Baro_altitude()     {return 0;}
+float Baro_pressure()     {return 0;}
+float Baro_temperature()  {return 0;}
 #else
 
 #if !defined(EXCLUDE_BMP180)
@@ -49,15 +52,16 @@ Adafruit_BMP280 bmp280;
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
 #endif /* EXCLUDE_MPL3115A2 */
 
-static unsigned long BaroTimeMarker = 0;
-static float prev_pressure_altitude = 0;
+static float Baro_altitude_cache            = 0;
+static float Baro_pressure_cache            = 0;
+static float Baro_temperature_cache         = 0;
 
-#define VS_AVERAGING_FACTOR   4
+static unsigned long BaroAltitudeTimeMarker = 0;
+static unsigned long BaroPresTempTimeMarker = 0;
+static float prev_pressure_altitude         = 0;
+
 static float Baro_VS[VS_AVERAGING_FACTOR];
 static int avg_ndx = 0;
-
-/* 4 baro sensor readings per second */
-#define isTimeToBaro() ((millis() - BaroTimeMarker) > (1000 / VS_AVERAGING_FACTOR))
 
 #if !defined(EXCLUDE_BMP180)
 static bool bmp180_probe()
@@ -80,18 +84,6 @@ static void bmp180_setup()
   Serial.print(F("Altitude = "));
   Serial.print(bmp180.readAltitude());
   Serial.println(F(" meters"));
-
-  Serial.print(F("Pressure at sealevel (calculated) = "));
-  Serial.print(bmp180.readSealevelPressure());
-  Serial.println(F(" Pa"));
-
-// you can get a more precise measurement of altitude
-// if you know the current sea level pressure which will
-// vary with weather and such. If it is 1015 millibars
-// that is equal to 101500 Pascals.
-  Serial.print(F("Real altitude = "));
-  Serial.print(bmp180.readAltitude(101500));
-  Serial.println(F(" meters"));
   
   Serial.println();
   delay(500);
@@ -102,12 +94,24 @@ static float bmp180_altitude(float sealevelPressure)
   return bmp180.readAltitude(sealevelPressure * 100);
 }
 
+static float bmp180_pressure()
+{
+  return (float) bmp180.readPressure();
+}
+
+static float bmp180_temperature()
+{
+  return bmp180.readTemperature();
+}
+
 barochip_ops_t bmp180_ops = {
   BARO_MODULE_BMP180,
   "BMP180",
   bmp180_probe,
   bmp180_setup,
-  bmp180_altitude
+  bmp180_altitude,
+  bmp180_pressure,
+  bmp180_temperature
 };
 #endif /* EXCLUDE_BMP180 */
 
@@ -145,12 +149,24 @@ static float bmp280_altitude(float sealevelPressure)
     return bmp280.readAltitude(sealevelPressure);
 }
 
+static float bmp280_pressure()
+{
+    return bmp280.readPressure();
+}
+
+static float bmp280_temperature()
+{
+    return bmp280.readTemperature();
+}
+
 barochip_ops_t bmp280_ops = {
   BARO_MODULE_BMP280,
   "BMP280",
   bmp280_probe,
   bmp280_setup,
-  bmp280_altitude
+  bmp280_altitude,
+  bmp280_pressure,
+  bmp280_temperature
 };
 #endif /* EXCLUDE_BMP280 */
 
@@ -182,12 +198,24 @@ static float mpl3115a2_altitude(float sealevelPressure)
   return mpl3115a2.getAltitude();
 }
 
+static float mpl3115a2_pressure()
+{
+  return mpl3115a2.getPressure();
+}
+
+static float mpl3115a2_temperature()
+{
+  return mpl3115a2.getTemperature();
+}
+
 barochip_ops_t mpl3115a2_ops = {
   BARO_MODULE_MPL3115A2,
   "MPL3115A2",
   mpl3115a2_probe,
   mpl3115a2_setup,
-  mpl3115a2_altitude
+  mpl3115a2_altitude,
+  mpl3115a2_pressure,
+  mpl3115a2_temperature
 };
 #endif /* EXCLUDE_MPL3115A2 */
 
@@ -223,8 +251,13 @@ byte Baro_setup()
 
     baro_chip->setup();
 
-    prev_pressure_altitude = baro_chip->altitude(1013.25);
-    BaroTimeMarker = millis();
+    Baro_pressure_cache    = baro_chip->pressure();
+    Baro_temperature_cache = baro_chip->temperature();
+    BaroPresTempTimeMarker = millis();
+
+    Baro_altitude_cache    = baro_chip->altitude(1013.25);
+    ThisAircraft.pressure_altitude = prev_pressure_altitude = Baro_altitude_cache;
+    BaroAltitudeTimeMarker = millis();
 
     for (int i=0; i<VS_AVERAGING_FACTOR; i++) {
       Baro_VS[i] = 0;
@@ -242,13 +275,17 @@ byte Baro_setup()
 
 void Baro_loop()
 {
-  if (baro_chip && isTimeToBaro()) {
+  if (baro_chip == NULL) return;
+
+  if (isTimeToBaroAltitude()) {
 
     /* Draft of pressure altitude and vertical speed calculation */
-    ThisAircraft.pressure_altitude = baro_chip->altitude(1013.25);
+    Baro_altitude_cache = baro_chip->altitude(1013.25);
 
-    Baro_VS[avg_ndx] = (ThisAircraft.pressure_altitude - prev_pressure_altitude) /
-      (millis() - BaroTimeMarker) * 1000;  /* in m/s */
+    ThisAircraft.pressure_altitude = Baro_altitude_cache;
+
+    Baro_VS[avg_ndx] = (Baro_altitude_cache - prev_pressure_altitude) /
+                       (millis() - BaroAltitudeTimeMarker) * 1000;  /* in m/s */
 
     ThisAircraft.vs = 0;
     for (int i=0; i<VS_AVERAGING_FACTOR; i++) {
@@ -262,8 +299,8 @@ void Baro_loop()
 
     ThisAircraft.vs *= (_GPS_FEET_PER_METER * 60.0) ; /* feet per minute */
 
-    prev_pressure_altitude = ThisAircraft.pressure_altitude;
-    BaroTimeMarker = millis();
+    prev_pressure_altitude = Baro_altitude_cache;
+    BaroAltitudeTimeMarker = millis();
     avg_ndx = (avg_ndx + 1) % VS_AVERAGING_FACTOR;
 
 #if 0
@@ -271,6 +308,27 @@ void Baro_loop()
     Serial.print(F(" , VS avg. = ")); Serial.println(ThisAircraft.vs);
 #endif
   }
+
+  if (isTimeToBaroPresTemp()) {
+    Baro_pressure_cache    = baro_chip->pressure();
+    Baro_temperature_cache = baro_chip->temperature();
+    BaroPresTempTimeMarker = millis();
+  }
+}
+
+float Baro_altitude()
+{
+  return Baro_altitude_cache;
+}
+
+float Baro_pressure()
+{
+  return Baro_pressure_cache;
+}
+
+float Baro_temperature()
+{
+  return Baro_temperature_cache;
 }
 
 #endif /* EXCLUDE_BMP180 && EXCLUDE_BMP280 EXCLUDE_MPL3115A2 */

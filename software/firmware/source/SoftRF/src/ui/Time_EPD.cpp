@@ -21,9 +21,6 @@
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
-#include "../TrafficHelper.h"
-#include "../driver/Battery.h"
-#include <protocol.h>
 
 #if defined(ARDUINO_ARCH_NRF52)
 #include <pcf8563.h>

@@ -21,6 +21,8 @@
 
 #define isTimeToBattery()         (millis() - Battery_TimeMarker > 5000)
 
+#define BATTERY_THRESHOLD_INVALID 1.8
+
 #define BATTERY_THRESHOLD_NIMHX2  2.3
 #define BATTERY_THRESHOLD_LIPO    3.5
 #define BATTERY_THRESHOLD_LIFE    3.0

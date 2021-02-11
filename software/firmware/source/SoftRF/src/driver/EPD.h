@@ -54,6 +54,7 @@ enum
 	VIEW_MODE_STATUS,
 	VIEW_MODE_RADAR,
 	VIEW_MODE_TEXT,
+	VIEW_MODE_BARO,
 	VIEW_MODE_TIME
 };
 
@@ -212,6 +213,11 @@ void EPD_text_setup();
 void EPD_text_loop();
 void EPD_text_next();
 void EPD_text_prev();
+
+void EPD_baro_setup();
+void EPD_baro_loop();
+void EPD_baro_next();
+void EPD_baro_prev();
 
 void EPD_time_setup();
 void EPD_time_loop();

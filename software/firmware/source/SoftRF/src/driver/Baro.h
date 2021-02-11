@@ -19,7 +19,14 @@
 #ifndef BAROHELPER_H
 #define BAROHELPER_H
 
-#define BMP280_ADDRESS_ALT  0x76 /* GY-91, SA0 is NC */
+#define BMP280_ADDRESS_ALT    0x76 /* GY-91, SA0 is NC */
+
+#define VS_AVERAGING_FACTOR   3
+
+/* 3 baro sensor altitude readings per second */
+#define isTimeToBaroAltitude() ((millis() - BaroAltitudeTimeMarker) > (1000 / VS_AVERAGING_FACTOR))
+/* read pressure and temperature every 3 seconds */
+#define isTimeToBaroPresTemp() ((millis() - BaroPresTempTimeMarker) > 3000)
 
 enum
 {
@@ -35,12 +42,17 @@ typedef struct barochip_ops_struct {
   bool (*probe)();
   void (*setup)();
   float (*altitude)(float);
+  float (*pressure)();
+  float (*temperature)();
 } barochip_ops_t;
 
 extern barochip_ops_t *baro_chip;
 
-bool Baro_probe(void);
-byte Baro_setup(void);
-void Baro_loop(void);
+bool  Baro_probe(void);
+byte  Baro_setup(void);
+void  Baro_loop(void);
+float Baro_altitude(void);
+float Baro_pressure(void);
+float Baro_temperature(void);
 
 #endif /* BAROHELPER_H */

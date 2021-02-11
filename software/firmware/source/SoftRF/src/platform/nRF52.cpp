@@ -278,7 +278,7 @@ static void nRF52_setup()
   pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
   delay(100);
 
-  if (SoC->Battery_voltage() > 2.0) {  /* VBUS is ON */
+  if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {  /* VBUS is ON */
     nRF52_board = NRF52_LILYGO_TECHO_REV_0;
     pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
     pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
@@ -286,14 +286,14 @@ static void nRF52_setup()
     pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
     delay(100);
 
-    if (SoC->Battery_voltage() > 2.0) {
+    if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {
       nRF52_board = NRF52_LILYGO_TECHO_REV_0;
       pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
     } else {
       digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN is ON */
       delay(100);
 
-      if (SoC->Battery_voltage() > 2.0) {
+      if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {
         nRF52_board = NRF52_LILYGO_TECHO_REV_2;
       } else {
         pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);

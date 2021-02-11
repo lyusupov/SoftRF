@@ -612,6 +612,8 @@ void parseUISettings(JsonObject& root)
       ui_settings.vmode = VIEW_MODE_RADAR;
     } else if (!strcmp(vmode_s,"TEXT")) {
       ui_settings.vmode = VIEW_MODE_TEXT;
+    } else if (!strcmp(vmode_s,"BARO")) {
+      ui_settings.vmode = VIEW_MODE_BARO;
     } else if (!strcmp(vmode_s,"TIME")) {
       ui_settings.vmode = VIEW_MODE_TIME;
     }
