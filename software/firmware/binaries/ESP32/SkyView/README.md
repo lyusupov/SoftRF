@@ -2,6 +2,8 @@
 
 ## revision 0.11
 
+### Major improvements
+
 #### Common
 
 - improved traffic acceptor logic
