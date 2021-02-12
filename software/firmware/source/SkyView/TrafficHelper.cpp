@@ -253,10 +253,10 @@ static void Traffic_Voice()
                   "traffic %s distance %s altitude %s",
                   where, how_far, elev);
 
-      SoC->TTS(message);
-
       traffic[i].fop->alert |= TRAFFIC_ALERT_VOICE;
       traffic[i].fop->timestamp = now();
+
+      SoC->TTS(message);
 
       /* Speak up of one aircraft at a time */
       break;
