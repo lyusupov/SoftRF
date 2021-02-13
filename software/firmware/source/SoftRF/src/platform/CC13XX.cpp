@@ -496,6 +496,11 @@ static bool CC13XX_EEPROM_begin(size_t size)
   return true;
 }
 
+static void CC13XX_EEPROM_extension()
+{
+
+}
+
 static void CC13XX_SPI_begin()
 {
   /* init SPI bus of LoRa radio */
@@ -741,6 +746,7 @@ const SoC_ops_t CC13XX_ops = {
   NULL,
   NULL,
   CC13XX_EEPROM_begin,
+  CC13XX_EEPROM_extension,
   CC13XX_SPI_begin,
   CC13XX_swSer_begin,
   CC13XX_swSer_enableRx,

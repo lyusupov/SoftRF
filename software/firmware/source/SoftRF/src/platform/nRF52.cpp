@@ -876,6 +876,11 @@ static bool nRF52_EEPROM_begin(size_t size)
 
   EEPROM.begin();
 
+  return true;
+}
+
+static void nRF52_EEPROM_extension()
+{
   if ( nRF52_has_spiflash                       &&
       (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
        fatfs.begin(SPIFlash)) {
@@ -901,8 +906,6 @@ static bool nRF52_EEPROM_begin(size_t size)
       file.close();
     }
   }
-
-  return true;
 }
 
 static void nRF52_SPI_begin()
@@ -1284,6 +1287,7 @@ const SoC_ops_t nRF52_ops = {
   NULL,
   NULL,
   nRF52_EEPROM_begin,
+  nRF52_EEPROM_extension,
   nRF52_SPI_begin,
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,

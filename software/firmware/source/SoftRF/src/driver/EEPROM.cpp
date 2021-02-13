@@ -70,6 +70,8 @@ void EEPROM_setup()
     }
   }
   settings = &eeprom_block.field.settings;
+
+  SoC->EEPROM_extension();
 }
 
 void EEPROM_defaults()

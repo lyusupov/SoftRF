@@ -729,6 +729,11 @@ static bool ESP32_EEPROM_begin(size_t size)
   return rval;
 }
 
+static void ESP32_EEPROM_extension()
+{
+
+}
+
 static void ESP32_SPI_begin()
 {
   if (esp32_board != ESP32_TTGO_T_WATCH) {
@@ -1250,6 +1255,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFi_hostname,
   ESP32_WiFi_clients_count,
   ESP32_EEPROM_begin,
+  ESP32_EEPROM_extension,
   ESP32_SPI_begin,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,

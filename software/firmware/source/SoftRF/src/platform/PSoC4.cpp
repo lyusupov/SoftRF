@@ -336,6 +336,11 @@ static bool PSoC4_EEPROM_begin(size_t size)
   return true;
 }
 
+static void PSoC4_EEPROM_extension()
+{
+
+}
+
 static void PSoC4_SPI_begin()
 {
   SPI.begin();
@@ -604,6 +609,7 @@ const SoC_ops_t PSoC4_ops = {
   NULL,
   NULL,
   PSoC4_EEPROM_begin,
+  PSoC4_EEPROM_extension,
   PSoC4_SPI_begin,
   PSoC4_swSer_begin,
   PSoC4_swSer_enableRx,

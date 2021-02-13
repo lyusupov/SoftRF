@@ -508,6 +508,7 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
+  NULL,
   RPi_SPI_begin,
   RPi_swSer_begin,
   NULL,

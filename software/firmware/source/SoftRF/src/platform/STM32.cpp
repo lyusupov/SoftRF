@@ -460,6 +460,11 @@ static bool STM32_EEPROM_begin(size_t size)
   return true;
 }
 
+static void STM32_EEPROM_extension()
+{
+
+}
+
 static void STM32_SPI_begin()
 {
   SPI.setMISO(SOC_GPIO_PIN_MISO);
@@ -744,6 +749,7 @@ const SoC_ops_t STM32_ops = {
   NULL,
   NULL,
   STM32_EEPROM_begin,
+  STM32_EEPROM_extension,
   STM32_SPI_begin,
   STM32_swSer_begin,
   STM32_swSer_enableRx,

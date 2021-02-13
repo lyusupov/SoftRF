@@ -282,6 +282,11 @@ static bool ESP8266_EEPROM_begin(size_t size)
   return true;
 }
 
+static void ESP8266_EEPROM_extension()
+{
+
+}
+
 static void ESP8266_SPI_begin()
 {
   SPI.begin();
@@ -410,6 +415,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_WiFi_hostname,
   ESP8266_WiFi_clients_count,
   ESP8266_EEPROM_begin,
+  ESP8266_EEPROM_extension,
   ESP8266_SPI_begin,
   ESP8266_swSer_begin,
   ESP8266_swSer_enableRx,
