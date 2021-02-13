@@ -241,7 +241,8 @@ static void OLED_other()
   uint32_t sats_counter   = gnss.satellites.value();
   uint8_t  fix            = gnss.location.Quality();
   uint32_t uptime_minutes = millis() / 60000;
-  int32_t  voltage        = (int) (Battery_voltage() * 10.0);
+  int32_t  voltage        = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
+                              (int) (Battery_voltage() * 10.0) : 0;
 
   if (prev_acrfts_counter != acrfts_counter) {
     disp_value = acrfts_counter > 99 ? 99 : acrfts_counter;
@@ -299,14 +300,19 @@ static void OLED_other()
   }
 
   if (prev_voltage != voltage) {
-    disp_value = voltage / 10;
-    disp_value = disp_value > 9 ? 9 : disp_value;
-    u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
+    if (voltage) {
+      disp_value = voltage / 10;
+      disp_value = disp_value > 9 ? 9 : disp_value;
+      u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
 
-    disp_value = voltage % 10;
+      disp_value = voltage % 10;
 
-    u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
-
+      u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
+    } else {
+      u8x8->draw2x2Glyph(11, 6, 'N');
+      u8x8->drawGlyph   (13, 7, ' ');
+      u8x8->draw2x2Glyph(14, 6, 'A');
+    }
     prev_voltage = voltage;
   }
 }
