@@ -1236,9 +1236,9 @@ void PickGNSSFix()
 #endif
 
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
-    if (settings->nmea_g && GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
+    if (GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
       for (ndx = GNSS_cnt - 4; ndx >= 0; ndx--) { // skip CS and *
-        if ((GNSSbuf[ndx] == '$') && (GNSSbuf[ndx+1] == 'G')) {
+        if (settings->nmea_g && (GNSSbuf[ndx] == '$') && (GNSSbuf[ndx+1] == 'G')) {
 
           size_t write_size = GNSS_cnt - ndx + 1;
 
