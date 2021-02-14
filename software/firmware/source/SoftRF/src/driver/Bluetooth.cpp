@@ -1092,7 +1092,9 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 BLEDfu        bledfu;       // OTA DFU service
 BLEDis        bledis;       // device information
 BLEUart_HM10  bleuart_HM10; // TI UART over BLE
+#if !defined(EXCLUDE_NUS)
 BLEUart       bleuart_NUS;  // Nordic UART over BLE
+#endif /* EXCLUDE_NUS */
 BLEBas        blebas;       // battery
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
@@ -1110,7 +1112,11 @@ void startAdv(void)
   Bluefruit.Advertising.addTxPower();
 
   // Include bleuart 128-bit uuid
+#if !defined(EXCLUDE_NUS)
   Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
+#else
+  Bluefruit.Advertising.addService(bleuart_HM10);
+#endif /* EXCLUDE_NUS */
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Advertise BLE MIDI Service
@@ -1199,8 +1205,10 @@ void nRF52_Bluetooth_setup()
 
   // Configure and Start BLE Uart Service
   bleuart_HM10.begin();
+#if !defined(EXCLUDE_NUS)
   bleuart_NUS.begin();
   bleuart_NUS.bufferTXD(true);
+#endif /* EXCLUDE_NUS */
 
   // Start BLE Battery Service
   blebas.begin();
@@ -1291,10 +1299,12 @@ static void nRF52_Bluetooth_fini()
       bleuart_HM10.flushTXD();
     }
 
+#if !defined(EXCLUDE_NUS)
     if ( bleuart_NUS.notifyEnabled() ) {
       // flush TXD since we use bufferTXD()
       bleuart_NUS.flushTXD();
     }
+#endif /* EXCLUDE_NUS */
   }
 
   if (Bluefruit.Advertising.isRunning()) {
@@ -1317,9 +1327,11 @@ static int nRF52_Bluetooth_available()
     return bleuart_HM10.available();
   }
 
+#if !defined(EXCLUDE_NUS)
   if ( bleuart_NUS.notifyEnabled() ) {
     rval = bleuart_NUS.available();
   }
+#endif /* EXCLUDE_NUS */
 
   return rval;
 }
@@ -1337,9 +1349,11 @@ static int nRF52_Bluetooth_read()
     return bleuart_HM10.read();
   }
 
+#if !defined(EXCLUDE_NUS)
   if ( bleuart_NUS.notifyEnabled() ) {
     rval = bleuart_NUS.read();
   }
+#endif /* EXCLUDE_NUS */
 
   return rval;
 }
@@ -1357,9 +1371,11 @@ static size_t nRF52_Bluetooth_write(const uint8_t *buffer, size_t size)
     return bleuart_HM10.write(buffer, size);
   }
 
+#if !defined(EXCLUDE_NUS)
   if ( bleuart_NUS.notifyEnabled() ) {
     rval = bleuart_NUS.write(buffer, size);
   }
+#endif /* EXCLUDE_NUS */
 
   return rval;
 }
