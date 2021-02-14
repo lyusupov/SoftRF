@@ -73,6 +73,10 @@ typedef enum
 
 static PSoC4_states_t PSoC4_state = PSOC4_ACTIVE;
 
+#if defined(BAT_MON_DISABLE)
+static bool PSoC4_bat_mon_disable = false;
+#endif
+
 static int PSoC4_probe_pin(uint32_t pin, uint32_t mode)
 {
   return 0;
@@ -383,37 +387,54 @@ static void PSoC4_Display_fini(int reason)
 
 static void PSoC4_Battery_setup()
 {
+#if defined(BAT_MON_DISABLE)
+  if (hw_info.model == SOFTRF_MODEL_MINI) {
+    pinMode(SOC_GPIO_PIN_BMON_DIS, INPUT_PULLDOWN);
 
+    delay(100);
+
+    PSoC4_bat_mon_disable = (digitalRead(SOC_GPIO_PIN_BMON_DIS) == HIGH ?
+                             true : false);
+    pinMode(SOC_GPIO_PIN_BMON_DIS, ANALOG);
+  }
+#endif
 }
 
 static float PSoC4_Battery_voltage()
 {
-  uint16_t mV = 0;
+#if defined(BAT_MON_DISABLE)
+  if (PSoC4_bat_mon_disable) {
+    return 0;
+  } else
+#endif
+  {
+    uint16_t mV = 0;
 
-  if (hw_info.model == SOFTRF_MODEL_MINI &&
-      PSoC4_state   == PSOC4_ACTIVE) {
-    /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
-    int user_key_state = digitalRead(SOC_GPIO_PIN_BUTTON);
+    if (hw_info.model == SOFTRF_MODEL_MINI &&
+        PSoC4_state   == PSOC4_ACTIVE) {
+      /* GPIO7 is shared between USER_KEY and VBAT_ADC_CTL functions */
+      int user_key_state = digitalRead(SOC_GPIO_PIN_BUTTON);
 
-    /* if the key is not pressed down - activate VBAT_ADC_CTL */
-    if (user_key_state == HIGH) {
-      pinMode(VBAT_ADC_CTL,OUTPUT);
-      digitalWrite(VBAT_ADC_CTL,LOW);
+      /* if the key is not pressed down - activate VBAT_ADC_CTL */
+      if (user_key_state == HIGH) {
+        pinMode(VBAT_ADC_CTL,OUTPUT);
+        digitalWrite(VBAT_ADC_CTL,LOW);
+      }
+
+      mV = analogRead(SOC_GPIO_PIN_BATTERY);
+
+      /* restore previous state of VBAT_ADC_CTL pin */
+      if (user_key_state == HIGH) {
+        /*
+         * CubeCell-GPS has external 10K VDD pullup resistor
+         * connected to GPIO7 (USER_KEY / VBAT_ADC_CTL) pin
+         */
+        pinMode(VBAT_ADC_CTL, INPUT);
+      }
     }
 
-    mV = analogRead(SOC_GPIO_PIN_BATTERY);
-
-    /* restore previous state of VBAT_ADC_CTL pin */
-    if (user_key_state == HIGH) {
-      /*
-       * CubeCell-GPS has external 10K VDD pullup resistor
-       * connected to GPIO7 (USER_KEY / VBAT_ADC_CTL) pin
-       */
-      pinMode(VBAT_ADC_CTL, INPUT);
-    }
+    return mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
   }
-
-  return mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
 }
 
 void PSoC4_GNSS_PPS_Interrupt_handler() {

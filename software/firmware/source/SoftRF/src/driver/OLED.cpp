@@ -310,7 +310,6 @@ static void OLED_other()
       u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
     } else {
       u8x8->draw2x2Glyph(11, 6, 'N');
-      u8x8->drawGlyph   (13, 7, ' ');
       u8x8->draw2x2Glyph(14, 6, 'A');
     }
     prev_voltage = voltage;
