@@ -125,6 +125,11 @@ struct rst_info {
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_RED : \
                                SOC_GPIO_LED_PCA10059_RED)
 
+#define SOC_GPIO_LED_BLE      (hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_BLUE : \
+                               hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_BLUE : \
+                               hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_BLUE : \
+                               SOC_GPIO_LED_PCA10059_BLUE)
+
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
 
@@ -236,6 +241,7 @@ struct rst_info {
 //#define EXCLUDE_SX1276           //  -  3 kb
 
 //#define USE_OLED                 //  +    kb
+//#define EXCLUDE_OLED_BARO_PAGE
 #define USE_EPAPER                 //  +    kb
 
 /* Experimental */

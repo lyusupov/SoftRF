@@ -1180,7 +1180,7 @@ void nRF52_Bluetooth_setup()
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behavior, but provided
   // here in case you want to control this LED manually via PIN 19
-  Bluefruit.autoConnLed(false);
+  Bluefruit.autoConnLed(LED_BLUE == SOC_GPIO_LED_BLE ? true : false);
 
   // Config the peripheral connection with maximum bandwidth
   // more SRAM required by SoftDevice

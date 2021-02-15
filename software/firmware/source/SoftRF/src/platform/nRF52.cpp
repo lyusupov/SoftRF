@@ -447,13 +447,6 @@ static void nRF52_setup()
 
 static void nRF52_post_init()
 {
-#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
-
-  usb_web.setLandingPage(&landingPage);
-  usb_web.begin();
-
-#endif /* USE_WEBUSB_SETTINGS */
-
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
@@ -906,6 +899,13 @@ static void nRF52_EEPROM_extension()
       file.close();
     }
   }
+
+#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
+
+  usb_web.setLandingPage(&landingPage);
+  usb_web.begin();
+
+#endif /* USE_WEBUSB_SETTINGS */
 }
 
 static void nRF52_SPI_begin()
