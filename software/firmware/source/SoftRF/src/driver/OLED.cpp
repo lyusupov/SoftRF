@@ -35,6 +35,9 @@ enum
 {
   OLED_PAGE_RADIO,
   OLED_PAGE_OTHER,
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+  OLED_PAGE_BARO,
+#endif /* EXCLUDE_OLED_BARO_PAGE */
   OLED_PAGE_COUNT
 };
 
@@ -52,6 +55,13 @@ static uint32_t prev_sats_counter   = (uint32_t) -1;
 static uint32_t prev_uptime_minutes = (uint32_t) -1;
 static int32_t  prev_voltage        = (uint32_t) -1;
 static int8_t   prev_fix            = (uint8_t)  -1;
+
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+static int32_t  prev_altitude       = (int32_t)   -10000;
+static int32_t  prev_temperature    = (int32_t)   -100;
+static uint32_t prev_pressure       = (uint32_t)  -1;
+static int32_t  prev_cdr            = (int32_t)   -10000; /* climb/descent rate */
+#endif /* EXCLUDE_OLED_BARO_PAGE */
 
 unsigned long OLEDTimeMarker = 0;
 
@@ -88,6 +98,13 @@ const char SATS_text[]     = "SATS";
 const char FIX_text[]      = "FIX";
 const char UPTIME_text[]   = "UPTIME";
 const char BAT_text[]      = "BAT";
+
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+const char ALT_text[]      = "ALT M";
+const char TEMP_text[]     = "TEMP C";
+const char PRES_text[]     = "PRES MB";
+const char CDR_text[]      = "CDR FPM";
+#endif /* EXCLUDE_OLED_BARO_PAGE */
 
 static const uint8_t Dot_Tile[] = { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 };
 
@@ -316,6 +333,64 @@ static void OLED_other()
   }
 }
 
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+static void OLED_baro()
+{
+  char buf[16];
+
+  if (!OLED_display_titles) {
+
+    u8x8->clear();
+
+    u8x8->drawString( 2, 1, ALT_text);
+
+    u8x8->drawString( 10, 1, TEMP_text);
+
+    u8x8->drawString( 1, 5, PRES_text);
+
+    u8x8->drawString( 9, 5, CDR_text);
+
+    prev_altitude     = (int32_t)   -10000;
+    prev_temperature  = prev_altitude;
+    prev_pressure     = (uint32_t)  -1;
+    prev_cdr          = prev_altitude;
+
+    OLED_display_titles = true;
+  }
+
+  int32_t altitude    = Baro_altitude();        /* metres */
+  int32_t temperature = Baro_temperature();     /* Celcius */
+  uint32_t pressure   = Baro_pressure() / 100;  /* mbar */
+  int32_t cdr         = ThisAircraft.vs;        /* feet per minute */
+
+  if (prev_altitude != altitude) {
+    snprintf(buf, sizeof(buf), "%4d", altitude);
+    u8x8->draw2x2String(0, 2, buf);
+    prev_altitude = altitude;
+  }
+
+  if (prev_temperature != temperature) {
+    snprintf(buf, sizeof(buf), "%3d", temperature);
+    u8x8->draw2x2String(10, 2, buf);
+    prev_temperature = temperature;
+  }
+
+  if (prev_pressure != pressure) {
+    snprintf(buf, sizeof(buf), "%4d", pressure);
+    u8x8->draw2x2String(0, 6, buf);
+    prev_pressure = pressure;
+  }
+
+  if (prev_cdr != cdr) {
+    int disp_value = constrain(cdr, -999, 999);
+    snprintf(buf, sizeof(buf), "%3d", abs(disp_value));
+    u8x8->drawGlyph    ( 9, 6, disp_value < 0 ? '_' : ' ');
+    u8x8->draw2x2String(10, 6, buf);
+    prev_cdr = cdr;
+  }
+}
+#endif /* EXCLUDE_OLED_BARO_PAGE */
+
 void OLED_loop()
 {
   if (u8x8) {
@@ -325,6 +400,11 @@ void OLED_loop()
       case OLED_PAGE_OTHER:
         OLED_other();
         break;
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+      case OLED_PAGE_BARO:
+        OLED_baro();
+        break;
+#endif /* EXCLUDE_OLED_BARO_PAGE */
       case OLED_PAGE_RADIO:
       default:
         OLED_radio();
@@ -369,6 +449,11 @@ void OLED_Next_Page()
 {
   if (u8x8) {
     OLED_current_page = (OLED_current_page + 1) % OLED_PAGE_COUNT;
+#if !defined(EXCLUDE_OLED_BARO_PAGE)
+    if (OLED_current_page == OLED_PAGE_BARO && hw_info.baro == BARO_MODULE_NONE) {
+      OLED_current_page = (OLED_current_page + 1) % OLED_PAGE_COUNT;
+    }
+#endif /* EXCLUDE_OLED_BARO_PAGE */
     OLED_display_titles = false;
   }
 }

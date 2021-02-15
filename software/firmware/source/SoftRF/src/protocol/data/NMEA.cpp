@@ -132,8 +132,8 @@ void NMEA_loop()
 #if !defined(EXCLUDE_LK8EX1)
     snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$LK8EX1,999999,%d,%d,%d,%.1f*"),
             constrain((int) ThisAircraft.pressure_altitude, -1000, 99998), /* meters */
-            (int) ((ThisAircraft.vs * 100) / (_GPS_FEET_PER_METER * 60)), /* cm/s */
-            Baro_pressure() == 0 ? 99 : constrain((int) Baro_temperature(), -99, 98), /* deg. C */
+            (int) ((ThisAircraft.vs * 100) / (_GPS_FEET_PER_METER * 60)),  /* cm/s   */
+            constrain((int) Baro_temperature(), -99, 98),                  /* deg. C */
             Battery_voltage());
 
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
