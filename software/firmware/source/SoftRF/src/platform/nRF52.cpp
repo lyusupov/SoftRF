@@ -87,7 +87,8 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
-static nRF52_board_id nRF52_board = NRF52_NORDIC_PCA10059; /* default */
+static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
+//static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_0;
 
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
@@ -148,7 +149,7 @@ static Adafruit_SPIFlash *SPIFlash = NULL;
 #define MX25R1635F                                                             \
   {                                                                            \
     .total_size = (1 << 21), /* 2 MiB */                                       \
-        .start_up_time_us = 5000, .manufacturer_id = 0xc2,                     \
+    .start_up_time_us = 5000, .manufacturer_id = 0xc2,                         \
     .memory_type = 0x28, .capacity = 0x15, .max_clock_speed_mhz = 8,           \
     .quad_enable_bit_mask = 0x40, .has_sector_protection = false,              \
     .supports_fast_read = true, .supports_qspi = true,                         \
@@ -275,41 +276,18 @@ static void nRF52_setup()
 #endif
 
   digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
-  digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW); /* PWR_EN is OFF */
-  pinMode(SOC_GPIO_PIN_3V3_PWR, OUTPUT);
-  delay(100);
+  pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
+  digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);
 
-  if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {  /* VBUS is ON */
-    nRF52_board = NRF52_LILYGO_TECHO_REV_0;
-    pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
-    pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
-  } else {
-    pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT);  /* VDD_POWR is ON */
-    delay(100);
-
-    if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {
-      nRF52_board = NRF52_LILYGO_TECHO_REV_0;
-      pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
-    } else {
-      digitalWrite(SOC_GPIO_PIN_3V3_PWR, HIGH); /* PWR_EN is ON */
-      delay(100);
-
-      if (SoC->Battery_voltage() > BATTERY_THRESHOLD_INVALID) {
-        nRF52_board = NRF52_LILYGO_TECHO_REV_2;
-      } else {
-        pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
-        pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT);
-      }
-    }
-  }
+  delay(200);
 
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
   Wire.begin();
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
-  if (nRF52_has_rtc) {
-    hw_info.model = SOFTRF_MODEL_BADGE;
+  if (!nRF52_has_rtc) {
+    nRF52_board = NRF52_NORDIC_PCA10059;
   }
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {

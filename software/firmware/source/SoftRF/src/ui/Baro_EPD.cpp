@@ -67,7 +67,7 @@ void EPD_baro_loop()
 
     display->setFont(&FreeMono12pt7b);
 
-    x = 7 * display->width() / 10;
+    x = 8 * display->width() / 10;
 
     display->setCursor(x, (3 * display->height() / 10));
     display->print("M");

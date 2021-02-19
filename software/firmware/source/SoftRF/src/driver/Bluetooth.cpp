@@ -1199,7 +1199,8 @@ void nRF52_Bluetooth_setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("SoftRF");
   bledis.setModel("Badge Edition");
-  bledis.setHardwareRev("2020-08-15");
+  bledis.setHardwareRev(hw_info.revision == 0 ? "2020-8-6"   :
+                        hw_info.revision == 1 ? "2020-12-12" : "2021-1-15");
   bledis.setSoftwareRev(SOFTRF_FIRMWARE_VERSION);
   bledis.begin();
 
