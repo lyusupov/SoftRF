@@ -27,10 +27,20 @@
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMono18pt7b.h>
+
+#include <Fonts/Org_01.h>
+#include <Fonts/FreeMonoBoldOblique9pt7b.h>
+#include <Fonts/FreeSerif9pt7b.h>
 
 const char EPD_SoftRF_text1[] = "SoftRF";
-const char EPD_SoftRF_text2[] = "and";
+const char EPD_SoftRF_text2[] =  "and"  ;
 const char EPD_SoftRF_text3[] = "LilyGO";
+const char EPD_SoftRF_text4[] = "Author: ";
+const char EPD_SoftRF_text5[] = "Linar Yusupov";
+const char EPD_SoftRF_text6[] = "Copyright (C) 2016-2021";
+
 
 const char EPD_Radio_text[]   = "RADIO   ";
 const char EPD_GNSS_text[]    = "GNSS    ";
@@ -50,7 +60,6 @@ void EPD_Clear_Screen()
 {
   while (EPD_ready_to_display) delay(100);
 
-  display->setFullWindow();
   display->fillScreen(GxEPD_WHITE);
   display->display(false);
 
@@ -71,42 +80,47 @@ bool EPD_setup(bool splash_screen)
 
   display->init( /* 38400 */ );
 
-  // first update should be full refresh
   display->setRotation(1);
-  display->setFont(&FreeMonoBold24pt7b);
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);
 
+  display->setFont(&FreeMonoBold24pt7b);
   display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-  display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
   display->getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
 
   display->setFullWindow();
 
-  {
-    display->fillScreen(GxEPD_WHITE);
+  display->fillScreen(GxEPD_WHITE);
 
-    if (hw_info.model == SOFTRF_MODEL_BADGE) {
-      x = (display->width() - tbw1) / 2;
-      y = (display->height() + tbh1) / 2 - tbh3;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text1);
-      x = (display->width() - tbw2) / 2;
-      y = (display->height() + tbh2) / 2;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text2);
-      x = (display->width() - tbw3) / 2;
-      y = (display->height() + tbh3) / 2 + tbh3;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text3);
-    } else {
-      x = (display->width() - tbw1) / 2;
-      y = (display->height() + tbh1) / 2;
-      display->setCursor(x, y);
-      display->print(EPD_SoftRF_text1);
-    }
+  if (hw_info.model == SOFTRF_MODEL_BADGE) {
+    x = (display->width()  - tbw1) / 2;
+    y = (display->height() + tbh1) / 2 - tbh3;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text1);
+
+    display->setFont(&FreeMono18pt7b);
+    display->getTextBounds(EPD_SoftRF_text2, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+
+    x = (display->width()  - tbw2) / 2;
+    y = (display->height() + tbh2) / 2;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text2);
+
+    display->setFont(&FreeMonoBold24pt7b);
+
+    x = (display->width()  - tbw3) / 2;
+    y = (display->height() + tbh3) / 2 + tbh3;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text3);
+
+  } else {
+    x = (display->width()  - tbw1) / 2;
+    y = (display->height() + tbh1) / 2;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text1);
   }
 
+  // first update should be full refresh
   display->display(false);
 
   EPD_POWEROFF;
@@ -140,49 +154,45 @@ void EPD_info1(bool rtc, bool spiflash)
     display->setFont(&FreeMonoBold18pt7b);
     display->getTextBounds(EPD_Radio_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setFullWindow();
+    display->fillScreen(GxEPD_WHITE);
 
-    {
-      display->fillScreen(GxEPD_WHITE);
+    x = 5;
+    y = (tbh + INFO_1_LINE_SPACING);
 
-      x = 0;
-      y = (tbh + INFO_1_LINE_SPACING);
+    display->setCursor(x, y);
+    display->print(EPD_Radio_text);
+    display->print(hw_info.rf != RF_IC_NONE ? "+" : "-");
+
+    y += (tbh + INFO_1_LINE_SPACING);
+
+    display->setCursor(x, y);
+    display->print(EPD_GNSS_text);
+    display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+
+    y += (tbh + INFO_1_LINE_SPACING);
+
+    display->setCursor(x, y);
+    display->print(EPD_Display_text);
+    display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
+
+    if (hw_info.model == SOFTRF_MODEL_BADGE) {
+      y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
-      display->print(EPD_Radio_text);
-      display->print(hw_info.rf != RF_IC_NONE ? "+" : "-");
+      display->print(EPD_RTC_text);
+      display->print(rtc ? "+" : "-");
 
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
-      display->print(EPD_GNSS_text);
-      display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+      display->print(EPD_Flash_text);
+      display->print(spiflash ? "+" : "-");
 
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
-      display->print(EPD_Display_text);
-      display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
-
-      if (hw_info.model == SOFTRF_MODEL_BADGE) {
-        y += (tbh + INFO_1_LINE_SPACING);
-
-        display->setCursor(x, y);
-        display->print(EPD_RTC_text);
-        display->print(rtc ? "+" : "-");
-
-        y += (tbh + INFO_1_LINE_SPACING);
-
-        display->setCursor(x, y);
-        display->print(EPD_Flash_text);
-        display->print(spiflash ? "+" : "-");
-
-        y += (tbh + INFO_1_LINE_SPACING);
-
-        display->setCursor(x, y);
-        display->print(EPD_Baro_text);
-        display->print(hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
-      }
+      display->print(EPD_Baro_text);
+      display->print(hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
     }
 
     display->display(false);
@@ -236,13 +246,50 @@ void EPD_loop()
 
 void EPD_fini(int reason)
 {
+  int16_t  tbx, tby;
+  uint16_t tbw, tbh;
+  uint16_t x, y;
+
+  const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT ?
+                     "LOW BATTERY" : "NORMAL OFF");
+
   switch (hw_info.display)
   {
   case DISPLAY_EPD_1_54:
     while (EPD_ready_to_display) delay(100);
 
-    EPD_Message(reason == SOFTRF_SHUTDOWN_LOWBAT ? "LOW"     : "OFF",
-                reason == SOFTRF_SHUTDOWN_LOWBAT ? "BATTERY" : NULL);
+    display->fillScreen(GxEPD_WHITE);
+
+    display->setFont(&FreeMonoBold12pt7b);
+    display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
+    x = (display->width() - tbw) / 2;
+    y = tbh + tbh / 2;
+    display->setCursor(x, y);
+    display->print(msg);
+
+    x = (display->width()  - 128) / 2;
+    y = (display->height() - 128) / 2 - tbh / 2;
+    display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+
+    display->setFont(&Org_01);
+    display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
+    x =  5;
+    y += 128 + 17;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text4);
+
+    display->setFont(&FreeMonoBoldOblique9pt7b);
+    display->print(EPD_SoftRF_text5);
+
+    display->setFont(&FreeSerif9pt7b);
+    display->getTextBounds(EPD_SoftRF_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
+    x = (display->width() - tbw) / 2;
+    y += 21;
+    display->setCursor(x, y);
+    display->print(EPD_SoftRF_text6);
+
+    /* a signal to background EPD update task */
+    EPD_ready_to_display = true;
 
     while (EPD_ready_to_display) delay(100);
 
@@ -337,31 +384,29 @@ void EPD_Message(const char *msg1, const char *msg2)
 
     display->setFont(&FreeMonoBold18pt7b);
 
-    {
-      display->fillScreen(GxEPD_WHITE);
+    display->fillScreen(GxEPD_WHITE);
 
-      if (msg2 == NULL) {
+    if (msg2 == NULL) {
 
-        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
-        x = (display->width() - tbw) / 2;
-        y = (display->height() + tbh) / 2;
-        display->setCursor(x, y);
-        display->print(msg1);
+      display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = (display->height() + tbh) / 2;
+      display->setCursor(x, y);
+      display->print(msg1);
 
-      } else {
+    } else {
 
-        display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
-        x = (display->width() - tbw) / 2;
-        y = display->height() / 2 - tbh;
-        display->setCursor(x, y);
-        display->print(msg1);
+      display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = display->height() / 2 - tbh;
+      display->setCursor(x, y);
+      display->print(msg1);
 
-        display->getTextBounds(msg2, 0, 0, &tbx, &tby, &tbw, &tbh);
-        x = (display->width() - tbw) / 2;
-        y = display->height() / 2 + tbh;
-        display->setCursor(x, y);
-        display->print(msg2);
-      }
+      display->getTextBounds(msg2, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = display->height() / 2 + tbh;
+      display->setCursor(x, y);
+      display->print(msg2);
     }
 
     /* a signal to background EPD update task */

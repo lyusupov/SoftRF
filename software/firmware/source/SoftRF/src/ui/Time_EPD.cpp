@@ -21,6 +21,7 @@
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
+#include "../driver/Battery.h"
 
 #if defined(ARDUINO_ARCH_NRF52)
 #include <pcf8563.h>
@@ -28,13 +29,20 @@
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
+#include "U8g2_for_Adafruit_GFX.h"
 
 const char NOTIME_text[] = "--:--:--";
 const char TZ_text[]     = "UTC";
 
+U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
+
 void EPD_time_setup()
 {
-
+  u8g2Fonts.begin(*display); // connect u8g2 procedures to Adafruit GFX
+  u8g2Fonts.setFontDirection(3);
+  u8g2Fonts.setForegroundColor(GxEPD_BLACK);
+  u8g2Fonts.setBackgroundColor(GxEPD_WHITE);
+  u8g2Fonts.setFont(u8g2_font_battery19_tn);
 }
 
 void EPD_time_loop()
@@ -84,6 +92,9 @@ void EPD_time_loop()
 
     display->setCursor((display->width() - tbw) / 2, (3 * display->height()) / 4);
     display->print(TZ_text);
+
+    u8g2Fonts.setCursor(display->width() - 15, display->height() / 10);
+    u8g2Fonts.print(Battery_VoltsToPercent(Battery_voltage()) / 20);
 
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;

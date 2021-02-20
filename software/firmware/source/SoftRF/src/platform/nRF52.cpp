@@ -88,7 +88,6 @@ static struct rst_info reset_info = {
 static uint32_t bootCount = 0;
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
-//static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_0;
 
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
@@ -282,19 +281,33 @@ static void nRF52_setup()
   delay(200);
 
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-
   Wire.begin();
+
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
   if (!nRF52_has_rtc) {
     nRF52_board = NRF52_NORDIC_PCA10059;
   }
 
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0) {
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+    Wire.beginTransmission(BME280_ADDRESS);
+    nRF52_board = Wire.endTransmission() == 0 ?
+                  nRF52_board : NRF52_LILYGO_TECHO_REV_0;
+  }
+
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+    digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
+    pinMode(SOC_GPIO_PIN_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
+    delay(100);
+
     Wire.beginTransmission(BME280_ADDRESS);
     nRF52_board = Wire.endTransmission() == 0 ?
                   NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
+
+    digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);  /* PWR_EN is ON */
+    delay(200);
   }
+
   Wire.end();
 
   /* GPIO pins init */
