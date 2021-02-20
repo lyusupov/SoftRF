@@ -77,6 +77,7 @@ JSON_PATH     = $(LIB_PATH)/ArduinoJson/src
 TCPSRV_PATH   = $(LIB_PATH)/SimpleNetwork/src
 DUMP978_PATH  = $(LIB_PATH)/dump978/src
 GFX_PATH      = $(LIB_PATH)/Adafruit-GFX-Library
+U8G2_PATH     = $(LIB_PATH)/U8g2_for_Adafruit_GFX/src
 EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 
 ifdef BASICMAC
@@ -91,7 +92,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
-                -I$(GFX_PATH)    -I$(EPD2_PATH)
+                -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -173,7 +174,8 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(DUMP978_PATH)/fec.o $(DUMP978_PATH)/fec/init_rs_char.o \
                  $(DUMP978_PATH)/uat_decode.o $(DUMP978_PATH)/fec/decode_rs_char.o \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
-                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o
+                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
+                 $(U8G2_PATH)/U8g2_for_Adafruit_GFX.o $(U8G2_PATH)/u8g2_fonts.o
 
 ifdef BASICMAC
 OBJS          += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
