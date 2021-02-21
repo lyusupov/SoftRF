@@ -177,7 +177,7 @@ typedef struct UI_Settings {
 
 typedef struct navbox_struct
 {
-  char      title[9];
+  char      title[16];
   uint16_t  x;
   uint16_t  y;
   uint16_t  width;

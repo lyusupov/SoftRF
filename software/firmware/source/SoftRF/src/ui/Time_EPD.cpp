@@ -25,16 +25,24 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 #include <pcf8563.h>
+#include <bluefruit.h>
 #endif /* ARDUINO_ARCH_NRF52 */
 
+#include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMono18pt7b.h>
 #include "U8g2_for_Adafruit_GFX.h"
 
-const char NOTIME_text[] = "--:--:--";
-const char TZ_text[]     = "UTC";
+static const char TZ_text[] = "UTC";
 
 U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
+
+static const uint8_t bt_icon[] = {
+  0x0F, 0xF0, 0x1D, 0x38, 0x31, 0x98, 0x31, 0xCC,
+  0x6D, 0xEC, 0x6F, 0x6C, 0x67, 0xC4, 0x63, 0x84,
+  0x63, 0xC4, 0x67, 0xE4, 0x6D, 0x6C, 0x61, 0xEC,
+  0x31, 0xCC, 0x31, 0x98, 0x1D, 0x38, 0x0F, 0xF0,
+};
 
 void EPD_time_setup()
 {
@@ -47,7 +55,8 @@ void EPD_time_setup()
 
 void EPD_time_loop()
 {
-  char buf[16];
+  char buf_hm[8];
+  char buf_sec[4];
 
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
@@ -62,6 +71,8 @@ void EPD_time_loop()
 
   if (!EPD_ready_to_display) {
 
+    bool ble_has_client = false;
+
 #if defined(ARDUINO_ARCH_NRF52)
     RTC_Date now;
 
@@ -70,31 +81,46 @@ void EPD_time_loop()
     }
 
     if (now.year < 2019 || now.year > 2029) {
-      strcpy(buf, NOTIME_text);
+      strcpy(buf_hm, "--:--");
+      strcpy(buf_sec, "--");
     } else {
-      snprintf(buf, sizeof(buf), "%2d:%02d:%02d",
-               now.hour, now.minute, now.second);
+      snprintf(buf_hm,  sizeof(buf_hm),  "%2d:%02d", now.hour, now.minute);
+      snprintf(buf_sec, sizeof(buf_sec), "%02d"    , now.second);
     }
+
+    ble_has_client = Bluefruit.connected();
+
 #else
-    strcpy(buf, NOTIME_text);
+    strcpy(buf_hm, "--:--");
+    strcpy(buf_sec, "--");
 #endif /* ARDUINO_ARCH_NRF52 */
 
     display->fillScreen(GxEPD_WHITE);
 
-    display->setFont(&FreeMonoBold18pt7b);
-    display->getTextBounds(buf, 0, 0, &tbx, &tby, &tbw, &tbh);
-
-    display->setCursor((display->width() - tbw) / 2, (display->height() - tbh) / 2);
-    display->print(buf);
-
     display->setFont(&FreeMonoBold12pt7b);
     display->getTextBounds(TZ_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
-    display->setCursor((display->width() - tbw) / 2, (3 * display->height()) / 4);
+    display->setCursor((display->width() - tbw) / 2, tbh + tbh / 2);
     display->print(TZ_text);
 
-    u8g2Fonts.setCursor(display->width() - 15, display->height() / 10);
+    if (ble_has_client) {
+      display->drawBitmap(display->width() - 48, 3, bt_icon, 16, 16, GxEPD_BLACK);
+    }
+
+    u8g2Fonts.setCursor(display->width() - 5, 15);
     u8g2Fonts.print(Battery_VoltsToPercent(Battery_voltage()) / 20);
+
+    display->setFont(&FreeMonoBold24pt7b);
+    display->getTextBounds(buf_hm, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    display->setCursor((display->width() - tbw) / 2, display->height() / 2);
+    display->print(buf_hm);
+
+    display->setFont(&FreeMono18pt7b);
+    display->getTextBounds(buf_sec, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    display->setCursor((display->width() - tbw) / 2, display->height() / 2 + tbh + tbh);
+    display->print(buf_sec);
 
     /* a signal to background EPD update task */
     EPD_ready_to_display = true;

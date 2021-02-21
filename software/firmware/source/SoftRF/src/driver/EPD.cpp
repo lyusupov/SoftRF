@@ -39,7 +39,7 @@ const char EPD_SoftRF_text2[] =  "and"  ;
 const char EPD_SoftRF_text3[] = "LilyGO";
 const char EPD_SoftRF_text4[] = "Author: ";
 const char EPD_SoftRF_text5[] = "Linar Yusupov";
-const char EPD_SoftRF_text6[] = "Copyright (C) 2016-2021";
+const char EPD_SoftRF_text6[] = "(C) 2016-2021";
 
 
 const char EPD_Radio_text[]   = "RADIO   ";
@@ -127,7 +127,7 @@ bool EPD_setup(bool splash_screen)
 
   rval = display->epd2.probe();
 
-  EPD_view_mode = ui->vmode;;
+  EPD_view_mode = ui->vmode;
 
   EPD_status_setup();
   EPD_radar_setup();

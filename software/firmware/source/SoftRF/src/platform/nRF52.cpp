@@ -295,6 +295,21 @@ static void nRF52_setup()
                   nRF52_board : NRF52_LILYGO_TECHO_REV_0;
   }
 
+#if 0
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, LOW);
+    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
+    delay(100);
+
+    Wire.beginTransmission(BME280_ADDRESS);
+    nRF52_board = Wire.endTransmission() == 0 ?
+                  nRF52_board : NRF52_LILYGO_TECHO_REV_1;
+
+    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT);  /* PWR_EN is ON */
+    delay(200);
+  }
+#endif
+
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
     digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
     pinMode(SOC_GPIO_PIN_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
