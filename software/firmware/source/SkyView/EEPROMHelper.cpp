@@ -69,7 +69,11 @@ void EEPROM_defaults()
   if (SoC->id == SOC_ESP8266)
     eeprom_block.field.settings.adapter       = ADAPTER_NODEMCU;
   else
+#if defined(BUILD_SKYVIEW_HD)
+    eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5_4_7;
+#else
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5S;
+#endif
 
   eeprom_block.field.settings.connection      = CON_SERIAL;
   eeprom_block.field.settings.baudrate        = B38400;

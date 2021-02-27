@@ -97,7 +97,7 @@ Copyright (C) 2019-2021 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4700;
+  size_t size = 4770;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -133,12 +133,14 @@ void handleSettings() {
 <td align=right>\
 <select name='adapter'>\
 <option %s value='%d'>e-Paper TTGO T5S</option>\
+<option %s value='%d'>e-Paper TTGO T5 4.7</option>\
 <option %s value='%d'>e-Paper Waveshare ESP32</option>\
 <!-- <option %s value='%d'>OLED</option> -->\
 </select>\
 </td>\
 </tr>"),
     (settings->adapter == ADAPTER_TTGO_T5S        ? "selected" : ""), ADAPTER_TTGO_T5S,
+    (settings->adapter == ADAPTER_TTGO_T5_4_7     ? "selected" : ""), ADAPTER_TTGO_T5_4_7,
     (settings->adapter == ADAPTER_WAVESHARE_ESP32 ? "selected" : ""), ADAPTER_WAVESHARE_ESP32,
     (settings->adapter == ADAPTER_OLED            ? "selected" : ""), ADAPTER_OLED
     );
@@ -471,7 +473,8 @@ void handleRoot() {
     (SoC == NULL ? "NONE" : SoC->name),
     hr, min % 60, sec % 60, ESP.getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
-    hw_info.display      == DISPLAY_EPD_2_7   ? "e-Paper" :
+    hw_info.display      == DISPLAY_EPD_2_7   ||
+    hw_info.display      == DISPLAY_EPD_4_7   ? "e-Paper" :
     hw_info.display      == DISPLAY_OLED_2_4  ? "OLED" : "NONE",
     settings->connection == CON_SERIAL        ? "Serial" :
     settings->connection == CON_BLUETOOTH_SPP ? "Bluetooth SPP" :

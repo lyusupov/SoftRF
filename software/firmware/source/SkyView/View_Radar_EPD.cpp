@@ -421,14 +421,23 @@ void EPD_radar_setup()
   EPD_zoom = settings->zoom;
 
   uint16_t radar_x = 0;
-  uint16_t radar_y = (display->height() - display->width()) / 2;
-  uint16_t radar_w = display->width();
+  uint16_t radar_y = 0;
+  uint16_t radar_w = 0;
+
+  if (display) {
+    radar_y = (display->height() - display->width()) / 2;
+    radar_w = display->width();
+  }
 
   memcpy(navbox1.title, NAVBOX1_TITLE, strlen(NAVBOX1_TITLE));
   navbox1.x = 0;
   navbox1.y = 0;
-  navbox1.width  = display->width() / 2;
-  navbox1.height = (display->height() - display->width()) / 2;
+
+  if (display) {
+    navbox1.width  = display->width() / 2;
+    navbox1.height = (display->height() - display->width()) / 2;
+  }
+
   navbox1.value      = 0;
   navbox1.timestamp  = millis();
 

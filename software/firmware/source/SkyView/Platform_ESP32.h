@@ -71,8 +71,12 @@
 #define SOC_GPIO_PIN_LED_T5S  22
 
 /* Boya Microelectronics Inc. */
-#define BOYA_ID                 0x68
-#define BOYA_BY25Q32AL          0x4016
+#define BOYA_ID               0x68
+#define BOYA_BY25Q32AL        0x4016
+
+/* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
+#define ST_ID                 0x20
+#define XMC_XM25QH128C        0x4018
 
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
@@ -107,6 +111,8 @@ typedef struct wavProperties_s {
 extern bool loopTaskWDTEnabled;
 
 extern WebServer server;
+
+//#define BUILD_SKYVIEW_HD
 
 #endif /* PLATFORM_ESP32_H */
 

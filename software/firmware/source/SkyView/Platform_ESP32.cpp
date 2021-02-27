@@ -219,6 +219,7 @@ static void ESP32_setup()
    *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
    *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
    *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
+   *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
    *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
    */
 
@@ -228,6 +229,10 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
       /* ESP32-WROVER module */
       hw_info.revision = HW_REV_T8_1_8;
+      break;
+    case MakeFlashId(ST_ID, XMC_XM25QH128C):
+      /* custom ESP32-WROVER-E module with 16 MB flash */
+      hw_info.revision = HW_REV_T5_1;
       break;
     default:
       hw_info.revision = HW_REV_UNKNOWN;
@@ -337,7 +342,9 @@ static float ESP32_Battery_voltage()
   float voltage = ((float) read_voltage()) * 0.001 ;
 
   /* T5 has voltage divider 100k/100k on board */
-  return (settings->adapter == ADAPTER_TTGO_T5S ? 2 * voltage : voltage);
+  return (settings->adapter == ADAPTER_TTGO_T5S    ||
+          settings->adapter == ADAPTER_TTGO_T5_4_7 ?
+          2 * voltage : voltage);
 }
 
 #define EPD_STACK_SZ      (256*4)
@@ -354,6 +361,11 @@ static void ESP32_EPD_setup()
               SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_SS_WS);
     break;
+#if defined(BUILD_SKYVIEW_HD)
+  case ADAPTER_TTGO_T5_4_7:
+    display = NULL;
+    break;
+#endif /* BUILD_SKYVIEW_HD */
   case ADAPTER_TTGO_T5S:
   default:
     display = &epd_ttgo_t5s;
@@ -427,6 +439,8 @@ static bool ESP32_DB_init()
     return rval;
   }
 
+#if !defined(BUILD_SKYVIEW_HD)
+
   sdcard_files_to_open += (settings->adb   == DB_FLN    ? 1 : 0);
   sdcard_files_to_open += (settings->adb   == DB_OGN    ? 1 : 0);
   sdcard_files_to_open += (settings->adb   == DB_ICAO   ? 1 : 0);
@@ -475,6 +489,7 @@ static bool ESP32_DB_init()
       rval = true;
     }
   }
+#endif /* BUILD_SKYVIEW_HD */
 
   return rval;
 }
@@ -491,6 +506,8 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   if (settings->adapter != ADAPTER_TTGO_T5S) {
     return false;
   }
+
+#if !defined(BUILD_SKYVIEW_HD)
 
   switch (type)
   {
@@ -582,11 +599,14 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 
   free(query);
 
+#endif /* BUILD_SKYVIEW_HD */
+
   return rval;
 }
 
 static void ESP32_DB_fini()
 {
+#if !defined(BUILD_SKYVIEW_HD)
   if (settings->adapter == ADAPTER_TTGO_T5S) {
 
     if (settings->adb != DB_NONE) {
@@ -607,6 +627,7 @@ static void ESP32_DB_fini()
 
     SD.end();
   }
+#endif /* BUILD_SKYVIEW_HD */
 }
 
 /* write sample data to I2S */
