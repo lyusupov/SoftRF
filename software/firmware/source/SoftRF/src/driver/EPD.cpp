@@ -312,7 +312,8 @@ void EPD_Mode()
       EPD_view_mode = VIEW_MODE_TEXT;
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
-      EPD_view_mode = VIEW_MODE_BARO;
+      EPD_view_mode = (hw_info.baro == BARO_MODULE_NONE ?
+                       VIEW_MODE_TIME : VIEW_MODE_BARO);
       EPD_vmode_updated = true;
     }  else if (EPD_view_mode == VIEW_MODE_BARO) {
       EPD_view_mode = VIEW_MODE_TIME;

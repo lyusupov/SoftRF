@@ -169,6 +169,7 @@ static void ESP32_setup()
      *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
      *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
      *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
+     *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
      *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
      */
 
