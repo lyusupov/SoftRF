@@ -59,7 +59,7 @@ static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
 
-SPIClass SPI1(HSPI);
+SPIClass uSD_SPI(HSPI);
 
 #if 0
 /* variables hold file, state of process wav file and wav file properties */
@@ -109,13 +109,13 @@ static uint32_t ESP32_getFlashId()
   return g_rom_flashchip.device_id;
 }
 
-static uint8_t ESP32_I2C_readBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
+static int ESP32_I2C_readBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
 {
     if (!i2c) return 0xFF;
     return i2c->readBytes(devAddress, regAddress, data, len);
 }
 
-static uint8_t ESP32_I2C_writeBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
+static int ESP32_I2C_writeBytes(uint8_t devAddress, uint8_t regAddress, uint8_t *data, uint8_t len)
 {
     if (!i2c) return 0xFF;
     return i2c->writeBytes(devAddress, regAddress, data, len);
@@ -250,10 +250,10 @@ static void ESP32_setup()
   }
 
   /* SD-SPI init */
-  SPI1.begin(SOC_GPIO_PIN_TWATCH_SD_SCK,
-             SOC_GPIO_PIN_TWATCH_SD_MISO,
-             SOC_GPIO_PIN_TWATCH_SD_MOSI,
-             SOC_GPIO_PIN_TWATCH_SD_SS);
+  uSD_SPI.begin(SOC_GPIO_PIN_TWATCH_SD_SCK,
+                SOC_GPIO_PIN_TWATCH_SD_MISO,
+                SOC_GPIO_PIN_TWATCH_SD_MOSI,
+                SOC_GPIO_PIN_TWATCH_SD_SS);
 }
 
 static void ESP32_loop()
@@ -309,7 +309,7 @@ static void ESP32_loop()
 
 static void ESP32_fini()
 {
-  SPI1.end();
+  uSD_SPI.end();
 
   esp_wifi_stop();
   esp_bt_controller_disable();
@@ -541,7 +541,7 @@ static float ESP32_Battery_voltage()
 static bool ESP32_DB_init()
 {
 
-  if (!SD.begin(SOC_GPIO_PIN_TWATCH_SD_SS, SPI1)) {
+  if (!SD.begin(SOC_GPIO_PIN_TWATCH_SD_SS, uSD_SPI)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
     return false;
   }

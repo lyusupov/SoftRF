@@ -376,9 +376,9 @@ static void ESP32_EPD_setup()
 
     /* SD-SPI init */
     uSD_SPI.begin(SOC_SD_PIN_SCK_T5S,
-               SOC_SD_PIN_MISO_T5S,
-               SOC_SD_PIN_MOSI_T5S,
-               SOC_SD_PIN_SS_T5S);
+                  SOC_SD_PIN_MISO_T5S,
+                  SOC_SD_PIN_MOSI_T5S,
+                  SOC_SD_PIN_SS_T5S);
     break;
   }
 
