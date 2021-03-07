@@ -117,7 +117,7 @@ static sqlite3 *icao_db = NULL;
 
 static uint8_t sdcard_files_to_open = 0;
 
-SPIClass SPI1(HSPI);
+SPIClass uSD_SPI(HSPI);
 
 /* variables hold file, state of process wav file and wav file properties */
 wavProperties_t wavProps;
@@ -154,7 +154,7 @@ static void ESP32_fini()
   int mode_button_pin = SOC_BUTTON_MODE_DEF;
 
   if (settings && (settings->adapter == ADAPTER_TTGO_T5S)) {
-    SPI1.end();
+    uSD_SPI.end();
 
     mode_button_pin = SOC_BUTTON_MODE_T5S;
   }
@@ -375,7 +375,7 @@ static void ESP32_EPD_setup()
               SOC_GPIO_PIN_SS_T5S);
 
     /* SD-SPI init */
-    SPI1.begin(SOC_SD_PIN_SCK_T5S,
+    uSD_SPI.begin(SOC_SD_PIN_SCK_T5S,
                SOC_SD_PIN_MISO_T5S,
                SOC_SD_PIN_MOSI_T5S,
                SOC_SD_PIN_SS_T5S);
@@ -446,7 +446,7 @@ static bool ESP32_DB_init()
   sdcard_files_to_open += (settings->adb   == DB_ICAO   ? 1 : 0);
   sdcard_files_to_open += (settings->voice != VOICE_OFF ? 1 : 0);
 
-  if (!SD.begin(SOC_SD_PIN_SS_T5S, SPI1, 4000000, "/sd", sdcard_files_to_open)) {
+  if (!SD.begin(SOC_SD_PIN_SS_T5S, uSD_SPI, 4000000, "/sd", sdcard_files_to_open)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
     return rval;
   }

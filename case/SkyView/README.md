@@ -2,7 +2,7 @@
 
 This type of enclosure is built around [TTGO T5S](http://s.click.aliexpress.com/e/Zp4ygfQ) board.<br>
 
-**NOTICE**: This design is applicable for revision V1.9 of T5S. Other revisions may not match.
+<!-- **NOTICE**: This design is applicable for revision V1.9 of T5S. Other revisions may not match. -->
 
 # Exterior
 
