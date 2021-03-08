@@ -1,5 +1,26 @@
 # Release notes
 
+## revision 0.12
+
+### Major improvements
+
+#### ESP32
+
+- rebuilt in conjunction with most recent [Arduino Core 1.0.5](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5). More stable and less bugs in:
+    - Wi-Fi
+    - Bluetooth SPP
+    - Bluetooth LE
+
+### Known issues and limitations
+
+- same as in 0.11
+
+### Flashing instructions
+
+&nbsp;&nbsp;&nbsp;&nbsp;**Regular:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'[Web Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28Web-method%29#esp32)' method should work just fine when you are updating from **Regular** 0.11.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In case of troubles - use generic ('cable') method instead. Follow **Step 1** and **Step 2** of this [**Quick start**](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) guidance.
+
 ## revision 0.11
 
 ### Major improvements
