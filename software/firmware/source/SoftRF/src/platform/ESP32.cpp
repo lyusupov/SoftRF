@@ -268,15 +268,41 @@ static void ESP32_setup()
 
 static void ESP32_post_init()
 {
-  if (settings->nmea_out == NMEA_USB) {
-    settings->nmea_out = NMEA_UART;
+  Serial.println();
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART"));      break;
+    case NMEA_UDP        :  Serial.println(F("UDP"));       break;
+    case NMEA_TCP        :  Serial.println(F("TCP"));       break;
+    case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth")); break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL"));      break;
   }
-  if (settings->gdl90 == GDL90_USB) {
-    settings->gdl90 = GDL90_UART;
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART"));      break;
+    case GDL90_UDP       :  Serial.println(F("UDP"));       break;
+    case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL"));      break;
   }
-  if (settings->d1090 == D1090_USB) {
-    settings->d1090 = D1090_UART;
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART"));      break;
+    case D1090_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL"));      break;
   }
+
+  Serial.println();
+  Serial.flush();
 
   switch (hw_info.display)
   {
@@ -732,7 +758,15 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 static void ESP32_EEPROM_extension()
 {
-
+  if (settings->nmea_out == NMEA_USB) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB) {
+    settings->d1090 = D1090_UART;
+  }
 }
 
 static void ESP32_SPI_begin()

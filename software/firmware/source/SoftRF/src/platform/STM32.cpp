@@ -228,28 +228,6 @@ static void STM32_setup()
 
 static void STM32_post_init()
 {
-  if (settings->nmea_out == NMEA_BLUETOOTH) {
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->nmea_out = NMEA_USB;
-#else
-    settings->nmea_out = NMEA_UART;
-#endif
-  }
-  if (settings->gdl90 == GDL90_BLUETOOTH) {
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->gdl90 = GDL90_USB;
-#else
-    settings->gdl90 = GDL90_UART;
-#endif
-  }
-  if (settings->d1090 == D1090_BLUETOOTH) {
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->d1090 = D1090_USB;
-#else
-    settings->d1090 = D1090_UART;
-#endif
-  }
-
 #if defined(ARDUINO_NUCLEO_L073RZ)
   if (hw_info.model == SOFTRF_MODEL_DONGLE) {
     Serial.println();
@@ -282,10 +260,6 @@ static void STM32_post_init()
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
-#if defined(USE_OLED)
-  OLED_info1();
-#endif /* USE_OLED */
-
   Serial.println(F("Data output device(s):"));
 
   Serial.print(F("NMEA   - "));
@@ -317,6 +291,10 @@ static void STM32_post_init()
 
   Serial.println();
   Serial.flush();
+
+#if defined(USE_OLED)
+  OLED_info1();
+#endif /* USE_OLED */
 }
 
 static void STM32_loop()
@@ -462,7 +440,27 @@ static bool STM32_EEPROM_begin(size_t size)
 
 static void STM32_EEPROM_extension()
 {
-
+  if (settings->nmea_out == NMEA_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->nmea_out = NMEA_USB;
+#else
+    settings->nmea_out = NMEA_UART;
+#endif
+  }
+  if (settings->gdl90 == GDL90_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->gdl90 = GDL90_USB;
+#else
+    settings->gdl90 = GDL90_UART;
+#endif
+  }
+  if (settings->d1090 == D1090_BLUETOOTH) {
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+    settings->d1090 = D1090_USB;
+#else
+    settings->d1090 = D1090_UART;
+#endif
+  }
 }
 
 static void STM32_SPI_begin()

@@ -495,16 +495,6 @@ static void nRF52_post_init()
     Serial.println(F("Power-on Self Test is completed."));
     Serial.println();
     Serial.flush();
-
-#if defined(USE_EPAPER)
-    /* EPD back light on */
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
-
-    EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
-
-    /* EPD back light off */
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
-#endif /* USE_EPAPER */
   }
 
   Serial.println(F("Data output device(s):"));
@@ -541,6 +531,20 @@ static void nRF52_post_init()
 
   Serial.println();
   Serial.flush();
+
+#if defined(USE_EPAPER)
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+    /* EPD back light on */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+
+    EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
+
+    /* EPD back light off */
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+  }
+#endif /* USE_EPAPER */
 }
 
 static void nRF52_loop()

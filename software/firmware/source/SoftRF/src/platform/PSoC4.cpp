@@ -160,16 +160,6 @@ static void PSoC4_setup()
 
 static void PSoC4_post_init()
 {
-  if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
-    settings->nmea_out = NMEA_UART;
-  }
-  if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
-    settings->gdl90 = GDL90_UART;
-  }
-  if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
-    settings->d1090 = D1090_UART;
-  }
-
   if (hw_info.model == SOFTRF_MODEL_MINI) {
     Serial.println();
     Serial.println(F("CubeCell-GPS Power-on Self Test"));
@@ -342,7 +332,15 @@ static bool PSoC4_EEPROM_begin(size_t size)
 
 static void PSoC4_EEPROM_extension()
 {
-
+  if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
+    settings->nmea_out = NMEA_UART;
+  }
+  if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
+    settings->gdl90 = GDL90_UART;
+  }
+  if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
+    settings->d1090 = D1090_UART;
+  }
 }
 
 static void PSoC4_SPI_begin()
