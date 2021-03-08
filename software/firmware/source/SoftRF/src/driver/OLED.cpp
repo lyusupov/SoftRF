@@ -256,7 +256,7 @@ static void OLED_other()
 
   uint32_t acrfts_counter = Traffic_Count();
   uint32_t sats_counter   = gnss.satellites.value();
-  uint8_t  fix            = gnss.location.Quality();
+  uint8_t  fix            = (uint8_t) isValidGNSSFix();
   uint32_t uptime_minutes = millis() / 60000;
   int32_t  voltage        = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
                               (int) (Battery_voltage() * 10.0) : 0;
