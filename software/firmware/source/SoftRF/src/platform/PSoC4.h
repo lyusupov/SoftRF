@@ -146,7 +146,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
 //#define EXCLUDE_GNSS_GOKE
-#define EXCLUDE_GNSS_AT65
+//#define EXCLUDE_GNSS_AT65
 
 /* Component                         Cost */
 /* -------------------------------------- */
