@@ -569,7 +569,7 @@ static long ESP32_random(long howsmall, long howBig)
 
 static void ESP32_Sound_test(int var)
 {
-  if (settings->volume != BUZZER_OFF) {
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
 
@@ -604,6 +604,23 @@ static void ESP32_Sound_test(int var)
 #if defined(USE_BLE_MIDI)
   ESP32_BLEMIDI_test();
 #endif /* USE_BLE_MIDI */
+}
+
+static void ESP32_Sound_tone(int hz, uint8_t volume)
+{
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+      ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 125 : 63);
+
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
+    } else {
+      ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
+
+      ledcDetachPin(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
+    }
+  }
 }
 
 static uint32_t ESP32_maxSketchSpace()
@@ -1283,6 +1300,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_getFreeHeap,
   ESP32_random,
   ESP32_Sound_test,
+  ESP32_Sound_tone,
   ESP32_maxSketchSpace,
   ESP32_WiFi_set_param,
   ESP32_WiFi_transmit_UDP,

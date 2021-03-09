@@ -101,6 +101,7 @@ extern TTYSerial Serial2;
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_LED_RING
+#define EXCLUDE_SOUND
 #define EXCLUDE_EEPROM
 #define EXCLUDE_CC13XX
 #define EXCLUDE_LK8EX1

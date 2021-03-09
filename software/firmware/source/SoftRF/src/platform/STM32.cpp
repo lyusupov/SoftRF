@@ -72,6 +72,7 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
 #error "This hardware platform is not supported!"
 #endif
 
+#if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -81,6 +82,7 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
+#endif /* EXCLUDE_LED_RING */
 
 static int stm32_board = STM32_BLUE_PILL; /* default */
 
@@ -409,11 +411,22 @@ static long STM32_random(long howsmall, long howBig)
 
 static void STM32_Sound_test(int var)
 {
-  if (settings->volume != BUZZER_OFF) {
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
     tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+  }
+}
+
+static void STM32_Sound_tone(int hz, uint8_t volume)
+{
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+    }
   }
 }
 
@@ -740,6 +753,7 @@ const SoC_ops_t STM32_ops = {
   STM32_getFreeHeap,
   STM32_random,
   STM32_Sound_test,
+  STM32_Sound_tone,
   NULL,
   STM32_WiFi_set_param,
   STM32_WiFi_transmit_UDP,

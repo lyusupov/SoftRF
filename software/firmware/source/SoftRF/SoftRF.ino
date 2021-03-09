@@ -207,6 +207,7 @@ void setup()
     LED_test();
   }
 
+  Sound_setup();
   SoC->Sound_test(resetInfo->reason);
 
   switch (settings->mode)
@@ -315,6 +316,8 @@ void shutdown(int reason)
 
   SoC->swSer_enableRx(false);
 
+  Sound_fini();
+
   NMEA_fini();
 
   Web_fini();
@@ -406,6 +409,8 @@ void normal()
     LEDTimeMarker = millis();
   }
 
+  Sound_loop();
+
   if (isTimeToExport()) {
     NMEA_Export();
     GDL90_Export();
@@ -420,7 +425,6 @@ void normal()
   NMEA_loop();
 
   ClearExpired();
-
 }
 
 #if !defined(EXCLUDE_MAVLINK)
@@ -604,6 +608,8 @@ void txrx_test()
 #if DEBUG_TIMING
   led_end_ms = millis();
 #endif
+
+  Sound_loop();
 
 #if DEBUG_TIMING
   export_start_ms = millis();

@@ -22,7 +22,6 @@
 
 #include "IPAddress.h"
 #include "stm32yyxx_ll_adc.h"
-#include <Adafruit_NeoPixel.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -203,6 +202,8 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_EGM96            //  - 16 kb
 #define USE_SERIAL_DEEP_SLEEP    //  + 12 kb
 //#define USE_BASICMAC           //  +  7 kb
+#define EXCLUDE_LED_RING         //  -    kb
+#define EXCLUDE_SOUND
 //#define USE_GNSS_PSM
 #define EXCLUDE_LK8EX1
 
@@ -284,6 +285,8 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 //#define EXCLUDE_NRF905         //  -  2 kb
 #define EXCLUDE_EGM96            //  - 16 kb
+#define EXCLUDE_LED_RING         //  -    kb
+#define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
@@ -296,7 +299,11 @@ typedef struct stm32_backup_struct {
 #error "This hardware platform is not supported!"
 #endif
 
+#if !defined(EXCLUDE_LED_RING)
+#include <Adafruit_NeoPixel.h>
+
 extern Adafruit_NeoPixel strip;
+#endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C

@@ -83,7 +83,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_GNSS_RX    23
 #define SOC_GPIO_PIN_GNSS_TX    12
 #define SOC_GPIO_PIN_LED        25
-#define SOC_GPIO_PIN_BUZZER     13
 #define SOC_GPIO_PIN_BATTERY    36
 
 #define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
@@ -101,6 +100,9 @@ extern Adafruit_NeoPixel strip;
                                 (hw_info.revision == 8 ?                \
                                   SOC_GPIO_PIN_TBEAM_V08_PPS :          \
                                   SOC_UNUSED_PIN))
+
+#define SOC_GPIO_PIN_BUZZER   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
+                                13 : SOC_UNUSED_PIN)
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27

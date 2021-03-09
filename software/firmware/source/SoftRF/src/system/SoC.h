@@ -45,6 +45,7 @@ typedef struct SoC_ops_struct {
   uint32_t (*getFreeHeap)();
   long (*random)(long, long);
   void (*Sound_test)(int);
+  void (*Sound_tone)(int, uint8_t);
   uint32_t (*maxSketchSpace)();
   void (*WiFi_set_param)(int, int);
   void (*WiFi_transmit_UDP)(int, byte *, size_t);

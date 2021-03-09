@@ -100,6 +100,16 @@ TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
 static uint8_t C_NMEA_Source;
 
+static void nmea_cfg_restart()
+{
+  Serial.println();
+  Serial.println(F("Restart is in progress. Please, wait..."));
+  Serial.println();
+  Serial.flush();
+  Sound_fini();
+  RF_Shutdown();
+  SoC->reset();
+}
 #endif /* USE_NMEA_CFG */
 
 bool nmea_handshake(const char *req, const char *resp, bool skipline)
@@ -1279,12 +1289,7 @@ void PickGNSSFix()
       if (C_Version.isUpdated()) {
         if (strncmp(C_Version.value(), "RST", 3) == 0) {
             SoC->WDT_fini();
-            Serial.println();
-            Serial.println(F("Restart is in progress. Please, wait..."));
-            Serial.println();
-            Serial.flush();
-            RF_Shutdown();
-            SoC->reset();
+            nmea_cfg_restart();
         } else if (strncmp(C_Version.value(), "OFF", 3) == 0) {
           shutdown(SOFTRF_SHUTDOWN_NMEA);
         } else if (strncmp(C_Version.value(), "?", 1) == 0) {
@@ -1425,13 +1430,8 @@ void PickGNSSFix()
           if (cfg_is_updated) {
             SoC->WDT_fini();
             if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
-            Serial.println();
-            Serial.println(F("Restart is in progress. Please, wait..."));
-            Serial.println();
-            Serial.flush();
             EEPROM_store();
-            RF_Shutdown();
-            SoC->reset();
+            nmea_cfg_restart();
           }
         }
       }

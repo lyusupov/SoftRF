@@ -197,7 +197,10 @@ void EPD_Mode();
 void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);
+
+#if defined(USE_EPAPER)
 EPD_Task_t EPD_Task(void *);
+#endif /* USE_EPAPER */
 
 void EPD_status_setup();
 void EPD_status_loop();

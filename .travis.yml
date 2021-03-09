@@ -76,7 +76,7 @@ install:
       arduino --board $BOARD --save-prefs ;
       if [[ "$BOARD" =~ "STM32:stm32:Nucleo_64" ]]; then
         arduino --pref "custom_pnum=Nucleo_64_NUCLEO_L073RZ"  --save-prefs ;
-        arduino --pref "custom_opt=Nucleo_64_o1std"           --save-prefs ;
+        arduino --pref "custom_opt=Nucleo_64_osstd"           --save-prefs ;
         arduino --pref "custom_rtlib=Nucleo_64_nano"          --save-prefs ;
         arduino --pref "custom_usb=Nucleo_64_CDCgen"          --save-prefs ;
         arduino --pref "custom_xserial=Nucleo_64_none"        --save-prefs ;

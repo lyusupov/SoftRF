@@ -27,6 +27,7 @@
 #include "../driver/LED.h"
 #include "../driver/OLED.h"
 #include "../driver/Baro.h"
+#include "../driver/Sound.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -311,6 +312,11 @@ static long PSoC4_random(long howsmall, long howBig)
 static void PSoC4_Sound_test(int var)
 {
 
+}
+
+static void PSoC4_Sound_tone(int hz, uint8_t volume)
+{
+  /* TBD */
 }
 
 static void PSoC4_WiFi_set_param(int ndx, int value)
@@ -621,6 +627,7 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_getFreeHeap,
   PSoC4_random,
   PSoC4_Sound_test,
+  PSoC4_Sound_tone,
   NULL,
   PSoC4_WiFi_set_param,
   PSoC4_WiFi_transmit_UDP,

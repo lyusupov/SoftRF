@@ -133,7 +133,7 @@ static long ESP8266_random(long howsmall, long howBig)
 
 static void ESP8266_Sound_test(int var)
 {
-  if (settings->volume != BUZZER_OFF) {
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 //    swSer.enableRx(false);
 
     if (var == REASON_DEFAULT_RST ||
@@ -157,6 +157,13 @@ static void ESP8266_Sound_test(int var)
     delay(600);
 
 //    swSer.enableRx(true);
+  }
+}
+
+static void ESP8266_Sound_tone(int hz, uint8_t volume)
+{
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
   }
 }
 
@@ -408,6 +415,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_getFreeHeap,
   ESP8266_random,
   ESP8266_Sound_test,
+  ESP8266_Sound_tone,
   ESP8266_maxSketchSpace,
   ESP8266_WiFi_set_param,
   ESP8266_WiFi_transmit_UDP,

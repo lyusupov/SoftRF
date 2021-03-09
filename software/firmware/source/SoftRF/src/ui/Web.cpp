@@ -767,6 +767,7 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   EEPROM_store();
+  Sound_fini();
   RF_Shutdown();
   delay(1000);
   SoC->reset();
@@ -877,6 +878,7 @@ $('form').submit(function(e){\
     server.sendHeader(String(F("Access-Control-Allow-Origin")), "*");
     server.send(200, String(F("text/plain")), (Update.hasError())?"FAIL":"OK");
 //    SoC->swSer_enableRx(true);
+    Sound_fini();
     RF_Shutdown();
     delay(1000);
     SoC->reset();

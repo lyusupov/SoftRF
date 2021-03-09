@@ -465,7 +465,18 @@ static long CC13XX_random(long howsmall, long howBig)
 
 static void CC13XX_Sound_test(int var)
 {
+  /* TBD */
+}
 
+static void CC13XX_Sound_tone(int hz, uint8_t volume)
+{
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+    }
+  }
 }
 
 static void CC13XX_WiFi_set_param(int ndx, int value)
@@ -737,6 +748,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_getFreeHeap,
   CC13XX_random,
   CC13XX_Sound_test,
+  CC13XX_Sound_tone,
   NULL,
   CC13XX_WiFi_set_param,
   CC13XX_WiFi_transmit_UDP,

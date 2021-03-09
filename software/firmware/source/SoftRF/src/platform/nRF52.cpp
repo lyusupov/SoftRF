@@ -37,6 +37,7 @@
 #include "../driver/Bluetooth.h"
 #include "../driver/EPD.h"
 #include "../driver/Battery.h"
+#include "../driver/Sound.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -861,6 +862,17 @@ static void nRF52_Sound_test(int var)
 #endif /* USE_USB_MIDI */
 }
 
+static void nRF52_Sound_tone(int hz, uint8_t volume)
+{
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+    }
+  }
+}
+
 static void nRF52_WiFi_set_param(int ndx, int value)
 {
   /* NONE */
@@ -1290,6 +1302,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_getFreeHeap,
   nRF52_random,
   nRF52_Sound_test,
+  nRF52_Sound_tone,
   NULL,
   nRF52_WiFi_set_param,
   nRF52_WiFi_transmit_UDP,

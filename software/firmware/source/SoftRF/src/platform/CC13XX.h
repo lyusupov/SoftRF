@@ -90,6 +90,7 @@ struct rst_info {
 #define EXCLUDE_WIFI
 //#define EXCLUDE_EEPROM
 #define EXCLUDE_LED_RING
+#define EXCLUDE_SOUND
 #define EXCLUDE_EGM96
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
