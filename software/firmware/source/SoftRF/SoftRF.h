@@ -140,6 +140,9 @@ typedef struct UFO {
     float     bearing;
     int8_t    alarm_level;
 
+    /* bitmap of issued voice/tone/ble/... alerts */
+    uint8_t   alert;
+
     /* ADS-B (ES, UAT, GDL90) specific data */
     uint8_t   callsign[8];
 } ufo_t;

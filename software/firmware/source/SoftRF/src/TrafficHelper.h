@@ -47,6 +47,8 @@ enum
 	TRAFFIC_ALARM_LEGACY
 };
 
+#define TRAFFIC_ALERT_SOUND   1
+
 void ParseData(void);
 void Traffic_setup(void);
 void Traffic_loop(void);

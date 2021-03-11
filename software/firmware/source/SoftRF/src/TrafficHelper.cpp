@@ -20,6 +20,7 @@
 #include "driver/EEPROM.h"
 #include "driver/RF.h"
 #include "driver/GNSS.h"
+#include "driver/Sound.h"
 #include "ui/Web.h"
 #include "protocol/radio/Legacy.h"
 
@@ -164,7 +165,9 @@ void ParseData()
 
       for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
         if (Container[i].addr == fo.addr) {
+          uint8_t alert_bak = Container[i].alert;
           Container[i] = fo;
+          Container[i].alert = alert_bak;
           return;
         }
       }
@@ -230,8 +233,13 @@ void Traffic_loop()
 
       if (Container[i].addr &&
           (ThisAircraft.timestamp - Container[i].timestamp) <= ENTRY_EXPIRATION_TIME) {
-        if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL)
+        if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL) {
           Traffic_Update(&Container[i]);
+        }
+        if ((Container[i].alert & TRAFFIC_ALERT_SOUND) == 0) {
+          Sound_Notify();
+          Container[i].alert |= TRAFFIC_ALERT_SOUND;
+        }
       } else {
         Container[i] = EmptyFO;
       }
