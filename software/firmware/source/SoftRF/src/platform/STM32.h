@@ -178,8 +178,8 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SS      PA4
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-//#define SOC_GPIO_PIN_BUTTON   PC4
+//#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   PC4
 //#define SOC_GPIO_PIN_BUTTON   PA3
 
 #define EXCLUDE_WIFI
@@ -195,7 +195,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_AT65
 
 #define USE_OLED                 //  +3.5 kb
-#define EXCLUDE_OLED_BARO_PAGE
+//#define EXCLUDE_OLED_BARO_PAGE
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 #define EXCLUDE_NRF905           //  -  2 kb

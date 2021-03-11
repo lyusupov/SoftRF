@@ -252,8 +252,8 @@ struct rst_info {
 //#define EXCLUDE_NUS
 
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
-#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
-#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
+//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
+//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

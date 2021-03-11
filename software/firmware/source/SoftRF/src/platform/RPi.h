@@ -107,7 +107,7 @@ extern TTYSerial Serial2;
 #define EXCLUDE_LK8EX1
 
 #define USE_NMEALIB
-#define USE_EPAPER
+//#define USE_EPAPER
 
 #define TAKE_CARE_OF_MILLIS_ROLLOVER
 

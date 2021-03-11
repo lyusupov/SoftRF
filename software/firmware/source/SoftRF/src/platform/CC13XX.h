@@ -94,11 +94,11 @@ struct rst_info {
 #define EXCLUDE_EGM96
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
-#define EXCLUDE_LK8EX1
+//#define EXCLUDE_LK8EX1
 
 /* SoftRF/CC13XX PFLAU NMEA sentence extension(s) */
-#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
-#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
+//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
+//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 
 #include "../../hal_conf_extra.h"   // Sketch-specific definitions are located there
 
