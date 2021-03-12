@@ -573,8 +573,6 @@ static void ESP32_Sound_test(int var)
 
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
 
-    ledcWrite(LEDC_CHANNEL_BUZZER, 125); // high volume
-
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
         var == REASON_SOFT_RESTART) {
@@ -611,9 +609,9 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
       ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
-      ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 125 : 63);
 
       ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
+      ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
     } else {
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
 
