@@ -45,6 +45,17 @@
  *   Basic MAC library is developed by Michael Kuyper
  *   LowPowerLab SPIFlash library is maintained by Felix Rusu
  *   Arduino core for ASR650x is developed by Aaron Lee (HelTec Automation)
+ *   ADXL362 library is developed by Anne Mahaffey
+ *   Arduino Core for nRF52 and TinyUSB library are developed by Ha Thach
+ *   Arduino-NVM library is developed by Frank Holtz
+ *   AceButton library is developed by Brian Park
+ *   GxEPD2 library is developed by Jean-Marc Zingg
+ *   Adafruit GFX library is developed by Adafruit Industries
+ *   U8g2 fonts for Adafruit GFX are developed by Oliver Kraus
+ *   SoftSPI library is developed by Matt Jenkins
+ *   Adafruit SPIFlash and SleepyDog libraries are developed by Adafruit Industries
+ *   SdFat library is developed by Bill Greiman
+ *   Arduino MIDI library is developed by Francois Best (Forty Seven Effects)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
