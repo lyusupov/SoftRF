@@ -25,7 +25,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
-//#define USE_EXP_SW_SERIAL
+#define USE_EXP_SW_SERIAL
 
 #if defined(USE_EXP_SW_SERIAL)
 #include <Exp_SoftwareSerial.h>
