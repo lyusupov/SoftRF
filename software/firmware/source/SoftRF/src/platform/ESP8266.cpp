@@ -28,6 +28,7 @@
 #include "../driver/WiFi.h"
 #include "../driver/LED.h"
 #include "../driver/GNSS.h"
+#include "../driver/Battery.h"
 
 #include <ets_sys.h>
 #include <osapi.h>
@@ -333,9 +334,33 @@ static void ESP8266_Battery_setup()
 
 }
 
-static float ESP8266_Battery_voltage()
+static float ESP8266_Battery_param(uint8_t param)
 {
-  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+  float rval;
+
+  switch (param)
+  {
+  case BATTERY_PARAM_THRESHOLD:
+    rval = BATTERY_THRESHOLD_NIMHX2;
+    break;
+
+  case BATTERY_PARAM_CUTOFF:
+    rval = BATTERY_CUTOFF_NIMHX2;
+    break;
+
+  case BATTERY_PARAM_CHARGE:
+    /* TBD */
+
+    rval = 100;
+    break;
+
+  case BATTERY_PARAM_VOLTAGE:
+  default:
+    rval = analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+    break;
+  }
+
+  return rval;
 }
 
 void ESP8266_GNSS_PPS_Interrupt_handler()
@@ -434,7 +459,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_Display_loop,
   ESP8266_Display_fini,
   ESP8266_Battery_setup,
-  ESP8266_Battery_voltage,
+  ESP8266_Battery_param,
   ESP8266_GNSS_PPS_Interrupt_handler,
   ESP8266_get_PPS_TimeMarker,
   ESP8266_Baro_setup,

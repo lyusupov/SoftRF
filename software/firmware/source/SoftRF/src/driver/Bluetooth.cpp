@@ -291,7 +291,7 @@ static void ESP32_Bluetooth_loop()
           oldDeviceConnected = deviceConnected;
       }
       if (deviceConnected && isTimeToBattery()) {
-        uint8_t battery_level = Battery_VoltsToPercent(Battery_voltage());
+        uint8_t battery_level = Battery_charge();
 
         pBATCharacteristic->setValue(&battery_level, 1);
         pBATCharacteristic->notify();
@@ -1285,7 +1285,7 @@ static void nRF52_Bluetooth_loop()
   }
 
   if (isTimeToBattery()) {
-    blebas.write(Battery_VoltsToPercent(Battery_voltage()));
+    blebas.write(Battery_charge());
   }
 }
 

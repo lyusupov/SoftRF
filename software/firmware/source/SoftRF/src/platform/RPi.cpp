@@ -420,9 +420,33 @@ static void RPi_Battery_setup()
   /* TBD */
 }
 
-static float RPi_Battery_voltage()
+static float RPi_Battery_param(uint8_t param)
 {
-  return 0.0;  /* TBD */
+  float rval;
+
+  switch (param)
+  {
+  case BATTERY_PARAM_THRESHOLD:
+    rval = BATTERY_THRESHOLD_USB;
+    break;
+
+  case BATTERY_PARAM_CUTOFF:
+    rval = BATTERY_CUTOFF_USB;
+    break;
+
+  case BATTERY_PARAM_CHARGE:
+    /* TBD */
+
+    rval = 100;
+    break;
+
+  case BATTERY_PARAM_VOLTAGE:
+  default:
+    rval = BATTERY_THRESHOLD_USB + 0.05;
+    break;
+  }
+
+  return rval;
 }
 
 void RPi_GNSS_PPS_Interrupt_handler() {
@@ -520,7 +544,7 @@ const SoC_ops_t RPi_ops = {
   RPi_Display_loop,
   RPi_Display_fini,
   RPi_Battery_setup,
-  RPi_Battery_voltage,
+  RPi_Battery_param,
   NULL,
   RPi_get_PPS_TimeMarker,
   NULL,

@@ -251,7 +251,7 @@ static void ESP32_setup()
       axp.setLDO2Voltage (3300); // LoRa, AXP192 power-on value: 3300
       axp.setLDO3Voltage (3000); // GPS,  AXP192 power-on value: 2800
 
-      pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT_PULLUP);
+      pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT /* INPUT_PULLUP */);
 
       attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ),
                       ESP32_PMU_Interrupt_handler, FALLING);
@@ -1090,29 +1090,73 @@ static void ESP32_Battery_setup()
   }
 }
 
-static float ESP32_Battery_voltage()
+static float ESP32_Battery_param(uint8_t param)
 {
-  float voltage = 0.0;
+  float rval, voltage;
 
-  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-       hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
+  switch (param)
+  {
+  case BATTERY_PARAM_THRESHOLD:
+    rval = (hw_info.model == SOFTRF_MODEL_PRIME_MK2  && hw_info.revision ==  8) ?
+            BATTERY_THRESHOLD_LIPO + 0.1 :
+            hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
+            /* TTGO T3 V2.1.6 */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
+            BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
+    break;
 
-    /* T-Beam v08 and T-Watch have PMU */
-    if (axp.isBatteryConnect()) {
-      voltage = axp.getBattVoltage();
+  case BATTERY_PARAM_CUTOFF:
+    rval = (hw_info.model == SOFTRF_MODEL_PRIME_MK2  && hw_info.revision ==  8) ?
+            BATTERY_CUTOFF_LIPO + 0.2 :
+            hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
+            /* TTGO T3 V2.1.6 */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
+            BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
+    break;
+
+  case BATTERY_PARAM_CHARGE:
+    voltage = Battery_voltage();
+    if (voltage < Battery_cutoff())
+      return 0;
+
+    if (voltage > 4.2)
+      return 100;
+
+    if (voltage < 3.6) {
+      voltage -= 3.3;
+      return (voltage * 100) / 3;
     }
-  } else {
-    voltage = (float) read_voltage();
 
-    /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
-       (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16)) {
-      voltage += voltage;
+    voltage -= 3.6;
+    rval = 10 + (voltage * 150 );
+    break;
+
+  case BATTERY_PARAM_VOLTAGE:
+  default:
+    voltage = 0.0;
+
+    if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
+         hw_info.revision == 8)                     ||
+         hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
+
+      /* T-Beam v08 and T-Watch have PMU */
+      if (axp.isBatteryConnect()) {
+        voltage = axp.getBattVoltage();
+      }
+    } else {
+      voltage = (float) read_voltage();
+
+      /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
+         (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16)) {
+        voltage += voltage;
+      }
     }
+    rval = voltage * 0.001;
+    break;
   }
 
-  return (voltage * 0.001);
+  return rval;
 }
 
 static void IRAM_ATTR ESP32_GNSS_PPS_Interrupt_handler()
@@ -1317,7 +1361,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Display_loop,
   ESP32_Display_fini,
   ESP32_Battery_setup,
-  ESP32_Battery_voltage,
+  ESP32_Battery_param,
   ESP32_GNSS_PPS_Interrupt_handler,
   ESP32_get_PPS_TimeMarker,
   ESP32_Baro_setup,

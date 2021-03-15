@@ -64,7 +64,7 @@ typedef struct SoC_ops_struct {
   void (*Display_loop)();
   void (*Display_fini)(int);
   void (*Battery_setup)();
-  float (*Battery_voltage)();
+  float (*Battery_param)(uint8_t);
   void (*GNSS_PPS_handler)();
   unsigned long (*get_PPS_TimeMarker)();
   bool (*Baro_setup)();

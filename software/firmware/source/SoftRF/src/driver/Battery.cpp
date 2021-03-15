@@ -32,7 +32,7 @@ void Battery_setup()
 {
   SoC->Battery_setup();
 
-  Battery_voltage_cache = SoC->Battery_voltage();
+  Battery_voltage_cache = SoC->Battery_param(BATTERY_PARAM_VOLTAGE);
   Battery_TimeMarker = millis();
 }
 
@@ -44,67 +44,36 @@ float Battery_voltage()
 /* low battery voltage threshold */
 float Battery_threshold()
 {
-  return hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
-        (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-         hw_info.model == SOFTRF_MODEL_DONGLE                                ||
-         hw_info.model == SOFTRF_MODEL_BADGE                                 ||
-         hw_info.model == SOFTRF_MODEL_MINI      ? BATTERY_THRESHOLD_LIPO   :
-         hw_info.model == SOFTRF_MODEL_UNI       ? BATTERY_THRESHOLD_NIZNX2 :
-                                                   BATTERY_THRESHOLD_NIMHX2;
+  return SoC->Battery_param(BATTERY_PARAM_THRESHOLD);
 }
 
 /* Battery is empty */
 float Battery_cutoff()
 {
-  return hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
-        (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-         hw_info.model == SOFTRF_MODEL_DONGLE                                ||
-         hw_info.model == SOFTRF_MODEL_BADGE                                 ||
-         hw_info.model == SOFTRF_MODEL_MINI      ? BATTERY_CUTOFF_LIPO   :
-         hw_info.model == SOFTRF_MODEL_UNI       ? BATTERY_CUTOFF_NIZNX2 :
-                                                   BATTERY_CUTOFF_NIMHX2;
+  return SoC->Battery_param(BATTERY_PARAM_CUTOFF);
+}
+
+/* Battery charge level (in %) */
+uint8_t Battery_charge() {
+  return (uint8_t) SoC->Battery_param(BATTERY_PARAM_CHARGE);
 }
 
 void Battery_loop()
 {
   if (isTimeToBattery()) {
-    float voltage = SoC->Battery_voltage();
+    float voltage = SoC->Battery_param(BATTERY_PARAM_VOLTAGE);
 
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2                             ||
-       (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) || /* TTGO T3 V2.1.6 */
-        hw_info.model == SOFTRF_MODEL_DONGLE                                ||
-        hw_info.model == SOFTRF_MODEL_MINI                                  ||
-        hw_info.model == SOFTRF_MODEL_BADGE                                 ||
-        hw_info.model == SOFTRF_MODEL_UNI       ) {
-
-      if (voltage > BATTERY_THRESHOLD_INVALID && voltage < Battery_cutoff()) {
-        if (Battery_cutoff_count > 2) {
-          shutdown(SOFTRF_SHUTDOWN_LOWBAT);
-        } else {
-          Battery_cutoff_count++;
-        }
+    if (voltage > BATTERY_THRESHOLD_INVALID && voltage < Battery_cutoff()) {
+      if (Battery_cutoff_count > 2) {
+        shutdown(SOFTRF_SHUTDOWN_LOWBAT);
       } else {
-        Battery_cutoff_count = 0;
+        Battery_cutoff_count++;
       }
+    } else {
+      Battery_cutoff_count = 0;
     }
 
     Battery_voltage_cache = voltage;
     Battery_TimeMarker = millis();
   }
-}
-
-uint8_t Battery_VoltsToPercent(float volts) {
-  if (volts < Battery_cutoff())
-    return 0;
-
-  if (volts > 4.2)
-    return 100;
-
-  if (volts < 3.6) {
-    volts -= 3.3;
-    return (volts * 100) / 3;
-  }
-
-  volts -= 3.6;
-  return 10 + (volts * 150 );
 }

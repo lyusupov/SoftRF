@@ -1007,30 +1007,66 @@ static void nRF52_Battery_setup()
 
 }
 
-static float nRF52_Battery_voltage()
+static float nRF52_Battery_param(uint8_t param)
 {
-  float raw;
+  float rval, voltage;
 
-  // Set the analog reference to 3.0V (default = 3.6V)
-  analogReference(AR_INTERNAL_3_0);
+  switch (param)
+  {
+  case BATTERY_PARAM_THRESHOLD:
+    rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_THRESHOLD_LIPO   :
+                                                 BATTERY_THRESHOLD_NIMHX2;
+    break;
 
-  // Set the resolution to 12-bit (0..4095)
-  analogReadResolution(12); // Can be 8, 10, 12 or 14
+  case BATTERY_PARAM_CUTOFF:
+    rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_CUTOFF_LIPO   :
+                                                 BATTERY_CUTOFF_NIMHX2;
+    break;
 
-  // Let the ADC settle
-  delay(1);
+  case BATTERY_PARAM_CHARGE:
+    voltage = Battery_voltage();
+    if (voltage < Battery_cutoff())
+      return 0;
 
-  // Get the raw 12-bit, 0..3000mV ADC value
-  raw = analogRead(SOC_GPIO_PIN_BATTERY);
+    if (voltage > 4.2)
+      return 100;
 
-  // Set the ADC back to the default settings
-  analogReference(AR_DEFAULT);
-  analogReadResolution(10);
+    if (voltage < 3.6) {
+      voltage -= 3.3;
+      return (voltage * 100) / 3;
+    }
 
-  // Convert the raw value to compensated mv, taking the resistor-
-  // divider into account (providing the actual LIPO voltage)
-  // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
-  return raw * REAL_VBAT_MV_PER_LSB * 0.001;
+    voltage -= 3.6;
+    rval = 10 + (voltage * 150 );
+    break;
+
+  case BATTERY_PARAM_VOLTAGE:
+  default:
+
+    // Set the analog reference to 3.0V (default = 3.6V)
+    analogReference(AR_INTERNAL_3_0);
+
+    // Set the resolution to 12-bit (0..4095)
+    analogReadResolution(12); // Can be 8, 10, 12 or 14
+
+    // Let the ADC settle
+    delay(1);
+
+    // Get the raw 12-bit, 0..3000mV ADC value
+    voltage = analogRead(SOC_GPIO_PIN_BATTERY);
+
+    // Set the ADC back to the default settings
+    analogReference(AR_DEFAULT);
+    analogReadResolution(10);
+
+    // Convert the raw value to compensated mv, taking the resistor-
+    // divider into account (providing the actual LIPO voltage)
+    // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
+    rval = voltage * REAL_VBAT_MV_PER_LSB * 0.001;
+    break;
+  }
+
+  return rval;
 }
 
 void nRF52_GNSS_PPS_Interrupt_handler() {
@@ -1321,7 +1357,7 @@ const SoC_ops_t nRF52_ops = {
   nRF52_Display_loop,
   nRF52_Display_fini,
   nRF52_Battery_setup,
-  nRF52_Battery_voltage,
+  nRF52_Battery_param,
   nRF52_GNSS_PPS_Interrupt_handler,
   nRF52_get_PPS_TimeMarker,
   nRF52_Baro_setup,

@@ -28,6 +28,7 @@
 #include "../driver/LED.h"
 #include "../driver/Sound.h"
 #include "../driver/OLED.h"
+#include "../driver/Battery.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -559,14 +560,42 @@ static void CC13XX_Battery_setup()
   AONBatMonEnable();
 }
 
-static float CC13XX_Battery_voltage()
+static float CC13XX_Battery_param(uint8_t param)
 {
-  if (AONBatMonNewBatteryMeasureReady()) {
-    // Get the VDDS voltage
-    cc13xx_vdd = AONBatMonBatteryVoltageGet();
+  float rval;
+
+  switch (param)
+  {
+  case BATTERY_PARAM_THRESHOLD:
+    rval = hw_info.model == SOFTRF_MODEL_UNI ? BATTERY_THRESHOLD_NIZNX2 :
+                                               BATTERY_THRESHOLD_NIMHX2;
+    break;
+
+  case BATTERY_PARAM_CUTOFF:
+    rval = hw_info.model == SOFTRF_MODEL_UNI ? BATTERY_CUTOFF_NIZNX2 :
+                                               BATTERY_CUTOFF_NIMHX2;
+    break;
+
+  case BATTERY_PARAM_CHARGE:
+
+    /* TBD */
+
+    rval = 100;
+    break;
+
+  case BATTERY_PARAM_VOLTAGE:
+  default:
+
+    if (AONBatMonNewBatteryMeasureReady()) {
+      // Get the VDDS voltage
+      cc13xx_vdd = AONBatMonBatteryVoltageGet();
+    }
+
+    rval = ((cc13xx_vdd >> 8) & 0x7) + (float) (cc13xx_vdd & 0xFF) / 256.0;
+    break;
   }
 
-  return ((cc13xx_vdd >> 8) & 0x7) + (float) (cc13xx_vdd & 0xFF) / 256.0;
+  return rval;
 }
 
 void CC13XX_GNSS_PPS_Interrupt_handler() {
@@ -767,7 +796,7 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_Display_loop,
   CC13XX_Display_fini,
   CC13XX_Battery_setup,
-  CC13XX_Battery_voltage,
+  CC13XX_Battery_param,
   CC13XX_GNSS_PPS_Interrupt_handler,
   CC13XX_get_PPS_TimeMarker,
   CC13XX_Baro_setup,

@@ -27,10 +27,12 @@
 #define BATTERY_THRESHOLD_LIPO    3.5
 #define BATTERY_THRESHOLD_LIFE    3.0
 #define BATTERY_THRESHOLD_NIZNX2  3.0
+#define BATTERY_THRESHOLD_USB     5.0
 
 #define BATTERY_CUTOFF_NIMHX2     2.1
 #define BATTERY_CUTOFF_LIPO       3.2
 #define BATTERY_CUTOFF_NIZNX2     2.9
+#define BATTERY_CUTOFF_USB        4.9
 
 enum
 {
@@ -39,12 +41,20 @@ enum
 	POWER_SAVE_GNSS = 2
 };
 
+enum
+{
+	BATTERY_PARAM_VOLTAGE,
+	BATTERY_PARAM_THRESHOLD,
+	BATTERY_PARAM_CUTOFF,
+	BATTERY_PARAM_CHARGE
+};
+
 void    Battery_setup(void);
 void    Battery_loop(void);
 float   Battery_voltage(void);
 float   Battery_threshold(void);
 float   Battery_cutoff(void);
-uint8_t Battery_VoltsToPercent(float);
+uint8_t Battery_charge(void);
 
 extern unsigned long Battery_TimeMarker;
 
