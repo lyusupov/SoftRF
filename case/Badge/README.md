@@ -1,8 +1,8 @@
 # Badge enclosure 
 
-This type of enclosure is built around **TTGO** Txx board.<br>
+This type of enclosure is built around **LilyGO&#174;** **T-Echo** board.<br>
 
-**NOTICE**: This design is applicable for pre-production sample of the Txx. Other revisions may or may not match.
+**NOTICE**: This design is applicable for pre-production sample of the **T-Echo**. Other revisions may or may not match.
 
 # Exterior
 
