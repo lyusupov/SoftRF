@@ -207,7 +207,7 @@ typedef struct stm32_backup_struct {
 //#define USE_GNSS_PSM
 #define EXCLUDE_LK8EX1
 
-/* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
+/* SoftRF/S7xG PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
