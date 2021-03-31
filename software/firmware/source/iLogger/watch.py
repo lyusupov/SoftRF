@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  iLogger.py (main.py)
+#  Flight Recorder for TTGO T-Watch 2019
+#
+#  File name: watch.py
 #  Copyright (C) 2019-2021 Linar Yusupov
 # 
 #  This program is free software: you can redistribute it and/or modify
