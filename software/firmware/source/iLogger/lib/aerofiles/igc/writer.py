@@ -1,7 +1,12 @@
-import datetime
+from sys import implementation
+
+if implementation.name == 'micropython':
+  import datetime
+
+if implementation.name == 'circuitpython':
+  import adafruit_datetime as datetime
 
 from aerofiles.igc import patterns
-
 
 class Writer:
     """
@@ -21,24 +26,36 @@ class Writer:
         self.fix_extensions = None
         self.k_record_extensions = None
 
+    def _format_dmy(self, date):
+        return "%02d%02d%02d" % (date._day, date._month, date._year % 100)
+
     def format_date(self, date):
         if isinstance(date, datetime.datetime):
             date = date.date()
 
         if isinstance(date, datetime.date):
-            date = date.strftime('%d%m%y')
+            if implementation.name == 'circuitpython':
+              date = self._format_dmy(date)
+            else:
+              date = date.strftime('%d%m%y')
 
         if not patterns.DATE.match(date):
             raise ValueError("Invalid date: " + date)
 
         return date
 
+    def _format_hms(self, time):
+        return "%02d%02d%02d" % (time._hour, time._minute, time._second)
+
     def format_time(self, time):
         if isinstance(time, datetime.datetime):
             time = time.time()
 
         if isinstance(time, datetime.time):
-            time = time.strftime('%H%M%S')
+            if implementation.name == 'circuitpython':
+              time = self._format_hms(time)
+            else:
+              time = time.strftime('%H%M%S')
 
         if not patterns.TIME.match(time):
             raise ValueError("Invalid time: " + time)
