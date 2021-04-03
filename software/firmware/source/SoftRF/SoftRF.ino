@@ -158,9 +158,14 @@ void setup()
   EEPROM_setup();
 
   SoC->Button_setup();
-
-  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
-
+  if (settings->AircraftID == 0x00)
+  {
+    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+  }
+  else
+  {
+    ThisAircraft.addr = settings->AircraftID;
+  }
   hw_info.rf = RF_setup();
 
   delay(100);
