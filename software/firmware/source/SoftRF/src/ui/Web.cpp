@@ -127,7 +127,7 @@ Copyright (C) 2015-2021 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5020;
+  size_t size = 5420;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -251,6 +251,12 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>AircraftID (ICAO-HEX, 0=DevID)</th>\
+<td align=right>\
+<INPUT  type='string' name='AircraftID' size='7' maxlength='6' value='%6x'>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Alarm trigger</th>\
 <td align=right>\
 <select name='alarm'>\
@@ -310,6 +316,7 @@ void handleSettings() {
   (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_BALLOON ? "selected" : ""),  AIRCRAFT_TYPE_BALLOON,
   (settings->aircraft_type == AIRCRAFT_TYPE_STATIC ? "selected" : ""),  AIRCRAFT_TYPE_STATIC,
+  settings->AircraftID,
   (settings->alarm == TRAFFIC_ALARM_NONE ? "selected" : ""),  TRAFFIC_ALARM_NONE,
   (settings->alarm == TRAFFIC_ALARM_DISTANCE ? "selected" : ""),  TRAFFIC_ALARM_DISTANCE,
   (settings->alarm == TRAFFIC_ALARM_VECTOR ? "selected" : ""),  TRAFFIC_ALARM_VECTOR,
@@ -541,7 +548,9 @@ void handleSettings() {
     size -= len;
   }
 
-  /* Common part 7 */
+
+ 
+  /* Common part 8 */
   snprintf_P ( offset, size,
     PSTR("\
 </table>\
@@ -715,6 +724,13 @@ void handleInput() {
       settings->power_save = server.arg(i).toInt();
     } else if (server.argName(i).equals("rfc")) {
       settings->freq_corr = server.arg(i).toInt();
+    } else if (server.argName(i).equals("AircraftID")) {
+      String AircraftID;
+      AircraftID=server.arg(i);	
+      char cAircraftID[7];
+      AircraftID.toCharArray(cAircraftID, 7);
+
+      settings->AircraftID = strtoul(cAircraftID, 0, 16);
     }
   }
   snprintf_P ( Input_temp, 1600,
@@ -731,6 +747,7 @@ PSTR("<html>\
 <tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
 <tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
+<tr><th align=left>AircraftID</th><td align=right>%d</td></tr>\
 <tr><th align=left>Alarm trigger</th><td align=right>%d</td></tr>\
 <tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
 <tr><th align=left>Volume</th><td align=right>%d</td></tr>\
@@ -753,7 +770,7 @@ PSTR("<html>\
 </body>\
 </html>"),
   settings->mode, settings->rf_protocol, settings->band,
-  settings->aircraft_type, settings->alarm, settings->txpower,
+  settings->aircraft_type, settings->AircraftID, settings->alarm, settings->txpower,
   settings->volume, settings->pointer, settings->bluetooth,
   BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
