@@ -24,10 +24,10 @@ BL_OFF_TIME  = const(30000)
 
 MF_CODE      = 'XSR'
 FR_FW_ID     = '0.9'
-RF_HW_ID     = '1.0'
+RF_HW_ID     = '2.0'
 FR_TYPE      = 'SOFTRF,LOGGER'
-FR_GPS       = 'Quectel L76K'
-FR_PRESSURE  = 'BME280'
+FR_GPS       = 'Quectel,L76K,32,18000,GPS,GLO'
+FR_PRESSURE  = 'BOSCH,BME280,9163'
 
 import supervisor
 supervisor.disable_autoreload()

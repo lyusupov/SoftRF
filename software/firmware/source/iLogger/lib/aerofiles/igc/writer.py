@@ -312,7 +312,7 @@ class Writer:
 
         :param gps_receiver: the GPS receiver information
         """
-        self.write_fr_header('GPS', gps_receiver)
+        self.write_fr_header('GPS', gps_receiver, subtype_long='RECEIVER')
 
     def write_pressure_sensor(self, pressure_sensor):
         """
