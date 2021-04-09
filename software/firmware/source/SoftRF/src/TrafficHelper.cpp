@@ -155,6 +155,13 @@ void ParseData()
       StdOut.println(RF_last_rssi);
     }
 
+    if (memcmp(RxBuffer, TxBuffer, rx_size) == 0) {
+      if (settings->nmea_p) {
+        StdOut.println(F("$PSRFE,RF loopback is detected"));
+      }
+      return;
+    }
+
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
 
       int i;
