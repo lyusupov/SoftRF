@@ -52,7 +52,6 @@
  *   GxEPD2 library is developed by Jean-Marc Zingg
  *   Adafruit GFX library is developed by Adafruit Industries
  *   U8g2 fonts for Adafruit GFX are developed by Oliver Kraus
- *   SoftSPI library is developed by Matt Jenkins
  *   Adafruit SPIFlash and SleepyDog libraries are developed by Adafruit Industries
  *   SdFat library is developed by Bill Greiman
  *   Arduino MIDI library is developed by Francois Best (Forty Seven Effects)

@@ -21,7 +21,6 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <pcf8563.h>
-#include <SoftSPI.h>
 #include <Adafruit_SPIFlash.h>
 #include "Adafruit_TinyUSB.h"
 #include <Adafruit_SleepyDog.h>
@@ -131,9 +130,6 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
 #endif /* USE_EPAPER */
 
-SoftSPI SPI2(SOC_GPIO_PIN_SFL_MOSI, SOC_GPIO_PIN_SFL_MISO, SOC_GPIO_PIN_SFL_SCK);
-
-Adafruit_FlashTransport_SPI SWFlashTransport (SOC_GPIO_PIN_SFL_SS, &SPI2);
 Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
                                               SOC_GPIO_PIN_SFL_SS,
                                               SOC_GPIO_PIN_SFL_MOSI,
@@ -141,35 +137,45 @@ Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
                                               SOC_GPIO_PIN_SFL_WP,
                                               SOC_GPIO_PIN_SFL_HOLD);
 
-Adafruit_SPIFlash SoftSPIFlash(&SWFlashTransport);
-Adafruit_SPIFlash QSPIFlash   (&HWFlashTransport);
+Adafruit_SPIFlash QSPIFlash (&HWFlashTransport);
 
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
-#define MX25R1635F                                                             \
-  {                                                                            \
-    .total_size = (1 << 21), /* 2 MiB */                                       \
-    .start_up_time_us = 5000, .manufacturer_id = 0xc2,                         \
-    .memory_type = 0x28, .capacity = 0x15, .max_clock_speed_mhz = 8,           \
-    .quad_enable_bit_mask = 0x40, .has_sector_protection = false,              \
-    .supports_fast_read = true, .supports_qspi = true,                         \
-    .supports_qspi_writes = true, .write_status_register_split = false,        \
-    .single_status_byte = true, .is_fram = false,                              \
-  }
+// Settings for the Macronix MX25R1635F 2MiB SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7595/MX25R1635F,%20Wide%20Range,%2016Mb,%20v1.6.pdf
+// In low power mode, quad operations can only run at 8 MHz. In high power mode it can do 80 MHz.
+#define MX25R1635F_DESC  { \
+        .total_size = (1 << 21), /* 2 MiB */ \
+        .start_up_time_us = 800, \
+        .manufacturer_id = 0xc2, \
+        .memory_type = 0x28, \
+        .capacity = 0x15, \
+        .max_clock_speed_mhz = 8, /* 33 MHz for 1-bit operations */ \
+        .quad_enable_bit_mask = 0x40, \
+        .has_sector_protection = false, \
+        .supports_fast_read = true, \
+        .supports_qspi = true, \
+        .supports_qspi_writes = true, \
+        .write_status_register_split = false, \
+        .single_status_byte = true, \
+        .is_fram = false, \
+}
 
-/// List of all possible flash devices used by nRF52840 boards
-static const SPIFlash_Device_t possible_devices[] = {
-    // LilyGO T-Echo
-    MX25R1635F,
+#define SFLASH_CMD_READ_CONFIG  0x15
 
-    // Nordic PCA10056
-    MX25R6435F,
-};
+static uint32_t spiflash_id = 0;
+static uint8_t mx25_status_config[3] = {0x00, 0x00, 0x00};
 
 /// Flash device list count
 enum {
-  EXTERNAL_FLASH_DEVICE_COUNT =
-      sizeof(possible_devices) / sizeof(possible_devices[0])
+  MX25R1635F,
+  EXTERNAL_FLASH_DEVICE_COUNT
+};
+
+/// List of all possible flash devices used by nRF52840 boards
+static SPIFlash_Device_t possible_devices[] = {
+    // LilyGO T-Echo
+    [MX25R1635F] = MX25R1635F_DESC,
 };
 
 // USB Mass Storage object
@@ -408,7 +414,10 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
-      SPIFlash = &SoftSPIFlash;
+      possible_devices[0].max_clock_speed_mhz = 33;
+      possible_devices[0].supports_qspi = false;
+      possible_devices[0].supports_qspi_writes = false;
+      SPIFlash = &QSPIFlash;
       break;
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -424,9 +433,20 @@ static void nRF52_setup()
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
 
-  /* SoftSPI on REV_0 is slow which causes the system crash in main loop */
   if (nRF52_has_spiflash && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
-    uint32_t spi_flash_id = SPIFlash->getJEDECID();
+    spiflash_id = SPIFlash->getJEDECID();
+
+    //mx25_status_config[0] = SPIFlash->readStatus();
+    //HWFlashTransport.readCommand(SFLASH_CMD_READ_CONFIG,   mx25_status_config + 1, 2);
+    //mx25_status_config[2] |= 0x2;       /* High performance mode */
+    //SPIFlash->writeEnable();
+    //HWFlashTransport.writeCommand(SFLASH_CMD_WRITE_STATUS, mx25_status_config,     3);
+    //SPIFlash->writeDisable();
+    //SPIFlash->waitUntilReady();
+
+    //uint32_t const wr_speed = min(80 * 1000000U, (uint32_t)F_CPU);
+    //uint32_t rd_speed = wr_speed;
+    //HWFlashTransport.setClockSpeed(wr_speed, rd_speed);
 
     // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
     usb_msc.setID("SoftRF", "External Flash", "1.0");
@@ -457,6 +477,15 @@ static void nRF52_post_init()
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+
+    Serial.println();
+    Serial.print  (F("SPI FLASH JEDEC ID: "));
+    Serial.print  (spiflash_id, HEX);           Serial.print(" ");
+    Serial.print  (F("STATUS/CONFIG: "));
+    Serial.print  (mx25_status_config[0], HEX); Serial.print(" ");
+    Serial.print  (mx25_status_config[1], HEX); Serial.print(" ");
+    Serial.print  (mx25_status_config[2], HEX); Serial.println();
+
     Serial.println();
     Serial.print  (F("LilyGO T-Echo (rev."));
     Serial.print  (hw_info.revision);
@@ -605,7 +634,7 @@ static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
-//  if (nRF52_has_spiflash && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
+//  if (nRF52_has_spiflash) {
 //    usb_msc.end();
 //  }
 //    if (SPIFlash != NULL) SPIFlash->end();
@@ -636,7 +665,6 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_0_BLUE,  INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
-      SPI2.end(); /* SoftSPI */
       pinMode(SOC_GPIO_PIN_SFL_SS, INPUT);
       break;
 
@@ -899,7 +927,7 @@ static void nRF52_EEPROM_extension()
   if ( nRF52_has_spiflash                       &&
       (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
        fatfs.begin(SPIFlash)) {
-    File file = fatfs.open("/settings.txt", FILE_READ);
+    File file = fatfs.open("/settings.json", FILE_READ);
 
     if (file) {
       // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;

@@ -68,7 +68,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino Core for nRF52 and TinyUSB library are developed by **Ha Thach**
  * Arduino-NVM library is developed by **Frank Holtz**
  * U8g2 fonts for Adafruit GFX are developed by **Oliver Kraus**
- * SoftSPI library is developed by **Matt Jenkins**
  * Adafruit SPIFlash and SleepyDog libraries are developed by **Adafruit Industries**
  * SdFat library is developed by **Bill Greiman**
  * Arduino MIDI library is developed by **Francois Best**
