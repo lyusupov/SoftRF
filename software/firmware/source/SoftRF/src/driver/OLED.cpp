@@ -132,20 +132,28 @@ byte OLED_setup() {
 
   if (u8x8) {
     u8x8->begin();
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
 
-    uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
+    switch (rval)
+    {
+    case DISPLAY_OLED_TTGO:
+    case DISPLAY_OLED_HELTEC:
+    default:
+      u8x8->setFont(u8x8_font_chroma48medium8_r);
 
-    u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text);
+      uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
 
-    if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-      u8x8->drawString   ( 6, 3, "and");
-      u8x8->draw2x2String( 2, 4, "LilyGO");
+      u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text);
+
+      if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+        u8x8->drawString   ( 6, 3, "and");
+        u8x8->draw2x2String( 2, 4, "LilyGO");
+      }
+
+      u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
+
+      break;
     }
-
-    u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
-    u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
   }
 
   OLEDTimeMarker = millis();
@@ -158,66 +166,80 @@ static void OLED_radio()
   char buf[16];
   uint32_t disp_value;
 
-  if (!OLED_display_titles) {
+  switch (hw_info.display)
+  {
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+  default:
+    if (!OLED_display_titles) {
 
-    u8x8->clear();
+      u8x8->clear();
 
-    u8x8->drawString(1, 1, ID_text);
+      u8x8->drawString(1, 1, ID_text);
 
-    snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
-    u8x8->draw2x2String(0, 2, buf);
+      snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
+      u8x8->draw2x2String(0, 2, buf);
 
-    u8x8->drawString(8, 1, PROTOCOL_text);
+      u8x8->drawString(8, 1, PROTOCOL_text);
 
-    u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+      u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
 
-    u8x8->drawString(1, 5, RX_text);
+      u8x8->drawString(1, 5, RX_text);
 
-    u8x8->drawString(9, 5, TX_text);
+      u8x8->drawString(9, 5, TX_text);
 
-    if (settings->mode        == SOFTRF_MODE_RECEIVER ||
-        settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
-        settings->txpower     == RF_TX_POWER_OFF) {
-      u8x8->draw2x2String(8, 6, "OFF");
+      if (settings->power_save & POWER_SAVE_NORECEIVE &&
+          (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262)) {
+        u8x8->draw2x2String(0, 6, "OFF");
+        prev_rx_packets_counter = rx_packets_counter;
+      } else {
+        prev_rx_packets_counter = (uint32_t) -1;
+      }
+
+      if (settings->mode        == SOFTRF_MODE_RECEIVER ||
+          settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+          settings->txpower     == RF_TX_POWER_OFF) {
+        u8x8->draw2x2String(8, 6, "OFF");
+        prev_tx_packets_counter = tx_packets_counter;
+      } else {
+        prev_tx_packets_counter = (uint32_t) -1;
+      }
+
+      OLED_display_titles = true;
+    }
+
+    if (rx_packets_counter != prev_rx_packets_counter) {
+      disp_value = rx_packets_counter % 1000;
+      itoa(disp_value, buf, 10);
+
+      if (disp_value < 10) {
+        strcat_P(buf,PSTR("  "));
+      } else {
+        if (disp_value < 100) {
+          strcat_P(buf,PSTR(" "));
+        };
+      }
+
+      u8x8->draw2x2String(0, 6, buf);
+      prev_rx_packets_counter = rx_packets_counter;
+    }
+    if (tx_packets_counter != prev_tx_packets_counter) {
+      disp_value = tx_packets_counter % 1000;
+      itoa(disp_value, buf, 10);
+
+      if (disp_value < 10) {
+        strcat_P(buf,PSTR("  "));
+      } else {
+        if (disp_value < 100) {
+          strcat_P(buf,PSTR(" "));
+        };
+      }
+
+      u8x8->draw2x2String(8, 6, buf);
       prev_tx_packets_counter = tx_packets_counter;
-    } else {
-      prev_tx_packets_counter = (uint32_t) -1;
     }
 
-    prev_rx_packets_counter = (uint32_t) -1;
-
-    OLED_display_titles = true;
-  }
-
-  if (rx_packets_counter != prev_rx_packets_counter) {
-    disp_value = rx_packets_counter % 1000;
-    itoa(disp_value, buf, 10);
-
-    if (disp_value < 10) {
-      strcat_P(buf,PSTR("  "));
-    } else {
-      if (disp_value < 100) {
-        strcat_P(buf,PSTR(" "));
-      };
-    }
-
-    u8x8->draw2x2String(0, 6, buf);
-    prev_rx_packets_counter = rx_packets_counter;
-  }
-  if (tx_packets_counter != prev_tx_packets_counter) {
-    disp_value = tx_packets_counter % 1000;
-    itoa(disp_value, buf, 10);
-
-    if (disp_value < 10) {
-      strcat_P(buf,PSTR("  "));
-    } else {
-      if (disp_value < 100) {
-        strcat_P(buf,PSTR(" "));
-      };
-    }
-
-    u8x8->draw2x2String(8, 6, buf);
-    prev_tx_packets_counter = tx_packets_counter;
+    break;
   }
 }
 
@@ -226,110 +248,118 @@ static void OLED_other()
   char buf[16];
   uint32_t disp_value;
 
-  if (!OLED_display_titles) {
+  switch (hw_info.display)
+  {
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+  default:
+    if (!OLED_display_titles) {
 
-    u8x8->clear();
+      u8x8->clear();
 
-    u8x8->drawString( 1, 1, ACFTS_text);
+      u8x8->drawString( 1, 1, ACFTS_text);
 
-    u8x8->drawString( 7, 1, SATS_text);
+      u8x8->drawString( 7, 1, SATS_text);
 
-    u8x8->drawString(12, 1, FIX_text);
+      u8x8->drawString(12, 1, FIX_text);
 
-    u8x8->drawString( 1, 5, UPTIME_text);
+      u8x8->drawString( 1, 5, UPTIME_text);
 
-    u8x8->drawString(12, 5, BAT_text);
+      u8x8->drawString(12, 5, BAT_text);
 
-    u8x8->drawTile  (4, 6, 1, (uint8_t *) Dot_Tile);
-    u8x8->drawTile  (4, 7, 1, (uint8_t *) Dot_Tile);
+      u8x8->drawTile  (4, 6, 1, (uint8_t *) Dot_Tile);
+      u8x8->drawTile  (4, 7, 1, (uint8_t *) Dot_Tile);
 
-    u8x8->drawGlyph (13, 7, '.');
+      u8x8->drawGlyph (13, 7, '.');
 
-    prev_acrfts_counter = (uint32_t) -1;
-    prev_sats_counter   = (uint32_t) -1;
-    prev_fix            = (uint8_t)  -1;
-    prev_uptime_minutes = (uint32_t) -1;
-    prev_voltage        = (uint32_t) -1;
+      prev_acrfts_counter = (uint32_t) -1;
+      prev_sats_counter   = (uint32_t) -1;
+      prev_fix            = (uint8_t)  -1;
+      prev_uptime_minutes = (uint32_t) -1;
+      prev_voltage        = (uint32_t) -1;
 
-    OLED_display_titles = true;
-  }
-
-  uint32_t acrfts_counter = Traffic_Count();
-  uint32_t sats_counter   = gnss.satellites.value();
-  uint8_t  fix            = (uint8_t) isValidGNSSFix();
-  uint32_t uptime_minutes = millis() / 60000;
-  int32_t  voltage        = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
-                              (int) (Battery_voltage() * 10.0) : 0;
-
-  if (prev_acrfts_counter != acrfts_counter) {
-    disp_value = acrfts_counter > 99 ? 99 : acrfts_counter;
-    itoa(disp_value, buf, 10);
-
-    if (disp_value < 10) {
-      strcat_P(buf,PSTR(" "));
+      OLED_display_titles = true;
     }
 
-    u8x8->draw2x2String(1, 2, buf);
-    prev_acrfts_counter = acrfts_counter;
-  }
+    uint32_t acrfts_counter = Traffic_Count();
+    uint32_t sats_counter   = gnss.satellites.value();
+    uint8_t  fix            = (uint8_t) isValidGNSSFix();
+    uint32_t uptime_minutes = millis() / 60000;
+    int32_t  voltage        = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
+                                (int) (Battery_voltage() * 10.0) : 0;
 
-  if (prev_sats_counter != sats_counter) {
-    disp_value = sats_counter > 99 ? 99 : sats_counter;
-    itoa(disp_value, buf, 10);
+    if (prev_acrfts_counter != acrfts_counter) {
+      disp_value = acrfts_counter > 99 ? 99 : acrfts_counter;
+      itoa(disp_value, buf, 10);
 
-    if (disp_value < 10) {
-      strcat_P(buf,PSTR(" "));
+      if (disp_value < 10) {
+        strcat_P(buf,PSTR(" "));
+      }
+
+      u8x8->draw2x2String(1, 2, buf);
+      prev_acrfts_counter = acrfts_counter;
     }
 
-    u8x8->draw2x2String(7, 2, buf);
-    prev_sats_counter = sats_counter;
-  }
+    if (prev_sats_counter != sats_counter) {
+      disp_value = sats_counter > 99 ? 99 : sats_counter;
+      itoa(disp_value, buf, 10);
 
-  if (prev_fix != fix) {
-    u8x8->draw2x2Glyph(12, 2, fix > 0 ? '+' : '-');
+      if (disp_value < 10) {
+        strcat_P(buf,PSTR(" "));
+      }
+
+      u8x8->draw2x2String(7, 2, buf);
+      prev_sats_counter = sats_counter;
+    }
+
+    if (prev_fix != fix) {
+      u8x8->draw2x2Glyph(12, 2, fix > 0 ? '+' : '-');
 //    u8x8->draw2x2Glyph(12, 2, '0' + fix);
-    prev_fix = fix;
-  }
-
-  if (prev_uptime_minutes != uptime_minutes) {
-    uint32_t uptime_hours = uptime_minutes / 60;
-    disp_value = uptime_hours % 100;
-    if (disp_value < 10) {
-      buf[0] = '0';
-      itoa(disp_value, buf+1, 10);
-    } else {
-      itoa(disp_value, buf, 10);
+      prev_fix = fix;
     }
 
-    u8x8->draw2x2String(0, 6, buf);
+    if (prev_uptime_minutes != uptime_minutes) {
+      uint32_t uptime_hours = uptime_minutes / 60;
+      disp_value = uptime_hours % 100;
+      if (disp_value < 10) {
+        buf[0] = '0';
+        itoa(disp_value, buf+1, 10);
+      } else {
+        itoa(disp_value, buf, 10);
+      }
 
-    disp_value = uptime_minutes % 60;
-    if (disp_value < 10) {
-      buf[0] = '0';
-      itoa(disp_value, buf+1, 10);
-    } else {
-      itoa(disp_value, buf, 10);
+      u8x8->draw2x2String(0, 6, buf);
+
+      disp_value = uptime_minutes % 60;
+      if (disp_value < 10) {
+        buf[0] = '0';
+        itoa(disp_value, buf+1, 10);
+      } else {
+        itoa(disp_value, buf, 10);
+      }
+
+      u8x8->draw2x2String(5, 6, buf);
+
+      prev_uptime_minutes = uptime_minutes;
     }
 
-    u8x8->draw2x2String(5, 6, buf);
+    if (prev_voltage != voltage) {
+      if (voltage) {
+        disp_value = voltage / 10;
+        disp_value = disp_value > 9 ? 9 : disp_value;
+        u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
 
-    prev_uptime_minutes = uptime_minutes;
-  }
+        disp_value = voltage % 10;
 
-  if (prev_voltage != voltage) {
-    if (voltage) {
-      disp_value = voltage / 10;
-      disp_value = disp_value > 9 ? 9 : disp_value;
-      u8x8->draw2x2Glyph(11, 6, '0' + disp_value);
-
-      disp_value = voltage % 10;
-
-      u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
-    } else {
-      u8x8->draw2x2Glyph(11, 6, 'N');
-      u8x8->draw2x2Glyph(14, 6, 'A');
+        u8x8->draw2x2Glyph(14, 6, '0' + disp_value);
+      } else {
+        u8x8->draw2x2Glyph(11, 6, 'N');
+        u8x8->draw2x2Glyph(14, 6, 'A');
+      }
+      prev_voltage = voltage;
     }
-    prev_voltage = voltage;
+
+    break;
   }
 }
 
@@ -338,55 +368,63 @@ static void OLED_baro()
 {
   char buf[16];
 
-  if (!OLED_display_titles) {
+  switch (hw_info.display)
+  {
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+  default:
+    if (!OLED_display_titles) {
 
-    u8x8->clear();
+      u8x8->clear();
 
-    u8x8->drawString( 2, 1, ALT_text);
+      u8x8->drawString( 2, 1, ALT_text);
 
-    u8x8->drawString( 10, 1, TEMP_text);
+      u8x8->drawString( 10, 1, TEMP_text);
 
-    u8x8->drawString( 1, 5, PRES_text);
+      u8x8->drawString( 1, 5, PRES_text);
 
-    u8x8->drawString( 9, 5, CDR_text);
+      u8x8->drawString( 9, 5, CDR_text);
 
-    prev_altitude     = (int32_t)   -10000;
-    prev_temperature  = prev_altitude;
-    prev_pressure     = (uint32_t)  -1;
-    prev_cdr          = prev_altitude;
+      prev_altitude     = (int32_t)   -10000;
+      prev_temperature  = prev_altitude;
+      prev_pressure     = (uint32_t)  -1;
+      prev_cdr          = prev_altitude;
 
-    OLED_display_titles = true;
-  }
+      OLED_display_titles = true;
+    }
 
-  int32_t altitude    = Baro_altitude();        /* metres */
-  int32_t temperature = Baro_temperature();     /* Celcius */
-  uint32_t pressure   = Baro_pressure() / 100;  /* mbar */
-  int32_t cdr         = ThisAircraft.vs;        /* feet per minute */
+    int32_t altitude    = Baro_altitude();        /* metres */
+    int32_t temperature = Baro_temperature();     /* Celcius */
+    uint32_t pressure   = Baro_pressure() / 100;  /* mbar */
+    int32_t cdr         = ThisAircraft.vs;        /* feet per minute */
 
-  if (prev_altitude != altitude) {
-    snprintf(buf, sizeof(buf), "%4d", altitude);
-    u8x8->draw2x2String(0, 2, buf);
-    prev_altitude = altitude;
-  }
+    if (prev_altitude != altitude) {
+      snprintf(buf, sizeof(buf), "%4d", altitude);
+      u8x8->draw2x2String(0, 2, buf);
+      prev_altitude = altitude;
+    }
 
-  if (prev_temperature != temperature) {
-    snprintf(buf, sizeof(buf), "%3d", temperature);
-    u8x8->draw2x2String(10, 2, buf);
-    prev_temperature = temperature;
-  }
+    if (prev_temperature != temperature) {
+      snprintf(buf, sizeof(buf), "%3d", temperature);
+      u8x8->draw2x2String(10, 2, buf);
+      prev_temperature = temperature;
+    }
 
-  if (prev_pressure != pressure) {
-    snprintf(buf, sizeof(buf), "%4d", pressure);
-    u8x8->draw2x2String(0, 6, buf);
-    prev_pressure = pressure;
-  }
+    if (prev_pressure != pressure) {
+      snprintf(buf, sizeof(buf), "%4d", pressure);
+      u8x8->draw2x2String(0, 6, buf);
+      prev_pressure = pressure;
+    }
 
-  if (prev_cdr != cdr) {
-    int disp_value = constrain(cdr, -999, 999);
-    snprintf(buf, sizeof(buf), "%3d", abs(disp_value));
-    u8x8->drawGlyph    ( 9, 6, disp_value < 0 ? '_' : ' ');
-    u8x8->draw2x2String(10, 6, buf);
-    prev_cdr = cdr;
+    if (prev_cdr != cdr) {
+      int disp_value = constrain(cdr, -999, 999);
+      snprintf(buf, sizeof(buf), "%3d", abs(disp_value));
+      u8x8->drawGlyph    ( 9, 6, disp_value < 0 ? '_' : ' ');
+      u8x8->draw2x2String(10, 6, buf);
+      prev_cdr = cdr;
+    }
+
+    break;
   }
 }
 #endif /* EXCLUDE_OLED_BARO_PAGE */
@@ -419,10 +457,16 @@ void OLED_loop()
 void OLED_fini(int reason)
 {
   if (u8x8) {
-    u8x8->setFont(u8x8_font_chroma48medium8_r);
-    u8x8->clear();
-    u8x8->draw2x2String(1, 3, reason == SOFTRF_SHUTDOWN_LOWBAT ?
-                              "LOW BAT" : "  OFF  ");
+    switch (hw_info.display)
+    {
+    case DISPLAY_OLED_TTGO:
+    case DISPLAY_OLED_HELTEC:
+    default:
+      u8x8->clear();
+      u8x8->draw2x2String(1, 3, reason == SOFTRF_SHUTDOWN_LOWBAT ?
+                                "LOW BAT" : "  OFF  ");
+      break;
+    }
   }
 }
 
@@ -430,16 +474,25 @@ void OLED_info1()
 {
   if (u8x8) {
 
-    u8x8->clear();
+    switch (hw_info.display)
+    {
+    case DISPLAY_OLED_TTGO:
+    case DISPLAY_OLED_HELTEC:
+    default:
 
-    u8x8->draw2x2String(0, 0, "RADIO");
-    u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-    u8x8->draw2x2String(0, 2, "GNSS");
-    u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-    u8x8->draw2x2String(0, 4, "OLED");
-    u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-    u8x8->draw2x2String(0, 6, "BARO");
-    u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+      u8x8->clear();
+
+      u8x8->draw2x2String(0, 0, "RADIO");
+      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
+      u8x8->draw2x2String(0, 2, "GNSS");
+      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
+      u8x8->draw2x2String(0, 4, "OLED");
+      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
+      u8x8->draw2x2String(0, 6, "BARO");
+      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+
+      break;
+    }
 
     delay(3000);
   }

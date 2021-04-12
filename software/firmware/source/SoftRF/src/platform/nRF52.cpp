@@ -414,9 +414,9 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
-      possible_devices[0].max_clock_speed_mhz = 33;
-      possible_devices[0].supports_qspi = false;
-      possible_devices[0].supports_qspi_writes = false;
+      possible_devices[MX25R1635F].max_clock_speed_mhz = 33;
+      possible_devices[MX25R1635F].supports_qspi = false;
+      possible_devices[MX25R1635F].supports_qspi_writes = false;
       SPIFlash = &QSPIFlash;
       break;
     case NRF52_LILYGO_TECHO_REV_1:
