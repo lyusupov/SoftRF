@@ -36,9 +36,10 @@
 
 enum
 {
-	POWER_SAVE_NONE = 0,
-	POWER_SAVE_WIFI = 1,
-	POWER_SAVE_GNSS = 2
+	POWER_SAVE_NONE      = 0,
+	POWER_SAVE_WIFI      = 1,
+	POWER_SAVE_GNSS      = 2,
+	POWER_SAVE_NORECEIVE = 4
 };
 
 enum

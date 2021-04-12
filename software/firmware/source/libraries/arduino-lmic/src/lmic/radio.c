@@ -1177,6 +1177,8 @@ void os_radio (u1_t mode) {
       case RADIO_RST:
         // put radio to sleep
         opmode(OPMODE_SLEEP);
+        // power-down TCXO
+        hal_pin_tcxo(0);
         break;
 
       case RADIO_TX:
