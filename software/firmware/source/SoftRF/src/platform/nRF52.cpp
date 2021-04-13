@@ -748,8 +748,8 @@ static void nRF52_fini(int reason)
 
   if (i2c != nullptr) Wire.end();
 
-  // pinMode(SOC_GPIO_PIN_SDA,  INPUT);
-  // pinMode(SOC_GPIO_PIN_SCL,  INPUT);
+  pinMode(SOC_GPIO_PIN_SDA,  INPUT);
+  pinMode(SOC_GPIO_PIN_SCL,  INPUT);
 
   // pinMode(SOC_GPIO_PIN_MOSI, INPUT);
   // pinMode(SOC_GPIO_PIN_MISO, INPUT);
