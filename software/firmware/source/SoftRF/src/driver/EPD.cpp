@@ -47,7 +47,7 @@ const char EPD_GNSS_text[]    = "GNSS    ";
 const char EPD_Display_text[] = "DISPLAY ";
 const char EPD_RTC_text[]     = "RTC     ";
 const char EPD_Flash_text[]   = "FLASH   ";
-const char EPD_Baro_text[]    = "BARO    ";
+const char EPD_Baro_text[]    = "BARO  ";
 
 unsigned long EPDTimeMarker = 0;
 
@@ -190,9 +190,13 @@ void EPD_info1(bool rtc, bool spiflash)
 
       y += (tbh + INFO_1_LINE_SPACING);
 
+      if (hw_info.baro == BARO_MODULE_NONE) {
+        display->setFont(&FreeMono18pt7b);
+      }
+
       display->setCursor(x, y);
       display->print(EPD_Baro_text);
-      display->print(hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+      display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
     }
 
     display->display(false);

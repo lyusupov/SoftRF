@@ -293,7 +293,17 @@ static void nRF52_setup()
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
   if (!nRF52_has_rtc) {
-    nRF52_board = NRF52_NORDIC_PCA10059;
+    delay(200);
+    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    nRF52_has_rtc = (Wire.endTransmission() == 0);
+    if (!nRF52_has_rtc) {
+      delay(200);
+      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      nRF52_has_rtc = (Wire.endTransmission() == 0);
+      if (!nRF52_has_rtc) {
+        nRF52_board = NRF52_NORDIC_PCA10059;
+      }
+    }
   }
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
@@ -517,7 +527,7 @@ static void nRF52_post_init()
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
         nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
       Serial.print(F("BMx280  : "));
-      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
+      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
       Serial.flush();
     }
 
