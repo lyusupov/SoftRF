@@ -792,6 +792,11 @@ static void nRF52_fini(int reason)
     pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT_PULLDOWN);
   }
 
+  /* Cut 3.3V power off on REV_2 board */
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+    pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT_PULLDOWN);
+  }
+
   Serial.end();
 
   (void) sd_softdevice_is_enabled(&sd_en);
