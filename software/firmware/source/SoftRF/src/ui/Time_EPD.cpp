@@ -26,6 +26,8 @@
 #if defined(ARDUINO_ARCH_NRF52)
 #include <pcf8563.h>
 #include <bluefruit.h>
+
+extern RTC_Date fw_build_date_time;
 #endif /* ARDUINO_ARCH_NRF52 */
 
 #include <Fonts/FreeMonoBold24pt7b.h>
@@ -73,26 +75,24 @@ void EPD_time_loop()
 
     bool ble_has_client = false;
 
+    strcpy(buf_hm, "--:--");
+    strcpy(buf_sec, "--");
+
 #if defined(ARDUINO_ARCH_NRF52)
-    RTC_Date now;
 
-    if (rtc) {
-      now = rtc->getDateTime();
-    }
+    if (rtc && rtc->isVaild()) {
+      RTC_Date now = rtc->getDateTime();
 
-    if (now.year < 2019 || now.year > 2029) {
-      strcpy(buf_hm, "--:--");
-      strcpy(buf_sec, "--");
-    } else {
-      snprintf(buf_hm,  sizeof(buf_hm),  "%2d:%02d", now.hour, now.minute);
-      snprintf(buf_sec, sizeof(buf_sec), "%02d"    , now.second);
+      if (now.year >= fw_build_date_time.year &&
+          now.year <  fw_build_date_time.year + 15) {
+
+        snprintf(buf_hm,  sizeof(buf_hm),  "%2d:%02d", now.hour, now.minute);
+        snprintf(buf_sec, sizeof(buf_sec), "%02d"    , now.second);
+      }
     }
 
     ble_has_client = Bluefruit.connected();
 
-#else
-    strcpy(buf_hm, "--:--");
-    strcpy(buf_sec, "--");
 #endif /* ARDUINO_ARCH_NRF52 */
 
     display->fillScreen(GxEPD_WHITE);

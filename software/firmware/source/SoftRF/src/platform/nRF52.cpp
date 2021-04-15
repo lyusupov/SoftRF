@@ -96,6 +96,8 @@ static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false;
 static bool RTC_sync           = false;
 
+RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
+
 static TaskHandle_t EPD_Task_Handle = NULL;
 
 #if !defined(ARDUINO_NRF52840_PCA10056)
@@ -596,10 +598,10 @@ static void nRF52_loop()
 
   if (!RTC_sync) {
     if (rtc &&
-        gnss.date.isValid()     &&
-        gnss.time.isValid()     &&
-        gnss.date.year() > 2018 &&
-        gnss.date.year() < 2030 ) {
+        gnss.date.isValid()                         &&
+        gnss.time.isValid()                         &&
+        gnss.date.year() >= fw_build_date_time.year &&
+        gnss.date.year() <  fw_build_date_time.year + 15 ) {
       rtc->setDateTime(gnss.date.year(),   gnss.date.month(),
                        gnss.date.day(),    gnss.time.hour(),
                        gnss.time.minute(), gnss.time.second());
