@@ -76,7 +76,7 @@ void EPD_time_loop()
     bool ble_has_client = false;
 
     strcpy(buf_hm, "--:--");
-    strcpy(buf_sec, "--");
+    strcpy(buf_sec, "  ");
 
 #if defined(ARDUINO_ARCH_NRF52)
 
