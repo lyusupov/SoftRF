@@ -31,6 +31,9 @@
 #include "../driver/GNSS.h"
 #include "../driver/LED.h"
 
+#include <protocol.h>
+#include "../protocol/radio/Legacy.h"
+
 #include <Fonts/FreeMonoBold12pt7b.h>
 
 static int EPD_current = 1;
@@ -45,6 +48,25 @@ enum {
 
 static int view_state_curr = STATE_TVIEW_NONE;
 static int view_state_prev = STATE_TVIEW_NONE;
+
+const char *Aircraft_Type[] = {
+  [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
+  [AIRCRAFT_TYPE_GLIDER]     = "Glider",
+  [AIRCRAFT_TYPE_TOWPLANE]   = "Towplane",
+  [AIRCRAFT_TYPE_HELICOPTER] = "Helicopter",
+  [AIRCRAFT_TYPE_PARACHUTE]  = "Parachute",
+  [AIRCRAFT_TYPE_DROPPLANE]  = "Dropplane",
+  [AIRCRAFT_TYPE_HANGGLIDER] = "Hangglider",
+  [AIRCRAFT_TYPE_PARAGLIDER] = "Paraglider",
+  [AIRCRAFT_TYPE_POWERED]    = "Powered",
+  [AIRCRAFT_TYPE_JET]        = "Jet",
+  [AIRCRAFT_TYPE_UFO]        = "UFO",
+  [AIRCRAFT_TYPE_BALLOON]    = "Balloon",
+  [AIRCRAFT_TYPE_ZEPPELIN]   = "Zeppelin",
+  [AIRCRAFT_TYPE_UAV]        = "UAV",
+  [AIRCRAFT_TYPE_RESERVED]   = "Reserved",
+  [AIRCRAFT_TYPE_STATIC]     = "Static"
+};
 
 static void EPD_Draw_Text()
 {
@@ -120,9 +142,15 @@ static void EPD_Draw_Text()
       break;
     }
 
-    uint32_t id = traffic_by_dist[EPD_current - 1].fop->addr;
+    if (ui->idpref == ID_TYPE) {
+      uint8_t acft_type = traffic_by_dist[EPD_current - 1].fop->aircraft_type;
+      acft_type = acft_type > AIRCRAFT_TYPE_STATIC ? AIRCRAFT_TYPE_UNKNOWN : acft_type;
+      strncpy(id_text, Aircraft_Type[acft_type], sizeof(id_text));
+    } else {
+      uint32_t id = traffic_by_dist[EPD_current - 1].fop->addr;
 
-    snprintf(id_text, sizeof(id_text), "ID: %06X", id);
+      snprintf(id_text, sizeof(id_text), "ID: %06X", id);
+    }
 
     display->setFont(&FreeMonoBold12pt7b);
 

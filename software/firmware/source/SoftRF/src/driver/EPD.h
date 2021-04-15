@@ -103,7 +103,8 @@ enum
 {
 	ID_REG,
 	ID_TAIL,
-	ID_MAM
+	ID_MAM,
+	ID_TYPE
 };
 
 enum
