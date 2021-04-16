@@ -302,10 +302,13 @@ static void nRF52_setup()
       delay(200);
       Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
       nRF52_has_rtc = (Wire.endTransmission() == 0);
-      if (!nRF52_has_rtc) {
-        nRF52_board = NRF52_NORDIC_PCA10059;
-      }
     }
+  }
+
+#if !defined(EXCLUDE_BOARD_SELF_DETECT)
+
+  if (!nRF52_has_rtc) {
+    nRF52_board = NRF52_NORDIC_PCA10059;
   }
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
@@ -341,6 +344,8 @@ static void nRF52_setup()
     digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);  /* PWR_EN is ON */
     delay(200);
   }
+
+#endif /* EXCLUDE_BOARD_SELF_DETECT */
 
   Wire.end();
 

@@ -250,6 +250,7 @@ struct rst_info {
 //#define USE_USB_MIDI
 //#define USE_BLE_MIDI
 //#define EXCLUDE_NUS
+#define EXCLUDE_BOARD_SELF_DETECT
 
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 //#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
