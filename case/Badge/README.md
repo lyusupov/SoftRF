@@ -20,7 +20,7 @@ The enclosure is designed to fit for a 40 x 30 x 8 mm 1000 mAh Li-Po battery.
 
 # Instructions
 
-3D print two STL files from this folder: **Body** and **Face**.<br>
+3D print two STL files from this folder: **Body** and **Face**. You may pick some printing advisories on [my Thingiverse page](https://www.thingiverse.com/thing:4639183).<br>
 If you are unable to print the parts by yourself - you may consider to find an appropriate local 3D service provider and place an order with assistance of [Treatstock](http://www.treatstock.com) or [3DHubs](http://www.3dhubs.com/) portals.
 
 ## Assembly procedure
