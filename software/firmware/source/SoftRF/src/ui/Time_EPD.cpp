@@ -108,7 +108,7 @@ void EPD_time_loop()
     }
 
     u8g2Fonts.setCursor(display->width() - 5, 15);
-    u8g2Fonts.print(Battery_charge() / 20);
+    u8g2Fonts.print((Battery_charge() + 19) / 20);
 
     display->setFont(&FreeMonoBold24pt7b);
     display->getTextBounds(buf_hm, 0, 0, &tbx, &tby, &tbw, &tbh);
