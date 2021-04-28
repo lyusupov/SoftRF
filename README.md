@@ -53,10 +53,10 @@ GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&
 ---|:---:|:---:|:---:|---
 Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|Q4 2016|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)<br>3&nbsp;[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2018|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
-[Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)|Q2 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[1&nbsp;**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;Badge|Q2 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Sony<br>CXD5603GF](https://www.sony-semicon.co.jp/e/products/lsi/gps/product.html)|[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|Q4 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
-[GOKE](http://www.goke.com/en/)<br>GK9501|1&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>2&nbsp;Badge|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[GOKE](http://www.goke.com/en/)<br>GK9501|[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 
 # Documentation
 
