@@ -1158,7 +1158,7 @@ static void nRF52_WDT_fini()
 using namespace ace_button;
 
 AceButton button_1(SOC_GPIO_PIN_BUTTON);
-AceButton button_2(SOC_GPIO_PIN_PAD);
+AceButton button_2(SOC_GPIO_PIN_PAD, LOW);
 
 // The event handler for the button.
 void handleEvent(AceButton* button, uint8_t eventType,
@@ -1220,7 +1220,7 @@ static void nRF52_Button_setup()
   pinMode(up_button_pin, INPUT);
 
   button_1.init(mode_button_pin);
-  button_2.init(up_button_pin);
+  button_2.init(up_button_pin, LOW);
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
