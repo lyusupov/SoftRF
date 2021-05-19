@@ -886,7 +886,7 @@ static byte ESP32_Display_setup()
       u8x8->begin();
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
-      u8x8->draw2x2String( 2, 3, SoftRF_text);
+      u8x8->draw2x2String( 2, 3, SoftRF_text1);
       u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
       u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
     }
@@ -914,10 +914,10 @@ static byte ESP32_Display_setup()
     tft->setTextSize(2);
     tft->setTextColor(TFT_WHITE, TFT_NAVY);
 
-    uint16_t tbw = tft->textWidth(SoftRF_text);
+    uint16_t tbw = tft->textWidth(SoftRF_text1);
     uint16_t tbh = tft->fontHeight();
     tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
-    tft->println(SoftRF_text);
+    tft->println(SoftRF_text1);
 
     rval = DISPLAY_TFT_TTGO;
 #endif /* USE_TFT */
