@@ -57,6 +57,8 @@
 #define ADC_RANGE 4096
 #endif
 
+#define ICM20948_ADDRESS        (0x69)
+
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -71,7 +73,8 @@ enum stm32_board_id {
   STM32_BLUE_PILL,
   STM32_TTGO_TWATCH_EB_1_3,
   STM32_TTGO_TWATCH_EB_1_6,
-  STM32_TTGO_TMOTION_1_1
+  STM32_TTGO_TMOTION_1_1,
+  STM32_TTGO_T65_1_2
 };
 
 enum stm32_boot_action {
@@ -135,10 +138,15 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_GNSS_RST PB2
 #define SOC_GPIO_PIN_GNSS_LS  PC6
 #define SOC_GPIO_PIN_GNSS_PPS PB5
-#define SOC_GPIO_PIN_STATUS   PA0
+#define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_DONGLE ?\
+                                PA0 : SOC_UNUSED_PIN)
 
-#define SOC_GPIO_PIN_BUZZER   PA8
-#define SOC_GPIO_PIN_BATTERY  PB1
+#define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_DONGLE ?\
+                                PA8 : SOC_UNUSED_PIN)
+
+#define SOC_GPIO_PIN_BATTERY  (hw_info.model == SOFTRF_MODEL_DONGLE   ? PB1 :\
+                               hw_info.model == SOFTRF_MODEL_BRACELET ? PC4 :\
+                               SOC_UNUSED_PIN)
 
 /* SPI0 */
 #define SOC_GPIO_PIN_MOSI     PB15
@@ -181,6 +189,12 @@ typedef struct stm32_backup_struct {
 //#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUTTON   PC4
 //#define SOC_GPIO_PIN_BUTTON   PA3
+
+#define TTGO_T65_OLED_PIN_RST PA8
+#define TTGO_T65_GPIO_PAD_OUT PA0
+#define TTGO_T65_GPIO_PAD_PWR PA2
+#define TTGO_T65_SENSOR_INT   PB0
+#define TTGO_T65_GPIO_CHRG    PB8
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX

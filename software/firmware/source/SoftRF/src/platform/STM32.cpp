@@ -62,6 +62,7 @@ HardwareSerial Serial2(USART2);
 HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 
 static bool STM32_has_TCXO = false;
+static bool STM32_has_IMU  = false;
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
@@ -225,15 +226,33 @@ static void STM32_setup()
 
     // Set default value at Rx
     digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
+
+    if (stm32_board == STM32_TTGO_TMOTION_1_1) {
+      Wire.begin();
+      Wire.beginTransmission(ICM20948_ADDRESS);
+      STM32_has_IMU = (Wire.endTransmission() == 0);
+      Wire.end();
+
+      if (STM32_has_IMU) {
+        stm32_board = STM32_TTGO_T65_1_2;
+        hw_info.model = SOFTRF_MODEL_BRACELET;
+
+        pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
+      }
+    }
+
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
 static void STM32_post_init()
 {
 #if defined(ARDUINO_NUCLEO_L073RZ)
-  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+  if (hw_info.model == SOFTRF_MODEL_DONGLE ||
+      hw_info.model == SOFTRF_MODEL_BRACELET ) {
     Serial.println();
-    Serial.println(F("TTGO T-Motion (S76G) Power-on Self Test"));
+    Serial.print(F("TTGO "));
+    Serial.print(hw_info.model == SOFTRF_MODEL_BRACELET   ? F("T65") : F("T-Motion"));
+    Serial.println(F(" (S76G) Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
@@ -248,12 +267,21 @@ static void STM32_post_init()
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    == GNSS_MODULE_SONY    ? F("PASS") : F("FAIL"));
 
-    Serial.println();
-    Serial.println(F("External components:"));
-    Serial.print(F("DISPLAY : "));
-    Serial.println(hw_info.display == DISPLAY_OLED_TTGO   ? F("PASS") : F("N/A"));
-    Serial.print(F("BMx280  : "));
-    Serial.println(hw_info.baro    == BARO_MODULE_BMP280  ? F("PASS") : F("N/A"));
+    if (hw_info.model == SOFTRF_MODEL_BRACELET) {
+      Serial.print(F("DISPLAY : "));
+      Serial.println(hw_info.display == DISPLAY_OLED_0_49 ? F("PASS") : F("N/A"));
+      Serial.print(F("IMU     : "));
+      Serial.println(STM32_has_IMU                        ? F("PASS") : F("N/A"));
+    }
+
+    if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+      Serial.println();
+      Serial.println(F("External components:"));
+      Serial.print(F("DISPLAY : "));
+      Serial.println(hw_info.display == DISPLAY_OLED_TTGO ? F("PASS") : F("N/A"));
+      Serial.print(F("BMx280  : "));
+      Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+    }
 
     Serial.println();
     Serial.println(F("Power-on Self Test is completed."));
@@ -556,13 +584,15 @@ static float STM32_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_DONGLE ? BATTERY_THRESHOLD_LIPO   :
-                                                  BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_DONGLE  ||
+           hw_info.model == SOFTRF_MODEL_BRACELET ? BATTERY_THRESHOLD_LIPO   :
+                                                    BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_DONGLE ? BATTERY_CUTOFF_LIPO   :
-                                                  BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_DONGLE ||
+           hw_info.model == SOFTRF_MODEL_BRACELET ? BATTERY_CUTOFF_LIPO   :
+                                                    BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:

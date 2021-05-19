@@ -88,7 +88,9 @@ const char *ISO3166_CC[] = {
   [RF_BAND_KR]   = "KR"
 };
 
-const char SoftRF_text[]   = "SoftRF";
+const char SoftRF_text1[]  = "SoftRF";
+const char SoftRF_text2[]  = "and";
+const char SoftRF_text3[]  = "LilyGO";
 const char ID_text[]       = "ID";
 const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";
@@ -126,27 +128,36 @@ byte OLED_setup() {
 #endif /* ENERGIA_ARCH_CC13X2 */
   {
     u8x8 = &u8x8_i2c;
-    rval = (hw_info.model == SOFTRF_MODEL_MINI ?
-            DISPLAY_OLED_HELTEC : DISPLAY_OLED_TTGO);
+    rval = (hw_info.model == SOFTRF_MODEL_MINI     ? DISPLAY_OLED_HELTEC :
+            hw_info.model == SOFTRF_MODEL_BRACELET ? DISPLAY_OLED_0_49   :
+            DISPLAY_OLED_TTGO);
   }
 
   if (u8x8) {
     u8x8->begin();
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
 
     switch (rval)
     {
+    case DISPLAY_OLED_0_49:
+      u8x8->drawString( 5, 5, SoftRF_text3);
+      delay(2000);
+      u8x8->clearLine(5);
+      u8x8->drawString( 7, 5, SoftRF_text2);
+      delay(2000);
+      u8x8->clearLine(5);
+      u8x8->drawString( 5, 5, SoftRF_text1);
+      break;
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
     default:
-      u8x8->setFont(u8x8_font_chroma48medium8_r);
-
       uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
 
-      u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text);
+      u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text1);
 
       if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-        u8x8->drawString   ( 6, 3, "and");
-        u8x8->draw2x2String( 2, 4, "LilyGO");
+        u8x8->drawString   ( 6, 3, SoftRF_text2);
+        u8x8->draw2x2String( 2, 4, SoftRF_text3);
       }
 
       u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
@@ -168,6 +179,8 @@ static void OLED_radio()
 
   switch (hw_info.display)
   {
+  case DISPLAY_OLED_0_49:
+    break;
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
   default:
@@ -250,6 +263,8 @@ static void OLED_other()
 
   switch (hw_info.display)
   {
+  case DISPLAY_OLED_0_49:
+    break;
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
   default:
@@ -370,6 +385,8 @@ static void OLED_baro()
 
   switch (hw_info.display)
   {
+  case DISPLAY_OLED_0_49:
+    break;
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
   default:
@@ -459,6 +476,8 @@ void OLED_fini(int reason)
   if (u8x8) {
     switch (hw_info.display)
     {
+    case DISPLAY_OLED_0_49:
+      break;
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
     default:
@@ -476,6 +495,8 @@ void OLED_info1()
 
     switch (hw_info.display)
     {
+    case DISPLAY_OLED_0_49:
+      break;
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
     default:
