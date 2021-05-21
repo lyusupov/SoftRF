@@ -84,8 +84,9 @@ static void EPD_Draw_Text()
     }
   }
 
-  if (j > 0 && !EPD_ready_to_display) {
-
+//  if (j > 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
+//  if (j > 0 && SoC->Display_lock()) {
+  if (j > 0) {
     uint8_t db;
     const char *u_dist, *u_alt, *u_spd;
     float disp_dist;
@@ -243,7 +244,10 @@ static void EPD_Draw_Text()
     }
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+//    yield();
+    display->display(true);
   }
 }
 
@@ -254,42 +258,20 @@ void EPD_text_setup()
 
 void EPD_text_loop()
 {
-  bool hasFix = isValidGNSSFix();
+  if (isTimeToEPD()) {
+    bool hasFix = isValidGNSSFix();
 
-  if (hasFix) {
-      if (Traffic_Count() > 0) {
-        view_state_curr = STATE_TVIEW_TEXT;
-      } else {
-        view_state_curr = STATE_TVIEW_NOTRAFFIC;
-      }
-  } else {
-    view_state_curr = STATE_TVIEW_NOFIX;
-  }
-
-  if (EPD_vmode_updated) {
-    EPD_Clear_Screen();
-    view_state_prev = STATE_TVIEW_NONE;
-    EPD_vmode_updated = false;
-  }
-
-  if (view_state_curr != view_state_prev &&
-      view_state_curr == STATE_TVIEW_NOFIX) {
-    EPD_Message(NO_FIX_TEXT, NULL);
-    view_state_prev = view_state_curr;
-  }
-
-  if (view_state_curr != view_state_prev &&
-      view_state_curr == STATE_TVIEW_NOTRAFFIC) {
-    EPD_Message("NO", "TRAFFIC");
-    view_state_prev = view_state_curr;
-  }
-
-  if (view_state_curr == STATE_TVIEW_TEXT) {
-    if (view_state_curr != view_state_prev) {
-//       EPD_Clear_Screen();
-       view_state_prev = view_state_curr;
+    if (hasFix) {
+        if (Traffic_Count() > 0) {
+          EPD_Draw_Text();
+        } else {
+          EPD_Message("NO", "TRAFFIC");
+        }
+    } else {
+      EPD_Message(NO_FIX_TEXT, NULL);
     }
-    EPD_Draw_Text();
+
+    EPDTimeMarker = millis();
   }
 }
 

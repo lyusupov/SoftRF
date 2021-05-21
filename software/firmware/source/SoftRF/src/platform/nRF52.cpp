@@ -996,6 +996,9 @@ static void nRF52_swSer_enableRx(boolean arg)
   /* NONE */
 }
 
+SemaphoreHandle_t Display_Semaphore;
+unsigned long TaskInfoTime;
+
 static byte nRF52_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -1005,8 +1008,17 @@ static byte nRF52_Display_setup()
 
   if (EPD_setup(true)) {
 
-    xTaskCreate(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, TASK_PRIO_LOW, &EPD_Task_Handle);
+#if 0
+    Display_Semaphore = xSemaphoreCreateBinary();
 
+    if( Display_Semaphore != NULL ) {
+      xSemaphoreGive( Display_Semaphore );
+    }
+
+    xTaskCreate(EPD_Task, "EPD", EPD_STACK_SZ, NULL, /* TASK_PRIO_HIGH */ TASK_PRIO_LOW , &EPD_Task_Handle);
+
+    TaskInfoTime = millis();
+#endif
     rval = DISPLAY_EPD_1_54;
   }
 
@@ -1023,6 +1035,15 @@ static void nRF52_Display_loop()
 {
 #if defined(USE_EPAPER)
   EPD_loop();
+
+#if 0
+  if (millis() - TaskInfoTime > 5000) {
+    char pcWriteBuffer[512];
+    vTaskList(pcWriteBuffer );
+    Serial.println(pcWriteBuffer); Serial.flush();
+    TaskInfoTime = millis();
+  }
+#endif
 #endif /* USE_EPAPER */
 }
 
@@ -1030,13 +1051,19 @@ static void nRF52_Display_fini(int reason)
 {
 #if defined(USE_EPAPER)
 
-  EPD_Clear_Screen();
   EPD_fini(reason);
 
+#if 0
   if( EPD_Task_Handle != NULL )
   {
     vTaskDelete( EPD_Task_Handle );
   }
+
+  if( Display_Semaphore != NULL )
+  {
+    vSemaphoreDelete( Display_Semaphore );
+  }
+#endif
 
   SPI1.end();
 
@@ -1050,6 +1077,28 @@ static void nRF52_Display_fini(int reason)
   pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
 #endif /* USE_EPAPER */
+}
+
+static bool nRF52_Display_lock()
+{
+  bool rval = false;
+
+  if ( Display_Semaphore != NULL ) {
+    rval = (xSemaphoreTake( Display_Semaphore, ( TickType_t ) 0 ) == pdTRUE);
+  }
+//Serial.print("Display_lock: "); Serial.println(rval); Serial.flush();
+  return rval;
+}
+
+static bool nRF52_Display_unlock()
+{
+  bool rval = false;
+
+  if ( Display_Semaphore != NULL ) {
+    rval = (xSemaphoreGive( Display_Semaphore ) == pdTRUE);
+  }
+//Serial.print("Display_unlock: "); Serial.println(rval); Serial.flush();
+  return rval;
 }
 
 static void nRF52_Battery_setup()
@@ -1406,6 +1455,10 @@ const SoC_ops_t nRF52_ops = {
   nRF52_Display_setup,
   nRF52_Display_loop,
   nRF52_Display_fini,
+#if 0
+  nRF52_Display_lock,
+  nRF52_Display_unlock,
+#endif
   nRF52_Battery_setup,
   nRF52_Battery_param,
   nRF52_GNSS_PPS_Interrupt_handler,

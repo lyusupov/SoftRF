@@ -58,6 +58,13 @@ enum
 	VIEW_MODE_TIME
 };
 
+enum
+{
+	EPD_UPDATE_NONE = 0,
+	EPD_UPDATE_SLOW,
+	EPD_UPDATE_FAST
+};
+
 /*
  * 'Radar view' scale factor (outer circle diameter)
  *
@@ -184,7 +191,7 @@ typedef struct navbox_struct
   uint16_t  width;
   uint16_t  height;
   int32_t   value;
-  int32_t   prev_value;
+//  int32_t   prev_value;
   uint32_t  timestamp;
 } navbox_t;
 
@@ -230,7 +237,7 @@ void EPD_time_prev();
 
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
-extern volatile bool EPD_ready_to_display;
+extern volatile uint8_t EPD_update_in_progress;
 extern ui_settings_t ui_settings;
 extern ui_settings_t *ui;
 

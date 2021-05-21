@@ -55,7 +55,9 @@ static void EPD_Draw_Radar()
   uint16_t y;
   char cog_text[6];
 
-  if (!EPD_ready_to_display) {
+//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+//  if (SoC->Display_lock()) {
+  {
 
     /* divider is a half of full scale */
     int32_t divider = 2000;
@@ -317,7 +319,10 @@ static void EPD_Draw_Radar()
     }
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+//    yield();
+    display->display(true);
   }
 }
 
@@ -328,33 +333,16 @@ void EPD_radar_setup()
 
 void EPD_radar_loop()
 {
-  bool hasFix = isValidGNSSFix();
+  if (isTimeToEPD()) {
+    bool hasFix = isValidGNSSFix();
 
-  if (hasFix) {
-    view_state_curr = STATE_RVIEW_RADAR;
-  } else {
-    view_state_curr = STATE_RVIEW_NOFIX;
-  }
-
-  if (EPD_vmode_updated) {
-    EPD_Clear_Screen();
-    view_state_prev = STATE_RVIEW_NONE;
-    EPD_vmode_updated = false;
-  }
-
-  if (view_state_curr != view_state_prev &&
-      view_state_curr == STATE_RVIEW_NOFIX) {
-
-    EPD_Message(NO_FIX_TEXT, NULL);
-    view_state_prev = view_state_curr;
-  }
-
-  if (view_state_curr == STATE_RVIEW_RADAR) {
-    if (view_state_curr != view_state_prev) {
-//       EPD_Clear_Screen();
-       view_state_prev = view_state_curr;
+    if (hasFix) {
+      EPD_Draw_Radar();
+    } else {
+      EPD_Message(NO_FIX_TEXT, NULL);
     }
-    EPD_Draw_Radar();
+
+    EPDTimeMarker = millis();
   }
 }
 

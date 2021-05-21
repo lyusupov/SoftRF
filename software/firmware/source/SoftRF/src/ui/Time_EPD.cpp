@@ -63,15 +63,11 @@ void EPD_time_loop()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-  if (EPD_vmode_updated) {
-    EPD_Clear_Screen();
+  if (isTimeToEPD()) {
 
-    yield();
-
-    EPD_vmode_updated = false;
-  }
-
-  if (!EPD_ready_to_display) {
+//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+//  if (SoC->Display_lock()) {
+  {
 
     bool ble_has_client = false;
 
@@ -123,7 +119,12 @@ void EPD_time_loop()
     display->print(buf_sec);
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+//    yield();
+    display->display(true);
+  }
+    EPDTimeMarker = millis();
   }
 }
 

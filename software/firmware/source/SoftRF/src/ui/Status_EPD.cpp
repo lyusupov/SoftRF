@@ -64,7 +64,7 @@ void EPD_status_setup()
   navbox1.width  = display->width() / 2;
   navbox1.height = display->height() / 3;
   navbox1.value      = 0;
-  navbox1.prev_value = navbox1.value;
+//  navbox1.prev_value = navbox1.value;
   navbox1.timestamp  = millis();
 
   memcpy(navbox2.title, NAVBOX2_TITLE, strlen(NAVBOX2_TITLE));
@@ -73,7 +73,7 @@ void EPD_status_setup()
   navbox2.width  = navbox1.width;
   navbox2.height = navbox1.height;
   navbox2.value      = 0;
-  navbox2.prev_value = navbox2.value;
+//  navbox2.prev_value = navbox2.value;
   navbox2.timestamp  = millis();
 
   memcpy(navbox3.title, NAVBOX3_TITLE, strlen(NAVBOX3_TITLE));
@@ -82,7 +82,7 @@ void EPD_status_setup()
   navbox3.width  = navbox1.width;
   navbox3.height = navbox1.height;
   navbox3.value      = ThisAircraft.addr;
-  navbox3.prev_value = navbox3.value;
+//  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 
   memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
@@ -91,7 +91,7 @@ void EPD_status_setup()
   navbox4.width  = navbox3.width;
   navbox4.height = navbox3.height;
   navbox4.value      = settings->rf_protocol;
-  navbox4.prev_value = navbox4.value;
+//  navbox4.prev_value = navbox4.value;
   navbox4.timestamp  = millis();
 
   memcpy(navbox5.title, NAVBOX5_TITLE, strlen(NAVBOX5_TITLE));
@@ -100,7 +100,7 @@ void EPD_status_setup()
   navbox5.width  = navbox3.width;
   navbox5.height = navbox3.height;
   navbox5.value      = rx_packets_counter % 1000;
-  navbox5.prev_value = navbox5.value;
+//  navbox5.prev_value = navbox5.value;
   navbox5.timestamp  = millis();
 
   memcpy(navbox6.title, NAVBOX6_TITLE, strlen(NAVBOX6_TITLE));
@@ -109,7 +109,7 @@ void EPD_status_setup()
   navbox6.width  = navbox5.width;
   navbox6.height = navbox5.height;
   navbox6.value      = tx_packets_counter % 1000;
-  navbox6.prev_value = navbox6.value;
+//  navbox6.prev_value = navbox6.value;
   navbox6.timestamp  = millis();
 }
 
@@ -121,12 +121,15 @@ static void EPD_Draw_NavBoxes()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-  if (!EPD_ready_to_display) {
-
+//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+//  if (SoC->Display_lock()) {
+  {
     uint16_t top_navboxes_x = navbox1.x;
     uint16_t top_navboxes_y = navbox1.y;
     uint16_t top_navboxes_w = navbox1.width + navbox2.width;
     uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
+
+    display->fillScreen(GxEPD_WHITE);
 
     display->drawRoundRect( navbox1.x + 1, navbox1.y + 1,
                             navbox1.width - 2, navbox1.height - 2,
@@ -226,132 +229,25 @@ static void EPD_Draw_NavBoxes()
     }
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
-  }
-}
-
-static void EPD_Update_NavBoxes()
-{
-  char buf[16];
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
-
-  if (!EPD_ready_to_display) {
-
-    bool updated = false;
-
-    if (navbox1.value != navbox1.prev_value) {
-
-      display->setFont(&FreeMonoBold18pt7b);
-      display->getTextBounds("00", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect(navbox1.x + 25, navbox1.y + 53 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox1.x + 25, navbox1.y + 52);
-      display->print(navbox1.value);
-
-      navbox1.prev_value = navbox1.value;
-      updated = true;
-    }
-
-    if (navbox2.value != navbox2.prev_value) {
-
-      display->setFont(&FreeMonoBold18pt7b);
-      display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect(navbox2.x + 15, navbox2.y + 53 - tbh,
-                        tbw + 5, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox2.x + 15, navbox2.y + 52);
-      display->print((float) navbox2.value / 10, 1);
-
-      navbox2.prev_value = navbox2.value;
-      updated = true;
-    }
-
-    if (navbox3.value != navbox3.prev_value) {
-
-      display->setFont(&FreeSerifBold12pt7b);
-      display->getTextBounds("FFFFFF", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect(navbox3.x + 5, navbox3.y + 51 - tbh,
-                        tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox3.x + 5, navbox3.y + 50);
-
-      snprintf(buf, sizeof(buf), "%06X", navbox3.value);
-
-      display->print(buf);
-
-      navbox3.prev_value = navbox3.value;
-      updated = true;
-    }
-
-    if (navbox4.value != navbox4.prev_value) {
-
-      display->setFont(&FreeMonoBold18pt7b);
-      display->getTextBounds("UUU", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect (navbox4.x + 15, navbox4.y + 51 - tbh,
-                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox4.x + 15, navbox4.y + 50);
-      display->print(EPD_Protocol_ID[navbox4.value]);
-
-      navbox4.prev_value = navbox4.value;
-      updated = true;
-    }
-
-    if (navbox5.value != navbox5.prev_value) {
-
-      display->setFont(&FreeMonoBold18pt7b);
-      display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect (navbox5.x + 25, navbox5.y + 51 - tbh,
-                         tbw + 5, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox5.x + 25, navbox5.y + 50);
-      display->print(navbox5.value);
-
-      navbox5.prev_value = navbox5.value;
-      updated = true;
-    }
-
-    if (navbox6.value != navbox6.prev_value) {
-
-      display->setFont(&FreeMonoBold18pt7b);
-      display->getTextBounds("000", 0, 0, &tbx, &tby, &tbw, &tbh);
-
-      display->fillRect(navbox6.x + 25, navbox6.y + 51 - tbh,
-                        tbw + 5, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox6.x + 25, navbox6.y + 50);
-      display->print(navbox6.value);
-
-      navbox6.prev_value = navbox6.value;
-      updated = true;
-    }
-
-    /* a signal to background EPD update task */
-    if (updated) EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+//    yield();
+    display->display(true);
   }
 }
 
 void EPD_status_loop()
 {
-  if (EPD_vmode_updated) {
-
-    EPD_Clear_Screen();
-
-    yield();
-
-    EPD_Draw_NavBoxes();
-
-    EPD_vmode_updated = false;
-
-  } else {
+  if (isTimeToEPD()) {
 
     navbox1.value = Traffic_Count();
     navbox2.value = (int) (Battery_voltage() * 10.0);
-    navbox5.value      = rx_packets_counter % 1000;
-    navbox6.value      = tx_packets_counter % 1000;
+    navbox5.value = rx_packets_counter % 1000;
+    navbox6.value = tx_packets_counter % 1000;
 
-    EPD_Update_NavBoxes();
+    EPD_Draw_NavBoxes();
+
+    EPDTimeMarker = millis();
   }
 }
 

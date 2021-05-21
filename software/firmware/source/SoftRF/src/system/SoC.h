@@ -63,6 +63,10 @@ typedef struct SoC_ops_struct {
   byte (*Display_setup)();
   void (*Display_loop)();
   void (*Display_fini)(int);
+#if 0
+  bool (*Display_lock)();
+  bool (*Display_unlock)();
+#endif
   void (*Battery_setup)();
   float (*Battery_param)(uint8_t);
   void (*GNSS_PPS_handler)();

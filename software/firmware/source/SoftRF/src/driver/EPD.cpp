@@ -54,17 +54,7 @@ unsigned long EPDTimeMarker = 0;
 static int EPD_view_mode = 0;
 bool EPD_vmode_updated = true;
 
-volatile bool EPD_ready_to_display = false;
-
-void EPD_Clear_Screen()
-{
-  while (EPD_ready_to_display) delay(100);
-
-  display->fillScreen(GxEPD_WHITE);
-  display->display(false);
-
-  EPD_POWEROFF;
-}
+volatile uint8_t EPD_update_in_progress = EPD_UPDATE_NONE;
 
 bool EPD_setup(bool splash_screen)
 {
@@ -151,6 +141,10 @@ void EPD_info1(bool rtc, bool spiflash)
 
     uint16_t x, y;
 
+//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+
+//    while (!SoC->Display_lock()) { delay(10); }
+
     display->setFont(&FreeMonoBold18pt7b);
     display->getTextBounds(EPD_Radio_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
@@ -199,12 +193,20 @@ void EPD_info1(bool rtc, bool spiflash)
       display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
     }
 
-    display->display(false);
+//    EPD_update_in_progress = EPD_UPDATE_SLOW;
+//    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
 
-    EPD_POWEROFF;
+    display->display(false);
+//    SoC->Display_unlock();
 
     delay(4000);
 
+#if 0
+    display->fillScreen(GxEPD_WHITE);
+
+    EPD_update_in_progress = EPD_UPDATE_SLOW;
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+#endif
   case DISPLAY_NONE:
   default:
     break;
@@ -217,7 +219,23 @@ void EPD_loop()
   {
   case DISPLAY_EPD_1_54:
 
-    if (isTimeToEPD()) {
+    if (EPD_vmode_updated) {
+//      if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+//      while (!SoC->Display_lock()) { delay(10); }
+      {
+        display->fillScreen(GxEPD_BLACK /* GxEPD_WHITE */);
+
+//        EPD_update_in_progress = EPD_UPDATE_FAST /* EPD_UPDATE_SLOW */;
+//        while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+
+//        display->display(false);
+        display->display(true);
+
+//      SoC->Display_unlock();
+        EPD_vmode_updated = false;
+      }
+
+    } else {
       switch (EPD_view_mode)
       {
       case VIEW_MODE_RADAR:
@@ -237,8 +255,6 @@ void EPD_loop()
         EPD_status_loop();
         break;
       }
-
-      EPDTimeMarker = millis();
     }
     break;
 
@@ -260,7 +276,14 @@ void EPD_fini(int reason)
   switch (hw_info.display)
   {
   case DISPLAY_EPD_1_54:
-    while (EPD_ready_to_display) delay(100);
+//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+
+//    display->fillScreen(GxEPD_WHITE);
+
+//    EPD_update_in_progress = EPD_UPDATE_SLOW;
+//    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+
+//    while (!SoC->Display_lock()) { delay(10); }
 
     display->fillScreen(GxEPD_WHITE);
 
@@ -293,11 +316,18 @@ void EPD_fini(int reason)
     display->print(EPD_SoftRF_text6);
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
 
-    while (EPD_ready_to_display) delay(100);
+//    yield();
+
+//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+//    while (!SoC->Display_lock()) { delay(10); }
+    display->display(false);
 
     EPD_HIBERNATE;
+
+//    SoC->Display_unlock();
     break;
 
   case DISPLAY_NONE:
@@ -385,8 +415,9 @@ void EPD_Message(const char *msg1, const char *msg2)
   uint16_t tbw, tbh;
   uint16_t x, y;
 
-  if (msg1 != NULL && strlen(msg1) != 0 && !EPD_ready_to_display) {
-
+//  if (msg1 != NULL && strlen(msg1) != 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
+//  if (msg1 != NULL && strlen(msg1) != 0 && SoC->Display_lock()) {
+  if (msg1 != NULL && strlen(msg1) != 0) {
     display->setFont(&FreeMonoBold18pt7b);
 
     display->fillScreen(GxEPD_WHITE);
@@ -415,23 +446,40 @@ void EPD_Message(const char *msg1, const char *msg2)
     }
 
     /* a signal to background EPD update task */
-    EPD_ready_to_display = true;
+//    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+//    yield();
+      display->display(true);
   }
 }
 
 EPD_Task_t EPD_Task( void * pvParameters )
 {
+//  unsigned long LockTime = millis();
+
   for( ;; )
   {
-    if (EPD_ready_to_display) {
+    if (EPD_update_in_progress != EPD_UPDATE_NONE) {
+//    if (SoC->Display_lock()) {
+//Serial.println("EPD_Task: lock"); Serial.flush();
 
-      display->display(true);
-
+//      LockTime = millis();
+      display->display(EPD_update_in_progress == EPD_UPDATE_FAST ? true : false);
+//Serial.println("EPD_Task: display"); Serial.flush();
       yield();
 
-      EPD_POWEROFF;
+      if (EPD_update_in_progress == EPD_UPDATE_FAST) { EPD_POWEROFF; }
 
-      EPD_ready_to_display = false;
+      EPD_update_in_progress = EPD_UPDATE_NONE;
+//      SoC->Display_unlock();
+//Serial.println("EPD_Task: unlock"); Serial.flush();
+//      delay(100);
+//    } else {
+//      if (millis() - LockTime > 4000) {
+//        SoC->Display_unlock();
+//Serial.println("EPD_Task: reseet lock"); Serial.flush();
+//      }
+
     }
 
     yield();
