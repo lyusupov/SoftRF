@@ -120,7 +120,7 @@ install:
     fi
   - if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
       arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs ;
-      arduino --install-boards adafruit:nrf52 ;
+      arduino --install-boards adafruit:nrf52:0.21.0 ;
       arduino --board $BOARD --save-prefs ;
       arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
       arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
