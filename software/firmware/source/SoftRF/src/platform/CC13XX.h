@@ -183,6 +183,7 @@ extern SCSerial                 scSerial;
 #define MACRONIX_MX25R8035F     0xC228
 
 #define USE_OLED                 //  +5.5 kb
+#define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 #define USE_GNSS_PSM
 

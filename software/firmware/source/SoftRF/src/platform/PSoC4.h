@@ -166,6 +166,7 @@ struct rst_info {
 
 #if defined(CubeCell_GPS)
 #define USE_OLED                 //  +    kb
+#define EXCLUDE_OLED_049
 #define EXCLUDE_OLED_BARO_PAGE
 #endif
 

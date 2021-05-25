@@ -185,16 +185,17 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SCK     PA5
 #define SOC_GPIO_SPI1_SS      PA4
 
-/* button */
-//#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUTTON   PC4
-//#define SOC_GPIO_PIN_BUTTON   PA3
-
 #define TTGO_T65_OLED_PIN_RST PA8
 #define TTGO_T65_GPIO_PAD_OUT PA0
 #define TTGO_T65_GPIO_PAD_PWR PA2
 #define TTGO_T65_SENSOR_INT   PB0
 #define TTGO_T65_GPIO_CHRG    PB8
+
+/* button */
+//#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   (hw_info.model == SOFTRF_MODEL_BRACELET ? \
+                              TTGO_T65_GPIO_PAD_OUT : PC4)
+//#define SOC_GPIO_PIN_BUTTON   PA3
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -209,6 +210,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_AT65
 
 #define USE_OLED                 //  +3.5 kb
+//#define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -293,6 +295,7 @@ typedef struct stm32_backup_struct {
 /* USB Serial */                 //  + 10 kb
 #define USE_OLED                 //  +3.5 kb
 #define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_049
 #define USE_NMEA_CFG             //  +2.5 kb
 //#define EXCLUDE_BMP180         //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb

@@ -242,6 +242,7 @@ struct rst_info {
 
 //#define USE_OLED                 //  +    kb
 //#define EXCLUDE_OLED_BARO_PAGE
+//#define EXCLUDE_OLED_049
 #define USE_EPAPER                 //  +    kb
 
 /* Experimental */

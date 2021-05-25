@@ -196,15 +196,17 @@ static void STM32_setup()
       while (SerialOutput.available()) { SerialOutput.read(); }
       break;
 #endif
-#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
-      LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
-                                     STM32_ButtonWakeup, RISING);
+      if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
+        LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
+                                       STM32_ButtonWakeup, RISING);
 
-      LowPower.deepSleep();
+        LowPower.deepSleep();
+      } else {
+        LowPower_shutdown();
+      }
       break;
-#endif
     default:
       LowPower_shutdown();
       break;
@@ -238,6 +240,7 @@ static void STM32_setup()
         hw_info.model = SOFTRF_MODEL_BRACELET;
 
         pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
+        pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
       }
     }
 
@@ -678,7 +681,6 @@ static void STM32_WDT_fini()
   }
 }
 
-#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
 #include <AceButton.h>
 using namespace ace_button;
 
@@ -711,12 +713,12 @@ void handleEvent(AceButton* button, uint8_t eventType,
 void onPageButtonEvent() {
   button_1.check();
 }
-#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 
 static void STM32_Button_setup()
 {
-#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
+       hw_info.model == SOFTRF_MODEL_BRACELET)) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // BOOT0 button(s) uses external pull DOWN resistor.
@@ -735,25 +737,24 @@ static void STM32_Button_setup()
     PageButtonConfig->setClickDelay(600);
     PageButtonConfig->setLongPressDelay(2000);
   }
-#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void STM32_Button_loop()
 {
-#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
+       hw_info.model == SOFTRF_MODEL_BRACELET)) {
     button_1.check();
   }
-#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 static void STM32_Button_fini()
 {
-#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_DONGLE) {
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
+       hw_info.model == SOFTRF_MODEL_BRACELET)) {
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_ANALOG);
   }
-#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
 #if defined(USBD_USE_CDC)
