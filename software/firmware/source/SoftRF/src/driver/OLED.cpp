@@ -454,7 +454,9 @@ void OLED_049_func()
       u8x8->clear();
       u8x8->drawString(5, 4, ID_text);
       snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
-      u8x8->drawString(5, 6, buf);
+      u8x8->draw2x2Glyph ( 8, 4, buf[0]);
+      u8x8->draw2x2Glyph (10, 4, buf[1]);
+      u8x8->draw2x2String( 4, 6, buf+2);
 
       OLED_display_titles = true;
     }

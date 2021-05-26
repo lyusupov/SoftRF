@@ -222,6 +222,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SOUND
 //#define USE_GNSS_PSM
 #define EXCLUDE_LK8EX1
+//#define EXCLUDE_IMU
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
@@ -305,6 +306,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1
+#define EXCLUDE_IMU
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69

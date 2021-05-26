@@ -64,6 +64,10 @@ HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 static bool STM32_has_TCXO = false;
 static bool STM32_has_IMU  = false;
 
+#if !defined(EXCLUDE_IMU)
+#include <ICM_20948.h>
+ICM_20948_I2C imu;
+#endif /* EXCLUDE_IMU */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
@@ -240,7 +244,15 @@ static void STM32_setup()
         hw_info.model = SOFTRF_MODEL_BRACELET;
 
         pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
-        pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
+        if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
+          pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
+        }
+
+#if !defined(EXCLUDE_IMU)
+        imu.begin();
+
+        pinMode(TTGO_T65_SENSOR_INT, INPUT);
+#endif /* EXCLUDE_IMU */
       }
     }
 
@@ -341,6 +353,15 @@ static void STM32_loop()
 static void STM32_fini(int reason)
 {
 #if defined(ARDUINO_NUCLEO_L073RZ)
+
+  if (hw_info.model == SOFTRF_MODEL_BRACELET) {
+#if !defined(EXCLUDE_IMU)
+    imu.sleep(true);
+    // imu.lowPower(true);
+#endif /* EXCLUDE_IMU */
+    pinMode(TTGO_T65_OLED_PIN_RST, INPUT);
+    // pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT);
+  }
 
   /* De-activate 1.8V<->3.3V level shifters */
   digitalWrite(SOC_GPIO_PIN_GNSS_LS, LOW);
