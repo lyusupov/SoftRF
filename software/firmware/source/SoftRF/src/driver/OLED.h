@@ -31,7 +31,6 @@ void OLED_fini(int);
 void OLED_info1(void);
 void OLED_Next_Page(void);
 
-extern const char *OLED_Protocol_ID[];
 extern const char *ISO3166_CC[];
 extern const char SoftRF_text1[];
 extern const char ID_text[];

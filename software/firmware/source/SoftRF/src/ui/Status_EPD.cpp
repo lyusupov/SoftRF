@@ -33,15 +33,6 @@
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
-const char *EPD_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "LEG",
-  [RF_PROTOCOL_OGNTP]     = "OGN",
-  [RF_PROTOCOL_P3I]       = "P3I",
-  [RF_PROTOCOL_ADSB_1090] = "ADS",
-  [RF_PROTOCOL_ADSB_UAT]  = "UAT",
-  [RF_PROTOCOL_FANET]     = "FAN"
-};
-
 const char ID_text[]       = "ID";
 const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";
@@ -190,7 +181,7 @@ static void EPD_Draw_NavBoxes()
     display->setFont(&FreeMonoBold18pt7b);
 
     display->setCursor(navbox4.x + 15, navbox4.y + 50);
-    display->print(EPD_Protocol_ID[navbox4.value]);
+    display->print(Protocol_ID[navbox4.value]);
 
     uint16_t bottom_navboxes_x = navbox5.x;
     uint16_t bottom_navboxes_y = navbox5.y;

@@ -982,11 +982,11 @@ static void ESP32_Display_loop()
         tft->setCursor(tft->textWidth(" "), tft->height()/6);
         tft->print(buf);
 
-        tbw = tft->textWidth(OLED_Protocol_ID[ThisAircraft.protocol]);
+        tbw = tft->textWidth("O");
 
         tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
                        tft->height()/6);
-        tft->print(OLED_Protocol_ID[ThisAircraft.protocol]);
+        tft->print(Protocol_ID[ThisAircraft.protocol][0]);
 
         itoa(rx_packets_counter % 1000, buf, 10);
         tft->setCursor(tft->textWidth(" "), tft->height()/2);

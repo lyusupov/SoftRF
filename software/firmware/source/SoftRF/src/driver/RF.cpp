@@ -52,6 +52,15 @@ static long TxRandomValue = 0;
 const rfchip_ops_t *rf_chip = NULL;
 bool RF_SX12XX_RST_is_connected = true;
 
+const char *Protocol_ID[] = {
+  [RF_PROTOCOL_LEGACY]    = "LEG",
+  [RF_PROTOCOL_OGNTP]     = "OGN",
+  [RF_PROTOCOL_P3I]       = "P3I",
+  [RF_PROTOCOL_ADSB_1090] = "ADS",
+  [RF_PROTOCOL_ADSB_UAT]  = "UAT",
+  [RF_PROTOCOL_FANET]     = "FAN"
+};
+
 size_t (*protocol_encode)(void *, ufo_t *);
 bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 

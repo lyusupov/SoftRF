@@ -104,5 +104,6 @@ extern size_t (*protocol_encode)(void *, ufo_t *);
 extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 extern int8_t RF_last_rssi;
+extern const char *Protocol_ID[];
 
 #endif /* RFHELPER_H */

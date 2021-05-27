@@ -80,15 +80,6 @@ static int32_t  prev_cdr            = (int32_t)   -10000; /* climb/descent rate 
 
 unsigned long OLEDTimeMarker = 0;
 
-const char *OLED_Protocol_ID[] = {
-  [RF_PROTOCOL_LEGACY]    = "L",
-  [RF_PROTOCOL_OGNTP]     = "O",
-  [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
-  [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
-};
-
 const char *ISO3166_CC[] = {
   [RF_BAND_AUTO] = "--",
   [RF_BAND_EU]   = "EU",
@@ -208,7 +199,7 @@ static void OLED_radio()
 
     u8x8->drawString(8, 1, PROTOCOL_text);
 
-    u8x8->draw2x2String(14, 2, OLED_Protocol_ID[ThisAircraft.protocol]);
+    u8x8->draw2x2Glyph(14, 2, Protocol_ID[ThisAircraft.protocol][0]);
 
     u8x8->drawString(1, 5, RX_text);
 
@@ -467,7 +458,7 @@ void OLED_049_func()
     if (!OLED_display_titles) {
       u8x8->clear();
       u8x8->drawString(4, 4, PROTOCOL_text);
-      u8x8->draw2x2String(5, 6, OLED_Protocol_ID[ThisAircraft.protocol]);
+      u8x8->draw2x2String(5, 6, Protocol_ID[ThisAircraft.protocol]);
 
       OLED_display_titles = true;
     }
