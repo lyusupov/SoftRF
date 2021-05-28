@@ -77,7 +77,8 @@ static void sx12xx_setup(void);
 static void sx12xx_channel(uint8_t);
 static bool sx12xx_receive(void);
 static void sx12xx_transmit(void);
-static void sx12xx_shutdown(void);
+static void sx1276_shutdown(void);
+static void sx1262_shutdown(void);
 
 static bool uatm_probe(void);
 static void uatm_setup(void);
@@ -121,7 +122,7 @@ const rfchip_ops_t sx1276_ops = {
   sx12xx_channel,
   sx12xx_receive,
   sx12xx_transmit,
-  sx12xx_shutdown
+  sx1276_shutdown
 };
 #if defined(USE_BASICMAC)
 const rfchip_ops_t sx1262_ops = {
@@ -132,7 +133,7 @@ const rfchip_ops_t sx1262_ops = {
   sx12xx_channel,
   sx12xx_receive,
   sx12xx_transmit,
-  sx12xx_shutdown
+  sx1262_shutdown
 };
 #endif /* USE_BASICMAC */
 #endif /*EXCLUDE_SX12XX */
@@ -959,12 +960,20 @@ static void sx12xx_transmit()
     };
 }
 
-static void sx12xx_shutdown()
+static void sx1276_shutdown()
 {
   LMIC_shutdown();
-  SPI.end();
 
-  pinMode(lmic_pins.nss, INPUT);
+  SPI.end();
+}
+
+static void sx1262_shutdown()
+{
+  os_init (nullptr);
+  sx126x_ll_ops.radio_sleep();
+  delay(1);
+
+  SPI.end();
 }
 
 // Enable rx mode and call func when a packet is received
