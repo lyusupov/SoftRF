@@ -89,6 +89,13 @@ static uint32_t bootCount = 0;
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 
+const char *Hardware_Rev[] = {
+  [0] = "2020-8-6",
+  [1] = "2020-12-12",
+  [2] = "2021-3-26",
+  [3] = "Unknown"
+};
+
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 
@@ -123,13 +130,13 @@ SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MOSI);
 
 #if defined(USE_EPAPER)
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_ttgo_techo(GxEPD2_154_D67(
+GxEPD2_BW<TECHO_DISPLAY_MODEL, TECHO_DISPLAY_MODEL::HEIGHT> epd_ttgo_techo(TECHO_DISPLAY_MODEL(
                                                             SOC_GPIO_PIN_EPD_SS,
                                                             SOC_GPIO_PIN_EPD_DC,
                                                             SOC_GPIO_PIN_EPD_RST,
                                                             SOC_GPIO_PIN_EPD_BUSY));
 
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+GxEPD2_BW<TECHO_DISPLAY_MODEL, TECHO_DISPLAY_MODEL::HEIGHT> *display;
 #endif /* USE_EPAPER */
 
 Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
@@ -317,21 +324,6 @@ static void nRF52_setup()
                   nRF52_board : NRF52_LILYGO_TECHO_REV_0;
   }
 
-#if 0
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
-    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, LOW);
-    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
-    delay(100);
-
-    Wire.beginTransmission(BME280_ADDRESS);
-    nRF52_board = Wire.endTransmission() == 0 ?
-                  nRF52_board : NRF52_LILYGO_TECHO_REV_1;
-
-    digitalWrite(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT);  /* PWR_EN is ON */
-    delay(200);
-  }
-#endif
-
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
     digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
     pinMode(SOC_GPIO_PIN_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
@@ -495,6 +487,7 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
 
+#if 0
     Serial.println();
     Serial.print  (F("SPI FLASH JEDEC ID: "));
     Serial.print  (spiflash_id, HEX);           Serial.print(" ");
@@ -502,10 +495,12 @@ static void nRF52_post_init()
     Serial.print  (mx25_status_config[0], HEX); Serial.print(" ");
     Serial.print  (mx25_status_config[1], HEX); Serial.print(" ");
     Serial.print  (mx25_status_config[2], HEX); Serial.println();
+#endif
 
     Serial.println();
-    Serial.print  (F("LilyGO T-Echo (rev."));
-    Serial.print  (hw_info.revision);
+    Serial.print  (F("LilyGO T-Echo ("));
+    Serial.print  (hw_info.revision > 2 ?
+                   Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
     Serial.println(F(") Power-on Self Test"));
     Serial.println();
     Serial.flush();
@@ -729,7 +724,8 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_WKE,  INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_RST,  INPUT);
-      digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
+      /* Cut 3.3V power off on REV_2 board */
+      pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT_PULLDOWN);
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -792,16 +788,6 @@ static void nRF52_fini(int reason)
 #endif
   default:
     break;
-  }
-
-  /* Cut 3.3V power off on modded REV_1 board */
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 && hw_info.rf == RF_IC_SX1262) {
-    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT_PULLDOWN);
-  }
-
-  /* Cut 3.3V power off on REV_2 board */
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
-    pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT_PULLDOWN);
   }
 
   Serial.end();

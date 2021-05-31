@@ -66,6 +66,8 @@ bool EPD_setup(bool splash_screen)
   uint16_t tbw2, tbh2;
   int16_t  tbx3, tby3;
   uint16_t tbw3, tbh3;
+  int16_t  tbx4, tby4;
+  uint16_t tbw4, tbh4;
   uint16_t x, y;
 
   display->init( /* 38400 */ );
@@ -83,6 +85,7 @@ bool EPD_setup(bool splash_screen)
   display->fillScreen(GxEPD_WHITE);
 
   if (hw_info.model == SOFTRF_MODEL_BADGE) {
+
     x = (display->width()  - tbw1) / 2;
     y = (display->height() + tbh1) / 2 - tbh3;
     display->setCursor(x, y);
@@ -102,6 +105,18 @@ bool EPD_setup(bool splash_screen)
     y = (display->height() + tbh3) / 2 + tbh3;
     display->setCursor(x, y);
     display->print(EPD_SoftRF_text3);
+
+    char buf[32];
+    snprintf(buf, sizeof(buf), "HW: %s SW: %s", hw_info.revision > 2 ?
+                  Hardware_Rev[3] : Hardware_Rev[hw_info.revision],
+                  SOFTRF_FIRMWARE_VERSION);
+
+    display->setFont(&Org_01);
+    display->getTextBounds(buf, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);
+    x = (display->width() - tbw4) / 2;
+    y = display->height() - tbh4;
+    display->setCursor(x, y);
+    display->print(buf);
 
   } else {
     x = (display->width()  - tbw1) / 2;

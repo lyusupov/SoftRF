@@ -76,6 +76,9 @@ struct rst_info {
   uint32_t depc;
 };
 
+#define TECHO_DISPLAY_MODEL   GxEPD2_154_D67
+//#define TECHO_DISPLAY_MODEL   GxEPD2_154
+
 #define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
 #define SOC_ADC_VOLTAGE_DIV   (2.0F)          // 100K + 100K voltage divider on VBAT
 #define REAL_VBAT_MV_PER_LSB  (SOC_ADC_VOLTAGE_DIV * VBAT_MV_PER_LSB)
@@ -268,13 +271,14 @@ extern Uart Serial2;
 #endif
 
 extern PCF8563_Class *rtc;
+extern const char *Hardware_Rev[];
 
 #if defined(USE_EPAPER)
 #include <GxEPD2_BW.h>
 
 typedef void EPD_Task_t;
 
-extern GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> *display;
+extern GxEPD2_BW<TECHO_DISPLAY_MODEL, TECHO_DISPLAY_MODEL::HEIGHT> *display;
 #endif /* USE_EPAPER */
 
 #endif /* PLATFORM_NRF52_H */

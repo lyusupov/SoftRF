@@ -47,9 +47,8 @@ enum
   OLED_049_PAGE_ID,
   OLED_049_PAGE_PROTOCOL,
   OLED_049_PAGE_RX,
-  OLED_049_PAGE_TX,
+  OLED_049_PAGE_SATS_TX,
   OLED_049_PAGE_ACFTS,
-  OLED_049_PAGE_SATS,
   OLED_049_PAGE_UPTIME,
   OLED_049_PAGE_VOLTAGE,
   OLED_049_PAGE_COUNT
@@ -148,14 +147,29 @@ byte OLED_setup() {
     {
 #if !defined(EXCLUDE_OLED_049)
     case DISPLAY_OLED_0_49:
-      u8x8->drawString( 5, 5, SoftRF_text3);
+      u8x8->draw2x2Glyph(4,  4, SoftRF_text3[0]);
+      u8x8->draw2x2Glyph(6,  4, SoftRF_text3[1]);
+      u8x8->draw2x2Glyph(8,  4, SoftRF_text3[2]);
+      u8x8->draw2x2Glyph(10, 4, SoftRF_text3[3]);
+      u8x8->draw2x2Glyph(6,  6, SoftRF_text3[4]);
+      u8x8->draw2x2Glyph(8,  6, SoftRF_text3[5]);
+
       delay(2000);
-      u8x8->clearLine(5);
-      u8x8->drawString( 7, 5, SoftRF_text2);
+
+      u8x8->clear();
+      u8x8->draw2x2String( 5, 5, SoftRF_text2);
+
       delay(2000);
-      u8x8->clearLine(5);
-      u8x8->drawString( 5, 5, SoftRF_text1);
-      OLED_current_page = OLED_049_PAGE_TX;
+
+      u8x8->clear();
+      u8x8->draw2x2Glyph(4,  4, SoftRF_text1[0]);
+      u8x8->draw2x2Glyph(6,  4, SoftRF_text1[1]);
+      u8x8->draw2x2Glyph(8,  4, SoftRF_text1[2]);
+      u8x8->draw2x2Glyph(10, 4, SoftRF_text1[3]);
+      u8x8->draw2x2Glyph(6,  6, SoftRF_text1[4]);
+      u8x8->draw2x2Glyph(8,  6, SoftRF_text1[5]);
+
+      OLED_current_page = OLED_049_PAGE_SATS_TX;
       page_count        = OLED_049_PAGE_COUNT;
       break;
 #endif /* EXCLUDE_OLED_049 */
@@ -500,16 +514,19 @@ void OLED_049_func()
 
     break;
 
-  case OLED_049_PAGE_TX:
+  case OLED_049_PAGE_SATS_TX:
     if (!OLED_display_titles) {
       u8x8->clear();
 
-      u8x8->drawString(5, 4, TX_text);
+      u8x8->drawString( 4, 4, SATS_text);
+      prev_sats_counter   = (uint32_t) -1;
+
+      u8x8->drawString(10, 4, TX_text);
 
       if (settings->mode        == SOFTRF_MODE_RECEIVER ||
           settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
           settings->txpower     == RF_TX_POWER_OFF) {
-        u8x8->draw2x2String(5, 6, "OFF");
+        u8x8->draw2x2String(8, 6, "NA");
         prev_tx_packets_counter = tx_packets_counter;
       } else {
         prev_tx_packets_counter = (uint32_t) -1;
@@ -518,19 +535,25 @@ void OLED_049_func()
       OLED_display_titles = true;
     }
 
+    sats_counter   = gnss.satellites.value();
+
+    if (prev_sats_counter != sats_counter) {
+      disp_value = sats_counter > 9 ? 9 : sats_counter;
+
+      u8x8->draw2x2Glyph(4, 6, '0' + disp_value);
+      prev_sats_counter = sats_counter;
+    }
+
     if (tx_packets_counter != prev_tx_packets_counter) {
-      disp_value = tx_packets_counter % 1000;
+      disp_value = tx_packets_counter % 100;
       itoa(disp_value, buf, 10);
 
       if (disp_value < 10) {
         strcat_P(buf,PSTR("  "));
       } else {
-        if (disp_value < 100) {
-          strcat_P(buf,PSTR(" "));
-        };
       }
 
-      u8x8->draw2x2String(5, 6, buf);
+      u8x8->draw2x2String(8, 6, buf);
       prev_tx_packets_counter = tx_packets_counter;
     }
 
@@ -560,7 +583,7 @@ void OLED_049_func()
     }
 
     break;
-
+#if 0
   case OLED_049_PAGE_SATS:
     if (!OLED_display_titles) {
       u8x8->clear();
@@ -585,7 +608,7 @@ void OLED_049_func()
     }
 
     break;
-
+#endif
   case OLED_049_PAGE_UPTIME:
     if (!OLED_display_titles) {
       u8x8->clear();
@@ -715,15 +738,26 @@ void OLED_info1()
 {
   if (u8x8) {
 
+    u8x8->clear();
+
     switch (hw_info.display)
     {
+#if !defined(EXCLUDE_OLED_049)
     case DISPLAY_OLED_0_49:
+      {
+        const char buf[] = SOFTRF_FIRMWARE_VERSION;
+        int ndx = strlen(buf) - 3;
+        ndx = ndx < 0 ? 0 : ndx;
+        u8x8->drawString  (4, 4, "VERSION");
+        u8x8->draw2x2Glyph(5, 6, toupper(buf[ndx++]));
+        u8x8->draw2x2Glyph(7, 6, toupper(buf[ndx++]));
+        u8x8->draw2x2Glyph(9, 6, toupper(buf[ndx]));
+      }
       break;
+#endif /* EXCLUDE_OLED_049 */
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
     default:
-
-      u8x8->clear();
 
       u8x8->draw2x2String(0, 0, "RADIO");
       u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");

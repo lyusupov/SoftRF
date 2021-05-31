@@ -173,6 +173,10 @@ ui_settings_t ui_settings = {
 
 ui_settings_t *ui;
 
+const char *Hardware_Rev[] = {
+  [0] = "Unknown"
+};
+
 //-------------------------------------------------------------------------
 //
 // The MIT License (MIT)

@@ -182,6 +182,7 @@ static void STM32_setup()
 #endif
 
     uint32_t shudown_reason = getBackupRegister(SHUTDOWN_REASON_INDEX);
+    setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
 
     switch (shudown_reason)
     {
@@ -203,6 +204,7 @@ static void STM32_setup()
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
+        pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
         LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
                                        STM32_ButtonWakeup, RISING);
 
@@ -215,8 +217,6 @@ static void STM32_setup()
       LowPower_shutdown();
       break;
     }
-
-    setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
 
     bootCount = getBackupRegister(BOOT_COUNT_INDEX);
     bootCount++;

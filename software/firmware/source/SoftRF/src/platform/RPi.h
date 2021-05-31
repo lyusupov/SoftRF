@@ -99,6 +99,8 @@ struct rst_info {
 extern TTYSerial Serial1;
 extern TTYSerial Serial2;
 
+extern const char *Hardware_Rev[];
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND

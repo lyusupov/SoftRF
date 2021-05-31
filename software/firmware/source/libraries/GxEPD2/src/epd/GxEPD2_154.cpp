@@ -382,3 +382,12 @@ void GxEPD2_154::_Update_Part()
   _waitWhileBusy("_Update_Part", partial_refresh_time);
   _writeCommand(0xff);
 }
+
+bool GxEPD2_154::probe()
+{
+  if (_timeout_expired) {
+    return false;
+  } else {
+    return true;
+  }
+}

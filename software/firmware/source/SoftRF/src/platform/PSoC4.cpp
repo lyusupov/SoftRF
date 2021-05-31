@@ -204,18 +204,22 @@ static void PSoC4_fini(int reason)
   if (hw_info.model == SOFTRF_MODEL_MINI) {
 
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
-    pinMode(SOC_GPIO_PIN_GNSS_PWR, ANALOG);
+    pinMode(SOC_GPIO_PIN_GNSS_PWR,  ANALOG);
 
     swSer.end();
 
     delay(2000);
 
-    pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
+    pinMode(SOC_GPIO_PIN_OLED_RST,  ANALOG);
 
     digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
-    pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
+    pinMode(SOC_GPIO_PIN_OLED_PWR,  ANALOG);
 
-    pinMode(SOC_GPIO_PIN_BATTERY, ANALOG);
+    pinMode(SOC_GPIO_PIN_SS,        ANALOG);
+    pinMode(SOC_GPIO_PIN_RST,       ANALOG);
+    pinMode(SOC_GPIO_PIN_BUSY,      ANALOG);
+
+    pinMode(SOC_GPIO_PIN_BATTERY,   ANALOG);
 
 //    settings->nmea_l = false;
 //    settings->nmea_s = false;
@@ -227,7 +231,7 @@ static void PSoC4_fini(int reason)
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
-      pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+      pinMode(SOC_GPIO_PIN_BUTTON,  INPUT);
       attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON),
                       PSoC4_User_Key_Wakeup, FALLING);
       break;
@@ -290,14 +294,17 @@ static String PSoC4_getResetReason()
   }
 }
 
-extern void * _sbrk_r (int);
+extern "C" void * _sbrk_r (int);
+extern "C" void * _sbrk   (int);
 extern int _end;
 
 static uint32_t PSoC4_getFreeHeap()
 {
 //  uint8 *heapend = (uint8 *) _sbrk_r(0);
 //  return CYDEV_HEAP_SIZE - (heapend - (uint8 *) &_end);
-  return 0;
+
+  char top;
+  return &top - reinterpret_cast<char*>(_sbrk(0));
 }
 
 static long PSoC4_random(long howsmall, long howBig)

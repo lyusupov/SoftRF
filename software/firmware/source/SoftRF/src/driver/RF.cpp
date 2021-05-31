@@ -967,6 +967,7 @@ static void sx1276_shutdown()
   SPI.end();
 }
 
+#if defined(USE_BASICMAC)
 static void sx1262_shutdown()
 {
   os_init (nullptr);
@@ -975,6 +976,7 @@ static void sx1262_shutdown()
 
   SPI.end();
 }
+#endif /* USE_BASICMAC */
 
 // Enable rx mode and call func when a packet is received
 static void sx12xx_rx(osjobcb_t func) {
