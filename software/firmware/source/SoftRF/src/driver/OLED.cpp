@@ -549,7 +549,7 @@ void OLED_049_func()
       itoa(disp_value, buf, 10);
 
       if (disp_value < 10) {
-        strcat_P(buf,PSTR("  "));
+        strcat_P(buf,PSTR(" "));
       } else {
       }
 
@@ -583,32 +583,7 @@ void OLED_049_func()
     }
 
     break;
-#if 0
-  case OLED_049_PAGE_SATS:
-    if (!OLED_display_titles) {
-      u8x8->clear();
-      u8x8->drawString( 5, 4, SATS_text);
-      prev_sats_counter   = (uint32_t) -1;
 
-      OLED_display_titles = true;
-    }
-
-    sats_counter   = gnss.satellites.value();
-
-    if (prev_sats_counter != sats_counter) {
-      disp_value = sats_counter > 99 ? 99 : sats_counter;
-      itoa(disp_value, buf, 10);
-
-      if (disp_value < 10) {
-        strcat_P(buf,PSTR(" "));
-      }
-
-      u8x8->draw2x2String(5, 6, buf);
-      prev_sats_counter = sats_counter;
-    }
-
-    break;
-#endif
   case OLED_049_PAGE_UPTIME:
     if (!OLED_display_titles) {
       u8x8->clear();
@@ -752,6 +727,12 @@ void OLED_info1()
         u8x8->draw2x2Glyph(5, 6, toupper(buf[ndx++]));
         u8x8->draw2x2Glyph(7, 6, toupper(buf[ndx++]));
         u8x8->draw2x2Glyph(9, 6, toupper(buf[ndx]));
+
+        delay(2000);
+
+        u8x8->clear();
+        u8x8->drawString   (4, 4, "REGION");
+        u8x8->draw2x2String(6, 6, ISO3166_CC[settings->band]);
       }
       break;
 #endif /* EXCLUDE_OLED_049 */
