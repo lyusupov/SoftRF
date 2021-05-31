@@ -72,7 +72,11 @@ bool EPD_setup(bool splash_screen)
 
   display->init( /* 38400 */ );
 
-  display->setRotation(1);
+  display->setRotation( 1     /* 90  */
+#if defined(EPAPER_ROTATE_180)
+                        + 2   /* 270 */
+#endif /* EPAPER_ROTATE_180 */
+  );
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);
 

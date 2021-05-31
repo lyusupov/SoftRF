@@ -247,6 +247,7 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 //#define EXCLUDE_OLED_049
 #define USE_EPAPER                 //  +    kb
+//#define EPAPER_ROTATE_180
 
 /* Experimental */
 //#define USE_WEBUSB_SERIAL
