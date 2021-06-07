@@ -114,6 +114,19 @@ static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 static void STM32_SerialWakeup() { }
 static void STM32_ButtonWakeup() { }
 
+static void STM32_ULP_stop()
+{
+#if !defined(ARDUINO_NUCLEO_L073RZ)
+  LowPower_shutdown();
+#else
+  __disable_irq();
+
+  /* Enable Ultra low power mode */
+  HAL_PWREx_EnableUltraLowPower();
+  HAL_PWR_EnterSTOPMode( PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI );
+#endif /* ARDUINO_NUCLEO_L073RZ */
+}
+
 static void STM32_setup()
 {
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
@@ -149,6 +162,9 @@ static void STM32_setup()
 
     hw_info.model = SOFTRF_MODEL_RETRO;
 
+    Wire.setSCL(SOC_GPIO_PIN_SCL);
+    Wire.setSDA(SOC_GPIO_PIN_SDA);
+
 #if defined(ARDUINO_NUCLEO_L073RZ)
     stm32_board = STM32_TTGO_TWATCH_EB_1_3;
 
@@ -160,6 +176,25 @@ static void STM32_setup()
 
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
+
+      Wire.begin();
+      Wire.beginTransmission(ICM20948_ADDRESS);
+      STM32_has_IMU = (Wire.endTransmission() == 0);
+      Wire.end();
+
+      pinMode(SOC_GPIO_PIN_SDA,  INPUT_ANALOG);
+      pinMode(SOC_GPIO_PIN_SCL,  INPUT_ANALOG);
+
+      if (STM32_has_IMU) {
+        stm32_board   = STM32_TTGO_T65_1_2;
+        hw_info.model = SOFTRF_MODEL_BRACELET;
+
+        if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
+          pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
+        }
+
+        pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLDOWN);
+      }
     }
 
     // PC_1 is Low for TCXO or High for Crystal
@@ -170,6 +205,21 @@ static void STM32_setup()
       hal_pin_tcxo_init();
       hal_pin_tcxo(0); // disable TCXO
     }
+
+    /* De-activate 1.8V<->3.3V level shifters */
+    digitalWrite(SOC_GPIO_PIN_GNSS_LS, LOW);
+    delay(200);
+    pinMode(SOC_GPIO_PIN_GNSS_LS, INPUT_ANALOG);
+
+    digitalWrite(SOC_GPIO_PIN_ANT_RXTX, LOW);
+    pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT_OPEN_DRAIN);
+
+    if (!STM32_has_TCXO) {
+      // because PC1 = high for LoRa Crystal, need to be careful of leakage current
+      pinMode(SOC_GPIO_PIN_OSC_SEL, INPUT_PULLUP);
+    }
+
+    pinMode(SOC_GPIO_PIN_SS,  INPUT_PULLUP);
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
@@ -197,24 +247,29 @@ static void STM32_setup()
 
       LowPower.deepSleep();
 
-      // Empty Serial Rx
-      while (SerialOutput.available()) { SerialOutput.read(); }
+      HAL_NVIC_SystemReset();
       break;
 #endif
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
-        pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
+        pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
+                                     INPUT_PULLDOWN : INPUT);
         LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
                                        STM32_ButtonWakeup, RISING);
 
         LowPower.deepSleep();
+
+        /* do not enter into DFU mode when BOOT button has dual function */
+        while (hw_info.model == SOFTRF_MODEL_DONGLE &&
+               digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
+        HAL_NVIC_SystemReset();
       } else {
-        LowPower_shutdown();
+        STM32_ULP_stop();
       }
       break;
     default:
-      LowPower_shutdown();
+      STM32_ULP_stop();
       break;
     }
 
@@ -224,38 +279,22 @@ static void STM32_setup()
 
     pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
 
-    Wire.setSCL(SOC_GPIO_PIN_SCL);
-    Wire.setSDA(SOC_GPIO_PIN_SDA);
-
 #if defined(ARDUINO_NUCLEO_L073RZ)
     lmic_pins.rxe = SOC_GPIO_PIN_ANT_RXTX;
 
     // Set default value at Rx
     digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
 
-    if (stm32_board == STM32_TTGO_TMOTION_1_1) {
-      Wire.begin();
-      Wire.beginTransmission(ICM20948_ADDRESS);
-      STM32_has_IMU = (Wire.endTransmission() == 0);
-      Wire.end();
-
-      if (STM32_has_IMU) {
-        stm32_board = STM32_TTGO_T65_1_2;
-        hw_info.model = SOFTRF_MODEL_BRACELET;
-
-        pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
-        if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
-          pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
-        }
+    if (stm32_board == STM32_TTGO_T65_1_2) {
+      delay(1);
+      pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
 
 #if !defined(EXCLUDE_IMU)
-        imu.begin();
+      imu.begin();
 
-        pinMode(TTGO_T65_SENSOR_INT, INPUT);
+      pinMode(TTGO_T65_SENSOR_INT, INPUT);
 #endif /* EXCLUDE_IMU */
-      }
     }
-
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
@@ -359,26 +398,16 @@ static void STM32_fini(int reason)
     imu.sleep(true);
     // imu.lowPower(true);
 #endif /* EXCLUDE_IMU */
-    pinMode(TTGO_T65_OLED_PIN_RST, INPUT);
-    // pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT);
-  }
-
-  /* De-activate 1.8V<->3.3V level shifters */
-  digitalWrite(SOC_GPIO_PIN_GNSS_LS, LOW);
-  delay(100);
-  pinMode(SOC_GPIO_PIN_GNSS_LS, INPUT);
-
-  digitalWrite(SOC_GPIO_PIN_ANT_RXTX, LOW);
-  pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT_OPEN_DRAIN);
-
-  if (!STM32_has_TCXO) {
-    // because PC1 = high for LoRa Crystal, need to be careful of leakage current
-    pinMode(SOC_GPIO_PIN_OSC_SEL, INPUT_PULLUP);
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
   swSer.end();
   Wire.end();
+
+  pinMode(SOC_GPIO_PIN_SDA,  INPUT_ANALOG);
+  pinMode(SOC_GPIO_PIN_SCL,  INPUT_ANALOG);
+
+  if (lmic_pins.rst != LMIC_UNUSED_PIN) pinMode(lmic_pins.rst,  INPUT_ANALOG);
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   SerialOutput.end();
@@ -743,7 +772,8 @@ static void STM32_Button_setup()
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // BOOT0 button(s) uses external pull DOWN resistor.
-    pinMode(button_pin, INPUT);
+    pinMode(button_pin, hw_info.model == SOFTRF_MODEL_DONGLE ?
+                        INPUT_PULLDOWN : INPUT);
 
     button_1.init(button_pin, LOW);
 
@@ -774,6 +804,9 @@ static void STM32_Button_fini()
   if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
       (hw_info.model == SOFTRF_MODEL_DONGLE  ||
        hw_info.model == SOFTRF_MODEL_BRACELET)) {
+    pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
+                                 INPUT_PULLDOWN : INPUT);
+    while (digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_ANALOG);
   }
 }

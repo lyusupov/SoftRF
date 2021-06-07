@@ -697,6 +697,8 @@ void OLED_fini(int reason)
     case DISPLAY_OLED_0_49:
       u8x8->draw2x2String(5, 5, reason == SOFTRF_SHUTDOWN_LOWBAT ?
                                 "BAT" : "OFF");
+      delay(2000);
+      u8x8->noDisplay();
       break;
 #endif /* EXCLUDE_OLED_049 */
     case DISPLAY_OLED_TTGO:
