@@ -77,7 +77,7 @@ static void EPD_Draw_Radar()
       switch(EPD_zoom)
       {
       case ZOOM_LOWEST:
-        divider = 10000; /* 20 KM */
+        divider = 30000; /* 60 KM */
         break;
       case ZOOM_LOW:
         divider =  5000; /* 10 KM */
@@ -94,7 +94,7 @@ static void EPD_Draw_Radar()
       switch(EPD_zoom)
       {
       case ZOOM_LOWEST:
-        divider = 9260;  /* 10 NM */
+        divider = 27780;  /* 30 NM */
         break;
       case ZOOM_LOW:
         divider = 4630;  /*  5 NM */
@@ -297,12 +297,12 @@ static void EPD_Draw_Radar()
       display->setCursor(x, y);
 
       if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
-        display->print(EPD_zoom == ZOOM_LOWEST ? "20" :
+        display->print(EPD_zoom == ZOOM_LOWEST ? "60" :
                        EPD_zoom == ZOOM_LOW    ? "10" :
                        EPD_zoom == ZOOM_MEDIUM ? "4 " :
                        EPD_zoom == ZOOM_HIGH   ? "2 " : "");
       } else {
-        display->print(EPD_zoom == ZOOM_LOWEST ? "10" :
+        display->print(EPD_zoom == ZOOM_LOWEST ? "30" :
                        EPD_zoom == ZOOM_LOW    ? "5 " :
                        EPD_zoom == ZOOM_MEDIUM ? "2 " :
                        EPD_zoom == ZOOM_HIGH   ? "1 " : "");
