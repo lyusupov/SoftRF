@@ -111,25 +111,25 @@ static TaskHandle_t EPD_Task_Handle = NULL;
 #error "This nRF52 build variant is not supported!"
 #endif
 
+#if SPI_32MHZ_INTERFACE == 0
+#define _SPI_DEV    NRF_SPIM3 // 32 Mhz
+#define _SPI1_DEV   NRF_SPIM2
+#elif SPI_32MHZ_INTERFACE == 1
 #define _SPI_DEV    NRF_SPIM2
 #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
+#else
+  #error "not supported yet"
+#endif
 
-SPIClass SPI0(_SPI_DEV,
-              SOC_GPIO_PIN_TECHO_REV_0_MISO,
-              SOC_GPIO_PIN_TECHO_REV_0_SCK,
-              SOC_GPIO_PIN_TECHO_REV_0_MOSI);
-/*
-SPIClass SPI0(_SPI_DEV,
-              SOC_GPIO_PIN_PCA10059_MISO,
-              SOC_GPIO_PIN_PCA10059_SCK,
-              SOC_GPIO_PIN_PCA10059_MOSI);
-*/
+#if defined(USE_EPAPER)
+
+#if SPI_INTERFACES_COUNT == 1
 SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MISO,
               SOC_GPIO_PIN_EPD_SCK,
               SOC_GPIO_PIN_EPD_MOSI);
+#endif
 
-#if defined(USE_EPAPER)
 GxEPD2_BW<TECHO_DISPLAY_MODEL, TECHO_DISPLAY_MODEL::HEIGHT> epd_ttgo_techo(TECHO_DISPLAY_MODEL(
                                                             SOC_GPIO_PIN_EPD_SS,
                                                             SOC_GPIO_PIN_EPD_DC,
@@ -968,7 +968,17 @@ static void nRF52_EEPROM_extension()
 
 static void nRF52_SPI_begin()
 {
-  SPI0.begin();
+  if (nRF52_board == NRF52_NORDIC_PCA10059) {
+    SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
+                SOC_GPIO_PIN_PCA10059_SCK,
+                SOC_GPIO_PIN_PCA10059_MOSI);
+  } else {
+    SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
+                SOC_GPIO_PIN_TECHO_REV_0_SCK,
+                SOC_GPIO_PIN_TECHO_REV_0_MOSI);
+  }
+
+  SPI.begin();
 }
 
 static void nRF52_swSer_begin(unsigned long baud)
@@ -990,6 +1000,13 @@ static byte nRF52_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_EPAPER)
+
+#if SPI_INTERFACES_COUNT >= 2
+  SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
+               SOC_GPIO_PIN_EPD_SCK,
+               SOC_GPIO_PIN_EPD_MOSI);
+#endif
+
   display = &epd_ttgo_techo;
 
   if (EPD_setup(true)) {

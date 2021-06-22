@@ -25,10 +25,6 @@
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_NRF52)
 #define _BV(bit) (1 << (bit))
-#if defined(ARDUINO_ARCH_NRF52)
-extern SPIClass SPI0;
-#define SPI SPI0
-#endif /* ARDUINO_ARCH_NRF52 */
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else
 #if !defined(RASPBERRY_PI)
