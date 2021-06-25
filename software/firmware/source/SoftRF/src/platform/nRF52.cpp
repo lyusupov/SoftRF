@@ -153,7 +153,7 @@ static Adafruit_SPIFlash *SPIFlash = NULL;
 // Settings for the Macronix MX25R1635F 2MiB SPI flash.
 // Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7595/MX25R1635F,%20Wide%20Range,%2016Mb,%20v1.6.pdf
 // In low power mode, quad operations can only run at 8 MHz. In high power mode it can do 80 MHz.
-#define MX25R1635F_DESC  { \
+#define MX25R1635F  { \
         .total_size = (1 << 21), /* 2 MiB */ \
         .start_up_time_us = 800, \
         .manufacturer_id = 0xc2, \
@@ -177,14 +177,16 @@ static uint8_t mx25_status_config[3] = {0x00, 0x00, 0x00};
 
 /// Flash device list count
 enum {
-  MX25R1635F,
+  MX25R1635F_INDEX,
+  GD25Q32C_INDEX,
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
 /// List of all possible flash devices used by nRF52840 boards
 static SPIFlash_Device_t possible_devices[] = {
-    // LilyGO T-Echo
-    [MX25R1635F] = MX25R1635F_DESC,
+  // LilyGO T-Echo
+  [MX25R1635F_INDEX] = MX25R1635F,
+  [GD25Q32C_INDEX]   = GD25Q32C
 };
 
 // USB Mass Storage object
@@ -423,9 +425,9 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
-      possible_devices[MX25R1635F].max_clock_speed_mhz = 33;
-      possible_devices[MX25R1635F].supports_qspi = false;
-      possible_devices[MX25R1635F].supports_qspi_writes = false;
+      possible_devices[MX25R1635F_INDEX].max_clock_speed_mhz = 33;
+      possible_devices[MX25R1635F_INDEX].supports_qspi = false;
+      possible_devices[MX25R1635F_INDEX].supports_qspi_writes = false;
       SPIFlash = &QSPIFlash;
       break;
     case NRF52_LILYGO_TECHO_REV_1:
