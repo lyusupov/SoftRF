@@ -28,6 +28,7 @@
 static const SPIFlash_Device_t possible_devices[] = {
     // Main devices used in current Adafruit products
     GD25Q16C,
+    GD25Q32C,
     GD25Q64C,
     S25FL116K,
     S25FL216K,
@@ -47,6 +48,9 @@ static const SPIFlash_Device_t possible_devices[] = {
 
     // Other common flash devices
     W25Q16JV_IQ,
+    W25Q32JV_IQ,
+    AT25SF041,
+    AT25DF081A,
 };
 
 /// Flash device list count
@@ -166,7 +170,7 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 #if defined(ARDUINO_ARCH_SAMD) && !defined(__SAMD51__)
   // Hand-on testing show that SAMD21 M0 can write up to 24 Mhz,
   // but can only read reliably at 12 Mhz
-  rd_speed = min(12000000, rd_speed);
+  rd_speed = min(12000000U, rd_speed);
 #endif
 
   _trans->setClockSpeed(wr_speed, rd_speed);

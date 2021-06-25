@@ -76,8 +76,8 @@ void Adafruit_FlashTransport_QSPI::begin(void) {
 
   QSPI->BAUD.reg =
       QSPI_BAUD_BAUD(VARIANT_MCK / 4000000UL); // start with low 4Mhz, Mode 0
-  QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY | QSPI_CTRLB_CSMODE_NORELOAD |
-                    QSPI_CTRLB_DATALEN_8BITS | QSPI_CTRLB_CSMODE_LASTXFER;
+  QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY | QSPI_CTRLB_DATALEN_8BITS |
+                    QSPI_CTRLB_CSMODE_LASTXFER;
 
   QSPI->CTRLA.bit.ENABLE = 1;
 }
@@ -203,7 +203,8 @@ static void _run_instruction(uint8_t command, uint32_t iframe, uint32_t addr,
   // Dummy read of INSTRFRAME needed to synchronize.
   // See Instruction Transmission Flow Diagram, figure 37.9, page 995
   // and Example 4, page 998, section 37.6.8.5.
-  (volatile uint32_t) QSPI->INSTRFRAME.reg;
+  volatile uint32_t dummy = QSPI->INSTRFRAME.reg;
+  (void)dummy;
 
   if (buffer && size) {
     uint8_t *qspi_mem = (uint8_t *)(QSPI_AHB + addr);
