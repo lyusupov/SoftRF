@@ -123,7 +123,7 @@ typedef struct {
         104, /* if we need 120 then we can turn on high performance mode */    \
         .quad_enable_bit_mask = 0x02, .has_sector_protection = false,          \
     .supports_fast_read = true, .supports_qspi = true,                         \
-    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .supports_qspi_writes = true, .write_status_register_split = true,         \
     .single_status_byte = false, .is_fram = false,                             \
   }
 
