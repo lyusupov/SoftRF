@@ -23,6 +23,7 @@ Recommended:
 ## Hardware
 
 - [ ]   Standalone
+- [ ]   Badge
 - [ ]   Prime Mark II
 - [ ]   Uni
 - [ ]   Dongle

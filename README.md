@@ -83,7 +83,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
-* [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
 * [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
