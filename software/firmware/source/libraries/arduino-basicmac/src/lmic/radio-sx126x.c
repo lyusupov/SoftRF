@@ -436,7 +436,24 @@ static void SetModulationParamsFsk (void) {
     param[2] = (br      ) & 0xFF;
 
     param[3] = 0x09; // TX pulse shape filter gaussian BT 0.5
-    param[4] = 0x19; // RX bandwidth 312 kHz DSB
+
+    switch (LMIC.protocol->bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_50KHZ:
+      param[4] = 0x0B; // RX bandwidth 117.3 kHz DSB
+//    param[4] = 0x1A; // RX bandwidth 156.2 kHz DSB
+      break;
+    case RF_RX_BANDWIDTH_SS_100KHZ:
+      param[4] = 0x0A; // RX bandwidth 234.3 kHz DSB
+      break;
+    case RF_RX_BANDWIDTH_SS_166KHZ:
+      param[4] = 0x11; // RX bandwidth 373.6 kHz DSB
+      break;
+    case RF_RX_BANDWIDTH_SS_125KHZ:
+    default:
+      param[4] = 0x19; // RX bandwidth 312 kHz DSB
+      break;
+    }
 
     // set frequency deviation
     uint32_t Fdev;
