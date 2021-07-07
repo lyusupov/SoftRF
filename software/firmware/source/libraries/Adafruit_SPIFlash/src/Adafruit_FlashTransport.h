@@ -134,7 +134,7 @@ protected:
 #include "qspi/Adafruit_FlashTransport_QSPI.h"
 #include "spi/Adafruit_FlashTransport_SPI.h"
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#ifdef ARDUINO_ARCH_ESP32
 #include "esp32/Adafruit_FlashTransport_ESP32.h"
 #endif
 

@@ -1,3 +1,27 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Ha Thach and Dean Miller for Adafruit Industries LLC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "Adafruit_SPIFlashBase.h"
 #include "pins_arduino.h"
 #include <SPI.h>
@@ -22,7 +46,42 @@
 
 #endif
 
-#if !CONFIG_IDF_TARGET_ESP32S2
+Adafruit_SPIFlashBase::Adafruit_SPIFlashBase() {
+  _trans = NULL;
+  _flash_dev = NULL;
+  _ind_pin = -1;
+  _ind_active = true;
+}
+
+Adafruit_SPIFlashBase::Adafruit_SPIFlashBase(
+    Adafruit_FlashTransport *transport) {
+  _trans = transport;
+  _flash_dev = NULL;
+  _ind_pin = -1;
+  _ind_active = true;
+}
+
+#ifdef ARDUINO_ARCH_ESP32
+
+bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
+                                  size_t count) {
+  (void)flash_devs;
+  (void)count;
+
+  if (_trans == NULL) {
+    return false;
+  }
+
+  _trans->begin();
+
+  // For ESP32S2 the SPI flash is already detected and configured
+  // We could skip the initial sequence
+  _flash_dev = ((Adafruit_FlashTransport_ESP32 *)_trans)->getFlashDevice();
+
+  return true;
+}
+
+#else
 
 /// List of all possible flash devices used by Adafruit boards
 static const SPIFlash_Device_t possible_devices[] = {
@@ -72,39 +131,15 @@ static SPIFlash_Device_t const *findDevice(SPIFlash_Device_t const *device_list,
   }
   return NULL;
 }
-#endif
-
-Adafruit_SPIFlashBase::Adafruit_SPIFlashBase() {
-  _trans = NULL;
-  _flash_dev = NULL;
-  _ind_pin = -1;
-  _ind_active = true;
-}
-
-Adafruit_SPIFlashBase::Adafruit_SPIFlashBase(
-    Adafruit_FlashTransport *transport) {
-  _trans = transport;
-  _flash_dev = NULL;
-  _ind_pin = -1;
-  _ind_active = true;
-}
 
 bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
                                   size_t count) {
-  if (_trans == NULL)
+  if (_trans == NULL) {
     return false;
+  }
 
   _trans->begin();
 
-#if CONFIG_IDF_TARGET_ESP32S2
-  (void)flash_devs;
-  (void)count;
-
-  // For ESP32S2 the spi flash is already detected and configured
-  // We could skip the initial sequence
-  _flash_dev = ((Adafruit_FlashTransport_ESP32 *)_trans)->getFlashDevice();
-
-#else
   //------------- flash detection -------------//
   // Note: Manufacturer can be assigned with numerous of continuation code
   // (0x7F)
@@ -131,13 +166,9 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
   }
 
   if (_flash_dev == NULL) {
-#if SPIFLASH_DEBUG
-    if (Serial) {
-      Serial.print("Unknown flash device 0x");
-      Serial.println(
+    Serial.print("Unknown flash device 0x");
+    Serial.println(
         ((uint32_t)jedec_ids[0]) << 16 | jedec_ids[1] << 8 | jedec_ids[2], HEX);
-    }
-#endif
     return false;
   }
 
@@ -228,10 +259,10 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
   writeDisable();
   waitUntilReady();
 
-#endif // CONFIG_IDF_TARGET_ESP32S2
-
   return true;
 }
+
+#endif // ARDUINO_ARCH_ESP32
 
 void Adafruit_SPIFlashBase::setIndicator(int pin, bool state_on) {
   _ind_pin = pin;

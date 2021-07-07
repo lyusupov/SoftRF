@@ -1,6 +1,4 @@
 /**
- * @file Adafruit_FlashTransport_QSPI.cpp
- *
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach for Adafruit Industries LLC

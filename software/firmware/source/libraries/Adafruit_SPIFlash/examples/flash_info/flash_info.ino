@@ -11,8 +11,8 @@
 #if defined(CUSTOM_CS) && defined(CUSTOM_SPI)
   Adafruit_FlashTransport_SPI flashTransport(CUSTOM_CS, CUSTOM_SPI);
 
-#elif CONFIG_IDF_TARGET_ESP32S2
-  // ESP32-S2 use same flash device that store code.
+#elif defined(ARDUINO_ARCH_ESP32)
+  // ESP32 use same flash device that store code.
   // Therefore there is no need to specify the SPI and SS
   Adafruit_FlashTransport_ESP32 flashTransport;
 

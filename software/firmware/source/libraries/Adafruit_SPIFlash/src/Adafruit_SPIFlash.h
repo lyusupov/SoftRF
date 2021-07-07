@@ -1,6 +1,4 @@
 /**
- * @file Adafruit_QSPI_Flash.h
- *
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach and Dean Miller for Adafruit Industries LLC

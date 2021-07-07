@@ -24,7 +24,7 @@
 
 #include "Adafruit_FlashTransport.h"
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#ifdef ARDUINO_ARCH_ESP32
 
 Adafruit_FlashTransport_ESP32::Adafruit_FlashTransport_ESP32(void) {
   _cmd_read = SFLASH_CMD_READ;

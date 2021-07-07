@@ -4,12 +4,23 @@
 #include "SdFat.h"
 #include "Adafruit_SPIFlash.h"
 
+#ifdef LED_BUILTIN
+  uint8_t led_pin = LED_BUILTIN;
+#else
+  uint8_t led_pin = 0;
+#endif
+
 // Uncomment to run example with FRAM
 // #define FRAM_CS   A5
 // #define FRAM_SPI  SPI
 
 #if defined(FRAM_CS) && defined(FRAM_SPI)
   Adafruit_FlashTransport_SPI flashTransport(FRAM_CS, FRAM_SPI);
+
+#elif defined(ARDUINO_ARCH_ESP32)
+  // ESP32 use same flash device that store code.
+  // Therefore there is no need to specify the SPI and SS
+  Adafruit_FlashTransport_ESP32 flashTransport;
 
 #else
   // On-board external flash (QSPI or SPI) macros should already
@@ -43,8 +54,8 @@ void setup()
 
   flash.begin();
 
-  pinMode(LED_BUILTIN, OUTPUT);
-  flash.setIndicator(LED_BUILTIN, true);
+  pinMode(led_pin, OUTPUT);
+  flash.setIndicator(led_pin, true);
 
   Serial.println("Adafruit Serial Flash Speed Test example");
   Serial.print("JEDEC ID: "); Serial.println(flash.getJEDECID(), HEX);
