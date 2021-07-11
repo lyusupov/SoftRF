@@ -555,6 +555,14 @@ static void STM32_EEPROM_extension()
     settings->d1090 = D1090_UART;
 #endif
   }
+
+#if defined(ARDUINO_NUCLEO_L073RZ)
+  if (hw_info.model == SOFTRF_MODEL_BRACELET) {
+    if (settings->nmea_out == NMEA_UART)  { settings->nmea_out = NMEA_USB;  }
+    if (settings->gdl90    == GDL90_UART) { settings->gdl90    = GDL90_USB; }
+    if (settings->d1090    == D1090_UART) { settings->d1090    = D1090_USB; }
+  }
+#endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
 static void STM32_SPI_begin()

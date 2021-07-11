@@ -79,9 +79,12 @@ void EEPROM_defaults()
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol   = RF_PROTOCOL_OGNTP;
+  eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ?
+                                              RF_PROTOCOL_FANET : RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
-  eeprom_block.field.settings.aircraft_type = AIRCRAFT_TYPE_GLIDER;
+  eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
+                                              AIRCRAFT_TYPE_STATIC :
+                                              AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
   eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
@@ -112,7 +115,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.json       = JSON_OFF;
   eeprom_block.field.settings.stealth    = false;
   eeprom_block.field.settings.no_track   = false;
-  eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
+  eeprom_block.field.settings.power_save = hw_info.model == SOFTRF_MODEL_BRACELET ?
+                                           POWER_SAVE_NORECEIVE : POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr  = 0;
 }
 

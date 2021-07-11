@@ -78,7 +78,7 @@
   Stealth:        On, Off
   No track:       On, Off
 
-  Power save:     Off, GNSS
+  Power save:     Off, GNSS. No Receive
 
   RECOMMENDED DEFAULT SETTINGS
   ----------------------------
@@ -273,9 +273,10 @@ enum
 
 enum
 {
-	SOFTRF_POWER_SAVE_NONE = 0,
-	SOFTRF_POWER_SAVE_WIFI = 1,
-	SOFTRF_POWER_SAVE_GNSS = 2
+	SOFTRF_POWER_SAVE_NONE      = 0,
+	SOFTRF_POWER_SAVE_WIFI      = 1,
+	SOFTRF_POWER_SAVE_GNSS      = 2,
+	SOFTRF_POWER_SAVE_NORECEIVE = 4
 };
 
 #endif /* SOFTRF_H */
