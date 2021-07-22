@@ -145,9 +145,13 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 # Highlights
 
-* [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-18.jpg)
+
+* [**SoftRF Tool**](https://github.com/lyusupov/SoftRF/wiki/SoftRF-Configuration-Tool) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+<p><img src="https://github.com/lyusupov/SoftRF/blob/master/documents/images/SoftRF_Tool-7.jpg" width="800" height="592"></p>
 
 * [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
 
@@ -161,7 +165,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
 
-<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="310" width="426"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="310" width="240"</p>
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="310" width="426"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="310" width="240"></p>
 
 * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
 
