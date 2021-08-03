@@ -147,7 +147,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
-![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-18.jpg)
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-31.jpg)
 
 * [**SoftRF Tool**](https://github.com/lyusupov/SoftRF/wiki/SoftRF-Configuration-Tool) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
