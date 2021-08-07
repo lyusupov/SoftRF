@@ -6,6 +6,8 @@ Features:
 * standalone, battery powered, compatible proximity awareness instrument that fits typical 2.25 inches hole ;
 * lightweight version to carry onboard of an UAV.
 
+[<img src="https://user-images.githubusercontent.com/5849637/128593239-cf30ef4c-1761-4dc1-874a-2be9eaacab77.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
+
 # Compatibility <sup>1</sup>
 Type|Protocol|FLARM|OGN tracker|PilotAware|Skytraxx|SoftRF
 ---|---|---|---|---|---|---
