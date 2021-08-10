@@ -99,6 +99,15 @@ enum
 
 enum
 {
+	DATA_SOURCE_FLARM = 0,
+	DATA_SOURCE_ADSB  = 1,
+	DATA_SOURCE_ADSR  = 3, /* ADS-R (rebroadcasting of UAT ADS-B to 1090 MHz) */
+	DATA_SOURCE_TISB  = 4, /* TIS-B (broadcast of location of non-ADS-B equipped aircraft) */
+	DATA_SOURCE_MODES = 6  /* non-directional targets */
+};
+
+enum
+{
 	TX_STATUS_OFF,
 	TX_STATUS_ON
 };

@@ -257,6 +257,9 @@ struct rst_info {
 //#define EXCLUDE_NUS
 #define EXCLUDE_BOARD_SELF_DETECT
 
+/* FTD-012 data port protocol version 8 and 9 */
+#define PFLAA_EXT1_FMT  ",%d,%d,%d"
+#define PFLAA_EXT1_ARGS ,Container[i].no_track,data_source,Container[i].rssi
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 //#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)

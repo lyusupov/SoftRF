@@ -287,18 +287,19 @@ void NMEA_Export()
     int alt_diff;
     float distance;
 
-    int total_objects = 0;
-    int alarm_level = ALARM_LEVEL_NONE;
+    int total_objects  = 0;
+    int alarm_level    = ALARM_LEVEL_NONE;
+    int data_source    = DATA_SOURCE_FLARM;
     time_t this_moment = now();
 
     /* High priority object (most relevant target) */
-    int HP_bearing = 0;
-    int HP_alt_diff = 0;
+    int HP_bearing     = 0;
+    int HP_alt_diff    = 0;
     int HP_alarm_level = ALARM_LEVEL_NONE;
-    float HP_distance = 2147483647;
-    uint32_t HP_addr = 0;
+    float HP_distance  = 2147483647;
+    uint32_t HP_addr   = 0;
 
-    bool has_Fix = isValidFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
+    bool has_Fix       = isValidFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
 
     if (has_Fix) {
       for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -360,12 +361,17 @@ void NMEA_Export()
                   str.c_str(), str.length());
               }
 
-              snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d*"),
+              data_source = Container[i].protocol == RF_PROTOCOL_ADSB_UAT ?
+                            DATA_SOURCE_ADSB : DATA_SOURCE_FLARM;
+
+              snprintf_P(NMEABuffer, sizeof(NMEABuffer),
+                      PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d" PFLAA_EXT1_FMT "*"),
                       alarm_level,
                       (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
                       alt_diff, addr_type, Container[i].addr, NMEA_Callsign,
                       (int) Container[i].course, (int) (Container[i].speed * _GPS_MPS_PER_KNOT),
-                      ltrim(str_climb_rate), Container[i].aircraft_type);
+                      ltrim(str_climb_rate), Container[i].aircraft_type
+                      PFLAA_EXT1_ARGS );
 
               NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
@@ -388,6 +394,10 @@ void NMEA_Export()
 
     /* One PFLAU NMEA sentence is mandatory regardless of traffic reception status */
     if (settings->nmea_l) {
+      float voltage    = Battery_voltage();
+      int power_status = voltage > BATTERY_THRESHOLD_INVALID &&
+                         voltage < Battery_threshold() ?
+                         POWER_STATUS_BAD : POWER_STATUS_GOOD;
 
       if (total_objects > 0) {
         int rel_bearing = HP_bearing - ThisAircraft.course;
@@ -398,7 +408,7 @@ void NMEA_Export()
                 total_objects,
                 settings->txpower == RF_TX_POWER_OFF ? TX_STATUS_OFF : TX_STATUS_ON,
                 GNSS_STATUS_3D_MOVING,
-                POWER_STATUS_GOOD, HP_alarm_level, rel_bearing,
+                power_status, HP_alarm_level, rel_bearing,
                 ALARM_TYPE_AIRCRAFT, HP_alt_diff, (int) HP_distance, HP_addr
                 PFLAU_EXT1_ARGS );
       } else {
@@ -407,7 +417,7 @@ void NMEA_Export()
                 has_Fix && (settings->txpower != RF_TX_POWER_OFF) ?
                   TX_STATUS_ON : TX_STATUS_OFF,
                 has_Fix ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE,
-                POWER_STATUS_GOOD, HP_alarm_level
+                power_status, HP_alarm_level
                 PFLAU_EXT1_ARGS );
       }
 
