@@ -38,6 +38,12 @@ enum
 #define UUID16_SVC_BATTERY        ((uint16_t) 0x180F)
 #define UUID16_CHR_BATTERY_LEVEL  ((uint16_t) 0x2A19)
 
+#define SENSBOX_SERVICE_UUID            "aba27100-143b-4b81-a444-edcd0000f020"
+#define NAVIGATION_CHARACTERISTIC_UUID  "aba27100-143b-4b81-a444-edcd0000f022"
+#define MOVEMENT_CHARACTERISTIC_UUID    "aba27100-143b-4b81-a444-edcd0000f023"
+#define GPS2_CHARACTERISTIC_UUID        "aba27100-143b-4b81-a444-edcd0000f024"
+#define SYSTEM_CHARACTERISTIC_UUID      "aba27100-143b-4b81-a444-edcd0000f025"
+
 /* (FLAA x MAX_TRACKING_OBJECTS + GNGGA + GNRMC + FLAU) x 80 symbols */
 #define BLE_FIFO_TX_SIZE          1024
 #define BLE_FIFO_RX_SIZE          256
@@ -100,6 +106,37 @@ void bt_app_task_shut_down(void);
 #endif /* ENABLE_BT_VOICE */
 
 #elif defined(ARDUINO_ARCH_NRF52)
+
+#include "bluefruit_common.h"
+
+#include "BLECharacteristic.h"
+#include "BLEService.h"
+
+class BLESensBox : public BLEService
+{
+  protected:
+    BLECharacteristic _sensbox_nav;
+    BLECharacteristic _sensbox_move;
+
+  public:
+    BLESensBox(void);
+
+    virtual err_t begin(void);
+
+    bool notify(time_t, float , float, float, float);
+};
+
+typedef struct {
+    uint32_t  timestamp;
+    int32_t   lat;
+    int32_t   lon;
+    int16_t   alt;
+    int16_t   unknown1;
+    int16_t   vario;
+} __attribute__((packed)) sensbox_navigation_t;
+
+#define SENSBOX_DATA_LEN  sizeof(sensbox_navigation_t)
+#define isTimeToSensBox() (millis() - BLE_SensBox_TimeMarker > 1000)
 
 extern IODev_ops_t nRF52_Bluetooth_ops;
 extern void nRF52_BLEMIDI_test(void);

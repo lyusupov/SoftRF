@@ -1064,6 +1064,86 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include "../system/SoC.h"
 #include "Bluetooth.h"
 
+#include <bluefruit.h>
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+#include <BLEUart_HM10.h>
+#if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
+#include <MIDI.h>
+#endif /* USE_BLE_MIDI */
+
+#include "WiFi.h"   // HOSTNAME
+#include "Battery.h"
+#include <TinyGPS++.h>
+
+/*
+ * SensorBox Serivce: aba27100-143b-4b81-a444-edcd0000f020
+ * Navigation       : aba27100-143b-4b81-a444-edcd0000f022
+ * Movement         : aba27100-143b-4b81-a444-edcd0000f023
+ * GPS2             : aba27100-143b-4b81-a444-edcd0000f024
+ * System           : aba27100-143b-4b81-a444-edcd0000f025
+ */
+
+const uint8_t SENSBOX_UUID_SERVICE[] =
+{
+    0x20, 0xF0, 0x00, 0x00, 0xCD, 0xED, 0x44, 0xA4,
+    0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
+};
+
+const uint8_t SENSBOX_UUID_NAVIGATION[] =
+{
+    0x22, 0xF0, 0x00, 0x00, 0xCD, 0xED, 0x44, 0xA4,
+    0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
+};
+
+const uint8_t SENSBOX_UUID_MOVEMENT[] =
+{
+    0x23, 0xF0, 0x00, 0x00, 0xCD, 0xED, 0x44, 0xA4,
+    0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
+};
+
+BLESensBox::BLESensBox(void) :
+  BLEService   (SENSBOX_UUID_SERVICE),
+  _sensbox_nav (SENSBOX_UUID_NAVIGATION),
+  _sensbox_move(SENSBOX_UUID_MOVEMENT)
+{
+
+}
+
+err_t BLESensBox::begin(void)
+{
+  VERIFY_STATUS( BLEService::begin() );
+
+  _sensbox_nav.setProperties(CHR_PROPS_NOTIFY);
+  _sensbox_nav.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _sensbox_nav.setFixedLen(SENSBOX_DATA_LEN);
+  _sensbox_move.setProperties(CHR_PROPS_NOTIFY);
+  _sensbox_move.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _sensbox_move.setFixedLen(SENSBOX_DATA_LEN);
+  VERIFY_STATUS( _sensbox_nav.begin() );
+  VERIFY_STATUS( _sensbox_move.begin() );
+
+  return ERROR_NONE;
+}
+
+bool BLESensBox::notify(time_t timestamp,
+                        float latitude, float longitude,
+                        float altitude, float vs)
+{
+  sensbox_navigation_t data = {0};
+
+  data.timestamp = timestamp /* / 1000 */;
+  data.lat   = (int32_t) (latitude  * 10000000);
+  data.lon   = (int32_t) (longitude * 10000000);
+  data.alt   = (int16_t) altitude;
+  data.vario = (int16_t) (vs / (_GPS_FEET_PER_METER * 6.0));
+
+  return _sensbox_nav.notify(&data, SENSBOX_DATA_LEN) > 0;
+}
+
+static unsigned long BLE_Notify_TimeMarker  = 0;
+static unsigned long BLE_SensBox_TimeMarker = 0;
+
 /*********************************************************************
  This is an example for our nRF52 based Bluefruit LE modules
 
@@ -1077,16 +1157,6 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
-#include <bluefruit.h>
-#include <Adafruit_LittleFS.h>
-#include <InternalFileSystem.h>
-#include <BLEUart_HM10.h>
-#if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
-#include <MIDI.h>
-#endif /* USE_BLE_MIDI */
-
-#include "WiFi.h"   // HOSTNAME
-#include "Battery.h"
 
 // BLE Service
 BLEDfu        bledfu;       // OTA DFU service
@@ -1096,6 +1166,7 @@ BLEUart_HM10  bleuart_HM10; // TI UART over BLE
 BLEUart       bleuart_NUS;  // Nordic UART over BLE
 #endif /* EXCLUDE_NUS */
 BLEBas        blebas;       // battery
+BLESensBox    blesens;      // SensBox
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
 BLEMidi       blemidi;
@@ -1215,6 +1286,12 @@ void nRF52_Bluetooth_setup()
   blebas.begin();
   blebas.write(100);
 
+  // Start SensBox Service
+  blesens.begin();
+  blesens.notify(ThisAircraft.timestamp,
+                 ThisAircraft.latitude, ThisAircraft.longitude,
+                 ThisAircraft.altitude, ThisAircraft.vs);
+
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
   // This will also call blemidi service's begin()
@@ -1228,13 +1305,14 @@ void nRF52_Bluetooth_setup()
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
   Serial.println("Once connected, enter character(s) that you wish to send");
 #endif
+
+  BLE_Notify_TimeMarker  = millis();
+  BLE_SensBox_TimeMarker = millis();
 }
 
 /*********************************************************************
  End of Adafruit licensed text
 *********************************************************************/
-
-static unsigned long BLE_Notify_TimeMarker = 0;
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
 
@@ -1286,6 +1364,13 @@ static void nRF52_Bluetooth_loop()
 
   if (isTimeToBattery()) {
     blebas.write(Battery_charge());
+  }
+
+  if (isTimeToSensBox()) {
+    blesens.notify(ThisAircraft.timestamp,
+                   ThisAircraft.latitude, ThisAircraft.longitude,
+                   ThisAircraft.altitude, ThisAircraft.vs);
+    BLE_SensBox_TimeMarker = millis();
   }
 }
 
