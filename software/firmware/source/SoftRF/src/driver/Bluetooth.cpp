@@ -1068,13 +1068,16 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <BLEUart_HM10.h>
+#include <TinyGPS++.h>
 #if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
 #include <MIDI.h>
 #endif /* USE_BLE_MIDI */
 
 #include "WiFi.h"   // HOSTNAME
 #include "Battery.h"
-#include <TinyGPS++.h>
+#include "GNSS.h"
+#include "RF.h"
+#include "../protocol/radio/Legacy.h"
 
 /*
  * SensorBox Serivce: aba27100-143b-4b81-a444-edcd0000f020
@@ -1126,17 +1129,27 @@ err_t BLESensBox::begin(void)
   return ERROR_NONE;
 }
 
-bool BLESensBox::notify(time_t timestamp,
-                        float latitude, float longitude,
-                        float altitude, float vs)
+bool BLESensBox::notifyEnabled(void)
+{
+  return this->notifyEnabled(Bluefruit.connHandle());
+}
+
+bool BLESensBox::notifyEnabled(uint16_t conn_hdl)
+{
+  return _sensbox_nav.notifyEnabled(conn_hdl);
+}
+
+bool BLESensBox::notify_nav()
 {
   sensbox_navigation_t data = {0};
 
-  data.timestamp = timestamp /* / 1000 */;
-  data.lat   = (int32_t) (latitude  * 10000000);
-  data.lon   = (int32_t) (longitude * 10000000);
-  data.alt   = (int16_t) altitude;
-  data.vario = (int16_t) (vs / (_GPS_FEET_PER_METER * 6.0));
+  data.timestamp = ThisAircraft.timestamp;
+  data.lat       = (int32_t) (ThisAircraft.latitude  * 10000000);
+  data.lon       = (int32_t) (ThisAircraft.longitude * 10000000);
+  data.gnss_alt  = (int16_t) ThisAircraft.altitude;
+  data.pres_alt  = (int16_t) ThisAircraft.pressure_altitude;
+  data.vario     = (int16_t) ((ThisAircraft.vs * 10) / (_GPS_FEET_PER_METER * 6));
+  data.status    = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
 
   return _sensbox_nav.notify(&data, SENSBOX_DATA_LEN) > 0;
 }
@@ -1288,9 +1301,7 @@ void nRF52_Bluetooth_setup()
 
   // Start SensBox Service
   blesens.begin();
-  blesens.notify(ThisAircraft.timestamp,
-                 ThisAircraft.latitude, ThisAircraft.longitude,
-                 ThisAircraft.altitude, ThisAircraft.vs);
+  blesens.notify_nav();
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
@@ -1366,10 +1377,8 @@ static void nRF52_Bluetooth_loop()
     blebas.write(Battery_charge());
   }
 
-  if (isTimeToSensBox()) {
-    blesens.notify(ThisAircraft.timestamp,
-                   ThisAircraft.latitude, ThisAircraft.longitude,
-                   ThisAircraft.altitude, ThisAircraft.vs);
+  if (Bluefruit.connected() && blesens.notifyEnabled() && isTimeToSensBox()) {
+    blesens.notify_nav();
     BLE_SensBox_TimeMarker = millis();
   }
 }

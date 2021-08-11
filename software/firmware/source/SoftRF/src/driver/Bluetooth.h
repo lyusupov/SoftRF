@@ -123,20 +123,27 @@ class BLESensBox : public BLEService
 
     virtual err_t begin(void);
 
-    bool notify(time_t, float , float, float, float);
+    bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl);
+    bool notify_nav(void);
 };
 
+/*
+ * Source:
+ * https://github.com/flytec/SensBoxLib_iOS/blob/master/_SensBox%20Documentation/SensorBox%20BLE%20Protocol.pdf
+ */
 typedef struct {
-    uint32_t  timestamp;
-    int32_t   lat;
-    int32_t   lon;
-    int16_t   alt;
-    int16_t   unknown1;
-    int16_t   vario;
+    uint32_t  timestamp;  /* Date/Time (UTC), UnixTime */
+    int32_t   lat;        /* deg * 10^7 */
+    int32_t   lon;        /* deg * 10^7 */
+    int16_t   gnss_alt;   /* GPS Hight MSL, m */
+    int16_t   pres_alt;   /* Pressure Altitude, m */
+    int16_t   vario;      /* Vario 1 Hz, cm/s */
+    uint8_t   status;     /* Status: 0..2 - GNSS, 3 - time, 4 - charge, 5 - Bat, 6 - Log */
 } __attribute__((packed)) sensbox_navigation_t;
 
 #define SENSBOX_DATA_LEN  sizeof(sensbox_navigation_t)
-#define isTimeToSensBox() (millis() - BLE_SensBox_TimeMarker > 1000)
+#define isTimeToSensBox() (millis() - BLE_SensBox_TimeMarker > 500) /* 2 Hz */
 
 extern IODev_ops_t nRF52_Bluetooth_ops;
 extern void nRF52_BLEMIDI_test(void);
