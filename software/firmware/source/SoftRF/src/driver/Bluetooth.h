@@ -125,7 +125,8 @@ class BLESensBox : public BLEService
 
     bool notifyEnabled(void);
     bool notifyEnabled(uint16_t conn_hdl);
-    bool notify_nav(void);
+    bool notify_nav(uint8_t);
+    bool notify_move(uint8_t);
 };
 
 /*
@@ -142,7 +143,18 @@ typedef struct {
     uint8_t   status;     /* Status: 0..2 - GNSS, 3 - time, 4 - charge, 5 - Bat, 6 - Log */
 } __attribute__((packed)) sensbox_navigation_t;
 
-#define SENSBOX_DATA_LEN  sizeof(sensbox_navigation_t)
+typedef struct {
+    int32_t   pres_alt;   /* Pressure Altitude, cm */
+    int16_t   vario;      /* Vario 8 Hz, cm/s */
+    int16_t   gs;         /* Ground Speed, dm/s */
+    int16_t   cog;        /* GPS Heading, deg * 10 */
+    int16_t   pitch;      /* deg * 10 */
+    int16_t   yaw;        /* deg * 10 */
+    int16_t   roll;       /* deg * 10 */
+    uint16_t  accel;      /* Acceleration, 'g' * 10 */
+    uint8_t   status;     /* Status: same as above */
+} __attribute__((packed)) sensbox_movement_t;
+
 #define isTimeToSensBox() (millis() - BLE_SensBox_TimeMarker > 500) /* 2 Hz */
 
 extern IODev_ops_t nRF52_Bluetooth_ops;

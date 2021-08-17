@@ -1119,10 +1119,10 @@ err_t BLESensBox::begin(void)
 
   _sensbox_nav.setProperties(CHR_PROPS_NOTIFY);
   _sensbox_nav.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _sensbox_nav.setFixedLen(SENSBOX_DATA_LEN);
+  _sensbox_nav.setFixedLen(sizeof(sensbox_navigation_t));
   _sensbox_move.setProperties(CHR_PROPS_NOTIFY);
   _sensbox_move.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _sensbox_move.setFixedLen(SENSBOX_DATA_LEN);
+  _sensbox_move.setFixedLen(sizeof(sensbox_movement_t));
   VERIFY_STATUS( _sensbox_nav.begin() );
   VERIFY_STATUS( _sensbox_move.begin() );
 
@@ -1139,7 +1139,7 @@ bool BLESensBox::notifyEnabled(uint16_t conn_hdl)
   return _sensbox_nav.notifyEnabled(conn_hdl);
 }
 
-bool BLESensBox::notify_nav()
+bool BLESensBox::notify_nav(uint8_t status)
 {
   sensbox_navigation_t data = {0};
 
@@ -1149,9 +1149,21 @@ bool BLESensBox::notify_nav()
   data.gnss_alt  = (int16_t) ThisAircraft.altitude;
   data.pres_alt  = (int16_t) ThisAircraft.pressure_altitude;
   data.vario     = (int16_t) ((ThisAircraft.vs * 10) / (_GPS_FEET_PER_METER * 6));
-  data.status    = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
+  data.status    = status;
 
-  return _sensbox_nav.notify(&data, SENSBOX_DATA_LEN) > 0;
+  return _sensbox_nav.notify(&data, sizeof(sensbox_navigation_t)) > 0;
+}
+
+bool BLESensBox::notify_move(uint8_t status)
+{
+  sensbox_movement_t data = {0};
+
+  data.pres_alt  = (int32_t) (ThisAircraft.pressure_altitude * 100);
+  data.gs        = (int16_t) (ThisAircraft.speed  * _GPS_MPS_PER_KNOT * 10);
+  data.cog       = (int16_t) (ThisAircraft.course * 10);
+  data.status    = status;
+
+  return _sensbox_move.notify(&data, sizeof(sensbox_movement_t)) > 0;
 }
 
 static unsigned long BLE_Notify_TimeMarker  = 0;
@@ -1301,7 +1313,9 @@ void nRF52_Bluetooth_setup()
 
   // Start SensBox Service
   blesens.begin();
-  blesens.notify_nav();
+  uint8_t sens_status = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
+  blesens.notify_nav(sens_status);
+  blesens.notify_move(sens_status);
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
@@ -1378,7 +1392,9 @@ static void nRF52_Bluetooth_loop()
   }
 
   if (Bluefruit.connected() && blesens.notifyEnabled() && isTimeToSensBox()) {
-    blesens.notify_nav();
+    uint8_t sens_status = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
+    blesens.notify_nav(sens_status);
+    blesens.notify_move(sens_status);
     BLE_SensBox_TimeMarker = millis();
   }
 }
