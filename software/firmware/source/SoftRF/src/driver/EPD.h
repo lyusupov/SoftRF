@@ -51,6 +51,13 @@
 
 enum
 {
+	EPD_UPDATE_NONE = 0,
+	EPD_UPDATE_SLOW,
+	EPD_UPDATE_FAST
+};
+
+enum
+{
 	VIEW_MODE_STATUS,
 	VIEW_MODE_RADAR,
 	VIEW_MODE_TEXT,
@@ -58,24 +65,17 @@ enum
 	VIEW_MODE_TIME
 };
 
-enum
-{
-	EPD_UPDATE_NONE = 0,
-	EPD_UPDATE_SLOW,
-	EPD_UPDATE_FAST
-};
-
 /*
  * 'Radar view' scale factor (outer circle diameter)
  *
  * Metric and Mixed:
- *  LOWEST - 20 KM diameter (10 KM radius)
+ *  LOWEST - 60 KM diameter (30 KM radius)
  *  LOW    - 10 KM diameter ( 5 KM radius)
  *  MEDIUM -  4 KM diameter ( 2 KM radius)
  *  HIGH   -  2 KM diameter ( 1 KM radius)
  *
  * Imperial:
- *  LOWEST - 10 NM diameter (  5 NM radius)
+ *  LOWEST - 30 NM diameter ( 15 NM radius)
  *  LOW    -  5 NM diameter (2.5 NM radius)
  *  MEDIUM -  2 NM diameter (  1 NM radius)
  *  HIGH   -  1 NM diameter (0.5 NM radius)

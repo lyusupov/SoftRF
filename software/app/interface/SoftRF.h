@@ -20,6 +20,10 @@
 #define SOFTRF_H
 
 /*
+ * PART 1. SoftRF 'radio' component.
+ */
+
+/*
 
   TO RETREIVE SETTINGS
   --------------------
@@ -35,7 +39,7 @@
 
   TO APPLY SETTINGS
   -----------------
-  
+
   Sentence: "$PSRFC,1,
                     <mode>,<protocol>,<band>,<aircraft type>,
                     <alarm>,<tx power>,<buzzer>,<leds>,
@@ -78,7 +82,7 @@
   Stealth:        On, Off
   No track:       On, Off
 
-  Power save:     Off, GNSS. No Receive
+  Power save:     Off, GNSS, No Receive
 
   RECOMMENDED DEFAULT SETTINGS
   ----------------------------
@@ -277,6 +281,160 @@ enum
 	SOFTRF_POWER_SAVE_WIFI      = 1,
 	SOFTRF_POWER_SAVE_GNSS      = 2,
 	SOFTRF_POWER_SAVE_NORECEIVE = 4
+};
+
+/* ------------------------------------------------------------------------- */
+
+/*
+ * PART 2. SoftRF 'Badge Edition' e-paper extension.
+ */
+
+/*
+
+  TO RETREIVE SETTINGS
+  --------------------
+
+  Query:    "$PSKVC,?*4E"
+
+  Response: "$PSKVC,<version>,
+                    <mode>,<adapter>,<connection method>,<units>,
+                    <radar zoom level>,<data protocol>,<baud rate>,
+                    <server name>,<server key>,<radar orientation>,
+                    <aircrafts database>,<aircraft ID preference>,
+                    <view mode>,<voice alarm>,
+                    <e-paper anti-ghosting>,<traffic filter>,
+                    <power save>,<team member ID>*<checksum><CR><LF>"
+
+  TO APPLY SETTINGS
+  -----------------
+
+  Sentence: "$PSKVC,1,
+                    <mode>,<adapter>,<connection method>,<units>,
+                    <radar zoom level>,<data protocol>,<baud rate>,
+                    <server name>,<server key>,<radar orientation>,
+                    <aircrafts database>,<aircraft ID preference>,
+                    <view mode>,<voice alarm>,
+                    <e-paper anti-ghosting>,<traffic filter>,
+                    <power save>,<team member ID>*<checksum><CR><LF>"
+
+  Response: dump of new settings followed by system restart
+
+  EXAMPLE OF NMEA SENTENCE
+  ------------------------
+
+  $PSKVC,1,0,0,0,2,1,0,,,0,0,3,0,0,0,0,0,AABBCC*6C
+
+
+  LIST OF SETTINGS AVAILABLE
+  --------------------------
+
+  TBD
+
+  RECOMMENDED DEFAULT SETTINGS
+  ----------------------------
+
+  TBD
+
+  OTHER INFORMATION
+  -----------------
+
+  https://github.com/lyusupov/SoftRF/wiki/SkyView-settings
+
+ */
+
+/*
+ *  C/C++ enumerations
+ */
+
+enum
+{
+	SKYVIEW_MODE_STATUS,
+	SKYVIEW_MODE_RADAR,
+	SKYVIEW_MODE_TEXT,
+	SKYVIEW_MODE_BARO,
+	SKYVIEW_MODE_TIME
+};
+
+/*
+ * 'Radar view' scale factor (outer circle diameter)
+ *
+ * Metric and Mixed:
+ *  LOWEST - 60 KM diameter (30 KM radius)
+ *  LOW    - 10 KM diameter ( 5 KM radius)
+ *  MEDIUM -  4 KM diameter ( 2 KM radius)
+ *  HIGH   -  2 KM diameter ( 1 KM radius)
+ *
+ * Imperial:
+ *  LOWEST - 30 NM diameter ( 15 NM radius)
+ *  LOW    -  5 NM diameter (2.5 NM radius)
+ *  MEDIUM -  2 NM diameter (  1 NM radius)
+ *  HIGH   -  1 NM diameter (0.5 NM radius)
+ */
+enum
+{
+	SKYVIEW_ZOOM_LOWEST,
+	SKYVIEW_ZOOM_LOW,
+	SKYVIEW_ZOOM_MEDIUM,
+	SKYVIEW_ZOOM_HIGH
+};
+
+enum
+{
+	SKYVIEW_UNITS_METRIC,
+	SKYVIEW_UNITS_IMPERIAL,
+	SKYVIEW_UNITS_MIXED     // almost the same as metric, but all the altitudes are in feet
+};
+
+enum
+{
+	SKYVIEW_PROTOCOL_NONE,
+	SKYVIEW_PROTOCOL_NMEA, /* FTD-12 */
+	SKYVIEW_PROTOCOL_GDL90,
+	SKYVIEW_PROTOCOL_MAVLINK_1,
+	SKYVIEW_PROTOCOL_MAVLINK_2,
+	SKYVIEW_PROTOCOL_D1090,
+	SKYVIEW_PROTOCOL_UATRADIO
+};
+
+enum
+{
+	SKYVIEW_ID_REG,
+	SKYVIEW_ID_TAIL,
+	SKYVIEW_ID_MAM,
+	SKYVIEW_ID_TYPE
+};
+
+enum
+{
+	SKYVIEW_VOICE_OFF,
+	SKYVIEW_VOICE_1,
+	SKYVIEW_VOICE_2,
+	SKYVIEW_VOICE_3
+};
+
+enum
+{
+	SKYVIEW_ANTI_GHOSTING_OFF,
+	SKYVIEW_ANTI_GHOSTING_AUTO,
+	SKYVIEW_ANTI_GHOSTING_2MIN,
+	SKYVIEW_ANTI_GHOSTING_5MIN,
+	SKYVIEW_ANTI_GHOSTING_10MIN
+};
+
+enum
+{
+	SKYVIEW_TRAFFIC_FILTER_OFF,
+	SKYVIEW_TRAFFIC_FILTER_500M,
+	SKYVIEW_TRAFFIC_FILTER_1500M
+};
+
+enum
+{
+	SKYVIEW_DB_NONE,
+	SKYVIEW_DB_AUTO,
+	SKYVIEW_DB_FLN,
+	SKYVIEW_DB_OGN,
+	SKYVIEW_DB_ICAO
 };
 
 #endif /* SOFTRF_H */

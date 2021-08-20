@@ -32,6 +32,13 @@
 #define SOFTRF_EEPROM_MAGIC   0xBABADEDA
 #define SOFTRF_EEPROM_VERSION 0x0000005F
 
+enum
+{
+	EEPROM_EXT_LOAD,
+	EEPROM_EXT_DEFAULTS,
+	EEPROM_EXT_STORE
+};
+
 typedef struct Settings {
     uint8_t  mode;
     uint8_t  rf_protocol;

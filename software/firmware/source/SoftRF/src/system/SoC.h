@@ -53,7 +53,7 @@ typedef struct SoC_ops_struct {
   bool (*WiFi_hostname)(String);
   int  (*WiFi_clients_count)();
   bool (*EEPROM_begin)(size_t);
-  void (*EEPROM_extension)();
+  void (*EEPROM_extension)(int);
   void (*SPI_begin)();
   void (*swSer_begin)(unsigned long);
   void (*swSer_enableRx)(boolean);

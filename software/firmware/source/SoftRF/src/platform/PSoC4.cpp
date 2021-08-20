@@ -344,16 +344,18 @@ static bool PSoC4_EEPROM_begin(size_t size)
   return true;
 }
 
-static void PSoC4_EEPROM_extension()
+static void PSoC4_EEPROM_extension(int cmd)
 {
-  if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
-    settings->nmea_out = NMEA_UART;
-  }
-  if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
-    settings->gdl90 = GDL90_UART;
-  }
-  if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
-    settings->d1090 = D1090_UART;
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
+      settings->nmea_out = NMEA_UART;
+    }
+    if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
+      settings->gdl90 = GDL90_UART;
+    }
+    if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
+      settings->d1090 = D1090_UART;
+    }
   }
 }
 

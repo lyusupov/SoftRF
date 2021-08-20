@@ -951,8 +951,44 @@ static bool nRF52_EEPROM_begin(size_t size)
   return true;
 }
 
-static void nRF52_EEPROM_extension()
+static void nRF52_EEPROM_extension(int cmd)
 {
+  uint8_t *raw = (uint8_t *) ui;
+
+  switch (cmd)
+  {
+    case EEPROM_EXT_STORE:
+      for (int i=0; i<sizeof(ui_settings_t); i++) {
+        EEPROM.write(sizeof(eeprom_t) + i, raw[i]);
+      }
+      return;
+    case EEPROM_EXT_DEFAULTS:
+      ui->adapter      = 0;
+      ui->connection   = 0;
+      ui->units        = UNITS_METRIC;
+      ui->zoom         = ZOOM_MEDIUM;
+      ui->protocol     = PROTOCOL_NMEA;
+      ui->baudrate     = 0;
+      strcpy(ui->server, "");
+      strcpy(ui->key,    "");
+      ui->orientation  = DIRECTION_TRACK_UP;
+      ui->adb          = DB_NONE;
+      ui->idpref       = ID_TYPE;
+      ui->vmode        = VIEW_MODE_STATUS;
+      ui->voice        = VOICE_OFF;
+      ui->aghost       = ANTI_GHOSTING_OFF;
+      ui->filter       = TRAFFIC_FILTER_OFF;
+      ui->power_save   = 0;
+      ui->team         = 0;
+      break;
+    case EEPROM_EXT_LOAD:
+    default:
+      for (int i=0; i<sizeof(ui_settings_t); i++) {
+        raw[i] = EEPROM.read(sizeof(eeprom_t) + i);
+      }
+      break;
+  }
+
   if ( nRF52_has_spiflash                       &&
       (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
        fatfs.begin(SPIFlash)) {

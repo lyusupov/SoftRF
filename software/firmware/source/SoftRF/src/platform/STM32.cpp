@@ -532,37 +532,39 @@ static bool STM32_EEPROM_begin(size_t size)
   return true;
 }
 
-static void STM32_EEPROM_extension()
+static void STM32_EEPROM_extension(int cmd)
 {
-  if (settings->nmea_out == NMEA_BLUETOOTH) {
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->nmea_out == NMEA_BLUETOOTH) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->nmea_out = NMEA_USB;
+      settings->nmea_out = NMEA_USB;
 #else
-    settings->nmea_out = NMEA_UART;
+      settings->nmea_out = NMEA_UART;
 #endif
-  }
-  if (settings->gdl90 == GDL90_BLUETOOTH) {
+    }
+    if (settings->gdl90 == GDL90_BLUETOOTH) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->gdl90 = GDL90_USB;
+      settings->gdl90 = GDL90_USB;
 #else
-    settings->gdl90 = GDL90_UART;
+      settings->gdl90 = GDL90_UART;
 #endif
-  }
-  if (settings->d1090 == D1090_BLUETOOTH) {
+    }
+    if (settings->d1090 == D1090_BLUETOOTH) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-    settings->d1090 = D1090_USB;
+      settings->d1090 = D1090_USB;
 #else
-    settings->d1090 = D1090_UART;
+      settings->d1090 = D1090_UART;
 #endif
-  }
+    }
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
-  if (hw_info.model == SOFTRF_MODEL_BRACELET) {
-    if (settings->nmea_out == NMEA_UART)  { settings->nmea_out = NMEA_USB;  }
-    if (settings->gdl90    == GDL90_UART) { settings->gdl90    = GDL90_USB; }
-    if (settings->d1090    == D1090_UART) { settings->d1090    = D1090_USB; }
-  }
+    if (hw_info.model == SOFTRF_MODEL_BRACELET) {
+      if (settings->nmea_out == NMEA_UART)  { settings->nmea_out = NMEA_USB;  }
+      if (settings->gdl90    == GDL90_UART) { settings->gdl90    = GDL90_USB; }
+      if (settings->d1090    == D1090_UART) { settings->d1090    = D1090_USB; }
+    }
 #endif /* ARDUINO_NUCLEO_L073RZ */
+  }
 }
 
 static void STM32_SPI_begin()

@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>On-line Badge Edition EPD settings tool</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name=keywords content="SoftRF, Badge, ePaper, NMEA, checksum, settings, javascript, GNSS">
+<style type="text/css"><!--
+
+p.warn {
+    border-style: solid;
+    border-width: thin;
+    border-color: red;
+    padding:      0.5em;
+}
+
+--></style>
+<script><!--
+
+const version = 1;
+const adapter = 0;
+const connection = 0;
+const protocol = 1;
+const baudrate = 0;
+const server = "";
+const key = "";
+const adb = 0;
+const voice = 0;
+const power_save = 0;
+
+// Compute NMEA checksum and display it
+function UpdateChecksum()
+{
+  var cmd = "PSKVC,"
+      + version + ","
+      + adapter  + ","
+      + connection  + ","
+      + document.getElementById("unit").value + ","
+      + document.getElementById("zoom").value + ","
+      + protocol  + ","
+      + baudrate  + ","
+      + server  + ","
+      + key  + ","
+      + document.getElementById("orientation").value + ","
+      + adb  + ","
+      + document.getElementById("idpref").value + ","
+      + document.getElementById("vmode").value + ","
+      + voice  + ","
+      + document.getElementById("aghost").value + ","
+      + document.getElementById("filter").value + ","
+      + power_save  + ","
+      + document.getElementById("team").value;
+
+
+  // Compute the checksum by XORing all the character values in the string.
+  var checksum = 0;
+  for(var i = 0; i < cmd.length; i++) {
+    checksum = checksum ^ cmd.charCodeAt(i);
+  }
+
+  // Convert it to hexadecimal (base-16, upper case, most significant nybble first).
+  var hexsum = Number(checksum).toString(16).toUpperCase();
+  if (hexsum.length < 2) {
+    hexsum = ("00" + hexsum).slice(-2);
+  }
+  
+  // Display the result
+  settext(document.getElementById("output"), "$" + cmd + "*" + hexsum);
+}
+
+// Helper function to set the contents of the SPAN to some text
+function settext(span, text)
+{
+  if (!span.hasChildNodes()) {
+    span.appendChild(span.ownerDocument.createTextNode(text));
+    return;
+  } else {
+    span.firstChild.nodeValue = text;
+  }
+}
+
+function SelUnit()
+{
+  var unit = document.getElementById("Units");
+  document.getElementById("unit").value = unit.options[unit.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelVMode()
+{
+  var vmode = document.getElementById("VModes");
+  document.getElementById("vmode").value = vmode.options[vmode.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelOrientation()
+{
+  var orientation = document.getElementById("Orientations");
+  document.getElementById("orientation").value = orientation.options[orientation.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelZoom()
+{
+  var zoom = document.getElementById("ZoomLevels");
+  document.getElementById("zoom").value = zoom.options[zoom.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelIDPref()
+{
+  var idpref = document.getElementById("IDPrefs");
+  document.getElementById("idpref").value = idpref.options[idpref.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelAGhost()
+{
+  var aghost = document.getElementById("AGhostTimes");
+  document.getElementById("aghost").value = aghost.options[aghost.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelFilter()
+{
+  var filter = document.getElementById("Filters");
+  document.getElementById("filter").value = filter.options[filter.selectedIndex].value;
+  UpdateChecksum();
+}
+
+
+function SelTeam()
+{
+  var team = document.getElementById("TeamMember");
+  document.getElementById("team").value = team.value;
+  UpdateChecksum();
+}
+
+function InitSettings()
+{
+//  document.getElementById("ver").value        = 1;
+  document.getElementById("unit").value         = 0;
+  document.getElementById("vmode").value        = 0;
+  document.getElementById("orientation").value  = 0;
+  document.getElementById("zoom").value         = 2;
+  document.getElementById("idpref").value       = 3;
+  document.getElementById("aghost").value       = 0;
+  document.getElementById("filter").value       = 0;
+  document.getElementById("team").value         = "000000";
+
+  UpdateChecksum();
+}
+
+--></script>
+</head>
+<body  onload="InitSettings()">
+<h3 align=left>On-line Badge Edition EPD settings tool</h3>
+<b>NOTICE!</b> <small>Your browser should have support for JavaScript and DHTML (most modern browsers do).</small>
+<hr>
+<h1 align=center>Settings</h1>
+<form>
+<table width=100%%>
+<tr>
+<th align=left>Units</th>
+<td align=right>
+<select id="Units" onchange="SelUnit()">
+<option selected value=0>metric</option>
+<option value=1>imperial</option>
+<option value=2>mixed</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>View mode</th>
+<td align=right>
+<select id="VModes" onchange="SelVMode()">
+<option selected value='0'>status</option>
+<option value='1'>radar</option>
+<option value='2'>text</option>
+<option value='4'>time</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Radar orientation</th>
+<td align=right>
+<select id="Orientations" onchange="SelOrientation()">
+<option selected value='0'>CoG Up</option>
+<option value='1'>North Up</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Zoom level</th>
+<td align=right>
+<select id="ZoomLevels" onchange="SelZoom()">
+<option value=0>lowest</option>
+<option value=1>low</option>
+<option selected value=2>medium</option>
+<option value=3>high</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>ID preference</th>
+<td align=right>
+<select id="IDPrefs" onchange="SelIDPref()">
+<option value='0'>registration</option>
+<option value='1'>tail/CN</option>
+<option value='2'>make & model</option>
+<option selected value='3'>type</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>e-Paper 'ghosts' removal</th>
+<td align=right>
+<select id="AGhostTimes" onchange="SelAGhost()">
+<option selected value='0'>off</option>
+<option value='1'>auto</option>
+<option value='2'> 2 minutes</option>
+<option value='3'> 5 minutes</option>
+<option value='4'>10 minutes</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Traffic filter</th>
+<td align=right>
+<select id="Filters" onchange="SelFilter()">
+<option selected value='0'>off</option>
+<option value='1'>by Altitude (&#177;  500 m)</option>
+<option value='2'>by Altitude (&#177; 1500 m)</option>
+</select>
+</td>
+</tr>
+<tr>
+<th align=left>Team Member Id</th>
+<td align=right>
+<INPUT type="text" id="TeamMember" maxlength="6" size="6" value="000000" onchange="SelTeam()">
+</td>
+</tr>
+</table>
+<!-- Units: --><input type="hidden" id="unit" size="1">
+<!-- VMode:  --><input type="hidden" id="vmode" size="1">
+<!-- Orientation:  --><input type="hidden" id="orientation" size="1">
+<!-- Zoom:  --><input type="hidden" id="zoom" size="1">
+<!-- IDPref:  --><input type="hidden" id="idpref" size="1">
+<!-- AGhost:  --><input hidden="text" id="aghost" size="1">
+<!-- Filter:  --><input type="hidden" id="filter" size="1">
+<!-- Team:  --><input type="hidden" id="team" size="6">
+<h3 align=center>NMEA control sentence:</h3>
+<hr>
+<h4 align=center><tt><span id="output" style="font-family: monospace;"></span><br><br></tt></h4>
+</form>
+</body>
+</html>

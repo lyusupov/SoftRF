@@ -290,7 +290,7 @@ static bool ESP8266_EEPROM_begin(size_t size)
   return true;
 }
 
-static void ESP8266_EEPROM_extension()
+static void ESP8266_EEPROM_extension(int cmd)
 {
 
 }

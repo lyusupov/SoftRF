@@ -771,16 +771,18 @@ static bool ESP32_EEPROM_begin(size_t size)
   return rval;
 }
 
-static void ESP32_EEPROM_extension()
+static void ESP32_EEPROM_extension(int cmd)
 {
-  if (settings->nmea_out == NMEA_USB) {
-    settings->nmea_out = NMEA_UART;
-  }
-  if (settings->gdl90 == GDL90_USB) {
-    settings->gdl90 = GDL90_UART;
-  }
-  if (settings->d1090 == D1090_USB) {
-    settings->d1090 = D1090_UART;
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->nmea_out == NMEA_USB) {
+      settings->nmea_out = NMEA_UART;
+    }
+    if (settings->gdl90 == GDL90_USB) {
+      settings->gdl90 = GDL90_UART;
+    }
+    if (settings->d1090 == D1090_USB) {
+      settings->d1090 = D1090_UART;
+    }
   }
 }
 

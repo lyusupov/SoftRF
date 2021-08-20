@@ -37,6 +37,9 @@ enum
 #define PSRFC_VERSION       1
 #define MAX_PSRFC_LEN       64
 
+#define PSKVC_VERSION       1
+#define MAX_PSKVC_LEN       64
+
 void NMEA_setup(void);
 void NMEA_loop(void);
 void NMEA_fini();

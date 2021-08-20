@@ -98,6 +98,29 @@ TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
 TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
+#if defined(USE_SKYVIEW_CFG)
+#include "EPD.h"
+
+TinyGPSCustom V_Version      (gnss, "PSKVC", 1);
+TinyGPSCustom V_Adapter      (gnss, "PSKVC", 2);
+TinyGPSCustom V_Connection   (gnss, "PSKVC", 3);
+TinyGPSCustom V_Units        (gnss, "PSKVC", 4);
+TinyGPSCustom V_Zoon         (gnss, "PSKVC", 5);
+TinyGPSCustom V_Protocol     (gnss, "PSKVC", 6);
+TinyGPSCustom V_Baudrate     (gnss, "PSKVC", 7);
+TinyGPSCustom V_Server       (gnss, "PSKVC", 8);
+TinyGPSCustom V_Key          (gnss, "PSKVC", 9);
+TinyGPSCustom V_Orientation  (gnss, "PSKVC", 10);
+TinyGPSCustom V_AvDB         (gnss, "PSKVC", 11);
+TinyGPSCustom V_ID_Pref      (gnss, "PSKVC", 12);
+TinyGPSCustom V_VMode        (gnss, "PSKVC", 13);
+TinyGPSCustom V_Voice        (gnss, "PSKVC", 14);
+TinyGPSCustom V_AntiGhost    (gnss, "PSKVC", 15);
+TinyGPSCustom V_Filter       (gnss, "PSKVC", 16);
+TinyGPSCustom V_PowerSave    (gnss, "PSKVC", 17);
+TinyGPSCustom V_Team         (gnss, "PSKVC", 18);
+#endif /* USE_SKYVIEW_CFG */
+
 static uint8_t C_NMEA_Source;
 
 static void nmea_cfg_restart()
@@ -1192,7 +1215,7 @@ void PickGNSSFix()
 
       C_NMEA_Source = NMEA_USB;
 
-#if 0
+#if defined(ARDUINO_NUCLEO_L073RZ)
       /* This makes possible to configure S76x's built-in SONY GNSS from aside */
       if (hw_info.model == SOFTRF_MODEL_DONGLE) {
         swSer.write(c);
@@ -1435,6 +1458,139 @@ void PickGNSSFix()
           }
         }
       }
+#if defined(USE_SKYVIEW_CFG)
+      if (V_Version.isUpdated()) {
+        if (strncmp(V_Version.value(), "?", 1) == 0) {
+          char pskvc_buf[MAX_PSKVC_LEN];
+
+          snprintf_P(pskvc_buf, sizeof(pskvc_buf),
+              PSTR("$PSKVC,%d,%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%X*"),
+              PSKVC_VERSION,    ui->adapter,    ui->connection,
+              ui->units,        ui->zoom,       ui->protocol,
+              ui->baudrate,     ui->server,     ui->key,
+              ui->orientation,  ui->adb,        ui->idpref,
+              ui->vmode,        ui->voice,      ui->aghost,
+              ui->filter,       ui->power_save, ui->team);
+
+          NMEA_add_checksum(pskvc_buf, sizeof(pskvc_buf) - strlen(pskvc_buf));
+
+          NMEA_Out(C_NMEA_Source, (byte *) pskvc_buf, strlen(pskvc_buf), false);
+
+        } else if (atoi(V_Version.value()) == PSKVC_VERSION) {
+          bool cfg_is_updated = false;
+
+          if (V_Adapter.isUpdated())
+          {
+            ui->adapter = atoi(V_Adapter.value());
+            Serial.print(F("Adapter = ")); Serial.println(ui->adapter);
+            cfg_is_updated = true;
+          }
+          if (V_Connection.isUpdated())
+          {
+            ui->connection = atoi(V_Connection.value());
+            Serial.print(F("Connection = ")); Serial.println(ui->connection);
+            cfg_is_updated = true;
+          }
+          if (V_Units.isUpdated())
+          {
+            ui->units = atoi(V_Units.value());
+            Serial.print(F("Units = ")); Serial.println(ui->units);
+            cfg_is_updated = true;
+          }
+          if (V_Zoon.isUpdated())
+          {
+            ui->zoom = atoi(V_Zoon.value());
+            Serial.print(F("Zoon = ")); Serial.println(ui->zoom);
+            cfg_is_updated = true;
+          }
+          if (V_Protocol.isUpdated())
+          {
+            ui->protocol = atoi(V_Protocol.value());
+            Serial.print(F("Protocol = ")); Serial.println(ui->protocol);
+            cfg_is_updated = true;
+          }
+          if (V_Baudrate.isUpdated())
+          {
+            ui->baudrate = atoi(V_Baudrate.value());
+            Serial.print(F("Baudrate = ")); Serial.println(ui->baudrate);
+            cfg_is_updated = true;
+          }
+          if (V_Server.isUpdated())
+          {
+            strncpy(ui->server, V_Server.value(), sizeof(ui->server));
+            Serial.print(F("Server = ")); Serial.println(ui->server);
+            cfg_is_updated = true;
+          }
+           if (V_Key.isUpdated())
+          {
+            strncpy(ui->key, V_Key.value(), sizeof(ui->key));
+            Serial.print(F("Key = ")); Serial.println(ui->key);
+            cfg_is_updated = true;
+          }
+          if (V_Orientation.isUpdated())
+          {
+            ui->orientation = atoi(V_Orientation.value());
+            Serial.print(F("Orientation = ")); Serial.println(ui->orientation);
+            cfg_is_updated = true;
+          }
+          if (V_AvDB.isUpdated())
+          {
+            ui->adb = atoi(V_AvDB.value());
+            Serial.print(F("AvDB = ")); Serial.println(ui->adb);
+            cfg_is_updated = true;
+          }
+          if (V_ID_Pref.isUpdated())
+          {
+            ui->idpref = atoi(V_ID_Pref.value());
+            Serial.print(F("ID_Pref = ")); Serial.println(ui->idpref);
+            cfg_is_updated = true;
+          }
+           if (V_VMode.isUpdated())
+          {
+            ui->vmode = atoi(V_VMode.value());
+            Serial.print(F("VMode = ")); Serial.println(ui->vmode);
+            cfg_is_updated = true;
+          }
+          if (V_Voice.isUpdated())
+          {
+            ui->voice = atoi(V_Voice.value());
+            Serial.print(F("Voice = ")); Serial.println(ui->voice);
+            cfg_is_updated = true;
+          }
+          if (V_AntiGhost.isUpdated())
+          {
+            ui->aghost = atoi(V_AntiGhost.value());
+            Serial.print(F("AntiGhost = ")); Serial.println(ui->aghost);
+            cfg_is_updated = true;
+          }
+          if (V_Filter.isUpdated())
+          {
+            ui->filter = atoi(V_Filter.value());
+            Serial.print(F("Filter = ")); Serial.println(ui->filter);
+            cfg_is_updated = true;
+          }
+          if (V_PowerSave.isUpdated())
+          {
+            ui->power_save = atoi(V_PowerSave.value());
+            Serial.print(F("PowerSave = ")); Serial.println(ui->power_save);
+            cfg_is_updated = true;
+          }
+          if (V_Team.isUpdated())
+          {
+            ui->team = strtoul(V_Team.value(), NULL, 16);
+            Serial.print(F("Team = ")); Serial.println(ui->team, HEX);
+            cfg_is_updated = true;
+          }
+
+          if (cfg_is_updated) {
+            SoC->WDT_fini();
+            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
+            EEPROM_store();
+            nmea_cfg_restart();
+          }
+        }
+      }
+#endif /* USE_SKYVIEW_CFG */
 #endif /* USE_NMEA_CFG */
     }
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {

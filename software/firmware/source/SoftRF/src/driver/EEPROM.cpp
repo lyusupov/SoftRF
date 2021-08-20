@@ -42,6 +42,8 @@ settings_t *settings;
 
 void EEPROM_setup()
 {
+  int cmd = EEPROM_EXT_LOAD;
+
   if (!SoC->EEPROM_begin(sizeof(eeprom_t)))
   {
     Serial.print(F("ERROR: Failed to initialize "));
@@ -52,13 +54,14 @@ void EEPROM_setup()
   }
 
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    eeprom_block.raw[i] = EEPROM.read(i);  
+    eeprom_block.raw[i] = EEPROM.read(i);
   }
 
   if (eeprom_block.field.magic != SOFTRF_EEPROM_MAGIC) {
     Serial.println(F("WARNING! User defined settings are not initialized yet. Loading defaults..."));
 
     EEPROM_defaults();
+    cmd = EEPROM_EXT_DEFAULTS;
   } else {
     Serial.print(F("EEPROM version: "));
     Serial.println(eeprom_block.field.version);
@@ -67,11 +70,12 @@ void EEPROM_setup()
       Serial.println(F("WARNING! Version mismatch of user defined settings. Loading defaults..."));
 
       EEPROM_defaults();
+      cmd = EEPROM_EXT_DEFAULTS;
     }
   }
   settings = &eeprom_block.field.settings;
 
-  SoC->EEPROM_extension();
+  SoC->EEPROM_extension(cmd);
 }
 
 void EEPROM_defaults()
@@ -123,8 +127,10 @@ void EEPROM_defaults()
 void EEPROM_store()
 {
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    EEPROM.write(i, eeprom_block.raw[i]);  
+    EEPROM.write(i, eeprom_block.raw[i]);
   }
+
+  SoC->EEPROM_extension(EEPROM_EXT_STORE);
 
   EEPROM_commit();
 }

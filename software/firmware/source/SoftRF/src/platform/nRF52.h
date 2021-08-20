@@ -231,6 +231,7 @@ struct rst_info {
 /* -------------------------------------- */
 #define USE_NMEALIB
 #define USE_NMEA_CFG               //  +    kb
+#define USE_SKYVIEW_CFG            //  +    kb
 //#define EXCLUDE_BMP180           //  -    kb
 //#define EXCLUDE_BMP280           //  -    kb
 //#define EXCLUDE_MPL3115A2        //  -    kb
