@@ -26,8 +26,9 @@
 #include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMono12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
+#include <TinyGPS++.h>
 
-const char Altitude_text[]    = "ALTITUDE, M";
+const char Altitude_text[]    = "ALTITUDE, ";
 const char Pressure_text[]    = "PRESSURE, MB";
 const char Temperature_text[] = "TEMPERATURE, C";
 
@@ -35,31 +36,37 @@ static navbox_t navbox1;
 static navbox_t navbox2;
 static navbox_t navbox3;
 
+static float alt_scale = 1.0;
+
 void EPD_baro_setup()
 {
+  alt_scale = ui->units == UNITS_METRIC ? 1.0 : _GPS_FEET_PER_METER;
+
   memcpy(navbox1.title, Altitude_text, strlen(Altitude_text));
+  strcpy(navbox1.title + strlen(Altitude_text),
+        ui->units == UNITS_METRIC ? "M" : "FT");
   navbox1.x = 0;
   navbox1.y = 0;
-  navbox1.width  = display->width();
-  navbox1.height = display->height() / 3;
-  navbox1.value      = Baro_altitude();
+  navbox1.width      = display->width();
+  navbox1.height     = display->height() / 3;
+  navbox1.value      = Baro_altitude() * alt_scale;
 //  navbox1.prev_value = navbox1.value;
   navbox1.timestamp  = millis();
 
   memcpy(navbox2.title, Pressure_text, strlen(Pressure_text));
-  navbox2.x = navbox1.x;
-  navbox2.y = navbox1.y + navbox1.height;
-  navbox2.width  = navbox1.width;
-  navbox2.height = navbox1.height;
+  navbox2.x          = navbox1.x;
+  navbox2.y          = navbox1.y + navbox1.height;
+  navbox2.width      = navbox1.width;
+  navbox2.height     = navbox1.height;
   navbox2.value      = Baro_pressure() / 100;
 //  navbox2.prev_value = navbox2.value;
   navbox2.timestamp  = millis();
 
   memcpy(navbox3.title, Temperature_text, strlen(Temperature_text));
-  navbox3.x = navbox1.x;
-  navbox3.y = navbox2.y + navbox2.height;
-  navbox3.width  = navbox1.width;
-  navbox3.height = navbox1.height;
+  navbox3.x          = navbox1.x;
+  navbox3.y          = navbox2.y + navbox2.height;
+  navbox3.width      = navbox1.width;
+  navbox3.height     = navbox1.height;
   navbox3.value      = Baro_temperature();
 //  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
@@ -127,7 +134,7 @@ void EPD_baro_loop()
 {
   if (isTimeToEPD()) {
 
-    navbox1.value = Baro_altitude();
+    navbox1.value = Baro_altitude() * alt_scale;
     navbox2.value = Baro_pressure() / 100;
     navbox3.value = Baro_temperature();
 
