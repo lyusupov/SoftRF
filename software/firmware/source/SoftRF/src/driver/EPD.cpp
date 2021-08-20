@@ -24,6 +24,7 @@
 #include "LED.h"
 #include "RF.h"
 #include "Baro.h"
+#include "../TrafficHelper.h"
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
@@ -50,6 +51,8 @@ const char EPD_Flash_text[]   = "FLASH   ";
 const char EPD_Baro_text[]    = "BARO  ";
 
 unsigned long EPDTimeMarker = 0;
+static unsigned long EPD_anti_ghosting_timer = 0;
+static uint8_t anti_ghosting_minutes = 0;
 
 static int EPD_view_mode = 0;
 bool EPD_vmode_updated = true;
@@ -144,7 +147,25 @@ bool EPD_setup(bool splash_screen)
   EPD_baro_setup();
   EPD_time_setup();
 
+  switch (ui->aghost)
+  {
+    case ANTI_GHOSTING_2MIN:
+      anti_ghosting_minutes = 2;
+      break;
+    case ANTI_GHOSTING_5MIN:
+    case ANTI_GHOSTING_AUTO:
+      anti_ghosting_minutes = 5;
+      break;
+    case ANTI_GHOSTING_10MIN:
+      anti_ghosting_minutes = 10;
+      break;
+    case ANTI_GHOSTING_OFF:
+    default:
+      break;
+  }
+
   EPDTimeMarker = millis();
+  EPD_anti_ghosting_timer = millis();
 
   return rval;
 }
@@ -273,6 +294,16 @@ void EPD_loop()
       default:
         EPD_status_loop();
         break;
+      }
+
+      bool auto_ag_condition = ui->aghost == ANTI_GHOSTING_AUTO ?
+                              (Traffic_Count() == 0) : true;
+
+      if (anti_ghosting_minutes > 0                                                &&
+          (millis() - EPD_anti_ghosting_timer) > (anti_ghosting_minutes * 60000UL) &&
+          auto_ag_condition) {
+        EPD_vmode_updated = true;
+        EPD_anti_ghosting_timer = millis();
       }
     }
     break;
