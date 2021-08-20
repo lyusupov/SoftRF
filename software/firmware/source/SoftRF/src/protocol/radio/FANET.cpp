@@ -345,7 +345,8 @@ size_t fanet_encode(void *fanet_pkt, ufo_t *this_aircraft) {
     pkt->speed        = speed2 & 0x7F;
   }
 
-  int climb10         = constrain((int)roundf(climb * 10.0f), -315, 315);
+  int climb10         = this_aircraft->stealth ?
+                        0 : constrain((int)roundf(climb * 10.0f), -315, 315);
   if(climb10 > 63) {
     pkt->climb_scale  = 1;
     pkt->climb        = ((climb10 + (climb10 >= 0 ? 2 : -2)) / 5);

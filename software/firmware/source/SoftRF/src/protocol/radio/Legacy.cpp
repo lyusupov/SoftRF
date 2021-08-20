@@ -229,7 +229,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     int8_t ew = (int8_t) (speed * sinf(radians(course)));
 
     int16_t vs10 = (int16_t) roundf(vsf * 10.0f);
-    pkt->vs = vs10 >> pkt->smult;
+    pkt->vs = this_aircraft->stealth ? 0 : vs10 >> pkt->smult;
 
     pkt->addr = id & 0x00FFFFFF;
 
