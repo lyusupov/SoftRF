@@ -29,6 +29,7 @@
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../driver/LED.h"
+#include "../driver/RF.h"
 
 #include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
@@ -201,27 +202,35 @@ static void EPD_Draw_Radar()
       display->drawCircle(  radar_center_x, radar_center_y,
                             radius / 2, GxEPD_BLACK);
 
-#if 0
-      /* arrow tip */
-      display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                            radar_center_x    , radar_center_y - 5,
-                            radar_center_x + 7, radar_center_y + 5,
-                            GxEPD_BLACK);
-      display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                            radar_center_x    , radar_center_y + 2,
-                            radar_center_x + 7, radar_center_y + 5,
-                            GxEPD_WHITE);
-#else
-      /* little airplane */
-      display->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, GxEPD_BLACK);
-      display->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, GxEPD_BLACK);
+      if (ThisAircraft.aircraft_type == AIRCRAFT_TYPE_GLIDER     ||
+          ThisAircraft.aircraft_type == AIRCRAFT_TYPE_TOWPLANE   ||
+          ThisAircraft.aircraft_type == AIRCRAFT_TYPE_HELICOPTER ||
+          ThisAircraft.aircraft_type == AIRCRAFT_TYPE_DROPPLANE  ||
+          ThisAircraft.aircraft_type == AIRCRAFT_TYPE_POWERED    ||
+          ThisAircraft.aircraft_type == AIRCRAFT_TYPE_JET) {
 
-      display->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, GxEPD_BLACK);
-      display->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, GxEPD_BLACK);
+        /* little airplane */
+        display->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, GxEPD_BLACK);
+        display->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, GxEPD_BLACK);
 
-      display->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, GxEPD_BLACK);
-      display->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, GxEPD_BLACK);
-#endif
+        display->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, GxEPD_BLACK);
+        display->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, GxEPD_BLACK);
+
+        display->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, GxEPD_BLACK);
+        display->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, GxEPD_BLACK);
+
+      } else {
+
+        /* arrow tip */
+        display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                              radar_center_x    , radar_center_y - 5,
+                              radar_center_x + 7, radar_center_y + 5,
+                              GxEPD_BLACK);
+        display->fillTriangle(radar_center_x - 7, radar_center_y + 5,
+                              radar_center_x    , radar_center_y + 2,
+                              radar_center_x + 7, radar_center_y + 5,
+                              GxEPD_WHITE);
+      }
 
       switch (ui->orientation)
       {

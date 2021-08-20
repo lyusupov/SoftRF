@@ -45,8 +45,8 @@ void EPD_baro_setup()
   memcpy(navbox1.title, Altitude_text, strlen(Altitude_text));
   strcpy(navbox1.title + strlen(Altitude_text),
         ui->units == UNITS_METRIC ? "M" : "FT");
-  navbox1.x = 0;
-  navbox1.y = 0;
+  navbox1.x          = 0;
+  navbox1.y          = 0;
   navbox1.width      = display->width();
   navbox1.height     = display->height() / 3;
   navbox1.value      = Baro_altitude() * alt_scale;
