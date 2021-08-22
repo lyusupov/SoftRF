@@ -108,7 +108,7 @@ static const uint32_t table[8] = LEGACY_KEY1;
 void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address) {
     int8_t i, ndx;
     for (i = 0; i < 4; i++) {
-        ndx = ((timestamp >> 23) & 1) ? i+4 : i ;
+        ndx = (((timestamp >> 23) & 1) && ((address >> 16) != 0x5b)) ? i+4 : i ;
         key[i] = obscure(table[ndx] ^ ((timestamp >> 6) ^ address), LEGACY_KEY2) ^ LEGACY_KEY3;
     }
 }
