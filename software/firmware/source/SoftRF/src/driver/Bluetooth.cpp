@@ -1078,6 +1078,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include "GNSS.h"
 #include "RF.h"
 #include "../protocol/radio/Legacy.h"
+#include "Baro.h"
 
 /*
  * SensorBox Serivce: aba27100-143b-4b81-a444-edcd0000f020
@@ -1105,10 +1106,24 @@ const uint8_t SENSBOX_UUID_MOVEMENT[] =
     0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
 };
 
+const uint8_t SENSBOX_UUID_GPS2[] =
+{
+    0x24, 0xF0, 0x00, 0x00, 0xCD, 0xED, 0x44, 0xA4,
+    0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
+};
+
+const uint8_t SENSBOX_UUID_SYSTEM[] =
+{
+    0x25, 0xF0, 0x00, 0x00, 0xCD, 0xED, 0x44, 0xA4,
+    0x81, 0x4B, 0x3B, 0x14, 0x00, 0x71, 0xA2, 0xAB,
+};
+
 BLESensBox::BLESensBox(void) :
   BLEService   (SENSBOX_UUID_SERVICE),
   _sensbox_nav (SENSBOX_UUID_NAVIGATION),
-  _sensbox_move(SENSBOX_UUID_MOVEMENT)
+  _sensbox_move(SENSBOX_UUID_MOVEMENT),
+  _sensbox_gps2(SENSBOX_UUID_GPS2),
+  _sensbox_sys (SENSBOX_UUID_SYSTEM)
 {
 
 }
@@ -1123,24 +1138,25 @@ err_t BLESensBox::begin(void)
   _sensbox_move.setProperties(CHR_PROPS_NOTIFY);
   _sensbox_move.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _sensbox_move.setFixedLen(sizeof(sensbox_movement_t));
-  VERIFY_STATUS( _sensbox_nav.begin() );
+  _sensbox_gps2.setProperties(CHR_PROPS_NOTIFY);
+  _sensbox_gps2.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _sensbox_gps2.setFixedLen(sizeof(sensbox_gps2_t));
+  _sensbox_sys.setProperties(CHR_PROPS_NOTIFY);
+  _sensbox_sys.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _sensbox_sys.setFixedLen(sizeof(sensbox_system_t));
+  VERIFY_STATUS( _sensbox_nav.begin()  );
   VERIFY_STATUS( _sensbox_move.begin() );
+  VERIFY_STATUS( _sensbox_gps2.begin() );
+  VERIFY_STATUS( _sensbox_sys.begin()  );
 
   return ERROR_NONE;
 }
 
-bool BLESensBox::notifyEnabled(void)
-{
-  return this->notifyEnabled(Bluefruit.connHandle());
-}
-
-bool BLESensBox::notifyEnabled(uint16_t conn_hdl)
-{
-  return _sensbox_nav.notifyEnabled(conn_hdl);
-}
-
 bool BLESensBox::notify_nav(uint8_t status)
 {
+  if (!_sensbox_nav.notifyEnabled(Bluefruit.connHandle()))
+    return false;
+
   sensbox_navigation_t data = {0};
 
   data.timestamp = ThisAircraft.timestamp;
@@ -1148,7 +1164,6 @@ bool BLESensBox::notify_nav(uint8_t status)
   data.lon       = (int32_t) (ThisAircraft.longitude * 10000000);
   data.gnss_alt  = (int16_t) ThisAircraft.altitude;
   data.pres_alt  = (int16_t) ThisAircraft.pressure_altitude;
-  data.vario     = (int16_t) ((ThisAircraft.vs * 10) / (_GPS_FEET_PER_METER * 6));
   data.status    = status;
 
   return _sensbox_nav.notify(&data, sizeof(sensbox_navigation_t)) > 0;
@@ -1156,14 +1171,45 @@ bool BLESensBox::notify_nav(uint8_t status)
 
 bool BLESensBox::notify_move(uint8_t status)
 {
+  if (!_sensbox_move.notifyEnabled(Bluefruit.connHandle()))
+    return false;
+
   sensbox_movement_t data = {0};
 
   data.pres_alt  = (int32_t) (ThisAircraft.pressure_altitude * 100);
+  data.vario     = (int16_t) ((ThisAircraft.vs * 10) / (_GPS_FEET_PER_METER * 6));
   data.gs        = (int16_t) (ThisAircraft.speed  * _GPS_MPS_PER_KNOT * 10);
   data.cog       = (int16_t) (ThisAircraft.course * 10);
   data.status    = status;
 
   return _sensbox_move.notify(&data, sizeof(sensbox_movement_t)) > 0;
+}
+
+bool BLESensBox::notify_gps2(uint8_t status)
+{
+  if (!_sensbox_gps2.notifyEnabled(Bluefruit.connHandle()))
+    return false;
+
+  sensbox_gps2_t data = {0};
+
+  data.sats      = (uint8_t) gnss.satellites.value();
+  data.status    = status;
+
+  return _sensbox_gps2.notify(&data, sizeof(sensbox_gps2_t)) > 0;
+}
+
+bool BLESensBox::notify_sys(uint8_t status)
+{
+  if (!_sensbox_sys.notifyEnabled(Bluefruit.connHandle()))
+    return false;
+
+  sensbox_system_t data = {0};
+
+  data.battery   = (uint8_t) Battery_charge();
+  data.temp      = (int16_t) (Baro_temperature() * 10);
+  data.status    = status;
+
+  return _sensbox_sys.notify(&data, sizeof(sensbox_system_t)) > 0;
 }
 
 static unsigned long BLE_Notify_TimeMarker  = 0;
@@ -1313,9 +1359,6 @@ void nRF52_Bluetooth_setup()
 
   // Start SensBox Service
   blesens.begin();
-  uint8_t sens_status = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
-  blesens.notify_nav(sens_status);
-  blesens.notify_move(sens_status);
 
 #if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
@@ -1391,10 +1434,12 @@ static void nRF52_Bluetooth_loop()
     blebas.write(Battery_charge());
   }
 
-  if (Bluefruit.connected() && blesens.notifyEnabled() && isTimeToSensBox()) {
+  if (Bluefruit.connected() && isTimeToSensBox()) {
     uint8_t sens_status = isValidFix() ? GNSS_STATUS_3D_MOVING : GNSS_STATUS_NONE;
-    blesens.notify_nav(sens_status);
+    blesens.notify_nav (sens_status);
     blesens.notify_move(sens_status);
+    blesens.notify_gps2(sens_status);
+    blesens.notify_sys (sens_status);
     BLE_SensBox_TimeMarker = millis();
   }
 }

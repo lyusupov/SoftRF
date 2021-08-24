@@ -296,8 +296,10 @@ void EPD_loop()
         break;
       }
 
-      bool auto_ag_condition = ui->aghost == ANTI_GHOSTING_AUTO ?
-                              (Traffic_Count() == 0) : true;
+      bool auto_ag_condition = ui->aghost == ANTI_GHOSTING_AUTO  &&
+                               (EPD_view_mode == VIEW_MODE_RADAR ||
+                                EPD_view_mode == VIEW_MODE_TEXT) ?
+                               (Traffic_Count() == 0) : true;
 
       if (anti_ghosting_minutes > 0                                                &&
           (millis() - EPD_anti_ghosting_timer) > (anti_ghosting_minutes * 60000UL) &&
@@ -376,6 +378,7 @@ void EPD_fini(int reason)
     display->display(false);
 
     EPD_HIBERNATE;
+    delay(200);
 
 //    SoC->Display_unlock();
     break;

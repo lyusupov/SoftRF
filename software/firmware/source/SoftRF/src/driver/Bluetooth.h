@@ -117,16 +117,18 @@ class BLESensBox : public BLEService
   protected:
     BLECharacteristic _sensbox_nav;
     BLECharacteristic _sensbox_move;
+    BLECharacteristic _sensbox_gps2;
+    BLECharacteristic _sensbox_sys;
 
   public:
     BLESensBox(void);
 
     virtual err_t begin(void);
 
-    bool notifyEnabled(void);
-    bool notifyEnabled(uint16_t conn_hdl);
-    bool notify_nav(uint8_t);
+    bool notify_nav (uint8_t);
     bool notify_move(uint8_t);
+    bool notify_gps2(uint8_t);
+    bool notify_sys (uint8_t);
 };
 
 /*
@@ -154,6 +156,25 @@ typedef struct {
     uint16_t  accel;      /* Acceleration, 'g' * 10 */
     uint8_t   status;     /* Status: same as above */
 } __attribute__((packed)) sensbox_movement_t;
+
+typedef struct {
+    uint16_t  accuracy_h; /* Horizontal Accuracy, dm */
+    uint16_t  accuracy_v; /* Vertical   Accuracy, dm */
+    int16_t   geo_separ;  /* GPS Height Ellipsoid, m */
+    uint8_t   sats;       /* Number of satellites */
+    uint8_t   status;     /* Status: same as above */
+} __attribute__((packed)) sensbox_gps2_t;
+
+typedef struct {
+    uint32_t  timestamp;  /* Date/Time (UTC), UnixTime */
+    uint8_t   battery;    /* Battery Level, % */
+    uint8_t   log;        /* Logging level, % */
+    int16_t   temp;       /* Temperature, °C * 10 */
+    uint8_t   status;     /* Status: same as above */
+    uint8_t   status2;
+    uint16_t  qnh;        /* QNH, Pa * 10 */
+    int32_t   pressure;   /* mPa  */
+} __attribute__((packed)) sensbox_system_t;
 
 #define isTimeToSensBox() (millis() - BLE_SensBox_TimeMarker > 500) /* 2 Hz */
 
