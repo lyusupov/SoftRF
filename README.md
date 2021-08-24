@@ -88,7 +88,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
-* [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#cubecell)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition.-Quick-start)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Mini)
@@ -125,7 +125,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
         * [Source](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)
 * Extras
     * [Long range (LoRa) RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)
-        * [Frequency deviation](https://github.com/lyusupov/SoftRF/wiki/Frequency-deviation) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [Frequency deviation](https://github.com/lyusupov/SoftRF/wiki/Frequency-deviation)
     * Protocols
         * [UAT](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/UATbridge)    
         * [OGNTP](https://github.com/lyusupov/SoftRF/wiki/OGNTP-compatibility)
