@@ -177,6 +177,13 @@ static void STM32_setup()
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
 
+//      pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP); /* LP modded early rev. */
+
+      pinMode(TTGO_T65_VDD_1V8_EN,  INPUT_PULLUP);
+      delay(150);
+      pinMode(TTGO_T65_GPS_PWR_DIS, INPUT_PULLDOWN);
+      delay(50);
+
       Wire.begin();
       Wire.beginTransmission(ICM20948_ADDRESS);
       STM32_has_IMU = (Wire.endTransmission() == 0);
@@ -194,6 +201,9 @@ static void STM32_setup()
         }
 
         pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLDOWN);
+      } else {
+        pinMode(TTGO_T65_VDD_1V8_EN,  INPUT_ANALOG);
+        pinMode(TTGO_T65_GPS_PWR_DIS, INPUT_ANALOG);
       }
     }
 
@@ -249,9 +259,14 @@ static void STM32_setup()
 
       HAL_NVIC_SystemReset();
       break;
-#endif
+#endif /* USE_SERIAL_DEEP_SLEEP */
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
+      if (hw_info.model == SOFTRF_MODEL_BRACELET) {
+        pinMode(TTGO_T65_GPS_PWR_DIS, INPUT_PULLUP);
+        pinMode(TTGO_T65_VDD_1V8_EN,  INPUT_PULLDOWN);
+      }
+
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
         pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
                                      INPUT_PULLDOWN : INPUT);
