@@ -63,7 +63,7 @@ enum nRF52_board_id {
   NRF52_NORDIC_PCA10059,        /* reference low power board */
   NRF52_LILYGO_TECHO_REV_0,     /* 20-8-6 */
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
-  NRF52_LILYGO_TECHO_REV_2      /* 2021-3-16 */
+  NRF52_LILYGO_TECHO_REV_2      /* 2021-3-26 */
 };
 
 struct rst_info {
