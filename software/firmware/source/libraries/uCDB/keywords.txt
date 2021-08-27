@@ -1,0 +1,21 @@
+#######################################
+# Syntax Coloring Map uCDB
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+uCDB	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+open	            KEYWORD2
+findKey	            KEYWORD2
+findNextValue	    KEYWORD2
+readValue	        KEYWORD2
+close           	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

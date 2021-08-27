@@ -150,7 +150,9 @@ static void EPD_Draw_Text()
     } else {
       uint32_t id = traffic_by_dist[EPD_current - 1].fop->addr;
 
-      snprintf(id_text, sizeof(id_text), "ID: %06X", id);
+      if (!SoC_DB_query(DB_OGN, id, id_text, sizeof(id_text))) {
+        snprintf(id_text, sizeof(id_text), "ID: %06X", id);
+      }
     }
 
     display->setFont(&FreeMonoBold12pt7b);
