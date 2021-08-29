@@ -71,3 +71,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Adafruit SPIFlash and SleepyDog libraries are developed by **Adafruit Industries**
  * SdFat library is developed by **Bill Greiman**
  * Arduino MIDI library is developed by **Francois Best**
+ * Arduino uCDB library is developed by **Ioulianos Kakoulidis**
