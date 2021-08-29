@@ -104,6 +104,8 @@ I2CBus        *i2c = nullptr;
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false;
 static bool RTC_sync           = false;
+static bool FATFS_is_mounted   = false;
+static bool ADB_is_open        = false;
 
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
 
@@ -609,18 +611,60 @@ static void nRF52_post_init()
 
     /* EPD back light off */
     digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+
+    char key[8];
+    char out[64];
+    uint8_t tokens[3] = { 0 };
+    cdbResult rt;
+    int c, i = 0, token_cnt = 0;
+
+    int acfts;
+    char *reg, *mam, *cn;
+    reg = mam = cn = NULL;
+
+    if (ADB_is_open) {
+      acfts = ucdb.recordsNumber();
+
+      snprintf(key, sizeof(key),"%06X", ThisAircraft.addr);
+
+      rt = ucdb.findKey(key, strlen(key));
+
+      switch (rt) {
+        case KEY_FOUND:
+          while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+            if (c == '|') {
+              if (token_cnt < (sizeof(tokens) - 1)) {
+                token_cnt++;
+                tokens[token_cnt] = i+1;
+              }
+              c = 0;
+            }
+            out[i++] = (char) c;
+          }
+          out[i] = 0;
+
+          reg = out + tokens[1];
+          mam = out + tokens[0];
+          cn  = out + tokens[2];
+
+          break;
+
+        case KEY_NOT_FOUND:
+        default:
+          break;
+      }
+
+      reg = (reg != NULL) && strlen(reg) ? reg : (char *) "REG: N/A";
+      mam = (mam != NULL) && strlen(mam) ? mam : (char *) "M&M: N/A";
+      cn  = (cn  != NULL) && strlen(cn)  ? cn  : (char *) "N/A";
+
+    } else {
+      acfts = -1;
+    }
+
+    EPD_info2(acfts, reg, mam, cn);
   }
 #endif /* USE_EPAPER */
-
-  if ( nRF52_has_spiflash                       &&
-      (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
-    const char fileName[] = "/Aircrafts/ogn.cdb";
-
-    if (ucdb.open(fileName) != CDB_OK) {
-      Serial.print("Invalid CDB: ");
-      Serial.println(fileName);
-    }
-  }
 }
 
 static void nRF52_loop()
@@ -679,11 +723,6 @@ static void nRF52_loop()
 static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
-
-  if ( nRF52_has_spiflash                       &&
-      (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
-    ucdb.close();
-  }
 
 //  if (nRF52_has_spiflash) {
 //    usb_msc.end();
@@ -1009,7 +1048,7 @@ static void nRF52_EEPROM_extension(int cmd)
 
   if ( nRF52_has_spiflash                       &&
       (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
-       fatfs.begin(SPIFlash)) {
+       (FATFS_is_mounted = fatfs.begin(SPIFlash))) {
     File file = fatfs.open("/settings.json", FILE_READ);
 
     if (file) {
@@ -1388,73 +1427,6 @@ static void nRF52_Button_fini()
   detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
 }
 
-/*
- * One aircratf CDB (20000+ records) query takes:
- * 1)     FOUND : 5-7 milliseconds
- * 2) NOT FOUND :   3 milliseconds
- */
-/* static */ bool SoC_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
-{
-  char key[8];
-  char out[64];
-  uint8_t tokens[3] = { 0 };
-  cdbResult rt;
-  bool rval = false;
-  int c, i = 0, token_cnt = 0;
-
-  snprintf(key, sizeof(key),"%06X", id);
-  size_t keyLen = strlen(key);
-
-  rt = ucdb.findKey(key, keyLen);
-
-  switch (rt) {
-    case KEY_FOUND:
-      while ((c = ucdb.readValue()) != -1) {
-        if (c == '|') {
-          token_cnt++;
-          tokens[token_cnt] = i+1;
-          c = 0;
-        }
-        out[i++] = (char) c;
-      }
-
-      if (c == -1) {
-        out[i] = 0;
-      }
-
-      switch (ui->idpref)
-      {
-      case ID_TAIL:
-        snprintf(buf, size, "CN: %s",
-          strlen(out + tokens[2]) ? out + tokens[2] : "N/A");
-        break;
-      case ID_MAM:
-        snprintf(buf, size, "%s",
-          strlen(out + tokens[0]) ? out + tokens[0] : "Unknown");
-        break;
-      case ID_REG:
-      default:
-        snprintf(buf, size, "%s",
-          strlen(out + tokens[1]) ? out + tokens[1] : "REG: N/A");
-        break;
-      }
-
-      rval = true;
-      break;
-
-    case KEY_NOT_FOUND:
-//      Serial.print("Aircraft not found: ");
-//      printKey(key, keyLen);
-      break;
-
-    default:
-//      Serial.println("ERROR");
-      break;
-  }
-
-  return rval;
-}
-
 #if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
 void line_state_callback(bool connected)
 {
@@ -1567,6 +1539,102 @@ IODev_ops_t nRF52_USBSerial_ops = {
   nRF52_USB_write
 };
 
+static bool nRF52_ADB_setup()
+{
+  if (FATFS_is_mounted) {
+    const char fileName[] = "/Aircrafts/ogn.cdb";
+
+    if (ucdb.open(fileName) != CDB_OK) {
+      Serial.print("Invalid CDB: ");
+      Serial.println(fileName);
+    } else {
+      ADB_is_open = true;
+    }
+  }
+
+  return ADB_is_open;
+}
+
+static bool nRF52_ADB_fini()
+{
+  if (ADB_is_open) {
+    ucdb.close();
+    ADB_is_open = false;
+  }
+
+  return !ADB_is_open;
+}
+
+/*
+ * One aircraft CDB (20000+ records) query takes:
+ * 1)     FOUND : 5-7 milliseconds
+ * 2) NOT FOUND :   3 milliseconds
+ */
+static bool nRF52_ADB_query(uint8_t type, uint32_t id, char *buf, size_t size)
+{
+  char key[8];
+  char out[64];
+  uint8_t tokens[3] = { 0 };
+  cdbResult rt;
+  int c, i = 0, token_cnt = 0;
+  bool rval = false;
+
+  if (!ADB_is_open) {
+    return rval;
+  }
+
+  snprintf(key, sizeof(key),"%06X", id);
+
+  rt = ucdb.findKey(key, strlen(key));
+
+  switch (rt) {
+    case KEY_FOUND:
+      while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+        if (c == '|') {
+          if (token_cnt < (sizeof(tokens) - 1)) {
+            token_cnt++;
+            tokens[token_cnt] = i+1;
+          }
+          c = 0;
+        }
+        out[i++] = (char) c;
+      }
+      out[i] = 0;
+
+      switch (ui->idpref)
+      {
+      case ID_TAIL:
+        snprintf(buf, size, "CN: %s",
+          strlen(out + tokens[2]) ? out + tokens[2] : "N/A");
+        break;
+      case ID_MAM:
+        snprintf(buf, size, "%s",
+          strlen(out + tokens[0]) ? out + tokens[0] : "Unknown");
+        break;
+      case ID_REG:
+      default:
+        snprintf(buf, size, "%s",
+          strlen(out + tokens[1]) ? out + tokens[1] : "REG: N/A");
+        break;
+      }
+
+      rval = true;
+      break;
+
+    case KEY_NOT_FOUND:
+    default:
+      break;
+  }
+
+  return rval;
+}
+
+DB_ops_t nRF52_ADB_ops = {
+  nRF52_ADB_setup,
+  nRF52_ADB_fini,
+  nRF52_ADB_query
+};
+
 const SoC_ops_t nRF52_ops = {
   SOC_NRF52,
   "nRF52",
@@ -1615,7 +1683,8 @@ const SoC_ops_t nRF52_ops = {
   nRF52_WDT_fini,
   nRF52_Button_setup,
   nRF52_Button_loop,
-  nRF52_Button_fini
+  nRF52_Button_fini,
+  &nRF52_ADB_ops
 };
 
 #endif /* ARDUINO_ARCH_NRF52 */

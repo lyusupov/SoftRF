@@ -704,7 +704,8 @@ const SoC_ops_t PSoC4_ops = {
   PSoC4_WDT_fini,
   PSoC4_Button_setup,
   PSoC4_Button_loop,
-  PSoC4_Button_fini
+  PSoC4_Button_fini,
+  NULL
 };
 
 #endif /* __ASR6501__ */

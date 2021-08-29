@@ -808,7 +808,8 @@ const SoC_ops_t CC13XX_ops = {
   CC13XX_WDT_fini,
   CC13XX_Button_setup,
   CC13XX_Button_loop,
-  CC13XX_Button_fini
+  CC13XX_Button_fini,
+  NULL
 };
 
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */

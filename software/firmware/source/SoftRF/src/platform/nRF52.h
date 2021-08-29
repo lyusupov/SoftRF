@@ -278,8 +278,6 @@ extern Uart Serial2;
 extern PCF8563_Class *rtc;
 extern const char *Hardware_Rev[];
 
-extern bool SoC_DB_query(uint8_t, uint32_t, char *, size_t);
-
 #if defined(USE_EPAPER)
 #include <GxEPD2_BW.h>
 

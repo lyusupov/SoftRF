@@ -1373,7 +1373,8 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_fini,
   ESP32_Button_setup,
   ESP32_Button_loop,
-  ESP32_Button_fini
+  ESP32_Button_fini,
+  NULL
 };
 
 #endif /* ESP32 */

@@ -150,7 +150,7 @@ static void EPD_Draw_Text()
     } else {
       uint32_t id = traffic_by_dist[EPD_current - 1].fop->addr;
 
-      if (!SoC_DB_query(DB_OGN, id, id_text, sizeof(id_text))) {
+      if (!(SoC->ADB_ops && SoC->ADB_ops->query(DB_OGN, id, id_text, sizeof(id_text)))) {
         snprintf(id_text, sizeof(id_text), "ID: %06X", id);
       }
     }

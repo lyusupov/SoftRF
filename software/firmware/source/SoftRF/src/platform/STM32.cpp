@@ -934,7 +934,8 @@ const SoC_ops_t STM32_ops = {
   STM32_WDT_fini,
   STM32_Button_setup,
   STM32_Button_loop,
-  STM32_Button_fini
+  STM32_Button_fini,
+  NULL
 };
 
 #endif /* ARDUINO_ARCH_STM32 */

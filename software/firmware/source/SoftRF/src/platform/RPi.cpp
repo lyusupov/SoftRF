@@ -558,7 +558,8 @@ const SoC_ops_t RPi_ops = {
   RPi_WDT_fini,
   RPi_Button_setup,
   RPi_Button_loop,
-  RPi_Button_fini
+  RPi_Button_fini,
+  NULL
 };
 
 static bool inputAvailable()

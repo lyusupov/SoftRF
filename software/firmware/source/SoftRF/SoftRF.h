@@ -170,6 +170,12 @@ typedef struct IODev_ops_struct {
   size_t (*write)(const uint8_t *buffer, size_t size);
 } IODev_ops_t;
 
+typedef struct DB_ops_struct {
+  bool (*setup)();
+  bool (*fini)();
+  bool (*query)(uint8_t, uint32_t, char *, size_t);
+} DB_ops_t;
+
 enum
 {
 	SOFTRF_MODE_NORMAL,

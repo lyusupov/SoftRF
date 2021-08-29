@@ -164,6 +164,8 @@ bool EPD_setup(bool splash_screen)
       break;
   }
 
+  SoC->ADB_ops && SoC->ADB_ops->setup();
+
   EPDTimeMarker = millis();
   EPD_anti_ghosting_timer = millis();
 
@@ -247,6 +249,129 @@ void EPD_info1(bool rtc, bool spiflash)
     EPD_update_in_progress = EPD_UPDATE_SLOW;
     while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
 #endif
+
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+void EPD_info2(int acfts, char *reg, char *mam, char *cn)
+{
+  const char *msg_line;
+
+  switch (hw_info.display)
+  {
+  case DISPLAY_EPD_1_54:
+  case DISPLAY_EPD_2_7:
+    int16_t  tbx, tby;
+    uint16_t tbw, tbh;
+
+    uint16_t x, y;
+
+    display->fillScreen(GxEPD_WHITE);
+
+    if (acfts == -1) {
+
+      display->setFont(&FreeMonoBold18pt7b);
+
+      msg_line = "WARNING";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = display->height() / 3;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+      display->setFont(&FreeMono18pt7b);
+
+      msg_line = "NO";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = (2 * display->height()) / 3 - tbh;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      msg_line = "AIRCRAFTS";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      msg_line = "DATA";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+    } else {
+
+      char buf[TEXT_VIEW_LINE_LENGTH+1];
+
+      snprintf(buf, sizeof(buf), "%d", acfts);
+
+      display->setFont(&FreeMonoBold12pt7b);
+
+      display->getTextBounds(buf, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = display->height() / 4 - tbh;
+      display->setCursor(x, y);
+      display->print(buf);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      msg_line = "ACFTS LOADED";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      msg_line = "THIS AIRCRAFT:";
+
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      display->setCursor(x, y);
+      display->print(msg_line);
+
+      x = 10;
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      snprintf(buf, sizeof(buf), "%s", reg);
+      display->setCursor(x, y);
+      display->print(buf);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      snprintf(buf, sizeof(buf), "%s", mam);
+      display->setCursor(x, y);
+      display->print(buf);
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      snprintf(buf, sizeof(buf), " CN: %s", cn);
+      display->setCursor(x, y);
+      display->print(buf);
+    }
+
+    display->display(false);
+
+    delay(3000);
+    break;
+
   case DISPLAY_NONE:
   default:
     break;
@@ -321,6 +446,8 @@ void EPD_fini(int reason)
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
   uint16_t x, y;
+
+  SoC->ADB_ops && SoC->ADB_ops->fini();
 
   const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT ?
                      "LOW BATTERY" : "NORMAL OFF");

@@ -69,6 +69,8 @@ class uCDB
     */
     int readValue(void *buff, unsigned int byteNum);
 
+    int recordsNumber() { return 22386; } /* https://github.com/JulStrat/uCDB/issues/1 */
+
     /**
         Close CDB
     */
