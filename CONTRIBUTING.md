@@ -26,9 +26,4 @@ Areas where contributions are welcomed by the project's developer:
         - pressure sensor
     - create and maintain **iOS** smartphone/tablet application to monitor status and change settings of the following SoftRF Edition(s) over **Bluetooth LE**:
         - [Badge](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
-<!--
-        - [Uni](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
-        - [Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
-        - [Mini](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
--->
     - create and maintain support for TT-SC1 radio module and "Aero" data protocol
