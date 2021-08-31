@@ -31,3 +31,4 @@ Areas where contributions are welcomed by the project's developer:
         - [Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
         - [Mini](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
 -->
+    - create and maintain support for TT-SC1 radio module and "Aero" data protocol
