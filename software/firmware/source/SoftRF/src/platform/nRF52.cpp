@@ -106,6 +106,8 @@ static bool nRF52_has_spiflash = false;
 static bool RTC_sync           = false;
 static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
+static bool screen_saver       = false;
+
 
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
 
@@ -1168,7 +1170,7 @@ static void nRF52_Display_fini(int reason)
 {
 #if defined(USE_EPAPER)
 
-  EPD_fini(reason);
+  EPD_fini(reason, screen_saver);
 
 #if 0
   if( EPD_Task_Handle != NULL )
@@ -1359,6 +1361,13 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
+
+#if defined(USE_EPAPER)
+        if (digitalRead(SOC_GPIO_PIN_PAD) == LOW) {
+          screen_saver = true;
+        }
+#endif
+
         shutdown(SOFTRF_SHUTDOWN_BUTTON);
         Serial.println(F("This will never be printed."));
       }

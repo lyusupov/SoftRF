@@ -410,7 +410,7 @@ static void RPi_Display_fini(int reason)
 #if defined(USE_EPAPER)
 
   EPD_Clear_Screen();
-  EPD_fini(reason);
+  EPD_fini(reason, false);
 
   if ( RPi_EPD_update_thread != (pthread_t) 0)
   {

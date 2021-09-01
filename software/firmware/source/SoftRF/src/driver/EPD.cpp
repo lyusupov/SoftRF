@@ -441,7 +441,7 @@ void EPD_loop()
   }
 }
 
-void EPD_fini(int reason)
+void EPD_fini(int reason, bool screen_saver)
 {
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
@@ -455,57 +455,88 @@ void EPD_fini(int reason)
   switch (hw_info.display)
   {
   case DISPLAY_EPD_1_54:
-//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+    if (screen_saver) {
+      const char *msg_line;
 
-//    display->fillScreen(GxEPD_WHITE);
+      display->setFont(&FreeMonoBold12pt7b);
+      display->fillScreen(GxEPD_WHITE);
 
-//    EPD_update_in_progress = EPD_UPDATE_SLOW;
-//    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+      msg_line = "POWER OFF";
 
-//    while (!SoC->Display_lock()) { delay(10); }
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = display->height() / 3;
+      display->setCursor(x, y);
+      display->print(msg_line);
 
-    display->fillScreen(GxEPD_WHITE);
+      msg_line = "SCREEN SAVER";
 
-    display->setFont(&FreeMonoBold12pt7b);
-    display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
-    x = (display->width() - tbw) / 2;
-    y = tbh + tbh / 2;
-    display->setCursor(x, y);
-    display->print(msg);
+      display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = (2 * display->height()) / 3;
+      display->setCursor(x, y);
+      display->print(msg_line);
 
-    x = (display->width()  - 128) / 2;
-    y = (display->height() - 128) / 2 - tbh / 2;
-    display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+      display->display(false);
 
-    display->setFont(&Org_01);
-    display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
-    x =  5;
-    y += 128 + 17;
-    display->setCursor(x, y);
-    display->print(EPD_SoftRF_text4);
+      delay(4000);
 
-    display->setFont(&FreeMonoBoldOblique9pt7b);
-    display->print(EPD_SoftRF_text5);
+      display->fillScreen(GxEPD_WHITE);
 
-    display->setFont(&FreeSerif9pt7b);
-    display->getTextBounds(EPD_SoftRF_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
-    x = (display->width() - tbw) / 2;
-    y += 21;
-    display->setCursor(x, y);
-    display->print(EPD_SoftRF_text6);
+    } else {
 
-    /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
-//    SoC->Display_unlock();
+//      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
 
-//    yield();
+//      display->fillScreen(GxEPD_WHITE);
 
-//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
-//    while (!SoC->Display_lock()) { delay(10); }
+//      EPD_update_in_progress = EPD_UPDATE_SLOW;
+//      while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+
+//      while (!SoC->Display_lock()) { delay(10); }
+
+      display->fillScreen(GxEPD_WHITE);
+
+      display->setFont(&FreeMonoBold12pt7b);
+      display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y = tbh + tbh / 2;
+      display->setCursor(x, y);
+      display->print(msg);
+
+      x = (display->width()  - 128) / 2;
+      y = (display->height() - 128) / 2 - tbh / 2;
+      display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+
+      display->setFont(&Org_01);
+      display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x =  5;
+      y += 128 + 17;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text4);
+
+      display->setFont(&FreeMonoBoldOblique9pt7b);
+      display->print(EPD_SoftRF_text5);
+
+      display->setFont(&FreeSerif9pt7b);
+      display->getTextBounds(EPD_SoftRF_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += 21;
+      display->setCursor(x, y);
+      display->print(EPD_SoftRF_text6);
+
+      /* a signal to background EPD update task */
+//      EPD_update_in_progress = EPD_UPDATE_FAST;
+//      SoC->Display_unlock();
+
+//      yield();
+
+//      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+//      while (!SoC->Display_lock()) { delay(10); }
+    }
+
     display->display(false);
 
     EPD_HIBERNATE;
-    delay(200);
 
 //    SoC->Display_unlock();
     break;
