@@ -1,13 +1,116 @@
 /**
-   @file uCDB.cpp
-   uCDB implementation
+   @file uCDB.hpp
+   uCDB template implementation
 
    @author    Ioulianos Kakoulidis
    @date      2021   
    @copyright Public Domain
 */
 
-#include "uCDB.h"
+enum cdbResult {
+  CDB_OK = 0,
+  CDB_CLOSED, ///< Initial state
+  CDB_NOT_FOUND,
+  CDB_ERROR,  ///< CDB data integrity critical error
+  FILE_ERROR, ///< File operation (open/seek/read) error
+  KEY_FOUND,
+  KEY_NOT_FOUND
+};
+
+unsigned long DJBHash(const void *key, unsigned long keyLen);
+
+template <class TFileSystem, class TFile>
+class uCDB
+{
+  public:
+    uCDB(TFileSystem& fs);
+
+    /**
+        Open CDB file
+        @param fileName  CDB filename
+        @param userHashFunc  User provided hash function, default - DJBHash
+    */
+    cdbResult open(const char *fileName, unsigned long (*userHashFunc)(const void *key, unsigned long keyLen) = DJBHash);
+
+    /**
+        Find `key'
+    */
+    cdbResult findKey(const void *key, unsigned long keyLen);
+
+    /**
+        Find next `value' after successful finKey() call
+    */
+    cdbResult findNextValue();
+
+    /**
+        Read next available `value' byte
+        after successful finKey() or findNextValue() call
+    */
+    int readValue();
+
+    /**
+        Read next available `value' byteNum bytes
+        after successful finKey() or findNextValue() call
+    */
+    int readValue(void *buff, unsigned int byteNum);
+    
+    /**
+        Total records number in CDB
+    */
+    unsigned long recordsNumber();
+
+    /**
+        The number of `value' bytes available for reading
+    */
+    unsigned long valueAvailable();
+
+    /**
+        Close CDB
+    */
+    cdbResult close();
+
+  private:
+    TFileSystem& fs_;
+    File cdb;
+    cdbResult state;
+
+    const byte *key_;
+    unsigned long keyLen_;
+    unsigned long keyHash;
+
+    unsigned long dataEndPos; ///< Data end position
+    unsigned long slotsNum;   ///< Total slots number in CDB.
+
+    /// @name Hash table descriptor (HEADER section)
+    /// @{
+    unsigned long hashTabStartPos; ///< Hash table position
+    unsigned long hashTabSlotsNum; ///< Hash table slot number
+    /// @}
+    unsigned long hashTabEndPos; ///< hashTabStartPos + 8 * hashTabSlotsNum
+
+    /// @name Slot descriptor (HASH TABLE section)
+    /// @{
+    unsigned long slotHash;
+    unsigned long dataPos;
+    /// @}
+
+    unsigned long slotsToScan;
+    unsigned long nextSlotPos;
+
+    /// @name Data (key, value) descriptor (DATA section)
+    /// @{
+    unsigned long dataKeyLen;   ///< Key length in bytes
+    unsigned long dataValueLen; ///< Value length in bytes
+    /// @}
+
+    unsigned long valueBytesAvail;
+
+    bool readDescriptor(byte *buff, unsigned long pos);
+    cdbResult compareKey();
+    unsigned long (*hashFunc)(const void *key, unsigned long keyLen);
+    void zero();
+};
+
 
 #define CDB_DESCRIPTOR_SIZE 2 * (sizeof (unsigned long))
 #define CDB_HEADER_SIZE 256 * CDB_DESCRIPTOR_SIZE
@@ -15,26 +118,32 @@
 
 static unsigned long unpack(const byte *buff);
 
-uCDB::uCDB() {
+template <class TFileSystem, class TFile>
+uCDB<TFileSystem, TFile>::uCDB(TFileSystem& fs) : fs_(fs) {
   zero();  
   state = CDB_CLOSED;
 }
 
-cdbResult uCDB::open(const char *fileName, unsigned long (*userHashFunc)(const void *key, unsigned long keyLen)) {
+template <class TFileSystem, class TFile>
+cdbResult uCDB<TFileSystem, TFile>::open(const char *fileName, unsigned long (*userHashFunc)(const void *key, unsigned long keyLen)) {
   unsigned long htPos;
   unsigned long htSlotsNum;
+
+  unsigned long dend;
+  unsigned long snum;
+  
   byte buff[CDB_DESCRIPTOR_SIZE];
   
   zero();
-
   if (cdb) {
     cdb.close(); // Close previously opened CDB file
   }
 
-  if (!SD.exists(fileName)) {
+  if (!fs_.exists(fileName)) {
     return (state = CDB_NOT_FOUND);
   }
-  cdb = SD.open(fileName, FILE_READ);
+  //cdb = fs_.open(fileName, FILE_READ);
+  cdb = fs_.open(fileName);
   if (!cdb) {
     return (state = CDB_CLOSED);
   }
@@ -46,8 +155,8 @@ cdbResult uCDB::open(const char *fileName, unsigned long (*userHashFunc)(const v
     return (state = CDB_ERROR);
   }
 
-  dataEndPos = cdb.size();
-  slotsNum = 0;
+  dend = cdb.size();
+  snum = 0;
 
   for (unsigned long pos = 0; pos < CDB_HEADER_SIZE; pos += CDB_DESCRIPTOR_SIZE) {
     if (!readDescriptor(buff, pos)) {
@@ -68,25 +177,28 @@ cdbResult uCDB::open(const char *fileName, unsigned long (*userHashFunc)(const v
     }
     
     // Adjust data end position and total slots number
-    if (htPos < dataEndPos) {
-      dataEndPos = htPos;
+    if (htPos < dend) {
+      dend = htPos;
     }
-    slotsNum += htSlotsNum;
+    snum += htSlotsNum;
 
-    if (((cdb.size() - dataEndPos) >> 3) < slotsNum) {
+    if (((cdb.size() - dend) >> 3) < snum) {
       return (state = CDB_ERROR); // Critical CDB format or data integrity error          
     }
   }
   // Check total
-  if ((cdb.size() - dataEndPos) != 8 * slotsNum){
+  if ((cdb.size() - dend) != 8 * snum){
     return (state = CDB_ERROR); // Critical CDB format or data integrity error           
   }
   
+  dataEndPos = dend;
+  slotsNum = snum;
   hashFunc = userHashFunc;
   return (state = CDB_OK);
 }
 
-cdbResult uCDB::findKey(const void *key, unsigned long keyLen) {
+template <class TFileSystem, class TFile>
+cdbResult uCDB<TFileSystem, TFile>::findKey(const void *key, unsigned long keyLen) {
   byte buff[CDB_DESCRIPTOR_SIZE];
 
   zero();
@@ -117,7 +229,8 @@ cdbResult uCDB::findKey(const void *key, unsigned long keyLen) {
   return findNextValue();
 }
 
-cdbResult uCDB::findNextValue() {
+template <class TFileSystem, class TFile>
+cdbResult uCDB<TFileSystem, TFile>::findNextValue() {
   byte buff[CDB_BUFF_SIZE];
   bool rd;
 
@@ -195,11 +308,10 @@ cdbResult uCDB::findNextValue() {
   return (state = KEY_NOT_FOUND);
 }
 
-int uCDB::readValue() {
-  int rt;
-  
+template <class TFileSystem, class TFile>
+int uCDB<TFileSystem, TFile>::readValue() {
   if ((state == KEY_FOUND) && valueBytesAvail) {
-    rt = cdb.read();
+    int rt = cdb.read();
     if (rt != -1) {
       --valueBytesAvail;
     }
@@ -209,32 +321,44 @@ int uCDB::readValue() {
   return -1;
 }
 
-int uCDB::readValue(void *buff, unsigned int byteNum) {
-  if (state != KEY_FOUND) {
-    return -1;
+template <class TFileSystem, class TFile>
+int uCDB<TFileSystem, TFile>::readValue(void *buff, unsigned int byteNum) {
+  if (state == KEY_FOUND) {
+    if (byteNum > valueBytesAvail) {
+      byteNum = valueBytesAvail;
+    }
+    int br = cdb.read(buff, byteNum);
+    if (br > 0) {
+      valueBytesAvail -= br;  
+    }
+    return br;
   }
 
-  if (byteNum > valueBytesAvail) {
-    byteNum = valueBytesAvail;
-  }
-  valueBytesAvail -= byteNum;
-
-  return cdb.read(buff, byteNum);
+  return -1;
 }
 
-cdbResult uCDB::close() {
-  zero();  
+template <class TFileSystem, class TFile>
+unsigned long uCDB<TFileSystem, TFile>::recordsNumber() {
+  return (slotsNum >> 1);  
+}
 
+template <class TFileSystem, class TFile>
+unsigned long uCDB<TFileSystem, TFile>::valueAvailable() {
+  return ((state == KEY_FOUND) ? valueBytesAvail : 0);
+}
+
+template <class TFileSystem, class TFile>
+cdbResult uCDB<TFileSystem, TFile>::close() {
+  zero();  
   if (cdb) {
     cdb.close();
   }
-
   return (state = CDB_CLOSED);
 }
 
 // Private functions
-
-cdbResult uCDB::compareKey() {
+template <class TFileSystem, class TFile>
+cdbResult uCDB<TFileSystem, TFile>::compareKey() {
   const byte *key = key_;
   unsigned long keyLen = keyLen_;
   byte buff[CDB_BUFF_SIZE];
@@ -252,8 +376,7 @@ cdbResult uCDB::compareKey() {
 
   // keyLen < CDB_BUFF_SIZE
   if (keyLen) {
-    // Compiler warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
-    if (cdb.read(buff, keyLen) != keyLen) {
+    if (cdb.read(buff, keyLen) != (int)keyLen) {
       return FILE_ERROR;
     }
     if (memcmp(key, buff, keyLen)) {
@@ -263,29 +386,29 @@ cdbResult uCDB::compareKey() {
 
   return KEY_FOUND;
 }
-
-bool uCDB::readDescriptor(byte *buff, unsigned long pos) {
+template <class TFileSystem, class TFile>
+bool uCDB<TFileSystem, TFile>::readDescriptor(byte *buff, unsigned long pos) {
   if (cdb.position() != pos) {
     if (!cdb.seek(pos)) {
       return false;
     }
   }
 
-  if (cdb.read(buff, CDB_DESCRIPTOR_SIZE) == CDB_DESCRIPTOR_SIZE) {
-    return true;
-  }
-  else {
-    return false;
-  }
+  return (cdb.read(buff, CDB_DESCRIPTOR_SIZE) == CDB_DESCRIPTOR_SIZE);
 }
 
-void uCDB::zero() {
+template <class TFileSystem, class TFile>
+void uCDB<TFileSystem, TFile>::zero() {
+  dataEndPos = 0;
+  slotsNum = 0;
+    
   slotsToScan = 0;
   nextSlotPos = 0;
 }
- 
+
+#define DJB_START_HASH 5381UL  
 unsigned long DJBHash(const void *key, unsigned long keyLen) {
-  unsigned long h = 5381;
+  unsigned long h = DJB_START_HASH;
   const byte *curr = static_cast<const byte *>(key);
   const byte *end = curr + keyLen;
 
@@ -296,6 +419,7 @@ unsigned long DJBHash(const void *key, unsigned long keyLen) {
 
   return h;
 }
+#undef DJB_START_HASH
 
 // Static functions
 

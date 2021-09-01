@@ -42,7 +42,7 @@
 #include "../protocol/data/D1090.h"
 #include "../protocol/data/JSON.h"
 
-#include "uCDB.h"
+#include "uCDB.hpp"
 
 #if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
 #include <MIDI.h>
@@ -263,7 +263,7 @@ ui_settings_t ui_settings = {
 };
 
 ui_settings_t *ui;
-uCDB          ucdb;
+uCDB<FatFileSystem, File> ucdb(fatfs);
 
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and

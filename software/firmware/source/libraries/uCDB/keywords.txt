@@ -3,7 +3,7 @@
 #######################################
 
 #######################################
-# Datatypes (KEYWORD1)
+# Data types (KEYWORD1)
 #######################################
 uCDB	KEYWORD1
 
@@ -14,7 +14,10 @@ open	            KEYWORD2
 findKey	            KEYWORD2
 findNextValue	    KEYWORD2
 readValue	        KEYWORD2
+recordsNumber       KEYWORD2
+valueAvailable      KEYWORD2
 close           	KEYWORD2
+DJBHash             KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
