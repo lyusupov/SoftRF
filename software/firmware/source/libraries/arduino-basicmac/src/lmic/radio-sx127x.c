@@ -1132,7 +1132,8 @@ static void sx127x_radio_init (void) {
     writeReg(RegOpMode, OPMODE_FSK_SLEEP);
 
     // sanity check, read version number
-    ASSERT( readReg(RegVersion) == RADIO_VERSION );
+    u1_t r_ver = readReg(RegVersion);
+    ASSERT( r_ver == RADIO_VERSION || r_ver == RADIO_VERSION+1 );
 
 #ifdef BRD_sx1276_radio
     state.calibrated = 0;

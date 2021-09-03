@@ -190,8 +190,8 @@ typedef struct stm32_backup_struct {
 #define TTGO_T65_GPIO_PAD_PWR PA2
 #define TTGO_T65_SENSOR_INT   PB1 // PB0
 #define TTGO_T65_GPIO_CHRG    PB8
-#define TTGO_T65_VDD_1V8_EN   PB0 /* HIGH - enable 1.8V power supply */
-#define TTGO_T65_GPS_PWR_DIS  PA3 /* HIGH - disable GNSS and LS power supply */
+#define TTGO_T65_VDD_1V8_EN   PB0 /* HIGH - enable 1.8V power supply        */
+#define TTGO_T65_GPS_PWR_EN   PA3 /* HIGH - enable GNSS and LS power supply */
 
 /* button */
 //#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN

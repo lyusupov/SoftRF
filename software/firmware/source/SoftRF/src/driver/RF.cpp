@@ -692,9 +692,9 @@ static bool sx1276_probe()
   pinMode(lmic_pins.nss, INPUT);
   SPI.end();
 
-  if (v == 0x12) {
+  if (v == 0x12 || v == 0x13) {
 
-    if (v_reset == 0x12) {
+    if (v_reset == 0x12 || v_reset == 0x13) {
       RF_SX12XX_RST_is_connected = false;
     }
 
@@ -1967,7 +1967,7 @@ static bool ognrf_probe()
   SPI.end();
 
 #if defined(WITH_RFM95)
-  if (ChipVersion == 0x12) success = true;
+  if (ChipVersion == 0x12 || ChipVersion == 0x13) success = true;
 #endif /* WITH_RFM95 */
 #if defined(WITH_RFM69)
   if (ChipVersion == 0x24) success = true;

@@ -956,7 +956,8 @@ void radio_init () {
     opmode(OPMODE_SLEEP);
 
     // sanity check, read version number
-    ASSERT( readReg(RegVersion) == RADIO_VERSION );
+    u1_t r_ver = readReg(RegVersion);
+    ASSERT( r_ver == RADIO_VERSION || r_ver == RADIO_VERSION+1 );
 
     // seed 15-byte randomness via noise rssi
     rxlora(RXMODE_RSSI);
