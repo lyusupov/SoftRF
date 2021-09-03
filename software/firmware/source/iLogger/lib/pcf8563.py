@@ -25,7 +25,17 @@ pcf8563.py - MicroPython library for NXP PCF8563 Real-time clock/calendar
 Created by Lewis he on September 17, 2019.
 github:https://github.com/lewisxhe/PCF8563_PythonLibrary
 '''
-import time
+
+from sys import implementation
+
+if implementation.name == 'micropython':
+  from utime import localtime
+  from machine import I2C
+
+if implementation.name == 'circuitpython':
+  from time import localtime
+  import adafruit_bus_device.i2c_device as i2c_device
+
 
 PCF8563_SLAVE_ADDRESS = const(0x51)
 PCF8563_STAT1_REG = const(0x00)
@@ -73,22 +83,32 @@ class PCF8563:
     def __init__(self, i2c, address=None):
         """Initialization needs to be given an initialized I2C port
         """
-        import adafruit_bus_device.i2c_device as i2c_device  # pylint: disable=import-outside-toplevel
         self.address = address if address else PCF8563_SLAVE_ADDRESS
-        self._i2c = i2c_device.I2CDevice(i2c, self.address)
+        if implementation.name == 'circuitpython':
+          self.i2c = i2c_device.I2CDevice(i2c, self.address)
+        else:
+          self.i2c = i2c
         self.buffer = bytearray(16)
         self.bytebuf = memoryview(self.buffer[0:1])
 
     def __write_byte(self, reg, val):
-        with self._i2c as i2c:
-            i2c.write(bytes([reg & 0xFF, val & 0xFF]))
+        if implementation.name == 'circuitpython':
+          with self.i2c as i2c:
+              i2c.write(bytes([reg & 0xFF, val & 0xFF]))
+        else:
+          self.bytebuf[0] = val
+          self.i2c.writeto_mem(self.address, reg, self.bytebuf)
 
     def __read_byte(self, reg):
-        with self._i2c as i2c:
-            i2c.write(bytes([reg & 0xFF]))
-            result = bytearray(1)
-            i2c.readinto(result)
-            return result[0]
+        if implementation.name == 'circuitpython':
+          with self.i2c as i2c:
+              i2c.write(bytes([reg & 0xFF]))
+              result = bytearray(1)
+              i2c.readinto(result)
+              return result[0]
+        else:
+          self.i2c.readfrom_mem_into(self.address, reg, self.bytebuf)
+          return self.bytebuf[0]
 
     def __bcd2dec(self, bcd):
         return (((bcd & 0xf0) >> 4) * 10 + (bcd & 0x0f))
@@ -194,7 +214,7 @@ class PCF8563:
     def write_now(self):
         """Write the current system time to PCF8563
         """
-        self.set_datetime(time.localtime())
+        self.set_datetime(localtime())
 
     def set_clk_out_frequency(self, frequency=CLOCK_CLK_OUT_FREQ_1_HZ):
         """Set the clock output pin frequency

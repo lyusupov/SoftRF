@@ -70,7 +70,7 @@ SDFolder       = '/sd'
 LogFolder      = '/Flights'
 IGCSUFFIX      = '.IGC'
 
-SETTINGS       = 'settings.py'
+SETTINGS       = 'mysettings.py'
 
 ICON_LOGO      = '/flash/icons/logo.bmp'
 ICON_NOSD      = '/flash/icons/nosd.jpg'
