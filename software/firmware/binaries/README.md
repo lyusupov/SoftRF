@@ -31,7 +31,7 @@
 
 1. Take ESP32 flash download tool from this location: https://www.espressif.com/en/support/download/other-tools <br>
 You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the ESP32 tool ;
-2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ; 
+2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ;
 
 3. Select COM port, enter partition files and addresses, select options ;<br>
 
@@ -44,7 +44,7 @@ You might also need to install a [driver for the CP210X USB to UART bridge from 
 4. Press **START** button and wait for completion.
 
 For some boards you may need to push **BOOT** button in order to activate flash download mode.<br>
-"Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.    
+"Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.
 
 <br>
 
@@ -52,7 +52,7 @@ For some boards you may need to push **BOOT** button in order to activate flash 
 
 1. Take **CubeCellflash** for Windows <sub>_(Linux and MacOS variants are also available there)_</sub> download tool from this location: https://resource.heltec.cn/download/<br>
 You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the CubeCellflash tool ;
-2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x) ;
+2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x) and unzip the archive ;
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Mini-1.jpg)
 
