@@ -156,45 +156,6 @@ Adafruit_SPIFlash QSPIFlash (&HWFlashTransport);
 
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
-// Settings for the Macronix MX25R1635F 2MiB SPI flash.
-// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7595/MX25R1635F,%20Wide%20Range,%2016Mb,%20v1.6.pdf
-// In low power mode, quad operations can only run at 8 MHz. In high power mode it can do 80 MHz.
-#define MX25R1635F  { \
-        .total_size = (1 << 21), /* 2 MiB */ \
-        .start_up_time_us = 800, \
-        .manufacturer_id = 0xc2, \
-        .memory_type = 0x28, \
-        .capacity = 0x15, \
-        .max_clock_speed_mhz = 8, /* 33 MHz for 1-bit operations */ \
-        .quad_enable_bit_mask = 0x40, \
-        .has_sector_protection = false, \
-        .supports_fast_read = true, \
-        .supports_qspi = true, \
-        .supports_qspi_writes = true, \
-        .write_status_register_split = false, \
-        .single_status_byte = true, \
-        .is_fram = false, \
-}
-
-// Settings for the Zetta Device ZD25WQ16B 2MiB SPI flash.
-// Datasheet: http://www.zettadevice.com/upload/file/pdf/ZD25WQ16B_datasheet.pdf
-#define ZD25WQ16B  { \
-        .total_size = (1 << 21), /* 2 MiB */ \
-        .start_up_time_us = 12000, \
-        .manufacturer_id = 0xba, \
-        .memory_type = 0x60, \
-        .capacity = 0x15, \
-        .max_clock_speed_mhz = 85, /* 33 MHz for 1-bit READ operations */ \
-        .quad_enable_bit_mask = 0x02, \
-        .has_sector_protection = false, \
-        .supports_fast_read = true, \
-        .supports_qspi = true, \
-        .supports_qspi_writes = true, \
-        .write_status_register_split = false, \
-        .single_status_byte = false, \
-        .is_fram = false, \
-}
-
 #define SFLASH_CMD_READ_CONFIG  0x15
 
 static uint32_t spiflash_id = 0;
