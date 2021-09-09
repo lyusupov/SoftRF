@@ -762,6 +762,7 @@ void OLED_Next_Page()
 {
   if (u8x8) {
     OLED_current_page = (OLED_current_page + 1) % page_count;
+
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
     if (hw_info.display   != DISPLAY_OLED_0_49 &&
         OLED_current_page == OLED_PAGE_BARO    &&
@@ -769,6 +770,16 @@ void OLED_Next_Page()
       OLED_current_page = (OLED_current_page + 1) % page_count;
     }
 #endif /* EXCLUDE_OLED_BARO_PAGE */
+
+#if !defined(EXCLUDE_OLED_049)
+    if (hw_info.display   == DISPLAY_OLED_0_49      &&
+        OLED_current_page == OLED_049_PAGE_ACFTS    &&
+        settings->power_save & POWER_SAVE_NORECEIVE &&
+        (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262)) {
+      OLED_current_page = (OLED_current_page + 1) % page_count;
+    }
+#endif /* EXCLUDE_OLED_049 */
+
     OLED_display_titles = false;
   }
 }

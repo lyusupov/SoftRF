@@ -431,7 +431,11 @@ static void nRF52_setup()
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
 
-  if (nRF52_has_spiflash && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)) {
+  if (nRF52_has_spiflash
+#if 1
+      && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)
+#endif
+     ) {
     spiflash_id = SPIFlash->getJEDECID();
 
     //mx25_status_config[0] = SPIFlash->readStatus();
@@ -1010,7 +1014,9 @@ static void nRF52_EEPROM_extension(int cmd)
   }
 
   if ( nRF52_has_spiflash                       &&
+#if 1
       (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
+#endif
        (FATFS_is_mounted = fatfs.begin(SPIFlash))) {
     File file = fatfs.open("/settings.json", FILE_READ);
 
