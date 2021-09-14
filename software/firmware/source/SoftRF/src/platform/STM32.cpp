@@ -177,11 +177,11 @@ static void STM32_setup()
       hw_info.model = SOFTRF_MODEL_DONGLE;
       stm32_board   = STM32_TTGO_TMOTION_1_1;
 
-//      pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP); /* LP modded early rev. */
+//      pinMode(TTGO_TIMPULSE_OLED_PIN_RST, INPUT_PULLUP); /* LP modded early rev. */
 
-      pinMode(TTGO_T65_VDD_1V8_EN, INPUT_PULLUP);
+      pinMode(TTGO_TIMPULSE_VDD_1V8_EN, INPUT_PULLUP);
       delay(150);
-      pinMode(TTGO_T65_GPS_PWR_EN, INPUT_PULLUP);
+      pinMode(TTGO_TIMPULSE_GPS_PWR_EN, INPUT_PULLUP);
       delay(50);
 
       Wire.begin();
@@ -193,17 +193,17 @@ static void STM32_setup()
       pinMode(SOC_GPIO_PIN_SCL,  INPUT_ANALOG);
 
       if (STM32_has_IMU) {
-        stm32_board   = STM32_TTGO_T65_1_2;
+        stm32_board   = STM32_TTGO_TIMPULSE_1_2;
         hw_info.model = SOFTRF_MODEL_BRACELET;
 
         if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
-          pinMode(TTGO_T65_GPIO_PAD_PWR, INPUT_PULLUP);
+          pinMode(TTGO_TIMPULSE_GPIO_PAD_PWR, INPUT_PULLUP);
         }
 
-        pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLDOWN);
+        pinMode(TTGO_TIMPULSE_OLED_PIN_RST, INPUT_PULLDOWN);
       } else {
-        pinMode(TTGO_T65_VDD_1V8_EN, INPUT_ANALOG);
-        pinMode(TTGO_T65_GPS_PWR_EN, INPUT_ANALOG);
+        pinMode(TTGO_TIMPULSE_VDD_1V8_EN, INPUT_ANALOG);
+        pinMode(TTGO_TIMPULSE_GPS_PWR_EN, INPUT_ANALOG);
       }
     }
 
@@ -263,8 +263,8 @@ static void STM32_setup()
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
       if (hw_info.model == SOFTRF_MODEL_BRACELET) {
-        pinMode(TTGO_T65_GPS_PWR_EN, INPUT_PULLDOWN);
-        pinMode(TTGO_T65_VDD_1V8_EN, INPUT_PULLDOWN);
+        pinMode(TTGO_TIMPULSE_GPS_PWR_EN, INPUT_PULLDOWN);
+        pinMode(TTGO_TIMPULSE_VDD_1V8_EN, INPUT_PULLDOWN);
       }
 
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
@@ -300,14 +300,14 @@ static void STM32_setup()
     // Set default value at Rx
     digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
 
-    if (stm32_board == STM32_TTGO_T65_1_2) {
+    if (stm32_board == STM32_TTGO_TIMPULSE_1_2) {
       delay(1);
-      pinMode(TTGO_T65_OLED_PIN_RST, INPUT_PULLUP);
+      pinMode(TTGO_TIMPULSE_OLED_PIN_RST, INPUT_PULLUP);
 
 #if !defined(EXCLUDE_IMU)
       imu.begin();
 
-      pinMode(TTGO_T65_SENSOR_INT, INPUT);
+      pinMode(TTGO_TIMPULSE_SENSOR_INT, INPUT);
 #endif /* EXCLUDE_IMU */
     }
 #endif /* ARDUINO_NUCLEO_L073RZ */

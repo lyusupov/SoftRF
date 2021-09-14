@@ -57,8 +57,13 @@ void Adafruit_FlashTransport_QSPI::begin(void) {
               .io2_pin = (uint8_t)g_ADigitalPinMap[_io2],
               .io3_pin = (uint8_t)g_ADigitalPinMap[_io3],
           },
-      .prot_if = {.readoc = NRF_QSPI_READOC_READ4O, // 0x6B read command
-                  .writeoc = NRF_QSPI_WRITEOC_PP4O, // 0x32 write command
+#if 1
+      .prot_if = {.readoc = NRF_QSPI_READOC_READ4O , // 0x6B read command
+                  .writeoc = NRF_QSPI_WRITEOC_PP4O , // 0x32 write command
+#else
+      .prot_if = {.readoc = NRF_QSPI_READOC_FASTREAD , // 0x0B read command
+                  .writeoc = NRF_QSPI_WRITEOC_PP ,     // 0x02 write command
+#endif
                   .addrmode = NRF_QSPI_ADDRMODE_24BIT,
                   .dpmconfig = false},
       .phy_if =

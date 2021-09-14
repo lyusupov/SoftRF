@@ -74,7 +74,7 @@ enum stm32_board_id {
   STM32_TTGO_TWATCH_EB_1_3,
   STM32_TTGO_TWATCH_EB_1_6,
   STM32_TTGO_TMOTION_1_1,
-  STM32_TTGO_T65_1_2
+  STM32_TTGO_TIMPULSE_1_2
 };
 
 enum stm32_boot_action {
@@ -185,18 +185,18 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_SPI1_SCK     PA5
 #define SOC_GPIO_SPI1_SS      PA4
 
-#define TTGO_T65_OLED_PIN_RST PA8
-#define TTGO_T65_GPIO_PAD_OUT PA0
-#define TTGO_T65_GPIO_PAD_PWR PA2
-#define TTGO_T65_SENSOR_INT   PB1 // PB0
-#define TTGO_T65_GPIO_CHRG    PB8
-#define TTGO_T65_VDD_1V8_EN   PB0 /* HIGH - enable 1.8V power supply        */
-#define TTGO_T65_GPS_PWR_EN   PA3 /* HIGH - enable GNSS and LS power supply */
+#define TTGO_TIMPULSE_OLED_PIN_RST PA8
+#define TTGO_TIMPULSE_GPIO_PAD_OUT PA0
+#define TTGO_TIMPULSE_GPIO_PAD_PWR PA2
+#define TTGO_TIMPULSE_SENSOR_INT   PB1 // PB0
+#define TTGO_TIMPULSE_GPIO_CHRG    PB8
+#define TTGO_TIMPULSE_VDD_1V8_EN   PB0 /* HIGH - enable 1.8V power supply        */
+#define TTGO_TIMPULSE_GPS_PWR_EN   PA3 /* HIGH - enable GNSS and LS power supply */
 
 /* button */
 //#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUTTON   (hw_info.model == SOFTRF_MODEL_BRACELET ? \
-                              TTGO_T65_GPIO_PAD_OUT : PC4)
+                              TTGO_TIMPULSE_GPIO_PAD_OUT : PC4)
 //#define SOC_GPIO_PIN_BUTTON   PA3
 
 #define EXCLUDE_WIFI
