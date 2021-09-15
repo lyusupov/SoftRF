@@ -40,6 +40,7 @@ function UpdateChecksum()
       + baudrate  + ","
       + server  + ","
       + key  + ","
+      + document.getElementById("rotate").value + ","
       + document.getElementById("orientation").value + ","
       + adb  + ","
       + document.getElementById("idpref").value + ","
@@ -92,6 +93,13 @@ function SelVMode()
   UpdateChecksum();
 }
 
+function SelRotation()
+{
+  var rotate = document.getElementById("Rotations");
+  document.getElementById("rotate").value = rotate.options[rotate.selectedIndex].value;
+  UpdateChecksum();
+}
+
 function SelOrientation()
 {
   var orientation = document.getElementById("Orientations");
@@ -140,6 +148,7 @@ function InitSettings()
 //  document.getElementById("ver").value        = 1;
   document.getElementById("unit").value         = 0;
   document.getElementById("vmode").value        = 0;
+  document.getElementById("rotate").value       = 0;
   document.getElementById("orientation").value  = 0;
   document.getElementById("zoom").value         = 2;
   document.getElementById("idpref").value       = 3;
@@ -166,6 +175,18 @@ function InitSettings()
 <option selected value=0>metric</option>
 <option value=1>imperial</option>
 <option value=2>mixed</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<th align=left>Display rotation</th>
+<td align=right>
+<select id="Rotations" onchange="SelRotation()">
+<option selected value='0'>0</option>
+<option value='1'>90</option>
+<option value='2'>180</option>
+<option value='3'>270</option>
 </select>
 </td>
 </tr>
@@ -248,6 +269,7 @@ function InitSettings()
 </table>
 <!-- Units: --><input type="hidden" id="unit" size="1">
 <!-- VMode:  --><input type="hidden" id="vmode" size="1">
+<!-- Rotation:  --><input type="hidden" id="rotate" size="1">
 <!-- Orientation:  --><input type="hidden" id="orientation" size="1">
 <!-- Zoom:  --><input type="hidden" id="zoom" size="1">
 <!-- IDPref:  --><input type="hidden" id="idpref" size="1">

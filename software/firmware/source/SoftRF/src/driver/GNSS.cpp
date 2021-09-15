@@ -110,15 +110,16 @@ TinyGPSCustom V_Protocol     (gnss, "PSKVC", 6);
 TinyGPSCustom V_Baudrate     (gnss, "PSKVC", 7);
 TinyGPSCustom V_Server       (gnss, "PSKVC", 8);
 TinyGPSCustom V_Key          (gnss, "PSKVC", 9);
-TinyGPSCustom V_Orientation  (gnss, "PSKVC", 10);
-TinyGPSCustom V_AvDB         (gnss, "PSKVC", 11);
-TinyGPSCustom V_ID_Pref      (gnss, "PSKVC", 12);
-TinyGPSCustom V_VMode        (gnss, "PSKVC", 13);
-TinyGPSCustom V_Voice        (gnss, "PSKVC", 14);
-TinyGPSCustom V_AntiGhost    (gnss, "PSKVC", 15);
-TinyGPSCustom V_Filter       (gnss, "PSKVC", 16);
-TinyGPSCustom V_PowerSave    (gnss, "PSKVC", 17);
-TinyGPSCustom V_Team         (gnss, "PSKVC", 18);
+TinyGPSCustom V_Rotate       (gnss, "PSKVC", 10);
+TinyGPSCustom V_Orientation  (gnss, "PSKVC", 11);
+TinyGPSCustom V_AvDB         (gnss, "PSKVC", 12);
+TinyGPSCustom V_ID_Pref      (gnss, "PSKVC", 13);
+TinyGPSCustom V_VMode        (gnss, "PSKVC", 14);
+TinyGPSCustom V_Voice        (gnss, "PSKVC", 15);
+TinyGPSCustom V_AntiGhost    (gnss, "PSKVC", 16);
+TinyGPSCustom V_Filter       (gnss, "PSKVC", 17);
+TinyGPSCustom V_PowerSave    (gnss, "PSKVC", 18);
+TinyGPSCustom V_Team         (gnss, "PSKVC", 19);
 #endif /* USE_SKYVIEW_CFG */
 
 static uint8_t C_NMEA_Source;
@@ -1541,13 +1542,14 @@ void PickGNSSFix()
           char pskvc_buf[MAX_PSKVC_LEN];
 
           snprintf_P(pskvc_buf, sizeof(pskvc_buf),
-              PSTR("$PSKVC,%d,%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%X*"),
-              PSKVC_VERSION,    ui->adapter,    ui->connection,
-              ui->units,        ui->zoom,       ui->protocol,
-              ui->baudrate,     ui->server,     ui->key,
-              ui->orientation,  ui->adb,        ui->idpref,
-              ui->vmode,        ui->voice,      ui->aghost,
-              ui->filter,       ui->power_save, ui->team);
+              PSTR("$PSKVC,%d,%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%X*"),
+              PSKVC_VERSION,  ui->adapter,      ui->connection,
+              ui->units,      ui->zoom,         ui->protocol,
+              ui->baudrate,   ui->server,       ui->key,
+              ui->rotate,     ui->orientation,  ui->adb,
+              ui->idpref,     ui->vmode,        ui->voice,
+              ui->aghost,     ui->filter,       ui->power_save,
+              ui->team);
 
           NMEA_add_checksum(pskvc_buf, sizeof(pskvc_buf) - strlen(pskvc_buf));
 
@@ -1602,6 +1604,12 @@ void PickGNSSFix()
           {
             strncpy(ui->key, V_Key.value(), sizeof(ui->key));
             Serial.print(F("Key = ")); Serial.println(ui->key);
+            cfg_is_updated = true;
+          }
+          if (V_Rotate.isUpdated())
+          {
+            ui->rotate = atoi(V_Rotate.value());
+            Serial.print(F("Rotation = ")); Serial.println(ui->rotate);
             cfg_is_updated = true;
           }
           if (V_Orientation.isUpdated())

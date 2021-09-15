@@ -148,6 +148,14 @@ enum
 	DB_ICAO
 };
 
+enum
+{
+	ROTATE_0,
+	ROTATE_90,
+	ROTATE_180,
+	ROTATE_270
+};
+
 typedef struct UI_Settings {
     uint8_t  adapter;
 
@@ -160,7 +168,7 @@ typedef struct UI_Settings {
     char     server  [18];
     char     key     [18];
 
-    uint8_t  resvd1:2;
+    uint8_t  rotate:2;
     uint8_t  orientation:1;
     uint8_t  adb:3;
     uint8_t  idpref:2;
@@ -174,7 +182,7 @@ typedef struct UI_Settings {
 
     uint32_t team;
 
-    uint8_t  resvd2;
+    uint8_t  resvd12;
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;

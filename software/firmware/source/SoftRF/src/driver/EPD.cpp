@@ -75,11 +75,7 @@ bool EPD_setup(bool splash_screen)
 
   display->init( /* 38400 */ );
 
-  display->setRotation( 1     /* 90  */
-#if defined(EPAPER_ROTATE_180)
-                        + 2   /* 270 */
-#endif /* EPAPER_ROTATE_180 */
-  );
+  display->setRotation((3 + ui->rotate) & 0x3); /* 270 deg. is default angle */
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);
 

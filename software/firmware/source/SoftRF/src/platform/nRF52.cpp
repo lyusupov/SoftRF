@@ -213,6 +213,7 @@ ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
+    .rotate       = ROTATE_0,
     .orientation  = DIRECTION_TRACK_UP,
     .adb          = DB_NONE,
     .idpref       = ID_TYPE,
@@ -995,6 +996,7 @@ static void nRF52_EEPROM_extension(int cmd)
       ui->baudrate     = 0;
       strcpy(ui->server, "");
       strcpy(ui->key,    "");
+      ui->rotate       = ROTATE_0;
       ui->orientation  = DIRECTION_TRACK_UP;
       ui->adb          = DB_NONE;
       ui->idpref       = ID_TYPE;

@@ -593,6 +593,21 @@ void parseUISettings(JsonObject& root)
     }
   }
 #endif
+
+  JsonVariant rotate = root["rotate"];
+  if (rotate.success()) {
+    const char * rotate_s = rotate.as<char*>();
+    if (!strcmp(rotate_s,"0")) {
+      ui_settings.rotate = ROTATE_0;
+    } else if (!strcmp(rotate_s,"90")) {
+      ui_settings.rotate = ROTATE_90;
+    } else if (!strcmp(rotate_s,"180")) {
+      ui_settings.rotate = ROTATE_180;
+    } else if (!strcmp(rotate_s,"270")) {
+      ui_settings.rotate = ROTATE_270;
+    }
+  }
+
   JsonVariant orientation = root["orientation"];
   if (orientation.success()) {
     const char * orientation_s = orientation.as<char*>();

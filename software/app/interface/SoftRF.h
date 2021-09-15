@@ -299,7 +299,8 @@ enum
   Response: "$PSKVC,<version>,
                     <mode>,<adapter>,<connection method>,<units>,
                     <radar zoom level>,<data protocol>,<baud rate>,
-                    <server name>,<server key>,<radar orientation>,
+                    <server name>,<server key>,
+                    <display rotation>,<radar orientation>,
                     <aircrafts database>,<aircraft ID preference>,
                     <view mode>,<voice alarm>,
                     <e-paper anti-ghosting>,<traffic filter>,
@@ -311,7 +312,8 @@ enum
   Sentence: "$PSKVC,1,
                     <mode>,<adapter>,<connection method>,<units>,
                     <radar zoom level>,<data protocol>,<baud rate>,
-                    <server name>,<server key>,<radar orientation>,
+                    <server name>,<server key>,
+                    <display rotation>,<radar orientation>,
                     <aircrafts database>,<aircraft ID preference>,
                     <view mode>,<voice alarm>,
                     <e-paper anti-ghosting>,<traffic filter>,
@@ -322,8 +324,7 @@ enum
   EXAMPLE OF NMEA SENTENCE
   ------------------------
 
-  $PSKVC,1,0,0,0,2,1,0,,,0,0,3,0,0,0,0,0,AABBCC*6C
-
+  $PSKVC,1,0,0,0,2,1,0,,,0,0,0,3,0,0,0,0,0,AABBCC*70
 
   LIST OF SETTINGS AVAILABLE
   --------------------------
@@ -435,6 +436,14 @@ enum
 	SKYVIEW_DB_FLN,
 	SKYVIEW_DB_OGN,
 	SKYVIEW_DB_ICAO
+};
+
+enum
+{
+	SKYVIEW_ROTATE_0,
+	SKYVIEW_ROTATE_90,
+	SKYVIEW_ROTATE_180,
+	SKYVIEW_ROTATE_270
 };
 
 #endif /* SOFTRF_H */
