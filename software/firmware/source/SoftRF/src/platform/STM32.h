@@ -74,7 +74,7 @@ enum stm32_board_id {
   STM32_TTGO_TWATCH_EB_1_3,
   STM32_TTGO_TWATCH_EB_1_6,
   STM32_TTGO_TMOTION_1_1,
-  STM32_TTGO_TIMPULSE_1_2
+  STM32_TTGO_TIMPULSE_1_0
 };
 
 enum stm32_boot_action {

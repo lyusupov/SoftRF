@@ -715,7 +715,44 @@ static gnss_id_t sony_probe()
 static bool sony_setup()
 {
   /* Idle */
-  swSer.write("@GSTP\r\n");      delay(1500);
+  swSer.write("@GSTP\r\n");
+  swSer.flush();
+  delay(2000);
+
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  while (swSer.available() > 0) { swSer.read(); }
+
+  swSer.write("@VER\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = swSer.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  if (strlen((char *) &GNSSbuf[0])) {
+    Serial.print(F("INFO: GNSS module FW version: "));
+    Serial.println((char *) &GNSSbuf[0]);
+  }
+
+  delay(250);
+#endif
 
   /* GGA + GSA + RMC */
   swSer.write("@BSSL 0x25\r\n"); delay(250);
@@ -902,6 +939,46 @@ static gnss_id_t at65_probe()
 
 static bool at65_setup()
 {
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  swSer.write("$PCAS06,0*1B\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = swSer.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 19) {
+    for (int i=19; i < len; i++) {
+      if (GNSSbuf[i] == '*') {
+        GNSSbuf[i] = 0;
+      }
+    }
+    Serial.print(F("INFO: GNSS module FW version: "));
+    Serial.println((char *) &GNSSbuf[19]);
+  }
+
+  delay(250);
+#endif
+
   /* Assume that we deal with fake NEO module (AT6558 based) */
   swSer.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
 #if defined(NMEA_TCP_SERVICE)

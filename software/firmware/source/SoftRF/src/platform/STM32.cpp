@@ -193,7 +193,7 @@ static void STM32_setup()
       pinMode(SOC_GPIO_PIN_SCL,  INPUT_ANALOG);
 
       if (STM32_has_IMU) {
-        stm32_board   = STM32_TTGO_TIMPULSE_1_2;
+        stm32_board   = STM32_TTGO_TIMPULSE_1_0;
         hw_info.model = SOFTRF_MODEL_BRACELET;
 
         if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
@@ -300,7 +300,7 @@ static void STM32_setup()
     // Set default value at Rx
     digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
 
-    if (stm32_board == STM32_TTGO_TIMPULSE_1_2) {
+    if (stm32_board == STM32_TTGO_TIMPULSE_1_0) {
       delay(1);
       pinMode(TTGO_TIMPULSE_OLED_PIN_RST, INPUT_PULLUP);
 
@@ -320,7 +320,7 @@ static void STM32_post_init()
       hw_info.model == SOFTRF_MODEL_BRACELET ) {
     Serial.println();
     Serial.print(F("TTGO "));
-    Serial.print(hw_info.model == SOFTRF_MODEL_BRACELET   ? F("T65") : F("T-Motion"));
+    Serial.print(hw_info.model == SOFTRF_MODEL_BRACELET   ? F("T-Impulse") : F("T-Motion"));
     Serial.println(F(" (S76G) Power-on Self Test"));
     Serial.println();
     Serial.flush();
