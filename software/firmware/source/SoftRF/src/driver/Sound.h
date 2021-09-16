@@ -19,7 +19,8 @@
 #ifndef SOUNDHELPER_H
 #define SOUNDHELPER_H
 
-#define ALARM_TONE_HZ     1040
+#define ALARM_TONE_HZ     (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
+						   4000 : 1040)
 #define ALARM_TONE_MS     1000
 
 enum
