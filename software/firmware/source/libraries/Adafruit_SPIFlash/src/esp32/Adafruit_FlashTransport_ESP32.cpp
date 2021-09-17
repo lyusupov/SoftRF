@@ -39,18 +39,19 @@ void Adafruit_FlashTransport_ESP32::begin(void) {
                                         ESP_PARTITION_SUBTYPE_DATA_FAT, NULL);
 
   if (!_partition) {
-    log_e("No FAT partition found");
+    log_printf("SPIFlash: No FAT partition found");
   }
 }
 
 SPIFlash_Device_t *Adafruit_FlashTransport_ESP32::getFlashDevice(void) {
-  if (!_partition)
+  if (!_partition) {
     return NULL;
+  }
+
+  // Limit to partition size
+  _flash_device.total_size = _partition->size;
 
   esp_flash_t const *flash = _partition->flash_chip;
-
-  _flash_device.total_size = flash->size;
-
   _flash_device.manufacturer_id = (flash->chip_id >> 16);
   _flash_device.memory_type = (flash->chip_id >> 8) & 0xff;
   _flash_device.capacity = flash->chip_id & 0xff;
@@ -64,9 +65,14 @@ void Adafruit_FlashTransport_ESP32::setClockSpeed(uint32_t write_hz,
 }
 
 bool Adafruit_FlashTransport_ESP32::runCommand(uint8_t command) {
-  // TODO maybe SFLASH_CMD_ERASE_CHIP should erase whole partition
+  switch (command) {
+  case SFLASH_CMD_ERASE_CHIP:
+    return ESP_OK == esp_partition_erase_range(_partition, 0, _partition->size);
+
   // do nothing, mostly write enable
-  return true;
+  default:
+    return true;
+  }
 }
 
 bool Adafruit_FlashTransport_ESP32::readCommand(uint8_t command,
@@ -87,8 +93,16 @@ bool Adafruit_FlashTransport_ESP32::writeCommand(uint8_t command,
 
 bool Adafruit_FlashTransport_ESP32::eraseCommand(uint8_t command,
                                                  uint32_t addr) {
-  uint32_t erase_sz = (command == SFLASH_CMD_ERASE_BLOCK) ? SFLASH_BLOCK_SIZE
-                                                          : SFLASH_SECTOR_SIZE;
+  uint32_t erase_sz;
+
+  if (command == SFLASH_CMD_ERASE_SECTOR) {
+    erase_sz = SFLASH_SECTOR_SIZE;
+  } else if (command == SFLASH_CMD_ERASE_BLOCK) {
+    erase_sz = SFLASH_BLOCK_SIZE;
+  } else {
+    return false;
+  }
+
   return ESP_OK == esp_partition_erase_range(_partition, addr, erase_sz);
 }
 

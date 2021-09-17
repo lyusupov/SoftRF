@@ -24,6 +24,10 @@
 
 #include "Adafruit_SPIFlash.h"
 
+#ifdef USE_TINYUSB
+#include "Adafruit_TinyUSB.h"
+#endif
+
 #if SPIFLASH_DEBUG
 #define SPIFLASH_LOG(_block, _count)                                           \
   do {                                                                         \

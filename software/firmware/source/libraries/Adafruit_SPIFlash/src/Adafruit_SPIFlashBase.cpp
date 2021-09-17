@@ -374,8 +374,9 @@ bool Adafruit_SPIFlashBase::eraseBlock(uint32_t blockNumber) {
 }
 
 bool Adafruit_SPIFlashBase::eraseChip(void) {
-  if (!_flash_dev)
+  if (!_flash_dev) {
     return false;
+  }
 
   // skip erase for fram
   if (_flash_dev->is_fram) {
