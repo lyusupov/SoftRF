@@ -262,11 +262,12 @@ static void STM32_setup()
 #endif /* USE_SERIAL_DEEP_SLEEP */
     case SOFTRF_SHUTDOWN_BUTTON:
     case SOFTRF_SHUTDOWN_LOWBAT:
+#if defined(ARDUINO_NUCLEO_L073RZ)
       if (hw_info.model == SOFTRF_MODEL_BRACELET) {
         pinMode(TTGO_TIMPULSE_GPS_PWR_EN, INPUT_PULLDOWN);
         pinMode(TTGO_TIMPULSE_VDD_1V8_EN, INPUT_PULLDOWN);
       }
-
+#endif /* ARDUINO_NUCLEO_L073RZ */
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
         pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
                                      INPUT_PULLDOWN : INPUT);
@@ -550,21 +551,30 @@ static bool STM32_EEPROM_begin(size_t size)
 static void STM32_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
-    if (settings->nmea_out == NMEA_BLUETOOTH) {
+    if (settings->mode != SOFTRF_MODE_NORMAL &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST) {
+      settings->mode = SOFTRF_MODE_NORMAL;
+    }
+
+    if (settings->nmea_out == NMEA_BLUETOOTH ||
+        settings->nmea_out == NMEA_UDP       ||
+        settings->nmea_out == NMEA_TCP ) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
       settings->nmea_out = NMEA_USB;
 #else
       settings->nmea_out = NMEA_UART;
 #endif
     }
-    if (settings->gdl90 == GDL90_BLUETOOTH) {
+    if (settings->gdl90 == GDL90_BLUETOOTH  ||
+        settings->gdl90 == GDL90_UDP) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
       settings->gdl90 = GDL90_USB;
 #else
       settings->gdl90 = GDL90_UART;
 #endif
     }
-    if (settings->d1090 == D1090_BLUETOOTH) {
+    if (settings->d1090 == D1090_BLUETOOTH  ||
+        settings->d1090 == D1090_UDP) {
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
       settings->d1090 = D1090_USB;
 #else

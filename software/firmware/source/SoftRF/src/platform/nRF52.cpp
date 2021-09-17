@@ -1012,35 +1012,52 @@ static void nRF52_EEPROM_extension(int cmd)
       for (int i=0; i<sizeof(ui_settings_t); i++) {
         raw[i] = EEPROM.read(sizeof(eeprom_t) + i);
       }
-      break;
-  }
 
-  if ( nRF52_has_spiflash                       &&
+      if ( nRF52_has_spiflash                       &&
 #if 1
-      (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
+          (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
 #endif
-       (FATFS_is_mounted = fatfs.begin(SPIFlash))) {
-    File file = fatfs.open("/settings.json", FILE_READ);
+           (FATFS_is_mounted = fatfs.begin(SPIFlash))) {
+        File file = fatfs.open("/settings.json", FILE_READ);
 
-    if (file) {
-      // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
+        if (file) {
+          // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
 
-      JsonObject &root = nRF52_jsonBuffer.parseObject(file);
+          JsonObject &root = nRF52_jsonBuffer.parseObject(file);
 
-      if (root.success()) {
-        JsonVariant msg_class = root["class"];
+          if (root.success()) {
+            JsonVariant msg_class = root["class"];
 
-        if (msg_class.success()) {
-          const char *msg_class_s = msg_class.as<char*>();
+            if (msg_class.success()) {
+              const char *msg_class_s = msg_class.as<char*>();
 
-          if (!strcmp(msg_class_s,"SOFTRF")) {
-            parseSettings  (root);
-            parseUISettings(root);
+              if (!strcmp(msg_class_s,"SOFTRF")) {
+                parseSettings  (root);
+                parseUISettings(root);
+              }
+            }
           }
+          file.close();
         }
       }
-      file.close();
-    }
+
+      if (settings->mode != SOFTRF_MODE_NORMAL &&
+          settings->mode != SOFTRF_MODE_TXRX_TEST) {
+        settings->mode = SOFTRF_MODE_NORMAL;
+      }
+
+      if (settings->nmea_out == NMEA_UDP  ||
+          settings->nmea_out == NMEA_TCP ) {
+        settings->nmea_out = NMEA_BLUETOOTH;
+      }
+      if (settings->gdl90 == GDL90_UDP) {
+        settings->gdl90 = GDL90_BLUETOOTH;
+      }
+      if (settings->d1090 == D1090_UDP) {
+        settings->d1090 = D1090_BLUETOOTH;
+      }
+
+      break;
   }
 
 #if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)

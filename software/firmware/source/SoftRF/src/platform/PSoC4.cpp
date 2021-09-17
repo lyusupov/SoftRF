@@ -347,13 +347,18 @@ static bool PSoC4_EEPROM_begin(size_t size)
 static void PSoC4_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
-    if (settings->nmea_out == NMEA_USB || settings->nmea_out == NMEA_BLUETOOTH) {
+    if (settings->mode != SOFTRF_MODE_NORMAL &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST) {
+      settings->mode = SOFTRF_MODE_NORMAL;
+    }
+
+    if (settings->nmea_out != NMEA_OFF) {
       settings->nmea_out = NMEA_UART;
     }
-    if (settings->gdl90 == GDL90_USB || settings->gdl90 == GDL90_BLUETOOTH) {
+    if (settings->gdl90 != GDL90_OFF) {
       settings->gdl90 = GDL90_UART;
     }
-    if (settings->d1090 == D1090_USB || settings->d1090 == D1090_BLUETOOTH) {
+    if (settings->d1090 != D1090_OFF) {
       settings->d1090 = D1090_UART;
     }
   }
