@@ -1,31 +1,43 @@
 /*
   uCDB benchmark sketch
-  
+
   Write file bench.cdb ([0..5000000] divisible by 5) on SD card. Connect to Ardino board.
   Compile and upload sketch. Open Serial Monitor.
-  
+
   Board: Arduino Uno
   SD card: SDHC 7.31Gb FAT32, sectorsPerCluster - 64
   SD chip select pin: 10
-  Arduino IDE Serial Monitors settings: 9600 baud, no line ending.
+  Arduino IDE Serial Monitors settings: 115200 baud, no line ending.
 
   Created by Ioulianos Kakoulidis, 2021.
-  Released into the public domain.     
+  Released into the public domain.
 */
 
+//#define USE_SERIALFLASH_LIB
+#ifdef USE_SERIALFLASH_LIB
+#include <SerialFlash.h>
+#include <SPI.h>
+#define fat SerialFlash
+#else
 #include "SdFat.h"
+#endif
+
+#define TRACE_CDB
 #include "uCDB.hpp"
 
+#ifdef USE_SERIALFLASH_LIB
+uCDB<SerialFlashChip, SerialFlashFile> ucdb(SerialFlash);
+#else
 SdFat fat;
 uCDB<SdFat, File> ucdb(fat);
-
+#endif
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) {
     ;
   }
-  
+
   if (!fat.begin(10)) {
     Serial.println("SD card initialization failed!");
     while (true) {
@@ -35,10 +47,9 @@ void setup() {
 }
 
 void loop() {
-  
   char str[16];
   long key;
-  unsigned long startMillis;  
+  unsigned long startMillis;
   cdbResult rt;
   int br;
 
@@ -46,7 +57,7 @@ void loop() {
   while (!Serial.available()) {
     ;
   }
-  
+
   if (ucdb.open("bench.cdb") != CDB_OK) {
     Serial.print("Invalid CDB: ");
     Serial.println("bench.cdb");
@@ -94,7 +105,7 @@ void loop() {
   }
   Serial.print("Query millis: ");
   Serial.println(millis() - startMillis);
-  
+
   Serial.println("Querying 1000 random keys with findNextValue() from interval [0, 5000000)...");
   startMillis = millis();
   for (int i = 0; i < 1000; ++i) {
@@ -124,7 +135,7 @@ void loop() {
   }
   Serial.print("Query millis: ");
   Serial.println(millis() - startMillis);
-  
+
   Serial.println("Querying 1000 random keys with findNextValue() from interval [-5000000, 0)...");
   startMillis = millis();
   for (int i = 0; i < 1000; ++i) {

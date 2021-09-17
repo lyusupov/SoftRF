@@ -1,26 +1,22 @@
 /*
   uCDB example sketch
-  
-  Queries airports Constant DataBase.
 
-  airports.cdb (`key', `value') data obtained from the airports.csv (https://ourairports.com/data/) UTF-8 file.
-  Key - column "ident" (ICAO code if available).
-  Value - '|' separated columns "type", "name", "latitude_deg", "longitude_deg", "elevation_ft", "continent",
-  "iso_country", "iso_region", "municipality", "scheduled_service", "gps_code", "iata_code", "local_code",
-  "home_link", "wikipedia_link", "keywords".
-  Columns description - https://ourairports.com/help/data-dictionary.html.
+  Queries satcat Constant DataBase.
 
-  Put file airports.cdb on SD card. Connect to Ardino board.
+  satcat.cdb (`key', `value') data obtained from the satcat.csv (https://celestrak.com/pub/satcat.csv).
+
+  Put file satcat.cdb on SD card. Connect to Ardino board.
   Compile and upload sketch. Open Serial Monitor.
-  
+
   Board: Arduino Uno
   SD card: SDHC 7.31Gb FAT32, sectorsPerCluster - 64
   SD chip select pin: 10
   Arduino IDE Serial Monitors settings: 115200 baud, no line ending.
 
   Created by Ioulianos Kakoulidis, 2021.
-  Released into the public domain.     
+  Released into the public domain.
 */
+
 #include <SPI.h>
 #include <SD.h>
 
@@ -45,41 +41,34 @@ void printValue() {
 
 void query(const void *key, unsigned long keyLen) {
   cdbResult rt;
-  
+
   Serial.println();
-  Serial.print("Query millisec: ");
   startMillis = millis();
   rt = ucdb.findKey(key, keyLen);
-  Serial.println(millis() - startMillis);
-  switch (rt) {
-    case KEY_FOUND:
-      Serial.print("Airport found: ");
-      printKey(key, keyLen);
-      Serial.println();
-      printValue();
-      break;
-    
-    case KEY_NOT_FOUND:
-      Serial.print("Airport not found: ");
-      printKey(key, keyLen);
-      break;
-      
-    default:
-      Serial.println("ERROR");
-      break;
+  if (rt != KEY_FOUND) {
+    Serial.println("Satellite not found: ");
+    printKey(key, keyLen);
+    Serial.println();
   }
-  Serial.println();  
+  while (rt == KEY_FOUND) {
+    printValue();
+    Serial.println();
+    rt = ucdb.findNextValue();
+  }
+  Serial.print("Query millisec: ");
+  Serial.println(millis() - startMillis);
+  Serial.println();
 }
 
 void setup() {
-  const char fileName[] = "airports.cdb";
-  const char *air[] = {"SBGL", "00AR", "PG-TFI", "US-0480", "ZYGH"};
+  const char fileName[] = "satcat.cdb";
+  const char *sat[] = {"SPUTNIK", "EXPLORER", "DISCOVERER", "THOR", "VENERA"};
 
   Serial.begin(115200);
   while (!Serial) {
     ;
   }
-  
+
   if (SD.begin(10)) {
     Serial.println("SPI OK.");
   }
@@ -94,8 +83,8 @@ void setup() {
     Serial.print("Total records number: ");
     Serial.println(ucdb.recordsNumber());
     // Find some existing codes.
-    for (unsigned int i = 0; i < sizeof (air) / sizeof (const char *); i++) {
-      query(air[i], strlen(air[i]));
+    for (unsigned int i = 0; i < sizeof (sat) / sizeof (const char *); i++) {
+      query(sat[i], strlen(sat[i]));
     }
 
     // Query not existing codes.
@@ -112,7 +101,7 @@ void setup() {
 
 void loop() {
   String code;
-  Serial.println("Enter airport code and press `Enter'");
+  Serial.println("Enter satellite name prefix (^[A-Z,0-9]*) and press `Enter'");
   while (!Serial.available()) {}
   code = Serial.readString();
   query(code.c_str(), code.length());
