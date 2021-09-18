@@ -850,7 +850,18 @@ static void nRF52_fini(int reason)
 
 static void nRF52_reset()
 {
-  NVIC_SystemReset();
+  if (nrf_wdt_started(NRF_WDT)) {
+    // There is no way to stop/disable watchdog using source code
+    // It can only be reset by WDT timeout, Pin reset, Power reset
+#if defined(USE_EPAPER)
+    if (hw_info.display == DISPLAY_EPD_1_54) {
+      EPD_Message("PLEASE,", "WAIT..");
+    }
+#endif /* USE_EPAPER */
+    while (true);
+  } else {
+    NVIC_SystemReset();
+  }
 }
 
 static uint32_t nRF52_getChipId()
@@ -1041,6 +1052,13 @@ static void nRF52_EEPROM_extension(int cmd)
         }
       }
 
+#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
+
+      usb_web.setLandingPage(&landingPage);
+      usb_web.begin();
+
+#endif /* USE_WEBUSB_SETTINGS */
+
       if (settings->mode != SOFTRF_MODE_NORMAL &&
           settings->mode != SOFTRF_MODE_TXRX_TEST) {
         settings->mode = SOFTRF_MODE_NORMAL;
@@ -1059,13 +1077,6 @@ static void nRF52_EEPROM_extension(int cmd)
 
       break;
   }
-
-#if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
-
-  usb_web.setLandingPage(&landingPage);
-  usb_web.begin();
-
-#endif /* USE_WEBUSB_SETTINGS */
 }
 
 static void nRF52_SPI_begin()
