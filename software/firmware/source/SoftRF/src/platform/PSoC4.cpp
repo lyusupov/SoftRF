@@ -210,6 +210,8 @@ static void PSoC4_fini(int reason)
 
     delay(2000);
 
+    digitalWrite(SOC_GPIO_PIN_OLED_RST, LOW);
+    delay(200);
     pinMode(SOC_GPIO_PIN_OLED_RST,  ANALOG);
 
     digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
@@ -617,6 +619,7 @@ static void PSoC4_Button_fini()
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_MINI) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
+    while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
     pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
