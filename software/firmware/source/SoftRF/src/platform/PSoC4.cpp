@@ -349,8 +349,12 @@ static bool PSoC4_EEPROM_begin(size_t size)
 static void PSoC4_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
-    if (settings->mode != SOFTRF_MODE_NORMAL &&
-        settings->mode != SOFTRF_MODE_TXRX_TEST) {
+    if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+        &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+        ) {
       settings->mode = SOFTRF_MODE_NORMAL;
     }
 

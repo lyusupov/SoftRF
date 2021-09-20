@@ -851,6 +851,7 @@ static void nRF52_fini(int reason)
 static void nRF52_reset()
 {
   if (nrf_wdt_started(NRF_WDT)) {
+    // When WDT is active - CRV, RREN and CONFIG are blocked
     // There is no way to stop/disable watchdog using source code
     // It can only be reset by WDT timeout, Pin reset, Power reset
 #if defined(USE_EPAPER)
@@ -1059,8 +1060,12 @@ static void nRF52_EEPROM_extension(int cmd)
 
 #endif /* USE_WEBUSB_SETTINGS */
 
-      if (settings->mode != SOFTRF_MODE_NORMAL &&
-          settings->mode != SOFTRF_MODE_TXRX_TEST) {
+      if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+          &&
+          settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+          ) {
         settings->mode = SOFTRF_MODE_NORMAL;
       }
 
