@@ -158,8 +158,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
-![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Bracelet-1.jpg)
-
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Bracelet-2.jpg)
 
 * [**SoftRF Tool**](https://github.com/lyusupov/SoftRF/wiki/SoftRF-Configuration-Tool) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
