@@ -25,8 +25,9 @@ Recommended:
 - [ ]   Standalone
 - [ ]   Badge
 - [ ]   Prime Mark II
-- [ ]   Uni
 - [ ]   Dongle
+- [ ]   Bracelet
+- [ ]   Uni
 - [ ]   Mini
 - [ ]   SkyView EZ
 - [ ]   Raspberry Edition
