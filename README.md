@@ -10,13 +10,18 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Portable**
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-    * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
-* **Classic** instrument
+* **Classic** 2.25 inch instrument
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
-* **Wireless** display
+* **Certified** (CE/FCC)
+    * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
+    * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
+* **Wireless** 2.7 inch E-Ink display
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **UAV** add-on
     * [**UAV Edition**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
+* Raspberry Pi **friendly**
+    * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
+    * [**SkyView Pi**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)
 
 <br>
 
