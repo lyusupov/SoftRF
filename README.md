@@ -1,10 +1,30 @@
 # SoftRF &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![Join the chat at https://gitter.im/lyusupov/SoftRF](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lyusupov/SoftRF?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/lyusupov/SoftRF.png?branch=master)](https://travis-ci.org/lyusupov/SoftRF "Build Status") 
-Multifunctional DIY IoT-based general aviation proximity awareness system.
+DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
-Features:
+## Features:
+
+* **Wearable**
+    * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* **Plug-and-Play**
+    * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+* **Portable**
+    * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
+* **Classic** instrument
+    * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
+* **Wireless** display
+    * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+* **UAV** add-on
+    * [**UAV Edition**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
+
+<br>
+
+<!--
 * 2-way raw data bridge between 868/915 MHz radio band and Wi-Fi ;
 * standalone, battery powered, compatible proximity awareness instrument that fits typical 2.25 inches hole ;
 * lightweight version to carry onboard of an UAV.
+-->
 
 [<img src="https://user-images.githubusercontent.com/5849637/128593239-cf30ef4c-1761-4dc1-874a-2be9eaacab77.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 
