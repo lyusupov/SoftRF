@@ -105,7 +105,7 @@ TinyGPSCustom V_Version      (gnss, "PSKVC", 1);
 TinyGPSCustom V_Adapter      (gnss, "PSKVC", 2);
 TinyGPSCustom V_Connection   (gnss, "PSKVC", 3);
 TinyGPSCustom V_Units        (gnss, "PSKVC", 4);
-TinyGPSCustom V_Zoon         (gnss, "PSKVC", 5);
+TinyGPSCustom V_Zoom         (gnss, "PSKVC", 5);
 TinyGPSCustom V_Protocol     (gnss, "PSKVC", 6);
 TinyGPSCustom V_Baudrate     (gnss, "PSKVC", 7);
 TinyGPSCustom V_Server       (gnss, "PSKVC", 8);
@@ -1576,10 +1576,10 @@ void PickGNSSFix()
             Serial.print(F("Units = ")); Serial.println(ui->units);
             cfg_is_updated = true;
           }
-          if (V_Zoon.isUpdated())
+          if (V_Zoom.isUpdated())
           {
-            ui->zoom = atoi(V_Zoon.value());
-            Serial.print(F("Zoon = ")); Serial.println(ui->zoom);
+            ui->zoom = atoi(V_Zoom.value());
+            Serial.print(F("Zoom = ")); Serial.println(ui->zoom);
             cfg_is_updated = true;
           }
           if (V_Protocol.isUpdated())

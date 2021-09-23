@@ -1239,6 +1239,17 @@ int AXP20X_Class::enableChargeing(bool en)
     return AXP_PASS;
 }
 
+int AXP20X_Class::getChargingTargetVoltage(axp_chargeing_vol_t& chargeing_vol)
+{
+    uint8_t val;
+    if (!_init)
+        return AXP_NOT_INIT;
+    _readByte(AXP202_CHARGE1, 1, &val);
+    val &= (0b11 << 5);
+    chargeing_vol = (axp_chargeing_vol_t) (val >> 5);
+    return AXP_PASS;
+}
+
 int AXP20X_Class::setChargingTargetVoltage(axp_chargeing_vol_t param)
 {
     uint8_t val;
@@ -1974,7 +1985,7 @@ int AXP20X_Class::setPowerDownVoltage(uint16_t mv)
     uint8_t val  = 0;
     ret = _readByte(AXP202_VOFF_SET, 1, &val);
     if (ret != 0)return AXP_FAIL;
-    val &= AXP202_VOFF_MASK;
+    val &= ~(AXP202_VOFF_MASK);
     val |= ((mv - 2600) / 100);
     ret = _writeByte(AXP202_VOFF_SET, 1, &val);
     if (ret != 0)return AXP_FAIL;
@@ -1987,7 +1998,7 @@ uint16_t AXP20X_Class::getPowerDownVoltage(void)
     uint8_t val  = 0;
     ret = _readByte(AXP202_VOFF_SET, 1, &val);
     if (ret != 0)return 0;
-    val &= ~(AXP202_VOFF_MASK);
+    val &= AXP202_VOFF_MASK;
     uint16_t voff = val * 100 + 2600;
     return voff;
 }
@@ -2248,5 +2259,5 @@ int AXP20X_Class::_writeByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
     }
     return _i2cPort->endTransmission();
 #endif
+    return 0;
 }
-

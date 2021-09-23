@@ -173,8 +173,8 @@ typedef struct UI_Settings {
     uint8_t  adb:3;
     uint8_t  idpref:2;
 
-    uint8_t  vmode:2;
-    uint8_t  voice:3;
+    uint8_t  vmode:3;
+    uint8_t  voice:2;
     uint8_t  aghost:3;
 
     uint8_t  filter:4;

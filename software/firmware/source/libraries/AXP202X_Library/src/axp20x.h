@@ -305,7 +305,7 @@ github:https://github.com/lewisxhe/AXP202X_Libraries
 #define IS_OPEN(reg, channel)                   (bool)(reg & _BV(channel))
 
 
-#define AXP202_VOFF_MASK                        (0x03)
+#define AXP202_VOFF_MASK                        (0x07)
 #define AXP202_LIMIT_MASK                       (0x03)
 #define AXP192_LIMIT_MASK                       (0x01)
 #define AXP192_LIMIT_EN_MASK                    (0x02)
@@ -789,6 +789,7 @@ public:
     uint32_t    getBattDischargeCoulomb(void);
     float       getSettingChargeCurrent(void);
 
+    int         getChargingTargetVoltage(axp_chargeing_vol_t& charging_target_voltage);
     int         setChargingTargetVoltage(axp_chargeing_vol_t param);
     int         enableChargeing(bool en);
 
