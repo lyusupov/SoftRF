@@ -43,9 +43,19 @@
 #include "WiFi.h"   // HOSTNAME
 #include "Battery.h"
 
+#include <core_version.h>
+
 BLEServer* pServer = NULL;
 BLECharacteristic* pUARTCharacteristic = NULL;
 BLECharacteristic* pBATCharacteristic  = NULL;
+
+BLECharacteristic* pModelCharacteristic         = NULL;
+BLECharacteristic* pSerialCharacteristic        = NULL;
+BLECharacteristic* pFirmwareCharacteristic      = NULL;
+BLECharacteristic* pHardwareCharacteristic      = NULL;
+BLECharacteristic* pSoftwareCharacteristic      = NULL;
+BLECharacteristic* pManufacturerCharacteristic  = NULL;
+
 bool deviceConnected    = false;
 bool oldDeviceConnected = false;
 
@@ -206,6 +216,59 @@ static void ESP32_Bluetooth_setup()
                               BLECharacteristic::PROPERTY_NOTIFY
                             );
       pBATCharacteristic->addDescriptor(new BLE2902());
+
+      // Start the service
+      pService->start();
+
+      // Create the BLE Service
+      pService = pServer->createService(BLEUUID(UUID16_SVC_DEVICE_INFORMATION));
+
+      // Create BLE Characteristics
+      pModelCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_MODEL_NUMBER_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+      pSerialCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_SERIAL_NUMBER_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+      pFirmwareCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_FIRMWARE_REVISION_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+      pHardwareCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_HARDWARE_REVISION_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+      pSoftwareCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_SOFTWARE_REVISION_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+      pManufacturerCharacteristic = pService->createCharacteristic(
+                              BLEUUID(UUID16_CHR_MANUFACTURER_NAME_STRING),
+                              BLECharacteristic::PROPERTY_READ
+                            );
+
+      const char *Model         = hw_info.model == SOFTRF_MODEL_STANDALONE ? "Standalone Edition" :
+                                  hw_info.model == SOFTRF_MODEL_PRIME_MK2  ? "Prime Mark II"      :
+                                  "Unknown";
+      char SerialNum[9];
+      snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());
+
+      const char *Firmware      = "Arduino Core ESP32 " ARDUINO_ESP32_RELEASE;
+
+      char Hardware[9];
+      snprintf(Hardware, sizeof(Hardware), "%08X", hw_info.revision);
+
+      const char *Software      = SOFTRF_FIRMWARE_VERSION;
+      const char *Manufacturer  = "SoftRF";
+
+      pModelCharacteristic->       setValue((uint8_t *) Model,        strlen(Model));
+      pSerialCharacteristic->      setValue((uint8_t *) SerialNum,    strlen(SerialNum));
+      pFirmwareCharacteristic->    setValue((uint8_t *) Firmware,     strlen(Firmware));
+      pHardwareCharacteristic->    setValue((uint8_t *) Hardware,     strlen(Hardware));
+      pSoftwareCharacteristic->    setValue((uint8_t *) Software,     strlen(Software));
+      pManufacturerCharacteristic->setValue((uint8_t *) Manufacturer, strlen(Manufacturer));
 
       // Start the service
       pService->start();
@@ -1339,8 +1402,8 @@ void nRF52_Bluetooth_setup()
   bledfu.begin();
 
   // Configure and Start Device Information Service
-  bledis.setManufacturer("SoftRF");
-  bledis.setModel("Badge Edition");
+  bledis.setManufacturer(nRF52_Device_Manufacturer);
+  bledis.setModel(nRF52_Device_Model);
   bledis.setHardwareRev(hw_info.revision > 2 ?
                         Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
   bledis.setSoftwareRev(SOFTRF_FIRMWARE_VERSION);

@@ -275,7 +275,7 @@ extern Uart Serial2;
 #endif
 
 extern PCF8563_Class *rtc;
-extern const char *Hardware_Rev[];
+extern const char *nRF52_Device_Manufacturer, *nRF52_Device_Model, *Hardware_Rev[];
 
 #if defined(USE_EPAPER)
 #include <GxEPD2_BW.h>

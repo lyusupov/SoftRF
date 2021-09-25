@@ -91,6 +91,9 @@ static uint32_t bootCount = 0;
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 
+const char *nRF52_Device_Manufacturer = "SoftRF";
+const char *nRF52_Device_Model = "Badge Edition";
+
 const char *Hardware_Rev[] = {
   [0] = "2020-8-6",
   [1] = "2020-12-12",
@@ -275,6 +278,9 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
+  USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
+  USBDevice.setProductDescriptor(nRF52_Device_Model);
+
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -452,7 +458,7 @@ static void nRF52_setup()
     //HWFlashTransport.setClockSpeed(wr_speed, rd_speed);
 
     // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
-    usb_msc.setID("SoftRF", "External Flash", "1.0");
+    usb_msc.setID(nRF52_Device_Manufacturer, "External Flash", "1.0");
 
     // Set callback
     usb_msc.setReadWriteCallback(nRF52_msc_read_cb,

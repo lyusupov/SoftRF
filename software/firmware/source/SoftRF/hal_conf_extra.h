@@ -48,6 +48,12 @@
 //#define USBD_FIXED_PULLUP
 
 #endif /* SERIAL_UART_INSTANCE */
+#if !defined(USB_MANUFACTURER_STRING)
+#define USB_MANUFACTURER_STRING "SoftRF"
+#endif /* USB_MANUFACTURER_STRING */
+#if !defined(USB_PRODUCT_STRING)
+#define USB_PRODUCT_STRING      "Dongle/Bracelet Edition"
+#endif /* USB_PRODUCT_STRING */
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
 #if defined(ENERGIA_ARCH_CC13XX)
