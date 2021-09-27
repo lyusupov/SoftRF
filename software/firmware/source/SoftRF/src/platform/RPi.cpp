@@ -63,6 +63,7 @@
 #include "../driver/EPD.h"
 #include "../driver/Battery.h"
 #include "../driver/Bluetooth.h"
+#include "../system/Time.h"
 
 #include "TCPServer.h"
 
@@ -134,7 +135,10 @@ hardware_info_t hw_info = {
   .rf       = RF_IC_NONE,
   .gnss     = GNSS_MODULE_NONE,
   .baro     = BARO_MODULE_NONE,
-  .display  = DISPLAY_NONE
+  .display  = DISPLAY_NONE,
+  .storage  = STORAGE_NONE,
+  .rtc      = RTC_NONE,
+  .imu      = IMU_NONE
 };
 
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)
@@ -312,7 +316,7 @@ static void RPi_post_init()
 
 #if defined(USE_EPAPER)
 
-  EPD_info1(false, false);
+  EPD_info1();
 
 #endif /* USE_EPAPER */
 }

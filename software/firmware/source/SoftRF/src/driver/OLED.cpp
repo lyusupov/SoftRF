@@ -722,9 +722,21 @@ void OLED_info1()
 #if !defined(EXCLUDE_OLED_049)
     case DISPLAY_OLED_0_49:
       {
+        u8x8->draw2x2Glyph(  4, 4, 'R');
+        u8x8->draw2x2Glyph(  6, 4, hw_info.rf      != RF_IC_NONE       ? '+' : '-');
+        u8x8->draw2x2Glyph(  8, 4, 'G');
+        u8x8->draw2x2Glyph( 10, 4, hw_info.gnss    != GNSS_MODULE_NONE ? '+' : '-');
+        u8x8->draw2x2Glyph(  4, 6, 'O');
+        u8x8->draw2x2Glyph(  6, 6, hw_info.display != DISPLAY_NONE     ? '+' : '-');
+        u8x8->draw2x2Glyph(  8, 6, 'I');
+        u8x8->draw2x2Glyph( 10, 6, hw_info.imu     != IMU_NONE         ? '+' : '-');
+
+        delay(3000);
+
         const char buf[] = SOFTRF_FIRMWARE_VERSION;
         int ndx = strlen(buf) - 3;
         ndx = ndx < 0 ? 0 : ndx;
+        u8x8->clear();
         u8x8->drawString  (4, 4, "VERSION");
         u8x8->draw2x2Glyph(5, 6, toupper(buf[ndx++]));
         u8x8->draw2x2Glyph(7, 6, toupper(buf[ndx++]));

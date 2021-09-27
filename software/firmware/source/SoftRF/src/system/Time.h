@@ -19,6 +19,12 @@
 #ifndef TIMEHELPER_H
 #define TIMEHELPER_H
 
+enum
+{
+  RTC_NONE,
+  RTC_PCF8563
+};
+
 void Time_setup(void);
 
 #endif /* TIMEHELPER_H */

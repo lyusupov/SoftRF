@@ -47,7 +47,10 @@ hardware_info_t hw_info = {
   .rf       = RF_IC_NONE,
   .gnss     = GNSS_MODULE_NONE,
   .baro     = BARO_MODULE_NONE,
-  .display  = DISPLAY_NONE
+  .display  = DISPLAY_NONE,
+  .storage  = STORAGE_NONE,
+  .rtc      = RTC_NONE,
+  .imu      = IMU_NONE
 };
 
 Stratux_frame_t LPUATRadio_frame = {

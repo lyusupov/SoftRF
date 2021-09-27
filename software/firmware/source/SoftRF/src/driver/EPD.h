@@ -208,7 +208,7 @@ void EPD_Clear_Screen();
 bool EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(int, bool);
-void EPD_info1(bool, bool);
+void EPD_info1();
 void EPD_info2(int, char *, char *, char *);
 
 void EPD_Mode();

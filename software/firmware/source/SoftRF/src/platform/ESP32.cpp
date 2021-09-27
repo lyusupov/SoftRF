@@ -867,6 +867,7 @@ static byte ESP32_Display_setup()
           } else {
             hw_info.revision = 11;
           }
+          hw_info.storage = STORAGE_SD;
         }
 
         rval = DISPLAY_OLED_TTGO;

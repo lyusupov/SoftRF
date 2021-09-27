@@ -113,7 +113,10 @@ hardware_info_t hw_info = {
   .rf       = RF_IC_NONE,
   .gnss     = GNSS_MODULE_NONE,
   .baro     = BARO_MODULE_NONE,
-  .display  = DISPLAY_NONE
+  .display  = DISPLAY_NONE,
+  .storage  = STORAGE_NONE,
+  .rtc      = RTC_NONE,
+  .imu      = IMU_NONE
 };
 
 unsigned long LEDTimeMarker = 0;
@@ -167,7 +170,7 @@ void setup()
 
   hw_info.baro = Baro_setup();
 #if defined(ENABLE_AHRS)
-  hw_info.ahrs = AHRS_setup();
+  hw_info.imu = AHRS_setup();
 #endif /* ENABLE_AHRS */
   hw_info.display = SoC->Display_setup();
 

@@ -195,6 +195,7 @@ static void STM32_setup()
       if (STM32_has_IMU) {
         stm32_board   = STM32_TTGO_TIMPULSE_1_0;
         hw_info.model = SOFTRF_MODEL_BRACELET;
+        hw_info.imu   = IMU_ICM20948;
 
         if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
           pinMode(TTGO_TIMPULSE_GPIO_PAD_PWR, INPUT_PULLUP);

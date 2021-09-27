@@ -155,9 +155,9 @@ typedef struct hardware_info {
     byte  gnss;
     byte  baro;
     byte  display;
-#if defined(ENABLE_AHRS)
-    byte  ahrs;
-#endif /* ENABLE_AHRS */
+    byte  storage;
+    byte  rtc;
+    byte  imu;
 } hardware_info_t;
 
 typedef struct IODev_ops_struct {
@@ -220,6 +220,20 @@ enum
 	SOFTRF_SHUTDOWN_BUTTON,
 	SOFTRF_SHUTDOWN_LOWBAT,
 	SOFTRF_SHUTDOWN_SENSOR
+};
+
+enum
+{
+	STORAGE_NONE,
+	STORAGE_SD,
+	STORAGE_FLASH
+};
+
+enum
+{
+	IMU_NONE,
+	IMU_BNO080,
+	IMU_ICM20948
 };
 
 static inline uint32_t DevID_Mapper(uint32_t id)

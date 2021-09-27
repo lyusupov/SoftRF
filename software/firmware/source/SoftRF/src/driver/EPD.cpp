@@ -25,6 +25,7 @@
 #include "RF.h"
 #include "Baro.h"
 #include "../TrafficHelper.h"
+#include "../system/Time.h"
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
@@ -168,7 +169,7 @@ bool EPD_setup(bool splash_screen)
   return rval;
 }
 
-void EPD_info1(bool rtc, bool spiflash)
+void EPD_info1()
 {
   switch (hw_info.display)
   {
@@ -212,13 +213,13 @@ void EPD_info1(bool rtc, bool spiflash)
 
       display->setCursor(x, y);
       display->print(EPD_RTC_text);
-      display->print(rtc ? "+" : "-");
+      display->print(hw_info.rtc != RTC_NONE ? "+" : "-");
 
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
       display->print(EPD_Flash_text);
-      display->print(spiflash ? "+" : "-");
+      display->print(hw_info.storage == STORAGE_FLASH ? "+" : "-");
 
       y += (tbh + INFO_1_LINE_SPACING);
 

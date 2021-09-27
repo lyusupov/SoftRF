@@ -41,6 +41,7 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 #include "../protocol/data/JSON.h"
+#include "../system/Time.h"
 
 #include "uCDB.hpp"
 
@@ -415,6 +416,7 @@ static void nRF52_setup()
     rtc = new PCF8563_Class(*i2c);
 
     pinMode(SOC_GPIO_PIN_R_INT, INPUT);
+    hw_info.rtc = RTC_PCF8563;
   }
 
   /* (Q)SPI flash init */
@@ -439,6 +441,8 @@ static void nRF52_setup()
     nRF52_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
+
+  hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
   if (nRF52_has_spiflash
 #if 1
@@ -583,7 +587,7 @@ static void nRF52_post_init()
     /* EPD back light on */
     digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
 
-    EPD_info1(nRF52_has_rtc, nRF52_has_spiflash);
+    EPD_info1();
 
     /* EPD back light off */
     digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
