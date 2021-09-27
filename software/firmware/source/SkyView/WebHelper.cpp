@@ -133,7 +133,7 @@ void handleSettings() {
 <td align=right>\
 <select name='adapter'>\
 <option %s value='%d'>e-Paper TTGO T5S</option>\
-<option %s value='%d'>e-Paper TTGO T5 4.7</option>\
+<!-- <option %s value='%d'>e-Paper TTGO T5 4.7</option> -->\
 <option %s value='%d'>e-Paper Waveshare ESP32</option>\
 <!-- <option %s value='%d'>OLED</option> -->\
 </select>\

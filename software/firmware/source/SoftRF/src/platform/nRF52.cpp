@@ -93,6 +93,7 @@ static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 
 const char *nRF52_Device_Manufacturer = "SoftRF";
 const char *nRF52_Device_Model = "Badge Edition";
+const uint16_t nRF52_Device_Version = 0x0100;
 
 const char *Hardware_Rev[] = {
   [0] = "2020-8-6",
@@ -280,6 +281,7 @@ static void nRF52_setup()
 
   USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
   USBDevice.setProductDescriptor(nRF52_Device_Model);
+  USBDevice.setDeviceVersion(nRF52_Device_Version);
 
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
