@@ -43,19 +43,18 @@ typedef struct gnss_chip_ops_struct {
   void      (*fini)();
 } gnss_chip_ops_t;
 
-/*
- * Both GGA and RMC NMEA sentences are required.
- * No fix when any of them is missing or lost.
- * Valid date is critical for legacy protocol (only).
- */
-#define NMEA_EXP_TIME  3500 /* 3.5 seconds */
-#define isValidGNSSFix()  ( gnss.location.isValid()               && \
-                            gnss.altitude.isValid()               && \
-                            gnss.date.isValid()                   && \
-                           (gnss.location.age() <= NMEA_EXP_TIME) && \
-                           (gnss.altitude.age() <= NMEA_EXP_TIME) && \
-                           (gnss.date.age()     <= NMEA_EXP_TIME))
+#if defined(ENABLE_GNSS_STATS)
+typedef struct gnss_stat_struct {
+  unsigned long gga_count;
+  unsigned long rmc_count;
+  unsigned long gga_time_ms;
+  unsigned long rmc_time_ms;
+} gnss_stat_t;
+#endif /* ENABLE_GNSS_STATS */
 
+#define NMEA_EXP_TIME  3500 /* 3.5 seconds */
+
+bool isValidGNSSFix  (void);
 byte GNSS_setup      (void);
 void GNSS_loop       (void);
 void GNSS_fini       (void);

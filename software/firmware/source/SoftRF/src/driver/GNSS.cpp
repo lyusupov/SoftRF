@@ -44,11 +44,6 @@
 unsigned long GNSSTimeSyncMarker = 0;
 volatile unsigned long PPS_TimeMarker = 0;
 
-#if 0
-unsigned long GGA_Start_Time_Marker = 0;
-unsigned long GGA_Stop_Time_Marker = 0;
-#endif
-
 boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
@@ -123,6 +118,10 @@ TinyGPSCustom V_Team         (gnss, "PSKVC", 19);
 #endif /* USE_SKYVIEW_CFG */
 
 static uint8_t C_NMEA_Source;
+
+#if defined(ENABLE_GNSS_STATS)
+gnss_stat_t gnss_stats;
+#endif /* ENABLE_GNSS_STATS */
 
 static void nmea_cfg_restart()
 {
@@ -1012,6 +1011,21 @@ const gnss_chip_ops_t at65_ops = {
 };
 #endif /* EXCLUDE_GNSS_AT65 */
 
+/*
+ * Both GGA and RMC NMEA sentences are required.
+ * No fix when any of them is missing or lost.
+ * Valid date is critical for legacy protocol (only).
+ */
+bool isValidGNSSFix()
+{
+  return gnss.location.isValid()               && \
+         gnss.altitude.isValid()               && \
+         gnss.date.isValid()                   && \
+        (gnss.location.age() <= NMEA_EXP_TIME) && \
+        (gnss.altitude.age() <= NMEA_EXP_TIME) && \
+        (gnss.date.age()     <= NMEA_EXP_TIME);
+}
+
 byte GNSS_setup() {
 
   gnss_id_t gnss_id = GNSS_MODULE_NONE;
@@ -1222,26 +1236,30 @@ void GNSS_fini()
   if (gnss) gnss->fini();
 }
 
+/*
+ * Sync with GNSS time every 60 seconds
+ */
 void GNSSTimeSync()
 {
-  if (GNSSTimeSyncMarker == 0 && gnss.time.isValid() && gnss.time.isUpdated()) {
-      setTime(gnss.time.hour(), gnss.time.minute(), gnss.time.second(), gnss.date.day(), gnss.date.month(), gnss.date.year());
-      GNSSTimeSyncMarker = millis();
-  } else {
-
-    if ((millis() - GNSSTimeSyncMarker > 60000) /* 1m */ && gnss.time.isValid() &&
-        gnss.time.isUpdated() && (gnss.time.age() <= 1000) /* 1s */ ) {
-  #if 0
-      Serial.print("Valid: ");
-      Serial.println(gnss.time.isValid());
-      Serial.print("isUpdated: ");
-      Serial.println(gnss.time.isUpdated());
-      Serial.print("age: ");
-      Serial.println(gnss.time.age());
-  #endif
-      setTime(gnss.time.hour(), gnss.time.minute(), gnss.time.second(), gnss.date.day(), gnss.date.month(), gnss.date.year());
-      GNSSTimeSyncMarker = millis();
-    }
+  if ((GNSSTimeSyncMarker == 0 || (millis() - GNSSTimeSyncMarker > 60000)) &&
+       gnss.time.isValid()                                                 &&
+       gnss.time.isUpdated()                                               &&
+      (gnss.time.age() <= 1000) /* 1s */ ) {
+#if 0
+    Serial.print("Valid: ");
+    Serial.println(gnss.time.isValid());
+    Serial.print("isUpdated: ");
+    Serial.println(gnss.time.isUpdated());
+    Serial.print("age: ");
+    Serial.println(gnss.time.age());
+#endif
+    setTime(gnss.time.hour(),
+            gnss.time.minute(),
+            gnss.time.second(),
+            gnss.date.day(),
+            gnss.date.month(),
+            gnss.date.year());
+    GNSSTimeSyncMarker = millis();
   }
 }
 
@@ -1333,16 +1351,23 @@ void PickGNSSFix()
       /* ignore */
       continue;
     }
-#if 0
+
+#if defined(ENABLE_GNSS_STATS)
     if ( (GNSS_cnt >= 5) &&
          (GNSSbuf[GNSS_cnt-5] == '$') &&
          (GNSSbuf[GNSS_cnt-4] == 'G') &&
-        ((GNSSbuf[GNSS_cnt-3] == 'P') || (GNSSbuf[GNSS_cnt-3] == 'N')) &&
-         (GNSSbuf[GNSS_cnt-2] == 'G') &&
-         (GNSSbuf[GNSS_cnt-1] == 'G') &&
-         (GNSSbuf[GNSS_cnt-0] == 'A')
-       ) {
-      GGA_Start_Time_Marker = millis();
+        ((GNSSbuf[GNSS_cnt-3] == 'P') || (GNSSbuf[GNSS_cnt-3] == 'N'))) {
+      if ( (GNSSbuf[GNSS_cnt-2] == 'G') &&
+           (GNSSbuf[GNSS_cnt-1] == 'G') &&
+           (GNSSbuf[GNSS_cnt-0] == 'A')) {
+        gnss_stats.gga_time_ms = millis();
+        gnss_stats.gga_count++;
+      } else if ( (GNSSbuf[GNSS_cnt-2] == 'R') &&
+                  (GNSSbuf[GNSS_cnt-1] == 'M') &&
+                  (GNSSbuf[GNSS_cnt-0] == 'C')) {
+        gnss_stats.rmc_time_ms = millis();
+        gnss_stats.rmc_count++;
+      }
     }
 #endif
 
