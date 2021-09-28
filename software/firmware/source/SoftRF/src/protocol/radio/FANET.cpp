@@ -55,6 +55,8 @@ const rf_proto_desc_t fanet_proto_desc = {
   .whitening        = RF_WHITENING_NONE,
   .bandwidth        = 0, /* INVALID FOR LORA */
 
+  .air_time         = FANET_AIR_TIME,
+
   .tx_interval_min  = FANET_TX_INTERVAL_MIN,
   .tx_interval_max  = FANET_TX_INTERVAL_MAX
 };

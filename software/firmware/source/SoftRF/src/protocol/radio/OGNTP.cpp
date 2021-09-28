@@ -46,8 +46,10 @@ const rf_proto_desc_t ogntp_proto_desc = {
   .whitening       = RF_WHITENING_MANCHESTER,
   .bandwidth       = RF_RX_BANDWIDTH_SS_125KHZ,
 
-  .tx_interval_min  = OGNTP_TX_INTERVAL_MIN,
-  .tx_interval_max  = OGNTP_TX_INTERVAL_MAX
+  .air_time        = OGNTP_AIR_TIME,
+
+  .tx_interval_min = OGNTP_TX_INTERVAL_MIN,
+  .tx_interval_max = OGNTP_TX_INTERVAL_MAX
 };
 
 static GPS_Position pos;

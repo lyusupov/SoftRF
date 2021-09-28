@@ -48,8 +48,10 @@ const rf_proto_desc_t legacy_proto_desc = {
   .whitening       = RF_WHITENING_MANCHESTER,
   .bandwidth       = RF_RX_BANDWIDTH_SS_125KHZ,
 
-  .tx_interval_min  = LEGACY_TX_INTERVAL_MIN,
-  .tx_interval_max  = LEGACY_TX_INTERVAL_MAX
+  .air_time        = LEGACY_AIR_TIME,
+
+  .tx_interval_min = LEGACY_TX_INTERVAL_MIN,
+  .tx_interval_max = LEGACY_TX_INTERVAL_MAX
 };
 
 /* http://en.wikipedia.org/wiki/XXTEA */

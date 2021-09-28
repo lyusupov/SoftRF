@@ -100,6 +100,8 @@
 #define P3I_FDEV            RF_FREQUENCY_DEVIATION_19_2KHZ
 #define P3I_BANDWIDTH       RF_RX_BANDWIDTH_SS_50KHZ
 
+#define P3I_AIR_TIME        10 /* in ms */
+
 #else
 
 /* Valid for NiceRF SV610 firmware ver. 4.66 */
@@ -138,6 +140,8 @@
 
 #define P3I_FDEV            RF_FREQUENCY_DEVIATION_50KHZ
 #define P3I_BANDWIDTH       RF_RX_BANDWIDTH_SS_100KHZ
+
+#define P3I_AIR_TIME        9 /* in ms */
 
 #endif
 

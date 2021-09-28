@@ -46,8 +46,10 @@ const rf_proto_desc_t uat978_proto_desc = {
   .whitening       = RF_WHITENING_NONE,
   .bandwidth       = RF_RX_BANDWIDTH_SS_1567KHZ,
 
-  .tx_interval_min  = UAT978_TX_INTERVAL_MIN,
-  .tx_interval_max  = UAT978_TX_INTERVAL_MAX
+  .air_time        = UAT978_AIR_TIME,
+
+  .tx_interval_min = UAT978_TX_INTERVAL_MIN,
+  .tx_interval_max = UAT978_TX_INTERVAL_MAX
 };
 
 static struct uat_adsb_mdb mdb;

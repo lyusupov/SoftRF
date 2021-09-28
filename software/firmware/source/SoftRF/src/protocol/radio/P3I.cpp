@@ -45,6 +45,8 @@ const rf_proto_desc_t p3i_proto_desc = {
   .whitening        = RF_WHITENING_NICERF,
   .bandwidth        = P3I_BANDWIDTH,
 
+  .air_time         = P3I_AIR_TIME,
+
   .tx_interval_min  = P3I_TX_INTERVAL_MIN,
   .tx_interval_max  = P3I_TX_INTERVAL_MAX
 };

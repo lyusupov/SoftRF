@@ -30,6 +30,8 @@
 #define OGNTP_CRC_TYPE        RF_CHECKSUM_TYPE_GALLAGER
 #define OGNTP_CRC_SIZE        6
 
+#define OGNTP_AIR_TIME        5 /* in ms */
+
 #define OGNTP_TX_INTERVAL_MIN 600 /* in ms */
 #define OGNTP_TX_INTERVAL_MAX 1400
 
