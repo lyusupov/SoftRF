@@ -41,6 +41,8 @@ typedef struct gnss_chip_ops_struct {
   bool      (*setup)();
   void      (*loop)();
   void      (*fini)();
+  uint16_t  gga_ms;
+  uint16_t  rmc_ms;
 } gnss_chip_ops_t;
 
 #if defined(ENABLE_GNSS_STATS)

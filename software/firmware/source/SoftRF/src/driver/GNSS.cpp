@@ -44,6 +44,7 @@
 unsigned long GNSSTimeSyncMarker = 0;
 volatile unsigned long PPS_TimeMarker = 0;
 
+const gnss_chip_ops_t *gnss_chip = NULL;
 boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
@@ -120,6 +121,14 @@ TinyGPSCustom V_Team         (gnss, "PSKVC", 19);
 static uint8_t C_NMEA_Source;
 
 #if defined(ENABLE_GNSS_STATS)
+/*
+ * Sony: GGA -  24 , RMC -  38
+ * L76K: GGA -  70+, RMC - 135+
+ * Goke: GGA - 185+, RMC - 265+
+ * Neo6: GGA - 138 , RMC -  67
+ * MT33: GGA - YBD , RMC -  TBD
+ */
+
 gnss_stat_t gnss_stats;
 #endif /* ENABLE_GNSS_STATS */
 
@@ -226,7 +235,9 @@ const gnss_chip_ops_t generic_nmea_ops = {
   generic_nmea_probe,
   generic_nmea_setup,
   generic_nmea_loop,
-  generic_nmea_fini
+  generic_nmea_fini,
+  /* use Ublox timing values for 'generic NMEA' module */
+  138 /* GGA */, 67 /* RMC */
 };
 
 #if !defined(EXCLUDE_GNSS_UBLOX)
@@ -680,7 +691,8 @@ const gnss_chip_ops_t ublox_ops = {
   ublox_probe,
   ublox_setup,
   ublox_loop,
-  ublox_fini
+  ublox_fini,
+  138 /* GGA */, 67 /* RMC */
 };
 
 static void ublox_factory_reset()
@@ -816,7 +828,8 @@ const gnss_chip_ops_t sony_ops = {
   sony_probe,
   sony_setup,
   sony_loop,
-  sony_fini
+  sony_fini,
+  24 /* GGA */, 38 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_SONY */
 
@@ -857,7 +870,8 @@ const gnss_chip_ops_t mtk_ops = {
   mtk_probe,
   mtk_setup,
   mtk_loop,
-  mtk_fini
+  mtk_fini,
+  50 /* GGA - TBD */, 100 /* RMC - TBD */
 };
 #endif /* EXCLUDE_GNSS_MTK */
 
@@ -925,7 +939,8 @@ const gnss_chip_ops_t goke_ops = {
   goke_probe,
   goke_setup,
   goke_loop,
-  goke_fini
+  goke_fini,
+  185 /* GGA */, 265 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_GOKE */
 
@@ -1007,7 +1022,8 @@ const gnss_chip_ops_t at65_ops = {
   at65_probe,
   at65_setup,
   at65_loop,
-  at65_fini
+  at65_fini,
+  70 /* GGA */, 135 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_AT65 */
 
@@ -1041,10 +1057,12 @@ byte GNSS_setup() {
   }
 
 #if !defined(EXCLUDE_GNSS_SONY)
-  gnss_id = (gnss_id == GNSS_MODULE_NONE ? sony_ops.probe()  : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NONE ?
+            (gnss_chip = &sony_ops,         gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_SONY */
 
-  gnss_id = (gnss_id == GNSS_MODULE_NONE ? generic_nmea_ops.probe() : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NONE ?
+            (gnss_chip = &generic_nmea_ops, gnss_chip->probe()) : gnss_id;
 
   if (gnss_id == GNSS_MODULE_NONE) {
 
@@ -1079,55 +1097,25 @@ byte GNSS_setup() {
   }
 
 #if !defined(EXCLUDE_GNSS_UBLOX)
-  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? ublox_ops.probe() : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &ublox_ops,  gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_UBLOX */
 #if !defined(EXCLUDE_GNSS_MTK)
-  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? mtk_ops.probe()   : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &mtk_ops,    gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_MTK */
 #if !defined(EXCLUDE_GNSS_GOKE)
-  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? goke_ops.probe()  : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &goke_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_GOKE */
 #if !defined(EXCLUDE_GNSS_AT65)
-  gnss_id = (gnss_id == GNSS_MODULE_NMEA ? at65_ops.probe()  : gnss_id);
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &at65_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_AT65 */
 
-  switch (gnss_id)
-  {
-#if !defined(EXCLUDE_GNSS_UBLOX)
-  case GNSS_MODULE_U6:
-  case GNSS_MODULE_U7:
-  case GNSS_MODULE_U8:
-    // Set the navigation mode (Airborne, 1G)
-    // Turning off some GPS NMEA sentences on the uBlox modules
-    ublox_ops.setup();
-    break;
-#endif /* EXCLUDE_GNSS_UBLOX */
-#if !defined(EXCLUDE_GNSS_SONY)
-  case GNSS_MODULE_SONY:
-    sony_ops.setup();
-    break;
-#endif /* EXCLUDE_GNSS_SONY */
-#if !defined(EXCLUDE_GNSS_MTK)
-  case GNSS_MODULE_MT33:
-    mtk_ops.setup();
-    break;
-#endif /* EXCLUDE_GNSS_MTK */
-#if !defined(EXCLUDE_GNSS_GOKE)
-  case GNSS_MODULE_GOKE:
-    goke_ops.setup();
-    break;
-#endif /* EXCLUDE_GNSS_GOKE */
-#if !defined(EXCLUDE_GNSS_AT65)
-  case GNSS_MODULE_AT65:
-    at65_ops.setup();
-    break;
-#endif /* EXCLUDE_GNSS_AT65 */
-  case GNSS_MODULE_NMEA:
-    generic_nmea_ops.setup();
-    break;
-  default:
-    break;
-  }
+  gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
+
+  if (gnss_chip) gnss_chip->setup();
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
     pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
@@ -1148,45 +1136,7 @@ void GNSS_loop()
 
   GNSSTimeSync();
 
-  const gnss_chip_ops_t *gnss = NULL;
-
-  switch (hw_info.gnss)
-  {
-#if !defined(EXCLUDE_GNSS_UBLOX)
-  case GNSS_MODULE_U6:
-  case GNSS_MODULE_U7:
-  case GNSS_MODULE_U8:
-    gnss = &ublox_ops;
-    break;
-#endif /* EXCLUDE_GNSS_UBLOX */
-#if !defined(EXCLUDE_GNSS_SONY)
-  case GNSS_MODULE_SONY:
-    gnss = &sony_ops;
-    break;
-#endif /* EXCLUDE_GNSS_SONY */
-#if !defined(EXCLUDE_GNSS_MTK)
-  case GNSS_MODULE_MT33:
-    gnss = &mtk_ops;
-    break;
-#endif /* EXCLUDE_GNSS_MTK */
-#if !defined(EXCLUDE_GNSS_GOKE)
-  case GNSS_MODULE_GOKE:
-    gnss = &goke_ops;
-    break;
-#endif /* EXCLUDE_GNSS_GOKE */
-#if !defined(EXCLUDE_GNSS_AT65)
-  case GNSS_MODULE_AT65:
-    gnss = &at65_ops;
-    break;
-#endif /* EXCLUDE_GNSS_AT65 */
-  case GNSS_MODULE_NMEA:
-    gnss = &generic_nmea_ops;
-    break;
-  default:
-    break;
-  }
-
-  if (gnss) gnss->loop();
+  if (gnss_chip) gnss_chip->loop();
 }
 
 void GNSS_fini()
@@ -1195,45 +1145,7 @@ void GNSS_fini()
     detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
   }
 
-  const gnss_chip_ops_t *gnss = NULL;
-
-  switch (hw_info.gnss)
-  {
-#if !defined(EXCLUDE_GNSS_UBLOX)
-  case GNSS_MODULE_U6:
-  case GNSS_MODULE_U7:
-  case GNSS_MODULE_U8:
-    gnss = &ublox_ops;
-    break;
-#endif /* EXCLUDE_GNSS_UBLOX */
-#if !defined(EXCLUDE_GNSS_SONY)
-  case GNSS_MODULE_SONY:
-    gnss = &sony_ops;
-    break;
-#endif /* EXCLUDE_GNSS_SONY */
-#if !defined(EXCLUDE_GNSS_MTK)
-  case GNSS_MODULE_MT33:
-    gnss = &mtk_ops;
-    break;
-#endif /* EXCLUDE_GNSS_MTK */
-#if !defined(EXCLUDE_GNSS_GOKE)
-  case GNSS_MODULE_GOKE:
-    gnss = &goke_ops;
-    break;
-#endif /* EXCLUDE_GNSS_GOKE */
-#if !defined(EXCLUDE_GNSS_AT65)
-  case GNSS_MODULE_AT65:
-    gnss = &at65_ops;
-    break;
-#endif /* EXCLUDE_GNSS_AT65 */
-  case GNSS_MODULE_NMEA:
-    gnss = &generic_nmea_ops;
-    break;
-  default:
-    break;
-  }
-
-  if (gnss) gnss->fini();
+  if (gnss_chip) gnss_chip->fini();
 }
 
 /*
