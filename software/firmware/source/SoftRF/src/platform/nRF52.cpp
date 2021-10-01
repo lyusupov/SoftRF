@@ -113,7 +113,6 @@ static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
 static bool screen_saver       = false;
 
-
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
 
 static TaskHandle_t EPD_Task_Handle = NULL;
@@ -399,14 +398,16 @@ static void nRF52_setup()
     case NRF52_NORDIC_PCA10059:
     default:
       pinMode(SOC_GPIO_LED_PCA10059_STATUS, OUTPUT);
-//      pinMode(SOC_GPIO_LED_PCA10059_GREEN,  OUTPUT);
+      pinMode(SOC_GPIO_LED_PCA10059_GREEN,  OUTPUT);
       pinMode(SOC_GPIO_LED_PCA10059_RED,    OUTPUT);
       pinMode(SOC_GPIO_LED_PCA10059_BLUE,   OUTPUT);
 
-//      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
+      ledOn (SOC_GPIO_LED_PCA10059_GREEN);
       ledOff(SOC_GPIO_LED_PCA10059_RED);
       ledOff(SOC_GPIO_LED_PCA10059_BLUE);
-      ledOn (SOC_GPIO_LED_PCA10059_STATUS);
+      ledOff(SOC_GPIO_LED_PCA10059_STATUS);
+
+      hw_info.revision = 3; /* Unknown */
       break;
   }
 
@@ -541,6 +542,11 @@ static void nRF52_post_init()
 
     Serial.println();
     Serial.println(F("Power-on Self Test is completed."));
+    Serial.println();
+    Serial.flush();
+  } else if (nRF52_board == NRF52_NORDIC_PCA10059) {
+    Serial.println();
+    Serial.println(F("Board: Nordic PCA10059 USB Dongle"));
     Serial.println();
     Serial.flush();
   }
