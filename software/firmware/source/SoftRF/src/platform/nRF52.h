@@ -133,7 +133,6 @@ struct rst_info {
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_BLUE : \
                                SOC_GPIO_LED_PCA10059_BLUE)
 
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  _PINNUM(0, 4) // P0.04 (AIN2)
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
@@ -254,6 +253,7 @@ struct rst_info {
 //#define USE_WEBUSB_SETTINGS
 //#define USE_USB_MIDI
 //#define USE_BLE_MIDI
+//#define USE_PWM_SOUND
 //#define EXCLUDE_NUS
 #define EXCLUDE_BOARD_SELF_DETECT
 
@@ -263,6 +263,15 @@ struct rst_info {
 /* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
 //#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
+
+#if defined(USE_PWM_SOUND)
+#define SOC_GPIO_PIN_BUZZER   (hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
+                               hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
+                               hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \
+                               SOC_UNUSED_PIN)
+#else
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+#endif /* USE_PWM_SOUND */
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

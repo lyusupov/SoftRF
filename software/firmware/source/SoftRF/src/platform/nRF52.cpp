@@ -966,6 +966,15 @@ static void nRF52_Sound_test(int var)
     MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
   }
 #endif /* USE_USB_MIDI */
+
+#if !defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
+    tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+  }
+#endif /* NOT(USE_BLE_MIDI OR USE_USB_MIDI) */
 }
 
 static void nRF52_Sound_tone(int hz, uint8_t volume)
