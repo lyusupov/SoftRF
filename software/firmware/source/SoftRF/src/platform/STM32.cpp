@@ -209,8 +209,9 @@ static void STM32_setup()
     }
 
     // PC_1 is Low for TCXO or High for Crystal
+#if !defined(ENFORCE_S78G)
     STM32_has_TCXO = (STM32_probe_pin(SOC_GPIO_PIN_OSC_SEL, INPUT) == 0);
-
+#endif
     if (STM32_has_TCXO) {
       lmic_pins.tcxo = SOC_GPIO_PIN_TCXO_OE;
       hal_pin_tcxo_init();

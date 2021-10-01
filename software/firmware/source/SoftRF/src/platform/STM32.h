@@ -226,6 +226,8 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LK8EX1
 //#define EXCLUDE_IMU
 
+//#define ENFORCE_S78G
+
 /* SoftRF/S7xG PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
