@@ -232,7 +232,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 ## nRF52840
 
 1. Follow [these official instructions](https://github.com/adafruit/Adafruit_nRF52_Arduino#recommended-adafruit-nrf52-bsp-via-the-arduino-board-manager)
-  to install Arduino IDE and [latest **stable** Arduino Core for Adafruit Bluefruit nRF52 Boards](https://github.com/adafruit/Adafruit_nRF52_Arduino/releases/tag/1.0.0) (1.0.0)
+  to install Arduino IDE and [latest **stable** Arduino Core for Adafruit Bluefruit nRF52 Boards](https://github.com/adafruit/Adafruit_nRF52_Arduino/releases/tag/1.1.0) (1.1.0)
 2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
