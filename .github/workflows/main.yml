@@ -20,10 +20,10 @@ jobs:
 
     strategy:
       matrix:
-        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056']
+        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS']
 
     env:
-      ARDUINO_IDE_VERSION: 1.8.10
+      ARDUINO_IDE_VERSION: 1.8.6
       ENERGIA_IDE_VERSION: 1.8.10E23
       BOARD: ${{ matrix.board }}
 
