@@ -23,7 +23,7 @@ jobs:
         board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056']
 
     env:
-      ARDUINO_IDE_VERSION: 1.8.6
+      ARDUINO_IDE_VERSION: 1.8.10
       ENERGIA_IDE_VERSION: 1.8.10E23
       BOARD: ${{ matrix.board }}
 
@@ -146,7 +146,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs ;
-            arduino --install-boards adafruit:nrf52:1.0.0 ;
+            arduino --install-boards adafruit:nrf52:1.1.0 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
             arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
