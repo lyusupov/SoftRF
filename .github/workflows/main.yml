@@ -1,0 +1,202 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056']
+
+    env:
+      ARDUINO_IDE_VERSION: 1.8.6
+      ENERGIA_IDE_VERSION: 1.8.10E23
+      BOARD: ${{ matrix.board }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      #- name: Setup tmate session
+      #  uses: mxschmitt/action-tmate@v3
+
+      # Runs a set of commands using the runners shell
+      - name: Run before_install
+        run: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
+          sleep 3
+          export DISPLAY=:1.0
+          if [[ "$BOARD" =~ "energia:" ]]; then
+            sudo dpkg --add-architecture i386 ;
+            sudo apt-get update ;
+            sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 ;
+            wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+            mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+            tar xf energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+            rm energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+            sudo mv energia-$ENERGIA_IDE_VERSION /usr/local/share/energia ;
+            sudo ln -s /usr/local/share/energia/energia /usr/local/bin/energia ;
+          else if [[ "$BOARD" =~ "raspberry" ]]; then
+              sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
+            else
+              wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+              tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+              rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+              sudo mv arduino-$ARDUINO_IDE_VERSION /usr/local/share/arduino ;
+              sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+              if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
+                sudo apt-get install python3-pip ;
+                pip3 install setuptools --user ;
+                pip3 install adafruit-nrfutil --user ;
+                pip3 install intelhex --user ;
+              fi
+            fi
+          fi
+      - name: Run install
+        run: |
+          if [[ "$BOARD" =~ "energia:" ]]; then
+            mkdir $HOME/Energia ;
+            ln -s $PWD/software/firmware/source/libraries $HOME/Energia/libraries ;
+          else if [[ "$BOARD" =~ "raspberry" ]]; then
+              cd $GITHUB_WORKSPACE/software/firmware/source/libraries/bcm2835 ;
+              autoreconf -f ;
+            else
+              mkdir $HOME/Arduino ;
+              ln -s $PWD/software/firmware/source/libraries $HOME/Arduino/libraries ;
+            fi
+          fi
+          if [[ "$BOARD" =~ "esp8266:esp8266:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/esp8266/Arduino/releases/download/2.7.0/package_esp8266com_index.json" --save-prefs ;
+            arduino --install-boards esp8266:esp8266 ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "compiler.warning_level=all" --save-prefs ;
+            arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs ;
+          fi
+          if [[ "$BOARD" =~ "esp32:esp32:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/espressif/arduino-esp32/releases/download/1.0.5/package_esp32_index.json" --save-prefs ;
+            arduino --install-boards esp32:esp32 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.5/tools/sdk/lib ;
+            rm -f libbt.a ;
+            cp $GITHUB_WORKSPACE/software/firmware/binaries/ESP32/misc/libbt.a . ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/07bcfb337e4c9abe83a029b39e33ddff5a6df2ef/STM32/package_stm_index.json" --save-prefs ;
+            arduino --install-boards STM32:stm32 ;
+            arduino --board $BOARD --save-prefs ;
+            if [[ "$BOARD" =~ "STM32:stm32:Nucleo_64" ]]; then
+              arduino --pref "custom_pnum=Nucleo_64_NUCLEO_L073RZ"  --save-prefs ;
+              arduino --pref "custom_opt=Nucleo_64_osstd"           --save-prefs ;
+              arduino --pref "custom_rtlib=Nucleo_64_nano"          --save-prefs ;
+              arduino --pref "custom_usb=Nucleo_64_CDCgen"          --save-prefs ;
+              arduino --pref "custom_xserial=Nucleo_64_none"        --save-prefs ;
+              arduino --pref "custom_xusb=Nucleo_64_FS"             --save-prefs ;
+            fi ;
+            if [[ "$BOARD" =~ "STM32:stm32:GenF1" ]]; then
+              arduino --pref "custom_pnum=GenF1_BLUEPILL_F103CB"   --save-prefs ;
+              arduino --pref "custom_opt=GenF1_osstd"              --save-prefs ;
+              arduino --pref "custom_rtlib=GenF1_nano"             --save-prefs ;
+              arduino --pref "custom_usb=GenF1_CDCgen"             --save-prefs ;
+              arduino --pref "custom_xserial=GenF1_none"           --save-prefs ;
+              arduino --pref "custom_xusb=GenF1_FS"                --save-prefs ;
+            fi ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "energia:cc13xx:" ]]; then
+            energia --install-boards energia:cc13xx ;
+            energia --board $BOARD --save-prefs ;
+            ln -s $PWD/software/firmware/source/UATbridge $HOME/Energia/UATbridge ;
+            cd $GITHUB_WORKSPACE/software/firmware/source/UATbridge ;
+            make links ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.2.0/package_CubeCell_index.json" --save-prefs ;
+            arduino --install-boards CubeCell:CubeCell ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_LORAWAN_ADR=CubeCell-GPS_1"         --save-prefs ;
+            arduino --pref "custom_LORAWAN_AT_SUPPORT=CubeCell-GPS_1"  --save-prefs ;
+            arduino --pref "custom_LORAWAN_CLASS=CubeCell-GPS_0"       --save-prefs ;
+            arduino --pref "custom_LORAWAN_DEVEUI=CubeCell-GPS_0"      --save-prefs ;
+            arduino --pref "custom_LORAWAN_DebugLevel=CubeCell-GPS_0"  --save-prefs ;
+            arduino --pref "custom_LORAWAN_NETMODE=CubeCell-GPS_1"     --save-prefs ;
+            arduino --pref "custom_LORAWAN_Net_Reserve=CubeCell-GPS_0" --save-prefs ;
+            arduino --pref "custom_LORAWAN_REGION=CubeCell-GPS_0"      --save-prefs ;
+            arduino --pref "custom_LORAWAN_RGB=CubeCell-GPS_0"         --save-prefs ;
+            arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-GPS_1"  --save-prefs ;
+            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.2.0 ;
+            sed -i 's/-ffunction-sections -ffat-lto-objects/-ffunction-sections -fdata-sections -ffat-lto-objects/g' platform.txt ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs ;
+            arduino --install-boards adafruit:nrf52:1.0.0 ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
+            arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
+            if [[ ! -f ~/.local/bin/adafruit-nrfutil ]]; then
+              ln -s /bin/true ~/.local/bin/adafruit-nrfutil;
+            fi ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+
+      - name: Run script
+        run: |
+          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+            arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+            arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+            arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "STM32:stm32:"        ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+            energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+            energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "raspberry"           ]]; then
+            cd $TRAVIS_BUILD_DIR/software/firmware/source/SoftRF ;
+            make pi;
+          fi ;
+          if [[ "$BOARD" =~ "raspberry"           ]]; then
+            cd $TRAVIS_BUILD_DIR/software/firmware/source/SkyView ;
+            make -f Makefile.RPi ;
+          fi ;
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:" ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "adafruit:nrf52:"      ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+
