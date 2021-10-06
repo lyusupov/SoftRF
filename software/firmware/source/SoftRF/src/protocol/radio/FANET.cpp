@@ -57,8 +57,11 @@ const rf_proto_desc_t fanet_proto_desc = {
 
   .air_time         = FANET_AIR_TIME,
 
+  .tm_type          = RF_TIMING_INTERVAL,
   .tx_interval_min  = FANET_TX_INTERVAL_MIN,
-  .tx_interval_max  = FANET_TX_INTERVAL_MAX
+  .tx_interval_max  = FANET_TX_INTERVAL_MAX,
+  .slot0            = {0, 0},
+  .slot1            = {0, 0}
 };
 
 const uint8_t aircraft_type_to_fanet[] PROGMEM = {

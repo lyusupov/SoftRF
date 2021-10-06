@@ -50,8 +50,15 @@ const rf_proto_desc_t legacy_proto_desc = {
 
   .air_time        = LEGACY_AIR_TIME,
 
+#if defined(USE_TIME_SLOTS)
+  .tm_type         = RF_TIMING_2SLOTS_PPS_SYNC,
+#else
+  .tm_type         = RF_TIMING_INTERVAL,
+#endif
   .tx_interval_min = LEGACY_TX_INTERVAL_MIN,
-  .tx_interval_max = LEGACY_TX_INTERVAL_MAX
+  .tx_interval_max = LEGACY_TX_INTERVAL_MAX,
+  .slot0           = {400,  800},
+  .slot1           = {800, 1200}
 };
 
 /* http://en.wikipedia.org/wiki/XXTEA */

@@ -48,8 +48,11 @@ const rf_proto_desc_t uat978_proto_desc = {
 
   .air_time        = UAT978_AIR_TIME,
 
+  .tm_type         = RF_TIMING_INTERVAL,
   .tx_interval_min = UAT978_TX_INTERVAL_MIN,
-  .tx_interval_max = UAT978_TX_INTERVAL_MAX
+  .tx_interval_max = UAT978_TX_INTERVAL_MAX,
+  .slot0           = {0, 0},
+  .slot1           = {0, 0}
 };
 
 static struct uat_adsb_mdb mdb;

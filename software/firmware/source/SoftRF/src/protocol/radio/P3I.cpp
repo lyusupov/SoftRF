@@ -47,10 +47,12 @@ const rf_proto_desc_t p3i_proto_desc = {
 
   .air_time         = P3I_AIR_TIME,
 
+  .tm_type          = RF_TIMING_INTERVAL,
   .tx_interval_min  = P3I_TX_INTERVAL_MIN,
-  .tx_interval_max  = P3I_TX_INTERVAL_MAX
+  .tx_interval_max  = P3I_TX_INTERVAL_MAX,
+  .slot0            = {0, 0},
+  .slot1            = {0, 0}
 };
-
 
 const uint8_t whitening_pattern[] PROGMEM = { 0x05, 0xb4, 0x05, 0xae, 0x14, 0xda,
   0xbf, 0x83, 0xc4, 0x04, 0xb2, 0x04, 0xd6, 0x4d, 0x87, 0xe2, 0x01, 0xa3, 0x26,

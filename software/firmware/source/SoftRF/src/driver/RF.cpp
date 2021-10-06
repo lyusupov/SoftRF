@@ -47,7 +47,6 @@ FreqPlan RF_FreqPlan;
 static bool RF_ready = false;
 
 static size_t RF_tx_size = 0;
-static long TxRandomValue = 0;
 
 const rfchip_ops_t *rf_chip = NULL;
 bool RF_SX12XX_RST_is_connected = true;
@@ -62,7 +61,12 @@ const char *Protocol_ID[] = {
 };
 
 size_t (*protocol_encode)(void *, ufo_t *);
-bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
+bool   (*protocol_decode)(void *, ufo_t *, ufo_t *);
+
+static Slots_descr_t Time_Slots, *ts;
+static uint8_t       RF_timing = RF_TIMING_INTERVAL;
+
+extern const gnss_chip_ops_t *gnss_chip;
 
 static bool nrf905_probe(void);
 static void nrf905_setup(void);
@@ -272,6 +276,34 @@ byte RF_setup(void)
 
   if (rf_chip) {
     rf_chip->setup();
+
+    const rf_proto_desc_t *p;
+
+    switch (settings->rf_protocol)
+    {
+      case RF_PROTOCOL_OGNTP:     p = &ogntp_proto_desc;  break;
+      case RF_PROTOCOL_P3I:       p = &p3i_proto_desc;    break;
+      case RF_PROTOCOL_FANET:     p = &fanet_proto_desc;  break;
+      case RF_PROTOCOL_ADSB_UAT:  p = &uat978_proto_desc; break;
+      case RF_PROTOCOL_LEGACY:
+      default:                    p = &legacy_proto_desc; break;
+    }
+
+    RF_timing         = p->tm_type;
+
+    ts                = &Time_Slots;
+    ts->air_time      = p->air_time;
+    ts->interval_min  = p->tx_interval_min;
+    ts->interval_max  = p->tx_interval_max;
+    ts->interval_mid  = (p->tx_interval_max + p->tx_interval_min) / 2;
+    ts->s0.begin      = p->slot0.begin;
+    ts->s1.begin      = p->slot1.begin;
+    ts->s0.duration   = p->slot0.end - p->slot0.begin;
+    ts->s1.duration   = p->slot1.end - p->slot1.begin;
+
+    uint16_t duration = ts->s0.duration + ts->s1.duration;
+    ts->adj = duration > ts->interval_mid ? 0 : (ts->interval_mid - duration) / 2;
+
     return rf_chip->type;
   } else {
     return RF_IC_NONE;
@@ -280,58 +312,80 @@ byte RF_setup(void)
 
 void RF_SetChannel(void)
 {
-  tmElements_t tm;
-  time_t Time;
+  tmElements_t  tm;
+  time_t        Time;
+  uint8_t       Slot;
+  unsigned long pps_btime_ms, ref_time_ms;
 
   switch (settings->mode)
   {
   case SOFTRF_MODE_TXRX_TEST:
     Time = now();
+    RF_timing = RF_timing == RF_TIMING_2SLOTS_PPS_SYNC ?
+                RF_TIMING_INTERVAL : RF_timing;
     break;
 #if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     Time = the_aircraft.location.gps_time_stamp / 1000000;
+    RF_timing = RF_timing == RF_TIMING_2SLOTS_PPS_SYNC ?
+                RF_TIMING_INTERVAL : RF_timing;
     break;
 #endif /* EXCLUDE_MAVLINK */
   case SOFTRF_MODE_NORMAL:
   default:
-    unsigned long pps_btime_ms = SoC->get_PPS_TimeMarker();
-    unsigned long time_corr_pos = 0;
-    unsigned long time_corr_neg = 0;
+    pps_btime_ms = SoC->get_PPS_TimeMarker();
+    unsigned long time_corr_neg;
 
     if (pps_btime_ms) {
-      unsigned long lastCommitTime = millis() - gnss.time.age();
-      if (pps_btime_ms <= lastCommitTime) {
-        time_corr_neg = (lastCommitTime - pps_btime_ms) % 1000;
+      unsigned long last_Commit_Time = millis() - gnss.time.age();
+      if (pps_btime_ms <= last_Commit_Time) {
+        time_corr_neg = (last_Commit_Time - pps_btime_ms) % 1000;
       } else {
-        time_corr_neg = 1000 - ((pps_btime_ms - lastCommitTime) % 1000);
+        time_corr_neg = 1000 - ((pps_btime_ms - last_Commit_Time) % 1000);
       }
-      time_corr_pos = 400; /* 400 ms after PPS for V6, 350 ms - for OGNTP */
+      ref_time_ms = pps_btime_ms;
+    } else {
+      unsigned long last_RMC_Commit = millis() - gnss.date.age();
+      time_corr_neg = gnss_chip ? gnss_chip->rmc_ms : 100;
+      ref_time_ms = last_RMC_Commit - time_corr_neg;
     }
 
-    int yr = gnss.date.year();
+    int yr    = gnss.date.year();
     if( yr > 99)
-        yr = yr - 1970;
+        yr    = yr - 1970;
     else
-        yr += 30;
-    tm.Year = yr;
-    tm.Month = gnss.date.month();
-    tm.Day = gnss.date.day();
-    tm.Hour = gnss.time.hour();
+        yr    += 30;
+    tm.Year   = yr;
+    tm.Month  = gnss.date.month();
+    tm.Day    = gnss.date.day();
+    tm.Hour   = gnss.time.hour();
     tm.Minute = gnss.time.minute();
     tm.Second = gnss.time.second();
 
-    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg + time_corr_pos)/ 1000;
+    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg)/ 1000;
     break;
   }
 
-  uint8_t Slot = 0; /* only #0 "400ms" timeslot is currently in use */
-  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-  /* FANET uses 868.2 MHz. Bandwidth is 250kHz  */
-  if (settings->rf_protocol == RF_PROTOCOL_FANET) {
+  switch (RF_timing)
+  {
+  case RF_TIMING_2SLOTS_PPS_SYNC:
+    if ((millis() - ts->s0.tmarker) >= ts->interval_mid) {
+      ts->s0.tmarker = ref_time_ms + ts->s0.begin - ts->adj;
+      ts->current = 0;
+    }
+    if ((millis() - ts->s1.tmarker) >= ts->interval_mid) {
+      ts->s1.tmarker = ref_time_ms + ts->s1.begin;
+      ts->current = 1;
+    }
+    Slot = ts->current;
+    break;
+  case RF_TIMING_INTERVAL:
+  default:
     Slot = 0;
+    break;
   }
+
+  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
 
   uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
 
@@ -375,7 +429,7 @@ size_t RF_Encode(ufo_t *fop)
       return size;
     }
 
-    if ((millis() - TxTimeMarker) > TxRandomValue) {
+    if (millis() > TxTimeMarker) {
       size = (*protocol_encode)((void *) &TxBuffer[0], fop);
     }
   }
@@ -391,7 +445,7 @@ bool RF_Transmit(size_t size, bool wait)
       return true;
     }
 
-    if (!wait || (millis() - TxTimeMarker) > TxRandomValue) {
+    if (!wait || millis() > TxTimeMarker) {
 
       time_t timestamp = now();
 
@@ -407,14 +461,24 @@ bool RF_Transmit(size_t size, bool wait)
       tx_packets_counter++;
       RF_tx_size = 0;
 
-      TxRandomValue = (
-#if !defined(EXCLUDE_SX12XX)
-        LMIC.protocol ?
-        SoC->random(LMIC.protocol->tx_interval_min, LMIC.protocol->tx_interval_max) :
-#endif
-        SoC->random(LEGACY_TX_INTERVAL_MIN, LEGACY_TX_INTERVAL_MAX));
+      Slot_descr_t *next;
+      unsigned long adj;
 
-      TxTimeMarker = millis();
+      switch (RF_timing)
+      {
+      case RF_TIMING_2SLOTS_PPS_SYNC:
+        next = RF_FreqPlan.Channels == 1 ? &(ts->s0) :
+               ts->current          == 1 ? &(ts->s0) : &(ts->s1);
+        adj  = ts->current ? ts->adj   : 0;
+        TxTimeMarker = next->tmarker    +
+                       ts->interval_mid +
+                       SoC->random(adj, next->duration - ts->air_time);
+        break;
+      case RF_TIMING_INTERVAL:
+      default:
+        TxTimeMarker = millis() + SoC->random(ts->interval_min, ts->interval_max) - ts->air_time;
+        break;
+      }
 
       return true;
     }
