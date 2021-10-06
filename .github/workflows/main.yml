@@ -45,7 +45,7 @@ jobs:
             sudo dpkg --add-architecture i386 ;
             sudo apt-get update ;
             sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 ;
-            wget http://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
+            wget https://energia.nu/downloads/downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
             mv "downloadv4.php?file=energia-$ENERGIA_IDE_VERSION-linux64.tar.xz" energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
             tar xf energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
             rm energia-$ENERGIA_IDE_VERSION-linux64.tar.xz ;
