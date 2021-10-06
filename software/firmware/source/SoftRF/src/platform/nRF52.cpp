@@ -1156,7 +1156,7 @@ static byte nRF52_Display_setup()
 
   if (EPD_setup(true)) {
 
-#if 0
+#if defined(USE_EPD_TASK)
     Display_Semaphore = xSemaphoreCreateBinary();
 
     if( Display_Semaphore != NULL ) {
@@ -1201,7 +1201,7 @@ static void nRF52_Display_fini(int reason)
 
   EPD_fini(reason, screen_saver);
 
-#if 0
+#if defined(USE_EPD_TASK)
   if( EPD_Task_Handle != NULL )
   {
     vTaskDelete( EPD_Task_Handle );

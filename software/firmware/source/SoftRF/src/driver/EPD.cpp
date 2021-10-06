@@ -510,7 +510,11 @@ void EPD_fini(int reason, bool screen_saver)
       display->display(false);
 #endif
 
+      SoC->loop(); /* reload WDT */
+
       delay(4000);
+
+      SoC->loop(); /* reload WDT */
 
       display->fillScreen(GxEPD_WHITE);
 
