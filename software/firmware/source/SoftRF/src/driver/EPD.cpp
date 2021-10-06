@@ -180,10 +180,11 @@ void EPD_info1()
 
     uint16_t x, y;
 
-//    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+#if defined(USE_EPD_TASK)
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
 
 //    while (!SoC->Display_lock()) { delay(10); }
-
+#endif
     display->setFont(&FreeMonoBold18pt7b);
     display->getTextBounds(EPD_Radio_text, 0, 0, &tbx, &tby, &tbw, &tbh);
 
@@ -232,11 +233,13 @@ void EPD_info1()
       display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
     }
 
-//    EPD_update_in_progress = EPD_UPDATE_SLOW;
-//    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
-
-    display->display(false);
+#if defined(USE_EPD_TASK)
+    EPD_update_in_progress = EPD_UPDATE_SLOW;
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
 //    SoC->Display_unlock();
+#else
+    display->display(false);
+#endif
 
     delay(4000);
 
@@ -267,6 +270,12 @@ void EPD_info2(int acfts, char *reg, char *mam, char *cn)
     uint16_t tbw, tbh;
 
     uint16_t x, y;
+
+#if defined(USE_EPD_TASK)
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+
+//    while (!SoC->Display_lock()) { delay(10); }
+#endif
 
     display->fillScreen(GxEPD_WHITE);
 
@@ -364,7 +373,13 @@ void EPD_info2(int acfts, char *reg, char *mam, char *cn)
       display->print(buf);
     }
 
+#if defined(USE_EPD_TASK)
+    EPD_update_in_progress = EPD_UPDATE_SLOW;
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+//    SoC->Display_unlock();
+#else
     display->display(false);
+#endif
 
     delay(3000);
     break;
@@ -382,18 +397,22 @@ void EPD_loop()
   case DISPLAY_EPD_1_54:
 
     if (EPD_vmode_updated) {
-//      if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+      if (EPD_update_in_progress == EPD_UPDATE_NONE) {
 //      while (!SoC->Display_lock()) { delay(10); }
+#else
       {
+#endif
         display->fillScreen(GxEPD_BLACK /* GxEPD_WHITE */);
 
-//        EPD_update_in_progress = EPD_UPDATE_FAST /* EPD_UPDATE_SLOW */;
-//        while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
-
+#if defined(USE_EPD_TASK)
+        EPD_update_in_progress = EPD_UPDATE_FAST /* EPD_UPDATE_SLOW */;
+        while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+//      SoC->Display_unlock();
+#else
 //        display->display(false);
         display->display(true);
-
-//      SoC->Display_unlock();
+#endif
         EPD_vmode_updated = false;
       }
 
@@ -452,6 +471,10 @@ void EPD_fini(int reason, bool screen_saver)
   switch (hw_info.display)
   {
   case DISPLAY_EPD_1_54:
+#if defined(USE_EPD_TASK)
+      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+//      while (!SoC->Display_lock()) { delay(10); }
+#endif
     if (screen_saver) {
       const char *msg_line;
 
@@ -474,22 +497,24 @@ void EPD_fini(int reason, bool screen_saver)
       display->setCursor(x, y);
       display->print(msg_line);
 
+#if defined(USE_EPD_TASK)
+      /* a signal to background EPD update task */
+      EPD_update_in_progress = EPD_UPDATE_FAST;
+//      SoC->Display_unlock();
+
+//    yield();
+
+      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+//      while (!SoC->Display_lock()) { delay(10); }
+#else
       display->display(false);
+#endif
 
       delay(4000);
 
       display->fillScreen(GxEPD_WHITE);
 
     } else {
-
-//      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
-
-//      display->fillScreen(GxEPD_WHITE);
-
-//      EPD_update_in_progress = EPD_UPDATE_SLOW;
-//      while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
-
-//      while (!SoC->Display_lock()) { delay(10); }
 
       display->fillScreen(GxEPD_WHITE);
 
@@ -520,18 +545,20 @@ void EPD_fini(int reason, bool screen_saver)
       y += 21;
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text6);
-
-      /* a signal to background EPD update task */
-//      EPD_update_in_progress = EPD_UPDATE_FAST;
-//      SoC->Display_unlock();
-
-//      yield();
-
-//      while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
-//      while (!SoC->Display_lock()) { delay(10); }
     }
 
+#if defined(USE_EPD_TASK)
+    /* a signal to background EPD update task */
+    EPD_update_in_progress = EPD_UPDATE_FAST;
+//    SoC->Display_unlock();
+
+//    yield();
+
+    while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
+//    while (!SoC->Display_lock()) { delay(10); }
+#else
     display->display(false);
+#endif
 
     EPD_HIBERNATE;
 
@@ -623,9 +650,12 @@ void EPD_Message(const char *msg1, const char *msg2)
   uint16_t tbw, tbh;
   uint16_t x, y;
 
-//  if (msg1 != NULL && strlen(msg1) != 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+  if (msg1 != NULL && strlen(msg1) != 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
 //  if (msg1 != NULL && strlen(msg1) != 0 && SoC->Display_lock()) {
+#else
   if (msg1 != NULL && strlen(msg1) != 0) {
+#endif
     display->setFont(&FreeMonoBold18pt7b);
 
     display->fillScreen(GxEPD_WHITE);
@@ -653,11 +683,14 @@ void EPD_Message(const char *msg1, const char *msg2)
       display->print(msg2);
     }
 
+#if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_FAST;
 //    SoC->Display_unlock();
 //    yield();
+#else
       display->display(true);
+#endif
   }
 }
 

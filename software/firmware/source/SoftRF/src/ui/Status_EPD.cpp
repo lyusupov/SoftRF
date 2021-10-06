@@ -112,9 +112,12 @@ static void EPD_Draw_NavBoxes()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
 //  if (SoC->Display_lock()) {
+#else
   {
+#endif
     uint16_t top_navboxes_x = navbox1.x;
     uint16_t top_navboxes_y = navbox1.y;
     uint16_t top_navboxes_w = navbox1.width + navbox2.width;
@@ -219,11 +222,14 @@ static void EPD_Draw_NavBoxes()
       display->print(navbox6.value);
     }
 
+#if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_FAST;
 //    SoC->Display_unlock();
 //    yield();
+#else
     display->display(true);
+#endif
   }
 }
 

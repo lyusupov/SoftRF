@@ -84,9 +84,12 @@ static void EPD_Draw_Text()
     }
   }
 
-//  if (j > 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+  if (j > 0 && EPD_update_in_progress == EPD_UPDATE_NONE) {
 //  if (j > 0 && SoC->Display_lock()) {
+#else
   if (j > 0) {
+#endif
     uint8_t db;
     const char *u_dist, *u_alt, *u_spd;
     float disp_dist;
@@ -245,11 +248,14 @@ static void EPD_Draw_Text()
 //      Serial.println();
     }
 
+#if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_FAST;
 //    SoC->Display_unlock();
 //    yield();
+#else
     display->display(true);
+#endif
   }
 }
 

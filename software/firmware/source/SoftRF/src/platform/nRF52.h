@@ -250,6 +250,7 @@ struct rst_info {
 #define USE_EPAPER                 //  +    kb
 
 /* Experimental */
+//#define USE_EPD_TASK
 //#define USE_WEBUSB_SERIAL
 //#define USE_WEBUSB_SETTINGS
 //#define USE_USB_MIDI

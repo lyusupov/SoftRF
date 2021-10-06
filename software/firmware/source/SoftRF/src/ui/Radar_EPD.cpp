@@ -56,10 +56,12 @@ static void EPD_Draw_Radar()
   uint16_t y;
   char cog_text[6];
 
-//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
 //  if (SoC->Display_lock()) {
+#else
   {
-
+#endif
     /* divider is a half of full scale */
     int32_t divider = 2000;
 
@@ -327,11 +329,14 @@ static void EPD_Draw_Radar()
                      "KM" : "NM");
     }
 
+#if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_FAST;
 //    SoC->Display_unlock();
 //    yield();
+#else
     display->display(true);
+#endif
   }
 }
 

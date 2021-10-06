@@ -80,9 +80,12 @@ static void EPD_Draw_NavBoxes()
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
 
-//  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
+#if defined(USE_EPD_TASK)
+  if (EPD_update_in_progress == EPD_UPDATE_NONE) {
 //  if (SoC->Display_lock()) {
+#else
   {
+#endif
     display->fillScreen(GxEPD_WHITE);
 
     display->drawRoundRect( navbox1.x + 1, navbox1.y + 1,
@@ -122,11 +125,14 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox3.x + navbox3.width / 3 + 15, navbox3.y + 52);
     display->print(navbox3.value);
 
+#if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-//    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_FAST;
 //    SoC->Display_unlock();
 //    yield();
+#else
     display->display(true);
+#endif
   }
 }
 
