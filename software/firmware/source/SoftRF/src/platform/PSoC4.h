@@ -117,8 +117,8 @@ struct rst_info {
 
 #if defined(CubeCell_GPS)
 #define SOC_GPIO_PIN_LED      RGB          // P0_6
-#define SOC_GPIO_PIN_GNSS_PPS GPIO8        /* V1.0 */
-//#define SOC_GPIO_PIN_GNSS_PPS GPIO12     /* V1.1 */
+#define SOC_GPIO_PIN_GNSS_PPS (gnss_chip == &goke_ops ? \
+                               GPIO8 /* V1.0 */ : GPIO12 /* V1.1 */)
 #define SOC_GPIO_PIN_BATTERY  ADC1         // P2_0
 
 #define SOC_GPIO_PIN_GNSS_PWR GPIO14       // P0_7

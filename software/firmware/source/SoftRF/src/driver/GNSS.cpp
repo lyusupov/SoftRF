@@ -45,6 +45,8 @@ unsigned long GNSSTimeSyncMarker = 0;
 volatile unsigned long PPS_TimeMarker = 0;
 
 const gnss_chip_ops_t *gnss_chip = NULL;
+extern const gnss_chip_ops_t goke_ops; /* forward declaration */
+
 boolean gnss_set_sucess = false ;
 TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
@@ -126,7 +128,7 @@ static uint8_t C_NMEA_Source;
  * L76K: GGA -  70+, RMC - 135+
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
- * MT33: GGA - YBD , RMC -  TBD
+ * MT33: GGA - TBD , RMC - TBD
  */
 
 gnss_stat_t gnss_stats;
