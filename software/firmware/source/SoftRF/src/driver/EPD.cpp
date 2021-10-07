@@ -499,7 +499,7 @@ void EPD_fini(int reason, bool screen_saver)
 
 #if defined(USE_EPD_TASK)
       /* a signal to background EPD update task */
-      EPD_update_in_progress = EPD_UPDATE_FAST;
+      EPD_update_in_progress = EPD_UPDATE_SLOW /* EPD_UPDATE_FAST */;
 //      SoC->Display_unlock();
 
 //    yield();
@@ -553,7 +553,7 @@ void EPD_fini(int reason, bool screen_saver)
 
 #if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
-    EPD_update_in_progress = EPD_UPDATE_FAST;
+    EPD_update_in_progress = EPD_UPDATE_SLOW /* EPD_UPDATE_FAST */;
 //    SoC->Display_unlock();
 
 //    yield();

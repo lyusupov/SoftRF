@@ -120,7 +120,7 @@ const rfchip_ops_t nrf905_ops = {
 #if !defined(EXCLUDE_SX12XX)
 const rfchip_ops_t sx1276_ops = {
   RF_IC_SX1276,
-  "SX1276",
+  "SX127x",
   sx1276_probe,
   sx12xx_setup,
   sx12xx_channel,
@@ -131,7 +131,7 @@ const rfchip_ops_t sx1276_ops = {
 #if defined(USE_BASICMAC)
 const rfchip_ops_t sx1262_ops = {
   RF_IC_SX1262,
-  "SX1262",
+  "SX126x",
   sx1262_probe,
   sx12xx_setup,
   sx12xx_channel,

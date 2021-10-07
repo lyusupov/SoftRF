@@ -224,9 +224,10 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SOUND
 //#define USE_GNSS_PSM
 #define EXCLUDE_LK8EX1
-//#define EXCLUDE_IMU
+#define EXCLUDE_IMU
 
 //#define ENFORCE_S78G
+//#define USE_TIME_SLOTS
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
@@ -317,6 +318,8 @@ typedef struct stm32_backup_struct {
 #define RFM69_POWER_RATING  1 /* 0 - RFM69xx , 1 - RFM69Hxx */
 //#define WITH_SX1272
 //#define WITH_SI4X32
+
+//#define USE_TIME_SLOTS
 
 #else
 #error "This hardware platform is not supported!"

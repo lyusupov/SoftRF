@@ -96,6 +96,8 @@ struct rst_info {
 #define EXCLUDE_UATM
 //#define EXCLUDE_LK8EX1
 
+//#define USE_TIME_SLOTS
+
 /* SoftRF/CC13XX PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 #define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter

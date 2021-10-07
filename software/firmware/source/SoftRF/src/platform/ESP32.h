@@ -235,6 +235,8 @@ struct rst_info {
 #define USE_NMEA_CFG
 #define USE_BASICMAC
 
+//#define USE_TIME_SLOTS
+
 /* Experimental */
 //#define USE_BLE_MIDI
 

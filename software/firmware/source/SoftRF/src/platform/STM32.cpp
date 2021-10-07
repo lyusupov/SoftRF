@@ -324,7 +324,9 @@ static void STM32_post_init()
     Serial.println();
     Serial.print(F("TTGO "));
     Serial.print(hw_info.model == SOFTRF_MODEL_BRACELET   ? F("T-Impulse") : F("T-Motion"));
-    Serial.println(F(" (S76G) Power-on Self Test"));
+    Serial.print(F(" (S7"));
+    Serial.print(STM32_has_TCXO ? '6' : '8');
+    Serial.println(F("G) Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
