@@ -147,6 +147,9 @@ byte OLED_setup() {
     {
 #if !defined(EXCLUDE_OLED_049)
     case DISPLAY_OLED_0_49:
+
+      u8x8->setContrast(255);
+
       u8x8->draw2x2Glyph(4,  4, SoftRF_text3[0]);
       u8x8->draw2x2Glyph(6,  4, SoftRF_text3[1]);
       u8x8->draw2x2Glyph(8,  4, SoftRF_text3[2]);

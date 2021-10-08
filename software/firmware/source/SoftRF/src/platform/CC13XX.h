@@ -94,9 +94,6 @@ struct rst_info {
 #define EXCLUDE_EGM96
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
-//#define EXCLUDE_LK8EX1
-
-//#define USE_TIME_SLOTS
 
 /* SoftRF/CC13XX PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
@@ -143,6 +140,9 @@ struct rst_info {
 #define EXCLUDE_D1090
 
 #define EXCLUDE_MAVLINK
+#define EXCLUDE_LK8EX1
+
+//#define USE_TIME_SLOTS
 
 extern SCSerial                 scSerial;
 
@@ -187,9 +187,11 @@ extern SCSerial                 scSerial;
 #define USE_OLED                 //  +5.5 kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
+//#define EXCLUDE_LK8EX1
 #define USE_GNSS_PSM
 
 //#define USE_BASICMAC
+//#define USE_TIME_SLOTS
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
