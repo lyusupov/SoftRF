@@ -1297,7 +1297,8 @@ void onPageButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision == 5) {
+  if ( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
+      (hw_info.revision == 2 || hw_info.revision == 5)) {
     int button_pin = SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
@@ -1320,7 +1321,8 @@ static void ESP32_Button_setup()
 
 static void ESP32_Button_loop()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision == 5) {
+  if ( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
+      (hw_info.revision == 2 || hw_info.revision == 5)) {
     button_1.check();
   }
 }
