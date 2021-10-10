@@ -191,7 +191,7 @@ extern SCSerial                 scSerial;
 #define USE_GNSS_PSM
 
 //#define USE_BASICMAC
-//#define USE_TIME_SLOTS
+#define USE_TIME_SLOTS
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

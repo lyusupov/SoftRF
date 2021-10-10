@@ -227,7 +227,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_IMU
 
 //#define ENFORCE_S78G
-//#define USE_TIME_SLOTS
+#define USE_TIME_SLOTS
 
 /* SoftRF/S7xG PFLAU NMEA sentence extension. In use by WebTop adapter */
 #define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"

@@ -249,7 +249,7 @@ struct rst_info {
 //#define EXCLUDE_OLED_049
 #define USE_EPAPER                 //  +    kb
 #define USE_EPD_TASK
-//#define USE_TIME_SLOTS
+#define USE_TIME_SLOTS
 
 /* Experimental */
 //#define USE_WEBUSB_SERIAL

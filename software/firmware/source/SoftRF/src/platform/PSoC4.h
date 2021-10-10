@@ -166,7 +166,7 @@ struct rst_info {
 #define USE_BASICMAC
 #define EXCLUDE_SX1276           //  -  3 kb
 
-//#define USE_TIME_SLOTS
+#define USE_TIME_SLOTS
 
 #if defined(CubeCell_GPS)
 #define USE_OLED                 //  +    kb
