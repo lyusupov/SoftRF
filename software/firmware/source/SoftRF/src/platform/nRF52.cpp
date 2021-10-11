@@ -874,10 +874,16 @@ static void nRF52_reset()
     // It can only be reset by WDT timeout, Pin reset, Power reset
 #if defined(USE_EPAPER)
     if (hw_info.display == DISPLAY_EPD_1_54) {
+
+#if defined(USE_EPD_TASK)
+      while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
+//    while (!SoC->Display_lock()) { delay(10); }
+#endif
+
       EPD_Message("PLEASE,", "WAIT..");
     }
 #endif /* USE_EPAPER */
-    while (true);
+    while (true) { delay(100); }
   } else {
     NVIC_SystemReset();
   }
