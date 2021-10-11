@@ -889,7 +889,7 @@ static byte ESP32_Display_setup()
       u8x8->begin();
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
-      u8x8->draw2x2String( 2, 3, SoftRF_text1);
+      u8x8->draw2x2String( 2, 2, SoftRF_text1);
       u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
       u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
     }

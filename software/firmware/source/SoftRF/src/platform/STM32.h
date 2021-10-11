@@ -251,7 +251,7 @@ typedef struct stm32_backup_struct {
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN   // PA1
+#define SOC_GPIO_PIN_GNSS_PPS PA1
 #define SOC_GPIO_PIN_STATUS   LED_GREEN
 
 #define SOC_GPIO_PIN_BUZZER   PB8

@@ -128,7 +128,7 @@ static uint8_t C_NMEA_Source;
  * L76K: GGA -  70+, RMC - 135+
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
- * MT33: GGA - TBD , RMC - TBD
+ * MT33: GGA -  48 , RMC - 175
  */
 
 gnss_stat_t gnss_stats;
@@ -873,7 +873,7 @@ const gnss_chip_ops_t mtk_ops = {
   mtk_setup,
   mtk_loop,
   mtk_fini,
-  50 /* GGA - TBD */, 100 /* RMC - TBD */
+  48 /* GGA */, 175 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_MTK */
 
