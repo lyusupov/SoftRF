@@ -826,7 +826,7 @@ static void nRF52_fini(int reason)
   pinMode(lmic_pins.rst,  INPUT);
 
   // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
-  pinMode(SOC_GPIO_PIN_BUTTON, nrf52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
+  pinMode(SOC_GPIO_PIN_BUTTON, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
   while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
   delay(100);
 
@@ -1426,7 +1426,7 @@ static void nRF52_Button_setup()
   int up_button_pin   = SOC_GPIO_PIN_PAD;
 
   // Button(s) uses external pull up resistor.
-  pinMode(mode_button_pin, nrf52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
+  pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
   pinMode(up_button_pin, INPUT);
 
   button_1.init(mode_button_pin);
