@@ -270,8 +270,46 @@ static void nRF52_setup()
 {
   ui = &ui_settings;
 
-//  uint32_t u32Reset_reason = NRF_POWER->RESETREAS;
-//  reset_info.reason = u32Reset_reason;
+#if 0
+  uint32_t reset_reason = getResetReason();
+
+  if      (reset_reason & POWER_RESETREAS_RESETPIN_Msk)
+  {
+      reset_info.reason = REASON_EXT_SYS_RST;
+  }
+  else if (reset_reason & POWER_RESETREAS_DOG_Msk)
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (reset_reason & POWER_RESETREAS_SREQ_Msk)
+  {
+      reset_info.reason = REASON_SOFT_RESTART;
+  }
+  else if (reset_reason & POWER_RESETREAS_LOCKUP_Msk)
+  {
+      reset_info.reason = REASON_SOFT_WDT_RST;
+  }
+  else if (reset_reason & POWER_RESETREAS_OFF_Msk)
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (reset_reason & POWER_RESETREAS_LPCOMP_Msk)
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (reset_reason & POWER_RESETREAS_DIF_Msk)
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (reset_reason & POWER_RESETREAS_NFC_Msk)
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (reset_reason & POWER_RESETREAS_VBUS_Msk)
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+#endif
 
   /* inactivate initVariant() of PCA10056 */
   pinMode(PIN_LED1, INPUT);
