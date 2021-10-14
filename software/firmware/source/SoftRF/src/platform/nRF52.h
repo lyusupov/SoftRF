@@ -257,6 +257,7 @@ struct rst_info {
 //#define USE_USB_MIDI
 //#define USE_BLE_MIDI
 //#define USE_PWM_SOUND
+//#define USE_GDL90_MSL
 //#define EXCLUDE_NUS
 #define EXCLUDE_BOARD_SELF_DETECT
 

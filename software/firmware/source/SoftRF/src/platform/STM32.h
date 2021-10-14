@@ -223,6 +223,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 //#define USE_GNSS_PSM
+//#define USE_GDL90_MSL
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
 

@@ -189,6 +189,7 @@ extern SCSerial                 scSerial;
 //#define EXCLUDE_OLED_BARO_PAGE
 //#define EXCLUDE_LK8EX1
 #define USE_GNSS_PSM
+//#define USE_GDL90_MSL
 
 //#define USE_BASICMAC
 #define USE_TIME_SLOTS

@@ -271,7 +271,7 @@ static void nRF52_setup()
   ui = &ui_settings;
 
 #if 0
-  uint32_t reset_reason = getResetReason();
+  uint32_t reset_reason = readResetReason();
 
   if      (reset_reason & POWER_RESETREAS_RESETPIN_Msk)
   {

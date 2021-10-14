@@ -101,9 +101,13 @@ const GDL90_Msg_FF_ID_t msgFFid = {
   .ShortName    = {'S', 'o', 'f', 't', 'R', 'F', ' ', ' ' },
   .LongName     = {'S', 'o', 'f', 't', 'R', 'F',
                     ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
+#if !defined(USE_GDL90_MSL)
+  .Capabilities = {0x00, 0x00, 0x00, 0x00}, /* WGS-84 ellipsoid altitude for Ownship Geometric report */
+#else
   .Capabilities = {0x00, 0x00, 0x00, 0x01}, /* MSL altitude for Ownship Geometric report */
+#endif /* USE_GDL90_MSL */
 };
-#endif
+#endif /* DO_GDL90_FF_EXT */
 
 /* convert a signed latitude to 2s complement ready for 24-bit packing */
 static uint32_t makeLatitude(float latitude)
@@ -313,7 +317,7 @@ static void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
 {
   uint16_t vfom = 0x000A;
 
-#if 0
+#if !defined(USE_GDL90_MSL)
   /*
    * The Geo Altitude field is a 16-bit signed integer that represents
    * the geometric altitude (height above WGS-84 ellipsoid),
@@ -328,7 +332,7 @@ static void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
    * SkyDemon is the only known exception which uses WGS-84 altitude still.
    */
   uint16_t altitude = (int16_t)(aircraft->altitude * _GPS_FEET_PER_METER / 5);
-#endif
+#endif /* USE_GDL90_MSL */
 
   GeometricAltitude.geo_altitude  = ((altitude & 0x00FF) << 8) | ((altitude & 0xFF00) >> 8) ;
   GeometricAltitude.VFOM          = ((vfom & 0x00FF) << 8) | ((vfom & 0xFF00) >> 8);
