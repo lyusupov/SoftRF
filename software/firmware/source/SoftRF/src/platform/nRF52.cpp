@@ -517,6 +517,8 @@ static void nRF52_setup()
     usb_msc.setUnitReady(true);
 
     usb_msc.begin();
+
+    FATFS_is_mounted = fatfs.begin(SPIFlash);
   }
 
 #if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
@@ -1100,7 +1102,7 @@ static void nRF52_EEPROM_extension(int cmd)
 #if 1
           (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
 #endif
-           (FATFS_is_mounted = fatfs.begin(SPIFlash))) {
+           FATFS_is_mounted ) {
         File file = fatfs.open("/settings.json", FILE_READ);
 
         if (file) {
