@@ -713,7 +713,11 @@ EPD_Task_t EPD_Task( void * pvParameters )
 //Serial.println("EPD_Task: display"); Serial.flush();
       yield();
 
-      if (EPD_update_in_progress == EPD_UPDATE_FAST) { EPD_POWEROFF; }
+      /*
+       * SYX 1942 revision of D67 display can use power_off() after partial update,
+       * SYX 1948 revision - can not.
+       */
+      if (EPD_update_in_progress == EPD_UPDATE_FAST) { /* EPD_POWEROFF; */ }
 
       EPD_update_in_progress = EPD_UPDATE_NONE;
 //      SoC->Display_unlock();
