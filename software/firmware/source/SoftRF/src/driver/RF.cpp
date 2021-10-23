@@ -362,7 +362,7 @@ void RF_SetChannel(void)
     tm.Minute = gnss.time.minute();
     tm.Second = gnss.time.second();
 
-    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg)/ 1000;
+    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg) / 1000;
     break;
   }
 

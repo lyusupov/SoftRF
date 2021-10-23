@@ -1594,7 +1594,7 @@ static size_t nRF52_USB_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
-  if (USBSerial && USBSerial.availableForWrite()) {
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
     rval = USBSerial.write(buffer, size);
   }
 
