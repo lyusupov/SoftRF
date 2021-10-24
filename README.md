@@ -95,7 +95,9 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Quick-start)
     * [Screen pages](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Screen-pages)
     * [Bluetooth LE](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Bluetooth-LE)
+    * [Aircrafts database](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Aircrafts-database)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Badge)
+    * [Display care](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Display-care)
 <!-- * [Bracelet Edition](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
 * [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII.-Quick-start)
