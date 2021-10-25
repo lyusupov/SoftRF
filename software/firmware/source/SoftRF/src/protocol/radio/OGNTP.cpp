@@ -113,8 +113,8 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   }
 
 #if defined(USE_OGN_ENCRYPTION)
-  if (ogn_tx_pkt.Packet.Header.Encrypted)
-    ogn_tx_pkt.Packet.Decrypt(EncryptKey);
+  if (ogn_rx_pkt.Packet.Header.Encrypted)
+    ogn_rx_pkt.Packet.Decrypt(EncryptKey);
   else
 #endif
     ogn_rx_pkt.Packet.Dewhiten();
