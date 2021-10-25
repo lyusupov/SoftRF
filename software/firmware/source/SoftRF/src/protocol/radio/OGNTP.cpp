@@ -63,6 +63,10 @@ static GPS_Position pos;
 static OGN_TxPacket ogn_tx_pkt;
 static OGN_RxPacket ogn_rx_pkt;
 
+#if defined(USE_OGN_ENCRYPTION)
+uint32_t EncryptKey[4] = {0, 0, 0, 0};    // OGN encryption key
+#endif
+
 void ogntp_init()
 {
   pos.Clear();
@@ -83,7 +87,14 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 //    return false;
 //  }
 
-  if ( ogn_rx_pkt.Packet.Header.Other || ogn_rx_pkt.Packet.Header.Encrypted ) {
+  if ( ogn_rx_pkt.Packet.Header.Other ||
+#if defined(USE_OGN_ENCRYPTION)
+      (ogn_rx_pkt.Packet.Header.Encrypted &&
+       !(EncryptKey[0] || EncryptKey[1] || EncryptKey[2] || EncryptKey[3]))
+#else
+       ogn_rx_pkt.Packet.Header.Encrypted
+#endif
+     ) {
     return false;
   }
 
@@ -101,7 +112,12 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
     return false;
   }
 
-  ogn_rx_pkt.Packet.Dewhiten();
+#if defined(USE_OGN_ENCRYPTION)
+  if (ogn_tx_pkt.Packet.Header.Encrypted)
+    ogn_tx_pkt.Packet.Decrypt(EncryptKey);
+  else
+#endif
+    ogn_rx_pkt.Packet.Dewhiten();
 
   fop->protocol = RF_PROTOCOL_OGNTP;
 
@@ -131,9 +147,9 @@ bool ogntp_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
 size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
 
-  pos.Latitude = (int32_t) (this_aircraft->latitude * 600000);
+  pos.Latitude  = (int32_t) (this_aircraft->latitude * 600000);
   pos.Longitude = (int32_t) (this_aircraft->longitude * 600000);
-  pos.Altitude = (int32_t) (this_aircraft->altitude * 10);
+  pos.Altitude  = (int32_t) (this_aircraft->altitude * 10);
   if (this_aircraft->pressure_altitude != 0.0) {
     pos.StdAltitude = (int32_t) (this_aircraft->pressure_altitude * 10);
     pos.ClimbRate = this_aircraft->stealth ?
@@ -155,13 +171,27 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
                                       ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS);
 #endif
 
+#if defined(USE_OGN_ENCRYPTION)
+  if (EncryptKey[0] || EncryptKey[1] || EncryptKey[2] || EncryptKey[3])
+    ogn_tx_pkt.Packet.Header.Encrypted = 1;
+  else
+#else
+    ogn_tx_pkt.Packet.Header.Encrypted = 0;
+#endif
+
   ogn_tx_pkt.Packet.calcAddrParity();
 
   ogn_tx_pkt.Packet.Position.AcftType = (int16_t) this_aircraft->aircraft_type;
   ogn_tx_pkt.Packet.Position.Stealth = (int16_t) this_aircraft->stealth;
   ogn_tx_pkt.Packet.Position.Time = second();
 
-  ogn_tx_pkt.Packet.Whiten();
+#if defined(USE_OGN_ENCRYPTION)
+  if (ogn_tx_pkt.Packet.Header.Encrypted)
+    ogn_tx_pkt.Packet.Encrypt(EncryptKey);
+  else
+#endif
+    ogn_tx_pkt.Packet.Whiten();
+
   ogn_tx_pkt.calcFEC();
 
   memcpy((void *) pkt,  ogn_tx_pkt.Byte(), ogn_tx_pkt.Bytes);

@@ -40,11 +40,11 @@ Recommended:
 
 ## Firmware version
 
-<  screenshot of WebUI status page > (**required**)
+<  screenshot of WebUI and/or [**SoftRF Tool**](https://github.com/lyusupov/SoftRF/wiki/SoftRF-Configuration-Tool) status page > (**required**)
 
 ## Firmware settings
 
-<  screenshot of WebUI settings page > (**required**)
+<  screenshot of WebUI and/or [**SoftRF Tool**](https://github.com/lyusupov/SoftRF/wiki/SoftRF-Configuration-Tool) settings page > (**required**)
 
 ## Describe the bug
 

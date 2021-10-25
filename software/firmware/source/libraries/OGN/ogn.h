@@ -658,10 +658,16 @@ class OGN_Packet           // Packet structure for the OGN tracker
 
 // --------------------------------------------------------------------------------------------------------------
 
-   // void Whiten  (void) { TEA_Encrypt(Position, OGN_WhitenKey, 4); TEA_Encrypt(Position+2, OGN_WhitenKey, 4); } // whiten the position
-   // void Dewhiten(void) { TEA_Decrypt(Position, OGN_WhitenKey, 4); TEA_Decrypt(Position+2, OGN_WhitenKey, 4); } // de-whiten the position
+   void Encrypt (const uint32_t Key[4]) { XXTEA_Encrypt(Data, 4, Key, 8); }        // encrypt with given Key
+   void Decrypt (const uint32_t Key[4]) { XXTEA_Decrypt(Data, 4, Key, 8); }        // decrypt with given Key
+
    void Whiten  (void) { TEA_Encrypt_Key0(Data, 8); TEA_Encrypt_Key0(Data+2, 8); } // whiten the position
    void Dewhiten(void) { TEA_Decrypt_Key0(Data, 8); TEA_Decrypt_Key0(Data+2, 8); } // de-whiten the position
+
+// ==============================================================================================
+// TEA encryption/decryption
+// Data is 2 x 32-bit word
+// Key  is 4 x 32-bit word
 
    static void TEA_Encrypt (uint32_t* Data, const uint32_t *Key, int Loops=4)
    { uint32_t v0=Data[0], v1=Data[1];                         // set up
@@ -704,6 +710,44 @@ class OGN_Packet           // Packet structure for the OGN tracker
        sum -= delta; }                                          // end cycle
      Data[0]=v0; Data[1]=v1;
    }
+
+// ==============================================================================================
+// XXTEA encryption/decryption
+
+   static uint32_t XXTEA_MX(uint8_t E, uint32_t Y, uint32_t Z, uint8_t P, uint32_t Sum, const uint32_t Key[4])
+   { return ((((Z>>5) ^ (Y<<2)) + ((Y>>3) ^ (Z<<4))) ^ ((Sum^Y) + (Key[(P&3)^E] ^ Z))); }
+
+   static void XXTEA_Encrypt(uint32_t *Data, uint8_t Words, const uint32_t Key[4], uint8_t Loops)
+   { const uint32_t Delta = 0x9e3779b9;
+     uint32_t Sum = 0;
+     uint32_t Z = Data[Words-1]; uint32_t Y;
+     for( ; Loops; Loops--)
+     { Sum += Delta;
+       uint8_t E = (Sum>>2)&3;
+       for (uint8_t P=0; P<(Words-1); P++)
+       { Y = Data[P+1];
+         Z = Data[P] += XXTEA_MX(E, Y, Z, P, Sum, Key); }
+       Y = Data[0];
+       Z = Data[Words-1] += XXTEA_MX(E, Y, Z, Words-1, Sum, Key);
+     }
+   }
+
+   static void XXTEA_Decrypt(uint32_t *Data, uint8_t Words, const uint32_t Key[4], uint8_t Loops)
+   { const uint32_t Delta = 0x9e3779b9;
+     uint32_t Sum = Loops*Delta;
+     uint32_t Y = Data[0]; uint32_t Z;
+     for( ; Loops; Loops--)
+     { uint8_t E = (Sum>>2)&3;
+       for (uint8_t P=Words-1; P; P--)
+       { Z = Data[P-1];
+         Y = Data[P] -= XXTEA_MX(E, Y, Z, P, Sum, Key); }
+       Z = Data[Words-1];
+       Y = Data[0] -= XXTEA_MX(E, Y, Z, 0, Sum, Key);
+       Sum -= Delta;
+     }
+   }
+
+// ==============================================================================================
 
    static uint8_t Gray(uint8_t Binary) { return Binary ^ (Binary>>1); }
 

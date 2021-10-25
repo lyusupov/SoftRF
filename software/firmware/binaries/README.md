@@ -71,9 +71,9 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 2. Connect the SoftRF Badge Edition device to your PC by means of a USB cable (Type-A <-> Type-C) ;
 
-3. Double click (within 0.5 seconds) onto the SoftRF device RESET button. A virtual disk with **NRF52BOOT** label should appear in your "File manager" afterwards.
+3. Double click (within 0.5 seconds) onto the SoftRF device RESET button. A virtual disk with **NRF52BOOT** (or **TECHOBOOT**) label should appear in your "File manager" afterwards.
 
-4. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **NRF52BOOT** disk. Wait until the file transfer is complete.
+4. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **NRF52BOOT** (or **TECHOBOOT**) disk. Wait until the file transfer is complete.
 
 <br>
 

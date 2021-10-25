@@ -224,6 +224,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SOUND
 //#define USE_GNSS_PSM
 //#define USE_GDL90_MSL
+//#define USE_OGN_ENCRYPTION
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
 
