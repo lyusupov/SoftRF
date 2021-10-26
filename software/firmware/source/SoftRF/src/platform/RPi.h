@@ -124,6 +124,8 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_MPL3115A2
 //#define EXCLUDE_MAVLINK
 
+//#define USE_OGN_ENCRYPTION
+
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69

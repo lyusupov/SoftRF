@@ -127,7 +127,7 @@ Copyright (C) 2015-2021 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5020;
+  size_t size = 5200;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -397,9 +397,9 @@ void handleSettings() {
   (!settings->nmea_p ? "checked" : "") , (settings->nmea_p ? "checked" : ""),
   (!settings->nmea_l ? "checked" : "") , (settings->nmea_l ? "checked" : ""),
   (!settings->nmea_s ? "checked" : "") , (settings->nmea_s ? "checked" : ""),
-  (settings->nmea_out == NMEA_OFF ? "selected" : ""), NMEA_OFF,
+  (settings->nmea_out == NMEA_OFF  ? "selected" : ""), NMEA_OFF,
   (settings->nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
-  (settings->nmea_out == NMEA_UDP ? "selected" : ""), NMEA_UDP);
+  (settings->nmea_out == NMEA_UDP  ? "selected" : ""), NMEA_UDP);
 
   len = strlen(offset);
   offset += len;
@@ -411,7 +411,7 @@ void handleSettings() {
       PSTR("\
 <option %s value='%d'>TCP</option>\
 <option %s value='%d'>Bluetooth</option>"),
-    (settings->nmea_out == NMEA_TCP ? "selected" : ""), NMEA_TCP,
+    (settings->nmea_out == NMEA_TCP       ? "selected" : ""), NMEA_TCP,
     (settings->nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH);
 
     len = strlen(offset);
@@ -432,9 +432,9 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>UDP</option>"),
-  (settings->gdl90 == GDL90_OFF ? "selected" : ""), GDL90_OFF,
+  (settings->gdl90 == GDL90_OFF  ? "selected" : ""), GDL90_OFF,
   (settings->gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
-  (settings->gdl90 == GDL90_UDP ? "selected" : ""), GDL90_UDP);
+  (settings->gdl90 == GDL90_UDP  ? "selected" : ""), GDL90_UDP);
 
   len = strlen(offset);
   offset += len;
@@ -464,7 +464,7 @@ void handleSettings() {
 <select name='d1090'>\
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>"),
-  (settings->d1090 == D1090_OFF ? "selected" : ""), D1090_OFF,
+  (settings->d1090 == D1090_OFF  ? "selected" : ""), D1090_OFF,
   (settings->d1090 == D1090_UART ? "selected" : ""), D1090_UART);
 
   len = strlen(offset);
@@ -516,7 +516,7 @@ void handleSettings() {
   (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
   (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
   (settings->power_save == POWER_SAVE_GNSS ? "selected" : ""), POWER_SAVE_GNSS,
-  (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
+  (!settings->stealth  ? "checked" : "") , (settings->stealth  ? "checked" : ""),
   (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
   );
 
@@ -540,6 +540,22 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+
+#if defined(USE_OGN_ENCRYPTION)
+  snprintf_P ( offset, size,
+    PSTR("\
+<tr>\
+<th align=left>IGC key (HEX)</th>\
+<td align=right>\
+<INPUT type='text' name='igc_key' maxlength='32' size='32' value='%08X%08X%08X%08X'>\
+</td>\
+</tr>"),
+  settings->igc_key[0], settings->igc_key[1], settings->igc_key[2], settings->igc_key[3]);
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+#endif
 
   /* Common part 7 */
   snprintf_P ( offset, size,
@@ -580,9 +596,9 @@ void handleRoot() {
     return;
   }
 
-  dtostrf(ThisAircraft.latitude, 8, 4, str_lat);
+  dtostrf(ThisAircraft.latitude,  8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
-  dtostrf(ThisAircraft.altitude, 7, 1, str_alt);
+  dtostrf(ThisAircraft.altitude,  7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
   snprintf_P ( Root_temp, 2300,
@@ -648,7 +664,7 @@ void handleRoot() {
     ,
     (SoC == NULL ? "NONE" : SoC->name),
     GNSS_name[hw_info.gnss],
-    (rf_chip == NULL ? "NONE" : rf_chip->name),
+    (rf_chip   == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
 #if defined(ENABLE_AHRS)
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
@@ -669,7 +685,9 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1600);
+  size_t size = 1700;
+
+  char *Input_temp = (char *) malloc(size);
   if (Input_temp == NULL) {
     return;
   }
@@ -715,9 +733,21 @@ void handleInput() {
       settings->power_save = server.arg(i).toInt();
     } else if (server.argName(i).equals("rfc")) {
       settings->freq_corr = server.arg(i).toInt();
+#if defined(USE_OGN_ENCRYPTION)
+    } else if (server.argName(i).equals("igc_key")) {
+      char buf[32 + 1];
+      server.arg(i).toCharArray(buf, sizeof(buf));
+      settings->igc_key[3] = strtoul(buf + 24, NULL, 16);
+      buf[24] = 0;
+      settings->igc_key[2] = strtoul(buf + 16, NULL, 16);
+      buf[16] = 0;
+      settings->igc_key[1] = strtoul(buf +  8, NULL, 16);
+      buf[ 8] = 0;
+      settings->igc_key[0] = strtoul(buf +  0, NULL, 16);
+#endif
     }
   }
-  snprintf_P ( Input_temp, 1600,
+  snprintf_P ( Input_temp, size,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -747,6 +777,7 @@ PSTR("<html>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
 <tr><th align=left>Power save</th><td align=right>%d</td></tr>\
 <tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
+<tr><th align=left>IGC key</th><td align=right>%08X%08X%08X%08X</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -759,7 +790,8 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
   settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
-  settings->power_save, settings->freq_corr
+  settings->power_save, settings->freq_corr,
+  settings->igc_key[0], settings->igc_key[1], settings->igc_key[2], settings->igc_key[3]
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );

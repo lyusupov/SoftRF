@@ -30,12 +30,7 @@
 #endif /* EXCLUDE_EEPROM */
 
 #define SOFTRF_EEPROM_MAGIC   0xBABADEDA
-#define SOFTRF_EEPROM_VERSION 0x0000005F
-
-#if defined(ARDUINO_ARCH_NRF52) && SOFTRF_EEPROM_VERSION == 0x0000005F
-#undef  SOFTRF_EEPROM_VERSION
-#define SOFTRF_EEPROM_VERSION (0x0000005F - 1)
-#endif
+#define SOFTRF_EEPROM_VERSION 0x00000060
 
 enum
 {
@@ -71,18 +66,15 @@ typedef struct Settings {
     uint8_t  json:2;
 
     uint8_t  power_save;
+
     int8_t   freq_corr; /* +/-, kHz */
-    uint8_t  resvd23456;
-    uint8_t  resvd7;
-    uint8_t  resvd8;
-    uint8_t  resvd9;
-    uint8_t  resvd10;
-    uint8_t  resvd11;
-    uint8_t  resvd12;
-    uint8_t  resvd13;
-    uint8_t  resvd14;
-    uint8_t  resvd15;
-    uint8_t  resvd16;
+    uint8_t  resvd2;
+    uint8_t  resvd3;
+    uint8_t  resvd4;
+
+    /* Use a key provided by (local) gliding contest organizer */
+    uint32_t igc_key[4];
+
 } __attribute__((packed)) settings_t;
 
 typedef struct EEPROM_S {

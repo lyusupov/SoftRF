@@ -883,6 +883,23 @@ void parseSettings(JsonObject& root)
     };
     eeprom_block.field.settings.freq_corr = fc;
   }
+#if defined(USE_OGN_ENCRYPTION)
+  JsonVariant key = root["igc_key"];
+  if (key.success()) {
+    char buf[32 + 1];
+
+    const char *key_s = key.as<char*>();
+    strncpy(buf, key_s, sizeof(buf));
+
+    eeprom_block.field.settings.igc_key[3] = strtoul(buf + 24, NULL, 16);
+    buf[24] = 0;
+    eeprom_block.field.settings.igc_key[2] = strtoul(buf + 16, NULL, 16);
+    buf[16] = 0;
+    eeprom_block.field.settings.igc_key[1] = strtoul(buf +  8, NULL, 16);
+    buf[ 8] = 0;
+    eeprom_block.field.settings.igc_key[0] = strtoul(buf +  0, NULL, 16);
+  }
+#endif
 }
 
 #endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */

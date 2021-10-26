@@ -283,6 +283,10 @@ static void RPi_setup()
   eeprom_block.field.settings.no_track      = false;
   eeprom_block.field.settings.power_save    = POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr     = 0;
+  eeprom_block.field.settings.igc_key[0]    = 0;
+  eeprom_block.field.settings.igc_key[1]    = 0;
+  eeprom_block.field.settings.igc_key[2]    = 0;
+  eeprom_block.field.settings.igc_key[3]    = 0;
 
   ui = &ui_settings;
 

@@ -168,6 +168,8 @@ struct rst_info {
 
 #define USE_TIME_SLOTS
 
+//#define USE_OGN_ENCRYPTION
+
 #if defined(CubeCell_GPS)
 #define USE_OLED                 //  +    kb
 #define EXCLUDE_OLED_049
