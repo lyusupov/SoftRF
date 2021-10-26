@@ -176,9 +176,8 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
   if (key[0] || key[1] || key[2] || key[3])
     ogn_tx_pkt.Packet.Header.Encrypted = 1;
   else
-#else
-    ogn_tx_pkt.Packet.Header.Encrypted = 0;
 #endif
+    ogn_tx_pkt.Packet.Header.Encrypted = 0;
 
   ogn_tx_pkt.Packet.calcAddrParity();
 
