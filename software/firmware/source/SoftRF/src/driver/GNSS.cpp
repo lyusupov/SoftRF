@@ -96,6 +96,12 @@ TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
 TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
 TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
 
+#if defined(USE_OGN_ENCRYPTION)
+/* Security and privacy */
+TinyGPSCustom S_Version      (gnss, "PSRFS", 1);
+TinyGPSCustom S_IGC_Key      (gnss, "PSRFS", 2);
+#endif /* USE_OGN_ENCRYPTION */
+
 #if defined(USE_SKYVIEW_CFG)
 #include "EPD.h"
 
@@ -1475,6 +1481,54 @@ void PickGNSSFix()
           }
         }
       }
+#if defined(USE_OGN_ENCRYPTION)
+      if (S_Version.isUpdated()) {
+        if (strncmp(S_Version.value(), "?", 1) == 0) {
+          char psrfs_buf[MAX_PSRFS_LEN];
+
+          snprintf_P(psrfs_buf, sizeof(psrfs_buf),
+              PSTR("$PSRFS,%d,%08X%08X%08X%08X*"),
+              PSRFS_VERSION, settings->igc_key[0], settings->igc_key[1],
+                             settings->igc_key[2], settings->igc_key[3]);
+
+          NMEA_add_checksum(psrfs_buf, sizeof(psrfs_buf) - strlen(psrfs_buf));
+
+          NMEA_Out(C_NMEA_Source, (byte *) psrfs_buf, strlen(psrfs_buf), false);
+
+        } else if (atoi(S_Version.value()) == PSRFS_VERSION) {
+          bool cfg_is_updated = false;
+
+          if (S_IGC_Key.isUpdated())
+          {
+            char buf[32 + 1];
+
+            strncpy(buf, S_IGC_Key.value(), sizeof(buf));
+
+            settings->igc_key[3] = strtoul(buf + 24, NULL, 16);
+            buf[24] = 0;
+            settings->igc_key[2] = strtoul(buf + 16, NULL, 16);
+            buf[16] = 0;
+            settings->igc_key[1] = strtoul(buf +  8, NULL, 16);
+            buf[ 8] = 0;
+            settings->igc_key[0] = strtoul(buf +  0, NULL, 16);
+
+            snprintf_P(buf, sizeof(buf),
+              PSTR("%08X%08X%08X%08X"),
+              settings->igc_key[0], settings->igc_key[1],
+              settings->igc_key[2], settings->igc_key[3]);
+
+            Serial.print(F("IGC Key = ")); Serial.println(buf);
+            cfg_is_updated = true;
+          }
+          if (cfg_is_updated) {
+            SoC->WDT_fini();
+            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
+            EEPROM_store();
+            nmea_cfg_restart();
+          }
+        }
+      }
+#endif /* USE_OGN_ENCRYPTION */
 #if defined(USE_SKYVIEW_CFG)
       if (V_Version.isUpdated()) {
         if (strncmp(V_Version.value(), "?", 1) == 0) {
