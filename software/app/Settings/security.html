@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SoftRF online 'security and privacy' settings tool</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<meta name=keywords content="SoftRF, NMEA, checksum, settings, javascript">
+<style type="text/css"><!--
+
+p.warn {
+    border-style: solid;
+    border-width: thin;
+    border-color: red;
+    padding:      0.5em;
+}
+
+--></style>
+<script><!--
+
+const version = 1;
+
+// Compute NMEA checksum and display it
+function UpdateChecksum()
+{
+  var cmd = "PSRFS,"
+      + version + ","
+      + document.getElementById("igc_key").value;
+
+
+  // Compute the checksum by XORing all the character values in the string.
+  var checksum = 0;
+  for(var i = 0; i < cmd.length; i++) {
+    checksum = checksum ^ cmd.charCodeAt(i);
+  }
+
+  // Convert it to hexadecimal (base-16, upper case, most significant nybble first).
+  var hexsum = Number(checksum).toString(16).toUpperCase();
+  if (hexsum.length < 2) {
+    hexsum = ("00" + hexsum).slice(-2);
+  }
+  
+  // Display the result
+  settext(document.getElementById("output"), "$" + cmd + "*" + hexsum);
+}
+
+// Helper function to set the contents of the SPAN to some text
+function settext(span, text)
+{
+  if (!span.hasChildNodes()) {
+    span.appendChild(span.ownerDocument.createTextNode(text));
+    return;
+  } else {
+    span.firstChild.nodeValue = text;
+  }
+}
+
+function SelIGCKey()
+{
+  var igc_key = document.getElementById("IGCKey");
+  document.getElementById("igc_key").value = igc_key.value;
+  UpdateChecksum();
+}
+
+function InitSettings()
+{
+//  document.getElementById("ver").value   = 1;
+  document.getElementById("igc_key").value = "00000000000000000000000000000000";
+
+  UpdateChecksum();
+}
+
+--></script>
+</head>
+<body  onload="InitSettings()">
+<h3 align=left>SoftRF online 'security and privacy' settings tool</h3>
+<b>NOTICE!</b> <small>Your browser should have support for JavaScript and DHTML (most modern browsers do).</small>
+<hr>
+<h1 align=center>Security settings</h1>
+<form>
+<table width=100%%>
+<tr>
+<th align=left>IGC key (HEX)</th>
+<td align=right>
+<INPUT type="text" id="IGCKey" maxlength="32" size="32" value="00000000000000000000000000000000" onchange="SelIGCKey()">
+</td>
+</tr>
+</table>
+<!-- IGC key:  --><input type="hidden" id="igc_key" size="32">
+<h3 align=center>NMEA control sentence:</h3>
+<hr>
+<h4 align=center><tt><span id="output" style="font-family: monospace;"></span><br><br></tt></h4>
+</form>
+</body>
+</html>
