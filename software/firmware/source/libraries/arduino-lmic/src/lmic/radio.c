@@ -134,23 +134,26 @@
 // #define RegAgcThresh3                              0x46 // common
 // #define RegPllHop                                  0x4B // common
 // #define RegTcxo                                    0x58 // common
-#define SX1272_RegTcxo                             0x58 // common
-#define SX1276_RegTcxo                             0x4B // common
-#define SX1272_RegPaDac                            0x5A // common
-#define SX1276_RegPaDac                            0x4D // common
+#define SX1272_RegTcxo                             0x58
+#define SX1276_RegTcxo                             0x4B
+#define SX1272_RegPaDac                            0x5A
+#define SX1276_RegPaDac                            0x4D
 // #define RegPll                                     0x5C // common
 // #define RegPllLowPn                                0x5E // common
 // #define RegFormerTemp                              0x6C // common
-// #define RegBitRateFrac                             0x70 // common
+#define SX1272_RegBitRateFrac                      0x70
+#define SX1276_RegBitRateFrac                      0x5D
 
 #ifdef CFG_sx1276_radio
 #define RADIO_VERSION               0x12
 #define RegPaDac                    SX1276_RegPaDac
 #define RegTcxo                     SX1276_RegTcxo
+#define RegBitRateFrac              SX1276_RegBitRateFrac
 #elif CFG_sx1272_radio
 #define RADIO_VERSION               0x22
 #define RegPaDac                    SX1272_RegPaDac
 #define RegTcxo                     SX1272_RegTcxo
+#define RegBitRateFrac              SX1272_RegBitRateFrac
 #endif
 
 // ----------------------------------------
@@ -502,11 +505,13 @@ static void txfsk () {
     case RF_BITRATE_38400:
       writeReg(FSKRegBitrateMsb, 0x03); // 38400 bps
       writeReg(FSKRegBitrateLsb, 0x41);
+      writeReg(RegBitRateFrac,   0x05);
       break;
     case RF_BITRATE_100KBPS:
     default:
-      writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
+      writeReg(FSKRegBitrateMsb, 0x01); // 100 kbps
       writeReg(FSKRegBitrateLsb, 0x40);
+      writeReg(RegBitRateFrac,   0x00);
       break;
     }
 

@@ -117,14 +117,15 @@
 // #define RegAgcThresh2                              0x45 // common
 // #define RegAgcThresh3                              0x46 // common
 // #define RegPllHop                                  0x4B // common
-#define SX1272_RegTcxo                             0x58 // common
-#define SX1276_RegTcxo                             0x4B // common
-#define SX1272_RegPaDac                            0x5A // common
-#define SX1276_RegPaDac                            0x4D // common
+#define SX1272_RegTcxo                             0x58
+#define SX1276_RegTcxo                             0x4B
+#define SX1272_RegPaDac                            0x5A
+#define SX1276_RegPaDac                            0x4D
 // #define RegPll                                     0x5C // common
 // #define RegPllLowPn                                0x5E // common
 // #define RegFormerTemp                              0x6C // common
-// #define RegBitRateFrac                             0x70 // common
+#define SX1272_RegBitRateFrac                      0x70
+#define SX1276_RegBitRateFrac                      0x5D
 
 // ----------------------------------------
 // SX1272 RegModemConfig1 settings
@@ -255,6 +256,7 @@
 #define RSSI_HF_CONST               157
 #define RegPaDac                    SX1276_RegPaDac
 #define RegTcxo                     SX1276_RegTcxo
+#define RegBitRateFrac              SX1276_RegBitRateFrac
 #define LORA_TXDONE_FIXUP           us2osticksRound(67)  // determined by timestamping DIO0 with SX1301 (mku/20190315)
 #define LORA_RXSTART_FIXUP          us2osticksRound(101) // determined by osc measurement GPIO vs with DIO5 (mode-ready) (mku/20190315)
 #define FSK_TXDONE_FIXUP            us2osticks(0) // XXX
@@ -286,6 +288,7 @@ static const u2_t LORA_RXDONE_FIXUP_500[] = {
 #define RSSI_HF_CONST               139
 #define RegPaDac                    SX1272_RegPaDac
 #define RegTcxo                     SX1272_RegTcxo
+#define RegBitRateFrac              SX1272_RegBitRateFrac
 #define LORA_TXDONE_FIXUP           us2osticks(43) // XXX
 #define LORA_RXSTART_FIXUP          us2osticks(0) // XXX
 #define FSK_TXDONE_FIXUP            us2osticks(0) // XXX
@@ -606,11 +609,13 @@ static void txfsk (void) {
     case RF_BITRATE_38400:
       writeReg(FSKRegBitrateMsb, 0x03); // 38400 bps
       writeReg(FSKRegBitrateLsb, 0x41);
+      writeReg(RegBitRateFrac,   0x05);
       break;
     case RF_BITRATE_100KBPS:
     default:
-      writeReg(FSKRegBitrateMsb, 0x01); // 100kbps
+      writeReg(FSKRegBitrateMsb, 0x01); // 100 kbps
       writeReg(FSKRegBitrateLsb, 0x40);
+      writeReg(RegBitRateFrac,   0x00);
       break;
     }
 
