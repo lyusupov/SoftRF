@@ -89,7 +89,7 @@ For Linux and Mac OS X users, you will need a few tools installed on your comput
 * [dfu-util](http://dfu-util.sourceforge.net/) 0.8 or newer - Used to load and run the stock HackRF firmware from RAM. dfu-util 0.8 is recommended, as it is the most extensively tested with the HackRF hardware and build software.
 * [hackrf](https://github.com/greatscottgadgets/hackrf) - All you need is the host tools, specifically, hackrf_spiflash.
 
-### Backup of factory firware
+### Backup of factory firmware
 
 ```
 $ hackrf_spiflash -r -v HackRF_factory_firmware.bin
