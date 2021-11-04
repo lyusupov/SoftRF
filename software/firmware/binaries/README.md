@@ -80,6 +80,8 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
 
+<br>
+
 ## LPC4320
 
 For Linux and Mac OS X users, you will need a few tools installed on your computer before you begin:
@@ -104,7 +106,7 @@ $ dfu-util -D hackrf_one_usb.dfu --reset
 $ hackrf_spiflash -w -v SoftRF-firmware-v1.0-LPC43.bin
 ```
 
-## Restoring HackRF firmware
+### Restoring HackRF firmware
 
 Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
 
