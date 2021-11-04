@@ -6,6 +6,7 @@
 - [CC1352R](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures#initial-installation)
 - [CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell) (ASR650x)
 - [nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)
+- [LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)
 
 ## NodeMCU
 
@@ -78,3 +79,36 @@ The Bootloader is capable to self-program an application firmware into the devic
 <br>
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
+
+## LPC4320
+
+For Linux and Mac OS X users, you will need a few tools installed on your computer before you begin:
+
+* [dfu-util](http://dfu-util.sourceforge.net/) 0.8 or newer - Used to load and run the stock HackRF firmware from RAM. dfu-util 0.8 is recommended, as it is the most extensively tested with the HackRF hardware and build software.
+* [hackrf](https://github.com/greatscottgadgets/hackrf) - All you need is the host tools, specifically, hackrf_spiflash.
+
+### Backup of factory firware
+
+```
+$ hackrf_spiflash -r -v HackRF_factory_firmware.bin
+$ ls -la HackRF_factory_firmware.bin
+-rw-r--r-- 1 pi pi 1048576 Nov  4 10:18 HackRF_factory_firmware.bin
+```
+
+### Flashing
+
+Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
+
+```
+$ dfu-util -D hackrf_one_usb.dfu --reset
+$ hackrf_spiflash -w -v SoftRF-firmware-v1.0-LPC43.bin
+```
+
+## Restoring HackRF firmware
+
+Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
+
+```
+$ dfu-util -D hackrf_one_usb.dfu --reset
+$ hackrf_spiflash -w -v HackRF_factory_firmware.bin
+```
