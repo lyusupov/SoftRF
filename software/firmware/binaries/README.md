@@ -92,7 +92,12 @@ For Linux and Mac OS X users, you will need a few tools installed on your comput
 ### Backup of factory firmware
 
 ```
-$ hackrf_spiflash -r -v HackRF_factory_firmware.bin
+$ hackrf_spiflash -v -r HackRF_factory_firmware.bin
+Reading 256 bytes from 0x000000.
+Reading 256 bytes from 0x000100.
+
+< ... skipped ... >
+
 $ ls -la HackRF_factory_firmware.bin
 -rw-r--r-- 1 pi pi 1048576 Nov  4 10:18 HackRF_factory_firmware.bin
 ```
@@ -103,7 +108,7 @@ Plug the HackRF into USB power while holding down the DFU button (the button clo
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
-$ hackrf_spiflash -w -v SoftRF-firmware-v1.0-LPC43.bin
+$ hackrf_spiflash -v -w SoftRF-firmware-v1.0-LPC43.bin
 ```
 
 ### Restoring HackRF firmware
@@ -112,5 +117,5 @@ Plug the HackRF into USB power while holding down the DFU button (the button clo
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
-$ hackrf_spiflash -w -v HackRF_factory_firmware.bin
+$ hackrf_spiflash -v -w HackRF_factory_firmware.bin
 ```

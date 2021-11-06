@@ -72,3 +72,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * SdFat library is developed by **Bill Greiman**
  * Arduino MIDI library is developed by **Francois Best**
  * Arduino uCDB library is developed by **Ioulianos Kakoulidis**
+ * libmodes library is developed by **Thomas Watson**
