@@ -34,7 +34,7 @@
 You might also need to install:
 * a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) or
 * [CH9102F driver](https://github.com/Xinyuan-LilyGO/CH9102_Driver)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;prior to first use of the ESP32 tool ;
+prior to first use of the ESP32 tool ;
 2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ;
 
 3. Select COM port, enter partition files and addresses, select options ;<br>

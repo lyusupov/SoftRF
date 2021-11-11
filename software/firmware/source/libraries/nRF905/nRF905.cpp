@@ -10,7 +10,7 @@
 #if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && \
     !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(ARDUINO_ARCH_STM32)  && !defined(ARDUINO_ARCH_NRF52)  && \
-    !defined(__ASR6501__)
+    !defined(__ASR6501__)         && !defined(HACKRF_ONE)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -27,11 +27,13 @@
 #define _BV(bit) (1 << (bit))
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else
-#if !defined(RASPBERRY_PI)
-#include "nRF905_spi.h"
-#else
+#if defined(RASPBERRY_PI)
 #define SPI SPI0
 #include <raspi/raspi.h>
+#elif defined(HACKRF_ONE)
+#include <compat.h>
+#else
+#include "nRF905_spi.h"
 #endif /* RASPBERRY_PI */
 #endif
 #include "nRF905.h"
@@ -39,7 +41,7 @@
 #include "nRF905_defs.h"
 #include "nRF905_types.h"
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(HACKRF_ONE)
 #define ARDUINO
 #endif /* RASPBERRY_PI */
 

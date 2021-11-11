@@ -24,7 +24,7 @@
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -48,7 +48,7 @@
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -62,7 +62,7 @@
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -174,7 +174,32 @@
 #else /* ARDUINO */
 // Non-Arduino pins
 
-#if !defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI)
+
+#include "bcm2835.h"
+
+#define TRX_EN    (RPI_V2_GPIO_P1_18)  // Enable/standby pin
+#define PWR_MODE  (RPI_V2_GPIO_P1_11)  // Power mode pin
+#define TX_EN     (RPI_V2_GPIO_P1_07)  // TX / RX mode pin
+#define CS_N      (RPI_V2_GPIO_P1_22)  // SPI slave select pin
+
+#define CD                        (24)  // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY          (25)
+
+// Address match pin (not used by library)
+//#define AM        (7)
+
+#elif defined(HACKRF_ONE)
+
+#define TRX_EN    (0)  // Enable/standby pin
+#define PWR_MODE  (0)  // Power mode pin
+#define TX_EN     (0)  // TX / RX mode pin
+#define CS_N      (0)  // SPI slave select pin
+
+#define CD        (0)  // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    (0)
+
+#else
 
 // Enable/standby pin
 #define CFG_TRX_EN_PORT		D
@@ -206,21 +231,6 @@
 // SPI slave select pin
 #define CFG_CSN_PORT      B
 #define CFG_CSN_BIT       2
-
-#else /* RASPBERRY_PI */
-
-#include "bcm2835.h"
-
-#define TRX_EN    (RPI_V2_GPIO_P1_18)  // Enable/standby pin
-#define PWR_MODE  (RPI_V2_GPIO_P1_11)  // Power mode pin
-#define TX_EN     (RPI_V2_GPIO_P1_07)  // TX / RX mode pin
-#define CS_N      (RPI_V2_GPIO_P1_22)  // SPI slave select pin
-
-#define CD			  (24)	// Carrier detect pin (for collision avoidance, if enabled)
-#define DREADY		(25)
-
-// Address match pin (not used by library)
-//#define AM        (7)
 
 #endif /* RASPBERRY_PI */
 
@@ -269,7 +279,7 @@
 // Frequency
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -281,7 +291,7 @@
 // NRF905_BAND_915
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -327,7 +337,7 @@
 // NRF905_ADDR_SIZE_4
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -337,7 +347,7 @@
 // Payload size (1 - 32)
 #if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
     defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)
+    defined(__ASR6501__)         || defined(HACKRF_ONE)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

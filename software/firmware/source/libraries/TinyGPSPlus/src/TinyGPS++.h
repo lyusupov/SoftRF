@@ -27,10 +27,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #if defined(ARDUINO) && ARDUINO >= 100 && !defined(RASPBERRY_PI)
 #include "Arduino.h"
 #else
-#if !defined(RASPBERRY_PI)
-#include "WProgram.h"
-#else
+#if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
+#elif defined(HACKRF_ONE)
+#include <compat.h>
+#else
+#include "WProgram.h"
 #endif /* RASPBERRY_PI */
 #endif
 #include <limits.h>

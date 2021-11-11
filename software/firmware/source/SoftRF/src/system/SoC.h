@@ -29,6 +29,7 @@
 #include "../platform/STM32.h"
 #include "../platform/PSoC4.h"
 #include "../platform/nRF52.h"
+#include "../platform/LPC43.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -91,7 +92,8 @@ enum
 	SOC_CC13XX,
 	SOC_STM32,
 	SOC_PSOC4,
-	SOC_NRF52
+	SOC_NRF52,
+	SOC_LPC43
 };
 
 extern const SoC_ops_t *SoC;

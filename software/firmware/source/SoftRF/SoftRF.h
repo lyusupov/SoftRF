@@ -31,6 +31,10 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
+#if defined(HACKRF_ONE)
+#include <compat.h>
+#endif /* HACKRF_ONE */
+
 #define SOFTRF_FIRMWARE_VERSION "1.0"
 #define SOFTRF_IDENT            "SoftRF-"
 
