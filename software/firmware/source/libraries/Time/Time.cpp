@@ -30,10 +30,12 @@
 #if ARDUINO >= 100
 #include <Arduino.h> 
 #else
-#if !defined(RASPBERRY_PI)
-#include <WProgram.h>
-#else
+#if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
+#elif defined(HACKRF_ONE)
+#include <compat.h>
+#else
+#include <WProgram.h>
 #endif /* RASPBERRY_PI */
 #endif
 

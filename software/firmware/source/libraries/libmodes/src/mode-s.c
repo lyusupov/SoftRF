@@ -1,23 +1,67 @@
+/* Mode1090, a Mode S messages decoder.
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (C) 2012 by Salvatore Sanfilippo <antirez@gmail.com>
+ * Copyright (C) 2017, Thomas Watson
+ * Copyright (C) 2021, Linar Yusupov
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  *  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *  *  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include "mode-s.h"
+
+#include <stdio.h>
 
 #define MODE_S_PREAMBLE_US 8       // microseconds
 #define MODE_S_LONG_MSG_BITS 112
 #define MODE_S_SHORT_MSG_BITS 56
 #define MODE_S_FULL_LEN (MODE_S_PREAMBLE_US+MODE_S_LONG_MSG_BITS)
 
+#ifndef HACKRF_ONE
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
 static uint16_t maglut[129*129*2];
 static int maglut_initialized = 0;
+#else
+#include <compat.h>
+#define MODE_S_ICAO_CACHE_TTL 10   // Time to live of cached addresses.
+
+extern uint16_t maglut[129*129];
+#endif
 
 // =============================== Initialization ===========================
 
 void mode_s_init(mode_s_t *self) {
-  int i, q;
 
   self->fix_errors = 1;
   self->check_crc = 1;
   self->aggressive = 0;
+  self->aircrafts = NULL;
+  self->interactive_ttl = MODE_S_INTERACTIVE_TTL;
 
   // Allocate the ICAO address cache. We use two uint32_t for every entry
   // because it's a addr / timestamp pair for every entry
@@ -29,6 +73,10 @@ void mode_s_init(mode_s_t *self) {
   // We scale to 0-255 range multiplying by 1.4 in order to ensure that every
   // different I/Q pair will result in a different magnitude value, not losing
   // any resolution.
+
+#ifndef HACKRF_ONE
+  int i, q;
+
   if (!maglut_initialized) {
     for (i = 0; i <= 128; i++) {
       for (q = 0; q <= 128; q++) {
@@ -37,6 +85,7 @@ void mode_s_init(mode_s_t *self) {
     }
     maglut_initialized = 1;
   }
+#endif
 }
 
 // ===================== Mode S detection and decoding  =====================
@@ -737,4 +786,336 @@ good_preamble:
       use_correction = 0;
     }
   }
+}
+
+/* ============================= Utility functions ========================== */
+
+static ms_time_t mstime(void) {
+#ifndef HACKRF_ONE
+    struct timeval tv;
+    ms_time_t mst;
+
+    gettimeofday(&tv, NULL);
+    mst = ((ms_time_t)tv.tv_sec)*1000;
+    mst += tv.tv_usec/1000;
+    return mst;
+#else
+    return millis();
+#endif
+}
+
+/* Capability table. */
+char *ca_str[8] = {
+    /* 0 */ "Level 1 (Survillance Only)",
+    /* 1 */ "Level 2 (DF0,4,5,11)",
+    /* 2 */ "Level 3 (DF0,4,5,11,20,21)",
+    /* 3 */ "Level 4 (DF0,4,5,11,20,21,24)",
+    /* 4 */ "Level 2+3+4 (DF0,4,5,11,20,21,24,code7 - is on ground)",
+    /* 5 */ "Level 2+3+4 (DF0,4,5,11,20,21,24,code7 - is on airborne)",
+    /* 6 */ "Level 2+3+4 (DF0,4,5,11,20,21,24,code7)",
+    /* 7 */ "Level 7 ???"
+};
+
+/* Flight status table. */
+char *fs_str[8] = {
+    /* 0 */ "Normal, Airborne",
+    /* 1 */ "Normal, On the ground",
+    /* 2 */ "ALERT,  Airborne",
+    /* 3 */ "ALERT,  On the ground",
+    /* 4 */ "ALERT & Special Position Identification. Airborne or Ground",
+    /* 5 */ "Special Position Identification. Airborne or Ground",
+    /* 6 */ "Value 6 is not assigned",
+    /* 7 */ "Value 7 is not assigned"
+};
+
+/* ME message type to description table. */
+char *me_str[] = {
+};
+
+char *getMEDescription(int metype, int mesub) {
+    char *mename = "Unknown";
+
+    if (metype >= 1 && metype <= 4)
+        mename = "Aircraft Identification and Category";
+    else if (metype >= 5 && metype <= 8)
+        mename = "Surface Position";
+    else if (metype >= 9 && metype <= 18)
+        mename = "Airborne Position (Baro Altitude)";
+    else if (metype == 19 && mesub >=1 && mesub <= 4)
+        mename = "Airborne Velocity";
+    else if (metype >= 20 && metype <= 22)
+        mename = "Airborne Position (GNSS Height)";
+    else if (metype == 23 && mesub == 0)
+        mename = "Test Message";
+    else if (metype == 24 && mesub == 1)
+        mename = "Surface System Status";
+    else if (metype == 28 && mesub == 1)
+        mename = "Extended Squitter Aircraft Status (Emergency)";
+    else if (metype == 28 && mesub == 2)
+        mename = "Extended Squitter Aircraft Status (1090ES TCAS RA)";
+    else if (metype == 29 && (mesub == 0 || mesub == 1))
+        mename = "Target State and Status Message";
+    else if (metype == 31 && (mesub == 0 || mesub == 1))
+        mename = "Aircraft Operational Status Message";
+    return mename;
+}
+
+/* ========================= Interactive mode =============================== */
+
+/* Return a new aircraft structure for the interactive mode linked list
+ * of aircrafts. */
+struct aircraft *interactiveCreateAircraft(uint32_t addr) {
+    struct aircraft *a = malloc(sizeof(*a));
+
+    a->addr = addr;
+    snprintf(a->hexaddr,sizeof(a->hexaddr),"%06x",(int)addr);
+    a->flight[0] = '\0';
+    a->altitude = 0;
+    a->speed = 0;
+    a->track = 0;
+    a->odd_cprlat = 0;
+    a->odd_cprlon = 0;
+    a->odd_cprtime = 0;
+    a->even_cprlat = 0;
+    a->even_cprlon = 0;
+    a->even_cprtime = 0;
+    a->lat = 0;
+    a->lon = 0;
+    a->seen = time(NULL);
+    a->messages = 0;
+    a->next = NULL;
+    return a;
+}
+
+/* Return the aircraft with the specified address, or NULL if no aircraft
+ * exists with this address. */
+struct aircraft *interactiveFindAircraft(mode_s_t *self, uint32_t addr) {
+    struct aircraft *a = self->aircrafts;
+
+    while(a) {
+        if (a->addr == addr) return a;
+        a = a->next;
+    }
+    return NULL;
+}
+
+/* Always positive MOD operation, used for CPR decoding. */
+int cprModFunction(int a, int b) {
+    int res = a % b;
+    if (res < 0) res += b;
+    return res;
+}
+
+/* The NL function uses the precomputed table from 1090-WP-9-14 */
+int cprNLFunction(double lat) {
+    if (lat < 0) lat = -lat; /* Table is simmetric about the equator. */
+    if (lat < 10.47047130) return 59;
+    if (lat < 14.82817437) return 58;
+    if (lat < 18.18626357) return 57;
+    if (lat < 21.02939493) return 56;
+    if (lat < 23.54504487) return 55;
+    if (lat < 25.82924707) return 54;
+    if (lat < 27.93898710) return 53;
+    if (lat < 29.91135686) return 52;
+    if (lat < 31.77209708) return 51;
+    if (lat < 33.53993436) return 50;
+    if (lat < 35.22899598) return 49;
+    if (lat < 36.85025108) return 48;
+    if (lat < 38.41241892) return 47;
+    if (lat < 39.92256684) return 46;
+    if (lat < 41.38651832) return 45;
+    if (lat < 42.80914012) return 44;
+    if (lat < 44.19454951) return 43;
+    if (lat < 45.54626723) return 42;
+    if (lat < 46.86733252) return 41;
+    if (lat < 48.16039128) return 40;
+    if (lat < 49.42776439) return 39;
+    if (lat < 50.67150166) return 38;
+    if (lat < 51.89342469) return 37;
+    if (lat < 53.09516153) return 36;
+    if (lat < 54.27817472) return 35;
+    if (lat < 55.44378444) return 34;
+    if (lat < 56.59318756) return 33;
+    if (lat < 57.72747354) return 32;
+    if (lat < 58.84763776) return 31;
+    if (lat < 59.95459277) return 30;
+    if (lat < 61.04917774) return 29;
+    if (lat < 62.13216659) return 28;
+    if (lat < 63.20427479) return 27;
+    if (lat < 64.26616523) return 26;
+    if (lat < 65.31845310) return 25;
+    if (lat < 66.36171008) return 24;
+    if (lat < 67.39646774) return 23;
+    if (lat < 68.42322022) return 22;
+    if (lat < 69.44242631) return 21;
+    if (lat < 70.45451075) return 20;
+    if (lat < 71.45986473) return 19;
+    if (lat < 72.45884545) return 18;
+    if (lat < 73.45177442) return 17;
+    if (lat < 74.43893416) return 16;
+    if (lat < 75.42056257) return 15;
+    if (lat < 76.39684391) return 14;
+    if (lat < 77.36789461) return 13;
+    if (lat < 78.33374083) return 12;
+    if (lat < 79.29428225) return 11;
+    if (lat < 80.24923213) return 10;
+    if (lat < 81.19801349) return 9;
+    if (lat < 82.13956981) return 8;
+    if (lat < 83.07199445) return 7;
+    if (lat < 83.99173563) return 6;
+    if (lat < 84.89166191) return 5;
+    if (lat < 85.75541621) return 4;
+    if (lat < 86.53536998) return 3;
+    if (lat < 87.00000000) return 2;
+    else return 1;
+}
+
+int cprNFunction(double lat, int isodd) {
+    int nl = cprNLFunction(lat) - isodd;
+    if (nl < 1) nl = 1;
+    return nl;
+}
+
+double cprDlonFunction(double lat, int isodd) {
+    return 360.0 / cprNFunction(lat, isodd);
+}
+
+/* This algorithm comes from:
+ * http://www.lll.lu/~edward/edward/adsb/DecodingADSBposition.html.
+ *
+ *
+ * A few remarks:
+ * 1) 131072 is 2^17 since CPR latitude and longitude are encoded in 17 bits.
+ * 2) We assume that we always received the odd packet as last packet for
+ *    simplicity. This may provide a position that is less fresh of a few
+ *    seconds.
+ */
+void decodeCPR(struct aircraft *a) {
+    const double AirDlat0 = 360.0 / 60;
+    const double AirDlat1 = 360.0 / 59;
+    double lat0 = a->even_cprlat;
+    double lat1 = a->odd_cprlat;
+    double lon0 = a->even_cprlon;
+    double lon1 = a->odd_cprlon;
+
+    /* Compute the Latitude Index "j" */
+    int j = floor(((59*lat0 - 60*lat1) / 131072) + 0.5);
+    double rlat0 = AirDlat0 * (cprModFunction(j,60) + lat0 / 131072);
+    double rlat1 = AirDlat1 * (cprModFunction(j,59) + lat1 / 131072);
+
+    if (rlat0 >= 270) rlat0 -= 360;
+    if (rlat1 >= 270) rlat1 -= 360;
+
+    /* Check that both are in the same latitude zone, or abort. */
+    if (cprNLFunction(rlat0) != cprNLFunction(rlat1)) return;
+
+    /* Compute ni and the longitude index m */
+    if (a->even_cprtime > a->odd_cprtime) {
+        /* Use even packet. */
+        int ni = cprNFunction(rlat0,0);
+        int m = floor((((lon0 * (cprNLFunction(rlat0)-1)) -
+                        (lon1 * cprNLFunction(rlat0))) / 131072) + 0.5);
+        a->lon = cprDlonFunction(rlat0,0) * (cprModFunction(m,ni)+lon0/131072);
+        a->lat = rlat0;
+    } else {
+        /* Use odd packet. */
+        int ni = cprNFunction(rlat1,1);
+        int m = floor((((lon0 * (cprNLFunction(rlat1)-1)) -
+                        (lon1 * cprNLFunction(rlat1))) / 131072.0) + 0.5);
+        a->lon = cprDlonFunction(rlat1,1) * (cprModFunction(m,ni)+lon1/131072);
+        a->lat = rlat1;
+    }
+    if (a->lon > 180) a->lon -= 360;
+}
+
+/* Receive new messages and populate the interactive mode with more info. */
+struct aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm) {
+    uint32_t addr;
+    struct aircraft *a, *aux;
+
+    if (self->check_crc && mm->crcok == 0) return NULL;
+    addr = (mm->aa1 << 16) | (mm->aa2 << 8) | mm->aa3;
+
+    /* Loookup our aircraft or create a new one. */
+    a = interactiveFindAircraft(self, addr);
+    if (!a) {
+        a = interactiveCreateAircraft(addr);
+        a->next = self->aircrafts;
+        self->aircrafts = a;
+    } else {
+        /* If it is an already known aircraft, move it on head
+         * so we keep aircrafts ordered by received message time.
+         *
+         * However move it on head only if at least one second elapsed
+         * since the aircraft that is currently on head sent a message,
+         * othewise with multiple aircrafts at the same time we have an
+         * useless shuffle of positions on the screen. */
+        if (0 && self->aircrafts != a && (time(NULL) - a->seen) >= 1) {
+            aux = self->aircrafts;
+            while(aux->next != a) aux = aux->next;
+            /* Now we are a node before the aircraft to remove. */
+            aux->next = aux->next->next; /* removed. */
+            /* Add on head */
+            a->next = self->aircrafts;
+            self->aircrafts = a;
+        }
+    }
+
+    a->seen = time(NULL);
+    a->messages++;
+
+    if (mm->msgtype == 0 || mm->msgtype == 4 || mm->msgtype == 20) {
+        a->altitude = mm->altitude;
+    } else if (mm->msgtype == 17) {
+        if (mm->metype >= 1 && mm->metype <= 4) {
+            memcpy(a->flight, mm->flight, sizeof(a->flight));
+        } else if (mm->metype >= 9 && mm->metype <= 18) {
+            a->altitude = mm->altitude;
+            if (mm->fflag) {
+                a->odd_cprlat = mm->raw_latitude;
+                a->odd_cprlon = mm->raw_longitude;
+                a->odd_cprtime = mstime();
+            } else {
+                a->even_cprlat = mm->raw_latitude;
+                a->even_cprlon = mm->raw_longitude;
+                a->even_cprtime = mstime();
+            }
+            /* If the two data is less than 10 seconds apart, compute
+             * the position. */
+            if (abs((long) (a->even_cprtime - a->odd_cprtime)) <= 10000) {
+                decodeCPR(a);
+            }
+        } else if (mm->metype == 19) {
+            if (mm->mesub == 1 || mm->mesub == 2) {
+                a->speed = mm->velocity;
+                a->track = mm->heading;
+            }
+        }
+    }
+    return a;
+}
+
+/* When in interactive mode If we don't receive new nessages within
+ * MODES_INTERACTIVE_TTL seconds we remove the aircraft from the list. */
+void interactiveRemoveStaleAircrafts(mode_s_t *self) {
+    struct aircraft *a = self->aircrafts;
+    struct aircraft *prev = NULL;
+    time_t now = time(NULL);
+
+    while(a) {
+        if ((now - a->seen) > self->interactive_ttl) {
+            struct aircraft *next = a->next;
+            /* Remove the element from the linked list, with care
+             * if we are removing the first element. */
+            free(a);
+            if (!prev)
+                self->aircrafts = next;
+            else
+                prev->next = next;
+            a = next;
+        } else {
+            prev = a;
+            a = a->next;
+        }
+    }
 }

@@ -1,3 +1,37 @@
+/* Mode1090, a Mode S messages decoder.
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (C) 2012 by Salvatore Sanfilippo <antirez@gmail.com>
+ * Copyright (C) 2017, Thomas Watson
+ * Copyright (C) 2021, Linar Yusupov
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  *  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *  *  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifndef __MODE_S_DECODER_H
 #define __MODE_S_DECODER_H
 
@@ -6,12 +40,52 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <math.h>
-#include <time.h>
 
-#define MODE_S_ICAO_CACHE_LEN 256 // Power of two required
-#define MODE_S_LONG_MSG_BYTES (112/8)
-#define MODE_S_UNIT_FEET 0
-#define MODE_S_UNIT_METERS 1
+#define MODE_S_ICAO_CACHE_LEN  64 // Power of two required
+#define MODE_S_LONG_MSG_BYTES  (112/8)
+#define MODE_S_UNIT_FEET       0
+#define MODE_S_UNIT_METERS     1
+
+#define MODE_S_DEFAULT_RATE    2000000
+#define MODE_S_DEFAULT_FREQ    1090000000
+
+#ifndef HACKRF_ONE
+#include <sys/time.h>
+
+#define MODE_S_INTERACTIVE_TTL 60 /* TTL before being removed */
+typedef long long ms_time_t;
+
+#else
+#include <TimeLib.h>
+#undef time
+extern time_t now_C();
+#define time(x) now_C()
+
+#define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
+
+typedef unsigned long ms_time_t;
+#endif
+
+/* Structure used to describe an aircraft in iteractive mode. */
+struct aircraft {
+    uint32_t addr;      /* ICAO address */
+    char hexaddr[7];    /* Printable ICAO address */
+    char flight[9];     /* Flight number */
+    int altitude;       /* Altitude */
+    int speed;          /* Velocity computed from EW and NS components. */
+    int track;          /* Angle of flight. */
+    time_t seen;        /* Time at which the last packet was received. */
+    long messages;      /* Number of Mode S messages received. */
+    /* Encoded latitude and longitude as extracted by odd and even
+     * CPR encoded messages. */
+    int odd_cprlat;
+    int odd_cprlon;
+    int even_cprlat;
+    int even_cprlon;
+    double lat, lon;    /* Coordinated obtained from CPR encoded data. */
+    ms_time_t odd_cprtime, even_cprtime;
+    struct aircraft *next; /* Next aircraft in our linked list. */
+};
 
 // Program state
 typedef struct {
@@ -22,6 +96,10 @@ typedef struct {
   int fix_errors; // Single bit error correction if true
   int aggressive; // Aggressive detection algorithm
   int check_crc;  // Only display messages with good CRC
+
+  /* Interactive mode */
+  struct aircraft *aircrafts;
+  int interactive_ttl; /* Interactive mode: TTL before deletion. */
 } mode_s_t;
 
 // The struct we use to store information about a decoded message
@@ -75,5 +153,8 @@ void mode_s_init(mode_s_t *self);
 void mode_s_compute_magnitude_vector(unsigned char *data, uint16_t *mag, uint32_t size);
 void mode_s_detect(mode_s_t *self, uint16_t *mag, uint32_t maglen, mode_s_callback_t);
 void mode_s_decode(mode_s_t *self, struct mode_s_msg *mm, unsigned char *msg);
+
+struct aircraft* interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm);
+void interactiveRemoveStaleAircrafts(mode_s_t *self);
 
 #endif
