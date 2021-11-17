@@ -36,6 +36,8 @@ byte SoC_setup()
   SoC = &PSoC4_ops;
 #elif defined(ARDUINO_ARCH_NRF52)
   SoC = &nRF52_ops;
+#elif defined(HACKRF_ONE)
+  SoC = &LPC43_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

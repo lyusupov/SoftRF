@@ -38,8 +38,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <math.h>
+#include <sys/time.h>
 
 #define MODE_S_ICAO_CACHE_LEN  64 // Power of two required
 #define MODE_S_LONG_MSG_BYTES  (112/8)
@@ -49,29 +49,42 @@
 #define MODE_S_DEFAULT_RATE    2000000
 #define MODE_S_DEFAULT_FREQ    1090000000
 
-#ifndef HACKRF_ONE
-#include <sys/time.h>
+#if !defined(HACKRF_ONE) && !defined(ARDUINO)
+#include <unistd.h>
 
 #define MODE_S_INTERACTIVE_TTL 60 /* TTL before being removed */
 typedef long long ms_time_t;
 
 #else
 #include <TimeLib.h>
+
+#ifdef HACKRF_ONE
 #undef time
 extern time_t now_C();
 #define time(x) now_C()
+#endif
 
+#define USE_BYTE_MAG
 #define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
 
 typedef unsigned long ms_time_t;
 #endif
 
+#if defined(USE_BYTE_MAG)
+typedef uint8_t mag_t;
+#else
+typedef uint16_t mag_t;
+#endif
+
+
 /* Structure used to describe an aircraft in iteractive mode. */
-struct aircraft {
+struct mode_s_aircraft {
     uint32_t addr;      /* ICAO address */
+    int aircraft_type;
     char hexaddr[7];    /* Printable ICAO address */
     char flight[9];     /* Flight number */
     int altitude;       /* Altitude */
+    int unit;           /* meters or feet */
     int speed;          /* Velocity computed from EW and NS components. */
     int track;          /* Angle of flight. */
     time_t seen;        /* Time at which the last packet was received. */
@@ -84,7 +97,7 @@ struct aircraft {
     int even_cprlon;
     double lat, lon;    /* Coordinated obtained from CPR encoded data. */
     ms_time_t odd_cprtime, even_cprtime;
-    struct aircraft *next; /* Next aircraft in our linked list. */
+    struct mode_s_aircraft *next; /* Next aircraft in our linked list. */
 };
 
 // Program state
@@ -98,7 +111,7 @@ typedef struct {
   int check_crc;  // Only display messages with good CRC
 
   /* Interactive mode */
-  struct aircraft *aircrafts;
+  struct mode_s_aircraft *aircrafts;
   int interactive_ttl; /* Interactive mode: TTL before deletion. */
 } mode_s_t;
 
@@ -150,11 +163,11 @@ struct mode_s_msg {
 typedef void (*mode_s_callback_t)(mode_s_t *self, struct mode_s_msg *mm);
 
 void mode_s_init(mode_s_t *self);
-void mode_s_compute_magnitude_vector(unsigned char *data, uint16_t *mag, uint32_t size);
-void mode_s_detect(mode_s_t *self, uint16_t *mag, uint32_t maglen, mode_s_callback_t);
+void mode_s_compute_magnitude_vector(unsigned char *data, mag_t *mag, uint32_t size);
+void mode_s_detect(mode_s_t *self, mag_t *mag, uint32_t maglen, mode_s_callback_t);
 void mode_s_decode(mode_s_t *self, struct mode_s_msg *mm, unsigned char *msg);
 
-struct aircraft* interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm);
+struct mode_s_aircraft* interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm);
 void interactiveRemoveStaleAircrafts(mode_s_t *self);
 
 #endif

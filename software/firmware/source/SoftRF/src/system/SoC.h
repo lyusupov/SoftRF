@@ -118,6 +118,9 @@ extern const SoC_ops_t PSoC4_ops;
 #if defined(ARDUINO_ARCH_NRF52)
 extern const SoC_ops_t nRF52_ops;
 #endif
+#if defined(HACKRF_ONE)
+extern const SoC_ops_t LPC43_ops;
+#endif
 
 byte SoC_setup(void);
 void SoC_fini(int);

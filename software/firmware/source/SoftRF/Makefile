@@ -79,6 +79,7 @@ DUMP978_PATH  = $(LIB_PATH)/dump978/src
 GFX_PATH      = $(LIB_PATH)/Adafruit-GFX-Library
 U8G2_PATH     = $(LIB_PATH)/U8g2_for_Adafruit_GFX/src
 EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
+MODES_PATH    = $(LIB_PATH)/libmodes/src
 
 ifdef BASICMAC
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -92,7 +93,8 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(BCMLIB_PATH) -I$(MAVLINK_PATH) -I$(AIRCRAFT_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
-                -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)
+                -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
+                -I$(MODES_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -101,7 +103,8 @@ PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
                  $(PRORAD_PATH)/P3I.cpp    \
                  $(PRORAD_PATH)/FANET.cpp  \
                  $(PRORAD_PATH)/OGNTP.cpp  \
-                 $(PRORAD_PATH)/UAT978.cpp
+                 $(PRORAD_PATH)/UAT978.cpp \
+                 $(PRORAD_PATH)/ES1090.cpp
 
 PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
                  $(PRODAT_PATH)/GDL90.cpp   \
@@ -117,7 +120,8 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/STM32.cpp    \
                  $(PLATFORM_PATH)/PSoC4.cpp    \
                  $(PLATFORM_PATH)/CC13XX.cpp   \
-                 $(PLATFORM_PATH)/nRF52.cpp
+                 $(PLATFORM_PATH)/nRF52.cpp    \
+                 $(PLATFORM_PATH)/LPC43.cpp
 
 DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/GNSS.cpp      \
@@ -164,6 +168,8 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(TIMELIB_PATH)/Time.o \
                  $(NRF905_PATH)/nRF905.o \
                  $(ADSB_PATH)/adsb_encoder.o \
+                 $(MODES_PATH)/mode-s.o \
+                 $(MODES_PATH)/maglut.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \

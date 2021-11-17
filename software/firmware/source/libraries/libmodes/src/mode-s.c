@@ -36,21 +36,25 @@
 
 #include <stdio.h>
 
-#define MODE_S_PREAMBLE_US 8       // microseconds
-#define MODE_S_LONG_MSG_BITS 112
+#define MODE_S_PREAMBLE_US    8       // microseconds
+#define MODE_S_LONG_MSG_BITS  112
 #define MODE_S_SHORT_MSG_BITS 56
-#define MODE_S_FULL_LEN (MODE_S_PREAMBLE_US+MODE_S_LONG_MSG_BITS)
+#define MODE_S_FULL_LEN       (MODE_S_PREAMBLE_US+MODE_S_LONG_MSG_BITS)
 
 #ifndef HACKRF_ONE
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
-static uint16_t maglut[129*129*2];
+static mag_t maglut[129*129*2];
 static int maglut_initialized = 0;
+
+#if defined(ENERGIA_ARCH_CC13X2) && !defined(M_PI)
+#define M_PI                  3.14159265358979323846
+#endif /* ENERGIA_ARCH_CC13X2 */
 #else
 #include <compat.h>
 #define MODE_S_ICAO_CACHE_TTL 10   // Time to live of cached addresses.
 
-extern uint16_t maglut[129*129];
+extern mag_t maglut[129*129];
 #endif
 
 // =============================== Initialization ===========================
@@ -535,7 +539,7 @@ void mode_s_decode(mode_s_t *self, struct mode_s_msg *mm, unsigned char *msg) {
 }
 
 // Turn I/Q samples pointed by `data` into the magnitude vector pointed by `mag`
-void mode_s_compute_magnitude_vector(unsigned char *data, uint16_t *mag, uint32_t size) {
+void mode_s_compute_magnitude_vector(unsigned char *data, mag_t *mag, uint32_t size) {
   uint32_t j;
 
   // Compute the magnitude vector. It's just SQRT(I^2 + Q^2), but we rescale
@@ -556,7 +560,7 @@ void mode_s_compute_magnitude_vector(unsigned char *data, uint16_t *mag, uint32_
 //
 // Note: this function will access mag[-1], so the caller should make sure to
 // call it only if we are not at the start of the current buffer.
-int detect_out_of_phase(uint16_t *mag) {
+int detect_out_of_phase(mag_t *mag) {
   if (mag[3] > mag[2]/3) return 1;
   if (mag[10] > mag[9]/3) return 1;
   if (mag[6] > mag[7]/3) return -1;
@@ -590,17 +594,17 @@ int detect_out_of_phase(uint16_t *mag) {
 // a zero, to detect another zero. Symmetrically if it is a one it will be more
 // likely to detect a one because of the transformation. In this way similar
 // levels will be interpreted more likely in the correct way.
-void apply_phase_correction(uint16_t *mag) {
+void apply_phase_correction(mag_t *mag) {
   int j;
 
   mag += 16; // Skip preamble.
   for (j = 0; j < (MODE_S_LONG_MSG_BITS-1)*2; j += 2) {
     if (mag[j] > mag[j+1]) {
       // One
-      mag[j+2] = (mag[j+2] * 5) / 4;
+      mag[j+2] = (((unsigned int) mag[j+2]) * 5) / 4;
     } else {
       // Zero
-      mag[j+2] = (mag[j+2] * 4) / 5;
+      mag[j+2] = (((unsigned int) mag[j+2]) * 4) / 5;
     }
   }
 }
@@ -608,10 +612,10 @@ void apply_phase_correction(uint16_t *mag) {
 // Detect a Mode S messages inside the magnitude buffer pointed by 'mag' and of
 // size 'maglen' bytes. Every detected Mode S message is convert it into a
 // stream of bits and passed to the function to display it.
-void mode_s_detect(mode_s_t *self, uint16_t *mag, uint32_t maglen, mode_s_callback_t cb) {
+void mode_s_detect(mode_s_t *self, mag_t *mag, uint32_t maglen, mode_s_callback_t cb) {
   unsigned char bits[MODE_S_LONG_MSG_BITS];
   unsigned char msg[MODE_S_LONG_MSG_BITS/2];
-  uint16_t aux[MODE_S_LONG_MSG_BITS*2];
+  mag_t aux[MODE_S_LONG_MSG_BITS*2];
   uint32_t j;
   int use_correction = 0;
 
@@ -664,7 +668,10 @@ void mode_s_detect(mode_s_t *self, uint16_t *mag, uint32_t maglen, mode_s_callba
     // high spikes level. We don't test bits too near to the high levels as
     // signals can be out of phase so part of the energy can be in the near
     // samples.
-    high = (mag[j]+mag[j+2]+mag[j+7]+mag[j+9])/6;
+    high = ((unsigned int) mag[j]   +
+            (unsigned int) mag[j+2] +
+            (unsigned int) mag[j+7] +
+            (unsigned int) mag[j+9]) / 6;
     if (mag[j+4] >= high ||
         mag[j+5] >= high)
     {
@@ -702,7 +709,7 @@ good_preamble:
       delta = low-high;
       if (delta < 0) delta = -delta;
 
-      if (i > 0 && delta < 256) {
+      if (i > 0 && (sizeof(mag_t) == 1 ? (delta == 0) : (delta < 256))) {
         bits[i/2] = bits[i/2-1];
       } else if (low == high) {
         // Checking if two adiacent samples have the same magnitude is
@@ -750,7 +757,7 @@ good_preamble:
     // Filter for an average delta of three is small enough to let almost
     // every kind of message to pass, but high enough to filter some random
     // noise.
-    if (delta < 10*255) {
+    if (sizeof(mag_t) == 1 ? (delta < 10) : (delta < 10*255)) {
       use_correction = 0;
       continue;
     }
@@ -864,13 +871,15 @@ char *getMEDescription(int metype, int mesub) {
 
 /* Return a new aircraft structure for the interactive mode linked list
  * of aircrafts. */
-struct aircraft *interactiveCreateAircraft(uint32_t addr) {
-    struct aircraft *a = malloc(sizeof(*a));
+struct mode_s_aircraft *interactiveCreateAircraft(uint32_t addr) {
+    struct mode_s_aircraft *a = malloc(sizeof(*a));
 
     a->addr = addr;
+    a->aircraft_type = 0;
     snprintf(a->hexaddr,sizeof(a->hexaddr),"%06x",(int)addr);
     a->flight[0] = '\0';
     a->altitude = 0;
+    a->unit = 0;
     a->speed = 0;
     a->track = 0;
     a->odd_cprlat = 0;
@@ -889,8 +898,8 @@ struct aircraft *interactiveCreateAircraft(uint32_t addr) {
 
 /* Return the aircraft with the specified address, or NULL if no aircraft
  * exists with this address. */
-struct aircraft *interactiveFindAircraft(mode_s_t *self, uint32_t addr) {
-    struct aircraft *a = self->aircrafts;
+struct mode_s_aircraft *interactiveFindAircraft(mode_s_t *self, uint32_t addr) {
+    struct mode_s_aircraft *a = self->aircrafts;
 
     while(a) {
         if (a->addr == addr) return a;
@@ -990,7 +999,7 @@ double cprDlonFunction(double lat, int isodd) {
  *    simplicity. This may provide a position that is less fresh of a few
  *    seconds.
  */
-void decodeCPR(struct aircraft *a) {
+void decodeCPR(struct mode_s_aircraft *a) {
     const double AirDlat0 = 360.0 / 60;
     const double AirDlat1 = 360.0 / 59;
     double lat0 = a->even_cprlat;
@@ -1029,9 +1038,9 @@ void decodeCPR(struct aircraft *a) {
 }
 
 /* Receive new messages and populate the interactive mode with more info. */
-struct aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm) {
+struct mode_s_aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm) {
     uint32_t addr;
-    struct aircraft *a, *aux;
+    struct mode_s_aircraft *a, *aux;
 
     if (self->check_crc && mm->crcok == 0) return NULL;
     addr = (mm->aa1 << 16) | (mm->aa2 << 8) | mm->aa3;
@@ -1066,11 +1075,14 @@ struct aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm) {
 
     if (mm->msgtype == 0 || mm->msgtype == 4 || mm->msgtype == 20) {
         a->altitude = mm->altitude;
+        a->unit = mm->unit;
     } else if (mm->msgtype == 17) {
         if (mm->metype >= 1 && mm->metype <= 4) {
             memcpy(a->flight, mm->flight, sizeof(a->flight));
+            a->aircraft_type = mm->aircraft_type;
         } else if (mm->metype >= 9 && mm->metype <= 18) {
             a->altitude = mm->altitude;
+            a->unit = mm->unit;
             if (mm->fflag) {
                 a->odd_cprlat = mm->raw_latitude;
                 a->odd_cprlon = mm->raw_longitude;
@@ -1098,13 +1110,13 @@ struct aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm) {
 /* When in interactive mode If we don't receive new nessages within
  * MODES_INTERACTIVE_TTL seconds we remove the aircraft from the list. */
 void interactiveRemoveStaleAircrafts(mode_s_t *self) {
-    struct aircraft *a = self->aircrafts;
-    struct aircraft *prev = NULL;
+    struct mode_s_aircraft *a = self->aircrafts;
+    struct mode_s_aircraft *prev = NULL;
     time_t now = time(NULL);
 
     while(a) {
         if ((now - a->seen) > self->interactive_ttl) {
-            struct aircraft *next = a->next;
+            struct mode_s_aircraft *next = a->next;
             /* Remove the element from the linked list, with care
              * if we are removing the first element. */
             free(a);
