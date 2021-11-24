@@ -26,6 +26,7 @@
 
 #define DEFAULT_SOFTRF_MODEL  SOFTRF_MODEL_ES
 
+#define USBSerial             Serial
 #define SerialOutput          Serial
 #define swSer                 Serial
 

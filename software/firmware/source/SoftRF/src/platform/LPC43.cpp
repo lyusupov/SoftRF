@@ -35,6 +35,8 @@
 #include "src/driver/Bluetooth.h"
 #include "src/driver/WiFi.h"
 
+#include "Adafruit_USBD_Device.h"
+
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 
@@ -58,6 +60,12 @@ hardware_info_t hw_info = {
   .rtc      = RTC_NONE,
   .imu      = IMU_NONE
 };
+
+const uint16_t LPC43_Vendor_Id = 0x1d50; /* OpenMoko, Inc. */
+const uint16_t LPC43_Device_Id = 0x6089; /* HackRF One */
+const char *LPC43_Device_Manufacturer = "SoftRF";
+const char *LPC43_Device_Model = "ES Edition";
+const uint16_t LPC43_Device_Version = 0x0100;
 
 void LPC43_setup(void)
 {
@@ -238,6 +246,75 @@ static void LPC43_Button_fini()
   /* TODO */
 }
 
+static void LPC43_USB_setup()
+{
+  TinyUSB_Device_Init(0);
+
+  USBDevice.setID(LPC43_Vendor_Id, LPC43_Device_Id);
+  USBDevice.setManufacturerDescriptor(LPC43_Device_Manufacturer);
+  USBDevice.setProductDescriptor(LPC43_Device_Model);
+  USBDevice.setDeviceVersion(LPC43_Device_Version);
+
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR);
+  }
+}
+
+static void LPC43_USB_loop()
+{
+  USBDevice.task();
+}
+
+static void LPC43_USB_fini()
+{
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
+}
+
+static int LPC43_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int LPC43_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t LPC43_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+
+IODev_ops_t LPC43_USBSerial_ops = {
+  "LPC43 USBSerial",
+  LPC43_USB_setup,
+  LPC43_USB_loop,
+  LPC43_USB_fini,
+  LPC43_USB_available,
+  LPC43_USB_read,
+  LPC43_USB_write
+};
+
 const SoC_ops_t LPC43_ops = {
   SOC_LPC43,
   "LPC43",
@@ -266,7 +343,7 @@ const SoC_ops_t LPC43_ops = {
   LPC43_swSer_begin,
   NULL,
   NULL,
-  NULL,
+  &LPC43_USBSerial_ops,
   NULL,
   LPC43_Display_setup,
   LPC43_Display_loop,
@@ -289,6 +366,20 @@ const SoC_ops_t LPC43_ops = {
 void setup_CPP(void)
 {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
+
+  if (SoC->USB_ops) {
+     SoC->USB_ops->setup();
+  }
+
+  Serial.begin(SERIAL_OUT_BR);
+
+  Serial.println();
+  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(SoC->name);
+  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.println(String(SoC->getChipId(), HEX));
+  Serial.println(F("Copyright (C) 2015-2021 Linar Yusupov. All rights reserved."));
+  Serial.flush();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;
@@ -427,4 +518,10 @@ void once_per_second_task_CPP(void)
     Traffic_loop();
   }
 }
+
+void shutdown(int reason)
+{
+
+}
+
 #endif /* HACKRF_ONE */
