@@ -1,4 +1,4 @@
-Every ZIP file in this folder contains a certain version of pre-built Adafruit nRF52 bootloader for LilyGO T-Echo board.<br>
+Every ZIP file in this folder contains a certain version of pre-built [Adafruit nRF52 bootloader for LilyGO T-Echo](https://github.com/lyusupov/Adafruit_nRF52_Bootloader/tree/master/src/boards/lilygo_techo) board.<br>
 There are few files inside the archive. Use case of each one is determined by it's name suffix.
 
 Suffix|Notes
