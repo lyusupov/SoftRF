@@ -45,7 +45,6 @@
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
 static mag_t maglut[129*129*2];
-static int maglut_initialized = 0;
 
 #if defined(ENERGIA_ARCH_CC13X2) && !defined(M_PI)
 #define M_PI                  3.14159265358979323846
@@ -56,6 +55,8 @@ static int maglut_initialized = 0;
 
 extern mag_t maglut[129*129];
 #endif
+
+static int maglut_initialized = 0;
 
 // =============================== Initialization ===========================
 
@@ -78,13 +79,14 @@ void mode_s_init(mode_s_t *self) {
   // different I/Q pair will result in a different magnitude value, not losing
   // any resolution.
 
-#ifndef HACKRF_ONE
+#if !defined(HACKRF_ONE) || (defined(HACKRF_ONE) && defined(DFU_MODE))
   int i, q;
 
   if (!maglut_initialized) {
     for (i = 0; i <= 128; i++) {
       for (q = 0; q <= 128; q++) {
-        maglut[i*129+q] = round(sqrt(i*i+q*q)*360);
+        uint16_t mag16 = round(sqrt(i*i+q*q)*360);
+        maglut[i*129+q] = (sizeof(mag_t) == 1 ? ((mag16 >> 8) & 0xFF) : mag16);
       }
     }
     maglut_initialized = 1;
