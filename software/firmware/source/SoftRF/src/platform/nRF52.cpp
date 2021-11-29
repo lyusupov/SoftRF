@@ -270,7 +270,6 @@ static void nRF52_setup()
 {
   ui = &ui_settings;
 
-#if 0
   uint32_t reset_reason = readResetReason();
 
   if      (reset_reason & POWER_RESETREAS_RESETPIN_Msk)
@@ -309,7 +308,6 @@ static void nRF52_setup()
   {
       reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
   }
-#endif
 
   /* inactivate initVariant() of PCA10056 */
   pinMode(PIN_LED1, INPUT);
