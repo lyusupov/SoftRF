@@ -352,6 +352,8 @@ void shutdown(int reason)
 
   SoC->Display_fini(reason);
 
+  Baro_fini();
+
   RF_Shutdown();
 
   SoC->Button_fini();

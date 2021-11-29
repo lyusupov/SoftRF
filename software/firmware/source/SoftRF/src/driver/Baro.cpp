@@ -23,6 +23,7 @@
 #if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2)
 byte  Baro_setup()        {return BARO_MODULE_NONE;}
 void  Baro_loop()         {}
+void  Baro_fini()         {}
 float Baro_altitude()     {return 0;}
 float Baro_pressure()     {return 0;}
 float Baro_temperature()  {return 0;}
@@ -89,6 +90,11 @@ static void bmp180_setup()
   delay(500);
 }
 
+static void bmp180_fini()
+{
+  /* TBD */
+}
+
 static float bmp180_altitude(float sealevelPressure)
 {
   return bmp180.readAltitude(sealevelPressure * 100);
@@ -109,6 +115,7 @@ barochip_ops_t bmp180_ops = {
   "BMP180",
   bmp180_probe,
   bmp180_setup,
+  bmp180_fini,
   bmp180_altitude,
   bmp180_pressure,
   bmp180_temperature
@@ -144,6 +151,11 @@ static void bmp280_setup()
     delay(500);
 }
 
+static void bmp280_fini()
+{
+    bmp280.reset();
+}
+
 static float bmp280_altitude(float sealevelPressure)
 {
     return bmp280.readAltitude(sealevelPressure);
@@ -164,6 +176,7 @@ barochip_ops_t bmp280_ops = {
   "BMP280",
   bmp280_probe,
   bmp280_setup,
+  bmp280_fini,
   bmp280_altitude,
   bmp280_pressure,
   bmp280_temperature
@@ -192,6 +205,11 @@ static void mpl3115a2_setup()
   delay(250);
 }
 
+static void mpl3115a2_fini()
+{
+  /* TBD */
+}
+
 static float mpl3115a2_altitude(float sealevelPressure)
 {
   mpl3115a2.setSeaPressure(sealevelPressure * 100);
@@ -213,6 +231,7 @@ barochip_ops_t mpl3115a2_ops = {
   "MPL3115A2",
   mpl3115a2_probe,
   mpl3115a2_setup,
+  mpl3115a2_fini,
   mpl3115a2_altitude,
   mpl3115a2_pressure,
   mpl3115a2_temperature
@@ -314,6 +333,11 @@ void Baro_loop()
     Baro_temperature_cache = baro_chip->temperature();
     BaroPresTempTimeMarker = millis();
   }
+}
+
+void Baro_fini()
+{
+  if (baro_chip != NULL) baro_chip->fini();
 }
 
 float Baro_altitude()

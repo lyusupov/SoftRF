@@ -129,11 +129,27 @@ class Adafruit_BMP280_Unified : public Adafruit_Sensor
 class Adafruit_BMP280
 {
   public:
+
+  /** Operating mode for the sensor. */
+  enum sensor_mode {
+    /** Sleep mode. */
+    MODE_SLEEP = 0x00,
+    /** Forced mode. */
+    MODE_FORCED = 0x01,
+    /** Normal mode. */
+    MODE_NORMAL = 0x03,
+    /** Software reset. */
+    MODE_SOFT_RESET_CODE = 0xB6
+  };
+
     Adafruit_BMP280();
     Adafruit_BMP280(int8_t cspin);
     Adafruit_BMP280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
 
     bool  begin(uint8_t addr = BMP280_ADDRESS, uint8_t chipid = BMP280_CHIPID);
+    void reset(void);
+    uint8_t sensorID(void);
+
     float readTemperature(void);
     float readPressure(void);
     float readAltitude(float seaLevelhPa = 1013.25);
