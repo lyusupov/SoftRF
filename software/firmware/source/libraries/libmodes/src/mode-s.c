@@ -53,8 +53,12 @@ static mag_t maglut[129*129*2];
 #include <compat.h>
 #define MODE_S_ICAO_CACHE_TTL 10   // Time to live of cached addresses.
 
+#if defined(MAG_LUT_128X128)
+extern mag_t maglut[128*128];
+#else
 extern mag_t maglut[129*129];
-#endif
+#endif /* MAG_LUT_128X128 */
+#endif /* HACKRF_ONE */
 
 static int maglut_initialized = 0;
 
@@ -83,15 +87,26 @@ void mode_s_init(mode_s_t *self) {
   int i, q;
 
   if (!maglut_initialized) {
+
+#if defined(MAG_LUT_128X128)
+    for (i = 1; i <= 128; i++) {
+      for (q = 1; q <= 128; q++) {
+        uint16_t mag16 = round(sqrt(i*i+q*q)*360);
+        maglut[(i-1)*128+(q-1)] = (sizeof(mag_t) == 1 ? ((mag16 >> 8) & 0xFF) : mag16);
+      }
+    }
+#else /* 129X129 */
     for (i = 0; i <= 128; i++) {
       for (q = 0; q <= 128; q++) {
         uint16_t mag16 = round(sqrt(i*i+q*q)*360);
         maglut[i*129+q] = (sizeof(mag_t) == 1 ? ((mag16 >> 8) & 0xFF) : mag16);
       }
     }
+#endif /* MAG_LUT_128X128 */
+
     maglut_initialized = 1;
   }
-#endif
+#endif /* HACKRF_ONE */
 }
 
 // ===================== Mode S detection and decoding  =====================

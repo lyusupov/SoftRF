@@ -67,6 +67,10 @@ extern time_t now_C();
 #define USE_BYTE_MAG
 #define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
 
+#ifdef DFU_MODE
+#define MAG_LUT_128X128
+#endif
+
 typedef unsigned long ms_time_t;
 #endif
 
