@@ -24,6 +24,8 @@
 #if !defined(EXCLUDE_EEPROM)
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #include <EEPROM_CC13XX.h>
+#elif defined(ARDUINO_ARCH_SAMD)
+#include <FlashAsEEPROM.h>
 #else
 #include <EEPROM.h>
 #endif /* CC13XX or CC13X2 */

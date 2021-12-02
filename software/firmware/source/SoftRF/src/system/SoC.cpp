@@ -38,6 +38,8 @@ byte SoC_setup()
   SoC = &nRF52_ops;
 #elif defined(HACKRF_ONE)
   SoC = &LPC43_ops;
+#elif defined(ARDUINO_ARCH_SAMD)
+  SoC = &SAMD_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

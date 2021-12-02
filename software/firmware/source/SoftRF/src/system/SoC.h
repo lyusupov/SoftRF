@@ -30,6 +30,7 @@
 #include "../platform/PSoC4.h"
 #include "../platform/nRF52.h"
 #include "../platform/LPC43.h"
+#include "../platform/SAMD.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -93,7 +94,8 @@ enum
 	SOC_STM32,
 	SOC_PSOC4,
 	SOC_NRF52,
-	SOC_LPC43
+	SOC_LPC43,
+	SOC_SAMD
 };
 
 extern const SoC_ops_t *SoC;
@@ -120,6 +122,9 @@ extern const SoC_ops_t nRF52_ops;
 #endif
 #if defined(HACKRF_ONE)
 extern const SoC_ops_t LPC43_ops;
+#endif
+#if defined(ARDUINO_ARCH_SAMD)
+extern const SoC_ops_t SAMD_ops;
 #endif
 
 byte SoC_setup(void);
