@@ -104,6 +104,15 @@ const char *Hardware_Rev[] = {
   [3] = "Unknown"
 };
 
+typedef struct { uint64_t id; nRF52_board_id rev; uint8_t tag; } __attribute__((packed)) prototype_entry_t;
+
+const prototype_entry_t techo_prototype_boards[] = {
+  { 0x684f99bd2d5c7fae, NRF52_LILYGO_TECHO_REV_0, 0 }, /* orange */
+  { 0xf353e11726ea8220, NRF52_LILYGO_TECHO_REV_0, 0 }, /* blue   */
+  { 0xf4e0f04ded1892da, NRF52_LILYGO_TECHO_REV_1, 0 }, /* green  */
+  { 0x65ab5994ea2c9094, NRF52_LILYGO_TECHO_REV_1, 0 }, /* blue   */
+};
+
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 
@@ -376,6 +385,13 @@ static void nRF52_setup()
 
   Wire.end();
 
+  for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
+    if (techo_prototype_boards[i].id == ((uint64_t) DEVICE_ID_HIGH << 32 | (uint64_t) DEVICE_ID_LOW)) {
+      nRF52_board = techo_prototype_boards[i].rev;
+      break;
+    }
+  }
+
   /* GPIO pins init */
   switch (nRF52_board)
   {
@@ -528,6 +544,14 @@ static void nRF52_post_init()
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+
+#if 0
+    char strbuf[32];
+    Serial.println();
+    Serial.print  (F("64-bit Device ID: "));
+    snprintf(strbuf, sizeof(strbuf),"0x%08x%08x", DEVICE_ID_HIGH, DEVICE_ID_LOW);
+    Serial.println(strbuf);
+#endif
 
 #if 0
     Serial.println();
