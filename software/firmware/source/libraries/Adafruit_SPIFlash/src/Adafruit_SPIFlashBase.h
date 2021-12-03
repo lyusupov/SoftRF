@@ -75,6 +75,8 @@ protected:
   int _ind_pin;
   bool _ind_active;
 
+  void write_status_register(uint8_t *);
+
   void _indicator_on(void) {
     if (_ind_pin >= 0) {
       digitalWrite(_ind_pin, _ind_active ? HIGH : LOW);

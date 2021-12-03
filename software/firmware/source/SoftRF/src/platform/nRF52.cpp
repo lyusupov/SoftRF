@@ -26,6 +26,7 @@
 #include <Adafruit_SleepyDog.h>
 #include <ArduinoJson.h>
 #include "nrf_wdt.h"
+#include "nrfx_qspi.h"
 
 #include "../system/SoC.h"
 #include "../driver/RF.h"
@@ -481,11 +482,7 @@ static void nRF52_setup()
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
-  if (nRF52_has_spiflash
-#if 1
-      && (nRF52_board != NRF52_LILYGO_TECHO_REV_0)
-#endif
-     ) {
+  if (nRF52_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
 
     //mx25_status_config[0] = SPIFlash->readStatus();
@@ -748,10 +745,14 @@ static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
-//  if (nRF52_has_spiflash) {
-//    usb_msc.end();
-//  }
-//    if (SPIFlash != NULL) SPIFlash->end();
+  if (nRF52_has_spiflash) {
+    usb_msc.setUnitReady(false);
+//  usb_msc.end(); /* N/A */
+  }
+
+//  if (SPIFlash != NULL) SPIFlash->end(); /* N/A */
+
+  nrfx_qspi_uninit();
 
   switch (nRF52_board)
   {
@@ -1096,11 +1097,7 @@ static void nRF52_EEPROM_extension(int cmd)
         raw[i] = EEPROM.read(sizeof(eeprom_t) + i);
       }
 
-      if ( nRF52_has_spiflash                       &&
-#if 1
-          (nRF52_board != NRF52_LILYGO_TECHO_REV_0) &&
-#endif
-           FATFS_is_mounted ) {
+      if ( nRF52_has_spiflash && FATFS_is_mounted ) {
         File file = fatfs.open("/settings.json", FILE_READ);
 
         if (file) {
