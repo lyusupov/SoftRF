@@ -52,6 +52,7 @@ public:
   ~Adafruit_SPIFlash() {}
 
   bool begin(SPIFlash_Device_t const *flash_devs = NULL, size_t count = 1);
+  bool end(void);
 
   //------------- SdFat BaseBlockDRiver API -------------//
   virtual bool readBlock(uint32_t block, uint8_t *dst);

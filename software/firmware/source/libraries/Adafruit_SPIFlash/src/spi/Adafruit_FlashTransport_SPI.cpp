@@ -44,6 +44,12 @@ void Adafruit_FlashTransport_SPI::begin(void) {
   _spi->begin();
 }
 
+void Adafruit_FlashTransport_SPI::end(void) {
+  _spi->end();
+
+  pinMode(_ss, INPUT);
+}
+
 void Adafruit_FlashTransport_SPI::setClockSpeed(uint32_t write_hz,
                                                 uint32_t read_hz) {
   _clock_wr = write_hz;

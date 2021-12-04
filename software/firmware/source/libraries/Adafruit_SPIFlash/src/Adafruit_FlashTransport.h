@@ -68,6 +68,7 @@ enum {
 class Adafruit_FlashTransport {
 public:
   virtual void begin(void) = 0;
+  virtual void end(void) = 0;
 
   virtual bool supportQuadMode(void) = 0;
 

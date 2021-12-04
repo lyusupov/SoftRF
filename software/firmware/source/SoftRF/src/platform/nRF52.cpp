@@ -26,7 +26,6 @@
 #include <Adafruit_SleepyDog.h>
 #include <ArduinoJson.h>
 #include "nrf_wdt.h"
-#include "nrfx_qspi.h"
 
 #include "../system/SoC.h"
 #include "../driver/RF.h"
@@ -774,9 +773,7 @@ static void nRF52_fini(int reason)
 //  usb_msc.end(); /* N/A */
   }
 
-//  if (SPIFlash != NULL) SPIFlash->end(); /* N/A */
-
-  nrfx_qspi_uninit();
+  if (SPIFlash != NULL) SPIFlash->end();
 
   switch (nRF52_board)
   {

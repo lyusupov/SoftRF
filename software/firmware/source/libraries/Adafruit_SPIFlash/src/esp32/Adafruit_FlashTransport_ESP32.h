@@ -38,6 +38,7 @@ public:
   Adafruit_FlashTransport_ESP32(void);
 
   virtual void begin(void);
+  virtual void end(void);
 
   virtual bool supportQuadMode(void) { return false; }
 

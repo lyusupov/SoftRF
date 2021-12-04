@@ -43,6 +43,14 @@ void Adafruit_FlashTransport_ESP32::begin(void) {
   }
 }
 
+void Adafruit_FlashTransport_ESP32::end(void) {
+  _cmd_read = SFLASH_CMD_READ;
+  _addr_len = 3; // work with most device if not set
+
+  _partition = NULL;
+  memset(&_flash_device, 0, sizeof(_flash_device));
+}
+
 SPIFlash_Device_t *Adafruit_FlashTransport_ESP32::getFlashDevice(void) {
   if (!_partition) {
     return NULL;

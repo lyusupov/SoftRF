@@ -292,6 +292,19 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
 
 #endif // ARDUINO_ARCH_ESP32
 
+bool Adafruit_SPIFlashBase::end(void) {
+
+  if (_trans == NULL) {
+    return false;
+  }
+
+  _trans->end();
+
+  _flash_dev = NULL;
+
+  return true;
+}
+
 void Adafruit_SPIFlashBase::setIndicator(int pin, bool state_on) {
   _ind_pin = pin;
   _ind_active = state_on;

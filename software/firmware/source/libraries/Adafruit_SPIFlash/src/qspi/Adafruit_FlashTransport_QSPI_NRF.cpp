@@ -81,6 +81,8 @@ void Adafruit_FlashTransport_QSPI::begin(void) {
   nrfx_qspi_init(&qspi_cfg, NULL, NULL);
 }
 
+void Adafruit_FlashTransport_QSPI::end(void) { nrfx_qspi_uninit(); }
+
 void Adafruit_FlashTransport_QSPI::setClockSpeed(uint32_t clock_hz,
                                                  uint32_t read_hz) {
   (void)read_hz;

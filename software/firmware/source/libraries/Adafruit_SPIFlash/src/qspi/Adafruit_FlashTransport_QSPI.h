@@ -36,6 +36,7 @@ public:
   Adafruit_FlashTransport_QSPI(void);
 
   virtual void begin(void);
+  virtual void end(void);
 
   virtual bool supportQuadMode(void) { return true; }
 

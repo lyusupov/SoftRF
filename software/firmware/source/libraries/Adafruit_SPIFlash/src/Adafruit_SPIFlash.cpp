@@ -68,6 +68,17 @@ bool Adafruit_SPIFlash::begin(SPIFlash_Device_t const *flash_devs,
   return ret;
 }
 
+bool Adafruit_SPIFlash::end(void) {
+  bool ret = Adafruit_SPIFlashBase::end();
+
+  if (ret && (_cache != NULL)) {
+    delete _cache;
+    _cache = NULL;
+  }
+
+  return ret;
+}
+
 //--------------------------------------------------------------------+
 // SdFat BaseBlockDRiver API
 // A block is 512 bytes
