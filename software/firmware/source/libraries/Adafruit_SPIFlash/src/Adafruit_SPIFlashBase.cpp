@@ -235,7 +235,7 @@ bool Adafruit_SPIFlashBase::begin(SPIFlash_Device_t const *flash_devs,
     }
   } else {
     /*
-     * Most of QSPI flash memory ICs have non-volatile QE bit is a status register.
+     * Most of QSPI flash memory ICs have non-volatile QE bit in a status register.
      * If it was set once - we need to apply a separate procedure to clear it off
      * when the device is connected to a non-QSPI capable bus or
      * it has _flash_dev->supports_qspi setting in 'false' state

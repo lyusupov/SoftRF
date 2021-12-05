@@ -216,8 +216,14 @@ ihex:
 				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
 				$(SED) $(BINDIR)/$(BIN_IHEX)
 
-uf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xADA52840 -o $(HEXDIR)/$(BIN_UF2)
+nuf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xada52840 -o $(HEXDIR)/$(BIN_UF2)
+
+suf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0x68ed2b88 -o $(HEXDIR)/$(BIN_UF2)
+
+euf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xbfdd4eee -o $(HEXDIR)/$(BIN_UF2)
 
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 

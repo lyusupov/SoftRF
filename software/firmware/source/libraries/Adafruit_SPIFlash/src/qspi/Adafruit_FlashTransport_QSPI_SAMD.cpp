@@ -139,16 +139,20 @@ bool Adafruit_FlashTransport_QSPI::eraseCommand(uint8_t command,
 
 bool Adafruit_FlashTransport_QSPI::readMemory(uint32_t addr, uint8_t *data,
                                               uint32_t len) {
-  // Command 0x6B 1 line address, 4 line Data
-  // Quad output mode, read memory type
-  uint32_t iframe = QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT |
+  uint32_t width = (_cmd_read == SFLASH_CMD_QUAD_READ) ?
+                    QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT  :
+                    QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI;
+
+  // Command 0x6B (or 0x0B) 1 line address, 4 (or 1) line Data
+  // Quad (or single) output mode, read memory type
+  uint32_t iframe = width |
                     QSPI_INSTRFRAME_ADDRLEN_24BITS |
                     QSPI_INSTRFRAME_TFRTYPE_READMEMORY |
                     QSPI_INSTRFRAME_INSTREN | QSPI_INSTRFRAME_ADDREN |
                     QSPI_INSTRFRAME_DATAEN | QSPI_INSTRFRAME_DUMMYLEN(8);
 
   samd_peripherals_disable_and_clear_cache();
-  _run_instruction(SFLASH_CMD_QUAD_READ, iframe, addr, data, len);
+  _run_instruction(_cmd_read, iframe, addr, data, len);
   samd_peripherals_enable_cache();
 
   return true;
@@ -157,14 +161,19 @@ bool Adafruit_FlashTransport_QSPI::readMemory(uint32_t addr, uint8_t *data,
 bool Adafruit_FlashTransport_QSPI::writeMemory(uint32_t addr,
                                                uint8_t const *data,
                                                uint32_t len) {
-  uint32_t iframe =
-      QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT | QSPI_INSTRFRAME_ADDRLEN_24BITS |
+  uint32_t width = (_cmd_read == SFLASH_CMD_QUAD_READ) ?
+                    QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT  :
+                    QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI;
+
+  uint32_t iframe = width | QSPI_INSTRFRAME_ADDRLEN_24BITS |
       QSPI_INSTRFRAME_TFRTYPE_WRITEMEMORY | QSPI_INSTRFRAME_INSTREN |
       QSPI_INSTRFRAME_ADDREN | QSPI_INSTRFRAME_DATAEN;
 
+  uint8_t cmd = (_cmd_read == SFLASH_CMD_QUAD_READ) ?
+                 SFLASH_CMD_QUAD_PAGE_PROGRAM : SFLASH_CMD_PAGE_PROGRAM;
+
   samd_peripherals_disable_and_clear_cache();
-  _run_instruction(SFLASH_CMD_QUAD_PAGE_PROGRAM, iframe, addr, (uint8_t *)data,
-                   len);
+  _run_instruction(cmd, iframe, addr, (uint8_t *)data, len);
   samd_peripherals_enable_cache();
 
   return true;
