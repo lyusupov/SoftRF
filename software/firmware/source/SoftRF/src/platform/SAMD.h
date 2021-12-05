@@ -40,12 +40,6 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#if !defined(digitalPinToInterrupt)
-#define digitalPinToInterrupt(p) ( p )
-#endif
-
-//#define isPrintable(c)          (isprint(c) == 0 ? false : true)
-
 #define SerialOutput            Serial
 
 enum rst_reason {
@@ -68,29 +62,31 @@ struct rst_info {
   uint32_t depc;
 };
 
-#define swSer                 Serial
+#define swSer                 Serial1
 #define UATSerial             Serial
 
-#define SOC_ADC_VOLTAGE_DIV   2 // HTCC-AB02S has Vbat 100k/100k voltage divider
+#define SOC_ADC_VOLTAGE_DIV   2 /* TBD */
+
+#if defined(ARDUINO_SAMD_ZERO) && !defined(SEEED_XIAO_M0)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  UART_RX
-#define SOC_GPIO_PIN_CONS_TX  UART_TX
+#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX
+#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX
 
-#define SOC_GPIO_PIN_SWSER_RX UART_RX2
-#define SOC_GPIO_PIN_SWSER_TX UART_TX2
+#define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PA11
+#define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PA10
 
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // PB03
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_RX3      PAD_SERIAL_RX
+#define SOC_GPIO_PIN_TX3      PAD_SERIAL_TX
 
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     MOSI   // P
-#define SOC_GPIO_PIN_MISO     MISO   // P
-#define SOC_GPIO_PIN_SCK      SCLK   // P
-#define SOC_GPIO_PIN_SS       SS     // P
+#define SOC_GPIO_PIN_MOSI     D11            // PA16
+#define SOC_GPIO_PIN_MISO     D12            // PA19
+#define SOC_GPIO_PIN_SCK      D13            // PA17
+#define SOC_GPIO_PIN_SS       D10            // PA18
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -98,21 +94,68 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN // P
-#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN // P
-#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN // P
+#define SOC_GPIO_PIN_RST      D9             // PA07
+#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO1     D6             // PA20
 
 /* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN // P
+#define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      SDA          // P
-#define SOC_GPIO_PIN_SCL      SCL          // P
+#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PA22
+#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PA23
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS PIN_A3         // PA04
+#define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA02
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+
+#elif defined(SEEED_XIAO_M0)
+
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX  PAD_SERIAL1_RX
+#define SOC_GPIO_PIN_CONS_TX  PAD_SERIAL1_TX
+
+#define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PB9
+#define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PB8
+
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PA17
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+
+#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
+
+/* SPI */
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PA6
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PA5
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PA7
+#define SOC_GPIO_PIN_SS       PIN_A1         // PA4
+
+/* NRF905 */
+#define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
+
+/* SX1276 */
+#define SOC_GPIO_PIN_RST      PIN_A3         // PA11
+#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN
+
+/* RF antenna switch */
+#define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
+
+/* I2C */
+#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PA8
+#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PA9
+
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS PIN_A2         // PA10
+#define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA2
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+
+#else
+#error "This SAMD build variant is not supported!"
+#endif
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
