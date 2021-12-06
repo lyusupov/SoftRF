@@ -33,6 +33,17 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#include <Adafruit_SleepyDog.h>
+
+#if !defined(__SAMD21__)
+#error "SAMD21 is the only one supported at this time"
+#endif
+
+typedef volatile uint32_t REG32;
+#define pREG32 (REG32 *)
+
+#define DEVICE_ID_HIGH    (*(pREG32 (0x0080A044)))
+#define DEVICE_ID_LOW     (*(pREG32 (0x0080A048)))
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -44,6 +55,8 @@ lmic_pinmap lmic_pins = {
     .busy = LMIC_UNUSED_PIN,
     .tcxo = LMIC_UNUSED_PIN,
 };
+
+//SPIClass SPI1(&PERIPH_SPI1, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MOSI, PAD_SPI1_TX, PAD_SPI1_RX);
 
 #if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
@@ -64,9 +77,11 @@ static struct rst_info reset_info = {
 };
 
 static uint32_t bootCount = 0;
+static bool wdt_is_active = false;
 
 static void SAMD_setup()
 {
+  uint8_t reset_reason = Watchdog.resetCause();
 
 }
 
@@ -77,23 +92,30 @@ static void SAMD_post_init()
 
 static void SAMD_loop()
 {
-
+  if (wdt_is_active) {
+    Watchdog.reset();
+  }
 }
 
 static void SAMD_fini(int reason)
 {
+  // Disable USB
+  USBDevice.detach();
 
+  Watchdog.sleep();
+
+  NVIC_SystemReset();
 }
 
 static void SAMD_reset()
 {
-
+  NVIC_SystemReset();
 }
 
 static uint32_t SAMD_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = 0;
+  uint32_t id = DEVICE_ID_LOW;
 
   return DevID_Mapper(id);
 #else
@@ -129,10 +151,12 @@ static String SAMD_getResetReason()
   }
 }
 
+extern "C" void * _sbrk   (int);
 
 static uint32_t SAMD_getFreeHeap()
 {
-  return 0;
+  char top;
+  return &top - reinterpret_cast<char*>(_sbrk(0));
 }
 
 static long SAMD_random(long howsmall, long howBig)
@@ -167,7 +191,6 @@ static void SAMD_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool SAMD_EEPROM_begin(size_t size)
 {
-
   return true;
 }
 
@@ -187,7 +210,11 @@ static void SAMD_EEPROM_extension(int cmd)
 
 static void SAMD_SPI_begin()
 {
+#if USE_ISP_PORT
   SPI.begin();
+#else
+//  SPI1.begin();
+#endif
 }
 
 static void SAMD_swSer_begin(unsigned long baud)
@@ -301,12 +328,16 @@ static void SAMD_UATModule_restart()
 
 static void SAMD_WDT_setup()
 {
-
+  Watchdog.enable(12000);
+  wdt_is_active = true;
 }
 
 static void SAMD_WDT_fini()
 {
-
+  if (wdt_is_active) {
+    Watchdog.disable();
+    wdt_is_active = false;
+  }
 }
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN

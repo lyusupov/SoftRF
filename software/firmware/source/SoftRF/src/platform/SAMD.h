@@ -34,11 +34,9 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define yield()                 ({ })
-#define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
-#define LED_STATE_ON            HIGH  // State when LED is litted
+#define LED_STATE_ON            LOW  // State when LED is litted
 
 #define SerialOutput            Serial
 
@@ -70,22 +68,36 @@ struct rst_info {
 #if defined(ARDUINO_SAMD_ZERO) && !defined(SEEED_XIAO_M0)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX
+#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PB23
+#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PB22
 
 #define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PA11
 #define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PA10
 
+#define	USE_ISP_PORT          1
+
+#if USE_ISP_PORT
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PA17
+#else
 #define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // PB03
+#endif /* USE_ISP_PORT */
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_RX3      PAD_SERIAL_RX
-#define SOC_GPIO_PIN_TX3      PAD_SERIAL_TX
+#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
+#if USE_ISP_PORT
+/* ISP port */
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PB10
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PB12
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB11
+#else
+/* Port B */
 #define SOC_GPIO_PIN_MOSI     D11            // PA16
 #define SOC_GPIO_PIN_MISO     D12            // PA19
 #define SOC_GPIO_PIN_SCK      D13            // PA17
+#endif /* USE_ISP_PORT */
 #define SOC_GPIO_PIN_SS       D10            // PA18
 
 /* NRF905 */
@@ -113,8 +125,8 @@ struct rst_info {
 #elif defined(SEEED_XIAO_M0)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PAD_SERIAL1_RX
-#define SOC_GPIO_PIN_CONS_TX  PAD_SERIAL1_TX
+#define SOC_GPIO_PIN_CONS_RX  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_CONS_TX  SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PB9
 #define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PB8
@@ -175,12 +187,12 @@ struct rst_info {
 /* -------------------------------------- */
 #define USE_NMEA_CFG             //  +    kb
 #define EXCLUDE_BMP180           //  -    kb
-#define EXCLUDE_BMP280           //  -    kb
+//#define EXCLUDE_BMP280         //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
-#define EXCLUDE_EGM96            //  -    kb
+//#define EXCLUDE_EGM96          //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 
