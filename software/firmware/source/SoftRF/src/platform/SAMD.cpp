@@ -79,9 +79,38 @@ static struct rst_info reset_info = {
 static uint32_t bootCount = 0;
 static bool wdt_is_active = false;
 
+const char *SAMD_Device_Manufacturer = "SoftRF";
+const char *SAMD_Device_Model = "Academy Edition";
+const uint16_t SAMD_Device_Version = 0x0100;
+
 static void SAMD_setup()
 {
   uint8_t reset_reason = Watchdog.resetCause();
+
+  if      (reset_reason & PM_RCAUSE_POR)
+  {
+      reset_info.reason = REASON_DEFAULT_RST;
+  }
+  else if (reset_reason & PM_RCAUSE_BOD12)
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (reset_reason & PM_RCAUSE_BOD33)
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (reset_reason & PM_RCAUSE_EXT)
+  {
+      reset_info.reason = REASON_EXT_SYS_RST;
+  }
+  else if (reset_reason & PM_RCAUSE_WDT)
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (reset_reason & PM_RCAUSE_SYST)
+  {
+      reset_info.reason = REASON_SOFT_RESTART;
+  }
 
 }
 

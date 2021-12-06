@@ -99,6 +99,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      D13            // PA17
 #endif /* USE_ISP_PORT */
 #define SOC_GPIO_PIN_SS       D10            // PA18
+//#define SOC_GPIO_PIN_SS     D4             // NL
+//#define SOC_GPIO_PIN_SS     D5             // NL
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
