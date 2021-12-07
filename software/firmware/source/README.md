@@ -7,6 +7,7 @@
 * [STM32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#stm32)<br>
 * [ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#asr650x)<br>
 * [nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#nrf52840)<br>
+* [SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#samd21)<br>
 
 <br>
 
@@ -247,3 +248,31 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 9. Select _Tools_ -> _Debug_ ->   _Level_ _0_  _(Release)_
 10. Select _Tools_ -> _Port_ ->  ``<your nRF52840 port device name>``
 11. try to build and upload using _Sketch_ -> _Upload_
+
+<br>
+
+## SAMD21
+
+1. Follow [these official instructions](https://www.arduino.cc/en/Guide/ArduinoM0)
+  to install Arduino IDE and latest Atmel SAMD Core
+2. Become familiar with IDE and **Arduino M0** or **Zero** by building and uploading of a basic **Blink** sketch:<br>
+
+    _File_ -> _Examples_ -> _01.Basics_ -> _Blink_ <br>
+
+    then<br>
+
+    _Sketch_ -> _Upload_
+
+3. When you are done with the lesson, close your **Arduino** application
+4. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+5. create **Arduino** sub-directory
+6. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
+
+7. start **Arduino** application again
+8. open **SoftRF** sketch from _File_ -> _Open_ menu
+9. _Sketch_ -> _Upload_
+
+<br>
