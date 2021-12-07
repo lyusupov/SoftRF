@@ -35,7 +35,7 @@
 
 #include <Adafruit_SleepyDog.h>
 
-#if !defined(__SAMD21__)
+#if !defined(__SAMD21G18A__)
 #error "SAMD21 is the only one supported at this time"
 #endif
 
