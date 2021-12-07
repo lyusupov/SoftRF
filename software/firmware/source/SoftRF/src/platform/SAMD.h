@@ -175,8 +175,8 @@ struct rst_info {
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
-#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
-#define EXCLUDE_LK8EX1
+//#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
+//#define EXCLUDE_LK8EX1
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
@@ -198,10 +198,11 @@ struct rst_info {
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 
-//#define USE_BASICMAC
-//#define EXCLUDE_SX1276           //  -  kb
+#define USE_OLED                 //       kb
+#define EXCLUDE_OLED_049
+//#define EXCLUDE_OLED_BARO_PAGE
 
-//#define USE_TIME_SLOTS
+#define USE_TIME_SLOTS
 
 //#define USE_OGN_ENCRYPTION
 

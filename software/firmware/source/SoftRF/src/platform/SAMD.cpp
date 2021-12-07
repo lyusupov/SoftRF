@@ -357,7 +357,7 @@ static void SAMD_UATModule_restart()
 
 static void SAMD_WDT_setup()
 {
-  Watchdog.enable(12000);
+  Watchdog.enable(8000);
   wdt_is_active = true;
 }
 
