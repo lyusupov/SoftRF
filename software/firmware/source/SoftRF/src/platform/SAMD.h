@@ -65,7 +65,7 @@ struct rst_info {
 
 #define SOC_ADC_VOLTAGE_DIV   2 /* TBD */
 
-#if defined(ARDUINO_SAMD_ZERO) && !defined(SEEED_XIAO_M0)
+#if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && !defined(SEEED_XIAO_M0)
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PB23
