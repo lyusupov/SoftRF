@@ -20,6 +20,8 @@
 #ifndef PLATFORM_SAMD_H
 #define PLATFORM_SAMD_H
 
+#include <avr/dtostrf.h>
+
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -94,13 +96,13 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB11
 #else
 /* Port B */
-#define SOC_GPIO_PIN_MOSI     D11            // PA16
-#define SOC_GPIO_PIN_MISO     D12            // PA19
-#define SOC_GPIO_PIN_SCK      D13            // PA17
+#define SOC_GPIO_PIN_MOSI     11             // PA16
+#define SOC_GPIO_PIN_MISO     12             // PA19
+#define SOC_GPIO_PIN_SCK      13             // PA17
 #endif /* USE_ISP_PORT */
-#define SOC_GPIO_PIN_SS       D10            // PA18
-//#define SOC_GPIO_PIN_SS     D4             // NL
-//#define SOC_GPIO_PIN_SS     D5             // NL
+#define SOC_GPIO_PIN_SS       10             // PA18
+//#define SOC_GPIO_PIN_SS     4              // NL
+//#define SOC_GPIO_PIN_SS     5              // NL
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -108,9 +110,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      D9             // PA07
+#define SOC_GPIO_PIN_RST      9              // PA07
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     D6             // PA20
+#define SOC_GPIO_PIN_DIO1     6              // PA20
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
