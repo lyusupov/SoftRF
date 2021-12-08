@@ -41,6 +41,11 @@
 #define LED_STATE_ON            LOW  // State when LED is litted
 
 #define SerialOutput            Serial
+#define USBSerial               Serial
+#define swSer                   Serial1
+#define UATSerial               Serial
+
+#define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -61,11 +66,6 @@ struct rst_info {
   uint32_t excvaddr;
   uint32_t depc;
 };
-
-#define swSer                 Serial1
-#define UATSerial             Serial
-
-#define SOC_ADC_VOLTAGE_DIV   2 /* TBD */
 
 #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && !defined(SEEED_XIAO_M0)
 

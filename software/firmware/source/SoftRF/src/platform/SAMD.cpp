@@ -76,7 +76,7 @@ static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
-static uint32_t bootCount = 0;
+static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
 const char *SAMD_Device_Manufacturer = "SoftRF";
@@ -200,12 +200,23 @@ static long SAMD_random(long howsmall, long howBig)
 
 static void SAMD_Sound_test(int var)
 {
-
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
+    tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+  }
 }
 
 static void SAMD_Sound_tone(int hz, uint8_t volume)
 {
-  /* TBD */
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+    }
+  }
 }
 
 static void SAMD_WiFi_set_param(int ndx, int value)
@@ -293,13 +304,13 @@ static float SAMD_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_MINI ? BATTERY_THRESHOLD_LIPO   :
-                                                BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_ACADEMY ? BATTERY_THRESHOLD_LIPO   :
+                                                   BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_MINI ? BATTERY_CUTOFF_LIPO   :
-                                                BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_ACADEMY ? BATTERY_CUTOFF_LIPO      :
+                                                   BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:
@@ -408,7 +419,7 @@ void onPageButtonEvent() {
 static void SAMD_Button_setup()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_MINI) {
+  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // Button(s) uses external pull up resistor.
@@ -440,7 +451,7 @@ static void SAMD_Button_setup()
 static void SAMD_Button_loop()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_MINI) {
+  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
     button_1.check();
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
@@ -449,7 +460,7 @@ static void SAMD_Button_loop()
 static void SAMD_Button_fini()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_MINI) {
+  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
     pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
@@ -457,24 +468,66 @@ static void SAMD_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
-static void SAMD_UART_loop()
+static void SAMD_USB_setup()
+{
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  }
+}
+
+static void SAMD_USB_loop()
 {
 
 }
 
-static size_t SAMD_UART_write(const uint8_t *buffer, size_t size)
+static void SAMD_USB_fini()
 {
-  return size;
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
 }
 
-IODev_ops_t SAMD_UART_ops = {
-  "SAMD UART",
-  NULL,
-  SAMD_UART_loop,
-  NULL,
-  NULL,
-  NULL,
-  SAMD_UART_write
+static int SAMD_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int SAMD_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t SAMD_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+
+IODev_ops_t SAMD_USBSerial_ops = {
+  "SAMD USBSerial",
+  SAMD_USB_setup,
+  SAMD_USB_loop,
+  SAMD_USB_fini,
+  SAMD_USB_available,
+  SAMD_USB_read,
+  SAMD_USB_write
 };
 
 const SoC_ops_t SAMD_ops = {
@@ -505,8 +558,8 @@ const SoC_ops_t SAMD_ops = {
   SAMD_swSer_begin,
   SAMD_swSer_enableRx,
   NULL, /* SAMD has no built-in Bluetooth */
-  NULL, /* TBD */
-  &SAMD_UART_ops,
+  &SAMD_USBSerial_ops,
+  NULL,
   SAMD_Display_setup,
   SAMD_Display_loop,
   SAMD_Display_fini,

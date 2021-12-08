@@ -88,7 +88,7 @@ static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
-static uint32_t bootCount = 0;
+static uint32_t bootCount __attribute__ ((section (".noinit")));
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 

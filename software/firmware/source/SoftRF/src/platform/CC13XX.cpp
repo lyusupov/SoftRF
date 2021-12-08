@@ -79,7 +79,7 @@ static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
-static uint32_t bootCount = 0;
+static uint32_t bootCount __attribute__ ((section (".noinit")));
 static int cc13xx_board = SOFTRF_UAT_MODULE_19; /* default */
 static uint32_t cc13xx_vdd = 0;
 
