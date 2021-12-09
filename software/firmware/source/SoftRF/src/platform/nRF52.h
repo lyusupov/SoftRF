@@ -274,6 +274,8 @@ struct rst_info {
                                hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
                                hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \
                                SOC_UNUSED_PIN)
+
+#define ALARM_TONE_HZ         2480 // seems to be the best value for 27 mm piezo buzzer
 #else
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #endif /* USE_PWM_SOUND */

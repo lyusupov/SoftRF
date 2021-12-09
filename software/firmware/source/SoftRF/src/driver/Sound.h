@@ -19,8 +19,12 @@
 #ifndef SOUNDHELPER_H
 #define SOUNDHELPER_H
 
+#ifndef ALARM_TONE_HZ
 #define ALARM_TONE_HZ     1040
+#endif
+#ifndef ALARM_TONE_MS
 #define ALARM_TONE_MS     1000
+#endif
 
 enum
 {
