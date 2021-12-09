@@ -226,6 +226,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
 
+* [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/Lora_GPS_Shield_2.jpg)
+
 * [**UAV appliance**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)
