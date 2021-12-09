@@ -129,7 +129,7 @@ static SPIFlash_Device_t const *findDevice(SPIFlash_Device_t const *device_list,
   return NULL;
 }
 
-void Adafruit_SPIFlashBase::write_status_register(uint8_t *status) {
+void Adafruit_SPIFlashBase::write_status_register(uint8_t const status[2]) {
   if (_flash_dev->write_status_register_split) {
     _trans->writeCommand(SFLASH_CMD_WRITE_STATUS2, status + 1, 1);
   } else if (_flash_dev->single_status_byte) {

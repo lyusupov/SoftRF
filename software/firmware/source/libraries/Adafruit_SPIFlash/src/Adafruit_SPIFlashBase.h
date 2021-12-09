@@ -75,7 +75,7 @@ protected:
   int _ind_pin;
   bool _ind_active;
 
-  void write_status_register(uint8_t *);
+  void write_status_register(uint8_t const status[2]);
 
   void _indicator_on(void) {
     if (_ind_pin >= 0) {
