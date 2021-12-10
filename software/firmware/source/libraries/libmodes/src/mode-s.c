@@ -44,7 +44,7 @@
 #ifndef HACKRF_ONE
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
-static mag_t maglut[129*129*2];
+static mag_t maglut[129*129];
 
 #if defined(ENERGIA_ARCH_CC13X2) && !defined(M_PI)
 #define M_PI                  3.14159265358979323846
@@ -815,7 +815,7 @@ good_preamble:
 /* ============================= Utility functions ========================== */
 
 static ms_time_t mstime(void) {
-#ifndef HACKRF_ONE
+#if !defined(HACKRF_ONE) && !defined(ARDUINO_ARCH_AVR)
     struct timeval tv;
     ms_time_t mst;
 

@@ -40,6 +40,8 @@ byte SoC_setup()
   SoC = &LPC43_ops;
 #elif defined(ARDUINO_ARCH_SAMD)
   SoC = &SAMD_ops;
+#elif defined(ARDUINO_ARCH_AVR)
+  SoC = &AVR_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

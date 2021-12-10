@@ -10,12 +10,11 @@
 #undef max
 #endif
 
-#include <limits>
-
 #include "bitcount.h"
 
 #ifndef __AVR__
 // #include <stdio.h>
+#include <limits>
 #include <math.h>
 #endif
 

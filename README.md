@@ -4,7 +4,7 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
 ## Features
 
 * **Wearable**
-    * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 <!--    * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
 * **Plug-and-Play**
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)

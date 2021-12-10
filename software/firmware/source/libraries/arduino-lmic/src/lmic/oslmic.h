@@ -244,7 +244,7 @@ u2_t os_crc16 (xref2u1_t d, uint len);
     // progmem using pgm_read_xx, or accesses memory directly when the
     // index is a constant so gcc can optimize it away;
     #define TABLE_GETTER(postfix, type, pgm_type) \
-        inline type table_get ## postfix(const type *table, size_t index) { \
+        inline type __attribute__((always_inline)) table_get ## postfix(const type *table, size_t index) { \
             if (__builtin_constant_p(table[index])) \
                 return table[index]; \
             return pgm_read_ ## pgm_type(&table[index]); \

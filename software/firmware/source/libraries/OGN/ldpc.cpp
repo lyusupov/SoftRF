@@ -632,7 +632,7 @@ void LDPC_Encode(const uint32_t *Data, uint32_t *Parity, const uint32_t ParityGe
 }
 
 void LDPC_Encode(const uint32_t *Data, uint32_t *Parity)
-{ LDPC_Encode(Data, Parity, LDPC_ParityGen); }
+{ LDPC_Encode(Data, Parity, /* LDPC_ParityGen */ LDPC_ParityGen_n208k160); }
 
 // encode Parity from Data: Data is 20 bytes = 160 bits, Parity is 6 bytes = 48 bits
 void LDPC_Encode(const uint8_t *Data, uint8_t *Parity, const uint32_t ParityGen[48][5])
@@ -648,23 +648,23 @@ void LDPC_Encode(const uint8_t *Data, uint8_t *Parity, const uint32_t ParityGen[
 }
 
 void LDPC_Encode(const uint8_t *Data, uint8_t *Parity)
-{ LDPC_Encode(Data, Parity, LDPC_ParityGen); }
+{ LDPC_Encode(Data, Parity, /* LDPC_ParityGen */ LDPC_ParityGen_n208k160); }
 
 void LDPC_Encode(uint8_t *Data)
-{ LDPC_Encode(Data, Data+20, LDPC_ParityGen); }
+{ LDPC_Encode(Data, Data+20, /* LDPC_ParityGen */ LDPC_ParityGen_n208k160); }
 
 // check Data against Parity (run 48 parity checks) - return number of failed checks
-int8_t LDPC_Check(const uint8_t *Data) // 20 data bytes followed by 6 parity bytes
+uint8_t LDPC_Check(const uint8_t *Data) // 20 data bytes followed by 6 parity bytes
 { uint8_t Errors=0;
   for(uint8_t Row=0; Row<48; Row++)
   { uint8_t Count=0;
-    const uint8_t *Check = (uint8_t *)LDPC_ParityCheck[Row];
+    const uint8_t *Check = (uint8_t *) /* LDPC_ParityCheck */ LDPC_ParityCheck_n208k160[Row];
     for(uint8_t Idx=0; Idx<26; Idx++)
     { Count+=Count1s(Data[Idx] & pgm_read_byte(Check+Idx)); }
     if(Count&1) Errors++; }
   return Errors; }
 
-int8_t LDPC_Check(const uint32_t *Packet)
+uint8_t LDPC_Check(const uint32_t *Packet)
 { return LDPC_Check( (uint8_t *)Packet ); }
 
 #else // if not 8-bit AVR

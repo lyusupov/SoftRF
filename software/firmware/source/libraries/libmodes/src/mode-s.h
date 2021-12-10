@@ -39,7 +39,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#ifndef ARDUINO_ARCH_AVR
 #include <sys/time.h>
+#else
+typedef unsigned long time_t;
+#endif
 
 #define MODE_S_ICAO_CACHE_LEN  64 // Power of two required
 #define MODE_S_LONG_MSG_BYTES  (112/8)
