@@ -33,6 +33,8 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#include <Adafruit_SleepyDog.h>
+#include <avr/boot.h>
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -63,11 +65,19 @@ static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
 };
 
-static uint32_t bootCount = 0;
+static uint32_t bootCount __attribute__ ((section (".noinit")));
+static bool wdt_is_active = false;
+
+#define UniqueIDsize 9
+uint8_t DeviceID[UniqueIDsize];
 
 static void AVR_setup()
 {
 
+  for (size_t i = 0; i < UniqueIDsize; i++)
+  {
+    DeviceID[i] = boot_signature_byte_get(0x0E + i + (UniqueIDsize == 9 && i > 5 ? 1 : 0));
+  }
 }
 
 static void AVR_post_init()
@@ -75,25 +85,44 @@ static void AVR_post_init()
 
 }
 
+static bool prev_PPS_state = LOW;
+
 static void AVR_loop()
 {
+  if (wdt_is_active) {
+    Watchdog.reset();
+  }
 
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  if (digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS) == NOT_AN_INTERRUPT) {
+    bool PPS_state = digitalRead(SOC_GPIO_PIN_GNSS_PPS);
+
+    if (PPS_state == HIGH && prev_PPS_state == LOW) {
+      PPS_TimeMarker = millis();
+    }
+    prev_PPS_state = PPS_state;
+  }
+#endif
 }
 
 static void AVR_fini(int reason)
 {
-
+  Watchdog.sleep();
 }
 
 static void AVR_reset()
 {
-
+  void (*reboot)() = 0x0000 ;
+  (*reboot)();
 }
 
 static uint32_t AVR_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = 0;
+  uint32_t id = DeviceID[UniqueIDsize-4];
+  id = (id << 8) | DeviceID[UniqueIDsize-3];
+  id = (id << 8) | DeviceID[UniqueIDsize-2];
+  id = (id << 8) | DeviceID[UniqueIDsize-1];
 
   return DevID_Mapper(id);
 #else
@@ -147,12 +176,23 @@ static long AVR_random(long howsmall, long howBig)
 
 static void AVR_Sound_test(int var)
 {
-
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
+    tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
+    tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+  }
 }
 
 static void AVR_Sound_tone(int hz, uint8_t volume)
 {
-  /* TBD */
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+    }
+  }
 }
 
 static void AVR_WiFi_set_param(int ndx, int value)
@@ -269,7 +309,9 @@ static float AVR_Battery_param(uint8_t param)
 
     {
       uint16_t mV = 0;
-
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+      mV = analogRead(SOC_GPIO_PIN_BATTERY);
+#endif
       rval = mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
     }
     break;
@@ -302,12 +344,16 @@ static void AVR_UATModule_restart()
 
 static void AVR_WDT_setup()
 {
-
+  Watchdog.enable(8000);
+  wdt_is_active = true;
 }
 
 static void AVR_WDT_fini()
 {
-
+  if (wdt_is_active) {
+    Watchdog.disable();
+    wdt_is_active = false;
+  }
 }
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
@@ -408,16 +454,6 @@ static size_t AVR_UART_write(const uint8_t *buffer, size_t size)
   return size;
 }
 
-IODev_ops_t AVR_UART_ops = {
-  "AVR UART",
-  NULL,
-  AVR_UART_loop,
-  NULL,
-  NULL,
-  NULL,
-  AVR_UART_write
-};
-
 const SoC_ops_t AVR_ops = {
   SOC_AVR,
   "AVR",
@@ -447,7 +483,7 @@ const SoC_ops_t AVR_ops = {
   AVR_swSer_enableRx,
   NULL, /* AVR has no built-in Bluetooth */
   NULL, /* TBD */
-  &AVR_UART_ops,
+  NULL,
   AVR_Display_setup,
   AVR_Display_loop,
   AVR_Display_fini,

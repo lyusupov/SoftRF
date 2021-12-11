@@ -39,6 +39,10 @@
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
 #define SerialOutput            Serial
+#define swSer                   Serial1
+#define UATSerial               Serial
+
+#define SOC_ADC_VOLTAGE_DIV     2 // TBD
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -60,26 +64,21 @@ struct rst_info {
   uint32_t depc;
 };
 
-#define swSer                 Serial
-#define UATSerial             Serial
-
-#define SOC_ADC_VOLTAGE_DIV   2 // TBD
-
 #if defined(ARDUINO_AVR_MEGA2560)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PB23
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PB22
+#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PE0
+#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PE1
 
-#define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PA11
-#define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PA10
+#define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PD2
+#define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PD3
 
 #define USE_ISP_PORT          1
 
 #if USE_ISP_PORT
-#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PA17
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PB7
 #else
-#define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // PB03
+#define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // Pxx
 #endif /* USE_ISP_PORT */
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
@@ -89,16 +88,16 @@ struct rst_info {
 /* SPI */
 #if USE_ISP_PORT
 /* ISP port */
-#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PB10
-#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PB12
-#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB11
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PB2
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PB3
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB1
 #else
 /* Port B */
-#define SOC_GPIO_PIN_MOSI     11             // PA16
-#define SOC_GPIO_PIN_MISO     12             // PA19
-#define SOC_GPIO_PIN_SCK      13             // PA17
+#define SOC_GPIO_PIN_MOSI     11             // PB5
+#define SOC_GPIO_PIN_MISO     12             // PB6
+#define SOC_GPIO_PIN_SCK      13             // PB7
 #endif /* USE_ISP_PORT */
-#define SOC_GPIO_PIN_SS       10             // PA18
+#define SOC_GPIO_PIN_SS       10             // PB4
 //#define SOC_GPIO_PIN_SS     4              // NL
 //#define SOC_GPIO_PIN_SS     5              // NL
 
@@ -108,20 +107,20 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      9              // PA07
+#define SOC_GPIO_PIN_RST      9              // PH6
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     6              // PA20
+#define SOC_GPIO_PIN_DIO1     6              // PH3
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PA22
-#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PA23
+#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PD1
+#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PD0
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS PIN_A3         // PA04
-#define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA02
+#define SOC_GPIO_PIN_GNSS_PPS PIN_A3         // PF3
+#define SOC_GPIO_PIN_BATTERY  PIN_A0         // PF0
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 #else
 #error "This AVR build variant is not supported!"
@@ -154,14 +153,15 @@ struct rst_info {
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 
-//#define USE_BASICMAC
-//#define EXCLUDE_SX1276           //  -  kb
+//#define USE_OLED               //       kb
+#define EXCLUDE_OLED_049
+//#define EXCLUDE_OLED_BARO_PAGE
 
 //#define USE_TIME_SLOTS
 
-//#define USE_OGN_ENCRYPTION
-
 /* SoftRF/AVR PFLAU NMEA sentence extension. In use by WebTop adapter */
+//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
+//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 //#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 

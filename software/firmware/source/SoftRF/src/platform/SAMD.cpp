@@ -335,7 +335,9 @@ static float SAMD_Battery_param(uint8_t param)
 
     {
       uint16_t mV = 0;
-
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+      mV = analogRead(SOC_GPIO_PIN_BATTERY);
+#endif
       rval = mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
     }
     break;
