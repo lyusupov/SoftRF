@@ -36,7 +36,7 @@
 #include <Adafruit_SleepyDog.h>
 #include <avr/boot.h>
 
-// SX1262 pin mapping
+// SX127x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
@@ -82,7 +82,34 @@ static void AVR_setup()
 
 static void AVR_post_init()
 {
+  {
+    Serial.println();
+    Serial.println(F("SoftRF Academy Edition Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
 
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("BARO    : "));
+    Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println();
+    Serial.flush();
+  }
+#if defined(USE_OLED)
+  OLED_info1();
+#endif /* USE_OLED */
 }
 
 static bool prev_PPS_state = LOW;
@@ -161,7 +188,9 @@ static String AVR_getResetReason()
 
 static uint32_t AVR_getFreeHeap()
 {
-  return 0;
+  extern int __heap_start,*__brkval;
+  int v;
+  return (int)&v - (__brkval == 0 ? (int)&__heap_start : (int) __brkval);
 }
 
 static long AVR_random(long howsmall, long howBig)
@@ -444,15 +473,67 @@ static void AVR_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
-static void AVR_UART_loop()
+static void AVR_USB_setup()
+{
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  }
+}
+
+static void AVR_USB_loop()
 {
 
 }
 
-static size_t AVR_UART_write(const uint8_t *buffer, size_t size)
+static void AVR_USB_fini()
 {
-  return size;
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
 }
+
+static int AVR_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int AVR_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t AVR_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+
+IODev_ops_t AVR_USBSerial_ops = {
+  "AVR USBSerial",
+  AVR_USB_setup,
+  AVR_USB_loop,
+  AVR_USB_fini,
+  AVR_USB_available,
+  AVR_USB_read,
+  AVR_USB_write
+};
 
 const SoC_ops_t AVR_ops = {
   SOC_AVR,
@@ -482,7 +563,7 @@ const SoC_ops_t AVR_ops = {
   AVR_swSer_begin,
   AVR_swSer_enableRx,
   NULL, /* AVR has no built-in Bluetooth */
-  NULL, /* TBD */
+  &AVR_USBSerial_ops,
   NULL,
   AVR_Display_setup,
   AVR_Display_loop,

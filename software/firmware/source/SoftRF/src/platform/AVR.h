@@ -38,9 +38,10 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#define SerialOutput            Serial
+#define SerialOutput            Serial2
+#define USBSerial               Serial
 #define swSer                   Serial1
-#define UATSerial               Serial
+#define UATSerial               Serial3
 
 #define SOC_ADC_VOLTAGE_DIV     2 // TBD
 
@@ -131,7 +132,7 @@ struct rst_info {
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
-#define EXCLUDE_LK8EX1
+//#define EXCLUDE_LK8EX1
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
@@ -144,14 +145,14 @@ struct rst_info {
 /* -------------------------------------- */
 #define USE_NMEA_CFG             //  +    kb
 #define EXCLUDE_BMP180           //  -    kb
-#define EXCLUDE_BMP280           //  -    kb
+//#define EXCLUDE_BMP280         //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
-#define EXCLUDE_SOUND
+//#define EXCLUDE_SOUND
 
 //#define USE_OLED               //       kb
 #define EXCLUDE_OLED_049
@@ -164,6 +165,11 @@ struct rst_info {
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 //#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
+
+#if defined(USE_OGN_ENCRYPTION)
+#error "OGN encryption is not supported by AVR platform"
+// TinyGPS++.h needs to increase _GPS_MAX_FIELD_SIZE up to 33
+#endif
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

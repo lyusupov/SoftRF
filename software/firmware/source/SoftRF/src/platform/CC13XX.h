@@ -149,6 +149,11 @@ struct rst_info {
 
 extern SCSerial                 scSerial;
 
+#if defined(USE_OGN_ENCRYPTION)
+#error "OGN encryption is not supported by CC1310 platform"
+// TinyGPS++.h needs to increase _GPS_MAX_FIELD_SIZE up to 33
+#endif
+
 #elif defined(ENERGIA_ARCH_CC13X2)
 
 /*

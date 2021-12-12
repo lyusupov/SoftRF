@@ -45,7 +45,7 @@ typedef volatile uint32_t REG32;
 #define DEVICE_ID_HIGH    (*(pREG32 (0x0080A044)))
 #define DEVICE_ID_LOW     (*(pREG32 (0x0080A048)))
 
-// SX1262 pin mapping
+// SX127x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
@@ -116,7 +116,34 @@ static void SAMD_setup()
 
 static void SAMD_post_init()
 {
+  {
+    Serial.println();
+    Serial.println(F("SoftRF Academy Edition Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
 
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("BARO    : "));
+    Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println();
+    Serial.flush();
+  }
+#if defined(USE_OLED)
+  OLED_info1();
+#endif /* USE_OLED */
 }
 
 static void SAMD_loop()
