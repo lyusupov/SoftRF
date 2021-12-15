@@ -67,6 +67,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       6
 #define SOC_GPIO_PIN_RST      0
 #define SOC_GPIO_PIN_DIO0     7
+
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
 #else /* BCM */
 
 #if defined(USE_SPI1)
@@ -84,9 +86,10 @@ struct rst_info {
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
 #endif
+
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RPI_V2_GPIO_P1_12 /* rev. 1.4 */
 #endif /* GPIO */
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
@@ -124,6 +127,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_MPL3115A2
 //#define EXCLUDE_MAVLINK
 
+//#define USE_TIME_SLOTS
 //#define USE_OGN_ENCRYPTION
 
 //#define USE_OGN_RF_DRIVER

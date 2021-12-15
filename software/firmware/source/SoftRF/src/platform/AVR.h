@@ -139,7 +139,7 @@ struct rst_info {
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
-#define EXCLUDE_LOG_GNSS_VERSION
+//#define EXCLUDE_LOG_GNSS_VERSION
 
 /* Component                         Cost */
 /* -------------------------------------- */

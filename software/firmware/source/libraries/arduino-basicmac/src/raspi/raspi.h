@@ -46,6 +46,10 @@
   #define NOT_A_PIN 0xFF
 #endif
 
+#ifndef NOT_AN_INTERRUPT
+  #define NOT_AN_INTERRUPT 0xFF
+#endif
+
 #ifndef LED_BUILTIN
   #define LED_BUILTIN NOT_A_PIN 
 #endif
@@ -53,13 +57,13 @@
 // We don't have IRQ on Raspberry PI
 #define interrupts()   {}
 #define noInterrupts() {}
-#define digitalPinToInterrupt(p)             (p)
+#define digitalPinToInterrupt(p)             (NOT_AN_INTERRUPT)
 #define attachInterrupt(irq, userFunc, mode) {}
 #define detachInterrupt(irq)                 {}
 
-#define CHANGE 3
+#define CHANGE  3
 #define FALLING 1
-#define RISING 2
+#define RISING  2
 
 // Delay macros
 #define delay(x) bcm2835_delay(x)

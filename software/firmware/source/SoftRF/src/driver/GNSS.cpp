@@ -851,6 +851,46 @@ static gnss_id_t mtk_probe()
 
 static bool mtk_setup()
 {
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  swSer.write("$PMTK605*31\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = swSer.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 19) {
+    for (int i=9; i < len; i++) {
+      if (GNSSbuf[i] == ',') {
+        GNSSbuf[i] = 0;
+      }
+    }
+    Serial.print(F("INFO: GNSS module FW version: "));
+    Serial.println((char *) &GNSSbuf[9]);
+  }
+
+  delay(250);
+#endif
+
   /* RMC + GGA + GSA */
   swSer.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
   swSer.flush(); delay(250);

@@ -107,6 +107,39 @@ static void AVR_post_init()
     Serial.println();
     Serial.flush();
   }
+
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART")); break;
+    case NMEA_USB        :  Serial.println(F("USB"));  break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL")); break;
+  }
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART")); break;
+    case GDL90_USB       :  Serial.println(F("USB"));  break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL")); break;
+  }
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART")); break;
+    case D1090_USB       :  Serial.println(F("USB"));  break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL")); break;
+  }
+
+  Serial.println();
+  Serial.flush();
+
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */

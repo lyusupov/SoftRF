@@ -325,9 +325,20 @@ static void RPi_post_init()
 #endif /* USE_EPAPER */
 }
 
+static bool prev_PPS_state = LOW;
+
 static void RPi_loop()
 {
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  if (digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS) == NOT_AN_INTERRUPT) {
+    bool PPS_state = digitalRead(SOC_GPIO_PIN_GNSS_PPS);
 
+    if (PPS_state == HIGH && prev_PPS_state == LOW) {
+      PPS_TimeMarker = millis();
+    }
+    prev_PPS_state = PPS_state;
+  }
+#endif
 }
 
 static void RPi_fini(int reason)
@@ -1018,6 +1029,8 @@ int main()
       normal_loop();
       break;
     }
+
+    SoC->loop();
 
 #if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
     /* take care of millis() rollover on a long term run */
