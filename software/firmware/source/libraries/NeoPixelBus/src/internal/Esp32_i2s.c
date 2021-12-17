@@ -26,14 +26,22 @@
 #include "freertos/semphr.h"
 #include "freertos/queue.h"
 
+#if ESP_IDF_VERSION_MAJOR>=4
+#include "esp_intr_alloc.h"
+#else
 #include "esp_intr.h"
+#endif
+
 #include "rom/ets_sys.h"
 #include "soc/gpio_reg.h"
 #include "soc/gpio_sig_map.h"
 #include "soc/io_mux_reg.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/i2s_struct.h"
+#if defined(CONFIG_IDF_TARGET_ESP32)
+/* included here for ESP-IDF v4.x compatibility */
 #include "soc/dport_reg.h"
+#endif
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/i2s.h"
@@ -41,7 +49,10 @@
 #include "Esp32_i2s.h"
 #include "esp32-hal.h"
 
+#if ESP_IDF_VERSION_MAJOR<=4
 #define I2S_BASE_CLK (160000000L)
+#endif
+
 #define ESP32_REG(addr) (*((volatile uint32_t*)(0x3FF00000+(addr))))
 
 #define I2S_DMA_QUEUE_SIZE      16

@@ -20,7 +20,7 @@ static struct {
 
 void os_init (void* bootarg) {
     memset(&OS, 0x00, sizeof(OS));
-    hal_init(bootarg);
+    lmic_hal_init(bootarg);
 #ifndef CFG_noradio
     radio_init();
 #endif

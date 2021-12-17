@@ -740,7 +740,7 @@ static bool sx1276_probe()
 
   SoC->SPI_begin();
 
-  hal_init (nullptr);
+  lmic_hal_init (nullptr);
 
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
@@ -799,7 +799,7 @@ static bool sx1262_probe()
 
   SoC->SPI_begin();
 
-  hal_init (nullptr);
+  lmic_hal_init (nullptr);
 
   // manually reset radio
   hal_pin_rst(0); // drive RST pin low
@@ -2018,7 +2018,7 @@ static bool ognrf_probe()
   TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
-  hal_init (nullptr);
+  lmic_hal_init (nullptr);
 
   TRX.RESET(1);                      // RESET active
   vTaskDelay(10);                    // wait 10ms
@@ -2085,7 +2085,7 @@ static void ognrf_setup()
   TRX.RESET        = RFM_RESET;
 
   SoC->SPI_begin();
-  hal_init (nullptr);
+  lmic_hal_init (nullptr);
 
   TRX.RESET(1);                      // RESET active
   vTaskDelay(10);                    // wait 10ms

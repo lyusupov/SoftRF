@@ -482,7 +482,7 @@ void hal_printf(char *fmt, ... )
 }
 #endif
 
-void hal_init (void *bootarg) {
+void lmic_hal_init (void *bootarg) {
     // configure radio I/O and interrupt handler
     hal_io_init();
     // configure radio SPI

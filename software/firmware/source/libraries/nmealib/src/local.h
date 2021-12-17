@@ -5,7 +5,10 @@
 #if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(ARDUINO_ARCH_NRF52)
 #include <pgmspace.h>
-#if defined(ARDUINO_ARCH_STM32)
+#if defined(ARDUINO_ARCH_ESP32)
+#include "esp_idf_version.h"
+#endif
+#if defined(ARDUINO_ARCH_STM32) || (defined(ARDUINO_ARCH_ESP32) && ESP_IDF_VERSION_MAJOR>=4)
 #define	_AND		,
 #define	_CONST		const
 #define	_EXFUN(name, proto)		name proto

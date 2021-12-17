@@ -1,5 +1,7 @@
 
 #include <esp32-hal-log.h>
+#include <soc/adc_channel.h>
+
 #include <Arduino.h>
 
 #include "battery.h"

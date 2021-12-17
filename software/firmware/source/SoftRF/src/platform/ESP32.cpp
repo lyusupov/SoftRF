@@ -26,6 +26,7 @@
 #include <Wire.h>
 #include <rom/rtc.h>
 #include <rom/spi_flash.h>
+#include <soc/adc_channel.h>
 #include <flashchips.h>
 #include <axp20x.h>
 
@@ -669,8 +670,8 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
     tcpip_adapter_dhcps_option(
-      (tcpip_adapter_option_mode_t) TCPIP_ADAPTER_OP_SET,
-      (tcpip_adapter_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
+      (tcpip_adapter_dhcp_option_mode_t) TCPIP_ADAPTER_OP_SET,
+      (tcpip_adapter_dhcp_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
       (void*) &lt, sizeof(lt));
     break;
   default:
