@@ -135,7 +135,7 @@ void setup()
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
-#elif defined(USE_TINYUSB) && defined(USBCON)
+#elif defined(USBCON) && (defined(USE_TINYUSB) || defined(ARDUINO_ARCH_SAMD))
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #endif
 

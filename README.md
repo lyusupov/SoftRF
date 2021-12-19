@@ -30,7 +30,7 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
     * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
     * [**SkyView Pi**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)
 * for **education** purpose
-    * [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
+    * [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 <br>
 
@@ -76,7 +76,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|[Cypress<br>PSoC 4100**S**](https://en.wikipedia.org/wiki/Cypress_PSoC)|Q3 2020|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)|1&nbsp;good add-on candidate for modded Kobo e-Readers ;<br>2&nbsp;holds [**FCC/CE** mark](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition#certificates)
 [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Nordic Semiconductor<br>nRF52840](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF52840)|Q4 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 ES|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
-[Academy](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560)|Q4 2021|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|good for teaching students of air traffic proximity awareness
+[Academy](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560)|Q4 2021|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)<!-- ![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress) -->|good for teaching students of air traffic proximity awareness
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
@@ -137,6 +137,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition.-Quick-start)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/Dongle-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Dongle)
+* [Academy Edition](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
     * [Wiring and pin-out](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
@@ -228,7 +229,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
 
-* [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
+* [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/Lora_GPS_Shield_2.jpg)
 

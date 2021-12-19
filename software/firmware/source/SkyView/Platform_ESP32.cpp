@@ -22,6 +22,7 @@
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
 #include <rom/spi_flash.h>
+#include <soc/adc_channel.h>
 #include <flashchips.h>
 
 #include "SoCHelper.h"
@@ -633,8 +634,14 @@ static void ESP32_DB_fini()
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
 {
+#if ESP_IDF_VERSION_MAJOR>=4
+    size_t i2s_bytes_written;
+    i2s_write((i2s_port_t)i2s_num, (const char*)&sample, sizeof(uint32_t), &i2s_bytes_written, 100);
+    return i2s_bytes_written;
+#else
   return i2s_write_bytes((i2s_port_t)i2s_num, (const char *)&sample,
                           sizeof(uint32_t), 100);
+#endif
 }
 
 /* read 4 bytes of data from wav file */
