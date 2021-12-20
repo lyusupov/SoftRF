@@ -126,6 +126,14 @@ struct rst_info {
 #define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA02
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
+#if defined(USE_TINYUSB)
+#define SOC_GPIO_RADIO_LED_RX PIN_LED_RXL
+#define SOC_GPIO_RADIO_LED_TX PIN_LED_TXL
+#else
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
+#define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+#endif /* USE_TINYUSB */
+
 #elif defined(SEEED_XIAO_M0)
 
 /* Peripherals */
@@ -168,6 +176,14 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_PPS PIN_A2         // PA10
 #define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA2
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+
+#if defined(USE_TINYUSB)
+#define SOC_GPIO_RADIO_LED_RX PIN_LED_RXL
+#define SOC_GPIO_RADIO_LED_TX PIN_LED_TXL
+#else
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
+#define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+#endif /* USE_TINYUSB */
 
 #else
 #error "This SAMD build variant is not supported!"

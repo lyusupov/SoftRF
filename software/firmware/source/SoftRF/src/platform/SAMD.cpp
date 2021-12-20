@@ -112,6 +112,20 @@ static void SAMD_setup()
       reset_info.reason = REASON_SOFT_RESTART;
   }
 
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_RADIO_LED_TX, OUTPUT);
+  digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+#endif /* SOC_GPIO_RADIO_LED_TX */
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
+  digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+#endif /* SOC_GPIO_RADIO_LED_RX */
+
+#if defined(USE_TINYUSB)
+  USBDevice.setManufacturerDescriptor(SAMD_Device_Manufacturer);
+  USBDevice.setProductDescriptor(SAMD_Device_Model);
+  USBDevice.setDeviceVersion(SAMD_Device_Version);
+#endif /* USE_TINYUSB */
 }
 
 static void SAMD_post_init()
@@ -179,11 +193,49 @@ static void SAMD_post_init()
 #endif /* USE_OLED */
 }
 
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+extern uint32_t tx_packets_counter, rx_packets_counter;
+static unsigned long tx_led_time_marker = 0;
+static unsigned long rx_led_time_marker = 0;
+
+#define	LED_BLINK_TIME 100
+
 static void SAMD_loop()
 {
   if (wdt_is_active) {
     Watchdog.reset();
   }
+
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+  if (digitalRead(SOC_GPIO_RADIO_LED_TX) != LED_STATE_ON) {
+    if (tx_packets_counter != prev_tx_packets_counter) {
+      digitalWrite(SOC_GPIO_RADIO_LED_TX, LED_STATE_ON);
+      prev_tx_packets_counter = tx_packets_counter;
+      tx_led_time_marker == millis();
+    }
+  } else {
+    if (millis() - tx_led_time_marker > LED_BLINK_TIME) {
+      digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+      prev_tx_packets_counter = tx_packets_counter;
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_TX */
+
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  if (digitalRead(SOC_GPIO_RADIO_LED_RX) != LED_STATE_ON) {
+    if (rx_packets_counter != prev_rx_packets_counter) {
+      digitalWrite(SOC_GPIO_RADIO_LED_RX, LED_STATE_ON);
+      prev_rx_packets_counter = rx_packets_counter;
+      rx_led_time_marker == millis();
+    }
+  } else {
+    if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
+      digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+      prev_rx_packets_counter = rx_packets_counter;
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_RX */
 }
 
 static void SAMD_fini(int reason)
