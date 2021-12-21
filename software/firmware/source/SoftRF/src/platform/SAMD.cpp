@@ -663,50 +663,101 @@ static void SAMD_USB_setup()
 }
 
 #include <RingBuffer.h>
+
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+#define USB_RX_FIFO_SIZE (256)
+
 RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
+RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
 
 static void SAMD_USB_loop()
 {
-#if !defined(USE_TINYUSB)
-  while (USBSerial.availableForWrite() > 0) {
-    if (USB_TX_FIFO.available() == 0) {
-      break;
-    }
-    USBSerial.write(USB_TX_FIFO.read_char());
-  }
-#endif /* USE_TINYUSB */
-
 #if defined(USE_USB_HOST)
+
   UsbH.Task();
 
-  if( AcmSerial.isReady()) {
+  if ( AcmSerial.isReady()) {
     uint8_t rcode;
-    int bytesIn;
-    uint8_t data[64];
+    uint8_t data[EPX_SIZE];
+    size_t size;
 
-#if 0
-    if((bytesIn = SerialOutput.available()) > 0) {
-      bytesIn = Serial1.readBytes(data, min(bytesIn, sizeof(data)));
-      rcode = AcmSerial.SndData(bytesIn, data);
+    while ((size = USB_TX_FIFO.available()) != 0) {
+
+      if (size > sizeof(data)) {
+        size = sizeof(data);
+      }
+
+      for (size_t i=0; i < size; i++) {
+        data[i] = USB_TX_FIFO.read_char();
+      }
+
+      rcode = AcmSerial.SndData(size, data);
       if (rcode) {
         ErrorMessage<uint8_t>(PSTR("SndData"), rcode);
       }
     }
-#endif
 
     uint16_t rcvd = sizeof(data);
     rcode = AcmSerial.RcvData(&rcvd, data);
     if (rcode && rcode != USB_ERRORFLOW) {
       ErrorMessage<uint8_t>(PSTR("RcvData"), rcode);
-    }
-    else {
+    } else {
       if( rcvd ) {
+#if 1
         SerialOutput.write(data, rcvd);
+#else
+        size_t written;
+
+        for (written=0; written < rcvd; written++) {
+          if (!USB_RX_FIFO.isFull()) {
+            USB_RX_FIFO.store_char(data[written]);
+          } else {
+            break;
+          }
+        }
+#endif
       }
     }
   }
-#endif /* USE_USB_HOST */
+
+#elif !defined(USE_TINYUSB)
+
+  uint8_t buf[EPX_SIZE];
+  size_t size;
+
+  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (USBSerial) {
+      USBSerial.write(buf, size);
+    }
+  }
+
+  while (USBSerial && USBSerial.available() > 0) {
+    if (!USB_RX_FIFO.isFull()) {
+      USB_RX_FIFO.store_char(USBSerial.read());
+    } else {
+      break;
+    }
+  }
+
+#endif /* USE_TINYUSB */
 }
 
 static void SAMD_USB_fini()
@@ -720,9 +771,13 @@ static int SAMD_USB_available()
 {
   int rval = 0;
 
+#if defined(USE_TINYUSB)
   if (USBSerial) {
     rval = USBSerial.available();
   }
+#else
+  rval = USB_RX_FIFO.available();
+#endif /* USE_TINYUSB */
 
   return rval;
 }
@@ -731,9 +786,13 @@ static int SAMD_USB_read()
 {
   int rval = -1;
 
+#if defined(USE_TINYUSB)
   if (USBSerial) {
     rval = USBSerial.read();
   }
+#else
+  rval = USB_RX_FIFO.read_char();
+#endif /* USE_TINYUSB */
 
   return rval;
 }
