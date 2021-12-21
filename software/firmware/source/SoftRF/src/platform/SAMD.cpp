@@ -83,6 +83,49 @@ const char *SAMD_Device_Manufacturer = "SoftRF";
 const char *SAMD_Device_Model = "Academy Edition";
 const uint16_t SAMD_Device_Version = 0x0100;
 
+#if defined(USE_USB_HOST)
+
+#include <cdcacm.h>
+#include <usbhub.h>
+
+class ACMAsyncOper : public CDCAsyncOper
+{
+public:
+    uint8_t OnInit(ACM *pacm);
+};
+
+uint8_t ACMAsyncOper::OnInit(ACM *pacm)
+{
+    uint8_t rcode;
+    // Set DTR = 1 RTS=1
+    rcode = pacm->SetControlLineState(3);
+
+    if (rcode)
+    {
+        ErrorMessage<uint8_t>(PSTR("SetControlLineState"), rcode);
+        return rcode;
+    }
+
+    LINE_CODING lc;
+    lc.dwDTERate        = 115200;
+    lc.bCharFormat      = 0;
+    lc.bParityType      = 0;
+    lc.bDataBits        = 8;
+
+    rcode = pacm->SetLineCoding(&lc);
+
+    if (rcode)
+        ErrorMessage<uint8_t>(PSTR("SetLineCoding"), rcode);
+
+    return rcode;
+}
+
+USBHost       UsbH;
+ACMAsyncOper  AsyncOper;
+ACM           AcmSerial(&UsbH, &AsyncOper);
+
+#endif /* USE_USB_HOST */
+
 static void SAMD_setup()
 {
   uint8_t reset_reason = Watchdog.resetCause();
@@ -126,6 +169,10 @@ static void SAMD_setup()
   USBDevice.setProductDescriptor(SAMD_Device_Model);
   USBDevice.setDeviceVersion(SAMD_Device_Version);
 #endif /* USE_TINYUSB */
+
+#if defined(USE_USB_HOST)
+  UsbH.Init();
+#endif /* USE_USB_HOST */
 }
 
 static void SAMD_post_init()
@@ -212,7 +259,7 @@ static void SAMD_loop()
     if (tx_packets_counter != prev_tx_packets_counter) {
       digitalWrite(SOC_GPIO_RADIO_LED_TX, LED_STATE_ON);
       prev_tx_packets_counter = tx_packets_counter;
-      tx_led_time_marker == millis();
+      tx_led_time_marker = millis();
     }
   } else {
     if (millis() - tx_led_time_marker > LED_BLINK_TIME) {
@@ -227,7 +274,7 @@ static void SAMD_loop()
     if (rx_packets_counter != prev_rx_packets_counter) {
       digitalWrite(SOC_GPIO_RADIO_LED_RX, LED_STATE_ON);
       prev_rx_packets_counter = rx_packets_counter;
-      rx_led_time_marker == millis();
+      rx_led_time_marker = millis();
     }
   } else {
     if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
@@ -357,6 +404,32 @@ static void SAMD_EEPROM_extension(int cmd)
         ) {
       settings->mode = SOFTRF_MODE_NORMAL;
     }
+
+    if (settings->nmea_out == NMEA_BLUETOOTH ||
+        settings->nmea_out == NMEA_UDP       ||
+        settings->nmea_out == NMEA_TCP ) {
+      settings->nmea_out = NMEA_USB;
+    }
+    if (settings->gdl90 == GDL90_BLUETOOTH  ||
+        settings->gdl90 == GDL90_UDP) {
+      settings->gdl90 = GDL90_USB;
+    }
+    if (settings->d1090 == D1090_BLUETOOTH  ||
+        settings->d1090 == D1090_UDP) {
+      settings->d1090 = D1090_USB;
+    }
+
+#if defined(USE_USB_HOST)
+    if (settings->nmea_out != NMEA_OFF) {
+      settings->nmea_out = NMEA_UART;
+    }
+    if (settings->gdl90 != GDL90_OFF) {
+      settings->gdl90 = GDL90_UART;
+    }
+    if (settings->d1090 != D1090_OFF) {
+      settings->d1090 = D1090_UART;
+    }
+#endif /* USE_USB_HOST */
   }
 }
 
@@ -589,9 +662,51 @@ static void SAMD_USB_setup()
   }
 }
 
+#include <RingBuffer.h>
+#define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
+
 static void SAMD_USB_loop()
 {
+#if !defined(USE_TINYUSB)
+  while (USBSerial.availableForWrite() > 0) {
+    if (USB_TX_FIFO.available() == 0) {
+      break;
+    }
+    USBSerial.write(USB_TX_FIFO.read_char());
+  }
+#endif /* USE_TINYUSB */
 
+#if defined(USE_USB_HOST)
+  UsbH.Task();
+
+  if( AcmSerial.isReady()) {
+    uint8_t rcode;
+    int bytesIn;
+    uint8_t data[64];
+
+#if 0
+    if((bytesIn = SerialOutput.available()) > 0) {
+      bytesIn = Serial1.readBytes(data, min(bytesIn, sizeof(data)));
+      rcode = AcmSerial.SndData(bytesIn, data);
+      if (rcode) {
+        ErrorMessage<uint8_t>(PSTR("SndData"), rcode);
+      }
+    }
+#endif
+
+    uint16_t rcvd = sizeof(data);
+    rcode = AcmSerial.RcvData(&rcvd, data);
+    if (rcode && rcode != USB_ERRORFLOW) {
+      ErrorMessage<uint8_t>(PSTR("RcvData"), rcode);
+    }
+    else {
+      if( rcvd ) {
+        SerialOutput.write(data, rcvd);
+      }
+    }
+  }
+#endif /* USE_USB_HOST */
 }
 
 static void SAMD_USB_fini()
@@ -625,6 +740,18 @@ static int SAMD_USB_read()
 
 static size_t SAMD_USB_write(const uint8_t *buffer, size_t size)
 {
+#if !defined(USE_TINYUSB)
+  size_t written;
+
+  for (written=0; written < size; written++) {
+    if (!USB_TX_FIFO.isFull()) {
+      USB_TX_FIFO.store_char(buffer[written]);
+    } else {
+      break;
+    }
+  }
+  return written;
+#else
   size_t rval = size;
 
   if (USBSerial && (size < USBSerial.availableForWrite())) {
@@ -632,6 +759,7 @@ static size_t SAMD_USB_write(const uint8_t *buffer, size_t size)
   }
 
   return rval;
+#endif /* USE_TINYUSB */
 }
 
 IODev_ops_t SAMD_USBSerial_ops = {

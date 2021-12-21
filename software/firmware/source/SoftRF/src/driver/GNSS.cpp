@@ -1265,11 +1265,14 @@ void PickGNSSFix()
 
       C_NMEA_Source = NMEA_BLUETOOTH;
 
+    /* NEEDS WORK */
+#if !(defined(ARDUINO_ARCH_SAMD) && !defined(USE_TINYUSB))
     /* USB input is second */
     } else if (SoC->USB_ops && SoC->USB_ops->available() > 0) {
       c = SoC->USB_ops->read();
 
       C_NMEA_Source = NMEA_USB;
+#endif /* ARDUINO_ARCH_SAMD */
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
       /* This makes possible to configure S76x's built-in SONY GNSS from aside */

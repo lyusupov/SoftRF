@@ -40,10 +40,12 @@
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 
-#define SerialOutput            Serial
-#define USBSerial               Serial
+#define SerialOutput            SerialUSB
+//#define SerialOutput          Serial1
+
+#define USBSerial               SerialUSB
 #define swSer                   Serial1
-#define UATSerial               Serial
+#define UATSerial               SerialUSB
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
@@ -183,6 +185,10 @@ struct rst_info {
 #else
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+
+/* Experimental */
+//#define USE_USB_HOST
+
 #endif /* USE_TINYUSB */
 
 #else
@@ -237,6 +243,20 @@ extern Adafruit_NeoPixel strip;
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
 #endif /* USE_OLED */
+
+#if defined(USE_USB_HOST)
+
+#if defined(Serial)
+#undef Serial
+#endif
+#define Serial                  Serial1
+
+#if defined(SerialOutput)
+#undef SerialOutput
+#endif
+#define SerialOutput            Serial1
+
+#endif /* USE_USB_HOST */
 
 #endif /* PLATFORM_SAMD_H */
 
