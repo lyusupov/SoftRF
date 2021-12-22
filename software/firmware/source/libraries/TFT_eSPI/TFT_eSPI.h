@@ -110,7 +110,11 @@
   #ifdef USE_HSPI_PORT
     #define SPI_PORT HSPI
   #else
-    #define SPI_PORT VSPI
+    #if !defined(CONFIG_IDF_TARGET_ESP32S2)
+      #define SPI_PORT VSPI
+    #else
+      #define SPI_PORT FSPI
+    #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   #endif
 #endif
 
@@ -551,7 +555,11 @@ uint8_t overlap;
   #if defined (USE_HSPI_PORT)
     uint8_t  port = HSPI;
   #else
-    uint8_t  port = VSPI;
+    #if !defined(CONFIG_IDF_TARGET_ESP32S2)
+      uint8_t  port = VSPI;
+    #else
+      uint8_t  port = FSPI;
+    #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   #endif
 #endif
 

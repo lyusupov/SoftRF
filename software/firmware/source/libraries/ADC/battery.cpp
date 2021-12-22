@@ -13,20 +13,31 @@ esp_adc_cal_characteristics_t *adc_characs =
     (esp_adc_cal_characteristics_t *)calloc(
         1, sizeof(esp_adc_cal_characteristics_t));
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 static adc1_channel_t adc_channel = ADC1_GPIO36_CHANNEL;
+#else
+static adc1_channel_t adc_channel = ADC1_GPIO9_CHANNEL;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+
 static const adc_atten_t atten = ADC_ATTEN_DB_11;
 static const adc_unit_t unit = ADC_UNIT_1;
 
 void calibrate_voltage(adc1_channel_t channel) {
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+  adc_bits_width_t width = ADC_WIDTH_BIT_12;
+#else
+  adc_bits_width_t width = ADC_WIDTH_BIT_13;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+
   adc_channel = channel;
 
   // configure ADC
-  ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
+  ESP_ERROR_CHECK(adc1_config_width(width));
   ESP_ERROR_CHECK(adc1_config_channel_atten(adc_channel, atten));
   // calibrate ADC
   esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-      unit, atten, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_characs);
+      unit, atten, width, DEFAULT_VREF, adc_characs);
   // show ADC characterization base
   if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
     ESP_LOGI(TAG,

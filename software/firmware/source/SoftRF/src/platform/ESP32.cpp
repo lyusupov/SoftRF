@@ -17,10 +17,14 @@
  */
 #if defined(ESP32)
 
+#include "sdkconfig.h"
+
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <esp_bt.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #include <soc/rtc_cntl_reg.h>
 #include <soc/efuse_reg.h>
 #include <Wire.h>
@@ -190,6 +194,7 @@ static void ESP32_setup()
       break;
     }
   } else {
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
     uint32_t pkg_ver  = chip_ver & 0x7;
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4) {
@@ -197,6 +202,7 @@ static void ESP32_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
       lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
     }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 
   ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
@@ -242,8 +248,8 @@ static void ESP32_setup()
 
       axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
 
-      axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
-      axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
+      axp.setPowerOutPut(AXP192_LDO2,  AXP202_ON);
+      axp.setPowerOutPut(AXP192_LDO3,  AXP202_ON);
       axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
       axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON); // NC
       axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
@@ -380,7 +386,10 @@ static void ESP32_fini(int reason)
   SPI.end();
 
   esp_wifi_stop();
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   esp_bt_controller_disable();
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
   if (hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
@@ -485,18 +494,12 @@ static void* ESP32_getResetInfoPtr()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : reset_info.reason = REASON_DEFAULT_RST; break;
-    case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
-    case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
     case DEEPSLEEP_RESET        : reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
-    case SDIO_RESET             : reset_info.reason = REASON_EXCEPTION_RST; break;
     case TG0WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
     case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
     case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
-    case TGWDT_CPU_RESET        : reset_info.reason = REASON_WDT_RST; break;
-    case SW_CPU_RESET           : reset_info.reason = REASON_SOFT_RESTART; break;
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
-    case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
     case RTCWDT_BROWN_OUT_RESET : reset_info.reason = REASON_EXT_SYS_RST; break;
     case RTCWDT_RTC_RESET       :
       /* Slow start of GD25LQ32 causes one read fault at boot time with current ESP-IDF */
@@ -505,6 +508,14 @@ static void* ESP32_getResetInfoPtr()
       else
                                   reset_info.reason = REASON_WDT_RST;
                                   break;
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+    case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
+    case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
+    case SDIO_RESET             : reset_info.reason = REASON_EXCEPTION_RST; break;
+    case TGWDT_CPU_RESET        : reset_info.reason = REASON_WDT_RST; break;
+    case SW_CPU_RESET           : reset_info.reason = REASON_SOFT_RESTART; break;
+    case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     default                     : reset_info.reason = REASON_DEFAULT_RST;
   }
 
@@ -516,20 +527,22 @@ static String ESP32_getResetInfo()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("Vbat power on reset");
-    case SW_RESET               : return F("Software reset digital core");
-    case OWDT_RESET             : return F("Legacy watch dog reset digital core");
     case DEEPSLEEP_RESET        : return F("Deep Sleep reset digital core");
-    case SDIO_RESET             : return F("Reset by SLC module, reset digital core");
     case TG0WDT_SYS_RESET       : return F("Timer Group0 Watch dog reset digital core");
     case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
     case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
-    case TGWDT_CPU_RESET        : return F("Time Group reset CPU");
-    case SW_CPU_RESET           : return F("Software reset CPU");
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
-    case EXT_CPU_RESET          : return F("for APP CPU, reseted by PRO CPU");
     case RTCWDT_BROWN_OUT_RESET : return F("Reset when the vdd voltage is not stable");
     case RTCWDT_RTC_RESET       : return F("RTC Watch dog reset digital core and rtc module");
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+    case SW_RESET               : return F("Software reset digital core");
+    case OWDT_RESET             : return F("Legacy watch dog reset digital core");
+    case SDIO_RESET             : return F("Reset by SLC module, reset digital core");
+    case TGWDT_CPU_RESET        : return F("Time Group reset CPU");
+    case SW_CPU_RESET           : return F("Software reset CPU");
+    case EXT_CPU_RESET          : return F("for APP CPU, reseted by PRO CPU");
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     default                     : return F("No reset information available");
   }
 }
@@ -540,20 +553,22 @@ static String ESP32_getResetReason()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("POWERON_RESET");
-    case SW_RESET               : return F("SW_RESET");
-    case OWDT_RESET             : return F("OWDT_RESET");
     case DEEPSLEEP_RESET        : return F("DEEPSLEEP_RESET");
-    case SDIO_RESET             : return F("SDIO_RESET");
     case TG0WDT_SYS_RESET       : return F("TG0WDT_SYS_RESET");
     case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
     case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
     case INTRUSION_RESET        : return F("INTRUSION_RESET");
-    case TGWDT_CPU_RESET        : return F("TGWDT_CPU_RESET");
-    case SW_CPU_RESET           : return F("SW_CPU_RESET");
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
-    case EXT_CPU_RESET          : return F("EXT_CPU_RESET");
     case RTCWDT_BROWN_OUT_RESET : return F("RTCWDT_BROWN_OUT_RESET");
     case RTCWDT_RTC_RESET       : return F("RTCWDT_RTC_RESET");
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+    case SW_RESET               : return F("SW_RESET");
+    case OWDT_RESET             : return F("OWDT_RESET");
+    case SDIO_RESET             : return F("SDIO_RESET");
+    case TGWDT_CPU_RESET        : return F("TGWDT_CPU_RESET");
+    case SW_CPU_RESET           : return F("SW_CPU_RESET");
+    case EXT_CPU_RESET          : return F("EXT_CPU_RESET");
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     default                     : return F("NO_MEAN");
   }
 }
@@ -1088,9 +1103,13 @@ static void ESP32_Battery_setup()
 
     /* TBD */
   } else {
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
                      (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
                       ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+#else
+    calibrate_voltage(ADC1_GPIO9_CHANNEL);
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 }
 
@@ -1360,7 +1379,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_SPI_begin,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   &ESP32_Bluetooth_ops,
+#else
+  NULL,
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   NULL,
   NULL,
   ESP32_Display_setup,

@@ -20,6 +20,8 @@
 #ifndef PLATFORM_ESP32_H
 #define PLATFORM_ESP32_H
 
+#include "sdkconfig.h"
+
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
@@ -35,7 +37,13 @@
 #define SerialOutput            Serial
 #define SoftwareSerial          HardwareSerial
 #define swSer                   Serial1
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define UATSerial               Serial2
+#else
+#define UATSerial               Serial
+#endif
+
 #define EEPROM_commit()         EEPROM.commit()
 
 #define isValidFix()            isValidGNSSFix()

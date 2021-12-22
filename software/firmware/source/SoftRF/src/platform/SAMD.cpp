@@ -676,7 +676,7 @@ static void SAMD_USB_loop()
 
   UsbH.Task();
 
-  if ( AcmSerial.isReady()) {
+  if (AcmSerial.isReady()) {
     uint8_t rcode;
     uint8_t data[EPX_SIZE];
     size_t size;

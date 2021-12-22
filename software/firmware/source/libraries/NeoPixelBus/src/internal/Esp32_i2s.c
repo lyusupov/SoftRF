@@ -243,9 +243,11 @@ void i2sSetPins(uint8_t bus_num, int8_t out, int8_t ws, int8_t bck, int8_t in) {
         return;
     }
 
+#if ESP_IDF_VERSION_MAJOR<4 || SOC_I2S_SUPPORTS_DAC
     if ((ws >= 0 && I2S[bus_num].ws == -1) || (bck >= 0 && I2S[bus_num].bck == -1) || (out >= 0 && I2S[bus_num].out == -1)) {
         i2sSetDac(bus_num, false, false);
     }
+#endif
 
     if (ws >= 0) {
         if (I2S[bus_num].ws != ws) {
@@ -254,7 +256,11 @@ void i2sSetPins(uint8_t bus_num, int8_t out, int8_t ws, int8_t bck, int8_t in) {
             }
             I2S[bus_num].ws = ws;
             pinMode(ws, OUTPUT);
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
             gpio_matrix_out(ws, bus_num?I2S1O_WS_OUT_IDX:I2S0O_WS_OUT_IDX, false, false);
+#else
+            gpio_matrix_out(ws, I2S0O_WS_OUT_IDX, false, false);
+#endif
         }
     } else if (I2S[bus_num].ws >= 0) {
         gpio_matrix_out(I2S[bus_num].ws, 0x100, false, false);
@@ -268,7 +274,11 @@ void i2sSetPins(uint8_t bus_num, int8_t out, int8_t ws, int8_t bck, int8_t in) {
             }
             I2S[bus_num].bck = bck;
             pinMode(bck, OUTPUT);
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
             gpio_matrix_out(bck, bus_num?I2S1O_BCK_OUT_IDX:I2S0O_BCK_OUT_IDX, false, false);
+#else
+            gpio_matrix_out(bck, I2S0O_BCK_OUT_IDX, false, false);
+#endif
         }
     } else if (I2S[bus_num].bck >= 0) {
         gpio_matrix_out(I2S[bus_num].bck, 0x100, false, false);
