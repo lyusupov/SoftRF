@@ -175,8 +175,20 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWATCH_TFT_RST     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TWATCH_TFT_BL      12
 
+#define SOC_GPIO_PIN_T8_S2_TFT_MOSI     35
+#define SOC_GPIO_PIN_T8_S2_TFT_MISO     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_T8_S2_TFT_SCK      36
+#define SOC_GPIO_PIN_T8_S2_TFT_SS       34
+#define SOC_GPIO_PIN_T8_S2_TFT_DC       37
+#define SOC_GPIO_PIN_T8_S2_TFT_RST      38
+#define SOC_GPIO_PIN_T8_S2_TFT_BL       33
+
 #define LV_HOR_RES                      (240) //Horizontal
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_VER_RES                      (240) //vertical
+#else
+#define LV_VER_RES                      (135) //vertical
+#endif
 
 // 1st I2C bus on the T-Watch
 #define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
@@ -212,7 +224,8 @@ enum esp32_board_id {
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
-  ESP32_TTGO_T_WATCH
+  ESP32_TTGO_T_WATCH,
+  ESP32_S2_T8_V1_1
 };
 
 struct rst_info {
@@ -249,6 +262,7 @@ struct rst_info {
 //#define USE_BLE_MIDI
 //#define USE_GDL90_MSL
 //#define USE_OGN_ENCRYPTION
+//#define USE_USB_HOST
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */

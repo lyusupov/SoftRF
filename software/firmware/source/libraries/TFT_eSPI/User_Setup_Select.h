@@ -20,7 +20,16 @@
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
 
 #include <User_Setup.h>           // Default setup is root library folder
+
+#if defined(ESP32)
+#include "sdkconfig.h"
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <User_Setups/TTGO_Watch.h>
+#else
+#include <User_Setups/TTGO_T8_S2.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* ESP32 */
+
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file configured for my ST7735
 //#include <User_Setups/Setup3_ILI9163.h>  // Setup file configured for my ILI9163
