@@ -23,12 +23,12 @@
 
 #if defined(ESP32)
 #include "sdkconfig.h"
+#endif /* ESP32 */
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <User_Setups/TTGO_Watch.h>
 #else
 #include <User_Setups/TTGO_T8_S2.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#endif /* ESP32 */
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file configured for my ST7735
