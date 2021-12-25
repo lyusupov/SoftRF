@@ -98,6 +98,10 @@
 #include "src/system/Log.h"
 #endif /* LOGGER_IS_ENABLED */
 
+#if !defined(SERIAL_BEGIN)
+#define SERIAL_BEGIN(b,s) Serial.begin(b,s)
+#endif
+
 #define DEBUG 0
 #define DEBUG_TIMING 0
 
@@ -130,12 +134,13 @@ void setup()
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
 
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  SERIAL_BEGIN(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
-#elif defined(USBCON) && (defined(USE_TINYUSB) || defined(ARDUINO_ARCH_SAMD))
+#elif ARDUINO_USB_CDC_ON_BOOT || \
+     (defined(USBCON) && (defined(USE_TINYUSB) || defined(ARDUINO_ARCH_SAMD)))
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #endif
 

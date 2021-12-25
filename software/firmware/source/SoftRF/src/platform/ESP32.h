@@ -41,8 +41,13 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define UATSerial               Serial2
 #else
+#if ARDUINO_USB_CDC_ON_BOOT
+#define SERIAL_BEGIN(b,s)       Serial.begin(b)
+#define UATSerial               Serial0
+#else
 #define UATSerial               Serial
-#endif
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #define EEPROM_commit()         EEPROM.commit()
 
@@ -90,8 +95,12 @@ extern Adafruit_NeoPixel strip;
 /* Peripherals */
 #define SOC_GPIO_PIN_GNSS_RX    23
 #define SOC_GPIO_PIN_GNSS_TX    12
-#define SOC_GPIO_PIN_LED        25
 #define SOC_GPIO_PIN_BATTERY    36
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#define SOC_GPIO_PIN_LED        25
+#else
+#define SOC_GPIO_PIN_LED        8
+#endif
 
 #define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
@@ -175,6 +184,30 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWATCH_TFT_RST     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TWATCH_TFT_BL      12
 
+// 1st I2C bus on the T-Watch
+#define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
+#define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
+
+/* TTGO T8 S2 section */
+// GPS module
+#define SOC_GPIO_PIN_T8_S2_GNSS_RX      1
+#define SOC_GPIO_PIN_T8_S2_GNSS_TX      2
+
+// USB
+#define SOC_GPIO_PIN_T8_S2_USB_DP       20
+#define SOC_GPIO_PIN_T8_S2_USB_DN       19
+
+// SD SPI
+#define SOC_GPIO_PIN_T8_S2_MOSI         11
+#define SOC_GPIO_PIN_T8_S2_MISO         13
+#define SOC_GPIO_PIN_T8_S2_SCK          12
+#define SOC_GPIO_PIN_T8_S2_SS           10
+
+/* SX1276 */
+#define SOC_GPIO_PIN_T8_S2_LORA_RST     5
+#define SOC_GPIO_PIN_T8_S2_LORA_SS      6
+
+// TFT
 #define SOC_GPIO_PIN_T8_S2_TFT_MOSI     35
 #define SOC_GPIO_PIN_T8_S2_TFT_MISO     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_T8_S2_TFT_SCK      36
@@ -183,18 +216,32 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_T8_S2_TFT_RST      38
 #define SOC_GPIO_PIN_T8_S2_TFT_BL       33
 
-#define LV_HOR_RES                      (240) //Horizontal
+// button
+#define SOC_GPIO_PIN_T8_S2_BUTTON       21
+
+// I2C
+#define SOC_GPIO_PIN_T8_S2_SDA          3
+#define SOC_GPIO_PIN_T8_S2_SCL          4
+
+// battery voltage
+#define SOC_GPIO_PIN_T8_S2_BATTERY      9
+
+// V3V Power enable
+#define SOC_GPIO_PIN_T8_PWR_EN          14
+
+// 32768 Hz crystal
+#define SOC_GPIO_PIN_T8_S2_XP           15
+#define SOC_GPIO_PIN_T8_S2_XN           16
+
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
-#define LV_VER_RES                      (240) //vertical
+#define LV_HOR_RES                      (240) //Horizontal
 #else
-#define LV_VER_RES                      (135) //vertical
+#define LV_HOR_RES                      (135) //Horizontal
 #endif
+#define LV_VER_RES                      (240) //vertical
 
-// 1st I2C bus on the T-Watch
-#define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
-#define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
-
-// Hardware pin definitions for TTGO V2 Board with OLED SSD1306 0,96" I2C Display
+// Hardware pin definitions for TTGO LoRa V2 board
+// with OLED SSD1306 0,96" I2C Display
 #define TTGO_V2_OLED_PIN_RST    U8X8_PIN_NONE // connected to CPU RST/EN
 #define TTGO_V2_OLED_PIN_SDA    21
 #define TTGO_V2_OLED_PIN_SCL    22
@@ -273,6 +320,13 @@ struct rst_info {
 
 #define EXCLUDE_CC13XX
 #define EXCLUDE_LK8EX1
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#define EXCLUDE_NRF905
+#define EXCLUDE_UATM
+#define EXCLUDE_BMP180
+#define EXCLUDE_LED_RING
+#endif
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 

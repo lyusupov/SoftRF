@@ -1,7 +1,6 @@
 
-
-#define TFT_WIDTH  240
-#define TFT_HEIGHT 135
+#define TFT_WIDTH  135
+#define TFT_HEIGHT 240
 #define ST7789_DRIVER
 
 #define TFT_MISO            -1

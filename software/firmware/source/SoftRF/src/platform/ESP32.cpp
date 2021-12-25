@@ -95,6 +95,49 @@ extern U8X8_OLED_I2C_BUS_TYPE *u8x8;
 
 #if defined(USE_TFT)
 static TFT_eSPI *tft = NULL;
+
+void TFT_off()
+{
+    tft->writecommand(TFT_DISPOFF);
+    tft->writecommand(TFT_SLPIN);
+}
+
+void TFT_sleep()
+{
+    tft->writecommand(TFT_DISPOFF);
+    tft->writecommand(TFT_SLPIN);
+}
+
+void TFT_wakeup()
+{
+    tft->writecommand(TFT_SLPOUT);
+    tft->writecommand(TFT_DISPON);
+}
+
+uint8_t TFT_backlight_getLevel()
+{
+    return ledcRead(BACKLIGHT_CHANNEL);
+}
+
+void TFT_backlight_adjust(uint8_t level)
+{
+    ledcWrite(BACKLIGHT_CHANNEL, level);
+}
+
+bool TFT_isBacklightOn()
+{
+    return (bool)ledcRead(BACKLIGHT_CHANNEL);
+}
+
+void TFT_backlight_off()
+{
+    ledcWrite(BACKLIGHT_CHANNEL, 0);
+}
+
+void TFT_backlight_on()
+{
+    ledcWrite(BACKLIGHT_CHANNEL, 250);
+}
 #endif /* USE_TFT */
 
 AXP20X_Class axp;
@@ -172,6 +215,7 @@ static void ESP32_setup()
      *  TTGO T22 V08    |            | WINBOND_NEX_W25Q32_V
      *  TTGO T22 V11    |            | BOYA_BY25Q32AL
      *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
+     *  TTGO T8 S2 V1.1 |            | WINBOND_NEX_W25Q32_V
      *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
      *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
      *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
@@ -190,7 +234,18 @@ static void ESP32_setup()
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
     case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
     default:
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
+#else
+      hw_info.model = SOFTRF_MODEL_STANDALONE;
+      esp32_board = ESP32_S2_T8_V1_1;
+
+      lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
+      lmic_pins.busy = LMIC_UNUSED_PIN;
+
+      pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
+#endif
       break;
     }
   } else {
@@ -202,6 +257,14 @@ static void ESP32_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
       lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
     }
+#else
+    esp32_board = ESP32_S2_T8_V1_1;
+
+    lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
+    lmic_pins.busy = LMIC_UNUSED_PIN;
+
+    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 
@@ -391,7 +454,7 @@ static void ESP32_fini(int reason)
   esp_bt_controller_disable();
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
-  if (hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
@@ -427,8 +490,8 @@ static void ESP32_fini(int reason)
 
 #endif /* PMK2_SLEEP_MODE */
 
-    axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-    axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+    axp.setPowerOutPut(AXP192_LDO2,  AXP202_OFF);
+    axp.setPowerOutPut(AXP192_LDO3,  AXP202_OFF);
     axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
 
     /* workaround against AXP I2C access blocking by 'noname' OLED */
@@ -463,6 +526,11 @@ static void ESP32_fini(int reason)
      */
     axp.shutdown();
 #endif /* PMK2_SLEEP_MODE */
+  } else if (esp32_board == ESP32_S2_T8_V1_1) {
+    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT);
+
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_T8_S2_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
   }
 
   esp_deep_sleep_start();
@@ -806,13 +874,9 @@ static void ESP32_SPI_begin()
 {
   switch (esp32_board)
   {
-    case ESP32_TTGO_T_WATCH:
-      SPI.begin(SOC_GPIO_PIN_TWATCH_TFT_SCK, SOC_GPIO_PIN_TWATCH_TFT_MISO,
-                SOC_GPIO_PIN_TWATCH_TFT_MOSI, -1);
-      break;
     case ESP32_S2_T8_V1_1:
-      SPI.begin(SOC_GPIO_PIN_T8_S2_TFT_SCK, SOC_GPIO_PIN_T8_S2_TFT_MISO,
-                SOC_GPIO_PIN_T8_S2_TFT_MOSI, -1);
+      SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
+                SOC_GPIO_PIN_T8_S2_MOSI, SOC_GPIO_PIN_T8_S2_SS);
       break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
@@ -844,9 +908,14 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.print(hw_info.revision);
       Serial.println(F(" is detected."));
       swSer.begin(baud, SERIAL_IN_BITS, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+    } else if (esp32_board == ESP32_S2_T8_V1_1) {
+      Serial.println(F("INFO: TTGO T8 rev. 1.1 is detected."));
+      swSer.begin(baud, SERIAL_IN_BITS,
+                  SOC_GPIO_PIN_T8_S2_GNSS_RX, SOC_GPIO_PIN_T8_S2_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
-      swSer.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+      swSer.begin(baud, SERIAL_IN_BITS,
+                  SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
     }
   }
 
@@ -867,7 +936,8 @@ static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (esp32_board != ESP32_TTGO_T_WATCH) {
+  if (esp32_board != ESP32_TTGO_T_WATCH &&
+      esp32_board != ESP32_S2_T8_V1_1) {
 
 #if defined(USE_OLED)
     /* SSD1306 I2C OLED probing */
@@ -923,20 +993,20 @@ static byte ESP32_Display_setup()
   } else {  /* ESP32_TTGO_T_WATCH */
 
 #if defined(USE_TFT)
-    ESP32_SPI_begin();
-
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
+#if LV_HOR_RES != 135
     tft->setRotation(0);
+#else
+    tft->setRotation(1);
+#endif /* LV_HOR_RES */
     tft->fillScreen(TFT_NAVY);
 
-    ledcAttachPin(SOC_GPIO_PIN_TWATCH_TFT_BL, 1);
-    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+    int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
+                 SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
 
-    for (int level = 0; level < 255; level += 25) {
-      ledcWrite(BACKLIGHT_CHANNEL, level);
-      delay(100);
-    }
+    ledcAttachPin(bl_pin, 1);
+    ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
 
     tft->setTextFont(4);
     tft->setTextSize(2);
@@ -947,7 +1017,16 @@ static byte ESP32_Display_setup()
     tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
     tft->println(SoftRF_text1);
 
+    for (int level = 0; level < 255; level += 25) {
+      TFT_backlight_adjust(level);
+      delay(100);
+    }
+
+#if LV_HOR_RES != 135
     rval = DISPLAY_TFT_TTGO_240;
+#else
+    rval = DISPLAY_TFT_TTGO_135;
+#endif /* LV_HOR_RES */
 #endif /* USE_TFT */
   }
 
@@ -1089,17 +1168,70 @@ static void ESP32_Display_loop()
 
 static void ESP32_Display_fini(int reason)
 {
+  switch (hw_info.display)
+  {
 #if defined(USE_OLED)
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
 
-  OLED_fini(reason);
+    OLED_fini(reason);
 
-  if (u8x8) {
+    if (u8x8) {
 
-    delay(3000); /* Keep shutdown message on OLED for 3 seconds */
+      delay(3000); /* Keep shutdown message on OLED for 3 seconds */
 
-    u8x8->noDisplay();
-  }
+      u8x8->noDisplay();
+    }
+    break;
 #endif /* USE_OLED */
+
+#if defined(USE_TFT)
+  case DISPLAY_TFT_TTGO_240:
+  case DISPLAY_TFT_TTGO_135:
+    if (tft) {
+        int level;
+        const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT) ?
+                   "LOW BAT" : "  OFF  ";
+
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(level);
+          delay(100);
+        }
+
+        tft->fillScreen(TFT_NAVY);
+
+        tft->setTextFont(4);
+        tft->setTextSize(2);
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        uint16_t tbw = tft->textWidth(msg);
+        uint16_t tbh = tft->fontHeight();
+
+        tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+        tft->print(msg);
+
+        for (level = 0; level <= 250; level += 25) {
+          TFT_backlight_adjust(level);
+          delay(100);
+        }
+
+        delay(2000);
+
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(level);
+          delay(100);
+        }
+
+        TFT_backlight_off();
+        TFT_off();
+    }
+    break;
+#endif /* USE_TFT */
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 static void ESP32_Battery_setup()
@@ -1180,7 +1312,8 @@ static float ESP32_Battery_param(uint8_t param)
 
       /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
-         (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16)) {
+         (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
+         (esp32_board   == ESP32_S2_T8_V1_1)) {
         voltage += voltage;
       }
     }
@@ -1213,6 +1346,10 @@ static bool ESP32_Baro_setup()
 
     return false;
 
+  } else if (esp32_board == ESP32_S2_T8_V1_1) {
+
+    Wire.setPins(SOC_GPIO_PIN_T8_S2_SDA, SOC_GPIO_PIN_T8_S2_SCL);
+
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
@@ -1224,8 +1361,7 @@ static bool ESP32_Baro_setup()
     Serial.println(F("INFO: RESET pin of SX12xx radio is not connected to MCU."));
 #endif
 
-    /* Pre-init 1st ESP32 I2C bus to stick on these pins */
-    Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+    Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
   } else {
 
@@ -1234,7 +1370,7 @@ static bool ESP32_Baro_setup()
     }
 
     /* Start from 1st I2C bus */
-    Wire.begin(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
+    Wire.setPins(SOC_GPIO_PIN_TBEAM_SDA, SOC_GPIO_PIN_TBEAM_SCL);
     if (Baro_probe())
       return true;
 
@@ -1326,9 +1462,11 @@ void onPageButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-  if ( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
-      (hw_info.revision == 2 || hw_info.revision == 5)) {
-    int button_pin = SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+  if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
+       (hw_info.revision == 2 || hw_info.revision == 5)) ||
+       esp32_board == ESP32_S2_T8_V1_1) {
+    int button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
+                     SOC_GPIO_PIN_T8_S2_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
     pinMode(button_pin, INPUT);
@@ -1350,15 +1488,18 @@ static void ESP32_Button_setup()
 
 static void ESP32_Button_loop()
 {
-  if ( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
-      (hw_info.revision == 2 || hw_info.revision == 5)) {
+  if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
+       (hw_info.revision == 2 || hw_info.revision == 5)) ||
+       esp32_board == ESP32_S2_T8_V1_1) {
     button_1.check();
   }
 }
 
 static void ESP32_Button_fini()
 {
-
+  if (esp32_board == ESP32_S2_T8_V1_1) {
+    while (digitalRead(SOC_GPIO_PIN_T8_S2_BUTTON) == LOW);
+  }
 }
 
 #if defined(USE_USB_HOST)
@@ -1444,6 +1585,14 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
     else
     {
         log_w("DEVICE gone event");
+#if 0
+        if (device)
+        {
+            device->deinit();
+            delete(device);
+        }
+        device = NULL;
+#endif
     }
 }
 
@@ -1471,7 +1620,8 @@ static void ESP32S2_USB_loop()
 
 static void ESP32S2_USB_fini()
 {
-  /* TBD */
+    delete(USB_RX_FIFO);
+    delete(USB_TX_FIFO);
 }
 
 static int ESP32S2_USB_available()
@@ -1516,7 +1666,11 @@ IODev_ops_t ESP32S2_USBSerial_ops = {
 
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
-  "ESP32",
+  "ESP32"
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+  "-S2"
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+  "" ,
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,
@@ -1546,7 +1700,7 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_USB_HOST)
   &ESP32S2_USBSerial_ops,
 #else
   NULL,
