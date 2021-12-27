@@ -17,6 +17,8 @@
  */
 #if defined(ESP32)
 
+#include "sdkconfig.h"
+
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
@@ -38,7 +40,9 @@
 //#include "driver/i2s.h"
 
 #include <esp_wifi.h>
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <esp_bt.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
@@ -312,7 +316,10 @@ static void ESP32_fini()
   uSD_SPI.end();
 
   esp_wifi_stop();
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   esp_bt_controller_disable();
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
@@ -401,8 +408,8 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
     tcpip_adapter_dhcps_option(
-      (tcpip_adapter_option_mode_t) TCPIP_ADAPTER_OP_SET,
-      (tcpip_adapter_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
+      (tcpip_adapter_dhcp_option_mode_t) TCPIP_ADAPTER_OP_SET,
+      (tcpip_adapter_dhcp_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
       (void*) &lt, sizeof(lt));
     break;
   default:
@@ -1060,7 +1067,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   ESP32_Service_Mode,
-  &ESP32_Bluetooth_ops
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+  &ESP32_Bluetooth_ops,
+#else
+  NULL,
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 };
 
 #endif /* ESP32 */

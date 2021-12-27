@@ -476,6 +476,8 @@ bool NMEA_Save_Settings()
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
     SerialInput.write((byte *) NMEABuffer, strlen(NMEABuffer));
+
+    return true;
 }
 
 bool NMEA_isConnected()
