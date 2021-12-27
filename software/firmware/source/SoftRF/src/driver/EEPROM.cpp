@@ -107,7 +107,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
 
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+#if (ARDUINO_ESP32S2_USB && !defined(USE_USB_HOST)) || \
+    (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB))
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE   ?

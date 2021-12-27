@@ -44,6 +44,8 @@
 #if ARDUINO_USB_CDC_ON_BOOT
 #define SERIAL_BEGIN(b,s)       Serial.begin(b)
 #define UATSerial               Serial0
+#undef  SerialOutput
+#define SerialOutput            Serial0
 #else
 #define UATSerial               Serial
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
@@ -189,6 +191,9 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
 
 /* TTGO T8 S2 section */
+#define SOC_GPIO_PIN_T8_S2_CONS_RX      44
+#define SOC_GPIO_PIN_T8_S2_CONS_TX      43
+
 // GPS module
 #define SOC_GPIO_PIN_T8_S2_GNSS_RX      1
 #define SOC_GPIO_PIN_T8_S2_GNSS_TX      2
@@ -309,7 +314,6 @@ struct rst_info {
 //#define USE_BLE_MIDI
 //#define USE_GDL90_MSL
 //#define USE_OGN_ENCRYPTION
-//#define USE_USB_HOST
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
@@ -326,7 +330,17 @@ struct rst_info {
 #define EXCLUDE_UATM
 #define EXCLUDE_BMP180
 #define EXCLUDE_LED_RING
-#endif
+
+/* Experimental */
+//#define USE_USB_HOST
+
+#if defined(USE_USB_HOST)
+#undef  SOC_GPIO_PIN_T8_S2_CONS_RX
+#undef  SOC_GPIO_PIN_T8_S2_CONS_TX
+#define SOC_GPIO_PIN_T8_S2_CONS_RX      46
+#define SOC_GPIO_PIN_T8_S2_CONS_TX      45
+#endif /* USE_USB_HOST */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 

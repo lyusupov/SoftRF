@@ -102,23 +102,6 @@ void TFT_off()
     tft->writecommand(TFT_SLPIN);
 }
 
-void TFT_sleep()
-{
-    tft->writecommand(TFT_DISPOFF);
-    tft->writecommand(TFT_SLPIN);
-}
-
-void TFT_wakeup()
-{
-    tft->writecommand(TFT_SLPOUT);
-    tft->writecommand(TFT_DISPON);
-}
-
-uint8_t TFT_backlight_getLevel()
-{
-    return ledcRead(BACKLIGHT_CHANNEL);
-}
-
 void TFT_backlight_adjust(uint8_t level)
 {
     ledcWrite(BACKLIGHT_CHANNEL, level);
@@ -160,6 +143,10 @@ static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
+
+const char *ESP32S2_Device_Manufacturer = "SoftRF";
+const char *ESP32S2_Device_Model = "Standalone Edition";
+const uint16_t ESP32S2_Device_Version = 0x0100;
 
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
@@ -237,14 +224,7 @@ static void ESP32_setup()
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
 #else
-      hw_info.model = SOFTRF_MODEL_STANDALONE;
       esp32_board = ESP32_S2_T8_V1_1;
-
-      lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
-      lmic_pins.busy = LMIC_UNUSED_PIN;
-
-      pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
 #endif
       break;
     }
@@ -259,12 +239,6 @@ static void ESP32_setup()
     }
 #else
     esp32_board = ESP32_S2_T8_V1_1;
-
-    lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
-    lmic_pins.busy = LMIC_UNUSED_PIN;
-
-    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 
@@ -333,6 +307,28 @@ static void ESP32_setup()
     }
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
     lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
+  } else if (esp32_board == ESP32_S2_T8_V1_1) {
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+    lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
+    lmic_pins.busy = LMIC_UNUSED_PIN;
+
+    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
+
+#if defined(USE_USB_HOST)
+    Serial.end();
+    Serial.begin(SERIAL_OUT_BR, SERIAL_IN_BITS,
+                 SOC_GPIO_PIN_T8_S2_CONS_RX, SOC_GPIO_PIN_T8_S2_CONS_TX);
+#endif /* USE_USB_HOST */
+
+#if defined(ARDUINO_ESP32S2_USB)
+    USB.manufacturerName(ESP32S2_Device_Manufacturer);
+    USB.productName(ESP32S2_Device_Model);
+    USB.firmwareVersion(ESP32S2_Device_Version);
+//  USB.serialNumber("12345677890");
+//  USB.begin();
+#endif /* ARDUINO_ESP32S2_USB */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 }
 
@@ -858,6 +854,7 @@ static bool ESP32_EEPROM_begin(size_t size)
 static void ESP32_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) || defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
@@ -867,6 +864,7 @@ static void ESP32_EEPROM_extension(int cmd)
     if (settings->d1090 == D1090_USB) {
       settings->d1090 = D1090_UART;
     }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
 }
 
