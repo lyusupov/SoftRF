@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2012 by Salvatore Sanfilippo <antirez@gmail.com>
  * Copyright (C) 2017, Thomas Watson
- * Copyright (C) 2021, Linar Yusupov
+ * Copyright (C) 2021-2022 Linar Yusupov
  *
  * All rights reserved.
  *

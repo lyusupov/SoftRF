@@ -1,6 +1,6 @@
 /*
  * Platform_LPC43.cpp
- * Copyright (C) 2021 Linar Yusupov
+ * Copyright (C) 2021-2022 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -378,7 +378,7 @@ void setup_CPP(void)
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2021 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;

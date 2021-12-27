@@ -1,6 +1,6 @@
 /*
  * Platform_ESP32.cpp
- * Copyright (C) 2018-2021 Linar Yusupov
+ * Copyright (C) 2018-2022 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -307,8 +307,8 @@ static void ESP32_setup()
     }
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
     lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
-  } else if (esp32_board == ESP32_S2_T8_V1_1) {
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
+  } else if (esp32_board == ESP32_S2_T8_V1_1) {
     lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
     lmic_pins.busy = LMIC_UNUSED_PIN;

@@ -1,6 +1,6 @@
 #
 #  NMEA.py
-#  Copyright (C) 2016-2021 Linar Yusupov
+#  Copyright (C) 2016-2022 Linar Yusupov
 # 
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
