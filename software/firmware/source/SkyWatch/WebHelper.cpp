@@ -26,6 +26,7 @@
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
 #include "BaroHelper.h"
+#include "BluetoothHelper.h"
 
 #include <protocol.h>
 #include <freqplan.h>

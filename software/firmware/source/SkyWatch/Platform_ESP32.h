@@ -56,10 +56,6 @@
 #define SOC_GPIO_PIN_TWATCH_TFT_RST     SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TWATCH_TFT_BL      12
 
-#define LV_HOR_RES                      (240) //Horizontal
-#define LV_VER_RES                      (240) //vertical
-#define BACKLIGHT_CHANNEL               ((uint8_t)1)
-
 /* 1st I2C bus on the T-Watch */
 #define SOC_GPIO_PIN_TWATCH_EXT_SDA     25
 #define SOC_GPIO_PIN_TWATCH_EXT_SCL     26
@@ -89,6 +85,54 @@
 #define SOC_GPIO_PIN_BCLK               26
 #define SOC_GPIO_PIN_LRCLK              25
 #define SOC_GPIO_PIN_DOUT               19
+
+/* TTGO T8 S2 section */
+#define SOC_GPIO_PIN_T8_S2_CONS_RX      44
+#define SOC_GPIO_PIN_T8_S2_CONS_TX      43
+
+// USB
+#define SOC_GPIO_PIN_T8_S2_USB_DP       20
+#define SOC_GPIO_PIN_T8_S2_USB_DN       19
+
+// SD SPI
+#define SOC_GPIO_PIN_T8_S2_MOSI         11
+#define SOC_GPIO_PIN_T8_S2_MISO         13
+#define SOC_GPIO_PIN_T8_S2_SCK          12
+#define SOC_GPIO_PIN_T8_S2_SS           10
+
+// TFT
+#define SOC_GPIO_PIN_T8_S2_TFT_MOSI     35
+#define SOC_GPIO_PIN_T8_S2_TFT_MISO     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_T8_S2_TFT_SCK      36
+#define SOC_GPIO_PIN_T8_S2_TFT_SS       34
+#define SOC_GPIO_PIN_T8_S2_TFT_DC       37
+#define SOC_GPIO_PIN_T8_S2_TFT_RST      38
+#define SOC_GPIO_PIN_T8_S2_TFT_BL       33
+
+// button
+#define SOC_GPIO_PIN_T8_S2_BUTTON       21
+
+// I2C
+#define SOC_GPIO_PIN_T8_S2_SDA          3
+#define SOC_GPIO_PIN_T8_S2_SCL          4
+
+// battery voltage
+#define SOC_GPIO_PIN_T8_S2_BATTERY      9
+
+// V3V Power enable
+#define SOC_GPIO_PIN_T8_PWR_EN          14
+
+// 32768 Hz crystal
+#define SOC_GPIO_PIN_T8_S2_XP           15
+#define SOC_GPIO_PIN_T8_S2_XN           16
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#define LV_HOR_RES                      (240) //Horizontal
+#else
+#define LV_HOR_RES                      (135) //Horizontal
+#endif
+#define LV_VER_RES                      (240) //vertical
+#define BACKLIGHT_CHANNEL               ((uint8_t)1)
 
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
@@ -134,6 +178,19 @@ extern PCF8563_Class *rtc;
 #define DEBUG_POWER 0
 
 #define EB_S76G_1_3
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+
+/* Experimental */
+#define USE_USB_HOST
+
+#if defined(USE_USB_HOST)
+#undef  SOC_GPIO_PIN_T8_S2_CONS_RX
+#undef  SOC_GPIO_PIN_T8_S2_CONS_TX
+#define SOC_GPIO_PIN_T8_S2_CONS_RX      46
+#define SOC_GPIO_PIN_T8_S2_CONS_TX      45
+#endif /* USE_USB_HOST */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #endif /* PLATFORM_ESP32_H */
 

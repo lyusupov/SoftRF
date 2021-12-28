@@ -21,6 +21,7 @@
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
 #include "BatteryHelper.h"
+#include "BluetoothHelper.h"
 
 #include <protocol.h>
 #include <freqplan.h>

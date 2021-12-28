@@ -280,7 +280,9 @@ void NMEA_setup()
     switch (settings->m.connection)
     {
     case CON_SERIAL_MAIN:
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     case CON_SERIAL_AUX:
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
       uint32_t SerialBaud;
 
       switch (settings->m.baudrate)
@@ -312,10 +314,21 @@ void NMEA_setup()
       SoC->swSer_begin(SerialBaud);
       break;
     case CON_BLUETOOTH:
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->setup();
+#if 0
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->setup();
       }
+#endif
       break;
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+    case CON_SERIAL_AUX:
+#if 0
+      if (SoC->USB_ops) {
+        SoC->USB_ops->setup();
+      }
+#endif
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     case CON_NONE:
     case CON_WIFI_UDP:
     default:
@@ -353,6 +366,7 @@ void NMEA_loop()
     }
     break;
   case CON_SERIAL_AUX:
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     /* read data from Type-C USB port */
     while (Serial.available() > 0) {
       c = Serial.read();
@@ -360,6 +374,17 @@ void NMEA_loop()
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
+#else
+    /* read data from Type-C USB port in Host mode */
+    if (SoC->USB_ops) {
+      while (SoC->USB_ops->available() > 0) {
+        c = SoC->USB_ops->read();
+        Serial.print(c);
+        NMEA_Parse_Character(c);
+        NMEA_TimeMarker = millis();
+      }
+    }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
@@ -372,9 +397,9 @@ void NMEA_loop()
     }
     break;
   case CON_BLUETOOTH:
-    if (SoC->Bluetooth) {
-      while (SoC->Bluetooth->available() > 0) {
-        c = SoC->Bluetooth->read();
+    if (SoC->Bluetooth_ops) {
+      while (SoC->Bluetooth_ops->available() > 0) {
+        c = SoC->Bluetooth_ops->read();
         Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
@@ -546,10 +571,10 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
     break;
   case NMEA_BLUETOOTH:
     {
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->write(buf, size);
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->write(buf, size);
         if (nl)
-          SoC->Bluetooth->write((byte *) "\n", 1);
+          SoC->Bluetooth_ops->write((byte *) "\n", 1);
       }
     }
     break;

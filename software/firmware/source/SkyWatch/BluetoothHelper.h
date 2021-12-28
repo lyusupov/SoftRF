@@ -19,17 +19,6 @@
 #ifndef BLUETOOTHHELPER_H
 #define BLUETOOTHHELPER_H
 
-#include <stddef.h>
-
-typedef struct Bluetooth_ops_struct {
-  const char name[16];
-  void (*setup)();
-  void (*loop)();
-  int (*available)(void);
-  int (*read)(void);
-  size_t (*write)(const uint8_t *buffer, size_t size);
-} Bluetooth_ops_t;
-
 enum
 {
 	BLUETOOTH_OFF,
@@ -53,7 +42,7 @@ enum
 
 #define BLE_MAX_WRITE_CHUNK_SIZE  20
 
-extern Bluetooth_ops_t ESP32_Bluetooth_ops;
+extern IODev_ops_t ESP32_Bluetooth_ops;
 
 #if defined(ENABLE_BT_VOICE)
 

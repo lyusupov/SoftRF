@@ -24,7 +24,6 @@
 #include "SkyWatch.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
-#include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -58,7 +57,8 @@ typedef struct SoC_ops_struct {
   void (*WDT_setup)();
   void (*WDT_fini)();
   void (*Service_Mode)(boolean);
-  Bluetooth_ops_t *Bluetooth;
+  IODev_ops_t *Bluetooth_ops;
+  IODev_ops_t *USB_ops;
 } SoC_ops_t;
 
 enum

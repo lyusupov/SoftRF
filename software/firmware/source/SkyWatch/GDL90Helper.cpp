@@ -252,9 +252,11 @@ void GDL90_setup()
       SoC->swSer_begin(SerialBaud);
       break;
     case CON_BLUETOOTH:
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->setup();
+#if 0
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->setup();
       }
+#endif
       break;
     case CON_NONE:
     case CON_WIFI_UDP:
@@ -281,13 +283,25 @@ void GDL90_loop()
     }
     break;
   case CON_SERIAL_AUX:
-    /* read data from microUSB port */
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+    /* read data from Type-C USB port */
     while (Serial.available() > 0) {
       char c = Serial.read();
 //        Serial.print(c);
       GDL90_Parse_Character(c);
       GDL90_Data_TimeMarker = millis();
     }
+#else
+    /* read data from Type-C USB port in Host mode */
+    if (SoC->USB_ops) {
+      while (SoC->USB_ops->available() > 0) {
+        char c = SoC->USB_ops->read();
+//        Serial.print(c);
+        GDL90_Parse_Character(c);
+        GDL90_Data_TimeMarker = millis();
+      }
+    }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
@@ -300,9 +314,9 @@ void GDL90_loop()
     }
     break;
   case CON_BLUETOOTH:
-    if (SoC->Bluetooth) {
-      while (SoC->Bluetooth->available() > 0) {
-        char c = SoC->Bluetooth->read();
+    if (SoC->Bluetooth_ops) {
+      while (SoC->Bluetooth_ops->available() > 0) {
+        char c = SoC->Bluetooth_ops->read();
 //        Serial.print(c);
         GDL90_Parse_Character(c);
         GDL90_Data_TimeMarker = millis();

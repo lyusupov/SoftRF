@@ -292,6 +292,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_WDT_setup,
   ESP8266_WDT_fini,
   ESP8266_Service_Mode,
+  NULL,
   NULL
 };
 

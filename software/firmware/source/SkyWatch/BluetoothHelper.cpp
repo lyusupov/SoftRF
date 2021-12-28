@@ -206,6 +206,11 @@ static void ESP32_Bluetooth_loop()
   }
 }
 
+static void ESP32_Bluetooth_fini()
+{
+  /* TBD */
+}
+
 static int ESP32_Bluetooth_available()
 {
   int rval = 0;
@@ -270,10 +275,11 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
   return rval;
 }
 
-Bluetooth_ops_t ESP32_Bluetooth_ops = {
+IODev_ops_t ESP32_Bluetooth_ops = {
   "ESP32 Bluetooth",
   ESP32_Bluetooth_setup,
   ESP32_Bluetooth_loop,
+  ESP32_Bluetooth_fini,
   ESP32_Bluetooth_available,
   ESP32_Bluetooth_read,
   ESP32_Bluetooth_write

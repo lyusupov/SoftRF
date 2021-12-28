@@ -117,8 +117,12 @@ void setup()
 
   WiFi_setup();
 
-  if (SoC->Bluetooth) {
-     SoC->Bluetooth->setup();
+  if (SoC->USB_ops) {
+     SoC->USB_ops->setup();
+  }
+
+  if (SoC->Bluetooth_ops) {
+     SoC->Bluetooth_ops->setup();
   }
 
   if (SoC->DB_init()) {
@@ -151,10 +155,12 @@ void setup()
       SerialInput.write(on_msg);
       SerialInput.flush();
       break;
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     case CON_SERIAL_AUX:
       Serial.write(on_msg);
       Serial.flush();
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     case CON_NONE:
     default:
       break;
@@ -191,8 +197,12 @@ void normal_loop()
     break;
   }
 
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->loop();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
   }
 
   Traffic_loop();
@@ -261,10 +271,12 @@ void shutdown(const char *msg)
       SerialInput.write(off_msg);
       SerialInput.flush();
       break;
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     case CON_SERIAL_AUX:
       Serial.write(off_msg);
       Serial.flush();
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     case CON_NONE:
     default:
       break;
@@ -276,6 +288,14 @@ void shutdown(const char *msg)
   Web_fini();
 
   SoC->DB_fini();
+
+  if (SoC->Bluetooth_ops) {
+     SoC->Bluetooth_ops->fini();
+  }
+
+  if (SoC->USB_ops) {
+     SoC->USB_ops->fini();
+  }
 
   WiFi_fini();
 

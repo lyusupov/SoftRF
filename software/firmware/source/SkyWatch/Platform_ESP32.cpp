@@ -1035,9 +1035,226 @@ static void ESP32_Service_Mode(boolean arg)
   }
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+
+#if defined(USE_USB_HOST)
+
+#include "usb/usb_host.h"
+
+#include "usb_host.hpp"
+#include "usb_acm.hpp"
+
+#define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+#define USB_RX_FIFO_SIZE (256)
+#define USB_MAX_WRITE_CHUNK_SIZE 256
+
+cbuf *USB_RX_FIFO, *USB_TX_FIFO;
+USBhost host;           // host is required to detect any device, before USB class is initialized
+USBacmDevice *device;   // when USB class is detected from descriptor
+
+void acm_events(int event, void *data, size_t len)
+{
+    switch (event)
+    {
+    case CDC_CTRL_SET_CONTROL_LINE_STATE:
+        log_i("CDC_CTRL_SET_CONTROL_LINE_STATE");
+        device->setLineCoding(115200, 0, 0, 8);
+        break;
+
+    case CDC_DATA_IN:
+    {
+        device->INDATA();
+        if (len > 0) {
+          USB_RX_FIFO->write((char *) data,
+                       USB_RX_FIFO->room() > len ?
+                       len : USB_RX_FIFO->room());
+        }
+        break;
+    }
+    case CDC_DATA_OUT:
+
+        break;
+
+    case CDC_CTRL_SET_LINE_CODING:
+        log_i("CDC_CTRL_SET_LINE_CODING");
+        break;
+    }
+}
+
+void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *arg)
+{
+    if (event_msg->event == USB_HOST_CLIENT_EVENT_NEW_DEV)
+    {
+        host.open(event_msg);
+        usb_device_info_t info = host.getDeviceInfo();
+        log_i("device speed: %s, device address: %d, max ep_ctrl size: %d, config: %d", info.speed ? "USB_SPEED_FULL" : "USB_SPEED_LOW", info.dev_addr, info.bMaxPacketSize0, info.bConfigurationValue);
+        const usb_device_desc_t *dev_desc = host.getDeviceDescriptor();
+        int offset = 0;
+        for (size_t i = 0; i < dev_desc->bNumConfigurations; i++)
+        {
+            const usb_config_desc_t *config_desc = host.getConfigurationDescriptor();
+            for (size_t n = 0; n < config_desc->bNumInterfaces; n++)
+            {
+                const usb_intf_desc_t *intf = usb_parse_interface_descriptor(config_desc, n, 0, &offset);
+                if (intf->bInterfaceClass == 0x0a) // CDC ACM
+                {
+                    device = new USBacmDevice(config_desc, &host);
+                    n = config_desc->bNumInterfaces;
+                    if (device)
+                    {
+                        device->init();
+                        device->onEvent(acm_events);
+                        device->setControlLine(1, 1);
+                        device->INDATA();
+                    }
+                }
+
+//                printf("config: %d[%d], interface: %d[%d], intf class: %d\n", i, dev_desc->bNumConfigurations, n, config_desc->bNumInterfaces, intf->bInterfaceClass);
+            }
+        }
+    }
+    else
+    {
+        log_w("DEVICE gone event");
+#if 0
+        if (device)
+        {
+            device->deinit();
+            delete(device);
+        }
+        device = NULL;
+#endif
+    }
+}
+
+static void ESP32S2_USB_setup()
+{
+  USB_RX_FIFO = new cbuf(USB_RX_FIFO_SIZE);
+  USB_TX_FIFO = new cbuf(USB_TX_FIFO_SIZE);
+
+  host.registerClientCb(client_event_callback);
+  host.init();
+}
+
+static void ESP32S2_USB_loop()
+{
+    if (device && device->isConnected())
+    {
+          uint8_t chunk[USB_MAX_WRITE_CHUNK_SIZE];
+          size_t size = (USB_TX_FIFO->available() < USB_MAX_WRITE_CHUNK_SIZE ?
+                         USB_TX_FIFO->available() : USB_MAX_WRITE_CHUNK_SIZE);
+
+          USB_TX_FIFO->read((char *) chunk, size);
+          device->OUTDATA(chunk, size);
+    }
+}
+
+static void ESP32S2_USB_fini()
+{
+    delete(USB_RX_FIFO);
+    delete(USB_TX_FIFO);
+}
+
+static int ESP32S2_USB_available()
+{
+  int rval = 0;
+
+  rval = USB_RX_FIFO->available();
+
+  return rval;
+}
+
+static int ESP32S2_USB_read()
+{
+  int rval = -1;
+
+  rval = USB_RX_FIFO->read();
+
+  return rval;
+}
+
+static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  rval = USB_TX_FIFO->write((char *) buffer,
+                      (USB_TX_FIFO->room() > size ? size : USB_TX_FIFO->room()));
+
+  return rval;
+}
+
+#elif ARDUINO_USB_CDC_ON_BOOT
+
+#define USBSerial Serial
+
+static void ESP32S2_USB_setup()
+{
+
+}
+
+static void ESP32S2_USB_loop()
+{
+
+}
+
+static void ESP32S2_USB_fini()
+{
+
+}
+
+static int ESP32S2_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int ESP32S2_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+#endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
+
+IODev_ops_t ESP32S2_USBSerial_ops = {
+  "ESP32S2 USB",
+  ESP32S2_USB_setup,
+  ESP32S2_USB_loop,
+  ESP32S2_USB_fini,
+  ESP32S2_USB_available,
+  ESP32S2_USB_read,
+  ESP32S2_USB_write
+};
+
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
-  "ESP32",
+  "ESP32"
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+  "-S2"
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+  "" ,
   ESP32_setup,
   ESP32_loop,
   ESP32_fini,
@@ -1072,6 +1289,12 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32S2) && \
+   (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
+  &ESP32S2_USBSerial_ops,
+#else
+  NULL,
+#endif /* USE_USB_HOST */
 };
 
 #endif /* ESP32 */
