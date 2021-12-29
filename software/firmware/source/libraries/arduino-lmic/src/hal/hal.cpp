@@ -228,7 +228,7 @@ bool hal_pin_tcxo (u1_t val) {
 //    BCM2835_CORE_CLK_HZ = 250000000
 //    Clock divider / 64 = 3.906 MHz
 static const SPISettings settings(BCM2835_SPI_CLOCK_DIVIDER_64, BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0);
-#elif defined(__ASR6501__)
+#elif defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 /* nothing to do */
 #else
 static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);

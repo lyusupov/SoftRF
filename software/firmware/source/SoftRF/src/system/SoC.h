@@ -116,7 +116,7 @@ extern const SoC_ops_t CC13XX_ops;
 #if defined(ARDUINO_ARCH_STM32)
 extern const SoC_ops_t STM32_ops;
 #endif
-#if defined(__ASR6501__)
+#if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 extern const SoC_ops_t PSoC4_ops;
 #endif
 #if defined(ARDUINO_ARCH_NRF52)

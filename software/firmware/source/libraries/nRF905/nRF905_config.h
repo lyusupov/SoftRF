@@ -21,11 +21,12 @@
 
 // Use pin interrupt for data ready
 // NOTE: If you have other devices connected that use the SPI bus then you will need to call nRF905_interrupt_off() before using SPI comms and then RF905_interrupt_on() once you've finished.
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)          || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)   || \
+    defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52)  || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)          || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -46,11 +47,12 @@
 
 // Use software to get address match state instead of reading pin for high/low state
 // Not used in this library yet
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)          || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)   || \
+    defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52)  || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)          || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -61,11 +63,12 @@
 #define NRF905_DR_SW		1
 
 // Don't transmit if airway is busy (other transmissions are going on)
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52)  || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)          || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)   || \
+    defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52)  || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)          || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -130,7 +133,7 @@
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5
 
-#elif defined(__ASR6501__)
+#elif defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 
 #include <board-config.h>
 
@@ -291,10 +294,11 @@
 ///////////////////
 
 // Frequency
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)         || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52) || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)         || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)   || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -304,10 +308,11 @@
 // NRF905_BAND_433
 // NRF905_BAND_868
 // NRF905_BAND_915
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)         || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52) || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)         || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)   || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -351,10 +356,11 @@
 // Number of bytes for address
 // NRF905_ADDR_SIZE_1
 // NRF905_ADDR_SIZE_4
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)         || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52) || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)         || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)   || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -362,10 +368,11 @@
 #endif
 
 // Payload size (1 - 32)
-#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__)         || defined(HACKRF_ONE)         || \
-    defined(ARDUINO_ARCH_SAMD)   || defined(ARDUINO_ARCH_AVR)
+#if defined(ESP8266) || defined(ESP32) || defined(RASPBERRY_PI)  || \
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_NRF52) || \
+    defined(__ASR6501__)          || defined(HACKRF_ONE)         || \
+    defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)   || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

@@ -7,11 +7,12 @@
  */
 
 #include <string.h>
-#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && \
-    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_STM32)  && !defined(ARDUINO_ARCH_NRF52)  && \
-    !defined(__ASR6501__)         && !defined(HACKRF_ONE)          && \
-    !defined(ARDUINO_ARCH_SAMD)
+#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI)  && \
+    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)  && \
+    !defined(ARDUINO_ARCH_STM32)  && !defined(ARDUINO_ARCH_NRF52)   && \
+    !defined(__ASR6501__)         && !defined(HACKRF_ONE)           && \
+    !defined(ARDUINO_ARCH_SAMD)   && !defined(ARDUINO_ARCH_ASR650X) && \
+    !defined(ARDUINO_ARCH_ASR6601)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -178,7 +179,7 @@ void nRF905_init()
 
 	SPI.begin();
 
-#if !defined(RASPBERRY_PI) && !defined(__ASR6501__)
+#if !defined(RASPBERRY_PI) && !defined(__ASR6501__) && !defined(ARDUINO_ARCH_ASR650X)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* RASPBERRY_PI */
 #else

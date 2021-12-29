@@ -113,7 +113,7 @@ typedef uint16_t neoPixelType;
 typedef uint8_t  neoPixelType;
 #endif
 
-#ifdef __ASR6501__
+#if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 #define yield()  ({ })
 #endif
 

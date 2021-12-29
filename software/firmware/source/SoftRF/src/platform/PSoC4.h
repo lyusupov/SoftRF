@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(__ASR6501__)
+#if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 
 #ifndef PLATFORM_PSOC4_H
 #define PLATFORM_PSOC4_H
@@ -204,4 +204,4 @@ extern CubeCell_NeoPixel strip;
 
 #endif /* PLATFORM_PSOC4_H */
 
-#endif /* __ASR6501__ */
+#endif /* __ASR6501__ || ARDUINO_ARCH_ASR650X */

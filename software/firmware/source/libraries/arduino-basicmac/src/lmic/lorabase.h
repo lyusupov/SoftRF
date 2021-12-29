@@ -30,7 +30,8 @@ enum { ILLEGAL_RPS = 0xFF };
 // Global maximum frame length
 enum { BCN_PREAMBLE_LEN  = 10 };  // length in symbols - actual time depends on DR
 enum { STD_PREAMBLE_LEN  =  8 };  //  -ditto-
-#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && !defined(__ASR6501__)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
+    !defined(__ASR6501__) && !defined(ARDUINO_ARCH_ASR650X)
 enum { MAX_LEN_FRAME     = 255 };  // in bytes
 #else
 enum { MAX_LEN_FRAME     = 64 };

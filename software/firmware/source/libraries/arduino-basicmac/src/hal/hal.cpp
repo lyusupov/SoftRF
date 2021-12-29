@@ -402,7 +402,8 @@ u1_t hal_checkTimer (u4_t time) {
 }
 
 #if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_NRF52) || \
-    defined(__ASR6501__) || defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_SAMD)
+    defined(__ASR6501__)  || defined(ARDUINO_ARCH_ASR650X) || \
+    defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_SAMD)
 
 // Fix for STM32 HAL based cores.
 

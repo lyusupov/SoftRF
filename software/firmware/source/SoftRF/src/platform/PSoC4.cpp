@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__ASR6501__)
+#if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
 
 #include <SPI.h>
 #include <Wire.h>
@@ -34,7 +34,9 @@
 #include "../protocol/data/D1090.h"
 
 #include <innerWdt.h>
+#if defined(__ASR6501__)
 #include <lorawan_port.h>
+#endif /* __ASR6501__ */
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -720,4 +722,4 @@ const SoC_ops_t PSoC4_ops = {
   NULL
 };
 
-#endif /* __ASR6501__ */
+#endif /* __ASR6501__ || ARDUINO_ARCH_ASR650X */
