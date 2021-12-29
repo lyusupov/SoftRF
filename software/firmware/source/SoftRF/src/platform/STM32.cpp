@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_STM32)
+#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ASR6601)
 
 #include <SPI.h>
 #include <Wire.h>
+
+#if defined(ARDUINO_ARCH_STM32)
 #include <IWatchdog.h>
+#endif /* ARDUINO_ARCH_STM32 */
 
 #include "../system/SoC.h"
 #include "../driver/RF.h"
@@ -34,7 +37,9 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#if defined(ARDUINO_ARCH_STM32)
 #include <STM32LowPower.h>
+#endif /* ARDUINO_ARCH_STM32 */
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -73,6 +78,10 @@ ICM_20948_I2C imu;
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
 
+#elif defined(ARDUINO_ARCH_ASR6601)
+
+/* TBD */
+
 #else
 #error "This hardware platform is not supported!"
 #endif
@@ -103,7 +112,17 @@ static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 {
   int rval;
 
+#if defined(ARDUINO_ARCH_STM32)
   pinMode(pin, mode);
+#else
+  if (mode == INPUT)
+    pinMode(pin, INPUT);
+  else if (mode == INPUT_PULLDOWN)
+    pinMode(pin, INPUT_PULLDOWN);
+  else if (mode == OUTPUT)
+    pinMode(pin, OUTPUT);
+#endif /* ARDUINO_ARCH_STM32 */
+
   delay(20);
   rval = digitalRead(pin);
   pinMode(pin, INPUT);
@@ -116,6 +135,7 @@ static void STM32_ButtonWakeup() { }
 
 static void STM32_ULP_stop()
 {
+#if defined(ARDUINO_ARCH_STM32)
 #if !defined(ARDUINO_NUCLEO_L073RZ)
   LowPower_shutdown();
 #else
@@ -125,10 +145,12 @@ static void STM32_ULP_stop()
   HAL_PWREx_EnableUltraLowPower();
   HAL_PWR_EnterSTOPMode( PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI );
 #endif /* ARDUINO_NUCLEO_L073RZ */
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_setup()
 {
+#if defined(ARDUINO_ARCH_STM32)
     if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
     {
         reset_info.reason = REASON_WDT_RST; // "LOW_POWER_RESET"
@@ -314,6 +336,7 @@ static void STM32_setup()
 #endif /* EXCLUDE_IMU */
     }
 #endif /* ARDUINO_NUCLEO_L073RZ */
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_post_init()
@@ -403,14 +426,17 @@ static void STM32_post_init()
 
 static void STM32_loop()
 {
+#if defined(ARDUINO_ARCH_STM32)
   // Reload the watchdog
   if (IWatchdog.isEnabled()) {
     IWatchdog.reload();
   }
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_fini(int reason)
 {
+#if defined(ARDUINO_ARCH_STM32)
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
   if (hw_info.model == SOFTRF_MODEL_BRACELET) {
@@ -441,19 +467,25 @@ static void STM32_fini(int reason)
   setBackupRegister(SHUTDOWN_REASON_INDEX, reason);
 
   HAL_NVIC_SystemReset();
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_reset()
 {
+#if defined(ARDUINO_ARCH_STM32)
   HAL_NVIC_SystemReset();
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static uint32_t STM32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
+#if defined(ARDUINO_ARCH_STM32)
   /* Same method as STM32 OGN tracker does */
   uint32_t id = HAL_GetUIDw0() ^ HAL_GetUIDw1() ^ HAL_GetUIDw2();
-
+#else
+  uint32_t id =  0; /* TBD */
+#endif /* ARDUINO_ARCH_STM32 */
   return DevID_Mapper(id);
 #else
   return (SOFTRF_ADDRESS & 0xFFFFFFFFU );
@@ -512,16 +544,19 @@ static long STM32_random(long howsmall, long howBig)
 
 static void STM32_Sound_test(int var)
 {
+#if defined(ARDUINO_ARCH_STM32)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
     tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
   }
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_Sound_tone(int hz, uint8_t volume)
 {
+#if defined(ARDUINO_ARCH_STM32)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
       tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
@@ -529,6 +564,7 @@ static void STM32_Sound_tone(int hz, uint8_t volume)
       noTone(SOC_GPIO_PIN_BUZZER);
     }
   }
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_WiFi_set_param(int ndx, int value)
@@ -543,11 +579,15 @@ static void STM32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool STM32_EEPROM_begin(size_t size)
 {
+#if defined(ARDUINO_ARCH_STM32)
   if (size > E2END) {
     return false;
   }
 
   EEPROM.begin();
+#else
+  EEPROM.begin(size);
+#endif /* ARDUINO_ARCH_STM32 */
 
   return true;
 }
@@ -602,10 +642,12 @@ static void STM32_EEPROM_extension(int cmd)
 
 static void STM32_SPI_begin()
 {
+#if defined(ARDUINO_ARCH_STM32)
   SPI.setMISO(SOC_GPIO_PIN_MISO);
   SPI.setMOSI(SOC_GPIO_PIN_MOSI);
   SPI.setSCLK(SOC_GPIO_PIN_SCK);
   // Slave Select pin is driven by RF driver
+#endif /* ARDUINO_ARCH_STM32 */
 
   SPI.begin();
 }
@@ -710,7 +752,7 @@ static float STM32_Battery_param(uint8_t param)
 
   case BATTERY_PARAM_VOLTAGE:
   default:
-
+#if defined(ARDUINO_ARCH_STM32)
 #ifdef __LL_ADC_CALC_VREFANALOG_VOLTAGE
     int32_t Vref = (__LL_ADC_CALC_VREFANALOG_VOLTAGE(analogRead(AVREF), LL_ADC_RESOLUTION));
 #else
@@ -720,6 +762,9 @@ static float STM32_Battery_param(uint8_t param)
     int32_t mV = (__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref,
                                                 analogRead(SOC_GPIO_PIN_BATTERY),
                                                 LL_ADC_RESOLUTION));
+#else
+    int32_t mV = 0; /* TBD */
+#endif /* ARDUINO_ARCH_STM32 */
 
     rval = mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
     break;
@@ -761,17 +806,21 @@ static void STM32_UATModule_restart()
 
 static void STM32_WDT_setup()
 {
+#if defined(ARDUINO_ARCH_STM32)
   // Init the watchdog timer with 5 seconds timeout
   IWatchdog.begin(5000000);
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 static void STM32_WDT_fini()
 {
+#if defined(ARDUINO_ARCH_STM32)
   /* once emabled - there is no way to disable WDT on STM32 */
 
   if (IWatchdog.isEnabled()) {
     IWatchdog.set(IWDG_TIMEOUT_MAX);
   }
+#endif /* ARDUINO_ARCH_STM32 */
 }
 
 #include <AceButton.h>
@@ -956,4 +1005,4 @@ const SoC_ops_t STM32_ops = {
   NULL
 };
 
-#endif /* ARDUINO_ARCH_STM32 */
+#endif /* ARDUINO_ARCH_STM32 || ARDUINO_ARCH_ASR6601 */

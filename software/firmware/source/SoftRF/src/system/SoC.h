@@ -113,7 +113,7 @@ extern const SoC_ops_t RPi_ops;
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 extern const SoC_ops_t CC13XX_ops;
 #endif
-#if defined(ARDUINO_ARCH_STM32)
+#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ASR6601)
 extern const SoC_ops_t STM32_ops;
 #endif
 #if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)

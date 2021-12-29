@@ -179,7 +179,8 @@ void nRF905_init()
 
 	SPI.begin();
 
-#if !defined(RASPBERRY_PI) && !defined(__ASR6501__) && !defined(ARDUINO_ARCH_ASR650X)
+#if !defined(RASPBERRY_PI) && !defined(__ASR6501__) && \
+    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_ASR6601)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* RASPBERRY_PI */
 #else
