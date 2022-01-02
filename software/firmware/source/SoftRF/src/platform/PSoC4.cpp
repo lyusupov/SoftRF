@@ -507,15 +507,8 @@ static float PSoC4_Battery_param(uint8_t param)
   return rval;
 }
 
-static unsigned long PSoC4_GNSS_PPS_errors = 0;
-
 void PSoC4_GNSS_PPS_Interrupt_handler() {
-  unsigned long ms = millis();
-  if (ms - PPS_TimeMarker > 990) {
-    PPS_TimeMarker = ms;
-  } else {
-    PSoC4_GNSS_PPS_errors++;
-  }
+  PPS_TimeMarker = millis();
 }
 
 static unsigned long PSoC4_get_PPS_TimeMarker() {
