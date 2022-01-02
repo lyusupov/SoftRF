@@ -9,7 +9,9 @@
            // Convert raw x,y values to calibrated and correctly rotated screen coordinates
   void     convertRawXY(uint16_t *x, uint16_t *y);
            // Get the screen touch coordinates, returns true if screen has been touched
-           // if the touch cordinates are off screen then x and y are not updated
+           // if the touch coordinates are off screen then x and y are not updated
+           // The returned value can be treated as a bool type, false or 0 means touch not detected
+           // In future the function may return an 8 "quality" (jitter) value.
   uint8_t  getTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);
 
            // Run screen calibration and test, report calibration values to the serial port
@@ -18,9 +20,13 @@
   void     setTouch(uint16_t *data);
 
  private:
-           // Handlers for the SPI settings and clock speed change
-  inline void spi_begin_touch() __attribute__((always_inline));
-  inline void spi_end_touch()   __attribute__((always_inline));
+           // Legacy support only - deprecated TODO: delete
+  void     spi_begin_touch();
+  void     spi_end_touch();
+
+           // Handlers for the touch controller bus settings
+  inline void begin_touch_read_write() __attribute__((always_inline));
+  inline void end_touch_read_write()   __attribute__((always_inline));
 
            // Private function to validate a touch, allow settle time and reduce spurious coordinates
   uint8_t  validTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);

@@ -19,15 +19,15 @@
 
 // Only ONE line below should be uncommented.  Add extra lines and files as needed.
 
-#include <User_Setup.h>           // Default setup is root library folder
+//#include <User_Setup.h>           // Default setup is root library folder
 
 #if defined(ESP32)
 #include "sdkconfig.h"
 #endif /* ESP32 */
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
-#include <User_Setups/TTGO_Watch.h>
+#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 #else
-#include <User_Setups/TTGO_T8_S2.h>
+#include <User_Setups/etup72_TTGO_T_Display_S2.h>  // Setup file for ESP32-S2 and TTGO T-Display S2 ST7789 SPI TFT 135x240
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file configured for my ILI9341
@@ -55,13 +55,60 @@
 //#include <User_Setups/Setup20_ILI9488.h>           // Setup file for ESP8266 and ILI9488 SPI bus TFT
 //#include <User_Setups/Setup21_ILI9488.h>           // Setup file for ESP32 and ILI9488 SPI bus TFT
 
-//#include <User_Setups/Setup22_TTGO_T4.h>           // Setup file for ESP32 and TTGO T4 (BTC) ILI9341 SPI bus TFT
+//#include <User_Setups/Setup22_TTGO_T4.h>           // Setup file for ESP32 and TTGO T4 version 1.2
+//#include <User_Setups/Setup22_TTGO_T4_v1.3.h>      // Setup file for ESP32 and TTGO T4 version 1.3
 //#include <User_Setups/Setup23_TTGO_TM.h>           // Setup file for ESP32 and TTGO TM ST7789 SPI bus TFT
 //#include <User_Setups/Setup24_ST7789.h>            // Setup file configured for ST7789 240 x 240
+//#include <User_Setups/Setup25_TTGO_T_Display.h>    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT
+//#include <User_Setups/Setup26_TTGO_T_Wristband.h>  // Setup file for ESP32 and TTGO T-Wristband ST7735 SPI bus TFT
+
+//#include <User_Setups/Setup27_RPi_ST7796_ESP32.h>    // ESP32   RPi MHS-4.0 inch Display-B
+//#include <User_Setups/Setup28_RPi_ST7796_ESP8266.h>  // ESP8266 RPi MHS-4.0 inch Display-B
+
+//#include <User_Setups/Setup29_ILI9341_STM32.h>          // Setup for Nucleo board
+//#include <User_Setups/Setup30_ILI9341_Parallel_STM32.h> // Setup for Nucleo board and parallel display
+//#include <User_Setups/Setup31_ST7796_Parallel_STM32.h>  // Setup for Nucleo board and parallel display
+//#include <User_Setups/Setup32_ILI9341_STM32F103.h>      // Setup for "Blue/Black Pill"
+
+//#include <User_Setups/Setup33_RPi_ILI9486_STM32.h>      // Setup for Nucleo board
+
+//#include <User_Setups/Setup34_ILI9481_Parallel_STM32.h> // Setup for Nucleo board and parallel display
+//#include <User_Setups/Setup35_ILI9341_STM32_Port_Bus.h> // Setup for STM32 port A parallel display
+
+//#include <User_Setups/Setup36_RPi_touch_ST7796.h>      // Setup file configured for ESP32 and RPi ST7796 TFT with touch
 
 //#include <User_Setups/Setup43_ST7735.h>            // Setup file configured for my ST7735S 80x160
+//#include <User_Setups/Setup44_TTGO_CameraPlus.h>   // Setup file for ESP32 and TTGO T-CameraPlus ST7789 SPI bus TFT    240x240
+//#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 
-//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 125 x 240 TFT
+//#include <User_Setups/Setup47_ST7735.h>            // Setup file configured for ST7735 128 x 128 animated eyes
+
+//#include <User_Setups/Setup50_SSD1963_Parallel.h>  // Setup file for ESP32 and SSD1963 TFT display
+
+//#include <User_Setups/Setup51_LilyPi_ILI9481.h>    // Setup file for LilyGo LilyPi with ILI9481 display
+//#include <User_Setups/Setup52_LilyPi_ST7796.h>     // Setup file for LilyGo LilyPi with ST7796 display
+
+//#include <User_Setups/Setup60_RP2040_ILI9341.h>    // Setup file for Raspberry Pi Pico with SPI ILI9341
+
+//#include <User_Setups/Setup70_ESP32_S2_ILI9341.h>  // Setup file for ESP32 S2 with SPI ILI9341
+
+//#include <User_Setups/Setup71_ESP32_S2_ST7789.h>  // Setup file for ESP32 S2 with ST7789
+
+//#include <User_Setups/Setup100_RP2040_ILI9488_parallel.h>
+//#include <User_Setups/Setup101_RP2040_ILI9481_parallel.h>
+//#include <User_Setups/Setup102_RP2040_ILI9341_parallel.h>
+//#include <User_Setups/Setup103_RP2040_ILI9486_parallel.h>
+//#include <User_Setups/Setup104_RP2040_ST7796_parallel.h>
+
+//#include <User_Setups/Setup135_ST7789.h>           // Setup file for ESP8266 and ST7789 135 x 240 TFT
+
+//#include <User_Setups/Setup136_LilyGo_TTV.h>       // Setup file for ESP32 and Lilygo TTV ST7789 SPI bus TFT  135x240
+
+//#include <User_Setups/Setup200_GC9A01.h>           // Setup file for ESP32 and GC9A01 240 x 240 TFT
+
+//#include <User_Setups/Setup201_WT32_SC01.h>        // Setup file for ESP32 based WT32_SC01 from Seeed
+
+//#include <User_Setups/Setup202_SSD1351_128.h>      // Setup file for ESP32/ESP8266 based SSD1351 128x128 1.5inch OLED display
 
 //#include <User_Setups/SetupX_Template.h>
 
@@ -73,7 +120,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
 //     DON'T TINKER WITH ANY OF THE FOLLOWING LINES, THESE ADD THE TFT DRIVERS     //
-//       AND ESP8266 PIN DEFINITONS THEY ARE HERE FOR BODMER'S CONVENIENCE!        //
+//       AND ESP8266 PIN DEFINITONS, THEY ARE HERE FOR BODMER'S CONVENIENCE!       //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,9 +129,33 @@
 #define TFT_BGR 0   // Colour order Blue-Green-Red
 #define TFT_RGB 1   // Colour order Red-Green-Blue
 
+// Legacy setup support, RPI_DISPLAY_TYPE replaces RPI_DRIVER
+#if defined (RPI_DRIVER)
+  #if !defined (RPI_DISPLAY_TYPE)
+    #define RPI_DISPLAY_TYPE
+  #endif
+#endif
+
+// Legacy setup support, RPI_ILI9486_DRIVER form is deprecated
+// Instead define RPI_DISPLAY_TYPE and also define driver (e.g. ILI9486_DRIVER) 
+#if defined (RPI_ILI9486_DRIVER)
+  #if !defined (ILI9486_DRIVER)
+    #define ILI9486_DRIVER
+  #endif
+  #if !defined (RPI_DISPLAY_TYPE)
+    #define RPI_DISPLAY_TYPE
+  #endif
+#endif
+
+// Invoke 18 bit colour for selected displays
+#if !defined (RPI_DISPLAY_TYPE) && !defined (TFT_PARALLEL_8_BIT) && !defined (ESP32_PARALLEL)
+  #if defined (ILI9481_DRIVER) || defined (ILI9486_DRIVER) || defined (ILI9488_DRIVER)
+    #define SPI_18BIT_DRIVER
+  #endif
+#endif
 
 // Load the right driver definition - do not tinker here !
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
      #define  TFT_DRIVER 0x9341
 #elif defined (ST7735_DRIVER)
@@ -96,9 +167,9 @@
 #elif defined (S6D02A1_DRIVER)
      #include <TFT_Drivers/S6D02A1_Defines.h>
      #define  TFT_DRIVER 0x6D02
-#elif defined (RPI_ILI9486_DRIVER)
-     #include <TFT_Drivers/ILI9486_Defines.h>
-     #define  TFT_DRIVER 0x9486
+#elif defined (ST7796_DRIVER)
+      #include "TFT_Drivers/ST7796_Defines.h"
+      #define  TFT_DRIVER 0x7796
 #elif defined (ILI9486_DRIVER)
      #include <TFT_Drivers/ILI9486_Defines.h>
      #define  TFT_DRIVER 0x9486
@@ -124,31 +195,53 @@
      #include "TFT_Drivers/ST7789_2_Defines.h"
      #define  TFT_DRIVER 0x778B
 #elif defined (RM68140_DRIVER)
-	 #include "TFT_Drivers/RM68140_Defines.h"
-	 #define  TFT_DRIVER 0x6814
-#elif defined (XYZZY_DRIVER)  // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+     #include "TFT_Drivers/RM68140_Defines.h"
+     #define  TFT_DRIVER 0x6814
+#elif defined (SSD1351_DRIVER)
+     #include "TFT_Drivers/SSD1351_Defines.h"
+     #define  TFT_DRIVER 0x1351
+#elif defined (SSD1963_480_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800ALT_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (SSD1963_800BD_DRIVER)
+     #include "TFT_Drivers/SSD1963_Defines.h"
+     #define  TFT_DRIVER 0x1963
+#elif defined (GC9A01_DRIVER)
+     #include "TFT_Drivers/GC9A01_Defines.h"
+     #define  TFT_DRIVER 0x9A01
+#elif defined (ILI9225_DRIVER)
+     #include "TFT_Drivers/ILI9225_Defines.h"
+     #define  TFT_DRIVER 0x9225
+                              // <<<<<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVER HERE
+                              // XYZZY_init.h and XYZZY_rotation.h must also be added in TFT_eSPI.cpp
+#elif defined (XYZZY_DRIVER)
      #include "TFT_Drivers/XYZZY_Defines.h"
      #define  TFT_DRIVER 0x0000
 #else
      #define  TFT_DRIVER 0x0000
 #endif
 
+// These are the pins for ESP8266 boards
+//      Name   GPIO    NodeMCU      Function
+#define PIN_D0  16  // GPIO16       WAKE
+#define PIN_D1   5  // GPIO5        User purpose
+#define PIN_D2   4  // GPIO4        User purpose
+#define PIN_D3   0  // GPIO0        Low on boot means enter FLASH mode
+#define PIN_D4   2  // GPIO2        TXD1 (must be high on boot to go to UART0 FLASH mode)
+#define PIN_D5  14  // GPIO14       HSCLK
+#define PIN_D6  12  // GPIO12       HMISO
+#define PIN_D7  13  // GPIO13       HMOSI  RXD2
+#define PIN_D8  15  // GPIO15       HCS    TXD0 (must be low on boot to enter UART0 FLASH mode)
+#define PIN_D9   3  //              RXD0
+#define PIN_D10  1  //              TXD0
 
-// These are the pins for all ESP8266 boards
-//      Name   GPIO    Function
-#define PIN_D0  16  // WAKE
-#define PIN_D1   5  // User purpose
-#define PIN_D2   4  // User purpose
-#define PIN_D3   0  // Low on boot means enter FLASH mode
-#define PIN_D4   2  // TXD1 (must be high on boot to go to UART0 FLASH mode)
-#define PIN_D5  14  // HSCLK
-#define PIN_D6  12  // HMISO
-#define PIN_D7  13  // HMOSI  RXD2
-#define PIN_D8  15  // HCS    TXD0 (must be low on boot to enter UART0 FLASH mode)
-#define PIN_D9   3  //        RXD0
-#define PIN_D10  1  //        TXD0
-
-#define PIN_MOSI 8  // SD1
+#define PIN_MOSI 8  // SD1          FLASH and overlap mode
 #define PIN_MISO 7  // SD0
 #define PIN_SCLK 6  // CLK
 #define PIN_HWCS 0  // D3

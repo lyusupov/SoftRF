@@ -11,13 +11,51 @@
 // See license in root directory.
 
 /***************************************************************************************
+** Function name:           begin_touch_read_write - was spi_begin_touch
+** Description:             Start transaction and select touch controller
+***************************************************************************************/
+// The touch controller has a low SPI clock rate
+inline void TFT_eSPI::begin_touch_read_write(void){
+  DMA_BUSY_CHECK;
+  CS_H; // Just in case it has been left low
+  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+    if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+  #else
+    spi.setFrequency(SPI_TOUCH_FREQUENCY);
+  #endif
+  SET_BUS_READ_MODE;
+  T_CS_L;
+}
+
+/***************************************************************************************
+** Function name:           end_touch_read_write - was spi_end_touch
+** Description:             End transaction and deselect touch controller
+***************************************************************************************/
+inline void TFT_eSPI::end_touch_read_write(void){
+  T_CS_H;
+  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+    if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
+  #else
+    spi.setFrequency(SPI_FREQUENCY);
+  #endif
+  //SET_BUS_WRITE_MODE;
+}
+
+/***************************************************************************************
+** Function name:           Legacy - deprecated
+** Description:             Start/end transaction
+***************************************************************************************/
+void TFT_eSPI::spi_begin_touch() {begin_touch_read_write();}
+void TFT_eSPI::spi_end_touch()   {  end_touch_read_write();}
+
+/***************************************************************************************
 ** Function name:           getTouchRaw
 ** Description:             read raw touch position.  Always returns true.
 ***************************************************************************************/
 uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   uint16_t tmp;
 
-  spi_begin_touch();
+  begin_touch_read_write();
   
   // Start YP sample request for x position, read 4 times and keep last sample
   spi.transfer(0xd0);                    // Start new YP conversion
@@ -48,7 +86,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 
   *y = tmp;
 
-  spi_end_touch();
+  end_touch_read_write();
 
   return true;
 }
@@ -59,7 +97,7 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
 ***************************************************************************************/
 uint16_t TFT_eSPI::getTouchRawZ(void){
 
-  spi_begin_touch();
+  begin_touch_read_write();
 
   // Z sample request
   int16_t tz = 0xFFF;
@@ -67,7 +105,7 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
   tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
   tz -= spi.transfer16(0x00) >> 3;  // Read Z2
 
-  spi_end_touch();
+  end_touch_read_write();
 
   return (uint16_t)tz;
 }

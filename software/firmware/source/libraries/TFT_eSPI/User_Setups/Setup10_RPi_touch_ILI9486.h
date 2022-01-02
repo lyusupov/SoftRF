@@ -1,10 +1,11 @@
+// For ESP8266
 // See SetupX_Template.h for all options available
 
-#define RPI_ILI9486_DRIVER // 20MHz maximum SPI
-
+#define RPI_DISPLAY_TYPE
+#define ILI9486_DRIVER
 
 // For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
-#define TFT_CS   PIN_D8  // Chip select control pin D8
+#define TFT_CS   PIN_D2  // Chip select control pin D2
 #define TFT_DC   PIN_D3  // Data Command control pin
 #define TFT_RST  PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
@@ -23,7 +24,7 @@
 #define SMOOTH_FONT
 
 
-#define SPI_FREQUENCY  16000000
+#define SPI_FREQUENCY  16000000 // Some displays will operate at higher frequencies
 
 #define SPI_TOUCH_FREQUENCY  2500000
 

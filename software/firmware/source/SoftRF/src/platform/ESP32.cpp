@@ -1500,11 +1500,9 @@ static void ESP32_Button_fini()
   }
 }
 
-#if defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
-#error "USB Host feature is not supported for this ESP32 model"
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(USE_USB_HOST)
 
 #include "usb/usb_host.h"
 
@@ -1650,6 +1648,60 @@ static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
   return rval;
 }
 
+#elif ARDUINO_USB_CDC_ON_BOOT
+
+#define USBSerial Serial
+
+static void ESP32S2_USB_setup()
+{
+
+}
+
+static void ESP32S2_USB_loop()
+{
+
+}
+
+static void ESP32S2_USB_fini()
+{
+
+}
+
+static int ESP32S2_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int ESP32S2_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+#endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
+
+#if ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST)
 IODev_ops_t ESP32S2_USBSerial_ops = {
   "ESP32S2 USB",
   ESP32S2_USB_setup,
@@ -1659,8 +1711,8 @@ IODev_ops_t ESP32S2_USBSerial_ops = {
   ESP32S2_USB_read,
   ESP32S2_USB_write
 };
-
-#endif /* USE_USB_HOST */
+#endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
@@ -1698,7 +1750,8 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) && \
+   (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32S2_USBSerial_ops,
 #else
   NULL,
