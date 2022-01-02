@@ -796,7 +796,7 @@ debug_printf("+++ rxfsk +++ %02x %d\r\n", rxcontinuous, LMIC.dataLen);
   			 now - LMIC.rxtime, osticks2ms(now - t0), now - t0);
 
   	    /* workaround against Rx issue on ASR650x target */
-#if !defined(CFG_DEBUG) && defined(__ASR6501__)
+#if !defined(CFG_DEBUG) && (defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X))
   	    delay(1);
 #endif /* __ASR6501__ */
 
@@ -853,7 +853,7 @@ debug_printf("+++ rxlora +++ %02x\r\n", rxcontinuous);
   			 now - LMIC.rxtime, osticks2ms(now - t0), now - t0);
 
   	    /* workaround against Rx issue on ASR650x target */
-#if !defined(CFG_DEBUG) && defined(__ASR6501__)
+#if !defined(CFG_DEBUG) && (defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X))
   	    delay(1);
 #endif /* __ASR6501__ */
 

@@ -482,7 +482,12 @@ static float PSoC4_Battery_param(uint8_t param)
           digitalWrite(VBAT_ADC_CTL,LOW);
         }
 
+#if !defined(ARDUINO_ARCH_ASR650X)
+        /* Heltec CubeCell Arduino Core 1.2.0 or less */
         mV = analogRead(SOC_GPIO_PIN_BATTERY);
+#else
+        mV = analogReadmV(SOC_GPIO_PIN_BATTERY);
+#endif
 
         /* restore previous state of VBAT_ADC_CTL pin */
         if (user_key_state == HIGH) {
@@ -502,8 +507,15 @@ static float PSoC4_Battery_param(uint8_t param)
   return rval;
 }
 
+static unsigned long PSoC4_GNSS_PPS_errors = 0;
+
 void PSoC4_GNSS_PPS_Interrupt_handler() {
-  PPS_TimeMarker = millis();
+  unsigned long ms = millis();
+  if (ms - PPS_TimeMarker > 990) {
+    PPS_TimeMarker = ms;
+  } else {
+    PSoC4_GNSS_PPS_errors++;
+  }
 }
 
 static unsigned long PSoC4_get_PPS_TimeMarker() {
