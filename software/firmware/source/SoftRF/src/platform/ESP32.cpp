@@ -907,7 +907,7 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F(" is detected."));
       swSer.begin(baud, SERIAL_IN_BITS, TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
     } else if (esp32_board == ESP32_S2_T8_V1_1) {
-      Serial.println(F("INFO: TTGO T8 rev. 1.1 is detected."));
+      Serial.println(F("INFO: TTGO T8_S2 rev. 1.1 is detected."));
       swSer.begin(baud, SERIAL_IN_BITS,
                   SOC_GPIO_PIN_T8_S2_GNSS_RX, SOC_GPIO_PIN_T8_S2_GNSS_TX);
     } else {
@@ -1003,7 +1003,7 @@ static byte ESP32_Display_setup()
     int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
                  SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
 
-    ledcAttachPin(bl_pin, 1);
+    ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
     ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
 
     tft->setTextFont(4);
@@ -1043,6 +1043,7 @@ static void ESP32_Display_loop()
   {
 
 #if defined(USE_TFT)
+#if LV_HOR_RES == 240
   case DISPLAY_TFT_TTGO_240:
     if (tft) {
       if (!TFT_display_frontpage) {
@@ -1149,6 +1150,117 @@ static void ESP32_Display_loop()
     }
 
     break;
+#endif /* LV_HOR_RES == 240 */
+
+#if LV_HOR_RES == 135
+  case DISPLAY_TFT_TTGO_135:
+    if (tft) {
+      if (!TFT_display_frontpage) {
+        tft->fillScreen(TFT_NAVY);
+
+        tft->setTextFont(2);
+        tft->setTextSize(2);
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        tbw = tft->textWidth(ID_text);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth(" "), tft->height()/4 - tbh - 1);
+        tft->print(ID_text);
+
+        tbw = tft->textWidth(PROTOCOL_text);
+
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/4 - tbh - 1);
+        tft->print(PROTOCOL_text);
+
+        tbw = tft->textWidth(RX_text);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth("   "), 3*tft->height()/4 - tbh - 1);
+        tft->print(RX_text);
+
+        tbw = tft->textWidth(TX_text);
+
+        tft->setCursor(tft->width()/2 + tft->textWidth("   "),
+                       3*tft->height()/4 - tbh - 1);
+        tft->print(TX_text);
+
+        tft->setTextFont(2);
+        tft->setTextSize(3);
+
+        snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
+
+        tbw = tft->textWidth(buf);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth(" "), tft->height()/4 - 7);
+        tft->print(buf);
+
+        tbw = tft->textWidth("O");
+
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/4 - 7);
+        tft->print(Protocol_ID[ThisAircraft.protocol][0]);
+
+        itoa(rx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->textWidth(" "), 3*tft->height()/4 - 7);
+        tft->print(buf);
+
+        itoa(tx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->width()/2 + tft->textWidth(" "), 3*tft->height()/4 - 7);
+        tft->print(buf);
+
+        TFT_display_frontpage = true;
+
+      } else { /* TFT_display_frontpage */
+
+        if (rx_packets_counter > prev_rx_packets_counter) {
+          disp_value = rx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          tft->setTextFont(2);
+          tft->setTextSize(3);
+
+          tft->setCursor(tft->textWidth(" "), 3*tft->height()/4 - 7);
+          tft->print(buf);
+
+          prev_rx_packets_counter = rx_packets_counter;
+        }
+        if (tx_packets_counter > prev_tx_packets_counter) {
+          disp_value = tx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          tft->setTextFont(2);
+          tft->setTextSize(3);
+
+          tft->setCursor(tft->width()/2 + tft->textWidth(" "), 3*tft->height()/4 - 7);
+          tft->print(buf);
+
+          prev_tx_packets_counter = tx_packets_counter;
+        }
+      }
+    }
+
+    break;
+
+#endif /* LV_HOR_RES == 135 */
 #endif /* USE_TFT */
 
 #if defined(USE_OLED)
@@ -1221,6 +1333,13 @@ static void ESP32_Display_fini(int reason)
         }
 
         TFT_backlight_off();
+        int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
+                     SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
+
+        ledcDetachPin(bl_pin);
+        pinMode(bl_pin, INPUT_PULLDOWN);
+
+        tft->fillScreen(TFT_NAVY);
         TFT_off();
     }
     break;
