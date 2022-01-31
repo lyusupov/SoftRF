@@ -24,6 +24,7 @@
 #include <esp_wifi.h>
 #include <soc/rtc_cntl_reg.h>
 #include <rom/spi_flash.h>
+#include <soc/adc_channel.h>
 #include <flashchips.h>
 #include <axp20x.h>
 
@@ -63,7 +64,13 @@ static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
 
-SPIClass uSD_SPI(HSPI);
+SPIClass uSD_SPI(
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+                 HSPI
+#else
+                 FSPI
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+                );
 
 #if 0
 /* variables hold file, state of process wav file and wav file properties */
@@ -160,6 +167,7 @@ static void ESP32_setup()
    *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
    *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
    *  TTGO T-Watch     |            | WINBOND_NEX_W25Q128_V
+   *  TTGO T8 S2 V1.1  |            | WINBOND_NEX_W25Q32_V
    */
 
   if (psramFound()) {
@@ -172,6 +180,10 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
       hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_T8;
+      break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
+      hw_info.revision = HW_REV_T8_S2;
       break;
     default:
       hw_info.model = SOFTRF_MODEL_WEBTOP;
@@ -254,10 +266,19 @@ static void ESP32_setup()
   }
 
   /* SD-SPI init */
-  uSD_SPI.begin(SOC_GPIO_PIN_TWATCH_SD_SCK,
+  uSD_SPI.begin(
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+                SOC_GPIO_PIN_TWATCH_SD_SCK,
                 SOC_GPIO_PIN_TWATCH_SD_MISO,
                 SOC_GPIO_PIN_TWATCH_SD_MOSI,
-                SOC_GPIO_PIN_TWATCH_SD_SS);
+                SOC_GPIO_PIN_TWATCH_SD_SS
+#else
+                SOC_GPIO_PIN_T8_S2_SCK,
+                SOC_GPIO_PIN_T8_S2_MISO,
+                SOC_GPIO_PIN_T8_S2_MOSI,
+                SOC_GPIO_PIN_T8_S2_SS
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+               );
 }
 
 static void ESP32_loop()
@@ -528,18 +549,37 @@ static uint32_t ESP32_maxSketchSpace()
 
 static void ESP32_Battery_setup()
 {
-  /* T-Beam v08 and T-Watch have PMU */
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
-  /* TBD */
+    /* T-Beam v08 and T-Watch have PMU */
+
+    /* TBD */
+
+  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+             hw_info.revision == HW_REV_T8_S2) {
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+    calibrate_voltage(ADC1_GPIO9_CHANNEL);
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+  }
 }
 
 static float ESP32_Battery_voltage()
 {
   float voltage = 0.0;
 
-  /* T-Beam v08 and T-Watch have PMU */
-  if (axp.isBatteryConnect()) {
-    voltage = axp.getBattVoltage();
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
+
+    /* T-Beam v08 and T-Watch have PMU */
+    if (axp.isBatteryConnect()) {
+      voltage = axp.getBattVoltage();
+    }
+
+  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+             hw_info.revision == HW_REV_T8_S2) {
+    voltage = (float) read_voltage();
+
+    /* T8_S2 has voltage divider 100k/100k on board */
+    voltage += voltage;
   }
 
   return (voltage * 0.001);
@@ -935,14 +975,15 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventReleased:
       break;
-#if 0
     case AceButton::kEventLongPressed:
       if (button == &button_mode) {
-        shutdown("NORMAL OFF");
-        Serial.println(F("This will never be printed."));
+        if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+            hw_info.revision == HW_REV_T8_S2) {
+          shutdown("  OFF  ");
+          Serial.println(F("This will never be printed."));
+        }
       }
       break;
-#endif
   }
 }
 
@@ -953,21 +994,28 @@ void onModeButtonEvent() {
 
 static void ESP32_Button_setup()
 {
+  int button_pin = (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+                    hw_info.revision == HW_REV_T8_S2 ) ?
+                   SOC_GPIO_PIN_T8_S2_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
+
   // Button(s)) uses external pull up resistor.
-  pinMode(SOC_GPIO_PIN_TWATCH_BUTTON, INPUT);
+  pinMode(button_pin, INPUT);
+
+  button_mode.init(button_pin);
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
   ButtonConfig* ModeButtonConfig = button_mode.getButtonConfig();
   ModeButtonConfig->setEventHandler(handleEvent);
   ModeButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-//  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
-  ModeButtonConfig->setDebounceDelay(15);
-  ModeButtonConfig->setClickDelay(100);
-  ModeButtonConfig->setDoubleClickDelay(1000);
-//  ModeButtonConfig->setLongPressDelay(2000);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+  ModeButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+//  ModeButtonConfig->setDebounceDelay(15);
+  ModeButtonConfig->setClickDelay(600);
+//  ModeButtonConfig->setDoubleClickDelay(1000);
+  ModeButtonConfig->setLongPressDelay(2000);
 
-  attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWATCH_BUTTON), onModeButtonEvent, CHANGE );
+  attachInterrupt(digitalPinToInterrupt(button_pin), onModeButtonEvent, CHANGE );
 }
 
 static void ESP32_Button_loop()

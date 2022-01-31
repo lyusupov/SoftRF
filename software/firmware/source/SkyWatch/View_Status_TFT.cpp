@@ -67,6 +67,7 @@ void TFT_status_loop()
   tbw = sprite->textWidth(ID_text);
   tbh = sprite->fontHeight();
 
+#if LV_HOR_RES == 240
   sprite->setCursor(sprite->textWidth(" "), sprite->height()/6 - tbh);
   sprite->print(ID_text);
 
@@ -98,7 +99,7 @@ void TFT_status_loop()
                     (5 * sprite->height()/6) - tbh);
   sprite->print(BAT_text);
 
-  itoa(ThisDevice.addr & 0xFFFFFF, buf, 16);
+  snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
 
   sprite->setTextFont(4);
   sprite->setTextSize(2);
@@ -146,6 +147,71 @@ void TFT_status_loop()
 
   sprite->setCursor(sprite->width()/2 + sprite->textWidth("  "), (5 * sprite->height())/6);
   sprite->print(Battery_voltage(), 1);
+#endif /* LV_HOR_RES == 240 */
+
+#if LV_HOR_RES == 135
+  sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - tbh - 1);
+  sprite->print(ID_text);
+
+  tbw = sprite->textWidth(PROTOCOL_text);
+
+  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                    sprite->height()/4 - tbh - 1);
+  sprite->print(PROTOCOL_text);
+
+  tbw = sprite->textWidth(RX_text);
+
+  sprite->setCursor(sprite->textWidth("   "), 3*sprite->height()/4 - tbh - 1);
+  sprite->print(RX_text);
+
+  tbw = sprite->textWidth(TX_text);
+
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                    3*sprite->height()/4 - tbh - 1);
+  sprite->print(TX_text);
+
+  snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
+
+  sprite->setTextSize(3);
+
+  sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
+  sprite->print(buf);
+
+  tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
+
+  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                    sprite->height()/4 - 7);
+  sprite->print(TFT_Protocol_ID[ThisDevice.protocol]);
+
+
+  disp_value = rx_packets_counter % 1000;
+  itoa(disp_value, buf, 10);
+
+  if (disp_value < 10) {
+    strcat_P(buf,PSTR("  "));
+  } else {
+    if (disp_value < 100) {
+      strcat_P(buf,PSTR(" "));
+    };
+  }
+
+  sprite->setCursor(sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+  sprite->print(buf);
+
+  disp_value = tx_packets_counter % 1000;
+  itoa(disp_value, buf, 10);
+
+  if (disp_value < 10) {
+    strcat_P(buf,PSTR("  "));
+  } else {
+    if (disp_value < 100) {
+      strcat_P(buf,PSTR(" "));
+    };
+  }
+
+  sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+  sprite->print(buf);
+#endif /* LV_HOR_RES == 135 */
 
   tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
   sprite->pushSprite(0, 0);

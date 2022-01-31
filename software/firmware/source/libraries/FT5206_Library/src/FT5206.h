@@ -87,7 +87,7 @@ public:
     void enterMonitorMode();
 private:
     void _readRegister();
-    int _readByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
+    void _readByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
     {
         _i2cPort->beginTransmission(_address);
         _i2cPort->write(reg);
@@ -98,7 +98,7 @@ private:
             data[index++] = _i2cPort->read();
     }
 
-    int _writeByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
+    void _writeByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
     {
         _i2cPort->beginTransmission(_address);
         _i2cPort->write(reg);

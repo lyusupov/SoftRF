@@ -73,7 +73,7 @@ static const char about_html[] PROGMEM = "<html>\
   </head>\
 <body>\
 <h1 align=center>About</h1>\
-<p>This firmware is a part of open SoftRF project</p>\
+<p>This firmware is a part of SoftRF project</p>\
 <p>URL: http://github.com/lyusupov/SoftRF</p>\
 <p>Author: <b>Linar Yusupov</b></p>\
 <p>E-mail: linar.r.yusupov@gmail.com</p>\
@@ -772,7 +772,8 @@ void handleSettings() {
   }
 #endif
 
-  if (hw_info.display != DISPLAY_NONE) {
+  if (hw_info.model   == SOFTRF_MODEL_SKYWATCH &&
+      hw_info.display == DISPLAY_TFT_TTGO_240) {
     /* SoC specific part 9 */
     snprintf_P ( offset, size,
       PSTR("\
@@ -893,7 +894,7 @@ void handleSettings() {
     }
 #endif
 
-  } /* hw_info.display != DISPLAY_NONE */
+  } /* hw_info.display == DISPLAY_TFT_TTGO_240 */
 
   /* Common part 8 */
   snprintf_P ( offset, size,
@@ -992,10 +993,10 @@ void handleStatus() {
 <tr><th align=left>Display</th><td align=right>%s</td></tr>\
 <tr><th align=left>Storage</th><td align=right>%s</td></tr>\
 <tr><th align=left>Baro</th><td align=right>%s</td></tr>"),
-      hw_info.display      == DISPLAY_EPD_2_7  ? "e-Paper" :
-      hw_info.display      == DISPLAY_OLED_2_4 ? "OLED"    :
-      hw_info.display      == DISPLAY_TFT_TTGO ? "LCD"     : "NONE",
-      hw_info.storage      == STORAGE_uSD      ? "uSD"     : "NONE",
+      hw_info.display      == DISPLAY_EPD_2_7      ? "e-Paper" :
+      hw_info.display      == DISPLAY_OLED_2_4     ? "OLED"    :
+      hw_info.display      == DISPLAY_TFT_TTGO_240 ? "LCD"     : "NONE",
+      hw_info.storage      == STORAGE_uSD          ? "uSD"     : "NONE",
       (baro_chip == NULL ? "NONE" : baro_chip->name)
     );
 
@@ -1068,11 +1069,12 @@ void handleStatus() {
         NMEA_hasFLARM()    ? "FLARM" : "",
         NMEA_has3DFix()    ? "3D" : "NONE",
         ThisDevice.addr,
-        ThisDevice.protocol == RF_PROTOCOL_LEGACY   ? "Legacy" :
-        ThisDevice.protocol == RF_PROTOCOL_OGNTP    ? "OGNTP"  :
-        ThisDevice.protocol == RF_PROTOCOL_P3I      ? "P3I"    :
-        ThisDevice.protocol == RF_PROTOCOL_ADSB_UAT ? "UAT"    :
-        ThisDevice.protocol == RF_PROTOCOL_FANET    ? "FANET"  : "UNK",
+        ThisDevice.protocol == RF_PROTOCOL_LEGACY    ? "Legacy" :
+        ThisDevice.protocol == RF_PROTOCOL_OGNTP     ? "OGNTP"  :
+        ThisDevice.protocol == RF_PROTOCOL_P3I       ? "P3I"    :
+        ThisDevice.protocol == RF_PROTOCOL_ADSB_1090 ? "ADS-B"  :
+        ThisDevice.protocol == RF_PROTOCOL_ADSB_UAT  ? "UAT"    :
+        ThisDevice.protocol == RF_PROTOCOL_FANET     ? "FANET"  : "UNK",
         tx_packets_counter, rx_packets_counter
       );
       break;
