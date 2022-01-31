@@ -181,10 +181,12 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_T8;
       break;
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
       hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_T8_S2;
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     default:
       hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_UNKNOWN;
@@ -587,8 +589,11 @@ static float ESP32_Battery_voltage()
 
 static bool ESP32_DB_init()
 {
+  int ss_pin = (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+                hw_info.revision == HW_REV_T8_S2 ) ?
+               SOC_GPIO_PIN_T8_S2_SS : SOC_GPIO_PIN_TWATCH_SD_SS;
 
-  if (!SD.begin(SOC_GPIO_PIN_TWATCH_SD_SS, uSD_SPI)) {
+  if (!SD.begin(ss_pin, uSD_SPI)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
     return false;
   }
