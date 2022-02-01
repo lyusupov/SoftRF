@@ -772,8 +772,7 @@ void handleSettings() {
   }
 #endif
 
-  if (hw_info.model   == SOFTRF_MODEL_SKYWATCH &&
-      hw_info.display == DISPLAY_TFT_TTGO_240) {
+  if (hw_info.display == DISPLAY_TFT_TTGO_240) {
     /* SoC specific part 9 */
     snprintf_P ( offset, size,
       PSTR("\

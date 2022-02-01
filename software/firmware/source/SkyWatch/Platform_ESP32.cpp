@@ -33,6 +33,7 @@
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
 #include "BatteryHelper.h"
+#include "TFTHelper.h"
 
 #include <battery.h>
 #include <sqlite3.h>
@@ -972,23 +973,26 @@ void handleEvent(AceButton* button, uint8_t eventType,
   Serial.println(buttonState);
 #endif
 
-  switch (eventType) {
-    case AceButton::kEventPressed:
-      if (button == &button_mode) {
-//        EPD_Mode();
-      }
-      break;
-    case AceButton::kEventReleased:
-      break;
-    case AceButton::kEventLongPressed:
-      if (button == &button_mode) {
-        if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-            hw_info.revision == HW_REV_T8_S2) {
+  if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+      hw_info.revision == HW_REV_T8_S2) {
+    switch (eventType) {
+      case AceButton::kEventClicked:
+      case AceButton::kEventReleased:
+        if (button == &button_mode) {
+          if (hw_info.display == DISPLAY_TFT_TTGO_240) {
+            TFT_Mode_Cycle();
+          }
+        }
+        break;
+      case AceButton::kEventDoubleClicked:
+        break;
+      case AceButton::kEventLongPressed:
+        if (button == &button_mode) {
           shutdown("  OFF  ");
           Serial.println(F("This will never be printed."));
         }
-      }
-      break;
+        break;
+    }
   }
 }
 

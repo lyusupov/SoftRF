@@ -59,6 +59,7 @@ void TFT_fini(const char *);
 void TFT_Up();
 void TFT_Down();
 void TFT_Message(const char *, const char *);
+void TFT_Mode_Cycle();
 
 void TFT_status_setup();
 void TFT_status_loop();

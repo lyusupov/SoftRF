@@ -22,6 +22,7 @@
 byte TFT_setup()                  {return DISPLAY_NONE;}
 void TFT_loop()                   {}
 void TFT_fini(const char *msg)    {}
+void TFT_Mode_Cycle()             {}
 #else
 
 #include <SPI.h>
@@ -124,7 +125,9 @@ byte TFT_setup()
     SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
               SOC_GPIO_PIN_T8_S2_MOSI, SOC_GPIO_PIN_T8_S2_SS);
 
+#if LV_HOR_RES == 135
     TFT_view_mode = VIEW_MODE_STATUS;
+#endif /* LV_HOR_RES */
   }
 
   {
@@ -437,4 +440,16 @@ void TFT_Message(const char *msg1, const char *msg2)
     }
   }
 }
+
+void TFT_Mode_Cycle()
+{
+  TFT_view_mode++;
+
+  if (TFT_view_mode > VIEW_MODE_TIME) {
+    TFT_view_mode = VIEW_MODE_STATUS;
+  }
+
+  TFT_vmode_updated = true;
+}
+
 #endif /* EXCLUDE_TFT */
