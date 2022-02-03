@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ASR6601)
+#if defined(ARDUINO_ARCH_STM32)
 
 #ifndef PLATFORM_STM32_H
 #define PLATFORM_STM32_H
@@ -325,100 +325,6 @@ typedef struct stm32_backup_struct {
 
 //#define USE_TIME_SLOTS
 
-#elif defined(ARDUINO_ARCH_ASR6601)
-
-#define yield()                 ({ })
-#define snprintf_P              snprintf
-#define EEPROM_commit()         EEPROM.commit()
-
-
-#if !defined(digitalPinToInterrupt)
-#define digitalPinToInterrupt(p) ( p )
-#endif
-
-#define isPrintable(c)        (isprint(c) == 0 ? false : true)
-
-#define INPUT_ANALOG          INPUT
-
-#define swSer                 Serial
-#define UATSerial             Serial
-
-#define SOC_ADC_VOLTAGE_DIV   1
-#define VREFINT               1200  // mV, TBD
-
-/* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_CONS_TX  SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_SWSER_RX SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SWSER_TX SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
-
-#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
-
-/* SPI */
-#define SOC_GPIO_PIN_MOSI     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCK      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SS       LMIC_UNUSED_PIN
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
-
-/* SX1276 (RFM95W) */
-#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO0     LMIC_UNUSED_PIN
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
-
-/* I2C */
-#define SOC_GPIO_PIN_SDA      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCL      SOC_UNUSED_PIN
-
-/* button */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-
-#define EXCLUDE_WIFI
-#define EXCLUDE_CC13XX
-#define EXCLUDE_TEST_MODE
-#define EXCLUDE_WATCHOUT_MODE
-#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
-#define EXCLUDE_LK8EX1
-
-#define EXCLUDE_GNSS_UBLOX
-#define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
-//#define EXCLUDE_GNSS_GOKE
-//#define EXCLUDE_GNSS_AT65
-#define EXCLUDE_LOG_GNSS_VERSION
-
-/* Component                         Cost */
-/* -------------------------------------- */
-#define USE_NMEA_CFG             //  +    kb
-#define EXCLUDE_BMP180           //  -    kb
-//#define EXCLUDE_BMP280         //  -    kb
-#define EXCLUDE_MPL3115A2        //  -    kb
-#define EXCLUDE_NRF905           //  -    kb
-#define EXCLUDE_UATM             //  -    kb
-#define EXCLUDE_MAVLINK          //  -    kb
-#define EXCLUDE_EGM96            //  - 16 kb
-#define EXCLUDE_LED_RING         //  -    kb
-#define EXCLUDE_SOUND
-
-#define USE_BASICMAC
-#define EXCLUDE_SX1276           //  -  3 kb
-
 #else
 #error "This hardware platform is not supported!"
 #endif
@@ -435,4 +341,4 @@ extern Adafruit_NeoPixel strip;
 
 #endif /* PLATFORM_STM32_H */
 
-#endif /* ARDUINO_ARCH_STM32 || ARDUINO_ARCH_ASR6601 */
+#endif /* ARDUINO_ARCH_STM32 */

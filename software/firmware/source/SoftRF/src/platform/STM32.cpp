@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ASR6601)
+#if defined(ARDUINO_ARCH_STM32)
 
 #include <SPI.h>
 #include <Wire.h>
@@ -77,10 +77,6 @@ ICM_20948_I2C imu;
 
 HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
-
-#elif defined(ARDUINO_ARCH_ASR6601)
-
-/* TBD */
 
 #else
 #error "This hardware platform is not supported!"
@@ -1005,4 +1001,4 @@ const SoC_ops_t STM32_ops = {
   NULL
 };
 
-#endif /* ARDUINO_ARCH_STM32 || ARDUINO_ARCH_ASR6601 */
+#endif /* ARDUINO_ARCH_STM32 */

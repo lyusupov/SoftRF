@@ -102,6 +102,10 @@
 #define SERIAL_BEGIN(b,s) Serial.begin(b,s)
 #endif
 
+#if !defined(SERIAL_FLUSH)
+#define SERIAL_FLUSH() Serial.flush()
+#endif
+
 #define DEBUG 0
 #define DEBUG_TIMING 0
 
@@ -154,7 +158,8 @@ void setup()
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
-  Serial.flush();
+
+  SERIAL_FLUSH();
 
   if (resetInfo) {
     Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
@@ -163,7 +168,11 @@ void setup()
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
+  SERIAL_FLUSH();
+
   EEPROM_setup();
+
+  SERIAL_FLUSH();
 
   SoC->Button_setup();
 
@@ -178,6 +187,8 @@ void setup()
   hw_info.imu = AHRS_setup();
 #endif /* ENABLE_AHRS */
   hw_info.display = SoC->Display_setup();
+
+  SERIAL_FLUSH();
 
 #if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {

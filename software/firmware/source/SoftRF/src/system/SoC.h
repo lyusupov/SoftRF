@@ -32,6 +32,7 @@
 #include "../platform/LPC43.h"
 #include "../platform/SAMD.h"
 #include "../platform/AVR.h"
+#include "../platform/ASR66.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -97,7 +98,8 @@ enum
 	SOC_NRF52,
 	SOC_LPC43,
 	SOC_SAMD,
-	SOC_AVR
+	SOC_AVR,
+	SOC_ASR66
 };
 
 extern const SoC_ops_t *SoC;
@@ -113,7 +115,7 @@ extern const SoC_ops_t RPi_ops;
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 extern const SoC_ops_t CC13XX_ops;
 #endif
-#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ASR6601)
+#if defined(ARDUINO_ARCH_STM32)
 extern const SoC_ops_t STM32_ops;
 #endif
 #if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
@@ -130,6 +132,9 @@ extern const SoC_ops_t SAMD_ops;
 #endif
 #if defined(ARDUINO_ARCH_AVR)
 extern const SoC_ops_t AVR_ops;
+#endif
+#if defined(ARDUINO_ARCH_ASR6601)
+extern const SoC_ops_t ASR66_ops;
 #endif
 
 byte SoC_setup(void);

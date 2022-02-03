@@ -123,7 +123,8 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/nRF52.cpp    \
                  $(PLATFORM_PATH)/LPC43.cpp    \
                  $(PLATFORM_PATH)/SAMD.cpp     \
-                 $(PLATFORM_PATH)/AVR.cpp
+                 $(PLATFORM_PATH)/AVR.cpp      \
+                 $(PLATFORM_PATH)/ASR66.cpp
 
 DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/GNSS.cpp      \
