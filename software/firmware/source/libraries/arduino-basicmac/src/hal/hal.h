@@ -34,6 +34,10 @@ struct lmic_pinmap {
 // Use this for any unused pins.
 const u1_t LMIC_UNUSED_PIN = 0xff;
 
+#if defined(ARDUINO_ARCH_ASR6601)
+extern "C" uint16_t SpiInOut( uint16_t outData );
+#endif /* ARDUINO_ARCH_ASR6601 */
+
 #else /* __cplusplus */
 
 #define NUM_DIO         3

@@ -313,7 +313,7 @@ static void RPi_post_init()
   Serial.print(F("BMx280  : ")); Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
 
   Serial.println();
-  Serial.println(F("Power-on Self Test is completed."));
+  Serial.println(F("Power-on Self Test is complete."));
   Serial.println();
   Serial.flush();
 #endif

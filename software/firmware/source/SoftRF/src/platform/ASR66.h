@@ -49,6 +49,8 @@
 #define SerialOutput            Serial
 #define SERIAL_FLUSH()          delay(300) 
 
+#define SX126X_DEF_LORASYNCWORDLSB  0xB2
+
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -124,8 +126,8 @@ struct rst_info {
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
-//#define EXCLUDE_GNSS_GOKE
+//#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
 //#define EXCLUDE_GNSS_AT65
 #define EXCLUDE_LOG_GNSS_VERSION
 
@@ -149,7 +151,7 @@ struct rst_info {
 
 //#define USE_OGN_ENCRYPTION
 
-//#define USE_OLED                 //  +    kb
+#define USE_OLED                 //  +    kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
@@ -158,8 +160,8 @@ struct rst_info {
 //#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
 /* trade performance for flash memory usage (-4 Kb) */
-//#define cosf(x)                 cos  ((double) (x))
-//#define sinf(x)                 sin  ((double) (x))
+#define cosf(x)                 cos  ((double) (x))
+#define sinf(x)                 sin  ((double) (x))
 /* has no effect yet */
 //#define sqrtf(x)              sqrt ((double) (x))
 //#define atan2f(y,x)           atan2((double) (y), (double) (x))

@@ -118,6 +118,58 @@ static void ASR66_setup()
 
 static void ASR66_post_init()
 {
+  {
+    Serial.println();
+    Serial.println(F("SoftRF Multi Edition Power-on Self Test"));
+    Serial.println();
+    SERIAL_FLUSH();
+
+    Serial.println(F("Components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262      ? F("PASS") : F("FAIL"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+    Serial.print(F("BARO    : "));
+    Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    SERIAL_FLUSH();
+  }
+
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART"));    break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART"));    break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART"));    break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.println();
+  SERIAL_FLUSH();
+
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */
@@ -255,7 +307,22 @@ static void ASR66_EEPROM_extension(int cmd)
 
 static void ASR66_SPI_begin()
 {
-  SPI.begin();
+#if 0
+    LORAC->CR0 = 0x00000200;
+
+    LORAC->SSP_CR0 = 0x07;
+    LORAC->SSP_CPSR = 0x02;
+
+    if(LORAC->CR1 != 0x80)
+    {
+        delayMicroseconds(20);
+        LORAC->NSS_CR = 0;
+        delayMicroseconds(20);
+        LORAC->NSS_CR = 1;
+    }
+
+    LORAC->SSP_CR1 = 0x02;
+#endif
 }
 
 static void ASR66_swSer_begin(unsigned long baud)

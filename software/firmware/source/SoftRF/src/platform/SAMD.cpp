@@ -198,7 +198,7 @@ static void SAMD_post_init()
     Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
 
     Serial.println();
-    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println(F("Power-on Self Test is complete."));
     Serial.println();
     Serial.flush();
   }

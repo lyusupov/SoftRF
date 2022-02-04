@@ -599,7 +599,7 @@ static void nRF52_post_init()
     }
 
     Serial.println();
-    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println(F("Power-on Self Test is complete."));
     Serial.println();
     Serial.flush();
   } else if (nRF52_board == NRF52_NORDIC_PCA10059) {

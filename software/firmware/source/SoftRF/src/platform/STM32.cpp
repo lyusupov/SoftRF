@@ -377,7 +377,7 @@ static void STM32_post_init()
     }
 
     Serial.println();
-    Serial.println(F("Power-on Self Test is completed."));
+    Serial.println(F("Power-on Self Test is complete."));
     Serial.println();
     Serial.flush();
   }

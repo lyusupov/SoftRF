@@ -104,6 +104,7 @@ void hal_pin_rxtx (s1_t val) {
         digitalWrite(lmic_pins.rxe, val == 0 ? HIGH : LOW);
 }
 
+#if !defined(ARDUINO_ARCH_ASR6601)
 // set radio RST pin to given value (or keep floating!)
 bool hal_pin_rst (u1_t val) {
     if (lmic_pins.rst == LMIC_UNUSED_PIN)
@@ -123,6 +124,16 @@ bool hal_pin_rst (u1_t val) {
     }
     return true;
 }
+#else
+bool hal_pin_rst (u1_t val) {
+    if (val == 0)
+      LORAC->CR1 |= 1<<5;  //nreset
+    else
+      LORAC->CR1 &= ~(1<<7); //por
+
+    return true;
+}
+#endif /* ARDUINO_ARCH_ASR6601 */
 
 #if !defined(LMIC_USE_INTERRUPTS)
 static void hal_interrupt_init() {
@@ -254,6 +265,7 @@ bool hal_pin_tcxo (u1_t val) {
     return true;
 }
 
+#if !defined(ARDUINO_ARCH_ASR6601)
 void hal_pin_busy_wait (void) {
     if (lmic_pins.busy == LMIC_UNUSED_PIN) {
         // TODO: We could probably keep some state so we know the chip
@@ -269,6 +281,22 @@ void hal_pin_busy_wait (void) {
         while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
     }
 }
+#else
+void hal_pin_busy_wait (void) {
+    delayMicroseconds(10);
+    int n = 0;
+    while( LORAC->SR & 0x100 )
+    {
+        delayMicroseconds(1);
+        n++;
+        if(n>=10000)
+        {
+//           printf("spi busy\r\n");
+           break;
+        }
+    }
+}
+#endif /* ARDUINO_ARCH_ASR6601 */
 
 // -----------------------------------------------------------------------------
 // SPI
@@ -281,6 +309,8 @@ static const SPISettings settings(BCM2835_SPI_CLOCK_DIVIDER_64, BCM2835_SPI_BIT_
 #else
 static const SPISettings settings(LMIC_SPI_FREQ, MSBFIRST, SPI_MODE0);
 #endif
+
+#if !defined(ARDUINO_ARCH_ASR6601)
 
 static void hal_spi_init () {
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
@@ -313,6 +343,24 @@ u1_t hal_spi (u1_t out) {
     */
     return res;
 }
+
+#else /* ARDUINO_ARCH_ASR6601 */
+
+static void hal_spi_init () {
+
+}
+
+void hal_spi_select (int on) {
+    LORAC->NSS_CR = (!on ? HIGH : LOW);
+}
+
+// perform SPI transaction with radio
+u1_t hal_spi (u1_t out) {
+    u1_t res = SpiInOut(out);
+    return res;
+}
+
+#endif /* ARDUINO_ARCH_ASR6601 */
 
 // -----------------------------------------------------------------------------
 // TIME
