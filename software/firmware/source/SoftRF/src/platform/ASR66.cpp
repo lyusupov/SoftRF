@@ -129,7 +129,7 @@ static void ASR66_post_init()
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262      ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("N/A"));
     Serial.print(F("BARO    : "));
     Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
     Serial.print(F("DISPLAY : "));

@@ -7,12 +7,12 @@
  */
 
 #include <string.h>
-#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI)  && \
-    !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)  && \
-    !defined(ARDUINO_ARCH_STM32)  && !defined(ARDUINO_ARCH_NRF52)   && \
-    !defined(__ASR6501__)         && !defined(HACKRF_ONE)           && \
-    !defined(ARDUINO_ARCH_SAMD)   && !defined(ARDUINO_ARCH_ASR650X) && \
-    !defined(ARDUINO_ARCH_ASR6601)
+#if !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI)   && \
+    !defined(ENERGIA_ARCH_CC13XX)  && !defined(ENERGIA_ARCH_CC13X2)  && \
+    !defined(ARDUINO_ARCH_STM32)   && !defined(ARDUINO_ARCH_NRF52)   && \
+    !defined(__ASR6501__)          && !defined(HACKRF_ONE)           && \
+    !defined(ARDUINO_ARCH_SAMD)    && !defined(ARDUINO_ARCH_ASR650X) && \
+    !defined(ARDUINO_ARCH_ASR6601) && !defined(ARDUINO_ARCH_RP2040)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -25,7 +25,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_NRF52)  || defined(ARDUINO_ARCH_SAMD)
+    defined(ARDUINO_ARCH_NRF52)  || defined(ARDUINO_ARCH_SAMD)   || \
+    defined(ARDUINO_ARCH_RP2040)
 #define _BV(bit) (1 << (bit))
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else
@@ -180,7 +181,8 @@ void nRF905_init()
 	SPI.begin();
 
 #if !defined(RASPBERRY_PI) && !defined(__ASR6501__) && \
-    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_ASR6601)
+    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_ASR6601) && \
+    !defined(ARDUINO_ARCH_RP2040)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* RASPBERRY_PI */
 #else
