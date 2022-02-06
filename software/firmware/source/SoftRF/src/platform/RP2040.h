@@ -25,7 +25,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_ACADEMY
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_ACADEMY /* TBD */
 
 #define isValidFix()            isValidGNSSFix()
 
@@ -38,13 +38,12 @@
 
 #define EEPROM_commit()         EEPROM.commit()
 
-#define LED_STATE_ON            LOW  // State when LED is litted
+#define LED_STATE_ON            HIGH  // State when LED is litted
 
-//#define SerialOutput            SerialUSB
 #define SerialOutput            Serial1
 
 #define USBSerial               SerialUSB
-#define swSer                   Serial1
+#define swSer                   Serial2
 #define UATSerial               SerialUSB
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
@@ -72,47 +71,52 @@ struct rst_info {
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_CONS_TX  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_CONS_RX  (1u)
+#define SOC_GPIO_PIN_CONS_TX  (0u)
 
-#define SOC_GPIO_PIN_SWSER_RX SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SWSER_TX SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SWSER_RX (5u)
+#define SOC_GPIO_PIN_SWSER_TX (4u)
 
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeACT
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
-
-/* SPI */
-#define SOC_GPIO_PIN_MOSI     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCK      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN
+/* SPI1 */
+#define SOC_GPIO_PIN_MOSI     (11u)
+#define SOC_GPIO_PIN_MISO     (12u)
+#define SOC_GPIO_PIN_SCK      (10u)
+#define SOC_GPIO_PIN_SS       (13u)
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
-/* SX1276 */
-#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN
+/* SX1262 */
+#define SOC_GPIO_PIN_RST      (14u)
+#define SOC_GPIO_PIN_BUSY     (15u)
+#define SOC_GPIO_PIN_DIO1     (29u)
 
 /* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_ANT_RXTX (25u) // RXEN
 
-/* I2C */
-#define SOC_GPIO_PIN_SDA      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCL      SOC_UNUSED_PIN
+/* I2C1 */
+#define SOC_GPIO_PIN_SDA      (2u)
+#define SOC_GPIO_PIN_SCL      (3u)
+
+/* I2C0 */
+//#define SOC_GPIO_PIN_SDA    (20u)
+//#define SOC_GPIO_PIN_SCL    (21u)
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS (6u)
+#define SOC_GPIO_PIN_GNSS_RST (22u)
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // ADC0 (26u) or ADC1 (27u)
+#define SOC_GPIO_PIN_VBUS     (24u) // Pico
+#define SOC_GPIO_PIN_VSYS     (29u) // Pico
+#define SOC_GPIO_PIN_PS       (23u) // Pico
+#define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
 
-#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN // LED2 (24u)
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 
 #else

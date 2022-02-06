@@ -95,6 +95,20 @@ static void RP2040_setup()
   USBDevice.setDeviceVersion(RP2040_Device_Version);
 #endif /* USE_TINYUSB */
 
+  Serial1.setRX(SOC_GPIO_PIN_CONS_RX);
+  Serial1.setTX(SOC_GPIO_PIN_CONS_TX);
+  Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+  Serial2.setRX(SOC_GPIO_PIN_SWSER_RX);
+  Serial2.setTX(SOC_GPIO_PIN_SWSER_TX);
+
+  SPI1.setRX(SOC_GPIO_PIN_MISO);
+  SPI1.setTX(SOC_GPIO_PIN_MOSI);
+  SPI1.setSCK(SOC_GPIO_PIN_SCK);
+  SPI1.setCS(SOC_GPIO_PIN_SS);
+
+  Wire1.setSCL(SOC_GPIO_PIN_SCL);
+  Wire1.setSDA(SOC_GPIO_PIN_SDA);
 }
 
 static void RP2040_post_init()
@@ -361,7 +375,7 @@ static void RP2040_EEPROM_extension(int cmd)
 
 static void RP2040_SPI_begin()
 {
-  SPI.begin();
+  SPI1.begin();
 }
 
 static void RP2040_swSer_begin(unsigned long baud)
@@ -572,7 +586,7 @@ static void RP2040_Button_fini()
   if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
-    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
+//    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
