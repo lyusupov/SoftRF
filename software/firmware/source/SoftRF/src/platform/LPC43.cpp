@@ -63,9 +63,9 @@ hardware_info_t hw_info = {
 
 const uint16_t LPC43_Vendor_Id = 0x1d50; /* OpenMoko, Inc. */
 const uint16_t LPC43_Device_Id = 0x6089; /* HackRF One */
-const char *LPC43_Device_Manufacturer = "SoftRF";
+const char *LPC43_Device_Manufacturer = SOFTRF_IDENT;
 const char *LPC43_Device_Model = "ES Edition";
-const uint16_t LPC43_Device_Version = 0x0100;
+const uint16_t LPC43_Device_Version = SOFTRF_USB_FW_VERSION;
 
 void LPC43_setup(void)
 {
@@ -374,7 +374,7 @@ void setup_CPP(void)
   Serial.begin(SERIAL_OUT_BR);
 
   Serial.println();
-  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(F(SOFTRF_IDENT "-"));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));

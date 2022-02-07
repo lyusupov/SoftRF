@@ -79,9 +79,9 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
-const char *SAMD_Device_Manufacturer = "SoftRF";
+const char *SAMD_Device_Manufacturer = SOFTRF_IDENT;
 const char *SAMD_Device_Model = "Academy Edition";
-const uint16_t SAMD_Device_Version = 0x0100;
+const uint16_t SAMD_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(USE_USB_HOST)
 

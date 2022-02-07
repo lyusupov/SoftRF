@@ -67,9 +67,9 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
-const char *RP2040_Device_Manufacturer = "SoftRF";
+const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
 const char *RP2040_Device_Model = "Academy Edition";
-const uint16_t RP2040_Device_Version = 0x0100;
+const uint16_t RP2040_Device_Version = SOFTRF_USB_FW_VERSION;
 
 static union {
   pico_unique_board_id_t RP2040_unique_flash_id;

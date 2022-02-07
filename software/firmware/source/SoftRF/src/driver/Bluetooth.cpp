@@ -158,7 +158,7 @@ void ESP32_BLEMIDI_test()
 
 static void ESP32_Bluetooth_setup()
 {
-
+  BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   switch(settings->bluetooth)
@@ -264,8 +264,8 @@ static void ESP32_Bluetooth_setup()
       char Hardware[9];
       snprintf(Hardware, sizeof(Hardware), "%08X", hw_info.revision);
 
+      const char *Manufacturer  = SOFTRF_IDENT;
       const char *Software      = SOFTRF_FIRMWARE_VERSION;
-      const char *Manufacturer  = "SoftRF";
 
       pModelCharacteristic->       setValue((uint8_t *) Model,        strlen(Model));
       pSerialCharacteristic->      setValue((uint8_t *) SerialNum,    strlen(SerialNum));
@@ -1384,6 +1384,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void nRF52_Bluetooth_setup()
 {
+  BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
   // Setup the BLE LED to be enabled on CONNECT

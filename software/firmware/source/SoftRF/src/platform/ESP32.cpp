@@ -144,9 +144,9 @@ static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
 
-const char *ESP32S2_Device_Manufacturer = "SoftRF";
+const char *ESP32S2_Device_Manufacturer = SOFTRF_IDENT;
 const char *ESP32S2_Device_Model = "Standalone Edition";
-const uint16_t ESP32S2_Device_Version = 0x0100;
+const uint16_t ESP32S2_Device_Version = SOFTRF_USB_FW_VERSION;
 
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);

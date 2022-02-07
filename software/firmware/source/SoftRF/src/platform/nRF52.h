@@ -154,6 +154,11 @@ struct rst_info {
 #define SOC_GPIO_PIN_PCA10059_MISO      _PINNUM(0, 13) // P0.13
 #define SOC_GPIO_PIN_PCA10059_SCK       _PINNUM(0, 14) // P0.14
 
+#define SOC_GPIO_PIN_WB_MOSI            _PINNUM(1, 12) // P1.12
+#define SOC_GPIO_PIN_WB_MISO            _PINNUM(1, 13) // P0.13
+#define SOC_GPIO_PIN_WB_SCK             _PINNUM(1, 11) // P1.11
+#define SOC_GPIO_PIN_WB_SS              _PINNUM(1, 10) // P1.10
+
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
@@ -170,8 +175,14 @@ struct rst_info {
 #define SOC_GPIO_PIN_DIO1     _PINNUM(0, 20) // P0.20
 #define SOC_GPIO_PIN_BUSY     _PINNUM(0, 17) // P0.17
 
+#define SOC_GPIO_PIN_WB_RST   _PINNUM(1,  6) // P1.06
+#define SOC_GPIO_PIN_WB_DIO1  _PINNUM(1, 15) // P1.15
+#define SOC_GPIO_PIN_WB_BUSY  _PINNUM(1, 14) // P1.14
+
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_WB_TXEN  _PINNUM(1,  7) // P1.07
+#define SOC_GPIO_PIN_WB_RXEN  _PINNUM(1,  5) // P1.05
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      _PINNUM(0, 26) // P0.26

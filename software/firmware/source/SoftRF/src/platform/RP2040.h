@@ -77,7 +77,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SWSER_RX (5u)
 #define SOC_GPIO_PIN_SWSER_TX (4u)
 
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeACT
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeAct
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
 /* SPI1 */

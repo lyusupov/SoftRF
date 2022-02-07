@@ -216,7 +216,7 @@ void setup() {
   Serial.begin(UAT_RECEIVER_BR, SERIAL_OUT_BITS);
 
   Serial.println();
-  Serial.print(F(SOFTRF_IDENT));
+  Serial.print(F(SOFTRF_IDENT "-"));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));

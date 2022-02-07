@@ -92,9 +92,9 @@ static uint32_t bootCount __attribute__ ((section (".noinit")));
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 
-const char *nRF52_Device_Manufacturer = "SoftRF";
+const char *nRF52_Device_Manufacturer = SOFTRF_IDENT;
 const char *nRF52_Device_Model = "Badge Edition";
-const uint16_t nRF52_Device_Version = 0x0100;
+const uint16_t nRF52_Device_Version = SOFTRF_USB_FW_VERSION;
 
 const char *Hardware_Rev[] = {
   [0] = "2020-8-6",
