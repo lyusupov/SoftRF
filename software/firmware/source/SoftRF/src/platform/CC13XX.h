@@ -113,7 +113,8 @@ struct rst_info {
  * BootLoader                   GPIO 1
  */
 
-#define swSer                   scSerial
+#define Serial_GNSS_In          scSerial
+#define Serial_GNSS_Out         Serial_GNSS_In
 
 #define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
@@ -165,12 +166,13 @@ extern SCSerial                 scSerial;
  *
  */
 
-#define swSer                   Serial2
+#define Serial_GNSS_In          Serial2
+#define Serial_GNSS_Out         Serial_GNSS_In
 
 #define EasyLink_setRfPwr       EasyLink_setRfPower
 
-#define SOC_GPIO_PIN_SWSER_RX   23  // GPIO 25
-#define SOC_GPIO_PIN_SWSER_TX   24  // GPIO 26
+#define SOC_GPIO_PIN_GNSS_RX    23  // GPIO 25
+#define SOC_GPIO_PIN_GNSS_TX    24  // GPIO 26
 
 #define SOC_GPIO_PIN_GNSS_PPS   25  // GPIO 27
 

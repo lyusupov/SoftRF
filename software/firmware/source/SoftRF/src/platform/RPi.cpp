@@ -380,7 +380,7 @@ static void RPi_SPI_begin()
 
 static void RPi_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 pthread_t RPi_EPD_update_thread;

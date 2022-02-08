@@ -99,8 +99,8 @@ static void RP2040_setup()
   Serial1.setTX(SOC_GPIO_PIN_CONS_TX);
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-  Serial2.setRX(SOC_GPIO_PIN_SWSER_RX);
-  Serial2.setTX(SOC_GPIO_PIN_SWSER_TX);
+  Serial2.setRX(SOC_GPIO_PIN_GNSS_RX);
+  Serial2.setTX(SOC_GPIO_PIN_GNSS_TX);
 
   SPI1.setRX(SOC_GPIO_PIN_MISO);
   SPI1.setTX(SOC_GPIO_PIN_MOSI);
@@ -380,7 +380,7 @@ static void RP2040_SPI_begin()
 
 static void RP2040_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void RP2040_swSer_enableRx(boolean arg)

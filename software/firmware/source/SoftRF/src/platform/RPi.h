@@ -32,7 +32,8 @@
 #include "JSON.h"
 
 #define SerialOutput          Serial
-#define swSer                 Serial1
+#define Serial_GNSS_In        Serial1
+#define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial2
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())

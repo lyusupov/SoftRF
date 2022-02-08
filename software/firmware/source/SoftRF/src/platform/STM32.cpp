@@ -54,13 +54,13 @@ lmic_pinmap lmic_pins = {
 };
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX,  SOC_GPIO_PIN_CONS_TX);
+HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
 #endif
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
 HardwareSerial Serial2(USART2);
-HardwareSerial Serial4(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
+HardwareSerial Serial4(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 
 static bool STM32_has_TCXO = false;
 static bool STM32_has_IMU  = false;
@@ -71,8 +71,8 @@ ICM_20948_I2C imu;
 #endif /* EXCLUDE_IMU */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
-HardwareSerial Serial2(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
-HardwareSerial Serial3(SOC_GPIO_PIN_RX3,      SOC_GPIO_PIN_TX3);
+HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
 #else
 #error "This hardware platform is not supported!"
@@ -423,7 +423,7 @@ static void STM32_fini(int reason)
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
-  swSer.end();
+  Serial_GNSS_In.end();
   Wire.end();
 
   pinMode(SOC_GPIO_PIN_SDA,  INPUT_ANALOG);
@@ -613,7 +613,7 @@ static void STM32_SPI_begin()
 
 static void STM32_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
   /* drive GNSS RST pin low */

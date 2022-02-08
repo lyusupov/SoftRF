@@ -208,7 +208,7 @@ static void PSoC4_fini(int reason)
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
     pinMode(SOC_GPIO_PIN_GNSS_PWR,  ANALOG);
 
-    swSer.end();
+    Serial_GNSS_In.end();
 
     delay(2000);
 
@@ -379,7 +379,7 @@ static void PSoC4_SPI_begin()
 
 static void PSoC4_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void PSoC4_swSer_enableRx(boolean arg)

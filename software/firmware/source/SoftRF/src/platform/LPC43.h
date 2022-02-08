@@ -28,7 +28,8 @@
 
 #define USBSerial             Serial
 #define SerialOutput          Serial
-#define swSer                 Serial
+#define Serial_GNSS_In        Serial
+#define Serial_GNSS_Out       Serial_GNSS_In
 
 #define isValidFix()          isValidGNSSFix()
 

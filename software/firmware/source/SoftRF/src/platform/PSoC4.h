@@ -71,9 +71,11 @@ struct rst_info {
 };
 
 #if defined(CubeCell_GPS)
-#define swSer                 Serial1
+#define Serial_GNSS_In        Serial1
+#define Serial_GNSS_Out       Serial_GNSS_In
 #else
-#define swSer                 Serial
+#define Serial_GNSS_In        Serial
+#define Serial_GNSS_Out       Serial_GNSS_In
 #endif /* CubeCell_GPS */
 #define UATSerial             Serial
 
@@ -83,8 +85,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  UART_RX
 #define SOC_GPIO_PIN_CONS_TX  UART_TX
 
-#define SOC_GPIO_PIN_SWSER_RX UART_RX2
-#define SOC_GPIO_PIN_SWSER_TX UART_TX2
+#define SOC_GPIO_PIN_GNSS_RX  UART_RX2
+#define SOC_GPIO_PIN_GNSS_TX  UART_TX2
 
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN

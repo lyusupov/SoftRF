@@ -36,7 +36,8 @@
 
 #define SerialOutput            Serial
 #define SoftwareSerial          HardwareSerial
-#define swSer                   Serial1
+#define Serial_GNSS_In          Serial1
+#define Serial_GNSS_Out         Serial_GNSS_In
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define UATSerial               Serial2

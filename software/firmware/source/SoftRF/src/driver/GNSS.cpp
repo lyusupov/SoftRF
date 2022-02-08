@@ -41,6 +41,13 @@
 #define GNSS_DEBUG_PRINTLN  Serial.println
 #endif
 
+#if !defined(SERIAL_FLUSH)
+#define SERIAL_FLUSH()      Serial.flush()
+#endif
+#if !defined(GNSS_FLUSH)
+#define GNSS_FLUSH()        Serial_GNSS_Out.flush()
+#endif
+
 unsigned long GNSSTimeSyncMarker = 0;
 volatile unsigned long PPS_TimeMarker = 0;
 
@@ -145,7 +152,7 @@ static void nmea_cfg_restart()
   Serial.println();
   Serial.println(F("Restart is in progress. Please, wait..."));
   Serial.println();
-  Serial.flush();
+  SERIAL_FLUSH();
   Sound_fini();
   RF_Shutdown();
   SoC->reset();
@@ -161,33 +168,33 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
   }
 
   // clean any leftovers
-  swSer.flush();
+  Serial_GNSS_In.flush();
 
-  while (swSer.available() > 0) { swSer.read(); }
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
 
   unsigned long start_time = millis();
   unsigned long timeout_ms = (req == NULL ? 3000 : 2000) ;
 
   while ((millis() - start_time) < timeout_ms) {
 
-    while (swSer.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
+    while (Serial_GNSS_In.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
 
     delay(5);
 
     /* wait for pause after NMEA burst */
-    if (req && swSer.available() > 0) {
+    if (req && Serial_GNSS_In.available() > 0) {
       continue;
     } else {
       /* send request */
       if (req) {
-        swSer.write((uint8_t *) req, strlen(req));
-        swSer.flush();
+        Serial_GNSS_Out.write((uint8_t *) req, strlen(req));
+        GNSS_FLUSH();
       }
 
       /* skip first line when expected response contains 2 of them */
       if (skipline) {
         start_time = millis();
-        while (swSer.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
+        while (Serial_GNSS_In.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
       }
 
       int i=0;
@@ -196,7 +203,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
       /* take response into buffer */
       while ((millis() - start_time) < timeout_ms) {
 
-        c = swSer.read();
+        c = Serial_GNSS_In.read();
 
         if (isPrintable(c) || c == '\r' || c == '\n') {
           if (i >= sizeof(GNSSbuf)) break;
@@ -324,10 +331,10 @@ static uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t 
 // Send a byte array of UBX protocol to the GPS
 static void sendUBX(const uint8_t *MSG, uint8_t len) {
   for (int i = 0; i < len; i++) {
-    swSer.write( MSG[i]);
+    Serial_GNSS_Out.write( MSG[i]);
     GNSS_DEBUG_PRINT(MSG[i], HEX);
   }
-//  swSer.println();
+//  Serial_GNSS_Out.println();
 }
 
 // Calculate expected UBX ACK packet and parse UBX response from GPS
@@ -357,8 +364,8 @@ static boolean getUBX_ACK(uint8_t cl, uint8_t id) {
     }
 
     // Make sure data is available to read
-    if (swSer.available()) {
-      b = swSer.read();
+    if (Serial_GNSS_In.available()) {
+      b = Serial_GNSS_In.read();
 
       // Check that bytes arrive in sequence as per expected ACK packet
       if (b == GNSSbuf[ackByteID]) {
@@ -397,7 +404,7 @@ static void setup_UBX()
     Serial.print(F("WARNING: Unable to set baud rate onto "));
     Serial.println(baudrate); 
   }
-  swSer.flush();
+  Serial_GNSS_In.flush();
   SoC->swSer_begin(baudrate);
 #endif
 
@@ -566,8 +573,8 @@ static byte ublox_version() {
 
   while ((millis() - startTime) < 2000 ) {
 
-    if (swSer.available()) {
-      unsigned char c = swSer.read();
+    if (Serial_GNSS_In.available()) {
+      unsigned char c = Serial_GNSS_In.read();
       int ret = 0;
 
       GNSS_DEBUG_PRINT(c, HEX);
@@ -632,18 +639,18 @@ static bool ublox_setup()
   // Turning off some GPS NMEA sentences on the uBlox modules
   setup_UBX();
 #else
-  //swSer.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
-  swSer.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
+  //Serial_GNSS_Out.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
+  Serial_GNSS_Out.write("$PUBX,41,1,0007,0003,38400,0*20\r\n");
 
-  swSer.flush();
+  GNSS_FLUSH();
   SoC->swSer_begin(38400);
 
   // Turning off some GPS NMEA strings on the uBlox modules
-  swSer.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
-  swSer.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
-  swSer.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
 #if !defined(NMEA_TCP_SERVICE)
-  swSer.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PUBX,40,GSA,0,0,0,0*4E\r\n"); delay(250);
 #endif
 #endif
 
@@ -659,7 +666,7 @@ static void ublox_loop()
       if (!gnss_psm_active && isValidGNSSFix() && gnss.satellites.value() > 5) {
         // Setup for Power Save Mode (Default Cyclic 1s)
         for (int i = 0; i < sizeof(RXM_PSM); i++) {
-          swSer.write(pgm_read_byte(&RXM_PSM[i]));
+          Serial_GNSS_Out.write(pgm_read_byte(&RXM_PSM[i]));
         }
 
         GNSS_DEBUG_PRINTLN(F("INFO: GNSS Power Save Mode"));
@@ -669,7 +676,7 @@ static void ublox_loop()
                    gnss.satellites.age() > NMEA_EXP_TIME)) {
         // Setup for Continuous Mode
         for (int i = 0; i < sizeof(RXM_MAXP); i++) {
-          swSer.write(pgm_read_byte(&RXM_MAXP[i]));
+          Serial_GNSS_Out.write(pgm_read_byte(&RXM_MAXP[i]));
         }
 
         GNSS_DEBUG_PRINTLN(F("INFO: GNSS Continuous Mode"));
@@ -684,14 +691,14 @@ static void ublox_fini()
 {
   // Controlled Software reset
   for (int i = 0; i < sizeof(CFG_RST); i++) {
-    swSer.write(pgm_read_byte(&CFG_RST[i]));
+    Serial_GNSS_Out.write(pgm_read_byte(&CFG_RST[i]));
   }
 
   delay(hw_info.gnss == GNSS_MODULE_U8 ? 1000 : 600);
 
   // power off until wakeup call
   for (int i = 0; i < sizeof(RXM_PMREQ_OFF); i++) {
-    swSer.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
+    Serial_GNSS_Out.write(pgm_read_byte(&RXM_PMREQ_OFF[i]));
   }
 }
 
@@ -707,14 +714,14 @@ static void ublox_factory_reset()
 {
   // reset GPS to factory settings
   for (int i = 0; i < sizeof(factoryUBX); i++) {
-    swSer.write(pgm_read_byte(&factoryUBX[i]));
+    Serial_GNSS_Out.write(pgm_read_byte(&factoryUBX[i]));
   }
 
   delay(600);
 
   // Cold Start (Forced Watchdog)
   for (int i = 0; i < sizeof(CFG_RST_COLD); i++) {
-    swSer.write(pgm_read_byte(&CFG_RST_COLD[i]));
+    Serial_GNSS_Out.write(pgm_read_byte(&CFG_RST_COLD[i]));
   }
 
   delay(1000);
@@ -725,7 +732,7 @@ static void ublox_factory_reset()
 static gnss_id_t sony_probe()
 {
   /* Wake-up */
-  swSer.write("@WUP\r\n");       delay(500);
+  Serial_GNSS_Out.write("@WUP\r\n");       delay(500);
 
   /* Firmware version request */
   return nmea_handshake("@VER\r\n", "[VER] Done", true) ?
@@ -735,14 +742,14 @@ static gnss_id_t sony_probe()
 static bool sony_setup()
 {
   /* Idle */
-  swSer.write("@GSTP\r\n");
-  swSer.flush();
+  Serial_GNSS_Out.write("@GSTP\r\n");
+  GNSS_FLUSH();
   delay(2000);
 
 #if !defined(EXCLUDE_LOG_GNSS_VERSION)
-  while (swSer.available() > 0) { swSer.read(); }
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
 
-  swSer.write("@VER\r\n");
+  Serial_GNSS_Out.write("@VER\r\n");
 
   int i=0;
   char c;
@@ -751,7 +758,7 @@ static bool sony_setup()
   /* take response into buffer */
   while ((millis() - start_time) < 2000) {
 
-    c = swSer.read();
+    c = Serial_GNSS_In.read();
 
     if (isPrintable(c) || c == '\r' || c == '\n') {
       if (i >= sizeof(GNSSbuf) - 1) break;
@@ -775,15 +782,15 @@ static bool sony_setup()
 #endif
 
   /* GGA + GSA + RMC */
-  swSer.write("@BSSL 0x25\r\n"); delay(250);
+  Serial_GNSS_Out.write("@BSSL 0x25\r\n"); delay(250);
   /* GPS + GLONASS. This command must be issued at “Idle” mode */
-  swSer.write("@GNS 3\r\n");     delay(250);
+  Serial_GNSS_Out.write("@GNS 3\r\n");     delay(250);
   /*  Positioning algorithm. This command must be issued at “Idle” mode */
-  swSer.write("@GUSE 0\r\n");    delay(250);
+  Serial_GNSS_Out.write("@GUSE 0\r\n");    delay(250);
 
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   /* Enable 1PPS output */
-  swSer.write("@GPPS 1\r\n");    delay(250);
+  Serial_GNSS_Out.write("@GPPS 1\r\n");    delay(250);
 #endif
 
 #if defined(USE_GNSS_PSM)
@@ -793,7 +800,7 @@ static bool sony_setup()
      *
      * WARNING: use of this mode may cause issues
      */
-    swSer.write("@GSOP 2 1000 0\r\n"); delay(250);
+    Serial_GNSS_Out.write("@GSOP 2 1000 0\r\n"); delay(250);
   }
 #endif /* USE_GNSS_PSM */
 
@@ -802,9 +809,9 @@ static bool sony_setup()
    * When the conditions for the hot start have not been met,
    * positioning is started automatically using a warm start or cold start.
    */
-  swSer.write("@GSR\r\n");
+  Serial_GNSS_Out.write("@GSR\r\n");
 
-  swSer.flush(); delay(100);
+  GNSS_FLUSH(); delay(100);
 
   return true;
 }
@@ -817,19 +824,19 @@ static void sony_loop()
 static void sony_fini()
 {
    /* Idle */
-  swSer.write("@GSTP\r\n");
-  swSer.flush(); delay(1500);
+  Serial_GNSS_Out.write("@GSTP\r\n");
+  GNSS_FLUSH(); delay(1500);
 
   /* Sony GNSS sleep level (0-2)
    * This command must be issued at Idle state.
    * When this command is issued at Exec state, error is returned.
    */
 
-//  swSer.write("@SLP 0\r\n");
-  swSer.write("@SLP 1\r\n");
-//  swSer.write("@SLP 2\r\n");
+//  Serial_GNSS_Out.write("@SLP 0\r\n");
+  Serial_GNSS_Out.write("@SLP 1\r\n");
+//  Serial_GNSS_Out.write("@SLP 2\r\n");
 
-  swSer.flush(); delay(100);
+  GNSS_FLUSH(); delay(100);
 }
 
 const gnss_chip_ops_t sony_ops = {
@@ -852,7 +859,7 @@ static gnss_id_t mtk_probe()
 static bool mtk_setup()
 {
 #if !defined(EXCLUDE_LOG_GNSS_VERSION)
-  swSer.write("$PMTK605*31\r\n");
+  Serial_GNSS_Out.write("$PMTK605*31\r\n");
 
   int i=0;
   char c;
@@ -861,7 +868,7 @@ static bool mtk_setup()
   /* take response into buffer */
   while ((millis() - start_time) < 2000) {
 
-    c = swSer.read();
+    c = Serial_GNSS_In.read();
 
     if (isPrintable(c) || c == '\r' || c == '\n') {
       if (i >= sizeof(GNSSbuf) - 1) break;
@@ -892,12 +899,12 @@ static bool mtk_setup()
 #endif
 
   /* RMC + GGA + GSA */
-  swSer.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
-  swSer.flush(); delay(250);
+  Serial_GNSS_Out.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
+  GNSS_FLUSH(); delay(250);
 
   /* Aviation mode */
-  swSer.write("$PMTK886,2*2A\r\n");
-  swSer.flush(); delay(250);
+  Serial_GNSS_Out.write("$PMTK886,2*2A\r\n");
+  GNSS_FLUSH(); delay(250);
 
   return true;
 }
@@ -910,8 +917,8 @@ static void mtk_loop()
 static void mtk_fini()
 {
   /* Stop mode */
-  swSer.write("$PMTK161,0*28\r\n");
-  swSer.flush(); delay(250);
+  Serial_GNSS_Out.write("$PMTK161,0*28\r\n");
+  GNSS_FLUSH(); delay(250);
 }
 
 const gnss_chip_ops_t mtk_ops = {
@@ -933,9 +940,9 @@ static gnss_id_t goke_probe()
 
 static void goke_sendcmd(const char *cmd)
 {
-  while (swSer.available() > 0) { while (swSer.read() != '\n') {yield();} }
-  swSer.write(cmd);
-  swSer.flush();
+  while (Serial_GNSS_In.available() > 0) { while (Serial_GNSS_In.read() != '\n') {yield();} }
+  Serial_GNSS_In.write(cmd);
+  GNSS_FLUSH();
   delay(250);
 }
 
@@ -1003,7 +1010,7 @@ static gnss_id_t at65_probe()
 static bool at65_setup()
 {
 #if !defined(EXCLUDE_LOG_GNSS_VERSION)
-  swSer.write("$PCAS06,0*1B\r\n");
+  Serial_GNSS_Out.write("$PCAS06,0*1B\r\n");
 
   int i=0;
   char c;
@@ -1012,7 +1019,7 @@ static bool at65_setup()
   /* take response into buffer */
   while ((millis() - start_time) < 2000) {
 
-    c = swSer.read();
+    c = Serial_GNSS_In.read();
 
     if (isPrintable(c) || c == '\r' || c == '\n') {
       if (i >= sizeof(GNSSbuf) - 1) break;
@@ -1043,15 +1050,15 @@ static bool at65_setup()
 #endif
 
   /* Assume that we deal with fake NEO module (AT6558 based) */
-  swSer.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
+  Serial_GNSS_Out.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
 #if defined(NMEA_TCP_SERVICE)
   /* GGA,RMC and GSA */
-  swSer.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
 #else
   /* GGA and RMC */
-  swSer.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
+  Serial_GNSS_Out.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
 #endif
-  swSer.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
+  Serial_GNSS_Out.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
 
   return true;
 }
@@ -1101,7 +1108,7 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_BADGE)      {
 
     // power on by wakeup call
-    swSer.write((uint8_t) 0); swSer.flush(); delay(500);
+    Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
   }
 
 #if !defined(EXCLUDE_GNSS_SONY)
@@ -1167,8 +1174,15 @@ byte GNSS_setup() {
 
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
     pinMode(SOC_GPIO_PIN_GNSS_PPS, INPUT);
+#if !defined(NOT_AN_INTERRUPT)
     attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS),
                     SoC->GNSS_PPS_handler, RISING);
+#else
+    int interrupt_num = digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS);
+    if (interrupt_num != NOT_AN_INTERRUPT) {
+      attachInterrupt(interrupt_num, SoC->GNSS_PPS_handler, RISING);
+    }
+#endif
   }
 
 #if defined(USE_NMEA_CFG)
@@ -1190,7 +1204,15 @@ void GNSS_loop()
 void GNSS_fini()
 {
   if (SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN) {
+#if !defined(NOT_AN_INTERRUPT)
     detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS));
+#else
+    int interrupt_num = digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS);
+    if (interrupt_num != NOT_AN_INTERRUPT) {
+      detachInterrupt(interrupt_num);
+    }
+#endif
+
   }
 
   if (gnss_chip) gnss_chip->fini();
@@ -1235,8 +1257,8 @@ void PickGNSSFix()
    */
   while (true) {
 #if !defined(USE_NMEA_CFG)
-    if (swSer.available() > 0) {
-      c = swSer.read();
+    if (Serial_GNSS_In.available() > 0) {
+      c = Serial_GNSS_In.read();
     } else if (Serial.available() > 0) {
       c = Serial.read();
     } else if (SoC->Bluetooth_ops && SoC->Bluetooth_ops->available() > 0) {
@@ -1274,7 +1296,7 @@ void PickGNSSFix()
 #if defined(ARDUINO_NUCLEO_L073RZ)
       /* This makes possible to configure S76x's built-in SONY GNSS from aside */
       if (hw_info.model == SOFTRF_MODEL_DONGLE) {
-        swSer.write(c);
+        Serial_GNSS_Out.write(c);
       }
 #endif
 
@@ -1287,13 +1309,13 @@ void PickGNSSFix()
 #if 0
       /* This makes possible to configure HTCC-AB02S built-in GOKE GNSS from aside */
       if (hw_info.model == SOFTRF_MODEL_MINI) {
-        swSer.write(c);
+        Serial_GNSS_Out.write(c);
       }
 #endif
 
     /* Built-in GNSS input */
-    } else if (swSer.available() > 0) {
-      c = swSer.read();
+    } else if (Serial_GNSS_In.available() > 0) {
+      c = Serial_GNSS_In.read();
 #endif /* USE_NMEA_CFG */
     } else {
       /* return back if no input data */

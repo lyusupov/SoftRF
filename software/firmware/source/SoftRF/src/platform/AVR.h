@@ -40,7 +40,8 @@
 
 #define SerialOutput            Serial2
 #define USBSerial               Serial
-#define swSer                   Serial1
+#define Serial_GNSS_In          Serial1
+#define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial3
 
 #define SOC_ADC_VOLTAGE_DIV     2 // TBD
@@ -71,8 +72,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PE0
 #define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PE1
 
-#define SOC_GPIO_PIN_SWSER_RX PIN_SERIAL1_RX // PD2
-#define SOC_GPIO_PIN_SWSER_TX PIN_SERIAL1_TX // PD3
+#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX // PD2
+#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX // PD3
 
 #define USE_ISP_PORT          1
 

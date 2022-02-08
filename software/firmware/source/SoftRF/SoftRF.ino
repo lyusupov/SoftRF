@@ -172,8 +172,6 @@ void setup()
 
   EEPROM_setup();
 
-  SERIAL_FLUSH();
-
   SoC->Button_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
@@ -187,8 +185,6 @@ void setup()
   hw_info.imu = AHRS_setup();
 #endif /* ENABLE_AHRS */
   hw_info.display = SoC->Display_setup();
-
-  SERIAL_FLUSH();
 
 #if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {

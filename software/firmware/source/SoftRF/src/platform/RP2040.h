@@ -43,7 +43,8 @@
 #define SerialOutput            Serial1
 
 #define USBSerial               SerialUSB
-#define swSer                   Serial2
+#define Serial_GNSS_In          Serial2
+#define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               SerialUSB
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
@@ -74,8 +75,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  (1u)
 #define SOC_GPIO_PIN_CONS_TX  (0u)
 
-#define SOC_GPIO_PIN_SWSER_RX (5u)
-#define SOC_GPIO_PIN_SWSER_TX (4u)
+#define SOC_GPIO_PIN_GNSS_RX  (5u)
+#define SOC_GPIO_PIN_GNSS_TX  (4u)
 
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeAct
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
@@ -130,9 +131,9 @@ struct rst_info {
 //#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 //#define EXCLUDE_LK8EX1
 
-#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
-//#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 //#define EXCLUDE_LOG_GNSS_VERSION

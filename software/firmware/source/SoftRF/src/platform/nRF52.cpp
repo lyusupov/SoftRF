@@ -783,14 +783,14 @@ static void nRF52_fini(int reason)
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
-    //swSer.write("$PGKC105,4*33\r\n");
+    // Serial_GNSS_Out.write("$PGKC105,4*33\r\n");
 #else
       pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
 
-      //swSer.write("$PGKC051,0*37\r\n");
-      // swSer.write("$PGKC051,1*36\r\n");
+      // Serial_GNSS_Out.write("$PGKC051,0*37\r\n");
+      // Serial_GNSS_Out.write("$PGKC051,1*36\r\n");
 #endif
-      //swSer.flush(); delay(250);
+      // Serial_GNSS_Out.flush(); delay(250);
 
       ledOff(SOC_GPIO_LED_TECHO_REV_0_GREEN);
       ledOff(SOC_GPIO_LED_TECHO_REV_0_RED);
@@ -810,14 +810,14 @@ static void nRF52_fini(int reason)
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_WKE, OUTPUT);
 
-    //swSer.write("$PGKC105,4*33\r\n");
+    // Serial_GNSS_Out.write("$PGKC105,4*33\r\n");
 #else
       pinMode(SOC_GPIO_PIN_GNSS_WKE, INPUT);
 
-      //swSer.write("$PGKC051,0*37\r\n");
-      // swSer.write("$PGKC051,1*36\r\n");
+      // Serial_GNSS_Out.write("$PGKC051,0*37\r\n");
+      // Serial_GNSS_Out.write("$PGKC051,1*36\r\n");
 #endif
-      //swSer.flush(); delay(250);
+      // Serial_GNSS_Out.flush(); delay(250);
 
       ledOff(SOC_GPIO_LED_TECHO_REV_1_GREEN);
       ledOff(SOC_GPIO_LED_TECHO_REV_1_RED);
@@ -866,10 +866,10 @@ static void nRF52_fini(int reason)
       break;
   }
 
-  swSer.end();
+  Serial_GNSS_In.end();
 
-  // pinMode(SOC_GPIO_PIN_SWSER_RX, INPUT);
-  // pinMode(SOC_GPIO_PIN_SWSER_TX, INPUT);
+  // pinMode(SOC_GPIO_PIN_GNSS_RX, INPUT);
+  // pinMode(SOC_GPIO_PIN_GNSS_TX, INPUT);
 
   // pinMode(SOC_GPIO_PIN_BATTERY, INPUT);
 
@@ -1190,8 +1190,8 @@ static void nRF52_SPI_begin()
 
 static void nRF52_swSer_begin(unsigned long baud)
 {
-  swSer.setPins(SOC_GPIO_PIN_SWSER_RX, SOC_GPIO_PIN_SWSER_TX);
-  swSer.begin(baud);
+  Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void nRF52_swSer_enableRx(boolean arg)

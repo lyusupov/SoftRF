@@ -444,7 +444,7 @@ static void SAMD_SPI_begin()
 
 static void SAMD_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void SAMD_swSer_enableRx(boolean arg)

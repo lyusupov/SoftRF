@@ -295,7 +295,7 @@ static void AVR_SPI_begin()
 
 static void AVR_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void AVR_swSer_enableRx(boolean arg)

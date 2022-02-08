@@ -40,14 +40,18 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
+#if !defined(NOT_AN_INTERRUPT)
+#define NOT_AN_INTERRUPT        -1
+#endif
 #if !defined(digitalPinToInterrupt)
-#define digitalPinToInterrupt(p) ( p )
+#define digitalPinToInterrupt(p) ( NOT_AN_INTERRUPT )
 #endif
 
 #define isPrintable(c)          (isprint(c) == 0 ? false : true)
 
 #define SerialOutput            Serial
-#define SERIAL_FLUSH()          delay(300) 
+#define SERIAL_FLUSH()          ({ while (Serial         .availableForWrite() < 1024); })
+#define GNSS_FLUSH()            ({ while (Serial_GNSS_Out.availableForWrite() < 1024); })
 
 #define SX126X_DEF_LORASYNCWORDLSB  0xB2
 
@@ -71,7 +75,8 @@ struct rst_info {
   uint32_t depc;
 };
 
-#define swSer                 Serial1
+#define Serial_GNSS_In        Serial1
+#define Serial_GNSS_Out       Serial3
 #define UATSerial             Serial
 
 #define SOC_ADC_VOLTAGE_DIV   2 // Vbat 100k/100k voltage divider
@@ -80,12 +85,15 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  16
 #define SOC_GPIO_PIN_CONS_TX  17
 
-#define SOC_GPIO_PIN_SWSER_RX 4
-#define SOC_GPIO_PIN_SWSER_TX 5
+#define SOC_GPIO_PIN_GNSS_RX  4
+#define SOC_GPIO_PIN_UART1_TX 5  /* NC */
+
+#define SOC_GPIO_PIN_UART3_RX 45 /* NC */
+#define SOC_GPIO_PIN_GNSS_TX  44
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS 33
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
@@ -156,8 +164,8 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 
 /* SoftRF/ASR66 PFLAU NMEA sentence extension. In use by WebTop adapter */
-//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
-//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
+#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
+#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
 
 /* trade performance for flash memory usage (-4 Kb) */
 #define cosf(x)                 cos  ((double) (x))

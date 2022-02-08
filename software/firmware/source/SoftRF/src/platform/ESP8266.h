@@ -56,8 +56,8 @@
 #define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_SWSER_RX D3
-#define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
+#define SOC_GPIO_PIN_GNSS_RX  D3
+#define SOC_GPIO_PIN_GNSS_TX  D1 // 9  /* not in use */
 #define SOC_GPIO_PIN_LED      D1
 #define SOC_GPIO_PIN_BUZZER   10
 #define SOC_GPIO_PIN_BATTERY  A0
@@ -84,6 +84,8 @@
 #define SOC_GPIO_PIN_SCL      D4
 
 #define SerialOutput          Serial
+#define Serial_GNSS_In        swSer
+#define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial /* TBD */
 
 extern "C" {

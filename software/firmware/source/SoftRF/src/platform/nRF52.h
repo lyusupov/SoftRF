@@ -46,7 +46,8 @@
 
 #define SerialOutput            Serial1
 #define USBSerial               Serial
-#define swSer                   Serial2
+#define Serial_GNSS_In          Serial2
+#define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial1
 
 enum rst_reason {
@@ -94,8 +95,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  _PINNUM(0, 8) // P0.08
 #define SOC_GPIO_PIN_CONS_TX  _PINNUM(0, 6) // P0.06
 
-#define SOC_GPIO_PIN_SWSER_RX _PINNUM(1, 9) // P1.09
-#define SOC_GPIO_PIN_SWSER_TX _PINNUM(1, 8) // P1.08
+#define SOC_GPIO_PIN_GNSS_RX  _PINNUM(1, 9) // P1.09
+#define SOC_GPIO_PIN_GNSS_TX  _PINNUM(1, 8) // P1.08
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 

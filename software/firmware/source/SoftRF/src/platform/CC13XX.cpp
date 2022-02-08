@@ -521,13 +521,13 @@ static void CC13XX_SPI_begin()
 
 static void CC13XX_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
 }
 
 static void CC13XX_swSer_enableRx(boolean arg)
 {
 #if defined(ENERGIA_ARCH_CC13XX)
-  swSer.enableRx(arg);
+  Serial_GNSS_In.enableRx(arg);
 #endif /* ENERGIA_ARCH_CC13XX */
 }
 

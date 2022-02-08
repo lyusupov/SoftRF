@@ -110,7 +110,8 @@ typedef struct stm32_backup_struct {
 /* Primary target hardware (S76G) */
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
-#define swSer                 Serial4
+#define Serial_GNSS_In        Serial4
+#define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial2  /* PA3, PA2 */
 
 /* S76G GNSS is operating at 115200 baud (by default) */
@@ -132,8 +133,8 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_CONS_RX  PA10
 #define SOC_GPIO_PIN_CONS_TX  PA9
 
-#define SOC_GPIO_PIN_SWSER_RX PC11
-#define SOC_GPIO_PIN_SWSER_TX PC10
+#define SOC_GPIO_PIN_GNSS_RX  PC11
+#define SOC_GPIO_PIN_GNSS_TX  PC10
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PB0
 
@@ -240,7 +241,8 @@ typedef struct stm32_backup_struct {
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
-#define swSer                 Serial2
+#define Serial_GNSS_In        Serial2
+#define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial3
 
 #define SOC_ADC_VOLTAGE_DIV   1
@@ -250,8 +252,8 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_CONS_RX  PA10
 #define SOC_GPIO_PIN_CONS_TX  PA9
 
-#define SOC_GPIO_PIN_SWSER_RX PA3
-#define SOC_GPIO_PIN_SWSER_TX PA2
+#define SOC_GPIO_PIN_GNSS_RX  PA3
+#define SOC_GPIO_PIN_GNSS_TX  PA2
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
 

@@ -175,11 +175,24 @@ static void ASR66_post_init()
 #endif /* USE_OLED */
 }
 
+static bool prev_PPS_state = LOW;
+
 static void ASR66_loop()
 {
   if (ASR66_state == ASR66_LOW_POWER) {
     lowPowerHandler();
   }
+
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+  if (digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS) == NOT_AN_INTERRUPT) {
+    bool PPS_state = digitalRead(SOC_GPIO_PIN_GNSS_PPS);
+
+    if (PPS_state == HIGH && prev_PPS_state == LOW) {
+      PPS_TimeMarker = millis();
+    }
+    prev_PPS_state = PPS_state;
+  }
+#endif
 }
 
 static void ASR66_fini(int reason)
@@ -327,7 +340,11 @@ static void ASR66_SPI_begin()
 
 static void ASR66_swSer_begin(unsigned long baud)
 {
-  swSer.begin(baud);
+  Serial_GNSS_In.begin(baud);
+
+  Serial_GNSS_Out.begin(baud);
+  iomux(SOC_GPIO_PIN_GNSS_TX, 2); /* RX -> TX */
+  iomux(SOC_GPIO_PIN_UART3_RX,2); /* TX -> RX */
 }
 
 static void ASR66_swSer_enableRx(boolean arg)
