@@ -314,7 +314,10 @@ static void SetDIO3AsTcxoCtrl (uint8_t voltage) {
     uint32_t timeout = 320;
     uint8_t data[] = {voltage, (timeout >> 16) & 0xff, (timeout >> 8) & 0xff, timeout & 0xff };
 
-    writecmd(CMD_SETDIO3ASTCXOCTRL, data, sizeof(data));
+#if defined(ARDUINO_ARCH_ASR6601)
+    if (LORAC->CR1 & 0x1)
+#endif /* ARDUINO_ARCH_ASR6601 */
+      writecmd(CMD_SETDIO3ASTCXOCTRL, data, sizeof(data));
 }
 
 // write payload to fifo buffer at offset 0

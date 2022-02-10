@@ -53,8 +53,6 @@
 #define SERIAL_FLUSH()          ({ while (Serial         .availableForWrite() < 1024); })
 #define GNSS_FLUSH()            ({ while (Serial_GNSS_Out.availableForWrite() < 1024); })
 
-#define SX126X_DEF_LORASYNCWORDLSB  0xB2
-
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -88,7 +86,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_RX  4
 #define SOC_GPIO_PIN_UART1_TX 5  /* NC */
 
-#define SOC_GPIO_PIN_UART3_RX 45 /* NC */
+#define SOC_GPIO_PIN_UART3_RX 29 /* NC */
 #define SOC_GPIO_PIN_GNSS_TX  44
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
@@ -116,7 +114,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
 
 /* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_ANT_RXTX 59
+#define SOC_GPIO_PIN_ANT_VDD  45
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      15

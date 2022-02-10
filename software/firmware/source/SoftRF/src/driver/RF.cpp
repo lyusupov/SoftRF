@@ -778,10 +778,7 @@ static bool sx1276_probe()
 
 #define CMD_READREGISTER            0x1D
 #define REG_LORASYNCWORDLSB         0x0741
-
-#if !defined(SX126X_DEF_LORASYNCWORDLSB)
 #define SX126X_DEF_LORASYNCWORDLSB  0x24
-#endif
 
 static void sx1262_ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
     hal_spi_select(1);

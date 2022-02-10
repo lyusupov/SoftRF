@@ -113,7 +113,10 @@ static void ASR66_User_Key_Wakeup()
 
 static void ASR66_setup()
 {
+  NVIC_DisableIRQ(LORA_IRQn);
 
+  pinMode(SOC_GPIO_PIN_ANT_VDD, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_ANT_VDD, HIGH);
 }
 
 static void ASR66_post_init()

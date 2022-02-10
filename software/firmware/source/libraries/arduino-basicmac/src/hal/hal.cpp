@@ -126,10 +126,7 @@ bool hal_pin_rst (u1_t val) {
 }
 #else
 bool hal_pin_rst (u1_t val) {
-    if (val == 0)
-      LORAC->CR1 |= 1<<5;  //nreset
-    else
-      LORAC->CR1 &= ~(1<<7); //por
+    if (val) SX126xReset();
 
     return true;
 }
@@ -283,18 +280,9 @@ void hal_pin_busy_wait (void) {
 }
 #else
 void hal_pin_busy_wait (void) {
-    delayMicroseconds(10);
-    int n = 0;
-    while( LORAC->SR & 0x100 )
-    {
-        delayMicroseconds(1);
-        n++;
-        if(n>=10000)
-        {
-//           printf("spi busy\r\n");
-           break;
-        }
-    }
+    unsigned long start = micros();
+
+    while(((micros() - start) < MAX_BUSY_TIME) && (LORAC->SR & 0x100)) /* wait */;
 }
 #endif /* ARDUINO_ARCH_ASR6601 */
 
