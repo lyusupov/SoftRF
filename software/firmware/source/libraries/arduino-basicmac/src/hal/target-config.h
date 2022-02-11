@@ -96,6 +96,10 @@ enum _dr_eu868_t { DR_SF12=0, DR_SF11, DR_SF10, DR_SF9, DR_SF8, DR_SF7, DR_SF7B,
 #include <pgmspace.h>
 #if defined(ARDUINO_ARCH_ASR6601)
 #include "tremo_regs.h"
+#ifdef __cplusplus
+extern "C" uint16_t SpiInOut( uint16_t outData );
+extern "C" void SX126xReset();
+#endif /* __cplusplus */
 #endif /* ARDUINO_ARCH_ASR6601 */
 #elif defined(ARDUINO_ARCH_NRF52)
 #include <avr/pgmspace.h>

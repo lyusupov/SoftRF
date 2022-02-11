@@ -122,7 +122,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL      14
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   2
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
