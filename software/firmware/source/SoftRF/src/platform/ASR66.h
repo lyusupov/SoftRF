@@ -36,7 +36,7 @@
 
 #define yield()                 ({ })
 #define snprintf_P              snprintf
-#define EEPROM_commit()         EEPROM.commit()
+#define EEPROM_commit()         ({ }) // EEPROM.commit() has an issue
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 

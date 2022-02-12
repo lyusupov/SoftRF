@@ -34,6 +34,7 @@
 #include "../protocol/data/D1090.h"
 
 #include <tremo_wdg.h>
+#include <tremo_flash.h>
 
 // SX1262 pin mapping
 lmic_pinmap lmic_pins = {
@@ -259,6 +260,9 @@ static bool ASR66_EEPROM_begin(size_t size)
   return true;
 }
 
+#define _EEPROM_BASE FLASH_BASE+(FLASH_PAGE_SIZE*31) /* ASR6601CB */
+static uint8_t ASR66_flash_buf[sizeof(eeprom_t)] __attribute__((aligned(8)));
+
 static void ASR66_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
@@ -279,6 +283,14 @@ static void ASR66_EEPROM_extension(int cmd)
     }
     if (settings->d1090 != D1090_OFF) {
       settings->d1090 = D1090_UART;
+    }
+  } else if (cmd == EEPROM_EXT_STORE) {
+    for (int i=0; i < sizeof(eeprom_t); i++) {
+      ASR66_flash_buf[i] = EEPROM.read(i);
+    }
+
+    if (flash_erase_page(_EEPROM_BASE) == ERRNO_OK) {
+      flash_program_bytes(_EEPROM_BASE, ASR66_flash_buf, sizeof(eeprom_t));
     }
   }
 }
@@ -427,7 +439,7 @@ static void ASR66_WDT_setup()
 {
   rcc_enable_peripheral_clk(RCC_PERIPHERAL_WDG, true);
   delay(200);
-  wdg_start(0xFFFFFFFF);
+  wdg_start(8 * RCC_FREQ_24M); /* 7 sec */
   wdt_is_active = true;
 }
 
@@ -509,7 +521,7 @@ static void ASR66_Button_loop()
 static void ASR66_Button_fini()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
+  while (digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
   pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
