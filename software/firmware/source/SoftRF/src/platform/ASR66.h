@@ -44,7 +44,7 @@
 #define NOT_AN_INTERRUPT        -1
 #endif
 #if !defined(digitalPinToInterrupt)
-#define digitalPinToInterrupt(p) ( NOT_AN_INTERRUPT )
+#define digitalPinToInterrupt(p) (p == 33 ? NOT_AN_INTERRUPT : p)
 #endif
 
 #define isPrintable(c)          (isprint(c) == 0 ? false : true)
@@ -91,7 +91,7 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_GNSS_PPS 33
+#define SOC_GPIO_PIN_GNSS_PPS 3
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN

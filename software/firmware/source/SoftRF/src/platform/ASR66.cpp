@@ -76,8 +76,13 @@ typedef enum
 
 static ASR66_states_t ASR66_state = ASR66_ACTIVE;
 
+#define UniqueIDsize 2
+static uint32_t DeviceID[UniqueIDsize];
+
 static void ASR66_setup()
 {
+  system_get_chip_id(DeviceID);
+
   NVIC_DisableIRQ(LORA_IRQn);
 
   pinMode(SOC_GPIO_PIN_ANT_VDD, OUTPUT);
@@ -166,18 +171,44 @@ static void ASR66_loop()
 
 static void ASR66_fini(int reason)
 {
+  Serial_GNSS_In.end();
 
+  digitalWrite(SOC_GPIO_PIN_ANT_VDD, LOW);
+  pinMode(SOC_GPIO_PIN_ANT_VDD, INPUT_PULLDOWN);
+  iomux(SOC_GPIO_PIN_ANT_RXTX, 0);
+  pinMode(SOC_GPIO_PIN_ANT_RXTX, INPUT_PULLDOWN);
+
+  Serial.end();
+
+  switch (reason)
+  {
+#if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
+  case SOFTRF_SHUTDOWN_BUTTON:
+  case SOFTRF_SHUTDOWN_LOWBAT:
+    pinMode(SOC_GPIO_PIN_BUTTON,  INPUT);
+    enableGpioWakeUp(SOC_GPIO_PIN_BUTTON, HIGH);
+    break;
+#endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+  case SOFTRF_SHUTDOWN_NMEA:
+    pinMode(SOC_GPIO_PIN_CONS_RX, INPUT);
+    enableGpioWakeUp(SOC_GPIO_PIN_CONS_RX, LOW);
+    break;
+  default:
+    break;
+  }
+
+  pwr_deepsleep_wfi(PWR_LP_MODE_STOP0);
 }
 
 static void ASR66_reset()
 {
-  NVIC_SystemReset();
+  system_reset();
 }
 
 static uint32_t ASR66_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = getID();
+  uint32_t id = DeviceID[0];
 
   return DevID_Mapper(id);
 #else
