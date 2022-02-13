@@ -149,7 +149,7 @@ jobs:
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "CubeCell:CubeCell:CubeCell-Board-PRO" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.3.0/package_CubeCell_index.json" --save-prefs ;
+            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.4.0/package_CubeCell_index.json" --save-prefs ;
             arduino --install-boards CubeCell:CubeCell ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_LORAWAN_ADR=CubeCell-Board-PRO_1"         --save-prefs ;
@@ -162,7 +162,12 @@ jobs:
             arduino --pref "custom_LORAWAN_REGION=CubeCell-Board-PRO_0"      --save-prefs ;
             arduino --pref "custom_LORAWAN_RGB=CubeCell-Board-PRO_0"         --save-prefs ;
             arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-Board-PRO_1"  --save-prefs ;
-            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.3.0 ;
+            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.4.0 ;
+            sed -i 's\compiler.sdk.path={runtime.platform.path}/cores/asr650x\compiler.sdk.path={runtime.platform.path}/cores/{build.core}\g' platform.txt ;
+            sed -i 's\#define #define _EEPROM_SIZE      0xC00\#define _EEPROM_SIZE              0xC00\g' libraries/EEPROM/EEPROM.cpp;
+            sed -i 's\_baddr(CY_SFLASH_USERBASE)\_baddr(_EEPROM_BASE)\g' libraries/EEPROM/EEPROM.cpp ;
+            sed -i '26 a #define SPI_HAS_TRANSACTION 1' cores/asr6601/peripheral/SPI.h
+
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
