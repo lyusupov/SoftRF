@@ -20,7 +20,9 @@ jobs:
 
     strategy:
       matrix:
-        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega']
+        board: ['rp2040:rp2040:rpipico', 'CubeCell:CubeCell:CubeCell-Board-PRO']
+
+        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega']
 
         # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega']
 
@@ -128,8 +130,8 @@ jobs:
             make links ;
             cd $GITHUB_WORKSPACE ;
           fi
-          if [[ "$BOARD" =~ "CubeCell:CubeCell:" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.2.0/package_CubeCell_index.json" --save-prefs ;
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:CubeCell-GPS" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.4.0/package_CubeCell_index.json" --save-prefs ;
             arduino --install-boards CubeCell:CubeCell ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_LORAWAN_ADR=CubeCell-GPS_1"         --save-prefs ;
@@ -142,8 +144,25 @@ jobs:
             arduino --pref "custom_LORAWAN_REGION=CubeCell-GPS_0"      --save-prefs ;
             arduino --pref "custom_LORAWAN_RGB=CubeCell-GPS_0"         --save-prefs ;
             arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-GPS_1"  --save-prefs ;
-            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.2.0 ;
+            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.4.0 ;
             sed -i 's/-ffunction-sections -ffat-lto-objects/-ffunction-sections -fdata-sections -ffat-lto-objects/g' platform.txt ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:CubeCell-Board-PRO" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/HelTecAutomation/ASR650x-Arduino/releases/download/V1.4.0/package_CubeCell_index.json" --save-prefs ;
+            arduino --install-boards CubeCell:CubeCell ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_LORAWAN_ADR=CubeCell-Board-PRO_1"         --save-prefs ;
+            arduino --pref "custom_LORAWAN_AT_SUPPORT=CubeCell-Board-PRO_1"  --save-prefs ;
+            arduino --pref "custom_LORAWAN_CLASS=CubeCell-Board-PRO_0"       --save-prefs ;
+            arduino --pref "custom_LORAWAN_DEVEUI=CubeCell-Board-PRO_0"      --save-prefs ;
+            arduino --pref "custom_LORAWAN_DebugLevel=CubeCell-Board-PRO_0"  --save-prefs ;
+            arduino --pref "custom_LORAWAN_NETMODE=CubeCell-Board-PRO_1"     --save-prefs ;
+            arduino --pref "custom_LORAWAN_Net_Reserve=CubeCell-Board-PRO_0" --save-prefs ;
+            arduino --pref "custom_LORAWAN_REGION=CubeCell-Board-PRO_0"      --save-prefs ;
+            arduino --pref "custom_LORAWAN_RGB=CubeCell-Board-PRO_0"         --save-prefs ;
+            arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-Board-PRO_1"  --save-prefs ;
+            cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.4.0 ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
@@ -164,6 +183,12 @@ jobs:
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "arduino:avr:" ]]; then
+            arduino --board $BOARD --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
+            arduino --install-boards rp2040:rp2040:1.10.0 ;
             arduino --board $BOARD --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
@@ -215,6 +240,9 @@ jobs:
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "arduino:avr:"      ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
 
