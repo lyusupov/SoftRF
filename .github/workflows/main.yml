@@ -20,11 +20,9 @@ jobs:
 
     strategy:
       matrix:
-        board: ['CubeCell:CubeCell:CubeCell-Board-PRO']
+        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico']
 
-        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'rp2040:rp2040:rpipico']
-
-        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'rp2040:rp2040:rpipico']
+        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico']
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
@@ -145,7 +143,7 @@ jobs:
             arduino --pref "custom_LORAWAN_RGB=CubeCell-GPS_0"         --save-prefs ;
             arduino --pref "custom_LORAWAN_UPLINKMODE=CubeCell-GPS_1"  --save-prefs ;
             cd $HOME/.arduino15/packages/CubeCell/hardware/CubeCell/1.4.0 ;
-            sed -i 's/-ffunction-sections -ffat-lto-objects/-ffunction-sections -fdata-sections -ffat-lto-objects/g' platform.txt ;
+            sed -i 's\compiler.sdk.path={runtime.platform.path}/cores/asr650x\compiler.sdk.path={runtime.platform.path}/cores/{build.core}\g' platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "CubeCell:CubeCell:CubeCell-Board-PRO" ]]; then
@@ -172,7 +170,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs ;
-            arduino --install-boards adafruit:nrf52:1.2.0 ;
+            arduino --install-boards adafruit:nrf52:1.3.0 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_debug=pca10056_l0"                 --save-prefs ;
             arduino --pref "custom_softdevice=pca10056_s140v6"        --save-prefs ;
@@ -193,7 +191,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:1.10.0 ;
+            arduino --install-boards rp2040:rp2040:1.11.0 ;
             arduino --board $BOARD --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
