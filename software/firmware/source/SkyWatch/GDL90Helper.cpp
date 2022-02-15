@@ -258,6 +258,7 @@ void GDL90_setup()
       }
 #endif
       break;
+    case CON_USB:
     case CON_NONE:
     case CON_WIFI_UDP:
     default:
@@ -283,7 +284,6 @@ void GDL90_loop()
     }
     break;
   case CON_SERIAL_AUX:
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     /* read data from Type-C USB port */
     while (Serial.available() > 0) {
       char c = Serial.read();
@@ -291,7 +291,8 @@ void GDL90_loop()
       GDL90_Parse_Character(c);
       GDL90_Data_TimeMarker = millis();
     }
-#else
+    break;
+  case CON_USB:
     /* read data from Type-C USB port in Host mode */
     if (SoC->USB_ops) {
       while (SoC->USB_ops->available() > 0) {
@@ -301,7 +302,6 @@ void GDL90_loop()
         GDL90_Data_TimeMarker = millis();
       }
     }
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));

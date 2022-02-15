@@ -8,6 +8,7 @@
 * [ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#asr650x)<br>
 * [nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#nrf52840)<br>
 * [SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#samd21)<br>
+* [RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#rp2040)<br>
 
 <br>
 
@@ -274,5 +275,21 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. _Sketch_ -> _Upload_
+
+## RP2040
+
+1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
+  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/1.12.0) (1.12.0)
+2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+3. create **Arduino** sub-directory
+4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
+
+5. start **Arduino** application
+6. open **SoftRF** sketch from _File_ -> _Open_ menu
+7. Select _Tools_ -> _Board_ ->  _Raspberry_ _Pi_ _Pico_
+8. try to build and upload using _Sketch_ -> _Upload_
 
 <br>

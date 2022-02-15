@@ -81,6 +81,10 @@ void print_current(const char *s, bool d)
 }
 #endif
 
+#if !defined(SERIAL_BEGIN)
+#define SERIAL_BEGIN(b,s) Serial.begin(b,s)
+#endif
+
 bool inServiceMode = false;
 
 void setup()
@@ -88,7 +92,7 @@ void setup()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   delay(300);
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  SERIAL_BEGIN(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   Serial.println();
 
   Serial.println();

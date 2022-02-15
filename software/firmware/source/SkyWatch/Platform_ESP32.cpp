@@ -266,6 +266,9 @@ static void ESP32_setup()
     if (rtc_present && (i2c != nullptr)) {
       rtc = new PCF8563_Class(*i2c);
     }
+  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+             hw_info.revision == HW_REV_T8_S2) {
+    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
   }
 
   /* SD-SPI init */

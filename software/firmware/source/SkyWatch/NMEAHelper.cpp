@@ -280,9 +280,7 @@ void NMEA_setup()
     switch (settings->m.connection)
     {
     case CON_SERIAL_MAIN:
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     case CON_SERIAL_AUX:
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
       uint32_t SerialBaud;
 
       switch (settings->m.baudrate)
@@ -321,7 +319,7 @@ void NMEA_setup()
 #endif
       break;
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
-    case CON_SERIAL_AUX:
+    case CON_USB:
 #if 0
       if (SoC->USB_ops) {
         SoC->USB_ops->setup();
@@ -366,7 +364,6 @@ void NMEA_loop()
     }
     break;
   case CON_SERIAL_AUX:
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
     /* read data from Type-C USB port */
     while (Serial.available() > 0) {
       c = Serial.read();
@@ -374,17 +371,17 @@ void NMEA_loop()
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
-#else
+    break;
+  case CON_USB:
     /* read data from Type-C USB port in Host mode */
     if (SoC->USB_ops) {
       while (SoC->USB_ops->available() > 0) {
         c = SoC->USB_ops->read();
-        Serial.print(c);
+//        Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }
     }
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
     break;
   case CON_WIFI_UDP:
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
@@ -489,13 +486,21 @@ void NMEA_loop()
 
 bool NMEA_Save_Settings()
 {
+    int nmea_out = NMEA_UART;
+
+    if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+        hw_info.revision == HW_REV_T8_S2        &&
+        settings->m.connection == CON_USB) {
+      nmea_out = NMEA_USB;
+    }
+
     snprintf_P(NMEABuffer, sizeof(NMEABuffer),
             PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
             PSRFC_VERSION, settings->s.mode, settings->s.rf_protocol,
             settings->s.band, settings->s.aircraft_type, settings->s.alarm,
             settings->s.txpower, BUZZER_OFF, LED_OFF,
             settings->s.nmea_g, settings->s.nmea_p, settings->s.nmea_l,
-            settings->s.nmea_s, NMEA_UART, GDL90_OFF, D1090_OFF,
+            settings->s.nmea_s, nmea_out, GDL90_OFF, D1090_OFF,
             settings->s.stealth, settings->s.no_track, settings->s.power_save );
 
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
@@ -533,6 +538,7 @@ void NMEA_Out(byte *buf, size_t size, bool nl)
   switch(settings->s.nmea_out)
   {
   case NMEA_UART:
+  case NMEA_USB:
     {
       Serial.write(buf, size);
       if (nl)

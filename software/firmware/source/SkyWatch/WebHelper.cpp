@@ -190,7 +190,7 @@ void handleRoot() {
 
 void handleSettings() {
 
-  size_t size = 7160;
+  size_t size = 7200;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -216,7 +216,7 @@ void handleSettings() {
 <th align=left>Connection port</th>\
 <td align=right>\
 <select name='connection'>\
-<option %s value='%d'>MAIN</option>\
+<option %s value='%d'>%s</option>\
 <option %s value='%d'>AUX</option>\
 <!--<option %s value='%d'>WiFi UDP</option>\
 <option %s value='%d'>Bluetooth SPP</option> -->\
@@ -241,7 +241,11 @@ void handleSettings() {
 <option %s value='%d'>19200</option>\
 <option %s value='%d'>38400</option>\
 <option %s value='%d'>57600</option>"),
-  (settings->m.connection == CON_SERIAL_MAIN  ? "selected" : ""), CON_SERIAL_MAIN,
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+  (settings->m.connection == CON_USB          ? "selected" : ""), CON_USB, "USB",
+#else
+  (settings->m.connection == CON_SERIAL_MAIN  ? "selected" : ""), CON_SERIAL_MAIN, "MAIN",
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
   (settings->m.connection == CON_SERIAL_AUX   ? "selected" : ""), CON_SERIAL_AUX,
   (settings->m.connection == CON_WIFI_UDP     ? "selected" : ""), CON_WIFI_UDP,
   (settings->m.connection == CON_BLUETOOTH    ? "selected" : ""), CON_BLUETOOTH,
@@ -294,10 +298,10 @@ void handleSettings() {
 </select>\
 </td>\
 </tr> -->"),
-  (settings->s.mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
+  (settings->s.mode == SOFTRF_MODE_NORMAL    ? "selected" : "") , SOFTRF_MODE_NORMAL,
   (settings->s.mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
-  (settings->s.mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
-  (settings->s.mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV
+  (settings->s.mode == SOFTRF_MODE_BRIDGE    ? "selected" : ""), SOFTRF_MODE_BRIDGE,
+  (settings->s.mode == SOFTRF_MODE_UAV       ? "selected" : ""), SOFTRF_MODE_UAV
 /*  (settings->s.mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT, */
   );
 
@@ -322,15 +326,15 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
-    (settings->s.rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_LEGACY   ? "selected" : ""),
      RF_PROTOCOL_LEGACY, "Legacy",
-    (settings->s.rf_protocol == RF_PROTOCOL_OGNTP ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_OGNTP    ? "selected" : ""),
      RF_PROTOCOL_OGNTP, "OGNTP",
-    (settings->s.rf_protocol == RF_PROTOCOL_P3I ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_P3I      ? "selected" : ""),
      RF_PROTOCOL_P3I, "P3I",
     (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT ? "selected" : ""),
      RF_PROTOCOL_ADSB_UAT, "UAT",
-    (settings->s.rf_protocol == RF_PROTOCOL_FANET ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_FANET    ? "selected" : ""),
      RF_PROTOCOL_FANET, "FANET"
     );
   } else {
@@ -529,14 +533,16 @@ void handleSettings() {
 <select name='nmea_out'>\
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>\
 <option %s value='%d'>UDP</option>"),
   (!settings->s.nmea_g ? "checked" : "") , (settings->s.nmea_g ? "checked" : ""),
   (!settings->s.nmea_p ? "checked" : "") , (settings->s.nmea_p ? "checked" : ""),
   (!settings->s.nmea_l ? "checked" : "") , (settings->s.nmea_l ? "checked" : ""),
   (!settings->s.nmea_s ? "checked" : "") , (settings->s.nmea_s ? "checked" : ""),
-  (settings->s.nmea_out == NMEA_OFF ? "selected" : ""), NMEA_OFF,
+  (settings->s.nmea_out == NMEA_OFF  ? "selected" : ""), NMEA_OFF,
   (settings->s.nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
-  (settings->s.nmea_out == NMEA_UDP ? "selected" : ""), NMEA_UDP);
+  (settings->s.nmea_out == NMEA_USB  ? "selected" : ""), NMEA_USB,
+  (settings->s.nmea_out == NMEA_UDP  ? "selected" : ""), NMEA_UDP);
 
   len = strlen(offset);
   offset += len;
@@ -569,10 +575,12 @@ void handleSettings() {
 <select name='gdl90'>\
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>\
 <option %s value='%d'>UDP</option>"),
-  (settings->s.gdl90 == GDL90_OFF ? "selected" : ""), GDL90_OFF,
+  (settings->s.gdl90 == GDL90_OFF  ? "selected" : ""), GDL90_OFF,
   (settings->s.gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
-  (settings->s.gdl90 == GDL90_UDP ? "selected" : ""), GDL90_UDP);
+  (settings->s.gdl90 == GDL90_USB  ? "selected" : ""), GDL90_USB);
+  (settings->s.gdl90 == GDL90_UDP  ? "selected" : ""), GDL90_UDP);
 
   len = strlen(offset);
   offset += len;
@@ -601,9 +609,11 @@ void handleSettings() {
 <td align=right>\
 <select name='d1090'>\
 <option %s value='%d'>Off</option>\
-<option %s value='%d'>Serial</option>"),
-  (settings->s.d1090 == D1090_OFF ? "selected" : ""), D1090_OFF,
-  (settings->s.d1090 == D1090_UART ? "selected" : ""), D1090_UART);
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>"),
+  (settings->s.d1090 == D1090_OFF  ? "selected" : ""), D1090_OFF,
+  (settings->s.d1090 == D1090_UART ? "selected" : ""), D1090_UART,
+  (settings->s.d1090 == D1090_USB  ? "selected" : ""), D1090_USB);
 
   len = strlen(offset);
   offset += len;
@@ -1007,8 +1017,9 @@ void handleStatus() {
   snprintf_P ( offset, size,
     PSTR("<tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
     settings->m.connection == CON_SERIAL_MAIN  ? "Main Serial" :
-    settings->m.connection == CON_SERIAL_AUX   ? "AUX Serial" :
-    settings->m.connection == CON_BLUETOOTH    ? "Bluetooth" :
+    settings->m.connection == CON_SERIAL_AUX   ? "AUX Serial"  :
+    settings->m.connection == CON_USB          ? "USB"         :
+    settings->m.connection == CON_BLUETOOTH    ? "Bluetooth"   :
     settings->m.connection == CON_WIFI_UDP     ? "WiFi" : "NONE"
   );
 
@@ -1033,6 +1044,7 @@ void handleStatus() {
     size -= len;
   case CON_SERIAL_MAIN:
   case CON_SERIAL_AUX:
+  case CON_USB:
   case CON_BLUETOOTH:
     switch (settings->m.protocol)
     {

@@ -63,9 +63,12 @@ bool USBhost::init(bool create_tasks)
     ESP_LOGI("", "install status: %d", err);
 
     const usb_host_client_config_t client_config = {
-        .client_event_callback = _client_event_callback,
-        .callback_arg = this,
-        .max_num_event_msg = 5};
+        .max_num_event_msg = 5,
+        .async = {
+            .client_event_callback = _client_event_callback,
+            .callback_arg = this
+        }
+    };
 
     err = usb_host_client_register(&client_config, &client_hdl);
     ESP_LOGI("", "client register status: %d", err);

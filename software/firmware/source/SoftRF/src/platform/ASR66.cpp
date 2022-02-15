@@ -397,12 +397,12 @@ static float ASR66_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_MINI ? BATTERY_THRESHOLD_LIPO   :
+    rval = hw_info.model == SOFTRF_MODEL_MULTI ? BATTERY_THRESHOLD_LIPO   :
                                                 BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_MINI ? BATTERY_CUTOFF_LIPO   :
+    rval = hw_info.model == SOFTRF_MODEL_MULTI ? BATTERY_CUTOFF_LIPO   :
                                                 BATTERY_CUTOFF_NIMHX2;
     break;
 

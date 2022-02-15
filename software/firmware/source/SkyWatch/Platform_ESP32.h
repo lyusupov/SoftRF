@@ -189,6 +189,8 @@ extern PCF8563_Class *rtc;
 #undef  SOC_GPIO_PIN_T8_S2_CONS_TX
 #define SOC_GPIO_PIN_T8_S2_CONS_RX      46
 #define SOC_GPIO_PIN_T8_S2_CONS_TX      45
+
+#define SERIAL_BEGIN(b,s) Serial.begin(b,s,SOC_GPIO_PIN_T8_S2_CONS_RX,SOC_GPIO_PIN_T8_S2_CONS_TX)
 #endif /* USE_USB_HOST */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
