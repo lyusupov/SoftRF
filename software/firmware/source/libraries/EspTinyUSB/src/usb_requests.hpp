@@ -56,6 +56,15 @@
     (ctrl_req_ptr)->wLength = (0);   \
 })
 
+#define MSC_SCSI_INIT_CBW(cbw, is_read, lun, tag, cmd, len)({  \
+    (cbw)->dCBWSignature = 0x43425355;  \
+    (cbw)->dCBWTag = tag;  \
+    (cbw)->dCBWDataTransferLength = len;  \
+    (cbw)->bmCBWFlags = (is_read) ? (1 << 7) : 0;   \
+    (cbw)->bCBWLUN = lun;  \
+    (cbw)->bCBWCBLength = 10;  \
+    (cbw)->CBWCB = cmd;  \
+})
 
 /// SCSI Command Operation Code
 typedef enum

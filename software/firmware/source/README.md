@@ -276,6 +276,8 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. _Sketch_ -> _Upload_
 
+<br>
+
 ## RP2040
 
 1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)

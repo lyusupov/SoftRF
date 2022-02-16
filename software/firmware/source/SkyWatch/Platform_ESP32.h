@@ -120,7 +120,7 @@
 #define SOC_GPIO_PIN_T8_S2_BATTERY      9
 
 // V3V Power enable
-#define SOC_GPIO_PIN_T8_PWR_EN          14
+#define SOC_GPIO_PIN_T8_S2_PWR_EN       14
 
 // 32768 Hz crystal
 #define SOC_GPIO_PIN_T8_S2_XP           15

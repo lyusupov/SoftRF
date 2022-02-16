@@ -268,7 +268,7 @@ static void ESP32_setup()
     }
   } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
              hw_info.revision == HW_REV_T8_S2) {
-    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT_PULLUP);
   }
 
   /* SD-SPI init */
@@ -1118,7 +1118,7 @@ void acm_events(int event, void *data, size_t len)
     {
     case CDC_CTRL_SET_CONTROL_LINE_STATE:
         log_i("CDC_CTRL_SET_CONTROL_LINE_STATE");
-        device->setLineCoding(115200, 0, 0, 8);
+        device->setLineCoding(SERIAL_OUT_BR, 0, 0, 8);
         break;
 
     case CDC_DATA_IN:
@@ -1176,14 +1176,12 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
     else
     {
         log_w("DEVICE gone event");
-#if 0
         if (device)
         {
             device->deinit();
             delete(device);
         }
         device = NULL;
-#endif
     }
 }
 

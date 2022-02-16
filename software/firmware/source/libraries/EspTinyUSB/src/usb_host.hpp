@@ -7,7 +7,7 @@ class USBhost
 
 protected:
     usb_device_info_t dev_info;
-    usb_host_client_handle_t client_hdl;
+    
     usb_device_handle_t dev_hdl;
     
     usb_host_client_event_cb_t _client_event_cb = nullptr;
@@ -19,9 +19,10 @@ public:
     USBhost();
     ~USBhost();
 
-
+    usb_host_client_handle_t client_hdl;
     bool init(bool create_tasks = true);
     bool open(const usb_host_client_event_msg_t *event_msg);
+    void close();
     usb_device_info_t getDeviceInfo();
     const usb_device_desc_t* getDeviceDescriptor();
     const usb_config_desc_t* getConfigurationDescriptor();

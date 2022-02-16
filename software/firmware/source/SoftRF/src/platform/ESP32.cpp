@@ -313,7 +313,7 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_T8_S2_LORA_RST;
     lmic_pins.busy = LMIC_UNUSED_PIN;
 
-    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT_PULLUP);
 
 #if defined(USE_USB_HOST)
     Serial.end();
@@ -523,7 +523,7 @@ static void ESP32_fini(int reason)
     axp.shutdown();
 #endif /* PMK2_SLEEP_MODE */
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
-    pinMode(SOC_GPIO_PIN_T8_PWR_EN, INPUT);
+    pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT);
 
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_T8_S2_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
@@ -1642,7 +1642,7 @@ void acm_events(int event, void *data, size_t len)
     {
     case CDC_CTRL_SET_CONTROL_LINE_STATE:
         log_i("CDC_CTRL_SET_CONTROL_LINE_STATE");
-        device->setLineCoding(115200, 0, 0, 8);
+        device->setLineCoding(SERIAL_OUT_BR, 0, 0, 8);
         break;
 
     case CDC_DATA_IN:
@@ -1700,14 +1700,12 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
     else
     {
         log_w("DEVICE gone event");
-#if 0
         if (device)
         {
             device->deinit();
             delete(device);
         }
         device = NULL;
-#endif
     }
 }
 

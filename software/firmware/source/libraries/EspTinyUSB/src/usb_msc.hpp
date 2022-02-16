@@ -29,19 +29,20 @@ private:
     msc_transfer_cb_t callbacks = {};   // user callbacks
 
 public:
+    static USBmscDevice* getInstance();
     USBmscDevice(const usb_config_desc_t* config_desc, USBhost*);
     ~USBmscDevice();
 
     bool            init();
-    void            reset();
-    void            format();
-    void            mount(char*, uint8_t lun = 0);
+    bool            mount(char*, uint8_t lun = 0);
+    void            unmount(char *path, uint8_t lun = 0);
+    void            getDrivePath(char* path, uint8_t lun = 0);
     uint8_t         getMaxLUN();
     uint32_t        getBlockCount(uint8_t lun = 0);
     uint16_t        getBlockSize(uint8_t lun = 0);
     void            registerCallbacks(msc_transfer_cb_t);
-    void            onEvent();
-
+    void            reset();
+    void            format();
 
 public: // POSIX
 
@@ -53,23 +54,17 @@ public: // POSIX
 
 
 public: // public to use from ff_diskio
-    static USBmscDevice* getInstance();
     esp_err_t _read10 (uint8_t lun, int offset, int num_sectors, uint8_t* buff);
     esp_err_t _write10(uint8_t lun, int offset, int num_sectors, uint8_t* buff);
 
 private:
-    void inquiry();
-    esp_err_t unitReady();
+    void _inquiry();
+    esp_err_t _unitReady();
     void _getCapacity(uint8_t);
     void _setCapacity(uint32_t, uint32_t);
     void _emitEvent(host_event_t event, usb_transfer_t* data);
     void _getMaxLUN();
-    void csw();
-    void csw(usb_transfer_cb_t);
-
-    esp_err_t allocate(size_t);
-    esp_err_t dealocate(uint8_t);    
-
+    void _csw();
 
 private: // internal callbacks
     void onCSW(usb_transfer_t *transfer);

@@ -25,12 +25,14 @@ void IRAM_ATTR usb_read_cb(usb_transfer_t *transfer)
 {
     USBacmDevice *dev = (USBacmDevice *)transfer->context;
     dev->_callback(CDC_DATA_IN, transfer);
+    dev->deallocate(transfer);
 }
 
 void IRAM_ATTR usb_write_cb(usb_transfer_t *transfer)
 {
     USBacmDevice *dev = (USBacmDevice *)transfer->context;
     dev->_callback(CDC_DATA_OUT, transfer);
+    dev->deallocate(transfer);
 }
 
 USBacmDevice::USBacmDevice(const usb_config_desc_t *config_desc, USBhost *host)
@@ -93,29 +95,15 @@ USBacmDevice::USBacmDevice(const usb_config_desc_t *config_desc, USBhost *host)
 
 USBacmDevice::~USBacmDevice()
 {
+    // TODO
+    deallocate(xfer_ctrl);
 }
 
 bool USBacmDevice::init()
 {
     usb_device_info_t info = _host->getDeviceInfo();
-
-    esp_err_t err = usb_host_transfer_alloc(64, 0, &xfer_write);
-    xfer_write->device_handle = _host->deviceHandle();
-    xfer_write->context = this;
-    xfer_write->callback = usb_write_cb;
-    xfer_write->bEndpointAddress = ep_out->bEndpointAddress;
-
-    err = usb_host_transfer_alloc(64, 0, &xfer_read);
-    xfer_read->device_handle = _host->deviceHandle();
-    xfer_read->context = this;
-    xfer_read->callback = usb_read_cb;
-    xfer_read->bEndpointAddress = ep_in->bEndpointAddress;
-
-    err = usb_host_transfer_alloc(info.bMaxPacketSize0, 0, &xfer_ctrl);
-    xfer_ctrl->device_handle = _host->deviceHandle();
-    xfer_ctrl->context = this;
+    USBhostDevice::init(info.bMaxPacketSize0);
     xfer_ctrl->callback = usb_ctrl_cb;
-    xfer_ctrl->bEndpointAddress = 0;
 
     return true;
 }
@@ -147,11 +135,18 @@ void USBacmDevice::getLineCoding()
     esp_err_t err = usb_host_transfer_submit_control(_host->clientHandle(), xfer_ctrl);
 }
 
-void USBacmDevice::INDATA()
+void USBacmDevice::INDATA(size_t len)
 {
     if (!connected)
         return;
-    xfer_read->num_bytes = 64;
+
+    size_t _len = usb_round_up_to_mps(len, ep_out->wMaxPacketSize);
+
+    usb_transfer_t *xfer_read = allocate(_len);
+    xfer_read->num_bytes = _len;
+    xfer_read->callback = usb_read_cb;
+    xfer_read->context = this;
+    xfer_read->bEndpointAddress = ep_in->bEndpointAddress;
 
     esp_err_t err = usb_host_transfer_submit(xfer_read);
     if (err)
@@ -166,6 +161,11 @@ void USBacmDevice::OUTDATA(uint8_t *data, size_t len)
         return;
     if (!len)
         return;
+
+    usb_transfer_t *xfer_write = allocate(64);
+    xfer_write->callback = usb_write_cb;
+    xfer_write->context = this;
+    xfer_write->bEndpointAddress = ep_out->bEndpointAddress;
     xfer_write->num_bytes = len;
     memcpy(xfer_write->data_buffer, data, len);
 
@@ -181,28 +181,18 @@ bool USBacmDevice::isConnected()
     return connected;
 }
 
-void USBacmDevice::onEvent(cdc_event_cb_t _cb)
-{
-    event_cb = _cb;
-}
-
 void USBacmDevice::_callback(int event, usb_transfer_t *transfer)
 {
     switch (event)
     {
     case CDC_DATA_IN:
-        if (event_cb)
-            event_cb(event, transfer->data_buffer, transfer->actual_num_bytes);
-        break;
     case CDC_DATA_OUT:
-        if (event_cb)
-            event_cb(event, transfer->data_buffer, transfer->actual_num_bytes);
         break;
 
     default:
-        if (event_cb)
-            event_cb(event, NULL, transfer->actual_num_bytes);
         connected = true;
         break;
     }
+    if (event_cb)
+        event_cb(event, transfer->data_buffer, transfer->actual_num_bytes);
 }
