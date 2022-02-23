@@ -136,6 +136,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PWR SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BMON_DIS SOC_UNUSED_PIN
+
+#if !defined(VBAT_ADC_CTL)
+#define VBAT_ADC_CTL          SOC_UNUSED_PIN
+#endif /* VBAT_ADC_CTL */
 #endif /* CubeCell_GPS */
 
 #define EXCLUDE_WIFI

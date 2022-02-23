@@ -34,7 +34,7 @@
 #include "../protocol/data/D1090.h"
 
 #include <innerWdt.h>
-#if defined(__ASR6501__)
+#if defined(__ASR6501__) && !defined(ARDUINO_ARCH_ASR650X)
 #include <lorawan_port.h>
 #endif /* __ASR6501__ */
 
@@ -132,11 +132,13 @@ static void PSoC4_setup()
       reset_info.reason = REASON_DEFAULT_RST; break;
   }
 
+#if defined(USE_OLED)
   pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
 
   pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
+#endif /* USE_OLED */
 
   delay(200);
 
@@ -147,15 +149,20 @@ static void PSoC4_setup()
     hw_info.model = SOFTRF_MODEL_MINI;
   }
 
+#if defined(USE_OLED)
   pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
   pinMode(SOC_GPIO_PIN_OLED_PWR, ANALOG);
+#endif /* USE_OLED */
 
   if (hw_info.model == SOFTRF_MODEL_MINI) {
+
+#if defined(USE_OLED)
     pinMode(SOC_GPIO_PIN_OLED_PWR, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_OLED_PWR, LOW);
 
     pinMode(SOC_GPIO_PIN_OLED_RST, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_OLED_RST, HIGH);
+#endif /* USE_OLED */
 
     pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
@@ -212,12 +219,14 @@ static void PSoC4_fini(int reason)
 
     delay(2000);
 
+#if defined(USE_OLED)
     digitalWrite(SOC_GPIO_PIN_OLED_RST, LOW);
     delay(200);
     pinMode(SOC_GPIO_PIN_OLED_RST,  ANALOG);
 
     digitalWrite(SOC_GPIO_PIN_OLED_PWR, HIGH);
     pinMode(SOC_GPIO_PIN_OLED_PWR,  ANALOG);
+#endif /* USE_OLED */
 
     pinMode(SOC_GPIO_PIN_SS,        ANALOG);
     pinMode(SOC_GPIO_PIN_RST,       ANALOG);
