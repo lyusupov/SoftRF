@@ -49,6 +49,10 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
+#if !defined(CubeCell_GPS)
+softSerial swSer(SOC_GPIO_PIN_GNSS_TX, SOC_GPIO_PIN_GNSS_RX);
+#endif /* CubeCell_GPS */
+
 #if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -142,12 +146,15 @@ static void PSoC4_setup()
 
   delay(200);
 
+  /* This test needs a proper pull-up resistors on the I2C bus */
+#if defined(CubeCell_GPS)
   /* SSD1306 I2C OLED probing */
   Wire.begin();
   Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
   if (Wire.endTransmission() == 0) {
     hw_info.model = SOFTRF_MODEL_MINI;
   }
+#endif /* CubeCell_GPS */
 
 #if defined(USE_OLED)
   pinMode(SOC_GPIO_PIN_OLED_RST, ANALOG);
@@ -171,31 +178,42 @@ static void PSoC4_setup()
 
 static void PSoC4_post_init()
 {
+  Serial.println();
+  Serial.print(F("SoftRF "));
+  Serial.print(hw_info.model == SOFTRF_MODEL_MINI ? F("Mini") : F("Multi"));
+  Serial.println(F(" Edition Power-on Self Test"));
+  Serial.println();
+  Serial.flush();
+
+  Serial.println(F("Built-in components:"));
+
+  Serial.print  (F("RADIO   : "));
+  Serial.println  (hw_info.rf      == RF_IC_SX1262        ? F("PASS") : F("FAIL"));
+
   if (hw_info.model == SOFTRF_MODEL_MINI) {
-    Serial.println();
-    Serial.println(F("CubeCell-GPS Power-on Self Test"));
-    Serial.println();
-    Serial.flush();
-
-    Serial.println(F("Built-in components:"));
-
-    Serial.print(F("RADIO   : "));
-    Serial.println(hw_info.rf      == RF_IC_SX1262        ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE    ? F("PASS") : F("FAIL"));
     Serial.print(F("DISPLAY : "));
     Serial.println(hw_info.display == DISPLAY_OLED_HELTEC ? F("PASS") : F("FAIL"));
-
-    Serial.println();
-    Serial.println(F("External components:"));
-    Serial.print(F("BMx280  : "));
-    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
-
-    Serial.println();
-    Serial.println(F("Power-on Self Test is complete."));
-    Serial.println();
-    Serial.flush();
   }
+
+  Serial.println();
+  Serial.println(F("External components:"));
+
+  if (hw_info.model != SOFTRF_MODEL_MINI) {
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE    ? F("PASS") : F("N/A"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display == DISPLAY_OLED_HELTEC ? F("PASS") : F("N/A"));
+  }
+  Serial.print  (F("BMx280  : "));
+  Serial.println  (hw_info.baro    == BARO_MODULE_BMP280  ? F("PASS") : F("N/A"));
+
+  Serial.println();
+  Serial.println(F("Power-on Self Test is complete."));
+  Serial.println();
+  Serial.flush();
+
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */
@@ -215,7 +233,10 @@ static void PSoC4_fini(int reason)
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, HIGH);
     pinMode(SOC_GPIO_PIN_GNSS_PWR,  ANALOG);
 
+    /* Current HELTEC 'softSerial' implementation has no .end() method available yet */
+#if defined(CubeCell_GPS)
     Serial_GNSS_In.end();
+#endif /* CubeCell_GPS */
 
     delay(2000);
 

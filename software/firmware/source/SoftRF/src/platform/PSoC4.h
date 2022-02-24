@@ -74,9 +74,13 @@ struct rst_info {
 #define Serial_GNSS_In        Serial1
 #define Serial_GNSS_Out       Serial_GNSS_In
 #else
-#define Serial_GNSS_In        Serial
+#include <softSerial.h>
+extern softSerial swSer;
+
+#define Serial_GNSS_In        swSer
 #define Serial_GNSS_Out       Serial_GNSS_In
 #endif /* CubeCell_GPS */
+
 #define UATSerial             Serial
 
 #define SOC_ADC_VOLTAGE_DIV   2 // HTCC-AB02S has Vbat 100k/100k voltage divider
@@ -85,8 +89,13 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  UART_RX
 #define SOC_GPIO_PIN_CONS_TX  UART_TX
 
+#if defined(CubeCell_GPS)
 #define SOC_GPIO_PIN_GNSS_RX  UART_RX2
 #define SOC_GPIO_PIN_GNSS_TX  UART_TX2
+#else
+#define SOC_GPIO_PIN_GNSS_RX  GPIO4        // P0_7, RTS
+#define SOC_GPIO_PIN_GNSS_TX  GPIO5        // P0_6, CTS
+#endif /* CubeCell_GPS */
 
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
@@ -133,9 +142,9 @@ struct rst_info {
 #else /* CubeCell_GPS */
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // GPIO0,P0_2,SETB
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // GPIO2,P6_2,AUX
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN // GPIO3,P6_4,SETA
 #define SOC_GPIO_PIN_GNSS_PWR SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BMON_DIS SOC_UNUSED_PIN
 
