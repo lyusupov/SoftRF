@@ -455,16 +455,27 @@ bool RF_Transmit(size_t size, bool wait)
 
       time_t timestamp = now();
 
-      rf_chip->transmit();
+      if (memcmp(TxBuffer, RxBuffer, RF_tx_size) != 0 ||
+          settings->mode == SOFTRF_MODE_RELAY) {
 
-      if (settings->nmea_p) {
-        StdOut.print(F("$PSRFO,"));
-        StdOut.print((unsigned long) timestamp);
-        StdOut.print(F(","));
-        StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
-                               RF_Payload_Size(settings->rf_protocol)));
+        rf_chip->transmit();
+
+        if (settings->nmea_p) {
+          StdOut.print(F("$PSRFO,"));
+          StdOut.print((unsigned long) timestamp);
+          StdOut.print(F(","));
+          StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
+                                 RF_Payload_Size(settings->rf_protocol)));
+        }
+        tx_packets_counter++;
+
+      } else {
+
+        if (settings->nmea_p) {
+          StdOut.println(F("$PSRFE,RF loopback is detected on Tx"));
+        }
       }
-      tx_packets_counter++;
+
       RF_tx_size = 0;
 
       Slot_descr_t *next;

@@ -157,7 +157,7 @@ void ParseData()
 
     if (memcmp(RxBuffer, TxBuffer, rx_size) == 0) {
       if (settings->nmea_p) {
-        StdOut.println(F("$PSRFE,RF loopback is detected"));
+        StdOut.println(F("$PSRFE,RF loopback is detected on Rx"));
       }
       return;
     }
