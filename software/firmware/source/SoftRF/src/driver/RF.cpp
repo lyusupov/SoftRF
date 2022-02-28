@@ -455,8 +455,7 @@ bool RF_Transmit(size_t size, bool wait)
 
       time_t timestamp = now();
 
-      if (memcmp(TxBuffer, RxBuffer, RF_tx_size) != 0 ||
-          settings->mode == SOFTRF_MODE_RELAY) {
+      if (memcmp(TxBuffer, RxBuffer, RF_tx_size) != 0) {
 
         rf_chip->transmit();
 

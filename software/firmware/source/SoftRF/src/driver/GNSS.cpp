@@ -899,7 +899,7 @@ static bool mtk_setup()
 #endif
 
   /* RMC + GGA + GSA */
-  Serial_GNSS_Out.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29<\r\n");
+  Serial_GNSS_Out.write("$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n");
   GNSS_FLUSH(); delay(250);
 
   /* Aviation mode */

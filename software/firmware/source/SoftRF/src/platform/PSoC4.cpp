@@ -173,6 +173,9 @@ static void PSoC4_setup()
 
     pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
+  } else {
+    pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
   }
 }
 
@@ -278,6 +281,10 @@ static void PSoC4_fini(int reason)
     default:
       break;
     }
+  } else {
+    pinMode(SOC_GPIO_PIN_ANT_RXTX, ANALOG);
+
+    /* TBD */
   }
 
   PSoC4_state = PSOC4_LOW_POWER;
@@ -409,7 +416,27 @@ static void PSoC4_SPI_begin()
 
 static void PSoC4_swSer_begin(unsigned long baud)
 {
+#if defined(CubeCell_GPS)
   Serial_GNSS_In.begin(baud);
+#else
+  Serial_GNSS_Out.begin(baud);
+
+#if !defined(EXCLUDE_GNSS_MTK) && (STD_OUT_BR == 38400)
+  Serial_GNSS_Out.write("$PMTK251,38400*27\r\n");
+  GNSS_FLUSH(); delay(250);
+#endif /* EXCLUDE_GNSS_MTK */
+
+#if !defined(EXCLUDE_GNSS_UBLOX) && (STD_OUT_BR == 38400)
+  /* TBD */
+#endif /* EXCLUDE_GNSS_MTK */
+
+// https://github.com/HelTecAutomation/CubeCell-Arduino/commit/0c7dfbf325602a0ac502b89a4e7e44e9b705e5ac
+#if 0
+  Serial_GNSS_Out.end();
+#endif
+
+  Serial_GNSS_Out.begin(STD_OUT_BR);
+#endif /* CubeCell_GPS */
 }
 
 static void PSoC4_swSer_enableRx(boolean arg)

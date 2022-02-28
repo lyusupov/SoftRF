@@ -77,8 +77,13 @@ struct rst_info {
 #include <softSerial.h>
 extern softSerial swSer;
 
-#define Serial_GNSS_In        swSer
-#define Serial_GNSS_Out       Serial_GNSS_In
+//#define Serial_GNSS_In      swSer
+//#define Serial_GNSS_Out     Serial_GNSS_In
+
+#define Serial_GNSS_In        Serial
+#define Serial_GNSS_Out       swSer
+
+#define GNSS_FLUSH()          ({ })
 #endif /* CubeCell_GPS */
 
 #define UATSerial             Serial
@@ -134,8 +139,8 @@ extern softSerial swSer;
 
 #define SOC_GPIO_PIN_GNSS_PWR GPIO14       // P0_7
 #define SOC_GPIO_PIN_OLED_RST GPIO10       // P7_2
-#define SOC_GPIO_PIN_OLED_PWR Vext         // P3_2
-#define SOC_GPIO_PIN_BAT_CTL  VBAT_ADC_CTL // P3_3
+#define SOC_GPIO_PIN_OLED_PWR Vext         // P3_2, SWD
+#define SOC_GPIO_PIN_BAT_CTL  VBAT_ADC_CTL // P3_3, SWC
 #define SOC_GPIO_PIN_BUTTON   USER_KEY     // P3_3
 
 #define SOC_GPIO_PIN_BMON_DIS GPIO7        // P3_7
@@ -160,11 +165,20 @@ extern softSerial swSer;
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 #define EXCLUDE_LK8EX1
 
+#if defined(CubeCell_GPS)
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
 //#define EXCLUDE_GNSS_GOKE
 //#define EXCLUDE_GNSS_AT65
+#else
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+//#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+#endif /* CubeCell_GPS */
+
 #define EXCLUDE_LOG_GNSS_VERSION
 
 /* Component                         Cost */

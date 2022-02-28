@@ -311,6 +311,7 @@ static void SetDIO2AsRfSwitchCtrl (uint8_t enable) {
 
 // use DIO3 to drive crystal enable switch
 static void SetDIO3AsTcxoCtrl (uint8_t voltage) {
+#if !defined(CubeCell_Module)
     uint32_t timeout = 320;
     uint8_t data[] = {voltage, (timeout >> 16) & 0xff, (timeout >> 8) & 0xff, timeout & 0xff };
 
@@ -318,6 +319,7 @@ static void SetDIO3AsTcxoCtrl (uint8_t voltage) {
     if (LORAC->CR1 & 0x1)
 #endif /* ARDUINO_ARCH_ASR6601 */
       writecmd(CMD_SETDIO3ASTCXOCTRL, data, sizeof(data));
+#endif /* CubeCell_Module */
 }
 
 // write payload to fifo buffer at offset 0
