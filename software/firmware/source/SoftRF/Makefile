@@ -32,6 +32,7 @@ BIN_ELF       := $(SKETCH:.ino=.ino.elf)
 BIN_HEX       := $(BIN_ELF:.elf=.hex)
 BIN_IHEX      := $(BIN_ELF:.elf=.ihex)
 BIN_UF2       := $(BIN_ELF:.elf=.uf2)
+BIN_RAW       := $(BIN_ELF:.elf=.bin)
 
 SOFTRF_DIR    = ../SoftRF
 
@@ -44,9 +45,13 @@ HEXDIR        = /tmp/$(ARDUINO)
 
 LN            = ln -s
 RM            = rm -f
-OBJCOPY       = arm-none-eabi-objcopy -O ihex -R .empty -R .vtable \
+OBJCOPY       = arm-none-eabi-objcopy
+OBJCOPY_TI    = -O ihex -R .empty -R .vtable \
                  -R .dmaSpi0RxControlTableEntry -R .dmaSpi0TxControlTableEntry \
                  -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
+OBJCOPY_CY    = -O binary -R .eh_frame -R .ARM.exidx \
+                 -R .cyloadablemeta -R .cyflashprotect \
+                 -R .cymeta -R .cychipprotect
 SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
 UF2CONV       = uf2conv.py
 
@@ -216,8 +221,11 @@ upload:
 #    for cc2538-bsl.py serial firmware uploader.
 #
 ihex:
-				$(TC_PATH)/$(OBJCOPY) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
+				$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_TI) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
 				$(SED) $(BINDIR)/$(BIN_IHEX)
+
+psoc4:
+				$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_CY) $(HEXDIR)/$(BIN_ELF) $(HEXDIR)/$(BIN_RAW)
 
 nuf2:
 				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xada52840 -o $(HEXDIR)/$(BIN_UF2)
