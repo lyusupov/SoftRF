@@ -51,7 +51,7 @@ OBJCOPY_TI    = -O ihex -R .empty -R .vtable \
                  -R .dmaSpi1RxControlTableEntry -R .dmaSpi1TxControlTableEntry
 OBJCOPY_CY    = -O binary -R .eh_frame -R .ARM.exidx \
                  -R .cyloadablemeta -R .cyflashprotect \
-                 -R .cymeta -R .cychipprotect
+                 -R .cymeta -R .cychipprotect -R .cyloadermeta
 SED           = sed -i 's/:10FFD800FFFFFF00FFFFFFFF00FFFFFFC500C5FF9A/:10FFD800C501FEC5FFFFFFFF00FFFFFFC500C5FF0E/'
 UF2CONV       = uf2conv.py
 

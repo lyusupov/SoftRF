@@ -300,6 +300,7 @@ static void PSoC4_fini(int reason)
 //    settings->nmea_l = false;
 //    settings->nmea_s = false;
 
+    Wire.end();
     Serial.end();
 
     switch (reason)
@@ -465,7 +466,7 @@ static void PSoC4_swSer_begin(unsigned long baud)
   GNSS_FLUSH(); delay(250);
 #endif /* EXCLUDE_GNSS_MTK */
 
-#if !defined(EXCLUDE_GNSS_UBLOX) && (STD_OUT_BR == 38400)
+#if !defined(EXCLUDE_GNSS_UBLOX)
   unsigned int baudrate = STD_OUT_BR;
 
   setBR[ 8] = (baudrate      ) & 0xFF;
@@ -475,7 +476,7 @@ static void PSoC4_swSer_begin(unsigned long baud)
   uint8_t msglen = makeUBXCFG(0x06, 0x00, sizeof(setBR), setBR);
   Serial_GNSS_Out.write(GNSSbuf, msglen);
   GNSS_FLUSH(); delay(250);
-#endif /* EXCLUDE_GNSS_MTK */
+#endif /* EXCLUDE_GNSS_UBLOX */
 
 // https://github.com/HelTecAutomation/CubeCell-Arduino/commit/0c7dfbf325602a0ac502b89a4e7e44e9b705e5ac
 #if 0
@@ -496,7 +497,12 @@ static byte PSoC4_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  rval = OLED_setup();
+#if !defined(CubeCell_GPS)
+  Wire.begin();
+  if ((Wire.beginTransmission(SSD1306_OLED_I2C_ADDR  ), Wire.endTransmission() == 0) &&
+      (Wire.beginTransmission(SSD1306_OLED_I2C_ADDR+1), Wire.endTransmission() != 0))
+#endif /* CubeCell_GPS */
+    rval = OLED_setup();
 #endif /* USE_OLED */
 
   return rval;
