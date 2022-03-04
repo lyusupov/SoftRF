@@ -498,9 +498,11 @@ static byte PSoC4_Display_setup()
 
 #if defined(USE_OLED)
 #if !defined(CubeCell_GPS)
+  /* generic module may not have built-in I2C pull-up resistors */
   Wire.begin();
-  if ((Wire.beginTransmission(SSD1306_OLED_I2C_ADDR  ), Wire.endTransmission() == 0) &&
-      (Wire.beginTransmission(SSD1306_OLED_I2C_ADDR+1), Wire.endTransmission() != 0))
+  /* I2C transaction @ SSD1306_OLED_I2C_ADDR is a part of OLED_setup() */
+  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR + 1);
+  if (Wire.endTransmission() != 0)
 #endif /* CubeCell_GPS */
     rval = OLED_setup();
 #endif /* USE_OLED */

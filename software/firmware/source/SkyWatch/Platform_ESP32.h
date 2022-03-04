@@ -110,7 +110,7 @@
 #define SOC_GPIO_PIN_T8_S2_TFT_BL       33
 
 // button
-#define SOC_GPIO_PIN_T8_S2_BUTTON       21
+#define SOC_GPIO_PIN_T8_S2_BUTTON       0 // 21
 
 // I2C
 #define SOC_GPIO_PIN_T8_S2_SDA          3
@@ -125,6 +125,8 @@
 // 32768 Hz crystal
 #define SOC_GPIO_PIN_T8_S2_XP           15
 #define SOC_GPIO_PIN_T8_S2_XN           16
+
+#define SOC_GPIO_PIN_TDISPLAY_S2_LED    39
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_HOR_RES                      (240) //Horizontal

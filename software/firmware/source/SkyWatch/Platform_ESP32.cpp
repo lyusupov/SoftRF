@@ -1011,7 +1011,7 @@ static void ESP32_Button_setup()
                    SOC_GPIO_PIN_T8_S2_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
   // Button(s)) uses external pull up resistor.
-  pinMode(button_pin, INPUT);
+  pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
 
   button_mode.init(button_pin);
 
