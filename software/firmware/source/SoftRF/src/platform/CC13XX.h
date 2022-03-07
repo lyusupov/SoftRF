@@ -20,11 +20,6 @@
 #ifndef PLATFORM_CC13XX_H
 #define PLATFORM_CC13XX_H
 
-#if defined(ENERGIA_ARCH_CC13X2)
-extern size_t strnlen (const char *string, size_t length);
-extern char *itoa(int, char *, int);
-#endif /* ENERGIA_ARCH_CC13X2 */
-
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -105,16 +100,24 @@ struct rst_info {
 
 #include <SCSerial.h>
 
+#define Serial_GNSS_In          scSerial
+#define Serial_GNSS_Out         Serial_GNSS_In
+
+#if defined(BOARD_CC1310_LAUNCHXL)
 /*
- *  UART pins
- *
- * Board_UART_TX                GPIO 3
- * Board_UART_RX                GPIO 2
+ * TI LaunchPad LAUNCHXL-CC1310 or Ebyte E70-XXXT14S
+ * MCU: CC1310F128RGZ (7x7 mm)
+ */
+
+/*
  * BootLoader                   GPIO 1
  */
 
-#define Serial_GNSS_In          scSerial
-#define Serial_GNSS_Out         Serial_GNSS_In
+#define SOC_GPIO_PIN_CONS_RX    IOID_2
+#define SOC_GPIO_PIN_CONS_TX    IOID_3
+
+#define SOC_GPIO_PIN_GNSS_RX    IOID_24
+#define SOC_GPIO_PIN_GNSS_TX    IOID_25
 
 #define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN
@@ -129,6 +132,53 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
+#define EXCLUDE_BMP280
+
+#elif defined(BOARD_E70_XXXT14S2)
+/*
+ * Ebyte E70-XXXT14S2
+ * MCU: CC1310F128RSM (4x4 mm)
+ */
+
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX    IOID_1
+#define SOC_GPIO_PIN_CONS_TX    IOID_2
+
+#define SOC_GPIO_PIN_GNSS_RX    IOID_6
+#define SOC_GPIO_PIN_GNSS_TX    IOID_7
+
+#define SOC_GPIO_PIN_GNSS_PPS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS     SOC_UNUSED_PIN // 29 (DIO_00)
+#define SOC_GPIO_PIN_BUZZER     SOC_UNUSED_PIN
+
+/* Optional SX1276 SPI radio */
+#define SOC_GPIO_PIN_SS         LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_RST        LMIC_UNUSED_PIN
+
+// button
+#define SOC_GPIO_PIN_BUTTON     10 // DIO_05
+
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN
+
+/* I2C */
+#define SOC_GPIO_PIN_SDA        IOID_8
+#define SOC_GPIO_PIN_SCL        IOID_9
+
+//#define USE_OLED                 //  +4.2 kb
+#define EXCLUDE_OLED_049
+#define EXCLUDE_OLED_BARO_PAGE
+
+/* trade performance for flash memory usage (-3 Kb) */
+#define cosf(x)                 cos  ((double) (x))
+#define sinf(x)                 sin  ((double) (x))
+/* has no effect yet */
+//#define sqrtf(x)              sqrt ((double) (x))
+//#define atan2f(y,x)           atan2((double) (y), (double) (x))
+
+#else
+#error "This board is not supported!"
+#endif /* BOARD_CC1310_LAUNCHXL || BOARD_E70_XXXT14S2 */
+
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
@@ -136,7 +186,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_BMP180
-#define EXCLUDE_BMP280
+//#define EXCLUDE_BMP280
 #define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
 
@@ -215,6 +265,12 @@ extern SCSerial                 scSerial;
 #else
 #error "This hardware platform is not supported!"
 #endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
+
+extern char *itoa(int, char *, int);
+
+#if defined(ENERGIA_ARCH_CC13X2)
+extern size_t strnlen (const char *string, size_t length);
+#endif /* ENERGIA_ARCH_CC13X2 */
 
 #if !defined(EXCLUDE_LED_RING)
 #include <WS2812.h>

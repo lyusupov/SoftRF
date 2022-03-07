@@ -1,5 +1,4 @@
-#ifdef ENERGIA_CC1310_LAUNCHXL
-
+#if defined(ENERGIA_CC1310_LAUNCHXL) || defined(ENERGIA_E70_XXXT14S2)
 
 //*********************************************************************************
 // These settings have been generated for use with TI-RTOS and cc13xxware

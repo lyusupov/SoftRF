@@ -83,7 +83,11 @@ static const uint16_t pAuxRamImage[] = {
 
 /// Look-up table that converts from AUX I/O index to MCU IOCFG offset
 static const uint8_t pAuxIoIndexToMcuIocfgOffsetLut[] = {
+#if defined(BOARD_E70_XXXT14S2)
+    120, 116, 112, 36, 32, 28, 24, 20, 8, 4, 0, 16, 12, 8, 4, 0
+#else
     120, 116, 112, 108, 104, 100, 96, 92, 28, 24, 20, 16, 12, 8, 4, 0
+#endif /* BOARD_E70_XXXT14S2 */
 };
 
 
