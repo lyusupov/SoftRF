@@ -359,8 +359,10 @@ static void CC13XX_post_init()
   Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("N/A"));
   Serial.print(F("BARO    : "));
   Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
+#if defined(USE_OLED)
   Serial.print(F("DISPLAY : "));
   Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+#endif /* USE_OLED */
 
   Serial.println();
   Serial.println(F("Power-on Self Test is complete."));

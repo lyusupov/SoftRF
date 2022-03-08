@@ -124,9 +124,10 @@ byte OLED_setup() {
 
 /*
  * BUG:
- * return value of Wire.endTransmission() is always '4' with Arduino Core for CCC13X2
+ * return value of Wire.endTransmission() is always '4'
+ * with Arduino Core(s) for CC13X0 and CC13X2
  */
-#if !defined(ENERGIA_ARCH_CC13X2)
+#if !defined(ENERGIA_ARCH_CC13X2) && !defined(ENERGIA_ARCH_CC13XX)
   /* SSD1306 I2C OLED probing */
   Wire.begin();
   Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);

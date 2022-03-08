@@ -164,16 +164,15 @@ struct rst_info {
 #define SOC_GPIO_PIN_SDA        IOID_8
 #define SOC_GPIO_PIN_SCL        IOID_9
 
-//#define USE_OLED                 //  +4.2 kb
+//#define USE_OLED              //  +4.2 kb
 #define EXCLUDE_OLED_049
 #define EXCLUDE_OLED_BARO_PAGE
 
-/* trade performance for flash memory usage (-3 Kb) */
+/* trade performance for flash memory usage (-5.8 Kb) */
 #define cosf(x)                 cos  ((double) (x))
 #define sinf(x)                 sin  ((double) (x))
-/* has no effect yet */
-//#define sqrtf(x)              sqrt ((double) (x))
-//#define atan2f(y,x)           atan2((double) (y), (double) (x))
+#define sqrtf(x)                sqrt ((double) (x))
+#define atan2f(y,x)             atan2((double) (y), (double) (x))
 
 #else
 #error "This board is not supported!"
