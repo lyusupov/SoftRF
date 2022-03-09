@@ -10,8 +10,9 @@ jobs:
         arduino-platform:
           - 'metro_m0'
           - 'metro_m4'
+          - 'metroesp32s2'
           - 'nrf52840'
-          #- 'metroesp32s2'
+          - 'feather_rp2040'
 
     runs-on: ubuntu-latest
     steps:

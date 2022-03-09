@@ -32,6 +32,16 @@
   // Therefore there is no need to specify the SPI and SS
   Adafruit_FlashTransport_ESP32 flashTransport;
 
+#elif defined(ARDUINO_ARCH_RP2040)
+  // RP2040 use same flash device that store code.
+  // Therefore there is no need to specify the SPI and SS
+  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
+  Adafruit_FlashTransport_RP2040 flashTransport;
+
+  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
+  // If start_address and size are both 0, value that match filesystem setting in
+  // 'Tools->Flash Size' menu selection will be used
+
 #else
   // On-board external flash (QSPI or SPI) macros should already
   // defined in your board variant if supported
@@ -60,7 +70,7 @@ void setup() {
   while (!Serial) {
     delay(100);
   }
-  Serial.println("Adafruit M0 Express CircuitPython Flash Example");
+  Serial.println("Adafruit SPIFlash CircuitPython Example");
 
   // Initialize flash library and check its chip ID.
   if (!flash.begin()) {
@@ -93,9 +103,9 @@ void setup() {
   }
 
   // Check if a main.py exists and print it out:
-  if (fatfs.exists("main.py")) {
-    File mainPy = fatfs.open("main.py", FILE_READ);
-    Serial.println("Printing main.py...");
+  if (fatfs.exists("code.py")) {
+    File mainPy = fatfs.open("code.py", FILE_READ);
+    Serial.println("Printing code.py...");
     while (mainPy.available()) {
       char c = mainPy.read();
       Serial.print(c);
@@ -103,7 +113,7 @@ void setup() {
     Serial.println();
   }
   else {
-    Serial.println("No main.py found...");
+    Serial.println("No code.py found...");
   }
 
   // Create or append to a data.txt file and add a new line

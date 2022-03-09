@@ -13,8 +13,19 @@
 
 #elif defined(ARDUINO_ARCH_ESP32)
   // ESP32 use same flash device that store code.
+  // SPIFlash can use partition table to detect fatfs partition
   // Therefore there is no need to specify the SPI and SS
   Adafruit_FlashTransport_ESP32 flashTransport;
+
+#elif defined(ARDUINO_ARCH_RP2040)
+  // RP2040 use same flash device that store code.
+  // Therefore there is no need to specify the SPI and SS
+  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
+  Adafruit_FlashTransport_RP2040 flashTransport;
+
+  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
+  // If start_address and size are both 0, value that match filesystem setting in
+  // 'Tools->Flash Size' menu selection will be used
 
 #else
   // On-board external flash (QSPI or SPI) macros should already
@@ -47,18 +58,20 @@ Adafruit_SPIFlash flash(&flashTransport);
  *  With this macro properly defined you can then create an array of device definitions as shown below, this can include any from the list of devices in flash_devices.h, and any you define yourself here
  *  You need to update the variable on line 71 to reflect the number of items in the array
  *  You also need to uncomment line 84 and comment out line 81 so this array will be passed to the flash memory driver. 
+ *
+ *  Example of a user defined flash memory device:
+    #define W25Q80DLX_EXAMPLE                                                \
+      {                                                                      \
+        .total_size = 1*1024*1024,                                           \
+            .start_up_time_us = 5000, .manufacturer_id = 0xef,               \
+        .memory_type = 0x40, .capacity = 0x14, .max_clock_speed_mhz = 80,    \
+        .quad_enable_bit_mask = 0x02, .has_sector_protection = false,        \
+        .supports_fast_read = true, .supports_qspi = true,                   \
+        .supports_qspi_writes = false, .write_status_register_split = false, \
+        .single_status_byte = false, .is_fram = false,                       \
+      }
  */
-//Example of a user defined flash memory device:
-//#define W25Q80DLX_EXAMPLE                                                               \
-//  {                                                                            \
-//    .total_size = (1 << 20), /* 1 MiB */                                       \
-//        .start_up_time_us = 5000, .manufacturer_id = 0xef,                     \
-//    .memory_type = 0x40, .capacity = 0x14, .max_clock_speed_mhz = 80,         \
-//    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
-//    .supports_fast_read = true, .supports_qspi = true,                         \
-//    .supports_qspi_writes = false, .write_status_register_split = false,       \
-//    .single_status_byte = false, .is_fram = false,                             \
-//  }
+
 
 /*
  * Create an array of data structures and fill it with the settings we defined above.
@@ -82,7 +95,7 @@ void setup()
 
   Serial.println("Adafruit Serial Flash Info example");
   flash.begin();
-  
+
   //Using a flash device not already listed? Start the flash memory by passing it the array of device settings defined above, and the number of elements in the array.
   //flash.begin(my_flash_devices, flashDevices);
 

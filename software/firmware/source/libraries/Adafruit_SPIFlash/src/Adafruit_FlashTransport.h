@@ -139,4 +139,8 @@ protected:
 #include "esp32/Adafruit_FlashTransport_ESP32.h"
 #endif
 
+#ifdef ARDUINO_ARCH_RP2040
+#include "rp2040/Adafruit_FlashTransport_RP2040.h"
+#endif
+
 #endif /* ADAFRUIT_FLASHTRANSPORT_H_ */

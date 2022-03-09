@@ -14,6 +14,16 @@
   // Therefore there is no need to specify the SPI and SS
   Adafruit_FlashTransport_ESP32 flashTransport;
 
+#elif defined(ARDUINO_ARCH_RP2040)
+  // RP2040 use same flash device that store code.
+  // Therefore there is no need to specify the SPI and SS
+  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
+  Adafruit_FlashTransport_RP2040 flashTransport;
+
+  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
+  // If start_address and size are both 0, value that match filesystem setting in
+  // 'Tools->Flash Size' menu selection will be used
+
 #else
   // On-board external flash (QSPI or SPI) macros should already
   // defined in your board variant if supported
@@ -43,7 +53,7 @@ constexpr int getSDCardPin() noexcept {
 #endif
 }
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	while (!Serial) {
 		// wait for native usb
 		delay(100); 
