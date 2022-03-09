@@ -61,30 +61,42 @@ bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   uat_decode_adsb_mdb((uint8_t *) pkt, &mdb);
 
-  fop->protocol = RF_PROTOCOL_ADSB_UAT;
+  fop->protocol      = RF_PROTOCOL_ADSB_UAT;
 
-  fop->addr = mdb.address;
-  fop->latitude = mdb.lat;
-  fop->longitude = mdb.lon;
+  fop->addr          = mdb.address;
+  fop->latitude      = mdb.lat;
+  fop->longitude     = mdb.lon;
 
-  if (mdb.altitude_type == ALT_GEO) {
-    fop->altitude = mdb.altitude / _GPS_FEET_PER_METER;          /* TBD */
-  }
-  if (mdb.altitude_type == ALT_BARO) {
-    fop->pressure_altitude = mdb.altitude / _GPS_FEET_PER_METER; /* TBD */
+  switch (mdb.altitude_type)
+  {
+  case ALT_GEO:
+    fop->altitude    = mdb.altitude / _GPS_FEET_PER_METER;
+    break;
+  case ALT_BARO:
+    fop->pressure_altitude = mdb.altitude / _GPS_FEET_PER_METER;
+    if (this_aircraft->pressure_altitude != 0.0) {
+      fop->altitude  = fop->pressure_altitude -
+                      this_aircraft->pressure_altitude +
+                      this_aircraft->altitude;
+    }
+  case ALT_INVALID:
+  default:
+    /* TBD */
+    break;
   }
 
   fop->aircraft_type = GDL90_TO_AT(mdb.emitter_category);
-  fop->course = mdb.track;
-  fop->speed = mdb.speed;
-  fop->vs = mdb.vert_rate;
-  fop->hdop = 0;                                                 /* TBD */
+  fop->course        = mdb.track;
+  fop->speed         = mdb.speed;
+  fop->vs            = mdb.vert_rate;
+  fop->hdop          = 0; /* TBD */
 
-  fop->addr_type = ADDR_TYPE_ICAO;
-  fop->timestamp = this_aircraft->timestamp;
+  fop->addr_type     = ADDR_TYPE_ICAO;
+  fop->timestamp     = this_aircraft->timestamp;
 
-  fop->stealth = false;
-  fop->no_track = false;
+  fop->stealth       = false;
+  fop->no_track      = false;
+
   fop->ns[0] = 0; fop->ns[1] = 0;
   fop->ns[2] = 0; fop->ns[3] = 0;
   fop->ew[0] = 0; fop->ew[1] = 0;
