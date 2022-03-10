@@ -424,6 +424,17 @@ void NMEA_Export()
       NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
       NMEA_Out(settings->nmea_out, (byte *) NMEABuffer, strlen(NMEABuffer), false);
+
+#if !defined(EXCLUDE_SOFTRF_HEARTBEAT)
+      snprintf_P(NMEABuffer, sizeof(NMEABuffer),
+              PSTR("$PSRFH,%06X,%d,%d,%d,%d*"),
+              ThisAircraft.addr,settings->rf_protocol,
+              rx_packets_counter,tx_packets_counter,(int)(voltage*100));
+
+      NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
+
+      NMEA_Out(settings->nmea_out, (byte *) NMEABuffer, strlen(NMEABuffer), false);
+#endif /* EXCLUDE_SOFTRF_HEARTBEAT */
     }
 }
 

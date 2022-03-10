@@ -110,6 +110,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_GNSS_AT65
 
 #define EXCLUDE_CC13XX
+#define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 
 #if defined(pgm_read_float_aligned)

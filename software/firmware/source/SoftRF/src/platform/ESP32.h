@@ -324,6 +324,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_MTK
 
 #define EXCLUDE_CC13XX
+#define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)

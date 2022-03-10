@@ -231,10 +231,6 @@ struct rst_info {
 
 //#define USE_OGN_ENCRYPTION
 
-/* SoftRF/SAMD PFLAU NMEA sentence extension. In use by WebTop adapter */
-//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
-//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
-
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>
 

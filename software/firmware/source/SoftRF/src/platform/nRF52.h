@@ -231,6 +231,7 @@ struct rst_info {
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 //#define EXCLUDE_TEST_MODE
+#define EXCLUDE_SOFTRF_HEARTBEAT
 //#define EXCLUDE_LK8EX1
 
 #define EXCLUDE_GNSS_UBLOX
@@ -277,9 +278,6 @@ struct rst_info {
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"
 #define PFLAA_EXT1_ARGS ,Container[i].no_track,data_source,Container[i].rssi
-/* SoftRF/nRF52 PFLAU NMEA sentence extension(s) */
-//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
-//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
 
 #if defined(USE_PWM_SOUND)
 #define SOC_GPIO_PIN_BUZZER   (hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \

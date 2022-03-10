@@ -161,12 +161,6 @@ struct rst_info {
 
 //#define USE_TIME_SLOTS
 
-/* SoftRF/AVR PFLAU NMEA sentence extension. In use by WebTop adapter */
-//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d,%d"
-//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter,(int)(Battery_voltage()*100)
-//#define PFLAU_EXT1_FMT  ",%06X,%d,%d,%d"
-//#define PFLAU_EXT1_ARGS ,ThisAircraft.addr,settings->rf_protocol,rx_packets_counter,tx_packets_counter
-
 #if defined(USE_OGN_ENCRYPTION)
 #error "OGN encryption is not supported by AVR platform"
 // TinyGPS++.h needs to increase _GPS_MAX_FIELD_SIZE up to 33

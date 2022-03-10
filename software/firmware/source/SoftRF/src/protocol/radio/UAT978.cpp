@@ -79,6 +79,7 @@ bool uat978_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
                       this_aircraft->pressure_altitude +
                       this_aircraft->altitude;
     }
+    break;
   case ALT_INVALID:
   default:
     /* TBD */
