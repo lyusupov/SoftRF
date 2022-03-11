@@ -190,7 +190,7 @@ void handleRoot() {
 
 void handleSettings() {
 
-  size_t size = 7200;
+  size_t size = 7204;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -226,7 +226,7 @@ void handleSettings() {
 <!-- <tr>\
 <th align=left>Protocol</th>\
 <td align=right>\
-<select name='protocol'>\
+<select name='dprotocol'>\
 <option %s value='%d'>NMEA</option>\
 <option %s value='%d'>GDL90</option>\
 </select>\
@@ -317,7 +317,7 @@ void handleSettings() {
 <tr>\
 <th align=left>Protocol</th>\
 <td align=right>\
-<select name='protocol'>\
+<select name='rf_protocol'>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
@@ -1125,7 +1125,9 @@ void handleStatus() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(3200);
+  size_t size = 3200;
+
+  char *Input_temp = (char *) malloc(size);
   if (Input_temp == NULL) {
     return;
   }
@@ -1133,7 +1135,7 @@ void handleInput() {
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if (server.argName(i).equals("mode")) {
       settings->s.mode = server.arg(i).toInt();
-    } else if (server.argName(i).equals("protocol")) {
+    } else if (server.argName(i).equals("rf_protocol")) {
       settings->s.rf_protocol = server.arg(i).toInt();
     } else if (server.argName(i).equals("band")) {
       settings->s.band = server.arg(i).toInt();
@@ -1173,7 +1175,7 @@ void handleInput() {
       settings->m.adapter = server.arg(i).toInt();
     } else if (server.argName(i).equals("connection")) {
       settings->m.connection = server.arg(i).toInt();
-    } else if (server.argName(i).equals("protocol")) {
+    } else if (server.argName(i).equals("dprotocol")) {
       settings->m.protocol = server.arg(i).toInt();
     } else if (server.argName(i).equals("baudrate")) {
       settings->m.baudrate = server.arg(i).toInt();
@@ -1205,7 +1207,7 @@ void handleInput() {
       server.arg(i).toCharArray(settings->m.bt_key, sizeof(settings->m.bt_key));
     }
   }
-  snprintf_P ( Input_temp, 3200,
+  snprintf_P ( Input_temp, size,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -1216,7 +1218,7 @@ PSTR("<html>\
 <h1 align=center>New settings:</h1>\
 <table width=100%%>\
 <tr><th align=left>Mode</th><td align=right>%d</td></tr>\
-<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
+<tr><th align=left>RF protocol</th><td align=right>%d</td></tr>\
 <tr><th align=left>Band</th><td align=right>%d</td></tr>\
 <tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
 <tr><th align=left>Alarm trigger</th><td align=right>%d</td></tr>\

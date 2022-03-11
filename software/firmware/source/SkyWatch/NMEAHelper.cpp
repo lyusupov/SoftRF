@@ -49,11 +49,11 @@ TinyGPSCustom S_AlarmType       (nmea, "PFLAU", 7);
 TinyGPSCustom S_RelativeVertical(nmea, "PFLAU", 8);
 TinyGPSCustom S_RelativeDistance(nmea, "PFLAU", 9);
 TinyGPSCustom S_ID              (nmea, "PFLAU", 10);
-/* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
-TinyGPSCustom S_Addr            (nmea, "PFLAU", 11);
-TinyGPSCustom S_Protocol        (nmea, "PFLAU", 12);
-TinyGPSCustom S_RxCnt           (nmea, "PFLAU", 13);
-TinyGPSCustom S_TxCnt           (nmea, "PFLAU", 14);
+
+TinyGPSCustom H_Addr            (nmea, "PSRFH", 1);
+TinyGPSCustom H_Protocol        (nmea, "PSRFH", 2);
+TinyGPSCustom H_RxCnt           (nmea, "PSRFH", 3);
+TinyGPSCustom H_TxCnt           (nmea, "PSRFH", 4);
 
 status_t NMEA_Status;
 
@@ -247,22 +247,21 @@ static void NMEA_Parse_Character(char c)
           NMEA_Status.ID = strtol(S_ID.value(), NULL, 16);
         }
 
-        /* SoftRF/S7xG PFLAU NMEA sentence extension(s) */
-        if (S_Addr.isUpdated())
+      } else if (H_Addr.isUpdated()) {
+
+        ThisDevice.addr = strtol(H_Addr.value(), NULL, 16);
+
+        if (H_Protocol.isUpdated())
         {
-          ThisDevice.addr = strtol(S_Addr.value(), NULL, 16);
+          ThisDevice.protocol = atoi(H_Protocol.value());
         }
-        if (S_Protocol.isUpdated())
+        if (H_RxCnt.isUpdated())
         {
-          ThisDevice.protocol = atoi(S_Protocol.value());
+          rx_packets_counter = strtol(H_RxCnt.value(), NULL, 10);
         }
-        if (S_RxCnt.isUpdated())
+        if (H_TxCnt.isUpdated())
         {
-          rx_packets_counter = strtol(S_RxCnt.value(), NULL, 10);
-        }
-        if (S_TxCnt.isUpdated())
-        {
-          tx_packets_counter = strtol(S_TxCnt.value(), NULL, 10);
+          tx_packets_counter = strtol(H_TxCnt.value(), NULL, 10);
         }
       }
     }
