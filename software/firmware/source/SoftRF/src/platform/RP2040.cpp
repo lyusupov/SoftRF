@@ -34,6 +34,7 @@
 #include "../protocol/data/D1090.h"
 
 #include "pico/unique_id.h"
+#include <hardware/watchdog.h>
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -68,7 +69,7 @@ static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
 const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
-const char *RP2040_Device_Model = "Academy Edition";
+const char *RP2040_Device_Model = "Lego Edition";
 const uint16_t RP2040_Device_Version = SOFTRF_USB_FW_VERSION;
 
 static union {
@@ -115,14 +116,14 @@ static void RP2040_post_init()
 {
   {
     Serial.println();
-    Serial.println(F("SoftRF Academy Edition Power-on Self Test"));
+    Serial.println(F("SoftRF Lego Edition Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
     Serial.println(F("Built-in components:"));
 
     Serial.print(F("RADIO   : "));
-    Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.rf      == RF_IC_SX1262      ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
 
@@ -188,6 +189,7 @@ static void RP2040_loop()
 {
   if (wdt_is_active) {
 //    Watchdog.reset();
+//    watchdog_update();
   }
 
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
@@ -393,7 +395,11 @@ static byte RP2040_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  rval = OLED_setup();
+  Wire1.begin();
+  /* I2C transaction @ SSD1306_OLED_I2C_ADDR is a part of OLED_setup() */
+  Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR + 1);
+  if (Wire1.endTransmission() != 0)
+    rval = OLED_setup();
 #endif /* USE_OLED */
 
   return rval;
@@ -425,13 +431,13 @@ static float RP2040_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_ACADEMY ? BATTERY_THRESHOLD_LIPO   :
-                                                   BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_LEGO ? BATTERY_THRESHOLD_LIPO   :
+                                                BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_ACADEMY ? BATTERY_CUTOFF_LIPO      :
-                                                   BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_LEGO ? BATTERY_CUTOFF_LIPO      :
+                                                BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:
@@ -492,6 +498,7 @@ static void RP2040_UATModule_restart()
 static void RP2040_WDT_setup()
 {
 //  Watchdog.enable(8000);
+//  watchdog_enable(5000, 1);
   wdt_is_active = true;
 }
 
@@ -507,7 +514,7 @@ static void RP2040_WDT_fini()
 #include <AceButton.h>
 using namespace ace_button;
 
-AceButton button_1(SOC_GPIO_PIN_BUTTON);
+AceButton button_1(SOC_GPIO_PIN_BUTTON, LOW);
 
 // The event handler for the button.
 void handleEvent(AceButton* button, uint8_t eventType,
@@ -542,28 +549,23 @@ void onPageButtonEvent() {
 static void RP2040_Button_setup()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
+  if (hw_info.model == SOFTRF_MODEL_LEGO) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
-    // Button(s) uses external pull up resistor.
+    // Button(s) uses external pull down resistor.
     pinMode(button_pin, INPUT);
 
-    button_1.init(button_pin);
+    button_1.init(button_pin, LOW);
 
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
     ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
     PageButtonConfig->setEventHandler(handleEvent);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
-//    PageButtonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-//    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-//    PageButtonConfig->setFeature(
-//                      ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
 //  PageButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
-//    PageButtonConfig->setDoubleClickDelay(1500);
     PageButtonConfig->setLongPressDelay(2000);
 
 //  attachInterrupt(digitalPinToInterrupt(button_pin), onPageButtonEvent, CHANGE );
@@ -574,7 +576,7 @@ static void RP2040_Button_setup()
 static void RP2040_Button_loop()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
+  if (hw_info.model == SOFTRF_MODEL_LEGO) {
     button_1.check();
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
@@ -583,7 +585,7 @@ static void RP2040_Button_loop()
 static void RP2040_Button_fini()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-  if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
+  if (hw_info.model == SOFTRF_MODEL_LEGO) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
 //    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
@@ -591,7 +593,6 @@ static void RP2040_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
-#if 0
 static void RP2040_USB_setup()
 {
   if (USBSerial && USBSerial != Serial) {
@@ -599,17 +600,21 @@ static void RP2040_USB_setup()
   }
 }
 
-#include <RingBuffer.h>
+#include <api/RingBuffer.h>
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
 #define USB_RX_FIFO_SIZE (256)
+
+#if !defined(USBD_CDC_IN_OUT_MAX_SIZE)
+#define USBD_CDC_IN_OUT_MAX_SIZE (64)
+#endif /* USBD_CDC_IN_OUT_MAX_SIZE */
 
 RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
 RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
 
 static void RP2040_USB_loop()
 {
-  uint8_t buf[EPX_SIZE];
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
   size_t size;
 
   while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
@@ -707,7 +712,7 @@ static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
 }
 
 IODev_ops_t RP2040_USBSerial_ops = {
-  "RP2040 USBSerial",
+  "RP2040 USB ACM",
   RP2040_USB_setup,
   RP2040_USB_loop,
   RP2040_USB_fini,
@@ -715,7 +720,6 @@ IODev_ops_t RP2040_USBSerial_ops = {
   RP2040_USB_read,
   RP2040_USB_write
 };
-#endif
 
 const SoC_ops_t RP2040_ops = {
   SOC_RP2040,
@@ -745,11 +749,7 @@ const SoC_ops_t RP2040_ops = {
   RP2040_swSer_begin,
   RP2040_swSer_enableRx,
   NULL, /* RP2040 has no built-in Bluetooth */
-#if 0
   &RP2040_USBSerial_ops,
-#else
-  NULL,
-#endif
   NULL,
   RP2040_Display_setup,
   RP2040_Display_loop,

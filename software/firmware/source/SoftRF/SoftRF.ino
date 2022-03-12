@@ -140,7 +140,7 @@ void setup()
 
   SERIAL_BEGIN(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+#if (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)) || defined(ARDUINO_ARCH_RP2040)
   /* Let host's USB and console drivers to warm-up */
   delay(2000);
 #elif ARDUINO_USB_CDC_ON_BOOT || \

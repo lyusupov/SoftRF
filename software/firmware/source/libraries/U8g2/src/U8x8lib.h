@@ -89,7 +89,7 @@
 #endif 
 #endif
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 #define WIRE_INTERFACES_COUNT 2
 
 #include <Wire.h>

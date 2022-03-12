@@ -25,7 +25,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_ACADEMY /* TBD */
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_LEGO
 
 #define isValidFix()            isValidGNSSFix()
 
@@ -42,10 +42,10 @@
 
 #define SerialOutput            Serial1
 
-#define USBSerial               SerialUSB
+#define USBSerial               Serial
 #define Serial_GNSS_In          Serial2
 #define Serial_GNSS_Out         Serial_GNSS_In
-#define UATSerial               SerialUSB
+#define UATSerial               Serial
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
@@ -100,13 +100,14 @@ struct rst_info {
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX (25u) // RXEN
 
-/* I2C1 */
-#define SOC_GPIO_PIN_SDA      (2u)
-#define SOC_GPIO_PIN_SCL      (3u)
-
 /* I2C0 */
 //#define SOC_GPIO_PIN_SDA    (20u)
 //#define SOC_GPIO_PIN_SCL    (21u)
+
+/* I2C1 */
+#define SOC_GPIO_PIN_SDA      (2u)
+#define SOC_GPIO_PIN_SCL      (3u)
+#define Wire                  Wire1
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS (6u)
@@ -133,7 +134,7 @@ struct rst_info {
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
+//#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 //#define EXCLUDE_LOG_GNSS_VERSION
@@ -155,6 +156,9 @@ struct rst_info {
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
+#define USE_BASICMAC
+#define EXCLUDE_SX1276           //  -  3 kb
+
 #define USE_TIME_SLOTS
 
 //#define USE_OGN_ENCRYPTION
@@ -166,7 +170,7 @@ extern Adafruit_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
-#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_RP2040_H */

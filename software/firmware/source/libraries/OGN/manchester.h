@@ -6,7 +6,8 @@
 #include <avr/pgmspace.h>
 #endif
 
-#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
+    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_RP2040)
 #include <pgmspace.h>
 #endif
 

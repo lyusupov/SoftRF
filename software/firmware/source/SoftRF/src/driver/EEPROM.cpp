@@ -114,6 +114,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE   ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY ?
+                                           NMEA_USB :
+                                           hw_info.model == SOFTRF_MODEL_LEGO    ?
                                            NMEA_USB : NMEA_UART;
 #endif
 
