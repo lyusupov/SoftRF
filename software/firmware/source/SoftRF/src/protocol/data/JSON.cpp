@@ -16,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52)
-
-#include <ArduinoJson.h>
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_RP2040)
 
 #include "../../system/SoC.h"
 #include <TinyGPS++.h>
@@ -32,12 +30,14 @@
 #include "NMEA.h"
 #include "GDL90.h"
 #include "D1090.h"
+
+#undef DEPRECATED
 #include "JSON.h"
 
 extern eeprom_t eeprom_block;
 extern settings_t *settings;
 
-#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_RP2040 */
 
 #if defined(RASPBERRY_PI)
 
@@ -666,6 +666,9 @@ void parseUISettings(JsonObject& root)
     ui_settings.team = team_32;
   }
 }
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
+
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_RP2040)
 
 void parseSettings(JsonObject& root)
 {
@@ -902,4 +905,4 @@ void parseSettings(JsonObject& root)
 #endif
 }
 
-#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_RP2040 */

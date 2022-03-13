@@ -59,6 +59,12 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum RP2040_board_id {
+  RP2040_RAK11300,
+  RP2040_RPIPICO,
+  RP2040_WEACT,
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -81,6 +87,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeAct
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
+/* SPI0 */
+#define SOC_GPIO_PIN_MOSI0    (19u)
+#define SOC_GPIO_PIN_MISO0    (16u)
+#define SOC_GPIO_PIN_SCK0     (18u)
+#define SOC_GPIO_PIN_SS0      (17u)
+
 /* SPI1 */
 #define SOC_GPIO_PIN_MOSI     (11u)
 #define SOC_GPIO_PIN_MISO     (12u)
@@ -101,8 +113,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_ANT_RXTX (25u) // RXEN
 
 /* I2C0 */
-//#define SOC_GPIO_PIN_SDA    (20u)
-//#define SOC_GPIO_PIN_SCL    (21u)
+#define SOC_GPIO_PIN_SDA0     (20u)
+#define SOC_GPIO_PIN_SCL0     (21u)
 
 /* I2C1 */
 #define SOC_GPIO_PIN_SDA      (2u)
@@ -110,8 +122,8 @@ struct rst_info {
 #define Wire                  Wire1
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS (6u)
-#define SOC_GPIO_PIN_GNSS_RST (22u)
+#define SOC_GPIO_PIN_GNSS_PPS (6u)  // IO1
+#define SOC_GPIO_PIN_GNSS_RST (22u) // IO2
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // ADC0 (26u) or ADC1 (27u)
 #define SOC_GPIO_PIN_VBUS     (24u) // Pico
 #define SOC_GPIO_PIN_VSYS     (29u) // Pico
@@ -120,6 +132,15 @@ struct rst_info {
 
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN // LED2 (24u)
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+
+#define SOC_GPIO_PIN_IO1      (6u)
+#define SOC_GPIO_PIN_IO2      (22u)
+#define SOC_GPIO_PIN_IO3      (7u)
+#define SOC_GPIO_PIN_IO4      (28u)
+#define SOC_GPIO_PIN_IO5      (9u)
+#define SOC_GPIO_PIN_IO6      (8u)
+#define SOC_GPIO_PIN_A0       (26u)
+#define SOC_GPIO_PIN_A1       (27u)
 
 #else
 #error "This RP2040 build variant is not supported!"
