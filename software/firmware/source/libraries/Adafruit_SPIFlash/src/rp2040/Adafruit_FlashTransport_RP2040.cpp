@@ -78,11 +78,15 @@ void Adafruit_FlashTransport_RP2040::begin(void) {
   }
   _flash_dev.total_size = _size;
 
-  Serial.print("Start = 0x");
-  Serial.println(_start_addr, HEX);
+#if SPIFLASH_DEBUG
+  if (Serial) {
+    Serial.print("Start = 0x");
+    Serial.println(_start_addr, HEX);
 
-  Serial.print("Size = ");
-  Serial.println(_size);
+    Serial.print("Size = ");
+    Serial.println(_size);
+  }
+#endif
 
   // Read the RDID register to get the flash capacity.
   uint8_t const cmd[] = {

@@ -374,6 +374,7 @@ typedef struct {
     .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
     .supports_fast_read = true, .supports_qspi = true,                         \
     .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = false, .is_fram = false,                             \
   }
 
 // Settings for the Winbond W25Q32BV 4MiB SPI flash.

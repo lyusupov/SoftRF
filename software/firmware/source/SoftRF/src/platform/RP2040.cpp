@@ -45,6 +45,9 @@ extern "C" {
 #include "pico/binary_info/code.h"
 }
 
+#define SOFTRF_DESC "Multifunctional, compatible DIY general aviation proximity awareness system"
+#define SOFTRF_URL  "https://github.com/lyusupov/SoftRF"
+
 #if defined(USE_TINYUSB)
 #include "Adafruit_TinyUSB.h"
 #endif /* USE_TINYUSB */
@@ -95,7 +98,7 @@ static union {
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
 Adafruit_SPIFlash QSPIFlash(&HWFlashTransport);
 
-static Adafruit_SPIFlash *SPIFlash = NULL;
+static Adafruit_SPIFlash *SPIFlash = &QSPIFlash;
 
 /// Flash device list count
 enum {
@@ -157,11 +160,11 @@ static void RP2040_msc_flush_cb (void)
 
 static void RP2040_setup()
 {
-  bi_decl(bi_program_name("SoftRF"));
-  bi_decl(bi_program_description("Multifunctional, compatible DIY general aviation proximity awareness system"));
+  bi_decl(bi_program_name(SOFTRF_IDENT));
+  bi_decl(bi_program_description(SOFTRF_DESC));
   bi_decl(bi_program_version_string(SOFTRF_FIRMWARE_VERSION));
   bi_decl(bi_program_build_date_string(__DATE__));
-  bi_decl(bi_program_url("https://github.com/lyusupov/SoftRF"));
+  bi_decl(bi_program_url(SOFTRF_URL));
 
   pico_get_unique_board_id(&RP2040_unique_flash_id);
 
@@ -180,12 +183,14 @@ static void RP2040_setup()
   USBDevice.setDeviceVersion(RP2040_Device_Version);
 #endif /* USE_TINYUSB */
 
-  Serial1.setRX(SOC_GPIO_PIN_CONS_RX);
-  Serial1.setTX(SOC_GPIO_PIN_CONS_TX);
-  Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  SerialOutput.setRX(SOC_GPIO_PIN_CONS_RX);
+  SerialOutput.setTX(SOC_GPIO_PIN_CONS_TX);
+  SerialOutput.setFIFOSize(128);
+  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-  Serial2.setRX(SOC_GPIO_PIN_GNSS_RX);
-  Serial2.setTX(SOC_GPIO_PIN_GNSS_TX);
+  Serial_GNSS_In.setRX(SOC_GPIO_PIN_GNSS_RX);
+  Serial_GNSS_In.setTX(SOC_GPIO_PIN_GNSS_TX);
+  Serial_GNSS_In.setFIFOSize(128);
 
   SPI1.setRX(SOC_GPIO_PIN_MISO);
   SPI1.setTX(SOC_GPIO_PIN_MOSI);
@@ -200,13 +205,8 @@ static void RP2040_setup()
   pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
 
-  SPIFlash = &QSPIFlash;
-
-  if (SPIFlash != NULL) {
-    RP2040_has_spiflash = SPIFlash->begin(possible_devices,
-                                         EXTERNAL_FLASH_DEVICE_COUNT);
-  }
-
+  RP2040_has_spiflash = SPIFlash->begin(possible_devices,
+                                        EXTERNAL_FLASH_DEVICE_COUNT);
   hw_info.storage = RP2040_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
   if (RP2040_has_spiflash) {
@@ -236,12 +236,11 @@ static void RP2040_setup()
 
 static void RP2040_post_init()
 {
-#if 1
+#if 0
     Serial.println();
-    Serial.print(F("SPI FLASH JEDEC ID: "));
+    Serial.print(F("INFO: SPI FLASH JEDEC ID "));
     Serial.println(spiflash_id, HEX);
 #endif
-
   {
     Serial.println();
     Serial.println(F("SoftRF Lego Edition Power-on Self Test"));
@@ -251,16 +250,16 @@ static void RP2040_post_init()
     Serial.println(F("Built-in components:"));
 
     Serial.print(F("RADIO   : "));
-    Serial.println(hw_info.rf      == RF_IC_SX1262      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.rf      != RF_IC_NONE       ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
 
     Serial.println();
     Serial.println(F("External components:"));
     Serial.print(F("BARO    : "));
-    Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
+    Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
     Serial.print(F("DISPLAY : "));
-    Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+    Serial.println(hw_info.display != DISPLAY_NONE     ? F("PASS") : F("N/A"));
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -353,6 +352,15 @@ static void RP2040_loop()
 
 static void RP2040_fini(int reason)
 {
+  if (RP2040_has_spiflash) {
+#if defined(USE_TINYUSB)
+    usb_msc.setUnitReady(false);
+//  usb_msc.end(); /* N/A */
+#endif /* USE_TINYUSB */
+  }
+
+  if (SPIFlash != NULL) SPIFlash->end();
+
   pinMode(SOC_GPIO_PIN_ANT_RXTX, INPUT);
 
 #if defined(USE_TINYUSB)

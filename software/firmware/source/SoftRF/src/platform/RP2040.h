@@ -151,7 +151,7 @@ struct rst_info {
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
 //#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
-//#define EXCLUDE_LK8EX1
+#define EXCLUDE_LK8EX1
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
@@ -171,18 +171,17 @@ struct rst_info {
 #define EXCLUDE_MAVLINK          //  -    kb
 //#define EXCLUDE_EGM96          //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
-#define EXCLUDE_SOUND
+//#define EXCLUDE_SOUND
 
 #define USE_OLED                 //       kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
 #define USE_BASICMAC
-#define EXCLUDE_SX1276           //  -  3 kb
 
 #define USE_TIME_SLOTS
 
-//#define USE_OGN_ENCRYPTION
+#define USE_OGN_ENCRYPTION
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

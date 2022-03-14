@@ -1278,7 +1278,7 @@ void PickGNSSFix()
 #else
     /*
      * Give priority to control channels over default GNSS input source on
-     * 'Dongle', 'Retro', 'Uni', 'Mini' and 'Badge' Editions
+     * 'Dongle', 'Retro', 'Uni', 'Mini', 'Badge', 'Academy' and 'Lego' Editions
      */
 
     /* Bluetooth input is first */
