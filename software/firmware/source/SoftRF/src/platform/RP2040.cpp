@@ -219,13 +219,17 @@ static void RP2040_setup()
   SPI1.setSCK(SOC_GPIO_PIN_SCK);
   SPI1.setCS(SOC_GPIO_PIN_SS);
 
-  Wire1.setSCL(SOC_GPIO_PIN_SCL);
-  Wire1.setSDA(SOC_GPIO_PIN_SDA);
+  Wire.setSCL(SOC_GPIO_PIN_SCL);
+  Wire.setSDA(SOC_GPIO_PIN_SDA);
 
+#if SOC_GPIO_PIN_GNSS_RST != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_PIN_GNSS_RST, INPUT_PULLUP);
+#endif
 
+#if SOC_GPIO_PIN_ANT_RXTX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
+#endif
 
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
                                         EXTERNAL_FLASH_DEVICE_COUNT);
@@ -383,7 +387,9 @@ static void RP2040_fini(int reason)
 
   if (SPIFlash != NULL) SPIFlash->end();
 
+#if SOC_GPIO_PIN_ANT_RXTX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_PIN_ANT_RXTX, INPUT);
+#endif
 
 #if defined(USE_TINYUSB)
   // Disable USB
@@ -585,10 +591,10 @@ static byte RP2040_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  Wire1.begin();
+  Wire.begin();
   /* I2C transaction @ SSD1306_OLED_I2C_ADDR is a part of OLED_setup() */
-  Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR + 1);
-  if (Wire1.endTransmission() != 0)
+  Wire.beginTransmission(SSD1306_OLED_I2C_ADDR + 1);
+  if (Wire.endTransmission() != 0)
     rval = OLED_setup();
 #endif /* USE_OLED */
 
@@ -764,7 +770,7 @@ static void RP2040_Button_setup()
 }
 
 #if defined(USE_BOOTSEL_BUTTON)
-#define BOOSEL_CLICK_DELAY      200
+#define BOOTSEL_CLICK_DELAY     200
 #define BOOTSEL_LONGPRESS_DELAY 2000
 
 static unsigned long bootsel_time_marker = 0;
@@ -787,7 +793,7 @@ static void RP2040_Button_loop()
       prev_bootsel_state = true;
     } else {
       if (bootsel_time_marker && !is_bootsel_click &&
-          millis() - bootsel_time_marker > BOOSEL_CLICK_DELAY) {
+          millis() - bootsel_time_marker > BOOTSEL_CLICK_DELAY) {
         is_bootsel_click = true;
       }
       if (bootsel_time_marker &&

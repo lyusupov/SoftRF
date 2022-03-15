@@ -36,7 +36,7 @@
  #define Wire TinyWireM
 #else
  #include <Wire.h>
- #if defined(ARDUINO_ARCH_RP2040)
+ #if defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_GENERIC_RP2040)
  #define Wire Wire1
  #endif
 #endif
