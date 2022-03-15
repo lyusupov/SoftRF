@@ -40,17 +40,45 @@
 
 #include <Adafruit_SPIFlash.h>
 
+#define PICO_ON_DEVICE 1
 extern "C" {
 #include "pico/binary_info.h"
-#include "pico/binary_info/code.h"
 }
-
-#define SOFTRF_DESC "Multifunctional, compatible DIY general aviation proximity awareness system"
-#define SOFTRF_URL  "https://github.com/lyusupov/SoftRF"
 
 #if defined(USE_TINYUSB)
 #include "Adafruit_TinyUSB.h"
 #endif /* USE_TINYUSB */
+
+#define SOFTRF_DESC "Multifunctional, compatible DIY general aviation proximity awareness system"
+#define SOFTRF_URL  "https://github.com/lyusupov/SoftRF"
+
+bi_decl(bi_program_name(SOFTRF_IDENT));
+bi_decl(bi_program_description(SOFTRF_DESC));
+bi_decl(bi_program_version_string(SOFTRF_FIRMWARE_VERSION));
+bi_decl(bi_program_build_date_string(__DATE__));
+bi_decl(bi_program_url(SOFTRF_URL));
+extern char __flash_binary_end;
+bi_decl(bi_binary_end((intptr_t)&__flash_binary_end));
+
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_RX,  "GNSS RX"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_TX,  "GNSS TX"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_PPS, "GNSS PPS"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_RST, "GNSS RST"));
+
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_MOSI,     "SX1262 MOSI"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_MISO,     "SX1262 MISO"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCK,      "SX1262 SCK"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SS,       "SX1262 SS"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_RST,      "SX1262 RST"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_BUSY,     "SX1262 BUSY"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_DIO1,     "SX1262 DIO1"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_ANT_RXTX, "RF ANT PWR"));
+
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_CONS_RX,  "Console RX"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_CONS_TX,  "Console TX"));
+
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SDA,      "I2C1 SDA"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCL,      "I2C1 SCL"));
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -160,12 +188,6 @@ static void RP2040_msc_flush_cb (void)
 
 static void RP2040_setup()
 {
-  bi_decl(bi_program_name(SOFTRF_IDENT));
-  bi_decl(bi_program_description(SOFTRF_DESC));
-  bi_decl(bi_program_version_string(SOFTRF_FIRMWARE_VERSION));
-  bi_decl(bi_program_build_date_string(__DATE__));
-  bi_decl(bi_program_url(SOFTRF_URL));
-
   pico_get_unique_board_id(&RP2040_unique_flash_id);
 
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
@@ -741,6 +763,15 @@ static void RP2040_Button_setup()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
+#if defined(USE_BOOTSEL_BUTTON)
+#define BOOSEL_CLICK_DELAY      200
+#define BOOTSEL_LONGPRESS_DELAY 2000
+
+static unsigned long bootsel_time_marker = 0;
+static bool prev_bootsel_state = false;
+static bool is_bootsel_click = false;
+#endif /* USE_BOOTSEL_BUTTON */
+
 static void RP2040_Button_loop()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
@@ -748,6 +779,36 @@ static void RP2040_Button_loop()
     button_1.check();
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
+#if defined(USE_BOOTSEL_BUTTON)
+  if (BOOTSEL) {
+    if (!prev_bootsel_state) {
+      bootsel_time_marker = millis();
+      prev_bootsel_state = true;
+    } else {
+      if (bootsel_time_marker && !is_bootsel_click &&
+          millis() - bootsel_time_marker > BOOSEL_CLICK_DELAY) {
+        is_bootsel_click = true;
+      }
+      if (bootsel_time_marker &&
+          millis() - bootsel_time_marker > BOOTSEL_LONGPRESS_DELAY) {
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
+//      Serial.println(F("This will never be printed."));
+      }
+    }
+  } else {
+    if (prev_bootsel_state) {
+      if (is_bootsel_click) {
+#if defined(USE_OLED)
+        OLED_Next_Page();
+#endif
+        is_bootsel_click = false;
+      }
+      bootsel_time_marker = 0;
+      prev_bootsel_state = false;
+    }
+  }
+#endif /* USE_BOOTSEL_BUTTON */
 }
 
 static void RP2040_Button_fini()
@@ -758,6 +819,10 @@ static void RP2040_Button_fini()
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
+#if defined(USE_BOOTSEL_BUTTON)
+  while (BOOTSEL);
+#endif /* USE_BOOTSEL_BUTTON */
 }
 
 static void RP2040_USB_setup()

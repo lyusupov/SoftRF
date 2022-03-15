@@ -177,6 +177,8 @@ struct rst_info {
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
+#define USE_BOOTSEL_BUTTON
+
 #define USE_BASICMAC
 
 #define USE_TIME_SLOTS

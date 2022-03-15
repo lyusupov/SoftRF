@@ -15,6 +15,7 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
 * **Certified** (CE/FCC)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
+    * **Lego Edition**
 * **Wireless** 2.7 inch E-Ink display
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * can **receive ADS-B** air traffic
@@ -78,7 +79,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 ES|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
 [Academy](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560)|Q4 2021|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)<!-- ![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress) -->|good for teaching students of air traffic proximity awareness
 Multi|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/index.html)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)| [ [1](https://user-images.githubusercontent.com/5849637/152556525-8e50c1af-9ea0-4d8a-a866-4864bb2a5186.png) ]
-**Lego**|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|&nbsp;
+**Lego**|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|&nbsp;holds **FCC/CE** mark
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
