@@ -36,13 +36,13 @@
 
 #include "pico/unique_id.h"
 #include <hardware/watchdog.h>
-//#include <pico/sleep.h>
 
 #include <Adafruit_SPIFlash.h>
 
 #define PICO_ON_DEVICE 1
 extern "C" {
 #include "pico/binary_info.h"
+#include <pico_sleep.h>
 }
 
 #if defined(USE_TINYUSB)
@@ -63,8 +63,9 @@ bi_decl(bi_binary_end((intptr_t)&__flash_binary_end));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_RX,  "GNSS RX"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_TX,  "GNSS TX"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_PPS, "GNSS PPS"));
+#if SOC_GPIO_PIN_GNSS_RST != SOC_UNUSED_PIN
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_GNSS_RST, "GNSS RST"));
-
+#endif
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_MOSI,     "SX1262 MOSI"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_MISO,     "SX1262 MISO"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCK,      "SX1262 SCK"));
@@ -77,8 +78,8 @@ bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_ANT_RXTX, "RF ANT PWR"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_CONS_RX,  "Console RX"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_CONS_TX,  "Console TX"));
 
-bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SDA,      "I2C1 SDA"));
-bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCL,      "I2C1 SCL"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SDA,      "I2C SDA"));
+bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCL,      "I2C SCL"));
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -231,6 +232,10 @@ static void RP2040_setup()
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);
 #endif
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO)
+  RP2040_board = (SoC->getChipId() == 0x766065d9) ? RP2040_WEACT : RP2040_RPIPICO;
+#endif /* ARDUINO_RASPBERRY_PI_PICO */
+
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
                                         EXTERNAL_FLASH_DEVICE_COUNT);
   hw_info.storage = RP2040_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
@@ -341,8 +346,7 @@ static unsigned long rx_led_time_marker = 0;
 static void RP2040_loop()
 {
   if (wdt_is_active) {
-//    Watchdog.reset();
-//    watchdog_update();
+    watchdog_update();
   }
 
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
@@ -396,15 +400,14 @@ static void RP2040_fini(int reason)
   USBDevice.detach();
 #endif /* USE_TINYUSB */
 
-//  Watchdog.sleep();
-
-//  sleep_run_from_xosc();
+  sleep_run_from_xosc();
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
-//  sleep_goto_dormant_until_edge_high(SOC_GPIO_PIN_BUTTON);
+  sleep_goto_dormant_until_edge_high(SOC_GPIO_PIN_BUTTON);
+#else
+  datetime_t alarm = {0};
+  sleep_goto_sleep_until(&alarm, NULL);
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
-
-  NVIC_SystemReset();
 }
 
 static void RP2040_reset()
@@ -693,15 +696,14 @@ static void RP2040_UATModule_restart()
 
 static void RP2040_WDT_setup()
 {
-//  Watchdog.enable(8000);
-//  watchdog_enable(5000, 1);
+  watchdog_enable(5000, 1);
   wdt_is_active = true;
 }
 
 static void RP2040_WDT_fini()
 {
   if (wdt_is_active) {
-//    Watchdog.disable();
+    hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
     wdt_is_active = false;
   }
 }

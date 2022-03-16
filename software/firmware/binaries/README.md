@@ -7,6 +7,7 @@
 - [CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell) (ASR650x)
 - [nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)
 - [LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)
+- [RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)
 
 ## NodeMCU
 
@@ -122,3 +123,30 @@ Plug the HackRF into USB power while holding down the DFU button (the button clo
 $ dfu-util -D hackrf_one_usb.dfu --reset
 $ hackrf_spiflash -v -w HackRF_factory_firmware.bin
 ```
+
+<br>
+
+## RP2040
+
+Every RAK11310 WisBlock Core module has built-in (ROM) bootloader.<br>
+The bootloader is capable to self-program an application firmware into the device. In order to simplify the firmware transfer, the bootloader emulates a "USB Mass Storage" interface.
+
+1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/) ;
+
+2. Plug RAK11310 WisBlock Core module into RAK5005 WisBlock Base ;
+
+3. Connect the RAK5005 to your PC by means of a USB cable (Type-A <-> micro Type-B) ;
+
+4. Press and keep holding BOOTSEL button of RAK11310 Core module ;
+
+5. Click RESET button on RAK5005 Base ;
+
+6. Release BOOTSEL button of RAK11310 module. A virtual disk with **RPI-RP2** label should appear in your "File manager" afterwards.
+
+7. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **RPI-RP2** disk. Wait until the file transfer is complete.
+
+<br>
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
+
+<br>

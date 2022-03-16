@@ -61,6 +61,7 @@ enum rst_reason {
 
 enum RP2040_board_id {
   RP2040_RAK11300,
+  RP2040_RESERVED1,
   RP2040_RPIPICO,
   RP2040_WEACT,
 };
@@ -197,6 +198,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_VSYS     (29u) // Pico
 #define SOC_GPIO_PIN_PS       (23u) // Pico
 #define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
+
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
+#define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 
 #else
 #error "This RP2040 build variant is not supported!"

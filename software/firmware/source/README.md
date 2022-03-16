@@ -291,7 +291,12 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 
 5. start **Arduino** application
 6. open **SoftRF** sketch from _File_ -> _Open_ menu
-7. Select _Tools_ -> _Board_ ->  _Raspberry_ _Pi_ _Pico_
-8. try to build and upload using _Sketch_ -> _Upload_
+7. For RAK11310 WisBlock Core:<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ -> _Generic_ _RP2040_<br>
+   For Raspberry Pi Pico with Waveshare modules:<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ -> _Raspberry_ _Pi_ _Pico_<br>
+8. Select _Tools_ -> _Flash_ _Size_ -> _2MB_ _(Sketch:_ _1MB,_ _FS:_ _1MB)_
+9. Select _Tools_ -> _USB_ _Stack_ -> _Adafruit_ _TinyUSB_
+10. try to build and upload using _Sketch_ -> _Upload_
 
 <br>
