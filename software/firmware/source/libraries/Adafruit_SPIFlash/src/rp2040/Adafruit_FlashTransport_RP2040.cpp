@@ -96,7 +96,9 @@ void Adafruit_FlashTransport_RP2040::begin(void) {
       0,
   };
   uint8_t data[4];
+  fl_lock();
   flash_do_cmd(cmd, data, 5);
+  fl_unlock();
 
   uint8_t *jedec_ids = data + 1;
 

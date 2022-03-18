@@ -137,11 +137,11 @@ The bootloader is capable to self-program an application firmware into the devic
 
 3. Connect the RAK5005 to your PC by means of a USB cable (Type-A <-> micro Type-B) ;
 
-4. Press and keep holding BOOTSEL button of RAK11310 Core module ;
+4. Press and keep holding BOOT button of RAK11310 Core module ;
 
-5. Click RESET button on RAK5005 Base ;
+5. Press and release RESET button on RAK5005 Base ;
 
-6. Release BOOTSEL button of RAK11310 module. A virtual disk with **RPI-RP2** label should appear in your "File manager" afterwards.
+6. Release BOOT button of RAK11310 module. A virtual disk with **RPI-RP2** label should appear in your "File manager" afterwards ;
 
 7. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **RPI-RP2** disk. Wait until the file transfer is complete.
 

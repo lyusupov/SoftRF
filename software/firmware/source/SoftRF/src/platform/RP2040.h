@@ -43,6 +43,7 @@
 #define SerialOutput            Serial1
 
 #define USBSerial               Serial
+#define SERIAL_BEGIN(b,s)       USBSerial.begin(b)
 #define Serial_GNSS_In          Serial2
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial

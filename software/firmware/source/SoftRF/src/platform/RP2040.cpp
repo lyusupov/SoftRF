@@ -37,13 +37,13 @@
 #include "pico/unique_id.h"
 #include <hardware/watchdog.h>
 
-#include <Adafruit_SPIFlash.h>
-
 #define PICO_ON_DEVICE 1
 extern "C" {
 #include "pico/binary_info.h"
-#include <pico_sleep.h>
 }
+
+#include <Adafruit_SPIFlash.h>
+#include <pico_sleep.h>
 
 #if defined(USE_TINYUSB)
 #include "Adafruit_TinyUSB.h"
@@ -238,30 +238,34 @@ static void RP2040_setup()
 
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
                                         EXTERNAL_FLASH_DEVICE_COUNT);
-  hw_info.storage = RP2040_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
-
   if (RP2040_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
 
+    uint32_t capacity = spiflash_id & 0xFF;
+    if (capacity >= 0x15) { /* equal or greater than 1UL << 21 (2 MiB) */
+      hw_info.storage = STORAGE_FLASH;
+
 #if defined(USE_TINYUSB)
-    // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
-    usb_msc.setID(RP2040_Device_Manufacturer, "External Flash", "1.0");
+      // Set disk vendor id, product id and revision
+      // with string up to 8, 16, 4 characters respectively
+      usb_msc.setID(RP2040_Device_Manufacturer, "External Flash", "1.0");
 
-    // Set callback
-    usb_msc.setReadWriteCallback(RP2040_msc_read_cb,
-                                 RP2040_msc_write_cb,
-                                 RP2040_msc_flush_cb);
+      // Set callback
+      usb_msc.setReadWriteCallback(RP2040_msc_read_cb,
+                                   RP2040_msc_write_cb,
+                                   RP2040_msc_flush_cb);
 
-    // Set disk size, block size should be 512 regardless of spi flash page size
-    usb_msc.setCapacity(SPIFlash->size()/512, 512);
+      // Set disk size, block size should be 512 regardless of spi flash page size
+      usb_msc.setCapacity(SPIFlash->size()/512, 512);
 
-    // MSC is ready for read/write
-    usb_msc.setUnitReady(true);
+      // MSC is ready for read/write
+      usb_msc.setUnitReady(true);
 
-    usb_msc.begin();
+      usb_msc.begin();
 #endif /* USE_TINYUSB */
 
-    FATFS_is_mounted = fatfs.begin(SPIFlash);
+      FATFS_is_mounted = fatfs.begin(SPIFlash);
+    }
   }
 }
 
@@ -836,7 +840,7 @@ static void RP2040_Button_fini()
 static void RP2040_USB_setup()
 {
   if (USBSerial && USBSerial != Serial) {
-    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+    USBSerial.begin(SERIAL_OUT_BR);
   }
 }
 
