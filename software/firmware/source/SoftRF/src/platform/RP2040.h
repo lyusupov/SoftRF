@@ -83,14 +83,16 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_RX  (1u)
 #define SOC_GPIO_PIN_CONS_TX  (0u)
 
-/* RAK1910 (Ublox-7) */
+/* RAK1910 (Ublox-7), SLOT A only */
 #define SOC_GPIO_PIN_GNSS_RX  (5u)
 #define SOC_GPIO_PIN_GNSS_TX  (4u)
 #define SOC_GPIO_PIN_GNSS_PPS (6u)  // IO1
 #define SOC_GPIO_PIN_GNSS_RST (22u) // IO2
 
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeAct
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED
+
+/* RAK18001, SLOT C */
+#define SOC_GPIO_PIN_BUZZER   (7u)  // IO3
 
 /* SPI0 */
 #define SOC_GPIO_PIN_MOSI0    (19u)
