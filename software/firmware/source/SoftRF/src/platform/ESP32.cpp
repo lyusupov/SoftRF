@@ -330,6 +330,14 @@ static void ESP32_setup()
 #endif /* ARDUINO_ESP32S2_USB */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   }
+
+#if ARDUINO_USB_CDC_ON_BOOT && defined(CONFIG_IDF_TARGET_ESP32S2)
+  Serial.begin(SERIAL_OUT_BR);
+
+  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
+#else
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* ARDUINO_USB_CDC_ON_BOOT && CONFIG_IDF_TARGET_ESP32S2 */
 }
 
 static void ESP32_post_init()

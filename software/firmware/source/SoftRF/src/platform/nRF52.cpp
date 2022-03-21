@@ -536,6 +536,12 @@ static void nRF52_setup()
   // This will also call usb_midi's begin()
   MIDI.begin(MIDI_CHANNEL_OFF);
 #endif /* USE_USB_MIDI */
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USE_TINYUSB) && defined(USBCON)
+  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
+#endif
 }
 
 static void nRF52_post_init()

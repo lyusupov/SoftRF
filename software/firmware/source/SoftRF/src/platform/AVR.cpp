@@ -78,6 +78,8 @@ static void AVR_setup()
   {
     DeviceID[i] = boot_signature_byte_get(0x0E + i + (UniqueIDsize == 9 && i > 5 ? 1 : 0));
   }
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void AVR_post_init()

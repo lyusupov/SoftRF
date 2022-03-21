@@ -43,7 +43,6 @@
 #define UATSerial               Serial2
 #else
 #if ARDUINO_USB_CDC_ON_BOOT
-#define SERIAL_BEGIN(b,s)       Serial.begin(b)
 #define UATSerial               Serial0
 #undef  SerialOutput
 #define SerialOutput            Serial0

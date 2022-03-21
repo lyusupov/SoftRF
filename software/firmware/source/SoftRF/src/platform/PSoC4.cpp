@@ -200,6 +200,8 @@ static void PSoC4_setup()
 
     lmic_pins.tcxo = (PSoC4_board == PSOC4_AITHINKER_RA_07H) ? lmic_pins.rst : lmic_pins.tcxo;
   }
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void PSoC4_post_init()

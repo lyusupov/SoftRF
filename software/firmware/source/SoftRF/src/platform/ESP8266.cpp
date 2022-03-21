@@ -73,7 +73,7 @@ void ICACHE_FLASH_ATTR user_init()
 
 static void ESP8266_setup()
 {
-
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void ESP8266_post_init()

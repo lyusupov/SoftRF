@@ -267,6 +267,11 @@ static void RP2040_setup()
       FATFS_is_mounted = fatfs.begin(SPIFlash);
     }
   }
+
+  USBSerial.begin(SERIAL_OUT_BR);
+
+  /* Let host's USB and console drivers to warm-up */
+  delay(2000);
 }
 
 static void RP2040_post_init()

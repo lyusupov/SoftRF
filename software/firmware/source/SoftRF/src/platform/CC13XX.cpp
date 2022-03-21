@@ -340,6 +340,8 @@ static void CC13XX_setup()
 #endif /* ENERGIA_ARCH_CC13X2 */
 
   hw_info.revision = cc13xx_board;
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void CC13XX_post_init()

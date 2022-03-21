@@ -173,6 +173,12 @@ static void SAMD_setup()
 #if defined(USE_USB_HOST)
   UsbH.Init();
 #endif /* USE_USB_HOST */
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USBCON)
+  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
+#endif
 }
 
 static void SAMD_post_init()

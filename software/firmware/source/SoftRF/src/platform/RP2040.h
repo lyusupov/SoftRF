@@ -40,11 +40,10 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#define SerialOutput            Serial1
+#define SerialOutput            Serial2
 
 #define USBSerial               Serial
-#define SERIAL_BEGIN(b,s)       USBSerial.begin(b)
-#define Serial_GNSS_In          Serial2
+#define Serial_GNSS_In          Serial1
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial
 
@@ -79,19 +78,19 @@ struct rst_info {
 
 #if defined(ARDUINO_GENERIC_RP2040)
 
-/* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  (1u)
-#define SOC_GPIO_PIN_CONS_TX  (0u)
+/* Console, I/O SLOT only */
+#define SOC_GPIO_PIN_CONS_RX  (5u)
+#define SOC_GPIO_PIN_CONS_TX  (4u)
 
-/* RAK1910 (Ublox-7), SLOT A only */
-#define SOC_GPIO_PIN_GNSS_RX  (5u)
-#define SOC_GPIO_PIN_GNSS_TX  (4u)
-#define SOC_GPIO_PIN_GNSS_PPS (6u)  // IO1
-#define SOC_GPIO_PIN_GNSS_RST (22u) // IO2
+/* RAK1910 (Ublox-7), SENSOR SLOT A only */
+#define SOC_GPIO_PIN_GNSS_RX  (1u)  // J10
+#define SOC_GPIO_PIN_GNSS_TX  (0u)  // J10
+#define SOC_GPIO_PIN_GNSS_PPS (6u)  // IO1, J11
+#define SOC_GPIO_PIN_GNSS_RST (22u) // IO2, J11
 
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED
 
-/* RAK18001, SLOT C */
+/* RAK18001, SENSOR SLOT C */
 #define SOC_GPIO_PIN_BUZZER   (7u)  // IO3
 
 /* SPI0 */
@@ -123,7 +122,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SDA0     (20u)
 #define SOC_GPIO_PIN_SCL0     (21u)
 
-/* RAK11310, I2C1 */
+/* RAK11310, I2C1, J12 */
 #define SOC_GPIO_PIN_SDA      (2u)
 #define SOC_GPIO_PIN_SCL      (3u)
 #define Wire                  Wire1
@@ -147,7 +146,7 @@ struct rst_info {
 
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 
-/* Peripherals */
+/* Console I/O */
 #define SOC_GPIO_PIN_CONS_RX  (5u)
 #define SOC_GPIO_PIN_CONS_TX  (4u)
 
@@ -216,7 +215,8 @@ struct rst_info {
 //#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 #define EXCLUDE_LK8EX1
 
-//#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
+#define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary) */
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE

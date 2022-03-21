@@ -316,6 +316,13 @@ static void STM32_setup()
 #endif /* EXCLUDE_IMU */
     }
 #endif /* ARDUINO_NUCLEO_L073RZ */
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+  /* Let host's USB and console drivers to warm-up */
+  delay(2000);
+#endif
 }
 
 static void STM32_post_init()

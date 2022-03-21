@@ -88,6 +88,8 @@ static void ASR66_setup()
   pinMode(SOC_GPIO_PIN_ANT_VDD, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_ANT_VDD, HIGH);
   iomux(SOC_GPIO_PIN_ANT_RXTX, 3);
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void ASR66_post_init()

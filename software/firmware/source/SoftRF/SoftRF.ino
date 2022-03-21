@@ -98,10 +98,6 @@
 #include "src/system/Log.h"
 #endif /* LOGGER_IS_ENABLED */
 
-#if !defined(SERIAL_BEGIN)
-#define SERIAL_BEGIN(b,s) Serial.begin(b,s)
-#endif
-
 #if !defined(SERIAL_FLUSH)
 #define SERIAL_FLUSH() Serial.flush()
 #endif
@@ -124,7 +120,7 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE,
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
-  .imu      = IMU_NONE
+  .imu      = IMU_NONE,
 };
 
 unsigned long LEDTimeMarker = 0;
@@ -137,16 +133,6 @@ void setup()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   resetInfo = (rst_info *) SoC->getResetInfoPtr();
-
-  SERIAL_BEGIN(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-
-#if (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)) || defined(ARDUINO_ARCH_RP2040)
-  /* Let host's USB and console drivers to warm-up */
-  delay(2000);
-#elif ARDUINO_USB_CDC_ON_BOOT || \
-     (defined(USBCON) && (defined(USE_TINYUSB) || defined(ARDUINO_ARCH_SAMD)))
-  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
-#endif
 
 #if LOGGER_IS_ENABLED
   Logger_setup();
