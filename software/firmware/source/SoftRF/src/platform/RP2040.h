@@ -42,7 +42,12 @@
 
 #define SerialOutput            Serial2
 
+#if !defined(ARDUINO_ARCH_MBED)
 #define USBSerial               Serial
+#else
+#define USBSerial               SerialUSB
+#endif /* ARDUINO_ARCH_MBED */
+
 #define Serial_GNSS_In          Serial1
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial
@@ -240,7 +245,11 @@ struct rst_info {
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
+#if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
+#else
+#define EXCLUDE_EEPROM
+#endif /* ARDUINO_ARCH_MBED */
 
 #define USE_BASICMAC
 

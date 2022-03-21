@@ -2,12 +2,13 @@
 #define __MANCHESTER_H__
 
 #if defined(__AVR__) || defined(ARDUINO_ARCH_STM32) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    (defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_ARCH_MBED))
 #include <avr/pgmspace.h>
 #endif
 
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
-    defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_RP2040)
+    defined(ARDUINO_ARCH_ASR650X) || (defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))
 #include <pgmspace.h>
 #endif
 
