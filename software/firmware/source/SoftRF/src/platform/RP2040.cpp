@@ -91,14 +91,14 @@ bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SDA,      "I2C SDA"));
 bi_decl(bi_1pin_with_name(SOC_GPIO_PIN_SCL,      "I2C SCL"));
 #endif /* ARDUINO_ARCH_MBED */
 
-// SX127x pin mapping
+// SX126x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
     .txe = LMIC_UNUSED_PIN,
     .rxe = LMIC_UNUSED_PIN,
     .rst = SOC_GPIO_PIN_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
-    .busy = LMIC_UNUSED_PIN,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -234,12 +234,12 @@ static void RP2040_setup()
 #if !defined(ARDUINO_ARCH_MBED)
   SerialOutput.setRX(SOC_GPIO_PIN_CONS_RX);
   SerialOutput.setTX(SOC_GPIO_PIN_CONS_TX);
-  SerialOutput.setFIFOSize(128);
+  SerialOutput.setFIFOSize(255);
   SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
   Serial_GNSS_In.setRX(SOC_GPIO_PIN_GNSS_RX);
   Serial_GNSS_In.setTX(SOC_GPIO_PIN_GNSS_TX);
-  Serial_GNSS_In.setFIFOSize(128);
+  Serial_GNSS_In.setFIFOSize(255);
 
   SPI1.setRX(SOC_GPIO_PIN_MISO);
   SPI1.setTX(SOC_GPIO_PIN_MOSI);
