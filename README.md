@@ -8,6 +8,7 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
 <!--    * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
 * **Plug-and-Play**
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * **Portable**
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Classic** 2.25 inch instrument
@@ -15,7 +16,7 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
 * **Certified** (CE/FCC)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
-    * **Lego Edition**
+    * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * **Wireless** 2.7 inch E-Ink display
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * can **receive ADS-B** air traffic
@@ -60,7 +61,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 <sup>1</sup> - it is necessary for a reader to distinguish the difference between statement "**compatible**" and statement "**fully compatible**".<br>
 &nbsp;&nbsp;&nbsp;&nbsp; SoftRF implements only a reasonable minimum of the protocols specs. No "bells and whistles" so far.<br>
 <sup>2</sup> - FANET+ can not receive FLARM. However it is able to transmit it.<br>
-<sup>3</sup> - valid for [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) , [**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) , [**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) , [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) , [**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) and [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition) **Editions**; valid for [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) , [**UAV**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition) and [**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
+<sup>3</sup> - valid for [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) , [**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) , [**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) , [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) , [**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) , [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition) and [**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) **Editions**; valid for [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) , [**UAV**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition) and [**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
 <sup>4</sup> - [**Reception**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition#ads-b-out-remark) of traffic 'downlink' frames only. Valid for [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) alone and for [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) with optional DIY [SoftRF UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)<br>
 <sup>5</sup> - Reception of traffic 'downlink' frames only. Valid for **ES Edition**<br>
 <sup>6</sup> - also known as "raw ADS-B"<br>
@@ -79,26 +80,26 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 ES|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
 [Academy](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560)|Q4 2021|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)<!-- ![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress) -->|good for teaching students of air traffic proximity awareness
 Multi|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/index.html)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)| [ [1](https://user-images.githubusercontent.com/5849637/152556525-8e50c1af-9ea0-4d8a-a866-4864bb2a5186.png) ]
-**Lego**|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)|&nbsp;holds **FCC/CE** mark
+[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)|&nbsp;holds **FCC/CE** mark
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 [Nordic Semiconductor<br>nRF905](https://infocenter.nordicsemi.com/pdf/nRF905_PS_v1.5.pdf)|1&nbsp;[Prime](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition)<br>2&nbsp;[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)<br>3&nbsp;[UAV](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|Q4 2015|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
-[Semtech<br>SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)|1&nbsp;[LoRa module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>2&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>3&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>4&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<!-- <br>5&nbsp;[**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) -->|Q4 2017|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[Semtech<br>SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)|1&nbsp;[LoRa module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>2&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>3&nbsp;[**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>4&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<br>5&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<!-- <br>5&nbsp;[**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) -->|Q4 2017|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Texas Instruments<br>CC1310](http://www.ti.com/product/CC1310)|[UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)|Q1 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Semtech<br>SX1231](https://www.semtech.com/products/wireless-rf/fsk-transceivers/sx1231)|[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)|Q3 2019|![](https://via.placeholder.com/140x70/FFFF00/000000?text=Limited)|operates through OGN driver with OGNTP protocol only
-[Semtech<br>SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|Q1 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[Semtech<br>SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q1 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Texas Instruments<br>CC1352R](http://www.ti.com/product/CC1352R)|[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 
 ## By GNSS chip
 GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
 ---|:---:|:---:|:---:|---
 Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|Q4 2016|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
-[U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)<br>3&nbsp;[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2018|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)<br>3&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q2 2018|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[1&nbsp;**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|Q2 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [Sony<br>CXD5603GF](https://www.sony-semicon.co.jp/e/products/lsi/gps/product.html)|1&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<!-- <br>2&nbsp;[**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) -->|Q4 2019|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
-[MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
+[MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>3&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 [GOKE](http://www.goke.com/en/)<br>GK9501|[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|Q3 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 
 # Documentation
@@ -140,6 +141,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition.-Quick-start)
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/Dongle-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Dongle)
+* [Lego Edition](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Academy Edition](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
@@ -231,6 +233,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
+
+* [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Lego-11.png)
 
 * [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
