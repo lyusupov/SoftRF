@@ -156,8 +156,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_CONS_TX  (4u)
 
 /* Waveshare Pico-GPS-L76B (MTK) */
-#define SOC_GPIO_PIN_GNSS_RX  (1u)
-#define SOC_GPIO_PIN_GNSS_TX  (0u)
+#define SOC_GPIO_PIN_GNSS_RX  (1u)  // (5u) , H2
+#define SOC_GPIO_PIN_GNSS_TX  (0u)  // (4u) , H1
 #define SOC_GPIO_PIN_GNSS_PPS (16u) // R20 (NC by default)
 #define SOC_GPIO_PIN_GNSS_RST SOC_UNUSED_PIN // NA
 #define SOC_GPIO_PIN_GNSS_SBY (17u) // STANDBY
@@ -186,7 +186,7 @@ struct rst_info {
 /* Waveshare Pico-LoRa-SX1262-868M, SX1262 */
 #define SOC_GPIO_PIN_RST      (15u)
 #define SOC_GPIO_PIN_BUSY     (2u)
-#define SOC_GPIO_PIN_DIO1     (20u)
+#define SOC_GPIO_PIN_DIO1     (20u) // may have conflict with SDA
 
 /* Waveshare Pico-LoRa-SX1262-868M, RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX (22u) // RXEN
@@ -200,12 +200,13 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL1     (27u)
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // ADC0 (26u) or ADC1 (27u)
 #define SOC_GPIO_PIN_VBUS     (24u) // Pico
 #define SOC_GPIO_PIN_VSYS     (29u) // Pico
 #define SOC_GPIO_PIN_PS       (23u) // Pico
 #define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
 
+/* Waveshare Pico-LoRa-SX1262-868M */
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // (26u)
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 

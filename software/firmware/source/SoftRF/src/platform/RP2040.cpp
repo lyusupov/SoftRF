@@ -904,6 +904,7 @@ RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
 
 static void RP2040_USB_loop()
 {
+#if !defined(USE_TINYUSB)
   uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
   size_t size;
 
@@ -938,6 +939,7 @@ static void RP2040_USB_loop()
       break;
     }
   }
+#endif /* USE_TINYUSB */
 }
 
 static void RP2040_USB_fini()
