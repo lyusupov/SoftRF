@@ -625,7 +625,10 @@ static gnss_id_t ublox_probe()
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_RASPBERRY ||
-      hw_info.model == SOFTRF_MODEL_UNI)        {
+      hw_info.model == SOFTRF_MODEL_UNI       ||
+      hw_info.model == SOFTRF_MODEL_MULTI     ||
+      hw_info.model == SOFTRF_MODEL_LEGO)
+  {
     return (gnss_id_t) ublox_version();
   } else {
     return GNSS_MODULE_NMEA;
@@ -1105,8 +1108,9 @@ byte GNSS_setup() {
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
-      hw_info.model == SOFTRF_MODEL_BADGE)      {
-
+      hw_info.model == SOFTRF_MODEL_BADGE     ||
+      hw_info.model == SOFTRF_MODEL_LEGO)
+  {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
   }

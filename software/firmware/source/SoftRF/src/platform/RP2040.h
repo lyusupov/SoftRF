@@ -52,8 +52,6 @@
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial
 
-#define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
-
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -133,21 +131,23 @@ struct rst_info {
 #define Wire                  Wire1
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // ADC0 (26u) or ADC1 (27u)
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
-#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN // RAK11310, LED2 (24u)
-#define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN // RAK11310, LED1 (23u)
-
 /* RAK11310 */
+#define SOC_GPIO_PIN_BATTERY  (26u) // ADC0
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN // LED1 (23u)
+#define SOC_GPIO_RADIO_LED_TX (24u) // LED2
+
 #define SOC_GPIO_PIN_IO1      (6u)
-#define SOC_GPIO_PIN_IO2      (22u)
+#define SOC_GPIO_PIN_IO2      (22u) // 3V3_S PWR_EN, GNSS NRST
 #define SOC_GPIO_PIN_IO3      (7u)
 #define SOC_GPIO_PIN_IO4      (28u)
 #define SOC_GPIO_PIN_IO5      (9u)
 #define SOC_GPIO_PIN_IO6      (8u)
-#define SOC_GPIO_PIN_A0       (26u)
+#define SOC_GPIO_PIN_A0       (26u) // ADC_VBAT
 #define SOC_GPIO_PIN_A1       (27u)
+
+#define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 
@@ -186,7 +186,7 @@ struct rst_info {
 /* Waveshare Pico-LoRa-SX1262-868M, SX1262 */
 #define SOC_GPIO_PIN_RST      (15u)
 #define SOC_GPIO_PIN_BUSY     (2u)
-#define SOC_GPIO_PIN_DIO1     (20u) // may have conflict with SDA
+#define SOC_GPIO_PIN_DIO1     (20u) // may cause conflict with SDA
 
 /* Waveshare Pico-LoRa-SX1262-868M, RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX (22u) // RXEN
@@ -206,9 +206,11 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
 
 /* Waveshare Pico-LoRa-SX1262-868M */
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // (26u)
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN // (26u) NC
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+
+#define SOC_ADC_VOLTAGE_DIV   (3.0)
 
 #else
 #error "This RP2040 build variant is not supported!"
@@ -222,7 +224,6 @@ struct rst_info {
 #define EXCLUDE_LK8EX1
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
-#define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary) */
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
