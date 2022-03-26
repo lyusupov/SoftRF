@@ -133,13 +133,13 @@ The bootloader is capable to self-program an application firmware into the devic
 
 1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/) ;
 
-2. Plug RAK11310 WisBlock Core module into RAK5005 WisBlock Base ;
+2. Plug RAK11310 WisBlock Core module into RAK5005-O WisBlock Base ;
 
-3. Connect the RAK5005 to your PC by means of a USB cable (Type-A <-> micro Type-B) ;
+3. Connect the RAK5005-O to your PC by means of a USB cable (Type-A <-> micro Type-B) ;
 
 4. Press and keep holding BOOT button of RAK11310 Core module ;
 
-5. Press and release RESET button on RAK5005 Base ;
+5. Press and release RESET button on RAK5005-O Base ;
 
 6. Release BOOT button of RAK11310 module. A virtual disk with **RPI-RP2** label should appear in your "File manager" afterwards ;
 

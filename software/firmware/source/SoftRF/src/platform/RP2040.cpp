@@ -299,8 +299,7 @@ static void RP2040_setup()
 
   USBSerial.begin(SERIAL_OUT_BR);
 
-  /* Let host's USB and console drivers to warm-up */
-  delay(2000);
+  for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
 }
 
 static void RP2040_post_init()
