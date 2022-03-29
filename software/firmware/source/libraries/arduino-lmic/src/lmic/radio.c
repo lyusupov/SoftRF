@@ -928,7 +928,7 @@ static void rxfsk (u1_t rxmode) {
 }
 
 static void startrx (u1_t rxmode) {
-//    ASSERT( (readReg(RegOpMode) & OPMODE_MASK) == OPMODE_SLEEP );
+    ASSERT( (readReg(RegOpMode) & OPMODE_MASK) == OPMODE_SLEEP );
     if(getSf(LMIC.rps) == FSK) { // FSK modem
         rxfsk(rxmode);
     } else { // LoRa modem
@@ -1188,14 +1188,13 @@ void os_radio (u1_t mode) {
         break;
 
       case RADIO_TX:
-#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || defined(RASPBERRY_PI)
-        delay(1);
-#endif
+        if ((readReg(RegOpMode) & OPMODE_MASK) != OPMODE_SLEEP) opmode(OPMODE_SLEEP);
         // transmit frame now
         starttx(); // buf=LMIC.frame, len=LMIC.dataLen
         break;
 
       case RADIO_RX:
+        if ((readReg(RegOpMode) & OPMODE_MASK) != OPMODE_SLEEP) opmode(OPMODE_SLEEP);
         // receive frame now (exactly at rxtime)
         startrx(RXMODE_SINGLE); // buf=LMIC.frame, time=LMIC.rxtime, timeout=LMIC.rxsyms
         break;
