@@ -249,7 +249,7 @@ extern SCSerial                 scSerial;
 //#define USE_BASICMAC
 #define USE_TIME_SLOTS
 
-//#define USE_OGN_ENCRYPTION
+#define USE_OGN_ENCRYPTION
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

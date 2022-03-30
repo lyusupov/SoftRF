@@ -131,10 +131,17 @@ $ hackrf_spiflash -v -w HackRF_factory_firmware.bin
 
 1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601) ;
 2. Take a copy of **tremo_loader.py** script from [ASR SDK](https://raw.githubusercontent.com/akarsh98/ASR6601-getting-started-guide/main/SDK/build/scripts/tremo_loader.py) ;
-3. Connect a USB-Serial adapter to GPIO16 (RX) and GPIO17 (TX) pins of ASR6601 MCU ;
-4. Make a pull-up ciruit for GPIO2 (BOOTSEL) pin of the MCU ;
-5. Power up (3.3V) both the MCU and USB-Serial adapter ;
-6. Use the loader tool to read the serial number of the MCU. This is a safety action to make sure that all the connections are good ;
+3. Connect an appropriate USB-Serial adapter to ASR6601 MCU pins as follows:
+
+Adapter|MCU
+---|---
+TX|GPIO16
+RX|GPIO17
+DTR|GPIO2
+RTS|RESET
+
+4. Power up (3.3V) both the MCU and USB-Serial adapter ;
+5. Use the loader tool to read the serial number of the MCU. This is a safety action to make sure that all the connections are good ;
 
 ```
 $ python tremo_loader.py --port /dev/ttyUSB0 read_sn
@@ -143,7 +150,7 @@ Connected
 The SN is: 0c15458cc5fb3201
 ```
 
-7. Write the SoftRF firmware binary into flash memory of the ASR6601.
+6. Write the SoftRF firmware binary into flash memory of the ASR6601.
 
 ```
 $ python tremo_loader.py --port /dev/ttyUSB0 flash 0x08000000 SoftRF-firmware-v1.1-ASR66.bin
@@ -163,7 +170,6 @@ Connected
 ('send: ', 103228)
 Download files successfully
 ```
-
 <br>
 
 ## RP2040

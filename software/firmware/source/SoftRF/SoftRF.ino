@@ -44,7 +44,7 @@
  *   STM32duino Low Power and RTC libraries are developed by Wi6Labs
  *   Basic MAC library is developed by Michael Kuyper
  *   LowPowerLab SPIFlash library is maintained by Felix Rusu
- *   Arduino core for ASR650x is developed by Aaron Lee (HelTec Automation)
+ *   Arduino Core for ASR6x0x is developed by Aaron Lee (HelTec Automation)
  *   ADXL362 library is developed by Anne Mahaffey
  *   Arduino Core for nRF52 and TinyUSB library are developed by Ha Thach
  *   Arduino-NVM library is developed by Frank Holtz
@@ -56,9 +56,10 @@
  *   SdFat library is developed by Bill Greiman
  *   Arduino MIDI library is developed by Francois Best (Forty Seven Effects)
  *   Arduino uCDB library is developed by Ioulianos Kakoulidis
- *   FlashStorage library is maintained by Arduino Team
+ *   Arduino Core for Atmel SAMD and FlashStorage library are developed by Arduino LLC
  *   USB host library 2.0 for Zero/M0/SAMD is developed by gdsports625@gmail.com
  *   EspTinyUSB library is developed by Dariusz Krempa <esp32@esp32.eu.org>
+ *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

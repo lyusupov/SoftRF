@@ -313,7 +313,7 @@ struct rst_info {
 /* Experimental */
 //#define USE_BLE_MIDI
 //#define USE_GDL90_MSL
-//#define USE_OGN_ENCRYPTION
+#define USE_OGN_ENCRYPTION
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
