@@ -36,8 +36,8 @@
 #endif /* HACKRF_ONE */
 
 #define SOFTRF_IDENT            "SoftRF"
-#define SOFTRF_FIRMWARE_VERSION "1.0"
-#define SOFTRF_USB_FW_VERSION   0x0100
+#define SOFTRF_FIRMWARE_VERSION "1.1"
+#define SOFTRF_USB_FW_VERSION   0x0101
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
 #define LED_EXPIRATION_TIME     5 /* seconds */
