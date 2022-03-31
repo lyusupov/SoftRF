@@ -23,7 +23,7 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#define SKYWATCH_FIRMWARE_VERSION  "1.0-rc7"
+#define SKYWATCH_FIRMWARE_VERSION  "1.1"
 #define SKYWATCH_IDENT    "SkyWatch"
 #define SOFTRF_IDENT      "SoftRF"
 
