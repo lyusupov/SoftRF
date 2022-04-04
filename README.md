@@ -8,7 +8,6 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
 <!--    * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
 * **Plug-and-Play**
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-    * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * **Portable**
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Classic** 2.25 inch instrument
@@ -26,6 +25,8 @@ DIY, multifunctional, compatible, sub-1 GHz ISM band radio based proximity aware
         * **ES Edition**
     * 1090 ES and/or 978 UAT
         * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
+* **Weatherproof**
+    * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP67
 * **UAV** add-on
     * [**UAV Edition**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
 * Raspberry Pi **friendly**
@@ -79,7 +80,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Nordic Semiconductor<br>nRF52840](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF52840)|Q4 2020|![](https://via.placeholder.com/140x70/00A000/000000?text=Good)|&nbsp;
 ES|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
 [Academy](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560)|Q4 2021|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)<!-- ![](https://via.placeholder.com/140x70/FFFF00/000000?text=In+progress) -->|good for teaching students of air traffic proximity awareness
-Multi|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/index.html)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)| [ [1](https://user-images.githubusercontent.com/5849637/152556525-8e50c1af-9ea0-4d8a-a866-4864bb2a5186.png) ]
+Octave|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/index.html)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)| [ [1](https://user-images.githubusercontent.com/5849637/152556525-8e50c1af-9ea0-4d8a-a866-4864bb2a5186.png) ]
 [**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements)|&nbsp;holds **FCC/CE** mark
 
 ## By sub-1 GHz radio

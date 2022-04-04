@@ -208,7 +208,7 @@ static void PSoC4_post_init()
 {
   Serial.println();
   Serial.print(F("SoftRF "));
-  Serial.print(hw_info.model == SOFTRF_MODEL_MINI ? F("Mini") : F("Multi"));
+  Serial.print(hw_info.model == SOFTRF_MODEL_MINI ? F("Mini") : F("Octave"));
   Serial.println(F(" Edition Power-on Self Test"));
   Serial.println();
   Serial.flush();

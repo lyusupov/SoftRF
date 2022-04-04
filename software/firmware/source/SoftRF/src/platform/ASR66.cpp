@@ -96,7 +96,7 @@ static void ASR66_post_init()
 {
   {
     Serial.println();
-    Serial.println(F("SoftRF Multi Edition Power-on Self Test"));
+    Serial.println(F("SoftRF Octave Edition Power-on Self Test"));
     Serial.println();
     SERIAL_FLUSH();
 
@@ -399,13 +399,13 @@ static float ASR66_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_MULTI ? BATTERY_THRESHOLD_LIPO   :
-                                                BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_OCTAVE ? BATTERY_THRESHOLD_LIPO  :
+                                                  BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_MULTI ? BATTERY_CUTOFF_LIPO   :
-                                                BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_OCTAVE ? BATTERY_CUTOFF_LIPO  :
+                                                  BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:

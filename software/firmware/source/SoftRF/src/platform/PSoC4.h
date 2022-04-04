@@ -25,7 +25,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_MULTI
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_OCTAVE
 
 #define isValidFix()            isValidGNSSFix()
 
