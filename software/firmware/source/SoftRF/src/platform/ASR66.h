@@ -137,6 +137,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_GOKE
 //#define EXCLUDE_GNSS_AT65
 #define EXCLUDE_LOG_GNSS_VERSION
+//#define GNSS_MASTER_ID        0x8c45150c
 
 /* Component                         Cost */
 /* -------------------------------------- */
