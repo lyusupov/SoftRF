@@ -117,9 +117,10 @@ struct rst_info {
 #define SOC_GPIO_PIN_ANT_RXTX 59
 #define SOC_GPIO_PIN_ANT_VDD  45
 
-/* I2C */
-#define SOC_GPIO_PIN_SDA      15
-#define SOC_GPIO_PIN_SCL      14
+/* I2C2 */
+#define SOC_GPIO_PIN_SDA2     15
+#define SOC_GPIO_PIN_SCL2     14
+#define Wire                  Wire2
 
 /* button */
 #define SOC_GPIO_PIN_BUTTON   2
@@ -137,7 +138,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_GOKE
 //#define EXCLUDE_GNSS_AT65
 #define EXCLUDE_LOG_GNSS_VERSION
-//#define GNSS_MASTER_ID        0x8c45150c
+//#define GNSS_MASTER_ID        0xc5fb3201
 
 /* Component                         Cost */
 /* -------------------------------------- */
@@ -182,7 +183,7 @@ extern CubeCell_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
-#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_ASR66_H */

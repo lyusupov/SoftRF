@@ -98,8 +98,7 @@ typedef struct {
 #define FANET_PAYLOAD_SIZE    sizeof(fanet_packet_t)
 #define FANET_HEADER_SIZE     4
 
-/* Declared air time of FANET+ is 20-40 ms */
-#define FANET_AIR_TIME        40   /* in ms */
+#define FANET_AIR_TIME        36   /* in ms */
 
 #define FANET_TX_INTERVAL_MIN 2500 /* in ms */
 #define FANET_TX_INTERVAL_MAX 3500

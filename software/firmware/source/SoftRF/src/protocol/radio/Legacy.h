@@ -29,7 +29,7 @@
 #define LEGACY_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
 #define LEGACY_CRC_SIZE        2
 
-#define LEGACY_AIR_TIME        5 /* in ms */
+#define LEGACY_AIR_TIME        6 /* in ms */
 
 #define LEGACY_TX_INTERVAL_MIN 600 /* in ms */
 #define LEGACY_TX_INTERVAL_MAX 1400

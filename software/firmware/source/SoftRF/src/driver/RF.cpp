@@ -1032,7 +1032,16 @@ static void sx12xx_transmit()
     sx12xx_setvars();
     os_setCallback(&sx12xx_txjob, sx12xx_tx_func);
 
+    unsigned long tx_timeout = LMIC.protocol ? (LMIC.protocol->air_time + 25) : 60;
+    unsigned long tx_start   = millis();
+
     while (sx12xx_transmit_complete == false) {
+      if ((millis() - tx_start) > tx_timeout) {
+        os_radio(RADIO_RST);
+        //Serial.println("TX timeout");
+        break;
+      }
+
       // execute scheduled jobs and events
       os_runstep();
 
@@ -1066,7 +1075,7 @@ static void sx12xx_rx(osjobcb_t func) {
   // still stops after receiving a packet)
   os_radio(LMIC.protocol &&
            LMIC.protocol->modulation_type == RF_MODULATION_TYPE_LORA ?
-          RADIO_RXON : RADIO_RX);
+           RADIO_RXON : RADIO_RX);
   //Serial.println("RX");
 }
 

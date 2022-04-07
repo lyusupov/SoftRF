@@ -89,7 +89,7 @@ static void ASR66_setup()
   digitalWrite(SOC_GPIO_PIN_ANT_VDD, HIGH);
   iomux(SOC_GPIO_PIN_ANT_RXTX, 3);
 
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS, SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
 }
 
 static void ASR66_post_init()
@@ -210,7 +210,7 @@ static void ASR66_reset()
 static uint32_t ASR66_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = DeviceID[0];
+  uint32_t id = __builtin_bswap32(DeviceID[UniqueIDsize - 1]);
 
   return DevID_Mapper(id);
 #else
@@ -355,11 +355,8 @@ extern uint8_t makeUBXCFG(uint8_t, uint8_t, uint8_t, const uint8_t *);
 
 static void ASR66_swSer_begin(unsigned long baud)
 {
-  Serial_GNSS_In.begin(baud);
-
-  Serial_GNSS_Out.begin(baud);
-  iomux(SOC_GPIO_PIN_GNSS_TX, 2); /* RX -> TX */
-  iomux(SOC_GPIO_PIN_UART3_RX,2); /* TX -> RX */
+  Serial_GNSS_In.begin (baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX,  SOC_GPIO_PIN_UART1_TX);
+  Serial_GNSS_Out.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_UART3_RX, SOC_GPIO_PIN_GNSS_TX);
 
 #if defined(GNSS_MASTER_ID)
   if (SoC->getChipId() == GNSS_MASTER_ID) {
@@ -381,11 +378,8 @@ static void ASR66_swSer_begin(unsigned long baud)
     GNSS_FLUSH(); delay(250);
 #endif /* EXCLUDE_GNSS_UBLOX */
 
-    Serial_GNSS_In.updateBaudRate(STD_OUT_BR);
-
+    Serial_GNSS_In.updateBaudRate (STD_OUT_BR);
     Serial_GNSS_Out.updateBaudRate(STD_OUT_BR);
-    iomux(SOC_GPIO_PIN_GNSS_TX, 2); /* RX -> TX */
-    iomux(SOC_GPIO_PIN_UART3_RX,2); /* TX -> RX */
   }
 #endif /* GNSS_MASTER_ID */
 }

@@ -339,7 +339,9 @@ u1_t hal_spi (u1_t out) {
 #else /* ARDUINO_ARCH_ASR6601 */
 
 static void hal_spi_init () {
-
+    /* LMIC_SPI_FREQ = 1 MHz , 8 bit */
+    LORAC->SSP_CR0  = (11UL /* SCR */ << 8) | 0x07 /* DSS */;
+    LORAC->SSP_CPSR = 0x02; /* CPSDVR */
 }
 
 void hal_spi_select (int on) {

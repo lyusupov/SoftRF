@@ -129,11 +129,13 @@ const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
 const char *RP2040_Device_Model        = "Lego Edition";
 const uint16_t RP2040_Device_Version   = SOFTRF_USB_FW_VERSION;
 
+#define UniqueIDsize 2
+
 static union {
 #if !defined(ARDUINO_ARCH_MBED)
   pico_unique_board_id_t RP2040_unique_flash_id;
 #endif /* ARDUINO_ARCH_MBED */
-  uint64_t RP2040_chip_id;
+  uint32_t RP2040_chip_id[UniqueIDsize];
 };
 
 #if defined(EXCLUDE_EEPROM)
@@ -260,7 +262,8 @@ static void RP2040_setup()
 #endif
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board = (SoC->getChipId() == 0x766065d9) ? RP2040_WEACT : RP2040_RPIPICO;
+  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
+                  RP2040_WEACT : RP2040_RPIPICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -459,7 +462,7 @@ static void RP2040_reset()
 static uint32_t RP2040_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = (uint32_t) RP2040_chip_id;
+  uint32_t id = __builtin_bswap32(RP2040_chip_id[UniqueIDsize - 1]);
 
   return DevID_Mapper(id);
 #else
