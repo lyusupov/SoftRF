@@ -155,7 +155,7 @@ The SN is: 0c15458cc5fb3201
 6. Write the SoftRF firmware binary into flash memory of the ASR6601.
 
 ```
-$ python tremo_loader.py --port /dev/ttyUSB0 flash 0x08000000 SoftRF-firmware-v1.1-ASR66.bin
+$ python tremo_loader.py --port /dev/ttyUSB0 flash 0x08000000 SoftRF-firmware-v1.1-ASR6601.bin
 Connecting...
 Connected
 ('send: ', 512)
