@@ -377,10 +377,10 @@ static void ASR66_swSer_begin(unsigned long baud)
     Serial_GNSS_Out.write(GNSSbuf, msglen);
     GNSS_FLUSH(); delay(250);
 #endif /* EXCLUDE_GNSS_UBLOX */
-
-    Serial_GNSS_In.updateBaudRate (STD_OUT_BR);
-    Serial_GNSS_Out.updateBaudRate(STD_OUT_BR);
   }
+
+  Serial_GNSS_In.updateBaudRate (STD_OUT_BR);
+  Serial_GNSS_Out.updateBaudRate(STD_OUT_BR);
 #endif /* GNSS_MASTER_ID */
 }
 
