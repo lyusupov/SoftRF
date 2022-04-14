@@ -29,6 +29,8 @@ Recommended:
 - [ ]   Bracelet
 - [ ]   Uni
 - [ ]   Mini
+- [ ]   Academy
+- [ ]   Lego
 - [ ]   SkyView EZ
 - [ ]   Raspberry Edition
 - [ ]   UAV
