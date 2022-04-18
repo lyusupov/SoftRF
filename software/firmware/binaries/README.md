@@ -139,8 +139,10 @@ GND|GND
 3V3|VCC
 TX|GPIO16
 RX|GPIO17
-DTR|GPIO2
+DTR&nbsp;<sup>1</sup>|GPIO2
 RTS|RESET
+
+<sup>1</sup> - certain USB-Serial adapters may require to **invert DTR** signal either in hardware or in the Python script.<br>
 
 4. Plug the USB-Serial adapter into spare USB slot of your PC ;
 5. Use the loader tool to read the serial number of the MCU. This is a safety action to make sure that all the connections are good ;

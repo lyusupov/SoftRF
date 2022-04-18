@@ -891,25 +891,28 @@ char *getMEDescription(int metype, int mesub) {
 struct mode_s_aircraft *interactiveCreateAircraft(uint32_t addr) {
     struct mode_s_aircraft *a = malloc(sizeof(*a));
 
-    a->addr = addr;
-    a->aircraft_type = 0;
-    snprintf(a->hexaddr,sizeof(a->hexaddr),"%06x",(int)addr);
-    a->flight[0] = '\0';
-    a->altitude = 0;
-    a->unit = 0;
-    a->speed = 0;
-    a->track = 0;
-    a->odd_cprlat = 0;
-    a->odd_cprlon = 0;
-    a->odd_cprtime = 0;
-    a->even_cprlat = 0;
-    a->even_cprlon = 0;
-    a->even_cprtime = 0;
-    a->lat = 0;
-    a->lon = 0;
-    a->seen = time(NULL);
-    a->messages = 0;
-    a->next = NULL;
+    if (a != NULL) {
+      a->addr = addr;
+      a->aircraft_type = 0;
+      snprintf(a->hexaddr,sizeof(a->hexaddr),"%06x",(int)addr);
+      a->flight[0] = '\0';
+      a->altitude = 0;
+      a->unit = 0;
+      a->speed = 0;
+      a->track = 0;
+      a->odd_cprlat = 0;
+      a->odd_cprlon = 0;
+      a->odd_cprtime = 0;
+      a->even_cprlat = 0;
+      a->even_cprlon = 0;
+      a->even_cprtime = 0;
+      a->lat = 0;
+      a->lon = 0;
+      a->seen = time(NULL);
+      a->messages = 0;
+      a->next = NULL;
+    }
+
     return a;
 }
 
@@ -1066,6 +1069,8 @@ struct mode_s_aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg
     a = interactiveFindAircraft(self, addr);
     if (!a) {
         a = interactiveCreateAircraft(addr);
+        if (a == NULL) return a;
+
         a->next = self->aircrafts;
         self->aircrafts = a;
     } else {

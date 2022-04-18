@@ -16,7 +16,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-* **Wireless** 2.7 inch E-Ink display
+* **Wireless** 2.7 inch E-Ink **display**
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * can **receive ADS-B** air traffic
     * 978 UAT
