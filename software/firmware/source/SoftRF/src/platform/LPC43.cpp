@@ -42,6 +42,9 @@ settings_t *settings = &eeprom_block.field.settings;
 
 ufo_t ThisAircraft;
 
+uint32_t tx_packets_counter = 0;
+uint32_t rx_packets_counter = 0;
+
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
 
 static struct rst_info reset_info = {
@@ -67,6 +70,10 @@ const char *LPC43_Device_Manufacturer = SOFTRF_IDENT;
 const char *LPC43_Device_Model = "ES Edition";
 const uint16_t LPC43_Device_Version = SOFTRF_USB_FW_VERSION;
 
+#if defined(USE_PORTAPACK)
+extern "C" const void* portapack(void);
+#endif /* USE_PORTAPACK */
+
 void LPC43_setup(void)
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
@@ -85,7 +92,7 @@ void LPC43_setup(void)
   eeprom_block.field.settings.nmea_p        = false;
   eeprom_block.field.settings.nmea_l        = true;
   eeprom_block.field.settings.nmea_s        = true;
-  eeprom_block.field.settings.nmea_out      = NMEA_UART;
+  eeprom_block.field.settings.nmea_out      = NMEA_USB;
   eeprom_block.field.settings.gdl90         = GDL90_OFF;
   eeprom_block.field.settings.d1090         = D1090_OFF;
   eeprom_block.field.settings.json          = JSON_OFF;
@@ -97,12 +104,56 @@ void LPC43_setup(void)
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
-
 }
 
 static void LPC43_post_init()
 {
+  Serial.println();
+  Serial.println(F("SoftRF ES Edition Power-on Self Test"));
+  Serial.println();
+  Serial.flush();
 
+  Serial.print(F("GNSS    : "));
+  Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("N/A"));
+  Serial.print(F("DISPLAY : "));
+  Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
+
+  Serial.println();
+  Serial.println(F("Power-on Self Test is complete."));
+  Serial.println();
+  Serial.flush();
+
+  Serial.println(F("Data output device(s):"));
+
+  Serial.print(F("NMEA   - "));
+  switch (settings->nmea_out)
+  {
+    case NMEA_UART       :  Serial.println(F("UART"));    break;
+    case NMEA_USB        :  Serial.println(F("USB CDC")); break;
+    case NMEA_OFF        :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.print(F("GDL90  - "));
+  switch (settings->gdl90)
+  {
+    case GDL90_UART      :  Serial.println(F("UART"));    break;
+    case GDL90_USB       :  Serial.println(F("USB CDC")); break;
+    case GDL90_OFF       :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.print(F("D1090  - "));
+  switch (settings->d1090)
+  {
+    case D1090_UART      :  Serial.println(F("UART"));    break;
+    case D1090_USB       :  Serial.println(F("USB CDC")); break;
+    case D1090_OFF       :
+    default              :  Serial.println(F("NULL"));    break;
+  }
+
+  Serial.println();
+  Serial.flush();
 }
 
 static void LPC43_loop()
@@ -263,6 +314,7 @@ static void LPC43_USB_setup()
 static void LPC43_USB_loop()
 {
   USBDevice.task();
+  Serial.flush();
 }
 
 static void LPC43_USB_fini()
@@ -373,6 +425,11 @@ void setup_CPP(void)
 
   Serial.begin(SERIAL_OUT_BR);
 
+  unsigned long ms = millis();
+  while (millis() - ms < 3000) {
+    if (Serial) { delay(1000); break; } else if (SoC->USB_ops) SoC->USB_ops->loop();
+  }
+
   Serial.println();
   Serial.print(F(SOFTRF_IDENT "-"));
   Serial.print(SoC->name);
@@ -387,13 +444,22 @@ void setup_CPP(void)
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
-  hw_info.gnss = GNSS_setup();
+  hw_info.gnss    = GNSS_setup();
+#if defined(USE_PORTAPACK)
+  hw_info.display = portapack() ? DISPLAY_TFT_PORTAPACK : DISPLAY_NONE;
+#endif /* USE_PORTAPACK */
+
   Traffic_setup();
+  NMEA_setup();
+  Serial.flush();
+
+  SoC->post_init();
+
+  SoC->WDT_setup();
 }
 
 void main_loop_CPP(void)
 {
-
   GNSS_loop();
 
   ThisAircraft.timestamp = now();
@@ -501,17 +567,16 @@ void once_per_second_task_CPP(void)
       }
 #endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
 
-
       }
     }
     a = a->next;
   }
 
-////    NMEA_Export();
-//    GDL90_Export();
+    NMEA_Export();
+    GDL90_Export();
 
   if (isValidFix()) {
-//    D1090_Export();
+    D1090_Export();
   }
 
   if (isValidFix()) {
