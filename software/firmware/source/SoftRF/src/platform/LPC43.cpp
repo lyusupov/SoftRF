@@ -92,8 +92,8 @@ void LPC43_setup(void)
   eeprom_block.field.settings.nmea_p        = false;
   eeprom_block.field.settings.nmea_l        = true;
   eeprom_block.field.settings.nmea_s        = true;
-  eeprom_block.field.settings.nmea_out      = NMEA_USB;
-  eeprom_block.field.settings.gdl90         = GDL90_OFF;
+  eeprom_block.field.settings.nmea_out      = NMEA_OFF;
+  eeprom_block.field.settings.gdl90         = GDL90_USB;
   eeprom_block.field.settings.d1090         = D1090_OFF;
   eeprom_block.field.settings.json          = JSON_OFF;
   eeprom_block.field.settings.stealth       = false;
@@ -444,7 +444,13 @@ void setup_CPP(void)
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
-  hw_info.gnss    = GNSS_setup();
+  hw_info.gnss = GNSS_setup();
+
+  if (hw_info.gnss != GNSS_MODULE_NONE) {
+    settings->nmea_out = NMEA_USB;
+    settings->gdl90    = GDL90_OFF;
+  }
+
 #if defined(USE_PORTAPACK)
   hw_info.display = portapack() ? DISPLAY_TFT_PORTAPACK : DISPLAY_NONE;
 #endif /* USE_PORTAPACK */

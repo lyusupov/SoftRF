@@ -471,7 +471,6 @@ static void GDL90_Out(byte *buf, size_t size)
 void GDL90_Export()
 {
   size_t size;
-  float distance;
   time_t this_moment = now();
   uint8_t *buf = (uint8_t *) (sizeof(UDPpacketBuffer) < UDP_PACKET_BUFSIZE ?
                               NMEABuffer : UDPpacketBuffer);
@@ -496,17 +495,21 @@ void GDL90_Export()
 
       size = makeGeometricAltitude(buf, &ThisAircraft);
       GDL90_Out(buf, size);
+    }
 
-      for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        if (Container[i].addr &&
-           (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr &&
+         (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
-          distance = Container[i].distance;
+        /*
+         * Disable distance filter when we have no positive GNSS fix.
+         * Assume that we never gonna fly over 'Null Island'.
+         */
 
-          if (distance < ALARM_ZONE_NONE) {
-            size = makeTrafficReport(buf, &Container[i]);
-            GDL90_Out(buf, size);
-          }
+        if ((ThisAircraft.latitude == 0 && ThisAircraft.longitude == 0) ||
+            Container[i].distance < ALARM_ZONE_NONE) {
+          size = makeTrafficReport(buf, &Container[i]);
+          GDL90_Out(buf, size);
         }
       }
     }
