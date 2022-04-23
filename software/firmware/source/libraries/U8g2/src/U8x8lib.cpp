@@ -569,7 +569,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
       if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
       {
 	// second argument for the wire lib is the clock pin. In u8g2, the first argument of the  clock pin in the clock/data pair
-	Wire.begin(u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+	Wire.begin((int) u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
       }
       else
       {
@@ -582,12 +582,12 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
     case U8X8_MSG_BYTE_SET_DC:
       break;
     case U8X8_MSG_BYTE_START_TRANSFER:
-#if ARDUINO >= 10600 && defined(SPI_HAS_TRANSACTION)
+#if ARDUINO >= 10600
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
       /* if there is any error with Wire.setClock() just remove this function call */
       if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )
       {
-	Wire.setClock(400000L); 
+	Wire.setClock(400000L);
       }
 #endif
       Wire.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);
@@ -616,7 +616,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
       {
         // second argument for the wire lib is the clock pin. In u8g2, the first argument of the  clock pin in the clock/data pair
-        Wire1.begin(u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+        Wire1.begin((int) u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
       }
       else
       {
@@ -634,7 +634,7 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
       /* if there is any error with Wire.setClock() just remove this function call */
       if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )
       {
-	Wire1.setClock(400000L); 
+	Wire1.setClock(400000L);
       }
 #endif
       Wire1.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);

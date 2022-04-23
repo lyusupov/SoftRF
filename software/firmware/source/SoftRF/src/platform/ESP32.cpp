@@ -82,14 +82,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 #endif /* USE_NEOPIXELBUS_LIBRARY */
 
 #if defined(USE_OLED)
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo(TTGO_V2_OLED_PIN_RST,
-                                                TTGO_V2_OLED_PIN_SCL,
-                                                TTGO_V2_OLED_PIN_SDA);
-
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST,
-                                                  HELTEC_OLED_PIN_SCL,
-                                                  HELTEC_OLED_PIN_SDA);
-
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ttgo  (TTGO_V2_OLED_PIN_RST);
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_heltec(HELTEC_OLED_PIN_RST);
 extern U8X8_OLED_I2C_BUS_TYPE *u8x8;
 #endif /* USE_OLED */
 
@@ -249,7 +243,8 @@ static void ESP32_setup()
 
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
-    if (Wire1.endTransmission() == 0) {
+    bool has_axp202 = (Wire1.endTransmission() == 0);
+    if (has_axp202) {
 
       axp.begin(Wire1, AXP202_SLAVE_ADDRESS);
 
@@ -271,14 +266,18 @@ static void ESP32_setup()
       axp.adc1Enable(AXP202_BATT_VOL_ADC1, AXP202_ON);
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
+    } else {
+      WIRE_FINI(Wire1);
     }
-
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
 
     Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+    Wire1.setClock(100000);
     Wire1.beginTransmission(AXP192_SLAVE_ADDRESS);
-    if (Wire1.endTransmission() == 0) {
+    bool has_axp192 = (Wire1.endTransmission() == 0);
+    if (has_axp192) {
+
       hw_info.revision = 8;
 
       axp.begin(Wire1, AXP192_SLAVE_ADDRESS);
@@ -303,6 +302,7 @@ static void ESP32_setup()
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
     } else {
+      WIRE_FINI(Wire1);
       hw_info.revision = 2;
     }
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
@@ -946,11 +946,15 @@ static byte ESP32_Display_setup()
       esp32_board != ESP32_S2_T8_V1_1) {
 
 #if defined(USE_OLED)
+    bool has_oled = false;
+
     /* SSD1306 I2C OLED probing */
     if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      if (Wire1.endTransmission() == 0) {
+      has_oled = (Wire1.endTransmission() == 0);
+      WIRE_FINI(Wire1);
+      if (has_oled) {
         u8x8 = &u8x8_heltec;
         esp32_board = ESP32_HELTEC_OLED;
         rval = DISPLAY_OLED_HELTEC;
@@ -958,11 +962,13 @@ static byte ESP32_Display_setup()
     } else {
       Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      if (Wire1.endTransmission() == 0) {
+      has_oled = (Wire1.endTransmission() == 0);
+      if (has_oled) {
         u8x8 = &u8x8_ttgo;
-        esp32_board = ESP32_TTGO_V2_OLED;
 
         if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
+          esp32_board = ESP32_TTGO_V2_OLED;
+
           if (RF_SX12XX_RST_is_connected) {
             hw_info.revision = 16;
           } else {
@@ -977,7 +983,9 @@ static byte ESP32_Display_setup()
               hw_info.revision == 8)) {
           Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
           Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-          if (Wire1.endTransmission() == 0) {
+          has_oled = (Wire1.endTransmission() == 0);
+          WIRE_FINI(Wire1);
+          if (has_oled) {
             u8x8 = &u8x8_heltec;
             esp32_board = ESP32_HELTEC_OLED;
             rval = DISPLAY_OLED_HELTEC;
@@ -1499,14 +1507,18 @@ static bool ESP32_Baro_setup()
     if (Baro_probe())
       return true;
 
-    if (hw_info.revision == 2)
+    WIRE_FINI(Wire);
+
+    if (hw_info.revision == 2 || hw_info.revision >= 8)
       return false;
 
 #if !defined(ENABLE_AHRS)
     /* Try out OLED I2C bus */
     Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
-    if (!Baro_probe())
+    if (!Baro_probe()) {
+      WIRE_FINI(Wire);
       return false;
+    }
 
     GPIO_21_22_are_busy = true;
 #else

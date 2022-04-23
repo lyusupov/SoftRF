@@ -55,6 +55,12 @@
 
 #define isValidFix()            isValidGNSSFix()
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
+#define WIRE_FINI(bus)          { bus.end(); }
+#else
+#define WIRE_FINI(bus)          { } /* AC 1.0.x has no Wire.end() */
+#endif
+
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
@@ -329,7 +335,6 @@ struct rst_info {
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
-#define EXCLUDE_BMP180
 #define EXCLUDE_LED_RING
 
 /* Experimental */

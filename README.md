@@ -243,6 +243,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/Lora_GPS_Shield_2.jpg)
 
+* **Octave Concept**
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Octave-1.jpg)
+
 * [**UAV appliance**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/uav-rx-hookup.jpg)

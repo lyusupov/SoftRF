@@ -502,8 +502,8 @@ void GDL90_Export()
          (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
         /*
-         * Disable distance filter when we have no positive GNSS fix.
-         * Assume that we never gonna fly over 'Null Island'.
+         * Disable distance filter when we have no GNSS data source to locate
+         * own position. Assume that we never gonna fly over 'Null Island'.
          */
 
         if ((ThisAircraft.latitude == 0 && ThisAircraft.longitude == 0) ||
