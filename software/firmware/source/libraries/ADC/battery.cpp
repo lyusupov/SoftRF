@@ -13,7 +13,7 @@ esp_adc_cal_characteristics_t *adc_characs =
     (esp_adc_cal_characteristics_t *)calloc(
         1, sizeof(esp_adc_cal_characteristics_t));
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
 static adc1_channel_t adc_channel = ADC1_GPIO36_CHANNEL;
 #else
 static adc1_channel_t adc_channel = ADC1_GPIO9_CHANNEL;

@@ -17,6 +17,11 @@
 
 #if defined(ARDUINO_ARCH_ESP32)
 
+#include "sdkconfig.h" // this sets useful config symbols, like CONFIG_IDF_TARGET_ESP32C3
+
+// ESP32C3/S3 I2S is not supported yet due to significant changes to interface
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+
 #include <string.h>
 #include <stdio.h>
 #include "stdlib.h"
@@ -45,7 +50,9 @@
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/i2s.h"
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #include "driver/dac.h"
+#endif
 #include "Esp32_i2s.h"
 #include "esp32-hal.h"
 
@@ -531,5 +538,5 @@ size_t i2sWrite(uint8_t bus_num, uint8_t* data, size_t len, bool copy, bool free
     return index;
 }
 
-
-#endif
+#endif // !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#endif // defined(ARDUINO_ARCH_ESP32)

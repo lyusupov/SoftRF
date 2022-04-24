@@ -63,14 +63,17 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
-//#define USE_ADAFRUIT_NEO_LIBRARY
+#define USE_ADAFRUIT_NEO_LIBRARY
 
+#else
 /*
  * NeoPixelBus is already "flickering-free" on ESP32 (with I2S)
  * but the "Core" needs update onto the most recent one
  */
 #define USE_NEOPIXELBUS_LIBRARY
+#endif
 
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 #include <NeoPixelBus.h>
@@ -310,7 +313,9 @@ struct rst_info {
 #define USE_OLED
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #define USE_TFT
+#endif
 #define USE_NMEA_CFG
 #define USE_BASICMAC
 
@@ -332,7 +337,7 @@ struct rst_info {
 #define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
 #define EXCLUDE_LED_RING

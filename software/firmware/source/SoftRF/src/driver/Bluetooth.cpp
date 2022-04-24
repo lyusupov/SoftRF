@@ -20,7 +20,7 @@
 #include "sdkconfig.h"
 #endif
 
-#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "../system/SoC.h"
 #include "EEPROM.h"
 #include "Bluetooth.h"

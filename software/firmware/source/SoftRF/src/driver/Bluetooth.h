@@ -31,7 +31,7 @@ enum
 #include "sdkconfig.h"
 #endif
 
-#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
 
 #define UART_SERVICE_UUID         "0000ffe0-0000-1000-8000-00805f9b34fb"
 #define UART_CHARACTERISTIC_UUID  "0000ffe1-0000-1000-8000-00805f9b34fb"
