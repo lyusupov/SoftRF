@@ -36,6 +36,10 @@
 #include "src/driver/WiFi.h"
 
 #include "Adafruit_USBD_Device.h"
+#include "Uart.h"
+
+Uart Serial1(LIBGREAT_UART0);
+Uart Serial4(LIBGREAT_UART3);
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
@@ -104,6 +108,18 @@ void LPC43_setup(void)
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
+
+  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if 0
+  SerialOutput.println();
+  SerialOutput.print(F(SOFTRF_IDENT "-"));
+  SerialOutput.print(SoC->name);
+  SerialOutput.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  SerialOutput.println(String(SoC->getChipId(), HEX));
+  SerialOutput.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
+  SerialOutput.println();
+#endif
 }
 
 static void LPC43_post_init()
@@ -200,7 +216,7 @@ static void LPC43_SPI_begin()
 
 static void LPC43_swSer_begin(unsigned long baud)
 {
-
+  Serial_GNSS_In.begin(baud);
 }
 
 static byte LPC43_Display_setup()
@@ -519,10 +535,28 @@ void main_loop_CPP(void)
 }
 
 extern mode_s_t state;
+#include <malloc.h>
+struct mallinfo mi;
 
 void once_per_second_task_CPP(void)
 {
   struct mode_s_aircraft *a = state.aircrafts;
+
+#if 0
+    int i = 0;
+
+    while (a) {
+      i++;
+      a = a->next;
+    }
+
+    mi = mallinfo();
+    SerialOutput.print(millis() / 1000); SerialOutput.write(' ');
+    SerialOutput.print(i); SerialOutput.write(' ');
+    SerialOutput.println(mi.fordblks);
+
+    a = state.aircrafts;
+#endif
 
   while (a) {
     if (a->even_cprtime && a->odd_cprtime &&

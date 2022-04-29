@@ -27,8 +27,8 @@
 #define DEFAULT_SOFTRF_MODEL  SOFTRF_MODEL_ES
 
 #define USBSerial             Serial
-#define SerialOutput          Serial
-#define Serial_GNSS_In        Serial
+#define SerialOutput          Serial1
+#define Serial_GNSS_In        Serial4
 #define Serial_GNSS_Out       Serial_GNSS_In
 
 #define isValidFix()          isValidGNSSFix()
@@ -46,6 +46,17 @@ enum rst_reason {
 struct rst_info {
   uint32_t reason;
 };
+
+#ifdef __cplusplus
+#include <Uart.h>
+
+#if defined(static_assert)
+#undef static_assert
+#endif
+
+extern Uart Serial1;
+extern Uart Serial4;
+#endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 
