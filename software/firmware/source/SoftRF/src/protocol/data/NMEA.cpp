@@ -346,6 +346,12 @@ void NMEA_Export()
 
               if (strnlen((char *) Container[i].callsign, sizeof(Container[i].callsign)) > 0) {
                 memcpy(NMEA_Callsign, Container[i].callsign, sizeof(Container[i].callsign));
+                for (int j=0; j < sizeof(NMEA_Callsign); j++) {
+                  if (NMEA_Callsign[j] == ' ' || NMEA_Callsign[j] == ',' || NMEA_Callsign[j] == '*') {
+                    NMEA_Callsign[j] = 0;
+                    break;
+                  }
+                }
               } else {
                 memcpy(NMEA_Callsign, NMEA_CallSign_Prefix[Container[i].protocol],
                   strlen(NMEA_CallSign_Prefix[Container[i].protocol]));
@@ -361,7 +367,8 @@ void NMEA_Export()
                   str.c_str(), str.length());
               }
 
-              data_source = Container[i].protocol == RF_PROTOCOL_ADSB_UAT ?
+              data_source = (Container[i].protocol == RF_PROTOCOL_ADSB_UAT ||
+                             Container[i].protocol == RF_PROTOCOL_ADSB_1090) ?
                             DATA_SOURCE_ADSB : DATA_SOURCE_FLARM;
 
               snprintf_P(NMEABuffer, sizeof(NMEABuffer),
