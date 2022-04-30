@@ -543,77 +543,78 @@ void once_per_second_task_CPP(void)
   struct mode_s_aircraft *a = state.aircrafts;
 
 #if 0
-    int i = 0;
-
-    while (a) {
-      i++;
-      a = a->next;
-    }
-
-    mi = mallinfo();
-    SerialOutput.print(millis() / 1000); SerialOutput.write(' ');
-    SerialOutput.print(i); SerialOutput.write(' ');
-    SerialOutput.println(mi.fordblks);
-
-    a = state.aircrafts;
-#endif
+  int i = 0;
 
   while (a) {
-    if (a->even_cprtime && a->odd_cprtime &&
-        abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
-      if (es1090_decode(a, &ThisAircraft, &fo)) {
-         memset(fo.raw, 0, sizeof(fo.raw));
-
-     int i;
-
-      Traffic_Update(&fo);
-
-      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        if (Container[i].addr == fo.addr) {
-          uint8_t alert_bak = Container[i].alert;
-          Container[i] = fo;
-          Container[i].alert = alert_bak;
-          return;
-        }
-      }
-
-      int max_dist_ndx = 0;
-      int min_level_ndx = 0;
-
-      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-          Container[i] = fo;
-          return;
-        }
-#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
-        if  (Container[i].distance > Container[max_dist_ndx].distance)  {
-          max_dist_ndx = i;
-        }
-        if  (Container[i].alarm_level < Container[min_level_ndx].alarm_level)  {
-          min_level_ndx = i;
-        }
-#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
-      }
-#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
-      if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
-        Container[min_level_ndx] = fo;
-        return;
-      }
-
-      if (fo.distance    <  Container[max_dist_ndx].distance &&
-          fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
-        Container[max_dist_ndx] = fo;
-        return;
-      }
-#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
-
-      }
-    }
+    i++;
     a = a->next;
   }
 
-    NMEA_Export();
-    GDL90_Export();
+  mi = mallinfo();
+  SerialOutput.print(millis() / 1000); SerialOutput.write(' ');
+  SerialOutput.print(i); SerialOutput.write(' ');
+  SerialOutput.println(mi.fordblks);
+
+  a = state.aircrafts;
+#endif
+
+  for (; a; a = a->next) {
+    if (a->even_cprtime && a->odd_cprtime &&
+        abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+      if (es1090_decode(a, &ThisAircraft, &fo)) {
+        memset(fo.raw, 0, sizeof(fo.raw));
+
+        int i;
+
+        Traffic_Update(&fo);
+
+        for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+          if (Container[i].addr == fo.addr) {
+            uint8_t alert_bak = Container[i].alert;
+            Container[i] = fo;
+            Container[i].alert = alert_bak;
+            break;
+          }
+        }
+        if (i < MAX_TRACKING_OBJECTS) continue;
+
+        int max_dist_ndx = 0;
+        int min_level_ndx = 0;
+
+        for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[i] = fo;
+            break;
+          }
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+          if (Container[i].distance > Container[max_dist_ndx].distance) {
+            max_dist_ndx = i;
+          }
+          if (Container[i].alarm_level < Container[min_level_ndx].alarm_level) {
+            min_level_ndx = i;
+          }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+        }
+        if (i < MAX_TRACKING_OBJECTS) continue;
+
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+        if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
+          Container[min_level_ndx] = fo;
+          continue;
+        }
+
+        if (fo.distance    <  Container[max_dist_ndx].distance &&
+            fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
+          Container[max_dist_ndx] = fo;
+          continue;
+        }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+      }
+    }
+  }
+
+  NMEA_Export();
+  GDL90_Export();
 
   if (isValidFix()) {
     D1090_Export();
