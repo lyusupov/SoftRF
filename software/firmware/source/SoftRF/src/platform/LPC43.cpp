@@ -38,8 +38,8 @@
 #include "Adafruit_USBD_Device.h"
 #include "Uart.h"
 
-Uart Serial1(LIBGREAT_UART0);
-Uart Serial4(LIBGREAT_UART3);
+Uart Serial1(LPC43_UART0);
+Uart Serial4(LPC43_UART3);
 
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
@@ -80,6 +80,10 @@ extern "C" const void* portapack(void);
 
 usb_data_t usb_data_type = USB_DATA_GDL90;
 
+static bool wdt_is_active = false;
+
+void RF_Shutdown() { }
+
 void LPC43_setup(void)
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
@@ -110,7 +114,6 @@ void LPC43_setup(void)
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
-
 
   SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
@@ -185,7 +188,6 @@ typedef enum {
         LED1 = 0,
         LED2 = 1,
         LED3 = 2,
-        LED4 = 3,
 } led_t;
 
 extern "C" void led_on (const led_t led);
@@ -194,6 +196,10 @@ extern "C" void led_toggle(const led_t led);
 
 static void LPC43_loop()
 {
+  if (wdt_is_active) {
+    platform_watchdog_feed();
+  }
+
 #if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
   if (!rx_led_state) {
     if (rx_packets_counter != prev_rx_packets_counter) {
@@ -219,7 +225,7 @@ static void LPC43_fini(int reason)
 
 static void LPC43_reset()
 {
-
+  system_reset(RESET_REASON_SOFT_RESET, true);
 }
 
 extern uint32_t LPC43_Device_ID;
@@ -232,6 +238,19 @@ static uint32_t LPC43_getChipId()
 static void* LPC43_getResetInfoPtr()
 {
   return (void *) &reset_info;
+}
+
+static String LPC43_getResetReason()
+{
+  return (String) system_get_reset_reason_string();
+}
+
+extern "C" void * _sbrk   (int);
+
+static uint32_t LPC43_getFreeHeap()
+{
+  char top;
+  return &top - reinterpret_cast<char*>(_sbrk(0));
 }
 
 static long LPC43_random(long howsmall, long howBig)
@@ -329,7 +348,9 @@ static void LPC43_UATModule_restart()
 
 static void LPC43_WDT_setup()
 {
-  /* TBD */
+  reset_driver_initialize();
+  platform_watchdog_enable(16000000UL); /* approx. 6 seconds */
+  wdt_is_active = true;
 }
 
 static void LPC43_WDT_fini()
@@ -515,8 +536,8 @@ const SoC_ops_t LPC43_ops = {
   LPC43_getChipId,
   LPC43_getResetInfoPtr,
   NULL,
-  NULL,
-  NULL,
+  LPC43_getResetReason,
+  LPC43_getFreeHeap,
   LPC43_random,
   NULL,
   NULL,
@@ -573,6 +594,11 @@ void setup_CPP(void)
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
+  Serial.flush();
+
+  Serial.println(""); Serial.print(F("Reset reason: ")); Serial.print(system_reset_reason(), HEX);
+  Serial.print(F(" - ")); Serial.println(SoC->getResetReason());
+  Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.flush();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
@@ -738,6 +764,8 @@ void once_per_second_task_CPP(void)
   if (isValidFix()) {
     Traffic_loop();
   }
+
+  ClearExpired();
 }
 
 void shutdown(int reason)
