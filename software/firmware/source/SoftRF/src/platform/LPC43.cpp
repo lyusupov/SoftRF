@@ -78,6 +78,8 @@ const uint16_t LPC43_Device_Version = SOFTRF_USB_FW_VERSION;
 extern "C" const void* portapack(void);
 #endif /* USE_PORTAPACK */
 
+usb_data_t usb_data_type = USB_DATA_GDL90;
+
 void LPC43_setup(void)
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
@@ -108,6 +110,7 @@ void LPC43_setup(void)
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
+
 
   SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
@@ -172,9 +175,41 @@ static void LPC43_post_init()
   Serial.flush();
 }
 
+static uint32_t prev_rx_packets_counter = 0;
+static unsigned long rx_led_time_marker = 0;
+static bool rx_led_state = false;
+
+#define LED_BLINK_TIME 100
+
+typedef enum {
+        LED1 = 0,
+        LED2 = 1,
+        LED3 = 2,
+        LED4 = 3,
+} led_t;
+
+extern "C" void led_on (const led_t led);
+extern "C" void led_off(const led_t led);
+extern "C" void led_toggle(const led_t led);
+
 static void LPC43_loop()
 {
-
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  if (!rx_led_state) {
+    if (rx_packets_counter != prev_rx_packets_counter) {
+      led_on(LED2);
+      rx_led_state = true;
+      prev_rx_packets_counter = rx_packets_counter;
+      rx_led_time_marker = millis();
+    }
+  } else {
+    if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
+      led_off(LED2);
+      rx_led_state = false;
+      prev_rx_packets_counter = rx_packets_counter;
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_RX */
 }
 
 static void LPC43_fini(int reason)
@@ -222,6 +257,10 @@ static void LPC43_swSer_begin(unsigned long baud)
 static byte LPC43_Display_setup()
 {
   byte rval = DISPLAY_NONE;
+
+#if defined(USE_PORTAPACK)
+  rval = portapack() ? DISPLAY_TFT_PORTAPACK : rval;
+#endif /* USE_PORTAPACK */
 
   return rval;
 }
@@ -298,14 +337,86 @@ static void LPC43_WDT_fini()
   /* TBD */
 }
 
+#define DFU_CLICK_DELAY     200
+#define DFU_LONGPRESS_DELAY 2000
+
+static unsigned long dfu_time_marker = 0;
+static bool prev_dfu_state = false;
+static bool is_dfu_click = false;
+static usb_data_t prev_usb_data_type = USB_DATA_D1090;
+
+void On_Button_Clock()
+{
+  led_toggle(LED3);
+
+  if (usb_data_type != USB_DATA_D1090) {
+    prev_usb_data_type = usb_data_type;
+    usb_data_type = USB_DATA_D1090;
+
+    if (prev_usb_data_type == USB_DATA_NMEA) {
+      settings->nmea_out = NMEA_OFF;
+    } else if (prev_usb_data_type == USB_DATA_GDL90) {
+      settings->gdl90    = GDL90_OFF;
+    }
+
+    settings->d1090 = D1090_USB;
+
+  } else {
+
+    usb_data_type = prev_usb_data_type;
+    prev_usb_data_type = USB_DATA_D1090;
+
+    settings->d1090 = D1090_OFF;
+
+    if (usb_data_type == USB_DATA_NMEA) {
+      settings->nmea_out = NMEA_USB;
+    } else if (usb_data_type == USB_DATA_GDL90) {
+      settings->gdl90    = GDL90_USB;
+    }
+  }
+}
+
+void On_Button_LongPress()
+{
+
+}
+
 static void LPC43_Button_setup()
 {
-  /* TODO */
+
 }
 
 static void LPC43_Button_loop()
 {
-  /* TODO */
+  if (dfu_button_state()) {
+    if (!prev_dfu_state) {
+      dfu_time_marker = millis();
+      prev_dfu_state = true;
+    } else {
+      if (dfu_time_marker && !is_dfu_click &&
+          millis() - dfu_time_marker > DFU_CLICK_DELAY) {
+        is_dfu_click = true;
+      }
+      if (dfu_time_marker &&
+          millis() - dfu_time_marker > DFU_LONGPRESS_DELAY) {
+
+        On_Button_LongPress();
+
+//      Serial.println(F("This will never be printed."));
+      }
+    }
+  } else {
+    if (prev_dfu_state) {
+      if (is_dfu_click) {
+
+        On_Button_Clock();
+
+        is_dfu_click = false;
+      }
+      dfu_time_marker = 0;
+      prev_dfu_state = false;
+    }
+  }
 }
 
 static void LPC43_Button_fini()
@@ -327,10 +438,20 @@ static void LPC43_USB_setup()
   }
 }
 
+static bool usb_led_state = false;
+
 static void LPC43_USB_loop()
 {
   USBDevice.task();
   Serial.flush();
+
+  if (USBSerial && !usb_led_state) {
+    led_on(LED1);
+    usb_led_state = true;
+  } else if (!USBSerial && usb_led_state) {
+    led_off(LED1);
+    usb_led_state = false;
+  }
 }
 
 static void LPC43_USB_fini()
@@ -465,11 +586,11 @@ void setup_CPP(void)
   if (hw_info.gnss != GNSS_MODULE_NONE) {
     settings->nmea_out = NMEA_USB;
     settings->gdl90    = GDL90_OFF;
+
+    usb_data_type = USB_DATA_NMEA;
   }
 
-#if defined(USE_PORTAPACK)
-  hw_info.display = portapack() ? DISPLAY_TFT_PORTAPACK : DISPLAY_NONE;
-#endif /* USE_PORTAPACK */
+  hw_info.display = SoC->Display_setup();
 
   Traffic_setup();
   NMEA_setup();
@@ -494,9 +615,6 @@ void main_loop_CPP(void)
     ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
   }
-
-//  success = RF_Receive();
-//  if (success && isValidFix()) ParseData();
 
   if (isValidFix()) {
     Traffic_loop();
@@ -540,10 +658,11 @@ struct mallinfo mi;
 
 void once_per_second_task_CPP(void)
 {
-  struct mode_s_aircraft *a = state.aircrafts;
+  struct mode_s_aircraft *a;
+  int i = 0;
 
 #if 0
-  int i = 0;
+  a = state.aircrafts;
 
   while (a) {
     i++;
@@ -554,17 +673,13 @@ void once_per_second_task_CPP(void)
   SerialOutput.print(millis() / 1000); SerialOutput.write(' ');
   SerialOutput.print(i); SerialOutput.write(' ');
   SerialOutput.println(mi.fordblks);
-
-  a = state.aircrafts;
 #endif
 
-  for (; a; a = a->next) {
+  for (a = state.aircrafts; a; a = a->next) {
     if (a->even_cprtime && a->odd_cprtime &&
         abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
       if (es1090_decode(a, &ThisAircraft, &fo)) {
         memset(fo.raw, 0, sizeof(fo.raw));
-
-        int i;
 
         Traffic_Update(&fo);
 
@@ -616,9 +731,9 @@ void once_per_second_task_CPP(void)
   NMEA_Export();
   GDL90_Export();
 
-  if (isValidFix()) {
-    D1090_Export();
-  }
+//  if (isValidFix()) {
+//    D1090_Export();
+//  }
 
   if (isValidFix()) {
     Traffic_loop();

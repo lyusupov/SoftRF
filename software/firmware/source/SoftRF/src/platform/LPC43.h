@@ -33,6 +33,8 @@
 
 #define isValidFix()          isValidGNSSFix()
 
+#define LED_STATE_ON          HIGH // State when LED is litted
+
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -47,6 +49,12 @@ struct rst_info {
   uint32_t reason;
 };
 
+typedef enum {
+        USB_DATA_GDL90,
+        USB_DATA_D1090,
+        USB_DATA_NMEA,
+} usb_data_t;
+
 #ifdef __cplusplus
 #include <Uart.h>
 
@@ -56,9 +64,31 @@ struct rst_info {
 
 extern Uart Serial1;
 extern Uart Serial4;
-#endif
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+extern "C" bool dfu_button_state(void);
+
+#endif /* __cplusplus */
+
+extern usb_data_t usb_data_type;
+
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX  (P2_1)
+#define SOC_GPIO_PIN_CONS_TX  (P2_0)
+
+#define SOC_GPIO_PIN_GNSS_RX  (P2_4)
+#define SOC_GPIO_PIN_GNSS_TX  (P2_3)
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN /* P2_13 */
+
+/* I2C */
+#define SOC_GPIO_PIN_SDA      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SCL      SOC_UNUSED_PIN
+
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   (P2_8) /* active HIGH */
+
+#define SOC_GPIO_RADIO_LED_RX (P4_2)  /* Yellow */
+#define SOC_GPIO_RADIO_LED_TX (P6_12) /* Red */
+#define SOC_GPIO_LED_USB      (P4_1)  /* Green */
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_LED_RING

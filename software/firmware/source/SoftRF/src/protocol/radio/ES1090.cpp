@@ -65,16 +65,18 @@ bool es1090_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->latitude  = a->lat;
   fop->longitude = a->lon;
 
-#if 0
-  if (mdb.altitude_type == ALT_GEO) {
-    fop->altitude = mdb.altitude / _GPS_FEET_PER_METER;         /* TBD */
-  }
-#endif
-
   if (a->unit == MODE_S_UNIT_FEET) {
-    fop->pressure_altitude = a->altitude / _GPS_FEET_PER_METER; /* TBD */
+    fop->pressure_altitude = a->altitude / _GPS_FEET_PER_METER;
   } else {
     fop->pressure_altitude = a->altitude;
+  }
+
+  if (this_aircraft->pressure_altitude != 0.0) {
+    fop->altitude = fop->pressure_altitude -
+                    this_aircraft->pressure_altitude +
+                    this_aircraft->altitude;
+  } else {
+    fop->altitude = fop->pressure_altitude;
   }
 
   fop->aircraft_type = GDL90_TO_AT(a->aircraft_type);
