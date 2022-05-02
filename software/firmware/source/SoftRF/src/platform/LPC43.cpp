@@ -33,7 +33,6 @@
 #include <src/TrafficHelper.h>
 #include "src/protocol/data/JSON.h"
 #include "src/driver/Bluetooth.h"
-#include "src/driver/WiFi.h"
 
 #include "Adafruit_USBD_Device.h"
 #include "Uart.h"
@@ -49,7 +48,8 @@ ufo_t ThisAircraft;
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
-char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming and outgoing packets
+char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+void RF_Shutdown() { }   // Dummy definition to satisfy build sequence
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
@@ -81,8 +81,6 @@ extern "C" const void* portapack(void);
 usb_data_t usb_data_type = USB_DATA_GDL90;
 
 static bool wdt_is_active = false;
-
-void RF_Shutdown() { }
 
 void LPC43_setup(void)
 {
@@ -137,6 +135,8 @@ static void LPC43_post_init()
 
   Serial.print(F("GNSS    : "));
   Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("N/A"));
+  Serial.print(F("BARO    : "));
+  Serial.println(hw_info.baro    != BARO_MODULE_NONE  ? F("PASS") : F("N/A"));
   Serial.print(F("DISPLAY : "));
   Serial.println(hw_info.display != DISPLAY_NONE      ? F("PASS") : F("N/A"));
 
@@ -336,6 +336,10 @@ static unsigned long LPC43_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static bool LPC43_Baro_setup() {
+  return false; /* TBD */
+}
+
 static void LPC43_UATSerial_begin(unsigned long baud)
 {
 
@@ -366,7 +370,7 @@ static bool prev_dfu_state = false;
 static bool is_dfu_click = false;
 static usb_data_t prev_usb_data_type = USB_DATA_D1090;
 
-void On_Button_Clock()
+void On_Button_Click()
 {
   led_toggle(LED3);
 
@@ -430,7 +434,7 @@ static void LPC43_Button_loop()
     if (prev_dfu_state) {
       if (is_dfu_click) {
 
-        On_Button_Clock();
+        On_Button_Click();
 
         is_dfu_click = false;
       }
@@ -562,7 +566,7 @@ const SoC_ops_t LPC43_ops = {
   LPC43_Battery_param,
   NULL,
   LPC43_get_PPS_TimeMarker,
-  NULL,
+  LPC43_Baro_setup,
   LPC43_UATSerial_begin,
   LPC43_UATModule_restart,
   LPC43_WDT_setup,
@@ -607,16 +611,20 @@ void setup_CPP(void)
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
-  hw_info.gnss = GNSS_setup();
-
-  if (hw_info.gnss != GNSS_MODULE_NONE) {
-    settings->nmea_out = NMEA_USB;
-    settings->gdl90    = GDL90_OFF;
-
-    usb_data_type = USB_DATA_NMEA;
-  }
-
   hw_info.display = SoC->Display_setup();
+
+  if (hw_info.display == DISPLAY_NONE) {
+    hw_info.gnss = GNSS_setup();
+
+    if (hw_info.gnss != GNSS_MODULE_NONE) {
+      settings->nmea_out = NMEA_USB;
+      settings->gdl90    = GDL90_OFF;
+
+      usb_data_type = USB_DATA_NMEA;
+    }
+
+    hw_info.baro = Baro_setup();
+  }
 
   Traffic_setup();
   NMEA_setup();
@@ -629,6 +637,8 @@ void setup_CPP(void)
 
 void main_loop_CPP(void)
 {
+  Baro_loop();
+
   GNSS_loop();
 
   ThisAircraft.timestamp = now();

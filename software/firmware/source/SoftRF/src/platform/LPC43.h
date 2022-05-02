@@ -118,5 +118,11 @@ extern usb_data_t usb_data_type;
 
 #define USE_NMEA_CFG
 
+/* trade performance for flash memory usage (-5 Kb) */
+//#define cosf(x)               cos  ((double) (x))
+//#define sinf(x)               sin  ((double) (x))
+//#define sqrtf(x)              sqrt ((double) (x))
+//#define atan2f(y,x)           atan2((double) (y), (double) (x))
+
 #endif /* PLATFORM_LPC43_H */
 #endif /* HACKRF_ONE */
