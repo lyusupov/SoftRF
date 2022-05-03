@@ -26,7 +26,9 @@
 #endif
 
 #define HOSTNAME            SOFTRF_IDENT
+#ifndef UDP_PACKET_BUFSIZE
 #define UDP_PACKET_BUFSIZE  256
+#endif
 #define WIFI_DHCP_LEASE_HRS 8
 
 enum

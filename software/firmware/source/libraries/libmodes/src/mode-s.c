@@ -50,7 +50,7 @@ static mag_t maglut[129*129];
 #define M_PI                  3.14159265358979323846
 #endif /* ENERGIA_ARCH_CC13X2 */
 #else
-#include <compat.h>
+#include <Arduino.h>
 #define MODE_S_ICAO_CACHE_TTL 10   // Time to live of cached addresses.
 
 #if defined(MAG_LUT_128X128)

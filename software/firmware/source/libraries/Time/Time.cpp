@@ -27,13 +27,11 @@
   1.4  5  Sep 2014 - compatibility with Arduino 1.5.7
 */
 
-#if ARDUINO >= 100
+#if ARDUINO >= 100 || defined(HACKRF_ONE)
 #include <Arduino.h> 
 #else
 #if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
-#elif defined(HACKRF_ONE)
-#include <compat.h>
 #else
 #include <WProgram.h>
 #endif /* RASPBERRY_PI */

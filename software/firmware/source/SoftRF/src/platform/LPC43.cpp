@@ -48,7 +48,7 @@ ufo_t ThisAircraft;
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
-char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold GDL90 frames
 void RF_Shutdown() { }   // Dummy definition to satisfy build sequence
 
 static struct rst_info reset_info = {
@@ -337,7 +337,7 @@ static unsigned long LPC43_get_PPS_TimeMarker() {
 }
 
 static bool LPC43_Baro_setup() {
-  return false; /* TBD */
+  return true;
 }
 
 static void LPC43_UATSerial_begin(unsigned long baud)
@@ -639,21 +639,23 @@ void main_loop_CPP(void)
 {
   Baro_loop();
 
-  GNSS_loop();
-
   ThisAircraft.timestamp = now();
-  if (isValidFix()) {
-    ThisAircraft.latitude = gnss.location.lat();
-    ThisAircraft.longitude = gnss.location.lng();
-    ThisAircraft.altitude = gnss.altitude.meters();
-    ThisAircraft.course = gnss.course.deg();
-    ThisAircraft.speed = gnss.speed.knots();
-    ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
-    ThisAircraft.geoid_separation = gnss.separation.meters();
-  }
 
-  if (isValidFix()) {
-    Traffic_loop();
+  if (hw_info.gnss != GNSS_MODULE_NONE) {
+
+    GNSS_loop();
+
+    if (isValidFix()) {
+      ThisAircraft.latitude = gnss.location.lat();
+      ThisAircraft.longitude = gnss.location.lng();
+      ThisAircraft.altitude = gnss.altitude.meters();
+      ThisAircraft.course = gnss.course.deg();
+      ThisAircraft.speed = gnss.speed.knots();
+      ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+      ThisAircraft.geoid_separation = gnss.separation.meters();
+
+      Traffic_loop();
+    }
   }
 
   Sound_loop();
@@ -770,10 +772,6 @@ void once_per_second_task_CPP(void)
 //  if (isValidFix()) {
 //    D1090_Export();
 //  }
-
-  if (isValidFix()) {
-    Traffic_loop();
-  }
 
   ClearExpired();
 }

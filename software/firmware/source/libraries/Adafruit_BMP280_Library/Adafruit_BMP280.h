@@ -16,18 +16,19 @@
 #ifndef __BMP280_H__
 #define __BMP280_H__
 
-#if (ARDUINO >= 100)
+#if (ARDUINO >= 100) || defined(HACKRF_ONE)
  #include "Arduino.h"
 #else
  #include "WProgram.h"
 #endif
 
-#if !(defined(ESP8266)              || defined(ESP32) || \
+#if !(defined(ESP8266)              || defined(ESP32)                || \
       defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2)  || \
-      defined(ARDUINO_ARCH_STM32)   || defined(__ASR6501__) || \
+      defined(ARDUINO_ARCH_STM32)   || defined(__ASR6501__)          || \
       defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
       defined(ARDUINO_ARCH_NRF52)   || defined(ARDUINO_ARCH_SAMD)    || \
-      defined(ARDUINO_ARCH_AVR)     || defined(ARDUINO_ARCH_RP2040))
+      defined(ARDUINO_ARCH_AVR)     || defined(ARDUINO_ARCH_RP2040)  || \
+      defined(HACKRF_ONE))
 #include <Adafruit_Sensor.h>
 #endif
 

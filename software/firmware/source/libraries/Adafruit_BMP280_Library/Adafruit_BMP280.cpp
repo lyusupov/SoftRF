@@ -15,7 +15,9 @@
  ***************************************************************************/
 #include "Arduino.h"
 #include <Wire.h>
+#if !defined(HACKRF_ONE)
 #include <SPI.h>
+#endif /* HACKRF_ONE */
 #include "Adafruit_BMP280.h"
 
 
@@ -43,6 +45,7 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
   if (_cs == -1) {
     // i2c
     Wire.begin();
+#if !defined(HACKRF_ONE)
   } else {
     digitalWrite(_cs, HIGH);
     pinMode(_cs, OUTPUT);
@@ -56,6 +59,7 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
       pinMode(_mosi, OUTPUT);
       pinMode(_miso, INPUT);
     }
+#endif /* HACKRF_ONE */
   }
 
   if (read8(BMP280_REGISTER_CHIPID) != chipid)
@@ -66,6 +70,7 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
   return true;
 }
 
+#if !defined(HACKRF_ONE)
 uint8_t Adafruit_BMP280::spixfer(uint8_t x) {
   if (_sck == -1)
     return SPI.transfer(x);
@@ -83,6 +88,7 @@ uint8_t Adafruit_BMP280::spixfer(uint8_t x) {
   }
   return reply;
 }
+#endif /* HACKRF_ONE */
 
 /**************************************************************************/
 /*!
@@ -96,6 +102,7 @@ void Adafruit_BMP280::write8(byte reg, byte value)
     Wire.write((uint8_t)reg);
     Wire.write((uint8_t)value);
     Wire.endTransmission();
+#if !defined(HACKRF_ONE)
   } else {
 #if defined(SPI_HAS_TRANSACTION)
     if (_sck == -1)
@@ -109,6 +116,7 @@ void Adafruit_BMP280::write8(byte reg, byte value)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
 #endif
+#endif /* HACKRF_ONE */
   }
 }
 
@@ -128,6 +136,7 @@ uint8_t Adafruit_BMP280::read8(byte reg)
     Wire.requestFrom((uint8_t)_i2caddr, (byte)1);
     value = Wire.read();
 
+#if !defined(HACKRF_ONE)
   } else {
 #if defined(SPI_HAS_TRANSACTION)
     if (_sck == -1)
@@ -141,6 +150,7 @@ uint8_t Adafruit_BMP280::read8(byte reg)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
 #endif
+#endif /* HACKRF_ONE */
   }
   return value;
 }
@@ -161,6 +171,7 @@ uint16_t Adafruit_BMP280::read16(byte reg)
     Wire.requestFrom((uint8_t)_i2caddr, (byte)2);
     value = (Wire.read() << 8) | Wire.read();
 
+#if !defined(HACKRF_ONE)
   } else {
 #if defined(SPI_HAS_TRANSACTION)
     if (_sck == -1)
@@ -174,6 +185,7 @@ uint16_t Adafruit_BMP280::read16(byte reg)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
 #endif
+#endif /* HACKRF_ONE */
   }
 
   return value;
@@ -224,6 +236,7 @@ uint32_t Adafruit_BMP280::read24(byte reg)
     value <<= 8;
     value |= Wire.read();
 
+#if !defined(HACKRF_ONE)
   } else {
 #if defined(SPI_HAS_TRANSACTION)
     if (_sck == -1)
@@ -243,6 +256,7 @@ uint32_t Adafruit_BMP280::read24(byte reg)
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
 #endif
+#endif /* HACKRF_ONE */
   }
 
   return value;

@@ -35,6 +35,8 @@
 
 #define LED_STATE_ON          HIGH // State when LED is litted
 
+#define UDP_PACKET_BUFSIZE    128  // GDL90 buffer
+
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
   REASON_WDT_RST          = 1,  /* hardware watch dog reset */
@@ -113,7 +115,7 @@ extern usb_data_t usb_data_type;
 //#define EXCLUDE_LOG_GNSS_VERSION
 
 #define EXCLUDE_BMP180
-#define EXCLUDE_BMP280
+//#define EXCLUDE_BMP280
 #define EXCLUDE_MPL3115A2
 
 #define USE_NMEA_CFG

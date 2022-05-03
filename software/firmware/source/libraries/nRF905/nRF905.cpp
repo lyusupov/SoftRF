@@ -34,7 +34,7 @@
 #define SPI SPI0
 #include <raspi/raspi.h>
 #elif defined(HACKRF_ONE)
-#include <compat.h>
+#include <Arduino.h>
 #else
 #include "nRF905_spi.h"
 #endif /* RASPBERRY_PI */
