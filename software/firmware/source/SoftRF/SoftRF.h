@@ -19,7 +19,7 @@
 #ifndef SOFTRF_H
 #define SOFTRF_H
 
-#if defined(ARDUINO)
+#if defined(ARDUINO) || defined(HACKRF_ONE)
 #include <Arduino.h>
 #endif /* ARDUINO */
 
@@ -30,10 +30,6 @@
 #if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
-
-#if defined(HACKRF_ONE)
-#include <compat.h>
-#endif /* HACKRF_ONE */
 
 #define SOFTRF_IDENT            "SoftRF"
 #define SOFTRF_FIRMWARE_VERSION "1.1"

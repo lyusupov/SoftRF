@@ -33,6 +33,8 @@
 
 #define isValidFix()          isValidGNSSFix()
 
+#define EEPROM_commit()       EEPROM.commit()
+
 #define LED_STATE_ON          HIGH // State when LED is litted
 
 #define UDP_PACKET_BUFSIZE    128  // GDL90 buffer
@@ -82,8 +84,8 @@ extern usb_data_t usb_data_type;
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN /* P2_13 */
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCL      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SDA      (I2C0_SDA)
+#define SOC_GPIO_PIN_SCL      (I2C0_SCL)
 
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUTTON   (P2_8) /* active HIGH */
@@ -95,7 +97,7 @@ extern usb_data_t usb_data_type;
 #define EXCLUDE_WIFI
 #define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_EEPROM
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_EGM96
 #define EXCLUDE_CC13XX

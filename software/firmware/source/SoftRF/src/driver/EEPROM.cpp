@@ -84,12 +84,15 @@ void EEPROM_defaults()
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ?
-                                              RF_PROTOCOL_FANET : RF_PROTOCOL_OGNTP;
+                                              RF_PROTOCOL_FANET :
+                                              hw_info.model == SOFTRF_MODEL_ES ?
+                                              RF_PROTOCOL_ADSB_1090 : RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
                                               AIRCRAFT_TYPE_STATIC :
                                               AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
+  eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
+                                              RF_TX_POWER_OFF : RF_TX_POWER_FULL;
   eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
@@ -115,11 +118,14 @@ void EEPROM_defaults()
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY ?
                                            NMEA_USB :
+                                           hw_info.model == SOFTRF_MODEL_ES      ?
+                                           NMEA_OFF :
                                            hw_info.model == SOFTRF_MODEL_LEGO    ?
                                            NMEA_USB : NMEA_UART;
 #endif
 
-  eeprom_block.field.settings.gdl90      = GDL90_OFF;
+  eeprom_block.field.settings.gdl90      = hw_info.model == SOFTRF_MODEL_ES      ?
+                                           GDL90_USB : GDL90_OFF;
   eeprom_block.field.settings.d1090      = D1090_OFF;
   eeprom_block.field.settings.json       = JSON_OFF;
   eeprom_block.field.settings.stealth    = false;

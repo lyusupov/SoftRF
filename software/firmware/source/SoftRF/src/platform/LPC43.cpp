@@ -40,8 +40,10 @@
 Uart Serial1(LPC43_UART0);
 Uart Serial4(LPC43_UART3);
 
+#if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#endif
 
 ufo_t ThisAircraft;
 
@@ -84,6 +86,7 @@ static bool wdt_is_active = false;
 
 void LPC43_setup(void)
 {
+#if defined(EXCLUDE_EEPROM)
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
@@ -112,6 +115,7 @@ void LPC43_setup(void)
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
+#endif
 
   SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
@@ -263,6 +267,43 @@ static void LPC43_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 }
 
+static bool LPC43_EEPROM_begin(size_t size)
+{
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM.begin(size);
+#endif
+
+  return true;
+}
+
+static void LPC43_EEPROM_extension(int cmd)
+{
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+        &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+        ) {
+      settings->mode = SOFTRF_MODE_NORMAL;
+    }
+
+    if (settings->nmea_out == NMEA_BLUETOOTH ||
+        settings->nmea_out == NMEA_UDP       ||
+        settings->nmea_out == NMEA_TCP ) {
+      settings->nmea_out = NMEA_USB;
+    }
+    if (settings->gdl90 == GDL90_BLUETOOTH  ||
+        settings->gdl90 == GDL90_UDP) {
+      settings->gdl90 = GDL90_USB;
+    }
+    if (settings->d1090 == D1090_BLUETOOTH  ||
+        settings->d1090 == D1090_UDP) {
+      settings->d1090 = D1090_USB;
+    }
+  }
+}
+
 static void LPC43_SPI_begin()
 {
 
@@ -353,8 +394,10 @@ static void LPC43_UATModule_restart()
 static void LPC43_WDT_setup()
 {
   reset_driver_initialize();
+#if SOFTRF_USB_FW_VERSION > 0x0101 /* not active until release */
   platform_watchdog_enable(16000000UL); /* approx. 6 seconds */
   wdt_is_active = true;
+#endif
 }
 
 static void LPC43_WDT_fini()
@@ -551,8 +594,8 @@ const SoC_ops_t LPC43_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
-  NULL,
+  LPC43_EEPROM_begin,
+  LPC43_EEPROM_extension,
   LPC43_SPI_begin,
   LPC43_swSer_begin,
   NULL,
@@ -600,10 +643,19 @@ void setup_CPP(void)
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
-  Serial.println(""); Serial.print(F("Reset reason: ")); Serial.print(system_reset_reason(), HEX);
-  Serial.print(F(" - ")); Serial.println(SoC->getResetReason());
+  Serial.println();
+  Serial.print(F("Reset reason: ")); Serial.print(SoC->getResetReason());
+  Serial.print(F(" ("));
+  Serial.print(system_reset_reason(), HEX);
+  Serial.println(')');
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
   Serial.flush();
+
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM_setup();
+#endif
+
+  SoC->Button_setup();
 
   ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
   ThisAircraft.aircraft_type = settings->aircraft_type;
