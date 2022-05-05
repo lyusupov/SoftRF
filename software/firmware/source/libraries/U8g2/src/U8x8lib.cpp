@@ -582,7 +582,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
     case U8X8_MSG_BYTE_SET_DC:
       break;
     case U8X8_MSG_BYTE_START_TRANSFER:
-#if ARDUINO >= 10600
+#if ARDUINO >= 10600 && !defined(ENERGIA_ARCH_CC13X2) && !defined(ENERGIA_ARCH_CC13XX)
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
       /* if there is any error with Wire.setClock() just remove this function call */
       if ( u8x8->display_info->i2c_bus_clock_100kHz >= 4 )

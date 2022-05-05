@@ -274,7 +274,16 @@ extern uint8_t LEDs[][3];
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
+
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+
+/*
+ * BUG:
+ * return value of Wire.endTransmission() is always '4'
+ * with Arduino Core(s) for CC13X0 and CC13X2
+ */
+#define plat_oled_probe_func()    (true)
+
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_CC13XX_H */

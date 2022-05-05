@@ -122,11 +122,23 @@ extern usb_data_t usb_data_type;
 
 #define USE_NMEA_CFG
 
+#define USE_OLED
+#define EXCLUDE_OLED_049
+//#define EXCLUDE_OLED_BARO_PAGE
+
 /* trade performance for flash memory usage (-5 Kb) */
 //#define cosf(x)               cos  ((double) (x))
 //#define sinf(x)               sin  ((double) (x))
 //#define sqrtf(x)              sqrt ((double) (x))
 //#define atan2f(y,x)           atan2((double) (y), (double) (x))
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+
+extern bool LPC43_OLED_probe_func();
+
+#define plat_oled_probe_func LPC43_OLED_probe_func
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_LPC43_H */
 #endif /* HACKRF_ONE */

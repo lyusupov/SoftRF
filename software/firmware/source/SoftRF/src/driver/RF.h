@@ -63,7 +63,8 @@ enum
   RF_IC_UATM,
   RF_IC_CC13XX,
   RF_DRV_OGN,
-  RF_IC_SX1262
+  RF_IC_SX1262,
+  RF_IC_MAX2837,
 };
 
 enum

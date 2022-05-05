@@ -174,7 +174,7 @@ uint8_t u8x8_pgm_read_esp(const uint8_t * addr);   /* u8x8_8x8.c */
 #  define U8X8_PROGMEM
 #endif
 
-#ifdef ARDUINO
+#if defined(ARDUINO) || defined(HACKRF_ONE)
 #define U8X8_USE_PINS
 #endif
 

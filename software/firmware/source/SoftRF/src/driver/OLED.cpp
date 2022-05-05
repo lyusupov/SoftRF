@@ -121,18 +121,17 @@ static uint8_t page_count        = OLED_PAGE_COUNT;
 byte OLED_setup() {
 
   byte rval = DISPLAY_NONE;
+  bool oled_probe = false;
 
-/*
- * BUG:
- * return value of Wire.endTransmission() is always '4'
- * with Arduino Core(s) for CC13X0 and CC13X2
- */
-#if !defined(ENERGIA_ARCH_CC13X2) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(plat_oled_probe_func)
+  oled_probe = plat_oled_probe_func();
+#else
   /* SSD1306 I2C OLED probing */
   Wire.begin();
   Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
-  if (Wire.endTransmission() == 0)
-#endif /* ENERGIA_ARCH_CC13X2 */
+  oled_probe = (Wire.endTransmission() == 0);
+#endif /* plat_oled_probe_func */
+  if (oled_probe)
   {
     u8x8 = &u8x8_i2c;
     rval = (hw_info.model == SOFTRF_MODEL_MINI     ? DISPLAY_OLED_HELTEC :

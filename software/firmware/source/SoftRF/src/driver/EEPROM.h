@@ -19,7 +19,9 @@
 #ifndef EEPROMHELPER_H
 #define EEPROMHELPER_H
 
+#ifdef __cplusplus
 #include "../system/SoC.h"
+#endif /* __cplusplus */
 
 #if !defined(EXCLUDE_EEPROM)
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
@@ -27,7 +29,9 @@
 #elif defined(ARDUINO_ARCH_SAMD)
 #include <FlashAsEEPROM.h>
 #else
+#ifdef __cplusplus
 #include <EEPROM.h>
+#endif /* __cplusplus */
 #endif /* CC13XX or CC13X2 */
 #endif /* EXCLUDE_EEPROM */
 
