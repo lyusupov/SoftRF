@@ -829,7 +829,7 @@ void once_per_second_task_CPP(void)
   NMEA_Export();
   GDL90_Export();
 
-  /* D0190 data comes directly out of MODE-S low-level frames decoder */
+  /* D1090 data comes directly out of MODE-S low-level frames decoder */
 
   ClearExpired();
 }
