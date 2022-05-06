@@ -83,7 +83,7 @@ void mode_s_init(mode_s_t *self) {
   // different I/Q pair will result in a different magnitude value, not losing
   // any resolution.
 
-#if !defined(HACKRF_ONE) || (defined(HACKRF_ONE) && defined(DFU_MODE))
+#if !defined(HACKRF_ONE) || (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))
   int i, q;
 
   if (!maglut_initialized) {

@@ -109,11 +109,12 @@ $ ls -la HackRF_factory_firmware.bin
 
 ### Flashing
 
-Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
+1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/LPC4320) ;
+2. Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
-$ hackrf_spiflash -v -w SoftRF-firmware-v1.1-LPC43.bin
+$ hackrf_spiflash -v -w SoftRF-firmware-v1.1-LPC4320.bin
 ```
 
 ### Restoring HackRF firmware

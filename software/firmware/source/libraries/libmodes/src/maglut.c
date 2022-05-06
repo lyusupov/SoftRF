@@ -1,8 +1,12 @@
-#if defined(HACKRF_ONE) && !defined(DFU_MODE)
+#if defined(HACKRF_ONE) && defined(MAGLUT_IN_ROM)
 
 #include <mode-s.h>
 
-#if !defined(USE_BYTE_MAG)
+#if defined(MAG_LUT_128X128)
+
+#error "ROM 128X128 MagLUT is not supported"
+
+#elif !defined(USE_BYTE_MAG)
 
 const uint16_t maglut_ro[129*129] = {
 0x0000, 0x0168, 0x02D0, 0x0438, 0x05A0, 0x0708, 0x0870, 0x09D8,

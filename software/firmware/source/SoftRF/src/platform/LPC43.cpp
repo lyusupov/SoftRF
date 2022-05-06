@@ -69,16 +69,17 @@ hardware_info_t hw_info = {
 const uint16_t LPC43_Vendor_Id = 0x1d50; /* OpenMoko, Inc. */
 const uint16_t LPC43_Device_Id = 0x6089; /* HackRF One */
 const char *LPC43_Device_Manufacturer = SOFTRF_IDENT;
-const char *LPC43_Device_Model = "ES Edition";
-const uint16_t LPC43_Device_Version = SOFTRF_USB_FW_VERSION;
+const char *LPC43_Device_Model        = "ES Edition";
+const uint16_t LPC43_Device_Version   = SOFTRF_USB_FW_VERSION;
+
+const char *LPC43_boot_str1 = SOFTRF_IDENT "-" PLAT_LPC43_NAME
+                              " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: ";
+const char *LPC43_boot_str2 = "Copyright (C) 2015-2022 Linar Yusupov. ";
+const char *LPC43_boot_str3 = "All rights reserved";
 
 #if defined(USE_PORTAPACK)
 extern "C" const void* portapack(void);
 #endif /* USE_PORTAPACK */
-
-#if 0
-usb_data_t usb_data_type = USB_DATA_GDL90;
-#endif
 
 static bool wdt_is_active = false;
 
@@ -97,21 +98,18 @@ void LPC43_setup(void)
 {
   SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-#if 0
   SerialOutput.println();
-  SerialOutput.print(F(SOFTRF_IDENT "-"));
-  SerialOutput.print(SoC->name);
-  SerialOutput.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  SerialOutput.print(LPC43_boot_str1);
   SerialOutput.println(String(SoC->getChipId(), HEX));
-  SerialOutput.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
+  SerialOutput.print(LPC43_boot_str2); SerialOutput.println(LPC43_boot_str3);
   SerialOutput.println();
-#endif
 }
 
 static void LPC43_post_init()
 {
   Serial.println();
-  Serial.println(F("SoftRF ES Edition Power-on Self Test"));
+  Serial.print(LPC43_Device_Manufacturer); Serial.print(' ');
+  Serial.print(LPC43_Device_Model); Serial.println(" Power-on Self Test");
   Serial.println();
   Serial.flush();
 
@@ -412,44 +410,10 @@ static unsigned long dfu_time_marker = 0;
 static bool prev_dfu_state = false;
 static bool is_dfu_click = false;
 
-#if 0
-static usb_data_t prev_usb_data_type = USB_DATA_D1090;
-#endif
-
 static void On_Button_Click()
 {
 #if defined(USE_OLED)
   OLED_Next_Page();
-#endif
-
-#if 0
-  led_toggle(LED3);
-
-  if (usb_data_type != USB_DATA_D1090) {
-    prev_usb_data_type = usb_data_type;
-    usb_data_type = USB_DATA_D1090;
-
-    if (prev_usb_data_type == USB_DATA_NMEA) {
-      settings->nmea_out = NMEA_OFF;
-    } else if (prev_usb_data_type == USB_DATA_GDL90) {
-      settings->gdl90    = GDL90_OFF;
-    }
-
-    settings->d1090 = D1090_USB;
-
-  } else {
-
-    usb_data_type = prev_usb_data_type;
-    prev_usb_data_type = USB_DATA_D1090;
-
-    settings->d1090 = D1090_OFF;
-
-    if (usb_data_type == USB_DATA_NMEA) {
-      settings->nmea_out = NMEA_USB;
-    } else if (usb_data_type == USB_DATA_GDL90) {
-      settings->gdl90    = GDL90_USB;
-    }
-  }
 #endif
 }
 
@@ -583,7 +547,7 @@ IODev_ops_t LPC43_USBSerial_ops = {
 
 const SoC_ops_t LPC43_ops = {
   SOC_LPC43,
-  "LPC43",
+  PLAT_LPC43_NAME,
   LPC43_setup,
   LPC43_post_init,
   LPC43_loop,
@@ -645,11 +609,9 @@ void setup_CPP(void)
   }
 
   Serial.println();
-  Serial.print(F(SOFTRF_IDENT "-"));
-  Serial.print(SoC->name);
-  Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
+  Serial.print(LPC43_boot_str1);
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
+  Serial.print(LPC43_boot_str2); Serial.println(LPC43_boot_str3);
   Serial.flush();
 
   Serial.println();
@@ -674,16 +636,6 @@ void setup_CPP(void)
 
   if (hw_info.display != DISPLAY_TFT_PORTAPACK) {
     hw_info.gnss = GNSS_setup();
-
-#if 0
-    if (hw_info.gnss != GNSS_MODULE_NONE) {
-      settings->nmea_out = NMEA_USB;
-      settings->gdl90    = GDL90_OFF;
-
-      usb_data_type = USB_DATA_NMEA;
-    }
-#endif
-
     hw_info.baro = Baro_setup();
   }
 

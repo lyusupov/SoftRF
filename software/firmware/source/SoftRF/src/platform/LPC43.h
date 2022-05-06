@@ -25,6 +25,7 @@
 #define MAX_TRACKING_OBJECTS  8
 
 #define DEFAULT_SOFTRF_MODEL  SOFTRF_MODEL_ES
+#define PLAT_LPC43_NAME       "LPC43"
 
 #define USBSerial             Serial
 #define SerialOutput          Serial1
@@ -107,6 +108,7 @@ extern usb_data_t usb_data_type;
 #define EXCLUDE_OGLEP3
 #define EXCLUDE_MAVLINK
 #define EXCLUDE_TEST_MODE
+#define EXCLUDE_WATCHOUT_MODE
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 
 //#define EXCLUDE_GNSS_UBLOX
@@ -124,13 +126,13 @@ extern usb_data_t usb_data_type;
 
 #define USE_OLED
 #define EXCLUDE_OLED_049
-//#define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_BARO_PAGE
 
 /* trade performance for flash memory usage (-5 Kb) */
-//#define cosf(x)               cos  ((double) (x))
-//#define sinf(x)               sin  ((double) (x))
-//#define sqrtf(x)              sqrt ((double) (x))
-//#define atan2f(y,x)           atan2((double) (y), (double) (x))
+#define cosf(x)               cos  ((double) (x))
+#define sinf(x)               sin  ((double) (x))
+#define sqrtf(x)              sqrt ((double) (x))
+#define atan2f(y,x)           atan2((double) (y), (double) (x))
 
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
