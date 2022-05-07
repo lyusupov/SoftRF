@@ -234,11 +234,14 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     esp32_board = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    /* TBD */
+    esp32_board = ESP32_S3_DEVKIT;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
-  ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN) {
+    ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+    ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+  }
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
     esp32_board = ESP32_TTGO_T_WATCH;
@@ -330,6 +333,25 @@ static void ESP32_setup()
 //  USB.begin();
 #endif /* ARDUINO_ESP32S2_USB */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  } else if (esp32_board == ESP32_S3_DEVKIT) {
+    lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
+
+#if defined(USE_USB_HOST)
+    Serial.end();
+    Serial.begin(SERIAL_OUT_BR, SERIAL_IN_BITS,
+                 SOC_GPIO_PIN_S3_CONS_RX, SOC_GPIO_PIN_S3_CONS_TX);
+#endif /* USE_USB_HOST */
+
+#if defined(ARDUINO_ESP32S3_USB)
+    USB.manufacturerName(ESP32S2_Device_Manufacturer);
+    USB.productName(ESP32S2_Device_Model);
+    USB.firmwareVersion(ESP32S2_Device_Version);
+#endif /* ARDUINO_ESP32S3_USB */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 
 #if ARDUINO_USB_CDC_ON_BOOT && defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -661,6 +683,7 @@ static void ESP32_Sound_test(int var)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+    ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
@@ -698,6 +721,7 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
       ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
+      ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 
       ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
       ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
@@ -885,6 +909,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
                 SOC_GPIO_PIN_T8_S2_MOSI, SOC_GPIO_PIN_T8_S2_SS);
       break;
+    case ESP32_S3_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_S3_SCK,  SOC_GPIO_PIN_S3_MISO,
+                SOC_GPIO_PIN_S3_MOSI, SOC_GPIO_PIN_S3_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -919,6 +947,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: TTGO T8_S2 rev. 1.1 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T8_S2_GNSS_RX, SOC_GPIO_PIN_T8_S2_GNSS_TX);
+    } else if (esp32_board == ESP32_S3_DEVKIT) {
+      Serial.println(F("INFO: ESP32-S3 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_S3_GNSS_RX, SOC_GPIO_PIN_S3_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,

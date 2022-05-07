@@ -37,7 +37,7 @@ You might also need to install:
 * a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) or
 * [CH9102F driver](https://github.com/Xinyuan-LilyGO/CH9102_Driver)<br>
 prior to first use of the ESP32 tool ;
-2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32) and unzip the archive ;
 
 3. Select COM port, enter partition files and addresses, select options ;<br>
 
@@ -58,7 +58,7 @@ For some boards you may need to push **BOOT** button in order to activate flash 
 
 1. Take **CubeCellflash** for Windows <sub>_(Linux and MacOS variants are also available there)_</sub> download tool from this location: https://resource.heltec.cn/download/<br>
 You might also need to install a [driver for the CP210X USB to UART bridge from Silicon Labs](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers) prior to first use of the CubeCellflash tool ;
-2. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x) and unzip the archive ;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x) and unzip the archive ;
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Mini-1.jpg)
 
@@ -73,7 +73,7 @@ You might also need to install a [driver for the CP210X USB to UART bridge from 
 The board typically comes with factory pre-installed [Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader).<br>
 The Bootloader is capable to self-program an application firmware into the device. In order to simplify the firmware transfer, the bootloader emulates a "USB Mass Storage" interface.
 
-1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840/SoftRF/MassStorage) ;
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840/SoftRF/MassStorage) ;
 
 2. Connect the SoftRF Badge Edition device to your PC by means of a USB cable (Type-A <-> Type-C) ;
 
@@ -91,46 +91,46 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 For Linux and Mac OS X users, you will need a few tools installed on your computer before you begin:
 
-* [dfu-util](http://dfu-util.sourceforge.net/) 0.8 or newer - Used to load and run the stock HackRF firmware from RAM. dfu-util 0.8 is recommended, as it is the most extensively tested with the HackRF hardware and build software.
+* [dfu-util](http://dfu-util.sourceforge.net/) 0.8 or newer - Used to load and run the stock HackRF One firmware from RAM. dfu-util 0.8 is recommended, as it is the most extensively tested with the HackRF One hardware and build software.
 * [hackrf](https://github.com/greatscottgadgets/hackrf) - All you need is the host tools, specifically, hackrf_spiflash.
 
 ### Backup of factory firmware
 
 ```
-$ hackrf_spiflash -v -r HackRF_factory_firmware.bin
+$ hackrf_spiflash -v -r HackRF_One_factory_firmware.bin
 Reading 256 bytes from 0x000000.
 Reading 256 bytes from 0x000100.
 
 < ... skipped ... >
 
-$ ls -la HackRF_factory_firmware.bin
--rw-r--r-- 1 pi pi 1048576 Nov  4 10:18 HackRF_factory_firmware.bin
+$ ls -la HackRF_One_factory_firmware.bin
+-rw-r--r-- 1 pi pi 1048576 Nov  4 10:18 HackRF_One_factory_firmware.bin
 ```
 
 ### Flashing
 
-1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/LPC4320) ;
-2. Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/LPC4320) ;
+2. Plug the HackRF One into a PC USB slot while holding down DFU button (the button closer to antenna jack). Release the DFU button, then execute:
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
 $ hackrf_spiflash -v -w SoftRF-firmware-v1.1-LPC4320.bin
 ```
 
-### Restoring HackRF firmware
+### Restore of HackRF One firmware
 
-Plug the HackRF into USB power while holding down the DFU button (the button closer to the antenna jack). Release the DFU button. Then run:
+Plug the HackRF One into a PC USB slot while holding down DFU button (the button closer to antenna jack). Release the DFU button, then execute:
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
-$ hackrf_spiflash -v -w HackRF_factory_firmware.bin
+$ hackrf_spiflash -v -w HackRF_One_factory_firmware.bin
 ```
 
 <br>
 
 ## ASR6601
 
-1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601) ;
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601) ;
 2. Take a copy of **tremo_loader.py** script from [ASR SDK](https://raw.githubusercontent.com/akarsh98/ASR6601-getting-started-guide/main/SDK/build/scripts/tremo_loader.py) ;
 3. Connect an appropriate USB-Serial adapter to ASR6601 MCU pins as follows:
 
@@ -182,7 +182,7 @@ Download files successfully
 Every RAK11310 WisBlock Core module has built-in (ROM) bootloader.<br>
 The bootloader is capable to self-program an application firmware into the device. In order to simplify the firmware transfer, the bootloader emulates a "USB Mass Storage" interface.
 
-1. Download appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/) ;
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/) ;
 
 2. Plug RAK11310 WisBlock Core module into RAK5005-O WisBlock Base ;
 

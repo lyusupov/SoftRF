@@ -254,6 +254,27 @@ extern Adafruit_NeoPixel strip;
 #endif
 #define LV_VER_RES                      (240) //vertical
 
+/* ESP32-S3 DevKit section */
+#define SOC_GPIO_PIN_S3_CONS_RX         44
+#define SOC_GPIO_PIN_S3_CONS_TX         43
+
+// GPS module
+#define SOC_GPIO_PIN_S3_GNSS_RX         15
+#define SOC_GPIO_PIN_S3_GNSS_TX         16
+#define SOC_GPIO_PIN_S3_GNSS_PPS        SOC_UNUSED_PIN /* TBD */
+
+// USB
+#define SOC_GPIO_PIN_S3_USB_DP          20
+#define SOC_GPIO_PIN_S3_USB_DN          19
+
+// SX1262
+#define SOC_GPIO_PIN_S3_MOSI            35
+#define SOC_GPIO_PIN_S3_MISO            37
+#define SOC_GPIO_PIN_S3_SCK             36
+#define SOC_GPIO_PIN_S3_SS              34
+#define SOC_GPIO_PIN_S3_RST             33
+#define SOC_GPIO_PIN_S3_BUSY            38
+
 // Hardware pin definitions for TTGO LoRa V2 board
 // with OLED SSD1306 0,96" I2C Display
 #define TTGO_V2_OLED_PIN_RST    U8X8_PIN_NONE // connected to CPU RST/EN
@@ -286,7 +307,8 @@ enum esp32_board_id {
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
   ESP32_TTGO_T_WATCH,
-  ESP32_S2_T8_V1_1
+  ESP32_S2_T8_V1_1,
+  ESP32_S3_DEVKIT,
 };
 
 struct rst_info {
