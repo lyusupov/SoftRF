@@ -28,6 +28,7 @@ void GDL90_loop(void);
 bool GDL90_isConnected(void);
 bool GDL90_hasHeartBeat(void);
 bool GDL90_hasOwnShip(void);
+void GDL90_Out(byte *, size_t);
 
 #define GDL90_TO_AT(x)  ((x) > 15 ? \
    AIRCRAFT_TYPE_UNKNOWN : pgm_read_byte(&gdl90_to_aircraft_type[(x)]))

@@ -94,6 +94,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
+      GDL90_Out(buf, msg_size);
+
       if (decode_gdl90_heartbeat(&message, &heartbeat)) {
 
 //      print_gdl90_heartbeat(&heartbeat);
@@ -113,6 +115,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
+      GDL90_Out(buf, msg_size);
+
       decode_gdl90_ownship_geo_altitude(&message, &geo_altitude);
 //    print_gdl90_ownship_geo_altitude(&geo_altitude);
     }
@@ -127,6 +131,8 @@ static void GDL90_Parse_Character(char c)
       for (uint8_t i=0; i < msg_size; i++) {
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
+
+      GDL90_Out(buf, msg_size);
 
       if (decode_gdl90_traffic_report(&message, &gdl_traffic)) {
 
@@ -181,6 +187,8 @@ static void GDL90_Parse_Character(char c)
       for (uint8_t i=0; i < msg_size; i++) {
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
+
+      GDL90_Out(buf, msg_size);
 
       if (decode_gdl90_traffic_report(&message, &ownship)) {
 
@@ -345,4 +353,33 @@ bool GDL90_hasOwnShip()
 {
   return (GDL90_OwnShip_TimeMarker > GDL90_EXP_TIME &&
          (millis() - GDL90_OwnShip_TimeMarker) < GDL90_EXP_TIME);
+}
+
+void GDL90_Out(byte *buf, size_t size)
+{
+  if (size > 0) {
+    switch(settings->s.gdl90)
+    {
+    case GDL90_UART:
+    case GDL90_USB:
+      Serial.write(buf, size);
+      break;
+    case GDL90_UDP:
+      {
+        SoC->WiFi_transmit_UDP(GDL90_DST_PORT, buf, size);
+      }
+      break;
+    case GDL90_BLUETOOTH:
+      {
+        if (SoC->Bluetooth_ops) {
+          SoC->Bluetooth_ops->write(buf, size);
+        }
+      }
+      break;
+    case GDL90_TCP:
+    case GDL90_OFF:
+    default:
+      break;
+    }
+  }
 }

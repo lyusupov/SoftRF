@@ -223,7 +223,7 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>\
-<!-- <tr>\
+ <tr>\
 <th align=left>Protocol</th>\
 <td align=right>\
 <select name='dprotocol'>\
@@ -231,7 +231,7 @@ void handleSettings() {
 <option %s value='%d'>GDL90</option>\
 </select>\
 </td>\
-</tr> -->\
+</tr>\
 <tr>\
 <th align=left>Baud rate</th>\
 <td align=right>\
@@ -562,7 +562,6 @@ void handleSettings() {
     size -= len;
   }
 
-#if 0
   /* Common part 4 */
   snprintf_P ( offset, size,
     PSTR("\
@@ -579,7 +578,7 @@ void handleSettings() {
 <option %s value='%d'>UDP</option>"),
   (settings->s.gdl90 == GDL90_OFF  ? "selected" : ""), GDL90_OFF,
   (settings->s.gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
-  (settings->s.gdl90 == GDL90_USB  ? "selected" : ""), GDL90_USB);
+  (settings->s.gdl90 == GDL90_USB  ? "selected" : ""), GDL90_USB,
   (settings->s.gdl90 == GDL90_UDP  ? "selected" : ""), GDL90_UDP);
 
   len = strlen(offset);
@@ -597,7 +596,7 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
-
+#if 0
   /* Common part 5 */
   snprintf_P ( offset, size,
     PSTR("\
