@@ -114,7 +114,7 @@ $ ls -la HackRF_One_factory_firmware.bin
 
 ```
 $ dfu-util -D hackrf_one_usb.dfu --reset
-$ hackrf_spiflash -v -w SoftRF-firmware-v1.1-LPC4320.bin
+$ hackrf_spiflash -v -i -w SoftRF-firmware-v1.1-LPC4320.bin
 ```
 
 ### Restore of HackRF One firmware
