@@ -628,7 +628,8 @@ static gnss_id_t ublox_probe()
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_OCTAVE    ||
-      hw_info.model == SOFTRF_MODEL_LEGO)
+      hw_info.model == SOFTRF_MODEL_LEGO      ||
+     (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 203))
   {
     return (gnss_id_t) ublox_version();
   } else {

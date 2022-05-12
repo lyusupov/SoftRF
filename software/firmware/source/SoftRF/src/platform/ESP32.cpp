@@ -201,6 +201,7 @@ static void ESP32_setup()
      *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
      *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
      *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
+     *  Ai-T NodeMCU-S3 | ESP-S3-12K | GIGADEVICE_GD25Q64C
      */
 
     switch(flash_id)
@@ -215,10 +216,14 @@ static void ESP32_setup()
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
     case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
     default:
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32)
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
-#else
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
       esp32_board = ESP32_S2_T8_V1_1;
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+      esp32_board = ESP32_S3_DEVKIT;
+#else
+#error "This ESP32 family build variant is not supported!"
 #endif
       break;
     }
@@ -339,6 +344,8 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
+
+    hw_info.revision = 203;
 
 #if defined(USE_USB_HOST)
     Serial.end();
@@ -982,7 +989,16 @@ static byte ESP32_Display_setup()
     bool has_oled = false;
 
     /* SSD1306 I2C OLED probing */
-    if (GPIO_21_22_are_busy) {
+    if (esp32_board == ESP32_S3_DEVKIT) {
+      Wire1.begin(SOC_GPIO_PIN_S3_OLED_SDA, SOC_GPIO_PIN_S3_OLED_SCL);
+      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      has_oled = (Wire1.endTransmission() == 0);
+      WIRE_FINI(Wire1);
+      if (has_oled) {
+        u8x8 = &u8x8_ttgo;
+        rval = DISPLAY_OLED_TTGO;
+      }
+    } else if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire1.endTransmission() == 0);
@@ -1515,6 +1531,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
 
     Wire.setPins(SOC_GPIO_PIN_T8_S2_SDA, SOC_GPIO_PIN_T8_S2_SCL);
+
+  } else if (esp32_board == ESP32_S3_DEVKIT) {
+
+    Wire.setPins(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
