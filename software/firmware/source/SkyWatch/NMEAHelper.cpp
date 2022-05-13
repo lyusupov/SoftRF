@@ -376,7 +376,9 @@ void NMEA_loop()
     if (SoC->USB_ops) {
       while (SoC->USB_ops->available() > 0) {
         c = SoC->USB_ops->read();
-//        Serial.print(c);
+#if 1
+        Serial.print(c);
+#endif
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }
@@ -488,7 +490,7 @@ bool NMEA_Save_Settings()
     int nmea_out = NMEA_UART;
 
     if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-        hw_info.revision == HW_REV_T8_S2        &&
+        hw_info.revision == HW_REV_TDONGLE      &&
         settings->m.connection == CON_USB) {
       nmea_out = NMEA_USB;
     }

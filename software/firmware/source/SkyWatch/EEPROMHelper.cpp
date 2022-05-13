@@ -82,7 +82,13 @@ void EEPROM_defaults()
   eeprom_block.field.settings.s.nmea_p          = false;
   eeprom_block.field.settings.s.nmea_l          = true;
   eeprom_block.field.settings.s.nmea_s          = true;
-  eeprom_block.field.settings.s.nmea_out        = NMEA_UART;
+
+  if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+      hw_info.revision == HW_REV_TDONGLE) {
+    eeprom_block.field.settings.s.nmea_out      = NMEA_UDP;
+  } else {
+    eeprom_block.field.settings.s.nmea_out      = NMEA_UART;
+  }
   eeprom_block.field.settings.s.gdl90           = GDL90_OFF;
   eeprom_block.field.settings.s.d1090           = D1090_OFF;
   eeprom_block.field.settings.s.json            = JSON_OFF;
@@ -93,7 +99,12 @@ void EEPROM_defaults()
   /* SkyView defaults */
   eeprom_block.field.settings.m.adapter         = ADAPTER_NONE;
 
-  eeprom_block.field.settings.m.connection      = CON_SERIAL_MAIN;
+  if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+      hw_info.revision == HW_REV_TDONGLE) {
+    eeprom_block.field.settings.m.connection    = CON_USB;
+  } else {
+    eeprom_block.field.settings.m.connection    = CON_SERIAL_MAIN;
+  }
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
     eeprom_block.field.settings.m.baudrate      = B115200; /* S76G AN3155 BR */
   } else {

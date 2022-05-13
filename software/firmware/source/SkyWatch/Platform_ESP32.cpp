@@ -169,6 +169,8 @@ static void ESP32_setup()
    *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
    *  TTGO T-Watch     |            | WINBOND_NEX_W25Q128_V
    *  TTGO T8 S2 V1.1  |            | WINBOND_NEX_W25Q32_V
+   *  Ai-T NodeMCU-S3  | ESP-S3-12K | GIGADEVICE_GD25Q64C
+   *  TTGO T-Dongle    |            | BOYA_BY25Q32AL
    */
 
   if (psramFound()) {
@@ -184,8 +186,9 @@ static void ESP32_setup()
       break;
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
       hw_info.model = SOFTRF_MODEL_WEBTOP;
-      hw_info.revision = HW_REV_T8_S2;
+      hw_info.revision = HW_REV_TDONGLE;
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
     default:
@@ -266,9 +269,6 @@ static void ESP32_setup()
     if (rtc_present && (i2c != nullptr)) {
       rtc = new PCF8563_Class(*i2c);
     }
-  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-             hw_info.revision == HW_REV_T8_S2) {
-    pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT_PULLUP);
   }
 
   /* SD-SPI init */
@@ -279,10 +279,10 @@ static void ESP32_setup()
                 SOC_GPIO_PIN_TWATCH_SD_MOSI,
                 SOC_GPIO_PIN_TWATCH_SD_SS
 #else
-                SOC_GPIO_PIN_T8_S2_SCK,
-                SOC_GPIO_PIN_T8_S2_MISO,
-                SOC_GPIO_PIN_T8_S2_MOSI,
-                SOC_GPIO_PIN_T8_S2_SS
+                SOC_GPIO_PIN_TDONGLE_SCK,
+                SOC_GPIO_PIN_TDONGLE_MISO,
+                SOC_GPIO_PIN_TDONGLE_MOSI,
+                SOC_GPIO_PIN_TDONGLE_SS
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
                );
 }
@@ -539,7 +539,9 @@ static void ESP32_swSer_begin(unsigned long baud)
                       SERIAL_IN_BITS : SERIAL_8N1;
     SerialInput.begin(baud, config, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   } else {
+#if !defined(USE_USB_HOST)
     Serial.updateBaudRate(baud);
+#endif
   }
 }
 
@@ -562,7 +564,7 @@ static void ESP32_Battery_setup()
     /* TBD */
 
   } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-             hw_info.revision == HW_REV_T8_S2) {
+             hw_info.revision == HW_REV_TDONGLE) {
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
@@ -579,13 +581,6 @@ static float ESP32_Battery_voltage()
     if (axp.isBatteryConnect()) {
       voltage = axp.getBattVoltage();
     }
-
-  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-             hw_info.revision == HW_REV_T8_S2) {
-    voltage = (float) read_voltage();
-
-    /* T8_S2 has voltage divider 100k/100k on board */
-    voltage += voltage;
   }
 
   return (voltage * 0.001);
@@ -594,8 +589,8 @@ static float ESP32_Battery_voltage()
 static bool ESP32_DB_init()
 {
   int ss_pin = (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-                hw_info.revision == HW_REV_T8_S2 ) ?
-               SOC_GPIO_PIN_T8_S2_SS : SOC_GPIO_PIN_TWATCH_SD_SS;
+                hw_info.revision == HW_REV_TDONGLE) ?
+               SOC_GPIO_PIN_TDONGLE_SS : SOC_GPIO_PIN_TWATCH_SD_SS;
 
   if (!SD.begin(ss_pin, uSD_SPI)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
@@ -977,7 +972,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
 #endif
 
   if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-      hw_info.revision == HW_REV_T8_S2) {
+      hw_info.revision == HW_REV_TDONGLE) {
     switch (eventType) {
       case AceButton::kEventClicked:
       case AceButton::kEventReleased:
@@ -1007,8 +1002,8 @@ void onModeButtonEvent() {
 static void ESP32_Button_setup()
 {
   int button_pin = (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-                    hw_info.revision == HW_REV_T8_S2 ) ?
-                   SOC_GPIO_PIN_T8_S2_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
+                    hw_info.revision == HW_REV_TDONGLE) ?
+                   SOC_GPIO_PIN_TDONGLE_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
   // Button(s)) uses external pull up resistor.
   pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
@@ -1069,7 +1064,9 @@ static void ESP32_Service_Mode(boolean arg)
 {
   if (arg) {
 //    Serial.begin(SERIAL_IN_BR, SERIAL_IN_BITS);
+#if !defined(USE_USB_HOST)
      Serial.updateBaudRate(SERIAL_IN_BR);
+#endif
   WiFi_fini();
     axp.setGPIOMode(AXP_GPIO_2, AXP_IO_OUTPUT_LOW_MODE);  // MCU_reset
     delay(10);
@@ -1082,7 +1079,9 @@ static void ESP32_Service_Mode(boolean arg)
     inServiceMode = true;
   } else {
 //    Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#if !defined(USE_USB_HOST)
     Serial.updateBaudRate(SERIAL_OUT_BR);
+#endif
     axp.setGPIOMode(AXP_GPIO_2, AXP_IO_OUTPUT_LOW_MODE);  // MCU_reset
     delay(10);
     axp.setGPIOMode(AXP_GPIO_1, AXP_IO_OUTPUT_LOW_MODE);  // BOOT0 low

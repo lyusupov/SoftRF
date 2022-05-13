@@ -233,7 +233,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_T8_S2_TFT_BL       33
 
 // button
-#define SOC_GPIO_PIN_T8_S2_BUTTON       21
+#define SOC_GPIO_PIN_T8_S2_BUTTON       0 // 21
 
 // I2C
 #define SOC_GPIO_PIN_T8_S2_SDA          3
@@ -248,6 +248,9 @@ extern Adafruit_NeoPixel strip;
 // 32768 Hz crystal
 #define SOC_GPIO_PIN_T8_S2_XP           15
 #define SOC_GPIO_PIN_T8_S2_XN           16
+
+#define SOC_GPIO_PIN_TDISPLAY_S2_LED    39
+#define SOC_GPIO_PIN_TDONGLE_S2_LED     39
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_HOR_RES                      (240) //Horizontal
@@ -275,7 +278,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_SCK             36
 #define SOC_GPIO_PIN_S3_SS              34
 #define SOC_GPIO_PIN_S3_RST             33
-#define SOC_GPIO_PIN_S3_BUSY            38
+#define SOC_GPIO_PIN_S3_BUSY            48
 
 // I2C
 #define SOC_GPIO_PIN_S3_SDA             8
@@ -283,6 +286,9 @@ extern Adafruit_NeoPixel strip;
 
 #define SOC_GPIO_PIN_S3_OLED_SDA        21
 #define SOC_GPIO_PIN_S3_OLED_SCL        18
+
+// button
+#define SOC_GPIO_PIN_S3_BUTTON          0
 
 // LEDs, active state - HIGH
 #define SOC_GPIO_PIN_S3_LED_RED         5

@@ -75,7 +75,7 @@ void TFT_wakeup()
 void TFT_backlight_init(void)
 {
     int bl_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP) ?
-                 SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
+                 SOC_GPIO_PIN_TDONGLE_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
 
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
     ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
@@ -122,8 +122,8 @@ byte TFT_setup()
     SPI.begin(SOC_GPIO_PIN_TWATCH_TFT_SCK, SOC_GPIO_PIN_TWATCH_TFT_MISO,
               SOC_GPIO_PIN_TWATCH_TFT_MOSI, -1);
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP) {
-    SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
-              SOC_GPIO_PIN_T8_S2_MOSI, SOC_GPIO_PIN_T8_S2_SS);
+    SPI.begin(SOC_GPIO_PIN_TDONGLE_SCK,  SOC_GPIO_PIN_TDONGLE_MISO,
+              SOC_GPIO_PIN_TDONGLE_MOSI, SOC_GPIO_PIN_TDONGLE_SS);
 
 #if LV_HOR_RES == 135
     TFT_view_mode = VIEW_MODE_STATUS;

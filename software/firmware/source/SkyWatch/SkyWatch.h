@@ -162,7 +162,7 @@ enum
 	HW_REV_T_WATCH_20,
 	HW_REV_DEVKIT,
 	HW_REV_T8,
-	HW_REV_T8_S2
+	HW_REV_TDONGLE,
 };
 
 enum

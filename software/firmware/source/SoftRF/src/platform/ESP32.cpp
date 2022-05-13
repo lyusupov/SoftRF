@@ -202,6 +202,7 @@ static void ESP32_setup()
      *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
      *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
      *  Ai-T NodeMCU-S3 | ESP-S3-12K | GIGADEVICE_GD25Q64C
+     *  TTGO T-Dongle   |            | BOYA_BY25Q32AL
      */
 
     switch(flash_id)
@@ -1654,12 +1655,16 @@ static void ESP32_Button_setup()
 {
   if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
-       esp32_board == ESP32_S2_T8_V1_1) {
+       esp32_board == ESP32_S2_T8_V1_1 ||
+       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
-                     SOC_GPIO_PIN_T8_S2_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+                     SOC_GPIO_PIN_T8_S2_BUTTON :
+                     (esp32_board == ESP32_S3_DEVKIT) ?
+                     SOC_GPIO_PIN_S3_BUTTON :
+                     SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
-    pinMode(button_pin, INPUT);
+    pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
 
     button_1.init(button_pin);
 
@@ -1680,15 +1685,20 @@ static void ESP32_Button_loop()
 {
   if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
-       esp32_board == ESP32_S2_T8_V1_1) {
+       esp32_board == ESP32_S2_T8_V1_1 ||
+       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
   }
 }
 
 static void ESP32_Button_fini()
 {
-  if (esp32_board == ESP32_S2_T8_V1_1) {
-    while (digitalRead(SOC_GPIO_PIN_T8_S2_BUTTON) == LOW);
+  if (esp32_board == ESP32_S2_T8_V1_1 ||
+      esp32_board == ESP32_S3_DEVKIT) {
+    int button_pin = esp32_board == ESP32_S2_T8_V1_1 ?
+                     SOC_GPIO_PIN_T8_S2_BUTTON :
+                     SOC_GPIO_PIN_S3_BUTTON;
+    while (digitalRead(button_pin) == LOW);
   }
 }
 

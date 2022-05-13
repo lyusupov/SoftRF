@@ -86,47 +86,47 @@
 #define SOC_GPIO_PIN_LRCLK              25
 #define SOC_GPIO_PIN_DOUT               19
 
-/* TTGO T8 S2 section */
-#define SOC_GPIO_PIN_T8_S2_CONS_RX      44
-#define SOC_GPIO_PIN_T8_S2_CONS_TX      43
+/* TTGO T-Dongle S2 section */
+#define SOC_GPIO_PIN_TDONGLE_CONS_RX    44
+#define SOC_GPIO_PIN_TDONGLE_CONS_TX    43
 
 // USB
-#define SOC_GPIO_PIN_T8_S2_USB_DP       20
-#define SOC_GPIO_PIN_T8_S2_USB_DN       19
+#define SOC_GPIO_PIN_TDONGLE_USB_DP     20
+#define SOC_GPIO_PIN_TDONGLE_USB_DN     19
 
 // SD SPI
-#define SOC_GPIO_PIN_T8_S2_MOSI         11
-#define SOC_GPIO_PIN_T8_S2_MISO         13
-#define SOC_GPIO_PIN_T8_S2_SCK          12
-#define SOC_GPIO_PIN_T8_S2_SS           10
+#define SOC_GPIO_PIN_TDONGLE_MOSI       11
+#define SOC_GPIO_PIN_TDONGLE_MISO       13
+#define SOC_GPIO_PIN_TDONGLE_SCK        12
+#define SOC_GPIO_PIN_TDONGLE_SS         10
 
 // TFT
-#define SOC_GPIO_PIN_T8_S2_TFT_MOSI     35
-#define SOC_GPIO_PIN_T8_S2_TFT_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_T8_S2_TFT_SCK      36
-#define SOC_GPIO_PIN_T8_S2_TFT_SS       34
-#define SOC_GPIO_PIN_T8_S2_TFT_DC       37
-#define SOC_GPIO_PIN_T8_S2_TFT_RST      38
-#define SOC_GPIO_PIN_T8_S2_TFT_BL       33
+#define SOC_GPIO_PIN_TDONGLE_TFT_MOSI   35
+#define SOC_GPIO_PIN_TDONGLE_TFT_MISO   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_TDONGLE_TFT_SCK    36
+#define SOC_GPIO_PIN_TDONGLE_TFT_SS     34
+#define SOC_GPIO_PIN_TDONGLE_TFT_DC     37
+#define SOC_GPIO_PIN_TDONGLE_TFT_RST    38
+#define SOC_GPIO_PIN_TDONGLE_TFT_BL     33
 
 // button
-#define SOC_GPIO_PIN_T8_S2_BUTTON       0 // 21
+#define SOC_GPIO_PIN_TDONGLE_BUTTON     0
 
 // I2C
-#define SOC_GPIO_PIN_T8_S2_SDA          3
-#define SOC_GPIO_PIN_T8_S2_SCL          4
+#define SOC_GPIO_PIN_TDONGLE_SDA        3
+#define SOC_GPIO_PIN_TDONGLE_SCL        4
 
 // battery voltage
-#define SOC_GPIO_PIN_T8_S2_BATTERY      9
+#define SOC_GPIO_PIN_TDONGLE_BATTERY    SOC_UNUSED_PIN
 
 // V3V Power enable
-#define SOC_GPIO_PIN_T8_S2_PWR_EN       14
+#define SOC_GPIO_PIN_TDONGLE_PWR_EN     SOC_UNUSED_PIN
 
 // 32768 Hz crystal
-#define SOC_GPIO_PIN_T8_S2_XP           15
-#define SOC_GPIO_PIN_T8_S2_XN           16
+#define SOC_GPIO_PIN_TDONGLE_XP         SOC_UNUSED_PIN //  15
+#define SOC_GPIO_PIN_TDONGLE_XN         SOC_UNUSED_PIN //  16
 
-#define SOC_GPIO_PIN_TDISPLAY_S2_LED    39
+#define SOC_GPIO_PIN_TDONGLE_LED        39
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_HOR_RES                      (240) //Horizontal
@@ -135,6 +135,10 @@
 #endif
 #define LV_VER_RES                      (240) //vertical
 #define BACKLIGHT_CHANNEL               ((uint8_t)1)
+
+/* Boya Microelectronics Inc. */
+#define BOYA_ID                 0x68
+#define BOYA_BY25Q32AL          0x4016
 
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
@@ -187,12 +191,7 @@ extern PCF8563_Class *rtc;
 #define USE_USB_HOST
 
 #if defined(USE_USB_HOST)
-#undef  SOC_GPIO_PIN_T8_S2_CONS_RX
-#undef  SOC_GPIO_PIN_T8_S2_CONS_TX
-#define SOC_GPIO_PIN_T8_S2_CONS_RX      46
-#define SOC_GPIO_PIN_T8_S2_CONS_TX      45
-
-#define SERIAL_BEGIN(b,s) Serial.begin(b,s,SOC_GPIO_PIN_T8_S2_CONS_RX,SOC_GPIO_PIN_T8_S2_CONS_TX)
+#define SERIAL_BEGIN(b,s) Serial.begin(b,s,SOC_GPIO_PIN_TDONGLE_CONS_RX,SOC_GPIO_PIN_TDONGLE_CONS_TX)
 #endif /* USE_USB_HOST */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
