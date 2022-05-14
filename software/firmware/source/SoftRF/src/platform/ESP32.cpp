@@ -142,6 +142,11 @@ const char *ESP32S2_Device_Manufacturer = SOFTRF_IDENT;
 const char *ESP32S2_Device_Model = "Standalone Edition";
 const uint16_t ESP32S2_Device_Version = SOFTRF_USB_FW_VERSION;
 
+#if defined(EXCLUDE_WIFI)
+// Dummy definition to satisfy build sequence
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
+#endif /* EXCLUDE_WIFI */
+
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
   PMU_Irq = true;
@@ -530,7 +535,10 @@ static void ESP32_fini(int reason)
     axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
 
     /* workaround against AXP I2C access blocking by 'noname' OLED */
-    if (u8x8 == NULL) {
+#if defined(USE_OLED)
+    if (u8x8 == NULL)
+#endif /* USE_OLED */
+    {
       axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
     }
     axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
@@ -773,6 +781,7 @@ static const int8_t ESP32_dBm_to_power_level[21] = {
 
 static void ESP32_WiFi_set_param(int ndx, int value)
 {
+#if !defined(EXCLUDE_WIFI)
   uint32_t lt = value * 60; /* in minutes */
 
   switch (ndx)
@@ -797,6 +806,7 @@ static void ESP32_WiFi_set_param(int ndx, int value)
   default:
     break;
   }
+#endif /* EXCLUDE_WIFI */
 }
 
 static IPAddress ESP32_WiFi_get_broadcast()
@@ -816,6 +826,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
 
 static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
+#if !defined(EXCLUDE_WIFI)
   IPAddress ClientIP;
   WiFiMode_t mode = WiFi.getMode();
   int i = 0;
@@ -849,6 +860,7 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
   default:
     break;
   }
+#endif /* EXCLUDE_WIFI */
 }
 
 static void ESP32_WiFiUDP_stopAll()
@@ -858,11 +870,18 @@ static void ESP32_WiFiUDP_stopAll()
 
 static bool ESP32_WiFi_hostname(String aHostname)
 {
+#if defined(EXCLUDE_WIFI)
+  return false;
+#else
   return WiFi.setHostname(aHostname.c_str());
+#endif /* EXCLUDE_WIFI */
 }
 
 static int ESP32_WiFi_clients_count()
 {
+#if defined(EXCLUDE_WIFI)
+  return 0;
+#else
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)
@@ -879,6 +898,7 @@ static int ESP32_WiFi_clients_count()
   default:
     return -1; /* error */
   }
+#endif /* EXCLUDE_WIFI */
 }
 
 static bool ESP32_EEPROM_begin(size_t size)
@@ -1427,13 +1447,17 @@ static void ESP32_Battery_setup()
 
     /* TBD */
   } else {
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
                      (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
                       ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
-#else
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    calibrate_voltage(ADC1_GPIO1_CHANNEL);
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 }
 

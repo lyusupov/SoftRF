@@ -290,6 +290,9 @@ extern Adafruit_NeoPixel strip;
 // button
 #define SOC_GPIO_PIN_S3_BUTTON          0
 
+// battery voltage
+#define SOC_GPIO_PIN_S3_BATTERY         1
+
 // LEDs, active state - HIGH
 #define SOC_GPIO_PIN_S3_LED_RED         5
 #define SOC_GPIO_PIN_S3_LED_GREEN       6
