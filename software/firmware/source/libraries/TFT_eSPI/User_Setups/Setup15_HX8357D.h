@@ -1,7 +1,12 @@
 // See SetupX_Template.h for all options available
+#define USER_SETUP_ID 15
 
 #define HX8357D_DRIVER
 
+// If green and blue swapped on display then change the RGB colour order
+// Only uncomment ONE of the following options
+#define TFT_RGB_ORDER TFT_RGB    //   Red-Green-Blue
+//#define TFT_RGB_ORDER TFT_BGR    //   Blue-Green-RED
 
 // For NodeMCU - use pin numbers in the form PIN_Dx where Dx is the NodeMCU pin designation
 #define TFT_CS   PIN_D8  // Chip select control pin D8

@@ -20,6 +20,26 @@
   #endif
 #endif
 
+// Adafruit 1.69 round corner TFT support
+#if (TFT_HEIGHT == 280) && (TFT_WIDTH == 240)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
+// 1.47" 172x320 Round Rectangle Color IPS TFT Display
+#if (TFT_HEIGHT == 320) && (TFT_WIDTH == 172)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
+#if (TFT_HEIGHT == 300) && (TFT_WIDTH == 240)
+  #ifndef CGRAM_OFFSET
+    #define CGRAM_OFFSET
+  #endif
+#endif
+
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY 0x80 // Not used unless commandlist invoked
 
@@ -104,6 +124,7 @@
 #define ST7789_TEOFF		0x34      // Tearing effect line off
 #define ST7789_TEON			0x35      // Tearing effect line on
 #define ST7789_MADCTL		0x36      // Memory data access control
+#define ST7789_VSCRSADD		0x37      // Vertical screoll address
 #define ST7789_IDMOFF		0x38      // Idle mode off
 #define ST7789_IDMON		0x39      // Idle mode on
 #define ST7789_RAMWRC		0x3C      // Memory write continue (ST7789V)

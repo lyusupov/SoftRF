@@ -48,7 +48,7 @@ bool HIDkeyboard::sendPress(uint8_t _keycode, uint8_t modifier)
   uint8_t keycode[6] = {0};
   keycode[0] = _keycode;
 
-  return tud_hid_keyboard_report(report_id, keymap[_keycode].modifier, keycode);
+  return tud_hid_keyboard_report(report_id, modifier, keycode);
 }
 
 bool HIDkeyboard::sendRelease()

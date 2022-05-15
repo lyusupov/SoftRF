@@ -1,7 +1,7 @@
 
 #pragma once
 #include "Arduino.h"
-#if CONFIG_IDF_TARGET_ESP32S2
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 #if CONFIG_TINYUSB_ENABLED
 
 #include "common/tusb_common.h"
@@ -12,10 +12,17 @@
 #include "soc/usb_reg.h"
 #include "soc/usb_wrap_reg.h"
 #include "soc/usb_wrap_struct.h"
+#if CONFIG_IDF_TARGET_ESP32S2
+  #include "esp32s2/rom/usb/usb_persist.h"
+  #include "esp32s2/rom/usb/usb_dc.h"
+  #include "esp32s2/rom/usb/chip_usb_dw_wrapper.h"
+#endif
+#if CONFIG_IDF_TARGET_ESP32S3
+  #include "esp32s3/rom/usb/usb_persist.h"
+  #include "esp32s3/rom/usb/usb_dc.h"
+  #include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
+#endif
 
-#include "esp32s2/rom/usb/usb_persist.h"
-#include "esp32s2/rom/usb/usb_dc.h"
-#include "esp32s2/rom/usb/chip_usb_dw_wrapper.h"
 
 #include "usb_descriptors.h"
 /*
@@ -32,7 +39,7 @@ typedef enum {
 //--------------------------------------------------------------------+
 // Device callbacks
 //--------------------------------------------------------------------+
-class USBCallbacks { 
+class USBCallbacks {
 public:
     virtual ~USBCallbacks() { }
     virtual void onMount() { }
@@ -41,7 +48,7 @@ public:
     virtual void onResume() { }
 };
 
-typedef struct 
+typedef struct
 {
     char langId[2];
     const char *manufacturer;

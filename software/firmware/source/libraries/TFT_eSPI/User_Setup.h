@@ -8,6 +8,11 @@
 //   run without the need to make any more changes for a particular hardware setup!
 //   Note that some sketches are designed for a particular TFT pixel width/height
 
+// User defined information reported by "Read_User_Setup" test & diagnostics example
+#define USER_SETUP_INFO "User_Setup"
+
+// Define to disable all #warnings in library (can be put in User_Setup_Select.h)
+//#define DISABLE_ALL_LIBRARY_WARNINGS
 
 // ##################################################################################
 //
@@ -77,6 +82,7 @@
 // For ST7789, ST7735, ILI9163 and GC9A01 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
 // #define TFT_WIDTH  128
+// #define TFT_WIDTH  172 // ST7789 172 x 320
 // #define TFT_WIDTH  240 // ST7789 240 x 240 and 240 x 320
 // #define TFT_HEIGHT 160
 // #define TFT_HEIGHT 128
@@ -312,6 +318,9 @@
 // Section 4. Other options
 //
 // ##################################################################################
+
+// For RP2040 processor and SPI displays, uncomment the following line to use the PIO interface.
+//#define RP2040_PIO_SPI // Leave commented out to use standard RP2040 SPI port interface
 
 // For the RP2040 processor define the SPI port channel used (default 0 if undefined)
 //#define TFT_SPI_PORT 1 // Set to 0 if SPI0 pins are used, or 1 if spi1 pins used

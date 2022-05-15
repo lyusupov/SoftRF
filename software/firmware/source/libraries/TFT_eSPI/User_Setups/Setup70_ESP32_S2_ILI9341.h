@@ -1,6 +1,6 @@
 // Setup for the ESP32 S2 with ILI9341 display
 // Note SPI DMA with ESP32 S2 is not currently supported
-
+#define USER_SETUP_ID 70
 // See SetupX_Template.h for all options available
 #define ILI9341_DRIVER
 
@@ -13,6 +13,8 @@
 
 #define TFT_DC   14
 #define TFT_RST  15
+
+//#define TOUCH_CS 16 // Optional for touch screen
 
 #define LOAD_GLCD
 #define LOAD_FONT2
@@ -31,3 +33,5 @@
 #define SPI_FREQUENCY  40000000   // Maximum for ILI9341
 
 #define SPI_READ_FREQUENCY  6000000 // 6 MHz is the maximum SPI read speed for the ST7789V
+
+#define SPI_TOUCH_FREQUENCY 2500000

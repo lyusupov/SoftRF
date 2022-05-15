@@ -3,15 +3,20 @@
 #include "soc/usb_periph.h"
 #include "driver/periph_ctrl.h"
 #include "driver/gpio.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/gpio.h"
+#endif
+#if CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/gpio.h"
+#endif
 #include "esp_log.h"
 
 #include "esptinyusb.h"
-#if CONFIG_IDF_TARGET_ESP32S2
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 #if CONFIG_TINYUSB_ENABLED
 
 #define _manufacturer  "Espressif"
-#define _product  "ESP32S2 arduino device"
+#define _product  "ESP32 Arduino Device"
 #define _serial  "1234-5678"
 
 #define _cdc "CDC class"
