@@ -20,7 +20,12 @@ Areas where contributions are welcomed by the project's developer:
     - create and maintain settings menu UI for [SkyView Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi) and/or
         - connected [SoftRF Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
     - design, produce and sell for less than 20 USD a "BoosterPack" for TI SensorTag LPSTK-CC1352R that contains
-        - GNSS
+        - GNSS receiver
+        - display
+        - Wi-Fi/BT/LE/USB adapter
+        - pressure sensor
+    - design, produce and sell for less than 40 USD a "daughterboard" for HackRF One that contains
+        - GNSS receiver
         - display
         - Wi-Fi/BT/LE/USB adapter
         - pressure sensor

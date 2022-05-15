@@ -241,7 +241,7 @@ jobs:
           if [[ "$BOARD" =~ "esp32:esp32:esp32:"  ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
           fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:esp32:"  ]]; then
+          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
           if [[ "$BOARD" =~ "STM32:stm32:"        ]]; then

@@ -191,6 +191,12 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_TDONGLE;
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
+      hw_info.model = SOFTRF_MODEL_WEBTOP;
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
     default:
       hw_info.model = SOFTRF_MODEL_WEBTOP;
       hw_info.revision = HW_REV_UNKNOWN;
@@ -273,7 +279,7 @@ static void ESP32_setup()
 
   /* SD-SPI init */
   uSD_SPI.begin(
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
                 SOC_GPIO_PIN_TWATCH_SD_SCK,
                 SOC_GPIO_PIN_TWATCH_SD_MISO,
                 SOC_GPIO_PIN_TWATCH_SD_MOSI,
@@ -283,7 +289,7 @@ static void ESP32_setup()
                 SOC_GPIO_PIN_TDONGLE_MISO,
                 SOC_GPIO_PIN_TDONGLE_MOSI,
                 SOC_GPIO_PIN_TDONGLE_SS
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32SX */
                );
 }
 
@@ -568,6 +574,11 @@ static void ESP32_Battery_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+  } else if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
+             hw_info.revision == HW_REV_DEVKIT) {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 }
 
@@ -1094,7 +1105,7 @@ static void ESP32_Service_Mode(boolean arg)
   }
 }
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 
 #if defined(USE_USB_HOST)
 
@@ -1310,7 +1321,9 @@ const SoC_ops_t ESP32_ops = {
   "ESP32"
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
   "-S2"
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  "-S3"
+#endif /* CONFIG_IDF_TARGET_ESP32SX */
   "" ,
   ESP32_setup,
   ESP32_loop,
@@ -1341,12 +1354,12 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   ESP32_Service_Mode,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
   &ESP32_Bluetooth_ops,
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if defined(CONFIG_IDF_TARGET_ESP32S2) && \
+#if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32S2_USBSerial_ops,
 #else

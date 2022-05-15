@@ -185,7 +185,7 @@ extern PCF8563_Class *rtc;
 
 #define EB_S76G_1_3
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 
 /* Experimental */
 #define USE_USB_HOST
