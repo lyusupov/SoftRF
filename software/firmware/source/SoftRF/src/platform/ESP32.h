@@ -152,7 +152,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_SCL        2
 
 /* TTGO T-BEAM section */
-// GPS module
+// GNSS module
 #define SOC_GPIO_PIN_TBEAM_V05_RX       12
 #define SOC_GPIO_PIN_TBEAM_V05_TX       15
 #define SOC_GPIO_PIN_TBEAM_V08_RX       34
@@ -179,7 +179,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TBEAM_SCL          2
 
 /* TTGO T-Watch section */
-// GPS module
+// GNSS module
 #define SOC_GPIO_PIN_TWATCH_RX          34
 #define SOC_GPIO_PIN_TWATCH_TX          33
 // button
@@ -205,7 +205,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_T8_S2_CONS_RX      44
 #define SOC_GPIO_PIN_T8_S2_CONS_TX      43
 
-// GPS module
+// GNSS module
 #define SOC_GPIO_PIN_T8_S2_GNSS_RX      1
 #define SOC_GPIO_PIN_T8_S2_GNSS_TX      2
 
@@ -263,42 +263,79 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_CONS_RX         44
 #define SOC_GPIO_PIN_S3_CONS_TX         43
 
-// GPS module
-#define SOC_GPIO_PIN_S3_GNSS_RX         15
-#define SOC_GPIO_PIN_S3_GNSS_TX         16
-#define SOC_GPIO_PIN_S3_GNSS_PPS        17
+// GNSS module
+#define SOC_GPIO_PIN_S3_GNSS_RX         18
+#define SOC_GPIO_PIN_S3_GNSS_TX         17
+#define SOC_GPIO_PIN_S3_GNSS_PPS        7
 
 // USB
 #define SOC_GPIO_PIN_S3_USB_DP          20
 #define SOC_GPIO_PIN_S3_USB_DN          19
 
-// SX1262
+// TFT
+#define SOC_GPIO_PIN_S3_TFT_MOSI        35
+#define SOC_GPIO_PIN_S3_TFT_MISO        SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_S3_TFT_SCK         36
+#define SOC_GPIO_PIN_S3_TFT_SS          34
+#define SOC_GPIO_PIN_S3_TFT_DC          37
+#define SOC_GPIO_PIN_S3_TFT_RST         38
+#define SOC_GPIO_PIN_S3_TFT_BL          33
+
+// SX1262 (HPD16A)
 #define SOC_GPIO_PIN_S3_MOSI            35
-#define SOC_GPIO_PIN_S3_MISO            37
+#define SOC_GPIO_PIN_S3_MISO            40
 #define SOC_GPIO_PIN_S3_SCK             36
-#define SOC_GPIO_PIN_S3_SS              34
-#define SOC_GPIO_PIN_S3_RST             33
-#define SOC_GPIO_PIN_S3_BUSY            48
+#define SOC_GPIO_PIN_S3_SS              41
+#define SOC_GPIO_PIN_S3_RST             38 /* shared with TFT RST (and/or I2C OLED RST) */
+#define SOC_GPIO_PIN_S3_BUSY            42 /* shared with HPD13A DIO2 */
+// SX1276 (HPD13A)
+#define SOC_GPIO_PIN_S3_DIO0            47
+#define SOC_GPIO_PIN_S3_DIO1            48
+#define SOC_GPIO_PIN_S3_DIO2            42 /* shared with HPD16A BUSY */
 
 // I2C
 #define SOC_GPIO_PIN_S3_SDA             8
 #define SOC_GPIO_PIN_S3_SCL             9
 
-#define SOC_GPIO_PIN_S3_OLED_SDA        21
-#define SOC_GPIO_PIN_S3_OLED_SCL        18
+/* 2nd I2C bus (PMU) */
+#define SOC_GPIO_PIN_S3_OLED_SDA        1
+#define SOC_GPIO_PIN_S3_OLED_SCL        4
 
-// button
-#define SOC_GPIO_PIN_S3_BUTTON          0
+// microSD SPI
+#define SOC_GPIO_PIN_S3_SD_MOSI         11
+#define SOC_GPIO_PIN_S3_SD_MISO         13
+#define SOC_GPIO_PIN_S3_SD_SCK          12
+#define SOC_GPIO_PIN_S3_SD_SS           10
 
-// battery voltage
-#define SOC_GPIO_PIN_S3_BATTERY         1
+// button (BOOT)
+#define SOC_GPIO_PIN_S3_BUTTON          0 // "strapping" pin (S)
+
+// battery voltage (ADC)
+#define SOC_GPIO_PIN_S3_BATTERY         2
+
+// 32768 Hz crystal
+#define SOC_GPIO_PIN_S3_XP              15
+#define SOC_GPIO_PIN_S3_XN              16
 
 // LEDs, active state - HIGH
+#define SOC_GPIO_PIN_S3_STATUS          39
+/* auxillary */
 #define SOC_GPIO_PIN_S3_LED_RED         5
 #define SOC_GPIO_PIN_S3_LED_GREEN       6
 #define SOC_GPIO_PIN_S3_LED_BLUE        7
-#define SOC_GPIO_PIN_S3_STATUS          39
 #define SOC_GPIO_PIN_S3_LED4            38
+
+// Spare ESP32-S3 pins:
+// 46(S), 45(S), 21, 26
+// 3(S), 14
+// More spare pins when the devkit's Red and Green LEDs are not in use:
+// 5, 6
+// Few more when TFT is not connected:
+// 33, 34, 37
+// two more when there is no 32768 Hz crystal:
+// 15, 16
+// One more when SX1262 (HPD16A) is the only radio option:
+// 47
 
 // Hardware pin definitions for TTGO LoRa V2 board
 // with OLED SSD1306 0,96" I2C Display
@@ -360,9 +397,7 @@ struct rst_info {
 #define USE_OLED
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #define USE_TFT
-#endif
 #define USE_NMEA_CFG
 #define USE_BASICMAC
 

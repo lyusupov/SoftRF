@@ -1454,7 +1454,7 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    calibrate_voltage(ADC1_GPIO1_CHANNEL);
+    calibrate_voltage(ADC1_GPIO2_CHANNEL);
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -1726,7 +1726,7 @@ static void ESP32_Button_fini()
   }
 }
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 
 #if defined(USE_USB_HOST)
 
@@ -1971,12 +1971,12 @@ const SoC_ops_t ESP32_ops = {
   ESP32_SPI_begin,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   &ESP32_Bluetooth_ops,
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if defined(CONFIG_IDF_TARGET_ESP32S2) && \
+#if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32S2_USBSerial_ops,
 #else
