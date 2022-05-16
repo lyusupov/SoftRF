@@ -117,6 +117,7 @@ I2CBus        *i2c = nullptr;
 
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false;
+static bool nRF52_has_imu      = false;
 static bool RTC_sync           = false;
 static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
@@ -355,6 +356,9 @@ static void nRF52_setup()
     }
   }
 
+  Wire.beginTransmission(MPU9250_ADDRESS);
+  nRF52_has_imu = (Wire.endTransmission() == 0);
+
 #if !defined(EXCLUDE_BOARD_SELF_DETECT)
 
   if (!nRF52_has_rtc) {
@@ -470,6 +474,10 @@ static void nRF52_setup()
 
     pinMode(SOC_GPIO_PIN_R_INT, INPUT);
     hw_info.rtc = RTC_PCF8563;
+  }
+
+  if (nRF52_has_imu) {
+    hw_info.imu = IMU_MPU9250;
   }
 
   /* (Q)SPI flash init */
@@ -591,10 +599,10 @@ static void nRF52_post_init()
     Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("RTC     : "));
-    Serial.println(nRF52_has_rtc                       ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("FLASH   : "));
-    Serial.println(nRF52_has_spiflash                  ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.storage == STORAGE_FLASH    ? F("PASS") : F("FAIL"));
     Serial.flush();
 
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
@@ -603,6 +611,12 @@ static void nRF52_post_init()
       Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
       Serial.flush();
     }
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("IMU     : "));
+    Serial.println(hw_info.imu    == IMU_MPU9250       ? F("PASS") : F("N/A"));
+    Serial.flush();
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));

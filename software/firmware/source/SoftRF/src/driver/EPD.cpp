@@ -50,6 +50,7 @@ const char EPD_Display_text[] = "DISPLAY ";
 const char EPD_RTC_text[]     = "RTC     ";
 const char EPD_Flash_text[]   = "FLASH   ";
 const char EPD_Baro_text[]    = "BARO  ";
+const char EPD_IMU_text[]     = "IMU   ";
 
 unsigned long EPDTimeMarker = 0;
 static unsigned long EPD_anti_ghosting_timer = 0;
@@ -191,7 +192,7 @@ void EPD_info1()
     display->fillScreen(GxEPD_WHITE);
 
     x = 5;
-    y = (tbh + INFO_1_LINE_SPACING);
+    y = (tbh + INFO_1_LINE_SPACING - 2);
 
     display->setCursor(x, y);
     display->print(EPD_Radio_text);
@@ -231,6 +232,18 @@ void EPD_info1()
       display->setCursor(x, y);
       display->print(EPD_Baro_text);
       display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
+
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      if (hw_info.imu == IMU_NONE) {
+        display->setFont(&FreeMono18pt7b);
+      } else {
+        display->setFont(&FreeMonoBold18pt7b);
+      }
+
+      display->setCursor(x, y);
+      display->print(EPD_IMU_text);
+      display->print(hw_info.imu != IMU_NONE ? "  +" : "N/A");
     }
 
 #if defined(USE_EPD_TASK)

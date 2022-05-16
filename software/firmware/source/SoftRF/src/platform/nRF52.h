@@ -90,6 +90,7 @@ struct rst_info {
 
 #define DFU_MAGIC_SKIP        (0x6d)
 #define BME280_ADDRESS        (0x77)
+#define MPU9250_ADDRESS       (0x68)
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_RX  _PINNUM(0, 8) // P0.08
