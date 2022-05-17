@@ -39,9 +39,9 @@
 #define Serial_GNSS_In          Serial1
 #define Serial_GNSS_Out         Serial_GNSS_In
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #define UATSerial               Serial2
-#else
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #if ARDUINO_USB_CDC_ON_BOOT
 #define UATSerial               Serial0
 #undef  SerialOutput
@@ -49,7 +49,15 @@
 #else
 #define UATSerial               Serial
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#define UATSerial               Serial2
+#if ARDUINO_USB_CDC_ON_BOOT
+#undef  SerialOutput
+#define SerialOutput            Serial0
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #define EEPROM_commit()         EEPROM.commit()
 
