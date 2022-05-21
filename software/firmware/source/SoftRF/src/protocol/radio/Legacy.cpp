@@ -258,8 +258,18 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->gps = 323;
 
-    pkt->lat = (uint32_t ( lat * 1e7) >> 7) & 0x7FFFF;
-    pkt->lon = (uint32_t ( lon * 1e7) >> 7) & 0xFFFFF;
+    int32_t i32_lat = int32_t (lat * 1e7);
+    if (i32_lat < 0) {
+      i32_lat = (i32_lat % 0x4000000) + 0x4000000;
+    }
+    pkt->lat = ((i32_lat >> 7) + (i32_lat & 0x40 ? 1 : 0)) & 0x7FFFF;
+
+    int32_t i32_lon = int32_t (lon * 1e7);
+    if (i32_lon < 0) {
+      i32_lon = (i32_lon % 0x8000000) + 0x8000000;
+    }
+    pkt->lon = ((i32_lon >> 7) + (i32_lon & 0x40 ? 1 : 0)) & 0xFFFFF;
+
     pkt->alt = alt;
 
     pkt->airborne = speed > 0 ? 1 : 0;
