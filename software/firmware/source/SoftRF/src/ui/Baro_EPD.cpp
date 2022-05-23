@@ -40,6 +40,10 @@ static float alt_scale = 1.0;
 
 void EPD_baro_setup()
 {
+  if (hw_info.baro != BARO_MODULE_NONE) {
+    EPD_pages_mask |= (1 << VIEW_MODE_BARO);
+  }
+
   alt_scale = ui->units == UNITS_METRIC ? 1.0 : _GPS_FEET_PER_METER;
 
   memcpy(navbox1.title, Altitude_text, strlen(Altitude_text));

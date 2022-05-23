@@ -58,6 +58,10 @@ static uint8_t anti_ghosting_minutes = 0;
 
 static int EPD_view_mode = 0;
 bool EPD_vmode_updated = true;
+uint16_t EPD_pages_mask = (1 << VIEW_MODE_STATUS) |
+                          (1 << VIEW_MODE_RADAR ) |
+                          (1 << VIEW_MODE_TEXT  ) |
+                          (1 << VIEW_MODE_TIME  );
 
 volatile uint8_t EPD_update_in_progress = EPD_UPDATE_NONE;
 
@@ -143,6 +147,7 @@ bool EPD_setup(bool splash_screen)
   EPD_radar_setup();
   EPD_text_setup();
   EPD_baro_setup();
+  EPD_imu_setup();
   EPD_time_setup();
 
   switch (ui->aghost)
@@ -441,6 +446,9 @@ void EPD_loop()
       case VIEW_MODE_BARO:
         EPD_baro_loop();
         break;
+      case VIEW_MODE_IMU:
+        EPD_imu_loop();
+        break;
       case VIEW_MODE_TIME:
         EPD_time_loop();
         break;
@@ -591,22 +599,14 @@ void EPD_fini(int reason, bool screen_saver)
 void EPD_Mode()
 {
   if (hw_info.display == DISPLAY_EPD_1_54) {
-    if (EPD_view_mode == VIEW_MODE_STATUS) {
-      EPD_view_mode = VIEW_MODE_RADAR;
-      EPD_vmode_updated = true;
-    }  else if (EPD_view_mode == VIEW_MODE_RADAR) {
-      EPD_view_mode = VIEW_MODE_TEXT;
-      EPD_vmode_updated = true;
-    }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
-      EPD_view_mode = (hw_info.baro == BARO_MODULE_NONE ?
-                       VIEW_MODE_TIME : VIEW_MODE_BARO);
-      EPD_vmode_updated = true;
-    }  else if (EPD_view_mode == VIEW_MODE_BARO) {
-      EPD_view_mode = VIEW_MODE_TIME;
-      EPD_vmode_updated = true;
-    }  else if (EPD_view_mode == VIEW_MODE_TIME) {
-      EPD_view_mode = VIEW_MODE_STATUS;
-      EPD_vmode_updated = true;
+    for (int i=0; i < VIEW_MODES_COUNT; i++) {
+      int next_view_mode = (EPD_view_mode + i) % VIEW_MODES_COUNT;
+      if ((next_view_mode != EPD_view_mode) &&
+          (EPD_pages_mask & (1 << next_view_mode))) {
+        EPD_view_mode = next_view_mode;
+        EPD_vmode_updated = true;
+        break;
+      }
     }
   }
 }
@@ -624,6 +624,9 @@ void EPD_Up()
       break;
     case VIEW_MODE_BARO:
       EPD_baro_prev();
+      break;
+    case VIEW_MODE_IMU:
+      EPD_imu_prev();
       break;
     case VIEW_MODE_TIME:
       EPD_time_prev();
@@ -649,6 +652,9 @@ void EPD_Down()
       break;
     case VIEW_MODE_BARO:
       EPD_baro_next();
+      break;
+    case VIEW_MODE_IMU:
+      EPD_imu_next();
       break;
     case VIEW_MODE_TIME:
       EPD_time_next();

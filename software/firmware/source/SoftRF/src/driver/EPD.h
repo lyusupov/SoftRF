@@ -59,11 +59,14 @@ enum
 
 enum
 {
-	VIEW_MODE_STATUS,
+	VIEW_MODE_STATUS = 0,
 	VIEW_MODE_RADAR,
 	VIEW_MODE_TEXT,
 	VIEW_MODE_BARO,
-	VIEW_MODE_TIME
+	VIEW_MODE_IMU,
+	VIEW_MODE_TIME,
+
+	VIEW_MODES_COUNT,
 };
 
 /*
@@ -240,6 +243,11 @@ void EPD_baro_loop();
 void EPD_baro_next();
 void EPD_baro_prev();
 
+void EPD_imu_setup();
+void EPD_imu_loop();
+void EPD_imu_next();
+void EPD_imu_prev();
+
 void EPD_time_setup();
 void EPD_time_loop();
 void EPD_time_next();
@@ -247,6 +255,7 @@ void EPD_time_prev();
 
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
+extern uint16_t EPD_pages_mask;
 extern volatile uint8_t EPD_update_in_progress;
 extern ui_settings_t ui_settings;
 extern ui_settings_t *ui;

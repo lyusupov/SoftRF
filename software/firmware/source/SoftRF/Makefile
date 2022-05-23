@@ -149,6 +149,7 @@ UI_CPPS       := $(UI_PATH)/Web.cpp        \
                  $(UI_PATH)/Status_EPD.cpp \
                  $(UI_PATH)/Text_EPD.cpp   \
                  $(UI_PATH)/Baro_EPD.cpp   \
+                 $(UI_PATH)/IMU_EPD.cpp    \
                  $(UI_PATH)/Time_EPD.cpp
 
 SYSTEM_CPPS   := $(SYSTEM_PATH)/SoC.cpp    \
