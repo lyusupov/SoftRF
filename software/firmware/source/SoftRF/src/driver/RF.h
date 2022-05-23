@@ -79,7 +79,7 @@ typedef struct rfchip_ops_struct {
   const char name[8];
   bool (*probe)();
   void (*setup)();
-  void (*channel)(uint8_t);
+  void (*channel)(int8_t);
   bool (*receive)();
   void (*transmit)();
   void (*shutdown)();

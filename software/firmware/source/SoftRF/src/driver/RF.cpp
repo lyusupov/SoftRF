@@ -70,7 +70,7 @@ extern const gnss_chip_ops_t *gnss_chip;
 
 static bool nrf905_probe(void);
 static void nrf905_setup(void);
-static void nrf905_channel(uint8_t);
+static void nrf905_channel(int8_t);
 static bool nrf905_receive(void);
 static void nrf905_transmit(void);
 static void nrf905_shutdown(void);
@@ -78,7 +78,7 @@ static void nrf905_shutdown(void);
 static bool sx1276_probe(void);
 static bool sx1262_probe(void);
 static void sx12xx_setup(void);
-static void sx12xx_channel(uint8_t);
+static void sx12xx_channel(int8_t);
 static bool sx12xx_receive(void);
 static void sx12xx_transmit(void);
 static void sx1276_shutdown(void);
@@ -86,21 +86,21 @@ static void sx1262_shutdown(void);
 
 static bool uatm_probe(void);
 static void uatm_setup(void);
-static void uatm_channel(uint8_t);
+static void uatm_channel(int8_t);
 static bool uatm_receive(void);
 static void uatm_transmit(void);
 static void uatm_shutdown(void);
 
 static bool cc13xx_probe(void);
 static void cc13xx_setup(void);
-static void cc13xx_channel(uint8_t);
+static void cc13xx_channel(int8_t);
 static bool cc13xx_receive(void);
 static void cc13xx_transmit(void);
 static void cc13xx_shutdown(void);
 
 static bool ognrf_probe(void);
 static void ognrf_setup(void);
-static void ognrf_channel(uint8_t);
+static void ognrf_channel(int8_t);
 static bool ognrf_receive(void);
 static void ognrf_transmit(void);
 static void ognrf_shutdown(void);
@@ -314,7 +314,6 @@ void RF_SetChannel(void)
 {
   tmElements_t  tm;
   time_t        Time;
-  uint8_t       Slot;
   unsigned long pps_btime_ms, ref_time_ms;
 
   switch (settings->mode)
@@ -369,6 +368,9 @@ void RF_SetChannel(void)
     break;
   }
 
+  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
+  int8_t chan = -1;
+
   switch (RF_timing)
   {
   case RF_TIMING_2SLOTS_PPS_SYNC:
@@ -377,27 +379,23 @@ void RF_SetChannel(void)
       if ((ms_since_boot - ts->s0.tmarker) >= ts->interval_mid) {
         ts->s0.tmarker = ref_time_ms + ts->s0.begin - ts->adj;
         ts->current = 0;
+        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN);
       }
       if ((ms_since_boot - ts->s1.tmarker) >= ts->interval_mid) {
         ts->s1.tmarker = ref_time_ms + ts->s1.begin;
         ts->current = 1;
+        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN);
       }
-      Slot = ts->current;
     }
     break;
   case RF_TIMING_INTERVAL:
   default:
-    Slot = 0;
+    chan = (int8_t) RF_FreqPlan.getChannel(Time, 0, OGN);
     break;
   }
 
-  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-
-  uint8_t chan = RF_FreqPlan.getChannel(Time, Slot, OGN);
-
 #if DEBUG
   Serial.print("Plan: "); Serial.println(RF_FreqPlan.Plan);
-  Serial.print("Slot: "); Serial.println(Slot);
   Serial.print("OGN: "); Serial.println(OGN);
   Serial.print("Channel: "); Serial.println(chan);
 #endif
@@ -540,7 +538,7 @@ uint8_t RF_Payload_Size(uint8_t protocol)
  *
  */
 
-static uint8_t nrf905_channel_prev = (uint8_t) -1;
+static int8_t nrf905_channel_prev = (int8_t) -1;
 static bool nrf905_receive_active  = false;
 
 static bool nrf905_probe()
@@ -592,14 +590,14 @@ static bool nrf905_probe()
   return false;
 }
 
-static void nrf905_channel(uint8_t channel)
+static void nrf905_channel(int8_t channel)
 {
-  if (channel != nrf905_channel_prev) {
+  if (channel != -1 && channel != nrf905_channel_prev) {
 
     uint32_t frequency;
     nRF905_band_t band;
 
-    frequency = RF_FreqPlan.getChanFrequency(channel);
+    frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
     band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
 
     nRF905_setFrequency(band , frequency);
@@ -720,7 +718,7 @@ static bool sx12xx_receive_complete = false;
 bool sx12xx_receive_active = false;
 static bool sx12xx_transmit_complete = false;
 
-static uint8_t sx12xx_channel_prev = (uint8_t) -1;
+static int8_t sx12xx_channel_prev = (int8_t) -1;
 
 #if defined(USE_BASICMAC)
 void os_getDevEui (u1_t* buf) { }
@@ -845,10 +843,10 @@ static bool sx1262_probe()
 }
 #endif
 
-static void sx12xx_channel(uint8_t channel)
+static void sx12xx_channel(int8_t channel)
 {
-  if (channel != sx12xx_channel_prev) {
-    uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+  if (channel != -1 && channel != sx12xx_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
     int8_t fc = settings->freq_corr;
 
     //Serial.print("frequency: "); Serial.println(frequency);
@@ -1419,7 +1417,7 @@ static bool uatm_probe()
   return success;
 }
 
-static void uatm_channel(uint8_t channel)
+static void uatm_channel(int8_t channel)
 {
   /* Nothing to do */
 }
@@ -1532,7 +1530,7 @@ EasyLink myLink;
 EasyLink_TxPacket txPacket;
 #endif /* EXCLUDE_OGLEP3 */
 
-static uint8_t cc13xx_channel_prev = (uint8_t) -1;
+static int8_t cc13xx_channel_prev = (int8_t) -1;
 
 static bool cc13xx_receive_complete  = false;
 static bool cc13xx_receive_active    = false;
@@ -1745,12 +1743,13 @@ static bool cc13xx_probe()
   return success;
 }
 
-static void cc13xx_channel(uint8_t channel)
+static void cc13xx_channel(int8_t channel)
 {
 #if !defined(EXCLUDE_OGLEP3)
   if (settings->rf_protocol != RF_PROTOCOL_ADSB_UAT &&
+      channel != -1                                 &&
       channel != cc13xx_channel_prev) {
-    uint32_t frequency = RF_FreqPlan.getChanFrequency(channel);
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
 
     if (cc13xx_receive_active) {
       /* restart Rx upon a channel switch */
@@ -2011,7 +2010,7 @@ static void cc13xx_shutdown()
 
 static RFM_TRX  TRX;
 
-static uint8_t ognrf_channel_prev  = (uint8_t) -1;
+static int8_t ognrf_channel_prev  = (int8_t) -1;
 static bool ognrf_receive_active   = false;
 
 void RFM_Select  (void)                 { hal_pin_nss(0); }
@@ -2072,9 +2071,9 @@ static bool ognrf_probe()
   return success;
 }
 
-static void ognrf_channel(uint8_t channel)
+static void ognrf_channel(int8_t channel)
 {
-  if (channel != ognrf_channel_prev) {
+  if (channel != -1 && channel != ognrf_channel_prev) {
 
     if (ognrf_receive_active) {
 
