@@ -1,5 +1,5 @@
 /*
- * WiFiHelper.h
+ * OTAHelper.h
  * Copyright (C) 2016-2022 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,40 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WIFIHELPER_H
-#define WIFIHELPER_H
+#ifndef OTAHELPER_H
+#define OTAHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
-#include <WiFiUdp.h>
-#endif
+#define APORT 8266 ///< Port for OTA update
 
-#include "SoCHelper.h"
+void OTA_setup(void);
+void OTA_loop(void);
 
-#define UDP_PACKET_BUFSIZE  256
-#define WIFI_DHCP_LEASE_HRS 8
-
-enum
-{
-    WIFI_PARAM_TX_POWER,
-    WIFI_PARAM_DHCP_LEASE_TIME
-};
-
-enum
-{
-    WIFI_TX_POWER_MIN = 0,  /* 0  dBm */
-    WIFI_TX_POWER_MED = 10, /* 10 dBm */
-    WIFI_TX_POWER_MAX = 18  /* 18 dBm */
-};
-
-void WiFi_setup(void);
-void WiFi_loop(void);
-void WiFi_fini(void);
-
-extern String host_name;
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
-extern WiFiUDP Uni_Udp;
-#endif
-
-extern char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
-
-#endif /* WIFIHELPER_H */
+#endif /* OTAHELPER_H */

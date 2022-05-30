@@ -133,6 +133,8 @@ static int ESP32_I2C_writeBytes(uint8_t devAddress, uint8_t regAddress, uint8_t 
     return i2c->writeBytes(devAddress, regAddress, data, len);
 }
 
+#define TAG "MAC"
+
 static void ESP32_setup()
 {
   esp_err_t ret = ESP_OK;
@@ -1115,7 +1117,7 @@ static void ESP32_Service_Mode(boolean arg)
 #include "usb_acm.hpp"
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
-#define USB_RX_FIFO_SIZE (256)
+#define USB_RX_FIFO_SIZE (1024)
 #define USB_MAX_WRITE_CHUNK_SIZE 256
 
 cbuf *USB_RX_FIFO, *USB_TX_FIFO;
@@ -1202,6 +1204,8 @@ static void ESP32S2_USB_setup()
 
   host.registerClientCb(client_event_callback);
   host.init();
+
+  delay(2000);
 }
 
 static void ESP32S2_USB_loop()

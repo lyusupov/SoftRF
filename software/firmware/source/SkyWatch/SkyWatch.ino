@@ -39,6 +39,7 @@
 #include "NMEAHelper.h"
 #include "TrafficHelper.h"
 #include "WiFiHelper.h"
+#include "OTAHelper.h"
 #include "WebHelper.h"
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
@@ -119,11 +120,11 @@ void setup()
   hw_info.baro = Baro_setup();
   hw_info.display = TFT_setup();
 
-  WiFi_setup();
-
   if (SoC->USB_ops) {
      SoC->USB_ops->setup();
   }
+
+  WiFi_setup();
 
   if (SoC->Bluetooth_ops) {
      SoC->Bluetooth_ops->setup();
@@ -133,6 +134,7 @@ void setup()
     hw_info.storage = STORAGE_uSD;
   }
 
+  OTA_setup();
   Web_setup();
   Traffic_setup();
 
@@ -219,6 +221,9 @@ void normal_loop()
 
   // Handle Web
   Web_loop();
+
+  // Handle OTA update.
+  OTA_loop();
 
   SoC->Button_loop();
 

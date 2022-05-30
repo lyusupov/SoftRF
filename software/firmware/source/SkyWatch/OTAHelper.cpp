@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SoC.h"
+#include "SoCHelper.h"
 
 #if defined(EXCLUDE_WIFI)
 void OTA_setup()    {}
@@ -26,8 +26,8 @@ void OTA_loop()     {}
 #include <FS.h>
 #include <ArduinoOTA.h>
 
-#include "OTA.h"
-#include "../driver/WiFi.h"
+#include "OTAHelper.h"
+#include "WiFiHelper.h"
 
 void OTA_setup()
 {
