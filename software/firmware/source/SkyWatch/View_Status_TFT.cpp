@@ -23,6 +23,9 @@
 #include "TFTHelper.h"
 #include "TrafficHelper.h"
 #include "BatteryHelper.h"
+#include "NMEAHelper.h"
+#include "GDL90Helper.h"
+#include "EEPROMHelper.h"
 #include <protocol.h>
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
@@ -55,6 +58,18 @@ void TFT_status_loop()
 
   uint16_t tbw;
   uint16_t tbh;
+
+  bool has_connection = false;
+
+  switch (settings->m.protocol)
+  {
+  case PROTOCOL_GDL90:
+    has_connection = GDL90_isConnected();
+    break;
+  case PROTOCOL_NMEA:
+    has_connection = NMEA_isConnected();
+    break;
+  }
 
   sprite->createSprite(tft->width(), tft->height());
 
@@ -175,13 +190,13 @@ void TFT_status_loop()
   sprite->setTextSize(3);
 
   sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
-  sprite->print(buf);
+  sprite->print(has_connection ? buf : "N/A");
 
   tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
 
   sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
                     sprite->height()/4 - 7);
-  sprite->print(TFT_Protocol_ID[ThisDevice.protocol]);
+  sprite->print(has_connection ? TFT_Protocol_ID[ThisDevice.protocol] : "-");
 
 
   disp_value = rx_packets_counter % 1000;

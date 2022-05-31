@@ -489,8 +489,7 @@ bool NMEA_Save_Settings()
 {
     int nmea_out = NMEA_UART;
 
-    if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-        hw_info.revision == HW_REV_TDONGLE      &&
+    if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB &&
         settings->m.connection == CON_USB) {
       nmea_out = NMEA_USB;
     }

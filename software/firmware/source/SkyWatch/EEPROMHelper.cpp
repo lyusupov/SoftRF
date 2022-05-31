@@ -83,8 +83,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.s.nmea_l          = true;
   eeprom_block.field.settings.s.nmea_s          = true;
 
-  if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-      hw_info.revision == HW_REV_TDONGLE) {
+  if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
     eeprom_block.field.settings.s.nmea_out      = NMEA_UDP;
   } else {
     eeprom_block.field.settings.s.nmea_out      = NMEA_UART;
@@ -99,8 +98,7 @@ void EEPROM_defaults()
   /* SkyView defaults */
   eeprom_block.field.settings.m.adapter         = ADAPTER_NONE;
 
-  if (hw_info.model    == SOFTRF_MODEL_WEBTOP &&
-      hw_info.revision == HW_REV_TDONGLE) {
+  if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
     eeprom_block.field.settings.m.connection    = CON_USB;
   } else {
     eeprom_block.field.settings.m.connection    = CON_SERIAL_MAIN;

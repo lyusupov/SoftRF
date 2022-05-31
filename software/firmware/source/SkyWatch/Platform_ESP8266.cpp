@@ -25,8 +25,13 @@ ESP8266WebServer server ( 80 );
 
 static void ESP8266_setup()
 {
-  hw_info.model = SOFTRF_MODEL_WEBTOP;
+  hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
   hw_info.revision = HW_REV_DEVKIT;
+}
+
+static void ESP8266_post_init()
+{
+
 }
 
 static void ESP8266_loop()
@@ -264,6 +269,7 @@ const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
+  ESP8266_post_init,
   ESP8266_loop,
   ESP8266_fini,
   ESP8266_reset,

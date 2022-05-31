@@ -1004,7 +1004,7 @@ void handleStatus() {
       hw_info.display      == DISPLAY_EPD_2_7      ? "e-Paper" :
       hw_info.display      == DISPLAY_OLED_2_4     ? "OLED"    :
       hw_info.display      == DISPLAY_TFT_TTGO_240 ? "LCD"     : "NONE",
-      hw_info.storage      == STORAGE_uSD          ? "uSD"     : "NONE",
+      hw_info.storage      == STORAGE_SD           ? "SD"      : "NONE",
       (baro_chip == NULL ? "NONE" : baro_chip->name)
     );
 
@@ -1079,6 +1079,7 @@ void handleStatus() {
         NMEA_hasFLARM()    ? "FLARM" : "",
         NMEA_has3DFix()    ? "3D" : "NONE",
         ThisDevice.addr,
+        !NMEA_isConnected()                          ? "NONE"   :
         ThisDevice.protocol == RF_PROTOCOL_LEGACY    ? "Legacy" :
         ThisDevice.protocol == RF_PROTOCOL_OGNTP     ? "OGNTP"  :
         ThisDevice.protocol == RF_PROTOCOL_P3I       ? "P3I"    :

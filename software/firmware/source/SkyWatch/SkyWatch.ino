@@ -48,14 +48,17 @@
 
 ufo_t ThisDevice;
 hardware_info_t hw_info = {
-  .model    = SOFTRF_MODEL_WEBTOP,
+  .model    = SOFTRF_MODEL_WEBTOP_SERIAL,
   .revision = HW_REV_UNKNOWN,
   .soc      = SOC_NONE,
   .rf       = RF_IC_NONE,
   .gnss     = GNSS_MODULE_NONE,
   .baro     = BARO_MODULE_NONE,
   .display  = DISPLAY_NONE,
-  .storage  = STORAGE_NONE
+  .storage  = STORAGE_NONE,
+  .rtc      = RTC_NONE,
+  .imu      = IMU_NONE,
+  .slave    = SOFTRF_MODEL_UNKNOWN,
 };
 
 #if DEBUG_POWER
@@ -131,7 +134,7 @@ void setup()
   }
 
   if (SoC->DB_init()) {
-    hw_info.storage = STORAGE_uSD;
+    hw_info.storage = STORAGE_SD;
   }
 
   OTA_setup();
@@ -172,6 +175,8 @@ void setup()
       break;
     }
   }
+
+  SoC->post_init();
 
   SoC->WDT_setup();
 }

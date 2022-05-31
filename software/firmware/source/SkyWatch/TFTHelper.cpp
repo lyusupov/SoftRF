@@ -46,7 +46,13 @@ bool TFT_vmode_updated = true;
 
 static Gesture_t gesture = { false, {0,0}, {0,0} };
 
-const char SoftRF_text[]   = "SoftRF";
+const char SoftRF_text1[]   = "SoftRF";
+const char SoftRF_text2[]   = "Edition";
+const char SoftRF_text3[]   = "Dongle";
+const char SoftRF_text4[]   = "Badge";
+const char SoftRF_text5[]   = "Academy";
+const char SoftRF_text6[]   = "ES";
+const char SoftRF_text7[]   = "Lego";
 
 void TFT_off()
 {
@@ -74,7 +80,7 @@ void TFT_wakeup()
 
 void TFT_backlight_init(void)
 {
-    int bl_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP) ?
+    int bl_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                  SOC_GPIO_PIN_TDONGLE_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
 
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
@@ -121,7 +127,7 @@ byte TFT_setup()
 
     SPI.begin(SOC_GPIO_PIN_TWATCH_TFT_SCK, SOC_GPIO_PIN_TWATCH_TFT_MISO,
               SOC_GPIO_PIN_TWATCH_TFT_MOSI, -1);
-  } else if (hw_info.model == SOFTRF_MODEL_WEBTOP) {
+  } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
     SPI.begin(SOC_GPIO_PIN_TDONGLE_SCK,  SOC_GPIO_PIN_TDONGLE_MISO,
               SOC_GPIO_PIN_TDONGLE_MOSI, SOC_GPIO_PIN_TDONGLE_SS);
 
@@ -169,10 +175,10 @@ byte TFT_setup()
     tft->setTextSize(2);
     tft->setTextColor(TFT_WHITE, TFT_NAVY);
 
-    uint16_t tbw = tft->textWidth(SoftRF_text);
+    uint16_t tbw = tft->textWidth(SoftRF_text1);
     uint16_t tbh = tft->fontHeight();
     tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
-    tft->println(SoftRF_text);
+    tft->println(SoftRF_text1);
 
 #if LV_HOR_RES != 135
     rval = DISPLAY_TFT_TTGO_240;
@@ -450,6 +456,41 @@ void TFT_Mode_Cycle()
   }
 
   TFT_vmode_updated = true;
+}
+
+void TFT_info1(bool usb)
+{
+  const char *str1 = "NO";
+  const char *str2 = "DEVICE";
+
+  if (usb) {
+    str2 = "Edition";
+
+    switch (hw_info.slave)
+    {
+    case SOFTRF_MODEL_DONGLE:
+      str1 = SoftRF_text3;
+      break;
+    case SOFTRF_MODEL_BADGE:
+      str1 = SoftRF_text4;
+      break;
+    case SOFTRF_MODEL_ACADEMY:
+      str1 = SoftRF_text5;
+      break;
+    case SOFTRF_MODEL_ES:
+      str1 = SoftRF_text6;
+      break;
+    case SOFTRF_MODEL_LEGO:
+      str1 = SoftRF_text7;
+      break;
+    default:
+      str1 = "Unknown";
+      break;
+    }
+  }
+
+  TFT_Message(str1, str2);
+  delay(3000);
 }
 
 #endif /* EXCLUDE_TFT */

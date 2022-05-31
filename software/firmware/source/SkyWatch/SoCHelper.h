@@ -29,6 +29,7 @@ typedef struct SoC_ops_struct {
   uint8_t id;
   const char name[16];
   void (*setup)();
+  void (*post_init)();
   void (*loop)();
   void (*fini)();
   void (*reset)();
