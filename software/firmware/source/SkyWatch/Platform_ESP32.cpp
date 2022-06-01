@@ -34,6 +34,7 @@
 #include "BluetoothHelper.h"
 #include "BatteryHelper.h"
 #include "TFTHelper.h"
+#include "GNSSHelper.h"
 
 #include <battery.h>
 #include <sqlite3.h>
@@ -297,6 +298,19 @@ static void ESP32_setup()
                 SOC_GPIO_PIN_TDONGLE_SS
 #endif /* CONFIG_IDF_TARGET_ESP32SX */
                );
+
+#if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+  Serial.begin(SERIAL_OUT_BR);
+
+  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
+#else
+#if defined(USE_USB_HOST)
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+               SOC_GPIO_PIN_TDONGLE_CONS_RX, SOC_GPIO_PIN_TDONGLE_CONS_TX);
+#else
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* USE_USB_HOST */
+#endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
 }
 
 static void ESP32_post_init()
@@ -361,6 +375,36 @@ static void ESP32_loop()
       }
     }
   }
+
+#if defined(USE_USB_HOST)
+  if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB &&
+      hw_info.gnss  != GNSS_MODULE_NONE        &&
+      settings->m.connection == CON_USB) {
+
+    int c = -1;
+
+    while (true) {
+      if (Serial_GNSS_In.available() > 0) {
+        c = Serial_GNSS_In.read();
+      } else {
+        /* return back if no input data */
+        break;
+      }
+
+      if (c == -1) {
+        /* retry */
+        continue;
+      }
+
+      if (isPrintable(c) || c == '\r' || c == '\n') {
+        if (SoC->USB_ops) {
+          uint8_t symbol = (uint8_t) c;
+          SoC->USB_ops->write(&symbol, 1);
+        }
+      }
+    }
+  }
+#endif /* USE_USB_HOST */
 }
 
 static void ESP32_fini()
@@ -564,9 +608,19 @@ static void ESP32_swSer_begin(unsigned long baud)
                       SERIAL_IN_BITS : SERIAL_8N1;
     SerialInput.begin(baud, config, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   } else {
-#if !defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if ARDUINO_USB_ON_BOOT == 0
+#if defined(USE_USB_HOST)
+    if (hw_info.slave == SOFTRF_MODEL_ES) {
+      Serial_GNSS_In.updateBaudRate(baud);
+    }
+#else
     Serial.updateBaudRate(baud);
-#endif
+#endif /* USE_USB_HOST */
+#endif /* ARDUINO_USB_ON_BOOT */
+#else
+    Serial.updateBaudRate(baud);
+#endif /* defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) */
   }
 }
 
@@ -1089,7 +1143,7 @@ static void ESP32_Service_Mode(boolean arg)
 {
   if (arg) {
 //    Serial.begin(SERIAL_IN_BR, SERIAL_IN_BITS);
-#if !defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32)
      Serial.updateBaudRate(SERIAL_IN_BR);
 #endif
   WiFi_fini();
@@ -1104,7 +1158,7 @@ static void ESP32_Service_Mode(boolean arg)
     inServiceMode = true;
   } else {
 //    Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-#if !defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     Serial.updateBaudRate(SERIAL_OUT_BR);
 #endif
     axp.setGPIOMode(AXP_GPIO_2, AXP_IO_OUTPUT_LOW_MODE);  // MCU_reset
@@ -1128,9 +1182,9 @@ static void ESP32_Service_Mode(boolean arg)
 #include "usb_host.hpp"
 #include "usb_acm.hpp"
 
-#define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+#define USB_TX_FIFO_SIZE (1024)
 #define USB_RX_FIFO_SIZE (1024)
-#define USB_MAX_WRITE_CHUNK_SIZE 256
+#define USB_MAX_WRITE_CHUNK_SIZE 256 /* 64 */
 
 cbuf *USB_RX_FIFO, *USB_TX_FIFO;
 USBhost host;           // host is required to detect any device, before USB class is initialized
@@ -1199,6 +1253,9 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
           break;
         case MAKE_USB_ID(0x1A86, 0x55D4): /* CH9102 */
           slave = SOFTRF_MODEL_PRIME_MK2;
+          break;
+        case MAKE_USB_ID(0x303a, 0x0100):
+          slave = SOFTRF_MODEL_STANDALONE;
           break;
         }
 

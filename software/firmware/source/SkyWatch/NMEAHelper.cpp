@@ -115,7 +115,7 @@ static void NMEA_Parse_Character(char c)
             (NMEABuffer[ndx+1] == 'G' || NMEABuffer[ndx+1] == 'P')) {
 
           size_t write_size = NMEA_cnt - ndx + 1;
-          NMEA_Out((byte *) &NMEABuffer[ndx], write_size, true);
+          NMEA_Out(settings->s.nmea_out, (byte *) &NMEABuffer[ndx], write_size, true);
           break;
         }
       }
@@ -420,7 +420,7 @@ void NMEA_loop()
 
     NMEA_add_checksum(PGRMZBuffer, sizeof(PGRMZBuffer) - strlen(PGRMZBuffer));
 
-    NMEA_Out((byte *) PGRMZBuffer, strlen(PGRMZBuffer), false);
+    NMEA_Out(settings->s.nmea_out, (byte *) PGRMZBuffer, strlen(PGRMZBuffer), false);
 
     PGRMZ_TimeMarker = millis();
   }
@@ -533,9 +533,9 @@ bool NMEA_has3DFix()
           NMEA_Status.GPS == GNSS_STATUS_3D_MOVING);
 }
 
-void NMEA_Out(byte *buf, size_t size, bool nl)
+void NMEA_Out(uint8_t dest, byte *buf, size_t size, bool nl)
 {
-  switch(settings->s.nmea_out)
+  switch (dest)
   {
   case NMEA_UART:
   case NMEA_USB:

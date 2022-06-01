@@ -288,7 +288,7 @@ void TFT_radar_loop()
 
   if (hasData) {
 
-    bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+    bool hasFix = settings->m.protocol == PROTOCOL_NMEA  ? isValidNMEAFix()   :
                   settings->m.protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
                   false;
 

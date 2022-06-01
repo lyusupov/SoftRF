@@ -30,6 +30,10 @@
 
 #define SerialInput                     Serial
 
+#define Serial_GNSS_In                  Serial
+#define Serial_GNSS_Out                 Serial
+#define SOC_GPIO_PIN_GNSS_PPS           SOC_UNUSED_PIN
+
 #define SOC_A0_VOLTAGE_DIVIDER          (950.0 / 3.2)
 #define SOC_GPIO_PIN_BATTERY            A0
 

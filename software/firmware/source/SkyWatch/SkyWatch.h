@@ -172,21 +172,6 @@ enum
 
 enum
 {
-	GNSS_MODULE_NONE,
-	GNSS_MODULE_NMEA, /* generic NMEA */
-	GNSS_MODULE_U6,   /* Ublox 6 */
-	GNSS_MODULE_U7,   /* Ublox 7 */
-	GNSS_MODULE_U8,   /* Ublox 8 */
-	GNSS_MODULE_U9,   /* reserved for Ublox 9 */
-	GNSS_MODULE_MAV,  /* MAVLink */
-	GNSS_MODULE_SONY, /* S7XG */
-	GNSS_MODULE_AT65, /* AT6558 */
-	GNSS_MODULE_MT33, /* L80 */
-	GNSS_MODULE_GOKE, /* Air530 */
-};
-
-enum
-{
 	DISPLAY_NONE,
 	DISPLAY_EPD_2_7,
 	DISPLAY_OLED_2_4,

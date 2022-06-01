@@ -45,6 +45,7 @@
 #include "GDL90Helper.h"
 #include "TFTHelper.h"
 #include "BaroHelper.h"
+#include "GNSSHelper.h"
 
 ufo_t ThisDevice;
 hardware_info_t hw_info = {
@@ -85,10 +86,6 @@ void print_current(const char *s, bool d)
 }
 #endif
 
-#if !defined(SERIAL_BEGIN)
-#define SERIAL_BEGIN(b,s) Serial.begin(b,s)
-#endif
-
 bool inServiceMode = false;
 
 void setup()
@@ -96,7 +93,7 @@ void setup()
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   delay(300);
-  SERIAL_BEGIN(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
   Serial.println();
 
   Serial.println();
@@ -125,6 +122,11 @@ void setup()
 
   if (SoC->USB_ops) {
      SoC->USB_ops->setup();
+  }
+
+  if (hw_info.slave == SOFTRF_MODEL_ES &&
+      settings->m.connection == CON_USB) {
+    hw_info.gnss = GNSS_setup();
   }
 
   WiFi_setup();

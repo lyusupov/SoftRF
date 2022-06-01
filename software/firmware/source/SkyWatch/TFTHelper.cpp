@@ -48,11 +48,13 @@ static Gesture_t gesture = { false, {0,0}, {0,0} };
 
 const char SoftRF_text1[]   = "SoftRF";
 const char SoftRF_text2[]   = "Edition";
-const char SoftRF_text3[]   = "Dongle";
-const char SoftRF_text4[]   = "Badge";
-const char SoftRF_text5[]   = "Academy";
-const char SoftRF_text6[]   = "ES";
-const char SoftRF_text7[]   = "Lego";
+const char SoftRF_text3[]   = "Standalone";
+const char SoftRF_text4[]   = "Prime 2";
+const char SoftRF_text5[]   = "Dongle";
+const char SoftRF_text6[]   = "Badge";
+const char SoftRF_text7[]   = "Academy";
+const char SoftRF_text8[]   = "ES";
+const char SoftRF_text9[]   = "Lego";
 
 void TFT_off()
 {
@@ -464,24 +466,30 @@ void TFT_info1(bool usb)
   const char *str2 = "DEVICE";
 
   if (usb) {
-    str2 = "Edition";
+    str2 = SoftRF_text2;
 
     switch (hw_info.slave)
     {
-    case SOFTRF_MODEL_DONGLE:
+    case SOFTRF_MODEL_STANDALONE:
       str1 = SoftRF_text3;
       break;
-    case SOFTRF_MODEL_BADGE:
+    case SOFTRF_MODEL_PRIME:
       str1 = SoftRF_text4;
       break;
-    case SOFTRF_MODEL_ACADEMY:
+    case SOFTRF_MODEL_DONGLE:
       str1 = SoftRF_text5;
       break;
-    case SOFTRF_MODEL_ES:
+    case SOFTRF_MODEL_BADGE:
       str1 = SoftRF_text6;
       break;
-    case SOFTRF_MODEL_LEGO:
+    case SOFTRF_MODEL_ACADEMY:
       str1 = SoftRF_text7;
+      break;
+    case SOFTRF_MODEL_ES:
+      str1 = SoftRF_text8;
+      break;
+    case SOFTRF_MODEL_LEGO:
+      str1 = SoftRF_text9;
       break;
     default:
       str1 = "Unknown";

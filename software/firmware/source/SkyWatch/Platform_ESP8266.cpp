@@ -27,6 +27,8 @@ static void ESP8266_setup()
 {
   hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
   hw_info.revision = HW_REV_DEVKIT;
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 }
 
 static void ESP8266_post_init()

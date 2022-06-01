@@ -35,11 +35,14 @@
 #define MAX_TRACKING_OBJECTS            9
 
 #define SerialInput                     Serial1
+#define Serial_GNSS_In                  Serial
+#define Serial_GNSS_Out                 Serial
 
 /* TTGO T-Watch section */
 // GNSS module
 #define SOC_GPIO_PIN_GNSS_RX            34
 #define SOC_GPIO_PIN_GNSS_TX            33
+#define SOC_GPIO_PIN_GNSS_PPS           SOC_UNUSED_PIN
 
 // button
 #define SOC_GPIO_PIN_TWATCH_BUTTON      36
@@ -185,15 +188,17 @@ extern PCF8563_Class *rtc;
 
 #define EB_S76G_1_3
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
+    (ARDUINO_USB_ON_BOOT == 0)
 
 /* Experimental */
 #define USE_USB_HOST
 
-#if defined(USE_USB_HOST)
-#define SERIAL_BEGIN(b,s) Serial.begin(b,s,SOC_GPIO_PIN_TDONGLE_CONS_RX,SOC_GPIO_PIN_TDONGLE_CONS_TX)
-#endif /* USE_USB_HOST */
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_LOG_GNSS_VERSION
+#endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
 
 #endif /* PLATFORM_ESP32_H */
 
