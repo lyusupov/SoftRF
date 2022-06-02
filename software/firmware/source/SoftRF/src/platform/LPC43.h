@@ -32,6 +32,8 @@
 #define Serial_GNSS_In        Serial4
 #define Serial_GNSS_Out       Serial_GNSS_In
 
+#define SERIAL_FLUSH()        LPC43_USB_CDC_Sync()
+
 #define isValidFix()          isValidGNSSFix()
 
 #define EEPROM_commit()       EEPROM.commit()
@@ -71,6 +73,8 @@ extern Uart Serial1;
 extern Uart Serial4;
 
 extern "C" bool dfu_button_state(void);
+
+extern void LPC43_USB_CDC_Sync(void);
 
 #endif /* __cplusplus */
 
@@ -132,7 +136,9 @@ extern usb_data_t usb_data_type;
 #define cosf(x)               cos  ((double) (x))
 #define sinf(x)               sin  ((double) (x))
 #define sqrtf(x)              sqrt ((double) (x))
+//#define atanf(x)            atan ((double) (x))
 #define atan2f(y,x)           atan2((double) (y), (double) (x))
+//#define powf(x,y)           pow  ((double) (x), (double) (y))
 
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C

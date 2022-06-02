@@ -111,7 +111,7 @@ static void LPC43_post_init()
   Serial.print(LPC43_Device_Manufacturer); Serial.print(' ');
   Serial.print(LPC43_Device_Model); Serial.println(" Power-on Self Test");
   Serial.println();
-  Serial.flush();
+  SERIAL_FLUSH();
 
   Serial.print(F("GNSS    : "));
   Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("N/A"));
@@ -123,7 +123,7 @@ static void LPC43_post_init()
   Serial.println();
   Serial.println(F("Power-on Self Test is complete."));
   Serial.println();
-  Serial.flush();
+  SERIAL_FLUSH();
 
   Serial.println(F("Data output device(s):"));
 
@@ -155,7 +155,7 @@ static void LPC43_post_init()
   }
 
   Serial.println();
-  Serial.flush();
+  SERIAL_FLUSH();
 
 #if defined(USE_OLED)
   OLED_info1();
@@ -465,6 +465,14 @@ static void LPC43_Button_fini()
   /* TODO */
 }
 
+void LPC43_USB_CDC_Sync()
+{
+  unsigned long ms = millis();
+  while (millis() - ms < 200) {
+    if (SoC->USB_ops) SoC->USB_ops->loop();
+  }
+}
+
 static void LPC43_USB_setup()
 {
   TinyUSB_Device_Init(0);
@@ -473,10 +481,6 @@ static void LPC43_USB_setup()
   USBDevice.setManufacturerDescriptor(LPC43_Device_Manufacturer);
   USBDevice.setProductDescriptor(LPC43_Device_Model);
   USBDevice.setDeviceVersion(LPC43_Device_Version);
-
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.begin(SERIAL_OUT_BR);
-  }
 }
 
 static bool usb_led_state = false;
@@ -497,9 +501,11 @@ static void LPC43_USB_loop()
 
 static void LPC43_USB_fini()
 {
+#if 0
   if (USBSerial && USBSerial != Serial) {
     USBSerial.end();
   }
+#endif
 }
 
 static int LPC43_USB_available()
@@ -612,7 +618,7 @@ void setup_CPP(void)
   Serial.print(LPC43_boot_str1);
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.print(LPC43_boot_str2); Serial.println(LPC43_boot_str3);
-  Serial.flush();
+  SERIAL_FLUSH();
 
   Serial.println();
   Serial.print(F("Reset reason: ")); Serial.print(SoC->getResetReason());
@@ -620,7 +626,7 @@ void setup_CPP(void)
   Serial.print(system_reset_reason(), HEX);
   Serial.println(')');
   Serial.print(F("Free heap size: ")); Serial.println(SoC->getFreeHeap());
-  Serial.flush();
+  SERIAL_FLUSH();
 
   EEPROM_setup();
 
@@ -641,7 +647,7 @@ void setup_CPP(void)
 
   Traffic_setup();
   NMEA_setup();
-  Serial.flush();
+  SERIAL_FLUSH();
 
   SoC->post_init();
 
