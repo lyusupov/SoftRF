@@ -313,12 +313,58 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
 }
 
+const char SoftRF_text2[]   = "Edition";
+const char SoftRF_text3[]   = "Standalone";
+const char SoftRF_text4[]   = "Prime 2";
+const char SoftRF_text5[]   = "Dongle";
+const char SoftRF_text6[]   = "Badge";
+const char SoftRF_text7[]   = "Academy";
+const char SoftRF_text8[]   = "ES";
+const char SoftRF_text9[]   = "Lego";
+
 static void ESP32_post_init()
 {
+  const char *str1 = "NO";
+  const char *str2 = "DEVICE";
+
   switch (hw_info.display)
   {
   case DISPLAY_TFT_TTGO_135:
-    TFT_info1(has_usb_client);
+    if (has_usb_client) {
+      str2 = SoftRF_text2;
+
+      switch (hw_info.slave)
+      {
+      case SOFTRF_MODEL_STANDALONE:
+        str1 = SoftRF_text3;
+        break;
+      case SOFTRF_MODEL_PRIME:
+        str1 = SoftRF_text4;
+        break;
+      case SOFTRF_MODEL_DONGLE:
+        str1 = SoftRF_text5;
+        break;
+      case SOFTRF_MODEL_BADGE:
+        str1 = SoftRF_text6;
+        break;
+      case SOFTRF_MODEL_ACADEMY:
+        str1 = SoftRF_text7;
+        break;
+      case SOFTRF_MODEL_ES:
+        str1 = SoftRF_text8;
+        break;
+      case SOFTRF_MODEL_LEGO:
+        str1 = SoftRF_text9;
+        break;
+      default:
+        str1 = "Unknown";
+        break;
+      }
+    }
+
+    TFT_Message(str1, str2);
+    delay(3000);
+
     break;
   case DISPLAY_NONE:
   default:
@@ -611,8 +657,8 @@ static void ESP32_swSer_begin(unsigned long baud)
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #if ARDUINO_USB_ON_BOOT == 0
 #if defined(USE_USB_HOST)
-    if (hw_info.slave == SOFTRF_MODEL_ES) {
-      Serial_GNSS_In.updateBaudRate(baud);
+    if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
+      Serial_GNSS_In.updateBaudRate(SERIAL_GNSS_BR);
     }
 #else
     Serial.updateBaudRate(baud);
@@ -1184,7 +1230,7 @@ static void ESP32_Service_Mode(boolean arg)
 
 #define USB_TX_FIFO_SIZE (1024)
 #define USB_RX_FIFO_SIZE (1024)
-#define USB_MAX_WRITE_CHUNK_SIZE 256 /* 64 */
+#define USB_MAX_WRITE_CHUNK_SIZE 64
 
 cbuf *USB_RX_FIFO, *USB_TX_FIFO;
 USBhost host;           // host is required to detect any device, before USB class is initialized

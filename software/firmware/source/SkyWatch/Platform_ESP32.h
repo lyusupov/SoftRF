@@ -37,6 +37,7 @@
 #define SerialInput                     Serial1
 #define Serial_GNSS_In                  Serial
 #define Serial_GNSS_Out                 Serial
+#define SERIAL_GNSS_BR                  9600
 
 /* TTGO T-Watch section */
 // GNSS module
@@ -90,8 +91,8 @@
 #define SOC_GPIO_PIN_DOUT               19
 
 /* TTGO T-Dongle S2 section */
-#define SOC_GPIO_PIN_TDONGLE_CONS_RX    44
-#define SOC_GPIO_PIN_TDONGLE_CONS_TX    43
+#define SOC_GPIO_PIN_TDONGLE_CONS_RX    43 // 44
+#define SOC_GPIO_PIN_TDONGLE_CONS_TX    44 // 43
 
 // USB
 #define SOC_GPIO_PIN_TDONGLE_USB_DP     20

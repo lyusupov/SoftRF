@@ -24,6 +24,7 @@
 #include "TrafficHelper.h"
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
+#include "GNSSHelper.h"
 
 TinyGPSPlus nmea;
 
@@ -377,7 +378,9 @@ void NMEA_loop()
       while (SoC->USB_ops->available() > 0) {
         c = SoC->USB_ops->read();
 #if 1
-        Serial.print(c);
+        if (hw_info.gnss == GNSS_MODULE_NONE) {
+          Serial.print(c);
+        }
 #endif
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();

@@ -116,17 +116,17 @@ void setup()
   Battery_setup();
   SoC->Button_setup();
 
-  hw_info.rf = RF_IC_SX1276;
-  hw_info.baro = Baro_setup();
+  hw_info.rf      = RF_IC_SX1276;
+  hw_info.baro    = Baro_setup();
   hw_info.display = TFT_setup();
+
+  if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB &&
+      settings->m.connection == CON_USB) {
+    hw_info.gnss = GNSS_setup();
+  }
 
   if (SoC->USB_ops) {
      SoC->USB_ops->setup();
-  }
-
-  if (hw_info.slave == SOFTRF_MODEL_ES &&
-      settings->m.connection == CON_USB) {
-    hw_info.gnss = GNSS_setup();
   }
 
   WiFi_setup();

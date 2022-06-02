@@ -13,21 +13,25 @@
 ## NodeMCU
 
 ### Select NodeMCU COM port
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/NodeMCU-Flasher-1.GIF)
 
 
 
 ### Select firmware file
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/NodeMCU-Flasher-2.GIF)
 
 
 
 ### Start flashing cycle
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/NodeMCU-Flasher-3.GIF)
 
 
 
 ### Wait for completion
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/NodeMCU-Flasher-4.GIF)
 
 ## ESP32
