@@ -19,7 +19,9 @@
 #ifndef NMEAHELPER_H
 #define NMEAHELPER_H
 
+#ifdef __cplusplus
 #include "../../system/SoC.h"
+#endif /* __cplusplus */
 
 enum
 {

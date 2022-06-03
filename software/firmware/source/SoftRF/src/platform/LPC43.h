@@ -102,7 +102,6 @@ extern usb_data_t usb_data_type;
 #define EXCLUDE_WIFI
 #define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND
-//#define EXCLUDE_EEPROM
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_EGM96
 #define EXCLUDE_CC13XX
@@ -120,7 +119,7 @@ extern usb_data_t usb_data_type;
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
-//#define EXCLUDE_LOG_GNSS_VERSION
+#define EXCLUDE_LOG_GNSS_VERSION
 
 #define EXCLUDE_BMP180
 //#define EXCLUDE_BMP280
