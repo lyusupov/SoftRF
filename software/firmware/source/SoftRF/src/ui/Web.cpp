@@ -37,6 +37,7 @@ void Web_fini()     {}
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#include "../system/Time.h"
 
 #if defined(ENABLE_AHRS)
 #include "../driver/AHRS.h"
@@ -577,9 +578,6 @@ void handleSettings() {
 }
 
 void handleRoot() {
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
 
   float vdd = Battery_voltage() ;
   bool low_voltage = (Battery_voltage() <= Battery_threshold());
@@ -669,7 +667,7 @@ void handleRoot() {
 #if defined(ENABLE_AHRS)
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
 #endif /* ENABLE_AHRS */
-    hr, min % 60, sec % 60, ESP.getFreeHeap(),
+    UpTime.hours, UpTime.minutes, UpTime.seconds, ESP.getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
     tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt

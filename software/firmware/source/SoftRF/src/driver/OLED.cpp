@@ -30,6 +30,7 @@
 #include "Baro.h"
 #include "Battery.h"
 #include "../TrafficHelper.h"
+#include "../system/Time.h"
 
 enum
 {
@@ -310,7 +311,7 @@ static void OLED_other()
   uint32_t acrfts_counter = Traffic_Count();
   uint32_t sats_counter   = gnss.satellites.value();
   uint8_t  fix            = (uint8_t) isValidGNSSFix();
-  uint32_t uptime_minutes = millis() / 60000;
+  uint32_t uptime_minutes = UpTime.minutes;
   int32_t  voltage        = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
                               (int) (Battery_voltage() * 10.0) : 0;
 
@@ -345,8 +346,7 @@ static void OLED_other()
   }
 
   if (prev_uptime_minutes != uptime_minutes) {
-    uint32_t uptime_hours = uptime_minutes / 60;
-    disp_value = uptime_hours % 100;
+    disp_value = UpTime.hours; /* 0-23 */
     if (disp_value < 10) {
       buf[0] = '0';
       itoa(disp_value, buf+1, 10);
@@ -356,7 +356,7 @@ static void OLED_other()
 
     u8x8->draw2x2String(0, 6, buf);
 
-    disp_value = uptime_minutes % 60;
+    disp_value = uptime_minutes;
     if (disp_value < 10) {
       buf[0] = '0';
       itoa(disp_value, buf+1, 10);
@@ -598,16 +598,15 @@ void OLED_049_func()
       OLED_display_titles = true;
     }
 
-    uptime_minutes = millis() / 60000;
+    uptime_minutes = UpTime.minutes;
 
     if (prev_uptime_minutes != uptime_minutes) {
-      uint32_t uptime_hours = uptime_minutes / 60;
-      disp_value = uptime_hours % 10;
+      disp_value = UpTime.hours % 10; /* 0-9, 0-9, 0-3 */
       itoa(disp_value, buf, 10);
 
       u8x8->draw2x2String(5, 6, buf);
 
-      disp_value = uptime_minutes % 60;
+      disp_value = uptime_minutes;
       if (disp_value < 10) {
         buf[0] = '0';
         itoa(disp_value, buf+1, 10);

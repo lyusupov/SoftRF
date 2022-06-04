@@ -115,9 +115,9 @@ void LPC43_setup(void)
 static void LPC43_post_init()
 {
   Serial.println();
-//  Serial.print(LPC43_Device_Manufacturer); Serial.print(' ');
-//  Serial.print(LPC43_Device_Model); Serial.println(" Power-on Self Test");
-  Serial.println("SoftRF ES Edition Power-on Self Test");
+  Serial.print(LPC43_Device_Manufacturer); Serial.print(' ');
+  Serial.print(LPC43_Device_Model); Serial.println(" Power-on Self Test");
+//  Serial.println("SoftRF ES Edition Power-on Self Test");
   Serial.println();
   SERIAL_FLUSH();
 
@@ -685,12 +685,7 @@ void main_loop_CPP(void)
 
   SoC->Button_loop();
 
-#if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
-  /* restart the device when uptime is more than 47 days */
-  if (millis() > (47 * 24 * 3600 * 1000UL)) {
-    SoC->reset();
-  }
-#endif /* TAKE_CARE_OF_MILLIS_ROLLOVER */
+  Time_loop();
 
   yield();
 }

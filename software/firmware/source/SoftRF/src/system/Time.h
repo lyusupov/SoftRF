@@ -19,12 +19,25 @@
 #ifndef TIMEHELPER_H
 #define TIMEHELPER_H
 
+#include <stdint.h>
+
 enum
 {
   RTC_NONE,
   RTC_PCF8563
 };
 
+typedef struct UpTime_struct {
+  uint8_t days;
+  uint8_t hours;
+  uint8_t minutes;
+  uint8_t seconds;
+} UpTime_t;
+
+
 void Time_setup(void);
+void Time_loop(void);
+
+extern UpTime_t UpTime;
 
 #endif /* TIMEHELPER_H */
