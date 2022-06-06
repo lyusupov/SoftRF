@@ -21,13 +21,14 @@
 
 #include "system/SoC.h"
 
-#define ALARM_ZONE_NONE       10000 /* zone range is 1000m <-> 10000m */
-#define ALARM_ZONE_LOW        1000  /* zone range is  700m <->  1000m */
+#define ALARM_ZONE_NONE       25500 /* zone range is 1000m <-> 25500m */
+#define ALARM_ZONE_LOW        2000  /* zone range is  700m <->  2000m */
 #define ALARM_ZONE_IMPORTANT  700   /* zone range is  400m <->   700m */
 #define ALARM_ZONE_URGENT     400   /* zone range is    0m <->   400m */
 
 #define VERTICAL_SEPARATION         300 /* metres */
-#define VERTICAL_VISIBILITY_RANGE   500 /* value from FLARM data port specs */
+#define VERTICAL_VISIBILITY_RANGE   500 /* value from Classic FLARM data port specs */
+#define VERTICAL_VISIBILITY_MAX    2000 /* limit for PowerFLARM */
 
 #define TRAFFIC_VECTOR_UPDATE_INTERVAL 2 /* seconds */
 #define TRAFFIC_UPDATE_INTERVAL_MS (TRAFFIC_VECTOR_UPDATE_INTERVAL * 1000)

@@ -160,7 +160,7 @@ void Time_setup()
 
 #endif /* EXCLUDE_WIFI */
 
-UpTime_t UpTime = {0, 0, 0};
+UpTime_t UpTime = {0, 0, 0, 0};
 static unsigned long UpTime_Marker = 0;
 
 void Time_loop()

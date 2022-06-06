@@ -61,6 +61,30 @@ const rf_proto_desc_t legacy_proto_desc = {
   .slot1           = {800, 1200}
 };
 
+/*
+ * FTD-014. Speed threshold in m/sec.
+ * The aircraft is treated as on ground if its horizontal
+ * velocity is below this value.
+ */
+static const uint8_t legacy_GS_threshold[] PROGMEM = {
+        0,  /* OTHER      */
+        2,  /* GLIDER     */
+        10, /* TOWPLANE   */
+        2,  /* HELICOPTER */
+        5,  /* PARACHUTE  */
+        10, /* DROPPLANE  */
+        2,  /* HANGGLIDER */
+        2,  /* PARAGLIDER */
+        10, /* POWERED    */
+        10, /* JET        */
+        0,  /* UFO        */
+        0,  /* BALLOON    */
+        0,  /* ZEPPELIN   */
+        2,  /* UAV        */
+        0,  /* RESERVED   */
+        0   /* STATIC     */
+};
+
 /* http://en.wikipedia.org/wiki/XXTEA */
 void btea(uint32_t *v, int8_t n, const uint32_t key[4]) {
     uint32_t y, z, sum;
@@ -208,6 +232,9 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     uint32_t key[4];
 
     uint32_t id = this_aircraft->addr;
+    uint8_t acft_type = this_aircraft->aircraft_type > AIRCRAFT_TYPE_STATIC ?
+            AIRCRAFT_TYPE_UNKNOWN : this_aircraft->aircraft_type;
+
     int32_t lat = (int32_t) (this_aircraft->latitude  * 1e7);
     int32_t lon = (int32_t) (this_aircraft->longitude * 1e7);
     int16_t alt = (int16_t) (this_aircraft->altitude  + this_aircraft->geoid_separation);
@@ -251,10 +278,10 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->parity = 0;
 
-    pkt->stealth = this_aircraft->stealth;
+    pkt->stealth  = this_aircraft->stealth;
     pkt->no_track = this_aircraft->no_track;
 
-    pkt->aircraft_type = this_aircraft->aircraft_type;
+    pkt->aircraft_type = acft_type;
 
     pkt->gps = 323;
 
@@ -263,7 +290,8 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->alt = alt < 0 ? 0 : alt;
 
-    pkt->airborne = speed > 0 ? 1 : 0;
+    pkt->airborne = ((int) speedf) >= legacy_GS_threshold[acft_type] ? 1 : 0;
+
     pkt->ns[0] = ns; pkt->ns[1] = ns; pkt->ns[2] = ns; pkt->ns[3] = ns;
     pkt->ew[0] = ew; pkt->ew[1] = ew; pkt->ew[2] = ew; pkt->ew[3] = ew;
 
