@@ -377,7 +377,7 @@ void NMEA_loop()
     if (SoC->USB_ops) {
       while (SoC->USB_ops->available() > 0) {
         c = SoC->USB_ops->read();
-#if 1
+#if defined(ENABLE_USB_HOST_DEBUG)
         if (hw_info.gnss == GNSS_MODULE_NONE) {
           Serial.print(c);
         }

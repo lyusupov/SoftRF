@@ -194,6 +194,7 @@ extern PCF8563_Class *rtc;
 
 /* Experimental */
 #define USE_USB_HOST
+//#define ENABLE_USB_HOST_DEBUG
 
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65

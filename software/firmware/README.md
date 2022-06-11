@@ -64,6 +64,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * port of MicroPython for ESP32 is developed by **Boris Lovosevic**
  * ESP32 BT SPP library is developed by **Evandro Copercini**
  * TFT library is developed by **Bodmer**
+ * STM32duino Low Power and RTC libraries are developed by **Wi6Labs**
+ * Basic MAC library is developed by **Michael Kuyper**
+ * LowPowerLab SPIFlash library is maintained by **Felix Rusu**
+ * Arduino Core for ASR6x0x is developed by **Aaron Lee**
  * ADXL362 library is developed by **Anne Mahaffey**
  * Arduino Core for nRF52 and TinyUSB library are developed by **Ha Thach**
  * Arduino-NVM library is developed by **Frank Holtz**
@@ -73,3 +77,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino MIDI library is developed by **Francois Best**
  * Arduino uCDB library is developed by **Ioulianos Kakoulidis**
  * libmodes library is developed by **Salvatore Sanfilippo** and **Thomas Watson**
+ * Arduino Core for Atmel SAMD and FlashStorage library are developed by **Arduino LLC**
+ * USB host library 2.0 for Zero/M0/SAMD is developed by **gdsports625@gmail.com**
+ * EspTinyUSB library is developed by **Dariusz Krempa**
+ * Arduino Core for Raspberry Pi RP2040 is developed by **Earle Philhower**

@@ -123,6 +123,11 @@ void setup()
   if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB &&
       settings->m.connection == CON_USB) {
     hw_info.gnss = GNSS_setup();
+#if defined(ENABLE_USB_HOST_DEBUG)
+    if (hw_info.gnss == GNSS_MODULE_NONE) {
+      Serial_GNSS_In.updateBaudRate(SERIAL_OUT_BR);
+    }
+#endif
   }
 
   if (SoC->USB_ops) {
