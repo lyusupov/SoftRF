@@ -25,6 +25,8 @@
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
 
+float IMU_g = 0;
+
 static const char G_load_text[] = "G-load";
 
 void EPD_imu_setup()
@@ -36,7 +38,6 @@ void EPD_imu_setup()
 
 void EPD_imu_loop()
 {
-  float g = 0;
   char buf_g[8];
 
   int16_t  tbx, tby;
@@ -50,7 +51,7 @@ void EPD_imu_loop()
 #else
   {
 #endif
-    snprintf(buf_g, sizeof(buf_g), "%.1f", g);
+    snprintf(buf_g, sizeof(buf_g), "%.1f", IMU_g);
 
     display->fillScreen(GxEPD_WHITE);
 

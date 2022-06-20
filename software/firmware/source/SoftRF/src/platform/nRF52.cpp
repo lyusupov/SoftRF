@@ -117,7 +117,6 @@ I2CBus        *i2c = nullptr;
 
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false;
-static bool nRF52_has_imu      = false;
 static bool RTC_sync           = false;
 static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
@@ -241,6 +240,15 @@ ui_settings_t ui_settings = {
 ui_settings_t *ui;
 uCDB<FatFileSystem, File> ucdb(fatfs);
 
+#if !defined(EXCLUDE_IMU)
+#include <MPU9250.h>
+MPU9250 imu;
+
+static bool nRF52_has_imu = false;
+
+extern float IMU_g;
+#endif /* EXCLUDE_IMU */
+
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and
 // return number of copied bytes (must be multiple of block size)
@@ -356,8 +364,10 @@ static void nRF52_setup()
     }
   }
 
+#if !defined(EXCLUDE_IMU)
   Wire.beginTransmission(MPU9250_ADDRESS);
   nRF52_has_imu = (Wire.endTransmission() == 0);
+#endif /* EXCLUDE_IMU */
 
 #if !defined(EXCLUDE_BOARD_SELF_DETECT)
 
@@ -476,9 +486,15 @@ static void nRF52_setup()
     hw_info.rtc = RTC_PCF8563;
   }
 
-  if (nRF52_has_imu) {
+#if !defined(EXCLUDE_IMU)
+  if (nRF52_has_imu && imu.setup(MPU9250_ADDRESS)) {
+    imu.verbose(false);
+    if (imu.isSleeping()) {
+      imu.sleep(false);
+    }
     hw_info.imu = IMU_MPU9250;
   }
+#endif /* EXCLUDE_IMU */
 
   /* (Q)SPI flash init */
   switch (nRF52_board)
@@ -612,11 +628,13 @@ static void nRF52_post_init()
       Serial.flush();
     }
 
+#if !defined(EXCLUDE_IMU)
     Serial.println();
     Serial.println(F("External components:"));
     Serial.print(F("IMU     : "));
     Serial.println(hw_info.imu    == IMU_MPU9250       ? F("PASS") : F("N/A"));
     Serial.flush();
+#endif /* EXCLUDE_IMU */
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -782,6 +800,19 @@ static void nRF52_loop()
   }
 
 #endif /* USE_WEBUSB_SETTINGS */
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == IMU_MPU9250) {
+    if (imu.update()) {
+
+      float a_x = imu.getAccX();
+      float a_y = imu.getAccY();
+      float a_z = imu.getAccZ();
+
+      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
+    }
+  }
+#endif /* EXCLUDE_IMU */
 }
 
 static void nRF52_fini(int reason)
@@ -794,6 +825,12 @@ static void nRF52_fini(int reason)
   }
 
   if (SPIFlash != NULL) SPIFlash->end();
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == IMU_MPU9250) {
+    imu.sleep(true);
+  }
+#endif /* EXCLUDE_IMU */
 
   switch (nRF52_board)
   {

@@ -273,6 +273,7 @@ struct rst_info {
 //#define USE_PWM_SOUND
 //#define USE_GDL90_MSL
 //#define EXCLUDE_NUS
+#define EXCLUDE_IMU
 #define USE_OGN_ENCRYPTION
 #define EXCLUDE_BOARD_SELF_DETECT
 
