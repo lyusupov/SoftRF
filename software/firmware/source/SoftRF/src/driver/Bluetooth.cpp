@@ -1328,9 +1328,34 @@ MIDI_CREATE_BLE_INSTANCE(blemidi);
 
 String BT_name = HOSTNAME;
 
+#define UUID16_COMPANY_ID_NORDIC 0x0059
+
+static uint8_t BeaconUuid[16] =
+{
+ /* https://openuuid.net: becf4a85-29b8-476e-928f-fce11f303344 */
+  0xbe, 0xcf, 0x4a, 0x85, 0x29, 0xb8, 0x47, 0x6e,
+  0x92, 0x8f, 0xfc, 0xe1, 0x1f, 0x30, 0x33, 0x44
+};
+
+// UUID, Major, Minor, RSSI @ 1M
+BLEBeacon iBeacon(BeaconUuid, 0x0102, 0x0304, -64);
+
 void startAdv(void)
 {
+#if defined(USE_IBEACON)
+  uint32_t id = SoC->getChipId();
+  uint16_t major = (id >> 16) & 0x0000FFFF;
+  uint16_t minor = (id      ) & 0x0000FFFF;
+
+  // Manufacturer ID is required for Manufacturer Specific Data
+  iBeacon.setManufacturer(UUID16_COMPANY_ID_NORDIC);
+  iBeacon.setMajorMinor(major, minor);
+
   // Advertising packet
+
+  // Set the beacon payload using the BLEBeacon class
+  Bluefruit.Advertising.setBeacon(iBeacon);
+#endif /* USE_IBEACON */
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 

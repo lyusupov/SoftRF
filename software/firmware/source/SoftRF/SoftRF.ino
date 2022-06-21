@@ -60,6 +60,7 @@
  *   USB host library 2.0 for Zero/M0/SAMD is developed by gdsports625@gmail.com
  *   EspTinyUSB library is developed by Dariusz Krempa <esp32@esp32.eu.org>
  *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
+ *   MPU-9250 9 DoF sensor library is developed by Kris Winer and Hideaki Tai
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

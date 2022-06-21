@@ -803,8 +803,7 @@ static void nRF52_loop()
 
 #if !defined(EXCLUDE_IMU)
   if (hw_info.imu == IMU_MPU9250) {
-    if (imu.update()) {
-
+    if (imu.update()) { /* TODO: performance overhead ? */
       float a_x = imu.getAccX();
       float a_y = imu.getAccY();
       float a_z = imu.getAccZ();
