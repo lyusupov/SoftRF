@@ -1359,17 +1359,13 @@ void startAdv(void)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  // Include bleuart 128-bit uuid
-#if !defined(EXCLUDE_NUS)
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+  Bluefruit.Advertising.addService(blemidi, bleuart_HM10);
+#elif !defined(EXCLUDE_NUS)
   Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
 #else
   Bluefruit.Advertising.addService(bleuart_HM10);
-#endif /* EXCLUDE_NUS */
-
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
-  // Advertise BLE MIDI Service
-  Bluefruit.Advertising.addService(blemidi);
-#endif /* USE_BLE_MIDI */
+#endif /* USE_BLE_MIDI || EXCLUDE_NUS */
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
@@ -1488,42 +1484,6 @@ void nRF52_Bluetooth_setup()
 /*********************************************************************
  End of Adafruit licensed text
 *********************************************************************/
-
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
-
-#define MIDI_CHANNEL_TRAFFIC  1
-#define MIDI_CHANNEL_VARIO    2
-
-byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
-
-void nRF52_BLEMIDI_test()
-{
-  // Don't continue if we aren't connected.
-  if (Bluefruit.connected() && blemidi.notifyEnabled()) {
-    unsigned int position = 0;
-    unsigned int current  = 0;
-
-    for (; position <= sizeof(note_sequence); position++) {
-      // Setup variables for the current and previous
-      // positions in the note sequence.
-      current = position;
-      // If we currently are at position 0, set the
-      // previous position to the last note in the sequence.
-      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
-
-      // Send Note On for current position at full velocity (127) on channel 1.
-      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
-
-      // Send Note Off for previous note.
-      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
-
-      delay(286);
-    }
-
-    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
-  }
-}
-#endif /* USE_BLE_MIDI */
 
 static void nRF52_Bluetooth_loop()
 {

@@ -45,9 +45,13 @@
 
 #include "uCDB.hpp"
 
-#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_BLE_MIDI)
+#include <bluefruit.h>
+#endif /* USE_BLE_MIDI */
+
+#if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
 #include <MIDI.h>
-#endif /* USE_USB_MIDI */
+#endif /* USE_BLE_MIDI || USE_USB_MIDI */
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -365,7 +369,7 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  Wire.beginTransmission(MPU9250_ADDRESS);
+  Wire.beginTransmission(MPU9250_DEFAULT_ADDRESS);
   nRF52_has_imu = (Wire.endTransmission() == 0);
 #endif /* EXCLUDE_IMU */
 
@@ -487,7 +491,7 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu && imu.setup(MPU9250_ADDRESS)) {
+  if (nRF52_has_imu && imu.setup(MPU9250_DEFAULT_ADDRESS)) {
     imu.verbose(false);
     if (imu.isSleeping()) {
       imu.sleep(false);
@@ -1055,22 +1059,18 @@ static long nRF52_random(long howsmall, long howBig)
 }
 
 #if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
-
-#define MIDI_CHANNEL_TRAFFIC  1
-#define MIDI_CHANNEL_VARIO    2
-
 byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
 #endif /* USE_USB_MIDI */
 
-static void nRF52_Sound_test(int var)
-{
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
-    nRF52_BLEMIDI_test();
+#if defined(USE_BLE_MIDI)
+extern BLEMidi blemidi;
+extern midi::MidiInterface<BLEMidi> MIDI;
 #endif /* USE_BLE_MIDI */
 
+static void nRF52_Sound_test(int var)
+{
 #if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
-  if (USBDevice.mounted()) {
-
+  if (USBDevice.mounted() && settings->volume != BUZZER_OFF) {
     unsigned int position = 0;
     unsigned int current  = 0;
 
@@ -1114,6 +1114,18 @@ static void nRF52_Sound_tone(int hz, uint8_t volume)
       noTone(SOC_GPIO_PIN_BUZZER);
     }
   }
+
+#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+  if (volume != BUZZER_OFF  &&
+      Bluefruit.connected() &&
+      blemidi.notifyEnabled()) {
+    if (hz > 0) {
+      MIDI.sendNoteOn (60, 127, MIDI_CHANNEL_TRAFFIC); // 60 == middle C
+    } else {
+      MIDI.sendNoteOff(60,   0, MIDI_CHANNEL_TRAFFIC);
+    }
+  }
+#endif /* USE_BLE_MIDI */
 }
 
 static void nRF52_WiFi_set_param(int ndx, int value)
