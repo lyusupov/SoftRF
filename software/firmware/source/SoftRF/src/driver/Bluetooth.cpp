@@ -1150,7 +1150,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <InternalFileSystem.h>
 #include <BLEUart_HM10.h>
 #include <TinyGPS++.h>
-#if defined(USE_BLE_MIDI) || defined(USE_USB_MIDI)
+#if defined(USE_BLE_MIDI)
 #include <MIDI.h>
 #endif /* USE_BLE_MIDI */
 
@@ -1160,6 +1160,11 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include "RF.h"
 #include "../protocol/radio/Legacy.h"
 #include "Baro.h"
+#include "EEPROM.h"
+#include "Sound.h"
+#include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 
 /*
  * SensorBox Serivce: aba27100-143b-4b81-a444-edcd0000f020
@@ -1320,10 +1325,10 @@ BLEUart       bleuart_NUS;  // Nordic UART over BLE
 BLEBas        blebas;       // battery
 BLESensBox    blesens;      // SensBox
 
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+#if defined(USE_BLE_MIDI)
 BLEMidi       blemidi;
 
-MIDI_CREATE_BLE_INSTANCE(blemidi);
+MIDI_CREATE_INSTANCE(BLEMidi, blemidi, MIDI_BLE);
 #endif /* USE_BLE_MIDI */
 
 String BT_name = HOSTNAME;
@@ -1342,30 +1347,43 @@ BLEBeacon iBeacon(BeaconUuid, 0x0102, 0x0304, -64);
 
 void startAdv(void)
 {
+  bool no_data = (settings->nmea_out != NMEA_BLUETOOTH  &&
+                  settings->gdl90    != GDL90_BLUETOOTH &&
+                  settings->d1090    != D1090_BLUETOOTH);
+
 #if defined(USE_IBEACON)
-  uint32_t id = SoC->getChipId();
-  uint16_t major = (id >> 16) & 0x0000FFFF;
-  uint16_t minor = (id      ) & 0x0000FFFF;
+  if (no_data) {
+    uint32_t id = SoC->getChipId();
+    uint16_t major = (id >> 16) & 0x0000FFFF;
+    uint16_t minor = (id      ) & 0x0000FFFF;
 
-  // Manufacturer ID is required for Manufacturer Specific Data
-  iBeacon.setManufacturer(UUID16_COMPANY_ID_NORDIC);
-  iBeacon.setMajorMinor(major, minor);
+    // Manufacturer ID is required for Manufacturer Specific Data
+    iBeacon.setManufacturer(UUID16_COMPANY_ID_NORDIC);
+    iBeacon.setMajorMinor(major, minor);
 
-  // Advertising packet
+    // Advertising packet
 
-  // Set the beacon payload using the BLEBeacon class
-  Bluefruit.Advertising.setBeacon(iBeacon);
+    // Set the beacon payload using the BLEBeacon class
+    Bluefruit.Advertising.setBeacon(iBeacon);
+  } else
 #endif /* USE_IBEACON */
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
+  {
+    Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+    Bluefruit.Advertising.addTxPower();
 
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
-  Bluefruit.Advertising.addService(blemidi, bleuart_HM10);
-#elif !defined(EXCLUDE_NUS)
-  Bluefruit.Advertising.addService(bleuart_NUS, bleuart_HM10);
-#else
-  Bluefruit.Advertising.addService(bleuart_HM10);
-#endif /* USE_BLE_MIDI || EXCLUDE_NUS */
+#if defined(USE_BLE_MIDI)
+    if (settings->volume != BUZZER_OFF) {
+      Bluefruit.Advertising.addService(blemidi, bleuart_HM10);
+    } else
+#endif /* USE_BLE_MIDI */
+    {
+      Bluefruit.Advertising.addService(
+#if !defined(EXCLUDE_NUS)
+                                       bleuart_NUS,
+#endif /* EXCLUDE_NUS */
+                                       bleuart_HM10);
+    }
+  }
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
@@ -1463,10 +1481,10 @@ void nRF52_Bluetooth_setup()
   // Start SensBox Service
   blesens.begin();
 
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+#if defined(USE_BLE_MIDI)
   // Initialize MIDI with no any input channels
   // This will also call blemidi service's begin()
-  MIDI.begin(MIDI_CHANNEL_OFF);
+  MIDI_BLE.begin(MIDI_CHANNEL_OFF);
 #endif /* USE_BLE_MIDI */
 
   // Set up and start advertising

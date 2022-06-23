@@ -217,13 +217,13 @@ WEBUSB_URL_DEF(landingPage, 1 /*https*/, "adafruit.github.io/Adafruit_TinyUSB_Ar
 WEBUSB_URL_DEF(landingPage, 1 /*https*/, "lyusupov.github.io/SoftRF/settings.html");
 #endif /* USE_WEBUSB_SETTINGS */
 
-#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_USB_MIDI)
 // USB MIDI object
 Adafruit_USBD_MIDI usb_midi;
 
 // Create a new instance of the Arduino MIDI Library,
 // and attach usb_midi as the transport.
-MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI_USB);
 #endif /* USE_USB_MIDI */
 
 ui_settings_t ui_settings = {
@@ -559,10 +559,10 @@ static void nRF52_setup()
     FATFS_is_mounted = fatfs.begin(SPIFlash);
   }
 
-#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
   // This will also call usb_midi's begin()
-  MIDI.begin(MIDI_CHANNEL_OFF);
+  MIDI_USB.begin(MIDI_CHANNEL_OFF);
 #endif /* USE_USB_MIDI */
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -1058,18 +1058,13 @@ static long nRF52_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
-#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_USB_MIDI)
 byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
 #endif /* USE_USB_MIDI */
 
-#if defined(USE_BLE_MIDI)
-extern BLEMidi blemidi;
-extern midi::MidiInterface<BLEMidi> MIDI;
-#endif /* USE_BLE_MIDI */
-
 static void nRF52_Sound_test(int var)
 {
-#if defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_USB_MIDI)
   if (USBDevice.mounted() && settings->volume != BUZZER_OFF) {
     unsigned int position = 0;
     unsigned int current  = 0;
@@ -1083,30 +1078,36 @@ static void nRF52_Sound_test(int var)
       unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
 
       // Send Note On for current position at full velocity (127) on channel 1.
-      MIDI.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
+      MIDI_USB.sendNoteOn(note_sequence[current], 127, MIDI_CHANNEL_TRAFFIC);
 
       // Send Note Off for previous note.
-      MIDI.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
+      MIDI_USB.sendNoteOff(note_sequence[previous], 0, MIDI_CHANNEL_TRAFFIC);
 
       delay(286);
     }
 
-    MIDI.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
+    MIDI_USB.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
   }
 #endif /* USE_USB_MIDI */
 
-#if !defined(USE_USB_MIDI) && !defined(USE_BLE_MIDI)
+#if defined(USE_PWM_SOUND)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
     tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
   }
-#endif /* NOT(USE_BLE_MIDI OR USE_USB_MIDI) */
+#endif /* USE_PWM_SOUND */
 }
+
+#if defined(USE_BLE_MIDI)
+extern BLEMidi blemidi;
+extern midi::MidiInterface<BLEMidi> MIDI_BLE;
+#endif /* USE_BLE_MIDI */
 
 static void nRF52_Sound_tone(int hz, uint8_t volume)
 {
+#if defined(USE_PWM_SOUND)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
       tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
@@ -1114,15 +1115,26 @@ static void nRF52_Sound_tone(int hz, uint8_t volume)
       noTone(SOC_GPIO_PIN_BUZZER);
     }
   }
+#endif /* USE_PWM_SOUND */
 
-#if defined(USE_BLE_MIDI) && !defined(USE_USB_MIDI)
+#if defined(USE_USB_MIDI)
+  if (USBDevice.mounted() && volume != BUZZER_OFF) {
+    if (hz > 0) {
+      MIDI_USB.sendNoteOn (60, 127, MIDI_CHANNEL_TRAFFIC); // 60 == middle C
+    } else {
+      MIDI_USB.sendNoteOff(60,   0, MIDI_CHANNEL_TRAFFIC);
+    }
+  }
+#endif /* USE_USB_MIDI */
+
+#if defined(USE_BLE_MIDI)
   if (volume != BUZZER_OFF  &&
       Bluefruit.connected() &&
       blemidi.notifyEnabled()) {
     if (hz > 0) {
-      MIDI.sendNoteOn (60, 127, MIDI_CHANNEL_TRAFFIC); // 60 == middle C
+      MIDI_BLE.sendNoteOn (60, 127, MIDI_CHANNEL_TRAFFIC); // 60 == middle C
     } else {
-      MIDI.sendNoteOff(60,   0, MIDI_CHANNEL_TRAFFIC);
+      MIDI_BLE.sendNoteOff(60,   0, MIDI_CHANNEL_TRAFFIC);
     }
   }
 #endif /* USE_BLE_MIDI */
