@@ -740,6 +740,23 @@ static long ESP32_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+#include <BLEDevice.h>
+
+extern bool deviceConnected;
+extern BLECharacteristic* pMIDICharacteristic;
+
+uint8_t midiPacket[] = {
+   0x80,  // header
+   0x80,  // timestamp, not implemented
+   0x00,  // status
+   0x3c,  // 0x3c == 60 == middle c
+   0x00   // velocity
+};
+
+byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
+#endif /* USE_BLE_MIDI */
+
 static void ESP32_Sound_test(int var)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
@@ -773,8 +790,49 @@ static void ESP32_Sound_test(int var)
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
 
-#if defined(USE_BLE_MIDI)
-  ESP32_BLEMIDI_test();
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+  if (settings->volume != BUZZER_OFF                  &&
+      settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
+      deviceConnected) {
+
+    unsigned int position = 0;
+    unsigned int current  = 0;
+
+    for (; position <= sizeof(note_sequence); position++) {
+      // Setup variables for the current and previous
+      // positions in the note sequence.
+      current = position;
+      // If we currently are at position 0, set the
+      // previous position to the last note in the sequence.
+      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
+
+      // Send Note On for current position at full velocity (127) on channel 1.
+      // note down
+      midiPacket[2] = 0x90; // note down, channel 0
+      midiPacket[3] = note_sequence[current];
+      midiPacket[4] = 127;  // velocity
+      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes
+      pMIDICharacteristic->notify();
+
+      // Send Note Off for previous note.
+      // note up
+      midiPacket[2] = 0x80; // note up, channel 0
+      midiPacket[3] = note_sequence[previous];
+      midiPacket[4] = 0;    // velocity
+      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
+      pMIDICharacteristic->notify();
+
+      // play note for 286ms
+      delay(286);
+    }
+
+    // note up
+    midiPacket[2] = 0x80; // note up, channel 0
+    midiPacket[3] = note_sequence[current];
+    midiPacket[4] = 0;    // velocity
+    pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
+    pMIDICharacteristic->notify();
+  }
 #endif /* USE_BLE_MIDI */
 }
 
@@ -794,6 +852,27 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
       pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
     }
   }
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+  if (volume != BUZZER_OFF                            &&
+      settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
+      deviceConnected) {
+    midiPacket[3] = 60; // 60 == middle C
+    if (hz > 0) {
+      // Send Note On for current position at full velocity (127) on channel 1.
+      // note down
+      midiPacket[2] = 0x90; // note down, channel 0
+      midiPacket[4] = 127;  // velocity
+    } else {
+      // Send Note Off for previous note.
+      // note up
+      midiPacket[2] = 0x80; // note up, channel 0
+      midiPacket[4] = 0;    // velocity
+    }
+    pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
+    pMIDICharacteristic->notify();
+  }
+#endif /* USE_BLE_MIDI */
 }
 
 static uint32_t ESP32_maxSketchSpace()

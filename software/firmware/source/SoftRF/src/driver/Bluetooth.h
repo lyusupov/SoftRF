@@ -63,7 +63,6 @@ enum
 #define BLE_MAX_WRITE_CHUNK_SIZE  20
 
 extern IODev_ops_t ESP32_Bluetooth_ops;
-extern void ESP32_BLEMIDI_test(void);
 
 #if defined(ENABLE_BT_VOICE)
 

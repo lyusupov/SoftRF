@@ -65,14 +65,6 @@ bool oldDeviceConnected = false;
 
 #if defined(USE_BLE_MIDI)
 BLECharacteristic* pMIDICharacteristic = NULL;
-
-uint8_t midiPacket[] = {
-   0x80,  // header
-   0x80,  // timestamp, not implemented
-   0x00,  // status
-   0x3c,  // 0x3c == 60 == middle c
-   0x00   // velocity
-};
 #endif /* USE_BLE_MIDI */
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
@@ -110,55 +102,6 @@ class UARTCallbacks: public BLECharacteristicCallbacks {
       }
     }
 };
-
-#if defined(USE_BLE_MIDI)
-
-byte note_sequence[] = {62,65,69,65,67,67,65,64,69,69,67,67,62,62};
-
-void ESP32_BLEMIDI_test()
-{
-  if ((settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL) && deviceConnected) {
-
-    unsigned int position = 0;
-    unsigned int current  = 0;
-
-    for (; position <= sizeof(note_sequence); position++) {
-      // Setup variables for the current and previous
-      // positions in the note sequence.
-      current = position;
-      // If we currently are at position 0, set the
-      // previous position to the last note in the sequence.
-      unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
-
-      // Send Note On for current position at full velocity (127) on channel 1.
-      // note down
-      midiPacket[2] = 0x90; // note down, channel 0
-      midiPacket[3] = note_sequence[current];
-      midiPacket[4] = 127;  // velocity
-      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes
-      pMIDICharacteristic->notify();
-
-      // Send Note Off for previous note.
-      // note up
-      midiPacket[2] = 0x80; // note up, channel 0
-      midiPacket[3] = note_sequence[previous];
-      midiPacket[4] = 0;    // velocity
-      pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-      pMIDICharacteristic->notify();
-
-      // play note for 286ms
-      delay(286);
-    }
-
-    // note up
-    midiPacket[2] = 0x80; // note up, channel 0
-    midiPacket[3] = note_sequence[current];
-    midiPacket[4] = 0;    // velocity
-    pMIDICharacteristic->setValue(midiPacket, 5); // packet, length in bytes)
-    pMIDICharacteristic->notify();
-  }
-}
-#endif /* USE_BLE_MIDI */
 
 static void ESP32_Bluetooth_setup()
 {
@@ -1351,8 +1294,10 @@ void startAdv(void)
                   settings->gdl90    != GDL90_BLUETOOTH &&
                   settings->d1090    != D1090_BLUETOOTH);
 
+  // Advertising packet
+
 #if defined(USE_IBEACON)
-  if (no_data) {
+  if (no_data && settings->volume == BUZZER_OFF) {
     uint32_t id = SoC->getChipId();
     uint16_t major = (id >> 16) & 0x0000FFFF;
     uint16_t minor = (id      ) & 0x0000FFFF;
@@ -1360,8 +1305,6 @@ void startAdv(void)
     // Manufacturer ID is required for Manufacturer Specific Data
     iBeacon.setManufacturer(UUID16_COMPANY_ID_NORDIC);
     iBeacon.setMajorMinor(major, minor);
-
-    // Advertising packet
 
     // Set the beacon payload using the BLEBeacon class
     Bluefruit.Advertising.setBeacon(iBeacon);
