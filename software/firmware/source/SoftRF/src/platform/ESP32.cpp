@@ -793,6 +793,7 @@ static void ESP32_Sound_test(int var)
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
   if (settings->volume != BUZZER_OFF                  &&
       settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
+      pMIDICharacteristic != NULL                     &&
       deviceConnected) {
 
     unsigned int position = 0;
@@ -856,6 +857,7 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
   if (volume != BUZZER_OFF                            &&
       settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
+      pMIDICharacteristic != NULL                     &&
       deviceConnected) {
     midiPacket[3] = 60; // 60 == middle C
     if (hz > 0) {
