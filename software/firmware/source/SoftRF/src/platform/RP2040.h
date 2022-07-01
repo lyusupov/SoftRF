@@ -147,6 +147,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_A0       (26u) // ADC_VBAT
 #define SOC_GPIO_PIN_A1       (27u)
 
+#define SOC_GPIO_PIN_USBH_DP  (8u)  // Pin used as D+ for host, D- = D+ + 1
+#define SOC_GPIO_PIN_USBH_DN  (9u)
+
 #define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
@@ -210,6 +213,9 @@ struct rst_info {
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 
+#define SOC_GPIO_PIN_USBH_DP  (6u)  // Pin used as D+ for host, D- = D+ + 1
+#define SOC_GPIO_PIN_USBH_DN  (7u)
+
 #define SOC_ADC_VOLTAGE_DIV   (3.0)
 
 #else
@@ -246,6 +252,11 @@ struct rst_info {
 #define USE_OLED                 //       kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
+
+/* Experimental */
+#if defined(USE_TINYUSB)
+//#define USE_USB_HOST
+#endif /* USE_TINYUSB */
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
