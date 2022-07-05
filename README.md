@@ -45,7 +45,10 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * lightweight version to carry onboard of an UAV.
 -->
 
+<!--
 [<img src="https://user-images.githubusercontent.com/5849637/128593239-cf30ef4c-1761-4dc1-874a-2be9eaacab77.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
+-->
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 
 # Compatibility <sup>1</sup>
 Type|Protocol|FLARM|OGN tracker|PilotAware|Skytraxx|SoftRF
@@ -135,6 +138,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
 * [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
@@ -162,6 +166,8 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
         * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/SkyView)
         * [Dual boot](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Dual-boot)
     * [Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)
+
+* [WebTop USB](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [WebTop Serial](https://github.com/lyusupov/SoftRF/wiki/WebTop-Serial-adapter)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/WebTop-Serial.-Quick-Start)
 * [Flight Recorder](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
