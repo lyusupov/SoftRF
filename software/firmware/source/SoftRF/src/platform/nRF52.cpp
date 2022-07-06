@@ -245,10 +245,13 @@ ui_settings_t *ui;
 uCDB<FatFileSystem, File> ucdb(fatfs);
 
 #if !defined(EXCLUDE_IMU)
+#define IMU_UPDATE_INTERVAL 500 /* ms */
+
 #include <MPU9250.h>
 MPU9250 imu;
 
 static bool nRF52_has_imu = false;
+static unsigned long IMU_Time_Marker = 0;
 
 extern float IMU_g;
 #endif /* EXCLUDE_IMU */
@@ -369,7 +372,7 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  Wire.beginTransmission(MPU9250_DEFAULT_ADDRESS);
+  Wire.beginTransmission(MPU9250_ADDRESS);
   nRF52_has_imu = (Wire.endTransmission() == 0);
 #endif /* EXCLUDE_IMU */
 
@@ -491,12 +494,13 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu && imu.setup(MPU9250_DEFAULT_ADDRESS)) {
+  if (nRF52_has_imu && imu.setup(MPU9250_ADDRESS)) {
     imu.verbose(false);
     if (imu.isSleeping()) {
       imu.sleep(false);
     }
     hw_info.imu = IMU_MPU9250;
+    IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */
 
@@ -806,14 +810,16 @@ static void nRF52_loop()
 #endif /* USE_WEBUSB_SETTINGS */
 
 #if !defined(EXCLUDE_IMU)
-  if (hw_info.imu == IMU_MPU9250) {
-    if (imu.update()) { /* TODO: performance overhead ? */
+  if (hw_info.imu == IMU_MPU9250 &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    if (imu.update()) {
       float a_x = imu.getAccX();
       float a_y = imu.getAccY();
       float a_z = imu.getAccZ();
 
       IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
     }
+    IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */
 }
