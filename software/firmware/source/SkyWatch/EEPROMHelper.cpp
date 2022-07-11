@@ -42,7 +42,9 @@ void EEPROM_setup()
     delay(1000000);
   }
 
-  for (int i=0; i<sizeof(eeprom_t); i++) {
+  size_t size = sizeof(eeprom_t);
+
+  for (int i=0; i<size; i++) {
     eeprom_block.raw[i] = EEPROM.read(i);  
   }
 
@@ -84,7 +86,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.s.nmea_s          = true;
 
   if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
-    eeprom_block.field.settings.s.nmea_out      = NMEA_UDP;
+    eeprom_block.field.settings.s.nmea_out      = NMEA_USB;
   } else {
     eeprom_block.field.settings.s.nmea_out      = NMEA_UART;
   }
@@ -109,11 +111,13 @@ void EEPROM_defaults()
     eeprom_block.field.settings.m.baudrate      = B38400;
   }
   eeprom_block.field.settings.m.protocol        = PROTOCOL_NMEA;
+  eeprom_block.field.settings.m.rotate          = ROTATE_0;
   eeprom_block.field.settings.m.orientation     = DIRECTION_NORTH_UP;
 
   strcpy(eeprom_block.field.settings.m.ssid,      DEFAULT_AP_SSID);
   strcpy(eeprom_block.field.settings.m.psk,       DEFAULT_AP_PSK);
 
+  eeprom_block.field.settings.m.data_dest       = NMEA_UDP;
   eeprom_block.field.settings.m.bluetooth       = BLUETOOTH_OFF;
 
   strcpy(eeprom_block.field.settings.m.bt_name,   DEFAULT_BT_NAME);
@@ -126,11 +130,16 @@ void EEPROM_defaults()
   eeprom_block.field.settings.m.idpref          = ID_REG;
   eeprom_block.field.settings.m.voice           = VOICE_OFF;
   eeprom_block.field.settings.m.aghost          = ANTI_GHOSTING_OFF;
+
+  eeprom_block.field.settings.m.filter          = TRAFFIC_FILTER_OFF;
+  eeprom_block.field.settings.m.power_save      = POWER_SAVE_NONE;
 }
 
 void EEPROM_store()
 {
-  for (int i=0; i<sizeof(eeprom_t); i++) {
+  size_t size = sizeof(eeprom_t);
+
+  for (int i=0; i<size; i++) {
     EEPROM.write(i, eeprom_block.raw[i]);  
   }
 

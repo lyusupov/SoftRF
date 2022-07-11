@@ -310,10 +310,26 @@ enum
 
 enum
 {
+	TRAFFIC_FILTER_OFF,
+	TRAFFIC_FILTER_500M,
+	TRAFFIC_FILTER_1500M,
+};
+
+enum
+{
+	DB_NONE,
 	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
 	DB_ICAO,
+};
+
+enum
+{
+	ROTATE_0,
+	ROTATE_90,
+	ROTATE_180,
+	ROTATE_270,
 };
 
 /* SoftRF enumerations */

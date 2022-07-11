@@ -127,6 +127,7 @@ typedef struct nmea_status_struct {
 void NMEA_setup(void);
 void NMEA_loop(void);
 
+bool NMEA_Request_Settings(void);
 bool NMEA_Save_Settings(void);
 
 bool NMEA_isConnected(void);

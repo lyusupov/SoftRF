@@ -1395,7 +1395,7 @@ void PickGNSSFix()
           else
 #endif
           {
-            NMEA_Out(settings->s.nmea_out, &GNSSbuf[ndx], write_size, true);
+            NMEA_Out(settings->m.data_dest, &GNSSbuf[ndx], write_size, true);
           }
 
           break;

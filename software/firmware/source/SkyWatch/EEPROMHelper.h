@@ -25,7 +25,7 @@
 
 
 #define SKYWATCH_EEPROM_MAGIC   0xC0BAFACE
-#define SKYWATCH_EEPROM_VERSION 0x0000001B
+#define SKYWATCH_EEPROM_VERSION 0x0000001C
 
 typedef struct SoftRF_Settings {
     uint8_t  mode;
@@ -66,7 +66,7 @@ typedef struct SoftRF_Settings {
     uint8_t  resvd14;
     uint8_t  resvd15;
     uint8_t  resvd16;
-} softrf_settings_t;
+} __attribute__((packed)) softrf_settings_t;
 
 typedef struct SkyView_Settings {
     uint8_t  adapter;
@@ -77,23 +77,30 @@ typedef struct SkyView_Settings {
 
     uint8_t  protocol;
     uint8_t  baudrate;
-    char     ssid    [16];
-    char     psk     [16];
+    char     ssid    [18];
+    char     psk     [18];
 
-    uint8_t  resvd1:3;
+    uint8_t  rotate:2;
     uint8_t  orientation:1;
-    uint8_t  adb:2;
+    uint8_t  adb:3;
     uint8_t  idpref:2;
 
-    uint8_t  bluetooth; /* ESP32 built-in Bluetooth */
-    char     bt_name [16];
-    char     bt_key  [16];
+    uint8_t  data_dest:4;
+    uint8_t  bluetooth:4; /* ESP32 built-in Bluetooth */
 
-    uint8_t  vmode:2;
-    uint8_t  voice:3;
+    char     bt_name [18];
+    char     bt_key  [18];
+
+    uint8_t  vmode:3;
+    uint8_t  voice:2;
     uint8_t  aghost:3;
 
-    uint8_t  resvd2;
+    uint8_t  filter:4;
+    uint8_t  power_save:4;
+
+    uint32_t team;
+
+    uint8_t  resvd12;
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;
@@ -101,11 +108,11 @@ typedef struct SkyView_Settings {
     uint8_t  resvd7;
     uint8_t  resvd8;
     uint8_t  resvd9;
-} skyview_settings_t;
+} __attribute__((packed)) skyview_settings_t;
 
 typedef struct Settings {
-    softrf_settings_t  s; /* slave  */
     skyview_settings_t m; /* master */
+    softrf_settings_t  s; /* slave  */
 } settings_t;
 
 typedef struct EEPROM_S {

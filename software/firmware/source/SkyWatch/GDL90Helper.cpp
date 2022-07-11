@@ -358,7 +358,7 @@ bool GDL90_hasOwnShip()
 void GDL90_Out(byte *buf, size_t size)
 {
   if (size > 0) {
-    switch(settings->s.gdl90)
+    switch(settings->m.data_dest)
     {
     case GDL90_UART:
     case GDL90_USB:

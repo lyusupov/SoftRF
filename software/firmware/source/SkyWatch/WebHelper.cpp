@@ -191,7 +191,20 @@ void handleRoot() {
 }
 #endif /* EXPERIMENTAL */
 
-void handleSettings() {
+static const char settings_html[] PROGMEM = "<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>Settings</title>\
+  </head>\
+<body>\
+<h1 align=center>Settings</h1>\
+<br><br><p align=center>Select device:</p>\
+<p align=center><input type=button onClick=\"location.href='/settings_master'\" value='Master'></p>\
+<p align=center><input type=button onClick=\"location.href='/settings_slave'\" value='Slave'></p>\
+</body>\
+</html>";
+
+void handleSettings_master() {
 
   size_t size = 7204;
   char *offset;
@@ -209,11 +222,11 @@ void handleSettings() {
     PSTR("<html>\
 <head>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
-<title>Settings</title>\
+<title>Master settings</title>\
 </head>\
 <body>\
-<h1 align=center>Settings</h1>\
-<form action='/input' method='GET'>\
+<h1 align=center>Master settings</h1>\
+<form action='/input_master' method='GET'>\
 <table width=100%%>\
 <tr>\
 <th align=left>Connection port</th>\
@@ -280,16 +293,451 @@ void handleSettings() {
   }
 
   snprintf_P ( offset, size,
-    PSTR("</select></td></tr><tr><th>&nbsp;</th><td>&nbsp;</td></tr>"));
+    PSTR("\
+</select>\
+</td>\
+</tr>\
+<tr><th>&nbsp;</th><td>&nbsp;</td></tr>\
+<tr>\
+<th align=left>Data output</th>\
+<td align=right>\
+<select name='data_out'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>\
+<option %s value='%d'>UDP</option>\
+</select>\
+</td>\
+</tr>"),
+  (settings->m.data_dest == NMEA_OFF  ? "selected" : ""), NMEA_OFF,
+  (settings->m.data_dest == NMEA_UART ? "selected" : ""), NMEA_UART,
+  (settings->m.data_dest == NMEA_USB  ? "selected" : ""), NMEA_USB,
+  (settings->m.data_dest == NMEA_UDP  ? "selected" : ""), NMEA_UDP);
 
   len = strlen(offset);
   offset += len;
   size -= len;
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+  /* SoC specific part 1 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Built-in Bluetooth</th>\
+<td align=right>\
+<select name='bluetooth'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>SPP</option>\
+<option %s value='%d'>LE</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->s.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->s.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->s.bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+
 #if 0
-  /* Common part 2 */
+  /* Common part 3 */
   snprintf_P ( offset, size,
     PSTR("\
+<tr>\
+<th align=left>NMEA output</th>\
+<td align=right>\
+<select name='nmea_out'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>\
+<option %s value='%d'>UDP</option>"),
+  (settings->s.nmea_out == NMEA_OFF  ? "selected" : ""), NMEA_OFF,
+  (settings->s.nmea_out == NMEA_UART ? "selected" : ""), NMEA_UART,
+  (settings->s.nmea_out == NMEA_USB  ? "selected" : ""), NMEA_USB,
+  (settings->s.nmea_out == NMEA_UDP  ? "selected" : ""), NMEA_UDP);
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 2 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<option %s value='%d'>TCP</option>\
+<option %s value='%d'>Bluetooth</option>"),
+    (settings->s.nmea_out == NMEA_TCP ? "selected" : ""), NMEA_TCP,
+    (settings->s.nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 4 */
+  snprintf_P ( offset, size,
+    PSTR("\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>GDL90</th>\
+<td align=right>\
+<select name='gdl90'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>\
+<option %s value='%d'>UDP</option>"),
+  (settings->s.gdl90 == GDL90_OFF  ? "selected" : ""), GDL90_OFF,
+  (settings->s.gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
+  (settings->s.gdl90 == GDL90_USB  ? "selected" : ""), GDL90_USB,
+  (settings->s.gdl90 == GDL90_UDP  ? "selected" : ""), GDL90_UDP);
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 3 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<option %s value='%d'>Bluetooth</option>"),
+    (settings->s.gdl90 == GDL90_BLUETOOTH ? "selected" : ""), GDL90_BLUETOOTH);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 5 */
+  snprintf_P ( offset, size,
+    PSTR("\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Dump1090</th>\
+<td align=right>\
+<select name='d1090'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>Serial</option>\
+<option %s value='%d'>USB</option>"),
+  (settings->s.d1090 == D1090_OFF  ? "selected" : ""), D1090_OFF,
+  (settings->s.d1090 == D1090_UART ? "selected" : ""), D1090_UART,
+  (settings->s.d1090 == D1090_USB  ? "selected" : ""), D1090_USB);
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 4 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<option %s value='%d'>Bluetooth</option>"),
+    (settings->s.d1090 == D1090_BLUETOOTH ? "selected" : ""), D1090_BLUETOOTH);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* SoC specific part 5 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Display adapter</th>\
+<td align=right>\
+<select name='adapter'>\
+<option %s value='%d'>e-Paper TTGO T5S</option>\
+<option %s value='%d'>e-Paper Waveshare ESP32</option>\
+<option %s value='%d'>OLED</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->m.adapter == ADAPTER_TTGO_T5S        ? "selected" : ""), ADAPTER_TTGO_T5S,
+    (settings->m.adapter == ADAPTER_WAVESHARE_ESP32 ? "selected" : ""), ADAPTER_WAVESHARE_ESP32,
+    (settings->m.adapter == ADAPTER_OLED            ? "selected" : ""), ADAPTER_OLED
+    );
+  } else if (SoC->id == SOC_ESP8266) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Display adapter</th>\
+<td align=right>\
+<select name='adapter'>\
+<option %s value='%d'>NodeMCU</option>\
+<option %s value='%d'>e-Paper Waveshare ESP8266</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->m.adapter == ADAPTER_NODEMCU           ? "selected" : ""), ADAPTER_NODEMCU,
+    (settings->m.adapter == ADAPTER_WAVESHARE_ESP8266 ? "selected" : ""), ADAPTER_WAVESHARE_ESP8266
+    );
+  }
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+    /* Common part 7 */
+  snprintf_P ( offset, size,
+    PSTR("\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Source WiFi SSID</th>\
+<td align=right>\
+<INPUT type='text' name='ssid' maxlength='15' size='15' value='%s'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PSK</th>\
+<td align=right>\
+<INPUT type='text' name='psk' maxlength='15' size='15' value='%s'>\
+</td>\
+</tr>"),
+   settings->m.ssid, settings->m.psk);
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+#endif
+
+/*
+
+<tr>\
+<th align=left>Built-in Bluetooth</th>\
+<td align=right>\
+<select name='bluetooth'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>SPP</option>\
+</select>\
+</td>\
+</tr>\
+
+    (settings->m.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->m.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+
+ */
+
+#if 0
+  /* SoC specific part 8 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Source BT Name</th>\
+<td align=right>\
+<INPUT type='text' name='bt_name' maxlength='15' size='15' value='%s'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Key</th>\
+<td align=right>\
+<INPUT type='text' name='bt_key' maxlength='15' size='15' value='%s'>\
+</td>\
+</tr>"),
+     settings->m.bt_name, settings->m.bt_key);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+#endif
+
+  if (hw_info.display == DISPLAY_TFT_TTGO_240) {
+    /* SoC specific part 9 */
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr><th>&nbsp;</th><td>&nbsp;</td></tr>\
+<tr>\
+<th align=left>Units</th>\
+<td align=right>\
+<select name='units'>\
+<option %s value='%d'>metric</option>\
+<option %s value='%d'>imperial</option>\
+<option %s value='%d'>mixed</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>View mode</th>\
+<td align=right>\
+<select name='vmode'>\
+<option %s value='%d'>status</option>\
+<option %s value='%d'>radar</option>\
+<option %s value='%d'>text</option>\
+<option %s value='%d'>time</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Radar orientation</th>\
+<td align=right>\
+<select name='orientation'>\
+<option %s value='%d'>CoG Up</option>\
+<option %s value='%d'>North Up</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Zoom level</th>\
+<td align=right>\
+<select name='zoom'>\
+<option %s value='%d'>lowest</option>\
+<option %s value='%d'>low</option>\
+<option %s value='%d'>medium</option>\
+<option %s value='%d'>high</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Aircrafts data</th>\
+<td align=right>\
+<select name='adb'>\
+<option %s value='%d'>auto</option>\
+<option %s value='%d'>FlarmNet</option>\
+<option %s value='%d'>GliderNet</option>\
+<option %s value='%d'>ICAO</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>ID preference</th>\
+<td align=right>\
+<select name='idpref'>\
+<option %s value='%d'>registration</option>\
+<option %s value='%d'>tail/CN</option>\
+<option %s value='%d'>make & model</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->m.units == UNITS_METRIC     ? "selected" : ""), UNITS_METRIC,
+    (settings->m.units == UNITS_IMPERIAL   ? "selected" : ""), UNITS_IMPERIAL,
+    (settings->m.units == UNITS_MIXED      ? "selected" : ""), UNITS_MIXED,
+    (settings->m.vmode == VIEW_MODE_STATUS ? "selected" : ""), VIEW_MODE_STATUS,
+    (settings->m.vmode == VIEW_MODE_RADAR  ? "selected" : ""), VIEW_MODE_RADAR,
+    (settings->m.vmode == VIEW_MODE_TEXT   ? "selected" : ""), VIEW_MODE_TEXT,
+    (settings->m.vmode == VIEW_MODE_TIME   ? "selected" : ""), VIEW_MODE_TIME,
+    (settings->m.orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
+    (settings->m.orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
+    (settings->m.zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,
+    (settings->m.zoom == ZOOM_LOW    ? "selected" : ""), ZOOM_LOW,
+    (settings->m.zoom == ZOOM_MEDIUM ? "selected" : ""), ZOOM_MEDIUM,
+    (settings->m.zoom == ZOOM_HIGH   ? "selected" : ""), ZOOM_HIGH,
+    (settings->m.adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
+    (settings->m.adb == DB_FLN       ? "selected" : ""), DB_FLN,
+    (settings->m.adb == DB_OGN       ? "selected" : ""), DB_OGN,
+    (settings->m.adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
+    (settings->m.idpref == ID_REG    ? "selected" : ""), ID_REG,
+    (settings->m.idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
+    (settings->m.idpref == ID_MAM    ? "selected" : ""), ID_MAM
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+
+#if 0
+    /* SoC specific part 10 */
+    if (SoC->id == SOC_ESP32) {
+      snprintf_P ( offset, size,
+        PSTR("\
+<tr>\
+<th align=left>Voice</th>\
+<td align=right>\
+<select name='voice'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>voice 1</option>\
+<option %s value='%d'>voice 2</option>\
+<option %s value='%d'>voice 3</option>\
+</select>\
+</td>\
+</tr>"),
+      (settings->m.voice == VOICE_OFF  ? "selected" : ""), VOICE_OFF,
+      (settings->m.voice == VOICE_1    ? "selected" : ""), VOICE_1,
+      (settings->m.voice == VOICE_2    ? "selected" : ""), VOICE_2,
+      (settings->m.voice == VOICE_3    ? "selected" : ""), VOICE_3
+      );
+
+      len = strlen(offset);
+      offset += len;
+      size -= len;
+    }
+#endif
+
+  } /* hw_info.display == DISPLAY_TFT_TTGO_240 */
+
+  /* Common part 8 */
+  snprintf_P ( offset, size,
+    PSTR("\
+<!-- <tr>\
+<th align=left>e-Paper 'ghosts' removal</th>\
+<td align=right>\
+<select name='aghost'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>auto</option>\
+<option %s value='%d'> 2 minutes</option>\
+<option %s value='%d'> 5 minutes</option>\
+<option %s value='%d'>10 minutes</option>\
+</select>\
+</td>\
+</tr> -->\
+</table>\
+<p align=center><INPUT type='submit' value='Save and restart'></p>\
+</form>\
+</body>\
+</html>"),
+    (settings->m.aghost == ANTI_GHOSTING_OFF   ? "selected" : ""), ANTI_GHOSTING_OFF,
+    (settings->m.aghost == ANTI_GHOSTING_AUTO  ? "selected" : ""), ANTI_GHOSTING_AUTO,
+    (settings->m.aghost == ANTI_GHOSTING_2MIN  ? "selected" : ""), ANTI_GHOSTING_2MIN,
+    (settings->m.aghost == ANTI_GHOSTING_5MIN  ? "selected" : ""), ANTI_GHOSTING_5MIN,
+    (settings->m.aghost == ANTI_GHOSTING_10MIN ? "selected" : ""), ANTI_GHOSTING_10MIN
+  );
+
+  SoC->swSer_enableRx(false);
+  server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+  server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+  server.sendHeader(String(F("Expires")), String(F("-1")));
+  server.send ( 200, "text/html", Settings_temp );
+  SoC->swSer_enableRx(true);
+  free(Settings_temp);
+}
+
+void handleSettings_slave() {
+
+  size_t size = 7204;
+  char *offset;
+  size_t len = 0;
+  char *Settings_temp = (char *) malloc(size);
+
+  if (Settings_temp == NULL) {
+    return;
+  }
+
+  offset = Settings_temp;
+
+  /* Common part 1 */
+  snprintf_P ( offset, size,
+    PSTR("<html>\
+<head>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+<title>Slave settings</title>\
+</head>\
+<body>\
+<h1 align=center>Slave settings</h1>\
+<form action='/input_slave' method='GET'>\
+<table width=100%%>\
 <!-- <tr>\
 <th align=left>Mode</th>\
 <td align=right>\
@@ -301,7 +749,7 @@ void handleSettings() {
 </select>\
 </td>\
 </tr> -->"),
-  (settings->s.mode == SOFTRF_MODE_NORMAL    ? "selected" : "") , SOFTRF_MODE_NORMAL,
+  (settings->s.mode == SOFTRF_MODE_NORMAL    ? "selected" : ""), SOFTRF_MODE_NORMAL,
   (settings->s.mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
   (settings->s.mode == SOFTRF_MODE_BRIDGE    ? "selected" : ""), SOFTRF_MODE_BRIDGE,
   (settings->s.mode == SOFTRF_MODE_UAV       ? "selected" : ""), SOFTRF_MODE_UAV
@@ -311,7 +759,6 @@ void handleSettings() {
   len = strlen(offset);
   offset += len;
   size -= len;
-#endif
 
   /* Radio specific part */
   if (hw_info.rf == RF_IC_SX1276) {  /* + RF_IC_CC13XX */
@@ -326,19 +773,22 @@ void handleSettings() {
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
 </select>\
 </td>\
 </tr>"),
-    (settings->s.rf_protocol == RF_PROTOCOL_LEGACY   ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_LEGACY    ? "selected" : ""),
      RF_PROTOCOL_LEGACY, "Legacy",
-    (settings->s.rf_protocol == RF_PROTOCOL_OGNTP    ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_OGNTP     ? "selected" : ""),
      RF_PROTOCOL_OGNTP, "OGNTP",
-    (settings->s.rf_protocol == RF_PROTOCOL_P3I      ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_P3I       ? "selected" : ""),
      RF_PROTOCOL_P3I, "P3I",
-    (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT ? "selected" : ""),
+    (settings->s.rf_protocol == RF_PROTOCOL_FANET     ? "selected" : ""),
+     RF_PROTOCOL_FANET, "FANET",
+    (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT  ? "selected" : ""),
      RF_PROTOCOL_ADSB_UAT, "UAT",
-    (settings->s.rf_protocol == RF_PROTOCOL_FANET    ? "selected" : ""),
-     RF_PROTOCOL_FANET, "FANET"
+    (settings->s.rf_protocol == RF_PROTOCOL_ADSB_1090 ? "selected" : ""),
+     RF_PROTOCOL_ADSB_1090, "1090ES"
     );
   } else {
     snprintf_P ( offset, size,
@@ -472,6 +922,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if 0
   /* SoC specific part 1 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -495,6 +946,7 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif
 
   /* Common part 3 */
   snprintf_P ( offset, size,
@@ -537,7 +989,7 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>USB</option>\
-<option %s value='%d'>UDP</option>"),
+<!-- <option %s value='%d'>UDP</option> -->"),
   (!settings->s.nmea_g ? "checked" : "") , (settings->s.nmea_g ? "checked" : ""),
   (!settings->s.nmea_p ? "checked" : "") , (settings->s.nmea_p ? "checked" : ""),
   (!settings->s.nmea_l ? "checked" : "") , (settings->s.nmea_l ? "checked" : ""),
@@ -551,6 +1003,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if 0
   /* SoC specific part 2 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -564,6 +1017,7 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif
 
   /* Common part 4 */
   snprintf_P ( offset, size,
@@ -578,7 +1032,7 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>USB</option>\
-<option %s value='%d'>UDP</option>"),
+<!-- <option %s value='%d'>UDP</option> -->"),
   (settings->s.gdl90 == GDL90_OFF  ? "selected" : ""), GDL90_OFF,
   (settings->s.gdl90 == GDL90_UART ? "selected" : ""), GDL90_UART,
   (settings->s.gdl90 == GDL90_USB  ? "selected" : ""), GDL90_USB,
@@ -588,6 +1042,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if 0
   /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -599,7 +1054,8 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
-#if 0
+#endif
+
   /* Common part 5 */
   snprintf_P ( offset, size,
     PSTR("\
@@ -621,6 +1077,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if 0
   /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32) {
     snprintf_P ( offset, size,
@@ -923,7 +1380,7 @@ void handleSettings() {
 </td>\
 </tr> -->\
 </table>\
-<p align=center><INPUT type='submit' value='Save and restart'></p>\
+<p align=center><INPUT type='submit' value='Submit and restart'></p>\
 </form>\
 </body>\
 </html>"),
@@ -1141,7 +1598,103 @@ void handleStatus() {
   free(Root_temp);
 }
 
-void handleInput() {
+void handleInput_master() {
+
+  size_t size = 3200;
+
+  char *Input_temp = (char *) malloc(size);
+  if (Input_temp == NULL) {
+    return;
+  }
+
+  for ( uint8_t i = 0; i < server.args(); i++ ) {
+    if (server.argName(i).equals("adapter")) {
+      settings->m.adapter = server.arg(i).toInt();
+    } else if (server.argName(i).equals("connection")) {
+      settings->m.connection = server.arg(i).toInt();
+    } else if (server.argName(i).equals("dprotocol")) {
+      settings->m.protocol = server.arg(i).toInt();
+    } else if (server.argName(i).equals("baudrate")) {
+      settings->m.baudrate = server.arg(i).toInt();
+    } else if (server.argName(i).equals("ssid")) {
+      server.arg(i).toCharArray(settings->m.ssid, sizeof(settings->m.ssid));
+    } else if (server.argName(i).equals("psk")) {
+      server.arg(i).toCharArray(settings->m.psk, sizeof(settings->m.psk));
+    } else if (server.argName(i).equals("units")) {
+      settings->m.units = server.arg(i).toInt();
+    } else if (server.argName(i).equals("vmode")) {
+      settings->m.vmode = server.arg(i).toInt();
+    } else if (server.argName(i).equals("orientation")) {
+      settings->m.orientation = server.arg(i).toInt();
+    } else if (server.argName(i).equals("zoom")) {
+      settings->m.zoom = server.arg(i).toInt();
+    } else if (server.argName(i).equals("adb")) {
+      settings->m.adb = server.arg(i).toInt();
+    } else if (server.argName(i).equals("idpref")) {
+      settings->m.idpref = server.arg(i).toInt();
+    } else if (server.argName(i).equals("voice")) {
+      settings->m.voice = server.arg(i).toInt();
+    } else if (server.argName(i).equals("aghost")) {
+      settings->m.aghost = server.arg(i).toInt();
+//    } else if (server.argName(i).equals("bluetooth")) {
+//      settings->m.bluetooth = server.arg(i).toInt();
+    } else if (server.argName(i).equals("bt_name")) {
+      server.arg(i).toCharArray(settings->m.bt_name, sizeof(settings->m.bt_name));
+    } else if (server.argName(i).equals("bt_key")) {
+      server.arg(i).toCharArray(settings->m.bt_key, sizeof(settings->m.bt_key));
+    }
+  }
+  snprintf_P ( Input_temp, size,
+PSTR("<html>\
+<head>\
+<meta http-equiv='refresh' content='15; url=/'>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+<title>%s Settings</title>\
+</head>\
+<body>\
+<h1 align=center>New settings:</h1>\
+<table width=100%%>\
+<tr><th align=left>Adapter</th><td align=right>%d</td></tr>\
+<tr><th align=left>Connection</th><td align=right>%d</td></tr>\
+<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
+<tr><th align=left>Baud rate</th><td align=right>%d</td></tr>\
+<tr><th align=left>WiFi SSID</th><td align=right>%s</td></tr>\
+<tr><th align=left>WiFi PSK</th><td align=right>%s</td></tr>\
+<tr><th align=left>Units</th><td align=right>%d</td></tr>\
+<tr><th align=left>View mode</th><td align=right>%d</td></tr>\
+<tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
+<tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
+<tr><th align=left>Aircrafts data</th><td align=right>%d</td></tr>\
+<tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
+<tr><th align=left>Voice</th><td align=right>%d</td></tr>\
+<tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
+<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
+<tr><th align=left>BT Name</th><td align=right>%s</td></tr>\
+<tr><th align=left>BT Key</th><td align=right>%s</td></tr>\
+</table>\
+<hr>\
+  <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
+</body>\
+</html>"),
+  hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
+  settings->m.adapter, settings->m.connection, settings->m.protocol,
+  settings->m.baudrate, settings->m.ssid, settings->m.psk,
+  settings->m.units, settings->m.vmode, settings->m.orientation, settings->m.zoom,
+  settings->m.adb, settings->m.idpref, settings->m.voice, settings->m.aghost,
+  settings->m.bluetooth, settings->m.bt_name, settings->m.bt_key
+  );
+
+  SoC->swSer_enableRx(false);
+  server.send ( 200, "text/html", Input_temp );
+//  SoC->swSer_enableRx(true);
+  delay(1000);
+  free(Input_temp);
+  EEPROM_store();
+  delay(1000);
+  ESP.restart();
+}
+
+void handleInput_slave() {
 
   size_t size = 3200;
 
@@ -1189,40 +1742,6 @@ void handleInput() {
       settings->s.no_track = server.arg(i).toInt();
     } else if (server.argName(i).equals("power_save")) {
       settings->s.power_save = server.arg(i).toInt();
-    } else if (server.argName(i).equals("adapter")) {
-      settings->m.adapter = server.arg(i).toInt();
-    } else if (server.argName(i).equals("connection")) {
-      settings->m.connection = server.arg(i).toInt();
-    } else if (server.argName(i).equals("dprotocol")) {
-      settings->m.protocol = server.arg(i).toInt();
-    } else if (server.argName(i).equals("baudrate")) {
-      settings->m.baudrate = server.arg(i).toInt();
-    } else if (server.argName(i).equals("ssid")) {
-      server.arg(i).toCharArray(settings->m.ssid, sizeof(settings->m.ssid));
-    } else if (server.argName(i).equals("psk")) {
-      server.arg(i).toCharArray(settings->m.psk, sizeof(settings->m.psk));
-    } else if (server.argName(i).equals("units")) {
-      settings->m.units = server.arg(i).toInt();
-    } else if (server.argName(i).equals("vmode")) {
-      settings->m.vmode = server.arg(i).toInt();
-    } else if (server.argName(i).equals("orientation")) {
-      settings->m.orientation = server.arg(i).toInt();
-    } else if (server.argName(i).equals("zoom")) {
-      settings->m.zoom = server.arg(i).toInt();
-    } else if (server.argName(i).equals("adb")) {
-      settings->m.adb = server.arg(i).toInt();
-    } else if (server.argName(i).equals("idpref")) {
-      settings->m.idpref = server.arg(i).toInt();
-    } else if (server.argName(i).equals("voice")) {
-      settings->m.voice = server.arg(i).toInt();
-    } else if (server.argName(i).equals("aghost")) {
-      settings->m.aghost = server.arg(i).toInt();
-//    } else if (server.argName(i).equals("bluetooth")) {
-//      settings->m.bluetooth = server.arg(i).toInt();
-    } else if (server.argName(i).equals("bt_name")) {
-      server.arg(i).toCharArray(settings->m.bt_name, sizeof(settings->m.bt_name));
-    } else if (server.argName(i).equals("bt_key")) {
-      server.arg(i).toCharArray(settings->m.bt_key, sizeof(settings->m.bt_key));
     }
   }
   snprintf_P ( Input_temp, size,
@@ -1230,7 +1749,7 @@ PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
 <meta name='viewport' content='width=device-width, initial-scale=1'>\
-<title>%s Settings</title>\
+<title>Slave settings</title>\
 </head>\
 <body>\
 <h1 align=center>New settings:</h1>\
@@ -1254,29 +1773,11 @@ PSTR("<html>\
 <tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
 <tr><th align=left>Power save</th><td align=right>%d</td></tr>\
-<tr><th align=left>Adapter</th><td align=right>%d</td></tr>\
-<tr><th align=left>Connection</th><td align=right>%d</td></tr>\
-<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
-<tr><th align=left>Baud rate</th><td align=right>%d</td></tr>\
-<tr><th align=left>WiFi SSID</th><td align=right>%s</td></tr>\
-<tr><th align=left>WiFi PSK</th><td align=right>%s</td></tr>\
-<tr><th align=left>Units</th><td align=right>%d</td></tr>\
-<tr><th align=left>View mode</th><td align=right>%d</td></tr>\
-<tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
-<tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
-<tr><th align=left>Aircrafts data</th><td align=right>%d</td></tr>\
-<tr><th align=left>ID preference</th><td align=right>%d</td></tr>\
-<tr><th align=left>Voice</th><td align=right>%d</td></tr>\
-<tr><th align=left>'Ghosts' removal</th><td align=right>%d</td></tr>\
-<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
-<tr><th align=left>BT Name</th><td align=right>%s</td></tr>\
-<tr><th align=left>BT Key</th><td align=right>%s</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
 </body>\
 </html>"),
-  hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
   settings->s.mode, settings->s.rf_protocol, settings->s.band,
   settings->s.aircraft_type, settings->s.alarm, settings->s.txpower,
   settings->s.volume, settings->s.pointer, settings->s.bluetooth,
@@ -1284,12 +1785,7 @@ PSTR("<html>\
   BOOL_STR(settings->s.nmea_l), BOOL_STR(settings->s.nmea_s),
   settings->s.nmea_out, settings->s.gdl90, settings->s.d1090,
   BOOL_STR(settings->s.stealth), BOOL_STR(settings->s.no_track),
-  settings->s.power_save,
-  settings->m.adapter, settings->m.connection, settings->m.protocol,
-  settings->m.baudrate, settings->m.ssid, settings->m.psk,
-  settings->m.units, settings->m.vmode, settings->m.orientation, settings->m.zoom,
-  settings->m.adb, settings->m.idpref, settings->m.voice, settings->m.aghost,
-  settings->m.bluetooth, settings->m.bt_name, settings->m.bt_key
+  settings->s.power_save
   );
 
   SoC->swSer_enableRx(false);
@@ -1298,9 +1794,11 @@ PSTR("<html>\
   delay(1000);
   free(Input_temp);
   NMEA_Save_Settings();
+#if 0
   EEPROM_store();
   delay(1000);
   ESP.restart();
+#endif
 }
 
 void handleNotFound() {
@@ -1335,7 +1833,17 @@ void Web_setup()
 #else
   server.on ( "/", handleStatus );
 #endif /* EXPERIMENTAL */
-  server.on ( "/settings", handleSettings );
+  server.on ( "/settings", []() {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send_P ( 200, PSTR("text/html"), settings_html);
+    SoC->swSer_enableRx(true);
+    NMEA_Request_Settings();
+  } );
+  server.on ( "/settings_master", handleSettings_master );
+  server.on ( "/settings_slave",  handleSettings_slave  );
   server.on ( "/about", []() {
     SoC->swSer_enableRx(false);
     server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
@@ -1364,7 +1872,8 @@ void Web_setup()
     SoC->Service_Mode(false);
   } );
 #endif /* EXPERIMENTAL */
-  server.on ( "/input", handleInput );
+  server.on ( "/input_master", handleInput_master );
+  server.on ( "/input_slave",  handleInput_slave  );
   server.on ( "/inline", []() {
     server.send ( 200, "text/plain", "this works as well" );
   } );
