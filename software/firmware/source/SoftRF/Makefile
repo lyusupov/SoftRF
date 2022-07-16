@@ -18,6 +18,10 @@
 #BASICMAC      = -DUSE_BASICMAC
 #NOMAVLINK    = -DEXCLUDE_MAVLINK
 
+RTLSDR        ?= no
+HACKRF        ?= no
+MIRISDR       ?= no
+
 CC            = gcc
 CXX           = g++
 
@@ -180,6 +184,11 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(ADSB_PATH)/adsb_encoder.o \
                  $(MODES_PATH)/mode-s.o \
                  $(MODES_PATH)/maglut.o \
+                 $(MODES_PATH)/sdr/fifo.o \
+                 $(MODES_PATH)/sdr/util.o \
+                 $(MODES_PATH)/sdr/convert.o \
+                 $(MODES_PATH)/sdr/dispatcher.o \
+                 $(MODES_PATH)/sdr/stub.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \
@@ -203,6 +212,24 @@ OBJS          += $(MAVLINK_PATH)/mavlink.o
 endif
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+
+ifeq ($(RTLSDR), yes)
+  OBJS        += $(MODES_PATH)/sdr/sdr_rtlsdr.o
+  CFLAGS      += -DENABLE_RTLSDR
+  LIBS        += -lrtlsdr
+endif
+
+ifeq ($(HACKRF), yes)
+  OBJS        += $(MODES_PATH)/sdr/sdr_hackrf.o
+  CFLAGS      += -DENABLE_HACKRF
+  LIBS        += -lhackrf
+endif
+
+ifeq ($(MIRISDR), yes)
+  OBJS        += $(MODES_PATH)/sdr/sdr_miri.o
+  CFLAGS      += -DENABLE_MIRISDR
+  LIBS        += -lmirisdr
+endif
 
 PROGNAME      := SoftRF
 
