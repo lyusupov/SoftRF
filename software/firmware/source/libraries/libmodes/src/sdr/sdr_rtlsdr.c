@@ -52,8 +52,6 @@
 
 #include "sdr/common.h"
 
-struct _Modes Modes;
-
 #include "sdr/sdr_rtlsdr.h"
 
 #include <rtl-sdr.h>
@@ -200,9 +198,9 @@ bool rtlsdrOpen(void)
     }
 
     int dev_index = 0;
-    if (Modes.dev_name) {
-        if ((dev_index = find_device_index(Modes.dev_name)) < 0) {
-            fprintf(stderr, "rtlsdr: no device matching '%s' found.\n", Modes.dev_name);
+    if (state.dev_name) {
+        if ((dev_index = find_device_index(state.dev_name)) < 0) {
+            fprintf(stderr, "rtlsdr: no device matching '%s' found.\n", state.dev_name);
             show_rtlsdr_devices();
             return false;
         }
@@ -260,13 +258,13 @@ bool rtlsdrOpen(void)
         RTLSDR.gains = gains;
 
         int selected = -1;
-        if (Modes.gain == MODES_LEGACY_AUTO_GAIN) {
+        if (state.gain == MODES_LEGACY_AUTO_GAIN) {
             selected = numgains;
-        } else if (Modes.gain == MODES_DEFAULT_GAIN) {
+        } else if (state.gain == MODES_DEFAULT_GAIN) {
             selected = numgains - 1;
         } else {
             for (int i = 0; i <= numgains; ++i) {
-                if (selected == -1 || fabs(gains[i]/10.0 - Modes.gain) < fabs(gains[selected]/10.0 - Modes.gain))
+                if (selected == -1 || fabs(gains[i]/10.0 - state.gain) < fabs(gains[selected]/10.0 - state.gain))
                     selected = i;
             }
         }
@@ -280,14 +278,14 @@ bool rtlsdrOpen(void)
     }
 
     rtlsdr_set_freq_correction(RTLSDR.dev, RTLSDR.ppm_error);
-    rtlsdr_set_center_freq(RTLSDR.dev, Modes.freq);
-    rtlsdr_set_sample_rate(RTLSDR.dev, (unsigned)Modes.sample_rate);
+    rtlsdr_set_center_freq(RTLSDR.dev, state.freq);
+    rtlsdr_set_sample_rate(RTLSDR.dev, (unsigned)state.sample_rate);
 
     rtlsdr_reset_buffer(RTLSDR.dev);
 
     RTLSDR.converter = init_converter(INPUT_UC8,
-                                      Modes.sample_rate,
-                                      Modes.dc_filter,
+                                      state.sample_rate,
+                                      state.dc_filter,
                                       &RTLSDR.converter_state);
     if (!RTLSDR.converter) {
         fprintf(stderr, "rtlsdr: can't initialize sample converter\n");
@@ -303,8 +301,8 @@ bool rtlsdrOpen(void)
     }
 #endif
 
-    if (Modes.adaptive_range_target == 0)
-        Modes.adaptive_range_target = 30.0;
+    if (state.adaptive_range_target == 0)
+        state.adaptive_range_target = 30.0;
     
     return true;
 }
@@ -318,7 +316,7 @@ static void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx)
 
     sdrMonitor();
 
-    if (Modes.exit) {
+    if (state.exit) {
         rtlsdr_cancel_async(RTLSDR.dev); // ask our caller to exit
         return;
     }
@@ -346,11 +344,11 @@ static void rtlsdrCallback(unsigned char *buf, uint32_t len, void *ctx)
     dropped = 0;
 
     // Compute the sample timestamp and system timestamp for the start of the block
-    outbuf->sampleTimestamp = sampleCounter * 12e6 / Modes.sample_rate;
+    outbuf->sampleTimestamp = sampleCounter * 12e6 / state.sample_rate;
     sampleCounter += samples_read;
 
     // Get the approx system time for the start of this block
-    uint64_t block_duration = 1e3 * samples_read / Modes.sample_rate;
+    uint64_t block_duration = 1e3 * samples_read / state.sample_rate;
     outbuf->sysTimestamp = mstime() - block_duration;
 
     // Convert the new data
@@ -383,7 +381,7 @@ void rtlsdrRun()
     rtlsdr_read_async(RTLSDR.dev, rtlsdrCallback, NULL,
                       /* MODES_RTL_BUFFERS */ 4,
                       MODES_RTL_BUF_SIZE);
-    if (!Modes.exit) {
+    if (!state.exit) {
         fprintf(stderr, "rtlsdr: rtlsdr_read_async returned unexpectedly, probably lost the USB device, bailing out\n");
     }
 }

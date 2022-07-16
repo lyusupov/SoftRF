@@ -65,6 +65,8 @@ enum
   RF_DRV_OGN,
   RF_IC_SX1262,
   RF_IC_MAX2837,
+  RF_IC_R820T,
+  RF_IC_MSI001,
 };
 
 enum

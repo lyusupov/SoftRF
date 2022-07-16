@@ -188,7 +188,8 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(MODES_PATH)/sdr/util.o \
                  $(MODES_PATH)/sdr/convert.o \
                  $(MODES_PATH)/sdr/dispatcher.o \
-                 $(MODES_PATH)/sdr/stub.o \
+                 $(MODES_PATH)/sdr/sdr.o \
+                 $(MODES_PATH)/sdr/sdr_ifile.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \

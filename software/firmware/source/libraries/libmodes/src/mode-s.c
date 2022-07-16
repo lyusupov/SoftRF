@@ -76,6 +76,13 @@ void mode_s_init(mode_s_t *self) {
   // because it's a addr / timestamp pair for every entry
   memset(&self->icao_cache, 0, sizeof(self->icao_cache));
 
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+  self->gain        = MODE_S_DEFAULT_GAIN;
+  self->freq        = MODE_S_DEFAULT_FREQ;
+  self->sample_rate = 2400000.0;
+  self->sdr_type    = SDR_NONE;
+#endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
+
   // Populate the I/Q -> Magnitude lookup table. It is used because sqrt or
   // round may be expensive and may vary a lot depending on the libc used.
   //

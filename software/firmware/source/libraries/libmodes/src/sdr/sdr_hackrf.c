@@ -22,8 +22,6 @@
 #include "sdr/common.h"
 #include "sdr/sdr_hackrf.h"
 
-struct _Modes Modes;
-
 #include <libhackrf/hackrf.h>
 #include <inttypes.h>
 
@@ -203,8 +201,8 @@ bool hackRFOpen()
     show_config();
 
     HackRF.converter = init_converter(INPUT_UC8,
-                                      Modes.sample_rate,
-                                      Modes.dc_filter,
+                                      state.sample_rate,
+                                      state.dc_filter,
                                       &HackRF.converter_state);
     if (!HackRF.converter) {
         fprintf(stderr, "HackRF: can't initialize sample converter\n");
@@ -221,7 +219,7 @@ static int handle_hackrf_samples(hackrf_transfer *transfer)
 
     sdrMonitor();
 
-    if (Modes.exit || transfer->valid_length < 0)
+    if (state.exit || transfer->valid_length < 0)
         return -1;
 
     uint8_t *buf = transfer->buffer;
@@ -253,11 +251,11 @@ static int handle_hackrf_samples(hackrf_transfer *transfer)
     dropped = 0;
 
     // Compute the sample timestamp and system timestamp for the start of the block
-    outbuf->sampleTimestamp = sampleCounter * 12e6 / Modes.sample_rate;
+    outbuf->sampleTimestamp = sampleCounter * 12e6 / state.sample_rate;
     sampleCounter += samples_read;
 
     // Get the approx system time for the start of this block
-    uint64_t block_duration = 1e3 * samples_read / Modes.sample_rate;
+    uint64_t block_duration = 1e3 * samples_read / state.sample_rate;
     outbuf->sysTimestamp = mstime() - block_duration;
 
     // Convert the new data

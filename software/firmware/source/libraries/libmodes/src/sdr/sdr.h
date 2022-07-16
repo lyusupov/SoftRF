@@ -21,6 +21,10 @@
 #ifndef SDR_H
 #define SDR_H
 
+#ifdef __cplusplus
+extern "C"{
+#endif /* __cplusplus */
+
 // Common interface to different SDR inputs.
 
 void sdrInitConfig();
@@ -41,5 +45,9 @@ int sdrSetGain(int step);      // set gain step; return actual gain step used, o
 void sdrMonitor();
 // Retrieve CPU stats and add new CPU time to *addTo
 void sdrUpdateCPUTime(struct timespec *addTo);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif

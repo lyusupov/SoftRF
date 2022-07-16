@@ -181,6 +181,11 @@ const char *Hardware_Rev[] = {
   [0] = "Unknown"
 };
 
+#include "mode-s.h"
+#include "sdr/sdr.h"
+
+mode_s_t state;
+
 //-------------------------------------------------------------------------
 //
 // The MIT License (MIT)
@@ -974,6 +979,24 @@ int main()
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
   Serial.flush();
+
+#if defined(ENABLE_RTLSDR)
+  if (state.sdr_type = SDR_RTLSDR, sdrOpen()) {
+    hw_info.rf = RF_IC_R820T;
+  } else
+#endif /* ENABLE_RTLSDR */
+
+#if defined(ENABLE_HACKRF)
+  if (state.sdr_type = SDR_HACKRF, sdrOpen()) {
+    hw_info.rf = RF_IC_MAX2837;
+  } else
+#endif /* ENABLE_HACKRF */
+
+#if defined(ENABLE_MIRISDR)
+  if (state.sdr_type = SDR_MIRI, sdrOpen()) {
+    hw_info.rf = RF_IC_MSI001;
+  } else
+#endif /* ENABLE_MIRISDR */
 
   hw_info.rf = RF_setup();
 

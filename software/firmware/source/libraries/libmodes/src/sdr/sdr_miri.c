@@ -23,8 +23,6 @@
 #include "sdr/common.h"
 #include "sdr/sdr_miri.h"
 
-struct _Modes Modes;
-
 #include <unistd.h>
 #include "mirisdr.h"
 
@@ -92,11 +90,11 @@ bool miriHandleOption(int argc, char **argv, int *jptr)
 bool miriOpen(void)
 {
     uint32_t dev_index = 0;
-    uint32_t freq = Modes.freq;
-    uint32_t sample_rate = Modes.sample_rate;
+    uint32_t freq = state.freq;
+    uint32_t sample_rate = state.sample_rate;
 
     int r, i = 0;
-    int gain =  Modes.gain;
+    int gain =  state.gain;
     char vendor[256] = { 0 }, product[256] = { 0 }, serial[256] = { 0 };
 
     int device_count = mirisdr_get_device_count();
@@ -160,8 +158,8 @@ bool miriOpen(void)
         fprintf(stderr, "WARNING: Failed to reset buffers.\n");
 
     MIRI.converter = init_converter(INPUT_SC16, 
-                                     Modes.sample_rate,
-                                     Modes.dc_filter,
+                                     state.sample_rate,
+                                     state.dc_filter,
                                      &MIRI.converter_state);
     if (!MIRI.converter) {
         fprintf(stderr, "MIRI: can't initialize sample converter\n");
@@ -190,7 +188,7 @@ static void miriCallback(unsigned char *buf, uint32_t len, void *ctx)
 
     sdrMonitor();
 
-    if (Modes.exit) {
+    if (state.exit) {
         mirisdr_cancel_async(MIRI.dev); 
         return;
     }
@@ -221,11 +219,11 @@ static void miriCallback(unsigned char *buf, uint32_t len, void *ctx)
     dropped = 0;
 
     // Compute the sample timestamp and system timestamp for the start of the block
-    outbuf->sampleTimestamp = sampleCounter * 12e6 / Modes.sample_rate;
+    outbuf->sampleTimestamp = sampleCounter * 12e6 / state.sample_rate;
     sampleCounter += samples_read;
 
     // Get the approx system time for the start of this block
-    uint64_t block_duration = 1e3 * samples_read / Modes.sample_rate;
+    uint64_t block_duration = 1e3 * samples_read / state.sample_rate;
     outbuf->sysTimestamp = mstime() - block_duration;
 
     // Convert the new data
@@ -257,7 +255,7 @@ void miriRun()
                       DEFAULT_ASYNC_BUF_NUMBER,
                       out_block_size);
 
-    if (!Modes.exit)
+    if (!state.exit)
         fprintf(stderr, "miri: mirisdr_read_async returned unexpectedly. (error %d) \n", r);
 
 }
