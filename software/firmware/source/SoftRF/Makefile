@@ -188,6 +188,9 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(MODES_PATH)/sdr/util.o \
                  $(MODES_PATH)/sdr/convert.o \
                  $(MODES_PATH)/sdr/dispatcher.o \
+                 $(MODES_PATH)/sdr/cpu.o \
+                 $(MODES_PATH)/sdr/flavor.generic.o \
+                 $(MODES_PATH)/sdr/impl/tables.o \
                  $(MODES_PATH)/sdr/sdr.o \
                  $(MODES_PATH)/sdr/sdr_ifile.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
@@ -215,20 +218,23 @@ endif
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
 
 ifeq ($(RTLSDR), yes)
-  OBJS        += $(MODES_PATH)/sdr/sdr_rtlsdr.o
-  CFLAGS      += -DENABLE_RTLSDR
+  OBJS        += $(MODES_PATH)/sdr/sdr_rtlsdr.o \
+                 $(MODES_PATH)/sdr/flavor.armv7a_neon_vfpv4.o
+  CFLAGS      += -DENABLE_RTLSDR -march=armv7-a -mfpu=neon-vfpv4 -DSTARCH_MIX_ARM
   LIBS        += -lrtlsdr
 endif
 
 ifeq ($(HACKRF), yes)
-  OBJS        += $(MODES_PATH)/sdr/sdr_hackrf.o
-  CFLAGS      += -DENABLE_HACKRF
+  OBJS        += $(MODES_PATH)/sdr/sdr_hackrf.o \
+                 $(MODES_PATH)/sdr/flavor.armv7a_neon_vfpv4.o
+  CFLAGS      += -DENABLE_HACKRF -march=armv7-a -mfpu=neon-vfpv4 -DSTARCH_MIX_ARM
   LIBS        += -lhackrf
 endif
 
 ifeq ($(MIRISDR), yes)
-  OBJS        += $(MODES_PATH)/sdr/sdr_miri.o
-  CFLAGS      += -DENABLE_MIRISDR
+  OBJS        += $(MODES_PATH)/sdr/sdr_miri.o \
+                 $(MODES_PATH)/sdr/flavor.armv7a_neon_vfpv4.o
+  CFLAGS      += -DENABLE_MIRISDR -march=armv7-a -mfpu=neon-vfpv4 -DSTARCH_MIX_ARM
   LIBS        += -lmirisdr
 endif
 

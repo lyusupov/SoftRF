@@ -79,7 +79,7 @@ void mode_s_init(mode_s_t *self) {
 #if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   self->gain        = MODE_S_DEFAULT_GAIN;
   self->freq        = MODE_S_DEFAULT_FREQ;
-  self->sample_rate = 2400000.0;
+  self->sample_rate = MODE_S_DEFAULT_RATE;
   self->sdr_type    = SDR_NONE;
 #endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 

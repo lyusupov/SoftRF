@@ -182,7 +182,7 @@ const char *Hardware_Rev[] = {
 };
 
 #include "mode-s.h"
-#include "sdr/sdr.h"
+#include "sdr/common.h"
 
 mode_s_t state;
 
@@ -769,6 +769,67 @@ void normal_loop()
     }
 
     if (isTimeToExport()) {
+
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+  struct mode_s_aircraft *a;
+  int i = 0;
+
+  for (a = state.aircrafts; a; a = a->next) {
+    if (a->even_cprtime && a->odd_cprtime &&
+        abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+      if (es1090_decode(a, &ThisAircraft, &fo)) {
+        memset(fo.raw, 0, sizeof(fo.raw));
+
+        Traffic_Update(&fo);
+
+        for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+          if (Container[i].addr == fo.addr) {
+            uint8_t alert_bak = Container[i].alert;
+            Container[i] = fo;
+            Container[i].alert = alert_bak;
+            break;
+          }
+        }
+        if (i < MAX_TRACKING_OBJECTS) continue;
+
+        int max_dist_ndx = 0;
+        int min_level_ndx = 0;
+
+        for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+          if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+            Container[i] = fo;
+            break;
+          }
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+          if (Container[i].distance > Container[max_dist_ndx].distance) {
+            max_dist_ndx = i;
+          }
+          if (Container[i].alarm_level < Container[min_level_ndx].alarm_level) {
+            min_level_ndx = i;
+          }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+        }
+        if (i < MAX_TRACKING_OBJECTS) continue;
+
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+        if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
+          Container[min_level_ndx] = fo;
+          continue;
+        }
+
+        if (fo.distance    <  Container[max_dist_ndx].distance &&
+            fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
+          Container[max_dist_ndx] = fo;
+          continue;
+        }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+      }
+    }
+  }
+
+  interactiveRemoveStaleAircrafts(&state);
+#endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
+
       NMEA_Export();
 
       if (isValidFix()) {
@@ -960,6 +1021,41 @@ void * traffic_tcpserv_loop(void * m)
   Traffic_TCP_Server.receive();
 }
 
+extern "C" void *readerThreadEntryPoint(void *arg);
+extern "C" void ModeS_demod_loop(mode_s_callback_t);
+
+void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
+
+  MODES_NOTUSED(self);
+
+//  rx_packets_counter++;
+
+/* When a new message is available, because it was decoded from the
+ * RTL device, file, or received in the TCP input port, or any other
+ * way we can receive a decoded message, we call this function in order
+ * to use the message.
+ *
+ * Basically this function passes a raw message to the upper layers for
+ * further processing and visualization. */
+
+    if (self->check_crc == 0 || mm->crcok) {
+
+//    printf("%02d %03d %02x%02x%02x\r\n", mm->msgtype, mm->msgbits, mm->aa1, mm->aa2, mm->aa3);
+
+        int acfts_in_sight = 0;
+        struct mode_s_aircraft *a = state.aircrafts;
+
+        while (a) {
+          acfts_in_sight++;
+          a = a->next;
+        }
+
+        if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+          interactiveReceiveData(self, mm);
+        }
+    }
+}
+
 int main()
 {
   // Init GPIO bcm
@@ -979,6 +1075,19 @@ int main()
   Serial.println(String(SoC->getChipId(), HEX));
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
   Serial.flush();
+
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+  mode_s_init(&state);
+  sdrInitConfig();
+
+  // Allocate the various buffers used by Modes
+  state.trailing_samples = (MODES_PREAMBLE_US + MODES_LONG_MSG_BITS + 16) * 1e-6 * state.sample_rate;
+
+  if (!fifo_create(MODES_MAG_BUFFERS, MODES_MAG_BUF_SAMPLES + state.trailing_samples, state.trailing_samples)) {
+      fprintf(stderr, "Out of memory allocating FIFO\n");
+      exit(EXIT_FAILURE);
+  }
+#endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
 #if defined(ENABLE_RTLSDR)
   if (state.sdr_type = SDR_RTLSDR, sdrOpen()) {
@@ -1003,6 +1112,15 @@ int main()
   if (hw_info.rf == RF_IC_NONE) {
       exit(EXIT_FAILURE);
   }
+
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+  if (hw_info.rf == RF_IC_R820T   ||
+      hw_info.rf == RF_IC_MAX2837 ||
+      hw_info.rf == RF_IC_MSI001) {
+    // Create the thread that will read the data from the device.
+    pthread_create(&state.reader_thread, NULL, readerThreadEntryPoint, NULL);
+  }
+#endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
 #if defined(USE_EPAPER)
   Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
@@ -1052,6 +1170,10 @@ int main()
       normal_loop();
       break;
     }
+
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+    ModeS_demod_loop(on_msg);
+#endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
     SoC->loop();
 

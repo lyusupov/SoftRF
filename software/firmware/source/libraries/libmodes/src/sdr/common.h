@@ -54,7 +54,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#ifndef __cplusplus
 #include <stdatomic.h>
+#endif /* __cplusplus */
 #include <pthread.h>
 #include <stdint.h>
 #include <errno.h>
@@ -63,8 +65,13 @@
 
 #define MODES_RTL_BUF_SIZE         (16*16384)                 // 256k
 #define MODES_MAG_BUF_SAMPLES      (MODES_RTL_BUF_SIZE / 2)   // Each sample is 2 bytes
+#define MODES_MAG_BUFFERS          12                         // Number of magnitude buffers (should be smaller than RTL_BUFFERS for flowcontrol to work)
 #define MODES_LEGACY_AUTO_GAIN     -10                        // old gain value for "use automatic gain"
 #define MODES_DEFAULT_GAIN         999999                     // Use default SDR gain
+
+#define MODES_PREAMBLE_US          8                          // microseconds = bits
+#define MODES_LONG_MSG_BYTES       14
+#define MODES_LONG_MSG_BITS        (MODES_LONG_MSG_BYTES * 8)
 
 #define MODES_NOTUSED(V)           ((void) V)
 

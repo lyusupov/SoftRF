@@ -69,6 +69,10 @@ struct mag_buf {
     struct mag_buf *next;            // linked list forward link
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 // Create the queue structures. Not threadsafe. Returns true on success.
 //
 //   buffer_count - the number of buffers to preallocate
@@ -116,4 +120,8 @@ struct mag_buf *fifo_dequeue(uint32_t timeout_ms);
 // Release a buffer previously returned by fifo_acquire() or fifo_pop() back to the freelist.
 void fifo_release(struct mag_buf *buf);
 
-#endif
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* FIFO_H */

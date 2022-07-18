@@ -138,10 +138,13 @@ typedef struct {
 
 #if defined(ENABLE_RTLSDR)  || defined(ENABLE_HACKRF) || \
     defined(ENABLE_MIRISDR) || defined(RASPBERRY_PI)
+  pthread_t       reader_thread;
+
   pthread_mutex_t reader_cpu_mutex;       // mutex protecting reader_cpu_accumulator
   struct timespec reader_cpu_accumulator; // accumulated CPU time used by the reader thread
   struct timespec reader_cpu_start;       // start time for the last reader thread CPU measurement
 
+  unsigned trailing_samples;              // extra trailing samples in magnitude buffers
   double sample_rate;  // actual sample rate in use (in hz)
 
   // Sample conversion
@@ -210,6 +213,10 @@ struct mode_s_msg {
 
 typedef void (*mode_s_callback_t)(mode_s_t *self, struct mode_s_msg *mm);
 
+#ifdef __cplusplus
+extern "C"{
+#endif /* __cplusplus */
+
 void mode_s_init(mode_s_t *self);
 void mode_s_compute_magnitude_vector(unsigned char *data, mag_t *mag, uint32_t size);
 void mode_s_detect(mode_s_t *self, mag_t *mag, uint32_t maglen, mode_s_callback_t);
@@ -218,4 +225,8 @@ void mode_s_decode(mode_s_t *self, struct mode_s_msg *mm, unsigned char *msg);
 struct mode_s_aircraft* interactiveReceiveData(mode_s_t *self, struct mode_s_msg *mm);
 void interactiveRemoveStaleAircrafts(mode_s_t *self);
 
-#endif
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __MODE_S_DECODER_H */

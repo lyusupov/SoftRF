@@ -147,4 +147,43 @@ int join_thread(pthread_t thread, void **retval, uint32_t timeout_ms)
 #endif
 }
 
+//
+//=========================================================================
+//
+// We read data using a thread, so the main thread only handles decoding
+// without caring about data acquisition
+//
+
+void *readerThreadEntryPoint(void *arg)
+{
+    MODES_NOTUSED(arg);
+
+    sdrRun();
+
+    if (!state.exit)
+        state.exit = 2; // unexpected exit
+
+    fifo_halt(); // wakes the main thread, if it's still waiting
+    return NULL;
+}
+
+void ModeS_demod_loop(mode_s_callback_t cb)
+{
+   if (!state.exit) {
+        // get the next sample buffer off the FIFO; wait only up to 100ms
+        // this is fairly aggressive as all our network I/O runs out of the background work!
+        struct mag_buf *buf = fifo_dequeue(100 /* milliseconds */);
+
+        if (buf) {
+            // Process one buffer
+            uint16_t *mag = buf->data;
+            uint32_t mlen = buf->validLength - buf->overlap;
+
+            mode_s_detect(&state, mag, mlen, cb);
+
+            // Return the buffer to the FIFO freelist for reuse
+            fifo_release(buf);
+        }
+    }
+}
 #endif /* RASPBERRY_PI */
