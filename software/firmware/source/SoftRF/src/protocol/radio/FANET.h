@@ -28,14 +28,21 @@
  * FANET uses LoRa modulation
  * FANET+ uses both LoRa (FANET) and FSK(FLARM)
  *
+ * Zone 1: EU, default
  * Freq: 868.2 [ 869.525 ] MHz
  * Modulation: LoRa (TM)
  * Parameters: BW_250 SF_7 CR_5
+ *
+ * Zone 2: America (South+North), Australia, New Zealand, China, Japan
+ * Freq: 920.8 MHz
+ * Modulation: LoRa (TM)
+ * Parameters: BW_500 SF_7 CR_5
  */
 
 #define SOFRF_FANET_VENDOR_ID       0x07
 
 //#define FANET_NEXT
+//#define FANET_ZONE2_ENABLE
 
 enum
 {

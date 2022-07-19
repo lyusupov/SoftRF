@@ -1028,10 +1028,10 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 
   MODES_NOTUSED(self);
 
-//  rx_packets_counter++;
+  rx_packets_counter++;
 
 /* When a new message is available, because it was decoded from the
- * RTL device, file, or received in the TCP input port, or any other
+ * SDR device, file, or received in the TCP input port, or any other
  * way we can receive a decoded message, we call this function in order
  * to use the message.
  *

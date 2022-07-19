@@ -145,7 +145,7 @@ typedef struct {
   struct timespec reader_cpu_start;       // start time for the last reader thread CPU measurement
 
   unsigned trailing_samples;              // extra trailing samples in magnitude buffers
-  double sample_rate;  // actual sample rate in use (in hz)
+  double   sample_rate;                   // actual sample rate in use (in hz)
 
   // Sample conversion
   int dc_filter;       // should we apply a DC filter?
@@ -214,7 +214,7 @@ struct mode_s_msg {
 typedef void (*mode_s_callback_t)(mode_s_t *self, struct mode_s_msg *mm);
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif /* __cplusplus */
 
 void mode_s_init(mode_s_t *self);

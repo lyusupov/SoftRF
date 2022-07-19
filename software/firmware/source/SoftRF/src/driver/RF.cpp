@@ -849,6 +849,24 @@ static void sx12xx_channel(int8_t channel)
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
     int8_t fc = settings->freq_corr;
 
+#if defined(FANET_ZONE2_ENABLE)
+    /*
+     * NEEDS WORK
+     * https://github.com/3s1d/fanet-stm32/commit/0671ce65e5faa06e0e34abce7f35a5b95c1e19db
+     *
+     * The quick and diry patch below is Ok to apply
+     * when (if) FCC certified Skytraxx 'zone #2' devices will appear on the market
+     *
+     * Better solution is to advance
+     * RF_FreqPlan.setPlan(band) -> RF_FreqPlan.setPlan(proto, band)
+     */
+    if (LMIC.protocol                            &&
+        LMIC.protocol->type == RF_PROTOCOL_FANET &&
+        settings->band == RF_BAND_US) {
+      frequency = 920800000UL; /* 920.8 MHz */
+    }
+#endif /* FANET_ZONE2_ENABLE */
+
     //Serial.print("frequency: "); Serial.println(frequency);
 
     if (sx12xx_receive_active) {
@@ -978,6 +996,11 @@ static void sx12xx_setvars()
   if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_FANET) {
     /* for only a few nodes around, increase the coding rate to ensure a more robust transmission */
     LMIC.rps = setCr(LMIC.rps, CR_4_8);
+#if defined(FANET_ZONE2_ENABLE)
+    if (settings->band == RF_BAND_US) {
+      LMIC.rps = setBw(LMIC.rps, BW500);
+    }
+#endif /* FANET_ZONE2_ENABLE */
   }
 }
 
