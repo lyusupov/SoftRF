@@ -612,9 +612,9 @@ static byte ublox_version() {
               rval = GNSS_MODULE_U7;
             else if (GNSSbuf[33] == '8')
               rval = GNSS_MODULE_U8;
-            else if (GNSSbuf[33] == '9')
+            else if (GNSSbuf[32] == '1' && GNSSbuf[33] == '9')
               rval = GNSS_MODULE_U9;
-            else if (GNSSbuf[32] == '1' && GNSSbuf[33] == 'A')
+            else if (GNSSbuf[33] == 'A')
               rval = GNSS_MODULE_U10;
 
             break;

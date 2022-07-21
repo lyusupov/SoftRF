@@ -685,8 +685,11 @@ public:
     bool        isLDO4Enable(void);
 
     bool        isChargingEnable(void);
+
+    bool        isChargeingEnable(void) __attribute__((deprecated));
     bool        isBatteryConnect(void);
     bool        isCharging(void);
+    bool        isChargeing(void) __attribute__((deprecated));
     bool        isVBUSPlug(void);
     bool        isExtenEnable(void);
 
@@ -791,7 +794,9 @@ public:
 
     int         getChargingTargetVoltage(axp_chargeing_vol_t &charging_target_voltage);
     int         setChargingTargetVoltage(axp_chargeing_vol_t param);
-    int         enableChargeing(bool en);
+    int         enableCharging(bool en);
+    int         enableChargeing(bool en) __attribute__((deprecated));
+
 
     int         adc1Enable(uint16_t params, bool en);
     int         adc2Enable(uint16_t params, bool en);
