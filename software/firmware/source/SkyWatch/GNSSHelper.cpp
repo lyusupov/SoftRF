@@ -69,6 +69,7 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_U7]      = "U7",
   [GNSS_MODULE_U8]      = "U8",
   [GNSS_MODULE_U9]      = "U9",
+  [GNSS_MODULE_U10]     = "U10",
   [GNSS_MODULE_MAV]     = "MAV",
   [GNSS_MODULE_SONY]    = "SONY",
   [GNSS_MODULE_AT65]    = "AT65",
@@ -611,6 +612,10 @@ static byte ublox_version() {
               rval = GNSS_MODULE_U7;
             else if (GNSSbuf[33] == '8')
               rval = GNSS_MODULE_U8;
+            else if (GNSSbuf[33] == '9')
+              rval = GNSS_MODULE_U9;
+            else if (GNSSbuf[32] == '1' && GNSSbuf[33] == 'A')
+              rval = GNSS_MODULE_U10;
 
             break;
           }

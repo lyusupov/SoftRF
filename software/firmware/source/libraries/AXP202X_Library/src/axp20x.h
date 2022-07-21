@@ -684,9 +684,9 @@ public:
     bool        isLDO3Enable(void);
     bool        isLDO4Enable(void);
 
-    bool        isChargeingEnable(void);
+    bool        isChargingEnable(void);
     bool        isBatteryConnect(void);
-    bool        isChargeing(void);
+    bool        isCharging(void);
     bool        isVBUSPlug(void);
     bool        isExtenEnable(void);
 
@@ -789,7 +789,7 @@ public:
     uint32_t    getBattDischargeCoulomb(void);
     float       getSettingChargeCurrent(void);
 
-    int         getChargingTargetVoltage(axp_chargeing_vol_t& charging_target_voltage);
+    int         getChargingTargetVoltage(axp_chargeing_vol_t &charging_target_voltage);
     int         setChargingTargetVoltage(axp_chargeing_vol_t param);
     int         enableChargeing(bool en);
 

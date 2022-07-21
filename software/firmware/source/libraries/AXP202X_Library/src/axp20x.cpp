@@ -240,7 +240,7 @@ int AXP20X_Class::setPowerOutPut(uint8_t ch, bool en)
     return AXP_FAIL;
 }
 
-bool AXP20X_Class::isChargeing(void)
+bool AXP20X_Class::isCharging(void)
 {
     uint8_t reg;
     if (!_init)
@@ -1212,7 +1212,7 @@ float AXP20X_Class::getSettingChargeCurrent(void)
     return cur;
 }
 
-bool AXP20X_Class::isChargeingEnable(void)
+bool AXP20X_Class::isChargingEnable(void)
 {
     uint8_t val;
     if (!_init)
@@ -1239,7 +1239,7 @@ int AXP20X_Class::enableChargeing(bool en)
     return AXP_PASS;
 }
 
-int AXP20X_Class::getChargingTargetVoltage(axp_chargeing_vol_t& chargeing_vol)
+int AXP20X_Class::getChargingTargetVoltage(axp_chargeing_vol_t &chargeing_vol)
 {
     uint8_t val;
     if (!_init)
