@@ -130,6 +130,7 @@ extern const char *Hardware_Rev[];
 
 //#define USE_TIME_SLOTS
 //#define USE_OGN_ENCRYPTION
+//#define ENABLE_D1090_INPUT
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95

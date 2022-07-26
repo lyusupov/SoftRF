@@ -770,7 +770,8 @@ void normal_loop()
 
     if (isTimeToExport()) {
 
-#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+#if defined(ENABLE_D1090_INPUT) || \
+    defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   struct mode_s_aircraft *a;
   int i = 0;
 
@@ -1034,8 +1035,9 @@ int main()
   Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
-#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   mode_s_init(&state);
+
+#if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   sdrInitConfig();
 
   // Allocate the various buffers used by Modes

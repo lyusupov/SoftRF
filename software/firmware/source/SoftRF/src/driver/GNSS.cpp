@@ -28,6 +28,7 @@
 #include "WiFi.h"
 #include "RF.h"
 #include "Battery.h"
+#include "../protocol/data/D1090.h"
 
 #if !defined(EXCLUDE_EGM96)
 #include <egm96s.h>
@@ -1747,6 +1748,35 @@ void PickGNSSFix()
 #endif /* USE_SKYVIEW_CFG */
 #endif /* USE_NMEA_CFG */
     }
+
+#if defined(ENABLE_D1090_INPUT)
+    if (GNSSbuf[GNSS_cnt]   == '\n' &&
+        GNSS_cnt             >  1   &&
+        GNSSbuf[GNSS_cnt-1] == '\r' &&
+        GNSSbuf[GNSS_cnt-2] == ';')
+    {
+      int i=0;
+
+      if (GNSS_cnt > 16 && GNSSbuf[GNSS_cnt-17] == '*') {
+        for (i=0; i<14; i++) {
+          if (!isxdigit(GNSSbuf[GNSS_cnt-16+i])) break;
+        }
+        if (i>=14) {
+          D1090_Import(&GNSSbuf[GNSS_cnt-17]);
+          GNSS_cnt -= 18;
+        }
+      } else if (GNSS_cnt > 30 && GNSSbuf[GNSS_cnt-31] == '*') {
+        for (i=0; i<28; i++) {
+          if (!isxdigit(GNSSbuf[GNSS_cnt-30+i])) break;
+        }
+        if (i>=28) {
+          D1090_Import(&GNSSbuf[GNSS_cnt-31]);
+          GNSS_cnt -= 32;
+        }
+      }
+    }
+#endif /* ENABLE_D1090_INPUT */
+
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
       GNSS_cnt = 0;
     } else {

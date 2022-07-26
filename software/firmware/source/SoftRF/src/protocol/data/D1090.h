@@ -30,5 +30,6 @@ enum
 };
 
 void D1090_Export(void);
+void D1090_Import(uint8_t *);
 
 #endif /* D1090HELPER_H */

@@ -146,3 +146,62 @@ void D1090_Export()
     }
   }
 }
+
+#if defined(ENABLE_D1090_INPUT)
+
+#include <mode-s.h>
+extern mode_s_t state;
+
+void D1090_Import(uint8_t *msg)
+{
+  uint8_t buf[14];
+  struct mode_s_msg mm;
+
+  for (int i=0; i<28; i+=2) {
+    if (msg[1 + i] == ';') break;
+
+    uint8_t out = 0;
+    uint8_t h = msg[1 + i];
+
+    if (isdigit(h)) {
+      out |= ((h - '0'     ) << 4);
+    } else if (islower(h)) {
+      out |= ((h - 'a' + 10) << 4);
+    } else {
+      out |= ((h - 'A' + 10) << 4);
+    }
+
+    uint8_t l = msg[1 + i + 1];
+
+    if (isdigit(l)) {
+      out |= (l - '0'     );
+    } else if (islower(l)) {
+      out |= (l - 'a' + 10);
+    } else {
+      out |= (l - 'A' + 10);
+    }
+
+    buf[i>>1] = out;
+  }
+
+  mode_s_decode(&state, &mm, buf);
+
+  if (state.check_crc == 0 || mm.crcok) {
+
+//  printf("%02d %03d %02x%02x%02x\r\n", mm.msgtype, mm.msgbits, mm.aa1, mm.aa2, mm.aa3);
+
+      int acfts_in_sight = 0;
+      struct mode_s_aircraft *a = state.aircrafts;
+
+      while (a) {
+        acfts_in_sight++;
+        a = a->next;
+      }
+
+      if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+        interactiveReceiveData(&state, &mm);
+      }
+  }
+}
+
+#endif /* ENABLE_D1090_INPUT */
