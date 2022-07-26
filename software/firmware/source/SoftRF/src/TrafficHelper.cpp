@@ -136,6 +136,53 @@ void Traffic_Update(ufo_t *fop)
   }
 }
 
+bool Traffic_Add(ufo_t *fop)
+{
+  int i;
+
+  for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].addr == fo.addr) {
+      uint8_t alert_bak = Container[i].alert;
+      Container[i] = fo;
+      Container[i].alert = alert_bak;
+      return true;
+    }
+  }
+
+  int max_dist_ndx = 0;
+  int min_level_ndx = 0;
+
+  for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
+      Container[i] = fo;
+      return true;
+    }
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+    if  (Container[i].distance > Container[max_dist_ndx].distance)  {
+      max_dist_ndx = i;
+    }
+    if  (Container[i].alarm_level < Container[min_level_ndx].alarm_level)  {
+      min_level_ndx = i;
+    }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+  }
+
+#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
+  if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
+    Container[min_level_ndx] = fo;
+    return true;
+  }
+
+  if (fo.distance    <  Container[max_dist_ndx].distance &&
+      fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
+    Container[max_dist_ndx] = fo;
+    return true;
+  }
+#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
+
+  return false;
+}
+
 void ParseData()
 {
     size_t rx_size = RF_Payload_Size(settings->rf_protocol);
@@ -163,53 +210,9 @@ void ParseData()
     }
 
     if (protocol_decode && (*protocol_decode)((void *) RxBuffer, &ThisAircraft, &fo)) {
-
-      int i;
-
       fo.rssi = RF_last_rssi;
-
       Traffic_Update(&fo);
-
-      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        if (Container[i].addr == fo.addr) {
-          uint8_t alert_bak = Container[i].alert;
-          Container[i] = fo;
-          Container[i].alert = alert_bak;
-          return;
-        }
-      }
-
-      int max_dist_ndx = 0;
-      int min_level_ndx = 0;
-
-      for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-        if (now() - Container[i].timestamp > ENTRY_EXPIRATION_TIME) {
-          Container[i] = fo;
-          return;
-        }
-#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
-        if  (Container[i].distance > Container[max_dist_ndx].distance)  {
-          max_dist_ndx = i;
-        }
-        if  (Container[i].alarm_level < Container[min_level_ndx].alarm_level)  {
-          min_level_ndx = i;
-        }
-#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
-      }
-
-#if !defined(EXCLUDE_TRAFFIC_FILTER_EXTENSION)
-      if (fo.alarm_level > Container[min_level_ndx].alarm_level) {
-        Container[min_level_ndx] = fo;
-        return;
-      }
-
-      if (fo.distance    <  Container[max_dist_ndx].distance &&
-          fo.alarm_level >= Container[max_dist_ndx].alarm_level) {
-        Container[max_dist_ndx] = fo;
-        return;
-      }
-#endif /* EXCLUDE_TRAFFIC_FILTER_EXTENSION */
-
+      Traffic_Add(&fo);
     }
 }
 
