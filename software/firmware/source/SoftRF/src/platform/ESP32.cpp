@@ -32,7 +32,17 @@
 #include <rom/spi_flash.h>
 #include <soc/adc_channel.h>
 #include <flashchips.h>
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #include <axp20x.h>
+typedef AXP20X_Class PMU_t;
+#else
+#define XPOWERS_CHIP_AXP2102
+#include <XPowersLib.h>
+typedef XPowersPMU PMU_t;
+#define AXP192_SLAVE_ADDRESS (0x34)
+#define AXP202_SLAVE_ADDRESS (0x35)
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #include "../system/SoC.h"
 #include "../driver/Sound.h"
@@ -117,7 +127,7 @@ void TFT_backlight_on()
 }
 #endif /* USE_TFT */
 
-AXP20X_Class axp;
+PMU_t axp;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
 
@@ -270,6 +280,7 @@ static void ESP32_setup()
     bool has_axp202 = (Wire1.endTransmission() == 0);
     if (has_axp202) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
       axp.begin(Wire1, AXP202_SLAVE_ADDRESS);
 
       axp.enableIRQ(AXP202_ALL_IRQ, AXP202_OFF);
@@ -290,6 +301,9 @@ static void ESP32_setup()
       axp.adc1Enable(AXP202_BATT_VOL_ADC1, AXP202_ON);
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
+#else
+      /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     } else {
       WIRE_FINI(Wire1);
     }
@@ -303,6 +317,7 @@ static void ESP32_setup()
 
       hw_info.revision = 8;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
       axp.begin(Wire1, AXP192_SLAVE_ADDRESS);
 
       axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
@@ -324,6 +339,9 @@ static void ESP32_setup()
 
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
+#else
+      /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     } else {
       WIRE_FINI(Wire1);
       hw_info.revision = 2;
@@ -489,6 +507,7 @@ static void ESP32_loop()
 
     if (is_irq) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
       if (axp.readIRQ() == AXP_PASS) {
 
         if (axp.isPEKLongtPressIRQ()) {
@@ -510,6 +529,9 @@ static void ESP32_loop()
 
         axp.clearIRQ();
       }
+#else
+      /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
       portENTER_CRITICAL_ISR(&PMU_mutex);
       PMU_Irq = false;
@@ -521,11 +543,15 @@ static void ESP32_loop()
     }
 
     if (isTimeToBattery()) {
+#if defined(CONFIG_IDF_TARGET_ESP32)
       if (Battery_voltage() > Battery_threshold()) {
         axp.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
       } else {
         axp.setChgLEDMode(AXP20X_LED_BLINK_1HZ);
       }
+#else
+      /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     }
   }
 }
@@ -542,11 +568,15 @@ static void ESP32_fini(int reason)
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
     axp.setPowerOutPut(AXP202_LDO2, AXP202_OFF); // BL
     axp.setPowerOutPut(AXP202_LDO4, AXP202_OFF); // S76G (Sony GNSS)
     axp.setPowerOutPut(AXP202_LDO3, AXP202_OFF); // S76G (MCU + LoRa)
+#else
+    /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
     delay(20);
 
@@ -556,6 +586,7 @@ static void ESP32_fini(int reason)
   } else if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
              hw_info.revision == 8) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     axp.setChgLEDMode(AXP20X_LED_OFF);
 
 #if PMK2_SLEEP_MODE == 2
@@ -615,6 +646,9 @@ static void ESP32_fini(int reason)
      */
     axp.shutdown();
 #endif /* PMK2_SLEEP_MODE */
+#else
+    /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT);
 
