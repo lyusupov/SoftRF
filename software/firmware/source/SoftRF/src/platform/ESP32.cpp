@@ -389,6 +389,80 @@ static void ESP32_setup()
                        SOC_GPIO_PIN_S3_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
+    Wire1.begin(SOC_GPIO_PIN_S3_OLED_SDA , SOC_GPIO_PIN_S3_OLED_SCL);
+    Wire1.beginTransmission(AXP2101_SLAVE_ADDRESS);
+    bool has_axp2101 = (Wire1.endTransmission() == 0);
+    WIRE_FINI(Wire1);
+
+    if (has_axp2101) {
+
+      axp.begin(Wire1, AXP2101_SLAVE_ADDRESS,
+                SOC_GPIO_PIN_S3_OLED_SDA, SOC_GPIO_PIN_S3_OLED_SCL);
+
+      // Set the minimum system operating voltage inside the PMU,
+      // below this value will shut down the PMU
+      axp.setMinSystemVoltage(XPOWERS_VSYS_VOL_4V5);
+
+      // Set the minimum common working voltage of the PMU VBUS input,
+      // below this value will turn off the PMU
+      axp.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V36);
+
+      // Set the maximum current of the PMU VBUS input,
+      // higher than this value will turn off the PMU
+      axp.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
+
+      // DCDC1 1500~3400mV, IMAX=2A
+      axp.setDC1Voltage(3300);
+
+      // DCDC2 500~1200mV, 1220~1540mV, IMAX=2A;
+      axp.setDC2Voltage(1000);
+
+      // DCDC3 500~1200mV, 1220~1540mV, 1600~3400mV,IMAX = 2A;
+      axp.setDC3Voltage(3300);
+
+      // DCDC4: 500~1200mV, 1220~1840mV, IMAX = 1.5A;
+      axp.setDC4Voltage(1000);
+
+      // DCDC5 500~1200V, 1220~1540V, 1600~3400mV,IMAX=2A;
+      axp.setDC5Voltage(3300);
+
+      // ALDO 500~3500V, 100mV/step, IMAX=300mA
+      axp.setALDO1Voltage(3300);
+      axp.setALDO2Voltage(3300);
+      axp.setALDO3Voltage(3300);
+      axp.setALDO4Voltage(3300);
+
+      // BLDO 500~3500V, 100mV/step,IMAX=300mA
+      axp.setBLDO1Voltage(3300);
+      axp.setBLDO2Voltage(3300);
+
+      // CPUSLDO 500~1400mV, IMAX=30mA
+      axp.setCPUSLDOVoltage(1000);
+
+      // DLDO1/2: analog LDO or power switch, 500~3300mV / 500~1400mV, IMAX = 300mA
+      axp.setDLDO1Voltage(3300);
+      axp.setDLDO2Voltage(3300);
+
+      // axp.enableDC1();
+      axp.enableDC2();
+#if 0 /* TBD */
+      axp.enableDC3();
+      axp.enableDC4();
+      axp.enableDC5();
+#endif
+      axp.enableALDO1();
+      axp.enableALDO2();
+#if 0 /* TBD */
+      axp.enableALDO3();
+      axp.enableALDO4();
+      axp.enableBLDO1();
+      axp.enableBLDO2();
+      axp.enableCPUSLDO();
+      axp.enableDLDO1();
+      axp.enableDLDO2();
+#endif
+    }
+
     /* uSD-SPI init */
     uSD_SPI.begin(SOC_GPIO_PIN_S3_SD_SCK,
                   SOC_GPIO_PIN_S3_SD_MISO,
