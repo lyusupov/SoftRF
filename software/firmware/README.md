@@ -51,7 +51,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * EasyLink library is developed by **Robert Wessels** and **Tony Cave**
  * Dump978 library is developed by **Oliver Jowett**
  * FEC library is developed by **Phil Karn**
- * AXP20X, BMA423, FT5206 and PCF8563 libraries are developed by **Lewis He**
+ * AXP20X, XPowersLib, BMA423, FT5206 and PCF8563 libraries are developed by **Lewis He**
  * GxEPD2 library is developed by **Jean-Marc Zingg**
  * Adafruit SSD1306 and GFX libraries are developed by **Adafruit Industries**
  * GDL90 decoder is developed by **Ryan David**
