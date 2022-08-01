@@ -138,7 +138,8 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE,
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
-  .imu      = IMU_NONE
+  .imu      = IMU_NONE,
+  .pmu      = PMU_NONE,
 };
 
 #define isTimeToExport() (millis() - ExportTimeMarker > 1000)

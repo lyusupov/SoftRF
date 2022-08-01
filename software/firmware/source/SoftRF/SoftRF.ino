@@ -126,6 +126,7 @@ hardware_info_t hw_info = {
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
   .imu      = IMU_NONE,
+  .pmu      = PMU_NONE,
 };
 
 unsigned long LEDTimeMarker = 0;

@@ -273,6 +273,8 @@ static void ESP32_setup()
     bool has_axp202 = (Wire1.endTransmission() == 0);
     if (has_axp202) {
 
+      hw_info.pmu = PMU_AXP202;
+
       axp_xxx.begin(Wire1, AXP202_SLAVE_ADDRESS);
 
       axp_xxx.enableIRQ(AXP202_ALL_IRQ, AXP202_OFF);
@@ -305,6 +307,7 @@ static void ESP32_setup()
     if (has_axp192) {
 
       hw_info.revision = 8;
+      hw_info.pmu = PMU_AXP192;
 
       axp_xxx.begin(Wire1, AXP192_SLAVE_ADDRESS);
 
@@ -337,7 +340,8 @@ static void ESP32_setup()
 
         /* TBD */
 
-        /* hw_info.revision = 12 */;
+        hw_info.revision = 12;
+        hw_info.pmu = PMU_AXP2101;
       } else {
         WIRE_FINI(Wire1);
         hw_info.revision = 2;
@@ -392,6 +396,8 @@ static void ESP32_setup()
     WIRE_FINI(Wire1);
 
     if (has_axp2101) {
+
+      hw_info.pmu = PMU_AXP2101;
 
       axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
                      SOC_GPIO_PIN_S3_OLED_SDA, SOC_GPIO_PIN_S3_OLED_SCL);
@@ -565,12 +571,13 @@ static void ESP32_post_init()
 
 static void ESP32_loop()
 {
-  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-       hw_info.revision == 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
+  bool is_irq = false;
+  bool down = false;
 
-    bool is_irq = false;
-    bool down = false;
+  switch (hw_info.pmu)
+  {
+  case PMU_AXP192:
+  case PMU_AXP202:
 
     portENTER_CRITICAL_ISR(&PMU_mutex);
     is_irq = PMU_Irq;
@@ -616,6 +623,15 @@ static void ESP32_loop()
         axp_xxx.setChgLEDMode(AXP20X_LED_BLINK_1HZ);
       }
     }
+    break;
+
+  case PMU_AXP2101:
+    /* TBD */
+    break;
+
+  case PMU_NONE:
+  default:
+    break;
   }
 }
 
@@ -642,68 +658,80 @@ static void ESP32_fini(int reason)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWATCH_PMU_IRQ,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 
-  } else if (hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-             hw_info.revision == 8) {
+  } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 
-    axp_xxx.setChgLEDMode(AXP20X_LED_OFF);
+    switch (hw_info.pmu)
+    {
+    case PMU_AXP192:
+      axp_xxx.setChgLEDMode(AXP20X_LED_OFF);
 
 #if PMK2_SLEEP_MODE == 2
-    int ret;
-    // PEK or GPIO edge wake-up function enable setting in Sleep mode
-    do {
-        // In order to ensure that it is set correctly,
-        // the loop waits for it to return the correct return value
-        ret = axp_xxx.setSleep();
-        delay(500);
-    } while (ret != AXP_PASS) ;
+      { int ret;
+      // PEK or GPIO edge wake-up function enable setting in Sleep mode
+      do {
+          // In order to ensure that it is set correctly,
+          // the loop waits for it to return the correct return value
+          ret = axp_xxx.setSleep();
+          delay(500);
+      } while (ret != AXP_PASS) ; }
 
-    // Turn off all power channels, only use PEK or AXP GPIO to wake up
+      // Turn off all power channels, only use PEK or AXP GPIO to wake up
 
-    // After setting AXP202/AXP192 to sleep,
-    // it will start to record the status of the power channel that was turned off after setting,
-    // it will restore the previously set state after PEK button or GPIO wake up
+      // After setting AXP202/AXP192 to sleep,
+      // it will start to record the status of the power channel that was turned off after setting,
+      // it will restore the previously set state after PEK button or GPIO wake up
 
 #endif /* PMK2_SLEEP_MODE */
 
-    axp_xxx.setPowerOutPut(AXP192_LDO2,  AXP202_OFF);
-    axp_xxx.setPowerOutPut(AXP192_LDO3,  AXP202_OFF);
-    axp_xxx.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
+      axp_xxx.setPowerOutPut(AXP192_LDO2,  AXP202_OFF);
+      axp_xxx.setPowerOutPut(AXP192_LDO3,  AXP202_OFF);
+      axp_xxx.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
 
-    /* workaround against AXP I2C access blocking by 'noname' OLED */
+      /* workaround against AXP I2C access blocking by 'noname' OLED */
 #if defined(USE_OLED)
-    if (u8x8 == NULL)
+      if (u8x8 == NULL)
 #endif /* USE_OLED */
-    {
-      axp_xxx.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
-    }
-    axp_xxx.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+      {
+        axp_xxx.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+      }
+      axp_xxx.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
 
-    delay(20);
+      delay(20);
 
-    /*
-     * When driven by SoftRF the V08+ T-Beam takes:
-     * in 'full power' - 160 - 180 mA
-     * in 'stand by'   - 600 - 900 uA
-     * in 'power off'  -  50 -  90 uA
-     * of current from 3.7V battery
-     */
+      /*
+       * When driven by SoftRF the V08+ T-Beam takes:
+       * in 'full power' - 160 - 180 mA
+       * in 'stand by'   - 600 - 900 uA
+       * in 'power off'  -  50 -  90 uA
+       * of current from 3.7V battery
+       */
 #if   PMK2_SLEEP_MODE == 1
-    /* Deep sleep with wakeup by power button click */
-    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ,
+      /* Deep sleep with wakeup by power button click */
+      esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #elif PMK2_SLEEP_MODE == 2
-    // Cut MCU power off, PMU remains in sleep until wakeup by PEK button press
-    axp_xxx.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
+      // Cut MCU power off, PMU remains in sleep until wakeup by PEK button press
+      axp_xxx.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
 #else
-    /*
-     * Complete power off
-     *
-     * to power back on either:
-     * - press and hold PWR button for 1-2 seconds then release, or
-     * - cycle micro-USB power
-     */
-    axp_xxx.shutdown();
+      /*
+       * Complete power off
+       *
+       * to power back on either:
+       * - press and hold PWR button for 1-2 seconds then release, or
+       * - cycle micro-USB power
+       */
+      axp_xxx.shutdown();
 #endif /* PMK2_SLEEP_MODE */
+      break;
+
+    case PMU_AXP2101:
+      /* TBD */
+      break;
+
+    case PMU_NONE:
+    default:
+      break;
+    }
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT);
 
@@ -1172,7 +1200,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     Serial.print(hw_info.revision);
     Serial.println(F(" is detected."));
 
-    if (hw_info.revision == 8) {
+    if (hw_info.revision >= 8) {
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TBEAM_V08_RX,
                            SOC_GPIO_PIN_TBEAM_V08_TX);
@@ -1273,7 +1301,7 @@ static byte ESP32_Display_setup()
         rval = DISPLAY_OLED_TTGO;
       } else {
         if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-              hw_info.revision == 8)) {
+              hw_info.revision >= 8)) {
           Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
           Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
           has_oled = (Wire1.endTransmission() == 0);
@@ -1663,7 +1691,7 @@ static void ESP32_Display_fini(int reason)
 static void ESP32_Battery_setup()
 {
   if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-       hw_info.revision == 8)                     ||
+       hw_info.revision >= 8)                     ||
        hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
     /* T-Beam v08 and T-Watch have PMU */
@@ -1729,15 +1757,22 @@ static float ESP32_Battery_param(uint8_t param)
   default:
     voltage = 0.0;
 
-    if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-         hw_info.revision == 8)                     ||
-         hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
-
+    switch (hw_info.pmu)
+    {
+    case PMU_AXP192:
+    case PMU_AXP202:
       /* T-Beam v08 and T-Watch have PMU */
       if (axp_xxx.isBatteryConnect()) {
         voltage = axp_xxx.getBattVoltage();
       }
-    } else {
+      break;
+
+    case PMU_AXP2101:
+      /* TBD */
+      break;
+
+    case PMU_NONE:
+    default:
       voltage = (float) read_voltage();
 
       /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
@@ -1746,7 +1781,9 @@ static float ESP32_Battery_param(uint8_t param)
          (esp32_board   == ESP32_S2_T8_V1_1)) {
         voltage += voltage;
       }
+      break;
     }
+
     rval = voltage * 0.001;
     break;
   }

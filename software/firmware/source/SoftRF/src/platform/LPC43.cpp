@@ -63,7 +63,8 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE,
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
-  .imu      = IMU_NONE
+  .imu      = IMU_NONE,
+  .pmu      = PMU_NONE,
 };
 
 const uint16_t LPC43_Vendor_Id = 0x1d50; /* OpenMoko, Inc. */
