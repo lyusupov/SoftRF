@@ -158,6 +158,12 @@ SPIClass uSD_SPI(HSPI);
 static bool uSD_is_mounted = false;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if defined(ENABLE_D1090_INPUT)
+#include <mode-s.h>
+
+mode_s_t state;
+#endif /* ENABLE_D1090_INPUT */
+
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
   PMU_Irq = true;
@@ -335,10 +341,13 @@ static void ESP32_setup()
       bool has_axp2101 = (Wire1.endTransmission() == 0);
       if (has_axp2101) {
 
-        /* axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
-                       TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL); */
+        axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
+                       TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
 
         /* TBD */
+
+        axp_2xxx.enableChargingLed();
+        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
 
         hw_info.revision = 12;
         hw_info.pmu = PMU_AXP2101;
@@ -626,7 +635,49 @@ static void ESP32_loop()
     break;
 
   case PMU_AXP2101:
-    /* TBD */
+    portENTER_CRITICAL_ISR(&PMU_mutex);
+    is_irq = PMU_Irq;
+    portEXIT_CRITICAL_ISR(&PMU_mutex);
+
+    if (is_irq) {
+
+      axp_2xxx.getIrqStatus();
+
+      if (axp_2xxx.isPekeyLongPressIrq()) {
+        down = true;
+#if 0
+        Serial.println(F("Long press IRQ"));
+        Serial.flush();
+#endif
+      }
+      if (axp_2xxx.isPekeyShortPressIrq()) {
+#if 0
+        Serial.println(F("Short press IRQ"));
+        Serial.flush();
+#endif
+#if defined(USE_OLED)
+        OLED_Next_Page();
+#endif
+      }
+
+      axp_2xxx.clearIrqStatus();
+
+      portENTER_CRITICAL_ISR(&PMU_mutex);
+      PMU_Irq = false;
+      portEXIT_CRITICAL_ISR(&PMU_mutex);
+
+      if (down) {
+        shutdown(SOFTRF_SHUTDOWN_BUTTON);
+      }
+    }
+
+    if (isTimeToBattery()) {
+      if (Battery_voltage() > Battery_threshold()) {
+        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+      } else {
+        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_1HZ);
+      }
+    }
     break;
 
   case PMU_NONE:
@@ -1761,14 +1812,15 @@ static float ESP32_Battery_param(uint8_t param)
     {
     case PMU_AXP192:
     case PMU_AXP202:
-      /* T-Beam v08 and T-Watch have PMU */
       if (axp_xxx.isBatteryConnect()) {
         voltage = axp_xxx.getBattVoltage();
       }
       break;
 
     case PMU_AXP2101:
-      /* TBD */
+      if (axp_2xxx.isBatteryConnect()) {
+        voltage = axp_2xxx.getBattVoltage();
+      }
       break;
 
     case PMU_NONE:

@@ -1249,7 +1249,17 @@ public:
 
     bool setDC1Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DCDC1_VOL_MIN, XPOWERS_DCDC1_VOL_MAX);
+        if (millivolt % XPOWERS_DCDC1_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_DCDC1_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_DCDC1_VOL_MIN) {
+            log_e("Mistake ! DC1 minimum voltage is %u mV", XPOWERS_DCDC1_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_DCDC5_VOL_MAX) {
+            log_e("Mistake ! DC1 maximum voltage is %u mV", XPOWERS_DCDC1_VOL_MAX);
+            return false;
+        }
         return 0 == writeRegister(XPOWERS_DC_VOL0_CTRL, (millivolt - XPOWERS_DCDC1_VOL_MIN) / XPOWERS_DCDC1_VOL_STEPS);
     }
 
@@ -1295,36 +1305,37 @@ public:
 
     bool setDC2Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DCDC2_VOL_MIN, XPOWERS_DCDC2_VOL_MAX);
-        uint8_t val = readRegister(XPOWERS_DC_VOL1_CTRL) & 0x80;
-        if (millivolt <= 1200) {
+        uint8_t val = readRegister(XPOWERS_DC_VOL1_CTRL);
+        if (val == -1)return 0;
+        val &= 0x80;
+        if (millivolt >= XPOWERS_DCDC2_VOL1_MIN && millivolt <= XPOWERS_DCDC2_VOL1_MAX) {
             if (millivolt % XPOWERS_DCDC2_VOL_STEPS1) {
-                log_e("Mistake !  Voltage range,The steps is must 10mV");
+                log_e("Mistake !  The steps is must %umV", XPOWERS_DCDC2_VOL_STEPS1);
                 return false;
             }
-            return  0 == writeRegister(XPOWERS_DC_VOL1_CTRL, val | (millivolt - XPOWERS_DCDC2_VOL_MIN) / XPOWERS_DCDC2_VOL_STEPS1);
-        } else if (millivolt >= 1220 && millivolt <= 1540) {
+            return  0 == writeRegister(XPOWERS_DC_VOL1_CTRL, val | (millivolt - XPOWERS_DCDC2_VOL1_MIN) / XPOWERS_DCDC2_VOL_STEPS1);
+        } else if (millivolt >= XPOWERS_DCDC2_VOL2_MIN && millivolt <= XPOWERS_DCDC2_VOL2_MAX) {
             if (millivolt % XPOWERS_DCDC2_VOL_STEPS2) {
-                log_e("Mistake !  Voltage range,The steps is must 20mV");
+                log_e("Mistake !  The steps is must %umV", XPOWERS_DCDC2_VOL_STEPS2);
                 return false;
             }
-            val |= (((millivolt - 1220) / XPOWERS_DCDC2_VOL_STEPS2) + XPOWERS_DCDC2_VOL_STEPS2_BASE);
+            val |= (((millivolt - XPOWERS_DCDC2_VOL2_MIN) / XPOWERS_DCDC2_VOL_STEPS2) + XPOWERS_DCDC2_VOL_STEPS2_BASE);
             return  0 == writeRegister(XPOWERS_DC_VOL1_CTRL, val);
         }
         return false;
-
     }
 
     uint16_t getDC2Voltage(void)
     {
-        uint8_t val = readRegister(XPOWERS_DC_VOL1_CTRL) & 0x7F;
+        int val = readRegister(XPOWERS_DC_VOL1_CTRL);
+        if (val ==  -1)return 0;
+        val &= 0x7F;
         if (val < XPOWERS_DCDC2_VOL_STEPS2_BASE) {
-            return (val  * XPOWERS_DCDC2_VOL_STEPS1) +  XPOWERS_DCDC2_VOL_MIN;
+            return (val  * XPOWERS_DCDC2_VOL_STEPS1) +  XPOWERS_DCDC2_VOL1_MIN;
         } else  {
             return (val  * XPOWERS_DCDC2_VOL_STEPS2) - 200;
         }
         return 0;
-
     }
 
     uint8_t getDC2WorkMode(void)
@@ -1367,27 +1378,28 @@ public:
      */
     bool setDC3Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DCDC3_VOL_MIN, XPOWERS_DCDC3_VOL_MAX);
-        int val = readRegister(XPOWERS_DC_VOL2_CTRL) & 0x80;
-        if (millivolt <= 1200) {
+        int val = readRegister(XPOWERS_DC_VOL2_CTRL);
+        if (val == -1)return false;
+        val &= 0x80;
+        if (millivolt >= XPOWERS_DCDC3_VOL1_MIN && millivolt <= XPOWERS_DCDC3_VOL1_MAX) {
             if (millivolt % XPOWERS_DCDC3_VOL_STEPS1) {
-                log_e("Mistake ! Voltage range,The steps is must 10mV");
+                log_e("Mistake ! The steps is must %umV", XPOWERS_DCDC3_VOL_STEPS1);
                 return false;
             }
             return  0 == writeRegister(XPOWERS_DC_VOL2_CTRL, val | (millivolt - XPOWERS_DCDC3_VOL_MIN) / XPOWERS_DCDC3_VOL_STEPS1);
-        } else if (millivolt >= 1220 && millivolt <= 1540) {
+        } else if (millivolt >= XPOWERS_DCDC3_VOL2_MIN && millivolt <= XPOWERS_DCDC3_VOL2_MAX) {
             if (millivolt % XPOWERS_DCDC3_VOL_STEPS2) {
-                log_e("Mistake ! Voltage range,The steps is must 20mV");
+                log_e("Mistake ! The steps is must %umV", XPOWERS_DCDC3_VOL_STEPS2);
                 return false;
             }
-            val |= (((millivolt - 1220) / XPOWERS_DCDC3_VOL_STEPS2) + XPOWERS_DCDC3_VOL_STEPS2_BASE);
+            val |= (((millivolt - XPOWERS_DCDC3_VOL2_MIN) / XPOWERS_DCDC3_VOL_STEPS2) + XPOWERS_DCDC3_VOL_STEPS2_BASE);
             return  0 == writeRegister(XPOWERS_DC_VOL2_CTRL, val);
-        } else if (millivolt >= 1600 && millivolt <= 3400) {
+        } else if (millivolt >= XPOWERS_DCDC3_VOL3_MIN && millivolt <= XPOWERS_DCDC3_VOL3_MAX) {
             if (millivolt % XPOWERS_DCDC3_VOL_STEPS3) {
-                log_e("Mistake ! Voltage range,The steps is must 100mV");
+                log_e("Mistake ! The steps is must %umV", XPOWERS_DCDC3_VOL_STEPS3);
                 return false;
             }
-            val |= (((millivolt - 1600) / XPOWERS_DCDC3_VOL_STEPS3) + XPOWERS_DCDC3_VOL_STEPS3_BASE);
+            val |= (((millivolt - XPOWERS_DCDC3_VOL3_MIN) / XPOWERS_DCDC3_VOL_STEPS3) + XPOWERS_DCDC3_VOL_STEPS3_BASE);
             return  0 == writeRegister(XPOWERS_DC_VOL2_CTRL, val);
         }
         return false;
@@ -1449,30 +1461,35 @@ public:
 
     bool setDC4Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DCDC4_VOL_MIN, XPOWERS_DCDC4_VOL_MAX);
-        uint8_t val = readRegister(XPOWERS_DC_VOL3_CTRL) & 0x80;
-        if (millivolt <= 1200) {
+        int val = readRegister(XPOWERS_DC_VOL3_CTRL);
+        if (val == -1)return false;
+        val &= 0x80;
+        if (millivolt >= XPOWERS_DCDC4_VOL1_MIN && millivolt <= XPOWERS_DCDC4_VOL1_MAX) {
             if (millivolt % XPOWERS_DCDC4_VOL_STEPS1) {
-                log_e("Mistake ! Voltage range,The steps is must 10mV");
+                log_e("Mistake ! The steps is must %umV", XPOWERS_DCDC4_VOL_STEPS1);
                 return false;
             }
-            return  0 == writeRegister(XPOWERS_DC_VOL3_CTRL, val | (millivolt - XPOWERS_DCDC4_VOL_MIN) / XPOWERS_DCDC4_VOL_STEPS1);
-        } else if (millivolt >= 1220 && millivolt <= XPOWERS_DCDC4_VOL_MAX) {
+            return  0 == writeRegister(XPOWERS_DC_VOL3_CTRL, val | (millivolt - XPOWERS_DCDC4_VOL1_MIN) / XPOWERS_DCDC4_VOL_STEPS1);
+
+        } else if (millivolt >= XPOWERS_DCDC4_VOL2_MIN && millivolt <= XPOWERS_DCDC4_VOL2_MAX) {
             if (millivolt % XPOWERS_DCDC4_VOL_STEPS2) {
-                log_e("Mistake ! Voltage range,The steps is must 20mV");
+                log_e("Mistake ! The steps is must %umV", XPOWERS_DCDC4_VOL_STEPS2);
                 return false;
             }
-            val |= (((millivolt - 1220) / XPOWERS_DCDC3_VOL_STEPS2) + XPOWERS_DCDC3_VOL_STEPS2_BASE);
+            val |= (((millivolt - XPOWERS_DCDC4_VOL2_MIN) / XPOWERS_DCDC4_VOL_STEPS2) + XPOWERS_DCDC4_VOL_STEPS2_BASE);
             return  0 == writeRegister(XPOWERS_DC_VOL3_CTRL, val);
+
         }
         return false;
     }
 
     uint16_t getDC4Voltage(void)
     {
-        uint8_t val = readRegister(XPOWERS_DC_VOL3_CTRL) & 0x7F;
+        int val = readRegister(XPOWERS_DC_VOL3_CTRL);
+        if (val == -1)return 0;
+        val &= 0x7F;
         if (val < XPOWERS_DCDC4_VOL_STEPS2_BASE) {
-            return (val  * XPOWERS_DCDC3_VOL_STEPS1) +  XPOWERS_DCDC4_VOL_MIN;
+            return (val  * XPOWERS_DCDC4_VOL_STEPS1) +  XPOWERS_DCDC4_VOL1_MIN;
         } else  {
             return (val  * XPOWERS_DCDC4_VOL_STEPS2) - 200;
         }
@@ -1510,15 +1527,34 @@ public:
 
     bool setDC5Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DCDC5_VOL_MIN, XPOWERS_DCDC5_VOL_MAX);
-        uint16_t val =  readRegister(XPOWERS_DC_VOL4_CTRL) & 0xE0;
+        if (millivolt % XPOWERS_DCDC5_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_DCDC5_VOL_STEPS);
+            return false;
+        }
+        if (millivolt != XPOWERS_DCDC5_VOL_1200MV && millivolt < XPOWERS_DCDC5_VOL_MIN) {
+            log_e("Mistake ! DC5 minimum voltage is %umV ,%umV", XPOWERS_DCDC5_VOL_1200MV, XPOWERS_DCDC5_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_DCDC5_VOL_MAX) {
+            log_e("Mistake ! DC5 maximum voltage is %umV", XPOWERS_DCDC5_VOL_MAX);
+            return false;
+        }
+
+        int val =  readRegister(XPOWERS_DC_VOL4_CTRL);
+        if (val == -1)return false;
+        val &= 0xE0;
+        if (millivolt == XPOWERS_DCDC5_VOL_1200MV) {
+            return 0 == writeRegister(XPOWERS_DC_VOL4_CTRL, val | XPOWERS_DCDC5_VOL_VAL);
+        }
         val |= (millivolt - XPOWERS_DCDC5_VOL_MIN) / XPOWERS_DCDC5_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_DC_VOL4_CTRL, val);
     }
 
     uint16_t getDC5Voltage(void)
     {
-        uint8_t val = readRegister(XPOWERS_DC_VOL4_CTRL) & 0x1F;
+        int val = readRegister(XPOWERS_DC_VOL4_CTRL) ;
+        if (val == -1)return 0;
+        val &= 0x1F;
+        if (val == XPOWERS_DCDC5_VOL_VAL)return XPOWERS_DCDC5_VOL_1200MV;
         return  (val * XPOWERS_DCDC5_VOL_STEPS) + XPOWERS_DCDC5_VOL_MIN;
     }
 
@@ -1568,7 +1604,17 @@ public:
 
     bool setALDO1Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_ALDO1_VOL_MIN, XPOWERS_ALDO1_VOL_MAX);
+        if (millivolt % XPOWERS_ALDO1_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_ALDO1_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_ALDO1_VOL_MIN) {
+            log_e("Mistake ! ALDO1 minimum output voltage is  %umV", XPOWERS_ALDO1_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_ALDO1_VOL_MAX) {
+            log_e("Mistake ! ALDO1 maximum output voltage is  %umV", XPOWERS_ALDO1_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL0_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_ALDO1_VOL_MIN) / XPOWERS_ALDO1_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL0_CTRL, val);
@@ -1600,7 +1646,17 @@ public:
 
     bool setALDO2Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_ALDO2_VOL_MIN, XPOWERS_ALDO2_VOL_MAX);
+        if (millivolt % XPOWERS_ALDO2_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_ALDO2_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_ALDO2_VOL_MIN) {
+            log_e("Mistake ! ALDO2 minimum output voltage is  %umV", XPOWERS_ALDO2_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_ALDO2_VOL_MAX) {
+            log_e("Mistake ! ALDO2 maximum output voltage is  %umV", XPOWERS_ALDO2_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL1_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_ALDO2_VOL_MIN) / XPOWERS_ALDO2_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL1_CTRL, val);
@@ -1632,7 +1688,17 @@ public:
 
     bool setALDO3Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_ALDO3_VOL_MIN, XPOWERS_ALDO3_VOL_MAX);
+        if (millivolt % XPOWERS_ALDO3_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_ALDO3_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_ALDO3_VOL_MIN) {
+            log_e("Mistake ! ALDO3 minimum output voltage is  %umV", XPOWERS_ALDO3_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_ALDO3_VOL_MAX) {
+            log_e("Mistake ! ALDO3 maximum output voltage is  %umV", XPOWERS_ALDO3_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL2_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_ALDO3_VOL_MIN) / XPOWERS_ALDO3_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL2_CTRL, val);
@@ -1664,7 +1730,17 @@ public:
 
     bool setALDO4Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_ALDO4_VOL_MIN, XPOWERS_ALDO4_VOL_MAX);
+        if (millivolt % XPOWERS_ALDO4_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_ALDO4_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_ALDO4_VOL_MIN) {
+            log_e("Mistake ! ALDO4 minimum output voltage is  %umV", XPOWERS_ALDO4_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_ALDO4_VOL_MAX) {
+            log_e("Mistake ! ALDO4 maximum output voltage is  %umV", XPOWERS_ALDO4_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL3_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_ALDO4_VOL_MIN) / XPOWERS_ALDO4_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL3_CTRL, val);
@@ -1696,15 +1772,29 @@ public:
 
     bool setBLDO1Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_BLDO1_VOL_MIN, XPOWERS_BLDO1_VOL_MAX);
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL4_CTRL) & 0xE0;
+        if (millivolt % XPOWERS_BLDO1_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_BLDO1_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_BLDO1_VOL_MIN) {
+            log_e("Mistake ! BLDO1 minimum output voltage is  %umV", XPOWERS_BLDO1_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_BLDO1_VOL_MAX) {
+            log_e("Mistake ! BLDO1 maximum output voltage is  %umV", XPOWERS_BLDO1_VOL_MAX);
+            return false;
+        }
+        int val =  readRegister(XPOWERS_LDO_VOL4_CTRL);
+        if (val == -1)return  false;
+        val &= 0xE0;
         val |= (millivolt - XPOWERS_BLDO1_VOL_MIN) / XPOWERS_BLDO1_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL4_CTRL, val);
     }
 
     uint16_t getBLDO1Voltage(void)
     {
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL4_CTRL) & 0x1F;
+        int val =  readRegister(XPOWERS_LDO_VOL4_CTRL);
+        if (val == -1)return 0;
+        val &= 0x1F;
         return val * XPOWERS_BLDO1_VOL_STEPS + XPOWERS_BLDO1_VOL_MIN;
     }
 
@@ -1728,7 +1818,17 @@ public:
 
     bool setBLDO2Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_BLDO2_VOL_MIN, XPOWERS_BLDO2_VOL_MAX);
+        if (millivolt % XPOWERS_BLDO2_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_BLDO2_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_BLDO2_VOL_MIN) {
+            log_e("Mistake ! BLDO2 minimum output voltage is  %umV", XPOWERS_BLDO2_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_BLDO2_VOL_MAX) {
+            log_e("Mistake ! BLDO2 maximum output voltage is  %umV", XPOWERS_BLDO2_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL5_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_BLDO2_VOL_MIN) / XPOWERS_BLDO2_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL5_CTRL, val);
@@ -1736,7 +1836,9 @@ public:
 
     uint16_t getBLDO2Voltage(void)
     {
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL5_CTRL) & 0x1F;
+        int val =  readRegister(XPOWERS_LDO_VOL5_CTRL);
+        if (val == -1)return 0;
+        val &= 0x1F;
         return val * XPOWERS_BLDO2_VOL_STEPS + XPOWERS_BLDO2_VOL_MIN;
     }
 
@@ -1760,7 +1862,17 @@ public:
 
     bool setCPUSLDOVoltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_CPUSLDO_VOL_MIN, XPOWERS_CPUSLDO_VOL_MAX);
+        if (millivolt % XPOWERS_CPUSLDO_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_CPUSLDO_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_CPUSLDO_VOL_MIN) {
+            log_e("Mistake ! CPULDO minimum output voltage is  %umV", XPOWERS_CPUSLDO_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_CPUSLDO_VOL_MAX) {
+            log_e("Mistake ! CPULDO maximum output voltage is  %umV", XPOWERS_CPUSLDO_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL6_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_CPUSLDO_VOL_MIN) / XPOWERS_CPUSLDO_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL6_CTRL, val);
@@ -1768,7 +1880,9 @@ public:
 
     uint16_t getCPUSLDOVoltage(void)
     {
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL6_CTRL) & 0x1F;
+        int val =  readRegister(XPOWERS_LDO_VOL6_CTRL);
+        if (val == -1)return 0;
+        val &= 0x1F;
         return val * XPOWERS_CPUSLDO_VOL_STEPS + XPOWERS_CPUSLDO_VOL_MIN;
     }
 
@@ -1793,7 +1907,17 @@ public:
 
     bool setDLDO1Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DLDO1_VOL_MIN, XPOWERS_DLDO1_VOL_MAX);
+        if (millivolt % XPOWERS_DLDO1_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_DLDO1_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_DLDO1_VOL_MIN) {
+            log_e("Mistake ! DLDO1 minimum output voltage is  %umV", XPOWERS_DLDO1_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_DLDO1_VOL_MAX) {
+            log_e("Mistake ! DLDO1 maximum output voltage is  %umV", XPOWERS_DLDO1_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL7_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_DLDO1_VOL_MIN) / XPOWERS_DLDO1_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL7_CTRL, val);
@@ -1801,7 +1925,9 @@ public:
 
     uint16_t getDLDO1Voltage(void)
     {
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL7_CTRL) & 0x1F;
+        int val =  readRegister(XPOWERS_LDO_VOL7_CTRL);
+        if (val == -1)return 0;
+        val &= 0x1F;
         return val * XPOWERS_DLDO1_VOL_STEPS + XPOWERS_DLDO1_VOL_MIN;
     }
 
@@ -1825,7 +1951,17 @@ public:
 
     bool setDLDO2Voltage(uint16_t millivolt)
     {
-        millivolt =  constrain(millivolt, XPOWERS_DLDO2_VOL_MIN, XPOWERS_DLDO2_VOL_MAX);
+        if (millivolt % XPOWERS_DLDO2_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_DLDO2_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_DLDO2_VOL_MIN) {
+            log_e("Mistake ! DLDO2 minimum output voltage is  %umV", XPOWERS_DLDO2_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_DLDO2_VOL_MAX) {
+            log_e("Mistake ! DLDO2 maximum output voltage is  %umV", XPOWERS_DLDO2_VOL_MAX);
+            return false;
+        }
         uint16_t val =  readRegister(XPOWERS_LDO_VOL8_CTRL) & 0xE0;
         val |= (millivolt - XPOWERS_DLDO2_VOL_MIN) / XPOWERS_DLDO2_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_LDO_VOL8_CTRL, val);
@@ -1833,7 +1969,9 @@ public:
 
     uint16_t getDLDO2Voltage(void)
     {
-        uint16_t val =  readRegister(XPOWERS_LDO_VOL8_CTRL) & 0x1F;
+        int val =  readRegister(XPOWERS_LDO_VOL8_CTRL);
+        if (val == -1)return 0;
+        val &= 0x1F;
         return val * XPOWERS_DLDO2_VOL_STEPS + XPOWERS_DLDO2_VOL_MIN;
     }
 
@@ -2042,9 +2180,6 @@ public:
         val |= (millivolt - XPOWERS_BTN_VOL_MIN) / XPOWERS_BTN_VOL_STEPS;
         return 0 == writeRegister(XPOWERS_BTN_BAT_CHG_VOL_SET, val);
     }
-
-
-
 
     /**
      * @brief 预充电充电电流限制

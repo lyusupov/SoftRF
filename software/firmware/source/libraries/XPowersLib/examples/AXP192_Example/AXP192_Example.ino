@@ -22,6 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+! WARN:
+Please do not run the example without knowing the external load voltage of the PMU,
+it may burn your external load, please check the voltage setting before running the example,
+if there is any loss, please bear it by yourself
+*/
+#error "Running this example is known to not damage the device! Please go and uncomment this!"
 
 // Defined using AXP192
 #define XPOWERS_CHIP_AXP192

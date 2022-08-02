@@ -440,6 +440,9 @@ struct rst_info {
 #undef  SOC_GPIO_PIN_T8_S2_CONS_TX
 #define SOC_GPIO_PIN_T8_S2_CONS_RX      46
 #define SOC_GPIO_PIN_T8_S2_CONS_TX      45
+
+/* Experimental */
+//#define ENABLE_D1090_INPUT
 #endif /* USE_USB_HOST */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 

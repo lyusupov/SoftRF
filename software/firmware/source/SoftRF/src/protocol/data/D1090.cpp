@@ -36,6 +36,12 @@
         }                                               \
       })
 
+#if defined(ENABLE_D1090_INPUT)
+#include "../radio/ES1090.h"
+
+extern mode_s_t state;
+#endif /* ENABLE_D1090_INPUT */
+
 static void D1090_Out(byte *buf, size_t size)
 {
   switch(settings->d1090)
@@ -76,7 +82,25 @@ void D1090_Export()
   String str;
   time_t this_moment = now();
 
-  if (settings->d1090 != D1090_OFF) {
+#if defined(ENABLE_D1090_INPUT) || \
+    defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
+  struct mode_s_aircraft *a;
+
+  for (a = state.aircrafts; a; a = a->next) {
+    if (a->even_cprtime && a->odd_cprtime &&
+        abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+      if (es1090_decode(a, &ThisAircraft, &fo)) {
+        memset(fo.raw, 0, sizeof(fo.raw));
+        Traffic_Update(&fo);
+        Traffic_Add(&fo);
+      }
+    }
+  }
+
+  interactiveRemoveStaleAircrafts(&state);
+#endif /* ENABLE_D1090_INPUT || ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
+
+  if (settings->d1090 != D1090_OFF && isValidFix()) {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
 
@@ -148,9 +172,6 @@ void D1090_Export()
 }
 
 #if defined(ENABLE_D1090_INPUT)
-
-#include <mode-s.h>
-extern mode_s_t state;
 
 void D1090_Import(uint8_t *msg)
 {

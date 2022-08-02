@@ -136,8 +136,11 @@
 #define XPOWERS_DCDC1_VOL_MAX                    (3400)
 #define XPOWERS_DCDC1_VOL_STEPS                  (100u)
 
-#define XPOWERS_DCDC2_VOL_MIN                    (500)
-#define XPOWERS_DCDC2_VOL_MAX                    (1540)
+#define XPOWERS_DCDC2_VOL1_MIN                  (500u)
+#define XPOWERS_DCDC2_VOL1_MAX                  (1200u)
+#define XPOWERS_DCDC2_VOL2_MIN                  (1220u)
+#define XPOWERS_DCDC2_VOL2_MAX                  (1540u)
+
 #define XPOWERS_DCDC2_VOL_STEPS1                 (10u)
 #define XPOWERS_DCDC2_VOL_STEPS2                 (20u)
 
@@ -145,12 +148,19 @@
 #define XPOWERS_DCDC2_VOL_STEPS2_BASE            (71u)
 
 
+#define XPOWERS_DCDC3_VOL1_MIN                  (500u)
+#define XPOWERS_DCDC3_VOL1_MAX                  (1200u)
+#define XPOWERS_DCDC3_VOL2_MIN                  (1220u)
+#define XPOWERS_DCDC3_VOL2_MAX                  (1540u)
+#define XPOWERS_DCDC3_VOL3_MIN                  (1600u)
+#define XPOWERS_DCDC3_VOL3_MAX                  (3400u)
+
 #define XPOWERS_DCDC3_VOL_MIN                    (500)
 #define XPOWERS_DCDC3_VOL_MAX                    (3400)
+
 #define XPOWERS_DCDC3_VOL_STEPS1                 (10u)
 #define XPOWERS_DCDC3_VOL_STEPS2                 (20u)
 #define XPOWERS_DCDC3_VOL_STEPS3                 (100u)
-
 
 #define XPOWERS_DCDC3_VOL_STEPS1_BASE            (0u)
 #define XPOWERS_DCDC3_VOL_STEPS2_BASE            (71u)
@@ -158,8 +168,11 @@
 
 
 
-#define XPOWERS_DCDC4_VOL_MIN                    (500)
-#define XPOWERS_DCDC4_VOL_MAX                    (1840)
+#define XPOWERS_DCDC4_VOL1_MIN                  (500u)
+#define XPOWERS_DCDC4_VOL1_MAX                  (1200u)
+#define XPOWERS_DCDC4_VOL2_MIN                  (1220u)
+#define XPOWERS_DCDC4_VOL2_MAX                  (1840u)
+
 #define XPOWERS_DCDC4_VOL_STEPS1                 (10u)
 #define XPOWERS_DCDC4_VOL_STEPS2                 (20u)
 
@@ -168,7 +181,8 @@
 
 
 
-
+#define XPOWERS_DCDC5_VOL_1200MV                 (1200)
+#define XPOWERS_DCDC5_VOL_VAL                    (0x19)
 #define XPOWERS_DCDC5_VOL_MIN                    (1400)
 #define XPOWERS_DCDC5_VOL_MAX                    (3700)
 #define XPOWERS_DCDC5_VOL_STEPS                  (100u)

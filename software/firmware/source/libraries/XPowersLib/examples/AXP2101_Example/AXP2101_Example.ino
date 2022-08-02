@@ -22,6 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+! WARN:
+Please do not run the example without knowing the external load voltage of the PMU,
+it may burn your external load, please check the voltage setting before running the example,
+if there is any loss, please bear it by yourself
+*/
+#error "Running this example is known to not damage the device! Please go and uncomment this!"
 
 // Defined using AXP2102
 #define XPOWERS_CHIP_AXP2102
@@ -68,41 +75,70 @@ void setup()
     // higher than this value will turn off the PMU
     PMU.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
 
-    // DC1 1500~3400mV, IMAX=2A
+    // DC1 IMAX=2A
+    // 1500~3400mV,100mV/step,20steps
     PMU.setDC1Voltage(3300);
     Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
 
-    // DC2 500~1200mV, 1220~1540mV, IMAX=2A;
+    // DC2 IMAX=2A
+    // 500~1200mV  10mV/step,71steps
+    // 1220~1540mV 20mV/step,17steps
     PMU.setDC2Voltage(1000);
     Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
 
-    // DC3 500~1200mV, 1220~1540mV, 1600~3400mV,IMAX = 2A;
+    // DC3 IMAX = 2A
+    // 500~1200mV,10mV/step,71steps
+    // 1220~1540mV,20mV/step,17steps
+    // 1600~3400mV,100mV/step,19steps
     PMU.setDC3Voltage(3300);
     Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
 
-    // DCDC4: 500~1200mV, 1220~1840mV, IMAX = 1.5A;
+    // DCDC4 IMAX=1.5A
+    // 500~1200mV,10mV/step,71steps
+    // 1220~1840mV,20mV/step,32steps
     PMU.setDC4Voltage(1000);
     Serial.printf("DC4  :%s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "ENABLE" : "DISABLE", PMU.getDC4Voltage());
 
-    // DC5 500~1200V, 1220~1540V, 1600~3400mV,IMAX=2A;
+    // DC5 IMAX=2A
+    // 1200mV
+    // 1400~3700mV,100mV/step,24steps
     PMU.setDC5Voltage(3300);
     Serial.printf("DC5  :%s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "ENABLE" : "DISABLE", PMU.getDC5Voltage());
 
-    //ALDO 500~3500V, 100mV/step, IMAX=300mA
+    //ALDO1 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setALDO1Voltage(3300);
+
+    //ALDO2 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setALDO2Voltage(3300);
+
+    //ALDO3 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setALDO3Voltage(3300);
+
+    //ALDO4 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setALDO4Voltage(3300);
 
-    //BLDO 500~3500V, 100mV/step,IMAX=300mA
+    //BLDO1 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setBLDO1Voltage(3300);
+
+    //BLDO2 IMAX=300mA
+    //500~3500mV, 100mV/step,31steps
     PMU.setBLDO2Voltage(3300);
 
-    //CPUSLDO 500~1400mV, IMAX=30mA
+    //CPUSLDO IMAX=30mA
+    //500~1400mV,50mV/step,19steps
     PMU.setCPUSLDOVoltage(1000);
 
-    // DLDO1/2: analog LDO or power switch, 500~3300mV / 500~1400mV, IMAX = 300mA
+    //DLDO1 IMAX=300mA
+    //500~3400mV, 100mV/step,29steps
     PMU.setDLDO1Voltage(3300);
+
+    //DLDO2 IMAX=300mA
+    //500~1400mV, 50mV/step,2steps
     PMU.setDLDO2Voltage(3300);
 
 
