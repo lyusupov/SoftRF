@@ -147,8 +147,8 @@ bool EPD_setup(bool splash_screen)
   EPD_radar_setup();
   EPD_text_setup();
   EPD_baro_setup();
-  EPD_imu_setup();
   EPD_time_setup();
+  EPD_imu_setup();
 
   switch (ui->aghost)
   {
@@ -446,11 +446,11 @@ void EPD_loop()
       case VIEW_MODE_BARO:
         EPD_baro_loop();
         break;
-      case VIEW_MODE_IMU:
-        EPD_imu_loop();
-        break;
       case VIEW_MODE_TIME:
         EPD_time_loop();
+        break;
+      case VIEW_MODE_IMU:
+        EPD_imu_loop();
         break;
       case VIEW_MODE_STATUS:
       default:
@@ -625,11 +625,11 @@ void EPD_Up()
     case VIEW_MODE_BARO:
       EPD_baro_prev();
       break;
-    case VIEW_MODE_IMU:
-      EPD_imu_prev();
-      break;
     case VIEW_MODE_TIME:
       EPD_time_prev();
+      break;
+    case VIEW_MODE_IMU:
+      EPD_imu_prev();
       break;
     case VIEW_MODE_STATUS:
     default:
@@ -653,11 +653,11 @@ void EPD_Down()
     case VIEW_MODE_BARO:
       EPD_baro_next();
       break;
-    case VIEW_MODE_IMU:
-      EPD_imu_next();
-      break;
     case VIEW_MODE_TIME:
       EPD_time_next();
+      break;
+    case VIEW_MODE_IMU:
+      EPD_imu_next();
       break;
     case VIEW_MODE_STATUS:
     default:
