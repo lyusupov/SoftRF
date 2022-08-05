@@ -363,6 +363,8 @@ static void ESP32_setup()
 #if 1
         axp_2xxx.setALDO1Voltage(3100); // RTC,  AXP2101 power-on value: 1800
 #endif
+        axp_2xxx.setButtonBatteryChargeVoltage(3100); // GNSS battery
+
         axp_2xxx.setALDO2Voltage(3300); // LoRa, AXP2101 power-on value: 2800
         axp_2xxx.setALDO3Voltage(3300); // GPS,  AXP2101 power-on value: 3300
 
@@ -370,6 +372,8 @@ static void ESP32_setup()
 #if 1
         axp_2xxx.enableALDO1();
 #endif
+        axp_2xxx.enableButtonBatteryCharge();
+
         axp_2xxx.enableALDO2();
         axp_2xxx.enableALDO3();
 
@@ -808,6 +812,8 @@ static void ESP32_fini(int reason)
 #if 0
       axp_2xxx.disableALDO1();
 #endif
+      axp_2xxx.disableButtonBatteryCharge();
+
       axp_2xxx.disableALDO2();
       axp_2xxx.disableALDO3();
 
