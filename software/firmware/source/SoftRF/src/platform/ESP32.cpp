@@ -803,7 +803,24 @@ static void ESP32_fini(int reason)
       break;
 
     case PMU_AXP2101:
-      /* TBD */
+      axp_2xxx.disableChargingLed();
+
+#if 0
+      axp_2xxx.disableALDO1();
+#endif
+      axp_2xxx.disableALDO2();
+      axp_2xxx.disableALDO3();
+
+      delay(20);
+
+      /*
+       * Complete power off
+       *
+       * to power back on either:
+       * - press and hold PWR button for 1-2 seconds then release, or
+       * - cycle micro-USB power
+       */
+      axp_2xxx.softPowerOff();
       break;
 
     case PMU_NONE:
