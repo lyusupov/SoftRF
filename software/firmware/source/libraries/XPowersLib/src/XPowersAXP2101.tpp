@@ -258,6 +258,35 @@ typedef enum {
     XPOWERS_VSYS_VOL_4V8,
 } xpower_vsys_vol_t;
 
+typedef enum {
+    XPOWER_POWERON_SRC_POWERON_LOW,                     //POWERON low for on level when POWERON Mode as POWERON Source
+    XPOWER_POWERON_SRC_IRQ_LOW,                         //IRQ PIN Pull-down as POWERON Source
+    XPOWER_POWERON_SRC_VBUS_INSERT,                     //Vbus Insert and Good as POWERON Source
+    XPOWER_POWERON_SRC_BAT_CHARGE,                      //Vbus Insert and Good as POWERON Source
+    XPOWER_POWERON_SRC_BAT_INSERT,                      //Battery Insert and Good as POWERON Source
+    XPOWER_POWERON_SRC_ENMODE,                          //POWERON always high when EN Mode as POWERON Source
+    XPOWER_POWERON_SRC_UNKONW,                          //Unkonw
+} xpower_power_on_source_t;
+
+typedef enum {
+    XPOWER_POWEROFF_SRC_PWEKEY_PULLDOWN,            //POWERON Pull down for off level when POWERON Mode as POWEROFF Source
+    XPOWER_POWEROFF_SRC_SOFT_OFF,                   //Software configuration as POWEROFF Source
+    XPOWER_POWEROFF_SRC_PWEKEY_LOW,                 //POWERON always low when EN Mode as POWEROFF Source
+    XPOWER_POWEROFF_SRC_UNDER_VSYS,                 //Vsys Under Voltage as POWEROFF Source
+    XPOWER_POWEROFF_SRC_OVER_VBUS,                  //VBUS Over Voltage as POWEROFF Source
+    XPOWER_POWEROFF_SRC_UNDER_VOL,                  //DCDC Under Voltage as POWEROFF Source
+    XPOWER_POWEROFF_SRC_OVER_VOL,                   //DCDC Over Voltage as POWEROFF Source
+    XPOWER_POWEROFF_SRC_OVER_TEMP,                  //Die Over Temperature as POWEROFF Source
+    XPOWER_POWEROFF_SRC_UNKONW,                     //Unkonw
+} xpower_power_off_source_t;
+
+typedef enum {
+    XPOWER_PWROK_DELAY_8MS,
+    XPOWER_PWROK_DELAY_16MS,
+    XPOWER_PWROK_DELAY_32MS,
+    XPOWER_PWROK_DELAY_64MS,
+} xpower_pwrok_delay_t;
+
 class XPowersAXP2101 :
     public XPowersCommon<XPowersAXP2101>
 {
@@ -633,162 +662,103 @@ public:
 
     //!  PWRON statu  20
     // POWERON always high when EN Mode as POWERON Source
-    void enablePoweronAlwaysHighSource()
+    bool isPoweronAlwaysHighSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 5);
-    }
-
-    void disablePoweronAlwaysHighSource()
-    {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 5);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 5);
     }
 
     // Battery Insert and Good as POWERON Source
-    void enableBattInsertOnSource()
+    bool isBattInsertOnSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 4);
-    }
-
-    void disableBattInsertOnSource()
-    {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 4);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 4);
     }
 
     // Battery Voltage > 3.3V when Charged as Source
-    void enableBattNormalOnSource()
+    bool isBattNormalOnSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 3);
-    }
-    void disableBattNormalOnSource()
-    {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 3);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 3);
     }
 
     // Vbus Insert and Good as POWERON Source
-    void enableVbusInsertOnSource()
+    bool isVbusInsertOnSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 2);
-    }
-
-    void disableVbusInsertOnSource()
-    {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 2);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 2);
     }
 
     // IRQ PIN Pull-down as POWERON Source
-    void enableIrqLowOnSource()
+    bool isIrqLowOnSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 1);
-    }
-
-    void disableIrqLowOnSource()
-    {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 1);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 1);
     }
 
     // POWERON low for on level when POWERON Mode as POWERON Source
-    void enablePwronLowOnSource()
+    bool isPwronLowOnSource()
     {
-        setRegisterBit(XPOWERS_PWRON_STATUS, 0);
+        return getRegisterBit(XPOWERS_PWRON_STATUS, 0);
     }
 
-    void disablePwronLowOnSource()
+    xpower_power_on_source_t getPowerOnSource()
     {
-        clrRegisterBit(XPOWERS_PWRON_STATUS, 0);
+        int val = readRegister(XPOWERS_PWRON_STATUS);
+        if (val == -1) return XPOWER_POWERON_SRC_UNKONW;
+        return (xpower_power_on_source_t)val;
     }
-
-
-
 
     //!  PWROFF status  21
     // Die Over Temperature as POWEROFF Source
-    void enableOverTemperatureOffSource()
+    bool isOverTemperatureOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 7);
-    }
-
-    void disableOverTemperatureOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 7);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 7);
     }
 
     // DCDC Over Voltage as POWEROFF Source
-    void enableDcOverVoltageOffSource()
+    bool isDcOverVoltageOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 6);
-    }
-
-    void disableDcOverVoltageOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 6);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 6);
     }
 
     // DCDC Under Voltage as POWEROFF Source
-    void enableDcUnderVoltageOffSource()
+    bool isDcUnderVoltageOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 5);
-    }
-
-    void disableDcUnderVoltageOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 5);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 5);
     }
 
     // VBUS Over Voltage as POWEROFF Source
-    void enableVbusOverVoltageOffSource()
+    bool isVbusOverVoltageOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 4);
-    }
-
-    void disableVbusOverVoltageOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 4);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 4);
     }
 
     // Vsys Under Voltage as POWEROFF Source
-    void enableVsysUnderVoltageOffSource()
+    bool isVsysUnderVoltageOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 3);
-    }
-
-    void disableVsysUnderVoltageOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 3);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 3);
     }
 
     // POWERON always low when EN Mode as POWEROFF Source
-    void enablePwronAlwaysLowOffSource()
+    bool isPwronAlwaysLowOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 2);
-    }
-
-    void disablePwronAlwaysLowOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 2);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 2);
     }
 
     // Software configuration as POWEROFF Source
-    void enableSwConfigOffSource()
+    bool isSwConfigOffSource()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 1);
-    }
-
-    void disableSwConfigOffSource()
-    {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 1);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 1);
     }
 
     // POWERON Pull down for off level when POWERON Mode as POWEROFF Source
-    void enablePwrSourcePullDown()
+    bool isPwrSourcePullDown()
     {
-        setRegisterBit(XPOWERS_PWROFF_STATUS, 0);
+        return getRegisterBit(XPOWERS_PWROFF_STATUS, 0);
     }
 
-    void disablePwrSourcePullDown()
+    xpower_power_off_source_t getPowerOffSource()
     {
-        clrRegisterBit(XPOWERS_PWROFF_STATUS, 0);
+        int val = readRegister(XPOWERS_PWRON_STATUS);
+        if (val == -1) return XPOWER_POWEROFF_SRC_UNKONW;
+        return (xpower_power_off_source_t)val;
     }
-
 
     //!REG 22H
     void enableOverTemperatureLevel2PowerOff()
@@ -902,9 +872,56 @@ public:
     }
 
     //  PWROK setting and PWROFF sequence control 25.
-    //TODO:
+    // Check the PWROK Pin enable after all dcdc/ldo output valid 128ms
+    void enablePwrOk()
+    {
+        setRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 4);
+    }
 
+    void disablePwrOk()
+    {
+        clrRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 4);
+    }
 
+    // POWEROFF Delay 4ms after PWROK enable
+    void eanblePowerOffDelay()
+    {
+        setRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 3);
+    }
+
+    // POWEROFF Delay 4ms after PWROK disable
+    void disablePowerOffDelay()
+    {
+        clrRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 3);
+    }
+
+    // POWEROFF Sequence Control the reverse of the Startup
+    void eanblePowerSequence()
+    {
+        setRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 2);
+    }
+
+    // POWEROFF Sequence Control at the same time
+    void disablePowerSequence()
+    {
+        clrRegisterBit(XPOWERS_PWROK_SEQU_CTRL, 2);
+    }
+
+    // Delay of PWROK after all power output good
+    bool setPwrOkDelay(xpower_pwrok_delay_t opt)
+    {
+        int val = readRegister(XPOWERS_PWROK_SEQU_CTRL);
+        if (val == -1)return false;
+        val &= 0xFC;
+        return 0 == writeRegister(XPOWERS_PWROK_SEQU_CTRL, val | opt);
+    }
+
+    xpower_pwrok_delay_t getPwrOkDelay()
+    {
+        int val = readRegister(XPOWERS_PWROK_SEQU_CTRL);
+        if (val == -1)return XPOWER_PWROK_DELAY_8MS;
+        return (xpower_pwrok_delay_t)(val & 0x03);
+    }
 
     //  Sleep and 26
     void wakeupControl(xpowers_wakeup_t opt, bool enable)

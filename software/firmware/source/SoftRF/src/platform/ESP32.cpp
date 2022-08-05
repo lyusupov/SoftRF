@@ -344,7 +344,34 @@ static void ESP32_setup()
         axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
                        TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
 
-        /* TBD */
+        // Set the minimum system operating voltage inside the PMU,
+        // below this value will shut down the PMU
+        axp_2xxx.setMinSystemVoltage(XPOWERS_VSYS_VOL_4V5);
+
+        // Set the minimum common working voltage of the PMU VBUS input,
+        // below this value will turn off the PMU
+        axp_2xxx.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V36);
+
+        // Set the maximum current of the PMU VBUS input,
+        // higher than this value will turn off the PMU
+        axp_2xxx.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
+
+        // DCDC1 1500~3400mV, IMAX=2A
+        axp_2xxx.setDC1Voltage(3300); // ESP32,  AXP2101 power-on value: 3300
+
+        // ALDO 500~3500V, 100mV/step, IMAX=300mA
+#if 1
+        axp_2xxx.setALDO1Voltage(3100); // RTC,  AXP2101 power-on value: 1800
+#endif
+        axp_2xxx.setALDO2Voltage(3300); // LoRa, AXP2101 power-on value: 2800
+        axp_2xxx.setALDO3Voltage(3300); // GPS,  AXP2101 power-on value: 3300
+
+        // axp_2xxx.enableDC1();
+#if 1
+        axp_2xxx.enableALDO1();
+#endif
+        axp_2xxx.enableALDO2();
+        axp_2xxx.enableALDO3();
 
         axp_2xxx.enableChargingLed();
         axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
