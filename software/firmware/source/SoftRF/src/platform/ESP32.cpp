@@ -384,6 +384,16 @@ static void ESP32_setup()
         axp_2xxx.enableChargingLed();
         axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
 
+        pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT /* INPUT_PULLUP */);
+
+        attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ),
+                        ESP32_PMU_Interrupt_handler, FALLING);
+
+        axp_2xxx.disableIRQ(XPOWERS_ALL_IRQ);
+        axp_2xxx.clearIrqStatus();
+
+        axp_2xxx.enableIRQ(XPOWERS_PKEY_LONG_IRQ | XPOWERS_PKEY_SHORT_IRQ);
+
         hw_info.revision = 12;
         hw_info.pmu = PMU_AXP2101;
       } else {
