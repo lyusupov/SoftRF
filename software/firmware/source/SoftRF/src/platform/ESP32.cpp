@@ -309,13 +309,15 @@ static void ESP32_setup()
 
     Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
     Wire1.beginTransmission(AXP192_SLAVE_ADDRESS);
-    bool has_axp192 = (Wire1.endTransmission() == 0);
+    bool has_axp = (Wire1.endTransmission() == 0);
+
+    bool has_axp192 = has_axp &&
+                      (axp_xxx.begin(Wire1, AXP192_SLAVE_ADDRESS) == AXP_PASS);
+
     if (has_axp192) {
 
       hw_info.revision = 8;
       hw_info.pmu = PMU_AXP192;
-
-      axp_xxx.begin(Wire1, AXP192_SLAVE_ADDRESS);
 
       axp_xxx.setChgLEDMode(AXP20X_LED_LOW_LEVEL);
 
@@ -337,12 +339,14 @@ static void ESP32_setup()
       axp_xxx.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp_xxx.clearIRQ();
     } else {
-      Wire1.beginTransmission(AXP2101_SLAVE_ADDRESS);
-      bool has_axp2101 = (Wire1.endTransmission() == 0);
-      if (has_axp2101) {
+      bool has_axp2101 = has_axp &&
+                         axp_2xxx.begin(Wire1,
+                                        AXP2101_SLAVE_ADDRESS,
+                                        TTGO_V2_OLED_PIN_SDA,
+                                        TTGO_V2_OLED_PIN_SCL) &&
+                         (axp_2xxx.getChipID() == XPOWERS_CHIP_ID);
 
-        axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
-                       TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
+      if (has_axp2101) {
 
         // Set the minimum system operating voltage inside the PMU,
         // below this value will shut down the PMU
