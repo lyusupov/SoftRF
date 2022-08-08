@@ -79,6 +79,7 @@ struct rst_info {
 
 #define TECHO_DISPLAY_MODEL   GxEPD2_154_D67
 //#define TECHO_DISPLAY_MODEL   GxEPD2_154
+//#define TECHO_DISPLAY_MODEL   GxEPD2_150_BN
 
 #define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
 #define SOC_ADC_VOLTAGE_DIV   (2.0F)          // 100K + 100K voltage divider on VBAT
