@@ -175,6 +175,10 @@ static uint32_t ESP32_getFlashId()
   return g_rom_flashchip.device_id;
 }
 
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG)
+#define TAG "MAC"
+#endif
+
 static void ESP32_setup()
 {
 #if !defined(SOFTRF_ADDRESS)
@@ -339,13 +343,10 @@ static void ESP32_setup()
       axp_xxx.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp_xxx.clearIRQ();
     } else {
-      bool has_axp2101 = has_axp &&
-                         axp_2xxx.begin(Wire1,
-                                        AXP2101_SLAVE_ADDRESS,
-                                        TTGO_V2_OLED_PIN_SDA,
-                                        TTGO_V2_OLED_PIN_SCL) &&
-                         (axp_2xxx.getChipID() == XPOWERS_CHIP_ID);
-
+      bool has_axp2101 = has_axp && axp_2xxx.begin(Wire1,
+                                                   AXP2101_SLAVE_ADDRESS,
+                                                   TTGO_V2_OLED_PIN_SDA,
+                                                   TTGO_V2_OLED_PIN_SCL);
       if (has_axp2101) {
 
         // Set the minimum system operating voltage inside the PMU,
@@ -364,18 +365,12 @@ static void ESP32_setup()
         axp_2xxx.setDC1Voltage(3300); // ESP32,  AXP2101 power-on value: 3300
 
         // ALDO 500~3500V, 100mV/step, IMAX=300mA
-#if 1
-        axp_2xxx.setALDO1Voltage(3100); // RTC,  AXP2101 power-on value: 1800
-#endif
         axp_2xxx.setButtonBatteryChargeVoltage(3100); // GNSS battery
 
         axp_2xxx.setALDO2Voltage(3300); // LoRa, AXP2101 power-on value: 2800
         axp_2xxx.setALDO3Voltage(3300); // GPS,  AXP2101 power-on value: 3300
 
         // axp_2xxx.enableDC1();
-#if 1
-        axp_2xxx.enableALDO1();
-#endif
         axp_2xxx.enableButtonBatteryCharge();
 
         axp_2xxx.enableALDO2();
@@ -446,15 +441,14 @@ static void ESP32_setup()
 
     Wire1.begin(SOC_GPIO_PIN_S3_OLED_SDA , SOC_GPIO_PIN_S3_OLED_SCL);
     Wire1.beginTransmission(AXP2101_SLAVE_ADDRESS);
-    bool has_axp2101 = (Wire1.endTransmission() == 0);
-    WIRE_FINI(Wire1);
-
+    bool has_axp2101 = (Wire1.endTransmission() == 0) &&
+                       axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
+                                      SOC_GPIO_PIN_S3_OLED_SDA,
+                                      SOC_GPIO_PIN_S3_OLED_SCL);
     if (has_axp2101) {
 
+      // esp32_board = ESP32_TTGO_T_BEAM_SUPREME;
       hw_info.pmu = PMU_AXP2101;
-
-      axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
-                     SOC_GPIO_PIN_S3_OLED_SDA, SOC_GPIO_PIN_S3_OLED_SCL);
 
       // Set the minimum system operating voltage inside the PMU,
       // below this value will shut down the PMU
@@ -471,53 +465,25 @@ static void ESP32_setup()
       // DCDC1 1500~3400mV, IMAX=2A
       axp_2xxx.setDC1Voltage(3300);
 
-      // DCDC2 500~1200mV, 1220~1540mV, IMAX=2A;
-      axp_2xxx.setDC2Voltage(1000);
-
-      // DCDC3 500~1200mV, 1220~1540mV, 1600~3400mV,IMAX = 2A;
-      axp_2xxx.setDC3Voltage(3300);
-
-      // DCDC4: 500~1200mV, 1220~1840mV, IMAX = 1.5A;
-      axp_2xxx.setDC4Voltage(1000);
-
-      // DCDC5 500~1200V, 1220~1540V, 1600~3400mV,IMAX=2A;
-      axp_2xxx.setDC5Voltage(3300);
+      // DCDC5 1400~3700mV, 100mV/step, 24 steps, IMAX=1A
+      axp_2xxx.setDC5Voltage(3700);
 
       // ALDO 500~3500V, 100mV/step, IMAX=300mA
       axp_2xxx.setALDO1Voltage(3300);
       axp_2xxx.setALDO2Voltage(3300);
       axp_2xxx.setALDO3Voltage(3300);
-      axp_2xxx.setALDO4Voltage(3300);
-
-      // BLDO 500~3500V, 100mV/step,IMAX=300mA
-      axp_2xxx.setBLDO1Voltage(3300);
-      axp_2xxx.setBLDO2Voltage(3300);
-
-      // CPUSLDO 500~1400mV, IMAX=30mA
-      axp_2xxx.setCPUSLDOVoltage(1000);
-
-      // DLDO1/2: analog LDO or power switch, 500~3300mV / 500~1400mV, IMAX = 300mA
-      axp_2xxx.setDLDO1Voltage(3300);
-      axp_2xxx.setDLDO2Voltage(3300);
 
       // axp_2xxx.enableDC1();
-      axp_2xxx.enableDC2();
-#if 0 /* TBD */
-      axp_2xxx.enableDC3();
-      axp_2xxx.enableDC4();
       axp_2xxx.enableDC5();
-#endif
+
       axp_2xxx.enableALDO1();
       axp_2xxx.enableALDO2();
-#if 0 /* TBD */
       axp_2xxx.enableALDO3();
-      axp_2xxx.enableALDO4();
-      axp_2xxx.enableBLDO1();
-      axp_2xxx.enableBLDO2();
-      axp_2xxx.enableCPUSLDO();
-      axp_2xxx.enableDLDO1();
-      axp_2xxx.enableDLDO2();
-#endif
+
+      axp_2xxx.enableChargingLed();
+      axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+    } else {
+      WIRE_FINI(Wire1);
     }
 
     /* uSD-SPI init */
@@ -690,16 +656,8 @@ static void ESP32_loop()
 
       if (axp_2xxx.isPekeyLongPressIrq()) {
         down = true;
-#if 0
-        Serial.println(F("Long press IRQ"));
-        Serial.flush();
-#endif
       }
       if (axp_2xxx.isPekeyShortPressIrq()) {
-#if 0
-        Serial.println(F("Short press IRQ"));
-        Serial.flush();
-#endif
 #if defined(USE_OLED)
         OLED_Next_Page();
 #endif
@@ -823,9 +781,6 @@ static void ESP32_fini(int reason)
     case PMU_AXP2101:
       axp_2xxx.disableChargingLed();
 
-#if 0
-      axp_2xxx.disableALDO1();
-#endif
       axp_2xxx.disableButtonBatteryCharge();
 
       axp_2xxx.disableALDO2();
@@ -1311,7 +1266,7 @@ static void ESP32_swSer_begin(unsigned long baud)
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
 
-    Serial.print(F("INFO: TTGO T-Beam rev. 0"));
+    Serial.print(F("INFO: TTGO T-Beam rev. "));
     Serial.print(hw_info.revision);
     Serial.println(F(" is detected."));
 

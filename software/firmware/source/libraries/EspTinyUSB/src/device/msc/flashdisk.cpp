@@ -147,7 +147,7 @@ bool FlashUSB::begin(char* str)
     return MSCusb::begin(str);
 }
 
-bool FlashUSB::init(char* path, char* label)
+bool FlashUSB::init(const char* path, char* label)
 {
     esp_vfs_fat_mount_config_t mount_config = 
     {

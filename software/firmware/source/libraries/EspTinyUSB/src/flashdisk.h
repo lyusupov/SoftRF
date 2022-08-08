@@ -12,7 +12,7 @@ class FlashUSB : public MSCusb {
 public:
     FlashUSB(bool aes = false);
     bool begin(char* str = nullptr);
-    bool init(char* path = "/fatfs",char* label = NULL);
+    bool init(const char* path = "/fatfs",char* label = NULL);
     void setCallbacks(MSCCallbacks*);
     void setCapacity(uint32_t count, uint32_t size);
     bool isReady();

@@ -102,10 +102,10 @@ size_t CDCusb::write(const uint8_t *buffer, size_t size)
 {
     if (tud_cdc_n_connected(_itf))
     {
-        uint32_t d = 0;
+        size_t d = 0;
         do{
-            d += tud_cdc_n_write(_itf, buffer + d, size <= 64 ? size: size - d);
-        }while(size - d > 0 || d == 0);
+            d += tud_cdc_n_write(_itf, buffer + d, size - d <= 64 ? size - d : 64);
+        }while(size > d);
         tud_cdc_n_write_flush(_itf);
         return d;
     }

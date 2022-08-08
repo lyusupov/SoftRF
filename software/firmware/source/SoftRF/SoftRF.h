@@ -244,22 +244,6 @@ enum
 	IMU_MPU9250,
 };
 
-static inline uint32_t DevID_Mapper(uint32_t id)
-{
-  /* remap address to avoid overlapping with congested FLARM range */
-  if (((id & 0x00FFFFFF) >= 0xDD0000) && ((id & 0x00FFFFFF) <= 0xDFFFFF)) {
-    id += 0x100000;
-  /*
-   * OGN 0.2.8+ does not decode 'Air V6' traffic when leading byte of 24-bit Id is 0x5B
-   * Remap 11xxxx addresses to avoid overlapping with congested Skytraxx range
-   */
-  } else if ((id & 0x00FF0000) == 0x5B0000 || (id & 0x00FF0000) == 0x110000) {
-    id += 0x010000;
-  }
-
-  return id;
-}
-
 extern ufo_t ThisAircraft;
 extern hardware_info_t hw_info;
 extern const float txrx_test_positions[90][2] PROGMEM;

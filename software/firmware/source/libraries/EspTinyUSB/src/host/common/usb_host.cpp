@@ -77,7 +77,8 @@ bool USBhost::init(bool create_tasks)
     ESP_LOGI("", "install status: %d", err);
 
     const usb_host_client_config_t client_config = {
-        .max_num_event_msg = 15,
+        .is_synchronous = false,
+        .max_num_event_msg = 5,
         .async = {
             .client_event_callback = _client_event_callback,
             .callback_arg = this,

@@ -144,5 +144,6 @@ extern const SoC_ops_t RP2040_ops;
 
 byte SoC_setup(void);
 void SoC_fini(int);
+uint32_t DevID_Mapper(uint32_t);
 
 #endif /* SOCHELPER_H */
