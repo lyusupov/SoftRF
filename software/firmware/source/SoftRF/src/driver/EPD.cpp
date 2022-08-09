@@ -139,7 +139,7 @@ bool EPD_setup(bool splash_screen)
 
   EPD_POWEROFF;
 
-  rval = display->epd2.probe();
+  rval = display->probe();
 
   EPD_status_setup();
   EPD_radar_setup();

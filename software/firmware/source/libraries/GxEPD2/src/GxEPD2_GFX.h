@@ -81,6 +81,7 @@ class GxEPD2_GFX : public Adafruit_GFX
     virtual void refresh(int16_t x, int16_t y, int16_t w, int16_t h) = 0; // screen refresh from controller memory, partial screen
     virtual void powerOff() = 0; // turns off generation of panel driving voltages, avoids screen fading over time
     virtual void hibernate() = 0; // turns powerOff() and sets controller to deep sleep for minimum power use, ONLY if wakeable by RST (rst >= 0)
+    virtual bool probe() = 0;
   public:
     GxEPD2_EPD& epd2;
 };

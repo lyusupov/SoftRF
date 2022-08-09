@@ -19,7 +19,8 @@
 #ifndef EPDHELPER_H
 #define EPDHELPER_H
 
-#define ENABLE_GxEPD2_GFX       0
+#define ENABLE_GxEPD2_GFX       1
+#include <GxEPD2_BW.h>
 
 #define EPD_EXPIRATION_TIME     5 /* seconds */
 
@@ -207,7 +208,6 @@ typedef struct navbox_struct
   uint32_t  timestamp;
 } navbox_t;
 
-void EPD_Clear_Screen();
 bool EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(int, bool);
@@ -253,6 +253,7 @@ void EPD_time_loop();
 void EPD_time_next();
 void EPD_time_prev();
 
+extern GxEPD2_GFX *display;
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
 extern uint16_t EPD_pages_mask;

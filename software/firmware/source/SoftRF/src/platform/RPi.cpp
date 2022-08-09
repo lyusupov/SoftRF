@@ -152,7 +152,7 @@ TCPServer Traffic_TCP_Server;
 #if defined(USE_EPAPER)
 GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> __attribute__ ((common)) epd_waveshare(GxEPD2_270(/*CS=5*/ 8,
                                        /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
+GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
 
 ui_settings_t ui_settings = {
@@ -434,7 +434,6 @@ static void RPi_Display_fini(int reason)
 {
 #if defined(USE_EPAPER)
 
-  EPD_Clear_Screen();
   EPD_fini(reason, false);
 
   if ( RPi_EPD_update_thread != (pthread_t) 0)
