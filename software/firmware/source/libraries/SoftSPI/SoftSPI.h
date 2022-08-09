@@ -15,6 +15,8 @@ public:
     void setDataMode(uint8_t);
     void setClockDivider(uint32_t);
     uint8_t transfer(uint8_t);
+    uint8_t transfer_in();
+    void transfer_out(uint8_t);
     uint16_t transfer16(uint16_t data);
     void transfer(void *buf, size_t count);
     /* compatibility with Adafruit_nRF52_Arduino */
@@ -28,5 +30,4 @@ private:
     uint8_t _sck;
 };
 
-extern SoftSPI SPI2;
 #endif

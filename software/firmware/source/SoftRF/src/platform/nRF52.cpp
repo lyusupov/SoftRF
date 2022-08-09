@@ -95,7 +95,7 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 
 static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
-static nRF52_display_id nRF52_display = EP_GDEH0154D67;
+static nRF52_display_id nRF52_display = EP_UNKNOWN;
 
 const char *nRF52_Device_Manufacturer = SOFTRF_IDENT;
 const char *nRF52_Device_Model = "Badge Edition";
@@ -150,6 +150,11 @@ SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MISO,
               SOC_GPIO_PIN_EPD_SCK,
               SOC_GPIO_PIN_EPD_MOSI);
+
+#include <SoftSPI.h>
+SoftSPI swSPI(SOC_GPIO_PIN_EPD_MOSI,
+              SOC_GPIO_PIN_EPD_MOSI, /* half duplex */
+              SOC_GPIO_PIN_EPD_SCK);
 #endif
 
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_d67(GxEPD2_154_D67(
@@ -1298,6 +1303,79 @@ static void nRF52_swSer_enableRx(boolean arg)
 SemaphoreHandle_t Display_Semaphore;
 unsigned long TaskInfoTime;
 
+static nRF52_display_id nRF52_EPD_probe()
+{
+  nRF52_display_id rval = EP_GDEH0154D67; /* default */
+
+  digitalWrite(SOC_GPIO_PIN_EPD_SS, HIGH);
+  pinMode(SOC_GPIO_PIN_EPD_SS, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_EPD_DC, HIGH);
+  pinMode(SOC_GPIO_PIN_EPD_DC, OUTPUT);
+
+  digitalWrite(SOC_GPIO_PIN_EPD_RST, LOW);
+  pinMode(SOC_GPIO_PIN_EPD_RST, OUTPUT);
+  delay(20);
+  pinMode(SOC_GPIO_PIN_EPD_RST, INPUT_PULLUP);
+  delay(200);
+  pinMode(SOC_GPIO_PIN_EPD_BUSY, INPUT);
+
+  swSPI.begin();
+
+  uint8_t buf[11];
+
+  digitalWrite(SOC_GPIO_PIN_EPD_DC, LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_SS, LOW);
+
+  swSPI.transfer_out(0x2D /* 0x2E */);
+
+  pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
+  digitalWrite(SOC_GPIO_PIN_EPD_DC, HIGH);
+
+  for (int i=0; i<10; i++) {
+    buf[i] = swSPI.transfer_in();
+  }
+
+  digitalWrite(SOC_GPIO_PIN_EPD_SCK, LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_DC,  LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_SS,  HIGH);
+
+#if 0
+  for (int i=0; i<10; i++) {
+    Serial.print(buf[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+/*
+ *  0x2D:
+ *  FF FF FF FF FF FF FF FF FF FF FF - C1
+ *  00 00 00 00 00 FF 40 00 00 00 01 - D67 SYX 1942
+ *  00 00 00 FF 00 00 40 01 00 00 00 - D67
+ *
+ *  0x2E:
+ *  00 00 00 00 00 00 00 00 00 00    - C1
+ *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 1942
+ *  00 05 00 9A 00 55 35 37 14 0C    - D67
+ */
+#endif
+
+  bool is_ff = true;
+  for (int i=0; i<10; i++) {
+    if (buf[i] != 0xFF) {is_ff = false; break;}
+  }
+
+  bool is_00 = true;
+  for (int i=0; i<10; i++) {
+    if (buf[i] != 0x00) {is_00 = false; break;}
+  }
+
+  if (is_ff || is_00) {
+//    rval = EP_DEPG0150BN; /* TBD */
+  }
+
+  return rval;
+}
+
 static byte nRF52_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -1309,6 +1387,10 @@ static byte nRF52_Display_setup()
                SOC_GPIO_PIN_EPD_SCK,
                SOC_GPIO_PIN_EPD_MOSI);
 #endif
+
+  if (nRF52_display == EP_UNKNOWN) {
+    nRF52_display = nRF52_EPD_probe();
+  }
 
   switch (nRF52_display)
   {
