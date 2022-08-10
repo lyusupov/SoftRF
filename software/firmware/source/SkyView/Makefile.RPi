@@ -60,6 +60,7 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(TIMELIB_PATH)/Time.o \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
                  $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
+                 $(EPD2_PATH)/epd/GxEPD2_270_T91.o \
                  $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o \
                  $(BUTTON_PATH)/ace_button/AceButton.o \
                  $(BUTTON_PATH)/ace_button/ButtonConfig.o

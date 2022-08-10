@@ -30,7 +30,7 @@
 
 #include "SkyView.h"
 
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
+GxEPD2_GFX *display;
 
 const char EPD_SkyView_text1[] = "Sky";
 const char EPD_SkyView_text2[] = "View";

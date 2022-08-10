@@ -59,8 +59,11 @@ TTYSerial SerialInput("/dev/ttyACM0");
 static const uint8_t SS    = 8; // pin 24
 
 /* Waveshare Pi HAT 2.7" */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare(GxEPD2_270(/*CS=*/ SS,
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare_W3(GxEPD2_270(/*CS=*/ SS,
                                        /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
+GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_waveshare_T91(GxEPD2_270_T91(/*CS=*/ SS,
+                                       /*DC=*/ 25, /*RST=*/ 17, /*BUSY=*/ 24));
+
 
 Adafruit_SSD1306 odisplay(SCREEN_WIDTH, SCREEN_HEIGHT,
   &SPI, /*DC=*/ 25, /*RST=*/ 17, /*CS=*/ SS);
@@ -234,7 +237,8 @@ static float RPi_Battery_voltage()
 
 static void RPi_EPD_setup()
 {
-  display = &epd_waveshare;
+  display = &epd_waveshare_W3;
+//  display = &epd_waveshare_T91;
 }
 
 static void RPi_EPD_fini()
