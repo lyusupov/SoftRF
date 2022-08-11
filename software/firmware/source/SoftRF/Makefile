@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#BASICMAC      = -DUSE_BASICMAC
-#NOMAVLINK    = -DEXCLUDE_MAVLINK
+BASICMAC      ?= no
+NOMAVLINK     ?= no
+
+GDEY027T91    ?= no
 
 RTLSDR        ?= no
 HACKRF        ?= no
@@ -26,7 +28,7 @@ CC            = gcc
 CXX           = g++
 
 CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\" $(BASICMAC) $(NOMAVLINK)
+                -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
@@ -90,7 +92,7 @@ U8G2_PATH     = $(LIB_PATH)/U8g2_for_Adafruit_GFX/src
 EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 MODES_PATH    = $(LIB_PATH)/libmodes/src
 
-ifdef BASICMAC
+ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
 else
 RADIO_PATH    = $(LMIC_PATH)
@@ -120,7 +122,7 @@ PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
                  $(PRODAT_PATH)/D1090.cpp   \
                  $(PRODAT_PATH)/JSON.cpp
 
-ifndef NOMAVLINK
+ifeq ($(NOMAVLINK), no)
 PRODAT_CPPS   += $(PRODAT_PATH)/MAVLink.cpp
 endif
 
@@ -207,13 +209,20 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(EPD2_PATH)/epd/GxEPD2_270_T91.o \
                  $(U8G2_PATH)/U8g2_for_Adafruit_GFX.o $(U8G2_PATH)/u8g2_fonts.o
 
-ifdef BASICMAC
-OBJS          += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
+ifeq ($(BASICMAC), yes)
+  OBJS        += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
                  $(RADIO_PATH)/lmic/debug.o $(RADIO_PATH)/lmic/lce.o
+  CFLAGS      += -DUSE_BASICMAC
 endif
 
-ifndef NOMAVLINK
-OBJS          += $(MAVLINK_PATH)/mavlink.o
+ifeq ($(NOMAVLINK), no)
+  OBJS        += $(MAVLINK_PATH)/mavlink.o
+else
+  CFLAGS      += -DEXCLUDE_MAVLINK
+endif
+
+ifeq ($(GDEY027T91), yes)
+  CFLAGS      += -DUSE_GDEY027T91
 endif
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread

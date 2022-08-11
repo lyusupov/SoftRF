@@ -58,6 +58,12 @@ enum
 	EPD_UPDATE_FAST
 };
 
+enum ep_model_id {
+	EP_UNKNOWN,
+	EP_GDEW027W3,
+	EP_GDEY027T91,
+};
+
 byte EPD_setup(bool);
 void EPD_loop();
 void EPD_fini(const char *);

@@ -150,11 +150,6 @@ SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MISO,
               SOC_GPIO_PIN_EPD_SCK,
               SOC_GPIO_PIN_EPD_MOSI);
-
-#include <SoftSPI.h>
-SoftSPI swSPI(SOC_GPIO_PIN_EPD_MOSI,
-              SOC_GPIO_PIN_EPD_MOSI, /* half duplex */
-              SOC_GPIO_PIN_EPD_SCK);
 #endif
 
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_d67(GxEPD2_154_D67(
@@ -1303,7 +1298,14 @@ static void nRF52_swSer_enableRx(boolean arg)
 SemaphoreHandle_t Display_Semaphore;
 unsigned long TaskInfoTime;
 
-static nRF52_display_id nRF52_EPD_probe()
+#if defined(USE_EPAPER)
+
+#include <SoftSPI.h>
+SoftSPI swSPI(SOC_GPIO_PIN_EPD_MOSI,
+              SOC_GPIO_PIN_EPD_MOSI, /* half duplex */
+              SOC_GPIO_PIN_EPD_SCK);
+
+static nRF52_display_id nRF52_EPD_ident()
 {
   nRF52_display_id rval = EP_GDEH0154D67; /* default */
 
@@ -1323,6 +1325,8 @@ static nRF52_display_id nRF52_EPD_probe()
 
   uint8_t buf[11];
 
+  taskENTER_CRITICAL();
+
   digitalWrite(SOC_GPIO_PIN_EPD_DC, LOW);
   digitalWrite(SOC_GPIO_PIN_EPD_SS, LOW);
 
@@ -1338,6 +1342,10 @@ static nRF52_display_id nRF52_EPD_probe()
   digitalWrite(SOC_GPIO_PIN_EPD_SCK, LOW);
   digitalWrite(SOC_GPIO_PIN_EPD_DC,  LOW);
   digitalWrite(SOC_GPIO_PIN_EPD_SS,  HIGH);
+
+  taskEXIT_CRITICAL();
+
+  swSPI.end();
 
 #if 0
   for (int i=0; i<10; i++) {
@@ -1376,6 +1384,8 @@ static nRF52_display_id nRF52_EPD_probe()
   return rval;
 }
 
+#endif /* USE_EPAPER */
+
 static byte nRF52_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -1389,7 +1399,7 @@ static byte nRF52_Display_setup()
 #endif
 
   if (nRF52_display == EP_UNKNOWN) {
-    nRF52_display = nRF52_EPD_probe();
+    nRF52_display = nRF52_EPD_ident();
   }
 
   switch (nRF52_display)

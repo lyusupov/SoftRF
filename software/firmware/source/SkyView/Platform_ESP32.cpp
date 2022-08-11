@@ -350,8 +350,68 @@ static float ESP32_Battery_voltage()
           2 * voltage : voltage);
 }
 
+#include <SoftSPI.h>
+SoftSPI swSPI(SOC_GPIO_PIN_MOSI_T5S,
+              SOC_GPIO_PIN_MOSI_T5S, /* half duplex */
+              SOC_GPIO_PIN_SCK_T5S);
+
+static portMUX_TYPE EPD_ident_mutex;
+
+static ep_model_id ESP32_EPD_ident()
+{
+  ep_model_id rval = EP_GDEW027W3; /* default */
+  vPortCPUInitializeMutex(&EPD_ident_mutex);
+
+  digitalWrite(SOC_GPIO_PIN_SS_T5S, HIGH);
+  pinMode(SOC_GPIO_PIN_SS_T5S, OUTPUT);
+  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
+  pinMode(SOC_EPD_PIN_DC_T5S, OUTPUT);
+
+  digitalWrite(SOC_EPD_PIN_RST_T5S, LOW);
+  pinMode(SOC_EPD_PIN_RST_T5S, OUTPUT);
+  delay(20);
+  pinMode(SOC_EPD_PIN_RST_T5S, INPUT_PULLUP);
+  delay(200);
+  pinMode(SOC_EPD_PIN_BUSY_T5S, INPUT);
+
+  swSPI.begin();
+
+  taskENTER_CRITICAL(&EPD_ident_mutex);
+
+  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_T5S, LOW);
+
+  swSPI.transfer_out(0x71);
+
+  pinMode(SOC_GPIO_PIN_MOSI_T5S, INPUT);
+  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
+
+  uint8_t status = swSPI.transfer_in();
+
+  digitalWrite(SOC_GPIO_PIN_SCK_T5S, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_T5S,  HIGH);
+
+  taskEXIT_CRITICAL(&EPD_ident_mutex);
+
+  swSPI.end();
+
+#if 0
+  Serial.print("REG 71H: ");
+  Serial.println(status, HEX);
+#endif
+
+//  if (status != 2) {
+//    rval = EP_GDEY027T91; /* TBD */
+//  }
+
+  return rval;
+}
+
 #define EPD_STACK_SZ      (256*4)
 static TaskHandle_t EPD_Task_Handle = NULL;
+
+static ep_model_id ESP32_display = EP_UNKNOWN;
 
 static void ESP32_EPD_setup()
 {
@@ -372,8 +432,21 @@ static void ESP32_EPD_setup()
 #endif /* BUILD_SKYVIEW_HD */
   case ADAPTER_TTGO_T5S:
   default:
-    display = &epd_ttgo_t5s_W3;
-//    display = &epd_ttgo_t5s_T91;
+    if (ESP32_display == EP_UNKNOWN) {
+      ESP32_display = ESP32_EPD_ident();
+    }
+
+    switch (ESP32_display)
+    {
+    case EP_GDEY027T91:
+      display = &epd_ttgo_t5s_T91;
+      break;
+    case EP_GDEW027W3:
+    default:
+      display = &epd_ttgo_t5s_W3;
+      break;
+    }
+
     SPI.begin(SOC_GPIO_PIN_SCK_T5S,
               SOC_GPIO_PIN_MISO_T5S,
               SOC_GPIO_PIN_MOSI_T5S,

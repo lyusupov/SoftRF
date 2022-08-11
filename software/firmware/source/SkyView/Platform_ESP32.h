@@ -51,6 +51,11 @@
 #define SOC_GPIO_PIN_SCK_WS   13
 #define SOC_GPIO_PIN_SS_WS    15
 
+/* TTGO T5S EPD pins mapping */
+#define SOC_EPD_PIN_DC_T5S    17
+#define SOC_EPD_PIN_RST_T5S   16
+#define SOC_EPD_PIN_BUSY_T5S  4
+
 /* TTGO T5S microSD pins mapping */
 #define SOC_SD_PIN_MOSI_T5S   15
 #define SOC_SD_PIN_MISO_T5S   2

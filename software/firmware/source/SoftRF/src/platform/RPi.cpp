@@ -399,8 +399,11 @@ static byte RPi_Display_setup()
 
 #if defined(USE_EPAPER)
 
+#if !defined(USE_GDEY027T91)
   display = &epd_waveshare_W3;
-//  display = &epd_waveshare_T91;
+#else
+  display = &epd_waveshare_T91;
+#endif /* USE_GDEY027T91 */
 
   if (EPD_setup(true)) {
 
