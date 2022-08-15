@@ -1,5 +1,4 @@
 /**
-/**
  *
  * @license MIT License
  *
@@ -1322,7 +1321,7 @@ public:
 
     bool setDC2Voltage(uint16_t millivolt)
     {
-        uint8_t val = readRegister(XPOWERS_DC_VOL1_CTRL);
+        int val = readRegister(XPOWERS_DC_VOL1_CTRL);
         if (val == -1)return 0;
         val &= 0x80;
         if (millivolt >= XPOWERS_DCDC2_VOL1_MIN && millivolt <= XPOWERS_DCDC2_VOL1_MAX) {
