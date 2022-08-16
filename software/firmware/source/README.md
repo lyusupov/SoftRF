@@ -25,7 +25,7 @@
     _Sketch_ -> _Upload_
 
 3. When you are done with the lesson, close your **Arduino** application
-4. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+4. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 5. create **Arduino** sub-directory
 6. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -65,7 +65,7 @@ void loop()
 ```
 
 3. When you are done with the lesson, close your **Arduino** application
-4. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+4. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 5. create **Arduino** sub-directory
 6. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -170,7 +170,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 
 1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
   to install Arduino IDE and [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0) (1.9.0)
-2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -207,7 +207,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 
 1. Follow [these official instructions](https://heltec-automation-docs.readthedocs.io/en/latest/cubecell/quick_start.html)
   to install Arduino IDE and [latest **stable** Heltec CubeCell (ASR650X) Arduino Support](https://github.com/HelTecAutomation/ASR650x-Arduino/releases/tag/V1.4.0) (1.4.0)
-2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -235,7 +235,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 
 1. Follow [these official instructions](https://github.com/adafruit/Adafruit_nRF52_Arduino#recommended-adafruit-nrf52-bsp-via-the-arduino-board-manager)
   to install Arduino IDE and [latest **stable** Arduino Core for Adafruit Bluefruit nRF52 Boards](https://github.com/adafruit/Adafruit_nRF52_Arduino/releases/tag/1.3.0) (1.3.0)
-2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -265,7 +265,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
     _Sketch_ -> _Upload_
 
 3. When you are done with the lesson, close your **Arduino** application
-4. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+4. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 5. create **Arduino** sub-directory
 6. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
@@ -282,7 +282,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 
 1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
   to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/2.3.3) (2.3.3)
-2. open ``<My Documents>`` (Windows) or ``<Home>`` (Linux) directory
+2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
 
