@@ -439,12 +439,12 @@ static void ESP32_setup()
                        SOC_GPIO_PIN_S3_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    Wire1.begin(SOC_GPIO_PIN_S3_OLED_SDA , SOC_GPIO_PIN_S3_OLED_SCL);
+    Wire1.begin(SOC_GPIO_PIN_S3_PMU_SDA , SOC_GPIO_PIN_S3_PMU_SCL);
     Wire1.beginTransmission(AXP2101_SLAVE_ADDRESS);
     bool has_axp2101 = (Wire1.endTransmission() == 0) &&
                        axp_2xxx.begin(Wire1, AXP2101_SLAVE_ADDRESS,
-                                      SOC_GPIO_PIN_S3_OLED_SDA,
-                                      SOC_GPIO_PIN_S3_OLED_SCL);
+                                      SOC_GPIO_PIN_S3_PMU_SDA,
+                                      SOC_GPIO_PIN_S3_PMU_SCL);
     if (has_axp2101) {
 
       // esp32_board = ESP32_TTGO_T_BEAM_SUPREME;
@@ -482,6 +482,16 @@ static void ESP32_setup()
 
       axp_2xxx.enableChargingLed();
       axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+
+      pinMode(SOC_GPIO_PIN_S3_PMU_IRQ, INPUT /* INPUT_PULLUP */);
+
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_S3_PMU_IRQ),
+                      ESP32_PMU_Interrupt_handler, FALLING);
+
+      axp_2xxx.disableIRQ(XPOWERS_ALL_IRQ);
+      axp_2xxx.clearIrqStatus();
+
+      axp_2xxx.enableIRQ(XPOWERS_PKEY_LONG_IRQ | XPOWERS_PKEY_SHORT_IRQ);
     } else {
       WIRE_FINI(Wire1);
     }
@@ -1332,7 +1342,7 @@ static byte ESP32_Display_setup()
 
     /* SSD1306 I2C OLED probing */
     if (esp32_board == ESP32_S3_DEVKIT) {
-      Wire1.begin(SOC_GPIO_PIN_S3_OLED_SDA, SOC_GPIO_PIN_S3_OLED_SCL);
+      Wire1.begin(SOC_GPIO_PIN_S3_PMU_SDA, SOC_GPIO_PIN_S3_PMU_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire1.endTransmission() == 0);
       WIRE_FINI(Wire1);
