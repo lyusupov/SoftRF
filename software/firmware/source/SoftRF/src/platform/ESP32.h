@@ -319,7 +319,9 @@ extern Adafruit_NeoPixel strip;
 // button (BOOT)
 #define SOC_GPIO_PIN_S3_BUTTON          0 // "strapping" pin (S)
 
-/* ESP32-S3 section 2 */
+/* ESP32-S3 section 2 (reserved pins) */
+// 17,18 - I2C; 33,34,38,(47 ? - DC) - TFT/EINK; 35,36,37,39 - uSD; 2 - SX1276
+
 // TFT
 #define SOC_GPIO_PIN_S3_TFT_MOSI        35
 #define SOC_GPIO_PIN_S3_TFT_MISO        SOC_UNUSED_PIN
@@ -339,8 +341,11 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_SD_SCK          36
 #define SOC_GPIO_PIN_S3_SD_SS           39
 
+/* ESP32-S3 section 3 (spare pins) */
+// 3(S), 14, 21, 45(S), 46(S), 47, 48
+
 // battery voltage (ADC)
-#define SOC_GPIO_PIN_S3_BATTERY         3 // "strapping" pin (S)
+#define SOC_GPIO_PIN_S3_BATTERY         3 // (S)
 
 // LEDs, active state - HIGH
 #define SOC_GPIO_PIN_S3_STATUS          39
@@ -349,18 +354,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_LED_GREEN       6
 #define SOC_GPIO_PIN_S3_LED_BLUE        7
 #define SOC_GPIO_PIN_S3_LED4            38
-
-// Spare ESP32-S3 pins:
-// 46(S), 45(S), 21, 26
-// 3(S), 14
-// More spare pins when the devkit's Red and Green LEDs are not in use:
-// 5, 6
-// Few more when TFT is not connected:
-// 33, 34, 37
-// two more when there is no 32768 Hz crystal:
-// 15, 16
-// One more when SX1262 (HPD16A) is the only radio option:
-// 47
 
 extern WebServer server;
 
