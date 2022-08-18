@@ -323,6 +323,84 @@ typedef struct stm32_backup_struct {
 
 //#define USE_TIME_SLOTS
 
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+
+#define Serial_GNSS_In        Serial2
+#define Serial_GNSS_Out       Serial_GNSS_In
+#define UATSerial             Serial
+
+#define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
+#define VREFINT               1200 /* TBD */
+
+#define SOC_GPIO_PIN_CONS_RX  PA10
+#define SOC_GPIO_PIN_CONS_TX  PA9
+
+#define SOC_GPIO_PIN_GNSS_RX  PA3
+#define SOC_GPIO_PIN_GNSS_TX  PA2
+
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+
+/* SPI */
+#define SOC_GPIO_PIN_MOSI     PA7
+#define SOC_GPIO_PIN_MISO     PA6
+#define SOC_GPIO_PIN_SCK      PA5
+#define SOC_GPIO_PIN_SS       PA4
+
+/* NRF905 */
+#define SOC_GPIO_PIN_TXE      PB4
+#define SOC_GPIO_PIN_CE       PB3
+#define SOC_GPIO_PIN_PWR      PB5
+
+/* SX1262 */
+#define SOC_GPIO_PIN_RST      PB5
+#define SOC_GPIO_PIN_BUSY     PB4
+#define SOC_GPIO_PIN_DIO1     PB3
+
+/* RF antenna switch */
+#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
+
+/* I2C */
+#define SOC_GPIO_PIN_SDA      PB7
+#define SOC_GPIO_PIN_SCL      PB6
+
+/* button */
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+
+#define EXCLUDE_WIFI
+#define EXCLUDE_CC13XX
+#define EXCLUDE_TEST_MODE
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+
+/* Component                         Cost */
+/* -------------------------------------- */
+/* USB Serial */                 //  + 10 kb
+#define USE_OLED                 //  +3.5 kb
+//#define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_049
+#define USE_NMEA_CFG             //  +2.5 kb
+#define EXCLUDE_BMP180           //  -  1 kb
+//#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_NRF905           //  -  2 kb
+#define EXCLUDE_EGM96            //  - 16 kb
+#define EXCLUDE_LED_RING         //  -    kb
+#define EXCLUDE_SOUND
+#define EXCLUDE_LK8EX1
+#define EXCLUDE_IMU
+
+#define USE_BASICMAC             //  +  7 kb
+#define EXCLUDE_SX1276           //  -  3 kb
+
 #else
 #error "This hardware platform is not supported!"
 #endif

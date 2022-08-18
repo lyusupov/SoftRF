@@ -45,7 +45,10 @@
 #define XPOWERS_ATTR_NOT_IMPLEMENTED    __attribute__((error("Not implemented")))
 #define IS_BIT_SET(val,mask)            (((val)&(mask)) == (mask))
 
-
+#if !defined(ARDUINO)
+#define log_e(...)
+#define log_i(...)
+#endif
 
 template <class chipType>
 class XPowersCommon
@@ -53,6 +56,7 @@ class XPowersCommon
     typedef int (*iic_fptr_t)(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 
 public:
+#if defined(ARDUINO)
     bool begin(void)
     {
         Wire.begin();
@@ -68,7 +72,7 @@ public:
         address = addr;
         return thisChip().initImpl();
     }
-
+#endif
     bool begin(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
     {
         thisReadRegCallback = readRegCallback;
@@ -81,8 +85,12 @@ public:
     {
         uint8_t val = 0;
         if (thisReadRegCallback) {
-            return thisReadRegCallback(address, reg, &val, 1);
+            if (thisReadRegCallback(address, reg, &val, 1) != 0) {
+                return 0;
+            }
+            return val;
         }
+#if defined(ARDUINO)
         if (wire) {
             wire->beginTransmission(address);
             wire->write(reg);
@@ -92,6 +100,7 @@ public:
             wire->requestFrom(address, 1U);
             return wire->read();
         }
+#endif
         return -1;
     }
 
@@ -100,12 +109,14 @@ public:
         if (thisWriteRegCallback) {
             return thisWriteRegCallback(address, reg, &val, 1);
         }
+#if defined(ARDUINO)
         if (wire) {
             wire->beginTransmission(address);
             wire->write(reg);
             wire->write(val);
             return (wire->endTransmission() == 0) ? 0 : -1;
         }
+#endif
         return -1;
     }
 
@@ -114,6 +125,7 @@ public:
         if (thisReadRegCallback) {
             return thisReadRegCallback(address, reg, buf, lenght);
         }
+#if defined(ARDUINO)
         if (wire) {
             wire->beginTransmission(address);
             wire->write(reg);
@@ -123,6 +135,7 @@ public:
             wire->requestFrom(address, lenght);
             return wire->readBytes(buf, lenght) == lenght ? 0 : -1;
         }
+#endif
         return -1;
     }
 
@@ -131,12 +144,14 @@ public:
         if (thisWriteRegCallback) {
             return thisWriteRegCallback(address, reg, buf, lenght);
         }
+#if defined(ARDUINO)
         if (wire) {
             wire->beginTransmission(address);
             wire->write(reg);
             wire->write(buf, lenght);
             return (wire->endTransmission() == 0) ? 0 : -1;
         }
+#endif
         return -1;
     }
 
@@ -213,8 +228,10 @@ protected:
     }
 
 protected:
-    uint8_t     address              = 0xFF;
+#if defined(ARDUINO)
     TwoWire     *wire                = NULL;
+#endif
+    uint8_t     address              = 0xFF;
     iic_fptr_t  thisReadRegCallback  = NULL;
     iic_fptr_t  thisWriteRegCallback = NULL;
 };

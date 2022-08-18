@@ -74,6 +74,11 @@ ICM_20948_I2C imu;
 HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+
+HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+
 #else
 #error "This hardware platform is not supported!"
 #endif
@@ -148,10 +153,12 @@ static void STM32_setup()
         // This reset is induced by calling the ARM CMSIS `NVIC_SystemReset()` function!
         reset_info.reason = REASON_SOFT_RESTART; // "SOFTWARE_RESET"
     }
+#if !defined(ARDUINO_GENERIC_WLE5CCUX)
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
     {
         reset_info.reason = REASON_DEFAULT_RST; // "POWER-ON_RESET (POR) / POWER-DOWN_RESET (PDR)"
     }
+#endif /* ARDUINO_GENERIC_WLE5CCUX */
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
     {
         reset_info.reason = REASON_EXT_SYS_RST; // "EXTERNAL_RESET_PIN_RESET"
@@ -237,6 +244,11 @@ static void STM32_setup()
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
     stm32_board = STM32_BLUE_PILL;
+
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+
+    /* TBD */
+
 #else
 #error "This hardware platform is not supported!"
 #endif

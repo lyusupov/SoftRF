@@ -281,7 +281,7 @@ extern Adafruit_NeoPixel strip;
 #endif
 #define LV_VER_RES                      (240) //vertical
 
-/* ESP32-S3 section 1 */
+/* ESP32-S3 section 1 (core) */
 #define SOC_GPIO_PIN_S3_CONS_RX         44
 #define SOC_GPIO_PIN_S3_CONS_TX         43
 

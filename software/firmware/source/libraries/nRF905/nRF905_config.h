@@ -129,9 +129,17 @@
 #define TX_EN     PB4  // TX / RX mode pin
 #define CS_N      PA4  // SPI slave select pin
 
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+
+/* TBD */
+#define TRX_EN    PB3  // Enable/standby pin
+#define PWR_MODE  PB5  // Power mode pin
+#define TX_EN     PB4  // TX / RX mode pin
+#define CS_N      PA4  // SPI slave select pin
+
 #else
 #error "This hardware platform is not supported!"
-#endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103CB */
+#endif /* ARDUINO_NUCLEO_L073RZ & ARDUINO_BLUEPILL_F103CB & ARDUINO_GENERIC_WLE5CCUX */
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5
