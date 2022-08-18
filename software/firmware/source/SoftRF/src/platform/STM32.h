@@ -337,10 +337,9 @@ typedef struct stm32_backup_struct {
 
 #define SOC_GPIO_PIN_GNSS_RX  PA3
 #define SOC_GPIO_PIN_GNSS_TX  PA2
+#define SOC_GPIO_PIN_GNSS_PPS PA1
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
-
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
@@ -357,9 +356,9 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_PWR      PB5
 
 /* SX1262 */
-#define SOC_GPIO_PIN_RST      PB5
-#define SOC_GPIO_PIN_BUSY     PB4
-#define SOC_GPIO_PIN_DIO1     PB3
+#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
@@ -383,7 +382,6 @@ typedef struct stm32_backup_struct {
 
 /* Component                         Cost */
 /* -------------------------------------- */
-/* USB Serial */                 //  + 10 kb
 #define USE_OLED                 //  +3.5 kb
 //#define EXCLUDE_OLED_BARO_PAGE
 #define EXCLUDE_OLED_049
