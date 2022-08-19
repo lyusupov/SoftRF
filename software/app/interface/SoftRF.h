@@ -60,7 +60,7 @@
 
   Version:        1
   Mode:           Normal, UAV
-  Protocol:       Legacy, OGNTP, P3I, FANET
+  Protocol:       Legacy, OGNTP, P3I, 1090ES, UAT, FANET
   Band:           EU, US/CA, AU, NZ, RU, CN, UK, IN
   Aircraft:       Glider, Towplane, Powered, Helicopter, UAV, Hangglider,
                   Paraglider, Balloon, Static
@@ -446,5 +446,106 @@ enum
 	SKYVIEW_ROTATE_180,
 	SKYVIEW_ROTATE_270
 };
+
+/* ------------------------------------------------------------------------- */
+
+/*
+ * PART 3. SoftRF 'security' message.
+ */
+
+/*
+
+  APPLICABLE
+  ----------
+
+  FIRMWARE: 1.0 or higher
+  MODEL(S): Badge Edition
+            Uni Edition
+            Lego Edition
+            Prime Edition Mark II
+
+  TO RETREIVE SETTINGS
+  --------------------
+
+  Query:    "$PSRFS,?*57"
+
+  Response: "$PSRFS,<version>,<IGC key>*<checksum><CR><LF>"
+
+  TO APPLY SETTINGS
+  -----------------
+
+  Sentence: "$PSRFS,1,<IGC key>*<checksum><CR><LF>"
+
+  Response: dump of new settings followed by system restart
+
+  EXAMPLE OF NMEA SENTENCE
+  ------------------------
+
+  $PSRFS,1,00000000000000000000000000000000*75
+
+
+  LIST OF SETTINGS AVAILABLE
+  --------------------------
+
+  Version:        1
+  IGC key:        128-bit HEX integer
+
+
+  RECOMMENDED DEFAULT SETTINGS
+  ----------------------------
+
+  IGC key:        00000000000000000000000000000000
+
+  OTHER INFORMATION
+  -----------------
+
+  https://github.com/lyusupov/SoftRF/wiki/Dongle-settings
+  https://github.com/lyusupov/SoftRF/wiki/Settings
+
+ */
+
+/* ------------------------------------------------------------------------- */
+
+/*
+ * PART 4. SoftRF 'heartbeat' message.
+ */
+
+/*
+
+  Sentence: "$PSRFH,
+                    <device ID>,<protocol>,<RX packets>,<TX packets>,
+                    <battery voltage>*<checksum><CR><LF>"
+
+  APPLICABLE
+  ----------
+
+  FIRMWARE: 1.1 or higher
+  MODEL(S): Dongle Edition
+            Uni Edition
+            Mini Edition
+            Academy Edition
+            Lego Edition
+            ES Edition
+
+  DESCRIPTION
+  -----------
+
+  Device ID:       24-bit HEX integer unique ident of SoftRF device
+  Protocol:        integer (Legacy, OGNTP, P3I, 1090ES, UAT, FANET)
+  RX packets:      integer
+  TX packets:      integer
+  Battery voltage: in centi-Volt units (0.01 V)
+
+  EXAMPLE OF NMEA SENTENCE
+  ------------------------
+
+  $PSRFH,AABBCC,1,0,0,370*76
+
+  INTERVAL
+  --------
+
+  1 second
+
+ */
 
 #endif /* SOFTRF_H */
