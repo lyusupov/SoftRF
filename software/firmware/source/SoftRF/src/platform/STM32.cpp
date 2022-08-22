@@ -53,9 +53,12 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
+#if defined(USBD_USE_CDC)
+#if !defined(DISABLE_GENERIC_SERIALUSB) || \
+    (defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION > 0x01090000))
 HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
 #endif
+#endif /* USBD_USE_CDC */
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
 
@@ -248,6 +251,7 @@ static void STM32_setup()
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 
     /* TBD */
+    stm32_board = STM32_GEN_WLE5CC;
 
 #else
 #error "This hardware platform is not supported!"

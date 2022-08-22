@@ -60,8 +60,8 @@
 
   Version:        1
   Mode:           Normal, UAV
-  Protocol:       Legacy, OGNTP, P3I, 1090ES, UAT, FANET
-  Band:           EU, US/CA, AU, NZ, RU, CN, UK, IN
+  Protocol:       Legacy, OGNTP, P3I, FANET, UAT, 1090ES
+  Band:           EU, US/CA, AU, NZ, RU, CN, UK, IN, IL, KR
   Aircraft:       Glider, Towplane, Powered, Helicopter, UAV, Hangglider,
                   Paraglider, Balloon, Static
   Alarm:          None, Distance, Vector
@@ -458,7 +458,7 @@ enum
   APPLICABLE
   ----------
 
-  FIRMWARE: 1.0 or higher
+  FIRMWARE: 1.1 or newer
   MODEL(S): Badge Edition
             Uni Edition
             Lego Edition
@@ -483,13 +483,11 @@ enum
 
   $PSRFS,1,00000000000000000000000000000000*75
 
-
   LIST OF SETTINGS AVAILABLE
   --------------------------
 
   Version:        1
   IGC key:        128-bit HEX integer
-
 
   RECOMMENDED DEFAULT SETTINGS
   ----------------------------
@@ -519,7 +517,7 @@ enum
   APPLICABLE
   ----------
 
-  FIRMWARE: 1.1 or higher
+  FIRMWARE: 1.1 or newer
   MODEL(S): Dongle Edition
             Uni Edition
             Mini Edition
@@ -531,7 +529,7 @@ enum
   -----------
 
   Device ID:       24-bit HEX integer unique ident of SoftRF device
-  Protocol:        integer (Legacy, OGNTP, P3I, 1090ES, UAT, FANET)
+  Protocol:        integer (Legacy, OGNTP, P3I, FANET, UAT, 1090ES)
   RX packets:      integer
   TX packets:      integer
   Battery voltage: in centi-Volt units (0.01 V)
