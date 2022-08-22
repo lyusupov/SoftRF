@@ -1,42 +1,20 @@
-/**
-  ******************************************************************************
-  * @file    Epoch.ino
-  * @author  WI6LABS
-  * @version V1.0.0
-  * @date    12-December-2017
-  * @brief   RTC epoch example
-  *
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
+/*
+  Epoch
+
+  This sketch shows how to manage the RTC using Epoch time
+
+  Creation 12 Dec 2017
+  by Wi6Labs
+  Modified 03 Jul 2020
+  by Frederic Pillon for STMicroelectronics
+
+  This example code is in the public domain.
+
+  https://github.com/stm32duino/STM32RTC
+*/
 
 #include <STM32RTC.h>
+#include <time.h>
 
 /* Get the rtc object */
 STM32RTC& rtc = STM32RTC::getInstance();
@@ -54,33 +32,33 @@ void setup() {
 }
 
 void loop() {
+  uint32_t ss = rtc.getSubSeconds();
+  uint32_t epoch = rtc.getEpoch();
+  time_t rawtime = epoch;
+  struct tm ts;
+  char buf[80];
+
   Serial.print("Unix time = ");
-  Serial.println(rtc.getEpoch());
+  Serial.println(epoch);
 
   Serial.print("Seconds since Jan 1 2000 = ");
   Serial.println(rtc.getY2kEpoch());
 
-  // Print date...
-  Serial.print(rtc.getDay());
-  Serial.print("/");
-  Serial.print(rtc.getMonth());
-  Serial.print("/");
-  Serial.print(rtc.getYear());
-  Serial.print("\t");
-
-  // ...and time
-  print2digits(rtc.getHours());
-  Serial.print(":");
-  print2digits(rtc.getMinutes());
-  Serial.print(":");
-  print2digits(rtc.getSeconds());
-
+  // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
+  ts = *localtime(&rawtime);
+  strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S", &ts);
+  Serial.print(buf);
+  Serial.print(".");
+  print2digits(ss);
   Serial.println();
 
-  delay(1000);
+  delay(678);
 }
 
-void print2digits(int number) {
+void print2digits(uint32_t number) {
+  if (number < 100) {
+    Serial.print("0");
+  }
   if (number < 10) {
     Serial.print("0");
   }

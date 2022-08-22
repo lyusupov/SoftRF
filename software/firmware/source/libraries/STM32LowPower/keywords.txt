@@ -21,6 +21,11 @@ shutdown	KEYWORD2
 attachInterruptWakeup	KEYWORD2
 enableWakeupFrom	KEYWORD2
 
+IDLE_MODE	LITERAL1
+SLEEP_MODE	LITERAL1
+DEEP_SLEEP_MODE	LITERAL1
+SHUTDOWN_MODE	LITERAL1
+
 #######################################
 # Constants (LITERAL1)
 #######################################

@@ -1,15 +1,13 @@
 /**
 ******************************************************************************
 * @file    STM32LowPower.cpp
-* @author  WI6LABS
-* @version V1.0.0
-* @date    11-December-2017
+* @author  Frederic Pillon
 * @brief   Provides a STM32 Low Power interface with Arduino
 *
 ******************************************************************************
 * @attention
 *
-* <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+* <h2><center>&copy; COPYRIGHT(c) 2020 STMicroelectronics</center></h2>
 *
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
@@ -62,13 +60,13 @@ void STM32LowPower::begin(void)
 /**
   * @brief  Enable the idle low power mode (STM32 sleep). Exit this mode on
   *         interrupt or in n milliseconds.
-  * @param  millis: optional delay before leave the idle mode (default: 0).
+  * @param  ms: optional delay before leave the idle mode (default: 0).
   * @retval None
   */
-void STM32LowPower::idle(uint32_t millis)
+void STM32LowPower::idle(uint32_t ms)
 {
-  if((millis > 0) || _rtc_wakeup) {
-    programRtcWakeUp(millis, IDLE_MODE);
+  if ((ms != 0) || _rtc_wakeup) {
+    programRtcWakeUp(ms, IDLE_MODE);
   }
   LowPower_sleep(PWR_MAINREGULATOR_ON);
 }
@@ -76,13 +74,13 @@ void STM32LowPower::idle(uint32_t millis)
 /**
   * @brief  Enable the sleep low power mode (STM32 sleep). Exit this mode on
   *         interrupt or in n milliseconds.
-  * @param  millis: optional delay before leave the sleep mode (default: 0).
+  * @param  ms: optional delay before leave the sleep mode (default: 0).
   * @retval None
   */
-void STM32LowPower::sleep(uint32_t millis)
+void STM32LowPower::sleep(uint32_t ms)
 {
-  if((millis > 0) || _rtc_wakeup) {
-    programRtcWakeUp(millis, SLEEP_MODE);
+  if ((ms != 0) || _rtc_wakeup) {
+    programRtcWakeUp(ms, SLEEP_MODE);
   }
   LowPower_sleep(PWR_LOWPOWERREGULATOR_ON);
 }
@@ -90,13 +88,13 @@ void STM32LowPower::sleep(uint32_t millis)
 /**
   * @brief  Enable the deepsleep low power mode (STM32 stop). Exit this mode on
   *         interrupt or in n milliseconds.
-  * @param  millis: optional delay before leave the deepSleep mode (default: 0).
+  * @param  ms: optional delay before leave the deepSleep mode (default: 0).
   * @retval None
   */
-void STM32LowPower::deepSleep(uint32_t millis)
+void STM32LowPower::deepSleep(uint32_t ms)
 {
-  if((millis > 0) || _rtc_wakeup) {
-    programRtcWakeUp(millis, DEEP_SLEEP_MODE);
+  if ((ms != 0) || _rtc_wakeup) {
+    programRtcWakeUp(ms, DEEP_SLEEP_MODE);
   }
   LowPower_stop(_serial);
 }
@@ -104,13 +102,13 @@ void STM32LowPower::deepSleep(uint32_t millis)
 /**
   * @brief  Enable the shutdown low power mode (STM32 shutdown or standby mode).
   *          Exit this mode on interrupt or in n milliseconds.
-  * @param  millis: optional delay before leave the shutdown mode (default: 0).
+  * @param  ms: optional delay before leave the shutdown mode (default: 0).
   * @retval None
   */
-void STM32LowPower::shutdown(uint32_t millis)
+void STM32LowPower::shutdown(uint32_t ms)
 {
-  if((millis > 0) || _rtc_wakeup) {
-    programRtcWakeUp(millis, SHUTDOWN_MODE);
+  if ((ms != 0) || _rtc_wakeup) {
+    programRtcWakeUp(ms, SHUTDOWN_MODE);
   }
   LowPower_shutdown();
 }
@@ -121,15 +119,19 @@ void STM32LowPower::shutdown(uint32_t millis)
   * @param  pin:  pin number
   * @param  callback: pointer to callback function.
   * @param  mode: pin interrupt mode (HIGH, LOW, RISING, FALLING or CHANGE)
+  * @param  LowPowerMode: Low power mode which will be used
+  *         (IDLE_MODE, SLEEP_MODE, DEEP_SLEEP_MODE, SHUTDOWN_MODE)
+  *         In case of SHUTDOWN_MODE only, Wakeup pin capability is activated
   * @retval None
   */
-void STM32LowPower::attachInterruptWakeup(uint32_t pin, voidFuncPtrVoid callback, uint32_t mode)
+void STM32LowPower::attachInterruptWakeup(uint32_t pin, voidFuncPtrVoid callback, uint32_t mode, LP_Mode LowPowerMode)
 {
-  // All GPIO for idle (smt32 sleep) and sleep (stm32 stop)
   attachInterrupt(pin, callback, mode);
 
-  // If Gpio is a Wake up pin activate it for deepSleep (standby stm32) and shutdown
-  LowPower_EnableWakeUpPin(pin, mode);
+  if (LowPowerMode == SHUTDOWN_MODE) {
+    // If Gpio is a Wake up pin activate it for shutdown (standby or shutdown stm32)
+    LowPower_EnableWakeUpPin(pin, mode);
+  }
 }
 
 /**
@@ -141,7 +143,7 @@ void STM32LowPower::attachInterruptWakeup(uint32_t pin, voidFuncPtrVoid callback
   */
 void STM32LowPower::enableWakeupFrom(HardwareSerial *serial, voidFuncPtrVoid callback)
 {
-  if(serial != NULL) {
+  if (serial != NULL) {
     _serial = &(serial->_serial);
     // Reconfigure serial for low power mode (using HSI as clock source)
     serial->configForLowPower();
@@ -159,7 +161,7 @@ void STM32LowPower::enableWakeupFrom(HardwareSerial *serial, voidFuncPtrVoid cal
   */
 void STM32LowPower::enableWakeupFrom(STM32RTC *rtc, voidFuncPtr callback, void *data)
 {
-  if(rtc == NULL) {
+  if (rtc == NULL) {
     rtc = &(STM32RTC::getInstance());
   }
   _rtc_wakeup = true;
@@ -168,18 +170,18 @@ void STM32LowPower::enableWakeupFrom(STM32RTC *rtc, voidFuncPtr callback, void *
 
 /**
   * @brief  Configure the RTC alarm
-  * @param  millis: time of the alarm in milliseconds. At least 1000ms.
+  * @param  ms: time of the alarm in milliseconds.
   * @param  lp_mode: low power mode targeted.
   * @retval None
   */
-void STM32LowPower::programRtcWakeUp(uint32_t millis, LP_Mode lp_mode)
+void STM32LowPower::programRtcWakeUp(uint32_t ms, LP_Mode lp_mode)
 {
-  int epoc;
+  uint32_t epoc;
   uint32_t sec;
-  STM32RTC& rtc = STM32RTC::getInstance();
+  STM32RTC &rtc = STM32RTC::getInstance();
   STM32RTC::Source_Clock clkSrc = rtc.getClockSource();
 
-  switch(lp_mode) {
+  switch (lp_mode) {
     case IDLE_MODE:
     case SLEEP_MODE:
       break;
@@ -189,8 +191,8 @@ void STM32LowPower::programRtcWakeUp(uint32_t millis, LP_Mode lp_mode)
       break;
     default:
     case SHUTDOWN_MODE:
-#ifdef STM32L4xx
-      // For shutdown mode LSE have to be used (STM32L4 series only)
+#if defined(PWR_CR1_LPMS)
+      // For shutdown mode LSE have to be used
       clkSrc = STM32RTC::LSE_CLOCK;
 #else
       // LSE or LSI
@@ -200,15 +202,31 @@ void STM32LowPower::programRtcWakeUp(uint32_t millis, LP_Mode lp_mode)
   }
   rtc.configForLowPower(clkSrc);
 
-  if(millis > 0) {
+  if (ms != 0) {
     // Convert millisecond to second
-    sec = millis / 1000;
-    // Minimum is 1 second
-    if (sec == 0){
-      sec = 1;
+    sec = ms / 1000;
+
+#if defined(STM32_RTC_VERSION) && (STM32_RTC_VERSION  >= 0x01010000)
+    uint32_t epoc_ms;
+    ms = ms % 1000;
+    epoc = rtc.getEpoch(&epoc_ms);
+
+    //Update epoch_ms - might need to add a second to epoch
+    epoc_ms += ms;
+    if (epoc_ms >= 1000) {
+      sec ++;
+      epoc_ms -= 1000;
     }
 
+    rtc.setAlarmEpoch(epoc + sec, STM32RTC::MATCH_DHHMMSS, epoc_ms);
+#else
+    // Minimum is 1 second
+    if (sec == 0) {
+      sec = 1;
+    }
     epoc = rtc.getEpoch();
-    rtc.setAlarmEpoch( epoc + sec );
+
+    rtc.setAlarmEpoch(epoc + sec);
+#endif
   }
 }
