@@ -19,8 +19,10 @@
 #ifndef EPDHELPER_H
 #define EPDHELPER_H
 
+#if defined(USE_EPAPER)
 #define ENABLE_GxEPD2_GFX       1
 #include <GxEPD2_BW.h>
+#endif /* USE_EPAPER */
 
 #define EPD_EXPIRATION_TIME     5 /* seconds */
 
@@ -219,10 +221,6 @@ void EPD_Up();
 void EPD_Down();
 void EPD_Message(const char *, const char *);
 
-#if defined(USE_EPAPER)
-EPD_Task_t EPD_Task(void *);
-#endif /* USE_EPAPER */
-
 void EPD_status_setup();
 void EPD_status_loop();
 void EPD_status_next();
@@ -253,7 +251,11 @@ void EPD_time_loop();
 void EPD_time_next();
 void EPD_time_prev();
 
+#if defined(USE_EPAPER)
+EPD_Task_t EPD_Task(void *);
 extern GxEPD2_GFX *display;
+#endif /* USE_EPAPER */
+
 extern unsigned long EPDTimeMarker;
 extern bool EPD_vmode_updated;
 extern uint16_t EPD_pages_mask;
