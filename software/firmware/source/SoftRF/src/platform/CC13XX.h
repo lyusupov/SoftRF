@@ -202,6 +202,7 @@ extern SCSerial                 scSerial;
 
 #elif defined(ENERGIA_ARCH_CC13X2)
 
+#if defined(BOARD_CC1352R1_LAUNCHXL) || defined(BOARD_CC1312R1_LAUNCHXL)
 /*
  *  UART pins
  *
@@ -256,6 +257,10 @@ extern SCSerial                 scSerial;
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
+
+#else
+#error "This board is not supported!"
+#endif /* BOARD_CC1352R1_LAUNCHXL || BOARD_CC1312R1_LAUNCHXL */
 
 #else
 #error "This hardware platform is not supported!"
