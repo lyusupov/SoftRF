@@ -20,9 +20,9 @@ jobs:
 
     strategy:
       matrix:
-        board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico', 'esp32:esp32:esp32s2', 'esp32:esp32:esp32s3']
+        board: ['esp8266:esp8266:nodemcuv2', 'esp32:esp32:esp32:PartitionScheme=min_spiffs', 'esp32:esp32:esp32s2', 'esp32:esp32:esp32s3', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'STM32:stm32:GenWL', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'rp2040:rp2040:rpipico']
 
-        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M3M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico']
+        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M1M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico']
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
@@ -83,32 +83,83 @@ jobs:
             fi
           fi
           if [[ "$BOARD" =~ "esp8266:esp8266:" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://github.com/esp8266/Arduino/releases/download/2.7.0/package_esp8266com_index.json" --save-prefs ;
-            arduino --install-boards esp8266:esp8266 ;
-            arduino --board $BOARD --save-prefs ;
-            arduino --pref "compiler.warning_level=all" --save-prefs ;
-            arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt" --save-prefs ;
+            arduino --pref "boardsmanager.additional.urls=https://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs ;
+            arduino --install-boards esp8266:esp8266:2.7.0 ;
+            arduino --board $BOARD                                     --save-prefs ;
+            arduino --pref "compiler.warning_level=all"                --save-prefs ;
+            arduino --pref "custom_LwIPVariant=nodemcuv2_Prebuilt"     --save-prefs ;
+            arduino --pref "custom_Debug=nodemcuv2_Disabled"           --save-prefs ;
+            arduino --pref "custom_dbg=nodemcuv2_Disabled"             --save-prefs ;
+            arduino --pref "custom_eesz=nodemcuv2_4M1M"                --save-prefs ;
+            arduino --pref "custom_xtal=nodemcuv2_80"                  --save-prefs ;
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/espressif/arduino-esp32/releases/download/1.0.5/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32 ;
+            arduino --install-boards esp32:esp32:1.0.5 ;
             arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_CPUFreq=esp32_80"                   --save-prefs ;
+            arduino --pref "custom_DebugLevel=esp32_none"              --save-prefs ;
+            arduino --pref "custom_FlashFreq=esp32_80"                 --save-prefs ;
+            arduino --pref "custom_FlashMode=esp32_dio"                --save-prefs ;
+            arduino --pref "custom_FlashSize=esp32_4M"                 --save-prefs ;
+            arduino --pref "custom_PSRAM=esp32_enabled"                --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32_min_spiffs"   --save-prefs ;
+            arduino --pref "custom_UploadSpeed=esp32_921600"           --save-prefs ;
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/1.0.5/tools/sdk/lib ;
             rm -f libbt.a ;
             cp $GITHUB_WORKSPACE/software/firmware/binaries/ESP32/misc/libbt.a . ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
+            arduino --install-boards esp32:esp32:2.0.4 ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
+            arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
+            arduino --pref "custom_FlashFreq=esp32s2_80"               --save-prefs ;
+            arduino --pref "custom_FlashMode=esp32s2_dio"              --save-prefs ;
+            arduino --pref "custom_FlashSize=esp32s2_4M"               --save-prefs ;
+            arduino --pref "custom_PSRAM=esp32s2_enabled"              --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32s2_min_spiffs" --save-prefs ;
+            arduino --pref "custom_UploadSpeed=esp32s2_921600"         --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
+            arduino --install-boards esp32:esp32:2.0.4 ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_CPUFreq=esp32s3_80"                 --save-prefs ;
+            arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
+            arduino --pref "custom_FlashFreq=esp32s3_80"               --save-prefs ;
+            arduino --pref "custom_FlashMode=esp32s3_dio"              --save-prefs ;
+            arduino --pref "custom_FlashSize=esp32s3_4M"               --save-prefs ;
+            arduino --pref "custom_PSRAM=esp32s3_enabled"              --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32s3_min_spiffs" --save-prefs ;
+            arduino --pref "custom_UploadSpeed=esp32s3_921600"         --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
           if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/07bcfb337e4c9abe83a029b39e33ddff5a6df2ef/STM32/package_stm_index.json" --save-prefs ;
-            arduino --install-boards STM32:stm32 ;
+            if [[ "$BOARD" =~ "STM32:stm32:GenWL" ]]; then
+              arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json" --save-prefs ;
+              arduino --install-boards STM32:stm32:2.3.0 ;
+            else
+              arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/07bcfb337e4c9abe83a029b39e33ddff5a6df2ef/STM32/package_stm_index.json" --save-prefs ;
+              arduino --install-boards STM32:stm32:1.9.0 ;
+            fi ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "STM32:stm32:Nucleo_64" ]]; then
-              arduino --pref "custom_pnum=Nucleo_64_NUCLEO_L073RZ"  --save-prefs ;
-              arduino --pref "custom_opt=Nucleo_64_osstd"           --save-prefs ;
-              arduino --pref "custom_rtlib=Nucleo_64_nano"          --save-prefs ;
-              arduino --pref "custom_usb=Nucleo_64_CDCgen"          --save-prefs ;
-              arduino --pref "custom_xserial=Nucleo_64_none"        --save-prefs ;
-              arduino --pref "custom_xusb=Nucleo_64_FS"             --save-prefs ;
+              arduino --pref "custom_pnum=Nucleo_64_NUCLEO_L073RZ" --save-prefs ;
+              arduino --pref "custom_opt=Nucleo_64_osstd"          --save-prefs ;
+              arduino --pref "custom_rtlib=Nucleo_64_nano"         --save-prefs ;
+              arduino --pref "custom_usb=Nucleo_64_CDCgen"         --save-prefs ;
+              arduino --pref "custom_xserial=Nucleo_64_none"       --save-prefs ;
+              arduino --pref "custom_xusb=Nucleo_64_FS"            --save-prefs ;
+            fi ;
+            if [[ "$BOARD" =~ "STM32:stm32:GenWL" ]]; then
+              arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;
+              arduino --pref "custom_opt=GenWL_osstd"              --save-prefs ;
+              arduino --pref "custom_rtlib=GenWL_nano"             --save-prefs ;
+              arduino --pref "custom_xserial=GenWL_generic"        --save-prefs ;
             fi ;
             if [[ "$BOARD" =~ "STM32:stm32:GenF1" ]]; then
               arduino --pref "custom_pnum=GenF1_BLUEPILL_F103CB"   --save-prefs ;
@@ -164,8 +215,7 @@ jobs:
             sed -i 's\compiler.sdk.path={runtime.platform.path}/cores/asr650x\compiler.sdk.path={runtime.platform.path}/cores/{build.core}\g' platform.txt ;
             sed -i 's\#define #define _EEPROM_SIZE      0xC00\#define _EEPROM_SIZE              0xC00\g' libraries/EEPROM/EEPROM.cpp;
             sed -i 's\_baddr(CY_SFLASH_USERBASE)\_baddr(_EEPROM_BASE)\g' libraries/EEPROM/EEPROM.cpp ;
-            sed -i '26 a #define SPI_HAS_TRANSACTION 1' cores/asr6601/peripheral/SPI.h
-
+            sed -i '26 a #define SPI_HAS_TRANSACTION 1' cores/asr6601/peripheral/SPI.h ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
@@ -191,36 +241,8 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:2.3.3 ;
+            arduino --install-boards rp2040:rp2040:2.4.0 ;
             arduino --board $BOARD --save-prefs ;
-            cd $GITHUB_WORKSPACE ;
-          fi
-          if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.4 ;
-            arduino --board $BOARD --save-prefs ;
-            arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
-            arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
-            arduino --pref "custom_FlashFreq=esp32s2_80"               --save-prefs ;
-            arduino --pref "custom_FlashMode=esp32s2_dio"              --save-prefs ;
-            arduino --pref "custom_FlashSize=esp32s2_4M"               --save-prefs ;
-            arduino --pref "custom_PSRAM=esp32s2_enabled"              --save-prefs ;
-            arduino --pref "custom_PartitionScheme=esp32s2_min_spiffs" --save-prefs ;
-            arduino --pref "custom_UploadSpeed=esp32s2_921600"         --save-prefs ;
-            cd $GITHUB_WORKSPACE ;
-          fi
-          if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.4 ;
-            arduino --board $BOARD --save-prefs ;
-            arduino --pref "custom_CPUFreq=esp32s3_80"                 --save-prefs ;
-            arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
-            arduino --pref "custom_FlashFreq=esp32s3_80"               --save-prefs ;
-            arduino --pref "custom_FlashMode=esp32s3_dio"              --save-prefs ;
-            arduino --pref "custom_FlashSize=esp32s3_4M"               --save-prefs ;
-            arduino --pref "custom_PSRAM=esp32s3_enabled"              --save-prefs ;
-            arduino --pref "custom_PartitionScheme=esp32s3_min_spiffs" --save-prefs ;
-            arduino --pref "custom_UploadSpeed=esp32s3_921600"         --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
 
@@ -276,4 +298,3 @@ jobs:
           if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-
