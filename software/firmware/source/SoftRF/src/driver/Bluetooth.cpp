@@ -206,6 +206,7 @@ static void ESP32_Bluetooth_setup()
 
       const char *Model         = hw_info.model == SOFTRF_MODEL_STANDALONE ? "Standalone Edition" :
                                   hw_info.model == SOFTRF_MODEL_PRIME_MK2  ? "Prime Mark II"      :
+                                  hw_info.model == SOFTRF_MODEL_PRIME_MK3  ? "Prime Mark III"     :
                                   "Unknown";
       char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());

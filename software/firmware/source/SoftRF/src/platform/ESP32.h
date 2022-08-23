@@ -450,7 +450,11 @@ struct rst_info {
 #define PMK2_SLEEP_MODE 3      //  60 uA : axp.shutdown()
 
 #if defined(USE_OLED)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#else
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_ESP32_H */

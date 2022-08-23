@@ -632,6 +632,7 @@ static byte ublox_version() {
 static gnss_id_t ublox_probe()
 {
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_RASPBERRY ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_ES        ||
@@ -1117,6 +1118,7 @@ byte GNSS_setup() {
   SoC->swSer_begin(SERIAL_IN_BR);
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
       hw_info.model == SOFTRF_MODEL_LEGO)
@@ -1136,7 +1138,8 @@ byte GNSS_setup() {
   if (gnss_id == GNSS_MODULE_NONE) {
 
 #if !defined(EXCLUDE_GNSS_UBLOX) && defined(ENABLE_UBLOX_RFS)
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+        hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
       byte version = ublox_version();
 
