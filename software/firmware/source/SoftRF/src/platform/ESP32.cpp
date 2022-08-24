@@ -561,6 +561,7 @@ static void ESP32_post_init()
   switch (settings->nmea_out)
   {
     case NMEA_UART       :  Serial.println(F("UART"));      break;
+    case NMEA_USB        :  Serial.println(F("USB CDC"));   break;
     case NMEA_UDP        :  Serial.println(F("UDP"));       break;
     case NMEA_TCP        :  Serial.println(F("TCP"));       break;
     case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth")); break;
@@ -572,6 +573,7 @@ static void ESP32_post_init()
   switch (settings->gdl90)
   {
     case GDL90_UART      :  Serial.println(F("UART"));      break;
+    case GDL90_USB       :  Serial.println(F("USB CDC"));   break;
     case GDL90_UDP       :  Serial.println(F("UDP"));       break;
     case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
     case GDL90_OFF       :
@@ -582,6 +584,7 @@ static void ESP32_post_init()
   switch (settings->d1090)
   {
     case D1090_UART      :  Serial.println(F("UART"));      break;
+    case D1090_USB       :  Serial.println(F("USB CDC"));   break;
     case D1090_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
     case D1090_OFF       :
     default              :  Serial.println(F("NULL"));      break;

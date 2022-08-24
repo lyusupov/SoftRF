@@ -320,7 +320,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_BUTTON          0 // "strapping" pin (S)
 
 /* ESP32-S3 section 2 (reserved pins) */
-// 17,18 - I2C; 33,34,38,(47 ? - DC) - TFT/EINK; 35,36,37,39 - uSD; 2 - SX1276
+// 17,18 - I2C; 33,34,39,(47 ? - DC) - TFT/EINK; 35,36,37,38 - uSD; 2 - SX1276
 
 // TFT
 #define SOC_GPIO_PIN_S3_TFT_MOSI        35
@@ -328,7 +328,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_TFT_SCK         36
 #define SOC_GPIO_PIN_S3_TFT_SS          34
 #define SOC_GPIO_PIN_S3_TFT_DC          37
-#define SOC_GPIO_PIN_S3_TFT_RST         38
+#define SOC_GPIO_PIN_S3_TFT_RST         39
 #define SOC_GPIO_PIN_S3_TFT_BL          33
 
 // I2C
@@ -339,7 +339,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_SD_MOSI         35
 #define SOC_GPIO_PIN_S3_SD_MISO         37
 #define SOC_GPIO_PIN_S3_SD_SCK          36
-#define SOC_GPIO_PIN_S3_SD_SS           39
+#define SOC_GPIO_PIN_S3_SD_SS           38
 
 /* ESP32-S3 section 3 (spare pins) */
 // 3(S), 14, 21, 45(S), 46(S), 47, 48
@@ -347,13 +347,13 @@ extern Adafruit_NeoPixel strip;
 // battery voltage (ADC)
 #define SOC_GPIO_PIN_S3_BATTERY         3 // (S)
 
-// LEDs, active state - HIGH
-#define SOC_GPIO_PIN_S3_STATUS          39
 /* auxillary */
+// Devkit LEDs, active state - HIGH
 #define SOC_GPIO_PIN_S3_LED_RED         5
 #define SOC_GPIO_PIN_S3_LED_GREEN       6
 #define SOC_GPIO_PIN_S3_LED_BLUE        7
-#define SOC_GPIO_PIN_S3_LED4            38
+#define SOC_GPIO_PIN_S3_LED_WHITE       38
+#define SOC_GPIO_PIN_S3_LED_YELLOW      39
 
 extern WebServer server;
 
