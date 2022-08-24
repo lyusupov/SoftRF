@@ -92,6 +92,9 @@ jobs:
             arduino --pref "custom_dbg=nodemcuv2_Disabled"             --save-prefs ;
             arduino --pref "custom_eesz=nodemcuv2_4M1M"                --save-prefs ;
             arduino --pref "custom_xtal=nodemcuv2_80"                  --save-prefs ;
+            cd $HOME/.arduino15/packages/esp8266/hardware/esp8266/2.7.0 ;
+            sed -i '52 a #define isFlashInterfacePin(p) ((p) == 6 || (p) == 7 || (p) == 8 || (p) == 9 || (p) == 11)' variants/nodemcu/pins_arduino.h ;
+            cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/espressif/arduino-esp32/releases/download/1.0.5/package_esp32_index.json" --save-prefs ;
