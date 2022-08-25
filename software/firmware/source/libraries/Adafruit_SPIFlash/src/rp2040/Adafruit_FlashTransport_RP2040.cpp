@@ -44,11 +44,15 @@ extern uint8_t _FS_end;
 
 static inline void fl_lock(void) {
   noInterrupts();
+#if !defined(ARDUINO_ARCH_MBED)
   rp2040.idleOtherCore();
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static inline void fl_unlock(void) {
+#if !defined(ARDUINO_ARCH_MBED)
   rp2040.resumeOtherCore();
+#endif /* ARDUINO_ARCH_MBED */
   interrupts();
 }
 
@@ -97,7 +101,9 @@ void Adafruit_FlashTransport_RP2040::begin(void) {
   };
   uint8_t data[4];
   fl_lock();
+#if !defined(ARDUINO_ARCH_MBED)
   flash_do_cmd(cmd, data, 5);
+#endif /* ARDUINO_ARCH_MBED */
   fl_unlock();
 
   uint8_t *jedec_ids = data + 1;

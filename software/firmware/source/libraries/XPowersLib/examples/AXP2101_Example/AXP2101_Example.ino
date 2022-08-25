@@ -75,6 +75,18 @@ void setup()
     // higher than this value will turn off the PMU
     PMU.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
 
+
+    // Get the VSYS shutdown voltage
+    uint16_t vol = PMU.getVsysPowerOffThreshold();
+    Serial.printf("->  getVsysPowerOffThreshold:%u\n", vol);
+
+    // Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
+    PMU.setVsysPowerOffThreshold(2600);
+
+    vol = PMU.getVsysPowerOffThreshold();
+    Serial.printf("->  getVsysPowerOffThreshold:%u\n", vol);
+
+
     // DC1 IMAX=2A
     // 1500~3400mV,100mV/step,20steps
     PMU.setDC1Voltage(3300);

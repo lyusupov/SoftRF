@@ -114,17 +114,17 @@ void EEPROM_defaults()
     (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB))
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
-  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE   ?
+  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE     ?
                                            NMEA_BLUETOOTH :
-                                           hw_info.model == SOFTRF_MODEL_ACADEMY ?
-                                           NMEA_USB :
-                                           hw_info.model == SOFTRF_MODEL_ES      ?
+                                           hw_info.model == SOFTRF_MODEL_ES        ?
                                            NMEA_OFF :
-                                           hw_info.model == SOFTRF_MODEL_LEGO    ?
+                                           hw_info.model == SOFTRF_MODEL_ACADEMY  ||
+                                           hw_info.model == SOFTRF_MODEL_LEGO     ||
+                                           hw_info.model == SOFTRF_MODEL_PRIME_MK3 ?
                                            NMEA_USB : NMEA_UART;
 #endif
 
-  eeprom_block.field.settings.gdl90      = hw_info.model == SOFTRF_MODEL_ES      ?
+  eeprom_block.field.settings.gdl90      = hw_info.model == SOFTRF_MODEL_ES        ?
                                            GDL90_USB : GDL90_OFF;
   eeprom_block.field.settings.d1090      = D1090_OFF;
   eeprom_block.field.settings.json       = JSON_OFF;

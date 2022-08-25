@@ -187,6 +187,9 @@
 #define XPOWERS_DCDC5_VOL_MAX                    (3700)
 #define XPOWERS_DCDC5_VOL_STEPS                  (100u)
 
+#define XPOWERS_VSYS_VOL_THRESHOLD_MIN        2600
+#define XPOWERS_VSYS_VOL_THRESHOLD_MAX        3300
+#define XPOWERS_VSYS_VOL_THRESHOLD_STEPS      100
 
 // ALDO 1~4
 

@@ -757,7 +757,7 @@ public:
 
     xpower_power_off_source_t getPowerOffSource()
     {
-        int val = readRegister(XPOWERS_PWRON_STATUS);
+        int val = readRegister(XPOWERS_PWROFF_STATUS);
         if (val == -1) return XPOWER_POWEROFF_SRC_UNKONW;
         return (xpower_power_off_source_t)val;
     }
@@ -862,15 +862,29 @@ public:
 
 
     //  Vsys voltage for PWROFF threshold setting 24
-    void setVsysPowerOffThreshold(uint8_t opt)
+    //  Adjustment range 2600mV ~ 3300mV
+    bool setVsysPowerOffThreshold(uint16_t millivolt)
     {
+        if (millivolt % XPOWERS_VSYS_VOL_THRESHOLD_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_VSYS_VOL_THRESHOLD_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_VSYS_VOL_THRESHOLD_MIN) {
+            log_e("Mistake ! The minimum settable voltage of VSYS is %u mV", XPOWERS_VSYS_VOL_THRESHOLD_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_VSYS_VOL_THRESHOLD_MAX) {
+            log_e("Mistake ! The maximum settable voltage of VSYS is %u mV", XPOWERS_VSYS_VOL_THRESHOLD_MAX);
+            return false;
+        }
         uint8_t val = readRegister(XPOWERS_VOFF_SET) & 0xF8;
-        writeRegister(XPOWERS_VOFF_SET, val | (opt));
+        return 0 == writeRegister(XPOWERS_VOFF_SET,
+                                  val | (millivolt - XPOWERS_VSYS_VOL_THRESHOLD_MIN) / XPOWERS_VSYS_VOL_THRESHOLD_STEPS);
+
     }
 
-    uint8_t getVsysPowerOffThreshold(void)
+    uint16_t getVsysPowerOffThreshold(void)
     {
-        return readRegister(XPOWERS_VOFF_SET) & 0x07;
+        return (readRegister(XPOWERS_VOFF_SET) & 0x07) * XPOWERS_VSYS_VOL_THRESHOLD_STEPS + XPOWERS_VSYS_VOL_THRESHOLD_MIN;
     }
 
     //  PWROK setting and PWROFF sequence control 25.
