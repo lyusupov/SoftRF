@@ -331,7 +331,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_TFT_RST         39
 #define SOC_GPIO_PIN_S3_TFT_BL          33
 
-// I2C
+// 1st I2C bus (OLED display, air pressure sensor)
 #define SOC_GPIO_PIN_S3_SDA             17
 #define SOC_GPIO_PIN_S3_SCL             18
 

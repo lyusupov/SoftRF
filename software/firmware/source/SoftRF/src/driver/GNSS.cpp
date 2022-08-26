@@ -631,19 +631,12 @@ static byte ublox_version() {
 
 static gnss_id_t ublox_probe()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-      hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
-      hw_info.model == SOFTRF_MODEL_RASPBERRY ||
-      hw_info.model == SOFTRF_MODEL_UNI       ||
-      hw_info.model == SOFTRF_MODEL_ES        ||
-      hw_info.model == SOFTRF_MODEL_OCTAVE    ||
-      hw_info.model == SOFTRF_MODEL_LEGO      ||
-     (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 203))
-  {
-    return (gnss_id_t) ublox_version();
-  } else {
-    return GNSS_MODULE_NMEA;
-  }
+  /*
+   * ESP8266 NodeMCU and ESP32 DevKit (with NodeMCU adapter)
+   * have no any spare GPIO pin to provide GNSS Tx feedback
+   */
+  return(hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 0 ?
+         GNSS_MODULE_NMEA : (gnss_id_t) ublox_version());
 }
 
 static bool ublox_setup()

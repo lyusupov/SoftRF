@@ -143,7 +143,7 @@ extern bool loopTaskWDTEnabled;
 
 const char *ESP32S2_Device_Manufacturer = SOFTRF_IDENT;
 const char *ESP32S2_Device_Model = "Standalone Edition";
-const char *ESP32S3_Device_Model = "Prime Edition Mk.3";
+const char *ESP32S3_Device_Model = "Prime Edition Mk.3"; /* 303a:1001 */
 const uint16_t ESP32S2_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
