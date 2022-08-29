@@ -251,7 +251,7 @@ static void STM32_setup()
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 
     /* TBD */
-    stm32_board   = STM32_GEN_WLE5CC;
+    stm32_board   = STM32_OLIMEX_WLE5CC;
     hw_info.model = SOFTRF_MODEL_BALKAN;
 
 #else

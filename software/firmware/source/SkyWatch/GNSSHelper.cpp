@@ -42,9 +42,6 @@
 #define GNSS_DEBUG_PRINTLN  Serial.println
 #endif
 
-#if !defined(SERIAL_FLUSH)
-#define SERIAL_FLUSH()      Serial.flush()
-#endif
 #if !defined(GNSS_FLUSH)
 #define GNSS_FLUSH()        Serial_GNSS_Out.flush()
 #endif
@@ -60,7 +57,9 @@ TinyGPSPlus gnss;  // Create an Instance of the TinyGPS++ object called gnss
 
 uint8_t GNSSbuf[250]; // at least 3 lines of 80 characters each
                       // and 40+30*N bytes for "UBX-MON-VER" payload
-int GNSS_cnt = 0;
+
+int GNSS_cnt           = 0;
+uint16_t FW_Build_Year = 2000 + ((__DATE__[ 9]) - '0') * 10 + ((__DATE__[10]) - '0');
 
 const char *GNSS_name[] = {
   [GNSS_MODULE_NONE]    = "NONE",
@@ -77,66 +76,6 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_GOKE]    = "GOKE"
 };
 
-#if defined(USE_NMEA_CFG)
-
-#include "RF.h"       /* RF_Shutdown() */
-#include "Sound.h"
-#include "LED.h"
-#include "../protocol/data/GDL90.h"
-#include "../protocol/data/D1090.h"
-
-TinyGPSCustom C_Version      (gnss, "PSRFC", 1);
-TinyGPSCustom C_Mode         (gnss, "PSRFC", 2);
-TinyGPSCustom C_Protocol     (gnss, "PSRFC", 3);
-TinyGPSCustom C_Band         (gnss, "PSRFC", 4);
-TinyGPSCustom C_AcftType     (gnss, "PSRFC", 5);
-TinyGPSCustom C_Alarm        (gnss, "PSRFC", 6);
-TinyGPSCustom C_TxPower      (gnss, "PSRFC", 7);
-TinyGPSCustom C_Volume       (gnss, "PSRFC", 8);
-TinyGPSCustom C_Pointer      (gnss, "PSRFC", 9);
-TinyGPSCustom C_NMEA_gnss    (gnss, "PSRFC", 10);
-TinyGPSCustom C_NMEA_private (gnss, "PSRFC", 11);
-TinyGPSCustom C_NMEA_legacy  (gnss, "PSRFC", 12);
-TinyGPSCustom C_NMEA_sensors (gnss, "PSRFC", 13);
-TinyGPSCustom C_NMEA_Output  (gnss, "PSRFC", 14);
-TinyGPSCustom C_GDL90_Output (gnss, "PSRFC", 15);
-TinyGPSCustom C_D1090_Output (gnss, "PSRFC", 16);
-TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
-TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
-TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
-
-#if defined(USE_OGN_ENCRYPTION)
-/* Security and privacy */
-TinyGPSCustom S_Version      (gnss, "PSRFS", 1);
-TinyGPSCustom S_IGC_Key      (gnss, "PSRFS", 2);
-#endif /* USE_OGN_ENCRYPTION */
-
-#if defined(USE_SKYVIEW_CFG)
-#include "EPD.h"
-
-TinyGPSCustom V_Version      (gnss, "PSKVC", 1);
-TinyGPSCustom V_Adapter      (gnss, "PSKVC", 2);
-TinyGPSCustom V_Connection   (gnss, "PSKVC", 3);
-TinyGPSCustom V_Units        (gnss, "PSKVC", 4);
-TinyGPSCustom V_Zoom         (gnss, "PSKVC", 5);
-TinyGPSCustom V_Protocol     (gnss, "PSKVC", 6);
-TinyGPSCustom V_Baudrate     (gnss, "PSKVC", 7);
-TinyGPSCustom V_Server       (gnss, "PSKVC", 8);
-TinyGPSCustom V_Key          (gnss, "PSKVC", 9);
-TinyGPSCustom V_Rotate       (gnss, "PSKVC", 10);
-TinyGPSCustom V_Orientation  (gnss, "PSKVC", 11);
-TinyGPSCustom V_AvDB         (gnss, "PSKVC", 12);
-TinyGPSCustom V_ID_Pref      (gnss, "PSKVC", 13);
-TinyGPSCustom V_VMode        (gnss, "PSKVC", 14);
-TinyGPSCustom V_Voice        (gnss, "PSKVC", 15);
-TinyGPSCustom V_AntiGhost    (gnss, "PSKVC", 16);
-TinyGPSCustom V_Filter       (gnss, "PSKVC", 17);
-TinyGPSCustom V_PowerSave    (gnss, "PSKVC", 18);
-TinyGPSCustom V_Team         (gnss, "PSKVC", 19);
-#endif /* USE_SKYVIEW_CFG */
-
-static uint8_t C_NMEA_Source;
-
 #if defined(ENABLE_GNSS_STATS)
 /*
  * Sony: GGA -  24 , RMC -  38
@@ -148,18 +87,6 @@ static uint8_t C_NMEA_Source;
 
 gnss_stat_t gnss_stats;
 #endif /* ENABLE_GNSS_STATS */
-
-static void nmea_cfg_restart()
-{
-  Serial.println();
-  Serial.println(F("Restart is in progress. Please, wait..."));
-  Serial.println();
-  SERIAL_FLUSH();
-  Sound_fini();
-  RF_Shutdown();
-  SoC->reset();
-}
-#endif /* USE_NMEA_CFG */
 
 bool nmea_handshake(const char *req, const char *resp, bool skipline)
 {
@@ -629,19 +556,12 @@ static byte ublox_version() {
 
 static gnss_id_t ublox_probe()
 {
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
-      hw_info.model == SOFTRF_MODEL_RASPBERRY  ||
-      hw_info.model == SOFTRF_MODEL_UNI        ||
-      hw_info.model == SOFTRF_MODEL_ES         ||
-      hw_info.model == SOFTRF_MODEL_OCTAVE     ||
-      hw_info.model == SOFTRF_MODEL_LEGO       ||
-      hw_info.model == SOFTRF_MODEL_WEBTOP_USB ||
-     (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 203))
-  {
-    return (gnss_id_t) ublox_version();
-  } else {
-    return GNSS_MODULE_NMEA;
-  }
+  /*
+   * ESP8266 NodeMCU and ESP32 DevKit (with NodeMCU adapter)
+   * have no any spare GPIO pin to provide GNSS Tx feedback
+   */
+  return(hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 0 ?
+         GNSS_MODULE_NMEA : (gnss_id_t) ublox_version());
 }
 
 static bool ublox_setup()
@@ -1117,6 +1037,7 @@ byte GNSS_setup() {
   SoC->swSer_begin(SERIAL_IN_BR);
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+      hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
       hw_info.model == SOFTRF_MODEL_LEGO)
@@ -1136,7 +1057,8 @@ byte GNSS_setup() {
   if (gnss_id == GNSS_MODULE_NONE) {
 
 #if !defined(EXCLUDE_GNSS_UBLOX) && defined(ENABLE_UBLOX_RFS)
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+        hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
       byte version = ublox_version();
 
@@ -1239,6 +1161,7 @@ void GNSSTimeSync()
   if ((GNSSTimeSyncMarker == 0 || (millis() - GNSSTimeSyncMarker > 60000)) &&
        gnss.time.isValid()                                                 &&
        gnss.time.isUpdated()                                               &&
+       gnss.date.year() >= FW_Build_Year                                   &&
       (gnss.time.age() <= 1000) /* 1s */ ) {
 #if 0
     Serial.print("Valid: ");
@@ -1364,7 +1287,7 @@ void PickGNSSFix()
         gnss_stats.rmc_count++;
       }
     }
-#endif
+#endif /* ENABLE_GNSS_STATS */
 
     isValidSentence = gnss.encode(GNSSbuf[GNSS_cnt]);
     if (GNSSbuf[GNSS_cnt] == '\r' && isValidSentence) {
@@ -1406,346 +1329,40 @@ void PickGNSSFix()
           break;
         }
       }
+
 #if defined(USE_NMEA_CFG)
-      if (C_Version.isUpdated()) {
-        if (strncmp(C_Version.value(), "RST", 3) == 0) {
-            SoC->WDT_fini();
-            nmea_cfg_restart();
-        } else if (strncmp(C_Version.value(), "OFF", 3) == 0) {
-          shutdown(SOFTRF_SHUTDOWN_NMEA);
-        } else if (strncmp(C_Version.value(), "?", 1) == 0) {
-          char psrfc_buf[MAX_PSRFC_LEN];
-
-          snprintf_P(psrfc_buf, sizeof(psrfc_buf),
-              PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
-              PSRFC_VERSION,        settings->mode,     settings->rf_protocol,
-              settings->band,       settings->aircraft_type, settings->alarm,
-              settings->txpower,    settings->volume,   settings->pointer,
-              settings->nmea_g,     settings->nmea_p,   settings->nmea_l,
-              settings->nmea_s,     settings->nmea_out, settings->gdl90,
-              settings->d1090,      settings->stealth,  settings->no_track,
-              settings->power_save );
-
-          NMEA_add_checksum(psrfc_buf, sizeof(psrfc_buf) - strlen(psrfc_buf));
-
-#if !defined(USE_NMEA_CFG)
-          uint8_t dest = settings->nmea_out;
-#else
-          uint8_t dest = C_NMEA_Source;
-#endif /* USE_NMEA_CFG */
-
-          NMEA_Out(dest, (byte *) psrfc_buf, strlen(psrfc_buf), false);
-
-        } else if (atoi(C_Version.value()) == PSRFC_VERSION) {
-          bool cfg_is_updated = false;
-
-          if (C_Mode.isUpdated())
-          {
-            settings->mode = atoi(C_Mode.value());
-            Serial.print(F("Mode = ")); Serial.println(settings->mode);
-            cfg_is_updated = true;
-          }
-          if (C_Protocol.isUpdated())
-          {
-            settings->rf_protocol = atoi(C_Protocol.value());
-            Serial.print(F("Protocol = ")); Serial.println(settings->rf_protocol);
-            cfg_is_updated = true;
-          }
-          if (C_Band.isUpdated())
-          {
-            settings->band = atoi(C_Band.value());
-            Serial.print(F("Region = ")); Serial.println(settings->band);
-            cfg_is_updated = true;
-          }
-          if (C_AcftType.isUpdated())
-          {
-            settings->aircraft_type = atoi(C_AcftType.value());
-            Serial.print(F("AcftType = ")); Serial.println(settings->aircraft_type);
-            cfg_is_updated = true;
-          }
-          if (C_Alarm.isUpdated())
-          {
-            settings->alarm = atoi(C_Alarm.value());
-            Serial.print(F("Alarm = ")); Serial.println(settings->alarm);
-            cfg_is_updated = true;
-          }
-          if (C_TxPower.isUpdated())
-          {
-            settings->txpower = atoi(C_TxPower.value());
-            Serial.print(F("TxPower = ")); Serial.println(settings->txpower);
-            cfg_is_updated = true;
-          }
-          if (C_Volume.isUpdated())
-          {
-            settings->volume = atoi(C_Volume.value());
-            Serial.print(F("Volume = ")); Serial.println(settings->volume);
-            cfg_is_updated = true;
-          }
-           if (C_Pointer.isUpdated())
-          {
-            settings->pointer = atoi(C_Pointer.value());
-            Serial.print(F("Pointer = ")); Serial.println(settings->pointer);
-            cfg_is_updated = true;
-          }
-          if (C_NMEA_gnss.isUpdated())
-          {
-            settings->nmea_g = atoi(C_NMEA_gnss.value());
-            Serial.print(F("NMEA_gnss = ")); Serial.println(settings->nmea_g);
-            cfg_is_updated = true;
-          }
-          if (C_NMEA_private.isUpdated())
-          {
-            settings->nmea_p = atoi(C_NMEA_private.value());
-            Serial.print(F("NMEA_private = ")); Serial.println(settings->nmea_p);
-            cfg_is_updated = true;
-          }
-          if (C_NMEA_legacy.isUpdated())
-          {
-            settings->nmea_l = atoi(C_NMEA_legacy.value());
-            Serial.print(F("NMEA_legacy = ")); Serial.println(settings->nmea_l);
-            cfg_is_updated = true;
-          }
-           if (C_NMEA_sensors.isUpdated())
-          {
-            settings->nmea_s = atoi(C_NMEA_sensors.value());
-            Serial.print(F("NMEA_sensors = ")); Serial.println(settings->nmea_s);
-            cfg_is_updated = true;
-          }
-          if (C_NMEA_Output.isUpdated())
-          {
-            settings->nmea_out = atoi(C_NMEA_Output.value());
-            Serial.print(F("NMEA_Output = ")); Serial.println(settings->nmea_out);
-            cfg_is_updated = true;
-          }
-          if (C_GDL90_Output.isUpdated())
-          {
-            settings->gdl90 = atoi(C_GDL90_Output.value());
-            Serial.print(F("GDL90_Output = ")); Serial.println(settings->gdl90);
-            cfg_is_updated = true;
-          }
-          if (C_D1090_Output.isUpdated())
-          {
-            settings->d1090 = atoi(C_D1090_Output.value());
-            Serial.print(F("D1090_Output = ")); Serial.println(settings->d1090);
-            cfg_is_updated = true;
-          }
-          if (C_Stealth.isUpdated())
-          {
-            settings->stealth = atoi(C_Stealth.value());
-            Serial.print(F("Stealth = ")); Serial.println(settings->stealth);
-            cfg_is_updated = true;
-          }
-          if (C_noTrack.isUpdated())
-          {
-            settings->no_track = atoi(C_noTrack.value());
-            Serial.print(F("noTrack = ")); Serial.println(settings->no_track);
-            cfg_is_updated = true;
-          }
-          if (C_PowerSave.isUpdated())
-          {
-            settings->power_save = atoi(C_PowerSave.value());
-            Serial.print(F("PowerSave = ")); Serial.println(settings->power_save);
-            cfg_is_updated = true;
-          }
-
-          if (cfg_is_updated) {
-            SoC->WDT_fini();
-            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
-            EEPROM_store();
-            nmea_cfg_restart();
-          }
-        }
-      }
-#if defined(USE_OGN_ENCRYPTION)
-      if (S_Version.isUpdated()) {
-        if (strncmp(S_Version.value(), "?", 1) == 0) {
-          char psrfs_buf[MAX_PSRFS_LEN];
-
-          snprintf_P(psrfs_buf, sizeof(psrfs_buf),
-              PSTR("$PSRFS,%d,%08X%08X%08X%08X*"),
-              PSRFS_VERSION, settings->igc_key[0], settings->igc_key[1],
-                             settings->igc_key[2], settings->igc_key[3]);
-
-          NMEA_add_checksum(psrfs_buf, sizeof(psrfs_buf) - strlen(psrfs_buf));
-
-          NMEA_Out(C_NMEA_Source, (byte *) psrfs_buf, strlen(psrfs_buf), false);
-
-        } else if (atoi(S_Version.value()) == PSRFS_VERSION) {
-          bool cfg_is_updated = false;
-
-          if (S_IGC_Key.isUpdated())
-          {
-            char buf[32 + 1];
-
-            strncpy(buf, S_IGC_Key.value(), sizeof(buf));
-
-            settings->igc_key[3] = strtoul(buf + 24, NULL, 16);
-            buf[24] = 0;
-            settings->igc_key[2] = strtoul(buf + 16, NULL, 16);
-            buf[16] = 0;
-            settings->igc_key[1] = strtoul(buf +  8, NULL, 16);
-            buf[ 8] = 0;
-            settings->igc_key[0] = strtoul(buf +  0, NULL, 16);
-
-            snprintf_P(buf, sizeof(buf),
-              PSTR("%08X%08X%08X%08X"),
-              settings->igc_key[0], settings->igc_key[1],
-              settings->igc_key[2], settings->igc_key[3]);
-
-            Serial.print(F("IGC Key = ")); Serial.println(buf);
-            cfg_is_updated = true;
-          }
-          if (cfg_is_updated) {
-            SoC->WDT_fini();
-            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
-            EEPROM_store();
-            nmea_cfg_restart();
-          }
-        }
-      }
-#endif /* USE_OGN_ENCRYPTION */
-#if defined(USE_SKYVIEW_CFG)
-      if (V_Version.isUpdated()) {
-        if (strncmp(V_Version.value(), "?", 1) == 0) {
-          char pskvc_buf[MAX_PSKVC_LEN];
-
-          snprintf_P(pskvc_buf, sizeof(pskvc_buf),
-              PSTR("$PSKVC,%d,%d,%d,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%X*"),
-              PSKVC_VERSION,  ui->adapter,      ui->connection,
-              ui->units,      ui->zoom,         ui->protocol,
-              ui->baudrate,   ui->server,       ui->key,
-              ui->rotate,     ui->orientation,  ui->adb,
-              ui->idpref,     ui->vmode,        ui->voice,
-              ui->aghost,     ui->filter,       ui->power_save,
-              ui->team);
-
-          NMEA_add_checksum(pskvc_buf, sizeof(pskvc_buf) - strlen(pskvc_buf));
-
-          NMEA_Out(C_NMEA_Source, (byte *) pskvc_buf, strlen(pskvc_buf), false);
-
-        } else if (atoi(V_Version.value()) == PSKVC_VERSION) {
-          bool cfg_is_updated = false;
-
-          if (V_Adapter.isUpdated())
-          {
-            ui->adapter = atoi(V_Adapter.value());
-            Serial.print(F("Adapter = ")); Serial.println(ui->adapter);
-            cfg_is_updated = true;
-          }
-          if (V_Connection.isUpdated())
-          {
-            ui->connection = atoi(V_Connection.value());
-            Serial.print(F("Connection = ")); Serial.println(ui->connection);
-            cfg_is_updated = true;
-          }
-          if (V_Units.isUpdated())
-          {
-            ui->units = atoi(V_Units.value());
-            Serial.print(F("Units = ")); Serial.println(ui->units);
-            cfg_is_updated = true;
-          }
-          if (V_Zoom.isUpdated())
-          {
-            ui->zoom = atoi(V_Zoom.value());
-            Serial.print(F("Zoom = ")); Serial.println(ui->zoom);
-            cfg_is_updated = true;
-          }
-          if (V_Protocol.isUpdated())
-          {
-            ui->protocol = atoi(V_Protocol.value());
-            Serial.print(F("Protocol = ")); Serial.println(ui->protocol);
-            cfg_is_updated = true;
-          }
-          if (V_Baudrate.isUpdated())
-          {
-            ui->baudrate = atoi(V_Baudrate.value());
-            Serial.print(F("Baudrate = ")); Serial.println(ui->baudrate);
-            cfg_is_updated = true;
-          }
-          if (V_Server.isUpdated())
-          {
-            strncpy(ui->server, V_Server.value(), sizeof(ui->server));
-            Serial.print(F("Server = ")); Serial.println(ui->server);
-            cfg_is_updated = true;
-          }
-           if (V_Key.isUpdated())
-          {
-            strncpy(ui->key, V_Key.value(), sizeof(ui->key));
-            Serial.print(F("Key = ")); Serial.println(ui->key);
-            cfg_is_updated = true;
-          }
-          if (V_Rotate.isUpdated())
-          {
-            ui->rotate = atoi(V_Rotate.value());
-            Serial.print(F("Rotation = ")); Serial.println(ui->rotate);
-            cfg_is_updated = true;
-          }
-          if (V_Orientation.isUpdated())
-          {
-            ui->orientation = atoi(V_Orientation.value());
-            Serial.print(F("Orientation = ")); Serial.println(ui->orientation);
-            cfg_is_updated = true;
-          }
-          if (V_AvDB.isUpdated())
-          {
-            ui->adb = atoi(V_AvDB.value());
-            Serial.print(F("AvDB = ")); Serial.println(ui->adb);
-            cfg_is_updated = true;
-          }
-          if (V_ID_Pref.isUpdated())
-          {
-            ui->idpref = atoi(V_ID_Pref.value());
-            Serial.print(F("ID_Pref = ")); Serial.println(ui->idpref);
-            cfg_is_updated = true;
-          }
-           if (V_VMode.isUpdated())
-          {
-            ui->vmode = atoi(V_VMode.value());
-            Serial.print(F("VMode = ")); Serial.println(ui->vmode);
-            cfg_is_updated = true;
-          }
-          if (V_Voice.isUpdated())
-          {
-            ui->voice = atoi(V_Voice.value());
-            Serial.print(F("Voice = ")); Serial.println(ui->voice);
-            cfg_is_updated = true;
-          }
-          if (V_AntiGhost.isUpdated())
-          {
-            ui->aghost = atoi(V_AntiGhost.value());
-            Serial.print(F("AntiGhost = ")); Serial.println(ui->aghost);
-            cfg_is_updated = true;
-          }
-          if (V_Filter.isUpdated())
-          {
-            ui->filter = atoi(V_Filter.value());
-            Serial.print(F("Filter = ")); Serial.println(ui->filter);
-            cfg_is_updated = true;
-          }
-          if (V_PowerSave.isUpdated())
-          {
-            ui->power_save = atoi(V_PowerSave.value());
-            Serial.print(F("PowerSave = ")); Serial.println(ui->power_save);
-            cfg_is_updated = true;
-          }
-          if (V_Team.isUpdated())
-          {
-            ui->team = strtoul(V_Team.value(), NULL, 16);
-            Serial.print(F("Team = ")); Serial.println(ui->team, HEX);
-            cfg_is_updated = true;
-          }
-
-          if (cfg_is_updated) {
-            SoC->WDT_fini();
-            if (SoC->Bluetooth_ops) { SoC->Bluetooth_ops->fini(); }
-            EEPROM_store();
-            nmea_cfg_restart();
-          }
-        }
-      }
-#endif /* USE_SKYVIEW_CFG */
+      NMEA_Process_SRF_SKV_Sentences();
 #endif /* USE_NMEA_CFG */
     }
+
+#if defined(ENABLE_D1090_INPUT)
+    if (GNSSbuf[GNSS_cnt]   == '\n' &&
+        GNSS_cnt             >  1   &&
+        GNSSbuf[GNSS_cnt-1] == '\r' &&
+        GNSSbuf[GNSS_cnt-2] == ';')
+    {
+      int i=0;
+
+      if (GNSS_cnt > 16 && GNSSbuf[GNSS_cnt-17] == '*') {
+        for (i=0; i<14; i++) {
+          if (!isxdigit(GNSSbuf[GNSS_cnt-16+i])) break;
+        }
+        if (i>=14) {
+          D1090_Import(&GNSSbuf[GNSS_cnt-17]);
+          GNSS_cnt -= 18;
+        }
+      } else if (GNSS_cnt > 30 && GNSSbuf[GNSS_cnt-31] == '*') {
+        for (i=0; i<28; i++) {
+          if (!isxdigit(GNSSbuf[GNSS_cnt-30+i])) break;
+        }
+        if (i>=28) {
+          D1090_Import(&GNSSbuf[GNSS_cnt-31]);
+          GNSS_cnt -= 32;
+        }
+      }
+    }
+#endif /* ENABLE_D1090_INPUT */
+
     if (GNSSbuf[GNSS_cnt] == '\n' || GNSS_cnt == sizeof(GNSSbuf)-1) {
       GNSS_cnt = 0;
     } else {

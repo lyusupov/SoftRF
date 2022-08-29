@@ -37,6 +37,14 @@ enum
 	POWER_SAVE_GNSS = 2
 };
 
+enum
+{
+	PMU_NONE,
+	PMU_AXP192,
+	PMU_AXP202,
+	PMU_AXP2101,
+};
+
 void  Battery_setup(void);
 void  Battery_loop(void);
 float Battery_voltage(void);

@@ -56,6 +56,12 @@ void NMEA_add_checksum(char *, size_t);
 
 extern char NMEABuffer[NMEA_BUFFER_SIZE];
 
+#if defined(USE_NMEA_CFG)
+void NMEA_Process_SRF_SKV_Sentences(void);
+
+extern uint8_t C_NMEA_Source;
+#endif /* USE_NMEA_CFG */
+
 #if defined(NMEA_TCP_SERVICE)
 
 typedef struct NmeaTCP_struct {

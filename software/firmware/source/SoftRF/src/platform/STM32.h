@@ -77,7 +77,10 @@ enum stm32_board_id {
   STM32_TTGO_TWATCH_EB_1_6,
   STM32_TTGO_TMOTION_1_1,
   STM32_TTGO_TIMPULSE_1_0,
-  STM32_GEN_WLE5CC, /* 15ba:0044 */
+  STM32_OLIMEX_WLE5CC, /* 15ba:0044 */
+  STM32_EBYTE_E77,
+  STM32_SEEED_E5,
+  STM32_ACSIP_ST50H,
 };
 
 enum stm32_boot_action {
@@ -367,11 +370,17 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
 
 /* RF antenna switch */
-#define SOC_GPIO_ANT_RX       PB8  /* active LOW */
-#define SOC_GPIO_ANT_TX       PC13 /* active LOW */
+#define SOC_GPIO_ANT_RX_OLI   PB8  /* active LOW */
+#define SOC_GPIO_ANT_TX_OLI   PC13 /* active LOW */
 
-#define SOC_GPIO_ANT_RX_ALT   PA7  /* active HIGH */
-#define SOC_GPIO_ANT_TX_ALT   PA6  /* active LOW  */
+#define SOC_GPIO_ANT_RX_E77   PA7  /* active HIGH */
+#define SOC_GPIO_ANT_TX_E77   PA6  /* active LOW  */
+
+#define SOC_GPIO_ANT_RX_E5    PA5  /* active LOW */
+#define SOC_GPIO_ANT_TX_E5    PA4  /* active LOW */
+
+#define SOC_GPIO_ANT_RX_ST50  PA1  /* active LOW */
+#define SOC_GPIO_ANT_TX_ST50  PA0  /* active LOW */
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PA10

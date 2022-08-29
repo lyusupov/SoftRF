@@ -59,6 +59,7 @@ hardware_info_t hw_info = {
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
   .imu      = IMU_NONE,
+  .pmu      = PMU_NONE,
   .slave    = SOFTRF_MODEL_UNKNOWN,
 };
 

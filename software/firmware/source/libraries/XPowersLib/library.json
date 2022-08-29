@@ -1,6 +1,6 @@
 {
     "name": "XPowersLib",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Arduino library for x-powers power management series",
     "keywords": "AXP192 AXP202 AXP2101 x-powers",
     "authors": [{

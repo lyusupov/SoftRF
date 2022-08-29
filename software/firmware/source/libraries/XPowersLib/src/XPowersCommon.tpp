@@ -48,6 +48,21 @@
 #if !defined(ARDUINO)
 #define log_e(...)
 #define log_i(...)
+
+#define LOW                 0x0
+#define HIGH                0x1
+
+//GPIO FUNCTIONS
+#define INPUT               0x01
+#define OUTPUT              0x03
+#define PULLUP              0x04
+#define INPUT_PULLUP        0x05
+#define PULLDOWN            0x08
+#define INPUT_PULLDOWN      0x09
+
+#define RISING              0x01
+#define FALLING             0x02
+
 #endif
 
 template <class chipType>

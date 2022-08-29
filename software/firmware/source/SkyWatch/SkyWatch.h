@@ -122,6 +122,7 @@ typedef struct hardware_info {
     byte  storage;
     byte  rtc;
     byte  imu;
+    byte  pmu;
     byte  slave;
 } hardware_info_t;
 
@@ -158,6 +159,8 @@ enum
 	SOFTRF_MODEL_ACADEMY,
 	SOFTRF_MODEL_LEGO,
 	SOFTRF_MODEL_WEBTOP_USB,
+	SOFTRF_MODEL_PRIME_MK3,
+	SOFTRF_MODEL_BALKAN,
 };
 
 enum

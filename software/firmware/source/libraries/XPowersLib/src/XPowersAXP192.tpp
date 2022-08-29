@@ -1,5 +1,4 @@
 /**
-/**
  *
  * @license MIT License
  *
@@ -28,8 +27,11 @@
  * @date      2022-05-07
  *
  */
-
+#if defined(ARDUINO)
 #include <Arduino.h>
+#else
+#include <math.h>
+#endif /*ARDUINO*/
 #include "XPowersCommon.tpp"
 #include "REG/AXP192Constants.h"
 
@@ -659,6 +661,7 @@ public:
     {
         int val = readRegister(XPOWERS_LDO23OUT_VOL);
         if (val == -1)return 0;
+        val &= 0x0F;
         return (val * XPOWERS_LDO3_VOL_STEPS) + XPOWERS_LDO3_VOL_MIN;
     }
 
