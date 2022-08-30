@@ -31,6 +31,10 @@
 
 #pragma once
 
+#if defined(ARDUINO)
+#include <Wire.h>
+#endif
+
 #ifdef _BV
 #undef _BV
 #endif
@@ -48,6 +52,7 @@
 #if !defined(ARDUINO)
 #define log_e(...)
 #define log_i(...)
+#define log_d(...)
 
 #define LOW                 0x0
 #define HIGH                0x1
@@ -72,19 +77,13 @@ class XPowersCommon
 
 public:
 #if defined(ARDUINO)
-    bool begin(void)
-    {
-        Wire.begin();
-        wire = &Wire;
-        return thisChip().initImpl();
-    }
 
     bool begin(TwoWire &w, uint8_t addr, int sda, int scl)
     {
-        wire = &w;
-        wire->setPins(sda, scl);
-        wire->begin();
-        address = addr;
+        __wire = &w;
+        __wire->setPins(sda, scl);
+        __wire->begin();
+        __addr = addr;
         return thisChip().initImpl();
     }
 #endif
@@ -92,7 +91,7 @@ public:
     {
         thisReadRegCallback = readRegCallback;
         thisWriteRegCallback = writeRegCallback;
-        address = addr;
+        __addr = addr;
         return thisChip().initImpl();
     }
 
@@ -100,20 +99,20 @@ public:
     {
         uint8_t val = 0;
         if (thisReadRegCallback) {
-            if (thisReadRegCallback(address, reg, &val, 1) != 0) {
+            if (thisReadRegCallback(__addr, reg, &val, 1) != 0) {
                 return 0;
             }
             return val;
         }
 #if defined(ARDUINO)
-        if (wire) {
-            wire->beginTransmission(address);
-            wire->write(reg);
-            if (wire->endTransmission() != 0) {
+        if (__wire) {
+            __wire->beginTransmission(__addr);
+            __wire->write(reg);
+            if (__wire->endTransmission() != 0) {
                 return -1;
             }
-            wire->requestFrom(address, 1U);
-            return wire->read();
+            __wire->requestFrom(__addr, 1U);
+            return __wire->read();
         }
 #endif
         return -1;
@@ -122,14 +121,14 @@ public:
     int writeRegister(uint8_t reg, uint8_t val)
     {
         if (thisWriteRegCallback) {
-            return thisWriteRegCallback(address, reg, &val, 1);
+            return thisWriteRegCallback(__addr, reg, &val, 1);
         }
 #if defined(ARDUINO)
-        if (wire) {
-            wire->beginTransmission(address);
-            wire->write(reg);
-            wire->write(val);
-            return (wire->endTransmission() == 0) ? 0 : -1;
+        if (__wire) {
+            __wire->beginTransmission(__addr);
+            __wire->write(reg);
+            __wire->write(val);
+            return (__wire->endTransmission() == 0) ? 0 : -1;
         }
 #endif
         return -1;
@@ -138,17 +137,17 @@ public:
     int readRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
     {
         if (thisReadRegCallback) {
-            return thisReadRegCallback(address, reg, buf, lenght);
+            return thisReadRegCallback(__addr, reg, buf, lenght);
         }
 #if defined(ARDUINO)
-        if (wire) {
-            wire->beginTransmission(address);
-            wire->write(reg);
-            if (wire->endTransmission() != 0) {
+        if (__wire) {
+            __wire->beginTransmission(__addr);
+            __wire->write(reg);
+            if (__wire->endTransmission() != 0) {
                 return -1;
             }
-            wire->requestFrom(address, lenght);
-            return wire->readBytes(buf, lenght) == lenght ? 0 : -1;
+            __wire->requestFrom(__addr, lenght);
+            return __wire->readBytes(buf, lenght) == lenght ? 0 : -1;
         }
 #endif
         return -1;
@@ -157,14 +156,14 @@ public:
     int writeRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
     {
         if (thisWriteRegCallback) {
-            return thisWriteRegCallback(address, reg, buf, lenght);
+            return thisWriteRegCallback(__addr, reg, buf, lenght);
         }
 #if defined(ARDUINO)
-        if (wire) {
-            wire->beginTransmission(address);
-            wire->write(reg);
-            wire->write(buf, lenght);
-            return (wire->endTransmission() == 0) ? 0 : -1;
+        if (__wire) {
+            __wire->beginTransmission(__addr);
+            __wire->write(reg);
+            __wire->write(buf, lenght);
+            return (__wire->endTransmission() == 0) ? 0 : -1;
         }
 #endif
         return -1;
@@ -229,6 +228,7 @@ public:
         if (h5 == -1 || l8 == -1)return 0;
         return ((h5 & 0x1F) << 8) | l8;
     }
+
     /*
      * CRTP Helper
      */
@@ -244,9 +244,11 @@ protected:
 
 protected:
 #if defined(ARDUINO)
-    TwoWire     *wire                = NULL;
+    TwoWire     *__wire                 = NULL;
 #endif
-    uint8_t     address              = 0xFF;
-    iic_fptr_t  thisReadRegCallback  = NULL;
-    iic_fptr_t  thisWriteRegCallback = NULL;
+    int         __sda                   = -1;
+    int         __scl                   = -1;
+    uint8_t     __addr                  = 0xFF;
+    iic_fptr_t  thisReadRegCallback     = NULL;
+    iic_fptr_t  thisWriteRegCallback    = NULL;
 };

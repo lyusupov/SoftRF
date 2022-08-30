@@ -65,15 +65,15 @@ void setup()
 
     // Set the minimum system operating voltage inside the PMU,
     // below this value will shut down the PMU
-    PMU.setMinSystemVoltage(XPOWERS_VSYS_VOL_4V5);
+    PMU.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
-    PMU.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V36);
+    PMU.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
 
     // Set the maximum current of the PMU VBUS input,
     // higher than this value will turn off the PMU
-    PMU.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
+    PMU.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
 
 
     // Get the VSYS shutdown voltage
@@ -192,33 +192,33 @@ void setup()
     Serial.println("===========================================================================");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
+    PMU.setPowerKeyPressOffTime(XPOWERS_AXP2101_POWEROFF_4S);
     uint8_t opt = PMU.getPowerKeyPressOffTime();
     Serial.print("PowerKeyPressOffTime:");
     switch (opt) {
-    case XPOWERS_POWEROFF_4S: Serial.println("4 Second");
+    case XPOWERS_AXP2101_POWEROFF_4S: Serial.println("4 Second");
         break;
-    case XPOWERS_POWEROFF_6S: Serial.println("6 Second");
+    case XPOWERS_AXP2101_POWEROFF_6S: Serial.println("6 Second");
         break;
-    case XPOWERS_POWEROFF_8S: Serial.println("8 Second");
+    case XPOWERS_AXP2101_POWEROFF_8S: Serial.println("8 Second");
         break;
-    case XPOWERS_POWEROFF_10S: Serial.println("10 Second");
+    case XPOWERS_AXP2101_POWEROFF_10S: Serial.println("10 Second");
         break;
     default:
         break;
     }
     // Set the button power-on press time
-    PMU.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
+    PMU.setPowerKeyPressOnTime(XPOWERS_AXP2101_POWERON_128MS);
     opt = PMU.getPowerKeyPressOnTime();
     Serial.print("PowerKeyPressOnTime:");
     switch (opt) {
-    case XPOWERS_POWERON_128MS: Serial.println("128 Ms");
+    case XPOWERS_AXP2101_POWERON_128MS: Serial.println("128 Ms");
         break;
-    case XPOWERS_POWERON_512MS: Serial.println("512 Ms");
+    case XPOWERS_AXP2101_POWERON_512MS: Serial.println("512 Ms");
         break;
-    case XPOWERS_POWERON_1S: Serial.println("1 Second");
+    case XPOWERS_AXP2101_POWERON_1S: Serial.println("1 Second");
         break;
-    case XPOWERS_POWERON_2S: Serial.println("2 Second");
+    case XPOWERS_AXP2101_POWERON_2S: Serial.println("2 Second");
         break;
     default:
         break;
@@ -275,7 +275,7 @@ void setup()
 
     // Manual control CHGLED
     // PMU.setChargerLedFunction(XPOWER_CHGLED_MANUAL);
-    // PMU.setChargingLedFreq(XPOWERS_CHG_LED_FRE_4HZ);
+    // PMU.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_4HZ);
 
 
     // The default setting is TypeA mode, and the CHGLED is automatically controlled by the PMU.
@@ -291,32 +291,32 @@ void setup()
 
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_ALL_IRQ);
+    PMU.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
     // Clear all interrupt flags
     PMU.clearIrqStatus();
     // Enable the required interrupt function
     PMU.enableIRQ(
-        XPOWERS_BAT_INSERT_IRQ    | XPOWERS_BAT_REMOVE_IRQ      |   //BATTERY
-        XPOWERS_VBUS_INSERT_IRQ   | XPOWERS_VBUS_REMOVE_IRQ     |   //VBUS
-        XPOWERS_PKEY_SHORT_IRQ    | XPOWERS_PKEY_LONG_IRQ       |   //POWER KEY
-        XPOWERS_BAT_CHG_DONE_IRQ  | XPOWERS_BAT_CHG_START_IRQ       //CHARGE
-        // XPOWERS_PKEY_NEGATIVE_IRQ | XPOWERS_PKEY_POSITIVE_IRQ   |   //POWER KEY
+        XPOWERS_AXP2101_BAT_INSERT_IRQ    | XPOWERS_AXP2101_BAT_REMOVE_IRQ      |   //BATTERY
+        XPOWERS_AXP2101_VBUS_INSERT_IRQ   | XPOWERS_AXP2101_VBUS_REMOVE_IRQ     |   //VBUS
+        XPOWERS_AXP2101_PKEY_SHORT_IRQ    | XPOWERS_AXP2101_PKEY_LONG_IRQ       |   //POWER KEY
+        XPOWERS_AXP2101_BAT_CHG_DONE_IRQ  | XPOWERS_AXP2101_BAT_CHG_START_IRQ       //CHARGE
+        // XPOWERS_AXP2101_PKEY_NEGATIVE_IRQ | XPOWERS_AXP2101_PKEY_POSITIVE_IRQ   |   //POWER KEY
     );
 
     // Set the precharge charging current
-    PMU.setPrechargeCurr(XPOWERS_PRECHARGE_50MA);
+    PMU.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_ICC_CHG_200MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP2101_ICC_CHG_200MA);
     // Set stop charging termination current
-    PMU.setChargerTerminationCurr(XPOWERS_CHG_ITERM_25MA);
+    PMU.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_CHG_VOL_4V1);
+    PMU.setChargerVoltageLimit(XPOWERS_AXP2101_CHG_VOL_4V1);
 
     // Set the watchdog trigger event type
-    PMU.setWatchdogConfig(XPOWERS_WDT_IRQ_TO_PIN);
+    PMU.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);
     // Set watchdog timeout
-    PMU.setWatchdogTimeout(XPOWERS_WDT_TIMEOUT_4S);
+    PMU.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_4S);
     // Enable watchdog to trigger interrupt event
     PMU.enableWatchdog();
 
@@ -333,17 +333,17 @@ void printPMU()
     Serial.print("isVbusGood:"); Serial.println(PMU.isVbusGood() ? "YES" : "NO");
     Serial.print("getChargerStatus:");
     uint8_t charge_status = PMU.getChargerStatus();
-    if (charge_status == XPOWERS_CHG_TRI_STATE) {
+    if (charge_status == XPOWERS_AXP2101_CHG_TRI_STATE) {
         Serial.println("tri_charge");
-    } else if (charge_status == XPOWERS_CHG_PRE_STATE) {
+    } else if (charge_status == XPOWERS_AXP2101_CHG_PRE_STATE) {
         Serial.println("pre_charge");
-    } else if (charge_status == XPOWERS_CHG_CC_STATE) {
+    } else if (charge_status == XPOWERS_AXP2101_CHG_CC_STATE) {
         Serial.println("constant charge");
-    } else if (charge_status == XPOWERS_CHG_CV_STATE) {
+    } else if (charge_status == XPOWERS_AXP2101_CHG_CV_STATE) {
         Serial.println("constant voltage");
-    } else if (charge_status == XPOWERS_CHG_DONE_STATE) {
+    } else if (charge_status == XPOWERS_AXP2101_CHG_DONE_STATE) {
         Serial.println("charge done");
-    } else if (charge_status == XPOWERS_CHG_STOP_STATE) {
+    } else if (charge_status == XPOWERS_AXP2101_CHG_STOP_STATE) {
         Serial.println("not chargin");
     }
 
@@ -366,7 +366,7 @@ void printPMU()
 void enterPmuSleep(void)
 {
     // Set the wake-up source to PWRKEY
-    PMU.wakeupControl(XPOWERS_WAKEUP_IRQ_PIN_TO_LOW, true);
+    PMU.wakeupControl(XPOWERS_AXP2101_WAKEUP_IRQ_PIN_TO_LOW, true);
 
     // Set sleep flag
     PMU.enableSleep();
@@ -443,7 +443,7 @@ void loop()
 
             Serial.print("Read pmu data buffer .");
             uint8_t data[4] = {0};
-            PMU.readDataBuffer(data, XPOWERS_DATA_BUFFER_SIZE);
+            PMU.readDataBuffer(data, XPOWERS_AXP2101_DATA_BUFFER_SIZE);
             for (int i = 0; i < 4; ++i) {
                 Serial.print(data[i]);
                 Serial.print(",");
@@ -455,7 +455,7 @@ void loop()
             Serial.println("isPekeyLongPress");
             Serial.println("write pmu data buffer .");
             uint8_t data[4] = {1, 2, 3, 4};
-            PMU.writeDataBuffer(data, XPOWERS_DATA_BUFFER_SIZE);
+            PMU.writeDataBuffer(data, XPOWERS_AXP2101_DATA_BUFFER_SIZE);
         }
 
         if (PMU.isPekeyNegativeIrq()) {

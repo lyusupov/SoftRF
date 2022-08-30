@@ -109,32 +109,32 @@ esp_err_t pmu_init()
     PMU.disableTSPinMeasure();
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_ALL_IRQ);
+    PMU.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
     // Clear all interrupt flags
     PMU.clearIrqStatus();
     // Enable the required interrupt function
     PMU.enableIRQ(
-        XPOWERS_BAT_INSERT_IRQ    | XPOWERS_BAT_REMOVE_IRQ      |   //BATTERY
-        XPOWERS_VBUS_INSERT_IRQ   | XPOWERS_VBUS_REMOVE_IRQ     |   //VBUS
-        XPOWERS_PKEY_SHORT_IRQ    | XPOWERS_PKEY_LONG_IRQ       |   //POWER KEY
-        XPOWERS_BAT_CHG_DONE_IRQ  | XPOWERS_BAT_CHG_START_IRQ       //CHARGE
-        // XPOWERS_PKEY_NEGATIVE_IRQ | XPOWERS_PKEY_POSITIVE_IRQ   |   //POWER KEY
+        XPOWERS_AXP2101_BAT_INSERT_IRQ    | XPOWERS_AXP2101_BAT_REMOVE_IRQ      |   //BATTERY
+        XPOWERS_AXP2101_VBUS_INSERT_IRQ   | XPOWERS_AXP2101_VBUS_REMOVE_IRQ     |   //VBUS
+        XPOWERS_AXP2101_PKEY_SHORT_IRQ    | XPOWERS_AXP2101_PKEY_LONG_IRQ       |   //POWER KEY
+        XPOWERS_AXP2101_BAT_CHG_DONE_IRQ  | XPOWERS_AXP2101_BAT_CHG_START_IRQ       //CHARGE
+        // XPOWERS_AXP2101_PKEY_NEGATIVE_IRQ | XPOWERS_AXP2101_PKEY_POSITIVE_IRQ   |   //POWER KEY
     );
 
     // Set the precharge charging current
-    PMU.setPrechargeCurr(XPOWERS_PRECHARGE_50MA);
+    PMU.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_ICC_CHG_200MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP2101_ICC_CHG_200MA);
     // Set stop charging termination current
-    PMU.setChargerTerminationCurr(XPOWERS_CHG_ITERM_25MA);
+    PMU.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_CHG_VOL_4V1);
+    PMU.setChargerVoltageLimit(XPOWERS_AXP2101_CHG_VOL_4V1);
 
     // Set the watchdog trigger event type
-    // PMU.setWatchdogConfig(XPOWERS_WDT_IRQ_TO_PIN);
+    // PMU.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);
     // Set watchdog timeout
-    // PMU.setWatchdogTimeout(XPOWERS_WDT_TIMEOUT_4S);
+    // PMU.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_4S);
     // Enable watchdog to trigger interrupt event
     // PMU.enableWatchdog();
     return ESP_OK;
@@ -216,5 +216,5 @@ void pmu_isr_handler()
     PMU.clearIrqStatus();
 }
 
-#endif  /*CONFIG_XPOWERS_CHIP_AXP2102*/
+#endif  /*CONFIG_XPOWERS_AXP2101_CHIP_AXP2102*/
 

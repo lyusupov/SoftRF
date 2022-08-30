@@ -34,7 +34,7 @@ esp_err_t pmu_init()
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
-    PMU.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V5);
+    PMU.setVbusVoltageLimit(XPOWERS_AXP192_VBUS_VOL_LIM_4V5);
 
     // Turn off USB input current limit
     PMU.disableVbusCurrLimit();
@@ -81,33 +81,33 @@ esp_err_t pmu_init()
     ESP_LOGI(TAG, "BLDO=======================================================================");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
+    PMU.setPowerKeyPressOffTime(XPOWERS_AXP192_POWEROFF_4S);
     uint8_t opt = PMU.getPowerKeyPressOffTime();
     ESP_LOGI(TAG, "PowerKeyPressOffTime:");
     switch (opt) {
-    case XPOWERS_POWEROFF_4S: ESP_LOGI(TAG, "4 Second");
+    case XPOWERS_AXP192_POWEROFF_4S: ESP_LOGI(TAG, "4 Second");
         break;
-    case XPOWERS_POWEROFF_65: ESP_LOGI(TAG, "6 Second");
+    case XPOWERS_AXP192_POWEROFF_65: ESP_LOGI(TAG, "6 Second");
         break;
-    case XPOWERS_POWEROFF_8S: ESP_LOGI(TAG, "8 Second");
+    case XPOWERS_AXP192_POWEROFF_8S: ESP_LOGI(TAG, "8 Second");
         break;
-    case XPOWERS_POWEROFF_16S: ESP_LOGI(TAG, "10 Second");
+    case XPOWERS_AXP192_POWEROFF_16S: ESP_LOGI(TAG, "10 Second");
         break;
     default:
         break;
     }
     // Set the button power-on press time
-    PMU.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
+    PMU.setPowerKeyPressOnTime(XPOWERS_AXP192_POWERON_128MS);
     opt = PMU.getPowerKeyPressOnTime();
     ESP_LOGI(TAG, "PowerKeyPressOnTime:");
     switch (opt) {
-    case XPOWERS_POWERON_128MS: ESP_LOGI(TAG, "128 Ms");
+    case XPOWERS_AXP192_POWERON_128MS: ESP_LOGI(TAG, "128 Ms");
         break;
-    case XPOWERS_POWERON_512MS: ESP_LOGI(TAG, "512 Ms");
+    case XPOWERS_AXP192_POWERON_512MS: ESP_LOGI(TAG, "512 Ms");
         break;
-    case XPOWERS_POWERON_1S: ESP_LOGI(TAG, "1 Second");
+    case XPOWERS_AXP192_POWERON_1S: ESP_LOGI(TAG, "1 Second");
         break;
-    case XPOWERS_POWERON_2S: ESP_LOGI(TAG, "2 Second");
+    case XPOWERS_AXP192_POWERON_2S: ESP_LOGI(TAG, "2 Second");
         break;
     default:
         break;
@@ -130,42 +130,42 @@ esp_err_t pmu_init()
 
     // Manual control CHGLED
     // PMU.setChargerLedFunction(XPOWER_CHGLED_CTRL_MANUAL);
-    // PMU.setChargingLedFreq(XPOWERS_CHG_LED_FRE_4HZ);
+    // PMU.setChargingLedFreq(XPOWERS_AXP192_CHG_LED_FRE_4HZ);
 
     // The default setting is CHGLED is automatically controlled by the PMU.
     PMU.setChargerLedFunction(XPOWER_CHGLED_CTRL_CHGER);
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_ALL_IRQ);
+    PMU.disableIRQ(XPOWERS_AXP192_ALL_IRQ);
     // Clear all interrupt flags
     PMU.clearIrqStatus();
     // Enable the required interrupt function
     PMU.enableIRQ(
-        XPOWERS_BAT_INSERT_IRQ    | XPOWERS_BAT_REMOVE_IRQ      |   //BATTERY
-        XPOWERS_VBUS_INSERT_IRQ   | XPOWERS_VBUS_REMOVE_IRQ     |   //VBUS
-        XPOWERS_PKEY_SHORT_IRQ    | XPOWERS_PKEY_LONG_IRQ       |   //POWER KEY
-        XPOWERS_BAT_CHG_DONE_IRQ  | XPOWERS_BAT_CHG_START_IRQ   |    //CHARGE
-        // XPOWERS_PKEY_NEGATIVE_IRQ | XPOWERS_PKEY_POSITIVE_IRQ   |   //POWER KEY
-        XPOWERS_TIMER_TIMEOUT_IRQ               //Timer
+        XPOWERS_AXP192_BAT_INSERT_IRQ    | XPOWERS_AXP192_BAT_REMOVE_IRQ      |   //BATTERY
+        XPOWERS_AXP192_VBUS_INSERT_IRQ   | XPOWERS_AXP192_VBUS_REMOVE_IRQ     |   //VBUS
+        XPOWERS_AXP192_PKEY_SHORT_IRQ    | XPOWERS_AXP192_PKEY_LONG_IRQ       |   //POWER KEY
+        XPOWERS_AXP192_BAT_CHG_DONE_IRQ  | XPOWERS_AXP192_BAT_CHG_START_IRQ   |    //CHARGE
+        // XPOWERS_AXP192_PKEY_NEGATIVE_IRQ | XPOWERS_AXP192_PKEY_POSITIVE_IRQ   |   //POWER KEY
+        XPOWERS_AXP192_TIMER_TIMEOUT_IRQ               //Timer
     );
 
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_ICC_CHG_280MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP192_ICC_CHG_280MA);
     // Set stop charging termination current
-    PMU.setChargerTerminationCurr(XPOWERS_CHG_ITERM_LESS_10_PERCENT);
+    PMU.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_CHG_VOL_4V2);
+    PMU.setChargerVoltageLimit(XPOWERS_AXP192_CHG_VOL_4V2);
 
     // Cache writes and reads, as long as the PMU remains powered, the data will always be stored inside the PMU
     ESP_LOGI(TAG, "Write pmu data buffer .");
-    uint8_t data[XPOWERS_DATA_BUFFER_SIZE] = {1, 2, 3, 4, 5, 6};
-    PMU.writeDataBuffer(data, XPOWERS_DATA_BUFFER_SIZE);
-    memset(data, 0, XPOWERS_DATA_BUFFER_SIZE);
+    uint8_t data[XPOWERS_AXP192_DATA_BUFFER_SIZE] = {1, 2, 3, 4, 5, 6};
+    PMU.writeDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
+    memset(data, 0, XPOWERS_AXP192_DATA_BUFFER_SIZE);
 
     ESP_LOGI(TAG, "Read pmu data buffer :");
-    PMU.readDataBuffer(data, XPOWERS_DATA_BUFFER_SIZE);
-    ESP_LOG_BUFFER_HEX(TAG, data, XPOWERS_DATA_BUFFER_SIZE);
+    PMU.readDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
+    ESP_LOG_BUFFER_HEX(TAG, data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
 
     // Set the timing after one minute, the isWdtExpireIrq will be triggered in the loop interrupt function
     PMU.setTimerout(1);
@@ -285,6 +285,6 @@ void pmu_isr_handler()
     // Clear PMU Interrupt Status Register
     PMU.clearIrqStatus();
 }
-#endif /*CONFIG_XPOWERS_CHIP_AXP192*/
+#endif /*CONFIG_XPOWERS_AXP192_CHIP_AXP192*/
 
 

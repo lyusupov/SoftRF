@@ -352,15 +352,15 @@ static void ESP32_setup()
 
         // Set the minimum system operating voltage inside the PMU,
         // below this value will shut down the PMU
-        axp_2xxx.setMinSystemVoltage(XPOWERS_VSYS_VOL_4V5);
+        axp_2xxx.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
 
         // Set the minimum common working voltage of the PMU VBUS input,
         // below this value will turn off the PMU
-        axp_2xxx.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V36);
+        axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
 
         // Set the maximum current of the PMU VBUS input,
         // higher than this value will turn off the PMU
-        axp_2xxx.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
+        axp_2xxx.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
 
         // DCDC1 1500~3400mV, IMAX=2A
         axp_2xxx.setDC1Voltage(3300); // ESP32,  AXP2101 power-on value: 3300
@@ -378,17 +378,18 @@ static void ESP32_setup()
         axp_2xxx.enableALDO3();
 
         axp_2xxx.enableChargingLed();
-        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
 
         pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT /* INPUT_PULLUP */);
 
         attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ),
                         ESP32_PMU_Interrupt_handler, FALLING);
 
-        axp_2xxx.disableIRQ(XPOWERS_ALL_IRQ);
+        axp_2xxx.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
         axp_2xxx.clearIrqStatus();
 
-        axp_2xxx.enableIRQ(XPOWERS_PKEY_LONG_IRQ | XPOWERS_PKEY_SHORT_IRQ);
+        axp_2xxx.enableIRQ(XPOWERS_AXP2101_PKEY_LONG_IRQ |
+                           XPOWERS_AXP2101_PKEY_SHORT_IRQ);
 
         hw_info.revision = 12;
         hw_info.pmu = PMU_AXP2101;
@@ -442,15 +443,15 @@ static void ESP32_setup()
 
       // Set the minimum system operating voltage inside the PMU,
       // below this value will shut down the PMU
-      axp_2xxx.setMinSystemVoltage(XPOWERS_VSYS_VOL_4V5);
+      axp_2xxx.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
 
       // Set the minimum common working voltage of the PMU VBUS input,
       // below this value will turn off the PMU
-      axp_2xxx.setVbusVoltageLimit(XPOWERS_VBUS_VOL_LIM_4V36);
+      axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
 
       // Set the maximum current of the PMU VBUS input,
       // higher than this value will turn off the PMU
-      axp_2xxx.setVbusCurrentLimit(XPOWERS_VBUS_CUR_LIM_1500MA);
+      axp_2xxx.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
 
       // DCDC1 1500~3400mV, IMAX=2A
       axp_2xxx.setDC1Voltage(3300);
@@ -469,17 +470,18 @@ static void ESP32_setup()
       axp_2xxx.enableALDO4();
 
       axp_2xxx.enableChargingLed();
-      axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+      axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
 
       pinMode(SOC_GPIO_PIN_S3_PMU_IRQ, INPUT /* INPUT_PULLUP */);
 
       attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_S3_PMU_IRQ),
                       ESP32_PMU_Interrupt_handler, FALLING);
 
-      axp_2xxx.disableIRQ(XPOWERS_ALL_IRQ);
+      axp_2xxx.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
       axp_2xxx.clearIrqStatus();
 
-      axp_2xxx.enableIRQ(XPOWERS_PKEY_LONG_IRQ | XPOWERS_PKEY_SHORT_IRQ);
+      axp_2xxx.enableIRQ(XPOWERS_AXP2101_PKEY_LONG_IRQ |
+                         XPOWERS_AXP2101_PKEY_SHORT_IRQ);
 
       /* Wake up Quectel L76K GNSS */
       digitalWrite(SOC_GPIO_PIN_S3_GNSS_WAKE, HIGH);
@@ -694,9 +696,9 @@ static void ESP32_loop()
 
     if (isTimeToBattery()) {
       if (Battery_voltage() > Battery_threshold()) {
-        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_0HZ);
+        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
       } else {
-        axp_2xxx.setChargingLedFreq(XPOWERS_CHG_LED_FRE_1HZ);
+        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_1HZ);
       }
     }
     break;
