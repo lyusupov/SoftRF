@@ -56,13 +56,13 @@
 
 #include <battery.h>
 
-// RFM95W pin mapping
+// SX12xx pin mapping
 lmic_pinmap lmic_pins = {
-    .nss = SOC_GPIO_PIN_SS,
-    .txe = LMIC_UNUSED_PIN,
-    .rxe = LMIC_UNUSED_PIN,
-    .rst = SOC_GPIO_PIN_RST,
-    .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
+    .nss  = SOC_GPIO_PIN_SS,
+    .txe  = LMIC_UNUSED_PIN,
+    .rxe  = LMIC_UNUSED_PIN,
+    .rst  = SOC_GPIO_PIN_RST,
+    .dio  = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
     .busy = SOC_GPIO_PIN_TXE,
     .tcxo = LMIC_UNUSED_PIN,
 };
@@ -230,6 +230,7 @@ static void ESP32_setup()
      *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
      *  Ai-T NodeMCU-S3 | ESP-S3-12K | GIGADEVICE_GD25Q64C
      *  TTGO T-Dongle   |            | BOYA_BY25Q32AL
+     *  TTGO S3 Core    |            | GIGADEVICE_GD25Q64C
      */
 
     switch(flash_id)
@@ -241,15 +242,18 @@ static void ESP32_setup()
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q128_V):
       hw_info.model = SOFTRF_MODEL_SKYWATCH;
       break;
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
     case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
     default:
-#if defined(CONFIG_IDF_TARGET_ESP32)
       hw_info.model = SOFTRF_MODEL_PRIME_MK2;
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-      esp32_board = ESP32_S2_T8_V1_1;
+    default:
+      esp32_board   = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-      esp32_board = ESP32_S3_DEVKIT;
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
+    default:
+      hw_info.model = SOFTRF_MODEL_PRIME_MK3;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -265,9 +269,9 @@ static void ESP32_setup()
       lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-    esp32_board = ESP32_S2_T8_V1_1;
+    esp32_board      = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    esp32_board = ESP32_S3_DEVKIT;
+    esp32_board      = ESP32_S3_DEVKIT;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
@@ -424,11 +428,8 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-  } else if (esp32_board == ESP32_S3_DEVKIT) {
-    lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
-
+  } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
+             esp32_board   == ESP32_S3_DEVKIT) {
     Wire1.begin(SOC_GPIO_PIN_S3_PMU_SDA , SOC_GPIO_PIN_S3_PMU_SCL);
     Wire1.beginTransmission(AXP2101_SLAVE_ADDRESS);
     bool has_axp2101 = (Wire1.endTransmission() == 0) &&
@@ -436,10 +437,8 @@ static void ESP32_setup()
                                       SOC_GPIO_PIN_S3_PMU_SDA,
                                       SOC_GPIO_PIN_S3_PMU_SCL);
     if (has_axp2101) {
-
-      esp32_board   = ESP32_TTGO_T_BEAM_SUPREME;
-      hw_info.model = SOFTRF_MODEL_PRIME_MK3;
-      hw_info.pmu   = PMU_AXP2101;
+      esp32_board = ESP32_TTGO_T_BEAM_SUPREME;
+      hw_info.pmu = PMU_AXP2101;
 
       // Set the minimum system operating voltage inside the PMU,
       // below this value will shut down the PMU
@@ -489,6 +488,8 @@ static void ESP32_setup()
 
     } else {
       WIRE_FINI(Wire1);
+      esp32_board      = ESP32_S3_DEVKIT;
+      hw_info.model    = SOFTRF_MODEL_STANDALONE;
       hw_info.revision = 203;
     }
 
@@ -502,6 +503,10 @@ static void ESP32_setup()
                        SOC_GPIO_PIN_S3_CONS_RX,
                        SOC_GPIO_PIN_S3_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
 
     /* uSD-SPI init */
     uSD_SPI.begin(SOC_GPIO_PIN_S3_SD_SCK,
@@ -1303,7 +1308,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     }
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
-    Serial.print(F("INFO: TTGO T-Beam Supreme is detected."));
+    Serial.println(F("INFO: TTGO T-Beam Supreme is detected."));
 
     Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                          SOC_GPIO_PIN_S3_GNSS_RX,

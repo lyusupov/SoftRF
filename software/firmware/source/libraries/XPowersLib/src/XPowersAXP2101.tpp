@@ -2313,7 +2313,7 @@ public:
     void setChargerVoltageLimit(xpowers_axp2101_chg_vol_t opt)
     {
         uint8_t val = readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0xFC;
-        writeRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL, val | opt);
+        writeRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET, val | opt);
     }
 
     xpowers_axp2101_chg_vol_t getChargerVoltageLimit(void)
