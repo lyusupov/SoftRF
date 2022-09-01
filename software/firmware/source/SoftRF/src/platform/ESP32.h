@@ -131,10 +131,12 @@ extern Adafruit_NeoPixel strip;
                                       SOC_GPIO_PIN_TBEAM_LED_V11 :      \
                                       SOC_UNUSED_PIN))))
 
-#define SOC_GPIO_PIN_GNSS_PPS (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
-                                SOC_UNUSED_PIN :                        \
-                                (hw_info.revision == 8 ?                \
-                                  SOC_GPIO_PIN_TBEAM_V08_PPS :          \
+#define SOC_GPIO_PIN_GNSS_PPS (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ?  \
+                                SOC_GPIO_PIN_S3_GNSS_PPS :                \
+                                (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?\
+                                  (hw_info.revision >= 8 ?                \
+                                    SOC_GPIO_PIN_TBEAM_V08_PPS :          \
+                                    SOC_UNUSED_PIN) :                     \
                                   SOC_UNUSED_PIN))
 
 #define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?\

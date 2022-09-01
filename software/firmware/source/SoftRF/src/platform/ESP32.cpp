@@ -437,8 +437,9 @@ static void ESP32_setup()
                                       SOC_GPIO_PIN_S3_PMU_SDA,
                                       SOC_GPIO_PIN_S3_PMU_SCL);
     if (has_axp2101) {
-      esp32_board = ESP32_TTGO_T_BEAM_SUPREME;
-      hw_info.pmu = PMU_AXP2101;
+      esp32_board   = ESP32_TTGO_T_BEAM_SUPREME;
+      hw_info.model = SOFTRF_MODEL_PRIME_MK3; /* allow psramFound() to fail */
+      hw_info.pmu   = PMU_AXP2101;
 
       // Set the minimum system operating voltage inside the PMU,
       // below this value will shut down the PMU
