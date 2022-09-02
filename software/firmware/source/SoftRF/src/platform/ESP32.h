@@ -115,10 +115,15 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_GNSS_RX    23
 #define SOC_GPIO_PIN_GNSS_TX    12
 #define SOC_GPIO_PIN_BATTERY    36
+
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #define SOC_GPIO_PIN_LED        25
-#else
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #define SOC_GPIO_PIN_LED        7
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD 14? */
+#else
+#error "This ESP32 family build variant is not supported!"
 #endif
 
 #define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
