@@ -313,14 +313,16 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
 }
 
-const char SoftRF_text2[]   = "Edition";
-const char SoftRF_text3[]   = "Standalone";
-const char SoftRF_text4[]   = "Prime 2";
-const char SoftRF_text5[]   = "Dongle";
-const char SoftRF_text6[]   = "Badge";
-const char SoftRF_text7[]   = "Academy";
-const char SoftRF_text8[]   = "ES";
-const char SoftRF_text9[]   = "Lego";
+const char SoftRF_text2 [] = "Edition";
+const char SoftRF_text3 [] = "Standalone";
+const char SoftRF_text4 [] = "Prime 2";
+const char SoftRF_text5 [] = "Dongle";
+const char SoftRF_text6 [] = "Badge";
+const char SoftRF_text7 [] = "Academy";
+const char SoftRF_text8 [] = "ES";
+const char SoftRF_text9 [] = "Lego";
+const char SoftRF_text10[] = "Prime 3";
+const char SoftRF_text11[] = "Balkan";
 
 static void ESP32_post_init()
 {
@@ -338,7 +340,7 @@ static void ESP32_post_init()
       case SOFTRF_MODEL_STANDALONE:
         str1 = SoftRF_text3;
         break;
-      case SOFTRF_MODEL_PRIME:
+      case SOFTRF_MODEL_PRIME_MK2:
         str1 = SoftRF_text4;
         break;
       case SOFTRF_MODEL_DONGLE:
@@ -355,6 +357,12 @@ static void ESP32_post_init()
         break;
       case SOFTRF_MODEL_LEGO:
         str1 = SoftRF_text9;
+        break;
+      case SOFTRF_MODEL_PRIME_MK3:
+        str1 = SoftRF_text10;
+        break;
+      case SOFTRF_MODEL_BALKAN:
+        str1 = SoftRF_text11;
         break;
       default:
         str1 = "Unknown";
@@ -1299,6 +1307,12 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
           break;
         case MAKE_USB_ID(0x1A86, 0x55D4): /* CH9102 */
           slave = SOFTRF_MODEL_PRIME_MK2;
+          break;
+        case MAKE_USB_ID(0x303a, 0x1001):
+          slave = SOFTRF_MODEL_PRIME_MK3;
+          break;
+        case MAKE_USB_ID(0x15ba, 0x0044):
+          slave = SOFTRF_MODEL_BALKAN;
           break;
         case MAKE_USB_ID(0x303a, 0x0100):
           slave = SOFTRF_MODEL_STANDALONE;

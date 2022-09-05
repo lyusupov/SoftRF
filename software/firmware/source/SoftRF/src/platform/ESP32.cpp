@@ -419,11 +419,12 @@ static void ESP32_setup()
 #endif /* USE_USB_HOST */
 
 #if defined(ARDUINO_ESP32S2_USB)
-    USB.manufacturerName(ESP32S2_Device_Manufacturer);
-    USB.productName(ESP32S2_Device_Model);
-    USB.firmwareVersion(ESP32S2_Device_Version);
-//  USB.serialNumber("12345677890");
-//  USB.begin();
+    if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
+      USB.productName(ESP32S2_Device_Model);
+      USB.firmwareVersion(ESP32S2_Device_Version);
+//    USB.serialNumber("12345677890");
+      USB.begin();
+    }
 #endif /* ARDUINO_ESP32S2_USB */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
@@ -495,10 +496,12 @@ static void ESP32_setup()
     }
 
 #if ARDUINO_USB_CDC_ON_BOOT
-    USB.manufacturerName(ESP32S2_Device_Manufacturer);
-    USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
-                    ESP32S3_Device_Model : ESP32S2_Device_Model);
-    USB.firmwareVersion(ESP32S2_Device_Version);
+    if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
+      USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
+                      ESP32S3_Device_Model : ESP32S2_Device_Model);
+      USB.firmwareVersion(ESP32S2_Device_Version);
+      USB.begin();
+    }
 
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_S3_CONS_RX,
