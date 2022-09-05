@@ -418,14 +418,6 @@ static void ESP32_setup()
                  SOC_GPIO_PIN_T8_S2_CONS_RX, SOC_GPIO_PIN_T8_S2_CONS_TX);
 #endif /* USE_USB_HOST */
 
-#if defined(ARDUINO_ESP32S2_USB)
-    if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
-      USB.productName(ESP32S2_Device_Model);
-      USB.firmwareVersion(ESP32S2_Device_Version);
-//    USB.serialNumber("12345677890");
-      USB.begin();
-    }
-#endif /* ARDUINO_ESP32S2_USB */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -496,13 +488,6 @@ static void ESP32_setup()
     }
 
 #if ARDUINO_USB_CDC_ON_BOOT
-    if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
-      USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
-                      ESP32S3_Device_Model : ESP32S2_Device_Model);
-      USB.firmwareVersion(ESP32S2_Device_Version);
-      USB.begin();
-    }
-
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_S3_CONS_RX,
                        SOC_GPIO_PIN_S3_CONS_TX);
@@ -523,6 +508,21 @@ static void ESP32_setup()
   }
 
 #if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+  if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
+    char usb_serial_number[16];
+
+    snprintf(usb_serial_number, sizeof(usb_serial_number),
+             "%02X%02X%02X%02X%02X%02X",
+             efuse_mac[0], efuse_mac[1], efuse_mac[2],
+             efuse_mac[3], efuse_mac[4], efuse_mac[5]);
+
+    USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
+                    ESP32S3_Device_Model : ESP32S2_Device_Model);
+    USB.firmwareVersion(ESP32S2_Device_Version);
+    USB.serialNumber(usb_serial_number);
+    USB.begin();
+  }
+
   Serial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
