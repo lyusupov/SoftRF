@@ -76,26 +76,26 @@ esp_err_t pmu_init()
     PMU.setBLDO2Voltage(3300);
     PMU.enableBLDO2();
 
-    ESP_LOGI(TAG, "DCDC=======================================================================");
-    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV ",  PMU.isEnableDC1()  ? "ENABLE " : "DISABLE", PMU.getDC1Voltage());
-    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV ",  PMU.isEnableDC2()  ? "ENABLE " : "DISABLE", PMU.getDC2Voltage());
-    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV ",  PMU.isEnableDC3()  ? "ENABLE " : "DISABLE", PMU.getDC3Voltage());
-    ESP_LOGI(TAG, "DC4  :%s   Voltage:%u mV ",  PMU.isEnableDC4()  ? "ENABLE " : "DISABLE", PMU.getDC4Voltage());
-    ESP_LOGI(TAG, "DC5  :%s   Voltage:%u mV ",  PMU.isEnableDC5()  ? "ENABLE " : "DISABLE", PMU.getDC5Voltage());
-    ESP_LOGI(TAG, "ALDO=======================================================================");
-    ESP_LOGI(TAG, "ALDO1:%s   Voltage:%u mV",  PMU.isEnableALDO1()  ? "ENABLE " : "DISABLE", PMU.getALDO1Voltage());
-    ESP_LOGI(TAG, "ALDO2:%s   Voltage:%u mV",  PMU.isEnableALDO2()  ? "ENABLE " : "DISABLE", PMU.getALDO2Voltage());
-    ESP_LOGI(TAG, "ALDO3:%s   Voltage:%u mV",  PMU.isEnableALDO3()  ? "ENABLE " : "DISABLE", PMU.getALDO3Voltage());
-    ESP_LOGI(TAG, "ALDO4:%s   Voltage:%u mV",  PMU.isEnableALDO4()  ? "ENABLE " : "DISABLE", PMU.getALDO4Voltage());
-    ESP_LOGI(TAG, "BLDO=======================================================================");
-    ESP_LOGI(TAG, "BLDO1:%s   Voltage:%u mV",  PMU.isEnableBLDO1()  ? "ENABLE " : "DISABLE", PMU.getBLDO1Voltage());
-    ESP_LOGI(TAG, "BLDO2:%s   Voltage:%u mV",  PMU.isEnableBLDO2()  ? "ENABLE " : "DISABLE", PMU.getBLDO2Voltage());
-    ESP_LOGI(TAG, "CPUSLDO=======================================================================");
-    ESP_LOGI(TAG, "CPUSLDO:%s Voltage:%u mV",  PMU.isEnableCPUSLDO()   ? "ENABLE " : "DISABLE", PMU.getCPUSLDOVoltage());
-    ESP_LOGI(TAG, "DLDO=======================================================================");
-    ESP_LOGI(TAG, "DLDO1:%s   Voltage:%u mV",  PMU.isEnableDLDO1()  ? "ENABLE " : "DISABLE", PMU.getDLDO1Voltage());
-    ESP_LOGI(TAG, "DLDO2:%s   Voltage:%u mV",  PMU.isEnableDLDO2()  ? "ENABLE " : "DISABLE", PMU.getDLDO2Voltage());
-    ESP_LOGI(TAG, "=======================================================================");
+    Serial.println("DCDC=======================================================================");
+    Serial.printf("DC1  : %s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "+" : "-", PMU.getDC1Voltage());
+    Serial.printf("DC2  : %s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "+" : "-", PMU.getDC2Voltage());
+    Serial.printf("DC3  : %s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "+" : "-", PMU.getDC3Voltage());
+    Serial.printf("DC4  : %s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "+" : "-", PMU.getDC4Voltage());
+    Serial.printf("DC5  : %s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "+" : "-", PMU.getDC5Voltage());
+    Serial.println("ALDO=======================================================================");
+    Serial.printf("ALDO1: %s   Voltage:%u mV\n",  PMU.isEnableALDO1()  ? "+" : "-", PMU.getALDO1Voltage());
+    Serial.printf("ALDO2: %s   Voltage:%u mV\n",  PMU.isEnableALDO2()  ? "+" : "-", PMU.getALDO2Voltage());
+    Serial.printf("ALDO3: %s   Voltage:%u mV\n",  PMU.isEnableALDO3()  ? "+" : "-", PMU.getALDO3Voltage());
+    Serial.printf("ALDO4: %s   Voltage:%u mV\n",  PMU.isEnableALDO4()  ? "+" : "-", PMU.getALDO4Voltage());
+    Serial.println("BLDO=======================================================================");
+    Serial.printf("BLDO1: %s   Voltage:%u mV\n",  PMU.isEnableBLDO1()  ? "+" : "-", PMU.getBLDO1Voltage());
+    Serial.printf("BLDO2: %s   Voltage:%u mV\n",  PMU.isEnableBLDO2()  ? "+" : "-", PMU.getBLDO2Voltage());
+    Serial.println("CPUSLDO====================================================================");
+    Serial.printf("CPUSLDO: %s Voltage:%u mV\n",  PMU.isEnableCPUSLDO() ? "+" : "-", PMU.getCPUSLDOVoltage());
+    Serial.println("DLDO=======================================================================");
+    Serial.printf("DLDO1: %s   Voltage:%u mV\n",  PMU.isEnableDLDO1()  ? "+" : "-", PMU.getDLDO1Voltage());
+    Serial.printf("DLDO2: %s   Voltage:%u mV\n",  PMU.isEnableDLDO2()  ? "+" : "-", PMU.getDLDO2Voltage());
+    Serial.println("===========================================================================");
 
     PMU.clearIrqStatus();
 
@@ -124,12 +124,12 @@ esp_err_t pmu_init()
     // Set the precharge charging current
     PMU.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_AXP2101_ICC_CHG_200MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
     // Set stop charging termination current
     PMU.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_AXP2101_CHG_VOL_4V1);
+    PMU.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V1);
 
     // Set the watchdog trigger event type
     // PMU.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);

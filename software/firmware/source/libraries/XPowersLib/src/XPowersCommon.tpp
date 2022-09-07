@@ -35,10 +35,12 @@
 #include <Wire.h>
 #endif
 
+
+
 #ifdef _BV
 #undef _BV
 #endif
-#define _BV(b)                          (1ULL << (b))
+#define _BV(b)                          (1ULL << (uint64_t)(b))
 
 
 #ifndef constrain
@@ -76,19 +78,23 @@ class XPowersCommon
     typedef int (*iic_fptr_t)(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 
 public:
-#if defined(ARDUINO)
 
+#if defined(ARDUINO)
     bool begin(TwoWire &w, uint8_t addr, int sda, int scl)
     {
+        if (__has_init)return thisChip().initImpl();
+        __has_init = true;
         __wire = &w;
-        __wire->setPins(sda, scl);
-        __wire->begin();
+        __wire->begin(sda, scl);
         __addr = addr;
         return thisChip().initImpl();
     }
 #endif
+
     bool begin(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
     {
+        if (__has_init)return thisChip().initImpl();
+        __has_init = true;
         thisReadRegCallback = readRegCallback;
         thisWriteRegCallback = writeRegCallback;
         __addr = addr;
@@ -233,16 +239,44 @@ public:
      * CRTP Helper
      */
 protected:
+
+    bool begin()
+    {
+#if defined(ARDUINO)
+        if (__has_init) return thisChip().initImpl();
+        __has_init = true;
+        log_i("SDA:%d SCL:%d", __sda, __scl);
+        __wire->begin(__sda, __scl);
+#endif  /*ARDUINO*/
+        return thisChip().initImpl();
+    }
+
+    void end()
+    {
+#if defined(ARDUINO)
+        if (__wire) {
+#if defined(ESP_IDF_VERSION)
+#if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4,4,0)
+            __wire->end();
+#endif  /*ESP_IDF_VERSION*/
+#endif  /*ESP_IDF_VERSION*/
+        }
+#endif /*ARDUINO*/
+    }
+
+
     inline const chipType &thisChip() const
     {
         return static_cast<const chipType &>(*this);
     }
+
     inline chipType &thisChip()
     {
         return static_cast<chipType &>(*this);
     }
 
 protected:
+    bool        __has_init              = false;
 #if defined(ARDUINO)
     TwoWire     *__wire                 = NULL;
 #endif

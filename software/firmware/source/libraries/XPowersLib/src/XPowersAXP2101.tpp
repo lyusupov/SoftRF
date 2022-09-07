@@ -36,43 +36,6 @@
 #include "REG/AXP2101Constants.h"
 #include "XPowersLibInterface.hpp"
 
-
-typedef enum {
-    //! IRQ1 REG 40H
-    XPOWERS_AXP2101_BAT_NOR_UNDER_TEMP_IRQ   = _BV(0),   // Battery Under Temperature in Work
-    XPOWERS_AXP2101_BAT_NOR_OVER_TEMP_IRQ    = _BV(1),   // Battery Over Temperature in Work mode
-    XPOWERS_AXP2101_BAT_CHG_UNDER_TEMP_IRQ   = _BV(2),   // Battery Under Temperature in Charge mode IRQ(bcut_irq)
-    XPOWERS_AXP2101_BAT_CHG_OVER_TEMP_IRQ    = _BV(3),   // Battery Over Temperature in Charge mode IRQ(bcot_irq) enable
-    XPOWERS_AXP2101_GAUGE_NEW_SOC_IRQ        = _BV(4),   // Gauge New SOC IRQ(lowsoc_irq) enable ???
-    XPOWERS_AXP2101_WDT_TIMEOUT_IRQ          = _BV(5),   // Gauge Watchdog Timeout IRQ(gwdt_irq) enable
-    XPOWERS_AXP2101_WARNING_LEVEL1_IRQ       = _BV(6),   // SOC drop to Warning Level1 IRQ(socwl1_irq) enable
-    XPOWERS_AXP2101_WARNING_LEVEL2_IRQ       = _BV(7),   // SOC drop to Warning Level2 IRQ(socwl2_irq) enable
-
-    //! IRQ2 REG 41H
-    XPOWERS_AXP2101_PKEY_POSITIVE_IRQ        = _BV(8),   // POWERON Positive Edge IRQ(ponpe_irq_en) enable
-    XPOWERS_AXP2101_PKEY_NEGATIVE_IRQ        = _BV(9),   // POWERON Negative Edge IRQ(ponne_irq_en) enable
-    XPOWERS_AXP2101_PKEY_LONG_IRQ            = _BV(10),  // POWERON Long PRESS IRQ(ponlp_irq) enable
-    XPOWERS_AXP2101_PKEY_SHORT_IRQ           = _BV(11),  // POWERON Short PRESS IRQ(ponsp_irq_en) enable
-    XPOWERS_AXP2101_BAT_REMOVE_IRQ           = _BV(12),  // Battery Remove IRQ(bremove_irq) enable
-    XPOWERS_AXP2101_BAT_INSERT_IRQ           = _BV(13),  // Battery Insert IRQ(binsert_irq) enabl
-    XPOWERS_AXP2101_VBUS_REMOVE_IRQ          = _BV(14),  // VBUS Remove IRQ(vremove_irq) enabl
-    XPOWERS_AXP2101_VBUS_INSERT_IRQ          = _BV(15),  // VBUS Insert IRQ(vinsert_irq) enable
-
-    //! IRQ3 REG 42H
-    XPOWERS_AXP2101_BAT_OVER_VOL_IRQ         = _BV(16),  // Battery Over Voltage Protection IRQ(bovp_irq) enable
-    XPOWERS_AXP2101_CHAGER_TIMER_IRQ         = _BV(17),  // Charger Safety Timer1/2 expire IRQ(chgte_irq) enable
-    XPOWERS_AXP2101_DIE_OVER_TEMP_IRQ        = _BV(18),  // DIE Over Temperature level1 IRQ(dotl1_irq) enable
-    XPOWERS_AXP2101_BAT_CHG_START_IRQ        = _BV(19),  // Charger start IRQ(chgst_irq) enable
-    XPOWERS_AXP2101_BAT_CHG_DONE_IRQ         = _BV(20),  // Battery charge done IRQ(chgdn_irq) enable
-    XPOWERS_AXP2101_BATFET_OVER_CURR_IRQ     = _BV(21),  // BATFET Over Current Protection IRQ(bocp_irq) enable
-    XPOWERS_AXP2101_LDO_OVER_CURR_IRQ        = _BV(22),  // LDO Over Current IRQ(ldooc_irq) enable
-    XPOWERS_AXP2101_WDT_EXPIRE_IRQ           = _BV(23),  // Watchdog Expire IRQ(wdexp_irq) enable
-
-    XPOWERS_AXP2101_ALL_IRQ                  = (0xFFFFFFFFUL)
-
-} xpowers_axp2101_irq_t;
-
-
 typedef enum {
     XPOWERS_AXP2101_IRQ_TIME_1S,
     XPOWERS_AXP2101_IRQ_TIME_1S5,
@@ -80,27 +43,7 @@ typedef enum {
     XPOWERS_AXP2101_PRESSOFF_2S5,
 } xpowers_irq_time_t;
 
-typedef enum {
-    XPOWERS_AXP2101_POWEROFF_4S,
-    XPOWERS_AXP2101_POWEROFF_6S,
-    XPOWERS_AXP2101_POWEROFF_8S,
-    XPOWERS_AXP2101_POWEROFF_10S,
-} xpowers_press_off_time_t;
 
-typedef enum {
-    XPOWERS_AXP2101_POWERON_128MS,
-    XPOWERS_AXP2101_POWERON_512MS,
-    XPOWERS_AXP2101_POWERON_1S,
-    XPOWERS_AXP2101_POWERON_2S,
-} xpowers_press_on_time_t;
-
-
-typedef enum {
-    XPOWERS_AXP2101_CHG_LED_FRE_0HZ,
-    XPOWERS_AXP2101_CHG_LED_FRE_1HZ,
-    XPOWERS_AXP2101_CHG_LED_FRE_4HZ,
-    XPOWERS_AXP2101_CHG_LED_DISABLE,
-} xpowers_axp2101_chgled_t;
 
 typedef enum {
     XPOWERS_AXP2101_PRECHARGE_0MA,
@@ -115,23 +58,6 @@ typedef enum {
 } xpowers_prechg_t;
 
 typedef enum {
-    XPOWERS_AXP2101_ICC_CHG_0MA,
-    XPOWERS_AXP2101_ICC_CHG_100MA = 4,
-    XPOWERS_AXP2101_ICC_CHG_125MA,
-    XPOWERS_AXP2101_ICC_CHG_150MA,
-    XPOWERS_AXP2101_ICC_CHG_175MA,
-    XPOWERS_AXP2101_ICC_CHG_200MA,
-    XPOWERS_AXP2101_ICC_CHG_300MA,
-    XPOWERS_AXP2101_ICC_CHG_400MA,
-    XPOWERS_AXP2101_ICC_CHG_500MA,
-    XPOWERS_AXP2101_ICC_CHG_600MA,
-    XPOWERS_AXP2101_ICC_CHG_700MA,
-    XPOWERS_AXP2101_ICC_CHG_800MA,
-    XPOWERS_AXP2101_ICC_CHG_900MA,
-    XPOWERS_AXP2101_ICC_CHG_1000MA,
-} xpowers_axp2101_icc_chg_t;
-
-typedef enum {
     XPOWERS_AXP2101_CHG_ITERM_0MA,
     XPOWERS_AXP2101_CHG_ITERM_25MA,
     XPOWERS_AXP2101_CHG_ITERM_50MA,
@@ -143,13 +69,6 @@ typedef enum {
     XPOWERS_AXP2101_CHG_ITERM_200MA,
 } xpowers_axp2101_chg_iterm_t;
 
-typedef enum {
-    XPOWERS_AXP2101_CHG_VOL_4V,
-    XPOWERS_AXP2101_CHG_VOL_4V1,
-    XPOWERS_AXP2101_CHG_VOL_4V2,
-    XPOWERS_AXP2101_CHG_VOL_4V35,
-    XPOWERS_AXP2101_CHG_VOL_4V4
-} xpowers_axp2101_chg_vol_t;
 
 typedef enum {
     XPOWERS_AXP2101_THREMAL_60DEG,
@@ -216,11 +135,7 @@ typedef enum {
     XPOWERS_AXP2101_WDT_TIMEOUT_128S,
 } xpowers_wdt_timeout_t;
 
-typedef enum {
-    XPOWER_CHGLED_TYPEA,        //See datasheet 6.7.5 page 27, Table 6-4 CHGLED Function Control
-    XPOWER_CHGLED_TYPEB,        //See datasheet 6.7.5 page 27, Table 6-4 CHGLED Function Control
-    XPOWER_CHGLED_MANUAL,       //The charging indicator is controlled by setChargingLedFreq to control the output frequency
-} xpowers_axp2101_chgled_func_t;
+
 
 typedef enum {
     XPOWERS_AXP2101_VBUS_VOL_LIM_3V88,
@@ -242,15 +157,6 @@ typedef enum {
 } xpower_vbus_vol_limit_t;
 
 typedef enum {
-    XPOWERS_AXP2101_VBUS_CUR_LIM_100MA,
-    XPOWERS_AXP2101_VBUS_CUR_LIM_500MA,
-    XPOWERS_AXP2101_VBUS_CUR_LIM_900MA,
-    XPOWERS_AXP2101_VBUS_CUR_LIM_1000MA,
-    XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA,
-    XPOWERS_AXP2101_VBUS_CUR_LIM_2000MA,
-} xpowers_axp2101_vbus_cur_limit_t;
-
-typedef enum {
     XPOWERS_AXP2101_VSYS_VOL_4V1,
     XPOWERS_AXP2101_VSYS_VOL_4V2,
     XPOWERS_AXP2101_VSYS_VOL_4V3,
@@ -259,7 +165,7 @@ typedef enum {
     XPOWERS_AXP2101_VSYS_VOL_4V6,
     XPOWERS_AXP2101_VSYS_VOL_4V7,
     XPOWERS_AXP2101_VSYS_VOL_4V8,
-} xpower_vsys_vol_t;
+} xpower_chg_dpm_t;
 
 typedef enum {
     XPOWER_POWERON_SRC_POWERON_LOW,                     //POWERON low for on level when POWERON Mode as POWERON Source
@@ -307,15 +213,33 @@ public:
         __addr = addr;
     }
 
+#endif
+
     XPowersAXP2101()
     {
+#if defined(ARDUINO)
         __wire = &Wire;
         __sda = SDA;
         __scl = SCL;
+#endif
         __addr = AXP2101_SLAVE_ADDRESS;
     }
-#endif
 
+    ~XPowersAXP2101()
+    {
+        log_i("~XPowersAXP2101");
+        deinit();
+    }
+
+    bool init()
+    {
+        return begin();
+    }
+
+    void deinit()
+    {
+        end();
+    }
 
     /*
      * PMU status functions
@@ -383,7 +307,9 @@ public:
 
     xpowers_chg_status_t getChargerStatus(void)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_STATUS2) & 0x07;
+        int val = readRegister(XPOWERS_AXP2101_THE_REGU_THRES_SET);
+        if (val == -1)return XPOWERS_AXP2101_CHG_STOP_STATE;
+        val &= 0x07;
         return (xpowers_chg_status_t)val;
     }
 
@@ -445,12 +371,22 @@ public:
         clrRegisterBit(XPOWERS_AXP2101_COMMON_CONFIG, 2);
     }
 
-    void resetPmuSocSystem(void)
+
+    /**
+     * @brief  Restart the SoC System, POWOFF/POWON and reset the related registers
+     * @retval None
+     */
+    void reset(void)
     {
         setRegisterBit(XPOWERS_AXP2101_COMMON_CONFIG, 1);
     }
 
-    void softPowerOff(void)
+    /**
+     * @brief  Set shutdown, calling shutdown will turn off all power channels,
+     *         only VRTC belongs to normal power supply
+     * @retval None
+     */
+    void shutdown(void)
     {
         setRegisterBit(XPOWERS_AXP2101_COMMON_CONFIG, 0);
     }
@@ -463,7 +399,9 @@ public:
      */
     void setBatfetDieOverTempLevel1(uint8_t opt)
     {
-        uint8_t val = (readRegister(XPOWERS_AXP2101_BATFET_CTRL) & 0xF9);
+        int val = readRegister(XPOWERS_AXP2101_BATFET_CTRL);
+        if (val == -1)return;
+        val &= 0xF9;
         writeRegister(XPOWERS_AXP2101_BATFET_CTRL, val | (opt << 1));
     }
 
@@ -487,7 +425,9 @@ public:
      */
     void setDieOverTempLevel1(uint8_t opt)
     {
-        uint8_t val = (readRegister(XPOWERS_AXP2101_DIE_TEMP_CTRL) & 0xF9);
+        int val = readRegister(XPOWERS_AXP2101_DIE_TEMP_CTRL);
+        if (val == -1)return;
+        val &= 0xF9;
         writeRegister(XPOWERS_AXP2101_DIE_TEMP_CTRL, val | (opt << 1));
     }
 
@@ -506,17 +446,21 @@ public:
         setRegisterBit(XPOWERS_AXP2101_DIE_TEMP_CTRL, 0);
     }
 
-    // Set the minimum system operating voltage inside the PMU,
-    // below this value will shut down the PMU
-    void setMinSystemVoltage(xpower_vsys_vol_t opt)
+    // Linear Charger Vsys voltage dpm
+    void setLinearChargerVsysDpm(xpower_chg_dpm_t opt)
     {
-        uint8_t val = (readRegister(XPOWERS_AXP2101_MIN_SYS_VOL_CTRL) & 0x8F);
+        int val = readRegister(XPOWERS_AXP2101_MIN_SYS_VOL_CTRL);
+        if (val == -1)return;
+        val &= 0x8F;
         writeRegister(XPOWERS_AXP2101_MIN_SYS_VOL_CTRL, val | (opt << 4));
     }
 
-    uint8_t getMinSystemVoltage(void)
+    uint8_t getLinearChargerVsysDpm(void)
     {
-        return (readRegister(XPOWERS_AXP2101_MIN_SYS_VOL_CTRL) & 0x70) >> 4;
+        int val = readRegister(XPOWERS_AXP2101_MIN_SYS_VOL_CTRL);
+        if (val == -1)return 0;
+        val &= 0x70;
+        return (val & 0x70) >> 4;
     }
 
     // Set the minimum common working voltage of the PMU VBUS input,
@@ -534,17 +478,26 @@ public:
         return (readRegister(XPOWERS_AXP2101_INPUT_VOL_LIMIT_CTRL) & 0x0F);
     }
 
-    // Set the maximum current of the PMU VBUS input,
-    // higher than this value will turn off the PMU
-    void setVbusCurrentLimit(xpowers_axp2101_vbus_cur_limit_t opt)
+    /**
+    * @brief  Set VBUS Current Input Limit.
+    * @param  opt: View the related chip type xpowers_axp2101_vbus_cur_limit_t enumeration
+    *              parameters in "XPowersParams.hpp"
+    * @retval true valid false invalid
+    */
+    bool setVbusCurrentLimit(uint8_t opt)
     {
         int val = readRegister(XPOWERS_AXP2101_INPUT_CUR_LIMIT_CTRL);
-        if (val == -1)return;
+        if (val == -1)return false;
         val &= 0xF8;
-        writeRegister(XPOWERS_AXP2101_INPUT_CUR_LIMIT_CTRL, val | (opt & 0x07));
+        return 0 == writeRegister(XPOWERS_AXP2101_INPUT_CUR_LIMIT_CTRL, val | (opt & 0x07));
     }
 
-    uint8_t getVinCurrentLimit(void)
+    /**
+    * @brief  Get VBUS Current Input Limit.
+    * @retval View the related chip type xpowers_axp2101_vbus_cur_limit_t enumeration
+    *              parameters in "XPowersParams.hpp"
+    */
+    uint8_t getVbusCurrentLimit(void)
     {
         return (readRegister(XPOWERS_AXP2101_INPUT_CUR_LIMIT_CTRL) & 0x07);
     }
@@ -565,7 +518,6 @@ public:
         setRegisterBit(XPOWERS_AXP2101_RESET_FUEL_GAUGE, 2);
     }
 
-
     /**
      * @brief Gauge Module
      */
@@ -582,15 +534,50 @@ public:
     /**
      * @brief  Button Battery charge
      */
-    void enableButtonBatteryCharge(void)
+    bool enableButtonBatteryCharge(void)
     {
-        setRegisterBit(XPOWERS_AXP2101_CHARGE_GAUGE_WDT_CTRL, 2);
+        return setRegisterBit(XPOWERS_AXP2101_CHARGE_GAUGE_WDT_CTRL, 2);
     }
 
-    void disableButtonBatteryCharge(void)
+    bool disableButtonBatteryCharge(void)
     {
-        clrRegisterBit(XPOWERS_AXP2101_CHARGE_GAUGE_WDT_CTRL, 2);
+        return clrRegisterBit(XPOWERS_AXP2101_CHARGE_GAUGE_WDT_CTRL, 2);
     }
+
+    bool isEanbleButtonBatteryCharge()
+    {
+        return getRegisterBit(XPOWERS_AXP2101_CHARGE_GAUGE_WDT_CTRL, 2);
+    }
+
+
+    //Button battery charge termination voltage setting
+    bool setButtonBatteryChargeVoltage(uint16_t millivolt)
+    {
+        if (millivolt % XPOWERS_AXP2101_BTN_VOL_STEPS) {
+            log_e("Mistake ! Button battery charging step voltage is %u mV", XPOWERS_AXP2101_BTN_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_AXP2101_BTN_VOL_MIN) {
+            log_e("Mistake ! The minimum charge termination voltage of the coin cell battery is %u mV", XPOWERS_AXP2101_BTN_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_AXP2101_BTN_VOL_MAX) {
+            log_e("Mistake ! The minimum charge termination voltage of the coin cell battery is %u mV", XPOWERS_AXP2101_BTN_VOL_MAX);
+            return false;
+        }
+        int val =  readRegister(XPOWERS_AXP2101_BTN_BAT_CHG_VOL_SET);
+        if (val == -1)return 0;
+        val  &= 0xF8;
+        val |= (millivolt - XPOWERS_AXP2101_BTN_VOL_MIN) / XPOWERS_AXP2101_BTN_VOL_STEPS;
+        return 0 == writeRegister(XPOWERS_AXP2101_BTN_BAT_CHG_VOL_SET, val);
+    }
+
+    uint16_t getButtonBatteryVoltage(void)
+    {
+        int val =  readRegister(XPOWERS_AXP2101_BTN_BAT_CHG_VOL_SET);
+        if (val == -1)return 0;
+        return (val & 0x07) * XPOWERS_AXP2101_BTN_VOL_STEPS + XPOWERS_AXP2101_BTN_VOL_MIN;
+    }
+
 
     /**
      * @brief Cell Battery charge
@@ -628,7 +615,9 @@ public:
      */
     void setWatchdogConfig(xpowers_wdt_config_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_WDT_CTRL) & 0xCF;
+        int val = readRegister(XPOWERS_AXP2101_WDT_CTRL);
+        if (val == -1)return;
+        val &= 0xCF;
         writeRegister(XPOWERS_AXP2101_WDT_CTRL, val | (opt << 4));
     }
 
@@ -645,7 +634,9 @@ public:
 
     void setWatchdogTimeout(xpowers_wdt_timeout_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_WDT_CTRL) & 0xF8;
+        int val = readRegister(XPOWERS_AXP2101_WDT_CTRL);
+        if (val == -1)return;
+        val &= 0xF8;
         writeRegister(XPOWERS_AXP2101_WDT_CTRL, val | opt);
     }
 
@@ -659,7 +650,9 @@ public:
      */
     void setLowBatWarnThreshold(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET) & 0x0F;
+        int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
+        if (val == -1)return;
+        val &= 0x0F;
         writeRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET, val | (opt << 4));
     }
 
@@ -674,7 +667,9 @@ public:
 
     void setLowBatShutdownThreshold(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET) & 0xF0;
+        int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
+        if (val == -1)return;
+        val &= 0xF0;
         writeRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET, val | opt);
     }
 
@@ -882,9 +877,9 @@ public:
     }
 
 
-    //  Vsys voltage for PWROFF threshold setting 24
-    //  Adjustment range 2600mV ~ 3300mV
-    bool setVsysPowerOffThreshold(uint16_t millivolt)
+    // Set the minimum system operating voltage inside the PMU,
+    // below this value will shut down the PMU,Adjustment range 2600mV~3300mV
+    bool setSysPowerDownVoltage(uint16_t millivolt)
     {
         if (millivolt % XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS) {
             log_e("Mistake ! The steps is must %u mV", XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS);
@@ -897,15 +892,17 @@ public:
             log_e("Mistake ! The maximum settable voltage of VSYS is %u mV", XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_MAX);
             return false;
         }
-        uint8_t val = readRegister(XPOWERS_AXP2101_VOFF_SET) & 0xF8;
-        return 0 == writeRegister(XPOWERS_AXP2101_VOFF_SET,
-                                  val | (millivolt - XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_MIN) / XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS);
-
+        int val = readRegister(XPOWERS_AXP2101_VOFF_SET);
+        if (val == -1)return false;
+        val &= 0xF8;
+        return 0 == writeRegister(XPOWERS_AXP2101_VOFF_SET, val | ((millivolt - XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_MIN) / XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS));
     }
 
-    uint16_t getVsysPowerOffThreshold(void)
+    uint16_t getSysPowerDownVoltage(void)
     {
-        return (readRegister(XPOWERS_AXP2101_VOFF_SET) & 0x07) * XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS + XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_MIN;
+        int val = readRegister(XPOWERS_AXP2101_VOFF_SET);
+        if (val == -1)return false;
+        return (val & 0x07) * XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_STEPS + XPOWERS_AXP2101_VSYS_VOL_THRESHOLD_MIN;
     }
 
     //  PWROK setting and PWROFF sequence control 25.
@@ -963,29 +960,30 @@ public:
     //  Sleep and 26
     void wakeupControl(xpowers_wakeup_t opt, bool enable)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL) ;
+        int val = readRegister(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL);
+        if (val == -1)return;
         enable ? (val | opt) : (val & (~opt));
         writeRegister(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, val | opt);
     }
 
-    void enableWakeup(void)
+    bool enableWakeup(void)
     {
-        setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 1);
+        return setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 1);
     }
 
-    void disableWakeup(void)
+    bool disableWakeup(void)
     {
-        clrRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 1);
+        return clrRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 1);
     }
 
-    void enableSleep(void)
+    bool enableSleep(void)
     {
-        setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 0);
+        return setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 0);
     }
 
-    void disableSleep(void)
+    bool disableSleep(void)
     {
-        clrRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 0);
+        return clrRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 0);
     }
 
 
@@ -996,7 +994,9 @@ public:
      */
     void setIrqLevel(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return;
+        val &= 0xFC;
         writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | (opt << 4));
     }
 
@@ -1006,7 +1006,8 @@ public:
      */
     void setOffLevel(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return;
         writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | (opt << 2));
     }
 
@@ -1016,7 +1017,8 @@ public:
      */
     void setOnLevel(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return;
         writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | opt);
     }
 
@@ -1410,6 +1412,7 @@ public:
     /*
      * Power control DCDC3 functions
      */
+
     bool isEnableDC3(void)
     {
         return getRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 2);
@@ -1493,7 +1496,6 @@ public:
     /*
     * Power control DCDC4 functions
     */
-
     /**
         0.5~1.2V,10mV/step,71steps
         1.22~1.84V,20mV/step,32steps
@@ -2036,7 +2038,9 @@ public:
 
     void setIrqLevelTime(xpowers_irq_time_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0xCF;
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return;
+        val &= 0xCF;
         writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | (opt << 4));
     }
 
@@ -2045,26 +2049,50 @@ public:
         return (xpowers_irq_time_t)((readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0x30) >> 4);
     }
 
-    void setPowerKeyPressOffTime(xpowers_press_off_time_t opt)
+    /**
+    * @brief Set the PEKEY power-on long press time.
+    * @param opt: See xpowers_press_on_time_t enum for details.
+    * @retval
+    */
+    bool setPowerKeyPressOnTime(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0xF3;
-        writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | (opt << 2));
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return false;
+        val  &= 0xFC;
+        return 0 ==  writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | opt);
     }
 
-    xpowers_press_off_time_t getPowerKeyPressOffTime(void)
+    /**
+    * @brief Get the PEKEY power-on long press time.
+    * @retval See xpowers_press_on_time_t enum for details.
+    */
+    uint8_t getPowerKeyPressOnTime(void)
     {
-        return (xpowers_press_off_time_t)((readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0x0C) >> 2);
+        int val =  readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return 0;
+        return (val & 0x03) ;
     }
 
-    void setPowerKeyPressOnTime(xpowers_press_on_time_t opt)
+    /**
+    * @brief Set the PEKEY power-off long press time.
+    * @param opt: See xpowers_press_off_time_t enum for details.
+    * @retval
+    */
+    bool setPowerKeyPressOffTime(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0xFC;
-        writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | opt);
-
+        int val = readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL);
+        if (val == -1)return false;
+        val  &= 0xF3;
+        return 0 == writeRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL, val | (opt << 2));
     }
-    xpowers_press_on_time_t getPowerKeyPressOnTime(void)
+
+    /**
+    * @brief Get the PEKEY power-off long press time.
+    * @retval See xpowers_press_off_time_t enum for details.
+    */
+    uint8_t getPowerKeyPressOffTime(void)
     {
-        return (xpowers_press_on_time_t)(readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0x03);
+        return ((readRegister(XPOWERS_AXP2101_IRQ_OFF_ON_LEVEL_CTRL) & 0x0C) >> 2);
     }
 
     /*
@@ -2187,55 +2215,59 @@ public:
     /*
     * CHG LED setting and control
     */
-    void enableChargingLed(void)
+    // void enableChargingLed(void)
+    // {
+    //     setRegisterBit(XPOWERS_AXP2101_CHGLED_SET_CTRL, 0);
+    // }
+
+    // void disableChargingLed(void)
+    // {
+    //     clrRegisterBit(XPOWERS_AXP2101_CHGLED_SET_CTRL, 0);
+    // }
+
+    /**
+    * @brief Set charging led mode.
+    * @retval See xpowers_chg_led_mode_t enum for details.
+    */
+    void setChargingLedMode(uint8_t mode)
     {
-        setRegisterBit(XPOWERS_AXP2101_CHGLED_SET_CTRL, 0);
+        int val;
+        switch (mode) {
+        case XPOWERS_CHG_LED_OFF:
+        // clrRegisterBit(XPOWERS_AXP2101_CHGLED_SET_CTRL, 0);
+        // break;
+        case XPOWERS_CHG_LED_BLINK_1HZ:
+        case XPOWERS_CHG_LED_BLINK_4HZ:
+        case XPOWERS_CHG_LED_ON:
+            val = readRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL);
+            if (val == -1)return;
+            val &= 0xC8;
+            val |= 0x05;    //use manual ctrl
+            val |= (mode << 4);
+            writeRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL, val);
+            break;
+        case XPOWERS_CHG_LED_CTRL_CHG:
+            val = readRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL);
+            if (val == -1)return;
+            val &= 0xF9;
+            writeRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL, val | 0x01); // use type A mode
+            // writeRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL, val | 0x02); // use type B mode
+            break;
+        default:
+            break;
+        }
     }
 
-    void disableChargingLed(void)
-    {
-        clrRegisterBit(XPOWERS_AXP2101_CHGLED_SET_CTRL, 0);
-    }
-
-    void setChargingLedFreq(xpowers_axp2101_chgled_t opt)
+    uint8_t getChargingLedMode()
     {
         int val = readRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL);
-        if (val == -1)return;
-        val &= 0xCF;
-        val |= (opt << 4);
-        writeRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL, val);
-    }
-
-    xpowers_axp2101_chgled_t getChargingLedFreq(void)
-    {
-        return (xpowers_axp2101_chgled_t)((readRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL) & 0x30) >> 4);
-    }
-
-    void setChargerLedFunction(xpowers_axp2101_chgled_func_t opt)
-    {
-        uint8_t val = readRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL) & 0xF9;
-        writeRegister(XPOWERS_AXP2101_CHGLED_SET_CTRL, val | (opt << 1));
-    }
-
-    //Button battery charge termination voltage setting
-    bool setButtonBatteryChargeVoltage(uint16_t millivolt)
-    {
-        if (millivolt % XPOWERS_AXP2101_BTN_VOL_STEPS) {
-            log_e("Mistake ! Button battery charging step voltage is %u mV", XPOWERS_AXP2101_BTN_VOL_STEPS);
-            return false;
+        if (val == -1)return XPOWERS_CHG_LED_OFF;
+        val >>= 1;
+        if ((val & 0x02) == 0x02) {
+            val >>= 4;
+            return val & 0x03;
         }
-        if (millivolt < XPOWERS_AXP2101_BTN_VOL_MIN) {
-            log_e("Mistake ! The minimum charge termination voltage of the coin cell battery is %u mV", XPOWERS_AXP2101_BTN_VOL_MIN);
-            return false;
-        } else if (millivolt > XPOWERS_AXP2101_BTN_VOL_MAX) {
-            log_e("Mistake ! The minimum charge termination voltage of the coin cell battery is %u mV", XPOWERS_AXP2101_BTN_VOL_MAX);
-            return false;
-        }
-
-        millivolt =  constrain(millivolt, XPOWERS_AXP2101_BTN_VOL_MIN, XPOWERS_AXP2101_BTN_VOL_MAX);
-        uint16_t val =  readRegister(XPOWERS_AXP2101_BTN_BAT_CHG_VOL_SET) & 0xFC;
-        val |= (millivolt - XPOWERS_AXP2101_BTN_VOL_MIN) / XPOWERS_AXP2101_BTN_VOL_STEPS;
-        return 0 == writeRegister(XPOWERS_AXP2101_BTN_BAT_CHG_VOL_SET, val);
+        return XPOWERS_CHG_LED_CTRL_CHG;
     }
 
     /**
@@ -2246,7 +2278,9 @@ public:
      */
     void setPrechargeCurr(xpowers_prechg_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_IPRECHG_SET) & 0xFC ;
+        int val = readRegister(XPOWERS_AXP2101_IPRECHG_SET);
+        if (val == -1)return;
+        val &= 0xFC;
         writeRegister(XPOWERS_AXP2101_IPRECHG_SET, val | opt);
     }
 
@@ -2255,21 +2289,28 @@ public:
         return (xpowers_prechg_t)(readRegister(XPOWERS_AXP2101_IPRECHG_SET) & 0x03);
     }
 
+
     /**
-     * @brief  恒流充电电流限制
-     * @note   constant current charge current limit
-     * @param  opt: 25*N mA if N<=8 200+100*(N-8) mA if N>8
-     * @retval None
-     */
-    void setChargerConstantCurr(xpowers_axp2101_icc_chg_t opt)
+    * @brief Set charge current.
+    * @param  opt: See xpowers_axp2101_chg_curr_t enum for details.
+    * @retval
+    */
+    bool setChargerConstantCurr(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_ICC_CHG_SET) & 0xE0 ;
-        writeRegister(XPOWERS_AXP2101_ICC_CHG_SET, val | opt);
+        if (opt > XPOWERS_AXP2101_CHG_CUR_1000MA)return false;
+        int val = readRegister(XPOWERS_AXP2101_ICC_CHG_SET);
+        if (val == -1)return false;
+        val &= 0xE0;
+        return 0 == writeRegister(XPOWERS_AXP2101_ICC_CHG_SET, val | opt);
     }
 
-    xpowers_axp2101_icc_chg_t getChargerConstantCurr(void)
+    /**
+     * @brief Get charge current settings.
+    *  @retval See xpowers_axp2101_chg_curr_t enum for details.
+     */
+    uint8_t getChargerConstantCurr(void)
     {
-        return (xpowers_axp2101_icc_chg_t)(readRegister(XPOWERS_AXP2101_ICC_CHG_SET) & 0x1F);
+        return (readRegister(XPOWERS_AXP2101_ICC_CHG_SET) & 0x1F);
     }
 
     /**
@@ -2279,7 +2320,9 @@ public:
      */
     void setChargerTerminationCurr(xpowers_axp2101_chg_iterm_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL) & 0xF0;
+        int val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
+        if (val == -1)return;
+        val &= 0xF0;
         writeRegister(XPOWERS_AXP2101_ICC_CHG_SET, val | opt);
     }
 
@@ -2290,13 +2333,15 @@ public:
 
     void enableChargerTerminationLimit(void)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
+        int val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
+        if (val == -1)return;
         writeRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL, val | 0x10);
     }
 
     void disableChargerTerminationLimit(void)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
+        int val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
+        if (val == -1)return;
         writeRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL, val & 0xEF);
     }
 
@@ -2307,18 +2352,26 @@ public:
 
 
     /**
-     * @brief  设置充电电压
-     * @note   Charger voltage limit
-     */
-    void setChargerVoltageLimit(xpowers_axp2101_chg_vol_t opt)
+    * @brief Set charge target voltage.
+    * @param  opt: See xpowers_axp2101_chg_vol_t enum for details.
+    * @retval
+    */
+    bool setChargeTargetVoltage(uint8_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0xFC;
-        writeRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET, val | opt);
+        if (opt >= XPOWERS_AXP2101_CHG_VOL_MAX)return false;
+        int val = readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET);
+        if (val == -1)return false;
+        val &= 0xFC;
+        return 0 == writeRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET, val | opt);
     }
 
-    xpowers_axp2101_chg_vol_t getChargerVoltageLimit(void)
+    /**
+     * @brief Get charge target voltage settings.
+     * @retval See xpowers_axp2101_chg_vol_t enum for details.
+     */
+    uint8_t getChargeTargetVoltage(void)
     {
-        return (xpowers_axp2101_chg_vol_t)(readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0x03);
+        return (readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0x03);
     }
 
 
@@ -2328,7 +2381,9 @@ public:
      */
     void setThermaThreshold(xpowers_thermal_t opt)
     {
-        uint8_t val = readRegister(XPOWERS_AXP2101_THE_REGU_THRES_SET) & 0xFC;
+        int val = readRegister(XPOWERS_AXP2101_THE_REGU_THRES_SET);
+        if (val == -1)return;
+        val &= 0xFC;
         writeRegister(XPOWERS_AXP2101_THE_REGU_THRES_SET, val | opt);
     }
 
@@ -2345,6 +2400,11 @@ public:
     /*
      * Interrupt status/control functions
      */
+
+    /**
+    * @brief  Get the interrupt controller mask value.
+    * @retval   Mask value corresponds to xpowers_axp2101_irq_t ,
+    */
     uint64_t getIrqStatus(void)
     {
         statusRegister[0] = readRegister(XPOWERS_AXP2101_INTSTS1);
@@ -2353,6 +2413,10 @@ public:
         return (uint32_t)(statusRegister[0] << 16) | (uint32_t)(statusRegister[1] << 8) | (uint32_t)(statusRegister[2]);
     }
 
+
+    /**
+     * @brief  Clear interrupt controller state.
+     */
     void clearIrqStatus(void)
     {
         for (int i = 0; i < XPOWERS_AXP2101_INTSTS_CNT; i++) {
@@ -2361,11 +2425,23 @@ public:
         }
     }
 
+    /**
+     * @brief  Eanble PMU interrupt control mask .
+     * @param  opt: View the related chip type xpowers_axp2101_irq_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval
+     */
     bool enableIRQ(uint64_t opt)
     {
         return setInterruptImpl(opt, true);
     }
 
+    /**
+     * @brief  Disable PMU interrupt control mask .
+     * @param  opt: View the related chip type xpowers_axp2101_irq_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval
+     */
     bool disableIRQ(uint64_t opt)
     {
         return setInterruptImpl(opt, false);
@@ -2497,21 +2573,212 @@ public:
 
 protected:
 
-    bool enablePowerOutput(uint8_t channel)
+    uint16_t getPowerChannelVoltage(uint8_t channel)
     {
-        //TODO:
+        switch (channel) {
+        case XPOWERS_DCDC1:
+            return getDC1Voltage();
+        case XPOWERS_DCDC2:
+            return getDC2Voltage();
+        case XPOWERS_DCDC3:
+            return getDC3Voltage();
+        case XPOWERS_DCDC4:
+            return getDC4Voltage();
+        case XPOWERS_DCDC5:
+            return getDC5Voltage();
+        case XPOWERS_ALDO1:
+            return getALDO1Voltage();
+        case XPOWERS_ALDO2:
+            return getALDO2Voltage();
+        case XPOWERS_ALDO3:
+            return getALDO3Voltage();
+        case XPOWERS_ALDO4:
+            return getALDO4Voltage();
+        case XPOWERS_BLDO1:
+            return getBLDO1Voltage();
+        case XPOWERS_BLDO2:
+            return getBLDO2Voltage();
+        case XPOWERS_DLDO1:
+            return getDLDO1Voltage();
+        case XPOWERS_DLDO2:
+            return getDLDO2Voltage();
+        case XPOWERS_VBACKUP:
+            return getButtonBatteryVoltage();
+        default:
+            break;
+        }
+        return 0;
+    }
+
+    bool inline enablePowerOutput(uint8_t channel)
+    {
+        switch (channel) {
+        case XPOWERS_DCDC1:
+            return enableDC1();
+        case XPOWERS_DCDC2:
+            return enableDC2();
+        case XPOWERS_DCDC3:
+            return enableDC3();
+        case XPOWERS_DCDC4:
+            return enableDC4();
+        case XPOWERS_DCDC5:
+            return enableDC5();
+        case XPOWERS_ALDO1:
+            return enableALDO1();
+        case XPOWERS_ALDO2:
+            return enableALDO2();
+        case XPOWERS_ALDO3:
+            return enableALDO3();
+        case XPOWERS_ALDO4:
+            return enableALDO4();
+        case XPOWERS_BLDO1:
+            return enableBLDO1();
+        case XPOWERS_BLDO2:
+            return enableBLDO2();
+        case XPOWERS_DLDO1:
+            return enableDLDO1();
+        case XPOWERS_DLDO2:
+            return enableDLDO2();
+        case XPOWERS_VBACKUP:
+            return enableButtonBatteryCharge();
+        default:
+            break;
+        }
         return false;
     }
 
-    bool disablePowerOutput(uint8_t channel)
+    bool inline disablePowerOutput(uint8_t channel)
     {
-        //TODO:
+        if (getProtectedChannel(channel)) {
+            log_e("Failed to disable the power channel, the power channel has been protected");
+            return false;
+        }
+        switch (channel) {
+        case XPOWERS_DCDC1:
+            return disableDC1();
+        case XPOWERS_DCDC2:
+            return disableDC2();
+        case XPOWERS_DCDC3:
+            return disableDC3();
+        case XPOWERS_DCDC4:
+            return disableDC4();
+        case XPOWERS_DCDC5:
+            return disableDC5();
+        case XPOWERS_ALDO1:
+            return disableALDO1();
+        case XPOWERS_ALDO2:
+            return disableALDO2();
+        case XPOWERS_ALDO3:
+            return disableALDO3();
+        case XPOWERS_ALDO4:
+            return disableALDO4();
+        case XPOWERS_BLDO1:
+            return disableBLDO1();
+        case XPOWERS_BLDO2:
+            return disableBLDO2();
+        case XPOWERS_DLDO1:
+            return disableDLDO1();
+        case XPOWERS_DLDO2:
+            return disableDLDO2();
+        case XPOWERS_VBACKUP:
+            return disableButtonBatteryCharge();
+        case XPOWERS_CPULDO:
+            return disableCPUSLDO();
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool inline isPowerChannelEnable(uint8_t channel)
+    {
+        switch (channel) {
+        case XPOWERS_DCDC1:
+            return isEnableDC1();
+        case XPOWERS_DCDC2:
+            return isEnableDC2();
+        case XPOWERS_DCDC3:
+            return isEnableDC3();
+        case XPOWERS_DCDC4:
+            return isEnableDC4();
+        case XPOWERS_DCDC5:
+            return isEnableDC5();
+        case XPOWERS_ALDO1:
+            return isEnableALDO1();
+        case XPOWERS_ALDO2:
+            return isEnableALDO2();
+        case XPOWERS_ALDO3:
+            return isEnableALDO3();
+        case XPOWERS_ALDO4:
+            return isEnableALDO4();
+        case XPOWERS_BLDO1:
+            return isEnableBLDO1();
+        case XPOWERS_BLDO2:
+            return isEnableBLDO2();
+        case XPOWERS_DLDO1:
+            return isEnableDLDO1();
+        case XPOWERS_DLDO2:
+            return isEnableDLDO2();
+        case XPOWERS_VBACKUP:
+            return isEanbleButtonBatteryCharge();
+        case XPOWERS_CPULDO:
+            return isEnableCPUSLDO();
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool inline setPowerChannelVoltage(uint8_t channel, uint16_t millivolt)
+    {
+        if (getProtectedChannel(channel)) {
+            log_e("Failed to set the power channel, the power channel has been protected");
+            return false;
+        }
+        switch (channel) {
+        case XPOWERS_DCDC1:
+            return setDC1Voltage(millivolt);
+        case XPOWERS_DCDC2:
+            return setDC2Voltage(millivolt);
+        case XPOWERS_DCDC3:
+            return setDC3Voltage(millivolt);
+        case XPOWERS_DCDC4:
+            return setDC4Voltage(millivolt);
+        case XPOWERS_DCDC5:
+            return setDC5Voltage(millivolt);
+        case XPOWERS_ALDO1:
+            return setALDO1Voltage(millivolt);
+        case XPOWERS_ALDO2:
+            return setALDO2Voltage(millivolt);
+        case XPOWERS_ALDO3:
+            return setALDO3Voltage(millivolt);
+        case XPOWERS_ALDO4:
+            return setALDO4Voltage(millivolt);
+        case XPOWERS_BLDO1:
+            return setBLDO1Voltage(millivolt);
+        case XPOWERS_BLDO2:
+            return setBLDO1Voltage(millivolt);
+        case XPOWERS_DLDO1:
+            return setDLDO1Voltage(millivolt);
+        case XPOWERS_DLDO2:
+            return setDLDO1Voltage(millivolt);
+        case XPOWERS_VBACKUP:
+            return setButtonBatteryChargeVoltage(millivolt);
+        case XPOWERS_CPULDO:
+            return setCPUSLDOVoltage(millivolt);
+        default:
+            break;
+        }
         return false;
     }
 
     bool initImpl()
     {
-        return getChipID() == XPOWERS_AXP2101_CHIP_ID;
+        if (getChipID() == XPOWERS_AXP2101_CHIP_ID) {
+            setChipModel(XPOWERS_AXP2101);
+            return true;
+        }
+        return  false;
     }
 
     /*

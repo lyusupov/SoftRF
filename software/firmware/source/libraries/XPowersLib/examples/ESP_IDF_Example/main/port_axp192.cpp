@@ -30,14 +30,14 @@ esp_err_t pmu_init()
     // Set the minimum system operating voltage inside the PMU,
     // below this value will shut down the PMU
     // Range: 2600~3300mV
-    PMU.setMinSystemVoltage(2700);
+    PMU.setSysPowerDownVoltage(2700);
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
     PMU.setVbusVoltageLimit(XPOWERS_AXP192_VBUS_VOL_LIM_4V5);
 
     // Turn off USB input current limit
-    PMU.disableVbusCurrLimit();
+    PMU.setVbusCurrentLimit(XPOWERS_AXP192_VBUS_CUR_LIM_OFF);
 
     // DC1 700~3500mV, IMAX=1.2A
     PMU.setDC1Voltage(3300);
@@ -70,44 +70,44 @@ esp_err_t pmu_init()
     PMU.enableLDO3();
     PMU.enableLDOio();
 
-    ESP_LOGI(TAG, "DCDC=======================================================================");
-    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV ",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
-    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV ",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
-    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV ",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
-    ESP_LOGI(TAG, "LDO=======================================================================");
-    ESP_LOGI(TAG, "LDO2:%s   Voltage:%u mV",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
-    ESP_LOGI(TAG, "LDO3:%s   Voltage:%u mV",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
-    ESP_LOGI(TAG, "LDOio:%s   Voltage:%u mV",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
-    ESP_LOGI(TAG, "BLDO=======================================================================");
+    Serial.println("DCDC=======================================================================");
+    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
+    Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
+    Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
+    Serial.println("LDO=======================================================================");
+    Serial.printf("LDO2: %s   Voltage:%u mV\n",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
+    Serial.printf("LDO3: %s   Voltage:%u mV\n",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
+    Serial.printf("LDOio: %s   Voltage:%u mV\n",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
+    Serial.println("==========================================================================");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_AXP192_POWEROFF_4S);
+    PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
     uint8_t opt = PMU.getPowerKeyPressOffTime();
     ESP_LOGI(TAG, "PowerKeyPressOffTime:");
     switch (opt) {
-    case XPOWERS_AXP192_POWEROFF_4S: ESP_LOGI(TAG, "4 Second");
+    case XPOWERS_POWEROFF_4S: ESP_LOGI(TAG, "4 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_65: ESP_LOGI(TAG, "6 Second");
+    case XPOWERS_POWEROFF_6S: ESP_LOGI(TAG, "6 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_8S: ESP_LOGI(TAG, "8 Second");
+    case XPOWERS_POWEROFF_8S: ESP_LOGI(TAG, "8 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_16S: ESP_LOGI(TAG, "10 Second");
+    case XPOWERS_POWEROFF_10S: ESP_LOGI(TAG, "10 Second");
         break;
     default:
         break;
     }
     // Set the button power-on press time
-    PMU.setPowerKeyPressOnTime(XPOWERS_AXP192_POWERON_128MS);
+    PMU.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
     opt = PMU.getPowerKeyPressOnTime();
     ESP_LOGI(TAG, "PowerKeyPressOnTime:");
     switch (opt) {
-    case XPOWERS_AXP192_POWERON_128MS: ESP_LOGI(TAG, "128 Ms");
+    case XPOWERS_POWERON_128MS: ESP_LOGI(TAG, "128 Ms");
         break;
-    case XPOWERS_AXP192_POWERON_512MS: ESP_LOGI(TAG, "512 Ms");
+    case XPOWERS_POWERON_512MS: ESP_LOGI(TAG, "512 Ms");
         break;
-    case XPOWERS_AXP192_POWERON_1S: ESP_LOGI(TAG, "1 Second");
+    case XPOWERS_POWERON_1S: ESP_LOGI(TAG, "1 Second");
         break;
-    case XPOWERS_AXP192_POWERON_2S: ESP_LOGI(TAG, "2 Second");
+    case XPOWERS_POWERON_2S: ESP_LOGI(TAG, "2 Second");
         break;
     default:
         break;
@@ -128,12 +128,15 @@ esp_err_t pmu_init()
     PMU.enableBattVoltageMeasure();
     PMU.enableSystemVoltageMeasure();
 
-    // Manual control CHGLED
-    // PMU.setChargerLedFunction(XPOWER_CHGLED_CTRL_MANUAL);
-    // PMU.setChargingLedFreq(XPOWERS_AXP192_CHG_LED_FRE_4HZ);
-
-    // The default setting is CHGLED is automatically controlled by the PMU.
-    PMU.setChargerLedFunction(XPOWER_CHGLED_CTRL_CHGER);
+    /*
+      The default setting is CHGLED is automatically controlled by the PMU.
+    - XPOWERS_CHG_LED_OFF,
+    - XPOWERS_CHG_LED_BLINK_1HZ,
+    - XPOWERS_CHG_LED_BLINK_4HZ,
+    - XPOWERS_CHG_LED_ON,
+    - XPOWERS_CHG_LED_CTRL_CHG,
+    * */
+    PMU.setChargingLedMode(XPOWERS_CHG_LED_OFF);
 
     // Disable all interrupts
     PMU.disableIRQ(XPOWERS_AXP192_ALL_IRQ);
@@ -150,12 +153,12 @@ esp_err_t pmu_init()
     );
 
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_AXP192_ICC_CHG_280MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP192_CHG_CUR_280MA);
     // Set stop charging termination current
     PMU.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_AXP192_CHG_VOL_4V2);
+    PMU.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V2);
 
     // Cache writes and reads, as long as the PMU remains powered, the data will always be stored inside the PMU
     ESP_LOGI(TAG, "Write pmu data buffer .");

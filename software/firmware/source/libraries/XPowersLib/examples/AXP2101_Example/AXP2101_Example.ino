@@ -63,10 +63,6 @@ void setup()
 
     Serial.printf("getID:0x%x\n", PMU.getChipID());
 
-    // Set the minimum system operating voltage inside the PMU,
-    // below this value will shut down the PMU
-    PMU.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
-
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
     PMU.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
@@ -77,45 +73,45 @@ void setup()
 
 
     // Get the VSYS shutdown voltage
-    uint16_t vol = PMU.getVsysPowerOffThreshold();
-    Serial.printf("->  getVsysPowerOffThreshold:%u\n", vol);
+    uint16_t vol = PMU.getSysPowerDownVoltage();
+    Serial.printf("->  getSysPowerDownVoltage:%u\n", vol);
 
     // Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
-    PMU.setVsysPowerOffThreshold(2600);
+    PMU.setSysPowerDownVoltage(2600);
 
-    vol = PMU.getVsysPowerOffThreshold();
-    Serial.printf("->  getVsysPowerOffThreshold:%u\n", vol);
+    vol = PMU.getSysPowerDownVoltage();
+    Serial.printf("->  getSysPowerDownVoltage:%u\n", vol);
 
 
     // DC1 IMAX=2A
     // 1500~3400mV,100mV/step,20steps
     PMU.setDC1Voltage(3300);
-    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
+    Serial.printf("DC1  : %s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "+" : "-", PMU.getDC1Voltage());
 
     // DC2 IMAX=2A
     // 500~1200mV  10mV/step,71steps
     // 1220~1540mV 20mV/step,17steps
     PMU.setDC2Voltage(1000);
-    Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
+    Serial.printf("DC2  : %s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "+" : "-", PMU.getDC2Voltage());
 
     // DC3 IMAX = 2A
     // 500~1200mV,10mV/step,71steps
     // 1220~1540mV,20mV/step,17steps
     // 1600~3400mV,100mV/step,19steps
     PMU.setDC3Voltage(3300);
-    Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
+    Serial.printf("DC3  : %s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "+" : "-", PMU.getDC3Voltage());
 
     // DCDC4 IMAX=1.5A
     // 500~1200mV,10mV/step,71steps
     // 1220~1840mV,20mV/step,32steps
     PMU.setDC4Voltage(1000);
-    Serial.printf("DC4  :%s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "ENABLE" : "DISABLE", PMU.getDC4Voltage());
+    Serial.printf("DC4  : %s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "+" : "-", PMU.getDC4Voltage());
 
     // DC5 IMAX=2A
     // 1200mV
     // 1400~3700mV,100mV/step,24steps
     PMU.setDC5Voltage(3300);
-    Serial.printf("DC5  :%s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "ENABLE" : "DISABLE", PMU.getDC5Voltage());
+    Serial.printf("DC5  : %s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "+" : "-", PMU.getDC5Voltage());
 
     //ALDO1 IMAX=300mA
     //500~3500mV, 100mV/step,31steps
@@ -171,54 +167,54 @@ void setup()
 
 
     Serial.println("DCDC=======================================================================");
-    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
-    Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
-    Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
-    Serial.printf("DC4  :%s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "ENABLE" : "DISABLE", PMU.getDC4Voltage());
-    Serial.printf("DC5  :%s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "ENABLE" : "DISABLE", PMU.getDC5Voltage());
+    Serial.printf("DC1  : %s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "+" : "-", PMU.getDC1Voltage());
+    Serial.printf("DC2  : %s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "+" : "-", PMU.getDC2Voltage());
+    Serial.printf("DC3  : %s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "+" : "-", PMU.getDC3Voltage());
+    Serial.printf("DC4  : %s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "+" : "-", PMU.getDC4Voltage());
+    Serial.printf("DC5  : %s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "+" : "-", PMU.getDC5Voltage());
     Serial.println("ALDO=======================================================================");
-    Serial.printf("ALDO1:%s   Voltage:%u mV\n",  PMU.isEnableALDO1()  ? "ENABLE" : "DISABLE", PMU.getALDO1Voltage());
-    Serial.printf("ALDO2:%s   Voltage:%u mV\n",  PMU.isEnableALDO2()  ? "ENABLE" : "DISABLE", PMU.getALDO2Voltage());
-    Serial.printf("ALDO3:%s   Voltage:%u mV\n",  PMU.isEnableALDO3()  ? "ENABLE" : "DISABLE", PMU.getALDO3Voltage());
-    Serial.printf("ALDO4:%s   Voltage:%u mV\n",  PMU.isEnableALDO4()  ? "ENABLE" : "DISABLE", PMU.getALDO4Voltage());
+    Serial.printf("ALDO1: %s   Voltage:%u mV\n",  PMU.isEnableALDO1()  ? "+" : "-", PMU.getALDO1Voltage());
+    Serial.printf("ALDO2: %s   Voltage:%u mV\n",  PMU.isEnableALDO2()  ? "+" : "-", PMU.getALDO2Voltage());
+    Serial.printf("ALDO3: %s   Voltage:%u mV\n",  PMU.isEnableALDO3()  ? "+" : "-", PMU.getALDO3Voltage());
+    Serial.printf("ALDO4: %s   Voltage:%u mV\n",  PMU.isEnableALDO4()  ? "+" : "-", PMU.getALDO4Voltage());
     Serial.println("BLDO=======================================================================");
-    Serial.printf("BLDO1:%s   Voltage:%u mV\n",  PMU.isEnableBLDO1()  ? "ENABLE" : "DISABLE", PMU.getBLDO1Voltage());
-    Serial.printf("BLDO2:%s   Voltage:%u mV\n",  PMU.isEnableBLDO2()  ? "ENABLE" : "DISABLE", PMU.getBLDO2Voltage());
+    Serial.printf("BLDO1: %s   Voltage:%u mV\n",  PMU.isEnableBLDO1()  ? "+" : "-", PMU.getBLDO1Voltage());
+    Serial.printf("BLDO2: %s   Voltage:%u mV\n",  PMU.isEnableBLDO2()  ? "+" : "-", PMU.getBLDO2Voltage());
     Serial.println("CPUSLDO====================================================================");
-    Serial.printf("CPUSLDO:%s Voltage:%u mV\n",  PMU.isEnableCPUSLDO() ? "ENABLE" : "DISABLE", PMU.getCPUSLDOVoltage());
+    Serial.printf("CPUSLDO: %s Voltage:%u mV\n",  PMU.isEnableCPUSLDO() ? "+" : "-", PMU.getCPUSLDOVoltage());
     Serial.println("DLDO=======================================================================");
-    Serial.printf("DLDO1:%s   Voltage:%u mV\n",  PMU.isEnableDLDO1()  ? "ENABLE" : "DISABLE", PMU.getDLDO1Voltage());
-    Serial.printf("DLDO2:%s   Voltage:%u mV\n",  PMU.isEnableDLDO2()  ? "ENABLE" : "DISABLE", PMU.getDLDO2Voltage());
+    Serial.printf("DLDO1: %s   Voltage:%u mV\n",  PMU.isEnableDLDO1()  ? "+" : "-", PMU.getDLDO1Voltage());
+    Serial.printf("DLDO2: %s   Voltage:%u mV\n",  PMU.isEnableDLDO2()  ? "+" : "-", PMU.getDLDO2Voltage());
     Serial.println("===========================================================================");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_AXP2101_POWEROFF_4S);
+    PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
     uint8_t opt = PMU.getPowerKeyPressOffTime();
     Serial.print("PowerKeyPressOffTime:");
     switch (opt) {
-    case XPOWERS_AXP2101_POWEROFF_4S: Serial.println("4 Second");
+    case XPOWERS_POWEROFF_4S: Serial.println("4 Second");
         break;
-    case XPOWERS_AXP2101_POWEROFF_6S: Serial.println("6 Second");
+    case XPOWERS_POWEROFF_6S: Serial.println("6 Second");
         break;
-    case XPOWERS_AXP2101_POWEROFF_8S: Serial.println("8 Second");
+    case XPOWERS_POWEROFF_8S: Serial.println("8 Second");
         break;
-    case XPOWERS_AXP2101_POWEROFF_10S: Serial.println("10 Second");
+    case XPOWERS_POWEROFF_10S: Serial.println("10 Second");
         break;
     default:
         break;
     }
     // Set the button power-on press time
-    PMU.setPowerKeyPressOnTime(XPOWERS_AXP2101_POWERON_128MS);
+    PMU.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
     opt = PMU.getPowerKeyPressOnTime();
     Serial.print("PowerKeyPressOnTime:");
     switch (opt) {
-    case XPOWERS_AXP2101_POWERON_128MS: Serial.println("128 Ms");
+    case XPOWERS_POWERON_128MS: Serial.println("128 Ms");
         break;
-    case XPOWERS_AXP2101_POWERON_512MS: Serial.println("512 Ms");
+    case XPOWERS_POWERON_512MS: Serial.println("512 Ms");
         break;
-    case XPOWERS_AXP2101_POWERON_1S: Serial.println("1 Second");
+    case XPOWERS_POWERON_1S: Serial.println("1 Second");
         break;
-    case XPOWERS_AXP2101_POWERON_2S: Serial.println("2 Second");
+    case XPOWERS_POWERON_2S: Serial.println("2 Second");
         break;
     default:
         break;
@@ -273,17 +269,15 @@ void setup()
     PMU.enableSystemVoltageMeasure();
 
 
-    // Manual control CHGLED
-    // PMU.setChargerLedFunction(XPOWER_CHGLED_MANUAL);
-    // PMU.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_4HZ);
-
-
-    // The default setting is TypeA mode, and the CHGLED is automatically controlled by the PMU.
-    PMU.setChargerLedFunction(XPOWER_CHGLED_TYPEA);
-
-
-    PMU.enableChargingLed();
-    // PMU.disableChargingLed();
+    /*
+      The default setting is CHGLED is automatically controlled by the PMU.
+    - XPOWERS_CHG_LED_OFF,
+    - XPOWERS_CHG_LED_BLINK_1HZ,
+    - XPOWERS_CHG_LED_BLINK_4HZ,
+    - XPOWERS_CHG_LED_ON,
+    - XPOWERS_CHG_LED_CTRL_CHG,
+    * */
+    PMU.setChargingLedMode(XPOWERS_CHG_LED_OFF);
 
 
     pinMode(pmu_irq_pin, INPUT);
@@ -306,12 +300,12 @@ void setup()
     // Set the precharge charging current
     PMU.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_AXP2101_ICC_CHG_200MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
     // Set stop charging termination current
     PMU.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
 
     // Set charge cut-off voltage
-    PMU.setChargerVoltageLimit(XPOWERS_AXP2101_CHG_VOL_4V1);
+    PMU.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V1);
 
     // Set the watchdog trigger event type
     PMU.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);

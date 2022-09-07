@@ -163,7 +163,7 @@ disableTimer	KEYWORD2
 clearTimerFlag	KEYWORD2
 writeDataBuffer	KEYWORD2
 readDataBuffer	KEYWORD2
-setChargerLedFunction	KEYWORD2
+setChargingLedMode	KEYWORD2
 setChargingLedFreq	KEYWORD2
 enableCoulomb	KEYWORD2
 disableCoulomb	KEYWORD2
@@ -417,11 +417,8 @@ enableBattDetection	KEYWORD2
 disableBattDetection	KEYWORD2
 getBattVoltage	KEYWORD2
 getBatteryPercent	KEYWORD2
-enableChargingLed	KEYWORD2
-disableChargingLed	KEYWORD2
-setChargingLedFreq	KEYWORD2
-getChargingLedFreq	KEYWORD2
-setChargerLedFunction	KEYWORD2
+setChargingLedMode	KEYWORD2
+getChargingLedMode	KEYWORD2
 setButtonBatteryChargeVoltage	KEYWORD2
 setPrechargeCurr	KEYWORD2
 getPrechargeCurr	KEYWORD2
@@ -432,8 +429,8 @@ getChargerTerminationCurr	KEYWORD2
 enableChargerTerminationLimit	KEYWORD2
 disableChargerTerminationLimit	KEYWORD2
 isChargerTerminationLimit	KEYWORD2
-setChargerVoltageLimit	KEYWORD2
-getChargerVoltageLimit	KEYWORD2
+setChargeTargetVoltage	KEYWORD2
+getChargeTargetVoltage	KEYWORD2
 setThermaThreshold	KEYWORD2
 getThermaThreshold	KEYWORD2
 getBatteryParameter	KEYWORD2

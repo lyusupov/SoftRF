@@ -130,15 +130,15 @@
 #define XPOWERS_AXP192_COULOMB_CTL                      (0xB8)
 
 
-#define XPOWERS_AXP192_BATT_VOLTAGE_STEP                (1100)//(1.1F)
+#define XPOWERS_AXP192_BATT_VOLTAGE_STEP                (1.1F)
 #define XPOWERS_AXP192_BATT_DISCHARGE_CUR_STEP          (0.5F)
 #define XPOWERS_AXP192_BATT_CHARGE_CUR_STEP             (0.5F)
-#define XPOWERS_AXP192_ACIN_VOLTAGE_STEP                (1700)//(1.7F)
+#define XPOWERS_AXP192_ACIN_VOLTAGE_STEP                (1.7F)
 #define XPOWERS_AXP192_ACIN_CUR_STEP                    (0.625F)
-#define XPOWERS_AXP192_VBUS_VOLTAGE_STEP                (1700)//(1.7F)
+#define XPOWERS_AXP192_VBUS_VOLTAGE_STEP                (1.7F)
 #define XPOWERS_AXP192_VBUS_CUR_STEP                    (0.375F)
 #define XPOWERS_AXP192_INTERNAL_TEMP_STEP               (0.1F)
-#define XPOWERS_AXP192_APS_VOLTAGE_STEP                 (1400)//(1.4F)
+#define XPOWERS_AXP192_APS_VOLTAGE_STEP                 (1.4F)
 #define XPOWERS_AXP192_TS_PIN_OUT_STEP                  (0.8F)
 
 
@@ -152,29 +152,29 @@
 #define XPOWERS_AXP192_LDO3_VOL_STEPS                   (100u)
 
 
-#define XPOWERS_AXP192_DC1_VOL_STEPS                   (25u)
-#define XPOWERS_AXP192_DC1_VOL_MIN                     (700u)
-#define XPOWERS_AXP192_DC1_VOL_MAX                     (3500u)
+#define XPOWERS_AXP192_DC1_VOL_STEPS                    (25u)
+#define XPOWERS_AXP192_DC1_VOL_MIN                      (700u)
+#define XPOWERS_AXP192_DC1_VOL_MAX                      (3500u)
 
-#define XPOWERS_AXP192_DC2_VOL_STEPS                   (25u)
-#define XPOWERS_AXP192_DC2_VOL_MIN                     (700u)
-#define XPOWERS_AXP192_DC2_VOL_MAX                     (3500u)
+#define XPOWERS_AXP192_DC2_VOL_STEPS                    (25u)
+#define XPOWERS_AXP192_DC2_VOL_MIN                      (700u)
+#define XPOWERS_AXP192_DC2_VOL_MAX                      (3500u)
 
-#define XPOWERS_AXP192_DC3_VOL_STEPS                   (25u)
-#define XPOWERS_AXP192_DC3_VOL_MIN                     (700u)
-#define XPOWERS_AXP192_DC3_VOL_MAX                     (3500u)
+#define XPOWERS_AXP192_DC3_VOL_STEPS                    (25u)
+#define XPOWERS_AXP192_DC3_VOL_MIN                      (700u)
+#define XPOWERS_AXP192_DC3_VOL_MAX                      (3500u)
 
-#define XPOWER_LDOIO_VOL_MIN                     (1800)
-#define XPOWER_LDOIO_VOL_MAX                     (3300)
-#define XPOWER_LDOIO_VOL_STEP                    (100)
+#define XPOWERS_AXP192_LDOIO_VOL_STEPS                  (100)
+#define XPOWERS_AXP192_LDOIO_VOL_MIN                    (1800)
+#define XPOWERS_AXP192_LDOIO_VOL_MAX                    (3300)
 
-#define XPOWER_VOFF_VOL_MIN                     (2600)
-#define XPOWER_VOFF_VOL_MAX                     (3300)
-#define XPOWER_VOFF_VOL_STEP                    (100)
+#define XPOWERS_AXP192_SYS_VOL_STEPS                    (100)
+#define XPOWERS_AXP192_VOFF_VOL_MIN                     (2600)
+#define XPOWERS_AXP192_VOFF_VOL_MAX                     (3300)
 
-#define XPOWERS_AXP192_CHG_EXT_CURR_MIN                (300)
-#define XPOWERS_AXP192_CHG_EXT_CURR_MAX                (1000)
-#define XPOWERS_AXP192_CHG_EXT_CURR_STEP               (100)
+#define XPOWERS_AXP192_CHG_EXT_CURR_MIN                 (300)
+#define XPOWERS_AXP192_CHG_EXT_CURR_MAX                 (1000)
+#define XPOWERS_AXP192_CHG_EXT_CURR_STEP                (100)
 
 
 #define XPOWERS_AXP192_INTERNAL_TEMP_H8                 (0x5E)

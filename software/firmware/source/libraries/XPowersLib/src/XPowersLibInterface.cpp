@@ -27,5 +27,82 @@
  * @date      2022-08-28
  *
  */
-//TODO:Unified interface functions and parameters
+#if defined(ARDUINO)
+#include <Arduino.h>
+#endif
 
+#include "XPowersLibInterface.hpp"
+
+
+bool XPowersLibInterface::isChannelAvailable(uint8_t channel)
+{
+    if (__chipModel == XPOWERS_AXP192) {
+        switch (channel) {
+        case XPOWERS_DCDC1:
+        case XPOWERS_DCDC2:
+        case XPOWERS_DCDC3:
+        case XPOWERS_LDO2:
+        case XPOWERS_LDO3:
+        case XPOWERS_LDOIO:
+            return true;
+        default:
+            return false;
+        }
+    } else if (__chipModel == XPOWERS_AXP202) {
+
+        switch (channel) {
+        case XPOWERS_DCDC2:
+        case XPOWERS_DCDC3:
+        case XPOWERS_LDO2:
+        case XPOWERS_LDO3:
+        case XPOWERS_LDO4:
+        case XPOWERS_LDO5:
+            return true;
+        default:
+            return false;
+        }
+
+    } else if (__chipModel == XPOWERS_AXP2101) {
+        switch (channel) {
+        case XPOWERS_DCDC1:
+        case XPOWERS_DCDC2:
+        case XPOWERS_DCDC3:
+        case XPOWERS_DCDC4:
+        case XPOWERS_DCDC5:
+        case XPOWERS_ALDO1:
+        case XPOWERS_ALDO2:
+        case XPOWERS_ALDO3:
+        case XPOWERS_ALDO4:
+        case XPOWERS_BLDO1:
+        case XPOWERS_BLDO2:
+        case XPOWERS_VBACKUP:
+        case XPOWERS_CPULDO:
+            return true;
+        default:
+            // DLDO is not available, will also return false
+            return false;
+        }
+    }
+    return false;
+}
+
+void XPowersLibInterface::setProtectedChannel(uint8_t channel)
+{
+    __protectedMask |= _BV(channel);
+}
+
+void XPowersLibInterface::setUnprotectChannel(uint8_t channel)
+{
+    __protectedMask &= (~_BV(channel));
+}
+
+bool XPowersLibInterface::getProtectedChannel(uint8_t channel)
+{
+    return __protectedMask & _BV(channel);
+}
+
+
+uint16_t XPowersLibInterface::getVbusVoltage()
+{
+    return 0;
+}

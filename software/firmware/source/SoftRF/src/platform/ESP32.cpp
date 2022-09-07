@@ -354,10 +354,6 @@ static void ESP32_setup()
                                                    TTGO_V2_OLED_PIN_SCL);
       if (has_axp2101) {
 
-        // Set the minimum system operating voltage inside the PMU,
-        // below this value will shut down the PMU
-        axp_2xxx.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
-
         // Set the minimum common working voltage of the PMU VBUS input,
         // below this value will turn off the PMU
         axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
@@ -381,8 +377,7 @@ static void ESP32_setup()
         axp_2xxx.enableALDO2();
         axp_2xxx.enableALDO3();
 
-        axp_2xxx.enableChargingLed();
-        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
+        axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
 
         pinMode(SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ, INPUT /* INPUT_PULLUP */);
 
@@ -434,10 +429,6 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_PRIME_MK3; /* allow psramFound() to fail */
       hw_info.pmu   = PMU_AXP2101;
 
-      // Set the minimum system operating voltage inside the PMU,
-      // below this value will shut down the PMU
-      axp_2xxx.setMinSystemVoltage(XPOWERS_AXP2101_VSYS_VOL_4V5);
-
       // Set the minimum common working voltage of the PMU VBUS input,
       // below this value will turn off the PMU
       axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
@@ -462,8 +453,7 @@ static void ESP32_setup()
       axp_2xxx.enableALDO3();
       axp_2xxx.enableALDO4();
 
-      axp_2xxx.enableChargingLed();
-      axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
+      axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
 
       pinMode(SOC_GPIO_PIN_S3_PMU_IRQ, INPUT /* INPUT_PULLUP */);
 
@@ -705,9 +695,9 @@ static void ESP32_loop()
 
     if (isTimeToBattery()) {
       if (Battery_voltage() > Battery_threshold()) {
-        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_0HZ);
+        axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
       } else {
-        axp_2xxx.setChargingLedFreq(XPOWERS_AXP2101_CHG_LED_FRE_1HZ);
+        axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_BLINK_1HZ);
       }
     }
     break;
@@ -809,7 +799,7 @@ static void ESP32_fini(int reason)
       break;
 
     case PMU_AXP2101:
-      axp_2xxx.disableChargingLed();
+      axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_OFF);
 
       axp_2xxx.disableButtonBatteryCharge();
 
@@ -825,7 +815,7 @@ static void ESP32_fini(int reason)
        * - press and hold PWR button for 1-2 seconds then release, or
        * - cycle micro-USB power
        */
-      axp_2xxx.softPowerOff();
+      axp_2xxx.shutdown();
       break;
 
     case PMU_NONE:
