@@ -715,9 +715,9 @@ static bool sony_setup()
 
   /* GGA + GSA + RMC */
   Serial_GNSS_Out.write("@BSSL 0x25\r\n"); delay(250);
-  /* GPS + GLONASS. This command must be issued at “Idle” mode */
+  /* GPS + GLONASS. This command must be issued at Idle state */
   Serial_GNSS_Out.write("@GNS 3\r\n");     delay(250);
-  /*  Positioning algorithm. This command must be issued at “Idle” mode */
+  /*  Positioning algorithm. This command must be issued at Idle state */
   Serial_GNSS_Out.write("@GUSE 0\r\n");    delay(250);
 
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN

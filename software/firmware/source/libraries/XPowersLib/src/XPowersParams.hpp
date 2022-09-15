@@ -74,7 +74,7 @@ typedef enum __xpowers_chg_led_mode {
  * @brief axp2101 charge target voltage parameters.
  */
 typedef enum __xpowers_axp2101_chg_vol {
-    XPOWERS_AXP2101_CHG_VOL_4V,
+    XPOWERS_AXP2101_CHG_VOL_4V = 1,
     XPOWERS_AXP2101_CHG_VOL_4V1,
     XPOWERS_AXP2101_CHG_VOL_4V2,
     XPOWERS_AXP2101_CHG_VOL_4V35,
