@@ -129,7 +129,8 @@
 #define TX_EN     PB4  // TX / RX mode pin
 #define CS_N      PA4  // SPI slave select pin
 
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || \
+      defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
 /* TBD */
 #define TRX_EN    PB3  // Enable/standby pin

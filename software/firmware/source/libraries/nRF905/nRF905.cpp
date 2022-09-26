@@ -26,7 +26,8 @@
 #include <SPI.h>
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     defined(ARDUINO_ARCH_NRF52)  || defined(ARDUINO_ARCH_SAMD)   || \
-    defined(ARDUINO_ARCH_RP2040)
+    defined(ARDUINO_ARCH_RP2040) || (defined(ARDUINO_ARCH_STM32) && \
+    defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board))
 #define _BV(bit) (1 << (bit))
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else

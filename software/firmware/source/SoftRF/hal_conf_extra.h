@@ -32,6 +32,7 @@
 #define SERIAL_UART_INSTANCE    1
 #define PIN_SERIAL_RX           PA10
 #define PIN_SERIAL_TX           PA9
+#endif /* SERIAL_UART_INSTANCE */
 
 // (Few) pre-production SoftRF Dongles had 1.5k D+ external pullup resistor
 // If you have one of these, then either:
@@ -47,7 +48,6 @@
 // pullups instead.
 //#define USBD_FIXED_PULLUP
 
-#endif /* SERIAL_UART_INSTANCE */
 #if !defined(USB_MANUFACTURER_STRING)
 #define USB_MANUFACTURER_STRING "SoftRF"
 #endif /* USB_MANUFACTURER_STRING */
@@ -55,6 +55,19 @@
 #define USB_PRODUCT_STRING      "Dongle/Bracelet Edition"
 #endif /* USB_PRODUCT_STRING */
 #endif /* ARDUINO_NUCLEO_L073RZ */
+
+#if defined(ARDUINO_GENERIC_WLE5CCUX)
+#if SERIAL_UART_INSTANCE == 101
+
+#undef  SERIAL_UART_INSTANCE
+#undef  PIN_SERIAL_RX
+#undef  PIN_SERIAL_TX
+
+#define SERIAL_UART_INSTANCE    1
+#define PIN_SERIAL_RX           PB7
+#define PIN_SERIAL_TX           PB6
+#endif /* SERIAL_UART_INSTANCE */
+#endif /* ARDUINO_GENERIC_WLE5CCUX */
 
 #if defined(ENERGIA_ARCH_CC13XX)
 

@@ -22,7 +22,12 @@
 
 #if defined(ARDUINO_ARCH_STM32)
 #include "IPAddress.h"
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 #include "stm32yyxx_ll_adc.h"
+#else
+extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
+#define dtostrf dtostrf_workaround
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 #endif /* ARDUINO_ARCH_STM32 */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
@@ -42,8 +47,6 @@
 #define yield()                 ({ })
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
-
-#define SerialOutput            Serial1
 
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
@@ -81,6 +84,7 @@ enum stm32_board_id {
   STM32_EBYTE_E77,
   STM32_SEEED_E5,
   STM32_ACSIP_ST50H,
+  STM32_RAK_3172,
 };
 
 enum stm32_boot_action {
@@ -117,6 +121,7 @@ typedef struct stm32_backup_struct {
 #define Serial_GNSS_In        Serial4
 #define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial2  /* PA3, PA2 */
+#define SerialOutput          Serial1
 
 /* S76G GNSS is operating at 115200 baud (by default) */
 #define SERIAL_IN_BR          115200
@@ -244,6 +249,7 @@ typedef struct stm32_backup_struct {
 #define Serial_GNSS_In        Serial2
 #define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial3
+#define SerialOutput          Serial1
 
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV, STM32F103x8 datasheet value
@@ -337,6 +343,7 @@ typedef struct stm32_backup_struct {
 #define Serial_GNSS_In        Serial2
 #define Serial_GNSS_Out       Serial_GNSS_In
 #define UATSerial             Serial
+#define SerialOutput          Serial
 
 #define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
 #define VREFINT               1200 /* TBD */
@@ -393,6 +400,100 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_XP       PC14
 #define SOC_GPIO_PIN_XN       PC15
 
+#define EXCLUDE_WIFI
+#define EXCLUDE_CC13XX
+#define EXCLUDE_TEST_MODE
+#define EXCLUDE_WATCHOUT_MODE
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+
+/* Component                         Cost */
+/* -------------------------------------- */
+#define USE_OLED                 //  +3.5 kb
+//#define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_049
+#define USE_NMEA_CFG             //  +2.5 kb
+#define EXCLUDE_BMP180           //  -  1 kb
+//#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_NRF905           //  -  2 kb
+#define EXCLUDE_EGM96            //  - 16 kb
+#define EXCLUDE_LED_RING         //  -    kb
+#define EXCLUDE_SOUND
+#define EXCLUDE_LK8EX1
+#define EXCLUDE_IMU
+
+#define USE_BASICMAC             //  +  7 kb
+#define EXCLUDE_SX1276           //  -  3 kb
+
+#elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+
+#define Serial_GNSS_In        Serial1
+#define Serial_GNSS_Out       Serial_GNSS_In
+#define UATSerial             Serial
+#define SerialOutput          Serial
+
+#define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
+#define VREFINT               1200 /* TBD */
+
+#define SOC_GPIO_PIN_CONS_RX  PA3 // UART2_RX
+#define SOC_GPIO_PIN_CONS_TX  PA2 // UART2_TX
+
+#define SOC_GPIO_PIN_GNSS_RX  PB7 // UART1_RX
+#define SOC_GPIO_PIN_GNSS_TX  PB6 // UART1_TX
+#define SOC_GPIO_PIN_GNSS_PPS PB5 // IO1
+#define SOC_GPIO_PIN_GNSS_RST PA8 // IO2
+
+#define SOC_GPIO_PIN_STATUS   PA0 // LED1
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN // PA1 LED2
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+
+/* SPI */
+#define SOC_GPIO_PIN_MOSI     PA7
+#define SOC_GPIO_PIN_MISO     PA6
+#define SOC_GPIO_PIN_SCK      PA5
+#define SOC_GPIO_PIN_SS       PA4
+
+/* NRF905 */
+#define SOC_GPIO_PIN_TXE      PB4
+#define SOC_GPIO_PIN_CE       PB3
+#define SOC_GPIO_PIN_PWR      PB5
+
+/* SX1262 */
+#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
+
+/* RF antenna switch */
+#define SOC_GPIO_PIN_ANT_RXTX PB8 // RXEN
+
+/* RF clock source */
+#define SOC_GPIO_PIN_TCXO_OE  PB0
+
+/* RF front end control */
+#define SOC_GPIO_PIN_FE       PC13
+
+/* I2C1 */
+#define SOC_GPIO_PIN_SDA      PA11
+#define SOC_GPIO_PIN_SCL      PA12
+
+/* I2C2 */
+#define SOC_GPIO_PIN_SDA2     PA10
+#define SOC_GPIO_PIN_SCL2     PA9
+
+/* button */
+#define SOC_GPIO_PIN_BUTTON   LMIC_UNUSED_PIN
+
+/* 32768 Hz crystal */
+#define SOC_GPIO_PIN_XP       PC14
+#define SOC_GPIO_PIN_XN       PC15
+
+#define EXCLUDE_EEPROM
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE

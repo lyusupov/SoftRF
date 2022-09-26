@@ -1,11 +1,20 @@
 #ifndef __MANCHESTER_H__
 #define __MANCHESTER_H__
 
-#if defined(__AVR__) || defined(ARDUINO_ARCH_STM32) || \
+#if defined(__AVR__) || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
     (defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_ARCH_MBED))
 #include <avr/pgmspace.h>
 #endif
+
+#if defined(ARDUINO_ARCH_STM32)
+#if defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+#define PROGMEM
+#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+#else
+#include <avr/pgmspace.h>
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
+#endif /* ARDUINO_ARCH_STM32 */
 
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
     defined(ARDUINO_ARCH_ASR650X) || (defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))

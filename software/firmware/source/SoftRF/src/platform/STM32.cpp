@@ -21,7 +21,9 @@
 #include <SPI.h>
 #include <Wire.h>
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 #include <IWatchdog.h>
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 #include "../system/SoC.h"
 #include "../driver/RF.h"
@@ -35,7 +37,9 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 #include <STM32LowPower.h>
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -79,8 +83,104 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 
-HardwareSerial Serial1(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
-HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+HardwareSerial Serial2(USART2);
+
+#elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+
+char *dtostrf_workaround(double number, signed char width, unsigned char prec, char *s) {
+    bool negative = false;
+
+    if (isnan(number)) {
+        strcpy(s, "nan");
+        return s;
+    }
+    if (isinf(number)) {
+        strcpy(s, "inf");
+        return s;
+    }
+
+    char* out = s;
+
+    int fillme = width; // how many cells to fill for the integer part
+    if (prec > 0) {
+        fillme -= (prec+1);
+    }
+
+    // Handle negative numbers
+    if (number < 0.0) {
+        negative = true;
+        fillme--;
+        number = -number;
+    }
+
+    // Round correctly so that print(1.999, 2) prints as "2.00"
+    // I optimized out most of the divisions
+    double rounding = 2.0;
+    for (uint8_t i = 0; i < prec; ++i)
+        rounding *= 10.0;
+    rounding = 1.0 / rounding;
+
+    number += rounding;
+
+    // Figure out how big our number really is
+    double tenpow = 1.0;
+    int digitcount = 1;
+    while (number >= 10.0 * tenpow) {
+        tenpow *= 10.0;
+        digitcount++;
+    }
+
+    number /= tenpow;
+    fillme -= digitcount;
+
+    // Pad unused cells with spaces
+    while (fillme-- > 0) {
+        *out++ = ' ';
+    }
+
+    // Handle negative sign
+    if (negative) *out++ = '-';
+
+    // Print the digits, and if necessary, the decimal point
+    digitcount += prec;
+    int8_t digit = 0;
+    while (digitcount-- > 0) {
+        digit = (int8_t)number;
+        if (digit > 9) digit = 9; // insurance
+        *out++ = (char)('0' | digit);
+        if ((digitcount == prec) && (prec > 0)) {
+            *out++ = '.';
+        }
+        number -= digit;
+        number *= 10.0;
+    }
+
+    // make sure the string is terminated
+    *out = 0;
+    return s;
+}
+
+#ifndef SUPPORT_LORA
+
+extern "C" void service_lora_suspend(void) {
+}
+
+extern "C" void service_lora_resume(void) {
+}
+
+typedef enum _SERVICE_LORA_CLASS
+{
+  SERVICE_LORA_CLASS_A = 0,
+  SERVICE_LORA_CLASS_B = 1,
+  SERVICE_LORA_CLASS_C = 2,
+} SERVICE_LORA_CLASS;
+
+extern "C" int service_lora_get_real_class_from_stack(void)
+{
+  return SERVICE_LORA_CLASS_C;
+}
+
+#endif /* SUPPORT_LORA */
 
 #else
 #error "This hardware platform is not supported!"
@@ -108,6 +208,11 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount = 0;
 
+#if defined(EXCLUDE_EEPROM)
+eeprom_t eeprom_block;
+settings_t *settings = &eeprom_block.field.settings;
+#endif /* EXCLUDE_EEPROM */
+
 static int STM32_probe_pin(uint32_t pin, uint32_t mode)
 {
   int rval;
@@ -126,14 +231,16 @@ static void STM32_ButtonWakeup() { }
 
 static void STM32_ULP_stop()
 {
-#if !defined(ARDUINO_NUCLEO_L073RZ)
-  LowPower_shutdown();
-#else
+#if defined(ARDUINO_NUCLEO_L073RZ)
   __disable_irq();
 
   /* Enable Ultra low power mode */
   HAL_PWREx_EnableUltraLowPower();
   HAL_PWR_EnterSTOPMode( PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI );
+#else
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+  LowPower_shutdown();
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 #endif /* ARDUINO_NUCLEO_L073RZ */
 }
 
@@ -156,7 +263,7 @@ static void STM32_setup()
         // This reset is induced by calling the ARM CMSIS `NVIC_SystemReset()` function!
         reset_info.reason = REASON_SOFT_RESTART; // "SOFTWARE_RESET"
     }
-#if !defined(ARDUINO_GENERIC_WLE5CCUX)
+#if !defined(ARDUINO_GENERIC_WLE5CCUX) && !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
     {
         reset_info.reason = REASON_DEFAULT_RST; // "POWER-ON_RESET (POR) / POWER-DOWN_RESET (PDR)"
@@ -170,12 +277,16 @@ static void STM32_setup()
     // Clear all the reset flags or else they will remain set during future resets until system power is fully removed.
     __HAL_RCC_CLEAR_RESET_FLAGS();
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     LowPower.begin();
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
     hw_info.model = SOFTRF_MODEL_RETRO;
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
     stm32_board = STM32_TTGO_TWATCH_EB_1_3;
@@ -251,7 +362,13 @@ static void STM32_setup()
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 
     /* TBD */
-    stm32_board   = STM32_OLIMEX_WLE5CC;
+    stm32_board = (SoC->getChipId() == 0x725c6907) ? STM32_EBYTE_E77 : STM32_OLIMEX_WLE5CC;
+    hw_info.model = SOFTRF_MODEL_BALKAN;
+
+#elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+
+    /* TBD */
+    stm32_board   = STM32_RAK_3172;
     hw_info.model = SOFTRF_MODEL_BALKAN;
 
 #else
@@ -262,8 +379,11 @@ static void STM32_setup()
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif
 
-    uint32_t shudown_reason = getBackupRegister(SHUTDOWN_REASON_INDEX);
+    uint32_t shudown_reason;
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+    shudown_reason = getBackupRegister(SHUTDOWN_REASON_INDEX);
     setBackupRegister(SHUTDOWN_REASON_INDEX, SOFTRF_SHUTDOWN_NONE);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
     switch (shudown_reason)
     {
@@ -292,10 +412,12 @@ static void STM32_setup()
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
         pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
                                      INPUT_PULLDOWN : INPUT);
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
         LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
                                        STM32_ButtonWakeup, RISING);
 
         LowPower.deepSleep();
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
         /* do not enter into DFU mode when BOOT button has dual function */
         while (hw_info.model == SOFTRF_MODEL_DONGLE &&
@@ -310,11 +432,15 @@ static void STM32_setup()
       break;
     }
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     bootCount = getBackupRegister(BOOT_COUNT_INDEX);
     bootCount++;
     setBackupRegister(BOOT_COUNT_INDEX, bootCount);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     pinMode(SOC_GPIO_PIN_BATTERY, INPUT_ANALOG);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
     lmic_pins.rxe = SOC_GPIO_PIN_ANT_RXTX;
@@ -429,10 +555,12 @@ static void STM32_post_init()
 
 static void STM32_loop()
 {
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   // Reload the watchdog
   if (IWatchdog.isEnabled()) {
     IWatchdog.reload();
   }
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 }
 
 static void STM32_fini(int reason)
@@ -450,21 +578,25 @@ static void STM32_fini(int reason)
   Serial_GNSS_In.end();
   Wire.end();
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   pinMode(SOC_GPIO_PIN_SDA,  INPUT_ANALOG);
   pinMode(SOC_GPIO_PIN_SCL,  INPUT_ANALOG);
 
   if (lmic_pins.rst != LMIC_UNUSED_PIN) pinMode(lmic_pins.rst,  INPUT_ANALOG);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
   SerialOutput.end();
 #endif
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   /*
    * Work around an issue that
    * WDT (once enabled) is active all the time
    * until hardware restart
    */
   setBackupRegister(SHUTDOWN_REASON_INDEX, reason);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
   HAL_NVIC_SystemReset();
 }
@@ -568,11 +700,15 @@ static void STM32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool STM32_EEPROM_begin(size_t size)
 {
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   if (size > E2END) {
     return false;
   }
 
+#if !defined(EXCLUDE_EEPROM)
   EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
   return true;
 }
@@ -627,10 +763,12 @@ static void STM32_EEPROM_extension(int cmd)
 
 static void STM32_SPI_begin()
 {
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   SPI.setMISO(SOC_GPIO_PIN_MISO);
   SPI.setMOSI(SOC_GPIO_PIN_MOSI);
   SPI.setSCLK(SOC_GPIO_PIN_SCK);
   // Slave Select pin is driven by RF driver
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
   SPI.begin();
 }
@@ -785,17 +923,21 @@ static void STM32_UATModule_restart()
 
 static void STM32_WDT_setup()
 {
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   // Init the watchdog timer with 5 seconds timeout
   IWatchdog.begin(5000000);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 }
 
 static void STM32_WDT_fini()
 {
   /* once emabled - there is no way to disable WDT on STM32 */
 
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   if (IWatchdog.isEnabled()) {
     IWatchdog.set(IWDG_TIMEOUT_MAX);
   }
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 }
 
 #include <AceButton.h>
@@ -874,7 +1016,10 @@ static void STM32_Button_fini()
     pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
                                  INPUT_PULLDOWN : INPUT);
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
+
+#if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_ANALOG);
+#endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
   }
 }
 

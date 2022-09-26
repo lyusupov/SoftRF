@@ -77,6 +77,15 @@
 #endif
 #endif
 
+#if defined(ARDUINO_ARCH_STM32) && \
+    defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+
+#ifdef CFG_DEBUG
+#undef CFG_DEBUG
+#endif
+
+#endif /* ARDUINO_ARCH_STM32 && ARDUINO_WisDuo_RAK3172_Evaluation_Board */
+
 #if defined(ARDUINO_ARCH_NRF52)
 
 #ifdef CFG_DEBUG
