@@ -85,6 +85,15 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
 HardwareSerial Serial2(USART2);
 
+#ifdef HAL_SUBGHZ_MODULE_ENABLED
+void HAL_SUBGHZ_MspInit(SUBGHZ_HandleTypeDef * hsubghz)
+{
+    __HAL_RCC_SUBGHZSPI_CLK_ENABLE();
+    __HAL_RCC_SUBGHZSPI_FORCE_RESET();
+    __HAL_RCC_SUBGHZSPI_RELEASE_RESET();
+}
+#endif /* HAL_SUBGHZ_MODULE_ENABLED */
+
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
 char *dtostrf_workaround(double number, signed char width, unsigned char prec, char *s) {

@@ -112,7 +112,8 @@ bool hal_pin_rst (u1_t val) {
 }
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 bool hal_pin_rst (u1_t val) {
-    if (val)
+#if 0
+    if (val == 0)
     {
         LL_RCC_RF_EnableReset();
         LL_RCC_HSE_EnableTcxo();
@@ -121,7 +122,7 @@ bool hal_pin_rst (u1_t val) {
     }
     else
         LL_RCC_RF_DisableReset();
-
+#endif
     return true;
 }
 #else
@@ -341,23 +342,23 @@ u1_t hal_spi (u1_t out) {
 }
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#ifdef HAL_SUBGHZ_MODULE_ENABLED
+
+#define SUBGHZ_DEFAULT_TIMEOUT     100U    /* HAL Timeout in ms               */
+/* SystemCoreClock dividers. Corresponding to time execution of while loop.   */
+#define SUBGHZ_DEFAULT_LOOP_TIME   ((SystemCoreClock*28U)>>19U)
+
+static SUBGHZ_HandleTypeDef hsubghz = {.Init = {.BaudratePrescaler =
+                                               SUBGHZSPI_BAUDRATEPRESCALER_8 } };
+#endif /* HAL_SUBGHZ_MODULE_ENABLED */
 
 static void hal_spi_init () {
-    __HAL_RCC_SUBGHZSPI_CLK_ENABLE();
-    __HAL_RCC_SUBGHZSPI_FORCE_RESET();
-    __HAL_RCC_SUBGHZSPI_RELEASE_RESET();
-
-//    SPI.begin(); /* SUBGHZSPI */
+#ifdef HAL_SUBGHZ_MODULE_ENABLED
+    HAL_SUBGHZ_Init(&hsubghz);
+#endif /* HAL_SUBGHZ_MODULE_ENABLED */
 }
 
 void hal_spi_select (int on) {
-#if defined(SPI_HAS_TRANSACTION)
-    if (on)
-        SPI.beginTransaction(settings);
-    else
-        SPI.endTransaction();
-#endif
-
     if (on)
         LL_PWR_SelectSUBGHZSPI_NSS();
     else
@@ -366,14 +367,45 @@ void hal_spi_select (int on) {
 
 // perform SPI transaction with radio
 u1_t hal_spi (u1_t out) {
+#ifdef HAL_SUBGHZ_MODULE_ENABLED
+  HAL_StatusTypeDef status = HAL_OK;
+  __IO uint32_t count;
 
-/* TBD */
-#if 0
-    u1_t res = SPI.transfer(out);
-    return res;
+  count = SUBGHZ_DEFAULT_TIMEOUT * SUBGHZ_DEFAULT_LOOP_TIME;
+
+  /* Wait until TXE flag is set */
+  do
+  {
+    if (count == 0U)
+    {
+      status = HAL_ERROR;
+      hsubghz.ErrorCode = HAL_SUBGHZ_ERROR_TIMEOUT;
+      break;
+    }
+    count--;
+  } while (READ_BIT(SUBGHZSPI->SR, SPI_SR_TXE) != (SPI_SR_TXE));
+
+  __IO uint8_t *spidr = ((__IO uint8_t *)&SUBGHZSPI->DR);
+  *spidr = out;
+
+  count = SUBGHZ_DEFAULT_TIMEOUT * SUBGHZ_DEFAULT_LOOP_TIME;
+
+  /* Wait until RXNE flag is set */
+  do
+  {
+    if (count == 0U)
+    {
+      status = HAL_ERROR;
+      hsubghz.ErrorCode = HAL_SUBGHZ_ERROR_TIMEOUT;
+      break;
+    }
+    count--;
+  } while (READ_BIT(SUBGHZSPI->SR, SPI_SR_RXNE) != (SPI_SR_RXNE));
+
+  return (uint8_t)(READ_REG(SUBGHZSPI->DR));
 #else
-    return 0;
-#endif
+  return 0;
+#endif /* HAL_SUBGHZ_MODULE_ENABLED */
 }
 
 #else
