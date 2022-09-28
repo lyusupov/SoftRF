@@ -795,8 +795,8 @@ static void STM32_SPI_begin()
 {
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   SPI.setMISO(SOC_GPIO_PIN_MISO);
-  SPI.setMOSI(SOC_GPIO_PIN_MOSI);
-  SPI.setSCLK(SOC_GPIO_PIN_SCK);
+  SPI.setMOSI(stm32_board == STM32_EBYTE_E77 ? PB5 /*NC*/ : SOC_GPIO_PIN_MOSI);
+  SPI.setSCLK(stm32_board == STM32_SEEED_E5  ? PB3 /*NC*/ : SOC_GPIO_PIN_SCK);
   // Slave Select pin is driven by RF driver
 #endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 

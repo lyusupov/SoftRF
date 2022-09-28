@@ -353,18 +353,18 @@ typedef struct stm32_backup_struct {
 
 #define SOC_GPIO_PIN_GNSS_RX  PA3
 #define SOC_GPIO_PIN_GNSS_TX  PA2
-#define SOC_GPIO_PIN_GNSS_PPS PA1 /* PA11 */
+#define SOC_GPIO_PIN_GNSS_PPS PA11
 
 #define SOC_GPIO_PIN_STATUS   PA15
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN /* PB2 */
+#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     PA7
-#define SOC_GPIO_PIN_MISO     PA11
-#define SOC_GPIO_PIN_SCK      PA5
-#define SOC_GPIO_PIN_SS       PA4
+#define SOC_GPIO_PIN_MOSI     PA7 /* E77: PB5 (NC) */
+#define SOC_GPIO_PIN_MISO     PB4
+#define SOC_GPIO_PIN_SCK      PA5 /* E5 : PB3 (NC) */
+#define SOC_GPIO_PIN_SS       PB2
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      PB4
@@ -383,11 +383,11 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_ANT_RX_E77   PA7 /* NB: SOC_GPIO_PIN_MOSI = PA7 */
 #define SOC_GPIO_ANT_TX_E77   PA6
 
-#define SOC_GPIO_ANT_RX_E5    PA4 /* NB: SOC_GPIO_PIN_SS   = PA4 */
+#define SOC_GPIO_ANT_RX_E5    PA4
 #define SOC_GPIO_ANT_TX_E5    PA5 /* NB: SOC_GPIO_PIN_SCK  = PA5 */
 
 #define SOC_GPIO_ANT_RX_ST50  PA0
-#define SOC_GPIO_ANT_TX_ST50  PA1 /* NB: SOC_GPIO_PIN_GNSS_PPS = PA1 */
+#define SOC_GPIO_ANT_TX_ST50  PA1
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PA10
