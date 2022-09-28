@@ -467,7 +467,28 @@ static void STM32_setup()
       pinMode(TTGO_TIMPULSE_SENSOR_INT, INPUT);
 #endif /* EXCLUDE_IMU */
     }
-#endif /* ARDUINO_NUCLEO_L073RZ */
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+  switch (stm32_board)
+  {
+    case STM32_EBYTE_E77:
+      lmic_pins.rxe = SOC_GPIO_ANT_RX_E77;
+      lmic_pins.txe = SOC_GPIO_ANT_TX_E77;
+      break;
+    case STM32_SEEED_E5:
+      lmic_pins.rxe = SOC_GPIO_ANT_RX_E5;
+      lmic_pins.txe = SOC_GPIO_ANT_TX_E5;
+      break;
+    case STM32_ACSIP_ST50H:
+      lmic_pins.rxe = SOC_GPIO_ANT_RX_ST50;
+      lmic_pins.txe = SOC_GPIO_ANT_TX_ST50;
+      break;
+    case STM32_OLIMEX_WLE5CC:
+    default:
+      lmic_pins.rxe = SOC_GPIO_ANT_RX_OLI;
+      lmic_pins.txe = SOC_GPIO_ANT_TX_OLI;
+      break;
+  }
+#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
@@ -984,16 +1005,18 @@ void onPageButtonEvent() {
 
 static void STM32_Button_setup()
 {
-  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
-      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
-       hw_info.model == SOFTRF_MODEL_BRACELET)) {
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE   ||
+       hw_info.model == SOFTRF_MODEL_BRACELET ||
+       hw_info.model == SOFTRF_MODEL_BALKAN)) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // BOOT0 button(s) uses external pull DOWN resistor.
-    pinMode(button_pin, hw_info.model == SOFTRF_MODEL_DONGLE ?
-                        INPUT_PULLDOWN : INPUT);
+    pinMode(button_pin,
+            hw_info.model == SOFTRF_MODEL_DONGLE ? INPUT_PULLDOWN :
+            hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
 
-    button_1.init(button_pin, LOW);
+    button_1.init(button_pin, hw_info.model == SOFTRF_MODEL_BALKAN ? HIGH : LOW);
 
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
@@ -1010,21 +1033,25 @@ static void STM32_Button_setup()
 
 static void STM32_Button_loop()
 {
-  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
-      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
-       hw_info.model == SOFTRF_MODEL_BRACELET)) {
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE   ||
+       hw_info.model == SOFTRF_MODEL_BRACELET ||
+       hw_info.model == SOFTRF_MODEL_BALKAN)) {
     button_1.check();
   }
 }
 
 static void STM32_Button_fini()
 {
-  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN  &&
-      (hw_info.model == SOFTRF_MODEL_DONGLE  ||
-       hw_info.model == SOFTRF_MODEL_BRACELET)) {
-    pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
-                                 INPUT_PULLDOWN : INPUT);
-    while (digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
+  if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
+      (hw_info.model == SOFTRF_MODEL_DONGLE   ||
+       hw_info.model == SOFTRF_MODEL_BRACELET ||
+       hw_info.model == SOFTRF_MODEL_BALKAN)) {
+    pinMode(SOC_GPIO_PIN_BUTTON,
+            hw_info.model == SOFTRF_MODEL_DONGLE ? INPUT_PULLDOWN :
+            hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
+    bool button_is_active = (hw_info.model == SOFTRF_MODEL_BALKAN ? LOW : HIGH);
+    while (digitalRead(SOC_GPIO_PIN_BUTTON) == button_is_active);
 
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_ANALOG);

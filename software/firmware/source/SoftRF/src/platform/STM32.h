@@ -377,24 +377,24 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
 
 /* RF antenna switch */
-#define SOC_GPIO_ANT_RX_OLI   PB8  /* active LOW */
-#define SOC_GPIO_ANT_TX_OLI   PC13 /* active LOW */
+#define SOC_GPIO_ANT_RX_OLI   PC13
+#define SOC_GPIO_ANT_TX_OLI   PB8
 
-#define SOC_GPIO_ANT_RX_E77   PA7  /* active HIGH */
-#define SOC_GPIO_ANT_TX_E77   PA6  /* active LOW  */
+#define SOC_GPIO_ANT_RX_E77   PA7 /* NB: SOC_GPIO_PIN_MOSI = PA7 */
+#define SOC_GPIO_ANT_TX_E77   PA6
 
-#define SOC_GPIO_ANT_RX_E5    PA5  /* active LOW */
-#define SOC_GPIO_ANT_TX_E5    PA4  /* active LOW */
+#define SOC_GPIO_ANT_RX_E5    PA4 /* NB: SOC_GPIO_PIN_SS   = PA4 */
+#define SOC_GPIO_ANT_TX_E5    PA5 /* NB: SOC_GPIO_PIN_SCK  = PA5 */
 
-#define SOC_GPIO_ANT_RX_ST50  PA1  /* active LOW */
-#define SOC_GPIO_ANT_TX_ST50  PA0  /* active LOW */
+#define SOC_GPIO_ANT_RX_ST50  PA0
+#define SOC_GPIO_ANT_TX_ST50  PA1 /* NB: SOC_GPIO_PIN_GNSS_PPS = PA1 */
 
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PA10
 #define SOC_GPIO_PIN_SCL      PA9
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   PA0
+#define SOC_GPIO_PIN_BUTTON   PA0 /* NB: SOC_GPIO_ANT_RX_ST50 = PA0 */
 
 /* 32768 Hz crystal */
 #define SOC_GPIO_PIN_XP       PC14
@@ -489,7 +489,7 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_PIN_SCL2     PA9
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
 /* 32768 Hz crystal */
 #define SOC_GPIO_PIN_XP       PC14
