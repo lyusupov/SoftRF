@@ -83,8 +83,8 @@ enum stm32_board_id {
   STM32_OLIMEX_WLE5CC, /* 15ba:0044 */
   STM32_EBYTE_E77,
   STM32_SEEED_E5,
-  STM32_ACSIP_ST50H,
-  STM32_RAK_3172,
+  STM32_ACSIP_ST50H, /* a.k.a. "RAK3172-SiP" */
+  STM32_RAK_3172_EB,
 };
 
 enum stm32_boot_action {
@@ -389,6 +389,9 @@ typedef struct stm32_backup_struct {
 #define SOC_GPIO_ANT_RX_ST50  PA0
 #define SOC_GPIO_ANT_TX_ST50  PA1
 
+#define SOC_GPIO_ANT_RX_3172  PB8
+#define SOC_GPIO_ANT_TX_3172  PC13
+
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PA10
 #define SOC_GPIO_PIN_SCL      PA9
@@ -431,6 +434,8 @@ typedef struct stm32_backup_struct {
 
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
+
+#define USE_TIME_SLOTS
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
@@ -527,6 +532,8 @@ typedef struct stm32_backup_struct {
 
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
+
+#define USE_TIME_SLOTS
 
 #else
 #error "This hardware platform is not supported!"

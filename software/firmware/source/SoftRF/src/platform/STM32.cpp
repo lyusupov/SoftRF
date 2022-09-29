@@ -377,7 +377,7 @@ static void STM32_setup()
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
     /* TBD */
-    stm32_board   = STM32_RAK_3172;
+    stm32_board   = STM32_RAK_3172_EB;
     hw_info.model = SOFTRF_MODEL_BALKAN;
 
 #else
@@ -478,9 +478,13 @@ static void STM32_setup()
       lmic_pins.rxe = SOC_GPIO_ANT_RX_E5;
       lmic_pins.txe = SOC_GPIO_ANT_TX_E5;
       break;
-    case STM32_ACSIP_ST50H:
+    case STM32_ACSIP_ST50H: /* a.k.a. "RAK3172-SiP" */
       lmic_pins.rxe = SOC_GPIO_ANT_RX_ST50;
       lmic_pins.txe = SOC_GPIO_ANT_TX_ST50;
+      break;
+    case STM32_RAK_3172_EB:
+      lmic_pins.rxe = SOC_GPIO_ANT_RX_3172;
+      lmic_pins.txe = SOC_GPIO_ANT_TX_3172;
       break;
     case STM32_OLIMEX_WLE5CC:
     default:

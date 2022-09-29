@@ -204,11 +204,11 @@ extern SCSerial                 scSerial;
 
 #if defined(BOARD_CC1352R1_LAUNCHXL) || defined(BOARD_CC1312R1_LAUNCHXL)
 /*
- *  UART pins
+ *  UART pins                   CC1352R1_LAUNCHXL SOFTRF-UAT-CC1312R1
  *
- * Board_UART0_TX               GPIO 13
- * Board_UART0_RX               GPIO 12
- * BootLoader                   GPIO 15
+ * Board_UART0_TX               GPIO 13           GPIO 3
+ * Board_UART0_RX               GPIO 12           GPIO 2
+ * BootLoader                   GPIO 15           GPIO 1 (?)
  *
  */
 
@@ -217,10 +217,19 @@ extern SCSerial                 scSerial;
 
 #define EasyLink_setRfPwr       EasyLink_setRfPower
 
+#if defined(BOARD_CC1352R1_LAUNCHXL) /* CC1352R1_LAUNCHXL and LPSTK_CC1352R */
 #define SOC_GPIO_PIN_GNSS_RX    23  // GPIO 25
 #define SOC_GPIO_PIN_GNSS_TX    24  // GPIO 26
 
 #define SOC_GPIO_PIN_GNSS_PPS   25  // GPIO 27
+#elif defined(BOARD_CC1312R1_LAUNCHXL) /* SOFTRF-UAT-CC1312R1 */
+#define SOC_GPIO_PIN_GNSS_RX    6   // GPIO 24
+#define SOC_GPIO_PIN_GNSS_TX    23  // GPIO 25
+
+#define SOC_GPIO_PIN_GNSS_PPS   24  // GPIO 26
+#else
+#error "This board is not supported!"
+#endif
 
 /* Optional SX12XX SPI radio */
 #define SOC_GPIO_PIN_SS         36  // GPIO 18 'RTS'
