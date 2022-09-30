@@ -265,6 +265,12 @@ size_t strnlen (const char *string, size_t length)
 #error "This hardware platform is not supported!"
 #endif /* ENERGIA_ARCH_CC13X0 & ENERGIA_ARCH_CC13X2 */
 
+#if defined(USE_OLED)
+#include <ti/drivers/I2C.h>
+
+static bool CC13XX_has_OLED = false;
+#endif /* USE_OLED */
+
 static void CC13XX_setup()
 {
   uint32_t reset_source = SysCtrlResetSourceGet();
@@ -338,6 +344,34 @@ static void CC13XX_setup()
     digitalWrite(pps_led, LOW);
   }
 #endif /* ENERGIA_ARCH_CC13X2 */
+
+#if defined(USE_OLED)
+  uint8_t txBuffer[2] = { 0x00 };
+  uint8_t rxBuffer[6] = { 0x00 };
+
+  I2C_Handle i2c;
+  I2C_Params i2cParams;
+  I2C_Transaction i2cTransaction;
+
+  I2C_init();
+  I2C_Params_init(&i2cParams);
+  i2cParams.bitRate = I2C_400kHz;
+  i2c = I2C_open(Board_I2C, &i2cParams);
+
+  if (i2c != NULL) {
+    i2cTransaction.writeBuf = txBuffer;
+    i2cTransaction.readBuf = rxBuffer;
+    i2cTransaction.writeCount = 1;
+    i2cTransaction.readCount = 0;
+
+    i2cTransaction.slaveAddress = SSD1306_OLED_I2C_ADDR;
+    txBuffer[0] = 0x00;
+
+    CC13XX_has_OLED = I2C_transfer(i2c, &i2cTransaction);
+
+    I2C_close(i2c);
+  }
+#endif /* USE_OLED */
 
   hw_info.revision = cc13xx_board;
 
@@ -596,6 +630,13 @@ static void CC13XX_swSer_enableRx(boolean arg)
   Serial_GNSS_In.enableRx(arg);
 #endif /* ENERGIA_ARCH_CC13XX */
 }
+
+#if defined(USE_OLED)
+bool CC13XX_OLED_probe_func()
+{
+  return CC13XX_has_OLED;
+}
+#endif /* USE_OLED */
 
 static byte CC13XX_Display_setup()
 {
