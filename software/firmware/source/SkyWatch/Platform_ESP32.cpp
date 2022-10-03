@@ -267,6 +267,7 @@ static void ESP32_setup()
 
       axp.enableIRQ(AXP202_PEK_LONGPRESS_IRQ | AXP202_PEK_SHORTPRESS_IRQ, true);
       axp.clearIRQ();
+      hw_info.pmu = PMU_AXP202;
     }
 
     if (bma_present && (i2c != nullptr)) {
@@ -275,7 +276,7 @@ static void ESP32_setup()
       pinMode(SOC_GPIO_PIN_TWATCH_BMA_IRQ, INPUT);
       attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWATCH_BMA_IRQ),
                       ESP32_BMA_Interrupt_handler, RISING);
-      hw_info.imu = IMU_BMA423;
+      hw_info.imu = ACC_BMA423;
     }
 
     if (rtc_present && (i2c != nullptr)) {

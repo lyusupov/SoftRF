@@ -37,6 +37,7 @@
 #include <XPowersLib.h>
 
 #include "../system/SoC.h"
+#include "../system/Time.h"
 #include "../driver/Sound.h"
 #include "../driver/EEPROM.h"
 #include "../driver/RF.h"
