@@ -791,7 +791,17 @@ static void STM32_EEPROM_extension(int cmd)
       if (settings->gdl90    == GDL90_UART) { settings->gdl90    = GDL90_USB; }
       if (settings->d1090    == D1090_UART) { settings->d1090    = D1090_USB; }
     }
-#endif /* ARDUINO_NUCLEO_L073RZ */
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+    if (settings->nmea_out != NMEA_OFF) {
+      settings->nmea_out = NMEA_UART;
+    }
+    if (settings->gdl90 != GDL90_OFF) {
+      settings->gdl90 = GDL90_UART;
+    }
+    if (settings->d1090 != D1090_OFF) {
+      settings->d1090 = D1090_UART;
+    }
+#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
   }
 }
 

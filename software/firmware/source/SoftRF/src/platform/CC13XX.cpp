@@ -331,6 +331,7 @@ static void CC13XX_setup()
       cc13xx_board = TI_CC1352R1_LAUNCHXL;
     } else {
       cc13xx_board = TI_LPSTK_CC1352R;
+      hw_info.imu  = ACC_ADXL362;
     }
   } else {
     cc13xx_board  = SOFTRF_UAT_MODULE_20;

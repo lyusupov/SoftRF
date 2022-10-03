@@ -267,7 +267,7 @@ void EPD_text_setup()
 void EPD_text_loop()
 {
   if (isTimeToEPD()) {
-    bool hasFix = isValidGNSSFix();
+    bool hasFix = isValidGNSSFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
 
     if (hasFix) {
         if (Traffic_Count() > 0) {

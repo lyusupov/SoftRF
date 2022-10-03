@@ -282,6 +282,8 @@ static void ESP32_setup()
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
     esp32_board = ESP32_TTGO_T_WATCH;
+    hw_info.rtc = RTC_PCF8563;
+    hw_info.imu = ACC_BMA423;
 
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);

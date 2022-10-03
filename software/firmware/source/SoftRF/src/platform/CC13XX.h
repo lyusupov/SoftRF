@@ -208,7 +208,7 @@ extern SCSerial                 scSerial;
  *
  * Board_UART0_TX               GPIO 13           GPIO 3
  * Board_UART0_RX               GPIO 12           GPIO 2
- * BootLoader                   GPIO 15           GPIO 1 (?)
+ * BootLoader                   GPIO 15           GPIO 1
  *
  */
 

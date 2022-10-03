@@ -13,8 +13,8 @@
 //#####################################
 
 // Use default VDDR trim
-#define CCFG_FORCE_VDDR_HH                              0x0        
-
+#define CCFG_FORCE_VDDR_HH                              0x0  /* +12.5 dBm */
+//#define CCFG_FORCE_VDDR_HH                            0x1  /* +14   dBm */
 
 //#####################################
 // Power settings
@@ -55,7 +55,11 @@
 #define SET_CCFG_BL_CONFIG_BL_ENABLE                    0xC5
 
 // DIO number for boot loader backdoor
+#if defined(BOARD_CC1312R1_LAUNCHXL)
+#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                0x1
+#else
 #define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER                0xf
+#endif /* BOARD_CC1312R1_LAUNCHXL */
 
 // Active low to open boot loader backdoor
 #define SET_CCFG_BL_CONFIG_BL_LEVEL                     0x0

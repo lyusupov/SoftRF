@@ -348,7 +348,7 @@ void EPD_radar_setup()
 void EPD_radar_loop()
 {
   if (isTimeToEPD()) {
-    bool hasFix = isValidGNSSFix();
+    bool hasFix = isValidGNSSFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
 
     if (hasFix) {
       EPD_Draw_Radar();
