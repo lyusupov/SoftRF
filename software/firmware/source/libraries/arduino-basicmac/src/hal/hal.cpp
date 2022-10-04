@@ -263,7 +263,7 @@ void hal_pin_tcxo_init()
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
 bool hal_pin_tcxo (u1_t val) {
-#if !defined(__ASR6501__)
+#if !defined(__ASR6501__) && !defined(ARDUINO_GENERIC_WLE5CCUX)
     if (lmic_pins.tcxo == LMIC_UNUSED_PIN)
         return false;
 
@@ -278,7 +278,7 @@ bool hal_pin_tcxo (u1_t val) {
     return true;
 #else
     return lmic_pins.tcxo == lmic_pins.rst ? false : true;
-#endif /* __ASR6501__ */
+#endif /* __ASR6501__ || ARDUINO_GENERIC_WLE5CCUX */
 }
 
 #if defined(ARDUINO_ARCH_ASR6601)
