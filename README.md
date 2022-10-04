@@ -70,7 +70,7 @@ Data|FLARM NMEA|<p align="center">![](https://github.com/lyusupov/SoftRF/raw/mas
 <sup>1</sup> - it is necessary for a reader to distinguish the difference between statement "**compatible**" and statement "**fully compatible**".<br>
 &nbsp;&nbsp;&nbsp;&nbsp; SoftRF implements only a reasonable minimum of the protocols specs. No "bells and whistles" so far.<br>
 <sup>2</sup> - FANET+ can not receive FLARM. However it is able to transmit it.<br>
-<sup>3</sup> - valid for [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) , [**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) , [**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) , [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) , [**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) , [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition), [**Octave**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept), [**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) and [**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition) **Editions**; valid for [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) , [**UAV**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition) and [**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
+<sup>3</sup> - valid for [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) , [**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) , [**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition) , [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) , [**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) , [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition) , [**Octave**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept) , [**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) and [**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition) **Editions**; valid for [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) , [**UAV**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition) and [**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) **Editions** with optional DIY [SoftRF LoRa RF module](https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module)<br>
 <sup>4</sup> - [**Reception**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition#ads-b-out-remark) of traffic 'downlink' frames only. Valid for [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition) alone and for [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) with optional DIY [SoftRF UAT module](https://github.com/lyusupov/UAT-test-signal#variant-2-advanced)<br>
 <sup>5</sup> - Reception of traffic 'downlink' frames only. Valid for [**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)<br>
 <sup>6</sup> - also known as "raw ADS-B"<br>
@@ -213,7 +213,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-31.jpg)
 
-* [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
+* [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
 
@@ -238,7 +238,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/LPSTK-CC1352R.png" height="310" width="426"><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Uni-3.jpg" height="310" width="240"></p>
 
-* [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
+* [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/t-motion-22.jpg)
 
@@ -246,7 +246,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Mini-7.jpg)
 
-* [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
+* [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-16-ePaper-vs-OLED.jpg)
 

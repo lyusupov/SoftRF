@@ -1309,13 +1309,13 @@ void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *a
         case MAKE_USB_ID(0x1A86, 0x55D4): /* CH9102 */
           slave = SOFTRF_MODEL_PRIME_MK2;
           break;
-        case MAKE_USB_ID(0x303a, 0x1001):
+        case MAKE_USB_ID(0x303a, SOFTRF_USB_PID_PRIME_MK3):
           slave = SOFTRF_MODEL_PRIME_MK3;
           break;
         case MAKE_USB_ID(0x15ba, 0x0044):
           slave = SOFTRF_MODEL_BALKAN;
           break;
-        case MAKE_USB_ID(0x303a, 0x0100):
+        case MAKE_USB_ID(0x303a, SOFTRF_USB_PID_STANDALONE):
           slave = SOFTRF_MODEL_STANDALONE;
           break;
         }

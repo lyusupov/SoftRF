@@ -172,6 +172,13 @@ typedef struct wavProperties_s {
     uint16_t bitsPerSample;
 } wavProperties_t;
 
+enum softrf_usb_pid {
+  SOFTRF_USB_PID_WEBTOP     = 0x8131,
+  SOFTRF_USB_PID_STANDALONE = 0x8132,
+  SOFTRF_USB_PID_PRIME_MK3  = 0x8133,
+  SOFTRF_USB_PID_UF2_BOOT   = 0x8134,
+};
+
 extern bool loopTaskWDTEnabled;
 
 extern WebServer server;
