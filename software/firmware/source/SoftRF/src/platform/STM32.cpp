@@ -548,7 +548,33 @@ static void STM32_post_init()
     Serial.println();
     Serial.flush();
   }
-#endif /* ARDUINO_NUCLEO_L073RZ */
+#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+  if (hw_info.model == SOFTRF_MODEL_BALKAN) {
+    Serial.println();
+    Serial.print(F("Olimex LoRa-STM32WL Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262       ? F("PASS") : F("FAIL"));
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE   ? F("PASS") : F("N/A"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE       ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+  }
+#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
 
   Serial.println(F("Data output device(s):"));
 
