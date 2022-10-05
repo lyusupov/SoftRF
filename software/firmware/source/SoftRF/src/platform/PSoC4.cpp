@@ -219,7 +219,7 @@ static void PSoC4_post_init()
   Serial.println  (hw_info.rf      == RF_IC_SX1262        ? F("PASS") : F("FAIL"));
   if (hw_info.rf == RF_IC_SX1262) {
     Serial.print(F("CLK SRC : "));
-    Serial.println(PSoC4_board == PSOC4_AITHINKER_RA_07H  ? F("Crystal") : F("TCXO"));
+    Serial.println(PSoC4_board == PSOC4_AITHINKER_RA_07H  ? F("XTAL") : F("TCXO"));
   }
 
 #if defined(CubeCell_GPS)

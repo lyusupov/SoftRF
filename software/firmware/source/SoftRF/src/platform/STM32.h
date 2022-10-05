@@ -80,11 +80,11 @@ enum stm32_board_id {
   STM32_TTGO_TWATCH_EB_1_6,
   STM32_TTGO_TMOTION_1_1,
   STM32_TTGO_TIMPULSE_1_0,
-  STM32_OLIMEX_WLE5CC, /* RFO_LP (default), 32 MHz XTAL (10 ppm) , VID/PID 15ba:0044 */
+  STM32_OLIMEX_WLE5CC, /* RFO_LP (default), 32 MHz XTAL (10 ppm), VID/PID 15ba:0044 */
   STM32_EBYTE_E77,     /* RFO_HP, 32 MHz XTAL */
-  STM32_SEEED_E5,
-  STM32_ACSIP_ST50H,   /* a.k.a. "RAK3172-SiP" */
-  STM32_RAK_3172_EB,
+  STM32_SEEED_E5,      /* RFO_HP, 32 MHz TCXO */
+  STM32_ACSIP_ST50H,   /* a.k.a. "RAK3172-SiP", RFO_HP, 32 MHz TCXO */
+  STM32_RAK_3172_EB,   /* RFO_HP, 32 MHz XTAL (10 ppm) */
 };
 
 enum stm32_boot_action {
@@ -385,9 +385,11 @@ typedef struct stm32_backup_struct {
 
 #define SOC_GPIO_ANT_RX_E5    PA4
 #define SOC_GPIO_ANT_TX_E5    PA5 /* NB: SOC_GPIO_PIN_SCK  = PA5 */
+#define SOC_GPIO_TCXO_E5      PB0
 
 #define SOC_GPIO_ANT_RX_ST50  PA0
 #define SOC_GPIO_ANT_TX_ST50  PA1
+#define SOC_GPIO_TCXO_ST50    PB0
 
 #define SOC_GPIO_ANT_RX_3172  PB8
 #define SOC_GPIO_ANT_TX_3172  PC13

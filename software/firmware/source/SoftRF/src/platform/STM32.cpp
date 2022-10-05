@@ -85,6 +85,8 @@ HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
 HardwareSerial Serial2(USART2);
 
+static bool STM32_has_TCXO = false;
+
 #ifdef HAL_SUBGHZ_MODULE_ENABLED
 void HAL_SUBGHZ_MspInit(SUBGHZ_HandleTypeDef * hsubghz)
 {
@@ -468,8 +470,8 @@ static void STM32_setup()
 #endif /* EXCLUDE_IMU */
     }
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
-  switch (stm32_board)
-  {
+    switch (stm32_board)
+    {
     case STM32_EBYTE_E77:
       lmic_pins.rxe = SOC_GPIO_ANT_RX_E77;
       lmic_pins.txe = SOC_GPIO_ANT_TX_E77;
@@ -477,10 +479,14 @@ static void STM32_setup()
     case STM32_SEEED_E5:
       lmic_pins.rxe = SOC_GPIO_ANT_RX_E5;
       lmic_pins.txe = SOC_GPIO_ANT_TX_E5;
+      STM32_has_TCXO = true;
+      lmic_pins.tcxo = SOC_GPIO_TCXO_E5;
       break;
     case STM32_ACSIP_ST50H: /* a.k.a. "RAK3172-SiP" */
       lmic_pins.rxe = SOC_GPIO_ANT_RX_ST50;
       lmic_pins.txe = SOC_GPIO_ANT_TX_ST50;
+      STM32_has_TCXO = true;
+      lmic_pins.tcxo = SOC_GPIO_TCXO_ST50;
       break;
     case STM32_RAK_3172_EB:
       lmic_pins.rxe = SOC_GPIO_ANT_RX_3172;
@@ -491,14 +497,19 @@ static void STM32_setup()
       lmic_pins.rxe = SOC_GPIO_ANT_RX_OLI;
       lmic_pins.txe = SOC_GPIO_ANT_TX_OLI;
       break;
-  }
+    }
+
+    if (STM32_has_TCXO) {
+      hal_pin_tcxo(1);
+      pinMode(lmic_pins.tcxo, OUTPUT);
+    }
 #endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
 
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+    Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
 #if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-  /* Let host's USB and console drivers to warm-up */
-  delay(2000);
+    /* Let host's USB and console drivers to warm-up */
+    delay(2000);
 #endif
 }
 
@@ -522,7 +533,7 @@ static void STM32_post_init()
     Serial.println(hw_info.rf      == RF_IC_SX1276        ? F("PASS") : F("FAIL"));
     if (hw_info.rf == RF_IC_SX1276) {
       Serial.print(F("CLK SRC : "));
-      Serial.println(STM32_has_TCXO                       ? F("TCXO") : F("Crystal"));
+      Serial.println(STM32_has_TCXO                       ? F("TCXO") : F("XTAL"));
     }
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    == GNSS_MODULE_SONY    ? F("PASS") : F("FAIL"));
@@ -559,6 +570,8 @@ static void STM32_post_init()
 
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262       ? F("PASS") : F("FAIL"));
+    Serial.print(F("CLK SRC : "));
+    Serial.println(STM32_has_TCXO                        ? F("TCXO") : F("XTAL"));
     Serial.print(F("BMx280  : "));
     Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
 
