@@ -562,7 +562,7 @@ static void STM32_post_init()
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
   if (hw_info.model == SOFTRF_MODEL_BALKAN) {
     Serial.println();
-    Serial.print(F("Olimex LoRa-STM32WL Power-on Self Test"));
+    Serial.print(F("SoftRF Balkan Edition Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
