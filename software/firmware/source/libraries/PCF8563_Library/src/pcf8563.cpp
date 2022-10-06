@@ -107,7 +107,7 @@ bool PCF8563_Class::isVaild()
 RTC_Date PCF8563_Class::getDateTime()
 {
     uint16_t year;
-    uint8_t cetury = 0;
+    uint8_t century = 0;
     _readByte(PCF8563_SEC_REG, 7, _data);
     _voltageLow = (_data[0] & PCF8563_VOL_LOW_MASK);
     _data[0] = _bcd_to_dec(_data[0] & (~PCF8563_VOL_LOW_MASK));
