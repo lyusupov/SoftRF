@@ -201,10 +201,9 @@ The bootloader is capable to self-program an application firmware into the devic
 
 7. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **RPI-RP2** disk. Wait until the file transfer is complete.
 
-_The illustration below was made for nRF52840 target, but the 'drag-and-drop' procedure for the RP2040 one is very very similar._
 <br>
 
-<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Lego-14.jpg" height="295" width="800">
 
 <br>
 
