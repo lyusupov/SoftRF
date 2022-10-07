@@ -2,13 +2,14 @@
 
 - [NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu) (ESP8266)
 - [ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)
-- [S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g) (STM32)
+- [S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g) (STM32L073)
 - [CC1352R](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures#initial-installation)
 - [CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell) (ASR650x)
 - [nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)
 - [LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)
 - [ASR6601](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#asr6601)
 - [RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)
+- [STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)
 
 ## NodeMCU
 
@@ -204,5 +205,22 @@ _The illustration below was made for nRF52840 target, but the 'drag-and-drop' pr
 <br>
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
+
+<br>
+
+## STM32WLE5
+
+1. Take pre-built **OpenOCD** tool for Windows from this location: https://gnutoolchains.com/arm-eabi/openocd/ and extract the archive ;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/WLE5) ;
+3. Connect the SoftRF Balkan Edition device to your PC by means of a USB cable ;
+4. Use Windows command line tool to execute firmware flashing procedure as follows:
+
+```
+C:\OpenOCD-20211118-0.11.0>.\bin\openocd.exe -f interface/cmsis-dap.cfg -c "cmsis_dap_vid_pid 0x15ba 0x0044" -c "transport select swd" -c "adapter speed 4000" -f "target/stm32wlx.cfg" -c "program SoftRF-firmware-v1.2-WLE5.bin 0x08000000"
+```
+
+Example:<br>
+
+![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Balkan-7.jpg)
 
 <br>
