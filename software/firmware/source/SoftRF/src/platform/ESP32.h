@@ -385,6 +385,7 @@ enum esp32_board_id {
   ESP32_S3_DEVKIT,
 };
 
+/* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */
 enum softrf_usb_pid {
   SOFTRF_USB_PID_WEBTOP     = 0x8131,
   SOFTRF_USB_PID_STANDALONE = 0x8132,
