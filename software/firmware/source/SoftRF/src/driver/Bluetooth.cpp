@@ -288,13 +288,16 @@ static void ESP32_Bluetooth_loop()
       if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 10)) { /* < 18000 baud */
 
           uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
-          size_t size = (BLE_FIFO_TX->available() < BLE_MAX_WRITE_CHUNK_SIZE ?
-                         BLE_FIFO_TX->available() : BLE_MAX_WRITE_CHUNK_SIZE);
+          size_t size = BLE_FIFO_TX->available();
+          size = size < BLE_MAX_WRITE_CHUNK_SIZE ? size : BLE_MAX_WRITE_CHUNK_SIZE;
 
-          BLE_FIFO_TX->read((char *) chunk, size);
+          if (size > 0) {
+            BLE_FIFO_TX->read((char *) chunk, size);
 
-          pUARTCharacteristic->setValue(chunk, size);
-          pUARTCharacteristic->notify();
+            pUARTCharacteristic->setValue(chunk, size);
+            pUARTCharacteristic->notify();
+          }
+
           BLE_Notify_TimeMarker = millis();
       }
       // disconnecting
@@ -1552,12 +1555,12 @@ static size_t nRF52_Bluetooth_write(const uint8_t *buffer, size_t size)
   }
 
   /* Give priority to HM-10 output */
-  if ( bleuart_HM10.notifyEnabled() ) {
+  if ( bleuart_HM10.notifyEnabled() && size > 0) {
     return bleuart_HM10.write(buffer, size);
   }
 
 #if !defined(EXCLUDE_NUS)
-  if ( bleuart_NUS.notifyEnabled() ) {
+  if ( bleuart_NUS.notifyEnabled() && size > 0) {
     rval = bleuart_NUS.write(buffer, size);
   }
 #endif /* EXCLUDE_NUS */
