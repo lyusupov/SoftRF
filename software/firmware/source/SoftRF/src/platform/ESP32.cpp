@@ -450,11 +450,19 @@ static void ESP32_setup()
       axp_2xxx.setALDO3Voltage(3300); // LoRa, AXP2101 power-on value: 3300
       axp_2xxx.setALDO4Voltage(3300); // GNSS, AXP2101 power-on value: 2900
 
+      axp_2xxx.setALDO2Voltage(3300); // RTC
+      axp_2xxx.setALDO1Voltage(3300); // sensors, OLED
+      axp_2xxx.setBLDO1Voltage(3300); // uSD
+
       // axp_2xxx.enableDC1();
       axp_2xxx.enableDC5();
 
       axp_2xxx.enableALDO3();
       axp_2xxx.enableALDO4();
+
+      axp_2xxx.enableALDO2();
+      axp_2xxx.enableALDO1();
+      axp_2xxx.enableBLDO1();
 
       axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
 
@@ -1371,8 +1379,7 @@ static byte ESP32_Display_setup()
     bool has_oled = false;
 
     /* SSD1306 I2C OLED probing */
-    if (esp32_board == ESP32_S3_DEVKIT ||
-        esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+    if (esp32_board == ESP32_S3_DEVKIT) {
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
@@ -1380,6 +1387,15 @@ static byte ESP32_Display_setup()
       if (has_oled) {
         u8x8 = &u8x8_ttgo;
         rval = DISPLAY_OLED_TTGO;
+      }
+    } else if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+      Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
+      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
+      has_oled = (Wire.endTransmission() == 0);
+      WIRE_FINI(Wire);
+      if (has_oled) {
+        u8x8 = &u8x8_ttgo; /* TBD */
+        rval = DISPLAY_OLED_TTGO /* DISPLAY_OLED_1_3 */;
       }
     } else if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);

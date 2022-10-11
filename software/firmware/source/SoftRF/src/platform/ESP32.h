@@ -409,6 +409,9 @@ struct rst_info {
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
+#define QMC6310U_ADDRESS        (0x1C)
+#define QMI8658C_ADDRESS        (0x6B)
+
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
@@ -467,6 +470,7 @@ struct rst_info {
 #if defined(USE_OLED)
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+//#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SH1106_128X64_NONAME_HW_I2C
 #else
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */

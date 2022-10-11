@@ -22,6 +22,7 @@
 #include <U8x8lib.h>
 
 #define SSD1306_OLED_I2C_ADDR   0x3C
+#define SH1106_OLED_I2C_ADDR    0x3C /* 0x3D */
 
 #define isTimeToOLED()          (millis() - OLEDTimeMarker > 500)
 
