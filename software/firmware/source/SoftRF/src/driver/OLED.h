@@ -32,6 +32,8 @@ void OLED_fini(int);
 void OLED_info1(void);
 void OLED_Next_Page(void);
 
+extern U8X8 *u8x8;
+
 extern const char *ISO3166_CC[];
 extern const char SoftRF_text1[];
 extern const char ID_text[];

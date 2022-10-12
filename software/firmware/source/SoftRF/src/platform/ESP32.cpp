@@ -35,6 +35,7 @@
 #include <axp20x.h>
 #define  XPOWERS_CHIP_AXP2102
 #include <XPowersLib.h>
+#include <pcf8563.h>
 
 #include "../system/SoC.h"
 #include "../system/Time.h"
@@ -88,7 +89,6 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 U8X8_OLED_I2C_BUS_TYPE u8x8_ttgo  (TTGO_V2_OLED_PIN_RST);
 U8X8_OLED_I2C_BUS_TYPE u8x8_heltec(HELTEC_OLED_PIN_RST);
 U8X8_SH1106_128X64_NONAME_HW_I2C u8x8_1_3(U8X8_PIN_NONE);
-extern U8X8 *u8x8;
 #endif /* USE_OLED */
 
 #if defined(USE_TFT)
@@ -482,6 +482,21 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_S3_GNSS_WAKE, HIGH);
       pinMode(SOC_GPIO_PIN_S3_GNSS_WAKE, OUTPUT);
 
+      delay(200);
+
+      Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
+      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      if (Wire.endTransmission() == 0) {
+        hw_info.rtc = RTC_PCF8563;
+      }
+#if !defined(EXCLUDE_IMU)
+      Wire.beginTransmission(QMI8658C_ADDRESS);
+      if (Wire.endTransmission() == 0) {
+        hw_info.imu = IMU_QMI8658;
+      }
+#endif /* EXCLUDE_IMU */
+      WIRE_FINI(Wire);
+
     } else {
       WIRE_FINI(Wire1);
       esp32_board      = ESP32_S3_DEVKIT;
@@ -544,6 +559,42 @@ static void ESP32_setup()
 static void ESP32_post_init()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
+    Serial.println();
+    Serial.println(F("Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262 ||
+                   hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display == DISPLAY_OLED_1_3 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("RTC     : "));
+    Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro  == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+
+#if !defined(EXCLUDE_IMU)
+    Serial.print(F("IMU     : "));
+    Serial.println(hw_info.imu    == IMU_QMI8658       ? F("PASS") : F("FAIL"));
+    Serial.flush();
+#endif /* EXCLUDE_IMU */
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.flush();
+  }
+
   Serial.println();
 
   if (!uSD_is_mounted) {
