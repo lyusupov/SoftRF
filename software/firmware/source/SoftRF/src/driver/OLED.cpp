@@ -58,7 +58,7 @@ enum
 
 U8X8_OLED_I2C_BUS_TYPE u8x8_i2c(U8X8_PIN_NONE);
 
-U8X8_OLED_I2C_BUS_TYPE *u8x8 = NULL;
+U8X8 *u8x8 = NULL;
 
 static bool OLED_display_titles = false;
 static uint32_t prev_tx_packets_counter = (uint32_t) -1;
@@ -179,6 +179,7 @@ byte OLED_setup() {
 #endif /* EXCLUDE_OLED_049 */
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
+    case DISPLAY_OLED_1_3:
     default:
       uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
 
@@ -705,6 +706,7 @@ void OLED_fini(int reason)
 #endif /* EXCLUDE_OLED_049 */
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
+    case DISPLAY_OLED_1_3:
     default:
       u8x8->draw2x2String(1, 3, reason == SOFTRF_SHUTDOWN_LOWBAT ?
                                 "LOW BAT" : "  OFF  ");
@@ -754,6 +756,7 @@ void OLED_info1()
 #endif /* EXCLUDE_OLED_049 */
     case DISPLAY_OLED_TTGO:
     case DISPLAY_OLED_HELTEC:
+    case DISPLAY_OLED_1_3:
     default:
 
       u8x8->draw2x2String(0, 0, "RADIO");

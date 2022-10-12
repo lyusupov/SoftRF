@@ -87,7 +87,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 #if defined(USE_OLED)
 U8X8_OLED_I2C_BUS_TYPE u8x8_ttgo  (TTGO_V2_OLED_PIN_RST);
 U8X8_OLED_I2C_BUS_TYPE u8x8_heltec(HELTEC_OLED_PIN_RST);
-extern U8X8_OLED_I2C_BUS_TYPE *u8x8;
+U8X8_SH1106_128X64_NONAME_HW_I2C u8x8_1_3(U8X8_PIN_NONE);
+extern U8X8 *u8x8;
 #endif /* USE_OLED */
 
 #if defined(USE_TFT)
@@ -618,6 +619,7 @@ static void ESP32_post_init()
 #if defined(USE_OLED)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
+  case DISPLAY_OLED_1_3:
     OLED_info1();
     break;
 #endif /* USE_OLED */
@@ -1394,8 +1396,8 @@ static byte ESP32_Display_setup()
       has_oled = (Wire.endTransmission() == 0);
       WIRE_FINI(Wire);
       if (has_oled) {
-        u8x8 = &u8x8_ttgo; /* TBD */
-        rval = DISPLAY_OLED_TTGO /* DISPLAY_OLED_1_3 */;
+        u8x8 = &u8x8_1_3;
+        rval = DISPLAY_OLED_1_3;
       }
     } else if (GPIO_21_22_are_busy) {
       Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
@@ -1730,6 +1732,7 @@ static void ESP32_Display_loop()
 #if defined(USE_OLED)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
+  case DISPLAY_OLED_1_3:
     OLED_loop();
     break;
 #endif /* USE_OLED */
@@ -1747,6 +1750,7 @@ static void ESP32_Display_fini(int reason)
 #if defined(USE_OLED)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
+  case DISPLAY_OLED_1_3:
 
     OLED_fini(reason);
 
