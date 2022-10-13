@@ -759,14 +759,22 @@ void OLED_info1()
     case DISPLAY_OLED_1_3:
     default:
 
-      u8x8->draw2x2String(0, 0, "RADIO");
-      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE       ? "+" : "-");
-      u8x8->draw2x2String(0, 2, "GNSS");
-      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
-      u8x8->draw2x2String(0, 4, "OLED");
-      u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE  ? "+" : "-");
-      u8x8->draw2x2String(0, 6, "BARO");
-      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE ? "+" : "-");
+      u8x8->draw2x2String( 0, 0, "RADIO");
+      u8x8->draw2x2String(14, 0, hw_info.rf   != RF_IC_NONE        ? "+" : "-");
+      u8x8->draw2x2String( 0, 2, "GNSS");
+      u8x8->draw2x2String(14, 2, hw_info.gnss != GNSS_MODULE_NONE  ? "+" : "-");
+#if !defined(EXCLUDE_IMU)
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
+        u8x8->draw2x2String( 0, 4, "IMU");
+        u8x8->draw2x2String(14, 4, hw_info.imu != IMU_NONE         ? "+" : "-");
+      } else
+#endif /* EXCLUDE_IMU */
+      {
+        u8x8->draw2x2String( 0, 4, "OLED");
+        u8x8->draw2x2String(14, 4, hw_info.display != DISPLAY_NONE ? "+" : "-");
+      }
+      u8x8->draw2x2String( 0, 6, "BARO");
+      u8x8->draw2x2String(14, 6, hw_info.baro != BARO_MODULE_NONE  ? "+" : "-");
 
       break;
     }
