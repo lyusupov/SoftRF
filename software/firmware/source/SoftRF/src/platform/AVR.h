@@ -154,6 +154,7 @@ struct rst_info {
 #define EXCLUDE_EGM96            //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
 //#define EXCLUDE_SOUND
+#define EXCLUDE_IMU
 
 //#define USE_OLED               //       kb
 #define EXCLUDE_OLED_049

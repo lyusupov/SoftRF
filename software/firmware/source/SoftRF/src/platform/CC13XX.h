@@ -129,6 +129,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 #define EXCLUDE_BMP280
+#define EXCLUDE_IMU
 
 #elif defined(BOARD_E70_XXXT14S2)
 /*
@@ -190,6 +191,7 @@ struct rst_info {
 #define EXCLUDE_WATCHOUT_MODE
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 #define EXCLUDE_LOG_GNSS_VERSION
+#define EXCLUDE_IMU
 
 //#define USE_TIME_SLOTS
 

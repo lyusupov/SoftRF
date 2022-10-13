@@ -112,6 +112,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_CC13XX
 #define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
+#define EXCLUDE_IMU
 
 #if defined(pgm_read_float_aligned)
 #define pgm_read_float(addr)  pgm_read_float_aligned(addr)

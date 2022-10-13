@@ -130,6 +130,7 @@ extern usb_data_t usb_data_type;
 #define USE_OLED
 #define EXCLUDE_OLED_049
 #define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_IMU
 
 /* trade performance for flash memory usage (-5 Kb) */
 #define cosf(x)               cos  ((double) (x))
