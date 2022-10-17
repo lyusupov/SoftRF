@@ -60,6 +60,8 @@ public:
   virtual bool writeBlock(uint32_t block, const uint8_t *src);
   virtual bool readBlocks(uint32_t block, uint8_t *dst, size_t nb);
   virtual bool writeBlocks(uint32_t block, const uint8_t *src, size_t nb);
+  virtual bool readBlocks(uint32_t block, uint32_t off, uint8_t *dst, size_t nb);
+  virtual bool writeBlocks(uint32_t block, uint32_t off, const uint8_t *src, size_t nb);
 
 private:
   Adafruit_FlashCache *_cache;

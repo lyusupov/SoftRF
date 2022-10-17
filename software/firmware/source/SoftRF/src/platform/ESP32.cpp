@@ -144,8 +144,8 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
 
 const char *ESP32S2_Device_Manufacturer = SOFTRF_IDENT;
-const char *ESP32S2_Device_Model = "Standalone Edition";
-const char *ESP32S3_Device_Model = "Prime Edition Mk.3"; /* 303a:1001 */
+const char *ESP32S2_Device_Model = "Standalone Edition"; /* 303a:8132 */
+const char *ESP32S3_Device_Model = "Prime Edition Mk.3"; /* 303a:8133 */
 const uint16_t ESP32S2_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -154,11 +154,92 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #endif /* EXCLUDE_WIFI */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-#include <SD.h>
+#include <Adafruit_SPIFlash.h>
+#include "../driver/EPD.h"
+#include "uCDB.hpp"
 
 SPIClass uSD_SPI(HSPI);
+SdFat    uSD(&uSD_SPI);
 
 static bool uSD_is_mounted = false;
+
+Adafruit_FlashTransport_ESP32 HWFlashTransport;
+Adafruit_SPIFlash QSPIFlash(&HWFlashTransport);
+
+static Adafruit_SPIFlash *SPIFlash = &QSPIFlash;
+
+/// Flash device list count
+enum {
+  EXTERNAL_FLASH_DEVICE_COUNT
+};
+
+/// List of all possible flash devices used by ESP32 boards
+static SPIFlash_Device_t possible_devices[] = { };
+
+static bool ESP32_has_spiflash  = false;
+static uint32_t spiflash_id     = 0;
+static bool FATFS_is_mounted    = false;
+static bool ADB_is_open         = false;
+
+#if CONFIG_TINYUSB_MSC_ENABLED
+#include "USBMSC.h"
+
+// USB Mass Storage object
+USBMSC usb_msc;
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+
+// file system object from SdFat
+FatFileSystem fatfs;
+
+ui_settings_t ui_settings = {
+    .units        = UNITS_METRIC,
+    .zoom         = ZOOM_MEDIUM,
+    .protocol     = PROTOCOL_NMEA,
+    .rotate       = ROTATE_0,
+    .orientation  = DIRECTION_TRACK_UP,
+    .adb          = DB_NONE,
+    .idpref       = ID_TYPE,
+    .vmode        = VIEW_MODE_STATUS,
+    .voice        = VOICE_OFF,
+    .aghost       = ANTI_GHOSTING_OFF,
+    .filter       = TRAFFIC_FILTER_OFF,
+    .team         = 0
+};
+
+ui_settings_t *ui;
+uCDB<FatFileSystem, File> ucdb(fatfs);
+
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and
+// return number of copied bytes (must be multiple of block size)
+static int32_t ESP32_msc_read_cb (uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+{
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->readBlocks(lba, offset, (uint8_t*) buffer, bufsize/512) ?
+         bufsize : -1;
+}
+
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and
+// return number of written bytes (must be multiple of block size)
+static int32_t ESP32_msc_write_cb (uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
+{
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  int32_t rval = SPIFlash->writeBlocks(lba, offset, buffer, bufsize/512) ?
+                 bufsize : -1;
+
+#if 1
+  // sync with flash
+  SPIFlash->syncBlocks();
+
+  // clear file system's cache to force refresh
+  fatfs.cacheClear();
+#endif
+
+  return rval;
+}
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -520,7 +601,43 @@ static void ESP32_setup()
                   SOC_GPIO_PIN_S3_SD_MOSI,
                   SOC_GPIO_PIN_S3_SD_SS);
 
-    uSD_is_mounted = SD.begin(SOC_GPIO_PIN_S3_SD_SS, uSD_SPI);
+    pinMode(SOC_GPIO_PIN_S3_SD_SS, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_S3_SD_SS, HIGH);
+
+    uSD_is_mounted = uSD.cardBegin(SOC_GPIO_PIN_S3_SD_SS);
+
+    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
+                                         EXTERNAL_FLASH_DEVICE_COUNT);
+    if (ESP32_has_spiflash) {
+      spiflash_id = SPIFlash->getJEDECID();
+
+      uint32_t capacity = spiflash_id & 0xFF;
+      if (capacity >= 0x15) { /* equal or greater than 1UL << 21 (2 MiB) */
+        hw_info.storage = STORAGE_FLASH;
+
+#if CONFIG_TINYUSB_MSC_ENABLED
+        // Set disk vendor id, product id and revision
+        // with string up to 8, 16, 4 characters respectively
+        usb_msc.vendorID(ESP32S2_Device_Manufacturer);
+        usb_msc.productID("Internal Flash");
+        usb_msc.productRevision("1.0");
+
+        // Set callback
+        usb_msc.onRead(ESP32_msc_read_cb);
+        usb_msc.onWrite(ESP32_msc_write_cb);
+
+        // MSC is ready for read/write
+        usb_msc.mediaPresent(true);
+
+        // Set disk size, block size should be 512 regardless of spi flash page size
+        usb_msc.begin(SPIFlash->size()/512, 512);
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+
+        FATFS_is_mounted = fatfs.begin(SPIFlash);
+      }
+    }
+
+    ui = &ui_settings;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 
@@ -600,28 +717,31 @@ static void ESP32_post_init()
   if (!uSD_is_mounted) {
     Serial.println(F("WARNING: unable to mount micro-SD card."));
   } else {
-    uint8_t cardType = SD.cardType();
+    // The number of 512 byte sectors in the card
+    // or zero if an error occurs.
+    size_t cardSize = uSD.card()->cardSize();
 
-    if(cardType == CARD_NONE){
-      Serial.println(F("NOTICE: No micro-SD card attached."));
+    if (cardSize == 0) {
+      Serial.println(F("WARNING: invalid micro-SD card size."));
     } else {
+      uint8_t cardType = uSD.card()->type();
 
       Serial.print(F("SD Card Type: "));
-      if(cardType == CARD_MMC){
-          Serial.println(F("MMC"));
-      } else if(cardType == CARD_SD){
-          Serial.println(F("SDSC"));
-      } else if(cardType == CARD_SDHC){
+      if(cardType == SD_CARD_TYPE_SD1){
+          Serial.println(F("V1"));
+      } else if(cardType == SD_CARD_TYPE_SD2){
+          Serial.println(F("V2"));
+      } else if(cardType == SD_CARD_TYPE_SDHC){
           Serial.println(F("SDHC"));
       } else {
           Serial.println(F("UNKNOWN"));
       }
 
-      Serial.printf("SD Card Size: %lluMB\r\n", SD.cardSize()   / (1024 * 1024));
-      Serial.printf("Total space : %lluMB\r\n", SD.totalBytes() / (1024 * 1024));
-      Serial.printf("Used space  : %lluMB\r\n", SD.usedBytes()  / (1024 * 1024));
+      Serial.print("SD Card Size: ");
+      Serial.print(cardSize / (2 * 1024));
+      Serial.println(" MB");
 
-      hw_info.storage = STORAGE_SD;
+      uSD.fsBegin();
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
@@ -782,6 +902,17 @@ static void ESP32_loop()
 
 static void ESP32_fini(int reason)
 {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (ESP32_has_spiflash) {
+#if CONFIG_TINYUSB_MSC_ENABLED
+    usb_msc.mediaPresent(false);
+    usb_msc.end();
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+  }
+
+  if (SPIFlash != NULL) SPIFlash->end();
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
   SPI.end();
 
   esp_wifi_stop();
@@ -2385,6 +2516,104 @@ IODev_ops_t ESP32S2_USBSerial_ops = {
 #endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+static bool ESP32_ADB_setup()
+{
+  if (FATFS_is_mounted) {
+    const char fileName[] = "/Aircrafts/ogn.cdb";
+
+    if (ucdb.open(fileName) != CDB_OK) {
+      Serial.print("Invalid CDB: ");
+      Serial.println(fileName);
+    } else {
+      ADB_is_open = true;
+    }
+  }
+
+  return ADB_is_open;
+}
+
+static bool ESP32_ADB_fini()
+{
+  if (ADB_is_open) {
+    ucdb.close();
+    ADB_is_open = false;
+  }
+
+  return !ADB_is_open;
+}
+
+/*
+ * One aircraft CDB (20000+ records) query takes:
+ * 1)     FOUND : xxx milliseconds
+ * 2) NOT FOUND : xxx milliseconds
+ */
+static bool ESP32_ADB_query(uint8_t type, uint32_t id, char *buf, size_t size)
+{
+  char key[8];
+  char out[64];
+  uint8_t tokens[3] = { 0 };
+  cdbResult rt;
+  int c, i = 0, token_cnt = 0;
+  bool rval = false;
+
+  if (!ADB_is_open) {
+    return rval;
+  }
+
+  snprintf(key, sizeof(key),"%06X", id);
+
+  rt = ucdb.findKey(key, strlen(key));
+
+  switch (rt) {
+    case KEY_FOUND:
+      while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+        if (c == '|') {
+          if (token_cnt < (sizeof(tokens) - 1)) {
+            token_cnt++;
+            tokens[token_cnt] = i+1;
+          }
+          c = 0;
+        }
+        out[i++] = (char) c;
+      }
+      out[i] = 0;
+
+      switch (ui->idpref)
+      {
+      case ID_TAIL:
+        snprintf(buf, size, "CN: %s",
+          strlen(out + tokens[2]) ? out + tokens[2] : "N/A");
+        break;
+      case ID_MAM:
+        snprintf(buf, size, "%s",
+          strlen(out + tokens[0]) ? out + tokens[0] : "Unknown");
+        break;
+      case ID_REG:
+      default:
+        snprintf(buf, size, "%s",
+          strlen(out + tokens[1]) ? out + tokens[1] : "REG: N/A");
+        break;
+      }
+
+      rval = true;
+      break;
+
+    case KEY_NOT_FOUND:
+    default:
+      break;
+  }
+
+  return rval;
+}
+
+DB_ops_t ESP32_ADB_ops = {
+  ESP32_ADB_setup,
+  ESP32_ADB_fini,
+  ESP32_ADB_query
+};
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 const SoC_ops_t ESP32_ops = {
   SOC_ESP32,
   "ESP32"
@@ -2445,7 +2674,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_setup,
   ESP32_Button_loop,
   ESP32_Button_fini,
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  &ESP32_ADB_ops
+#else
   NULL
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 };
 
 #endif /* ESP32 */

@@ -77,7 +77,17 @@
  * USE_STANDARD_SPI_LIBRARY is two, the SPI port can be selected with the
  * constructors SdFat(SPIClass* spiPort) and SdFatEX(SPIClass* spiPort).
  */
+#if defined(ESP32)
+#include "sdkconfig.h"
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define USE_STANDARD_SPI_LIBRARY 2
+#else
 #define USE_STANDARD_SPI_LIBRARY 0
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#else
+#define USE_STANDARD_SPI_LIBRARY 0
+#endif /* ESP32 */
+
 //------------------------------------------------------------------------------
 /**
  * If the symbol ENABLE_SOFTWARE_SPI_CLASS is nonzero, the class SdFatSoftSpi

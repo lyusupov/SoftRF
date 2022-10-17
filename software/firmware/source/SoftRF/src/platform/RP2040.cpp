@@ -282,7 +282,7 @@ static void RP2040_setup()
 #if defined(USE_TINYUSB)
       // Set disk vendor id, product id and revision
       // with string up to 8, 16, 4 characters respectively
-      usb_msc.setID(RP2040_Device_Manufacturer, "External Flash", "1.0");
+      usb_msc.setID(RP2040_Device_Manufacturer, "Internal Flash", "1.0");
 
       // Set callback
       usb_msc.setReadWriteCallback(RP2040_msc_read_cb,

@@ -272,14 +272,21 @@ ihex:
 psoc4:
 				$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_CY) $(HEXDIR)/$(BIN_ELF) $(HEXDIR)/$(BIN_RAW)
 
+# Nordic nRF52840
 nuf2:
 				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xada52840 -o $(HEXDIR)/$(BIN_UF2)
 
+# Microchip (Atmel) SAMD21
 suf2:
 				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0x68ed2b88 -o $(HEXDIR)/$(BIN_UF2)
 
-euf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xbfdd4eee -o $(HEXDIR)/$(BIN_UF2)
+# Espressif ESP32-S2
+e2uf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xbfdd4eee -b 0 -o $(HEXDIR)/$(BIN_UF2)
+
+# Espressif ESP32-S3
+e3uf2:
+				$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xc47e5767 -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 

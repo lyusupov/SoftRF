@@ -135,9 +135,11 @@ jobs:
             arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
             arduino --pref "custom_FlashFreq=esp32s3_80"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32s3_dio"              --save-prefs ;
-            arduino --pref "custom_FlashSize=esp32s3_4M"               --save-prefs ;
+            arduino --pref "custom_FlashSize=esp32s3_8M"               --save-prefs ;
+            arduino --pref "custom_USBMode=esp32s3_default"            --save-prefs ;
+            arduino --pref "custom_CDCOnBoot=esp32s3_cdc"              --save-prefs ;
             arduino --pref "custom_PSRAM=esp32s3_enabled"              --save-prefs ;
-            arduino --pref "custom_PartitionScheme=esp32s3_min_spiffs" --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32s3_default_8MB" --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32s3_921600"         --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi

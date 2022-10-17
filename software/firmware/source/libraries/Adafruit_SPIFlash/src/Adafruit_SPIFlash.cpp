@@ -133,3 +133,24 @@ bool Adafruit_SPIFlash::writeBlocks(uint32_t block, const uint8_t *src,
     return _cache->write(this, block * 512, src, 512 * nb);
   }
 }
+
+bool Adafruit_SPIFlash::readBlocks(uint32_t block, uint32_t offset,
+                                   uint8_t *dst, size_t nb) {
+  SPIFLASH_LOG(block, nb);
+
+  if (_flash_dev->is_fram) {
+    return this->readBuffer(block * 512 + offset, dst, 512 * nb) > 0;
+  } else {
+    return _cache->read(this, block * 512 + offset, dst, 512 * nb);
+  }
+}
+
+bool Adafruit_SPIFlash::writeBlocks(uint32_t block, uint32_t offset,
+                                    const uint8_t *src, size_t nb) {
+  SPIFLASH_LOG(block, nb);
+  if (_flash_dev->is_fram) {
+    return this->writeBuffer(block * 512 + offset, src, 512 * nb) > 0;
+  } else {
+    return _cache->write(this, block * 512 + offset, src, 512 * nb);
+  }
+}

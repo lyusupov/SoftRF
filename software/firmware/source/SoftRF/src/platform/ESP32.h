@@ -27,7 +27,6 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiClient.h>
-#include <SPIFFS.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
