@@ -799,6 +799,7 @@ static void ESP32_post_init()
   case DISPLAY_OLED_1_3:
     OLED_info1();
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
     {
       char key[8];
@@ -855,6 +856,8 @@ static void ESP32_post_init()
 
       OLED_info3(acfts, reg, mam, cn);
     }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
     break;
 #endif /* USE_OLED */
   case DISPLAY_NONE:
