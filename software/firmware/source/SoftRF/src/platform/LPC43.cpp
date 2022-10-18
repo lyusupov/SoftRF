@@ -64,6 +64,7 @@ hardware_info_t hw_info = {
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
   .imu      = IMU_NONE,
+  .mag      = MAG_NONE,
   .pmu      = PMU_NONE,
 };
 

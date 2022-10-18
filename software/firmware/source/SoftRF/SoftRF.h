@@ -159,6 +159,7 @@ typedef struct hardware_info {
     byte  storage;
     byte  rtc;
     byte  imu;
+    byte  mag;
     byte  pmu;
 } hardware_info_t;
 
@@ -247,6 +248,14 @@ enum
 	IMU_ICM20948,
 	IMU_MPU9250,
 	IMU_QMI8658,
+};
+
+enum
+{
+	MAG_NONE,
+	MAG_AK8963,
+	MAG_AK09916,
+	MAG_QMC6310,
 };
 
 extern ufo_t ThisAircraft;

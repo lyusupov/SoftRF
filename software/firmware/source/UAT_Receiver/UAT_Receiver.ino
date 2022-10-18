@@ -50,7 +50,9 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE,
   .storage  = STORAGE_NONE,
   .rtc      = RTC_NONE,
-  .imu      = IMU_NONE
+  .imu      = IMU_NONE,
+  .mag      = MAG_NONE,
+  .pmu      = PMU_NONE,
 };
 
 Stratux_frame_t LPUATRadio_frame = {

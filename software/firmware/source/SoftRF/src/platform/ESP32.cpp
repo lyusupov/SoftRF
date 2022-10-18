@@ -576,6 +576,10 @@ static void ESP32_setup()
         hw_info.imu = IMU_QMI8658;
       }
 #endif /* EXCLUDE_IMU */
+      Wire.beginTransmission(QMC6310U_ADDRESS);
+      if (Wire.endTransmission() == 0) {
+        hw_info.mag = MAG_QMC6310;
+      }
       WIRE_FINI(Wire);
 
     } else {
@@ -612,7 +616,7 @@ static void ESP32_setup()
       spiflash_id = SPIFlash->getJEDECID();
 
       uint32_t capacity = spiflash_id & 0xFF;
-      if (capacity >= 0x15) { /* equal or greater than 1UL << 21 (2 MiB) */
+      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
         hw_info.storage = STORAGE_FLASH;
 
 #if CONFIG_TINYUSB_MSC_ENABLED
@@ -700,12 +704,14 @@ static void ESP32_post_init()
     Serial.print(F("BMx280  : "));
     Serial.println(hw_info.baro  == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
     Serial.flush();
-
 #if !defined(EXCLUDE_IMU)
     Serial.print(F("IMU     : "));
     Serial.println(hw_info.imu    == IMU_QMI8658       ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
+    Serial.print(F("MAG     : "));
+    Serial.println(hw_info.mag    == MAG_QMC6310       ? F("PASS") : F("FAIL"));
+    Serial.flush();
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -792,6 +798,63 @@ static void ESP32_post_init()
   case DISPLAY_OLED_HELTEC:
   case DISPLAY_OLED_1_3:
     OLED_info1();
+
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
+    {
+      char key[8];
+      char out[64];
+      uint8_t tokens[3] = { 0 };
+      cdbResult rt;
+      int c, i = 0, token_cnt = 0;
+
+      int acfts;
+      char *reg, *mam, *cn;
+      reg = mam = cn = NULL;
+
+      OLED_info2();
+
+      if (ADB_is_open) {
+        acfts = ucdb.recordsNumber();
+
+        snprintf(key, sizeof(key),"%06X", ThisAircraft.addr);
+
+        rt = ucdb.findKey(key, strlen(key));
+
+        switch (rt) {
+          case KEY_FOUND:
+            while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+              if (c == '|') {
+                if (token_cnt < (sizeof(tokens) - 1)) {
+                  token_cnt++;
+                  tokens[token_cnt] = i+1;
+                }
+                c = 0;
+              }
+              out[i++] = (char) c;
+            }
+            out[i] = 0;
+
+            reg = out + tokens[1];
+            mam = out + tokens[0];
+            cn  = out + tokens[2];
+
+            break;
+
+          case KEY_NOT_FOUND:
+          default:
+            break;
+        }
+
+        reg = (reg != NULL) && strlen(reg) ? reg : (char *) "REG: N/A";
+        mam = (mam != NULL) && strlen(mam) ? mam : (char *) "M&M: N/A";
+        cn  = (cn  != NULL) && strlen(cn)  ? cn  : (char *) " CN: N/A";
+
+      } else {
+        acfts = -1;
+      }
+
+      OLED_info3(acfts, reg, mam, cn);
+    }
     break;
 #endif /* USE_OLED */
   case DISPLAY_NONE:
@@ -1634,6 +1697,8 @@ static byte ESP32_Display_setup()
       u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
       u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
     }
+
+    SoC->ADB_ops && SoC->ADB_ops->setup();
 #endif /* USE_OLED */
 
   } else {  /* ESP32_TTGO_T_WATCH */
@@ -1933,6 +1998,8 @@ static void ESP32_Display_fini(int reason)
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
   case DISPLAY_OLED_1_3:
+
+    SoC->ADB_ops && SoC->ADB_ops->fini();
 
     OLED_fini(reason);
 
