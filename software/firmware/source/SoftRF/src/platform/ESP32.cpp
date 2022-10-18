@@ -599,17 +599,6 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
 
-    /* uSD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_S3_SD_SCK,
-                  SOC_GPIO_PIN_S3_SD_MISO,
-                  SOC_GPIO_PIN_S3_SD_MOSI,
-                  SOC_GPIO_PIN_S3_SD_SS);
-
-    pinMode(SOC_GPIO_PIN_S3_SD_SS, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_S3_SD_SS, HIGH);
-
-    uSD_is_mounted = uSD.cardBegin(SOC_GPIO_PIN_S3_SD_SS);
-
     ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
     if (ESP32_has_spiflash) {
@@ -639,6 +628,22 @@ static void ESP32_setup()
 
         FATFS_is_mounted = fatfs.begin(SPIFlash);
       }
+    }
+
+    /* uSD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_S3_SD_SCK,
+                  SOC_GPIO_PIN_S3_SD_MISO,
+                  SOC_GPIO_PIN_S3_SD_MOSI,
+                  SOC_GPIO_PIN_S3_SD_SS);
+
+    pinMode(SOC_GPIO_PIN_S3_SD_SS, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_S3_SD_SS, HIGH);
+
+    uSD_is_mounted = uSD.cardBegin(SOC_GPIO_PIN_S3_SD_SS);
+
+    if (uSD_is_mounted && uSD.card()->cardSize() > 0) {
+      hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
+                        STORAGE_FLASH_AND_CARD : STORAGE_CARD;
     }
 
     ui = &ui_settings;
@@ -680,7 +685,8 @@ static void ESP32_setup()
 static void ESP32_post_init()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
+  {
     Serial.println();
     Serial.println(F("Power-on Self Test"));
     Serial.println();
@@ -706,11 +712,16 @@ static void ESP32_post_init()
     Serial.flush();
 #if !defined(EXCLUDE_IMU)
     Serial.print(F("IMU     : "));
-    Serial.println(hw_info.imu    == IMU_QMI8658       ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.imu     == IMU_QMI8658      ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
     Serial.print(F("MAG     : "));
-    Serial.println(hw_info.mag    == MAG_QMC6310       ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.mag     == MAG_QMC6310      ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("CARD    : "));
+    Serial.println(hw_info.storage == STORAGE_CARD ||
+                   hw_info.storage == STORAGE_FLASH_AND_CARD
+                                                       ? F("PASS") : F("N/A"));
     Serial.flush();
 
     Serial.println();
@@ -1672,7 +1683,7 @@ static byte ESP32_Display_setup()
           } else {
             hw_info.revision = 11;
           }
-          hw_info.storage = STORAGE_SD;
+          hw_info.storage = STORAGE_CARD;
         }
 
         rval = DISPLAY_OLED_TTGO;

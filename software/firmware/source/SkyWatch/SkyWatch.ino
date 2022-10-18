@@ -142,7 +142,7 @@ void setup()
   }
 
   if (SoC->DB_init()) {
-    hw_info.storage = STORAGE_SD;
+    hw_info.storage = STORAGE_CARD;
   }
 
   OTA_setup();

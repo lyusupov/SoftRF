@@ -1464,7 +1464,7 @@ void handleStatus() {
       hw_info.display      == DISPLAY_EPD_2_7      ? "e-Paper" :
       hw_info.display      == DISPLAY_OLED_2_4     ? "OLED"    :
       hw_info.display      == DISPLAY_TFT_TTGO_240 ? "LCD"     : "NONE",
-      hw_info.storage      == STORAGE_SD           ? "SD"      : "NONE",
+      hw_info.storage      == STORAGE_CARD         ? "CARD"    : "NONE",
       (baro_chip == NULL ? "NONE" : baro_chip->name)
     );
 
@@ -1478,7 +1478,7 @@ void handleStatus() {
       PSTR("\
 <tr><th align=left>Storage</th><td align=right>%s</td></tr>\
 <tr><th align=left>GNSS module</th><td align=right>%s</td></tr>"),
-      hw_info.storage == STORAGE_SD ? "SD" : "NONE",
+      hw_info.storage == STORAGE_CARD ? "CARD" : "NONE",
       GNSS_name[hw_info.gnss]
     );
 

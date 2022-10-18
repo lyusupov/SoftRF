@@ -794,7 +794,10 @@ void OLED_info2()
       u8x8->draw2x2String(14, 2, hw_info.imu != IMU_NONE ? "+" : "-");
       u8x8->draw2x2String( 0, 4, "MAG");
       u8x8->draw2x2String(14, 4, hw_info.mag != MAG_NONE ? "+" : "-");
-
+      u8x8->draw2x2String( 0, 6, "CARD");
+      u8x8->draw2x2String(14, 6, hw_info.storage == STORAGE_CARD ||
+                                 hw_info.storage == STORAGE_FLASH_AND_CARD ?
+                                                           "+" : "-");
       break;
     }
 
