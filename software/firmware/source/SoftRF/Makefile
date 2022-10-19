@@ -253,79 +253,79 @@ PROGNAME      := SoftRF
 DEPS          := $(OBJS:.o=.d)
 
 all:
-				$(ARDUINO) --verify --verbose-build $(SKETCH)
+	$(ARDUINO) --verify --verbose-build $(SKETCH)
 
 cc:
-				$(ENERGIA) --verify --verbose-build $(SKETCH)
+	$(ENERGIA) --verify --verbose-build $(SKETCH)
 
 upload:
-				$(ARDUINO) --upload --verbose-build --verbose-upload  $(SKETCH)
+	$(ARDUINO) --upload --verbose-build --verbose-upload  $(SKETCH)
 
 #
 # "Intel HEX" type of the firmware binary is necessary input format
 #    for cc2538-bsl.py serial firmware uploader.
 #
 ihex:
-				$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_TI) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
-				$(SED) $(BINDIR)/$(BIN_IHEX)
+	$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_TI) $(BINDIR)/$(BIN_ELF) $(BINDIR)/$(BIN_IHEX)
+	$(SED) $(BINDIR)/$(BIN_IHEX)
 
 psoc4:
-				$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_CY) $(HEXDIR)/$(BIN_ELF) $(HEXDIR)/$(BIN_RAW)
+	$(TC_PATH)/$(OBJCOPY) $(OBJCOPY_CY) $(HEXDIR)/$(BIN_ELF) $(HEXDIR)/$(BIN_RAW)
 
 # Nordic nRF52840
 nuf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xada52840 -o $(HEXDIR)/$(BIN_UF2)
+	$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0xada52840 -o $(HEXDIR)/$(BIN_UF2)
 
 # Microchip (Atmel) SAMD21
 suf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0x68ed2b88 -o $(HEXDIR)/$(BIN_UF2)
+	$(UF2CONV) $(HEXDIR)/$(BIN_HEX) -c -f 0x68ed2b88 -o $(HEXDIR)/$(BIN_UF2)
 
 # Espressif ESP32-S2
 e2uf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xbfdd4eee -b 0 -o $(HEXDIR)/$(BIN_UF2)
+	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xbfdd4eee -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
 # Espressif ESP32-S3
 e3uf2:
-				$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xc47e5767 -b 0 -o $(HEXDIR)/$(BIN_UF2)
+	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xc47e5767 -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 
 %.o: %.cpp
-				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
+	$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
 
 %.o: %.c
-				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+	$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
 
 hal.o: $(RADIO_PATH)/hal/hal.cpp
-				$(CXX) $(CXXFLAGS) -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
+	$(CXX) $(CXXFLAGS) -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
 
 hal-aux.o: $(RADIO_PATH)/hal/hal.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
+	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
 RPi.o: $(PLATFORM_PATH)/RPi.cpp
-				$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi.o
+	$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi.o
 
 RPi-aux.o: $(PLATFORM_PATH)/RPi.cpp
-				$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi-aux.o
+	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi-aux.o
 
 aes.o: $(RADIO_PATH)/aes/lmic.c
-				$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
+	$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
 
 $(RADIO_PATH)/lmic/%.o: $(RADIO_PATH)/lmic/%.c
-				$(CC) -c $(CFLAGS) $(RADIO_PATH)/lmic/$*.c -o $(RADIO_PATH)/lmic/$*.o $(INCLUDE)
+	$(CC) -c $(CFLAGS) $(RADIO_PATH)/lmic/$*.c -o $(RADIO_PATH)/lmic/$*.o $(INCLUDE)
 
 bcm:
-				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+	(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
 $(PROGNAME): $(OBJS) aes.o hal.o RPi.o
-				$(CXX) $(OBJS) aes.o hal.o RPi.o $(LIBS) -o $(PROGNAME)
+	$(CXX) $(OBJS) aes.o hal.o RPi.o $(LIBS) -o $(PROGNAME)
 
 $(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o RPi-aux.o
-				$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
+	$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
-				(cd $(BCMLIB_PATH)/../ ; make distclean)
+	(cd $(BCMLIB_PATH)/../ ; make distclean)
 
 clean: bcm-clean
-				rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
-				RPi.o RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d
+	rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
+	RPi.o RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d

@@ -514,6 +514,9 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_PRIME_MK3; /* allow psramFound() to fail */
       hw_info.pmu   = PMU_AXP2101;
 
+      /* inactivate tinyUF2 LED output setting */
+      pinMode(SOC_GPIO_PIN_S3_GNSS_PPS, INPUT);
+
       // Set the minimum common working voltage of the PMU VBUS input,
       // below this value will turn off the PMU
       axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
@@ -556,6 +559,10 @@ static void ESP32_setup()
       axp_2xxx.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
       axp_2xxx.clearIrqStatus();
 
+      axp_2xxx.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+      axp_2xxx.disableTSPinMeasure();
+      axp_2xxx.enableBattVoltageMeasure();
+
       axp_2xxx.enableIRQ(XPOWERS_AXP2101_PKEY_LONG_IRQ |
                          XPOWERS_AXP2101_PKEY_SHORT_IRQ);
 
@@ -563,23 +570,26 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_S3_GNSS_WAKE, HIGH);
       pinMode(SOC_GPIO_PIN_S3_GNSS_WAKE, OUTPUT);
 
+      Wire1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      if (Wire1.endTransmission() == 0) {
+        hw_info.rtc = RTC_PCF8563;
+      }
+
+      /* wait until every LDO voltage will settle down */
       delay(200);
 
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      Wire.beginTransmission(QMC6310U_ADDRESS);
       if (Wire.endTransmission() == 0) {
-        hw_info.rtc = RTC_PCF8563;
+        hw_info.mag = MAG_QMC6310;
       }
 #if !defined(EXCLUDE_IMU)
+      /* TBD */
       Wire.beginTransmission(QMI8658C_ADDRESS);
       if (Wire.endTransmission() == 0) {
         hw_info.imu = IMU_QMI8658;
       }
 #endif /* EXCLUDE_IMU */
-      Wire.beginTransmission(QMC6310U_ADDRESS);
-      if (Wire.endTransmission() == 0) {
-        hw_info.mag = MAG_QMC6310;
-      }
       WIRE_FINI(Wire);
 
     } else {
@@ -630,16 +640,19 @@ static void ESP32_setup()
       }
     }
 
+    int uSD_SS_pin = (esp32_board == ESP32_S3_DEVKIT) ?
+                     SOC_GPIO_PIN_S3_SD_SS_DK : SOC_GPIO_PIN_S3_SD_SS_TBEAM;
+
     /* uSD-SPI init */
     uSD_SPI.begin(SOC_GPIO_PIN_S3_SD_SCK,
                   SOC_GPIO_PIN_S3_SD_MISO,
                   SOC_GPIO_PIN_S3_SD_MOSI,
-                  SOC_GPIO_PIN_S3_SD_SS);
+                  uSD_SS_pin);
 
-    pinMode(SOC_GPIO_PIN_S3_SD_SS, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_S3_SD_SS, HIGH);
+    pinMode(uSD_SS_pin, OUTPUT);
+    digitalWrite(uSD_SS_pin, HIGH);
 
-    uSD_is_mounted = uSD.cardBegin(SOC_GPIO_PIN_S3_SD_SS);
+    uSD_is_mounted = uSD.cardBegin(uSD_SS_pin);
 
     if (uSD_is_mounted && uSD.card()->cardSize() > 0) {
       hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
@@ -707,7 +720,7 @@ static void ESP32_post_init()
     Serial.print(F("RTC     : "));
     Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("BMx280  : "));
+    Serial.print(F("BARO    : "));
     Serial.println(hw_info.baro  == BARO_MODULE_BMP280 ? F("PASS") : F("FAIL"));
     Serial.flush();
 #if !defined(EXCLUDE_IMU)
@@ -718,6 +731,9 @@ static void ESP32_post_init()
     Serial.print(F("MAG     : "));
     Serial.println(hw_info.mag     == MAG_QMC6310      ? F("PASS") : F("FAIL"));
     Serial.flush();
+
+    Serial.println();
+    Serial.println(F("External components:"));
     Serial.print(F("CARD    : "));
     Serial.println(hw_info.storage == STORAGE_CARD ||
                    hw_info.storage == STORAGE_FLASH_AND_CARD

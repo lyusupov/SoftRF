@@ -313,10 +313,11 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_DIO1            1
 #define SOC_GPIO_PIN_S3_DIO2            4 /* shared with HPD16A BUSY */
 
-/* 2nd I2C bus (PMU) */
+/* 2nd I2C bus (PMU, RTC) */
 #define SOC_GPIO_PIN_S3_PMU_SDA         42
 #define SOC_GPIO_PIN_S3_PMU_SCL         41
 #define SOC_GPIO_PIN_S3_PMU_IRQ         40
+#define SOC_GPIO_PIN_S3_RTC_IRQ         14
 
 // 32768 Hz crystal
 #define SOC_GPIO_PIN_S3_XP              15
@@ -328,27 +329,26 @@ extern Adafruit_NeoPixel strip;
 /* ESP32-S3 section 2 (reserved pins) */
 // 17,18 - I2C; 33,34,39,(47 ? - DC) - TFT/EINK; 35,36,37,38 - uSD; 2 - SX1276
 
-// TFT
-#define SOC_GPIO_PIN_S3_TFT_MOSI        35
-#define SOC_GPIO_PIN_S3_TFT_MISO        SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_S3_TFT_SCK         36
-#define SOC_GPIO_PIN_S3_TFT_SS          34
-#define SOC_GPIO_PIN_S3_TFT_DC          37
-#define SOC_GPIO_PIN_S3_TFT_RST         39
-#define SOC_GPIO_PIN_S3_TFT_BL          33
-
-// 1st I2C bus (OLED display, air pressure sensor)
+// 1st I2C bus (OLED display, sensors)
 #define SOC_GPIO_PIN_S3_SDA             17
 #define SOC_GPIO_PIN_S3_SCL             18
 
-// microSD SPI
+// IMU
+#define SOC_GPIO_PIN_S3_IMU_MOSI        35
+#define SOC_GPIO_PIN_S3_IMU_MISO        37
+#define SOC_GPIO_PIN_S3_IMU_SCK         36
+#define SOC_GPIO_PIN_S3_IMU_SS          34
+#define SOC_GPIO_PIN_S3_IMU_INT12       33
+
+// microSD
 #define SOC_GPIO_PIN_S3_SD_MOSI         35
 #define SOC_GPIO_PIN_S3_SD_MISO         37
 #define SOC_GPIO_PIN_S3_SD_SCK          36
-#define SOC_GPIO_PIN_S3_SD_SS           38
+#define SOC_GPIO_PIN_S3_SD_SS_DK        38
+#define SOC_GPIO_PIN_S3_SD_SS_TBEAM     47
 
 /* ESP32-S3 section 3 (spare pins) */
-// 3(S), 14, 21, 45(S), 46(S), 47, 48
+// 3(S), 21, 39, 45(S), 46(S), 48
 
 // battery voltage (ADC)
 #define SOC_GPIO_PIN_S3_BATTERY         3 // (S)
