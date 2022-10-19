@@ -411,6 +411,9 @@ struct rst_info {
 #define QMC6310U_ADDRESS        (0x1C)
 #define QMI8658C_ADDRESS        (0x6B)
 
+#define MPU9250_REG_WHOAMI      (0x75)
+#define QMI8658_REG_WHOAMI      (0x00)
+
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 

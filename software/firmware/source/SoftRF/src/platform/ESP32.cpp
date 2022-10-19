@@ -585,10 +585,44 @@ static void ESP32_setup()
       }
 #if !defined(EXCLUDE_IMU)
       /* TBD */
+#if 0
       Wire.beginTransmission(QMI8658C_ADDRESS);
       if (Wire.endTransmission() == 0) {
         hw_info.imu = IMU_QMI8658;
       }
+#else
+      uSD_SPI.begin(SOC_GPIO_PIN_S3_IMU_SCK,
+                    SOC_GPIO_PIN_S3_IMU_MISO,
+                    SOC_GPIO_PIN_S3_IMU_MOSI,
+                    SOC_GPIO_PIN_S3_IMU_SS);
+
+      pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+
+      delay(100);
+
+      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+      uSD_SPI.transfer(MPU9250_REG_WHOAMI | 0x80 /* read */);
+      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x71) ? IMU_MPU9250 : IMU_NONE;
+
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+      uSD_SPI.endTransaction();
+
+      delay(10);
+
+      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+      uSD_SPI.transfer(QMI8658_REG_WHOAMI | 0x80 /* read */);
+      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x5) ? IMU_QMI8658 : hw_info.imu;
+
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+      uSD_SPI.endTransaction();
+
+      uSD_SPI.end();
+#endif
 #endif /* EXCLUDE_IMU */
       WIRE_FINI(Wire);
 
@@ -725,7 +759,7 @@ static void ESP32_post_init()
     Serial.flush();
 #if !defined(EXCLUDE_IMU)
     Serial.print(F("IMU     : "));
-    Serial.println(hw_info.imu     == IMU_QMI8658      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.imu     != IMU_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
     Serial.print(F("MAG     : "));
@@ -2504,12 +2538,12 @@ static void ESP32S2_USB_loop()
 {
     if (device && device->isConnected())
     {
-          uint8_t chunk[USB_MAX_WRITE_CHUNK_SIZE];
-          size_t size = (USB_TX_FIFO->available() < USB_MAX_WRITE_CHUNK_SIZE ?
-                         USB_TX_FIFO->available() : USB_MAX_WRITE_CHUNK_SIZE);
+      uint8_t chunk[USB_MAX_WRITE_CHUNK_SIZE];
+      size_t size = (USB_TX_FIFO->available() < USB_MAX_WRITE_CHUNK_SIZE ?
+                     USB_TX_FIFO->available() : USB_MAX_WRITE_CHUNK_SIZE);
 
-          USB_TX_FIFO->read((char *) chunk, size);
-          device->OUTDATA(chunk, size);
+      USB_TX_FIFO->read((char *) chunk, size);
+      device->OUTDATA(chunk, size);
     }
 }
 
