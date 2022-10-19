@@ -496,6 +496,12 @@ static void STM32_setup()
     default:
       lmic_pins.rxe = SOC_GPIO_ANT_RX_OLI;
       lmic_pins.txe = SOC_GPIO_ANT_TX_OLI;
+
+      Wire.begin();
+      Wire.beginTransmission(IIS2MDC_ADDRESS);
+      hw_info.mag = (Wire.endTransmission() == 0) ? MAG_IIS2MDC : MAG_NONE;
+      Wire.end();
+
       break;
     }
 

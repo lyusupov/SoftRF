@@ -63,6 +63,7 @@ extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
 #endif
 
 #define ICM20948_ADDRESS        (0x69)
+#define IIS2MDC_ADDRESS         (0x1E) // (0x3D)
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
