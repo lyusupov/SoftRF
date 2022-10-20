@@ -7,11 +7,11 @@ about: This template helps to report issues related to SoftRF hardware, software
 
 **ATTENTION** ! 
 
-- Use this form to report bugs in [**Official Release**](https://github.com/lyusupov/SoftRF/releases) of SoftRF firmware, hardware and web pages only ;
+- Use this form to report bugs in an [**Official Release**](https://github.com/lyusupov/SoftRF/releases) of SoftRF firmware, hardware and web pages only ;
 - Issue reports from anonymous users will be most likely invalidated. Reasons for that are well explained [here](https://berthub.eu/articles/posts/anonymous-help/) ;
 - Prior to asking a question, look into ["Closed issues"](https://github.com/lyusupov/SoftRF/issues?q=is%3Aissue+is%3Aclosed) area to see if it was answered before ;
 - No any "ideas" or new feature requests, please ! New feature requests do not subject for taking into consideration unless they come from co-developers ;
-- "Enhancements" of existing features are only allowed when you are ready to implement them by yourself. See [**CONTRIBUTING**](https://github.com/lyusupov/SoftRF/blob/master/CONTRIBUTING.md) list for details ;
+- "Enhancements" of existing features are only allowed when you are ready to implement them by yourself. See [CONTRIBUTING](https://github.com/lyusupov/SoftRF/blob/master/CONTRIBUTING.md) list for details ;
 
 Recommended:
 - screenshot or photo width - from 600 to 800 pixels ;

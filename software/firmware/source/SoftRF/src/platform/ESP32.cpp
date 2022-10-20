@@ -590,6 +590,7 @@ static void ESP32_setup()
                     SOC_GPIO_PIN_S3_IMU_MISO,
                     SOC_GPIO_PIN_S3_IMU_MOSI,
                     SOC_GPIO_PIN_S3_IMU_SS);
+      uSD_SPI.setHwCs(false);
 
       pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
@@ -606,7 +607,7 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
       uSD_SPI.endTransaction();
 
-      delay(100);
+      delay(50);
 #endif
       uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
@@ -616,6 +617,29 @@ static void ESP32_setup()
 
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
       uSD_SPI.endTransaction();
+
+      if (hw_info.imu == IMU_NONE) {
+        uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
+        digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+        // reset device
+        uSD_SPI.transfer(MPU6886_REG_PWR_MGMT_1);
+        uSD_SPI.transfer(0x80);
+
+        digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+        uSD_SPI.endTransaction();
+
+        delay(100);
+
+        uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
+        digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+        uSD_SPI.transfer(MPU6886_REG_WHOAMI | 0x80 /* read */);
+        hw_info.imu = (uSD_SPI.transfer(0x00) ==  0x19) ? IMU_MPU6886 : IMU_NONE;
+
+        digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+        uSD_SPI.endTransaction();
+      }
 
       uSD_SPI.end();
 #endif /* EXCLUDE_IMU */
@@ -630,6 +654,7 @@ static void ESP32_setup()
                     SOC_GPIO_PIN_S3_IMU_MISO,
                     SOC_GPIO_PIN_S3_IMU_MOSI,
                     SOC_GPIO_PIN_S3_IMU_SS);
+      uSD_SPI.setHwCs(false);
 
       pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
