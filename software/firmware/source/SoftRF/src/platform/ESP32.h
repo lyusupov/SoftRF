@@ -411,7 +411,9 @@ struct rst_info {
 #define QMC6310U_ADDRESS        (0x1C)
 #define QMI8658C_ADDRESS        (0x6B)
 
+#define MPU9250_REG_PWR_MGMT_1  (0x6B)
 #define MPU9250_REG_WHOAMI      (0x75)
+#define QMI8658_REG_RESET       (0x60)
 #define QMI8658_REG_WHOAMI      (0x00)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */

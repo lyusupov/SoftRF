@@ -583,14 +583,9 @@ static void ESP32_setup()
       if (Wire.endTransmission() == 0) {
         hw_info.mag = MAG_QMC6310;
       }
+      WIRE_FINI(Wire);
+
 #if !defined(EXCLUDE_IMU)
-      /* TBD */
-#if 0
-      Wire.beginTransmission(QMI8658C_ADDRESS);
-      if (Wire.endTransmission() == 0) {
-        hw_info.imu = IMU_QMI8658;
-      }
-#else
       uSD_SPI.begin(SOC_GPIO_PIN_S3_IMU_SCK,
                     SOC_GPIO_PIN_S3_IMU_MISO,
                     SOC_GPIO_PIN_S3_IMU_MOSI,
@@ -599,38 +594,72 @@ static void ESP32_setup()
       pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
 
+      delay(50);
+#if 0
+      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+      // reset device
+      uSD_SPI.transfer(QMI8658_REG_RESET);
+      uSD_SPI.transfer(0xB0);
+
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+      uSD_SPI.endTransaction();
+
+      delay(100);
+#endif
+      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+      uSD_SPI.transfer(QMI8658_REG_WHOAMI | 0x80 /* read */);
+      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x5) ? IMU_QMI8658 : IMU_NONE;
+
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+      uSD_SPI.endTransaction();
+
+      uSD_SPI.end();
+#endif /* EXCLUDE_IMU */
+    } else {
+      WIRE_FINI(Wire1);
+      esp32_board      = ESP32_S3_DEVKIT;
+      hw_info.model    = SOFTRF_MODEL_STANDALONE;
+      hw_info.revision = 203;
+
+#if !defined(EXCLUDE_IMU)
+      uSD_SPI.begin(SOC_GPIO_PIN_S3_IMU_SCK,
+                    SOC_GPIO_PIN_S3_IMU_MISO,
+                    SOC_GPIO_PIN_S3_IMU_MOSI,
+                    SOC_GPIO_PIN_S3_IMU_SS);
+
+      pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+
+      delay(50);
+
+      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
+
+      // reset device
+      uSD_SPI.transfer(MPU9250_REG_PWR_MGMT_1);
+      uSD_SPI.transfer(0x80);
+
+      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
+      uSD_SPI.endTransaction();
+
       delay(100);
 
       uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
 
       uSD_SPI.transfer(MPU9250_REG_WHOAMI | 0x80 /* read */);
-      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x71) ? IMU_MPU9250 : IMU_NONE;
-
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
-      uSD_SPI.endTransaction();
-
-      delay(10);
-
-      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
-
-      uSD_SPI.transfer(QMI8658_REG_WHOAMI | 0x80 /* read */);
-      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x5) ? IMU_QMI8658 : hw_info.imu;
+      uint8_t whoami = uSD_SPI.transfer(0x00);
+      hw_info.imu = (whoami == 0x71 || whoami == 0x73) ? IMU_MPU9250 : IMU_NONE;
 
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
       uSD_SPI.endTransaction();
 
       uSD_SPI.end();
-#endif
 #endif /* EXCLUDE_IMU */
-      WIRE_FINI(Wire);
-
-    } else {
-      WIRE_FINI(Wire1);
-      esp32_board      = ESP32_S3_DEVKIT;
-      hw_info.model    = SOFTRF_MODEL_STANDALONE;
-      hw_info.revision = 203;
     }
 
 #if ARDUINO_USB_CDC_ON_BOOT
