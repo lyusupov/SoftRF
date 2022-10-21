@@ -684,6 +684,8 @@ static void ESP32_setup()
       uSD_SPI.endTransaction();
 
       uSD_SPI.end();
+
+      hw_info.mag = (hw_info.imu == IMU_MPU9250) ? MAG_AK8963 : hw_info.mag;
 #endif /* EXCLUDE_IMU */
     }
 
@@ -817,7 +819,7 @@ static void ESP32_post_init()
     Serial.flush();
 #endif /* EXCLUDE_IMU */
     Serial.print(F("MAG     : "));
-    Serial.println(hw_info.mag     == MAG_QMC6310      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.mag     != MAG_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 
     Serial.println();

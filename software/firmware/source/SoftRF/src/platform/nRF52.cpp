@@ -510,6 +510,7 @@ static void nRF52_setup()
       imu.sleep(false);
     }
     hw_info.imu = IMU_MPU9250;
+    hw_info.mag = MAG_AK8963;
     IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */
