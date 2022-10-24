@@ -1646,6 +1646,15 @@ static void ESP32_EEPROM_extension(int cmd)
       settings->d1090 = D1090_UART;
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+    if (settings->bluetooth != BLUETOOTH_OFF) {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+      settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
+#else
+      settings->bluetooth = BLUETOOTH_OFF;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+    }
+#endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
   }
 }
 
@@ -2802,14 +2811,16 @@ DB_ops_t ESP32_ADB_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 const SoC_ops_t ESP32_ops = {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   SOC_ESP32,
-  "ESP32"
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
-  "-S2"
+  "ESP32",
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+  SOC_ESP32S2,
+  "ESP32-S2",
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  "-S3"
-#endif /* CONFIG_IDF_TARGET_ESP32S2-S3 */
-  "" ,
+  SOC_ESP32S3,
+  "ESP32-S3",
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,

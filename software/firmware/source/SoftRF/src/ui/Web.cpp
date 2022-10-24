@@ -351,6 +351,27 @@ void handleSettings() {
     len = strlen(offset);
     offset += len;
     size -= len;
+
+  } else if (SoC->id == SOC_ESP32S3) {
+
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Built-in Bluetooth</th>\
+<td align=right>\
+<select name='bluetooth'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>LE</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
   }
 
   /* Common part 3 */
@@ -407,7 +428,7 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -442,7 +463,7 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -473,7 +494,7 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),

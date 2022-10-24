@@ -872,8 +872,13 @@ static void CC13XX_Button_fini()
 }
 
 const SoC_ops_t CC13XX_ops = {
-  SOC_CC13XX,
-  "CC13XX",
+#if defined(ENERGIA_ARCH_CC13XX)
+  SOC_CC13X0,
+  "CC13X0",
+#elif defined(ENERGIA_ARCH_CC13X2)
+  SOC_CC13X2,
+  "CC13X2",
+#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
   CC13XX_setup,
   CC13XX_post_init,
   CC13XX_loop,

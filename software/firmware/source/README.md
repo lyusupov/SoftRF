@@ -3,7 +3,7 @@
 * [NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#nodemcu)<br>
 * [ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#esp32)<br>
 * [Raspberry Pi](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#raspberry-pi)<br>
-* [CC13XX](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#cc13xx)<br>
+* [CC13X0](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#cc13x0)<br>
 * [STM32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#stm32)<br>
 * [ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#asr650x)<br>
 * [nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#nrf52840)<br>
@@ -118,7 +118,7 @@ As a result of the build, two program binaries will become created:
 
 <br>
 
-## CC13XX
+## CC13X0
 
 [Energia](http://energia.nu/download/) IDE has to be pre-installed first.<br>
 
@@ -140,7 +140,7 @@ As a result of the build, two program binaries will become created:
 10a. or, to build the firmware using shell prompt, do:
 
 ```
-$ make build
+$ make cc
 energia --verify --verbose-build SoftRF.ino
 Picked up JAVA_TOOL_OPTIONS:
 Loading configuration...
