@@ -408,9 +408,6 @@ struct rst_info {
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
-#define QMC6310U_ADDRESS        (0x1C)
-#define QMI8658C_ADDRESS        (0x6B)
-
 #define MPU6886_REG_PWR_MGMT_1  (0x6B)
 #define MPU6886_REG_WHOAMI      (0x75)
 #define MPU9250_REG_PWR_MGMT_1  (0x6B)

@@ -1,0 +1,29 @@
+{
+    "name": "SensorLib",
+    "version": "0.1.0",
+    "description": "Arduino library for QMC6310,QMI8658",
+    "keywords": "QMC6310 QMI8658 IMU Sensor",
+    "authors": [{
+        "name": "LewisHe",
+        "url": "https://github.com/lewisxhe",
+        "maintainer": true
+    }],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lewisxhe/SensorsLib.git"
+    },
+    "homepage": "https://github.com/lewisxhe/SensorsLib",
+    "export": {
+        "include": [
+            "LICENSE",
+            "library.json",
+            "library.properties",
+            "README.md",
+            "keywords.txt",
+            "src/*",
+            "examples/*"
+        ]
+    },
+    "frameworks": ["arduino"],
+    "platforms": "esp32"
+}
