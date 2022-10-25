@@ -283,7 +283,7 @@ struct rst_info {
 //#define USE_WEBUSB_SERIAL
 //#define USE_WEBUSB_SETTINGS
 //#define USE_USB_MIDI
-//#define USE_BLE_MIDI
+#define USE_BLE_MIDI
 //#define USE_PWM_SOUND
 //#define USE_GDL90_MSL
 //#define USE_IBEACON

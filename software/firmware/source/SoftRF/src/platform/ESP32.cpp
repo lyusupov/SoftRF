@@ -22,8 +22,9 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <esp_bt.h>
+#include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #include <soc/rtc_cntl_reg.h>
 #include <soc/efuse_reg.h>
@@ -1334,8 +1335,6 @@ static long ESP32_random(long howsmall, long howBig)
 }
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
-#include <BLEDevice.h>
-
 extern bool deviceConnected;
 extern BLECharacteristic* pMIDICharacteristic;
 
