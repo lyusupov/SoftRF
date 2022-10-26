@@ -69,6 +69,7 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_U8]      = "U8",
   [GNSS_MODULE_U9]      = "U9",
   [GNSS_MODULE_U10]     = "U10",
+  [GNSS_MODULE_U11]     = "U11",
   [GNSS_MODULE_MAV]     = "MAV",
   [GNSS_MODULE_SONY]    = "SONY",
   [GNSS_MODULE_AT65]    = "AT65",
@@ -1015,19 +1016,11 @@ const gnss_chip_ops_t at65_ops = {
 };
 #endif /* EXCLUDE_GNSS_AT65 */
 
-/*
- * Both GGA and RMC NMEA sentences are required.
- * No fix when any of them is missing or lost.
- * Valid date is critical for legacy protocol (only).
- */
+static bool GNSS_fix_cache = false;
+
 bool isValidGNSSFix()
 {
-  return gnss.location.isValid()               && \
-         gnss.altitude.isValid()               && \
-         gnss.date.isValid()                   && \
-        (gnss.location.age() <= NMEA_EXP_TIME) && \
-        (gnss.altitude.age() <= NMEA_EXP_TIME) && \
-        (gnss.date.age()     <= NMEA_EXP_TIME);
+  return GNSS_fix_cache;
 }
 
 byte GNSS_setup() {
@@ -1131,6 +1124,18 @@ byte GNSS_setup() {
 void GNSS_loop()
 {
   PickGNSSFix();
+
+  /*
+   * Both GGA and RMC NMEA sentences are required.
+   * No fix when any of them is missing or lost.
+   * Valid date is critical for legacy protocol (only).
+   */
+  GNSS_fix_cache = gnss.location.isValid()               &&
+                   gnss.altitude.isValid()               &&
+                   gnss.date.isValid()                   &&
+                  (gnss.location.age() <= NMEA_EXP_TIME) &&
+                  (gnss.altitude.age() <= NMEA_EXP_TIME) &&
+                  (gnss.date.age()     <= NMEA_EXP_TIME);
 
   GNSSTimeSync();
 
