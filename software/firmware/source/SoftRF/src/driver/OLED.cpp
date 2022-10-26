@@ -181,8 +181,7 @@ byte OLED_setup() {
     case DISPLAY_OLED_HELTEC:
     case DISPLAY_OLED_1_3:
     default:
-      uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE    ||
-                         hw_info.model == SOFTRF_MODEL_PRIME_MK3 ? 1 : 0);
+      uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_DONGLE ? 1 : 0);
 
       u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text1);
 

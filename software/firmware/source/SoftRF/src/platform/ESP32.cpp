@@ -1846,9 +1846,18 @@ static byte ESP32_Display_setup()
       u8x8->begin();
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
-      u8x8->draw2x2String( 2, 2, SoftRF_text1);
-      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
-      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
+
+      uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ? 1 : 0);
+
+      u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text1);
+
+      if (shift_y) {
+        u8x8->drawString   ( 6, 3, SoftRF_text2);
+        u8x8->draw2x2String( 2, 4, SoftRF_text3);
+      }
+
+      u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
     }
 
     SoC->ADB_ops && SoC->ADB_ops->setup();
