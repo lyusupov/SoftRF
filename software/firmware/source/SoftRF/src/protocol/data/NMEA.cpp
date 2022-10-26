@@ -122,8 +122,9 @@ void NMEA_loop()
             (int) (ThisAircraft.pressure_altitude * _GPS_FEET_PER_METER),
             -1000, 60000);
 
-    snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PGRMZ,%d,f,3*"),
-            altitude ); /* feet , 3D fix */
+    /* https://developer.garmin.com/downloads/legacy/uploads/2015/08/190-00684-00.pdf */
+    snprintf_P(NMEABuffer, sizeof(NMEABuffer), PSTR("$PGRMZ,%d,f,%c*"),
+               altitude, isValidGNSSFix() ? '3' : '1'); /* feet , 3D fix */
 
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
 
