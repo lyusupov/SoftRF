@@ -117,7 +117,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Robert Wessels and Tony Cave</th><td align=left>EasyLink library</td></tr>\
 <tr><th align=left>Oliver Jowett</th><td align=left>Dump978 library</td></tr>\
 <tr><th align=left>Phil Karn</th><td align=left>FEC library</td></tr>\
-<tr><th align=left>Lewis He</th><td align=left>AXP20X and XPowersLib libraries</td></tr>\
+<tr><th align=left>Lewis He</th><td align=left>AXP20X, XPowersLib and SensorsLib libraries</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 <tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
 </table>\

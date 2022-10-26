@@ -47,6 +47,7 @@
 #define QMC6310_REG_CMD2                        (0x0B)
 
 
+#define QMC6310_REG_SIGN                        (0x29)
 
 
 

@@ -131,6 +131,7 @@ public:
         return __has_init;
     }
 
+protected:
     int readRegister(uint8_t reg)
     {
         uint8_t val = 0;
