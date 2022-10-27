@@ -354,7 +354,7 @@ u1_t hal_spi (u1_t out) {
 #define SUBGHZ_DEFAULT_LOOP_TIME   ((SystemCoreClock*28U)>>19U)
 
 static SUBGHZ_HandleTypeDef hsubghz = {.Init = {.BaudratePrescaler =
-                                               SUBGHZSPI_BAUDRATEPRESCALER_8 } };
+                                               SUBGHZSPI_BAUDRATEPRESCALER_16 } };
 #endif /* HAL_SUBGHZ_MODULE_ENABLED */
 
 static void hal_spi_init () {
@@ -411,6 +411,12 @@ u1_t hal_spi (u1_t out) {
 #else
   return 0;
 #endif /* HAL_SUBGHZ_MODULE_ENABLED */
+}
+
+u1_t lmic_wle_rf_output = HIGH;
+
+void hal_set_rf_output (u1_t val) {
+    lmic_wle_rf_output = val;
 }
 
 #else

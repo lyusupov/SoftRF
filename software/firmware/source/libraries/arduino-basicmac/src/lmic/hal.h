@@ -40,6 +40,12 @@ bool hal_pin_tcxo (u1_t val);
 void hal_pin_tcxo_init (void);
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
+#if defined(ARDUINO_GENERIC_WLE5CCUX)
+extern u1_t lmic_wle_rf_output;
+
+void hal_set_rf_output (u1_t);
+#endif /* ARDUINO_GENERIC_WLE5CCUX */
+
 /*
  * control radio RST pin (0=low, 1=high, 2=floating)
  */

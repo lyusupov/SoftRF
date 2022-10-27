@@ -590,7 +590,21 @@ static void SetDioIrqParams (uint16_t mask) {
 
 // set tx power (in dBm)
 static void SetTxPower (s1_t pw) {
-#if defined(BRD_sx1261_radio)
+#if defined(ARDUINO_GENERIC_WLE5CCUX)
+    if (lmic_wle_rf_output) {
+      // high power PA: -9 ... +22 dBm
+      if (pw > 22) pw = 22;
+      if (pw < -9) pw = -9;
+      // set PA config (and reset OCP to 140mA)
+      writecmd(CMD_SETPACONFIG, (const uint8_t[]) { 0x04, 0x07, 0x00, 0x01 }, 4);
+    } else {
+      // low power PA: -17 ... +14 dBm
+      if (pw > 14) pw = 14;
+      if (pw < -17) pw = -17;
+      // set PA config (and reset OCP to 60mA)
+      writecmd(CMD_SETPACONFIG, (const uint8_t[]) { 0x04, 0x00, 0x01, 0x01 }, 4);
+    }
+#elif defined(BRD_sx1261_radio)
     // low power PA: -17 ... +14 dBm
     if (pw > 14) pw = 14;
     if (pw < -17) pw = -17;
