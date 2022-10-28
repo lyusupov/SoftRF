@@ -385,33 +385,6 @@ static void nRF52_setup()
   nRF52_has_imu = (Wire.endTransmission() == 0);
 #endif /* EXCLUDE_IMU */
 
-#if !defined(EXCLUDE_BOARD_SELF_DETECT)
-
-  if (!nRF52_has_rtc) {
-    nRF52_board = NRF52_NORDIC_PCA10059;
-  }
-
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
-    Wire.beginTransmission(BME280_ADDRESS);
-    nRF52_board = Wire.endTransmission() == 0 ?
-                  nRF52_board : NRF52_LILYGO_TECHO_REV_0;
-  }
-
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
-    digitalWrite(SOC_GPIO_PIN_3V3_PWR, LOW);
-    pinMode(SOC_GPIO_PIN_3V3_PWR,  OUTPUT);     /* PWR_EN is OFF */
-    delay(100);
-
-    Wire.beginTransmission(BME280_ADDRESS);
-    nRF52_board = Wire.endTransmission() == 0 ?
-                  NRF52_LILYGO_TECHO_REV_1 : nRF52_board;
-
-    digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);  /* PWR_EN is ON */
-    delay(200);
-  }
-
-#endif /* EXCLUDE_BOARD_SELF_DETECT */
-
   Wire.end();
 
   for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
