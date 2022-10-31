@@ -110,7 +110,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
 
-#if (ARDUINO_ESP32S2_USB && !defined(USE_USB_HOST)) || \
+#if (ARDUINO_USB_CDC_ON_BOOT && !defined(USE_USB_HOST)) || \
     (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB))
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
 #else
@@ -119,8 +119,7 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_ES        ?
                                            NMEA_OFF :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY  ||
-                                           hw_info.model == SOFTRF_MODEL_LEGO     ||
-                                           hw_info.model == SOFTRF_MODEL_PRIME_MK3 ?
+                                           hw_info.model == SOFTRF_MODEL_LEGO      ?
                                            NMEA_USB : NMEA_UART;
 #endif
 
