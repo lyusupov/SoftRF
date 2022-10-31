@@ -66,6 +66,59 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 unsigned long RPYL_TimeMarker = 0;
 #endif /* ENABLE_AHRS */
 
+#if defined(USE_NMEA_CFG)
+
+TinyGPSCustom C_Version;   /* 1 */
+TinyGPSCustom C_Mode;
+TinyGPSCustom C_Protocol;
+TinyGPSCustom C_Band;
+TinyGPSCustom C_AcftType;
+TinyGPSCustom C_Alarm;
+TinyGPSCustom C_TxPower;
+TinyGPSCustom C_Volume;
+TinyGPSCustom C_Pointer;
+TinyGPSCustom C_NMEA_gnss; /* 10 */
+TinyGPSCustom C_NMEA_private;
+TinyGPSCustom C_NMEA_legacy;
+TinyGPSCustom C_NMEA_sensors;
+TinyGPSCustom C_NMEA_Output;
+TinyGPSCustom C_GDL90_Output;
+TinyGPSCustom C_D1090_Output;
+TinyGPSCustom C_Stealth;
+TinyGPSCustom C_noTrack;
+TinyGPSCustom C_PowerSave; /* 19 */
+
+#if defined(USE_OGN_ENCRYPTION)
+/* Security and privacy */
+TinyGPSCustom S_Version;
+TinyGPSCustom S_IGC_Key;
+#endif /* USE_OGN_ENCRYPTION */
+
+#if defined(USE_SKYVIEW_CFG)
+#include "../../driver/EPD.h"
+
+TinyGPSCustom V_Version; /* 1 */
+TinyGPSCustom V_Adapter;
+TinyGPSCustom V_Connection;
+TinyGPSCustom V_Units;
+TinyGPSCustom V_Zoom;
+TinyGPSCustom V_Protocol;
+TinyGPSCustom V_Baudrate;
+TinyGPSCustom V_Server;
+TinyGPSCustom V_Key;
+TinyGPSCustom V_Rotate;  /* 10 */
+TinyGPSCustom V_Orientation;
+TinyGPSCustom V_AvDB;
+TinyGPSCustom V_ID_Pref;
+TinyGPSCustom V_VMode;
+TinyGPSCustom V_Voice;
+TinyGPSCustom V_AntiGhost;
+TinyGPSCustom V_Filter;
+TinyGPSCustom V_PowerSave;
+TinyGPSCustom V_Team;    /* 19 */
+#endif /* USE_SKYVIEW_CFG */
+#endif /* USE_NMEA_CFG */
+
 static char *ltrim(char *s)
 {
   if(s) {
@@ -92,6 +145,65 @@ void NMEA_add_checksum(char *buf, size_t limit)
 
 void NMEA_setup()
 {
+#if defined(USE_NMEA_CFG)
+  const char *psrf_c = "PSRFC";
+  int term_num = 1;
+
+  C_Version.begin      (gnss, psrf_c, term_num++); /* 1 */
+  C_Mode.begin         (gnss, psrf_c, term_num++);
+  C_Protocol.begin     (gnss, psrf_c, term_num++);
+  C_Band.begin         (gnss, psrf_c, term_num++);
+  C_AcftType.begin     (gnss, psrf_c, term_num++);
+  C_Alarm.begin        (gnss, psrf_c, term_num++);
+  C_TxPower.begin      (gnss, psrf_c, term_num++);
+  C_Volume.begin       (gnss, psrf_c, term_num++);
+  C_Pointer.begin      (gnss, psrf_c, term_num++);
+  C_NMEA_gnss.begin    (gnss, psrf_c, term_num++); /* 10 */
+  C_NMEA_private.begin (gnss, psrf_c, term_num++);
+  C_NMEA_legacy.begin  (gnss, psrf_c, term_num++);
+  C_NMEA_sensors.begin (gnss, psrf_c, term_num++);
+  C_NMEA_Output.begin  (gnss, psrf_c, term_num++);
+  C_GDL90_Output.begin (gnss, psrf_c, term_num++);
+  C_D1090_Output.begin (gnss, psrf_c, term_num++);
+  C_Stealth.begin      (gnss, psrf_c, term_num++);
+  C_noTrack.begin      (gnss, psrf_c, term_num++);
+  C_PowerSave.begin    (gnss, psrf_c, term_num  ); /* 19 */
+
+#if defined(USE_OGN_ENCRYPTION)
+/* Security and privacy */
+  const char *psrf_s = "PSRFS";
+  term_num = 1;
+
+  S_Version.begin      (gnss, psrf_s, term_num++);
+  S_IGC_Key.begin      (gnss, psrf_s, term_num  );
+#endif /* USE_OGN_ENCRYPTION */
+
+#if defined(USE_SKYVIEW_CFG)
+  const char *pskv_c = "PSKVC";
+  term_num = 1;
+
+  V_Version.begin      (gnss, pskv_c, term_num++); /* 1 */
+  V_Adapter.begin      (gnss, pskv_c, term_num++);
+  V_Connection.begin   (gnss, pskv_c, term_num++);
+  V_Units.begin        (gnss, pskv_c, term_num++);
+  V_Zoom.begin         (gnss, pskv_c, term_num++);
+  V_Protocol.begin     (gnss, pskv_c, term_num++);
+  V_Baudrate.begin     (gnss, pskv_c, term_num++);
+  V_Server.begin       (gnss, pskv_c, term_num++);
+  V_Key.begin          (gnss, pskv_c, term_num++);
+  V_Rotate.begin       (gnss, pskv_c, term_num++); /* 10 */
+  V_Orientation.begin  (gnss, pskv_c, term_num++);
+  V_AvDB.begin         (gnss, pskv_c, term_num++);
+  V_ID_Pref.begin      (gnss, pskv_c, term_num++);
+  V_VMode.begin        (gnss, pskv_c, term_num++);
+  V_Voice.begin        (gnss, pskv_c, term_num++);
+  V_AntiGhost.begin    (gnss, pskv_c, term_num++);
+  V_Filter.begin       (gnss, pskv_c, term_num++);
+  V_PowerSave.begin    (gnss, pskv_c, term_num++);
+  V_Team.begin         (gnss, pskv_c, term_num  ); /* 19 */
+#endif /* USE_SKYVIEW_CFG */
+#endif /* USE_NMEA_CFG */
+
 #if defined(NMEA_TCP_SERVICE)
   if (settings->nmea_out == NMEA_TCP) {
     NmeaTCPServer.begin();
@@ -590,56 +702,6 @@ void NMEA_GGA()
 #if !defined(SERIAL_FLUSH)
 #define SERIAL_FLUSH()       Serial.flush()
 #endif
-
-TinyGPSCustom C_Version      (gnss, "PSRFC", 1);
-TinyGPSCustom C_Mode         (gnss, "PSRFC", 2);
-TinyGPSCustom C_Protocol     (gnss, "PSRFC", 3);
-TinyGPSCustom C_Band         (gnss, "PSRFC", 4);
-TinyGPSCustom C_AcftType     (gnss, "PSRFC", 5);
-TinyGPSCustom C_Alarm        (gnss, "PSRFC", 6);
-TinyGPSCustom C_TxPower      (gnss, "PSRFC", 7);
-TinyGPSCustom C_Volume       (gnss, "PSRFC", 8);
-TinyGPSCustom C_Pointer      (gnss, "PSRFC", 9);
-TinyGPSCustom C_NMEA_gnss    (gnss, "PSRFC", 10);
-TinyGPSCustom C_NMEA_private (gnss, "PSRFC", 11);
-TinyGPSCustom C_NMEA_legacy  (gnss, "PSRFC", 12);
-TinyGPSCustom C_NMEA_sensors (gnss, "PSRFC", 13);
-TinyGPSCustom C_NMEA_Output  (gnss, "PSRFC", 14);
-TinyGPSCustom C_GDL90_Output (gnss, "PSRFC", 15);
-TinyGPSCustom C_D1090_Output (gnss, "PSRFC", 16);
-TinyGPSCustom C_Stealth      (gnss, "PSRFC", 17);
-TinyGPSCustom C_noTrack      (gnss, "PSRFC", 18);
-TinyGPSCustom C_PowerSave    (gnss, "PSRFC", 19);
-
-#if defined(USE_OGN_ENCRYPTION)
-/* Security and privacy */
-TinyGPSCustom S_Version      (gnss, "PSRFS", 1);
-TinyGPSCustom S_IGC_Key      (gnss, "PSRFS", 2);
-#endif /* USE_OGN_ENCRYPTION */
-
-#if defined(USE_SKYVIEW_CFG)
-#include "../../driver/EPD.h"
-
-TinyGPSCustom V_Version      (gnss, "PSKVC", 1);
-TinyGPSCustom V_Adapter      (gnss, "PSKVC", 2);
-TinyGPSCustom V_Connection   (gnss, "PSKVC", 3);
-TinyGPSCustom V_Units        (gnss, "PSKVC", 4);
-TinyGPSCustom V_Zoom         (gnss, "PSKVC", 5);
-TinyGPSCustom V_Protocol     (gnss, "PSKVC", 6);
-TinyGPSCustom V_Baudrate     (gnss, "PSKVC", 7);
-TinyGPSCustom V_Server       (gnss, "PSKVC", 8);
-TinyGPSCustom V_Key          (gnss, "PSKVC", 9);
-TinyGPSCustom V_Rotate       (gnss, "PSKVC", 10);
-TinyGPSCustom V_Orientation  (gnss, "PSKVC", 11);
-TinyGPSCustom V_AvDB         (gnss, "PSKVC", 12);
-TinyGPSCustom V_ID_Pref      (gnss, "PSKVC", 13);
-TinyGPSCustom V_VMode        (gnss, "PSKVC", 14);
-TinyGPSCustom V_Voice        (gnss, "PSKVC", 15);
-TinyGPSCustom V_AntiGhost    (gnss, "PSKVC", 16);
-TinyGPSCustom V_Filter       (gnss, "PSKVC", 17);
-TinyGPSCustom V_PowerSave    (gnss, "PSKVC", 18);
-TinyGPSCustom V_Team         (gnss, "PSKVC", 19);
-#endif /* USE_SKYVIEW_CFG */
 
 uint8_t C_NMEA_Source;
 
