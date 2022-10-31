@@ -62,17 +62,19 @@ public:
     }
     int32_t onRead(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
     {
-        log_v("default onread");
+        log_v("default onread lba (%u) bufsize (%u)", lba, bufsize);
         (void) lun;
-        SD.readRAW((uint8_t*)buffer, lba);
+        for (int i = 0; m_parent->block_size * i < bufsize; i++)
+            SD.readRAW((uint8_t *)buffer + m_parent->block_size * i, lba + i);
 
         return bufsize;
     }
     int32_t onWrite(uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
     {
-        log_v("default onwrite");
+        log_v("default onwrite lba (%u) bufsize (%u)", lba, bufsize);
         (void) lun;
-        SD.writeRAW((uint8_t*)buffer, lba);
+        for (int i = 0; m_parent->block_size * i < bufsize; i++)
+            SD.writeRAW((uint8_t *)buffer + m_parent->block_size * i, lba + i);
 
         return bufsize;
     }
@@ -98,6 +100,15 @@ bool SDCard2USB::initSD(uint8_t ssPin, SPIClass &spi, uint32_t frequency, const 
         return false;
     }
 
+    uint8_t cardType = SD.cardType();
+
+    if(cardType == CARD_NONE){
+        Serial.println("No SD card attached");
+        return false;
+    }
+
+    block_count = SD.cardSize() / block_size;
+    sdcardReady = true;
     return true;
 }
 

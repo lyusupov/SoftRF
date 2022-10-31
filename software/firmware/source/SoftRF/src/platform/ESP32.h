@@ -452,6 +452,7 @@ struct rst_info {
 #define EXCLUDE_LED_RING
 
 /* Experimental */
+//#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST
 
 #if defined(USE_USB_HOST)
