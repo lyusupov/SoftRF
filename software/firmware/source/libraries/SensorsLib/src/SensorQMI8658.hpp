@@ -252,7 +252,7 @@ public:
     {
         uint8_t buffer[2];
         if (readRegister(QMI8658_REG_TEMPEARTURE_L, buffer, 2) !=  DEV_WIRE_ERR) {
-            return (float)buffer[1] + ((float)buffer[0] / 100.0);
+            return (float)buffer[1] + ((float)buffer[0] / 256.0);
         }
         return NAN;
     }
@@ -682,12 +682,12 @@ public:
         readRegister(QMI8658_REG_CTRL1, buffer, 9);
         for (int i = 0; i < 9; ++i) {
 #if defined(ARDUINO)
-            Serial.printf("CTRL%d: 0x%02x", i + 1, buffer[i]);
+            Serial.printf("CTRL%d: REG:0x%02X HEX:0x%02X ", i + 1, QMI8658_REG_CTRL1 + i, buffer[i]);
 #else
             printf("CTRL%d: 0x%02x", i + 1, buffer[i]);
 #endif
 #if defined(ARDUINO)
-            Serial.print("\t\t BIN:");
+            Serial.print(" BIN:0b");
             Serial.println(buffer[i], BIN);
 #else
             LOG("\n");
@@ -1138,7 +1138,10 @@ protected:
             return false;
         }
         // Eanble address auto increment, Big-Endian format
-        writeRegister(QMI8658_REG_CTRL1, 0x60);
+        // writeRegister(QMI8658_REG_CTRL1, 0x60);
+
+        // Little-Endian / address auto increment
+        writeRegister(QMI8658_REG_CTRL1, 0x40);
 
         // Use STATUSINT.bit7 as CTRL9 handshake
         writeRegister(QMI8658_REG_CTRL8, 0x80);

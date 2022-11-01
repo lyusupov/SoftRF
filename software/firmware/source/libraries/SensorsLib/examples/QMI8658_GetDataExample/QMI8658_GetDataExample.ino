@@ -41,16 +41,8 @@
 
 SensorQMI8658 qmi;
 
-
-
-struct IMUdata {
-    float x;
-    float y;
-    float z;
-} ;
-
-struct IMUdata acc;
-struct IMUdata gyr;
+IMUdata acc;
+IMUdata gyr;
 
 
 
