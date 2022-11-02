@@ -50,15 +50,16 @@ byte SoC_setup()
 #error "This hardware platform is not supported!"
 #endif
 
-  if (SoC && SoC->setup) {
-    SoC->setup();
-  }
+  byte id = SOC_NONE;
 
   if (SoC) {
-    return SoC->id;
-  } else {
-    return SOC_NONE;
+    if (SoC->setup) {
+      SoC->setup();
+    }
+    id = SoC->id;
   }
+
+  return id;
 }
 
 void SoC_fini(int reason)

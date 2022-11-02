@@ -126,6 +126,7 @@ AXP20X_Class axp_xxx;
 XPowersPMU   axp_2xxx;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
+static size_t ESP32_Min_AppPart_Size = 0;
 
 static portMUX_TYPE GNSS_PPS_mutex = portMUX_INITIALIZER_UNLOCKED;
 static portMUX_TYPE PMU_mutex      = portMUX_INITIALIZER_UNLOCKED;
@@ -344,6 +345,30 @@ static void ESP32_setup()
 #if ESP32_DISABLE_BROWNOUT_DETECTOR
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
+
+  size_t flash_size = spi_flash_get_chip_size();
+  size_t min_app_size = flash_size;
+
+  esp_partition_iterator_t it;
+  const esp_partition_t *part;
+
+  it = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, NULL);
+  if (it) {
+    do {
+      part = esp_partition_get(it);
+      if (part->subtype == ESP_PARTITION_SUBTYPE_APP_FACTORY) {
+        continue;
+      }
+      if (part->size < min_app_size) {
+        min_app_size = part->size;
+      }
+    } while (it = esp_partition_next(it));
+  }
+  esp_partition_iterator_release(it);
+
+  if (min_app_size && (min_app_size != flash_size)) {
+    ESP32_Min_AppPart_Size = min_app_size;
+  }
 
   if (psramFound()) {
 
@@ -844,7 +869,8 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 
-#if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+#if ARDUINO_USB_CDC_ON_BOOT && \
+    (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
   if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
     char usb_serial_number[16];
     uint16_t pid;
@@ -1566,7 +1592,10 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
 
 static uint32_t ESP32_maxSketchSpace()
 {
-  return 0x1E0000; /* min_spiffs.csv */
+  return ESP32_Min_AppPart_Size ? ESP32_Min_AppPart_Size :
+           SoC->id == SOC_ESP32S3 ?
+             0x200000  /* 8MB-tinyuf2.csv */ :
+             0x1E0000; /* min_spiffs.csv */
 }
 
 static const int8_t ESP32_dBm_to_power_level[21] = {
