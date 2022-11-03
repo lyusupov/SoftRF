@@ -363,8 +363,9 @@ static void ESP32_setup()
         min_app_size = part->size;
       }
     } while (it = esp_partition_next(it));
+
+    if (it) esp_partition_iterator_release(it);
   }
-  esp_partition_iterator_release(it);
 
   if (min_app_size && (min_app_size != flash_size)) {
     ESP32_Min_AppPart_Size = min_app_size;
@@ -1897,14 +1898,25 @@ static byte ESP32_Display_setup()
         rval = DISPLAY_OLED_1_3;
       }
     } else if (GPIO_21_22_are_busy) {
-      Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
-      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-      has_oled = (Wire1.endTransmission() == 0);
-      WIRE_FINI(Wire1);
-      if (has_oled) {
-        u8x8 = &u8x8_heltec;
-        esp32_board = ESP32_HELTEC_OLED;
-        rval = DISPLAY_OLED_HELTEC;
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
+        Wire1 = Wire;
+        Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
+        Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+        has_oled = (Wire1.endTransmission() == 0);
+        if (has_oled) {
+          u8x8 = &u8x8_ttgo;
+          rval = DISPLAY_OLED_TTGO;
+        }
+      } else {
+        Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
+        Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+        has_oled = (Wire1.endTransmission() == 0);
+        WIRE_FINI(Wire1);
+        if (has_oled) {
+          u8x8 = &u8x8_heltec;
+          esp32_board = ESP32_HELTEC_OLED;
+          rval = DISPLAY_OLED_HELTEC;
+        }
       }
     } else {
       Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -2493,7 +2505,7 @@ static bool ESP32_Baro_setup()
 
     WIRE_FINI(Wire);
 
-    if (hw_info.revision == 2 || hw_info.revision >= 8)
+    if (hw_info.revision == 2)
       return false;
 
 #if !defined(ENABLE_AHRS)

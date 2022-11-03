@@ -14,7 +14,7 @@
 ## List by Model
 
 Model(s)|Instructions|Firmware folder
----|:---:|---
+---|:---:|:---:
 Standalone Edition|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU)
 Prime Edition Mk2|[ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32)
 Prime Edition Mk3|ESP32S3|ESP32S3
