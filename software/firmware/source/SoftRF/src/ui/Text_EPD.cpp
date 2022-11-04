@@ -68,6 +68,8 @@ const char *Aircraft_Type[] = {
   [AIRCRAFT_TYPE_STATIC]     = "Static"
 };
 
+static int prev_j=0;
+
 static void EPD_Draw_Text()
 {
   int j=0;
@@ -98,8 +100,13 @@ static void EPD_Draw_Text()
     qsort(traffic_by_dist, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
 
     if (EPD_current > j) {
-      EPD_current = j;
+      if (prev_j > j) {
+        EPD_current = j;
+      } else {
+        EPD_current = 1;
+      }
     }
+    prev_j = j;
 
     bearing = (int) traffic_by_dist[EPD_current - 1].fop->bearing;
 
@@ -287,6 +294,8 @@ void EPD_text_next()
 {
   if (EPD_current < MAX_TRACKING_OBJECTS) {
     EPD_current++;
+  } else {
+    EPD_current = 1;
   }
 }
 
@@ -294,6 +303,8 @@ void EPD_text_prev()
 {
   if (EPD_current > 1) {
     EPD_current--;
+  } else {
+    EPD_current = MAX_TRACKING_OBJECTS;
   }
 }
 
