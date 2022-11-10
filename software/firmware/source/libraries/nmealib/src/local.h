@@ -8,7 +8,8 @@
 #if defined(ARDUINO_ARCH_ESP32)
 #include "esp_idf_version.h"
 #endif
-#if defined(ARDUINO_ARCH_STM32) || (defined(ARDUINO_ARCH_ESP32) && ESP_IDF_VERSION_MAJOR>=4)
+#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_RP2040) || \
+   (defined(ARDUINO_ARCH_ESP32) && ESP_IDF_VERSION_MAJOR>=4)
 #define	_AND		,
 #define	_CONST		const
 #define	_EXFUN(name, proto)		name proto
