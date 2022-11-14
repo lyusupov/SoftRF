@@ -294,6 +294,24 @@ SensorQMC6310 mag;
 #include "SensorQMI8658.hpp"
 SensorQMI8658 imu;
 #endif /* EXCLUDE_IMU */
+
+#include "soc/rtc.h"
+static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
+{
+    const uint32_t cal_count = 1000;
+    const float factor = (1 << 19) * 1000.0f;
+    uint32_t cali_val;
+    for (int i = 0; i < 5; ++i) {
+        cali_val = rtc_clk_cal(cal_clk, cal_count);
+    }
+    return cali_val;
+}
+
+#define CALIBRATE_ONE(cali_clk) calibrate_one(cali_clk, #cali_clk)
+
+//#define DEBUG_X32K(s) Serial.println(s)
+#define DEBUG_X32K(s) {}
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -901,6 +919,29 @@ static void ESP32_setup()
 #else
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+    rtc_clk_32k_enable(true);
+
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    uint32_t cal_32k = CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+
+    if (cal_32k == 0) {
+        DEBUG_X32K("32K XTAL OSC has not started up");
+    } else {
+        rtc_clk_slow_freq_set(RTC_SLOW_FREQ_32K_XTAL);
+        DEBUG_X32K("Switching of RTC clock source onto 32768 Hz XTAL is successful.");
+        CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+        CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    }
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
+        DEBUG_X32K("Warning: Failed to switch RTC clock source onto 32768 Hz XTAL !");
+    }
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 static void ESP32_post_init()

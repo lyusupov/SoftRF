@@ -67,7 +67,7 @@
 #define QMI8658_REG_FIFOCOUNT                   (0x15)
 #define QMI8658_REG_FIFOSTATUS                  (0x16)
 #define QMI8658_REG_FIFODATA                    (0x17)
-#define QMI8658_REG_STATUSI2CM                  (0x2C)
+// #define QMI8658_REG_STATUSI2CM                  (0x2C)
 #define QMI8658_REG_STATUSINT                   (0x2D)
 #define QMI8658_REG_STATUS0                     (0x2E)
 #define QMI8658_REG_STATUS1                     (0x2F)

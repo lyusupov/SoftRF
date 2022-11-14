@@ -43,6 +43,8 @@ class SensorQMI8658 :
     friend class SensorCommon<SensorQMI8658>;
 public:
 
+    typedef void (*EventCallBack_t)(void);
+
     enum AccelRange {
         ACC_RANGE_2G,
         ACC_RANGE_4G,
@@ -146,13 +148,13 @@ public:
         CTRL_CMD_APPLY_GYRO_GAINS               = 0xAA,
     };
 
-    enum {
-        EVENT_SIGNIFICANT_MOITON = 128,
-        EVENT_NO_MOITON = 64,
-        EVENT_ANY_MOITON = 32,
-        EVENT_PEDOMETER_MOITON = 16,
-        EVENT_WOM_MOITON = 4,
-        EVENT_TAP_MOITON = 2,
+    enum StatusReg {
+        EVENT_SIGNIFICANT_MOTION = 128,
+        EVENT_NO_MOTION = 64,
+        EVENT_ANY_MOTION = 32,
+        EVENT_PEDOMETER_MOTION = 16,
+        EVENT_WOM_MOTION = 4,
+        EVENT_TAP_MOTION = 2,
     };
 
 #if defined(ARDUINO)
@@ -211,6 +213,10 @@ public:
             while (millis() - start < timeout) {
                 val = readRegister(QMI8658_REG_RST_RESULT);
                 if (val != DEV_WIRE_ERR && val == QMI8658_REG_RST_RESULT_VAL) {
+
+                    //EN.ADDR_AI
+                    setRegisterBit(QMI8658_REG_CTRL1, 6);
+
                     return true;
                 }
                 delay(10);
@@ -218,6 +224,10 @@ public:
             LOG("Reset chip failed, respone val = %d - 0x%X\n", val, val);
             return false;
         }
+
+        //EN.ADDR_AI
+        setRegisterBit(QMI8658_REG_CTRL1, 6);
+
         return true;
     }
 
@@ -475,6 +485,7 @@ public:
         uint16_t bytes = getFifoNeedBytes();
         uint8_t *buffer = new uint8_t [bytes];
         if (!buffer) {
+            LOG("No memory!");
             return false;
         }
         if (!readFromFifo(buffer, bytes)) {
@@ -675,6 +686,7 @@ public:
         case SYNC_MODE:
             return  getRegisterBit(QMI8658_REG_STATUSINT, 1);
         case ASYNC_MODE:
+            //TODO: When Accel and Gyro are configured with different rates, this will always be false
             if (gyroEn && accelEn) {
                 return readRegister(QMI8658_REG_STATUS0) & 0x03;
             } else if (gyroEn) {
@@ -699,6 +711,25 @@ public:
     {
         sampleMode = ASYNC_MODE;
         return clrRegisterBit(QMI8658_REG_CTRL7, 7);
+    }
+
+    int enableLockingMechanism()
+    {
+        enableSyncSampleMode();
+        if (writeRegister(QMI8658_REG_CAL1_L, 0x01) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+        return writeCommand(CTRL_CMD_AHB_CLOCK_GATING);
+
+    }
+
+    int disableLockingMechanism()
+    {
+        disableSyncSampleMode();
+        if (writeRegister(QMI8658_REG_CAL1_L, 0x00) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+        return writeCommand(CTRL_CMD_AHB_CLOCK_GATING);
     }
 
 
@@ -858,6 +889,15 @@ public:
         return clrRegisterBit(QMI8658_REG_CTRL8, 4);
     }
 
+    enum TagPriority {
+        PRIORITY0,      // (X > Y> Z)
+        PRIORITY1,      // (X > Z > Y)
+        PRIORITY2,      // (Y > X > Z)
+        PRIORITY3,      // (Y > Z > X)
+        PRIORITY4,      // (Z > X > Y)
+        PRIORITY5,      // (Z > Y > X)
+    };
+
     /**
      * @brief   configTap
      * @note    The calculation of the Tap Detection is based on the accelerometer ODR defined by CTRL2.aODR, refer to Table 22 for details.
@@ -880,7 +920,6 @@ public:
                         second tap should be detected after TapWindow and before
                         DTapWindow.
                         E.g., 50 @500Hz ODR
-     *
      * @param  dTapWindow:Defines the maximum time for a valid second Tap for Double Tap,
                         count start from the first peak of the valid first Tap.
                         E.g., 250 @500Hz ODR
@@ -1073,34 +1112,78 @@ public:
         return clrRegisterBit(QMI8658_REG_CTRL8, 2);
     }
 
-    // WoM Interrupt Initial Value select:
-    // 01 – INT2 (with initial value 0)
-    // 11 – INT2 (with initial value 1)
-    // 00 – INT1 (with initial value 0)
-    // 10 – INT1 (with initial value 1)
-    int configWakeOnMotion(uint8_t WoMThreshold, IntPin pin, bool intVal, uint8_t blankingTime)
-    {
-        uint8_t val = 0;
-        writeRegister(QMI8658_REG_CAL1_L, WoMThreshold);
-        if ( pin == IntPin1) {
-            if (intVal) {
-                val = 0x02;
-            } else {
-                val = 0x00;
-            }
-        } else if (pin == IntPin2) {
-            if (intVal) {
-                val = 0x03;
-            } else {
 
-                val = 0x01;
-            }
+    /**
+     * @brief  configWakeOnMotion
+     * @note   Configuring Wom will reset the sensor, set the function to Wom, and there will be no data output
+     * @param  WoMThreshold: Resolution = 1mg ,default 200g
+     * @param  odr: Accelerometer output data rate  ,defalut low power 128Hz
+     * @param  pin: Interrupt Pin( 1 or 2 ) ,defalut use pin2
+     * @param  defaultPinValue: WoM Interrupt Initial Value select: ,default pin high
+     *  01 – INT2 (with initial value 0)
+     *  11 – INT2 (with initial value 1)
+     *  00 – INT1 (with initial value 0)
+     *  10 – INT1 (with initial value 1)
+     * @param  blankingTime: Interrupt Blanking Time
+     *  (in number of accelerometer samples), the
+     *  number of consecutive samples that will be ignored after
+     *  enabling the WoM, to screen out unwanted fake detection
+     * @retval
+     */
+    int configWakeOnMotion(uint8_t WoMThreshold = 200,
+                           AccelODR odr = ACC_ODR_LOWPOWER_128Hz,
+                           IntPin pin = IntPin2,
+                           uint8_t defaultPinValue = 1,
+                           uint8_t blankingTime = 0x20
+                          )
+    {
+
+        uint8_t val = 0;
+
+        //Reset default value
+        if (!reset()) {
+            return DEV_WIRE_ERR;
         }
+
+        // Disable sensors
+        clrRegisterBit(QMI8658_REG_CTRL7, 0);
+
+        //setAccelRange
+        if (writeRegister(QMI8658_REG_CTRL2, 0x8F, (ACC_RANGE_8G << 4)) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+
+        // setAccelOutputDataRate
+        if (writeRegister(QMI8658_REG_CTRL2, 0xF0, odr) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+
+        //set wom
+        if (writeRegister(QMI8658_REG_CAL1_L, WoMThreshold) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+
+        if ( pin == IntPin1) {
+            val = defaultPinValue ? 0x02 : 0x00;
+        } else if (pin == IntPin2) {
+            val = defaultPinValue ? 0x03 : 0x01;
+        }
+
         val <<= 6;
         val |= (blankingTime & 0x3F);
-        writeRegister(QMI8658_REG_CAL1_H, val);
-        writeCommand(CTRL_CMD_WRITE_WOM_SETTING);
-        return 0;
+        if (writeRegister(QMI8658_REG_CAL1_H, val) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+
+        if (writeCommand(CTRL_CMD_WRITE_WOM_SETTING) != DEV_WIRE_NONE) {
+            return DEV_WIRE_ERR;
+        }
+
+        enableAccelerometer();
+
+        enableINT(pin);
+
+        return DEV_WIRE_NONE;
     }
 
 
@@ -1119,7 +1202,184 @@ public:
         return revisionID;
     }
 
+    enum SensorStatus {
+        STATUS_INT_CTRL9_CMD_DONE = _BV(0),
+        STATUS_INT_LOCKED = _BV(1),
+        STATUS_INT_AVAIL = _BV(2),
+        STATUS0_GDATA_REDAY = _BV(3),
+        STATUS0_ADATA_REDAY = _BV(4),
+        STATUS1_SIGNI_MOTION = _BV(5),
+        STATUS1_NO_MOTION = _BV(6),
+        STATUS1_ANY_MOTION = _BV(7),
+        STATUS1_PEDOME_MOTION = _BV(8),
+        STATUS1_WOM_MOTION = _BV(9),
+        STATUS1_TAP_MOTION = _BV(10),
+    };
 
+    /**
+     * @brief readSensorStatus
+     * @note  Get the interrupt status and status 0, status 1 of the sensor
+     * @retval  Return SensorStatus
+     */
+    uint16_t readSensorStatus()
+    {
+        uint16_t result = 0;
+        // STATUSINT 0x2D
+        // STATUS0 0x2E
+        // STATUS1 0x2F
+        uint8_t status[3];
+        if (readRegister(QMI8658_REG_STATUSINT, status, 3) != DEV_WIRE_NONE) {
+            return 0;
+        }
+
+        // LOG("STATUSINT:0x%X BIN:", status[0]);
+        // LOG_BIN(status[0]);
+        // LOG("STATUS0:0x%X BIN:", status[1]);
+        // LOG_BIN(status[1]);
+        // LOG("STATUS1:0x%X BIN:", status[2]);
+        // LOG_BIN(status[2]);
+        // LOG("------------------\n");
+
+        // Ctrl9 CmdDone
+        // Indicates CTRL9 Command was done, as part of CTRL9 protocol
+        // 0: Not Completed
+        // 1: Done
+        if (status[0] & 0x80) {
+            result |= STATUS_INT_CTRL9_CMD_DONE;
+        }
+        // If syncSmpl (CTRL7.bit7) = 1:
+        //      0: Sensor Data is not locked.
+        //      1: Sensor Data is locked.
+        // If syncSmpl = 0, this bit shows the same value of INT1 level
+        if (status[0] & 0x02) {
+            result |= STATUS_INT_LOCKED;
+        }
+        // If syncSmpl (CTRL7.bit7) = 1:
+        //      0: Sensor Data is not available
+        //      1: Sensor Data is available for reading
+        // If syncSmpl = 0, this bit shows the same value of INT2 level
+        if (status[0] & 0x01) {
+            result |= STATUS_INT_AVAIL;
+            // if (eventGyroDataReady)eventGyroDataReady();
+            // if (eventAccelDataReady)eventAccelDataReady();
+        }
+
+        //Locking Mechanism Can reading..
+        if ((status[0] & 0x03) == 0x03) {
+            if (eventDataLocking)eventDataLocking();
+        }
+
+        //=======================================
+        // Valid only in asynchronous mode
+        if (sampleMode == ASYNC_MODE) {
+            // Gyroscope new data available
+            // 0: No updates since last read.
+            // 1: New data available
+            if (status[1] & 0x02) {
+                result |= STATUS0_GDATA_REDAY;
+                if (eventGyroDataReady)eventGyroDataReady();
+                __gDataReady = true;
+            }
+            // Accelerometer new data available
+            // 0: No updates since last read.
+            // 1: New data available.
+            if (status[1] & 0x01) {
+                result |= STATUS0_ADATA_REDAY;
+                if (eventAccelDataReady)eventAccelDataReady();
+                __aDataReady = true;
+            }
+        }
+
+        //=======================================
+        // Significant Motion
+        // 0: No Significant-Motion was detected
+        // 1: Significant-Motion was detected
+        if (status[2] & 0x80) {
+            result |= STATUS1_SIGNI_MOTION;
+            if (eventSignificantMotion)eventSignificantMotion();
+        }
+        // No Motion
+        // 0: No No-Motion was detected
+        // 1: No-Motion was detected
+        if (status[2] & 0x40) {
+            result |= STATUS1_NO_MOTION;
+            if (eventNoMotionEvent)eventNoMotionEvent();
+        }
+        // Any Motion
+        // 0: No Any-Motion was detected
+        // 1: Any-Motion was detected
+        if (status[2] & 0x20) {
+            result |= STATUS1_ANY_MOTION;
+            if (eventAnyMotionEvent)eventAnyMotionEvent();
+        }
+        // Pedometer
+        // 0: No step was detected
+        // 1: step was detected
+        if (status[2] & 0x10) {
+            result |= STATUS1_PEDOME_MOTION;
+            if (eventPedometerEvent)eventPedometerEvent();
+        }
+        // WoM
+        // 0: No WoM was detected
+        // 1: WoM was detected
+        if (status[2] & 0x04) {
+            result |= STATUS1_WOM_MOTION;
+            if (eventWomEvent)eventWomEvent();
+        }
+        // TAP
+        // 0: No Tap was detected
+        // 1: Tap was detected
+        if (status[2] & 0x02) {
+            result |= STATUS1_TAP_MOTION;
+            if (eventTagEvent)eventTagEvent();
+        }
+        return result;
+    }
+
+    void setWakeupMotionEventCallBack(EventCallBack_t cb)
+    {
+        eventWomEvent = cb;
+    }
+
+    void setTapEventCallBack(EventCallBack_t cb)
+    {
+        eventTagEvent = cb;
+    }
+
+    void setPedometerEventCallBack(EventCallBack_t cb)
+    {
+        eventPedometerEvent = cb;
+    }
+
+    void setNoMotionEventCallBack(EventCallBack_t cb)
+    {
+        eventNoMotionEvent = cb;
+    }
+
+    void setAnyMotionEventCallBack(EventCallBack_t cb)
+    {
+        eventAnyMotionEvent = cb;
+    }
+
+    void setSignificantMotionEventCallBack(EventCallBack_t cb)
+    {
+        eventSignificantMotion = cb;
+    }
+
+    void setGyroDataReadyCallBack(EventCallBack_t cb)
+    {
+        eventGyroDataReady = cb;
+    }
+
+    void setAccelDataReadyEventCallBack(EventCallBack_t cb)
+    {
+        eventAccelDataReady = cb;
+    }
+
+    void setDataLockingEvevntCallBack(EventCallBack_t cb)
+    {
+        eventDataLocking = cb;
+    }
 
 private:
     float accelScales, gyroScales;
@@ -1129,6 +1389,18 @@ private:
     uint8_t fifoMode;
     uint32_t revisionID;
     uint8_t  usid[6];
+    bool __gDataReady = false;
+    bool __aDataReady = false;
+
+    EventCallBack_t eventWomEvent = NULL;
+    EventCallBack_t eventTagEvent = NULL;
+    EventCallBack_t eventPedometerEvent = NULL;
+    EventCallBack_t eventNoMotionEvent = NULL;
+    EventCallBack_t eventAnyMotionEvent = NULL;
+    EventCallBack_t eventSignificantMotion = NULL;
+    EventCallBack_t eventGyroDataReady = NULL;
+    EventCallBack_t eventAccelDataReady = NULL;
+    EventCallBack_t eventDataLocking = NULL;
 
 
     int writeCommand(CommandTable cmd)
@@ -1186,9 +1458,9 @@ protected:
         // Little-Endian / address auto increment
         // writeRegister(QMI8658_REG_CTRL1, 0x40);
 
+        // no need . reset function has set
         //EN.ADDR_AI
-        setRegisterBit(QMI8658_REG_CTRL1, 6);
-        // writeRegister(QMI8658_REG_CTRL1, 0x78);
+        // setRegisterBit(QMI8658_REG_CTRL1, 6);
 
 
         // Use STATUSINT.bit7 as CTRL9 handshake

@@ -45,13 +45,15 @@
 #ifdef _BV
 #undef _BV
 #endif
-#define _BV(b)                          (1ULL << (uint64_t)(b))
+#define _BV(b)                          (1UL << (uint32_t)(b))
 
 // #define LOG_PORT Serial
 #ifdef LOG_PORT
 #define LOG(fmt, ...) LOG_PORT.printf("[%s] " fmt , __func__, ##__VA_ARGS__)
+#define LOG_BIN(x)    LOG_PORT.println(x,BIN);
 #else
 #define LOG(fmt, ...)
+#define LOG_BIN(x)
 #endif
 
 
