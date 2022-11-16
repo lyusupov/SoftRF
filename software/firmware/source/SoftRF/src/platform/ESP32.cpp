@@ -312,6 +312,7 @@ static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
 //#define DEBUG_X32K(s) Serial.println(s)
 #define DEBUG_X32K(s) {}
 
+static bool ESP32_has_32k_xtal = false;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -921,7 +922,8 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-  if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+  if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME)
+  {
     rtc_clk_32k_enable(true);
 
     CALIBRATE_ONE(RTC_CAL_RTC_MUX);
@@ -939,6 +941,8 @@ static void ESP32_setup()
     CALIBRATE_ONE(RTC_CAL_32K_XTAL);
     if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
         DEBUG_X32K("Warning: Failed to switch RTC clock source onto 32768 Hz XTAL !");
+    } else {
+        ESP32_has_32k_xtal = true;
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
@@ -956,34 +960,37 @@ static void ESP32_post_init()
 
     Serial.println(F("Built-in components:"));
 
-    Serial.print(F("RADIO   : "));
+    Serial.print(F("RADIO    : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262 ||
                    hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("GNSS    : "));
+    Serial.print(F("GNSS     : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("DISPLAY : "));
+    Serial.print(F("32K XTAL : "));
+    Serial.println(ESP32_has_32k_xtal                  ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("DISPLAY  : "));
     Serial.println(hw_info.display == DISPLAY_OLED_1_3 ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("RTC     : "));
+    Serial.print(F("RTC      : "));
     Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("BARO    : "));
+    Serial.print(F("BARO     : "));
     Serial.println(hw_info.baro  == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
     Serial.flush();
 #if !defined(EXCLUDE_IMU)
-    Serial.print(F("IMU     : "));
+    Serial.print(F("IMU      : "));
     Serial.println(hw_info.imu     != IMU_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
-    Serial.print(F("MAG     : "));
+    Serial.print(F("MAG      : "));
     Serial.println(hw_info.mag     != MAG_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 
     Serial.println();
     Serial.println(F("External components:"));
-    Serial.print(F("CARD    : "));
+    Serial.print(F("CARD     : "));
     Serial.println(hw_info.storage == STORAGE_CARD ||
                    hw_info.storage == STORAGE_FLASH_AND_CARD
                                                        ? F("PASS") : F("N/A"));
