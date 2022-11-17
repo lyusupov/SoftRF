@@ -39,6 +39,9 @@ enum
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
   OLED_PAGE_BARO,
 #endif /* EXCLUDE_OLED_BARO_PAGE */
+#if !defined(EXCLUDE_IMU)
+  OLED_PAGE_IMU,
+#endif /* EXCLUDE_IMU */
   OLED_PAGE_COUNT
 };
 
@@ -78,6 +81,11 @@ static uint32_t prev_pressure       = (uint32_t)  -1;
 static int32_t  prev_cdr            = (int32_t)   -10000; /* climb/descent rate */
 #endif /* EXCLUDE_OLED_BARO_PAGE */
 
+#if !defined(EXCLUDE_IMU)
+int32_t IMU_g_x10                   = 0;
+static int32_t  prev_g_x10          = (int32_t) -10000;
+#endif /* EXCLUDE_IMU */
+
 unsigned long OLEDTimeMarker = 0;
 
 const char *ISO3166_CC[] = {
@@ -113,6 +121,11 @@ const char TEMP_text[]     = "TEMP C";
 const char PRES_text[]     = "PRES MB";
 const char CDR_text[]      = "CDR FPM";
 #endif /* EXCLUDE_OLED_BARO_PAGE */
+
+
+#if !defined(EXCLUDE_IMU)
+const char G_load_text[]   = "G load";
+#endif /* EXCLUDE_IMU */
 
 static const uint8_t Dot_Tile[] = { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 };
 
@@ -445,6 +458,32 @@ static void OLED_baro()
 }
 #endif /* EXCLUDE_OLED_BARO_PAGE */
 
+#if !defined(EXCLUDE_IMU)
+static void OLED_imu()
+{
+  char buf[16];
+
+  if (!OLED_display_titles) {
+
+    u8x8->clear();
+
+    u8x8->drawString( 2, 1, G_load_text);
+
+    prev_g_x10 = (int32_t) -10000;
+
+    OLED_display_titles = true;
+  }
+
+  int32_t disp_value = (IMU_g_x10 > 99) ? 99 : IMU_g_x10;
+
+  if (prev_g_x10 != disp_value) {
+    snprintf(buf, sizeof(buf), "%01d.%01d", disp_value / 10, disp_value % 10);
+    u8x8->draw2x2String(2, 2, buf);
+    prev_g_x10 = disp_value;
+  }
+}
+#endif /* EXCLUDE_IMU */
+
 #if !defined(EXCLUDE_OLED_049)
 
 void OLED_049_func()
@@ -679,6 +718,11 @@ void OLED_loop()
           OLED_baro();
           break;
 #endif /* EXCLUDE_OLED_BARO_PAGE */
+#if !defined(EXCLUDE_IMU)
+        case OLED_PAGE_IMU:
+          OLED_imu();
+          break;
+#endif /* EXCLUDE_IMU */
         case OLED_PAGE_RADIO:
         default:
           OLED_radio();
@@ -860,6 +904,14 @@ void OLED_Next_Page()
       OLED_current_page = (OLED_current_page + 1) % page_count;
     }
 #endif /* EXCLUDE_OLED_BARO_PAGE */
+
+#if !defined(EXCLUDE_IMU)
+    if (hw_info.display   != DISPLAY_OLED_0_49 &&
+        OLED_current_page == OLED_PAGE_IMU     &&
+        hw_info.imu       == IMU_NONE) {
+      OLED_current_page = (OLED_current_page + 1) % page_count;
+    }
+#endif /* EXCLUDE_IMU */
 
 #if !defined(EXCLUDE_OLED_049)
     if (hw_info.display   == DISPLAY_OLED_0_49      &&

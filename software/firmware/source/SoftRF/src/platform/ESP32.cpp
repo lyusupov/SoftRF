@@ -287,12 +287,21 @@ static int32_t ESP32_msc_write_cb (uint32_t lba, uint32_t offset, uint8_t* buffe
 #endif /* USE_ADAFRUIT_MSC */
 #endif /* CONFIG_TINYUSB_MSC_ENABLED */
 
-#include "SensorQMC6310.hpp"
+#include <SensorQMC6310.hpp>
 SensorQMC6310 mag;
 
 #if !defined(EXCLUDE_IMU)
-#include "SensorQMI8658.hpp"
-SensorQMI8658 imu;
+#include <SensorQMI8658.hpp>
+#include <MPU9250.h>
+
+#define IMU_UPDATE_INTERVAL 500 /* ms */
+
+SensorQMI8658 imu_qmi8658;
+MPU9250       imu_mpu9250;
+
+static unsigned long IMU_Time_Marker = 0;
+
+extern int32_t IMU_g_x10;
 #endif /* EXCLUDE_IMU */
 
 #include "soc/rtc.h"
@@ -724,12 +733,12 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
       uSD_SPI.endTransaction();
 #else
-      bool has_qmi = imu.begin(SOC_GPIO_PIN_S3_IMU_SS,
-                               SOC_GPIO_PIN_S3_IMU_MOSI,
-                               SOC_GPIO_PIN_S3_IMU_MISO,
-                               SOC_GPIO_PIN_S3_IMU_SCK,
-                               uSD_SPI);
-      imu.deinit();
+      bool has_qmi = imu_qmi8658.begin(SOC_GPIO_PIN_S3_IMU_SS,
+                                       SOC_GPIO_PIN_S3_IMU_MOSI,
+                                       SOC_GPIO_PIN_S3_IMU_MISO,
+                                       SOC_GPIO_PIN_S3_IMU_SCK,
+                                       uSD_SPI);
+      imu_qmi8658.deinit();
       hw_info.imu  = has_qmi ? IMU_QMI8658 : hw_info.imu;
 #endif
 
@@ -765,6 +774,7 @@ static void ESP32_setup()
       hw_info.revision = 203;
 
 #if !defined(EXCLUDE_IMU)
+#if 0
       uSD_SPI.begin(SOC_GPIO_PIN_S3_IMU_SCK,
                     SOC_GPIO_PIN_S3_IMU_MISO,
                     SOC_GPIO_PIN_S3_IMU_MOSI,
@@ -801,6 +811,7 @@ static void ESP32_setup()
       uSD_SPI.end();
 
       hw_info.mag = (hw_info.imu == IMU_MPU9250) ? MAG_AK8963 : hw_info.mag;
+#endif
 #endif /* EXCLUDE_IMU */
     }
 
@@ -944,6 +955,25 @@ static void ESP32_setup()
     } else {
         ESP32_has_32k_xtal = true;
     }
+  } else {
+#if !defined(EXCLUDE_IMU)
+    Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
+    Wire.beginTransmission(MPU9250_ADDRESS);
+    bool has_mpu = (Wire.endTransmission() == 0);
+
+    if (has_mpu && imu_mpu9250.setup(MPU9250_ADDRESS)) {
+      imu_mpu9250.verbose(false);
+      if (imu_mpu9250.isSleeping()) {
+        imu_mpu9250.sleep(false);
+      }
+      hw_info.imu = IMU_MPU9250;
+      IMU_Time_Marker = millis();
+    } else {
+      WIRE_FINI(Wire);
+    }
+
+    hw_info.mag = (hw_info.imu == IMU_MPU9250) ? MAG_AK8963 : hw_info.mag;
+#endif /* EXCLUDE_IMU */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
@@ -1247,6 +1277,20 @@ static void ESP32_loop()
   default:
     break;
   }
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(EXCLUDE_IMU)
+  if (hw_info.imu == IMU_MPU9250 &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    if (imu_mpu9250.update()) {
+      float a_x = imu_mpu9250.getAccX();
+      float a_y = imu_mpu9250.getAccY();
+      float a_z = imu_mpu9250.getAccZ();
+
+      IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+    }
+    IMU_Time_Marker = millis();
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 && !EXCLUDE_IMU */
 }
 
 static void ESP32_fini(int reason)
@@ -1265,6 +1309,13 @@ static void ESP32_fini(int reason)
   }
 
   if (SPIFlash != NULL) SPIFlash->end();
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == IMU_MPU9250) {
+    imu_mpu9250.sleep(true);
+  }
+#endif /* EXCLUDE_IMU */
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   SPI.end();
