@@ -467,7 +467,7 @@ static void OLED_imu()
 
     u8x8->clear();
 
-    u8x8->drawString( 2, 1, G_load_text);
+    u8x8->drawString( 5, 1, G_load_text);
 
     prev_g_x10 = (int32_t) -10000;
 
@@ -478,7 +478,7 @@ static void OLED_imu()
 
   if (prev_g_x10 != disp_value) {
     snprintf(buf, sizeof(buf), "%01d.%01d", disp_value / 10, disp_value % 10);
-    u8x8->draw2x2String(2, 2, buf);
+    u8x8->draw2x2String(5, 3, buf);
     prev_g_x10 = disp_value;
   }
 }

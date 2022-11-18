@@ -738,8 +738,45 @@ static void ESP32_setup()
                                        SOC_GPIO_PIN_S3_IMU_MISO,
                                        SOC_GPIO_PIN_S3_IMU_SCK,
                                        uSD_SPI);
-      imu_qmi8658.deinit();
-      hw_info.imu  = has_qmi ? IMU_QMI8658 : hw_info.imu;
+      if (has_qmi) {
+        imu_qmi8658.configAccelerometer(
+            /*
+             * ACC_RANGE_2G
+             * ACC_RANGE_4G
+             * ACC_RANGE_8G
+             * ACC_RANGE_16G
+             * */
+            SensorQMI8658::ACC_RANGE_4G,
+            /*
+             * ACC_ODR_1000H
+             * ACC_ODR_500Hz
+             * ACC_ODR_250Hz
+             * ACC_ODR_125Hz
+             * ACC_ODR_62_5Hz
+             * ACC_ODR_31_25Hz
+             * ACC_ODR_LOWPOWER_128Hz
+             * ACC_ODR_LOWPOWER_21Hz
+             * ACC_ODR_LOWPOWER_11Hz
+             * ACC_ODR_LOWPOWER_3H
+            * */
+            SensorQMI8658::ACC_ODR_1000Hz,
+            /*
+            *  LPF_MODE_0     //2.66% of ODR
+            *  LPF_MODE_1     //3.63% of ODR
+            *  LPF_MODE_2     //5.39% of ODR
+            *  LPF_MODE_3     //13.37% of ODR
+            * */
+            SensorQMI8658::LPF_MODE_0,
+            // selfTest enable
+            true);
+
+        // In 3DOF mode,
+        imu_qmi8658.enableAccelerometer();
+
+        hw_info.imu = IMU_QMI8658;
+      }
+
+      IMU_Time_Marker = millis();
 #endif
 
       if (hw_info.imu == IMU_NONE) {
@@ -1279,15 +1316,31 @@ static void ESP32_loop()
   }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(EXCLUDE_IMU)
-  if (hw_info.imu == IMU_MPU9250 &&
-      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    if (imu_mpu9250.update()) {
-      float a_x = imu_mpu9250.getAccX();
-      float a_y = imu_mpu9250.getAccY();
-      float a_z = imu_mpu9250.getAccZ();
+  if ((millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
 
-      IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+    switch (hw_info.imu)
+    {
+    case IMU_MPU9250:
+      if (imu_mpu9250.update()) {
+        float a_x = imu_mpu9250.getAccX();
+        float a_y = imu_mpu9250.getAccY();
+        float a_z = imu_mpu9250.getAccZ();
+        IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+      }
+      break;
+    case IMU_QMI8658:
+      if (imu_qmi8658.getDataReady()) {
+        float a_x, a_y, a_z;
+        if (imu_qmi8658.getAccelerometer(a_x, a_y, a_z)) {
+          IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+        }
+      }
+      break;
+    case IMU_NONE:
+    default:
+      break;
     }
+
     IMU_Time_Marker = millis();
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 && !EXCLUDE_IMU */
@@ -1311,8 +1364,17 @@ static void ESP32_fini(int reason)
   if (SPIFlash != NULL) SPIFlash->end();
 
 #if !defined(EXCLUDE_IMU)
-  if (hw_info.imu == IMU_MPU9250) {
+  switch (hw_info.imu)
+  {
+  case IMU_MPU9250:
     imu_mpu9250.sleep(true);
+    break;
+  case IMU_QMI8658:
+      imu_qmi8658.deinit();
+    break;
+  case IMU_NONE:
+  default:
+    break;
   }
 #endif /* EXCLUDE_IMU */
 

@@ -27,7 +27,7 @@ extern esp_err_t i2c_init(void);
 extern void pmu_isr_handler();
 
 static void pmu_hander_task(void *);
-static xQueueHandle  gpio_evt_queue = NULL;
+static QueueHandle_t  gpio_evt_queue = NULL;
 
 static void IRAM_ATTR pmu_irq_handler(void *arg)
 {

@@ -4,3 +4,6 @@ test
 .travis.yml
 test
 assets
+build
+sdkconfig
+sdkconfig.old

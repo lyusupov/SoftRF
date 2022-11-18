@@ -149,6 +149,14 @@ SPIFlash flash(SOC_GPIO_PIN_MX25_SS); // MACRONIX_MX25R8035F
 
 ADXL362 adxl;
 
+#if !defined(EXCLUDE_IMU)
+#define IMU_UPDATE_INTERVAL 500 /* ms */
+
+static unsigned long IMU_Time_Marker = 0;
+
+extern int32_t IMU_g_x10;
+#endif /* EXCLUDE_IMU */
+
 static Watchdog_Handle cc13xx_watchdogHandle;
 
 static void Uart2_ReadCallback(UART_Handle uart, void *buf, size_t count)
@@ -320,8 +328,13 @@ static void CC13XX_setup()
   adxl.beginMeasure();
 
   adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
+
+#if defined(EXCLUDE_IMU)
   /* no .end() method for adxl */
   SPI.end(SOC_GPIO_PIN_ADXL_SS);
+#else
+  IMU_Time_Marker = millis();
+#endif /* EXCLUDE_IMU */
 
   if (has_spiflash && flash_id == MACRONIX_MX25R8035F) {
 
@@ -456,6 +469,23 @@ static void CC13XX_loop()
   } else {
     digitalWrite(pps_led, LOW);
   }
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == ACC_ADXL362 &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    int16_t XValue = 0, YValue = 0, ZValue = 0, Temperature = 0;
+    adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
+
+    int32_t x32 = (int32_t) XValue;
+    int32_t y32 = (int32_t) YValue;
+    int32_t z32 = (int32_t) ZValue;
+
+     /* +- 2G (default) */
+    IMU_g_x10 = (int) (sqrtf(((float) (x32 * x32 + y32 * y32 + z32 * z32)) / (1024 * 1024)) * 10);
+
+    IMU_Time_Marker = millis();
+  }
+#endif /* EXCLUDE_IMU */
 #endif /* ENERGIA_ARCH_CC13X2 */
 }
 
@@ -489,6 +519,10 @@ static void CC13XX_fini(int reason)
     pinMode(pps_led, INPUT);
   }
 
+#if !defined(EXCLUDE_IMU)
+  /* no .end() method for adxl */
+  SPI.end(SOC_GPIO_PIN_ADXL_SS);
+#endif /* EXCLUDE_IMU */
 #endif /* ENERGIA_ARCH_CC13X2 */
 
 #if defined(USE_SERIAL_DEEP_SLEEP)

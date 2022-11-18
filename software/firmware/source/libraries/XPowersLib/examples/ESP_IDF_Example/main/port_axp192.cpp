@@ -70,15 +70,15 @@ esp_err_t pmu_init()
     PMU.enableLDO3();
     PMU.enableLDOio();
 
-    Serial.println("DCDC=======================================================================");
-    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
-    Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
-    Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
-    Serial.println("LDO=======================================================================");
-    Serial.printf("LDO2: %s   Voltage:%u mV\n",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
-    Serial.printf("LDO3: %s   Voltage:%u mV\n",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
-    Serial.printf("LDOio: %s   Voltage:%u mV\n",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
-    Serial.println("==========================================================================");
+    ESP_LOGI(TAG, "DCDC=======================================================================\n");
+    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
+    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
+    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
+    ESP_LOGI(TAG, "LDO=======================================================================\n");
+    ESP_LOGI(TAG, "LDO2: %s   Voltage:%u mV\n",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
+    ESP_LOGI(TAG, "LDO3: %s   Voltage:%u mV\n",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
+    ESP_LOGI(TAG, "LDOio: %s   Voltage:%u mV\n",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
+    ESP_LOGI(TAG, "==========================================================================\n");
 
     // Set the time of pressing the button to turn off
     PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);

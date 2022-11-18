@@ -337,7 +337,7 @@ public:
     * @brief  Get PMU SYS main Voltage
     * @retval Voltage unit: millivolt
     */
-    virtual uint16_t getSystemVoltage();
+    virtual uint16_t getSystemVoltage() = 0;
 
     /**
      * @brief  Set PMU Low Voltage Shutdown Threshold
@@ -374,14 +374,14 @@ public:
      *              parameters in "XPowersParams.hpp"
      * @retval true valid false invalid
      */
-    virtual bool setChargerConstantCurr(uint8_t opt);
+    virtual bool setChargerConstantCurr(uint8_t opt) = 0;
 
     /**
      * @brief  Get charge current.
      * @retval View the related chip type xpowers_axpxxx_chg_curr_t enumeration
      *         parameters in "XPowersParams.hpp"
      */
-    virtual uint8_t getChargerConstantCurr();
+    virtual uint8_t getChargerConstantCurr() = 0;
 
 
     //!PMU Interrupt control
@@ -492,73 +492,73 @@ public:
      * @brief  Enable battery detection function,the default is on
      * @retval true success false failed
      */
-    virtual bool enableBattDetection();
+    virtual bool enableBattDetection() = 0;
 
     /**
      * @brief  Disable battery detection
      * @retval true success false failed
      */
-    virtual bool disableBattDetection();
+    virtual bool disableBattDetection() = 0;
 
     /**
      * @brief  Enable USB input voltage detection
      * @retval true success false failed
      */
-    virtual bool enableVbusVoltageMeasure(void);
+    virtual bool enableVbusVoltageMeasure(void) = 0;
 
     /**
      * @brief  Disable USB input voltage detection
      * @retval true success false failed
      */
-    virtual bool disableVbusVoltageMeasure(void);
+    virtual bool disableVbusVoltageMeasure(void) = 0;
 
     /**
      * @brief  Enable system voltage detection
      * @retval true success false failed
      */
-    virtual bool enableSystemVoltageMeasure(void);
+    virtual bool enableSystemVoltageMeasure(void) = 0;
 
     /**
      * @brief  Disable system voltage detection
      * @retval true success false failed
      */
-    virtual bool disableSystemVoltageMeasure(void);
+    virtual bool disableSystemVoltageMeasure(void) = 0;
 
     /**
      * @brief  Enable PMU internal temperature sensor detection
      * @retval true success false failed
      */
-    virtual bool enableTemperatureMeasure(void);
+    virtual bool enableTemperatureMeasure(void) = 0;
 
     /**
      * @brief  Disable PMU internal temperature sensor detection
      * @retval true success false failed
      */
-    virtual bool disableTemperatureMeasure(void);
+    virtual bool disableTemperatureMeasure(void) = 0;
 
     /**
      * @brief  Enable battery input voltage detection
      * @retval true success false failed
      */
-    virtual bool enableBattVoltageMeasure(void);
+    virtual bool enableBattVoltageMeasure(void) = 0;
 
     /**
      * @brief  Disable battery input voltage detection
      * @retval true success false failed
      */
-    virtual bool disableBattVoltageMeasure(void);
+    virtual bool disableBattVoltageMeasure(void) = 0;
 
     /**
      * @brief  Enable NTC thermistor detection (requires hardware support)
      * @retval true success false failed
      */
-    virtual bool enableTSPinMeasure(void);
+    virtual bool enableTSPinMeasure(void) = 0;
 
     /**
      * @brief  Disable NTC thermistor detection (requires hardware support)
      * @retval true success false failed
      */
-    virtual bool disableTSPinMeasure(void);
+    virtual bool disableTSPinMeasure(void) = 0;
 
     // Charge indicator function
     /**
@@ -577,14 +577,14 @@ public:
     *              parameters in "XPowersParams.hpp"
     * @retval true success false failed
     */
-    virtual bool setPowerKeyPressOnTime(uint8_t opt);
+    virtual bool setPowerKeyPressOnTime(uint8_t opt) = 0;
 
     /**
      * @brief Get PEKEY press power on time
      * @retval View the related chip type xpowers_press_on_time_t enumeration
      *              parameters in "XPowersParams.hpp"
      */
-    virtual uint8_t getPowerKeyPressOnTime();
+    virtual uint8_t getPowerKeyPressOnTime() = 0;
 
     /**
      * @brief Set PEKEY press power off time
@@ -592,14 +592,14 @@ public:
      *              parameters in "XPowersParams.hpp"
      * @retval true success false failed
      */
-    virtual bool setPowerKeyPressOffTime(uint8_t opt);
+    virtual bool setPowerKeyPressOffTime(uint8_t opt) = 0;
 
     /**
      * @brief Get PEKEY press power off time
      * @retval View the related chip type xpowers_press_off_time_t enumeration
      *              parameters in "XPowersParams.hpp"
      */
-    virtual uint8_t getPowerKeyPressOffTime();
+    virtual uint8_t getPowerKeyPressOffTime() = 0;
 
     /**
      * @brief Get the chip model
