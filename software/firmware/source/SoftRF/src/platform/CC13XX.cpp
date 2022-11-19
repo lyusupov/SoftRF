@@ -147,7 +147,7 @@ SCSerial scSerial;
 
 SPIFlash flash(SOC_GPIO_PIN_MX25_SS); // MACRONIX_MX25R8035F
 
-ADXL362 adxl;
+ADXL362 adxl(SOC_GPIO_PIN_ADXL_SS);
 
 #if !defined(EXCLUDE_IMU)
 #define IMU_UPDATE_INTERVAL 500 /* ms */
@@ -314,7 +314,6 @@ static void CC13XX_setup()
 
   bool has_spiflash = false;
   uint16_t flash_id = 0;
-  int16_t XValue = 0, YValue = 0, ZValue = 0, Temperature = 0;
 
   has_spiflash = flash.initialize();
 
@@ -324,27 +323,22 @@ static void CC13XX_setup()
   }
   flash.end();
 
-  adxl.begin(SOC_GPIO_PIN_ADXL_SS);
-  adxl.beginMeasure();
+  short CC13XX_has_accel = adxl.init();
 
-  adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
-
-#if defined(EXCLUDE_IMU)
-  /* no .end() method for adxl */
+  if (CC13XX_has_accel == true) {
+    adxl.activateStandbyMode();
+  }
   SPI.end(SOC_GPIO_PIN_ADXL_SS);
-#else
-  IMU_Time_Marker = millis();
-#endif /* EXCLUDE_IMU */
 
   if (has_spiflash && flash_id == MACRONIX_MX25R8035F) {
 
     hw_info.model = SOFTRF_MODEL_UNI;
 
-    if (XValue == 0 && YValue == 0 && ZValue == 0 && Temperature == 0) {
-      cc13xx_board = TI_CC1352R1_LAUNCHXL;
-    } else {
+    if (CC13XX_has_accel == true) {
       cc13xx_board = TI_LPSTK_CC1352R;
       hw_info.imu  = ACC_ADXL362;
+    } else {
+      cc13xx_board = TI_CC1352R1_LAUNCHXL;
     }
   } else {
     cc13xx_board  = SOFTRF_UAT_MODULE_20;
@@ -451,6 +445,14 @@ static void CC13XX_post_init()
 #if defined(USE_OLED)
   OLED_info1();
 #endif /* USE_OLED */
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == ACC_ADXL362) {
+    adxl.init();
+    adxl.activateMeasure(ad_bandwidth_hz_25, ad_range_4G, ad_noise_normal);
+    IMU_Time_Marker = millis();
+  }
+#endif /* EXCLUDE_IMU */
 }
 
 static void CC13XX_loop()
@@ -473,15 +475,13 @@ static void CC13XX_loop()
 #if !defined(EXCLUDE_IMU)
   if (hw_info.imu == ACC_ADXL362 &&
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    int16_t XValue = 0, YValue = 0, ZValue = 0, Temperature = 0;
-    adxl.readXYZTData(XValue, YValue, ZValue, Temperature);
+    MeasurementInMg m = adxl.getXYZLowPower(ad_range_4G);
 
-    int32_t x32 = (int32_t) XValue;
-    int32_t y32 = (int32_t) YValue;
-    int32_t z32 = (int32_t) ZValue;
+    int32_t x32 = (int32_t) m.x;
+    int32_t y32 = (int32_t) m.y;
+    int32_t z32 = (int32_t) m.z;
 
-     /* +- 2G (default) */
-    IMU_g_x10 = (int) (sqrtf(((float) (x32 * x32 + y32 * y32 + z32 * z32)) / (1024 * 1024)) * 10);
+    IMU_g_x10 = (int) (sqrtf((float) (x32 * x32 + y32 * y32 + z32 * z32)) / 100);
 
     IMU_Time_Marker = millis();
   }
@@ -520,8 +520,10 @@ static void CC13XX_fini(int reason)
   }
 
 #if !defined(EXCLUDE_IMU)
-  /* no .end() method for adxl */
-  SPI.end(SOC_GPIO_PIN_ADXL_SS);
+  if (hw_info.imu == ACC_ADXL362) {
+    adxl.activateStandbyMode();
+    SPI.end(SOC_GPIO_PIN_ADXL_SS);
+  }
 #endif /* EXCLUDE_IMU */
 #endif /* ENERGIA_ARCH_CC13X2 */
 

@@ -1,0 +1,101 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+ADXL362	KEYWORD1
+public	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+activateMeasure	KEYWORD2
+activateAutonomousMotionSwitch	KEYWORD2
+activateFreeFallDetection	KEYWORD2
+activateCustomDetection	KEYWORD2
+executeSelfTest	KEYWORD2
+executeTimeCalibration	KEYWORD2
+configureSequantial	KEYWORD2
+isAwake	KEYWORD2
+configure	KEYWORD2
+configureInterrupt1	KEYWORD2
+configureInterrupt2	KEYWORD2
+configureActivity	KEYWORD2
+configureInActivity	KEYWORD2
+configureActivityWakeupMode	KEYWORD2
+isInactInterrupt	KEYWORD2
+isActInterrupt	KEYWORD2
+activateMode	KEYWORD2
+printRegisters	KEYWORD2
+checkDevice	KEYWORD2
+getRevisionId	KEYWORD2
+softReset	KEYWORD2
+hasStatus	KEYWORD2
+activateStandbyMode	KEYWORD2
+getXYZLowPower	KEYWORD2
+getXYZ	KEYWORD2
+getTemperature	KEYWORD2
+configureFIFO	KEYWORD2
+configureFIFOInterrupt1	KEYWORD2
+configureFIFOInterrupt2	KEYWORD2
+getNrOf16bitFIFOEntries	KEYWORD2
+readFIFO	KEYWORD2
+parseFIFOEntry	KEYWORD2
+parseFIFOMeasurement	KEYWORD2
+
+######################################
+# Constants (LITERAL1)
+######################################
+ad_range_2G	LITERAL1
+ad_range_4G	LITERAL1
+ad_range_8G	LITERAL1
+measurementRange	LITERAL1
+ad_bandwith_externalODR	LITERAL1
+ad_bandwidth_hz_6_wakeup_ultralowpower	LITERAL1
+ad_bandwidth_hz_3_125	LITERAL1
+ad_bandwidth_hz_6_25_lowpower	LITERAL1
+ad_bandwidth_hz_6_25	LITERAL1
+ad_bandwidth_hz_12_5_lowpower	LITERAL1
+ad_bandwidth_hz_12_5	LITERAL1
+ad_bandwidth_hz_25_lowpower	LITERAL1
+ad_bandwidth_hz_25	LITERAL1
+ad_bandwidth_hz_50_lowpower	LITERAL1
+ad_bandwidth_hz_50	LITERAL1
+ad_bandwidth_hz_100_lowpower	LITERAL1
+ad_bandwidth_hz_100	LITERAL1
+ad_bandwidth_hz_200	LITERAL1
+bandwidth	LITERAL1
+ad_power_standby	LITERAL1
+ad_power_wakeup	LITERAL1
+ad_power_autowakeup	LITERAL1
+powerMode	LITERAL1
+ad_seq_none	LITERAL1
+ad_seq_link	LITERAL1
+ad_seq_loop	LITERAL1
+sequentialMode	LITERAL1
+ad_noise_normal	LITERAL1
+ad_noise_low	LITERAL1
+ad_noise_ultralow	LITERAL1
+noiseMode	LITERAL1
+ad_status_awake	LITERAL1
+ad_status_inactive	LITERAL1
+ad_status_active	LITERAL1
+ad_status_fifo_overrun	LITERAL1
+ad_status_fifo_watermark	LITERAL1
+ad_status_fifo_ready	LITERAL1
+ad_status_data_ready	LITERAL1
+fifoMode	LITERAL1
+ad_fifo_disable	LITERAL1
+ad_fifo_oldestsaved	LITERAL1
+ad_fifo_stream	LITERAL1
+ad_fifo_trigger	LITERAL1
+ADXL362Config	LITERAL1
+MeasurementInMg	LITERAL1
+ad_fifo_X_Mg	LITERAL1
+ad_fifo_Z_Mg	LITERAL1
+ad_fifo_TEMP_C	LITERAL1
+ad_fifo_UNKNOWN	LITERAL1
+fifoEntryType	LITERAL1

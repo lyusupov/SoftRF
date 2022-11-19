@@ -45,7 +45,7 @@
  *   Basic MAC library is developed by Michael Kuyper
  *   LowPowerLab SPIFlash library is maintained by Felix Rusu
  *   Arduino Core for ASR6x0x is developed by Aaron Lee (HelTec Automation)
- *   ADXL362 library is developed by Anne Mahaffey
+ *   ADXL362 library is developed by Klaas-Jan Winkel
  *   Arduino Core for nRF52 and TinyUSB library are developed by Ha Thach
  *   Arduino-NVM library is developed by Frank Holtz
  *   AceButton library is developed by Brian Park
