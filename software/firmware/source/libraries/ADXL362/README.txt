@@ -1,1 +1,0 @@
-See more info at http://annem.github.com/ADXL362
