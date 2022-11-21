@@ -55,6 +55,9 @@ enum
   OLED_049_PAGE_ACFTS,
   OLED_049_PAGE_UPTIME,
   OLED_049_PAGE_VOLTAGE,
+#if !defined(EXCLUDE_IMU)
+  OLED_049_PAGE_IMU,
+#endif /* EXCLUDE_IMU */
   OLED_049_PAGE_COUNT
 };
 #endif /* EXCLUDE_OLED_049 */
@@ -691,6 +694,31 @@ void OLED_049_func()
     }
 
     break;
+
+#if !defined(EXCLUDE_IMU)
+  case OLED_049_PAGE_IMU:
+    if (!OLED_display_titles) {
+      u8x8->clear();
+      u8x8->drawString(5, 4, G_load_text);
+      u8x8->drawGlyph (7, 7, '.');
+      prev_g_x10          = (int32_t) -10000;
+
+      OLED_display_titles = true;
+    }
+
+    if (prev_g_x10 != IMU_g_x10) {
+        disp_value = IMU_g_x10 / 10;
+        disp_value = disp_value > 9 ? 9 : disp_value;
+        u8x8->draw2x2Glyph(5, 6, '0' + disp_value);
+
+        disp_value = IMU_g_x10 % 10;
+
+        u8x8->draw2x2Glyph(8, 6, '0' + disp_value);
+      prev_g_x10 = IMU_g_x10;
+    }
+
+    break;
+#endif /* EXCLUDE_IMU */
 
   default:
     break;

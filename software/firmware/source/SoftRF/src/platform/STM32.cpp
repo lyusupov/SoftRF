@@ -74,7 +74,14 @@ static bool STM32_has_IMU  = false;
 
 #if !defined(EXCLUDE_IMU)
 #include <ICM_20948.h>
+
+#define IMU_UPDATE_INTERVAL 500 /* ms */
+
 ICM_20948_I2C imu;
+
+static unsigned long IMU_Time_Marker = 0;
+
+extern int32_t IMU_g_x10;
 #endif /* EXCLUDE_IMU */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
@@ -468,6 +475,8 @@ static void STM32_setup()
       imu.begin();
 
       pinMode(TTGO_TIMPULSE_SENSOR_INT, INPUT);
+
+      IMU_Time_Marker = millis();
 #endif /* EXCLUDE_IMU */
     }
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
@@ -643,6 +652,21 @@ static void STM32_loop()
     IWatchdog.reload();
   }
 #endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
+
+#if !defined(EXCLUDE_IMU)
+  if (hw_info.imu == IMU_ICM20948 &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    if (imu.dataReady()) {
+      // milli g's
+      float a_x = imu.accX();
+      float a_y = imu.accY();
+      float a_z = imu.accZ();
+
+      IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 100);
+    }
+    IMU_Time_Marker = millis();
+  }
+#endif /* EXCLUDE_IMU */
 }
 
 static void STM32_fini(int reason)
@@ -651,8 +675,10 @@ static void STM32_fini(int reason)
 
   if (hw_info.model == SOFTRF_MODEL_BRACELET) {
 #if !defined(EXCLUDE_IMU)
-    imu.sleep(true);
-    // imu.lowPower(true);
+    if (hw_info.imu == IMU_ICM20948) {
+      imu.sleep(true);
+      // imu.lowPower(true);
+    }
 #endif /* EXCLUDE_IMU */
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */

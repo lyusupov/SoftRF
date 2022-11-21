@@ -446,7 +446,7 @@ static void CC13XX_post_init()
   OLED_info1();
 #endif /* USE_OLED */
 
-#if !defined(EXCLUDE_IMU)
+#if defined(ENERGIA_ARCH_CC13X2) && !defined(EXCLUDE_IMU)
   if (hw_info.imu == ACC_ADXL362) {
     adxl.init();
     adxl.activateMeasure(ad_bandwidth_hz_25, ad_range_4G, ad_noise_normal);
