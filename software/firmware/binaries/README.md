@@ -153,7 +153,7 @@ $ hackrf_spiflash -v -w HackRF_One_factory_firmware.bin
 ## ASR6601
 
 1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601) ;
-2. Take a copy of **tremo_loader.py** script from [ASR SDK](https://raw.githubusercontent.com/akarsh98/ASR6601-getting-started-guide/main/SDK/build/scripts/tremo_loader.py) ;
+2. Take a copy of **tremo_loader.py** script from [ASR SDK](https://github.com/asrlora/asr_lora_6601/raw/master/build/scripts/tremo_loader.py) ;
 3. Connect an appropriate USB-Serial adapter to ASR6601 MCU pins as follows:
 
 Adapter|MCU

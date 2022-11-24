@@ -439,6 +439,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SX1276           //  -  3 kb
 
 #define USE_TIME_SLOTS
+#define USE_OGN_ENCRYPTION
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
