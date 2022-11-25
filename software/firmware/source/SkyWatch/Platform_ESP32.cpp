@@ -1238,8 +1238,6 @@ static void ESP32_Service_Mode(boolean arg)
 
 #if defined(USE_USB_HOST)
 
-#include "usb/usb_host.h"
-
 #include <cp210x_usb.hpp>
 #include <ftdi_usb.hpp>
 #include <ch34x_usb.hpp>
@@ -1250,7 +1248,7 @@ using namespace esp_usb;
 #define USB_RX_FIFO_SIZE            (1024)
 #define USB_MAX_WRITE_CHUNK_SIZE    64
 
-#define EXAMPLE_USB_HOST_PRIORITY   20
+#define USB_HOST_PRIORITY           20
 
 #undef  TAG
 #define TAG "USB-CDC"
@@ -1283,7 +1281,6 @@ static ESP32_USBSerial_device_t ESP32_USB_Serial = {
 
 CdcAcmDevice *cdc = new CdcAcmDevice();
 
-/* ------------------------------- Callbacks -------------------------------- */
 static void handle_rx(uint8_t *data, size_t data_len, void *arg)
 {
 //    ESP_LOGI(TAG, "Data received");
@@ -1356,7 +1353,7 @@ static void ESP32S2_USB_setup()
     ESP_ERROR_CHECK(usb_host_install(&host_config));
 
     // Create a task that will handle USB library events
-    xTaskCreate(usb_lib_task, "usb_lib", 4096, xTaskGetCurrentTaskHandle(), EXAMPLE_USB_HOST_PRIORITY, NULL);
+    xTaskCreate(usb_lib_task, "usb_lib", 4096, xTaskGetCurrentTaskHandle(), USB_HOST_PRIORITY, NULL);
 
     ESP_LOGI(TAG, "Installing CDC-ACM driver");
     ESP_ERROR_CHECK(cdc_acm_host_install(NULL));

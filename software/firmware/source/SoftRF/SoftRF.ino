@@ -58,7 +58,6 @@
  *   Arduino uCDB library is developed by Ioulianos Kakoulidis
  *   Arduino Core for Atmel SAMD and FlashStorage library are developed by Arduino LLC
  *   USB host library 2.0 for Zero/M0/SAMD is developed by gdsports625@gmail.com
- *   EspTinyUSB library is developed by Dariusz Krempa <esp32@esp32.eu.org>
  *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
  *   MPU-9250 9 DoF sensor library is developed by Kris Winer and Hideaki Tai
  *
