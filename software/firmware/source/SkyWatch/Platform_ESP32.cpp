@@ -107,6 +107,50 @@ volatile bool BMA_Irq         = false;
 
 static bool has_usb_client    = false;
 
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(USE_USB_HOST)
+
+enum {
+  USBSER_TYPE_CDC,
+  USBSER_TYPE_CP210X,
+  USBSER_TYPE_FTDI,
+  USBSER_TYPE_CH34X,
+};
+
+typedef struct {
+    uint16_t vid;
+    uint16_t pid;
+    uint8_t type;
+    uint8_t model;
+    const char *first_name;
+    const char *last_name;
+} CDC_Device_List_t;
+
+static const CDC_Device_List_t supported_devices[] = {
+  { 0x0483, 0x5740, USBSER_TYPE_CDC, SOFTRF_MODEL_DONGLE, "Dongle" /* or Bracelet */, "Edition" },
+  { 0x239A, 0x8029, USBSER_TYPE_CDC, SOFTRF_MODEL_BADGE, "Badge", "Edition" },
+  { 0x2341, 0x804d, USBSER_TYPE_CDC, SOFTRF_MODEL_ACADEMY, "Academy", "Edition" },
+  { 0x2886, 0x802f, USBSER_TYPE_CDC, SOFTRF_MODEL_ACADEMY, "Academy", "Edition" },
+  { 0x1d50, 0x6089, USBSER_TYPE_CDC, SOFTRF_MODEL_ES, "ES", "Edition" },
+  { 0x2e8a, 0x000a, USBSER_TYPE_CDC, SOFTRF_MODEL_LEGO, "Lego", "Edition" },
+  { 0x2e8a, 0xf00a, USBSER_TYPE_CDC, SOFTRF_MODEL_LEGO, "Lego", "Edition" },
+  { 0x1A86, 0x55D4, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK2, "CH9102", "Device" },
+  { 0x303a, 0x8133, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK3, "Prime 3", "Edition" },
+  { 0x15ba, 0x0044, USBSER_TYPE_CDC, SOFTRF_MODEL_BALKAN, "Balkan", "Edition" },
+  { 0x303a, 0x8132, USBSER_TYPE_CDC, SOFTRF_MODEL_STANDALONE, "Standalone", "Edition" },
+  { 0x10c4, 0xea60, USBSER_TYPE_CP210X, SOFTRF_MODEL_UNKNOWN, "CP210X", "Device" },
+  { 0x0403, 0x6001, USBSER_TYPE_FTDI, SOFTRF_MODEL_UNKNOWN, "FT232", "Device" },
+  { 0x1a86, 0x7523, USBSER_TYPE_CH34X, SOFTRF_MODEL_UNKNOWN, "CH340", "Device" },
+};
+
+enum {
+  SOFTRF_DEVICE_COUNT =
+      sizeof(supported_devices) / sizeof(supported_devices[0])
+};
+
+#endif /* USE_USB_HOST */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
+
 static void IRAM_ATTR ESP32_PMU_Interrupt_handler() {
   portENTER_CRITICAL_ISR(&PMU_mutex);
   PMU_Irq = true;
@@ -314,19 +358,11 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
 }
 
-const char SoftRF_text2 [] = "Edition";
-const char SoftRF_text3 [] = "Standalone";
-const char SoftRF_text4 [] = "Prime 2";
-const char SoftRF_text5 [] = "Dongle";
-const char SoftRF_text6 [] = "Badge";
-const char SoftRF_text7 [] = "Academy";
-const char SoftRF_text8 [] = "ES";
-const char SoftRF_text9 [] = "Lego";
-const char SoftRF_text10[] = "Prime 3";
-const char SoftRF_text11[] = "Balkan";
-
 static void ESP32_post_init()
 {
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(USE_USB_HOST)
+
   const char *str1 = "NO";
   const char *str2 = "DEVICE";
 
@@ -334,41 +370,8 @@ static void ESP32_post_init()
   {
   case DISPLAY_TFT_TTGO_135:
     if (has_usb_client) {
-      str2 = SoftRF_text2;
-
-      switch (hw_info.slave)
-      {
-      case SOFTRF_MODEL_STANDALONE:
-        str1 = SoftRF_text3;
-        break;
-      case SOFTRF_MODEL_PRIME_MK2:
-        str1 = SoftRF_text4;
-        break;
-      case SOFTRF_MODEL_DONGLE:
-        str1 = SoftRF_text5;
-        break;
-      case SOFTRF_MODEL_BADGE:
-        str1 = SoftRF_text6;
-        break;
-      case SOFTRF_MODEL_ACADEMY:
-        str1 = SoftRF_text7;
-        break;
-      case SOFTRF_MODEL_ES:
-        str1 = SoftRF_text8;
-        break;
-      case SOFTRF_MODEL_LEGO:
-        str1 = SoftRF_text9;
-        break;
-      case SOFTRF_MODEL_PRIME_MK3:
-        str1 = SoftRF_text10;
-        break;
-      case SOFTRF_MODEL_BALKAN:
-        str1 = SoftRF_text11;
-        break;
-      default:
-        str1 = "Unknown";
-        break;
-      }
+      str1 = supported_devices[hw_info.slave].first_name;
+      str2 = supported_devices[hw_info.slave].last_name;
     }
 
     TFT_Message(str1, str2);
@@ -379,6 +382,9 @@ static void ESP32_post_init()
   default:
     break;
   }
+
+#endif /* USE_USB_HOST */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 static void ESP32_loop()
@@ -1234,139 +1240,22 @@ static void ESP32_Service_Mode(boolean arg)
 
 #include "usb/usb_host.h"
 
-#include "usb_host.hpp"
-#include "usb_acm.hpp"
+#include <cp210x_usb.hpp>
+#include <ftdi_usb.hpp>
+#include <ch34x_usb.hpp>
 
-#define USB_TX_FIFO_SIZE (1024)
-#define USB_RX_FIFO_SIZE (1024)
-#define USB_MAX_WRITE_CHUNK_SIZE 64
+using namespace esp_usb;
+
+#define USB_TX_FIFO_SIZE            (1024)
+#define USB_RX_FIFO_SIZE            (1024)
+#define USB_MAX_WRITE_CHUNK_SIZE    64
+
+#define EXAMPLE_USB_HOST_PRIORITY   20
+
+#undef  TAG
+#define TAG "USB-CDC"
 
 cbuf *USB_RX_FIFO, *USB_TX_FIFO;
-USBhost host;           // host is required to detect any device, before USB class is initialized
-USBacmDevice *device;   // when USB class is detected from descriptor
-
-void acm_events(int event, void *data, size_t len)
-{
-    switch (event)
-    {
-    case CDC_CTRL_SET_CONTROL_LINE_STATE:
-        log_i("CDC_CTRL_SET_CONTROL_LINE_STATE");
-        device->setLineCoding(SERIAL_OUT_BR, 0, 0, 8);
-        break;
-
-    case CDC_DATA_IN:
-    {
-        device->INDATA();
-        if (len > 0) {
-          USB_RX_FIFO->write((char *) data,
-                       USB_RX_FIFO->room() > len ?
-                       len : USB_RX_FIFO->room());
-        }
-        break;
-    }
-    case CDC_DATA_OUT:
-
-        break;
-
-    case CDC_CTRL_SET_LINE_CODING:
-        log_i("CDC_CTRL_SET_LINE_CODING");
-        break;
-    }
-}
-
-#define MAKE_USB_ID(v,p) ((uint32_t) v << 16 | (uint32_t) p)
-
-void client_event_callback(const usb_host_client_event_msg_t *event_msg, void *arg)
-{
-    if (event_msg->event == USB_HOST_CLIENT_EVENT_NEW_DEV)
-    {
-        host.open(event_msg);
-        usb_device_info_t info = host.getDeviceInfo();
-        log_i("device speed: %s, device address: %d, max ep_ctrl size: %d, config: %d", info.speed ? "USB_SPEED_FULL" : "USB_SPEED_LOW", info.dev_addr, info.bMaxPacketSize0, info.bConfigurationValue);
-        const usb_device_desc_t *dev_desc = host.getDeviceDescriptor();
-
-        uint8_t slave = SOFTRF_MODEL_UNKNOWN;
-
-        switch (MAKE_USB_ID(dev_desc->idVendor, dev_desc->idProduct))
-        {
-        case MAKE_USB_ID(0x0483, 0x5740):
-          slave = SOFTRF_MODEL_DONGLE; /* or Bracelet */
-          break;
-        case MAKE_USB_ID(0x239A, 0x8029):
-          slave = SOFTRF_MODEL_BADGE;
-          break;
-        case MAKE_USB_ID(0x2341, 0x804d):
-        case MAKE_USB_ID(0x2886, 0x802f):
-          slave = SOFTRF_MODEL_ACADEMY;
-          break;
-        case MAKE_USB_ID(0x1d50, 0x6089):
-          slave = SOFTRF_MODEL_ES;
-          break;
-        case MAKE_USB_ID(0x2e8a, 0x000a):
-        case MAKE_USB_ID(0x2e8a, 0xf00a):
-          slave = SOFTRF_MODEL_LEGO;
-          break;
-        case MAKE_USB_ID(0x1A86, 0x55D4): /* CH9102 */
-          slave = SOFTRF_MODEL_PRIME_MK2;
-          break;
-        case MAKE_USB_ID(0x303a, SOFTRF_USB_PID_PRIME_MK3):
-          slave = SOFTRF_MODEL_PRIME_MK3;
-          break;
-        case MAKE_USB_ID(0x15ba, 0x0044):
-          slave = SOFTRF_MODEL_BALKAN;
-          break;
-        case MAKE_USB_ID(0x303a, SOFTRF_USB_PID_STANDALONE):
-          slave = SOFTRF_MODEL_STANDALONE;
-          break;
-        }
-
-        int offset = 0;
-        for (size_t i = 0; i < dev_desc->bNumConfigurations; i++)
-        {
-            const usb_config_desc_t *config_desc = host.getConfigurationDescriptor();
-            for (size_t n = 0; n < config_desc->bNumInterfaces; n++)
-            {
-                const usb_intf_desc_t *intf = usb_parse_interface_descriptor(config_desc, n, 0, &offset);
-                if (intf->bInterfaceClass == 0x0a) // CDC ACM
-                {
-                    device = new USBacmDevice(config_desc, &host);
-                    n = config_desc->bNumInterfaces;
-                    if (device)
-                    {
-                        device->init();
-                        device->onEvent(acm_events);
-                        device->setControlLine(1, 1);
-                        has_usb_client = true;
-                        hw_info.slave  = slave;
-                        device->INDATA();
-                    }
-                }
-
-//                printf("config: %d[%d], interface: %d[%d], intf class: %d\n", i, dev_desc->bNumConfigurations, n, config_desc->bNumInterfaces, intf->bInterfaceClass);
-            }
-        }
-    }
-    else
-    {
-        log_w("DEVICE gone event");
-        if (device)
-        {
-            device->deinit();
-            delete(device);
-            has_usb_client = false;
-        }
-        device = NULL;
-    }
-}
-
-#if 1
-
-#include <cdc_acm_host.h>
-
-#define EXAMPLE_USB_HOST_PRIORITY 20
-
-#undef TAG
-#define TAG "USB-CDC"
 
 // CDC-ACM driver object
 typedef struct {
@@ -1379,38 +1268,26 @@ typedef struct {
 
 extern cdc_acm_obj_t *p_cdc_acm_obj;
 
+static SemaphoreHandle_t device_disconnected_sem;
+
 typedef struct {
-    uint16_t vid;
-    uint16_t pid;
-    uint8_t model;
-} CDC_Device_t;
+    bool connected;
+    int index;
+    CdcAcmDevice *device;
+} ESP32_USBSerial_device_t;
 
-static const CDC_Device_t supported_devices[] = {
-        { 0x0483, 0x5740, SOFTRF_MODEL_DONGLE /* or Bracelet */ },
-        { 0x239A, 0x8029, SOFTRF_MODEL_BADGE },
-        { 0x2341, 0x804d, SOFTRF_MODEL_ACADEMY },
-        { 0x2886, 0x802f, SOFTRF_MODEL_ACADEMY },
-        { 0x1d50, 0x6089, SOFTRF_MODEL_ES },
-        { 0x2e8a, 0x000a, SOFTRF_MODEL_LEGO },
-        { 0x2e8a, 0xf00a, SOFTRF_MODEL_LEGO },
-        { 0x1A86, 0x55D4, SOFTRF_MODEL_PRIME_MK2 /* CH9102 */ },
-        { 0x303a, SOFTRF_USB_PID_PRIME_MK3, SOFTRF_MODEL_PRIME_MK3 },
-        { 0x15ba, 0x0044, SOFTRF_MODEL_BALKAN },
-        { 0x303a, SOFTRF_USB_PID_STANDALONE, SOFTRF_MODEL_STANDALONE },
+static ESP32_USBSerial_device_t ESP32_USB_Serial = {
+    .connected = false,
+    .index = 0,
 };
 
-enum {
-  SOFTRF_DEVICE_COUNT =
-      sizeof(supported_devices) / sizeof(supported_devices[0])
-};
-
+CdcAcmDevice *cdc = new CdcAcmDevice();
 
 /* ------------------------------- Callbacks -------------------------------- */
 static void handle_rx(uint8_t *data, size_t data_len, void *arg)
 {
 //    ESP_LOGI(TAG, "Data received");
 //    ESP_LOG_BUFFER_HEXDUMP(TAG, data, data_len, ESP_LOG_INFO);
-//    Serial.write(data, data_len);
       if (data_len > 0) {
         USB_RX_FIFO->write((char *) data,
                      USB_RX_FIFO->room() > data_len ?
@@ -1436,19 +1313,40 @@ void usb_lib_task(void *arg)
     vTaskDelete(NULL);
 }
 
+static void handle_event(const cdc_acm_host_dev_event_data_t *event, void *user_ctx)
+{
+    switch (event->type) {
+        case CDC_ACM_HOST_ERROR:
+            ESP_LOGE(TAG, "CDC-ACM error has occurred, err_no = %d", event->data.error);
+            break;
+        case CDC_ACM_HOST_DEVICE_DISCONNECTED:
+            ESP_LOGI(TAG, "Device suddenly disconnected");
+//            xSemaphoreGive(device_disconnected_sem);
+#if 0
+            if (ESP32_USB_Serial.device) {
+              ESP32_USB_Serial.device->close();
+              ESP32_USB_Serial.device = NULL;
+            }
+            usb_host_device_free_all();
 #endif
+            ESP32_USB_Serial.connected = false;
+            break;
+        case CDC_ACM_HOST_SERIAL_STATE:
+            ESP_LOGI(TAG, "serial state notif 0x%04X", event->data.serial_state.val);
+            break;
+        case CDC_ACM_HOST_NETWORK_CONNECTION:
+        default: break;
+    }
+}
 
 static void ESP32S2_USB_setup()
 {
-  USB_RX_FIFO = new cbuf(USB_RX_FIFO_SIZE);
-  USB_TX_FIFO = new cbuf(USB_TX_FIFO_SIZE);
+    USB_RX_FIFO = new cbuf(USB_RX_FIFO_SIZE);
+    USB_TX_FIFO = new cbuf(USB_TX_FIFO_SIZE);
 
-#if 0
-  host.registerClientCb(client_event_callback);
-  host.init();
+    device_disconnected_sem = xSemaphoreCreateBinary();
+    assert(device_disconnected_sem);
 
-  delay(2000);
-#else
     //Install USB Host driver. Should only be called once in entire application
     ESP_LOGI(TAG, "Installing USB Host");
     usb_host_config_t host_config = {
@@ -1500,33 +1398,16 @@ static void ESP32S2_USB_setup()
 
             if (j < SOFTRF_DEVICE_COUNT) {
               has_usb_client = true;
-              hw_info.slave  = supported_devices[j].model;
+              hw_info.slave  = j;
             }
         }
         vTaskDelay(pdMS_TO_TICKS(50));
     } while (xTaskCheckForTimeOut(&connection_timeout, &timeout_ticks) == pdFALSE);
-
-#endif
 }
-
-static bool CDC_connected = false;
-static int CDC_device_ndx = 0;
-static cdc_acm_dev_hdl_t CDC_device_handle;
 
 static void ESP32S2_USB_loop()
 {
-#if 0
-    if (device && device->isConnected())
-    {
-          uint8_t chunk[USB_MAX_WRITE_CHUNK_SIZE];
-          size_t size = (USB_TX_FIFO->available() < USB_MAX_WRITE_CHUNK_SIZE ?
-                         USB_TX_FIFO->available() : USB_MAX_WRITE_CHUNK_SIZE);
-
-          USB_TX_FIFO->read((char *) chunk, size);
-          device->OUTDATA(chunk, size);
-    }
-#else
-    if (!CDC_connected) {
+    if (!ESP32_USB_Serial.connected) {
         ESP_LOGD(TAG, "Checking list of connected USB devices");
         uint8_t dev_addr_list[10];
         int num_of_devices;
@@ -1545,6 +1426,7 @@ static void ESP32S2_USB_loop()
 
             uint16_t vid = device_desc->idVendor;
             uint16_t pid = device_desc->idProduct;
+            uint8_t dev_type;
 
             usb_host_device_close(p_cdc_acm_obj->cdc_acm_client_hdl, current_device);
 
@@ -1554,90 +1436,163 @@ static void ESP32S2_USB_loop()
             for (j = 0; j < SOFTRF_DEVICE_COUNT; j++) {
               if (vid == supported_devices[j].vid &&
                   pid == supported_devices[j].pid) {
-                  break;
+                dev_type = supported_devices[j].type;
+                break;
               }
             }
 
             if (j < SOFTRF_DEVICE_COUNT) {
-              ESP_LOGI(TAG, "Opening CDC ACM device 0x%04X:0x%04X", vid, pid);
-              cdc_acm_dev_hdl_t cdc_dev;
               const cdc_acm_host_device_config_t dev_config = {
                   .connection_timeout_ms = 5000,
                   .out_buffer_size = 64,
-                  .event_cb = NULL,
+                  .event_cb = handle_event /* NULL */,
                   .data_cb = handle_rx,
                   .user_arg = NULL,
               };
-              ESP_ERROR_CHECK(cdc_acm_host_open(vid, pid, 0, &dev_config, &cdc_dev));
-              if (cdc_dev) {
-//                cdc_acm_host_desc_print(cdc_dev);
-//                vTaskDelay(100);
 
-                // Test Line Coding commands: Get current line coding, change it 38400 8N1 and read again
-                cdc_acm_line_coding_t line_coding;
-                ESP_ERROR_CHECK(cdc_acm_host_line_coding_get(cdc_dev, &line_coding));
-                ESP_LOGI(TAG, "Line Get: Rate: %d, Stop bits: %d, Parity: %d, Databits: %d", line_coding.dwDTERate,
-                         line_coding.bCharFormat, line_coding.bParityType, line_coding.bDataBits);
+              CdcAcmDevice *vcp;
 
-                line_coding.dwDTERate = SERIAL_OUT_BR;
-                line_coding.bDataBits = 8;
-                line_coding.bParityType = 0;
-                line_coding.bCharFormat = 0;
-                ESP_ERROR_CHECK(cdc_acm_host_line_coding_set(cdc_dev, &line_coding));
-                ESP_LOGI(TAG, "Line Set: Rate: %d, Stop bits: %d, Parity: %d, Databits: %d", line_coding.dwDTERate,
-                         line_coding.bCharFormat, line_coding.bParityType, line_coding.bDataBits);
+              cdc_acm_line_coding_t line_coding = {
+                  .dwDTERate = SERIAL_OUT_BR,
+                  .bCharFormat = 0,
+                  .bParityType = 0,
+                  .bDataBits = 8,
+              };
 
-                ESP_ERROR_CHECK(cdc_acm_host_set_control_line_state(cdc_dev, true, true));
+              switch (dev_type)
+              {
+              case USBSER_TYPE_CDC:
+                try {
+                    ESP_LOGI(TAG, "Opening CDC ACM device 0x%04X:0x%04X", vid, pid);
+                    cdc->open(vid, pid, 0, &dev_config);
+                }
 
-                CDC_connected = true;
-                CDC_device_ndx = j;
-                CDC_device_handle = cdc_dev;
+                catch (esp_err_t err) {
+                    ESP_LOGE(TAG, "The required device was not opened.\nExiting...");
+                    continue;
+                }
+                vcp = cdc;
+                break;
+
+              case USBSER_TYPE_CP210X:
+                try {
+                    ESP_LOGI(TAG, "Opening CP210X device");
+                    vcp = CP210x::open_cp210x(CP210X_PID, &dev_config);
+                }
+
+                catch (esp_err_t err) {
+                    ESP_LOGE(TAG, "The required device was not opened.\nExiting...");
+                    continue;
+                }
+                break;
+
+              case USBSER_TYPE_FTDI:
+                try {
+                    ESP_LOGI(TAG, "Opening FT232 device");
+                    vcp = FT23x::open_ftdi(FTDI_FT232_PID, &dev_config);
+                }
+
+                catch (esp_err_t err) {
+                    ESP_LOGE(TAG, "The required device was not opened.\nExiting...");
+                    continue;
+                }
+                break;
+
+              case USBSER_TYPE_CH34X:
+                try {
+                    ESP_LOGI(TAG, "Opening CH340 device");
+                    vcp = CH34x::open_ch34x(CH340_PID_1, &dev_config);
+                }
+
+                catch (esp_err_t err) {
+                    ESP_LOGE(TAG, "The required device was not opened.\nExiting...");
+                    continue;
+                }
+                break;
               }
+
+              switch (settings->m.baudrate)
+              {
+              case B4800:
+                line_coding.dwDTERate = 4800;
+                break;
+              case B9600:
+                line_coding.dwDTERate = 9600;
+                break;
+              case B19200:
+                line_coding.dwDTERate = 19200;
+                break;
+              case B57600:
+                line_coding.dwDTERate = 57600;
+                break;
+              case B115200:
+                line_coding.dwDTERate = 115200;
+                break;
+              case B2000000:
+                line_coding.dwDTERate = 2000000;
+                break;
+              case B38400:
+              default:
+                line_coding.dwDTERate = 38400;
+                break;
+              }
+
+              ESP_ERROR_CHECK(vcp->line_coding_set(&line_coding));
+              ESP_LOGI(TAG, "Line Set: Rate: %d, Stop bits: %d, Parity: %d, Databits: %d", line_coding.dwDTERate,
+                       line_coding.bCharFormat, line_coding.bParityType, line_coding.bDataBits);
+
+              ESP_ERROR_CHECK(vcp->set_control_line_state(true, true));
+
+              ESP32_USB_Serial.connected = true;
+              ESP32_USB_Serial.device = vcp;
+              ESP32_USB_Serial.index = j;
+
             } else {
               ESP_LOGI(TAG, "USB device VID: %X, PID: %X is not supported", vid, pid);
             }
         }
     } else {
+#if 0
         uint8_t dev_addr_list[10];
         int num_of_devices;
         ESP_ERROR_CHECK(usb_host_device_addr_list_fill(sizeof(dev_addr_list), dev_addr_list, &num_of_devices));
         if (num_of_devices == 0) {
-          ESP_LOGI(TAG, "Closing CDC ACM device 0x%04X:0x%04X",
-                   supported_devices[CDC_device_ndx].vid,
-                   supported_devices[CDC_device_ndx].pid);
-          if (CDC_device_handle) {
-            cdc_acm_host_close(CDC_device_handle);
-            CDC_device_handle = NULL;
+          ESP_LOGI(TAG, "Closing USB device 0x%04X:0x%04X",
+                   supported_devices[ESP32_USB_Serial.index].vid,
+                   supported_devices[ESP32_USB_Serial.index].pid);
+          if (ESP32_USB_Serial.device) {
+            ESP32_USB_Serial.device->close();
+            ESP32_USB_Serial.device = NULL;
           }
-          CDC_connected = false;
+          ESP32_USB_Serial.connected = false;
           USB_TX_FIFO->flush();
           USB_RX_FIFO->flush();
-        } else {
+        }
+        else
+#endif
+        {
           uint8_t chunk[USB_MAX_WRITE_CHUNK_SIZE];
           size_t size = (USB_TX_FIFO->available() < USB_MAX_WRITE_CHUNK_SIZE ?
                          USB_TX_FIFO->available() : USB_MAX_WRITE_CHUNK_SIZE);
 
           if (size > 0) {
             USB_TX_FIFO->read((char *) chunk, size);
-            cdc_acm_host_data_tx_blocking(CDC_device_handle, chunk, size, 10);
+            ESP32_USB_Serial.device->tx_blocking(chunk, size);
           }
         }
     }
-#endif
 }
 
 static void ESP32S2_USB_fini()
 {
-#if 1
-    if (CDC_device_handle) {
-      cdc_acm_host_close(CDC_device_handle);
+    if (ESP32_USB_Serial.device) {
+      ESP32_USB_Serial.device->close();
     }
 
     vTaskDelay(100);
     ESP_ERROR_CHECK(cdc_acm_host_uninstall());
     vTaskDelay(100);
     ESP_ERROR_CHECK(usb_host_uninstall());
-#endif
 
     delete(USB_RX_FIFO);
     delete(USB_TX_FIFO);
