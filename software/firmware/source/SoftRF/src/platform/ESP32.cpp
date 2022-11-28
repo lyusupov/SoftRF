@@ -2852,10 +2852,10 @@ static ESP32_USBSerial_device_t ESP32_USB_Serial = {
 CdcAcmDevice *cdc = new CdcAcmDevice();
 
 enum {
-  USBSER_TYPE_CDC,
-  USBSER_TYPE_CP210X,
-  USBSER_TYPE_FTDI,
-  USBSER_TYPE_CH34X,
+    USBSER_TYPE_CDC,
+    USBSER_TYPE_CP210X,
+    USBSER_TYPE_FTDI,
+    USBSER_TYPE_CH34X,
 };
 
 typedef struct {
@@ -2865,9 +2865,9 @@ typedef struct {
     uint8_t model;
     const char *first_name;
     const char *last_name;
-} CDC_Device_List_t;
+} USB_Device_List_t;
 
-static const CDC_Device_List_t supported_devices[] = {
+static const USB_Device_List_t supported_devices[] = {
   { 0x0483, 0x5740, USBSER_TYPE_CDC, SOFTRF_MODEL_DONGLE, "Dongle" /* or Bracelet */, "Edition" },
   { 0x239A, 0x8029, USBSER_TYPE_CDC, SOFTRF_MODEL_BADGE, "Badge", "Edition" },
   { 0x2341, 0x804d, USBSER_TYPE_CDC, SOFTRF_MODEL_ACADEMY, "Academy", "Edition" },
@@ -2875,13 +2875,13 @@ static const CDC_Device_List_t supported_devices[] = {
   { 0x1d50, 0x6089, USBSER_TYPE_CDC, SOFTRF_MODEL_ES, "ES", "Edition" },
   { 0x2e8a, 0x000a, USBSER_TYPE_CDC, SOFTRF_MODEL_LEGO, "Lego", "Edition" },
   { 0x2e8a, 0xf00a, USBSER_TYPE_CDC, SOFTRF_MODEL_LEGO, "Lego", "Edition" },
-  { 0x1A86, 0x55D4, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK2, "CH9102", "Device" },
+  { 0x1A86, 0x55D4, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK2, "CH9102", "device" },
   { 0x303a, 0x8133, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK3, "Prime 3", "Edition" },
   { 0x15ba, 0x0044, USBSER_TYPE_CDC, SOFTRF_MODEL_BALKAN, "Balkan", "Edition" },
   { 0x303a, 0x8132, USBSER_TYPE_CDC, SOFTRF_MODEL_STANDALONE, "Standalone", "Edition" },
-  { 0x10c4, 0xea60, USBSER_TYPE_CP210X, SOFTRF_MODEL_UNKNOWN, "CP210X", "Device" },
-  { 0x0403, 0x6001, USBSER_TYPE_FTDI, SOFTRF_MODEL_UNKNOWN, "FT232", "Device" },
-  { 0x1a86, 0x7523, USBSER_TYPE_CH34X, SOFTRF_MODEL_UNKNOWN, "CH340", "Device" },
+  { 0x10c4, 0xea60, USBSER_TYPE_CP210X, SOFTRF_MODEL_UNKNOWN, "CP210X", "device" },
+  { 0x0403, 0x6001, USBSER_TYPE_FTDI, SOFTRF_MODEL_UNKNOWN, "FT232", "device" },
+  { 0x1a86, 0x7523, USBSER_TYPE_CH34X, SOFTRF_MODEL_UNKNOWN, "CH340", "device" },
 };
 
 enum {
@@ -3036,7 +3036,7 @@ static void ESP32S2_USB_loop()
               case USBSER_TYPE_CP210X:
                 try {
                     ESP_LOGI(TAG, "Opening CP210X device");
-                    vcp = CP210x::open_cp210x(CP210X_PID, &dev_config);
+                    vcp = CP210x::open_cp210x(pid, &dev_config);
                 }
 
                 catch (esp_err_t err) {
@@ -3048,7 +3048,7 @@ static void ESP32S2_USB_loop()
               case USBSER_TYPE_FTDI:
                 try {
                     ESP_LOGI(TAG, "Opening FT232 device");
-                    vcp = FT23x::open_ftdi(FTDI_FT232_PID, &dev_config);
+                    vcp = FT23x::open_ftdi(pid, &dev_config);
                 }
 
                 catch (esp_err_t err) {
@@ -3060,7 +3060,7 @@ static void ESP32S2_USB_loop()
               case USBSER_TYPE_CH34X:
                 try {
                     ESP_LOGI(TAG, "Opening CH340 device");
-                    vcp = CH34x::open_ch34x(CH340_PID_1, &dev_config);
+                    vcp = CH34x::open_ch34x(pid, &dev_config);
                 }
 
                 catch (esp_err_t err) {
