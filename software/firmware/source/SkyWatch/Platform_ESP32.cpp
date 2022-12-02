@@ -126,7 +126,7 @@ typedef struct {
     const char *last_name;
 } USB_Device_List_t;
 
-static const USB_Device_List_t supported_devices[] = {
+static const USB_Device_List_t supported_USB_devices[] = {
   { 0x0483, 0x5740, USBSER_TYPE_CDC, SOFTRF_MODEL_DONGLE, "Dongle" /* or Bracelet */, "Edition" },
   { 0x239A, 0x8029, USBSER_TYPE_CDC, SOFTRF_MODEL_BADGE, "Badge", "Edition" },
   { 0x2341, 0x804d, USBSER_TYPE_CDC, SOFTRF_MODEL_ACADEMY, "Academy", "Edition" },
@@ -145,7 +145,7 @@ static const USB_Device_List_t supported_devices[] = {
 
 enum {
   SOFTRF_DEVICE_COUNT =
-      sizeof(supported_devices) / sizeof(supported_devices[0])
+      sizeof(supported_USB_devices) / sizeof(supported_USB_devices[0])
 };
 
 // CDC-ACM driver object
@@ -406,8 +406,8 @@ static void ESP32_post_init()
 
           int j;
           for (j = 0; j < SOFTRF_DEVICE_COUNT; j++) {
-            if (vid == supported_devices[j].vid &&
-                pid == supported_devices[j].pid) {
+            if (vid == supported_USB_devices[j].vid &&
+                pid == supported_USB_devices[j].pid) {
                 break;
             }
           }
@@ -426,8 +426,8 @@ static void ESP32_post_init()
   {
   case DISPLAY_TFT_TTGO_135:
     if (has_usb_client) {
-      str1 = supported_devices[hw_info.slave].first_name;
-      str2 = supported_devices[hw_info.slave].last_name;
+      str1 = supported_USB_devices[hw_info.slave].first_name;
+      str2 = supported_USB_devices[hw_info.slave].last_name;
     }
 
     TFT_Message(str1, str2);
@@ -1435,9 +1435,9 @@ static void ESP32S2_USB_loop()
 
             int j;
             for (j = 0; j < SOFTRF_DEVICE_COUNT; j++) {
-              if (vid == supported_devices[j].vid &&
-                  pid == supported_devices[j].pid) {
-                dev_type = supported_devices[j].type;
+              if (vid == supported_USB_devices[j].vid &&
+                  pid == supported_USB_devices[j].pid) {
+                dev_type = supported_USB_devices[j].type;
                 break;
               }
             }
@@ -1559,8 +1559,8 @@ static void ESP32S2_USB_loop()
         ESP_ERROR_CHECK(usb_host_device_addr_list_fill(sizeof(dev_addr_list), dev_addr_list, &num_of_devices));
         if (num_of_devices == 0) {
           ESP_LOGI(TAG, "Closing USB device 0x%04X:0x%04X",
-                   supported_devices[ESP32_USB_Serial.index].vid,
-                   supported_devices[ESP32_USB_Serial.index].pid);
+                   supported_USB_devices[ESP32_USB_Serial.index].vid,
+                   supported_USB_devices[ESP32_USB_Serial.index].pid);
           if (ESP32_USB_Serial.device) {
             ESP32_USB_Serial.device->close();
             ESP32_USB_Serial.device = NULL;

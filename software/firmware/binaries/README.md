@@ -13,7 +13,7 @@
 
 ## List by Model
 
-Model(s)|Instructions|Firmware folder
+Model|Instructions|Firmware folder
 ---|:---:|:---:
 [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)
 [Prime Edition Mk2](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)|[ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SoftRF)
@@ -30,7 +30,7 @@ Prime Edition Mk3|ESP32S3|ESP32S3
 [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)
 <br>
 
-Model(s)|Instructions|Firmware folder
+Model|Instructions|Firmware folder
 ---|:---:|:---:
 [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)|[ESP32](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SkyView)
 [WebTop Serial](https://github.com/lyusupov/SoftRF/wiki/WebTop-Serial-adapter)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/WebTop)

@@ -459,11 +459,32 @@ struct rst_info {
 #if defined(USE_USB_HOST)
 #undef  SOC_GPIO_PIN_T8_S2_CONS_RX
 #undef  SOC_GPIO_PIN_T8_S2_CONS_TX
-#define SOC_GPIO_PIN_T8_S2_CONS_RX      46
-#define SOC_GPIO_PIN_T8_S2_CONS_TX      45
+#define SOC_GPIO_PIN_T8_S2_CONS_RX      46 // 43
+#define SOC_GPIO_PIN_T8_S2_CONS_TX      45 // 44
 
 /* Experimental */
 //#define ENABLE_D1090_INPUT
+
+#include <cdc_acm_host.h>
+
+typedef struct {
+    bool connected;
+    int index;
+    CdcAcmDevice *device;
+} ESP32_USBSerial_device_t;
+
+typedef struct {
+    uint16_t vid;
+    uint16_t pid;
+    uint8_t type;
+    uint8_t model;
+    const char *first_name;
+    const char *last_name;
+} USB_Device_List_t;
+
+extern ESP32_USBSerial_device_t ESP32_USB_Serial;
+extern const USB_Device_List_t supported_USB_devices[];
+
 #endif /* USE_USB_HOST */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 

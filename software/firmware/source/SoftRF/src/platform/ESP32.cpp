@@ -2838,13 +2838,7 @@ typedef struct {
 
 extern cdc_acm_obj_t *p_cdc_acm_obj;
 
-typedef struct {
-    bool connected;
-    int index;
-    CdcAcmDevice *device;
-} ESP32_USBSerial_device_t;
-
-static ESP32_USBSerial_device_t ESP32_USB_Serial = {
+ESP32_USBSerial_device_t ESP32_USB_Serial = {
     .connected = false,
     .index = 0,
 };
@@ -2858,16 +2852,7 @@ enum {
     USBSER_TYPE_CH34X,
 };
 
-typedef struct {
-    uint16_t vid;
-    uint16_t pid;
-    uint8_t type;
-    uint8_t model;
-    const char *first_name;
-    const char *last_name;
-} USB_Device_List_t;
-
-static const USB_Device_List_t supported_devices[] = {
+const USB_Device_List_t supported_USB_devices[] = {
   { 0x0483, 0x5740, USBSER_TYPE_CDC, SOFTRF_MODEL_DONGLE, "Dongle" /* or Bracelet */, "Edition" },
   { 0x239A, 0x8029, USBSER_TYPE_CDC, SOFTRF_MODEL_BADGE, "Badge", "Edition" },
   { 0x2341, 0x804d, USBSER_TYPE_CDC, SOFTRF_MODEL_ACADEMY, "Academy", "Edition" },
@@ -2886,7 +2871,7 @@ static const USB_Device_List_t supported_devices[] = {
 
 enum {
   SOFTRF_DEVICE_COUNT =
-      sizeof(supported_devices) / sizeof(supported_devices[0])
+      sizeof(supported_USB_devices) / sizeof(supported_USB_devices[0])
 };
 
 static void handle_rx(uint8_t *data, size_t data_len, void *arg)
@@ -2993,9 +2978,9 @@ static void ESP32S2_USB_loop()
 
             int j;
             for (j = 0; j < SOFTRF_DEVICE_COUNT; j++) {
-              if (vid == supported_devices[j].vid &&
-                  pid == supported_devices[j].pid) {
-                dev_type = supported_devices[j].type;
+              if (vid == supported_USB_devices[j].vid &&
+                  pid == supported_USB_devices[j].pid) {
+                dev_type = supported_USB_devices[j].type;
                 break;
               }
             }
@@ -3091,8 +3076,8 @@ static void ESP32S2_USB_loop()
         ESP_ERROR_CHECK(usb_host_device_addr_list_fill(sizeof(dev_addr_list), dev_addr_list, &num_of_devices));
         if (num_of_devices == 0) {
           ESP_LOGI(TAG, "Closing USB device 0x%04X:0x%04X",
-                   supported_devices[ESP32_USB_Serial.index].vid,
-                   supported_devices[ESP32_USB_Serial.index].pid);
+                   supported_USB_devices[ESP32_USB_Serial.index].vid,
+                   supported_USB_devices[ESP32_USB_Serial.index].pid);
           if (ESP32_USB_Serial.device) {
             ESP32_USB_Serial.device->close();
             ESP32_USB_Serial.device = NULL;

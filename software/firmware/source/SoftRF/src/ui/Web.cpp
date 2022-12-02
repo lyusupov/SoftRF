@@ -674,8 +674,11 @@ void handleRoot() {
 #endif /* ENABLE_AHRS */
  "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
- </table>\
+  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
+#if defined(USE_USB_HOST)
+  "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
+#endif /* USE_USB_HOST */
+ "</table>\
  <table width=100%%>\
    <tr><th align=left>Packets</th>\
     <td align=right><table><tr>\
@@ -702,9 +705,12 @@ void handleRoot() {
 </body>\
 </html>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
+#if defined(USE_USB_HOST)
+    "H"
+#endif /* USE_USB_HOST */
 #if defined(SOFTRF_ADDRESS)
     "I"
-#endif
+#endif /* SOFTRF_ADDRESS */
     ,
     (SoC == NULL ? "NONE" : SoC->name),
     GNSS_name[hw_info.gnss],
@@ -715,6 +721,10 @@ void handleRoot() {
 #endif /* ENABLE_AHRS */
     UpTime.hours, UpTime.minutes, UpTime.seconds, ESP.getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
+#if defined(USE_USB_HOST)
+    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
+    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
+#endif /* USE_USB_HOST */
     tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
