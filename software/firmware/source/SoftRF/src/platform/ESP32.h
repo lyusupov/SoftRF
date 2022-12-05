@@ -54,6 +54,8 @@
 #undef  SerialOutput
 #define SerialOutput            Serial0
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#define UATSerial               Serial
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -121,6 +123,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_LED        7
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD 14? */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -361,6 +365,40 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_LED_WHITE       38
 #define SOC_GPIO_PIN_S3_LED_YELLOW      39
 
+/* ESP32-C3 */
+#define SOC_GPIO_PIN_S3_CONS_RX         20
+#define SOC_GPIO_PIN_S3_CONS_TX         21
+
+// GNSS module
+#define SOC_GPIO_PIN_C3_GNSS_RX         9  /* D3 */
+#define SOC_GPIO_PIN_C3_GNSS_TX         18 /* D1 */
+#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN /* TBD */
+
+// SPI
+#define SOC_GPIO_PIN_C3_MOSI            15 /* D7 */
+#define SOC_GPIO_PIN_C3_MISO            17 /* D6 */
+#define SOC_GPIO_PIN_C3_SCK             16 /* D5 */
+#define SOC_GPIO_PIN_C3_SS              14 /* D8 */
+
+// NRF905
+#define SOC_GPIO_PIN_C3_TXE             19 /* D0 */
+#define SOC_GPIO_PIN_C3_CE              10 /* D4 */
+#define SOC_GPIO_PIN_C3_PWR             12 /* D2 */
+
+// SX1276
+#define SOC_GPIO_PIN_C3_RST             12 /* D2 */
+#define SOC_GPIO_PIN_C3_DIO0            19 /* D0 */
+#define SOC_GPIO_PIN_C3_SDA             12 /* D2 */
+#define SOC_GPIO_PIN_C3_SCL             10 /* D4 */
+
+// battery voltage (ADC)
+#define SOC_GPIO_PIN_C3_BATTERY         0  /* A0 */
+
+// auxillary
+#define SOC_GPIO_PIN_C3_LED             18 /* D1 */
+#define SOC_GPIO_PIN_C3_BUZZER          3  /* 10 */
+#define SOC_GPIO_PIN_C3_STATUS          SOC_UNUSED_PIN
+
 extern WebServer server;
 
 enum rst_reason {
@@ -447,11 +485,12 @@ struct rst_info {
 #define EXCLUDE_LK8EX1
 //#define EXCLUDE_IMU
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(CONFIG_IDF_TARGET_ESP32)
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
 #define EXCLUDE_LED_RING
 
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 /* Experimental */
 //#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST
@@ -486,7 +525,8 @@ extern ESP32_USBSerial_device_t ESP32_USB_Serial;
 extern const USB_Device_List_t supported_USB_devices[];
 
 #endif /* USE_USB_HOST */
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32SX */
+#endif /* NOT CONFIG_IDF_TARGET_ESP32 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 

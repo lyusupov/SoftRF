@@ -424,6 +424,7 @@ static void ESP32_post_init()
 
   switch (hw_info.display)
   {
+#if !defined(EXCLUDE_TFT)
   case DISPLAY_TFT_TTGO_135:
     if (has_usb_client) {
       str1 = supported_USB_devices[hw_info.slave].first_name;
@@ -434,6 +435,7 @@ static void ESP32_post_init()
     delay(3000);
 
     break;
+#endif /* EXCLUDE_TFT */
   case DISPLAY_NONE:
   default:
     break;
@@ -546,7 +548,9 @@ static void ESP32_fini()
 
     delay(20);
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
 
 //  Serial.println("Going to sleep now");
@@ -764,7 +768,7 @@ static void ESP32_Battery_setup()
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_SERIAL) {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
     calibrate_voltage(ADC1_GPIO2_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
@@ -1174,9 +1178,11 @@ void handleEvent(AceButton* button, uint8_t eventType,
       case AceButton::kEventClicked:
       case AceButton::kEventReleased:
         if (button == &button_mode) {
+#if !defined(EXCLUDE_TFT)
           if (hw_info.display == DISPLAY_TFT_TTGO_240) {
             TFT_Mode_Cycle();
           }
+#endif /* EXCLUDE_TFT */
         }
         break;
       case AceButton::kEventDoubleClicked:
@@ -1699,7 +1705,9 @@ const SoC_ops_t ESP32_ops = {
   "-S2"
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
   "-S3"
-#endif /* CONFIG_IDF_TARGET_ESP32SX */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  "-C3"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
   "" ,
   ESP32_setup,
   ESP32_post_init,
@@ -1731,7 +1739,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   ESP32_Service_Mode,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   &ESP32_Bluetooth_ops,
 #else
   NULL,

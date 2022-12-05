@@ -27,6 +27,10 @@ License along with NeoPixel.  If not, see
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include <Arduino.h>
+
+// ESP32C3 is not supported yet
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <eagle_soc.h>
 #endif
@@ -148,4 +152,5 @@ void ICACHE_RAM_ATTR bitbang_send_pixels_400(uint8_t* pixels, uint8_t* end, uint
     } while (pixels < end);
 }
 
-#endif
+#endif // !defined(CONFIG_IDF_TARGET_ESP32C3)
+#endif //  defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)

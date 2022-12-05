@@ -444,6 +444,9 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    default:
+      hw_info.model = SOFTRF_MODEL_STANDALONE; /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -1384,9 +1387,9 @@ static void ESP32_fini(int reason)
 
   esp_wifi_stop();
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32)
   esp_bt_controller_disable();
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
 
@@ -1398,9 +1401,10 @@ static void ESP32_fini(int reason)
 
     delay(20);
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWATCH_PMU_IRQ,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
-
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
              hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
@@ -1495,8 +1499,10 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT);
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_T8_S2_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
 
   esp_deep_sleep_start();
@@ -1542,14 +1548,14 @@ static void* ESP32_getResetInfoPtr()
       else
                                   reset_info.reason = REASON_WDT_RST;
                                   break;
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
     case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
     case SDIO_RESET             : reset_info.reason = REASON_EXCEPTION_RST; break;
     case TGWDT_CPU_RESET        : reset_info.reason = REASON_WDT_RST; break;
     case SW_CPU_RESET           : reset_info.reason = REASON_SOFT_RESTART; break;
     case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : reset_info.reason = REASON_DEFAULT_RST;
   }
 
@@ -1569,14 +1575,14 @@ static String ESP32_getResetInfo()
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
     case RTCWDT_BROWN_OUT_RESET : return F("Reset when the vdd voltage is not stable");
     case RTCWDT_RTC_RESET       : return F("RTC Watch dog reset digital core and rtc module");
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : return F("Software reset digital core");
     case OWDT_RESET             : return F("Legacy watch dog reset digital core");
     case SDIO_RESET             : return F("Reset by SLC module, reset digital core");
     case TGWDT_CPU_RESET        : return F("Time Group reset CPU");
     case SW_CPU_RESET           : return F("Software reset CPU");
     case EXT_CPU_RESET          : return F("for APP CPU, reseted by PRO CPU");
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : return F("No reset information available");
   }
 }
@@ -1595,14 +1601,14 @@ static String ESP32_getResetReason()
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
     case RTCWDT_BROWN_OUT_RESET : return F("RTCWDT_BROWN_OUT_RESET");
     case RTCWDT_RTC_RESET       : return F("RTCWDT_RTC_RESET");
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : return F("SW_RESET");
     case OWDT_RESET             : return F("OWDT_RESET");
     case SDIO_RESET             : return F("SDIO_RESET");
     case TGWDT_CPU_RESET        : return F("TGWDT_CPU_RESET");
     case SW_CPU_RESET           : return F("SW_CPU_RESET");
     case EXT_CPU_RESET          : return F("EXT_CPU_RESET");
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : return F("NO_MEAN");
   }
 }
@@ -1920,7 +1926,7 @@ static bool ESP32_EEPROM_begin(size_t size)
 static void ESP32_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
@@ -1933,7 +1939,7 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     if (settings->bluetooth != BLUETOOTH_OFF) {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
       settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
 #else
       settings->bluetooth = BLUETOOTH_OFF;
@@ -2520,6 +2526,8 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
     calibrate_voltage(ADC1_GPIO2_CHANNEL);
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -3358,7 +3366,12 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
   SOC_ESP32S3,
   "ESP32-S3",
-#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3 */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  SOC_ESP32C3,
+  "ESP32-C3",
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,

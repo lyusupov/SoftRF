@@ -20,9 +20,7 @@
 #ifndef PLATFORM_ESP32_H
 #define PLATFORM_ESP32_H
 
-#if defined(ARDUINO)
-#include <Arduino.h>
-#endif /* ARDUINO */
+#include "sdkconfig.h"
 
 #include <WiFi.h>
 #include <WebServer.h>
@@ -208,6 +206,11 @@ extern PCF8563_Class *rtc;
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_LOG_GNSS_VERSION
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define EXCLUDE_RTC
+#define EXCLUDE_TFT
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #endif /* PLATFORM_ESP32_H */
 

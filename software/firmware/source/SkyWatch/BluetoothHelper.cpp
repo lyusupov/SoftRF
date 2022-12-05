@@ -20,18 +20,11 @@
 #include "sdkconfig.h"
 #endif
 
-#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
-
-#include "Platform_ESP32.h"
-#include "SoCHelper.h"
-#include "EEPROMHelper.h"
-#include "BluetoothHelper.h"
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled!
 #endif
-
-#include <BluetoothSerial.h>
 
 /*
     BLE code is based on Neil Kolban example for IDF:
@@ -46,13 +39,20 @@
 
 #include "esp_gap_bt_api.h"
 
+#include "SoCHelper.h"
+#include "EEPROMHelper.h"
+#include "BluetoothHelper.h"
+
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
+#if defined(CONFIG_IDF_TARGET_ESP32)
+#include <BluetoothSerial.h>
 BluetoothSerial SerialBT;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 String BT_name;
 
 static unsigned long BLE_Notify_TimeMarker = 0;
@@ -93,6 +93,7 @@ static void ESP32_Bluetooth_setup()
 
   switch(settings->s.bluetooth)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
     {
       esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
@@ -100,12 +101,15 @@ static void ESP32_Bluetooth_setup()
       SerialBT.begin(BT_name.c_str());
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     {
       BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
       BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
       esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
       // Create the BLE Device
       BLEDevice::init((BT_name+"-LE").c_str());
@@ -217,9 +221,11 @@ static int ESP32_Bluetooth_available()
 
   switch(settings->s.bluetooth)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
     rval = SerialBT.available();
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->available();
     break;
@@ -238,9 +244,11 @@ static int ESP32_Bluetooth_read()
 
   switch(settings->s.bluetooth)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
     rval = SerialBT.read();
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->read();
     break;
@@ -259,9 +267,11 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
 
   switch(settings->s.bluetooth)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
     rval = SerialBT.write(buffer, size);
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_TX->write((char *) buffer,
                         (BLE_FIFO_TX->room() > size ? size : BLE_FIFO_TX->room()));
