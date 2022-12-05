@@ -279,7 +279,8 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -341,6 +342,27 @@ void handleSettings_master() {
     len = strlen(offset);
     offset += len;
     size -= len;
+
+  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Built-in Bluetooth</th>\
+<td align=right>\
+<select name='bluetooth'>\
+<option %s value='%d'>Off</option>\
+<option %s value='%d'>LE</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->s.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->s.bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
@@ -366,7 +388,7 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -377,6 +399,15 @@ void handleSettings_master() {
     len = strlen(offset);
     offset += len;
     size -= len;
+
+  } else if (SoC->id == SOC_ESP32S2) {
+    snprintf_P (offset, size, PSTR("<option %s value='%d'>TCP</option>"),
+                (settings->s.nmea_out == NMEA_TCP ? "selected" : ""), NMEA_TCP);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+
   }
 
   /* Common part 4 */
@@ -403,7 +434,7 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -436,7 +467,7 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1044,7 +1075,7 @@ void handleSettings_slave() {
 
 #if 0
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1079,7 +1110,7 @@ void handleSettings_slave() {
 
 #if 0
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),

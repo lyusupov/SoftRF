@@ -366,8 +366,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_LED_YELLOW      39
 
 /* ESP32-C3 */
-#define SOC_GPIO_PIN_S3_CONS_RX         20
-#define SOC_GPIO_PIN_S3_CONS_TX         21
+#define SOC_GPIO_PIN_C3_CONS_RX         20
+#define SOC_GPIO_PIN_C3_CONS_TX         21
 
 // GNSS module
 #define SOC_GPIO_PIN_C3_GNSS_RX         9  /* D3 */

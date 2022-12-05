@@ -1699,16 +1699,21 @@ IODev_ops_t ESP32S2_USBSerial_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 const SoC_ops_t ESP32_ops = {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   SOC_ESP32,
-  "ESP32"
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
-  "-S2"
+  "ESP32",
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+  SOC_ESP32S2,
+  "ESP32-S2",
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  "-S3"
+  SOC_ESP32S3,
+  "ESP32-S3",
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-  "-C3"
-#endif /* CONFIG_IDF_TARGET_ESP32XX */
-  "" ,
+  SOC_ESP32C3,
+  "ESP32-C3",
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,
