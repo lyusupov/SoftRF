@@ -36,6 +36,9 @@ enum
 {
   OLED_PAGE_RADIO,
   OLED_PAGE_OTHER,
+#if defined(ENABLE_OLED_TEXT_PAGE)
+  OLED_PAGE_TEXT,
+#endif /* ENABLE_OLED_TEXT_PAGE */
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
   OLED_PAGE_BARO,
 #endif /* EXCLUDE_OLED_BARO_PAGE */
@@ -117,6 +120,10 @@ const char SATS_text[]     = "SATS";
 const char FIX_text[]      = "FIX";
 const char UPTIME_text[]   = "UPTIME";
 const char BAT_text[]      = "BAT";
+
+#if defined(ENABLE_OLED_TEXT_PAGE)
+const char OCLK_text[]     = "o'clock";
+#endif /* ENABLE_OLED_TEXT_PAGE */
 
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
 const char ALT_text[]      = "ALT M";
@@ -402,6 +409,182 @@ static void OLED_other()
     prev_voltage = voltage;
   }
 }
+
+#if defined(ENABLE_OLED_TEXT_PAGE)
+
+#define TEXT_VIEW_LINE_LENGTH   9     /* characters */
+#define OLED_EXPIRATION_TIME    5     /* seconds */
+
+static int OLED_current = 1;
+
+const char *Aircraft_Type[] = {
+  [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown ",
+  [AIRCRAFT_TYPE_GLIDER]     = " Glider ",
+  [AIRCRAFT_TYPE_TOWPLANE]   = "Towplane",
+  [AIRCRAFT_TYPE_HELICOPTER] = "Helicptr",
+  [AIRCRAFT_TYPE_PARACHUTE]  = "Parachut",
+  [AIRCRAFT_TYPE_DROPPLANE]  = "Drpplane",
+  [AIRCRAFT_TYPE_HANGGLIDER] = "Hanggldr",
+  [AIRCRAFT_TYPE_PARAGLIDER] = "Paragldr",
+  [AIRCRAFT_TYPE_POWERED]    = "Powered ",
+  [AIRCRAFT_TYPE_JET]        = " Jet    ",
+  [AIRCRAFT_TYPE_UFO]        = " UFO    ",
+  [AIRCRAFT_TYPE_BALLOON]    = "Balloon ",
+  [AIRCRAFT_TYPE_ZEPPELIN]   = "Zeppelin",
+  [AIRCRAFT_TYPE_UAV]        = " UAV    ",
+  [AIRCRAFT_TYPE_RESERVED]   = "Reserved",
+  [AIRCRAFT_TYPE_STATIC]     = " Static "
+};
+
+static const uint8_t Up_Tile1[]   = { 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF };
+static const uint8_t Up_Tile2[]   = { 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80 };
+
+static const uint8_t Down_Tile1[] = { 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
+static const uint8_t Down_Tile2[] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
+
+static int prev_j         = 0;
+static bool prev_has_data = true;
+static int prev_oclock    = -1;
+static int prev_dist      = -1;
+static int prev_alt       = -1;
+static uint8_t prev_type  = AIRCRAFT_TYPE_UNKNOWN;
+
+static void OLED_text()
+{
+  if (!OLED_display_titles) {
+
+    u8x8->clear();
+
+    u8x8->drawString(9, 1, OCLK_text);
+
+    switch (settings->band)
+    {
+    case RF_BAND_US:
+      u8x8->drawString(12, 3, "nm");
+      u8x8->drawString(12, 5, "f");
+      break;
+    case RF_BAND_EU:
+    default:
+      u8x8->drawString(12, 3, "km");
+      u8x8->drawString(12, 5, "m");
+      break;
+    }
+
+    prev_has_data = true;
+    OLED_display_titles = true;
+  }
+
+  bool hasFix = isValidGNSSFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
+
+  int j = 0;
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (Container[i].addr && (now() - Container[i].timestamp) <= OLED_EXPIRATION_TIME) {
+
+      traffic_by_dist[j].fop = &Container[i];
+      traffic_by_dist[j].distance = Container[i].distance;
+      j++;
+    }
+  }
+
+  if (hasFix && j > 0) {
+    float distance;
+    int disp_alt;
+
+    qsort(traffic_by_dist, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
+
+    if (OLED_current > j) {
+      if (prev_j > j) {
+        OLED_current = j;
+      } else {
+        OLED_current = 1;
+      }
+    }
+    prev_j = j;
+
+    int bearing = (int) traffic_by_dist[OLED_current - 1].fop->bearing;
+
+    /* This bearing is always relative to current ground track */
+//  if (ui->orientation == DIRECTION_TRACK_UP) {
+      bearing -= ThisAircraft.course;
+//  }
+
+    if (bearing < 0) {
+      bearing += 360;
+    }
+
+    int oclock = ((bearing + 15) % 360) / 30;
+    float RelativeVertical = traffic_by_dist[OLED_current - 1].fop->altitude -
+                                ThisAircraft.altitude;
+
+    switch (settings->band)
+    {
+    case RF_BAND_US:
+      distance = (traffic_by_dist[OLED_current - 1].distance * _GPS_MILES_PER_METER) /
+                  _GPS_MPH_PER_KNOT;
+      disp_alt = abs((int) (RelativeVertical * _GPS_FEET_PER_METER));
+      break;
+    case RF_BAND_EU:
+    default:
+      distance = traffic_by_dist[OLED_current - 1].distance / 1000.0;
+      disp_alt = abs((int) RelativeVertical);
+      break;
+    }
+
+    char info_line    [TEXT_VIEW_LINE_LENGTH];
+    char acft_id_text [TEXT_VIEW_LINE_LENGTH];
+
+    if (oclock != prev_oclock) {
+      snprintf(info_line, sizeof(info_line), "%2d", oclock == 0 ? 12 : oclock);
+      u8x8->draw2x2String(4, 0, info_line);
+      prev_oclock = oclock;
+    }
+
+    int disp_dist = (int) (distance * 10);
+    if (disp_dist != prev_dist) {
+      snprintf(info_line, sizeof(info_line), "%2d.%1d", disp_dist / 10, disp_dist % 10);
+      u8x8->draw2x2String(3, 2, info_line);
+      prev_dist = disp_dist;
+    }
+
+    if (disp_alt != prev_alt) {
+      if ((int) RelativeVertical >= 0) {
+        u8x8->drawTile (0, 4, 1, (uint8_t *) Up_Tile1);
+        u8x8->drawTile (1, 4, 1, (uint8_t *) Up_Tile2);
+        u8x8->drawGlyph(0, 5, ' ');
+        u8x8->drawGlyph(1, 5, ' ');
+      } else {
+        u8x8->drawGlyph(0, 4, ' ');
+        u8x8->drawGlyph(1, 4, ' ');
+        u8x8->drawTile (0, 5, 1, (uint8_t *) Down_Tile1);
+        u8x8->drawTile (1, 5, 1, (uint8_t *) Down_Tile2);
+      }
+      snprintf(info_line, sizeof(info_line), "%4d", disp_alt);
+      u8x8->draw2x2String(3, 4, info_line);
+      prev_alt = disp_alt;
+    }
+
+    uint8_t acft_type = traffic_by_dist[OLED_current - 1].fop->aircraft_type;
+    acft_type = acft_type > AIRCRAFT_TYPE_STATIC ? AIRCRAFT_TYPE_UNKNOWN : acft_type;
+    if (acft_type != prev_type) {
+      strncpy(acft_id_text, Aircraft_Type[acft_type], sizeof(acft_id_text));
+      u8x8->draw2x2String(0, 6, acft_id_text);
+      prev_type = acft_type;
+    }
+
+    prev_has_data = true;
+  } else {
+    if (prev_has_data) {
+      u8x8->draw2x2String(4, 0, "--");
+      u8x8->draw2x2String(3, 2, "--.-");
+      u8x8->draw2x2String(0, 4, " ");
+      u8x8->draw2x2String(3, 4, "----");
+      u8x8->draw2x2String(0, 6, "        ");
+      prev_has_data = false;
+    }
+  }
+}
+#endif /* ENABLE_OLED_TEXT_PAGE */
 
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
 static void OLED_baro()
@@ -741,6 +924,11 @@ void OLED_loop()
         case OLED_PAGE_OTHER:
           OLED_other();
           break;
+#if defined(ENABLE_OLED_TEXT_PAGE)
+        case OLED_PAGE_TEXT:
+          OLED_text();
+          break;
+#endif /* ENABLE_OLED_TEXT_PAGE */
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
         case OLED_PAGE_BARO:
           OLED_baro();

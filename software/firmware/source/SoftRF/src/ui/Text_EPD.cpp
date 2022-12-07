@@ -36,19 +36,6 @@
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 
-static int EPD_current = 1;
-
-enum {
-   STATE_TVIEW_NONE,
-   STATE_TVIEW_TEXT,
-   STATE_TVIEW_NOFIX,
-   STATE_TVIEW_NODATA,
-   STATE_TVIEW_NOTRAFFIC
-};
-
-static int view_state_curr = STATE_TVIEW_NONE;
-static int view_state_prev = STATE_TVIEW_NONE;
-
 const char *Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
   [AIRCRAFT_TYPE_GLIDER]     = "Glider",
@@ -68,7 +55,8 @@ const char *Aircraft_Type[] = {
   [AIRCRAFT_TYPE_STATIC]     = "Static"
 };
 
-static int prev_j=0;
+static int EPD_current = 1;
+static int prev_j      = 0;
 
 static void EPD_Draw_Text()
 {
@@ -92,7 +80,6 @@ static void EPD_Draw_Text()
 #else
   if (j > 0) {
 #endif
-    uint8_t db;
     const char *u_dist, *u_alt, *u_spd;
     float disp_dist;
     int   disp_alt, disp_spd;
