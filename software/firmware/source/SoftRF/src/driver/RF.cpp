@@ -960,6 +960,17 @@ static void sx12xx_setup()
     if (LMIC.txpow > 17)
       LMIC.txpow = 17;
 #endif
+
+    /* Enforce Tx power limit for a limb-worn (handheld or wristband) device */
+#if 0
+    if (hw_info.model == SOFTRF_MODEL_BADGE ||
+        hw_info.model == SOFTRF_MODEL_BRACELET) {
+      if (settings->band == RF_BAND_US &&
+          LMIC.txpow > 13) {
+        LMIC.txpow = 13; /* d = 0.5 cm */
+      }
+    }
+#endif
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
