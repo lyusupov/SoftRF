@@ -471,6 +471,11 @@ static void OLED_text()
     }
 
     prev_has_data = true;
+    prev_oclock   = -1;
+    prev_dist     = -1;
+    prev_alt      = -1;
+    prev_type     = AIRCRAFT_TYPE_UNKNOWN;
+
     OLED_display_titles = true;
   }
 
