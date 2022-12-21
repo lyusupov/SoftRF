@@ -26,14 +26,16 @@ Recommended:
 - [ ]   Badge
 - [ ]   Prime Mark II
 - [ ]   Dongle
-- [ ]   Bracelet
+- [ ]   SkyView EZ
 - [ ]   Uni
 - [ ]   Mini
+- [ ]   Bracelet
 - [ ]   Academy
 - [ ]   Lego
-- [ ]   SkyView EZ
+- [ ]   Balkan
 - [ ]   Raspberry Edition
 - [ ]   UAV
+- [ ]   WebTop Serial
 - [ ]   UAT978 module
 - [ ]   Flight Recorder
 
