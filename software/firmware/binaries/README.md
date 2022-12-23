@@ -9,6 +9,7 @@
 - [LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)
 - [ASR6601](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#asr6601)
 - [RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)
+- [ESP32-S2](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/binaries/README.md#esp32-s2)
 - [STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)
 
 ## List by Model
@@ -34,7 +35,7 @@ Model|Instructions|Firmware folder
 ---|:---:|:---:
 [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)|[ESP32](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SkyView)
 [WebTop Serial](https://github.com/lyusupov/SoftRF/wiki/WebTop-Serial-adapter)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/WebTop)
-[WebTop USB](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)|ESP32S2|ESP32S2
+[WebTop USB](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)|[ESP32S2](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/binaries/README.md#esp32-s2)|[ESP32S2](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S2/WebTop)
 [USB to Bluetooth](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter)|[XIAO](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter#quick-start)|[SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/SAMD21/USB_Bluetooth)
 <br>
 
@@ -231,6 +232,22 @@ The bootloader is capable to self-program an application firmware into the devic
 <br>
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Lego-14.jpg" height="295" width="800">
+
+<br>
+
+## ESP32-S2
+
+1. Take **esptool-v4.4-win64.zip** flash tool for Windows from this location: [https://github.com/espressif/esptool/releases/tag/v4.4](https://github.com/espressif/esptool/releases/tag/v4.4) and unzip the archive ;
+2. Download an appropriate version of WebTop firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S2/WebTop) and unzip the archive ;
+3. Connect the ESP32-S2 board into spare USB slot of your Windows PC ;
+4. Press and keep holding BOOT button of the ESP32-S2 board ;
+5. Press and release RESET button on the ESP32-S2 board ;
+6. Release BOOT button of the ESP32-S2 board. A virtual COM port should appear in "Device Manager" afterwards ;
+7. Execute **essptool.exe** utility as folows :
+
+<br>
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/WebTop-9.jpg)
 
 <br>
 
