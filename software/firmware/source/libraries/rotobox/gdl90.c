@@ -794,16 +794,17 @@ void gdl90_escape_message_for_tx(gdl_message_t *rawMsg, gdl_message_escaped_t *e
             break;
     }
 
-    originalLen += 5; // Add (2) Frame bytes, (2) CRC bytes, and (1) msg ID byte
+    originalLen += 3; //One frame byte and msg ID byte are outside the data[] array.  One frame byte and 2 byte CRC are inside data[]
 
     // Init the escaped message
     escapedMsg->length = 0;
     memset(&(escapedMsg->data[0]), 0, sizeof(escapedMsg->data));
     escapedMsg->data[0] = GDL90_FLAG_BYTE;
+    escapedMsg->data[1] = rawMsg->messageId;
 
-    // Start escaping! Start at index 1 and stop 1 byte short so we skip the true frame bytes
-    uint16_t paddedIndex = 1;
-    for(size_t i = 1; i < originalLen - 1; i++) {
+    // Start escaping! Stop 1 byte short so we skip the end frame byte that's inside data[]
+    uint16_t paddedIndex = 2;
+    for(size_t i = 0; i < originalLen - 1; i++) {
         if ((rawMsg->data[i] == GDL90_FLAG_BYTE) || (rawMsg->data[i] == GDL90_CONTROL_ESCAPE)) {
             escapedMsg->data[paddedIndex++] = GDL90_CONTROL_ESCAPE;
             escapedMsg->data[paddedIndex++] = rawMsg->data[i] ^ GDL90_ESCAPE_BYTE;
@@ -811,7 +812,8 @@ void gdl90_escape_message_for_tx(gdl_message_t *rawMsg, gdl_message_escaped_t *e
             escapedMsg->data[paddedIndex++] = rawMsg->data[i];
         }
     }
-
+    //Add the end flag byte back in since we skipped it in the loop (don't want to escape it)
+    escapedMsg->data[paddedIndex++] = GDL90_FLAG_BYTE;
     // Update the length of our now escaped message
     escapedMsg->length = paddedIndex - 1;
 }
