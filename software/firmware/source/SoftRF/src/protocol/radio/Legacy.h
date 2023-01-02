@@ -1,7 +1,7 @@
 /*
  * Protocol_Legacy.h
  * Copyright (C) 2014-2015 Stanislaw Pusep
- * Copyright (C) 2016-2022 Linar Yusupov
+ * Copyright (C) 2016-2023 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

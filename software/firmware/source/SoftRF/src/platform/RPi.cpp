@@ -1,6 +1,6 @@
 /*
  * Platform_RPi.cpp
- * Copyright (C) 2018-2022 Linar Yusupov
+ * Copyright (C) 2018-2023 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1018,7 +1018,7 @@ int main()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2022 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2015-2023 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   mode_s_init(&state);

@@ -1,6 +1,6 @@
 /*
  * WebHelper.cpp
- * Copyright (C) 2016-2022 Linar Yusupov
+ * Copyright (C) 2016-2023 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Dariusz Krempa</th><td align=left>ESP32TinyUSB library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2019-2022 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2019-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 

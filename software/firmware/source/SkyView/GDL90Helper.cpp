@@ -1,6 +1,6 @@
 /*
  * GDL90Helper.cpp
- * Copyright (C) 2019-2022 Linar Yusupov
+ * Copyright (C) 2019-2023 Linar Yusupov
  *
  *
  * This program is free software: you can redistribute it and/or modify
