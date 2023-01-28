@@ -107,7 +107,7 @@ public:
         if (!__spiSetting) {
             return false;
         }
-        if (mosi != -1 && miso != -1 && sck == -1) {
+        if (mosi != -1 && miso != -1 && sck != -1) {
             __spi->begin(sck, miso, mosi);
         } else {
             __spi->begin();

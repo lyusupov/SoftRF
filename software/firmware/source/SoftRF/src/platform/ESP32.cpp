@@ -703,39 +703,7 @@ static void ESP32_setup()
 #endif
 
 #if !defined(EXCLUDE_IMU)
-#if 0
-      uSD_SPI.begin(SOC_GPIO_PIN_S3_IMU_SCK,
-                    SOC_GPIO_PIN_S3_IMU_MISO,
-                    SOC_GPIO_PIN_S3_IMU_MOSI,
-                    SOC_GPIO_PIN_S3_IMU_SS);
-      uSD_SPI.setHwCs(false);
-
-      pinMode(SOC_GPIO_PIN_S3_IMU_SS, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
-
-      delay(50);
-
-      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
-
-      // reset device
-      uSD_SPI.transfer(QMI8658_REG_RESET);
-      uSD_SPI.transfer(0xB0);
-
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
-      uSD_SPI.endTransaction();
-
-      delay(50);
-
-      uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, LOW);
-
-      uSD_SPI.transfer(QMI8658_REG_WHOAMI | 0x80 /* read */);
-      hw_info.imu = (uSD_SPI.transfer(0x00) == 0x5) ? IMU_QMI8658 : IMU_NONE;
-
-      digitalWrite(SOC_GPIO_PIN_S3_IMU_SS, HIGH);
-      uSD_SPI.endTransaction();
-#else
+      imu_qmi8658.setSpiSetting(4000000, MSBFIRST, SPI_MODE0);
       bool has_qmi = imu_qmi8658.begin(SOC_GPIO_PIN_S3_IMU_SS,
                                        SOC_GPIO_PIN_S3_IMU_MOSI,
                                        SOC_GPIO_PIN_S3_IMU_MISO,
@@ -780,7 +748,6 @@ static void ESP32_setup()
       }
 
       IMU_Time_Marker = millis();
-#endif
 
       if (hw_info.imu == IMU_NONE) {
         uSD_SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3));
@@ -1335,7 +1302,7 @@ static void ESP32_loop()
       if (imu_qmi8658.getDataReady()) {
         float a_x, a_y, a_z;
         if (imu_qmi8658.getAccelerometer(a_x, a_y, a_z)) {
-          IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+          IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 4 * 10);
         }
       }
       break;
