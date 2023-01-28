@@ -363,6 +363,8 @@ static void SetTxContinuousWave (void) {
 // set radio in receive mode (abort after timeout [1/64ms], or with timeout=0 after frame received, or continuous with timeout=FFFFFF)
 static void SetRx (uint32_t timeout64ms) {
     uint8_t timeout[3] = { timeout64ms >> 16, timeout64ms >> 8, timeout64ms };
+
+    WriteReg(REG_RXGAIN, 0x96); // max LNA gain, increase current by ~2mA for around ~3dB in sensitivity
     writecmd(CMD_SETRX, timeout, 3);
 }
 
