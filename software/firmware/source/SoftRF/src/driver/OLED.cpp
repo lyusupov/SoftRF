@@ -1147,4 +1147,22 @@ void OLED_Next_Page()
   }
 }
 
+void OLED_Up()
+{
+  if (u8x8) {
+    switch (OLED_current_page)
+    {
+#if defined(ENABLE_OLED_TEXT_PAGE)
+    case OLED_PAGE_TEXT:
+      if (OLED_current < MAX_TRACKING_OBJECTS) {
+        OLED_current++;
+      } else {
+        OLED_current = 1;
+      }
+      break;
+#endif /* ENABLE_OLED_TEXT_PAGE */
+    }
+  }
+}
+
 #endif /* USE_OLED */

@@ -421,6 +421,7 @@ static void ESP32_setup()
      *  Ai-T NodeMCU-S3 | ESP-S3-12K | GIGADEVICE_GD25Q64C
      *  TTGO T-Dongle   |            | BOYA_BY25Q32AL
      *  TTGO S3 Core    |            | GIGADEVICE_GD25Q64C
+     *  TTGO T-01C3     |            | BOYA_BY25Q32AL
      */
 
     switch(flash_id)
@@ -2702,7 +2703,7 @@ using namespace ace_button;
 AceButton button_1(SOC_GPIO_PIN_TBEAM_V05_BUTTON);
 
 // The event handler for the button.
-void handleEvent(AceButton* button, uint8_t eventType,
+void handleMainEvent(AceButton* button, uint8_t eventType,
     uint8_t buttonState) {
 
   switch (eventType) {
@@ -2724,6 +2725,23 @@ void handleEvent(AceButton* button, uint8_t eventType,
   }
 }
 
+void handleAuxEvent(AceButton* button, uint8_t eventType,
+    uint8_t buttonState) {
+
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventReleased:
+#if defined(USE_OLED)
+      if (button == &button_1) {
+        OLED_Up();
+      }
+#endif
+      break;
+    case AceButton::kEventDoubleClicked:
+      break;
+  }
+}
+
 /* Callbacks for push button interrupt */
 void onPageButtonEvent() {
   button_1.check();
@@ -2731,15 +2749,17 @@ void onPageButtonEvent() {
 
 static void ESP32_Button_setup()
 {
+  int button_pin = SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+
   if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
        esp32_board == ESP32_S2_T8_V1_1 ||
        esp32_board == ESP32_S3_DEVKIT) {
-    int button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
-                     SOC_GPIO_PIN_T8_S2_BUTTON :
-                     (esp32_board == ESP32_S3_DEVKIT) ?
-                     SOC_GPIO_PIN_S3_BUTTON :
-                     SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+    button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
+                 SOC_GPIO_PIN_T8_S2_BUTTON :
+                 (esp32_board == ESP32_S3_DEVKIT) ?
+                 SOC_GPIO_PIN_S3_BUTTON :
+                 SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
     pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
@@ -2749,22 +2769,38 @@ static void ESP32_Button_setup()
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
     ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
-    PageButtonConfig->setEventHandler(handleEvent);
+    PageButtonConfig->setEventHandler(handleMainEvent);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureLongPress);
     PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
 //  PageButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
     PageButtonConfig->setLongPressDelay(2000);
+  } else if ((hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) ||
+             esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+    button_pin = (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) ?
+                 SOC_GPIO_PIN_S3_BUTTON :
+                 SOC_GPIO_PIN_TBEAM_V08_BUTTON;
+
+    // Button(s) uses external pull up resistor.
+    pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
+
+    button_1.init(button_pin);
+
+    ButtonConfig* PageButtonConfig = button_1.getButtonConfig();
+    PageButtonConfig->setEventHandler(handleAuxEvent);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    PageButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    PageButtonConfig->setClickDelay(600);
   }
 }
 
 static void ESP32_Button_loop()
 {
-  if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
-       (hw_info.revision == 2 || hw_info.revision == 5)) ||
-       esp32_board == ESP32_S2_T8_V1_1 ||
-       esp32_board == ESP32_S3_DEVKIT) {
+  if (esp32_board == ESP32_TTGO_T_BEAM         ||
+      esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
+      esp32_board == ESP32_S2_T8_V1_1          ||
+      esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
   }
 }

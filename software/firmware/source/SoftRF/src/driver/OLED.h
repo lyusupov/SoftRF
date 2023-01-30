@@ -33,6 +33,7 @@ void OLED_info1(void);
 void OLED_info2(void);
 void OLED_info3(int, char *, char *, char *);
 void OLED_Next_Page(void);
+void OLED_Up(void);
 
 extern U8X8 *u8x8;
 

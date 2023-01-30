@@ -289,6 +289,6 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 <br>
 
-<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-2.jpg" height="302" width="800">
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-3.jpg" height="233" width="800">
 
 <br>
