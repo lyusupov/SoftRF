@@ -190,9 +190,7 @@ const gnss_chip_ops_t generic_nmea_ops = {
 const uint8_t setGLL[] PROGMEM = {0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t setGSV[] PROGMEM = {0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t setVTG[] PROGMEM = {0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-#if !defined(NMEA_TCP_SERVICE)
 const uint8_t setGSA[] PROGMEM = {0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-#endif
  /* CFG-PRT */
 uint8_t setBR[] = {0x01, 0x00, 0x00, 0x00, 0xD0, 0x08, 0x00, 0x00, 0x00, 0x96,
                    0x00, 0x00, 0x07, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -356,7 +354,7 @@ static void setup_UBX()
   gnss_set_sucess = getUBX_ACK(0x06, 0x01);
 
   if (!gnss_set_sucess) {
-    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to disable NMEA GLL."));
+    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to turn off NMEA GLL."));
   }
 
   GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSV: "));
@@ -366,7 +364,7 @@ static void setup_UBX()
   gnss_set_sucess = getUBX_ACK(0x06, 0x01);
 
   if (!gnss_set_sucess) {
-    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to disable NMEA GSV."));
+    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to turn off NMEA GSV."));
   }
 
   GNSS_DEBUG_PRINTLN(F("Switching off NMEA VTG: "));
@@ -376,22 +374,23 @@ static void setup_UBX()
   gnss_set_sucess = getUBX_ACK(0x06, 0x01);
 
   if (!gnss_set_sucess) {
-    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to disable NMEA VTG."));
+    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to turn off NMEA VTG."));
   }
 
-#if !defined(NMEA_TCP_SERVICE)
+#if defined(NMEA_TCP_SERVICE)
+  if (settings->nmea_out != NMEA_TCP)
+#endif /* NMEA_TCP_SERVICE */
+  {
+    GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSA: "));
 
-  GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSA: "));
+    msglen = makeUBXCFG(0x06, 0x01, sizeof(setGSA), setGSA);
+    sendUBX(GNSSbuf, msglen);
+    gnss_set_sucess = getUBX_ACK(0x06, 0x01);
 
-  msglen = makeUBXCFG(0x06, 0x01, sizeof(setGSA), setGSA);
-  sendUBX(GNSSbuf, msglen);
-  gnss_set_sucess = getUBX_ACK(0x06, 0x01);
-
-  if (!gnss_set_sucess) {
-    GNSS_DEBUG_PRINTLN(F("WARNING: Unable to disable NMEA GSA."));
+    if (!gnss_set_sucess) {
+      GNSS_DEBUG_PRINTLN(F("WARNING: Unable to turn off NMEA GSA."));
+    }
   }
-
-#endif
 }
 
 /* ------ BEGIN -----------  https://github.com/Black-Thunder/FPV-Tracker */
@@ -982,16 +981,22 @@ static bool at65_setup()
   delay(250);
 #endif
 
-  /* Assume that we deal with fake NEO module (AT6558 based) */
-  Serial_GNSS_Out.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */     delay(250);
+  Serial_GNSS_Out.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */ delay(250);
+
 #if defined(NMEA_TCP_SERVICE)
-  /* GGA,RMC and GSA */
-  Serial_GNSS_Out.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n"); delay(250);
-#else
-  /* GGA and RMC */
-  Serial_GNSS_Out.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n"); delay(250);
-#endif
-  Serial_GNSS_Out.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */     delay(250);
+  if (settings->nmea_out == NMEA_TCP) {
+    /* GGA,RMC and GSA */
+    Serial_GNSS_Out.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n");
+  }
+  else
+#endif /* NMEA_TCP_SERVICE */
+  {
+    /* GGA and RMC */
+    Serial_GNSS_Out.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n");
+  }
+  delay(250);
+
+  Serial_GNSS_Out.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */ delay(250);
 
   return true;
 }
