@@ -1297,20 +1297,43 @@ static nRF52_display_id nRF52_EPD_ident()
 
   swSPI.begin();
 
-  uint8_t buf[11];
+  uint8_t buf_2D[11];
+  uint8_t buf_2E[10];
 
   taskENTER_CRITICAL();
 
   digitalWrite(SOC_GPIO_PIN_EPD_DC, LOW);
   digitalWrite(SOC_GPIO_PIN_EPD_SS, LOW);
 
-  swSPI.transfer_out(0x2D /* 0x2E */);
+  swSPI.transfer_out(0x2D);
 
   pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
   digitalWrite(SOC_GPIO_PIN_EPD_DC, HIGH);
 
-  for (int i=0; i<10; i++) {
-    buf[i] = swSPI.transfer_in();
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    buf_2D[i] = swSPI.transfer_in();
+  }
+
+  digitalWrite(SOC_GPIO_PIN_EPD_SCK, LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_DC,  LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_SS,  HIGH);
+
+  taskEXIT_CRITICAL();
+
+  delay(1);
+
+  taskENTER_CRITICAL();
+
+  digitalWrite(SOC_GPIO_PIN_EPD_DC, LOW);
+  digitalWrite(SOC_GPIO_PIN_EPD_SS, LOW);
+
+  swSPI.transfer_out(0x2E);
+
+  pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
+  digitalWrite(SOC_GPIO_PIN_EPD_DC, HIGH);
+
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    buf_2E[i] = swSPI.transfer_in();
   }
 
   digitalWrite(SOC_GPIO_PIN_EPD_SCK, LOW);
@@ -1322,8 +1345,16 @@ static nRF52_display_id nRF52_EPD_ident()
   swSPI.end();
 
 #if 0
-  for (int i=0; i<10; i++) {
-    Serial.print(buf[i], HEX);
+  Serial.print("2D: ");
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    Serial.print(buf_2D[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+  Serial.print("2E: ");
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    Serial.print(buf_2E[i], HEX);
     Serial.print(' ');
   }
   Serial.println();
@@ -1333,22 +1364,25 @@ static nRF52_display_id nRF52_EPD_ident()
  *  FF FF FF FF FF FF FF FF FF FF FF - C1
  *  00 00 00 00 00 FF 40 00 00 00 01 - D67 SYX 1942
  *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2118
+ *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2129
+
  *
  *  0x2E:
  *  00 00 00 00 00 00 00 00 00 00    - C1
  *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 1942
  *  00 05 00 9A 00 55 35 37 14 0C    - D67 SYX 2118
+ *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 2129
  */
 #endif
 
   bool is_ff = true;
-  for (int i=0; i<10; i++) {
-    if (buf[i] != 0xFF) {is_ff = false; break;}
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0xFF) {is_ff = false; break;}
   }
 
   bool is_00 = true;
-  for (int i=0; i<10; i++) {
-    if (buf[i] != 0x00) {is_00 = false; break;}
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0x00) {is_00 = false; break;}
   }
 
   if (is_ff || is_00) {
