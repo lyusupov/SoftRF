@@ -171,6 +171,7 @@ enum
 	HW_REV_DEVKIT,
 	HW_REV_T8,
 	HW_REV_TDONGLE,
+	HW_REV_T01C3,
 };
 
 enum

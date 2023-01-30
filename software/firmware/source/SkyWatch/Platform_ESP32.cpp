@@ -231,6 +231,8 @@ static void ESP32_setup()
    *  TTGO T8 S2 V1.1  |            | WINBOND_NEX_W25Q32_V
    *  Ai-T NodeMCU-S3  | ESP-S3-12K | GIGADEVICE_GD25Q64C
    *  TTGO T-Dongle    |            | BOYA_BY25Q32AL
+   *  TTGO S3 Core     |            | GIGADEVICE_GD25Q64C
+   *  TTGO T-01C3      |            | BOYA_BY25Q32AL
    */
 
   if (psramFound()) {
@@ -269,6 +271,12 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
       hw_info.revision = HW_REV_DEVKIT;
       break;
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
+      hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
+      hw_info.revision = HW_REV_T01C3;
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
     default:
       hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
       hw_info.revision = HW_REV_UNKNOWN;
@@ -340,6 +348,7 @@ static void ESP32_setup()
     }
   }
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
   /* SD-SPI init */
   uSD_SPI.begin(
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -354,6 +363,7 @@ static void ESP32_setup()
                 SOC_GPIO_PIN_TDONGLE_SS
 #endif /* CONFIG_IDF_TARGET_ESP32SX */
                );
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
   Serial.begin(SERIAL_OUT_BR);
@@ -528,7 +538,9 @@ static void ESP32_loop()
 
 static void ESP32_fini()
 {
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
   uSD_SPI.end();
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
   esp_wifi_stop();
 
@@ -791,6 +803,9 @@ static float ESP32_Battery_voltage()
 
 static bool ESP32_DB_init()
 {
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+  return false;
+#else
   int ss_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                SOC_GPIO_PIN_TDONGLE_SS : SOC_GPIO_PIN_TWATCH_SD_SS;
 
@@ -829,10 +844,14 @@ static bool ESP32_DB_init()
   }
 
   return true;
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 }
 
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+  return false;
+#else
   sqlite3_stmt *stmt;
   char *query = NULL;
   int error;
@@ -931,6 +950,7 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   free(query);
 
   return rval;
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 }
 
 static void ESP32_DB_fini()
@@ -1204,6 +1224,7 @@ void onModeButtonEvent() {
 
 static void ESP32_Button_setup()
 {
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
   int button_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                    SOC_GPIO_PIN_TDONGLE_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
@@ -1225,11 +1246,14 @@ static void ESP32_Button_setup()
   ModeButtonConfig->setLongPressDelay(2000);
 
   attachInterrupt(digitalPinToInterrupt(button_pin), onModeButtonEvent, CHANGE );
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 }
 
 static void ESP32_Button_loop()
 {
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
   button_mode.check();
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 }
 
 static void ESP32_Button_fini()

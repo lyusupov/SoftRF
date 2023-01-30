@@ -208,6 +208,10 @@ extern PCF8563_Class *rtc;
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
+#undef  SOC_GPIO_PIN_GNSS_RX
+#undef  SOC_GPIO_PIN_GNSS_TX
+#define SOC_GPIO_PIN_GNSS_RX            18
+#define SOC_GPIO_PIN_GNSS_TX            19
 #define EXCLUDE_RTC
 #define EXCLUDE_TFT
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
