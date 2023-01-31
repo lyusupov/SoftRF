@@ -742,6 +742,39 @@ static void ESP32_setup()
             // selfTest enable
             true);
 
+        imu_qmi8658.configGyroscope(
+            /*
+            * GYR_RANGE_16DPS
+            * GYR_RANGE_32DPS
+            * GYR_RANGE_64DPS
+            * GYR_RANGE_128DPS
+            * GYR_RANGE_256DPS
+            * GYR_RANGE_512DPS
+            * GYR_RANGE_1024DPS
+            * */
+            SensorQMI8658::GYR_RANGE_64DPS,
+            /*
+             * GYR_ODR_7174_4Hz
+             * GYR_ODR_3587_2Hz
+             * GYR_ODR_1793_6Hz
+             * GYR_ODR_896_8Hz
+             * GYR_ODR_448_4Hz
+             * GYR_ODR_224_2Hz
+             * GYR_ODR_112_1Hz
+             * GYR_ODR_56_05Hz
+             * GYR_ODR_28_025H
+             * */
+            SensorQMI8658::GYR_ODR_896_8Hz,
+            /*
+            *  LPF_MODE_0     //2.66% of ODR
+            *  LPF_MODE_1     //3.63% of ODR
+            *  LPF_MODE_2     //5.39% of ODR
+            *  LPF_MODE_3     //13.37% of ODR
+            * */
+            SensorQMI8658::LPF_MODE_3,
+            // selfTest enable
+            true);
+
         // In 3DOF mode,
         imu_qmi8658.enableAccelerometer();
 
@@ -1303,7 +1336,16 @@ static void ESP32_loop()
       if (imu_qmi8658.getDataReady()) {
         float a_x, a_y, a_z;
         if (imu_qmi8658.getAccelerometer(a_x, a_y, a_z)) {
-          IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 4 * 10);
+#if 0
+            Serial.print("{ACCEL: ");
+            Serial.print(a_x);
+            Serial.print(",");
+            Serial.print(a_y);
+            Serial.print(",");
+            Serial.print(a_z);
+            Serial.println("}");
+#endif
+          IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
         }
       }
       break;

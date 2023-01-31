@@ -38,13 +38,13 @@ class FreqPlan
      switch (Protocol)
      {
       case RF_PROTOCOL_P3I:
-        { BaseFreq=869525000; ChanSepar= 200000; Channels= 1; MaxTxPower =  27; }
+        { BaseFreq= 869525000; ChanSepar= 200000; Channels= 1; MaxTxPower =  27; }
         break;
       case RF_PROTOCOL_ADSB_1090:
-        { BaseFreq=869525000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
+        { BaseFreq=1090000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
         break;
       case RF_PROTOCOL_ADSB_UAT:
-        { BaseFreq=978000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
+        { BaseFreq= 978000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
         break;
       case RF_PROTOCOL_FANET:
         switch (Plan)
