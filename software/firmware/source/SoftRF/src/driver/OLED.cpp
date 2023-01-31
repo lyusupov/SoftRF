@@ -442,8 +442,9 @@ static const uint8_t Up_Tile2[]   = { 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 
 static const uint8_t Down_Tile1[] = { 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF };
 static const uint8_t Down_Tile2[] = { 0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
 
-static int prev_j         = 0;
 static bool prev_has_data = true;
+static int prev_j         = 0;
+static int prev_current   = -1;
 static int prev_oclock    = -1;
 static int prev_dist      = -1;
 static int prev_alt       = -1;
@@ -455,6 +456,7 @@ static void OLED_text()
 
     u8x8->clear();
 
+    u8x8->drawGlyph (1, 0, '/');
     u8x8->drawString(9, 1, OCLK_text);
 
     switch (settings->band)
@@ -471,6 +473,8 @@ static void OLED_text()
     }
 
     prev_has_data = true;
+    prev_current  = -1;
+    prev_j        = 0;
     prev_oclock   = -1;
     prev_dist     = -1;
     prev_alt      = -1;
@@ -505,7 +509,6 @@ static void OLED_text()
         OLED_current = 1;
       }
     }
-    prev_j = j;
 
     int bearing = (int) traffic_by_dist[OLED_current - 1].fop->bearing;
 
@@ -538,6 +541,18 @@ static void OLED_text()
 
     char info_line    [TEXT_VIEW_LINE_LENGTH];
     char acft_id_text [TEXT_VIEW_LINE_LENGTH];
+
+    if (OLED_current != prev_current) {
+      snprintf(info_line, sizeof(info_line), "%1d", OLED_current);
+      u8x8->drawString(0, 0, info_line);
+      prev_current = OLED_current;
+    }
+
+    if (j != prev_j) {
+      snprintf(info_line, sizeof(info_line), "%1d", j);
+      u8x8->drawString(2, 0, info_line);
+      prev_j = j;
+    }
 
     if (oclock != prev_oclock) {
       snprintf(info_line, sizeof(info_line), "%2d", oclock == 0 ? 12 : oclock);
@@ -580,6 +595,7 @@ static void OLED_text()
     prev_has_data = true;
   } else {
     if (prev_has_data) {
+      u8x8->drawString   (0, 0, "   ");
       u8x8->draw2x2String(4, 0, "--");
       u8x8->draw2x2String(3, 2, "--.-");
       u8x8->draw2x2String(0, 4, " ");
