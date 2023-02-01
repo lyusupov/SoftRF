@@ -595,12 +595,20 @@ static void OLED_text()
     prev_has_data = true;
   } else {
     if (prev_has_data) {
-      u8x8->drawString   (0, 0, "   ");
+      u8x8->drawString   (0, 0, "-/-");
       u8x8->draw2x2String(4, 0, "--");
       u8x8->draw2x2String(3, 2, "--.-");
       u8x8->draw2x2String(0, 4, " ");
       u8x8->draw2x2String(3, 4, "----");
       u8x8->draw2x2String(0, 6, "        ");
+
+      prev_current  = -1;
+      prev_j        = 0;
+      prev_oclock   = -1;
+      prev_dist     = -1;
+      prev_alt      = -1;
+      prev_type     = AIRCRAFT_TYPE_UNKNOWN;
+
       prev_has_data = false;
     }
   }
