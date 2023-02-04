@@ -592,7 +592,7 @@ void handleSettings() {
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
-<th align=left>IGC key (HEX)</th>\
+<th align=left>IGC key</th>\
 <td align=right>\
 <INPUT type='text' name='igc_key' maxlength='32' size='32' value='%08X%08X%08X%08X'>\
 </td>\
