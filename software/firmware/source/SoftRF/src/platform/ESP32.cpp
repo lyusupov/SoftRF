@@ -971,7 +971,7 @@ static void ESP32_setup()
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #else
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-#endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
+#endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME)
@@ -1936,7 +1936,8 @@ static bool ESP32_EEPROM_begin(size_t size)
 static void ESP32_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
@@ -1947,15 +1948,16 @@ static void ESP32_EEPROM_extension(int cmd)
       settings->d1090 = D1090_UART;
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
     if (settings->bluetooth != BLUETOOTH_OFF) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
       settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
 #else
       settings->bluetooth = BLUETOOTH_OFF;
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 || C3 */
     }
-#endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */
   }
 }
 
