@@ -2,7 +2,7 @@
 // ESP8266 work for the NeoPixelBus library: github.com/Makuna/NeoPixelBus
 // Needs to be a separate .c file to enforce ICACHE_RAM_ATTR execution.
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266)
 
 #include <Arduino.h>
 #ifdef ESP8266
@@ -55,14 +55,6 @@ void espShow(
   }
 #endif
 
-#if defined(ESP32)
-		delay(1); // required
-
-		portMUX_TYPE updateMux = portMUX_INITIALIZER_UNLOCKED;
-
-		taskENTER_CRITICAL(&updateMux);
-#endif
-
   for(t = time0;; t = time0) {
     if(pix & mask) t = time1;                             // Bit high duration
     while(((c = _getCycleCount()) - startTime) < period); // Wait for bit start
@@ -84,10 +76,6 @@ void espShow(
       mask = 0x80;
     }
   }
-
-#if defined(ESP32)
-		taskEXIT_CRITICAL(&updateMux);
-#endif
 
   while((_getCycleCount() - startTime) < period); // Wait for last bit
 }

@@ -72,7 +72,7 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
 #define USE_ADAFRUIT_NEO_LIBRARY
 
@@ -124,7 +124,7 @@ extern Adafruit_NeoPixel strip;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD 14? */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED        19 /* D1 */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -147,10 +147,11 @@ extern Adafruit_NeoPixel strip;
                                     SOC_UNUSED_PIN) :                     \
                                   SOC_UNUSED_PIN))
 
-#define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ?\
-                                SOC_UNUSED_PIN :                        \
-                                (esp32_board == ESP32_DEVKIT ?          \
-                                  13 : SOC_UNUSED_PIN))
+#define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
+                                SOC_UNUSED_PIN :                         \
+                                (esp32_board == ESP32_DEVKIT    ? 13 :   \
+                                (esp32_board == ESP32_C3_DEVKIT ?        \
+                                SOC_GPIO_PIN_C3_BUZZER : SOC_UNUSED_PIN)))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27
@@ -371,8 +372,8 @@ extern Adafruit_NeoPixel strip;
 
 // GNSS module
 #define SOC_GPIO_PIN_C3_GNSS_RX         9  /* D3 */
-#define SOC_GPIO_PIN_C3_GNSS_TX         19 /* D1 */
-#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN // 7
+#define SOC_GPIO_PIN_C3_GNSS_TX         7
+#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN // 0
 
 // SPI
 #define SOC_GPIO_PIN_C3_MOSI            5  /* D7 */
@@ -387,7 +388,7 @@ extern Adafruit_NeoPixel strip;
 
 // SX1276
 #define SOC_GPIO_PIN_C3_RST             18 /* D2 */
-#define SOC_GPIO_PIN_C3_DIO0            19 /* D0 */
+#define SOC_GPIO_PIN_C3_DIO0            2  /* D0 */
 #define SOC_GPIO_PIN_C3_SDA             18 /* D2 */
 #define SOC_GPIO_PIN_C3_SCL             10 /* D4 */
 
@@ -395,7 +396,6 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_C3_BATTERY         1  /* A0 */
 
 // auxillary
-#define SOC_GPIO_PIN_C3_LED             19 /* D1 */
 #define SOC_GPIO_PIN_C3_BUZZER          6  /* 10 */
 #define SOC_GPIO_PIN_C3_STATUS          SOC_UNUSED_PIN
 
@@ -478,10 +478,10 @@ struct rst_info {
 //#define USE_GDL90_MSL
 #define USE_OGN_ENCRYPTION
 
-//#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8 */
+//#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8, M10 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
 #define EXCLUDE_GNSS_GOKE       /* 'Air530' GK9501 GPS/GLO/BDS (GAL inop.)   */
-//#define EXCLUDE_GNSS_AT65     /* 'fake Neo-6/8' on some 2018 T-Beam boards */
+//#define EXCLUDE_GNSS_AT65     /* L76K, Air530Z */
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
 
@@ -493,9 +493,10 @@ struct rst_info {
 #if !defined(CONFIG_IDF_TARGET_ESP32)
 #define EXCLUDE_NRF905
 #define EXCLUDE_UATM
-#define EXCLUDE_LED_RING
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#define EXCLUDE_LED_RING
+
 /* Experimental */
 //#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST

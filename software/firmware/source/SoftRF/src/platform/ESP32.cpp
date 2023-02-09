@@ -2674,6 +2674,10 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
 
+  } else if (esp32_board == ESP32_C3_DEVKIT) {
+
+    Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
+
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
