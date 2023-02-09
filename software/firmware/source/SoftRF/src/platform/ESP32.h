@@ -371,32 +371,32 @@ extern Adafruit_NeoPixel strip;
 
 // GNSS module
 #define SOC_GPIO_PIN_C3_GNSS_RX         9  /* D3 */
-#define SOC_GPIO_PIN_C3_GNSS_TX         18 /* D1 */
-#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN /* TBD */
+#define SOC_GPIO_PIN_C3_GNSS_TX         19 /* D1 */
+#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN // 7
 
 // SPI
-#define SOC_GPIO_PIN_C3_MOSI            15 /* D7 */
-#define SOC_GPIO_PIN_C3_MISO            17 /* D6 */
-#define SOC_GPIO_PIN_C3_SCK             16 /* D5 */
-#define SOC_GPIO_PIN_C3_SS              14 /* D8 */
+#define SOC_GPIO_PIN_C3_MOSI            5  /* D7 */
+#define SOC_GPIO_PIN_C3_MISO            4  /* D6 */
+#define SOC_GPIO_PIN_C3_SCK             3  /* D5 */
+#define SOC_GPIO_PIN_C3_SS              8  /* D8 */
 
 // NRF905
-#define SOC_GPIO_PIN_C3_TXE             19 /* D0 */
+#define SOC_GPIO_PIN_C3_TXE             2  /* D0 */
 #define SOC_GPIO_PIN_C3_CE              10 /* D4 */
-#define SOC_GPIO_PIN_C3_PWR             12 /* D2 */
+#define SOC_GPIO_PIN_C3_PWR             18 /* D2 */
 
 // SX1276
-#define SOC_GPIO_PIN_C3_RST             12 /* D2 */
+#define SOC_GPIO_PIN_C3_RST             18 /* D2 */
 #define SOC_GPIO_PIN_C3_DIO0            19 /* D0 */
-#define SOC_GPIO_PIN_C3_SDA             12 /* D2 */
+#define SOC_GPIO_PIN_C3_SDA             18 /* D2 */
 #define SOC_GPIO_PIN_C3_SCL             10 /* D4 */
 
 // battery voltage (ADC)
-#define SOC_GPIO_PIN_C3_BATTERY         0  /* A0 */
+#define SOC_GPIO_PIN_C3_BATTERY         1  /* A0 */
 
 // auxillary
-#define SOC_GPIO_PIN_C3_LED             18 /* D1 */
-#define SOC_GPIO_PIN_C3_BUZZER          3  /* 10 */
+#define SOC_GPIO_PIN_C3_LED             19 /* D1 */
+#define SOC_GPIO_PIN_C3_BUZZER          6  /* 10 */
 #define SOC_GPIO_PIN_C3_STATUS          SOC_UNUSED_PIN
 
 extern WebServer server;
@@ -413,13 +413,14 @@ enum rst_reason {
 
 enum esp32_board_id {
   ESP32_DEVKIT,
+  ESP32_S3_DEVKIT,
+  ESP32_C3_DEVKIT,
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
   ESP32_TTGO_T_BEAM_SUPREME,
   ESP32_TTGO_T_WATCH,
   ESP32_S2_T8_V1_1,
-  ESP32_S3_DEVKIT,
 };
 
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */
@@ -443,6 +444,10 @@ struct rst_info {
 /* Boya Microelectronics Inc. */
 #define BOYA_ID                 0x68
 #define BOYA_BY25Q32AL          0x4016
+
+/* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
+#define ST_ID                   0x20
+#define XMC_XM25QH32B           0x4016
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
@@ -525,7 +530,10 @@ extern ESP32_USBSerial_device_t ESP32_USB_Serial;
 extern const USB_Device_List_t supported_USB_devices[];
 
 #endif /* USE_USB_HOST */
-#endif /* CONFIG_IDF_TARGET_ESP32SX */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#undef USE_OLED
+#undef USE_TFT
+#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 */
 #endif /* NOT CONFIG_IDF_TARGET_ESP32 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

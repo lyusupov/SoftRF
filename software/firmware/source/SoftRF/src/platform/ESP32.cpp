@@ -422,6 +422,7 @@ static void ESP32_setup()
      *  TTGO T-Dongle   |            | BOYA_BY25Q32AL
      *  TTGO S3 Core    |            | GIGADEVICE_GD25Q64C
      *  TTGO T-01C3     |            | BOYA_BY25Q32AL
+     *                  | ESP-C3-12F | XMC_XM25QH32B
      */
 
     switch(flash_id)
@@ -446,8 +447,9 @@ static void ESP32_setup()
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
     default:
-      hw_info.model = SOFTRF_MODEL_STANDALONE; /* TBD */
+      esp32_board   = ESP32_C3_DEVKIT;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -466,6 +468,8 @@ static void ESP32_setup()
     esp32_board      = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     esp32_board      = ESP32_S3_DEVKIT;
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp32_board      = ESP32_C3_DEVKIT;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
@@ -689,19 +693,10 @@ static void ESP32_setup()
       /* wait until every LDO voltage will settle down */
       delay(200);
 
-#if 0
-      Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-      Wire.beginTransmission(QMC6310_SLAVE_ADDRESS);
-      if (Wire.endTransmission() == 0) {
-        hw_info.mag = MAG_QMC6310;
-      }
-      WIRE_FINI(Wire);
-#else
       bool has_qmc = mag.begin(Wire, QMC6310_SLAVE_ADDRESS,
                                SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       mag.deinit(); WIRE_FINI(Wire);
       hw_info.mag  = has_qmc ? MAG_QMC6310 : hw_info.mag;
-#endif
 
 #if !defined(EXCLUDE_IMU)
       imu_qmi8658.setSpiSetting(4000000, MSBFIRST, SPI_MODE0);
@@ -939,6 +934,17 @@ static void ESP32_setup()
 
     ui = &ui_settings;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+  } else if (esp32_board == ESP32_C3_DEVKIT) {
+
+    lmic_pins.nss  = SOC_GPIO_PIN_C3_SS;
+    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.busy = SOC_GPIO_PIN_C3_TXE;
+
+    /* TBD */
+
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
@@ -1974,6 +1980,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_S3_SCK,  SOC_GPIO_PIN_S3_MISO,
                 SOC_GPIO_PIN_S3_MOSI, SOC_GPIO_PIN_S3_SS);
       break;
+    case ESP32_C3_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C3_SCK,  SOC_GPIO_PIN_C3_MISO,
+                SOC_GPIO_PIN_C3_MOSI, SOC_GPIO_PIN_C3_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -2027,6 +2037,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: ESP32-S3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_S3_GNSS_RX, SOC_GPIO_PIN_S3_GNSS_TX);
+    } else if (esp32_board == ESP32_C3_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C3 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
