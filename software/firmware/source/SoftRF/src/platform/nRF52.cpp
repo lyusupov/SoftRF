@@ -1365,12 +1365,14 @@ static nRF52_display_id nRF52_EPD_ident()
  *  00 00 00 00 00 FF 40 00 00 00 01 - D67 SYX 1942
  *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2118
  *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2129
+ *  00 00 00 00 00 00 00 00 00 00 00 - DEPG0150BN
  *
  *  0x2E:
  *  00 00 00 00 00 00 00 00 00 00    - C1
  *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 1942
  *  00 05 00 9A 00 55 35 37 14 0C    - D67 SYX 2118
  *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 2129
+ *  00 00 00 00 00 00 00 00 00 00    - DEPG0150BN
  */
 #endif
 
@@ -1384,8 +1386,8 @@ static nRF52_display_id nRF52_EPD_ident()
     if (buf_2D[i] != 0x00) {is_00 = false; break;}
   }
 
-  if (is_ff || is_00) {
-//    rval = EP_DEPG0150BN; /* TBD */
+  if (is_00) {
+    rval = EP_DEPG0150BN;
   }
 
   return rval;
