@@ -4,6 +4,7 @@
 - [ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)
 - [ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)
 - [ESP32-S2](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s2)
+- [ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)
 - [S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g) (STM32L073)
 - [CC1352R](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures#initial-installation)
 - [CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell) (ASR650x)
@@ -291,5 +292,29 @@ The Bootloader is capable to self-program an application firmware into the devic
 <br>
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-3.jpg" height="233" width="800">
+
+<br>
+
+## ESP32-C3
+
+1. Take ESP32 flash download tool from this location: https://www.espressif.com/en/support/download/other-tools <br>
+
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C3/SoftRF) and unzip the archive ; <br>
+
+3. Connect the ESP32-C3 based device to your PC by means of a USB cable ;
+
+4. Execute the tool; Select **ESP32-C3** Chip Type, **Develop** WorkMode and **UART** LoadMode ; <br>
+
+5. Select COM port, enter partition files and addresses, select options ; <br>
+
+   Here is an example:<br>
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Standalone-ESP32C3-3.jpg)
+
+
+
+6. Press **START** button and wait for completion.
+
+"Stock" devices may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.
 
 <br>
