@@ -2554,7 +2554,7 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     calibrate_voltage(ADC1_GPIO2_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+    calibrate_voltage(ADC1_GPIO1_CHANNEL);
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -2632,6 +2632,9 @@ static float ESP32_Battery_param(uint8_t param)
          (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
          (esp32_board   == ESP32_S2_T8_V1_1)) {
         voltage += voltage;
+      } else if (esp32_board == ESP32_C3_DEVKIT) {
+      /* NodeMCU has voltage divider 100k/220k on board */
+        voltage *= 3.2;
       }
       break;
     }
