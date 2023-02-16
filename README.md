@@ -11,7 +11,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Portable**
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Classic** 2.25 inch instrument
-    * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
+    * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Certified** (CE/FCC)
@@ -29,7 +29,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * 1090 ES and/or 978 UAT
         * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
 * can operate **multiple protocols** at the same time
-    * [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
 * **Weatherproof**
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) - IP67
 * **UAV** add-on
@@ -90,7 +90,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[Nordic Semiconductor<br>nRF52840](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF52840)|Q4 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;holds [**FCC** mark](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition#certificates)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 [**ES**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
 1&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>2&nbsp;[USB2BT](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) <!-- and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560) -->|Q4 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png) <!-- ![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements) -->|good for teaching students of air traffic proximity awareness
-[**Octave**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/ASR6601/index.html)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)| **the best 'price per radio protocol' ratio** on the market
+[**Octave**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/ASR6601/index.html)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)| **the best 'price per radio protocol' ratio** on the market
 [**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;holds [**FCC/CE** mark](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition#certificates)
 
 ## By sub-1 GHz radio
@@ -135,15 +135,16 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
         * [USB](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#esp32)
         * [webUI](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28Web-method%29#esp32)
         * [programming device](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28hardware-method%29)
-* [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)
+* [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * [Specifications](https://github.com/lyusupov/SoftRF/wiki/Standalone-Specifications)
     * [Shield](https://github.com/lyusupov/SoftRF/wiki/Standalone-Shield)
     * [Modules](https://github.com/lyusupov/SoftRF/wiki/Standalone-Modules)
     * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
+    * [ESP32‐C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-* [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
@@ -264,7 +265,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/bom/Lora_GPS_Shield_2.jpg)
 
-* [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Octave-1.jpg)
 
