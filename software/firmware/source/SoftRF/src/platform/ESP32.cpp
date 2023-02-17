@@ -404,25 +404,26 @@ static void ESP32_setup()
     uint32_t flash_id = ESP32_getFlashId();
 
     /*
-     *    Board         |   Module   |  Flash memory IC
-     *  ----------------+------------+--------------------
-     *  DoIt ESP32      | WROOM      | GIGADEVICE_GD25Q32
-     *  TTGO T3  V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO T3  V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
-     *  TTGO T22 V06    |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T22 V08    |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T22 V11    |            | BOYA_BY25Q32AL
-     *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
-     *  TTGO T8 S2 V1.1 |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
-     *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
-     *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
-     *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
-     *  Ai-T NodeMCU-S3 | ESP-S3-12K | GIGADEVICE_GD25Q64C
-     *  TTGO T-Dongle   |            | BOYA_BY25Q32AL
-     *  TTGO S3 Core    |            | GIGADEVICE_GD25Q64C
-     *  TTGO T-01C3     |            | BOYA_BY25Q32AL
-     *                  | ESP-C3-12F | XMC_XM25QH32B
+     *    Board         |   Module      |  Flash memory IC
+     *  ----------------+---------------+--------------------
+     *  DoIt ESP32      | WROOM         | GIGADEVICE_GD25Q32
+     *  TTGO T3  V2.0   | PICO-D4 IC    | GIGADEVICE_GD25Q32
+     *  TTGO T3  V2.1.6 | PICO-D4 IC    | GIGADEVICE_GD25Q32
+     *  TTGO T22 V06    |               | WINBOND_NEX_W25Q32_V
+     *  TTGO T22 V08    |               | WINBOND_NEX_W25Q32_V
+     *  TTGO T22 V11    |               | BOYA_BY25Q32AL
+     *  TTGO T8  V1.8   | WROVER        | GIGADEVICE_GD25LQ32
+     *  TTGO T8 S2 V1.1 |               | WINBOND_NEX_W25Q32_V
+     *  TTGO T5S V1.9   |               | WINBOND_NEX_W25Q32_V
+     *  TTGO T5S V2.8   |               | BOYA_BY25Q32AL
+     *  TTGO T5  4.7    | WROVER-E      | XMC_XM25QH128C
+     *  TTGO T-Watch    |               | WINBOND_NEX_W25Q128_V
+     *  Ai-T NodeMCU-S3 | ESP-S3-12K    | GIGADEVICE_GD25Q64C
+     *  TTGO T-Dongle   |               | BOYA_BY25Q32AL
+     *  TTGO S3 Core    |               | GIGADEVICE_GD25Q64C
+     *  TTGO T-01C3     |               | BOYA_BY25Q32AL
+     *                  | ESP-C3-12F    | XMC_XM25QH32B
+     *  LilyGO T-TWR    | WROOM-1-N16R8 | GIGADEVICE_GD25Q128
      */
 
     switch(flash_id)

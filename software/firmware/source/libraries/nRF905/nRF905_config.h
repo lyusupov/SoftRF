@@ -104,11 +104,19 @@
 
 #elif defined(ESP32)
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
 // DOIT ESP32
 #define TRX_EN    2    // Enable/standby pin
 #define PWR_MODE  14   // Power mode pin
 #define TX_EN     26   // TX / RX mode pin
 #define CS_N      18   // SPI slave select pin
+#else
+// NodeMCU 1.0 + ESP-C3-12F GPIO pins
+#define TRX_EN    10   // D4 // Enable/standby pin
+#define PWR_MODE  18   // D2 // Power mode pin
+#define TX_EN     2    // D0 // TX / RX mode pin
+#define CS_N      8    // D8 // SPI slave select pin
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5

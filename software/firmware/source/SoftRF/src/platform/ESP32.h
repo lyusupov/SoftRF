@@ -491,10 +491,10 @@ struct rst_info {
 //#define EXCLUDE_IMU
 
 #if !defined(CONFIG_IDF_TARGET_ESP32)
-#define EXCLUDE_NRF905
 #define EXCLUDE_UATM
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#define EXCLUDE_NRF905
 #define EXCLUDE_LED_RING
 
 /* Experimental */
