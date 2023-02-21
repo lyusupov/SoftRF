@@ -115,7 +115,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.6 ;
+            arduino --install-boards esp32:esp32:2.0.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
@@ -129,7 +129,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.6 ;
+            arduino --install-boards esp32:esp32:2.0.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
@@ -145,7 +145,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.6 ;
+            arduino --install-boards esp32:esp32:2.0.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c3_none"            --save-prefs ;
@@ -261,7 +261,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:2.6.2 ;
+            arduino --install-boards rp2040:rp2040:2.7.3 ;
             arduino --board $BOARD --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
