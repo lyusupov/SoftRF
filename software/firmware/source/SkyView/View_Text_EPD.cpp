@@ -62,8 +62,8 @@ static void EPD_Draw_Text()
       EPD_current = j;
     }
 
-    bearing = (int) atan2f(traffic[EPD_current - 1].fop->RelativeNorth,
-                           traffic[EPD_current - 1].fop->RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+    bearing = (int) (atan2f(traffic[EPD_current - 1].fop->RelativeNorth,
+                            traffic[EPD_current - 1].fop->RelativeEast) * 180.0 / PI);  /* -180 ... 180 */
 
     /* convert from math angle into course relative to north */
     bearing = (bearing <= 90 ? 90 - bearing :

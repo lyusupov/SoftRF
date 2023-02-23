@@ -72,8 +72,8 @@ static void TFT_Draw_Text()
       TFT_current = j;
     }
 
-    bearing = (int) atan2f(traffic[TFT_current - 1].fop->RelativeNorth,
-                           traffic[TFT_current - 1].fop->RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
+    bearing = (int) (atan2f(traffic[TFT_current - 1].fop->RelativeNorth,
+                            traffic[TFT_current - 1].fop->RelativeEast) * 180.0 / PI);  /* -180 ... 180 */
 
     /* convert from math angle into course relative to north */
     bearing = (bearing <= 90 ? 90 - bearing :
