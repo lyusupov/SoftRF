@@ -644,8 +644,10 @@ static void ESP32_setup()
       // DCDC1 1500~3400mV, IMAX=2A
       axp_2xxx.setDC1Voltage(3300);
 
+#if defined(USE_USB_HOST)
       // DCDC5 1400~3700mV, 100mV/step, 24 steps, IMAX=1A
       axp_2xxx.setDC5Voltage(3700);
+#endif /* USE_USB_HOST */
 
       // ALDO 500~3500V, 100mV/step, IMAX=300mA
       axp_2xxx.setALDO3Voltage(3300); // LoRa, AXP2101 power-on value: 3300
@@ -656,7 +658,10 @@ static void ESP32_setup()
       axp_2xxx.setBLDO1Voltage(3300); // uSD
 
       // axp_2xxx.enableDC1();
+
+#if defined(USE_USB_HOST)
       axp_2xxx.enableDC5();
+#endif /* USE_USB_HOST */
 
       axp_2xxx.enableALDO3();
       axp_2xxx.enableALDO4();
@@ -1965,6 +1970,7 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32S3 || C3 */
     }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */
+
   }
 }
 
