@@ -705,9 +705,7 @@ void parseSettings(JsonObject& root)
   JsonVariant band = root["band"];
   if (band.success()) {
     const char * band_s = band.as<char*>();
-    if (!strcmp(band_s,"AUTO")) {
-      eeprom_block.field.settings.band = RF_BAND_AUTO;
-    } else if (!strcmp(band_s,"EU")) {
+    if (!strcmp(band_s,"EU")) {
       eeprom_block.field.settings.band = RF_BAND_EU;
     } else if (!strcmp(band_s,"US")) {
       eeprom_block.field.settings.band = RF_BAND_US;
@@ -719,8 +717,6 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.band = RF_BAND_RU;
     } else if (!strcmp(band_s,"CN")) {
       eeprom_block.field.settings.band = RF_BAND_CN;
-    } else if (!strcmp(band_s,"UK")) {
-      eeprom_block.field.settings.band = RF_BAND_UK;
     } else if (!strcmp(band_s,"IN")) {
       eeprom_block.field.settings.band = RF_BAND_IN;
     } else if (!strcmp(band_s,"IL")) {

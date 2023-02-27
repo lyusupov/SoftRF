@@ -8,14 +8,14 @@
 
 enum
 {
-  RF_BAND_AUTO = 0,
+  RF_BAND_AUTO = 0,  /* Deprecated - treated as EU */
   RF_BAND_EU   = 1,  /* 868.2 MHz band */
   RF_BAND_US   = 2,  /* 915 MHz band */
   RF_BAND_AU   = 3,  /* 921 MHz band */
   RF_BAND_NZ   = 4,  /* 869.250 MHz band */
   RF_BAND_RU   = 5,  /* 868.8 MHz band */
   RF_BAND_CN   = 6,  /* 470 MHz band */
-  RF_BAND_UK   = 7,  /* 869.52 MHz band */
+  RF_BAND_UK   = 7,  /* 869.52 MHz band. Deprecated - treated as EU */
   RF_BAND_IN   = 8,  /* 866.0 MHz band */
   RF_BAND_IL   = 9,  /* 916.2 MHz band */
   RF_BAND_KR   = 10  /* 920.9 MHz band */
@@ -29,6 +29,7 @@ class FreqPlan
    uint32_t BaseFreq;    // [Hz] base channel (#0) frequency
    uint32_t ChanSepar;   // [Hz] channel spacing
    int8_t   MaxTxPower;  // max. EIRP in dBm
+   uint8_t  Bandwidth;   // FANET only
    static const uint8_t MaxChannels=65;
 
   public:
@@ -38,7 +39,10 @@ class FreqPlan
      switch (Protocol)
      {
       case RF_PROTOCOL_P3I:
-        { BaseFreq= 869525000; ChanSepar= 200000; Channels= 1; MaxTxPower =  27; }
+        { BaseFreq= 869525000; ChanSepar= 200000; Channels= 1; MaxTxPower = 27; }
+#if defined(TEST_PAW_ON_NICERF_SV610_FW466)
+        BaseFreq= 869920000; // Test PAW on NiceRF SV6X0
+#endif
         break;
       case RF_PROTOCOL_ADSB_1090:
         { BaseFreq=1090000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
@@ -47,16 +51,22 @@ class FreqPlan
         { BaseFreq= 978000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }
         break;
       case RF_PROTOCOL_FANET:
+        { ChanSepar=400000; Channels= 1; MaxTxPower = 14; }
         switch (Plan)
         {
           case RF_BAND_US:
           case RF_BAND_AU:
-          case RF_BAND_NZ:
-            { BaseFreq=920800000; ChanSepar=400000; Channels= 1; MaxTxPower = 14; } // BW500
+          case RF_BAND_NZ: /* ? */
+          case RF_BAND_CN: /* ? */
+          case RF_BAND_IL: /* TBD */
+          case RF_BAND_KR: /* TBD */
+            { BaseFreq=920800000; Bandwidth = RF_RX_BANDWIDTH_SS_250KHZ; } // BW500
             break;
           case RF_BAND_EU:
+          case RF_BAND_RU:
+          case RF_BAND_IN:
           default:
-            { BaseFreq=868200000; ChanSepar=400000; Channels= 1; MaxTxPower = 14; } // BW250
+            { BaseFreq=868200000; Bandwidth = RF_RX_BANDWIDTH_SS_125KHZ; } // BW250
             break;
         }
         break;
@@ -80,13 +90,6 @@ class FreqPlan
           case RF_BAND_CN:
             { BaseFreq=470100000; ChanSepar=200000; Channels= 1 /* 18 */; MaxTxPower = 17; } // China, 470-473.6 MHz
             break;
-          case RF_BAND_UK:
-#if !defined(TEST_PAW_ON_NICERF_SV610_FW466)
-            { BaseFreq=869525000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // PilotAware (UK)
-#else
-            { BaseFreq=869920000; ChanSepar=200000; Channels= 1; MaxTxPower = 27; } // Test PAW on NiceRF SV6X0
-#endif
-            break;
           case RF_BAND_IN:
             { BaseFreq=866000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // India
             break;
@@ -97,7 +100,7 @@ class FreqPlan
             { BaseFreq=920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
             break;
           case RF_BAND_EU:
-          default:
+          default: /* AUTO, UK */
             { BaseFreq=868200000; ChanSepar=200000; Channels= 2; MaxTxPower = 14; } // Europe
             break;
         }

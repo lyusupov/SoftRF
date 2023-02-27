@@ -1971,6 +1971,10 @@ static void ESP32_EEPROM_extension(int cmd)
     }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */
 
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
   }
 }
 

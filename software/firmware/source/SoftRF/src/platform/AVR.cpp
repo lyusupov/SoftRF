@@ -287,6 +287,11 @@ static void AVR_EEPROM_extension(int cmd)
         ) {
       settings->mode = SOFTRF_MODE_NORMAL;
     }
+
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
   }
 }
 

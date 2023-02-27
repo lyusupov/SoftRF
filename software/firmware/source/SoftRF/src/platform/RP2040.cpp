@@ -620,6 +620,11 @@ static void RP2040_EEPROM_extension(int cmd)
       settings->d1090 = D1090_UART;
     }
 #endif /* USE_USB_HOST */
+
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
   }
 }
 

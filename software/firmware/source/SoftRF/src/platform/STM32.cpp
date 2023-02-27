@@ -876,6 +876,11 @@ static void STM32_EEPROM_extension(int cmd)
       settings->d1090 = D1090_UART;
     }
 #endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
+
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
   }
 }
 

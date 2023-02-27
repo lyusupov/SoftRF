@@ -292,7 +292,12 @@ static bool ESP8266_EEPROM_begin(size_t size)
 
 static void ESP8266_EEPROM_extension(int cmd)
 {
-
+  if (cmd == EEPROM_EXT_LOAD) {
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
+  }
 }
 
 static void ESP8266_SPI_begin()
