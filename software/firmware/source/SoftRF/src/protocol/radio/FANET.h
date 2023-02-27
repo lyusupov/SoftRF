@@ -42,7 +42,6 @@
 #define SOFRF_FANET_VENDOR_ID       0x07
 
 //#define FANET_NEXT
-//#define FANET_ZONE2_ENABLE
 
 enum
 {

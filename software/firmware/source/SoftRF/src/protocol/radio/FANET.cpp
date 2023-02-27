@@ -49,11 +49,11 @@ const rf_proto_desc_t fanet_proto_desc = {
   .payload_offset   = 0,
   .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
   .crc_size         = 0 /* INVALID FOR LORA */,
-  .bitrate          = DR_SF7B /* CR_5 BW_250 SF_7 */,
+  .bitrate          = DR_SF7B /* CR_5 EU:BW_250 N/SA,AU,NZ,CN,JP:BW_500 SF_7 */,
 
   .deviation        = 0 /* INVALID FOR LORA */,
   .whitening        = RF_WHITENING_NONE,
-  .bandwidth        = 0, /* INVALID FOR LORA */
+  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ, /* RF_RX_BANDWIDTH_SS_250KHZ */
 
   .air_time         = FANET_AIR_TIME,
 
