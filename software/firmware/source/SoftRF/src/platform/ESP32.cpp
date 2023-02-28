@@ -692,9 +692,19 @@ static void ESP32_setup()
       pinMode(SOC_GPIO_PIN_S3_GNSS_WAKE, OUTPUT);
 
       Wire1.beginTransmission(PCF8563_SLAVE_ADDRESS);
-      if (Wire1.endTransmission() == 0) {
-        hw_info.rtc = RTC_PCF8563;
+      bool esp32_has_rtc = (Wire1.endTransmission() == 0);
+      if (!esp32_has_rtc) {
+        delay(200);
+        Wire1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+        esp32_has_rtc = (Wire1.endTransmission() == 0);
+        if (!esp32_has_rtc) {
+          delay(200);
+          Wire1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+          esp32_has_rtc = (Wire1.endTransmission() == 0);
+        }
       }
+
+      hw_info.rtc = esp32_has_rtc ? RTC_PCF8563 : hw_info.rtc;
 
       /* wait until every LDO voltage will settle down */
       delay(200);
@@ -2072,6 +2082,36 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 }
 
+#if defined(USE_OLED)
+static byte ESP32_OLED_ident(TwoWire *bus)
+{
+  uint8_t r = 0;
+  byte rval = DISPLAY_OLED_TTGO;
+
+  bus->beginTransmission(SSD1306_OLED_I2C_ADDR);
+  bus->write(0x00);
+  bus->endTransmission();
+  bus->requestFrom((int) SSD1306_OLED_I2C_ADDR, 1);
+  if (bus->available()) {
+    r = bus->read();
+    r &= 0x0f;
+
+    if (r == 0x08 || r == 0x00 || r == 0x0C) {
+        rval = DISPLAY_OLED_1_3;  // SH1106
+    } else if (r == 0x03 || r == 0x04 || r == 0x06 || r == 0x07) {
+        rval = DISPLAY_OLED_TTGO; // SSD1306
+    }
+  }
+
+#if 1
+  Serial.print("INFO: OLED subtype ");
+  Serial.println(r, HEX);
+#endif
+
+  return rval;
+}
+#endif /* USE_OLED */
+
 static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -2087,11 +2127,15 @@ static byte ESP32_Display_setup()
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
-      WIRE_FINI(Wire);
       if (has_oled) {
-        u8x8 = &u8x8_ttgo;
-        rval = DISPLAY_OLED_TTGO;
+        rval = ESP32_OLED_ident(&Wire);
+        if (rval == DISPLAY_OLED_1_3) {
+          u8x8 = &u8x8_1_3;
+        } else {
+          u8x8 = &u8x8_ttgo;
+        }
       }
+      WIRE_FINI(Wire);
     } else if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
@@ -2108,8 +2152,17 @@ static byte ESP32_Display_setup()
         Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
         has_oled = (Wire1.endTransmission() == 0);
         if (has_oled) {
+#if 0
+          rval = ESP32_OLED_ident(&Wire1);
+          if (rval == DISPLAY_OLED_1_3) {
+            u8x8 = &u8x8_1_3;
+          } else {
+            u8x8 = &u8x8_ttgo;
+          }
+#else
           u8x8 = &u8x8_ttgo;
           rval = DISPLAY_OLED_TTGO;
+#endif
         }
       } else {
         Wire1.begin(HELTEC_OLED_PIN_SDA , HELTEC_OLED_PIN_SCL);
@@ -2127,8 +2180,17 @@ static byte ESP32_Display_setup()
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire1.endTransmission() == 0);
       if (has_oled) {
+#if 0
+        rval = ESP32_OLED_ident(&Wire1);
+        if (rval == DISPLAY_OLED_1_3) {
+          u8x8 = &u8x8_1_3;
+        } else {
+          u8x8 = &u8x8_ttgo;
+        }
+#else
         u8x8 = &u8x8_ttgo;
-
+        rval = DISPLAY_OLED_TTGO;
+#endif
         if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
           esp32_board = ESP32_TTGO_V2_OLED;
 
@@ -2139,8 +2201,6 @@ static byte ESP32_Display_setup()
           }
           hw_info.storage = STORAGE_CARD;
         }
-
-        rval = DISPLAY_OLED_TTGO;
       } else {
         if (!(hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
               hw_info.revision >= 8)) {
