@@ -29,13 +29,15 @@ Recommended:
 - [ ]   SkyView EZ
 - [ ]   Uni
 - [ ]   Mini
-- [ ]   Bracelet
+<!-- - [ ]   Bracelet -->
 - [ ]   Academy
 - [ ]   Lego
+- [ ]   ES Edition
 - [ ]   Balkan
 - [ ]   Raspberry Edition
 - [ ]   UAV
 - [ ]   WebTop Serial
+- [ ]   WebTop USB
 - [ ]   UAT978 module
 - [ ]   Flight Recorder
 

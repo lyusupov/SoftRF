@@ -508,7 +508,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_T8_S2_CONS_TX      45 // 44
 
 /* Experimental */
-//#define ENABLE_D1090_INPUT
+#define ENABLE_D1090_INPUT
 
 #include <cdc_acm_host.h>
 

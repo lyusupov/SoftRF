@@ -2231,7 +2231,12 @@ static byte ESP32_Display_setup()
         u8x8->draw2x2String( 2, 4, SoftRF_text3);
       }
 
-      u8x8->drawString   ( 3, 6 + shift_y, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   ( 3, 6 + shift_y,
+                           SOFTRF_FIRMWARE_VERSION
+#if defined(USE_USB_HOST)
+                           "H"
+#endif /* USE_USB_HOST */
+                         );
       u8x8->drawString   (11, 6 + shift_y, ISO3166_CC[settings->band]);
     }
 

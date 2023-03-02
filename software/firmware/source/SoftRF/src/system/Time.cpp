@@ -38,34 +38,6 @@ const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of th
 
 byte NTPPacketBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP NTP_udp;
-
-// send an NTP request to the time server at the given address
-unsigned long sendNTPpacket(IPAddress& address)
-{
-  Serial.println(F("sending NTP packet..."));
-  // set all bytes in the buffer to 0
-  memset(NTPPacketBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  NTPPacketBuffer[0] = 0b11100011;   // LI, Version, Mode
-  NTPPacketBuffer[1] = 0;     // Stratum, or type of clock
-  NTPPacketBuffer[2] = 6;     // Polling Interval
-  NTPPacketBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  NTPPacketBuffer[12]  = 49;
-  NTPPacketBuffer[13]  = 0x4E;
-  NTPPacketBuffer[14]  = 49;
-  NTPPacketBuffer[15]  = 52;
-
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  NTP_udp.beginPacket(address, 123); //NTP requests are to port 123
-  NTP_udp.write(NTPPacketBuffer, NTP_PACKET_SIZE);
-  NTP_udp.endPacket();
-}
-
 void Time_setup()
 {
   int cb = 0;
@@ -75,6 +47,9 @@ void Time_setup()
   if (WiFi.getMode() == WIFI_AP) {
     return;
   }
+
+  // A UDP instance to let us send and receive packets over UDP
+  WiFiUDP NTP_udp;
 
   Serial.println(F("Starting NTP UDP"));
   NTP_udp.begin(localPort);
@@ -92,7 +67,27 @@ void Time_setup()
     Serial.print(F(" NTP server's IP address: "));
     Serial.println(timeServerIP);
 
-    sendNTPpacket(timeServerIP); // send an NTP packet to a time server
+    // send an NTP request to the time server at the given address
+    Serial.println(F("sending NTP packet..."));
+    // set all bytes in the buffer to 0
+    memset(NTPPacketBuffer, 0, NTP_PACKET_SIZE);
+    // Initialize values needed to form NTP request
+    // (see URL above for details on the packets)
+    NTPPacketBuffer[0] = 0b11100011;   // LI, Version, Mode
+    NTPPacketBuffer[1] = 0;     // Stratum, or type of clock
+    NTPPacketBuffer[2] = 6;     // Polling Interval
+    NTPPacketBuffer[3] = 0xEC;  // Peer Clock Precision
+    // 8 bytes of zero for Root Delay & Root Dispersion
+    NTPPacketBuffer[12]  = 49;
+    NTPPacketBuffer[13]  = 0x4E;
+    NTPPacketBuffer[14]  = 49;
+    NTPPacketBuffer[15]  = 52;
+
+    // all NTP fields have been given values, now
+    // you can send a packet requesting a timestamp:
+    NTP_udp.beginPacket(timeServerIP, 123); //NTP requests are to port 123
+    NTP_udp.write(NTPPacketBuffer, NTP_PACKET_SIZE);
+    NTP_udp.endPacket();
 
     // wait to see if a reply is available
     delay(2000);

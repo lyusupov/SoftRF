@@ -173,7 +173,7 @@ static float bmp280_temperature()
 
 barochip_ops_t bmp280_ops = {
   BARO_MODULE_BMP280,
-  "BMP280",
+  "BMx280",
   bmp280_probe,
   bmp280_setup,
   bmp280_fini,
