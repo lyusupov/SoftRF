@@ -145,10 +145,10 @@ static uint32_t prev_rx_packets_counter = 0;
 extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
 
-const char *ESP32S2_Device_Manufacturer = SOFTRF_IDENT;
-const char *ESP32S2_Device_Model = "Standalone Edition"; /* 303a:8132 */
+const char *ESP32SX_Device_Manufacturer = SOFTRF_IDENT;
+const char *ESP32SX_Device_Model = "Standalone Edition"; /* 303a:8132 */
 const char *ESP32S3_Device_Model = "Prime Edition Mk.3"; /* 303a:8133 */
-const uint16_t ESP32S2_Device_Version = SOFTRF_USB_FW_VERSION;
+const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
 // Dummy definition to satisfy build sequence
@@ -287,9 +287,6 @@ static int32_t ESP32_msc_write_cb (uint32_t lba, uint32_t offset, uint8_t* buffe
 #endif /* USE_ADAFRUIT_MSC */
 #endif /* CONFIG_TINYUSB_MSC_ENABLED */
 
-#include <SensorQMC6310.hpp>
-SensorQMC6310 mag;
-
 #if !defined(EXCLUDE_IMU)
 #include <SensorQMI8658.hpp>
 #include <MPU9250.h>
@@ -301,8 +298,24 @@ MPU9250       imu_mpu9250;
 
 static unsigned long IMU_Time_Marker = 0;
 
+#if defined(USE_OLED)
 extern int32_t IMU_g_x10;
+#endif /* USE_OLED */
 #endif /* EXCLUDE_IMU */
+
+#if !defined(EXCLUDE_MAG)
+#include <SensorQMC6310.hpp>
+
+#define MAG_UPDATE_INTERVAL 500 /* ms */
+
+SensorQMC6310 mag_qmc6310;
+
+static unsigned long MAG_Time_Marker = 0;
+
+#if defined(USE_OLED)
+extern int32_t MAG_heading;
+#endif /* USE_OLED */
+#endif /* EXCLUDE_MAG */
 
 #include "soc/rtc.h"
 static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
@@ -709,10 +722,60 @@ static void ESP32_setup()
       /* wait until every LDO voltage will settle down */
       delay(200);
 
-      bool has_qmc = mag.begin(Wire, QMC6310_SLAVE_ADDRESS,
-                               SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-      mag.deinit(); WIRE_FINI(Wire);
-      hw_info.mag  = has_qmc ? MAG_QMC6310 : hw_info.mag;
+#if !defined(EXCLUDE_MAG)
+      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310_SLAVE_ADDRESS,
+                                       SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
+      if (has_qmc) {
+        mag_qmc6310.configMagnetometer(
+            /*
+            * Run Mode
+            * MODE_SUSPEND
+            * MODE_NORMAL
+            * MODE_SINGLE
+            * MODE_CONTINUOUS
+            * * */
+            SensorQMC6310::MODE_NORMAL,
+            /*
+            * Full Range
+            * RANGE_30G
+            * RANGE_12G
+            * RANGE_8G
+            * RANGE_2G
+            * * */
+            SensorQMC6310::RANGE_2G,
+            /*
+            * Output data rate
+            * DATARATE_10HZ
+            * DATARATE_50HZ
+            * DATARATE_100HZ
+            * DATARATE_200HZ
+            * * */
+            SensorQMC6310::DATARATE_100HZ,
+            /*
+            * Over sample Ratio1
+            * OSR_8
+            * OSR_4
+            * OSR_2
+            * OSR_1
+            * * * */
+            SensorQMC6310::OSR_1,
+
+            /*
+            * Down sample Ratio1
+            * DSR_8
+            * DSR_4
+            * DSR_2
+            * DSR_1
+            * * */
+            SensorQMC6310::DSR_1);
+
+        hw_info.mag = MAG_QMC6310;
+      } else {
+        WIRE_FINI(Wire);
+      }
+
+      MAG_Time_Marker = millis();
+#endif /* EXCLUDE_MAG */
 
 #if !defined(EXCLUDE_IMU)
       imu_qmi8658.setSpiSetting(4000000, MSBFIRST, SPI_MODE0);
@@ -890,7 +953,7 @@ static void ESP32_setup()
   #if defined(USE_ADAFRUIT_MSC)
         // Set disk vendor id, product id and revision
         // with string up to 8, 16, 4 characters respectively
-        usb_msc.setID(ESP32S2_Device_Manufacturer, "Internal Flash", "1.0");
+        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
 
         // Set callback
         usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
@@ -909,7 +972,7 @@ static void ESP32_setup()
 
         // Set disk vendor id, product id and revision
         // with string up to 8, 16, 4 characters respectively
-        usb_msc.vendorID(ESP32S2_Device_Manufacturer);
+        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
         usb_msc.productID("Internal Flash");
         usb_msc.productRevision("1.0");
 
@@ -965,7 +1028,7 @@ static void ESP32_setup()
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
     (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
-  if (USB.manufacturerName(ESP32S2_Device_Manufacturer)) {
+  if (USB.manufacturerName(ESP32SX_Device_Manufacturer)) {
     char usb_serial_number[16];
     uint16_t pid;
 
@@ -982,8 +1045,8 @@ static void ESP32_setup()
     USB.VID(USB_VID); // USB_ESPRESSIF_VID = 0x303A
     USB.PID(pid);
     USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
-                    ESP32S3_Device_Model : ESP32S2_Device_Model);
-    USB.firmwareVersion(ESP32S2_Device_Version);
+                    ESP32S3_Device_Model : ESP32SX_Device_Model);
+    USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
     USB.begin();
   }
@@ -1077,9 +1140,11 @@ static void ESP32_post_init()
     Serial.println(hw_info.imu     != IMU_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
+#if !defined(EXCLUDE_MAG)
     Serial.print(F("MAG      : "));
     Serial.println(hw_info.mag     != MAG_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
+#endif /* EXCLUDE_MAG */
 
     Serial.println();
     Serial.println(F("External components:"));
@@ -1341,7 +1406,8 @@ static void ESP32_loop()
     break;
   }
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(EXCLUDE_IMU)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  #if !defined(EXCLUDE_IMU)
   if ((millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
 
     switch (hw_info.imu)
@@ -1351,14 +1417,16 @@ static void ESP32_loop()
         float a_x = imu_mpu9250.getAccX();
         float a_y = imu_mpu9250.getAccY();
         float a_z = imu_mpu9250.getAccZ();
+    #if defined(USE_OLED)
         IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+    #endif /* USE_OLED */
       }
       break;
     case IMU_QMI8658:
       if (imu_qmi8658.getDataReady()) {
         float a_x, a_y, a_z;
         if (imu_qmi8658.getAccelerometer(a_x, a_y, a_z)) {
-#if 0
+    #if 0
             Serial.print("{ACCEL: ");
             Serial.print(a_x);
             Serial.print(",");
@@ -1366,8 +1434,10 @@ static void ESP32_loop()
             Serial.print(",");
             Serial.print(a_z);
             Serial.println("}");
-#endif
+    #endif
+    #if defined(USE_OLED)
           IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) * 10);
+    #endif /* USE_OLED */
         }
       }
       break;
@@ -1378,7 +1448,50 @@ static void ESP32_loop()
 
     IMU_Time_Marker = millis();
   }
-#endif /* CONFIG_IDF_TARGET_ESP32S3 && !EXCLUDE_IMU */
+  #endif /* !EXCLUDE_IMU */
+
+  #if !defined(EXCLUDE_MAG)
+  if ((millis() - MAG_Time_Marker) > MAG_UPDATE_INTERVAL) {
+
+    switch (hw_info.mag)
+    {
+    case MAG_QMC6310:
+      if (mag_qmc6310.isDataReady()) {
+        mag_qmc6310.readData();
+
+        float m_x = mag_qmc6310.getX();
+        float m_y = mag_qmc6310.getY();
+        float m_z = mag_qmc6310.getZ();
+        float angle = atan2(-m_z, m_x);
+        if (angle < 0) {
+          angle += 2 * PI;
+        }
+    #if defined(USE_OLED)
+        MAG_heading = (int) (angle * 180 / M_PI);
+    #endif /* USE_OLED */
+    #if 0
+        Serial.print("MAG");
+        Serial.print(" X:");
+        Serial.print(m_x);
+        Serial.print(" Y:");
+        Serial.print(m_y);
+        Serial.print(" Z:");
+        Serial.print(m_z);
+        Serial.print(" uT");
+        Serial.print(" H:");
+        Serial.println(MAG_heading);
+    #endif
+      }
+      break;
+    case MAG_NONE:
+    default:
+      break;
+    }
+
+    MAG_Time_Marker = millis();
+  }
+  #endif /* !EXCLUDE_MAG */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 static void ESP32_fini(int reason)
@@ -1405,7 +1518,7 @@ static void ESP32_fini(int reason)
     imu_mpu9250.sleep(true);
     break;
   case IMU_QMI8658:
-      imu_qmi8658.deinit();
+    imu_qmi8658.deinit();
     break;
   case IMU_NONE:
   default:
@@ -1413,6 +1526,17 @@ static void ESP32_fini(int reason)
   }
 #endif /* EXCLUDE_IMU */
 
+#if !defined(EXCLUDE_MAG)
+  switch (hw_info.mag)
+  {
+  case MAG_QMC6310:
+    mag_qmc6310.deinit();
+    break;
+  case MAG_NONE:
+  default:
+    break;
+  }
+#endif /* EXCLUDE_MAG */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   SPI.end();
@@ -3081,7 +3205,7 @@ static void handle_event(const cdc_acm_host_dev_event_data_t *event, void *user_
     }
 }
 
-static void ESP32S2_USB_setup()
+static void ESP32SX_USB_setup()
 {
     USB_RX_FIFO = new cbuf(USB_RX_FIFO_SIZE);
     USB_TX_FIFO = new cbuf(USB_TX_FIFO_SIZE);
@@ -3101,7 +3225,7 @@ static void ESP32S2_USB_setup()
     ESP_ERROR_CHECK(cdc_acm_host_install(NULL));
 }
 
-static void ESP32S2_USB_loop()
+static void ESP32SX_USB_loop()
 {
     if (!ESP32_USB_Serial.connected) {
         ESP_LOGD(TAG, "Checking list of connected USB devices");
@@ -3253,7 +3377,7 @@ static void ESP32S2_USB_loop()
     }
 }
 
-static void ESP32S2_USB_fini()
+static void ESP32SX_USB_fini()
 {
     if (ESP32_USB_Serial.device) {
       ESP32_USB_Serial.device->close();
@@ -3268,7 +3392,7 @@ static void ESP32S2_USB_fini()
     delete(USB_TX_FIFO);
 }
 
-static int ESP32S2_USB_available()
+static int ESP32SX_USB_available()
 {
   int rval = 0;
 
@@ -3277,7 +3401,7 @@ static int ESP32S2_USB_available()
   return rval;
 }
 
-static int ESP32S2_USB_read()
+static int ESP32SX_USB_read()
 {
   int rval = -1;
 
@@ -3286,7 +3410,7 @@ static int ESP32S2_USB_read()
   return rval;
 }
 
-static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
@@ -3307,7 +3431,7 @@ static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
 cbuf *USB_TX_FIFO;
 #endif /* USE_ASYNC_USB_OUTPUT */
 
-static void ESP32S2_USB_setup()
+static void ESP32SX_USB_setup()
 {
   USBSerial.setRxBufferSize(USB_RX_FIFO_SIZE);
 #if ARDUINO_USB_MODE
@@ -3318,7 +3442,7 @@ static void ESP32S2_USB_setup()
 #endif /* ARDUINO_USB_MODE */
 }
 
-static void ESP32S2_USB_loop()
+static void ESP32SX_USB_loop()
 {
 #if !ARDUINO_USB_MODE && defined(USE_ASYNC_USB_OUTPUT)
   if (USBSerial)
@@ -3335,14 +3459,14 @@ static void ESP32S2_USB_loop()
 #endif /* USE_ASYNC_USB_OUTPUT */
 }
 
-static void ESP32S2_USB_fini()
+static void ESP32SX_USB_fini()
 {
 #if !ARDUINO_USB_MODE && defined(USE_ASYNC_USB_OUTPUT)
   delete(USB_TX_FIFO);
 #endif /* USE_ASYNC_USB_OUTPUT */
 }
 
-static int ESP32S2_USB_available()
+static int ESP32SX_USB_available()
 {
   int rval = 0;
 
@@ -3353,7 +3477,7 @@ static int ESP32S2_USB_available()
   return rval;
 }
 
-static int ESP32S2_USB_read()
+static int ESP32SX_USB_read()
 {
   int rval = -1;
 
@@ -3364,7 +3488,7 @@ static int ESP32S2_USB_read()
   return rval;
 }
 
-static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
@@ -3390,14 +3514,14 @@ static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
 #endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
 
 #if ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST)
-IODev_ops_t ESP32S2_USBSerial_ops = {
-  "ESP32S2 USB",
-  ESP32S2_USB_setup,
-  ESP32S2_USB_loop,
-  ESP32S2_USB_fini,
-  ESP32S2_USB_available,
-  ESP32S2_USB_read,
-  ESP32S2_USB_write
+IODev_ops_t ESP32SX_USBSerial_ops = {
+  "ESP32SX USB",
+  ESP32SX_USB_setup,
+  ESP32SX_USB_loop,
+  ESP32SX_USB_fini,
+  ESP32SX_USB_available,
+  ESP32SX_USB_read,
+  ESP32SX_USB_write
 };
 #endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
@@ -3547,7 +3671,7 @@ const SoC_ops_t ESP32_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
-  &ESP32S2_USBSerial_ops,
+  &ESP32SX_USBSerial_ops,
 #else
   NULL,
 #endif /* USE_USB_HOST */

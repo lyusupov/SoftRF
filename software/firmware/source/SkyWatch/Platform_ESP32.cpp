@@ -1411,7 +1411,7 @@ static void handle_event(const cdc_acm_host_dev_event_data_t *event, void *user_
     }
 }
 
-static void ESP32S2_USB_setup()
+static void ESP32SX_USB_setup()
 {
     USB_RX_FIFO = new cbuf(USB_RX_FIFO_SIZE);
     USB_TX_FIFO = new cbuf(USB_TX_FIFO_SIZE);
@@ -1436,7 +1436,7 @@ static void ESP32S2_USB_setup()
     assert(p_cdc_acm_obj);
 }
 
-static void ESP32S2_USB_loop()
+static void ESP32SX_USB_loop()
 {
     if (!ESP32_USB_Serial.connected) {
         ESP_LOGD(TAG, "Checking list of connected USB devices");
@@ -1614,7 +1614,7 @@ static void ESP32S2_USB_loop()
     }
 }
 
-static void ESP32S2_USB_fini()
+static void ESP32SX_USB_fini()
 {
     if (ESP32_USB_Serial.device) {
       ESP32_USB_Serial.device->close();
@@ -1629,7 +1629,7 @@ static void ESP32S2_USB_fini()
     delete(USB_TX_FIFO);
 }
 
-static int ESP32S2_USB_available()
+static int ESP32SX_USB_available()
 {
   int rval = 0;
 
@@ -1638,7 +1638,7 @@ static int ESP32S2_USB_available()
   return rval;
 }
 
-static int ESP32S2_USB_read()
+static int ESP32SX_USB_read()
 {
   int rval = -1;
 
@@ -1647,7 +1647,7 @@ static int ESP32S2_USB_read()
   return rval;
 }
 
-static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
@@ -1661,22 +1661,22 @@ static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
 
 #define USBSerial Serial
 
-static void ESP32S2_USB_setup()
+static void ESP32SX_USB_setup()
 {
 
 }
 
-static void ESP32S2_USB_loop()
+static void ESP32SX_USB_loop()
 {
 
 }
 
-static void ESP32S2_USB_fini()
+static void ESP32SX_USB_fini()
 {
 
 }
 
-static int ESP32S2_USB_available()
+static int ESP32SX_USB_available()
 {
   int rval = 0;
 
@@ -1687,7 +1687,7 @@ static int ESP32S2_USB_available()
   return rval;
 }
 
-static int ESP32S2_USB_read()
+static int ESP32SX_USB_read()
 {
   int rval = -1;
 
@@ -1698,7 +1698,7 @@ static int ESP32S2_USB_read()
   return rval;
 }
 
-static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
+static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
@@ -1710,14 +1710,14 @@ static size_t ESP32S2_USB_write(const uint8_t *buffer, size_t size)
 }
 #endif /* USE_USB_HOST || ARDUINO_USB_CDC_ON_BOOT */
 
-IODev_ops_t ESP32S2_USBSerial_ops = {
-  "ESP32S2 USB",
-  ESP32S2_USB_setup,
-  ESP32S2_USB_loop,
-  ESP32S2_USB_fini,
-  ESP32S2_USB_available,
-  ESP32S2_USB_read,
-  ESP32S2_USB_write
+IODev_ops_t ESP32SX_USBSerial_ops = {
+  "ESP32SX USB",
+  ESP32SX_USB_setup,
+  ESP32SX_USB_loop,
+  ESP32SX_USB_fini,
+  ESP32SX_USB_available,
+  ESP32SX_USB_read,
+  ESP32SX_USB_write
 };
 
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
@@ -1775,7 +1775,7 @@ const SoC_ops_t ESP32_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
-  &ESP32S2_USBSerial_ops,
+  &ESP32SX_USBSerial_ops,
 #else
   NULL,
 #endif /* USE_USB_HOST */

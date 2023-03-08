@@ -87,6 +87,11 @@ static uint32_t prev_pressure       = (uint32_t)  -1;
 static int32_t  prev_cdr            = (int32_t)   -10000; /* climb/descent rate */
 #endif /* EXCLUDE_OLED_BARO_PAGE */
 
+#if !defined(EXCLUDE_MAG)
+int32_t MAG_heading                 = 0;
+static int32_t  prev_heading        = (int32_t) -10000;
+#endif /* EXCLUDE_MAG */
+
 #if !defined(EXCLUDE_IMU)
 int32_t IMU_g_x10                   = 0;
 static int32_t  prev_g_x10          = (int32_t) -10000;
