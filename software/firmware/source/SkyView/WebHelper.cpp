@@ -125,7 +125,8 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -215,7 +216,8 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -335,7 +337,8 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\

@@ -62,8 +62,20 @@ enum
 	SOC_NONE,
 	SOC_ESP8266,
 	SOC_ESP32,
+	SOC_ESP32S2,
+	SOC_ESP32S3,
+	SOC_ESP32C3,
 	SOC_RPi,
-	SOC_CC13XX
+	SOC_CC13X0,
+	SOC_CC13X2,
+	SOC_STM32,
+	SOC_PSOC4,
+	SOC_NRF52,
+	SOC_LPC43,
+	SOC_SAMD,
+	SOC_AVR,
+	SOC_ASR66,
+	SOC_RP2040
 };
 
 extern const SoC_ops_t *SoC;
@@ -76,8 +88,32 @@ extern const SoC_ops_t ESP32_ops;
 #if defined(RASPBERRY_PI)
 extern const SoC_ops_t RPi_ops;
 #endif
-#if defined(ENERGIA_ARCH_CC13XX)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 extern const SoC_ops_t CC13XX_ops;
+#endif
+#if defined(ARDUINO_ARCH_STM32)
+extern const SoC_ops_t STM32_ops;
+#endif
+#if defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+extern const SoC_ops_t PSoC4_ops;
+#endif
+#if defined(ARDUINO_ARCH_NRF52)
+extern const SoC_ops_t nRF52_ops;
+#endif
+#if defined(HACKRF_ONE)
+extern const SoC_ops_t LPC43_ops;
+#endif
+#if defined(ARDUINO_ARCH_SAMD)
+extern const SoC_ops_t SAMD_ops;
+#endif
+#if defined(ARDUINO_ARCH_AVR)
+extern const SoC_ops_t AVR_ops;
+#endif
+#if defined(ARDUINO_ARCH_ASR6601)
+extern const SoC_ops_t ASR66_ops;
+#endif
+#if defined(ARDUINO_ARCH_RP2040)
+extern const SoC_ops_t RP2040_ops;
 #endif
 
 byte SoC_setup(void);

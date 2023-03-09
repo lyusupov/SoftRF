@@ -15,7 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #if defined(ESP32)
+#include "sdkconfig.h"
+#endif
+
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"
@@ -30,13 +35,15 @@
 #error Bluetooth is not enabled!
 #endif
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #include <BluetoothSerial.h>
+BluetoothSerial SerialBT;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #include <BLEDevice.h>
 
 #include "WiFiHelper.h"   // HOSTNAME
 
-BluetoothSerial SerialBT;
 String BT_name = HOSTNAME;
 
 Bluetooth_ctl_t ESP32_BT_ctl = {
@@ -98,6 +105,7 @@ class AppAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
   }
 };
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 static void ESP32_BT_SPP_Connection_Manager(void *parameter)
 {
   int command;
@@ -180,6 +188,7 @@ static void ESP32_BT_SPP_Connection_Manager(void *parameter)
     delay(1000);
   }
 }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 static bool ESP32_BLEConnectToServer() {
     pClient->connect(AppDevice);
@@ -211,6 +220,7 @@ static void ESP32_Bluetooth_setup()
 {
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
@@ -225,12 +235,15 @@ static void ESP32_Bluetooth_setup()
       BT_TimeMarker = millis();
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
       BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
       esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
       BLEDevice::init("");
 
@@ -259,6 +272,7 @@ static void ESP32_Bluetooth_loop()
 
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -295,6 +309,7 @@ static void ESP32_Bluetooth_loop()
       }
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       if (ESP32_BT_ctl.command == BT_CMD_CONNECT) {
@@ -366,6 +381,7 @@ static void ESP32_Bluetooth_fini()
 {
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -377,6 +393,7 @@ static void ESP32_Bluetooth_fini()
       SerialBT.end();
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       BLEDevice::deinit();
@@ -393,6 +410,7 @@ static int ESP32_Bluetooth_available()
 
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -404,6 +422,7 @@ static int ESP32_Bluetooth_available()
       }
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       rval = BLE_FIFO_RX->available();
@@ -422,6 +441,7 @@ static int ESP32_Bluetooth_read()
 
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -433,6 +453,7 @@ static int ESP32_Bluetooth_read()
       }
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       rval = BLE_FIFO_RX->read();
@@ -452,6 +473,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
 
   switch(settings->connection)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case CON_BLUETOOTH_SPP:
     {
       portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -463,6 +485,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
       }
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
       rval = BLE_FIFO_TX->write((char *) buffer,

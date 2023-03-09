@@ -17,12 +17,18 @@
  */
 #if defined(ESP32)
 
+#include "sdkconfig.h"
+
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#include <esp_bt.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #include <soc/rtc_cntl_reg.h>
 #include <rom/spi_flash.h>
 #include <soc/adc_channel.h>
+#include <driver/i2s.h>
 #include <flashchips.h>
 
 #include "SoCHelper.h"
@@ -36,11 +42,6 @@
 #include <battery.h>
 #include <sqlite3.h>
 #include <SD.h>
-
-#include "driver/i2s.h"
-
-#include <esp_wifi.h>
-#include <esp_bt.h>
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
@@ -163,7 +164,11 @@ static void ESP32_fini()
   }
 
   esp_wifi_stop();
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
   esp_bt_controller_disable();
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
   SPI.end();
 
   /*
@@ -176,13 +181,19 @@ static void ESP32_fini()
    *  SD card in  -            0.2 mA
    *  SD card out -            0.1 mA
    */
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
   esp_sleep_enable_ext1_wakeup(1ULL << mode_button_pin, ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 //  Serial.println("Going to sleep now");
 //  Serial.flush();
 
   esp_deep_sleep_start();
 }
+
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG)
+#define TAG "MAC"
+#endif
 
 static void ESP32_setup()
 {
@@ -336,8 +347,18 @@ static void ESP32_WiFiUDP_stopAll()
 
 static void ESP32_Battery_setup()
 {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   calibrate_voltage(settings->adapter == ADAPTER_TTGO_T5S ?
                     ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+  calibrate_voltage(ADC1_GPIO9_CHANNEL); /* TBD */
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  calibrate_voltage(ADC1_GPIO2_CHANNEL); /* TBD */
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  calibrate_voltage(ADC1_GPIO1_CHANNEL); /* TBD */
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 }
 
 static float ESP32_Battery_voltage()
@@ -1019,8 +1040,21 @@ static void ESP32_WDT_fini()
 }
 
 const SoC_ops_t ESP32_ops = {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   SOC_ESP32,
   "ESP32",
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+  SOC_ESP32S2,
+  "ESP32-S2",
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  SOC_ESP32S3,
+  "ESP32-S3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+  SOC_ESP32C3,
+  "ESP32-C3",
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
   ESP32_setup,
   ESP32_fini,
   ESP32_getChipId,
@@ -1048,7 +1082,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_fini,
   ESP32_WDT_setup,
   ESP32_WDT_fini,
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   &ESP32_Bluetooth_ops
+#else
+  NULL,
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
 };
 
 #endif /* ESP32 */
