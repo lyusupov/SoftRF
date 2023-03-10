@@ -23,7 +23,6 @@ void OTA_setup()    {}
 void OTA_loop()     {}
 #else
 
-//#include <FS.h>
 #include <ArduinoOTA.h>
 
 #include "OTA.h"

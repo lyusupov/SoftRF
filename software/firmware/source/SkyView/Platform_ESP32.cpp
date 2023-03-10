@@ -271,10 +271,20 @@ static void ESP32_setup()
   }
 }
 
+static void ESP32_reset()
+{
+  ESP.restart();
+}
+
 static uint32_t ESP32_getChipId()
 {
   return (uint32_t) efuse_mac[5]        | (efuse_mac[4] << 8) | \
                    (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
+}
+
+static uint32_t ESP32_getFreeHeap()
+{
+  return ESP.getFreeHeap();
 }
 
 static bool ESP32_EEPROM_begin(size_t size)
@@ -1057,7 +1067,9 @@ const SoC_ops_t ESP32_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
   ESP32_setup,
   ESP32_fini,
+  ESP32_reset,
   ESP32_getChipId,
+  ESP32_getFreeHeap,
   ESP32_EEPROM_begin,
   ESP32_WiFi_setOutputPower,
   ESP32_WiFi_hostname,

@@ -17,6 +17,13 @@
  */
 
 #include "SoCHelper.h"
+
+#if defined(EXCLUDE_EEPROM)
+void EEPROM_setup()    {}
+void EEPROM_defaults() {}
+void EEPROM_store()    {}
+#else
+
 #include "EEPROMHelper.h"
 #include "EPDHelper.h"
 #include "TrafficHelper.h"
@@ -106,3 +113,5 @@ void EEPROM_store()
 
   EEPROM.commit();
 }
+
+#endif /* EXCLUDE_EEPROM */

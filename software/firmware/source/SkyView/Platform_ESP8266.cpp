@@ -46,9 +46,19 @@ static void ESP8266_fini()
 
 }
 
+static void ESP8266_reset()
+{
+  ESP.restart();
+}
+
 static uint32_t ESP8266_getChipId()
 {
   return ESP.getChipId();
+}
+
+static uint32_t ESP8266_getFreeHeap()
+{
+  return ESP.getFreeHeap();
 }
 
 static bool ESP8266_EEPROM_begin(size_t size)
@@ -213,7 +223,9 @@ const SoC_ops_t ESP8266_ops = {
   "ESP8266",
   ESP8266_setup,
   ESP8266_fini,
+  ESP8266_reset,
   ESP8266_getChipId,
+  ESP8266_getFreeHeap,
   ESP8266_EEPROM_begin,
   ESP8266_WiFi_setOutputPower,
   ESP8266_WiFi_hostname,

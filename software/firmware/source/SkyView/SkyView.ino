@@ -80,7 +80,7 @@ void setup()
   Serial.begin(SERIAL_OUT_BR); Serial.println();
 
   Serial.println();
-  Serial.print(F(SKYVIEW_IDENT));
+  Serial.print(F(SKYVIEW_IDENT "-"));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));

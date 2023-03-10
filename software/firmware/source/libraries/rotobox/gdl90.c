@@ -8,6 +8,10 @@
 #include <avr/pgmspace.h>
 #endif
 
+#if defined(ARDUINO_ARCH_RP2040)
+#include <stdio.h>
+#endif
+
 // Copied from the GDL90 ICD
 #if !defined(ESP8266) && !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)
 uint16_t crc16table[256];

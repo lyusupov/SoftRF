@@ -22,6 +22,7 @@
 #include "Platform_RPi.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
+#include "Platform_RP2040.h"
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -29,7 +30,9 @@ typedef struct SoC_ops_struct {
   const char name[16];
   void (*setup)();
   void (*fini)();
+  void (*reset)();
   uint32_t (*getChipId)();
+  uint32_t (*getFreeHeap)();
   bool (*EEPROM_begin)(size_t);
   void (*WiFi_setOutputPower)(int);
   bool (*WiFi_hostname)(String);

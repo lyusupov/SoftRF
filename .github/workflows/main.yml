@@ -306,18 +306,21 @@ jobs:
             cd $GITHUB_WORKSPACE/software/firmware/source/SkyView ;
             make -f Makefile.RPi ;
           fi ;
-          if [[ "$BOARD" =~ "CubeCell:CubeCell:" ]]; then
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:"  ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "adafruit:nrf52:"      ]]; then
+          if [[ "$BOARD" =~ "adafruit:nrf52:"     ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:samd:"      ]]; then
+          if [[ "$BOARD" =~ "arduino:samd:"       ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:avr:"      ]]; then
+          if [[ "$BOARD" =~ "arduino:avr:"        ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
           fi ;

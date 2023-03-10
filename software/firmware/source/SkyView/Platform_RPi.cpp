@@ -215,6 +215,11 @@ static void RPi_fini()
   exit(EXIT_SUCCESS);
 }
 
+static void RPi_reset()
+{
+
+}
+
 static uint32_t RPi_getChipId()
 {
   return SerialNumber ? SerialNumber : gethostid();
@@ -634,7 +639,9 @@ const SoC_ops_t RPi_ops = {
   "RPi",
   RPi_setup,
   RPi_fini,
+  RPi_reset,
   RPi_getChipId,
+  NULL,
   NULL,
   NULL,
   NULL,
@@ -738,7 +745,7 @@ int main(int argc, char *argv[])
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
   Serial.println();
-  Serial.print(F(SKYVIEW_IDENT));
+  Serial.print(F(SKYVIEW_IDENT "-"));
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));

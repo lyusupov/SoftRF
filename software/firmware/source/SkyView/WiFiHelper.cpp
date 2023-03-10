@@ -19,9 +19,16 @@
 #include <FS.h>
 #include <TimeLib.h>
 
+#include "SoCHelper.h"
+
+#if defined(EXCLUDE_WIFI)
+void WiFi_setup()   {}
+void WiFi_loop()    {}
+size_t WiFi_Receive_UDP(uint8_t *buf, size_t max_size) { return 0; }
+void WiFi_fini()    {}
+#else
 
 #include "EEPROMHelper.h"
-#include "SoCHelper.h"
 #include "WiFiHelper.h"
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
@@ -89,6 +96,7 @@ void WiFi_setup()
 {
 
   // Set Hostname.
+  host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
   SoC->WiFi_hostname(host_name);
 
@@ -220,3 +228,5 @@ void WiFi_fini()
 
   WiFi.mode(WIFI_OFF);
 }
+
+#endif /* EXCLUDE_WIFI */

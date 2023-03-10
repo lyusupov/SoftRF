@@ -19,11 +19,13 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
+#include "SoCHelper.h"
+
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiUdp.h>
 #endif
 
-#define HOSTNAME            "SkyView-"
+#define HOSTNAME            SKYVIEW_IDENT
 #define UDP_PACKET_BUFSIZE  256
 
 enum
@@ -39,7 +41,7 @@ size_t  WiFi_Receive_UDP(uint8_t *, size_t);
 void    WiFi_fini(void);
 
 extern String host_name;
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 extern WiFiUDP Uni_Udp;
 #endif
 

@@ -36,6 +36,8 @@
 #define SOC_GPIO_BUTTON_DOWN    RPI_V2_GPIO_P1_33
 #define SOC_GPIO_BUTTON_4       RPI_V2_GPIO_P1_35
 
+#define EXCLUDE_WIFI
+
 extern TTYSerial SerialInput;
 
 #endif /* PLATFORM_RPI_H */

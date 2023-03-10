@@ -20,7 +20,7 @@
 #define SKYVIEW_H
 
 #define SKYVIEW_FIRMWARE_VERSION  "0.12"
-#define SKYVIEW_IDENT     "SkyView-"
+#define SKYVIEW_IDENT     "SkyView"
 
 #define DEFAULT_AP_SSID   "SoftRF-abc123"
 #define DEFAULT_AP_PSK    "12345678"
