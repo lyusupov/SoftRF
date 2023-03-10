@@ -66,6 +66,7 @@ enum RP2040_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
   RP2040_RPIPICO,
+  RP2040_RPIPICO_W,
   RP2040_WEACT,
 };
 
@@ -152,7 +153,7 @@ struct rst_info {
 
 #define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 
 /* Console I/O */
 #define SOC_GPIO_PIN_CONS_RX  (5u)
@@ -222,7 +223,15 @@ struct rst_info {
 #error "This RP2040 build variant is not supported!"
 #endif
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <WiFi.h>
+#include <WebServer.h>
+#define Serial_setDebugOutput(x) ({})
+extern WebServer server;
+#else
 #define EXCLUDE_WIFI
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE

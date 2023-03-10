@@ -50,7 +50,6 @@ extern "C"
 }
 #endif /* ARDUINO_ARCH_MBED */
 
-#include <Adafruit_SPIFlash.h>
 #include <pico_sleep.h>
 
 #if defined(USE_TINYUSB)
@@ -117,7 +116,13 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
+#if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+#else
+#define ENABLE_ARDUINO_FEATURES 0
+#include "../driver/WiFi.h"
+WebServer server ( 80 );
+#endif /* EXCLUDE_WIFI */
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
@@ -145,6 +150,8 @@ static union {
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 #endif /* EXCLUDE_EEPROM */
+
+#include <Adafruit_SPIFlash.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
@@ -267,6 +274,8 @@ static void RP2040_setup()
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
   RP2040_board = (SoC->getChipId() == 0xcf516424) ?
                   RP2040_WEACT : RP2040_RPIPICO;
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  RP2040_board = RP2040_RPIPICO_W;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -540,14 +549,143 @@ static void RP2040_Sound_tone(int hz, uint8_t volume)
   }
 }
 
+static uint32_t RP2040_maxSketchSpace()
+{
+  return 1048576; /* TBD */
+}
+
 static void RP2040_WiFi_set_param(int ndx, int value)
 {
-  /* NONE */
+#if !defined(EXCLUDE_WIFI)
+  switch (ndx)
+  {
+  case WIFI_PARAM_TX_POWER:
+    switch (value)
+    {
+    case WIFI_TX_POWER_MAX:
+      WiFi.aggressiveLowPowerMode();
+      break;
+    case WIFI_TX_POWER_MIN:
+      WiFi.defaultLowPowerMode();
+      break;
+    case WIFI_TX_POWER_MED:
+    default:
+      WiFi.noLowPowerMode();
+      break;
+    }
+    break;
+  case WIFI_PARAM_DHCP_LEASE_TIME:
+    if (WiFi.getMode() == WIFI_AP) {
+      /* TBD */
+    }
+    break;
+  default:
+    break;
+  }
+#endif /* EXCLUDE_WIFI */
 }
+
+#if 0 // !defined(EXCLUDE_WIFI)
+static IPAddress RP2040_WiFi_get_broadcast()
+{
+  struct ip_info ipinfo;
+  IPAddress broadcastIp;
+
+  if (WiFi.getMode() == WIFI_STA) {
+    wifi_get_ip_info(STATION_IF, &ipinfo);
+  } else {
+    wifi_get_ip_info(SOFTAP_IF, &ipinfo);
+  }
+  broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
+
+  return broadcastIp;
+}
+#endif /* EXCLUDE_WIFI */
 
 static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-  /* NONE */
+#if !defined(EXCLUDE_WIFI)
+  IPAddress ClientIP;
+  struct station_info *stat_info;
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+#if 0 /* TBD */
+  case WIFI_STA:
+    ClientIP = RP2040_WiFi_get_broadcast();
+
+    Uni_Udp.beginPacket(ClientIP, port);
+    Uni_Udp.write(buf, size);
+    Uni_Udp.endPacket();
+
+    break;
+  case WIFI_AP:
+    stat_info = wifi_softap_get_station_info();
+
+    while (stat_info != NULL) {
+      ClientIP = stat_info->ip.addr;
+
+      Uni_Udp.beginPacket(ClientIP, port);
+      Uni_Udp.write(buf, size);
+      Uni_Udp.endPacket();
+
+      stat_info = STAILQ_NEXT(stat_info, next);
+    }
+    wifi_softap_free_station_info();
+    break;
+#endif
+  case WIFI_OFF:
+  default:
+    break;
+  }
+#endif /* EXCLUDE_WIFI */
+}
+
+static void RP2040_WiFiUDP_stopAll()
+{
+#if !defined(EXCLUDE_WIFI)
+  WiFiUDP::stopAll();
+#endif /* EXCLUDE_WIFI */
+}
+
+static bool RP2040_WiFi_hostname(String aHostname)
+{
+#if !defined(EXCLUDE_WIFI)
+  WiFi.hostname(aHostname.c_str());
+#endif /* EXCLUDE_WIFI */
+  return true;
+}
+
+static int RP2040_WiFi_clients_count()
+{
+#if !defined(EXCLUDE_WIFI)
+  struct station_info *stat_info;
+  int clients = 0;
+  WiFiMode_t mode = WiFi.getMode();
+
+  switch (mode)
+  {
+#if 0 /* TBD */
+  case WIFI_AP:
+    stat_info = wifi_softap_get_station_info();
+
+    while (stat_info != NULL) {
+      clients++;
+
+      stat_info = STAILQ_NEXT(stat_info, next);
+    }
+    wifi_softap_free_station_info();
+
+    return clients;
+#endif
+  case WIFI_STA:
+  default:
+    return -1; /* error */
+  }
+#else
+  return -1;
+#endif /* EXCLUDE_WIFI */
 }
 
 static bool RP2040_EEPROM_begin(size_t size)
@@ -564,6 +702,7 @@ static void RP2040_EEPROM_extension(int cmd)
   if (cmd == EEPROM_EXT_LOAD) {
 
     if ( RP2040_has_spiflash && FATFS_is_mounted ) {
+#if ENABLE_ARDUINO_FEATURES
       File file = fatfs.open("/settings.json", FILE_READ);
 
       if (file) {
@@ -584,6 +723,7 @@ static void RP2040_EEPROM_extension(int cmd)
         }
         file.close();
       }
+#endif /* ENABLE_ARDUINO_FEATURES */
     }
 
     if (settings->mode != SOFTRF_MODE_NORMAL
@@ -1212,12 +1352,12 @@ const SoC_ops_t RP2040_ops = {
   RP2040_random,
   RP2040_Sound_test,
   RP2040_Sound_tone,
-  NULL,
+  RP2040_maxSketchSpace,
   RP2040_WiFi_set_param,
   RP2040_WiFi_transmit_UDP,
-  NULL,
-  NULL,
-  NULL,
+  RP2040_WiFiUDP_stopAll,
+  RP2040_WiFi_hostname,
+  RP2040_WiFi_clients_count,
   RP2040_EEPROM_begin,
   RP2040_EEPROM_extension,
   RP2040_SPI_begin,

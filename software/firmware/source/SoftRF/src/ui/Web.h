@@ -46,6 +46,10 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 extern String TxDataTemplate;
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
+#ifndef Serial_setDebugOutput
+#define Serial_setDebugOutput(x) Serial.setDebugOutput(x)
+#endif /* Serial_setDebugOutput */
+
 extern WiFiClient client;
 #endif /* ARDUINO */
 

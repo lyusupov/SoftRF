@@ -719,7 +719,7 @@ void handleRoot() {
 #if defined(ENABLE_AHRS)
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
 #endif /* ENABLE_AHRS */
-    UpTime.hours, UpTime.minutes, UpTime.seconds, ESP.getFreeHeap(),
+    UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
 #if defined(USE_USB_HOST)
     ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
@@ -971,7 +971,7 @@ $('form').submit(function(e){\
   },[](){
     HTTPUpload& upload = server.upload();
     if(upload.status == UPLOAD_FILE_START){
-      Serial.setDebugOutput(true);
+      Serial_setDebugOutput(true);
       SoC->WiFiUDP_stopAll();
       SoC->WDT_fini();
       Serial.printf("Update: %s\r\n", upload.filename.c_str());
@@ -989,7 +989,7 @@ $('form').submit(function(e){\
       } else {
         Update.printError(Serial);
       }
-      Serial.setDebugOutput(false);
+      Serial_setDebugOutput(false);
     }
     yield();
   });
