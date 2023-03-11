@@ -53,9 +53,31 @@ enum RP2040_board_id {
   RP2040_WEACT,
 };
 
+/* Console I/O */
+#define SOC_GPIO_PIN_CONS_RX  (5u)
+#define SOC_GPIO_PIN_CONS_TX  (4u)
+
 /* Peripherals */
-#define SOC_GPIO_PIN_SWSER_RX D3
-#define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
+#define SOC_GPIO_PIN_GNSS_RX  (1u)
+#define SOC_GPIO_PIN_GNSS_TX  (0u)
+
+/* Waveshare Pico SPI pins mapping */
+#define SOC_EPD_PIN_MOSI_WS   (11u)
+#define SOC_EPD_PIN_MISO_WS   (28u)
+#define SOC_EPD_PIN_SCK_WS    (10u)
+#define SOC_EPD_PIN_SS_WS     (9u)
+
+/* Waveshare Pico EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     (8u)
+#define SOC_EPD_PIN_RST_WS    (12u)
+#define SOC_EPD_PIN_BUSY_WS   (13u)
+
+/* Waveshare Pico keys mapping */
+#define SOC_GPIO_PIN_KEY0     (23u)
+//#define SOC_GPIO_PIN_KEY0     (15u)
+#define SOC_GPIO_PIN_KEY1     (17u)
+#define SOC_GPIO_PIN_KEY2     (2u)
+
 #define SOC_GPIO_PIN_BATTERY  A0
 
 #endif /* PLATFORM_RP2040_H */
