@@ -46,7 +46,11 @@
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
+#if defined(EXCLUDE_WIFI)
+char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // Dummy definition to satisfy build sequence
+#else
 WebServer server ( 80 );
+#endif /* EXCLUDE_WIFI */
 
 /*
  * TTGO-T5S. Pin definition
@@ -87,9 +91,18 @@ P2                      0
                         34
                         35 (BAT)
  */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_ttgo_t5s_W3(GxEPD2_270(/*CS=5*/ 5, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
-GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_ttgo_t5s_T91(GxEPD2_270_T91(/*CS=5*/ 5, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
-
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_ttgo_t5s_W3(GxEPD2_270(
+                                          /*CS=*/   SOC_GPIO_PIN_SS_T5S,
+                                          /*DC=*/   SOC_EPD_PIN_DC_T5S,
+                                          /*RST=*/  SOC_EPD_PIN_RST_T5S,
+                                          /*BUSY=*/ SOC_EPD_PIN_BUSY_T5S
+                                          ));
+GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_ttgo_t5s_T91(GxEPD2_270_T91(
+                                                  /*CS=*/   SOC_GPIO_PIN_SS_T5S,
+                                                  /*DC=*/   SOC_EPD_PIN_DC_T5S,
+                                                  /*RST=*/  SOC_EPD_PIN_RST_T5S,
+                                                  /*BUSY=*/ SOC_EPD_PIN_BUSY_T5S
+                                                  ));
 /*
  * Waveshare E-Paper ESP32 Driver Board
 
@@ -107,8 +120,19 @@ RX0, TX0                3,1
 
 P                       0,2,4,5,12,13,14,15,16,17,18,19,21,22,23,25,26,27,32,33,34,35
  */
-GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare_W3(GxEPD2_270(/*CS=15*/ 15, /*DC=*/ 27, /*RST=*/ 26, /*BUSY=*/ 25));
-GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_waveshare_T91(GxEPD2_270_T91(/*CS=15*/ 15, /*DC=*/ 27, /*RST=*/ 26, /*BUSY=*/ 25));
+GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> epd_waveshare_W3(GxEPD2_270(
+                                          /*CS=*/   SOC_GPIO_PIN_SS_WS,
+                                          /*DC=*/   SOC_EPD_PIN_DC_WS,
+                                          /*RST=*/  SOC_EPD_PIN_RST_WS,
+                                          /*BUSY=*/ SOC_EPD_PIN_BUSY_WS
+                                          ));
+
+GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_waveshare_T91(GxEPD2_270_T91(
+                                                  /*CS=*/   SOC_GPIO_PIN_SS_WS,
+                                                  /*DC=*/   SOC_EPD_PIN_DC_WS,
+                                                  /*RST=*/  SOC_EPD_PIN_RST_WS,
+                                                  /*BUSY=*/ SOC_EPD_PIN_BUSY_WS
+                                                  ));
 
 static union {
   uint8_t efuse_mac[6];
@@ -146,11 +170,124 @@ i2s_pin_config_t pin_config = {
     .data_in_num  = -1  // Not used
 };
 
-RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR int bootCount          = 0;
+static size_t ESP32_Min_AppPart_Size = 0;
 
 static uint32_t ESP32_getFlashId()
 {
   return g_rom_flashchip.device_id;
+}
+
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG)
+#define TAG "MAC"
+#endif
+
+static void ESP32_setup()
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t null_mac[6] = {0};
+
+  ++bootCount;
+
+  ret = esp_efuse_mac_get_custom(efuse_mac);
+  if (ret != ESP_OK) {
+      ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
+    /* If get custom base MAC address error, the application developer can decide what to do:
+     * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
+     * nothing.
+     */
+
+    ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+    chipmacid = ESP.getEfuseMac();
+  } else {
+    if (memcmp(efuse_mac, null_mac, 6) == 0) {
+      ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+      chipmacid = ESP.getEfuseMac();
+    }
+  }
+
+  size_t flash_size = spi_flash_get_chip_size();
+  size_t min_app_size = flash_size;
+
+  esp_partition_iterator_t it;
+  const esp_partition_t *part;
+
+  it = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, NULL);
+  if (it) {
+    do {
+      part = esp_partition_get(it);
+      if (part->subtype == ESP_PARTITION_SUBTYPE_APP_FACTORY) {
+        continue;
+      }
+      if (part->size < min_app_size) {
+        min_app_size = part->size;
+      }
+    } while (it = esp_partition_next(it));
+
+    if (it) esp_partition_iterator_release(it);
+  }
+
+  if (min_app_size && (min_app_size != flash_size)) {
+    ESP32_Min_AppPart_Size = min_app_size;
+  }
+
+  uint32_t flash_id = ESP32_getFlashId();
+
+  /*
+   *    Board         |   Module      |  Flash memory IC
+   *  ----------------+---------------+--------------------
+   *  DoIt ESP32      | WROOM         | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.0   | PICO-D4 IC    | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.1.6 | PICO-D4 IC    | GIGADEVICE_GD25Q32
+   *  TTGO T22 V06    |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V08    |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V11    |               | BOYA_BY25Q32AL
+   *  TTGO T8  V1.8   | WROVER        | GIGADEVICE_GD25LQ32
+   *  TTGO T8 S2 V1.1 |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V1.9   |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V2.8   |               | BOYA_BY25Q32AL
+   *  TTGO T5  4.7    | WROVER-E      | XMC_XM25QH128C
+   *  TTGO T-Watch    |               | WINBOND_NEX_W25Q128_V
+   *  Ai-T NodeMCU-S3 | ESP-S3-12K    | GIGADEVICE_GD25Q64C
+   *  TTGO T-Dongle   |               | BOYA_BY25Q32AL
+   *  TTGO S3 Core    |               | GIGADEVICE_GD25Q64C
+   *  TTGO T-01C3     |               | BOYA_BY25Q32AL
+   *                  | ESP-C3-12F    | XMC_XM25QH32B
+   *  LilyGO T-TWR    | WROOM-1-N16R8 | GIGADEVICE_GD25Q128
+   */
+
+  if (psramFound()) {
+    switch(flash_id)
+    {
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
+      /* ESP32-WROVER module */
+      hw_info.revision = HW_REV_T8_1_8;
+      break;
+    case MakeFlashId(ST_ID, XMC_XM25QH128C):
+      /* custom ESP32-WROVER-E module with 16 MB flash */
+      hw_info.revision = HW_REV_T5_1;
+      break;
+    default:
+      hw_info.revision = HW_REV_UNKNOWN;
+      break;
+    }
+  } else {
+    switch(flash_id)
+    {
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q32):
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
+      hw_info.revision = HW_REV_T5S_1_9;
+      break;
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
+      hw_info.revision = HW_REV_T5S_2_8;
+      break;
+    default:
+      hw_info.revision = HW_REV_UNKNOWN;
+      break;
+    }
+  }
 }
 
 static void ESP32_fini()
@@ -189,86 +326,6 @@ static void ESP32_fini()
 //  Serial.flush();
 
   esp_deep_sleep_start();
-}
-
-#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG)
-#define TAG "MAC"
-#endif
-
-static void ESP32_setup()
-{
-  esp_err_t ret = ESP_OK;
-  uint8_t null_mac[6] = {0};
-
-  ++bootCount;
-
-  ret = esp_efuse_mac_get_custom(efuse_mac);
-  if (ret != ESP_OK) {
-      ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
-    /* If get custom base MAC address error, the application developer can decide what to do:
-     * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
-     * nothing.
-     */
-
-    ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
-    chipmacid = ESP.getEfuseMac();
-  } else {
-    if (memcmp(efuse_mac, null_mac, 6) == 0) {
-      ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
-      chipmacid = ESP.getEfuseMac();
-    }
-  }
-
-  uint32_t flash_id = ESP32_getFlashId();
-
-  /*
-   *    Board         |   Module   |  Flash memory IC
-   *  ----------------+------------+--------------------
-   *  DoIt ESP32      | WROOM      | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.0   | PICO-D4 IC | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.1.6 | PICO-D4 IC | GIGADEVICE_GD25Q32
-   *  TTGO T22 V06    |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V08    |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V11    |            | BOYA_BY25Q32AL
-   *  TTGO T8  V1.8   | WROVER     | GIGADEVICE_GD25LQ32
-   *  TTGO T5S V1.9   |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T5S V2.8   |            | BOYA_BY25Q32AL
-   *  TTGO T5  4.7    | WROVER-E   | XMC_XM25QH128C
-   *  TTGO T-Watch    |            | WINBOND_NEX_W25Q128_V
-   */
-
-  if (psramFound()) {
-    switch(flash_id)
-    {
-    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
-      /* ESP32-WROVER module */
-      hw_info.revision = HW_REV_T8_1_8;
-      break;
-    case MakeFlashId(ST_ID, XMC_XM25QH128C):
-      /* custom ESP32-WROVER-E module with 16 MB flash */
-      hw_info.revision = HW_REV_T5_1;
-      break;
-    default:
-      hw_info.revision = HW_REV_UNKNOWN;
-      break;
-    }
-  } else {
-    switch(flash_id)
-    {
-    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q32):
-      hw_info.revision = HW_REV_DEVKIT;
-      break;
-    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q32_V):
-      hw_info.revision = HW_REV_T5S_1_9;
-      break;
-    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL):
-      hw_info.revision = HW_REV_T5S_2_8;
-      break;
-    default:
-      hw_info.revision = HW_REV_UNKNOWN;
-      break;
-    }
-  }
 }
 
 static void ESP32_reset()
@@ -347,7 +404,8 @@ static void ESP32_swSer_enableRx(boolean arg)
 
 static uint32_t ESP32_maxSketchSpace()
 {
-  return 0x1E0000;
+  return ESP32_Min_AppPart_Size ?
+         ESP32_Min_AppPart_Size : 0x1E0000; /* min_spiffs.csv */
 }
 
 static void ESP32_WiFiUDP_stopAll()
@@ -773,8 +831,10 @@ int readProps(File file, wavProperties_t *wavProps)
 
 static bool play_file(char *filename)
 {
-  headerState_t state = HEADER_RIFF;
   bool rval = false;
+
+#if !defined(EXCLUDE_AUDIO)
+  headerState_t state = HEADER_RIFF;
 
   File wavfile = SD.open(filename);
 
@@ -844,6 +904,7 @@ static bool play_file(char *filename)
   if (state == DATA) {
     i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
   }
+#endif /* EXCLUDE_AUDIO */
 
   return rval;
 }

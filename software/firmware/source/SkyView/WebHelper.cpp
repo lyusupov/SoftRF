@@ -181,9 +181,40 @@ void handleSettings() {
 <td align=right>\
 <select name='connection'>\
 <option %s value='%d'>Serial</option>\
-<option %s value='%d'>WiFi UDP</option>\
-<option %s value='%d'>Bluetooth SPP</option>\
-<option %s value='%d'>Bluetooth LE</option>\
+<option %s value='%d'>WiFi UDP</option>"),
+  (settings->connection == CON_SERIAL        ? "selected" : ""), CON_SERIAL,
+  (settings->connection == CON_WIFI_UDP      ? "selected" : ""), CON_WIFI_UDP
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 2 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("<option %s value='%d'>Bluetooth SPP</option>"),
+  (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* SoC specific part 3 */
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+    snprintf_P ( offset, size,
+      PSTR("<option %s value='%d'>Bluetooth LE</option>"),
+  (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  /* Common part 3 */
+  snprintf_P ( offset, size,
+    PSTR("\
 </select>\
 </td>\
 </tr>\
@@ -205,10 +236,6 @@ void handleSettings() {
 <option %s value='%d'>19200</option>\
 <option %s value='%d'>38400</option>\
 <option %s value='%d'>57600</option>"),
-  (settings->connection == CON_SERIAL        ? "selected" : ""), CON_SERIAL,
-  (settings->connection == CON_WIFI_UDP      ? "selected" : ""), CON_WIFI_UDP,
-  (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP,
-  (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE,
   (settings->protocol   == PROTOCOL_NMEA     ? "selected" : ""), PROTOCOL_NMEA,
   (settings->protocol   == PROTOCOL_GDL90    ? "selected" : ""), PROTOCOL_GDL90,
   (settings->baudrate   == B4800             ? "selected" : ""), B4800,
@@ -222,7 +249,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* SoC specific part 2 */
+  /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
@@ -237,7 +264,7 @@ void handleSettings() {
     size -= len;
   }
 
-    /* Common part 3 */
+    /* Common part 4 */
   snprintf_P ( offset, size,
     PSTR("\
 </select>\
@@ -343,7 +370,8 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* SoC specific part 3 */
+#if !defined(EXCLUDE_AUDIO)
+  /* SoC specific part 5 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
@@ -369,8 +397,9 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif /* EXCLUDE_AUDIO */
 
-  /* Common part 4 */
+  /* Common part 5 */
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\

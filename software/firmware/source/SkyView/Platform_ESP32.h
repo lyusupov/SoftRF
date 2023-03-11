@@ -34,22 +34,12 @@
 #define SerialInput           Serial1
 
 /* Peripherals */
-#define SOC_GPIO_PIN_GNSS_RX  21
-#define SOC_GPIO_PIN_GNSS_TX  22
-
-#define SOC_BUTTON_MODE_DEF   0
 
 /* TTGO T5 and T5S SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_T5S 23
 #define SOC_GPIO_PIN_MISO_T5S 12
 #define SOC_GPIO_PIN_SCK_T5S  18
 #define SOC_GPIO_PIN_SS_T5S   5
-
-/* Waveshare ESP32 SPI pins mapping */
-#define SOC_GPIO_PIN_MOSI_WS  14
-#define SOC_GPIO_PIN_MISO_WS  12
-#define SOC_GPIO_PIN_SCK_WS   13
-#define SOC_GPIO_PIN_SS_WS    15
 
 /* TTGO T5S EPD pins mapping */
 #define SOC_EPD_PIN_DC_T5S    17
@@ -75,6 +65,77 @@
 /* TTGO T5S green LED mapping */
 #define SOC_GPIO_PIN_LED_T5S  22
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
+#define SOC_GPIO_PIN_GNSS_RX  21
+#define SOC_GPIO_PIN_GNSS_TX  22
+
+#define SOC_BUTTON_MODE_DEF   0
+
+/* Waveshare ESP32 SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  14
+#define SOC_GPIO_PIN_MISO_WS  12
+#define SOC_GPIO_PIN_SCK_WS   13
+#define SOC_GPIO_PIN_SS_WS    15
+
+/* Waveshare ESP32 EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     27
+#define SOC_EPD_PIN_RST_WS    26
+#define SOC_EPD_PIN_BUSY_WS   25
+
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+#define SOC_GPIO_PIN_GNSS_RX  1
+#define SOC_GPIO_PIN_GNSS_TX  2
+
+#define SOC_BUTTON_MODE_DEF   0
+
+/* Waveshare ESP32-S2 SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  35
+#define SOC_GPIO_PIN_MISO_WS  33
+#define SOC_GPIO_PIN_SCK_WS   36
+#define SOC_GPIO_PIN_SS_WS    34
+
+/* Waveshare ESP32-S2 EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     37
+#define SOC_EPD_PIN_RST_WS    38
+#define SOC_EPD_PIN_BUSY_WS   39
+
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#define SOC_GPIO_PIN_GNSS_RX  9
+#define SOC_GPIO_PIN_GNSS_TX  8
+
+#define SOC_BUTTON_MODE_DEF   0
+
+/* Waveshare ESP32-S3 SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  35
+#define SOC_GPIO_PIN_MISO_WS  33
+#define SOC_GPIO_PIN_SCK_WS   36
+#define SOC_GPIO_PIN_SS_WS    34
+
+/* Waveshare ESP32-S3 EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     37
+#define SOC_EPD_PIN_RST_WS    38
+#define SOC_EPD_PIN_BUSY_WS   39
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
+#define SOC_GPIO_PIN_GNSS_TX  7
+
+#define SOC_BUTTON_MODE_DEF   9  /* D3 */
+
+/* Waveshare ESP32-C3 SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  5  /* D7 */
+#define SOC_GPIO_PIN_MISO_WS  4  /* D6 */
+#define SOC_GPIO_PIN_SCK_WS   3  /* D5 */
+#define SOC_GPIO_PIN_SS_WS    8  /* D8 */
+
+/* Waveshare ESP32-C3 EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     18 /* D2 */
+#define SOC_EPD_PIN_RST_WS    19 /* D1 */
+#define SOC_EPD_PIN_BUSY_WS   2  /* D0 */
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
 /* Boya Microelectronics Inc. */
 #define BOYA_ID               0x68
 #define BOYA_BY25Q32AL        0x4016
@@ -82,6 +143,7 @@
 /* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
 #define ST_ID                 0x20
 #define XMC_XM25QH128C        0x4018
+#define XMC_XM25QH32B         0x4016
 
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
@@ -118,6 +180,10 @@ extern bool loopTaskWDTEnabled;
 extern WebServer server;
 
 //#define BUILD_SKYVIEW_HD
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define EXCLUDE_AUDIO
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #endif /* PLATFORM_ESP32_H */
 

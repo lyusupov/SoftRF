@@ -82,7 +82,7 @@ void EEPROM_defaults()
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5_4_7;
 #else
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5S;
-#endif
+#endif /* BUILD_SKYVIEW_HD */
 
   eeprom_block.field.settings.connection      = CON_SERIAL;
   eeprom_block.field.settings.baudrate        = B38400;
@@ -97,7 +97,11 @@ void EEPROM_defaults()
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
   eeprom_block.field.settings.adb             = DB_NONE;
   eeprom_block.field.settings.idpref          = ID_REG;
+#if defined(EXCLUDE_AUDIO)
+  eeprom_block.field.settings.voice           = VOICE_OFF;
+#else
   eeprom_block.field.settings.voice           = VOICE_1;
+#endif /* EXCLUDE_AUDIO */
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
 
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
