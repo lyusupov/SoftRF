@@ -24,6 +24,13 @@ public:
     // Transaction Functions
     void beginTransaction(SPISettings settings);
     void endTransaction(void);
+#if defined(ARDUINO_ARCH_RP2040)
+    /* compatibility with Arduino RP2040 Core */
+    void usingInterrupt(int interruptNumber);
+    void notUsingInterrupt(int interruptNumber);
+    void attachInterrupt();
+    void detachInterrupt();
+#endif /* ARDUINO_ARCH_RP2040 */
 private:
     uint8_t _miso;
     uint8_t _mosi;

@@ -61,6 +61,11 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_GNSS_RX  (1u)
 #define SOC_GPIO_PIN_GNSS_TX  (0u)
 
+/* Raspberry Pico W SPI pins mapping */
+#define SOC_W_PIN_MOSI        (24u)
+#define SOC_W_PIN_SCK         (29u)
+#define SOC_W_PIN_SS          (25u)
+
 /* Waveshare Pico SPI pins mapping */
 #define SOC_EPD_PIN_MOSI_WS   (11u)
 #define SOC_EPD_PIN_MISO_WS   (28u)
@@ -73,10 +78,12 @@ enum RP2040_board_id {
 #define SOC_EPD_PIN_BUSY_WS   (13u)
 
 /* Waveshare Pico keys mapping */
-#define SOC_GPIO_PIN_KEY0     (23u)
-//#define SOC_GPIO_PIN_KEY0     (15u)
+#define SOC_GPIO_PIN_KEY0     (15u)
 #define SOC_GPIO_PIN_KEY1     (17u)
 #define SOC_GPIO_PIN_KEY2     (2u)
+
+#define SOC_GPIO_PIN_BUTTON   (23u)
+#define USE_BOOTSEL_BUTTON
 
 #define SOC_GPIO_PIN_BATTERY  A0
 

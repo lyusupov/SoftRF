@@ -20,9 +20,9 @@
 #define SKYVIEW_H
 
 #define SKYVIEW_FIRMWARE_VERSION  "0.12"
+#define SKYVIEW_USB_FW_VERSION    0x0012
 #define SKYVIEW_IDENT             "SkyView"
 #define SOFTRF_IDENT              "SoftRF"
-#define SOFTRF_USB_FW_VERSION     0x0102
 
 #define DEFAULT_AP_SSID   "SoftRF-abc123"
 #define DEFAULT_AP_PSK    "12345678"
