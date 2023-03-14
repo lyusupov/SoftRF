@@ -499,7 +499,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
   return rval;
 }
 
-Bluetooth_ops_t ESP32_Bluetooth_ops = {
+IODev_ops_t ESP32_Bluetooth_ops = {
   "ESP32 Bluetooth",
   ESP32_Bluetooth_setup,
   ESP32_Bluetooth_loop,

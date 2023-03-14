@@ -214,7 +214,7 @@ void GDL90_setup()
 
     switch (settings->connection)
     {
-    case CON_SERIAL:
+    case CON_SERIAL_MAIN:
       uint32_t SerialBaud;
 
       switch (settings->baudrate)
@@ -247,8 +247,8 @@ void GDL90_setup()
       break;
     case CON_BLUETOOTH_SPP:
     case CON_BLUETOOTH_LE:
-      if (SoC->Bluetooth) {
-        SoC->Bluetooth->setup();
+      if (SoC->Bluetooth_ops) {
+        SoC->Bluetooth_ops->setup();
       }
       break;
     case CON_NONE:
@@ -267,7 +267,7 @@ void GDL90_loop()
 
   switch (settings->connection)
   {
-  case CON_SERIAL:
+  case CON_SERIAL_MAIN:
     while (SerialInput.available() > 0) {
       char c = SerialInput.read();
 //      Serial.print(c);
@@ -299,9 +299,9 @@ void GDL90_loop()
     break;
   case CON_BLUETOOTH_SPP:
   case CON_BLUETOOTH_LE:
-    if (SoC->Bluetooth) {
-      while (SoC->Bluetooth->available() > 0) {
-        char c = SoC->Bluetooth->read();
+    if (SoC->Bluetooth_ops) {
+      while (SoC->Bluetooth_ops->available() > 0) {
+        char c = SoC->Bluetooth_ops->read();
 //        Serial.print(c);
         GDL90_Parse_Character(c);
         GDL90_Data_TimeMarker = millis();

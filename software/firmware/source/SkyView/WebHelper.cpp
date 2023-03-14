@@ -182,7 +182,7 @@ void handleSettings() {
 <select name='connection'>\
 <option %s value='%d'>Serial</option>\
 <option %s value='%d'>WiFi UDP</option>"),
-  (settings->connection == CON_SERIAL        ? "selected" : ""), CON_SERIAL,
+  (settings->connection == CON_SERIAL_MAIN   ? "selected" : ""), CON_SERIAL_MAIN,
   (settings->connection == CON_WIFI_UDP      ? "selected" : ""), CON_WIFI_UDP
   );
 
@@ -515,7 +515,7 @@ void handleRoot() {
     hw_info.display      == DISPLAY_EPD_2_7   ||
     hw_info.display      == DISPLAY_EPD_4_7   ? "e-Paper" :
     hw_info.display      == DISPLAY_OLED_2_4  ? "OLED" : "NONE",
-    settings->connection == CON_SERIAL        ? "Serial" :
+    settings->connection == CON_SERIAL_MAIN   ? "Serial" :
     settings->connection == CON_BLUETOOTH_SPP ? "Bluetooth SPP" :
     settings->connection == CON_BLUETOOTH_LE  ? "Bluetooth LE" :
     settings->connection == CON_WIFI_UDP      ? "WiFi" : "NONE"
@@ -540,7 +540,7 @@ void handleRoot() {
     len = strlen(offset);
     offset += len;
     size -= len;
-  case CON_SERIAL:
+  case CON_SERIAL_MAIN:
   case CON_BLUETOOTH_SPP:
   case CON_BLUETOOTH_LE:
     switch (settings->protocol)

@@ -663,6 +663,7 @@ static bool RP2040_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   uint8_t tokens[3] = { 0 };
   cdbResult rt;
   int c, i = 0, token_cnt = 0;
+  int tok_num = 1;
 
   if (!ADB_is_open) {
     return rval;
@@ -689,21 +690,21 @@ static bool RP2040_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
       switch (settings->idpref)
       {
       case ID_TAIL:
-        snprintf(buf, size, "CN: %s",
-          strlen(out + tokens[2]) ? out + tokens[2] : "N/A");
+        tok_num = 2;
         break;
       case ID_MAM:
-        snprintf(buf, size, "%s",
-          strlen(out + tokens[0]) ? out + tokens[0] : "Unknown");
+        tok_num = 0;
         break;
       case ID_REG:
       default:
-        snprintf(buf, size, "%s",
-          strlen(out + tokens[1]) ? out + tokens[1] : "REG: N/A");
+        tok_num = 1;
         break;
       }
 
-      rval = true;
+      if (strlen(out + tokens[tok_num]) > 0) {
+        snprintf(buf, size, "%s", out + tokens[tok_num]);
+        rval = true;
+      }
       break;
 
     case KEY_NOT_FOUND:
@@ -928,6 +929,311 @@ static void RP2040_WDT_fini()
   }
 }
 
+static void RP2040_USB_setup()
+{
+#if !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR);
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+#include <api/RingBuffer.h>
+
+#define USB_TX_FIFO_SIZE (256)
+#define USB_RX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+
+#if !defined(USBD_CDC_IN_OUT_MAX_SIZE)
+#define USBD_CDC_IN_OUT_MAX_SIZE (64)
+#endif /* USBD_CDC_IN_OUT_MAX_SIZE */
+
+RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
+RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
+
+static void RP2040_USB_loop()
+{
+#if !defined(USE_TINYUSB)
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
+  size_t size;
+
+  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (USBSerial) {
+      USBSerial.write(buf, size);
+    }
+  }
+
+  while (USBSerial && USBSerial.available() > 0) {
+    if (!USB_RX_FIFO.isFull()) {
+      USB_RX_FIFO.store_char(USBSerial.read());
+    } else {
+      break;
+    }
+  }
+#endif /* USE_TINYUSB */
+}
+
+static void RP2040_USB_fini()
+{
+#if !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+static int RP2040_USB_available()
+{
+  int rval = 0;
+
+#if defined(USE_TINYUSB)
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+#else
+  rval = USB_RX_FIFO.available();
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static int RP2040_USB_read()
+{
+  int rval = -1;
+
+#if defined(USE_TINYUSB)
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+#else
+  rval = USB_RX_FIFO.read_char();
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
+{
+#if !defined(USE_TINYUSB)
+  size_t written;
+
+  for (written=0; written < size; written++) {
+    if (!USB_TX_FIFO.isFull()) {
+      USB_TX_FIFO.store_char(buffer[written]);
+    } else {
+      break;
+    }
+  }
+  return written;
+#else
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+#endif /* USE_TINYUSB */
+}
+
+#if defined(USE_USB_HOST)
+/*********************************************************************
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ Copyright (c) 2019 Ha Thach for Adafruit Industries
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+#define LANGUAGE_ID 0x0409  // English
+
+// USB Host object
+Adafruit_USBH_Host USBHost;
+
+// holding device descriptor
+tusb_desc_device_t desc_device;
+
+void setup1() {
+
+  // Check for CPU frequency, must be multiple of 120Mhz for bit-banging USB
+  uint32_t cpu_hz = clock_get_hz(clk_sys);
+  if ( cpu_hz != 120000000UL && cpu_hz != 240000000UL ) {
+    while ( !Serial ) delay(10);   // wait for native usb
+    Serial.printf("Error: CPU Clock = %u, PIO USB require CPU clock must be multiple of 120 Mhz\r\n", cpu_hz);
+    Serial.printf("Change your CPU Clock to either 120 or 240 Mhz in Menu->CPU Speed \r\n", cpu_hz);
+    while(1) delay(1);
+  }
+
+  pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
+  pio_cfg.pin_dp = SOC_GPIO_PIN_USBH_DP;
+  USBHost.configure_pio_usb(1, &pio_cfg);
+
+  // run host stack on controller (rhport) 1
+  // Note: For rp2040 pico-pio-usb, calling USBHost.begin() on core1 will have most of the
+  // host bit-banging processing works done in core1 to free up core0 for other works
+  USBHost.begin(1);
+}
+
+// core1's loop
+void loop1()
+{
+  USBHost.task();
+}
+
+//--------------------------------------------------------------------+
+// String Descriptor Helper
+//--------------------------------------------------------------------+
+
+static void _convert_utf16le_to_utf8(const uint16_t *utf16, size_t utf16_len, uint8_t *utf8, size_t utf8_len) {
+  // TODO: Check for runover.
+  (void)utf8_len;
+  // Get the UTF-16 length out of the data itself.
+
+  for (size_t i = 0; i < utf16_len; i++) {
+    uint16_t chr = utf16[i];
+    if (chr < 0x80) {
+      *utf8++ = chr & 0xff;
+    } else if (chr < 0x800) {
+      *utf8++ = (uint8_t)(0xC0 | (chr >> 6 & 0x1F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
+    } else {
+      // TODO: Verify surrogate.
+      *utf8++ = (uint8_t)(0xE0 | (chr >> 12 & 0x0F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
+    }
+    // TODO: Handle UTF-16 code points that take two entries.
+  }
+}
+
+// Count how many bytes a utf-16-le encoded string will take in utf-8.
+static int _count_utf8_bytes(const uint16_t *buf, size_t len) {
+  size_t total_bytes = 0;
+  for (size_t i = 0; i < len; i++) {
+    uint16_t chr = buf[i];
+    if (chr < 0x80) {
+      total_bytes += 1;
+    } else if (chr < 0x800) {
+      total_bytes += 2;
+    } else {
+      total_bytes += 3;
+    }
+    // TODO: Handle UTF-16 code points that take two entries.
+  }
+  return total_bytes;
+}
+
+static void print_utf16(uint16_t *temp_buf, size_t buf_len) {
+  size_t utf16_len = ((temp_buf[0] & 0xff) - 2) / sizeof(uint16_t);
+  size_t utf8_len = _count_utf8_bytes(temp_buf + 1, utf16_len);
+
+  _convert_utf16le_to_utf8(temp_buf + 1, utf16_len, (uint8_t *) temp_buf, sizeof(uint16_t) * buf_len);
+  ((uint8_t*) temp_buf)[utf8_len] = '\0';
+
+  Serial.printf((char*)temp_buf);
+}
+
+void print_device_descriptor(tuh_xfer_t* xfer)
+{
+  if ( XFER_RESULT_SUCCESS != xfer->result )
+  {
+    Serial.printf("Failed to get device descriptor\r\n");
+    return;
+  }
+
+  uint8_t const daddr = xfer->daddr;
+
+  Serial.printf("Device %u: ID %04x:%04x\r\n", daddr, desc_device.idVendor, desc_device.idProduct);
+  Serial.printf("Device Descriptor:\r\n");
+  Serial.printf("  bLength             %u\r\n"     , desc_device.bLength);
+  Serial.printf("  bDescriptorType     %u\r\n"     , desc_device.bDescriptorType);
+  Serial.printf("  bcdUSB              %04x\r\n"   , desc_device.bcdUSB);
+  Serial.printf("  bDeviceClass        %u\r\n"     , desc_device.bDeviceClass);
+  Serial.printf("  bDeviceSubClass     %u\r\n"     , desc_device.bDeviceSubClass);
+  Serial.printf("  bDeviceProtocol     %u\r\n"     , desc_device.bDeviceProtocol);
+  Serial.printf("  bMaxPacketSize0     %u\r\n"     , desc_device.bMaxPacketSize0);
+  Serial.printf("  idVendor            0x%04x\r\n" , desc_device.idVendor);
+  Serial.printf("  idProduct           0x%04x\r\n" , desc_device.idProduct);
+  Serial.printf("  bcdDevice           %04x\r\n"   , desc_device.bcdDevice);
+
+  // Get String descriptor using Sync API
+  uint16_t temp_buf[128];
+
+  Serial.printf("  iManufacturer       %u     "     , desc_device.iManufacturer);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_manufacturer_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)) )
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  iProduct            %u     "     , desc_device.iProduct);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_product_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)))
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  iSerialNumber       %u     "     , desc_device.iSerialNumber);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_serial_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)))
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  bNumConfigurations  %u\r\n"     , desc_device.bNumConfigurations);
+}
+
+//--------------------------------------------------------------------+
+// TinyUSB Host callbacks
+//--------------------------------------------------------------------+
+
+// Invoked when device is mounted (configured)
+void tuh_mount_cb (uint8_t daddr)
+{
+  Serial.printf("Device attached, address = %d\r\n", daddr);
+
+  // Get Device Descriptor
+  tuh_descriptor_get_device(daddr, &desc_device, 18, print_device_descriptor, 0);
+}
+
+/// Invoked when device is unmounted (bus reset/unplugged)
+void tuh_umount_cb(uint8_t daddr)
+{
+  Serial.printf("Device removed, address = %d\r\n", daddr);
+}
+
+#endif /* USE_USB_HOST */
+
+IODev_ops_t RP2040_USBSerial_ops = {
+  "RP2040 USB ACM",
+  RP2040_USB_setup,
+  RP2040_USB_loop,
+  RP2040_USB_fini,
+  RP2040_USB_available,
+  RP2040_USB_read,
+  RP2040_USB_write
+};
+
 const SoC_ops_t RP2040_ops = {
   SOC_RP2040,
   "RP2040",
@@ -960,7 +1266,8 @@ const SoC_ops_t RP2040_ops = {
   RP2040_Button_fini,
   RP2040_WDT_setup,
   RP2040_WDT_fini,
-  NULL
+  NULL,
+  &RP2040_USBSerial_ops,
 };
 
 #endif /* ARDUINO_ARCH_RP2040 */

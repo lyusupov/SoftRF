@@ -47,8 +47,18 @@ typedef struct hardware_info {
     byte  revision;
     byte  soc;
     byte  display;
-
+    byte  storage;
 } hardware_info_t;
+
+typedef struct IODev_ops_struct {
+  const char name[16];
+  void (*setup)();
+  void (*loop)();
+  void (*fini)();
+  int (*available)(void);
+  int (*read)(void);
+  size_t (*write)(const uint8_t *buffer, size_t size);
+} IODev_ops_t;
 
 enum
 {
@@ -84,7 +94,7 @@ enum
 	HW_REV_T5S_1_9,
 	HW_REV_T5S_2_8,
 	HW_REV_T8_1_8,
-	HW_REV_T5_1
+	HW_REV_T5_1,
 };
 
 enum
@@ -92,7 +102,7 @@ enum
 	DISPLAY_NONE,
 	DISPLAY_EPD_2_7,
 	DISPLAY_OLED_2_4,
-	DISPLAY_EPD_4_7
+	DISPLAY_EPD_4_7,
 };
 
 enum
@@ -104,17 +114,19 @@ enum
 	ADAPTER_TTGO_T5S,
 	ADAPTER_NODEMCU,
 	ADAPTER_OLED,
-	ADAPTER_TTGO_T5_4_7
+	ADAPTER_TTGO_T5_4_7,
 };
 
 enum
 {
 	CON_NONE,
-	CON_SERIAL,
+	CON_SERIAL_MAIN,
+	CON_SERIAL_AUX,
+	CON_USB,
 	CON_WIFI_UDP,
 	CON_WIFI_TCP,
 	CON_BLUETOOTH_SPP,
-	CON_BLUETOOTH_LE
+	CON_BLUETOOTH_LE,
 };
 
 enum
@@ -125,7 +137,7 @@ enum
 	B38400,
 	B57600,
 	B115200,
-	B2000000
+	B2000000,
 };
 
 enum
@@ -136,27 +148,27 @@ enum
 	PROTOCOL_MAVLINK_1,
 	PROTOCOL_MAVLINK_2,
 	PROTOCOL_D1090,
-	PROTOCOL_UATRADIO
+	PROTOCOL_UATRADIO,
 };
 
 enum
 {
 	UNITS_METRIC,
 	UNITS_IMPERIAL,
-	UNITS_MIXED     // almost the same as metric, but all the altitudes are in feet
+	UNITS_MIXED,    // almost the same as metric, but all the altitudes are in feet
 };
 
 enum
 {
 	VIEW_MODE_RADAR,
 	VIEW_MODE_TABLE,
-	VIEW_MODE_TEXT
+	VIEW_MODE_TEXT,
 };
 
 enum
 {
 	DIRECTION_TRACK_UP,
-	DIRECTION_NORTH_UP
+	DIRECTION_NORTH_UP,
 };
 
 /*
@@ -179,14 +191,15 @@ enum
 	ZOOM_LOWEST,
 	ZOOM_LOW,
 	ZOOM_MEDIUM,
-	ZOOM_HIGH
+	ZOOM_HIGH,
 };
 
 enum
 {
 	ID_REG,
 	ID_TAIL,
-	ID_MAM
+	ID_MAM,
+	ID_TYPE,
 };
 
 enum
@@ -194,7 +207,7 @@ enum
 	VOICE_OFF,
 	VOICE_1,
 	VOICE_2,
-	VOICE_3
+	VOICE_3,
 };
 
 enum
@@ -203,21 +216,21 @@ enum
 	ANTI_GHOSTING_AUTO,
 	ANTI_GHOSTING_2MIN,
 	ANTI_GHOSTING_5MIN,
-	ANTI_GHOSTING_10MIN
+	ANTI_GHOSTING_10MIN,
 };
 
 enum
 {
 	POWER_SAVE_NONE = 0,
 	POWER_SAVE_WIFI = 1,
-	POWER_SAVE_GNSS = 2
+	POWER_SAVE_GNSS = 2,
 };
 
 enum
 {
 	TRAFFIC_FILTER_OFF,
 	TRAFFIC_FILTER_500M,
-	TRAFFIC_FILTER_1500M
+	TRAFFIC_FILTER_1500M,
 };
 
 enum
@@ -226,7 +239,23 @@ enum
 	DB_AUTO,
 	DB_FLN,
 	DB_OGN,
-	DB_ICAO
+	DB_ICAO,
+};
+
+enum
+{
+	ROTATE_0,
+	ROTATE_90,
+	ROTATE_180,
+	ROTATE_270,
+};
+
+enum
+{
+	STORAGE_NONE,
+	STORAGE_FLASH,
+	STORAGE_CARD,
+	STORAGE_FLASH_AND_CARD,
 };
 
 extern hardware_info_t hw_info;

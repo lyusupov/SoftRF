@@ -23,6 +23,7 @@
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
 #include "Platform_RP2040.h"
+#include "SkyView.h"
 #include "BluetoothHelper.h"
 
 typedef struct SoC_ops_struct {
@@ -57,7 +58,8 @@ typedef struct SoC_ops_struct {
   void (*Button_fini)();
   void (*WDT_setup)();
   void (*WDT_fini)();
-  Bluetooth_ops_t *Bluetooth;
+  IODev_ops_t *Bluetooth_ops;
+  IODev_ops_t *USB_ops;
 } SoC_ops_t;
 
 enum

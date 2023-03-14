@@ -86,7 +86,7 @@ void EEPROM_defaults()
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5S;
 #endif /* BUILD_SKYVIEW_HD */
 
-  eeprom_block.field.settings.connection      = CON_SERIAL;
+  eeprom_block.field.settings.connection      = CON_SERIAL_MAIN;
   eeprom_block.field.settings.baudrate        = B38400;
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.orientation     = DIRECTION_NORTH_UP;

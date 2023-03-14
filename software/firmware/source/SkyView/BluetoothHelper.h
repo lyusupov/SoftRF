@@ -21,16 +21,6 @@
 
 #include <stddef.h>
 
-typedef struct Bluetooth_ops_struct {
-  const char name[16];
-  void (*setup)();
-  void (*loop)();
-  void (*fini)();
-  int (*available)(void);
-  int (*read)(void);
-  size_t (*write)(const uint8_t *buffer, size_t size);
-} Bluetooth_ops_t;
-
 #if defined(ESP32)
 
 #define SERVICE_UUID              "0000ffe0-0000-1000-8000-00805f9b34fb"
@@ -64,7 +54,7 @@ enum
 	BT_STATUS_CON
 };
 
-extern Bluetooth_ops_t ESP32_Bluetooth_ops;
+extern IODev_ops_t ESP32_Bluetooth_ops;
 extern Bluetooth_ctl_t ESP32_BT_ctl;
 
 #endif /* ESP32 */

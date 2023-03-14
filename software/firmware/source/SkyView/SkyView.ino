@@ -102,8 +102,12 @@ void setup()
     break;
   }
 
+  if (SoC->USB_ops) {
+     SoC->USB_ops->setup();
+  }
+
   /* If a Dongle is connected - try to wake it up */
-  if (settings->connection == CON_SERIAL &&
+  if (settings->connection == CON_SERIAL_MAIN &&
       settings->protocol   == PROTOCOL_NMEA) {
     SerialInput.write("$PSRFC,?*47\r\n");
     SerialInput.flush();
@@ -133,8 +137,12 @@ void setup()
 
 void loop()
 {
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->loop();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+  if (SoC->USB_ops) {
+    SoC->USB_ops->loop();
   }
 
   Input_loop();
@@ -160,14 +168,18 @@ void shutdown(const char *msg)
   SoC->WDT_fini();
 
   /* If a Dongle is connected - try to shut it down */
-  if (settings->connection == CON_SERIAL &&
+  if (settings->connection == CON_SERIAL_MAIN &&
       settings->protocol   == PROTOCOL_NMEA) {
     SerialInput.write("$PSRFC,OFF*37\r\n");
     SerialInput.flush();
   }
 
-  if (SoC->Bluetooth) {
-    SoC->Bluetooth->fini();
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->fini();
+  }
+
+  if (SoC->USB_ops) {
+     SoC->USB_ops->fini();
   }
 
   Web_fini();
