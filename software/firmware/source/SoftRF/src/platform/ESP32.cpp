@@ -178,10 +178,16 @@ enum {
 /// List of all possible flash devices used by ESP32 boards
 static SPIFlash_Device_t possible_devices[] = { };
 
+PCF8563_Class *rtc              = nullptr;
+I2CBus        *i2c              = nullptr;
+
 static bool ESP32_has_spiflash  = false;
 static uint32_t spiflash_id     = 0;
 static bool FATFS_is_mounted    = false;
 static bool ADB_is_open         = false;
+static bool RTC_sync            = false;
+
+RTC_Date fw_build_date_time     = RTC_Date(__DATE__, __TIME__);
 
 #if CONFIG_TINYUSB_MSC_ENABLED
   #if defined(USE_ADAFRUIT_MSC)
@@ -717,7 +723,14 @@ static void ESP32_setup()
         }
       }
 
-      hw_info.rtc = esp32_has_rtc ? RTC_PCF8563 : hw_info.rtc;
+      i2c = new I2CBus(Wire1);
+
+      if (esp32_has_rtc && (i2c != nullptr)) {
+        rtc = new PCF8563_Class(*i2c);
+
+        pinMode(SOC_GPIO_PIN_S3_RTC_IRQ, INPUT);
+        hw_info.rtc = RTC_PCF8563;
+      }
 
       /* wait until every LDO voltage will settle down */
       delay(200);
@@ -1407,6 +1420,19 @@ static void ESP32_loop()
   }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (!RTC_sync) {
+    if (rtc &&
+        gnss.date.isValid()                         &&
+        gnss.time.isValid()                         &&
+        gnss.date.year() >= fw_build_date_time.year &&
+        gnss.date.year() <  fw_build_date_time.year + 15 ) {
+      rtc->setDateTime(gnss.date.year(),   gnss.date.month(),
+                       gnss.date.day(),    gnss.time.hour(),
+                       gnss.time.minute(), gnss.time.second());
+      RTC_sync = true;
+    }
+  }
+
   #if !defined(EXCLUDE_IMU)
   if ((millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
 
