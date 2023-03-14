@@ -45,7 +45,7 @@ void parseSettings(JsonObject& root)
   if (connection.success()) {
     const char * connection_s = connection.as<char*>();
     if (!strcmp(connection_s,"SERIAL")) {
-      eeprom_block.field.settings.connection = CON_SERIAL;
+      eeprom_block.field.settings.connection = CON_SERIAL_MAIN;
     } else if (!strcmp(connection_s,"UDP")) {
       eeprom_block.field.settings.connection = CON_WIFI_UDP;
     } else if (!strcmp(connection_s,"TCP")) {

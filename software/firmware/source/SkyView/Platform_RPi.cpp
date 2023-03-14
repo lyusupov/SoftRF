@@ -186,7 +186,7 @@ static void RPi_setup()
 {
   eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7;
 
-  eeprom_block.field.settings.connection      = CON_SERIAL;
+  eeprom_block.field.settings.connection      = CON_SERIAL_MAIN;
   eeprom_block.field.settings.baudrate        = B38400;
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.orientation     = DIRECTION_NORTH_UP;
