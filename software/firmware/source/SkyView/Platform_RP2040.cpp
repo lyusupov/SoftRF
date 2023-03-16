@@ -74,7 +74,6 @@ bi_decl(bi_1pin_with_name(SOC_EPD_PIN_DC_WS,   "EPD DC"));
 #if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 #else
-#define ENABLE_ARDUINO_FEATURES 0
 WebServer server ( 80 );
 #endif /* EXCLUDE_WIFI */
 
@@ -92,14 +91,14 @@ GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_waveshare_T91(GxEPD2_270_T
                                                   /*BUSY=*/ SOC_EPD_PIN_BUSY_WS
                                                   ));
 static uint32_t bootCount __attribute__ ((section (".noinit")));
-static bool wdt_is_active = false;
+static bool wdt_is_active              = false;
 
 static RP2040_board_id RP2040_board    = RP2040_RPIPICO; /* default */
 const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
 const char *RP2040_Device_Model        = SKYVIEW_IDENT " Light";
 const uint16_t RP2040_Device_Version   = SKYVIEW_USB_FW_VERSION;
 
-#define UniqueIDsize 2
+#define UniqueIDsize                   2
 
 static union {
 #if !defined(ARDUINO_ARCH_MBED)
@@ -109,6 +108,8 @@ static union {
 };
 
 #include <Adafruit_SPIFlash.h>
+#include "uCDB.hpp"
+#include <ArduinoJson.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
@@ -139,16 +140,12 @@ Adafruit_USBD_MSC usb_msc;
 #endif /* USE_TINYUSB */
 
 // file system object from SdFat
-FatFileSystem fatfs;
+FatVolume fatfs;
 
-#if ENABLE_ARDUINO_FEATURES
-#include "uCDB.hpp"
-#include <ArduinoJson.h>
 #define RP2040_JSON_BUFFER_SIZE  1024
 
-uCDB<FatFileSystem, File> ucdb(fatfs);
+uCDB<FatVolume, File32> ucdb(fatfs);
 StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
-#endif
 
 #if !defined(ARDUINO_ARCH_MBED)
 // Callback invoked when received READ10 command.
@@ -303,7 +300,6 @@ static uint32_t RP2040_getFreeHeap()
   return &top - reinterpret_cast<char*>(_sbrk(0));
 }
 
-#if ENABLE_ARDUINO_FEATURES
 static void RP2040_parseSettings(JsonObject& root)
 {
   JsonVariant units = root["units"];
@@ -416,15 +412,13 @@ static void RP2040_parseSettings(JsonObject& root)
     settings->team = team_32;
   }
 }
-#endif /* ENABLE_ARDUINO_FEATURES */
 
 static bool RP2040_EEPROM_begin(size_t size)
 {
   EEPROM.begin(size);
 
   if ( RP2040_has_spiflash && FATFS_is_mounted ) {
-#if ENABLE_ARDUINO_FEATURES
-    File file = fatfs.open("/settings.json", FILE_READ);
+    File32 file = fatfs.open("/settings.json", FILE_READ);
 
     if (file) {
       // StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
@@ -444,7 +438,6 @@ static bool RP2040_EEPROM_begin(size_t size)
       }
       file.close();
     }
-#endif /* ENABLE_ARDUINO_FEATURES */
   }
 
   return true;
@@ -637,7 +630,6 @@ static int RP2040_WiFi_clients_count()
 
 static bool RP2040_DB_init()
 {
-#if ENABLE_ARDUINO_FEATURES
   if (FATFS_is_mounted) {
     const char fileName[] = "/Aircrafts/ogn.cdb";
 
@@ -648,7 +640,6 @@ static bool RP2040_DB_init()
       ADB_is_open = true;
     }
   }
-#endif /* ENABLE_ARDUINO_FEATURES */
 
   return ADB_is_open;
 }
@@ -657,7 +648,6 @@ static bool RP2040_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
   bool rval = false;
 
-#if ENABLE_ARDUINO_FEATURES
   char key[8];
   char out[64];
   uint8_t tokens[3] = { 0 };
@@ -711,19 +701,16 @@ static bool RP2040_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     default:
       break;
   }
-#endif /* ENABLE_ARDUINO_FEATURES */
 
   return rval;
 }
 
 static void RP2040_DB_fini()
 {
-#if ENABLE_ARDUINO_FEATURES
   if (ADB_is_open) {
     ucdb.close();
     ADB_is_open = false;
   }
-#endif /* ENABLE_ARDUINO_FEATURES */
 }
 
 static void RP2040_TTS(char *message)

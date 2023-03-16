@@ -205,7 +205,7 @@ static SPIFlash_Device_t possible_devices[] = {
 Adafruit_USBD_MSC usb_msc;
 
 // file system object from SdFat
-FatFileSystem fatfs;
+FatVolume fatfs;
 
 #define NRF52_JSON_BUFFER_SIZE  1024
 
@@ -251,7 +251,7 @@ ui_settings_t ui_settings = {
 };
 
 ui_settings_t *ui;
-uCDB<FatFileSystem, File> ucdb(fatfs);
+uCDB<FatVolume, File32> ucdb(fatfs);
 
 #if !defined(EXCLUDE_IMU)
 #define IMU_UPDATE_INTERVAL 500 /* ms */
@@ -1189,7 +1189,7 @@ static void nRF52_EEPROM_extension(int cmd)
       }
 
       if ( nRF52_has_spiflash && FATFS_is_mounted ) {
-        File file = fatfs.open("/settings.json", FILE_READ);
+        File32 file = fatfs.open("/settings.json", FILE_READ);
 
         if (file) {
           // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;

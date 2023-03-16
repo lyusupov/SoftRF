@@ -268,6 +268,20 @@ typedef struct {
     .single_status_byte = true, .is_fram = false,                              \
   }
 
+// Settings for the Macronix MX25L12833F 16MiB SPI flash.
+// Datasheet:
+// https://www.macronix.com/Lists/Datasheet/Attachments/7408/MX25L12833F,%203V,%2064Mb,%20v1.6.pdf
+#define MX25L12833F                                                            \
+  {                                                                            \
+    .total_size = (1UL << 24), /* 8 MiB */                                     \
+        .start_up_time_us = 5000, .manufacturer_id = 0xc2,                     \
+    .memory_type = 0x20, .capacity = 0x18, .max_clock_speed_mhz = 133,         \
+    .quad_enable_bit_mask = 0x40, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = true, .is_fram = false,                              \
+  }
+
 // Settings for the Cypress (was Spansion) S25FL064L 8MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/316661/download
 #define S25FL064L                                                              \

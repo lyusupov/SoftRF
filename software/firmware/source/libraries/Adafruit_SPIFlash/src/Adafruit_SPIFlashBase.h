@@ -28,6 +28,9 @@
 #include "Adafruit_FlashTransport.h"
 #include "flash_devices.h"
 
+// for debugging
+#define SPIFLASH_DEBUG 0
+
 // An easy to use interface for working with Flash memory.
 //
 // If you are managing allocation of the Flash space yourself, this is the
@@ -39,7 +42,7 @@ public:
   ~Adafruit_SPIFlashBase() {}
 
   bool begin(SPIFlash_Device_t const *flash_devs = NULL, size_t count = 1);
-  bool end(void);
+  void end(void);
 
   void setIndicator(int pin, bool state_on = true);
 
@@ -53,6 +56,7 @@ public:
   void waitUntilReady(void);
   bool writeEnable(void);
   bool writeDisable(void);
+  bool isReady(void); // both WIP and WREN are clear
 
   uint32_t getJEDECID(void);
 
@@ -89,8 +93,5 @@ protected:
     }
   }
 };
-
-// for debugging
-#define SPIFLASH_DEBUG 0
 
 #endif /* ADAFRUIT_SPIFLASHBASE_H_ */

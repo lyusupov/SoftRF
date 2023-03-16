@@ -16,42 +16,13 @@
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_NeoPixel.h>
 
-#if defined(ARDUINO_ARCH_ESP32)
-  // ESP32 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  Adafruit_FlashTransport_ESP32 flashTransport;
-
-#elif defined(ARDUINO_ARCH_RP2040)
-  // RP2040 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
-  Adafruit_FlashTransport_RP2040 flashTransport;
-
-  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
-  // If start_address and size are both 0, value that match filesystem setting in
-  // 'Tools->Flash Size' menu selection will be used
-
-#else
-  // On-board external flash (QSPI or SPI) macros should already
-  // defined in your board variant if supported
-  // - EXTERNAL_FLASH_USE_QSPI
-  // - EXTERNAL_FLASH_USE_CS/EXTERNAL_FLASH_USE_SPI
-  #if defined(EXTERNAL_FLASH_USE_QSPI)
-    Adafruit_FlashTransport_QSPI flashTransport;
-
-  #elif defined(EXTERNAL_FLASH_USE_SPI)
-    Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS, EXTERNAL_FLASH_USE_SPI);
-
-  #else
-    #error No QSPI/SPI flash are defined on your board variant.h !
-  #endif
-#endif
+// for flashTransport definition
+#include "flash_config.h"
 
 Adafruit_SPIFlash flash(&flashTransport);
 
 // file system object from SdFat
-FatFileSystem fatfs;
-
+FatVolume fatfs;
 
 #define NEOPIN         40       // neopixel pin
 #define BUFFERSIZ      200
@@ -118,8 +89,8 @@ boolean moveFile(const char *file, const char *dest) {
 
   pixel.setPixelColor(0, pixel.Color(100,100,0)); pixel.show();
 
-  File source = fatfs.open(file, FILE_READ);
-  File backup = fatfs.open(dest, FILE_WRITE);
+  File32 source = fatfs.open(file, FILE_READ);
+  File32 backup = fatfs.open(dest, FILE_WRITE);
   Serial.println("Making backup!");
   Serial.println("\n---------------------\n");
 
@@ -143,7 +114,7 @@ boolean moveFile(const char *file, const char *dest) {
     }
     buffer[toread] = 0;      
     Serial.print(buffer);
-    if (backup.write(buffer, toread) != toread) {
+    if ( (int) backup.write(buffer, toread) != toread) {
         Serial.println("Error, couldn't write data to backup file!");
         error(6);
     }

@@ -119,7 +119,6 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 #if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 #else
-#define ENABLE_ARDUINO_FEATURES 0
 #include "../driver/WiFi.h"
 WebServer server ( 80 );
 #endif /* EXCLUDE_WIFI */
@@ -181,7 +180,7 @@ Adafruit_USBD_MSC usb_msc;
 #endif /* USE_TINYUSB */
 
 // file system object from SdFat
-FatFileSystem fatfs;
+FatVolume fatfs;
 
 #define RP2040_JSON_BUFFER_SIZE  1024
 
@@ -702,8 +701,7 @@ static void RP2040_EEPROM_extension(int cmd)
   if (cmd == EEPROM_EXT_LOAD) {
 
     if ( RP2040_has_spiflash && FATFS_is_mounted ) {
-#if ENABLE_ARDUINO_FEATURES
-      File file = fatfs.open("/settings.json", FILE_READ);
+      File32 file = fatfs.open("/settings.json", FILE_READ);
 
       if (file) {
         // StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
@@ -723,7 +721,6 @@ static void RP2040_EEPROM_extension(int cmd)
         }
         file.close();
       }
-#endif /* ENABLE_ARDUINO_FEATURES */
     }
 
     if (settings->mode != SOFTRF_MODE_NORMAL

@@ -83,10 +83,22 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_KEY2     (2u)
 
 #define SOC_GPIO_PIN_BUTTON   (23u)
-#define USE_BOOTSEL_BUTTON
+
+#define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
+#define SOC_GPIO_PIN_USBH_DN  (21u)
 
 #define SOC_GPIO_PIN_BATTERY  A0
 
-#endif /* PLATFORM_RP2040_H */
+#if !defined(ARDUINO_ARCH_MBED)
+#define USE_BOOTSEL_BUTTON
+#else
+#define EXCLUDE_EEPROM
+#endif /* ARDUINO_ARCH_MBED */
 
+/* Experimental */
+#if defined(USE_TINYUSB)
+#define USE_USB_HOST
+#endif /* USE_TINYUSB */
+
+#endif /* PLATFORM_RP2040_H */
 #endif /* ARDUINO_ARCH_RP2040 */

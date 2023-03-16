@@ -50,8 +50,9 @@ static inline uint32_t offset_of(uint32_t addr) {
 Adafruit_FlashCache::Adafruit_FlashCache(void) { _addr = INVALID_ADDR; }
 
 bool Adafruit_FlashCache::sync(Adafruit_SPIFlash *fl) {
-  if (_addr == INVALID_ADDR)
+  if (_addr == INVALID_ADDR) {
     return true;
+  }
 
   fl->eraseSector(_addr / SFLASH_SECTOR_SIZE);
   fl->writeBuffer(_addr, _buf, SFLASH_SECTOR_SIZE);
@@ -74,7 +75,7 @@ bool Adafruit_FlashCache::write(Adafruit_SPIFlash *fl, uint32_t address,
     uint32_t wr_bytes = SFLASH_SECTOR_SIZE - offset;
     wr_bytes = min(remain, wr_bytes);
 
-    // Page changes, flush old and update new cache
+    // Flash sector changes, flush old and update new cache
     if (sector_addr != _addr) {
       SPICACHE_LOG(sector_addr);
       this->sync(fl);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2018 Bill Greiman
+ * Copyright (c) 2011-2022 Bill Greiman
  * This file is part of the SdFat library for SD memory cards.
  *
  * MIT License
@@ -24,13 +24,6 @@
  */
 #ifndef FatLib_h
 #define FatLib_h
-#include "ArduinoFiles.h"
-#include "FatFileSystem.h"
-#include "FatLibConfig.h"
 #include "FatVolume.h"
-#include "FatFile.h"
-#include "StdioStream.h"
-//------------------------------------------------------------------------------
-/** FatFileSystem version YYYYMMDD */
-#define FAT_LIB_VERSION 20150131
+#include "FatFormatter.h"
 #endif  // FatLib_h

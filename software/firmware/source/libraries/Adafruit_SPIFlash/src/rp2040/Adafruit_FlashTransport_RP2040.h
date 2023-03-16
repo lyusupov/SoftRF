@@ -30,20 +30,26 @@
 #include "flash_devices.h"
 
 class Adafruit_FlashTransport_RP2040 : public Adafruit_FlashTransport {
-private:
+protected:
   uint32_t _start_addr;
   uint32_t _size;
   SPIFlash_Device_t _flash_dev;
 
-public:
-  // Default constructor is compatible with CircuitPython partition scheme:
-  // start_address = 1 MB, size = total flash - 1 MB
-  Adafruit_FlashTransport_RP2040(void);
+  // check if relative addr is valid
+  bool check_addr(uint32_t addr) { return addr <= _size; }
 
-  // Generic constructor with address and size.
-  // If start_address and/or size is 0, we will auto detect value to match
-  // filesystem setting in 'Tools->Flash Size' menu selection
-  Adafruit_FlashTransport_RP2040(uint32_t start_addr, uint32_t size);
+public:
+  static const uint32_t CPY_START_ADDR;
+  static const uint32_t CPY_SIZE;
+
+  // Generic constructor with address and size. If start_address and size are 0,
+  // value that matches filesystem setting in 'Tools->Flash Size' menu selection
+  // will be used.
+  //
+  // To be compatible with CircuitPython partition scheme (start_address = 1
+  // MB, size = total flash - 1 MB) use
+  //   Adafruit_FlashTransport_RP2040(CPY_START_ADDR, CPY_SIZE)
+  Adafruit_FlashTransport_RP2040(uint32_t start_addr = 0, uint32_t size = 0);
 
   virtual void begin(void);
   virtual void end(void);
@@ -63,6 +69,14 @@ public:
   // Flash device is already detected and configured, get the pointer without
   // go through initial sequence
   SPIFlash_Device_t *getFlashDevice(void);
+};
+
+class Adafruit_FlashTransport_RP2040_CPY
+    : public Adafruit_FlashTransport_RP2040 {
+
+public:
+  Adafruit_FlashTransport_RP2040_CPY(void)
+      : Adafruit_FlashTransport_RP2040(CPY_START_ADDR, CPY_SIZE) {}
 };
 
 #endif

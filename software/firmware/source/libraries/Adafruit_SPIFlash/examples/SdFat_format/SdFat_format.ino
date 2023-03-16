@@ -30,101 +30,43 @@
 // up to 11 characters
 #define DISK_LABEL    "EXT FLASH"
 
-// Uncomment to run example with custom SPI and SS e.g with FRAM breakout
-// #define CUSTOM_CS   A5
-// #define CUSTOM_SPI  SPI
-
-#if defined(CUSTOM_CS) && defined(CUSTOM_SPI)
-  Adafruit_FlashTransport_SPI flashTransport(CUSTOM_CS, CUSTOM_SPI);
-
-#elif defined(ARDUINO_ARCH_ESP32)
-  // ESP32 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  Adafruit_FlashTransport_ESP32 flashTransport;
-
-#elif defined(ARDUINO_ARCH_RP2040)
-  // RP2040 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
-  Adafruit_FlashTransport_RP2040 flashTransport;
-
-  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
-  // If start_address and size are both 0, value that match filesystem setting in
-  // 'Tools->Flash Size' menu selection will be used
-
-#else
-  // On-board external flash (QSPI or SPI) macros should already
-  // defined in your board variant if supported
-  // - EXTERNAL_FLASH_USE_QSPI
-  // - EXTERNAL_FLASH_USE_CS/EXTERNAL_FLASH_USE_SPI
-  #if defined(EXTERNAL_FLASH_USE_QSPI)
-    Adafruit_FlashTransport_QSPI flashTransport;
-  
-  #elif defined(EXTERNAL_FLASH_USE_SPI)
-    Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS, EXTERNAL_FLASH_USE_SPI);
-  
-  #else
-    #error No QSPI/SPI flash are defined on your board variant.h !
-  #endif
-#endif
+// for flashTransport definition
+#include "flash_config.h"
 
 Adafruit_SPIFlash flash(&flashTransport);
 
-// file system object from SdFat
-FatFileSystem fatfs;
 
-// Elm Cham's fatfs objects
-FATFS elmchamFatfs;
-uint8_t workbuf[4096]; // Working buffer for f_fdisk function.
-  
-void setup() {
-  // Initialize serial port and wait for it to open before continuing.
-  Serial.begin(115200);
-  while (!Serial) delay(100);
-  
-  Serial.println("Adafruit SPI Flash FatFs Format Example");
+void format_fat12(void)
+{
+  // Working buffer for f_mkfs.
+  #ifdef __AVR__
+    uint8_t workbuf[512];
+  #else
+    uint8_t workbuf[4096];
+  #endif
 
-  // Initialize flash library and check its chip ID.
-  if (!flash.begin()) {
-    Serial.println("Error, failed to initialize flash chip!");
-    while(1) yield();
-  }
-  Serial.print("Flash chip JEDEC ID: 0x"); Serial.println(flash.getJEDECID(), HEX);
-
-  // Uncomment to flash LED while writing to flash
-  // flash.setIndicator(LED_BUILTIN, true);
-
-  // Wait for user to send OK to continue.
-  Serial.setTimeout(30000);  // Increase timeout to print message less frequently.
-  do {
-    Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    Serial.println("This sketch will ERASE ALL DATA on the flash chip and format it with a new filesystem!");
-    Serial.println("Type OK (all caps) and press enter to continue.");
-    Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  } while ( !Serial.find((char*) "OK"));
-
-  // Call fatfs begin and passed flash object to initialize file system
-  Serial.println("Creating and formatting FAT filesystem (this takes ~60 seconds)...");
+  // Elm Cham's fatfs objects
+  FATFS elmchamFatfs;
 
   // Make filesystem.
-  FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf, sizeof(workbuf));
+  FRESULT r = f_mkfs("", FM_FAT, 0, workbuf, sizeof(workbuf));
   if (r != FR_OK) {
-    Serial.print("Error, f_mkfs failed with error code: "); Serial.println(r, DEC);
+    Serial.print(F("Error, f_mkfs failed with error code: ")); Serial.println(r, DEC);
     while(1) yield();
   }
 
   // mount to set disk label
   r = f_mount(&elmchamFatfs, "0:", 1);
   if (r != FR_OK) {
-    Serial.print("Error, f_mount failed with error code: "); Serial.println(r, DEC);
+    Serial.print(F("Error, f_mount failed with error code: ")); Serial.println(r, DEC);
     while(1) yield();
   }
 
   // Setting label
-  Serial.println("Setting disk label to: " DISK_LABEL);
+  Serial.println(F("Setting disk label to: " DISK_LABEL));
   r = f_setlabel(DISK_LABEL);
   if (r != FR_OK) {
-    Serial.print("Error, f_setlabel failed with error code: "); Serial.println(r, DEC);
+    Serial.print(F("Error, f_setlabel failed with error code: ")); Serial.println(r, DEC);
     while(1) yield();
   }
 
@@ -133,17 +75,58 @@ void setup() {
 
   // sync to make sure all data is written to flash
   flash.syncBlocks();
-  
-  Serial.println("Formatted flash!");
 
+  Serial.println(F("Formatted flash!"));
+}
+
+void check_fat12(void)
+{
   // Check new filesystem
+  FatVolume fatfs;
   if (!fatfs.begin(&flash)) {
-    Serial.println("Error, failed to mount newly formatted filesystem!");
+    Serial.println(F("Error, failed to mount newly formatted filesystem!"));
     while(1) delay(1);
   }
+}
+
+
+void setup() {
+  // Initialize serial port and wait for it to open before continuing.
+  Serial.begin(115200);
+  while (!Serial) delay(100);
+  
+  Serial.println(F("Adafruit SPI Flash FatFs Format Example"));
+
+  // Initialize flash library and check its chip ID.
+  if (!flash.begin()) {
+    Serial.println(F("Error, failed to initialize flash chip!"));
+    while(1) yield();
+  }
+
+  Serial.print(F("Flash chip JEDEC ID: 0x")); Serial.println(flash.getJEDECID(), HEX);
+  Serial.print(F("Flash size: ")); Serial.print(flash.size() / 1024); Serial.println(F(" KB"));
+
+  // Uncomment to flash LED while writing to flash
+  // flash.setIndicator(LED_BUILTIN, true);
+
+  // Wait for user to send OK to continue.
+  Serial.setTimeout(30000);  // Increase timeout to print message less frequently.
+  do {
+    Serial.println(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+    Serial.println(F("This sketch will ERASE ALL DATA on the flash chip and format it with a new filesystem!"));
+    Serial.println(F("Type OK (all caps) and press enter to continue."));
+    Serial.println(F("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+  } while ( !Serial.find((char*) "OK"));
+
+  // Call fatfs begin and passed flash object to initialize file system
+  Serial.println(F("Creating and formatting FAT filesystem (this takes ~60 seconds)..."));
+
+  format_fat12();
+
+  check_fat12();
 
   // Done!
-  Serial.println("Flash chip successfully formatted with new empty filesystem!");
+  Serial.println(F("Flash chip successfully formatted with new empty filesystem!"));
 }
 
 void loop() {

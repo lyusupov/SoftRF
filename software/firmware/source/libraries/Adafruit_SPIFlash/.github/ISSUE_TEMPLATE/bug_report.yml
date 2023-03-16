@@ -52,7 +52,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Sketch
+      label: Sketch as attached file if not stock example
       placeholder: |
         e.g examples/flash_info
         If it is custom sketch, please provide links to your minimal sources or as attached files.
@@ -78,7 +78,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Debug Log
+      label: Debug Log as attached txt file
       placeholder: |
         Debug log where the issue occurred as attached txt file, best with comments to explain the actual events.
     validations:

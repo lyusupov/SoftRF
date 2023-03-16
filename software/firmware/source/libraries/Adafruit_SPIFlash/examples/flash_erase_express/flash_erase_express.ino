@@ -25,44 +25,28 @@
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_NeoPixel.h>
 
-#if defined(ARDUINO_ARCH_ESP32)
-  // ESP32 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  Adafruit_FlashTransport_ESP32 flashTransport;
-
-#elif defined(ARDUINO_ARCH_RP2040)
-  // RP2040 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
-  Adafruit_FlashTransport_RP2040 flashTransport;
-
-  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
-  // If start_address and size are both 0, value that match filesystem setting in
-  // 'Tools->Flash Size' menu selection will be used
-
-#else
-  // On-board external flash (QSPI or SPI) macros should already
-  // defined in your board variant if supported
-  // - EXTERNAL_FLASH_USE_QSPI
-  // - EXTERNAL_FLASH_USE_CS/EXTERNAL_FLASH_USE_SPI
-  #if defined(EXTERNAL_FLASH_USE_QSPI)
-    Adafruit_FlashTransport_QSPI flashTransport;
-
-  #elif defined(EXTERNAL_FLASH_USE_SPI)
-    Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS, EXTERNAL_FLASH_USE_SPI);
-
-  #else
-    #error No QSPI/SPI flash are defined on your board variant.h !
-  #endif
-#endif
+// for flashTransport definition
+#include "flash_config.h"
 
 Adafruit_SPIFlash flash(&flashTransport);
 
 // On-board status Neopixel.
-#define NEOPIN         40       // neopixel pin
-Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, NEOPIN, NEO_GRB + NEO_KHZ800);
+#if defined(ARDUINO_TRELLIS_M4)
+  #define PIN_NEOPIXEL         10
+#elif defined(ARDUINO_PYPORTAL_M4) || defined(ADAFRUIT_PYPORTAL_M4_TITANO)
+  #define PIN_NEOPIXEL         2
+#elif defined(ADAFRUIT_PYBADGE_M4_EXPRESS)
+  #define PIN_NEOPIXEL         8
+#else
+  // something else?
+  #warning "PIN_NEOPIXEL is not defined/detected, default to 8"
+  #define PIN_NEOPIXEL         8
+#endif
+
+Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 uint32_t BLUE = pixel.Color(0, 0, 100);
 uint32_t GREEN = pixel.Color(0, 100, 0);
+uint32_t YELLOW = pixel.Color(100, 100, 0);
 uint32_t RED = pixel.Color(100, 0, 0);
 uint32_t OFF = pixel.Color(0, 0, 0);
 
@@ -78,6 +62,9 @@ void setup() {
     // blink red
     blink(2, RED);
   }
+  
+  pixel.setPixelColor(0, YELLOW);
+  pixel.show();
   
   if (!flash.eraseChip()) {
     blink(3, RED);

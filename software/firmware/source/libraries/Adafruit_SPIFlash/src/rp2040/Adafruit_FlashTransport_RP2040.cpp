@@ -36,11 +36,15 @@ extern uint8_t _FS_end;
 // FS Size determined by menu selection
 #define MENU_FS_SIZE ((uint32_t)(&_FS_end - &_FS_start))
 
-// CircuitPython partition scheme with start adress = 1 MB, the rest is for
-// FileSystem
-// + 4KB since CPY does not reserve EEPROM from arduino core
-#define CPY_START_ADDR (1 * 1024 * 1024)
-#define CPY_SIZE (((uint32_t)&_FS_end) - (XIP_BASE + CPY_START_ADDR) + 4096)
+// CircuitPython partition scheme with
+// - start address = 1 MB,
+// - size = total flash - 1 MB + 4KB (since CPY does not reserve EEPROM from
+// arduino core)
+const uint32_t Adafruit_FlashTransport_RP2040::CPY_START_ADDR =
+    (1 * 1024 * 1024);
+const uint32_t Adafruit_FlashTransport_RP2040::CPY_SIZE =
+    (((uint32_t)&_FS_end) -
+     (XIP_BASE + Adafruit_FlashTransport_RP2040::CPY_START_ADDR) + 4096);
 
 static inline void fl_lock(void) {
   noInterrupts();
@@ -56,9 +60,6 @@ static inline void fl_unlock(void) {
   interrupts();
 }
 
-Adafruit_FlashTransport_RP2040::Adafruit_FlashTransport_RP2040(void)
-    : Adafruit_FlashTransport_RP2040(CPY_START_ADDR, CPY_SIZE) {}
-
 Adafruit_FlashTransport_RP2040::Adafruit_FlashTransport_RP2040(
     uint32_t start_addr, uint32_t size) {
   _cmd_read = SFLASH_CMD_READ;
@@ -67,30 +68,20 @@ Adafruit_FlashTransport_RP2040::Adafruit_FlashTransport_RP2040(
   _start_addr = start_addr;
   _size = size;
 
-  memset(&_flash_dev, 0, sizeof(_flash_dev));
-}
-
-void Adafruit_FlashTransport_RP2040::begin(void) {
-  // auto detect start address
+  // detect start address and size that match menu option
   if (!_start_addr) {
     _start_addr = (uint32_t)&_FS_start - XIP_BASE;
   }
 
-  // auto detect size
   if (!_size) {
     _size = MENU_FS_SIZE;
   }
+
+  memset(&_flash_dev, 0, sizeof(_flash_dev));
+}
+
+void Adafruit_FlashTransport_RP2040::begin(void) {
   _flash_dev.total_size = _size;
-
-#if SPIFLASH_DEBUG
-  if (Serial) {
-    Serial.print("Start = 0x");
-    Serial.println(_start_addr, HEX);
-
-    Serial.print("Size = ");
-    Serial.println(_size);
-  }
-#endif
 
   // Read the RDID register to get the flash capacity.
   uint8_t const cmd[] = {
@@ -130,6 +121,10 @@ void Adafruit_FlashTransport_RP2040::setClockSpeed(uint32_t write_hz,
 }
 
 bool Adafruit_FlashTransport_RP2040::runCommand(uint8_t command) {
+  if (_size < 4096) {
+    return false;
+  }
+
   switch (command) {
   case SFLASH_CMD_ERASE_CHIP:
     fl_lock();
@@ -178,6 +173,10 @@ bool Adafruit_FlashTransport_RP2040::eraseCommand(uint8_t command,
     return false;
   }
 
+  if (!check_addr(addr + erase_sz)) {
+    return false;
+  }
+
   fl_lock();
   flash_range_erase(_start_addr + addr, erase_sz);
   fl_unlock();
@@ -187,6 +186,10 @@ bool Adafruit_FlashTransport_RP2040::eraseCommand(uint8_t command,
 
 bool Adafruit_FlashTransport_RP2040::readMemory(uint32_t addr, uint8_t *data,
                                                 uint32_t len) {
+  if (!check_addr(addr + len)) {
+    return false;
+  }
+
   memcpy(data, (void *)(XIP_BASE + _start_addr + addr), len);
   return true;
 }
@@ -194,6 +197,10 @@ bool Adafruit_FlashTransport_RP2040::readMemory(uint32_t addr, uint8_t *data,
 bool Adafruit_FlashTransport_RP2040::writeMemory(uint32_t addr,
                                                  uint8_t const *data,
                                                  uint32_t len) {
+  if (!check_addr(addr + len)) {
+    return false;
+  }
+
   fl_lock();
   flash_range_program(_start_addr + addr, data, len);
   fl_unlock();

@@ -26,41 +26,20 @@
 #include <SdFat.h>
 #include <Adafruit_SPIFlash.h>
 
-#if defined(ARDUINO_ARCH_ESP32)
-  // ESP32 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  Adafruit_FlashTransport_ESP32 flashTransport;
-
-#elif defined(ARDUINO_ARCH_RP2040)
-  // RP2040 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
-  Adafruit_FlashTransport_RP2040 flashTransport;
-
-  // For generic usage: Adafruit_FlashTransport_RP2040(start_address, size)
-  // If start_address and size are both 0, value that match filesystem setting in
-  // 'Tools->Flash Size' menu selection will be used
-
-#else
-  // On-board external flash (QSPI or SPI) macros should already
-  // defined in your board variant if supported
-  // - EXTERNAL_FLASH_USE_QSPI
-  // - EXTERNAL_FLASH_USE_CS/EXTERNAL_FLASH_USE_SPI
-  #if defined(EXTERNAL_FLASH_USE_QSPI)
-    Adafruit_FlashTransport_QSPI flashTransport;
-
-  #elif defined(EXTERNAL_FLASH_USE_SPI)
-    Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS, EXTERNAL_FLASH_USE_SPI);
-
-  #else
-    #error No QSPI/SPI flash are defined on your board variant.h !
-  #endif
-#endif
+// for flashTransport definition
+#include "flash_config.h"
 
 Adafruit_SPIFlash flash(&flashTransport);
 
 // file system object from SdFat
-FatFileSystem fatfs;
+FatVolume fatfs;
+
+#define D_TEST                "/test"
+#define D_TEST_FOO_BAR        "/test/foo/bar"
+#define D_TEST_FOO_BAZ        "/test/foo/baz"
+
+#define F_TEST_TEST_TXT       "/test/test.txt"
+#define F_TEST_FOO_TEST2_TXT  "/test/foo/test2.txt"
 
 void setup() {
   // Initialize serial port and wait for it to open before continuing.
@@ -68,66 +47,66 @@ void setup() {
   while (!Serial) {
     delay(100);
   }
-  Serial.println("Adafruit SPI Flash FatFs Full Usage Example");
+  Serial.println(F("Adafruit SPI Flash FatFs Full Usage Example"));
 
   // Initialize flash library and check its chip ID.
   if (!flash.begin()) {
-    Serial.println("Error, failed to initialize flash chip!");
+    Serial.println(F("Error, failed to initialize flash chip!"));
     while(1) yield();
   }
-  Serial.print("Flash chip JEDEC ID: 0x"); Serial.println(flash.getJEDECID(), HEX);
+  Serial.print(F("Flash chip JEDEC ID: 0x")); Serial.println(flash.getJEDECID(), HEX);
 
   // First call begin to mount the filesystem.  Check that it returns true
   // to make sure the filesystem was mounted.
   if (!fatfs.begin(&flash)) {
-    Serial.println("Error, failed to mount newly formatted filesystem!");
-    Serial.println("Was the flash chip formatted with the SdFat_format example?");
+    Serial.println(F("Error, failed to mount newly formatted filesystem!"));
+    Serial.println(F("Was the flash chip formatted with the SdFat_format example?"));
     while(1) yield();
   }
-  Serial.println("Mounted filesystem!");
+  Serial.println(F("Mounted filesystem!"));
 
   // Check if a directory called 'test' exists and create it if not there.
   // Note you should _not_ add a trailing slash (like '/test/') to directory names!
   // You can use the same exists function to check for the existance of a file too.
-  if (!fatfs.exists("/test")) {
-    Serial.println("Test directory not found, creating...");
+  if (!fatfs.exists(D_TEST)) {
+    Serial.println(F("Test directory not found, creating..."));
     
     // Use mkdir to create directory (note you should _not_ have a trailing slash).
-    fatfs.mkdir("/test");
+    fatfs.mkdir(D_TEST);
     
-    if ( !fatfs.exists("/test") ) {
-      Serial.println("Error, failed to create directory!");
+    if ( !fatfs.exists(D_TEST) ) {
+      Serial.println(F("Error, failed to create directory!"));
       while(1) yield();
     }else {
-      Serial.println("Created directory!");
+      Serial.println(F("Created directory!"));
     }
   }
 
   // You can also create all the parent subdirectories automatically with mkdir.
   // For example to create the hierarchy /test/foo/bar:
-  Serial.println("Creating deep folder structure...");
-  if ( !fatfs.exists("/test/foo/bar") ) {
-    Serial.println("Creating /test/foo/bar");
-    fatfs.mkdir("/test/foo/bar");
+  Serial.println(F("Creating deep folder structure..."));
+  if ( !fatfs.exists(D_TEST_FOO_BAR) ) {
+    Serial.println(F("Creating " D_TEST_FOO_BAR));
+    fatfs.mkdir(D_TEST_FOO_BAR);
 
-    if ( !fatfs.exists("/test/foo/bar") ) {
-      Serial.println("Error, failed to create directory!");
+    if ( !fatfs.exists(D_TEST_FOO_BAR) ) {
+      Serial.println(F("Error, failed to create directory!"));
       while(1) yield();
     }else {
-      Serial.println("Created directory!");
+      Serial.println(F("Created directory!"));
     }
   }
 
   // This will create the hierarchy /test/foo/baz, even when /test/foo already exists:
-  if ( !fatfs.exists("/test/foo/baz") ) {
-    Serial.println("Creating /test/foo/baz");
-    fatfs.mkdir("/test/foo/baz");
+  if ( !fatfs.exists(D_TEST_FOO_BAZ) ) {
+    Serial.println(F("Creating " D_TEST_FOO_BAZ));
+    fatfs.mkdir(D_TEST_FOO_BAZ);
 
-    if ( !fatfs.exists("/test/foo/baz") ) {
-      Serial.println("Error, failed to create directory!");
+    if ( !fatfs.exists(D_TEST_FOO_BAZ) ) {
+      Serial.println(F("Error, failed to create directory!"));
       while(1) yield();
     }else {
-      Serial.println("Created directory!");
+      Serial.println(F("Created directory!"));
     }
   }
 
@@ -136,12 +115,12 @@ void setup() {
   // write to the file.  This will create the file if it doesn't exist,
   // otherwise it will open the file and start appending new data to the
   // end of it.
-  File writeFile = fatfs.open("/test/test.txt", FILE_WRITE);
+  File32 writeFile = fatfs.open(F_TEST_TEST_TXT, FILE_WRITE);
   if (!writeFile) {
-    Serial.println("Error, failed to open test.txt for writing!");
+    Serial.println(F("Error, failed to open " F_TEST_TEST_TXT " for writing!"));
     while(1) yield();
   }
-  Serial.println("Opened file /test/test.txt for writing/appending...");
+  Serial.println(F("Opened file " F_TEST_TEST_TXT " for writing/appending..."));
 
   // Once open for writing you can print to the file as if you're printing
   // to the serial terminal, the same functions are available.
@@ -151,12 +130,12 @@ void setup() {
 
   // Close the file when finished writing.
   writeFile.close();
-  Serial.println("Wrote to file /test/test.txt!");
+  Serial.println(F("Wrote to file " F_TEST_TEST_TXT "!"));
 
   // Now open the same file but for reading.
-  File readFile = fatfs.open("/test/test.txt", FILE_READ);
+  File32 readFile = fatfs.open(F_TEST_TEST_TXT, FILE_READ);
   if (!readFile) {
-    Serial.println("Error, failed to open test.txt for reading!");
+    Serial.println(F("Error, failed to open " F_TEST_TEST_TXT " for reading!"));
     while(1) yield();
   }
 
@@ -165,27 +144,29 @@ void setup() {
   //   https://www.arduino.cc/en/reference/SD
   // Read a line of data:
   String line = readFile.readStringUntil('\n');
-  Serial.print("First line of test.txt: "); Serial.println(line);
+  Serial.print(F("First line of test.txt: ")); Serial.println(line);
 
   // You can get the current position, remaining data, and total size of the file:
-  Serial.print("Total size of test.txt (bytes): "); Serial.println(readFile.size(), DEC);
-  Serial.print("Current position in test.txt: "); Serial.println(readFile.position(), DEC);
-  Serial.print("Available data to read in test.txt: "); Serial.println(readFile.available(), DEC);
+  Serial.print(F("Total size of test.txt (bytes): ")); Serial.println(readFile.size(), DEC);
+  Serial.print(F("Current position in test.txt: ")); Serial.println(readFile.position(), DEC);
+  Serial.print(F("Available data to read in test.txt: ")); Serial.println(readFile.available(), DEC);
 
   // And a few other interesting attributes of a file:
-  Serial.print("File name: "); Serial.println(readFile.name());
-  Serial.print("Is file a directory? "); Serial.println(readFile.isDirectory() ? "Yes" : "No");
+  char readName[64];
+  readFile.getName(readName, sizeof(readName));
+  Serial.print(F("File name: ")); Serial.println(readName);
+  Serial.print(F("Is file a directory? ")); Serial.println(readFile.isDirectory() ? F("Yes") : F("No"));
 
   // You can seek around inside the file relative to the start of the file.
   // For example to skip back to the start (position 0):
   if (!readFile.seek(0)) {
-    Serial.println("Error, failed to seek back to start of file!");
+    Serial.println(F("Error, failed to seek back to start of file!"));
     while(1) yield();
   }
 
   // And finally to read all the data and print it out a character at a time
   // (stopping when end of file is reached):
-  Serial.println("Entire contents of test.txt:");
+  Serial.println(F("Entire contents of test.txt:"));
   while (readFile.available()) {
     char c = readFile.read();
     Serial.print(c);
@@ -196,25 +177,25 @@ void setup() {
 
   // You can open a directory to list all the children (files and directories).
   // Just like the SD library the File type represents either a file or directory.
-  File testDir = fatfs.open("/test");
+  File32 testDir = fatfs.open(D_TEST);
   if (!testDir) {
-    Serial.println("Error, failed to open test directory!");
+    Serial.println(F("Error, failed to open test directory!"));
     while(1) yield();
   }
   if (!testDir.isDirectory()) {
-    Serial.println("Error, expected test to be a directory!");
+    Serial.println(F("Error, expected test to be a directory!"));
     while(1) yield();
   }
-  Serial.println("Listing children of directory /test:");
-  File child = testDir.openNextFile();
+  Serial.println(F("Listing children of directory " D_TEST ":"));
+  File32 child = testDir.openNextFile();
   while (child) {
     char filename[64];
     child.getName(filename, sizeof(filename));
     
     // Print the file name and mention if it's a directory.
-    Serial.print("- "); Serial.print(filename);
+    Serial.print(F("- ")); Serial.print(filename);
     if (child.isDirectory()) {
-      Serial.print(" (directory)");
+      Serial.print(F(" (directory)"));
     }
     Serial.println();
     // Keep calling openNextFile to get a new file.
@@ -231,32 +212,32 @@ void setup() {
 
   // Delete a file with the remove command.  For example create a test2.txt file
   // inside /test/foo and then delete it.
-  File test2File = fatfs.open("/test/foo/test2.txt", FILE_WRITE);
+  File32 test2File = fatfs.open(F_TEST_FOO_TEST2_TXT, FILE_WRITE);
   test2File.close();
-  Serial.println("Deleting /test/foo/test2.txt...");
-  if (!fatfs.remove("/test/foo/test2.txt")) {
-    Serial.println("Error, couldn't delete test.txt file!");
+  Serial.println(F("Deleting " F_TEST_FOO_TEST2_TXT "..."));
+  if (!fatfs.remove(F_TEST_FOO_TEST2_TXT)) {
+    Serial.println(F("Error, couldn't delete " F_TEST_FOO_TEST2_TXT " file!"));
     while(1) yield();
   }
-  Serial.println("Deleted file!");
+  Serial.println(F("Deleted file!"));
 
   // Delete a directory with the rmdir command.  Be careful as
   // this will delete EVERYTHING in the directory at all levels!
   // I.e. this is like running a recursive delete, rm -rf *, in
   // unix filesystems!
-  Serial.println("Deleting /test directory and everything inside it...");
+  Serial.println(F("Deleting /test directory and everything inside it..."));
   if (!testDir.rmRfStar()) {
-    Serial.println("Error, couldn't delete test directory!");
+    Serial.println(F("Error, couldn't delete test directory!"));
     while(1) yield();
   }
   // Check that test is really deleted.
-  if (fatfs.exists("/test")) {
-    Serial.println("Error, test directory was not deleted!");
+  if (fatfs.exists(D_TEST)) {
+    Serial.println(F("Error, test directory was not deleted!"));
     while(1) yield();
   }
-  Serial.println("Test directory was deleted!");
+  Serial.println(F("Test directory was deleted!"));
 
-  Serial.println("Finished!");
+  Serial.println(F("Finished!"));
 }
 
 void loop() {

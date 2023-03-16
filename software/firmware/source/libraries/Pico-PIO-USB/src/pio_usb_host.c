@@ -408,11 +408,12 @@ bool pio_usb_host_endpoint_transfer(uint8_t root_idx, uint8_t device_address,
     return false;
   }
 
-  // control endpoint switch direction when switch stage
-  if (ep->ep_num != ep_address) {
+  // Control endpoint, address may switch between 0x00 <-> 0x80
+  // therefore we need to update ep_num and is_tx
+  if ((ep_address & 0x7f) == 0) {
     ep->ep_num = ep_address;
-    ep->data_id = 1; // data and status always start with DATA1
     ep->is_tx = (ep_address == 0) ? true : false;
+    ep->data_id = 1; // data and status always start with DATA1
   }
 
   return pio_usb_ll_transfer_start(ep, buffer, buflen);
@@ -746,7 +747,7 @@ static int get_string_descriptor(usb_device_t *device, uint8_t idx,
     return res;
   }
 
-  uint16_t *wchar_buffer = (uint16_t *)rx_buffer;
+  uint16_t *wchar_buffer = (uint16_t *)(uintptr_t) rx_buffer;
   for (int i = 0; i < (len - 2) / 2; i++) {
     str_buffer[i] = wchar_buffer[i + 1];
   }
@@ -848,7 +849,7 @@ static int enumerate_device(usb_device_t *device, uint8_t address) {
           ->total_length_msb;
   uint16_t request_length =
       get_configuration_descriptor_request.length_lsb |
-      (get_configuration_descriptor_request.index_msb << 8);
+      (get_configuration_descriptor_request.length_msb << 8);
   res = control_in_protocol(
       device, (uint8_t *)&get_configuration_descriptor_request,
       sizeof(get_configuration_descriptor_request), rx_buffer, request_length);
@@ -1088,7 +1089,7 @@ static void __no_inline_not_in_flash_func(process_hub_event)(
       clear_hub_feature(device, port, HUB_CLR_PORT_CONNECTION);
     } else if (status.port_change & HUB_CHANGE_PORT_RESET) {
       printf("reset port %d complete\n", port);
-      int res = clear_hub_feature(device, port, HUB_CLR_PORT_RESET);
+      res = clear_hub_feature(device, port, HUB_CLR_PORT_RESET);
       if (res == 0) {
         assign_new_device_to_port(device, port,
                                   status.port_status & HUB_STAT_PORT_LOWSPEED);

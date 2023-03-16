@@ -204,7 +204,7 @@ RTC_Date fw_build_date_time     = RTC_Date(__DATE__, __TIME__);
 #endif /* CONFIG_TINYUSB_MSC_ENABLED */
 
 // file system object from SdFat
-FatFileSystem fatfs;
+FatVolume fatfs;
 
 ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
@@ -222,7 +222,7 @@ ui_settings_t ui_settings = {
 };
 
 ui_settings_t *ui;
-uCDB<FatFileSystem, File> ucdb(fatfs);
+uCDB<FatVolume, File32> ucdb(fatfs);
 
 #if CONFIG_TINYUSB_MSC_ENABLED
 #if defined(USE_ADAFRUIT_MSC)
