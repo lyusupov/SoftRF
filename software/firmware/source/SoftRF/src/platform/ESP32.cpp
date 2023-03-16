@@ -156,12 +156,14 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #endif /* EXCLUDE_WIFI */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+//#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
 #include "../driver/EPD.h"
 #include "uCDB.hpp"
 
 SPIClass uSD_SPI(HSPI);
-SdFat    uSD(&uSD_SPI);
+#define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(16), &uSD_SPI)
+SdFat    uSD;
 
 static bool uSD_is_mounted = false;
 
@@ -1017,7 +1019,7 @@ static void ESP32_setup()
     pinMode(uSD_SS_pin, OUTPUT);
     digitalWrite(uSD_SS_pin, HIGH);
 
-    uSD_is_mounted = uSD.cardBegin(uSD_SS_pin);
+    uSD_is_mounted = uSD.cardBegin(SD_CONFIG);
 
     if (uSD_is_mounted && uSD.card()->cardSize() > 0) {
       hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
@@ -1201,7 +1203,7 @@ static void ESP32_post_init()
       Serial.print(cardSize / (2 * 1024));
       Serial.println(" MB");
 
-      uSD.fsBegin();
+      uSD.volumeBegin();
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */

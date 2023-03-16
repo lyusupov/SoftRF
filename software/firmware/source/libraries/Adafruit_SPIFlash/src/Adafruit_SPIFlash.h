@@ -94,12 +94,21 @@ public:
     return readSectors(block, dst, nb);
   }
 
+  virtual bool readBlocks(uint32_t block, uint32_t off, uint8_t *dst, size_t nb) {
+    return readSectors(block, off, dst, nb);
+  }
+
+
   virtual bool writeBlock(uint32_t block, const uint8_t *src) {
     return writeSector(block, src);
   }
 
   virtual bool writeBlocks(uint32_t block, const uint8_t *src, size_t nb) {
     return writeSectors(block, src, nb);
+  }
+
+  virtual bool writeBlocks(uint32_t block, uint32_t off, const uint8_t *src, size_t nb) {
+    return writeSectors(block, off, src, nb);
   }
 
 private:
