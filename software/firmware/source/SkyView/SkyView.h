@@ -95,6 +95,8 @@ enum
 	HW_REV_T5S_2_8,
 	HW_REV_T8_1_8,
 	HW_REV_T5_1,
+	HW_REV_PICO,
+	HW_REV_PICO_W,
 };
 
 enum

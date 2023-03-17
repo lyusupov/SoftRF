@@ -263,6 +263,11 @@ void NMEA_setup()
         SoC->Bluetooth_ops->setup();
       }
       break;
+    case CON_USB:
+      if (SoC->USB_ops) {
+        SoC->USB_ops->setup();
+      }
+      break;
     case CON_NONE:
     case CON_WIFI_UDP:
     default:
@@ -314,6 +319,16 @@ void NMEA_loop()
     if (SoC->Bluetooth_ops) {
       while (SoC->Bluetooth_ops->available() > 0) {
         char c = SoC->Bluetooth_ops->read();
+        Serial.print(c);
+        NMEA_Parse_Character(c);
+        NMEA_TimeMarker = millis();
+      }
+    }
+    break;
+  case CON_USB:
+    if (SoC->USB_ops) {
+      while (SoC->USB_ops->available() > 0) {
+        char c = SoC->USB_ops->read();
         Serial.print(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();

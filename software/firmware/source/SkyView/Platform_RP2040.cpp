@@ -208,8 +208,10 @@ static void RP2040_setup()
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
   RP2040_board = (SoC->getChipId() == 0xcf516424) ?
                   RP2040_WEACT : RP2040_RPIPICO;
+  hw_info.revision = HW_REV_PICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2040_board = RP2040_RPIPICO_W;
+  hw_info.revision = HW_REV_PICO_W;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -916,15 +918,6 @@ static void RP2040_WDT_fini()
   }
 }
 
-static void RP2040_USB_setup()
-{
-#if !defined(ARDUINO_ARCH_MBED)
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.begin(SERIAL_OUT_BR);
-  }
-#endif /* ARDUINO_ARCH_MBED */
-}
-
 #include <api/RingBuffer.h>
 
 #define USB_TX_FIFO_SIZE (256)
@@ -936,109 +929,6 @@ static void RP2040_USB_setup()
 
 RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
 RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
-
-static void RP2040_USB_loop()
-{
-#if !defined(USE_TINYUSB)
-  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
-  size_t size;
-
-  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
-    size_t avail = USB_TX_FIFO.available();
-
-    if (avail == 0) {
-      break;
-    }
-
-    if (size > avail) {
-      size = avail;
-    }
-
-    if (size > sizeof(buf)) {
-      size = sizeof(buf);
-    }
-
-    for (size_t i=0; i < size; i++) {
-      buf[i] = USB_TX_FIFO.read_char();
-    }
-
-    if (USBSerial) {
-      USBSerial.write(buf, size);
-    }
-  }
-
-  while (USBSerial && USBSerial.available() > 0) {
-    if (!USB_RX_FIFO.isFull()) {
-      USB_RX_FIFO.store_char(USBSerial.read());
-    } else {
-      break;
-    }
-  }
-#endif /* USE_TINYUSB */
-}
-
-static void RP2040_USB_fini()
-{
-#if !defined(ARDUINO_ARCH_MBED)
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.end();
-  }
-#endif /* ARDUINO_ARCH_MBED */
-}
-
-static int RP2040_USB_available()
-{
-  int rval = 0;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.available();
-  }
-#else
-  rval = USB_RX_FIFO.available();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static int RP2040_USB_read()
-{
-  int rval = -1;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.read();
-  }
-#else
-  rval = USB_RX_FIFO.read_char();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
-{
-#if !defined(USE_TINYUSB)
-  size_t written;
-
-  for (written=0; written < size; written++) {
-    if (!USB_TX_FIFO.isFull()) {
-      USB_TX_FIFO.store_char(buffer[written]);
-    } else {
-      break;
-    }
-  }
-  return written;
-#else
-  size_t rval = size;
-
-  if (USBSerial && (size < USBSerial.availableForWrite())) {
-    rval = USBSerial.write(buffer, size);
-  }
-
-  return rval;
-#endif /* USE_TINYUSB */
-}
 
 #if defined(USE_USB_HOST)
 /*********************************************************************
@@ -1056,6 +946,9 @@ static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
 
 // USB Host object
 Adafruit_USBH_Host USBHost;
+
+// CDC Host object
+Adafruit_USBH_CDC  SerialHost;
 
 // holding device descriptor
 tusb_desc_device_t desc_device;
@@ -1085,6 +978,21 @@ void setup1() {
 void loop1()
 {
   USBHost.task();
+
+#if 0
+  uint8_t buf[64];
+  // SerialHost -> Serial
+  if ( SerialHost.connected() && SerialHost.available() ) {
+    size_t count = SerialHost.read(buf, sizeof(buf));
+//Serial.println(count);
+    Serial.write(buf, count);
+  }
+#endif
+
+  // periodically flush SerialHost if connected
+  if ( SerialHost && SerialHost.connected() ) {
+    SerialHost.flush();
+  }
 }
 
 //--------------------------------------------------------------------+
@@ -1209,7 +1117,207 @@ void tuh_umount_cb(uint8_t daddr)
   Serial.printf("Device removed, address = %d\r\n", daddr);
 }
 
+void line_cb(tuh_xfer_t* xfer)
+{
+  Serial.println("LINE set");
+}
+void dtr_cb(tuh_xfer_t* xfer)
+{
+  Serial.println("DTR set");
+}
+
+#define CFG_TUH_CDC_LINE_CODING_ON_ENUM { 38400, CDC_LINE_CONDING_STOP_BITS_1, CDC_LINE_CODING_PARITY_NONE, 8 }
+
+// Invoked when a device with CDC interface is mounted
+// idx is index of cdc interface in the internal pool.
+void tuh_cdc_mount_cb(uint8_t idx) {
+
+  // bind SerialHost object to this interface index
+  SerialHost.begin(idx);
+#if 0
+  cdc_line_coding_t line_coding = CFG_TUH_CDC_LINE_CODING_ON_ENUM;;
+
+  tuh_cdc_set_line_coding(idx, &line_coding, line_cb, 0);
+  tuh_cdc_set_control_line_state(idx, CDC_CONTROL_LINE_STATE_DTR, dtr_cb, 0);
+#endif
+  Serial.println("SerialHost is connected to a new CDC device");
+}
+
+// Invoked when a device with CDC interface is unmounted
+void tuh_cdc_umount_cb(uint8_t idx) {
+  if (idx == SerialHost.getIndex()) {
+    // unbind SerialHost if this interface is unmounted
+    SerialHost.end();
+
+    Serial.println("SerialHost is disconnected");
+  }
+}
 #endif /* USE_USB_HOST */
+
+static void RP2040_USB_setup()
+{
+#if defined(USE_USB_HOST)
+  /* TBD */
+#elif !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR);
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+static void RP2040_USB_loop()
+{
+#if defined(USE_USB_HOST)
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
+  size_t size;
+
+  while (SerialHost             &&
+         SerialHost.connected() &&
+         (size = SerialHost.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (SerialHost && SerialHost.connected()) {
+      SerialHost.write(buf, size);
+    }
+  }
+
+  if ( SerialHost             &&
+       SerialHost.connected() &&
+       (size = USB_RX_FIFO.availableForStore()) > 0 ) {
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+    size_t avail = SerialHost.available();
+    if (size > avail) {
+      size = avail;
+    }
+
+    size_t count = SerialHost.read(buf, size);
+//    Serial.write(buf, count);
+    for (size_t i=0; i < count; i++) {
+      if (!USB_RX_FIFO.isFull()) {
+        USB_RX_FIFO.store_char(buf[i]);
+      }
+    }
+  }
+#elif !defined(USE_TINYUSB)
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
+  size_t size;
+
+  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (USBSerial) {
+      USBSerial.write(buf, size);
+    }
+  }
+
+  while (USBSerial && USBSerial.available() > 0) {
+    if (!USB_RX_FIFO.isFull()) {
+      USB_RX_FIFO.store_char(USBSerial.read());
+    } else {
+      break;
+    }
+  }
+#endif /* USE_TINYUSB */
+}
+
+static void RP2040_USB_fini()
+{
+#if defined(USE_USB_HOST)
+  /* TBD */
+#elif !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+static int RP2040_USB_available()
+{
+  int rval = 0;
+
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  rval = USB_RX_FIFO.available();
+#else
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static int RP2040_USB_read()
+{
+  int rval = -1;
+
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  rval = USB_RX_FIFO.read_char();
+#else
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
+{
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  size_t written;
+
+  for (written=0; written < size; written++) {
+    if (!USB_TX_FIFO.isFull()) {
+      USB_TX_FIFO.store_char(buffer[written]);
+    } else {
+      break;
+    }
+  }
+  return written;
+#else
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+#endif /* USE_TINYUSB */
+}
 
 IODev_ops_t RP2040_USBSerial_ops = {
   "RP2040 USB ACM",

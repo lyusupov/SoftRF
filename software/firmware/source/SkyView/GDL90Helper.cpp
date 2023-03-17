@@ -251,6 +251,11 @@ void GDL90_setup()
         SoC->Bluetooth_ops->setup();
       }
       break;
+    case CON_USB:
+      if (SoC->USB_ops) {
+        SoC->USB_ops->setup();
+      }
+      break;
     case CON_NONE:
     case CON_WIFI_UDP:
     default:
@@ -302,6 +307,16 @@ void GDL90_loop()
     if (SoC->Bluetooth_ops) {
       while (SoC->Bluetooth_ops->available() > 0) {
         char c = SoC->Bluetooth_ops->read();
+//        Serial.print(c);
+        GDL90_Parse_Character(c);
+        GDL90_Data_TimeMarker = millis();
+      }
+    }
+    break;
+  case CON_USB:
+    if (SoC->USB_ops) {
+      while (SoC->USB_ops->available() > 0) {
+        char c = SoC->USB_ops->read();
 //        Serial.print(c);
         GDL90_Parse_Character(c);
         GDL90_Data_TimeMarker = millis();
