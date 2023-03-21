@@ -19,11 +19,11 @@
 #ifndef WIFIHELPER_H
 #define WIFIHELPER_H
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#include "SoCHelper.h"
+
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiUdp.h>
 #endif
-
-#include "SoCHelper.h"
 
 #define UDP_PACKET_BUFSIZE  256
 #define WIFI_DHCP_LEASE_HRS 8
@@ -46,7 +46,7 @@ void WiFi_loop(void);
 void WiFi_fini(void);
 
 extern String host_name;
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 extern WiFiUDP Uni_Udp;
 #endif
 

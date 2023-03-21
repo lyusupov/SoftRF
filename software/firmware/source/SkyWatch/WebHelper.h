@@ -21,11 +21,12 @@
 
 #include <TinyGPS++.h>
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#include "SoCHelper.h"
+
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 
-#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 
 #define BOOL_STR(x) (x ? "true":"false")
@@ -43,7 +44,11 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 //extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 
-#if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
+#ifndef Serial_setDebugOutput
+#define Serial_setDebugOutput(x) Serial.setDebugOutput(x)
+#endif /* Serial_setDebugOutput */
+
 extern WiFiClient client;
 #endif /* ARDUINO */
 

@@ -589,6 +589,11 @@ static uint32_t ESP32_getChipId()
                    (efuse_mac[3] << 16) | (efuse_mac[2] << 24);
 }
 
+static uint32_t ESP32_getFreeHeap()
+{
+  return ESP.getFreeHeap();
+}
+
 static bool ESP32_EEPROM_begin(size_t size)
 {
   return EEPROM.begin(size);
@@ -1745,6 +1750,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_reset,
   ESP32_sleep_ms,
   ESP32_getChipId,
+  ESP32_getFreeHeap,
   ESP32_EEPROM_begin,
   ESP32_WiFi_set_param,
   ESP32_WiFi_hostname,

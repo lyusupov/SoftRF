@@ -28,21 +28,38 @@ byte SoC_setup()
   SoC = &ESP32_ops;
 #elif defined(RASPBERRY_PI)
   SoC = &RPi_ops;
-#elif defined(ENERGIA_ARCH_CC13XX)
+#elif defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
   SoC = &CC13XX_ops;
+#elif defined(ARDUINO_ARCH_STM32)
+  SoC = &STM32_ops;
+#elif defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+  SoC = &PSoC4_ops;
+#elif defined(ARDUINO_ARCH_NRF52)
+  SoC = &nRF52_ops;
+#elif defined(HACKRF_ONE)
+  SoC = &LPC43_ops;
+#elif defined(ARDUINO_ARCH_SAMD)
+  SoC = &SAMD_ops;
+#elif defined(ARDUINO_ARCH_AVR)
+  SoC = &AVR_ops;
+#elif defined(ARDUINO_ARCH_ASR6601)
+  SoC = &ASR66_ops;
+#elif defined(ARDUINO_ARCH_RP2040)
+  SoC = &RP2040_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif
 
-  if (SoC && SoC->setup) {
-    SoC->setup();
-  }
+  byte id = SOC_NONE;
 
   if (SoC) {
-    return SoC->id;
-  } else {
-    return SOC_NONE;
+    if (SoC->setup) {
+      SoC->setup();
+    }
+    id = SoC->id;
   }
+
+  return id;
 }
 
 void SoC_fini()

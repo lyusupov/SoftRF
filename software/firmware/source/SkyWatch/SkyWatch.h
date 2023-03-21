@@ -24,7 +24,9 @@
 #endif /* ARDUINO */
 
 #define SKYWATCH_FIRMWARE_VERSION  "1.1"
+#define SKYWATCH_USB_FW_VERSION    0x0101
 #define SKYWATCH_IDENT    "SkyWatch"
+#define WEBTOP_IDENT      "WebTop"
 #define SOFTRF_IDENT      "SoftRF"
 
 #define DEFAULT_AP_SSID   "SoftRF-abc123"
@@ -172,6 +174,7 @@ enum
 	HW_REV_T8,
 	HW_REV_TDONGLE,
 	HW_REV_T01C3,
+	HW_REV_PICO_W,
 };
 
 enum

@@ -259,5 +259,9 @@ int traffic_cmp_by_distance(const void *a, const void *b)
 
   if (ta->distance >  tb->distance) return  1;
   if (ta->distance == tb->distance) return  0;
+#if 0
   if (ta->distance <  tb->distance) return -1;
+#else
+  else return -1;
+#endif
 }

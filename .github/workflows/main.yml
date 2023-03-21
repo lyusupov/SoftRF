@@ -20,9 +20,26 @@ jobs:
 
     strategy:
       matrix:
-        board: ['esp8266:esp8266:nodemcuv2', 'esp32:esp32:esp32:PartitionScheme=min_spiffs', 'esp32:esp32:esp32s2', 'esp32:esp32:esp32s3', 'esp32:esp32:esp32c3', 'STM32:stm32:Nucleo_64', 'STMicroelectronics:stm32:GenF1', 'STMicroelectronics:stm32:GenWL', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'rp2040:rp2040:rpipico']
-
-        # board: ['esp8266:esp8266:nodemcuv2:xtal=80,eesz=4M1M', 'esp32:esp32:esp32:PartitionScheme=min_spiffs,CPUFreq=80,FlashMode=dio,FlashFreq=80,FlashSize=4M,DebugLevel=none', 'STM32:stm32:Nucleo_64', 'STM32:stm32:GenF1', 'energia:cc13xx:LAUNCHXL_CC1310', 'raspberry', 'CubeCell:CubeCell:CubeCell-GPS', 'adafruit:nrf52:pca10056', 'arduino:samd:mzero_bl', 'arduino:avr:mega', 'CubeCell:CubeCell:CubeCell-Board-PRO', 'rp2040:rp2040:rpipico']
+        board:
+          [
+            'esp8266:esp8266:nodemcuv2',
+            'esp32:esp32:esp32:PartitionScheme=min_spiffs',
+            'esp32:esp32:esp32s2',
+            'esp32:esp32:esp32s3',
+            'esp32:esp32:esp32c3',
+            'STM32:stm32:Nucleo_64',
+            'STMicroelectronics:stm32:GenF1',
+            'STMicroelectronics:stm32:GenWL',
+            'raspberry',
+            'CubeCell:CubeCell:CubeCell-GPS',
+            'CubeCell:CubeCell:CubeCell-Board-PRO',
+            'adafruit:nrf52:pca10056',
+            'arduino:samd:mzero_bl',
+            'arduino:avr:mega',
+            'rp2040:rp2040:rpipico',
+            'rp2040:rp2040:rpipicow'
+          ]
+          # 'energia:cc13xx:LAUNCHXL_CC1310'
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
@@ -323,4 +340,7 @@ jobs:
           fi ;
           if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
+            arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;

@@ -20,6 +20,13 @@
 #include <TimeLib.h>
 
 #include "SoCHelper.h"
+
+#if defined(EXCLUDE_WIFI)
+void Web_setup()    {}
+void Web_loop()     {}
+void Web_fini()     {}
+#else
+
 #include "WebHelper.h"
 #include "TrafficHelper.h"
 #include "NMEAHelper.h"
@@ -1477,7 +1484,7 @@ void handleStatus() {
     hw_info.model == SOFTRF_MODEL_SKYWATCH ? SKYWATCH_IDENT : SOFTRF_IDENT " WT",
     SoC->getChipId() & 0xFFFFFF, SKYWATCH_FIRMWARE_VERSION,
     (SoC == NULL ? "NONE" : SoC->name),
-    hr, min % 60, sec % 60, ESP.getFreeHeap(),
+    hr, min % 60, sec % 60, SoC->getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc
   );
 
@@ -1722,7 +1729,7 @@ PSTR("<html>\
   free(Input_temp);
   EEPROM_store();
   delay(1000);
-  ESP.restart();
+  SoC->reset();
 }
 
 void handleInput_slave() {
@@ -1828,7 +1835,7 @@ PSTR("<html>\
 #if 0
   EEPROM_store();
   delay(1000);
-  ESP.restart();
+  SoC->reset();
 #endif
 }
 
@@ -1983,11 +1990,11 @@ $('form').submit(function(e){\
     server.send(200, String(F("text/plain")), (Update.hasError())?"FAIL":"OK");
 //    SoC->swSer_enableRx(true);
     delay(1000);
-    ESP.restart();
+    SoC->reset();
   },[](){
     HTTPUpload& upload = server.upload();
     if(upload.status == UPLOAD_FILE_START){
-      Serial.setDebugOutput(true);
+      Serial_setDebugOutput(true);
       SoC->WiFiUDP_stopAll();
       SoC->WDT_fini();
       Serial.printf("Update: %s\r\n", upload.filename.c_str());
@@ -2005,7 +2012,7 @@ $('form').submit(function(e){\
       } else {
         Update.printError(Serial);
       }
-      Serial.setDebugOutput(false);
+      Serial_setDebugOutput(false);
     }
     yield();
   });
@@ -2050,3 +2057,5 @@ void Web_fini()
 {
   server.stop();
 }
+
+#endif /* EXCLUDE_WIFI */
