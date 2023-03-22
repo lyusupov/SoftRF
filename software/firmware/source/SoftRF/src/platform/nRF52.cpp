@@ -1430,6 +1430,8 @@ static byte nRF52_Display_setup()
     break;
   }
 
+  display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+
   if (EPD_setup(true)) {
 
 #if defined(USE_EPD_TASK)

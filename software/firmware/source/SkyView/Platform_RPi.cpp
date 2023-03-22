@@ -247,6 +247,9 @@ static void RPi_EPD_setup()
 #else
   display = &epd_waveshare_T91;
 #endif /* USE_GDEY027T91 */
+  display->epd2.selectSPI(SPI0, SPISettings(BCM2835_SPI_CLOCK_DIVIDER_64,
+                                            BCM2835_SPI_BIT_ORDER_MSBFIRST,
+                                            BCM2835_SPI_MODE0));
 }
 
 static void RPi_EPD_fini()

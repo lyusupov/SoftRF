@@ -571,6 +571,8 @@ static void RP2040_EPD_setup()
     SPI1.setTX(SOC_EPD_PIN_MOSI_WS);
     SPI1.setSCK(SOC_EPD_PIN_SCK_WS);
     SPI1.setCS(SOC_EPD_PIN_SS_WS);
+
+    display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     break;
   }
 }
