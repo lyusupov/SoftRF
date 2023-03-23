@@ -104,7 +104,7 @@ Copyright (C) 2019-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4770;
+  size_t size = 4810;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -341,6 +341,7 @@ void handleSettings() {
 <option %s value='%d'>registration</option>\
 <option %s value='%d'>tail/CN</option>\
 <option %s value='%d'>make & model</option>\
+<option %s value='%d'>class</option>\
 </select>\
 </td>\
 </tr>"),
@@ -363,7 +364,8 @@ void handleSettings() {
   (settings->adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
   (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
   (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
-  (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM
+  (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM,
+  (settings->idpref == ID_TYPE   ? "selected" : ""), ID_TYPE
   );
 
   len = strlen(offset);

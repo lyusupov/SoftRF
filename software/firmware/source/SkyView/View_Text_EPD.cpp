@@ -30,6 +30,25 @@
 
 #include "SkyView.h"
 
+const char *Aircraft_Type[] = {
+  [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
+  [AIRCRAFT_TYPE_GLIDER]     = "Glider",
+  [AIRCRAFT_TYPE_TOWPLANE]   = "Towplane",
+  [AIRCRAFT_TYPE_HELICOPTER] = "Helicopter",
+  [AIRCRAFT_TYPE_PARACHUTE]  = "Parachute",
+  [AIRCRAFT_TYPE_DROPPLANE]  = "Dropplane",
+  [AIRCRAFT_TYPE_HANGGLIDER] = "Hangglider",
+  [AIRCRAFT_TYPE_PARAGLIDER] = "Paraglider",
+  [AIRCRAFT_TYPE_POWERED]    = "Powered",
+  [AIRCRAFT_TYPE_JET]        = "Jet",
+  [AIRCRAFT_TYPE_UFO]        = "UFO",
+  [AIRCRAFT_TYPE_BALLOON]    = "Balloon",
+  [AIRCRAFT_TYPE_ZEPPELIN]   = "Zeppelin",
+  [AIRCRAFT_TYPE_UAV]        = "UAV",
+  [AIRCRAFT_TYPE_RESERVED]   = "Reserved",
+  [AIRCRAFT_TYPE_STATIC]     = "Static"
+};
+
 static int EPD_current = 1;
 
 static void EPD_Draw_Text()
@@ -145,23 +164,29 @@ static void EPD_Draw_Text()
       break;
     }
 
-    uint32_t id = traffic[EPD_current - 1].fop->ID;
-
-    long start = micros();
-    if (SoC->DB_query(db, id, id_text, sizeof(id_text))) {
-#if 0
-      Serial.print(F("Registration of "));
-      Serial.print(id);
-      Serial.print(F(" is "));
-      Serial.println(id_text);
-#endif
+    if (settings->idpref == ID_TYPE) {
+      uint8_t acft_type = traffic[EPD_current - 1].fop->AcftType;
+      acft_type = acft_type > AIRCRAFT_TYPE_STATIC ? AIRCRAFT_TYPE_UNKNOWN : acft_type;
+      strncpy(id_text, Aircraft_Type[acft_type], sizeof(id_text));
     } else {
-      snprintf(id_text, sizeof(id_text), "ID: %06X", id);
-    }
+      uint32_t id = traffic[EPD_current - 1].fop->ID;
+      long start = micros();
+
+      if (SoC->DB_query(db, id, id_text, sizeof(id_text))) {
 #if 0
-     Serial.print(F("Time taken: "));
-     Serial.println(micros()-start);
+        Serial.print(F("Registration of "));
+        Serial.print(id);
+        Serial.print(F(" is "));
+        Serial.println(id_text);
 #endif
+      } else {
+        snprintf(id_text, sizeof(id_text), "ID: %06X", id);
+      }
+#if 0
+      Serial.print(F("Time taken: "));
+      Serial.println(micros()-start);
+#endif
+    }
 
     display->setFont(&FreeMonoBold12pt7b);
 
