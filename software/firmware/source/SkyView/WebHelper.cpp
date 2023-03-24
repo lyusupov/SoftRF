@@ -95,7 +95,11 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Tuan Nha</th><td align=left>ESP32 I2S WAV player</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
-<tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
+<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for Raspberry Pi RP2040</td></tr>\
+<tr><th align=left>Adafruit Industries</th><td align=left>SPIFlash library</td></tr>\
+<tr><th align=left>Bill Greiman</th><td align=left>SdFat library</td></tr>\
+<tr><th align=left>Ioulianos Kakoulidis</th><td align=left>Arduino uCDB library</td></tr>\
+<tr><th align=left>sekigon-gonnoc</th><td align=left>Pico PIO USB library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
@@ -167,6 +171,19 @@ void handleSettings() {
     (settings->adapter == ADAPTER_NODEMCU           ? "selected" : ""), ADAPTER_NODEMCU,
     (settings->adapter == ADAPTER_WAVESHARE_ESP8266 ? "selected" : ""), ADAPTER_WAVESHARE_ESP8266
     );
+  } else if (SoC->id == SOC_RP2040) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Display adapter</th>\
+<td align=right>\
+<select name='adapter'>\
+<option %s value='%d'>e-Paper Waveshare Pico</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->adapter == ADAPTER_WAVESHARE_PICO    ? "selected" : ""), ADAPTER_WAVESHARE_PICO
+    );
   }
 
   len = strlen(offset);
@@ -212,6 +229,17 @@ void handleSettings() {
     size -= len;
   }
 
+  /* SoC specific part 4 */
+  if (SoC->id == SOC_RP2040) {
+    snprintf_P ( offset, size,
+      PSTR("<option %s value='%d'>USB</option>"),
+  (settings->connection == CON_USB ? "selected" : ""), CON_USB
+    );
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
   /* Common part 3 */
   snprintf_P ( offset, size,
     PSTR("\
@@ -249,7 +277,7 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* SoC specific part 4 */
+  /* SoC specific part 5 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
@@ -373,7 +401,7 @@ void handleSettings() {
   size -= len;
 
 #if !defined(EXCLUDE_AUDIO)
-  /* SoC specific part 5 */
+  /* SoC specific part 6 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
@@ -520,6 +548,7 @@ void handleRoot() {
     settings->connection == CON_SERIAL_MAIN   ? "Serial" :
     settings->connection == CON_BLUETOOTH_SPP ? "Bluetooth SPP" :
     settings->connection == CON_BLUETOOTH_LE  ? "Bluetooth LE" :
+    settings->connection == CON_USB           ? "USB" :
     settings->connection == CON_WIFI_UDP      ? "WiFi" : "NONE"
   );
 
@@ -543,8 +572,10 @@ void handleRoot() {
     offset += len;
     size -= len;
   case CON_SERIAL_MAIN:
+  case CON_SERIAL_AUX:
   case CON_BLUETOOTH_SPP:
   case CON_BLUETOOTH_LE:
+  case CON_USB:
     switch (settings->protocol)
     {
     case PROTOCOL_GDL90:
