@@ -60,6 +60,7 @@
  *   USB host library 2.0 for Zero/M0/SAMD is developed by gdsports625@gmail.com
  *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
  *   MPU-9250 9 DoF sensor library is developed by Kris Winer and Hideaki Tai
+ *   Pico PIO USB library is developed by sekigon-gonnoc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -374,12 +375,12 @@ void normal()
 
   ThisAircraft.timestamp = now();
   if (isValidFix()) {
-    ThisAircraft.latitude = gnss.location.lat();
+    ThisAircraft.latitude  = gnss.location.lat();
     ThisAircraft.longitude = gnss.location.lng();
-    ThisAircraft.altitude = gnss.altitude.meters();
-    ThisAircraft.course = gnss.course.deg();
-    ThisAircraft.speed = gnss.speed.knots();
-    ThisAircraft.hdop = (uint16_t) gnss.hdop.value();
+    ThisAircraft.altitude  = gnss.altitude.meters();
+    ThisAircraft.course    = gnss.course.deg();
+    ThisAircraft.speed     = gnss.speed.knots();
+    ThisAircraft.hdop      = (uint16_t) gnss.hdop.value();
     ThisAircraft.geoid_separation = gnss.separation.meters();
 
 #if !defined(EXCLUDE_EGM96)
@@ -453,13 +454,13 @@ void uav()
   ThisAircraft.timestamp = now();
 
   if (isValidMAVFix()) {
-    ThisAircraft.latitude = the_aircraft.location.gps_lat / 1e7;
+    ThisAircraft.latitude  = the_aircraft.location.gps_lat / 1e7;
     ThisAircraft.longitude = the_aircraft.location.gps_lon / 1e7;
-    ThisAircraft.altitude = the_aircraft.location.gps_alt / 1000.0;
-    ThisAircraft.course = the_aircraft.location.gps_cog;
-    ThisAircraft.speed = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT;
+    ThisAircraft.altitude  = the_aircraft.location.gps_alt / 1000.0;
+    ThisAircraft.course    = the_aircraft.location.gps_cog;
+    ThisAircraft.speed     = (the_aircraft.location.gps_vog / 100.0) / _GPS_MPS_PER_KNOT;
+    ThisAircraft.hdop      = the_aircraft.location.gps_hdop;
     ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
-    ThisAircraft.hdop = the_aircraft.location.gps_hdop;
 
     RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
@@ -562,15 +563,15 @@ void txrx_test()
   ThisAircraft.timestamp = now();
 
   if (TxPosUpdMarker == 0 || (millis() - TxPosUpdMarker) > 4000 ) {
-    ThisAircraft.latitude =  pgm_read_float( &txrx_test_positions[pos_ndx][0]);
-    ThisAircraft.longitude =  pgm_read_float( &txrx_test_positions[pos_ndx][1]);
+    ThisAircraft.latitude  = pgm_read_float( &txrx_test_positions[pos_ndx][0]);
+    ThisAircraft.longitude = pgm_read_float( &txrx_test_positions[pos_ndx][1]);
     pos_ndx = (pos_ndx + 1) % TXRX_TEST_NUM_POSITIONS;
     TxPosUpdMarker = millis();
   }
   ThisAircraft.altitude = TXRX_TEST_ALTITUDE;
-  ThisAircraft.course = TXRX_TEST_COURSE;
-  ThisAircraft.speed = TXRX_TEST_SPEED;
-  ThisAircraft.vs = TXRX_TEST_VS;
+  ThisAircraft.course   = TXRX_TEST_COURSE;
+  ThisAircraft.speed    = TXRX_TEST_SPEED;
+  ThisAircraft.vs       = TXRX_TEST_VS;
 
 #if DEBUG_TIMING
   baro_start_ms = millis();

@@ -95,7 +95,7 @@ static bool wdt_is_active              = false;
 
 static RP2040_board_id RP2040_board    = RP2040_RPIPICO; /* default */
 const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
-const char *RP2040_Device_Model        = SKYVIEW_IDENT " Light";
+const char *RP2040_Device_Model        = SKYVIEW_IDENT " Pico";
 const uint16_t RP2040_Device_Version   = SKYVIEW_USB_FW_VERSION;
 
 #define UniqueIDsize                   2
@@ -206,13 +206,15 @@ static void RP2040_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
-                  RP2040_WEACT : RP2040_RPIPICO;
+  RP2040_board = RP2040_RPIPICO;
   hw_info.revision = HW_REV_PICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2040_board = RP2040_RPIPICO_W;
   hw_info.revision = HW_REV_PICO_W;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
+
+  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
+                  RP2040_WEACT : RP2040_board;
 
 #if !defined(ARDUINO_ARCH_MBED)
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
@@ -286,7 +288,7 @@ static void RP2040_fini()
 
 static void RP2040_reset()
 {
-  NVIC_SystemReset();
+  rp2040.restart();
 }
 
 static uint32_t RP2040_getChipId()
@@ -294,12 +296,9 @@ static uint32_t RP2040_getChipId()
   return __builtin_bswap32(RP2040_chip_id[UniqueIDsize - 1]);
 }
 
-extern "C" void * _sbrk   (int);
-
 static uint32_t RP2040_getFreeHeap()
 {
-  char top;
-  return &top - reinterpret_cast<char*>(_sbrk(0));
+  return rp2040.getFreeHeap();
 }
 
 static void RP2040_parseSettings(JsonObject& root)
@@ -454,10 +453,14 @@ static void RP2040_WiFi_setOutputPower(int dB)
 
 static bool RP2040_WiFi_hostname(String aHostname)
 {
+  bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  WiFi.hostname(aHostname.c_str());
+  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+    WiFi.hostname(aHostname.c_str());
+    rval = true;
+  }
 #endif /* EXCLUDE_WIFI */
-  return true;
+  return rval;
 }
 
 static void RP2040_swSer_begin(unsigned long baud)
@@ -636,19 +639,8 @@ static int RP2040_WiFi_clients_count()
 
   switch (mode)
   {
-#if 0 /* TBD */
   case WIFI_AP:
-    stat_info = wifi_softap_get_station_info();
-
-    while (stat_info != NULL) {
-      clients++;
-
-      stat_info = STAILQ_NEXT(stat_info, next);
-    }
-    wifi_softap_free_station_info();
-
-    return clients;
-#endif
+    return WiFi.softAPgetStationNum();
   case WIFI_STA:
   default:
     return -1; /* error */
@@ -877,7 +869,7 @@ static void RP2040_Button_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    watchdog_update();
+    rp2040.wdt_reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 
@@ -931,7 +923,7 @@ static void RP2040_Button_fini()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  watchdog_enable(8000, 1);
+  rp2040.wdt_begin(8000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }

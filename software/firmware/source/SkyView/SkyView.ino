@@ -16,14 +16,17 @@
  *   jQuery library is developed by JS Foundation
  *   BCM2835 C library is developed by Mike McCauley
  *   GxEPD2 library is developed by Jean-Marc Zingg
- *   Adafruit GFX library is developed by Adafruit Industries
+ *   Adafruit GFX, SSD1306 and SPIFlash libraries are developed by Adafruit Industries
  *   GDL90 decoder is developed by Ryan David
  *   Sqlite3 Arduino library for ESP32 is developed by Arundale Ramanathan
  *   FLN/OGN aircrafts data is courtesy of FlarmNet/GliderNet
- *   Adafruit SSD1306 library is developed by Adafruit Industries
  *   ESP32 I2S WAV player example is developed by Tuan Nha
  *   AceButton library is developed by Brian Park
  *   Flashrom library is part of the flashrom.org project
+ *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
+ *   SdFat library is developed by Bill Greiman
+ *   Arduino uCDB library is developed by Ioulianos Kakoulidis
+ *   Pico PIO USB library is developed by sekigon-gonnoc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
