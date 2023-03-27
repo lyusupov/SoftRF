@@ -50,6 +50,12 @@ void rosc_set_range(uint range);
  */
 void rosc_disable(void);
 
+/*! \brief  Enable the Ring Oscillator
+ *  \ingroup hardware_rosc
+ *
+ */
+void rosc_enable(void);
+
 /*! \brief  Put Ring Oscillator in to dormant mode.
  *  \ingroup hardware_rosc
  *

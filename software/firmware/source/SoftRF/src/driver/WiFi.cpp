@@ -109,7 +109,10 @@ void WiFi_setup()
   // Set Hostname.
   host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
-  SoC->WiFi_hostname(host_name);
+
+  if (SoC->WiFi_hostname(host_name) == false) {
+    return;
+  }
 
   // Print hostname.
   Serial.println("Hostname: " + host_name);

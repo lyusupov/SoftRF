@@ -199,7 +199,7 @@ int WatchdogSAMD::sleep(int maxPeriodMS) {
 
   // Enable standby sleep mode (deepest sleep) and activate.
   // Insights from Atmel ASF library.
-#if (SAMD20 || SAMD21)
+#if (SAMD20_SERIES || SAMD21_SERIES)
   // Don't fully power down flash when in sleep
   NVMCTRL->CTRLB.bit.SLEEPPRM = NVMCTRL_CTRLB_SLEEPPRM_DISABLED_Val;
 #endif
@@ -209,10 +209,19 @@ int WatchdogSAMD::sleep(int maxPeriodMS) {
     ; // Wait for it to take
 #else
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  // Due to a hardware bug on the SAMD21, the SysTick interrupts become
+  // active before the flash has powered up from sleep, causing a hard fault.
+  // To prevent this the SysTick interrupts are disabled before entering sleep
+  // mode.
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk; // Disable SysTick interrupts
 #endif
 
   __DSB(); // Data sync to ensure outgoing memory accesses complete
   __WFI(); // Wait for interrupt (places device in sleep mode)
+
+#if (SAMD20_SERIES || SAMD21_SERIES)
+  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; // Enable SysTick interrupts
+#endif
 
   // Code resumes here on wake (WDT early warning interrupt).
   // Bug: the return value assumes the WDT has run its course;

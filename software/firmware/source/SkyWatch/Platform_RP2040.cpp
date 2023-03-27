@@ -114,6 +114,9 @@ static void RP2040_setup()
   hw_info.model = SOFTRF_MODEL_WEBTOP_USB;
   hw_info.revision = HW_REV_PICO_W;
 
+  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
+                  RP2040_WEACT : RP2040_board;
+
   USBSerial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
@@ -128,7 +131,7 @@ static void RP2040_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    watchdog_update();
+    rp2040.wdt_reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 }
@@ -140,7 +143,7 @@ static void RP2040_fini()
 
 static void RP2040_reset()
 {
-  NVIC_SystemReset();
+  rp2040.restart();
 }
 
 static void RP2040_sleep_ms(int ms)
@@ -153,12 +156,9 @@ static uint32_t RP2040_getChipId()
   return __builtin_bswap32(RP2040_chip_id[UniqueIDsize - 1]);
 }
 
-extern "C" void * _sbrk   (int);
-
 static uint32_t RP2040_getFreeHeap()
 {
-  char top;
-  return &top - reinterpret_cast<char*>(_sbrk(0));
+  return rp2040.getFreeHeap();
 }
 
 static bool RP2040_EEPROM_begin(size_t size)
@@ -200,10 +200,14 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 
 static bool RP2040_WiFi_hostname(String aHostname)
 {
+  bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  WiFi.hostname(aHostname.c_str());
+  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+    WiFi.hostname(aHostname.c_str());
+    rval = true;
+  }
 #endif /* EXCLUDE_WIFI */
-  return true;
+  return rval;
 }
 
 static void RP2040_WiFiUDP_stopAll()
@@ -284,19 +288,7 @@ static int RP2040_WiFi_clients_count()
 
   switch (mode)
   {
-#if 0 /* TBD */
-  case WIFI_AP:
-    stat_info = wifi_softap_get_station_info();
-
-    while (stat_info != NULL) {
-      clients++;
-
-      stat_info = STAILQ_NEXT(stat_info, next);
-    }
-    wifi_softap_free_station_info();
-
-    return clients;
-#endif
+    return WiFi.softAPgetStationNum();
   case WIFI_STA:
   default:
     return -1; /* error */
@@ -374,7 +366,7 @@ static bool RP2040_Baro_setup()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  watchdog_enable(4000, 1);
+  rp2040.wdt_begin(4000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }

@@ -27,6 +27,7 @@
 #include "SkyView.h"
 
 #include <hardware/watchdog.h>
+#include <Adafruit_SleepyDog.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
 #include "pico/unique_id.h"
@@ -43,6 +44,7 @@ extern "C"
 #endif /* ARDUINO_ARCH_MBED */
 
 #include <pico_sleep.h>
+#include <pico_rosc.h>
 
 #if defined(USE_TINYUSB)
 #if defined(USE_USB_HOST)
@@ -206,10 +208,10 @@ static void RP2040_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board = RP2040_RPIPICO;
+  RP2040_board     = RP2040_RPIPICO;
   hw_info.revision = HW_REV_PICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2040_board = RP2040_RPIPICO_W;
+  RP2040_board     = RP2040_RPIPICO_W;
   hw_info.revision = HW_REV_PICO_W;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
@@ -282,8 +284,14 @@ static void RP2040_fini()
   #endif
 #else
   datetime_t alarm = {0};
-  sleep_goto_sleep_until(&alarm, NULL);
+  sleep_goto_sleep_until(&alarm, NULL); /* TBD */
 #endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
+
+  // back from dormant state
+  rosc_enable();
+  clocks_init();
+
+  rp2040.restart();
 }
 
 static void RP2040_reset()
@@ -592,6 +600,12 @@ static bool RP2040_EPD_is_ready()
 
 static void RP2040_EPD_Busy_Callback(const void* p)
 {
+  if (wdt_is_active) {
+#if !defined(ARDUINO_ARCH_MBED)
+    Watchdog.reset();
+#endif /* ARDUINO_ARCH_MBED */
+  }
+
   if (SoC->Bluetooth_ops) {
     SoC->Bluetooth_ops->loop();
   }
@@ -609,7 +623,9 @@ static void RP2040_EPD_Busy_Callback(const void* p)
   // Handle Web
   // Web_loop();
 
-  SoC->Button_loop();
+  // SoC->Button_loop();
+  // button_up.check();
+  // button_down.check();
 
   yield();
 }
@@ -748,7 +764,9 @@ static void RP2040_TTS(char *message)
 #include <AceButton.h>
 using namespace ace_button;
 
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
 AceButton button_mode(SOC_GPIO_PIN_KEY0);
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
 AceButton button_up  (SOC_GPIO_PIN_KEY1);
 AceButton button_down(SOC_GPIO_PIN_KEY2);
 
@@ -758,9 +776,12 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
 #if 0
   // Print out a message for all events.
-  if        (button == &button_mode) {
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
+  if (button == &button_mode) {
     Serial.print(F("MODE "));
-  } else if (button == &button_up) {
+  } else
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
+  if (button == &button_up) {
     Serial.print(F("UP   "));
   } else if (button == &button_down) {
     Serial.print(F("DOWN "));
@@ -777,26 +798,33 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventClicked:
     case AceButton::kEventReleased:
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
       if (button == &button_mode) {
         EPD_Mode();
-      } else if (button == &button_up) {
+      } else
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
+      if (button == &button_up) {
         EPD_Up();
       } else if (button == &button_down) {
         EPD_Down();
       }
       break;
     case AceButton::kEventLongPressed:
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
       if (button == &button_mode) {
         shutdown("NORMAL OFF");
-        Serial.println(F("This will never be printed."));
+//        Serial.println(F("This will never be printed."));
       }
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
       break;
   }
 }
 
 /* Callbacks for push button interrupt */
 void onModeButtonEvent() {
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
   button_mode.check();
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
 }
 
 void onUpButtonEvent() {
@@ -809,6 +837,7 @@ void onDownButtonEvent() {
 
 static void RP2040_Button_setup()
 {
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
   int mode_button_pin = SOC_GPIO_PIN_KEY0;
 
   pinMode(mode_button_pin,
@@ -830,6 +859,7 @@ static void RP2040_Button_setup()
   ModeButtonConfig->setLongPressDelay(2000);
 
 //  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
 
   pinMode(SOC_GPIO_PIN_KEY1, INPUT_PULLUP);
   pinMode(SOC_GPIO_PIN_KEY2, INPUT_PULLUP);
@@ -869,11 +899,13 @@ static void RP2040_Button_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    rp2040.wdt_reset();
+    Watchdog.reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
   button_mode.check();
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
   button_up.check();
   button_down.check();
 
@@ -912,8 +944,10 @@ static void RP2040_Button_fini()
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY1));
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY0));
 
+#if SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN
   int pin = SOC_GPIO_PIN_KEY0;
   while (digitalRead(pin) == (pin == SOC_GPIO_PIN_BUTTON ? HIGH : LOW));
+#endif /* SOC_GPIO_PIN_KEY0 != SOC_UNUSED_PIN */
 
 #if defined(USE_BOOTSEL_BUTTON)
   while (BOOTSEL);
@@ -923,7 +957,7 @@ static void RP2040_Button_fini()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  rp2040.wdt_begin(8000);
+  Watchdog.enable(8000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }

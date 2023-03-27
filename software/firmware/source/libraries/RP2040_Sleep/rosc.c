@@ -54,6 +54,16 @@ void rosc_disable(void) {
     while(rosc_hw->status & ROSC_STATUS_STABLE_BITS);
 }
 
+void rosc_enable(void)
+{
+    uint32_t tmp = rosc_hw->ctrl;
+    tmp &= (~ROSC_CTRL_ENABLE_BITS);
+    tmp |= (ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB);
+    rosc_write(&rosc_hw->ctrl, tmp);
+    // Wait for stable
+    while ((rosc_hw->status & ROSC_STATUS_STABLE_BITS) != ROSC_STATUS_STABLE_BITS);
+}
+
 void rosc_set_dormant(void) {
     // WARNING: This stops the rosc until woken up by an irq
     rosc_write(&rosc_hw->dormant, ROSC_DORMANT_VALUE_DORMANT);

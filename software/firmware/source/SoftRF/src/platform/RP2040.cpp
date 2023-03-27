@@ -271,11 +271,13 @@ static void RP2040_setup()
 #endif
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
-                  RP2040_WEACT : RP2040_RPIPICO;
+  RP2040_board = RP2040_RPIPICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2040_board = RP2040_RPIPICO_W;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
+
+  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
+                  RP2040_WEACT : RP2040_board;
 
 #if !defined(ARDUINO_ARCH_MBED)
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
@@ -398,7 +400,7 @@ static void RP2040_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    watchdog_update();
+    rp2040.wdt_reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 
@@ -467,7 +469,7 @@ static void RP2040_fini(int reason)
 
 static void RP2040_reset()
 {
-  NVIC_SystemReset();
+  rp2040.restart();
 }
 
 static uint32_t RP2040_getChipId()
@@ -509,12 +511,9 @@ static String RP2040_getResetReason()
   }
 }
 
-extern "C" void * _sbrk   (int);
-
 static uint32_t RP2040_getFreeHeap()
 {
-  char top;
-  return &top - reinterpret_cast<char*>(_sbrk(0));
+  return rp2040.getFreeHeap();
 }
 
 static long RP2040_random(long howsmall, long howBig)
@@ -650,10 +649,14 @@ static void RP2040_WiFiUDP_stopAll()
 
 static bool RP2040_WiFi_hostname(String aHostname)
 {
+  bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  WiFi.hostname(aHostname.c_str());
+  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+    WiFi.hostname(aHostname.c_str());
+    rval = true;
+  }
 #endif /* EXCLUDE_WIFI */
-  return true;
+  return rval;
 }
 
 static int RP2040_WiFi_clients_count()
@@ -665,19 +668,7 @@ static int RP2040_WiFi_clients_count()
 
   switch (mode)
   {
-#if 0 /* TBD */
-  case WIFI_AP:
-    stat_info = wifi_softap_get_station_info();
-
-    while (stat_info != NULL) {
-      clients++;
-
-      stat_info = STAILQ_NEXT(stat_info, next);
-    }
-    wifi_softap_free_station_info();
-
-    return clients;
-#endif
+    return WiFi.softAPgetStationNum();
   case WIFI_STA:
   default:
     return -1; /* error */
@@ -888,7 +879,7 @@ static void RP2040_UATModule_restart()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  watchdog_enable(5000, 1);
+  rp2040.wdt_begin(5000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }

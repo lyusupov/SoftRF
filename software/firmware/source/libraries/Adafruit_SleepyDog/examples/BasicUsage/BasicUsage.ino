@@ -8,7 +8,8 @@
 
 void setup() {
   Serial.begin(115200);
-  while(!Serial) delay(10); 
+  while (!Serial)
+    delay(10);
   // wait for Arduino Serial Monitor (native USB boards)
 
   Serial.println("Adafruit Watchdog Library Demo!");
@@ -29,8 +30,9 @@ void setup() {
 
   // Now loop a few times and periodically reset the watchdog.
   Serial.println("Looping ten times while resetting the watchdog...");
-  for(int i = 1; i <= 10; ++i) {
-    Serial.print("Loop #"); Serial.println(i, DEC);
+  for (int i = 1; i <= 10; ++i) {
+    Serial.print("Loop #");
+    Serial.println(i, DEC);
     delay(1000);
     // Reset watchdog with every loop to make sure the sketch keeps running.
     // If you comment out this call watch what happens in about 4 iterations!
@@ -38,10 +40,11 @@ void setup() {
   }
   Serial.println();
 
-#ifndef NRF52_SERIES // cannot disable nRF's WDT
+// can not disable NRF or RP2040 wdt once enabled
+#if !defined(NRF52_SERIES) || !defined(ARDUINO_ARCH_RP2040)
   // Disable the watchdog entirely by calling Watchdog.disable();
   Watchdog.disable();
-#endif  
+#endif
 
   // Finally demonstrate the watchdog resetting by enabling it for a shorter
   // period of time and waiting a long time without a reset.  Notice you can
@@ -54,7 +57,13 @@ void setup() {
   Serial.print(countdownMS, DEC);
   Serial.println(" milliseconds!");
   Serial.println();
-  delay(countdownMS+1000);
+#ifndef ARDUINO_ARCH_ESP8266
+  delay(countdownMS + 1000);
+#else
+  // Calls to delay() and yield() feed the ESP8266's
+  // hardware and software watchdog timers, delayMicroseconds does not.
+  delayMicroseconds(countdownMS * 1000);
+#endif
 
   // Execution will never get here because the watchdog resets the Arduino!
 }

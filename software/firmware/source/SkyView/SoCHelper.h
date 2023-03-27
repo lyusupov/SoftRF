@@ -19,6 +19,8 @@
 #ifndef SOCHELPER_H
 #define SOCHELPER_H
 
+#define SOC_UNUSED_PIN 255
+
 #include "Platform_RPi.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"

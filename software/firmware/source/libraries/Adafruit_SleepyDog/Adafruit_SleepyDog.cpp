@@ -20,6 +20,8 @@
  * You can restore the USB serial connection after waking up using
  * `USBDevice.attach();` and then reconnect to USB serial from the host machine.
  * Partial support for Teensy 3.X and LC (watchdog, no sleep).
+ * ESP32/ESP32-S2
+ * ESP8266
  *
  * Adafruit Trinket and other boards using ATtiny MCUs are NOT supported.
  */
