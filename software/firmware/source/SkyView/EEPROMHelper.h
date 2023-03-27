@@ -25,7 +25,7 @@
 
 
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE
-#define SKYVIEW_EEPROM_VERSION 0x0000001C
+#define SKYVIEW_EEPROM_VERSION 0x0000001D
 
 typedef struct Settings {
     uint8_t  adapter;
@@ -39,7 +39,7 @@ typedef struct Settings {
     char     server  [18];
     char     key     [18];
 
-    uint8_t  resvd1:2;
+    uint8_t  rotate:2;
     uint8_t  orientation:1;
     uint8_t  adb:3;
     uint8_t  idpref:2;
@@ -53,7 +53,7 @@ typedef struct Settings {
 
     uint32_t team;
 
-    uint8_t  resvd2;
+    uint8_t  resvd12;
     uint8_t  resvd3;
     uint8_t  resvd4;
     uint8_t  resvd5;

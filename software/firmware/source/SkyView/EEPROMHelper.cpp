@@ -92,6 +92,7 @@ void EEPROM_defaults()
     eeprom_block.field.settings.connection    = CON_SERIAL_MAIN;
 
   eeprom_block.field.settings.baudrate        = B38400;
+  eeprom_block.field.settings.rotate          = ROTATE_0;
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;
   eeprom_block.field.settings.orientation     = DIRECTION_NORTH_UP;
 

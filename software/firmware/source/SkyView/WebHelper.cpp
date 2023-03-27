@@ -107,7 +107,7 @@ Copyright (C) 2019-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 4810;
+  size_t size = 4980;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -321,6 +321,15 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Screen rotation</th>\
+<td align=right>\
+<select name='rotation'>\
+<option %s value='%d'>0</option>\
+<option %s value='%d'>180</option>\
+</select>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>View mode</th>\
 <td align=right>\
 <select name='vmode'>\
@@ -376,6 +385,8 @@ void handleSettings() {
   (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
   (settings->units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
   (settings->units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
+  (settings->rotate == ROTATE_0       ? "selected" : ""), ROTATE_0,
+  (settings->rotate == ROTATE_180     ? "selected" : ""), ROTATE_180,
   (settings->vmode == VIEW_MODE_RADAR ? "selected" : ""), VIEW_MODE_RADAR,
   (settings->vmode == VIEW_MODE_TEXT  ? "selected" : ""), VIEW_MODE_TEXT,
   (settings->orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
@@ -637,7 +648,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1900);
+  char *Input_temp = (char *) malloc(1970);
   if (Input_temp == NULL) {
     return;
   }
@@ -657,6 +668,8 @@ void handleInput() {
       server.arg(i).toCharArray(settings->key, sizeof(settings->key));
     } else if (server.argName(i).equals("units")) {
       settings->units = server.arg(i).toInt();
+    } else if (server.argName(i).equals("rotation")) {
+      settings->rotate = server.arg(i).toInt();
     } else if (server.argName(i).equals("vmode")) {
       settings->vmode = server.arg(i).toInt();
     } else if (server.argName(i).equals("orientation")) {
@@ -698,6 +711,7 @@ PSTR("<html>\
 <tr><th align=left>Server</th><td align=right>%s</td></tr>\
 <tr><th align=left>Key</th><td align=right>%s</td></tr>\
 <tr><th align=left>Units</th><td align=right>%d</td></tr>\
+<tr><th align=left>Screen rotation</th><td align=right>%d</td></tr>\
 <tr><th align=left>View mode</th><td align=right>%d</td></tr>\
 <tr><th align=left>Radar orientation</th><td align=right>%d</td></tr>\
 <tr><th align=left>Zoom level</th><td align=right>%d</td></tr>\
@@ -715,9 +729,9 @@ PSTR("<html>\
 </html>"),
   settings->adapter, settings->connection, settings->protocol,
   settings->baudrate, settings->server, settings->key,
-  settings->units, settings->vmode, settings->orientation, settings->zoom,
-  settings->adb, settings->idpref, settings->voice, settings->aghost,
-  settings->filter, settings->power_save, settings->team
+  settings->units, settings->rotate, settings->vmode, settings->orientation,
+  settings->zoom, settings->adb, settings->idpref, settings->voice,
+  settings->aghost, settings->filter, settings->power_save, settings->team
   );
 
   SoC->swSer_enableRx(false);

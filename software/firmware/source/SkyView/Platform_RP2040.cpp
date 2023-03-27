@@ -247,6 +247,7 @@ static void RP2040_setup()
 #endif /* USE_TINYUSB */
 
       FATFS_is_mounted = fatfs.begin(SPIFlash);
+      hw_info.storage  = FATFS_is_mounted ? STORAGE_FLASH : STORAGE_NONE;
     }
   }
 #endif /* ARDUINO_ARCH_MBED */
@@ -353,21 +354,15 @@ static void RP2040_parseSettings(JsonObject& root)
     }
   }
 
-#if 0
   JsonVariant rotate = root["rotate"];
   if (rotate.success()) {
     const char * rotate_s = rotate.as<char*>();
     if (!strcmp(rotate_s,"0")) {
       settings->rotate = ROTATE_0;
-    } else if (!strcmp(rotate_s,"90")) {
-      settings->rotate = ROTATE_90;
     } else if (!strcmp(rotate_s,"180")) {
       settings->rotate = ROTATE_180;
-    } else if (!strcmp(rotate_s,"270")) {
-      settings->rotate = ROTATE_270;
     }
   }
-#endif
 
   JsonVariant orientation = root["orientation"];
   if (orientation.success()) {

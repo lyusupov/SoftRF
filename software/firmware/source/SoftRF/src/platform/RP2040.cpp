@@ -35,6 +35,7 @@
 #include "../protocol/data/JSON.h"
 
 #include <hardware/watchdog.h>
+#include <Adafruit_SleepyDog.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
 #include "pico/unique_id.h"
@@ -400,7 +401,7 @@ static void RP2040_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    rp2040.wdt_reset();
+    Watchdog.reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 
@@ -465,6 +466,14 @@ static void RP2040_fini(int reason)
   datetime_t alarm = {0};
   sleep_goto_sleep_until(&alarm, NULL);
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+
+#if 0 /* TBD */
+  // back from dormant state
+  rosc_enable();
+  clocks_init();
+
+  rp2040.restart();
+#endif
 }
 
 static void RP2040_reset()
@@ -879,7 +888,7 @@ static void RP2040_UATModule_restart()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  rp2040.wdt_begin(5000);
+  Watchdog.enable(5000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }

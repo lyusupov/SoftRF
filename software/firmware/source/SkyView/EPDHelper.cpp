@@ -104,7 +104,7 @@ byte EPD_setup(bool splash_screen)
 
     display->init();
 
-    display->setRotation(0);
+    display->setRotation(settings->rotate & 0x3);
     display->setTextColor(GxEPD_BLACK);
     display->setFullWindow();
     display->fillScreen(GxEPD_WHITE);

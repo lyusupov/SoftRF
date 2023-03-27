@@ -26,6 +26,7 @@
 #include "SkyWatch.h"
 
 #include <hardware/watchdog.h>
+#include <Adafruit_SleepyDog.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
 #include "pico/unique_id.h"
@@ -131,14 +132,20 @@ static void RP2040_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
-    rp2040.wdt_reset();
+    Watchdog.reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
 }
 
 static void RP2040_fini()
 {
+#if 0 /* TBD */
+  // back from dormant state
+  rosc_enable();
+  clocks_init();
 
+  rp2040.restart();
+#endif
 }
 
 static void RP2040_reset()
@@ -366,7 +373,7 @@ static bool RP2040_Baro_setup()
 static void RP2040_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  rp2040.wdt_begin(4000);
+  Watchdog.enable(4000);
 #endif /* ARDUINO_ARCH_MBED */
   wdt_is_active = true;
 }
