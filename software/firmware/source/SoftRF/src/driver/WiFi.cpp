@@ -109,23 +109,16 @@ void WiFi_setup()
   // Set Hostname.
   host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
-
+  WiFi.mode(WIFI_STA);
+  delay(10);
   if (SoC->WiFi_hostname(host_name) == false) {
     return;
   }
 
   // Print hostname.
-  Serial.println("Hostname: " + host_name);
+  Serial.print("Hostname: "); Serial.println(WiFi.getHostname());
 
   if (station_ssid.length() > 0) {
-    // Check WiFi connection
-    // ... check mode
-    if (WiFi.getMode() != WIFI_STA)
-    {
-      WiFi.mode(WIFI_STA);
-      delay(10);
-    }
-
     // ... Try to connect to WiFi station.
     WiFi.begin(station_ssid.c_str(), station_psk.c_str());
 
@@ -146,7 +139,7 @@ void WiFi_setup()
     Serial.println();
 
     // Check connection
-    if(WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED) {
       // ... print IP Address
       Serial.print(F("IP address: "));
       Serial.println(WiFi.localIP());
@@ -155,7 +148,7 @@ void WiFi_setup()
     }
   }
 
-  if (WiFi.getMode() != WIFI_STA || WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED) {
     // Go into software AP mode.
     WiFi.mode(WIFI_AP);
     SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MED); // 10 dBm

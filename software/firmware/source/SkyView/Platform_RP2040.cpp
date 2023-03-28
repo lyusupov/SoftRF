@@ -864,7 +864,7 @@ static void RP2040_Button_setup()
   int down_button_pin = settings->rotate == ROTATE_180 ?
                         SOC_GPIO_PIN_KEY2 : SOC_GPIO_PIN_KEY0;
   pinMode(down_button_pin, INPUT_PULLUP);
-  button_down.init(mode_button_pin, HIGH);
+  button_down.init(down_button_pin, HIGH);
 
   ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
   UpButtonConfig->setEventHandler(handleEvent);

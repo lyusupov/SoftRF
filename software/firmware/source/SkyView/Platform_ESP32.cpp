@@ -1064,6 +1064,14 @@ static void ESP32_Button_setup()
     pinMode(SOC_BUTTON_UP_T5S,   INPUT);
     pinMode(SOC_BUTTON_DOWN_T5S, INPUT);
 
+    if (settings->rotate == ROTATE_180) {
+      button_up.init(SOC_BUTTON_DOWN_T5S);
+      button_down.init(SOC_BUTTON_UP_T5S);
+    } else {
+      button_up.init(SOC_BUTTON_UP_T5S);
+      button_down.init(SOC_BUTTON_DOWN_T5S);
+    }
+
     ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
     UpButtonConfig->setEventHandler(handleEvent);
     UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
@@ -1080,8 +1088,13 @@ static void ESP32_Button_setup()
     DownButtonConfig->setDoubleClickDelay(1000);
     DownButtonConfig->setLongPressDelay(2000);
 
-    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE );
-    attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE );
+    if (settings->rotate == ROTATE_180) {
+      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onDownButtonEvent, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onUpButtonEvent,   CHANGE);
+    } else {
+      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE);
+      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE);
+    }
   }
 }
 
@@ -1098,6 +1111,13 @@ static void ESP32_Button_loop()
 static void ESP32_Button_fini()
 {
 
+  if (settings->adapter == ADAPTER_TTGO_T5S) {
+    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S));
+    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S));
+    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S));
+  } else {
+    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_DEF));
+  }
 }
 
 static void ESP32_WDT_setup()
