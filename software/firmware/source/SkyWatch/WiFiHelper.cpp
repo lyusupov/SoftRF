@@ -88,7 +88,7 @@ void WiFi_setup()
   }
 
   // Print hostname.
-  Serial.print("Hostname: "); Serial.println(WiFi.getHostname());
+  Serial.println("Hostname: " + host_name);
 
   if (station_ssid.length() > 0) {
     // ... Try to connect to WiFi station.

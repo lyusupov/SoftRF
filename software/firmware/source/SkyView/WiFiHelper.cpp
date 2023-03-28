@@ -105,7 +105,7 @@ void WiFi_setup()
   }
 
   // Print hostname.
-  Serial.print("Hostname: "); Serial.println(WiFi.getHostname());
+  Serial.println("Hostname: " + host_name);
 
   WiFiMode_t mode = (settings->connection == CON_WIFI_UDP ||
                      settings->connection == CON_WIFI_TCP ) ?
