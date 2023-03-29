@@ -20,7 +20,6 @@
 #define JSONHELPER_H
 
 #include <ArduinoJson.h>
-#include "SkyView.h"
 
 #define JSON_BUFFER_SIZE  65536
 

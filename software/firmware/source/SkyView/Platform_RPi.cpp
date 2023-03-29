@@ -209,6 +209,16 @@ static void RPi_setup()
   RPi_SerialNumber();
 }
 
+static void RPi_post_init()
+{
+
+}
+
+static void RPi_loop()
+{
+
+}
+
 static void RPi_fini()
 {
   fprintf( stderr, "Program termination.\n" );
@@ -641,6 +651,8 @@ const SoC_ops_t RPi_ops = {
   SOC_RPi,
   "RPi",
   RPi_setup,
+  RPi_post_init,
+  RPi_loop,
   RPi_fini,
   RPi_reset,
   RPi_getChipId,

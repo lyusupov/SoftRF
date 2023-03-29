@@ -196,22 +196,27 @@ void handleSettings() {
 <th align=left>Connection type</th>\
 <td align=right>\
 <select name='connection'>\
-<option %s value='%d'>Serial</option>\
-<option %s value='%d'>WiFi UDP</option>"),
-  (settings->connection == CON_SERIAL_MAIN   ? "selected" : ""), CON_SERIAL_MAIN,
-  (settings->connection == CON_WIFI_UDP      ? "selected" : ""), CON_WIFI_UDP
+<option %s value='%d'>Serial</option>"),
+  (settings->connection == CON_SERIAL_MAIN   ? "selected" : ""), CON_SERIAL_MAIN
   );
 
   len = strlen(offset);
   offset += len;
   size -= len;
 
+  /* Wi-Fi specific part 1 */
+  if (WiFi.getMode() == WIFI_AP_STA || WiFi.getMode() == WIFI_STA) {
+    snprintf_P ( offset, size, PSTR("<option %s value='%d'>WiFi UDP</option>"),
+      (settings->connection == CON_WIFI_UDP ? "selected" : ""), CON_WIFI_UDP);
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
   /* SoC specific part 2 */
   if (SoC->id == SOC_ESP32) {
-    snprintf_P ( offset, size,
-      PSTR("<option %s value='%d'>Bluetooth SPP</option>"),
-  (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP
-    );
+    snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth SPP</option>"),
+    (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP);
     len = strlen(offset);
     offset += len;
     size -= len;
@@ -219,10 +224,8 @@ void handleSettings() {
 
   /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
-    snprintf_P ( offset, size,
-      PSTR("<option %s value='%d'>Bluetooth LE</option>"),
-  (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE
-    );
+    snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
+    (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE);
     len = strlen(offset);
     offset += len;
     size -= len;
@@ -230,10 +233,8 @@ void handleSettings() {
 
   /* SoC specific part 4 */
   if (SoC->id == SOC_RP2040) {
-    snprintf_P ( offset, size,
-      PSTR("<option %s value='%d'>USB</option>"),
-  (settings->connection == CON_USB ? "selected" : ""), CON_USB
-    );
+    snprintf_P ( offset, size, PSTR("<option %s value='%d'>USB</option>"),
+      (settings->connection == CON_USB ? "selected" : ""), CON_USB);
     len = strlen(offset);
     offset += len;
     size -= len;
@@ -278,7 +279,8 @@ void handleSettings() {
 
   /* SoC specific part 5 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -629,8 +631,21 @@ void handleRoot() {
  <table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
-    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>\
-    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
+    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"));
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 5 */
+  if (SoC->id != SOC_RP2040) {
+    snprintf_P ( offset, size, PSTR("\
+    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  snprintf_P ( offset, size, PSTR("\
   </tr>\
  </table>\
 </body>\

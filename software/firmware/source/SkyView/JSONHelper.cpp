@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI)
-
-#include <ArduinoJson.h>
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_RP2040)
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
+
+#undef DEPRECATED
 #include "JSONHelper.h"
 
 StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
@@ -36,6 +36,8 @@ void parseSettings(JsonObject& root)
     const char * adapter_s = adapter.as<char*>();
     if (!strcmp(adapter_s,"HAT27")) {
       eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PI_HAT_2_7;
+    } else if (!strcmp(adapter_s,"PICO27")) {
+      eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PICO;
     } else if (!strcmp(adapter_s,"OLED")) {
       eeprom_block.field.settings.adapter = ADAPTER_OLED;
     }
@@ -54,6 +56,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.connection = CON_BLUETOOTH_SPP;
     } else if (!strcmp(connection_s,"LE")) {
       eeprom_block.field.settings.connection = CON_BLUETOOTH_LE;
+    } else if (!strcmp(connection_s,"USB")) {
+      eeprom_block.field.settings.connection = CON_USB;
     }
   }
 
@@ -92,6 +96,16 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.protocol = PROTOCOL_D1090;
     } else if (!strcmp(protocol_s,"UATRADIO")) {
       eeprom_block.field.settings.protocol = PROTOCOL_UATRADIO;
+    }
+  }
+
+  JsonVariant rotate = root["rotate"];
+  if (rotate.success()) {
+    const char * rotate_s = rotate.as<char*>();
+    if (!strcmp(rotate_s,"0")) {
+      eeprom_block.field.settings.rotate = ROTATE_0;
+    } else if (!strcmp(rotate_s,"180")) {
+      eeprom_block.field.settings.rotate = ROTATE_180;
     }
   }
 
@@ -168,6 +182,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.idpref = ID_TAIL;
     } else if (!strcmp(idpref_s,"MAM")) {
       eeprom_block.field.settings.idpref = ID_MAM;
+    } else if (!strcmp(idpref_s,"CLASS")) {
+      eeprom_block.field.settings.idpref = ID_TYPE;
     }
   }
 
@@ -220,4 +236,4 @@ void parseSettings(JsonObject& root)
   }
 }
 
-#endif /* RASPBERRY_PI */
+#endif /* RASPBERRY_PI or RP2040 */

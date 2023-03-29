@@ -135,6 +135,8 @@ void setup()
   Web_setup();
   Traffic_setup();
 
+  SoC->post_init();
+
   SoC->WDT_setup();
 }
 
@@ -162,6 +164,8 @@ void loop()
   Web_loop();
 
   SoC->Button_loop();
+
+  SoC->loop();
 
   Battery_loop();
 }

@@ -24,23 +24,26 @@
 #define SKYVIEW_IDENT             "SkyView"
 #define SOFTRF_IDENT              "SoftRF"
 
-#define DEFAULT_AP_SSID   "SoftRF-abc123"
-#define DEFAULT_AP_PSK    "12345678"
+#define DEFAULT_AP_SSID           "SoftRF-abc123"
+#define DEFAULT_AP_PSK            "12345678"
 
-#define RELAY_DST_PORT    12390
-#define RELAY_SRC_PORT    (RELAY_DST_PORT - 1)
+#define MY_ACCESSPOINT_SSID       ""
+#define MY_ACCESSPOINT_PSK        ""
+
+#define RELAY_DST_PORT            12390
+#define RELAY_SRC_PORT            (RELAY_DST_PORT - 1)
 
 /* SoftRF serial output defaults */
-#define SERIAL_OUT_BR     38400
-#define SERIAL_OUT_BITS   SERIAL_8N1
+#define SERIAL_OUT_BR             38400
+#define SERIAL_OUT_BITS           SERIAL_8N1
 
-#define DATA_TIMEOUT      2000 /* 2.0 seconds */
+#define DATA_TIMEOUT              2000 /* 2.0 seconds */
 
-#define MAX_FILENAME_LEN  64
-#define WAV_FILE_SUFFIX   ".wav"
-#define VOICE1_SUBDIR     "voice1/"
-#define VOICE2_SUBDIR     "voice2/"
-#define VOICE3_SUBDIR     "voice3/"
+#define MAX_FILENAME_LEN          64
+#define WAV_FILE_SUFFIX           ".wav"
+#define VOICE1_SUBDIR             "voice1/"
+#define VOICE2_SUBDIR             "voice2/"
+#define VOICE3_SUBDIR             "voice3/"
 
 typedef struct hardware_info {
     byte  model;

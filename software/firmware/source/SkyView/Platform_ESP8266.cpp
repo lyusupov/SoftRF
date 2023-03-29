@@ -41,6 +41,16 @@ static void ESP8266_setup()
 
 }
 
+static void ESP8266_post_init()
+{
+
+}
+
+static void ESP8266_loop()
+{
+
+}
+
 static void ESP8266_fini()
 {
 
@@ -222,6 +232,8 @@ const SoC_ops_t ESP8266_ops = {
   SOC_ESP8266,
   "ESP8266",
   ESP8266_setup,
+  ESP8266_post_init,
+  ESP8266_loop,
   ESP8266_fini,
   ESP8266_reset,
   ESP8266_getChipId,

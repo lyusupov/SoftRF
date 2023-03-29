@@ -111,7 +111,7 @@ static union {
 
 #include <Adafruit_SPIFlash.h>
 #include "uCDB.hpp"
-#include <ArduinoJson.h>
+#include "JSONHelper.h"
 
 #if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
@@ -257,6 +257,20 @@ static void RP2040_setup()
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
 }
 
+static void RP2040_post_init()
+{
+
+}
+
+static void RP2040_loop()
+{
+  if (wdt_is_active) {
+#if !defined(ARDUINO_ARCH_MBED)
+    Watchdog.reset();
+#endif /* ARDUINO_ARCH_MBED */
+  }
+}
+
 static void RP2040_fini()
 {
   if (RP2040_has_spiflash) {
@@ -312,113 +326,6 @@ static uint32_t RP2040_getFreeHeap()
   return rp2040.getFreeHeap();
 }
 
-static void RP2040_parseSettings(JsonObject& root)
-{
-  JsonVariant units = root["units"];
-  if (units.success()) {
-    const char * units_s = units.as<char*>();
-    if (!strcmp(units_s,"METRIC")) {
-      settings->units = UNITS_METRIC;
-    } else if (!strcmp(units_s,"IMPERIAL")) {
-      settings->units = UNITS_IMPERIAL;
-    } else if (!strcmp(units_s,"MIXED")) {
-      settings->units = UNITS_MIXED;
-    }
-  }
-
-  JsonVariant zoom = root["zoom"];
-  if (zoom.success()) {
-    const char * zoom_s = zoom.as<char*>();
-    if (!strcmp(zoom_s,"LOWEST")) {
-      settings->zoom = ZOOM_LOWEST;
-    } else if (!strcmp(zoom_s,"LOW")) {
-      settings->zoom = ZOOM_LOW;
-    } else if (!strcmp(zoom_s,"MEDIUM")) {
-      settings->zoom = ZOOM_MEDIUM;
-    } else if (!strcmp(zoom_s,"HIGH")) {
-      settings->zoom = ZOOM_HIGH;
-    }
-  }
-
-  JsonVariant protocol = root["data"];
-  if (protocol.success()) {
-    const char * protocol_s = protocol.as<char*>();
-    if (!strcmp(protocol_s,"NMEA")) {
-      settings->protocol = PROTOCOL_NMEA;
-    } else if (!strcmp(protocol_s,"GDL90")) {
-      settings->protocol = PROTOCOL_GDL90;
-    } else if (!strcmp(protocol_s,"MAV1")) {
-      settings->protocol = PROTOCOL_MAVLINK_1;
-    } else if (!strcmp(protocol_s,"MAV2")) {
-      settings->protocol = PROTOCOL_MAVLINK_2;
-    } else if (!strcmp(protocol_s,"D1090")) {
-      settings->protocol = PROTOCOL_D1090;
-    }
-  }
-
-  JsonVariant rotate = root["rotate"];
-  if (rotate.success()) {
-    const char * rotate_s = rotate.as<char*>();
-    if (!strcmp(rotate_s,"0")) {
-      settings->rotate = ROTATE_0;
-    } else if (!strcmp(rotate_s,"180")) {
-      settings->rotate = ROTATE_180;
-    }
-  }
-
-  JsonVariant orientation = root["orientation"];
-  if (orientation.success()) {
-    const char * orientation_s = orientation.as<char*>();
-    if (!strcmp(orientation_s,"TRACK")) {
-      settings->orientation = DIRECTION_TRACK_UP;
-    } else if (!strcmp(orientation_s,"NORTH")) {
-      settings->orientation = DIRECTION_NORTH_UP;
-    }
-  }
-
-  JsonVariant vmode = root["vmode"];
-  if (vmode.success()) {
-    const char * vmode_s = vmode.as<char*>();
-    if (!strcmp(vmode_s,"RADAR")) {
-      settings->vmode = VIEW_MODE_RADAR;
-    } else if (!strcmp(vmode_s,"TEXT")) {
-      settings->vmode = VIEW_MODE_TEXT;
-    }
-  }
-
-  JsonVariant aghost = root["aghost"];
-  if (aghost.success()) {
-    const char * aghost_s = aghost.as<char*>();
-    if (!strcmp(aghost_s,"OFF")) {
-      settings->aghost = ANTI_GHOSTING_OFF;
-    } else if (!strcmp(aghost_s,"2MIN")) {
-      settings->aghost = ANTI_GHOSTING_2MIN;
-    } else if (!strcmp(aghost_s,"5MIN")) {
-      settings->aghost = ANTI_GHOSTING_5MIN;
-    } else if (!strcmp(aghost_s,"10MIN")) {
-      settings->aghost = ANTI_GHOSTING_10MIN;
-    }
-  }
-
-  JsonVariant filter = root["filter"];
-  if (filter.success()) {
-    const char * filter_s = filter.as<char*>();
-    if (!strcmp(filter_s,"OFF")) {
-      settings->filter = TRAFFIC_FILTER_OFF;
-    } else if (!strcmp(filter_s,"500M")) {
-      settings->filter = TRAFFIC_FILTER_500M;
-    } else if (!strcmp(filter_s,"1500M")) {
-      settings->filter = TRAFFIC_FILTER_1500M;
-    }
-  }
-
-  JsonVariant team = root["team"];
-  if (team.success()) {
-    uint32_t team_32 = team.as<unsigned int>();
-    settings->team = team_32;
-  }
-}
-
 static bool RP2040_EEPROM_begin(size_t size)
 {
   EEPROM.begin(size);
@@ -438,7 +345,7 @@ static bool RP2040_EEPROM_begin(size_t size)
           const char *msg_class_s = msg_class.as<char*>();
 
           if (!strcmp(msg_class_s,"SKYVIEW")) {
-            RP2040_parseSettings(root);
+            parseSettings(root);
           }
         }
       }
@@ -899,12 +806,6 @@ static bool is_bootsel_click             = false;
 
 static void RP2040_Button_loop()
 {
-  if (wdt_is_active) {
-#if !defined(ARDUINO_ARCH_MBED)
-    Watchdog.reset();
-#endif /* ARDUINO_ARCH_MBED */
-  }
-
 #if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
   button_mode.check();
 #endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
@@ -1389,6 +1290,8 @@ const SoC_ops_t RP2040_ops = {
   SOC_RP2040,
   "RP2040",
   RP2040_setup,
+  RP2040_post_init,
+  RP2040_loop,
   RP2040_fini,
   RP2040_reset,
   RP2040_getChipId,

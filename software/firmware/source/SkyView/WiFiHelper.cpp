@@ -37,6 +37,9 @@ void WiFi_fini()    {}
 
 #include "SkyView.h"
 
+String station_ssid = MY_ACCESSPOINT_SSID ;
+String station_psk  = MY_ACCESSPOINT_PSK ;
+
 String host_name = HOSTNAME;
 
 IPAddress local_IP(192,168,1,1);
@@ -94,7 +97,6 @@ size_t WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
  */
 void WiFi_setup()
 {
-
   // Set Hostname.
   host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
@@ -107,31 +109,79 @@ void WiFi_setup()
   // Print hostname.
   Serial.println("Hostname: " + host_name);
 
-  WiFiMode_t mode = (settings->connection == CON_WIFI_UDP ||
-                     settings->connection == CON_WIFI_TCP ) ?
-                     WIFI_AP_STA : WIFI_AP;
-  WiFi.mode(mode);
+  if (station_ssid.length() > 0) {
+    // ... Try to connect to WiFi station.
+    WiFi.begin(station_ssid.c_str(), station_psk.c_str());
 
-  SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED); // 10 dB
-  // WiFi.setOutputPower(0); // 0 dB
-  //system_phy_set_max_tpw(4 * 0); // 0 dB
-  delay(10);
+    // ... Print SSID
+    Serial.print(F("SSID: "));
+    Serial.println(WiFi.SSID());
 
-  Serial.print(F("Setting soft-AP configuration ... "));
-  Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ?
-    F("Ready") : F("Failed!"));
+    Serial.println(F("Wait for WiFi connection."));
 
-  Serial.print(F("Setting soft-AP ... "));
-  Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
-    F("Ready") : F("Failed!"));
+    // ... Give Wi-Fi 10 seconds to connect to station.
+    unsigned long startTime = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000)
+    {
+      Serial.write('.'); Serial.flush();
+      //Serial.print(WiFi.status());
+      delay(500);
+    }
+    Serial.println();
+
+    // Check connection
+    if (WiFi.status() == WL_CONNECTED) {
+      // ... print IP Address
+      Serial.print(F("IP address: "));
+      Serial.println(WiFi.localIP());
+
+      WiFi_STA_TimeMarker = millis();
+    } else {
+      Serial.println(F("Can not connect to WiFi station. Go into AP mode."));
+    }
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFiMode_t mode = (settings->connection == CON_WIFI_UDP ||
+                       settings->connection == CON_WIFI_TCP ) ?
+                       WIFI_AP_STA : WIFI_AP;
+    WiFi.mode(mode);
+
+    SoC->WiFi_setOutputPower(WIFI_TX_POWER_MED); // 10 dB
+    // WiFi.setOutputPower(0); // 0 dB
+    //system_phy_set_max_tpw(4 * 0); // 0 dB
+    delay(10);
+
+    Serial.print(F("Setting soft-AP configuration ... "));
+    Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ?
+      F("Ready") : F("Failed!"));
+
+    Serial.print(F("Setting soft-AP ... "));
+    Serial.println(WiFi.softAP(host_name.c_str(), ap_default_psk) ?
+      F("Ready") : F("Failed!"));
 #if defined(USE_DNS_SERVER)
-  // if DNSServer is started with "*" for domain name, it will reply with
-  // provided IP to all DNS request
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-  dns_active = true;
+    // if DNSServer is started with "*" for domain name, it will reply with
+    // provided IP to all DNS request
+    dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+    dns_active = true;
 #endif
-  Serial.print(F("IP address: "));
-  Serial.println(WiFi.softAPIP());
+    Serial.print(F("IP address: "));
+    Serial.println(WiFi.softAPIP());
+
+    if (settings->connection == CON_WIFI_UDP ||
+        settings->connection == CON_WIFI_TCP ) {
+      if (strnlen(settings->server, sizeof(settings->server)) > 0 &&
+          strnlen(settings->key,  sizeof(settings->key))  > 0) {
+        WiFi.begin(settings->server, settings->key);
+
+        Serial.print(F("Wait for WiFi connection to "));
+        Serial.print(settings->server);
+        Serial.println(F(" AP..."));
+      }
+
+      WiFi_STA_TimeMarker = millis();
+    }
+  }
 
   if (settings->connection == CON_WIFI_UDP) {
     switch (settings->protocol)
@@ -152,20 +202,6 @@ void WiFi_setup()
       Serial.print(F("UDP server has started at port: "));
       Serial.println(UDP_Data_Port);
     }
-  }
-
-  if (settings->connection == CON_WIFI_UDP ||
-      settings->connection == CON_WIFI_TCP ) {
-    if (strnlen(settings->server, sizeof(settings->server)) > 0 &&
-        strnlen(settings->key,  sizeof(settings->key))  > 0) {
-      WiFi.begin(settings->server, settings->key);
-
-      Serial.print(F("Wait for WiFi connection to "));
-      Serial.print(settings->server);
-      Serial.println(F(" AP..."));
-    }
-
-    WiFi_STA_TimeMarker = millis();
   }
 
 #if defined(POWER_SAVING_WIFI_TIMEOUT)

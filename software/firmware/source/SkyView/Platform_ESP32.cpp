@@ -290,6 +290,16 @@ static void ESP32_setup()
   }
 }
 
+static void ESP32_post_init()
+{
+
+}
+
+static void ESP32_loop()
+{
+
+}
+
 static void ESP32_fini()
 {
   int mode_button_pin = SOC_BUTTON_MODE_DEF;
@@ -1147,6 +1157,8 @@ const SoC_ops_t ESP32_ops = {
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
   ESP32_setup,
+  ESP32_post_init,
+  ESP32_loop,
   ESP32_fini,
   ESP32_reset,
   ESP32_getChipId,
