@@ -277,7 +277,7 @@ static void RPi_setup()
   eeprom_block.field.settings.txpower       = RF_TX_POWER_FULL;
   eeprom_block.field.settings.volume        = BUZZER_VOLUME_FULL;
   eeprom_block.field.settings.pointer       = DIRECTION_NORTH_UP;
-  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
+  eeprom_block.field.settings.bluetooth     = BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
   eeprom_block.field.settings.nmea_g        = true;

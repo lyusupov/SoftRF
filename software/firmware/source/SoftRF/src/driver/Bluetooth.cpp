@@ -270,7 +270,7 @@ static void ESP32_Bluetooth_setup()
     bt_app_main();
 #endif
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   default:
     break;
   }
@@ -319,7 +319,7 @@ static void ESP32_Bluetooth_loop()
       }
     }
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
   case BLUETOOTH_A2DP_SOURCE:
   default:
@@ -346,7 +346,7 @@ static int ESP32_Bluetooth_available()
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->available();
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -369,7 +369,7 @@ static int ESP32_Bluetooth_read()
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->read();
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -393,7 +393,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
     rval = BLE_FIFO_TX->write((char *) buffer,
                         (BLE_FIFO_TX->room() > size ? size : BLE_FIFO_TX->room()));
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -1577,4 +1577,158 @@ IODev_ops_t nRF52_Bluetooth_ops = {
   nRF52_Bluetooth_write
 };
 
-#endif /* ESP32 or ARDUINO_ARCH_NRF52 */
+#elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)
+
+#include <SerialBT.h>
+
+#include "../system/SoC.h"
+#include "EEPROM.h"
+#include "WiFi.h"   // HOSTNAME
+
+#include "Bluetooth.h"
+
+#include <api/RingBuffer.h>
+
+RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
+RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
+
+String BT_name = HOSTNAME;
+
+static void CYW43_Bluetooth_setup()
+{
+  BT_name += "-";
+  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    {
+      SerialBT.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+    }
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_NONE:
+  default:
+    break;
+  }
+}
+
+static void CYW43_Bluetooth_loop()
+{
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+}
+
+static void CYW43_Bluetooth_fini()
+{
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    {
+      SerialBT.end();
+    }
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_NONE:
+  default:
+    break;
+  }
+}
+
+static int CYW43_Bluetooth_available()
+{
+  int rval = 0;
+
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.available();
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    rval = BLE_FIFO_RX.available();
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+static int CYW43_Bluetooth_read()
+{
+  int rval = -1;
+
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.read();
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    rval = BLE_FIFO_RX.read_char();
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+static size_t CYW43_Bluetooth_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.write(buffer, size);
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    {
+      size_t avail = BLE_FIFO_TX.availableForStore();
+      if (size > avail) {
+        rval = avail;
+      }
+      for (size_t i = 0; i < rval; i++) {
+        BLE_FIFO_TX.store_char(buffer[i]);
+      }
+    }
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+IODev_ops_t CYW43_Bluetooth_ops = {
+  "CYW43 Bluetooth",
+  CYW43_Bluetooth_setup,
+  CYW43_Bluetooth_loop,
+  CYW43_Bluetooth_fini,
+  CYW43_Bluetooth_available,
+  CYW43_Bluetooth_read,
+  CYW43_Bluetooth_write
+};
+
+#endif /* ESP32 or ARDUINO_ARCH_NRF52 or ARDUINO_ARCH_RP2040 */

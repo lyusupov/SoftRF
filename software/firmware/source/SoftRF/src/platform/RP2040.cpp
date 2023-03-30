@@ -29,6 +29,7 @@
 #include "../driver/Baro.h"
 #include "../driver/Sound.h"
 #include "../driver/Battery.h"
+#include "../driver/Bluetooth.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -357,28 +358,31 @@ static void RP2040_post_init()
   Serial.print(F("NMEA   - "));
   switch (settings->nmea_out)
   {
-    case NMEA_UART       :  Serial.println(F("UART"));    break;
-    case NMEA_USB        :  Serial.println(F("USB CDC")); break;
+    case NMEA_UART       :  Serial.println(F("UART"));      break;
+    case NMEA_USB        :  Serial.println(F("USB CDC"));   break;
+    case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth")); break;
     case NMEA_OFF        :
-    default              :  Serial.println(F("NULL"));    break;
+    default              :  Serial.println(F("NULL"));      break;
   }
 
   Serial.print(F("GDL90  - "));
   switch (settings->gdl90)
   {
-    case GDL90_UART      :  Serial.println(F("UART"));    break;
-    case GDL90_USB       :  Serial.println(F("USB CDC")); break;
+    case GDL90_UART      :  Serial.println(F("UART"));      break;
+    case GDL90_USB       :  Serial.println(F("USB CDC"));   break;
+    case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
     case GDL90_OFF       :
-    default              :  Serial.println(F("NULL"));    break;
+    default              :  Serial.println(F("NULL"));      break;
   }
 
   Serial.print(F("D1090  - "));
   switch (settings->d1090)
   {
-    case D1090_UART      :  Serial.println(F("UART"));    break;
-    case D1090_USB       :  Serial.println(F("USB CDC")); break;
+    case D1090_UART      :  Serial.println(F("UART"));      break;
+    case D1090_USB       :  Serial.println(F("USB CDC"));   break;
+    case D1090_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
     case D1090_OFF       :
-    default              :  Serial.println(F("NULL"));    break;
+    default              :  Serial.println(F("NULL"));      break;
   }
 
   Serial.println();
@@ -592,20 +596,10 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 #endif /* EXCLUDE_WIFI */
 }
 
-#if 0 // !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI)
 static IPAddress RP2040_WiFi_get_broadcast()
 {
-  struct ip_info ipinfo;
-  IPAddress broadcastIp;
-
-  if (WiFi.getMode() == WIFI_STA) {
-    wifi_get_ip_info(STATION_IF, &ipinfo);
-  } else {
-    wifi_get_ip_info(SOFTAP_IF, &ipinfo);
-  }
-  broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
-
-  return broadcastIp;
+  return IPAddress(~((uint32_t) WiFi.subnetMask()) | ((uint32_t) WiFi.localIP()));
 }
 #endif /* EXCLUDE_WIFI */
 
@@ -618,7 +612,6 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
   switch (mode)
   {
-#if 0 /* TBD */
   case WIFI_STA:
     ClientIP = RP2040_WiFi_get_broadcast();
 
@@ -627,6 +620,7 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     Uni_Udp.endPacket();
 
     break;
+#if 0 /* TBD */
   case WIFI_AP:
     stat_info = wifi_softap_get_station_info();
 
@@ -677,6 +671,7 @@ static int RP2040_WiFi_clients_count()
 
   switch (mode)
   {
+  case WIFI_AP:
     return WiFi.softAPgetStationNum();
   case WIFI_STA:
   default:
@@ -1360,7 +1355,11 @@ const SoC_ops_t RP2040_ops = {
   RP2040_SPI_begin,
   RP2040_swSer_begin,
   RP2040_swSer_enableRx,
-  NULL, /* RP2040 has no built-in Bluetooth */
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  &CYW43_Bluetooth_ops,
+#else
+  NULL,
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
   &RP2040_USBSerial_ops,
   NULL,
   RP2040_Display_setup,

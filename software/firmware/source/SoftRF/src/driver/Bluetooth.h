@@ -21,7 +21,7 @@
 
 enum
 {
-	BLUETOOTH_OFF,
+	BLUETOOTH_NONE,
 	BLUETOOTH_SPP,
 	BLUETOOTH_LE_HM10_SERIAL,
 	BLUETOOTH_A2DP_SOURCE
@@ -191,6 +191,19 @@ typedef struct {
 
 extern IODev_ops_t nRF52_Bluetooth_ops;
 
-#endif /* ESP32 or ARDUINO_ARCH_NRF52 */
+#elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)
+
+#define UART_SERVICE_UUID         "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define UART_CHARACTERISTIC_UUID  "0000ffe1-0000-1000-8000-00805f9b34fb"
+
+/* (FLAA x MAX_TRACKING_OBJECTS + GNGGA + GNRMC + FLAU) x 80 symbols */
+#define BLE_FIFO_TX_SIZE          1024
+#define BLE_FIFO_RX_SIZE          256
+
+#define BLE_MAX_WRITE_CHUNK_SIZE  20
+
+extern IODev_ops_t CYW43_Bluetooth_ops;
+
+#endif /* ESP32 or ARDUINO_ARCH_NRF52 or ARDUINO_ARCH_RP2040 */
 
 #endif /* BLUETOOTHHELPER_H */

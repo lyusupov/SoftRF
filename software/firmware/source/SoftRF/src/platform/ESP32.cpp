@@ -2124,11 +2124,11 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || \
     defined(CONFIG_IDF_TARGET_ESP32C3)
-    if (settings->bluetooth != BLUETOOTH_OFF) {
+    if (settings->bluetooth != BLUETOOTH_NONE) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
       settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
 #else
-      settings->bluetooth = BLUETOOTH_OFF;
+      settings->bluetooth = BLUETOOTH_NONE;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 || C3 */
     }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */

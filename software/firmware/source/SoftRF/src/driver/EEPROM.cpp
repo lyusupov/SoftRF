@@ -93,7 +93,7 @@ void EEPROM_defaults()
                                               AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
                                               RF_TX_POWER_OFF : RF_TX_POWER_FULL;
-  eeprom_block.field.settings.bluetooth     = BLUETOOTH_OFF;
+  eeprom_block.field.settings.bluetooth     = BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
   /* This will speed up 'factory' boot sequence on Editions other than Standalone */

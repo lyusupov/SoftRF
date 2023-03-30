@@ -291,7 +291,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 ## RP2040
 
 1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
-  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/2.3.3) (2.3.3)
+  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/3.1.0) (3.1.0)
 2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:

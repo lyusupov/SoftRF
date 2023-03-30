@@ -295,6 +295,7 @@ static int RP2040_WiFi_clients_count()
 
   switch (mode)
   {
+  case WIFI_AP:
     return WiFi.softAPgetStationNum();
   case WIFI_STA:
   default:
