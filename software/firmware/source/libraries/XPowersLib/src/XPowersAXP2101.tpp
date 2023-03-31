@@ -244,6 +244,13 @@ public:
     /*
      * PMU status functions
      */
+    uint16_t status()
+    {
+        uint16_t status1 = readRegister(XPOWERS_AXP2101_STATUS1) & 0x1F;
+        uint16_t status2 = readRegister(XPOWERS_AXP2101_STATUS2) & 0x1F;;
+        return (status1 << 8) | (status2);
+    }
+
     bool isVbusGood(void)
     {
         return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 5);
@@ -307,7 +314,7 @@ public:
 
     xpowers_chg_status_t getChargerStatus(void)
     {
-        int val = readRegister(XPOWERS_AXP2101_THE_REGU_THRES_SET);
+        int val = readRegister(XPOWERS_AXP2101_STATUS2);
         if (val == -1)return XPOWERS_AXP2101_CHG_STOP_STATE;
         val &= 0x07;
         return (xpowers_chg_status_t)val;
@@ -417,7 +424,7 @@ public:
 
     void disableBatfetDieOverTempDetect(void)
     {
-        setRegisterBit(XPOWERS_AXP2101_BATFET_CTRL, 0);
+        clrRegisterBit(XPOWERS_AXP2101_BATFET_CTRL, 0);
     }
 
     /**
@@ -443,7 +450,7 @@ public:
 
     void disableDieOverTempDetect(void)
     {
-        setRegisterBit(XPOWERS_AXP2101_DIE_TEMP_CTRL, 0);
+        clrRegisterBit(XPOWERS_AXP2101_DIE_TEMP_CTRL, 0);
     }
 
     // Linear Charger Vsys voltage dpm
@@ -646,10 +653,13 @@ public:
     }
 
     /**
-     * @brief Low battery warning threshold 5-20%, 1% per step
+     * @brief  Low battery warning threshold 5-20%, 1% per step
+     * @param  opt:   5 ~ 20
+     * @retval None
      */
     void setLowBatWarnThreshold(uint8_t opt)
     {
+        if (opt < 5 || opt > 20)return;
         int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
         if (val == -1)return;
         val &= 0x0F;
@@ -662,11 +672,13 @@ public:
     }
 
     /**
-     * @brief Low battery shutdown threshold 0-15%, 1% per step
+     * @brief  Low battery shutdown threshold 5-20%, 1% per step
+     * @param  opt:   5 ~ 20
+     * @retval None
      */
-
     void setLowBatShutdownThreshold(uint8_t opt)
     {
+        if (opt < 5 || opt > 20)return;
         int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
         if (val == -1)return;
         val &= 0xF0;
@@ -2316,7 +2328,9 @@ public:
      */
     uint8_t getChargerConstantCurr(void)
     {
-        return (readRegister(XPOWERS_AXP2101_ICC_CHG_SET) & 0x1F);
+        int val = readRegister(XPOWERS_AXP2101_ICC_CHG_SET);
+        if (val == -1)return 0;
+        return val & 0x1F;
     }
 
     /**
