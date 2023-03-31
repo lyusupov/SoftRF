@@ -230,6 +230,7 @@ struct rst_info {
 extern WebServer server;
 #else
 #define EXCLUDE_WIFI
+#define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
 #define EXCLUDE_CC13XX

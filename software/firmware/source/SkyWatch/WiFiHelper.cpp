@@ -104,7 +104,7 @@ void WiFi_setup()
     unsigned long startTime = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000)
     {
-      Serial.write('.');
+      Serial.write('.'); Serial.flush();
       //Serial.print(WiFi.status());
       delay(500);
     }

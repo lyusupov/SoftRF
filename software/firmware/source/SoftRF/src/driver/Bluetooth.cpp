@@ -1577,17 +1577,16 @@ IODev_ops_t nRF52_Bluetooth_ops = {
   nRF52_Bluetooth_write
 };
 
-#elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_ARCH_RP2040)
+#include "../system/SoC.h"
+#if !defined(EXCLUDE_BLUETOOTH)
 
 #include <SerialBT.h>
+#include <api/RingBuffer.h>
 
-#include "../system/SoC.h"
 #include "EEPROM.h"
 #include "WiFi.h"   // HOSTNAME
-
 #include "Bluetooth.h"
-
-#include <api/RingBuffer.h>
 
 RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
 RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
@@ -1730,5 +1729,5 @@ IODev_ops_t CYW43_Bluetooth_ops = {
   CYW43_Bluetooth_read,
   CYW43_Bluetooth_write
 };
-
+#endif /* EXCLUDE_BLUETOOTH */
 #endif /* ESP32 or ARDUINO_ARCH_NRF52 or ARDUINO_ARCH_RP2040 */

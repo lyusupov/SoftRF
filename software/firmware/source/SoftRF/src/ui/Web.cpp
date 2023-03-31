@@ -329,8 +329,9 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -373,6 +374,7 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif /* EXCLUDE_BLUETOOTH */
 
   /* Common part 3 */
   snprintf_P ( offset, size,
@@ -428,7 +430,8 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -471,8 +474,10 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->gdl90 == GDL90_BLUETOOTH ? "selected" : ""), GDL90_BLUETOOTH);
@@ -481,6 +486,8 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif /* EXCLUDE_BLUETOOTH */
+
   if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
@@ -510,8 +517,10 @@ void handleSettings() {
   offset += len;
   size -= len;
 
+#if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->d1090 == D1090_BLUETOOTH ? "selected" : ""), D1090_BLUETOOTH);
@@ -520,6 +529,8 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
+#endif /* EXCLUDE_BLUETOOTH */
+
   if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
@@ -635,17 +646,22 @@ void handleRoot() {
   char str_alt[16];
   char str_Vcc[8];
 
-  char *Root_temp = (char *) malloc(2300);
+  size_t size = 2300;
+  char *offset;
+  size_t len = 0;
+
+  char *Root_temp = (char *) malloc(size);
   if (Root_temp == NULL) {
     return;
   }
+  offset = Root_temp;
 
   dtostrf(ThisAircraft.latitude,  8, 4, str_lat);
   dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
   dtostrf(ThisAircraft.altitude,  7, 1, str_alt);
   dtostrf(vdd, 4, 2, str_Vcc);
 
-  snprintf_P ( Root_temp, 2300,
+  snprintf_P ( offset, size,
     PSTR("<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -698,12 +714,7 @@ void handleRoot() {
  <table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
-    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>\
-    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
-  </tr>\
- </table>\
-</body>\
-</html>"),
+    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
 #if defined(USE_USB_HOST)
     "H"
@@ -728,6 +739,27 @@ void handleRoot() {
     tx_packets_counter, rx_packets_counter,
     timestamp, sats, str_lat, str_lon, str_alt
   );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 1 */
+  if (SoC->id != SOC_RP2040) {
+    snprintf_P ( offset, size, PSTR("\
+    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  snprintf_P ( offset, size, PSTR("\
+  </tr>\
+ </table>\
+</body>\
+</html>")
+  );
+
   SoC->swSer_enableRx(false);
   server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
   server.sendHeader(String(F("Pragma")), String(F("no-cache")));

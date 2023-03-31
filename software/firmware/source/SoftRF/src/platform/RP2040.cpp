@@ -257,7 +257,9 @@ static void RP2040_setup()
   SPI1.setRX(SOC_GPIO_PIN_MISO);
   SPI1.setTX(SOC_GPIO_PIN_MOSI);
   SPI1.setSCK(SOC_GPIO_PIN_SCK);
+#if !defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(ARDUINO_RASPBERRY_PI_PICO_W)
   SPI1.setCS(SOC_GPIO_PIN_SS);
+#endif /* ARDUINO_RASPBERRY_PI_PICO or ARDUINO_RASPBERRY_PI_PICO_W */
 
   Wire.setSCL(SOC_GPIO_PIN_SCL);
   Wire.setSDA(SOC_GPIO_PIN_SDA);
@@ -360,6 +362,8 @@ static void RP2040_post_init()
   {
     case NMEA_UART       :  Serial.println(F("UART"));      break;
     case NMEA_USB        :  Serial.println(F("USB CDC"));   break;
+    case NMEA_UDP        :  Serial.println(F("UDP"));       break;
+    case NMEA_TCP        :  Serial.println(F("TCP"));       break;
     case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth")); break;
     case NMEA_OFF        :
     default              :  Serial.println(F("NULL"));      break;
@@ -370,6 +374,7 @@ static void RP2040_post_init()
   {
     case GDL90_UART      :  Serial.println(F("UART"));      break;
     case GDL90_USB       :  Serial.println(F("USB CDC"));   break;
+    case GDL90_UDP       :  Serial.println(F("UDP"));       break;
     case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
     case GDL90_OFF       :
     default              :  Serial.println(F("NULL"));      break;
@@ -727,6 +732,7 @@ static void RP2040_EEPROM_extension(int cmd)
       settings->mode = SOFTRF_MODE_NORMAL;
     }
 
+#if defined(EXCLUDE_WIFI) && defined(EXCLUDE_BLUETOOTH)
     if (settings->nmea_out == NMEA_BLUETOOTH ||
         settings->nmea_out == NMEA_UDP       ||
         settings->nmea_out == NMEA_TCP ) {
@@ -752,6 +758,7 @@ static void RP2040_EEPROM_extension(int cmd)
       settings->d1090 = D1090_UART;
     }
 #endif /* USE_USB_HOST */
+#endif /* EXCLUDE_WIFI and EXCLUDE_BLUETOOTH */
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
     if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
@@ -1355,11 +1362,11 @@ const SoC_ops_t RP2040_ops = {
   RP2040_SPI_begin,
   RP2040_swSer_begin,
   RP2040_swSer_enableRx,
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if !defined(EXCLUDE_BLUETOOTH)
   &CYW43_Bluetooth_ops,
 #else
   NULL,
-#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+#endif /* EXCLUDE_BLUETOOTH */
   &RP2040_USBSerial_ops,
   NULL,
   RP2040_Display_setup,
