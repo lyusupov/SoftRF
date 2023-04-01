@@ -443,7 +443,8 @@ void handleSettings() {
     offset += len;
     size -= len;
   }
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3) {
+  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->nmea_out == NMEA_USB       ? "selected" : ""), NMEA_USB);
@@ -488,7 +489,8 @@ void handleSettings() {
   }
 #endif /* EXCLUDE_BLUETOOTH */
 
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3) {
+  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->gdl90 == GDL90_USB       ? "selected" : ""), GDL90_USB);
@@ -531,7 +533,8 @@ void handleSettings() {
   }
 #endif /* EXCLUDE_BLUETOOTH */
 
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3) {
+  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->d1090 == D1090_USB       ? "selected" : ""), D1090_USB);
@@ -639,8 +642,9 @@ void handleRoot() {
   float vdd = Battery_voltage() ;
   bool low_voltage = (Battery_voltage() <= Battery_threshold());
 
-  time_t timestamp = ThisAircraft.timestamp;
+  unsigned int timestamp = (unsigned int) ThisAircraft.timestamp;
   unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
+
   char str_lat[16];
   char str_lon[16];
   char str_alt[16];

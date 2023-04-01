@@ -162,7 +162,7 @@ static void ESP32_Bluetooth_setup()
     bt_app_main();
 #endif
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   default:
     break;
   }
@@ -202,7 +202,7 @@ static void ESP32_Bluetooth_loop()
       }
     }
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
   case BLUETOOTH_A2DP_SOURCE:
   default:
@@ -229,7 +229,7 @@ static int ESP32_Bluetooth_available()
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->available();
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -252,7 +252,7 @@ static int ESP32_Bluetooth_read()
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->read();
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -276,7 +276,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
     rval = BLE_FIFO_TX->write((char *) buffer,
                         (BLE_FIFO_TX->room() > size ? size : BLE_FIFO_TX->room()));
     break;
-  case BLUETOOTH_OFF:
+  case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;

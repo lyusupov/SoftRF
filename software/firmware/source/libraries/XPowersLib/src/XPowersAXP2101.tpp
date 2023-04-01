@@ -2417,6 +2417,20 @@ public:
         return  readRegister(XPOWERS_AXP2101_BAT_PARAME);
     }
 
+    void fuelGaugeControl(bool writeROM, bool enable)
+    {
+        if (writeROM) {
+            clrRegisterBit(XPOWERS_AXP2101_FUEL_GAUGE_CTRL, 4);
+        } else {
+            setRegisterBit(XPOWERS_AXP2101_FUEL_GAUGE_CTRL, 4);
+        }
+        if (enable) {
+            setRegisterBit(XPOWERS_AXP2101_FUEL_GAUGE_CTRL, 0);
+        } else {
+            clrRegisterBit(XPOWERS_AXP2101_FUEL_GAUGE_CTRL, 0);
+        }
+    }
+
     /*
      * Interrupt status/control functions
      */

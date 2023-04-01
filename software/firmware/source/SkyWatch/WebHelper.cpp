@@ -341,8 +341,8 @@ void handleSettings_master() {
 </select>\
 </td>\
 </tr>"),
-    (settings->s.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->s.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->s.bluetooth == BLUETOOTH_NONE ? "selected" : ""), BLUETOOTH_NONE,
+    (settings->s.bluetooth == BLUETOOTH_SPP  ? "selected" : ""), BLUETOOTH_SPP,
     (settings->s.bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
     );
 
@@ -362,7 +362,7 @@ void handleSettings_master() {
 </select>\
 </td>\
 </tr>"),
-    (settings->s.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
+    (settings->s.bluetooth == BLUETOOTH_NONE           ? "selected" : ""), BLUETOOTH_NONE,
     (settings->s.bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
     );
 
@@ -562,8 +562,8 @@ void handleSettings_master() {
 </td>\
 </tr>\
 
-    (settings->m.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->m.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->m.bluetooth == BLUETOOTH_NONE ? "selected" : ""), BLUETOOTH_NONE,
+    (settings->m.bluetooth == BLUETOOTH_SPP  ? "selected" : ""), BLUETOOTH_SPP,
 
  */
 
@@ -975,8 +975,8 @@ void handleSettings_slave() {
 </select>\
 </td>\
 </tr>"),
-    (settings->s.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->s.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->s.bluetooth == BLUETOOTH_NONE ? "selected" : ""), BLUETOOTH_NONE,
+    (settings->s.bluetooth == BLUETOOTH_SPP  ? "selected" : ""), BLUETOOTH_SPP,
     (settings->s.bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
     );
 
@@ -1248,8 +1248,8 @@ void handleSettings_slave() {
 </td>\
 </tr>\
 
-    (settings->m.bluetooth == BLUETOOTH_OFF ? "selected" : ""), BLUETOOTH_OFF,
-    (settings->m.bluetooth == BLUETOOTH_SPP ? "selected" : ""), BLUETOOTH_SPP,
+    (settings->m.bluetooth == BLUETOOTH_NONE ? "selected" : ""), BLUETOOTH_NONE,
+    (settings->m.bluetooth == BLUETOOTH_SPP  ? "selected" : ""), BLUETOOTH_SPP,
 
  */
 

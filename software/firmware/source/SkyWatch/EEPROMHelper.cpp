@@ -76,7 +76,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.s.band            = RF_BAND_EU;
   eeprom_block.field.settings.s.aircraft_type   = AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.s.txpower         = RF_TX_POWER_FULL;
-  eeprom_block.field.settings.s.bluetooth       = BLUETOOTH_OFF;
+  eeprom_block.field.settings.s.bluetooth       = BLUETOOTH_NONE;
   eeprom_block.field.settings.s.alarm           = TRAFFIC_ALARM_DISTANCE;
   eeprom_block.field.settings.s.volume          = BUZZER_OFF;
   eeprom_block.field.settings.s.pointer         = LED_OFF;
@@ -118,7 +118,7 @@ void EEPROM_defaults()
   strcpy(eeprom_block.field.settings.m.psk,       DEFAULT_AP_PSK);
 
   eeprom_block.field.settings.m.data_dest       = NMEA_UDP;
-  eeprom_block.field.settings.m.bluetooth       = BLUETOOTH_OFF;
+  eeprom_block.field.settings.m.bluetooth       = BLUETOOTH_NONE;
 
   strcpy(eeprom_block.field.settings.m.bt_name,   DEFAULT_BT_NAME);
   strcpy(eeprom_block.field.settings.m.bt_key,    DEFAULT_BT_KEY);

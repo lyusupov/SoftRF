@@ -167,7 +167,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_SBY (17u) // STANDBY
 #define SOC_GPIO_PIN_GNSS_FON (14u) // FORCE_ON
 
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN // LED (25u) Pico/WeAct
+#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
 /* SPI0 */
@@ -227,6 +227,7 @@ struct rst_info {
 #include <WiFi.h>
 #include <WebServer.h>
 #define Serial_setDebugOutput(x) ({})
+#define WIFI_STA_TIMEOUT         20000
 extern WebServer server;
 #else
 #define EXCLUDE_WIFI
