@@ -592,7 +592,7 @@ static void RP2040_WiFi_set_param(int ndx, int value)
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
     if (WiFi.getMode() == WIFI_AP) {
-      /* TBD */
+      /* RP2040 Wi-Fi default lease time is 24 hours */
     }
     break;
   default:
@@ -601,46 +601,42 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 #endif /* EXCLUDE_WIFI */
 }
 
-#if !defined(EXCLUDE_WIFI)
-static IPAddress RP2040_WiFi_get_broadcast()
-{
-  return IPAddress(~((uint32_t) WiFi.subnetMask()) | ((uint32_t) WiFi.localIP()));
-}
-#endif /* EXCLUDE_WIFI */
+#include <dhcpserver/dhcpserver.h>
+
+union rp2040_ip {
+  uint32_t addr;
+  uint8_t bytes[4];
+};
 
 static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if !defined(EXCLUDE_WIFI)
+  union rp2040_ip ipv4;
   IPAddress ClientIP;
-  struct station_info *stat_info;
+  ipv4.addr       = (uint32_t) WiFi.localIP();
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)
   {
   case WIFI_STA:
-    ClientIP = RP2040_WiFi_get_broadcast();
+    ClientIP = IPAddress(ipv4.addr | ~((uint32_t) WiFi.subnetMask()));
 
     Uni_Udp.beginPacket(ClientIP, port);
     Uni_Udp.write(buf, size);
     Uni_Udp.endPacket();
 
     break;
-#if 0 /* TBD */
   case WIFI_AP:
-    stat_info = wifi_softap_get_station_info();
-
-    while (stat_info != NULL) {
-      ClientIP = stat_info->ip.addr;
-
-      Uni_Udp.beginPacket(ClientIP, port);
-      Uni_Udp.write(buf, size);
-      Uni_Udp.endPacket();
-
-      stat_info = STAILQ_NEXT(stat_info, next);
+    if (WiFi.softAPgetStationNum() > 0) {
+      for (int i=0; i<4; i++) {
+        ClientIP = IPAddress(ipv4.bytes[0], ipv4.bytes[1], ipv4.bytes[2],
+                             DHCPS_BASE_IP + i);
+        Uni_Udp.beginPacket(ClientIP, port);
+        Uni_Udp.write(buf, size);
+        Uni_Udp.endPacket();
+      }
     }
-    wifi_softap_free_station_info();
     break;
-#endif
   case WIFI_OFF:
   default:
     break;
@@ -670,8 +666,6 @@ static bool RP2040_WiFi_hostname(String aHostname)
 static int RP2040_WiFi_clients_count()
 {
 #if !defined(EXCLUDE_WIFI)
-  struct station_info *stat_info;
-  int clients = 0;
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)

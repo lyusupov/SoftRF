@@ -119,7 +119,7 @@ void WiFi_setup()
 
     Serial.println(F("Wait for WiFi connection."));
 
-    // ... Give Wi-Fi 10 seconds to connect to station.
+    // ... Give Wi-Fi 10-20 seconds to connect to station.
     unsigned long startTime = millis();
     while (WiFi.status() != WL_CONNECTED &&
            millis() - startTime < WIFI_STA_TIMEOUT)
