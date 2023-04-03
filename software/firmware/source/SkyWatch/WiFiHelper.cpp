@@ -100,9 +100,10 @@ void WiFi_setup()
 
     Serial.println(F("Wait for WiFi connection."));
 
-    // ... Give ESP 10 seconds to connect to station.
+    // ... Give Wi-Fi 10-20 seconds to connect to station.
     unsigned long startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000)
+    while (WiFi.status() != WL_CONNECTED &&
+           millis() - startTime < WIFI_STA_TIMEOUT)
     {
       Serial.write('.'); Serial.flush();
       //Serial.print(WiFi.status());
@@ -117,6 +118,7 @@ void WiFi_setup()
       Serial.println(WiFi.localIP());
     } else {
       Serial.println(F("Can not connect to WiFi station. Go into AP mode."));
+      WiFi.mode(WIFI_OFF);
     }
   }
 

@@ -27,6 +27,9 @@
 
 #define HOSTNAME            SKYVIEW_IDENT
 #define UDP_PACKET_BUFSIZE  256
+#ifndef WIFI_STA_TIMEOUT
+#define WIFI_STA_TIMEOUT    10000
+#endif
 
 enum
 {

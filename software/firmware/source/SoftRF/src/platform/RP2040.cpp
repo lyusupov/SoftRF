@@ -277,7 +277,7 @@ static void RP2040_setup()
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
   RP2040_board = RP2040_RPIPICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2040_board = RP2040_RPIPICO_W;
+  RP2040_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2040_board = (SoC->getChipId() == 0xcf516424) ?
@@ -813,8 +813,14 @@ static void RP2040_Display_fini(int reason)
 
 static void RP2040_Battery_setup()
 {
-
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+  analogReadResolution(12);
+  analogRead(SOC_GPIO_PIN_BATTERY);
+#endif
 }
+
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
 
 static float RP2040_Battery_param(uint8_t param)
 {
@@ -823,13 +829,13 @@ static float RP2040_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_LEGO ? BATTERY_THRESHOLD_LIPO   :
-                                                BATTERY_THRESHOLD_NIMHX2;
+    rval = RP2040_board == RP2040_RPIPICO || RP2040_board == RP2040_RPIPICO_W ?
+           BATTERY_THRESHOLD_NIMHX2 : BATTERY_THRESHOLD_LIPO;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_LEGO ? BATTERY_CUTOFF_LIPO      :
-                                                BATTERY_CUTOFF_NIMHX2;
+    rval = RP2040_board == RP2040_RPIPICO || RP2040_board == RP2040_RPIPICO_W ?
+           BATTERY_CUTOFF_NIMHX2 : BATTERY_CUTOFF_LIPO;
     break;
 
   case BATTERY_PARAM_CHARGE:
@@ -851,11 +857,34 @@ static float RP2040_Battery_param(uint8_t param)
 
   case BATTERY_PARAM_VOLTAGE:
   default:
-
     {
       uint16_t mV = 0;
+
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
-      mV = analogRead(SOC_GPIO_PIN_BATTERY);
+      enum gpio_function pin25_func;
+      enum gpio_function pin29_func;
+      uint pin25_dir;
+      uint pin29_dir;
+
+      if (RP2040_board == RP2040_RPIPICO_W) {
+        pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
+        pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
+        adc_gpio_init(SOC_GPIO_PIN_BATTERY);
+
+        pin25_dir  = gpio_get_dir(SOC_GPIO_PIN_CYW43_EN);
+        pin25_func = gpio_get_function(SOC_GPIO_PIN_CYW43_EN);
+        pinMode(SOC_GPIO_PIN_CYW43_EN, OUTPUT);
+        digitalWrite(SOC_GPIO_PIN_CYW43_EN, HIGH);
+      }
+
+      mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
+
+      if (RP2040_board == RP2040_RPIPICO_W) {
+        gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
+        gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
+        gpio_set_function(SOC_GPIO_PIN_BATTERY,  pin29_func);
+        gpio_set_dir(SOC_GPIO_PIN_BATTERY,  pin29_dir);
+      }
 #endif
       rval = mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
     }

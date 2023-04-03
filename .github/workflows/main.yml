@@ -190,7 +190,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "STMicroelectronics:stm32:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json" --save-prefs ;
-            arduino --install-boards STMicroelectronics:stm32:2.5.0 ;
+            arduino --install-boards STMicroelectronics:stm32:2.4.0 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "STMicroelectronics:stm32:GenWL" ]]; then
               arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;

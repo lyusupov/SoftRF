@@ -25,6 +25,7 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #define Serial_setDebugOutput(x) ({})
+#define WIFI_STA_TIMEOUT         20000
 extern WebServer server;
 #else
 #include <Arduino.h>
@@ -34,7 +35,7 @@ extern WebServer server;
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
 
-#define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
+#define SOC_ADC_VOLTAGE_DIV   (3.0) // 20K + 10K voltage divider of VSYS
 
 #define SerialInput           Serial1
 #define SerialOutput          Serial2
@@ -87,7 +88,11 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
 #define SOC_GPIO_PIN_USBH_DN  (21u)
 
-#define SOC_GPIO_PIN_BATTERY  A0
+#define SOC_GPIO_PIN_VSYS     (29u) // Pico
+#define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
+
+#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
+#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON

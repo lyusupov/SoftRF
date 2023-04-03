@@ -211,8 +211,8 @@ static void RP2040_setup()
   RP2040_board     = RP2040_RPIPICO;
   hw_info.revision = HW_REV_PICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2040_board     = RP2040_RPIPICO_W;
-  hw_info.revision = HW_REV_PICO_W;
+  RP2040_board     = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
+  hw_info.revision = rp2040.isPicoW() ? HW_REV_PICO_W    : HW_REV_PICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2040_board = (SoC->getChipId() == 0xcf516424) ?
@@ -399,12 +399,46 @@ static void RP2040_WiFiUDP_stopAll()
 
 static void RP2040_Battery_setup()
 {
-
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+  analogReadResolution(12);
+  analogRead(SOC_GPIO_PIN_BATTERY);
+#endif
 }
+
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
 
 static float RP2040_Battery_voltage()
 {
-  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+  uint16_t mV = 0;
+
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+  enum gpio_function pin25_func;
+  enum gpio_function pin29_func;
+  uint pin25_dir;
+  uint pin29_dir;
+
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
+    pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
+    adc_gpio_init(SOC_GPIO_PIN_BATTERY);
+
+    pin25_dir  = gpio_get_dir(SOC_GPIO_PIN_CYW43_EN);
+    pin25_func = gpio_get_function(SOC_GPIO_PIN_CYW43_EN);
+    pinMode(SOC_GPIO_PIN_CYW43_EN, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_CYW43_EN, HIGH);
+  }
+
+  mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
+
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
+    gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
+    gpio_set_function(SOC_GPIO_PIN_BATTERY,  pin29_func);
+    gpio_set_dir(SOC_GPIO_PIN_BATTERY,  pin29_dir);
+  }
+#endif
+  return (mV * SOC_ADC_VOLTAGE_DIV / 1000.0);
 }
 
 #include <SoftSPI.h>

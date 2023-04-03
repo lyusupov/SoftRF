@@ -121,7 +121,8 @@ void WiFi_setup()
 
     // ... Give Wi-Fi 10 seconds to connect to station.
     unsigned long startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000)
+    while (WiFi.status() != WL_CONNECTED &&
+           millis() - startTime < WIFI_STA_TIMEOUT)
     {
       Serial.write('.'); Serial.flush();
       //Serial.print(WiFi.status());
@@ -138,6 +139,7 @@ void WiFi_setup()
       WiFi_STA_TimeMarker = millis();
     } else {
       Serial.println(F("Can not connect to WiFi station. Go into AP mode."));
+      WiFi.mode(WIFI_OFF);
     }
   }
 

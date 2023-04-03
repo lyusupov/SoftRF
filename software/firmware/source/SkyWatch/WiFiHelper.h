@@ -27,6 +27,9 @@
 
 #define UDP_PACKET_BUFSIZE  256
 #define WIFI_DHCP_LEASE_HRS 8
+#ifndef WIFI_STA_TIMEOUT
+#define WIFI_STA_TIMEOUT    10000
+#endif
 
 enum
 {

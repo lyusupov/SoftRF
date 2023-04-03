@@ -25,6 +25,7 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #define Serial_setDebugOutput(x) ({})
+#define WIFI_STA_TIMEOUT         20000
 extern WebServer server;
 #else
 #include <Arduino.h>
