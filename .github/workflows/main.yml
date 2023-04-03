@@ -190,7 +190,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "STMicroelectronics:stm32:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json" --save-prefs ;
-            arduino --install-boards STMicroelectronics:stm32:2.4.0 ;
+            arduino --install-boards STMicroelectronics:stm32:2.5.0 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "STMicroelectronics:stm32:GenWL" ]]; then
               arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;
@@ -281,8 +281,8 @@ jobs:
             arduino --install-boards rp2040:rp2040:3.1.0 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "rp2040:rp2040:rpipicow" ]]; then
-              arduino --pref "custom_freq=rpipicow_120"                 --save-prefs ;
-              arduino --pref "custom_ipbtstack=rpipicow_ipv4btcble"     --save-prefs ;
+              arduino --pref "custom_freq=rpipicow_120"               --save-prefs ;
+              arduino --pref "custom_ipbtstack=rpipicow_ipv4btcble"   --save-prefs ;
             fi
             cd $GITHUB_WORKSPACE ;
           fi
