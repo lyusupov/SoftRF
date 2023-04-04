@@ -30,15 +30,16 @@ extern WebServer server;
 #else
 #include <Arduino.h>
 #define EXCLUDE_WIFI
+#define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  9
 
-#define SerialInput           Serial1
+#define SerialInput           Serial2
 
-#define Serial_GNSS_In        Serial2
-#define Serial_GNSS_Out       Serial2
+#define Serial_GNSS_In        Serial1
+#define Serial_GNSS_Out       Serial1
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USBSerial             Serial
@@ -68,8 +69,12 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
 #define SOC_GPIO_PIN_USBH_DN  (21u)
 
-#define SOC_GPIO_PIN_BATTERY  A0
-#define SOC_A0_VOLTAGE_DIVIDER (950.0 / 3.2)
+#define SOC_GPIO_PIN_VSYS     (29u) // Pico
+#define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
+
+#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
+#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
+#define SOC_ADC_VOLTAGE_DIV   (3.0) // 20K + 10K voltage divider of VSYS
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON

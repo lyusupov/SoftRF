@@ -91,7 +91,7 @@ static void ESP32_Bluetooth_setup()
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
-  switch(settings->s.bluetooth)
+  switch (settings->s.bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -170,7 +170,7 @@ static void ESP32_Bluetooth_setup()
 
 static void ESP32_Bluetooth_loop()
 {
-  switch(settings->s.bluetooth)
+  switch (settings->s.bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
     {
@@ -219,7 +219,7 @@ static int ESP32_Bluetooth_available()
 {
   int rval = 0;
 
-  switch(settings->s.bluetooth)
+  switch (settings->s.bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -242,7 +242,7 @@ static int ESP32_Bluetooth_read()
 {
   int rval = -1;
 
-  switch(settings->s.bluetooth)
+  switch (settings->s.bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -265,7 +265,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
-  switch(settings->s.bluetooth)
+  switch (settings->s.bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -969,4 +969,159 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 
 #endif /* ENABLE_BT_VOICE */
 
-#endif /* ESP32 */
+#elif defined(ARDUINO_ARCH_RP2040)
+#include "SoCHelper.h"
+#if !defined(EXCLUDE_BLUETOOTH)
+
+#include <SerialBT.h>
+#include <api/RingBuffer.h>
+
+#include "EEPROMHelper.h"
+#include "WiFiHelper.h"   // HOSTNAME
+#include "BluetoothHelper.h"
+
+RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
+RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
+
+String BT_name;
+
+static void CYW43_Bluetooth_setup()
+{
+  BT_name += hw_info.model == SOFTRF_MODEL_SKYWATCH ?
+                              SKYWATCH_IDENT : SOFTRF_IDENT;
+  BT_name += "-";
+  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    {
+      SerialBT.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+    }
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_NONE:
+  default:
+    break;
+  }
+}
+
+static void CYW43_Bluetooth_loop()
+{
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+}
+
+static void CYW43_Bluetooth_fini()
+{
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    {
+      SerialBT.end();
+    }
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    /* TBD */
+    break;
+  case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_NONE:
+  default:
+    break;
+  }
+}
+
+static int CYW43_Bluetooth_available()
+{
+  int rval = 0;
+
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.available();
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    rval = BLE_FIFO_RX.available();
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+static int CYW43_Bluetooth_read()
+{
+  int rval = -1;
+
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.read();
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    rval = BLE_FIFO_RX.read_char();
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+static size_t CYW43_Bluetooth_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  switch (settings->s.bluetooth)
+  {
+  case BLUETOOTH_SPP:
+    rval = SerialBT.write(buffer, size);
+    break;
+  case BLUETOOTH_LE_HM10_SERIAL:
+    {
+      size_t avail = BLE_FIFO_TX.availableForStore();
+      if (size > avail) {
+        rval = avail;
+      }
+      for (size_t i = 0; i < rval; i++) {
+        BLE_FIFO_TX.store_char(buffer[i]);
+      }
+    }
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_A2DP_SOURCE:
+  default:
+    break;
+  }
+
+  return rval;
+}
+
+IODev_ops_t CYW43_Bluetooth_ops = {
+  "CYW43 Bluetooth",
+  CYW43_Bluetooth_setup,
+  CYW43_Bluetooth_loop,
+  CYW43_Bluetooth_fini,
+  CYW43_Bluetooth_available,
+  CYW43_Bluetooth_read,
+  CYW43_Bluetooth_write
+};
+#endif /* EXCLUDE_BLUETOOTH */
+#endif /* ESP32 or ARDUINO_ARCH_RP2040 */

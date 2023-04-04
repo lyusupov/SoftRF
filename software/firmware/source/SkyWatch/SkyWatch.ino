@@ -19,6 +19,8 @@
  *   Adafruit SSD1306 library is developed by Adafruit Industries
  *   AceButton library is developed by Brian Park
  *   Flashrom library is part of the flashrom.org project
+ *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
+ *   Pico PIO USB library is developed by sekigon-gonnoc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -601,7 +601,9 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 #endif /* EXCLUDE_WIFI */
 }
 
+#if !defined(EXCLUDE_WIFI)
 #include <dhcpserver/dhcpserver.h>
+#endif /* EXCLUDE_WIFI */
 
 union rp2040_ip {
   uint32_t addr;
@@ -865,17 +867,21 @@ static float RP2040_Battery_param(uint8_t param)
         pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
         adc_gpio_init(SOC_GPIO_PIN_BATTERY);
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
         pin25_dir  = gpio_get_dir(SOC_GPIO_PIN_CYW43_EN);
         pin25_func = gpio_get_function(SOC_GPIO_PIN_CYW43_EN);
         pinMode(SOC_GPIO_PIN_CYW43_EN, OUTPUT);
         digitalWrite(SOC_GPIO_PIN_CYW43_EN, HIGH);
+#endif /* PICO or PICO W */
       }
 
       mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
 
       if (RP2040_board == RP2040_RPIPICO_W) {
+#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
         gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
         gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
+#endif /* PICO or PICO W */
         gpio_set_function(SOC_GPIO_PIN_BATTERY,  pin29_func);
         gpio_set_dir(SOC_GPIO_PIN_BATTERY,  pin29_dir);
       }

@@ -22,6 +22,9 @@
 #if !defined(EXCLUDE_WIFI)
 #include "WiFiHelper.h"
 #endif /* EXCLUDE_WIFI */
+#if !defined(EXCLUDE_BLUETOOTH)
+#include "BluetoothHelper.h"
+#endif /* EXCLUDE_BLUETOOTH */
 
 #include "SkyWatch.h"
 
@@ -112,11 +115,17 @@ static void RP2040_setup()
   Serial_GNSS_In.setFIFOSize(255);
 #endif /* ARDUINO_ARCH_MBED */
 
-  hw_info.model = SOFTRF_MODEL_WEBTOP_USB;
-  hw_info.revision = HW_REV_PICO_W;
+#if defined(ARDUINO_RASPBERRY_PI_PICO)
+  RP2040_board = RP2040_RPIPICO;
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  RP2040_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
+#endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2040_board = (SoC->getChipId() == 0xcf516424) ?
                   RP2040_WEACT : RP2040_board;
+
+  hw_info.model    = SOFTRF_MODEL_WEBTOP_USB;
+  hw_info.revision = HW_REV_PICO_W;
 
   USBSerial.begin(SERIAL_OUT_BR);
 
@@ -155,7 +164,7 @@ static void RP2040_reset()
 
 static void RP2040_sleep_ms(int ms)
 {
-  /* TODO */
+  sleep_ms(ms);
 }
 
 static uint32_t RP2040_getChipId()
@@ -196,7 +205,7 @@ static void RP2040_WiFi_set_param(int ndx, int value)
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
     if (WiFi.getMode() == WIFI_AP) {
-      /* TBD */
+      /* RP2040 Wi-Fi default lease time is 24 hours */
     }
     break;
   default:
@@ -224,35 +233,27 @@ static void RP2040_WiFiUDP_stopAll()
 #endif /* EXCLUDE_WIFI */
 }
 
-#if 0 // !defined(EXCLUDE_WIFI)
-static IPAddress RP2040_WiFi_get_broadcast()
-{
-  struct ip_info ipinfo;
-  IPAddress broadcastIp;
-
-  if (WiFi.getMode() == WIFI_STA) {
-    wifi_get_ip_info(STATION_IF, &ipinfo);
-  } else {
-    wifi_get_ip_info(SOFTAP_IF, &ipinfo);
-  }
-  broadcastIp = ~ipinfo.netmask.addr | ipinfo.ip.addr;
-
-  return broadcastIp;
-}
+#if !defined(EXCLUDE_WIFI)
+#include <dhcpserver/dhcpserver.h>
 #endif /* EXCLUDE_WIFI */
+
+union rp2040_ip {
+  uint32_t addr;
+  uint8_t bytes[4];
+};
 
 static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if !defined(EXCLUDE_WIFI)
+  union rp2040_ip ipv4;
   IPAddress ClientIP;
-  struct station_info *stat_info;
+  ipv4.addr       = (uint32_t) WiFi.localIP();
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)
   {
-#if 0 /* TBD */
   case WIFI_STA:
-    ClientIP = RP2040_WiFi_get_broadcast();
+    ClientIP = IPAddress(ipv4.addr | ~((uint32_t) WiFi.subnetMask()));
 
     Uni_Udp.beginPacket(ClientIP, port);
     Uni_Udp.write(buf, size);
@@ -260,20 +261,16 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
     break;
   case WIFI_AP:
-    stat_info = wifi_softap_get_station_info();
-
-    while (stat_info != NULL) {
-      ClientIP = stat_info->ip.addr;
-
-      Uni_Udp.beginPacket(ClientIP, port);
-      Uni_Udp.write(buf, size);
-      Uni_Udp.endPacket();
-
-      stat_info = STAILQ_NEXT(stat_info, next);
+    if (WiFi.softAPgetStationNum() > 0) {
+      for (int i=0; i<4; i++) {
+        ClientIP = IPAddress(ipv4.bytes[0], ipv4.bytes[1], ipv4.bytes[2],
+                             DHCPS_BASE_IP + i);
+        Uni_Udp.beginPacket(ClientIP, port);
+        Uni_Udp.write(buf, size);
+        Uni_Udp.endPacket();
+      }
     }
-    wifi_softap_free_station_info();
     break;
-#endif
   case WIFI_OFF:
   default:
     break;
@@ -323,12 +320,46 @@ static uint32_t RP2040_maxSketchSpace()
 
 static void RP2040_Battery_setup()
 {
-
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+  analogReadResolution(12);
+  analogRead(SOC_GPIO_PIN_BATTERY);
+#endif
 }
+
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
 
 static float RP2040_Battery_voltage()
 {
-  return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
+  uint16_t mV = 0;
+
+#if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+  enum gpio_function pin25_func;
+  enum gpio_function pin29_func;
+  uint pin25_dir;
+  uint pin29_dir;
+
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
+    pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
+    adc_gpio_init(SOC_GPIO_PIN_BATTERY);
+
+    pin25_dir  = gpio_get_dir(SOC_GPIO_PIN_CYW43_EN);
+    pin25_func = gpio_get_function(SOC_GPIO_PIN_CYW43_EN);
+    pinMode(SOC_GPIO_PIN_CYW43_EN, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_CYW43_EN, HIGH);
+  }
+
+  mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
+
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
+    gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
+    gpio_set_function(SOC_GPIO_PIN_BATTERY,  pin29_func);
+    gpio_set_dir(SOC_GPIO_PIN_BATTERY,  pin29_dir);
+  }
+#endif
+  return (mV * SOC_ADC_VOLTAGE_DIV / 1000.0);
 }
 
 static bool RP2040_DB_init()
@@ -394,6 +425,407 @@ static void RP2040_Service_Mode(boolean arg)
 
 }
 
+#include <api/RingBuffer.h>
+
+#define USB_TX_FIFO_SIZE (256)
+#define USB_RX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
+
+#if !defined(USBD_CDC_IN_OUT_MAX_SIZE)
+#define USBD_CDC_IN_OUT_MAX_SIZE (64)
+#endif /* USBD_CDC_IN_OUT_MAX_SIZE */
+
+RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
+RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
+
+#if defined(USE_USB_HOST)
+/*********************************************************************
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ Copyright (c) 2019 Ha Thach for Adafruit Industries
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+#define LANGUAGE_ID 0x0409  // English
+
+// USB Host object
+Adafruit_USBH_Host USBHost;
+
+// CDC Host object
+Adafruit_USBH_CDC  SerialHost;
+
+// holding device descriptor
+tusb_desc_device_t desc_device;
+
+void setup1() {
+
+  // Check for CPU frequency, must be multiple of 120Mhz for bit-banging USB
+  uint32_t cpu_hz = clock_get_hz(clk_sys);
+  if ( cpu_hz != 120000000UL && cpu_hz != 240000000UL ) {
+    while ( !Serial ) delay(10);   // wait for native usb
+    Serial.printf("Error: CPU Clock = %u, PIO USB require CPU clock must be multiple of 120 Mhz\r\n", cpu_hz);
+    Serial.printf("Change your CPU Clock to either 120 or 240 Mhz in Menu->CPU Speed \r\n", cpu_hz);
+    while(1) delay(1);
+  }
+
+  pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
+  pio_cfg.pin_dp = SOC_GPIO_PIN_USBH_DP;
+  USBHost.configure_pio_usb(1, &pio_cfg);
+
+  // run host stack on controller (rhport) 1
+  // Note: For rp2040 pico-pio-usb, calling USBHost.begin() on core1 will have most of the
+  // host bit-banging processing works done in core1 to free up core0 for other works
+  USBHost.begin(1);
+}
+
+// core1's loop
+void loop1()
+{
+  USBHost.task();
+
+  // periodically flush SerialHost if connected
+  if ( SerialHost && SerialHost.connected() ) {
+    SerialHost.flush();
+  }
+}
+
+//--------------------------------------------------------------------+
+// String Descriptor Helper
+//--------------------------------------------------------------------+
+
+static void _convert_utf16le_to_utf8(const uint16_t *utf16, size_t utf16_len, uint8_t *utf8, size_t utf8_len) {
+  // TODO: Check for runover.
+  (void)utf8_len;
+  // Get the UTF-16 length out of the data itself.
+
+  for (size_t i = 0; i < utf16_len; i++) {
+    uint16_t chr = utf16[i];
+    if (chr < 0x80) {
+      *utf8++ = chr & 0xff;
+    } else if (chr < 0x800) {
+      *utf8++ = (uint8_t)(0xC0 | (chr >> 6 & 0x1F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
+    } else {
+      // TODO: Verify surrogate.
+      *utf8++ = (uint8_t)(0xE0 | (chr >> 12 & 0x0F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
+      *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
+    }
+    // TODO: Handle UTF-16 code points that take two entries.
+  }
+}
+
+// Count how many bytes a utf-16-le encoded string will take in utf-8.
+static int _count_utf8_bytes(const uint16_t *buf, size_t len) {
+  size_t total_bytes = 0;
+  for (size_t i = 0; i < len; i++) {
+    uint16_t chr = buf[i];
+    if (chr < 0x80) {
+      total_bytes += 1;
+    } else if (chr < 0x800) {
+      total_bytes += 2;
+    } else {
+      total_bytes += 3;
+    }
+    // TODO: Handle UTF-16 code points that take two entries.
+  }
+  return total_bytes;
+}
+
+static void print_utf16(uint16_t *temp_buf, size_t buf_len) {
+  size_t utf16_len = ((temp_buf[0] & 0xff) - 2) / sizeof(uint16_t);
+  size_t utf8_len = _count_utf8_bytes(temp_buf + 1, utf16_len);
+
+  _convert_utf16le_to_utf8(temp_buf + 1, utf16_len, (uint8_t *) temp_buf, sizeof(uint16_t) * buf_len);
+  ((uint8_t*) temp_buf)[utf8_len] = '\0';
+
+  Serial.printf((char*)temp_buf);
+}
+
+void print_device_descriptor(tuh_xfer_t* xfer)
+{
+  if ( XFER_RESULT_SUCCESS != xfer->result )
+  {
+    Serial.printf("Failed to get device descriptor\r\n");
+    return;
+  }
+
+  uint8_t const daddr = xfer->daddr;
+
+  Serial.printf("Device %u: ID %04x:%04x\r\n", daddr, desc_device.idVendor, desc_device.idProduct);
+  Serial.printf("Device Descriptor:\r\n");
+  Serial.printf("  bLength             %u\r\n"     , desc_device.bLength);
+  Serial.printf("  bDescriptorType     %u\r\n"     , desc_device.bDescriptorType);
+  Serial.printf("  bcdUSB              %04x\r\n"   , desc_device.bcdUSB);
+  Serial.printf("  bDeviceClass        %u\r\n"     , desc_device.bDeviceClass);
+  Serial.printf("  bDeviceSubClass     %u\r\n"     , desc_device.bDeviceSubClass);
+  Serial.printf("  bDeviceProtocol     %u\r\n"     , desc_device.bDeviceProtocol);
+  Serial.printf("  bMaxPacketSize0     %u\r\n"     , desc_device.bMaxPacketSize0);
+  Serial.printf("  idVendor            0x%04x\r\n" , desc_device.idVendor);
+  Serial.printf("  idProduct           0x%04x\r\n" , desc_device.idProduct);
+  Serial.printf("  bcdDevice           %04x\r\n"   , desc_device.bcdDevice);
+
+  // Get String descriptor using Sync API
+  uint16_t temp_buf[128];
+
+  Serial.printf("  iManufacturer       %u     "     , desc_device.iManufacturer);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_manufacturer_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)) )
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  iProduct            %u     "     , desc_device.iProduct);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_product_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)))
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  iSerialNumber       %u     "     , desc_device.iSerialNumber);
+  if (XFER_RESULT_SUCCESS == tuh_descriptor_get_serial_string_sync(daddr, LANGUAGE_ID, temp_buf, sizeof(temp_buf)))
+  {
+    print_utf16(temp_buf, TU_ARRAY_SIZE(temp_buf));
+  }
+  Serial.printf("\r\n");
+
+  Serial.printf("  bNumConfigurations  %u\r\n"     , desc_device.bNumConfigurations);
+}
+
+//--------------------------------------------------------------------+
+// TinyUSB Host callbacks
+//--------------------------------------------------------------------+
+
+// Invoked when device is mounted (configured)
+void tuh_mount_cb (uint8_t daddr)
+{
+  Serial.printf("Device attached, address = %d\r\n", daddr);
+
+  // Get Device Descriptor
+  tuh_descriptor_get_device(daddr, &desc_device, 18, print_device_descriptor, 0);
+}
+
+/// Invoked when device is unmounted (bus reset/unplugged)
+void tuh_umount_cb(uint8_t daddr)
+{
+  Serial.printf("Device removed, address = %d\r\n", daddr);
+}
+
+void line_cb(tuh_xfer_t* xfer)
+{
+  Serial.println("LINE set");
+}
+void dtr_cb(tuh_xfer_t* xfer)
+{
+  Serial.println("DTR set");
+}
+
+#define CFG_TUH_CDC_LINE_CODING_ON_ENUM { 38400, CDC_LINE_CONDING_STOP_BITS_1, CDC_LINE_CODING_PARITY_NONE, 8 }
+
+// Invoked when a device with CDC interface is mounted
+// idx is index of cdc interface in the internal pool.
+void tuh_cdc_mount_cb(uint8_t idx) {
+
+  // bind SerialHost object to this interface index
+  SerialHost.begin(idx);
+#if 0
+  cdc_line_coding_t line_coding = CFG_TUH_CDC_LINE_CODING_ON_ENUM;;
+
+  tuh_cdc_set_line_coding(idx, &line_coding, line_cb, 0);
+  tuh_cdc_set_control_line_state(idx, CDC_CONTROL_LINE_STATE_DTR, dtr_cb, 0);
+#endif
+  Serial.println("SerialHost is connected to a new CDC device");
+}
+
+// Invoked when a device with CDC interface is unmounted
+void tuh_cdc_umount_cb(uint8_t idx) {
+  if (idx == SerialHost.getIndex()) {
+    // unbind SerialHost if this interface is unmounted
+    SerialHost.end();
+
+    Serial.println("SerialHost is disconnected");
+  }
+}
+#endif /* USE_USB_HOST */
+
+static void RP2040_USB_setup()
+{
+#if defined(USE_USB_HOST)
+  /* TBD */
+#elif !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.begin(SERIAL_OUT_BR);
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+static void RP2040_USB_loop()
+{
+#if defined(USE_USB_HOST)
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
+  size_t size;
+
+  while (SerialHost             &&
+         SerialHost.connected() &&
+         (size = SerialHost.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (SerialHost && SerialHost.connected()) {
+      SerialHost.write(buf, size);
+    }
+  }
+
+  if ( SerialHost             &&
+       SerialHost.connected() &&
+       (size = USB_RX_FIFO.availableForStore()) > 0 ) {
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+    size_t avail = SerialHost.available();
+    if (size > avail) {
+      size = avail;
+    }
+
+    size_t count = SerialHost.read(buf, size);
+//    Serial.write(buf, count);
+    for (size_t i=0; i < count; i++) {
+      if (!USB_RX_FIFO.isFull()) {
+        USB_RX_FIFO.store_char(buf[i]);
+      }
+    }
+  }
+#elif !defined(USE_TINYUSB)
+  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
+  size_t size;
+
+  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
+    size_t avail = USB_TX_FIFO.available();
+
+    if (avail == 0) {
+      break;
+    }
+
+    if (size > avail) {
+      size = avail;
+    }
+
+    if (size > sizeof(buf)) {
+      size = sizeof(buf);
+    }
+
+    for (size_t i=0; i < size; i++) {
+      buf[i] = USB_TX_FIFO.read_char();
+    }
+
+    if (USBSerial) {
+      USBSerial.write(buf, size);
+    }
+  }
+
+  while (USBSerial && USBSerial.available() > 0) {
+    if (!USB_RX_FIFO.isFull()) {
+      USB_RX_FIFO.store_char(USBSerial.read());
+    } else {
+      break;
+    }
+  }
+#endif /* USE_TINYUSB */
+}
+
+static void RP2040_USB_fini()
+{
+#if defined(USE_USB_HOST)
+  /* TBD */
+#elif !defined(ARDUINO_ARCH_MBED)
+  if (USBSerial && USBSerial != Serial) {
+    USBSerial.end();
+  }
+#endif /* ARDUINO_ARCH_MBED */
+}
+
+static int RP2040_USB_available()
+{
+  int rval = 0;
+
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  rval = USB_RX_FIFO.available();
+#else
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static int RP2040_USB_read()
+{
+  int rval = -1;
+
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  rval = USB_RX_FIFO.read_char();
+#else
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+#endif /* USE_TINYUSB */
+
+  return rval;
+}
+
+static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
+{
+#if defined(USE_USB_HOST) || !defined(USE_TINYUSB)
+  size_t written;
+
+  for (written=0; written < size; written++) {
+    if (!USB_TX_FIFO.isFull()) {
+      USB_TX_FIFO.store_char(buffer[written]);
+    } else {
+      break;
+    }
+  }
+  return written;
+#else
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+#endif /* USE_TINYUSB */
+}
+
+IODev_ops_t RP2040_USBSerial_ops = {
+  "RP2040 USB ACM",
+  RP2040_USB_setup,
+  RP2040_USB_loop,
+  RP2040_USB_fini,
+  RP2040_USB_available,
+  RP2040_USB_read,
+  RP2040_USB_write
+};
+
 const SoC_ops_t RP2040_ops = {
   SOC_RP2040,
   "RP2040",
@@ -428,8 +860,12 @@ const SoC_ops_t RP2040_ops = {
   RP2040_WDT_setup,
   RP2040_WDT_fini,
   RP2040_Service_Mode,
+#if !defined(EXCLUDE_BLUETOOTH)
+  &CYW43_Bluetooth_ops,
+#else
   NULL,
-  NULL
+#endif /* EXCLUDE_BLUETOOTH */
+  &RP2040_USBSerial_ops,
 };
 
 #endif /* ARDUINO_ARCH_RP2040 */

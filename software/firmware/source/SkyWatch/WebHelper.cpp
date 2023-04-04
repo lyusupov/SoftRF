@@ -104,6 +104,8 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 <tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
 <tr><th align=left>Dariusz Krempa</th><td align=left>ESP32TinyUSB library</td></tr>\
+<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for Raspberry Pi RP2040</td></tr>\
+<tr><th align=left>sekigon-gonnoc</th><td align=left>Pico PIO USB library</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2019-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
@@ -287,7 +289,8 @@ void handleSettings_master() {
 
   /* SoC specific part 1 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -328,7 +331,7 @@ void handleSettings_master() {
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -395,7 +398,8 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -441,7 +445,8 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -474,7 +479,8 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1613,14 +1619,26 @@ void handleStatus() {
     break;
   }
 
-  snprintf_P ( offset, size,
-    PSTR(" </table>\
+  snprintf_P ( offset, size, PSTR(" </table>\
 <hr>\
 <table width=100%%>\
   <tr>\
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
-    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>\
-    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>\
+    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"));
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 1 */
+  if (SoC->id != SOC_RP2040) {
+    snprintf_P ( offset, size, PSTR("\
+    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  snprintf_P ( offset, size, PSTR("\
   </tr>\
 </table>\
 </body>\
