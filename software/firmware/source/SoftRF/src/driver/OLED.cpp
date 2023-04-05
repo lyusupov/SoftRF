@@ -67,9 +67,10 @@ enum
 
 U8X8_OLED_I2C_BUS_TYPE u8x8_i2c(U8X8_PIN_NONE);
 
-U8X8 *u8x8 = NULL;
+U8X8 *u8x8                          = NULL;
+uint8_t OLED_flip                   = 0;
+static bool OLED_display_titles     = false;
 
-static bool OLED_display_titles = false;
 static uint32_t prev_tx_packets_counter = (uint32_t) -1;
 static uint32_t prev_rx_packets_counter = (uint32_t) -1;
 extern uint32_t tx_packets_counter, rx_packets_counter;
@@ -170,6 +171,7 @@ byte OLED_setup() {
 
   if (u8x8) {
     u8x8->begin();
+    u8x8->setFlipMode(OLED_flip);
     u8x8->setFont(u8x8_font_chroma48medium8_r);
 
     switch (rval)

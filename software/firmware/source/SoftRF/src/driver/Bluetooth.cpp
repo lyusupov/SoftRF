@@ -107,7 +107,7 @@ static void ESP32_Bluetooth_setup()
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
-  switch(settings->bluetooth)
+  switch (settings->bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -278,7 +278,7 @@ static void ESP32_Bluetooth_setup()
 
 static void ESP32_Bluetooth_loop()
 {
-  switch(settings->bluetooth)
+  switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
     {
@@ -336,7 +336,7 @@ static int ESP32_Bluetooth_available()
 {
   int rval = 0;
 
-  switch(settings->bluetooth)
+  switch (settings->bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -359,7 +359,7 @@ static int ESP32_Bluetooth_read()
 {
   int rval = -1;
 
-  switch(settings->bluetooth)
+  switch (settings->bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:
@@ -382,7 +382,7 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
 {
   size_t rval = size;
 
-  switch(settings->bluetooth)
+  switch (settings->bluetooth)
   {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case BLUETOOTH_SPP:

@@ -300,6 +300,7 @@ static int32_t ESP32_msc_write_cb (uint32_t lba, uint32_t offset, uint8_t* buffe
 #include <MPU9250.h>
 
 #define IMU_UPDATE_INTERVAL 500 /* ms */
+#define OLED_FLIP_THRESHOLD 0.6
 
 SensorQMI8658 imu_qmi8658;
 MPU9250       imu_mpu9250;
@@ -1096,6 +1097,26 @@ static void ESP32_setup()
     } else {
         ESP32_has_32k_xtal = true;
     }
+#if !defined(EXCLUDE_IMU)
+    if (hw_info.imu             == IMU_QMI8658 /* && */
+     /* rtc_get_reset_reason(0) == POWERON_RESET */) {
+      for (int i=0; i<50; i++) {
+        if (imu_qmi8658.getDataReady()) {
+          float a_x, a_y, a_z;
+          if (imu_qmi8658.getAccelerometer(a_x, a_y, a_z)) {
+            if (a_x > OLED_FLIP_THRESHOLD) {
+#if defined(USE_OLED)
+              OLED_flip = 1;
+#endif /* USE_OLED */
+            }
+          }
+          break;
+        } else {
+          delay(10);
+        }
+      }
+    }
+#endif /* EXCLUDE_IMU */
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -2371,6 +2392,7 @@ static byte ESP32_Display_setup()
 
     if (u8x8) {
       u8x8->begin();
+      u8x8->setFlipMode(OLED_flip);
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
 
