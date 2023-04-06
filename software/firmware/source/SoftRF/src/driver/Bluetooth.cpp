@@ -1582,6 +1582,7 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #if !defined(EXCLUDE_BLUETOOTH)
 
 #include <SerialBT.h>
+#include <BTstack.h>
 #include <api/RingBuffer.h>
 
 #include "EEPROM.h"
@@ -1592,6 +1593,8 @@ RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
 RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
+
+UUID uuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0");
 
 static void CYW43_Bluetooth_setup()
 {
@@ -1606,7 +1609,9 @@ static void CYW43_Bluetooth_setup()
     }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
-    /* TBD */
+    BTstack.setup();
+    BTstack.iBeaconConfigure(&uuid, 4711, 2);
+    BTstack.startAdvertising();
     break;
   case BLUETOOTH_A2DP_SOURCE:
   case BLUETOOTH_NONE:
@@ -1620,7 +1625,7 @@ static void CYW43_Bluetooth_loop()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
-    /* TBD */
+    BTstack.loop();
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
