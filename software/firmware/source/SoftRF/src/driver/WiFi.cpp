@@ -109,10 +109,16 @@ void WiFi_setup()
   // Set Hostname.
   host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
-  WiFi.mode(WIFI_STA);
-  delay(10);
-  if (SoC->WiFi_hostname(host_name) == false) {
-    return;
+
+  if (SoC->id == SOC_ESP8266 || SoC->id == SOC_RP2040) {
+    WiFi.mode(WIFI_STA);
+    if (SoC->WiFi_hostname(host_name) == false) {
+      return;
+    }
+  } else { /* ESP32, -S2, -S3, -C3 */
+    SoC->WiFi_hostname(host_name);
+    WiFi.mode(WIFI_STA);
+    delay(10);
   }
 
   // Print hostname.

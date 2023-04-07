@@ -20,7 +20,7 @@ Model|Instructions|Firmware folder
 ---|:---:|:---:
 [Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)<br>[ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)<br>ESP32C3
 [Prime Edition Mk2](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)|[ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SoftRF)
-Prime Edition Mk3|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
+[Prime Edition Mk3](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Dongle Edition](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|[S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g)|[S76G](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/S76G)
 [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)|[LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)|[LPC4320](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/LPC4320)
@@ -85,7 +85,8 @@ prior to first use of the ESP32 tool ;
 4. Press **START** button and wait for completion.
 
 For some boards you may need to push **BOOT** button in order to activate flash download mode.<br>
-"Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.
+"Stock" modules may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.<br>
+One may need to reduce BAUD rate down to 115200 bps.
 
 <br>
 
