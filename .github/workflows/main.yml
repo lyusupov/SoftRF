@@ -36,7 +36,7 @@ jobs:
             'adafruit:nrf52:pca10056',
             'arduino:samd:mzero_bl',
             'arduino:avr:mega',
-            'rp2040:rp2040:rpipico',
+            'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow'
           ]
           # 'energia:cc13xx:LAUNCHXL_CC1310'
