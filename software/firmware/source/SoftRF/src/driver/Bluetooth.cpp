@@ -210,7 +210,7 @@ static void ESP32_Bluetooth_setup()
       char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());
 
-      const char *Firmware      = "Arduino Core ESP32 " ARDUINO_ESP32_RELEASE;
+      const char *Firmware      = "Arduino ESP32 " ARDUINO_ESP32_RELEASE;
 
       char Hardware[9];
       snprintf(Hardware, sizeof(Hardware), "%08X", hw_info.revision);
