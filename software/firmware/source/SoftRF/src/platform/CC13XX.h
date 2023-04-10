@@ -254,6 +254,7 @@ extern SCSerial                 scSerial;
 #define USE_OLED                 //  +5.5 kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
+#define ENABLE_OLED_TEXT_PAGE
 //#define EXCLUDE_LK8EX1
 #define USE_GNSS_PSM
 //#define USE_GDL90_MSL
