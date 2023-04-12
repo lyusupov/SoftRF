@@ -16,7 +16,7 @@ Areas where contributions are welcomed by the project's developer:
     - create and maintain goTenna Mesh radio protocol implementaton
     - create and maintain [OGNTP-2](https://github.com/pjalocha/esp32-ogn-tracker/blob/master/main/ogn2.h) radio protocol implementaton
     - create and maintain MAVLINK **V2** data link protocol implementaton
-    - create and maintain data logger (in IGC format) for [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
+    - create and maintain an Arduino-style **IGC Flight Recorder** library for [Prime Edition Mark III](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) and/or [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)
     - create and maintain settings menu UI for [SkyView Pi](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi) and/or
         - connected [SoftRF Dongle](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)
     - design, produce and sell for less than 20 USD a "BoosterPack" for TI SensorTag LPSTK-CC1352R that contains
