@@ -24,7 +24,7 @@ Model|Instructions|Firmware folder
 [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Dongle Edition](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|[S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g)|[S76G](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/S76G)
 [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)|[LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)|[LPC4320](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/LPC4320)
-[Lego Edition](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|[RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)|[RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040)
+[Lego Edition](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|[RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)|[RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/SoftRF)
 [Balkan Edition](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)|[STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)|[STM32WLE5](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/WLE5)
 [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|[CC1352R](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures#initial-installation)|[CC1352](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/CC13XX/CC1352)
 [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|[CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell)|[ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x)
@@ -218,7 +218,7 @@ Download files successfully
 Every RAK11310 WisBlock Core module has built-in (ROM) bootloader.<br>
 The bootloader is capable to self-program an application firmware into the device. In order to simplify the firmware transfer, the bootloader emulates a "USB Mass Storage" interface.
 
-1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/) ;
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/SoftRF) ;
 
 2. Plug RAK11310 WisBlock Core module into RAK5005-O WisBlock Base ;
 
