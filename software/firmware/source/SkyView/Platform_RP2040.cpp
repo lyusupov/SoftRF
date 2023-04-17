@@ -100,6 +100,9 @@ const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
 const char *RP2040_Device_Model        = SKYVIEW_IDENT " Pico";
 const uint16_t RP2040_Device_Version   = SKYVIEW_USB_FW_VERSION;
 
+static volatile bool core1_booting     = true;
+static volatile bool core0_booting     = true;
+
 #define UniqueIDsize                   2
 
 static union {
@@ -255,11 +258,15 @@ static void RP2040_setup()
   USBSerial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
+
+#if defined(USE_USB_HOST)
+  while (core1_booting) {}
+#endif /* USE_USB_HOST */
 }
 
 static void RP2040_post_init()
 {
-
+  core0_booting = false;
 }
 
 static void RP2040_loop()
@@ -956,13 +963,22 @@ void setup1() {
   }
 
   pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
-  pio_cfg.pin_dp = SOC_GPIO_PIN_USBH_DP;
+  pio_cfg.pin_dp     = SOC_GPIO_PIN_USBH_DP;
+  pio_cfg.sm_tx      = 3;
+  pio_cfg.sm_rx      = 2;
+  pio_cfg.sm_eop     = 3;
+  pio_cfg.pio_rx_num = 0;
+  pio_cfg.pio_tx_num = 1;
+  pio_cfg.tx_ch      = 9;
   USBHost.configure_pio_usb(1, &pio_cfg);
 
   // run host stack on controller (rhport) 1
   // Note: For rp2040 pico-pio-usb, calling USBHost.begin() on core1 will have most of the
   // host bit-banging processing works done in core1 to free up core0 for other works
   USBHost.begin(1);
+
+  core1_booting = false;
+  while (core0_booting) { }
 }
 
 // core1's loop

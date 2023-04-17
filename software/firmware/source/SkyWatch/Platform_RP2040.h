@@ -85,6 +85,7 @@ enum RP2040_board_id {
 /* Experimental */
 #if defined(USE_TINYUSB)
 #define USE_USB_HOST
+//#define ENABLE_USB_HOST_DEBUG
 #endif /* USE_TINYUSB */
 
 #define POWER_SAVING_WIFI_TIMEOUT 300000UL /* 5 minutes */
