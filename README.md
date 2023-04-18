@@ -131,6 +131,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Quick-start)
     * [Screen pages](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Screen-pages)
     * [Aircrafts database](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Aircrafts-database)
+    * [GNSS access](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-GNSS-troubleshooting)
 * [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Quick-start)
     * [Screen pages](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Screen-pages)

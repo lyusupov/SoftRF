@@ -981,7 +981,14 @@ static bool at65_setup()
   delay(250);
 #endif
 
-  Serial_GNSS_Out.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */ delay(250);
+  if (SoC->id == SOC_NRF52 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_PSOC4) {
+    /* Badge and Prime 3 with Quectel L76K or Mini with Luat Air530Z */
+    Serial_GNSS_Out.write("$PCAS04,7*1E\r\n"); /* GPS + GLONASS + Beidou */
+  } else {
+    /* other AT6558 variants: 'fake' NEO, ... */
+    Serial_GNSS_Out.write("$PCAS04,5*1C\r\n"); /* GPS + GLONASS */
+  }
+  delay(250);
 
 #if defined(NMEA_TCP_SERVICE)
   if (settings->nmea_out == NMEA_TCP) {
