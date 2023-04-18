@@ -1581,7 +1581,11 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #include "../system/SoC.h"
 #if !defined(EXCLUDE_BLUETOOTH)
 
-#include <SerialBT.h>
+#include <queue>
+#include <pico/cyw43_arch.h>
+#include <CoreMutex.h>
+#include <btstack.h>
+
 #include <BTstack.h>
 #include <api/RingBuffer.h>
 
@@ -1589,12 +1593,116 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #include "WiFi.h"   // HOSTNAME
 #include "Bluetooth.h"
 
+static bool _running = false;
+static mutex_t _mutex;
+static bool _overflow = false;
+static volatile bool _connected = false;
+
+static uint32_t _writer;
+static uint32_t _reader;
+static size_t   _fifoSize = 32;
+static uint8_t *_queue;
+
+static const int RFCOMM_SERVER_CHANNEL = 1;
+
+static uint16_t _channelID;
+static uint8_t  _spp_service_buffer[150];
+static btstack_packet_callback_registration_t _hci_event_callback_registration;
+
+static volatile int _writeLen = 0;
+static const void *_writeBuff;
+
 RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
 RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
 
 UUID uuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0");
+
+static void packetHandler(uint8_t type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    UNUSED(channel);
+    bd_addr_t event_addr;
+    //uint8_t   rfcomm_channel_nr;
+    //uint16_t  mtu;
+    int i;
+
+    switch (type) {
+    case HCI_EVENT_PACKET:
+        switch (hci_event_packet_get_type(packet)) {
+        case HCI_EVENT_PIN_CODE_REQUEST:
+            //Serial.printf("Pin code request - using '0000'\n");
+            hci_event_pin_code_request_get_bd_addr(packet, event_addr);
+            gap_pin_code_response(event_addr, "0000");
+            break;
+
+        case HCI_EVENT_USER_CONFIRMATION_REQUEST:
+            // ssp: inform about user confirmation request
+            //Serial.printf("SSP User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+            //Serial.printf("SSP User Confirmation Auto accept\n");
+            break;
+
+        case RFCOMM_EVENT_INCOMING_CONNECTION:
+            rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
+            //rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
+            _channelID = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
+            //Serial.printf("RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
+            rfcomm_accept_connection(_channelID);
+            break;
+
+        case RFCOMM_EVENT_CHANNEL_OPENED:
+            if (rfcomm_event_channel_opened_get_status(packet)) {
+                //Serial.printf("RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
+            } else {
+                _channelID = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
+                //mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
+                //Serial.printf("RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                _connected = true;
+            }
+            break;
+        case RFCOMM_EVENT_CAN_SEND_NOW:
+            rfcomm_send(_channelID, (uint8_t *)_writeBuff, _writeLen);
+            _writeLen = 0;
+            break;
+        case RFCOMM_EVENT_CHANNEL_CLOSED:
+            //Serial.printf("RFCOMM channel closed\n");
+            _channelID = 0;
+            _connected = false;
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    case RFCOMM_DATA_PACKET:
+        for (i = 0; i < size; i++) {
+            auto next_writer = _writer + 1;
+            if (next_writer == _fifoSize) {
+                next_writer = 0;
+            }
+            if (next_writer != _reader) {
+                _queue[_writer] = packet[i];
+                asm volatile("" ::: "memory"); // Ensure the queue is written before the written count advances
+                // Avoid using division or mod because the HW divider could be in use
+                _writer = next_writer;
+            } else {
+                _overflow = true;
+            }
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void lockBluetooth() {
+    async_context_acquire_lock_blocking(cyw43_arch_async_context());
+}
+
+static void unlockBluetooth() {
+    async_context_release_lock(cyw43_arch_async_context());
+}
 
 static void CYW43_Bluetooth_setup()
 {
@@ -1605,7 +1713,41 @@ static void CYW43_Bluetooth_setup()
   {
   case BLUETOOTH_SPP:
     {
-      SerialBT.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+      mutex_init(&_mutex);
+      _overflow = false;
+
+      _queue = new uint8_t[_fifoSize];
+      _writer = 0;
+      _reader = 0;
+
+      // register for HCI events
+      _hci_event_callback_registration.callback = &packetHandler;
+      hci_add_event_handler(&_hci_event_callback_registration);
+
+      l2cap_init();
+
+#ifdef ENABLE_BLE
+      // Initialize LE Security Manager. Needed for cross-transport key derivation
+      sm_init();
+#endif
+
+      rfcomm_init();
+      rfcomm_register_service(packetHandler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+
+      // init SDP, create record for SPP and register with SDP
+      sdp_init();
+      bzero(_spp_service_buffer, sizeof(_spp_service_buffer));
+      spp_create_sdp_record(_spp_service_buffer, 0x10001, RFCOMM_SERVER_CHANNEL, "SoftRF Serial");
+      sdp_register_service(_spp_service_buffer);
+
+      gap_discoverable_control(1);
+      gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
+      gap_set_local_name(BT_name.c_str());
+
+      // Turn on!
+      hci_power_control(HCI_POWER_ON);
+
+      _running = true;
     }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
@@ -1641,7 +1783,15 @@ static void CYW43_Bluetooth_fini()
   {
   case BLUETOOTH_SPP:
     {
-      SerialBT.end();
+      if (!_running) {
+          return;
+      }
+      _running = false;
+
+      hci_power_control(HCI_POWER_OFF);
+      lockBluetooth();
+      delete[] _queue;
+      unlockBluetooth();
     }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
@@ -1661,7 +1811,12 @@ static int CYW43_Bluetooth_available()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_SPP:
-    rval = SerialBT.available();
+    {
+      CoreMutex m(&_mutex);
+      if (_running && m) {
+        rval = (_fifoSize + _writer - _reader) % _fifoSize;
+      }
+    }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX.available();
@@ -1682,7 +1837,17 @@ static int CYW43_Bluetooth_read()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_SPP:
-    rval = SerialBT.read();
+    {
+      CoreMutex m(&_mutex);
+      if (_running && m && _writer != _reader) {
+          auto ret = _queue[_reader];
+          asm volatile("" ::: "memory"); // Ensure the value is read before advancing
+          auto next_reader = (_reader + 1) % _fifoSize;
+          asm volatile("" ::: "memory"); // Ensure the reader value is only written once, correctly
+          _reader = next_reader;
+          rval = ret;
+      }
+    }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX.read_char();
@@ -1703,7 +1868,20 @@ static size_t CYW43_Bluetooth_write(const uint8_t *buffer, size_t size)
   switch (settings->bluetooth)
   {
   case BLUETOOTH_SPP:
-    rval = SerialBT.write(buffer, size);
+    {
+      CoreMutex m(&_mutex);
+      if (!_running || !m || !_connected || !size)  {
+          return 0;
+      }
+      _writeBuff = buffer;
+      _writeLen = size;
+      lockBluetooth();
+      rfcomm_request_can_send_now_event(_channelID);
+      unlockBluetooth();
+      while (_connected && _writeLen) {
+          /* noop busy wait */
+      }
+    }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
     {
