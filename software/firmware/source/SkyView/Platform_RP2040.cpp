@@ -1370,7 +1370,11 @@ const SoC_ops_t RP2040_ops = {
   RP2040_Button_fini,
   RP2040_WDT_setup,
   RP2040_WDT_fini,
+#if !defined(EXCLUDE_BLUETOOTH)
+  &CYW43_Bluetooth_ops,
+#else
   NULL,
+#endif /* EXCLUDE_BLUETOOTH */
   &RP2040_USBSerial_ops,
 };
 

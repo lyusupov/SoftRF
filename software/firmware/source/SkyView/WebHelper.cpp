@@ -214,7 +214,7 @@ void handleSettings() {
   }
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth SPP</option>"),
     (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP);
     len = strlen(offset);

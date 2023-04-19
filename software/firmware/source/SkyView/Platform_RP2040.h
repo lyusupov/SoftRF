@@ -30,6 +30,7 @@ extern WebServer server;
 #else
 #include <Arduino.h>
 #define EXCLUDE_WIFI
+#define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
