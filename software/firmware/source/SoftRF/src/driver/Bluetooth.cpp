@@ -1737,7 +1737,7 @@ static void CYW43_Bluetooth_setup()
       // init SDP, create record for SPP and register with SDP
       sdp_init();
       bzero(_spp_service_buffer, sizeof(_spp_service_buffer));
-      spp_create_sdp_record(_spp_service_buffer, 0x10001, RFCOMM_SERVER_CHANNEL, "RP2040_SPP");
+      spp_create_sdp_record(_spp_service_buffer, 0x10001, RFCOMM_SERVER_CHANNEL, "CYW43_SPP");
       sdp_register_service(_spp_service_buffer);
 
       gap_discoverable_control(1);

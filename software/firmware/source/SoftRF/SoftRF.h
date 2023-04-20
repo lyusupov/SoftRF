@@ -278,12 +278,6 @@ extern void shutdown(int);
 //#define TEST_PAW_ON_NICERF_SV610_FW466
 #define  DO_GDL90_FF_EXT
 
-#define LOGGER_IS_ENABLED 0
-
-#if LOGGER_IS_ENABLED
-#define StdOut  LogFile
-#else
 #define StdOut  Serial
-#endif /* LOGGER_IS_ENABLED */
 
 #endif /* SOFTRF_H */

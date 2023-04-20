@@ -29,10 +29,6 @@
 #endif /* EXCLUDE_MAVLINK */
 #include <fec.h>
 
-#if LOGGER_IS_ENABLED
-#include "../system/Log.h"
-#endif /* LOGGER_IS_ENABLED */
-
 byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
 
 unsigned long TxTimeMarker = 0;

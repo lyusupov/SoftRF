@@ -1,5 +1,5 @@
 /*
- * LogHelper.h
+ * RecorderHelper.h
  * Copyright (C) 2016-2023 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,20 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGHELPER_H
-#define LOGHELPER_H
+#ifndef RECORDERHELPER_H
+#define RECORDERHELPER_H
 
-#include "../../SoftRF.h"
+void Recorder_setup(void);
+void Recorder_loop(void);
+void Recorder_fini(void);
 
-#if LOGGER_IS_ENABLED
-
-#include <FS.h>
-
-extern File LogFile;
-void Logger_setup(void);
-void Logger_loop(void);
-void Logger_fini(void);
-
-#endif /* LOGGER_IS_ENABLED */
-
-#endif /* LOGHELPER_H */
+#endif /* RECORDERHELPER_H */
