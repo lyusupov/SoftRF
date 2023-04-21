@@ -17,7 +17,6 @@
  */
 
 #include "SoC.h"
-#include "Recorder.h"
 
 #if !defined(ENABLE_RECORDER)
 void Recorder_setup()   {}
@@ -25,19 +24,38 @@ void Recorder_loop()    {}
 void Recorder_fini()    {}
 #else
 
+#include <SdFat.h>
+#include <FlightRecorder.h>
+
+#include "Recorder.h"
+#include "../driver/GNSS.h"
+
+extern SdFat uSD;
+
+FlightRecorder FR;
+
 void Recorder_setup()
 {
-  /* TBD */
+  if (hw_info.storage == STORAGE_CARD ||
+      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+     FR.begin(&uSD);
+  }
 }
 
 void Recorder_loop()
 {
-  /* TBD */
+  if (hw_info.storage == STORAGE_CARD ||
+      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+    FR.loop(&gnss, ThisAircraft.pressure_altitude);
+  }
 }
 
 void Recorder_fini()
 {
-  /* TBD */
+  if (hw_info.storage == STORAGE_CARD ||
+      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+    FR.end();
+  }
 }
 
 #endif /* ENABLE_RECORDER */

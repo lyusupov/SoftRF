@@ -502,6 +502,10 @@ struct rst_info {
 //#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+//#define ENABLE_RECORDER
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #if defined(USE_USB_HOST)
 #undef  SOC_GPIO_PIN_T8_S2_CONS_RX
 #undef  SOC_GPIO_PIN_T8_S2_CONS_TX
