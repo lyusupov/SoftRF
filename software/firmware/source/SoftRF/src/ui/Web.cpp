@@ -895,22 +895,133 @@ PSTR("<html>\
   SoC->reset();
 }
 
-void handleNotFound() {
+#if defined(ENABLE_RECORDER)
 
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
+#include <SdFat.h>
+extern SdFat uSD;
 
-  for ( uint8_t i = 0; i < server.args(); i++ ) {
-    message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+#define FILESYSTEM uSD
+
+String getContentType(String filename) {
+  if (server.hasArg("download")) {
+    return "application/octet-stream";
+  } else if (filename.endsWith(".htm")) {
+    return "text/html";
+  } else if (filename.endsWith(".html")) {
+    return "text/html";
+  } else if (filename.endsWith(".css")) {
+    return "text/css";
+  } else if (filename.endsWith(".js")) {
+    return "application/javascript";
+  } else if (filename.endsWith(".png")) {
+    return "image/png";
+  } else if (filename.endsWith(".gif")) {
+    return "image/gif";
+  } else if (filename.endsWith(".jpg")) {
+    return "image/jpeg";
+  } else if (filename.endsWith(".ico")) {
+    return "image/x-icon";
+  } else if (filename.endsWith(".xml")) {
+    return "text/xml";
+  } else if (filename.endsWith(".pdf")) {
+    return "application/x-pdf";
+  } else if (filename.endsWith(".zip")) {
+    return "application/x-zip";
+  } else if (filename.endsWith(".gz")) {
+    return "application/x-gzip";
+  } else if (filename.endsWith(".igc")) {
+    return "application/octet-stream";
+  }
+  return "text/plain";
+}
+
+bool exists(String path){
+  bool yes = false;
+  File32 file = FILESYSTEM.open(path, O_RDONLY);
+  if(!file.isDirectory()){
+    yes = true;
+  }
+  file.close();
+  return yes;
+}
+
+bool handleFileRead(String path) {
+//  Serial.println("handleFileRead: " + path);
+  if (path.endsWith("/")) {
+    path += "index.htm";
+  }
+  String contentType = getContentType(path);
+  String pathWithGz = path + ".gz";
+  if (exists(pathWithGz) || exists(path)) {
+    if (exists(pathWithGz)) {
+      path += ".gz";
+    }
+    File32 file = FILESYSTEM.open(path, O_RDONLY);
+    server.streamFile(file, contentType);
+    file.close();
+    return true;
+  }
+  return false;
+}
+
+void handleFileList() {
+  if (!server.hasArg("dir")) {
+    server.send(500, "text/plain", "BAD ARGS");
+    return;
   }
 
-  server.send ( 404, "text/plain", message );
+  String path = server.arg("dir");
+//  Serial.println("handleFileList: " + path);
+
+  File32 root = FILESYSTEM.open(path);
+  path = String();
+
+  String output = "[";
+  if(root.isDirectory()){
+      File32 file = root.openNextFile();
+      while(file){
+          if (output != "[") {
+            output += ',';
+          }
+          output += "{\"type\":\"";
+          output += (file.isDirectory()) ? "dir" : "file";
+          output += "\",\"name\":\"";
+#if 0
+          output += String(file.path()).substring(1);
+#else
+          char buf[128];
+          file.getName(buf, 128);
+          output += String(buf);
+#endif
+          output += "\"}";
+          file = root.openNextFile();
+      }
+  }
+  output += "]";
+  server.send(200, "text/json", output);
+}
+#endif /* ENABLE_RECORDER */
+
+void handleNotFound() {
+#if defined(ENABLE_RECORDER)
+  if (!handleFileRead(server.uri()))
+#endif /* ENABLE_RECORDER */
+  {
+    String message = "File Not Found\n\n";
+    message += "URI: ";
+    message += server.uri();
+    message += "\nMethod: ";
+    message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+    message += "\nArguments: ";
+    message += server.args();
+    message += "\n";
+
+    for ( uint8_t i = 0; i < server.args(); i++ ) {
+      message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+    }
+
+    server.send ( 404, "text/plain", message );
+  }
 }
 
 void Web_setup()
@@ -1052,6 +1163,10 @@ $('form').submit(function(e){\
     } while (bytes_left > 0) ;
 
   } );
+
+#if defined(ENABLE_RECORDER)
+  server.on("/list", HTTP_GET, handleFileList);
+#endif /* ENABLE_RECORDER */
 
   server.begin();
   Serial.println (F("HTTP server has started at port: 80"));
