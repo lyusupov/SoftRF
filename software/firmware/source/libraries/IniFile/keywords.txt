@@ -1,0 +1,33 @@
+#######################################
+# Syntax Coloring Map For IniFile
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+IniFile	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+clearError	KEYWORD2
+close	KEYWORD2
+isOpen	KEYWORD2
+getCaseSensitive	KEYWORD2
+getError	KEYWORD2
+getFilename	KEYWORD2
+getIPAddress	KEYWORD2
+getMACAddress	KEYWORD2
+getMode	KEYWORD2
+getValue	KEYWORD2
+isCommentChar	KEYWORD2
+open	KEYWORD2
+readLine	KEYWORD2
+removeTrailingWhiteSpace	KEYWORD2
+setCaseSensitive	KEYWORD2
+skipWhiteSpace	KEYWORD2
+validate	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

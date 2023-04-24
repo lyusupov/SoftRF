@@ -1,0 +1,69 @@
+*** Testing IniFile(char*) ***
+Using file missing.ini
+  File open? false
+    Looking for key "mac"
+      Error: file not open (2)
+    Looking for key "mac" in section "network"
+      Error: file not open (2)
+    Looking for key "mac" in section "network2"
+      Error: file not open (2)
+    Looking for key "mac" in section "fake"
+      Error: file not open (2)
+    Looking for key "ip"
+      Error: file not open (2)
+    Looking for key "gateway"
+      Error: file not open (2)
+    Looking for key "hosts allow" in section "network"
+      Error: file not open (2)
+    Looking for key "hosts allow" in section "network"
+      Error: file not open (2)
+    Looking for key "hosts allow" in section "network2"
+      Error: file not open (2)
+    Looking for key "hosts allow" in section "network2"
+      Error: file not open (2)
+    Looking for key "string" in section "misc"
+      Error: file not open (2)
+    Looking for key "string2" in section "misc"
+      Error: file not open (2)
+    Looking for key "pi" in section "misc"
+      Error: file not open (2)
+    Could not read "pi" from section "misc" in missing.ini
+      Error: file not open (2)
+----
+Using file test.ini
+  File open? true
+    Looking for key "mac"
+      Value of mac is "01:23:45:67:89:AB"
+    Looking for key "mac" in section "network"
+      Value of mac is "01:23:45:67:89:AB"
+    Looking for key "mac" in section "network2"
+      Value of mac is "ee:ee:ee:ee:ee:ee"
+    Looking for key "mac" in section "fake"
+      Error: section not found (5)
+    Looking for key "ip"
+      Value of ip is "192.168.1.2"
+    Looking for key "gateway"
+      Value of gateway is "192.168.1.1"
+    Looking for key "hosts allow" in section "network"
+      Value of hosts allow is "example.com"
+    Looking for key "hosts allow" in section "network"
+      Value of hosts allow is "example.com"
+    Looking for key "hosts allow" in section "network2"
+      Value of hosts allow is "sloppy.example.com"
+    Looking for key "hosts allow" in section "network2"
+      Value of hosts allow is "sloppy.example.com"
+    Looking for key "string" in section "misc"
+      Value of string is "123456789012345678901234567890123456789001234567890"
+    Looking for key "string2" in section "misc"
+      Value of string2 is "a string with spaces in it"
+    Looking for key "pi" in section "misc"
+      Value of pi is "3.141592653589793"
+    Pi: 3.14159
+----
+Using file browsetest.ini
+  File open? true
+Karen eats burger, drinks beer, and has chocolate for dessert.
+Peter eats falafel, drinks tea without milk, and has vegan icecream for dessert.
+Noel eats sushi, drinks water, and has no dessert.
+Jessica eats sandwich, drinks nothing, and has muffin for dessert.
+Done

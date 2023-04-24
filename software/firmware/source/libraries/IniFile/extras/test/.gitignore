@@ -1,0 +1,12 @@
+# Ignore intermediate files
+*.o
+
+# Ignore test file
+ini_test
+
+# Ignore source files made from our standard src files
+IniFile.cpp
+IniFile.h
+
+# Ignore regression test output file
+ini_test.regressiontest.tmp
