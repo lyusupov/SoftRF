@@ -34,27 +34,32 @@ extern SdFat uSD;
 
 FlightRecorder FR;
 
+bool FR_is_active = false;
+
 void Recorder_setup()
 {
-  if (hw_info.storage == STORAGE_CARD ||
-      hw_info.storage == STORAGE_FLASH_AND_CARD) {
-     FR.begin(&uSD);
+  if (SoC->id          == SOC_ESP32S3      &&
+      hw_info.gnss     != GNSS_MODULE_NONE &&
+      (hw_info.storage == STORAGE_CARD     ||
+       hw_info.storage == STORAGE_FLASH_AND_CARD)) {
+    if (!FR_is_active) {
+      FR_is_active = FR.begin(&uSD, SoC->getChipId());
+    }
   }
 }
 
 void Recorder_loop()
 {
-  if (hw_info.storage == STORAGE_CARD ||
-      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+  if (FR_is_active) {
     FR.loop(&gnss, ThisAircraft.pressure_altitude);
   }
 }
 
 void Recorder_fini()
 {
-  if (hw_info.storage == STORAGE_CARD ||
-      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+  if (FR_is_active) {
     FR.end();
+    FR_is_active = false;
   }
 }
 

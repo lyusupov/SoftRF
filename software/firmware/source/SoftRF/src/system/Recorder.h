@@ -23,4 +23,6 @@ void Recorder_setup(void);
 void Recorder_loop(void);
 void Recorder_fini(void);
 
+extern bool FR_is_active;
+
 #endif /* RECORDERHELPER_H */
