@@ -1223,8 +1223,6 @@ static void ESP32_post_init()
       Serial.print("SD Card Size: ");
       Serial.print(cardSize / (2 * 1024));
       Serial.println(" MB");
-
-      uSD.volumeBegin();
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */

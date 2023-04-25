@@ -42,7 +42,7 @@ void Recorder_setup()
       hw_info.gnss     != GNSS_MODULE_NONE &&
       (hw_info.storage == STORAGE_CARD     ||
        hw_info.storage == STORAGE_FLASH_AND_CARD)) {
-    if (!FR_is_active) {
+    if (!FR_is_active && uSD.volumeBegin()) {
       FR_is_active = FR.begin(&uSD, SoC->getChipId());
     }
   }
