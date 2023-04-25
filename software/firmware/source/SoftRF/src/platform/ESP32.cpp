@@ -162,10 +162,10 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #include "uCDB.hpp"
 
 SPIClass uSD_SPI(HSPI);
-#define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(16), &uSD_SPI)
+#define  SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(16), &uSD_SPI)
 SdFat    uSD;
 
-static bool uSD_is_mounted = false;
+static bool uSD_is_attached = false;
 
 Adafruit_FlashTransport_ESP32 HWFlashTransport;
 Adafruit_SPIFlash QSPIFlash(&HWFlashTransport);
@@ -1020,9 +1020,9 @@ static void ESP32_setup()
     pinMode(uSD_SS_pin, OUTPUT);
     digitalWrite(uSD_SS_pin, HIGH);
 
-    uSD_is_mounted = uSD.cardBegin(SD_CONFIG);
+    uSD_is_attached = uSD.cardBegin(SD_CONFIG);
 
-    if (uSD_is_mounted && uSD.card()->cardSize() > 0) {
+    if (uSD_is_attached && uSD.card()->cardSize() > 0) {
       hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
                         STORAGE_FLASH_AND_CARD : STORAGE_CARD;
     }
@@ -1197,8 +1197,8 @@ static void ESP32_post_init()
 
   Serial.println();
 
-  if (!uSD_is_mounted) {
-    Serial.println(F("WARNING: unable to mount micro-SD card."));
+  if (!uSD_is_attached) {
+    Serial.println(F("WARNING: unable to attach micro-SD card."));
   } else {
     // The number of 512 byte sectors in the card
     // or zero if an error occurs.
@@ -1584,6 +1584,11 @@ static void ESP32_fini(int reason)
     break;
   }
 #endif /* EXCLUDE_MAG */
+
+  if (hw_info.storage == STORAGE_FLASH ||
+      hw_info.storage == STORAGE_FLASH_AND_CARD) {
+    uSD.end();
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   SPI.end();
