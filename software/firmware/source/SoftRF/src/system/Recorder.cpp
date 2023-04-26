@@ -29,6 +29,7 @@ void Recorder_fini()    {}
 
 #include "Recorder.h"
 #include "../driver/GNSS.h"
+#include "../driver/Baro.h"
 
 extern SdFat uSD;
 
@@ -36,14 +37,22 @@ FlightRecorder FR;
 
 bool FR_is_active = false;
 
+static const char *m10s_specs = "u-blox,MAX-M10S,72,50000,GPS,GLO,BDS,GAL";
+static const char *l76k_specs = "Quectel,L76K,32,50000,GPS,GLO,BDS";
+
 void Recorder_setup()
 {
+  const char *gnss_specs = hw_info.gnss == GNSS_MODULE_U10  ? m10s_specs :
+                           hw_info.gnss == GNSS_MODULE_AT65 ? l76k_specs :
+                           "Generic NMEA";
+
   if (SoC->id          == SOC_ESP32S3      &&
       hw_info.gnss     != GNSS_MODULE_NONE &&
+      hw_info.baro     != BARO_MODULE_NONE &&
       (hw_info.storage == STORAGE_CARD     ||
        hw_info.storage == STORAGE_FLASH_AND_CARD)) {
     if (!FR_is_active && uSD.volumeBegin()) {
-      FR_is_active = FR.begin(&uSD, SoC->getChipId());
+      FR_is_active = FR.begin(&uSD, SoC->getChipId(), gnss_specs);
     }
   }
 }

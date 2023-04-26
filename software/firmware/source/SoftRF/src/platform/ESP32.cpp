@@ -1589,6 +1589,8 @@ static void ESP32_fini(int reason)
       hw_info.storage == STORAGE_FLASH_AND_CARD) {
     uSD.end();
   }
+
+  uSD_SPI.end();
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   SPI.end();
