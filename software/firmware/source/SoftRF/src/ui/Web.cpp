@@ -43,6 +43,10 @@ void Web_fini()     {}
 #include "../driver/AHRS.h"
 #endif /* ENABLE_AHRS */
 
+#if defined(ENABLE_RECORDER)
+#include "../system/Recorder.h"
+#endif /* ENABLE_RECORDER */
+
 static uint32_t prev_rx_pkt_cnt = 0;
 
 static const char Logo[] PROGMEM = {
@@ -650,7 +654,7 @@ void handleRoot() {
   char str_alt[16];
   char str_Vcc[8];
 
-  size_t size = 2300;
+  size_t size = 2420;
   char *offset;
   size_t len = 0;
 
@@ -747,6 +751,16 @@ void handleRoot() {
   len = strlen(offset);
   offset += len;
   size -= len;
+
+#if defined(ENABLE_RECORDER)
+  if (FR_is_active) {
+    snprintf_P ( offset, size,
+    PSTR("<td align=center>&nbsp;&nbsp;&nbsp;<input type=button onClick=\"location.href='/flights'\" value='Flights'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+#endif /* ENABLE_RECORDER */
 
   /* SoC specific part 1 */
   if (SoC->id != SOC_RP2040) {
@@ -900,7 +914,93 @@ PSTR("<html>\
 #include <SdFat.h>
 extern SdFat uSD;
 
-#define FILESYSTEM uSD
+#define FILESYSTEM  uSD
+#define FLIGHTS_DIR "/Flights"
+
+typedef struct
+{
+  String filename;
+  String fsize;
+} fileinfo;
+
+String   webpage;
+fileinfo Filenames[100];
+int      numfiles;
+
+String ConvBinUnits(int bytes, int resolution) {
+  if      (bytes < 1024)                 {
+    return String(bytes) + " B";
+  }
+  else if (bytes < 1024 * 1024)          {
+    return String((bytes / 1024.0), resolution) + " KB";
+  }
+  else if (bytes < (1024 * 1024 * 1024)) {
+    return String((bytes / 1024.0 / 1024.0), resolution) + " MB";
+  }
+  else return "";
+}
+
+void Flights() {
+  char buf[48];
+  String filename;
+  numfiles = 0;
+  File32 root = FILESYSTEM.open(FLIGHTS_DIR);
+  if (root) {
+    root.rewindDirectory();
+    File32 file = root.openNextFile();
+    while (file) {
+      if (!file.isDirectory()) {
+        file.getName(buf, sizeof(buf));
+        filename = String(buf);
+        if (filename.endsWith(".igc") || filename.endsWith(".IGC")) {
+          Filenames[numfiles].filename = (filename.startsWith("/") ? filename.substring(1) : filename);
+          Filenames[numfiles].fsize    = ConvBinUnits(file.size(), 1);
+          numfiles++;
+        }
+      }
+      file = root.openNextFile();
+    }
+    root.close();
+  }
+}
+
+void Handle_Flight_Download() {
+  String filename;
+  int index = 0;
+
+  Flights();
+
+  webpage  = "<html>";
+  webpage += "<head>";
+  webpage += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+  webpage += "<title>Flights</title>";
+  webpage += "</head>";
+  webpage += "<body>";
+
+  if (numfiles > 0) {
+    webpage += "<table width=100%%><tr>";
+    webpage += "<td align=center><h2>Select a flight to download</h2></td>";
+    webpage += "</tr></table>";
+    webpage += "<table width=100%%>";
+    webpage += "<tr><th align=left>File Name</th><th align=right>File Size</th></tr>";
+    webpage += "<tr><td><hr></td><td><hr></td></tr>";
+    while (index < numfiles) {
+      filename = Filenames[index].filename;
+      webpage += "<tr><td align=left><a href='" FLIGHTS_DIR "/" + filename +
+                 "'>" + filename + "</a><td align=right>" +
+                 Filenames[index].fsize + "</td></tr>";
+      index++;
+    }
+    webpage += "</table>";
+  } else {
+    webpage += "<h2>No flights found</h2>";
+  }
+
+  webpage += "</body>";
+  webpage += "</html>";
+
+  server.send(200, "text/html", webpage);
+}
 
 String getContentType(String filename) {
   if (server.hasArg("download")) {
@@ -929,8 +1029,9 @@ String getContentType(String filename) {
     return "application/x-zip";
   } else if (filename.endsWith(".gz")) {
     return "application/x-gzip";
-  } else if (filename.endsWith(".igc")) {
-    return "application/octet-stream";
+  } else if (filename.endsWith(".igc") || filename.endsWith(".IGC")) {
+//    return "application/octet-stream";
+    return "text/plain";
   }
   return "text/plain";
 }
@@ -957,48 +1058,17 @@ bool handleFileRead(String path) {
       path += ".gz";
     }
     File32 file = FILESYSTEM.open(path, O_RDONLY);
-    server.streamFile(file, contentType);
+
+//    server.streamFile(file, contentType);
+
+    server.setContentLength(file.size());
+    server.send(200, contentType, "");
+    server.client().write(file);
+
     file.close();
     return true;
   }
   return false;
-}
-
-void handleFileList() {
-  if (!server.hasArg("dir")) {
-    server.send(500, "text/plain", "BAD ARGS");
-    return;
-  }
-
-  String path = server.arg("dir");
-//  Serial.println("handleFileList: " + path);
-
-  File32 root = FILESYSTEM.open(path);
-  path = String();
-
-  String output = "[";
-  if(root.isDirectory()){
-      File32 file = root.openNextFile();
-      while(file){
-          if (output != "[") {
-            output += ',';
-          }
-          output += "{\"type\":\"";
-          output += (file.isDirectory()) ? "dir" : "file";
-          output += "\",\"name\":\"";
-#if 0
-          output += String(file.path()).substring(1);
-#else
-          char buf[128];
-          file.getName(buf, 128);
-          output += String(buf);
-#endif
-          output += "\"}";
-          file = root.openNextFile();
-      }
-  }
-  output += "]";
-  server.send(200, "text/json", output);
 }
 #endif /* ENABLE_RECORDER */
 
@@ -1165,7 +1235,7 @@ $('form').submit(function(e){\
   } );
 
 #if defined(ENABLE_RECORDER)
-  server.on("/list", HTTP_GET, handleFileList);
+  server.on("/flights", HTTP_GET, Handle_Flight_Download);
 #endif /* ENABLE_RECORDER */
 
   server.begin();
