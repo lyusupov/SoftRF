@@ -1070,6 +1070,13 @@ static void ESP32_setup()
   Serial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
+
+#if 0 /* TBD */
+  if (Serial.rebootEnabled()) {
+    Serial.enableReboot(false);
+  }
+#endif /* TBD */
+
 #else
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
