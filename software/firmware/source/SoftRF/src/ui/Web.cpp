@@ -914,8 +914,9 @@ PSTR("<html>\
 #include <SdFat.h>
 extern SdFat uSD;
 
-#define FILESYSTEM  uSD
-#define FLIGHTS_DIR "/Flights"
+#define FILESYSTEM       uSD
+#define FLIGHTS_DIR      "/Flights"
+#define MAX_IGC_FILE_NUM 200
 
 typedef struct
 {
@@ -924,7 +925,7 @@ typedef struct
 } fileinfo;
 
 String   webpage;
-fileinfo Filenames[100];
+fileinfo Filenames[MAX_IGC_FILE_NUM];
 int      numfiles;
 
 String ConvBinUnits(int bytes, int resolution) {
@@ -956,6 +957,8 @@ void Flights() {
           Filenames[numfiles].filename = (filename.startsWith("/") ? filename.substring(1) : filename);
           Filenames[numfiles].fsize    = ConvBinUnits(file.size(), 1);
           numfiles++;
+
+          if (numfiles >= MAX_IGC_FILE_NUM) break;
         }
       }
       file = root.openNextFile();
@@ -982,7 +985,7 @@ void Handle_Flight_Download() {
     webpage += "<td align=center><h2>Select a flight to download</h2></td>";
     webpage += "</tr></table>";
     webpage += "<table width=100%%>";
-    webpage += "<tr><th align=left>File Name</th><th align=right>File Size</th></tr>";
+    webpage += "<tr><th align=left>File Name</th><th align=right>Size</th></tr>";
     webpage += "<tr><td><hr></td><td><hr></td></tr>";
     while (index < numfiles) {
       filename = Filenames[index].filename;
@@ -990,6 +993,13 @@ void Handle_Flight_Download() {
                  "'>" + filename + "</a><td align=right>" +
                  Filenames[index].fsize + "</td></tr>";
       index++;
+    }
+    webpage += "<tr><td><hr></td><td><hr></td></tr>";
+    if (index >= MAX_IGC_FILE_NUM) {
+      webpage += "<tr><td align=left>view is limited to " +
+                 String(MAX_IGC_FILE_NUM) + " files only</td></tr>";
+    } else {
+      webpage += "<tr><td align=left>" + String(index) + " file(s) total</td></tr>";
     }
     webpage += "</table>";
   } else {
@@ -1030,20 +1040,9 @@ String getContentType(String filename) {
   } else if (filename.endsWith(".gz")) {
     return "application/x-gzip";
   } else if (filename.endsWith(".igc") || filename.endsWith(".IGC")) {
-//    return "application/octet-stream";
-    return "text/plain";
+    return "application/octet-stream";
   }
   return "text/plain";
-}
-
-bool exists(String path){
-  bool yes = false;
-  File32 file = FILESYSTEM.open(path, O_RDONLY);
-  if(!file.isDirectory()){
-    yes = true;
-  }
-  file.close();
-  return yes;
 }
 
 bool handleFileRead(String path) {
@@ -1053,19 +1052,29 @@ bool handleFileRead(String path) {
   }
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
-  if (exists(pathWithGz) || exists(path)) {
-    if (exists(pathWithGz)) {
+  if (FILESYSTEM.exists(pathWithGz) || FILESYSTEM.exists(path)) {
+    char buf[1024];
+
+    if (FILESYSTEM.exists(pathWithGz)) {
       path += ".gz";
     }
     File32 file = FILESYSTEM.open(path, O_RDONLY);
+    size_t size = file.size();
 
-//    server.streamFile(file, contentType);
+    SoC->WDT_fini();
 
-    server.setContentLength(file.size());
+    server.setContentLength(size);
     server.send(200, contentType, "");
-    server.client().write(file);
+    while (size > 0) {
+      size_t nread = file.readBytes(buf, sizeof(buf));
+      server.client().write(buf, nread);
+      size -= nread;
+    }
 
     file.close();
+
+    SoC->WDT_setup();
+
     return true;
   }
   return false;
