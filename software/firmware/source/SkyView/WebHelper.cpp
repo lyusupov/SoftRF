@@ -223,7 +223,8 @@ void handleSettings() {
   }
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
     (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE);
     len = strlen(offset);

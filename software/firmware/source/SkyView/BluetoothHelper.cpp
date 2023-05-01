@@ -518,12 +518,13 @@ IODev_ops_t ESP32_Bluetooth_ops = {
 #include <CoreMutex.h>
 #include <btstack.h>
 
-#include <BTstack.h>
 #include <api/RingBuffer.h>
 
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"   // HOSTNAME
 #include "BluetoothHelper.h"
+
+/* ------- SPP BEGIN ------ */
 
 #define SOFTRF_SPP_COD 0x02c110
 
@@ -554,21 +555,19 @@ static uint8_t    *_queue;
 static uint16_t    _mtu;
 static uint8_t     rfcomm_server_channel;
 static bd_addr_t   peer_addr;
-static state_t     state;
+static state_t     spp_state;
 static const void *_writeBuff;
 
 static btstack_packet_callback_registration_t  _hci_event_callback_registration;
 static btstack_context_callback_registration_t _handle_sdp_client_query_request;
 
 // prototypes
-static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
 RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
-
-UUID uuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0");
 
 /*
  * Find remote peer by COD
@@ -576,12 +575,12 @@ UUID uuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0");
 #define INQUIRY_INTERVAL 5
 static void start_scan(void){
     DEBUG_SPP("Starting inquiry scan..\r\n");
-    state = W4_PEER_COD;
+    spp_state = W4_PEER_COD;
     gap_inquiry_start(INQUIRY_INTERVAL);
 }
 static void stop_scan(void){
     DEBUG_SPP("Stopping inquiry scan..\r\n");
-    state = W4_SCAN_COMPLETE;
+    spp_state = W4_SCAN_COMPLETE;
     gap_inquiry_stop();
 }
 
@@ -609,7 +608,7 @@ static void handle_query_rfcomm_event(uint8_t packet_type, uint16_t channel, uin
                 break;
             }
             DEBUG_SPP("SDP query done, channel %u.\r\n", rfcomm_server_channel);
-            rfcomm_create_channel(packetHandler, peer_addr, rfcomm_server_channel, NULL);
+            rfcomm_create_channel(hci_spp_event_handler, peer_addr, rfcomm_server_channel, NULL);
             break;
         default:
             break;
@@ -618,18 +617,12 @@ static void handle_query_rfcomm_event(uint8_t packet_type, uint16_t channel, uin
 
 static void handle_start_sdp_client_query(void * context){
     UNUSED(context);
-    if (state != W2_SEND_SDP_QUERY) return;
-    state = W4_RFCOMM_CHANNEL;
+    if (spp_state != W2_SEND_SDP_QUERY) return;
+    spp_state = W4_RFCOMM_CHANNEL;
     sdp_client_query_rfcomm_channel_and_name_for_uuid(&handle_query_rfcomm_event, peer_addr, BLUETOOTH_ATTRIBUTE_PUBLIC_BROWSE_ROOT);
 }
 
-/*
- * @section Gerenal Packet Handler
- *
- * @text Handles startup (BTSTACK_EVENT_STATE), inquiry, pairing, starts SDP query for SPP service, and RFCOMM connection
- */
-
-static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
     UNUSED(channel);
 
     bd_addr_t event_addr;
@@ -646,7 +639,7 @@ static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet
                     break;
 
                 case GAP_EVENT_INQUIRY_RESULT:
-                    if (state != W4_PEER_COD) break;
+                    if (spp_state != W4_PEER_COD) break;
                     class_of_device = gap_event_inquiry_result_get_class_of_device(packet);
                     gap_event_inquiry_result_get_bd_addr(packet, event_addr);
                     if (class_of_device == SOFTRF_SPP_COD){
@@ -659,7 +652,7 @@ static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet
                     break;
 
                 case GAP_EVENT_INQUIRY_COMPLETE:
-                    switch (state){
+                    switch (spp_state){
                         case W4_PEER_COD:
                             DEBUG_SPP("Inquiry complete\r\n");
                             DEBUG_SPP("Peer not found, starting scan again\r\n");
@@ -667,14 +660,14 @@ static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet
                             break;
                         case W4_SCAN_COMPLETE:
                             DEBUG_SPP("Start to connect and query for SPP service\r\n");
-                            state = W2_SEND_SDP_QUERY;
+                            spp_state = W2_SEND_SDP_QUERY;
                             _handle_sdp_client_query_request.callback = &handle_start_sdp_client_query;
                             (void) sdp_client_register_query_callback(&_handle_sdp_client_query_request);
                             break;
                         default:
                             break;
                     }
-                    if (state == W4_PEER_COD){
+                    if (spp_state == W4_PEER_COD){
                     }
                     break;
 
@@ -755,6 +748,499 @@ static void packetHandler(uint8_t packet_type, uint16_t channel, uint8_t *packet
             break;
     }
 }
+/* ------- SPP END ------ */
+
+/* ------- BLE BEGIN------ */
+
+#define TEST_MODE_WRITE_WITHOUT_RESPONSE 1
+#define TEST_MODE_ENABLE_NOTIFICATIONS   2
+#define TEST_MODE_DUPLEX                 3
+
+// configure test mode: send only, receive only, full duplex
+#define TEST_MODE TEST_MODE_ENABLE_NOTIFICATIONS
+
+#define REPORT_INTERVAL_MS 3000
+
+#define DEBUG_BLE          0
+
+// prototypes
+static void handle_gatt_client_event(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+
+typedef enum {
+    TC_OFF,
+    TC_IDLE,
+    TC_W4_SCAN_RESULT,
+    TC_W4_CONNECT,
+    TC_W4_SERVICE_RESULT,
+    TC_W4_CHARACTERISTIC_RXTX_RESULT,
+    TC_W4_ENABLE_NOTIFICATIONS_COMPLETE,
+    TC_W4_TEST_DATA
+} gc_state_t;
+
+// addr and type of device with correct name
+static bd_addr_t      le_streamer_addr;
+static bd_addr_type_t le_streamer_addr_type;
+
+static hci_con_handle_t connection_handle;
+
+static uint8_t le_streamer_service_uuid[16]             = { 0x00, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
+static uint8_t le_streamer_characteristic_rxtx_uuid[16] = { 0x00, 0x00, 0xFF, 0xE1, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
+
+static gatt_client_service_t le_streamer_service;
+static gatt_client_characteristic_t le_streamer_characteristic_rxtx;
+
+static gatt_client_notification_t notification_listener;
+static int listener_registered;
+
+static gc_state_t le_state = TC_OFF;
+
+// support for multiple clients
+typedef struct {
+    char name;
+    int le_notification_enabled;
+    int  counter;
+    char test_data[200];
+    int  test_data_len;
+    uint32_t test_data_sent;
+    uint32_t test_data_start;
+} le_streamer_connection_t;
+
+static le_streamer_connection_t le_streamer_connection;
+
+static void test_reset(le_streamer_connection_t * context){
+    context->test_data_start = btstack_run_loop_get_time_ms();
+    context->test_data_sent = 0;
+}
+
+static void test_track_data(le_streamer_connection_t * context, int bytes_sent){
+    context->test_data_sent += bytes_sent;
+    // evaluate
+    uint32_t now = btstack_run_loop_get_time_ms();
+    uint32_t time_passed = now - context->test_data_start;
+    if (time_passed < REPORT_INTERVAL_MS) return;
+    // print speed
+    int bytes_per_second = context->test_data_sent * 1000 / time_passed;
+#if DEBUG_BLE
+    Serial.printf("%c: %"PRIu32" bytes -> %u.%03u kB/s\r\n", context->name, context->test_data_sent, bytes_per_second / 1000, bytes_per_second % 1000);
+#endif /* DEBUG_BLE */
+
+    // restart
+    context->test_data_start = now;
+    context->test_data_sent  = 0;
+}
+
+// stramer
+static void streamer(le_streamer_connection_t * context){
+    if (connection_handle == HCI_CON_HANDLE_INVALID) return;
+
+    // create test data
+    context->counter++;
+    if (context->counter > 'Z') context->counter = 'A';
+    memset(context->test_data, context->counter, context->test_data_len);
+
+    // send
+    uint8_t status = gatt_client_write_value_of_characteristic_without_response(connection_handle, le_streamer_characteristic_rxtx.value_handle, context->test_data_len, (uint8_t*) context->test_data);
+    if (status){
+#if DEBUG_BLE
+        Serial.printf("error %02x for write without response!\r\n", status);
+#endif /* DEBUG_BLE */
+        return;
+    } else {
+        test_track_data(&le_streamer_connection, context->test_data_len);
+    }
+
+    // request again
+    gatt_client_request_can_write_without_response_event(handle_gatt_client_event, connection_handle);
+}
+
+
+// returns 1 if name is found in advertisement
+static int advertisement_report_contains_name(const char * name, uint8_t * advertisement_report){
+    // get advertisement from report event
+    const uint8_t * adv_data = gap_event_advertising_report_get_data(advertisement_report);
+    uint8_t         adv_len  = gap_event_advertising_report_get_data_length(advertisement_report);
+    uint16_t        name_len = (uint8_t) strlen(name);
+
+    // iterate over advertisement data
+    ad_context_t context;
+    for (ad_iterator_init(&context, adv_len, adv_data) ; ad_iterator_has_more(&context) ; ad_iterator_next(&context)){
+        uint8_t data_type    = ad_iterator_get_data_type(&context);
+        uint8_t data_size    = ad_iterator_get_data_len(&context);
+        const uint8_t * data = ad_iterator_get_data(&context);
+        switch (data_type){
+            case BLUETOOTH_DATA_TYPE_SHORTENED_LOCAL_NAME:
+            case BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME:
+                // compare prefix
+                if (data_size < name_len) break;
+                if (memcmp(data, name, name_len) == 0) return 1;
+                return 1;
+            default:
+                break;
+        }
+    }
+    return 0;
+}
+
+static void handle_gatt_client_event(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    UNUSED(packet_type);
+    UNUSED(channel);
+    UNUSED(size);
+
+    uint16_t mtu;
+    uint8_t att_status;
+    switch(le_state){
+        case TC_W4_SERVICE_RESULT:
+            switch(hci_event_packet_get_type(packet)){
+                case GATT_EVENT_SERVICE_QUERY_RESULT:
+                    // store service (we expect only one)
+                    gatt_event_service_query_result_get_service(packet, &le_streamer_service);
+                    break;
+                case GATT_EVENT_QUERY_COMPLETE:
+                    att_status = gatt_event_query_complete_get_att_status(packet);
+                    if (att_status != ATT_ERROR_SUCCESS){
+#if DEBUG_BLE
+                        Serial.printf("SERVICE_QUERY_RESULT - Error status %x.\r\n", att_status);
+#endif /* DEBUG_BLE */
+                        gap_disconnect(connection_handle);
+                        break;
+                    }
+                    // service query complete, look for characteristic
+                    le_state = TC_W4_CHARACTERISTIC_RXTX_RESULT;
+#if DEBUG_BLE
+                    Serial.printf("Search for HM-10 UART RX/TX characteristic.\r\n");
+#endif /* DEBUG_BLE */
+                    gatt_client_discover_characteristics_for_service_by_uuid128(handle_gatt_client_event, connection_handle, &le_streamer_service, le_streamer_characteristic_rxtx_uuid);
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case TC_W4_CHARACTERISTIC_RXTX_RESULT:
+            switch(hci_event_packet_get_type(packet)){
+                case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
+                    gatt_event_characteristic_query_result_get_characteristic(packet, &le_streamer_characteristic_rxtx);
+                    break;
+                case GATT_EVENT_QUERY_COMPLETE:
+                    att_status = gatt_event_query_complete_get_att_status(packet);
+                    if (att_status != ATT_ERROR_SUCCESS){
+#if DEBUG_BLE
+                        Serial.printf("CHARACTERISTIC_QUERY_RESULT - Error status %x.\r\n", att_status);
+#endif /* DEBUG_BLE */
+                        gap_disconnect(connection_handle);
+                        break;
+                    }
+                    // register handler for notifications
+                    listener_registered = 1;
+                    gatt_client_listen_for_characteristic_value_updates(&notification_listener, handle_gatt_client_event, connection_handle, &le_streamer_characteristic_rxtx);
+                    // setup tracking
+                    le_streamer_connection.name = 'A';
+                    le_streamer_connection.test_data_len = ATT_DEFAULT_MTU - 3;
+                    test_reset(&le_streamer_connection);
+                    gatt_client_get_mtu(connection_handle, &mtu);
+                    le_streamer_connection.test_data_len = btstack_min(mtu - 3, sizeof(le_streamer_connection.test_data));
+#if DEBUG_BLE
+                    Serial.printf("%c: ATT MTU = %u => use test data of len %u\r\n", le_streamer_connection.name, mtu, le_streamer_connection.test_data_len);
+#endif /* DEBUG_BLE */
+                    // enable notifications
+#if (TEST_MODE & TEST_MODE_ENABLE_NOTIFICATIONS)
+#if DEBUG_BLE
+                    Serial.printf("Start streaming - enable notify on test characteristic.\r\n");
+#endif /* DEBUG_BLE */
+                    le_state = TC_W4_ENABLE_NOTIFICATIONS_COMPLETE;
+                    gatt_client_write_client_characteristic_configuration(handle_gatt_client_event, connection_handle,
+                        &le_streamer_characteristic_rxtx, GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION);
+                    break;
+#endif
+                    le_state = TC_W4_TEST_DATA;
+#if (TEST_MODE & TEST_MODE_WRITE_WITHOUT_RESPONSE)
+#if DEBUG_BLE
+                    Serial.printf("Start streaming - request can send now.\r\n");
+#endif /* DEBUG_BLE */
+                    gatt_client_request_can_write_without_response_event(handle_gatt_client_event, connection_handle);
+#endif
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case TC_W4_ENABLE_NOTIFICATIONS_COMPLETE:
+            switch(hci_event_packet_get_type(packet)){
+                case GATT_EVENT_QUERY_COMPLETE:
+#if DEBUG_BLE
+                    Serial.printf("Notifications enabled, ATT status %02x\r\n", gatt_event_query_complete_get_att_status(packet));
+#endif /* DEBUG_BLE */
+                    if (gatt_event_query_complete_get_att_status(packet) != ATT_ERROR_SUCCESS) break;
+                    le_state = TC_W4_TEST_DATA;
+#if (TEST_MODE & TEST_MODE_WRITE_WITHOUT_RESPONSE)
+#if DEBUG_BLE
+                    Serial.printf("Start streaming - request can send now.\r\n");
+#endif /* DEBUG_BLE */
+                    gatt_client_request_can_write_without_response_event(handle_gatt_client_event, connection_handle);
+#endif
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        case TC_W4_TEST_DATA:
+            switch(hci_event_packet_get_type(packet)){
+                case GATT_EVENT_NOTIFICATION:
+                    {
+                      size_t payload_len = gatt_event_notification_get_value_length(packet);
+                      if (payload_len > 0) {
+                        size_t size = BLE_FIFO_RX.availableForStore();
+                        size = (size < payload_len) ? size : payload_len;
+                        for (size_t i = 0; i < size; i++) {
+                          BLE_FIFO_RX.store_char(gatt_event_notification_get_value(packet)[i]);
+                        }
+                      }
+                      test_track_data(&le_streamer_connection, payload_len);
+                    }
+                    break;
+                case GATT_EVENT_QUERY_COMPLETE:
+                    break;
+                case GATT_EVENT_CAN_WRITE_WITHOUT_RESPONSE:
+                    streamer(&le_streamer_connection);
+                    break;
+                default:
+#if DEBUG_BLE
+                    Serial.printf("Unknown packet type %x\r\n", hci_event_packet_get_type(packet));
+#endif /* DEBUG_BLE */
+                    break;
+            }
+            break;
+
+        default:
+#if DEBUG_BLE
+            Serial.printf("error\r\n");
+#endif /* DEBUG_BLE */
+            break;
+    }
+}
+
+static void le_streamer_client_start(void){
+#if DEBUG_BLE
+    Serial.printf("Start scanning!\r\n");
+#endif /* DEBUG_BLE */
+    le_state = TC_W4_SCAN_RESULT;
+    gap_set_scan_parameters(1, 0x0030, 0x0030);
+    gap_start_scan();
+}
+
+#if DEBUG_BLE
+static const char * ad_types[] = {
+    "",
+    "Flags",
+    "Incomplete List of 16-bit Service Class UUIDs",
+    "Complete List of 16-bit Service Class UUIDs",
+    "Incomplete List of 32-bit Service Class UUIDs",
+    "Complete List of 32-bit Service Class UUIDs",
+    "Incomplete List of 128-bit Service Class UUIDs",
+    "Complete List of 128-bit Service Class UUIDs",
+    "Shortened Local Name",
+    "Complete Local Name",
+    "Tx Power Level",
+    "",
+    "",
+    "Class of Device",
+    "Simple Pairing Hash C",
+    "Simple Pairing Randomizer R",
+    "Device ID",
+    "Security Manager TK Value",
+    "Slave Connection Interval Range",
+    "",
+    "List of 16-bit Service Solicitation UUIDs",
+    "List of 128-bit Service Solicitation UUIDs",
+    "Service Data",
+    "Public Target Address",
+    "Random Target Address",
+    "Appearance",
+    "Advertising Interval"
+};
+
+static const char * flags[] = {
+    "LE Limited Discoverable Mode",
+    "LE General Discoverable Mode",
+    "BR/EDR Not Supported",
+    "Simultaneous LE and BR/EDR to Same Device Capable (Controller)",
+    "Simultaneous LE and BR/EDR to Same Device Capable (Host)",
+    "Reserved",
+    "Reserved",
+    "Reserved"
+};
+
+static void dump_advertisement_data(const uint8_t * adv_data, uint8_t adv_size){
+    ad_context_t context;
+    bd_addr_t address;
+    uint8_t uuid_128[16];
+    for (ad_iterator_init(&context, adv_size, (uint8_t *)adv_data) ; ad_iterator_has_more(&context) ; ad_iterator_next(&context)){
+        uint8_t data_type    = ad_iterator_get_data_type(&context);
+        uint8_t size         = ad_iterator_get_data_len(&context);
+        const uint8_t * data = ad_iterator_get_data(&context);
+
+        if (data_type > 0 && data_type < 0x1B){
+            Serial.printf("    %s: ", ad_types[data_type]);
+        }
+        int i;
+        // Assigned Numbers GAP
+
+        switch (data_type){
+            case BLUETOOTH_DATA_TYPE_FLAGS:
+                // show only first octet, ignore rest
+                for (i=0; i<8;i++){
+                    if (data[0] & (1<<i)){
+                        Serial.printf("%s; ", flags[i]);
+                    }
+                }
+                break;
+            case BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_LIST_OF_16_BIT_SERVICE_SOLICITATION_UUIDS:
+                for (i=0; i<size;i+=2){
+                    Serial.printf("%02X ", little_endian_read_16(data, i));
+                }
+                break;
+            case BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_32_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_32_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_LIST_OF_32_BIT_SERVICE_SOLICITATION_UUIDS:
+                for (i=0; i<size;i+=4){
+                    Serial.printf("%04"PRIX32, little_endian_read_32(data, i));
+                }
+                break;
+            case BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_128_BIT_SERVICE_CLASS_UUIDS:
+            case BLUETOOTH_DATA_TYPE_LIST_OF_128_BIT_SERVICE_SOLICITATION_UUIDS:
+                reverse_128(data, uuid_128);
+                Serial.printf("%s", uuid128_to_str(uuid_128));
+                break;
+            case BLUETOOTH_DATA_TYPE_SHORTENED_LOCAL_NAME:
+            case BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME:
+                for (i=0; i<size;i++){
+                    Serial.printf("%c", (char)(data[i]));
+                }
+                break;
+            case BLUETOOTH_DATA_TYPE_TX_POWER_LEVEL:
+                Serial.printf("%d dBm", *(int8_t*)data);
+                break;
+            case BLUETOOTH_DATA_TYPE_SLAVE_CONNECTION_INTERVAL_RANGE:
+                Serial.printf("Connection Interval Min = %u ms, Max = %u ms", little_endian_read_16(data, 0) * 5/4, little_endian_read_16(data, 2) * 5/4);
+                break;
+            case BLUETOOTH_DATA_TYPE_SERVICE_DATA:
+//                printf_hexdump(data, size);
+                break;
+            case BLUETOOTH_DATA_TYPE_PUBLIC_TARGET_ADDRESS:
+            case BLUETOOTH_DATA_TYPE_RANDOM_TARGET_ADDRESS:
+                reverse_bd_addr(data, address);
+                Serial.printf("%s", bd_addr_to_str(address));
+                break;
+            case BLUETOOTH_DATA_TYPE_APPEARANCE:
+                // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.gap.appearance.xml
+                Serial.printf("%02X", little_endian_read_16(data, 0) );
+                break;
+            case BLUETOOTH_DATA_TYPE_ADVERTISING_INTERVAL:
+                Serial.printf("%u ms", little_endian_read_16(data, 0) * 5/8 );
+                break;
+            case BLUETOOTH_DATA_TYPE_3D_INFORMATION_DATA:
+//                printf_hexdump(data, size);
+                break;
+            case BLUETOOTH_DATA_TYPE_MANUFACTURER_SPECIFIC_DATA: // Manufacturer Specific Data
+                break;
+            case BLUETOOTH_DATA_TYPE_CLASS_OF_DEVICE:
+            case BLUETOOTH_DATA_TYPE_SIMPLE_PAIRING_HASH_C:
+            case BLUETOOTH_DATA_TYPE_SIMPLE_PAIRING_RANDOMIZER_R:
+            case BLUETOOTH_DATA_TYPE_DEVICE_ID:
+            case BLUETOOTH_DATA_TYPE_SECURITY_MANAGER_OUT_OF_BAND_FLAGS:
+            default:
+                Serial.printf("Advertising Data Type 0x%2x not handled yet", data_type);
+                break;
+        }
+        Serial.printf("\r\n");
+    }
+    Serial.printf("\r\n");
+}
+
+#endif /* DEBUG_BLE */
+
+static void hci_le_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    UNUSED(channel);
+    UNUSED(size);
+
+    if (packet_type != HCI_EVENT_PACKET) return;
+
+    uint16_t conn_interval;
+    uint8_t event = hci_event_packet_get_type(packet);
+    switch (event) {
+        case BTSTACK_EVENT_STATE:
+            // BTstack activated, get started
+            if (btstack_event_state_get_state(packet) == HCI_STATE_WORKING) {
+                le_streamer_client_start();
+            } else {
+                le_state = TC_OFF;
+            }
+            break;
+        case GAP_EVENT_ADVERTISING_REPORT:
+            if (le_state != TC_W4_SCAN_RESULT) return;
+#if DEBUG_BLE
+            {
+              bd_addr_t address;
+              gap_event_advertising_report_get_address(packet, address);
+              uint8_t length = gap_event_advertising_report_get_data_length(packet);
+              const uint8_t * data = gap_event_advertising_report_get_data(packet);
+              dump_advertisement_data(data, length);
+            }
+#endif /* DEBUG_BLE */
+            // check name in advertisement
+            if (!advertisement_report_contains_name(settings->server, packet)) return;
+            // store address and type
+            gap_event_advertising_report_get_address(packet, le_streamer_addr);
+            le_streamer_addr_type = (bd_addr_type_t) gap_event_advertising_report_get_address_type(packet);
+            // stop scanning, and connect to the device
+            le_state = TC_W4_CONNECT;
+            gap_stop_scan();
+#if DEBUG_BLE
+            Serial.printf("Stop scan. Connect to %s with addr %s.\r\n", settings->server, bd_addr_to_str(le_streamer_addr));
+#endif /* DEBUG_BLE */
+            gap_connect(le_streamer_addr,le_streamer_addr_type);
+            break;
+        case HCI_EVENT_LE_META:
+            // wait for connection complete
+            if (hci_event_le_meta_get_subevent_code(packet) !=  HCI_SUBEVENT_LE_CONNECTION_COMPLETE) break;
+            if (le_state != TC_W4_CONNECT) return;
+            connection_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
+            // print connection parameters (without using float operations)
+            conn_interval = hci_subevent_le_connection_complete_get_conn_interval(packet);
+#if DEBUG_BLE
+            Serial.printf("Connection Interval: %u.%02u ms\r\n", conn_interval * 125 / 100, 25 * (conn_interval & 3));
+            Serial.printf("Connection Latency: %u\r\n", hci_subevent_le_connection_complete_get_conn_latency(packet));
+            // initialize gatt client context with handle, and add it to the list of active clients
+            // query primary services
+            Serial.printf("Search for HM-10 UART service.\r\n");
+#endif /* DEBUG_BLE */
+            le_state = TC_W4_SERVICE_RESULT;
+            gatt_client_discover_primary_services_by_uuid128(handle_gatt_client_event, connection_handle, le_streamer_service_uuid);
+            break;
+        case HCI_EVENT_DISCONNECTION_COMPLETE:
+            // unregister listener
+            connection_handle = HCI_CON_HANDLE_INVALID;
+            if (listener_registered){
+                listener_registered = 0;
+                gatt_client_stop_listening_for_characteristic_value_updates(&notification_listener);
+            }
+#if DEBUG_BLE
+            Serial.printf("Disconnected %s\r\n", bd_addr_to_str(le_streamer_addr));
+#endif /* DEBUG_BLE */
+            if (le_state == TC_OFF) break;
+            le_streamer_client_start();
+            break;
+        default:
+            break;
+    }
+}
+
+/* ------- BLE END ------ */
 
 static void lockBluetooth() {
     async_context_acquire_lock_blocking(cyw43_arch_async_context());
@@ -766,6 +1252,8 @@ static void unlockBluetooth() {
 
 static void CYW43_Bluetooth_setup()
 {
+  if (_running) return;
+
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
@@ -781,31 +1269,46 @@ static void CYW43_Bluetooth_setup()
       _reader = 0;
 
       // register for HCI events
-      _hci_event_callback_registration.callback = &packetHandler;
+      _hci_event_callback_registration.callback = &hci_spp_event_handler;
       hci_add_event_handler(&_hci_event_callback_registration);
 
       l2cap_init();
 
-#ifdef ENABLE_BLE
-      // Initialize LE Security Manager. Needed for cross-transport key derivation
       sm_init();
-#endif
 
       rfcomm_init();
 
       // init SDP
       gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
 
-      // turn on!
       hci_power_control(HCI_POWER_ON);
 
       _running = true;
     }
     break;
   case CON_BLUETOOTH_LE:
-    BTstack.setup();
-    BTstack.iBeaconConfigure(&uuid, 4711, 2);
-    BTstack.startAdvertising();
+    {
+      BT_name += "-LE";
+
+      mutex_init(&_mutex);
+
+      _queue = new uint8_t[_fifoSize]; /* TBD */
+
+      l2cap_init();
+
+      sm_init();
+      sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+
+      // sm_init needed before gatt_client_init
+      gatt_client_init();
+
+      _hci_event_callback_registration.callback = &hci_le_event_handler;
+      hci_add_event_handler(&_hci_event_callback_registration);
+
+      hci_power_control(HCI_POWER_ON);
+
+      _running = true;
+    }
     break;
   default:
     break;
@@ -817,7 +1320,7 @@ static void CYW43_Bluetooth_loop()
   switch (settings->connection)
   {
   case CON_BLUETOOTH_LE:
-    BTstack.loop();
+    /* TBD */
     break;
   case CON_BLUETOOTH_SPP:
   default:
@@ -830,6 +1333,7 @@ static void CYW43_Bluetooth_fini()
   switch (settings->connection)
   {
   case CON_BLUETOOTH_SPP:
+  case CON_BLUETOOTH_LE:
     {
       if (!_running) {
           return;
@@ -841,9 +1345,6 @@ static void CYW43_Bluetooth_fini()
       delete[] _queue;
       unlockBluetooth();
     }
-    break;
-  case CON_BLUETOOTH_LE:
-    /* TBD */
     break;
   default:
     break;
