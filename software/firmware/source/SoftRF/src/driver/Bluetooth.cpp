@@ -42,7 +42,7 @@
 #include "../system/SoC.h"
 #include "EEPROM.h"
 #include "Bluetooth.h"
-#include "WiFi.h"   // HOSTNAME
+#include "WiFi.h"
 #include "Battery.h"
 
 #include <core_version.h>
@@ -1100,7 +1100,7 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <MIDI.h>
 #endif /* USE_BLE_MIDI */
 
-#include "WiFi.h"   // HOSTNAME
+#include "WiFi.h"
 #include "Battery.h"
 #include "GNSS.h"
 #include "RF.h"
@@ -1586,11 +1586,10 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #include <CoreMutex.h>
 #include <btstack.h>
 
-#include <BTstack.h>
 #include <api/RingBuffer.h>
 
 #include "EEPROM.h"
-#include "WiFi.h"   // HOSTNAME
+#include "WiFi.h"
 #include "Bluetooth.h"
 
 static bool _running = false;
@@ -1617,9 +1616,9 @@ RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
 
-UUID uuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0");
+/* ------- SPP BEGIN ------ */
 
-static void packetHandler(uint8_t type, uint16_t channel, uint8_t *packet, uint16_t size) {
+static void hci_spp_packet_handler(uint8_t type, uint16_t channel, uint8_t *packet, uint16_t size) {
     UNUSED(channel);
     bd_addr_t event_addr;
     //uint8_t   rfcomm_channel_nr;
@@ -1696,6 +1695,433 @@ static void packetHandler(uint8_t type, uint16_t channel, uint8_t *packet, uint1
     }
 }
 
+/* ------- SPP END ------ */
+
+/* ------- BLE BEGIN------ */
+
+#define REPORT_INTERVAL_MS 3000
+#define MAX_NR_CONNECTIONS 3
+#define APP_AD_FLAGS       0x06
+
+#define DEBUG_BLE          0
+
+uint8_t *_advData = nullptr;
+uint8_t _advDataLen = 0;
+
+void _buildAdvData(const char *completeLocalName) {
+    free(_advData);
+    _advDataLen = 13 + strlen(completeLocalName);
+    _advData = (uint8_t*) malloc(_advDataLen);
+    int i = 0;
+    // Flags general discoverable, BR/EDR not supported
+    // 0x02, BLUETOOTH_DATA_TYPE_FLAGS, 0x06,
+    _advData[i++] = 0x02;
+    _advData[i++] = BLUETOOTH_DATA_TYPE_FLAGS;
+    _advData[i++] = 0x06;
+    // Name
+    // 0x0d, BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME,
+    _advData[i++] = 1 + strlen(completeLocalName);
+    _advData[i++] = BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME;
+    memcpy(_advData + i, completeLocalName, strlen(completeLocalName));
+    i += strlen(completeLocalName);
+    // 16-bit Service UUIDs
+    _advData[i++] = 0x03;
+    _advData[i++] = BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS;
+    _advData[i++] = 0xe0;
+    _advData[i++] = 0xff;
+}
+
+
+uint8_t *_attdb = nullptr;
+int _attdbLen = 0;
+
+static constexpr const uint8_t _attdb_head[] = {
+    // ATT DB Version
+    1,
+
+    // 0x0001 PRIMARY_SERVICE-GAP_SERVICE
+    0x0a, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x28, 0x00, 0x18,
+    // 0x0002 CHARACTERISTIC-GAP_DEVICE_NAME - READ
+    0x0d, 0x00, 0x02, 0x00, 0x02, 0x00, 0x03, 0x28, 0x02, 0x03, 0x00, 0x00, 0x2a,
+};
+
+static constexpr const uint8_t _attdb_tail[] =  {
+    // Specification Type org.bluetooth.service.battery_service
+    // https://www.bluetooth.com/api/gatt/xmlfile?xmlFileName=org.bluetooth.service.battery_service.xml
+    // Battery Service 180F
+    // 0x0004 PRIMARY_SERVICE-ORG_BLUETOOTH_SERVICE_BATTERY_SERVICE
+    0x0a, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00, 0x28, 0x0f, 0x18,
+    // 0x0005 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_BATTERY_LEVEL - DYNAMIC | READ | NOTIFY
+    0x0d, 0x00, 0x02, 0x00, 0x05, 0x00, 0x03, 0x28, 0x12, 0x06, 0x00, 0x19, 0x2a,
+    // 0x0006 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_BATTERY_LEVEL - DYNAMIC | READ | NOTIFY
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x06, 0x00, 0x19, 0x2a,
+    // 0x0007 CLIENT_CHARACTERISTIC_CONFIGURATION
+    // READ_ANYBODY, WRITE_ANYBODY
+    0x0a, 0x00, 0x0e, 0x01, 0x07, 0x00, 0x02, 0x29, 0x00, 0x00,
+
+    // Specification Type org.bluetooth.service.device_information
+    // https://www.bluetooth.com/api/gatt/xmlfile?xmlFileName=org.bluetooth.service.device_information.xml
+    // Device Information 180A
+    // 0x0008 PRIMARY_SERVICE-ORG_BLUETOOTH_SERVICE_DEVICE_INFORMATION
+    0x0a, 0x00, 0x02, 0x00, 0x08, 0x00, 0x00, 0x28, 0x0a, 0x18,
+    // 0x0009 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_MANUFACTURER_NAME_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x09, 0x00, 0x03, 0x28, 0x02, 0x0a, 0x00, 0x29, 0x2a,
+    // 0x000a VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_MANUFACTURER_NAME_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x0a, 0x00, 0x29, 0x2a,
+    // 0x000b CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_MODEL_NUMBER_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x0b, 0x00, 0x03, 0x28, 0x02, 0x0c, 0x00, 0x24, 0x2a,
+    // 0x000c VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_MODEL_NUMBER_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x0c, 0x00, 0x24, 0x2a,
+    // 0x000d CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SERIAL_NUMBER_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x0d, 0x00, 0x03, 0x28, 0x02, 0x0e, 0x00, 0x25, 0x2a,
+    // 0x000e VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SERIAL_NUMBER_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x0e, 0x00, 0x25, 0x2a,
+    // 0x000f CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_HARDWARE_REVISION_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x0f, 0x00, 0x03, 0x28, 0x02, 0x10, 0x00, 0x27, 0x2a,
+    // 0x0010 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_HARDWARE_REVISION_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x10, 0x00, 0x27, 0x2a,
+    // 0x0011 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_FIRMWARE_REVISION_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x11, 0x00, 0x03, 0x28, 0x02, 0x12, 0x00, 0x26, 0x2a,
+    // 0x0012 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_FIRMWARE_REVISION_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x12, 0x00, 0x26, 0x2a,
+    // 0x0013 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x13, 0x00, 0x03, 0x28, 0x02, 0x14, 0x00, 0x28, 0x2a,
+    // 0x0014 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x14, 0x00, 0x28, 0x2a,
+    // 0x0015 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SYSTEM_ID - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x15, 0x00, 0x03, 0x28, 0x02, 0x16, 0x00, 0x23, 0x2a,
+    // 0x0016 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_SYSTEM_ID - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x16, 0x00, 0x23, 0x2a,
+    // 0x0017 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_IEEE_11073_20601_REGULATORY_CERTIFICATION_DATA_LIST - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x17, 0x00, 0x03, 0x28, 0x02, 0x18, 0x00, 0x2a, 0x2a,
+    // 0x0018 VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_IEEE_11073_20601_REGULATORY_CERTIFICATION_DATA_LIST - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x18, 0x00, 0x2a, 0x2a,
+    // 0x0019 CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_PNP_ID - DYNAMIC | READ
+    0x0d, 0x00, 0x02, 0x00, 0x19, 0x00, 0x03, 0x28, 0x02, 0x1a, 0x00, 0x50, 0x2a,
+    // 0x001a VALUE CHARACTERISTIC-ORG_BLUETOOTH_CHARACTERISTIC_PNP_ID - DYNAMIC | READ
+    // READ_ANYBODY
+    0x08, 0x00, 0x02, 0x01, 0x1a, 0x00, 0x50, 0x2a,
+
+    // 0x001b PRIMARY_SERVICE-0000ffe0-0000-1000-8000-00805f9b34fb
+    0x18, 0x00, 0x02, 0x00, 0x1b, 0x00, 0x00, 0x28, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe0, 0xff, 0x00, 0x00,
+    // 0x001c CHARACTERISTIC-0000ffe1-0000-1000-8000-00805f9b34fb - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
+    0x1b, 0x00, 0x02, 0x00, 0x1c, 0x00, 0x03, 0x28, 0x16, 0x1d, 0x00, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe1, 0xff, 0x00, 0x00,
+    // 0x001d VALUE CHARACTERISTIC-0000ffe1-0000-1000-8000-00805f9b34fb - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
+    // READ_ANYBODY, WRITE_ANYBODY
+    0x16, 0x00, 0x06, 0x03, 0x1d, 0x00, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe1, 0xff, 0x00, 0x00,
+    // 0x001e CLIENT_CHARACTERISTIC_CONFIGURATION
+    // READ_ANYBODY, WRITE_ANYBODY
+    0x0a, 0x00, 0x0e, 0x01, 0x1e, 0x00, 0x02, 0x29, 0x00, 0x00,
+    // END
+    0x00, 0x00,
+};
+
+void _buildAttdb(const char *Name) {
+    free(_attdb);
+    _attdbLen = sizeof(_attdb_head) + 8 + strlen(Name) + sizeof(_attdb_tail);
+    _attdb = (uint8_t *) malloc(_attdbLen);
+    memcpy(_attdb, _attdb_head, sizeof(_attdb_head));
+    // 0x0003 VALUE CHARACTERISTIC-GAP_DEVICE_NAME - READ
+    // READ_ANYBODY
+    // 0x11, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x2a, 0x48, 0x49, 0x44, 0x20, 0x4d, 0x6f, 0x75, 0x73, 0x65,
+    int i = sizeof(_attdb_head);
+    _attdb[i++] = 8 + strlen(Name);
+    _attdb[i++] = 0x00;
+    _attdb[i++] = 0x02;
+    _attdb[i++] = 0x00;
+    _attdb[i++] = 0x03;
+    _attdb[i++] = 0x00;
+    _attdb[i++] = 0x00;
+    _attdb[i++] = 0x2a;
+    memcpy(_attdb + i, Name, strlen(Name));
+    i += strlen(Name);
+    memcpy(_attdb + i, _attdb_tail, sizeof(_attdb_tail));
+}
+
+// support for multiple clients
+typedef struct {
+    char name;
+    int le_notification_enabled;
+    uint16_t value_handle;
+    hci_con_handle_t connection_handle;
+    int  counter;
+    char test_data[200];
+    int  test_data_len;
+    uint32_t test_data_sent;
+    uint32_t test_data_start;
+} le_streamer_connection_t;
+
+static le_streamer_connection_t le_streamer_connections[MAX_NR_CONNECTIONS];
+
+// round robin sending
+static int connection_index;
+
+static void init_connections(void){
+    // track connections
+    int i;
+    for (i=0;i<MAX_NR_CONNECTIONS;i++){
+        le_streamer_connections[i].connection_handle = HCI_CON_HANDLE_INVALID;
+        le_streamer_connections[i].name = 'A' + i;
+    }
+}
+
+static le_streamer_connection_t * connection_for_conn_handle(hci_con_handle_t conn_handle){
+    int i;
+    for (i=0;i<MAX_NR_CONNECTIONS;i++){
+        if (le_streamer_connections[i].connection_handle == conn_handle) return &le_streamer_connections[i];
+    }
+    return NULL;
+}
+
+static void next_connection_index(void){
+    connection_index++;
+    if (connection_index == MAX_NR_CONNECTIONS){
+        connection_index = 0;
+    }
+}
+
+static void test_reset(le_streamer_connection_t * context){
+    context->test_data_start = btstack_run_loop_get_time_ms();
+    context->test_data_sent = 0;
+}
+
+static void test_track_sent(le_streamer_connection_t * context, int bytes_sent){
+    context->test_data_sent += bytes_sent;
+    // evaluate
+    uint32_t now = btstack_run_loop_get_time_ms();
+    uint32_t time_passed = now - context->test_data_start;
+    if (time_passed < REPORT_INTERVAL_MS) return;
+    // print speed
+    int bytes_per_second = context->test_data_sent * 1000 / time_passed;
+#if DEBUG_BLE
+    Serial.printf("%c: %"PRIu32" bytes sent-> %u.%03u kB/s\r\n", context->name, context->test_data_sent, bytes_per_second / 1000, bytes_per_second % 1000);
+#endif /* DEBUG_BLE */
+
+    // restart
+    context->test_data_start = now;
+    context->test_data_sent  = 0;
+}
+
+static void streamer(void){
+
+    // find next active streaming connection
+    int old_connection_index = connection_index;
+    while (1){
+        // active found?
+        if ((le_streamer_connections[connection_index].connection_handle != HCI_CON_HANDLE_INVALID) &&
+            (le_streamer_connections[connection_index].le_notification_enabled)) break;
+
+        // check next
+        next_connection_index();
+
+        // none found
+        if (connection_index == old_connection_index) return;
+    }
+
+    le_streamer_connection_t * context = &le_streamer_connections[connection_index];
+
+    size_t size = BLE_FIFO_TX.available();
+    size = size < context->test_data_len ? size : context->test_data_len;
+    size = size < BLE_MAX_WRITE_CHUNK_SIZE ? size : BLE_MAX_WRITE_CHUNK_SIZE;
+
+    /* if (size > 0) */
+    {
+      for (int i=0; i < size; i++) {
+        context->test_data[i] = BLE_FIFO_TX.read_char();
+      }
+
+      // send
+      att_server_notify(context->connection_handle, context->value_handle, (uint8_t*) context->test_data, size);
+
+      // track
+      test_track_sent(context, size);
+    }
+
+    // request next send event
+    att_server_request_can_send_now_event(context->connection_handle);
+
+    // check next
+    next_connection_index();
+}
+
+static void hci_le_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    UNUSED(channel);
+    UNUSED(size);
+
+    if (packet_type != HCI_EVENT_PACKET) return;
+
+    uint16_t conn_interval;
+    hci_con_handle_t con_handle;
+    static const char * const phy_names[] = {
+        "1 M", "2 M", "Codec"
+    };
+
+    switch (hci_event_packet_get_type(packet)) {
+        case BTSTACK_EVENT_STATE:
+            // BTstack activated, get started
+            if (btstack_event_state_get_state(packet) == HCI_STATE_WORKING) {
+                //Serial.printf("To start the streaming, please run the le_streamer_client example on other device, or use some GATT Explorer, e.g. LightBlue, BLExplr.\r\n");
+            }
+            break;
+        case HCI_EVENT_DISCONNECTION_COMPLETE:
+            con_handle = hci_event_disconnection_complete_get_connection_handle(packet);
+#if DEBUG_BLE
+            Serial.printf("- LE Connection 0x%04x: disconnect, reason %02x\r\n", con_handle, hci_event_disconnection_complete_get_reason(packet));
+#endif /* DEBUG_BLE */
+            break;
+        case HCI_EVENT_LE_META:
+            switch (hci_event_le_meta_get_subevent_code(packet)) {
+                case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+                    // print connection parameters (without using float operations)
+                    con_handle    = hci_subevent_le_connection_complete_get_connection_handle(packet);
+                    conn_interval = hci_subevent_le_connection_complete_get_conn_interval(packet);
+#if DEBUG_BLE
+                    Serial.printf("- LE Connection 0x%04x: connected - connection interval %u.%02u ms, latency %u\r\n", con_handle, conn_interval * 125 / 100,
+                        25 * (conn_interval & 3), hci_subevent_le_connection_complete_get_conn_latency(packet));
+
+                    // request min con interval 15 ms for iOS 11+
+                    Serial.printf("- LE Connection 0x%04x: request 15 ms connection interval\r\n", con_handle);
+#endif /* DEBUG_BLE */
+                    gap_request_connection_parameter_update(con_handle, 12, 12, 0, 0x0048);
+                    break;
+                case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
+                    // print connection parameters (without using float operations)
+                    con_handle    = hci_subevent_le_connection_update_complete_get_connection_handle(packet);
+                    conn_interval = hci_subevent_le_connection_update_complete_get_conn_interval(packet);
+#if DEBUG_BLE
+                    Serial.printf("- LE Connection 0x%04x: connection update - connection interval %u.%02u ms, latency %u\r\n", con_handle, conn_interval * 125 / 100,
+                        25 * (conn_interval & 3), hci_subevent_le_connection_update_complete_get_conn_latency(packet));
+#endif /* DEBUG_BLE */
+                    break;
+                case HCI_SUBEVENT_LE_DATA_LENGTH_CHANGE:
+                    con_handle = hci_subevent_le_data_length_change_get_connection_handle(packet);
+#if DEBUG_BLE
+                    Serial.printf("- LE Connection 0x%04x: data length change - max %u bytes per packet\r\n", con_handle,
+                                  hci_subevent_le_data_length_change_get_max_tx_octets(packet));
+#endif /* DEBUG_BLE */
+                    break;
+                case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
+                    con_handle = hci_subevent_le_phy_update_complete_get_connection_handle(packet);
+                    Serial.printf("- LE Connection 0x%04x: PHY update - using LE %s PHY now\r\n", con_handle,
+                                  phy_names[hci_subevent_le_phy_update_complete_get_tx_phy(packet)]);
+                    break;
+                default:
+                    break;
+            }
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void att_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    UNUSED(channel);
+    UNUSED(size);
+
+    int mtu;
+    le_streamer_connection_t * context;
+    switch (packet_type) {
+        case HCI_EVENT_PACKET:
+            switch (hci_event_packet_get_type(packet)) {
+                case ATT_EVENT_CONNECTED:
+                    // setup new
+                    context = connection_for_conn_handle(HCI_CON_HANDLE_INVALID);
+                    if (!context) break;
+                    context->counter = 'A';
+                    context->connection_handle = att_event_connected_get_handle(packet);
+                    context->test_data_len = btstack_min(att_server_get_mtu(context->connection_handle) - 3, sizeof(context->test_data));
+#if DEBUG_BLE
+                    Serial.printf("%c: ATT connected, handle %04x, test data len %u\r\n", context->name, context->connection_handle, context->test_data_len);
+#endif /* DEBUG_BLE */
+                    break;
+                case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
+                    mtu = att_event_mtu_exchange_complete_get_MTU(packet) - 3;
+                    context = connection_for_conn_handle(att_event_mtu_exchange_complete_get_handle(packet));
+                    if (!context) break;
+                    context->test_data_len = btstack_min(mtu - 3, sizeof(context->test_data));
+#if DEBUG_BLE
+                    Serial.printf("%c: ATT MTU = %u => use test data of len %u\r\n", context->name, mtu, context->test_data_len);
+#endif /* DEBUG_BLE */
+                    break;
+                case ATT_EVENT_CAN_SEND_NOW:
+                    streamer();
+                    break;
+                case ATT_EVENT_DISCONNECTED:
+                    context = connection_for_conn_handle(att_event_disconnected_get_handle(packet));
+                    if (!context) break;
+                    // free connection
+#if DEBUG_BLE
+                    Serial.printf("%c: ATT disconnected, handle %04x\r\n", context->name, context->connection_handle);
+#endif /* DEBUG_BLE */
+                    context->le_notification_enabled = 0;
+                    context->connection_handle = HCI_CON_HANDLE_INVALID;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+static int att_write_callback(hci_con_handle_t con_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size){
+    UNUSED(offset);
+
+#if DEBUG_BLE
+    Serial.printf("att_write_callback att_handle %04x, transaction mode %u size %u offset %u\r\n", att_handle, transaction_mode, buffer_size, offset);
+#endif /* DEBUG_BLE */
+    if (transaction_mode != ATT_TRANSACTION_MODE_NONE) return 0;
+    le_streamer_connection_t * context = connection_for_conn_handle(con_handle);
+    switch(att_handle){
+        case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_CLIENT_CONFIGURATION_HANDLE:
+            context->le_notification_enabled = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
+            //Serial.printf("%c: Notifications enabled %u\r\n", context->name, context->le_notification_enabled);
+            if (context->le_notification_enabled){
+                switch (att_handle){
+                    case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_CLIENT_CONFIGURATION_HANDLE:
+                        context->value_handle = ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_VALUE_HANDLE;
+                        break;
+                    default:
+                        break;
+                }
+                att_server_request_can_send_now_event(context->connection_handle);
+            }
+            test_reset(context);
+            break;
+        case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_VALUE_HANDLE:
+#if DEBUG_BLE
+            Serial.printf("Write to 0x%04x, len %u offset %u\r\n", att_handle, buffer_size, offset);
+#endif /* DEBUG_BLE */
+            if (buffer_size > 0 && offset == 0) {
+              size_t size = BLE_FIFO_RX.availableForStore();
+              size = (size < buffer_size) ? size : buffer_size;
+              for (size_t i = 0; i < size; i++) {
+                BLE_FIFO_RX.store_char(buffer[i]);
+              }
+            }
+            break;
+        default:
+            Serial.printf("Write to 0x%04x, len %u\r\n", att_handle, buffer_size);
+            break;
+    }
+    return 0;
+}
+
+uint8_t _battery = 100; /* TBD */
+
+/* ------- BLE END ------ */
+
 static void lockBluetooth() {
     async_context_acquire_lock_blocking(cyw43_arch_async_context());
 }
@@ -1713,6 +2139,8 @@ static void CYW43_Bluetooth_setup()
   {
   case BLUETOOTH_SPP:
     {
+      if (_running) return;
+
       mutex_init(&_mutex);
       _overflow = false;
 
@@ -1721,7 +2149,7 @@ static void CYW43_Bluetooth_setup()
       _reader = 0;
 
       // register for HCI events
-      _hci_event_callback_registration.callback = &packetHandler;
+      _hci_event_callback_registration.callback = &hci_spp_packet_handler;
       hci_add_event_handler(&_hci_event_callback_registration);
 
       l2cap_init();
@@ -1732,7 +2160,7 @@ static void CYW43_Bluetooth_setup()
 #endif
 
       rfcomm_init();
-      rfcomm_register_service(packetHandler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+      rfcomm_register_service(hci_spp_packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
       // init SDP, create record for SPP and register with SDP
       sdp_init();
@@ -1744,16 +2172,75 @@ static void CYW43_Bluetooth_setup()
       gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
       gap_set_local_name(BT_name.c_str());
 
-      // Turn on!
       hci_power_control(HCI_POWER_ON);
 
       _running = true;
     }
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
-    BTstack.setup();
-    BTstack.iBeaconConfigure(&uuid, 4711, 2);
-    BTstack.startAdvertising();
+    {
+      if (_running) return;
+
+      mutex_init(&_mutex);
+
+      _queue = new uint8_t[_fifoSize]; /* TBD */
+
+      BT_name += "-LE";
+      _buildAdvData(BT_name.c_str());
+      _buildAttdb(BT_name.c_str());
+
+      l2cap_init();
+//      l2cap_set_max_le_mtu(26);
+
+      // setup SM: Display only
+      sm_init();
+
+      // setup ATT server
+      att_server_init(_attdb, NULL, att_write_callback);
+
+      // Setup battery service
+      battery_service_server_init(_battery);
+
+      static char SerialNum[9];
+      snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());
+      static char Hardware[9];
+      snprintf(Hardware,  sizeof(Hardware),  "%08X", hw_info.revision);
+
+      const char *Firmware = "Arduino RP2040 " ARDUINO_PICO_VERSION_STR;
+
+      // Setup device information service
+      device_information_service_server_init();
+      device_information_service_server_set_manufacturer_name(RP2040_Device_Manufacturer);
+      device_information_service_server_set_model_number(RP2040_Device_Model);
+      device_information_service_server_set_serial_number(SerialNum);
+      device_information_service_server_set_hardware_revision(Hardware);
+      device_information_service_server_set_firmware_revision(Firmware);
+      device_information_service_server_set_software_revision(SOFTRF_FIRMWARE_VERSION);
+
+      // register for HCI events
+      _hci_event_callback_registration.callback = &hci_le_packet_handler;
+      hci_add_event_handler(&_hci_event_callback_registration);
+
+      // register for ATT events
+      att_server_register_packet_handler(att_packet_handler);
+
+      // setup advertisements
+      uint16_t adv_int_min = 0x0030;
+      uint16_t adv_int_max = 0x0030;
+      uint8_t adv_type = 0;
+      bd_addr_t null_addr;
+      memset(null_addr, 0, 6);
+      gap_advertisements_set_params(adv_int_min, adv_int_max, adv_type, 0, null_addr, 0x07, 0x00);
+      gap_advertisements_set_data(_advDataLen, _advData);
+      gap_advertisements_enable(1);
+
+      // init client state
+      init_connections();
+
+      hci_power_control(HCI_POWER_ON);
+
+      _running = true;
+    }
     break;
   case BLUETOOTH_A2DP_SOURCE:
   case BLUETOOTH_NONE:
@@ -1767,7 +2254,7 @@ static void CYW43_Bluetooth_loop()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
-    BTstack.loop();
+    /* TBD */
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
@@ -1782,6 +2269,7 @@ static void CYW43_Bluetooth_fini()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_SPP:
+  case BLUETOOTH_LE_HM10_SERIAL:
     {
       if (!_running) {
           return;
@@ -1793,9 +2281,6 @@ static void CYW43_Bluetooth_fini()
       delete[] _queue;
       unlockBluetooth();
     }
-    break;
-  case BLUETOOTH_LE_HM10_SERIAL:
-    /* TBD */
     break;
   case BLUETOOTH_A2DP_SOURCE:
   case BLUETOOTH_NONE:
