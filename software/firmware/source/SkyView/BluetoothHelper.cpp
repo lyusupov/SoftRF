@@ -783,8 +783,10 @@ static bd_addr_type_t le_streamer_addr_type;
 
 static hci_con_handle_t connection_handle;
 
-static uint8_t le_streamer_service_uuid[16]             = { 0x00, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
-static uint8_t le_streamer_characteristic_rxtx_uuid[16] = { 0x00, 0x00, 0xFF, 0xE1, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
+static uint8_t le_streamer_service_uuid128[16]             = { 0x00, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
+static uint8_t le_streamer_characteristic_rxtx_uuid128[16] = { 0x00, 0x00, 0xFF, 0xE1, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB};
+static uint16_t le_streamer_service_uuid16             = 0xFFE0;
+static uint16_t le_streamer_characteristic_rxtx_uuid16 = 0xFFE1;
 
 static gatt_client_service_t le_streamer_service;
 static gatt_client_characteristic_t le_streamer_characteristic_rxtx;
@@ -873,7 +875,7 @@ static int advertisement_report_contains_name(const char * name, uint8_t * adver
                 // compare prefix
                 if (data_size < name_len) break;
                 if (memcmp(data, name, name_len) == 0) return 1;
-                return 1;
+                return 0;
             default:
                 break;
         }
@@ -909,7 +911,8 @@ static void handle_gatt_client_event(uint8_t packet_type, uint16_t channel, uint
 #if DEBUG_BLE
                     Serial.printf("Search for HM-10 UART RX/TX characteristic.\r\n");
 #endif /* DEBUG_BLE */
-                    gatt_client_discover_characteristics_for_service_by_uuid128(handle_gatt_client_event, connection_handle, &le_streamer_service, le_streamer_characteristic_rxtx_uuid);
+//                    gatt_client_discover_characteristics_for_service_by_uuid128(handle_gatt_client_event, connection_handle, &le_streamer_service, le_streamer_characteristic_rxtx_uuid128);
+                    gatt_client_discover_characteristics_for_service_by_uuid16(handle_gatt_client_event, connection_handle, &le_streamer_service, le_streamer_characteristic_rxtx_uuid16);
                     break;
                 default:
                     break;
@@ -1220,7 +1223,8 @@ static void hci_le_event_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             Serial.printf("Search for HM-10 UART service.\r\n");
 #endif /* DEBUG_BLE */
             le_state = TC_W4_SERVICE_RESULT;
-            gatt_client_discover_primary_services_by_uuid128(handle_gatt_client_event, connection_handle, le_streamer_service_uuid);
+//            gatt_client_discover_primary_services_by_uuid128(handle_gatt_client_event, connection_handle, le_streamer_service_uuid128);
+            gatt_client_discover_primary_services_by_uuid16(handle_gatt_client_event, connection_handle, le_streamer_service_uuid16);
             break;
         case HCI_EVENT_DISCONNECTION_COMPLETE:
             // unregister listener
