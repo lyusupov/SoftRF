@@ -551,7 +551,7 @@ static volatile int _writeLen   = 0;
 static mutex_t     _mutex;
 static uint32_t    _writer;
 static uint32_t    _reader;
-static uint8_t    *_queue;
+static uint8_t    *_queue = NULL;
 static uint16_t    _mtu;
 static uint8_t     rfcomm_server_channel;
 static bd_addr_t   peer_addr;
@@ -1296,8 +1296,6 @@ static void CYW43_Bluetooth_setup()
 
       mutex_init(&_mutex);
 
-      _queue = new uint8_t[_fifoSize]; /* TBD */
-
       l2cap_init();
 
       sm_init();
@@ -1346,7 +1344,7 @@ static void CYW43_Bluetooth_fini()
 
       hci_power_control(HCI_POWER_OFF);
       lockBluetooth();
-      delete[] _queue;
+      if (_queue != NULL) delete[] _queue;
       unlockBluetooth();
     }
     break;

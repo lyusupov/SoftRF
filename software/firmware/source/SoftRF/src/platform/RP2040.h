@@ -282,6 +282,8 @@ extern WebServer server;
 
 #define USE_OGN_ENCRYPTION
 
+extern const char *RP2040_Device_Manufacturer, *RP2040_Device_Model;
+
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>
 

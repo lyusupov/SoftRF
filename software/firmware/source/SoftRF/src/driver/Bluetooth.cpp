@@ -1600,7 +1600,7 @@ static volatile bool _connected = false;
 static uint32_t _writer;
 static uint32_t _reader;
 static size_t   _fifoSize = 32;
-static uint8_t *_queue;
+static uint8_t *_queue = NULL;
 
 static const int RFCOMM_SERVER_CHANNEL = 1;
 
@@ -1710,7 +1710,7 @@ uint8_t _advDataLen = 0;
 
 void _buildAdvData(const char *completeLocalName) {
     free(_advData);
-    _advDataLen = 13 + strlen(completeLocalName);
+    _advDataLen = 9 + strlen(completeLocalName);
     _advData = (uint8_t*) malloc(_advDataLen);
     int i = 0;
     // Flags general discoverable, BR/EDR not supported
@@ -1730,7 +1730,6 @@ void _buildAdvData(const char *completeLocalName) {
     _advData[i++] = 0xe0;
     _advData[i++] = 0xff;
 }
-
 
 uint8_t *_attdb = nullptr;
 int _attdbLen = 0;
@@ -1811,16 +1810,18 @@ static constexpr const uint8_t _attdb_tail[] =  {
     // READ_ANYBODY
     0x08, 0x00, 0x02, 0x01, 0x1a, 0x00, 0x50, 0x2a,
 
-    // 0x001b PRIMARY_SERVICE-0000ffe0-0000-1000-8000-00805f9b34fb
-    0x18, 0x00, 0x02, 0x00, 0x1b, 0x00, 0x00, 0x28, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe0, 0xff, 0x00, 0x00,
-    // 0x001c CHARACTERISTIC-0000ffe1-0000-1000-8000-00805f9b34fb - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
-    0x1b, 0x00, 0x02, 0x00, 0x1c, 0x00, 0x03, 0x28, 0x16, 0x1d, 0x00, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe1, 0xff, 0x00, 0x00,
-    // 0x001d VALUE CHARACTERISTIC-0000ffe1-0000-1000-8000-00805f9b34fb - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
-    // READ_ANYBODY, WRITE_ANYBODY
-    0x16, 0x00, 0x06, 0x03, 0x1d, 0x00, 0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xe1, 0xff, 0x00, 0x00,
+    // 0x001b PRIMARY_SERVICE-FFE0
+    0x0a, 0x00, 0x02, 0x00, 0x1b, 0x00, 0x00, 0x28, 0xe0, 0xff,
+    // 0x001c CHARACTERISTIC-FFE1 - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
+    0x0d, 0x00, 0x02, 0x00, 0x1c, 0x00, 0x03, 0x28, 0x16, 0x1d, 0x00, 0xe1, 0xff,
+    // 0x001d VALUE CHARACTERISTIC-FFE1 - READ | WRITE_WITHOUT_RESPONSE | NOTIFY | DYNAMIC
+    0x08, 0x00, 0x06, 0x01, 0x1d, 0x00, 0xe1, 0xff,
     // 0x001e CLIENT_CHARACTERISTIC_CONFIGURATION
     // READ_ANYBODY, WRITE_ANYBODY
     0x0a, 0x00, 0x0e, 0x01, 0x1e, 0x00, 0x02, 0x29, 0x00, 0x00,
+    // 0x001f USER_DESCRIPTION-READ-HMSoft
+    // READ_ANYBODY, WRITE_ANYBODY
+    0x08, 0x00, 0x0a, 0x01, 0x1f, 0x00, 0x01, 0x29,
     // END
     0x00, 0x00,
 };
@@ -2084,13 +2085,13 @@ static int att_write_callback(hci_con_handle_t con_handle, uint16_t att_handle, 
     if (transaction_mode != ATT_TRANSACTION_MODE_NONE) return 0;
     le_streamer_connection_t * context = connection_for_conn_handle(con_handle);
     switch(att_handle){
-        case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_CLIENT_CONFIGURATION_HANDLE:
+        case ATT_CHARACTERISTIC_FFE1_01_CLIENT_CONFIGURATION_HANDLE:
             context->le_notification_enabled = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
             //Serial.printf("%c: Notifications enabled %u\r\n", context->name, context->le_notification_enabled);
             if (context->le_notification_enabled){
                 switch (att_handle){
-                    case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_CLIENT_CONFIGURATION_HANDLE:
-                        context->value_handle = ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_VALUE_HANDLE;
+                    case ATT_CHARACTERISTIC_FFE1_01_CLIENT_CONFIGURATION_HANDLE:
+                        context->value_handle = ATT_CHARACTERISTIC_FFE1_01_VALUE_HANDLE;
                         break;
                     default:
                         break;
@@ -2099,7 +2100,7 @@ static int att_write_callback(hci_con_handle_t con_handle, uint16_t att_handle, 
             }
             test_reset(context);
             break;
-        case ATT_CHARACTERISTIC_0000ffe1_0000_1000_8000_00805f9b34fb_01_VALUE_HANDLE:
+        case ATT_CHARACTERISTIC_FFE1_01_VALUE_HANDLE:
 #if DEBUG_BLE
             Serial.printf("Write to 0x%04x, len %u offset %u\r\n", att_handle, buffer_size, offset);
 #endif /* DEBUG_BLE */
@@ -2118,6 +2119,52 @@ static int att_write_callback(hci_con_handle_t con_handle, uint16_t att_handle, 
     return 0;
 }
 
+#define ATT_VALUE_MAX_LEN  50
+#define ATT_NUM_ATTRIBUTES 10
+
+typedef struct {
+    uint16_t handle;
+    uint16_t len;
+    uint8_t  value[ATT_VALUE_MAX_LEN];
+} attribute_t;
+
+static attribute_t att_attributes[ATT_NUM_ATTRIBUTES];
+
+// handle == 0 finds free attribute
+static int att_attribute_for_handle(uint16_t aHandle){
+    int i;
+    for (i=0;i<ATT_NUM_ATTRIBUTES;i++){
+        if (att_attributes[i].handle == aHandle) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void att_setup_attribute(uint16_t attribute_handle, const uint8_t * value, uint16_t len){
+    int index = att_attribute_for_handle(attribute_handle);
+    if (index < 0){
+        index = att_attribute_for_handle(0);
+    }
+#if DEBUG_BLE
+    Serial.printf("Setup Attribute %04x, len %u, value: %s\r\n", attribute_handle, len, value);
+#endif /* DEBUG_BLE */
+    att_attributes[index].handle = attribute_handle;
+    att_attributes[index].len    = len;
+    memcpy(att_attributes[index].value, value, len);
+}
+
+static void att_attributes_init(void){
+    int i;
+    for (i=0;i<ATT_NUM_ATTRIBUTES;i++){
+        att_attributes[i].handle = 0;
+    }
+
+    // preset some attributes
+    att_setup_attribute(ATT_CHARACTERISTIC_FFE1_01_USER_DESCRIPTION_HANDLE,
+                        (const uint8_t *) "HMSoft", strlen("HMSoft"));
+}
+
 uint8_t _battery = 100; /* TBD */
 
 /* ------- BLE END ------ */
@@ -2132,6 +2179,8 @@ static void unlockBluetooth() {
 
 static void CYW43_Bluetooth_setup()
 {
+  if (_running) return;
+
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
@@ -2139,8 +2188,6 @@ static void CYW43_Bluetooth_setup()
   {
   case BLUETOOTH_SPP:
     {
-      if (_running) return;
-
       mutex_init(&_mutex);
       _overflow = false;
 
@@ -2179,11 +2226,7 @@ static void CYW43_Bluetooth_setup()
     break;
   case BLUETOOTH_LE_HM10_SERIAL:
     {
-      if (_running) return;
-
       mutex_init(&_mutex);
-
-      _queue = new uint8_t[_fifoSize]; /* TBD */
 
       BT_name += "-LE";
       _buildAdvData(BT_name.c_str());
@@ -2220,6 +2263,8 @@ static void CYW43_Bluetooth_setup()
       // register for HCI events
       _hci_event_callback_registration.callback = &hci_le_packet_handler;
       hci_add_event_handler(&_hci_event_callback_registration);
+
+      att_attributes_init();
 
       // register for ATT events
       att_server_register_packet_handler(att_packet_handler);
@@ -2278,7 +2323,7 @@ static void CYW43_Bluetooth_fini()
 
       hci_power_control(HCI_POWER_OFF);
       lockBluetooth();
-      delete[] _queue;
+      if (_queue != NULL) delete[] _queue;
       unlockBluetooth();
     }
     break;
