@@ -1705,8 +1705,10 @@ static void hci_spp_packet_handler(uint8_t type, uint16_t channel, uint8_t *pack
 
 #define DEBUG_BLE          0
 
-uint8_t *_advData = nullptr;
+uint8_t *_advData   = nullptr;
 uint8_t _advDataLen = 0;
+uint8_t *_attdb     = nullptr;
+size_t _attdbLen    = 0;
 
 void _buildAdvData(const char *completeLocalName) {
     free(_advData);
@@ -1730,9 +1732,6 @@ void _buildAdvData(const char *completeLocalName) {
     _advData[i++] = 0xe0;
     _advData[i++] = 0xff;
 }
-
-uint8_t *_attdb = nullptr;
-int _attdbLen = 0;
 
 static constexpr const uint8_t _attdb_head[] = {
     // ATT DB Version
@@ -1916,7 +1915,7 @@ static void streamer(void){
 
     // find next active streaming connection
     int old_connection_index = connection_index;
-    while (1){
+    while (1) {
         // active found?
         if ((le_streamer_connections[connection_index].connection_handle != HCI_CON_HANDLE_INVALID) &&
             (le_streamer_connections[connection_index].le_notification_enabled)) break;
@@ -1934,8 +1933,7 @@ static void streamer(void){
     size = size < context->test_data_len ? size : context->test_data_len;
     size = size < BLE_MAX_WRITE_CHUNK_SIZE ? size : BLE_MAX_WRITE_CHUNK_SIZE;
 
-    /* if (size > 0) */
-    {
+    if (size > 0) {
       for (int i=0; i < size; i++) {
         context->test_data[i] = BLE_FIFO_TX.read_char();
       }
@@ -1943,12 +1941,12 @@ static void streamer(void){
       // send
       att_server_notify(context->connection_handle, context->value_handle, (uint8_t*) context->test_data, size);
 
-      // track
-      test_track_sent(context, size);
+      // request next send event
+      att_server_request_can_send_now_event(context->connection_handle);
     }
 
-    // request next send event
-    att_server_request_can_send_now_event(context->connection_handle);
+    // track
+    test_track_sent(context, size);
 
     // check next
     next_connection_index();
@@ -2166,6 +2164,7 @@ static void att_attributes_init(void){
 }
 
 uint8_t _battery = 100; /* TBD */
+static unsigned long BLE_Aux_Tx_TimeMarker = 0;
 
 /* ------- BLE END ------ */
 
@@ -2284,6 +2283,7 @@ static void CYW43_Bluetooth_setup()
 
       hci_power_control(HCI_POWER_ON);
 
+       BLE_Aux_Tx_TimeMarker = millis();
       _running = true;
     }
     break;
@@ -2299,7 +2299,12 @@ static void CYW43_Bluetooth_loop()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
-    /* TBD */
+    if (_running && (millis() - BLE_Aux_Tx_TimeMarker > 100)) {
+      if (BLE_FIFO_TX.available() > 0) {
+        streamer();
+      }
+      BLE_Aux_Tx_TimeMarker = millis();
+    }
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
