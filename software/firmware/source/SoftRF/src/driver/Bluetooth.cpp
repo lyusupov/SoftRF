@@ -1915,7 +1915,7 @@ static void streamer(void){
 
     // find next active streaming connection
     int old_connection_index = connection_index;
-    while (1) {
+    while (true) {
         // active found?
         if ((le_streamer_connections[connection_index].connection_handle != HCI_CON_HANDLE_INVALID) &&
             (le_streamer_connections[connection_index].le_notification_enabled)) break;
