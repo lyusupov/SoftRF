@@ -471,15 +471,38 @@ static ep_model_id RP2040_EPD_ident()
 
   swSPI.begin();
 
+  uint8_t buf_2D[11];
+  uint8_t buf_2E[10];
+
   digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
   digitalWrite(SOC_EPD_PIN_SS_WS, LOW);
 
-  swSPI.transfer_out(0x71);
+  swSPI.transfer_out(0x2D);
 
   pinMode(SOC_EPD_PIN_MOSI_WS, INPUT);
   digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
 
-  uint8_t status = swSPI.transfer_in();
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    buf_2D[i] = swSPI.transfer_in();
+  }
+
+  digitalWrite(SOC_EPD_PIN_SCK_WS, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_EPD_PIN_SS_WS,  HIGH);
+
+  delay(1);
+
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_EPD_PIN_SS_WS, LOW);
+
+  swSPI.transfer_out(0x2D);
+
+  pinMode(SOC_EPD_PIN_MOSI_WS, INPUT);
+  digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
+
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    buf_2D[i] = swSPI.transfer_in();
+  }
 
   digitalWrite(SOC_EPD_PIN_SCK_WS, LOW);
   digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
@@ -488,14 +511,44 @@ static ep_model_id RP2040_EPD_ident()
   swSPI.end();
 
 #if 0
-  Serial.print("REG 71H: ");
-  Serial.println(status, HEX);
-  Serial.flush();
+  Serial.print("2D: ");
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    Serial.print(buf_2D[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+  Serial.print("2E: ");
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    Serial.print(buf_2E[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+/*
+ *  0x2D:
+ *  FF FF FF FF FF FF FF FF FF FF FF - W3
+ *
+ *  0x2E:
+ *  05 00 00 00 43 BE 01 10 90 00    - W3
+ */
 #endif
 
-//  if (status != 2) {
-//    rval = EP_GDEY027T91; /* TBD */
-//  }
+  bool is_ff = true;
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0xFF) {is_ff = false; break;}
+  }
+
+  bool is_00 = true;
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0x00) {is_00 = false; break;}
+  }
+
+  if (is_ff) {
+    rval = EP_GDEW027W3;
+  } else {
+    rval = EP_GDEY027T91; /* TBD */
+  }
 
   return rval;
 }
@@ -506,7 +559,17 @@ static void RP2040_EPD_setup()
 {
   switch(settings->adapter)
   {
-  case ADAPTER_WAVESHARE_PICO:
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+    display = &epd_waveshare_T91;
+
+    SPI1.setRX(SOC_EPD_PIN_MISO_WS);
+    SPI1.setTX(SOC_EPD_PIN_MOSI_WS);
+    SPI1.setSCK(SOC_EPD_PIN_SCK_WS);
+    SPI1.setCS(SOC_EPD_PIN_SS_WS);
+
+    display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+    break;
+  case ADAPTER_WAVESHARE_PICO_2_7:
   default:
     if (RP2040_display == EP_UNKNOWN) {
       RP2040_display = RP2040_EPD_ident();

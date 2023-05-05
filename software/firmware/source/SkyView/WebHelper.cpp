@@ -178,10 +178,12 @@ void handleSettings() {
 <td align=right>\
 <select name='adapter'>\
 <option %s value='%d'>e-Paper Waveshare Pico</option>\
+<option %s value='%d'>e-Paper Waveshare Pico V2</option>\
 </select>\
 </td>\
 </tr>"),
-    (settings->adapter == ADAPTER_WAVESHARE_PICO    ? "selected" : ""), ADAPTER_WAVESHARE_PICO
+    (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7    ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7,
+    (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7_V2
     );
   }
 

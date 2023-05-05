@@ -37,7 +37,7 @@ void parseSettings(JsonObject& root)
     if (!strcmp(adapter_s,"HAT27")) {
       eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PI_HAT_2_7;
     } else if (!strcmp(adapter_s,"PICO27")) {
-      eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PICO;
+      eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PICO_2_7;
     } else if (!strcmp(adapter_s,"OLED")) {
       eeprom_block.field.settings.adapter = ADAPTER_OLED;
     }

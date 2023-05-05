@@ -78,7 +78,7 @@ void EEPROM_defaults()
   else if (SoC->id == SOC_ESP32C3)
     eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_ESP32;
   else if (SoC->id == SOC_RP2040)
-    eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_PICO;
+    eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_PICO_2_7;
   else
 #if defined(BUILD_SKYVIEW_HD)
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5_4_7;
