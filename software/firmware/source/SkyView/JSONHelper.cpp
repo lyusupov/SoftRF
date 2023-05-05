@@ -36,8 +36,12 @@ void parseSettings(JsonObject& root)
     const char * adapter_s = adapter.as<char*>();
     if (!strcmp(adapter_s,"HAT27")) {
       eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PI_HAT_2_7;
+    } else if (!strcmp(adapter_s,"HAT27_V2")) {
+      eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PI_HAT_2_7_V2;
     } else if (!strcmp(adapter_s,"PICO27")) {
       eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PICO_2_7;
+    } else if (!strcmp(adapter_s,"PICO27_V2")) {
+      eeprom_block.field.settings.adapter = ADAPTER_WAVESHARE_PICO_2_7_V2;
     } else if (!strcmp(adapter_s,"OLED")) {
       eeprom_block.field.settings.adapter = ADAPTER_OLED;
     }

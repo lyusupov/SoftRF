@@ -184,7 +184,11 @@ void RPi_SerialNumber(void)
 
 static void RPi_setup()
 {
+#if defined(USE_GDEY027T91)
+  eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7_V2;
+#else
   eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7;
+#endif /* USE_GDEY027T91 */
 
   eeprom_block.field.settings.connection      = CON_SERIAL_MAIN;
   eeprom_block.field.settings.baudrate        = B38400;
@@ -252,11 +256,16 @@ static float RPi_Battery_voltage()
 
 static void RPi_EPD_setup()
 {
-#if !defined(USE_GDEY027T91)
-  display = &epd_waveshare_W3;
-#else
-  display = &epd_waveshare_T91;
-#endif /* USE_GDEY027T91 */
+  switch (settings->adapter)
+  {
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+    display = &epd_waveshare_T91;
+    break;
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+  default:
+    display = &epd_waveshare_W3;
+    break;
+  }
   display->epd2.selectSPI(SPI0, SPISettings(BCM2835_SPI_CLOCK_DIVIDER_64,
                                             BCM2835_SPI_BIT_ORDER_MSBFIRST,
                                             BCM2835_SPI_MODE0));
@@ -575,7 +584,8 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
 static void RPi_Button_setup()
 {
-  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
     // Sets the pins as input.
     bcm2835_gpio_fsel(SOC_GPIO_BUTTON_MODE,     BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(SOC_GPIO_BUTTON_UP,       BCM2835_GPIO_FSEL_INPT);
@@ -619,7 +629,8 @@ static void RPi_Button_setup()
 
 static void RPi_Button_loop()
 {
-  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
     button_mode.check();
     button_up.check();
     button_down.check();
@@ -628,7 +639,8 @@ static void RPi_Button_loop()
 
 static void RPi_Button_fini()
 {
-  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7) {
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
     // Clears the Pull-up mode for the pins.
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_OFF);
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_OFF);
@@ -776,6 +788,7 @@ int main(int argc, char *argv[])
   switch (settings->adapter)
   {
   case ADAPTER_WAVESHARE_PI_HAT_2_7:
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
     Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
     Serial.flush();
 
