@@ -24,7 +24,10 @@
 #undef DEPRECATED
 #include "JSONHelper.h"
 
+/* RAM usage optimization */
+#if defined(RASPBERRY_PI)
 StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
+#endif /* RASPBERRY_PI */
 
 extern eeprom_t eeprom_block;
 extern settings_t *settings;

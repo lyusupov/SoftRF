@@ -758,13 +758,13 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     // already in our list
                     if (index >= 0) {
                       size_t name_len = strnlen(settings->server, sizeof(settings->server));
-                      if (name_len > 0 &&
+                      if (name_len > 0 && devices[index].state == REMOTE_NAME_FETCHED &&
                           memcmp(settings->server, devices[index].name, name_len) == 0) {
                         memcpy(peer_addr, event_addr, 6);
                         DEBUG_SPP("Peer found: %s\r\n", bd_addr_to_str(peer_addr));
                         stop_scan();
-                        break;
                       }
+                      break;
                     }
 
                     memcpy(devices[deviceCount].address, event_addr, 6);
