@@ -113,6 +113,8 @@ static void ESP32_BT_SPP_Connection_Manager(void *parameter)
 
   while (true) {
 
+    delay(1000);
+
     if (strnlen(settings->server, sizeof(settings->server)) == 0) continue;
 
     portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -186,8 +188,6 @@ static void ESP32_BT_SPP_Connection_Manager(void *parameter)
     default:
         break;
     }
-
-    delay(1000);
   }
 }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
