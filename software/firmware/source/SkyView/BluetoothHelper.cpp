@@ -113,6 +113,8 @@ static void ESP32_BT_SPP_Connection_Manager(void *parameter)
 
   while (true) {
 
+    if (strnlen(settings->server, sizeof(settings->server)) == 0) continue;
+
     portENTER_CRITICAL(&ESP32_BT_ctl.mutex);
     command = ESP32_BT_ctl.command;
     portEXIT_CRITICAL(&ESP32_BT_ctl.mutex);
@@ -526,13 +528,22 @@ IODev_ops_t ESP32_Bluetooth_ops = {
 
 /* ------- SPP BEGIN ------ */
 
+//#define SPP_USE_COD
+#define SPP_USE_NAME
+
+#if defined(SPP_USE_COD)
 #define SOFTRF_SPP_COD 0x02c110
+#endif /* SPP_USE_COD */
 
 //#define DEBUG_SPP      Serial.printf
 #define DEBUG_SPP
 
 typedef enum {
+#if defined(SPP_USE_COD)
     W4_PEER_COD,
+#else
+    W4_PEER_NAME,
+#endif /* SPP_USE_COD */
     W4_SCAN_COMPLETE,
     W4_SDP_RESULT,
     W2_SEND_SDP_QUERY,
@@ -569,13 +580,15 @@ RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
 
-/*
- * Find remote peer by COD
- */
 #define INQUIRY_INTERVAL 5
+
 static void start_scan(void){
     DEBUG_SPP("Starting inquiry scan..\r\n");
+#if defined(SPP_USE_COD)
     spp_state = W4_PEER_COD;
+#else
+    spp_state = W4_PEER_NAME,
+#endif /* SPP_USE_COD */
     gap_inquiry_start(INQUIRY_INTERVAL);
 }
 static void stop_scan(void){
@@ -583,6 +596,62 @@ static void stop_scan(void){
     spp_state = W4_SCAN_COMPLETE;
     gap_inquiry_stop();
 }
+
+#if defined(SPP_USE_NAME)
+#define MAX_DEVICES      20
+#define MAX_NAMELEN      18 /* matches EEPROMHelper.h value */
+
+enum DEVICE_STATE { REMOTE_NAME_REQUEST, REMOTE_NAME_INQUIRED, REMOTE_NAME_FETCHED };
+struct device {
+    bd_addr_t          address;
+    uint8_t            pageScanRepetitionMode;
+    uint16_t           clockOffset;
+    enum DEVICE_STATE  state;
+    char               name[MAX_NAMELEN];
+};
+
+struct device devices[MAX_DEVICES];
+int deviceCount = 0;
+
+static int getDeviceIndexForAddress( bd_addr_t addr){
+    int j;
+    for (j=0; j< deviceCount; j++){
+        if (bd_addr_cmp(addr, devices[j].address) == 0){
+            return j;
+        }
+    }
+    return -1;
+}
+
+static int has_more_remote_name_requests(void){
+    int i;
+    for (i=0;i<deviceCount;i++) {
+        if (devices[i].state == REMOTE_NAME_REQUEST) return 1;
+    }
+    return 0;
+}
+
+static void do_next_remote_name_request(void){
+    int i;
+    for (i=0;i<deviceCount;i++) {
+        // remote name request
+        if (devices[i].state == REMOTE_NAME_REQUEST){
+            devices[i].state = REMOTE_NAME_INQUIRED;
+            DEBUG_SPP("Get remote name of %s...\r\n", bd_addr_to_str(devices[i].address));
+            gap_remote_name_request( devices[i].address, devices[i].pageScanRepetitionMode,  devices[i].clockOffset | 0x8000);
+            return;
+        }
+    }
+}
+
+static void continue_remote_names(void){
+    if (has_more_remote_name_requests()){
+        do_next_remote_name_request();
+        return;
+    }
+    start_scan();
+}
+#endif /* SPP_USE_NAME */
 
 /*
  * @section SDP Query Packet Handler
@@ -629,6 +698,9 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
     uint8_t   rfcomm_channel_nr;
     uint32_t class_of_device;
     int i;
+#if defined(SPP_USE_NAME)
+    int index;
+#endif /* SPP_USE_NAME */
 
     switch (packet_type) {
         case HCI_EVENT_PACKET:
@@ -638,6 +710,7 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     start_scan();
                     break;
 
+#if defined(SPP_USE_COD)
                 case GAP_EVENT_INQUIRY_RESULT:
                     if (spp_state != W4_PEER_COD) break;
                     class_of_device = gap_event_inquiry_result_get_class_of_device(packet);
@@ -650,14 +723,96 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                         DEBUG_SPP("Device found: %s with COD: 0x%06x\r\n", bd_addr_to_str(event_addr), (int) class_of_device);
                     }
                     break;
+#endif /* SPP_USE_COD */
+
+#if defined(SPP_USE_NAME)
+                case HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE:
+                    reverse_bd_addr(&packet[3], event_addr);
+                    index = getDeviceIndexForAddress(event_addr);
+                    if (index >= 0) {
+                        if (packet[2] == 0) {
+                            // fix for invalid remote names - terminate on 0xff
+                            for (i=0; i<248;i++){
+                                if (packet[9+i] == 0xff){
+                                    packet[9+i] = 0;
+                                    break;
+                                }
+                            }
+                            packet[9+248] = 0;
+                            DEBUG_SPP("Name: '%s'\r\n", &packet[9]);
+                            memcpy(devices[index].name, &packet[9], MAX_NAMELEN);
+                            devices[index].state = REMOTE_NAME_FETCHED;
+                        } else {
+                            DEBUG_SPP("Failed to get name: page timeout\r\n");
+                        }
+                    }
+                    continue_remote_names();
+                    break;
+
+                case GAP_EVENT_INQUIRY_RESULT:
+                    if (spp_state != W4_PEER_NAME) break;
+                    if (deviceCount >= MAX_DEVICES) break;  // already full
+                    gap_event_inquiry_result_get_bd_addr(packet, event_addr);
+                    index = getDeviceIndexForAddress(event_addr);
+
+                    // already in our list
+                    if (index >= 0) {
+                      size_t name_len = strnlen(settings->server, sizeof(settings->server));
+                      if (name_len > 0 &&
+                          memcmp(settings->server, devices[index].name, name_len) == 0) {
+                        memcpy(peer_addr, event_addr, 6);
+                        DEBUG_SPP("Peer found: %s\r\n", bd_addr_to_str(peer_addr));
+                        stop_scan();
+                        break;
+                      }
+                    }
+
+                    memcpy(devices[deviceCount].address, event_addr, 6);
+                    devices[deviceCount].pageScanRepetitionMode = gap_event_inquiry_result_get_page_scan_repetition_mode(packet);
+                    devices[deviceCount].clockOffset = gap_event_inquiry_result_get_clock_offset(packet);
+                    // print info
+                    DEBUG_SPP("Device found: %s ",  bd_addr_to_str(event_addr));
+                    DEBUG_SPP("with COD: 0x%06x, ", (unsigned int) gap_event_inquiry_result_get_class_of_device(packet));
+                    DEBUG_SPP("pageScan %d, ",      devices[deviceCount].pageScanRepetitionMode);
+                    DEBUG_SPP("clock offset 0x%04x",devices[deviceCount].clockOffset);
+                    if (gap_event_inquiry_result_get_rssi_available(packet)){
+                        DEBUG_SPP(", rssi %d dBm", (int8_t) gap_event_inquiry_result_get_rssi(packet));
+                    }
+                    if (gap_event_inquiry_result_get_name_available(packet)){
+                        char name_buffer[240];
+                        int name_len = gap_event_inquiry_result_get_name_len(packet);
+                        memcpy(name_buffer, gap_event_inquiry_result_get_name(packet), name_len);
+                        name_buffer[name_len] = 0;
+                        DEBUG_SPP(", name '%s'", name_buffer);
+                        devices[deviceCount].state = REMOTE_NAME_FETCHED;
+                    } else {
+                        devices[deviceCount].state = REMOTE_NAME_REQUEST;
+                    }
+                    DEBUG_SPP("\r\n");
+                    deviceCount++;
+                    break;
+#endif /* SPP_USE_NAME */
 
                 case GAP_EVENT_INQUIRY_COMPLETE:
                     switch (spp_state){
+#if defined(SPP_USE_COD)
                         case W4_PEER_COD:
                             DEBUG_SPP("Inquiry complete\r\n");
                             DEBUG_SPP("Peer not found, starting scan again\r\n");
                             start_scan();
                             break;
+#endif /* SPP_USE_COD */
+
+#if defined(SPP_USE_NAME)
+                        case W4_PEER_NAME:
+                            for (i=0;i<deviceCount;i++) {
+                                // retry remote name request
+                                if (devices[i].state == REMOTE_NAME_INQUIRED)
+                                    devices[i].state = REMOTE_NAME_REQUEST;
+                            }
+                            continue_remote_names();
+                            break;
+#endif /* SPP_USE_NAME */
                         case W4_SCAN_COMPLETE:
                             DEBUG_SPP("Start to connect and query for SPP service\r\n");
                             spp_state = W2_SEND_SDP_QUERY;
@@ -667,8 +822,10 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                         default:
                             break;
                     }
+#if defined(SPP_USE_COD)
                     if (spp_state == W4_PEER_COD){
                     }
+#endif /* SPP_USE_COD */
                     break;
 
                 case HCI_EVENT_PIN_CODE_REQUEST:
@@ -1196,6 +1353,7 @@ static void hci_le_event_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             }
 #endif /* DEBUG_BLE */
             // check name in advertisement
+            if (strnlen(settings->server, sizeof(settings->server)) == 0) return;
             if (!advertisement_report_contains_name(settings->server, packet)) return;
             // store address and type
             gap_event_advertising_report_get_address(packet, le_streamer_addr);
