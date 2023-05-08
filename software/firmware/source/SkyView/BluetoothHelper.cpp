@@ -232,7 +232,7 @@ static void ESP32_Bluetooth_setup()
       SerialBT.setPin(settings->key);
       SerialBT.begin(BT_name.c_str(), true);
 
-      xTaskCreate(ESP32_BT_SPP_Connection_Manager, "BT SPP ConMgr Task", 1024, NULL, tskIDLE_PRIORITY, NULL);
+      xTaskCreate(ESP32_BT_SPP_Connection_Manager, "BT SPP ConMgr Task", 2048, NULL, tskIDLE_PRIORITY, NULL);
 
       BT_TimeMarker = millis();
     }
@@ -528,11 +528,15 @@ IODev_ops_t ESP32_Bluetooth_ops = {
 
 /* ------- SPP BEGIN ------ */
 
+#define INQUIRY_INTERVAL 5
+#define NUM_SERVICES     10
+
 //#define SPP_USE_COD
 #define SPP_USE_NAME
 
 #if defined(SPP_USE_COD)
 #define SOFTRF_SPP_COD 0x02c110
+//#define SOFTRF_SPP_COD 0x001f00 /* HC-05 */
 #endif /* SPP_USE_COD */
 
 //#define DEBUG_SPP      Serial.printf
@@ -552,19 +556,21 @@ typedef enum {
     DONE
 } state_t;
 
-static bool _running            = false;
-static bool _overflow           = false;
-static volatile bool _connected = false;
-static size_t _fifoSize         = 512;
-static uint16_t _channelID      = 0;
-static volatile int _writeLen   = 0;
+static bool _running                 = false;
+static bool _overflow                = false;
+static volatile bool _connected      = false;
+static size_t _fifoSize              = 512;
+static uint16_t _channelID           = 0;
+static volatile int _writeLen        = 0;
+static uint8_t rfcomm_server_channel = 1;
+static char *pin_code                = "0000";
+static uint8_t service_index         = 0;
 
 static mutex_t     _mutex;
 static uint32_t    _writer;
 static uint32_t    _reader;
 static uint8_t    *_queue = NULL;
 static uint16_t    _mtu;
-static uint8_t     rfcomm_server_channel;
 static bd_addr_t   peer_addr;
 static state_t     spp_state;
 static const void *_writeBuff;
@@ -580,7 +586,10 @@ RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
 
 String BT_name = HOSTNAME;
 
-#define INQUIRY_INTERVAL 5
+static struct {
+    uint8_t channel_nr;
+    char    service_name[SDP_SERVICE_NAME_LEN+1];
+} services[NUM_SERVICES];
 
 static void start_scan(void){
     DEBUG_SPP("Starting inquiry scan..\r\n");
@@ -653,6 +662,31 @@ static void continue_remote_names(void){
 }
 #endif /* SPP_USE_NAME */
 
+static void store_found_service(const char * name, uint8_t port){
+    DEBUG_SPP("APP: Service name: '%s', RFCOMM port %u\r\n", name, port);
+    if (service_index < NUM_SERVICES){
+        services[service_index].channel_nr = port;
+        btstack_strcpy(services[service_index].service_name, SDP_SERVICE_NAME_LEN + 1, name);
+        service_index++;
+    } else {
+        DEBUG_SPP("APP: list full - ignore\r\n");
+        return;
+    }
+}
+
+static void report_found_services(void){
+    DEBUG_SPP("Client query response done. ");
+    if (service_index == 0) {
+        DEBUG_SPP("No service found.\r\n");
+    } else {
+        DEBUG_SPP("Found following %d services:\r\n", service_index);
+    }
+    int i;
+    for (i=0; i<service_index; i++) {
+        DEBUG_SPP("     Service name %s, RFCOMM port %u\r\n", services[i].service_name, services[i].channel_nr);
+    }
+}
+
 /*
  * @section SDP Query Packet Handler
  *
@@ -665,6 +699,8 @@ static void handle_query_rfcomm_event(uint8_t packet_type, uint16_t channel, uin
 
     switch (hci_event_packet_get_type(packet)){
         case SDP_EVENT_QUERY_RFCOMM_SERVICE:
+            store_found_service(sdp_event_query_rfcomm_service_get_name(packet),
+                                sdp_event_query_rfcomm_service_get_rfcomm_channel(packet));
             rfcomm_server_channel = sdp_event_query_rfcomm_service_get_rfcomm_channel(packet);
             break;
         case SDP_EVENT_QUERY_COMPLETE:
@@ -672,9 +708,12 @@ static void handle_query_rfcomm_event(uint8_t packet_type, uint16_t channel, uin
                 DEBUG_SPP("SDP query failed 0x%02x\r\n", sdp_event_query_complete_get_status(packet));
                 break;
             }
-            if (rfcomm_server_channel == 0){
-                DEBUG_SPP("No SPP service found\r\n");
-                break;
+
+            report_found_services();
+
+            if (rfcomm_server_channel == 0) {
+              DEBUG_SPP("No SPP service found\r\n");
+              break;
             }
             DEBUG_SPP("SDP query done, channel %u.\r\n", rfcomm_server_channel);
             rfcomm_create_channel(hci_spp_event_handler, peer_addr, rfcomm_server_channel, NULL);
@@ -784,6 +823,13 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                         memcpy(name_buffer, gap_event_inquiry_result_get_name(packet), name_len);
                         name_buffer[name_len] = 0;
                         DEBUG_SPP(", name '%s'", name_buffer);
+                        size_t srv_name_len = strnlen(settings->server, sizeof(settings->server));
+                        if (srv_name_len > 0 &&
+                            memcmp(settings->server, name_buffer, srv_name_len) == 0) {
+                          memcpy(peer_addr, event_addr, 6);
+                          DEBUG_SPP("Peer found: %s\r\n", bd_addr_to_str(peer_addr));
+                          stop_scan();
+                        }
                         devices[deviceCount].state = REMOTE_NAME_FETCHED;
                     } else {
                         devices[deviceCount].state = REMOTE_NAME_REQUEST;
@@ -822,17 +868,16 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                         default:
                             break;
                     }
-#if defined(SPP_USE_COD)
-                    if (spp_state == W4_PEER_COD){
-                    }
-#endif /* SPP_USE_COD */
                     break;
 
                 case HCI_EVENT_PIN_CODE_REQUEST:
                     // inform about pin code request
-                    DEBUG_SPP("Pin code request - using '0000'\r\n");
+                    if (strnlen(settings->key, sizeof(settings->key)) > 0) {
+                      pin_code = settings->key;
+                    }
+                    DEBUG_SPP("Pin code request - using '%s'\r\n", pin_code);
                     hci_event_pin_code_request_get_bd_addr(packet, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
+                    gap_pin_code_response(event_addr, pin_code);
                     break;
 
                 case HCI_EVENT_USER_CONFIRMATION_REQUEST:
@@ -873,6 +918,16 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     DEBUG_SPP("RFCOMM channel closed\r\n");
                     _channelID = 0;
                     _connected = false;
+
+#if defined(SPP_USE_COD)
+                    spp_state = W4_PEER_COD;
+#else
+                    spp_state = W4_PEER_NAME,
+                    deviceCount = 0;
+#endif /* SPP_USE_COD */
+
+                    service_index = 0;
+                    rfcomm_server_channel = 1;
 
                     // re-enable page/inquiry scan again
                     gap_discoverable_control(1);
