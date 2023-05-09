@@ -503,6 +503,7 @@ struct rst_info {
 //#define USE_USB_HOST
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define USE_U10_EXT
 //#define ENABLE_RECORDER
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
