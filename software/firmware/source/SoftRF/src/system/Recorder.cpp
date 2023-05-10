@@ -37,7 +37,7 @@ FlightRecorder FR;
 
 bool FR_is_active = false;
 
-static const char *m10s_specs = "u-blox,MAX-M10S,72,50000,GPS,GLO,BDS,GAL";
+static const char *m10s_specs = "u-blox,MAX-M10S,49,50000,GPS,GLO,BDS,GAL";
 static const char *l76k_specs = "Quectel,L76K,32,50000,GPS,GLO,BDS";
 
 void Recorder_setup()

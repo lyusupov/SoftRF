@@ -1066,7 +1066,7 @@ static void ESP32_Button_setup()
   ModeButtonConfig->setDoubleClickDelay(1000);
   ModeButtonConfig->setLongPressDelay(2000);
 
-  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
+//  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
 
   if (settings->adapter == ADAPTER_TTGO_T5S) {
 
@@ -1099,11 +1099,11 @@ static void ESP32_Button_setup()
     DownButtonConfig->setLongPressDelay(2000);
 
     if (settings->rotate == ROTATE_180) {
-      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onDownButtonEvent, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onUpButtonEvent,   CHANGE);
+//      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onDownButtonEvent, CHANGE);
+//      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onUpButtonEvent,   CHANGE);
     } else {
-      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE);
-      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE);
+//      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S),   onUpButtonEvent,   CHANGE);
+//      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE);
     }
   }
 }
@@ -1122,11 +1122,15 @@ static void ESP32_Button_fini()
 {
 
   if (settings->adapter == ADAPTER_TTGO_T5S) {
-    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S));
-    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S));
-    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S));
+//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S));
+//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S));
+//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S));
+
+    while (digitalRead(SOC_BUTTON_MODE_T5S) == LOW);
   } else {
-    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_DEF));
+//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_DEF));
+
+    while (digitalRead(SOC_BUTTON_MODE_DEF) == LOW);
   }
 }
 
