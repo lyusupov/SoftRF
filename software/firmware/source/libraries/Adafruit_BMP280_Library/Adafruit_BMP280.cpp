@@ -45,6 +45,12 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
   if (_cs == -1) {
     // i2c
     Wire.begin();
+
+#if defined(ESP32) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
+    Wire.beginTransmission(a);
+    if (Wire.endTransmission() != 0) return false;
+#endif /* ESP32 && ESP_IDF_VERSION_MAJOR>=4 */
+
 #if !defined(HACKRF_ONE)
   } else {
     digitalWrite(_cs, HIGH);
@@ -229,7 +235,7 @@ uint32_t Adafruit_BMP280::read24(byte reg)
     Wire.write((uint8_t)reg);
     Wire.endTransmission();
     Wire.requestFrom((uint8_t)_i2caddr, (byte)3);
-    
+
     value = Wire.read();
     value <<= 8;
     value |= Wire.read();
@@ -244,7 +250,7 @@ uint32_t Adafruit_BMP280::read24(byte reg)
 #endif
     digitalWrite(_cs, LOW);
     spixfer(reg | 0x80); // read, bit 7 high
-    
+
     value = spixfer(0);
     value <<= 8;
     value |= spixfer(0);

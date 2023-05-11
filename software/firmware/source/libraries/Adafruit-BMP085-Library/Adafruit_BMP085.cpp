@@ -28,6 +28,11 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
 
   Wire.begin();
 
+#if defined(ESP32) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
+  Wire.beginTransmission(BMP085_I2CADDR);
+  if (Wire.endTransmission() != 0) return false;
+#endif /* ESP32 && ESP_IDF_VERSION_MAJOR>=4 */
+
   if (read8(0xD0) != 0x55) return false;
 
   /* read calibration data */
@@ -217,7 +222,7 @@ float Adafruit_BMP085::readTemperature(void) {
   B5 = computeB5(UT);
   temp = (B5+8) >> 4;
   temp /= 10;
-  
+
   return temp;
 }
 
@@ -244,7 +249,7 @@ uint8_t Adafruit_BMP085::read8(uint8_t a) {
   Wire.send(a); // sends register address to read from
 #endif
   Wire.endTransmission(); // end transmission
-  
+
   Wire.requestFrom(BMP085_I2CADDR, 1);// send data n-bytes read
 #if (ARDUINO >= 100)
   ret = Wire.read(); // receive DATA
@@ -265,7 +270,7 @@ uint16_t Adafruit_BMP085::read16(uint8_t a) {
   Wire.send(a); // sends register address to read from
 #endif
   Wire.endTransmission(); // end transmission
-  
+
   Wire.requestFrom(BMP085_I2CADDR, 2);// send data n-bytes read
 #if (ARDUINO >= 100)
   ret = Wire.read(); // receive DATA

@@ -2332,7 +2332,6 @@ static byte ESP32_Display_setup()
       }
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
-        Wire1 = Wire;
         Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
         Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
         has_oled = (Wire1.endTransmission() == 0);
@@ -2975,8 +2974,13 @@ static bool ESP32_Baro_setup()
 #if !defined(ENABLE_AHRS)
     /* Try out OLED I2C bus */
     Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
+      Wire1 = Wire;
+    }
     if (!Baro_probe()) {
-      WIRE_FINI(Wire);
+      if (!(hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8)) {
+        WIRE_FINI(Wire);
+      }
       return false;
     }
 
