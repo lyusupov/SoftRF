@@ -475,17 +475,44 @@ static ep_model_id ESP32_EPD_ident()
 
   swSPI.begin();
 
+  uint8_t buf_2D[11];
+  uint8_t buf_2E[10];
+
   taskENTER_CRITICAL(&EPD_ident_mutex);
 
   digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
   digitalWrite(SOC_GPIO_PIN_SS_T5S, LOW);
 
-  swSPI.transfer_out(0x71);
+  swSPI.transfer_out(0x2D);
 
   pinMode(SOC_GPIO_PIN_MOSI_T5S, INPUT);
   digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
 
-  uint8_t status = swSPI.transfer_in();
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    buf_2D[i] = swSPI.transfer_in();
+  }
+
+  digitalWrite(SOC_GPIO_PIN_SCK_T5S, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_T5S,  HIGH);
+
+  taskEXIT_CRITICAL(&EPD_ident_mutex);
+
+  delay(1);
+
+  taskENTER_CRITICAL(&EPD_ident_mutex);
+
+  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_T5S, LOW);
+
+  swSPI.transfer_out(0x2E);
+
+  pinMode(SOC_GPIO_PIN_MOSI_T5S, INPUT);
+  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
+
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    buf_2E[i] = swSPI.transfer_in();
+  }
 
   digitalWrite(SOC_GPIO_PIN_SCK_T5S, LOW);
   digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
@@ -496,13 +523,48 @@ static ep_model_id ESP32_EPD_ident()
   swSPI.end();
 
 #if 0
-  Serial.print("REG 71H: ");
-  Serial.println(status, HEX);
+  Serial.println();
+
+  Serial.print("2D: ");
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    Serial.print(buf_2D[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+  Serial.print("2E: ");
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    Serial.print(buf_2E[i], HEX);
+    Serial.print(' ');
+  }
+  Serial.println();
+
+/*
+ *  0x2D:
+ *  FF FF FF FF FF FF FF FF FF FF FF - W3
+ *  00 00 00 FF 00 00 40 01 00 00 00
+ *
+ *  0x2E:
+ *  FF FF FF FF FF FF FF FF FF FF    - W3
+ *  FF FF FF FF FF FF FF FF FF FF
+ */
 #endif
 
-//  if (status != 2) {
-//    rval = EP_GDEY027T91; /* TBD */
-//  }
+  bool is_ff = true;
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0xFF) {is_ff = false; break;}
+  }
+
+  bool is_00 = true;
+  for (int i=0; i<sizeof(buf_2D); i++) {
+    if (buf_2D[i] != 0x00) {is_00 = false; break;}
+  }
+
+  if (is_ff) {
+    rval = EP_GDEW027W3;
+  } else {
+    rval = EP_GDEY027T91; /* TBD */
+  }
 
   return rval;
 }
