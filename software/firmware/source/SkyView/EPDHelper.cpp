@@ -23,6 +23,7 @@
 #include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeSerif9pt7b.h>
+#include <Fonts/Picopixel.h>
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
@@ -45,6 +46,7 @@ const char EPD_SkyView_text10[] = "POWER";
 const char EPD_SkyView_text11[] = "OFF";
 const char EPD_SkyView_text12[] = "Screen";
 const char EPD_SkyView_text13[] = "Saver";
+const char EPD_SkyView_text14[] = "VERSION " SKYVIEW_FIRMWARE_VERSION;
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -129,6 +131,12 @@ byte EPD_setup(bool splash_screen)
         y = (display->height() + tbh2) / 2;
         display->setCursor(x + (tbw2 / 7), y - (tbh2 - tbh1) );
         display->print(EPD_SkyView_text2);
+
+        display->setFont(&Picopixel);
+        x = display->width() * 2 / 3;
+        y += 20;
+        display->setCursor(x, y);
+        display->print(EPD_SkyView_text14);
 
         display->setFont(&FreeMonoOblique9pt7b);
         display->getTextBounds(EPD_SkyView_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);

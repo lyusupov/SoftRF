@@ -560,7 +560,7 @@ static ep_model_id ESP32_EPD_ident()
     if (buf_2D[i] != 0x00) {is_00 = false; break;}
   }
 
-  if (is_ff) {
+  if (is_ff || is_00) {
     rval = EP_GDEW027W3;
   } else {
     rval = EP_GDEY027T91; /* TBD */
