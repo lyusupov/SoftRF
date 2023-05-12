@@ -495,13 +495,13 @@ static ep_model_id RP2040_EPD_ident()
   digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
   digitalWrite(SOC_EPD_PIN_SS_WS, LOW);
 
-  swSPI.transfer_out(0x2D);
+  swSPI.transfer_out(0x2E);
 
   pinMode(SOC_EPD_PIN_MOSI_WS, INPUT);
   digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
 
-  for (int i=0; i<sizeof(buf_2D); i++) {
-    buf_2D[i] = swSPI.transfer_in();
+  for (int i=0; i<sizeof(buf_2E); i++) {
+    buf_2E[i] = swSPI.transfer_in();
   }
 
   digitalWrite(SOC_EPD_PIN_SCK_WS, LOW);
@@ -528,9 +528,11 @@ static ep_model_id RP2040_EPD_ident()
 /*
  *  0x2D:
  *  FF FF FF FF FF FF FF FF FF FF FF - W3
+ *  00 00 00 FF 00 00 40 01 00 00 00
  *
  *  0x2E:
- *  05 00 00 00 43 BE 01 10 90 00    - W3
+ *  FF FF FF FF FF FF FF FF FF FF    - W3
+ *  FF FF FF FF FF FF FF FF FF FF
  */
 #endif
 
