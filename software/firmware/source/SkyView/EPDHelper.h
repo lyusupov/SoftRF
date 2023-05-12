@@ -66,7 +66,7 @@ enum ep_model_id {
 
 byte EPD_setup(bool);
 void EPD_loop();
-void EPD_fini(const char *);
+void EPD_fini(const char *, bool);
 
 void EPD_Mode();
 void EPD_Up();

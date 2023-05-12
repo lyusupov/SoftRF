@@ -61,6 +61,8 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+bool screen_saver = false;
+
 /* Poll input source(s) */
 void Input_loop() {
   switch (settings->protocol)
@@ -195,7 +197,7 @@ void shutdown(const char *msg)
 
   WiFi_fini();
 
-  EPD_fini(msg);
+  EPD_fini(msg, screen_saver);
 
   SoC->Button_fini();
 

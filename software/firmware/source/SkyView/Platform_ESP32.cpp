@@ -1025,6 +1025,12 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_mode) {
+
+        if (settings->adapter == ADAPTER_TTGO_T5S &&
+            digitalRead(SOC_BUTTON_DOWN_T5S) == LOW) {
+          screen_saver = true;
+        }
+
         shutdown("NORMAL OFF");
         Serial.println(F("This will never be printed."));
       }

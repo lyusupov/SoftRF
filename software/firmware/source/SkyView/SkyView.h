@@ -267,6 +267,7 @@ enum
 };
 
 extern hardware_info_t hw_info;
+extern bool screen_saver;
 
 extern void shutdown(const char *);
 extern void Input_loop(void);

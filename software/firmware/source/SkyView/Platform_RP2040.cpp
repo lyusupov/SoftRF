@@ -822,6 +822,11 @@ void handleEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventLongPressed:
 #if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
       if (button == &button_mode) {
+
+        if (digitalRead(SOC_GPIO_PIN_KEY1) == LOW) {
+          screen_saver = true;
+        }
+
         shutdown("NORMAL OFF");
 //        Serial.println(F("This will never be printed."));
       }

@@ -100,6 +100,8 @@ hardware_info_t hw_info = {
   .display  = DISPLAY_NONE
 };
 
+bool screen_saver = false;
+
 static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
@@ -873,7 +875,7 @@ void shutdown(const char *msg)
 
   SoC->DB_fini();
 
-  EPD_fini(msg);
+  EPD_fini(msg, screen_saver);
 
   SoC->Button_fini();
 

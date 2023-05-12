@@ -32,15 +32,19 @@
 
 GxEPD2_GFX *display;
 
-const char EPD_SkyView_text1[] = "Sky";
-const char EPD_SkyView_text2[] = "View";
-const char EPD_SkyView_text3[] = "Presented by";
-const char EPD_SkyView_text4[] = "SoftRF project";
-const char EPD_SkyView_text5[] = "and LilyGO";
-const char EPD_SkyView_text6[] = "SkyView";
-const char EPD_SkyView_text7[] = "Author:";
-const char EPD_SkyView_text8[] = "Linar Yusupov";
-const char EPD_SkyView_text9[] = "(C) 2019-2023";
+const char EPD_SkyView_text1 [] = "Sky";
+const char EPD_SkyView_text2 [] = "View";
+const char EPD_SkyView_text3 [] = "Presented by";
+const char EPD_SkyView_text4 [] = "SoftRF project";
+const char EPD_SkyView_text5 [] = "and LilyGO";
+const char EPD_SkyView_text6 [] = "SkyView";
+const char EPD_SkyView_text7 [] = "Author:";
+const char EPD_SkyView_text8 [] = "Linar Yusupov";
+const char EPD_SkyView_text9 [] = "(C) 2019-2023";
+const char EPD_SkyView_text10[] = "POWER";
+const char EPD_SkyView_text11[] = "OFF";
+const char EPD_SkyView_text12[] = "Screen";
+const char EPD_SkyView_text13[] = "Saver";
 
 unsigned long EPDTimeMarker = 0;
 bool EPD_display_frontpage = false;
@@ -274,7 +278,7 @@ void EPD_loop()
   }
 }
 
-void EPD_fini(const char *msg)
+void EPD_fini(const char *msg, bool screen_saver)
 {
   SoC->EPD_fini();
 
@@ -282,7 +286,40 @@ void EPD_fini(const char *msg)
     int16_t  tbx, tby;
     uint16_t tbw, tbh;
 
-    {
+    if (screen_saver) {
+      display->setFont(&FreeMonoBold18pt7b);
+      display->fillScreen(GxEPD_WHITE);
+
+      display->getTextBounds(EPD_SkyView_text10, 0, 0, &tbx, &tby, &tbw, &tbh);
+      uint16_t x = (display->width() - tbw) / 2;
+      uint16_t y = display->height() / 4;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text10);
+
+      display->getTextBounds(EPD_SkyView_text11, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += 40;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text11);
+
+      display->getTextBounds(EPD_SkyView_text12, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += 80;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text12);
+
+      display->getTextBounds(EPD_SkyView_text13, 0, 0, &tbx, &tby, &tbw, &tbh);
+      x = (display->width() - tbw) / 2;
+      y += 40;
+      display->setCursor(x, y);
+      display->print(EPD_SkyView_text13);
+
+      display->display(false);
+
+      delay(4000);
+
+      display->fillScreen(GxEPD_WHITE);
+    } else {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width()  - 128) / 2;
       uint16_t y = (display->height() - 128) / 6;
