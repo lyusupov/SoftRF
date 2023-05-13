@@ -113,8 +113,11 @@ static union {
 };
 
 #include <Adafruit_SPIFlash.h>
+#include <Adafruit_INA219.h>
 #include "uCDB.hpp"
 #include "JSONHelper.h"
+
+Adafruit_INA219 ina219;
 
 #if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
@@ -135,6 +138,7 @@ static SPIFlash_Device_t possible_devices[] = {
 #endif /* ARDUINO_ARCH_MBED */
 
 static bool RP2040_has_spiflash = false;
+static bool RP2040_has_CPM      = false;
 static uint32_t spiflash_id     = 0;
 static bool FATFS_is_mounted    = false;
 static bool ADB_is_open         = false;
@@ -255,6 +259,18 @@ static void RP2040_setup()
   }
 #endif /* ARDUINO_ARCH_MBED */
 
+  Wire1.setSCL(SOC_GPIO_PIN_SCL);
+  Wire1.setSDA(SOC_GPIO_PIN_SDA);
+  Wire1.begin();
+  Wire1.beginTransmission(INA219_ADDRESS);
+  RP2040_has_CPM = (Wire1.endTransmission() == 0);
+  Wire1.end();
+
+  if (RP2040_has_CPM) {
+    ina219.begin(&Wire1);
+//  ina219.setCalibration_16V_400mA();
+  }
+
   USBSerial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
@@ -280,6 +296,10 @@ static void RP2040_loop()
 
 static void RP2040_fini()
 {
+  if (RP2040_has_CPM) {
+//  ina219.powerSave(true);
+  }
+
   if (RP2040_has_spiflash) {
 #if defined(USE_TINYUSB)
     usb_msc.setUnitReady(false);
@@ -418,6 +438,13 @@ static void RP2040_Battery_setup()
 static float RP2040_Battery_voltage()
 {
   uint16_t mV = 0;
+
+  if (RP2040_has_CPM) {
+    float shuntvoltage = ina219.getShuntVoltage_mV();
+    float busvoltage   = ina219.getBusVoltage_V();
+
+    return (busvoltage + (shuntvoltage / 1000));
+  }
 
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
   enum gpio_function pin25_func;

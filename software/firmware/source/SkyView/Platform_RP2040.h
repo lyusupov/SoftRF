@@ -79,6 +79,10 @@ enum RP2040_board_id {
 #define SOC_EPD_PIN_RST_WS    (12u)
 #define SOC_EPD_PIN_BUSY_WS   (13u)
 
+/* Waveshare Pico UPS-B I2C1 */
+#define SOC_GPIO_PIN_SDA      (6u)
+#define SOC_GPIO_PIN_SCL      (7u)
+
 /* Waveshare Pico keys mapping */
 #define SOC_GPIO_PIN_KEY0     (15u)
 #define SOC_GPIO_PIN_KEY1     (17u)
