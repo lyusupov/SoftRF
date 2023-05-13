@@ -756,6 +756,11 @@ static void RP2040_EEPROM_extension(int cmd)
 #endif /* USE_USB_HOST */
 #endif /* EXCLUDE_WIFI and EXCLUDE_BLUETOOTH */
 
+    if (RP2040_board != RP2040_RPIPICO_W &&
+        settings->bluetooth != BLUETOOTH_NONE) {
+      settings->bluetooth = BLUETOOTH_NONE;
+    }
+
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
     if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
       settings->band = RF_BAND_EU;

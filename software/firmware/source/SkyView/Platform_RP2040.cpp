@@ -380,6 +380,12 @@ static bool RP2040_EEPROM_begin(size_t size)
     }
   }
 
+  if (RP2040_board != RP2040_RPIPICO_W &&
+      (settings->connection == CON_BLUETOOTH_SPP ||
+       settings->connection == CON_BLUETOOTH_LE)) {
+    settings->connection = CON_USB; /* matches EEPROMHelper.cpp default value */
+  }
+
   return true;
 }
 
