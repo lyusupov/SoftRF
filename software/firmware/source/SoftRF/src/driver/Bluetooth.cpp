@@ -1591,6 +1591,7 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #include "EEPROM.h"
 #include "WiFi.h"
 #include "Bluetooth.h"
+#include "Battery.h"
 
 static bool _running = false;
 static mutex_t _mutex;
@@ -2163,7 +2164,6 @@ static void att_attributes_init(void){
                         (const uint8_t *) "HMSoft", strlen("HMSoft"));
 }
 
-uint8_t _battery = 100; /* TBD */
 static unsigned long BLE_Aux_Tx_TimeMarker = 0;
 
 /* ------- BLE END ------ */
@@ -2241,7 +2241,7 @@ static void CYW43_Bluetooth_setup()
       att_server_init(_attdb, NULL, att_write_callback);
 
       // Setup battery service
-      battery_service_server_init(_battery);
+      battery_service_server_init((uint8_t) Battery_charge());
 
       static char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());
@@ -2304,6 +2304,10 @@ static void CYW43_Bluetooth_loop()
         streamer();
       }
       BLE_Aux_Tx_TimeMarker = millis();
+    }
+
+    if (isTimeToBattery()) {
+      battery_service_server_set_battery_value((uint8_t) Battery_charge());
     }
     break;
   case BLUETOOTH_NONE:
