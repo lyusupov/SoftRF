@@ -83,6 +83,8 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_SDA      (6u)
 #define SOC_GPIO_PIN_SCL      (7u)
 
+#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
+
 /* Waveshare Pico keys mapping */
 #define SOC_GPIO_PIN_KEY0     (15u)
 #define SOC_GPIO_PIN_KEY1     (17u)

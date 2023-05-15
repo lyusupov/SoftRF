@@ -48,9 +48,6 @@
 
 #define BLE_MAX_WRITE_CHUNK_SIZE              20
 
-extern const uint8_t BLEUART_HM10_UUID_SERVICE[];
-extern const uint8_t BLEUART_HM10_UUID_CHR_RW[];
-
 class BLEUart_HM10 : public BLEService, public Stream
 {
   public:

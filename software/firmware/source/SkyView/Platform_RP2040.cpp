@@ -117,7 +117,7 @@ static union {
 #include "uCDB.hpp"
 #include "JSONHelper.h"
 
-Adafruit_INA219 ina219;
+Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 
 #if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_RP2040 HWFlashTransport;
@@ -262,7 +262,7 @@ static void RP2040_setup()
   Wire1.setSCL(SOC_GPIO_PIN_SCL);
   Wire1.setSDA(SOC_GPIO_PIN_SDA);
   Wire1.begin();
-  Wire1.beginTransmission(INA219_ADDRESS);
+  Wire1.beginTransmission(INA219_ADDRESS_ALT);
   RP2040_has_CPM = (Wire1.endTransmission() == 0);
   Wire1.end();
 

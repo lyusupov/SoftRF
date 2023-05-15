@@ -42,14 +42,16 @@
 /* UART Serivce: 0000ffe0-0000-1000-8000-00805f9b34fb
  * UART RW     : 0000ffe1-0000-1000-8000-00805f9b34fb
  */
+static const uint16_t BLEUART_HM10_UUID16_SERVICE = 0xFFE0;
+static const uint16_t BLEUART_HM10_UUID16_CHR_RW  = 0xFFE1;
 
-const uint8_t BLEUART_HM10_UUID_SERVICE[] =
+static const uint8_t BLEUART_HM10_UUID128_SERVICE[] =
 {
     0xFB, 0x34, 0x9B, 0x5F, 0x80, 0x00, 0x00, 0x80,
     0x00, 0x10, 0x00, 0x00, 0xE0, 0xFF, 0x00, 0x00,
 };
 
-const uint8_t BLEUART_HM10_UUID_CHR_RW[] =
+static const uint8_t BLEUART_HM10_UUID128_CHR_RW[] =
 {
     0xFB, 0x34, 0x9B, 0x5F, 0x80, 0x00, 0x00, 0x80,
     0x00, 0x10, 0x00, 0x00, 0xE1, 0xFF, 0x00, 0x00,
@@ -57,7 +59,7 @@ const uint8_t BLEUART_HM10_UUID_CHR_RW[] =
 
 // Constructor
 BLEUart_HM10::BLEUart_HM10(uint16_t rx_fifo_depth, uint16_t tx_fifo_depth)
-  : BLEService(BLEUART_HM10_UUID_SERVICE), _rtxd(BLEUART_HM10_UUID_CHR_RW)
+  : BLEService(BLEUART_HM10_UUID16_SERVICE), _rtxd(BLEUART_HM10_UUID16_CHR_RW)
 {
   _rx_fifo       = NULL;
   _rx_fifo_depth = rx_fifo_depth;
