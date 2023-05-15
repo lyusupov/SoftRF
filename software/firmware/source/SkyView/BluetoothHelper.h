@@ -23,8 +23,10 @@
 
 #if defined(ESP32)
 
-#define SERVICE_UUID              "0000ffe0-0000-1000-8000-00805f9b34fb"
-#define CHARACTERISTIC_UUID       "0000ffe1-0000-1000-8000-00805f9b34fb"
+#define SERVICE_UUID16            ((uint16_t) 0xFFE0)
+#define CHARACTERISTIC_UUID16     ((uint16_t) 0xFFE1)
+#define SERVICE_UUID128           "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define CHARACTERISTIC_UUID128    "0000ffe1-0000-1000-8000-00805f9b34fb"
 
 #define BT_NODATA_TIMEOUT         30000
 

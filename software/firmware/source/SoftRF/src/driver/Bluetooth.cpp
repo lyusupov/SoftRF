@@ -141,11 +141,11 @@ static void ESP32_Bluetooth_setup()
       pServer->setCallbacks(new MyServerCallbacks());
 
       // Create the BLE Service
-      BLEService *pService = pServer->createService(BLEUUID(UART_SERVICE_UUID));
+      BLEService *pService = pServer->createService(BLEUUID(UART_SERVICE_UUID16));
 
       // Create a BLE Characteristic
       pUARTCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UART_CHARACTERISTIC_UUID),
+                              BLEUUID(UART_CHARACTERISTIC_UUID16),
                               BLECharacteristic::PROPERTY_READ   |
                               BLECharacteristic::PROPERTY_NOTIFY |
                               BLECharacteristic::PROPERTY_WRITE_NR
@@ -250,7 +250,7 @@ static void ESP32_Bluetooth_setup()
 
       // Start advertising
       BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-      pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID));
+      pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID16));
       pAdvertising->addServiceUUID(BLEUUID(UUID16_SVC_BATTERY));
 #if defined(USE_BLE_MIDI)
       pAdvertising->addServiceUUID(BLEUUID(MIDI_SERVICE_UUID));

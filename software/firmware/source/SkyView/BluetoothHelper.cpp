@@ -57,8 +57,8 @@ static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* AppDevice;
 static BLEClient* pClient;
 
-static BLEUUID  serviceUUID(SERVICE_UUID);
-static BLEUUID  charUUID(CHARACTERISTIC_UUID);
+static BLEUUID  serviceUUID(SERVICE_UUID16);
+static BLEUUID  charUUID(CHARACTERISTIC_UUID16);
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
 

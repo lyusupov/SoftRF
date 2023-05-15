@@ -125,11 +125,11 @@ static void ESP32_Bluetooth_setup()
       pServer->setCallbacks(new MyServerCallbacks());
 
       // Create the BLE Service
-      BLEService *pService = pServer->createService(SERVICE_UUID);
+      BLEService *pService = pServer->createService(SERVICE_UUID16);
 
       // Create a BLE Characteristic
       pCharacteristic = pService->createCharacteristic(
-                          CHARACTERISTIC_UUID,
+                          CHARACTERISTIC_UUID16,
                           BLECharacteristic::PROPERTY_READ   |
                           BLECharacteristic::PROPERTY_NOTIFY |
                           BLECharacteristic::PROPERTY_WRITE_NR
@@ -146,7 +146,7 @@ static void ESP32_Bluetooth_setup()
 
       // Start advertising
       BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-      pAdvertising->addServiceUUID(SERVICE_UUID);
+      pAdvertising->addServiceUUID(SERVICE_UUID16);
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);

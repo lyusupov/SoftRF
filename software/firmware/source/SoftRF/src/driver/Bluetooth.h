@@ -33,11 +33,13 @@ enum
 
 #if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
 
-#define UART_SERVICE_UUID         "0000ffe0-0000-1000-8000-00805f9b34fb"
-#define UART_CHARACTERISTIC_UUID  "0000ffe1-0000-1000-8000-00805f9b34fb"
+#define UART_SERVICE_UUID16                 ((uint16_t) 0xFFE0)
+#define UART_CHARACTERISTIC_UUID16          ((uint16_t) 0xFFE1)
+#define UART_SERVICE_UUID128            "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define UART_CHARACTERISTIC_UUID128     "0000ffe1-0000-1000-8000-00805f9b34fb"
 
-#define MIDI_SERVICE_UUID         "03b80e5a-ede8-4b33-a751-6ce34ec4c700"
-#define MIDI_CHARACTERISTIC_UUID  "7772e5db-3868-4112-a1a9-f2669d106bf3"
+#define MIDI_SERVICE_UUID               "03b80e5a-ede8-4b33-a751-6ce34ec4c700"
+#define MIDI_CHARACTERISTIC_UUID        "7772e5db-3868-4112-a1a9-f2669d106bf3"
 
 #define UUID16_SVC_BATTERY                  ((uint16_t) 0x180F)
 #define UUID16_CHR_BATTERY_LEVEL            ((uint16_t) 0x2A19)
