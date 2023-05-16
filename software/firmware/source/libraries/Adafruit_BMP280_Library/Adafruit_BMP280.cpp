@@ -48,7 +48,14 @@ bool Adafruit_BMP280::begin(uint8_t a, uint8_t chipid) {
 
 #if defined(ESP32) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
     Wire.beginTransmission(a);
-    if (Wire.endTransmission() != 0) return false;
+    bool probe = Wire.endTransmission();
+    if (probe) {
+      Wire.beginTransmission(a);
+      probe = Wire.endTransmission();
+      if (probe) {
+        return false;
+      }
+    }
 #endif /* ESP32 && ESP_IDF_VERSION_MAJOR>=4 */
 
 #if !defined(HACKRF_ONE)

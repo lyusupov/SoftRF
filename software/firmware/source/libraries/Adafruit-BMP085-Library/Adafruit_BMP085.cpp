@@ -30,7 +30,14 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
 
 #if defined(ESP32) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
   Wire.beginTransmission(BMP085_I2CADDR);
-  if (Wire.endTransmission() != 0) return false;
+  bool probe = Wire.endTransmission();
+  if (probe) {
+    Wire.beginTransmission(BMP085_I2CADDR);
+    probe = Wire.endTransmission();
+    if (probe) {
+      return false;
+    }
+  }
 #endif /* ESP32 && ESP_IDF_VERSION_MAJOR>=4 */
 
   if (read8(0xD0) != 0x55) return false;
