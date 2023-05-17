@@ -127,6 +127,11 @@
 #define SOC_GPIO_PIN_KEY1     2
 #define SOC_GPIO_PIN_KEY2     47
 
+/* misc. Banana PicoW pins */
+#define SOC_GPIO_PIN_LED      46 // active HIGH
+#define SOC_GPIO_PIN_NEOPIXEL 48
+#define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
+
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
 #define SOC_GPIO_PIN_GNSS_TX  7

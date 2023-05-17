@@ -268,6 +268,7 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_T5_1;
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_W):
       hw_info.revision = HW_REV_BPI;
       break;
     default:
@@ -572,7 +573,7 @@ static ep_model_id ESP32_EPD_ident()
   return rval;
 }
 
-#define EPD_STACK_SZ      (256*4)
+#define EPD_STACK_SZ      (256*6)
 static TaskHandle_t EPD_Task_Handle = NULL;
 
 static ep_model_id ESP32_display = EP_UNKNOWN;
