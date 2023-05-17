@@ -100,6 +100,7 @@ enum
 	HW_REV_T5_1,
 	HW_REV_PICO,
 	HW_REV_PICO_W,
+	HW_REV_BPI,
 };
 
 enum

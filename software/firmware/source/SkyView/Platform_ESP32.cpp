@@ -267,6 +267,9 @@ static void ESP32_setup()
       /* custom ESP32-WROVER-E module with 16 MB flash */
       hw_info.revision = HW_REV_T5_1;
       break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
+      hw_info.revision = HW_REV_BPI;
+      break;
     default:
       hw_info.revision = HW_REV_UNKNOWN;
       break;
@@ -579,8 +582,15 @@ static void ESP32_EPD_setup()
   switch(settings->adapter)
   {
   case ADAPTER_WAVESHARE_ESP32:
+  case ADAPTER_WAVESHARE_PICO_2_7:
     display = &epd_waveshare_W3;
-//    display = &epd_waveshare_T91;
+    SPI.begin(SOC_GPIO_PIN_SCK_WS,
+              SOC_GPIO_PIN_MISO_WS,
+              SOC_GPIO_PIN_MOSI_WS,
+              SOC_GPIO_PIN_SS_WS);
+    break;
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+    display = &epd_waveshare_T91;
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,

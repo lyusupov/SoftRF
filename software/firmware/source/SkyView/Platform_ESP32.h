@@ -105,16 +105,27 @@
 
 #define SOC_BUTTON_MODE_DEF   0
 
-/* Waveshare ESP32-S3 SPI pins mapping */
-#define SOC_GPIO_PIN_MOSI_WS  35
-#define SOC_GPIO_PIN_MISO_WS  33
-#define SOC_GPIO_PIN_SCK_WS   36
-#define SOC_GPIO_PIN_SS_WS    34
+/* Waveshare Pico & Banana PicoW SPI pins mapping */
+#define SOC_GPIO_PIN_MOSI_WS  38
+#define SOC_GPIO_PIN_MISO_WS  14
+#define SOC_GPIO_PIN_SCK_WS   21
+#define SOC_GPIO_PIN_SS_WS    16
 
-/* Waveshare ESP32-S3 EPD pins mapping */
-#define SOC_EPD_PIN_DC_WS     37
-#define SOC_EPD_PIN_RST_WS    38
-#define SOC_EPD_PIN_BUSY_WS   39
+/* Waveshare Pico & Banana PicoW EPD pins mapping */
+#define SOC_EPD_PIN_DC_WS     18
+#define SOC_EPD_PIN_RST_WS    39
+#define SOC_EPD_PIN_BUSY_WS   40
+
+/* Waveshare Pico UPS-B & Banana PicoW I2C */
+#define SOC_GPIO_PIN_SDA      12
+#define SOC_GPIO_PIN_SCL      14
+
+#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
+
+/* Waveshare Pico & Banana PicoW keys mapping */
+#define SOC_GPIO_PIN_KEY0     42
+#define SOC_GPIO_PIN_KEY1     2
+#define SOC_GPIO_PIN_KEY2     47
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */

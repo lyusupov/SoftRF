@@ -135,8 +135,7 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -170,7 +169,7 @@ void handleSettings() {
     (settings->adapter == ADAPTER_NODEMCU           ? "selected" : ""), ADAPTER_NODEMCU,
     (settings->adapter == ADAPTER_WAVESHARE_ESP8266 ? "selected" : ""), ADAPTER_WAVESHARE_ESP8266
     );
-  } else if (SoC->id == SOC_RP2040) {
+  } else if (SoC->id == SOC_RP2040 || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
