@@ -40,8 +40,11 @@
 #include "SkyView.h"
 
 #include <battery.h>
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #include <sqlite3.h>
 #include <SD.h>
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
@@ -139,6 +142,7 @@ static union {
   uint64_t chipmacid;
 };
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 static sqlite3 *fln_db  = NULL;
 static sqlite3 *ogn_db  = NULL;
 static sqlite3 *icao_db = NULL;
@@ -146,6 +150,7 @@ static sqlite3 *icao_db = NULL;
 static uint8_t sdcard_files_to_open = 0;
 
 SPIClass uSD_SPI(HSPI);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 /* variables hold file, state of process wav file and wav file properties */
 wavProperties_t wavProps;
@@ -529,11 +534,12 @@ static void ESP32_fini()
 
   int mode_button_pin = SOC_BUTTON_MODE_DEF;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
   if (settings && (settings->adapter == ADAPTER_TTGO_T5S)) {
     uSD_SPI.end();
-
     mode_button_pin = SOC_BUTTON_MODE_T5S;
   }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
   esp_wifi_stop();
 
@@ -656,7 +662,7 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
   calibrate_voltage(ADC1_GPIO9_CHANNEL); /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  calibrate_voltage(ADC1_GPIO2_CHANNEL); /* TBD */
+  calibrate_voltage(ADC1_GPIO3_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   calibrate_voltage(ADC1_GPIO1_CHANNEL); /* TBD */
 #else
@@ -845,11 +851,13 @@ static void ESP32_EPD_setup()
               SOC_GPIO_PIN_MOSI_T5S,
               SOC_GPIO_PIN_SS_T5S);
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     /* SD-SPI init */
     uSD_SPI.begin(SOC_SD_PIN_SCK_T5S,
                   SOC_SD_PIN_MISO_T5S,
                   SOC_SD_PIN_MOSI_T5S,
                   SOC_SD_PIN_SS_T5S);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     break;
   }
 
@@ -941,6 +949,7 @@ static bool ESP32_DB_init()
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
     {
@@ -995,6 +1004,7 @@ static bool ESP32_DB_init()
     }
 #endif /* BUILD_SKYVIEW_HD */
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   default:
     break;
   }
@@ -1070,6 +1080,7 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
     {
@@ -1171,6 +1182,7 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     }
 #endif /* BUILD_SKYVIEW_HD */
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   default:
     break;
   }
@@ -1193,6 +1205,7 @@ static void ESP32_DB_fini()
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
     if (settings->adb != DB_NONE) {
@@ -1214,6 +1227,7 @@ static void ESP32_DB_fini()
     SD.end();
 #endif /* BUILD_SKYVIEW_HD */
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   default:
     break;
   }
@@ -1232,6 +1246,7 @@ int i2s_write_sample_nb(uint32_t sample)
 #endif
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 /* read 4 bytes of data from wav file */
 int read4bytes(File file, uint32_t *chunkId)
 {
@@ -1250,11 +1265,13 @@ int readProps(File file, wavProperties_t *wavProps)
   int n = file.read((uint8_t *)wavProps, sizeof(wavProperties_t));
   return n;
 }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 static bool play_file(char *filename)
 {
   bool rval = false;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #if !defined(EXCLUDE_AUDIO)
   headerState_t state = HEADER_RIFF;
 
@@ -1327,12 +1344,14 @@ static bool play_file(char *filename)
     i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
   }
 #endif /* EXCLUDE_AUDIO */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
   return rval;
 }
 
 static void ESP32_TTS(char *message)
 {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   char filename[MAX_FILENAME_LEN];
 
   if (strcmp(message, "POST")) {
@@ -1394,6 +1413,7 @@ static void ESP32_TTS(char *message)
       }
     }
   }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 }
 
 #include <AceButton.h>
@@ -1465,11 +1485,25 @@ void onDownButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-  int mode_button_pin = settings->adapter == ADAPTER_TTGO_T5S ?
-                        SOC_BUTTON_MODE_T5S : SOC_BUTTON_MODE_DEF;
+  int mode_button_pin = SOC_BUTTON_MODE_DEF;
 
-  // Button(s) uses external pull up resistor.
-  pinMode(mode_button_pin, INPUT);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+  if (settings->adapter == ADAPTER_TTGO_T5S) {
+    mode_button_pin = SOC_BUTTON_MODE_T5S;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
+    mode_button_pin = settings->rotate == ROTATE_180 ?
+                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+  pinMode(mode_button_pin, settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+                           settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2 ?
+                           INPUT_PULLUP : INPUT);
 
   button_mode.init(mode_button_pin);
 
@@ -1486,6 +1520,7 @@ static void ESP32_Button_setup()
 
 //  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
   if (settings->adapter == ADAPTER_TTGO_T5S) {
 
     // Button(s) uses external pull up resistor.
@@ -1524,13 +1559,43 @@ static void ESP32_Button_setup()
 //      attachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S), onDownButtonEvent, CHANGE);
     }
   }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
+    pinMode(SOC_GPIO_PIN_KEY1, INPUT_PULLUP);
+    button_up.init(SOC_GPIO_PIN_KEY1, HIGH);
+
+    int down_button_pin = settings->rotate == ROTATE_180 ?
+                          SOC_GPIO_PIN_KEY2 : SOC_GPIO_PIN_KEY0;
+    pinMode(down_button_pin, INPUT_PULLUP);
+    button_down.init(down_button_pin, HIGH);
+
+    ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
+    UpButtonConfig->setEventHandler(handleEvent);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    UpButtonConfig->setClickDelay(100);
+    UpButtonConfig->setLongPressDelay(2000);
+
+    ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
+    DownButtonConfig->setEventHandler(handleEvent);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    DownButtonConfig->setClickDelay(100);
+    DownButtonConfig->setLongPressDelay(2000);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 static void ESP32_Button_loop()
 {
   button_mode.check();
 
-  if (settings->adapter == ADAPTER_TTGO_T5S) {
+  if (settings->adapter == ADAPTER_TTGO_T5S           ||
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
     button_up.check();
     button_down.check();
   }
@@ -1538,18 +1603,26 @@ static void ESP32_Button_loop()
 
 static void ESP32_Button_fini()
 {
+  int mode_button_pin = SOC_BUTTON_MODE_DEF;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
   if (settings->adapter == ADAPTER_TTGO_T5S) {
-//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_T5S));
+    mode_button_pin = SOC_BUTTON_MODE_T5S;
 //    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_UP_T5S));
 //    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_DOWN_T5S));
-
-    while (digitalRead(SOC_BUTTON_MODE_T5S) == LOW);
-  } else {
-//    detachInterrupt(digitalPinToInterrupt(SOC_BUTTON_MODE_DEF));
-
-    while (digitalRead(SOC_BUTTON_MODE_DEF) == LOW);
   }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
+    mode_button_pin = settings->rotate == ROTATE_180 ?
+                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+//  detachInterrupt(digitalPinToInterrupt(mode_button_pin));
+  while (digitalRead(mode_button_pin) == LOW);
 }
 
 static void ESP32_WDT_setup()
