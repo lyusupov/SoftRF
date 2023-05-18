@@ -38,7 +38,8 @@ GxEPD2_BW<GxEPD2_270_T91, GxEPD2_270_T91::HEIGHT> epd_nodemcu_T91(GxEPD2_270_T91
 
 static void ESP8266_setup()
 {
-
+  Serial.begin(SERIAL_OUT_BR);
+  Serial.println();
 }
 
 static void ESP8266_post_init()

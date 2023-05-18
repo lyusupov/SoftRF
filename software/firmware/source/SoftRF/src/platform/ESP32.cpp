@@ -1592,7 +1592,7 @@ static void ESP32_fini(int reason)
   }
 #endif /* EXCLUDE_MAG */
 
-  if (hw_info.storage == STORAGE_FLASH ||
+  if (hw_info.storage == STORAGE_CARD ||
       hw_info.storage == STORAGE_FLASH_AND_CARD) {
     uSD.end();
   }

@@ -81,9 +81,6 @@ void setup()
 {
   hw_info.soc = SoC_setup(); // Has to be very first procedure in the execution order
 
-  delay(300);
-  Serial.begin(SERIAL_OUT_BR); Serial.println();
-
   Serial.println();
   Serial.print(F(SKYVIEW_IDENT "-"));
   Serial.print(SoC->name);
