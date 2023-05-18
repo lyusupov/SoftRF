@@ -181,6 +181,7 @@ static size_t ESP32_Min_AppPart_Size = 0;
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 //#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
+#include <Adafruit_INA219.h>
 #include "uCDB.hpp"
 
 Adafruit_FlashTransport_ESP32 HWFlashTransport;
@@ -196,6 +197,7 @@ enum {
 /// List of all possible flash devices used by ESP32 boards
 static SPIFlash_Device_t possible_devices[] = { };
 
+static bool ESP32_has_CPM       = false;
 static bool ESP32_has_spiflash  = false;
 static uint32_t spiflash_id     = 0;
 static bool FATFS_is_mounted    = false;
@@ -219,6 +221,8 @@ static bool ADB_is_open         = false;
 FatVolume fatfs;
 
 uCDB<FatVolume, File32> ucdb(fatfs);
+
+Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 
 #if CONFIG_TINYUSB_MSC_ENABLED
 #if defined(USE_ADAFRUIT_MSC)
@@ -418,6 +422,17 @@ static void ESP32_setup()
   }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+  Wire.begin();
+  Wire.beginTransmission(INA219_ADDRESS_ALT);
+  ESP32_has_CPM = (Wire.endTransmission() == 0);
+  Wire.end();
+
+  if (ESP32_has_CPM) {
+    ina219.begin(&Wire);
+//  ina219.setCalibration_16V_400mA();
+  }
+
   ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                        EXTERNAL_FLASH_DEVICE_COUNT);
   if (ESP32_has_spiflash) {
@@ -530,6 +545,10 @@ static void ESP32_fini()
   }
 
   if (SPIFlash != NULL) SPIFlash->end();
+
+  if (ESP32_has_CPM) {
+//  ina219.powerSave(true);
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   int mode_button_pin = SOC_BUTTON_MODE_DEF;
@@ -672,6 +691,15 @@ static void ESP32_Battery_setup()
 
 static float ESP32_Battery_voltage()
 {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (ESP32_has_CPM) {
+    float shuntvoltage = ina219.getShuntVoltage_mV();
+    float busvoltage   = ina219.getBusVoltage_V();
+
+    return (busvoltage + (shuntvoltage / 1000));
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
   float voltage = ((float) read_voltage()) * 0.001 ;
 
   /* T5 has voltage divider 100k/100k on board */
