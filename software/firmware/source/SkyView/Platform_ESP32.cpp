@@ -20,6 +20,7 @@
 #include "sdkconfig.h"
 
 #include <SPI.h>
+#include <Wire.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -41,10 +42,12 @@
 
 #include <battery.h>
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
 #include <sqlite3.h>
 #include <SD.h>
-#endif /* CONFIG_IDF_TARGET_ESP32 */
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
@@ -183,6 +186,8 @@ static size_t ESP32_Min_AppPart_Size = 0;
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_INA219.h>
 #include "uCDB.hpp"
+
+#define File File32
 
 Adafruit_FlashTransport_ESP32 HWFlashTransport;
 Adafruit_SPIFlash QSPIFlash(&HWFlashTransport);
@@ -559,6 +564,15 @@ static void ESP32_fini()
     mode_button_pin = SOC_BUTTON_MODE_T5S;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (settings &&
+      (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+       settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
+    mode_button_pin = settings->rotate == ROTATE_180 ?
+                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   esp_wifi_stop();
 
@@ -944,39 +958,6 @@ static bool ESP32_DB_init()
 
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-  case ADAPTER_WAVESHARE_PICO_2_7:
-  case ADAPTER_WAVESHARE_PICO_2_7_V2:
-#if !defined(BUILD_SKYVIEW_HD)
-    if (FATFS_is_mounted) {
-      const char *fileName;
-
-      if (settings->adb == DB_OGN) {
-        fileName = "/Aircrafts/ogn.cdb";
-
-        if (ucdb.open(fileName) != CDB_OK) {
-          Serial.print("Invalid CDB: ");
-          Serial.println(fileName);
-        } else {
-          ADB_is_open = true;
-        }
-      }
-      if (settings->adb == DB_FLN) {
-        fileName = "/Aircrafts/fln.cdb";
-
-        if (ucdb.open(fileName) != CDB_OK) {
-          Serial.print("Invalid CDB: ");
-          Serial.println(fileName);
-        } else {
-          ADB_is_open = true;
-        }
-      }
-    }
-
-    rval = ADB_is_open;
-#endif /* BUILD_SKYVIEW_HD */
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
@@ -1033,6 +1014,39 @@ static bool ESP32_DB_init()
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  case ADAPTER_WAVESHARE_PICO_2_7:
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+#if !defined(BUILD_SKYVIEW_HD)
+    if (FATFS_is_mounted) {
+      const char *fileName;
+
+      if (settings->adb == DB_OGN) {
+        fileName = "/Aircrafts/ogn.cdb";
+
+        if (ucdb.open(fileName) != CDB_OK) {
+          Serial.print("Invalid CDB: ");
+          Serial.println(fileName);
+        } else {
+          ADB_is_open = true;
+        }
+      }
+      if (settings->adb == DB_FLN) {
+        fileName = "/Aircrafts/fln.cdb";
+
+        if (ucdb.open(fileName) != CDB_OK) {
+          Serial.print("Invalid CDB: ");
+          Serial.println(fileName);
+        } else {
+          ADB_is_open = true;
+        }
+      }
+    }
+
+    rval = ADB_is_open;
+#endif /* BUILD_SKYVIEW_HD */
+    break;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   default:
     break;
   }
@@ -1046,68 +1060,6 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-  case ADAPTER_WAVESHARE_PICO_2_7:
-  case ADAPTER_WAVESHARE_PICO_2_7_V2:
-#if !defined(BUILD_SKYVIEW_HD)
-    {
-      char key[8];
-      char out[64];
-      uint8_t tokens[3] = { 0 };
-      cdbResult rt;
-      int c, i = 0, token_cnt = 0;
-      int tok_num = 1;
-
-      if (!ADB_is_open) {
-        return rval;
-      }
-
-      snprintf(key, sizeof(key),"%06X", id);
-
-      rt = ucdb.findKey(key, strlen(key));
-
-      switch (rt) {
-        case KEY_FOUND:
-          while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
-            if (c == '|') {
-              if (token_cnt < (sizeof(tokens) - 1)) {
-                token_cnt++;
-                tokens[token_cnt] = i+1;
-              }
-              c = 0;
-            }
-            out[i++] = (char) c;
-          }
-          out[i] = 0;
-
-          switch (settings->idpref)
-          {
-          case ID_TAIL:
-            tok_num = 2;
-            break;
-          case ID_MAM:
-            tok_num = 0;
-            break;
-          case ID_REG:
-          default:
-            tok_num = 1;
-            break;
-          }
-
-          if (strlen(out + tokens[tok_num]) > 0) {
-            snprintf(buf, size, "%s", out + tokens[tok_num]);
-            rval = true;
-          }
-          break;
-
-        case KEY_NOT_FOUND:
-        default:
-          break;
-      }
-    }
-#endif /* BUILD_SKYVIEW_HD */
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
@@ -1211,6 +1163,68 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  case ADAPTER_WAVESHARE_PICO_2_7:
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+#if !defined(BUILD_SKYVIEW_HD)
+    {
+      char key[8];
+      char out[64];
+      uint8_t tokens[3] = { 0 };
+      cdbResult rt;
+      int c, i = 0, token_cnt = 0;
+      int tok_num = 1;
+
+      if (!ADB_is_open) {
+        return rval;
+      }
+
+      snprintf(key, sizeof(key),"%06X", id);
+
+      rt = ucdb.findKey(key, strlen(key));
+
+      switch (rt) {
+        case KEY_FOUND:
+          while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+            if (c == '|') {
+              if (token_cnt < (sizeof(tokens) - 1)) {
+                token_cnt++;
+                tokens[token_cnt] = i+1;
+              }
+              c = 0;
+            }
+            out[i++] = (char) c;
+          }
+          out[i] = 0;
+
+          switch (settings->idpref)
+          {
+          case ID_TAIL:
+            tok_num = 2;
+            break;
+          case ID_MAM:
+            tok_num = 0;
+            break;
+          case ID_REG:
+          default:
+            tok_num = 1;
+            break;
+          }
+
+          if (strlen(out + tokens[tok_num]) > 0) {
+            snprintf(buf, size, "%s", out + tokens[tok_num]);
+            rval = true;
+          }
+          break;
+
+        case KEY_NOT_FOUND:
+        default:
+          break;
+      }
+    }
+#endif /* BUILD_SKYVIEW_HD */
+    break;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   default:
     break;
   }
@@ -1222,17 +1236,6 @@ static void ESP32_DB_fini()
 {
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-  case ADAPTER_WAVESHARE_PICO_2_7:
-  case ADAPTER_WAVESHARE_PICO_2_7_V2:
-#if !defined(BUILD_SKYVIEW_HD)
-    if (ADB_is_open) {
-      ucdb.close();
-      ADB_is_open = false;
-    }
-#endif /* BUILD_SKYVIEW_HD */
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
   case ADAPTER_TTGO_T5S:
 #if !defined(BUILD_SKYVIEW_HD)
@@ -1256,6 +1259,17 @@ static void ESP32_DB_fini()
 #endif /* BUILD_SKYVIEW_HD */
     break;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  case ADAPTER_WAVESHARE_PICO_2_7:
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+#if !defined(BUILD_SKYVIEW_HD)
+    if (ADB_is_open) {
+      ucdb.close();
+      ADB_is_open = false;
+    }
+#endif /* BUILD_SKYVIEW_HD */
+    break;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   default:
     break;
   }
@@ -1274,7 +1288,6 @@ int i2s_write_sample_nb(uint32_t sample)
 #endif
 }
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
 /* read 4 bytes of data from wav file */
 int read4bytes(File file, uint32_t *chunkId)
 {
@@ -1293,17 +1306,23 @@ int readProps(File file, wavProperties_t *wavProps)
   int n = file.read((uint8_t *)wavProps, sizeof(wavProperties_t));
   return n;
 }
-#endif /* CONFIG_IDF_TARGET_ESP32 */
 
 static bool play_file(char *filename)
 {
   bool rval = false;
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
 #if !defined(EXCLUDE_AUDIO)
   headerState_t state = HEADER_RIFF;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
   File wavfile = SD.open(filename);
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  File wavfile = fatfs.open(filename, FILE_READ);
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
 
   if (wavfile) {
     int c = 0;
@@ -1372,20 +1391,29 @@ static bool play_file(char *filename)
     i2s_driver_uninstall((i2s_port_t)i2s_num); //stop & destroy i2s driver
   }
 #endif /* EXCLUDE_AUDIO */
-#endif /* CONFIG_IDF_TARGET_ESP32 */
 
   return rval;
 }
 
 static void ESP32_TTS(char *message)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32)
   char filename[MAX_FILENAME_LEN];
 
   if (strcmp(message, "POST")) {
-    if (settings->voice != VOICE_OFF && settings->adapter == ADAPTER_TTGO_T5S) {
+    if ( settings->voice   != VOICE_OFF                  &&
+        (settings->adapter == ADAPTER_TTGO_T5S           ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
       if (SD.cardType() == CARD_NONE)
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+      if (!FATFS_is_mounted)
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
         return;
 
       while (!SoC->EPD_is_ready()) {yield();}
@@ -1424,13 +1452,25 @@ static void ESP32_TTS(char *message)
       }
     }
   } else {
-    if (settings->voice != VOICE_OFF && settings->adapter == ADAPTER_TTGO_T5S) {
+    if ( settings->voice   != VOICE_OFF                  &&
+        (settings->adapter == ADAPTER_TTGO_T5S           ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
 
       strcpy(filename, WAV_FILE_PREFIX);
       strcat(filename, "POST");
       strcat(filename, WAV_FILE_SUFFIX);
 
-      if (SD.cardType() == CARD_NONE || !play_file(filename)) {
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
+      if (SD.cardType() == CARD_NONE ||
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+      if (!FATFS_is_mounted          ||
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
+          !play_file(filename)) {
         /* keep boot-time SkyView logo on the screen for 7 seconds */
         delay(7000);
       }
@@ -1441,7 +1481,6 @@ static void ESP32_TTS(char *message)
       }
     }
   }
-#endif /* CONFIG_IDF_TARGET_ESP32 */
 }
 
 #include <AceButton.h>
