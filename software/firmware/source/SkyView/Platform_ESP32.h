@@ -132,6 +132,8 @@
 #define SOC_GPIO_PIN_NEOPIXEL 48
 #define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
 
+#define SOC_GPIO_PIN_PDM_OUT  13
+
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
 #define SOC_GPIO_PIN_GNSS_TX  7
@@ -148,6 +150,7 @@
 #define SOC_EPD_PIN_DC_WS     18 /* D2 */
 #define SOC_EPD_PIN_RST_WS    19 /* D1 */
 #define SOC_EPD_PIN_BUSY_WS   2  /* D0 */
+
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */

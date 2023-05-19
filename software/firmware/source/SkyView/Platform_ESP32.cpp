@@ -161,7 +161,15 @@ wavProperties_t wavProps;
 //i2s configuration
 int i2s_num = 0; // i2s port number
 i2s_config_t i2s_config = {
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
      .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+     .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_PDM),
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
      .sample_rate          = 22050,
      .bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT,
      .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
@@ -171,12 +179,26 @@ i2s_config_t i2s_config = {
      .dma_buf_len          = 128   //Interrupt level 1
     };
 
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
 i2s_pin_config_t pin_config = {
     .bck_io_num   = SOC_GPIO_PIN_BCLK,
     .ws_io_num    = SOC_GPIO_PIN_LRCLK,
     .data_out_num = SOC_GPIO_PIN_DOUT,
     .data_in_num  = -1  // Not used
 };
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+i2s_pin_config_t pin_config = {
+    .bck_io_num   = I2S_PIN_NO_CHANGE,
+    .ws_io_num    = I2S_PIN_NO_CHANGE,
+    .data_out_num = SOC_GPIO_PIN_PDM_OUT,
+    .data_in_num  = I2S_PIN_NO_CHANGE
+};
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
+
 
 RTC_DATA_ATTR int bootCount          = 0;
 static size_t ESP32_Min_AppPart_Size = 0;
@@ -1278,10 +1300,11 @@ static void ESP32_DB_fini()
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
 {
-#if ESP_IDF_VERSION_MAJOR>=4
-    size_t i2s_bytes_written;
-    i2s_write((i2s_port_t)i2s_num, (const char*)&sample, sizeof(uint32_t), &i2s_bytes_written, 100);
-    return i2s_bytes_written;
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
+  size_t i2s_bytes_written;
+  i2s_write((i2s_port_t)i2s_num, (const char*)&sample, sizeof(uint32_t),
+             &i2s_bytes_written, 100);
+  return i2s_bytes_written;
 #else
   return i2s_write_bytes((i2s_port_t)i2s_num, (const char *)&sample,
                           sizeof(uint32_t), 100);
