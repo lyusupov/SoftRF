@@ -47,6 +47,11 @@ extern WebServer server;
 #define USBSerial             SerialUSB
 #endif /* ARDUINO_ARCH_MBED */
 
+#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
+
+#define MAX_FILENAME_LEN      64
+#define WAV_FILE_PREFIX       "/Audio/"
+
 enum RP2040_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
@@ -83,8 +88,6 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_SDA      (6u)
 #define SOC_GPIO_PIN_SCL      (7u)
 
-#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
-
 /* Waveshare Pico keys mapping */
 #define SOC_GPIO_PIN_KEY0     (15u)
 #define SOC_GPIO_PIN_KEY1     (17u)
@@ -100,6 +103,9 @@ enum RP2040_board_id {
 
 #define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
 #define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
+
+#define SOC_GPIO_PIN_PWM_OUT  (3u)
+#define EXCLUDE_AUDIO               // pending
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON

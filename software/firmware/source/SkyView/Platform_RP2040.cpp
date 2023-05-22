@@ -117,6 +117,12 @@ static union {
 #include "uCDB.hpp"
 #include "JSONHelper.h"
 
+#if !defined(EXCLUDE_AUDIO)
+#include "AudioFileSourceSdFat.h"
+#include "AudioGeneratorWAV.h"
+#include "AudioOutputPWM.h"
+#endif /* EXCLUDE_AUDIO */
+
 Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -155,6 +161,12 @@ FatVolume fatfs;
 
 uCDB<FatVolume, File32> ucdb(fatfs);
 StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+
+#if !defined(EXCLUDE_AUDIO)
+AudioGeneratorWAV    *WAV_In;
+AudioFileSourceSdFat *Audio_File;
+AudioOutputPWM       *PWM_Out;
+#endif /* EXCLUDE_AUDIO */
 
 #if !defined(ARDUINO_ARCH_MBED)
 // Callback invoked when received READ10 command.
@@ -265,6 +277,14 @@ static void RP2040_setup()
   Wire1.beginTransmission(INA219_ADDRESS_ALT);
   RP2040_has_CPM = (Wire1.endTransmission() == 0);
   Wire1.end();
+
+#if !defined(EXCLUDE_AUDIO)
+  WAV_In     = new AudioGeneratorWAV();
+  PWM_Out    = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
+  Audio_File = new AudioFileSourceSdFat(fatfs);
+
+  PWM_Out->SetChannels(1);
+#endif /* EXCLUDE_AUDIO */
 
   if (RP2040_has_CPM) {
     ina219.begin(&Wire1);
@@ -794,12 +814,95 @@ static void RP2040_DB_fini()
   }
 }
 
+static bool play_file(char *filename)
+{
+  bool rval = false;
+
+#if !defined(EXCLUDE_AUDIO)
+  if (Audio_File->open(filename)) {
+    WAV_In->begin(Audio_File, PWM_Out);
+
+    while (WAV_In->isRunning()) {
+      if (!WAV_In->loop()) WAV_In->stop();
+    }
+
+    Audio_File->close();
+    rval = true;
+  }
+#endif /* EXCLUDE_AUDIO */
+
+  return rval;
+}
+
 static void RP2040_TTS(char *message)
 {
-  if (!strcmp(message, "POST")) {
-    if (hw_info.display == DISPLAY_EPD_2_7) {
-      /* keep boot-time SkyView logo on the screen for 7 seconds */
-      delay(7000);
+  char filename[MAX_FILENAME_LEN];
+
+  if (strcmp(message, "POST")) {
+    if ( settings->voice   != VOICE_OFF                  &&
+        (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
+
+      if (!FATFS_is_mounted)
+        return;
+
+      while (!SoC->EPD_is_ready()) {yield();}
+      EPD_Message("VOICE", "ALERT");
+      SoC->EPD_update(EPD_UPDATE_FAST);
+      while (!SoC->EPD_is_ready()) {yield();}
+
+#if 0 /* TBD */
+      bool wdt_status = loopTaskWDTEnabled;
+
+      if (wdt_status) {
+        disableLoopWDT();
+      }
+#endif
+
+      char *word = strtok (message, " ");
+
+      while (word != NULL)
+      {
+          strcpy(filename, WAV_FILE_PREFIX);
+          strcat(filename,  settings->voice == VOICE_1 ? VOICE1_SUBDIR :
+                           (settings->voice == VOICE_2 ? VOICE2_SUBDIR :
+                           (settings->voice == VOICE_3 ? VOICE3_SUBDIR :
+                            "" )));
+          strcat(filename, word);
+          strcat(filename, WAV_FILE_SUFFIX);
+          play_file(filename);
+          word = strtok (NULL, " ");
+
+          yield();
+
+          /* Poll input source(s) */
+          Input_loop();
+      }
+
+#if 0 /* TBD */
+      if (wdt_status) {
+        enableLoopWDT();
+      }
+#endif
+    }
+  } else {
+    if ( settings->voice   != VOICE_OFF                  &&
+        (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
+
+      strcpy(filename, WAV_FILE_PREFIX);
+      strcat(filename, "POST");
+      strcat(filename, WAV_FILE_SUFFIX);
+
+      if (!FATFS_is_mounted || !play_file(filename)) {
+        /* keep boot-time SkyView logo on the screen for 7 seconds */
+        delay(7000);
+      }
+    } else {
+      if (hw_info.display == DISPLAY_EPD_2_7) {
+        /* keep boot-time SkyView logo on the screen for 7 seconds */
+        delay(7000);
+      }
     }
   }
 }
