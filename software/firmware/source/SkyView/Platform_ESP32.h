@@ -34,6 +34,7 @@
 #define SerialInput           Serial1
 
 /* Peripherals */
+#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
 
 /* TTGO T5 and T5S SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_T5S 23
@@ -120,8 +121,6 @@
 #define SOC_GPIO_PIN_SDA      12
 #define SOC_GPIO_PIN_SCL      14
 
-#define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
-
 /* Waveshare Pico & Banana PicoW keys mapping */
 #define SOC_GPIO_PIN_KEY0     42
 #define SOC_GPIO_PIN_KEY1     2
@@ -133,6 +132,8 @@
 #define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
 
 #define SOC_GPIO_PIN_PDM_OUT  13
+
+#define EXCLUDE_AUDIO            // pending
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
@@ -150,6 +151,8 @@
 #define SOC_EPD_PIN_DC_WS     18 /* D2 */
 #define SOC_EPD_PIN_RST_WS    19 /* D1 */
 #define SOC_EPD_PIN_BUSY_WS   2  /* D0 */
+
+#define EXCLUDE_AUDIO
 
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -199,10 +202,6 @@ extern bool loopTaskWDTEnabled;
 extern WebServer server;
 
 //#define BUILD_SKYVIEW_HD
-
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
-#define EXCLUDE_AUDIO
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #endif /* PLATFORM_ESP32_H */
 

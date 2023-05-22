@@ -155,21 +155,21 @@ static uint8_t sdcard_files_to_open = 0;
 SPIClass uSD_SPI(HSPI);
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
+
 /* variables hold file, state of process wav file and wav file properties */
 wavProperties_t wavProps;
 
 //i2s configuration
 int i2s_num = 0; // i2s port number
 i2s_config_t i2s_config = {
-#if defined(CONFIG_IDF_TARGET_ESP32)   || \
-    defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+#if 1
      .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-     .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_PDM),
 #else
-#error "This ESP32 family build variant is not supported!"
-#endif /* CONFIG_IDF_TARGET_ESP32XX */
+     .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_PDM),
+#endif
      .sample_rate          = 22050,
      .bits_per_sample      = I2S_BITS_PER_SAMPLE_16BIT,
      .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
@@ -179,24 +179,21 @@ i2s_config_t i2s_config = {
      .dma_buf_len          = 128   //Interrupt level 1
     };
 
-#if defined(CONFIG_IDF_TARGET_ESP32)   || \
-    defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+#if 1
 i2s_pin_config_t pin_config = {
     .bck_io_num   = SOC_GPIO_PIN_BCLK,
     .ws_io_num    = SOC_GPIO_PIN_LRCLK,
     .data_out_num = SOC_GPIO_PIN_DOUT,
     .data_in_num  = -1  // Not used
 };
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#else
 i2s_pin_config_t pin_config = {
     .bck_io_num   = I2S_PIN_NO_CHANGE,
     .ws_io_num    = I2S_PIN_NO_CHANGE,
     .data_out_num = SOC_GPIO_PIN_PDM_OUT,
     .data_in_num  = I2S_PIN_NO_CHANGE
 };
-#else
-#error "This ESP32 family build variant is not supported!"
+#endif
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
 
 
@@ -209,7 +206,11 @@ static size_t ESP32_Min_AppPart_Size = 0;
 #include <Adafruit_INA219.h>
 #include "uCDB.hpp"
 
-#define File File32
+#if !defined(EXCLUDE_AUDIO)
+#include "AudioFileSourceSdFat.h"
+#include "AudioGeneratorWAV.h"
+#include "AudioOutputI2S.h"
+#endif /* EXCLUDE_AUDIO */
 
 Adafruit_FlashTransport_ESP32 HWFlashTransport;
 Adafruit_SPIFlash QSPIFlash(&HWFlashTransport);
@@ -250,6 +251,12 @@ FatVolume fatfs;
 uCDB<FatVolume, File32> ucdb(fatfs);
 
 Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
+
+#if !defined(EXCLUDE_AUDIO)
+AudioGeneratorWAV    *WAV_In;
+AudioFileSourceSdFat *Audio_File;
+AudioOutputI2S       *I2S_Out;
+#endif /* EXCLUDE_AUDIO */
 
 #if CONFIG_TINYUSB_MSC_ENABLED
 #if defined(USE_ADAFRUIT_MSC)
@@ -510,6 +517,19 @@ static void ESP32_setup()
       hw_info.storage  = FATFS_is_mounted ? STORAGE_FLASH : STORAGE_NONE;
     }
   }
+
+#if !defined(EXCLUDE_AUDIO)
+  WAV_In     = new AudioGeneratorWAV();
+  I2S_Out    = new AudioOutputI2S(0, AudioOutputI2S::INTERNAL_PDM);
+  Audio_File = new AudioFileSourceSdFat(fatfs);
+
+  I2S_Out->SetPinout(I2S_PIN_NO_CHANGE,
+                     I2S_PIN_NO_CHANGE,
+                     SOC_GPIO_PIN_PDM_OUT,
+                     I2S_PIN_NO_CHANGE);
+  I2S_Out->SetMclk(false);
+#endif /* EXCLUDE_AUDIO */
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
@@ -1297,6 +1317,9 @@ static void ESP32_DB_fini()
   }
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3)
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
 {
@@ -1337,15 +1360,11 @@ static bool play_file(char *filename)
 #if !defined(EXCLUDE_AUDIO)
   headerState_t state = HEADER_RIFF;
 
-#if defined(CONFIG_IDF_TARGET_ESP32)   || \
-    defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+#if 1
   File wavfile = SD.open(filename);
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  File wavfile = fatfs.open(filename, FILE_READ);
 #else
-#error "This ESP32 family build variant is not supported!"
-#endif /* CONFIG_IDF_TARGET_ESP32XX */
+  File wavfile = fatfs.open(filename, FILE_READ);
+#endif
 
   if (wavfile) {
     int c = 0;
@@ -1417,6 +1436,30 @@ static bool play_file(char *filename)
 
   return rval;
 }
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+static bool play_file(char *filename)
+{
+  bool rval = false;
+
+#if !defined(EXCLUDE_AUDIO)
+  if (Audio_File->open(filename)) {
+    WAV_In->begin(Audio_File, I2S_Out);
+
+    while (WAV_In->isRunning()) {
+      if (!WAV_In->loop()) WAV_In->stop();
+    }
+
+    Audio_File->close();
+    rval = true;
+  }
+#endif /* EXCLUDE_AUDIO */
+
+  return rval;
+}
+#else
+#error "This ESP32 family build variant is not supported!"
+#endif /* CONFIG_IDF_TARGET_ESP32XX */
+
 
 static void ESP32_TTS(char *message)
 {
