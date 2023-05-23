@@ -283,6 +283,7 @@ static void RP2040_setup()
   PWM_Out    = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
   Audio_File = new AudioFileSourceSdFat(fatfs);
 
+  PWM_Out->SetOutputModeMono(true);
   PWM_Out->SetChannels(1);
 #endif /* EXCLUDE_AUDIO */
 
