@@ -42,8 +42,10 @@
 
 ## ESP32
 
-1. Follow [these official instructions](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
-  to install Arduino IDE and [latest **stable** Arduino ESP32 Core](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5) (1.0.5)
+1. Follow [these official instructions](https://github.com/espressif/arduino-esp32/blob/master/docs/source/installing.rst)
+  to install Arduino IDE and a **certain version** of Arduino ESP32 Core<!--[**stable** Arduino ESP32 Core](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5) (1.0.5)--><br>
+    For **ESP32**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**1.0.5**](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5)<br>
+    For **ESP32-S3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
 int ledPin = 2; // use pin 14 for TTGO T-Beam rev.05 or higher   
@@ -75,6 +77,11 @@ void loop()
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
+
+9. For **ESP32**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_<br>
+    For **ESP32-S3**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-S3_ _Dev_ _Module_<br>
 10. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
 11. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
 12. Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_
@@ -291,7 +298,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 ## RP2040
 
 1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
-  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/3.1.0) (3.1.0)
+  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2040 boards](https://github.com/earlephilhower/arduino-pico/releases/tag/3.2.1) (3.2.1)
 2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:

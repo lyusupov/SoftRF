@@ -847,23 +847,23 @@ static void RP2040_TTS(char *message)
       if (!FATFS_is_mounted)
         return;
 
+      if (wdt_is_active) {
+        Watchdog.reset();
+      }
+
       while (!SoC->EPD_is_ready()) {yield();}
       EPD_Message("VOICE", "ALERT");
       SoC->EPD_update(EPD_UPDATE_FAST);
       while (!SoC->EPD_is_ready()) {yield();}
 
-#if 0 /* TBD */
-      bool wdt_status = loopTaskWDTEnabled;
-
-      if (wdt_status) {
-        disableLoopWDT();
-      }
-#endif
-
       char *word = strtok (message, " ");
 
       while (word != NULL)
       {
+          if (wdt_is_active) {
+            Watchdog.reset();
+          }
+
           strcpy(filename, WAV_FILE_PREFIX);
           strcat(filename,  settings->voice == VOICE_1 ? VOICE1_SUBDIR :
                            (settings->voice == VOICE_2 ? VOICE2_SUBDIR :
@@ -879,12 +879,6 @@ static void RP2040_TTS(char *message)
           /* Poll input source(s) */
           Input_loop();
       }
-
-#if 0 /* TBD */
-      if (wdt_status) {
-        enableLoopWDT();
-      }
-#endif
     }
   } else {
     if ( settings->voice   != VOICE_OFF                  &&
