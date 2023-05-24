@@ -583,10 +583,12 @@ static ep_model_id RP2040_EPD_ident()
  *  0x2D:
  *  FF FF FF FF FF FF FF FF FF FF FF - W3
  *  00 00 00 FF 00 00 40 01 00 00 00
+ *  00 00 00 00 00 00 00 00 00 00 00 - T91
  *
  *  0x2E:
  *  FF FF FF FF FF FF FF FF FF FF    - W3
  *  FF FF FF FF FF FF FF FF FF FF
+ *  00 00 00 00 00 00 00 00 00 00    - T91
  */
 #endif
 
@@ -603,7 +605,7 @@ static ep_model_id RP2040_EPD_ident()
   if (is_ff) {
     rval = EP_GDEW027W3;
   } else {
-    rval = EP_GDEY027T91; /* TBD */
+    rval = EP_GDEY027T91;
   }
 
   return rval;
