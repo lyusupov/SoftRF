@@ -733,13 +733,27 @@ static int RP2040_WiFi_clients_count()
 static bool RP2040_DB_init()
 {
   if (FATFS_is_mounted) {
-    const char fileName[] = "/Aircrafts/ogn.cdb";
+    const char *fileName;
 
-    if (ucdb.open(fileName) != CDB_OK) {
-      Serial.print("Invalid CDB: ");
-      Serial.println(fileName);
-    } else {
-      ADB_is_open = true;
+    if (settings->adb == DB_OGN) {
+      fileName = "/Aircrafts/ogn.cdb";
+
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
+    }
+    if (settings->adb == DB_FLN) {
+      fileName = "/Aircrafts/fln.cdb";
+
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
     }
   }
 

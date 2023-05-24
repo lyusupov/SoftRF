@@ -76,8 +76,6 @@ void loop()
 
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
-9. Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_
-
 9. For **ESP32**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_<br>
     For **ESP32-S3**:<br>

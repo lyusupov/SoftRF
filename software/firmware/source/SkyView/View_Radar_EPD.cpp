@@ -132,7 +132,11 @@ static void EPD_Draw_NavBoxes()
     display->setFont(&FreeMonoBold18pt7b);
 
     display->setCursor(navbox4.x + 15, navbox4.y + 32);
-    display->print((float) navbox4.value / 10);
+    if (navbox4.value) {
+      display->print((float) navbox4.value / 10);
+    } else {
+      display->print("N.A");
+    }
   }
 }
 
@@ -462,7 +466,8 @@ void EPD_radar_setup()
   navbox4.y = navbox3.y;
   navbox4.width  = navbox3.width;
   navbox4.height = navbox3.height;
-  navbox4.value      = (int) (Battery_voltage() * 10.0);
+  navbox4.value      = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
+                       (int) (Battery_voltage() * 10.0) : 0;
   navbox4.timestamp  = millis();
 }
 
@@ -505,7 +510,8 @@ void EPD_radar_loop()
     }
 
     navbox3.value = EPD_zoom;
-    navbox4.value = (int) (Battery_voltage() * 10.0);
+    navbox4.value = Battery_voltage() > BATTERY_THRESHOLD_INVALID ?
+                    (int) (Battery_voltage() * 10.0) : 0;
 
     EPD_Draw_NavBoxes();
 
