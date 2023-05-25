@@ -212,7 +212,7 @@ static void NMEA_Parse_Character(char c)
         }
         if (T_AcftType.isUpdated())
         {
-          fo.AcftType = atoi(T_AcftType.value());
+          fo.AcftType = strtol(T_AcftType.value(), NULL, 16);
         }
 
         fo.timestamp = now();

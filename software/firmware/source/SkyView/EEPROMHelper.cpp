@@ -104,11 +104,14 @@ void EEPROM_defaults()
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
   eeprom_block.field.settings.adb             = DB_NONE;
   eeprom_block.field.settings.idpref          = ID_REG;
-#if defined(EXCLUDE_AUDIO)
-  eeprom_block.field.settings.voice           = VOICE_OFF;
-#else
-  eeprom_block.field.settings.voice           = VOICE_1;
+
+#if !defined(EXCLUDE_AUDIO)
+  if (SoC->id != SOC_RP2040)
+    eeprom_block.field.settings.voice         = VOICE_1;
+  else
 #endif /* EXCLUDE_AUDIO */
+    eeprom_block.field.settings.voice         = VOICE_OFF;
+
   eeprom_block.field.settings.aghost          = ANTI_GHOSTING_OFF;
 
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;

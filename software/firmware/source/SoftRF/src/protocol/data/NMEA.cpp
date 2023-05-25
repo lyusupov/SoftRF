@@ -485,7 +485,7 @@ void NMEA_Export()
                             DATA_SOURCE_ADSB : DATA_SOURCE_FLARM;
 
               snprintf_P(NMEABuffer, sizeof(NMEABuffer),
-                      PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%d" PFLAA_EXT1_FMT "*"),
+                      PSTR("$PFLAA,%d,%d,%d,%d,%d,%06X!%s,%d,,%d,%s,%X" PFLAA_EXT1_FMT "*"),
                       alarm_level,
                       (int) (distance * cos(radians(bearing))), (int) (distance * sin(radians(bearing))),
                       alt_diff, addr_type, Container[i].addr, NMEA_Callsign,
