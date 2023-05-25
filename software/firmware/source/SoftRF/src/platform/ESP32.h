@@ -375,6 +375,10 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_C3_GNSS_TX         7
 #define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN // 0
 
+// USB CDC/JTAG
+#define SOC_GPIO_PIN_C3_USB_DP          19 /* D1 */
+#define SOC_GPIO_PIN_C3_USB_DN          18 /* D2 */
+
 // SPI
 #define SOC_GPIO_PIN_C3_MOSI            5  /* D7 */
 #define SOC_GPIO_PIN_C3_MISO            4  /* D6 */

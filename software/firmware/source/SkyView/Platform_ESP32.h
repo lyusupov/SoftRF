@@ -131,6 +131,11 @@
 #define SOC_GPIO_PIN_NEOPIXEL 48
 #define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
 
+// USB
+#define SOC_GPIO_PIN_USB_DP   20
+#define SOC_GPIO_PIN_USB_DN   19
+
+// Audio
 #define SOC_GPIO_PIN_PDM_OUT  13
 
 #define EXCLUDE_AUDIO            // pending
@@ -151,6 +156,10 @@
 #define SOC_EPD_PIN_DC_WS     18 /* D2 */
 #define SOC_EPD_PIN_RST_WS    19 /* D1 */
 #define SOC_EPD_PIN_BUSY_WS   2  /* D0 */
+
+// USB CDC/JTAG
+#define SOC_GPIO_PIN_USB_DP   19 /* D1 */
+#define SOC_GPIO_PIN_USB_DN   18 /* D2 */
 
 #define EXCLUDE_AUDIO
 

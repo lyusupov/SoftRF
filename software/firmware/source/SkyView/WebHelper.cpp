@@ -369,22 +369,7 @@ void handleSettings() {
 <option %s value='%d'>off</option>\
 <!-- <option %s value='%d'>auto</option> -->\
 <option %s value='%d'>FlarmNet</option>\
-<option %s value='%d'>GliderNet</option>\
-<option %s value='%d'>ICAO</option>\
-</select>\
-</td>\
-</tr>\
-<tr>\
-<th align=left>ID preference</th>\
-<td align=right>\
-<select name='idpref'>\
-<option %s value='%d'>registration</option>\
-<option %s value='%d'>tail/CN</option>\
-<option %s value='%d'>make & model</option>\
-<option %s value='%d'>class</option>\
-</select>\
-</td>\
-</tr>"),
+<option %s value='%d'>GliderNet</option>"),
   settings->server, settings->key,
   (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
   (settings->units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
@@ -402,8 +387,43 @@ void handleSettings() {
   (settings->adb == DB_NONE      ? "selected" : ""), DB_NONE,
   (settings->adb == DB_AUTO      ? "selected" : ""), DB_AUTO,
   (settings->adb == DB_FLN       ? "selected" : ""), DB_FLN,
-  (settings->adb == DB_OGN       ? "selected" : ""), DB_OGN,
-  (settings->adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
+  (settings->adb == DB_OGN       ? "selected" : ""), DB_OGN
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  /* SoC specific part 6 */
+  if (SoC->id == SOC_ESP32) {
+    snprintf_P ( offset, size,
+      PSTR("<option %s value='%d'>ICAO</option>"),
+      (settings->adb == DB_ICAO  ? "selected" : ""), DB_ICAO);
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+    /* Common part 5 */
+  snprintf_P ( offset, size,
+    PSTR("\
+</select>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>ID preference</th>\
+<td align=right>\
+<select name='idpref'>\
+<option %s value='%d'>registration</option>\
+<option %s value='%d'>tail/CN</option>\
+<option %s value='%d'>make & model</option>\
+<option %s value='%d'>class</option>\
+</select>\
+</td>\
+</tr>"),
+
+
   (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
   (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
   (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM,
@@ -415,9 +435,9 @@ void handleSettings() {
   size -= len;
 
 #if !defined(EXCLUDE_AUDIO)
-  /* SoC specific part 6 */
+  /* SoC specific part 7 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+      SoC->id == SOC_ESP32C3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -440,10 +460,29 @@ void handleSettings() {
     len = strlen(offset);
     offset += len;
     size -= len;
+  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_RP2040) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Voice</th>\
+<td align=right>\
+<select name='voice'>\
+<option %s value='%d'>off</option>\
+<option %s value='%d'>voice 1</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->voice == VOICE_OFF  ? "selected" : ""), VOICE_OFF,
+    (settings->voice == VOICE_1    ? "selected" : ""), VOICE_1
+    );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
   }
 #endif /* EXCLUDE_AUDIO */
 
-  /* Common part 5 */
+  /* Common part 6 */
   snprintf_P ( offset, size,
     PSTR("\
 <tr>\
