@@ -18,7 +18,7 @@ Compatible storage libraries:
 - official [Arduino SD](https://github.com/arduino-libraries/SD)
 - [Greiman SdFat](https://github.com/greiman/SdFat)
 - [SdFat - Adafruit fork](https://github.com/adafruit/SdFat)
-- [Adafruit SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash)
+- [Adafruit SPIFlash](https://github.com/adafruit/Adafruit_SPIFlash), real usage :airplane:[SoftRF](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/source/SoftRF/src/platform/nRF52.cpp).
 
 Simple tracing for CDB format/integrity and run time file operation errors.
 ```C++
