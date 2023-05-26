@@ -22,6 +22,7 @@ FILENAME=fln
 
 GAWK=gawk/$FILENAME.gawk
 SQL=sql/$FILENAME.sql
+PTN=python/$FILENAME.py
 
 CSV=$FILENAME.csv
 DB=$FILENAME.db
@@ -31,6 +32,9 @@ RAW=data.fln
 
 rm -f $CSV $DB
 
-$FLNJSON | grep registration | jq -r '[._id,.owner,.airport,.type,.registration,.tail,.radio | tostring] | @csv' | gawk -f $GAWK > $CSV
+$FLNJSON | grep registration | jq -r '[._id,.owner,.airport,.type,.registration,.tail,.radio | tostring] | @csv' | gawk -v id_type=int -f $GAWK > $CSV
 sqlite3 -init $SQL $DB .exit
+rm -f $CSV $RAW
+$FLNJSON | grep registration | jq -r '[._id,.type,.registration,.tail | tostring] | @csv' | gawk -v id_type=hex -f $GAWK > $CSV
+python2 $PTN
 rm -f $CSV $RAW

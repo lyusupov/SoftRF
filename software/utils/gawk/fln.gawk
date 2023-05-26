@@ -49,9 +49,9 @@ BEGIN {FS=","; OFS=","}
     }
 
     if (i == 1) {
-
-      ret_str = strtonum("0x" ret_str);
-
+      if (id_type == "int") {
+        ret_str = strtonum("0x" ret_str);
+      }
     }
 
     $i = ret_str;
