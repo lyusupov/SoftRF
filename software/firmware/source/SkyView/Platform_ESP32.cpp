@@ -622,7 +622,7 @@ static void ESP32_fini()
   esp_bt_controller_disable();
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
-  SPI.end();
+//  SPI.end(); // done in EPD_fini
 
   /*
    * manually apply this fix onto Arduino Core for ESP32:
@@ -896,6 +896,7 @@ static void ESP32_EPD_setup()
   case ADAPTER_WAVESHARE_ESP32:
   case ADAPTER_WAVESHARE_PICO_2_7:
     display = &epd_waveshare_W3;
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
@@ -903,6 +904,7 @@ static void ESP32_EPD_setup()
     break;
   case ADAPTER_WAVESHARE_PICO_2_7_V2:
     display = &epd_waveshare_T91;
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
@@ -929,6 +931,8 @@ static void ESP32_EPD_setup()
       display = &epd_ttgo_t5s_W3;
       break;
     }
+
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
 
     SPI.begin(SOC_GPIO_PIN_SCK_T5S,
               SOC_GPIO_PIN_MISO_T5S,

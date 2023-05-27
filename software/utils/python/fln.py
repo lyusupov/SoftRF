@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 
 '''
-    Creates aircrafts Constant DataBase from ogn.csv data file.
+    Creates aircrafts Constant DataBase from fln.csv data file.
     Based on - https://www.unixuser.org/~euske/doc/cdbinternals/pycdb.py.html
-    Aircrafts data - http://wiki.glidernet.org/ddb
+    Aircrafts data - http://www.flarmnet.org/static/files/wfn/data.fln
 '''
 
 # calc hash value with a given key

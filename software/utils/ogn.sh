@@ -33,6 +33,6 @@ rm -f $CSV $DB
 wget -q -O - $URL | tail -n +2 | gawk -f $GAWK > $CSV
 sqlite3 -init $SQL $DB .exit
 rm -f $CSV
-wget -q -O - http://ddb.glidernet.org/download > $CSV
+wget -q -O - $URL > $CSV
 python2 $PTN
 rm -f $CSV

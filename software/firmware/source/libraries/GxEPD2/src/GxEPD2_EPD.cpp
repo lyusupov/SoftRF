@@ -75,6 +75,14 @@ void GxEPD2_EPD::init(uint32_t serial_diag_bitrate, bool initial, bool pulldown_
   _pSPIx->begin();
 }
 
+void GxEPD2_EPD::end()
+{
+  _pSPIx->end();
+  if (_cs >= 0) pinMode(_cs, INPUT);
+  if (_dc >= 0) pinMode(_dc, INPUT);
+  if (_rst >= 0) pinMode(_rst, INPUT);
+}
+
 void GxEPD2_EPD::setBusyCallback(void (*busyCallback)(const void*), const void* busy_callback_parameter)
 {
   _busy_callback = busyCallback;

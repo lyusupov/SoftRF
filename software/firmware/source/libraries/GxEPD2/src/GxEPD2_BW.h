@@ -139,6 +139,12 @@ class GxEPD2_BW : public Adafruit_GFX
       setFullWindow();
     }
 
+    // release SPI and control pins
+    void end()
+    {
+      epd2.end();
+    }
+
     void fillScreen(uint16_t color) // 0x0 black, >0x0 white, to buffer
     {
       uint8_t data = (color == GxEPD_BLACK) ? 0x00 : 0xFF;
