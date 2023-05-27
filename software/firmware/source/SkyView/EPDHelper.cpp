@@ -372,7 +372,7 @@ void EPD_fini(const char *msg, bool screen_saver)
     display->hibernate();
   }
 
-  if (display) display->epd2.end();
+  if (display) display->end();
 }
 
 void EPD_Mode()

@@ -52,6 +52,8 @@ extern WebServer server;
 #define MAX_FILENAME_LEN      64
 #define WAV_FILE_PREFIX       "/Audio/"
 
+#define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
+
 enum RP2040_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
