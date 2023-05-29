@@ -24,15 +24,19 @@ GAWK=gawk/$FILENAME.gawk
 SQL=sql/$FILENAME.sql
 PTN=python/$FILENAME.py
 
+RAW=$FILENAME.raw
 CSV=$FILENAME.csv
 DB=$FILENAME.db
 
 URL="http://ddb.glidernet.org/download/?t=1"
 
 rm -f $CSV $DB
-wget -q -O - $URL | tail -n +2 | gawk -f $GAWK > $CSV
+wget -q -O - $URL | tail -n +2 > $RAW
+
+cat $RAW | gawk -v id_type=int -f $GAWK > $CSV
 sqlite3 -init $SQL $DB .exit
 rm -f $CSV
-wget -q -O - $URL > $CSV
+# wget -q -O - $URL > $CSV
+cat $RAW | gawk -v id_type=hex -f $GAWK > $CSV
 python2 $PTN
-rm -f $CSV
+rm -f $CSV $RAW

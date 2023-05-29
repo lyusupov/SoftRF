@@ -22,49 +22,52 @@ function trim(s) { return rtrim(ltrim(s)); }
 
 BEGIN {FS=","; OFS=","}
 {
-  for (i = 1; i <= 8; i++)
-  { 
-    str = trim($i);
+  if ($3 != "''" || $4 != "''" || $5 != "''") {
 
-    if (index(str, "'") == 1)
+    for (i = 1; i <= 8; i++)
     {
-      str = substr(str, 2);
-    }
+      str = trim($i);
 
-    rev_str = "";
-
-    for (j = length(str); j > 0; j--) rev_str=(rev_str substr(str, j, 1));
-
-    if (index(rev_str, "'") == 1)
-    {
-      rev_str = substr(rev_str, 2);
-    }
-
-    ret_str = "";
-
-    for (j = length(rev_str); j > 0; j--) ret_str=(ret_str substr(rev_str, j, 1));
-
-    if (i == 1) {
-      if (ret_str == "I") {
-        ret_str = 1;
-      } else if (ret_str == "F") {
-        ret_str = 2;
-      } else {
-        ret_str = 3;
+      if (index(str, "'") == 1)
+      {
+        str = substr(str, 2);
       }
-    } else if (i == 2) {
 
-      ret_str = strtonum("0x" ret_str);
+      rev_str = "";
 
-    } else if (i == 6 || i == 7) {
-      if (ret_str == "Y") {
-        ret_str = 1;
-      } else {
-        ret_str = 0;
+      for (j = length(str); j > 0; j--) rev_str=(rev_str substr(str, j, 1));
+
+      if (index(rev_str, "'") == 1)
+      {
+        rev_str = substr(rev_str, 2);
       }
-    }
 
-    $i = ret_str;
+      ret_str = "";
+
+      for (j = length(rev_str); j > 0; j--) ret_str=(ret_str substr(rev_str, j, 1));
+
+      if (i == 1) {
+        if (ret_str == "I") {
+          ret_str = 1;
+        } else if (ret_str == "F") {
+          ret_str = 2;
+        } else {
+          ret_str = 3;
+        }
+      } else if (i == 2) {
+        if (id_type == "int") {
+          ret_str = strtonum("0x" ret_str);
+        }
+      } else if (i == 6 || i == 7) {
+        if (ret_str == "Y") {
+          ret_str = 1;
+        } else {
+          ret_str = 0;
+        }
+      }
+
+      $i = ret_str;
+    }
+    print $0;
   }
-  print $0;
 }

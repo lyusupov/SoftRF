@@ -54,6 +54,8 @@ extern WebServer server;
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 
+#define LED_STATE_ON          HIGH  // State when LED is litted
+
 enum RP2040_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
@@ -95,7 +97,8 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_KEY1     (17u)
 #define SOC_GPIO_PIN_KEY2     (2u)
 
-#define SOC_GPIO_PIN_BUTTON   (23u)
+#define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
+#define SOC_GPIO_PIN_CYW43_PW (23u) // Pico W
 
 #define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
 #define SOC_GPIO_PIN_USBH_DN  (21u)

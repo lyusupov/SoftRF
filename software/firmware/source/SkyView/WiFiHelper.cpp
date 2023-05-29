@@ -254,11 +254,18 @@ void WiFi_loop()
   if ((settings->power_save & POWER_SAVE_WIFI) && WiFi.getMode() == WIFI_AP) {
     if (SoC->WiFi_clients_count() == 0) {
       if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT) {
-        Web_fini();
-        WiFi_fini();
+        if (SoC->id == SOC_RP2040 &&
+            (settings->connection == CON_BLUETOOTH_SPP ||
+             settings->connection == CON_BLUETOOTH_LE)) {
+          /* TBD */
+          /* https://github.com/earlephilhower/arduino-pico/issues/1480 */
+        } else {
+          Web_fini();
+          WiFi_fini();
 
-        if (settings->protocol == PROTOCOL_NMEA) {
-          Serial.println(F("$PSRFS,WIFI_OFF"));
+          if (settings->protocol == PROTOCOL_NMEA) {
+            Serial.println(F("$PSRFS,WIFI_OFF"));
+          }
         }
       }
     } else {

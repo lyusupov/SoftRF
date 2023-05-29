@@ -123,6 +123,11 @@ static union {
 #include "AudioOutputPWM.h"
 #endif /* EXCLUDE_AUDIO */
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <pico/cyw43_arch.h>
+#include <boards/pico_w.h>
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+
 Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -226,16 +231,13 @@ static void RP2040_setup()
   SerialInput.setFIFOSize(255);
 #endif /* ARDUINO_ARCH_MBED */
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board     = RP2040_RPIPICO;
-  hw_info.revision = HW_REV_PICO;
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2040_board     = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
-  hw_info.revision = rp2040.isPicoW() ? HW_REV_PICO_W    : HW_REV_PICO;
-#endif /* ARDUINO_RASPBERRY_PI_PICO */
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  RP2040_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_board;
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
-  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
-                  RP2040_WEACT : RP2040_board;
+  RP2040_board = (SoC->getChipId() == 0xcf516424) ? RP2040_WEACT : RP2040_board;
+
+  hw_info.revision = RP2040_board == RP2040_RPIPICO_W ? HW_REV_PICO_W : HW_REV_PICO;
 
 #if !defined(ARDUINO_ARCH_MBED)
   RP2040_has_spiflash = SPIFlash->begin(possible_devices,
@@ -292,6 +294,12 @@ static void RP2040_setup()
 //  ina219.setCalibration_16V_400mA();
   }
 
+#if SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_PIN_STATUS, OUTPUT);
+  /* Indicate positive power supply */
+  digitalWrite(SOC_GPIO_PIN_STATUS, LED_STATE_ON);
+#endif /* SOC_GPIO_PIN_STATUS */
+
   USBSerial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
@@ -318,8 +326,26 @@ static void RP2040_loop()
 static void RP2040_fini()
 {
   if (RP2040_has_CPM) {
-//  ina219.powerSave(true);
+    ina219.powerSave(true);
+    Wire1.end();
   }
+
+#if !defined(EXCLUDE_AUDIO)
+  WAV_In->stop();
+  pinMode(SOC_GPIO_PIN_PWM_OUT, INPUT);
+#endif /* EXCLUDE_AUDIO */
+
+#if SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN
+  digitalWrite(SOC_GPIO_PIN_STATUS, !(LED_STATE_ON));
+  pinMode(SOC_GPIO_PIN_STATUS, INPUT);
+#endif /* SOC_GPIO_PIN_STATUS */
+
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
+    pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
+  }
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
   if (RP2040_has_spiflash) {
 #if defined(USE_TINYUSB)
@@ -331,6 +357,9 @@ static void RP2040_fini()
 #if !defined(ARDUINO_ARCH_MBED)
   if (SPIFlash != NULL) SPIFlash->end();
 #endif /* ARDUINO_ARCH_MBED */
+
+  SerialInput.end();
+  USBSerial.end();
 
 #if defined(USE_TINYUSB)
   // Disable USB
@@ -421,7 +450,7 @@ static bool RP2040_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+  if (RP2040_board == RP2040_RPIPICO_W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }

@@ -65,15 +65,20 @@ if __name__ == "__main__":
 
     air = {}
     with open('ogn.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter = ',', quotechar = "'")
+        # csv_reader = csv.reader(csv_file, delimiter = ',', quotechar = "'")
+        csv_reader = csv.reader(csv_file, delimiter = ',')
+
         line_count = 0
 
         for row in csv_reader:
-            if line_count == 0:
-                # skip first row
-                print ", ".join(row)
-                line_count += 1
-            else:
-                air[row[1]] = "|".join(row[2:5])
-                line_count += 1
+            # if line_count == 0:
+            #    # skip first row
+            #    print ", ".join(row)
+            #    line_count += 1
+            #else:
+            #    air[row[1]] = "|".join(row[2:5])
+            #    line_count += 1
+
+            air[row[1]] = "|".join(row[2:5])
+            line_count += 1
     cdbmake("ogn.cdb", air)

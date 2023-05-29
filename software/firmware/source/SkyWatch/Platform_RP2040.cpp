@@ -199,14 +199,14 @@ static void RP2040_WiFi_set_param(int ndx, int value)
     switch (value)
     {
     case WIFI_TX_POWER_MAX:
-      WiFi.aggressiveLowPowerMode();
+      WiFi.noLowPowerMode();
       break;
     case WIFI_TX_POWER_MIN:
-      WiFi.defaultLowPowerMode();
+      WiFi.aggressiveLowPowerMode();
       break;
     case WIFI_TX_POWER_MED:
     default:
-      WiFi.noLowPowerMode();
+      WiFi.defaultLowPowerMode();
       break;
     }
     break;
@@ -225,7 +225,7 @@ static bool RP2040_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+  if (RP2040_board == RP2040_RPIPICO_W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }

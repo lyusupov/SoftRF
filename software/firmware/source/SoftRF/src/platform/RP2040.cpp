@@ -445,8 +445,22 @@ static void RP2040_loop()
 #endif /* SOC_GPIO_RADIO_LED_RX */
 }
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <pico/cyw43_arch.h>
+#include <boards/pico_w.h>
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+
 static void RP2040_fini(int reason)
 {
+  Wire.end();
+
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  if (RP2040_board == RP2040_RPIPICO_W) {
+    if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
+    pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
+  }
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+
   if (RP2040_has_spiflash) {
 #if defined(USE_TINYUSB)
     usb_msc.setUnitReady(false);
@@ -458,9 +472,21 @@ static void RP2040_fini(int reason)
   if (SPIFlash != NULL) SPIFlash->end();
 #endif /* ARDUINO_ARCH_MBED */
 
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_RADIO_LED_TX, INPUT);
+#endif /* SOC_GPIO_RADIO_LED_TX */
+
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
+#endif /* SOC_GPIO_RADIO_LED_RX */
+
 #if SOC_GPIO_PIN_ANT_RXTX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_PIN_ANT_RXTX, INPUT);
 #endif
+
+  Serial_GNSS_In.end();
+  SerialOutput.end();
+  USBSerial.end();
 
 #if defined(USE_TINYUSB)
   // Disable USB
@@ -579,14 +605,14 @@ static void RP2040_WiFi_set_param(int ndx, int value)
     switch (value)
     {
     case WIFI_TX_POWER_MAX:
-      WiFi.aggressiveLowPowerMode();
+      WiFi.noLowPowerMode();
       break;
     case WIFI_TX_POWER_MIN:
-      WiFi.defaultLowPowerMode();
+      WiFi.aggressiveLowPowerMode();
       break;
     case WIFI_TX_POWER_MED:
     default:
-      WiFi.noLowPowerMode();
+      WiFi.defaultLowPowerMode();
       break;
     }
     break;
@@ -657,7 +683,7 @@ static bool RP2040_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  if (RP2040_board != RP2040_WEACT && rp2040.isPicoW()) {
+  if (RP2040_board == RP2040_RPIPICO_W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }
