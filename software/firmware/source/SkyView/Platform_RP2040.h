@@ -97,19 +97,23 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_KEY1     (17u)
 #define SOC_GPIO_PIN_KEY2     (2u)
 
-#define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
-#define SOC_GPIO_PIN_CYW43_PW (23u) // Pico W
-
 #define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
 #define SOC_GPIO_PIN_USBH_DN  (21u)
 
-#define SOC_GPIO_PIN_VSYS     (29u) // Pico
-#define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
-
-#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
-#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
-
 #define SOC_GPIO_PIN_PWM_OUT  (3u)
+
+#define SOC_GPIO_PIN_SMPS     (23u) // Pico
+#define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
+#define SOC_GPIO_PIN_CYW43_PW (23u) // Pico W
+#define SOC_GPIO_PIN_VBUS     (24u) // Pico
+#define SOC_GPIO_PIN_LED      (25u) // Pico/WeAct
+#define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
+#define SOC_GPIO_PIN_VSYS     (29u) // Pico/Pico W
+#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
+#define SOC_GPIO_PIN_LED_W    (32u) // Pico W (CYW43 GPIO 0)
+#define SOC_GPIO_PIN_SMPS_W   (33u) // Pico W (CYW43 GPIO 1)
+#define SOC_GPIO_PIN_VBUS_W   (34u) // Pico W (CYW43 GPIO 2)
+
 #define EXCLUDE_AUDIO               // pending
 
 #if !defined(ARDUINO_ARCH_MBED)

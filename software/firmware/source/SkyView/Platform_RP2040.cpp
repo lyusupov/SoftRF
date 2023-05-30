@@ -23,6 +23,7 @@
 #if !defined(EXCLUDE_WIFI)
 #include "WiFiHelper.h"
 #endif /* EXCLUDE_WIFI */
+#include "BatteryHelper.h"
 
 #include "SkyView.h"
 
@@ -167,6 +168,9 @@ FatVolume fatfs;
 uCDB<FatVolume, File32> ucdb(fatfs);
 StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
 
+#define isTimeToToggle() (millis() - status_LED_TimeMarker > 300)
+static unsigned long status_LED_TimeMarker = 0;
+
 #if !defined(EXCLUDE_AUDIO)
 AudioGeneratorWAV    *WAV_In;
 AudioFileSourceSdFat *Audio_File;
@@ -291,14 +295,27 @@ static void RP2040_setup()
 
   if (RP2040_has_CPM) {
     ina219.begin(&Wire1);
-//  ina219.setCalibration_16V_400mA();
+    ina219.setCalibration_16V_400mA();
   }
 
-#if SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN
-  pinMode(SOC_GPIO_PIN_STATUS, OUTPUT);
+  pin_size_t pin_LED = RP2040_board == RP2040_RPIPICO_W ?
+                       SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
+  pinMode(pin_LED, OUTPUT);
   /* Indicate positive power supply */
-  digitalWrite(SOC_GPIO_PIN_STATUS, LED_STATE_ON);
-#endif /* SOC_GPIO_PIN_STATUS */
+  digitalWrite(pin_LED, LED_STATE_ON);
+
+  switch (RP2040_board)
+  {
+  case RP2040_RPIPICO:
+    pinMode(SOC_GPIO_PIN_VBUS, INPUT);
+    break;
+  case RP2040_RPIPICO_W:
+    pinMode(SOC_GPIO_PIN_VBUS_W, INPUT);
+    break;
+  case RP2040_WEACT:
+  default:
+    break;
+  }
 
   USBSerial.begin(SERIAL_OUT_BR);
 
@@ -321,6 +338,35 @@ static void RP2040_loop()
     Watchdog.reset();
 #endif /* ARDUINO_ARCH_MBED */
   }
+
+  bool vbus_is_on = false;
+  pin_size_t pin_LED = RP2040_board == RP2040_RPIPICO_W ?
+                       SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
+
+  switch (RP2040_board)
+  {
+  case RP2040_RPIPICO:
+    vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS);
+    break;
+  case RP2040_RPIPICO_W:
+    vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS_W);
+    break;
+  case RP2040_WEACT:
+  default:
+    break;
+  }
+
+  if (vbus_is_on || Battery_voltage() > Battery_threshold()) {
+    /* Indicate positive power supply */
+    if (digitalRead(pin_LED) != LED_STATE_ON) {
+      digitalWrite(pin_LED, LED_STATE_ON);
+    }
+  } else {
+    if (isTimeToToggle()) {
+      digitalWrite(pin_LED, !digitalRead(pin_LED) ? HIGH : LOW);  // toggle state
+      status_LED_TimeMarker = millis();
+    }
+  }
 }
 
 static void RP2040_fini()
@@ -335,10 +381,9 @@ static void RP2040_fini()
   pinMode(SOC_GPIO_PIN_PWM_OUT, INPUT);
 #endif /* EXCLUDE_AUDIO */
 
-#if SOC_GPIO_PIN_STATUS != SOC_UNUSED_PIN
-  digitalWrite(SOC_GPIO_PIN_STATUS, !(LED_STATE_ON));
-  pinMode(SOC_GPIO_PIN_STATUS, INPUT);
-#endif /* SOC_GPIO_PIN_STATUS */
+  pin_size_t pin_LED = RP2040_board == RP2040_RPIPICO_W ?
+                       SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
+  pinMode(pin_LED, INPUT);
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
   if (RP2040_board == RP2040_RPIPICO_W) {
