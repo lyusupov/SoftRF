@@ -108,7 +108,7 @@
 
 /* Waveshare Pico & Banana PicoW SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_WS  38
-#define SOC_GPIO_PIN_MISO_WS  14
+#define SOC_GPIO_PIN_MISO_WS  41
 #define SOC_GPIO_PIN_SCK_WS   21
 #define SOC_GPIO_PIN_SS_WS    16
 
@@ -130,6 +130,8 @@
 #define SOC_GPIO_PIN_LED      46 // active HIGH
 #define SOC_GPIO_PIN_NEOPIXEL 48
 #define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
+
+#define LED_STATE_ON          HIGH // State when LED is litted
 
 // USB
 #define SOC_GPIO_PIN_USB_DP   20

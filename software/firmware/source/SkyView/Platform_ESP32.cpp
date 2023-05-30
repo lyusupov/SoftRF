@@ -204,7 +204,8 @@ static size_t ESP32_Min_AppPart_Size = 0;
 //#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_INA219.h>
-#include "uCDB.hpp"
+#include <uCDB.hpp>
+#include "BatteryHelper.h"
 
 #if !defined(EXCLUDE_AUDIO)
 #include "AudioFileSourceSdFat.h"
@@ -251,6 +252,9 @@ FatVolume fatfs;
 uCDB<FatVolume, File32> ucdb(fatfs);
 
 Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
+
+#define isTimeToToggle() (millis() - status_LED_TimeMarker > 300)
+static unsigned long status_LED_TimeMarker = 0;
 
 #if !defined(EXCLUDE_AUDIO)
 AudioGeneratorWAV    *WAV_In;
@@ -464,7 +468,7 @@ static void ESP32_setup()
 
   if (ESP32_has_CPM) {
     ina219.begin(&Wire);
-//  ina219.setCalibration_16V_400mA();
+    ina219.setCalibration_16V_400mA();
   }
 
   ESP32_has_spiflash = SPIFlash->begin(possible_devices,
@@ -530,6 +534,10 @@ static void ESP32_setup()
   I2S_Out->SetMclk(false);
 #endif /* EXCLUDE_AUDIO */
 
+  pinMode(SOC_GPIO_PIN_LED, OUTPUT);
+  /* Indicate positive power supply */
+  digitalWrite(SOC_GPIO_PIN_LED, LED_STATE_ON);
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
@@ -573,7 +581,20 @@ static void ESP32_post_init()
 
 static void ESP32_loop()
 {
-
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (Battery_voltage() > Battery_threshold()) {
+    /* Indicate positive power supply */
+    if (digitalRead(SOC_GPIO_PIN_LED) != LED_STATE_ON) {
+      digitalWrite(SOC_GPIO_PIN_LED, LED_STATE_ON);
+    }
+  } else {
+    if (isTimeToToggle()) {
+      digitalWrite(SOC_GPIO_PIN_LED, !digitalRead(SOC_GPIO_PIN_LED) ?
+                                     HIGH : LOW);  // toggle state
+      status_LED_TimeMarker = millis();
+    }
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 static void ESP32_fini()
@@ -594,8 +615,11 @@ static void ESP32_fini()
   if (SPIFlash != NULL) SPIFlash->end();
 
   if (ESP32_has_CPM) {
-//  ina219.powerSave(true);
+    ina219.powerSave(true);
+    Wire.end();
   }
+
+  pinMode(SOC_GPIO_PIN_LED, INPUT);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   int mode_button_pin = SOC_BUTTON_MODE_DEF;
