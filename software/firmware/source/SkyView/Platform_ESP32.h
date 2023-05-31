@@ -138,7 +138,7 @@
 #define SOC_GPIO_PIN_USB_DN   19
 
 // Audio
-#define SOC_GPIO_PIN_PDM_OUT  13
+#define SOC_GPIO_PIN_PDM_OUT  17
 
 #define EXCLUDE_AUDIO            // pending
 
