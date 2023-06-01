@@ -31,16 +31,16 @@
 #include <Adafruit_SleepyDog.h>
 
 #if !defined(ARDUINO_ARCH_MBED)
-#include "pico/unique_id.h"
+#include <pico/unique_id.h>
 
 #define PICO_ON_DEVICE 1
 extern "C" {
-#include "pico/binary_info.h"
+#include <pico/binary_info.h>
 }
 #else
 extern "C"
 {
-#include "hardware/flash.h"
+#include <hardware/flash.h>
 }
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -49,9 +49,9 @@ extern "C"
 
 #if defined(USE_TINYUSB)
 #if defined(USE_USB_HOST)
-#include "pio_usb.h"
+#include <pio_usb.h>
 #endif /* USE_USB_HOST */
-#include "Adafruit_TinyUSB.h"
+#include <Adafruit_TinyUSB.h>
 #endif /* USE_TINYUSB */
 
 #define SOFTRF_DESC "Multifunctional, compatible DIY general aviation proximity awareness system"
@@ -115,13 +115,13 @@ static union {
 
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_INA219.h>
-#include "uCDB.hpp"
+#include <uCDB.hpp>
 #include "JSONHelper.h"
 
 #if !defined(EXCLUDE_AUDIO)
-#include "AudioFileSourceSdFat.h"
-#include "AudioGeneratorWAV.h"
-#include "AudioOutputPWM.h"
+#include <AudioFileSourceSdFat.h>
+#include <AudioGeneratorWAV.h>
+#include <AudioOutputPWM.h>
 #endif /* EXCLUDE_AUDIO */
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -404,6 +404,7 @@ static void RP2040_fini()
 #endif /* ARDUINO_ARCH_MBED */
 
   SerialInput.end();
+  SerialOutput.end();
   USBSerial.end();
 
 #if defined(USE_TINYUSB)
@@ -533,8 +534,8 @@ static void RP2040_Battery_setup()
 #endif
 }
 
-#include "hardware/gpio.h"
-#include "hardware/adc.h"
+#include <hardware/gpio.h>
+#include <hardware/adc.h>
 
 static float RP2040_Battery_voltage()
 {

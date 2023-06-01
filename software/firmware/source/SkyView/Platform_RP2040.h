@@ -38,8 +38,8 @@ extern WebServer server;
 
 #define SOC_ADC_VOLTAGE_DIV   (3.0) // 20K + 10K voltage divider of VSYS
 
-#define SerialInput           Serial1
-#define SerialOutput          Serial2
+#define SerialOutput          Serial1
+#define SerialInput           Serial2
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USBSerial             Serial
@@ -65,12 +65,12 @@ enum RP2040_board_id {
 };
 
 /* Console I/O */
-#define SOC_GPIO_PIN_CONS_RX  (5u)
-#define SOC_GPIO_PIN_CONS_TX  (4u)
+#define SOC_GPIO_PIN_CONS_RX  (1u)
+#define SOC_GPIO_PIN_CONS_TX  (0u)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_GNSS_RX  (1u)
-#define SOC_GPIO_PIN_GNSS_TX  (0u)
+#define SOC_GPIO_PIN_GNSS_RX  (5u)
+#define SOC_GPIO_PIN_GNSS_TX  (4u)
 
 /* Raspberry Pico W SPI pins mapping */
 #define SOC_W_PIN_MOSI        (24u)

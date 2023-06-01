@@ -101,8 +101,8 @@
 #define SOC_EPD_PIN_BUSY_WS   39
 
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-#define SOC_GPIO_PIN_GNSS_RX  9
-#define SOC_GPIO_PIN_GNSS_TX  8
+#define SOC_GPIO_PIN_GNSS_RX  13
+#define SOC_GPIO_PIN_GNSS_TX  15
 
 #define SOC_BUTTON_MODE_DEF   0
 
