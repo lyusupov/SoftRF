@@ -436,6 +436,9 @@ static void ESP32_setup()
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_W):
       hw_info.revision = HW_REV_BPI;
       break;
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
     default:
       hw_info.revision = HW_REV_UNKNOWN;

@@ -451,7 +451,13 @@ void EPD_Update_Sync(int cmd)
   case EPD_UPDATE_FAST:
     display->display(true);
     yield();
-    display->powerOff();
+    if (SoC->id             == SOC_ESP32S3   &&
+        hw_info.revision    == HW_REV_DEVKIT &&
+        display->epd2.panel == GxEPD2::GDEY027T91) {
+      /* TBD */
+    } else {
+      display->powerOff();
+    }
     EPD_task_command = EPD_UPDATE_NONE;
     break;
   case EPD_UPDATE_NONE:
