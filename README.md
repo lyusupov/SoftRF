@@ -17,18 +17,19 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)
-    * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 * can **receive ADS-B** air traffic
     * 978 UAT
         * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * 1090 ES
-        * [**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+        * [**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
     * 1090 ES and/or 978 UAT
         * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
 * can operate **multiple protocols** at the same time
@@ -43,7 +44,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * for **education** purpose
     * [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
 * **made in** EU
-    * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 
 <br>
 
@@ -95,11 +96,11 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**ES**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[NXP Semiconductors<br>LPC4320](https://en.wikipedia.org/wiki/NXP_LPC#LPC4000_series)|Q2 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|Unique RF radio specs are useful for 1090ES **ADS-B** reception [ [1](https://user-images.githubusercontent.com/5849637/140610617-7c74582e-b0d7-4610-8ac2-d51f55c9086d.png) , [2](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/ES-1.jpg) ]
 1&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>2&nbsp;[USB2BT](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Microchip&nbsp;(Atmel)<br>SAM&nbsp;D21](https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus/sam-d) <!-- and [ATmega2560](https://www.microchip.com/en-us/product/ATmega2560) -->|Q4 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png) <!-- ![](https://via.placeholder.com/140x40/c5f015/000000?text=May+need)<br>![](https://via.placeholder.com/140x40/c5f015/000000?text=improvements) -->|good for teaching students of air traffic proximity awareness
 [**Octave**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)|[ASR Microelectronics<br>ASR6601](https://asriot.readthedocs.io/en/latest/ASR6601/index.html)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)| **the best 'price per radio protocol' ratio** on the market
-[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;holds [**FCC/CE** mark](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition#certificates)
-[**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[STMicroelectronics](https://en.wikipedia.org/wiki/STMicroelectronics)<br>[STM32**WLE5**](https://www.st.com/en/microcontrollers-microprocessors/stm32wle5cc.html)|Q3 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;holds [**CE** mark](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition#certificates)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+1&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Raspberry Pi<br>Foundation<br>**RP2040**](https://en.wikipedia.org/wiki/RP2040)|Q1 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;holds [**FCC/CE** mark](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition#certificates)
+[**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)|[STMicroelectronics](https://en.wikipedia.org/wiki/STMicroelectronics)<br>[STM32**WLE5**](https://www.st.com/en/microcontrollers-microprocessors/stm32wle5cc.html)|Q3 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;holds [**CE** mark](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition#certificates)
 [**WebTop USB**](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S2](https://en.wikipedia.org/wiki/ESP32#ESP32-S2)|Q4 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-C3](https://en.wikipedia.org/wiki/ESP32#ESP32-C3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)
-[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
+1&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
@@ -156,7 +157,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [ESP32‐C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-* [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
 * [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
@@ -171,7 +172,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Settings](https://github.com/lyusupov/SoftRF/wiki/Dongle-settings)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Dongle)
 * [Lego Edition](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)
-* [Balkan Edition](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Balkan Edition](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 * [Academy Edition](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
 * [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
     * [Bill of materials](https://github.com/lyusupov/SoftRF/wiki/UAV-BOM)
@@ -233,7 +234,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
 
-* [**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/ES-1.jpg)
 <!-- * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
@@ -270,7 +271,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Lego-11.png)
 
-* [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 
 ![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Balkan-1.jpg)
 

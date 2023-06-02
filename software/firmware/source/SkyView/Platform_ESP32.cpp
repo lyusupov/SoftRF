@@ -576,7 +576,64 @@ static void ESP32_setup()
 
 static void ESP32_post_init()
 {
+  uint32_t SerialBaud;
 
+  switch (settings->baudrate)
+  {
+  case B4800:
+    SerialBaud = 4800;
+    break;
+  case B9600:
+    SerialBaud = 9600;
+    break;
+  case B19200:
+    SerialBaud = 19200;
+    break;
+  case B57600:
+    SerialBaud = 57600;
+    break;
+  case B115200:
+    SerialBaud = 115200;
+    break;
+  case B2000000:
+    SerialBaud = 2000000;
+    break;
+  case B38400:
+  default:
+    SerialBaud = 38400;
+    break;
+  }
+
+  Serial.println();
+
+  Serial.print(F("Input source : "));
+  switch (settings->connection)
+  {
+    case CON_SERIAL_MAIN   :  Serial.print  (F("UART MAIN "));
+                              Serial.println(SerialBaud);     break;
+    case CON_SERIAL_AUX    :  Serial.print  (F("UART AUX "));
+                              Serial.println(SerialBaud);     break;
+    case CON_USB           :  Serial.println(F("USB"));       break;
+    case CON_WIFI_UDP      :  Serial.println(F("WIFI UDP"));  break;
+    case CON_WIFI_TCP      :  Serial.println(F("WIFI TCP"));  break;
+    case CON_BLUETOOTH_SPP :  Serial.println(F("BT SPP"));    break;
+    case CON_BLUETOOTH_LE  :  Serial.println(F("BT LE"));     break;
+    case CON_NONE          :
+    default                :  Serial.println(F("NONE"));      break;
+  }
+
+  Serial.print(F("Protocol     : "));
+  switch (settings->protocol)
+  {
+    case PROTOCOL_NMEA     :  Serial.println(F("NMEA"));      break;
+    case PROTOCOL_GDL90    :  Serial.println(F("GDL90"));     break;
+    case PROTOCOL_D1090    :  Serial.println(F("D1090"));     break;
+    case PROTOCOL_NONE     :
+    default                :  Serial.println(F("NONE"));      break;
+  }
+
+  Serial.println();
+  Serial.flush();
 }
 
 static void ESP32_loop()
