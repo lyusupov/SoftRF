@@ -846,9 +846,9 @@ static float ESP32_Battery_voltage()
 }
 
 #include <SoftSPI.h>
-SoftSPI swSPI(SOC_GPIO_PIN_MOSI_T5S,
-              SOC_GPIO_PIN_MOSI_T5S, /* half duplex */
-              SOC_GPIO_PIN_SCK_T5S);
+SoftSPI swSPI(SOC_GPIO_PIN_MOSI_WS,
+              SOC_GPIO_PIN_MOSI_WS, /* half duplex */
+              SOC_GPIO_PIN_SCK_WS);
 
 static portMUX_TYPE EPD_ident_mutex;
 
@@ -857,17 +857,17 @@ static ep_model_id ESP32_EPD_ident()
   ep_model_id rval = EP_GDEW027W3; /* default */
   vPortCPUInitializeMutex(&EPD_ident_mutex);
 
-  digitalWrite(SOC_GPIO_PIN_SS_T5S, HIGH);
-  pinMode(SOC_GPIO_PIN_SS_T5S, OUTPUT);
-  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
-  pinMode(SOC_EPD_PIN_DC_T5S, OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_SS_WS, HIGH);
+  pinMode(SOC_GPIO_PIN_SS_WS, OUTPUT);
+  digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
+  pinMode(SOC_EPD_PIN_DC_WS, OUTPUT);
 
-  digitalWrite(SOC_EPD_PIN_RST_T5S, LOW);
-  pinMode(SOC_EPD_PIN_RST_T5S, OUTPUT);
+  digitalWrite(SOC_EPD_PIN_RST_WS, LOW);
+  pinMode(SOC_EPD_PIN_RST_WS, OUTPUT);
   delay(20);
-  pinMode(SOC_EPD_PIN_RST_T5S, INPUT_PULLUP);
+  pinMode(SOC_EPD_PIN_RST_WS, INPUT_PULLUP);
   delay(200);
-  pinMode(SOC_EPD_PIN_BUSY_T5S, INPUT);
+  pinMode(SOC_EPD_PIN_BUSY_WS, INPUT);
 
   swSPI.begin();
 
@@ -876,21 +876,21 @@ static ep_model_id ESP32_EPD_ident()
 
   taskENTER_CRITICAL(&EPD_ident_mutex);
 
-  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
-  digitalWrite(SOC_GPIO_PIN_SS_T5S, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_WS, LOW);
 
   swSPI.transfer_out(0x2D);
 
-  pinMode(SOC_GPIO_PIN_MOSI_T5S, INPUT);
-  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
+  pinMode(SOC_GPIO_PIN_MOSI_WS, INPUT);
+  digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
 
   for (int i=0; i<sizeof(buf_2D); i++) {
     buf_2D[i] = swSPI.transfer_in();
   }
 
-  digitalWrite(SOC_GPIO_PIN_SCK_T5S, LOW);
-  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
-  digitalWrite(SOC_GPIO_PIN_SS_T5S,  HIGH);
+  digitalWrite(SOC_GPIO_PIN_SCK_WS, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_WS,  HIGH);
 
   taskEXIT_CRITICAL(&EPD_ident_mutex);
 
@@ -898,21 +898,21 @@ static ep_model_id ESP32_EPD_ident()
 
   taskENTER_CRITICAL(&EPD_ident_mutex);
 
-  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
-  digitalWrite(SOC_GPIO_PIN_SS_T5S, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_WS, LOW);
 
   swSPI.transfer_out(0x2E);
 
-  pinMode(SOC_GPIO_PIN_MOSI_T5S, INPUT);
-  digitalWrite(SOC_EPD_PIN_DC_T5S, HIGH);
+  pinMode(SOC_GPIO_PIN_MOSI_WS, INPUT);
+  digitalWrite(SOC_EPD_PIN_DC_WS, HIGH);
 
   for (int i=0; i<sizeof(buf_2E); i++) {
     buf_2E[i] = swSPI.transfer_in();
   }
 
-  digitalWrite(SOC_GPIO_PIN_SCK_T5S, LOW);
-  digitalWrite(SOC_EPD_PIN_DC_T5S,  LOW);
-  digitalWrite(SOC_GPIO_PIN_SS_T5S,  HIGH);
+  digitalWrite(SOC_GPIO_PIN_SCK_WS, LOW);
+  digitalWrite(SOC_EPD_PIN_DC_WS,  LOW);
+  digitalWrite(SOC_GPIO_PIN_SS_WS,  HIGH);
 
   taskEXIT_CRITICAL(&EPD_ident_mutex);
 
@@ -939,10 +939,12 @@ static ep_model_id ESP32_EPD_ident()
  *  0x2D:
  *  FF FF FF FF FF FF FF FF FF FF FF - W3
  *  00 00 00 FF 00 00 40 01 00 00 00
+ *  00 00 40 20 10 00 40 01 00 00 00 - T91
  *
  *  0x2E:
  *  FF FF FF FF FF FF FF FF FF FF    - W3
  *  FF FF FF FF FF FF FF FF FF FF
+ *  FF FF FF FF FF FF FF FF FF FF    - T91
  */
 #endif
 
@@ -959,7 +961,7 @@ static ep_model_id ESP32_EPD_ident()
   if (is_ff || is_00) {
     rval = EP_GDEW027W3;
   } else {
-    rval = EP_GDEY027T91; /* TBD */
+    rval = EP_GDEY027T91;
   }
 
   return rval;
@@ -976,7 +978,21 @@ static void ESP32_EPD_setup()
   {
   case ADAPTER_WAVESHARE_ESP32:
   case ADAPTER_WAVESHARE_PICO_2_7:
-    display = &epd_waveshare_W3;
+    if (ESP32_display == EP_UNKNOWN) {
+      ESP32_display = ESP32_EPD_ident();
+    }
+
+    switch (ESP32_display)
+    {
+    case EP_GDEY027T91:
+      display = &epd_waveshare_T91;
+      break;
+    case EP_GDEW027W3:
+    default:
+      display = &epd_waveshare_W3;
+      break;
+    }
+
     display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
@@ -998,21 +1014,7 @@ static void ESP32_EPD_setup()
 #endif /* BUILD_SKYVIEW_HD */
   case ADAPTER_TTGO_T5S:
   default:
-    if (ESP32_display == EP_UNKNOWN) {
-      ESP32_display = ESP32_EPD_ident();
-    }
-
-    switch (ESP32_display)
-    {
-    case EP_GDEY027T91:
-      display = &epd_ttgo_t5s_T91;
-      break;
-    case EP_GDEW027W3:
-    default:
-      display = &epd_ttgo_t5s_W3;
-      break;
-    }
-
+    display = &epd_ttgo_t5s_W3;
     display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
 
     SPI.begin(SOC_GPIO_PIN_SCK_T5S,
