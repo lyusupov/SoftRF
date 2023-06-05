@@ -38,6 +38,8 @@ settings_t *settings;
 
 void EEPROM_setup()
 {
+  int cmd = EEPROM_EXT_LOAD;
+
   if (!SoC->EEPROM_begin(sizeof(eeprom_t)))
   {
     Serial.print(F("ERROR: Failed to initialize "));
@@ -66,6 +68,8 @@ void EEPROM_setup()
     }
   }
   settings = &eeprom_block.field.settings;
+
+  SoC->EEPROM_extension(cmd);
 }
 
 void EEPROM_defaults()
@@ -86,11 +90,7 @@ void EEPROM_defaults()
     eeprom_block.field.settings.adapter       = ADAPTER_TTGO_T5S;
 #endif /* BUILD_SKYVIEW_HD */
 
-  if (SoC->id == SOC_RP2040)
-    eeprom_block.field.settings.connection    = CON_USB;
-  else
-    eeprom_block.field.settings.connection    = CON_SERIAL_MAIN;
-
+  eeprom_block.field.settings.connection      = CON_SERIAL_MAIN;
   eeprom_block.field.settings.baudrate        = B38400;
   eeprom_block.field.settings.rotate          = ROTATE_0;
   eeprom_block.field.settings.protocol        = PROTOCOL_NMEA;

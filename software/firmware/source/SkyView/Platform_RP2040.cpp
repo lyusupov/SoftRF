@@ -575,7 +575,6 @@ static void RP2040_EEPROM_extension(int cmd)
   }
 }
 
-
 static void RP2040_WiFi_setOutputPower(int dB)
 {
 #if !defined(EXCLUDE_WIFI)
