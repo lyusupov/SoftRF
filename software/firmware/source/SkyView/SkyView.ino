@@ -129,7 +129,7 @@ void setup()
 
   SoC->DB_init();
 
-  SoC->TTS("POST");
+  SoC->TTS((char*) "POST");
 
   Web_setup();
   Traffic_setup();

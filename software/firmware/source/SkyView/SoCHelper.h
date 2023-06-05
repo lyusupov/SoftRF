@@ -39,6 +39,7 @@ typedef struct SoC_ops_struct {
   uint32_t (*getChipId)();
   uint32_t (*getFreeHeap)();
   bool (*EEPROM_begin)(size_t);
+  void (*EEPROM_extension)(int);
   void (*WiFi_setOutputPower)(int);
   bool (*WiFi_hostname)(String);
   void (*swSer_begin)(unsigned long);

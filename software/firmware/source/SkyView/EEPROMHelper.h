@@ -23,9 +23,15 @@
 #include <EEPROM.h>
 #endif /* ARDUINO */
 
-
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE
 #define SKYVIEW_EEPROM_VERSION 0x0000001D
+
+enum
+{
+	EEPROM_EXT_LOAD,
+	EEPROM_EXT_DEFAULTS,
+	EEPROM_EXT_STORE
+};
 
 typedef struct Settings {
     uint8_t  adapter;

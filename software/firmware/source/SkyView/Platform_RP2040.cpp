@@ -358,30 +358,56 @@ static void RP2040_post_init()
 
   Serial.println();
 
+  Serial.print(F("Board        : "));
+
+  switch (RP2040_board)
+  {
+  case RP2040_RPIPICO_W    : Serial.println(F("Pico W"));   break;
+  case RP2040_WEACT        : Serial.println(F("WeAct"));    break;
+  case RP2040_RPIPICO      :
+  default                  : Serial.println(F("Pico"));     break;
+    break;
+  }
+
+  Serial.print(F("Display      : "));
+
+  if (hw_info.display != DISPLAY_EPD_2_7 || display == NULL) {
+    Serial.println(F("NONE"));
+  } else {
+    switch (display->epd2.panel)
+    {
+    case GxEPD2::GDEY027T91: Serial.println(F("GDEY027T91")); break;
+    case GxEPD2::GDEW027W3 : Serial.println(F("GDEW027W3"));  break;
+    default                : Serial.println(F("OTHER"));      break;
+    }
+  }
+
+  Serial.println();
+
   Serial.print(F("Input source : "));
   switch (settings->connection)
   {
-    case CON_SERIAL_MAIN   :  Serial.print  (F("UART MAIN "));
-                              Serial.println(SerialBaud);     break;
-    case CON_SERIAL_AUX    :  Serial.print  (F("UART AUX "));
-                              Serial.println(SerialBaud);     break;
-    case CON_USB           :  Serial.println(F("USB"));       break;
-    case CON_WIFI_UDP      :  Serial.println(F("WIFI UDP"));  break;
-    case CON_WIFI_TCP      :  Serial.println(F("WIFI TCP"));  break;
-    case CON_BLUETOOTH_SPP :  Serial.println(F("BT SPP"));    break;
-    case CON_BLUETOOTH_LE  :  Serial.println(F("BT LE"));     break;
+    case CON_SERIAL_MAIN   : Serial.print  (F("UART MAIN "));
+                             Serial.println(SerialBaud);    break;
+    case CON_SERIAL_AUX    : Serial.print  (F("UART AUX "));
+                             Serial.println(SerialBaud);    break;
+    case CON_USB           : Serial.println(F("USB"));      break;
+    case CON_WIFI_UDP      : Serial.println(F("WIFI UDP")); break;
+    case CON_WIFI_TCP      : Serial.println(F("WIFI TCP")); break;
+    case CON_BLUETOOTH_SPP : Serial.println(F("BT SPP"));   break;
+    case CON_BLUETOOTH_LE  : Serial.println(F("BT LE"));    break;
     case CON_NONE          :
-    default                :  Serial.println(F("NONE"));      break;
+    default                : Serial.println(F("NONE"));     break;
   }
 
   Serial.print(F("Protocol     : "));
   switch (settings->protocol)
   {
-    case PROTOCOL_NMEA     :  Serial.println(F("NMEA"));      break;
-    case PROTOCOL_GDL90    :  Serial.println(F("GDL90"));     break;
-    case PROTOCOL_D1090    :  Serial.println(F("D1090"));     break;
+    case PROTOCOL_NMEA     : Serial.println(F("NMEA"));     break;
+    case PROTOCOL_GDL90    : Serial.println(F("GDL90"));    break;
+    case PROTOCOL_D1090    : Serial.println(F("D1090"));    break;
     case PROTOCOL_NONE     :
-    default                :  Serial.println(F("NONE"));      break;
+    default                : Serial.println(F("NONE"));     break;
   }
 
   Serial.println();
@@ -511,38 +537,44 @@ static uint32_t RP2040_getFreeHeap()
 static bool RP2040_EEPROM_begin(size_t size)
 {
   EEPROM.begin(size);
-
-  if ( RP2040_has_spiflash && FATFS_is_mounted ) {
-    File32 file = fatfs.open("/settings.json", FILE_READ);
-
-    if (file) {
-      // StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
-
-      JsonObject &root = RP2040_jsonBuffer.parseObject(file);
-
-      if (root.success()) {
-        JsonVariant msg_class = root["class"];
-
-        if (msg_class.success()) {
-          const char *msg_class_s = msg_class.as<char*>();
-
-          if (!strcmp(msg_class_s,"SKYVIEW")) {
-            parseSettings(root);
-          }
-        }
-      }
-      file.close();
-    }
-  }
-
-  if (RP2040_board != RP2040_RPIPICO_W &&
-      (settings->connection == CON_BLUETOOTH_SPP ||
-       settings->connection == CON_BLUETOOTH_LE)) {
-    settings->connection = CON_USB; /* matches EEPROMHelper.cpp default value */
-  }
-
   return true;
 }
+
+static void RP2040_EEPROM_extension(int cmd)
+{
+  if (cmd == EEPROM_EXT_LOAD) {
+
+    if ( RP2040_has_spiflash && FATFS_is_mounted ) {
+      File32 file = fatfs.open("/settings.json", FILE_READ);
+
+      if (file) {
+        // StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+
+        JsonObject &root = RP2040_jsonBuffer.parseObject(file);
+
+        if (root.success()) {
+          JsonVariant msg_class = root["class"];
+
+          if (msg_class.success()) {
+            const char *msg_class_s = msg_class.as<char*>();
+
+            if (!strcmp(msg_class_s,"SKYVIEW")) {
+              parseSettings(root);
+            }
+          }
+        }
+        file.close();
+      }
+    }
+
+    if (RP2040_board != RP2040_RPIPICO_W &&
+        (settings->connection == CON_BLUETOOTH_SPP ||
+         settings->connection == CON_BLUETOOTH_LE)) {
+      settings->connection = CON_USB; /* matches EEPROMHelper.cpp default value */
+    }
+  }
+}
+
 
 static void RP2040_WiFi_setOutputPower(int dB)
 {
@@ -1698,6 +1730,7 @@ const SoC_ops_t RP2040_ops = {
   RP2040_getChipId,
   RP2040_getFreeHeap,
   RP2040_EEPROM_begin,
+  RP2040_EEPROM_extension,
   RP2040_WiFi_setOutputPower,
   RP2040_WiFi_hostname,
   RP2040_swSer_begin,

@@ -749,6 +749,11 @@ static bool ESP32_EEPROM_begin(size_t size)
   return EEPROM.begin(size);
 }
 
+static void ESP32_EEPROM_extension(int cmd)
+{
+  /* TBD */
+}
+
 static const int8_t ESP32_dB_to_power_level[21] = {
   8,  /* 2    dB, #0 */
   8,  /* 2    dB, #1 */
@@ -1882,6 +1887,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_getChipId,
   ESP32_getFreeHeap,
   ESP32_EEPROM_begin,
+  ESP32_EEPROM_extension,
   ESP32_WiFi_setOutputPower,
   ESP32_WiFi_hostname,
   ESP32_swSer_begin,

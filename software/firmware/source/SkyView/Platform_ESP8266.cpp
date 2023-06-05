@@ -78,6 +78,11 @@ static bool ESP8266_EEPROM_begin(size_t size)
   return true;
 }
 
+static void ESP8266_EEPROM_extension(int cmd)
+{
+  /* TBD */
+}
+
 static void ESP8266_WiFi_setOutputPower(int dB)
 {
   WiFi.setOutputPower(dB);
@@ -240,6 +245,7 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_getChipId,
   ESP8266_getFreeHeap,
   ESP8266_EEPROM_begin,
+  ESP8266_EEPROM_extension,
   ESP8266_WiFi_setOutputPower,
   ESP8266_WiFi_hostname,
   ESP8266_swSer_begin,

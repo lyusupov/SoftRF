@@ -563,7 +563,7 @@ static size_t _fifoSize              = 512;
 static uint16_t _channelID           = 0;
 static volatile int _writeLen        = 0;
 static uint8_t rfcomm_server_channel = 1;
-static char *pin_code                = "0000";
+static char *pin_code                = (char *) "0000";
 static uint8_t service_index         = 0;
 
 static mutex_t     _mutex;
@@ -929,9 +929,9 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     service_index = 0;
                     rfcomm_server_channel = 1;
 
-                    // re-enable page/inquiry scan again
-                    gap_discoverable_control(1);
-                    gap_connectable_control(1);
+                    hci_power_control(HCI_POWER_OFF);
+                    hci_power_control(HCI_POWER_ON);
+
                     break;
 
                 default:
