@@ -60,9 +60,14 @@ void Battery_loop()
     float voltage = SoC->Battery_voltage();
 
     if ( hw_info.model    == SOFTRF_MODEL_SKYVIEW &&
-        (hw_info.revision == HW_REV_T5S_1_9 || hw_info.revision == HW_REV_T5S_2_8)) {
+        (hw_info.revision == HW_REV_T5S_1_9 ||
+         hw_info.revision == HW_REV_T5S_2_8 ||
+         hw_info.revision == HW_REV_PICO    ||
+         hw_info.revision == HW_REV_PICO_W  ||
+         hw_info.revision == HW_REV_BPI     )) {
 
-      if (voltage > 2.0 && voltage < Battery_cutoff()) {
+      if (voltage > BATTERY_THRESHOLD_INVALID &&
+          voltage < Battery_cutoff()) {
         if (Battery_cutoff_count > 3) {
           shutdown("LOW BATTERY");
         } else {

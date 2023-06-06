@@ -287,7 +287,7 @@ void NMEA_loop()
   case CON_SERIAL_MAIN:
     while (SerialInput.available() > 0) {
       char c = SerialInput.read();
-      Serial.print(c);
+      Serial.write(c);
       NMEA_Parse_Character(c);
       NMEA_TimeMarker = millis();
     }
@@ -298,7 +298,7 @@ void NMEA_loop()
     {
       while (Serial.available() > 0) {
         char c = Serial.read();
-//        Serial.print(c);
+//        Serial.write(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }
@@ -308,7 +308,7 @@ void NMEA_loop()
     size = SoC->WiFi_Receive_UDP((uint8_t *) UDPpacketBuffer, sizeof(UDPpacketBuffer));
     if (size > 0) {
       for (size_t i=0; i < size; i++) {
-        Serial.print(UDPpacketBuffer[i]);
+        Serial.write(UDPpacketBuffer[i]);
         NMEA_Parse_Character(UDPpacketBuffer[i]);
       }
       NMEA_TimeMarker = millis();
@@ -319,7 +319,7 @@ void NMEA_loop()
     if (SoC->Bluetooth_ops) {
       while (SoC->Bluetooth_ops->available() > 0) {
         char c = SoC->Bluetooth_ops->read();
-        Serial.print(c);
+        Serial.write(c);
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }
@@ -329,7 +329,9 @@ void NMEA_loop()
     if (SoC->USB_ops) {
       while (SoC->USB_ops->available() > 0) {
         char c = SoC->USB_ops->read();
-        Serial.print(c);
+        if (hw_info.revision != HW_REV_PICO_W) {
+          Serial.write(c);
+        }
         NMEA_Parse_Character(c);
         NMEA_TimeMarker = millis();
       }

@@ -170,6 +170,7 @@ StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
 
 #define isTimeToToggle() (millis() - status_LED_TimeMarker > 300)
 static unsigned long status_LED_TimeMarker = 0;
+static uint8_t LED_state_cache = !(LED_STATE_ON);
 
 #if !defined(EXCLUDE_AUDIO)
 AudioGeneratorWAV    *WAV_In;
@@ -302,7 +303,8 @@ static void RP2040_setup()
                        SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
   pinMode(pin_LED, OUTPUT);
   /* Indicate positive power supply */
-  digitalWrite(pin_LED, LED_STATE_ON);
+  LED_state_cache = LED_STATE_ON;
+  digitalWrite(pin_LED, LED_state_cache);
 
   switch (RP2040_board)
   {
@@ -424,33 +426,38 @@ static void RP2040_loop()
 #endif /* ARDUINO_ARCH_MBED */
   }
 
-  bool vbus_is_on = false;
-  pin_size_t pin_LED = RP2040_board == RP2040_RPIPICO_W ?
-                       SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
+  if (isTimeToToggle()) {
+    bool vbus_is_on = false;
+    pin_size_t pin_LED = RP2040_board == RP2040_RPIPICO_W ?
+                         SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
 
-  switch (RP2040_board)
-  {
-  case RP2040_RPIPICO:
-    vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS);
-    break;
-  case RP2040_RPIPICO_W:
-    vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS_W);
-    break;
-  case RP2040_WEACT:
-  default:
-    break;
-  }
+    switch (RP2040_board)
+    {
+    case RP2040_RPIPICO:
+      vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS);
+      break;
+    case RP2040_RPIPICO_W:
+      if (RP2040_board != RP2040_RPIPICO_W || settings->connection != CON_USB) {
+        vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS_W);
+      }
+      break;
+    case RP2040_WEACT:
+    default:
+      break;
+    }
 
-  if (vbus_is_on || Battery_voltage() > Battery_threshold()) {
-    /* Indicate positive power supply */
-    if (digitalRead(pin_LED) != LED_STATE_ON) {
-      digitalWrite(pin_LED, LED_STATE_ON);
+    if (vbus_is_on || Battery_voltage() > Battery_threshold()) {
+      /* Indicate positive power supply */
+      if (LED_state_cache != LED_STATE_ON) {
+        LED_state_cache = LED_STATE_ON;
+        digitalWrite(pin_LED, LED_state_cache);
+      }
+    } else {
+      LED_state_cache = !(LED_state_cache); // toggle state
+      digitalWrite(pin_LED, LED_state_cache);
     }
-  } else {
-    if (isTimeToToggle()) {
-      digitalWrite(pin_LED, !digitalRead(pin_LED) ? HIGH : LOW);  // toggle state
-      status_LED_TimeMarker = millis();
-    }
+
+    status_LED_TimeMarker = millis();
   }
 }
 
