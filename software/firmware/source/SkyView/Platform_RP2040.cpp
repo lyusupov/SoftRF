@@ -78,6 +78,10 @@ bi_decl(bi_1pin_with_name(SOC_EPD_PIN_DC_WS,   "EPD DC"));
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 #else
 WebServer server ( 80 );
+
+#define isTimeToAP() (millis() - AP_clients_TimeMarker > 3000)
+static unsigned long AP_clients_TimeMarker = 0;
+static int AP_clients_cache                = 0;
 #endif /* EXCLUDE_WIFI */
 
 /* Waveshare E-Paper Driver Board */
@@ -888,13 +892,16 @@ static int RP2040_WiFi_clients_count()
 {
 #if !defined(EXCLUDE_WIFI)
   struct station_info *stat_info;
-  int clients = 0;
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)
   {
   case WIFI_AP:
-    return WiFi.softAPgetStationNum();
+    if (isTimeToAP()) {
+      AP_clients_cache = WiFi.softAPgetStationNum();
+      AP_clients_TimeMarker = millis();
+    }
+    return AP_clients_cache;
   case WIFI_STA:
   default:
     return -1; /* error */
