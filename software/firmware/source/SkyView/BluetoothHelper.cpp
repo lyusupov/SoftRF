@@ -517,6 +517,7 @@ IODev_ops_t ESP32_Bluetooth_ops = {
 
 #include <queue>
 #include <pico/cyw43_arch.h>
+#include <pico/btstack_cyw43.h>
 #include <CoreMutex.h>
 #include <btstack.h>
 
@@ -621,6 +622,9 @@ struct device {
 
 struct device devices[MAX_DEVICES];
 int deviceCount = 0;
+
+static void CYW43_Bluetooth_setup();
+static void CYW43_Bluetooth_fini();
 
 static int getDeviceIndexForAddress( bd_addr_t addr){
     int j;
@@ -929,9 +933,11 @@ static void hci_spp_event_handler(uint8_t packet_type, uint16_t channel, uint8_t
                     service_index = 0;
                     rfcomm_server_channel = 1;
 
-                    hci_power_control(HCI_POWER_OFF);
-                    hci_power_control(HCI_POWER_ON);
+                    CYW43_Bluetooth_fini();
+                    //rfcomm_deinit();
 
+                    btstack_cyw43_init(cyw43_arch_async_context());
+                    CYW43_Bluetooth_setup();
                     break;
 
                 default:
@@ -1555,7 +1561,11 @@ static void CYW43_Bluetooth_fini()
       }
       _running = false;
 
-      hci_power_control(HCI_POWER_OFF);
+      sm_deinit();
+      l2cap_deinit();
+
+      btstack_cyw43_deinit(cyw43_arch_async_context());
+
       lockBluetooth();
       if (_queue != NULL) delete[] _queue;
       unlockBluetooth();
