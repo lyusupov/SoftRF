@@ -609,30 +609,55 @@ static void ESP32_post_init()
 
   Serial.println();
 
+  Serial.print(F("Board        : "));
+
+  switch (hw_info.revision)
+  {
+  case HW_REV_T5S_1_9    : Serial.println(F("LilyGO T5S"));   break;
+  case HW_REV_T5S_2_8    : Serial.println(F("LilyGO T5S"));   break;
+  case HW_REV_BPI        : Serial.println(F("Banana PicoW")); break;
+  default                : Serial.println(F("OTHER"));        break;
+  }
+
+  Serial.print(F("Display      : "));
+
+  if (hw_info.display != DISPLAY_EPD_2_7 || display == NULL) {
+    Serial.println(F("NONE"));
+  } else {
+    switch (display->epd2.panel)
+    {
+    case GxEPD2::GDEY027T91: Serial.println(F("GDEY027T91")); break;
+    case GxEPD2::GDEW027W3 : Serial.println(F("GDEW027W3"));  break;
+    default                : Serial.println(F("OTHER"));      break;
+    }
+  }
+
+  Serial.println();
+
   Serial.print(F("Input source : "));
   switch (settings->connection)
   {
-    case CON_SERIAL_MAIN   :  Serial.print  (F("UART MAIN "));
-                              Serial.println(SerialBaud);     break;
-    case CON_SERIAL_AUX    :  Serial.print  (F("UART AUX "));
-                              Serial.println(SerialBaud);     break;
-    case CON_USB           :  Serial.println(F("USB"));       break;
-    case CON_WIFI_UDP      :  Serial.println(F("WIFI UDP"));  break;
-    case CON_WIFI_TCP      :  Serial.println(F("WIFI TCP"));  break;
-    case CON_BLUETOOTH_SPP :  Serial.println(F("BT SPP"));    break;
-    case CON_BLUETOOTH_LE  :  Serial.println(F("BT LE"));     break;
+    case CON_SERIAL_MAIN   : Serial.print  (F("UART MAIN "));
+                             Serial.println(SerialBaud);    break;
+    case CON_SERIAL_AUX    : Serial.print  (F("UART AUX "));
+                             Serial.println(SerialBaud);    break;
+    case CON_USB           : Serial.println(F("USB"));      break;
+    case CON_WIFI_UDP      : Serial.println(F("WIFI UDP")); break;
+    case CON_WIFI_TCP      : Serial.println(F("WIFI TCP")); break;
+    case CON_BLUETOOTH_SPP : Serial.println(F("BT SPP"));   break;
+    case CON_BLUETOOTH_LE  : Serial.println(F("BT LE"));    break;
     case CON_NONE          :
-    default                :  Serial.println(F("NONE"));      break;
+    default                : Serial.println(F("NONE"));     break;
   }
 
   Serial.print(F("Protocol     : "));
   switch (settings->protocol)
   {
-    case PROTOCOL_NMEA     :  Serial.println(F("NMEA"));      break;
-    case PROTOCOL_GDL90    :  Serial.println(F("GDL90"));     break;
-    case PROTOCOL_D1090    :  Serial.println(F("D1090"));     break;
+    case PROTOCOL_NMEA     : Serial.println(F("NMEA"));     break;
+    case PROTOCOL_GDL90    : Serial.println(F("GDL90"));    break;
+    case PROTOCOL_D1090    : Serial.println(F("D1090"));    break;
     case PROTOCOL_NONE     :
-    default                :  Serial.println(F("NONE"));      break;
+    default                : Serial.println(F("NONE"));     break;
   }
 
   Serial.println();

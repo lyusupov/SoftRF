@@ -372,7 +372,6 @@ static void RP2040_post_init()
   case RP2040_WEACT        : Serial.println(F("WeAct"));    break;
   case RP2040_RPIPICO      :
   default                  : Serial.println(F("Pico"));     break;
-    break;
   }
 
   Serial.print(F("Display      : "));
@@ -675,7 +674,9 @@ static float RP2040_Battery_voltage()
     gpio_set_dir(SOC_GPIO_PIN_BATTERY,  pin29_dir);
   }
 #endif
-  return (mV * SOC_ADC_VOLTAGE_DIV / 1000.0);
+
+  float mult = (RP2040_board == RP2040_WEACT) ? 1 : SOC_ADC_VOLTAGE_DIV;
+  return (mV * mult / 1000.0);
 }
 
 #include <SoftSPI.h>

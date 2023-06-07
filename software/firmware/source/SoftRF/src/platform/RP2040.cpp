@@ -659,7 +659,7 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
     break;
   case WIFI_AP:
-    if (WiFi.softAPgetStationNum() > 0) {
+    if (SoC->WiFi_clients_count() > 0) {
       for (int i=0; i<4; i++) {
         ClientIP = IPAddress(ipv4.bytes[0], ipv4.bytes[1], ipv4.bytes[2],
                              DHCPS_BASE_IP + i);
