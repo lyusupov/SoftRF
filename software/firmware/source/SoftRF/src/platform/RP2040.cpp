@@ -123,6 +123,10 @@ char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 #else
 #include "../driver/WiFi.h"
 WebServer server ( 80 );
+
+#define isTimeToAP() (millis() - AP_clients_TimeMarker > 1000)
+static unsigned long AP_clients_TimeMarker = 0;
+static int AP_clients_cache                = 0;
 #endif /* EXCLUDE_WIFI */
 
 static struct rst_info reset_info = {
@@ -699,7 +703,11 @@ static int RP2040_WiFi_clients_count()
   switch (mode)
   {
   case WIFI_AP:
-    return WiFi.softAPgetStationNum();
+    if (isTimeToAP()) {
+      AP_clients_cache = WiFi.softAPgetStationNum();
+      AP_clients_TimeMarker = millis();
+    }
+    return AP_clients_cache;
   case WIFI_STA:
   default:
     return -1; /* error */
