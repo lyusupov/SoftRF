@@ -1336,8 +1336,6 @@ RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
  any redistribution
 *********************************************************************/
 
-#define TINYUSB_HOST_API_NEW 0
-
 #define LANGUAGE_ID 0x0409  // English
 
 // USB Host object
@@ -1375,9 +1373,7 @@ void setup1() {
   // host bit-banging processing works done in core1 to free up core0 for other works
   USBHost.begin(1);
 
-#if TINYUSB_HOST_API_NEW
   SerialHost.begin(SERIAL_OUT_BR);
-#endif /* TINYUSB_HOST_API_NEW */
 
   core1_booting = false;
   while (core0_booting) { }
@@ -1526,17 +1522,6 @@ void tuh_umount_cb(uint8_t daddr)
   Serial.printf("Device removed, address = %d\r\n", daddr);
 }
 
-void line_cb(tuh_xfer_t* xfer)
-{
-  Serial.println("LINE set");
-}
-void dtr_cb(tuh_xfer_t* xfer)
-{
-  Serial.println("DTR set");
-}
-
-#define CFG_TUH_CDC_LINE_CODING_ON_ENUM { 38400, CDC_LINE_CONDING_STOP_BITS_1, CDC_LINE_CODING_PARITY_NONE, 8 }
-
 extern "C" {
 
 // Invoked when a device with CDC interface is mounted
@@ -1544,7 +1529,6 @@ extern "C" {
 void tuh_cdc_mount_cb(uint8_t idx) {
 
   // bind SerialHost object to this interface index
-#if TINYUSB_HOST_API_NEW
   uint32_t SerialBaud;
 
   switch (settings->baudrate)
@@ -1577,31 +1561,14 @@ void tuh_cdc_mount_cb(uint8_t idx) {
 
   SerialHost.setBaudrate(SerialBaud);
   SerialHost.setDtrRts(true, false);
-#else
-  SerialHost.begin(idx);
-#if 0
-  cdc_line_coding_t line_coding = CFG_TUH_CDC_LINE_CODING_ON_ENUM;;
 
-  tuh_cdc_set_line_coding(idx, &line_coding, line_cb, 0);
-  tuh_cdc_set_control_line_state(idx, CDC_CONTROL_LINE_STATE_DTR, dtr_cb, 0);
-#endif
-#endif /* TINYUSB_HOST_API_NEW */
   Serial.println("SerialHost is connected to a new CDC device");
 }
 
 // Invoked when a device with CDC interface is unmounted
 void tuh_cdc_umount_cb(uint8_t idx) {
-#if TINYUSB_HOST_API_NEW
   SerialHost.umount(idx);
   Serial.println("SerialHost is disconnected");
-#else
-  if (idx == SerialHost.getIndex()) {
-    // unbind SerialHost if this interface is unmounted
-    SerialHost.end();
-
-    Serial.println("SerialHost is disconnected");
-  }
-#endif /* TINYUSB_HOST_API_NEW */
 }
 
 } // extern "C"
