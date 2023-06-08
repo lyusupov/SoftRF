@@ -493,6 +493,8 @@ void setup1() {
   // host bit-banging processing works done in core1 to free up core0 for other works
   USBHost.begin(1);
 
+  SerialHost.begin(SERIAL_OUT_BR);
+
   core1_booting = false;
   while (core0_booting) { }
 }
@@ -630,41 +632,57 @@ void tuh_umount_cb(uint8_t daddr)
   Serial.printf("Device removed, address = %d\r\n", daddr);
 }
 
-void line_cb(tuh_xfer_t* xfer)
-{
-  Serial.println("LINE set");
-}
-void dtr_cb(tuh_xfer_t* xfer)
-{
-  Serial.println("DTR set");
-}
-
-#define CFG_TUH_CDC_LINE_CODING_ON_ENUM { 38400, CDC_LINE_CONDING_STOP_BITS_1, CDC_LINE_CODING_PARITY_NONE, 8 }
+extern "C" {
 
 // Invoked when a device with CDC interface is mounted
 // idx is index of cdc interface in the internal pool.
 void tuh_cdc_mount_cb(uint8_t idx) {
 
   // bind SerialHost object to this interface index
-  SerialHost.begin(idx);
-#if 0
-  cdc_line_coding_t line_coding = CFG_TUH_CDC_LINE_CODING_ON_ENUM;;
+  uint32_t SerialBaud;
 
-  tuh_cdc_set_line_coding(idx, &line_coding, line_cb, 0);
-  tuh_cdc_set_control_line_state(idx, CDC_CONTROL_LINE_STATE_DTR, dtr_cb, 0);
-#endif
+  switch (settings->m.baudrate)
+  {
+  case B4800:
+    SerialBaud = 4800;
+    break;
+  case B9600:
+    SerialBaud = 9600;
+    break;
+  case B19200:
+    SerialBaud = 19200;
+    break;
+  case B57600:
+    SerialBaud = 57600;
+    break;
+  case B115200:
+    SerialBaud = 115200;
+    break;
+  case B2000000:
+    SerialBaud = 2000000;
+    break;
+  case B38400:
+  default:
+    SerialBaud = 38400;
+    break;
+  }
+
+  SerialHost.mount(idx);
+
+  SerialHost.setBaudrate(SerialBaud);
+  SerialHost.setDtrRts(true, false);
+
   Serial.println("SerialHost is connected to a new CDC device");
 }
 
 // Invoked when a device with CDC interface is unmounted
 void tuh_cdc_umount_cb(uint8_t idx) {
-  if (idx == SerialHost.getIndex()) {
-    // unbind SerialHost if this interface is unmounted
-    SerialHost.end();
-
-    Serial.println("SerialHost is disconnected");
-  }
+  SerialHost.umount(idx);
+  Serial.println("SerialHost is disconnected");
 }
+
+} // extern "C"
+
 #endif /* USE_USB_HOST */
 
 static void RP2040_USB_setup()
