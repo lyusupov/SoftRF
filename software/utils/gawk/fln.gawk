@@ -51,6 +51,8 @@ BEGIN {FS=","; OFS=","}
     if (i == 1) {
       if (id_type == "int") {
         ret_str = strtonum("0x" ret_str);
+      } else {
+        ret_str = toupper(ret_str);
       }
     }
 

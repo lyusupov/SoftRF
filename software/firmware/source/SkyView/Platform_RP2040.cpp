@@ -1022,7 +1022,6 @@ static bool play_file(char *filename)
       if (!WAV_In->loop()) WAV_In->stop();
     }
 
-    Audio_File->close();
     rval = true;
   }
 #endif /* EXCLUDE_AUDIO */
