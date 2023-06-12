@@ -124,6 +124,7 @@ void setup()
   } else {
     Serial.println(F(" failed!"));
   }
+  Serial.flush();
 
   WiFi_setup();
 

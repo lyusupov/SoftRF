@@ -125,7 +125,11 @@ static union {
 #if !defined(EXCLUDE_AUDIO)
 #include <AudioFileSourceSdFat.h>
 #include <AudioGeneratorWAV.h>
+#if defined(USE_EXT_I2S_DAC)
+#include <AudioOutputI2S.h>
+#else
 #include <AudioOutputPWM.h>
+#endif /* USE_EXT_I2S_DAC */
 #endif /* EXCLUDE_AUDIO */
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -179,7 +183,11 @@ static uint8_t LED_state_cache = !(LED_STATE_ON);
 #if !defined(EXCLUDE_AUDIO)
 AudioGeneratorWAV    *WAV_In;
 AudioFileSourceSdFat *Audio_File;
-AudioOutputPWM       *PWM_Out;
+#if defined(USE_EXT_I2S_DAC)
+AudioOutputI2S       *Audio_Out;
+#else
+AudioOutputPWM       *Audio_Out;
+#endif /* USE_EXT_I2S_DAC */
 #endif /* EXCLUDE_AUDIO */
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -291,11 +299,22 @@ static void RP2040_setup()
 
 #if !defined(EXCLUDE_AUDIO)
   WAV_In     = new AudioGeneratorWAV();
-  PWM_Out    = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
   Audio_File = new AudioFileSourceSdFat(fatfs);
 
-  PWM_Out->SetOutputModeMono(true);
-  PWM_Out->SetChannels(1);
+#if defined(USE_EXT_I2S_DAC)
+  Audio_Out  = new AudioOutputI2S(11025);
+  Audio_Out->SetPinout(SOC_GPIO_PIN_BCK,  SOC_GPIO_PIN_LRCK,
+                       SOC_GPIO_PIN_DATA, SOC_GPIO_PIN_MCK);
+#if SOC_GPIO_PIN_MCK != SOC_UNUSED_PIN
+  Audio_Out->SetMclk(true);
+#endif /* SOC_GPIO_PIN_MCK */
+#else
+  Audio_Out  = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
+  Audio_Out->SetBuffers(8, 512);
+#endif /* USE_EXT_I2S_DAC */
+
+  Audio_Out->SetOutputModeMono(true);
+  Audio_Out->SetChannels(1);
 #endif /* EXCLUDE_AUDIO */
 
   if (RP2040_has_CPM) {
@@ -1016,10 +1035,13 @@ static bool play_file(char *filename)
 
 #if !defined(EXCLUDE_AUDIO)
   if (Audio_File->open(filename)) {
-    WAV_In->begin(Audio_File, PWM_Out);
+    WAV_In->begin(Audio_File, Audio_Out);
 
     while (WAV_In->isRunning()) {
-      if (!WAV_In->loop()) WAV_In->stop();
+      if (!WAV_In->loop()) {
+        Audio_Out->flush();
+        WAV_In->stop();
+      }
     }
 
     rval = true;

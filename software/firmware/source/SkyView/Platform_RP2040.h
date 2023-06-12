@@ -100,8 +100,6 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_USBH_DP  (20u)  // Pin used as D+ for host, D- = D+ + 1
 #define SOC_GPIO_PIN_USBH_DN  (21u)
 
-#define SOC_GPIO_PIN_PWM_OUT  (3u)
-
 #define SOC_GPIO_PIN_SMPS     (23u) // Pico
 #define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
 #define SOC_GPIO_PIN_CYW43_PW (23u) // Pico W
@@ -116,6 +114,20 @@ enum RP2040_board_id {
 
 #define EXCLUDE_AUDIO               // pending
 
+#define SOC_GPIO_PIN_PWM_OUT  (3u)
+
+/* Waveshare Pico-Audio, PCM5101A I2S DAC */
+#define SOC_GPIO_PIN_DATA     (26u)
+#define SOC_GPIO_PIN_BCK      (27u)
+#define SOC_GPIO_PIN_LRCK     (28u)
+#define SOC_GPIO_PIN_MCK      SOC_UNUSED_PIN
+
+/* Waveshare Pico-Audio Rev2.1, CS4344 I2S DAC */
+//#define SOC_GPIO_PIN_DATA     (22u)
+//#define SOC_GPIO_PIN_BCK      (28u)
+//#define SOC_GPIO_PIN_LRCK     (27u)
+//#define SOC_GPIO_PIN_MCK      (26u)
+
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
 #else
@@ -123,7 +135,10 @@ enum RP2040_board_id {
 #endif /* ARDUINO_ARCH_MBED */
 
 /* Experimental */
-#if defined(USE_TINYUSB)
+#if !defined(EXCLUDE_AUDIO)
+//#define USE_EXT_I2S_DAC
+#endif /* EXCLUDE_AUDIO */
+#if defined(USE_TINYUSB) && !defined(USE_EXT_I2S_DAC)
 #define USE_USB_HOST
 #endif /* USE_TINYUSB */
 
