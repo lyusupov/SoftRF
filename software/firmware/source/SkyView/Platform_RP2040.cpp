@@ -181,12 +181,12 @@ static unsigned long status_LED_TimeMarker = 0;
 static uint8_t LED_state_cache = !(LED_STATE_ON);
 
 #if !defined(EXCLUDE_AUDIO)
-AudioGeneratorWAV    *WAV_In;
-AudioFileSourceSdFat *Audio_File;
+AudioGeneratorWAV    *Audio_Gen;
+AudioFileSourceSdFat *Audio_Source;
 #if defined(USE_EXT_I2S_DAC)
-AudioOutputI2S       *Audio_Out;
+AudioOutputI2S       *Audio_Sink;
 #else
-AudioOutputPWM       *Audio_Out;
+AudioOutputPWM       *Audio_Sink;
 #endif /* USE_EXT_I2S_DAC */
 #endif /* EXCLUDE_AUDIO */
 
@@ -298,23 +298,23 @@ static void RP2040_setup()
   Wire1.end();
 
 #if !defined(EXCLUDE_AUDIO)
-  WAV_In     = new AudioGeneratorWAV();
-  Audio_File = new AudioFileSourceSdFat(fatfs);
+  Audio_Gen    = new AudioGeneratorWAV();
+  Audio_Source = new AudioFileSourceSdFat(fatfs);
 
 #if defined(USE_EXT_I2S_DAC)
-  Audio_Out  = new AudioOutputI2S(11025);
-  Audio_Out->SetPinout(SOC_GPIO_PIN_BCK,  SOC_GPIO_PIN_LRCK,
+  Audio_Sink   = new AudioOutputI2S(11025);
+  Audio_Sink->SetPinout(SOC_GPIO_PIN_BCK,  SOC_GPIO_PIN_LRCK,
                        SOC_GPIO_PIN_DATA, SOC_GPIO_PIN_MCK);
 #if SOC_GPIO_PIN_MCK != SOC_UNUSED_PIN
-  Audio_Out->SetMclk(true);
+  Audio_Sink->SetMclk(true);
 #endif /* SOC_GPIO_PIN_MCK */
 #else
-  Audio_Out  = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
-  Audio_Out->SetBuffers(8, 512);
+  Audio_Sink   = new AudioOutputPWM(11025, SOC_GPIO_PIN_PWM_OUT);
+  Audio_Sink->SetBuffers(8, 512);
 #endif /* USE_EXT_I2S_DAC */
 
-  Audio_Out->SetOutputModeMono(true);
-  Audio_Out->SetChannels(1);
+  Audio_Sink->SetOutputModeMono(true);
+  Audio_Sink->SetChannels(1);
 #endif /* EXCLUDE_AUDIO */
 
   if (RP2040_has_CPM) {
@@ -491,7 +491,6 @@ static void RP2040_fini()
   }
 
 #if !defined(EXCLUDE_AUDIO)
-  WAV_In->stop();
   pinMode(SOC_GPIO_PIN_PWM_OUT, INPUT);
 #endif /* EXCLUDE_AUDIO */
 
@@ -1034,13 +1033,14 @@ static bool play_file(char *filename)
   bool rval = false;
 
 #if !defined(EXCLUDE_AUDIO)
-  if (Audio_File->open(filename)) {
-    WAV_In->begin(Audio_File, Audio_Out);
+  if (Audio_Source->open(filename)) {
+    unsigned long Audio_Timemarker = millis();
+    Audio_Gen->begin(Audio_Source, Audio_Sink);
 
-    while (WAV_In->isRunning()) {
-      if (!WAV_In->loop()) {
-        Audio_Out->flush();
-        WAV_In->stop();
+    while (Audio_Gen->loop()) {
+      if (millis() - Audio_Timemarker > 10000) {
+        Audio_Gen->stop();
+        Serial.println("ERROR: audio timeout."); Serial.flush();
       }
     }
 
