@@ -257,9 +257,9 @@ Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 static unsigned long status_LED_TimeMarker = 0;
 
 #if !defined(EXCLUDE_AUDIO)
-AudioGeneratorWAV    *WAV_In;
-AudioFileSourceSdFat *Audio_File;
-AudioOutputI2S       *I2S_Out;
+AudioGeneratorWAV    *Audio_Gen;
+AudioFileSourceSdFat *Audio_Source;
+AudioOutputI2S       *Audio_Sink;
 #endif /* EXCLUDE_AUDIO */
 
 #if CONFIG_TINYUSB_MSC_ENABLED
@@ -526,15 +526,30 @@ static void ESP32_setup()
   }
 
 #if !defined(EXCLUDE_AUDIO)
-  WAV_In     = new AudioGeneratorWAV();
-  I2S_Out    = new AudioOutputI2S(0, AudioOutputI2S::INTERNAL_PDM);
-  Audio_File = new AudioFileSourceSdFat(fatfs);
+  Audio_Gen    = new AudioGeneratorWAV();
+  Audio_Source = new AudioFileSourceSdFat(fatfs);
 
-  I2S_Out->SetPinout(I2S_PIN_NO_CHANGE,
-                     I2S_PIN_NO_CHANGE,
-                     SOC_GPIO_PIN_PDM_OUT,
-                     I2S_PIN_NO_CHANGE);
-  I2S_Out->SetMclk(false);
+#if defined(USE_EXT_I2S_DAC)
+  Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S );
+  Audio_Sink->SetPinout(SOC_GPIO_PIN_BCK,
+                        SOC_GPIO_PIN_LRCK,
+                        SOC_GPIO_PIN_DATA,
+                        SOC_GPIO_PIN_MCK);
+#else
+  Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::INTERNAL_PDM);
+  Audio_Sink->SetPinout(I2S_PIN_NO_CHANGE,
+                        I2S_PIN_NO_CHANGE,
+                        SOC_GPIO_PIN_PDM_OUT,
+                        I2S_PIN_NO_CHANGE);
+#endif /* USE_EXT_I2S_DAC */
+
+  Audio_Sink->SetOutputModeMono(true);
+  Audio_Sink->SetChannels(1);
+#if SOC_GPIO_PIN_MCK != I2S_PIN_NO_CHANGE
+  Audio_Sink->SetMclk(true);
+#else
+  Audio_Sink->SetMclk(false);
+#endif /* SOC_GPIO_PIN_MCK */
 #endif /* EXCLUDE_AUDIO */
 
   pinMode(SOC_GPIO_PIN_LED, OUTPUT);
@@ -1562,11 +1577,16 @@ static bool play_file(char *filename)
   bool rval = false;
 
 #if !defined(EXCLUDE_AUDIO)
-  if (Audio_File->open(filename)) {
-    WAV_In->begin(Audio_File, I2S_Out);
+  if (Audio_Source->open(filename)) {
+    unsigned long Audio_Timemarker = millis();
+    Audio_Gen->begin(Audio_Source, Audio_Sink);
 
-    while (WAV_In->isRunning()) {
-      if (!WAV_In->loop()) WAV_In->stop();
+    while (Audio_Gen->loop()) {
+      if (millis() - Audio_Timemarker > 10000) {
+        Audio_Gen->stop();
+        Serial.println("ERROR: Audio timeout. Playback aborted.");
+        Serial.flush();
+      }
     }
 
     rval = true;
@@ -1601,10 +1621,12 @@ static void ESP32_TTS(char *message)
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
         return;
 
-      while (!SoC->EPD_is_ready()) {yield();}
-      EPD_Message("VOICE", "ALERT");
-      SoC->EPD_update(EPD_UPDATE_FAST);
-      while (!SoC->EPD_is_ready()) {yield();}
+      if (hw_info.display == DISPLAY_EPD_2_7) {
+        while (!SoC->EPD_is_ready()) {yield();}
+        EPD_Message("VOICE", "ALERT");
+        SoC->EPD_update(EPD_UPDATE_FAST);
+        while (!SoC->EPD_is_ready()) {yield();}
+      }
 
       bool wdt_status = loopTaskWDTEnabled;
 

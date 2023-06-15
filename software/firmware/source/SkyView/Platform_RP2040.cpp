@@ -304,7 +304,7 @@ static void RP2040_setup()
 #if defined(USE_EXT_I2S_DAC)
   Audio_Sink   = new AudioOutputI2S(11025);
   Audio_Sink->SetPinout(SOC_GPIO_PIN_BCK,  SOC_GPIO_PIN_LRCK,
-                       SOC_GPIO_PIN_DATA, SOC_GPIO_PIN_MCK);
+                        SOC_GPIO_PIN_DATA, SOC_GPIO_PIN_MCK);
 #if SOC_GPIO_PIN_MCK != SOC_UNUSED_PIN
   Audio_Sink->SetMclk(true);
 #endif /* SOC_GPIO_PIN_MCK */
@@ -1040,7 +1040,8 @@ static bool play_file(char *filename)
     while (Audio_Gen->loop()) {
       if (millis() - Audio_Timemarker > 10000) {
         Audio_Gen->stop();
-        Serial.println("ERROR: audio timeout."); Serial.flush();
+        Serial.println("ERROR: Audio timeout. Playback aborted.");
+        Serial.flush();
       }
     }
 
@@ -1067,10 +1068,12 @@ static void RP2040_TTS(char *message)
         Watchdog.reset();
       }
 
-      while (!SoC->EPD_is_ready()) {yield();}
-      EPD_Message("VOICE", "ALERT");
-      SoC->EPD_update(EPD_UPDATE_FAST);
-      while (!SoC->EPD_is_ready()) {yield();}
+      if (hw_info.display == DISPLAY_EPD_2_7) {
+        while (!SoC->EPD_is_ready()) {yield();}
+        EPD_Message("VOICE", "ALERT");
+        SoC->EPD_update(EPD_UPDATE_FAST);
+        while (!SoC->EPD_is_ready()) {yield();}
+      }
 
       char *word = strtok (message, " ");
 

@@ -138,9 +138,24 @@
 #define SOC_GPIO_PIN_USB_DN   19
 
 // Audio
+#define EXCLUDE_AUDIO            // pending
+#if !defined(EXCLUDE_AUDIO)
+//#define USE_EXT_I2S_DAC
+#endif /* EXCLUDE_AUDIO */
+
 #define SOC_GPIO_PIN_PDM_OUT  17
 
-#define EXCLUDE_AUDIO            // pending
+/* Waveshare Pico-Audio, PCM5101A I2S DAC */
+#define SOC_GPIO_PIN_DATA     8
+#define SOC_GPIO_PIN_BCK      9
+#define SOC_GPIO_PIN_LRCK     10
+#define SOC_GPIO_PIN_MCK      I2S_PIN_NO_CHANGE
+
+/* Waveshare Pico-Audio Rev2.1, CS4344 I2S DAC */
+//#define SOC_GPIO_PIN_DATA     7
+//#define SOC_GPIO_PIN_BCK      10
+//#define SOC_GPIO_PIN_LRCK     9
+//#define SOC_GPIO_PIN_MCK      8
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
