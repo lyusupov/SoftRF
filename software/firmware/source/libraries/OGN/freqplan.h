@@ -70,6 +70,34 @@ class FreqPlan
             break;
         }
         break;
+      case RF_PROTOCOL_APRS:
+        { ChanSepar = 10000; Channels = 1; MaxTxPower = 30; }
+        switch (Plan)
+        {
+          case RF_BAND_CN:
+            { BaseFreq = 144640000; }
+            break;
+          case RF_BAND_KR:
+            { BaseFreq = 144620000; }
+            break;
+          case RF_BAND_AU:
+            { BaseFreq = 145175000; }
+            break;
+          case RF_BAND_NZ:
+            { BaseFreq = 144575000; }
+            break;
+          case RF_BAND_US:
+            { BaseFreq = 144390000; }
+            break;
+          case RF_BAND_EU:
+          case RF_BAND_RU:
+          case RF_BAND_IN: /* TBD */
+          case RF_BAND_IL: /* TBD */
+          default:
+            { BaseFreq = 144800000; }
+            break;
+        }
+        break;
       case RF_PROTOCOL_LEGACY:
       case RF_PROTOCOL_OGNTP:
       default:
