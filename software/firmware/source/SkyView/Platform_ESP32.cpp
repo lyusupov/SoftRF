@@ -530,7 +530,7 @@ static void ESP32_setup()
   Audio_Source = new AudioFileSourceSdFat(fatfs);
 
 #if defined(USE_EXT_I2S_DAC)
-  Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S );
+  Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S);
   Audio_Sink->SetPinout(SOC_GPIO_PIN_BCK,
                         SOC_GPIO_PIN_LRCK,
                         SOC_GPIO_PIN_DATA,

@@ -52,7 +52,8 @@ const char *Protocol_ID[] = {
   [RF_PROTOCOL_P3I]       = "P3I",
   [RF_PROTOCOL_ADSB_1090] = "ADS",
   [RF_PROTOCOL_ADSB_UAT]  = "UAT",
-  [RF_PROTOCOL_FANET]     = "FAN"
+  [RF_PROTOCOL_FANET]     = "FAN",
+  [RF_PROTOCOL_APRS]      = "HAM",
 };
 
 size_t (*protocol_encode)(void *, ufo_t *);

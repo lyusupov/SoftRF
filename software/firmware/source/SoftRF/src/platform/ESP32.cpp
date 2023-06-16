@@ -466,6 +466,9 @@ static void ESP32_setup()
     default:
       esp32_board   = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
+      hw_info.model = SOFTRF_MODEL_HAM;
+      break;
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
@@ -1028,6 +1031,131 @@ static void ESP32_setup()
     }
 
     ui = &ui_settings;
+
+  } else if (hw_info.model == SOFTRF_MODEL_HAM) {
+    Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
+    Wire.beginTransmission(AXP2101_SLAVE_ADDRESS);
+    bool has_axp2101 = (Wire.endTransmission() == 0) &&
+                       axp_2xxx.begin(Wire, AXP2101_SLAVE_ADDRESS,
+                                      SOC_GPIO_PIN_TWR2_SDA,
+                                      SOC_GPIO_PIN_TWR2_SCL);
+    if (has_axp2101) {
+      esp32_board   = ESP32_LILYGO_T_TWR_V2_0;
+      hw_info.pmu   = PMU_AXP2101;
+
+      // Set the minimum common working voltage of the PMU VBUS input,
+      // below this value will turn off the PMU
+      axp_2xxx.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
+
+      // Set the maximum current of the PMU VBUS input,
+      // higher than this value will turn off the PMU
+      axp_2xxx.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
+
+      // DCDC1 1500~3400mV, IMAX=2A
+      axp_2xxx.setDC1Voltage(3300); // WROOM, OLED
+
+      axp_2xxx.setDC3Voltage(3300); // SA868, NeoPixel
+
+      // ALDO 500~3500V, 100mV/step, IMAX=300mA
+      axp_2xxx.setALDO2Voltage(3300); // micro-SD
+      axp_2xxx.setALDO4Voltage(3300); // GNSS, AXP2101 power-on value: 2900
+
+      axp_2xxx.setBLDO1Voltage(3300); // Mic
+
+      // axp_2xxx.enableDC1();
+      axp_2xxx.enableDC3();
+
+      axp_2xxx.enableALDO2();
+      axp_2xxx.enableALDO4();
+
+      axp_2xxx.enableBLDO1();
+
+      axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
+
+      pinMode(SOC_GPIO_PIN_TWR2_PMU_IRQ, INPUT /* INPUT_PULLUP */);
+
+      attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TWR2_PMU_IRQ),
+                      ESP32_PMU_Interrupt_handler, FALLING);
+
+      axp_2xxx.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+      axp_2xxx.clearIrqStatus();
+
+      axp_2xxx.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+      axp_2xxx.disableTSPinMeasure();
+      axp_2xxx.enableBattVoltageMeasure();
+
+      axp_2xxx.enableIRQ(XPOWERS_AXP2101_PKEY_LONG_IRQ |
+                         XPOWERS_AXP2101_PKEY_SHORT_IRQ);
+
+      /* wait until every LDO voltage will settle down */
+      delay(200);
+
+    } else {
+      WIRE_FINI(Wire);
+      esp32_board = ESP32_LILYGO_T_TWR_V1_3;
+    }
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_TWR2_CONS_RX,
+                       SOC_GPIO_PIN_TWR2_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    //lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
+    //lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
+    //lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
+
+    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
+                                         EXTERNAL_FLASH_DEVICE_COUNT);
+    if (ESP32_has_spiflash) {
+      spiflash_id = SPIFlash->getJEDECID();
+
+      uint32_t capacity = spiflash_id & 0xFF;
+      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
+        hw_info.storage = STORAGE_FLASH;
+
+#if CONFIG_TINYUSB_MSC_ENABLED
+  #if defined(USE_ADAFRUIT_MSC)
+        // Set disk vendor id, product id and revision
+        // with string up to 8, 16, 4 characters respectively
+        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
+
+        // Set callback
+        usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
+                                     ESP32_msc_write_cb,
+                                     ESP32_msc_flush_cb);
+
+        // Set disk size, block size should be 512 regardless of spi flash page size
+        usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+        // MSC is ready for read/write
+        usb_msc.setUnitReady(true);
+
+        usb_msc.begin();
+
+  #else
+
+        // Set disk vendor id, product id and revision
+        // with string up to 8, 16, 4 characters respectively
+        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
+        usb_msc.productID("Internal Flash");
+        usb_msc.productRevision("1.0");
+
+        // Set callback
+        usb_msc.onRead(ESP32_msc_read_cb);
+        usb_msc.onWrite(ESP32_msc_write_cb);
+
+        // MSC is ready for read/write
+        usb_msc.mediaPresent(true);
+
+        // Set disk size, block size should be 512 regardless of spi flash page size
+        usb_msc.begin(SPIFlash->size()/512, 512);
+  #endif /* USE_ADAFRUIT_MSC */
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+
+        FATFS_is_mounted = fatfs.begin(SPIFlash);
+      }
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -1124,6 +1252,9 @@ static void ESP32_setup()
       }
     }
 #endif /* EXCLUDE_IMU */
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
+             esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+    /* TBD */
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -2190,6 +2321,14 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_C3_SCK,  SOC_GPIO_PIN_C3_MISO,
                 SOC_GPIO_PIN_C3_MOSI, SOC_GPIO_PIN_C3_SS);
       break;
+    case ESP32_LILYGO_T_TWR_V1_3:
+      SPI.begin(SOC_GPIO_PIN_TWR1_SCK,  SOC_GPIO_PIN_TWR1_MISO,
+                SOC_GPIO_PIN_TWR1_MOSI, SOC_GPIO_PIN_TWR1_SS);
+      break;
+    case ESP32_LILYGO_T_TWR_V2_0:
+      SPI.begin(SOC_GPIO_PIN_TWR2_SCK,  SOC_GPIO_PIN_TWR2_MISO,
+                SOC_GPIO_PIN_TWR2_MOSI, SOC_GPIO_PIN_TWR2_SS_EXT);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -2247,6 +2386,14 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: ESP32-C3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+      Serial.println(F("INFO: LilyGO T-TWR rev. 1.3 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_TWR1_GNSS_RX, SOC_GPIO_PIN_TWR1_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+      Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -2329,6 +2476,21 @@ static byte ESP32_Display_setup()
       if (has_oled) {
         u8x8 = &u8x8_1_3;
         rval = DISPLAY_OLED_1_3;
+      }
+    } else if (hw_info.model == SOFTRF_MODEL_HAM) {
+      if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+        Wire.begin(SOC_GPIO_PIN_TWR1_SDA, SOC_GPIO_PIN_TWR1_SCL);
+      } else {
+        Wire.begin(SOC_GPIO_PIN_TWR2_SDA, SOC_GPIO_PIN_TWR2_SCL);
+      }
+      Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      has_oled = (Wire.endTransmission() == 0);
+      if (has_oled) {
+        u8x8 = &u8x8_ttgo;
+        rval = DISPLAY_OLED_TTGO;
+      }
+      if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+        WIRE_FINI(Wire);
       }
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
