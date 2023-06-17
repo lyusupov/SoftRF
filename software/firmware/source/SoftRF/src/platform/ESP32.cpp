@@ -146,8 +146,9 @@ extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
 
 const char *ESP32SX_Device_Manufacturer = SOFTRF_IDENT;
-const char *ESP32SX_Device_Model = "Standalone Edition"; /* 303a:8132 */
-const char *ESP32S3_Device_Model = "Prime Edition Mk.3"; /* 303a:8133 */
+const char *ESP32SX_Model_Stand  = "Standalone Edition"; /* 303a:8132 */
+const char *ESP32S3_Model_Prime3 = "Prime Edition Mk.3"; /* 303a:8133 */
+const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -493,7 +494,11 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     esp32_board      = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    esp32_board      = ESP32_S3_DEVKIT;
+    if (ESP32_getFlashId() == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128)) {
+      hw_info.model  = SOFTRF_MODEL_HAM;  /* allow psramFound() to fail */
+    } else {
+      esp32_board    = ESP32_S3_DEVKIT;
+    }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     esp32_board      = ESP32_C3_DEVKIT;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -1090,9 +1095,17 @@ static void ESP32_setup()
       /* wait until every LDO voltage will settle down */
       delay(200);
 
+      lmic_pins.nss  = SOC_GPIO_PIN_TWR2_SS_EXT;
+      lmic_pins.rst  = SOC_UNUSED_PIN;
+      lmic_pins.busy = SOC_UNUSED_PIN;
+
     } else {
       WIRE_FINI(Wire);
       esp32_board = ESP32_LILYGO_T_TWR_V1_3;
+
+      lmic_pins.nss  = SOC_GPIO_PIN_TWR1_SS;
+      lmic_pins.rst  = SOC_UNUSED_PIN;
+      lmic_pins.busy = SOC_UNUSED_PIN;
     }
 
 #if ARDUINO_USB_CDC_ON_BOOT
@@ -1101,17 +1114,13 @@ static void ESP32_setup()
                        SOC_GPIO_PIN_TWR2_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    //lmic_pins.nss  = SOC_GPIO_PIN_S3_SS;
-    //lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
-    //lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
-
     ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
     if (ESP32_has_spiflash) {
       spiflash_id = SPIFlash->getJEDECID();
 
       uint32_t capacity = spiflash_id & 0xFF;
-      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
+      if (capacity >= 0x18) { /* equal or greater than 1UL << 24 (16 MiB) */
         hw_info.storage = STORAGE_FLASH;
 
 #if CONFIG_TINYUSB_MSC_ENABLED
@@ -1179,6 +1188,8 @@ static void ESP32_setup()
     pid = (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) ? SOFTRF_USB_PID_PRIME_MK3  :
           (esp32_board == ESP32_S2_T8_V1_1         ) ? SOFTRF_USB_PID_WEBTOP     :
           (esp32_board == ESP32_S3_DEVKIT          ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_LILYGO_T_TWR_V1_3  ) ? SOFTRF_USB_PID_HAM        :
+          (esp32_board == ESP32_LILYGO_T_TWR_V2_0  ) ? SOFTRF_USB_PID_HAM        :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1188,8 +1199,10 @@ static void ESP32_setup()
 
     USB.VID(USB_VID); // USB_ESPRESSIF_VID = 0x303A
     USB.PID(pid);
-    USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ?
-                    ESP32S3_Device_Model : ESP32SX_Device_Model);
+    USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ? ESP32S3_Model_Prime3 :
+                    esp32_board == ESP32_LILYGO_T_TWR_V1_3   ? ESP32S3_Model_Ham    :
+                    esp32_board == ESP32_LILYGO_T_TWR_V2_0   ? ESP32S3_Model_Ham    :
+                    ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
     USB.begin();
@@ -1252,9 +1265,24 @@ static void ESP32_setup()
       }
     }
 #endif /* EXCLUDE_IMU */
-  } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
-             esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+
+    pinMode(SOC_GPIO_PIN_TWR1_OLED_PWR_EN, INPUT_PULLUP);
+
+    pinMode(SOC_GPIO_PIN_TWR1_RADIO_HL, OUTPUT_OPEN_DRAIN);
+    pinMode(SOC_GPIO_PIN_TWR1_RADIO_PD, OUTPUT);
+
+    digitalWrite(SOC_GPIO_PIN_TWR1_RADIO_HL, LOW);
+    digitalWrite(SOC_GPIO_PIN_TWR1_RADIO_PD, LOW);
+
+//    delay(500);
+
+//    digitalWrite(SOC_GPIO_PIN_TWR1_RADIO_PD, HIGH);
+
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+
     /* TBD */
+
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -1849,6 +1877,13 @@ static void ESP32_fini(int reason)
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_T8_S2_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+    pinMode(SOC_GPIO_PIN_S3_BUTTON, INPUT);
+
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
@@ -2975,7 +3010,11 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     calibrate_voltage(ADC1_GPIO9_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+    if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+      calibrate_voltage(ADC1_GPIO6_CHANNEL);
+    } else {
+      calibrate_voltage(ADC1_GPIO2_CHANNEL);
+    }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     calibrate_voltage(ADC1_GPIO1_CHANNEL);
 #else
@@ -2995,6 +3034,7 @@ static float ESP32_Battery_param(uint8_t param)
             BATTERY_THRESHOLD_LIPO + 0.1 :
             hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
+            hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
@@ -3005,6 +3045,7 @@ static float ESP32_Battery_param(uint8_t param)
             BATTERY_CUTOFF_LIPO + 0.2 :
             hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
+            hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
@@ -3053,7 +3094,8 @@ static float ESP32_Battery_param(uint8_t param)
       /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
          (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
-         (esp32_board   == ESP32_S2_T8_V1_1)) {
+          esp32_board   == ESP32_LILYGO_T_TWR_V1_3  ||
+          esp32_board   == ESP32_S2_T8_V1_1) {
         voltage += voltage;
       } else if (esp32_board == ESP32_C3_DEVKIT) {
       /* NodeMCU has voltage divider 100k/220k on board */
@@ -3246,11 +3288,13 @@ static void ESP32_Button_setup()
 
   if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
-       esp32_board == ESP32_S2_T8_V1_1 ||
+       esp32_board == ESP32_S2_T8_V1_1        ||
+       esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
                  SOC_GPIO_PIN_T8_S2_BUTTON :
-                 (esp32_board == ESP32_S3_DEVKIT) ?
+                 (esp32_board == ESP32_S3_DEVKIT ||
+                  esp32_board == ESP32_LILYGO_T_TWR_V1_3) ?
                  SOC_GPIO_PIN_S3_BUTTON :
                  SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -3293,6 +3337,7 @@ static void ESP32_Button_loop()
   if (esp32_board == ESP32_TTGO_T_BEAM         ||
       esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
       esp32_board == ESP32_S2_T8_V1_1          ||
+      esp32_board == ESP32_LILYGO_T_TWR_V1_3   ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
   }
@@ -3300,7 +3345,8 @@ static void ESP32_Button_loop()
 
 static void ESP32_Button_fini()
 {
-  if (esp32_board == ESP32_S2_T8_V1_1 ||
+  if (esp32_board == ESP32_S2_T8_V1_1        ||
+      esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1 ?
                      SOC_GPIO_PIN_T8_S2_BUTTON :

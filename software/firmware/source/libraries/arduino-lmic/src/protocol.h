@@ -27,7 +27,7 @@ enum
 	RF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
 	RF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
 	RF_PROTOCOL_FANET,     /* Skytraxx */
-	RF_PROTOCOL_APRS,      /* HAM Radio */
+	RF_PROTOCOL_APRS,      /* Ham Radio */
 	/* Volunteer contributors are welcome */
 	RF_PROTOCOL_EID,       /* UAS eID */
 	RF_PROTOCOL_GOTENNA,   /* goTenna Mesh */

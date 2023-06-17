@@ -1078,7 +1078,9 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
-      hw_info.model == SOFTRF_MODEL_LEGO)
+      hw_info.model == SOFTRF_MODEL_LEGO      ||
+      hw_info.model == SOFTRF_MODEL_BALKAN    ||
+      hw_info.model == SOFTRF_MODEL_HAM)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);

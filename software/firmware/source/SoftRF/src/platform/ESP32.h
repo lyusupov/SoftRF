@@ -448,6 +448,7 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWR1_MISO          11
 #define SOC_GPIO_PIN_TWR1_SCK           12
 #define SOC_GPIO_PIN_TWR1_SS            18
+#define SOC_GPIO_PIN_TWR1_OLED_PWR_EN   21
 #define SOC_GPIO_PIN_TWR1_LED           1 /* green */
 #define SOC_GPIO_PIN_TWR1_BATTERY       6
 #define SOC_GPIO_PIN_TWR1_BUTTON1       0
@@ -486,6 +487,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_STANDALONE = 0x8132,
   SOFTRF_USB_PID_PRIME_MK3  = 0x8133,
   SOFTRF_USB_PID_UF2_BOOT   = 0x8134,
+  SOFTRF_USB_PID_HAM        = 0x818F,
 };
 
 struct rst_info {
