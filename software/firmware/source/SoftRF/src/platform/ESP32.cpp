@@ -3207,11 +3207,15 @@ static bool ESP32_Baro_setup()
 
 static void ESP32_UATSerial_begin(unsigned long baud)
 {
+#if defined(USE_SA8X8)
   if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
     SA8X8_Serial.begin(baud, SERIAL_IN_BITS,
                        SOC_GPIO_PIN_TWR1_RADIO_RX,
                        SOC_GPIO_PIN_TWR1_RADIO_TX);
-  } else {
+  }
+  else
+#endif /* USE_SA8X8 */
+  {
     /* open Standalone's I2C/UATSerial port */
     UATSerial.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
   }
