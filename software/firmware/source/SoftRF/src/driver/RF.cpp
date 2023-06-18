@@ -29,6 +29,11 @@
 #endif /* EXCLUDE_MAVLINK */
 #include <fec.h>
 
+#if defined(USE_SA8X8)
+#include <SA818.h>
+#include <SA818Controller.h>
+#endif /* USE_SA8X8 */
+
 byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
 
 unsigned long TxTimeMarker = 0;
@@ -100,6 +105,13 @@ static void ognrf_channel(int8_t);
 static bool ognrf_receive(void);
 static void ognrf_transmit(void);
 static void ognrf_shutdown(void);
+
+static bool sa8x8_probe(void);
+static void sa8x8_setup(void);
+static void sa8x8_channel(int8_t);
+static bool sa8x8_receive(void);
+static void sa8x8_transmit(void);
+static void sa8x8_shutdown(void);
 
 #if !defined(EXCLUDE_NRF905)
 const rfchip_ops_t nrf905_ops = {
@@ -183,6 +195,19 @@ const rfchip_ops_t ognrf_ops = {
 };
 #endif /* USE_OGN_RF_DRIVER */
 
+#if defined(USE_SA8X8)
+const rfchip_ops_t sa8x8_ops = {
+  RF_IC_SA8X8,
+  "SA8X8",
+  sa8x8_probe,
+  sa8x8_setup,
+  sa8x8_channel,
+  sa8x8_receive,
+  sa8x8_transmit,
+  sa8x8_shutdown
+};
+#endif /* USE_SA8X8 */
+
 String Bin2Hex(byte *buffer, size_t size)
 {
   String str = "";
@@ -239,6 +264,10 @@ byte RF_setup(void)
     } else if (cc13xx_ops.probe()) {
       rf_chip = &cc13xx_ops;
 #endif /* EXCLUDE_CC13XX */
+#if defined(USE_SA8X8)
+    } else if (sa8x8_ops.probe()) {
+      rf_chip = &sa8x8_ops;
+#endif /* USE_SA8X8 */
     }
     if (rf_chip && rf_chip->name) {
       Serial.print(rf_chip->name);
@@ -2232,3 +2261,88 @@ static void ognrf_shutdown()
 }
 
 #endif /* USE_OGN_RF_DRIVER */
+
+#if defined(USE_SA8X8)
+SA818 sa868(&SA8X8_Serial);
+SA818Controller controller(&sa868);
+
+static bool sa8x8_probe()
+{
+  bool success = false;
+
+  /* TBD */
+
+  SoC->UATSerial_begin(9600);
+
+  sa868.verbose(); // verbose mode
+
+  controller.setModel(Model::SA_868);
+  controller.setBand(Band::VHF);
+  controller.setPins(SOC_GPIO_PIN_TWR1_RADIO_PTT,
+                     SOC_GPIO_PIN_TWR1_RADIO_PD,
+                     SOC_GPIO_PIN_TWR1_RADIO_HL);
+  controller.wake();
+  controller.lowPower();
+  controller.receive();
+
+  bool connect = controller.connect();
+  if (connect) {
+    Serial.print("Version: "); Serial.println(controller.version());
+
+    Serial.println("Connexion etablie");
+    Serial.println("Code retour: " + controller.response());
+  } else {
+    Serial.println("Erreur de connexion");
+    Serial.println("Erreur: " + controller.response());
+  }
+
+  success = connect;
+
+  return success;
+}
+
+static void sa8x8_channel(int8_t channel)
+{
+  /* TBD */
+}
+
+static void sa8x8_setup()
+{
+  /* TBD */
+
+//  group = controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
+  bool group = controller.setGroup(0, 432.5, 432.5, 0, 0, -0);
+  if (group) {
+    Serial.println("Groupe parametre");
+  } else {
+    Serial.println("Impossible de parametrer le groupe");
+  }
+
+  controller.setVolume(1);
+}
+
+static bool sa8x8_receive()
+{
+  bool success = false;
+
+  /* TBD */
+  controller.receive();
+
+  return success;
+}
+
+static void sa8x8_transmit()
+{
+  /* TBD */
+  // controller.transmit();
+}
+
+static void sa8x8_shutdown()
+{
+  /* TBD */
+  controller.lowPower();
+  controller.receive();
+  controller.sleep();
+}
+
+#endif /* USE_SA8X8 */

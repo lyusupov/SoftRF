@@ -1045,8 +1045,9 @@ static void ESP32_setup()
                                       SOC_GPIO_PIN_TWR2_SDA,
                                       SOC_GPIO_PIN_TWR2_SCL);
     if (has_axp2101) {
-      esp32_board   = ESP32_LILYGO_T_TWR_V2_0;
-      hw_info.pmu   = PMU_AXP2101;
+      esp32_board      = ESP32_LILYGO_T_TWR_V2_0;
+      hw_info.revision = 20;
+      hw_info.pmu      = PMU_AXP2101;
 
       // Set the minimum common working voltage of the PMU VBUS input,
       // below this value will turn off the PMU
@@ -1101,7 +1102,8 @@ static void ESP32_setup()
 
     } else {
       WIRE_FINI(Wire);
-      esp32_board = ESP32_LILYGO_T_TWR_V1_3;
+      esp32_board      = ESP32_LILYGO_T_TWR_V1_3;
+      hw_info.revision = 13;
 
       lmic_pins.nss  = SOC_GPIO_PIN_TWR1_SS;
       lmic_pins.rst  = SOC_UNUSED_PIN;
@@ -1880,10 +1882,10 @@ static void ESP32_fini(int reason)
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
   } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
-    pinMode(SOC_GPIO_PIN_S3_BUTTON, INPUT);
+    pinMode(SOC_GPIO_PIN_TWR1_ENC_BUTTON, INPUT);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
-    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWR1_ENC_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
@@ -2604,7 +2606,9 @@ static byte ESP32_Display_setup()
       u8x8->setFont(u8x8_font_chroma48medium8_r);
       u8x8->clear();
 
-      uint8_t shift_y = (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ? 1 : 0);
+      uint8_t shift_y = hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
+                       (hw_info.model == SOFTRF_MODEL_HAM /* && hw_info.revision == 20 */) ?
+                        1 : 0;
 
       u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text1);
 
@@ -3146,6 +3150,10 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
 
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+
+    Wire.setPins(SOC_GPIO_PIN_TWR1_SDA, SOC_GPIO_PIN_TWR1_SCL);
+
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
@@ -3199,8 +3207,14 @@ static bool ESP32_Baro_setup()
 
 static void ESP32_UATSerial_begin(unsigned long baud)
 {
-  /* open Standalone's I2C/UATSerial port */
-  UATSerial.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
+  if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+    SA8X8_Serial.begin(baud, SERIAL_IN_BITS,
+                       SOC_GPIO_PIN_TWR1_RADIO_RX,
+                       SOC_GPIO_PIN_TWR1_RADIO_TX);
+  } else {
+    /* open Standalone's I2C/UATSerial port */
+    UATSerial.begin(baud, SERIAL_IN_BITS, SOC_GPIO_PIN_CE, SOC_GPIO_PIN_PWR);
+  }
 }
 
 static void ESP32_UATSerial_updateBaudRate(unsigned long baud)
@@ -3291,12 +3305,10 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_S2_T8_V1_1        ||
        esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
        esp32_board == ESP32_S3_DEVKIT) {
-    button_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
-                 SOC_GPIO_PIN_T8_S2_BUTTON :
-                 (esp32_board == ESP32_S3_DEVKIT ||
-                  esp32_board == ESP32_LILYGO_T_TWR_V1_3) ?
-                 SOC_GPIO_PIN_S3_BUTTON :
-                 SOC_GPIO_PIN_TBEAM_V05_BUTTON;
+    button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
+                 esp32_board == ESP32_S3_DEVKIT  ? SOC_GPIO_PIN_S3_BUTTON    :
+                 esp32_board == ESP32_LILYGO_T_TWR_V1_3 ?
+                 SOC_GPIO_PIN_TWR1_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
     pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
@@ -3348,9 +3360,9 @@ static void ESP32_Button_fini()
   if (esp32_board == ESP32_S2_T8_V1_1        ||
       esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
       esp32_board == ESP32_S3_DEVKIT) {
-    int button_pin = esp32_board == ESP32_S2_T8_V1_1 ?
-                     SOC_GPIO_PIN_T8_S2_BUTTON :
-                     SOC_GPIO_PIN_S3_BUTTON;
+    int button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
+                     esp32_board == ESP32_LILYGO_T_TWR_V1_3 ?
+                     SOC_GPIO_PIN_TWR1_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == LOW);
   }
 }

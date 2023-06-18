@@ -67,6 +67,7 @@ enum
   RF_IC_MAX2837,
   RF_IC_R820T,
   RF_IC_MSI001,
+  RF_IC_SA8X8,
 };
 
 enum

@@ -50,6 +50,7 @@
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #define UATSerial               Serial2
+#define SA8X8_Serial            Serial2
 #if ARDUINO_USB_CDC_ON_BOOT
 #undef  SerialOutput
 #define SerialOutput            Serial0
@@ -449,11 +450,15 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TWR1_SCK           12
 #define SOC_GPIO_PIN_TWR1_SS            18
 #define SOC_GPIO_PIN_TWR1_OLED_PWR_EN   21
-#define SOC_GPIO_PIN_TWR1_LED           1 /* green */
+#define SOC_GPIO_PIN_TWR1_LED           1  /* green, active LOW */
 #define SOC_GPIO_PIN_TWR1_BATTERY       6
-#define SOC_GPIO_PIN_TWR1_BUTTON1       0
-#define SOC_GPIO_PIN_TWR1_BUTTON2       3
-#define SOC_GPIO_PIN_TWR1_BUTTON3       38
+#define SOC_GPIO_PIN_TWR1_BUTTON1       0  /* Volume - , BOOT */
+#define SOC_GPIO_PIN_TWR1_BUTTON2       3  /* Volume + */
+#define SOC_GPIO_PIN_TWR1_BUTTON3       38 /* PTT */
+#define SOC_GPIO_PIN_TWR1_ENC_BUTTON    7  /* Encoder */
+#define SOC_GPIO_PIN_TWR1_ENC_A         9
+#define SOC_GPIO_PIN_TWR1_ENC_B         5
+#define SOC_GPIO_PIN_TWR1_4_2V_EN       15 /* NC */
 
 extern WebServer server;
 
@@ -560,6 +565,7 @@ struct rst_info {
 /* Experimental */
 //#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST
+//#define USE_SA8X8
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define USE_U10_EXT
