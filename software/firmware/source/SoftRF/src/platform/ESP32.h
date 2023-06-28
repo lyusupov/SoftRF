@@ -171,117 +171,16 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_SDA        14
 #define SOC_GPIO_PIN_SCL        2
 
-/* TTGO T-BEAM section */
-// GNSS module
-#define SOC_GPIO_PIN_TBEAM_V05_RX       12
-#define SOC_GPIO_PIN_TBEAM_V05_TX       15
-#define SOC_GPIO_PIN_TBEAM_V08_RX       34
-#define SOC_GPIO_PIN_TBEAM_V08_TX       12
-#define SOC_GPIO_PIN_TBEAM_V08_PPS      37
-// battery voltage
-#define SOC_GPIO_PIN_TBEAM_V05_BATTERY  35
-// status LED
-#define SOC_GPIO_PIN_TBEAM_LED_V02      21
-#define SOC_GPIO_PIN_TBEAM_LED_V05      14
-#define SOC_GPIO_PIN_TBEAM_LED_V11      4
-// button
-#define SOC_GPIO_PIN_TBEAM_V05_BUTTON   39
-#define SOC_GPIO_PIN_TBEAM_V08_BUTTON   38
-// PMU
-#define SOC_GPIO_PIN_TBEAM_V08_PMU_IRQ  35
-// SX1276 RESET
-#define SOC_GPIO_PIN_TBEAM_RF_RST_V02   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TBEAM_RF_RST_V05   23
-// SX1262 BUSY
-#define SOC_GPIO_PIN_TBEAM_RF_BUSY_V08  32
-// 1st I2C bus on the T-Beam
-#define SOC_GPIO_PIN_TBEAM_SDA          13
-#define SOC_GPIO_PIN_TBEAM_SCL          2
-
-// Hardware pin definitions for TTGO LoRa V2 board
-// with OLED SSD1306 0,96" I2C Display
-#define TTGO_V2_OLED_PIN_RST            U8X8_PIN_NONE // connected to CPU RST/EN
-#define TTGO_V2_OLED_PIN_SDA            21
-#define TTGO_V2_OLED_PIN_SCL            22
-#define TTGO_V2_PIN_GNSS_RX             34
-#define TTGO_V2_PIN_GNSS_TX             12
-#define TTGO_V2_PIN_GNSS_PPS            39
+#include "iomap/LilyGO_T22.h"
+#include "iomap/LilyGO_T3.h"
 
 // Hardware pin definitions for Heltec and TTGO-V1 LoRa-32 Boards with OLED SSD1306 I2C Display
 #define HELTEC_OLED_PIN_RST             U8X8_PIN_NONE // 16
 #define HELTEC_OLED_PIN_SDA             4
 #define HELTEC_OLED_PIN_SCL             15
 
-/* TTGO T-Watch section */
-// GNSS module
-#define SOC_GPIO_PIN_TWATCH_RX          34
-#define SOC_GPIO_PIN_TWATCH_TX          33
-// button
-#define SOC_GPIO_PIN_TWATCH_BUTTON      36
-
-// PMU
-#define SOC_GPIO_PIN_TWATCH_PMU_IRQ     35
-
-// TFT
-#define SOC_GPIO_PIN_TWATCH_TFT_MOSI    19
-#define SOC_GPIO_PIN_TWATCH_TFT_MISO    SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TWATCH_TFT_SCK     18
-#define SOC_GPIO_PIN_TWATCH_TFT_SS      5
-#define SOC_GPIO_PIN_TWATCH_TFT_DC      27
-#define SOC_GPIO_PIN_TWATCH_TFT_RST     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TWATCH_TFT_BL      12
-
-// 1st I2C bus on the T-Watch
-#define SOC_GPIO_PIN_TWATCH_SEN_SDA     21
-#define SOC_GPIO_PIN_TWATCH_SEN_SCL     22
-
-/* TTGO T8 S2 section */
-#define SOC_GPIO_PIN_T8_S2_CONS_RX      44
-#define SOC_GPIO_PIN_T8_S2_CONS_TX      43
-
-// GNSS module
-#define SOC_GPIO_PIN_T8_S2_GNSS_RX      1
-#define SOC_GPIO_PIN_T8_S2_GNSS_TX      2
-
-// USB
-#define SOC_GPIO_PIN_T8_S2_USB_DP       20
-#define SOC_GPIO_PIN_T8_S2_USB_DN       19
-
-// SD SPI
-#define SOC_GPIO_PIN_T8_S2_MOSI         11
-#define SOC_GPIO_PIN_T8_S2_MISO         13
-#define SOC_GPIO_PIN_T8_S2_SCK          12
-#define SOC_GPIO_PIN_T8_S2_SS           10
-
-/* SX1276 */
-#define SOC_GPIO_PIN_T8_S2_LORA_RST     5
-#define SOC_GPIO_PIN_T8_S2_LORA_SS      6
-
-// TFT
-#define SOC_GPIO_PIN_T8_S2_TFT_MOSI     35
-#define SOC_GPIO_PIN_T8_S2_TFT_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_T8_S2_TFT_SCK      36
-#define SOC_GPIO_PIN_T8_S2_TFT_SS       34
-#define SOC_GPIO_PIN_T8_S2_TFT_DC       37
-#define SOC_GPIO_PIN_T8_S2_TFT_RST      38
-#define SOC_GPIO_PIN_T8_S2_TFT_BL       33
-
-// button
-#define SOC_GPIO_PIN_T8_S2_BUTTON       0 // 21
-
-// I2C
-#define SOC_GPIO_PIN_T8_S2_SDA          3
-#define SOC_GPIO_PIN_T8_S2_SCL          4
-
-// battery voltage
-#define SOC_GPIO_PIN_T8_S2_BATTERY      9
-
-// V3V Power enable
-#define SOC_GPIO_PIN_T8_S2_PWR_EN       14
-
-// 32768 Hz crystal
-#define SOC_GPIO_PIN_T8_S2_XP           15
-#define SOC_GPIO_PIN_T8_S2_XN           16
+#include "iomap/LilyGO_TWatch.h"
+#include "iomap/LilyGO_T8S2.h"
 
 #define SOC_GPIO_PIN_TDISPLAY_S2_LED    39
 #define SOC_GPIO_PIN_TDONGLE_S2_LED     39
@@ -293,65 +192,7 @@ extern Adafruit_NeoPixel strip;
 #endif
 #define LV_VER_RES                      (240) //vertical
 
-/* ESP32-S3 section 1 (core) */
-#define SOC_GPIO_PIN_S3_CONS_RX         44
-#define SOC_GPIO_PIN_S3_CONS_TX         43
-
-// GNSS module
-#define SOC_GPIO_PIN_S3_GNSS_RX         9
-#define SOC_GPIO_PIN_S3_GNSS_TX         8
-#define SOC_GPIO_PIN_S3_GNSS_PPS        6
-#define SOC_GPIO_PIN_S3_GNSS_WAKE       7
-
-// USB
-#define SOC_GPIO_PIN_S3_USB_DP          20
-#define SOC_GPIO_PIN_S3_USB_DN          19
-
-// SX1262 (HPD16A)
-#define SOC_GPIO_PIN_S3_MOSI            11
-#define SOC_GPIO_PIN_S3_MISO            13
-#define SOC_GPIO_PIN_S3_SCK             12
-#define SOC_GPIO_PIN_S3_SS              10
-#define SOC_GPIO_PIN_S3_RST             5 /* shared with TFT RST (and/or I2C OLED RST) */
-#define SOC_GPIO_PIN_S3_BUSY            4 /* shared with HPD13A DIO2 */
-// SX1276 (HPD13A)
-#define SOC_GPIO_PIN_S3_DIO0            2
-#define SOC_GPIO_PIN_S3_DIO1            1
-#define SOC_GPIO_PIN_S3_DIO2            4 /* shared with HPD16A BUSY */
-
-/* 2nd I2C bus (PMU, RTC) */
-#define SOC_GPIO_PIN_S3_PMU_SDA         42
-#define SOC_GPIO_PIN_S3_PMU_SCL         41
-#define SOC_GPIO_PIN_S3_PMU_IRQ         40
-#define SOC_GPIO_PIN_S3_RTC_IRQ         14
-
-// 32768 Hz crystal
-#define SOC_GPIO_PIN_S3_XP              15
-#define SOC_GPIO_PIN_S3_XN              16
-
-// button (BOOT)
-#define SOC_GPIO_PIN_S3_BUTTON          0 // "strapping" pin (S)
-
-/* ESP32-S3 section 2 (reserved pins) */
-// 17,18 - I2C; 33,34,39,(47 ? - DC) - TFT/EINK; 35,36,37,38 - uSD; 2 - SX1276
-
-// 1st I2C bus (OLED display, sensors)
-#define SOC_GPIO_PIN_S3_SDA             17
-#define SOC_GPIO_PIN_S3_SCL             18
-
-// IMU
-#define SOC_GPIO_PIN_S3_IMU_MOSI        35
-#define SOC_GPIO_PIN_S3_IMU_MISO        37
-#define SOC_GPIO_PIN_S3_IMU_SCK         36
-#define SOC_GPIO_PIN_S3_IMU_SS          34
-#define SOC_GPIO_PIN_S3_IMU_INT12       33
-
-// microSD
-#define SOC_GPIO_PIN_S3_SD_MOSI         35
-#define SOC_GPIO_PIN_S3_SD_MISO         37
-#define SOC_GPIO_PIN_S3_SD_SCK          36
-#define SOC_GPIO_PIN_S3_SD_SS_DK        38
-#define SOC_GPIO_PIN_S3_SD_SS_TBEAM     47
+#include "iomap/LilyGO_TBeam_Supreme.h"
 
 /* ESP32-S3 section 3 (spare pins) */
 // 3(S), 21, 39, 45(S), 46(S), 48
@@ -367,98 +208,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_S3_LED_WHITE       38
 #define SOC_GPIO_PIN_S3_LED_YELLOW      39
 
-/* ESP32-C3 */
-#define SOC_GPIO_PIN_C3_CONS_RX         20
-#define SOC_GPIO_PIN_C3_CONS_TX         21
-
-// GNSS module
-#define SOC_GPIO_PIN_C3_GNSS_RX         9  /* D3 */
-#define SOC_GPIO_PIN_C3_GNSS_TX         7
-#define SOC_GPIO_PIN_C3_GNSS_PPS        SOC_UNUSED_PIN // 0
-
-// USB CDC/JTAG
-#define SOC_GPIO_PIN_C3_USB_DP          19 /* D1 */
-#define SOC_GPIO_PIN_C3_USB_DN          18 /* D2 */
-
-// SPI
-#define SOC_GPIO_PIN_C3_MOSI            5  /* D7 */
-#define SOC_GPIO_PIN_C3_MISO            4  /* D6 */
-#define SOC_GPIO_PIN_C3_SCK             3  /* D5 */
-#define SOC_GPIO_PIN_C3_SS              8  /* D8 */
-
-// NRF905
-#define SOC_GPIO_PIN_C3_TXE             2  /* D0 */
-#define SOC_GPIO_PIN_C3_CE              10 /* D4 */
-#define SOC_GPIO_PIN_C3_PWR             18 /* D2 */
-
-// SX1276
-#define SOC_GPIO_PIN_C3_RST             18 /* D2 */
-#define SOC_GPIO_PIN_C3_DIO0            2  /* D0 */
-#define SOC_GPIO_PIN_C3_SDA             18 /* D2 */
-#define SOC_GPIO_PIN_C3_SCL             10 /* D4 */
-
-// battery voltage (ADC)
-#define SOC_GPIO_PIN_C3_BATTERY         1  /* A0 */
-
-// auxillary
-#define SOC_GPIO_PIN_C3_BUZZER          6  /* 10 */
-#define SOC_GPIO_PIN_C3_STATUS          SOC_UNUSED_PIN
-
-/* LilyGO T-TWR 2.0 ("Plus") */
-#define SOC_GPIO_PIN_TWR2_CONS_RX       44
-#define SOC_GPIO_PIN_TWR2_CONS_TX       43
-
-// GNSS module
-#define SOC_GPIO_PIN_TWR2_GNSS_RX       5
-#define SOC_GPIO_PIN_TWR2_GNSS_TX       6
-#define SOC_GPIO_PIN_TWR2_GNSS_PPS      7
-
-// SA868 module
-#define SOC_GPIO_PIN_TWR2_RADIO_RX      48
-#define SOC_GPIO_PIN_TWR2_RADIO_TX      39
-#define SOC_GPIO_PIN_TWR2_RADIO_PTT     41
-#define SOC_GPIO_PIN_TWR2_RADIO_HL      38
-#define SOC_GPIO_PIN_TWR2_RADIO_PD      40
-
-// SPI
-#define SOC_GPIO_PIN_TWR2_MOSI          11
-#define SOC_GPIO_PIN_TWR2_MISO          13
-#define SOC_GPIO_PIN_TWR2_SCK           12
-#define SOC_GPIO_PIN_TWR2_SS_SD         10
-#define SOC_GPIO_PIN_TWR2_SS_EXT        14
-
-// 1st I2C bus (PMU, OLED display, sensors)
-#define SOC_GPIO_PIN_TWR2_SDA           8
-#define SOC_GPIO_PIN_TWR2_SCL           9
-#define SOC_GPIO_PIN_TWR2_PMU_IRQ       4
-
-#define SOC_GPIO_PIN_TWR2_NEOPIXEL      42
-
-/* LilyGO T-TWR 1.3 */
-#define SOC_GPIO_PIN_TWR1_GNSS_RX       17
-#define SOC_GPIO_PIN_TWR1_GNSS_TX       16
-#define SOC_GPIO_PIN_TWR1_GNSS_PPS      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TWR1_RADIO_RX      48
-#define SOC_GPIO_PIN_TWR1_RADIO_TX      47
-#define SOC_GPIO_PIN_TWR1_RADIO_PTT     41
-#define SOC_GPIO_PIN_TWR1_RADIO_HL      39
-#define SOC_GPIO_PIN_TWR1_RADIO_PD      40
-#define SOC_GPIO_PIN_TWR1_SDA           13
-#define SOC_GPIO_PIN_TWR1_SCL           14
-#define SOC_GPIO_PIN_TWR1_MOSI          10
-#define SOC_GPIO_PIN_TWR1_MISO          11
-#define SOC_GPIO_PIN_TWR1_SCK           12
-#define SOC_GPIO_PIN_TWR1_SS            18
-#define SOC_GPIO_PIN_TWR1_OLED_PWR_EN   21
-#define SOC_GPIO_PIN_TWR1_LED           1  /* green, active LOW */
-#define SOC_GPIO_PIN_TWR1_BATTERY       6
-#define SOC_GPIO_PIN_TWR1_BUTTON1       0  /* Volume - , BOOT */
-#define SOC_GPIO_PIN_TWR1_BUTTON2       3  /* Volume + */
-#define SOC_GPIO_PIN_TWR1_BUTTON3       38 /* PTT */
-#define SOC_GPIO_PIN_TWR1_ENC_BUTTON    7  /* Encoder */
-#define SOC_GPIO_PIN_TWR1_ENC_A         9
-#define SOC_GPIO_PIN_TWR1_ENC_B         5
-#define SOC_GPIO_PIN_TWR1_4_2V_EN       15 /* NC */
+#include "iomap/AiThinker_C3_12F.h"
+#include "iomap/LilyGO_TTWR.h"
 
 extern WebServer server;
 
@@ -484,6 +235,7 @@ enum esp32_board_id {
   ESP32_S2_T8_V1_1,
   ESP32_LILYGO_T_TWR_V1_3,
   ESP32_LILYGO_T_TWR_V2_0,
+  ESP32_HELTEC_TRACKER,
 };
 
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */
