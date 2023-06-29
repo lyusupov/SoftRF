@@ -74,7 +74,8 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_SONY]    = "SONY",
   [GNSS_MODULE_AT65]    = "AT65",
   [GNSS_MODULE_MT33]    = "MT33",
-  [GNSS_MODULE_GOKE]    = "GOKE"
+  [GNSS_MODULE_GOKE]    = "GOKE",
+  [GNSS_MODULE_UC65]    = "UC65"
 };
 
 #if defined(ENABLE_GNSS_STATS)
@@ -1060,6 +1061,38 @@ const gnss_chip_ops_t at65_ops = {
 };
 #endif /* EXCLUDE_GNSS_AT65 */
 
+#if !defined(EXCLUDE_GNSS_UC65)
+static gnss_id_t uc65_probe()
+{
+  /* Firmware version request */
+  return GNSS_MODULE_NMEA; /* TBD */
+}
+
+static bool uc65_setup()
+{
+  /* TBD */
+  return true;
+}
+
+static void uc65_loop()
+{
+
+}
+
+static void uc65_fini()
+{
+
+}
+
+const gnss_chip_ops_t uc65_ops = {
+  uc65_probe,
+  uc65_setup,
+  uc65_loop,
+  uc65_fini,
+  0 /* GGA */, 0 /* RMC */
+};
+#endif /* EXCLUDE_GNSS_UC65 */
+
 static bool GNSS_fix_cache = false;
 
 bool isValidGNSSFix()
@@ -1143,6 +1176,10 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &at65_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_AT65 */
+#if !defined(EXCLUDE_GNSS_UC65)
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &uc65_ops,   gnss_chip->probe()) : gnss_id;
+#endif /* EXCLUDE_GNSS_UC65 */
 
   gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
 

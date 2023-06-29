@@ -139,78 +139,7 @@ typedef struct stm32_backup_struct {
 #define SOC_ADC_VOLTAGE_DIV   2.3   // T-Motion has 100k/100k voltage divider
 #define VREFINT               1224  // mV, STM32L073 datasheet value
 
-/* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PA10
-#define SOC_GPIO_PIN_CONS_TX  PA9
-
-#define SOC_GPIO_PIN_GNSS_RX  PC11
-#define SOC_GPIO_PIN_GNSS_TX  PC10
-
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PB0
-
-#define SOC_GPIO_PIN_GNSS_RST PB2
-#define SOC_GPIO_PIN_GNSS_LS  PC6
-#define SOC_GPIO_PIN_GNSS_PPS PB5
-#define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_DONGLE ?\
-                                PA0 : SOC_UNUSED_PIN)
-
-#define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_DONGLE ?\
-                                PA8 : SOC_UNUSED_PIN)
-
-#define SOC_GPIO_PIN_BATTERY  (hw_info.model == SOFTRF_MODEL_DONGLE   ? PB1 :\
-                               hw_info.model == SOFTRF_MODEL_BRACELET ? PC4 :\
-                               SOC_UNUSED_PIN)
-
-/* SPI0 */
-#define SOC_GPIO_PIN_MOSI     PB15
-#define SOC_GPIO_PIN_MISO     PB14
-#define SOC_GPIO_PIN_SCK      PB13
-#define SOC_GPIO_PIN_SS       PB12
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      PB11
-#define SOC_GPIO_PIN_CE       PB8  // NC
-#define SOC_GPIO_PIN_PWR      PB10
-
-/* SX1276 */
-#define SOC_GPIO_PIN_RST      PB10
-#define SOC_GPIO_PIN_DIO0     PB11
-#define SOC_GPIO_PIN_DIO1     PC13
-#define SOC_GPIO_PIN_DIO2     PB9
-#define SOC_GPIO_PIN_DIO3     PB4
-#define SOC_GPIO_PIN_DIO4     PB3
-#define SOC_GPIO_PIN_DIO5     PA15
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX PA1 // 1:Rx, 0:Tx
-
-/* RF clock source */
-#define SOC_GPIO_PIN_TCXO_OE  PD_7
-#define SOC_GPIO_PIN_OSC_SEL  PC1
-
-/* I2C */
-#define SOC_GPIO_PIN_SDA      PB7
-#define SOC_GPIO_PIN_SCL      PB6
-
-/* SPI1 */
-#define SOC_GPIO_SPI1_MOSI    PA7
-#define SOC_GPIO_SPI1_MISO    PA6
-#define SOC_GPIO_SPI1_SCK     PA5
-#define SOC_GPIO_SPI1_SS      PA4
-
-#define TTGO_TIMPULSE_OLED_PIN_RST PA8
-#define TTGO_TIMPULSE_GPIO_PAD_OUT PA0
-#define TTGO_TIMPULSE_GPIO_PAD_PWR PA2
-#define TTGO_TIMPULSE_SENSOR_INT   PB1 // PB0
-#define TTGO_TIMPULSE_GPIO_CHRG    PB8
-#define TTGO_TIMPULSE_VDD_1V8_EN   PB0 /* HIGH - enable 1.8V power supply        */
-#define TTGO_TIMPULSE_GPS_PWR_EN   PA3 /* HIGH - enable GNSS and LS power supply */
-
-/* button */
-//#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUTTON   (hw_info.model == SOFTRF_MODEL_BRACELET ? \
-                              TTGO_TIMPULSE_GPIO_PAD_OUT : PC4)
-//#define SOC_GPIO_PIN_BUTTON   PA3
+#include "iomap/LilyGO_TMotion.h"
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -255,49 +184,7 @@ typedef struct stm32_backup_struct {
 #define SOC_ADC_VOLTAGE_DIV   1
 #define VREFINT               1200  // mV, STM32F103x8 datasheet value
 
-/* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PA10
-#define SOC_GPIO_PIN_CONS_TX  PA9
-
-#define SOC_GPIO_PIN_GNSS_RX  PA3
-#define SOC_GPIO_PIN_GNSS_TX  PA2
-
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
-
-#define SOC_GPIO_PIN_GNSS_PPS PA1
-#define SOC_GPIO_PIN_STATUS   LED_GREEN
-
-#define SOC_GPIO_PIN_BUZZER   PB8
-#define SOC_GPIO_PIN_BATTERY  PB1
-
-#define SOC_GPIO_PIN_RX3      PB11
-#define SOC_GPIO_PIN_TX3      PB10
-
-/* SPI */
-#define SOC_GPIO_PIN_MOSI     PA7
-#define SOC_GPIO_PIN_MISO     PA6
-#define SOC_GPIO_PIN_SCK      PA5
-#define SOC_GPIO_PIN_SS       PA4
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      PB4
-#define SOC_GPIO_PIN_CE       PB3
-#define SOC_GPIO_PIN_PWR      PB5
-
-/* SX1276 (RFM95W) */
-#define SOC_GPIO_PIN_RST      PB5
-#define SOC_GPIO_PIN_DIO0     PB4
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
-
-/* I2C */
-#define SOC_GPIO_PIN_SDA      PB7
-#define SOC_GPIO_PIN_SCL      PB6
-
-/* button */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-//#define SOC_GPIO_PIN_BUTTON   USER_BTN
+#include "iomap/Blue_Pill.h"
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -349,62 +236,7 @@ typedef struct stm32_backup_struct {
 #define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
 #define VREFINT               1200 /* TBD */
 
-#define SOC_GPIO_PIN_CONS_RX  PB7
-#define SOC_GPIO_PIN_CONS_TX  PB6
-
-#define SOC_GPIO_PIN_GNSS_RX  PA3
-#define SOC_GPIO_PIN_GNSS_TX  PA2
-#define SOC_GPIO_PIN_GNSS_PPS PA11
-
-#define SOC_GPIO_PIN_STATUS   PA15
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-
-/* SPI */
-#define SOC_GPIO_PIN_MOSI     PA7 /* E77: PB5 (NC) */
-#define SOC_GPIO_PIN_MISO     PB4
-#define SOC_GPIO_PIN_SCK      PA5 /* E5 : PB3 (NC) */
-#define SOC_GPIO_PIN_SS       PB2
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      PB4
-#define SOC_GPIO_PIN_CE       PB3
-#define SOC_GPIO_PIN_PWR      PB5
-
-/* SX1262 */
-#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
-
-/* RF antenna switch */
-#define SOC_GPIO_ANT_RX_OLI   PC13
-#define SOC_GPIO_ANT_TX_OLI   PB8
-
-#define SOC_GPIO_ANT_RX_E77   PA7 /* NB: SOC_GPIO_PIN_MOSI = PA7 */
-#define SOC_GPIO_ANT_TX_E77   PA6
-
-#define SOC_GPIO_ANT_RX_E5    PA4
-#define SOC_GPIO_ANT_TX_E5    PA5 /* NB: SOC_GPIO_PIN_SCK  = PA5 */
-#define SOC_GPIO_TCXO_E5      PB0
-
-#define SOC_GPIO_ANT_RX_ST50  PA0
-#define SOC_GPIO_ANT_TX_ST50  PA1
-#define SOC_GPIO_TCXO_ST50    PB0
-
-#define SOC_GPIO_ANT_RX_3172  PB8
-#define SOC_GPIO_ANT_TX_3172  PC13
-
-/* I2C */
-#define SOC_GPIO_PIN_SDA      PA10
-#define SOC_GPIO_PIN_SCL      PA9
-
-/* button */
-#define SOC_GPIO_PIN_BUTTON   PA0 /* NB: SOC_GPIO_ANT_RX_ST50 = PA0 */
-
-/* 32768 Hz crystal */
-#define SOC_GPIO_PIN_XP       PC14
-#define SOC_GPIO_PIN_XN       PC15
+#include "iomap/Olimex_STM32WL.h"
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
@@ -451,58 +283,7 @@ typedef struct stm32_backup_struct {
 #define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
 #define VREFINT               1200 /* TBD */
 
-#define SOC_GPIO_PIN_CONS_RX  PA3 // UART2_RX
-#define SOC_GPIO_PIN_CONS_TX  PA2 // UART2_TX
-
-#define SOC_GPIO_PIN_GNSS_RX  PB7 // UART1_RX
-#define SOC_GPIO_PIN_GNSS_TX  PB6 // UART1_TX
-#define SOC_GPIO_PIN_GNSS_PPS PB5 // IO1
-#define SOC_GPIO_PIN_GNSS_RST PA8 // IO2
-
-#define SOC_GPIO_PIN_STATUS   PA0 // LED1
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN // PA1 LED2
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-
-/* SPI */
-#define SOC_GPIO_PIN_MOSI     PA7
-#define SOC_GPIO_PIN_MISO     PA6
-#define SOC_GPIO_PIN_SCK      PA5
-#define SOC_GPIO_PIN_SS       PA4
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      PB4
-#define SOC_GPIO_PIN_CE       PB3
-#define SOC_GPIO_PIN_PWR      PB5
-
-/* SX1262 */
-#define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX PB8 // RXEN
-
-/* RF clock source */
-#define SOC_GPIO_PIN_TCXO_OE  PB0
-
-/* RF front end control */
-#define SOC_GPIO_PIN_FE       PC13
-
-/* I2C1 */
-#define SOC_GPIO_PIN_SDA      PA11
-#define SOC_GPIO_PIN_SCL      PA12
-
-/* I2C2 */
-#define SOC_GPIO_PIN_SDA2     PA10
-#define SOC_GPIO_PIN_SCL2     PA9
-
-/* button */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
-
-/* 32768 Hz crystal */
-#define SOC_GPIO_PIN_XP       PC14
-#define SOC_GPIO_PIN_XN       PC15
+#include "iomap/RAK_3172.h"
 
 #define EXCLUDE_EEPROM
 #define EXCLUDE_WIFI
