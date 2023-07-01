@@ -300,6 +300,7 @@ struct rst_info {
 //#define EXCLUDE_GNSS_AT65     /* L76K, Air530Z */
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
+//#define EXCLUDE_GNSS_UC65
 
 #define EXCLUDE_CC13XX
 #define EXCLUDE_SOFTRF_HEARTBEAT

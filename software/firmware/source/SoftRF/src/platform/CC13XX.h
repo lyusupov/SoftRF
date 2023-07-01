@@ -180,6 +180,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
+#define EXCLUDE_GNSS_UC65
 
 #define EXCLUDE_BMP180
 //#define EXCLUDE_BMP280
@@ -269,6 +270,7 @@ extern SCSerial                 scSerial;
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
+#define EXCLUDE_GNSS_UC65
 
 #else
 #error "This board is not supported!"

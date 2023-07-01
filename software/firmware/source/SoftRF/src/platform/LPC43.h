@@ -119,6 +119,7 @@ extern usb_data_t usb_data_type;
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
+#define EXCLUDE_GNSS_UC65
 #define EXCLUDE_LOG_GNSS_VERSION
 
 #define EXCLUDE_BMP180
