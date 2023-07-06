@@ -123,7 +123,7 @@
 
 /* Waveshare Pico & Banana PicoW keys mapping */
 #define SOC_GPIO_PIN_KEY0     42
-#define SOC_GPIO_PIN_KEY1     2
+#define SOC_GPIO_PIN_KEY1     2  // RTC GPIO
 #define SOC_GPIO_PIN_KEY2     47
 
 /* misc. Banana PicoW pins */
@@ -136,6 +136,8 @@
 // USB
 #define SOC_GPIO_PIN_USB_DP   20
 #define SOC_GPIO_PIN_USB_DN   19
+
+//#define USE_ADAFRUIT_MSC
 
 // Audio
 #define EXCLUDE_AUDIO            // pending

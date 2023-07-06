@@ -205,6 +205,7 @@ static size_t ESP32_Min_AppPart_Size = 0;
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_INA219.h>
 #include <uCDB.hpp>
+#include <driver/rtc_io.h>
 #include "BatteryHelper.h"
 
 #if !defined(EXCLUDE_AUDIO)
@@ -432,8 +433,8 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_T5_1;
       break;
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
-    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_W):
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V): /* BPI */
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_W): /* TBD */
       hw_info.revision = HW_REV_BPI;
       break;
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
@@ -722,12 +723,12 @@ static void ESP32_fini()
   pinMode(SOC_GPIO_PIN_LED, INPUT);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
-  int mode_button_pin = SOC_BUTTON_MODE_DEF;
+  int wake_gpio_num = SOC_BUTTON_MODE_DEF;
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
   if (settings && (settings->adapter == ADAPTER_TTGO_T5S)) {
     uSD_SPI.end();
-    mode_button_pin = SOC_BUTTON_MODE_T5S;
+    wake_gpio_num = SOC_BUTTON_MODE_T5S;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
@@ -735,8 +736,13 @@ static void ESP32_fini()
   if (settings &&
       (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
        settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
-    mode_button_pin = settings->rotate == ROTATE_180 ?
-                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+    wake_gpio_num = SOC_GPIO_PIN_KEY1; // RTC GPIO
+
+    if (rtc_gpio_is_valid_gpio((gpio_num_t) wake_gpio_num)) {
+      esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+      rtc_gpio_pulldown_dis((gpio_num_t) wake_gpio_num);
+      rtc_gpio_pullup_en((gpio_num_t) wake_gpio_num);
+    }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -759,7 +765,7 @@ static void ESP32_fini()
    *  SD card out -            0.1 mA
    */
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
-  esp_sleep_enable_ext1_wakeup(1ULL << mode_button_pin, ESP_EXT1_WAKEUP_ALL_LOW);
+  esp_sleep_enable_ext1_wakeup(1ULL << wake_gpio_num, ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 //  Serial.println("Going to sleep now");
