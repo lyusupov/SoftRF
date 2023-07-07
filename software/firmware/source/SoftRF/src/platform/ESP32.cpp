@@ -2559,8 +2559,13 @@ static byte ESP32_Display_setup()
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
       if (has_oled) {
-        u8x8 = &u8x8_ttgo;
-        rval = DISPLAY_OLED_TTGO;
+        if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+          u8x8 = &u8x8_ttgo;
+          rval = DISPLAY_OLED_TTGO;
+        } else {
+          u8x8 = &u8x8_1_3;
+          rval = DISPLAY_OLED_1_3;
+        }
       }
       if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
         WIRE_FINI(Wire);

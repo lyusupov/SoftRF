@@ -140,9 +140,11 @@ enum
 	SOFTRF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
 	SOFTRF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
 	SOFTRF_PROTOCOL_FANET,     /* Skytraxx */
+	SOFTRF_PROTOCOL_APRS,      /* Ham Radio */
 	/* Volunteer contributors are welcome */
 	SOFTRF_PROTOCOL_EID,       /* UAS eID */
-	SOFTRF_PROTOCOL_GOTENNA    /* goTenna Mesh */
+	SOFTRF_PROTOCOL_GOTENNA,   /* goTenna Mesh */
+	SOFTRF_PROTOCOL_ADSL_860,  /* ADS-L.4.SRD-860 */
 };
 
 enum

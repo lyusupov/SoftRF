@@ -48,7 +48,8 @@ const char *GDL90_CallSign_Prefix[] = {
   [RF_PROTOCOL_P3I]       = "PA",
   [RF_PROTOCOL_ADSB_1090] = "AD",
   [RF_PROTOCOL_ADSB_UAT]  = "UA",
-  [RF_PROTOCOL_FANET]     = "FA"
+  [RF_PROTOCOL_FANET]     = "FA",
+  [RF_PROTOCOL_APRS]      = "HA"
 };
 
 const uint8_t aircraft_type_to_gdl90[] PROGMEM = {

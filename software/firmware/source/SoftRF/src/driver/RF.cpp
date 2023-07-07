@@ -2270,13 +2270,9 @@ static bool sa8x8_probe()
 {
   bool success = false;
 
-  /* TBD */
-
   SoC->UATSerial_begin(9600);
 
-  sa868.verbose(); // verbose mode
-
-  controller.setModel(Model::SA_868);
+//  sa868.verbose(); // verbose mode
 
   if (hw_info.revision < 20) {
     controller.setBand(Band::UHF);
@@ -2294,9 +2290,17 @@ static bool sa8x8_probe()
   controller.lowPower();
   controller.receive();
 
+  delay(500);
+
   bool connect = controller.connect();
   if (connect) {
-    Serial.print("Version: "); Serial.println(controller.version());
+    String version = controller.version();
+
+    Serial.print("SA8X8 firmware version: "); Serial.println(version);
+
+    if (version.startsWith("SA868")) {
+      controller.setModel(Model::SA_868);
+    }
   }
 
   success = connect;
@@ -2311,13 +2315,15 @@ static void sa8x8_channel(int8_t channel)
 
 static void sa8x8_setup()
 {
-  /* TBD */
+  /* Enforce radio settings to follow APRS protocol's RF specs */
+  settings->rf_protocol = RF_PROTOCOL_APRS;
 
-  bool group = false;
-  if (hw_info.revision < 20) {
-    group = controller.setGroup(0, 432.5, 432.5, 0, 0, -0);
+  RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
+
+  if (controller.getBand() == Band::UHF) {
+    controller.setGroup(0, 432.5 , 432.5 , 0, 0, -0);
   } else {
-    group = controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
+    controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
   }
 
   controller.setVolume(0);
