@@ -1285,6 +1285,16 @@ static void ESP32_setup()
 
     /* TBD */
 
+    pinMode(SOC_GPIO_PIN_TWR2_RADIO_HL, OUTPUT_OPEN_DRAIN);
+    pinMode(SOC_GPIO_PIN_TWR2_RADIO_PD, OUTPUT);
+
+    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
+    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, LOW);
+
+//    delay(500);
+
+//    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, HIGH);
+
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -1888,6 +1898,38 @@ static void ESP32_fini(int reason)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWR1_ENC_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+
+    switch (hw_info.pmu)
+    {
+    case PMU_AXP2101:
+      axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_OFF);
+
+      axp_2xxx.disableButtonBatteryCharge();
+
+      axp_2xxx.disableBLDO1();
+      axp_2xxx.disableALDO4();
+      axp_2xxx.disableALDO2();
+
+      axp_2xxx.disableDC3();
+
+      delay(20);
+
+      /*
+       * Complete power off
+       *
+       * to power back on either:
+       * - press and hold PWR button for 1-2 seconds then release, or
+       * - cycle micro-USB power
+       */
+      axp_2xxx.shutdown();
+      break;
+
+    case PMU_NONE:
+    default:
+      break;
+    }
+
   }
 
   esp_deep_sleep_start();
@@ -3154,6 +3196,10 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_TWR1_SDA, SOC_GPIO_PIN_TWR1_SCL);
 
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+
+    Wire.setPins(SOC_GPIO_PIN_TWR2_SDA, SOC_GPIO_PIN_TWR2_SCL);
+
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
@@ -3212,6 +3258,10 @@ static void ESP32_UATSerial_begin(unsigned long baud)
     SA8X8_Serial.begin(baud, SERIAL_IN_BITS,
                        SOC_GPIO_PIN_TWR1_RADIO_RX,
                        SOC_GPIO_PIN_TWR1_RADIO_TX);
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+    SA8X8_Serial.begin(baud, SERIAL_IN_BITS,
+                       SOC_GPIO_PIN_TWR2_RADIO_RX,
+                       SOC_GPIO_PIN_TWR2_RADIO_TX);
   }
   else
 #endif /* USE_SA8X8 */
