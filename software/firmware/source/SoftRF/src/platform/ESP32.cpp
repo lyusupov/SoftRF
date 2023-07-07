@@ -1283,17 +1283,11 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
 
-    /* TBD */
-
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_HL, OUTPUT_OPEN_DRAIN);
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_PD, OUTPUT);
 
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, LOW);
-
-//    delay(500);
-
-//    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, HIGH);
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -3278,16 +3272,26 @@ static void ESP32_UATSerial_updateBaudRate(unsigned long baud)
 
 static void ESP32_UATModule_restart()
 {
-  digitalWrite(SOC_GPIO_PIN_TXE, LOW);
-  pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
+#if defined(USE_SA8X8)
+  if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
+    /* TBD */
+  } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+    /* TBD */
+  }
+  else
+#endif /* USE_SA8X8 */
+  {
+    digitalWrite(SOC_GPIO_PIN_TXE, LOW);
+    pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
 
-  delay(100);
+    delay(100);
 
-  digitalWrite(SOC_GPIO_PIN_TXE, HIGH);
+    digitalWrite(SOC_GPIO_PIN_TXE, HIGH);
 
-  delay(100);
+    delay(100);
 
-  pinMode(SOC_GPIO_PIN_TXE, INPUT);
+    pinMode(SOC_GPIO_PIN_TXE, INPUT);
+  }
 }
 
 static void ESP32_WDT_setup()

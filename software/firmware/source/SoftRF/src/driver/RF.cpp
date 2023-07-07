@@ -2277,10 +2277,19 @@ static bool sa8x8_probe()
   sa868.verbose(); // verbose mode
 
   controller.setModel(Model::SA_868);
-  controller.setBand(Band::VHF);
-  controller.setPins(SOC_GPIO_PIN_TWR1_RADIO_PTT,
-                     SOC_GPIO_PIN_TWR1_RADIO_PD,
-                     SOC_GPIO_PIN_TWR1_RADIO_HL);
+
+  if (hw_info.revision < 20) {
+    controller.setBand(Band::UHF);
+    controller.setPins(SOC_GPIO_PIN_TWR1_RADIO_PTT,
+                       SOC_GPIO_PIN_TWR1_RADIO_PD,
+                       SOC_GPIO_PIN_TWR1_RADIO_HL);
+  } else {
+    controller.setBand(Band::VHF);
+    controller.setPins(SOC_GPIO_PIN_TWR2_RADIO_PTT,
+                       SOC_GPIO_PIN_TWR2_RADIO_PD,
+                       SOC_GPIO_PIN_TWR2_RADIO_HL);
+  }
+
   controller.wake();
   controller.lowPower();
   controller.receive();
@@ -2288,12 +2297,6 @@ static bool sa8x8_probe()
   bool connect = controller.connect();
   if (connect) {
     Serial.print("Version: "); Serial.println(controller.version());
-
-    Serial.println("Connexion etablie");
-    Serial.println("Code retour: " + controller.response());
-  } else {
-    Serial.println("Erreur de connexion");
-    Serial.println("Erreur: " + controller.response());
   }
 
   success = connect;
@@ -2310,15 +2313,14 @@ static void sa8x8_setup()
 {
   /* TBD */
 
-//  group = controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
-  bool group = controller.setGroup(0, 432.5, 432.5, 0, 0, -0);
-  if (group) {
-    Serial.println("Groupe parametre");
+  bool group = false;
+  if (hw_info.revision < 20) {
+    group = controller.setGroup(0, 432.5, 432.5, 0, 0, -0);
   } else {
-    Serial.println("Impossible de parametrer le groupe");
+    group = controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
   }
 
-  controller.setVolume(1);
+  controller.setVolume(0);
 }
 
 static bool sa8x8_receive()
