@@ -345,6 +345,10 @@ static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
 #define DEBUG_X32K(s) {}
 
 static bool ESP32_has_32k_xtal = false;
+
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL);
+#endif /* USE_NEOPIXELBUS_LIBRARY */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -1060,7 +1064,7 @@ static void ESP32_setup()
       // DCDC1 1500~3400mV, IMAX=2A
       axp_2xxx.setDC1Voltage(3300); // WROOM, OLED
 
-      axp_2xxx.setDC3Voltage(3300); // SA868, NeoPixel
+      axp_2xxx.setDC3Voltage(3400); // SA868, NeoPixel
 
       // ALDO 500~3500V, 100mV/step, IMAX=300mA
       axp_2xxx.setALDO2Voltage(3300); // micro-SD
@@ -1100,6 +1104,12 @@ static void ESP32_setup()
       lmic_pins.rst  = SOC_UNUSED_PIN;
       lmic_pins.busy = SOC_UNUSED_PIN;
 
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+      TWR2_Pixel.Begin();
+      TWR2_Pixel.Show(); // Initialize all pixels to 'off'
+      TWR2_Pixel.SetPixelColor(0, LED_COLOR_GREEN);
+      TWR2_Pixel.Show();
+#endif /* USE_NEOPIXELBUS_LIBRARY */
     } else {
       WIRE_FINI(Wire);
       esp32_board      = ESP32_LILYGO_T_TWR_V1_3;
@@ -1894,6 +1904,13 @@ static void ESP32_fini(int reason)
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
   } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+    TWR2_Pixel.SetPixelColor(0, LED_COLOR_BLACK);
+    TWR2_Pixel.Show();
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
     switch (hw_info.pmu)
     {
     case PMU_AXP2101:
@@ -1923,7 +1940,6 @@ static void ESP32_fini(int reason)
     default:
       break;
     }
-
   }
 
   esp_deep_sleep_start();

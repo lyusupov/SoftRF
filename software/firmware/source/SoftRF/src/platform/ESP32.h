@@ -73,17 +73,14 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
 /* Adafruit_NeoPixel still has "flickering" issue of ESP32 caused by 1 ms scheduler */
-#define USE_ADAFRUIT_NEO_LIBRARY
+//#define USE_ADAFRUIT_NEO_LIBRARY
 
-#else
 /*
- * NeoPixelBus is already "flickering-free" on ESP32 (with I2S)
+ * NeoPixelBus is already "flickering-free" on ESP32 (with I2S or RMT)
  * but the "Core" needs update onto the most recent one
  */
 #define USE_NEOPIXELBUS_LIBRARY
-#endif
 
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 #include <NeoPixelBus.h>

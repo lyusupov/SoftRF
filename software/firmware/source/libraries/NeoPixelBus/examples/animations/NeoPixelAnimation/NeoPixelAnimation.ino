@@ -25,14 +25,11 @@
 const uint16_t PixelCount = 4; // make sure to set this to the number of pixels in your strip
 const uint8_t PixelPin = 2;  // make sure to set this to the correct pin, ignored for Esp8266
 
-NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
+NeoPixelBus<NeoGrbFeature, NeoWs2812xMethod> strip(PixelCount, PixelPin);
 // For Esp8266, the Pin is omitted and it uses GPIO3 due to DMA hardware use.  
 // There are other Esp8266 alternative methods that provide more pin options, but also have
 // other side effects.
-//NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
-//
-// NeoEsp8266Uart800KbpsMethod uses GPI02 instead
-
+// for details see wiki linked here https://github.com/Makuna/NeoPixelBus/wiki/ESP8266-NeoMethods 
 
 // NeoPixel animation time management object
 NeoPixelAnimator animations(PixelCount, NEO_CENTISECONDS);
@@ -56,7 +53,7 @@ NeoPixelAnimator animations(PixelCount, NEO_CENTISECONDS);
 // NEO_DECASECONDS     10000    // ~7.5 days, 10 second updates
 //
 
-#ifdef ARDUINO_ARCH_AVR
+#if defined(NEOPIXEBUS_NO_STL)
 // for AVR, you need to manage the state due to lack of STL/compiler support
 // for Esp8266 you can define the function using a lambda and state is created for you
 // see below for an example
@@ -161,7 +158,7 @@ void SetupAnimationSet()
             break;
         }
 
-#ifdef ARDUINO_ARCH_AVR
+#if defined(NEOPIXEBUS_NO_STL)
         // each animation starts with the color that was present
         animationState[pixel].StartingColor = originalColor;
         // and ends with a random color

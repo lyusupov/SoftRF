@@ -28,104 +28,107 @@ License along with NeoPixel.  If not, see
 
 #include "NeoPixelBus.h"
 
-template<typename T_COLOR_FEATURE, typename T_METHOD> class NeoPixelBrightnessBus : 
+
+template<typename T_COLOR_FEATURE, typename T_METHOD> class [[deprecated("Use NeoPixelBusLg instead.")]] NeoPixelBrightnessBus :
     public NeoPixelBus<T_COLOR_FEATURE, T_METHOD>
 {
 private:
+
+    void ScaleColor(uint16_t scale, typename T_COLOR_FEATURE::ColorObject* color)
+    {
+        // This is the similiar as calling Dim on the color object
+        // there is an assumption that all color elements are byte aligned
+        // so if any future color object gets introduced that is not it will 
+        // cause a problem
+        uint8_t* ptr = (uint8_t*)color;
+        uint8_t* ptrEnd = ptr + sizeof(typename T_COLOR_FEATURE::ColorObject);
+
+        while (ptr != ptrEnd)
+        {
+            uint16_t value = *ptr;
+            *ptr++ = (value * scale) >> 8;
+        }
+    }
+
     void ConvertColor(typename T_COLOR_FEATURE::ColorObject* color)
     {
-        if (_brightness)
-        {
-            uint8_t* ptr = (uint8_t*) color;
-            uint8_t* ptrEnd = ptr + T_COLOR_FEATURE::PixelSize;
-
-            while (ptr != ptrEnd)
-            {
-                uint16_t value = *ptr;
-                *ptr++ = (value * _brightness) >> 8;
-            }
-        }
+        // This is the same as calling Dim on the color object
+        uint16_t scale = _brightness + 1;
+        ScaleColor(scale, color);
     }
 
     void RecoverColor(typename T_COLOR_FEATURE::ColorObject* color) const
     {
-        if (_brightness)
-        {
-            uint8_t* ptr = (uint8_t*) color;
-            uint8_t* ptrEnd = ptr + T_COLOR_FEATURE::PixelSize;
+        // this is the same as calling Brighton on the color object
+        // there is an assumption that all color elements are byte aligned
+        // so if any future color object gets introduced that is not it will 
+        // cause a problem
+        uint8_t* ptr = (uint8_t*)color;
+        uint8_t* ptrEnd = ptr + sizeof(typename T_COLOR_FEATURE::ColorObject);
+        uint16_t scale = _brightness + 1;
 
-            while (ptr != ptrEnd)
-            {
-                uint16_t value = *ptr;
-                *ptr++ = (value << 8) / _brightness;
-            }
+        while (ptr != ptrEnd)
+        {
+            uint16_t value = *ptr;
+            *ptr++ = (value << 8) / scale;
         }
     }
 
 public:
     NeoPixelBrightnessBus(uint16_t countPixels, uint8_t pin) :
         NeoPixelBus<T_COLOR_FEATURE, T_METHOD>(countPixels, pin),
-        _brightness(0)
+        _brightness(255)
+    {
+    }
+    
+    NeoPixelBrightnessBus(uint16_t countPixels, uint8_t pin, NeoBusChannel channel) :
+        NeoPixelBus<T_COLOR_FEATURE, T_METHOD>(countPixels, pin, channel),
+        _brightness(255)
     {
     }
 
     NeoPixelBrightnessBus(uint16_t countPixels, uint8_t pinClock, uint8_t pinData) :
         NeoPixelBus<T_COLOR_FEATURE, T_METHOD>(countPixels, pinClock, pinData),
-        _brightness(0)
+        _brightness(255)
+    {
+    }
+
+    NeoPixelBrightnessBus(uint16_t countPixels, uint8_t pinClock, uint8_t pinData, uint8_t pinLatch, uint8_t pinOutputEnable = NOT_A_PIN) :
+        NeoPixelBus<T_COLOR_FEATURE, T_METHOD>(countPixels, pinClock, pinData, pinLatch, pinOutputEnable),
+        _brightness(255)
     {
     }
 
     NeoPixelBrightnessBus(uint16_t countPixels) :
         NeoPixelBus<T_COLOR_FEATURE, T_METHOD>(countPixels),
-        _brightness(0)
+        _brightness(255)
     {
     }
 
     void SetBrightness(uint8_t brightness)
     {
-        // Due to using fixed point math, we modifiy the brightness
-        // before storing making the math faster
-        uint8_t newBrightness = brightness + 1;
-
         // Only update if there is a change
-        if (newBrightness != _brightness) 
+        if (brightness != _brightness)
         { 
-            // calculate a scale to modify from old brightness to new brightness
+            uint16_t scale = ((static_cast<uint16_t>(brightness) + 1) << 8) / (static_cast<uint16_t>(_brightness) + 1);
+
+            // scale existing pixels
             //
-            uint8_t oldBrightness = _brightness - 1; // unmodify brightness value
-            uint16_t scale;
-
-            if (oldBrightness == 0)
+            for (uint16_t indexPixel = 0; indexPixel < NeoPixelBus<T_COLOR_FEATURE, T_METHOD>::PixelCount(); indexPixel++)
             {
-                scale = 0; // Avoid divide by 0
+                typename T_COLOR_FEATURE::ColorObject color = NeoPixelBus<T_COLOR_FEATURE, T_METHOD>::GetPixelColor(indexPixel);
+                ScaleColor(scale, &color);
+                NeoPixelBus<T_COLOR_FEATURE, T_METHOD>::SetPixelColor(indexPixel, color);
             }
-            else if (brightness == 255)
-            {
-                scale = 65535 / oldBrightness;
-            }
-            else
-            {
-                scale = (((uint16_t)newBrightness << 8) - 1) / oldBrightness;
-            }
-
-            // re-scale existing pixels
-            //
-            uint8_t* ptr = this->Pixels();
-            uint8_t* ptrEnd = ptr + this->PixelsSize();
-            while (ptr != ptrEnd)
-            {
-                uint16_t value = *ptr;
-                *ptr++ = (value * scale) >> 8;
-            }
-
-            _brightness = newBrightness;
+ 
+            _brightness = brightness;
             this->Dirty();
         }
     }
 
     uint8_t GetBrightness() const
     {
-        return _brightness - 1;
+        return _brightness;
     }
 
     void SetPixelColor(uint16_t indexPixel, typename T_COLOR_FEATURE::ColorObject color)

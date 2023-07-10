@@ -27,7 +27,7 @@ License along with NeoPixel.  If not, see
 #pragma once
 
 #include <Arduino.h>
-#include "internal/NeoEase.h"
+#include "internal/animations/NeoEase.h"
 
 enum AnimationState
 {
@@ -43,7 +43,7 @@ struct AnimationParam
     AnimationState state;
 };
 
-#ifdef ARDUINO_ARCH_AVR
+#if defined(NEOPIXEBUS_NO_STL)
 
 typedef void(*AnimUpdateCallback)(const AnimationParam& param);
 
@@ -153,7 +153,6 @@ private:
             _duration = duration;
             _remaining = duration;
             _fnCallback = animUpdate;
-            
         }
 
         void StopAnimation()
