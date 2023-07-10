@@ -525,6 +525,8 @@ uint8_t RF_Payload_Size(uint8_t protocol)
     case RF_PROTOCOL_P3I:       return p3i_proto_desc.payload_size;
     case RF_PROTOCOL_FANET:     return fanet_proto_desc.payload_size;
     case RF_PROTOCOL_ADSB_UAT:  return uat978_proto_desc.payload_size;
+    case RF_PROTOCOL_ADSB_1090: return es1090_proto_desc.payload_size;
+    case RF_PROTOCOL_APRS:      return aprs_proto_desc.payload_size;
     default:                    return 0;
   }
 }
@@ -2267,6 +2269,9 @@ static void ognrf_shutdown()
 SA818 sa868(&SA8X8_Serial);
 SA818Controller controller(&sa868);
 
+bool afskSync = false;
+int mVrms     = 0;
+
 void aprs_msg_callback(struct AX25Msg *msg) {
     AX25Msg pkg;
     memcpy(&pkg, msg, sizeof(AX25Msg));
@@ -2326,6 +2331,9 @@ static void sa8x8_channel(int8_t channel)
 
 static void sa8x8_setup()
 {
+  unsigned long aprs_preamble = 350UL;
+  unsigned long aprs_tail     =   0UL;
+
   /* Enforce radio settings to follow APRS protocol's RF specs */
   settings->rf_protocol = RF_PROTOCOL_APRS;
 
@@ -2341,10 +2349,21 @@ static void sa8x8_setup()
     controller.setGroup(0, MHz, MHz, 0, 0, -0);
   }
 
+  if (controller.getModel() == Model::SA_868) {
+    aprs_preamble = 350UL * 3;
+    aprs_tail     = 250UL;
+  }
+
   controller.setVolume(0);
+
+  protocol_encode = &aprs_encode;
+  protocol_decode = &aprs_decode;
 
   APRS_init();
   APRS_setCallsign("NOCALL", 1);
+  APRS_setPath1("WIDE1-1", 1);
+  APRS_setPreamble(aprs_preamble);
+  APRS_setTail(aprs_tail);
 
   // You don't need to set the destination identifier, but
   // if you want to, this is how you do it:
@@ -2366,11 +2385,12 @@ static void sa8x8_transmit()
   /* TBD */
   // controller.transmit();
 
-  // We'll define a comment string
   char *comment = "LibAPRS location update";
-
-  // And send the update
   APRS_sendLoc(comment, strlen(comment));
+
+  do {
+    AFSK_Poll( /* true */ false, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
+  } while (AFSK_modem->sending);
 }
 
 static void sa8x8_shutdown()
