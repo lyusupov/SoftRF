@@ -4,7 +4,7 @@
 #define SOC_GPIO_PIN_HELTRK_GNSS_TX     34
 #define SOC_GPIO_PIN_HELTRK_GNSS_RST    35
 #define SOC_GPIO_PIN_HELTRK_GNSS_PPS    36
-#define SOC_GPIO_PIN_HELTRK_GNSS_EN     37
+#define SOC_GPIO_PIN_HELTRK_GNSS_EN     37 /* active LOW */
 
 // SX1262
 #define SOC_GPIO_PIN_HELTRK_MOSI        10
@@ -23,4 +23,4 @@
 #define SOC_GPIO_PIN_HELTRK_TFT_DC      40
 #define SOC_GPIO_PIN_HELTRK_TFT_RST     39
 #define SOC_GPIO_PIN_HELTRK_TFT_BL      45
-#define SOC_GPIO_PIN_HELTRK_TFT_EN      46
+#define SOC_GPIO_PIN_HELTRK_TFT_EN      46 /* active LOW */

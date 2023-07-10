@@ -41,6 +41,7 @@
 #include "../protocol/radio/FANET.h"
 #include "../protocol/radio/UAT978.h"
 #include "../protocol/radio/ES1090.h"
+#include "../protocol/radio/APRS.h"
 
 #define maxof2(a,b)       (a > b ? a : b)
 #define maxof3(a,b,c)     maxof2(maxof2(a,b),c)

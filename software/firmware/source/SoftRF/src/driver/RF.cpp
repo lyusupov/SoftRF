@@ -32,6 +32,7 @@
 #if defined(USE_SA8X8)
 #include <SA818.h>
 #include <SA818Controller.h>
+#include <LibAPRSesp.h>
 #endif /* USE_SA8X8 */
 
 byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
@@ -2266,6 +2267,16 @@ static void ognrf_shutdown()
 SA818 sa868(&SA8X8_Serial);
 SA818Controller controller(&sa868);
 
+void aprs_msg_callback(struct AX25Msg *msg) {
+    AX25Msg pkg;
+    memcpy(&pkg, msg, sizeof(AX25Msg));
+#ifdef USE_KISS
+    kiss_messageCallback(ctx);
+#endif
+//    PacketBuffer.push(&pkg);
+//TODO processPacket();
+}
+
 static bool sa8x8_probe()
 {
   bool success = false;
@@ -2320,13 +2331,24 @@ static void sa8x8_setup()
 
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
+  uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
+  float MHz = frequency / 1000000.0;
+
   if (controller.getBand() == Band::UHF) {
     controller.setGroup(0, 432.5 , 432.5 , 0, 0, -0);
   } else {
-    controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
+//    controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
+    controller.setGroup(0, MHz, MHz, 0, 0, -0);
   }
 
   controller.setVolume(0);
+
+  APRS_init();
+  APRS_setCallsign("NOCALL", 1);
+
+  // You don't need to set the destination identifier, but
+  // if you want to, this is how you do it:
+  // APRS_setDestination("APZMDM", 0);
 }
 
 static bool sa8x8_receive()
@@ -2343,6 +2365,12 @@ static void sa8x8_transmit()
 {
   /* TBD */
   // controller.transmit();
+
+  // We'll define a comment string
+  char *comment = "LibAPRS location update";
+
+  // And send the update
+  APRS_sendLoc(comment, strlen(comment));
 }
 
 static void sa8x8_shutdown()

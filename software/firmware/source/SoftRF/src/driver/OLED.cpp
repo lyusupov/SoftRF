@@ -254,8 +254,10 @@ static void OLED_radio()
 
     u8x8->drawString(9, 5, TX_text);
 
-    if (settings->power_save & POWER_SAVE_NORECEIVE &&
-        (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262)) {
+    if ((settings->power_save & POWER_SAVE_NORECEIVE) &&
+        (hw_info.rf == RF_IC_SX1276 ||
+         hw_info.rf == RF_IC_SX1262 ||
+         hw_info.rf == RF_IC_SA8X8)) {
       u8x8->draw2x2String(0, 6, "OFF");
       prev_rx_packets_counter = rx_packets_counter;
     } else {
@@ -1149,6 +1151,17 @@ void OLED_Next_Page()
   if (u8x8) {
     OLED_current_page = (OLED_current_page + 1) % page_count;
 
+#if defined(ENABLE_OLED_TEXT_PAGE)
+    if (hw_info.display   != DISPLAY_OLED_0_49        &&
+        OLED_current_page == OLED_PAGE_TEXT           &&
+        (settings->power_save & POWER_SAVE_NORECEIVE) &&
+        (hw_info.rf == RF_IC_SX1276 ||
+         hw_info.rf == RF_IC_SX1262 ||
+         hw_info.rf == RF_IC_SA8X8)) {
+      OLED_current_page = (OLED_current_page + 1) % page_count;
+    }
+#endif /* ENABLE_OLED_TEXT_PAGE */
+
 #if !defined(EXCLUDE_OLED_BARO_PAGE)
     if (hw_info.display   != DISPLAY_OLED_0_49 &&
         OLED_current_page == OLED_PAGE_BARO    &&
@@ -1166,9 +1179,9 @@ void OLED_Next_Page()
 #endif /* EXCLUDE_IMU */
 
 #if !defined(EXCLUDE_OLED_049)
-    if (hw_info.display   == DISPLAY_OLED_0_49      &&
-        OLED_current_page == OLED_049_PAGE_ACFTS    &&
-        settings->power_save & POWER_SAVE_NORECEIVE &&
+    if (hw_info.display   == DISPLAY_OLED_0_49        &&
+        OLED_current_page == OLED_049_PAGE_ACFTS      &&
+        (settings->power_save & POWER_SAVE_NORECEIVE) &&
         (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262)) {
       OLED_current_page = (OLED_current_page + 1) % page_count;
     }

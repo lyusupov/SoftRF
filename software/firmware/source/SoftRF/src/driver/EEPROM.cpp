@@ -129,7 +129,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.json       = JSON_OFF;
   eeprom_block.field.settings.stealth    = false;
   eeprom_block.field.settings.no_track   = false;
-  eeprom_block.field.settings.power_save = hw_info.model == SOFTRF_MODEL_BRACELET ?
+  eeprom_block.field.settings.power_save = hw_info.model == SOFTRF_MODEL_BRACELET ||
+                                           hw_info.model == SOFTRF_MODEL_HAM      ?
                                            POWER_SAVE_NORECEIVE : POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr  = 0;
   eeprom_block.field.settings.igc_key[0] = 0;

@@ -91,6 +91,7 @@ GFX_PATH      = $(LIB_PATH)/Adafruit-GFX-Library
 U8G2_PATH     = $(LIB_PATH)/U8g2_for_Adafruit_GFX/src
 EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 MODES_PATH    = $(LIB_PATH)/libmodes/src
+APRS_PATH     = $(LIB_PATH)/LibAPRS_ESP32
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -105,7 +106,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
-                -I$(MODES_PATH)
+                -I$(MODES_PATH)  -I$(APRS_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -115,7 +116,8 @@ PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
                  $(PRORAD_PATH)/FANET.cpp  \
                  $(PRORAD_PATH)/OGNTP.cpp  \
                  $(PRORAD_PATH)/UAT978.cpp \
-                 $(PRORAD_PATH)/ES1090.cpp
+                 $(PRORAD_PATH)/ES1090.cpp \
+                 $(PRORAD_PATH)/APRS.cpp
 
 PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
                  $(PRODAT_PATH)/GDL90.cpp   \
@@ -195,6 +197,12 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(MODES_PATH)/sdr/impl/tables.o \
                  $(MODES_PATH)/sdr/sdr.o \
                  $(MODES_PATH)/sdr/sdr_ifile.o \
+                 $(APRS_PATH)/LibAPRS.o \
+                 $(APRS_PATH)/AX25.o \
+                 $(APRS_PATH)/AFSK.o \
+                 $(APRS_PATH)/cppQueue.o \
+                 $(APRS_PATH)/CRC-CCIT.o \
+                 $(APRS_PATH)/fir_filter.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \
