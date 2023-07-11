@@ -28,14 +28,14 @@
 
 #define APRS_SYNCWORD        { 0x00 }            /* TBD */
 #define APRS_SYNCWORD_SIZE   1
-#define APRS_PAYLOAD_SIZE    0                   /* TBD */
-#define APRS_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_1D02
-#define APRS_CRC_SIZE        0                   /* TBD */
+#define APRS_PAYLOAD_SIZE    AX25_MIN_FRAME_LEN
+#define APRS_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
+#define APRS_CRC_SIZE        2
 
 #define APRS_AIR_TIME        500  /* 0.5 s */
 
-#define APRS_TX_INTERVAL_MIN 9000 /* in ms */ /* TBD */
-#define APRS_TX_INTERVAL_MAX 10000            /* TBD */
+#define APRS_TX_INTERVAL_MIN 20000 /* in ms */ /* TBD */
+#define APRS_TX_INTERVAL_MAX 30000             /* TBD */
 
 typedef struct {
 

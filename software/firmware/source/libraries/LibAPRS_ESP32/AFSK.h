@@ -178,7 +178,11 @@ inline static uint8_t sinSample(uint16_t i)
 #define CPU_FREQ F_CPU
 
 #define CONFIG_AFSK_RX_BUFLEN 50
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #define CONFIG_AFSK_TX_BUFLEN 50
+#else
+#define CONFIG_AFSK_TX_BUFLEN 150
+#endif
 #define CONFIG_AFSK_RXTIMEOUT 0
 #define CONFIG_AFSK_PREAMBLE_LEN 350UL
 #define CONFIG_AFSK_TRAILER_LEN 50UL
@@ -279,16 +283,20 @@ typedef struct Afsk
 #define AFSK_DAC_IRQ_START()         \
     do                               \
     {                                \
-        extern bool hw_afsk_dac_isr; \
-        hw_afsk_dac_isr = true;      \
+      extern bool hw_afsk_dac_isr;   \
+      hw_afsk_dac_isr = true;        \
+      if (TX_LED_PIN > 0)  {         \
         digitalWrite(TX_LED_PIN,HIGH);\
+      }                              \
     } while (0)
 #define AFSK_DAC_IRQ_STOP()          \
     do                               \
     {                                \
-        extern bool hw_afsk_dac_isr; \
-        hw_afsk_dac_isr = false;     \
+      extern bool hw_afsk_dac_isr;   \
+      hw_afsk_dac_isr = false;       \
+      if (TX_LED_PIN > 0)  {         \
         digitalWrite(TX_LED_PIN,LOW);\
+      }                              \
     } while (0)
 //#define AFSK_DAC_INIT()        do { DAC_DDR |= (DAC_PINS) ; PTT_DDR = 0b01000000;} while (0)
 
@@ -298,8 +306,8 @@ typedef struct Afsk
 // and _OFF() functions writes to the PORT registers
 // to turn the pins on or off.
 
-#define LED_RX_ON() digitalWrite(RX_LED_PIN, HIGH);
-#define LED_RX_OFF() digitalWrite(RX_LED_PIN, LOW);
+#define LED_RX_ON()  if (RX_LED_PIN > 0) digitalWrite(RX_LED_PIN, HIGH);
+#define LED_RX_OFF() if (RX_LED_PIN > 0) digitalWrite(RX_LED_PIN, LOW);
 
 extern bool input_HPF;
 

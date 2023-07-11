@@ -81,5 +81,7 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   APRS_setGain(7);
   APRS_setDirectivity(0);
 
-  return (0);
+  strcpy((char *) pkt, "NOT IN USE");
+
+  return aprs_proto_desc.payload_size;
 }

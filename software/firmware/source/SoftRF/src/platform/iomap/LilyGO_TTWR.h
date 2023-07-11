@@ -14,6 +14,7 @@
 #define SOC_GPIO_PIN_TWR2_RADIO_PTT     41
 #define SOC_GPIO_PIN_TWR2_RADIO_HL      38
 #define SOC_GPIO_PIN_TWR2_RADIO_PD      40
+#define SOC_GPIO_PIN_TWR2_MIC_CH_SEL    17
 
 // SPI
 #define SOC_GPIO_PIN_TWR2_MOSI          11

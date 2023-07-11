@@ -297,6 +297,8 @@ byte RF_setup(void)
       case RF_PROTOCOL_P3I:       p = &p3i_proto_desc;    break;
       case RF_PROTOCOL_FANET:     p = &fanet_proto_desc;  break;
       case RF_PROTOCOL_ADSB_UAT:  p = &uat978_proto_desc; break;
+      case RF_PROTOCOL_ADSB_1090: p = &es1090_proto_desc; break;
+      case RF_PROTOCOL_APRS:      p = &aprs_proto_desc;   break;
       case RF_PROTOCOL_LEGACY:
       default:                    p = &legacy_proto_desc; break;
     }
@@ -2326,7 +2328,7 @@ static bool sa8x8_probe()
 
 static void sa8x8_channel(int8_t channel)
 {
-  /* TBD */
+  /* Nothing to do */
 }
 
 static void sa8x8_setup()
@@ -2375,16 +2377,13 @@ static bool sa8x8_receive()
   bool success = false;
 
   /* TBD */
-  controller.receive();
+//  controller.receive();
 
   return success;
 }
 
 static void sa8x8_transmit()
 {
-  /* TBD */
-  // controller.transmit();
-
   char *comment = "LibAPRS location update";
   APRS_sendLoc(comment, strlen(comment));
 

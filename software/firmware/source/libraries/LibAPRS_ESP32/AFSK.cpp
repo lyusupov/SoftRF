@@ -129,6 +129,8 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
   i2s_config_t i2s_config = {
 #if defined(CONFIG_IDF_TARGET_ESP32)
       .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN | I2S_MODE_ADC_BUILT_IN),
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_PDM | I2S_MODE_TX ),
 #else
       .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX ),
 #endif
@@ -209,6 +211,34 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
     dac_i2s_enable();
   }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  else if (MODE == (I2S_MODE_TX | I2S_MODE_PDM))
+  {
+    // Serial.println("Using built-in I2S PDM");
+    // install and start i2s driver
+    if (i2s_driver_install(I2S_NUM_0, &i2s_config, 5, &i2s_event_queue) != ESP_OK)
+    {
+      Serial.println("ERROR: Unable to install I2S driver");
+    }
+
+    i2s_pin_config_t pin_config;
+
+    pin_config.bck_io_num = I2S_PIN_NO_CHANGE;
+    pin_config.ws_io_num  = I2S_PIN_NO_CHANGE;
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
+#endif
+
+    pin_config.data_out_num = MIC_PIN;
+    pin_config.data_in_num  = I2S_PIN_NO_CHANGE;
+
+    i2s_set_pin(I2S_NUM_0, &pin_config);
+    i2s_set_clk(I2S_NUM_0, SAMPLE_RATE, BPS, I2S_CHANNEL_MONO);
+
+    i2s_zero_dma_buffer(I2S_NUM_0);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
 #else
@@ -229,21 +259,32 @@ void AFSK_TimerEnable(bool sts)
 void AFSK_hw_init(void)
 {
   // Set up ADC
-  pinMode(RSSI_PIN, INPUT_PULLUP);
-  pinMode(PTT_PIN, OUTPUT);
-  pinMode(TX_LED_PIN, OUTPUT);
-  digitalWrite(TX_LED_PIN, LOW);
+  if (RSSI_PIN > 0) {
+    pinMode(RSSI_PIN, INPUT_PULLUP);
+  }
 
-  pinMode(RX_LED_PIN, OUTPUT);
-  digitalWrite(RX_LED_PIN, LOW);
+  if (TX_LED_PIN > 0) {
+    pinMode(TX_LED_PIN, OUTPUT);
+    digitalWrite(TX_LED_PIN, LOW);
+  }
 
-  digitalWrite(PTT_PIN, LOW);
+  if (RX_LED_PIN > 0) {
+    pinMode(RX_LED_PIN, OUTPUT);
+    digitalWrite(RX_LED_PIN, LOW);
+  }
+
+  if (PTT_PIN > 0) {
+    pinMode(PTT_PIN, OUTPUT);
+    digitalWrite(PTT_PIN, LOW);
+  }
 
 #if defined(ESP32)
 #ifdef I2S_INTERNAL
 #if defined(CONFIG_IDF_TARGET_ESP32)
   //  Initialize the I2S peripheral
   I2S_Init(I2S_MODE_DAC_BUILT_IN, I2S_BITS_PER_SAMPLE_16BIT);
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM), I2S_BITS_PER_SAMPLE_16BIT);
 #else
   /* TBD */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -313,15 +354,21 @@ static void AFSK_txStart(Afsk *afsk)
     afsk->phaseAcc = 0;
     afsk->bitstuffCount = 0;
     // LED_TX_ON();
-    digitalWrite(TX_LED_PIN, HIGH);
-    digitalWrite(PTT_PIN, HIGH);
+    if (TX_LED_PIN > 0) {
+      digitalWrite(TX_LED_PIN, HIGH);
+    }
+    if (PTT_PIN > 0) {
+      digitalWrite(PTT_PIN, HIGH);
+    }
     afsk->preambleLength = DIV_ROUND(custom_preamble * BITRATE, 9600);
     AFSK_DAC_IRQ_START();
 #if defined(ESP32)
-#if defined(I2S_INTERNAL) && defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(I2S_INTERNAL)
     i2s_zero_dma_buffer(I2S_NUM_0);
+#if defined(CONFIG_IDF_TARGET_ESP32)
     // i2s_adc_disable(I2S_NUM_0);
     dac_i2s_enable();
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     // i2s_start(I2S_NUM_0);
 #endif /* I2S_INTERNAL */
 #endif /* ESP32 */
@@ -334,12 +381,20 @@ static void AFSK_txStart(Afsk *afsk)
 void afsk_putchar(char c)
 {
   AFSK_txStart(AFSK_modem);
+#if defined(CONFIG_IDF_TARGET_ESP32)
   while (fifo_isfull_locked(&AFSK_modem->txFifo))
   {
     /* Wait */
     // delay(10);
   }
   fifo_push_locked(&AFSK_modem->txFifo, c);
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (!fifo_isfull_locked(&AFSK_modem->txFifo)) {
+    fifo_push_locked(&AFSK_modem->txFifo, c);
+  } else {
+    Serial.println("txFifo IS FULL");
+  }
+#endif
 }
 
 int afsk_getchar(void)
@@ -809,8 +864,11 @@ void IRAM_ATTR sample_isr()
     // if(abufPos>=315) abufPos=0;
     // if(x++<16) Serial.printf("%d,",sinwave);
     dacWrite(MIC_PIN, sinwave);
-    if (AFSK_modem->sending == false)
-      digitalWrite(PTT_PIN, LOW);
+    if (AFSK_modem->sending == false) {
+      if (PTT_PIN > 0) {
+        digitalWrite(PTT_PIN, LOW);
+      }
+    }
   }
   else
   {
@@ -886,7 +944,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
 
   if (hw_afsk_dac_isr)
   {
-#if defined(I2S_INTERNAL) && defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(I2S_INTERNAL)
     memset(pcm_out, 0, sizeof(pcm_out));
     for (x = 0; x < ADC_SAMPLES_COUNT; x++)
     {
@@ -919,9 +977,9 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
     if (x > 0)
     {
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=4
-      if (i2s_write(I2S_NUM_0, (char *)&pcm_out, (x * sizeof(uint16_t)),&writeByte, portMAX_DELAY) == ESP_OK)
+      if (i2s_write(I2S_NUM_0, (char *)&pcm_out, (x * sizeof(uint16_t)),&writeByte, portMAX_DELAY) != ESP_OK)
 #else
-      if (i2s_write_bytes(I2S_NUM_0, (char *)&pcm_out, (x * sizeof(uint16_t)), portMAX_DELAY) == ESP_OK)
+      if (i2s_write_bytes(I2S_NUM_0, (char *)&pcm_out, (x * sizeof(uint16_t)), portMAX_DELAY) == ESP_FAIL)
 #endif
       {
         Serial.println("I2S Write Error");
@@ -975,15 +1033,19 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
           delay(10);
         }
       }
+#if defined(CONFIG_IDF_TARGET_ESP32)
       dac_i2s_disable();
+#endif /* CONFIG_IDF_TARGET_ESP32 */
       i2s_zero_dma_buffer(I2S_NUM_0);
       // i2s_adc_enable(I2S_NUM_0);
-      digitalWrite(PTT_PIN, LOW);
+      if (PTT_PIN > 0) {
+        digitalWrite(PTT_PIN, LOW);
+      }
       if (SA818) {
         digitalWrite(powerPin, RFPower ? HIGH : LOW); //RF Power LOW
       }
     }
-#endif
+#endif /* I2S_INTERNAL */
   }
   else
   {
@@ -999,6 +1061,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
         mVsumCount = 0;
       }
 #endif
+#if defined(CONFIG_IDF_TARGET_ESP32)
       // if (i2s_read(I2S_NUM_0, (char *)&pcm_in, (ADC_SAMPLES_COUNT * sizeof(uint16_t)), &bytesRead, portMAX_DELAY) == ESP_OK)
       if (i2s_read(I2S_NUM_0, (char *)&pcm_in, (ADC_SAMPLES_COUNT * sizeof(uint16_t)), &bytesRead, portMAX_DELAY) == ESP_OK)
       {
@@ -1065,6 +1128,9 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
           }
         }
       }
+#else
+    /* TBD */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 #else
     if (adcq.getCount() >= ADC_SAMPLES_COUNT)
     {
