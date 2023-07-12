@@ -2284,6 +2284,20 @@ void aprs_msg_callback(struct AX25Msg *msg) {
 //TODO processPacket();
 }
 
+#include "LED.h"
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel;
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+
+void sa868_Tx_LED_state(bool val) {
+  if (hw_info.model == SOFTRF_MODEL_HAM) {
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+    TWR2_Pixel.SetPixelColor(0, val ? LED_COLOR_RED : LED_COLOR_GREEN);
+    TWR2_Pixel.Show();
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+  }
+}
+
 static bool sa8x8_probe()
 {
   bool success = false;
@@ -2345,10 +2359,9 @@ static void sa8x8_setup()
   float MHz = frequency / 1000000.0;
 
   if (controller.getBand() == Band::UHF) {
-    controller.setGroup(0, 432.5 , 432.5 , 0, 0, -0);
+    controller.setGroup(0, 432.5 , 432.5 , 0, 0, 0);
   } else {
-//    controller.setGroup(0, 145.75, 145.75, 0, 0, -0);
-    controller.setGroup(0, MHz, MHz, 0, 0, -0);
+    controller.setGroup(0 /* TBD */, MHz, MHz, 0, 8, 0);
   }
 
   if (controller.getModel() == Model::SA_868) {
@@ -2356,7 +2369,7 @@ static void sa8x8_setup()
     aprs_tail     = 250UL;
   }
 
-  controller.setVolume(0);
+  controller.setVolume(1);
 
   protocol_encode = &aprs_encode;
   protocol_decode = &aprs_decode;
@@ -2366,6 +2379,8 @@ static void sa8x8_setup()
   APRS_setPath1("WIDE1-1", 1);
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);
+
+  APRS_setTxLEDCallback(sa868_Tx_LED_state);
 
   // You don't need to set the destination identifier, but
   // if you want to, this is how you do it:

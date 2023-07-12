@@ -1299,7 +1299,7 @@ static void ESP32_setup()
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, LOW);
 
-    pinMode(SOC_GPIO_PIN_TWR2_RADIO_PTT, INPUT_PULLDOWN);
+    pinMode(SOC_GPIO_PIN_TWR2_RADIO_PTT,  INPUT_PULLUP);
     pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLUP);
 
   } else {

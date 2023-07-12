@@ -276,27 +276,35 @@ typedef struct Afsk
 
 } Afsk;
 
+typedef void (*APRS_led_callback_t)(bool val);
+
 #define DIV_ROUND(dividend, divisor) (((dividend) + (divisor) / 2) / (divisor))
 #define MARK_INC (uint16_t)(DIV_ROUND(SIN_LEN * (uint32_t)MARK_FREQ, CONFIG_AFSK_DAC_SAMPLERATE))
 #define SPACE_INC (uint16_t)(DIV_ROUND(SIN_LEN * (uint32_t)SPACE_FREQ, CONFIG_AFSK_DAC_SAMPLERATE))
 
-#define AFSK_DAC_IRQ_START()         \
-    do                               \
-    {                                \
-      extern bool hw_afsk_dac_isr;   \
-      hw_afsk_dac_isr = true;        \
-      if (TX_LED_PIN > 0)  {         \
+#define AFSK_DAC_IRQ_START()          \
+    do                                \
+    {                                 \
+      extern bool hw_afsk_dac_isr;    \
+      hw_afsk_dac_isr = true;         \
+      if (TX_LED_PIN > 0) {           \
         digitalWrite(TX_LED_PIN,HIGH);\
-      }                              \
+      }                               \
+      if (AFSK_Tx_LED_Callback) {     \
+        (*AFSK_Tx_LED_Callback)(true);\
+      }                               \
     } while (0)
-#define AFSK_DAC_IRQ_STOP()          \
-    do                               \
-    {                                \
-      extern bool hw_afsk_dac_isr;   \
-      hw_afsk_dac_isr = false;       \
-      if (TX_LED_PIN > 0)  {         \
-        digitalWrite(TX_LED_PIN,LOW);\
-      }                              \
+#define AFSK_DAC_IRQ_STOP()           \
+    do                                \
+    {                                 \
+      extern bool hw_afsk_dac_isr;    \
+      hw_afsk_dac_isr = false;        \
+      if (TX_LED_PIN > 0) {           \
+        digitalWrite(TX_LED_PIN,LOW); \
+      }                               \
+      if (AFSK_Tx_LED_Callback) {     \
+        (*AFSK_Tx_LED_Callback)(false);\
+      }                               \
     } while (0)
 //#define AFSK_DAC_INIT()        do { DAC_DDR |= (DAC_PINS) ; PTT_DDR = 0b01000000;} while (0)
 

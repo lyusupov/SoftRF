@@ -14,6 +14,7 @@
 Afsk modem;
 AX25Ctx AX25;
 extern void aprs_msg_callback(struct AX25Msg *msg);
+extern APRS_led_callback_t AFSK_Tx_LED_Callback;
 
 #define countof(a) sizeof(a) / sizeof(a[0])
 
@@ -217,6 +218,11 @@ void APRS_setDirectivity(int s)
     {
         directivity = s;
     }
+}
+
+void APRS_setTxLEDCallback(APRS_led_callback_t cb)
+{
+    AFSK_Tx_LED_Callback = cb;
 }
 
 void APRS_printSettings()

@@ -32,7 +32,7 @@
 #define APRS_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
 #define APRS_CRC_SIZE        2
 
-#define APRS_AIR_TIME        500  /* 0.5 s */
+#define APRS_AIR_TIME        3000  /* 3 s */
 
 #define APRS_TX_INTERVAL_MIN 20000 /* in ms */ /* TBD */
 #define APRS_TX_INTERVAL_MAX 30000             /* TBD */

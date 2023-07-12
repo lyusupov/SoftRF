@@ -51,6 +51,8 @@ uint8_t CountOnesFromInteger(uint8_t value)
   return count;
 }
 
+APRS_led_callback_t AFSK_Tx_LED_Callback = NULL;
+
 #define IMPLEMENTATION FIFO
 
 #ifndef I2S_INTERNAL
@@ -275,7 +277,7 @@ void AFSK_hw_init(void)
 
   if (PTT_PIN > 0) {
     pinMode(PTT_PIN, OUTPUT);
-    digitalWrite(PTT_PIN, LOW);
+    digitalWrite(PTT_PIN, HIGH);
   }
 
 #if defined(ESP32)
@@ -358,7 +360,7 @@ static void AFSK_txStart(Afsk *afsk)
       digitalWrite(TX_LED_PIN, HIGH);
     }
     if (PTT_PIN > 0) {
-      digitalWrite(PTT_PIN, HIGH);
+      digitalWrite(PTT_PIN, LOW);
     }
     afsk->preambleLength = DIV_ROUND(custom_preamble * BITRATE, 9600);
     AFSK_DAC_IRQ_START();
@@ -866,7 +868,7 @@ void IRAM_ATTR sample_isr()
     dacWrite(MIC_PIN, sinwave);
     if (AFSK_modem->sending == false) {
       if (PTT_PIN > 0) {
-        digitalWrite(PTT_PIN, LOW);
+        digitalWrite(PTT_PIN, HIGH);
       }
     }
   }
@@ -1039,7 +1041,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
       i2s_zero_dma_buffer(I2S_NUM_0);
       // i2s_adc_enable(I2S_NUM_0);
       if (PTT_PIN > 0) {
-        digitalWrite(PTT_PIN, LOW);
+        digitalWrite(PTT_PIN, HIGH);
       }
       if (SA818) {
         digitalWrite(powerPin, RFPower ? HIGH : LOW); //RF Power LOW

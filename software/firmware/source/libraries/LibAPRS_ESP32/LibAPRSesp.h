@@ -41,6 +41,8 @@ void APRS_sendLoc(void *_buffer, size_t length);
 void APRS_sendMsg(void *_buffer, size_t length);
 void APRS_msgRetry();
 
+void APRS_setTxLEDCallback(APRS_led_callback_t cb);
+
 void APRS_printSettings();
 void APRS_sendTNC2Pkt(String raw);
 
