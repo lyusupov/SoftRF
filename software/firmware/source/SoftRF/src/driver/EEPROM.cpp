@@ -86,13 +86,17 @@ void EEPROM_defaults()
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ?
                                               RF_PROTOCOL_FANET :
                                               hw_info.model == SOFTRF_MODEL_ES ?
-                                              RF_PROTOCOL_ADSB_1090 : RF_PROTOCOL_OGNTP;
+                                              RF_PROTOCOL_ADSB_1090 :
+                                              hw_info.model == SOFTRF_MODEL_HAM ?
+                                              RF_PROTOCOL_APRS : RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
                                               AIRCRAFT_TYPE_STATIC :
                                               AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
-                                              RF_TX_POWER_OFF : RF_TX_POWER_FULL;
+                                              RF_TX_POWER_OFF :
+                                              hw_info.model == SOFTRF_MODEL_HAM ?
+                                              RF_TX_POWER_LOW : RF_TX_POWER_FULL;
   eeprom_block.field.settings.bluetooth     = BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 

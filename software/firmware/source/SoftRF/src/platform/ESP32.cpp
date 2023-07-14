@@ -2387,6 +2387,10 @@ static void ESP32_EEPROM_extension(int cmd)
       settings->bluetooth = BLUETOOTH_NONE;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 || C3 */
     }
+
+    if (hw_info.model == SOFTRF_MODEL_HAM) {
+      settings->power_save |= POWER_SAVE_NORECEIVE;
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */

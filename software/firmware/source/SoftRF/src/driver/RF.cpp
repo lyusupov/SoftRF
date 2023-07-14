@@ -2403,7 +2403,8 @@ static void sa8x8_transmit()
   APRS_sendLoc(comment, strlen(comment));
 
   do {
-    AFSK_Poll( /* true */ false, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
+    delay(5);
+    AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
   } while (AFSK_modem->sending);
 }
 
