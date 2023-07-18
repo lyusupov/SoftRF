@@ -24,13 +24,12 @@
 #if defined(ESP32)
 #include "sdkconfig.h"
 #endif /* ESP32 */
-#if defined(CONFIG_IDF_TARGET_ESP32)
-#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
-#elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #include <User_Setups/Setup72_TTGO_T_Display_S2.h> // Setup file for ESP32-S2 and TTGO T-Display S2 ST7789 SPI TFT 135x240
-#else
-/* CONFIG_IDF_TARGET_ESP32S3 */
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <User_Setups/Setup73_Heltec_Tracker_S3.h> // Setup file for ESP32-S3 and Heltec Tracker ST7735 SPI TFT 160x80
+#else
+#include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 #endif /* CONFIG_IDF_TARGET_ESP32SX */
 
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
