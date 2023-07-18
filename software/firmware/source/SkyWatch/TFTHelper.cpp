@@ -50,8 +50,13 @@ const char SoftRF_text1[]   = "SoftRF";
 
 void TFT_off()
 {
+#ifndef ST7735_DRIVER
     tft->writecommand(TFT_DISPOFF);
     tft->writecommand(TFT_SLPIN);
+#else
+    tft->writecommand(ST7735_DISPOFF);
+    tft->writecommand(ST7735_SLPIN);
+#endif /* ST7735_DRIVER */
     if (tp) {
       tp->enterSleepMode();
     }
@@ -59,8 +64,13 @@ void TFT_off()
 
 void TFT_sleep()
 {
+#ifndef ST7735_DRIVER
     tft->writecommand(TFT_DISPOFF);
     tft->writecommand(TFT_SLPIN);
+#else
+    tft->writecommand(ST7735_DISPOFF);
+    tft->writecommand(ST7735_SLPIN);
+#endif /* ST7735_DRIVER */
     if (tp) {
       tp->enterMonitorMode();
     }
@@ -68,8 +78,13 @@ void TFT_sleep()
 
 void TFT_wakeup()
 {
+#ifndef ST7735_DRIVER
     tft->writecommand(TFT_SLPOUT);
     tft->writecommand(TFT_DISPON);
+#else
+    tft->writecommand(ST7735_SLPOUT);
+    tft->writecommand(ST7735_DISPON);
+#endif /* ST7735_DRIVER */
 }
 
 void TFT_backlight_init(void)
