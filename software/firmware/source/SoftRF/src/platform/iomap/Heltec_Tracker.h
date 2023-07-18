@@ -24,3 +24,14 @@
 #define SOC_GPIO_PIN_HELTRK_TFT_RST     39
 #define SOC_GPIO_PIN_HELTRK_TFT_BL      45
 #define SOC_GPIO_PIN_HELTRK_TFT_EN      46 /* active LOW */
+
+// 1st I2C bus
+#define SOC_GPIO_PIN_HELTRK_SDA         6 /* TBD */
+#define SOC_GPIO_PIN_HELTRK_SCL         7 /* TBD */
+
+// LED
+#define SOC_GPIO_PIN_HELTRK_LED         18 /* white, active HIGH */
+
+// Misc.
+#define SOC_GPIO_PIN_HELTRK_VEXT_EN     3
+#define SOC_GPIO_PIN_HELTRK_ADC_EN      2

@@ -85,6 +85,7 @@ const char *GNSS_name[] = {
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
  * MT33: GGA -  48 , RMC - 175
+ * UC65: GGA - TBD , RMC - TBD
  */
 
 gnss_stat_t gnss_stats;
@@ -1065,12 +1066,15 @@ const gnss_chip_ops_t at65_ops = {
 static gnss_id_t uc65_probe()
 {
   /* Firmware version request */
-  return GNSS_MODULE_NMEA; /* TBD */
+  return nmea_handshake("$PDTINFO\r\n", "$PDTINFO,FB2S UM600", false) ?
+                        GNSS_MODULE_UC65 : GNSS_MODULE_NMEA;
 }
 
 static bool uc65_setup()
 {
-  /* TBD */
+  Serial_GNSS_Out.write("$CFGMSG,0,2,0\r\n"); delay(250); /* GSA off */
+  Serial_GNSS_Out.write("$CFGMSG,0,3,0\r\n"); delay(250); /* GSV off */
+
   return true;
 }
 
@@ -1113,7 +1117,8 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_LEGO      ||
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_BALKAN    ||
-      hw_info.model == SOFTRF_MODEL_HAM)
+      hw_info.model == SOFTRF_MODEL_HAM       ||
+      hw_info.model == SOFTRF_MODEL_MIDI)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);

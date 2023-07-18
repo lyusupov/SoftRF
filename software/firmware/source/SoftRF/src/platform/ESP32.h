@@ -143,7 +143,9 @@ extern Adafruit_NeoPixel strip;
                                   (hw_info.revision >= 8 ?                \
                                     SOC_GPIO_PIN_TBEAM_V08_PPS :          \
                                     SOC_UNUSED_PIN) :                     \
-                                  SOC_UNUSED_PIN))
+                                (hw_info.model == SOFTRF_MODEL_MIDI ?     \
+                                  SOC_GPIO_PIN_HELTRK_GNSS_PPS :          \
+                                  SOC_UNUSED_PIN)))
 
 #define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
                                 SOC_UNUSED_PIN :                         \
@@ -182,12 +184,19 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_TDISPLAY_S2_LED    39
 #define SOC_GPIO_PIN_TDONGLE_S2_LED     39
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
-#define LV_HOR_RES                      (240) //Horizontal
-#else
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_HOR_RES                      (135) //Horizontal
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#define LV_HOR_RES                      (80) //Horizontal
+#else
+#define LV_HOR_RES                      (240) //Horizontal
 #endif
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define LV_VER_RES                      (160) //vertical
+#else
 #define LV_VER_RES                      (240) //vertical
+#endif
 
 #include "iomap/LilyGO_TBeam_Supreme.h"
 
@@ -207,6 +216,7 @@ extern Adafruit_NeoPixel strip;
 
 #include "iomap/AiThinker_C3_12F.h"
 #include "iomap/LilyGO_TTWR.h"
+#include "iomap/Heltec_Tracker.h"
 
 extern WebServer server;
 

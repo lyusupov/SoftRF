@@ -97,8 +97,13 @@ static TFT_eSPI *tft = NULL;
 
 void TFT_off()
 {
+#ifndef ST7735_DRIVER
     tft->writecommand(TFT_DISPOFF);
     tft->writecommand(TFT_SLPIN);
+#else
+    tft->writecommand(ST7735_DISPOFF);
+    tft->writecommand(ST7735_SLPIN);
+#endif /* ST7735_DRIVER */
 }
 
 void TFT_backlight_adjust(uint8_t level)
@@ -149,6 +154,7 @@ const char *ESP32SX_Device_Manufacturer = SOFTRF_IDENT;
 const char *ESP32SX_Model_Stand  = "Standalone Edition"; /* 303a:8132 */
 const char *ESP32S3_Model_Prime3 = "Prime Edition Mk.3"; /* 303a:8133 */
 const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
+const char *ESP32S3_Model_Midi   = "Midi Edition";
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -451,6 +457,7 @@ static void ESP32_setup()
      *  TTGO T-01C3     |               | BOYA_BY25Q32AL
      *                  | ESP-C3-12F    | XMC_XM25QH32B
      *  LilyGO T-TWR    | WROOM-1-N16R8 | GIGADEVICE_GD25Q128
+     *  Heltec Tracker  |               | GIGADEVICE_GD25Q64
      */
 
     switch(flash_id)
@@ -500,6 +507,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     if (ESP32_getFlashId() == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128)) {
       hw_info.model  = SOFTRF_MODEL_HAM;  /* allow psramFound() to fail */
+    } else if (ESP32_getFlashId() == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64)) {
+      esp32_board    = ESP32_HELTEC_TRACKER;
+      hw_info.model  = SOFTRF_MODEL_MIDI;
     } else {
       esp32_board    = ESP32_S3_DEVKIT;
     }
@@ -1177,6 +1187,18 @@ static void ESP32_setup()
         FATFS_is_mounted = fatfs.begin(SPIFlash);
       }
     }
+  } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_S3_CONS_RX,
+                       SOC_GPIO_PIN_S3_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_HELTRK_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_HELTRK_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -1214,6 +1236,7 @@ static void ESP32_setup()
     USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ? ESP32S3_Model_Prime3 :
                     esp32_board == ESP32_LILYGO_T_TWR_V1_3   ? ESP32S3_Model_Ham    :
                     esp32_board == ESP32_LILYGO_T_TWR_V2_0   ? ESP32S3_Model_Ham    :
+                    esp32_board == ESP32_HELTEC_TRACKER      ? ESP32S3_Model_Midi   :
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
@@ -1302,6 +1325,20 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_PTT,  INPUT_PULLUP);
     pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLUP);
 
+  } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+
+    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_EN, LOW);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN,  OUTPUT);
+
+    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, LOW);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST, OUTPUT);
+    delay(100);
+    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, HIGH);
+
+    pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,   INPUT_PULLDOWN);
+    pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,   INPUT_PULLUP);
+//    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,  INPUT_PULLDOWN); /* TBD */
+
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -1378,36 +1415,36 @@ static void ESP32_post_init()
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
     Serial.flush();
-  }
 
-  Serial.println();
+    Serial.println();
 
-  if (!uSD_is_attached) {
-    Serial.println(F("WARNING: unable to attach micro-SD card."));
-  } else {
-    // The number of 512 byte sectors in the card
-    // or zero if an error occurs.
-    size_t cardSize = uSD.card()->cardSize();
-
-    if (cardSize == 0) {
-      Serial.println(F("WARNING: invalid micro-SD card size."));
+    if (!uSD_is_attached) {
+      Serial.println(F("WARNING: unable to attach micro-SD card."));
     } else {
-      uint8_t cardType = uSD.card()->type();
+      // The number of 512 byte sectors in the card
+      // or zero if an error occurs.
+      size_t cardSize = uSD.card()->cardSize();
 
-      Serial.print(F("SD Card Type: "));
-      if(cardType == SD_CARD_TYPE_SD1){
-          Serial.println(F("V1"));
-      } else if(cardType == SD_CARD_TYPE_SD2){
-          Serial.println(F("V2"));
-      } else if(cardType == SD_CARD_TYPE_SDHC){
-          Serial.println(F("SDHC"));
+      if (cardSize == 0) {
+        Serial.println(F("WARNING: invalid micro-SD card size."));
       } else {
-          Serial.println(F("UNKNOWN"));
-      }
+        uint8_t cardType = uSD.card()->type();
 
-      Serial.print("SD Card Size: ");
-      Serial.print(cardSize / (2 * 1024));
-      Serial.println(" MB");
+        Serial.print(F("SD Card Type: "));
+        if(cardType == SD_CARD_TYPE_SD1){
+            Serial.println(F("V1"));
+        } else if(cardType == SD_CARD_TYPE_SD2){
+            Serial.println(F("V2"));
+        } else if(cardType == SD_CARD_TYPE_SDHC){
+            Serial.println(F("SDHC"));
+        } else {
+            Serial.println(F("UNKNOWN"));
+        }
+
+        Serial.print("SD Card Size: ");
+        Serial.print(cardSize / (2 * 1024));
+        Serial.println(" MB");
+      }
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
@@ -1943,6 +1980,11 @@ static void ESP32_fini(int reason)
     default:
       break;
     }
+  } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
 
   esp_deep_sleep_start();
@@ -2425,6 +2467,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_TWR2_SCK,  SOC_GPIO_PIN_TWR2_MISO,
                 SOC_GPIO_PIN_TWR2_MOSI, SOC_GPIO_PIN_TWR2_SS_EXT);
       break;
+    case ESP32_HELTEC_TRACKER:
+      SPI.begin(SOC_GPIO_PIN_HELTRK_SCK,  SOC_GPIO_PIN_HELTRK_MISO,
+                SOC_GPIO_PIN_HELTRK_MOSI, SOC_GPIO_PIN_HELTRK_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -2490,6 +2536,11 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
+    } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+      Serial.println(F("INFO: Heltec Tracker is detected."));
+      Serial_GNSS_In.begin(115200, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_HELTRK_GNSS_RX,
+                           SOC_GPIO_PIN_HELTRK_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -2545,7 +2596,8 @@ static byte ESP32_Display_setup()
   byte rval = DISPLAY_NONE;
 
   if (esp32_board != ESP32_TTGO_T_WATCH &&
-      esp32_board != ESP32_S2_T8_V1_1) {
+      esp32_board != ESP32_S2_T8_V1_1   &&
+      esp32_board != ESP32_HELTEC_TRACKER) {
 
 #if defined(USE_OLED)
     bool has_oled = false;
@@ -2693,12 +2745,12 @@ static byte ESP32_Display_setup()
     SoC->ADB_ops && SoC->ADB_ops->setup();
 #endif /* USE_OLED */
 
-  } else {  /* ESP32_TTGO_T_WATCH */
+  } else {
 
 #if defined(USE_TFT)
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
-#if LV_HOR_RES != 135
+#if LV_HOR_RES != 135 && LV_HOR_RES != 80
     tft->setRotation(0);
 #else
     tft->setRotation(1);
@@ -2706,7 +2758,10 @@ static byte ESP32_Display_setup()
     tft->fillScreen(TFT_NAVY);
 
     int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
-                 SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
+                 SOC_GPIO_PIN_T8_S2_TFT_BL :
+                 (esp32_board == ESP32_HELTEC_TRACKER) ?
+                 SOC_GPIO_PIN_HELTRK_TFT_BL :
+                 SOC_GPIO_PIN_TWATCH_TFT_BL;
 
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
     ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
@@ -2725,10 +2780,12 @@ static byte ESP32_Display_setup()
       delay(100);
     }
 
-#if LV_HOR_RES != 135
-    rval = DISPLAY_TFT_TTGO_240;
-#else
+#if LV_HOR_RES == 135
     rval = DISPLAY_TFT_TTGO_135;
+#elif LV_HOR_RES == 80
+    rval = DISPLAY_TFT_HELTEC_80;
+#else
+    rval = DISPLAY_TFT_TTGO_240;
 #endif /* LV_HOR_RES */
 #endif /* USE_TFT */
   }
@@ -3007,6 +3064,7 @@ static void ESP32_Display_fini(int reason)
 #if defined(USE_TFT)
   case DISPLAY_TFT_TTGO_240:
   case DISPLAY_TFT_TTGO_135:
+  case DISPLAY_TFT_HELTEC_80:
     if (tft) {
         int level;
         const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT) ?
@@ -3018,9 +3076,16 @@ static void ESP32_Display_fini(int reason)
         }
 
         tft->fillScreen(TFT_NAVY);
-
         tft->setTextFont(4);
-        tft->setTextSize(2);
+#if LV_VER_RES == 160
+        if (reason == SOFTRF_SHUTDOWN_LOWBAT) {
+          tft->setTextSize(1);
+        } else
+#else
+        {
+          tft->setTextSize(2);
+        }
+#endif
         tft->setTextColor(TFT_WHITE, TFT_NAVY);
 
         uint16_t tbw = tft->textWidth(msg);
@@ -3062,14 +3127,14 @@ static void ESP32_Display_fini(int reason)
 
 static void ESP32_Battery_setup()
 {
-  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2 &&
-       hw_info.revision >= 8)                     ||
-       hw_info.model    == SOFTRF_MODEL_PRIME_MK3 ||
+  if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2  &&
+       hw_info.revision >= 8)                      ||
+       hw_info.model    == SOFTRF_MODEL_PRIME_MK3  ||
+       esp32_board      == ESP32_LILYGO_T_TWR_V2_0 ||
        hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
-    /* T-Beam v08+, T-Beam Supreme and T-Watch have PMU */
+    /* T-Beam v08+, T-Beam Supreme, T-TWR Plus and T-Watch have PMU */
 
-    /* TBD */
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32)
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
@@ -3080,6 +3145,8 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
       calibrate_voltage(ADC1_GPIO6_CHANNEL);
+    } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+      calibrate_voltage(ADC1_GPIO1_CHANNEL);
     } else {
       calibrate_voltage(ADC1_GPIO2_CHANNEL);
     }
@@ -3103,6 +3170,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
+            hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
@@ -3114,6 +3182,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK2  ||
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
+            hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
@@ -3168,6 +3237,8 @@ static float ESP32_Battery_param(uint8_t param)
       } else if (esp32_board == ESP32_C3_DEVKIT) {
       /* NodeMCU has voltage divider 100k/220k on board */
         voltage *= 3.2;
+      } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+        voltage *= 4.9;
       }
       break;
     }
@@ -3221,6 +3292,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
 
     Wire.setPins(SOC_GPIO_PIN_TWR2_SDA, SOC_GPIO_PIN_TWR2_SCL);
+
+  } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+
+    Wire.setPins(SOC_GPIO_PIN_HELTRK_SDA, SOC_GPIO_PIN_HELTRK_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
@@ -3390,9 +3465,11 @@ static void ESP32_Button_setup()
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
        esp32_board == ESP32_S2_T8_V1_1        ||
        esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
+       esp32_board == ESP32_HELTEC_TRACKER    ||
        esp32_board == ESP32_S3_DEVKIT) {
-    button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
-                 esp32_board == ESP32_S3_DEVKIT  ? SOC_GPIO_PIN_S3_BUTTON    :
+    button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON  :
+                 esp32_board == ESP32_S3_DEVKIT  ? SOC_GPIO_PIN_S3_BUTTON     :
+                 esp32_board == ESP32_HELTEC_TRACKER ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR_V1_3 ?
                  SOC_GPIO_PIN_TWR1_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -3436,6 +3513,7 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
       esp32_board == ESP32_S2_T8_V1_1          ||
       esp32_board == ESP32_LILYGO_T_TWR_V1_3   ||
+      esp32_board == ESP32_HELTEC_TRACKER      ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
   }
@@ -3445,6 +3523,7 @@ static void ESP32_Button_fini()
 {
   if (esp32_board == ESP32_S2_T8_V1_1        ||
       esp32_board == ESP32_LILYGO_T_TWR_V1_3 ||
+      esp32_board == ESP32_HELTEC_TRACKER    ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_LILYGO_T_TWR_V1_3 ?
