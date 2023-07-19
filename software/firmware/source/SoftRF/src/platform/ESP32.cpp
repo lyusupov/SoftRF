@@ -154,7 +154,7 @@ const char *ESP32SX_Device_Manufacturer = SOFTRF_IDENT;
 const char *ESP32SX_Model_Stand  = "Standalone Edition"; /* 303a:8132 */
 const char *ESP32S3_Model_Prime3 = "Prime Edition Mk.3"; /* 303a:8133 */
 const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
-const char *ESP32S3_Model_Midi   = "Midi Edition";
+const char *ESP32S3_Model_Midi   = "Midi Edition";       /* 303a:81A0 */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -1224,6 +1224,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_S3_DEVKIT          ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_LILYGO_T_TWR_V1_3  ) ? SOFTRF_USB_PID_HAM        :
           (esp32_board == ESP32_LILYGO_T_TWR_V2_0  ) ? SOFTRF_USB_PID_HAM        :
+          (esp32_board == ESP32_HELTEC_TRACKER     ) ? SOFTRF_USB_PID_MIDI       :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1337,7 +1338,11 @@ static void ESP32_setup()
 
     pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,   INPUT_PULLDOWN);
     pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,   INPUT_PULLUP);
+
 //    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,  INPUT_PULLDOWN); /* TBD */
+
+    digitalWrite(SOC_GPIO_PIN_HELTRK_LED, LOW);
+    pinMode(SOC_GPIO_PIN_HELTRK_LED,  OUTPUT);
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -1760,6 +1765,11 @@ static void ESP32_loop()
     MAG_Time_Marker = millis();
   }
   #endif /* !EXCLUDE_MAG */
+
+  if (esp32_board == ESP32_HELTEC_TRACKER) {
+    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,
+                 digitalRead(SOC_GPIO_PIN_HELTRK_GNSS_PPS));
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
@@ -1986,6 +1996,7 @@ static void ESP32_fini(int reason)
     pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,   INPUT);
     pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,   INPUT);
 //    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,  INPUT); /* TBD */
+    pinMode(SOC_GPIO_PIN_HELTRK_LED,      INPUT);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,

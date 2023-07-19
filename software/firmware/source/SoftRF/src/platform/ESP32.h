@@ -252,6 +252,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_PRIME_MK3  = 0x8133,
   SOFTRF_USB_PID_UF2_BOOT   = 0x8134,
   SOFTRF_USB_PID_HAM        = 0x818F,
+  SOFTRF_USB_PID_MIDI       = 0x81A0,
 };
 
 struct rst_info {

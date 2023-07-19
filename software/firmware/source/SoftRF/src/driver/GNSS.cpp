@@ -1072,6 +1072,11 @@ static gnss_id_t uc65_probe()
 
 static bool uc65_setup()
 {
+  /*
+   * Factory default:
+   * $CFGSYS,H35155 = GPS + BDS + GLO + GAL + QZSS + SBAS
+   * $CFGTP,1000000,500000,1,0,0,0 = PPS is enabled, 500 ms pulse, 1 s interval
+   */
   Serial_GNSS_Out.write("$CFGMSG,0,2,0\r\n"); delay(250); /* GSA off */
   Serial_GNSS_Out.write("$CFGMSG,0,3,0\r\n"); delay(250); /* GSV off */
 
