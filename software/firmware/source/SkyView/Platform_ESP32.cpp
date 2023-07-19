@@ -1743,6 +1743,12 @@ void handleEvent(AceButton* button, uint8_t eventType,
           screen_saver = true;
         }
 
+        if ((settings->adapter == ADAPTER_WAVESHARE_PICO_2_7     ||
+             settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) &&
+            digitalRead(SOC_GPIO_PIN_KEY2) == LOW) {
+          screen_saver = true;
+        }
+
         shutdown("NORMAL OFF");
         Serial.println(F("This will never be printed."));
       }
@@ -1776,8 +1782,7 @@ static void ESP32_Button_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
       settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
-    mode_button_pin = settings->rotate == ROTATE_180 ?
-                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+    mode_button_pin = SOC_GPIO_PIN_KEY1;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -1844,13 +1849,16 @@ static void ESP32_Button_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
       settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
-    pinMode(SOC_GPIO_PIN_KEY1, INPUT_PULLUP);
-    button_up.init(SOC_GPIO_PIN_KEY1, HIGH);
+    pinMode(SOC_GPIO_PIN_KEY0, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_KEY2, INPUT_PULLUP);
 
-    int down_button_pin = settings->rotate == ROTATE_180 ?
-                          SOC_GPIO_PIN_KEY2 : SOC_GPIO_PIN_KEY0;
-    pinMode(down_button_pin, INPUT_PULLUP);
-    button_down.init(down_button_pin, HIGH);
+    if (settings->rotate == ROTATE_180) {
+      button_up.init(SOC_GPIO_PIN_KEY0, HIGH);
+      button_down.init(SOC_GPIO_PIN_KEY2, HIGH);
+    } else {
+      button_up.init(SOC_GPIO_PIN_KEY2, HIGH);
+      button_down.init(SOC_GPIO_PIN_KEY0, HIGH);
+    }
 
     ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
     UpButtonConfig->setEventHandler(handleEvent);
@@ -1896,8 +1904,7 @@ static void ESP32_Button_fini()
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
       settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
-    mode_button_pin = settings->rotate == ROTATE_180 ?
-                      SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+    mode_button_pin = SOC_GPIO_PIN_KEY1;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 

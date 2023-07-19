@@ -527,10 +527,10 @@ static void RP2040_fini()
 
   sleep_run_from_xosc();
 
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
-  uint mode_button_pin = settings->rotate == ROTATE_180 ?
-                         SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
-  #if SOC_GPIO_PIN_KEY2 == SOC_GPIO_PIN_BUTTON
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
+  uint mode_button_pin = SOC_GPIO_PIN_KEY1;
+
+  #if SOC_GPIO_PIN_KEY1 == SOC_GPIO_PIN_BUTTON
     sleep_goto_dormant_until_pin(mode_button_pin, 0, HIGH);
   #else
     sleep_goto_dormant_until_pin(mode_button_pin, 0, LOW);
@@ -538,7 +538,7 @@ static void RP2040_fini()
 #else
   datetime_t alarm = {0};
   sleep_goto_sleep_until(&alarm, NULL); /* TBD */
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
 
   // back from dormant state
   rosc_enable();
@@ -1124,10 +1124,10 @@ static void RP2040_TTS(char *message)
 #include <AceButton.h>
 using namespace ace_button;
 
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
-AceButton button_mode(SOC_GPIO_PIN_KEY2);
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
-AceButton button_up  (SOC_GPIO_PIN_KEY1);
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
+AceButton button_mode(SOC_GPIO_PIN_KEY1);
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
+AceButton button_up  (SOC_GPIO_PIN_KEY2);
 AceButton button_down(SOC_GPIO_PIN_KEY0);
 
 // The event handler for the button.
@@ -1136,11 +1136,11 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
 #if 0
   // Print out a message for all events.
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
   if (button == &button_mode) {
     Serial.print(F("MODE "));
   } else
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
   if (button == &button_up) {
     Serial.print(F("UP   "));
   } else if (button == &button_down) {
@@ -1158,11 +1158,11 @@ void handleEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventClicked:
     case AceButton::kEventReleased:
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
       if (button == &button_mode) {
         EPD_Mode();
       } else
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
       if (button == &button_up) {
         EPD_Up();
       } else if (button == &button_down) {
@@ -1170,26 +1170,26 @@ void handleEvent(AceButton* button, uint8_t eventType,
       }
       break;
     case AceButton::kEventLongPressed:
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
       if (button == &button_mode) {
 
-        if (digitalRead(SOC_GPIO_PIN_KEY1) == LOW) {
+        if (digitalRead(SOC_GPIO_PIN_KEY2) == LOW) {
           screen_saver = true;
         }
 
         shutdown("NORMAL OFF");
 //        Serial.println(F("This will never be printed."));
       }
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
       break;
   }
 }
 
 /* Callbacks for push button interrupt */
 void onModeButtonEvent() {
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
   button_mode.check();
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
 }
 
 void onUpButtonEvent() {
@@ -1202,9 +1202,8 @@ void onDownButtonEvent() {
 
 static void RP2040_Button_setup()
 {
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
-  int mode_button_pin = settings->rotate == ROTATE_180 ?
-                        SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
+  int mode_button_pin = SOC_GPIO_PIN_KEY1;
 
   pinMode(mode_button_pin,
           mode_button_pin == SOC_GPIO_PIN_BUTTON ? INPUT : INPUT_PULLUP);
@@ -1225,14 +1224,18 @@ static void RP2040_Button_setup()
   ModeButtonConfig->setLongPressDelay(2000);
 
 //  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
 
-  pinMode(SOC_GPIO_PIN_KEY1, INPUT_PULLUP);
+  pinMode(SOC_GPIO_PIN_KEY0, INPUT_PULLUP);
+  pinMode(SOC_GPIO_PIN_KEY2, INPUT_PULLUP);
 
-  int down_button_pin = settings->rotate == ROTATE_180 ?
-                        SOC_GPIO_PIN_KEY2 : SOC_GPIO_PIN_KEY0;
-  pinMode(down_button_pin, INPUT_PULLUP);
-  button_down.init(down_button_pin, HIGH);
+  if (settings->rotate == ROTATE_180) {
+    button_up.init(SOC_GPIO_PIN_KEY0, HIGH);
+    button_down.init(SOC_GPIO_PIN_KEY2, HIGH);
+  } else {
+    button_up.init(SOC_GPIO_PIN_KEY2, HIGH);
+    button_down.init(SOC_GPIO_PIN_KEY0, HIGH);
+  }
 
   ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
   UpButtonConfig->setEventHandler(handleEvent);
@@ -1252,7 +1255,7 @@ static void RP2040_Button_setup()
 //  DownButtonConfig->setDoubleClickDelay(1000);
   DownButtonConfig->setLongPressDelay(2000);
 
-//  attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY1), onUpButtonEvent,   CHANGE );
+//  attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY2), onUpButtonEvent,   CHANGE );
 //  attachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY0), onDownButtonEvent, CHANGE );
 }
 
@@ -1267,9 +1270,9 @@ static bool is_bootsel_click             = false;
 
 static void RP2040_Button_loop()
 {
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
   button_mode.check();
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
   button_up.check();
   button_down.check();
 
@@ -1308,10 +1311,10 @@ static void RP2040_Button_fini()
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY1));
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_KEY2));
 
-#if SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN
-  int pin = settings->rotate == ROTATE_180 ? SOC_GPIO_PIN_KEY0 : SOC_GPIO_PIN_KEY2;
+#if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
+  int pin = SOC_GPIO_PIN_KEY1;
   while (digitalRead(pin) == (pin == SOC_GPIO_PIN_BUTTON ? HIGH : LOW));
-#endif /* SOC_GPIO_PIN_KEY2 != SOC_UNUSED_PIN */
+#endif /* SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN */
 
 #if defined(USE_BOOTSEL_BUTTON)
   while (BOOTSEL);
