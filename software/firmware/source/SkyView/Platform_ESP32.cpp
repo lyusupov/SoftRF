@@ -1743,11 +1743,13 @@ void handleEvent(AceButton* button, uint8_t eventType,
           screen_saver = true;
         }
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
         if ((settings->adapter == ADAPTER_WAVESHARE_PICO_2_7     ||
              settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) &&
             digitalRead(SOC_GPIO_PIN_KEY2) == LOW) {
           screen_saver = true;
         }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
         shutdown("NORMAL OFF");
         Serial.println(F("This will never be printed."));

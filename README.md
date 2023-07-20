@@ -16,7 +16,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Classic** 2.25 inch instrument
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
-    * [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    <!-- * [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
@@ -100,7 +100,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)|[STMicroelectronics](https://en.wikipedia.org/wiki/STMicroelectronics)<br>[STM32**WLE5**](https://www.st.com/en/microcontrollers-microprocessors/stm32wle5cc.html)|Q3 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;holds [**CE** mark](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition#certificates)
 [**WebTop USB**](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S2](https://en.wikipedia.org/wiki/ESP32#ESP32-S2)|Q4 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-C3](https://en.wikipedia.org/wiki/ESP32#ESP32-C3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)
-1&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
+&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<!-- <br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
