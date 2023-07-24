@@ -2385,6 +2385,8 @@ static void sa8x8_setup()
   // You don't need to set the destination identifier, but
   // if you want to, this is how you do it:
   // APRS_setDestination("APZMDM", 0);
+
+  // AFSK_TimerEnable(true); /* TBD */
 }
 
 static bool sa8x8_receive()
@@ -2400,12 +2402,17 @@ static bool sa8x8_receive()
 static void sa8x8_transmit()
 {
   char *comment = "LibAPRS location update";
+
+  // AFSK_TimerEnable(false); /* TBD */
+
   APRS_sendLoc(comment, strlen(comment));
 
   do {
     delay(5);
     AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
   } while (AFSK_modem->sending);
+
+  // AFSK_TimerEnable(true); /* TBD */
 }
 
 static void sa8x8_shutdown()

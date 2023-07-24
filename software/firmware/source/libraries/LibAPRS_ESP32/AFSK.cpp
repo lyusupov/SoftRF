@@ -12,6 +12,7 @@
 #ifdef I2S_INTERNAL
 #include <driver/adc.h>
 #include <driver/i2s.h>
+#include <driver/rtc_io.h>
 #include "esp_adc_cal.h"
 
 extern "C"
@@ -19,8 +20,6 @@ extern "C"
 #include "soc/syscon_reg.h"
 #include "soc/syscon_struct.h"
 }
-#else
-#include "cppQueue.h"
 #endif /* I2S_INTERNAL */
 
 #define DEBUG_TNC
@@ -53,9 +52,16 @@ uint8_t CountOnesFromInteger(uint8_t value)
 
 APRS_led_callback_t AFSK_Tx_LED_Callback = NULL;
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#include <soc/adc_channel.h>
+
+extern "C" int S3_i2s_mclk_quirk(int, uint16_t *, uint16_t *, uint16_t *);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #define IMPLEMENTATION FIFO
 
-#ifndef I2S_INTERNAL
+#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "cppQueue.h"
 cppQueue adcq(sizeof(int8_t), 19200, IMPLEMENTATION); // Instantiate queue
 #endif
 
@@ -139,6 +145,7 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
       .sample_rate = SAMPLE_RATE,
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
       .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,
+//      .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
       .communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_MSB,
 #else
@@ -236,15 +243,33 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
     pin_config.data_in_num  = I2S_PIN_NO_CHANGE;
 
     i2s_set_pin(I2S_NUM_0, &pin_config);
-    i2s_set_clk(I2S_NUM_0, SAMPLE_RATE, BPS, I2S_CHANNEL_MONO);
+
+    //Select Gpio as Digital Gpio
+    rtc_gpio_deinit((gpio_num_t) MIC_PIN);
+
+    i2s_set_clk(I2S_NUM_0, SAMPLE_RATE, BPS, /* I2S_CHANNEL_MONO */ I2S_CHANNEL_STEREO);
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    /* Stop I2S */
+    // i2s_stop(I2S_NUM);
+    uint16_t a, b, c;
+    int rval = S3_i2s_mclk_quirk(I2S_NUM_0, &a, &b, &c);
+    /* I2S start */
+    // i2s_start(I2S_NUM);
+
+    // Serial.print("rval = "); Serial.println(rval);
+    // Serial.print("a = "); Serial.println(a);
+    // Serial.print("b = "); Serial.println(b);
+    // Serial.print("c = "); Serial.println(c);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     i2s_zero_dma_buffer(I2S_NUM_0);
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
+#endif /* I2S_INTERNAL */
 
-#else
-
+#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
 hw_timer_t *timer = NULL;
 
 void AFSK_TimerEnable(bool sts)
@@ -254,8 +279,7 @@ void AFSK_TimerEnable(bool sts)
   else
     timerAlarmDisable(timer);
 }
-
-#endif /* I2S_INTERNAL */
+#endif /* !I2S_INTERNAL || CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* ESP32 */
 
 void AFSK_hw_init(void)
@@ -281,22 +305,25 @@ void AFSK_hw_init(void)
   }
 
 #if defined(ESP32)
-#ifdef I2S_INTERNAL
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(I2S_INTERNAL) && !defined(CONFIG_IDF_TARGET_ESP32S3)
   //  Initialize the I2S peripheral
   I2S_Init(I2S_MODE_DAC_BUILT_IN, I2S_BITS_PER_SAMPLE_16BIT);
-#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#else
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM), I2S_BITS_PER_SAMPLE_16BIT);
 #else
-  /* TBD */
-#endif /* CONFIG_IDF_TARGET_ESP32 */
-#else
   pinMode(MIC_PIN, INPUT);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
   // Init ADC and Characteristics
   // esp_adc_cal_characteristics_t characteristics;
   adc1_config_width(ADC_WIDTH_BIT_12);
+#if defined(CONFIG_IDF_TARGET_ESP32)
   adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0); // Input 1.24Vp-p,Use R 33K-(10K//10K) divider input power 1.2Vref
-  // adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); //Input 3.3Vp-p,Use R 10K divider input power 3.3V
+#else
+  /* work around R22=4.7K issue on T-TWR Plus FCS batches */
+  adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); //Input 3.3Vp-p,Use R 10K divider input power 3.3V
+#endif
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
 
@@ -334,7 +361,7 @@ void AFSK_init(Afsk *afsk)
   // BPF
   flt.size = FIR_BPF_N;
   flt.pass_freq = 1000;
-  flt.cutoff_freq = 2500;
+  flt.cutoff_freq = 2700;
   bpf_an = filter_coeff(&flt);
 
   // LPF
@@ -689,7 +716,7 @@ static bool hdlcParse(Hdlc *hdlc, bool bit, FIFOBuffer *fifo)
   return ret;
 }
  
- #define DECODE_DELAY 4.458981479161393e-4 // sample delay
+#define DECODE_DELAY 4.458981479161393e-4 // sample delay
 #define DELAY_DIVIDEND 325
 #define DELAY_DIVISOR 728866
 #define DELAYED_N ((DELAY_DIVIDEND * SAMPLERATE + DELAY_DIVISOR/2) / DELAY_DIVISOR)
@@ -848,11 +875,13 @@ uint8_t poll_timer = 0;
 // int adc_count = 0;
 int offset_new = 0, offset = 2303, offset_count = 0;
 
-#if !defined(I2S_INTERNAL) && defined(ESP32)
+#if defined(ESP32) && (!defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3))
 // int x=0;
 portMUX_TYPE DRAM_ATTR timerMux = portMUX_INITIALIZER_UNLOCKED;
 
+#ifdef SQL
 bool sqlActive = false;
+#endif /* SQL */
 
 void IRAM_ATTR sample_isr()
 {
@@ -860,6 +889,7 @@ void IRAM_ATTR sample_isr()
 
   if (hw_afsk_dac_isr)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
     uint8_t sinwave = AFSK_dac_isr(AFSK_modem);
     //   abufPos += 45;
     // sinwave =(uint8_t)(127+(sin((float)abufPos/57)*128));
@@ -871,6 +901,7 @@ void IRAM_ATTR sample_isr()
         digitalWrite(PTT_PIN, HIGH);
       }
     }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   }
   else
   {
@@ -940,7 +971,8 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
   size_t bytesRead;
   uint16_t pcm_in[ADC_SAMPLES_COUNT];
   uint16_t pcm_out[ADC_SAMPLES_COUNT];
-#else
+#endif /* I2S_INTERNAL */
+#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
   int8_t adc;
 #endif
 
@@ -962,17 +994,24 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
       // Ref: https://lang-ship.com/blog/work/esp32-i2s-dac/#toc6
       // Left Channel GPIO 26
       pcm_out[x] = (uint16_t)adcVal; // MSB
-      if(SA818){
+      if (SA818) {
+#if defined(CONFIG_IDF_TARGET_ESP32)
         pcm_out[x] <<= 7;
         pcm_out[x] += 10000;
+#else
+        pcm_out[x] <<= 3;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
       }
       else
       {
-        pcm_out[x] <<= 8;
+//        pcm_out[x] <<= 8;
+        pcm_out[x] <<= 4;
       }
+#if 1
       x++;
       // Right Channel GPIO 25
       pcm_out[x] = 0;
+#endif
     }
 
     size_t writeByte;
@@ -1051,7 +1090,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
   }
   else
   {
-#ifdef I2S_INTERNAL
+#if defined(I2S_INTERNAL) && !defined(CONFIG_IDF_TARGET_ESP32S3)
 #ifdef SQL
     if (digitalRead(33) == LOW)
     {
