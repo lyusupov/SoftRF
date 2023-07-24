@@ -305,7 +305,7 @@ void AFSK_hw_init(void)
   }
 
 #if defined(ESP32)
-#if defined(I2S_INTERNAL) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(I2S_INTERNAL) && defined(CONFIG_IDF_TARGET_ESP32)
   //  Initialize the I2S peripheral
   I2S_Init(I2S_MODE_DAC_BUILT_IN, I2S_BITS_PER_SAMPLE_16BIT);
 #else
@@ -315,6 +315,7 @@ void AFSK_hw_init(void)
   pinMode(MIC_PIN, INPUT);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   // Init ADC and Characteristics
   // esp_adc_cal_characteristics_t characteristics;
   adc1_config_width(ADC_WIDTH_BIT_12);
@@ -333,6 +334,7 @@ void AFSK_hw_init(void)
   timerAlarmWrite(timer, 834, true);              // Interrupts when counter == 834, 9592.3 times a second
 
   // timerAlarmEnable(timer);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* I2S_INTERNAL */
 #endif /* ESP32 */
 }
