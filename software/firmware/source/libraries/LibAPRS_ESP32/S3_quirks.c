@@ -1,4 +1,7 @@
 #if defined(ESP32)
+#include "sdkconfig.h"
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "hal/i2s_hal.h"
 #include "esp_err.h"
 
@@ -60,4 +63,5 @@ int S3_i2s_mclk_quirk(int i2s_num, uint16_t *a, uint16_t *b, uint16_t *c)
 
     return rval;
 }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* ESP32 */
