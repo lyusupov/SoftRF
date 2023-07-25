@@ -33,6 +33,7 @@
 #include <SA818.h>
 #include <SA818Controller.h>
 #include <LibAPRSesp.h>
+#include <cppQueue.h>
 #endif /* USE_SA8X8 */
 
 byte RxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
@@ -2274,14 +2275,53 @@ SA818Controller controller(&sa868);
 bool afskSync = false;
 int mVrms     = 0;
 
+AX25Msg incomingPacket;
+cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
+
 void aprs_msg_callback(struct AX25Msg *msg) {
-    AX25Msg pkg;
-    memcpy(&pkg, msg, sizeof(AX25Msg));
-#ifdef USE_KISS
-    kiss_messageCallback(ctx);
-#endif
-//    PacketBuffer.push(&pkg);
-//TODO processPacket();
+  AX25Msg pkg;
+  memcpy(&pkg, msg, sizeof(AX25Msg));
+  PacketBuffer.push(&pkg);
+}
+
+int packet2Raw(String &tnc2, AX25Msg &Packet) {
+  if (Packet.len < 5) return 0;
+
+  tnc2 = String(Packet.src.call);
+
+  if (Packet.src.ssid > 0) {
+      tnc2 += String(F("-"));
+      tnc2 += String(Packet.src.ssid);
+  }
+
+  tnc2 += String(F(">"));
+  tnc2 += String(Packet.dst.call);
+
+  if (Packet.dst.ssid > 0) {
+      tnc2 += String(F("-"));
+      tnc2 += String(Packet.dst.ssid);
+  }
+
+  for (int i = 0; i < Packet.rpt_count; i++) {
+      tnc2 += String(",");
+      tnc2 += String(Packet.rpt_list[i].call);
+      if (Packet.rpt_list[i].ssid > 0) {
+          tnc2 += String("-");
+          tnc2 += String(Packet.rpt_list[i].ssid);
+      }
+      if (Packet.rpt_flags & (1 << i)) tnc2 += "*";
+  }
+
+  tnc2 += String(F(":"));
+  tnc2 += String((const char *)Packet.info);
+  tnc2 += String("\n");
+
+  // #ifdef DEBUG_TNC
+  //     Serial.printf("[%d] ", ++pkgTNC_count);
+  //     Serial.print(tnc2);
+  // #endif
+
+  return tnc2.length();
 }
 
 #include "LED.h"
@@ -2374,6 +2414,8 @@ static void sa8x8_setup()
   protocol_encode = &aprs_encode;
   protocol_decode = &aprs_decode;
 
+  PacketBuffer.clean();
+
   APRS_init();
   APRS_setCallsign("NOCALL", 1);
   APRS_setPath1("WIDE1-1", 1);
@@ -2386,7 +2428,7 @@ static void sa8x8_setup()
   // if you want to, this is how you do it:
   // APRS_setDestination("APZMDM", 0);
 
-  // AFSK_TimerEnable(true); /* TBD */
+  AFSK_TimerEnable(true);
 }
 
 static bool sa8x8_receive()
@@ -2396,6 +2438,13 @@ static bool sa8x8_receive()
   /* TBD */
 //  controller.receive();
 
+  if (PacketBuffer.getCount() > 0) {
+      String tnc2;
+      PacketBuffer.pop(&incomingPacket);
+      packet2Raw(tnc2, incomingPacket);
+      Serial.println("RX->RF: " + tnc2);
+  }
+
   return success;
 }
 
@@ -2403,7 +2452,7 @@ static void sa8x8_transmit()
 {
   char *comment = "LibAPRS location update";
 
-  // AFSK_TimerEnable(false); /* TBD */
+  AFSK_TimerEnable(false);
 
   APRS_sendLoc(comment, strlen(comment));
 
@@ -2412,7 +2461,7 @@ static void sa8x8_transmit()
     AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
   } while (AFSK_modem->sending);
 
-  // AFSK_TimerEnable(true); /* TBD */
+  AFSK_TimerEnable(true);
 }
 
 static void sa8x8_shutdown()

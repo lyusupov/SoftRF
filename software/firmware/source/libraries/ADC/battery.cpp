@@ -7,11 +7,22 @@
 #include "battery.h"
 
 // Local logging tag
-static const char TAG[] = "main";
+static const char TAG[] = "ADC";
 
 esp_adc_cal_characteristics_t *adc_characs =
     (esp_adc_cal_characteristics_t *)calloc(
         1, sizeof(esp_adc_cal_characteristics_t));
+
+// ADC Calibration
+#if CONFIG_IDF_TARGET_ESP32
+#define ADC_CALI_SCHEME     ESP_ADC_CAL_VAL_EFUSE_VREF
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define ADC_CALI_SCHEME     ESP_ADC_CAL_VAL_EFUSE_TP
+#elif CONFIG_IDF_TARGET_ESP32C3
+#define ADC_CALI_SCHEME     ESP_ADC_CAL_VAL_EFUSE_TP
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define ADC_CALI_SCHEME     ESP_ADC_CAL_VAL_EFUSE_TP_FIT
+#endif
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 static adc1_channel_t adc_channel = ADC1_GPIO36_CHANNEL;
@@ -41,18 +52,28 @@ void calibrate_voltage(adc1_channel_t channel) {
   // configure ADC
   ESP_ERROR_CHECK(adc1_config_width(width));
   ESP_ERROR_CHECK(adc1_config_channel_atten(adc_channel, atten));
-  // calibrate ADC
-  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-      unit, atten, width, DEFAULT_VREF, adc_characs);
-  // show ADC characterization base
-  if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-    ESP_LOGI(TAG,
-             "ADC characterization based on Two Point values stored in eFuse");
-  } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-    ESP_LOGI(TAG,
-             "ADC characterization based on reference voltage stored in eFuse");
+
+  esp_err_t ret = esp_adc_cal_check_efuse(ADC_CALI_SCHEME);
+  if (ret == ESP_ERR_NOT_SUPPORTED) {
+    ESP_LOGW(TAG, "Calibration scheme not supported, skip software calibration");
+  } else if (ret == ESP_ERR_INVALID_VERSION) {
+    ESP_LOGW(TAG, "eFuse not burnt, skip software calibration");
+  } else if (ret == ESP_OK) {
+    // calibrate ADC
+    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
+        unit, atten, width, DEFAULT_VREF, adc_characs);
+    // show ADC characterization base
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+      ESP_LOGI(TAG,
+               "ADC characterization based on Two Point values stored in eFuse");
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+      ESP_LOGI(TAG,
+               "ADC characterization based on reference voltage stored in eFuse");
+    } else {
+      ESP_LOGI(TAG, "ADC characterization based on default reference voltage");
+    }
   } else {
-    ESP_LOGI(TAG, "ADC characterization based on default reference voltage");
+      ESP_LOGE(TAG, "Invalid arg");
   }
 }
 
