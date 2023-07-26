@@ -322,8 +322,8 @@ void AFSK_hw_init(void)
 #if defined(CONFIG_IDF_TARGET_ESP32)
   adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0); // Input 1.24Vp-p,Use R 33K-(10K//10K) divider input power 1.2Vref
 #else
-  /* work around R22=4.7K issue on T-TWR Plus FCS batches */
-  adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); //Input 3.3Vp-p,Use R 10K divider input power 3.3V
+  /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus FCS batches */
+  adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
 #endif
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
@@ -346,7 +346,17 @@ void AFSK_init(Afsk *afsk)
   AFSK_modem = afsk;
   // Set phase increment
   afsk->phaseInc = MARK_INC;
+
   // Initialise FIFO buffers
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  fifo_init(&afsk->delayFifo, (uint8_t *)afsk->delayBuf, sizeof(afsk->delayBuf));
+
+  // Fill delay FIFO with zeroes
+  for (int i = 0; i < SAMPLESPERBIT_RX / 2; i++)
+  {
+    fifo_push(&afsk->delayFifo, 0);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
   fifo_init(&afsk->rxFifo, afsk->rxBuf, sizeof(afsk->rxBuf));
   fifo_init(&afsk->txFifo, afsk->txBuf, sizeof(afsk->txBuf));
 
@@ -735,6 +745,8 @@ void AFSK_adc_isr(Afsk *afsk, int16_t currentSample)
    * 600 Hz filter. The filter implementation is selectable
    */
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+
   // BUTTERWORTH Filter
   // afsk->iirX[0] = afsk->iirX[1];
   // afsk->iirX[1] = ((int8_t)fifo_pop(&afsk->delayFifo) * currentSample) / 6.027339492F;
@@ -765,6 +777,25 @@ void AFSK_adc_isr(Afsk *afsk, int16_t currentSample)
 
   // Put the current raw sample in the delay FIFO
   //fifo_push16(&afsk->delayFifo, currentSample);
+
+#else
+
+  // BUTTERWORTH Filter
+  afsk->iirX[0] = afsk->iirX[1];
+  afsk->iirX[1] = ((int8_t)fifo_pop(&afsk->delayFifo) * currentSample) / 6.027339492F;
+  afsk->iirY[0] = afsk->iirY[1];
+  afsk->iirY[1] = afsk->iirX[0] + afsk->iirX[1] + afsk->iirY[0] * 0.6681786379F;
+
+  // We put the sampled bit in a delay-line:
+  // First we bitshift everything 1 left
+  afsk->sampledBits <<= 1;
+  // And then add the sampled bit to our delay line
+  afsk->sampledBits |= (afsk->iirY[1] > 0) ? 1 : 0;
+
+  // Put the current raw sample in the delay FIFO
+  fifo_push(&afsk->delayFifo, currentSample);
+
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   // We need to check whether there is a signal transition.
   // If there is, we can recalibrate the phase of our
@@ -869,6 +900,12 @@ void AFSK_adc_isr(Afsk *afsk, int16_t currentSample)
 }
 
 #define ADC_SAMPLES_COUNT 768
+#if defined(I2S_INTERNAL) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#define ADC_SAMPLES_COUNT_IN ADC_SAMPLES_COUNT
+#else
+#define ADC_SAMPLES_COUNT_IN 192
+#endif
+
 int16_t abufPos = 0;
 // extern TaskHandle_t taskSensorHandle;
 
@@ -1171,13 +1208,11 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
           }
         }
       }
-#else
-    /* TBD */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #else
-    if (adcq.getCount() >= ADC_SAMPLES_COUNT)
+    if (adcq.getCount() >= ADC_SAMPLES_COUNT_IN)
     {
-      for (x = 0; x < ADC_SAMPLES_COUNT; x++)
+      for (x = 0; x < ADC_SAMPLES_COUNT_IN; x++)
       {
         if (!adcq.pop(&adc)) // Pull queue buffer
           break;

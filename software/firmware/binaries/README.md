@@ -274,7 +274,7 @@ Example:<br>
 
 ## ESP32-S3
 
-The T-Beam Supreme board typically comes with factory pre-installed [**TinyUF2** bootloader](https://github.com/adafruit/tinyuf2).<br>
+The T-Beam Supreme board typically comes with factory pre-installed [**TinyUF2** bootloader](https://github.com/adafruit/tinyuf2/tree/master/ports/espressif#readme).<br>
 The Bootloader is capable to self-program an application firmware into the device. In order to simplify the firmware transfer, the bootloader emulates a "USB Mass Storage" interface.
 
 1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage) and extract the archive ;

@@ -2409,6 +2409,10 @@ static void sa8x8_setup()
     aprs_tail     = 250UL;
   }
 
+  controller.setFilter(1,1,1);
+  if (controller.getModel() == Model::SA_818) {
+    controller.closeTail();
+  }
   controller.setVolume(1);
 
   protocol_encode = &aprs_encode;
@@ -2435,14 +2439,19 @@ static bool sa8x8_receive()
 {
   bool success = false;
 
-  /* TBD */
 //  controller.receive();
 
+  AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
+
   if (PacketBuffer.getCount() > 0) {
-      String tnc2;
-      PacketBuffer.pop(&incomingPacket);
-      packet2Raw(tnc2, incomingPacket);
-      Serial.println("RX->RF: " + tnc2);
+    String tnc2;
+    PacketBuffer.pop(&incomingPacket);
+    packet2Raw(tnc2, incomingPacket);
+
+    Serial.println("APRS RX: " + tnc2);
+
+    rx_packets_counter++;
+    success = true;
   }
 
   return success;

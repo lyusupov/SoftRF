@@ -2447,9 +2447,9 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32S3 || C3 */
     }
 
-    if (hw_info.model == SOFTRF_MODEL_HAM) {
-      settings->power_save |= POWER_SAVE_NORECEIVE;
-    }
+    // if (hw_info.model == SOFTRF_MODEL_HAM) {
+    //   settings->power_save |= POWER_SAVE_NORECEIVE;
+    // }
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || S3 || C3 */
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
@@ -3256,10 +3256,9 @@ static void ESP32_Battery_setup()
   if ((hw_info.model    == SOFTRF_MODEL_PRIME_MK2  &&
        hw_info.revision >= 8)                      ||
        hw_info.model    == SOFTRF_MODEL_PRIME_MK3  ||
-       esp32_board      == ESP32_LILYGO_T_TWR_V2_0 ||
        hw_info.model    == SOFTRF_MODEL_SKYWATCH) {
 
-    /* T-Beam v08+, T-Beam Supreme, T-TWR Plus and T-Watch have PMU */
+    /* T-Beam v08+, T-Beam Supreme and T-Watch have PMU */
 
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -3271,7 +3270,9 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     if (esp32_board == ESP32_LILYGO_T_TWR_V1_3) {
       calibrate_voltage(ADC1_GPIO6_CHANNEL);
-    } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+    /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
+    } else if (esp32_board == ESP32_HELTEC_TRACKER ||
+               esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
       calibrate_voltage(ADC1_GPIO1_CHANNEL);
     } else {
       calibrate_voltage(ADC1_GPIO2_CHANNEL);

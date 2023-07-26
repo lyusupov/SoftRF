@@ -193,9 +193,18 @@ inline static uint8_t sinSample(uint16_t i)
 #define BIT_STUFF_LEN 5
 #define MARK_FREQ 1200
 #define SPACE_FREQ 2200
+
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #define PHASE_BITS 32                           // How much to increment phase counter each sample
 #define PHASE_INC 4                            // Nudge by an eigth of a sample each adjustment
 #define PHASE_MAX (SAMPLESPERBIT * PHASE_BITS) // Resolution of our phase counter = 64
+#else
+#define SAMPLESPERBIT_RX (9600 / BITRATE)
+#define PHASE_BITS 8                           // How much to increment phase counter each sample
+#define PHASE_INC 1                            // Nudge by an eigth of a sample each adjustment
+#define PHASE_MAX (SAMPLESPERBIT_RX * PHASE_BITS) // Resolution of our phase counter = 64
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #define PHASE_THRESHOLD (PHASE_MAX / 2)        // Target transition point of our phase window
 
 //#define SQL
@@ -261,6 +270,12 @@ typedef struct Afsk
     unsigned char txBuf[CONFIG_AFSK_TX_BUFLEN]; // Actial data storage for said FIFO
 
     volatile bool sending; // Set when modem is sending
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    // Demodulation values
+    FIFOBuffer delayFifo;                   // Delayed FIFO for frequency discrimination
+    int8_t delayBuf[SAMPLESPERBIT_RX / 2 + 1]; // Actual data storage for said FIFO
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     FIFOBuffer rxFifo;                    // FIFO for received data
     unsigned char rxBuf[CONFIG_AFSK_RX_BUFLEN]; // Actual data storage for said FIFO
