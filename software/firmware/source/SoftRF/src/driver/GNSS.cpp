@@ -1072,6 +1072,48 @@ static gnss_id_t uc65_probe()
 
 static bool uc65_setup()
 {
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
+
+  Serial_GNSS_Out.write("$PDTINFO\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = Serial_GNSS_In.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 14) {
+    for (int i=14; i < len; i++) {
+      if (GNSSbuf[i] == '*') {
+        GNSSbuf[i] = 0;
+      }
+    }
+    Serial.print(F("INFO: GNSS module FW version: "));
+    Serial.println((char *) &GNSSbuf[14]);
+  }
+
+  delay(250);
+#endif
+
   /*
    * Factory default:
    * $CFGSYS,H35155 = GPS + BDS + GLO + GAL + QZSS + SBAS
