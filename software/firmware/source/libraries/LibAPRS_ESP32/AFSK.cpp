@@ -145,7 +145,6 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
       .sample_rate = SAMPLE_RATE,
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
       .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,
-//      .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
       .communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_MSB,
 #else
@@ -247,9 +246,8 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
     //Select Gpio as Digital Gpio
     rtc_gpio_deinit((gpio_num_t) MIC_PIN);
 
-    i2s_set_clk(I2S_NUM_0, SAMPLE_RATE, BPS, /* I2S_CHANNEL_MONO */ I2S_CHANNEL_STEREO);
+    i2s_set_clk(I2S_NUM_0, SAMPLE_RATE, BPS, I2S_CHANNEL_MONO);
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
     /* Stop I2S */
     // i2s_stop(I2S_NUM);
     uint16_t a, b, c;
@@ -261,7 +259,6 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
     // Serial.print("a = "); Serial.println(a);
     // Serial.print("b = "); Serial.println(b);
     // Serial.print("c = "); Serial.println(c);
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     i2s_zero_dma_buffer(I2S_NUM_0);
   }
@@ -322,8 +319,13 @@ void AFSK_hw_init(void)
 #if defined(CONFIG_IDF_TARGET_ESP32)
   adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0); // Input 1.24Vp-p,Use R 33K-(10K//10K) divider input power 1.2Vref
 #else
-  /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus FCS batches */
-  adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
+  uint64_t mac = ESP.getEfuseMac();
+  if (mac == 0x7475ac188534ULL || mac == 0x58f8ab188534ULL) {
+    /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
+    adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
+  } else {
+    adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+  }
 #endif
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
@@ -1038,19 +1040,19 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
         pcm_out[x] <<= 7;
         pcm_out[x] += 10000;
 #else
-        pcm_out[x] <<= 3;
+        pcm_out[x] <<= 5;
+        pcm_out[x] -= 4000;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
       }
       else
       {
-//        pcm_out[x] <<= 8;
-        pcm_out[x] <<= 4;
+        pcm_out[x] <<= 8;
       }
-#if 1
+#if defined(CONFIG_IDF_TARGET_ESP32)
       x++;
       // Right Channel GPIO 25
       pcm_out[x] = 0;
-#endif
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     }
 
     size_t writeByte;

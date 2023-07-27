@@ -2550,7 +2550,11 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR1_GNSS_RX, SOC_GPIO_PIN_TWR1_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+      uint64_t mac = ESP.getEfuseMac();
       Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
+      if (mac == 0x7475ac188534ULL || mac == 0x58f8ab188534ULL) {
+        Serial.println(F("INFO: Audio ADC workaround has been applied."));
+      }
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else if (esp32_board == ESP32_HELTEC_TRACKER) {
