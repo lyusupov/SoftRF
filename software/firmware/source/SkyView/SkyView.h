@@ -19,7 +19,7 @@
 #ifndef SKYVIEW_H
 #define SKYVIEW_H
 
-#define SKYVIEW_FIRMWARE_VERSION  "0.12"
+#define SKYVIEW_FIRMWARE_VERSION  "0.13"
 #define SKYVIEW_USB_FW_VERSION    0x0012
 #define SKYVIEW_IDENT             "SkyView"
 #define SOFTRF_IDENT              "SoftRF"

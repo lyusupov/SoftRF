@@ -1,5 +1,18 @@
 # Release notes
 
+## revision 0.13
+
+TBD
+
+### Major improvements
+
+TBD
+
+### Known issues and limitations
+
+TBD
+
+
 ## revision 0.12
 
 ### Major improvements

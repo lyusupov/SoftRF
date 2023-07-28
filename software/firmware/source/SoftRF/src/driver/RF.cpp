@@ -2399,9 +2399,9 @@ static void sa8x8_setup()
   float MHz = frequency / 1000000.0;
 
   if (controller.getBand() == Band::UHF) {
-    controller.setGroup(0, 432.5 , 432.5 , 0, 0, 0);
+    controller.setGroup(0, 432.5 , 432.5 , 0, 1, 0);
   } else {
-    controller.setGroup(0 /* TBD */, MHz, MHz, 0, 8, 0);
+    controller.setGroup(0 /* TBD */, MHz, MHz, 0, 1, 0);
   }
 
   if (controller.getModel() == Model::SA_868) {
