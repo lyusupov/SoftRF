@@ -70,33 +70,47 @@ class FreqPlan
             break;
         }
         break;
-      case RF_PROTOCOL_APRS:
+      case RF_PROTOCOL_APRS: /* VHF */
         { ChanSepar = 10000; Channels = 1; MaxTxPower = 30; }
         switch (Plan)
         {
-          case RF_BAND_CN:
+          case RF_BAND_CN: /* + Hong Kong, Taiwan */
             { BaseFreq = 144640000; }
             break;
           case RF_BAND_KR:
             { BaseFreq = 144620000; }
             break;
-          case RF_BAND_AU:
+          case RF_BAND_AU: /* + Tasmania */
             { BaseFreq = 145175000; }
             break;
           case RF_BAND_NZ:
             { BaseFreq = 144575000; }
             break;
-          case RF_BAND_US:
+          case RF_BAND_US: /* + Canada, Chile, Indonesia, Singapore, Malaysia,
+                            * Mexico, Dominican Republic, Puerto Rico,
+                            * Trinidad & Tabago, Columbia */
             { BaseFreq = 144390000; }
             break;
-          case RF_BAND_EU:
+          case RF_BAND_EU: /* + UK, Ireland, Iceland, South Africa,
+                            * Azores, Costa Rica, Lebanon, Senegal */
           case RF_BAND_RU:
           case RF_BAND_IN: /* TBD */
-          case RF_BAND_IL: /* TBD */
+          case RF_BAND_IL:
           default:
             { BaseFreq = 144800000; }
             break;
+        /*
+         * Japan:       144.660 MHz
+         */
         }
+        /*
+         * UHF
+         * ------------------------
+         * Europe:      433.800 MHz
+         * Australia:   439.100 MHz
+         * US:          445.925 MHz
+         * New Zealand: 432.575 MHz
+         */
         break;
       case RF_PROTOCOL_LEGACY:
       case RF_PROTOCOL_OGNTP:

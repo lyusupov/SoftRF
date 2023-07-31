@@ -2342,6 +2342,10 @@ static bool sa8x8_probe()
 {
   bool success = false;
 
+  if (hw_info.model != SOFTRF_MODEL_HAM) {
+    return success;
+  }
+
   SoC->UATSerial_begin(9600);
 
 //  sa868.verbose(); // verbose mode
@@ -2399,10 +2403,26 @@ static void sa8x8_setup()
   float MHz = frequency / 1000000.0;
 
   if (controller.getBand() == Band::UHF) {
-    controller.setGroup(0, 432.5 , 432.5 , 0, 1, 0);
-  } else {
-    controller.setGroup(0 /* TBD */, MHz, MHz, 0, 1, 0);
+    switch (settings->band)
+    {
+      case RF_BAND_US:
+        MHz = 445.925;
+        break;
+      case RF_BAND_AU:
+        MHz = 439.1;
+        break;
+      case RF_BAND_NZ:
+        MHz = 432.575;
+        break;
+      case RF_BAND_EU:
+      default:
+        MHz = 432.5; /* IARU R1 */
+        // MHz = 433.8;
+        break;
+    }
   }
+
+  controller.setGroup(0 /* TBD */, MHz, MHz, 0, 1, 0);
 
   if (controller.getModel() == Model::SA_868) {
     aprs_preamble = 350UL * 3;
@@ -2441,7 +2461,9 @@ static bool sa8x8_receive()
 
 //  controller.receive();
 
-  AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
+  uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :
+                                             SOC_GPIO_PIN_TWR2_RADIO_HL;
+  AFSK_Poll(true, LOW, powerPin);
 
   if (PacketBuffer.getCount() > 0) {
     String tnc2;
@@ -2461,13 +2483,15 @@ static void sa8x8_transmit()
 {
   char *comment = "LibAPRS location update";
 
+  uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :
+                                             SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 
   APRS_sendLoc(comment, strlen(comment));
 
   do {
     delay(5);
-    AFSK_Poll(true, LOW, SOC_GPIO_PIN_TWR2_RADIO_HL);
+    AFSK_Poll(true, settings->txpower == RF_TX_POWER_FULL ? HIGH : LOW, powerPin);
   } while (AFSK_modem->sending);
 
   AFSK_TimerEnable(true);
