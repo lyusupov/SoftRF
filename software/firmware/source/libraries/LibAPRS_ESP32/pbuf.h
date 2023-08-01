@@ -30,6 +30,10 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
+#if defined(__AVR__)
+#include <time.h>
+#endif /* __AVR__ */
+
 /* minimum and maximum length of a callsign on APRS-IS */
 #define CALLSIGNLEN_MIN 3
 #define CALLSIGNLEN_MAX 9
