@@ -1328,21 +1328,48 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_HELTEC_TRACKER) {
 
-    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_EN, LOW);
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN,  OUTPUT);
+    rtc_clk_32k_enable(true);
+
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    uint32_t cal_32k = CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+
+    if (cal_32k == 0) {
+        DEBUG_X32K("32K XTAL OSC has not started up");
+    } else {
+        rtc_clk_slow_freq_set(RTC_SLOW_FREQ_32K_XTAL);
+        DEBUG_X32K("Switching of RTC clock source onto 32768 Hz XTAL is successful.");
+        CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+        CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    }
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
+        DEBUG_X32K("Warning: Failed to switch RTC clock source onto 32768 Hz XTAL !");
+    } else {
+        ESP32_has_32k_xtal = true;
+    }
+
+    hw_info.revision = ESP32_has_32k_xtal ? 5 : 3;
+
+    if (hw_info.revision > 3) {
+      pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN, INPUT_PULLUP);
+    } else {
+      digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_EN, LOW);
+      pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, OUTPUT);
+
+      pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,  INPUT_PULLDOWN);
+      pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN, INPUT_PULLDOWN);
+    }
 
     digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, LOW);
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST, OUTPUT);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  OUTPUT);
     delay(100);
     digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, HIGH);
 
-    pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,   INPUT_PULLDOWN);
-    pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,   INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,    INPUT_PULLUP);
 
-//    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,  INPUT_PULLDOWN); /* TBD */
-
-    digitalWrite(SOC_GPIO_PIN_HELTRK_LED, LOW);
-    pinMode(SOC_GPIO_PIN_HELTRK_LED,  OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,  LOW);
+    pinMode(SOC_GPIO_PIN_HELTRK_LED,       OUTPUT);
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -1991,12 +2018,15 @@ static void ESP32_fini(int reason)
       break;
     }
   } else if (esp32_board == ESP32_HELTEC_TRACKER) {
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN,  INPUT);
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST, INPUT);
-    pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,   INPUT);
-    pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,   INPUT);
-//    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,  INPUT); /* TBD */
-    pinMode(SOC_GPIO_PIN_HELTRK_LED,      INPUT);
+    if (hw_info.revision < 5) {
+      pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, INPUT);
+      pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,  INPUT);
+    }
+
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  INPUT);
+    pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,    INPUT);
+    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,   INPUT);
+    pinMode(SOC_GPIO_PIN_HELTRK_LED,       INPUT);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
@@ -2558,7 +2588,9 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else if (esp32_board == ESP32_HELTEC_TRACKER) {
-      Serial.println(F("INFO: Heltec Tracker is detected."));
+      Serial.print(F("INFO: Heltec Tracker rev. "));
+      Serial.print(hw_info.revision);
+      Serial.println(F(" is detected."));
       Serial_GNSS_In.begin(115200, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_HELTRK_GNSS_RX,
                            SOC_GPIO_PIN_HELTRK_GNSS_TX);
@@ -2780,8 +2812,10 @@ static byte ESP32_Display_setup()
 
     int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
                  SOC_GPIO_PIN_T8_S2_TFT_BL :
-                 (esp32_board == ESP32_HELTEC_TRACKER) ?
-                 SOC_GPIO_PIN_HELTRK_TFT_BL :
+                 (esp32_board == ESP32_HELTEC_TRACKER && hw_info.revision == 3) ?
+                 SOC_GPIO_PIN_HELTRK_TFT_BL_V03 :
+                 (esp32_board == ESP32_HELTEC_TRACKER && hw_info.revision == 5) ?
+                 SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
                  SOC_GPIO_PIN_TWATCH_TFT_BL;
 
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
@@ -3238,7 +3272,12 @@ static void ESP32_Display_fini(int reason)
 
         TFT_backlight_off();
         int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
-                     SOC_GPIO_PIN_T8_S2_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
+                     SOC_GPIO_PIN_T8_S2_TFT_BL :
+                     (esp32_board == ESP32_HELTEC_TRACKER && hw_info.revision == 3) ?
+                     SOC_GPIO_PIN_HELTRK_TFT_BL_V03 :
+                     (esp32_board == ESP32_HELTEC_TRACKER && hw_info.revision == 5) ?
+                     SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
+                     SOC_GPIO_PIN_TWATCH_TFT_BL;
 
         ledcDetachPin(bl_pin);
         pinMode(bl_pin, INPUT_PULLDOWN);

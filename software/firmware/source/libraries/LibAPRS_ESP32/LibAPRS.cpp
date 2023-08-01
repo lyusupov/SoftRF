@@ -26,7 +26,13 @@ AX25Call dst;
 AX25Call path1;
 AX25Call path2;
 
-char CALL[7] = "NOCALL";
+//#if !defined(SOFTRF_SKETCH)
+#define CALLSIGN_LEN 6
+//#else
+//#define CALLSIGN_LEN 9
+//#endif
+
+char CALL[CALLSIGN_LEN + 1] = "NOCALL";
 int CALL_SSID = 0;
 char DST[7] = "APESP1";
 int DST_SSID = 0;
@@ -81,9 +87,9 @@ void APRS_poll(void)
 
 void APRS_setCallsign(char *call, int ssid)
 {
-    memset(CALL, 0, 7);
+    memset(CALL, 0, CALLSIGN_LEN + 1);
     int i = 0;
-    while (i < 6 && call[i] != 0)
+    while (i < CALLSIGN_LEN && call[i] != 0)
     {
         CALL[i] = call[i];
         i++;
@@ -334,7 +340,7 @@ void APRS_sendPkt(void *_buffer, size_t length)
     memcpy(dst.call, DST, 6);
     dst.ssid = DST_SSID;
 
-    memcpy(src.call, CALL, 6);
+    memcpy(src.call, CALL, CALLSIGN_LEN);
     src.ssid = CALL_SSID;
 
     memcpy(path1.call, PATH1, 6);

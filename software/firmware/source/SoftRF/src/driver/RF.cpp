@@ -29,10 +29,10 @@
 #endif /* EXCLUDE_MAVLINK */
 #include <fec.h>
 
+#include <LibAPRSesp.h>
 #if defined(USE_SA8X8)
 #include <SA818.h>
 #include <SA818Controller.h>
-#include <LibAPRSesp.h>
 #include <cppQueue.h>
 #endif /* USE_SA8X8 */
 
@@ -2268,6 +2268,8 @@ static void ognrf_shutdown()
 
 #endif /* USE_OGN_RF_DRIVER */
 
+AX25Msg Incoming_APRS_Packet;
+
 #if defined(USE_SA8X8)
 SA818 sa868(&SA8X8_Serial);
 SA818Controller controller(&sa868);
@@ -2275,53 +2277,12 @@ SA818Controller controller(&sa868);
 bool afskSync = false;
 int mVrms     = 0;
 
-AX25Msg incomingPacket;
 cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
 
 void aprs_msg_callback(struct AX25Msg *msg) {
   AX25Msg pkg;
   memcpy(&pkg, msg, sizeof(AX25Msg));
   PacketBuffer.push(&pkg);
-}
-
-int packet2Raw(String &tnc2, AX25Msg &Packet) {
-  if (Packet.len < 5) return 0;
-
-  tnc2 = String(Packet.src.call);
-
-  if (Packet.src.ssid > 0) {
-      tnc2 += String(F("-"));
-      tnc2 += String(Packet.src.ssid);
-  }
-
-  tnc2 += String(F(">"));
-  tnc2 += String(Packet.dst.call);
-
-  if (Packet.dst.ssid > 0) {
-      tnc2 += String(F("-"));
-      tnc2 += String(Packet.dst.ssid);
-  }
-
-  for (int i = 0; i < Packet.rpt_count; i++) {
-      tnc2 += String(",");
-      tnc2 += String(Packet.rpt_list[i].call);
-      if (Packet.rpt_list[i].ssid > 0) {
-          tnc2 += String("-");
-          tnc2 += String(Packet.rpt_list[i].ssid);
-      }
-      if (Packet.rpt_flags & (1 << i)) tnc2 += "*";
-  }
-
-  tnc2 += String(F(":"));
-  tnc2 += String((const char *)Packet.info);
-  tnc2 += String("\n");
-
-  // #ifdef DEBUG_TNC
-  //     Serial.printf("[%d] ", ++pkgTNC_count);
-  //     Serial.print(tnc2);
-  // #endif
-
-  return tnc2.length();
 }
 
 #include "LED.h"
@@ -2442,7 +2403,7 @@ static void sa8x8_setup()
 
   APRS_init();
   APRS_setCallsign("NOCALL", 1);
-  APRS_setPath1("WIDE1-1", 1);
+  // APRS_setPath1("WIDE1", 1);
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);
 
@@ -2466,11 +2427,7 @@ static bool sa8x8_receive()
   AFSK_Poll(true, LOW, powerPin);
 
   if (PacketBuffer.getCount() > 0) {
-    String tnc2;
-    PacketBuffer.pop(&incomingPacket);
-    packet2Raw(tnc2, incomingPacket);
-
-    Serial.println("APRS RX: " + tnc2);
+    PacketBuffer.pop(&Incoming_APRS_Packet);
 
     rx_packets_counter++;
     success = true;

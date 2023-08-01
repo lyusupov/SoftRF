@@ -316,9 +316,7 @@ void AFSK_hw_init(void)
   // Init ADC and Characteristics
   // esp_adc_cal_characteristics_t characteristics;
   adc1_config_width(ADC_WIDTH_BIT_12);
-#if defined(CONFIG_IDF_TARGET_ESP32)
-  adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0); // Input 1.24Vp-p,Use R 33K-(10K//10K) divider input power 1.2Vref
-#else
+
   uint64_t mac = ESP.getEfuseMac();
   if (mac == 0x7475ac188534ULL || mac == 0x58f8ab188534ULL) {
     /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
@@ -326,7 +324,7 @@ void AFSK_hw_init(void)
   } else {
     adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
   }
-#endif
+
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
 

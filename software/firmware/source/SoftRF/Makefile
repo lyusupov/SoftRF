@@ -203,6 +203,7 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(APRS_PATH)/cppQueue.o \
                  $(APRS_PATH)/CRC-CCIT.o \
                  $(APRS_PATH)/fir_filter.o \
+                 $(APRS_PATH)/parse_aprs.o \
                  $(NMEALIB_PATH)/info.o $(NMEALIB_PATH)/util.o \
                  $(NMEALIB_PATH)/nmath.o $(NMEALIB_PATH)/context.o \
                  $(NMEALIB_PATH)/sentence.o $(NMEALIB_PATH)/validate.o \

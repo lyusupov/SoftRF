@@ -22,7 +22,8 @@
 #define SOC_GPIO_PIN_HELTRK_TFT_SS      38
 #define SOC_GPIO_PIN_HELTRK_TFT_DC      40
 #define SOC_GPIO_PIN_HELTRK_TFT_RST     39
-#define SOC_GPIO_PIN_HELTRK_TFT_BL      45
+#define SOC_GPIO_PIN_HELTRK_TFT_BL_V03  45
+#define SOC_GPIO_PIN_HELTRK_TFT_BL_V05  21
 #define SOC_GPIO_PIN_HELTRK_TFT_EN      46 /* active LOW */
 
 // 1st I2C bus
@@ -33,5 +34,9 @@
 #define SOC_GPIO_PIN_HELTRK_LED         18 /* white, active HIGH */
 
 // Misc.
-#define SOC_GPIO_PIN_HELTRK_VEXT_EN     3
+#define SOC_GPIO_PIN_HELTRK_VEXT_EN     3 /* V0.3 - active LOW, V0.5 - HIGH */
 #define SOC_GPIO_PIN_HELTRK_ADC_EN      2
+
+// V0.5 only: 32768 Hz crystal
+#define SOC_GPIO_PIN_HELTRK_XP          15
+#define SOC_GPIO_PIN_HELTRK_XN          16

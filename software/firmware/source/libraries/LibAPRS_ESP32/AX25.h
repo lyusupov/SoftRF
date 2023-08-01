@@ -39,7 +39,11 @@ typedef struct AX25Ctx {
 } AX25Ctx;
 
 typedef struct ax25header_struct{   
+//#if !defined(SOFTRF_SKETCH)
     char addr[7];
+//#else
+//    char addr[10];
+//#endif
     char ssid;   
 }ax25header;
 
@@ -52,7 +56,11 @@ typedef struct ax25frame_struct{
 #define AX25_MAX_RPT 8
 #define AX25_REPEATED(msg, n) ((msg)->rpt_flags & BV(n))
 
+//#if !defined(SOFTRF_SKETCH)
 #define CALL_OVERSPACE 1
+//#else
+//#define CALL_OVERSPACE 4
+//#endif
 
 typedef struct AX25Call {
     char call[6+CALL_OVERSPACE];
@@ -74,8 +82,6 @@ typedef struct AX25Msg {
 
 void ax25_sendVia(AX25Ctx *ctx, const AX25Call *path, size_t path_len, const void *_buf, size_t len);
 #define ax25_send(ctx, dst, src, buf, len) ax25_sendVia(ctx, ({static AX25Call __path[]={dst, src}; __path;}), 2, buf, len)
-
-
 
 void ax25_poll(AX25Ctx *ctx);
 void ax25_sendRaw(AX25Ctx *ctx, void *_buf, size_t len);

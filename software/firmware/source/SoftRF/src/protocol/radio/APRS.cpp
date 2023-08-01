@@ -22,6 +22,8 @@
 
 #include <protocol.h>
 #include <LibAPRSesp.h>
+#include <pbuf.h>
+#include <parse_aprs.h>
 
 #include "../../../SoftRF.h"
 #include "../../driver/RF.h"
@@ -55,19 +57,134 @@ const rf_proto_desc_t aprs_proto_desc = {
   .slot1           = {0, 0}
 };
 
+extern AX25Msg Incoming_APRS_Packet;
+
+struct pbuf_t aprs;
+ParseAPRS aprsParse;
+
+int packet2Raw(String &tnc2, AX25Msg &Packet) {
+  if (Packet.len < 5) return 0;
+
+  tnc2 = String(Packet.src.call);
+
+  if (Packet.src.ssid > 0) {
+      tnc2 += String(F("-"));
+      tnc2 += String(Packet.src.ssid);
+  }
+
+  tnc2 += String(F(">"));
+  tnc2 += String(Packet.dst.call);
+
+  if (Packet.dst.ssid > 0) {
+      tnc2 += String(F("-"));
+      tnc2 += String(Packet.dst.ssid);
+  }
+
+  for (int i = 0; i < Packet.rpt_count; i++) {
+      tnc2 += String(",");
+      tnc2 += String(Packet.rpt_list[i].call);
+      if (Packet.rpt_list[i].ssid > 0) {
+          tnc2 += String("-");
+          tnc2 += String(Packet.rpt_list[i].ssid);
+      }
+      if (Packet.rpt_flags & (1 << i)) tnc2 += "*";
+  }
+
+  tnc2 += String(F(":"));
+  tnc2 += String((const char *)Packet.info);
+  tnc2 += String("\n");
+
+  // #ifdef DEBUG_TNC
+  //     Serial.printf("[%d] ", ++pkgTNC_count);
+  //     Serial.print(tnc2);
+  // #endif
+
+  return tnc2.length();
+}
+
 bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-  /* N/A */
+  String tnc2;
+  packet2Raw(tnc2, Incoming_APRS_Packet);
 
-  return false;
+  Serial.println("APRS RX: " + tnc2);
+
+  int start_val = tnc2.indexOf(">", 0);
+  if (start_val > 3)
+  {
+    String src_call = tnc2.substring(0, start_val);
+    memset(&aprs, 0, sizeof(pbuf_t));
+    aprs.buf_len = 300;
+    aprs.packet_len = tnc2.length();
+    tnc2.toCharArray(&aprs.data[0], aprs.packet_len);
+    int start_info = tnc2.indexOf(":", 0);
+    int end_ssid = tnc2.indexOf(",", 0);
+    int start_dst = tnc2.indexOf(">", 2);
+    int start_dstssid = tnc2.indexOf("-", start_dst);
+    if ((start_dstssid > start_dst) && (start_dstssid < start_dst + 10))
+    {
+        aprs.dstcall_end_or_ssid = &aprs.data[start_dstssid];
+    }
+    else
+    {
+        aprs.dstcall_end_or_ssid = &aprs.data[end_ssid];
+    }
+    aprs.info_start = &aprs.data[start_info + 1];
+    aprs.dstname = &aprs.data[start_dst + 1];
+    aprs.dstname_len = end_ssid - start_dst;
+    aprs.dstcall_end = &aprs.data[end_ssid];
+    aprs.srccall_end = &aprs.data[start_dst];
+
+#if 0
+    // Serial.println(aprs.info_start);
+    // aprsParse.parse_aprs(&aprs);
+    if (aprsParse.parse_aprs(&aprs))
+    {
+      /* TBD */
+#ifndef RASPBERRY_PI
+      Serial.print("lat: "); Serial.println(aprs.lat);
+      Serial.print("lon: "); Serial.println(aprs.lng);
+#endif
+    }
+#endif
+
+    return false /* true */;
+  } else {
+    return false;
+  }
+}
+
+static void nmea_lat(float lat, char *buf)
+{
+  int   lat_int = (int) lat;
+  float lat_dec = lat - lat_int;
+
+  sprintf(buf, "%02d%05.2f%c", abs(lat_int), fabsf(lat_dec * 60), lat < 0 ? 'S' : 'N');
+}
+
+static void nmea_lon(float lon, char *buf)
+{
+  int   lon_int = (int) lon;
+  float lon_dec = lon - lon_int;
+
+  sprintf(buf, "%03d%05.2f%c", abs(lon_int), fabsf(lon_dec * 60), lon < 0 ? 'W' : 'E');
 }
 
 size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 
+  char buf[12];
+
+  //snprintf(buf, sizeof(buf), "FLR%06X", this_aircraft->addr);
+  //APRS_setCallsign(buf, 0);
+
+  APRS_setDestination("OGNFLR", 0);
+
   // Let's first set our latitude and longtitude.
   // These should be in NMEA format!
-  APRS_setLat("5530.80N");
-  APRS_setLon("01143.89E");
+  nmea_lat(this_aircraft->latitude, buf);
+  APRS_setLat(buf);
+  nmea_lon(this_aircraft->longitude, buf);
+  APRS_setLon(buf);
   
   // We can optionally set power/height/gain/directivity
   // information. These functions accept ranges
@@ -76,10 +193,10 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   // http://www.aprsfl.net/phgr.php
   // LibAPRS will only add PHG info if all four variables
   // are defined!
-  APRS_setPower(2);
-  APRS_setHeight(4);
-  APRS_setGain(7);
-  APRS_setDirectivity(0);
+  //APRS_setPower(2);
+  //APRS_setHeight(4);
+  //APRS_setGain(7);
+  //APRS_setDirectivity(0);
 
   strcpy((char *) pkt, "NOT IN USE");
 
