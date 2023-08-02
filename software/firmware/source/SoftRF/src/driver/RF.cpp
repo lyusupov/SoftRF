@@ -2269,6 +2269,7 @@ static void ognrf_shutdown()
 #endif /* USE_OGN_RF_DRIVER */
 
 AX25Msg Incoming_APRS_Packet;
+char Outgoing_APRS_Comment[80];
 
 #if defined(USE_SA8X8)
 SA818 sa868(&SA8X8_Serial);
@@ -2403,9 +2404,10 @@ static void sa8x8_setup()
 
   APRS_init();
   APRS_setCallsign("NOCALL", 1);
-  // APRS_setPath1("WIDE1", 1);
+  APRS_setPath1("WIDE1", 1);
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);
+  APRS_setSymbol('\'');
 
   APRS_setTxLEDCallback(sa868_Tx_LED_state);
 
@@ -2438,13 +2440,11 @@ static bool sa8x8_receive()
 
 static void sa8x8_transmit()
 {
-  char *comment = "LibAPRS location update";
-
   uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :
                                              SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 
-  APRS_sendLoc(comment, strlen(comment));
+  APRS_sendLoc(Outgoing_APRS_Comment, strlen(Outgoing_APRS_Comment));
 
   do {
     delay(5);

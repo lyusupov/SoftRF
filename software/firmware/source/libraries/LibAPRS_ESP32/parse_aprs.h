@@ -436,7 +436,7 @@ class ParseAPRS {
 		int parse_aprs_uncompressed(struct pbuf_t *pb, const char *body, const char *body_end);
 		int parse_aprs_object(struct pbuf_t *pb, const char *body, const char *body_end);
 		int parse_aprs_item(struct pbuf_t *pb, const char *body, const char *body_end);
-		int parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigned int const input_len);
+		void parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigned int const input_len);
 		char* parse_remove_part(char const* input, unsigned int const input_len, unsigned int const part_so, unsigned int const part_eo, unsigned int* result_len);
 		int parse_aprs_wx(struct pbuf_t* pb, char const* input, unsigned int const input_len);
 		int is_number(char const* input);

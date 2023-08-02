@@ -2049,7 +2049,7 @@ int ParseAPRS::parse_aprs_wx(struct pbuf_t* pb, char const* input, unsigned int 
 	return 1;
 }
 
-int ParseAPRS::parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigned int const input_len)
+void ParseAPRS::parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigned int const input_len)
 {
 	char course[4], speed[4], range[5], altitude[7], dao[3];
 	int i, tmp_s;

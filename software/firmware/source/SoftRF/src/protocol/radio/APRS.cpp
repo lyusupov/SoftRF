@@ -58,6 +58,7 @@ const rf_proto_desc_t aprs_proto_desc = {
 };
 
 extern AX25Msg Incoming_APRS_Packet;
+extern char Outgoing_APRS_Comment[80];
 
 struct pbuf_t aprs;
 ParseAPRS aprsParse;
@@ -135,23 +136,32 @@ bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
     aprs.dstcall_end = &aprs.data[end_ssid];
     aprs.srccall_end = &aprs.data[start_dst];
 
-#if 0
-    // Serial.println(aprs.info_start);
-    // aprsParse.parse_aprs(&aprs);
     if (aprsParse.parse_aprs(&aprs))
     {
-      /* TBD */
 #ifndef RASPBERRY_PI
       Serial.print("lat: "); Serial.println(aprs.lat);
       Serial.print("lon: "); Serial.println(aprs.lng);
-#endif
-    }
+      Serial.print("alt: "); Serial.println(aprs.altitude);
+      Serial.print("crs: "); Serial.println(aprs.course);
+      Serial.print("spd: "); Serial.println(aprs.speed);
 #endif
 
-    return false /* true */;
-  } else {
-    return false;
+      fop->protocol  = RF_PROTOCOL_APRS;
+
+      fop->latitude  = aprs.lat;
+      fop->longitude = aprs.lng;
+      fop->altitude  = (float) aprs.altitude / _GPS_FEET_PER_METER;
+      fop->course    = (float) aprs.course;
+      fop->speed     = (float) aprs.speed;
+
+      fop->addr_type = ADDR_TYPE_ANONYMOUS;
+      fop->timestamp = (uint32_t) this_aircraft->timestamp;
+
+      return false /* true */;
+    }
   }
+
+  return false;
 }
 
 static void nmea_lat(float lat, char *buf)
@@ -197,6 +207,13 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   //APRS_setHeight(4);
   //APRS_setGain(7);
   //APRS_setDirectivity(0);
+
+  snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
+           "%03d/%03d/A=%06d !W10! id%08X",
+           (int) this_aircraft->course,
+           (int) this_aircraft->speed, /* knots */
+           (int) (this_aircraft->altitude * _GPS_FEET_PER_METER), /* negative - TBD */
+           this_aircraft->addr);
 
   strcpy((char *) pkt, "NOT IN USE");
 
