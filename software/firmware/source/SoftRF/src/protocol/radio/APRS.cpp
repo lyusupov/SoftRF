@@ -150,9 +150,9 @@ bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
       fop->latitude  = aprs.lat;
       fop->longitude = aprs.lng;
-      fop->altitude  = (float) aprs.altitude / _GPS_FEET_PER_METER;
-      fop->course    = (float) aprs.course;
-      fop->speed     = (float) aprs.speed;
+      fop->altitude  = (float) aprs.altitude;                   /* metres */
+      fop->course    = (aprs.course == 360) ? 0 : (float) aprs.course;
+      fop->speed     = (float) aprs.speed / _GPS_KMPH_PER_KNOT; /* knots  */
 
       fop->addr_type = ADDR_TYPE_ANONYMOUS;
       fop->timestamp = (uint32_t) this_aircraft->timestamp;
@@ -208,11 +208,14 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   //APRS_setGain(7);
   //APRS_setDirectivity(0);
 
+  int course_i   = (int)  this_aircraft->course;
+  int altitude_i = (int) (this_aircraft->altitude * _GPS_FEET_PER_METER);
+
   snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
            "%03d/%03d/A=%06d !W10! id%08X",
-           (int) this_aircraft->course,
-           (int) this_aircraft->speed, /* knots */
-           (int) (this_aircraft->altitude * _GPS_FEET_PER_METER), /* negative - TBD */
+           (course_i == 0) ? 360 : course_i,
+           (int) this_aircraft->speed,        /* knots */
+           (altitude_i < 0) ? 0 : altitude_i, /* feet  */
            this_aircraft->addr);
 
   strcpy((char *) pkt, "NOT IN USE");
