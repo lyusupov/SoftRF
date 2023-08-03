@@ -93,9 +93,7 @@
 #define F_EQNS		(1 << 9)
 #define F_BITS		(1 << 10)
 #define F_TLM		(1 << 11)
-#if defined(SOFTRF_SKETCH)
 #define F_OGNID		(1 << 12)
-#endif /* SOFTRF_SKETCH */
 
 #define W_WD	(1 << 0)
 #define W_WS	(1 << 1)
@@ -286,9 +284,7 @@ struct pbuf_t {
 	/// Land speed in km/h.
 	double speed;
 
-#if defined(SOFTRF_SKETCH)
 	uint32_t ogn_id;
-#endif /* SOFTRF_SKETCH */
 
 	/// Weather report.
 	fap_wx_report_t wx_report;
