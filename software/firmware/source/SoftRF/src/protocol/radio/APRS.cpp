@@ -57,6 +57,26 @@ const rf_proto_desc_t aprs_proto_desc = {
   .slot1           = {0, 0}
 };
 
+static char AprsIcon[16] = // Icons for various FLARM acftType's
+{
+  'z',  //  0 = ?
+  '\'', //  1 = (moto-)glider    (most frequent)
+  '\'', //  2 = tow plane        (often)
+  'X',  //  3 = helicopter       (often)
+  'g',  //  4 = parachute        (rare but seen - often mixed with drop plane)
+  '^',  //  5 = drop plane       (seen)
+  'g',  //  6 = hang-glider      (rare but seen)
+  'g',  //  7 = para-glider      (rare but seen)
+  '^',  //  8 = powered aircraft (often)
+  '^',  //  9 = jet aircraft     (rare but seen)
+  'z',  //  A = UFO              (people set for fun)
+  'O',  //  B = balloon          (seen once)
+  'O',  //  C = airship          (seen once)
+  '\'', //  D = UAV              (drones, can become very common)
+  'z',  //  E = ground support   (ground vehicles at airfields)
+  'n'   //  F = static object    (ground relay ?)
+} ;
+
 extern AX25Msg Incoming_APRS_Packet;
 extern char Outgoing_APRS_Comment[80];
 
@@ -108,7 +128,7 @@ bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   String tnc2;
   packet2Raw(tnc2, Incoming_APRS_Packet);
 
-  Serial.println("APRS RX: " + tnc2);
+  // Serial.println("APRS RX: " + tnc2);
 
   int start_val = tnc2.indexOf(">", 0);
   if (start_val > 3)
@@ -138,26 +158,32 @@ bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
     if (aprsParse.parse_aprs(&aprs))
     {
-#ifndef RASPBERRY_PI
+#if 0 // ndef RASPBERRY_PI
       Serial.print("lat: "); Serial.println(aprs.lat);
       Serial.print("lon: "); Serial.println(aprs.lng);
       Serial.print("alt: "); Serial.println(aprs.altitude);
       Serial.print("crs: "); Serial.println(aprs.course);
       Serial.print("spd: "); Serial.println(aprs.speed);
+      Serial.print("id:  "); Serial.println(aprs.ogn_id, HEX);
 #endif
 
       fop->protocol  = RF_PROTOCOL_APRS;
 
+      fop->addr      = aprs.ogn_id & 0x00FFFFFF;
       fop->latitude  = aprs.lat;
       fop->longitude = aprs.lng;
       fop->altitude  = (float) aprs.altitude;                   /* metres */
       fop->course    = (aprs.course == 360) ? 0 : (float) aprs.course;
       fop->speed     = (float) aprs.speed / _GPS_KMPH_PER_KNOT; /* knots  */
-
-      fop->addr_type = ADDR_TYPE_ANONYMOUS;
       fop->timestamp = (uint32_t) this_aircraft->timestamp;
 
-      return false /* true */;
+      uint8_t XX         = (aprs.ogn_id >> 24) & 0xFF;
+      fop->addr_type     = XX & 0x3;
+      fop->aircraft_type = (XX >> 2) & 0xF;
+      fop->no_track      = (XX >> 6) & 0x1;
+      fop->stealth       = (XX >> 7) & 0x1;
+
+      return true;
     }
   }
 
@@ -184,7 +210,15 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 
   char buf[12];
 
-  //snprintf(buf, sizeof(buf), "FLR%06X", this_aircraft->addr);
+  uint32_t id = this_aircraft->addr & 0x00FFFFFF;
+
+#if !defined(SOFTRF_ADDRESS)
+  uint8_t addr_type = ADDR_TYPE_ANONYMOUS;
+#else
+  uint8_t addr_type = id == SOFTRF_ADDRESS ? ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
+#endif
+
+  //snprintf(buf, sizeof(buf), "FLR%06X", id);
   //APRS_setCallsign(buf, 0);
 
   APRS_setDestination("OGNFLR", 0);
@@ -195,7 +229,11 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   APRS_setLat(buf);
   nmea_lon(this_aircraft->longitude, buf);
   APRS_setLon(buf);
-  
+
+  uint8_t acft_type = this_aircraft->aircraft_type > AIRCRAFT_TYPE_STATIC ?
+          AIRCRAFT_TYPE_UNKNOWN : this_aircraft->aircraft_type;
+  APRS_setSymbol(AprsIcon[acft_type]);
+
   // We can optionally set power/height/gain/directivity
   // information. These functions accept ranges
   // from 0 to 10, directivity 0 to 9.
@@ -211,12 +249,17 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   int course_i   = (int)  this_aircraft->course;
   int altitude_i = (int) (this_aircraft->altitude * _GPS_FEET_PER_METER);
 
+  uint32_t XX = (this_aircraft->stealth  << 7UL) |
+                (this_aircraft->no_track << 6UL) |
+                (acft_type               << 2UL) |
+                (addr_type                     );
+
   snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
-           "%03d/%03d/A=%06d !W10! id%08X",
+           "%03d/%03d/A=%06d !W00! id%08X",
            (course_i == 0) ? 360 : course_i,
            (int) this_aircraft->speed,        /* knots */
            (altitude_i < 0) ? 0 : altitude_i, /* feet  */
-           this_aircraft->addr);
+           id | (XX << 24));
 
   strcpy((char *) pkt, "NOT IN USE");
 

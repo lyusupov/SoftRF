@@ -19,7 +19,7 @@
 #define debug 0
 
 //#define DEBUG_LOG(...) Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
-#define DEBUG_LOG 
+#define DEBUG_LOG
 //#define DEBUG_LOG Serial.printf
 
 /// Max amount of path elements.
@@ -2052,6 +2052,9 @@ int ParseAPRS::parse_aprs_wx(struct pbuf_t* pb, char const* input, unsigned int 
 void ParseAPRS::parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigned int const input_len)
 {
 	char course[4], speed[4], range[5], altitude[7], dao[3];
+#if defined(SOFTRF_SKETCH)
+	char id[9];
+#endif /* SOFTRF_SKETCH */
 	int i, tmp_s;
 	char* tmp_str, * rest = NULL;
 	unsigned int rest_len = 0, tmp_us;
@@ -2217,6 +2220,31 @@ void ParseAPRS::parse_aprs_comment(struct pbuf_t* pb, char const* input, unsigne
 
 	/* Check for base-91 comment telemetry. */
 	/*fapint_parse_comment_telemetry(packet, &rest, &rest_len);*/
+
+#if defined(SOFTRF_SKETCH)
+	if (rest_len >=11)
+	{
+		/* Check for optional OGN ID anywhere in the comment, take the first occurrence. */
+		res = strstr(rest, " id");
+		if (res)
+		{
+			DEBUG_LOG("Found ID : ");
+			DEBUG_LOG(res);
+			DEBUG_LOG("\n");
+
+			if (!pb->ogn_id)
+			{
+				memcpy(id, res +3, 8);
+				id[8] = 0;
+				pb->ogn_id = strtol(id, 0, 16);
+				pb->flags |= F_OGNID;
+			}
+
+			/* Remove OGN ID. */
+			rest = parse_remove_part(rest, rest_len, res - rest, res - rest + 11, &rest_len);
+		}
+	}
+#endif /* SOFTRF_SKETCH */
 
 	/* If there's something left, save it as a comment. */
 	rest_len=strlen(rest);
