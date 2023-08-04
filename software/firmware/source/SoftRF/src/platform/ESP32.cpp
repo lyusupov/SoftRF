@@ -1110,7 +1110,7 @@ static void ESP32_setup()
       /* wait until every LDO voltage will settle down */
       delay(200);
 
-      lmic_pins.nss  = SOC_GPIO_PIN_TWR2_SS_EXT;
+      lmic_pins.nss  = SOC_GPIO_PIN_TWR2_SS;
       lmic_pins.rst  = SOC_UNUSED_PIN;
       lmic_pins.busy = SOC_UNUSED_PIN;
 
@@ -1185,6 +1185,26 @@ static void ESP32_setup()
 #endif /* CONFIG_TINYUSB_MSC_ENABLED */
 
         FATFS_is_mounted = fatfs.begin(SPIFlash);
+      }
+    }
+
+    if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+      int uSD_SS_pin = SOC_GPIO_PIN_TWR2_SD_SS;
+
+      /* uSD-SPI init */
+      uSD_SPI.begin(SOC_GPIO_PIN_TWR2_SD_SCK,
+                    SOC_GPIO_PIN_TWR2_SD_MISO,
+                    SOC_GPIO_PIN_TWR2_SD_MOSI,
+                    uSD_SS_pin);
+
+      pinMode(uSD_SS_pin, OUTPUT);
+      digitalWrite(uSD_SS_pin, HIGH);
+
+      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+      if (uSD_is_attached && uSD.card()->cardSize() > 0) {
+        hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
+                          STORAGE_FLASH_AND_CARD : STORAGE_CARD;
       }
     }
   } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
@@ -1447,7 +1467,11 @@ static void ESP32_post_init()
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
     Serial.flush();
+  }
 
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
+      esp32_board   == ESP32_LILYGO_T_TWR_V2_0)
+  {
     Serial.println();
 
     if (!uSD_is_attached) {
@@ -2512,7 +2536,7 @@ static void ESP32_SPI_begin()
       break;
     case ESP32_LILYGO_T_TWR_V2_0:
       SPI.begin(SOC_GPIO_PIN_TWR2_SCK,  SOC_GPIO_PIN_TWR2_MISO,
-                SOC_GPIO_PIN_TWR2_MOSI, SOC_GPIO_PIN_TWR2_SS_EXT);
+                SOC_GPIO_PIN_TWR2_MOSI, SOC_GPIO_PIN_TWR2_SS);
       break;
     case ESP32_HELTEC_TRACKER:
       SPI.begin(SOC_GPIO_PIN_HELTRK_SCK,  SOC_GPIO_PIN_HELTRK_MISO,

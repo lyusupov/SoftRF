@@ -2422,6 +2422,10 @@ static bool sa8x8_receive()
 {
   bool success = false;
 
+  if (settings->power_save & POWER_SAVE_NORECEIVE) {
+    return success;
+  }
+
 //  controller.receive();
 
   uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :

@@ -183,7 +183,7 @@ bool aprs_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
       fop->no_track      = (XX >> 6) & 0x1;
       fop->stealth       = (XX >> 7) & 0x1;
 
-      return true;
+      if (fop->addr) return true;
     }
   }
 
