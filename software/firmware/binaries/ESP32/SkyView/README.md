@@ -2,16 +2,93 @@
 
 ## revision 0.13
 
-TBD
+### New features
+
+Three more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-processing-unit) (SoCs) that the **SkyView** technology is able to operate on:
+* Raspberry Pi Foundation [**RP2040**](https://en.wikipedia.org/wiki/RP2040) &nbsp; - dual _ARM [Cortex-M0+](https://en.wikipedia.org/wiki/ARM_Cortex-M#Cortex-M0+) cores @ 133 MHz_
+* Espressif &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ESP32-**S3**](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)&nbsp; - dual-core Xtensa LX7 with 2.4 GHz radio
+* Espressif &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [ESP32-**C3**](https://en.wikipedia.org/wiki/ESP32#ESP32-C3)&nbsp; - single [RISC-V](https://en.wikipedia.org/wiki/RISC-V) core with 2.4 GHz radio
+
+### Raspberry Pi RP2040
+
+* very first Release of [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico) for RP2040 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* base component: [**Raspberry Pico W**](https://s.click.aliexpress.com/e/_DD36aMv) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-47.jpg)
+
+### Espressif ESP32-S3
+
+* very first Release of [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option) for ESP32-S3 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* base component: [**Banana PicoW-S3**](https://s.click.aliexpress.com/e/_DFRHYMN) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-56.jpg)
 
 ### Major improvements
 
-TBD
+#### Common
+
+* GxEPD2 driver for GDEY027T91 e-Paper display
+* an option to show aircraft type (class) in 'Text View' mode
+* screen rotation feature
+* Screen Saver feature _(backported from Badge)_
+* print version number on boot screen
+* indicate on e-paper display when battery voltage value is not available
+* print connection settings into boot console
+* let UART to be default input across all the platforms
+* a fix for #139
+
+#### ESP32
+
+* swap Up and Down buttons when screen is rotated at 180 degrees
+* add the MODE button state guard upon shutdown
+* update of EPD detect logic
+
+#### ESP32-S2
+
+* made build possible for ESP32-S2 target
+
+#### ESP32-C3
+
+* made build possible for ESP32-C3 target
+* bringup on ESP32-C3 target is complete
+
+#### ESP32-S3
+
+* aircrafts database with USB mass storage interface
+* support for Waveshare UPS-B voltage monitor
+* PDM audio output over I2S0
+* use of an audio library
+* make the V2 version of Waveshare e-Paper Pico adapter to be the default one for ESP32-S3 targets
+* status LED logic
+* few more SkyView boot log messages
+* wake SkyView up by RTC GPIO input signal
+<!-- * make CS4344 external I2S DAC _(Waveshare Pico-Audio Rev. 2.1)_ to be default one for SkyView Pico -->
+
+#### RP2040
+
+* FATFS support for settings (JSON) and aircrafts data (uCDB)
+* basic USB I/O operations
+* PIO USB CDC Host function
+* Bluetooth SPP 'master' role
+* HM-10 compatible Bluetooth LE 'central' role
+* support for 'version 2' of Waveshare e-paper adapter _(has GDEY027T91 display)_
+* made the SkyView compatible with HC-05 BT SPP data source
+* fix for EPD detect logic
+* support for Waveshare UPS-B voltage monitor
+* PWM audio output
+* make the V2 version of Waveshare e-Paper Pico adapter to be the default one for RP2040 targets
+* activate Wi-Fi power saving feature
+* status LED logic
+* remap of 'Mode' button from left to center
+<!-- * cleanup of SkyView I2S audio logic -->
+
+#### BCM283X
+
+* support for Waveshare 2.7 inch e-Paper HAT V2 adapter _(uses GDEY027T91 display)_
 
 ### Known issues and limitations
 
 TBD
-
 
 ## revision 0.12
 
