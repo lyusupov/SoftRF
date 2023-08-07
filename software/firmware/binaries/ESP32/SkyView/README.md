@@ -39,6 +39,7 @@ Three more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-process
 
 #### ESP32
 
+* builds with either Arduino Core **1.0.5** or Arduino Core **2.0.9**
 * swap Up and Down buttons when screen is rotated at 180 degrees
 * add the MODE button state guard upon shutdown
 * update of EPD detect logic
@@ -90,7 +91,7 @@ Three more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-process
 
 * same that previous 0.12 release has, **plus**
 * **RP2040:** PIO USB Host is kind of fragile and can cause issues when Wi-Fi or Bluetooth is active. When USB is your primary connection method - activate Wi-Fi 'power saving' feature to disable the Wi-Fi while it is not in use. When you use Wi-Fi of Bluetooth as a primary connection method - do NOT connect any device to the RP2040 PIO USB port ;
-* **ESP32-S3**: pictore on the GDEY027T91 display may partially loose contrast after a sequence of screen updates. One should consider to activate [e-Paper 'ghosts' removal](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings#e-paper-ghosts-removal) procedure as a workaroud.
+* **ESP32-S3**: pictore on the GDEY027T91 display may partially loose contrast after a sequence of screen updates. One should consider to activate [e-Paper 'ghosts' removal](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings#e-paper-ghosts-removal) procedure as a workaround.
 
 ### Flashing instructions
 

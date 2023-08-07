@@ -194,8 +194,11 @@ void ax25_sendRaw(AX25Ctx *ctx, void *_buf, size_t len)
 
 static void ax25_sendCall(AX25Ctx *ctx, const AX25Call *addr, bool last)
 {
+//#if !defined(SOFTRF_SKETCH)
     unsigned len = MIN((sizeof(addr->call) - CALL_OVERSPACE), strlen(addr->call));
-
+//#else
+//    unsigned len = strlen(addr->call);
+//#endif
     for (unsigned i = 0; i < len; i++)
     {
         uint8_t c = addr->call[i];

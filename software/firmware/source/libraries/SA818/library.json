@@ -1,0 +1,22 @@
+{
+    "name": "SA818",
+    "version": "1.0.0",
+    "description": "AT+Commands library for SA818/SA868 module",
+    "keywords": [
+        "serial", "SA818", "SA868"
+    ],
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/gibbonzen/SA818"
+    },
+    "authors": [
+        {
+            "name": "Gibbon Zen"
+        }
+    ],
+    "frameworks": "arduino",
+    "platforms": [
+        "espressif8266", "espressif32"
+    ]
+}

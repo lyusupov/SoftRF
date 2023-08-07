@@ -279,17 +279,31 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage) and extract the archive ;
 
-2. Connect the SoftRF Prime Edition Mk.3 device to your PC by means of a USB cable (Type-A <-> Type-C) ;
+2. Connect the SoftRF device to your PC by means of a USB cable (Type-A <-> Type-C) ;
 
 3. Press and release RESET button of the SoftRF device. Immediately (within 1 second) press and release the BOOT button. One should see this message on the OLED display.
 
+&nbsp;&nbsp;&nbsp;&nbsp; For **T-Beam Supreme**:
+
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Prime3-1.jpg)
+
+&nbsp;&nbsp;&nbsp;&nbsp; For **T-TWR Plus**:
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/ham-1.jpg" width="400">
+
+&nbsp;&nbsp;&nbsp;&nbsp; This white LED on the **Heltec Tracker** will start to flicker:
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/midi-2.jpg" width="400">
 
 <br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with **TBEAMBOOT** label should appear in your "File manager" afterwards.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with a device specific label should appear in your "File manager" afterwards.<br>
 
-4. Drag the downloaded .uf2 firmware file by your pointing device (mouse, trackball,...) , then drop it into **TBEAMBOOT** disk. Wait until the file transfer is complete.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **T-Beam Supreme** the label is &nbsp; **TBEAMBOOT**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **T-TWR Plus** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **TWRBOOT**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **Heltec Tracker** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **HTBOOT**<br>
+
+4. Drag the downloaded .uf2 firmware file by your pointing device (mouse, trackball,...) , then drop it into **TBEAMBOOT** / **TWRBOOT** / **HTBOOT** disk. Wait until the file transfer is complete.
 
 <br>
 

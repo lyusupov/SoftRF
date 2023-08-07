@@ -219,8 +219,8 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 #endif
 
   // snprintf(buf, sizeof(buf), "FLR%06X", id);
-  // snprintf(buf, sizeof(buf), "OGN%06X", id);
-  // APRS_setCallsign(buf, 0);
+  snprintf(buf, sizeof(buf), "OGN%06X", id);
+  APRS_setCallsign(buf, 0);
 
   // APRS_setDestination("OGNFLR", 0);
   APRS_setDestination("OGNTRK", 0);
