@@ -218,10 +218,12 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   uint8_t addr_type = id == SOFTRF_ADDRESS ? ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
 #endif
 
-  //snprintf(buf, sizeof(buf), "FLR%06X", id);
-  //APRS_setCallsign(buf, 0);
+  // snprintf(buf, sizeof(buf), "FLR%06X", id);
+  // snprintf(buf, sizeof(buf), "OGN%06X", id);
+  // APRS_setCallsign(buf, 0);
 
-  APRS_setDestination("OGNFLR", 0);
+  // APRS_setDestination("OGNFLR", 0);
+  APRS_setDestination("OGNTRK", 0);
 
   // Let's first set our latitude and longtitude.
   // These should be in NMEA format!
@@ -255,7 +257,7 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
                 (addr_type                     );
 
   snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
-           "%03d/%03d/A=%06d !W00! id%08X",
+           "%03d/%03d/A=%06d !W00! id%08X +000fpm +0rot gps8x3",
            (course_i == 0) ? 360 : course_i,
            (int) this_aircraft->speed,        /* knots */
            (altitude_i < 0) ? 0 : altitude_i, /* feet  */

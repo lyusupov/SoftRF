@@ -2294,7 +2294,9 @@ extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel;
 void sa868_Tx_LED_state(bool val) {
   if (hw_info.model == SOFTRF_MODEL_HAM) {
 #if defined(USE_NEOPIXELBUS_LIBRARY)
-    TWR2_Pixel.SetPixelColor(0, val ? LED_COLOR_RED : LED_COLOR_GREEN);
+    TWR2_Pixel.SetPixelColor(0, val ? LED_COLOR_RED :
+                             settings->power_save & POWER_SAVE_NORECEIVE ?
+                             LED_COLOR_BLACK : LED_COLOR_GREEN);
     TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
   }
@@ -2384,7 +2386,8 @@ static void sa8x8_setup()
     }
   }
 
-  controller.setGroup(0 /* TBD */, MHz, MHz, 0, 1, 0);
+  byte sq = settings->power_save & POWER_SAVE_NORECEIVE ? 8 : 1;
+  controller.setGroup(0 /* TBD */, MHz, MHz, 0, sq, 0);
 
   if (controller.getModel() == Model::SA_868) {
     aprs_preamble = 350UL * 3;
@@ -2408,6 +2411,14 @@ static void sa8x8_setup()
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);
   APRS_setSymbol('\'');
+
+  if (hw_info.model == SOFTRF_MODEL_HAM) {
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+    TWR2_Pixel.SetPixelColor(0, settings->power_save & POWER_SAVE_NORECEIVE ?
+                             LED_COLOR_BLACK : LED_COLOR_GREEN);
+    TWR2_Pixel.Show();
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+  }
 
   APRS_setTxLEDCallback(sa868_Tx_LED_state);
 

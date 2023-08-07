@@ -88,7 +88,21 @@ Three more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-process
 
 ### Known issues and limitations
 
-TBD
+* same that previous 0.12 release has, **plus**
+* **RP2040:** PIO USB Host is kind of fragile and can cause issues when Wi-Fi or Bluetooth is active. When USB is your primary connection method - activate Wi-Fi 'power saving' feature to disable the Wi-Fi while it is not in use. When you use Wi-Fi of Bluetooth as a primary connection method - do NOT connect any device to the RP2040 PIO USB port ;
+* **ESP32-S3**: pictore on the GDEY027T91 display may partially loose contrast after a sequence of screen updates. One should consider to activate [e-Paper 'ghosts' removal](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings#e-paper-ghosts-removal) procedure as a workaroud.
+
+### Flashing instructions
+
+&nbsp;&nbsp;&nbsp;&nbsp;**ESP32:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'[Web Update](https://github.com/lyusupov/SoftRF/wiki/Firmware-update-%28Web-method%29#esp32)' method should work just fine when you are updating from **Regular** 0.12.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In case of troubles - use generic ('cable') method instead. Follow **Step 1** and **Step 2** of this [**Quick start**](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start) guidance.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**RP2040:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;**ESP32-S3:**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Both RP2040 and ESP32-S3 platforms can do firmware update over USB connection when the firmware binary is in UF2 format.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Follow **SkyView Pico** firmware installation procedure as explained on [this page](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start).<br>
+
+<br>
 
 ## revision 0.12
 

@@ -1117,8 +1117,6 @@ static void ESP32_setup()
 #if defined(USE_NEOPIXELBUS_LIBRARY)
       TWR2_Pixel.Begin();
       TWR2_Pixel.Show(); // Initialize all pixels to 'off'
-      TWR2_Pixel.SetPixelColor(0, LED_COLOR_GREEN);
-      TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
     } else {
       WIRE_FINI(Wire);
