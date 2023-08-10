@@ -2269,7 +2269,7 @@ static void ognrf_shutdown()
 #endif /* USE_OGN_RF_DRIVER */
 
 AX25Msg Incoming_APRS_Packet;
-char Outgoing_APRS_Comment[80];
+char Outgoing_APRS_Comment[160];
 
 #if defined(USE_SA8X8)
 SA818 sa868(&SA8X8_Serial);
@@ -2406,7 +2406,7 @@ static void sa8x8_setup()
   PacketBuffer.clean();
 
   APRS_init();
-  APRS_setCallsign("NOCALL", 1);
+  APRS_setCallsign("NOCALL", 0);
   APRS_setPath1("WIDE1", 1);
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);
@@ -2459,7 +2459,11 @@ static void sa8x8_transmit()
                                              SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 
+#if 0
   APRS_sendLoc(Outgoing_APRS_Comment, strlen(Outgoing_APRS_Comment));
+#else
+  APRS_sendTNC2Pkt(String(Outgoing_APRS_Comment));
+#endif
 
   do {
     delay(5);

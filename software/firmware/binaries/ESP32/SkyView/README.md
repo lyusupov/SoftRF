@@ -90,7 +90,7 @@ Three more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-process
 ### Known issues and limitations
 
 * same that previous 0.12 release has, **plus**
-* **RP2040:** PIO USB Host is kind of fragile and can cause issues when Wi-Fi or Bluetooth is active. When USB is your primary connection method - activate Wi-Fi 'power saving' feature to disable the Wi-Fi while it is not in use. When you use Wi-Fi of Bluetooth as a primary connection method - do NOT connect any device to the RP2040 PIO USB port ;
+* **RP2040:** new PIO USB Host feature is a kind of fragile and may cause issues when Wi-Fi or Bluetooth is active. When USB is your primary connection method - activate Wi-Fi 'power saving' feature to disable the Wi-Fi while it is not in use. When you use Wi-Fi or Bluetooth as a primary connection method - do NOT connect any device to the RP2040 PIO USB port ;
 * **ESP32-S3**: picture on the GDEY027T91 display may partially loose contrast after a sequence of screen updates. One should consider to activate [e-Paper 'ghosts' removal](https://github.com/lyusupov/SoftRF/wiki/SkyView-settings#e-paper-ghosts-removal) feature as a workaround.
 
 ### Flashing instructions
