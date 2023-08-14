@@ -2314,17 +2314,15 @@ static bool sa8x8_probe()
 
 //  sa868.verbose(); // verbose mode
 
-  if (hw_info.revision < 20) {
-    controller.setBand(Band::UHF);
-    controller.setPins(SOC_GPIO_PIN_TWR1_RADIO_PTT,
-                       SOC_GPIO_PIN_TWR1_RADIO_PD,
-                       SOC_GPIO_PIN_TWR1_RADIO_HL);
+  if (hw_info.revision > 20) {
+    /* TBD */
   } else {
     controller.setBand(Band::VHF);
-    controller.setPins(SOC_GPIO_PIN_TWR2_RADIO_PTT,
-                       SOC_GPIO_PIN_TWR2_RADIO_PD,
-                       SOC_GPIO_PIN_TWR2_RADIO_HL);
   }
+
+  controller.setPins(SOC_GPIO_PIN_TWR2_RADIO_PTT,
+                     SOC_GPIO_PIN_TWR2_RADIO_PD,
+                     SOC_GPIO_PIN_TWR2_RADIO_HL);
 
   controller.wake();
   controller.lowPower();
@@ -2439,8 +2437,7 @@ static bool sa8x8_receive()
 
 //  controller.receive();
 
-  uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :
-                                             SOC_GPIO_PIN_TWR2_RADIO_HL;
+  uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_Poll(true, LOW, powerPin);
 
   if (PacketBuffer.getCount() > 0) {
@@ -2455,8 +2452,7 @@ static bool sa8x8_receive()
 
 static void sa8x8_transmit()
 {
-  uint8_t powerPin = hw_info.revision < 20 ? SOC_GPIO_PIN_TWR1_RADIO_HL :
-                                             SOC_GPIO_PIN_TWR2_RADIO_HL;
+  uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 
 #if 0

@@ -16,7 +16,8 @@
 #define TFT_CS     38
 #define TFT_DC     40
 #define TFT_RST    39
-#define TFT_BL     45
+#define TFT_BL     45 /* V1.0 PCB marking */
+//#define TFT_BL   21 /* V1.1 PCB marking */
 
 #define LOAD_GLCD
 #define LOAD_FONT2

@@ -22,8 +22,8 @@
 #define SOC_GPIO_PIN_HELTRK_TFT_SS      38
 #define SOC_GPIO_PIN_HELTRK_TFT_DC      40
 #define SOC_GPIO_PIN_HELTRK_TFT_RST     39
-#define SOC_GPIO_PIN_HELTRK_TFT_BL_V03  45
-#define SOC_GPIO_PIN_HELTRK_TFT_BL_V05  21
+#define SOC_GPIO_PIN_HELTRK_TFT_BL_V03  45 /* V1.0 PCB marking */
+#define SOC_GPIO_PIN_HELTRK_TFT_BL_V05  21 /* V1.1 PCB marking */
 #define SOC_GPIO_PIN_HELTRK_TFT_EN      46 /* active LOW */
 
 // 1st I2C bus
