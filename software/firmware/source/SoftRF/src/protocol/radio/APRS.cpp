@@ -57,28 +57,27 @@ const rf_proto_desc_t aprs_proto_desc = {
   .slot1           = {0, 0}
 };
 
-static char AprsIcon[16] = // Icons for various FLARM acftType's
-{
-  'z',  //  0 = ?
-  '\'', //  1 = (moto-)glider    (most frequent)
-  '\'', //  2 = tow plane        (often)
-  'X',  //  3 = helicopter       (often)
-  'g',  //  4 = parachute        (rare but seen - often mixed with drop plane)
-  '^',  //  5 = drop plane       (seen)
-  'g',  //  6 = hang-glider      (rare but seen)
-  'g',  //  7 = para-glider      (rare but seen)
-  '^',  //  8 = powered aircraft (often)
-  '^',  //  9 = jet aircraft     (rare but seen)
-  'z',  //  A = UFO              (people set for fun)
-  'O',  //  B = balloon          (seen once)
-  'O',  //  C = airship          (seen once)
-  '\'', //  D = UAV              (drones, can become very common)
-  'z',  //  E = ground support   (ground vehicles at airfields)
-  'n'   //  F = static object    (ground relay ?)
-} ;
+static const char *AprsIcon[16] = // Icons for various FLARM acftType's
+{  "/z",  //  0 = ?
+   "/'",  //  1 = (moto-)glider    (most frequent)
+   "/'",  //  2 = tow plane        (often)
+   "/X",  //  3 = helicopter       (often)
+   "/g" , //  4 = parachute        (rare but seen - often mixed with drop plane)
+   "\\^", //  5 = drop plane       (seen)
+   "/g" , //  6 = hang-glider      (rare but seen)
+   "/g" , //  7 = para-glider      (rare but seen)
+   "\\^", //  8 = powered aircraft (often)
+   "/^",  //  9 = jet aircraft     (rare but seen)
+   "/z",  //  A = UFO              (people set for fun)
+   "/O",  //  B = balloon          (seen once)
+   "/O",  //  C = airship          (seen once)
+   "/'",  //  D = UAV              (drones, can become very common)
+   "/z",  //  E = ground support   (ground vehicles at airfields)
+   "\\n"  //  F = static object    (ground relay ?)
+};
 
 extern AX25Msg Incoming_APRS_Packet;
-extern char Outgoing_APRS_Comment[160];
+extern char Outgoing_APRS_Data[160];
 
 struct pbuf_t aprs;
 ParseAPRS aprsParse;
@@ -227,44 +226,6 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
                 (acft_type               << 2UL) |
                 (addr_type                     );
 
-#if 0
-  char buf[12];
-
-  // snprintf(buf, sizeof(buf), "FLR%06X", id);
-  snprintf(buf, sizeof(buf), "OGN%06X", id);
-  APRS_setCallsign(buf, 0);
-
-  // APRS_setDestination("OGNFLR", 0);
-  APRS_setDestination("OGNTRK", 0);
-
-  // Let's first set our latitude and longtitude.
-  // These should be in NMEA format!
-  nmea_lat(this_aircraft->latitude, buf);
-  APRS_setLat(buf);
-  nmea_lon(this_aircraft->longitude, buf);
-  APRS_setLon(buf);
-
-  APRS_setSymbol(AprsIcon[acft_type]);
-
-  // We can optionally set power/height/gain/directivity
-  // information. These functions accept ranges
-  // from 0 to 10, directivity 0 to 9.
-  // See this site for a calculator:
-  // http://www.aprsfl.net/phgr.php
-  // LibAPRS will only add PHG info if all four variables
-  // are defined!
-  //APRS_setPower(2);
-  //APRS_setHeight(4);
-  //APRS_setGain(7);
-  //APRS_setDirectivity(0);
-
-  snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
-           "%03d/%03d/A=%06d !W00! id%08X +000fpm +0rot gps8x3",
-           (course_i == 0) ? 360 : course_i,
-           (int) this_aircraft->speed,        /* knots */
-           (altitude_i < 0) ? 0 : altitude_i, /* feet  */
-           id | (XX << 24));
-#else
   float lat = this_aircraft->latitude;
   float lon = this_aircraft->longitude;
   int   lat_int = (int) lat;
@@ -272,7 +233,7 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   int   lon_int = (int) lon;
   float lon_dec = lon - lon_int;
 
-  snprintf(Outgoing_APRS_Comment, sizeof(Outgoing_APRS_Comment),
+  snprintf(Outgoing_APRS_Data, sizeof(Outgoing_APRS_Data),
            "%06X>%s:"
            "/"
            "%02d%02d%02dh"
@@ -289,7 +250,6 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
            (int) this_aircraft->speed,        /* knots */
            (altitude_i < 0) ? 0 : altitude_i, /* feet  */
            id | (XX << 24));
-#endif
 
   strcpy((char *) pkt, "NOT IN USE");
 

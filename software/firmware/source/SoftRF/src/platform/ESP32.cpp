@@ -355,6 +355,11 @@ static bool ESP32_has_32k_xtal = false;
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+
+#if defined(USE_SA8X8)
+#include <SA818Controller.h>
+extern SA818Controller controller;
+#endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -1330,9 +1335,13 @@ static void ESP32_setup()
       esp32_board = ESP32_LILYGO_T_TWR_V2_1;
       hw_info.revision = 21;
 
+#if defined(USE_SA8X8)
       if (gpio2_voltage > 2400) {
-        /* VHF */
+        controller.setBand(Band::VHF);
+      } else {
+        controller.setBand(Band::UHF);
       }
+#endif /* USE_SA8X8 */
     } else {
       pinMode(SOC_GPIO_PIN_TWR2_RADIO_HL, OUTPUT_OPEN_DRAIN);
       digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
@@ -2597,7 +2606,11 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_1) {
-      Serial.println(F("INFO: LilyGO T-TWR rev. 2.1 is detected."));
+      Serial.print(F("INFO: LilyGO T-TWR rev. 2.1 "));
+#if defined(USE_SA8X8)
+      Serial.print(controller.getBand() == Band::VHF ? "VHF " : "UHF ");
+#endif /* USE_SA8X8 */
+      Serial.println(F("is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else if (esp32_board == ESP32_HELTEC_TRACKER) {
