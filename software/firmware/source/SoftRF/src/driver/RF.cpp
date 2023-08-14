@@ -2406,7 +2406,7 @@ static void sa8x8_setup()
   PacketBuffer.clean();
 
   APRS_init();
-  APRS_setCallsign("NOCALL", 0);
+  APRS_setCallsign("NOCALL", 0 /* 11 - balloons, aircraft, spacecraft, etc */ );
   APRS_setPath1("WIDE1", 1);
   APRS_setPreamble(aprs_preamble);
   APRS_setTail(aprs_tail);

@@ -34,8 +34,8 @@
 
 #define APRS_AIR_TIME        3000  /* 3 s */
 
-#define APRS_TX_INTERVAL_MIN 20000 /* in ms */ /* TBD */
-#define APRS_TX_INTERVAL_MAX 30000             /* TBD */
+#define APRS_TX_INTERVAL_MIN 60000 /* in ms, no SB support at this time */
+#define APRS_TX_INTERVAL_MAX 80000
 
 typedef struct {
 
