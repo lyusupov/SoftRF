@@ -1335,6 +1335,8 @@ static void ESP32_setup()
       esp32_board = ESP32_LILYGO_T_TWR_V2_1;
       hw_info.revision = 21;
 
+      axp_2xxx.disableDC3();
+
 #if defined(USE_SA8X8)
       if (gpio2_voltage > 2400) {
         controller.setBand(Band::VHF);
@@ -1347,6 +1349,7 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
     }
 
+    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PTT, HIGH);
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_PTT,  INPUT_PULLUP);
     pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLUP);
 
