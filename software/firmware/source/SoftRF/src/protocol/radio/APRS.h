@@ -48,4 +48,21 @@ extern const rf_proto_desc_t aprs_proto_desc;
 bool   aprs_decode(void *, ufo_t *, ufo_t *);
 size_t aprs_encode(void *, ufo_t *);
 
+#if defined(ENABLE_PROL)
+/*
+ * APRS-over-LoRa
+ */
+#define PROL_PAYLOAD_SIZE    AX25_MIN_FRAME_LEN /* TBD */
+
+#define PROL_AIR_TIME        3000  /* 3 s */
+
+#define PROL_TX_INTERVAL_MIN 60000 /* in ms, no SB support at this time */
+#define PROL_TX_INTERVAL_MAX 80000
+
+extern const rf_proto_desc_t prol_proto_desc;
+
+bool   prol_decode(void *, ufo_t *, ufo_t *);
+size_t prol_encode(void *, ufo_t *);
+
+#endif /* ENABLE_PROL */
 #endif /* PROTOCOL_APRS_H */

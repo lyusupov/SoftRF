@@ -255,3 +255,48 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 
   return aprs_proto_desc.payload_size;
 }
+
+#if defined(ENABLE_PROL)
+/*
+ * APRS-over-LoRa
+ */
+const rf_proto_desc_t prol_proto_desc = {
+  "PRoL",
+  .type             = RF_PROTOCOL_APRS,
+  .modulation_type  = RF_MODULATION_TYPE_LORA,
+  .preamble_type    = 0 /* INVALID FOR LORA */,
+  .preamble_size    = 0 /* INVALID FOR LORA */,
+  .syncword         = { 0x12 },  // sx127x default value, valid for PRoL
+  .syncword_size    = 1,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = PROL_PAYLOAD_SIZE,
+  .payload_offset   = 0,
+  .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
+  .crc_size         = 0 /* INVALID FOR LORA */,
+  .bitrate          = DR_SF12 /* CR_5 BW_125 SF_12 */,
+
+  .deviation        = 0 /* INVALID FOR LORA */,
+  .whitening        = RF_WHITENING_NONE,
+  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ, /* TBD */
+
+  .air_time         = PROL_AIR_TIME,
+
+  .tm_type          = RF_TIMING_INTERVAL,
+  .tx_interval_min  = PROL_TX_INTERVAL_MIN,
+  .tx_interval_max  = PROL_TX_INTERVAL_MAX,
+  .slot0            = {0, 0},
+  .slot1            = {0, 0}
+};
+
+bool prol_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+
+  return false;
+}
+
+size_t prol_encode(void *pkt, ufo_t *this_aircraft) {
+
+  return 0 /* prol_proto_desc.payload_size */;
+}
+
+#endif /* ENABLE_PROL */
