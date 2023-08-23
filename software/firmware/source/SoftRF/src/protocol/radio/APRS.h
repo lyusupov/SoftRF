@@ -52,7 +52,7 @@ size_t aprs_encode(void *, ufo_t *);
 /*
  * APRS-over-LoRa
  */
-#define PROL_PAYLOAD_SIZE    120    /* TBD */
+#define PROL_PAYLOAD_SIZE    120   /* TBD */
 
 #define PROL_AIR_TIME        4000  /* 4 s */
 
