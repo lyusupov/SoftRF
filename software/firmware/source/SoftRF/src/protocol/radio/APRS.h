@@ -53,8 +53,9 @@ size_t aprs_encode(void *, ufo_t *);
  * APRS-over-LoRa
  */
 #define PROL_PAYLOAD_SIZE    120   /* TBD */
+#define PROL_PAYLOAD_OFFSET  3
 
-#define PROL_AIR_TIME        4000  /* 4 s */
+#define PROL_AIR_TIME        4600  /* 4.6 s */
 
 #define PROL_TX_INTERVAL_MIN 60000 /* in ms, no SB support at this time */
 #define PROL_TX_INTERVAL_MAX 65500 /* TBD: 80000 */

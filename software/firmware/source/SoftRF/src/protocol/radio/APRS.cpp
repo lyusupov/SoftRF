@@ -271,7 +271,7 @@ const rf_proto_desc_t prol_proto_desc = {
   .net_id           = 0x0000, /* not in use */
   .payload_type     = RF_PAYLOAD_DIRECT,
   .payload_size     = PROL_PAYLOAD_SIZE,
-  .payload_offset   = 0,
+  .payload_offset   = PROL_PAYLOAD_OFFSET,
   .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
   .crc_size         = 0 /* INVALID FOR LORA */,
   .bitrate          = DR_SF12 /* CR_5 BW_125 SF_12 */,
@@ -290,6 +290,67 @@ const rf_proto_desc_t prol_proto_desc = {
 };
 
 bool prol_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
+
+  String tnc2((char *) pkt);
+
+  // Serial.println("APRS RX: " + tnc2);
+
+  int start_val = tnc2.indexOf(">", 0);
+  if (start_val > 3)
+  {
+    String src_call = tnc2.substring(0, start_val);
+    memset(&aprs, 0, sizeof(pbuf_t));
+    aprs.buf_len = 300;
+    aprs.packet_len = tnc2.length();
+    tnc2.toCharArray(&aprs.data[0], aprs.packet_len);
+    int start_info = tnc2.indexOf(":", 0);
+    int end_ssid = tnc2.indexOf(",", 0);
+    int start_dst = tnc2.indexOf(">", 2);
+    int start_dstssid = tnc2.indexOf("-", start_dst);
+    if ((start_dstssid > start_dst) && (start_dstssid < start_dst + 10))
+    {
+        aprs.dstcall_end_or_ssid = &aprs.data[start_dstssid];
+    }
+    else
+    {
+        aprs.dstcall_end_or_ssid = &aprs.data[end_ssid];
+    }
+    aprs.info_start = &aprs.data[start_info + 1];
+    aprs.dstname = &aprs.data[start_dst + 1];
+    aprs.dstname_len = end_ssid - start_dst;
+    aprs.dstcall_end = &aprs.data[end_ssid];
+    aprs.srccall_end = &aprs.data[start_dst];
+
+    if (aprsParse.parse_aprs(&aprs))
+    {
+#if 0 // ndef RASPBERRY_PI
+      Serial.print("lat: "); Serial.println(aprs.lat);
+      Serial.print("lon: "); Serial.println(aprs.lng);
+      Serial.print("alt: "); Serial.println(aprs.altitude);
+      Serial.print("crs: "); Serial.println(aprs.course);
+      Serial.print("spd: "); Serial.println(aprs.speed);
+      Serial.print("id:  "); Serial.println(aprs.ogn_id, HEX);
+#endif
+
+      fop->protocol  = RF_PROTOCOL_APRS;
+
+      fop->addr      = aprs.ogn_id & 0x00FFFFFF;
+      fop->latitude  = aprs.lat;
+      fop->longitude = aprs.lng;
+      fop->altitude  = (float) aprs.altitude;                   /* metres */
+      fop->course    = (aprs.course == 360) ? 0 : (float) aprs.course;
+      fop->speed     = (float) aprs.speed / _GPS_KMPH_PER_KNOT; /* knots  */
+      fop->timestamp = (uint32_t) this_aircraft->timestamp;
+
+      uint8_t XX         = (aprs.ogn_id >> 24) & 0xFF;
+      fop->addr_type     = XX & 0x3;
+      fop->aircraft_type = (XX >> 2) & 0xF;
+      fop->no_track      = (XX >> 6) & 0x1;
+      fop->stealth       = (XX >> 7) & 0x1;
+
+      if (fop->addr) return true;
+    }
+  }
 
   return false;
 }
@@ -324,7 +385,7 @@ size_t prol_encode(void *pkt, ufo_t *this_aircraft) {
   float lon_dec = lon - lon_int;
 
   snprintf(buf, sizeof(buf),
-           "<\xff\x01"
+//           "<\xff\x01"
            "%06X>%s:"
            "/"
            "%02d%02d%02dh"

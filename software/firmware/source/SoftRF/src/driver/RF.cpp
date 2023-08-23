@@ -1062,9 +1062,29 @@ static bool sx12xx_receive()
 
     u1_t size = LMIC.dataLen - LMIC.protocol->payload_offset - LMIC.protocol->crc_size;
 
-    if (size >sizeof(RxBuffer)) {
+    if (size > sizeof(RxBuffer)) {
       size = sizeof(RxBuffer);
     }
+
+#if defined(ENABLE_PROL)
+    if (settings->rf_protocol == RF_PROTOCOL_APRS) {
+      /*
+       * APRS-over-LoRa header
+       */
+      if (LMIC.frame[0] == '<'  &&
+          LMIC.frame[1] == 0xFF &&
+          LMIC.frame[2] == 0x01) {
+        if (size < sizeof(RxBuffer)) {
+          RxBuffer[size  ] = 0;
+        } else {
+          RxBuffer[size-1] = 0;
+        }
+      } else {
+        // Serial.println("RX: invalid PRoL header");
+        return success;
+      }
+    }
+#endif /* ENABLE_PROL */
 
     for (u1_t i=0; i < size; i++) {
         RxBuffer[i] = LMIC.frame[i + LMIC.protocol->payload_offset];
@@ -1328,7 +1348,7 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     }
 
     break;
-#if 0
+#if 1
   case RF_PROTOCOL_APRS:
     /*
      * APRS-over-LoRa header
