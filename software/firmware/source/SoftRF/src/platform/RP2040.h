@@ -230,6 +230,8 @@ struct rst_info {
 #define Serial_setDebugOutput(x) ({})
 #define WIFI_STA_TIMEOUT         20000
 extern WebServer server;
+/* Experimental */
+//#define ENABLE_PROL
 #else
 #define EXCLUDE_WIFI
 #define EXCLUDE_BLUETOOTH

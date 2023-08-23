@@ -296,7 +296,54 @@ bool prol_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
 size_t prol_encode(void *pkt, ufo_t *this_aircraft) {
 
-  return 0 /* prol_proto_desc.payload_size */;
+  char buf[PROL_PAYLOAD_SIZE];
+  uint32_t id = this_aircraft->addr & 0x00FFFFFF;
+
+#if !defined(SOFTRF_ADDRESS)
+  uint8_t addr_type = ADDR_TYPE_ANONYMOUS;
+#else
+  uint8_t addr_type = id == SOFTRF_ADDRESS ? ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
+#endif
+
+  uint8_t acft_type = this_aircraft->aircraft_type > AIRCRAFT_TYPE_STATIC ?
+          AIRCRAFT_TYPE_UNKNOWN : this_aircraft->aircraft_type;
+
+  int course_i   = (int)  this_aircraft->course;
+  int altitude_i = (int) (this_aircraft->altitude * _GPS_FEET_PER_METER);
+
+  uint32_t XX = (this_aircraft->stealth  << 7UL) |
+                (this_aircraft->no_track << 6UL) |
+                (acft_type               << 2UL) |
+                (addr_type                     );
+
+  float lat = this_aircraft->latitude;
+  float lon = this_aircraft->longitude;
+  int   lat_int = (int) lat;
+  float lat_dec = lat - lat_int;
+  int   lon_int = (int) lon;
+  float lon_dec = lon - lon_int;
+
+  snprintf(buf, sizeof(buf),
+           "<\xff\x01"
+           "%06X>%s:"
+           "/"
+           "%02d%02d%02dh"
+           "%02d%05.2f%c"
+           "/"
+           "%03d%05.2f%c"
+           "'"
+           "%03d/%03d/A=%06d !W00! id%08X +000fpm +0.0rot" /* " 7.8dB -1.6kHz gps8x3" */,
+           id, "OGFLR",
+           gnss.time.hour(), gnss.time.minute(), gnss.time.second(),
+           abs(lat_int), fabsf(lat_dec * 60), lat < 0 ? 'S' : 'N',
+           abs(lon_int), fabsf(lon_dec * 60), lon < 0 ? 'W' : 'E',
+           (course_i == 0) ? 360 : course_i,
+           (int) this_aircraft->speed,        /* knots */
+           (altitude_i < 0) ? 0 : altitude_i, /* feet  */
+           id | (XX << 24));
+
+  memcpy((void *) pkt, buf, strlen(buf));
+  return strlen(buf);
 }
 
 #endif /* ENABLE_PROL */

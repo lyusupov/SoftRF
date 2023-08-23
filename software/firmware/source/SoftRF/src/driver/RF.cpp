@@ -299,7 +299,16 @@ byte RF_setup(void)
       case RF_PROTOCOL_FANET:     p = &fanet_proto_desc;  break;
       case RF_PROTOCOL_ADSB_UAT:  p = &uat978_proto_desc; break;
       case RF_PROTOCOL_ADSB_1090: p = &es1090_proto_desc; break;
-      case RF_PROTOCOL_APRS:      p = &aprs_proto_desc;   break;
+      case RF_PROTOCOL_APRS:
+#if defined(ENABLE_PROL)
+        if (rf_chip->type == RF_IC_SX1276 || rf_chip->type == RF_IC_SX1262) {
+          p = &prol_proto_desc;
+        } else
+#endif /* ENABLE_PROL */
+        {
+          p = &aprs_proto_desc;
+        }
+        break;
       case RF_PROTOCOL_LEGACY:
       default:                    p = &legacy_proto_desc; break;
     }
@@ -529,7 +538,15 @@ uint8_t RF_Payload_Size(uint8_t protocol)
     case RF_PROTOCOL_FANET:     return fanet_proto_desc.payload_size;
     case RF_PROTOCOL_ADSB_UAT:  return uat978_proto_desc.payload_size;
     case RF_PROTOCOL_ADSB_1090: return es1090_proto_desc.payload_size;
-    case RF_PROTOCOL_APRS:      return aprs_proto_desc.payload_size;
+    case RF_PROTOCOL_APRS:
+#if defined(ENABLE_PROL)
+      if (rf_chip->type == RF_IC_SX1276 || rf_chip->type == RF_IC_SX1262) {
+        return prol_proto_desc.payload_size;
+      } else
+#endif /* ENABLE_PROL */
+      {
+        return aprs_proto_desc.payload_size;
+      }
     default:                    return 0;
   }
 }
@@ -873,6 +890,12 @@ static void sx12xx_channel(int8_t channel)
       fc = 0;
     }
 
+#if defined(ENABLE_PROL)
+    if (settings->rf_protocol == RF_PROTOCOL_APRS) {
+      frequency = 433775000UL;
+    }
+#endif /* ENABLE_PROL */
+
     /* Actual RF chip's channel registers will be updated before each Tx or Rx session */
     LMIC.freq = frequency + (fc * 1000);
     //LMIC.freq = 868200000UL;
@@ -894,23 +917,30 @@ static void sx12xx_setup()
   switch (settings->rf_protocol)
   {
   case RF_PROTOCOL_OGNTP:
-    LMIC.protocol = &ogntp_proto_desc;
+    LMIC.protocol   = &ogntp_proto_desc;
     protocol_encode = &ogntp_encode;
     protocol_decode = &ogntp_decode;
     break;
   case RF_PROTOCOL_P3I:
-    LMIC.protocol = &p3i_proto_desc;
+    LMIC.protocol   = &p3i_proto_desc;
     protocol_encode = &p3i_encode;
     protocol_decode = &p3i_decode;
     break;
   case RF_PROTOCOL_FANET:
-    LMIC.protocol = &fanet_proto_desc;
+    LMIC.protocol   = &fanet_proto_desc;
     protocol_encode = &fanet_encode;
     protocol_decode = &fanet_decode;
     break;
+#if defined(ENABLE_PROL)
+  case RF_PROTOCOL_APRS:
+    LMIC.protocol   = &prol_proto_desc;
+    protocol_encode = &prol_encode;
+    protocol_decode = &prol_decode;
+    break;
+#endif /* ENABLE_PROL */
   case RF_PROTOCOL_LEGACY:
   default:
-    LMIC.protocol = &legacy_proto_desc;
+    LMIC.protocol   = &legacy_proto_desc;
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
@@ -999,6 +1029,11 @@ static void sx12xx_setvars()
     if (RF_FreqPlan.Bandwidth == RF_RX_BANDWIDTH_SS_250KHZ) {
       LMIC.rps = setBw(LMIC.rps, BW500);
     }
+#if defined(ENABLE_PROL)
+  } else if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_APRS) {
+    LMIC.rps = setCr(LMIC.rps, CR_4_5);
+    LMIC.rps = setBw(LMIC.rps, BW125);
+#endif /* ENABLE_PROL */
   }
 }
 
@@ -1293,6 +1328,16 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     }
 
     break;
+#if 0
+  case RF_PROTOCOL_APRS:
+    /*
+     * APRS-over-LoRa header
+     */
+    LMIC.frame[LMIC.dataLen++] = (u1_t) '<';
+    LMIC.frame[LMIC.dataLen++] = (u1_t) 0xFF;
+    LMIC.frame[LMIC.dataLen++] = (u1_t) 0x01;
+    break;
+#endif
   case RF_PROTOCOL_OGNTP:
   default:
     break;

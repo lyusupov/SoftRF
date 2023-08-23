@@ -52,6 +52,12 @@
 #define MAX_PKT_SIZE  maxof5(LEGACY_PAYLOAD_SIZE, OGNTP_PAYLOAD_SIZE, \
                              P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
                              UAT978_PAYLOAD_SIZE)
+#if defined(ENABLE_PROL)
+#undef  MAX_PKT_SIZE
+#define MAX_PKT_SIZE  maxof2(maxof5(LEGACY_PAYLOAD_SIZE, OGNTP_PAYLOAD_SIZE, \
+                             P3I_PAYLOAD_SIZE, FANET_PAYLOAD_SIZE, \
+                             UAT978_PAYLOAD_SIZE), PROL_PAYLOAD_SIZE)
+#endif /* ENABLE_PROL */
 
 #define RXADDR {0x31, 0xfa , 0xb6} // Address of this device (4 bytes)
 #define TXADDR {0x31, 0xfa , 0xb6} // Address of device to send to (4 bytes)
