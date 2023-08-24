@@ -1,6 +1,6 @@
 /*
- *
  * Protocol_ES1090.h
+ *
  * Decoder for Extended Squitter 1090 MHz ADS-B radio protocol
  * Copyright (C) 2021-2023 Linar Yusupov
  *

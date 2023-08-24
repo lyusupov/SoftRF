@@ -1,5 +1,6 @@
 /*
  * Protocol_Legacy.h
+ *
  * Copyright (C) 2014-2015 Stanislaw Pusep
  * Copyright (C) 2016-2023 Linar Yusupov
  *

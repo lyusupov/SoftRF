@@ -1,5 +1,4 @@
 /*
- *
  * Protocol_FANET.h
  *
  * Encoder and decoder for open FANET radio protocol

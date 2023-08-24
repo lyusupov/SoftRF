@@ -934,8 +934,8 @@ static void sx12xx_setup()
 #if defined(ENABLE_PROL)
   case RF_PROTOCOL_APRS:
     LMIC.protocol   = &prol_proto_desc;
-    protocol_encode = &prol_encode;
-    protocol_decode = &prol_decode;
+    protocol_encode = &aprs_encode;
+    protocol_decode = &aprs_decode;
     break;
 #endif /* ENABLE_PROL */
   case RF_PROTOCOL_LEGACY:
@@ -2334,7 +2334,6 @@ static void ognrf_shutdown()
 #endif /* USE_OGN_RF_DRIVER */
 
 AX25Msg Incoming_APRS_Packet;
-char Outgoing_APRS_Data[160];
 
 #if defined(USE_SA8X8)
 SA818 sa868(&SA8X8_Serial);
@@ -2466,7 +2465,7 @@ static void sa8x8_setup()
   controller.setVolume(1);
 
   protocol_encode = &aprs_encode;
-  protocol_decode = &aprs_decode;
+  protocol_decode = &ax25_decode;
 
   PacketBuffer.clean();
 
@@ -2522,7 +2521,7 @@ static void sa8x8_transmit()
   uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 
-  APRS_sendTNC2Pkt(String(Outgoing_APRS_Data));
+  APRS_sendTNC2Pkt(String((char *) TxBuffer));
 
   do {
     delay(5);

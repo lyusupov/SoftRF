@@ -1,6 +1,6 @@
 /*
- *
  * Protocol_UAT978.h
+ *
  * Decoder for UAT 978 MHz ADS-B radio protocol
  * Copyright (C) 2019-2023 Linar Yusupov
  *
