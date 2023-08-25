@@ -1,6 +1,6 @@
 /*
- *
  * Protocol_P3I.cpp
+ *
  * Encoder and decoder for PilotAware P3I radio protocol
  * Copyright (C) 2017-2023 Linar Yusupov
  *

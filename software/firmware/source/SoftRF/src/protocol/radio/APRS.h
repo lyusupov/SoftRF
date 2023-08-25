@@ -35,7 +35,7 @@
 #define APRS_AIR_TIME        3000  /* 3 s */
 
 #define APRS_TX_INTERVAL_MIN 60000 /* in ms, no SB nor LBT support at this time */
-#define APRS_TX_INTERVAL_MAX 65500 /* TBD: 80000 */
+#define APRS_TX_INTERVAL_MAX 80000
 
 typedef struct {
 
@@ -57,7 +57,7 @@ size_t aprs_encode(void *, ufo_t *);
 #define PROL_AIR_TIME        4600  /* 4.6 s */
 
 #define PROL_TX_INTERVAL_MIN 60000 /* in ms, no SB nor LBT support at this time */
-#define PROL_TX_INTERVAL_MAX 65500 /* TBD: 80000 */
+#define PROL_TX_INTERVAL_MAX 80000
 
 extern const rf_proto_desc_t prol_proto_desc;
 

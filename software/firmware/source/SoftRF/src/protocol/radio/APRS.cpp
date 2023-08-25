@@ -28,6 +28,9 @@
 #include "../../../SoftRF.h"
 #include "../../driver/RF.h"
 
+/*
+ * Classic APRS
+ */
 const rf_proto_desc_t aprs_proto_desc = {
   "APRS",
   .type            = RF_PROTOCOL_APRS,
@@ -55,6 +58,38 @@ const rf_proto_desc_t aprs_proto_desc = {
   .tx_interval_max = APRS_TX_INTERVAL_MAX,
   .slot0           = {0, 0},
   .slot1           = {0, 0}
+};
+
+/*
+ * APRS over LoRa
+ */
+const rf_proto_desc_t prol_proto_desc = {
+  "PRoL",
+  .type             = RF_PROTOCOL_APRS,
+  .modulation_type  = RF_MODULATION_TYPE_LORA,
+  .preamble_type    = 0 /* INVALID FOR LORA */,
+  .preamble_size    = 0 /* INVALID FOR LORA */,
+  .syncword         = { 0x12 },  // sx127x default value, valid for PRoL
+  .syncword_size    = 1,
+  .net_id           = 0x0000, /* not in use */
+  .payload_type     = RF_PAYLOAD_DIRECT,
+  .payload_size     = APRS_PAYLOAD_SIZE,
+  .payload_offset   = PROL_PAYLOAD_OFFSET,
+  .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
+  .crc_size         = 0 /* INVALID FOR LORA */,
+  .bitrate          = DR_SF12 /* CR_5 BW_125 SF_12 */,
+
+  .deviation        = 0 /* INVALID FOR LORA */,
+  .whitening        = RF_WHITENING_NONE,
+  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ, /* TBD */
+
+  .air_time         = PROL_AIR_TIME,
+
+  .tm_type          = RF_TIMING_INTERVAL,
+  .tx_interval_min  = PROL_TX_INTERVAL_MIN,
+  .tx_interval_max  = PROL_TX_INTERVAL_MAX,
+  .slot0            = {0, 0},
+  .slot1            = {0, 0}
 };
 
 static const char *AprsIcon[16] = // Icons for various FLARM acftType's
@@ -194,22 +229,6 @@ bool ax25_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   return aprs_decode((void *) tnc2.c_str(), this_aircraft, fop);
 }
 
-static void nmea_lat(float lat, char *buf)
-{
-  int   lat_int = (int) lat;
-  float lat_dec = lat - lat_int;
-
-  sprintf(buf, "%02d%05.2f%c", abs(lat_int), fabsf(lat_dec * 60), lat < 0 ? 'S' : 'N');
-}
-
-static void nmea_lon(float lon, char *buf)
-{
-  int   lon_int = (int) lon;
-  float lon_dec = lon - lon_int;
-
-  sprintf(buf, "%03d%05.2f%c", abs(lon_int), fabsf(lon_dec * 60), lon < 0 ? 'W' : 'E');
-}
-
 size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 
   char buf[APRS_PAYLOAD_SIZE];
@@ -240,7 +259,6 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   float lon_dec = lon - lon_int;
 
   snprintf(buf, sizeof(buf),
-//           "<\xff\x01"
            "%06X>%s:"
            "/"
            "%02d%02d%02dh"
@@ -258,38 +276,6 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
            (altitude_i < 0) ? 0 : altitude_i, /* feet  */
            id | (XX << 24));
 
-  memcpy((void *) pkt, buf, strlen(buf));
-  return strlen(buf);
+  strcpy((char *) pkt, buf);
+  return strlen(buf) + 1;
 }
-
-/*
- * APRS-over-LoRa
- */
-const rf_proto_desc_t prol_proto_desc = {
-  "PRoL",
-  .type             = RF_PROTOCOL_APRS,
-  .modulation_type  = RF_MODULATION_TYPE_LORA,
-  .preamble_type    = 0 /* INVALID FOR LORA */,
-  .preamble_size    = 0 /* INVALID FOR LORA */,
-  .syncword         = { 0x12 },  // sx127x default value, valid for PRoL
-  .syncword_size    = 1,
-  .net_id           = 0x0000, /* not in use */
-  .payload_type     = RF_PAYLOAD_DIRECT,
-  .payload_size     = APRS_PAYLOAD_SIZE,
-  .payload_offset   = PROL_PAYLOAD_OFFSET,
-  .crc_type         = RF_CHECKSUM_TYPE_NONE, /* LoRa packet has built-in CRC */
-  .crc_size         = 0 /* INVALID FOR LORA */,
-  .bitrate          = DR_SF12 /* CR_5 BW_125 SF_12 */,
-
-  .deviation        = 0 /* INVALID FOR LORA */,
-  .whitening        = RF_WHITENING_NONE,
-  .bandwidth        = RF_RX_BANDWIDTH_SS_125KHZ, /* TBD */
-
-  .air_time         = PROL_AIR_TIME,
-
-  .tm_type          = RF_TIMING_INTERVAL,
-  .tx_interval_min  = PROL_TX_INTERVAL_MIN,
-  .tx_interval_max  = PROL_TX_INTERVAL_MAX,
-  .slot0            = {0, 0},
-  .slot1            = {0, 0}
-};

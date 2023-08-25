@@ -137,8 +137,8 @@ typedef struct RF_PROTOCOL {
     uint16_t   air_time;
 
     uint8_t    tm_type;
-    uint16_t   tx_interval_min;
-    uint16_t   tx_interval_max;
+    uint32_t   tx_interval_min;
+    uint32_t   tx_interval_max;
     tslot_t    slot0;
     tslot_t    slot1;
 } rf_proto_desc_t;

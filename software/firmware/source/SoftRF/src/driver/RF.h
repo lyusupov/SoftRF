@@ -102,10 +102,10 @@ typedef struct Slot_descr_struct {
 } Slot_descr_t;
 
 typedef struct Slots_descr_struct {
-  uint16_t      interval_min;
-  uint16_t      interval_max;
-  uint16_t      interval_mid;
-  uint16_t      adj;
+  uint32_t      interval_min;
+  uint32_t      interval_max;
+  uint32_t      interval_mid;
+  uint32_t      adj;
   uint16_t      air_time;
   Slot_descr_t  s0;
   Slot_descr_t  s1;

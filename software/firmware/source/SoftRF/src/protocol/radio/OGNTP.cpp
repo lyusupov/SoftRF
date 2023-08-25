@@ -1,6 +1,6 @@
 /*
- *
  * Protocol_OGNTP.cpp
+ *
  * Encoder and decoder for Open Glider Network tracker radio protocol
  * Copyright (C) 2017-2023 Linar Yusupov
  *
