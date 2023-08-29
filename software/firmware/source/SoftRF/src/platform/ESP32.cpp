@@ -1079,9 +1079,6 @@ static void ESP32_setup()
       // DCDC1 1500~3400mV, IMAX=2A
       axp_2xxx.setDC1Voltage(3300); // WROOM, OLED
 
-      axp_2xxx.setDC3Voltage  (3400); // V2.0 - SA868, NeoPixel
-      axp_2xxx.setALDO3Voltage(3300); // V2.1 - SA868, NeoPixel
-
       // ALDO 500~3500V, 100mV/step, IMAX=300mA
       axp_2xxx.setALDO2Voltage(3300); // micro-SD
       axp_2xxx.setALDO4Voltage(3300); // GNSS, AXP2101 power-on value: 2900
@@ -1089,8 +1086,6 @@ static void ESP32_setup()
       axp_2xxx.setBLDO1Voltage(3300); // Mic
 
       // axp_2xxx.enableDC1();
-      axp_2xxx.enableDC3();   // V2.0
-      axp_2xxx.enableALDO3(); // V2.1
 
       axp_2xxx.enableALDO2();
       axp_2xxx.enableALDO4();
@@ -1335,7 +1330,8 @@ static void ESP32_setup()
       esp32_board = ESP32_LILYGO_T_TWR_V2_1;
       hw_info.revision = 21;
 
-      axp_2xxx.disableDC3();
+      axp_2xxx.setALDO3Voltage(3300); // V2.1 - SA868, NeoPixel
+      axp_2xxx.enableALDO3();
 
 #if defined(USE_SA8X8)
       if (gpio2_voltage > 2400) {
@@ -1345,6 +1341,9 @@ static void ESP32_setup()
       }
 #endif /* USE_SA8X8 */
     } else {
+      axp_2xxx.setDC3Voltage  (3400); // V2.0 - SA868, NeoPixel
+      axp_2xxx.enableDC3();
+
       pinMode(SOC_GPIO_PIN_TWR2_RADIO_HL, OUTPUT_OPEN_DRAIN);
       digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
     }
