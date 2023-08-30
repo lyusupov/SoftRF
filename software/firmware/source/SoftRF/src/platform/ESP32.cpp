@@ -1092,6 +1092,9 @@ static void ESP32_setup()
 
       axp_2xxx.enableBLDO1();
 
+      axp_2xxx.disableALDO3();
+      axp_2xxx.disableDC3();
+
       axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
 
       pinMode(SOC_GPIO_PIN_TWR2_PMU_IRQ, INPUT /* INPUT_PULLUP */);

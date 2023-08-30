@@ -60,7 +60,7 @@
 
   Version:        1
   Mode:           Normal, UAV
-  Protocol:       Legacy, OGNTP, P3I, FANET, UAT, 1090ES
+  Protocol:       Legacy, OGNTP, P3I, FANET, UAT, 1090ES, PRoL
   Band:           EU, US/CA, AU, NZ, RU, CN, UK, IN, IL, KR
   Aircraft:       Glider, Towplane, Powered, Helicopter, UAV, Hangglider,
                   Paraglider, Balloon, Static
@@ -140,7 +140,7 @@ enum
 	SOFTRF_PROTOCOL_ADSB_1090, /* ADS-B 1090ES */
 	SOFTRF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
 	SOFTRF_PROTOCOL_FANET,     /* Skytraxx */
-	SOFTRF_PROTOCOL_APRS,      /* Ham Radio */
+	SOFTRF_PROTOCOL_APRS,      /* Ham's 'classic' APRS and 'APRS over LoRa' */
 	/* Volunteer contributors are welcome */
 	SOFTRF_PROTOCOL_EID,       /* UAS eID */
 	SOFTRF_PROTOCOL_GOTENNA,   /* goTenna Mesh */
