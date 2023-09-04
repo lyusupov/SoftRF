@@ -60,16 +60,17 @@ extern "C" int S3_i2s_mclk_quirk(int, uint16_t *, uint16_t *, uint16_t *);
 
 #define IMPLEMENTATION FIFO
 
-#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
-#include "cppQueue.h"
-cppQueue adcq(sizeof(int8_t), 19200, IMPLEMENTATION); // Instantiate queue
-#endif
-
 #ifndef RTC_MODULE_TAG
 #define RTC_MODULE_TAG "RTC_MODULE"
 #endif
 
 #if defined(ESP32)
+
+#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "cppQueue.h"
+cppQueue adcq(sizeof(int8_t), 19200, IMPLEMENTATION); // Instantiate queue
+#endif
+
 #ifdef I2S_INTERNAL
 #define ADC_PATT_LEN_MAX (16)
 #define ADC_CHECK_UNIT(unit) RTC_MODULE_CHECK(adc_unit < ADC_UNIT_2, "ADC unit error, only support ADC1 for now", ESP_ERR_INVALID_ARG)
@@ -1001,6 +1002,7 @@ long lastVrms = 0;
 bool VrmsFlag = false;
 bool sqlActive = false;
 
+#if defined(ESP32)
 void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
 {
   int mV;
@@ -1240,3 +1242,4 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
 #endif
   }
 }
+#endif /* ESP32 */
