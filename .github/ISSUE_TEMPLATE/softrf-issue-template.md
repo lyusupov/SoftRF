@@ -24,9 +24,11 @@ Recommended:
 
 - [ ]   Standalone
 - [ ]   Badge
+- [ ]   Prime Mark III
 - [ ]   Prime Mark II
 - [ ]   Dongle
 - [ ]   SkyView EZ
+- [ ]   SkyView Pico
 - [ ]   Uni
 - [ ]   Mini
 <!-- - [ ]   Bracelet -->
