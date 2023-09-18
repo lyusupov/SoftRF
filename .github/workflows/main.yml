@@ -30,7 +30,7 @@ jobs:
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
-            'raspberry',
+            # 'raspberry',
             'CubeCell:CubeCell:CubeCell-GPS',
             'CubeCell:CubeCell:CubeCell-Board-PRO',
             'adafruit:nrf52:pca10056',
