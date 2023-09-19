@@ -112,7 +112,7 @@ enum RP2040_board_id {
 #define SOC_GPIO_PIN_SMPS_W   (33u) // Pico W (CYW43 GPIO 1)
 #define SOC_GPIO_PIN_VBUS_W   (34u) // Pico W (CYW43 GPIO 2)
 
-#define EXCLUDE_AUDIO               // pending
+//#define EXCLUDE_AUDIO
 
 #define SOC_GPIO_PIN_PWM_OUT  (3u)
 
@@ -138,7 +138,7 @@ enum RP2040_board_id {
 #if !defined(EXCLUDE_AUDIO)
 //#define USE_EXT_I2S_DAC
 #endif /* EXCLUDE_AUDIO */
-#if defined(USE_TINYUSB) && !defined(USE_EXT_I2S_DAC)
+#if defined(USE_TINYUSB) // && !defined(USE_EXT_I2S_DAC)
 #define USE_USB_HOST
 #endif /* USE_TINYUSB */
 

@@ -140,7 +140,7 @@
 //#define USE_ADAFRUIT_MSC
 
 // Audio
-#define EXCLUDE_AUDIO            // pending
+//#define EXCLUDE_AUDIO
 #if !defined(EXCLUDE_AUDIO)
 //#define USE_EXT_I2S_DAC
 #endif /* EXCLUDE_AUDIO */
