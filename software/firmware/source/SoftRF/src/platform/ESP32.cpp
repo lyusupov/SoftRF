@@ -637,6 +637,10 @@ static void ESP32_setup()
         axp_2xxx.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
         axp_2xxx.clearIrqStatus();
 
+        axp_2xxx.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+        axp_2xxx.disableTSPinMeasure();
+        axp_2xxx.enableBattVoltageMeasure();
+
         axp_2xxx.enableIRQ(XPOWERS_AXP2101_PKEY_LONG_IRQ |
                            XPOWERS_AXP2101_PKEY_SHORT_IRQ);
 
