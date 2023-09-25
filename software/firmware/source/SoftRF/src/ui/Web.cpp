@@ -188,7 +188,7 @@ void handleSettings() {
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
-<!-- <option %s value='%d'>%s</option> -->\
+<option %s value='%d'>%s</option>\
 </select>\
 </td>\
 </tr>"),

@@ -117,7 +117,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_IMU
 
 /* Experimental */
-//#define ENABLE_PROL
+#define ENABLE_PROL
 
 #if defined(pgm_read_float_aligned)
 #define pgm_read_float(addr)  pgm_read_float_aligned(addr)
