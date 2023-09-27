@@ -252,11 +252,23 @@ static void ESP32_Bluetooth_setup()
 
       // Start advertising
       BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+#if 0
       pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID16));
       pAdvertising->addServiceUUID(BLEUUID(UUID16_SVC_BATTERY));
 #if defined(USE_BLE_MIDI)
       pAdvertising->addServiceUUID(BLEUUID(MIDI_SERVICE_UUID));
 #endif /* USE_BLE_MIDI */
+#else
+      /* work around https://github.com/espressif/arduino-esp32/issues/6750 */
+      BLEAdvertisementData BLEAdvData;
+      BLEAdvData.setFlags(0x06);
+      BLEAdvData.setCompleteServices(BLEUUID(UART_SERVICE_UUID16));
+      BLEAdvData.setCompleteServices(BLEUUID(UUID16_SVC_BATTERY));
+#if defined(USE_BLE_MIDI)
+      BLEAdvData.setCompleteServices(BLEUUID(MIDI_SERVICE_UUID));
+#endif /* USE_BLE_MIDI */
+      pAdvertising->setAdvertisementData(BLEAdvData);
+#endif
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);
