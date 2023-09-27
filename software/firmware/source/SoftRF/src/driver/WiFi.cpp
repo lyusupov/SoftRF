@@ -70,6 +70,10 @@ char UDPpacketBuffer[256]; // buffer to hold incoming and outgoing packets
 static unsigned long WiFi_No_Clients_Time_ms = 0;
 #endif
 
+#if defined(ENABLE_REMOTE_ID)
+#include "../protocol/radio/RemoteID.h"
+static unsigned long RID_Time_Marker = 0;
+#endif /* ENABLE_REMOTE_ID */
 
 size_t Raw_Receive_UDP(uint8_t *buf)
 {
@@ -187,6 +191,34 @@ void WiFi_setup()
 #if defined(POWER_SAVING_WIFI_TIMEOUT)
   WiFi_No_Clients_Time_ms = millis();
 #endif
+
+#if defined(ENABLE_REMOTE_ID)
+  memset(&utm_parameters,0,sizeof(utm_parameters));
+
+#if 0
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-1234ABCDEFGH");
+#elif defined(ARDUINO_ARCH_ESP32)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP32");
+#elif defined(ARDUINO_ARCH_ESP8266)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP8266");
+#elif defined(ARDUINO_ARCH_RP2040)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-PICOW");
+#else
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-UNKNOWN");
+#endif
+
+  utm_parameters.region      = 1;
+  utm_parameters.EU_category = 1;
+  utm_parameters.EU_class    = 5;
+
+  squitter.init(&utm_parameters);
+
+  memset(&utm_data,0,sizeof(utm_data));
+
+  utm_data.satellites = 8;
+
+  RID_Time_Marker = millis();
+#endif /* ENABLE_REMOTE_ID */
 }
 
 void WiFi_loop()
@@ -214,6 +246,17 @@ void WiFi_loop()
     }
   }
 #endif
+
+#if defined(ENABLE_REMOTE_ID)
+  if (WiFi.getMode() == WIFI_AP && isValidFix()) {
+    if ((millis() - RID_Time_Marker) > (RID_TX_INTERVAL_MIN + RID_TX_INTERVAL_MAX)/2) {
+      rid_encode((void *) &utm_data, &ThisAircraft);
+      squitter.transmit(&utm_data);
+
+      RID_Time_Marker = millis();
+    }
+  }
+#endif /* ENABLE_REMOTE_ID */
 }
 
 void WiFi_fini()
