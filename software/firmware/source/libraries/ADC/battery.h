@@ -8,6 +8,6 @@
 #define NO_OF_SAMPLES 32  // we do some multisampling to get better values
 
 uint16_t read_voltage(void);
-void calibrate_voltage(adc1_channel_t);
+void calibrate_voltage(adc1_channel_t, adc_atten_t atten = ADC_ATTEN_DB_11);
 
 #endif

@@ -319,7 +319,7 @@ void AFSK_hw_init(void)
   adc1_config_width(ADC_WIDTH_BIT_12);
 
   uint64_t mac = ESP.getEfuseMac();
-  if (mac == 0x7475ac188534ULL || mac == 0x58f8ab188534ULL) {
+  if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
     /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
     adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
   } else {

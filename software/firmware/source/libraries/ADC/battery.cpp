@@ -36,10 +36,9 @@ static adc1_channel_t adc_channel = ADC1_GPIO1_CHANNEL;
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
-static const adc_atten_t atten = ADC_ATTEN_DB_11;
 static const adc_unit_t unit = ADC_UNIT_1;
 
-void calibrate_voltage(adc1_channel_t channel) {
+void calibrate_voltage(adc1_channel_t channel, adc_atten_t atten) {
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
   adc_bits_width_t width = ADC_WIDTH_BIT_12;

@@ -482,6 +482,10 @@ static void ESP32_setup()
     default:
       esp32_board   = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
+      /* specific to psram_type=opi enabled custom build */
+      hw_info.model  = SOFTRF_MODEL_HAM;
+      break;
     /* Both Ai-Thinker ESP-S3-12K and LilyGO S3 Core have QSPI PSRAM onboard */
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
@@ -2617,7 +2621,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
       uint64_t mac = ESP.getEfuseMac();
       Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
-      if (mac == 0x7475ac188534ULL || mac == 0x58f8ab188534ULL) {
+      if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
         Serial.println(F("INFO: Audio ADC workaround has been applied."));
       }
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3343,9 +3347,14 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
     if (esp32_board == ESP32_HELTEC_TRACKER    ||
-        esp32_board == ESP32_LILYGO_T_TWR_V2_0 ||
-        esp32_board == ESP32_LILYGO_T_TWR_V2_1 /* TBD */) {
-      calibrate_voltage(ADC1_GPIO1_CHANNEL);
+        esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+      if (ESP.getEfuseMac() == 0x58f8ab188534ULL) {
+        calibrate_voltage(ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
+      } else {
+        calibrate_voltage(ADC1_GPIO1_CHANNEL);
+      }
+    } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_1) {
+      calibrate_voltage(ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
     } else {
       calibrate_voltage(ADC1_GPIO2_CHANNEL);
     }
