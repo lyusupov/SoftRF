@@ -116,6 +116,8 @@ extern AX25Msg Incoming_APRS_Packet;
 struct pbuf_t aprs;
 ParseAPRS aprsParse;
 
+char APRS_FromCall[7] = "";
+
 int packet2Raw(String &tnc2, AX25Msg &Packet) {
   if (Packet.len < 5) return 0;
 
@@ -232,8 +234,11 @@ bool ax25_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
 
   char buf[APRS_PAYLOAD_SIZE];
+  char id_s[7];
   uint32_t id = this_aircraft->addr & 0x00FFFFFF;
   const char *ToCall = "OGFLR"; // TODO: make use of assigned APSRFx value
+
+  snprintf(id_s, sizeof(id_s), "%06X", id);
 
 #if !defined(SOFTRF_ADDRESS)
   uint8_t addr_type = ADDR_TYPE_ANONYMOUS;
@@ -260,7 +265,7 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   float lon_dec = lon - lon_int;
 
   snprintf(buf, sizeof(buf),
-           "%06X>%s:"
+           "%s>%s:"
            "/"
            "%02d%02d%02dh"
            "%02d%05.2f%c"
@@ -268,7 +273,8 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
            "%03d%05.2f%c"
            "'"
            "%03d/%03d/A=%06d !W00! id%08X +000fpm +0.0rot" /* " 7.8dB -1.6kHz gps8x3" */,
-           id, ToCall,
+           strlen(APRS_FromCall) == 0 ? id_s : APRS_FromCall,
+           ToCall,
            gnss.time.hour(), gnss.time.minute(), gnss.time.second(),
            abs(lat_int), fabsf(lat_dec * 60), lat < 0 ? 'S' : 'N',
            abs(lon_int), fabsf(lon_dec * 60), lon < 0 ? 'W' : 'E',

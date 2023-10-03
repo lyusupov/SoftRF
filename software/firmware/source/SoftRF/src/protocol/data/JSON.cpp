@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_RP2040)
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || \
+    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ESP32)
 
 #include "../../system/SoC.h"
 #include <TinyGPS++.h>
@@ -37,7 +38,7 @@
 extern eeprom_t eeprom_block;
 extern settings_t *settings;
 
-#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_RP2040 */
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ..._RP2040 || ..._ESP32 */
 
 #if defined(RASPBERRY_PI)
 
@@ -668,7 +669,8 @@ void parseUISettings(JsonObject& root)
 }
 #endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_RP2040)
+#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || \
+    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ESP32)
 
 void parseSettings(JsonObject& root)
 {
@@ -901,4 +903,4 @@ void parseSettings(JsonObject& root)
 #endif
 }
 
-#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_RP2040 */
+#endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 || ..._RP2040 || ..._ESP32 */

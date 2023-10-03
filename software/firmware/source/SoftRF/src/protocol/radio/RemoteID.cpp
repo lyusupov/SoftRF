@@ -27,7 +27,6 @@
 #include <id_open.h>
 
 ID_OpenDrone          squitter;
-UTM_Utilities         utm_utils;
 
 struct UTM_parameters utm_parameters;
 struct UTM_data       utm_data;

@@ -215,6 +215,12 @@ RTC_Date fw_build_date_time     = RTC_Date(__DATE__, __TIME__);
 // file system object from SdFat
 FatVolume fatfs;
 
+#include "../protocol/data/JSON.h"
+
+#define ESP32_JSON_BUFFER_SIZE  1024
+
+StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> ESP32_jsonBuffer;
+
 ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
@@ -2501,6 +2507,41 @@ static bool ESP32_EEPROM_begin(size_t size)
 static void ESP32_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    if ( ESP32_has_spiflash && FATFS_is_mounted ) {
+      File32 file = fatfs.open("/settings.json", FILE_READ);
+
+      if (file) {
+        // StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+
+        JsonObject &root = ESP32_jsonBuffer.parseObject(file);
+
+        if (root.success()) {
+          JsonVariant msg_class = root["class"];
+
+          if (msg_class.success()) {
+            const char *msg_class_s = msg_class.as<char*>();
+
+            if (!strcmp(msg_class_s,"SOFTRF")) {
+              parseSettings  (root);
+
+#if defined(USE_SA8X8)
+              JsonVariant fromcall = root["fromcall"];
+              if (fromcall.success()) {
+                const char * fromcall_s = fromcall.as<char*>();
+                if (strlen(fromcall_s) <= 6) {
+                  strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
+                }
+              }
+#endif /* USE_SA8X8 */
+            }
+          }
+        }
+        file.close();
+      }
+    }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {

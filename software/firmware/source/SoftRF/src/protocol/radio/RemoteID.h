@@ -37,7 +37,6 @@ size_t rid_encode(void *, ufo_t *);
 #include <id_open.h>
 
 extern ID_OpenDrone          squitter;
-extern UTM_Utilities         utm_utils;
 extern struct UTM_parameters utm_parameters;
 extern struct UTM_data       utm_data;
 
