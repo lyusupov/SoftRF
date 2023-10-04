@@ -2512,7 +2512,7 @@ static void ESP32_EEPROM_extension(int cmd)
       File32 file = fatfs.open("/settings.json", FILE_READ);
 
       if (file) {
-        // StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+        // StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> ESP32_jsonBuffer;
 
         JsonObject &root = ESP32_jsonBuffer.parseObject(file);
 
@@ -2525,12 +2525,36 @@ static void ESP32_EEPROM_extension(int cmd)
             if (!strcmp(msg_class_s,"SOFTRF")) {
               parseSettings  (root);
 
-#if defined(USE_SA8X8)
+              JsonVariant units = root["units"];
+              if (units.success()) {
+                const char * units_s = units.as<char*>();
+                if (!strcmp(units_s,"METRIC")) {
+                  ui_settings.units = UNITS_METRIC;
+                } else if (!strcmp(units_s,"IMPERIAL")) {
+                  ui_settings.units = UNITS_IMPERIAL;
+                } else if (!strcmp(units_s,"MIXED")) {
+                  ui_settings.units = UNITS_MIXED;
+                }
+              }
+
+#if defined(USE_SA8X8) || defined(ENABLE_PROL)
               JsonVariant fromcall = root["fromcall"];
               if (fromcall.success()) {
                 const char * fromcall_s = fromcall.as<char*>();
                 if (strlen(fromcall_s) <= 6) {
                   strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
+                }
+              }
+#endif /* USE_SA8X8 || ENABLE_PROL */
+
+#if defined(USE_SA8X8)
+              JsonVariant sa868 = root["sa868"];
+              if (sa868.success()) {
+                const char * sa868_s = sa868.as<char*>();
+                if (!strcmp(sa868_s,"VHF")) {
+                  controller.setBand(Band::VHF);
+                } else if (!strcmp(sa868_s,"UHF")) {
+                  controller.setBand(Band::UHF);
                 }
               }
 #endif /* USE_SA8X8 */
