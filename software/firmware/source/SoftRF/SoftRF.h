@@ -39,6 +39,8 @@
 #define LED_EXPIRATION_TIME     5 /* seconds */
 #define EXPORT_EXPIRATION_TIME  5 /* seconds */
 
+#define SETTINGS_JSON_PATH      "/settings.json"
+
 /*
  * If you need for SoftRF to operate in wireless
  * client mode - specify your local AP's SSID/PSK:

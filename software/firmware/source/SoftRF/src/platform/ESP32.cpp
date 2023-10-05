@@ -2509,7 +2509,7 @@ static void ESP32_EEPROM_extension(int cmd)
   if (cmd == EEPROM_EXT_LOAD) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
     if ( ESP32_has_spiflash && FATFS_is_mounted ) {
-      File32 file = fatfs.open("/settings.json", FILE_READ);
+      File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
       if (file) {
         // StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> ESP32_jsonBuffer;

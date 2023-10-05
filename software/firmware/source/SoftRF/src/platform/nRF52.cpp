@@ -1189,7 +1189,7 @@ static void nRF52_EEPROM_extension(int cmd)
       }
 
       if ( nRF52_has_spiflash && FATFS_is_mounted ) {
-        File32 file = fatfs.open("/settings.json", FILE_READ);
+        File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
         if (file) {
           // StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
