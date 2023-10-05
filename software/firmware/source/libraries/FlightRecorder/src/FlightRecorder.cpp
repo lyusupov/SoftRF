@@ -206,6 +206,25 @@ static bool readConfig(const char* iniFilename, config_t &config, SdFat *SD_ptr 
   config.liftoff_threshold = CONFIG::CONFIG_DEFAULT_LIFTOFF_THRESHOLD;
   config.log_interval = CONFIG::CONFIG_DEFAULT_LOG_INTERVAL;
 
+  if (!SD_ptr->exists(iniFilename)) {
+    File32 file = SD_ptr->open(iniFilename, FILE_WRITE);
+    if (file) {
+      file.println("[igcheader]");
+      file.println("Pilot=Winnie Pooh");
+      file.println("CoPilot=Mary Poppins");
+      file.println("Type=Duo Discus");
+      file.println("Registration=RF-012345");
+      file.println("CallSign=XXX");
+      file.println("Class=Two Seater");
+      file.println("");
+      file.println("[config]");
+      file.println("liftoff_detection=true");
+      file.println("liftoff_threshold=1.5");
+      file.println("log_interval=5");
+      file.close();
+    }
+  }
+
   IniFile ini(iniFilename);
   if (!ini.open(SD_ptr)) 
   {
