@@ -348,6 +348,10 @@ void AFSK_init(Afsk *afsk)
   // Set phase increment
   afsk->phaseInc = MARK_INC;
 
+#if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
+  adcq.begin(); // allocate memory for queue
+#endif
+
   // Initialise FIFO buffers
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   fifo_init(&afsk->delayFifo, (uint8_t *)afsk->delayBuf, sizeof(afsk->delayBuf));

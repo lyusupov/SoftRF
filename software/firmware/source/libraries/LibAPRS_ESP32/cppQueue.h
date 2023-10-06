@@ -52,6 +52,10 @@ public:
 	**/
 	cppQueue(const uint16_t size_rec, const uint16_t nb_recs=20, const cppQueueType type=FIFO, const bool overwrite=false);
 
+	/*!	\brief Allocate memory for queue
+	**/
+	void begin(void);
+
 	/*!	\brief cppQueue destructor: release dynamically allocated queue
 	**/
 	~cppQueue();

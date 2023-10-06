@@ -48,8 +48,14 @@ cppQueue::cppQueue(const uint16_t size_rec, const uint16_t nb_recs, const cppQue
 	ovw = overwrite;
 
 	init = 0;
+}
 
+void cppQueue::begin(void)
+{
 	//if (queue)	{ free(queue); }	// Free existing data (if any)
+
+	const uint32_t size = rec_nb * rec_sz;
+
 	queue = (uint8_t *) malloc(size);
 
 	if (queue == NULL)	{ queue_sz = 0; return; }	// Return here if cppQueue not allocated
