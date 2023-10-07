@@ -336,7 +336,7 @@ extern bool input_HPF;
 
 extern Afsk *AFSK_modem;
 
-void AFSK_init(Afsk *afsk);
+void AFSK_init(Afsk *afsk, bool rx);
 void AFSK_transmit(char *buffer, size_t size);
 void AFSK_poll(Afsk *afsk);
 

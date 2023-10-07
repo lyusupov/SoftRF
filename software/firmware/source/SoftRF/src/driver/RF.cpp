@@ -2446,7 +2446,8 @@ static void sa8x8_setup()
     }
   }
 
-  byte sq = settings->power_save & POWER_SAVE_NORECEIVE ? 8 : 1;
+  bool rx = (settings->power_save & POWER_SAVE_NORECEIVE ? false : true);
+  byte sq = rx ? 1: 8;
 
   if (controller.getModel() == Model::SA_868) {
     controller.setGroup(settings->txpower == RF_TX_POWER_FULL ? 0 : 1,
@@ -2467,9 +2468,12 @@ static void sa8x8_setup()
   protocol_encode = &aprs_encode;
   protocol_decode = &ax25_decode;
 
-  PacketBuffer.clean();
+  if (rx) {
+    PacketBuffer.begin();
+    PacketBuffer.clean();
+  }
 
-  APRS_init();
+  APRS_init(rx);
   APRS_setCallsign("NOCALL", 0 /* 11 - balloons, aircraft, spacecraft, etc */ );
   APRS_setPath1("WIDE1", 1);
   APRS_setPreamble(aprs_preamble);
@@ -2478,8 +2482,7 @@ static void sa8x8_setup()
 
   if (hw_info.model == SOFTRF_MODEL_HAM) {
 #if defined(USE_NEOPIXELBUS_LIBRARY)
-    TWR2_Pixel.SetPixelColor(0, settings->power_save & POWER_SAVE_NORECEIVE ?
-                             LED_COLOR_BLACK : LED_COLOR_GREEN);
+    TWR2_Pixel.SetPixelColor(0, rx ? LED_COLOR_GREEN: LED_COLOR_BLACK);
     TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
   }
@@ -2490,7 +2493,9 @@ static void sa8x8_setup()
   // if you want to, this is how you do it:
   // APRS_setDestination("APZMDM", 0);
 
-  AFSK_TimerEnable(true);
+  if (rx) {
+    AFSK_TimerEnable(true);
+  }
 }
 
 static bool sa8x8_receive()
@@ -2528,7 +2533,9 @@ static void sa8x8_transmit()
     AFSK_Poll(true, settings->txpower == RF_TX_POWER_FULL ? HIGH : LOW, powerPin);
   } while (AFSK_modem->sending);
 
-  AFSK_TimerEnable(true);
+  if ((settings->power_save & POWER_SAVE_NORECEIVE) == 0) {
+    AFSK_TimerEnable(true);
+  }
 }
 
 static void sa8x8_shutdown()

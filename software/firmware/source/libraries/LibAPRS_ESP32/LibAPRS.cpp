@@ -74,9 +74,9 @@ void aprs_msg_callback(struct AX25Msg *msg) {
 }
 #endif /* RASPBERRY_PI && !USE_SA8X8 */
 
-void APRS_init()
+void APRS_init(bool rx)
 {
-    AFSK_init(&modem);
+    AFSK_init(&modem, rx);
     ax25_init(&AX25, aprs_msg_callback);
 }
 

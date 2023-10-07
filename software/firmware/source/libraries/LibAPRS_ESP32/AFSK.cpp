@@ -340,7 +340,7 @@ void AFSK_hw_init(void)
 #endif /* ESP32 */
 }
 
-void AFSK_init(Afsk *afsk)
+void AFSK_init(Afsk *afsk, bool rx)
 {
   // Allocate modem struct memory
   memset(afsk, 0, sizeof(*afsk));
@@ -349,7 +349,9 @@ void AFSK_init(Afsk *afsk)
   afsk->phaseInc = MARK_INC;
 
 #if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
-  adcq.begin(); // allocate memory for queue
+  if (rx) {
+    adcq.begin(); // allocate memory for queue
+  }
 #endif
 
   // Initialise FIFO buffers

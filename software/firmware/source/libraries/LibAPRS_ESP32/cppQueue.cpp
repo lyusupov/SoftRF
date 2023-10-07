@@ -10,6 +10,9 @@
 #include <stdlib.h>
 
 #include "cppQueue.h"
+#if defined(ESP32)
+#include <esp32-hal.h>
+#endif /* ESP32 */
 /****************************************************************/
 
 
@@ -40,8 +43,6 @@ static inline void __attribute__((nonnull, always_inline)) dec_idx(uint16_t * co
 
 cppQueue::cppQueue(const uint16_t size_rec, const uint16_t nb_recs, const cppQueueType type, const bool overwrite)
 {
-	const uint32_t size = nb_recs * size_rec;
-
 	rec_nb = nb_recs;
 	rec_sz = size_rec;
 	impl = type;
@@ -56,7 +57,14 @@ void cppQueue::begin(void)
 
 	const uint32_t size = rec_nb * rec_sz;
 
-	queue = (uint8_t *) malloc(size);
+#if defined(ESP32)
+	if (psramFound()) {
+	  queue = (uint8_t *) ps_malloc(size);
+	} else
+#endif /* ESP32 */
+	{
+	  queue = (uint8_t *) malloc(size);
+	}
 
 	if (queue == NULL)	{ queue_sz = 0; return; }	// Return here if cppQueue not allocated
 	else				{ queue_sz = size; }
