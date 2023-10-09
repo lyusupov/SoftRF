@@ -132,8 +132,8 @@ jobs:
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.0.0-alpha1 ;
+            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
+            arduino --install-boards esp32:esp32:2.0.14 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
