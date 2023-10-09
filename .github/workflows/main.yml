@@ -43,6 +43,7 @@ jobs:
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
+      ARDUINO_IDE_V2:      2.2.1
       ENERGIA_IDE_VERSION: 1.8.10E23
       BOARD: ${{ matrix.board }}
 
@@ -73,17 +74,24 @@ jobs:
           else if [[ "$BOARD" =~ "raspberry" ]]; then
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
-            else
-              wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-              tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-              rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
-              sudo mv arduino-$ARDUINO_IDE_VERSION /usr/local/share/arduino ;
-              sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
-              if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
-                sudo apt-get install python3-pip ;
-                pip3 install setuptools --user ;
-                pip3 install adafruit-nrfutil --user ;
-                pip3 install intelhex --user ;
+            else if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
+                wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
+                tar xf arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
+                rm arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
+                sudo mv arduino-$ARDUINO_IDE_V2 /usr/local/share/arduino ;
+                sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+              else
+                wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+                tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+                rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
+                sudo mv arduino-$ARDUINO_IDE_VERSION /usr/local/share/arduino ;
+                sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+                if [[ "$BOARD" =~ "adafruit:nrf52:" ]]; then
+                  sudo apt-get install python3-pip ;
+                  pip3 install setuptools --user ;
+                  pip3 install adafruit-nrfutil --user ;
+                  pip3 install intelhex --user ;
+                fi
               fi
             fi
           fi
