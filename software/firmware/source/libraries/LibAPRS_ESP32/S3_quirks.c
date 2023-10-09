@@ -1,6 +1,8 @@
 #if defined(ESP32)
 #include "sdkconfig.h"
 
+#include <Arduino.h>
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "hal/i2s_hal.h"
 #include "esp_err.h"
@@ -12,6 +14,10 @@ static int mclk_calc(i2s_ll_mclk_div_t *cal)
     int ma = 0;
     int mb = 0;
 
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    /* TBD */
+    return -1;
+#else
     cal->mclk_div = I2S_LL_BASE_CLK / MCLK_FREQ;
     cal->a = 1;
     cal->b = 0;
@@ -43,6 +49,7 @@ static int mclk_calc(i2s_ll_mclk_div_t *cal)
             min = abs(mb - ma);
         }
     }
+#endif /* ESP_ARDUINO_VERSION */
 }
 
 int S3_i2s_mclk_quirk(int i2s_num, uint16_t *a, uint16_t *b, uint16_t *c)
@@ -52,6 +59,9 @@ int S3_i2s_mclk_quirk(int i2s_num, uint16_t *a, uint16_t *b, uint16_t *c)
 
     int rval = mclk_calc(cal);
 
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    /* TBD */
+#else
     *a = cal->a;
     *b = cal->b;
     *c = cal->mclk_div;
@@ -60,6 +70,7 @@ int S3_i2s_mclk_quirk(int i2s_num, uint16_t *a, uint16_t *b, uint16_t *c)
     i2s_hal_init(&hal, i2s_num);
 
     i2s_ll_tx_set_clk(hal.dev, cal);
+#endif /* ESP_ARDUINO_VERSION */
 
     return rval;
 }

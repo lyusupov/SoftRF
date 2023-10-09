@@ -22,6 +22,9 @@
 #ifdef ESP32
   #include "driver/i2s.h"
   #include <driver/rtc_io.h>
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  #include <esp_chip_info.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(ARDUINO_ARCH_RP2040) || ARDUINO_ESP8266_MAJOR >= 3
   #include <I2S.h>
 #elif ARDUINO_ESP8266_MAJOR < 3

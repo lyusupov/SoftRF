@@ -92,8 +92,12 @@ void TFT_backlight_init(void)
     int bl_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                  SOC_GPIO_PIN_TDONGLE_TFT_BL : SOC_GPIO_PIN_TWATCH_TFT_BL;
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
     ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+#endif /* ESP_IDF_VERSION_MAJOR */
 }
 
 uint8_t TFT_backlight_getLevel()

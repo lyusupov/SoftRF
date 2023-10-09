@@ -110,7 +110,11 @@ static esp_err_t adc_set_i2s_data_pattern(adc_unit_t adc_unit, int seq_num, adc_
     RTC_MODULE_CHECK((adc1_channel_t)channel < ADC1_CHANNEL_MAX, "ADC1 channel error", ESP_ERR_INVALID_ARG);
   }
   RTC_MODULE_CHECK(bits < ADC_WIDTH_MAX, "ADC bit width error", ESP_ERR_INVALID_ARG);
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  RTC_MODULE_CHECK(atten < SOC_ADC_ATTEN_NUM, "ADC Atten Err", ESP_ERR_INVALID_ARG);
+#else
   RTC_MODULE_CHECK(atten < ADC_ATTEN_MAX, "ADC Atten Err", ESP_ERR_INVALID_ARG);
+#endif /* ESP_IDF_VERSION_MAJOR */
 
   // portENTER_CRITICAL(&rtc_spinlock);
   // Configure pattern table, each 8 bit defines one channel
@@ -272,10 +276,14 @@ hw_timer_t *timer = NULL;
 
 void AFSK_TimerEnable(bool sts)
 {
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+  /* TBD */
+#else
   if (sts == true)
     timerAlarmEnable(timer);
   else
     timerAlarmDisable(timer);
+#endif /* ESP_ARDUINO_VERSION */
 }
 #endif /* !I2S_INTERNAL || CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* ESP32 */
@@ -321,20 +329,24 @@ void AFSK_hw_init(void)
   uint64_t mac = ESP.getEfuseMac();
   if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
     /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
-    adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
+    adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
   } else {
-    adc1_config_channel_atten(SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+    adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
   }
 
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
 
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+  /* TBD */
+#else
   // Start a timer at 9.6kHz to sample the ADC and play the audio on the DAC.
   timer = timerBegin(3, 10, true);                // 80 MHz / 10 = 8MHz hardware clock
   timerAttachInterrupt(timer, &sample_isr, true); // Attaches the handler function to the timer
   timerAlarmWrite(timer, 834, true);              // Interrupts when counter == 834, 9592.3 times a second
 
   // timerAlarmEnable(timer);
+#endif /* ESP_ARDUINO_VERSION */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* I2S_INTERNAL */
 #endif /* ESP32 */
@@ -963,7 +975,7 @@ void IRAM_ATTR sample_isr()
       }
 #endif
       // digitalWrite(4, HIGH);
-      adcVal = adc1_get_raw(SPK_PIN); // Read ADC1_0 From PIN 36(VP)
+      adcVal = adc1_get_raw((adc1_channel_t) SPK_PIN); // Read ADC1_0 From PIN 36(VP)
       // Auto offset level
       offset_new += adcVal;
       offset_count++;

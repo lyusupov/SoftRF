@@ -26,7 +26,7 @@
 #include "../../driver/RF.h"
 
 const rf_proto_desc_t p3i_proto_desc = {
-  "P3I",
+  .name             = {'P','3','I', 0},
   .type             = RF_PROTOCOL_P3I,
   .modulation_type  = RF_MODULATION_TYPE_2FSK,
   .preamble_type    = P3I_PREAMBLE_TYPE,

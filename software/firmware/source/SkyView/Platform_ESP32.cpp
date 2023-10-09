@@ -49,6 +49,11 @@
 #include <SD.h>
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#include <esp_mac.h>
+#include <esp_flash.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
@@ -371,7 +376,13 @@ static void ESP32_setup()
     }
   }
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  size_t flash_size;
+  esp_flash_get_size(NULL, (uint32_t *) &flash_size);
+#else
   size_t flash_size = spi_flash_get_chip_size();
+#endif /* ESP_IDF_VERSION_MAJOR */
+
   size_t min_app_size = flash_size;
 
   esp_partition_iterator_t it;
@@ -868,13 +879,14 @@ static void ESP32_Battery_setup()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   calibrate_voltage(settings->adapter == ADAPTER_TTGO_T5S ?
-                    ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+                    (adc1_channel_t) ADC1_GPIO35_CHANNEL  :
+                    (adc1_channel_t) ADC1_GPIO36_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-  calibrate_voltage(ADC1_GPIO9_CHANNEL); /* TBD */
+  calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL); /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-  calibrate_voltage(ADC1_GPIO3_CHANNEL);
+  calibrate_voltage((adc1_channel_t) ADC1_GPIO3_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-  calibrate_voltage(ADC1_GPIO1_CHANNEL); /* TBD */
+  calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL); /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -909,7 +921,12 @@ static portMUX_TYPE EPD_ident_mutex;
 static ep_model_id ESP32_EPD_ident()
 {
   ep_model_id rval = EP_GDEW027W3; /* default */
+
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  spinlock_initialize(&EPD_ident_mutex);
+#else
   vPortCPUInitializeMutex(&EPD_ident_mutex);
+#endif /* ESP_IDF_VERSION_MAJOR */
 
   digitalWrite(SOC_GPIO_PIN_SS_WS, HIGH);
   pinMode(SOC_GPIO_PIN_SS_WS, OUTPUT);
@@ -1125,10 +1142,16 @@ static int ESP32_WiFi_clients_count()
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+
+    return stations.num;
+#else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
     return infoList.num;
+#endif /* ESP_IDF_VERSION_MAJOR */
   case WIFI_STA:
   default:
     return -1; /* error */

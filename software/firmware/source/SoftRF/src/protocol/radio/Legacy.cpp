@@ -29,7 +29,7 @@
 #include "../../driver/EEPROM.h"
 
 const rf_proto_desc_t legacy_proto_desc = {
-  "Legacy",
+  .name            = {'L','e','g','a','c','y', 0},
   .type            = RF_PROTOCOL_LEGACY,
   .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type   = LEGACY_PREAMBLE_TYPE,

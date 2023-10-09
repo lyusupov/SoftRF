@@ -27,7 +27,7 @@
 #include "../data/GDL90.h"
 
 const rf_proto_desc_t uat978_proto_desc = {
-  "UAT",
+  .name            = {'U','A','T', 0},
   .type            = RF_PROTOCOL_ADSB_UAT,
   .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type   = UAT978_PREAMBLE_TYPE,

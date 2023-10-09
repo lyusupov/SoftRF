@@ -28,7 +28,7 @@
 #include "../../driver/EEPROM.h"
 
 const rf_proto_desc_t ogntp_proto_desc = {
-  "OGNTP",
+  .name            = {'O','G','N','T','P', 0},
   .type            = RF_PROTOCOL_OGNTP,
   .modulation_type = RF_MODULATION_TYPE_2FSK,
   .preamble_type   = OGNTP_PREAMBLE_TYPE,

@@ -27,7 +27,7 @@
 #include "../data/GDL90.h"
 
 const rf_proto_desc_t es1090_proto_desc = {
-  "ES",
+  .name            = {'E','S', 0},
   .type            = RF_PROTOCOL_ADSB_1090,
   .modulation_type = RF_MODULATION_TYPE_PPM,
   .preamble_type   = ES1090_PREAMBLE_TYPE,

@@ -38,6 +38,11 @@
 #include <XPowersLib.h>
 #include <pcf8563.h>
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#include <esp_mac.h>
+#include <esp_flash.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 #include "../system/SoC.h"
 #include "../system/Time.h"
 #include "../driver/Sound.h"
@@ -418,7 +423,13 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  size_t flash_size;
+  esp_flash_get_size(NULL, (uint32_t *) &flash_size);
+#else
   size_t flash_size = spi_flash_get_chip_size();
+#endif /* ESP_IDF_VERSION_MAJOR */
+
   size_t min_app_size = flash_size;
 
   esp_partition_iterator_t it;
@@ -507,6 +518,9 @@ static void ESP32_setup()
     }
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
     uint32_t pkg_ver  = chip_ver & 0x7;
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4) {
@@ -514,6 +528,7 @@ static void ESP32_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
       lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
     }
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     esp32_board      = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -542,8 +557,12 @@ static void ESP32_setup()
   }
 
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN) {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
     ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+#endif /* ESP_IDF_VERSION_MAJOR */
   }
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
@@ -1348,7 +1367,7 @@ static void ESP32_setup()
 
     delay(200);
 
-    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+    calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     uint16_t gpio2_voltage = read_voltage(); // avg. of 32 samples
 
     if (gpio2_voltage > 1900) {
@@ -2223,8 +2242,12 @@ static void ESP32_Sound_test(int var)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
     ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+#endif /* ESP_IDF_VERSION_MAJOR */
 
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
@@ -2248,7 +2271,11 @@ static void ESP32_Sound_test(int var)
 
     ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     ledcDetachPin(SOC_GPIO_PIN_BUZZER);
+#endif /* ESP_IDF_VERSION_MAJOR */
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
 
@@ -2303,15 +2330,23 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+      /* TBD */
+#else
       ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
       ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
+#endif /* ESP_IDF_VERSION_MAJOR */
 
       ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
       ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
     } else {
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+      /* TBD */
+#else
       ledcDetachPin(SOC_GPIO_PIN_BUZZER);
+#endif /* ESP_IDF_VERSION_MAJOR */
       pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
     }
   }
@@ -2390,10 +2425,14 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     tcpip_adapter_dhcps_option(
       (tcpip_adapter_dhcp_option_mode_t) TCPIP_ADAPTER_OP_SET,
       (tcpip_adapter_dhcp_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
       (void*) &lt, sizeof(lt));
+#endif /* ESP_IDF_VERSION_MAJOR */
     break;
   default:
     break;
@@ -2403,15 +2442,21 @@ static void ESP32_WiFi_set_param(int ndx, int value)
 
 static IPAddress ESP32_WiFi_get_broadcast()
 {
-  tcpip_adapter_ip_info_t info;
   IPAddress broadcastIp;
+
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  /* TBD */
+#else
+  tcpip_adapter_ip_info_t info;
 
   if (WiFi.getMode() == WIFI_STA) {
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &info);
   } else {
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &info);
   }
+
   broadcastIp = ~info.netmask.addr | info.ip.addr;
+#endif /* ESP_IDF_VERSION_MAJOR */
 
   return broadcastIp;
 }
@@ -2437,6 +2482,9 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
@@ -2447,6 +2495,7 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
       Uni_Udp.write(buf, size);
       Uni_Udp.endPacket();
     }
+#endif /* ESP_IDF_VERSION_MAJOR */
     break;
   case WIFI_OFF:
   default:
@@ -2482,10 +2531,16 @@ static int ESP32_WiFi_clients_count()
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+
+    return stations.num;
+#else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
     return infoList.num;
+#endif /* ESP_IDF_VERSION_MAJOR */
   case WIFI_STA:
   default:
     return -1; /* error */
@@ -2917,8 +2972,12 @@ static byte ESP32_Display_setup()
                  SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
                  SOC_GPIO_PIN_TWATCH_TFT_BL;
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
     ledcSetup(BACKLIGHT_CHANNEL, 12000, 8);
+#endif /* ESP_IDF_VERSION_MAJOR */
 
     tft->setTextFont(4);
     tft->setTextSize(2);
@@ -3378,7 +3437,11 @@ static void ESP32_Display_fini(int reason)
                      SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
                      SOC_GPIO_PIN_TWATCH_TFT_BL;
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+        /* TBD */
+#else
         ledcDetachPin(bl_pin);
+#endif /* ESP_IDF_VERSION_MAJOR */
         pinMode(bl_pin, INPUT_PULLDOWN);
 
         tft->fillScreen(TFT_NAVY);
@@ -3406,25 +3469,26 @@ static void ESP32_Battery_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32)
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
                      (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
-                      ADC1_GPIO35_CHANNEL : ADC1_GPIO36_CHANNEL);
+                     (adc1_channel_t) ADC1_GPIO35_CHANNEL :
+                     (adc1_channel_t) ADC1_GPIO36_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-    calibrate_voltage(ADC1_GPIO9_CHANNEL);
+    calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
     if (esp32_board == ESP32_HELTEC_TRACKER    ||
         esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
       if (ESP.getEfuseMac() == 0x58f8ab188534ULL) {
-        calibrate_voltage(ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
+        calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
       } else {
-        calibrate_voltage(ADC1_GPIO1_CHANNEL);
+        calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_1) {
-      calibrate_voltage(ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
     } else {
-      calibrate_voltage(ADC1_GPIO2_CHANNEL);
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    calibrate_voltage(ADC1_GPIO1_CHANNEL);
+    calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */

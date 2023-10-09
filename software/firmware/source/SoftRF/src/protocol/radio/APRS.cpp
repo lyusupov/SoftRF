@@ -32,7 +32,7 @@
  * Classic APRS
  */
 const rf_proto_desc_t aprs_proto_desc = {
-  "APRS",
+  .name            = {'A','P','R','S', 0},
   .type            = RF_PROTOCOL_APRS,
   .modulation_type = RF_MODULATION_TYPE_2FSK, /* Bell 202 AFSK */
   .preamble_type   = APRS_PREAMBLE_TYPE,
@@ -64,7 +64,7 @@ const rf_proto_desc_t aprs_proto_desc = {
  * APRS over LoRa
  */
 const rf_proto_desc_t prol_proto_desc = {
-  "PRoL",
+  .name             = {'P','R','o','L', 0},
   .type             = RF_PROTOCOL_APRS,
   .modulation_type  = RF_MODULATION_TYPE_LORA,
   .preamble_type    = 0 /* INVALID FOR LORA */,

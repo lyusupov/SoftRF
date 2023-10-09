@@ -18,6 +18,10 @@
 #include "soc/spi_reg.h"
 #include "driver/spi_master.h"
 
+#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+#include <hal/gpio_ll.h>
+#endif /* ESP_ARDUINO_VERSION */
+
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32)
   #define CONFIG_IDF_TARGET_ESP32
 #endif

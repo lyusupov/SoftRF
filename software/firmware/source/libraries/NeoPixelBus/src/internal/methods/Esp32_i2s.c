@@ -65,9 +65,16 @@ esp_err_t i2sSetSampleRate(uint8_t bus_num, uint32_t sample_rate, bool parallel_
 
 #define MATRIX_DETACH_OUT_SIG 0x100
 
-#if ESP_IDF_VERSION_MAJOR<=4
+#if ESP_IDF_VERSION_MAJOR<=5
 #define I2S_BASE_CLK (160000000L)
 #endif
+
+#if ESP_IDF_VERSION_MAJOR>=5
+#define I2S_NUM_MAX  I2S_NUM_AUTO
+#include <soc/periph_defs.h>
+#endif
+
+#include <Arduino.h>
 
 #define I2S_DMA_BLOCK_COUNT_DEFAULT      0
 // 20 bytes gives us enough time if we use single stage idle
@@ -414,12 +421,20 @@ void i2sInit(uint8_t bus_num,
 // (I2S_NUM_MAX == 2)
     if (bus_num) 
     {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+        /* TBD */
+#else
         periph_module_enable(PERIPH_I2S1_MODULE);
+#endif /* ESP_IDF_VERSION_MAJOR */
     } 
     else 
 #endif
     {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+        /* TBD */
+#else
         periph_module_enable(PERIPH_I2S0_MODULE);
+#endif /* ESP_IDF_VERSION_MAJOR */
     }
 
     esp_intr_disable(I2S[bus_num].isr_handle);

@@ -32,7 +32,7 @@
 #include "../../driver/RF.h"
 
 const rf_proto_desc_t fanet_proto_desc = {
-  "FANET",
+  .name             = {'F','A','N','E','T', 0},
   .type             = RF_PROTOCOL_FANET,
   .modulation_type  = RF_MODULATION_TYPE_LORA,
   .preamble_type    = 0 /* INVALID FOR LORA */,

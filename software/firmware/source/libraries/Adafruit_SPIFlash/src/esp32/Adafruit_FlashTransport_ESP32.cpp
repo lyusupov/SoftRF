@@ -26,6 +26,10 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#include <esp_flash.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 Adafruit_FlashTransport_ESP32::Adafruit_FlashTransport_ESP32(void) {
   _cmd_read = SFLASH_CMD_READ;
   _addr_len = 3; // work with most device if not set

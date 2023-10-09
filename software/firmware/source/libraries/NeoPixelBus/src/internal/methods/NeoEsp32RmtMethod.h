@@ -54,6 +54,29 @@ extern "C"
 #define NEOPIXELBUS_RMT_INT_FLAGS (ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1)
 #endif
 
+#if defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 4) // IDF 4+
+#include "soc/gpio_pins.h"
+#if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
+#include "esp32/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#include "esp32c6/rom/gpio.h"
+#elif CONFIG_IDF_TARGET_ESP32H2
+#include "esp32h2/rom/gpio.h"
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+#else // ESP32 Before IDF 4.0
+#include "rom/gpio.h"
+#define GPIO_MATRIX_CONST_ZERO_INPUT GPIO_FUNC_IN_LOW
+#define GPIO_MATRIX_CONST_ONE_INPUT GPIO_FUNC_IN_HIGH
+#endif
+
 class NeoEsp32RmtSpeed
 {
 public:

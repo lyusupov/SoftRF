@@ -25,13 +25,13 @@ esp_adc_cal_characteristics_t *adc_characs =
 #endif
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
-static adc1_channel_t adc_channel = ADC1_GPIO36_CHANNEL;
+static adc1_channel_t adc_channel = (adc1_channel_t) ADC1_GPIO36_CHANNEL;
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-static adc1_channel_t adc_channel = ADC1_GPIO9_CHANNEL;
+static adc1_channel_t adc_channel = (adc1_channel_t) ADC1_GPIO9_CHANNEL;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-static adc1_channel_t adc_channel = ADC1_GPIO2_CHANNEL;
+static adc1_channel_t adc_channel = (adc1_channel_t) ADC1_GPIO2_CHANNEL;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-static adc1_channel_t adc_channel = ADC1_GPIO1_CHANNEL;
+static adc1_channel_t adc_channel = (adc1_channel_t) ADC1_GPIO1_CHANNEL;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */

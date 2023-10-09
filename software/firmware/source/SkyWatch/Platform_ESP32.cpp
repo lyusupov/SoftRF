@@ -47,6 +47,10 @@
 #include <esp_bt.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#include <esp_mac.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
@@ -641,10 +645,14 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     tcpip_adapter_dhcps_option(
       (tcpip_adapter_dhcp_option_mode_t) TCPIP_ADAPTER_OP_SET,
       (tcpip_adapter_dhcp_option_id_t)   TCPIP_ADAPTER_IP_ADDRESS_LEASE_TIME,
       (void*) &lt, sizeof(lt));
+#endif /* ESP_IDF_VERSION_MAJOR */
     break;
   default:
     break;
@@ -663,8 +671,12 @@ static void ESP32_WiFiUDP_stopAll()
 
 static IPAddress ESP32_WiFi_get_broadcast()
 {
-  tcpip_adapter_ip_info_t info;
   IPAddress broadcastIp;
+
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  /* TBD */
+#else
+  tcpip_adapter_ip_info_t info;
 
   if (WiFi.getMode() == WIFI_STA) {
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &info);
@@ -672,6 +684,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &info);
   }
   broadcastIp = ~info.netmask.addr | info.ip.addr;
+#endif /* ESP_IDF_VERSION_MAJOR */
 
   return broadcastIp;
 }
@@ -696,6 +709,9 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+#else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
@@ -706,6 +722,7 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
       Uni_Udp.write(buf, size);
       Uni_Udp.endPacket();
     }
+#endif /* ESP_IDF_VERSION_MAJOR */
     break;
   case WIFI_OFF:
   default:
@@ -728,10 +745,16 @@ static int ESP32_WiFi_clients_count()
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    /* TBD */
+
+    return stations.num;
+#else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
 
     return infoList.num;
+#endif /* ESP_IDF_VERSION_MAJOR */
   case WIFI_STA:
   default:
     return -1; /* error */
@@ -782,11 +805,11 @@ static void ESP32_Battery_setup()
 
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
-    calibrate_voltage(ADC1_GPIO9_CHANNEL);
+    calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_SERIAL) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
-    calibrate_voltage(ADC1_GPIO2_CHANNEL);
+    calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 }

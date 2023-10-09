@@ -92,7 +92,11 @@ class MyServerCallbacks: public BLEServerCallbacks {
 
 class UARTCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pUARTCharacteristic) {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+      String rxValue = pUARTCharacteristic->getValue();
+#else
       std::string rxValue = pUARTCharacteristic->getValue();
+#endif /* ESP_IDF_VERSION_MAJOR */
 
       if (rxValue.length() > 0) {
         BLE_FIFO_RX->write(rxValue.c_str(),
