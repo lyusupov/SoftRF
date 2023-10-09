@@ -74,11 +74,11 @@ jobs:
           else if [[ "$BOARD" =~ "raspberry" ]]; then
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
-            else if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
-                wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
-                tar xf arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
-                rm arduino-$ARDUINO_IDE_V2-linux64.tar.xz ;
-                sudo mv arduino-$ARDUINO_IDE_V2 /usr/local/share/arduino ;
+            else if [[ "$BOARD" =~ "test" ]]; then
+                wget http://downloads.arduino.cc/arduino-ide/arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
+                unzip arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
+                rm arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
+                sudo mv arduino-ide_$ARDUINO_IDE_V2_Linux_64bit /usr/local/share/arduino ;
                 sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
               else
                 wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
