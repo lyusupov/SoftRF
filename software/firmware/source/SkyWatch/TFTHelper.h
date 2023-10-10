@@ -19,7 +19,6 @@
 #ifndef TFTHELPER_H
 #define TFTHELPER_H
 
-#include <TFT_eSPI.h>
 #include <FT5206.h>
 
 #define TFT_EXPIRATION_TIME     5 /* seconds */
@@ -82,8 +81,13 @@ void TFT_time_loop();
 void TFT_time_next();
 void TFT_time_prev();
 
-extern TFT_eSPI *tft;
-extern TFT_eSprite *sprite;
 extern bool TFT_vmode_updated;
 
+#include "SoCHelper.h"
+#if !defined(EXCLUDE_TFT)
+#include <TFT_eSPI.h>
+
+extern TFT_eSPI *tft;
+extern TFT_eSprite *sprite;
+#endif /* EXCLUDE_TFT */
 #endif /* TFTHELPER_H */

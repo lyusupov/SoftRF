@@ -43,13 +43,15 @@
 #include "soc/gpio_reg.h"
 #include "soc/gpio_sig_map.h"
 #include "soc/io_mux_reg.h"
+#if !defined(CONFIG_IDF_TARGET_ESP32C6)
 #include "soc/rtc_cntl_reg.h"
+#include "soc/sens_reg.h"
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include "soc/i2s_struct.h"
 #if defined(CONFIG_IDF_TARGET_ESP32)
 /* included here for ESP-IDF v4.x compatibility */
 #include "soc/dport_reg.h"
 #endif
-#include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/i2s.h"
 

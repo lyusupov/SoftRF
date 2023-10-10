@@ -55,7 +55,7 @@
 #undef  SerialOutput
 #define SerialOutput            Serial0
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define UATSerial               Serial
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -80,7 +80,9 @@
  * NeoPixelBus is already "flickering-free" on ESP32 (with I2S or RMT)
  * but the "Core" needs update onto the most recent one
  */
+#if !defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NEOPIXELBUS_LIBRARY
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 #include <NeoPixelBus.h>
@@ -123,6 +125,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD 14? */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_LED        19 /* D1 */
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -365,10 +369,13 @@ extern ESP32_USBSerial_device_t ESP32_USB_Serial;
 extern const USB_Device_List_t supported_USB_devices[];
 
 #endif /* USE_USB_HOST */
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #undef USE_OLED
 #undef USE_TFT
-#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#define EXCLUDE_LED_RING
+#endif /* C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 */
 #endif /* NOT CONFIG_IDF_TARGET_ESP32 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

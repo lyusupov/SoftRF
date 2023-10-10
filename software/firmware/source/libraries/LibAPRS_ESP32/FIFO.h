@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
-#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(ESP32) && \
+   !defined(CONFIG_IDF_TARGET_ESP32C3) && \
+   !defined(CONFIG_IDF_TARGET_ESP32C6)
 #define xt_rsil(level) (__extension__({uint32_t state; __asm__ __volatile__("rsil %0," __STRINGIFY(level) : "=a" (state)); state;}))
 #define xt_wsr_ps(state)  __asm__ __volatile__("wsr %0,ps; isync" :: "a" (state) : "memory")
 

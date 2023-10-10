@@ -159,7 +159,7 @@
 #define SOC_GPIO_PIN_LRCK     9
 #define SOC_GPIO_PIN_MCK      8
 
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
 #define SOC_GPIO_PIN_GNSS_TX  7
 

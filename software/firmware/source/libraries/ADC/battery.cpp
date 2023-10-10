@@ -6,6 +6,11 @@
 
 #include "battery.h"
 
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+void calibrate_voltage(adc1_channel_t channel, adc_atten_t atten) { /* TBD */ }
+uint16_t read_voltage() { /* TBD */ return 0; }
+#else
+
 // Local logging tag
 static const char TAG[] = "ADC";
 
@@ -93,3 +98,4 @@ uint16_t read_voltage() {
   ESP_LOGD(TAG, "Raw: %d / Voltage: %dmV", adc_reading, voltage);
   return voltage;
 }
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */

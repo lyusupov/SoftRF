@@ -26,7 +26,9 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <esp_bt.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if !defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <soc/rtc_cntl_reg.h>
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <rom/spi_flash.h>
 #include <soc/adc_channel.h>
 #include <driver/i2s.h>
@@ -44,7 +46,8 @@
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <sqlite3.h>
 #include <SD.h>
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
@@ -162,7 +165,8 @@ SPIClass uSD_SPI(HSPI);
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
 
 /* variables hold file, state of process wav file and wav file properties */
 wavProperties_t wavProps;
@@ -775,9 +779,9 @@ static void ESP32_fini()
    *  SD card in  -            0.2 mA
    *  SD card out -            0.1 mA
    */
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   esp_sleep_enable_ext1_wakeup(1ULL << wake_gpio_num, ESP_EXT1_WAKEUP_ALL_LOW);
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 */
 
 //  Serial.println("Going to sleep now");
 //  Serial.flush();
@@ -887,6 +891,8 @@ static void ESP32_Battery_setup()
   calibrate_voltage((adc1_channel_t) ADC1_GPIO3_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL); /* TBD */
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+  /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -916,7 +922,11 @@ SoftSPI swSPI(SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_MOSI_WS, /* half duplex */
               SOC_GPIO_PIN_SCK_WS);
 
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+static spinlock_t EPD_ident_mutex;
+#else
 static portMUX_TYPE EPD_ident_mutex;
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
 static ep_model_id ESP32_EPD_ident()
 {
@@ -1483,7 +1493,8 @@ static void ESP32_DB_fini()
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
 {
@@ -1641,7 +1652,8 @@ static void ESP32_TTS(char *message)
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
       if (SD.cardType() == CARD_NONE)
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
       if (!FATFS_is_mounted)
@@ -1699,7 +1711,8 @@ static void ESP32_TTS(char *message)
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3)
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
       if (SD.cardType() == CARD_NONE ||
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
       if (!FATFS_is_mounted          ||
@@ -1960,6 +1973,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+  SOC_ESP32C6,
+  "ESP32-C6",
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3 */
