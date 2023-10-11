@@ -447,7 +447,11 @@ static int ESP32Open(
   //p->fd = open(zName, oflags, 0600);
   //p->fd = open(zName, oflags, S_IRUSR | S_IWUSR);
   p->fp = fopen(zName, mode);
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+  if( p->fp == NULL){
+#else
   if( p->fp<=0){
+#endif /* ESP_IDF_VERSION_MAJOR */
     if (aBuf)
       sqlite3_free(aBuf);
     //Serial.println("Can't open");
@@ -489,7 +493,11 @@ static int ESP32Delete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 
     /* Open a file-descriptor on the directory. Sync. Close. */
     dfd = fopen(zDir, "r");
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+    if( dfd == NULL ){
+#else
     if( dfd<=0 ){
+#endif /* ESP_IDF_VERSION_MAJOR */
       rc = -1;
     }else{
       rc = fflush(dfd);

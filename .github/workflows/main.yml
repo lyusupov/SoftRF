@@ -323,8 +323,7 @@ jobs:
             fi ;
           fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
-            echo "TO DO" ;
-            # arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyView ;
+            arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyView ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
