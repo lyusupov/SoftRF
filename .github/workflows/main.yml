@@ -27,6 +27,7 @@ jobs:
             'esp32:esp32:esp32s2',
             'esp32:esp32:esp32s3',
             'esp32:esp32:esp32c3',
+            'esp32:esp32:esp32c6:PartitionScheme=min_spiffs',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
@@ -43,7 +44,7 @@ jobs:
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
-      ARDUINO_IDE_V2:      2.2.1
+      ARDUINO_CLI_VERSION: 0.34.2
       ENERGIA_IDE_VERSION: 1.8.10E23
       BOARD: ${{ matrix.board }}
 
@@ -74,12 +75,11 @@ jobs:
           else if [[ "$BOARD" =~ "raspberry" ]]; then
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
-            else if [[ "$BOARD" =~ "test" ]]; then
-                wget http://downloads.arduino.cc/arduino-ide/arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
-                unzip arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
-                rm arduino-ide_$ARDUINO_IDE_V2_Linux_64bit.zip ;
-                sudo mv arduino-ide_$ARDUINO_IDE_V2_Linux_64bit /usr/local/share/arduino ;
-                sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino ;
+            else if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
+                wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
+                tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
+                rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
+                sudo mv arduino-cli /usr/local/bin/ ;
               else
                 wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
                 tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
@@ -181,6 +181,14 @@ jobs:
             arduino --pref "custom_PSRAM=esp32c3_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c3_min_spiffs" --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c3_921600"         --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
+          if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
+            arduino-cli config init ;
+            arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json ;
+            arduino-cli core update-index ;
+            arduino-cli core install esp32:esp32@3.0.0-alpha1 ;
+            # arduino-cli board attach -b $BOARD ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
@@ -307,14 +315,26 @@ jobs:
           if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+          if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
+            arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
+          else
+            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+            fi ;
           fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+          if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
+            # arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyView ;
+          else
+            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
+            fi ;
           fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:"        ]]; then
+          if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
+            # arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyWatch ;
+          else
+            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
+            fi ;
           fi ;
           if [[ "$BOARD" =~ "STM32:stm32:"        ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
