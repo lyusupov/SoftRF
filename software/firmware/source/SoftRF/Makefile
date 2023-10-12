@@ -297,6 +297,10 @@ e2uf2:
 e3uf2:
 	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0xc47e5767 -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
+# Espressif ESP32-C6
+e6uf2:
+	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0x540ddf62 -b 0 -o $(HEXDIR)/$(BIN_UF2)
+
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 
 %.o: %.cpp
