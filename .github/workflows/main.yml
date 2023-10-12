@@ -316,14 +316,14 @@ jobs:
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
-            arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
+            arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
             fi ;
           fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
-            arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyView ;
+            arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SkyView ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
