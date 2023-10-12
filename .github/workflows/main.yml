@@ -27,7 +27,7 @@ jobs:
             'esp32:esp32:esp32s2',
             'esp32:esp32:esp32s3',
             'esp32:esp32:esp32c3',
-            'esp32:esp32:esp32c6:PartitionScheme=min_spiffs',
+            'esp32:esp32:esp32c6',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
@@ -330,8 +330,7 @@ jobs:
             fi ;
           fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
-            echo "TO DO" ;
-            # arduino-cli compile -v --build-path=/tmp/arduino -b "$BOARD" $PWD/software/firmware/source/SkyWatch ;
+            arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SkyWatch ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
