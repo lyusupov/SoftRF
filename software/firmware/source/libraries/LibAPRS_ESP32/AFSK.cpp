@@ -290,6 +290,54 @@ void AFSK_TimerEnable(bool sts)
 #endif /* !I2S_INTERNAL || CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* ESP32 */
 
+#if defined(SOFTRF_SKETCH)
+typedef struct hardware_info {
+    byte  model;
+    byte  revision;
+    byte  soc;
+    byte  rf;
+    byte  gnss;
+    byte  baro;
+    byte  display;
+    byte  storage;
+    byte  rtc;
+    byte  imu;
+    byte  mag;
+    byte  pmu;
+} hardware_info_t;
+
+extern hardware_info_t hw_info;
+
+enum
+{
+	SOFTRF_MODEL_UNKNOWN,
+	SOFTRF_MODEL_STANDALONE,
+	SOFTRF_MODEL_PRIME,
+	SOFTRF_MODEL_UAV,
+	SOFTRF_MODEL_PRIME_MK2,
+	SOFTRF_MODEL_RASPBERRY,
+	SOFTRF_MODEL_UAT,
+	SOFTRF_MODEL_SKYVIEW,
+	SOFTRF_MODEL_RETRO,
+	SOFTRF_MODEL_SKYWATCH,
+	SOFTRF_MODEL_DONGLE,
+	SOFTRF_MODEL_OCTAVE,
+	SOFTRF_MODEL_UNI,
+	SOFTRF_MODEL_WEBTOP_SERIAL,
+	SOFTRF_MODEL_MINI,
+	SOFTRF_MODEL_BADGE,
+	SOFTRF_MODEL_ES,
+	SOFTRF_MODEL_BRACELET,
+	SOFTRF_MODEL_ACADEMY,
+	SOFTRF_MODEL_LEGO,
+	SOFTRF_MODEL_WEBTOP_USB,
+	SOFTRF_MODEL_PRIME_MK3,
+	SOFTRF_MODEL_BALKAN,
+	SOFTRF_MODEL_HAM,
+	SOFTRF_MODEL_MIDI,
+};
+#endif /* SOFTRF_SKETCH */
+
 void AFSK_hw_init(void)
 {
   // Set up ADC
@@ -328,13 +376,31 @@ void AFSK_hw_init(void)
   // esp_adc_cal_characteristics_t characteristics;
   adc1_config_width(ADC_WIDTH_BIT_12);
 
-  uint64_t mac = ESP.getEfuseMac();
-  if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
+#if defined(SOFTRF_SKETCH)
+  if (hw_info.model == SOFTRF_MODEL_HAM) {
+    if (hw_info.revision == 20) {
+      uint64_t mac = ESP.getEfuseMac();
+      if (mac == 0x58f8ab188534ULL /* || mac == 0x7475ac188534ULL */) {
+        adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+      } else {
+        /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
+        adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
+      }
+    } else {
+      /* T-TWR Plus V2.1 is expected to use 47 KOhm value for R22 */
+      adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+    }
+  } else
+#else
+  {
+#if 1
     /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
     adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 3.3V
-  } else {
+#else
     adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+#endif
   }
+#endif /* SOFTRF_SKETCH */
 
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
