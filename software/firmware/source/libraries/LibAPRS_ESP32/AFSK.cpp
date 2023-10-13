@@ -391,7 +391,7 @@ void AFSK_hw_init(void)
       adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
     }
   } else
-#else
+#endif /* SOFTRF_SKETCH */
   {
 #if 1
     /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
@@ -400,7 +400,6 @@ void AFSK_hw_init(void)
     adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
 #endif
   }
-#endif /* SOFTRF_SKETCH */
 
   // esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
   // Serial.printf("v_ref routed to 3.3V\n");
