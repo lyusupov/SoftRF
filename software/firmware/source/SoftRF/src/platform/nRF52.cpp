@@ -1205,6 +1205,23 @@ static void nRF52_EEPROM_extension(int cmd)
               if (!strcmp(msg_class_s,"SOFTRF")) {
                 parseSettings  (root);
                 parseUISettings(root);
+
+#if defined(ENABLE_PROL)
+                JsonVariant fromcall = root["fromcall"];
+                if (fromcall.success()) {
+                  const char * fromcall_s = fromcall.as<char*>();
+                  if (strlen(fromcall_s) <= 6) {
+                    strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
+                  }
+                }
+                JsonVariant tocall = root["tocall"];
+                if (tocall.success()) {
+                  const char * tocall_s = tocall.as<char*>();
+                  if (strlen(tocall_s) <= 6) {
+                    strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
+                  }
+                }
+#endif /* ENABLE_PROL */
               }
             }
           }
