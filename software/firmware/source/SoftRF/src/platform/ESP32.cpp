@@ -232,7 +232,7 @@ ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
-    .rotate       = ROTATE_0,
+    .rotate       = ROTATE_90,
     .orientation  = DIRECTION_TRACK_UP,
     .adb          = DB_NONE,
     .idpref       = ID_TYPE,
@@ -1100,8 +1100,6 @@ static void ESP32_setup()
                         STORAGE_FLASH_AND_CARD : STORAGE_CARD;
     }
 
-    ui = &ui_settings;
-
   } else if (hw_info.model == SOFTRF_MODEL_HAM) {
     Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
     Wire.beginTransmission(AXP2101_SLAVE_ADDRESS);
@@ -1264,6 +1262,58 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_HELTRK_RST;
     lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
 
+    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
+                                         EXTERNAL_FLASH_DEVICE_COUNT);
+    if (ESP32_has_spiflash) {
+      spiflash_id = SPIFlash->getJEDECID();
+
+      uint32_t capacity = spiflash_id & 0xFF;
+      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
+        hw_info.storage = STORAGE_FLASH;
+
+#if CONFIG_TINYUSB_MSC_ENABLED
+  #if defined(USE_ADAFRUIT_MSC)
+        // Set disk vendor id, product id and revision
+        // with string up to 8, 16, 4 characters respectively
+        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
+
+        // Set callback
+        usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
+                                     ESP32_msc_write_cb,
+                                     ESP32_msc_flush_cb);
+
+        // Set disk size, block size should be 512 regardless of spi flash page size
+        usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+        // MSC is ready for read/write
+        usb_msc.setUnitReady(true);
+
+        usb_msc.begin();
+
+  #else
+
+        // Set disk vendor id, product id and revision
+        // with string up to 8, 16, 4 characters respectively
+        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
+        usb_msc.productID("Internal Flash");
+        usb_msc.productRevision("1.0");
+
+        // Set callback
+        usb_msc.onRead(ESP32_msc_read_cb);
+        usb_msc.onWrite(ESP32_msc_write_cb);
+
+        // MSC is ready for read/write
+        usb_msc.mediaPresent(true);
+
+        // Set disk size, block size should be 512 regardless of spi flash page size
+        usb_msc.begin(SPIFlash->size()/512, 512);
+  #endif /* USE_ADAFRUIT_MSC */
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+
+        FATFS_is_mounted = fatfs.begin(SPIFlash);
+      }
+    }
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -1322,6 +1372,8 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  ui = &ui_settings;
+
   if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME)
   {
     rtc_clk_32k_enable(true);
@@ -2589,8 +2641,8 @@ static void ESP32_EEPROM_extension(int cmd)
             const char *msg_class_s = msg_class.as<char*>();
 
             if (!strcmp(msg_class_s,"SOFTRF")) {
-              parseSettings  (root);
-
+              parseSettings(root);
+#if 0
               JsonVariant units = root["units"];
               if (units.success()) {
                 const char * units_s = units.as<char*>();
@@ -2602,6 +2654,34 @@ static void ESP32_EEPROM_extension(int cmd)
                   ui_settings.units = UNITS_MIXED;
                 }
               }
+#endif
+              JsonVariant rotate = root["rotate"];
+              if (rotate.success()) {
+                const char * rotate_s = rotate.as<char*>();
+                if (!strcmp(rotate_s,"0")) {
+                  ui_settings.rotate = ROTATE_0;
+                } else if (!strcmp(rotate_s,"90")) {
+                  ui_settings.rotate = ROTATE_90;
+                } else if (!strcmp(rotate_s,"180")) {
+                  ui_settings.rotate = ROTATE_180;
+                } else if (!strcmp(rotate_s,"270")) {
+                  ui_settings.rotate = ROTATE_270;
+                }
+              }
+
+              JsonVariant idpref = root["idpref"];
+              if (idpref.success()) {
+                const char * idpref_s = idpref.as<char*>();
+                if (!strcmp(idpref_s,"REG")) {
+                  ui_settings.idpref = ID_REG;
+                } else if (!strcmp(idpref_s,"TAIL")) {
+                  ui_settings.idpref = ID_TAIL;
+                } else if (!strcmp(idpref_s,"MAM")) {
+                  ui_settings.idpref = ID_MAM;
+                } else if (!strcmp(idpref_s,"CLASS")) {
+                  ui_settings.idpref = ID_TYPE;
+                }
+              }
 
 #if defined(USE_SA8X8) || defined(ENABLE_PROL)
               JsonVariant fromcall = root["fromcall"];
@@ -2609,6 +2689,13 @@ static void ESP32_EEPROM_extension(int cmd)
                 const char * fromcall_s = fromcall.as<char*>();
                 if (strlen(fromcall_s) <= 6) {
                   strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
+                }
+              }
+              JsonVariant tocall = root["tocall"];
+              if (tocall.success()) {
+                const char * tocall_s = tocall.as<char*>();
+                if (strlen(tocall_s) <= 6) {
+                  strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
                 }
               }
 #endif /* USE_SA8X8 || ENABLE_PROL */
@@ -2968,11 +3055,16 @@ static byte ESP32_Display_setup()
 #if defined(USE_TFT)
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
-#if LV_HOR_RES != 135 && LV_HOR_RES != 80
-    tft->setRotation(0);
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    uint8_t r = ui->rotate;
 #else
-    tft->setRotation(1);
+#if LV_HOR_RES != 135 && LV_HOR_RES != 80
+    uint8_t r = 0;
+#else
+    uint8_t r = 1; /* 90 degrees */
 #endif /* LV_HOR_RES */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+    tft->setRotation(r);
     tft->fillScreen(TFT_NAVY);
 
     int bl_pin = (esp32_board == ESP32_S2_T8_V1_1) ?
