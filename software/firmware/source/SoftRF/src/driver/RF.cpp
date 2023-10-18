@@ -2422,10 +2422,6 @@ static void sa8x8_setup()
   uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
   float MHz = frequency / 1000000.0;
 
-  if (hw_info.revision == 20) {
-    controller.setBand(Band::VHF);
-  }
-
   if (controller.getBand() == Band::UHF) {
     switch (settings->band)
     {
