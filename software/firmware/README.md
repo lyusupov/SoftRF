@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * FEC library is developed by **Phil Karn**
  * AXP20X, XPowersLib, BMA423, FT5206, PCF8563 and SensorsLib libraries are developed by **Lewis He**
  * GxEPD2 library is developed by **Jean-Marc Zingg**
- * Adafruit SSD1306 and GFX libraries are developed by **Adafruit Industries**
+ * Adafruit SSD1306, INA219 and GFX libraries are developed by **Adafruit Industries**
  * GDL90 decoder is developed by **Ryan David**
  * Sqlite3 Arduino library for ESP32 is developed by **Arundale Ramanathan**
  * FLN/OGN aircrafts data is courtesy of **FlarmNet/GliderNet**
@@ -81,3 +81,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * USB host library 2.0 for Zero/M0/SAMD is developed by **gdsports625@gmail.com**
  * Arduino Core for Raspberry Pi RP2040 is developed by **Earle Philhower**
  * MPU-9250 9 DoF sensor library is developed by **Kris Winer** and **Hideaki Tai**
+ * Pico PIO USB library is developed by **sekigon-gonnoc**
+ * ESP8266Audio library is developed by **Earle Philhower**
+ * IniFile library is developed by **Steve Marple**
+ * MD5 library is developed by **Vasilis Georgitzikis**
+ * LibAPRS-ESP32 library is developed by **Evan Krall** and **Atten Nakhonthai**
+ * SA818 library is developed by **Gibbon Zen**
+ * OpenDroneID library is developed by **Steve Jack**

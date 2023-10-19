@@ -87,7 +87,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
 <tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
 <tr><th align=left>Jean-Marc Zingg</th><td align=left>GxEPD2 library</td></tr>\
-<tr><th align=left>Adafruit Industries</th><td align=left>SPIFlash, SSD1306 and GFX libraries</td></tr>\
+<tr><th align=left>Adafruit Industries</th><td align=left>SPIFlash, SSD1306, INA219 and GFX libraries</td></tr>\
 <tr><th align=left>Ryan David</th><td align=left>GDL90 decoder</td></tr>\
 <tr><th align=left>Arundale Ramanathan</th><td align=left>Sqlite3 Arduino library</td></tr>\
 <tr><th align=left>FlarmNet<br>GliderNet</th><td align=left>aircrafts data</td></tr>\
@@ -95,7 +95,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Tuan Nha</th><td align=left>ESP32 I2S WAV player</td></tr>\
 <tr><th align=left>Brian Park</th><td align=left>AceButton library</td></tr>\
 <tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
-<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for Raspberry Pi RP2040</td></tr>\
+<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for Raspberry Pi RP2040, ESP8266Audio library</td></tr>\
 <tr><th align=left>Bill Greiman</th><td align=left>SdFat library</td></tr>\
 <tr><th align=left>Ioulianos Kakoulidis</th><td align=left>Arduino uCDB library</td></tr>\
 <tr><th align=left>sekigon-gonnoc</th><td align=left>Pico PIO USB library</td></tr>\

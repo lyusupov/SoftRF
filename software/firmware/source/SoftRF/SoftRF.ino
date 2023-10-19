@@ -50,7 +50,7 @@
  *   Arduino-NVM library is developed by Frank Holtz
  *   AceButton library is developed by Brian Park
  *   GxEPD2 library is developed by Jean-Marc Zingg
- *   Adafruit GFX library is developed by Adafruit Industries
+ *   Adafruit GFX and INA219 libraries are developed by Adafruit Industries
  *   U8g2 fonts for Adafruit GFX are developed by Oliver Kraus
  *   Adafruit SPIFlash and SleepyDog libraries are developed by Adafruit Industries
  *   SdFat library is developed by Bill Greiman
@@ -61,6 +61,11 @@
  *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
  *   MPU-9250 9 DoF sensor library is developed by Kris Winer and Hideaki Tai
  *   Pico PIO USB library is developed by sekigon-gonnoc
+ *   IniFile library is developed by Steve Marple
+ *   MD5 library is developed by Vasilis Georgitzikis
+ *   LibAPRS-ESP32 library is developed by Evan Krall and Atten Nakhonthai
+ *   SA818 library is developed by Gibbon Zen
+ *   OpenDroneID library is developed by Steve Jack
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
