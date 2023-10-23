@@ -2487,9 +2487,9 @@ static void sa8x8_setup()
   APRS_setSymbol('\'');
 
   /* AX25 library used is not 100% ready for SSID feature yet */
-  if (strlen(APRS_FromCall) > 6) {
-    APRS_FromCall[6] = 0;
-  }
+  //if (strlen(APRS_FromCall) > 6) {
+  //  APRS_FromCall[6] = 0;
+  //}
 
   // We don't need to set the destination identifier, but
   // if you want to, this is how you do it:
