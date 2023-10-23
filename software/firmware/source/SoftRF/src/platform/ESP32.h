@@ -131,7 +131,9 @@ extern Adafruit_NeoPixel strip;
 #error "This ESP32 family build variant is not supported!"
 #endif
 
-#define SOC_GPIO_PIN_STATUS   (hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
+#define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_MIDI      ?\
+                                SOC_GPIO_PIN_HELTRK_LED :               \
+                               hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \
                                   SOC_GPIO_PIN_TBEAM_LED_V02 :          \

@@ -751,14 +751,14 @@ static void RP2040_EEPROM_extension(int cmd)
               JsonVariant fromcall = root["fromcall"];
               if (fromcall.success()) {
                 const char * fromcall_s = fromcall.as<char*>();
-                if (strlen(fromcall_s) <= 6) {
+                if (strlen(fromcall_s) < sizeof(APRS_FromCall)) {
                   strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
                 }
               }
               JsonVariant tocall = root["tocall"];
               if (tocall.success()) {
                 const char * tocall_s = tocall.as<char*>();
-                if (strlen(tocall_s) <= 6) {
+                if (strlen(tocall_s) < sizeof(APRS_ToCall)) {
                   strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
                 }
               }

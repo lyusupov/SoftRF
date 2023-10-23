@@ -61,7 +61,7 @@ size_t aprs_encode(void *, ufo_t *);
 
 extern const rf_proto_desc_t prol_proto_desc;
 
-extern char APRS_FromCall[7];
-extern char APRS_ToCall  [7];
+extern char APRS_FromCall[10];
+extern char APRS_ToCall  [ 7];
 
 #endif /* PROTOCOL_APRS_H */

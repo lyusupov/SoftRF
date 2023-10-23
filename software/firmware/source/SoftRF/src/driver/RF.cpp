@@ -2347,6 +2347,16 @@ cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
 void aprs_msg_callback(struct AX25Msg *msg) {
   AX25Msg pkg;
   memcpy(&pkg, msg, sizeof(AX25Msg));
+
+  // trim off a multiline message
+  for (int i = 0; i < pkg.len; i++) {
+    if (pkg.info[i] == '\n' || pkg.info[i] == '\r') {
+      pkg.info[i] = 0;
+      pkg.len = i;
+      break;
+    }
+  }
+
   PacketBuffer.push(&pkg);
 }
 
@@ -2476,6 +2486,15 @@ static void sa8x8_setup()
   APRS_setTail(aprs_tail);
   APRS_setSymbol('\'');
 
+  /* AX25 library used is not 100% ready for SSID feature yet */
+  if (strlen(APRS_FromCall) > 6) {
+    APRS_FromCall[6] = 0;
+  }
+
+  // We don't need to set the destination identifier, but
+  // if you want to, this is how you do it:
+  // APRS_setDestination("APSRF1", 0);
+
   if (hw_info.model == SOFTRF_MODEL_HAM) {
 #if defined(USE_NEOPIXELBUS_LIBRARY)
     TWR2_Pixel.SetPixelColor(0, rx ? LED_COLOR_GREEN: LED_COLOR_BLACK);
@@ -2484,10 +2503,6 @@ static void sa8x8_setup()
   }
 
   APRS_setTxLEDCallback(sa868_Tx_LED_state);
-
-  // You don't need to set the destination identifier, but
-  // if you want to, this is how you do it:
-  // APRS_setDestination("APZMDM", 0);
 
   if (rx) {
     AFSK_TimerEnable(true);

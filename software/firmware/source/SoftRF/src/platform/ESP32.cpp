@@ -467,6 +467,7 @@ static void ESP32_setup()
    *  TTGO T22 V06    |               | WINBOND_NEX_W25Q32_V
    *  TTGO T22 V08    |               | WINBOND_NEX_W25Q32_V
    *  TTGO T22 V11    |               | BOYA_BY25Q32AL
+   *  TTGO T22 V12    |               | WINBOND_NEX_W25Q32_V
    *  TTGO T8  V1.8   | WROVER        | GIGADEVICE_GD25LQ32
    *  TTGO T8 S2 V1.1 |               | WINBOND_NEX_W25Q32_V
    *  TTGO T5S V1.9   |               | WINBOND_NEX_W25Q32_V
@@ -1472,6 +1473,7 @@ static void ESP32_setup()
     CALIBRATE_ONE(RTC_CAL_32K_XTAL);
     if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
         DEBUG_X32K("Warning: Failed to switch RTC clock source onto 32768 Hz XTAL !");
+        rtc_clk_32k_enable(false);
     } else {
         ESP32_has_32k_xtal = true;
     }
@@ -1485,15 +1487,16 @@ static void ESP32_setup()
       digitalWrite(SOC_GPIO_PIN_HELTRK_TFT_EN,  LOW);
       digitalWrite(SOC_GPIO_PIN_HELTRK_VEXT_EN, LOW);
 
+      pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, INPUT_PULLDOWN);
+      delay(300);
       pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, OUTPUT);
       pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,  OUTPUT);
       pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN, OUTPUT);
     }
 
-    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, LOW);
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  OUTPUT);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  INPUT_PULLDOWN);
     delay(100);
-    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST, HIGH);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  INPUT_PULLUP);
 
     pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,    INPUT_PULLUP);
 
@@ -1927,10 +1930,10 @@ static void ESP32_loop()
   }
   #endif /* !EXCLUDE_MAG */
 
-  if (esp32_board == ESP32_HELTEC_TRACKER) {
-    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,
-                 digitalRead(SOC_GPIO_PIN_HELTRK_GNSS_PPS));
-  }
+//  if (esp32_board == ESP32_HELTEC_TRACKER) {
+//    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,
+//                 digitalRead(SOC_GPIO_PIN_HELTRK_GNSS_PPS));
+//  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 
@@ -2689,14 +2692,14 @@ static void ESP32_EEPROM_extension(int cmd)
               JsonVariant fromcall = root["fromcall"];
               if (fromcall.success()) {
                 const char * fromcall_s = fromcall.as<char*>();
-                if (strlen(fromcall_s) <= 6) {
+                if (strlen(fromcall_s) < sizeof(APRS_FromCall)) {
                   strncpy(APRS_FromCall, fromcall_s, sizeof(APRS_FromCall));
                 }
               }
               JsonVariant tocall = root["tocall"];
               if (tocall.success()) {
                 const char * tocall_s = tocall.as<char*>();
-                if (strlen(tocall_s) <= 6) {
+                if (strlen(tocall_s) < sizeof(APRS_ToCall)) {
                   strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
                 }
               }
