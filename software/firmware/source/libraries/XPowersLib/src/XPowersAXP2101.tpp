@@ -269,17 +269,17 @@ public:
 
     bool isBatInActiveModeState(void)
     {
-        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 3);
+        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 2);
     }
 
     bool getThermalRegulationStatus(void)
     {
-        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 2);
+        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 1);
     }
 
     bool getCurrnetLimitStatus(void)
     {
-        return getRegisterBit(XPOWERS_AXP2101_STATUS1, 1);
+        return getRegisterBit(XPOWERS_AXP2101_STATUS1, 0);
     }
 
     bool isCharging(void)
