@@ -117,7 +117,7 @@ struct pbuf_t aprs;
 ParseAPRS aprsParse;
 
 char APRS_FromCall[10] = "";
-char APRS_ToCall  [ 7] = "OGFLR"; // TODO: make use of assigned APSRFx value
+char APRS_ToCall  [10] = "OGFLR"; // TODO: make use of assigned APSRFx value
 
 int packet2Raw(String &tnc2, AX25Msg &Packet) {
   if (Packet.len < 5) return 0;
