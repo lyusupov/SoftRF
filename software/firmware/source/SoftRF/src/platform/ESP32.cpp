@@ -234,7 +234,7 @@ ui_settings_t ui_settings = {
     .protocol     = PROTOCOL_NMEA,
     .rotate       = ROTATE_90,
     .orientation  = DIRECTION_TRACK_UP,
-    .adb          = DB_NONE,
+    .adb          = DB_OGN,
     .idpref       = ID_TYPE,
     .vmode        = VIEW_MODE_STATUS,
     .voice        = VOICE_OFF,
@@ -2674,6 +2674,18 @@ static void ESP32_EEPROM_extension(int cmd)
                 }
               }
 
+              JsonVariant adb = root["adb"];
+              if (adb.success()) {
+                const char * adb_s = adb.as<char*>();
+                if (!strcmp(adb_s,"NONE")) {
+                  ui_settings.adb = DB_NONE;
+                } else if (!strcmp(adb_s,"FLN")) {
+                  ui_settings.adb = DB_FLN;
+                } else if (!strcmp(adb_s,"OGN")) {
+                  ui_settings.adb = DB_OGN;
+                }
+              }
+
               JsonVariant idpref = root["idpref"];
               if (idpref.success()) {
                 const char * idpref_s = idpref.as<char*>();
@@ -4421,13 +4433,25 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 static bool ESP32_ADB_setup()
 {
   if (FATFS_is_mounted) {
-    const char fileName[] = "/Aircrafts/ogn.cdb";
+    const char *fileName;
 
-    if (ucdb.open(fileName) != CDB_OK) {
-      Serial.print("Invalid CDB: ");
-      Serial.println(fileName);
-    } else {
-      ADB_is_open = true;
+    if (ui->adb == DB_OGN) {
+      fileName = "/Aircrafts/ogn.cdb";
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid OGN CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
+    }
+    if (ui->adb == DB_FLN) {
+      fileName = "/Aircrafts/fln.cdb";
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid FLN CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
     }
   }
 

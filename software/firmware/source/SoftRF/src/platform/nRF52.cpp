@@ -241,7 +241,7 @@ ui_settings_t ui_settings = {
     .protocol     = PROTOCOL_NMEA,
     .rotate       = ROTATE_0,
     .orientation  = DIRECTION_TRACK_UP,
-    .adb          = DB_NONE,
+    .adb          = DB_OGN,
     .idpref       = ID_TYPE,
     .vmode        = VIEW_MODE_STATUS,
     .voice        = VOICE_OFF,
@@ -1173,7 +1173,7 @@ static void nRF52_EEPROM_extension(int cmd)
       strcpy(ui->key,    "");
       ui->rotate       = ROTATE_0;
       ui->orientation  = DIRECTION_TRACK_UP;
-      ui->adb          = DB_NONE;
+      ui->adb          = DB_OGN;
       ui->idpref       = ID_TYPE;
       ui->vmode        = VIEW_MODE_STATUS;
       ui->voice        = VOICE_OFF;
@@ -1205,6 +1205,18 @@ static void nRF52_EEPROM_extension(int cmd)
               if (!strcmp(msg_class_s,"SOFTRF")) {
                 parseSettings  (root);
                 parseUISettings(root);
+
+                JsonVariant adb = root["adb"];
+                if (adb.success()) {
+                  const char * adb_s = adb.as<char*>();
+                  if (!strcmp(adb_s,"NONE")) {
+                    ui_settings.adb = DB_NONE;
+                  } else if (!strcmp(adb_s,"FLN")) {
+                    ui_settings.adb = DB_FLN;
+                  } else if (!strcmp(adb_s,"OGN")) {
+                    ui_settings.adb = DB_OGN;
+                  }
+                }
 
 #if defined(ENABLE_PROL)
                 JsonVariant fromcall = root["fromcall"];
@@ -1875,13 +1887,25 @@ IODev_ops_t nRF52_USBSerial_ops = {
 static bool nRF52_ADB_setup()
 {
   if (FATFS_is_mounted) {
-    const char fileName[] = "/Aircrafts/ogn.cdb";
+    const char *fileName;
 
-    if (ucdb.open(fileName) != CDB_OK) {
-      Serial.print("Invalid CDB: ");
-      Serial.println(fileName);
-    } else {
-      ADB_is_open = true;
+    if (ui->adb == DB_OGN) {
+      fileName = "/Aircrafts/ogn.cdb";
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid OGN CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
+    }
+    if (ui->adb == DB_FLN) {
+      fileName = "/Aircrafts/fln.cdb";
+      if (ucdb.open(fileName) != CDB_OK) {
+        Serial.print("Invalid FLN CDB: ");
+        Serial.println(fileName);
+      } else {
+        ADB_is_open = true;
+      }
     }
   }
 
