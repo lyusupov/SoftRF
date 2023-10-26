@@ -32,7 +32,7 @@ jobs:
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
             'raspberry',
-            # 'energia:cc13xx:LAUNCHXL_CC1310',
+            'energia:cc13xx:LAUNCHXL_CC1310',
             'CubeCell:CubeCell:CubeCell-GPS',
             'CubeCell:CubeCell:CubeCell-Board-PRO',
             'adafruit:nrf52:pca10056',
