@@ -92,6 +92,7 @@ const rf_proto_desc_t prol_proto_desc = {
   .slot1            = {0, 0}
 };
 
+/* AprsIcon array is borrowed from OGN project */
 static const char *AprsIcon[16] = // Icons for various FLARM acftType's
 {  "/z",  //  0 = ?
    "/'",  //  1 = (moto-)glider    (most frequent)

@@ -292,6 +292,7 @@ struct rst_info {
 //#define EXCLUDE_IMU
 #define USE_OGN_ENCRYPTION
 #define ENABLE_PROL
+//#define ENABLE_REMOTE_ID
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"

@@ -1295,6 +1295,19 @@ BLEMidi       blemidi;
 MIDI_CREATE_INSTANCE(BLEMidi, blemidi, MIDI_BLE);
 #endif /* USE_BLE_MIDI */
 
+#if defined(ENABLE_REMOTE_ID)
+#include "../protocol/radio/RemoteID.h"
+
+#define UUID16_COMPANY_ID_ASTM 0xFFFA
+
+static unsigned long RID_Time_Marker = 0;
+
+BLEService    BLE_ODID_service;
+
+static const uint8_t ODID_Uuid[] = {0x00, 0x00, 0xff, 0xfa, 0x00, 0x00, 0x10, 0x00,
+                                    0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb};
+#endif /* ENABLE_REMOTE_ID */
+
 String BT_name = HOSTNAME;
 
 #define UUID16_COMPANY_ID_NORDIC 0x0059
@@ -1314,6 +1327,7 @@ void startAdv(void)
   bool no_data = (settings->nmea_out != NMEA_BLUETOOTH  &&
                   settings->gdl90    != GDL90_BLUETOOTH &&
                   settings->d1090    != D1090_BLUETOOTH);
+  bool odid = false /* true */;
 
   // Advertising packet
 
@@ -1335,6 +1349,12 @@ void startAdv(void)
     Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
     Bluefruit.Advertising.addTxPower();
 
+#if defined(ENABLE_REMOTE_ID)
+    if (odid) {
+      Bluefruit.Advertising.addService(BLE_ODID_service);
+      Bluefruit.Advertising.addName();
+    } else
+#endif /* ENABLE_REMOTE_ID */
 #if defined(USE_BLE_MIDI)
     if (settings->volume != BUZZER_OFF) {
       Bluefruit.Advertising.addService(blemidi, bleuart_HM10);
@@ -1351,7 +1371,9 @@ void startAdv(void)
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
-  Bluefruit.ScanResponse.addName();
+  if (!odid) {
+    Bluefruit.ScanResponse.addName();
+  }
 
   /* Start Advertising
    * - Enable auto advertising if disconnected
@@ -1442,6 +1464,11 @@ void nRF52_Bluetooth_setup()
   blebas.begin();
   blebas.write(100);
 
+#if defined(ENABLE_REMOTE_ID)
+  BLE_ODID_service.setUuid(BLEUuid(ODID_Uuid /* UUID16_COMPANY_ID_ASTM */));
+  BLE_ODID_service.begin();
+#endif /* ENABLE_REMOTE_ID */
+
   // Start SensBox Service
   blesens.begin();
 
@@ -1461,6 +1488,34 @@ void nRF52_Bluetooth_setup()
 
   BLE_Notify_TimeMarker  = millis();
   BLE_SensBox_TimeMarker = millis();
+
+#if defined(ENABLE_REMOTE_ID)
+  memset(&utm_parameters,0,sizeof(utm_parameters));
+
+#if 0
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-1234ABCDEFGH");
+#elif defined(ARDUINO_ARCH_ESP32)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP32");
+#elif defined(ARDUINO_ARCH_ESP8266)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP8266");
+#elif defined(ARDUINO_ARCH_RP2040)
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-PICOW");
+#else
+  strcpy(utm_parameters.UAS_operator,"GBR-OP-UNKNOWN");
+#endif
+
+  utm_parameters.region      = 1;
+  utm_parameters.EU_category = 1;
+  utm_parameters.EU_class    = 5;
+
+  squitter.init(&utm_parameters);
+
+  memset(&utm_data,0,sizeof(utm_data));
+
+  utm_data.satellites = 8;
+
+  RID_Time_Marker = millis();
+#endif /* ENABLE_REMOTE_ID */
 }
 
 /*********************************************************************
@@ -1491,6 +1546,17 @@ static void nRF52_Bluetooth_loop()
     blesens.notify_sys (sens_status);
     BLE_SensBox_TimeMarker = millis();
   }
+
+#if defined(ENABLE_REMOTE_ID)
+  if (isValidFix()) {
+    if ((millis() - RID_Time_Marker) > (RID_TX_INTERVAL_MIN + RID_TX_INTERVAL_MAX)/2) {
+      rid_encode((void *) &utm_data, &ThisAircraft);
+      squitter.transmit(&utm_data);
+
+      RID_Time_Marker = millis();
+    }
+  }
+#endif /* ENABLE_REMOTE_ID */
 }
 
 static void nRF52_Bluetooth_fini()
