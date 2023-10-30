@@ -1370,7 +1370,10 @@ void startAdv(void)
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
-  if (!rid_enabled()) {
+#if defined(ENABLE_REMOTE_ID)
+  if (!rid_enabled()) 
+#endif /* ENABLE_REMOTE_ID */
+  {
     Bluefruit.ScanResponse.addName();
   }
 
