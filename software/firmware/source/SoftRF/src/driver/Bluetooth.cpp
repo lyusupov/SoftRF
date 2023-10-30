@@ -1428,6 +1428,11 @@ void nRF52_Bluetooth_setup()
   BT_name += "-";
   BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
+#if defined(ENABLE_REMOTE_ID)
+  rid_init();
+  RID_Time_Marker = millis();
+#endif /* ENABLE_REMOTE_ID */
+
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behavior, but provided
   // here in case you want to control this LED manually via PIN 19
@@ -1492,11 +1497,6 @@ void nRF52_Bluetooth_setup()
 
   BLE_Notify_TimeMarker  = millis();
   BLE_SensBox_TimeMarker = millis();
-
-#if defined(ENABLE_REMOTE_ID)
-  rid_init();
-  RID_Time_Marker = millis();
-#endif /* ENABLE_REMOTE_ID */
 }
 
 /*********************************************************************
@@ -1530,7 +1530,7 @@ static void nRF52_Bluetooth_loop()
 
 #if defined(ENABLE_REMOTE_ID)
   if (rid_enabled() && isValidFix()) {
-    if ((millis() - RID_Time_Marker) > (RID_TX_INTERVAL_MIN + RID_TX_INTERVAL_MAX)/2) {
+    if ((millis() - RID_Time_Marker) > 74) {
       rid_encode((void *) &utm_data, &ThisAircraft);
       squitter.transmit(&utm_data);
 

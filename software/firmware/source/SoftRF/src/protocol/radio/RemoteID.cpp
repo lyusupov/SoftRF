@@ -55,9 +55,11 @@ bool rid_init() {
 
   if (strlen(RID_Drone_ID) > 0) {
     strcpy(utm_parameters.UAV_id, RID_Drone_ID);
+    utm_parameters.ID_type = ODID_IDTYPE_CAA_REGISTRATION_ID;
   } else {
     snprintf(utm_parameters.UAV_id, sizeof(utm_parameters.UAV_id), "%08X",
              SoC->getChipId());
+    utm_parameters.ID_type = ODID_IDTYPE_SERIAL_NUMBER;
   }
 
   utm_parameters.region      = ODID_CLASSIFICATION_TYPE_EU;
@@ -125,6 +127,11 @@ size_t rid_encode(void *pkt, ufo_t *this_aircraft) {
   utm_data.months     = (int) gnss.date.month();
   utm_data.years      = (int) gnss.date.year();
 
+/*
+ * SATS_LEVEL_1   4
+ * SATS_LEVEL_2   7
+ * SATS_LEVEL_3  10
+ */
   utm_data.satellites = (int) gnss.satellites.value();
 
   return 0;
