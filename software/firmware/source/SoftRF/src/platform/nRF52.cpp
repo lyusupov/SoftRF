@@ -53,6 +53,10 @@
 #include <MIDI.h>
 #endif /* USE_BLE_MIDI || USE_USB_MIDI */
 
+#if defined(ENABLE_REMOTE_ID)
+#include "../protocol/radio/RemoteID.h"
+#endif /* ENABLE_REMOTE_ID */
+
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
 
@@ -1234,6 +1238,22 @@ static void nRF52_EEPROM_extension(int cmd)
                   }
                 }
 #endif /* ENABLE_PROL */
+#if defined(ENABLE_REMOTE_ID)
+                JsonVariant opid = root["uas_opid"];
+                if (opid.success()) {
+                  const char * opid_s = opid.as<char*>();
+                  if (strlen(opid_s) < sizeof(RID_Operator_ID)) {
+                    strncpy(RID_Operator_ID, opid_s, sizeof(RID_Operator_ID));
+                  }
+                }
+                JsonVariant drid = root["uas_drid"];
+                if (drid.success()) {
+                  const char * drid_s = drid.as<char*>();
+                  if (strlen(drid_s) < sizeof(RID_Drone_ID)) {
+                    strncpy(RID_Drone_ID, drid_s, sizeof(RID_Drone_ID));
+                  }
+                }
+#endif /* ENABLE_REMOTE_ID */
               }
             }
           }

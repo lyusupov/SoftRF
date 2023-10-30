@@ -308,7 +308,6 @@ struct rst_info {
 //#define USE_GDL90_MSL
 #define USE_OGN_ENCRYPTION
 #define ENABLE_PROL
-//#define ENABLE_REMOTE_ID
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8, M10 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
@@ -339,6 +338,8 @@ struct rst_info {
 #define USE_U10_EXT
 #define ENABLE_RECORDER
 #define USE_SA8X8
+/* Experimental */
+//#define ENABLE_REMOTE_ID
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(USE_USB_HOST)

@@ -40,7 +40,7 @@
 #include <XPowersLib.h>
 #include <pcf8563.h>
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
 #include <esp_mac.h>
 #include <esp_flash.h>
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -59,6 +59,9 @@
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#if defined(ENABLE_REMOTE_ID)
+#include "../protocol/radio/RemoteID.h"
+#endif /* ENABLE_REMOTE_ID */
 
 #if defined(USE_TFT)
 #include <TFT_eSPI.h>
@@ -425,7 +428,7 @@ static void ESP32_setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
   size_t flash_size;
   esp_flash_get_size(NULL, (uint32_t *) &flash_size);
 #else
@@ -524,7 +527,7 @@ static void ESP32_setup()
     }
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32)
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 #else
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
@@ -563,9 +566,7 @@ static void ESP32_setup()
   }
 
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN) {
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-    /* TBD */
-#else
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
     ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -2310,9 +2311,7 @@ static void ESP32_Sound_test(int var)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-    /* TBD */
-#else
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
     ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -2320,6 +2319,22 @@ static void ESP32_Sound_test(int var)
     if (var == REASON_DEFAULT_RST ||
         var == REASON_EXT_SYS_RST ||
         var == REASON_SOFT_RESTART) {
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 640);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 840);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);
+    } else if (var == REASON_WDT_RST) {
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);
+    } else {
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 840);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 640);delay(500);
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);
+#else
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);delay(500);
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 640);delay(500);
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 840);delay(500);
@@ -2334,14 +2349,15 @@ static void ESP32_Sound_test(int var)
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 840);delay(500);
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 640);delay(500);
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);
+#endif /* ESP_IDF_VERSION_MAJOR */
     }
     delay(600);
 
-    ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
-
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-    /* TBD */
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+    ledcWriteTone(SOC_GPIO_PIN_BUZZER, 0); // off
+    ledcDetach(SOC_GPIO_PIN_BUZZER);
 #else
+    ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
     ledcDetachPin(SOC_GPIO_PIN_BUZZER);
 #endif /* ESP_IDF_VERSION_MAJOR */
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
@@ -2398,21 +2414,22 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-      /* TBD */
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, hz);
+      ledcWrite(SOC_GPIO_PIN_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
+    } else {
+      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 0); // off
+
+      ledcDetach(SOC_GPIO_PIN_BUZZER);
 #else
       ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
       ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
-#endif /* ESP_IDF_VERSION_MAJOR */
 
       ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
       ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
     } else {
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-      /* TBD */
-#else
       ledcDetachPin(SOC_GPIO_PIN_BUZZER);
 #endif /* ESP_IDF_VERSION_MAJOR */
       pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
@@ -2493,7 +2510,7 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 #else
     tcpip_adapter_dhcps_option(
@@ -2512,7 +2529,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
 {
   IPAddress broadcastIp;
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
   /* TBD */
 #else
   tcpip_adapter_ip_info_t info;
@@ -2550,7 +2567,7 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 #else
     tcpip_adapter_sta_list_t infoList;
@@ -2599,7 +2616,7 @@ static int ESP32_WiFi_clients_count()
     wifi_sta_list_t stations;
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 
     return stations.num;
@@ -2716,7 +2733,6 @@ static void ESP32_EEPROM_extension(int cmd)
                 }
               }
 #endif /* USE_SA8X8 || ENABLE_PROL */
-
 #if defined(USE_SA8X8)
               JsonVariant sa868 = root["sa868"];
               if (sa868.success()) {
@@ -2728,6 +2744,22 @@ static void ESP32_EEPROM_extension(int cmd)
                 }
               }
 #endif /* USE_SA8X8 */
+#if defined(ENABLE_REMOTE_ID)
+                JsonVariant opid = root["uas_opid"];
+                if (opid.success()) {
+                  const char * opid_s = opid.as<char*>();
+                  if (strlen(opid_s) < sizeof(RID_Operator_ID)) {
+                    strncpy(RID_Operator_ID, opid_s, sizeof(RID_Operator_ID));
+                  }
+                }
+                JsonVariant drid = root["uas_drid"];
+                if (drid.success()) {
+                  const char * drid_s = drid.as<char*>();
+                  if (strlen(drid_s) < sizeof(RID_Drone_ID)) {
+                    strncpy(RID_Drone_ID, drid_s, sizeof(RID_Drone_ID));
+                  }
+                }
+#endif /* ENABLE_REMOTE_ID */
             }
           }
         }
@@ -3092,7 +3124,7 @@ static byte ESP32_Display_setup()
                  SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
                  SOC_GPIO_PIN_TWATCH_TFT_BL;
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 #else
     ledcAttachPin(bl_pin, BACKLIGHT_CHANNEL);
@@ -3557,7 +3589,7 @@ static void ESP32_Display_fini(int reason)
                      SOC_GPIO_PIN_HELTRK_TFT_BL_V05 :
                      SOC_GPIO_PIN_TWATCH_TFT_BL;
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
         /* TBD */
 #else
         ledcDetachPin(bl_pin);

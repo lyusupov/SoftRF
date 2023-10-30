@@ -1327,7 +1327,6 @@ void startAdv(void)
   bool no_data = (settings->nmea_out != NMEA_BLUETOOTH  &&
                   settings->gdl90    != GDL90_BLUETOOTH &&
                   settings->d1090    != D1090_BLUETOOTH);
-  bool odid = false /* true */;
 
   // Advertising packet
 
@@ -1350,7 +1349,7 @@ void startAdv(void)
     Bluefruit.Advertising.addTxPower();
 
 #if defined(ENABLE_REMOTE_ID)
-    if (odid) {
+    if (rid_enabled()) {
       Bluefruit.Advertising.addService(BLE_ODID_service);
       Bluefruit.Advertising.addName();
     } else
@@ -1371,7 +1370,7 @@ void startAdv(void)
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet
-  if (!odid) {
+  if (!rid_enabled()) {
     Bluefruit.ScanResponse.addName();
   }
 
@@ -1465,8 +1464,10 @@ void nRF52_Bluetooth_setup()
   blebas.write(100);
 
 #if defined(ENABLE_REMOTE_ID)
-  BLE_ODID_service.setUuid(BLEUuid(ODID_Uuid /* UUID16_COMPANY_ID_ASTM */));
-  BLE_ODID_service.begin();
+  if (rid_enabled()) {
+    BLE_ODID_service.setUuid(BLEUuid(ODID_Uuid /* UUID16_COMPANY_ID_ASTM */));
+    BLE_ODID_service.begin();
+  }
 #endif /* ENABLE_REMOTE_ID */
 
   // Start SensBox Service
@@ -1490,30 +1491,7 @@ void nRF52_Bluetooth_setup()
   BLE_SensBox_TimeMarker = millis();
 
 #if defined(ENABLE_REMOTE_ID)
-  memset(&utm_parameters,0,sizeof(utm_parameters));
-
-#if 0
-  strcpy(utm_parameters.UAS_operator,"GBR-OP-1234ABCDEFGH");
-#elif defined(ARDUINO_ARCH_ESP32)
-  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP32");
-#elif defined(ARDUINO_ARCH_ESP8266)
-  strcpy(utm_parameters.UAS_operator,"GBR-OP-ESP8266");
-#elif defined(ARDUINO_ARCH_RP2040)
-  strcpy(utm_parameters.UAS_operator,"GBR-OP-PICOW");
-#else
-  strcpy(utm_parameters.UAS_operator,"GBR-OP-UNKNOWN");
-#endif
-
-  utm_parameters.region      = 1;
-  utm_parameters.EU_category = 1;
-  utm_parameters.EU_class    = 5;
-
-  squitter.init(&utm_parameters);
-
-  memset(&utm_data,0,sizeof(utm_data));
-
-  utm_data.satellites = 8;
-
+  rid_init();
   RID_Time_Marker = millis();
 #endif /* ENABLE_REMOTE_ID */
 }
@@ -1548,7 +1526,7 @@ static void nRF52_Bluetooth_loop()
   }
 
 #if defined(ENABLE_REMOTE_ID)
-  if (isValidFix()) {
+  if (rid_enabled() && isValidFix()) {
     if ((millis() - RID_Time_Marker) > (RID_TX_INTERVAL_MIN + RID_TX_INTERVAL_MAX)/2) {
       rid_encode((void *) &utm_data, &ThisAircraft);
       squitter.transmit(&utm_data);

@@ -30,8 +30,10 @@ typedef struct {
 
 } rid_packet_t;
 
-bool   rid_decode(void *, ufo_t *, ufo_t *);
+bool   rid_init();
+bool   rid_enabled();
 size_t rid_encode(void *, ufo_t *);
+bool   rid_decode(void *, ufo_t *, ufo_t *);
 
 #if defined(ENABLE_REMOTE_ID)
 #include <id_open.h>
@@ -39,6 +41,9 @@ size_t rid_encode(void *, ufo_t *);
 extern ID_OpenDrone          squitter;
 extern struct UTM_parameters utm_parameters;
 extern struct UTM_data       utm_data;
+
+extern char   RID_Operator_ID[ID_SIZE];
+extern char   RID_Drone_ID   [ID_SIZE];
 
 extern double RID_Base_Lat;
 extern double RID_Base_Lon;
