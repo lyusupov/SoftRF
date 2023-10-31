@@ -22,6 +22,7 @@
 
 #include "../../../SoftRF.h"
 #include "../../driver/RF.h"
+#include "../../driver/EEPROM.h"
 
 #if defined(ENABLE_REMOTE_ID)
 #include <id_open.h>
@@ -45,6 +46,28 @@ float  RID_Base_Alt = 0.0;
 
 static bool rid_status = false;
 
+const uint8_t aircraft_type_to_odid[] PROGMEM = {
+	ODID_UATYPE_OTHER,
+	ODID_UATYPE_GLIDER,
+	ODID_UATYPE_TETHERED_POWERED_AIRCRAFT,
+	ODID_UATYPE_HELICOPTER_OR_MULTIROTOR,
+	ODID_UATYPE_FREE_FALL_PARACHUTE,
+	ODID_UATYPE_AEROPLANE,
+	ODID_UATYPE_GLIDER,
+	ODID_UATYPE_GLIDER,
+	ODID_UATYPE_AEROPLANE,
+	ODID_UATYPE_AEROPLANE,
+	ODID_UATYPE_OTHER,
+	ODID_UATYPE_FREE_BALLOON,
+	ODID_UATYPE_AIRSHIP,
+	ODID_UATYPE_OTHER,
+	ODID_UATYPE_OTHER,
+	ODID_UATYPE_GROUND_OBSTACLE
+};
+
+#define AT_TO_ODID(x)  (x > 15 ? \
+   ODID_UATYPE_OTHER : pgm_read_byte(&aircraft_type_to_odid[x]))
+
 bool rid_init() {
   memset(&utm_parameters,0,sizeof(utm_parameters));
 
@@ -62,6 +85,8 @@ bool rid_init() {
     utm_parameters.ID_type = ODID_IDTYPE_SERIAL_NUMBER;
   }
 
+  utm_parameters.UA_type     = AT_TO_ODID(settings->aircraft_type);
+  utm_parameters.ID_type2    = ODID_IDTYPE_NONE;
   utm_parameters.region      = ODID_CLASSIFICATION_TYPE_EU;
   utm_parameters.EU_category = ODID_CATEGORY_EU_OPEN;
   utm_parameters.EU_class    = ODID_CLASS_EU_CLASS_4;
