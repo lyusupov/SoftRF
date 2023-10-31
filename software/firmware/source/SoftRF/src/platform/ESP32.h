@@ -339,7 +339,7 @@ struct rst_info {
 #define ENABLE_RECORDER
 #define USE_SA8X8
 /* Experimental */
-//#define ENABLE_REMOTE_ID
+#define ENABLE_REMOTE_ID
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(USE_USB_HOST)

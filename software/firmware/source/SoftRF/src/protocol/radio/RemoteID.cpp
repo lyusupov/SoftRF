@@ -104,17 +104,6 @@ bool rid_enabled() {
 
 size_t rid_encode(void *pkt, ufo_t *this_aircraft) {
 
-  uint32_t id = this_aircraft->addr & 0x00FFFFFF;
-
-#if !defined(SOFTRF_ADDRESS)
-  uint8_t addr_type = ADDR_TYPE_ANONYMOUS;
-#else
-  uint8_t addr_type = id == SOFTRF_ADDRESS ? ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS;
-#endif
-
-  uint8_t acft_type = this_aircraft->aircraft_type > AIRCRAFT_TYPE_STATIC ?
-          AIRCRAFT_TYPE_UNKNOWN : this_aircraft->aircraft_type;
-
   utm_data.latitude_d  = (double) this_aircraft->latitude;
   utm_data.longitude_d = (double) this_aircraft->longitude;
   utm_data.alt_msl_m   = (float)  this_aircraft->altitude;

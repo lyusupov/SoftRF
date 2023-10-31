@@ -21,8 +21,8 @@
 #ifndef PROTOCOL_RID_H
 #define PROTOCOL_RID_H
 
-#define RID_TX_INTERVAL_MIN  900  /* in ms */
-#define RID_TX_INTERVAL_MAX  1100
+#define RID_TX_INTERVAL_MIN  490  /* in ms */
+#define RID_TX_INTERVAL_MAX  510
 
 typedef struct {
 
