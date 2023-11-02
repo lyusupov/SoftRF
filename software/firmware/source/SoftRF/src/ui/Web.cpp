@@ -950,11 +950,14 @@ typedef struct
 {
   String filename;
   String fsize;
+  uint16_t date;
+  uint16_t time;
+  uint16_t s_ndx; /* reserved */
 } fileinfo;
 
 String   webpage;
 fileinfo Filenames[MAX_IGC_FILE_NUM];
-int      numfiles;
+static int numfiles;
 
 String ConvBinUnits(int bytes, int resolution) {
   if      (bytes < 1024)                 {
@@ -973,6 +976,7 @@ void Flights() {
   char buf[48];
   String filename;
   numfiles = 0;
+
   File32 root = FILESYSTEM.open(FLIGHTS_DIR);
   if (root) {
     root.rewindDirectory();
@@ -984,6 +988,7 @@ void Flights() {
         if (filename.endsWith(".igc") || filename.endsWith(".IGC")) {
           Filenames[numfiles].filename = (filename.startsWith("/") ? filename.substring(1) : filename);
           Filenames[numfiles].fsize    = ConvBinUnits(file.size(), 1);
+          file.getModifyDateTime(&Filenames[numfiles].date, &Filenames[numfiles].time);
           numfiles++;
 
           if (numfiles >= MAX_IGC_FILE_NUM) break;
@@ -1015,19 +1020,21 @@ void Handle_Flight_Download() {
     webpage += "<table width=100%%>";
     webpage += "<tr><th align=left>File Name</th><th align=right>Size</th></tr>";
     webpage += "<tr><td><hr></td><td><hr></td></tr>";
-    while (index < numfiles) {
+
+    index = numfiles - 1;
+    while (index >= 0) {
       filename = Filenames[index].filename;
       webpage += "<tr><td align=left><a href='" FLIGHTS_DIR "/" + filename +
                  "'>" + filename + "</a><td align=right>" +
                  Filenames[index].fsize + "</td></tr>";
-      index++;
+      index--;
     }
     webpage += "<tr><td><hr></td><td><hr></td></tr>";
-    if (index >= MAX_IGC_FILE_NUM) {
+    if (numfiles >= MAX_IGC_FILE_NUM) {
       webpage += "<tr><td align=left>view is limited to " +
                  String(MAX_IGC_FILE_NUM) + " files only</td></tr>";
     } else {
-      webpage += "<tr><td align=left>" + String(index) + " file(s) total</td></tr>";
+      webpage += "<tr><td align=left>" + String(numfiles) + " file(s) total</td></tr>";
     }
     webpage += "</table>";
   } else {
