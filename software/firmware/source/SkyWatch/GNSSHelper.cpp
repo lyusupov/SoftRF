@@ -74,7 +74,8 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_SONY]    = "SONY",
   [GNSS_MODULE_AT65]    = "AT65",
   [GNSS_MODULE_MT33]    = "MT33",
-  [GNSS_MODULE_GOKE]    = "GOKE"
+  [GNSS_MODULE_GOKE]    = "GOKE",
+  [GNSS_MODULE_UC65]    = "UC65"
 };
 
 #if defined(ENABLE_GNSS_STATS)
@@ -84,6 +85,7 @@ const char *GNSS_name[] = {
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
  * MT33: GGA -  48 , RMC - 175
+ * UC65: GGA - TBD , RMC - TBD
  */
 
 gnss_stat_t gnss_stats;
@@ -1061,6 +1063,88 @@ const gnss_chip_ops_t at65_ops = {
 };
 #endif /* EXCLUDE_GNSS_AT65 */
 
+#if !defined(EXCLUDE_GNSS_UC65)
+static gnss_id_t uc65_probe()
+{
+  /* Firmware version request */
+  return nmea_handshake("$PDTINFO\r\n", "$PDTINFO,FB2S UM600", false) ?
+                        GNSS_MODULE_UC65 : GNSS_MODULE_NMEA;
+}
+
+static bool uc65_setup()
+{
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
+
+  Serial_GNSS_Out.write("$PDTINFO\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = Serial_GNSS_In.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 14) {
+    for (int i=14; i < len; i++) {
+      if (GNSSbuf[i] == '*') {
+        GNSSbuf[i] = 0;
+      }
+    }
+    Serial.print(F("INFO: GNSS module FW version: "));
+    Serial.println((char *) &GNSSbuf[14]);
+  }
+
+  delay(250);
+#endif
+
+  /*
+   * Factory default:
+   * $CFGSYS,H35155 = GPS + BDS + GLO + GAL + QZSS + SBAS
+   * $CFGTP,1000000,500000,1,0,0,0 = PPS is enabled, 500 ms pulse, 1 s interval
+   */
+  Serial_GNSS_Out.write("$CFGMSG,0,2,0\r\n"); delay(250); /* GSA off */
+  Serial_GNSS_Out.write("$CFGMSG,0,3,0\r\n"); delay(250); /* GSV off */
+
+  return true;
+}
+
+static void uc65_loop()
+{
+
+}
+
+static void uc65_fini()
+{
+
+}
+
+const gnss_chip_ops_t uc65_ops = {
+  uc65_probe,
+  uc65_setup,
+  uc65_loop,
+  uc65_fini,
+  0 /* GGA */, 0 /* RMC */
+};
+#endif /* EXCLUDE_GNSS_UC65 */
+
 static bool GNSS_fix_cache = false;
 
 bool isValidGNSSFix()
@@ -1081,7 +1165,8 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_LEGO      ||
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_BALKAN    ||
-      hw_info.model == SOFTRF_MODEL_HAM)
+      hw_info.model == SOFTRF_MODEL_HAM       ||
+      hw_info.model == SOFTRF_MODEL_MIDI)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
@@ -1144,6 +1229,10 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &at65_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_AT65 */
+#if !defined(EXCLUDE_GNSS_UC65)
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &uc65_ops,   gnss_chip->probe()) : gnss_id;
+#endif /* EXCLUDE_GNSS_UC65 */
 
   gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
 
