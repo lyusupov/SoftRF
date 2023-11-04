@@ -1237,6 +1237,13 @@ static void nRF52_EEPROM_extension(int cmd)
                     strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
                   }
                 }
+                JsonVariant path = root["path"];
+                if (path.success()) {
+                  const char * path_s = path.as<char*>();
+                  if (strlen(path_s) < sizeof(APRS_Path)) {
+                    strncpy(APRS_Path, path_s, sizeof(APRS_Path));
+                  }
+                }
 #endif /* ENABLE_PROL */
 #if defined(ENABLE_REMOTE_ID)
                 JsonVariant opid = root["uas_opid"];

@@ -2732,6 +2732,13 @@ static void ESP32_EEPROM_extension(int cmd)
                   strncpy(APRS_ToCall, tocall_s, sizeof(APRS_ToCall));
                 }
               }
+              JsonVariant path = root["path"];
+              if (path.success()) {
+                const char * path_s = path.as<char*>();
+                if (strlen(path_s) < sizeof(APRS_Path)) {
+                  strncpy(APRS_Path, path_s, sizeof(APRS_Path));
+                }
+              }
 #endif /* USE_SA8X8 || ENABLE_PROL */
 #if defined(USE_SA8X8)
               JsonVariant sa868 = root["sa868"];

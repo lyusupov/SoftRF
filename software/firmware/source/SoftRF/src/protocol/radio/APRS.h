@@ -28,7 +28,7 @@
 
 #define APRS_SYNCWORD        { 0x00 }            /* TBD */
 #define APRS_SYNCWORD_SIZE   1
-#define APRS_PAYLOAD_SIZE    120                 /* TBD */
+#define APRS_PAYLOAD_SIZE    120 /* TBD ; 04.11.2023 actual size is 106 bytes */
 #define APRS_CRC_TYPE        RF_CHECKSUM_TYPE_CCITT_FFFF
 #define APRS_CRC_SIZE        2
 
@@ -63,5 +63,6 @@ extern const rf_proto_desc_t prol_proto_desc;
 
 extern char APRS_FromCall[10];
 extern char APRS_ToCall  [10];
+extern char APRS_Path    [10];
 
 #endif /* PROTOCOL_APRS_H */

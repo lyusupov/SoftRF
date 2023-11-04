@@ -119,6 +119,7 @@ ParseAPRS aprsParse;
 
 char APRS_FromCall[10] = "";
 char APRS_ToCall  [10] = "OGFLR"; // TODO: make use of assigned APSRFx value
+char APRS_Path    [10] = "";      // "WIDE1-1"
 
 int packet2Raw(String &tnc2, AX25Msg &Packet) {
   if (Packet.len < 5) return 0;
@@ -278,8 +279,7 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
   }
 
   snprintf(buf, sizeof(buf),
-           "%s>%s:"
-           "/"
+           "%s>%s" "%s%s" ":" "/"
            "%02d%02d%02dh"
            "%02d%05.2f%c"
            "%c"
@@ -290,8 +290,8 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
            "id%08X "
            "%c%sfpm "
            "+0.0rot" /* " 7.8dB -1.6kHz gps8x3" */,
-           strlen(APRS_FromCall) == 0 ? id_s : APRS_FromCall,
-           APRS_ToCall,
+           strlen(APRS_FromCall) == 0 ? id_s : APRS_FromCall, APRS_ToCall,
+           strlen(APRS_Path) > 0 ? "," : "", APRS_Path,
            gnss.time.hour(), gnss.time.minute(), gnss.time.second(),
            abs(lat_int), fabsf(lat_dec * 60), lat < 0 ? 'S' : 'N',
            AprsIcon[acft_type][0],
@@ -304,6 +304,10 @@ size_t aprs_encode(void *pkt, ufo_t *this_aircraft) {
            '0' + abs((int) (lon_dec * 60000)) % 10,
            id | (XX << 24),
            this_aircraft->vs < 0 ? '-' : '+', fpm_s);
+
+#if 0 // ndef RASPBERRY_PI
+  Serial.print(strlen(buf)); Serial.print(" , "); Serial.println(buf);
+#endif
 
   strcpy((char *) pkt, buf);
   return strlen(buf) + 1;
