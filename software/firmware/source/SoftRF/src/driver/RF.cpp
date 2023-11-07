@@ -2469,6 +2469,14 @@ static void sa8x8_setup()
   if (controller.getModel() == Model::SA_818) {
     controller.closeTail();
   }
+
+  /*
+   * Owners of T-TWR Plus V2.0 board with no R22 fix
+   * may consider to increase the volume setting
+   * up to 6 for a better 'APRS sensitivity' at an expense of
+   * very loud sound from the speaker.
+   * A disconnect of the speaker is one of the options to think about.
+   */
   controller.setVolume(1);
 
   protocol_encode = &aprs_encode;

@@ -63,7 +63,7 @@
  *   Pico PIO USB library is developed by sekigon-gonnoc
  *   IniFile library is developed by Steve Marple
  *   MD5 library is developed by Vasilis Georgitzikis
- *   LibAPRS-ESP32 library is developed by Evan Krall and Atten Nakhonthai
+ *   LibAPRS-ESP32 library is developed by Evan Krall and Somkiat Nakhonthai
  *   SA818 library is developed by Gibbon Zen
  *   OpenDroneID library is developed by Steve Jack
  *

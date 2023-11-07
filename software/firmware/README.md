@@ -85,6 +85,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ESP8266Audio library is developed by **Earle Philhower**
  * IniFile library is developed by **Steve Marple**
  * MD5 library is developed by **Vasilis Georgitzikis**
- * LibAPRS-ESP32 library is developed by **Evan Krall** and **Atten Nakhonthai**
+ * LibAPRS-ESP32 library is developed by **Evan Krall** and **Somkiat Nakhonthai**
  * SA818 library is developed by **Gibbon Zen**
  * OpenDroneID library is developed by **Steve Jack**
