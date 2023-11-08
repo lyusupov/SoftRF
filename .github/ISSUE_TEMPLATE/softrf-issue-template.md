@@ -30,6 +30,8 @@ Recommended:
 - [ ]   SkyView EZ
 - [ ]   SkyView Pico
 - [ ]   Uni
+- [ ]   Ham
+- [ ]   Midi
 - [ ]   Mini
 <!-- - [ ]   Bracelet -->
 - [ ]   Academy

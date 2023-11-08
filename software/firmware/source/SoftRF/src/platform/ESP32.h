@@ -223,6 +223,7 @@ extern Adafruit_NeoPixel strip;
 #include "iomap/AiThinker_C3_12F.h"
 #include "iomap/LilyGO_TTWR.h"
 #include "iomap/Heltec_Tracker.h"
+#include "iomap/WT0132C6.h"
 
 extern WebServer server;
 
@@ -240,6 +241,7 @@ enum esp32_board_id {
   ESP32_DEVKIT,
   ESP32_S3_DEVKIT,
   ESP32_C3_DEVKIT,
+  ESP32_C6_DEVKIT,
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
