@@ -33,5 +33,5 @@
 #define SOC_GPIO_PIN_C6_BATTERY         1  /* A0 */
 
 // auxillary
-#define SOC_GPIO_PIN_C6_BUZZER          21  /* 10 */
+#define SOC_GPIO_PIN_C6_BUZZER          21 /* 10 */
 #define SOC_GPIO_PIN_C6_STATUS          SOC_UNUSED_PIN

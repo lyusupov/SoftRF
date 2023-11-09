@@ -43,6 +43,8 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**SkyView Pi**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)
 * for **education** purpose
     * [**Academy Edition**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)
+* for **amateur radio** operators
+    * [**Ham Edition**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * **made in** EU
     * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 
@@ -122,7 +124,7 @@ GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&
 ---|:---:|:---:|:---:|---
 Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|Q4 2016|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [U-blox](https://en.wikipedia.org/wiki/U-blox)<br>6/7/8/9/10|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[Retro](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition)<br>3&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)<br>5&nbsp;[**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)<br>6&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)|Q2 2018|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
-[Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[1&nbsp;**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<br>4&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)|Q2 2019|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
+[Hangzhou ZhongKe](http://www.icofchina.com/)<br>AT6558|[1&nbsp;**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>3&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<br>4&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)<br>5&nbsp;[**Ham**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|Q2 2019|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [Sony<br>CXD5603GF](https://www.sony-semicon.co.jp/e/products/lsi/gps/product.html)|1&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<!-- <br>2&nbsp;[**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) -->|Q4 2019|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>3&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [GOKE](http://www.goke.com/en/)<br>GK9501|[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
@@ -162,11 +164,13 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [ESP32‐C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Ham Edition](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
 * [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
 * [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/Uni)
+* [Midi Edition](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
     * [Firmware installation](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#cubecell)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition.-Quick-start)
