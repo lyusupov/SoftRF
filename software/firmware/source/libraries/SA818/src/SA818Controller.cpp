@@ -87,7 +87,6 @@ bool SA818Controller::connect() {
 }
 
 bool SA818Controller::setGroup(byte bw, float tx_f, float rx_f, int tx_sub, byte sq, int rx_sub) {
-    bw_ = bw;
 
     setBW(bw);
     setTXF(tx_f);

@@ -2339,8 +2339,9 @@ AX25Msg Incoming_APRS_Packet;
 SA818 sa868(&SA8X8_Serial);
 SA818Controller controller(&sa868);
 
-bool afskSync = false;
-int mVrms     = 0;
+bool afskSync            = false;
+int mVrms                = 0;
+uint32_t Voice_Frequency = 0;
 
 cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
 
@@ -2430,40 +2431,47 @@ static void sa8x8_setup()
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
   uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
-  float MHz = frequency / 1000000.0;
+  float TxF_MHz = frequency / 1000000.0;
 
   if (controller.getBand() == Band::UHF) {
     switch (settings->band)
     {
       case RF_BAND_US:
-        MHz = 445.925;
+        TxF_MHz = 445.925;
         break;
       case RF_BAND_AU:
-        MHz = 439.1;
+        TxF_MHz = 439.1;
         break;
       case RF_BAND_NZ:
-        MHz = 432.575;
+        TxF_MHz = 432.575;
         break;
       case RF_BAND_EU:
       default:
-        MHz = 432.5; /* IARU R1 */
-        // MHz = 433.8;
+        TxF_MHz = 432.5; /* IARU R1 */
+        // TxF_MHz = 433.8;
         break;
     }
   }
 
   bool rx = (settings->power_save & POWER_SAVE_NORECEIVE ? false : true);
-  byte sq = rx ? 1: 8;
+  float RxF_MHz = Voice_Frequency && !rx ? Voice_Frequency/1000000.0 : TxF_MHz;
+  byte sq = rx || Voice_Frequency ? 1: 8;
 
   if (controller.getModel() == Model::SA_868) {
-    controller.setGroup(settings->txpower == RF_TX_POWER_FULL ? 0 : 1,
-                        MHz, MHz, 0, sq, 0);
-
+    controller.setBW(settings->txpower == RF_TX_POWER_FULL ? 0 : 1);
     aprs_preamble = 350UL * 3;
     aprs_tail     = 250UL;
   } else {
-    controller.setGroup(0 /* 12.5 KHz */, MHz, MHz, 0, sq, 0);
+    controller.setBW(0 /* 12.5 KHz */);
   }
+
+  controller.setTXF(TxF_MHz);
+  controller.setRXF(RxF_MHz);
+  controller.setTXSub(0);
+  controller.setSQ(sq);
+  controller.setRXSub(0);
+
+  controller.update();
 
   controller.setFilter(1,1,1);
   if (controller.getModel() == Model::SA_818) {
