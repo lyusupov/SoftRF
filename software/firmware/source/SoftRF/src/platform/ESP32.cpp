@@ -375,6 +375,7 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEO
 #if defined(USE_SA8X8)
 #include <SA818Controller.h>
 extern SA818Controller controller;
+extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
 #endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
@@ -2750,6 +2751,10 @@ static void ESP32_EEPROM_extension(int cmd)
                 } else if (!strcmp(sa868_s,"UHF")) {
                   controller.setBand(Band::UHF);
                 }
+              }
+              JsonVariant dfreq = root["dfreq"];
+              if (dfreq.success()) {
+                Data_Frequency = dfreq.as<unsigned int>();
               }
               JsonVariant vfreq = root["vfreq"];
               if (vfreq.success()) {

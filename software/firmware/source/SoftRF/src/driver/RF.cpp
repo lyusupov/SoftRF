@@ -2341,6 +2341,7 @@ SA818Controller controller(&sa868);
 
 bool afskSync            = false;
 int mVrms                = 0;
+uint32_t Data_Frequency  = 0;
 uint32_t Voice_Frequency = 0;
 
 cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
@@ -2433,23 +2434,27 @@ static void sa8x8_setup()
   uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
   float TxF_MHz = frequency / 1000000.0;
 
-  if (controller.getBand() == Band::UHF) {
-    switch (settings->band)
-    {
-      case RF_BAND_US:
-        TxF_MHz = 445.925;
-        break;
-      case RF_BAND_AU:
-        TxF_MHz = 439.1;
-        break;
-      case RF_BAND_NZ:
-        TxF_MHz = 432.575;
-        break;
-      case RF_BAND_EU:
-      default:
-        TxF_MHz = 432.5; /* IARU R1 */
-        // TxF_MHz = 433.8;
-        break;
+  if (Data_Frequency) {
+    TxF_MHz = Data_Frequency / 1000000.0;
+  } else {
+    if (controller.getBand() == Band::UHF) {
+      switch (settings->band)
+      {
+        case RF_BAND_US:
+          TxF_MHz = 445.925;
+          break;
+        case RF_BAND_AU:
+          TxF_MHz = 439.1;
+          break;
+        case RF_BAND_NZ:
+          TxF_MHz = 432.575;
+          break;
+        case RF_BAND_EU:
+        default:
+          TxF_MHz = 432.5; /* IARU R1 */
+          // TxF_MHz = 433.8;
+          break;
+      }
     }
   }
 
