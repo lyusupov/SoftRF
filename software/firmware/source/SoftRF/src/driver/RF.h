@@ -91,7 +91,7 @@ typedef struct rfchip_ops_struct {
   void (*setup)();
   void (*channel)(int8_t);
   bool (*receive)();
-  void (*transmit)();
+  bool (*transmit)();
   void (*shutdown)();
 } rfchip_ops_t;
 

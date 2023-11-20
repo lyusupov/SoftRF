@@ -75,7 +75,7 @@ static bool nrf905_probe(void);
 static void nrf905_setup(void);
 static void nrf905_channel(int8_t);
 static bool nrf905_receive(void);
-static void nrf905_transmit(void);
+static bool nrf905_transmit(void);
 static void nrf905_shutdown(void);
 
 static bool sx1276_probe(void);
@@ -83,7 +83,7 @@ static bool sx1262_probe(void);
 static void sx12xx_setup(void);
 static void sx12xx_channel(int8_t);
 static bool sx12xx_receive(void);
-static void sx12xx_transmit(void);
+static bool sx12xx_transmit(void);
 static void sx1276_shutdown(void);
 static void sx1262_shutdown(void);
 
@@ -91,28 +91,28 @@ static bool uatm_probe(void);
 static void uatm_setup(void);
 static void uatm_channel(int8_t);
 static bool uatm_receive(void);
-static void uatm_transmit(void);
+static bool uatm_transmit(void);
 static void uatm_shutdown(void);
 
 static bool cc13xx_probe(void);
 static void cc13xx_setup(void);
 static void cc13xx_channel(int8_t);
 static bool cc13xx_receive(void);
-static void cc13xx_transmit(void);
+static bool cc13xx_transmit(void);
 static void cc13xx_shutdown(void);
 
 static bool ognrf_probe(void);
 static void ognrf_setup(void);
 static void ognrf_channel(int8_t);
 static bool ognrf_receive(void);
-static void ognrf_transmit(void);
+static bool ognrf_transmit(void);
 static void ognrf_shutdown(void);
 
 static bool sa8x8_probe(void);
 static void sa8x8_setup(void);
 static void sa8x8_channel(int8_t);
 static bool sa8x8_receive(void);
-static void sa8x8_transmit(void);
+static bool sa8x8_transmit(void);
 static void sa8x8_shutdown(void);
 
 #if !defined(EXCLUDE_NRF905)
@@ -465,17 +465,16 @@ bool RF_Transmit(size_t size, bool wait)
 
       if (memcmp(TxBuffer, RxBuffer, RF_tx_size) != 0) {
 
-        rf_chip->transmit(); /* TODO */
-
-        if (settings->nmea_p) {
-          StdOut.print(F("$PSRFO,"));
-          StdOut.print((unsigned long) timestamp);
-          StdOut.print(F(","));
-          StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
-                                 RF_Payload_Size(settings->rf_protocol)));
+        if (rf_chip->transmit()) {
+          if (settings->nmea_p) {
+            StdOut.print(F("$PSRFO,"));
+            StdOut.print((unsigned long) timestamp);
+            StdOut.print(F(","));
+            StdOut.println(Bin2Hex((byte *) &TxBuffer[0],
+                                   RF_Payload_Size(settings->rf_protocol)));
+          }
+          tx_packets_counter++;
         }
-        tx_packets_counter++;
-
       } else {
 
         if (settings->nmea_p) {
@@ -697,7 +696,7 @@ static bool nrf905_receive()
   return success;
 }
 
-static void nrf905_transmit()
+static bool nrf905_transmit()
 {
     nrf905_receive_active = false;
 
@@ -712,6 +711,8 @@ static void nrf905_transmit()
     while (!nRF905_send()) {
       yield();
     } ;
+
+    return true;
 }
 
 static void nrf905_shutdown()
@@ -1098,8 +1099,10 @@ static bool sx12xx_receive()
   return success;
 }
 
-static void sx12xx_transmit()
+static bool sx12xx_transmit()
 {
+    bool success = true;
+
     sx12xx_transmit_complete = false;
     sx12xx_receive_active = false;
 
@@ -1112,6 +1115,7 @@ static void sx12xx_transmit()
     while (sx12xx_transmit_complete == false) {
       if ((millis() - tx_start) > tx_timeout) {
         os_radio(RADIO_RST);
+        success = false;
         //Serial.println("TX timeout");
         break;
       }
@@ -1121,6 +1125,8 @@ static void sx12xx_transmit()
 
       yield();
     };
+
+  return success;
 }
 
 static void sx1276_shutdown()
@@ -1584,9 +1590,10 @@ static bool uatm_receive()
   return success;
 }
 
-static void uatm_transmit()
+static bool uatm_transmit()
 {
   /* Nothing to do */
+  return false;
 }
 
 static void uatm_shutdown()
@@ -1928,9 +1935,11 @@ static bool cc13xx_receive()
   return cc13xx_Receive_Async();
 }
 
-static void cc13xx_transmit()
+static bool cc13xx_transmit()
 {
-#if !defined(EXCLUDE_OGLEP3)
+#if defined(EXCLUDE_OGLEP3)
+  return false;
+#else
   EasyLink_Status status;
 
   u1_t crc8;
@@ -1938,11 +1947,11 @@ static void cc13xx_transmit()
   u1_t i;
 
   if (RF_tx_size <= 0) {
-    return;
+    return false;
   }
 
   if (cc13xx_protocol->type == RF_PROTOCOL_ADSB_UAT) {
-    return; /* no transmit on UAT */
+    return false; /* no transmit on UAT */
   }
 
   EasyLink_abort();
@@ -2082,7 +2091,7 @@ static void cc13xx_transmit()
 #else
   myLink.transmit(&txPacket);
 #endif
-
+  return true;
 #endif /* EXCLUDE_OGLEP3 */
 }
 
@@ -2287,17 +2296,21 @@ static bool ognrf_receive()
   return success;
 }
 
-static void ognrf_transmit()
+static bool ognrf_transmit()
 {
   ognrf_receive_active = false;
 
 #if defined(WITH_SI4X32)
+
+  bool success = true;
 
   TRX.WritePacket((uint8_t *) &TxBuffer[0]);
   TRX.Transmit();
   vTaskDelay(6);
 
 #else
+
+  bool success = false;
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
   vTaskDelay(1);
@@ -2315,12 +2328,14 @@ static void ognrf_transmit()
   {
     uint16_t Flags=TRX.ReadIrqFlags();
     if(Flags&RF_IRQ_PacketSent) Break++;
-    if(Break>=2) break;
+    if(Break>=2) { success = true; break; }
   }
 
   TRX.WriteMode(RF_OPMODE_STANDBY);
 
 #endif /* WITH_SI4X32 */
+
+  return success;
 }
 
 static void ognrf_shutdown()
@@ -2553,9 +2568,9 @@ static bool sa8x8_receive()
   return success;
 }
 
-static void sa8x8_transmit()
+static bool sa8x8_transmit()
 {
-  if (controller.getTxStatus()) return;
+  if (controller.getTxStatus()) return false;
 
   uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
@@ -2570,6 +2585,8 @@ static void sa8x8_transmit()
   if ((settings->power_save & POWER_SAVE_NORECEIVE) == 0) {
     AFSK_TimerEnable(true);
   }
+
+  return true;
 }
 
 static void sa8x8_shutdown()
