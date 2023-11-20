@@ -39,6 +39,7 @@ public:
 
     void setBW(byte);
     void setTXF(float);
+    float getTXF();
     void setRXF(float);
     void setTXSub(int);
     void setSQ(byte);
@@ -66,6 +67,7 @@ public:
     void lowPower();
     void receive();
     void transmit();
+    bool getTxStatus();
 };
 
 #endif

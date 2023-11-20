@@ -377,6 +377,7 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEO
 extern SA818Controller controller;
 extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
+extern void sa868_Tx_LED_state(bool);
 #endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -2648,8 +2649,8 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 static void ESP32_EEPROM_extension(int cmd)
 {
-  if (cmd == EEPROM_EXT_LOAD) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS) {
     if ( ESP32_has_spiflash && FATFS_is_mounted ) {
       File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
@@ -2783,8 +2784,10 @@ static void ESP32_EEPROM_extension(int cmd)
         file.close();
       }
     }
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+  if (cmd == EEPROM_EXT_LOAD) {
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {
@@ -3912,19 +3915,67 @@ static void ESP32_WDT_fini()
 using namespace ace_button;
 
 AceButton button_1(SOC_GPIO_PIN_TBEAM_V05_BUTTON);
+#if defined(USE_SA8X8)
+AceButton button_ptt(SOC_GPIO_PIN_TWR2_BUTTON);
+static float PTT_TxF;
+#endif /* USE_SA8X8 */
 
 // The event handler for the button.
 void handleMainEvent(AceButton* button, uint8_t eventType,
     uint8_t buttonState) {
 
   switch (eventType) {
+#if defined(USE_SA8X8)
+    case AceButton::kEventPressed:
+      if (button == &button_ptt &&
+          Voice_Frequency > 0   &&
+          (settings->power_save & POWER_SAVE_NORECEIVE)) {
+        pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLDOWN);
+        PTT_TxF = controller.getTXF();
+        controller.setTXF(Voice_Frequency / 1000000.0);
+        controller.update();
+#if defined(USE_OLED)
+        if (u8x8) {
+          char buf[16];
+          int MHz = Voice_Frequency / 1000000;
+          int KHz = (Voice_Frequency - MHz * 1000000) / 1000;
+          if (MHz > 999) { MHz = 999; }
+          snprintf(buf, sizeof(buf), "%03d.%03d", MHz, KHz);
+
+          u8x8->setFont(u8x8_font_chroma48medium8_r);
+          u8x8->clear();
+          u8x8->draw2x2String( 2, 1, "ON AIR");
+          u8x8->draw2x2String( 1, 5, buf);
+          OLED_busy = true;
+        }
+#endif /* USE_OLED */
+        sa868_Tx_LED_state(true);
+        controller.transmit();
+      }
+      break;
+#endif /* USE_SA8X8 */
     case AceButton::kEventClicked:
     case AceButton::kEventReleased:
 #if defined(USE_OLED)
       if (button == &button_1) {
         OLED_Next_Page();
       }
-#endif
+#endif /* USE_OLED */
+#if defined(USE_SA8X8)
+      if (button == &button_ptt &&
+          Voice_Frequency > 0   &&
+          (settings->power_save & POWER_SAVE_NORECEIVE)) {
+        controller.receive();
+        sa868_Tx_LED_state(false);
+        pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLUP);
+#if defined(USE_OLED)
+        OLED_busy = false;
+        OLED_display_titles = false;
+#endif /* USE_OLED */
+        controller.setTXF(PTT_TxF);
+        controller.update();
+      }
+#endif /* USE_SA8X8 */
       break;
     case AceButton::kEventDoubleClicked:
       break;
@@ -3946,7 +3997,7 @@ void handleAuxEvent(AceButton* button, uint8_t eventType,
       if (button == &button_1) {
         OLED_Up();
       }
-#endif
+#endif /* USE_OLED */
       break;
     case AceButton::kEventDoubleClicked:
       break;
@@ -3965,13 +4016,13 @@ static void ESP32_Button_setup()
   if (( hw_info.model == SOFTRF_MODEL_PRIME_MK2 &&
        (hw_info.revision == 2 || hw_info.revision == 5)) ||
        esp32_board == ESP32_S2_T8_V1_1        ||
-       esp32_board == ESP32_LILYGO_T_TWR_V2_0 ||
+       hw_info.model == SOFTRF_MODEL_HAM      ||
        esp32_board == ESP32_HELTEC_TRACKER    ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON  :
                  esp32_board == ESP32_S3_DEVKIT  ? SOC_GPIO_PIN_S3_BUTTON     :
                  esp32_board == ESP32_HELTEC_TRACKER ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_LILYGO_T_TWR_V2_0 ?
+                 hw_info.model == SOFTRF_MODEL_HAM ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
@@ -3989,6 +4040,21 @@ static void ESP32_Button_setup()
 //  PageButtonConfig->setDebounceDelay(15);
     PageButtonConfig->setClickDelay(600);
     PageButtonConfig->setLongPressDelay(2000);
+
+#if defined(USE_SA8X8)
+    if (hw_info.model == SOFTRF_MODEL_HAM) {
+      int ptt_pin = SOC_GPIO_PIN_TWR2_BUTTON;
+
+      pinMode(ptt_pin, INPUT_PULLUP);
+      button_ptt.init(ptt_pin);
+
+      ButtonConfig* PTTButtonConfig = button_ptt.getButtonConfig();
+      PTTButtonConfig->setEventHandler(handleMainEvent);
+      PTTButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+      PTTButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+      PTTButtonConfig->setClickDelay(600);
+    }
+#endif /* USE_SA8X8 */
   } else if ((hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) ||
              esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
     button_pin = (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) ?
@@ -4013,21 +4079,26 @@ static void ESP32_Button_loop()
   if (esp32_board == ESP32_TTGO_T_BEAM         ||
       esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
       esp32_board == ESP32_S2_T8_V1_1          ||
-      esp32_board == ESP32_LILYGO_T_TWR_V2_0   ||
+      hw_info.model == SOFTRF_MODEL_HAM        ||
       esp32_board == ESP32_HELTEC_TRACKER      ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
+#if defined(USE_SA8X8)
+    if (hw_info.model == SOFTRF_MODEL_HAM) {
+      button_ptt.check();
+    }
+#endif /* USE_SA8X8 */
   }
 }
 
 static void ESP32_Button_fini()
 {
   if (esp32_board == ESP32_S2_T8_V1_1        ||
-      esp32_board == ESP32_LILYGO_T_TWR_V2_0 ||
+      hw_info.model == SOFTRF_MODEL_HAM      ||
       esp32_board == ESP32_HELTEC_TRACKER    ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
-                     esp32_board == ESP32_LILYGO_T_TWR_V2_0?
+                     hw_info.model == SOFTRF_MODEL_HAM ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == LOW);
   }

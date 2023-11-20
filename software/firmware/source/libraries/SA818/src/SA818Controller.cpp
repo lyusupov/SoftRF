@@ -48,6 +48,10 @@ void SA818Controller::setTXF(float tx) {
     tx_f_ = tx;
 }
 
+float SA818Controller::getTXF() {
+    return tx_f_;
+}
+
 void SA818Controller::setRXF(float rx) {
     rx_f_ = rx;
 }
@@ -264,4 +268,9 @@ void SA818Controller::transmit()
     if (_transmitStatus) return ;
     _transmitStatus = true;
     digitalWrite(ptt_, LOW);
+}
+
+bool SA818Controller::getTxStatus()
+{
+    return _transmitStatus;
 }

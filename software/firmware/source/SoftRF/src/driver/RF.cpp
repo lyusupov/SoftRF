@@ -465,7 +465,7 @@ bool RF_Transmit(size_t size, bool wait)
 
       if (memcmp(TxBuffer, RxBuffer, RF_tx_size) != 0) {
 
-        rf_chip->transmit();
+        rf_chip->transmit(); /* TODO */
 
         if (settings->nmea_p) {
           StdOut.print(F("$PSRFO,"));
@@ -2555,6 +2555,8 @@ static bool sa8x8_receive()
 
 static void sa8x8_transmit()
 {
+  if (controller.getTxStatus()) return;
+
   uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
 

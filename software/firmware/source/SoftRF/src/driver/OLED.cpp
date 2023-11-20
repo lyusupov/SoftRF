@@ -69,7 +69,8 @@ U8X8_OLED_I2C_BUS_TYPE u8x8_i2c(U8X8_PIN_NONE);
 
 U8X8 *u8x8                          = NULL;
 uint8_t OLED_flip                   = 0;
-static bool OLED_display_titles     = false;
+bool OLED_display_titles            = false;
+bool OLED_busy                      = false;
 
 static uint32_t prev_tx_packets_counter = (uint32_t) -1;
 static uint32_t prev_rx_packets_counter = (uint32_t) -1;
@@ -951,7 +952,7 @@ void OLED_049_func()
 void OLED_loop()
 {
   if (u8x8) {
-    if (isTimeToOLED()) {
+    if (isTimeToOLED() && !OLED_busy) {
 #if !defined(EXCLUDE_OLED_049)
       if (hw_info.display == DISPLAY_OLED_0_49) {
         OLED_049_func();

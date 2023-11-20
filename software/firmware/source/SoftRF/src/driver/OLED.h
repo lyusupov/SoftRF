@@ -37,6 +37,8 @@ void OLED_Up(void);
 
 extern U8X8    *u8x8;
 extern uint8_t OLED_flip;
+extern bool    OLED_display_titles;
+extern bool    OLED_busy;
 
 extern const char *ISO3166_CC[];
 extern const char SoftRF_text1[];
