@@ -1034,58 +1034,6 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
 
-    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
-                                         EXTERNAL_FLASH_DEVICE_COUNT);
-    if (ESP32_has_spiflash) {
-      spiflash_id = SPIFlash->getJEDECID();
-
-      uint32_t capacity = spiflash_id & 0xFF;
-      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
-        hw_info.storage = STORAGE_FLASH;
-
-#if CONFIG_TINYUSB_MSC_ENABLED
-  #if defined(USE_ADAFRUIT_MSC)
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
-
-        // Set callback
-        usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
-                                     ESP32_msc_write_cb,
-                                     ESP32_msc_flush_cb);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.setCapacity(SPIFlash->size()/512, 512);
-
-        // MSC is ready for read/write
-        usb_msc.setUnitReady(true);
-
-        usb_msc.begin();
-
-  #else
-
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
-        usb_msc.productID("Internal Flash");
-        usb_msc.productRevision("1.0");
-
-        // Set callback
-        usb_msc.onRead(ESP32_msc_read_cb);
-        usb_msc.onWrite(ESP32_msc_write_cb);
-
-        // MSC is ready for read/write
-        usb_msc.mediaPresent(true);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.begin(SPIFlash->size()/512, 512);
-  #endif /* USE_ADAFRUIT_MSC */
-#endif /* CONFIG_TINYUSB_MSC_ENABLED */
-
-        FATFS_is_mounted = fatfs.begin(SPIFlash);
-      }
-    }
-
     int uSD_SS_pin = (esp32_board == ESP32_S3_DEVKIT) ?
                      SOC_GPIO_PIN_S3_SD_SS_DK : SOC_GPIO_PIN_S3_SD_SS_TBEAM;
 
@@ -1099,11 +1047,6 @@ static void ESP32_setup()
     digitalWrite(uSD_SS_pin, HIGH);
 
     uSD_is_attached = uSD.cardBegin(SD_CONFIG);
-
-    if (uSD_is_attached && uSD.card()->cardSize() > 0) {
-      hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
-                        STORAGE_FLASH_AND_CARD : STORAGE_CARD;
-    }
 
   } else if (hw_info.model == SOFTRF_MODEL_HAM) {
     Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
@@ -1184,58 +1127,6 @@ static void ESP32_setup()
                        SOC_GPIO_PIN_TWR2_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
-                                         EXTERNAL_FLASH_DEVICE_COUNT);
-    if (ESP32_has_spiflash) {
-      spiflash_id = SPIFlash->getJEDECID();
-
-      uint32_t capacity = spiflash_id & 0xFF;
-      if (capacity >= 0x18) { /* equal or greater than 1UL << 24 (16 MiB) */
-        hw_info.storage = STORAGE_FLASH;
-
-#if CONFIG_TINYUSB_MSC_ENABLED
-  #if defined(USE_ADAFRUIT_MSC)
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
-
-        // Set callback
-        usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
-                                     ESP32_msc_write_cb,
-                                     ESP32_msc_flush_cb);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.setCapacity(SPIFlash->size()/512, 512);
-
-        // MSC is ready for read/write
-        usb_msc.setUnitReady(true);
-
-        usb_msc.begin();
-
-  #else
-
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
-        usb_msc.productID("Internal Flash");
-        usb_msc.productRevision("1.0");
-
-        // Set callback
-        usb_msc.onRead(ESP32_msc_read_cb);
-        usb_msc.onWrite(ESP32_msc_write_cb);
-
-        // MSC is ready for read/write
-        usb_msc.mediaPresent(true);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.begin(SPIFlash->size()/512, 512);
-  #endif /* USE_ADAFRUIT_MSC */
-#endif /* CONFIG_TINYUSB_MSC_ENABLED */
-
-        FATFS_is_mounted = fatfs.begin(SPIFlash);
-      }
-    }
-
     if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
       int uSD_SS_pin = SOC_GPIO_PIN_TWR2_SD_SS;
 
@@ -1249,11 +1140,6 @@ static void ESP32_setup()
       digitalWrite(uSD_SS_pin, HIGH);
 
       uSD_is_attached = uSD.cardBegin(SD_CONFIG);
-
-      if (uSD_is_attached && uSD.card()->cardSize() > 0) {
-        hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
-                          STORAGE_FLASH_AND_CARD : STORAGE_CARD;
-      }
     }
   } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
 
@@ -1266,58 +1152,6 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_HELTRK_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_HELTRK_RST;
     lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
-
-    ESP32_has_spiflash = SPIFlash->begin(possible_devices,
-                                         EXTERNAL_FLASH_DEVICE_COUNT);
-    if (ESP32_has_spiflash) {
-      spiflash_id = SPIFlash->getJEDECID();
-
-      uint32_t capacity = spiflash_id & 0xFF;
-      if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
-        hw_info.storage = STORAGE_FLASH;
-
-#if CONFIG_TINYUSB_MSC_ENABLED
-  #if defined(USE_ADAFRUIT_MSC)
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
-
-        // Set callback
-        usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
-                                     ESP32_msc_write_cb,
-                                     ESP32_msc_flush_cb);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.setCapacity(SPIFlash->size()/512, 512);
-
-        // MSC is ready for read/write
-        usb_msc.setUnitReady(true);
-
-        usb_msc.begin();
-
-  #else
-
-        // Set disk vendor id, product id and revision
-        // with string up to 8, 16, 4 characters respectively
-        usb_msc.vendorID(ESP32SX_Device_Manufacturer);
-        usb_msc.productID("Internal Flash");
-        usb_msc.productRevision("1.0");
-
-        // Set callback
-        usb_msc.onRead(ESP32_msc_read_cb);
-        usb_msc.onWrite(ESP32_msc_write_cb);
-
-        // MSC is ready for read/write
-        usb_msc.mediaPresent(true);
-
-        // Set disk size, block size should be 512 regardless of spi flash page size
-        usb_msc.begin(SPIFlash->size()/512, 512);
-  #endif /* USE_ADAFRUIT_MSC */
-#endif /* CONFIG_TINYUSB_MSC_ENABLED */
-
-        FATFS_is_mounted = fatfs.begin(SPIFlash);
-      }
-    }
 
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -1332,6 +1166,65 @@ static void ESP32_setup()
 
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
   }
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  ESP32_has_spiflash = SPIFlash->begin(possible_devices,
+                                       EXTERNAL_FLASH_DEVICE_COUNT);
+  if (ESP32_has_spiflash) {
+    spiflash_id = SPIFlash->getJEDECID();
+
+    uint32_t capacity = spiflash_id & 0xFF;
+    if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
+      hw_info.storage = STORAGE_FLASH;
+
+#if CONFIG_TINYUSB_MSC_ENABLED
+  #if defined(USE_ADAFRUIT_MSC)
+      // Set disk vendor id, product id and revision
+      // with string up to 8, 16, 4 characters respectively
+      usb_msc.setID(ESP32SX_Device_Manufacturer, "Internal Flash", "1.0");
+
+      // Set callback
+      usb_msc.setReadWriteCallback(ESP32_msc_read_cb,
+                                   ESP32_msc_write_cb,
+                                   ESP32_msc_flush_cb);
+
+      // Set disk size, block size should be 512 regardless of spi flash page size
+      usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+      // MSC is ready for read/write
+      usb_msc.setUnitReady(true);
+
+      usb_msc.begin();
+
+  #else
+
+      // Set disk vendor id, product id and revision
+      // with string up to 8, 16, 4 characters respectively
+      usb_msc.vendorID(ESP32SX_Device_Manufacturer);
+      usb_msc.productID("Internal Flash");
+      usb_msc.productRevision("1.0");
+
+      // Set callback
+      usb_msc.onRead(ESP32_msc_read_cb);
+      usb_msc.onWrite(ESP32_msc_write_cb);
+
+      // MSC is ready for read/write
+      usb_msc.mediaPresent(true);
+
+      // Set disk size, block size should be 512 regardless of spi flash page size
+      usb_msc.begin(SPIFlash->size()/512, 512);
+  #endif /* USE_ADAFRUIT_MSC */
+#endif /* CONFIG_TINYUSB_MSC_ENABLED */
+
+      FATFS_is_mounted = fatfs.begin(SPIFlash);
+    }
+  }
+
+  if (uSD_is_attached && uSD.card()->cardSize() > 0) {
+    hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
+                      STORAGE_FLASH_AND_CARD : STORAGE_CARD;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
     (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
