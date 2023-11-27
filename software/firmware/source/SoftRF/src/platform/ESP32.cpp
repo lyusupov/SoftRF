@@ -378,6 +378,56 @@ extern SA818Controller controller;
 extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
 extern void sa868_Tx_LED_state(bool);
+
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+#include <driver/i2s.h>
+#include <AudioFileSourceSdFat.h>
+#include <AudioGeneratorWAV.h>
+#include <AudioOutputI2S.h>
+
+#define MAX_FILENAME_LEN      64
+#define WAV_FILE_PREFIX       "/Audio/"
+#define WAV_FILE_SUFFIX       ".wav"
+
+AudioGeneratorWAV    *Audio_Gen;
+AudioFileSourceSdFat *Audio_Source;
+AudioOutputI2S       *Audio_Sink;
+
+bool playback_inited = false;
+
+static bool play_file(char *filename)
+{
+  bool rval = false;
+
+  if (Audio_Source->open(filename)) {
+    unsigned long Audio_Timemarker = millis();
+    Audio_Gen->begin(Audio_Source, Audio_Sink);
+
+    bool wdt_status = loopTaskWDTEnabled;
+
+    if (wdt_status) {
+      disableLoopWDT();
+    }
+
+    while (Audio_Gen->loop()) {
+      // feedLoopWDT();
+      if (millis() - Audio_Timemarker > 30000) {
+        Audio_Gen->stop();
+        Serial.println("ERROR: Audio timeout. Playback aborted.");
+        Serial.flush();
+      }
+    }
+
+    if (wdt_status) {
+      enableLoopWDT();
+    }
+
+    rval = true;
+  }
+
+  return rval;
+}
+#endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -1140,6 +1190,23 @@ static void ESP32_setup()
       digitalWrite(uSD_SS_pin, HIGH);
 
       uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+      if (uSD_is_attached && uSD.card()->cardSize() > 0 && uSD.volumeBegin()) {
+        Audio_Gen    = new AudioGeneratorWAV();
+        Audio_Source = new AudioFileSourceSdFat(uSD);
+
+        Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::INTERNAL_PDM);
+        Audio_Sink->SetPinout(I2S_PIN_NO_CHANGE,
+                              I2S_PIN_NO_CHANGE,
+                              SOC_GPIO_PIN_TWR2_PDM_OUT,
+                              I2S_PIN_NO_CHANGE);
+        Audio_Sink->SetOutputModeMono(true);
+        Audio_Sink->SetChannels(1);
+        Audio_Sink->SetMclk(false);
+        playback_inited = true;
+      }
+#endif /* EXCLUDE_VOICE_MESSAGE */
     }
   } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
 
@@ -3823,7 +3890,11 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       if (button == &button_ptt &&
           Voice_Frequency > 0   &&
           (settings->power_save & POWER_SAVE_NORECEIVE)) {
-        pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLDOWN);
+        bool playback = false;
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+        playback = playback_inited && (digitalRead(SOC_GPIO_PIN_S3_BUTTON) == 0);
+#endif /* EXCLUDE_VOICE_MESSAGE */
+        if (!playback) {pinMode(SOC_GPIO_PIN_TWR2_MIC_CH_SEL, INPUT_PULLDOWN);}
         PTT_TxF = controller.getTXF();
         controller.setTXF(Voice_Frequency / 1000000.0);
         controller.update();
@@ -3844,6 +3915,15 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
 #endif /* USE_OLED */
         sa868_Tx_LED_state(true);
         controller.transmit();
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+        if (playback) {
+          char filename[MAX_FILENAME_LEN];
+          strcpy(filename, WAV_FILE_PREFIX);
+          strcat(filename, "message");
+          strcat(filename, WAV_FILE_SUFFIX);
+          play_file(filename);
+        }
+#endif /* EXCLUDE_VOICE_MESSAGE */
       }
       break;
 #endif /* USE_SA8X8 */

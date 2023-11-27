@@ -16,6 +16,7 @@
 #define SOC_GPIO_PIN_TWR2_RADIO_PD      40
 #define SOC_GPIO_PIN_TWR2_RADIO_SQL     2  /* T-TWR 2.1 only */
 #define SOC_GPIO_PIN_TWR2_MIC_CH_SEL    17
+#define SOC_GPIO_PIN_TWR2_PDM_OUT       18
 
 // Radio SPI (not in use)
 #define SOC_GPIO_PIN_TWR2_MOSI          16
