@@ -384,6 +384,7 @@ extern void sa868_Tx_LED_state(bool);
 #include <AudioFileSourceSdFat.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
+#include <AFSK.h>
 
 #define MAX_FILENAME_LEN      64
 #define WAV_FILE_PREFIX       "/Audio/"
@@ -1203,6 +1204,7 @@ static void ESP32_setup()
                               I2S_PIN_NO_CHANGE);
         Audio_Sink->SetOutputModeMono(true);
         Audio_Sink->SetChannels(1);
+        Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
         Audio_Sink->SetMclk(false);
         playback_inited = true;
       }
@@ -3917,11 +3919,14 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
         controller.transmit();
 #if !defined(EXCLUDE_VOICE_MESSAGE)
         if (playback) {
+          delay(700);
           char filename[MAX_FILENAME_LEN];
           strcpy(filename, WAV_FILE_PREFIX);
           strcat(filename, "message");
           strcat(filename, WAV_FILE_SUFFIX);
           play_file(filename);
+          I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
+                    I2S_BITS_PER_SAMPLE_16BIT);
         }
 #endif /* EXCLUDE_VOICE_MESSAGE */
       }
