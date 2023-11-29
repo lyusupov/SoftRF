@@ -3919,14 +3919,16 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
         controller.transmit();
 #if !defined(EXCLUDE_VOICE_MESSAGE)
         if (playback) {
-          delay(700);
           char filename[MAX_FILENAME_LEN];
           strcpy(filename, WAV_FILE_PREFIX);
           strcat(filename, "message");
           strcat(filename, WAV_FILE_SUFFIX);
-          play_file(filename);
-          I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
-                    I2S_BITS_PER_SAMPLE_16BIT);
+          if (uSD.exists(filename)) {
+            delay(700);
+            play_file(filename);
+            I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
+                      I2S_BITS_PER_SAMPLE_16BIT);
+          }
         }
 #endif /* EXCLUDE_VOICE_MESSAGE */
       }

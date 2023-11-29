@@ -296,13 +296,13 @@ bool AudioOutputI2S::begin(bool txDAC)
 #endif
             .bck_io_num = I2S_PIN_NO_CHANGE,
             .ws_io_num = I2S_PIN_NO_CHANGE,
-            .data_out_num = 17,
+            .data_out_num = doutPin,
             .data_in_num = I2S_PIN_NO_CHANGE
         };
         i2s_set_pin((i2s_port_t)portNo, &pin_config);
 
         //Select Gpio as Digital Gpio
-        rtc_gpio_deinit((gpio_num_t) 17);
+        rtc_gpio_deinit((gpio_num_t) doutPin);
 
         // dac disable
 //        dac_output_disable(DAC_CHANNEL_1);

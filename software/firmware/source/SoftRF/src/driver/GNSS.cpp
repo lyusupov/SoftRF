@@ -1017,7 +1017,7 @@ static bool at65_setup()
 #endif
 
   if (SoC->id == SOC_NRF52 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_PSOC4) {
-    /* Badge and Prime 3 with Quectel L76K or Mini with Luat Air530Z */
+    /* Badge, Prime 3 and Ham with Quectel L76K or Mini with Luat Air530Z */
     Serial_GNSS_Out.write("$PCAS04,7*1E\r\n"); /* GPS + GLONASS + Beidou */
   } else {
     /* other AT6558 variants: 'fake' NEO, ... */
