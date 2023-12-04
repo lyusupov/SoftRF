@@ -1447,7 +1447,7 @@ static void ESP32_setup()
     hw_info.revision = ESP32_has_32k_xtal ? 5 : 3;
 
     if (hw_info.revision > 3) {
-      pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN, INPUT_PULLUP);
+      digitalWrite(SOC_GPIO_PIN_HELTRK_VEXT_EN, HIGH);
     } else {
       digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_EN, LOW);
       digitalWrite(SOC_GPIO_PIN_HELTRK_TFT_EN,  LOW);
@@ -1457,12 +1457,13 @@ static void ESP32_setup()
       delay(300);
       pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, OUTPUT);
       pinMode(SOC_GPIO_PIN_HELTRK_TFT_EN,  OUTPUT);
-      pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN, OUTPUT);
     }
+    pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,   OUTPUT);
 
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  INPUT_PULLDOWN);
+    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST,  LOW);
+    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,       OUTPUT);
     delay(100);
-    pinMode(SOC_GPIO_PIN_HELTRK_GNSS_RST,  INPUT_PULLUP);
+    digitalWrite(SOC_GPIO_PIN_HELTRK_GNSS_RST,  HIGH);
 
     pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,    INPUT_PULLUP);
 
