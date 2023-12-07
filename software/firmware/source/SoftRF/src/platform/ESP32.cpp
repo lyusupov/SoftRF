@@ -3866,7 +3866,9 @@ static void ESP32_UATModule_restart()
 
 static void ESP32_WDT_setup()
 {
+#if !defined(ENABLE_BT_VOICE)
   enableLoopWDT();
+#endif
 }
 
 static void ESP32_WDT_fini()

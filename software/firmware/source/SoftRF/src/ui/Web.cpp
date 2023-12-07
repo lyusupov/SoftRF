@@ -137,7 +137,7 @@ Copyright (C) 2015-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5390;
+  size_t size = 5430;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -354,12 +354,14 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>SPP</option>\
 <option %s value='%d'>LE</option>\
+<option %s value='%d'>A2DP</option>\
 </select>\
 </td>\
 </tr>"),
     (settings->bluetooth == BLUETOOTH_NONE ? "selected" : ""), BLUETOOTH_NONE,
     (settings->bluetooth == BLUETOOTH_SPP  ? "selected" : ""), BLUETOOTH_SPP,
-    (settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL
+    (settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL ? "selected" : ""), BLUETOOTH_LE_HM10_SERIAL,
+    (settings->bluetooth == BLUETOOTH_A2DP_SOURCE    ? "selected" : ""), BLUETOOTH_A2DP_SOURCE
     );
 
     len = strlen(offset);

@@ -278,7 +278,6 @@ extern void shutdown(int);
 #define TXRX_TEST_VS          -300.0
 
 //#define ENABLE_TTN
-//#define ENABLE_BT_VOICE
 //#define TEST_PAW_ON_NICERF_SV610_FW466
 #define  DO_GDL90_FF_EXT
 
