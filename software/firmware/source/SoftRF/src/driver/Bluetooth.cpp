@@ -993,6 +993,14 @@ IODev_ops_t nRF52_Bluetooth_ops = {
 #include "Bluetooth.h"
 #include "Battery.h"
 
+#if defined(ENABLE_BT_VOICE)
+#include "AudioTools.h"
+#include "BTstack_A2DP.h"
+
+SineWaveGenerator<int16_t> sineWave(32000);
+GeneratedSoundStream<int16_t> in(sineWave);
+#endif /* ENABLE_BT_VOICE */
+
 static bool _running = false;
 static mutex_t _mutex;
 static bool _overflow = false;
@@ -1688,6 +1696,11 @@ static void CYW43_Bluetooth_setup()
     }
     break;
   case BLUETOOTH_A2DP_SOURCE:
+#if defined(ENABLE_BT_VOICE)
+    A2DPSource.setVolume(50);
+    A2DPSource.begin(in);
+#endif
+    break;
   case BLUETOOTH_NONE:
   default:
     break;

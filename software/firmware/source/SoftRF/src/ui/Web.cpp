@@ -354,7 +354,7 @@ void handleSettings() {
 <option %s value='%d'>Off</option>\
 <option %s value='%d'>SPP</option>\
 <option %s value='%d'>LE</option>\
-<option %s value='%d'>A2DP</option>\
+<!--<option %s value='%d'>A2DP</option>-->\
 </select>\
 </td>\
 </tr>"),

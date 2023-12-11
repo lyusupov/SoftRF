@@ -232,6 +232,7 @@ struct rst_info {
 extern WebServer server;
 /* Experimental */
 #define ENABLE_PROL
+//#define ENABLE_BT_VOICE
 #else
 #define EXCLUDE_WIFI
 #define EXCLUDE_BLUETOOTH
