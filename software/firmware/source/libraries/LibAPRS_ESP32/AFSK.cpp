@@ -307,6 +307,7 @@ typedef struct hardware_info {
 } hardware_info_t;
 
 extern hardware_info_t hw_info;
+extern bool ESP32_R22_workaround;
 
 enum
 {
@@ -379,12 +380,18 @@ void AFSK_hw_init(void)
 #if defined(SOFTRF_SKETCH)
   if (hw_info.model == SOFTRF_MODEL_HAM) {
     if (hw_info.revision == 20) {
-      uint64_t mac = ESP.getEfuseMac();
-      if (mac == 0x58f8ab188534ULL /* || mac == 0x7475ac188534ULL */) {
-        adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
-      } else {
+      //uint64_t mac = ESP.getEfuseMac();
+      //if (mac == 0x58f8ab188534ULL /* || mac == 0x7475ac188534ULL */) {
+      //  adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
+      //} else {
+      //  /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
+      //  adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 4.2V
+      //}
+      if (ESP32_R22_workaround) {
         /* work around wrong R22 value (should be 47K) issue on very first T-TWR Plus batches */
         adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_11); // Input 3.3Vp-p,Use R 10K divider input power 4.2V
+      } else {
+        adc1_config_channel_atten((adc1_channel_t) SPK_PIN, ADC_ATTEN_DB_0);  // Input 1.24Vp-p,Use R 47K-(10K//10K) divider input power 1.2Vref
       }
     } else {
       /* T-TWR Plus V2.1 is expected to use 47 KOhm value for R22 */

@@ -379,6 +379,8 @@ extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
 extern void sa868_Tx_LED_state(bool);
 
+bool ESP32_R22_workaround = false;
+
 #if !defined(EXCLUDE_VOICE_MESSAGE)
 #include <driver/i2s.h>
 #include <AudioFileSourceSdFat.h>
@@ -1191,6 +1193,13 @@ static void ESP32_setup()
       digitalWrite(uSD_SS_pin, HIGH);
 
       uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+#if defined(USE_SA8X8)
+      uint64_t mac = ESP.getEfuseMac();
+      if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
+        ESP32_R22_workaround = true;
+      }
+#endif /* USE_SA8X8 */
 
 #if !defined(EXCLUDE_VOICE_MESSAGE)
       if (uSD_is_attached && uSD.card()->cardSize() > 0 && uSD.volumeBegin()) {
@@ -2716,6 +2725,10 @@ static void ESP32_EEPROM_extension(int cmd)
                   controller.setBand(Band::UHF);
                 }
               }
+              JsonVariant r22wa = root["r22wa"];
+              if (r22wa.success()) {
+                ESP32_R22_workaround = r22wa.as<bool>();
+              }
               JsonVariant dfreq = root["dfreq"];
               if (dfreq.success()) {
                 Data_Frequency = dfreq.as<unsigned int>();
@@ -2869,11 +2882,12 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
-      uint64_t mac = ESP.getEfuseMac();
       Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
-      if (mac == 0x7475ac188534ULL /* || mac == 0x58f8ab188534ULL */) {
+#if defined(USE_SA8X8)
+      if (ESP32_R22_workaround) {
         Serial.println(F("INFO: Audio ADC workaround has been applied."));
       }
+#endif /* USE_SA8X8 */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWR2_GNSS_RX, SOC_GPIO_PIN_TWR2_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_1) {
@@ -3610,15 +3624,19 @@ static void ESP32_Battery_setup()
     calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
-    if (esp32_board == ESP32_HELTEC_TRACKER    ||
-        esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
-      if (ESP.getEfuseMac() == 0x58f8ab188534ULL) {
-        calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
-      } else {
+    if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
+#if defined(USE_SA8X8)
+      if (ESP32_R22_workaround) {
         calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+      } else
+#endif /* USE_SA8X8 */
+      {
+        calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_1) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
+    } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
