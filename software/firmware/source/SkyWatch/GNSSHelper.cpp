@@ -1067,7 +1067,7 @@ const gnss_chip_ops_t at65_ops = {
 static gnss_id_t uc65_probe()
 {
   /* Firmware version request */
-  return nmea_handshake("$PDTINFO\r\n", "$PDTINFO,FB2S UM600", false) ?
+  return nmea_handshake("$PDTINFO\r\n", "$PDTINFO,", false) ?
                         GNSS_MODULE_UC65 : GNSS_MODULE_NMEA;
 }
 
@@ -1102,14 +1102,14 @@ static bool uc65_setup()
 
   size_t len = strlen((char *) &GNSSbuf[0]);
 
-  if (len > 14) {
-    for (int i=14; i < len; i++) {
+  if (len > 9) {
+    for (int i=9; i < len; i++) {
       if (GNSSbuf[i] == '*') {
         GNSSbuf[i] = 0;
       }
     }
-    Serial.print(F("INFO: GNSS module FW version: "));
-    Serial.println((char *) &GNSSbuf[14]);
+    Serial.print(F("INFO: GNSS ident - "));
+    Serial.println((char *) &GNSSbuf[9]);
   }
 
   delay(250);
@@ -1122,6 +1122,7 @@ static bool uc65_setup()
    */
   Serial_GNSS_Out.write("$CFGMSG,0,2,0\r\n"); delay(250); /* GSA off */
   Serial_GNSS_Out.write("$CFGMSG,0,3,0\r\n"); delay(250); /* GSV off */
+  Serial_GNSS_Out.write("$CFGMSG,6,0,0\r\n"); delay(250); /* TXT off */
 
   return true;
 }
