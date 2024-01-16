@@ -1,6 +1,6 @@
 /*
  * WebHelper.cpp
- * Copyright (C) 2016-2023 Linar Yusupov
+ * Copyright (C) 2016-2024 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,7 +131,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Steve Jack</th><td align=left>OpenDroneID library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2015-2023 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2015-2024 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
