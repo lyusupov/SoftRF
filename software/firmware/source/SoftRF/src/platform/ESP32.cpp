@@ -377,6 +377,8 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEO
 extern SA818Controller controller;
 extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
+extern byte     SA8X8_SQL;
+
 extern void sa868_Tx_LED_state(bool);
 
 bool ESP32_R22_workaround = false;
@@ -2736,6 +2738,10 @@ static void ESP32_EEPROM_extension(int cmd)
               JsonVariant vfreq = root["vfreq"];
               if (vfreq.success()) {
                 Voice_Frequency = vfreq.as<unsigned int>();
+              }
+              JsonVariant sql = root["sql"];
+              if (sql.success()) {
+                SA8X8_SQL = sql.as<byte>();
               }
 #endif /* USE_SA8X8 */
 #if defined(ENABLE_REMOTE_ID)

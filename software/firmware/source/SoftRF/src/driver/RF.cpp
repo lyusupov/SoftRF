@@ -2358,6 +2358,7 @@ bool afskSync            = false;
 int mVrms                = 0;
 uint32_t Data_Frequency  = 0;
 uint32_t Voice_Frequency = 0;
+byte     SA8X8_SQL       = 1;
 
 cppQueue PacketBuffer(sizeof(AX25Msg), 5, FIFO);
 
@@ -2475,7 +2476,7 @@ static void sa8x8_setup()
 
   bool rx = (settings->power_save & POWER_SAVE_NORECEIVE ? false : true);
   float RxF_MHz = Voice_Frequency && !rx ? Voice_Frequency/1000000.0 : TxF_MHz;
-  byte sq = rx || Voice_Frequency ? 1: 8;
+  byte sq = rx || Voice_Frequency ? SA8X8_SQL : 8;
 
   if (controller.getModel() == Model::SA_868) {
     controller.setBW(settings->txpower == RF_TX_POWER_FULL ? 0 : 1);
