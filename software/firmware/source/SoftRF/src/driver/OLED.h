@@ -21,10 +21,11 @@
 
 #include <U8x8lib.h>
 
-#define SSD1306_OLED_I2C_ADDR   0x3C
-#define SH1106_OLED_I2C_ADDR    0x3C /* 0x3D */
+#define SSD1306_OLED_I2C_ADDR       0x3C
+#define SH1106_OLED_I2C_ADDR        0x3C
+#define SH1106_OLED_I2C_ADDR_ALT    0x3D
 
-#define isTimeToOLED()          (millis() - OLEDTimeMarker > 500)
+#define isTimeToOLED()              (millis() - OLEDTimeMarker > 500)
 
 byte OLED_setup(void);
 void OLED_loop(void);
