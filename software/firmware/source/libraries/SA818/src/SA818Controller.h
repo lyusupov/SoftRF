@@ -70,4 +70,73 @@ public:
     bool getTxStatus();
 };
 
-#endif
+/* TODO */
+#if 0
+/*
+ * Source: https://github.com/nakhonthai/ESP32APRS_T-TWR/pull/17
+ */
+
+enum class OpenEdition_Mode: uint8_t
+{
+    OFF = 0,
+    RX,
+    TX
+};
+
+typedef struct OpenEdition_Config_Struct
+{
+	uint32_t freq_rx;
+	uint32_t freq_tx;
+	int tone_rx;
+	int tone_tx;
+	uint8_t band;
+	uint8_t sql_level;
+	bool rf_power;
+	uint8_t volume;
+	uint8_t mic;
+    OpenEdition_Mode mode;
+} OpenEdition_Configuration;
+
+typedef struct OpenEdition_Version_Struct
+{
+    uint8_t major;
+    uint8_t minor;
+    uint8_t patch;
+    uint8_t revision;
+} OpenEdition_Version;
+
+class OpenEdition
+{
+    public:
+        OpenEdition(HardwareSerial * SerialRF, uint8_t RX_PIN, uint8_t TX_PIN);
+        void init();
+        OpenEdition_Version Version();
+        int16_t getRSSI();
+        void RxOn();
+        void TxOn();
+        void TxOff();
+        void setAudio(bool value);
+        void setTxFrequency(uint32_t freq);
+        void setRxFrequency(uint32_t freq);
+        void setTxTone(uint32_t tone);
+        void setRxTone(uint32_t tone);
+        void setVolume(uint8_t value);
+        void setBandwidth(uint8_t value);
+        void setSqlThresh(uint8_t value);
+        OpenEdition_Configuration settings();
+        bool isHighPower();
+        void setHighPower();
+        void setLowPower();
+    private:
+        HardwareSerial * _SerialRF;
+        OpenEdition_Configuration _config;
+        uint8_t _RX_PIN;
+        uint8_t _TX_PIN;
+        void setFrequency(uint32_t freq);
+        void updateBandwidth();
+        void setSqlThresh();
+        void setPower();
+};
+#endif /* SA868 Open Edition */
+
+#endif /* SA818_CONTROLLER_H */
