@@ -70,9 +70,9 @@ public:
     bool getTxStatus();
 };
 
-/* TODO */
-#if 0
 /*
+ * TODO
+ *
  * Source: https://github.com/nakhonthai/ESP32APRS_T-TWR/pull/17
  */
 
@@ -104,6 +104,8 @@ typedef struct OpenEdition_Version_Struct
     uint8_t patch;
     uint8_t revision;
 } OpenEdition_Version;
+
+bool SA868_WaitResponse(HardwareSerial * SerialRF, const char * cmd, String * result);
 
 class OpenEdition
 {
@@ -137,6 +139,5 @@ class OpenEdition
         void setSqlThresh();
         void setPower();
 };
-#endif /* SA868 Open Edition */
 
 #endif /* SA818_CONTROLLER_H */
