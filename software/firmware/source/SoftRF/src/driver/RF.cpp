@@ -2354,6 +2354,8 @@ AX25Msg Incoming_APRS_Packet;
 SA818 sa868(&SA8X8_Serial);
 SA818Controller controller(&sa868);
 
+OpenEdition OE(&SA8X8_Serial, SOC_GPIO_PIN_TWR2_RADIO_RX, SOC_GPIO_PIN_TWR2_RADIO_TX);
+
 bool afskSync            = false;
 int mVrms                = 0;
 uint32_t Data_Frequency  = 0;
@@ -2423,11 +2425,27 @@ static bool sa8x8_probe()
     Serial.print("SA8X8 firmware version: "); Serial.println(version);
 
     if (version.startsWith("SA868")) {
-      controller.setModel(Model::SA_868);
+      controller.setModel(Model::SA_868_NiceRF);
+    }
+
+    success = connect;
+  } else {
+    String model = controller.model();
+
+    Serial.print("SA868 model: "); Serial.println(model);
+
+    if (model.startsWith("SA868S-VHF")) {
+      controller.setModel(Model::SA_868_OpenEdition);
+      controller.setBand(Band::VHF);
+      success = true;
+    }
+
+    if (model.startsWith("SA868S-UHF")) {
+      controller.setModel(Model::SA_868_OpenEdition);
+      controller.setBand(Band::UHF);
+      success = true;
     }
   }
-
-  success = connect;
 
   return success;
 }
@@ -2478,35 +2496,58 @@ static void sa8x8_setup()
   float RxF_MHz = Voice_Frequency && !rx ? Voice_Frequency/1000000.0 : TxF_MHz;
   byte sq = rx || Voice_Frequency ? SA8X8_SQL : 8;
 
-  if (controller.getModel() == Model::SA_868) {
-    controller.setBW(settings->txpower == RF_TX_POWER_FULL ? 0 : 1);
-    aprs_preamble = 350UL * 3;
-    aprs_tail     = 250UL;
-  } else {
-    controller.setBW(0 /* 12.5 KHz */);
+  switch (controller.getModel())
+  {
+    case Model::SA_868_OpenEdition:
+      OE.init();
+      // OE.setTxFrequency((uint32_t) (TxF_MHz * 1000000));
+      // OE.setRxFrequency((uint32_t) (RxF_MHz * 1000000));
+      // OE.setSqlThresh(sq);
+
+      if (settings->txpower == RF_TX_POWER_FULL) {
+      //  OE.setHighPower();
+      } else {
+      //  OE.setLowPower();
+      }
+
+      // OE.setBandwidth(1); /* 25 KHz */
+      // OE.setVolume(1);
+      break;
+    case Model::SA_818:
+    case Model::SA_868_NiceRF:
+    default:
+      if (controller.getModel() == Model::SA_868_NiceRF) {
+        controller.setBW(settings->txpower == RF_TX_POWER_FULL ? 0 : 1);
+        aprs_preamble = 350UL * 3;
+        aprs_tail     = 250UL;
+      } else {
+        controller.setBW(0 /* 12.5 KHz */);
+      }
+
+      controller.setTXF(TxF_MHz);
+      controller.setRXF(RxF_MHz);
+      controller.setTXSub(0);
+      controller.setSQ(sq);
+      controller.setRXSub(0);
+
+      controller.update();
+
+      controller.setFilter(1,1,1);
+      if (controller.getModel() == Model::SA_818) {
+        controller.closeTail();
+      }
+
+      /*
+       * Owners of T-TWR Plus V2.0 board with no R22 fix
+       * may consider to increase the volume setting
+       * up to 6 for a better 'APRS sensitivity' at an expense of
+       * very loud sound from the speaker.
+       * A disconnect of the speaker is one of the options to think about.
+       */
+      controller.setVolume(1);
+
+      break;
   }
-
-  controller.setTXF(TxF_MHz);
-  controller.setRXF(RxF_MHz);
-  controller.setTXSub(0);
-  controller.setSQ(sq);
-  controller.setRXSub(0);
-
-  controller.update();
-
-  controller.setFilter(1,1,1);
-  if (controller.getModel() == Model::SA_818) {
-    controller.closeTail();
-  }
-
-  /*
-   * Owners of T-TWR Plus V2.0 board with no R22 fix
-   * may consider to increase the volume setting
-   * up to 6 for a better 'APRS sensitivity' at an expense of
-   * very loud sound from the speaker.
-   * A disconnect of the speaker is one of the options to think about.
-   */
-  controller.setVolume(1);
 
   protocol_encode = &aprs_encode;
   protocol_decode = &ax25_decode;
@@ -2592,10 +2633,20 @@ static bool sa8x8_transmit()
 
 static void sa8x8_shutdown()
 {
-  /* TBD */
-  controller.lowPower();
-  controller.receive();
-  controller.sleep();
+  switch (controller.getModel())
+  {
+    case Model::SA_868_OpenEdition:
+      /* TBD */
+      break;
+    case Model::SA_818:
+    case Model::SA_868_NiceRF:
+    default:
+      /* TBD */
+      controller.lowPower();
+      controller.receive();
+      controller.sleep();
+      break;
+  }
 }
 
 #endif /* USE_SA8X8 */

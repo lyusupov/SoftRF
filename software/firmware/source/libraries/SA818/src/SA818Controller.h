@@ -55,6 +55,7 @@ public:
     bool closeTail();
     String rssi();
     String version();
+    String model();
 
     float next(float, float = 0, unsigned long = 0);
     float previous(float, float = 0, unsigned long = 0);
@@ -104,8 +105,6 @@ typedef struct OpenEdition_Version_Struct
     uint8_t patch;
     uint8_t revision;
 } OpenEdition_Version;
-
-bool SA868_WaitResponse(HardwareSerial * SerialRF, const char * cmd, String * result);
 
 class OpenEdition
 {

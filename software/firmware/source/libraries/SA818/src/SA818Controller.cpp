@@ -145,7 +145,7 @@ bool SA818Controller::closeTail() {
 
 String SA818Controller::rssi() {
     String cmd = "RSSI?";
-    if (type_ == Model::SA_868)
+    if (type_ == Model::SA_868_NiceRF)
         cmd = "AT+RSSI?";
 
     if (sa->send((char *) cmd.c_str()))
@@ -156,6 +156,12 @@ String SA818Controller::rssi() {
 
 String SA818Controller::version() {
     if (sa->send("AT+VERSION"))
+        return sa->response()->res;
+    return sa->response()->raw;
+}
+
+String SA818Controller::model() {
+    if (sa->send("AT+MODEL"))
         return sa->response()->res;
     return sa->response()->raw;
 }
@@ -280,6 +286,33 @@ bool SA818Controller::getTxStatus()
  *
  * Source: https://github.com/nakhonthai/ESP32APRS_T-TWR/pull/17
  */
+
+bool SA868_WaitResponse(HardwareSerial * SerialRF, const char * cmd, String * result)
+{
+    uint32_t startMillis = millis();
+    uint32_t timeout=200;
+    result->clear();
+
+    ESP_LOGD("SA8x8", "Command '%s'", cmd);
+    SerialRF->printf(cmd);
+    do
+    {
+        while (SerialRF->available() > 0)
+        {
+            int8_t ch = SerialRF->read();
+            * result += static_cast<char>(ch);
+
+            if (result->endsWith("\r\n")) {
+                ESP_LOGD("SA8x8", "Response '%s'", result);
+                return true;
+            }
+        }
+    } while (millis() - startMillis < timeout);
+
+    ESP_LOGD("SA8x8", "Command '%s' error: '%s'", cmd, result);
+
+    return false;
+}
 
 bool SA868_WriteAT1846Sreg(HardwareSerial * SerialRF, uint8_t reg, uint16_t value)
 {

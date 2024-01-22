@@ -16,7 +16,7 @@ class Response {
         String res;
 };
 
-enum Model { SA_818 = 0, SA_868 = 1 };
+enum Model { SA_818 = 0, SA_868_NiceRF = 1, SA_868_OpenEdition = 2 };
 enum Band { UHF = 0, VHF = 1 }; //400-480MHz // 134-174MHz
 
 class SA818 {
