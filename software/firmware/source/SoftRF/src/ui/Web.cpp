@@ -1257,11 +1257,13 @@ $('form').submit(function(e){\
     yield();
   });
 
+/* FLASH memory usage optimization */
+#if !defined(ARDUINO_ARCH_RP2040) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   server.on ( "/logo.png", []() {
     server.send_P ( 200, "image/png", Logo, sizeof(Logo) );
   } );
+#endif /* ARDUINO_ARCH_RP2040 CONFIG_IDF_TARGET_ESP32C6 */
 
-/* FLASH memory usage optimization */
 #if !defined(ARDUINO_ARCH_RP2040)
   server.on ( "/jquery.min.js", []() {
 

@@ -82,6 +82,7 @@ lmic_pinmap lmic_pins = {
 
 WebServer server ( 80 );
 
+#if !defined(EXCLUDE_LED_RING)
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PIX_NUM, SOC_GPIO_PIN_LED);
 #else /* USE_ADAFRUIT_NEO_LIBRARY */
@@ -95,6 +96,7 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PIX_NUM, SOC_GPIO_PIN_LED);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
 U8X8_OLED_I2C_BUS_TYPE u8x8_ttgo  (TTGO_V2_OLED_PIN_RST);
@@ -464,6 +466,10 @@ static void ESP32_setup()
   esp_err_t ret = ESP_OK;
   uint8_t null_mac[6] = {0};
 
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+  ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
+  if (ret != ESP_OK) {
+#else
   ret = esp_efuse_mac_get_custom(efuse_mac);
   if (ret != ESP_OK) {
       ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
@@ -471,7 +477,7 @@ static void ESP32_setup()
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
-
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
     ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
@@ -545,7 +551,7 @@ static void ESP32_setup()
    */
 
   if (psramFound()) {
-    switch(flash_id)
+    switch (flash_id)
     {
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32):
       /* ESP32-WROVER module with ESP32-NODEMCU-ADAPTER */
@@ -565,19 +571,18 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
       /* specific to psram_type=opi enabled custom build */
-      hw_info.model  = SOFTRF_MODEL_HAM;
+      hw_info.model = SOFTRF_MODEL_HAM;
       break;
     /* Both Ai-Thinker ESP-S3-12K and LilyGO S3 Core have QSPI PSRAM onboard */
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    case MakeFlashId(ST_ID, XMC_XM25QH32B):
     default:
       esp32_board   = ESP32_C3_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-    /* TBD */
     default:
+      esp32_board   = ESP32_C6_DEVKIT;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -599,7 +604,7 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
     esp32_board      = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    switch(flash_id)
+    switch (flash_id)
     {
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
       /*
@@ -619,7 +624,22 @@ static void ESP32_setup()
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    esp32_board      = ESP32_C3_DEVKIT;
+    switch (flash_id)
+    {
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+    default:
+      esp32_board   = ESP32_C3_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+    switch (flash_id)
+    {
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6 */
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):    /* ESP32-C6-MINI-1U */
+    default:
+      esp32_board   = ESP32_C6_DEVKIT;
+      break;
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
@@ -1245,6 +1265,17 @@ static void ESP32_setup()
     /* TBD */
 
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+  } else if (esp32_board == ESP32_C6_DEVKIT) {
+
+    lmic_pins.nss  = SOC_GPIO_PIN_C6_SS;
+    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
+
+    /* TBD */
+
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
   }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -2850,6 +2881,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_HELTRK_SCK,  SOC_GPIO_PIN_HELTRK_MISO,
                 SOC_GPIO_PIN_HELTRK_MOSI, SOC_GPIO_PIN_HELTRK_SS);
       break;
+    case ESP32_C6_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
+                SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -2931,6 +2966,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(115200, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_HELTRK_GNSS_RX,
                            SOC_GPIO_PIN_HELTRK_GNSS_TX);
+    } else if (esp32_board == ESP32_C6_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C6 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C6_GNSS_RX, SOC_GPIO_PIN_C6_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3761,7 +3800,7 @@ static float ESP32_Battery_param(uint8_t param)
          (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
           esp32_board   == ESP32_S2_T8_V1_1) {
         voltage += voltage;
-      } else if (esp32_board == ESP32_C3_DEVKIT) {
+      } else if (esp32_board == ESP32_C3_DEVKIT || esp32_board == ESP32_C6_DEVKIT) {
       /* NodeMCU has voltage divider 100k/220k on board */
         voltage *= 3.2;
       } else if (esp32_board == ESP32_HELTEC_TRACKER) {
@@ -3820,6 +3859,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_HELTEC_TRACKER) {
 
     Wire.setPins(SOC_GPIO_PIN_HELTRK_SDA, SOC_GPIO_PIN_HELTRK_SCL);
+
+  } else if (esp32_board == ESP32_C6_DEVKIT) {
+
+    Wire.setPins(SOC_GPIO_PIN_C6_SDA, SOC_GPIO_PIN_C6_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 

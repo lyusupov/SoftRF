@@ -82,8 +82,11 @@
  */
 #if !defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NEOPIXELBUS_LIBRARY
+#else
+#define EXCLUDE_LED_RING
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
+#if !defined(EXCLUDE_LED_RING)
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 #include <NeoPixelBus.h>
 
@@ -107,6 +110,7 @@ extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
 
 extern Adafruit_NeoPixel strip;
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#endif /* EXCLUDE_LED_RING */
 
 #define LEDC_CHANNEL_BUZZER     0
 #define BACKLIGHT_CHANNEL       ((uint8_t)1)
@@ -281,6 +285,10 @@ struct rst_info {
 #define ST_ID                   0x20
 #define XMC_XM25QH32B           0x4016
 
+/* Zbit Semiconductor, Inc. */
+#define ZBIT_ID                 0x5E
+#define ZBIT_ZB25VQ32B          0x4016
+
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
 #define MPU6886_REG_PWR_MGMT_1  (0x6B)
@@ -379,7 +387,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef USE_OLED
 #undef USE_TFT
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
-#define EXCLUDE_LED_RING
+#define EXCLUDE_EGM96
+#define EXCLUDE_TEST_MODE
+#undef USE_NMEALIB
 #endif /* C6 */
 #endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 */
 #else
