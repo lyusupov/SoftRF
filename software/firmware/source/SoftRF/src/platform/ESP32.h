@@ -228,6 +228,7 @@ extern Adafruit_NeoPixel strip;
 #include "iomap/LilyGO_TTWR.h"
 #include "iomap/Heltec_Tracker.h"
 #include "iomap/WT0132C6.h"
+#include "iomap/LilyGO_T3C6.h"
 
 extern WebServer server;
 
@@ -255,6 +256,7 @@ enum esp32_board_id {
   ESP32_LILYGO_T_TWR_V2_0,
   ESP32_LILYGO_T_TWR_V2_1,
   ESP32_HELTEC_TRACKER,
+  ESP32_LILYGO_T3C6,
 };
 
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */

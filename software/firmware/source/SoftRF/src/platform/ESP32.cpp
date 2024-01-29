@@ -634,8 +634,10 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     switch (flash_id)
     {
-    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6 */
     case MakeFlashId(ST_ID, XMC_XM25QH32B):    /* ESP32-C6-MINI-1U */
+      esp32_board   = ESP32_LILYGO_T3C6;
+      break;
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6 */
     default:
       esp32_board   = ESP32_C6_DEVKIT;
       break;
@@ -1262,8 +1264,6 @@ static void ESP32_setup()
     lmic_pins.rst  = LMIC_UNUSED_PIN;
     lmic_pins.busy = SOC_GPIO_PIN_C3_TXE;
 
-    /* TBD */
-
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -1273,7 +1273,13 @@ static void ESP32_setup()
     lmic_pins.rst  = LMIC_UNUSED_PIN;
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
 
-    /* TBD */
+  } else if (esp32_board == ESP32_LILYGO_T3C6) {
+
+    lmic_pins.nss  = SOC_GPIO_PIN_T3C6_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_T3C6_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_T3C6_BUSY;
+    lmic_pins.txe  = SOC_GPIO_PIN_T3C6_ANT_TX;
+    lmic_pins.rxe  = SOC_GPIO_PIN_T3C6_ANT_RX;
 
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
   }
@@ -2885,6 +2891,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
                 SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
       break;
+    case ESP32_LILYGO_T3C6:
+      SPI.begin(SOC_GPIO_PIN_T3C6_SCK,  SOC_GPIO_PIN_T3C6_MISO,
+                SOC_GPIO_PIN_T3C6_MOSI, SOC_GPIO_PIN_T3C6_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -2970,6 +2980,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: ESP32-C6 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_C6_GNSS_RX, SOC_GPIO_PIN_C6_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_T3C6) {
+      Serial.println(F("INFO: LilyGO T3-C6 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3863,6 +3877,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_C6_DEVKIT) {
 
     Wire.setPins(SOC_GPIO_PIN_C6_SDA, SOC_GPIO_PIN_C6_SCL);
+
+  } else if (esp32_board == ESP32_LILYGO_T3C6) {
+
+    Wire.setPins(SOC_GPIO_PIN_T3C6_SDA, SOC_GPIO_PIN_T3C6_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
