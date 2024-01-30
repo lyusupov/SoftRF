@@ -56,7 +56,13 @@
 #define SerialOutput            Serial0
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if ARDUINO_USB_CDC_ON_BOOT
+#define UATSerial               Serial0
+#undef  SerialOutput
+#define SerialOutput            Serial0
+#else
 #define UATSerial               Serial
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
