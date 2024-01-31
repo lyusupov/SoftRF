@@ -2379,20 +2379,20 @@ static void ESP32_Sound_test(int var)
         var == REASON_EXT_SYS_RST ||
         var == REASON_SOFT_RESTART) {
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 640);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 840);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);
+      tone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040);
     } else if (var == REASON_WDT_RST) {
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);
+      tone(SOC_GPIO_PIN_BUZZER, 440); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 440); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040);
     } else {
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 840);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 640);delay(500);
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 440);
+      tone(SOC_GPIO_PIN_BUZZER, 1040);delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 440);
 #else
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 440);delay(500);
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 640);delay(500);
@@ -2413,8 +2413,7 @@ static void ESP32_Sound_test(int var)
     delay(600);
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-    ledcWriteTone(SOC_GPIO_PIN_BUZZER, 0); // off
-    ledcDetach(SOC_GPIO_PIN_BUZZER);
+    noTone(SOC_GPIO_PIN_BUZZER);
 #else
     ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
     ledcDetachPin(SOC_GPIO_PIN_BUZZER);
@@ -2474,12 +2473,9 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, hz);
-      ledcWrite(SOC_GPIO_PIN_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
+      tone(SOC_GPIO_PIN_BUZZER, hz);
     } else {
-      ledcWriteTone(SOC_GPIO_PIN_BUZZER, 0); // off
-
-      ledcDetach(SOC_GPIO_PIN_BUZZER);
+      noTone(SOC_GPIO_PIN_BUZZER);
 #else
       ledcAttachPin(SOC_GPIO_PIN_BUZZER, LEDC_CHANNEL_BUZZER);
       ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
