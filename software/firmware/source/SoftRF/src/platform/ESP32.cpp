@@ -4691,6 +4691,9 @@ static void ESP32CX_USB_setup()
   /* native CDC (HWCDC) */
   USBSerial.setRxBufferSize(USB_RX_FIFO_SIZE);
   USBSerial.setTxBufferSize(USB_TX_FIFO_SIZE);
+#if !ARDUINO_USB_CDC_ON_BOOT
+  USBSerial.begin(SERIAL_OUT_BR);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 }
 
 static void ESP32CX_USB_loop()
@@ -4700,7 +4703,7 @@ static void ESP32CX_USB_loop()
 
 static void ESP32CX_USB_fini()
 {
-
+  /* TBD */
 }
 
 static int ESP32CX_USB_available()
