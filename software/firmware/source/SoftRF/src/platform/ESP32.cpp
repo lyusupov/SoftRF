@@ -3753,7 +3753,7 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-    /* TBD */
+    calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */

@@ -7,8 +7,28 @@
 #include "battery.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
-void calibrate_voltage(adc1_channel_t channel, adc_atten_t atten) { /* TBD */ }
-uint16_t read_voltage() { /* TBD */ return 0; }
+static uint8_t adc_pin = 1;
+
+void calibrate_voltage(uint8_t pin, adc_attenuation_t atten) {
+  adc_pin = pin;
+  analogReadResolution(12);
+  analogSetPinAttenuation(adc_pin, atten);
+}
+
+uint16_t read_voltage() {
+  // multisample ADC
+  uint32_t adc_reading = 0;
+
+  for (int i = 0; i < NO_OF_SAMPLES; i++) {
+    adc_reading += analogReadMilliVolts(adc_pin);
+    yield();
+  }
+
+  adc_reading /= NO_OF_SAMPLES;
+
+  return (uint16_t) adc_reading;
+}
+
 #else
 
 // Local logging tag
