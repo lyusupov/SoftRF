@@ -4,9 +4,9 @@
 #define SOC_GPIO_PIN_T3C6_CONS_TX       16
 
 // GNSS module (ext.)
-#define SOC_GPIO_PIN_T3C6_GNSS_RX       23
-#define SOC_GPIO_PIN_T3C6_GNSS_TX       22
-#define SOC_GPIO_PIN_T3C6_GNSS_PPS      21
+#define SOC_GPIO_PIN_T3C6_GNSS_RX       4
+#define SOC_GPIO_PIN_T3C6_GNSS_TX       5
+#define SOC_GPIO_PIN_T3C6_GNSS_PPS      19
 
 // USB CDC/JTAG
 #define SOC_GPIO_PIN_T3C6_USB_DP        13
@@ -19,16 +19,16 @@
 #define SOC_GPIO_PIN_T3C6_SS            18
 
 // SX1262 (S62F)
-#define SOC_GPIO_PIN_T3C6_RST           4
-#define SOC_GPIO_PIN_T3C6_BUSY          3
-#define SOC_GPIO_PIN_T3C6_DIO1          2
-#define SOC_GPIO_PIN_T3C6_DIO2          5
+#define SOC_GPIO_PIN_T3C6_RST           21
+#define SOC_GPIO_PIN_T3C6_BUSY          22
+#define SOC_GPIO_PIN_T3C6_DIO1          23
+#define SOC_GPIO_PIN_T3C6_DIO2          20
 #define SOC_GPIO_PIN_T3C6_ANT_RX        15
 #define SOC_GPIO_PIN_T3C6_ANT_TX        14
 
 // I2C (ext.)
-#define SOC_GPIO_PIN_T3C6_SDA           19
-#define SOC_GPIO_PIN_T3C6_SCL           20
+#define SOC_GPIO_PIN_T3C6_SDA           2
+#define SOC_GPIO_PIN_T3C6_SCL           3
 
 // NRF905 (NC)
 #define SOC_GPIO_PIN_T3C6_TXE           7 /* TBD */
