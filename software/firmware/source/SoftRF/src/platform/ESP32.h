@@ -89,7 +89,7 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NEOPIXELBUS_LIBRARY
 #else
-#define EXCLUDE_LED_RING
+#define USE_ADAFRUIT_NEO_LIBRARY
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
 #if !defined(EXCLUDE_LED_RING)
@@ -136,7 +136,7 @@ extern Adafruit_NeoPixel strip;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_LED        19 /* D1 */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
+#define SOC_GPIO_PIN_LED        3 /* D1 */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -399,7 +399,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
 #define EXCLUDE_EGM96
 #define EXCLUDE_TEST_MODE
+#define EXCLUDE_WATCHOUT_MODE
 #undef USE_NMEALIB
+#undef ENABLE_PROL
 #endif /* C6 */
 #endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 */
 #else
