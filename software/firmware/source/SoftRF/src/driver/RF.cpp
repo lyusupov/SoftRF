@@ -872,6 +872,15 @@ static void sx12xx_channel(int8_t channel)
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
     int8_t fc = settings->freq_corr;
 
+    if (LMIC.protocol->type == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
+
     //Serial.print("frequency: "); Serial.println(frequency);
 
     if (sx12xx_receive_active) {
@@ -892,7 +901,7 @@ static void sx12xx_channel(int8_t channel)
     }
 
 #if defined(ENABLE_PROL)
-    if (settings->rf_protocol == RF_PROTOCOL_APRS) {
+    if (LMIC.protocol->type == RF_PROTOCOL_APRS) {
       frequency = 433775000UL;
     }
 #endif /* ENABLE_PROL */
@@ -1846,6 +1855,15 @@ static void cc13xx_channel(int8_t channel)
       channel != -1                                 &&
       channel != cc13xx_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
 
     if (cc13xx_receive_active) {
       /* restart Rx upon a channel switch */
