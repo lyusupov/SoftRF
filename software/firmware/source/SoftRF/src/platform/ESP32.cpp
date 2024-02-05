@@ -548,6 +548,8 @@ static void ESP32_setup()
    *                  | ESP-C3-12F    | XMC_XM25QH32B
    *  LilyGO T-TWR    | WROOM-1-N16R8 | GIGADEVICE_GD25Q128
    *  Heltec Tracker  |               | GIGADEVICE_GD25Q64
+   *                  | WT0132C6-S5   | ZBIT_ZB25VQ32B
+   *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
    */
 
   if (psramFound()) {
@@ -632,12 +634,16 @@ static void ESP32_setup()
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
+    uint32_t pkg_ver = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_3_REG,
+                                     EFUSE_PKG_VERSION);
     switch (flash_id)
     {
-    case MakeFlashId(ST_ID, XMC_XM25QH32B):    /* ESP32-C6-MINI-1U */
-      esp32_board   = ESP32_LILYGO_T3C6;
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+      esp32_board   = (pkg_ver == 1) /* QFN32 */ ?
+                      ESP32_LILYGO_T3C6 /* ESP32-C6-MINI-1U */ :
+                      ESP32_C6_DEVKIT;
       break;
-    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6 */
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6-S5 (C6 QFN40) */
     default:
       esp32_board   = ESP32_C6_DEVKIT;
       break;
