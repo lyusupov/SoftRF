@@ -2517,20 +2517,23 @@ static void sa8x8_setup()
   switch (controller.getModel())
   {
     case Model::SA_868_OpenEdition:
+      OE.setAudio(false);
       OE.init();
-      // OE.setTxFrequency((uint32_t) (TxF_MHz * 1000000));
-      // OE.setRxFrequency((uint32_t) (RxF_MHz * 1000000));
+      OE.setTxFrequency((uint32_t) (TxF_MHz * 1000000));
+      OE.setRxFrequency((uint32_t) (RxF_MHz * 1000000));
       // OE.setSqlThresh(sq);
 
       if (settings->txpower == RF_TX_POWER_FULL) {
-      //  OE.setHighPower();
+        OE.setHighPower();
       } else {
-      //  OE.setLowPower();
+        OE.setLowPower();
       }
 
       // OE.setBandwidth(1); /* 25 KHz */
-      // OE.setVolume(1);
+      OE.setVolume(1);
+      OE.setAudio(true);
       break;
+
     case Model::SA_818:
     case Model::SA_868_NiceRF:
     default:
@@ -2613,7 +2616,20 @@ static bool sa8x8_receive()
     return success;
   }
 
-//  controller.receive();
+  switch (controller.getModel())
+  {
+    case Model::SA_868_OpenEdition:
+      if (OE.settings().mode != OpenEdition_Mode::RX) {
+        // OE.RxOn();
+      }
+      break;
+
+    case Model::SA_818:
+    case Model::SA_868_NiceRF:
+    default:
+//    controller.receive();
+      break;
+  }
 
   uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_Poll(true, LOW, powerPin);
@@ -2630,7 +2646,22 @@ static bool sa8x8_receive()
 
 static bool sa8x8_transmit()
 {
-  if (controller.getTxStatus()) return false;
+  switch (controller.getModel())
+  {
+    case Model::SA_868_OpenEdition:
+      if (OE.settings().mode != OpenEdition_Mode::TX) {
+        OE.TxOn();
+      } else {
+        return false;
+      }
+      break;
+
+    case Model::SA_818:
+    case Model::SA_868_NiceRF:
+    default:
+      if (controller.getTxStatus()) return false;
+      break;
+  }
 
   uint8_t powerPin = SOC_GPIO_PIN_TWR2_RADIO_HL;
   AFSK_TimerEnable(false);
@@ -2641,6 +2672,20 @@ static bool sa8x8_transmit()
     delay(5);
     AFSK_Poll(true, settings->txpower == RF_TX_POWER_FULL ? HIGH : LOW, powerPin);
   } while (AFSK_modem->sending);
+
+  switch (controller.getModel())
+  {
+    case Model::SA_868_OpenEdition:
+      if (OE.settings().mode == OpenEdition_Mode::TX) {
+        OE.TxOff();
+      }
+      break;
+
+    case Model::SA_818:
+    case Model::SA_868_NiceRF:
+    default:
+      break;
+  }
 
   if ((settings->power_save & POWER_SAVE_NORECEIVE) == 0) {
     AFSK_TimerEnable(true);
@@ -2656,6 +2701,7 @@ static void sa8x8_shutdown()
     case Model::SA_868_OpenEdition:
       /* TBD */
       break;
+
     case Model::SA_818:
     case Model::SA_868_NiceRF:
     default:
