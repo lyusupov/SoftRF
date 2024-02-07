@@ -2530,7 +2530,6 @@ static void sa8x8_setup()
       }
 
       // OE.setBandwidth(1); /* 25 KHz */
-      OE.setVolume(1);
       OE.setAudio(true);
       break;
 
@@ -2620,7 +2619,8 @@ static bool sa8x8_receive()
   {
     case Model::SA_868_OpenEdition:
       if (OE.settings().mode != OpenEdition_Mode::RX) {
-        // OE.RxOn();
+        OE.RxOn();
+        OE.setVolume(3);
       }
       break;
 
@@ -2650,7 +2650,12 @@ static bool sa8x8_transmit()
   {
     case Model::SA_868_OpenEdition:
       if (OE.settings().mode != OpenEdition_Mode::TX) {
+        if (OE.settings().mode == OpenEdition_Mode::RX) {
+          OE.RxOff();
+          delay(300);
+        }
         OE.TxOn();
+        delay(300);
       } else {
         return false;
       }

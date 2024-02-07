@@ -114,6 +114,7 @@ class OpenEdition
         OpenEdition_Version Version();
         int16_t getRSSI();
         void RxOn();
+        void RxOff();
         void TxOn();
         void TxOff();
         void setAudio(bool value);

@@ -506,14 +506,24 @@ void OpenEdition::init() {
                                     // Bit 11 = 1: bypass VOX HPF
                                     // Bit 12 = 1: bypass VOX LPF
                                     // Bit 13 = 1: bypass RSSI LPF
+
+#if 0
     SA868_WriteAT1846Sreg(_SerialRF, 0x44, SA868_maskSetValue(0x06FF, 0x00F0, ((int16_t)_config.volume) << 8));
-    SA868_WriteAT1846Sreg(_SerialRF, 0x40, 0x0030);
+    SA868_WriteAT1846Sreg(_SerialRF, 0x44,_config.volume*2 | (((int16_t)_config.volume*2) << 4));
+#else
+    SA868_WriteAT1846Sreg(_SerialRF, 0x44,0x00FF);
+    // SA868_WriteAT1846Sreg(_SerialRF, 0x41, 0x0030);
+#endif
 
     SA868_maskSetRegister(_SerialRF, 0x57, 0x0001, 0x00);     // Audio feedback off
     SA868_maskSetRegister(_SerialRF, 0x3A, 0x7000, 0x4000);   // Select voice channel
 
     setSqlThresh();
+#if 0
     SA868_maskSetRegister(_SerialRF, 0x30, 0x0004, 0x0004);   // SQ ON
+#else
+    SA868_maskSetRegister(_SerialRF, 0x30, 0x0008, 0x0000);
+#endif
     setPower();
 }
 
@@ -583,7 +593,9 @@ void OpenEdition::updateBandwidth()
 void OpenEdition::setVolume(uint8_t value)
 {
     _config.volume = value;
-    SA868_maskSetRegister(_SerialRF, 0x44, 0x00F0, ((int16_t)_config.volume) << 8);
+    uint16_t volume1 = ((((int16_t)_config.volume)*2)-1) << 4;
+    uint16_t volume2 = (((int16_t)_config.volume)*2)-1;
+    SA868_maskSetRegister(_SerialRF, 0x44, 0x00F0, volume1 | volume2);
 }
 
 int16_t OpenEdition::getRSSI()
@@ -631,8 +643,13 @@ void OpenEdition::setSqlThresh(uint8_t value)
 
 void OpenEdition::setSqlThresh()
 {
+#if 0
     SA868_WriteAT1846Sreg(_SerialRF, 0x49, static_cast< uint16_t >(_config.sql_level));
     SA868_WriteAT1846Sreg(_SerialRF, 0x48, static_cast< uint16_t >(_config.sql_level));
+#else
+    SA868_WriteAT1846Sreg(_SerialRF, 0x49, 0);
+    SA868_WriteAT1846Sreg(_SerialRF, 0x48, 0);
+#endif
 }
 
 void OpenEdition::RxOn()
@@ -642,6 +659,14 @@ void OpenEdition::RxOn()
     OpenEdition::setFrequency(_config.freq_rx);
     SA868_setFuncMode(_SerialRF, OpenEdition_Mode::RX);
     _config.mode = OpenEdition_Mode::RX;
+}
+
+void OpenEdition::RxOff()
+{
+    if (_config.mode != OpenEdition_Mode::RX)
+        return;
+    SA868_setFuncMode(_SerialRF, OpenEdition_Mode::OFF);
+    _config.mode = OpenEdition_Mode::OFF;
 }
 
 void OpenEdition::TxOn()
