@@ -1167,6 +1167,7 @@ static void ESP32_setup()
 
       axp_2xxx.enableBLDO1();
 
+      axp_2xxx.disableBLDO2();
       axp_2xxx.disableALDO3();
       axp_2xxx.disableDC3();
 
@@ -1483,8 +1484,9 @@ static void ESP32_setup()
       esp32_board = ESP32_LILYGO_T_TWR_V2_1;
       hw_info.revision = 21;
 
-      axp_2xxx.setALDO3Voltage(3300); // V2.1 - SA868
-      axp_2xxx.enableALDO3();
+      axp_2xxx.setBLDO2Voltage(3300); // V2.1 - SA868
+      axp_2xxx.enableBLDO2();
+      // axp_2xxx.setALDO3Voltage(3300); // V2.1 - Amp. OE Ctrl
 
 #if defined(USE_SA8X8)
 #if 0
