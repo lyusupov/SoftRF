@@ -23,7 +23,6 @@ const protocol = 1;
 const baudrate = 0;
 const server = "";
 const key = "";
-const adb = 0;
 const voice = 0;
 const power_save = 0;
 
@@ -42,7 +41,7 @@ function UpdateChecksum()
       + key  + ","
       + document.getElementById("rotate").value + ","
       + document.getElementById("orientation").value + ","
-      + adb  + ","
+      + document.getElementById("adb").value + ","
       + document.getElementById("idpref").value + ","
       + document.getElementById("vmode").value + ","
       + voice  + ","
@@ -114,6 +113,13 @@ function SelZoom()
   UpdateChecksum();
 }
 
+function SelADB()
+{
+  var adb = document.getElementById("ADBs");
+  document.getElementById("adb").value = adb.options[adb.selectedIndex].value;
+  UpdateChecksum();
+}
+
 function SelIDPref()
 {
   var idpref = document.getElementById("IDPrefs");
@@ -151,6 +157,7 @@ function InitSettings()
   document.getElementById("rotate").value       = 0;
   document.getElementById("orientation").value  = 0;
   document.getElementById("zoom").value         = 2;
+  document.getElementById("adb").value          = 3;
   document.getElementById("idpref").value       = 3;
   document.getElementById("aghost").value       = 0;
   document.getElementById("filter").value       = 0;
@@ -226,6 +233,17 @@ function InitSettings()
 </tr>
 
 <tr>
+<th align=left>Aircrafts data</th>
+<td align=right>
+<select id="ADBs" onchange="SelADB()">
+<option value='0'>off</option>
+<option value='2'>FlarmNet</option>
+<option selected value='3'>GliderNet</option>
+</select>
+</td>
+</tr>
+
+<tr>
 <th align=left>ID preference</th>
 <td align=right>
 <select id="IDPrefs" onchange="SelIDPref()">
@@ -272,6 +290,7 @@ function InitSettings()
 <!-- Rotation:  --><input type="hidden" id="rotate" size="1">
 <!-- Orientation:  --><input type="hidden" id="orientation" size="1">
 <!-- Zoom:  --><input type="hidden" id="zoom" size="1">
+<!-- ADB:  --><input type="hidden" id="adb" size="1">
 <!-- IDPref:  --><input type="hidden" id="idpref" size="1">
 <!-- AGhost:  --><input hidden="text" id="aghost" size="1">
 <!-- Filter:  --><input type="hidden" id="filter" size="1">

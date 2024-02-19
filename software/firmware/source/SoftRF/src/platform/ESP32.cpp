@@ -1486,7 +1486,7 @@ static void ESP32_setup()
 
       axp_2xxx.setBLDO2Voltage(3300); // V2.1 - SA868
       axp_2xxx.enableBLDO2();
-      // axp_2xxx.setALDO3Voltage(3300); // V2.1 - Amp. OE Ctrl
+      axp_2xxx.setALDO3Voltage(3300); // V2.1 - Amp. OE Ctrl
 
 #if defined(USE_SA8X8)
 #if 0
@@ -1684,6 +1684,35 @@ static void ESP32_post_init()
       }
     }
   }
+
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+  if (esp32_board == ESP32_LILYGO_T_TWR_V2_1 && uSD_is_attached)
+  {
+    char filename[MAX_FILENAME_LEN];
+    strcpy(filename, WAV_FILE_PREFIX);
+    strcat(filename, "POST");
+    strcat(filename, WAV_FILE_SUFFIX);
+    if (uSD.exists(filename)) {
+      axp_2xxx.enableALDO3();
+      Audio_Sink->SetPinout(I2S_PIN_NO_CHANGE,
+                            I2S_PIN_NO_CHANGE,
+                            SOC_GPIO_PIN_TWR2_PDM_AUX,
+                            I2S_PIN_NO_CHANGE);
+      Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
+
+      play_file(filename);
+
+      axp_2xxx.disableALDO3();
+      I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
+                I2S_BITS_PER_SAMPLE_16BIT);
+      Audio_Sink->SetPinout(I2S_PIN_NO_CHANGE,
+                            I2S_PIN_NO_CHANGE,
+                            SOC_GPIO_PIN_TWR2_PDM_OUT,
+                            I2S_PIN_NO_CHANGE);
+      Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
+    }
+  }
+#endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   Serial.println();

@@ -20,8 +20,8 @@
 
 // Radio SPI (not in use)
 #define SOC_GPIO_PIN_TWR2_MOSI          16
-#define SOC_GPIO_PIN_TWR2_MISO          45
-#define SOC_GPIO_PIN_TWR2_SCK           15
+#define SOC_GPIO_PIN_TWR2_MISO          45 /* T-TWR 2.0 only */
+#define SOC_GPIO_PIN_TWR2_SCK           15 /* T-TWR 2.0 only */
 #define SOC_GPIO_PIN_TWR2_SS            14
 
 // microSD
@@ -43,3 +43,6 @@
 #define SOC_GPIO_PIN_TWR2_ENC_A         47
 #define SOC_GPIO_PIN_TWR2_ENC_B         46
 
+/* T-TWR 2.1 only */
+#define SOC_GPIO_PIN_TWR2_PDM_AUX       45
+#define SOC_GPIO_PIN_TWR2_MIC_ADC       15
