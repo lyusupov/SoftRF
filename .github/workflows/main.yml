@@ -38,6 +38,7 @@ jobs:
             'adafruit:nrf52:pca10056',
             'arduino:samd:mzero_bl',
             'arduino:avr:mega',
+            'arduino:renesas_uno:minima',
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow'
           ]
@@ -314,6 +315,12 @@ jobs:
             arduino --board $BOARD --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "arduino:renesas_uno:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
+            arduino --install-boards arduino:renesas_uno:1.0.5 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
             arduino --install-boards rp2040:rp2040:3.3.2 ;
@@ -327,13 +334,13 @@ jobs:
 
       - name: Run script
         run: |
-          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+          if [[ "$BOARD" =~ "esp8266:esp8266:"     ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+          if [[ "$BOARD" =~ "esp8266:esp8266:"     ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
           fi ;
-          if [[ "$BOARD" =~ "esp8266:esp8266:"    ]]; then
+          if [[ "$BOARD" =~ "esp8266:esp8266:"     ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
           # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
@@ -341,62 +348,65 @@ jobs:
           #  arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           #else
           # ESP32 AC 3.0-alpha2+ can work with IDE1
-            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
+            if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
             fi ;
           #fi ;
           #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
           #  arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SkyView ;
           #else
-            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
+            if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
             fi ;
           #fi ;
           #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
           #  arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SkyWatch ;
           #else
-            if [[ "$BOARD" =~ "esp32:esp32:"      ]]; then
+            if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
             fi ;
           #fi ;
-          if [[ "$BOARD" =~ "STM32:stm32:"        ]]; then
+          if [[ "$BOARD" =~ "STM32:stm32:"         ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "STMicroelectronics:stm32:" ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+          if [[ "$BOARD" =~ "energia:cc13xx:"      ]]; then
             energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "energia:cc13xx:"     ]]; then
+          if [[ "$BOARD" =~ "energia:cc13xx:"      ]]; then
             energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
           fi ;
-          if [[ "$BOARD" =~ "raspberry"           ]]; then
+          if [[ "$BOARD" =~ "raspberry"            ]]; then
             cd $GITHUB_WORKSPACE/software/firmware/source/SoftRF ;
             make pi;
           fi ;
-          if [[ "$BOARD" =~ "raspberry"           ]]; then
+          if [[ "$BOARD" =~ "raspberry"            ]]; then
             cd $GITHUB_WORKSPACE/software/firmware/source/SkyView ;
             make -f Makefile.RPi ;
           fi ;
-          if [[ "$BOARD" =~ "CubeCell:CubeCell:"  ]]; then
+          if [[ "$BOARD" =~ "CubeCell:CubeCell:"   ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "adafruit:nrf52:"     ]]; then
+          if [[ "$BOARD" =~ "adafruit:nrf52:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:samd:"       ]]; then
+          if [[ "$BOARD" =~ "arduino:samd:"        ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:avr:"        ]]; then
+          if [[ "$BOARD" =~ "arduino:avr:"         ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
+          if [[ "$BOARD" =~ "arduino:renesas_uno:" ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
+          if [[ "$BOARD" =~ "rp2040:rp2040:"       ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "rp2040:rp2040:"       ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
           fi ;
-          if [[ "$BOARD" =~ "rp2040:rp2040:"      ]]; then
+          if [[ "$BOARD" =~ "rp2040:rp2040:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
