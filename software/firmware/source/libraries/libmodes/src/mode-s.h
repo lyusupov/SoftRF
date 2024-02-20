@@ -39,10 +39,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
-#ifndef ARDUINO_ARCH_AVR
-#include <sys/time.h>
-#else
+#if defined(ARDUINO_ARCH_AVR)
 typedef unsigned long time_t;
+#elif defined(ARDUINO_ARCH_RENESAS)
+typedef _TIME_T_ time_t;
+#else
+#include <sys/time.h>
 #endif
 
 #ifndef __cplusplus

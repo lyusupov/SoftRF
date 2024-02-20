@@ -28,7 +28,7 @@
       defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
       defined(ARDUINO_ARCH_NRF52)   || defined(ARDUINO_ARCH_SAMD)    || \
       defined(ARDUINO_ARCH_AVR)     || defined(ARDUINO_ARCH_RP2040)  || \
-      defined(HACKRF_ONE))
+      defined(HACKRF_ONE)           || defined(ARDUINO_ARCH_RENESAS))
 #include <Adafruit_Sensor.h>
 #endif
 

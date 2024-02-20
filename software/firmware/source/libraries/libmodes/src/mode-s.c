@@ -822,7 +822,9 @@ good_preamble:
 /* ============================= Utility functions ========================== */
 
 static ms_time_t mstime(void) {
-#if !defined(HACKRF_ONE) && !defined(ARDUINO_ARCH_AVR)
+#if !defined(HACKRF_ONE) && !defined(ARDUINO_ARCH_AVR) && \
+    !defined(ARDUINO_ARCH_RENESAS)
+
     struct timeval tv;
     ms_time_t mst;
 
