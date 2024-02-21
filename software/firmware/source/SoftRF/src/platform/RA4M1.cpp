@@ -33,15 +33,11 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#include <WDT.h>
+
 #if !defined(ARDUINO_ARCH_RENESAS_UNO)
 #error "ARDUINO UNO is the only one supported at this time"
 #endif
-
-typedef volatile uint32_t REG32;
-#define pREG32 (REG32 *)
-
-#define DEVICE_ID_HIGH    (*(pREG32 (0x0080A044)))
-#define DEVICE_ID_LOW     (*(pREG32 (0x0080A048)))
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -126,6 +122,35 @@ ACM           AcmSerial(&UsbH, &AsyncOper);
 
 static void RA4M1_setup()
 {
+  if (1U == R_SYSTEM->RSTSR0_b.PORF) /* Power on Reset */
+  {
+      reset_info.reason = REASON_DEFAULT_RST;
+  }
+  else if (1U == R_SYSTEM->RSTSR1_b.IWDTRF) /* Independent WDT Reset */
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (1U == R_SYSTEM->RSTSR1_b.WDTRF) /* Watchdog Timer Reset */
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (1U == R_SYSTEM->RSTSR0_b.LVD0RF) /* Voltage monitor Reset */
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (1U == R_SYSTEM->RSTSR0_b.DPSRSTF) /* Deep Software Standby Reset */
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (1U == R_SYSTEM->RSTSR1_b.SWRF) /* Software Reset */
+  {
+      reset_info.reason = REASON_SOFT_RESTART;
+  }
+  else if (1U == R_SYSTEM->RSTSR2_b.CWSF) /* Warm start */
+  {
+      reset_info.reason = REASON_EXT_SYS_RST;
+  }
+
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_RADIO_LED_TX, OUTPUT);
   digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
@@ -227,6 +252,10 @@ static unsigned long rx_led_time_marker = 0;
 
 static void RA4M1_loop()
 {
+  if (wdt_is_active) {
+    WDT.refresh();
+  }
+
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   if (digitalRead(SOC_GPIO_RADIO_LED_TX) != LED_STATE_ON) {
     if (tx_packets_counter != prev_tx_packets_counter) {
@@ -276,7 +305,8 @@ static void RA4M1_reset()
 static uint32_t RA4M1_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = DEVICE_ID_LOW;
+  const bsp_unique_id_t* t = R_BSP_UniqueIdGet();
+  uint32_t id = t->unique_id_words[3];
 
   return DevID_Mapper(id);
 #else
@@ -533,12 +563,16 @@ static void RA4M1_UATModule_restart()
 
 static void RA4M1_WDT_setup()
 {
-  /* TBD */
+  WDT.begin(5000);
+  wdt_is_active = true;
 }
 
 static void RA4M1_WDT_fini()
 {
-  /* TBD */
+  if (wdt_is_active) {
+    WDT.refresh(); /* TODO */
+    wdt_is_active = false;
+  }
 }
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN

@@ -1162,14 +1162,25 @@ static void ESP32_setup()
 
       // axp_2xxx.enableDC1();
 
-      axp_2xxx.enableALDO2();
-      axp_2xxx.enableALDO4();
+      axp_2xxx.enableALDO2();  // Rev2.x - micro-SD Card LDO
+      axp_2xxx.enableALDO4();  // Rev2.x - GNSS LDO
 
-      axp_2xxx.enableBLDO1();
+      axp_2xxx.enableBLDO1();  // Rev2.x - Microphone LDO
 
-      axp_2xxx.disableBLDO2();
-      axp_2xxx.disableALDO3();
-      axp_2xxx.disableDC3();
+      axp_2xxx.disableBLDO2(); // Rev2.1 - SA8x8 DC boost , Rev2.0 - user LDO
+      axp_2xxx.disableALDO3(); // Rev2.1 - Audio amp. switch , Rev2.0 - user LDO
+      axp_2xxx.disableDLDO1(); // Rev2.1 - Download switch control
+      axp_2xxx.disableDC3();   // Rev2.0 - SA8x8 DC boost , Rev2.1 - user LDO
+
+      // The following supply voltages can be controlled by the user
+      axp_2xxx.disableALDO1();
+      axp_2xxx.disableDC5();
+
+      // The following power supplies are unavailable
+      axp_2xxx.disableDC2();
+      axp_2xxx.disableDC4();
+      axp_2xxx.disableCPUSLDO();
+      axp_2xxx.disableDLDO2();
 
       axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_ON);
 

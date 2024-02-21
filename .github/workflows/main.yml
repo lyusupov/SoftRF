@@ -39,6 +39,7 @@ jobs:
             'arduino:samd:mzero_bl',
             'arduino:avr:mega',
             'arduino:renesas_uno:minima',
+            'arduino:renesas_uno:unor4wifi',
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow'
           ]

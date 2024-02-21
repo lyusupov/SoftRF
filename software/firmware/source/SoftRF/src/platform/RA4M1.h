@@ -40,11 +40,17 @@
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 
+#if defined(ARDUINO_UNOR4_MINIMA)
 #define SerialOutput            SerialUSB
-//#define SerialOutput          Serial1
+#define Serial_GNSS_In          Serial1
+#elif defined(ARDUINO_UNOR4_WIFI)
+#define SerialOutput            Serial1
+#define Serial_GNSS_In          Serial2
+#else
+#error "This Renesas R7FA4M1 build variant is not supported!"
+#endif
 
 #define USBSerial               SerialUSB
-#define Serial_GNSS_In          Serial1
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               SerialUSB
 
@@ -70,42 +76,32 @@ struct rst_info {
   uint32_t depc;
 };
 
-#if defined(ARDUINO_UNOR4_MINIMA)
-
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PB23
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PB22
+#if defined(ARDUINO_UNOR4_WIFI)
+#define SOC_GPIO_PIN_CONS_RX  UART1_RX_PIN
+#define SOC_GPIO_PIN_CONS_TX  UART1_TX_PIN
 
-#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX // PA11
-#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX // PA10
-
-#define	USE_ISP_PORT          1
-
-#if USE_ISP_PORT
-#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PA17
+#define SOC_GPIO_PIN_GNSS_RX  UART2_RX_PIN
+#define SOC_GPIO_PIN_GNSS_TX  UART2_TX_PIN
 #else
-#define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // PB03
-#endif /* USE_ISP_PORT */
+#define SOC_GPIO_PIN_CONS_RX  23 /* TBD */
+#define SOC_GPIO_PIN_CONS_TX  22 /* TBD */
+
+#define SOC_GPIO_PIN_GNSS_RX  UART1_RX_PIN
+#define SOC_GPIO_PIN_GNSS_TX  UART1_TX_PIN
+#endif /* ARDUINO_UNOR4_WIFI */
+
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
-#if USE_ISP_PORT
-/* ISP port */
-#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PB10
-#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PB12
-#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB11
-#else
-/* Port B */
-#define SOC_GPIO_PIN_MOSI     11             // PA16
-#define SOC_GPIO_PIN_MISO     12             // PA19
-#define SOC_GPIO_PIN_SCK      13             // PA17
-#endif /* USE_ISP_PORT */
-#define SOC_GPIO_PIN_SS       10             // PA18
-//#define SOC_GPIO_PIN_SS     4              // NL
-//#define SOC_GPIO_PIN_SS     5              // NL
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK
+#define SOC_GPIO_PIN_SS       PIN_SPI_CS
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -113,35 +109,31 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      9              // PA07
+#define SOC_GPIO_PIN_RST      PIN_D9
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     6              // PA20
+#define SOC_GPIO_PIN_DIO1     PIN_D6
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PA22
-#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PA23
+#define SOC_GPIO_PIN_SDA      WIRE_SDA_PIN
+#define SOC_GPIO_PIN_SCL      WIRE_SCL_PIN
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS PIN_A3         // PA04
-#define SOC_GPIO_PIN_BATTERY  PIN_A0         // PA02
+#define SOC_GPIO_PIN_GNSS_PPS PIN_A3
+#define SOC_GPIO_PIN_BATTERY  PIN_A0
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
-#if defined(USE_TINYUSB)
-#define SOC_GPIO_RADIO_LED_RX PIN_LED_RXL
-#define SOC_GPIO_RADIO_LED_TX PIN_LED_TXL
-#else
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
-#endif /* USE_TINYUSB */
 
-#else
-#error "This RA4M1 build variant is not supported!"
+#if defined(ARDUINO_UNOR4_MINIMA)
+#define EXCLUDE_WIFI
+#elif defined(ARDUINO_UNOR4_WIFI)
+#define EXCLUDE_WIFI          /* TODO */
 #endif
 
-#define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
@@ -186,20 +178,5 @@ extern Adafruit_NeoPixel strip;
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
 #endif /* USE_OLED */
 
-#if defined(USE_USB_HOST)
-
-#if defined(Serial)
-#undef Serial
-#endif
-#define Serial                  Serial1
-
-#if defined(SerialOutput)
-#undef SerialOutput
-#endif
-#define SerialOutput            Serial1
-
-#endif /* USE_USB_HOST */
-
 #endif /* PLATFORM_RA4M1_H */
-
 #endif /* ARDUINO_ARCH_RENESAS */
