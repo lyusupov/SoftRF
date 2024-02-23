@@ -11,7 +11,7 @@
 // extern "C" {
 // //#include "user_interface.h"
 // }uint32_t freemem = system_get_free_heap_size();
-Afsk modem;
+Afsk modem_afsk;
 AX25Ctx AX25;
 extern void aprs_msg_callback(struct AX25Msg *msg);
 extern APRS_led_callback_t AFSK_Tx_LED_Callback;
@@ -76,7 +76,7 @@ void aprs_msg_callback(struct AX25Msg *msg) {
 
 void APRS_init(bool rx)
 {
-    AFSK_init(&modem, rx);
+    AFSK_init(&modem_afsk, rx);
     ax25_init(&AX25, aprs_msg_callback);
 }
 

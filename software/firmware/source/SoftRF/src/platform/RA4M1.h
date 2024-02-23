@@ -131,7 +131,10 @@ struct rst_info {
 #if defined(ARDUINO_UNOR4_MINIMA)
 #define EXCLUDE_WIFI
 #elif defined(ARDUINO_UNOR4_WIFI)
-#define EXCLUDE_WIFI          /* TODO */
+#define USE_ARDUINO_WIFI
+#define EXCLUDE_OTA
+#define EXCLUDE_WEBUI         /* TODO */
+#define Serial_setDebugOutput(x) ({})
 #endif
 
 #define EXCLUDE_CC13XX

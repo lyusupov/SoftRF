@@ -19,7 +19,7 @@
 #include "SoC.h"
 #include "Time.h"
 
-#if defined(EXCLUDE_WIFI)
+#if defined(EXCLUDE_WIFI) || defined(USE_ARDUINO_WIFI)
 void Time_setup()     {}
 #else
 

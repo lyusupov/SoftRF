@@ -18,7 +18,7 @@
 
 #include "../system/SoC.h"
 
-#if defined(EXCLUDE_WIFI)
+#if defined(EXCLUDE_WIFI) || defined(EXCLUDE_WEBUI)
 void Web_setup()    {}
 void Web_loop()     {}
 void Web_fini()     {}

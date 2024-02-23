@@ -105,6 +105,58 @@ void Raw_Transmit_UDP()
     SoC->WiFi_transmit_UDP(RELAY_DST_PORT, (byte *)UDPpacketBuffer, len + 1);
 }
 
+#if defined(USE_ARDUINO_WIFI)
+#include <WiFi.h>
+
+void WiFi_setup()
+{
+  // Set Hostname.
+  host_name += "-";
+  host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
+
+  // check for the WiFi module:
+  if (WiFi.status() == WL_NO_MODULE) {
+    Serial.println("Communication with WiFi module failed!");
+    // don't continue
+    while (true);
+  }
+
+  String fv = WiFi.firmwareVersion();
+  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+    Serial.println("Please upgrade the firmware");
+  }
+
+  WiFi.setHostname(host_name.c_str());
+
+  // Print hostname.
+  Serial.println("Hostname: " + host_name);
+
+  Serial.print(F("Setting soft-AP configuration ... "));
+  WiFi.config(local_IP, gateway, gateway, subnet);
+  Serial.println(F("Ready"));
+
+  Serial.print(F("Setting soft-AP ... "));
+  Serial.println(WiFi.beginAP(host_name.c_str(), ap_default_psk) == WL_AP_LISTENING ?
+    F("Ready") : F("Failed!"));
+
+  Serial.print(F("IP address: "));
+  Serial.println(WiFi.softAPIP());
+
+  SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MED); // 10 dBm
+  SoC->WiFi_set_param(WIFI_PARAM_DHCP_LEASE_TIME, WIFI_DHCP_LEASE_HRS);
+  delay(10);
+
+  Uni_Udp.begin(RFlocalPort);
+  Serial.print(F("UDP server has started at port: "));
+  Serial.println(RFlocalPort);
+
+#if defined(POWER_SAVING_WIFI_TIMEOUT)
+  WiFi_No_Clients_Time_ms = millis();
+#endif
+}
+
+#else /* USE_ARDUINO_WIFI */
+
 /**
  * @brief Arduino setup function.
  */
@@ -197,6 +249,7 @@ void WiFi_setup()
   RID_Time_Marker = millis();
 #endif /* ENABLE_REMOTE_ID */
 }
+#endif /* USE_ARDUINO_WIFI */
 
 void WiFi_loop()
 {
@@ -240,7 +293,11 @@ void WiFi_fini()
 {
   Uni_Udp.stop();
 
+#if defined(USE_ARDUINO_WIFI)
+  WiFi.end();
+#else
   WiFi.mode(WIFI_OFF);
+#endif /* USE_ARDUINO_WIFI */
 }
 
 #endif /* EXCLUDE_WIFI */

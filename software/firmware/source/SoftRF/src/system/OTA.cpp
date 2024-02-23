@@ -18,7 +18,7 @@
 
 #include "SoC.h"
 
-#if defined(EXCLUDE_WIFI)
+#if defined(EXCLUDE_WIFI) || defined(EXCLUDE_OTA)
 void OTA_setup()    {}
 void OTA_loop()     {}
 #else

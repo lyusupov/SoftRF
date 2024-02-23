@@ -64,7 +64,9 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
+#if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+#endif /* EXCLUDE_WIFI */
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,
