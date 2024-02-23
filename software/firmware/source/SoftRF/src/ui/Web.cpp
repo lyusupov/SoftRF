@@ -49,11 +49,15 @@ void Web_fini()     {}
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
-static const char Logo[] PROGMEM = {
+#if !defined(ARDUINO_ARCH_RP2040)       && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(ARDUINO_ARCH_RENESAS)
 #include "../Logo.h"
-    } ;
+#endif /* ARDUINO_ARCH_RP2040 CONFIG_IDF_TARGET_ESP32C6 ARDUINO_ARCH_RENESAS */
 
+#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
 #include "jquery_min_js.h"
+#endif /* ARDUINO_ARCH_RP2040 ARDUINO_ARCH_RENESAS */
 
 #include <WiFiWebServer.h>
 WiFiWebServer server ( 80 );
