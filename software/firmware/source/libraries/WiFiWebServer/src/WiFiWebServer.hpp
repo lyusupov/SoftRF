@@ -200,6 +200,12 @@
 
 ////////////////////////////////////////
 
+#elif defined(ARDUINO_ARCH_RENESAS_UNO)
+
+  #if (_WIFI_LOGLEVEL_ > 2)
+    #warning Use Uno R4 from WiFiWebServer
+  #endif
+
 #else
 
   #warning Unknown or unsupported board
