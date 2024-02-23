@@ -49,15 +49,13 @@ void Web_fini()     {}
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
-#if !defined(ARDUINO_ARCH_RP2040)       && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
-    !defined(ARDUINO_ARCH_RENESAS)
+#if !defined(ARDUINO_ARCH_RENESAS)
 #include "../Logo.h"
-#endif /* ARDUINO_ARCH_RP2040 CONFIG_IDF_TARGET_ESP32C6 ARDUINO_ARCH_RENESAS */
+#endif /* ARDUINO_ARCH_RENESAS */
 
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
+#if !defined(EXCLUDE_OTA)
 #include "jquery_min_js.h"
-#endif /* ARDUINO_ARCH_RP2040 ARDUINO_ARCH_RENESAS */
+#endif /* EXCLUDE_OTA */
 
 #include <WiFiWebServer.h>
 WiFiWebServer server ( 80 );
@@ -1285,7 +1283,7 @@ $('form').submit(function(e){\
   } );
 #endif /* ARDUINO_ARCH_RP2040 CONFIG_IDF_TARGET_ESP32C6 ARDUINO_ARCH_RENESAS */
 
-#if !defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_RENESAS)
+#if !defined(EXCLUDE_OTA)
   server.on ( "/jquery.min.js", []() {
 
     PGM_P content = jquery_min_js_gz;
@@ -1304,7 +1302,7 @@ $('form').submit(function(e){\
     } while (bytes_left > 0) ;
 
   } );
-#endif /* ARDUINO_ARCH_RP2040 ARDUINO_ARCH_RENESAS */
+#endif /* EXCLUDE_OTA */
 
 #if defined(ENABLE_RECORDER)
   server.on("/flights", HTTP_GET, Handle_Flight_Download);

@@ -225,6 +225,7 @@ struct rst_info {
 #endif
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#define EXCLUDE_OTA
 #define USE_WIFI_NINA         false
 #define USE_WIFI_CUSTOM       true
 #include <ESP8266WiFi.h>

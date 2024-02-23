@@ -18,20 +18,15 @@
 
 #if defined(ESP32)
 #include "sdkconfig.h"
-#endif
 
-#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
-
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled!
-#endif
+#if defined(CONFIG_BLUEDROID_ENABLED)
 
 /*
-    BLE code is based on Neil Kolban example for IDF:
-      https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
-    Ported to Arduino ESP32 by Evandro Copercini    
-    HM-10 emulation and adaptation for SoftRF is done by Linar Yusupov.
-*/
+ *  BLE code is based on Neil Kolban example for IDF:
+ *    https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
+ *  Ported to Arduino ESP32 by Evandro Copercini
+ *  HM-10 emulation and adaptation for SoftRF is done by Linar Yusupov.
+ */
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -439,4 +434,5 @@ IODev_ops_t ESP32_Bluetooth_ops = {
   ESP32_Bluetooth_write
 };
 
+#endif /* CONFIG_BLUEDROID_ENABLED */
 #endif /* ESP32 */
