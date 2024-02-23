@@ -1,0 +1,22 @@
+name: Spell Check
+
+on:
+  pull_request:
+  push:
+  schedule:
+    # run every Tuesday at 3 AM UTC
+    - cron: "0 3 * * 2"
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # See: https://github.com/codespell-project/actions-codespell/blob/master/README.md
+      - name: Spell check
+        uses: codespell-project/actions-codespell@master

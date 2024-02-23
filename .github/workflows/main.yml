@@ -125,6 +125,7 @@ jobs:
             arduino --pref "custom_xtal=nodemcuv2_80"                  --save-prefs ;
             cd $HOME/.arduino15/packages/esp8266/hardware/esp8266/2.7.0 ;
             sed -i '52 a #define isFlashInterfacePin(p) ((p) == 6 || (p) == 7 || (p) == 8 || (p) == 9 || (p) == 11)' variants/nodemcu/pins_arduino.h ;
+            sed -i '57 a \        unsigned long getTimeout () const { return _timeout; }' cores/esp8266/Stream.h ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32:" ]]; then

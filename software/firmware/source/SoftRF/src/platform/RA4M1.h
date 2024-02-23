@@ -133,7 +133,9 @@ struct rst_info {
 #elif defined(ARDUINO_UNOR4_WIFI)
 #define USE_ARDUINO_WIFI
 #define EXCLUDE_OTA
-#define EXCLUDE_WEBUI         /* TODO */
+#define USE_WIFI_NINA         false
+#define USE_WIFI_CUSTOM       true
+#include <WiFiS3.h>
 #define Serial_setDebugOutput(x) ({})
 #endif
 
@@ -160,7 +162,7 @@ struct rst_info {
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
-//#define EXCLUDE_EGM96          //  -    kb
+#define EXCLUDE_EGM96            //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 

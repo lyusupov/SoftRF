@@ -1,0 +1,69 @@
+{
+  "name": "WiFiWebServer",
+  "version": "1.10.1",
+  "keywords": "wifi, wi-fi, WebServer, WiFiNINA, WiFi101, ESP32, Portenta-H7, SAM-DUE, SAMD, STM32, nRF52, rpi-pico, rp2040, HTTP-Client, WebSocket-Client, server, client, websocket, wifi-multi, mega-avr",
+  "description": "Simple WiFiWebServer, HTTP Client and WebSocket Client library for AVR Mega, megaAVR, Portenta_H7, Teensy, SAM DUE, SAMD21, SAMD51, STM32F/L/H/G/WB/MP1, nRF52, RP2040-based (Nano-RP2040-Connect, RASPBERRY_PI_PICO, RASPBERRY_PI_PICO_W, ESP32/ESP8266, etc.) boards using WiFi, such as WiFiNINA, WiFi101, CYW43439, U-Blox W101, W102, ESP8266/ESP32-AT modules/shields, with functions similar to those of ESP8266/ESP32 WebServer libraries",
+  "authors":
+  {
+    "name":  "Khoi Hoang",
+    "url":   "https://github.com/khoih-prog",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/khoih-prog/WiFiWebServer"
+  },
+  "homepage": "https://github.com/khoih-prog/WiFiWebServer",
+  "export": {
+    "exclude": [
+      "linux",
+      "extras",
+      "tests"
+    ]
+  },
+  "dependencies": 
+  [
+    {
+      "owner": "khoih-prog",
+      "name": "WiFiNINA_Generic",
+      "version": ">=1.8.15-1",
+      "platforms": ["*"]
+    },
+    {
+      "owner": "khoih-prog",
+      "name": "WiFi101_Generic",
+      "version": ">=1.0.0",
+      "platforms": ["*"]
+    },
+    {
+      "owner": "khoih-prog",
+      "name": "Functional-Vlpp",
+      "version": ">=1.0.2",
+      "platforms": ["*"]
+    },
+    {
+      "owner": "khoih-prog",
+      "name": "WiFiMulti_Generic",
+      "version": ">=1.2.2",
+      "platforms": ["*"]
+    },
+    {
+      "owner": "khoih-prog",
+      "name": "ESP_AT_Lib",
+      "version": ">=1.4.1",
+      "platforms": ["*"]
+    },
+    {
+      "owner": "jandrassy",
+      "name": "WiFiEspAT",
+      "version": ">=1.4.1",
+      "platforms": ["*"]
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "*",
+  "platforms": "*",
+  "examples": "examples/*/*/*.ino",
+  "headers": ["WiFiWebServer.h", "WiFiWebServer.hpp", "WiFiHttpClient.h"]
+}

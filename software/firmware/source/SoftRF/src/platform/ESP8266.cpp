@@ -52,8 +52,6 @@ Exp_SoftwareSerial swSer(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX, false, 256)
 SoftwareSerial swSer;
 #endif
 
-ESP8266WebServer server ( 80 );
-
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:

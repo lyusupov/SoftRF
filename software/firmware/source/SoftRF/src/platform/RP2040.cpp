@@ -122,7 +122,6 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
 #else
 #include "../driver/WiFi.h"
-WebServer server ( 80 );
 
 #define isTimeToAP() (millis() - AP_clients_TimeMarker > 1000)
 static unsigned long AP_clients_TimeMarker = 0;

@@ -1,0 +1,81 @@
+#######################################
+# Data types (KEYWORD1)
+#######################################
+NotCopyable	KEYWORD1
+RemoveReference	KEYWORD1
+RemoveConst	KEYWORD1
+RemoveVolatile	KEYWORD1
+RemoveCVR	KEYWORD1
+ForwardValue	KEYWORD1
+TypeTuple	KEYWORD1
+Object	KEYWORD1
+ObjectBox	KEYWORD1
+Nullable	KEYWORD1
+BinaryRetriver	KEYWORD1
+KeyType	KEYWORD1
+POD	KEYWORD1
+Interface	KEYWORD1
+YesType	KEYWORD1
+NoType	KEYWORD1
+AcceptType	KEYWORD1
+YesNoAnd	KEYWORD1
+YesNoOr	KEYWORD1
+AcceptValue	KEYWORD1
+PointerConvertable	KEYWORD1
+ReturnConvertable	KEYWORD1
+AcceptAlways	KEYWORD1
+RequiresConvertable	KEYWORD1
+ReferenceCounterOperator	KEYWORD1
+Ptr	KEYWORD1
+ComPtr	KEYWORD1
+Func	KEYWORD1
+Invoker	KEYWORD1
+StaticInvoker	KEYWORD1
+MemberInvoker	KEYWORD1
+ObjectInvoker	KEYWORD1
+LambdaRetriveType	KEYWORD1
+FunctionObjectRetriveType	KEYWORD1
+Binding	KEYWORD1
+CR	KEYWORD1
+Binder	KEYWORD1
+Currier	KEYWORD1
+Combining KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+Unbox KEYWORD2
+Equals  KEYWORD2
+Equals  KEYWORD2
+Value  KEYWORD2
+GetKeyValue  KEYWORD2
+CreateCounter  KEYWORD2
+DeleteReference  KEYWORD2
+Inc  KEYWORD2
+Dec  KEYWORD2
+Counter  KEYWORD2
+Cast  KEYWORD2
+Obj  KEYWORD2
+MakePtr  KEYWORD2
+KeyType  KEYWORD2
+Invoke  KEYWORD2
+Lambda  KEYWORD2
+Curry  KEYWORD2
+
+#######################################
+# Literals (LITERAL1)
+#######################################
+
+vint8_t LITERAL1
+vuint8_t  LITERAL1
+vint16_t  LITERAL1
+vuint16_t LITERAL1
+vint32_t  LITERAL1
+vuint32_t LITERAL1
+vint64_t  LITERAL1
+vuint64_t LITERAL1
+vint  LITERAL1
+vsint LITERAL1
+vuint LITERAL1
+pos_t LITERAL1

@@ -20,10 +20,12 @@
 #ifndef PLATFORM_ESP8266_H
 #define PLATFORM_ESP8266_H
 
+#define USE_WIFI_NINA           false
+#define USE_WIFI_CUSTOM         true
 #include <ESP8266WiFi.h>
+
 #include <ESP8266mDNS.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
 
 #define USE_EXP_SW_SERIAL
 
@@ -92,7 +94,6 @@ extern "C" {
 #include <user_interface.h>
 }
 
-extern ESP8266WebServer server;
 #if defined(USE_EXP_SW_SERIAL)
 extern Exp_SoftwareSerial swSer;
 #else

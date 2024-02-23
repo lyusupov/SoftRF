@@ -106,8 +106,6 @@ void Raw_Transmit_UDP()
 }
 
 #if defined(USE_ARDUINO_WIFI)
-#include <WiFi.h>
-
 void WiFi_setup()
 {
   // Set Hostname.

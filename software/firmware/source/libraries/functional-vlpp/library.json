@@ -1,0 +1,22 @@
+{
+  "name": "Functional-Vlpp",
+  "version": "1.0.2",
+  "keywords": "C++, Function, functional-vlpp, lambda-function, Lambda, Class, AVR, Teensy, SAM, SAMD, stm32, eps8266, esp32, nRF52",
+  "description": "Provides common C++ construction, including string operation / generic container / linq, function templates to better support C++ functional programming across platforms",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/khoih-prog/functional-vlpp"
+  },
+  "homepage": "https://github.com/khoih-prog/functional-vlpp",
+  "export": {
+    "exclude": [
+      "linux",
+      "extras",
+      "tests"
+    ]
+  },  
+  "frameworks": "*",
+  "platforms": "*",
+  "examples": "examples/*/*/*.ino"
+}

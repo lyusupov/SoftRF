@@ -1,0 +1,211 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################
+# WiFiWebServer
+#######################
+
+WiFiWebServer	KEYWORD1
+HTTPMethod	KEYWORD1
+HTTPUploadStatus  KEYWORD1
+HTTPClientStatus  KEYWORD1
+HTTPAuthMethod  KEYWORD1
+HTTPUpload  KEYWORD1
+RequestHandler  KEYWORD1
+FunctionRequestHandler  KEYWORD1
+StaticRequestHandler  KEYWORD1
+WiFi_RingBuffer  KEYWORD1
+
+WWString  KEYWORD1
+
+#######################
+# WiFiHttpClient
+#######################
+
+WiFiHttpClient  KEYWORD1
+
+##########################
+# WiFiWebSocketClient
+##########################
+
+WiFiWebSocketClient KEYWORD1
+
+##########################
+# WiFiURLEncoderClass
+##########################
+
+WiFiURLEncoderClass KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+#######################
+# WiFiWebServer
+#######################
+
+begin	KEYWORD2
+handleClient	KEYWORD2
+close KEYWORD2
+stop  KEYWORD2
+authenticate  KEYWORD2
+requestAuthentication KEYWORD2
+on	KEYWORD2
+addHandler	KEYWORD2
+onNotFound  KEYWORD2
+onFileUpload  KEYWORD2
+uri	KEYWORD2
+method	KEYWORD2
+client	KEYWORD2
+upload  KEYWORD2
+arg	KEYWORD2
+argName	KEYWORD2
+args	KEYWORD2
+hasArg	KEYWORD2
+collectHeaders  KEYWORD2
+header  KEYWORD2
+headerName  KEYWORD2
+headers KEYWORD2
+hasHeader KEYWORD2
+hostHeader  KEYWORD2
+send	KEYWORD2
+send_P  KEYWORD2
+void sendContent_P  KEYWORD2
+setContentLength  KEYWORD2
+sendHeader  KEYWORD2
+sendContent KEYWORD2
+urlDecode KEYWORD2
+streamFile  KEYWORD2
+
+#######################
+# Parsing-impl
+#######################
+readBytesWithTimeout  KEYWORD2
+_parseRequest KEYWORD2
+_collectHeader  KEYWORD2
+_parseArguments KEYWORD2
+_uploadWriteByte  KEYWORD2
+_uploadReadByte KEYWORD2
+_parseForm  KEYWORD2
+urlDecode KEYWORD2
+_parseFormUploadAborted KEYWORD2
+
+#######################
+# RequestHandler
+#######################
+canHandle KEYWORD2
+canUpload KEYWORD2
+handle  KEYWORD2
+upload  KEYWORD2
+next  KEYWORD2
+getContentType  KEYWORD2
+
+#######################
+# WiFi_RingBuffer
+#######################
+reset KEYWORD2
+init  KEYWORD2
+push  KEYWORD2
+getPos  KEYWORD2
+endsWith  KEYWORD2
+getStr  KEYWORD2
+getStrN KEYWORD2
+
+#######################
+# WiFiHttpClient
+#######################
+
+beginRequest  KEYWORD2
+endRequest  KEYWORD2
+beginBody KEYWORD2
+get KEYWORD2
+post  KEYWORD2
+put KEYWORD2
+patch KEYWORD2
+del KEYWORD2
+startRequest  KEYWORD2
+sendHeader  KEYWORD2
+sendBasicAuth KEYWORD2
+responseStatusCode  KEYWORD2
+headerAvailable KEYWORD2
+readHeaderValue KEYWORD2
+readHeader  KEYWORD2
+skipResponseHeaders KEYWORD2
+endOfHeadersReached KEYWORD2
+endOfBodyReached  KEYWORD2
+endOfStream KEYWORD2
+completed KEYWORD2
+contentLength KEYWORD2
+isResponseChunked KEYWORD2
+responseBody  KEYWORD2
+connectionKeepAlive KEYWORD2
+noDefaultRequestHeaders KEYWORD2
+write KEYWORD2
+available KEYWORD2
+read  KEYWORD2
+peek  KEYWORD2
+flush KEYWORD2
+connect KEYWORD2
+stop  KEYWORD2
+connected KEYWORD2
+httpResponseTimeout KEYWORD2
+setHttpResponseTimeout  KEYWORD2
+
+##########################
+# WiFiWebSocketClient
+##########################
+
+begin KEYWORD2
+beginMessage  KEYWORD2
+endMessage  KEYWORD2
+parseMessage  KEYWORD2
+messageType KEYWORD2
+isFinal KEYWORD2
+readString  KEYWORD2
+ping  KEYWORD2
+write KEYWORD2
+available KEYWORD2
+read  KEYWORD2
+peek  KEYWORD2
+
+##########################
+# WiFiURLEncoderClass
+##########################
+
+encode  KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+WIFI_WEBSERVER_VERSION  LITERAL1
+WIFI_WEBSERVER_VERSION_MAJOR  LITERAL1
+WIFI_WEBSERVER_VERSION_MINOR  LITERAL1
+WIFI_WEBSERVER_VERSION_PATCH  LITERAL1
+WIFI_WEBSERVER_VERSION_INT  LITERAL1
+
+HTTP_ANY	LITERAL1
+HTTP_GET	LITERAL1
+HTTP_HEAD LITERAL1
+HTTP_POST	LITERAL1
+HTTP_PUT  LITERAL1
+HTTP_PATCH  LITERAL1
+HTTP_DELETE LITERAL1
+HTTP_OPTIONS  LITERAL1
+
+UPLOAD_FILE_START LITERAL1
+UPLOAD_FILE_WRITE LITERAL1
+UPLOAD_FILE_END LITERAL1
+UPLOAD_FILE_ABORTED LITERAL1
+
+HC_NONE LITERAL1
+HC_WAIT_READ  LITERAL1
+HC_WAIT_CLOSE LITERAL1
+
+BASIC_AUTH  LITERAL1
+DIGEST_AUTH LITERAL1
+
+AUTHORIZATION_HEADER  LITERAL1
+

@@ -22,8 +22,10 @@
 
 #include "sdkconfig.h"
 
+#define USE_WIFI_NINA           false
+#define USE_WIFI_CUSTOM         true
 #include <WiFi.h>
-#include <WebServer.h>
+
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiClient.h>
@@ -237,8 +239,6 @@ extern Adafruit_NeoPixel strip;
 #include "iomap/Heltec_Tracker.h"
 #include "iomap/WT0132C6.h"
 #include "iomap/LilyGO_T3C6.h"
-
-extern WebServer server;
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */

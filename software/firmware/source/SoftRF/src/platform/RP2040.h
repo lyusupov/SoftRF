@@ -225,11 +225,12 @@ struct rst_info {
 #endif
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
-#include <WiFi.h>
-#include <WebServer.h>
+#define USE_WIFI_NINA         false
+#define USE_WIFI_CUSTOM       true
+#include <ESP8266WiFi.h>
 #define Serial_setDebugOutput(x) ({})
 #define WIFI_STA_TIMEOUT         20000
-extern WebServer server;
+
 /* Experimental */
 #define ENABLE_PROL
 //#define ENABLE_BT_VOICE
