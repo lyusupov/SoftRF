@@ -678,7 +678,23 @@ void handleSettings() {
   server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
   server.sendHeader(String(F("Pragma")), String(F("no-cache")));
   server.sendHeader(String(F("Expires")), String(F("-1")));
+#if !defined(USE_ARDUINO_WIFI)
   server.send ( 200, "text/html", Settings_temp );
+#else
+  char *content = Settings_temp;
+  size_t bytes_left = strlen(Settings_temp);
+  size_t chunk_size;
+
+  server.setContentLength(bytes_left);
+  server.send(200, String(F("text/html")), "");
+
+  do {
+    chunk_size = bytes_left > JS_MAX_CHUNK_SIZE ? JS_MAX_CHUNK_SIZE : bytes_left;
+    server.sendContent(content, chunk_size);
+    content += chunk_size;
+    bytes_left -= chunk_size;
+  } while (bytes_left > 0) ;
+#endif /* USE_ARDUINO_WIFI */
   SoC->swSer_enableRx(true);
   free(Settings_temp);
 }

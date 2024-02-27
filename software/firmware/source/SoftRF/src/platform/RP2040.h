@@ -230,13 +230,21 @@ struct rst_info {
 #define USE_WIFI_CUSTOM       true
 #include <ESP8266WiFi.h>
 #define Serial_setDebugOutput(x) ({})
-#define WIFI_STA_TIMEOUT         20000
+#define WIFI_STA_TIMEOUT      20000
 
 /* Experimental */
 #define ENABLE_PROL
 //#define ENABLE_BT_VOICE
 #else
 #define EXCLUDE_WIFI
+//#define EXCLUDE_OTA
+//#define USE_ARDUINO_WIFI
+//#define USE_WIFI_NINA         false
+//#define USE_WIFI_CUSTOM       true
+//#include <WiFiNINA.h>
+//#define Serial_setDebugOutput(x) ({})
+//#define WIFI_STA_TIMEOUT      20000
+
 #define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 

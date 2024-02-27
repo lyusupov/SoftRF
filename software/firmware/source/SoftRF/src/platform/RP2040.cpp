@@ -224,6 +224,10 @@ static void RP2040_msc_flush_cb (void)
 }
 #endif /* ARDUINO_ARCH_MBED */
 
+#if defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(EXCLUDE_WIFI)
+SPIClassRP2040 SPI0(spi0, PIN_SPI0_MISO, PIN_SPI0_SS, PIN_SPI0_SCK, PIN_SPI0_MOSI);
+#endif /* EXCLUDE_WIFI */
+
 static void RP2040_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
@@ -279,6 +283,9 @@ static void RP2040_setup()
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
   RP2040_board = RP2040_RPIPICO;
+#if !defined(EXCLUDE_WIFI)
+  WiFi.setPins(PIN_SPI0_SS, D26, D24, D20, &SPI0);
+#endif /* EXCLUDE_WIFI */
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2040_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
@@ -601,7 +608,7 @@ static uint32_t RP2040_maxSketchSpace()
 
 static void RP2040_WiFi_set_param(int ndx, int value)
 {
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   switch (ndx)
   {
   case WIFI_PARAM_TX_POWER:
@@ -630,7 +637,7 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 #endif /* EXCLUDE_WIFI */
 }
 
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
 #include <dhcpserver/dhcpserver.h>
 #endif /* EXCLUDE_WIFI */
 
@@ -641,7 +648,7 @@ union rp2040_ip {
 
 static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   union rp2040_ip ipv4;
   IPAddress ClientIP;
   ipv4.addr       = (uint32_t) WiFi.localIP();
@@ -677,7 +684,7 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static void RP2040_WiFiUDP_stopAll()
 {
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   WiFiUDP::stopAll();
 #endif /* EXCLUDE_WIFI */
 }
@@ -685,7 +692,7 @@ static void RP2040_WiFiUDP_stopAll()
 static bool RP2040_WiFi_hostname(String aHostname)
 {
   bool rval = false;
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   if (RP2040_board == RP2040_RPIPICO_W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
@@ -696,7 +703,7 @@ static bool RP2040_WiFi_hostname(String aHostname)
 
 static int RP2040_WiFi_clients_count()
 {
-#if !defined(EXCLUDE_WIFI)
+#if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   WiFiMode_t mode = WiFi.getMode();
 
   switch (mode)

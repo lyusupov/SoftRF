@@ -129,20 +129,68 @@ void WiFi_setup()
   // Print hostname.
   Serial.println("Hostname: " + host_name);
 
-  Serial.print(F("Setting soft-AP configuration ... "));
-  WiFi.config(local_IP, gateway, gateway, subnet);
-  Serial.println(F("Ready"));
+  if (station_ssid.length() > 0) {
+    // ... Try to connect to WiFi station.
+    WiFi.begin(station_ssid.c_str(), station_psk.c_str());
 
-  Serial.print(F("Setting soft-AP ... "));
-  Serial.println(WiFi.beginAP(host_name.c_str(), ap_default_psk) == WL_AP_LISTENING ?
-    F("Ready") : F("Failed!"));
+    // ... Pritn new SSID
+    Serial.print(F("new SSID: "));
+    Serial.println(WiFi.SSID());
 
-  Serial.print(F("IP address: "));
-  Serial.println(WiFi.softAPIP());
+    Serial.println(F("Wait for WiFi connection."));
 
-  SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MED); // 10 dBm
-  SoC->WiFi_set_param(WIFI_PARAM_DHCP_LEASE_TIME, WIFI_DHCP_LEASE_HRS);
-  delay(10);
+    // ... Give Wi-Fi 10-20 seconds to connect to station.
+    unsigned long startTime = millis();
+    while (WiFi.status() != WL_CONNECTED &&
+           millis() - startTime < WIFI_STA_TIMEOUT)
+    {
+      Serial.write('.'); Serial.flush();
+      //Serial.print(WiFi.status());
+      delay(500);
+    }
+    Serial.println();
+
+    // Check connection
+    if (WiFi.status() == WL_CONNECTED) {
+      // print the SSID of the network you're attached to:
+      Serial.print("SSID: ");
+      Serial.println(WiFi.SSID());
+
+#if !defined(ARDUINO_RASPBERRY_PI_PICO)
+      // print your board's IP address:
+      IPAddress ip = WiFi.localIP();
+      Serial.print("IP Address: ");
+      Serial.println(ip);
+#endif /* ARDUINO_RASPBERRY_PI_PICO */
+
+      // print the received signal strength:
+      long rssi = WiFi.RSSI();
+      Serial.print("signal strength (RSSI):");
+      Serial.print(rssi);
+      Serial.println(" dBm");
+    } else {
+      Serial.println(F("Can not connect to WiFi station. Go into AP mode."));
+    }
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    // Go into software AP mode.
+    Serial.print(F("Setting soft-AP configuration ... "));
+    WiFi.config(local_IP, gateway, gateway, subnet);
+    Serial.println(F("Ready"));
+
+    SoC->WiFi_set_param(WIFI_PARAM_TX_POWER, WIFI_TX_POWER_MED); // 10 dBm
+    SoC->WiFi_set_param(WIFI_PARAM_DHCP_LEASE_TIME, WIFI_DHCP_LEASE_HRS);
+
+    Serial.print(F("Setting soft-AP ... "));
+    Serial.println(WiFi.beginAP(host_name.c_str(), ap_default_psk) == WL_AP_LISTENING ?
+      F("Ready") : F("Failed!"));
+
+    delay(10);
+
+//  Serial.print(F("IP address: "));
+//  Serial.println(WiFi.softAPIP());
+  }
 
   Uni_Udp.begin(RFlocalPort);
   Serial.print(F("UDP server has started at port: "));
