@@ -47,6 +47,7 @@ jobs:
     env:
       ARDUINO_IDE_VERSION: 1.8.13
       ARDUINO_CLI_VERSION: 0.34.2
+      ARDUINO_BLE_VERSION: 1.3.6
       ENERGIA_IDE_VERSION: 1.8.10E23
       BOARD: ${{ matrix.board }}
 
@@ -321,6 +322,10 @@ jobs:
             arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
             arduino --install-boards arduino:renesas_uno:1.0.5 ;
             arduino --board $BOARD --save-prefs ;
+            wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
+            tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
+            rm ${ARDUINO_BLE_VERSION}.tar.gz ;
+            mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then

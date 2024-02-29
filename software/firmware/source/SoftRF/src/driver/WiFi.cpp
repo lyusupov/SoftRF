@@ -133,13 +133,13 @@ void WiFi_setup()
     // ... Try to connect to WiFi station.
     WiFi.begin(station_ssid.c_str(), station_psk.c_str());
 
-    // ... Pritn new SSID
+    // ... Print new SSID
     Serial.print(F("new SSID: "));
     Serial.println(WiFi.SSID());
 
     Serial.println(F("Wait for WiFi connection."));
 
-    // ... Give Wi-Fi 10-20 seconds to connect to station.
+    // ... Give Wi-Fi 10-20 seconds to connect to an AP.
     unsigned long startTime = millis();
     while (WiFi.status() != WL_CONNECTED &&
            millis() - startTime < WIFI_STA_TIMEOUT)
@@ -236,7 +236,7 @@ void WiFi_setup()
 
     Serial.println(F("Wait for WiFi connection."));
 
-    // ... Give Wi-Fi 10-20 seconds to connect to station.
+    // ... Give Wi-Fi 10-20 seconds to connect to an AP.
     unsigned long startTime = millis();
     while (WiFi.status() != WL_CONNECTED &&
            millis() - startTime < WIFI_STA_TIMEOUT)

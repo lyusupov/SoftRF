@@ -130,6 +130,7 @@ struct rst_info {
 
 #if defined(ARDUINO_UNOR4_MINIMA)
 #define EXCLUDE_WIFI
+#define EXCLUDE_BLUETOOTH
 #elif defined(ARDUINO_UNOR4_WIFI)
 #define USE_ARDUINO_WIFI
 #define EXCLUDE_OTA
@@ -137,6 +138,7 @@ struct rst_info {
 #define USE_WIFI_CUSTOM       true
 #include <WiFiS3.h>
 #define Serial_setDebugOutput(x) ({})
+//#define EXCLUDE_BLUETOOTH
 #endif
 
 #define EXCLUDE_CC13XX

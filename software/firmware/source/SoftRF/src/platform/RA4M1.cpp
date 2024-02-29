@@ -29,6 +29,7 @@
 #include "../driver/Baro.h"
 #include "../driver/Sound.h"
 #include "../driver/Battery.h"
+#include "../driver/Bluetooth.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -874,7 +875,11 @@ const SoC_ops_t RA4M1_ops = {
   RA4M1_SPI_begin,
   RA4M1_swSer_begin,
   RA4M1_swSer_enableRx,
-  NULL, /* RA4M1 has no built-in Bluetooth */
+#if !defined(EXCLUDE_BLUETOOTH)
+  &RA4M1_Bluetooth_ops,
+#else
+  NULL,
+#endif /* EXCLUDE_BLUETOOTH */
   &RA4M1_USBSerial_ops,
   NULL,
   RA4M1_Display_setup,
