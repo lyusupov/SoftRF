@@ -1474,7 +1474,7 @@ static void ESP32_setup()
 #endif /* EXCLUDE_IMU */
   } else if (esp32_board == ESP32_LILYGO_T_TWR_V2_0) {
 
-    /* turn SA868 power off  to make sure that SQL is inactive */
+    /* turn SA868 digital power off to make sure that SQL is inactive */
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, LOW);
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_PD, OUTPUT);
 
@@ -1486,9 +1486,23 @@ static void ESP32_setup()
 
     if (gpio2_voltage > 1900) {
 #else
-    pinMode(SOC_GPIO_PIN_TWR2_RADIO_SQL, INPUT_PULLDOWN);
 
-    if (digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL) == HIGH) {
+    bool probe_1 = false;
+    bool probe_2 = false;
+
+    pinMode(SOC_GPIO_PIN_TWR2_RADIO_SQL, INPUT_PULLDOWN);
+    delay(20);
+
+    probe_1 = digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL);
+
+    /* turn SA868 digital power on */
+    digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PD, HIGH);
+
+    delay(200);
+
+    probe_2 = digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL);
+
+    if (probe_1 == LOW && probe_2 == HIGH) {
 #endif
       esp32_board = ESP32_LILYGO_T_TWR_V2_1;
       hw_info.revision = 21;
@@ -1498,13 +1512,6 @@ static void ESP32_setup()
       axp_2xxx.setALDO3Voltage(3300); // V2.1 - Amp. OE Ctrl
 
 #if defined(USE_SA8X8)
-#if 0
-      if (gpio2_voltage > 2400) {
-        controller.setBand(Band::VHF);
-      } else {
-        controller.setBand(Band::UHF);
-      }
-#else
       Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       if (Wire.endTransmission() == 0) {
@@ -1514,7 +1521,6 @@ static void ESP32_setup()
       if (Wire.endTransmission() == 0) {
         controller.setBand(Band::UHF);
       }
-#endif
 #endif /* USE_SA8X8 */
     } else {
       axp_2xxx.setDC3Voltage  (3400); // V2.0 - SA868, NeoPixel
@@ -1523,6 +1529,8 @@ static void ESP32_setup()
       pinMode(SOC_GPIO_PIN_TWR2_RADIO_HL, OUTPUT_OPEN_DRAIN);
       digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_HL, LOW);
     }
+
+    pinMode(SOC_GPIO_PIN_TWR2_RADIO_SQL, INPUT);
 
     digitalWrite(SOC_GPIO_PIN_TWR2_RADIO_PTT, HIGH);
     pinMode(SOC_GPIO_PIN_TWR2_RADIO_PTT,  INPUT_PULLUP);
