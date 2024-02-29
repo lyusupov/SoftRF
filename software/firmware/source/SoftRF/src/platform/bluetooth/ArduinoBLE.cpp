@@ -175,6 +175,7 @@ static void RA4M1_Bluetooth_setup()
   case BLUETOOTH_A2DP_SOURCE:
     break;
   case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
   default:
     break;
   }
@@ -249,6 +250,7 @@ static int RA4M1_Bluetooth_available()
     rval = BLE_FIFO_RX.available();
     break;
   case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -267,6 +269,7 @@ static int RA4M1_Bluetooth_read()
     rval = BLE_FIFO_RX.read_char();
     break;
   case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
@@ -293,6 +296,7 @@ static size_t RA4M1_Bluetooth_write(const uint8_t *buffer, size_t size)
     }
     break;
   case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
   case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
