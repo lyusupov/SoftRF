@@ -32,7 +32,12 @@ enum
 #endif
 
 #if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
+#include "../system/SoC.h"
+#if defined(USE_NIMBLE)
+#include "../platform/bluetooth/NimBLE.h"
+#else
 #include "../platform/bluetooth/Bluedroid.h"
+#endif /* USE_NIMBLE */
 #elif defined(ARDUINO_ARCH_NRF52)
 #include "../platform/bluetooth/Bluefruit.h"
 #elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)

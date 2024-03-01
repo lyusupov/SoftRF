@@ -402,10 +402,12 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define EXCLUDE_WATCHOUT_MODE
 #undef USE_NMEALIB
 #undef ENABLE_PROL
+//#define USE_NIMBLE
 #endif /* C6 */
 #endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 */
 #else
 //#define ENABLE_BT_VOICE
+//#define USE_NIMBLE
 #endif /* NOT CONFIG_IDF_TARGET_ESP32 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

@@ -1,6 +1,6 @@
 /*
- * BluetoothHelper.cpp
- * Copyright (C) 2018-2024 Linar Yusupov
+ * NimBLE.cpp
+ * Copyright (C) 2024 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,16 @@
 
 #include "../../system/SoC.h"
 
-#if defined(CONFIG_BLUEDROID_ENABLED) && !defined(USE_NIMBLE)
+#if defined(USE_NIMBLE)
 /*
  *  BLE code is based on Neil Kolban example for IDF:
  *    https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
  *  Ported to Arduino ESP32 by Evandro Copercini
  *  HM-10 emulation and adaptation for SoftRF is done by Linar Yusupov.
  */
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
+#include <NimBLEDevice.h>
+#include <NimBLEServer.h>
+#include <NimBLEUtils.h>
 
 #include "esp_gap_bt_api.h"
 
@@ -42,59 +41,46 @@
 
 #include <core_version.h>
 
-BLEServer* pServer = NULL;
-BLECharacteristic* pUARTCharacteristic = NULL;
-BLECharacteristic* pBATCharacteristic  = NULL;
+NimBLEServer* pServer = NULL;
+NimBLECharacteristic* pUARTCharacteristic = NULL;
+NimBLECharacteristic* pBATCharacteristic  = NULL;
 
-BLECharacteristic* pModelCharacteristic         = NULL;
-BLECharacteristic* pSerialCharacteristic        = NULL;
-BLECharacteristic* pFirmwareCharacteristic      = NULL;
-BLECharacteristic* pHardwareCharacteristic      = NULL;
-BLECharacteristic* pSoftwareCharacteristic      = NULL;
-BLECharacteristic* pManufacturerCharacteristic  = NULL;
+NimBLECharacteristic* pModelCharacteristic         = NULL;
+NimBLECharacteristic* pSerialCharacteristic        = NULL;
+NimBLECharacteristic* pFirmwareCharacteristic      = NULL;
+NimBLECharacteristic* pHardwareCharacteristic      = NULL;
+NimBLECharacteristic* pSoftwareCharacteristic      = NULL;
+NimBLECharacteristic* pManufacturerCharacteristic  = NULL;
 
 bool deviceConnected    = false;
 bool oldDeviceConnected = false;
 
 #if defined(USE_BLE_MIDI)
-BLECharacteristic* pMIDICharacteristic = NULL;
+NimBLECharacteristic* pMIDICharacteristic = NULL;
 #endif /* USE_BLE_MIDI */
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
-
-#if defined(CONFIG_IDF_TARGET_ESP32)
-#include <BluetoothSerial.h>
-BluetoothSerial SerialBT;
-#endif /* CONFIG_IDF_TARGET_ESP32 */
-
-#if defined(ENABLE_BT_VOICE)
-#include "BluetoothA2DPSource.h"
-#include "piano16bit.h"
-
-BluetoothA2DPSource a2dp_source;
-SoundData *sound_data = new OneChannelSoundData((int16_t*)piano16bit_raw, piano16bit_raw_len/2);
-#endif /* ENABLE_BT_VOICE */
 
 String BT_name = HOSTNAME;
 
 static unsigned long BLE_Notify_TimeMarker = 0;
 static unsigned long BLE_Advertising_TimeMarker = 0;
 
-BLEDescriptor UserDescriptor(BLEUUID((uint16_t)0x2901));
+// NimBLEDescriptor UserDescriptor(NimBLEUUID((uint16_t)0x2901));
 
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
+class MyServerCallbacks: public NimBLEServerCallbacks {
+    void onConnect(NimBLEServer* pServer) {
       deviceConnected = true;
     };
 
-    void onDisconnect(BLEServer* pServer) {
+    void onDisconnect(NimBLEServer* pServer) {
       deviceConnected = false;
       BLE_Advertising_TimeMarker = millis();
     }
 };
 
 class UARTCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pUARTCharacteristic) {
+    void onWrite(NimBLECharacteristic *pUARTCharacteristic) {
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
       String rxValue = pUARTCharacteristic->getValue();
 #else
@@ -116,51 +102,37 @@ static void ESP32_Bluetooth_setup()
 
   switch (settings->bluetooth)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
-  case BLUETOOTH_SPP:
-    {
-      esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
-
-      SerialBT.begin(BT_name.c_str());
-    }
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     {
       BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
       BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
-      esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
-#endif /* CONFIG_IDF_TARGET_ESP32 */
-
       // Create the BLE Device
-      BLEDevice::init((BT_name+"-LE").c_str());
+      NimBLEDevice::init((BT_name+"-LE").c_str());
 
       /*
        * Set the MTU of the packets sent,
        * maximum is 500, Apple needs 23 apparently.
        */
-      // BLEDevice::setMTU(23);
+      // NimBLEDevice::setMTU(23);
 
       // Create the BLE Server
-      pServer = BLEDevice::createServer();
+      pServer = NimBLEDevice::createServer();
       pServer->setCallbacks(new MyServerCallbacks());
 
       // Create the BLE Service
-      BLEService *pService = pServer->createService(BLEUUID(UART_SERVICE_UUID16));
+      NimBLEService *pService = pServer->createService(NimBLEUUID(UART_SERVICE_UUID16));
 
       // Create a BLE Characteristic
       pUARTCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UART_CHARACTERISTIC_UUID16),
-                              BLECharacteristic::PROPERTY_READ   |
-                              BLECharacteristic::PROPERTY_NOTIFY |
-                              BLECharacteristic::PROPERTY_WRITE_NR
+                              NimBLEUUID(UART_CHARACTERISTIC_UUID16),
+                              NIMBLE_PROPERTY::READ   |
+                              NIMBLE_PROPERTY::NOTIFY |
+                              NIMBLE_PROPERTY::WRITE_NR
                             );
 
-      UserDescriptor.setValue("HMSoft");
-      pUARTCharacteristic->addDescriptor(&UserDescriptor);
-      pUARTCharacteristic->addDescriptor(new BLE2902());
+//      UserDescriptor.setValue("HMSoft");
+//      pUARTCharacteristic->addDescriptor(&UserDescriptor);
 
       pUARTCharacteristic->setCallbacks(new UARTCallbacks());
 
@@ -168,46 +140,45 @@ static void ESP32_Bluetooth_setup()
       pService->start();
 
       // Create the BLE Service
-      pService = pServer->createService(BLEUUID(UUID16_SVC_BATTERY));
+      pService = pServer->createService(NimBLEUUID(UUID16_SVC_BATTERY));
 
       // Create a BLE Characteristic
       pBATCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_BATTERY_LEVEL),
-                              BLECharacteristic::PROPERTY_READ   |
-                              BLECharacteristic::PROPERTY_NOTIFY
+                              NimBLEUUID(UUID16_CHR_BATTERY_LEVEL),
+                              NIMBLE_PROPERTY::READ   |
+                              NIMBLE_PROPERTY::NOTIFY
                             );
-      pBATCharacteristic->addDescriptor(new BLE2902());
 
       // Start the service
       pService->start();
 
       // Create the BLE Service
-      pService = pServer->createService(BLEUUID(UUID16_SVC_DEVICE_INFORMATION));
+      pService = pServer->createService(NimBLEUUID(UUID16_SVC_DEVICE_INFORMATION));
 
       // Create BLE Characteristics
       pModelCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_MODEL_NUMBER_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_MODEL_NUMBER_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
       pSerialCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_SERIAL_NUMBER_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_SERIAL_NUMBER_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
       pFirmwareCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_FIRMWARE_REVISION_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_FIRMWARE_REVISION_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
       pHardwareCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_HARDWARE_REVISION_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_HARDWARE_REVISION_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
       pSoftwareCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_SOFTWARE_REVISION_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_SOFTWARE_REVISION_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
       pManufacturerCharacteristic = pService->createCharacteristic(
-                              BLEUUID(UUID16_CHR_MANUFACTURER_NAME_STRING),
-                              BLECharacteristic::PROPERTY_READ
+                              NimBLEUUID(UUID16_CHR_MANUFACTURER_NAME_STRING),
+                              NIMBLE_PROPERTY::READ
                             );
 
       const char *Model         = hw_info.model == SOFTRF_MODEL_STANDALONE ? "Standalone Edition" :
@@ -239,60 +210,51 @@ static void ESP32_Bluetooth_setup()
 
 #if defined(USE_BLE_MIDI)
       // Create the BLE Service
-      pService = pServer->createService(BLEUUID(MIDI_SERVICE_UUID));
+      pService = pServer->createService(NimBLEUUID(MIDI_SERVICE_UUID));
 
       // Create a BLE Characteristic
       pMIDICharacteristic = pService->createCharacteristic(
-                              BLEUUID(MIDI_CHARACTERISTIC_UUID),
-                              BLECharacteristic::PROPERTY_READ   |
-                              BLECharacteristic::PROPERTY_WRITE  |
-                              BLECharacteristic::PROPERTY_NOTIFY |
-                              BLECharacteristic::PROPERTY_WRITE_NR
+                              NimBLEUUID(MIDI_CHARACTERISTIC_UUID),
+                              NIMBLE_PROPERTY::READ   |
+                              NIMBLE_PROPERTY::WRITE  |
+                              NIMBLE_PROPERTY::NOTIFY |
+                              NIMBLE_PROPERTY::WRITE_NR
                             );
-
-      // Create a BLE Descriptor
-      pMIDICharacteristic->addDescriptor(new BLE2902());
 
       // Start the service
       pService->start();
 #endif /* USE_BLE_MIDI */
 
       // Start advertising
-      BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+      NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
 #if 0
-      pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID16));
-      pAdvertising->addServiceUUID(BLEUUID(UUID16_SVC_BATTERY));
+      pAdvertising->addServiceUUID(NimBLEUUID(UART_SERVICE_UUID16));
+      pAdvertising->addServiceUUID(NimBLEUUID(UUID16_SVC_BATTERY));
 #if defined(USE_BLE_MIDI)
-      pAdvertising->addServiceUUID(BLEUUID(MIDI_SERVICE_UUID));
+      pAdvertising->addServiceUUID(NimBLEUUID(MIDI_SERVICE_UUID));
 #endif /* USE_BLE_MIDI */
 #else
       /* work around https://github.com/espressif/arduino-esp32/issues/6750 */
-      BLEAdvertisementData BLEAdvData;
+      NimBLEAdvertisementData BLEAdvData;
       BLEAdvData.setFlags(0x06);
-      BLEAdvData.setCompleteServices(BLEUUID(UART_SERVICE_UUID16));
-      BLEAdvData.setCompleteServices(BLEUUID(UUID16_SVC_BATTERY));
+      BLEAdvData.setCompleteServices(NimBLEUUID(UART_SERVICE_UUID16));
+      BLEAdvData.setCompleteServices(NimBLEUUID(UUID16_SVC_BATTERY));
 #if defined(USE_BLE_MIDI)
-      BLEAdvData.setCompleteServices(BLEUUID(MIDI_SERVICE_UUID));
+      BLEAdvData.setCompleteServices(NimBLEUUID(MIDI_SERVICE_UUID));
 #endif /* USE_BLE_MIDI */
       pAdvertising->setAdvertisementData(BLEAdvData);
 #endif
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);
-      BLEDevice::startAdvertising();
+      NimBLEDevice::startAdvertising();
 
       BLE_Advertising_TimeMarker = millis();
     }
     break;
-  case BLUETOOTH_A2DP_SOURCE:
-#if defined(ENABLE_BT_VOICE)
-    //a2dp_source.set_auto_reconnect(false);
-    a2dp_source.start("BT SPEAKER");
-    a2dp_source.set_volume(100);
-    a2dp_source.write_data(sound_data);
-#endif
-    break;
   case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
+  case BLUETOOTH_A2DP_SOURCE:
   default:
     break;
   }
@@ -360,16 +322,12 @@ static int ESP32_Bluetooth_available()
 
   switch (settings->bluetooth)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
-  case BLUETOOTH_SPP:
-    rval = SerialBT.available();
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->available();
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_SPP:
   default:
     break;
   }
@@ -383,16 +341,12 @@ static int ESP32_Bluetooth_read()
 
   switch (settings->bluetooth)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
-  case BLUETOOTH_SPP:
-    rval = SerialBT.read();
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_RX->read();
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_SPP:
   default:
     break;
   }
@@ -406,17 +360,13 @@ static size_t ESP32_Bluetooth_write(const uint8_t *buffer, size_t size)
 
   switch (settings->bluetooth)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
-  case BLUETOOTH_SPP:
-    rval = SerialBT.write(buffer, size);
-    break;
-#endif /* CONFIG_IDF_TARGET_ESP32 */
   case BLUETOOTH_LE_HM10_SERIAL:
     rval = BLE_FIFO_TX->write((char *) buffer,
                         (BLE_FIFO_TX->room() > size ? size : BLE_FIFO_TX->room()));
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_A2DP_SOURCE:
+  case BLUETOOTH_SPP:
   default:
     break;
   }
@@ -434,5 +384,5 @@ IODev_ops_t ESP32_Bluetooth_ops = {
   ESP32_Bluetooth_write
 };
 
-#endif /* CONFIG_BLUEDROID_ENABLED */
+#endif /* USE_NIMBLE */
 #endif /* ESP32 */
