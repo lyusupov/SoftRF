@@ -1715,7 +1715,7 @@ static void ESP32_post_init()
                             I2S_PIN_NO_CHANGE,
                             SOC_GPIO_PIN_TWR2_PDM_AUX,
                             I2S_PIN_NO_CHANGE);
-      Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
+      Audio_Sink->SetGain(/* 0.25 */ 0.5 /* 1 */);
 
       play_file(filename);
 
