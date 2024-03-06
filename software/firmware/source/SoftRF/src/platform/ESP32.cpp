@@ -1512,7 +1512,7 @@ static void ESP32_setup()
 
 #if defined(USE_SA8X8)
       Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
-      Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
       if (Wire.endTransmission() == 0) {
         controller.setBand(Band::VHF);
       }
