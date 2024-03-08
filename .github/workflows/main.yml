@@ -50,6 +50,7 @@ jobs:
       ARDUINO_BLE_VERSION: 1.3.6
       ENERGIA_IDE_VERSION: 1.8.10E23
       NIM_BLE_VERSION:     1.4.1
+      # NIM_BLE_VERSION:     esp32-c6-test
       BOARD: ${{ matrix.board }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -216,6 +217,7 @@ jobs:
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-alpha3 ;
             sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
+            # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
             rm ${NIM_BLE_VERSION}.tar.gz ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;

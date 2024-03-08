@@ -6,7 +6,7 @@
 
 #include "battery.h"
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6)
 static uint8_t adc_pin = 1;
 
 void calibrate_voltage(uint8_t pin, adc_attenuation_t atten) {
@@ -118,4 +118,4 @@ uint16_t read_voltage() {
   ESP_LOGD(TAG, "Raw: %d / Voltage: %dmV", adc_reading, voltage);
   return voltage;
 }
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C6 */

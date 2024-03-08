@@ -577,6 +577,9 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    default:
+      esp32_board   = ESP32_C2_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     default:
       esp32_board   = ESP32_C3_DEVKIT;
@@ -621,6 +624,13 @@ static void ESP32_setup()
       break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    switch (flash_id)
+    {
+    default:
+      esp32_board   = ESP32_C2_DEVKIT;
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -1273,6 +1283,21 @@ static void ESP32_setup()
 
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+  } else if (esp32_board == ESP32_C2_DEVKIT) {
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_C2_CONS_RX,
+                       SOC_GPIO_PIN_C2_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_C2_SS;
+    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.busy = SOC_GPIO_PIN_C2_TXE;
+
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
   } else if (esp32_board == ESP32_C3_DEVKIT) {
 
@@ -1417,7 +1442,9 @@ static void ESP32_setup()
 #endif /* TBD */
 
 #elif ARDUINO_USB_CDC_ON_BOOT && \
-      (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6))
+      (defined(CONFIG_IDF_TARGET_ESP32C2) || \
+       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+       defined(CONFIG_IDF_TARGET_ESP32C6))
 
   Serial.begin(SERIAL_OUT_BR);
 
@@ -1480,13 +1507,6 @@ static void ESP32_setup()
 
     delay(200);
 
-#if 0
-    calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
-    uint16_t gpio2_voltage = read_voltage(); // avg. of 32 samples
-
-    if (gpio2_voltage > 1900) {
-#else
-
     bool probe_1 = false;
     bool probe_2 = false;
 
@@ -1503,7 +1523,6 @@ static void ESP32_setup()
     probe_2 = digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL);
 
     if (probe_1 == LOW && probe_2 == HIGH) {
-#endif
       hw_info.revision = 1;
 
       axp_2xxx.setBLDO2Voltage(3300); // V2.1 - SA868
@@ -2911,7 +2930,8 @@ static void ESP32_EEPROM_extension(int cmd)
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
     if (settings->bluetooth != BLUETOOTH_NONE) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -3800,6 +3820,8 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    calibrate_voltage(SOC_GPIO_PIN_C2_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -4717,7 +4739,9 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if ARDUINO_USB_MODE && \
-    (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6))
+    (defined(CONFIG_IDF_TARGET_ESP32C2) || \
+     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+     defined(CONFIG_IDF_TARGET_ESP32C6))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
 #define USB_RX_FIFO_SIZE (256)
@@ -4793,7 +4817,7 @@ IODev_ops_t ESP32CX_USBSerial_ops = {
   ESP32CX_USB_read,
   ESP32CX_USB_write
 };
-#endif /* CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 || C6 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 static bool ESP32_ADB_setup()
@@ -4915,6 +4939,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
   SOC_ESP32S3,
   "ESP32-S3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)
+  SOC_ESP32C2,
+  "ESP32-C2",
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
@@ -4957,7 +4984,9 @@ const SoC_ops_t ESP32_ops = {
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
-      (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6))
+      (defined(CONFIG_IDF_TARGET_ESP32C2) || \
+       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+       defined(CONFIG_IDF_TARGET_ESP32C6))
   &ESP32CX_USBSerial_ops,
 #else
   NULL,
