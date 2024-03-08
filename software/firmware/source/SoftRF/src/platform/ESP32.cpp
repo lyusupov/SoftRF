@@ -2138,10 +2138,10 @@ static void ESP32_fini(int reason)
 
     delay(20);
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWATCH_PMU_IRQ,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
              hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
@@ -2236,10 +2236,10 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     pinMode(SOC_GPIO_PIN_T8_S2_PWR_EN, INPUT);
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_T8_S2_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
 
   } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
 
@@ -2291,10 +2291,10 @@ static void ESP32_fini(int reason)
     pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,   INPUT);
     pinMode(SOC_GPIO_PIN_HELTRK_LED,       INPUT);
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   }
 
   esp_deep_sleep_start();
@@ -2328,7 +2328,9 @@ static void* ESP32_getResetInfoPtr()
     case POWERON_RESET          : reset_info.reason = REASON_DEFAULT_RST; break;
     case DEEPSLEEP_RESET        : reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
     case TG0WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
+#if !defined(CONFIG_IDF_TARGET_ESP32C2)
     case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #if !defined(CONFIG_IDF_TARGET_ESP32C6)
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
@@ -2363,7 +2365,9 @@ static String ESP32_getResetInfo()
     case POWERON_RESET          : return F("Vbat power on reset");
     case DEEPSLEEP_RESET        : return F("Deep Sleep reset digital core");
     case TG0WDT_SYS_RESET       : return F("Timer Group0 Watch dog reset digital core");
+#if !defined(CONFIG_IDF_TARGET_ESP32C2)
     case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
 #if !defined(CONFIG_IDF_TARGET_ESP32C6)
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
@@ -2391,7 +2395,9 @@ static String ESP32_getResetReason()
     case POWERON_RESET          : return F("POWERON_RESET");
     case DEEPSLEEP_RESET        : return F("DEEPSLEEP_RESET");
     case TG0WDT_SYS_RESET       : return F("TG0WDT_SYS_RESET");
+#if !defined(CONFIG_IDF_TARGET_ESP32C2)
     case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
 #if !defined(CONFIG_IDF_TARGET_ESP32C6)
     case INTRUSION_RESET        : return F("INTRUSION_RESET");

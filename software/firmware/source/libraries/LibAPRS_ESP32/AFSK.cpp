@@ -15,13 +15,13 @@
 #include <driver/rtc_io.h>
 #include "esp_adc_cal.h"
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C6)
 extern "C"
 {
 #include "soc/syscon_reg.h"
 #include "soc/syscon_struct.h"
 }
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C6 */
 #endif /* I2S_INTERNAL */
 
 #define DEBUG_TNC

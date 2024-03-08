@@ -90,7 +90,9 @@
  * NeoPixelBus is already "flickering-free" on ESP32 (with I2S or RMT)
  * but the "Core" needs update onto the most recent one
  */
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+#define EXCLUDE_LED_RING
+#elif !defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NEOPIXELBUS_LIBRARY
 #else
 #define USE_ADAFRUIT_NEO_LIBRARY
