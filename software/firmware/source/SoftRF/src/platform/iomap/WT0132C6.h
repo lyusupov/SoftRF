@@ -46,10 +46,6 @@
 #define SOC_GPIO_PIN_C2_GNSS_TX         18
 #define SOC_GPIO_PIN_C2_GNSS_PPS        SOC_UNUSED_PIN // 0
 
-// USB CDC/JTAG
-#define SOC_GPIO_PIN_C2_USB_DP          13 /* NC */
-#define SOC_GPIO_PIN_C2_USB_DN          12 /* NC */
-
 // SPI
 #define SOC_GPIO_PIN_C2_MOSI            6  /* D7 */
 #define SOC_GPIO_PIN_C2_MISO            5  /* D6 */

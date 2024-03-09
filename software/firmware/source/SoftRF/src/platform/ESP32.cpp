@@ -2972,9 +2972,17 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_S3_SCK,  SOC_GPIO_PIN_S3_MISO,
                 SOC_GPIO_PIN_S3_MOSI, SOC_GPIO_PIN_S3_SS);
       break;
+    case ESP32_C2_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C2_SCK,  SOC_GPIO_PIN_C2_MISO,
+                SOC_GPIO_PIN_C2_MOSI, SOC_GPIO_PIN_C2_SS);
+      break;
     case ESP32_C3_DEVKIT:
       SPI.begin(SOC_GPIO_PIN_C3_SCK,  SOC_GPIO_PIN_C3_MISO,
                 SOC_GPIO_PIN_C3_MOSI, SOC_GPIO_PIN_C3_SS);
+      break;
+    case ESP32_C6_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
+                SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
       break;
     case ESP32_LILYGO_T_TWR2:
       SPI.begin(SOC_GPIO_PIN_TWR2_SCK,  SOC_GPIO_PIN_TWR2_MISO,
@@ -2983,10 +2991,6 @@ static void ESP32_SPI_begin()
     case ESP32_HELTEC_TRACKER:
       SPI.begin(SOC_GPIO_PIN_HELTRK_SCK,  SOC_GPIO_PIN_HELTRK_MISO,
                 SOC_GPIO_PIN_HELTRK_MOSI, SOC_GPIO_PIN_HELTRK_SS);
-      break;
-    case ESP32_C6_DEVKIT:
-      SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
-                SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
       break;
     case ESP32_LILYGO_T3C6:
       SPI.begin(SOC_GPIO_PIN_T3C6_SCK,  SOC_GPIO_PIN_T3C6_MISO,
@@ -3045,6 +3049,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: ESP32-S3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_S3_GNSS_RX, SOC_GPIO_PIN_S3_GNSS_TX);
+    } else if (esp32_board == ESP32_C2_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C2 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C2_GNSS_RX, SOC_GPIO_PIN_C2_GNSS_TX);
     } else if (esp32_board == ESP32_C3_DEVKIT) {
       Serial.println(F("INFO: ESP32-C3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3913,7 +3921,9 @@ static float ESP32_Battery_param(uint8_t param)
          (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
           esp32_board   == ESP32_S2_T8_V1_1) {
         voltage += voltage;
-      } else if (esp32_board == ESP32_C3_DEVKIT || esp32_board == ESP32_C6_DEVKIT) {
+      } else if (esp32_board == ESP32_C2_DEVKIT ||
+                 esp32_board == ESP32_C3_DEVKIT ||
+                 esp32_board == ESP32_C6_DEVKIT) {
       /* NodeMCU has voltage divider 100k/220k on board */
         voltage *= 3.2;
       } else if (esp32_board == ESP32_HELTEC_TRACKER) {
@@ -3959,6 +3969,10 @@ static bool ESP32_Baro_setup()
              esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
 
     Wire.setPins(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
+
+  } else if (esp32_board == ESP32_C2_DEVKIT) {
+
+    Wire.setPins(SOC_GPIO_PIN_C2_SDA, SOC_GPIO_PIN_C2_SCL);
 
   } else if (esp32_board == ESP32_C3_DEVKIT) {
 

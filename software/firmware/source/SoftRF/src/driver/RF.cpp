@@ -2557,6 +2557,10 @@ static void sa8x8_setup()
         controller.closeTail();
       }
 
+      byte volume = 1;
+      if (hw_info.revision == 1 && rx == false && Voice_Frequency) {
+        volume = 3;
+      }
       /*
        * Owners of T-TWR Plus V2.0 board with no R22 fix
        * may consider to increase the volume setting
@@ -2564,7 +2568,7 @@ static void sa8x8_setup()
        * very loud sound from the speaker.
        * A disconnect of the speaker is one of the options to think about.
        */
-      controller.setVolume(1);
+      controller.setVolume(volume);
 
       break;
   }
