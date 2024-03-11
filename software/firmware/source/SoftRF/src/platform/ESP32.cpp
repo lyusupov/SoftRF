@@ -629,6 +629,7 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
     switch (flash_id)
     {
+    case MakeFlashId(FMICRO_ID, FMICRO_ZB25Q16): /* WT018684-S5 */
     default:
       esp32_board   = ESP32_C2_DEVKIT;
       break;
@@ -1286,12 +1287,6 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
   } else if (esp32_board == ESP32_C2_DEVKIT) {
 
-#if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_C2_CONS_RX,
-                       SOC_GPIO_PIN_C2_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
     lmic_pins.nss  = SOC_GPIO_PIN_C2_SS;
     lmic_pins.rst  = LMIC_UNUSED_PIN;
     lmic_pins.busy = SOC_GPIO_PIN_C2_TXE;
@@ -1442,8 +1437,7 @@ static void ESP32_setup()
 #endif /* TBD */
 
 #elif ARDUINO_USB_CDC_ON_BOOT && \
-      (defined(CONFIG_IDF_TARGET_ESP32C2) || \
-       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      (defined(CONFIG_IDF_TARGET_ESP32C3) || \
        defined(CONFIG_IDF_TARGET_ESP32C6))
 
   Serial.begin(SERIAL_OUT_BR);
@@ -2060,6 +2054,29 @@ static void ESP32_loop()
     MAG_Time_Marker = millis();
   }
   #endif /* !EXCLUDE_MAG */
+
+  #if defined(USE_SA8X8)
+  if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision > 0) {
+    #if defined(USE_NEOPIXELBUS_LIBRARY)
+    color_t color = TWR2_Pixel.GetPixelColor(0);
+
+    if (color != LED_COLOR_RED) {
+      bool sql = digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL);
+      if (sql == LOW) {
+        if (color == LED_COLOR_BLACK) {
+          TWR2_Pixel.SetPixelColor(0, LED_COLOR_GREEN);
+          TWR2_Pixel.Show();
+        }
+      } else {
+        if (color == LED_COLOR_GREEN) {
+          TWR2_Pixel.SetPixelColor(0, LED_COLOR_BLACK);
+          TWR2_Pixel.Show();
+        }
+      }
+    }
+    #endif /* USE_NEOPIXELBUS_LIBRARY */
+  }
+  #endif /* USE_SA8X8 */
 
 //  if (esp32_board == ESP32_HELTEC_TRACKER) {
 //    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,
@@ -2924,7 +2941,9 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   if (cmd == EEPROM_EXT_LOAD) {
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32)   || \
+    defined(CONFIG_IDF_TARGET_ESP32C2) || \
+    defined(USE_USB_HOST)
     if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
@@ -4759,8 +4778,7 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if ARDUINO_USB_MODE && \
-    (defined(CONFIG_IDF_TARGET_ESP32C2) || \
-     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    (defined(CONFIG_IDF_TARGET_ESP32C3) || \
      defined(CONFIG_IDF_TARGET_ESP32C6))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
@@ -5004,8 +5022,7 @@ const SoC_ops_t ESP32_ops = {
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
-      (defined(CONFIG_IDF_TARGET_ESP32C2) || \
-       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      (defined(CONFIG_IDF_TARGET_ESP32C3) || \
        defined(CONFIG_IDF_TARGET_ESP32C6))
   &ESP32CX_USBSerial_ops,
 #else

@@ -305,6 +305,10 @@ struct rst_info {
 #define ZBIT_ID                 0x5E
 #define ZBIT_ZB25VQ32B          0x4016
 
+/* Shanghai Fudan Microelectronics Group Co., Ltd. */
+#define FMICRO_ID               0xA1
+#define FMICRO_ZB25Q16          0x4015
+
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
 #define MPU6886_REG_PWR_MGMT_1  (0x6B)
@@ -404,7 +408,7 @@ extern const USB_Device_List_t supported_USB_devices[];
       defined(CONFIG_IDF_TARGET_ESP32C6)
 #undef USE_OLED
 #undef USE_TFT
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define EXCLUDE_EGM96
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE

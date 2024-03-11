@@ -6,30 +6,7 @@
 
 #include "battery.h"
 
-#if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6)
-static uint8_t adc_pin = 1;
-
-void calibrate_voltage(uint8_t pin, adc_attenuation_t atten) {
-  adc_pin = pin;
-  analogReadResolution(12);
-  analogSetPinAttenuation(adc_pin, atten);
-}
-
-uint16_t read_voltage() {
-  // multisample ADC
-  uint32_t adc_reading = 0;
-
-  for (int i = 0; i < NO_OF_SAMPLES; i++) {
-    adc_reading += analogReadMilliVolts(adc_pin);
-    yield();
-  }
-
-  adc_reading /= NO_OF_SAMPLES;
-
-  return (uint16_t) adc_reading;
-}
-
-#else
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 
 // Local logging tag
 static const char TAG[] = "ADC";
@@ -118,4 +95,29 @@ uint16_t read_voltage() {
   ESP_LOGD(TAG, "Raw: %d / Voltage: %dmV", adc_reading, voltage);
   return voltage;
 }
-#endif /* CONFIG_IDF_TARGET_ESP32C2 || C6 */
+
+#else
+
+static uint8_t adc_pin = 1;
+
+void calibrate_voltage(uint8_t pin, adc_attenuation_t atten) {
+  adc_pin = pin;
+  analogReadResolution(12);
+  analogSetPinAttenuation(adc_pin, atten);
+}
+
+uint16_t read_voltage() {
+  // multisample ADC
+  uint32_t adc_reading = 0;
+
+  for (int i = 0; i < NO_OF_SAMPLES; i++) {
+    adc_reading += analogReadMilliVolts(adc_pin);
+    yield();
+  }
+
+  adc_reading /= NO_OF_SAMPLES;
+
+  return (uint16_t) adc_reading;
+}
+
+#endif /* ESP_IDF_VERSION_MAJOR */
