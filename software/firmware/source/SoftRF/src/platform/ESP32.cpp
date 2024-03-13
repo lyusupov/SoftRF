@@ -629,7 +629,7 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
     switch (flash_id)
     {
-    case MakeFlashId(FMICRO_ID, FMICRO_ZB25Q16): /* WT018684-S5 */
+    case MakeFlashId(FMICRO_ID, FMICRO_FM25Q16): /* WT018684-S5 */
     default:
       esp32_board   = ESP32_C2_DEVKIT;
       break;

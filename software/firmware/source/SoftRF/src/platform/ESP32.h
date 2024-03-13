@@ -307,7 +307,7 @@ struct rst_info {
 
 /* Shanghai Fudan Microelectronics Group Co., Ltd. */
 #define FMICRO_ID               0xA1
-#define FMICRO_ZB25Q16          0x4015
+#define FMICRO_FM25Q16          0x4015
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 

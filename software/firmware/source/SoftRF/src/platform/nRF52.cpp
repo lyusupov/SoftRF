@@ -304,6 +304,257 @@ static void nRF52_msc_flush_cb (void)
   ledOff(SOC_GPIO_LED_USBMSC);
 }
 
+#if defined(USE_EXT_I2S_DAC)
+
+#define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
+
+#define MAX_FILENAME_LEN      64
+#define WAV_FILE_PREFIX       "/Audio/"
+#define WAV_FILE_SUFFIX       ".wav"
+
+
+#define SOC_GPIO_PIN_I2S_MCK  _PINNUM(0, 6) // P0.06
+#define SOC_GPIO_PIN_I2S_LRCK _PINNUM(1, 6) // P1.06
+#define SOC_GPIO_PIN_I2S_BCK  _PINNUM(0, 8) // P0.08
+#define SOC_GPIO_PIN_I2S_DOUT _PINNUM(1, 7) // P1.07
+
+#define I2S_DATA_BLOCK_WORDS  8192
+
+/* these are data structures to process wav file */
+typedef enum headerState_e {
+    HEADER_RIFF,
+    HEADER_FMT,
+    HEADER_DATA,
+    DATA
+} headerState_t;
+
+typedef struct wavRiff_s {
+    uint32_t chunkID;
+    uint32_t chunkSize;
+    uint32_t format;
+} wavRiff_t;
+
+typedef struct wavProperties_s {
+    uint32_t chunkID;
+    uint32_t chunkSize;
+    uint16_t audioFormat;
+    uint16_t numChannels;
+    uint32_t sampleRate;
+    uint32_t byteRate;
+    uint16_t blockAlign;
+    uint16_t bitsPerSample;
+} wavProperties_t;
+
+static uint32_t i2s_buffer[I2S_DATA_BLOCK_WORDS];
+
+void I2S_begin(uint8_t pinSDOUT, uint8_t pinSCK, uint8_t pinLRCK, int8_t pinMCK) {
+  // Enable transmission
+  NRF_I2S->CONFIG.TXEN = (I2S_CONFIG_TXEN_TXEN_ENABLE << I2S_CONFIG_TXEN_TXEN_Pos);
+  // Enable MCK generator
+  NRF_I2S->CONFIG.MCKEN = (I2S_CONFIG_MCKEN_MCKEN_ENABLE << I2S_CONFIG_MCKEN_MCKEN_Pos);
+  NRF_I2S->CONFIG.MCKFREQ =  I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11 << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
+  NRF_I2S->CONFIG.RATIO = I2S_CONFIG_RATIO_RATIO_64X << I2S_CONFIG_RATIO_RATIO_Pos;
+  // Master mode, 16Bit, left aligned
+  NRF_I2S->CONFIG.MODE = I2S_CONFIG_MODE_MODE_MASTER << I2S_CONFIG_MODE_MODE_Pos;
+  NRF_I2S->CONFIG.SWIDTH = I2S_CONFIG_SWIDTH_SWIDTH_16BIT << I2S_CONFIG_SWIDTH_SWIDTH_Pos;
+  NRF_I2S->CONFIG.ALIGN = I2S_CONFIG_ALIGN_ALIGN_LEFT << I2S_CONFIG_ALIGN_ALIGN_Pos;
+  // Format = I2S
+  NRF_I2S->CONFIG.FORMAT = I2S_CONFIG_FORMAT_FORMAT_I2S << I2S_CONFIG_FORMAT_FORMAT_Pos;
+  // Use left
+  NRF_I2S->CONFIG.CHANNELS = I2S_CONFIG_CHANNELS_CHANNELS_LEFT << I2S_CONFIG_CHANNELS_CHANNELS_Pos;
+
+  // Configure pins
+  NRF_I2S->PSEL.SCK   = (pinSCK   << I2S_PSEL_SCK_PIN_Pos);
+  NRF_I2S->PSEL.LRCK  = (pinLRCK  << I2S_PSEL_LRCK_PIN_Pos);
+  NRF_I2S->PSEL.SDOUT = (pinSDOUT << I2S_PSEL_SDOUT_PIN_Pos);
+  NRF_I2S->PSEL.MCK   = (pinMCK   << I2S_PSEL_MCK_PIN_Pos);
+}
+
+void I2S_stop()
+{
+    // Erratta 55 workaround (part 1)
+    volatile uint32_t tmp = NRF_I2S->INTEN;
+    NRF_I2S->INTEN = 0;
+
+    NRF_I2S->TASKS_STOP = 1;
+
+    // Errata 194 workaround
+    *((volatile uint32_t *)0x40025038) = 1;
+    *((volatile uint32_t *)0x4002503C) = 1;
+    while (NRF_I2S->EVENTS_STOPPED == 0);
+    NRF_I2S->EVENTS_STOPPED = 0;
+    (void)NRF_I2S->EVENTS_STOPPED;
+
+    // Errata 55 workaround (part 2)
+    NRF_I2S->EVENTS_RXPTRUPD = 0;
+    NRF_I2S->EVENTS_TXPTRUPD = 0;
+    NRF_I2S->EVENTS_STOPPED  = 0;
+    NRF_I2S->INTEN = tmp;
+}
+
+/**
+ *  @brief Mapping Frequency constants to available frequencies
+ */
+struct I2S_freq_info {
+  int id;
+  float freq; // in mhz
+};
+
+static const I2S_freq_info freq_table[] = {
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV8,   32.0 /   8 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV10,  32.0 /  10 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11,  32.0 /  11 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV15,  32.0 /  15 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV16,  32.0 /  16 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV21,  32.0 /  21 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV23,  32.0 /  23 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV30,  32.0 /  30 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV31,  32.0 /  31 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV32,  32.0 /  32 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV42,  32.0 /  42 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV63,  32.0 /  63 },
+  { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV125, 32.0 / 125 }
+};
+
+/**
+ *  @brief Mapping from Ratio Constants to frequency ratios
+ */
+struct I2S_ratio_info {
+  int id;
+  float ratio;
+};
+
+static const I2S_ratio_info ratio_table[] = {
+  { I2S_CONFIG_RATIO_RATIO_32X,   32.0 },
+  { I2S_CONFIG_RATIO_RATIO_48X,   48.0 },
+  { I2S_CONFIG_RATIO_RATIO_64X,   64.0 },
+  { I2S_CONFIG_RATIO_RATIO_96X,   96.0 },
+  { I2S_CONFIG_RATIO_RATIO_128X, 128.0 },
+  { I2S_CONFIG_RATIO_RATIO_192X, 192.0 },
+  { I2S_CONFIG_RATIO_RATIO_256X, 256.0 },
+  { I2S_CONFIG_RATIO_RATIO_384X, 384.0 },
+  { I2S_CONFIG_RATIO_RATIO_512X, 512.0 }
+};
+
+void I2S_setSampleRate(uint16_t sampleRate)
+{
+  // find closest frequency for requested sample_rate
+  float freq_requested = sampleRate;
+  float selected_freq = 0;
+  for (auto freq : freq_table) {
+    for (auto div : ratio_table) {
+        float freq_value = freq.freq * 1000000 / div.ratio;
+        if (abs(freq_value-freq_requested) < abs(selected_freq-freq_requested)){
+          // MCKFREQ
+          NRF_I2S->CONFIG.MCKFREQ = freq.id << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
+          // Ratio
+          NRF_I2S->CONFIG.RATIO   = div.id  << I2S_CONFIG_RATIO_RATIO_Pos;
+          selected_freq = freq_value;
+          // Serial.printf("frequency requested %f vs %f\r\n", freq_requested, selected_freq);
+        }
+     }
+  }
+  // Serial.printf("Frequency req. %f vs eff. %f\r\n", freq_requested, selected_freq);
+}
+
+wavProperties_t wavProps;
+
+static bool play_file(char *filename)
+{
+  bool rval = false;
+
+#if !defined(EXCLUDE_AUDIO)
+  headerState_t state = HEADER_RIFF;
+
+  File wavfile = fatfs.open(filename, FILE_READ);
+
+  if (wavfile) {
+    int c = 0;
+    int n;
+
+    while (wavfile.available()) {
+      switch(state){
+        case HEADER_RIFF:
+        {
+          wavRiff_t wavRiff;
+
+          n = wavfile.read((uint8_t *) &wavRiff, sizeof(wavRiff_t));
+          if (n == sizeof(wavRiff_t)){
+            if (wavRiff.chunkID == CCCC('R', 'I', 'F', 'F') &&
+                wavRiff.format  == CCCC('W', 'A', 'V', 'E')) {
+              state = HEADER_FMT;
+              // Serial.println("HEADER_RIFF");
+            }
+          }
+        }
+        break;
+        case HEADER_FMT:
+        {
+          n = wavfile.read((uint8_t *) &wavProps, sizeof(wavProperties_t));
+          if (n == sizeof(wavProperties_t)) {
+            state = HEADER_DATA;
+          }
+        }
+        break;
+        case HEADER_DATA:
+        {
+          uint32_t chunkId, chunkSize;
+          n = wavfile.read((uint8_t *) &chunkId, sizeof(chunkId));
+          if (n == 4){
+            if(chunkId == CCCC('d', 'a', 't', 'a')) {
+              // Serial.println("HEADER_DATA");
+            }
+          }
+          n = wavfile.read((uint8_t *) &chunkSize, sizeof(chunkSize));
+          if (n == 4){
+            state = DATA;
+          }
+
+          I2S_begin(SOC_GPIO_PIN_I2S_DOUT,
+                    SOC_GPIO_PIN_I2S_BCK,
+                    SOC_GPIO_PIN_I2S_LRCK,
+                    SOC_GPIO_PIN_I2S_MCK);
+          I2S_setSampleRate(wavProps.sampleRate);
+        }
+        break;
+        /* after processing wav file, it is time to process music data */
+        case DATA:
+        while ((n = wavfile.read((uint8_t *) i2s_buffer, sizeof(i2s_buffer) /* / 2 */)) > 0) {
+
+          NRF_I2S->RXTXD.MAXCNT = n / 4;
+          NRF_I2S->TXD.PTR =  (uint32_t) i2s_buffer;
+          NRF_I2S->ENABLE  = 1;
+          NRF_I2S->TASKS_START = 1;
+
+          NRF_I2S->EVENTS_RXPTRUPD = 0;
+          NRF_I2S->EVENTS_TXPTRUPD = 0;
+          NRF_I2S->EVENTS_STOPPED  = 0;
+
+          unsigned long ms = millis();
+          while (NRF_I2S->EVENTS_TXPTRUPD == 0);
+        }
+
+        if (n == 0) {
+          NRF_I2S->TASKS_START = 0;
+          NRF_I2S->ENABLE = 0;
+        }
+        break;
+      }
+    }
+    wavfile.close();
+    rval = true;
+  } else {
+    Serial.println(F("error opening WAV file"));
+  }
+  if (state == DATA) {
+    I2S_stop();
+  }
+#endif /* EXCLUDE_AUDIO */
+
+  return rval;
+}
+#endif /* USE_EXT_I2S_DAC */
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -642,6 +893,16 @@ static void nRF52_post_init()
     Serial.println();
     Serial.flush();
   }
+
+#if defined(USE_EXT_I2S_DAC)
+    char filename[MAX_FILENAME_LEN];
+    strcpy(filename, WAV_FILE_PREFIX);
+    strcat(filename, "POST");
+    strcat(filename, WAV_FILE_SUFFIX);
+    if (FATFS_is_mounted && fatfs.exists(filename)) {
+      play_file(filename);
+    }
+#endif /* USE_EXT_I2S_DAC */
 
   Serial.println(F("Data output device(s):"));
 
