@@ -244,6 +244,14 @@ struct rst_info {
 #define SOC_GPIO_PIN_R_INT    _PINNUM(0, 16) // P0.16
 
 #define EXCLUDE_WIFI
+//#define EXCLUDE_OTA
+//#define USE_ARDUINO_WIFI
+//#define USE_WIFI_NINA         false
+//#define USE_WIFI_CUSTOM       true
+//#include <WiFiNINA.h>
+//#define Serial_setDebugOutput(x) ({})
+//#define WIFI_STA_TIMEOUT      20000
+
 #define EXCLUDE_CC13XX
 //#define EXCLUDE_TEST_MODE
 //#define EXCLUDE_SOFTRF_HEARTBEAT

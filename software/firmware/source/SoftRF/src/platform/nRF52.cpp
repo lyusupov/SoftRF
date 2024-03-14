@@ -86,7 +86,9 @@ lmic_pinmap lmic_pins = {
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
                               NEO_GRB + NEO_KHZ800);
 
+#if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+#endif /* EXCLUDE_WIFI */
 
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
@@ -312,7 +314,6 @@ static void nRF52_msc_flush_cb (void)
 #define WAV_FILE_PREFIX       "/Audio/"
 #define WAV_FILE_SUFFIX       ".wav"
 
-
 #define SOC_GPIO_PIN_I2S_MCK  _PINNUM(0, 6) // P0.06
 #define SOC_GPIO_PIN_I2S_LRCK _PINNUM(1, 6) // P1.06
 #define SOC_GPIO_PIN_I2S_BCK  _PINNUM(0, 8) // P0.08
@@ -349,17 +350,17 @@ static uint32_t i2s_buffer[I2S_DATA_BLOCK_WORDS];
 
 void I2S_begin(uint8_t pinSDOUT, uint8_t pinSCK, uint8_t pinLRCK, int8_t pinMCK) {
   // Enable transmission
-  NRF_I2S->CONFIG.TXEN = (I2S_CONFIG_TXEN_TXEN_ENABLE << I2S_CONFIG_TXEN_TXEN_Pos);
+  NRF_I2S->CONFIG.TXEN     = (I2S_CONFIG_TXEN_TXEN_ENABLE << I2S_CONFIG_TXEN_TXEN_Pos);
   // Enable MCK generator
-  NRF_I2S->CONFIG.MCKEN = (I2S_CONFIG_MCKEN_MCKEN_ENABLE << I2S_CONFIG_MCKEN_MCKEN_Pos);
-  NRF_I2S->CONFIG.MCKFREQ =  I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11 << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
-  NRF_I2S->CONFIG.RATIO = I2S_CONFIG_RATIO_RATIO_64X << I2S_CONFIG_RATIO_RATIO_Pos;
+  NRF_I2S->CONFIG.MCKEN    = (I2S_CONFIG_MCKEN_MCKEN_ENABLE << I2S_CONFIG_MCKEN_MCKEN_Pos);
+  NRF_I2S->CONFIG.MCKFREQ  = I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11 << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
+  NRF_I2S->CONFIG.RATIO    = I2S_CONFIG_RATIO_RATIO_64X << I2S_CONFIG_RATIO_RATIO_Pos;
   // Master mode, 16Bit, left aligned
-  NRF_I2S->CONFIG.MODE = I2S_CONFIG_MODE_MODE_MASTER << I2S_CONFIG_MODE_MODE_Pos;
-  NRF_I2S->CONFIG.SWIDTH = I2S_CONFIG_SWIDTH_SWIDTH_16BIT << I2S_CONFIG_SWIDTH_SWIDTH_Pos;
-  NRF_I2S->CONFIG.ALIGN = I2S_CONFIG_ALIGN_ALIGN_LEFT << I2S_CONFIG_ALIGN_ALIGN_Pos;
+  NRF_I2S->CONFIG.MODE     = I2S_CONFIG_MODE_MODE_MASTER << I2S_CONFIG_MODE_MODE_Pos;
+  NRF_I2S->CONFIG.SWIDTH   = I2S_CONFIG_SWIDTH_SWIDTH_16BIT << I2S_CONFIG_SWIDTH_SWIDTH_Pos;
+  NRF_I2S->CONFIG.ALIGN    = I2S_CONFIG_ALIGN_ALIGN_LEFT << I2S_CONFIG_ALIGN_ALIGN_Pos;
   // Format = I2S
-  NRF_I2S->CONFIG.FORMAT = I2S_CONFIG_FORMAT_FORMAT_I2S << I2S_CONFIG_FORMAT_FORMAT_Pos;
+  NRF_I2S->CONFIG.FORMAT   = I2S_CONFIG_FORMAT_FORMAT_I2S << I2S_CONFIG_FORMAT_FORMAT_Pos;
   // Use left
   NRF_I2S->CONFIG.CHANNELS = I2S_CONFIG_CHANNELS_CHANNELS_LEFT << I2S_CONFIG_CHANNELS_CHANNELS_Pos;
 
@@ -372,27 +373,27 @@ void I2S_begin(uint8_t pinSDOUT, uint8_t pinSCK, uint8_t pinLRCK, int8_t pinMCK)
 
 void I2S_stop()
 {
-    // Erratta 55 workaround (part 1)
-    volatile uint32_t tmp = NRF_I2S->INTEN;
-    NRF_I2S->INTEN = 0;
+  // Erratta 55 workaround (part 1)
+  volatile uint32_t tmp = NRF_I2S->INTEN;
+  NRF_I2S->INTEN = 0;
 
-    NRF_I2S->TASKS_STOP = 1;
+  NRF_I2S->TASKS_STOP = 1;
 
-    // Errata 194 workaround
-    *((volatile uint32_t *)0x40025038) = 1;
-    *((volatile uint32_t *)0x4002503C) = 1;
-    while (NRF_I2S->EVENTS_STOPPED == 0);
-    NRF_I2S->EVENTS_STOPPED = 0;
-    (void)NRF_I2S->EVENTS_STOPPED;
+  // Errata 194 workaround
+  *((volatile uint32_t *)0x40025038) = 1;
+  *((volatile uint32_t *)0x4002503C) = 1;
+  while (NRF_I2S->EVENTS_STOPPED == 0);
+  NRF_I2S->EVENTS_STOPPED = 0;
+  (void)NRF_I2S->EVENTS_STOPPED;
 
-    // Errata 55 workaround (part 2)
-    NRF_I2S->EVENTS_RXPTRUPD = 0;
-    NRF_I2S->EVENTS_TXPTRUPD = 0;
-    NRF_I2S->EVENTS_STOPPED  = 0;
-    NRF_I2S->INTEN = tmp;
+  // Errata 55 workaround (part 2)
+  NRF_I2S->EVENTS_RXPTRUPD = 0;
+  NRF_I2S->EVENTS_TXPTRUPD = 0;
+  NRF_I2S->EVENTS_STOPPED  = 0;
+  NRF_I2S->INTEN = tmp;
 }
 
-/**
+/*
  *  @brief Mapping Frequency constants to available frequencies
  */
 struct I2S_freq_info {
@@ -416,7 +417,7 @@ static const I2S_freq_info freq_table[] = {
   { I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV125, 32.0 / 125 }
 };
 
-/**
+/*
  *  @brief Mapping from Ratio Constants to frequency ratios
  */
 struct I2S_ratio_info {
@@ -479,7 +480,7 @@ static bool play_file(char *filename)
           wavRiff_t wavRiff;
 
           n = wavfile.read((uint8_t *) &wavRiff, sizeof(wavRiff_t));
-          if (n == sizeof(wavRiff_t)){
+          if (n == sizeof(wavRiff_t)) {
             if (wavRiff.chunkID == CCCC('R', 'I', 'F', 'F') &&
                 wavRiff.format  == CCCC('W', 'A', 'V', 'E')) {
               state = HEADER_FMT;
@@ -500,13 +501,13 @@ static bool play_file(char *filename)
         {
           uint32_t chunkId, chunkSize;
           n = wavfile.read((uint8_t *) &chunkId, sizeof(chunkId));
-          if (n == 4){
+          if (n == 4) {
             if(chunkId == CCCC('d', 'a', 't', 'a')) {
               // Serial.println("HEADER_DATA");
             }
           }
           n = wavfile.read((uint8_t *) &chunkSize, sizeof(chunkSize));
-          if (n == 4){
+          if (n == 4) {
             state = DATA;
           }
 
@@ -517,11 +518,11 @@ static bool play_file(char *filename)
           I2S_setSampleRate(wavProps.sampleRate);
         }
         break;
-        /* after processing wav file, it is time to process music data */
+        /* after processing wav header, it is time to process music data */
         case DATA:
-        while ((n = wavfile.read((uint8_t *) i2s_buffer, sizeof(i2s_buffer) /* / 2 */)) > 0) {
+        while ((n = wavfile.read((uint8_t *) i2s_buffer, sizeof(i2s_buffer))) > 0) {
 
-          NRF_I2S->RXTXD.MAXCNT = n / 4;
+          NRF_I2S->RXTXD.MAXCNT = n >> 2;
           NRF_I2S->TXD.PTR =  (uint32_t) i2s_buffer;
           NRF_I2S->ENABLE  = 1;
           NRF_I2S->TASKS_START = 1;
@@ -530,7 +531,6 @@ static bool play_file(char *filename)
           NRF_I2S->EVENTS_TXPTRUPD = 0;
           NRF_I2S->EVENTS_STOPPED  = 0;
 
-          unsigned long ms = millis();
           while (NRF_I2S->EVENTS_TXPTRUPD == 0);
         }
 
@@ -887,12 +887,6 @@ static void nRF52_post_init()
     Serial.println(F("Power-on Self Test is complete."));
     Serial.println();
     Serial.flush();
-  } else if (nRF52_board == NRF52_NORDIC_PCA10059) {
-    Serial.println();
-    Serial.println(F("Board: Nordic PCA10059 USB Dongle"));
-    Serial.println();
-    Serial.flush();
-  }
 
 #if defined(USE_EXT_I2S_DAC)
     char filename[MAX_FILENAME_LEN];
@@ -903,6 +897,13 @@ static void nRF52_post_init()
       play_file(filename);
     }
 #endif /* USE_EXT_I2S_DAC */
+
+  } else if (nRF52_board == NRF52_NORDIC_PCA10059) {
+    Serial.println();
+    Serial.println(F("Board: Nordic PCA10059 USB Dongle"));
+    Serial.println();
+    Serial.flush();
+  }
 
   Serial.println(F("Data output device(s):"));
 

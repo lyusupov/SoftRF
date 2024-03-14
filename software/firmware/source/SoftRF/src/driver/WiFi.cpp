@@ -323,7 +323,7 @@ void WiFi_loop()
   }
 #endif
 
-#if defined(ENABLE_REMOTE_ID)
+#if defined(ENABLE_REMOTE_ID) && !defined(USE_ARDUINO_WIFI)
   if (rid_enabled() && WiFi.getMode() == WIFI_AP && isValidFix()) {
     if ((millis() - RID_Time_Marker) > (RID_TX_INTERVAL_MIN + RID_TX_INTERVAL_MAX)/2) {
       rid_encode((void *) &utm_data, &ThisAircraft);
