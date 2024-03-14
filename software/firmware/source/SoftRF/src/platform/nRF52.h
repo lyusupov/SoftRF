@@ -248,7 +248,7 @@ struct rst_info {
 //#define USE_ARDUINO_WIFI
 //#define USE_WIFI_NINA         false
 //#define USE_WIFI_CUSTOM       true
-//#include <WiFiNINA.h>
+//#include <WiFiEspAT.h>
 //#define Serial_setDebugOutput(x) ({})
 //#define WIFI_STA_TIMEOUT      20000
 

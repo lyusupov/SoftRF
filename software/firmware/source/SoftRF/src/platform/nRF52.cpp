@@ -610,8 +610,10 @@ static void nRF52_setup()
 
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+#if defined(EXCLUDE_WIFI)
   Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-#endif
+#endif /* EXCLUDE_WIFI */
+#endif /* USE_TINYUSB */
 
   digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
   pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
@@ -813,6 +815,13 @@ static void nRF52_setup()
 #if defined(USE_TINYUSB) && defined(USBCON)
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #endif
+
+#if !defined(EXCLUDE_WIFI)
+#if defined(_WIFI_ESP_AT_H_)
+  Serial1.begin(115200);
+  WiFi.init(&Serial1);
+#endif /* _WIFI_ESP_AT_H_ */
+#endif /* EXCLUDE_WIFI */
 }
 
 static void nRF52_post_init()

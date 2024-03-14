@@ -116,13 +116,16 @@ void WiFi_setup()
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
-    while (true);
+    // while (true);
+    return;
   }
 
+#if !defined(_WIFI_ESP_AT_H_)
   String fv = WiFi.firmwareVersion();
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
     Serial.println("Please upgrade the firmware");
   }
+#endif /* _WIFI_ESP_AT_H_ */
 
   WiFi.setHostname(host_name.c_str());
 
@@ -340,7 +343,11 @@ void WiFi_fini()
   Uni_Udp.stop();
 
 #if defined(USE_ARDUINO_WIFI)
+#if !defined(_WIFI_ESP_AT_H_)
   WiFi.end();
+#else
+  WiFi.endAP();
+#endif /* _WIFI_ESP_AT_H_ */
 #else
   WiFi.mode(WIFI_OFF);
 #endif /* USE_ARDUINO_WIFI */
