@@ -248,7 +248,16 @@ struct rst_info {
 //#define USE_ARDUINO_WIFI
 //#define USE_WIFI_NINA         false
 //#define USE_WIFI_CUSTOM       true
+
 //#include <WiFiEspAT.h>
+
+//#define SPIWIFI               WiFiSPI
+//#define SPIWIFI_SS            _PINNUM(0, 6)
+//#define ESP32_RESETN          _PINNUM(1, 3)
+//#define SPIWIFI_ACK           _PINNUM(0,15)
+//#define ESP32_GPIO0           -1
+//#include <WiFiNINA.h>
+//#include <WiFiNINA_Generic.h>
 //#define Serial_setDebugOutput(x) ({})
 //#define WIFI_STA_TIMEOUT      20000
 

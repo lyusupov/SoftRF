@@ -88,6 +88,11 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 
 #if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+#else
+#if defined(USING_WIFI101_GENERIC) || defined(WiFiNINA_h)
+#include <SoftSPI.h>
+SoftSPI WiFiSPI(_PINNUM(1, 7), _PINNUM(1, 6), _PINNUM(0, 8));
+#endif /* USING_WIFI101_GENERIC || WiFiNINA_h */
 #endif /* EXCLUDE_WIFI */
 
 static uint32_t prev_tx_packets_counter = 0;
@@ -821,6 +826,10 @@ static void nRF52_setup()
   Serial1.begin(115200);
   WiFi.init(&Serial1);
 #endif /* _WIFI_ESP_AT_H_ */
+
+#if defined(WiFiNINA_h)
+  WiFi.setPins(SPIWIFI_SS, SPIWIFI_ACK, ESP32_RESETN, ESP32_GPIO0, &SPIWIFI);
+#endif /* WiFiNINA_h */
 #endif /* EXCLUDE_WIFI */
 }
 

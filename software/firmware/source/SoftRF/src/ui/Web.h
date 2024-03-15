@@ -21,7 +21,7 @@
 
 #include "../system/SoC.h"
 
-#if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
+#if defined(ARDUINO) && !defined(EXCLUDE_WIFI) && !defined(USING_WIFI101_GENERIC)
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 

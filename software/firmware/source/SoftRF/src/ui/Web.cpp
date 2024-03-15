@@ -678,7 +678,7 @@ void handleSettings() {
   server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
   server.sendHeader(String(F("Pragma")), String(F("no-cache")));
   server.sendHeader(String(F("Expires")), String(F("-1")));
-#if !defined(USE_ARDUINO_WIFI)
+#if !defined(USE_ARDUINO_WIFI) || defined(USING_WIFI101_GENERIC)
   server.send ( 200, "text/html", Settings_temp );
 #else
   char *content = Settings_temp;
