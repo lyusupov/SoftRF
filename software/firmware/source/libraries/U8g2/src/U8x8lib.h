@@ -98,7 +98,8 @@
 #endif
 
 
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ASR6601)
+#if defined(ARDUINO_ARCH_ESP32)   || defined(ARDUINO_ARCH_RP2040) || \
+    defined(ARDUINO_ARCH_ASR6601) || defined(ARDUINO_UNOR4_WIFI)
 #define WIRE_INTERFACES_COUNT 2
 
 #if defined(CubeCell_BoardPRO)

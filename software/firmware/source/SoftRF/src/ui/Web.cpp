@@ -373,8 +373,9 @@ void handleSettings() {
     offset += len;
     size -= len;
 
-  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
-             SoC->id == SOC_ESP32C6) {
+  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C2 ||
+             SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
+             SoC->id == SOC_RA4M1) {
 
     snprintf_P ( offset, size,
       PSTR("\
@@ -452,8 +453,9 @@ void handleSettings() {
 
   /* SoC specific part 2 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C2 || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -501,8 +503,9 @@ void handleSettings() {
 #if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C2 || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->gdl90 == GDL90_BLUETOOTH ? "selected" : ""), GDL90_BLUETOOTH);
@@ -547,8 +550,9 @@ void handleSettings() {
 #if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C2 || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->d1090 == D1090_BLUETOOTH ? "selected" : ""), D1090_BLUETOOTH);

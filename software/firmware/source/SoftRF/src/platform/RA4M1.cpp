@@ -404,6 +404,9 @@ static void RA4M1_EEPROM_extension(int cmd)
 #if defined(ARDUINO_UNOR4_WIFI)
   if (cmd == EEPROM_EXT_DEFAULTS) {
     settings->nmea_out = NMEA_UART;
+#if defined(EXCLUDE_WIFI) && !defined(EXCLUDE_BLUETOOTH)
+    settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
+#endif /* EXCLUDE_BLUETOOTH */
   }
 #endif /* ARDUINO_UNOR4_WIFI */
 
