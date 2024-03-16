@@ -14,15 +14,16 @@
 #if !defined(ESP8266) && !defined(ESP32) && \
     !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
     !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32) && \
-    !defined(ARDUINO_ARCH_ASR650X)
+    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_RENESAS)
 static unsigned int crc_table[256];
 #else
-#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
+    defined(ARDUINO_ARCH_ASR650X)
 #include <pgmspace.h>
 #endif
 
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_RENESAS)
 #include <avr/pgmspace.h>
 #endif
 
@@ -76,7 +77,8 @@ unsigned int modes_crc(unsigned char *buf, size_t  len)
 	for (rem = 0, i = len; i > 0; --i) {
 #if !defined(ESP8266) && !defined(ESP32) && \
     !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32) && !defined(ARDUINO_ARCH_ASR650X)
+    !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32) && \
+    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_RENESAS)
 		rem = ((rem & 0x00ffff) << 8) ^ crc_table[*buf++ ^ ((rem & 0xff0000) >> 16)];
 #else
 		rem = ((rem & 0x00ffff) << 8) ^ pgm_read_dword(&crc_table[*buf++ ^ ((rem & 0xff0000) >> 16)]);
@@ -634,7 +636,8 @@ int modescrc_module_init()
 {
 #if !defined(ESP8266) && !defined(ESP32) && \
     !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32) && !defined(ARDUINO_ARCH_ASR650X)
+    !defined(__ASR6501__) && !defined(ARDUINO_ARCH_STM32) && \
+    !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_RENESAS)
 	int i;
 
 	for (i = 0; i < 256; ++i) {

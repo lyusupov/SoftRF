@@ -7,11 +7,13 @@
 #include <math.h>
 #endif
 
-#if defined(__AVR__) || defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+#if defined(__AVR__) || defined(ENERGIA_ARCH_CC13XX) || \
+    defined(ENERGIA_ARCH_CC13X2) || defined(ARDUINO_ARCH_RENESAS)
 #include <avr/pgmspace.h>
 #endif
 
-#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+#if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
+    defined(ARDUINO_ARCH_ASR650X)
 #include <pgmspace.h>
 #endif
 
@@ -23,7 +25,8 @@
 static const uint32_t LDPC_ParityCheck_n208k160[48][7]
 #if defined(__AVR__) || defined(ESP8266) || defined(ESP32) || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+    defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X) || \
+    defined(ARDUINO_ARCH_RENESAS)
 PROGMEM
 #endif
 = { // parity check vectors: 48 vectors for 48 parity checks
@@ -150,7 +153,8 @@ PROGMEM
 static const uint32_t LDPC_ParityGen_n208k160[48][5]
 #if defined(__AVR__) || defined(ESP8266) || defined(ESP32) || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X)
+    defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X) || \
+    defined(ARDUINO_ARCH_RENESAS)
 PROGMEM
 #endif
 = { // Parity bits generator: 48 vectors to generate 48 parity bits
@@ -697,7 +701,8 @@ static void LDPC_Encode(const uint32_t *Data, uint32_t *Parity, uint8_t DataWord
   { uint8_t Count=0;
     for(uint8_t Idx=0; Idx<DataWords; Idx++)
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_RENESAS)
     { Count+=Count1s(Data[Idx] & (uint32_t) pgm_read_dword(Gen+Idx)); }
 #else
     { Count+=Count1s(Data[Idx]&Gen[Idx]); }
@@ -739,7 +744,8 @@ uint8_t LDPC_Check(const uint8_t *Data) // 20 data bytes followed by 6 parity by
     const uint8_t *Check = (uint8_t *)LDPC_ParityCheck_n208k160[Row];
     for(uint8_t Idx=0; Idx<26; Idx++)
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_RENESAS)
     { uint8_t And = Data[Idx]&pgm_read_byte(Check+Idx); Count+=Count1s(And); }
 #else
     { uint8_t And = Data[Idx]&Check[Idx]; Count+=Count1s(And); }

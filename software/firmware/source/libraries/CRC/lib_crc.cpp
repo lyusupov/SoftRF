@@ -6,7 +6,8 @@
 #endif
 
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_AVR)
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_RENESAS)
 #include <avr/pgmspace.h>
 #endif
 
@@ -111,7 +112,8 @@ static unsigned short   crc_tabkermit[256];
 #if !defined(ESP8266) && !defined(__ASR6501__) && \
     !defined(ARDUINO_ARCH_ASR650X) && \
     !defined(ENERGIA_ARCH_CC13XX)  && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_STM32)   && !defined(ARDUINO_ARCH_AVR)
+    !defined(ARDUINO_ARCH_STM32)   && !defined(ARDUINO_ARCH_AVR)    && \
+    !defined(ARDUINO_ARCH_RENESAS)
 static unsigned short   crc_tabccitt[256];
 #else
 static const unsigned short crc_tabccitt[256] PROGMEM = {
@@ -190,7 +192,8 @@ unsigned short update_crc_ccitt( unsigned short crc, char c ) {
 #if defined(ESP8266) || defined(__ASR6501__) || \
     defined(ARDUINO_ARCH_ASR650X) || \
     defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_RENESAS)
     crc = (crc << 8) ^ pgm_read_word(&crc_tabccitt[tmp]);
 #else
     crc = (crc << 8) ^ crc_tabccitt[tmp];
@@ -495,7 +498,8 @@ static void init_crcccitt_tab( void ) {
 #if !defined(ESP8266) && !defined(__ASR6501__) && \
     !defined(ARDUINO_ARCH_ASR650X) && \
     !defined(ENERGIA_ARCH_CC13XX)  && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_STM32)   && !defined(ARDUINO_ARCH_AVR)
+    !defined(ARDUINO_ARCH_STM32)   && !defined(ARDUINO_ARCH_AVR)    && \
+    !defined(ARDUINO_ARCH_RENESAS)
     int i, j;
     unsigned short crc, c;
 
@@ -531,7 +535,8 @@ unsigned short update_crc_gdl90( unsigned short crc, char c ) {
     tmp = (crc >> 8) ;
 #if defined(ESP8266) || defined(__ASR6501__) || defined(ARDUINO_ARCH_ASR650X) || \
     defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_AVR)
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_RENESAS)
     crc = pgm_read_word(&crc_tabccitt[tmp]) ^ (crc << 8) ^  short_c;
 #else
     crc = crc_tabccitt[tmp] ^ (crc << 8) ^  short_c;
@@ -552,7 +557,8 @@ static const unsigned char crc8_table[256]
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
     defined(ARDUINO_ARCH_ASR650X) || \
     defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_RENESAS)
  PROGMEM
 #endif
 = {
@@ -590,7 +596,8 @@ void update_crc8(unsigned char *crc, unsigned char m)
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
     defined(ARDUINO_ARCH_ASR650X) || \
     defined(ENERGIA_ARCH_CC13XX)  || defined(ENERGIA_ARCH_CC13X2) || \
-    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)
+    defined(ARDUINO_ARCH_STM32)   || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_RENESAS)
   *crc = pgm_read_byte(&crc8_table[(*crc) ^ m]);
 #else
   *crc = crc8_table[(*crc) ^ m];

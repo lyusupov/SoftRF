@@ -44,8 +44,8 @@
 #define SerialOutput            SerialUSB
 #define Serial_GNSS_In          Serial1
 #elif defined(ARDUINO_UNOR4_WIFI)
-#define SerialOutput            Serial1
-#define Serial_GNSS_In          Serial2
+#define SerialOutput            Serial
+#define Serial_GNSS_In          Serial1
 #else
 #error "This Renesas R7FA4M1 build variant is not supported!"
 #endif
@@ -138,7 +138,8 @@ struct rst_info {
 #define USE_WIFI_CUSTOM       true
 #include <WiFiS3.h>
 #define Serial_setDebugOutput(x) ({})
-//#define EXCLUDE_BLUETOOTH
+#define EXCLUDE_BLUETOOTH
+#define EXCLUDE_SOFTRF_HEARTBEAT
 #endif
 
 #define EXCLUDE_CC13XX

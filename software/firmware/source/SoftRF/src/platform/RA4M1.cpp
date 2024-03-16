@@ -401,6 +401,12 @@ static bool RA4M1_EEPROM_begin(size_t size)
 
 static void RA4M1_EEPROM_extension(int cmd)
 {
+#if defined(ARDUINO_UNOR4_WIFI)
+  if (cmd == EEPROM_EXT_DEFAULTS) {
+    settings->nmea_out = NMEA_UART;
+  }
+#endif /* ARDUINO_UNOR4_WIFI */
+
   if (cmd == EEPROM_EXT_LOAD) {
     if (settings->mode != SOFTRF_MODE_NORMAL
 #if !defined(EXCLUDE_TEST_MODE)
@@ -411,6 +417,7 @@ static void RA4M1_EEPROM_extension(int cmd)
       settings->mode = SOFTRF_MODE_NORMAL;
     }
 
+#if defined(ARDUINO_UNOR4_MINIMA)
     if (settings->nmea_out == NMEA_BLUETOOTH ||
         settings->nmea_out == NMEA_UDP       ||
         settings->nmea_out == NMEA_TCP ) {
@@ -424,18 +431,17 @@ static void RA4M1_EEPROM_extension(int cmd)
         settings->d1090 == D1090_UDP) {
       settings->d1090 = D1090_USB;
     }
-
-#if defined(USE_USB_HOST)
-    if (settings->nmea_out != NMEA_OFF) {
+#elif defined(ARDUINO_UNOR4_WIFI)
+    if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
-    if (settings->gdl90 != GDL90_OFF) {
+    if (settings->gdl90 == GDL90_USB) {
       settings->gdl90 = GDL90_UART;
     }
-    if (settings->d1090 != D1090_OFF) {
+    if (settings->d1090 == D1090_USB) {
       settings->d1090 = D1090_UART;
     }
-#endif /* USE_USB_HOST */
+#endif
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
     if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
@@ -666,6 +672,7 @@ static void RA4M1_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
+#if !defined(ARDUINO_UNOR4_WIFI)
 static void RA4M1_USB_setup()
 {
   if (USBSerial && USBSerial != Serial) {
@@ -847,6 +854,7 @@ IODev_ops_t RA4M1_USBSerial_ops = {
   RA4M1_USB_read,
   RA4M1_USB_write
 };
+#endif /* ARDUINO_UNOR4_WIFI */
 
 const SoC_ops_t RA4M1_ops = {
   SOC_RA4M1,
@@ -880,7 +888,11 @@ const SoC_ops_t RA4M1_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
+#if !defined(ARDUINO_UNOR4_WIFI)
   &RA4M1_USBSerial_ops,
+#else
+  NULL,
+#endif /* ARDUINO_UNOR4_WIFI */
   NULL,
   RA4M1_Display_setup,
   RA4M1_Display_loop,
