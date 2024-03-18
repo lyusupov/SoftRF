@@ -22,7 +22,8 @@
 #else
 
 #if defined(__AVR__) || defined(ARDUINO_ARCH_STM32) || \
-    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
+    defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(ARDUINO_ARCH_RENESAS)
 #include <avr/pgmspace.h>
 #endif
 

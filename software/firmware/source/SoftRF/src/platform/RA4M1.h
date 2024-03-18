@@ -128,6 +128,7 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS PIN_A3
+#define NOT_AN_INTERRUPT      SOC_GPIO_PIN_GNSS_PPS
 #define SOC_GPIO_PIN_BATTERY  PIN_A0
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
@@ -174,6 +175,9 @@ struct rst_info {
 #define EXCLUDE_EGM96            //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
+
+//#define USE_BASICMAC
+//#define EXCLUDE_SX1276         //  -  3 kb
 
 #define USE_OLED                 //       kb
 #define EXCLUDE_OLED_049

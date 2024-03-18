@@ -1,0 +1,74 @@
+##########################################
+# Syntax Coloring Map For ArduinoGraphics
+##########################################
+# Class
+##########################################
+
+ArduinoGraphics	KEYWORD1
+MATRIX	KEYWORD1
+Font	KEYWORD1
+Image	KEYWORD1
+
+##########################################
+# Methods and Functions 
+##########################################	
+
+begin	KEYWORD2
+end	KEYWORD2
+
+width	KEYWORD2
+height	KEYWORD2
+
+beginDraw	KEYWORD2
+endDraw	KEYWORD2
+
+background	KEYWORD2
+clear	KEYWORD2
+fill	KEYWORD2
+noFill	KEYWORD2
+stroke	KEYWORD2
+noStroke	KEYWORD2
+
+line	KEYWORD2
+point	KEYWORD2
+quad	KEYWORD2
+rect	KEYWORD2
+circle	KEYWORD2
+ellipse	KEYWORD2
+
+text	KEYWORD2
+textFont	KEYWORD2
+textFontWidth	KEYWORD2
+textFontHeight	KEYWORD2
+
+image	KEYWORD2
+
+set	KEYWORD2
+
+write	KEYWORD2
+flush	KEYWORD2
+
+beginText	KEYWORD2
+endText	KEYWORD2
+textScrollSpeed	KEYWORD2
+
+encoding	KEYWORD2
+data	KEYWORD2
+
+##########################################
+# Constants
+##########################################
+
+Font_4x6	LITERAL1
+Font_5x7	LITERAL1
+
+ENCODING_NONE	LITERAL1
+ENCODING_RGB	LITERAL1
+ENCODING_RGB24	LITERAL1
+ENCODING_RGB16	LITERAL1
+
+NO_SCROLL	LITERAL1
+SCROLL_LEFT	LITERAL1
+SCROLL_RIGHT	LITERAL1
+SCROLL_UP	LITERAL1
+SCROLL_DOWN	LITERAL1

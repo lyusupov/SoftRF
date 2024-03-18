@@ -141,6 +141,12 @@ extern SPIClass SPI0;
 #endif
 #endif /* ARDUINO_ARCH_NRF52 */
 
+#if defined(ARDUINO_ARCH_RENESAS)
+#ifndef SPI_HAS_TRANSACTION
+#define SPI_HAS_TRANSACTION 1
+#endif
+#endif /* ARDUINO_ARCH_RENESAS */
+
 #if defined(USE_ORIGINAL_AES) && defined(USE_IDEETRON_AES)
 # error "You may define at most one of USE_ORIGINAL_AES and USE_IDEETRON_AES"
 #endif
