@@ -21,6 +21,13 @@
 #include <cc13xx/cc13xx.h>
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
 
+#if defined(ARDUINO_ARCH_RENESAS)
+#include <SoftSPI.h>
+extern  SoftSPI RadioSPI;
+#undef  SPI
+#define SPI RadioSPI
+#endif /* ARDUINO_ARCH_RENESAS */
+
 #include "../lmic.h"
 #include "hal.h"
 #include <stdio.h>

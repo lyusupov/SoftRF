@@ -80,12 +80,17 @@ const char *RA4M1_Device_Manufacturer = SOFTRF_IDENT;
 const char *RA4M1_Device_Model = "Academy Edition";
 const uint16_t RA4M1_Device_Version = SOFTRF_USB_FW_VERSION;
 
-#if defined(ARDUINO_UNOR4_WIFI)
+#if defined(ARDUINO_UNOR4_WIFI) && (__GNUC__ <= 7)
 #include "ArduinoGraphics.h"
 #include "Arduino_LED_Matrix.h"
 
 ArduinoLEDMatrix matrix;
 #endif /* ARDUINO_UNOR4_WIFI */
+
+#if defined(USE_SOFTSPI)
+#include <SoftSPI.h>
+SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI,SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
+#endif /* USE_SOFTSPI */
 
 static void RA4M1_setup()
 {
@@ -139,7 +144,7 @@ static void RA4M1_setup()
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
 #endif
 
-#if defined(ARDUINO_UNOR4_WIFI)
+#if defined(ARDUINO_UNOR4_WIFI) && (__GNUC__ <= 7)
   matrix.begin();
   matrix.beginDraw();
 
@@ -449,7 +454,9 @@ static void RA4M1_EEPROM_extension(int cmd)
 
 static void RA4M1_SPI_begin()
 {
+#if !defined(EXCLUDE_NRF905) || defined(USE_OGN_RF_DRIVER)
   SPI.begin();
+#endif
 }
 
 static void RA4M1_swSer_begin(unsigned long baud)

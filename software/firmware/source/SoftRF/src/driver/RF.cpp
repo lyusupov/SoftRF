@@ -1119,6 +1119,11 @@ static bool sx12xx_transmit()
     os_setCallback(&sx12xx_txjob, sx12xx_tx_func);
 
     unsigned long tx_timeout = LMIC.protocol ? (LMIC.protocol->air_time + 25) : 60;
+
+#if defined(USE_SOFTSPI)
+    tx_timeout += tx_timeout;
+#endif
+
     unsigned long tx_start   = millis();
 
     while (sx12xx_transmit_complete == false) {
