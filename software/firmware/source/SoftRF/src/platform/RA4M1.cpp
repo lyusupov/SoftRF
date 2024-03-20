@@ -90,6 +90,14 @@ ArduinoLEDMatrix matrix;
 SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI,SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
 #endif /* USE_SOFTSPI */
 
+#if defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB)
+void __maybe_start_usb() {
+#if 0
+  __USBStart();
+#endif
+}
+#endif /* ARDUINO_UNOR4_WIFI */
+
 static void RA4M1_setup()
 {
   if (1U == R_SYSTEM->RSTSR0_b.PORF) /* Power on Reset */
@@ -129,10 +137,6 @@ static void RA4M1_setup()
   pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
-
-#if defined(ARDUINO_UNOR4_WIFI) && !defined(NO_USB)
-  pinMode(SOC_GPIO_PIN_USB_SW, INPUT_PULLUP);
-#endif /* ARDUINO_UNOR4_WIFI */
 
 #if defined(NO_USB)
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -293,7 +297,7 @@ static void RA4M1_fini(int reason)
   SerialUSB.end();
 #endif /* NO_USB */
 
-#if defined(ARDUINO_UNOR4_WIFI) && !defined(NO_USB)
+#if defined(ARDUINO_UNOR4_WIFI)
   pinMode(SOC_GPIO_PIN_USB_SW, INPUT);
 #endif /* ARDUINO_UNOR4_WIFI */
 
@@ -434,16 +438,6 @@ static void RA4M1_EEPROM_extension(int cmd)
     if (settings->d1090 == D1090_BLUETOOTH  ||
         settings->d1090 == D1090_UDP) {
       settings->d1090 = D1090_USB;
-    }
-#elif defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB)
-    if (settings->nmea_out == NMEA_USB) {
-      settings->nmea_out = NMEA_UART;
-    }
-    if (settings->gdl90 == GDL90_USB) {
-      settings->gdl90 = GDL90_UART;
-    }
-    if (settings->d1090 == D1090_USB) {
-      settings->d1090 = D1090_UART;
     }
 #endif
 
@@ -674,10 +668,21 @@ static void RA4M1_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
-#if !defined(NO_USB)
-static void RA4M1_USB_setup() { }
-static void RA4M1_USB_loop()  { }
-static void RA4M1_USB_fini()  { }
+static void RA4M1_USB_setup() {
+#if defined(NO_USB)
+  USBSerial.begin(SERIAL_OUT_BR);
+#endif /* NO_USB */
+}
+
+static void RA4M1_USB_loop()  {
+
+}
+
+static void RA4M1_USB_fini()  {
+#if defined(NO_USB)
+  USBSerial.end();
+#endif /* NO_USB */
+}
 
 static int RA4M1_USB_available()
 {
@@ -721,7 +726,6 @@ IODev_ops_t RA4M1_USBSerial_ops = {
   RA4M1_USB_read,
   RA4M1_USB_write
 };
-#endif /* NO_USB */
 
 #if defined(ARDUINO_UNOR4_WIFI)
 
@@ -793,11 +797,7 @@ const SoC_ops_t RA4M1_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
-#if defined(NO_USB)
-  NULL,
-#else
   &RA4M1_USBSerial_ops,
-#endif /* NO_USB */
 #if !defined(ARDUINO_UNOR4_WIFI)
   NULL,
 #else
