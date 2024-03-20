@@ -51,8 +51,6 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
-//SPIClass SPI1(&PERIPH_SPI1, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MOSI, PAD_SPI1_TX, PAD_SPI1_RX);
-
 #if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -132,17 +130,17 @@ static void RA4M1_setup()
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
-#if defined(USE_TINYUSB)
-  USBDevice.setManufacturerDescriptor(RA4M1_Device_Manufacturer);
-  USBDevice.setProductDescriptor(RA4M1_Device_Model);
-  USBDevice.setDeviceVersion(RA4M1_Device_Version);
-#endif /* USE_TINYUSB */
+#if defined(ARDUINO_UNOR4_WIFI) && !defined(NO_USB)
+  pinMode(SOC_GPIO_PIN_USB_SW, INPUT_PULLUP);
+#endif /* ARDUINO_UNOR4_WIFI */
 
+#if defined(NO_USB)
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#else
+  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
-#if defined(USBCON)
-  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
-#endif
+  for (int i=0; i < 20; i++) {if (SerialUSB) break; else delay(100);}
+#endif /* NO_USB */
 
 #if defined(ARDUINO_UNOR4_WIFI) && (__GNUC__ <= 7)
   matrix.begin();
@@ -291,12 +289,16 @@ static void RA4M1_loop()
 
 static void RA4M1_fini(int reason)
 {
-#if defined(USE_TINYUSB)
-  // Disable USB
-  USBDevice.detach();
-#endif /* USE_TINYUSB */
+#if !defined(NO_USB)
+  SerialUSB.end();
+#endif /* NO_USB */
 
-  NVIC_SystemReset();
+#if defined(ARDUINO_UNOR4_WIFI) && !defined(NO_USB)
+  pinMode(SOC_GPIO_PIN_USB_SW, INPUT);
+#endif /* ARDUINO_UNOR4_WIFI */
+
+  while (true); /* TBD */
+  // NVIC_SystemReset();
 }
 
 static void RA4M1_reset()
@@ -400,7 +402,7 @@ static bool RA4M1_EEPROM_begin(size_t size)
 
 static void RA4M1_EEPROM_extension(int cmd)
 {
-#if defined(ARDUINO_UNOR4_WIFI)
+#if defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB)
   if (cmd == EEPROM_EXT_DEFAULTS) {
     settings->nmea_out = NMEA_UART;
 #if defined(EXCLUDE_WIFI) && !defined(EXCLUDE_BLUETOOTH)
@@ -433,7 +435,7 @@ static void RA4M1_EEPROM_extension(int cmd)
         settings->d1090 == D1090_UDP) {
       settings->d1090 = D1090_USB;
     }
-#elif defined(ARDUINO_UNOR4_WIFI)
+#elif defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB)
     if (settings->nmea_out == NMEA_USB) {
       settings->nmea_out = NMEA_UART;
     }
@@ -534,13 +536,13 @@ static float RA4M1_Battery_param(uint8_t param)
 
   case BATTERY_PARAM_VOLTAGE:
   default:
-
     {
       uint16_t mV = 0;
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
-      mV = analogRead(SOC_GPIO_PIN_BATTERY);
+      int adc_reading = analogRead(SOC_GPIO_PIN_BATTERY);
+      mV = map(adc_reading, 0, 1023, 0, analogReference() * 1000); /* TODO */
 #endif
-      rval = mV * SOC_ADC_VOLTAGE_DIV / 1000.0;
+      rval = mV / 1000.0;
     }
     break;
   }
@@ -672,6 +674,55 @@ static void RA4M1_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
+#if !defined(NO_USB)
+static void RA4M1_USB_setup() { }
+static void RA4M1_USB_loop()  { }
+static void RA4M1_USB_fini()  { }
+
+static int RA4M1_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int RA4M1_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t RA4M1_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+
+IODev_ops_t RA4M1_USBSerial_ops = {
+  "RA4M1 USBSerial",
+  RA4M1_USB_setup,
+  RA4M1_USB_loop,
+  RA4M1_USB_fini,
+  RA4M1_USB_available,
+  RA4M1_USB_read,
+  RA4M1_USB_write
+};
+#endif /* NO_USB */
+
 #if defined(ARDUINO_UNOR4_WIFI)
 
 static void UNOR4W_Serial_setup()     { }
@@ -708,141 +759,6 @@ IODev_ops_t UNOR4W_Serial_ops = {
   UNOR4W_Serial_read,
   UNOR4W_Serial_write
 };
-
-#else
-
-static void RA4M1_USB_setup()
-{
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-  }
-}
-
-#include <RingBuffer.h>
-
-#if (CFG_TUSB_RHPORT1_MODE & OPT_MODE_DEVICE)
-#define USBD_CDC_IN_OUT_MAX_SIZE (512)
-#else
-#define USBD_CDC_IN_OUT_MAX_SIZE (64)
-#endif
-
-#define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
-#define USB_RX_FIFO_SIZE (256)
-
-RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
-RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
-
-static void RA4M1_USB_loop()
-{
-#if !defined(USE_TINYUSB)
-
-  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
-  size_t size;
-
-  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
-    size_t avail = USB_TX_FIFO.available();
-
-    if (avail == 0) {
-      break;
-    }
-
-    if (size > avail) {
-      size = avail;
-    }
-
-    if (size > sizeof(buf)) {
-      size = sizeof(buf);
-    }
-
-    for (size_t i=0; i < size; i++) {
-      buf[i] = USB_TX_FIFO.read_char();
-    }
-
-    if (USBSerial) {
-      USBSerial.write(buf, size);
-    }
-  }
-
-  while (USBSerial && USBSerial.available() > 0) {
-    if (!USB_RX_FIFO.isFull()) {
-      USB_RX_FIFO.store_char(USBSerial.read());
-    } else {
-      break;
-    }
-  }
-#endif /* USE_TINYUSB */
-}
-
-static void RA4M1_USB_fini()
-{
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.end();
-  }
-}
-
-static int RA4M1_USB_available()
-{
-  int rval = 0;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.available();
-  }
-#else
-  rval = USB_RX_FIFO.available();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static int RA4M1_USB_read()
-{
-  int rval = -1;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.read();
-  }
-#else
-  rval = USB_RX_FIFO.read_char();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static size_t RA4M1_USB_write(const uint8_t *buffer, size_t size)
-{
-#if !defined(USE_TINYUSB)
-  size_t written;
-
-  for (written=0; written < size; written++) {
-    if (!USB_TX_FIFO.isFull()) {
-      USB_TX_FIFO.store_char(buffer[written]);
-    } else {
-      break;
-    }
-  }
-  return written;
-#else
-  size_t rval = size;
-
-  if (USBSerial && (size < USBSerial.availableForWrite())) {
-    rval = USBSerial.write(buffer, size);
-  }
-
-  return rval;
-#endif /* USE_TINYUSB */
-}
-
-IODev_ops_t RA4M1_USBSerial_ops = {
-  "RA4M1 USBSerial",
-  RA4M1_USB_setup,
-  RA4M1_USB_loop,
-  RA4M1_USB_fini,
-  RA4M1_USB_available,
-  RA4M1_USB_read,
-  RA4M1_USB_write
-};
 #endif /* ARDUINO_UNOR4_WIFI */
 
 const SoC_ops_t RA4M1_ops = {
@@ -877,11 +793,14 @@ const SoC_ops_t RA4M1_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
-#if !defined(ARDUINO_UNOR4_WIFI)
-  &RA4M1_USBSerial_ops,
+#if defined(NO_USB)
   NULL,
 #else
+  &RA4M1_USBSerial_ops,
+#endif /* NO_USB */
+#if !defined(ARDUINO_UNOR4_WIFI)
   NULL,
+#else
   &UNOR4W_Serial_ops,
 #endif /* ARDUINO_UNOR4_WIFI */
   RA4M1_Display_setup,

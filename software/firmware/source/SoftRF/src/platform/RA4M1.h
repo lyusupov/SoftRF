@@ -44,8 +44,13 @@
 #define SerialOutput            SerialUSB
 #define Serial_GNSS_In          Serial1
 #elif defined(ARDUINO_UNOR4_WIFI)
+#if defined(NO_USB)
 #define SerialOutput            Serial
 #define Serial_GNSS_In          Serial1
+#else
+#define SerialOutput            Serial1
+#define Serial_GNSS_In          Serial2
+#endif /* NO_USB */
 #else
 #error "This Renesas R7FA4M1 build variant is not supported!"
 #endif
@@ -53,8 +58,6 @@
 #define USBSerial               SerialUSB
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               SerialUSB
-
-#define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -83,16 +86,18 @@ struct rst_info {
 
 #define SOC_GPIO_PIN_GNSS_RX  UART2_RX_PIN
 #define SOC_GPIO_PIN_GNSS_TX  UART2_TX_PIN
+
+#define SOC_GPIO_PIN_USB_SW   (21)
 #else
-#define SOC_GPIO_PIN_CONS_RX  23 /* TBD */
-#define SOC_GPIO_PIN_CONS_TX  22 /* TBD */
+#define SOC_GPIO_PIN_CONS_RX  24 /* SWD RX */
+#define SOC_GPIO_PIN_CONS_TX  23 /* SWD TX */
 
 #define SOC_GPIO_PIN_GNSS_RX  UART1_RX_PIN
 #define SOC_GPIO_PIN_GNSS_TX  UART1_TX_PIN
 #endif /* ARDUINO_UNOR4_WIFI */
 
 #define SOC_GPIO_PIN_STATUS   LED_BUILTIN
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUZZER   PIN_A0 /* DAC */
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
@@ -135,7 +140,7 @@ extern  SoftSPI RadioSPI;
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS PIN_A3
 #define NOT_AN_INTERRUPT      SOC_GPIO_PIN_GNSS_PPS
-#define SOC_GPIO_PIN_BATTERY  PIN_A0
+#define SOC_GPIO_PIN_BATTERY  PIN_A1
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
@@ -145,6 +150,7 @@ extern  SoftSPI RadioSPI;
 #define EXCLUDE_WIFI
 #define EXCLUDE_BLUETOOTH
 #elif defined(ARDUINO_UNOR4_WIFI)
+#if defined(NO_USB)
 #define USE_ARDUINO_WIFI
 #define EXCLUDE_OTA
 #define USE_WIFI_NINA         false
@@ -153,7 +159,11 @@ extern  SoftSPI RadioSPI;
 #define Serial_setDebugOutput(x) ({})
 #define EXCLUDE_BLUETOOTH
 #define EXCLUDE_SOFTRF_HEARTBEAT
-#endif
+#else
+#define EXCLUDE_WIFI
+#define EXCLUDE_BLUETOOTH
+#endif /* NO_USB */
+#endif /* ARDUINO_UNOR4 */
 
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
