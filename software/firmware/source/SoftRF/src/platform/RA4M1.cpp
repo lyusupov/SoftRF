@@ -92,7 +92,7 @@ SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI,SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
 
 #if defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB)
 void __maybe_start_usb() {
-#if 0
+#if defined(USE_RA4M1_USB)
   __USBStart();
 #endif
 }
@@ -438,6 +438,16 @@ static void RA4M1_EEPROM_extension(int cmd)
     if (settings->d1090 == D1090_BLUETOOTH  ||
         settings->d1090 == D1090_UDP) {
       settings->d1090 = D1090_USB;
+    }
+#elif defined(ARDUINO_UNOR4_WIFI) && defined(NO_USB) && !defined(USE_RA4M1_USB)
+    if (settings->nmea_out == NMEA_USB) {
+      settings->nmea_out = NMEA_UART;
+    }
+    if (settings->gdl90 == GDL90_USB) {
+      settings->gdl90 = GDL90_UART;
+    }
+    if (settings->d1090 == D1090_USB) {
+      settings->d1090 = D1090_UART;
     }
 #endif
 

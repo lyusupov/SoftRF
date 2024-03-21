@@ -151,6 +151,9 @@ extern  SoftSPI RadioSPI;
 #define EXCLUDE_BLUETOOTH
 #elif defined(ARDUINO_UNOR4_WIFI)
 #if defined(NO_USB)
+//#define USE_RA4M1_USB
+//#define EXCLUDE_WEBUI /* +2.5K HEAP */
+//#define EXCLUDE_WIFI  /* +1.7K HEAP */
 #define USE_ARDUINO_WIFI
 #define EXCLUDE_OTA
 #define USE_WIFI_NINA         false
@@ -181,7 +184,6 @@ extern  SoftSPI RadioSPI;
 
 /* Component                         Cost */
 /* -------------------------------------- */
-#define USE_NMEA_CFG             //  +    kb
 #define EXCLUDE_BMP180           //  -    kb
 //#define EXCLUDE_BMP280         //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb
@@ -195,7 +197,10 @@ extern  SoftSPI RadioSPI;
 //#define USE_BASICMAC
 //#define EXCLUDE_SX1276         //  -  3 kb
 
-#define USE_OLED                 //       kb
+#if defined(EXCLUDE_WIFI)
+#define USE_OLED                 /* -1.5K HEAP */
+#define USE_NMEA_CFG             /* -1.9K HEAP */
+#endif /* EXCLUDE_WIFI */
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
