@@ -396,6 +396,44 @@ static void RA4M1_WiFi_set_param(int ndx, int value)
   /* NONE */
 }
 
+#if !defined(EXCLUDE_WIFI)
+static IPAddress broadcastIp_cache = IPAddress(0, 0, 0, 0);
+
+static IPAddress RA4M1_WiFi_get_broadcast()
+{
+  if (broadcastIp_cache == IPAddress(0, 0, 0, 0)) {
+    int status = WiFi.status();
+
+    switch (status)
+    {
+    case WL_CONNECTED:
+      broadcastIp_cache = IPAddress((uint32_t) WiFi.localIP() |
+                                  ~((uint32_t) WiFi.subnetMask()));
+      break;
+    case WL_AP_CONNECTED:
+      broadcastIp_cache = IPAddress((uint32_t) WiFi.softAPIP() |
+                                  ~((uint32_t) WiFi.subnetMask()));
+      break;
+    default:
+      break;
+    }
+  }
+
+  return broadcastIp_cache;
+}
+
+static IPAddress AP_IP_cache = IPAddress(0, 0, 0, 0);
+
+static IPAddress RA4M1_WiFi_get_AP_IP()
+{
+  if (AP_IP_cache == IPAddress(0, 0, 0, 0)) {
+    AP_IP_cache = WiFi.softAPIP();
+  }
+
+  return AP_IP_cache;
+}
+#endif /* EXCLUDE_WIFI */
+
 static void RA4M1_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if !defined(EXCLUDE_WIFI)
@@ -405,8 +443,8 @@ static void RA4M1_WiFi_transmit_UDP(int port, byte *buf, size_t size)
   switch (status)
   {
   case WL_CONNECTED:
-    ClientIP = IPAddress((uint32_t) WiFi.localIP() | ~((uint32_t) WiFi.subnetMask()));
-    if (Uni_Udp) {
+    ClientIP = RA4M1_WiFi_get_broadcast();
+    if (Uni_Udp && ClientIP != IPAddress(0, 0, 0, 0)) {
       Uni_Udp->beginPacket(ClientIP, port);
       Uni_Udp->write(buf, size);
       Uni_Udp->endPacket();
@@ -414,13 +452,16 @@ static void RA4M1_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     break;
   case WL_AP_CONNECTED:
     if (SoC->WiFi_clients_count() > 0) {
-      IPAddress APIP = WiFi.softAPIP();
-      for (int i=0; i<4; i++) {
-        ClientIP = IPAddress(APIP[0], APIP[1], APIP[2], 2 + i); /* TBD */
-        if (Uni_Udp) {
-          Uni_Udp->beginPacket(ClientIP, port);
-          Uni_Udp->write(buf, size);
-          Uni_Udp->endPacket();
+      IPAddress APIP = RA4M1_WiFi_get_AP_IP();
+
+      if (APIP != IPAddress(0, 0, 0, 0)) {
+        for (int i=0; i < SoC->WiFi_clients_count(); i++) { /* TODO */
+          ClientIP = IPAddress(APIP[0], APIP[1], APIP[2], APIP[3] + 1 + i); /* TODO */
+          if (Uni_Udp) {
+            Uni_Udp->beginPacket(ClientIP, port);
+            Uni_Udp->write(buf, size);
+            Uni_Udp->endPacket();
+          }
         }
       }
     }
@@ -451,16 +492,7 @@ static bool RA4M1_WiFi_hostname(String aHostname)
 static int RA4M1_WiFi_clients_count()
 {
 #if !defined(EXCLUDE_WIFI)
-  int status = WiFi.status();
-
-  switch (status)
-  {
-  case WL_AP_CONNECTED:
-    return  1; /* TODO */
-  case WL_CONNECTED:
-  default:
-    return -1; /* error */
-  }
+  return  1; /* TODO */
 #else
   return -1;
 #endif /* EXCLUDE_WIFI */
