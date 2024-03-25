@@ -65,6 +65,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 
 #if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+#else
+#include "../driver/WiFi.h"
 #endif /* EXCLUDE_WIFI */
 
 static struct rst_info reset_info = {
@@ -396,7 +398,72 @@ static void RA4M1_WiFi_set_param(int ndx, int value)
 
 static void RA4M1_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-  /* NONE */
+#if !defined(EXCLUDE_WIFI)
+  IPAddress ClientIP;
+  int status = WiFi.status();
+
+  switch (status)
+  {
+  case WL_CONNECTED:
+    ClientIP = IPAddress((uint32_t) WiFi.localIP() | ~((uint32_t) WiFi.subnetMask()));
+    if (Uni_Udp) {
+      Uni_Udp->beginPacket(ClientIP, port);
+      Uni_Udp->write(buf, size);
+      Uni_Udp->endPacket();
+    }
+    break;
+  case WL_AP_CONNECTED:
+    if (SoC->WiFi_clients_count() > 0) {
+      IPAddress APIP = WiFi.softAPIP();
+      for (int i=0; i<4; i++) {
+        ClientIP = IPAddress(APIP[0], APIP[1], APIP[2], 2 + i); /* TBD */
+        if (Uni_Udp) {
+          Uni_Udp->beginPacket(ClientIP, port);
+          Uni_Udp->write(buf, size);
+          Uni_Udp->endPacket();
+        }
+      }
+    }
+    break;
+  default:
+    break;
+  }
+#endif /* EXCLUDE_WIFI */
+}
+
+static void RA4M1_WiFiUDP_stopAll()
+{
+#if !defined(EXCLUDE_WIFI)
+  /* TODO */
+#endif /* EXCLUDE_WIFI */
+}
+
+static bool RA4M1_WiFi_hostname(String aHostname)
+{
+  bool rval = false;
+#if !defined(EXCLUDE_WIFI)
+  WiFi.setHostname(aHostname.c_str());
+  rval = true;
+#endif /* EXCLUDE_WIFI */
+  return rval;
+}
+
+static int RA4M1_WiFi_clients_count()
+{
+#if !defined(EXCLUDE_WIFI)
+  int status = WiFi.status();
+
+  switch (status)
+  {
+  case WL_AP_CONNECTED:
+    return  1; /* TODO */
+  case WL_CONNECTED:
+  default:
+    return -1; /* error */
+  }
+#else
+  return -1;
+#endif /* EXCLUDE_WIFI */
 }
 
 static bool RA4M1_EEPROM_begin(size_t size)
@@ -794,9 +861,9 @@ const SoC_ops_t RA4M1_ops = {
   NULL,
   RA4M1_WiFi_set_param,
   RA4M1_WiFi_transmit_UDP,
-  NULL,
-  NULL,
-  NULL,
+  RA4M1_WiFiUDP_stopAll,
+  RA4M1_WiFi_hostname,
+  RA4M1_WiFi_clients_count,
   RA4M1_EEPROM_begin,
   RA4M1_EEPROM_extension,
   RA4M1_SPI_begin,

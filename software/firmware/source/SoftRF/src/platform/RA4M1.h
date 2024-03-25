@@ -160,8 +160,12 @@ extern  SoftSPI RadioSPI;
 #define USE_WIFI_CUSTOM       true
 #include <WiFiS3.h>
 #define Serial_setDebugOutput(x) ({})
-#define EXCLUDE_BLUETOOTH
-#define EXCLUDE_SOFTRF_HEARTBEAT
+#if !defined(EXCLUDE_WIFI)
+//#define NMEA_TCP_SERVICE   /* -2.4K HEAP */
+#define MAX_NMEATCP_CLIENTS   1
+#define EXCLUDE_BLUETOOTH  /* +5.7K HEAP */
+#endif /* EXCLUDE_WIFI */
+//#define EXCLUDE_SOFTRF_HEARTBEAT
 #else
 #define EXCLUDE_WIFI
 #define EXCLUDE_BLUETOOTH

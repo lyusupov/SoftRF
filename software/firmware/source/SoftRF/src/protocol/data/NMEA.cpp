@@ -31,7 +31,7 @@
 #define ADDR_TO_HEX_STR(s, c) (s += ((c) < 0x10 ? "0" : "") + String((c), HEX))
 
 #if defined(NMEA_TCP_SERVICE)
-WiFiServer NmeaTCPServer(NMEA_TCP_PORT);
+WiFiServer *NmeaTCPServer = NULL;
 NmeaTCP_t NmeaTCP[MAX_NMEATCP_CLIENTS];
 #endif
 
@@ -207,11 +207,14 @@ void NMEA_setup()
 
 #if defined(NMEA_TCP_SERVICE)
   if (settings->nmea_out == NMEA_TCP) {
-    NmeaTCPServer.begin();
+    NmeaTCPServer = new WiFiServer(NMEA_TCP_PORT);
+    NmeaTCPServer->begin();
     Serial.print(F("NMEA TCP server has started at port: "));
     Serial.println(NMEA_TCP_PORT);
 
-    NmeaTCPServer.setNoDelay(true);
+#if !defined(USE_ARDUINO_WIFI)
+    NmeaTCPServer->setNoDelay(true);
+#endif /* USE_ARDUINO_WIFI */
   }
 #endif /* NMEA_TCP_SERVICE */
 
@@ -275,7 +278,11 @@ void NMEA_loop()
 
   if (settings->nmea_out == NMEA_TCP) {
 
-    if (NmeaTCPServer.hasClient()) {
+#if defined(USE_ARDUINO_WIFI)
+    {
+#else
+    if (NmeaTCPServer->hasClient()) {
+#endif /* USE_ARDUINO_WIFI */
       for(i = 0; i < MAX_NMEATCP_CLIENTS; i++) {
         // find free/disconnected spot
         if (!NmeaTCP[i].client || !NmeaTCP[i].client.connected()) {
@@ -283,7 +290,7 @@ void NMEA_loop()
             NmeaTCP[i].client.stop();
             NmeaTCP[i].connect_ts = 0;
           }
-          NmeaTCP[i].client = NmeaTCPServer.available();
+          NmeaTCP[i].client = NmeaTCPServer->available();
           NmeaTCP[i].connect_ts = now();
           NmeaTCP[i].ack = false;
           NmeaTCP[i].client.print(F("PASS?"));
@@ -292,7 +299,9 @@ void NMEA_loop()
       }
       if (i >= MAX_NMEATCP_CLIENTS) {
         // no free/disconnected spot so reject
-        NmeaTCPServer.available().stop();
+#if !defined(USE_ARDUINO_WIFI)
+        NmeaTCPServer->available().stop();
+#endif /* USE_ARDUINO_WIFI */
       }
     }
 
@@ -319,7 +328,9 @@ void NMEA_fini()
 {
 #if defined(NMEA_TCP_SERVICE)
   if (settings->nmea_out == NMEA_TCP) {
-    NmeaTCPServer.stop();
+#if !defined(USE_ARDUINO_WIFI)
+    NmeaTCPServer->stop();
+#endif /* USE_ARDUINO_WIFI */
   }
 #endif /* NMEA_TCP_SERVICE */
 }

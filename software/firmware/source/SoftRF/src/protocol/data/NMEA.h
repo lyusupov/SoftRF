@@ -70,10 +70,13 @@ typedef struct NmeaTCP_struct {
   bool ack;           /* acknowledge */
 } NmeaTCP_t;
 
+#ifndef MAX_NMEATCP_CLIENTS
 #define MAX_NMEATCP_CLIENTS    2
+#endif /* MAX_NMEATCP_CLIENTS */
+
 #define NMEATCP_ACK_TIMEOUT    2 /* seconds */
 
-#endif
+#endif /* NMEA_TCP_SERVICE */
 
 #if !defined(PFLAA_EXT1_FMT)
 #define PFLAA_EXT1_FMT  ""

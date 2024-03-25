@@ -658,20 +658,22 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
   {
   case WIFI_STA:
     ClientIP = IPAddress(ipv4.addr | ~((uint32_t) WiFi.subnetMask()));
-
-    Uni_Udp.beginPacket(ClientIP, port);
-    Uni_Udp.write(buf, size);
-    Uni_Udp.endPacket();
-
+    if (Uni_Udp) {
+      Uni_Udp->beginPacket(ClientIP, port);
+      Uni_Udp->write(buf, size);
+      Uni_Udp->endPacket();
+    }
     break;
   case WIFI_AP:
     if (SoC->WiFi_clients_count() > 0) {
       for (int i=0; i<4; i++) {
         ClientIP = IPAddress(ipv4.bytes[0], ipv4.bytes[1], ipv4.bytes[2],
                              DHCPS_BASE_IP + i);
-        Uni_Udp.beginPacket(ClientIP, port);
-        Uni_Udp.write(buf, size);
-        Uni_Udp.endPacket();
+        if (Uni_Udp) {
+          Uni_Udp->beginPacket(ClientIP, port);
+          Uni_Udp->write(buf, size);
+          Uni_Udp->endPacket();
+        }
       }
     }
     break;

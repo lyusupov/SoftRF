@@ -457,9 +457,13 @@ void handleSettings() {
       SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040  ||
       SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
-      PSTR("\
-<option %s value='%d'>TCP</option>\
-<option %s value='%d'>Bluetooth</option>"),
+      PSTR(
+#if defined(NMEA_TCP_SERVICE)
+"<option %s value='%d'>TCP</option>"
+#else
+"<!-- <option %s value='%d'>TCP</option> -->"
+#endif /* NMEA_TCP_SERVICE */
+"<option %s value='%d'>Bluetooth</option>"),
       (settings->nmea_out == NMEA_TCP       ? "selected" : ""), NMEA_TCP,
       (settings->nmea_out == NMEA_BLUETOOTH ? "selected" : ""), NMEA_BLUETOOTH);
 

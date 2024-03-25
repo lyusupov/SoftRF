@@ -231,7 +231,7 @@ struct rst_info {
 #include <ESP8266WiFi.h>
 #define Serial_setDebugOutput(x) ({})
 #define WIFI_STA_TIMEOUT      20000
-
+#define NMEA_TCP_SERVICE
 /* Experimental */
 #define ENABLE_PROL
 //#define ENABLE_BT_VOICE

@@ -34,6 +34,8 @@ void WiFi_fini()    {}
 #include "RF.h"
 #include "../ui/Web.h"
 #include "../protocol/data/NMEA.h"
+#include "../protocol/data/GDL90.h"
+#include "../protocol/data/D1090.h"
 #include "Battery.h"
 
 String station_ssid = MY_ACCESSPOINT_SSID ;
@@ -60,7 +62,7 @@ bool dns_active = false;
 #endif
 
 // A UDP instance to let us send and receive packets over UDP
-WiFiUDP Uni_Udp;
+WiFiUDP *Uni_Udp = NULL;
 
 unsigned int RFlocalPort = RELAY_SRC_PORT;      // local port to listen for UDP packets
 
@@ -77,15 +79,15 @@ static unsigned long RID_Time_Marker = 0;
 
 size_t Raw_Receive_UDP(uint8_t *buf)
 {
-  int noBytes = Uni_Udp.parsePacket();
-  if ( noBytes ) {
+  int noBytes;
+  if (Uni_Udp && (noBytes = Uni_Udp->parsePacket())) {
 
     if (noBytes > MAX_PKT_SIZE) {
       noBytes = MAX_PKT_SIZE;
     }
 
     // We've received a packet, read the data from it
-    Uni_Udp.read(buf,noBytes); // read the packet into the buffer
+    Uni_Udp->read(buf,noBytes); // read the packet into the buffer
 
     return (size_t) noBytes;
   } else {
@@ -195,9 +197,15 @@ void WiFi_setup()
 //  Serial.println(WiFi.softAPIP());
   }
 
-  Uni_Udp.begin(RFlocalPort);
-  Serial.print(F("UDP server has started at port: "));
-  Serial.println(RFlocalPort);
+  if (settings->nmea_out == NMEA_UDP  ||
+      settings->gdl90    == GDL90_UDP ||
+      settings->d1090    == D1090_UDP) {
+    Uni_Udp = new WiFiUDP();
+
+    Uni_Udp->begin(RFlocalPort);
+    Serial.print(F("UDP server has started at port: "));
+    Serial.println(RFlocalPort);
+  }
 
 #if defined(POWER_SAVING_WIFI_TIMEOUT)
   WiFi_No_Clients_Time_ms = millis();
@@ -285,9 +293,15 @@ void WiFi_setup()
     Serial.println(WiFi.softAPIP());
   }
 
-  Uni_Udp.begin(RFlocalPort);
-  Serial.print(F("UDP server has started at port: "));
-  Serial.println(RFlocalPort);
+  if (settings->nmea_out == NMEA_UDP  ||
+      settings->gdl90    == GDL90_UDP ||
+      settings->d1090    == D1090_UDP) {
+    Uni_Udp = new WiFiUDP();
+
+    Uni_Udp->begin(RFlocalPort);
+    Serial.print(F("UDP server has started at port: "));
+    Serial.println(RFlocalPort);
+  }
 
 #if defined(POWER_SAVING_WIFI_TIMEOUT)
   WiFi_No_Clients_Time_ms = millis();
@@ -340,7 +354,7 @@ void WiFi_loop()
 
 void WiFi_fini()
 {
-  Uni_Udp.stop();
+  if (Uni_Udp) Uni_Udp->stop();
 
 #if defined(USE_ARDUINO_WIFI)
 #if !defined(_WIFI_ESP_AT_H_)

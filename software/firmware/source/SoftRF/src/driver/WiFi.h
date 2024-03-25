@@ -55,7 +55,7 @@ void WiFi_fini(void);
 
 extern String host_name;
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)
-extern WiFiUDP Uni_Udp;
+extern WiFiUDP *Uni_Udp;
 #endif
 
 extern char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
