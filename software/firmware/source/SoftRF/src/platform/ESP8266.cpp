@@ -216,9 +216,11 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
     Serial_GNSS_In.enableRx(false);
 
-    Uni_Udp.beginPacket(ClientIP, port);
-    Uni_Udp.write(buf, size);
-    Uni_Udp.endPacket();
+    if (Uni_Udp) {
+      Uni_Udp->beginPacket(ClientIP, port);
+      Uni_Udp->write(buf, size);
+      Uni_Udp->endPacket();
+    }
 
     Serial_GNSS_In.enableRx(true);
 
@@ -231,9 +233,11 @@ static void ESP8266_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
       Serial_GNSS_In.enableRx(false);
 
-      Uni_Udp.beginPacket(ClientIP, port);
-      Uni_Udp.write(buf, size);
-      Uni_Udp.endPacket();
+      if (Uni_Udp) {
+        Uni_Udp->beginPacket(ClientIP, port);
+        Uni_Udp->write(buf, size);
+        Uni_Udp->endPacket();
+      }
 
       Serial_GNSS_In.enableRx(true);
 
