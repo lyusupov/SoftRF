@@ -169,7 +169,7 @@ void handleSettings() {
 <td align=right>\
 <select name='mode'>\
 <option %s value='%d'>Normal</option>\
-<!-- <option %s value='%d'>Tx/Rx Test</option> -->\
+<!--<option %s value='%d'>Tx/Rx Test</option>-->\
 <option %s value='%d'>Bridge</option>\
 <option %s value='%d'>UAV</option>\
 </select>\
@@ -197,9 +197,13 @@ void handleSettings() {
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
-<option %s value='%d'>%s</option>\
-<option %s value='%d'>%s</option>\
-</select>\
+<option %s value='%d'>%s</option>"
+#if defined(ENABLE_PROL)
+"<option %s value='%d'>%s</option>"
+#else
+"<!--<option %s value='%d'>%s</option>-->"
+#endif /* ENABLE_PROL */
+"</select>\
 </td>\
 </tr>"),
     (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : ""),
@@ -461,7 +465,7 @@ void handleSettings() {
 #if defined(NMEA_TCP_SERVICE)
 "<option %s value='%d'>TCP</option>"
 #else
-"<!-- <option %s value='%d'>TCP</option> -->"
+"<!--<option %s value='%d'>TCP</option>-->"
 #endif /* NMEA_TCP_SERVICE */
 "<option %s value='%d'>Bluetooth</option>"),
       (settings->nmea_out == NMEA_TCP       ? "selected" : ""), NMEA_TCP,
@@ -689,6 +693,9 @@ void handleSettings() {
 #if !defined(USE_ARDUINO_WIFI) || defined(USING_WIFI101_GENERIC)
   server.send ( 200, "text/html", Settings_temp );
 #else
+
+#define HTML_MAX_CHUNK_SIZE (JS_MAX_CHUNK_SIZE / 2)
+
   char *content = Settings_temp;
   size_t bytes_left = strlen(Settings_temp);
   size_t chunk_size;
@@ -697,7 +704,8 @@ void handleSettings() {
   server.send(200, String(F("text/html")), "");
 
   do {
-    chunk_size = bytes_left > JS_MAX_CHUNK_SIZE ? JS_MAX_CHUNK_SIZE : bytes_left;
+    chunk_size = bytes_left > HTML_MAX_CHUNK_SIZE ?
+                 HTML_MAX_CHUNK_SIZE : bytes_left;
     server.sendContent(content, chunk_size);
     content += chunk_size;
     bytes_left -= chunk_size;
