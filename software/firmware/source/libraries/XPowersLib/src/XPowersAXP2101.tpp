@@ -2343,7 +2343,7 @@ public:
         int val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
         if (val == -1)return;
         val &= 0xF0;
-        writeRegister(XPOWERS_AXP2101_ICC_CHG_SET, val | opt);
+        writeRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL, val | opt);
     }
 
     xpowers_axp2101_chg_iterm_t getChargerTerminationCurr(void)
