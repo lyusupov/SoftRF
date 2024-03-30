@@ -139,7 +139,7 @@ extern  SoftSPI RadioSPI;
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS PIN_A3
-#define NOT_AN_INTERRUPT      SOC_GPIO_PIN_GNSS_PPS
+//#define NOT_AN_INTERRUPT      SOC_GPIO_PIN_GNSS_PPS
 #define SOC_GPIO_PIN_BATTERY  PIN_A1
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
@@ -163,7 +163,7 @@ extern  SoftSPI RadioSPI;
 #if !defined(EXCLUDE_WIFI)
 //#define NMEA_TCP_SERVICE   /* -2.4K HEAP */
 #define MAX_NMEATCP_CLIENTS   1
-#define EXCLUDE_BLUETOOTH  /* +5.7K HEAP */
+//#define EXCLUDE_BLUETOOTH  /* +5.7K HEAP */
 #endif /* EXCLUDE_WIFI */
 //#define EXCLUDE_SOFTRF_HEARTBEAT
 #else

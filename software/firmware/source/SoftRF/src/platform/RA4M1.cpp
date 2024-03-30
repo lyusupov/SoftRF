@@ -279,7 +279,7 @@ static void RA4M1_loop()
   }
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
-#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
+#if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN && defined(NOT_AN_INTERRUPT)
   static bool prev_PPS_state = LOW;
 
   if (digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS) == NOT_AN_INTERRUPT) {
