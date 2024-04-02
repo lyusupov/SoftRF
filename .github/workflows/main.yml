@@ -83,12 +83,12 @@ jobs:
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
               # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
-              #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
-              #  wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
-              #  tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
-              #  rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
-              #  sudo mv arduino-cli /usr/local/bin/ ;
-              #else
+              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
+                wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
+                tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
+                rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
+                sudo mv arduino-cli /usr/local/bin/ ;
+              else
               # ESP32 AC 3.0-alpha2+ can work with IDE1
                 wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
                 tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
@@ -101,7 +101,7 @@ jobs:
                   pip3 install adafruit-nrfutil --user ;
                   pip3 install intelhex --user ;
                 fi
-              #fi
+              fi
             fi
           fi
       - name: Run install
@@ -346,10 +346,18 @@ jobs:
             fi
             cd $GITHUB_WORKSPACE ;
           fi
+          #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
+          #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
+          #  arduino --install-boards SiliconLabs:silabs:1.0.0 ;
+          #  arduino --board $BOARD --save-prefs ;
+          #  cd $GITHUB_WORKSPACE ;
+          #fi
           if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
-            arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
-            arduino --install-boards SiliconLabs:silabs:1.0.0 ;
-            arduino --board $BOARD --save-prefs ;
+            arduino-cli config init ;
+            arduino-cli config add board_manager.additional_urls https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json ;
+            arduino-cli core update-index ;
+            arduino-cli core install SiliconLabs:silabs@1.0.0 ;
+            # arduino-cli board attach -b $BOARD ;
             cd $GITHUB_WORKSPACE ;
           fi
 
@@ -432,5 +440,5 @@ jobs:
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
           if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
-            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+            arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;

@@ -23,9 +23,11 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || defined(HACKRF_ONE) || defined(ARDUINO_ARCH_AVR)
+#if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || \
+    defined(HACKRF_ONE)          || defined(ARDUINO_ARCH_AVR)    || \
+    defined(ARDUINO_ARCH_SILABS)
 #include <TimeLib.h>
-#endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || defined(HACKRF_ONE) */
+#endif /* CC13XX || CC13X2 || HACKRF_ONE || AVR || SILABS */
 
 #if defined(RASPBERRY_PI)
 #include <raspi/raspi.h>

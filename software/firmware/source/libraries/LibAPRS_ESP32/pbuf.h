@@ -34,6 +34,10 @@
 #include <time.h>
 #endif /* __AVR__ */
 
+#if defined(ARDUINO_ARCH_SILABS)
+#include <TimeLib.h>
+#endif /* ARDUINO_ARCH_SILABS */
+
 /* minimum and maximum length of a callsign on APRS-IS */
 #define CALLSIGNLEN_MIN 3
 #define CALLSIGNLEN_MAX 9
