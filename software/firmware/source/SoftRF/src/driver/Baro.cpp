@@ -20,7 +20,8 @@
 
 #include "Baro.h"
 
-#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && defined(EXCLUDE_MPL3115A2)
+#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && \
+    defined(EXCLUDE_BME680) && defined(EXCLUDE_MPL3115A2)
 byte  Baro_setup()        {return BARO_MODULE_NONE;}
 void  Baro_loop()         {}
 void  Baro_fini()         {}
@@ -35,6 +36,9 @@ float Baro_temperature()  {return 0;}
 #if !defined(EXCLUDE_BMP280)
 #include <Adafruit_BMP280.h>
 #endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_BME680)
+#include <Adafruit_BME680.h>
+#endif /* EXCLUDE_BME680 */
 #if !defined(EXCLUDE_MPL3115A2)
 #include <Adafruit_MPL3115A2.h>
 #endif /* EXCLUDE_MPL3115A2 */
@@ -49,6 +53,9 @@ Adafruit_BMP085 bmp180;
 #if !defined(EXCLUDE_BMP280)
 Adafruit_BMP280 bmp280;
 #endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_BME680)
+Adafruit_BME680 bme680;
+#endif /* EXCLUDE_BME680 */
 #if !defined(EXCLUDE_MPL3115A2)
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
 #endif /* EXCLUDE_MPL3115A2 */
@@ -75,17 +82,17 @@ static void bmp180_setup()
   Serial.print(F("Temperature = "));
   Serial.print(bmp180.readTemperature());
   Serial.println(F(" *C"));
-  
+
   Serial.print(F("Pressure = "));
   Serial.print(bmp180.readPressure());
   Serial.println(F(" Pa"));
-  
+
   // Calculate altitude assuming 'standard' barometric
   // pressure of 1013.25 millibar = 101325 Pascal
   Serial.print(F("Altitude = "));
   Serial.print(bmp180.readAltitude());
   Serial.println(F(" meters"));
-  
+
   Serial.println();
   delay(500);
 }
@@ -138,7 +145,7 @@ static void bmp280_setup()
     Serial.print(F("Temperature = "));
     Serial.print(bmp280.readTemperature());
     Serial.println(F(" *C"));
-    
+
     Serial.print(F("Pressure = "));
     Serial.print(bmp280.readPressure());
     Serial.println(F(" Pa"));
@@ -146,7 +153,7 @@ static void bmp280_setup()
     Serial.print(F("Approx altitude = "));
     Serial.print(bmp280.readAltitude(1013.25)); // this should be adjusted to your local forcase
     Serial.println(F(" m"));
-    
+
     Serial.println();
     delay(500);
 }
@@ -182,6 +189,62 @@ barochip_ops_t bmp280_ops = {
   bmp280_temperature
 };
 #endif /* EXCLUDE_BMP280 */
+
+#if !defined(EXCLUDE_BME680)
+static bool bme680_probe()
+{
+  return bme680.begin(BME68X_DEFAULT_ADDRESS);
+}
+
+static void bme680_setup()
+{
+    Serial.print(F("Temperature = "));
+    Serial.print(bme680.readTemperature());
+    Serial.println(F(" *C"));
+
+    Serial.print(F("Pressure = "));
+    Serial.print(bme680.readPressure());
+    Serial.println(F(" Pa"));
+
+    Serial.print(F("Approx altitude = "));
+    Serial.print(bme680.readAltitude(1013.25)); // this should be adjusted to your local forcase
+    Serial.println(F(" m"));
+
+    Serial.println();
+    delay(500);
+}
+
+static void bme680_fini()
+{
+  /* TBD */
+}
+
+static float bme680_altitude(float sealevelPressure)
+{
+    return bme680.readAltitude(sealevelPressure);
+}
+
+static float bme680_pressure()
+{
+    return bme680.readPressure();
+}
+
+static float bme680_temperature()
+{
+    return bme680.readTemperature();
+}
+
+barochip_ops_t bme680_ops = {
+  BARO_MODULE_BME680,
+  "BME68x",
+  bme680_probe,
+  bme680_setup,
+  bme680_fini,
+  bme680_altitude,
+  bme680_pressure,
+  bme680_temperature
+};
+#endif /* EXCLUDE_BME680 */
 
 #if !defined(EXCLUDE_MPL3115A2)
 static bool mpl3115a2_probe()
@@ -252,6 +315,12 @@ bool Baro_probe()
 #else
            false                                            ||
 #endif /* EXCLUDE_BMP280 */
+
+#if !defined(EXCLUDE_BME680)
+           (baro_chip = &bme680_ops,    baro_chip->probe()) ||
+#else
+           false                                            ||
+#endif /* EXCLUDE_BME680 */
 
 #if !defined(EXCLUDE_MPL3115A2)
            (baro_chip = &mpl3115a2_ops, baro_chip->probe())
@@ -355,4 +424,4 @@ float Baro_temperature()
   return Baro_temperature_cache;
 }
 
-#endif /* EXCLUDE_BMP180 && EXCLUDE_BMP280 EXCLUDE_MPL3115A2 */
+#endif /* EXCLUDE_BMP180 && EXCLUDE_BMP280 EXCLUDE_BME680 EXCLUDE_MPL3115A2 */

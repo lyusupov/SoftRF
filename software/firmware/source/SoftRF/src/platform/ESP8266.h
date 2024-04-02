@@ -116,6 +116,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
+#define EXCLUDE_BME680
 
 /* Experimental */
 #define ENABLE_PROL

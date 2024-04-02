@@ -129,6 +129,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 #define EXCLUDE_BMP280
+#define EXCLUDE_BME680
 #define EXCLUDE_IMU
 
 #elif defined(BOARD_E70_XXXT14S2)
@@ -184,6 +185,7 @@ struct rst_info {
 
 #define EXCLUDE_BMP180
 //#define EXCLUDE_BMP280
+#define EXCLUDE_BME680
 #define EXCLUDE_MPL3115A2
 #define EXCLUDE_D1090
 

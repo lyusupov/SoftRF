@@ -353,6 +353,7 @@ struct rst_info {
 #define EXCLUDE_LK8EX1
 //#define EXCLUDE_IMU
 //#define EXCLUDE_MAG
+#define EXCLUDE_BME680
 
 #if !defined(CONFIG_IDF_TARGET_ESP32)
 #define EXCLUDE_UATM
