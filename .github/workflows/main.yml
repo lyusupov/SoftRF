@@ -41,7 +41,8 @@ jobs:
             'arduino:renesas_uno:minima',
             'arduino:renesas_uno:unor4wifi',
             'rp2040:rp2040:generic',
-            'rp2040:rp2040:rpipicow'
+            'rp2040:rp2040:rpipicow',
+            'SiliconLabs:silabs:thingplusmatter_ble'
           ]
 
     env:
@@ -345,6 +346,12 @@ jobs:
             fi
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
+            arduino --install-boards SiliconLabs:silabs:1.0.0 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
 
       - name: Run script
         run: |
@@ -423,4 +430,7 @@ jobs:
           fi ;
           if [[ "$BOARD" =~ "rp2040:rp2040:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
