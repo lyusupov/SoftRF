@@ -323,7 +323,9 @@ static void opmode (u1_t mode) {
     delay(1);
 #endif
     writeReg(RegOpMode, (readReg(RegOpMode) & ~OPMODE_MASK) | mode);
+#if !defined(ARDUINO_ARCH_SILABS)
     delay(1);
+#endif
 }
 
 static void opmodeLora() {

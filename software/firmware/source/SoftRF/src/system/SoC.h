@@ -35,6 +35,7 @@
 #include "../platform/ASR66.h"
 #include "../platform/RP2040.h"
 #include "../platform/RA4M1.h"
+#include "../platform/EFR32.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -109,7 +110,8 @@ enum
 	SOC_AVR,
 	SOC_ASR66,
 	SOC_RP2040,
-	SOC_RA4M1
+	SOC_RA4M1,
+	SOC_EFR32
 };
 
 extern const SoC_ops_t *SoC;
@@ -151,6 +153,9 @@ extern const SoC_ops_t RP2040_ops;
 #endif
 #if defined(ARDUINO_ARCH_RENESAS)
 extern const SoC_ops_t RA4M1_ops;
+#endif
+#if defined(ARDUINO_ARCH_SILABS)
+extern const SoC_ops_t EFR32_ops;
 #endif
 
 byte SoC_setup(void);

@@ -47,10 +47,9 @@
 #define HINCH_TO_MM 0.254
 
 /// The magic constant.
-#ifdef PI
-#undef PI
+#undef  PI
 #define PI 3.14159265
-#endif
+
 /// Degrees to radians.
 #define DEG2RAD(x) (x/360*2*PI)
 /// Radians to degrees.

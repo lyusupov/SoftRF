@@ -27,7 +27,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -54,7 +55,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -71,7 +73,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -178,9 +181,8 @@
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 
-#elif defined(ARDUINO_ARCH_SAMD)   || \
-      defined(ARDUINO_ARCH_RP2040) || \
-      defined(ARDUINO_ARCH_RENESAS)
+#elif defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_RP2040) || \
+      defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)
 
 // TBD
 #define TRX_EN    0   // Enable/standby pin
@@ -321,7 +323,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -336,7 +339,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -385,7 +389,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -398,7 +403,8 @@
     defined(__ASR6501__)          || defined(HACKRF_ONE)           || \
     defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)     || \
     defined(ARDUINO_ARCH_ASR650X) || defined(ARDUINO_ARCH_ASR6601) || \
-    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS)
+    defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

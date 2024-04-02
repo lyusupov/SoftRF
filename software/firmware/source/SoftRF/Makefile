@@ -139,7 +139,8 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/AVR.cpp      \
                  $(PLATFORM_PATH)/ASR66.cpp    \
                  $(PLATFORM_PATH)/RP2040.cpp   \
-                 $(PLATFORM_PATH)/RA4M1.cpp
+                 $(PLATFORM_PATH)/RA4M1.cpp    \
+                 $(PLATFORM_PATH)/EFR32.cpp
 
 DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
                  $(DRIVER_PATH)/GNSS.cpp      \
