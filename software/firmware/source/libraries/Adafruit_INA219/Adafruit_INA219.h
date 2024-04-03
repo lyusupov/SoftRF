@@ -2,13 +2,13 @@
  * @file Adafruit_INA219.h
  *
  * This is a library for the Adafruit INA219 breakout board
- * ----> https://www.adafruit.com/products/904
+ * ----> https://www.adafruit.com/product/904
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Kevin "KTOWN" Townsend for Adafruit Industries.
+ * Written by Bryan Siepert and Kevin "KTOWN" Townsend for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -18,7 +18,24 @@
 #define _LIB_ADAFRUIT_INA219_
 
 #include "Arduino.h"
+#include <Adafruit_BusIO_Register.h>
+#include <Adafruit_I2CDevice.h>
 #include <Wire.h>
+
+/** calculated I2C address: 0 = GND, 1 = V+ **/
+/* The address is controlled by the A0 and A1 inputs on the INA219:
+ *
+ * Calculated address: b100ABCD
+ * A0 controls C and D: GND = 00, V+ = 01, SDA = 10, SCL = 11
+ * A1 controls A and B: GND = 00, V+ = 01, SDA = 10, SCL = 11
+ *
+ * E.g. if A0 is tied to ground and A1 is tied to V+,
+ * the resulting address is b1000100 = 0x44
+ *
+ * SDA and SCL options aren't implemented.
+ */
+#define INA219_CALC_ADDRESS(INA_ADDR0, INA_ADDR1)                              \
+  (0x40 | (INA_ADDR0 != 0 ? 0x01 : 0x00) | (INA_ADDR1 != 0 ? 0x04 : 0x00))
 
 /** default I2C address **/
 #define INA219_ADDRESS (0x40) // 1000000 (A0+A1=GND)
@@ -65,6 +82,21 @@ enum {
   INA219_CONFIG_BADCRES_10BIT = (0x0080), // 10-bit bus res = 0..1023
   INA219_CONFIG_BADCRES_11BIT = (0x0100), // 11-bit bus res = 0..2047
   INA219_CONFIG_BADCRES_12BIT = (0x0180), // 12-bit bus res = 0..4097
+  INA219_CONFIG_BADCRES_12BIT_2S_1060US =
+      (0x0480), // 2 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_4S_2130US =
+      (0x0500), // 4 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_8S_4260US =
+      (0x0580), // 8 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_16S_8510US =
+      (0x0600), // 16 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_32S_17MS =
+      (0x0680), // 32 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_64S_34MS =
+      (0x0700), // 64 x 12-bit bus samples averaged together
+  INA219_CONFIG_BADCRES_12BIT_128S_69MS =
+      (0x0780), // 128 x 12-bit bus samples averaged together
+
 };
 
 /** mask for shunt ADC resolution bits **/
@@ -98,14 +130,16 @@ enum {
 
 /** values for operating mode **/
 enum {
-  INA219_CONFIG_MODE_POWERDOWN,
-  INA219_CONFIG_MODE_SVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_BVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_SANDBVOLT_TRIGGERED,
-  INA219_CONFIG_MODE_ADCOFF,
-  INA219_CONFIG_MODE_SVOLT_CONTINUOUS,
-  INA219_CONFIG_MODE_BVOLT_CONTINUOUS,
-  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
+  INA219_CONFIG_MODE_POWERDOWN = 0x00,       /**< power down */
+  INA219_CONFIG_MODE_SVOLT_TRIGGERED = 0x01, /**< shunt voltage triggered */
+  INA219_CONFIG_MODE_BVOLT_TRIGGERED = 0x02, /**< bus voltage triggered */
+  INA219_CONFIG_MODE_SANDBVOLT_TRIGGERED =
+      0x03,                         /**< shunt and bus voltage triggered */
+  INA219_CONFIG_MODE_ADCOFF = 0x04, /**< ADC off */
+  INA219_CONFIG_MODE_SVOLT_CONTINUOUS = 0x05, /**< shunt voltage continuous */
+  INA219_CONFIG_MODE_BVOLT_CONTINUOUS = 0x06, /**< bus voltage continuous */
+  INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS =
+      0x07, /**< shunt and bus voltage continuous */
 };
 
 /** shunt voltage register **/
@@ -130,7 +164,8 @@ enum {
 class Adafruit_INA219 {
 public:
   Adafruit_INA219(uint8_t addr = INA219_ADDRESS);
-  void begin(TwoWire *theWire = &Wire);
+  ~Adafruit_INA219();
+  bool begin(TwoWire *theWire = &Wire);
   void setCalibration_32V_2A();
   void setCalibration_32V_1A();
   void setCalibration_16V_400mA();
@@ -139,11 +174,14 @@ public:
   float getCurrent_mA();
   float getPower_mW();
   void powerSave(bool on);
+  bool success();
 
 private:
-  TwoWire *_i2c;
+  Adafruit_I2CDevice *i2c_dev = NULL;
 
-  uint8_t ina219_i2caddr;
+  bool _success;
+
+  uint8_t ina219_i2caddr = -1;
   uint32_t ina219_calValue;
   // The following multipliers are used to convert raw current and power
   // values to mA and mW, taking into account the current config settings
@@ -151,8 +189,6 @@ private:
   float ina219_powerMultiplier_mW;
 
   void init();
-  void wireWriteRegister(uint8_t reg, uint16_t value);
-  void wireReadRegister(uint8_t reg, uint16_t *value);
   int16_t getBusVoltage_raw();
   int16_t getShuntVoltage_raw();
   int16_t getCurrent_raw();

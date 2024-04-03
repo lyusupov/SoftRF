@@ -1,6 +1,6 @@
 // Feather Power Meter
 //
-// Small Feater-based power monitor using an INA219 breakout and 
+// Small Feather-based power monitor using an INA219 breakout and
 // monochrome OLED display.
 //
 // Author: Tony DiCola (modded by ladyada)
@@ -40,26 +40,33 @@ void pixel_show_and_powerupdate() {
 }
 
 void setup()   {
+  Serial.begin(115200);
+  while (!Serial) {
+      // will pause Zero, Leonardo, etc until serial console opens
+      delay(1);
+  }
   pixels.begin();
   pixels.show();  // Initialize all pixels to 'off'
-  
-  // Setup the INA219.
-  ina219.begin();
+  // Try to initialize the INA219
+  if (! ina219.begin()) {
+    Serial.println("Failed to find INA219 chip");
+    while (1) { delay(10); }
+  }
   // By default the INA219 will be calibrated with a range of 32V, 2A.
   // However uncomment one of the below to change the range.  A smaller
   // range can't measure as large of values but will measure with slightly
   // better precision.
   //ina219.setCalibration_32V_1A();
   //ina219.setCalibration_16V_400mA();
-  
+
   // Setup the OLED display.
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   Wire.setClock(400000);
-  
+
   // Clear the display.
   display.clearDisplay();
   display.display();
-  
+
   // Set rotation.
   display.setRotation(ROTATION);
 
@@ -176,30 +183,33 @@ void update_power_display() {
   float shuntvoltage = ina219.getShuntVoltage_mV();
   float busvoltage = ina219.getBusVoltage_V();
   float current_mA = ina219.getCurrent_mA();
-  
+
   // Compute load voltage, power, and milliamp-hours.
-  float loadvoltage = busvoltage + (shuntvoltage / 1000);  
+  float loadvoltage = busvoltage + (shuntvoltage / 1000);
   float power_mW = loadvoltage * current_mA;
+  (void)power_mW;
+
   total_mA += current_mA;
   total_sec += 1;
-  float total_mAH = total_mA / 3600.0;  
-  
+  float total_mAH = total_mA / 3600.0;
+  (void)total_mAH;
+
   // Update display.
   display.clearDisplay();
   display.setCursor(0,0);
-  
+
   // Mode 0, display volts and amps.
   printSIValue(loadvoltage, "V:", 2, 10);
   display.setCursor(0, 16);
   printSIValue(current_mA/1000.0, "A:", 5, 10);
- 
+
   display.display();
 }
 
-void printSIValue(float value, char* units, int precision, int maxWidth) {
+void printSIValue(float value, const char* units, int precision, int maxWidth) {
   // Print a value in SI units with the units left justified and value right justified.
   // Will switch to milli prefix if value is below 1.
-  
+
   // Add milli prefix if low value.
   if (fabs(value) < 1.0) {
     display.print('m');
@@ -207,22 +217,22 @@ void printSIValue(float value, char* units, int precision, int maxWidth) {
     value *= 1000.0;
     precision = max(0, precision-3);
   }
-  
+
   // Print units.
   display.print(units);
   maxWidth -= strlen(units);
-  
+
   // Leave room for negative sign if value is negative.
   if (value < 0.0) {
     maxWidth -= 1;
   }
-  
+
   // Find how many digits are in value.
   int digits = ceil(log10(fabs(value)));
   if (fabs(value) < 1.0) {
     digits = 1; // Leave room for 0 when value is below 0.
   }
-  
+
   // Handle if not enough width to display value, just print dashes.
   if (digits > maxWidth) {
     // Fill width with dashes (and add extra dash for negative values);
@@ -234,17 +244,17 @@ void printSIValue(float value, char* units, int precision, int maxWidth) {
     }
     return;
   }
-  
+
   // Compute actual precision for printed value based on space left after
   // printing digits and decimal point.  Clamp within 0 to desired precision.
   int actualPrecision = constrain(maxWidth-digits-1, 0, precision);
-  
+
   // Compute how much padding to add to right justify.
   int padding = maxWidth-digits-1-actualPrecision;
   for (int i=0; i < padding; ++i) {
     display.print(' ');
   }
-  
+
   // Finally, print the value!
   display.print(value, actualPrecision);
 }

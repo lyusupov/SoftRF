@@ -40,12 +40,12 @@
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 
-#define SerialOutput            Serial1 /* TBD */
+#define SerialOutput            Serial /* TBD */
 
-#define USBSerial               Serial1 /* TBD */
-#define Serial_GNSS_In          Serial1 /* TBD */
+#define USBSerial               Serial /* TBD */
+#define Serial_GNSS_In          Serial /* TBD */
 #define Serial_GNSS_Out         Serial_GNSS_In
-#define UATSerial               Serial1 /* TBD */
+#define UATSerial               Serial /* TBD */
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
@@ -93,42 +93,27 @@ struct rst_info {
   uint32_t depc;
 };
 
-#if defined(ARDUINO_SILABS_THINGPLUSMATTER_BLE)
+#if defined(ARDUINO_SILABS_THINGPLUSMATTER_BLE) || \
+    defined(ARDUINO_SILABS_BGM220EXPLORERKIT)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // PB23
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // PB22
+#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // TBD
+#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // TBD
 
-#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX // PA11
-#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX // PA10
+#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX // TBD
+#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX // TBD
 
-#define	USE_ISP_PORT          1
-
-#if USE_ISP_PORT
-#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // PA17
-#else
-#define SOC_GPIO_PIN_STATUS   PIN_LED_RXL    // PB03
-#endif /* USE_ISP_PORT */
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // TBD
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
 
 /* SPI */
-#if USE_ISP_PORT
-/* ISP port */
-#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // PB10
-#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // PB12
-#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // PB11
-#else
-/* Port B */
-#define SOC_GPIO_PIN_MOSI     11             // PA16
-#define SOC_GPIO_PIN_MISO     12             // PA19
-#define SOC_GPIO_PIN_SCK      13             // PA17
-#endif /* USE_ISP_PORT */
-#define SOC_GPIO_PIN_SS       10             // PA18
-//#define SOC_GPIO_PIN_SS     4              // NL
-//#define SOC_GPIO_PIN_SS     5              // NL
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // TBD
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // TBD
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // TBD
+#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN // TBD
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -136,29 +121,24 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      9              // PA07
+#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     6              // PA20
+#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN // TBD
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // PA22
-#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PA23
+#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // TBD
+#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // TBD
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN /* TBD */
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN /* TBD */
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
-#if defined(USE_TINYUSB)
-#define SOC_GPIO_RADIO_LED_RX PIN_LED_RXL
-#define SOC_GPIO_RADIO_LED_TX PIN_LED_TXL
-#else
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
-#endif /* USE_TINYUSB */
 
 #else
 #error "This EFR32 build variant is not supported!"
@@ -210,20 +190,6 @@ extern Adafruit_NeoPixel strip;
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
 #endif /* USE_OLED */
-
-#if defined(USE_USB_HOST)
-
-#if defined(Serial)
-#undef Serial
-#endif
-#define Serial                  Serial1
-
-#if defined(SerialOutput)
-#undef SerialOutput
-#endif
-#define SerialOutput            Serial1
-
-#endif /* USE_USB_HOST */
 
 #endif /* PLATFORM_EFR32_H */
 

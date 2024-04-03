@@ -50,8 +50,6 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
-//SPIClass SPI1(&PERIPH_SPI1, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK, SOC_GPIO_PIN_MOSI, PAD_SPI1_TX, PAD_SPI1_RX);
-
 #if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -74,10 +72,6 @@ static struct rst_info reset_info = {
 
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
-
-const char *EFR32_Device_Manufacturer = SOFTRF_IDENT;
-const char *EFR32_Device_Model = "Academy Edition";
-const uint16_t EFR32_Device_Version = SOFTRF_USB_FW_VERSION;
 
 char* ultoa(unsigned long value, char *string, int radix)
 {
@@ -128,17 +122,7 @@ static void EFR32_setup()
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
-#if defined(USE_TINYUSB)
-  USBDevice.setManufacturerDescriptor(EFR32_Device_Manufacturer);
-  USBDevice.setProductDescriptor(EFR32_Device_Model);
-  USBDevice.setDeviceVersion(EFR32_Device_Version);
-#endif /* USE_TINYUSB */
-
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-
-#if defined(USBCON)
-  for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
-#endif
 }
 
 static void EFR32_post_init()
@@ -249,12 +233,7 @@ static void EFR32_loop()
 
 static void EFR32_fini(int reason)
 {
-#if defined(USE_TINYUSB)
-  // Disable USB
-  USBDevice.detach();
-#endif /* USE_TINYUSB */
-
-  NVIC_SystemReset();
+  NVIC_SystemReset(); /* TODO */
 }
 
 static void EFR32_reset()
@@ -282,7 +261,7 @@ static String EFR32_getResetInfo()
 {
   switch (reset_info.reason)
   {
-    default                     : return F("No reset information available");
+    default                       : return F("No reset information available");
   }
 }
 
@@ -370,15 +349,15 @@ static void EFR32_EEPROM_extension(int cmd)
     if (settings->nmea_out == NMEA_BLUETOOTH ||
         settings->nmea_out == NMEA_UDP       ||
         settings->nmea_out == NMEA_TCP ) {
-      settings->nmea_out = NMEA_USB;
+      settings->nmea_out = NMEA_UART;
     }
     if (settings->gdl90 == GDL90_BLUETOOTH  ||
         settings->gdl90 == GDL90_UDP) {
-      settings->gdl90 = GDL90_USB;
+      settings->gdl90 = GDL90_UART;
     }
     if (settings->d1090 == D1090_BLUETOOTH  ||
         settings->d1090 == D1090_UDP) {
-      settings->d1090 = D1090_USB;
+      settings->d1090 = D1090_UART;
     }
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
@@ -390,11 +369,7 @@ static void EFR32_EEPROM_extension(int cmd)
 
 static void EFR32_SPI_begin()
 {
-#if USE_ISP_PORT
   SPI.begin();
-#else
-//  SPI1.begin();
-#endif
 }
 
 static void EFR32_swSer_begin(unsigned long baud)
@@ -606,142 +581,6 @@ static void EFR32_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
-#if 0
-static void EFR32_USB_setup()
-{
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-  }
-}
-
-#include <RingBuffer.h>
-
-#if (CFG_TUSB_RHPORT1_MODE & OPT_MODE_DEVICE)
-#define USBD_CDC_IN_OUT_MAX_SIZE (512)
-#else
-#define USBD_CDC_IN_OUT_MAX_SIZE (64)
-#endif
-
-#define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
-#define USB_RX_FIFO_SIZE (256)
-
-RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
-RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
-
-static void EFR32_USB_loop()
-{
-#if !defined(USE_TINYUSB)
-
-  uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
-  size_t size;
-
-  while (USBSerial && (size = USBSerial.availableForWrite()) > 0) {
-    size_t avail = USB_TX_FIFO.available();
-
-    if (avail == 0) {
-      break;
-    }
-
-    if (size > avail) {
-      size = avail;
-    }
-
-    if (size > sizeof(buf)) {
-      size = sizeof(buf);
-    }
-
-    for (size_t i=0; i < size; i++) {
-      buf[i] = USB_TX_FIFO.read_char();
-    }
-
-    if (USBSerial) {
-      USBSerial.write(buf, size);
-    }
-  }
-
-  while (USBSerial && USBSerial.available() > 0) {
-    if (!USB_RX_FIFO.isFull()) {
-      USB_RX_FIFO.store_char(USBSerial.read());
-    } else {
-      break;
-    }
-  }
-
-#endif /* USE_TINYUSB */
-}
-
-static void EFR32_USB_fini()
-{
-  if (USBSerial && USBSerial != Serial) {
-    USBSerial.end();
-  }
-}
-
-static int EFR32_USB_available()
-{
-  int rval = 0;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.available();
-  }
-#else
-  rval = USB_RX_FIFO.available();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static int EFR32_USB_read()
-{
-  int rval = -1;
-
-#if defined(USE_TINYUSB)
-  if (USBSerial) {
-    rval = USBSerial.read();
-  }
-#else
-  rval = USB_RX_FIFO.read_char();
-#endif /* USE_TINYUSB */
-
-  return rval;
-}
-
-static size_t EFR32_USB_write(const uint8_t *buffer, size_t size)
-{
-#if !defined(USE_TINYUSB)
-  size_t written;
-
-  for (written=0; written < size; written++) {
-    if (!USB_TX_FIFO.isFull()) {
-      USB_TX_FIFO.store_char(buffer[written]);
-    } else {
-      break;
-    }
-  }
-  return written;
-#else
-  size_t rval = size;
-
-  if (USBSerial && (size < USBSerial.availableForWrite())) {
-    rval = USBSerial.write(buffer, size);
-  }
-
-  return rval;
-#endif /* USE_TINYUSB */
-}
-
-IODev_ops_t EFR32_USBSerial_ops = {
-  "EFR32 USBSerial",
-  EFR32_USB_setup,
-  EFR32_USB_loop,
-  EFR32_USB_fini,
-  EFR32_USB_available,
-  EFR32_USB_read,
-  EFR32_USB_write
-};
-#endif
-
 const SoC_ops_t EFR32_ops = {
   SOC_EFR32,
   "EFR32",
@@ -769,12 +608,8 @@ const SoC_ops_t EFR32_ops = {
   EFR32_SPI_begin,
   EFR32_swSer_begin,
   EFR32_swSer_enableRx,
-  NULL, /* EFR32 has no built-in Bluetooth */
-#if 0
-  &EFR32_USBSerial_ops,
-#else
+  NULL, /* TODO */
   NULL,
-#endif
   NULL,
   EFR32_Display_setup,
   EFR32_Display_loop,
