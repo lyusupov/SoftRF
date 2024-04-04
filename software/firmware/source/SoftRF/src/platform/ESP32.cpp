@@ -1524,14 +1524,22 @@ static void ESP32_setup()
       axp_2xxx.setALDO3Voltage(3300); // V2.1 - Amp. OE Ctrl
 
 #if defined(USE_SA8X8)
-      Wire.begin(SOC_GPIO_PIN_TWR2_SDA , SOC_GPIO_PIN_TWR2_SCL);
-      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
-      if (Wire.endTransmission() == 0) {
-        controller.setBand(Band::VHF);
-      }
-      Wire.beginTransmission(SH1106_OLED_I2C_ADDR_ALT);
-      if (Wire.endTransmission() == 0) {
-        controller.setBand(Band::UHF);
+      for (uint8_t addr = 1; addr < 127; addr++) {
+          Wire.beginTransmission(addr);
+          if (Wire.endTransmission() == 0) {
+              switch (addr) {
+              case SH1106_OLED_I2C_ADDR:
+                  controller.setBand(Band::VHF);
+                  addr = 127;
+                  break;
+              case SH1106_OLED_I2C_ADDR_ALT:
+                  controller.setBand(Band::UHF);
+                  addr = 127;
+                  break;
+              default:
+                  break;
+              }
+          }
       }
 #endif /* USE_SA8X8 */
     } else {
@@ -3196,7 +3204,7 @@ static byte ESP32_Display_setup()
     } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
       Wire.begin(SOC_GPIO_PIN_TWR2_SDA, SOC_GPIO_PIN_TWR2_SCL);
 
-      Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
       if (has_oled) {
         u8x8 = &u8x8_1_3;
@@ -3207,7 +3215,7 @@ static byte ESP32_Display_setup()
         has_oled = (Wire.endTransmission() == 0);
         if (has_oled) {
           u8x8 = &u8x8_1_3;
-          u8x8->setI2CAddress(SH1106_OLED_I2C_ADDR_ALT);
+          u8x8->setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
           rval = DISPLAY_OLED_1_3;
         }
       }
