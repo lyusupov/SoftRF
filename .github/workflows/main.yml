@@ -84,7 +84,7 @@ jobs:
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
               # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
-              if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ] || [ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
+              if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]] || [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
                 rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
