@@ -399,14 +399,16 @@ jobs:
             fi ;
           #fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
-          #  SkyView is not available for H2
+            #  SkyView is not available for H2
+            true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
             fi ;
           fi ;
           if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
-          #  SkyWatch is not available for H2
+            #  SkyWatch is not available for H2
+            true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
