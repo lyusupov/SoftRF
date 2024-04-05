@@ -26,9 +26,9 @@
 #include <esp_bt.h>
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
 #include <soc/rtc_cntl_reg.h>
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
 #include <soc/efuse_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
@@ -464,7 +464,7 @@ static void ESP32_setup()
   esp_err_t ret = ESP_OK;
   uint8_t null_mac[6] = {0};
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
   ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
   if (ret != ESP_OK) {
 #else
@@ -475,7 +475,7 @@ static void ESP32_setup()
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
     ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
@@ -586,6 +586,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     default:
       esp32_board   = ESP32_C6_DEVKIT;
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    default:
+      esp32_board   = ESP32_H2_DEVKIT;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -1438,7 +1441,8 @@ static void ESP32_setup()
 
 #elif ARDUINO_USB_CDC_ON_BOOT && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-       defined(CONFIG_IDF_TARGET_ESP32C6))
+       defined(CONFIG_IDF_TARGET_ESP32C6) || \
+       defined(CONFIG_IDF_TARGET_ESP32H2))
 
   Serial.begin(SERIAL_OUT_BR);
 
@@ -2147,7 +2151,9 @@ static void ESP32_fini(int reason)
 
   SPI.end();
 
+#if !defined(EXCLUDE_WIFI)
   esp_wifi_stop();
+#endif /* EXCLUDE_WIFI */
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
   esp_bt_controller_disable();
@@ -3868,6 +3874,8 @@ static void ESP32_Battery_setup()
     calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -4788,7 +4796,8 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 
 #if ARDUINO_USB_MODE && \
     (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-     defined(CONFIG_IDF_TARGET_ESP32C6))
+     defined(CONFIG_IDF_TARGET_ESP32C6) || \
+     defined(CONFIG_IDF_TARGET_ESP32H2))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
 #define USB_RX_FIFO_SIZE (256)
@@ -4796,9 +4805,9 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #if ARDUINO_USB_CDC_ON_BOOT
 #define USBSerial                Serial
 #else
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
 #define USBSerial                HWCDCSerial
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
 static void ESP32CX_USB_setup()
@@ -4995,9 +5004,12 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+  SOC_ESP32H2,
+  "ESP32-H2",
 #else
 #error "This ESP32 family build variant is not supported!"
-#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6-H2 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,
@@ -5032,7 +5044,8 @@ const SoC_ops_t ESP32_ops = {
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-       defined(CONFIG_IDF_TARGET_ESP32C6))
+       defined(CONFIG_IDF_TARGET_ESP32C6) || \
+       defined(CONFIG_IDF_TARGET_ESP32H2))
   &ESP32CX_USBSerial_ops,
 #else
   NULL,

@@ -59,7 +59,8 @@
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
       defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6)
+      defined(CONFIG_IDF_TARGET_ESP32C6) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2)
 #if ARDUINO_USB_CDC_ON_BOOT
 #define UATSerial               Serial0
 #undef  SerialOutput
@@ -92,7 +93,7 @@
  */
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
 #define EXCLUDE_LED_RING
-#elif !defined(CONFIG_IDF_TARGET_ESP32C6)
+#elif !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
 #define USE_NEOPIXELBUS_LIBRARY
 #else
 #define USE_ADAFRUIT_NEO_LIBRARY
@@ -145,6 +146,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_LED        19 /* D1 */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_LED        3 /* D1 */
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -262,6 +265,7 @@ enum esp32_board_id {
   ESP32_C2_DEVKIT,
   ESP32_C3_DEVKIT,
   ESP32_C6_DEVKIT,
+  ESP32_H2_DEVKIT,
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
@@ -406,10 +410,13 @@ extern const USB_Device_List_t supported_USB_devices[];
 #endif /* USE_USB_HOST */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
       defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6)
+      defined(CONFIG_IDF_TARGET_ESP32C6) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2)
 #undef USE_OLED
 #undef USE_TFT
-#if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)
 #define EXCLUDE_EGM96
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
@@ -417,7 +424,10 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef ENABLE_PROL
 //#define USE_NIMBLE
 #endif /* C6 */
-#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 */
+#if defined(CONFIG_IDF_TARGET_ESP32H2)
+#define EXCLUDE_WIFI
+#endif /* H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 || H2 */
 #else
 //#define ENABLE_BT_VOICE
 //#define USE_NIMBLE
