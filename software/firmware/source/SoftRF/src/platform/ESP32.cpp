@@ -2458,7 +2458,7 @@ static long ESP32_random(long howsmall, long howBig)
   return random(howsmall, howBig);
 }
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+#if !defined(EXCLUDE_BLUETOOTH) && defined(USE_BLE_MIDI)
 extern bool deviceConnected;
 extern BLECharacteristic* pMIDICharacteristic;
 
@@ -2528,7 +2528,7 @@ static void ESP32_Sound_test(int var)
     pinMode(SOC_GPIO_PIN_BUZZER, INPUT_PULLDOWN);
   }
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+#if !defined(EXCLUDE_BLUETOOTH) && defined(USE_BLE_MIDI)
   if (settings->volume != BUZZER_OFF                  &&
       settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
       pMIDICharacteristic != NULL                     &&
@@ -2598,7 +2598,7 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
     }
   }
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && defined(USE_BLE_MIDI)
+#if !defined(EXCLUDE_BLUETOOTH) && defined(USE_BLE_MIDI)
   if (volume != BUZZER_OFF                            &&
       settings->bluetooth == BLUETOOTH_LE_HM10_SERIAL &&
       pMIDICharacteristic != NULL                     &&
@@ -5034,11 +5034,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_SPI_begin,
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(EXCLUDE_BLUETOOTH)
   &ESP32_Bluetooth_ops,
 #else
   NULL,
-#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* EXCLUDE_BLUETOOTH */
 #if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,

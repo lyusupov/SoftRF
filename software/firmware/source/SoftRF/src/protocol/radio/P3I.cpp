@@ -121,8 +121,8 @@ size_t p3i_encode(void *p3i_pkt, ufo_t *this_aircraft) {
   pkt->track = (uint16_t) this_aircraft->course; // degrees relative to true north
   pkt->knots = (uint16_t) this_aircraft->speed;  // knots
 
-  pkt->msd[0] = 0;
-  pkt->msd[1] = 0;
+  pkt->msd[0] = 0xf;
+  pkt->msd[1] = 0x5;
   pkt->msd[2] = 0;
   pkt->msd[3] = 0;
 

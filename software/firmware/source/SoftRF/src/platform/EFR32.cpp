@@ -33,12 +33,6 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
-typedef volatile uint32_t REG32;
-#define pREG32 (REG32 *)
-
-#define DEVICE_ID_HIGH    (*(pREG32 (0x0080A044)))
-#define DEVICE_ID_LOW     (*(pREG32 (0x0080A048)))
-
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -244,7 +238,7 @@ static void EFR32_reset()
 static uint32_t EFR32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = DEVICE_ID_LOW;
+  uint32_t id = getMcuUniqueId();
 
   return DevID_Mapper(id);
 #else

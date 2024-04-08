@@ -342,7 +342,6 @@ struct rst_info {
 //#define USE_GDL90_MSL
 #define USE_OGN_ENCRYPTION
 #define ENABLE_PROL
-//#define EXCLUDE_VOICE_MESSAGE
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8, M10 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */
@@ -359,7 +358,11 @@ struct rst_info {
 //#define EXCLUDE_MAG
 #define EXCLUDE_BME680
 
-#if !defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32)
+//#define ENABLE_BT_VOICE
+//#define USE_NIMBLE
+#else
+
 #define EXCLUDE_UATM
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -369,14 +372,6 @@ struct rst_info {
 /* Experimental */
 //#define USE_ADAFRUIT_MSC
 //#define USE_USB_HOST
-
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-#define USE_U10_EXT
-#define ENABLE_RECORDER
-#define USE_SA8X8
-/* Experimental */
-#define ENABLE_REMOTE_ID
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(USE_USB_HOST)
 #undef  SOC_GPIO_PIN_T8_S2_CONS_RX
@@ -390,16 +385,16 @@ struct rst_info {
 #include <cdc_acm_host.h>
 
 typedef struct {
-    bool connected;
-    int index;
+    bool         connected;
+    int          index;
     CdcAcmDevice *device;
 } ESP32_USBSerial_device_t;
 
 typedef struct {
-    uint16_t vid;
-    uint16_t pid;
-    uint8_t type;
-    uint8_t model;
+    uint16_t   vid;
+    uint16_t   pid;
+    uint8_t    type;
+    uint8_t    model;
     const char *first_name;
     const char *last_name;
 } USB_Device_List_t;
@@ -423,15 +418,26 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef USE_NMEALIB
 #undef ENABLE_PROL
 //#define USE_NIMBLE
-#endif /* C6 */
+#endif /* C2 || C6 || H2 */
+#endif /* SX || CX || H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define USE_U10_EXT
+#define ENABLE_RECORDER
+#define USE_SA8X8
+/* Experimental */
+#define ENABLE_REMOTE_ID
+//#define EXCLUDE_VOICE_MESSAGE
+#endif /* S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#define EXCLUDE_BLUETOOTH
+#endif /* S2 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32H2)
 #define EXCLUDE_WIFI
 #endif /* H2 */
-#endif /* CONFIG_IDF_TARGET_ESP32SX | C3 | C6 || H2 */
-#else
-//#define ENABLE_BT_VOICE
-//#define USE_NIMBLE
-#endif /* NOT CONFIG_IDF_TARGET_ESP32 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
 

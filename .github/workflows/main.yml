@@ -240,7 +240,7 @@ jobs:
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32h2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32h2_none"            --save-prefs ;
-            # arduino --pref "custom_FlashFreq=esp32h2_64"             --save-prefs ;
+            arduino --pref "custom_FlashFreq=esp32h2_64"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32h2_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32h2_4M"               --save-prefs ;
             arduino --pref "custom_PSRAM=esp32h2_enabled"              --save-prefs ;
