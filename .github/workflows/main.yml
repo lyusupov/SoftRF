@@ -83,15 +83,12 @@ jobs:
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
-              # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
-              # if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]] || [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
               if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
                 rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 sudo mv arduino-cli /usr/local/bin/ ;
               else
-              # ESP32 AC 3.0-alpha2+ can work with IDE1
                 wget http://downloads.arduino.cc/arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
                 tar xf arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
                 rm arduino-$ARDUINO_IDE_VERSION-linux64.tar.xz ;
@@ -195,7 +192,6 @@ jobs:
             arduino --pref "custom_UploadSpeed=esp32c3_921600"         --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
-          # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
           #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
           #  arduino-cli config init ;
           #  arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json ;
@@ -204,7 +200,6 @@ jobs:
           #  # arduino-cli board attach -b $BOARD ;
           #  cd $GITHUB_WORKSPACE ;
           #fi
-          # ESP32 AC 3.0-alpha2+ can work with IDE1
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
             arduino --install-boards esp32:esp32:3.0.0-alpha3 ;
@@ -398,11 +393,9 @@ jobs:
           if [[ "$BOARD" =~ "esp8266:esp8266:"     ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
           fi ;
-          # ESP32 AC 3.0-alpha1 needs IDE2 or CLI
           #if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
           #  arduino-cli compile -v --build-properties upload.maximum_size=2500000 -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           #else
-          # ESP32 AC 3.0-alpha2+ can work with IDE1
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
             fi ;
