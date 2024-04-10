@@ -102,6 +102,7 @@ static void ax25_decode(AX25Ctx *ctx)
 
     memset(msg.info,0,sizeof(msg.info));
     msg.len = ctx->frame_len - 2 - (buf - ctx->buf);
+    if (msg.len > AX25_MAX_INFO_LEN) msg.len=AX25_MAX_INFO_LEN;
     memcpy(msg.info,buf,msg.len);
     //msg.info[msg.len]=0;
     //msg.info = buf;
@@ -126,16 +127,20 @@ void ax25_poll(AX25Ctx *ctx)
     {
         if (!ctx->escape && c == HDLC_FLAG)
         {
-            if (ctx->frame_len >= AX25_MIN_FRAME_LEN)
-            {
+            // if (ctx->frame_len >= AX25_MIN_FRAME_LEN)
+            // {
                 if (ctx->crc_in == AX25_CRC_CORRECT)
                 {
-                    ax25_decode(ctx);
+                    //End Flag 7E
+                    ctx->sync = false;
+                    ctx->crc_in = CRC_CCIT_INIT_VAL;
+                    ctx->frame_len = 0;
+                    continue;
                 }
-            }
+            //}
+            //Sync and Start Flag 7E
             ctx->sync = true;
             ctx->crc_in = CRC_CCIT_INIT_VAL;
-
             ctx->frame_len = 0;
             continue;
         }
@@ -158,6 +163,15 @@ void ax25_poll(AX25Ctx *ctx)
             {
                 ctx->buf[ctx->frame_len++] = c;
                 ctx->crc_in = update_crc_ccit(c, ctx->crc_in);
+
+                if (ctx->crc_in == AX25_CRC_CORRECT)
+                {
+                    ax25_decode(ctx);
+                    ctx->sync = false;
+                    ctx->escape = true;
+                    ctx->frame_len = 0;
+                    memset(ctx->buf,0,sizeof(ctx->buf));
+                }
             }
             else
             {
