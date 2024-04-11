@@ -50,15 +50,16 @@
  *   Arduino-NVM library is developed by Frank Holtz
  *   AceButton library is developed by Brian Park
  *   GxEPD2 library is developed by Jean-Marc Zingg
- *   Adafruit GFX and INA219 libraries are developed by Adafruit Industries
+ *   Adafruit GFX, BusIO, INA219 and BME680 libraries are developed by Adafruit Industries
  *   U8g2 fonts for Adafruit GFX are developed by Oliver Kraus
  *   Adafruit SPIFlash and SleepyDog libraries are developed by Adafruit Industries
  *   SdFat library is developed by Bill Greiman
  *   Arduino MIDI library is developed by Francois Best (Forty Seven Effects)
  *   Arduino uCDB library is developed by Ioulianos Kakoulidis
- *   Arduino Core for Atmel SAMD and FlashStorage library are developed by Arduino LLC
+ *   Arduino Cores for Atmel SAMD and Renesas RA4 are developed by Arduino LLC
+ *   FlashStorage library is developed by Arduino LLC
  *   USB host library 2.0 for Zero/M0/SAMD is developed by gdsports625@gmail.com
- *   Arduino Core for Raspberry Pi RP2040 is developed by Earle Philhower
+ *   Arduino Core for RP2040 and ESP8266Audio library are developed by Earle Philhower
  *   MPU-9250 9 DoF sensor library is developed by Kris Winer and Hideaki Tai
  *   Pico PIO USB library is developed by sekigon-gonnoc
  *   IniFile library is developed by Steve Marple
@@ -66,6 +67,7 @@
  *   LibAPRS-ESP32 library is developed by Evan Krall and Somkiat Nakhonthai
  *   SA818 library is developed by Gibbon Zen
  *   OpenDroneID library is developed by Steve Jack
+ *   WiFiWebServer and Functional-Vlpp libraries are developed by Khoi Hoang
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

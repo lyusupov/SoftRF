@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Credits
 
- * Arduino core for ESP8266 is developed/supported by **ESP8266 Community** (support-esp8266@esp8266.com)
+ * Arduino Core for ESP8266 is developed/supported by **ESP8266 Community** (support-esp8266@esp8266.com)
  * AVR/Arduino nRF905 Library/Driver is developed by **Zak Kemble**, contact@zakkemble.co.uk
  * flarm_decode is developed by **Stanislaw Pusep**, http://github.com/creaktive
  * Arduino Time Library is developed by **Paul Stoffregen**, http://github.com/PaulStoffregen
@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * FEC library is developed by **Phil Karn**
  * AXP20X, XPowersLib, BMA423, FT5206, PCF8563 and SensorsLib libraries are developed by **Lewis He**
  * GxEPD2 library is developed by **Jean-Marc Zingg**
- * Adafruit SSD1306, INA219 and GFX libraries are developed by **Adafruit Industries**
+ * Adafruit SSD1306, GFX, BusIO, INA219 and BME680 libraries are developed by **Adafruit Industries**
  * GDL90 decoder is developed by **Ryan David**
  * Sqlite3 Arduino library for ESP32 is developed by **Arundale Ramanathan**
  * FLN/OGN aircrafts data is courtesy of **FlarmNet/GliderNet**
@@ -77,9 +77,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino MIDI library is developed by **Francois Best**
  * Arduino uCDB library is developed by **Ioulianos Kakoulidis**
  * libmodes library is developed by **Salvatore Sanfilippo** and **Thomas Watson**
- * Arduino Core for Atmel SAMD and FlashStorage library are developed by **Arduino LLC**
+ * Arduino Cores for Atmel SAMD and Renesas RA4 are developed by **Arduino LLC**
+ * FlashStorage library is developed by **Arduino LLC**
  * USB host library 2.0 for Zero/M0/SAMD is developed by **gdsports625@gmail.com**
- * Arduino Core for Raspberry Pi RP2040 is developed by **Earle Philhower**
+ * Arduino Core for Raspberry Pi RP2040 and ESP8266Audio library are developed by **Earle Philhower**
  * MPU-9250 9 DoF sensor library is developed by **Kris Winer** and **Hideaki Tai**
  * Pico PIO USB library is developed by **sekigon-gonnoc**
  * ESP8266Audio library is developed by **Earle Philhower**
@@ -88,3 +89,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * LibAPRS-ESP32 library is developed by **Evan Krall** and **Somkiat Nakhonthai**
  * SA818 library is developed by **Gibbon Zen**
  * OpenDroneID library is developed by **Steve Jack**
+ * WiFiWebServer and Functional-Vlpp libraries are developed by **Khoi Hoang**

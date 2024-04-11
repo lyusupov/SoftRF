@@ -95,7 +95,7 @@ static const char about_html[] PROGMEM = "<html>\
 <h2 align=center>Credits</h2>\
 <p align=center>(in historical order)</p>\
 <table width=100%%>\
-<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino core for ESP8266</td></tr>\
+<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino Core for ESP8266</td></tr>\
 <tr><th align=left>Zak Kemble</th><td align=left>nRF905 library</td></tr>\
 <tr><th align=left>Stanislaw Pusep</th><td align=left>flarm_decode</td></tr>\
 <tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
@@ -109,7 +109,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
 <tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
 <tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
-<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino core for ESP32</td></tr>\
+<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino Core for ESP32</td></tr>\
 <tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
 <tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
 <tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
@@ -129,11 +129,14 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Lewis He</th><td align=left>AXP20X, XPowersLib and SensorsLib libraries</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 <tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
+<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for RP2040 and ESP8266Audio library</td></tr>\
 <tr><th align=left>Steve Marple</th><td align=left>IniFile library</td></tr>\
 <tr><th align=left>Vasilis Georgitzikis</th><td align=left>MD5 library</td></tr>\
 <tr><th align=left>Evan Krall and Somkiat Nakhonthai</th><td align=left>LibAPRS-ESP32 library</td></tr>\
 <tr><th align=left>Gibbon Zen</th><td align=left>SA818 library</td></tr>\
 <tr><th align=left>Steve Jack</th><td align=left>OpenDroneID library</td></tr>\
+<tr><th align=left>Martino Facchin</th><td align=left>Arduino Core for Renesas fsp</td></tr>\
+<tr><th align=left>Khoi Hoang</th><td align=left>WiFiWebServer and Functional-Vlpp libraries</td></tr>\
 </table>\
 <hr>\
 Copyright (C) 2015-2024 &nbsp;&nbsp;&nbsp; Linar Yusupov\
