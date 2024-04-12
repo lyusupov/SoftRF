@@ -777,7 +777,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     SerialInput.begin(baud, config, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
-#if ARDUINO_USB_ON_BOOT == 0
+#if ARDUINO_USB_ON_BOOT == 0 && ARDUINO_USB_CDC_ON_BOOT != 1
 #if defined(USE_USB_HOST)
     if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
       Serial_GNSS_In.updateBaudRate(SERIAL_GNSS_BR);
