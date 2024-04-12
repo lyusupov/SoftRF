@@ -23,12 +23,12 @@ jobs:
         board:
           [
             'esp8266:esp8266:nodemcuv2',
-            #'esp32:esp32:esp32:PartitionScheme=min_spiffs',
-            #'esp32:esp32:esp32s2',
-            #'esp32:esp32:esp32s3',
-            #'esp32:esp32:esp32c3',
-            #'esp32:esp32:esp32c6',
-            #'esp32:esp32:esp32h2',
+            'esp32:esp32:esp32:PartitionScheme=min_spiffs',
+            'esp32:esp32:esp32s2',
+            'esp32:esp32:esp32s3',
+            'esp32:esp32:esp32c3',
+            'esp32:esp32:esp32c6',
+            'esp32:esp32:esp32h2',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
@@ -150,7 +150,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.14 ;
+            arduino --install-boards esp32:esp32:2.0.15 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
@@ -164,7 +164,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.14 ;
+            arduino --install-boards esp32:esp32:2.0.15 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
@@ -180,7 +180,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.14 ;
+            arduino --install-boards esp32:esp32:2.0.15 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c3_none"            --save-prefs ;
@@ -202,7 +202,7 @@ jobs:
           #fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.0.0-alpha3 ;
+            arduino --install-boards esp32:esp32:3.0.0-rc1 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c6_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c6_none"            --save-prefs ;
@@ -212,7 +212,7 @@ jobs:
             arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
-            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-alpha3 ;
+            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
             sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
             # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
@@ -231,7 +231,7 @@ jobs:
           #fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.0.0-alpha3 ;
+            arduino --install-boards esp32:esp32:3.0.0-rc1 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32h2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32h2_none"            --save-prefs ;
@@ -241,7 +241,7 @@ jobs:
             arduino --pref "custom_PSRAM=esp32h2_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32h2_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32h2_921600"         --save-prefs ;
-            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-alpha3 ;
+            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
             sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
