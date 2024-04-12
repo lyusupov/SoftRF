@@ -41,6 +41,7 @@
 #include "../../driver/Battery.h"
 
 #include <core_version.h>
+#include <cbuf.h>
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pUARTCharacteristic = NULL;

@@ -437,6 +437,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 
 #if defined(CONFIG_IDF_TARGET_ESP32H2)
 #define EXCLUDE_WIFI
+#undef NMEA_TCP_SERVICE
 #endif /* H2 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
