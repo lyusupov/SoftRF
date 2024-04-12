@@ -436,6 +436,11 @@ static bool play_file(char *filename)
 #endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if CONFIG_TINYUSB_ENABLED && \
+    (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+#include <USB.h>
+#endif /* CONFIG_TINYUSB_ENABLED */
+
 #if defined(ENABLE_D1090_INPUT)
 #include <mode-s.h>
 
