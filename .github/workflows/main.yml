@@ -23,12 +23,12 @@ jobs:
         board:
           [
             'esp8266:esp8266:nodemcuv2',
-            'esp32:esp32:esp32:PartitionScheme=min_spiffs',
-            'esp32:esp32:esp32s2',
-            'esp32:esp32:esp32s3',
-            'esp32:esp32:esp32c3',
-            'esp32:esp32:esp32c6',
-            'esp32:esp32:esp32h2',
+            #'esp32:esp32:esp32:PartitionScheme=min_spiffs',
+            #'esp32:esp32:esp32s2',
+            #'esp32:esp32:esp32s3',
+            #'esp32:esp32:esp32c3',
+            #'esp32:esp32:esp32c6',
+            #'esp32:esp32:esp32h2',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
@@ -150,7 +150,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s2" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.15 ;
+            arduino --install-boards esp32:esp32:2.0.14 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s2_none"            --save-prefs ;
@@ -164,7 +164,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.15 ;
+            arduino --install-boards esp32:esp32:2.0.14 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32s3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32s3_none"            --save-prefs ;
@@ -180,7 +180,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c3" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:2.0.15 ;
+            arduino --install-boards esp32:esp32:2.0.14 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c3_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c3_none"            --save-prefs ;
