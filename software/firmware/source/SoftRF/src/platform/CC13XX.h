@@ -274,6 +274,8 @@ extern SCSerial                 scSerial;
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
 
+#define EXCLUDE_BME680
+
 #else
 #error "This board is not supported!"
 #endif /* BOARD_CC1352R1_LAUNCHXL || BOARD_CC1312R1_LAUNCHXL */

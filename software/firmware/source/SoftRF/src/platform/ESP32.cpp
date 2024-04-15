@@ -4816,7 +4816,7 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #if HWCDC_SERIAL_IS_DEFINED
 #define USBSerial                HWCDCSerial
 #else
-#define USBSerial                Serial /* TBD */
+HWCDC USBSerial;
 #endif /* HWCDC_SERIAL_IS_DEFINED */
 #endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
