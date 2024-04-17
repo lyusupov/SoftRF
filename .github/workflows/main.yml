@@ -212,8 +212,8 @@ jobs:
             arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
-            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
-            sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
+            # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
             # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
@@ -241,8 +241,8 @@ jobs:
             arduino --pref "custom_PSRAM=esp32h2_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32h2_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32h2_921600"         --save-prefs ;
-            cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
-            sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.0-rc1 ;
+            # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "STM32:stm32:" ]]; then

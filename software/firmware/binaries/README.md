@@ -34,6 +34,9 @@ Model|Instructions|Firmware folder
 [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)|[ASR6601](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#asr6601)|[ASR6601](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601)
 [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)||[RaspberryPi](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RaspberryPi)
 [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)
+[Academy Edition](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)|N/A<sup>1</sup>|N/A<sup>1</sup>
+
+<sup>1</sup> - since primary purpose of the **Academy Edition** is education - we do not provide firmware binaries for this model. Students and a teacher are responsible to [build and install the SoftRF firmware](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/source/README.md) ( [SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#samd21) or [RA4M1](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/source#ra4m1) ) from source code by themselves.<br>
 <br>
 
 Model|Instructions|Firmware folder
@@ -180,10 +183,10 @@ GND|GND
 3V3|VCC
 TX|GPIO16
 RX|GPIO17
-DTR&nbsp;<sup>1</sup>|GPIO2
+DTR&nbsp;<sup>2</sup>|GPIO2
 RTS|RESET
 
-<sup>1</sup> - certain USB-Serial adapters may require to **invert DTR** signal either in hardware or in the Python script.<br>
+<sup>2</sup> - certain USB-Serial adapters may require to **invert DTR** signal either in hardware or in the Python script.<br>
 
 4. Plug the USB-Serial adapter into spare USB slot of your PC ;
 5. Use the loader tool to read the serial number of the MCU. This is a safety action to make sure that all the connections are good ;
