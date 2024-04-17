@@ -1296,7 +1296,7 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_C2_DEVKIT) {
 
     lmic_pins.nss  = SOC_GPIO_PIN_C2_SS;
-    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.rst  = SOC_GPIO_PIN_C2_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C2_TXE;
 
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
@@ -1311,7 +1311,7 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
     lmic_pins.nss  = SOC_GPIO_PIN_C3_SS;
-    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.rst  = SOC_GPIO_PIN_C3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C3_TXE;
 
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
@@ -1326,7 +1326,7 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
     lmic_pins.nss  = SOC_GPIO_PIN_C6_SS;
-    lmic_pins.rst  = LMIC_UNUSED_PIN;
+    lmic_pins.rst  = SOC_GPIO_PIN_C6_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
 
   } else if (esp32_board == ESP32_LILYGO_T3C6) {
@@ -4015,9 +4015,19 @@ static bool ESP32_Baro_setup()
 
   } else if (esp32_board == ESP32_C2_DEVKIT) {
 
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
     Wire.setPins(SOC_GPIO_PIN_C2_SDA, SOC_GPIO_PIN_C2_SCL);
 
   } else if (esp32_board == ESP32_C3_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
 
     Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
 
@@ -4030,6 +4040,11 @@ static bool ESP32_Baro_setup()
     Wire.setPins(SOC_GPIO_PIN_HELTRK_SDA, SOC_GPIO_PIN_HELTRK_SCL);
 
   } else if (esp32_board == ESP32_C6_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
 
     Wire.setPins(SOC_GPIO_PIN_C6_SDA, SOC_GPIO_PIN_C6_SCL);
 

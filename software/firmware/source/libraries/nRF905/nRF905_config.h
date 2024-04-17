@@ -107,19 +107,37 @@
 
 #elif defined(ESP32)
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
-// DOIT ESP32
-#define TRX_EN    2    // Enable/standby pin
-#define PWR_MODE  14   // Power mode pin
-#define TX_EN     26   // TX / RX mode pin
-#define CS_N      18   // SPI slave select pin
-#else
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+// NodeMCU 1.0 + WT018684-S5 GPIO pins
+#define TRX_EN    8    // D4 // Enable/standby pin
+#define PWR_MODE  10   // D2 // Power mode pin
+#define TX_EN     2    // D0 // TX / RX mode pin
+#define CS_N      7    // D8 // SPI slave select pin
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
 // NodeMCU 1.0 + ESP-C3-12F GPIO pins
 #define TRX_EN    10   // D4 // Enable/standby pin
 #define PWR_MODE  18   // D2 // Power mode pin
 #define TX_EN     2    // D0 // TX / RX mode pin
 #define CS_N      8    // D8 // SPI slave select pin
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+// NodeMCU 1.0 + WT0132C6-S5 GPIO pins
+#define TRX_EN    8    // D4 // Enable/standby pin
+#define PWR_MODE  10   // D2 // Power mode pin
+#define TX_EN     2    // D0 // TX / RX mode pin
+#define CS_N      7    // D8 // SPI slave select pin
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+// TBD
+#define TRX_EN    8    // D4 // Enable/standby pin
+#define PWR_MODE  10   // D2 // Power mode pin
+#define TX_EN     2    // D0 // TX / RX mode pin
+#define CS_N      7    // D8 // SPI slave select pin
+#else
+// DOIT ESP32
+#define TRX_EN    2    // Enable/standby pin
+#define PWR_MODE  14   // Power mode pin
+#define TX_EN     26   // TX / RX mode pin
+#define CS_N      18   // SPI slave select pin
+#endif /* CONFIG_IDF_TARGET_ESP32CX */
 
 #define CD        0	   // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    5
