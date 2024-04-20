@@ -29,12 +29,16 @@ uint8_t *ctxbuffer;
 
 #define typeof(x) __typeof__(x)
 #define countof(a) sizeof(a) / sizeof(a[0])
+
+#ifndef MIN
 #define MIN(a, b) (                          \
     {                                        \
         typeof(a) _a = (a);                  \
         typeof(b) _b = (b);                  \
         ((typeof(_a))((_a < _b) ? _a : _b)); \
     })
+#endif
+
 #define DECODE_CALL(buf, addr)                                     \
     for (unsigned i = 0; i < sizeof((addr)) - CALL_OVERSPACE; i++) \
     {                                                              \

@@ -236,7 +236,14 @@ struct rst_info {
 #define ENABLE_PROL
 //#define ENABLE_BT_VOICE
 #else
+#if defined(ESPHOSTSPI)
+#include <ESP8266WiFi.h>
+#define Serial_setDebugOutput(x) ({})
+#define USE_ARDUINO_WIFI
+#define EXCLUDE_OTA
+#else
 #define EXCLUDE_WIFI
+#endif /* ESPHOSTSPI */
 //#define EXCLUDE_OTA
 //#define USE_ARDUINO_WIFI
 //#define USE_WIFI_NINA         false

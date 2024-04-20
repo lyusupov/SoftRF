@@ -57,8 +57,13 @@ static uint32_t prev_rx_pkt_cnt = 0;
 #include "jquery_min_js.h"
 #endif /* EXCLUDE_OTA */
 
+#if defined(ESPHOSTSPI)
+#include <WebServer.h>
+WebServer server ( 80 );
+#else
 #include <WiFiWebServer.h>
 WiFiWebServer server ( 80 );
+#endif
 
 byte getVal(char c)
 {
