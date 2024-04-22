@@ -45,14 +45,14 @@
 extern "C" {
 #include "pico/binary_info.h"
 }
+
+#include <pico_sleep.h>
 #else
 extern "C"
 {
 #include "hardware/flash.h"
 }
 #endif /* ARDUINO_ARCH_MBED */
-
-#include <pico_sleep.h>
 
 #if defined(USE_TINYUSB)
 #if defined(USE_USB_HOST)
@@ -504,6 +504,7 @@ static void RP2040_fini(int reason)
   USBDevice.detach();
 #endif /* USE_TINYUSB */
 
+#if !defined(ARDUINO_ARCH_MBED)
   sleep_run_from_xosc();
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
@@ -512,6 +513,7 @@ static void RP2040_fini(int reason)
   datetime_t alarm = {0};
   sleep_goto_sleep_until(&alarm, NULL);
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
+#endif /* ARDUINO_ARCH_MBED */
 
 #if 0 /* TBD */
   // back from dormant state
@@ -524,7 +526,9 @@ static void RP2040_fini(int reason)
 
 static void RP2040_reset()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   rp2040.restart();
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static uint32_t RP2040_getChipId()
@@ -568,7 +572,11 @@ static String RP2040_getResetReason()
 
 static uint32_t RP2040_getFreeHeap()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   return rp2040.getFreeHeap();
+#else
+  return 0; /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static long RP2040_random(long howsmall, long howBig)

@@ -43,6 +43,7 @@ jobs:
             'arduino:renesas_uno:unor4wifi',
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
+            'arduino:mbed_rp2040:pico',
             'SiliconLabs:silabs:thingplusmatter_ble'
           ]
 
@@ -367,6 +368,32 @@ jobs:
             fi
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "arduino:mbed_rp2040:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
+            arduino --install-boards arduino:mbed_rp2040:4.1.1 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $HOME/.arduino15/packages/arduino/hardware/mbed_rp2040/4.1.1/variants/RASPBERRY_PI_PICO ;
+            sed -i '62 a // Serial2'                   pins_arduino.h ;
+            sed -i '63 a #define PIN_SERIAL2_TX (4ul)' pins_arduino.h ;
+            sed -i '64 a #define PIN_SERIAL2_RX (5ul)' pins_arduino.h ;
+            sed -i '65 a //'                           pins_arduino.h ;
+            sed -i '66 a #define SERIAL2_TX     (digitalPinToPinName(PIN_SERIAL2_TX))' pins_arduino.h ;
+            sed -i '67 a #define SERIAL2_RX     (digitalPinToPinName(PIN_SERIAL2_RX))' pins_arduino.h ;
+            sed -i '68 a //'                           pins_arduino.h ;
+            sed -i '69 a // SPI1'                      pins_arduino.h ;
+            sed -i '70 a #define PIN_SPI1_MISO  (12u)' pins_arduino.h ;
+            sed -i '71 a #define PIN_SPI1_MOSI  (11u)' pins_arduino.h ;
+            sed -i '72 a #define PIN_SPI1_SCK   (10u)' pins_arduino.h ;
+            sed -i '73 a #define PIN_SPI1_SS    ( 3u)' pins_arduino.h ;
+            sed -i '74 a //'                           pins_arduino.h ;
+            sed -i '75 a #define SPI_MISO1      (digitalPinToPinName(PIN_SPI1_MISO))' pins_arduino.h ;
+            sed -i '76 a #define SPI_MOSI1      (digitalPinToPinName(PIN_SPI1_MOSI))' pins_arduino.h ;
+            sed -i '77 a #define SPI_SCK1       (digitalPinToPinName(PIN_SPI1_SCK))'  pins_arduino.h ;
+            sed -i '78 a //'                           pins_arduino.h ;
+            sed -i 's,#define SPI_HOWMANY\t\t(1),#define SPI_HOWMANY\t\t(2),g'   pins_arduino.h ;
+            sed -i 's,#define SERIAL_HOWMANY\t\t1,#define SERIAL_HOWMANY\t\t2,g' pins_arduino.h ;
+            cd $GITHUB_WORKSPACE ;
+          fi
           #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
           #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
           #  arduino --install-boards SiliconLabs:silabs:1.0.0 ;
@@ -459,6 +486,9 @@ jobs:
           fi ;
           if [[ "$BOARD" =~ "rp2040:rp2040:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "arduino:mbed_rp2040:" ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
