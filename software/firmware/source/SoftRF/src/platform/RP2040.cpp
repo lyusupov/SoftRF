@@ -151,7 +151,48 @@ static union {
 };
 
 #if defined(EXCLUDE_EEPROM)
-eeprom_t eeprom_block;
+#include "../TrafficHelper.h"
+
+eeprom_t eeprom_block = {
+  SOFTRF_EEPROM_MAGIC,
+  SOFTRF_EEPROM_VERSION,
+  {
+    SOFTRF_MODE_NORMAL,
+    RF_PROTOCOL_OGNTP,
+    RF_BAND_EU,
+
+    AIRCRAFT_TYPE_GLIDER,
+    RF_TX_POWER_FULL,
+    BUZZER_VOLUME_FULL,
+    0,
+    DIRECTION_NORTH_UP,
+
+    true,
+    false,
+    true,
+    true,
+    false, /* resvd1 */
+    NMEA_USB,
+
+    BLUETOOTH_NONE,
+    TRAFFIC_ALARM_DISTANCE,
+    false,
+    false,
+
+    GDL90_OFF,
+    D1090_OFF,
+    JSON_OFF,
+    POWER_SAVE_NONE,
+
+    0,
+    0, /* resvd2 */
+    0, /* resvd3 */
+    0, /* resvd4 */
+
+    { 0, 0, 0, 0 },
+  },
+};
+
 settings_t *settings = &eeprom_block.field.settings;
 #endif /* EXCLUDE_EEPROM */
 
@@ -528,6 +569,8 @@ static void RP2040_reset()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   rp2040.restart();
+#else
+  NVIC_SystemReset();
 #endif /* ARDUINO_ARCH_MBED */
 }
 
@@ -1155,7 +1198,7 @@ RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
 
 static void RP2040_USB_loop()
 {
-#if !defined(USE_TINYUSB)
+#if !defined(USE_TINYUSB) && !defined(ARDUINO_ARCH_MBED)
   uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
   size_t size;
 
@@ -1206,7 +1249,7 @@ static int RP2040_USB_available()
 {
   int rval = 0;
 
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(ARDUINO_ARCH_MBED)
   if (USBSerial) {
     rval = USBSerial.available();
   }
@@ -1221,7 +1264,7 @@ static int RP2040_USB_read()
 {
   int rval = -1;
 
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(ARDUINO_ARCH_MBED)
   if (USBSerial) {
     rval = USBSerial.read();
   }
@@ -1234,7 +1277,7 @@ static int RP2040_USB_read()
 
 static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
 {
-#if !defined(USE_TINYUSB)
+#if !defined(USE_TINYUSB) && !defined(ARDUINO_ARCH_MBED)
   size_t written;
 
   for (written=0; written < size; written++) {
@@ -1248,7 +1291,11 @@ static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
 #else
   size_t rval = size;
 
+#if !defined(ARDUINO_ARCH_MBED)
   if (USBSerial && (size < USBSerial.availableForWrite())) {
+#else
+  if (USBSerial) {
+#endif /* ARDUINO_ARCH_MBED */
     rval = USBSerial.write(buffer, size);
   }
 
