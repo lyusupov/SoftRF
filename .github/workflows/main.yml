@@ -37,6 +37,7 @@ jobs:
             'CubeCell:CubeCell:CubeCell-GPS',
             'CubeCell:CubeCell:CubeCell-Board-PRO',
             'adafruit:nrf52:pca10056',
+            'arduino:mbed_edge:edge_control',
             'arduino:samd:mzero_bl',
             'arduino:avr:mega',
             'arduino:renesas_uno:minima',
@@ -339,6 +340,12 @@ jobs:
             fi ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "arduino:mbed_edge:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
+            arduino --install-boards arduino:mbed_edge:4.1.1 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
           if [[ "$BOARD" =~ "arduino:samd:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
             arduino --install-boards arduino:samd:1.8.13 ;
@@ -468,6 +475,9 @@ jobs:
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "adafruit:nrf52:"      ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "arduino:mbed_edge:" ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "arduino:samd:"        ]]; then
