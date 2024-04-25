@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ARDUINO_ARCH_NRF52)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
 
 #ifndef PLATFORM_NRF52_H
 #define PLATFORM_NRF52_H
 
 #include <avr/dtostrf.h>
+#if !defined(ARDUINO_ARCH_MBED)
 #include <pcf8563.h>
+#endif /* ARDUINO_ARCH_MBED */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -102,6 +104,10 @@ struct rst_info {
 #define DFU_MAGIC_SKIP        (0x6d)
 #define BME280_ADDRESS        (0x77)
 #define MPU9250_ADDRESS       (0x68)
+
+#if defined(ARDUINO_ARCH_MBED)
+#define PCF8563_SLAVE_ADDRESS (0x51)
+#endif /* ARDUINO_ARCH_MBED */
 
 #define MIDI_CHANNEL_TRAFFIC  1
 #define MIDI_CHANNEL_VARIO    2
@@ -302,7 +308,6 @@ struct rst_info {
 //#define USE_WEBUSB_SERIAL
 //#define USE_WEBUSB_SETTINGS
 //#define USE_USB_MIDI
-#define USE_BLE_MIDI
 //#define USE_PWM_SOUND
 //#define USE_GDL90_MSL
 //#define USE_IBEACON
@@ -310,7 +315,14 @@ struct rst_info {
 //#define EXCLUDE_IMU
 #define USE_OGN_ENCRYPTION
 #define ENABLE_PROL
+#if !defined(ARDUINO_ARCH_MBED)
+#define USE_BLE_MIDI
 #define ENABLE_REMOTE_ID
+#else
+#undef USE_EPAPER
+#define EXCLUDE_BLUETOOTH
+#define EXCLUDE_IMU
+#endif /* ARDUINO_ARCH_MBED */
 //#define USE_EXT_I2S_DAC
 
 /* FTD-012 data port protocol version 8 and 9 */
@@ -338,7 +350,9 @@ extern Adafruit_NeoPixel strip;
 extern Uart Serial2;
 #endif
 
+#if !defined(ARDUINO_ARCH_MBED)
 extern PCF8563_Class *rtc;
+#endif /* ARDUINO_ARCH_MBED */
 extern const char *nRF52_Device_Manufacturer, *nRF52_Device_Model, *Hardware_Rev[];
 
 #if defined(USE_EPAPER)

@@ -164,7 +164,7 @@ void os_runstep (void) {
     // check for runnable jobs
     if (OS.scheduledjobs) {
         //debug_verbose_printf("Sleeping until job %u, cb %u, deadline %s\r\n", (unsigned)OS.scheduledjobs, (unsigned)OS.scheduledjobs->func, (ostime_t)OS.scheduledjobs->deadline);
-      	if (hal_sleep(OS.exact ? HAL_SLEEP_EXACT : HAL_SLEEP_APPROX, OS.scheduledjobs->deadline) == 0) {
+	if (lmic_hal_sleep(OS.exact ? HAL_SLEEP_EXACT : HAL_SLEEP_APPROX, OS.scheduledjobs->deadline) == 0) {
       	    j = OS.scheduledjobs;
       	    OS.scheduledjobs = j->next;
       	    if ((j->flags & OSJOB_FLAG_APPROX) == 0) {
@@ -173,7 +173,7 @@ void os_runstep (void) {
       	}
     } else { // nothing pending
         //debug_verbose_printf("Sleeping forever\r\n");
-	      hal_sleep(HAL_SLEEP_FOREVER, 0);
+	      lmic_hal_sleep(HAL_SLEEP_FOREVER, 0);
     }
     if( j == NULL || (j->flags & OSJOB_FLAG_IRQDISABLED) == 0) {
         hal_enableIRQs();

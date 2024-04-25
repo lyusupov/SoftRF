@@ -2,8 +2,9 @@
 #include <_ansi.h>
 #include <time.h>
 
-#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2) && \
-    !defined(ARDUINO_ARCH_NRF52)  && !defined(ARDUINO_ARCH_SAMD)
+#if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)   && \
+    !defined(ARDUINO_ARCH_NRF52)  && !defined(ARDUINO_ARCH_NRF52840) && \
+    !defined(ARDUINO_ARCH_SAMD)
 #include <pgmspace.h>
 #if defined(ARDUINO_ARCH_ESP32)
 #include "esp_idf_version.h"
@@ -17,7 +18,8 @@
 #endif
 #else
 #include <avr/pgmspace.h>
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_SAMD)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || \
+    defined(ARDUINO_ARCH_SAMD)
 #define	_AND		,
 #define	_CONST		const
 #define	_EXFUN(name, proto)		name proto

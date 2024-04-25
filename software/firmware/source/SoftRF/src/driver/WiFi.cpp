@@ -122,7 +122,7 @@ void WiFi_setup()
     return;
   }
 
-#if !defined(_WIFI_ESP_AT_H_)
+#if !defined(_WIFI_ESP_AT_H_) && !defined(ARDUINO_ARCH_MBED)
   String fv = WiFi.firmwareVersion();
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
     Serial.println("Please upgrade the firmware");

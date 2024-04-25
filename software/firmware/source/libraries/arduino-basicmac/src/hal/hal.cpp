@@ -602,7 +602,7 @@ void hal_enableIRQs () {
 
 #endif /* ARDUINO_ARCH_STM32 */
 
-u1_t hal_sleep (u1_t type, u4_t targettime) {
+u1_t lmic_hal_sleep (u1_t type, u4_t targettime) {
     // Actual sleeping not implemented, but jobs are only run when this
     // function returns 0, so make sure we only do that when the
     // targettime is close. When asked to sleep forever (until woken up

@@ -96,7 +96,7 @@ void hal_enableIRQs (void);
 #define HAL_SLEEP_EXACT		0
 #define HAL_SLEEP_APPROX	1
 #define HAL_SLEEP_FOREVER	2
-u1_t hal_sleep (u1_t type, u4_t targettime);
+u1_t lmic_hal_sleep (u1_t type, u4_t targettime);
 
 /*
  * return 32-bit system time in ticks.

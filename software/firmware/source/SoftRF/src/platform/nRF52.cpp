@@ -16,14 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_NRF52)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
 
 #include <SPI.h>
 #include <Wire.h>
+#if !defined(ARDUINO_ARCH_MBED)
 #include <pcf8563.h>
 #include <Adafruit_SPIFlash.h>
 #include "Adafruit_TinyUSB.h"
 #include <Adafruit_SleepyDog.h>
+#endif /* ARDUINO_ARCH_MBED */
 #include <ArduinoJson.h>
 #include "nrf_wdt.h"
 
@@ -126,8 +128,10 @@ const prototype_entry_t techo_prototype_boards[] = {
   { 0x65ab5994ea2c9094, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* blue   */
 };
 
+#if !defined(ARDUINO_ARCH_MBED)
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
+#endif /* ARDUINO_ARCH_MBED */
 
 static bool nRF52_has_rtc      = false;
 static bool nRF52_has_spiflash = false;
@@ -136,11 +140,21 @@ static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
 static bool screen_saver       = false;
 
+#if !defined(ARDUINO_ARCH_MBED)
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
 
 static TaskHandle_t EPD_Task_Handle = NULL;
+#else
+#define ledOn(x)  {} /* TBD */
+#define ledOff(x) {} /* TBD */
 
-#if !defined(ARDUINO_NRF52840_PCA10056)
+#define PIN_LED1  0 /* TBD */
+#define PIN_LED2  0 /* TBD */
+#define PIN_LED3  0 /* TBD */
+#define PIN_LED4  0 /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
+
+#if !defined(ARDUINO_NRF52840_PCA10056) && !defined(ARDUINO_ARCH_MBED)
 #error "This nRF52 build variant is not supported!"
 #endif
 
@@ -182,6 +196,7 @@ GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT>   epd_bn (GxEPD2_150_BN(
 GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
 
+#if !defined(ARDUINO_ARCH_MBED)
 Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
                                               SOC_GPIO_PIN_SFL_SS,
                                               SOC_GPIO_PIN_SFL_MOSI,
@@ -217,6 +232,7 @@ Adafruit_USBD_MSC usb_msc;
 
 // file system object from SdFat
 FatVolume fatfs;
+#endif /* ARDUINO_ARCH_MBED */
 
 #define NRF52_JSON_BUFFER_SIZE  1024
 
@@ -247,6 +263,7 @@ MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI_USB);
 #endif /* USE_USB_MIDI */
 
 ui_settings_t ui_settings = {
+#if !defined(ARDUINO_ARCH_MBED)
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
@@ -259,10 +276,10 @@ ui_settings_t ui_settings = {
     .aghost       = ANTI_GHOSTING_OFF,
     .filter       = TRAFFIC_FILTER_OFF,
     .team         = 0
+#endif /* ARDUINO_ARCH_MBED */
 };
 
 ui_settings_t *ui;
-uCDB<FatVolume, File32> ucdb(fatfs);
 
 #if !defined(EXCLUDE_IMU)
 #define IMU_UPDATE_INTERVAL 500 /* ms */
@@ -275,6 +292,9 @@ static unsigned long IMU_Time_Marker = 0;
 
 extern float IMU_g;
 #endif /* EXCLUDE_IMU */
+
+#if !defined(ARDUINO_ARCH_MBED)
+uCDB<FatVolume, File32> ucdb(fatfs);
 
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and
@@ -310,6 +330,7 @@ static void nRF52_msc_flush_cb (void)
 
   ledOff(SOC_GPIO_LED_USBMSC);
 }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_EXT_I2S_DAC)
 
@@ -564,7 +585,11 @@ static void nRF52_setup()
 {
   ui = &ui_settings;
 
+#if !defined(ARDUINO_ARCH_MBED)
   uint32_t reset_reason = readResetReason();
+#else
+  uint32_t reset_reason = 0; /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
 
   if      (reset_reason & POWER_RESETREAS_RESETPIN_Msk)
   {
@@ -609,9 +634,11 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
+#if !defined(ARDUINO_ARCH_MBED)
   USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
   USBDevice.setProductDescriptor(nRF52_Device_Model);
   USBDevice.setDeviceVersion(nRF52_Device_Version);
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
@@ -626,7 +653,9 @@ static void nRF52_setup()
 
   delay(200);
 
+#if !defined(ARDUINO_ARCH_MBED)
   Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+#endif /* ARDUINO_ARCH_MBED */
   Wire.begin();
 
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
@@ -729,6 +758,7 @@ static void nRF52_setup()
       break;
   }
 
+#if !defined(ARDUINO_ARCH_MBED)
   i2c = new I2CBus(Wire);
 
   if (nRF52_has_rtc && (i2c != nullptr)) {
@@ -737,6 +767,7 @@ static void nRF52_setup()
     pinMode(SOC_GPIO_PIN_R_INT, INPUT);
     hw_info.rtc = RTC_PCF8563;
   }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
   if (nRF52_has_imu && imu.setup(MPU9250_ADDRESS)) {
@@ -750,6 +781,7 @@ static void nRF52_setup()
   }
 #endif /* EXCLUDE_IMU */
 
+#if !defined(ARDUINO_ARCH_MBED)
   /* (Q)SPI flash init */
   switch (nRF52_board)
   {
@@ -772,9 +804,11 @@ static void nRF52_setup()
     nRF52_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
+#endif /* ARDUINO_ARCH_MBED */
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
+#if !defined(ARDUINO_ARCH_MBED)
   if (nRF52_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
 
@@ -808,6 +842,7 @@ static void nRF52_setup()
 
     FATFS_is_mounted = fatfs.begin(SPIFlash);
   }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_USB_MIDI)
   // Initialize MIDI with no any input channels
@@ -1027,6 +1062,7 @@ static void nRF52_post_init()
 
 static void nRF52_loop()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   // Reload the watchdog
   if (nrf_wdt_started(NRF_WDT)) {
     Watchdog.reset();
@@ -1044,6 +1080,7 @@ static void nRF52_loop()
       RTC_sync = true;
     }
   }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
 
@@ -1096,12 +1133,14 @@ static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
+#if !defined(ARDUINO_ARCH_MBED)
   if (nRF52_has_spiflash) {
     usb_msc.setUnitReady(false);
 //  usb_msc.end(); /* N/A */
   }
 
   if (SPIFlash != NULL) SPIFlash->end();
+#endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
   if (hw_info.imu == IMU_MPU9250) {
@@ -1207,7 +1246,9 @@ static void nRF52_fini(int reason)
 
   // pinMode(SOC_GPIO_PIN_BATTERY, INPUT);
 
+#if !defined(ARDUINO_ARCH_MBED)
   if (i2c != nullptr) Wire.end();
+#endif /* ARDUINO_ARCH_MBED */
 
   pinMode(SOC_GPIO_PIN_SDA,  INPUT);
   pinMode(SOC_GPIO_PIN_SCL,  INPUT);
@@ -1237,11 +1278,15 @@ static void nRF52_fini(int reason)
   case SOFTRF_SHUTDOWN_BUTTON:
   case SOFTRF_SHUTDOWN_LOWBAT:
     NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED)
     pinMode(SOC_GPIO_PIN_BUTTON, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+#endif /* ARDUINO_ARCH_MBED */
     break;
 #if defined(USE_SERIAL_DEEP_SLEEP)
   case SOFTRF_SHUTDOWN_NMEA:
+#if !defined(ARDUINO_ARCH_MBED)
     pinMode(SOC_GPIO_PIN_CONS_RX, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+#endif /* ARDUINO_ARCH_MBED */
     break;
 #endif
   default:
@@ -1250,6 +1295,7 @@ static void nRF52_fini(int reason)
 
   Serial.end();
 
+#if !defined(ARDUINO_ARCH_MBED)
   (void) sd_softdevice_is_enabled(&sd_en);
 
   // Enter System OFF state
@@ -1258,10 +1304,14 @@ static void nRF52_fini(int reason)
   } else {
     NRF_POWER->SYSTEMOFF = 1;
   }
+#else
+  NRF_POWER->SYSTEMOFF = 1;
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static void nRF52_reset()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (nrf_wdt_started(NRF_WDT)) {
     // When WDT is active - CRV, RREN and CONFIG are blocked
     // There is no way to stop/disable watchdog using source code
@@ -1281,6 +1331,9 @@ static void nRF52_reset()
   } else {
     NVIC_SystemReset();
   }
+#else
+  /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static uint32_t nRF52_getChipId()
@@ -1324,7 +1377,11 @@ static String nRF52_getResetReason()
 
 static uint32_t nRF52_getFreeHeap()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   return dbgHeapTotal() - dbgHeapUsed();
+#else
+  return 0; /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static long nRF52_random(long howsmall, long howBig)
@@ -1472,6 +1529,7 @@ static void nRF52_EEPROM_extension(int cmd)
         raw[i] = EEPROM.read(sizeof(eeprom_t) + i);
       }
 
+#if !defined(ARDUINO_ARCH_MBED)
       if ( nRF52_has_spiflash && FATFS_is_mounted ) {
         File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
@@ -1547,6 +1605,7 @@ static void nRF52_EEPROM_extension(int cmd)
           file.close();
         }
       }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_WEBUSB_SETTINGS) && !defined(USE_WEBUSB_SERIAL)
 
@@ -1586,6 +1645,7 @@ static void nRF52_EEPROM_extension(int cmd)
 
 static void nRF52_SPI_begin()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (nRF52_board == NRF52_NORDIC_PCA10059) {
     SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
                 SOC_GPIO_PIN_PCA10059_SCK,
@@ -1595,13 +1655,16 @@ static void nRF52_SPI_begin()
                 SOC_GPIO_PIN_TECHO_REV_0_SCK,
                 SOC_GPIO_PIN_TECHO_REV_0_MOSI);
   }
+#endif /* ARDUINO_ARCH_MBED */
 
   SPI.begin();
 }
 
 static void nRF52_swSer_begin(unsigned long baud)
 {
+#if !defined(ARDUINO_ARCH_MBED)
   Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+#endif /* ARDUINO_ARCH_MBED */
   Serial_GNSS_In.begin(baud);
 }
 
@@ -1610,7 +1673,9 @@ static void nRF52_swSer_enableRx(boolean arg)
   /* NONE */
 }
 
+#if !defined(ARDUINO_ARCH_MBED)
 SemaphoreHandle_t Display_Semaphore;
+#endif /* ARDUINO_ARCH_MBED */
 unsigned long TaskInfoTime;
 
 #if defined(USE_EPAPER)
@@ -1841,6 +1906,7 @@ static void nRF52_Display_fini(int reason)
 #endif /* USE_EPAPER */
 }
 
+#if !defined(ARDUINO_ARCH_MBED)
 static bool nRF52_Display_lock()
 {
   bool rval = false;
@@ -1862,6 +1928,7 @@ static bool nRF52_Display_unlock()
 //Serial.print("Display_unlock: "); Serial.println(rval); Serial.flush();
   return rval;
 }
+#endif /* ARDUINO_ARCH_MBED */
 
 static void nRF52_Battery_setup()
 {
@@ -1905,7 +1972,9 @@ static float nRF52_Battery_param(uint8_t param)
   default:
 
     // Set the analog reference to 3.0V (default = 3.6V)
+#if !defined(ARDUINO_ARCH_MBED)
     analogReference(AR_INTERNAL_3_0);
+#endif /* ARDUINO_ARCH_MBED */
 
     // Set the resolution to 12-bit (0..4095)
     analogReadResolution(12); // Can be 8, 10, 12 or 14
@@ -1917,7 +1986,9 @@ static float nRF52_Battery_param(uint8_t param)
     voltage = analogRead(SOC_GPIO_PIN_BATTERY);
 
     // Set the ADC back to the default settings
+#if !defined(ARDUINO_ARCH_MBED)
     analogReference(AR_DEFAULT);
+#endif /* ARDUINO_ARCH_MBED */
     analogReadResolution(10);
 
     // Convert the raw value to compensated mv, taking the resistor-
@@ -1954,15 +2025,19 @@ static void nRF52_UATModule_restart()
 
 static void nRF52_WDT_setup()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   Watchdog.enable(12000);
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 static void nRF52_WDT_fini()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   // cannot disable nRF's WDT
   if (nrf_wdt_started(NRF_WDT)) {
     Watchdog.reset();
   }
+#endif /* ARDUINO_ARCH_MBED */
 }
 
 #include <AceButton.h>
@@ -2088,9 +2163,11 @@ void line_state_callback(bool connected)
 
 static void nRF52_USB_setup()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (USBSerial && USBSerial != Serial) {
     USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
 
@@ -2109,9 +2186,11 @@ static void nRF52_USB_loop()
 
 static void nRF52_USB_fini()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (USBSerial && USBSerial != Serial) {
     USBSerial.end();
   }
+#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
 
@@ -2193,6 +2272,7 @@ IODev_ops_t nRF52_USBSerial_ops = {
 
 static bool nRF52_ADB_setup()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (FATFS_is_mounted) {
     const char *fileName;
 
@@ -2215,16 +2295,19 @@ static bool nRF52_ADB_setup()
       }
     }
   }
+#endif /* ARDUINO_ARCH_MBED */
 
   return ADB_is_open;
 }
 
 static bool nRF52_ADB_fini()
 {
+#if !defined(ARDUINO_ARCH_MBED)
   if (ADB_is_open) {
     ucdb.close();
     ADB_is_open = false;
   }
+#endif /* ARDUINO_ARCH_MBED */
 
   return !ADB_is_open;
 }
@@ -2247,6 +2330,7 @@ static bool nRF52_ADB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     return rval;
   }
 
+#if !defined(ARDUINO_ARCH_MBED)
   snprintf(key, sizeof(key),"%06X", id);
 
   rt = ucdb.findKey(key, strlen(key));
@@ -2289,6 +2373,7 @@ static bool nRF52_ADB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     default:
       break;
   }
+#endif /* ARDUINO_ARCH_MBED */
 
   return rval;
 }
@@ -2326,7 +2411,11 @@ const SoC_ops_t nRF52_ops = {
   nRF52_SPI_begin,
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
+#if !defined(EXCLUDE_BLUETOOTH)
   &nRF52_Bluetooth_ops,
+#else
+  NULL,
+#endif /* EXCLUDE_BLUETOOTH */
   &nRF52_USBSerial_ops,
   NULL,
   nRF52_Display_setup,
