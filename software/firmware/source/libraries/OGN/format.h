@@ -69,6 +69,21 @@ uint8_t Format_Hex( char *Output, uint32_t Word, uint8_t Digits);
      return Len; }                                        // return number of characters read
 
   template <class Type>
+   int8_t Read_Int(Type &Value, const char *Inp)
+   { Value=0; int8_t Len=0;
+     if(Inp==0) return 0;
+     char Sign=Inp[0]; int8_t Dig;
+     if((Sign=='+')||(Sign=='-')) Len++;
+     if((Inp[Len]=='0')&&(Inp[Len+1]=='x'))
+     { Len+=2; Dig=Read_Hex(Value, Inp+Len); }
+     else
+     { Dig=Read_UnsDec(Value, Inp+Len); }
+     if(Dig<=0) return Dig;
+     Len+=Dig;
+     if(Sign=='-') Value=(-Value);
+     return Len; }
+
+  template <class Type>
    int8_t Read_Float1(Type &Value, const char *Inp)       // read floating point, take just one digit after decimal point
    { Value=0; int8_t Len=0;
      if(Inp==0) return 0;
