@@ -300,6 +300,9 @@ byte RF_setup(void)
       case RF_PROTOCOL_FANET:     p = &fanet_proto_desc;  break;
       case RF_PROTOCOL_ADSB_UAT:  p = &uat978_proto_desc; break;
       case RF_PROTOCOL_ADSB_1090: p = &es1090_proto_desc; break;
+#if defined(ENABLE_ADSL)
+      case RF_PROTOCOL_ADSL_860:  p = &adsl_proto_desc;   break;
+#endif /* ENABLE_ADSL */
       case RF_PROTOCOL_APRS:
 #if defined(ENABLE_PROL)
         if (rf_chip->type == RF_IC_SX1276 || rf_chip->type == RF_IC_SX1262) {
@@ -538,6 +541,9 @@ uint8_t RF_Payload_Size(uint8_t protocol)
     case RF_PROTOCOL_FANET:     return fanet_proto_desc.payload_size;
     case RF_PROTOCOL_ADSB_UAT:  return uat978_proto_desc.payload_size;
     case RF_PROTOCOL_ADSB_1090: return es1090_proto_desc.payload_size;
+#if defined(ENABLE_ADSL)
+    case RF_PROTOCOL_ADSL_860:  return adsl_proto_desc.payload_size;
+#endif /* ENABLE_ADSL */
     case RF_PROTOCOL_APRS:
 #if defined(ENABLE_PROL)
       if (rf_chip->type == RF_IC_SX1276 || rf_chip->type == RF_IC_SX1262) {
@@ -949,6 +955,13 @@ static void sx12xx_setup()
     protocol_decode = &aprs_decode;
     break;
 #endif /* ENABLE_PROL */
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    LMIC.protocol   = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+    break;
+#endif /* ENABLE_ADSL */
   case RF_PROTOCOL_LEGACY:
   default:
     LMIC.protocol   = &legacy_proto_desc;

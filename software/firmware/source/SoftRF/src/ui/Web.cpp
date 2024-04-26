@@ -150,7 +150,7 @@ Copyright (C) 2015-2024 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5430;
+  size_t size = 5470;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -206,6 +206,11 @@ void handleSettings() {
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>"
+#if defined(ENABLE_ADSL)
+"<option %s value='%d'>%s</option>"
+#else
+"<!--<option %s value='%d'>%s</option>-->"
+#endif /* ENABLE_ADSL */
 #if defined(ENABLE_PROL)
 "<option %s value='%d'>%s</option>"
 #else
@@ -214,15 +219,17 @@ void handleSettings() {
 "</select>\
 </td>\
 </tr>"),
-    (settings->rf_protocol == RF_PROTOCOL_LEGACY ? "selected" : ""),
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? "selected" : ""),
      RF_PROTOCOL_LEGACY, legacy_proto_desc.name,
-    (settings->rf_protocol == RF_PROTOCOL_OGNTP  ? "selected" : ""),
+    (settings->rf_protocol == RF_PROTOCOL_OGNTP    ? "selected" : ""),
      RF_PROTOCOL_OGNTP, ogntp_proto_desc.name,
-    (settings->rf_protocol == RF_PROTOCOL_P3I    ? "selected" : ""),
+    (settings->rf_protocol == RF_PROTOCOL_P3I      ? "selected" : ""),
      RF_PROTOCOL_P3I, p3i_proto_desc.name,
-    (settings->rf_protocol == RF_PROTOCOL_FANET  ? "selected" : ""),
+    (settings->rf_protocol == RF_PROTOCOL_FANET    ? "selected" : ""),
      RF_PROTOCOL_FANET, fanet_proto_desc.name,
-    (settings->rf_protocol == RF_PROTOCOL_APRS   ? "selected" : ""),
+    (settings->rf_protocol == RF_PROTOCOL_ADSL_860 ? "selected" : ""),
+     RF_PROTOCOL_ADSL_860, adsl_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_APRS     ? "selected" : ""),
      RF_PROTOCOL_APRS, prol_proto_desc.name
     );
   } else {

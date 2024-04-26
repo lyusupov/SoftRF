@@ -342,6 +342,7 @@ struct rst_info {
 //#define USE_GDL90_MSL
 #define USE_OGN_ENCRYPTION
 #define ENABLE_PROL
+//#define ENABLE_ADSL
 
 //#define EXCLUDE_GNSS_UBLOX    /* Neo-6/7/8, M10 */
 #define ENABLE_UBLOX_RFS        /* revert factory settings (when necessary)  */

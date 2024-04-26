@@ -1,7 +1,7 @@
 /*
  * Protocol_ADSL.h
  *
- * Encoder and decoder for Open Glider Network tracker radio protocol
+ * Encoder and decoder for ADS-L SRD-860 radio protocol
  * Copyright (C) 2024 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
