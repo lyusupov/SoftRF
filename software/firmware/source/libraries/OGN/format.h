@@ -25,7 +25,7 @@ uint8_t Format_String(char *Str, const char *String);
 uint8_t Format_String(char *Str, const char *String, uint8_t Len);
 
 uint8_t Format_UnsDec (char *Str, uint32_t Value, uint8_t MinDigits=1, uint8_t DecPoint=0);
-uint8_t Format_SignDec(char *Str,  int32_t Value, uint8_t MinDigits=1, uint8_t DecPoint=0);
+uint8_t Format_SignDec(char *Str,  int32_t Value, uint8_t MinDigits=1, uint8_t DecPoint=0, uint8_t NoPlus=0);
 
 uint8_t Format_Hex( char *Output, uint8_t  Byte );
 uint8_t Format_Hex( char *Output, uint16_t Word );

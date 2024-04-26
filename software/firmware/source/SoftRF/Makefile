@@ -117,7 +117,8 @@ PRORAD_CPPS   := $(PRORAD_PATH)/Legacy.cpp \
                  $(PRORAD_PATH)/OGNTP.cpp  \
                  $(PRORAD_PATH)/UAT978.cpp \
                  $(PRORAD_PATH)/ES1090.cpp \
-                 $(PRORAD_PATH)/APRS.cpp
+                 $(PRORAD_PATH)/APRS.cpp   \
+                 $(PRORAD_PATH)/ADSL.cpp
 
 PRODAT_CPPS   := $(PRODAT_PATH)/NMEA.cpp    \
                  $(PRODAT_PATH)/GDL90.cpp   \

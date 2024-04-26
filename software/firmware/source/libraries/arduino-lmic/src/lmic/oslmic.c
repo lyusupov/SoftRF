@@ -117,7 +117,7 @@ void os_runstep() {
         j = OS.scheduledjobs;
         OS.scheduledjobs = j->next;
     } else { // nothing pending
-        hal_sleep(); // wake by irq (timer already restarted)
+        lmic_hal_sleep(); // wake by irq (timer already restarted)
     }
     hal_enableIRQs();
     if(j) { // run job callback

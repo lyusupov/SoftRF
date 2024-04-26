@@ -472,7 +472,7 @@ void hal_enableIRQs () {
 
 #endif /* ARDUINO_ARCH_STM32 */
 
-void hal_sleep () {
+void lmic_hal_sleep () {
     // Not implemented
 }
 
