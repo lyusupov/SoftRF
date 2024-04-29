@@ -88,7 +88,7 @@ bool adsl_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   ptr += sizeof(ADSL_Packet::Version);
 
   for (int Idx=0; Idx<5; Idx++) {
-    r.Word[Idx] = r.get3bytes(ptr + Idx * sizeof(r.Word[0]));
+    r.Word[Idx] = r.get4bytes(ptr + Idx * sizeof(r.Word[0]));
   }
 
   r.Descramble();
@@ -147,9 +147,7 @@ size_t adsl_encode(void *pkt, ufo_t *this_aircraft) {
   t.Scramble();
   t.setCRC();
 
-  size_t size = adsl_proto_desc.payload_offset + adsl_proto_desc.payload_size +
-                adsl_proto_desc.crc_size;
-  memcpy((void *) pkt, &t.Version, size);
+  memcpy((void *) pkt, &t.Version, t.Length);
 
-  return (size);
+  return (t.Length);
 }

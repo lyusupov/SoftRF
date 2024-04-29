@@ -267,6 +267,8 @@ extern SCSerial                 scSerial;
 
 #define USE_OGN_ENCRYPTION
 
+//#define ENABLE_ADSL
+
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK

@@ -1696,6 +1696,7 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
     switch (cc13xx_protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
        /* crc16 left not initialized */
       break;
@@ -1721,6 +1722,7 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
       break;
     case RF_PROTOCOL_P3I:
     case RF_PROTOCOL_OGNTP:
+    case RF_PROTOCOL_ADSL_860:
     default:
       break;
     }
@@ -1749,6 +1751,7 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
       }
       break;
     case RF_PROTOCOL_OGNTP:
+    case RF_PROTOCOL_ADSL_860:
     case RF_PROTOCOL_LEGACY:
       offset = cc13xx_protocol->syncword_size - 4;
       size =  cc13xx_protocol->payload_offset +
@@ -1774,6 +1777,7 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
               switch (cc13xx_protocol->crc_type)
               {
               case RF_CHECKSUM_TYPE_GALLAGER:
+              case RF_CHECKSUM_TYPE_CRC_MODES:
               case RF_CHECKSUM_TYPE_NONE:
                 break;
               case RF_CHECKSUM_TYPE_CCITT_FFFF:
@@ -1790,9 +1794,15 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
         {
         case RF_CHECKSUM_TYPE_GALLAGER:
           if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
-
             success = true;
           }
+          break;
+        case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+          if (ADSL_Packet::checkPI((uint8_t  *) &LMIC.frame[0], LMIC.dataLen) == 0) {
+            success = true;
+          }
+#endif /* ENABLE_ADSL */
           break;
         case RF_CHECKSUM_TYPE_CCITT_FFFF:
         case RF_CHECKSUM_TYPE_CCITT_0000:
@@ -1928,6 +1938,15 @@ static void cc13xx_setup()
 
     myLink.begin(EasyLink_Phy_100kbps2gfsk_ogntp);
     break;
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    cc13xx_protocol = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+
+    myLink.begin(EasyLink_Phy_100kbps2gfsk_adsl);
+    break;
+#endif /* ENABLE_ADSL */
   case RF_PROTOCOL_P3I:
     cc13xx_protocol = &p3i_proto_desc;
     protocol_encode = &p3i_encode;
@@ -2020,6 +2039,7 @@ static bool cc13xx_transmit()
   switch (cc13xx_protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
   case RF_CHECKSUM_TYPE_NONE:
      /* crc16 left not initialized */
     break;
@@ -2064,6 +2084,7 @@ static bool cc13xx_transmit()
 
     break;
   case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
   default:
     break;
   }
@@ -2089,6 +2110,7 @@ static bool cc13xx_transmit()
     switch (cc13xx_protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
@@ -2111,6 +2133,7 @@ static bool cc13xx_transmit()
   switch (cc13xx_protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
   case RF_CHECKSUM_TYPE_NONE:
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:

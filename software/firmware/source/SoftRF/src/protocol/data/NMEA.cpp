@@ -49,10 +49,11 @@ const char *NMEA_CallSign_Prefix[] = {
   [RF_PROTOCOL_LEGACY]    = "FLR",
   [RF_PROTOCOL_OGNTP]     = "OGN",
   [RF_PROTOCOL_P3I]       = "PAW",
-  [RF_PROTOCOL_ADSB_1090] = "ADS",
+  [RF_PROTOCOL_ADSB_1090] = "ADB",
   [RF_PROTOCOL_ADSB_UAT]  = "UAT",
   [RF_PROTOCOL_FANET]     = "FAN",
-  [RF_PROTOCOL_APRS]      = "HAM"
+  [RF_PROTOCOL_APRS]      = "HAM",
+  [RF_PROTOCOL_ADSL_860]  = "ADL",
 };
 
 #define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
