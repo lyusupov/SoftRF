@@ -18,6 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Issue 1:
+ * https://www.easa.europa.eu/sites/default/files/dfu/ads-l_4_srd860_issue_1.pdf
+ */
+
 #include <stdint.h>
 
 #include <protocol.h>
@@ -60,14 +65,13 @@ const rf_proto_desc_t adsl_proto_desc = {
   .slot1           = {800, 1200}
 };
 
-static GPS_Position  pos;
-static ADSL_Packet   adsl_tx_pkt;
-static ADSL_RxPacket adsl_rx_pkt;
+static GPS_Position pos;
+static ADSL_Packet  r; /* Rx */
+static ADSL_Packet  t; /* Tx */
 
 void adsl_init()
 {
   pos.Clear();
-  adsl_rx_pkt.Init();
 }
 
 void adsl_fini()
@@ -77,9 +81,42 @@ void adsl_fini()
 
 bool adsl_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
-  /* TBD */
+  uint8_t *ptr = (uint8_t *) pkt;
 
-  return false;
+  r.Init();
+  r.Version = *ptr;
+  ptr += sizeof(ADSL_Packet::Version);
+
+  for (int Idx=0; Idx<5; Idx++) {
+    r.Word[Idx] = r.get3bytes(ptr + Idx * sizeof(r.Word[0]));
+  }
+
+  r.Descramble();
+
+  fop->protocol  = RF_PROTOCOL_ADSL_860;
+
+  fop->addr      = r.getAddress();
+  fop->latitude  = r.FNTtoFloat(r.getLat());
+  fop->longitude = r.FNTtoFloat(r.getLon());
+  fop->altitude  = (float) r.getAlt();
+  fop->pressure_altitude = 0; /* TBD */
+  fop->aircraft_type = r.getAcftTypeOGN();
+  fop->course    = (45.0/0x40) * r.getTrack();
+  fop->speed     = (0.25 * r.getSpeed()) / _GPS_MPS_PER_KNOT;
+  fop->vs        = (0.125 * r.getClimb()) * (_GPS_FEET_PER_METER * 60.0);
+  fop->hdop      = r.getHorAccur();
+
+  fop->addr_type = r.getAddrTypeOGN();
+  fop->timestamp = this_aircraft->timestamp;
+
+  fop->stealth   = 0;
+  fop->no_track  = 0;
+  fop->ns[0] = 0; fop->ns[1] = 0;
+  fop->ns[2] = 0; fop->ns[3] = 0;
+  fop->ew[0] = 0; fop->ew[1] = 0;
+  fop->ew[2] = 0; fop->ew[3] = 0;
+
+  return true;
 }
 
 size_t adsl_encode(void *pkt, ufo_t *this_aircraft) {
@@ -96,20 +133,23 @@ size_t adsl_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Speed   = (int16_t) (this_aircraft->speed * 10 * _GPS_MPS_PER_KNOT);
   pos.HDOP    = (uint8_t) (this_aircraft->hdop / 10);
 
-  adsl_tx_pkt.Init();
-  adsl_tx_pkt.setAddress(this_aircraft->addr);
+  t.Init();
+  t.setAddress(this_aircraft->addr);
 #if !defined(SOFTRF_ADDRESS)
-  adsl_tx_pkt.setAddrTypeOGN(ADDR_TYPE_ANONYMOUS);
+  t.setAddrTypeOGN(ADDR_TYPE_ANONYMOUS);
 #else
-  adsl_tx_pkt.setAddrTypeOGN(this_aircraft->addr == SOFTRF_ADDRESS ?
-                             ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS);
+  t.setAddrTypeOGN(this_aircraft->addr == SOFTRF_ADDRESS ?
+                   ADDR_TYPE_ICAO : ADDR_TYPE_ANONYMOUS);
 #endif
-  adsl_tx_pkt.setRelay(0);
-  adsl_tx_pkt.setAcftTypeOGN((int16_t) this_aircraft->aircraft_type);
-  pos.Encode(adsl_tx_pkt);
-  adsl_tx_pkt.Scramble();
-  adsl_tx_pkt.setCRC();
+  t.setRelay(0);
+  t.setAcftTypeOGN((int16_t) this_aircraft->aircraft_type);
+  pos.Encode(t);
+  t.Scramble();
+  t.setCRC();
 
-  memcpy((void *) pkt,  &adsl_tx_pkt, adsl_tx_pkt.TxBytes);
-  return (adsl_tx_pkt.TxBytes);
+  size_t size = adsl_proto_desc.payload_offset + adsl_proto_desc.payload_size +
+                adsl_proto_desc.crc_size;
+  memcpy((void *) pkt, &t.Version, size);
+
+  return (size);
 }

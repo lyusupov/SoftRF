@@ -28,8 +28,8 @@ enum
 	RF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
 	RF_PROTOCOL_FANET,     /* Skytraxx */
 	RF_PROTOCOL_APRS,      /* Ham Radio */
-	/* Volunteer contributors are welcome */
 	RF_PROTOCOL_ADSL_860,  /* ADS-L.4.SRD-860 */
+	/* Volunteer contributors are welcome */
 	RF_PROTOCOL_EID,       /* UAS eID */
 	RF_PROTOCOL_GOTENNA,   /* goTenna Mesh */
 };

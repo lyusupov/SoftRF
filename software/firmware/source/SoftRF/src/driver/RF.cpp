@@ -396,8 +396,9 @@ void RF_SetChannel(void)
     break;
   }
 
-  uint8_t OGN = (settings->rf_protocol == RF_PROTOCOL_OGNTP ? 1 : 0);
-  int8_t chan = -1;
+  uint8_t OGN  = (settings->rf_protocol == RF_PROTOCOL_OGNTP    ? 1 : 0);
+  uint8_t ADSL = (settings->rf_protocol == RF_PROTOCOL_ADSL_860 ? 1 : 0);
+  int8_t chan  = -1;
 
   switch (RF_timing)
   {
@@ -407,24 +408,25 @@ void RF_SetChannel(void)
       if ((ms_since_boot - ts->s0.tmarker) >= ts->interval_mid) {
         ts->s0.tmarker = ref_time_ms + ts->s0.begin - ts->adj;
         ts->current = 0;
-        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN);
+        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN | ADSL);
       }
       if ((ms_since_boot - ts->s1.tmarker) >= ts->interval_mid) {
         ts->s1.tmarker = ref_time_ms + ts->s1.begin;
         ts->current = 1;
-        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN);
+        chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN | ADSL);
       }
     }
     break;
   case RF_TIMING_INTERVAL:
   default:
-    chan = (int8_t) RF_FreqPlan.getChannel(Time, 0, OGN);
+    chan = (int8_t) RF_FreqPlan.getChannel(Time, 0, OGN | ADSL);
     break;
   }
 
 #if DEBUG
   Serial.print("Plan: "); Serial.println(RF_FreqPlan.Plan);
   Serial.print("OGN: "); Serial.println(OGN);
+  Serial.print("ADSL: "); Serial.println(ADSL);
   Serial.print("Channel: "); Serial.println(chan);
 #endif
 
@@ -1204,6 +1206,7 @@ static void sx12xx_rx_func (osjob_t* job) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
   case RF_CHECKSUM_TYPE_NONE:
      /* crc16 left not initialized */
     break;
@@ -1233,6 +1236,7 @@ static void sx12xx_rx_func (osjob_t* job) {
     break;
   case RF_PROTOCOL_P3I:
   case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
   default:
     break;
   }
@@ -1245,6 +1249,7 @@ static void sx12xx_rx_func (osjob_t* job) {
     switch (LMIC.protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
@@ -1287,6 +1292,16 @@ static void sx12xx_rx_func (osjob_t* job) {
 #endif
       sx12xx_receive_complete = false;
     } else {
+      sx12xx_receive_complete = true;
+    }
+    break;
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+    if (ADSL_Packet::checkPI((uint8_t  *) &LMIC.frame[0], LMIC.dataLen)) {
+      sx12xx_receive_complete = false;
+    } else
+#endif /* ENABLE_ADSL */
+    {
       sx12xx_receive_complete = true;
     }
     break;
@@ -1339,6 +1354,7 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
   case RF_CHECKSUM_TYPE_NONE:
      /* crc16 left not initialized */
     break;
@@ -1393,6 +1409,7 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     break;
 #endif
   case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
   default:
     break;
   }
@@ -1414,6 +1431,7 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
     switch (LMIC.protocol->crc_type)
     {
     case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
@@ -1432,6 +1450,7 @@ static void sx12xx_tx(unsigned char *buf, size_t size, osjobcb_t func) {
   switch (LMIC.protocol->crc_type)
   {
   case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
   case RF_CHECKSUM_TYPE_NONE:
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:

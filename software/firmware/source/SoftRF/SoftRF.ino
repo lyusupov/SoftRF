@@ -18,7 +18,7 @@
  *   IBM LMIC and Semtech Basic MAC frameworks for Arduino are maintained by Matthijs Kooijman
  *   ESP8266FtpServer is developed by David Paiva
  *   Lib_crc is developed by Lammert Bies
- *   OGN library is developed by Pawel Jalocha
+ *   OGN/ADS-L library is developed by Pawel Jalocha
  *   NMEA library is developed by Timur Sinitsyn, Tobias Simon, Ferry Huberts
  *   ADS-B encoder C++ library is developed by yangbinbin (yangbinbin_ytu@163.com)
  *   Arduino Core for ESP32 is developed by Hristo Gochkov

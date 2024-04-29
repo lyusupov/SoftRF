@@ -114,6 +114,7 @@ class FreqPlan
         break;
       case RF_PROTOCOL_LEGACY:
       case RF_PROTOCOL_OGNTP:
+      case RF_PROTOCOL_ADSL_860:
       default:
         switch (Plan)
         {

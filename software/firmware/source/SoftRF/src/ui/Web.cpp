@@ -111,7 +111,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC and Semtech Basic MAC frameworks for Arduino</td></tr>\
 <tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
 <tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
-<tr><th align=left>Pawel Jalocha</th><td align=left>OGN library</td></tr>\
+<tr><th align=left>Pawel Jalocha</th><td align=left>OGN/ADS-L library</td></tr>\
 <tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
 <tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
 <tr><th align=left>Hristo Gochkov</th><td align=left>Arduino Core for ESP32</td></tr>\

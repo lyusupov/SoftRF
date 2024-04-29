@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * IBM LMIC framework is maintained by **Matthijs Kooijman**
  * ESP8266FtpServer is developed by **David Paiva**
  * Lib_crc is developed by **Lammert Bies**
- * OGN library is developed by **Pawel Jalocha**
+ * OGN/ADS-L library is developed by **Pawel Jalocha**
  * NMEA library is developed by **Timur Sinitsyn**, **Tobias Simon**, **Ferry Huberts**
  * ADS-B encoder C++ library is developed by **yangbinbin** (yangbinbin_ytu@163.com)
  * Arduino Core for ESP32 is developed by **Hristo Gochkov**
@@ -83,7 +83,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino Core for Raspberry Pi RP2040 and ESP8266Audio library are developed by **Earle Philhower**
  * MPU-9250 9 DoF sensor library is developed by **Kris Winer** and **Hideaki Tai**
  * Pico PIO USB library is developed by **sekigon-gonnoc**
- * ESP8266Audio library is developed by **Earle Philhower**
  * IniFile library is developed by **Steve Marple**
  * MD5 library is developed by **Vasilis Georgitzikis**
  * LibAPRS-ESP32 library is developed by **Evan Krall** and **Somkiat Nakhonthai**

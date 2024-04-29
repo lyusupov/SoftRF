@@ -21,14 +21,15 @@
 #ifndef PROTOCOL_ADSL_H
 #define PROTOCOL_ADSL_H
 
-#define ADSL_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_AA
-#define ADSL_PREAMBLE_SIZE   1 /* Warmup: 6 bits, preamble: 8 bits, value:  0xAA */
-/* IEEE  Manchester(0AF3656C) = AA 66 55 A5 96 99 96 5A */
-#define ADSL_SYNCWORD        {0xAA, 0x66, 0x55, 0xA5, 0x96, 0x99, 0x96, 0x5A}
+#define ADSL_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_55
+#define ADSL_PREAMBLE_SIZE   1
+
+/* IEEE  Manchester(F5724B18) = 55 99 95 A6 9A 65 A9 6A */
+#define ADSL_SYNCWORD        {0x55, 0x99, 0x95, 0xA6, 0x9A, 0x65, 0xA9, 0x6A}
 #define ADSL_SYNCWORD_SIZE   8
-#define ADSL_PAYLOAD_SIZE    20
-#define ADSL_CRC_TYPE        RF_CHECKSUM_TYPE_GALLAGER
-#define ADSL_CRC_SIZE        6
+#define ADSL_PAYLOAD_SIZE    21
+#define ADSL_CRC_TYPE        RF_CHECKSUM_TYPE_CRC_MODES
+#define ADSL_CRC_SIZE        3
 
 #define ADSL_AIR_TIME        6 /* in ms */
 
