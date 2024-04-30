@@ -683,6 +683,142 @@ const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_38400bps_p3i =
     .pOutput = 0
 };
 
+// CMD_PROP_RADIO_DIV_SETUP
+// Proprietary Mode Radio Setup Command for All Frequency Bands
+const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk_100kbps_adsl =
+{
+    .commandNo = 0x3807,
+    .status = 0x0000,
+    .pNextOp = 0,
+    .startTime = 0x00000000,
+    .startTrigger.triggerType = 0x0,
+    .startTrigger.bEnaCmd = 0x0,
+    .startTrigger.triggerNo = 0x0,
+    .startTrigger.pastTrig = 0x0,
+    .condition.rule = 0x1,
+    .condition.nSkip = 0x0,
+    .modulation.modType = 0x1,
+    .modulation.deviation = 0xC8,
+    .modulation.deviationStepSz = 0x0,
+    .symbolRate.preScale = 0xF,
+    .symbolRate.rateWord = 0x10000,
+    .symbolRate.decimMode = 0x0,
+    .rxBw = 0x54,
+    .preamConf.nPreamBytes = 0x1,
+    .preamConf.preamMode = 0x2,
+    .formatConf.nSwBits = 0x20,
+    .formatConf.bBitReversal = 0x0,
+    .formatConf.bMsbFirst = 0x1,
+    .formatConf.fecMode = 0x0,
+    .formatConf.whitenMode = 0x0,
+    .config.frontEndMode = 0x0,
+    .config.biasMode = 0x1,
+    .config.analogCfgMode = 0x0,
+    .config.bNoFsPowerUp = 0x0,
+    .config.bSynthNarrowBand = 0x0,
+    .txPower = 0xB224,
+    .pRegOverride = pOverrides,
+    .centerFreq = 0x0364,
+    .intFreq = 0x8000,
+    .loDivider = 0x05
+};
+
+// CMD_FS
+// Frequency Synthesizer Programming Command
+const rfc_CMD_FS_t RF_cmdFs_fsk_100kbps_adsl =
+{
+    .commandNo = 0x0803,
+    .status = 0x0000,
+    .pNextOp = 0,
+    .startTime = 0x00000000,
+    .startTrigger.triggerType = 0x0,
+    .startTrigger.bEnaCmd = 0x0,
+    .startTrigger.triggerNo = 0x0,
+    .startTrigger.pastTrig = 0x0,
+    .condition.rule = 0x1,
+    .condition.nSkip = 0x0,
+    .frequency = 0x0364,
+    .fractFreq = 0x6667,
+    .synthConf.bTxMode = 0x0,
+    .synthConf.refFreq = 0x0,
+    .__dummy0 = 0x00,
+    .__dummy1 = 0x00,
+    .__dummy2 = 0x00,
+    .__dummy3 = 0x0000
+};
+
+// CMD_PROP_TX
+// Proprietary Mode Transmit Command
+const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_100kbps_adsl =
+{
+    .commandNo = 0x3801,
+    .status = 0x0000,
+    .pNextOp = 0,
+    .startTime = 0x00000000,
+    .startTrigger.triggerType = 0x0,
+    .startTrigger.bEnaCmd = 0x0,
+    .startTrigger.triggerNo = 0x0,
+    .startTrigger.pastTrig = 0x0,
+    .condition.rule = 0x1,
+    .condition.nSkip = 0x0,
+    .pktConf.bFsOff = 0x0,
+    .pktConf.bUseCrc = 0x0,
+    .pktConf.bVarLen = 0x0,
+    .pktLen = 0x34,
+    .syncWord = 0x559995A6,
+    .pPkt = 0
+};
+
+// CMD_PROP_RX_ADV
+// Proprietary Mode Advanced Receive Command
+const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_100kbps_adsl =
+{
+    .commandNo = 0x3804,
+    .status = 0x0000,
+    .pNextOp = 0,
+    .startTime = 0x00000000,
+    .startTrigger.triggerType = 0x0,
+    .startTrigger.bEnaCmd = 0x0,
+    .startTrigger.triggerNo = 0x0,
+    .startTrigger.pastTrig = 0x0,
+    .condition.rule = 0x1,
+    .condition.nSkip = 0x0,
+    .pktConf.bFsOff = 0x0,
+    .pktConf.bRepeatOk = 0x0,
+    .pktConf.bRepeatNok = 0x0,
+    .pktConf.bUseCrc = 0x0,
+    .pktConf.bCrcIncSw = 0x0,
+    .pktConf.bCrcIncHdr = 0x0,
+    .pktConf.endType = 0x0,
+    .pktConf.filterOp = 0x0,
+    .rxConf.bAutoFlushIgnored = 0x0,
+    .rxConf.bAutoFlushCrcErr = 0x0,
+    .rxConf.bIncludeHdr = 0x0,
+    .rxConf.bIncludeCrc = 0x0,
+    .rxConf.bAppendRssi = 0x0,
+    .rxConf.bAppendTimestamp = 0x0,
+    .rxConf.bAppendStatus = 0x0,
+    .syncWord0 = 0x559995A6,
+    .syncWord1 = 0x00000000,
+    .maxPktLen = 0x0034,
+    .hdrConf.numHdrBits = 0x0,
+    .hdrConf.lenPos = 0x0,
+    .hdrConf.numLenBits = 0x0,
+    .addrConf.addrType = 0x0,
+    .addrConf.addrSize = 0x0,
+    .addrConf.addrPos = 0x0,
+    .addrConf.numAddr = 0x0,
+    .lenOffset = 0x00,
+    .endTrigger.triggerType = 0x0,
+    .endTrigger.bEnaCmd = 0x0,
+    .endTrigger.triggerNo = 0x0,
+    .endTrigger.pastTrig = 0x0,
+    .endTime = 0x00000000,
+    .pAddr = 0,
+    .pQueue = 0,
+    .pOutput = 0
+};
+
 #if 0
 
 //*********************************************************************************

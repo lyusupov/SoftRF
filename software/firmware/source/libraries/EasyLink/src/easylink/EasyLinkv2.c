@@ -671,6 +671,8 @@ static void rxDoneCallback(RF_Handle h, RF_CmdHandle ch, RF_EventMask e)
                   rxPacket.len = (LEGACY_PAYLOAD_SIZE + LEGACY_CRC_SIZE) * 2 + (LEGACY_SYNCWORD_SIZE - 4);
                 } else if (EasyLink_params.ui32ModType == EasyLink_Phy_38400bps2gfsk_p3i) {
                   rxPacket.len = P3I_PAYLOAD_OFFSET + P3I_PAYLOAD_SIZE + P3I_CRC_SIZE;
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_adsl) {
+                  rxPacket.len = (ADSL_PAYLOAD_SIZE + ADSL_CRC_SIZE) * 2 + (ADSL_SYNCWORD_SIZE - 4);
                 }
 
                 //copy payload
@@ -1051,6 +1053,7 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
         case EasyLink_Phy_100kbps2gfsk_ogntp:
         case EasyLink_Phy_100kbps2gfsk_legacy:
         case EasyLink_Phy_38400bps2gfsk_p3i:
+        case EasyLink_Phy_100kbps2gfsk_adsl:
             if((ChipInfo_GetChipType() == CHIP_TYPE_CC1312) || (ChipInfo_GetChipType() == CHIP_TYPE_CC1352) ||
                (ChipInfo_GetChipType() == CHIP_TYPE_CC1352P))
             {
@@ -2038,6 +2041,8 @@ EasyLink_Status EasyLink_receive(EasyLink_RxPacket *rxPacket)
                   rxPacket->len = (LEGACY_PAYLOAD_SIZE + LEGACY_CRC_SIZE) * 2 + (LEGACY_SYNCWORD_SIZE - 4);
                 } else if (EasyLink_params.ui32ModType == EasyLink_Phy_38400bps2gfsk_p3i) {
                   rxPacket->len = P3I_PAYLOAD_OFFSET + P3I_PAYLOAD_SIZE + P3I_CRC_SIZE;
+                } else if (EasyLink_params.ui32ModType == EasyLink_Phy_100kbps2gfsk_adsl) {
+                  rxPacket->len = (ADSL_PAYLOAD_SIZE + ADSL_CRC_SIZE) * 2 + (ADSL_SYNCWORD_SIZE - 4);
                 }
                 memcpy(&rxPacket->payload, (&pDataEntry->data), (rxPacket->len));
 #endif

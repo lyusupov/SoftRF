@@ -75,6 +75,16 @@ extern const rfc_CMD_FS_t RF_cmdFs_fsk_38400bps_p3i;
 extern const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_38400bps_p3i;
 extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_38400bps_p3i;
 
+#define ADSL_SYNCWORD_SIZE    8
+#define ADSL_PAYLOAD_SIZE     21
+#define ADSL_CRC_SIZE         3
+
+// RF Core API commands
+extern const rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk_100kbps_adsl;
+extern const rfc_CMD_FS_t RF_cmdFs_fsk_100kbps_adsl;
+extern const rfc_CMD_PROP_TX_t RF_cmdPropTx_fsk_100kbps_adsl;
+extern const rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_fsk_100kbps_adsl;
+
 //*********************************************************************************
 //  RF Setting:   50 kbps, 2-GFSK, 25 kHz deviation
 //

@@ -98,6 +98,17 @@ EasyLink_RfSetting EasyLink_supportedPhys[] = {
         .RF_pTxPowerTable = txPowerTable,
         .RF_txPowerTableSize = TX_POWER_TABLE_SIZE,
     },
+    {
+        .EasyLink_phyType = EasyLink_Phy_100kbps2gfsk_adsl,
+        .RF_pProp = &RF_prop,
+        .RF_uCmdPropRadio.RF_pCmdPropRadioDivSetup = &RF_cmdPropRadioDivSetup_fsk_100kbps_adsl,
+        .RF_pCmdFs = &RF_cmdFs_fsk_100kbps_adsl,
+        .RF_pCmdPropTx = &RF_cmdPropTx_fsk_100kbps_adsl,
+        .RF_pCmdPropTxAdv = NULL,
+        .RF_pCmdPropRxAdv = &RF_cmdPropRxAdv_fsk_100kbps_adsl,
+        .RF_pTxPowerTable = txPowerTable,
+        .RF_txPowerTableSize = TX_POWER_TABLE_SIZE,
+    },
 #endif
 };
 

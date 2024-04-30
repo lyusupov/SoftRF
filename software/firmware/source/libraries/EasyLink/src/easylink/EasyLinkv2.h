@@ -210,6 +210,7 @@ typedef enum
 #define EasyLink_PHY_100KBPS2GFSK_OGN   8
 #define EasyLink_PHY_100KBPS2GFSK_LEG   9
 #define EasyLink_PHY_38400BPS2GFSK_P3I  10
+#define EasyLink_PHY_100KBPS2GFSK_ADSL  11
 
 //! \brief Phy Type passed to EasyLink_init()
 typedef enum
@@ -225,6 +226,7 @@ typedef enum
     EasyLink_Phy_100kbps2gfsk_ogntp = EasyLink_PHY_100KBPS2GFSK_OGN,   //!< Phy settings for 100kbps data rate
     EasyLink_Phy_100kbps2gfsk_legacy = EasyLink_PHY_100KBPS2GFSK_LEG,   //!< Phy settings for 100kbps data rate
     EasyLink_Phy_38400bps2gfsk_p3i = EasyLink_PHY_38400BPS2GFSK_P3I,   //!< Phy settings for 38400 bps data rate
+    EasyLink_Phy_100kbps2gfsk_adsl = EasyLink_PHY_100KBPS2GFSK_ADSL,   //!< Phy settings for 100kbps data rate
     EasyLink_Num_Phy_Settings,
 } EasyLink_PhyType;
 

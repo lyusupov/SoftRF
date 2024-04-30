@@ -192,6 +192,7 @@ typedef enum
     EasyLink_Phy_100kbps2gfsk_ogntp = 4,    //!< Phy settings for 100kbps data rate
     EasyLink_Phy_100kbps2gfsk_legacy = 5,   //!< Phy settings for 100kbps data rate
     EasyLink_Phy_38400bps2gfsk_p3i = 6,     //!< Phy settings for 38400 bps data rate
+    EasyLink_Phy_100kbps2gfsk_adsl = 7,     //!< Phy settings for 100kbps data rate
 } EasyLink_PhyType;
 
 /// \brief Advance configuration options
