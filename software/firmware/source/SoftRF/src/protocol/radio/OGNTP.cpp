@@ -160,6 +160,10 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Speed   = (int16_t) (this_aircraft->speed * 10 * _GPS_MPS_PER_KNOT);
   pos.HDOP    = (uint8_t) (this_aircraft->hdop / 10);
 
+  pos.Sec     = second();
+  // pos.Sec     = gnss.time.second();
+  pos.FracSec = gnss.time.centisecond();
+
   pos.Encode(ogn_tx_pkt.Packet);
 
   ogn_tx_pkt.Packet.HeaderWord      = 0;
@@ -183,7 +187,6 @@ size_t ogntp_encode(void *pkt, ufo_t *this_aircraft) {
 
   ogn_tx_pkt.Packet.Position.AcftType = (int16_t) this_aircraft->aircraft_type;
   ogn_tx_pkt.Packet.Position.Stealth  = (int16_t) this_aircraft->stealth;
-  ogn_tx_pkt.Packet.Position.Time     = second();
 
 #if defined(USE_OGN_ENCRYPTION)
   if (ogn_tx_pkt.Packet.Header.Encrypted)

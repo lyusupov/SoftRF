@@ -1223,7 +1223,6 @@ class GPS_Position
 
    int8_t  Year, Month, Day;    // Date (UTC) from GPS
    int8_t  Hour, Min, Sec;      // Time-of-day (UTC) from GPS
-   int16_t mSec;                // [ms]
    int8_t  FracSec;             // [1/100 sec] some GPS-es give second fraction with the time-of-day
 
    uint8_t PDOP;                // [0.1] dilution of precision
@@ -1480,7 +1479,7 @@ class GPS_Position
    { Packet.setAlt((Altitude+GeoidSeparation+5)/10);
      Packet.setLatOGN(Latitude);
      Packet.setLonOGN(Longitude);
-     Packet.TimeStamp = (Sec*4+mSec/250)&0x3F;
+     Packet.TimeStamp = (Sec*4+FracSec/25)%60;
      Packet.setSpeed(((uint32_t)Speed*4+5)/10);
      Packet.setClimb(((int32_t)ClimbRate*8+5)/10);
      // if(hasClimb) Packet.setClimb(((int32_t)ClimbRate*8+5)/10);

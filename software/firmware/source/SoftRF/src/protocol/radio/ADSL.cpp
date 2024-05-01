@@ -133,6 +133,10 @@ size_t adsl_encode(void *pkt, ufo_t *this_aircraft) {
   pos.Speed   = (int16_t) (this_aircraft->speed * 10 * _GPS_MPS_PER_KNOT);
   pos.HDOP    = (uint8_t) (this_aircraft->hdop / 10);
 
+  pos.Sec     = second();
+  // pos.Sec     = gnss.time.second();
+  pos.FracSec = gnss.time.centisecond();
+
   t.Init();
   t.setAddress(this_aircraft->addr);
 #if !defined(SOFTRF_ADDRESS)

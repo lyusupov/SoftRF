@@ -225,9 +225,9 @@ class ADSL_Packet
 
    int32_t getAlt(void) const                                                                  // [m]
    { int32_t Word=Position[8]&0x3F; Word<<=8; Word|=Position[7];
-     return UnsVRdecode<int32_t,12>(Word)-316; }
+     return UnsVRdecode<int32_t,12>(Word)-320; }
    void setAlt(int32_t Alt)
-   { Alt+=316; if(Alt<0) Alt=0;
+   { Alt+=320; if(Alt<0) Alt=0;
      int32_t Word=UnsVRencode<uint32_t,12>(Alt);
      Position[7]=Word;
      Position[8] = (Position[8]&0xC0) | (Word>>8); }

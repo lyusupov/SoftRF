@@ -1790,6 +1790,8 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
           }
         }
 
+        size = size>>1;
+
         switch (cc13xx_protocol->crc_type)
         {
         case RF_CHECKSUM_TYPE_GALLAGER:
@@ -1799,7 +1801,7 @@ void cc13xx_Receive_callback(EasyLink_RxPacket *rxPacket_ptr, EasyLink_Status st
           break;
         case RF_CHECKSUM_TYPE_CRC_MODES:
 #if defined(ENABLE_ADSL)
-          if (ADSL_Packet::checkPI((uint8_t  *) &LMIC.frame[0], LMIC.dataLen) == 0) {
+          if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
             success = true;
           }
 #endif /* ENABLE_ADSL */
