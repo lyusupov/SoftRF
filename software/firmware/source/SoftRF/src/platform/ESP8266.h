@@ -119,6 +119,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_BME680
 
 /* Experimental */
+//#define ENABLE_ADSL
 #define ENABLE_PROL
 
 #if defined(pgm_read_float_aligned)

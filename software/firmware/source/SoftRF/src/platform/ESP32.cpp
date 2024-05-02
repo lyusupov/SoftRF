@@ -3689,7 +3689,7 @@ static void ESP32_Display_loop()
           itoa(disp_value, buf, 10);
 
           if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
+            strcat_P(buf,PSTR("   "));
           } else {
             if (disp_value < 100) {
               strcat_P(buf,PSTR(" "));
@@ -3709,7 +3709,7 @@ static void ESP32_Display_loop()
           itoa(disp_value, buf, 10);
 
           if (disp_value < 10) {
-            strcat_P(buf,PSTR("  "));
+            strcat_P(buf,PSTR("   "));
           } else {
             if (disp_value < 100) {
               strcat_P(buf,PSTR(" "));

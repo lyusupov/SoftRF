@@ -134,6 +134,10 @@ extern const char *Hardware_Rev[];
 //#define USE_OGN_ENCRYPTION
 //#define ENABLE_D1090_INPUT
 
+/* Experimental */
+//#define ENABLE_ADSL
+//#define ENABLE_PROL
+
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69

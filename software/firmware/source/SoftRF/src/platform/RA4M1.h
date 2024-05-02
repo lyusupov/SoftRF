@@ -212,6 +212,10 @@ extern  SoftSPI RadioSPI;
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
 
+/* Experimental */
+//#define ENABLE_ADSL
+//#define ENABLE_PROL
+
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>
 

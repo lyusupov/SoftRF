@@ -233,7 +233,6 @@ struct rst_info {
 #define WIFI_STA_TIMEOUT      20000
 #define NMEA_TCP_SERVICE
 /* Experimental */
-#define ENABLE_PROL
 //#define ENABLE_BT_VOICE
 #else
 #if defined(ESPHOSTSPI)
@@ -288,6 +287,8 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 
 /* Experimental */
+//#define ENABLE_ADSL
+#define ENABLE_PROL
 #if defined(USE_TINYUSB)
 //#define USE_USB_HOST
 #endif /* USE_TINYUSB */

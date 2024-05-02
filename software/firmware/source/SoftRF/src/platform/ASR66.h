@@ -167,6 +167,10 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 #define EXCLUDE_IMU
 
+/* Experimental */
+//#define ENABLE_ADSL
+//#define ENABLE_PROL
+
 /* trade performance for flash memory usage (-4 Kb) */
 #define cosf(x)                 cos  ((double) (x))
 #define sinf(x)                 sin  ((double) (x))

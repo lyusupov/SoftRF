@@ -176,6 +176,7 @@ typedef struct stm32_backup_struct {
 #define USE_TIME_SLOTS
 
 /* Experimental */
+//#define ENABLE_ADSL
 #define ENABLE_PROL
 
 /* Secondary target ("Blue pill") */
@@ -282,6 +283,7 @@ typedef struct stm32_backup_struct {
 #define USE_OGN_ENCRYPTION
 
 /* Experimental */
+//#define ENABLE_ADSL
 #define ENABLE_PROL
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
