@@ -176,8 +176,8 @@ typedef struct stm32_backup_struct {
 #define USE_TIME_SLOTS
 
 /* Experimental */
-//#define ENABLE_ADSL
-#define ENABLE_PROL
+//#define ENABLE_ADSL            //  +  2 kb
+#define ENABLE_PROL              //  + 18 kb
 
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103CB)

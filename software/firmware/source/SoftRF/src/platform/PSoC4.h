@@ -218,6 +218,9 @@ extern softSerial swSer;
 #define EXCLUDE_OLED_BARO_PAGE
 #define EXCLUDE_IMU
 
+/* Experimental */
+//#define ENABLE_ADSL            //  +  2 kb
+
 /* trade performance for flash memory usage (-4 Kb) */
 #define cosf(x)                 cos  ((double) (x))
 #define sinf(x)                 sin  ((double) (x))
