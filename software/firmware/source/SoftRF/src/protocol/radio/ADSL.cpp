@@ -66,8 +66,8 @@ const rf_proto_desc_t adsl_proto_desc = {
 };
 
 static GPS_Position pos;
-static ADSL_Packet  r; /* Rx */
-static ADSL_Packet  t; /* Tx */
+static ADSL_Packet  r __attribute__((aligned(sizeof(uint32_t)))); /* Rx */
+static ADSL_Packet  t __attribute__((aligned(sizeof(uint32_t)))); /* Tx */
 
 void adsl_init()
 {
