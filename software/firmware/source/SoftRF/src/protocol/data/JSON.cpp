@@ -701,6 +701,12 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_FANET;
     } else if (!strcmp(protocol_s,"UAT")) {
       eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_ADSB_UAT;
+    } else if (!strcmp(protocol_s,"ADS-B")) {
+      eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_ADSB_1090;
+    } else if (!strcmp(protocol_s,"APRS") || !strcmp(protocol_s,"PROL")) {
+      eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_APRS;
+    } else if (!strcmp(protocol_s,"ADS-L")) {
+      eeprom_block.field.settings.rf_protocol = RF_PROTOCOL_ADSL_860;
     }
   }
 
