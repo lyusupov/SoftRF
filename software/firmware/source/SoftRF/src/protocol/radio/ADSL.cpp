@@ -65,6 +65,35 @@ const rf_proto_desc_t adsl_proto_desc = {
   .slot1           = {800, 1200}
 };
 
+const rf_proto_desc_t adsl_proto_desc_oband = {
+  .name            = {'A','D','S','-','L', 0},
+  .type            = RF_PROTOCOL_ADSL_860,
+  .modulation_type = RF_MODULATION_TYPE_2FSK,
+  .preamble_type   = P3I_PREAMBLE_TYPE,
+  .preamble_size   = P3I_PREAMBLE_SIZE,
+  .syncword        = {0x2d, 0xd4},
+  .syncword_size   = P3I_SYNCWORD_SIZE,
+  .net_id          = 0x0000, /* not in use */
+  .payload_type    = RF_PAYLOAD_DIRECT,
+  .payload_size    = ADSL_PAYLOAD_SIZE,
+  .payload_offset  = 0,
+  .crc_type        = ADSL_CRC_TYPE,
+  .crc_size        = ADSL_CRC_SIZE,
+
+  .bitrate         = RF_BITRATE_38400,
+  .deviation       = P3I_FDEV,
+  .whitening       = RF_WHITENING_NONE,
+  .bandwidth       = P3I_BANDWIDTH,
+
+  .air_time        = P3I_AIR_TIME,
+
+  .tm_type         = RF_TIMING_INTERVAL,
+  .tx_interval_min = P3I_TX_INTERVAL_MIN,
+  .tx_interval_max = P3I_TX_INTERVAL_MAX,
+  .slot0           = {0, 0},
+  .slot1           = {0, 0}
+};
+
 static GPS_Position pos;
 static ADSL_Packet  r __attribute__((aligned(sizeof(uint32_t)))); /* Rx */
 static ADSL_Packet  t __attribute__((aligned(sizeof(uint32_t)))); /* Tx */

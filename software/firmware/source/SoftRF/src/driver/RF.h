@@ -33,6 +33,9 @@
 #include <lib_crc.h>
 #include <protocol.h>
 #include <freqplan.h>
+#if defined(USE_RADIOLIB)
+#include <RadioLib.h>
+#endif
 
 #include "GNSS.h"
 #include "../protocol/radio/Legacy.h"
@@ -76,13 +79,14 @@ enum
   RF_IC_R820T,
   RF_IC_MSI001,
   RF_IC_SA8X8,
+  RF_IC_LR112X,
 };
 
 enum
 {
   RF_TX_POWER_FULL,
   RF_TX_POWER_LOW,
-  RF_TX_POWER_OFF
+  RF_TX_POWER_OFF,
 };
 
 typedef struct rfchip_ops_struct {

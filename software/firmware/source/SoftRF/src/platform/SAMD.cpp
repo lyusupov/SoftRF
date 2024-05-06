@@ -194,7 +194,7 @@ static void SAMD_post_init()
     Serial.println(F("Built-in components:"));
 
     Serial.print(F("RADIO   : "));
-    Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.rf      != RF_IC_NONE        ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
 
