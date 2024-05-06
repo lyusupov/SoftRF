@@ -334,6 +334,7 @@ struct rst_info {
 #define USE_TFT
 #define USE_NMEA_CFG
 #define USE_BASICMAC
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 

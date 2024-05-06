@@ -1134,6 +1134,10 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_S3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
 
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_S3_DIO1;
+#endif /* USE_RADIOLIB */
+
     int uSD_SS_pin = (esp32_board == ESP32_S3_DEVKIT) ?
                      SOC_GPIO_PIN_S3_SD_SS_DK : SOC_GPIO_PIN_S3_SD_SS_TBEAM;
 
@@ -1289,7 +1293,9 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_HELTRK_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_HELTRK_RST;
     lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
-
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_HELTRK_DIO1;
+#endif /* USE_RADIOLIB */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)

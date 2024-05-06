@@ -703,6 +703,10 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
+
       hw_info.revision = 0;
       break;
 
@@ -720,6 +724,10 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
+
       hw_info.revision = 1;
       break;
 
@@ -739,6 +747,10 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_2_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_2_RST;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
+
       hw_info.revision = 2;
       break;
 
