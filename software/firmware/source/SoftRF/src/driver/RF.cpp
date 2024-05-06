@@ -2826,10 +2826,8 @@ static void sa8x8_shutdown()
 #define RADIO_TYPE      LR1121
 #endif
 
-RADIO_TYPE radio = new Module(lmic_pins.nss,
-                              lmic_pins.dio[0],
-                              lmic_pins.rst,
-                              lmic_pins.busy);
+Module     *mod;
+RADIO_TYPE *radio;
 
 const rf_proto_desc_t  *rl_protocol = &ogntp_proto_desc;
 
@@ -2847,25 +2845,21 @@ static bool lr112x_transmit_complete = false;
 
 #define RADIOLIB_MAX_DATA_LENGTH    128
 
-
 typedef struct
 {
-        uint8_t dstAddr[8];              //!<  Destination address
-        uint32_t absTime;                //!< Absolute time to Tx packet (0 for immediate)
-                                         //!< Layer will use last SeqNum used + 1
-        uint8_t len;                     //!< Payload Length
-        uint8_t payload[RADIOLIB_MAX_DATA_LENGTH];       //!< Payload
+  uint8_t len;
+  uint8_t payload[RADIOLIB_MAX_DATA_LENGTH];
 } RadioLib_TxPacket;
 
 RadioLib_TxPacket txPacket;
 
-static const SPISettings spi_settings(1000000UL, MSBFIRST, SPI_MODE0);
+static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
 
 static void hal_spi_select (int on) {
 
 #if defined(SPI_HAS_TRANSACTION)
     if (on)
-        SPI.beginTransaction(spi_settings);
+        SPI.beginTransaction(probe_settings);
     else
         SPI.endTransaction();
 #endif
@@ -2975,7 +2969,7 @@ static void lr112x_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio.setFrequency(frequency / 1000000.0);
+    int state = radio->setFrequency(frequency / 1000000.0);
 
     lr112x_channel_prev = channel;
     /* restart Rx upon a channel switch */
@@ -2986,6 +2980,13 @@ static void lr112x_channel(int8_t channel)
 static void lr112x_setup()
 {
   int state;
+
+  SoC->SPI_begin();
+
+  mod   = new Module(lmic_pins.nss, lmic_pins.dio[0],
+                     lmic_pins.rst, lmic_pins.busy,
+                     SPI);
+  radio = new RADIO_TYPE(mod);
 
   switch (settings->rf_protocol)
   {
@@ -3036,7 +3037,7 @@ static void lr112x_setup()
   switch (rl_protocol->modulation_type)
   {
   case RF_MODULATION_TYPE_LORA:
-    state = radio.begin();    // start LoRa mode (and disable FSK)
+    state = radio->begin();    // start LoRa mode (and disable FSK)
     /* TBD */
     break;
   case RF_MODULATION_TYPE_2FSK:
@@ -3045,10 +3046,10 @@ static void lr112x_setup()
     float br, fdev, bw;
 
 #if USE_SX1262
-    state = radio.beginFSK(); // start FSK mode (and disable LoRa)
+    state = radio->beginFSK(); // start FSK mode (and disable LoRa)
 #endif
 #if USE_LR1121
-    state = radio.beginGFSK();
+    state = radio->beginGFSK();
 #endif
 
     switch (rl_protocol->bitrate)
@@ -3061,7 +3062,7 @@ static void lr112x_setup()
       br = 100.0;
       break;
     }
-    state = radio.setBitRate(br);
+    state = radio->setBitRate(br);
 
     switch (rl_protocol->deviation)
     {
@@ -3080,7 +3081,7 @@ static void lr112x_setup()
       fdev = 50.0;
       break;
     }
-    state = radio.setFrequencyDeviation(fdev);
+    state = radio->setFrequencyDeviation(fdev);
 
     switch (rl_protocol->bandwidth)
     {
@@ -3103,10 +3104,10 @@ static void lr112x_setup()
       bw = 234.3;
       break;
     }
-    state = radio.setRxBandwidth(bw);
+    state = radio->setRxBandwidth(bw);
 
-    state = radio.setPreambleLength(rl_protocol->preamble_size * 8);
-    state = radio.setDataShaping(RADIOLIB_SHAPING_0_5);
+    state = radio->setPreambleLength(rl_protocol->preamble_size * 8);
+    state = radio->setDataShaping(RADIOLIB_SHAPING_0_5);
 
     switch (rl_protocol->crc_type)
     {
@@ -3121,7 +3122,7 @@ static void lr112x_setup()
     case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
     default:
-      state = radio.setCRC(0, 0);
+      state = radio->setCRC(0, 0);
       break;
     }
 
@@ -3139,11 +3140,11 @@ static void lr112x_setup()
     default:
       break;
     }
-    state = radio.fixedPacketLengthMode(pkt_size);
+    state = radio->fixedPacketLengthMode(pkt_size);
 
-    state = radio.disableAddressFiltering();
-    state = radio.setSyncWord((uint8_t *) rl_protocol->syncword,
-                              (size_t)    rl_protocol->syncword_size);
+    state = radio->disableAddressFiltering();
+    state = radio->setSyncWord((uint8_t *) rl_protocol->syncword,
+                               (size_t)    rl_protocol->syncword_size);
     break;
   }
 
@@ -3176,11 +3177,11 @@ static void lr112x_setup()
     break;
   }
 
-  state = radio.setOutputPower(txpow);
+  state = radio->setOutputPower(txpow);
 
 #if USE_SX1262
-  state = radio.setCurrentLimit(100.0);
-  state = radio.setRxBoostedGainMode(true);
+  state = radio->setCurrentLimit(100.0);
+  state = radio->setRxBoostedGainMode(true);
 #endif
 }
 
@@ -3328,18 +3329,20 @@ static bool lr112x_transmit()
 
   txPacket.len = PayloadLen;
 
-  int state = radio.transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+  int state = radio->transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
 
   if (state == RADIOLIB_ERR_NONE) {
+
+    success = true;
+
+#if 0
     // the packet was successfully transmitted
     Serial.println(F("success!"));
 
     // print measured data rate
     Serial.print(F("[SX1262] Datarate:\t"));
-    Serial.print(radio.getDataRate());
+    Serial.print(radio->getDataRate());
     Serial.println(F(" bps"));
-
-    success = true;
 
   } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
     // the supplied packet was longer than 256 bytes
@@ -3353,6 +3356,7 @@ static bool lr112x_transmit()
     // some other error occurred
     Serial.print(F("failed, code "));
     Serial.println(state);
+#endif
   }
 
   return success;
@@ -3360,7 +3364,9 @@ static bool lr112x_transmit()
 
 static void lr112x_shutdown()
 {
-  int state = radio.sleep(false);
+  int state = radio->sleep(false);
+
+  SPI.end();
 }
 
 #endif /* USE_RADIOLIB */

@@ -183,10 +183,10 @@ void handleSettings() {
 </select>\
 </td>\
 </tr>"),
-  (settings->mode == SOFTRF_MODE_NORMAL ? "selected" : "") , SOFTRF_MODE_NORMAL,
+  (settings->mode == SOFTRF_MODE_NORMAL    ? "selected" : ""), SOFTRF_MODE_NORMAL,
   (settings->mode == SOFTRF_MODE_TXRX_TEST ? "selected" : ""), SOFTRF_MODE_TXRX_TEST,
-  (settings->mode == SOFTRF_MODE_BRIDGE ? "selected" : ""), SOFTRF_MODE_BRIDGE,
-  (settings->mode == SOFTRF_MODE_UAV ? "selected" : ""), SOFTRF_MODE_UAV
+  (settings->mode == SOFTRF_MODE_BRIDGE    ? "selected" : ""), SOFTRF_MODE_BRIDGE,
+  (settings->mode == SOFTRF_MODE_UAV       ? "selected" : ""), SOFTRF_MODE_UAV
 /*  (settings->mode == SOFTRF_MODE_WATCHOUT ? "selected" : ""), SOFTRF_MODE_WATCHOUT, */
   );
 
@@ -195,7 +195,9 @@ void handleSettings() {
   size -= len;
 
   /* Radio specific part 1 */
-  if (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262) {
+  if (hw_info.rf == RF_IC_SX1276 ||
+      hw_info.rf == RF_IC_SX1262 ||
+      hw_info.rf == RF_IC_LR112X) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -243,8 +245,9 @@ void handleSettings() {
     (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? legacy_proto_desc.name :
     (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ? uat978_proto_desc.name :
     (settings->rf_protocol == RF_PROTOCOL_FANET    ? fanet_proto_desc.name  :
+    (settings->rf_protocol == RF_PROTOCOL_ADSL_860 ? adsl_proto_desc.name   :
     (settings->rf_protocol == RF_PROTOCOL_APRS     ? aprs_proto_desc.name   :
-     "UNK"))))
+     "UNK")))))
     );
   }
   len = strlen(offset);
