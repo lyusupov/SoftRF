@@ -147,6 +147,13 @@ extern const char *Protocol_ID[];
 extern const rfchip_ops_t nrf905_ops;
 #endif
 
+#if !defined(EXCLUDE_SX12XX)
+extern const rfchip_ops_t sx1276_ops;
+#if defined(USE_BASICMAC)
+extern const rfchip_ops_t sx1262_ops;
+#endif /* USE_BASICMAC */
+#endif /*EXCLUDE_SX12XX */
+
 /* PLACEHOLDER */
 
 #if !defined(EXCLUDE_CC13XX)

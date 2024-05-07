@@ -216,7 +216,7 @@ typedef struct stm32_backup_struct {
 //#define EXCLUDE_BMP280         //  -  2 kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
-//#define EXCLUDE_NRF905         //  -  2 kb
+#define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  - 16 kb
@@ -224,6 +224,8 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
+#define EXCLUDE_MAG
+#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
 //#define WITH_RFM69
