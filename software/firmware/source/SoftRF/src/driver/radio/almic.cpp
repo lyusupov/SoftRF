@@ -15,6 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#if defined(ARDUINO)
+#include <SPI.h>
+#endif /* ARDUINO */
 
 #include "../RF.h"
 
@@ -23,10 +26,6 @@
  * Arduino-LMIC/BASICMAC
  * SX12XX-specific code
  */
-
-#if defined(ARDUINO)
-#include <SPI.h>
-#endif /* ARDUINO */
 
 #include "../EEPROM.h"
 #include "../Battery.h"
