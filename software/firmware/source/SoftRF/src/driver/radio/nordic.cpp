@@ -25,6 +25,10 @@
  *
  */
 
+#if defined(ARDUINO)
+#include <SPI.h>
+#endif /* ARDUINO */
+
 #include "../EEPROM.h"
 
 static bool nrf905_probe(void);
