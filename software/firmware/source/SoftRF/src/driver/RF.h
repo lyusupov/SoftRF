@@ -154,7 +154,9 @@ extern const rfchip_ops_t sx1262_ops;
 #endif /* USE_BASICMAC */
 #endif /*EXCLUDE_SX12XX */
 
-/* PLACEHOLDER */
+#if !defined(EXCLUDE_UATM)
+extern const rfchip_ops_t uatm_ops;
+#endif /* EXCLUDE_UATM */
 
 #if !defined(EXCLUDE_CC13XX)
 extern const rfchip_ops_t cc13xx_ops;

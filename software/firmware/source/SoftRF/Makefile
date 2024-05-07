@@ -146,6 +146,7 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
 DRV_CPPS      := $(DRIVER_PATH)/RF.cpp             \
                  $(DRIVER_PATH)/radio/nordic.cpp   \
                  $(DRIVER_PATH)/radio/almic.cpp    \
+                 $(DRIVER_PATH)/radio/uatm.cpp     \
                  $(DRIVER_PATH)/radio/easylink.cpp \
                  $(DRIVER_PATH)/radio/ogn.cpp      \
                  $(DRIVER_PATH)/radio/nicerf.cpp   \

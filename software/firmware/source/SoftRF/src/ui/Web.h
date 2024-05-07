@@ -25,7 +25,7 @@
 #include <WiFiClient.h>
 #endif /* ARDUINO */
 
-#include <TinyGPS++.h>
+//#include <TinyGPS++.h>
 
 #include "../driver/EEPROM.h"
 #include "../driver/RF.h"
@@ -51,6 +51,6 @@ extern String TxDataTemplate;
 extern WiFiClient client;
 #endif /* ARDUINO */
 
-extern TinyGPSPlus gps;
+//extern TinyGPSPlus gps;
 
 #endif /* WEBHELPER_H */
