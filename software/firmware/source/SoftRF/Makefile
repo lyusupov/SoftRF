@@ -144,6 +144,10 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/EFR32.cpp
 
 DRV_CPPS      := $(DRIVER_PATH)/RF.cpp             \
+                 $(DRIVER_PATH)/radio/nordic.cpp   \
+                 $(DRIVER_PATH)/radio/easylink.cpp \
+                 $(DRIVER_PATH)/radio/ogn.cpp      \
+                 $(DRIVER_PATH)/radio/nicerf.cpp   \
                  $(DRIVER_PATH)/radio/radiolib.cpp \
                  $(DRIVER_PATH)/GNSS.cpp           \
                  $(DRIVER_PATH)/Baro.cpp           \

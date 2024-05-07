@@ -138,14 +138,31 @@ extern bool RF_SX12XX_RST_is_connected;
 extern size_t (*protocol_encode)(void *, ufo_t *);
 extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
+extern FreqPlan RF_FreqPlan;
+
 extern int8_t RF_last_rssi;
 extern const char *Protocol_ID[];
 
-extern bool lr112x_probe(void);
-extern void lr112x_setup(void);
-extern void lr112x_channel(int8_t);
-extern bool lr112x_receive(void);
-extern bool lr112x_transmit(void);
-extern void lr112x_shutdown(void);
+#if !defined(EXCLUDE_NRF905)
+extern const rfchip_ops_t nrf905_ops;
+#endif
+
+/* PLACEHOLDER */
+
+#if !defined(EXCLUDE_CC13XX)
+extern const rfchip_ops_t cc13xx_ops;
+#endif /* EXCLUDE_CC13XX */
+
+#if defined(USE_OGN_RF_DRIVER)
+extern const rfchip_ops_t ognrf_ops;
+#endif /* USE_OGN_RF_DRIVER */
+
+#if defined(USE_SA8X8)
+extern const rfchip_ops_t sa8x8_ops;
+#endif /* USE_SA8X8 */
+
+#if defined(USE_RADIOLIB)
+extern const rfchip_ops_t lr112x_ops;
+#endif /* USE_RADIOLIB */
 
 #endif /* RFHELPER_H */

@@ -25,8 +25,25 @@
 
 #include <manchester.h>
 
-extern FreqPlan RF_FreqPlan;
 extern size_t RF_tx_size;
+
+static bool lr112x_probe(void);
+static void lr112x_setup(void);
+static void lr112x_channel(int8_t);
+static bool lr112x_receive(void);
+static bool lr112x_transmit(void);
+static void lr112x_shutdown(void);
+
+const rfchip_ops_t lr112x_ops = {
+  RF_IC_LR112X,
+  "LR112x",
+  lr112x_probe,
+  lr112x_setup,
+  lr112x_channel,
+  lr112x_receive,
+  lr112x_transmit,
+  lr112x_shutdown
+};
 
 #define USE_SX1262      1
 #define USE_LR1121      0
@@ -134,7 +151,7 @@ void lr112x_receive_handler(void) {
   lr112x_receive_complete = true;
 }
 
-bool lr112x_probe()
+static bool lr112x_probe()
 {
 #if USE_SX1262
   u1_t v, v_reset;
@@ -179,7 +196,7 @@ bool lr112x_probe()
 #endif
 }
 
-void lr112x_channel(int8_t channel)
+static void lr112x_channel(int8_t channel)
 {
   if (channel != -1 && channel != lr112x_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
@@ -201,7 +218,7 @@ void lr112x_channel(int8_t channel)
   }
 }
 
-void lr112x_setup()
+static void lr112x_setup()
 {
   int state;
 
@@ -411,7 +428,7 @@ void lr112x_setup()
   radio->setPacketReceivedAction(lr112x_receive_handler);
 }
 
-bool lr112x_receive()
+static bool lr112x_receive()
 {
   bool success = false;
   int state;
@@ -577,7 +594,7 @@ bool lr112x_receive()
   return success;
 }
 
-bool lr112x_transmit()
+static bool lr112x_transmit()
 {
   u1_t crc8;
   u2_t crc16;
@@ -743,7 +760,7 @@ bool lr112x_transmit()
   return success;
 }
 
-void lr112x_shutdown()
+static void lr112x_shutdown()
 {
   int state = radio->sleep(false);
 

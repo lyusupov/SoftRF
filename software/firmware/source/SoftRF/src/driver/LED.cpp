@@ -24,6 +24,7 @@
 #include "Battery.h"
 #include "../TrafficHelper.h"
 
+extern uint32_t tx_packets_counter, rx_packets_counter;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
 

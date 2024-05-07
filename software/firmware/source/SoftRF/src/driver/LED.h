@@ -80,6 +80,4 @@ void LED_DisplayTraffic();
 void LED_Clear();
 void LED_loop();
 
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
 #endif /* LEDHELPER_H */
