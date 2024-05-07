@@ -99,7 +99,6 @@ SoftSPI WiFiSPI(_PINNUM(1, 7), _PINNUM(1, 6), _PINNUM(0, 8));
 
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
 
 static struct rst_info reset_info = {
   .reason = REASON_DEFAULT_RST,

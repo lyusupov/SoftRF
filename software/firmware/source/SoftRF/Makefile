@@ -143,16 +143,17 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/RA4M1.cpp    \
                  $(PLATFORM_PATH)/EFR32.cpp
 
-DRV_CPPS      := $(DRIVER_PATH)/RF.cpp        \
-                 $(DRIVER_PATH)/GNSS.cpp      \
-                 $(DRIVER_PATH)/Baro.cpp      \
-                 $(DRIVER_PATH)/LED.cpp       \
-                 $(DRIVER_PATH)/OLED.cpp      \
-                 $(DRIVER_PATH)/Battery.cpp   \
-                 $(DRIVER_PATH)/EEPROM.cpp    \
-                 $(DRIVER_PATH)/Bluetooth.cpp \
-                 $(DRIVER_PATH)/Sound.cpp     \
-                 $(DRIVER_PATH)/WiFi.cpp      \
+DRV_CPPS      := $(DRIVER_PATH)/RF.cpp             \
+                 $(DRIVER_PATH)/radio/radiolib.cpp \
+                 $(DRIVER_PATH)/GNSS.cpp           \
+                 $(DRIVER_PATH)/Baro.cpp           \
+                 $(DRIVER_PATH)/LED.cpp            \
+                 $(DRIVER_PATH)/OLED.cpp           \
+                 $(DRIVER_PATH)/Battery.cpp        \
+                 $(DRIVER_PATH)/EEPROM.cpp         \
+                 $(DRIVER_PATH)/Bluetooth.cpp      \
+                 $(DRIVER_PATH)/Sound.cpp          \
+                 $(DRIVER_PATH)/WiFi.cpp           \
                  $(DRIVER_PATH)/EPD.cpp
 
 UI_CPPS       := $(UI_PATH)/Web.cpp        \

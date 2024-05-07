@@ -74,7 +74,6 @@ bool OLED_busy                      = false;
 
 static uint32_t prev_tx_packets_counter = (uint32_t) -1;
 static uint32_t prev_rx_packets_counter = (uint32_t) -1;
-extern uint32_t tx_packets_counter, rx_packets_counter;
 
 static uint32_t prev_acrfts_counter = (uint32_t) -1;
 static uint32_t prev_sats_counter   = (uint32_t) -1;

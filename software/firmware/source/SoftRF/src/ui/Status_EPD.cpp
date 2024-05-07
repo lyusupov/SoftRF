@@ -31,8 +31,6 @@
 #include <Fonts/FreeSerifBold12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
 
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
 const char ID_text[]       = "ID";
 const char PROTOCOL_text[] = "PROTOCOL";
 const char RX_text[]       = "RX";

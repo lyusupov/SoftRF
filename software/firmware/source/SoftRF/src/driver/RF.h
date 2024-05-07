@@ -131,6 +131,7 @@ uint8_t RF_Payload_Size(uint8_t);
 
 extern byte TxBuffer[MAX_PKT_SIZE], RxBuffer[MAX_PKT_SIZE];
 extern unsigned long TxTimeMarker;
+extern uint32_t tx_packets_counter, rx_packets_counter;
 
 extern const rfchip_ops_t *rf_chip;
 extern bool RF_SX12XX_RST_is_connected;
@@ -139,5 +140,12 @@ extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 extern int8_t RF_last_rssi;
 extern const char *Protocol_ID[];
+
+extern bool lr112x_probe(void);
+extern void lr112x_setup(void);
+extern void lr112x_channel(int8_t);
+extern bool lr112x_receive(void);
+extern bool lr112x_transmit(void);
+extern void lr112x_shutdown(void);
 
 #endif /* RFHELPER_H */

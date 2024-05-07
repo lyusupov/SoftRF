@@ -59,8 +59,6 @@ const char *NMEA_CallSign_Prefix[] = {
 #define isTimeToPGRMZ() (millis() - PGRMZ_TimeMarker > 1000)
 unsigned long PGRMZ_TimeMarker = 0;
 
-extern uint32_t tx_packets_counter, rx_packets_counter;
-
 #if defined(ENABLE_AHRS)
 #include "../../driver/AHRSHelper.h"
 

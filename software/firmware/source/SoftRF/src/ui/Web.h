@@ -41,8 +41,6 @@ void Web_fini(void);
 void Hex2Bin(String, byte *);
 #endif
 
-extern uint32_t tx_packets_counter, rx_packets_counter;
-//extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)

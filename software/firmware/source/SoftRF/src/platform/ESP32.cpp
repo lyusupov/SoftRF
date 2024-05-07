@@ -157,7 +157,6 @@ static union {
 static bool TFT_display_frontpage = false;
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
 extern bool loopTaskWDTEnabled;
 
 const char *ESP32SX_Device_Manufacturer = SOFTRF_IDENT;

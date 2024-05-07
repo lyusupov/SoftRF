@@ -186,7 +186,6 @@ static void EFR32_post_init()
 
 static uint32_t prev_tx_packets_counter = 0;
 static uint32_t prev_rx_packets_counter = 0;
-extern uint32_t tx_packets_counter, rx_packets_counter;
 static unsigned long tx_led_time_marker = 0;
 static unsigned long rx_led_time_marker = 0;
 
