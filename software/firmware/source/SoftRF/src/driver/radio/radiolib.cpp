@@ -275,16 +275,43 @@ static void lr112x_setup()
 
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
+  float br, fdev, bw;
   switch (rl_protocol->modulation_type)
   {
   case RF_MODULATION_TYPE_LORA:
     state = radio->begin();    // start LoRa mode (and disable FSK)
-    /* TBD */
+
+    switch (RF_FreqPlan.Bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_250KHZ:
+      bw = 500.0; /* BW_500 */
+      break;
+    case RF_RX_BANDWIDTH_SS_125KHZ:
+    default:
+      bw = 250.0; /* BW_250 */
+      break;
+    }
+    state = radio->setBandwidth(bw);
+
+    switch (rl_protocol->type)
+    {
+    case RF_PROTOCOL_FANET:
+    default:
+      state = radio->setSpreadingFactor(7); /* SF_7 */
+      state = radio->setCodingRate(5);      /* CR_5 */
+      break;
+    }
+
+    state = radio->setSyncWord((uint8_t) rl_protocol->syncword[0]);
+
+    state = radio->setPreambleLength(8);
+    state = radio->explicitHeader();
+    state = radio->setCRC(true);
+
     break;
   case RF_MODULATION_TYPE_2FSK:
   case RF_MODULATION_TYPE_PPM: /* TBD */
   default:
-    float br, fdev, bw;
 
 #if USE_SX1262
     state = radio->beginFSK(); // start FSK mode (and disable LoRa)
@@ -347,6 +374,7 @@ static void lr112x_setup()
     }
     state = radio->setRxBandwidth(bw);
 
+    state = radio->setEncoding(RADIOLIB_ENCODING_NRZ);
     state = radio->setPreambleLength(rl_protocol->preamble_size * 8);
     state = radio->setDataShaping(RADIOLIB_SHAPING_0_5);
 
@@ -421,6 +449,7 @@ static void lr112x_setup()
   state = radio->setOutputPower(txpow);
 
 #if USE_SX1262
+  state = radio->setDio2AsRfSwitch();
   state = radio->setCurrentLimit(100.0);
   state = radio->setRxBoostedGainMode(true);
 #endif

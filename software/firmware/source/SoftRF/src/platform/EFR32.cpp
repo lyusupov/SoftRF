@@ -241,7 +241,7 @@ static void EFR32_reset()
 static uint32_t EFR32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = getDeviceUniqueId(); // getMcuUniqueId() in V1.0.0
+  uint32_t id = getDeviceUniqueId();
 
   return DevID_Mapper(id);
 #else
