@@ -32,20 +32,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define _GNRMCterm   "GNRMC"
 #define _GNGGAterm   "GNGGA"
 
-#if defined(ARDUINO_ARCH_SILABS)
-#ifndef DEG_TO_RAD
-#define DEG_TO_RAD   0.017453292519943295769236907684886
-#endif
-
-#ifndef RAD_TO_DEG
-#define RAD_TO_DEG   57.295779513082320876798154814105
-#endif
-
-#ifndef TWO_PI
-#define TWO_PI       6.283185307179586476925286766559
-#endif
-#endif /* ARDUINO_ARCH_SILABS */
-
 TinyGPSPlus::TinyGPSPlus()
   :  parity(0)
   ,  isChecksumTerm(false)

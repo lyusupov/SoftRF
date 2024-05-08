@@ -18,8 +18,6 @@
 
 #include "RF.h"
 #include "EEPROM.h"
-//#include "Battery.h"
-//#include "../ui/Web.h"
 #if !defined(EXCLUDE_MAVLINK)
 #include "../protocol/data/MAVLink.h"
 #endif /* EXCLUDE_MAVLINK */

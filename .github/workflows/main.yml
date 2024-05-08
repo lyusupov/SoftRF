@@ -45,7 +45,7 @@ jobs:
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
             'arduino:mbed_rp2040:pico',
-            'SiliconLabs:silabs:thingplusmatter_ble'
+            'SiliconLabs:silabs:nano_matter'
           ]
 
     env:
@@ -404,7 +404,7 @@ jobs:
           fi
           #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
           #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
-          #  arduino --install-boards SiliconLabs:silabs:1.0.0 ;
+          #  arduino --install-boards SiliconLabs:silabs:2.0.0 ;
           #  arduino --board $BOARD --save-prefs ;
           #  cd $GITHUB_WORKSPACE ;
           #fi
@@ -412,7 +412,7 @@ jobs:
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install SiliconLabs:silabs@1.0.0 ;
+            arduino-cli core install SiliconLabs:silabs@2.0.0 ;
             # arduino-cli board attach -b $BOARD ;
             cd $GITHUB_WORKSPACE ;
           fi

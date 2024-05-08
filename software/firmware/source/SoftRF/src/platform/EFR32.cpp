@@ -100,6 +100,10 @@ char* ultoa(unsigned long value, char *string, int radix)
   return string;
 }
 
+#if (__GNUC__ <= 9)
+volatile int __sf;
+#endif
+
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
@@ -237,7 +241,7 @@ static void EFR32_reset()
 static uint32_t EFR32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = getMcuUniqueId();
+  uint32_t id = getDeviceUniqueId(); // getMcuUniqueId() in V1.0.0
 
   return DevID_Mapper(id);
 #else
