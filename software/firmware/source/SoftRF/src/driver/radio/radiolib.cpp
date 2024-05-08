@@ -66,12 +66,6 @@ static volatile bool lr112x_receive_complete = false;
 static bool lr112x_receive_active    = false;
 static bool lr112x_transmit_complete = false;
 
-#if USE_SX1262 && !defined(USE_BASICMAC)
-
-#define CMD_READREGISTER            0x1D
-#define REG_LORASYNCWORDLSB         0x0741
-#define SX126X_DEF_LORASYNCWORDLSB  0x24
-
 #define RADIOLIB_MAX_DATA_LENGTH    128
 
 typedef struct
@@ -82,6 +76,12 @@ typedef struct
 
 RadioLib_DataPacket txPacket;
 RadioLib_DataPacket rxPacket;
+
+#if USE_SX1262 && !defined(USE_BASICMAC)
+
+#define CMD_READREGISTER            0x1D
+#define REG_LORASYNCWORDLSB         0x0741
+#define SX126X_DEF_LORASYNCWORDLSB  0x24
 
 static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
 
@@ -305,7 +305,9 @@ static void lr112x_setup()
     state = radio->setSyncWord((uint8_t) rl_protocol->syncword[0]);
 
     state = radio->setPreambleLength(8);
+#if USE_SX1262
     state = radio->explicitHeader();
+#endif
     state = radio->setCRC(true);
 
     break;
@@ -521,10 +523,11 @@ static bool lr112x_receive()
       break;
     }
 
+    uint8_t i;
+
     switch (rl_protocol->type)
     {
     case RF_PROTOCOL_P3I:
-      uint8_t i;
       offset = rl_protocol->payload_offset;
       for (i = 0; i < rl_protocol->payload_size; i++)
       {
@@ -538,9 +541,19 @@ static bool lr112x_receive()
       pkt_crc8 = rxPacket_ptr->payload[i + offset];
 
       if (crc8 == pkt_crc8) {
-
         success = true;
       }
+      break;
+    case RF_PROTOCOL_FANET:
+      offset = rl_protocol->payload_offset;
+      size   = rl_protocol->payload_size + rl_protocol->crc_size;
+      for (i = 0; i < size; i++)
+      {
+        if (i < sizeof(RxBuffer)) {
+          RxBuffer[i] = rxPacket_ptr->payload[i + offset];
+        }
+      }
+      success = true;
       break;
     case RF_PROTOCOL_OGNTP:
     case RF_PROTOCOL_ADSL_860:
@@ -553,7 +566,7 @@ static bool lr112x_receive()
                rl_protocol->crc_size +
                rl_protocol->crc_size;
       if (rxPacket_ptr->len >= (size + offset)) {
-        uint8_t i, val1, val2;
+        uint8_t val1, val2;
         for (i = 0; i < size; i++) {
           val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
           i++;
