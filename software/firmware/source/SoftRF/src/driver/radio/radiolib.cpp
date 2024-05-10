@@ -478,156 +478,165 @@ static bool lr112x_receive()
 
   if (lr112x_receive_complete == true) {
 
-    size_t size = 0;
-    uint8_t offset;
-
-    u1_t crc8, pkt_crc8;
-    u2_t crc16, pkt_crc16;
-
     rxPacket.len = radio->getPacketLength();
-    state = radio->readData(rxPacket.payload, rxPacket.len);
 
-    RadioLib_DataPacket *rxPacket_ptr = &rxPacket;
+    if (rxPacket.len > 0) {
+      state = radio->readData(rxPacket.payload, rxPacket.len);
+      lr112x_receive_active = false;
 
-    switch (rl_protocol->crc_type)
-    {
-    case RF_CHECKSUM_TYPE_GALLAGER:
-    case RF_CHECKSUM_TYPE_CRC_MODES:
-    case RF_CHECKSUM_TYPE_NONE:
-       /* crc16 left not initialized */
-      break;
-    case RF_CHECKSUM_TYPE_CRC8_107:
-      crc8 = 0x71;     /* seed value */
-      break;
-    case RF_CHECKSUM_TYPE_CCITT_0000:
-      crc16 = 0x0000;  /* seed value */
-      break;
-    case RF_CHECKSUM_TYPE_CCITT_FFFF:
-    default:
-      crc16 = 0xffff;  /* seed value */
-      break;
-    }
+      if (state == RADIOLIB_ERR_NONE) {
+        size_t size = 0;
+        uint8_t offset;
 
-    switch (rl_protocol->type)
-    {
-    case RF_PROTOCOL_LEGACY:
-      /* take in account NRF905/FLARM "address" bytes */
-      crc16 = update_crc_ccitt(crc16, 0x31);
-      crc16 = update_crc_ccitt(crc16, 0xFA);
-      crc16 = update_crc_ccitt(crc16, 0xB6);
-      break;
-    case RF_PROTOCOL_P3I:
-    case RF_PROTOCOL_OGNTP:
-    case RF_PROTOCOL_ADSL_860:
-    default:
-      break;
-    }
+        u1_t crc8, pkt_crc8;
+        u2_t crc16, pkt_crc16;
 
-    uint8_t i;
-
-    switch (rl_protocol->type)
-    {
-    case RF_PROTOCOL_P3I:
-      offset = rl_protocol->payload_offset;
-      for (i = 0; i < rl_protocol->payload_size; i++)
-      {
-        update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
-        if (i < sizeof(RxBuffer)) {
-          RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
-                        pgm_read_byte(&whitening_pattern[i]);
-        }
-      }
-
-      pkt_crc8 = rxPacket_ptr->payload[i + offset];
-
-      if (crc8 == pkt_crc8) {
-        success = true;
-      }
-      break;
-    case RF_PROTOCOL_FANET:
-      offset = rl_protocol->payload_offset;
-      size   = rl_protocol->payload_size + rl_protocol->crc_size;
-      for (i = 0; i < size; i++)
-      {
-        if (i < sizeof(RxBuffer)) {
-          RxBuffer[i] = rxPacket_ptr->payload[i + offset];
-        }
-      }
-      success = true;
-      break;
-    case RF_PROTOCOL_OGNTP:
-    case RF_PROTOCOL_ADSL_860:
-    case RF_PROTOCOL_LEGACY:
-    default:
-      offset = 0;
-      size   = rl_protocol->payload_offset +
-               rl_protocol->payload_size +
-               rl_protocol->payload_size +
-               rl_protocol->crc_size +
-               rl_protocol->crc_size;
-      if (rxPacket_ptr->len >= (size + offset)) {
-        uint8_t val1, val2;
-        for (i = 0; i < size; i++) {
-          val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
-          i++;
-          val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
-          if ((i>>1) < sizeof(RxBuffer)) {
-            RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
-
-            if (i < size - (rl_protocol->crc_size + rl_protocol->crc_size)) {
-              switch (rl_protocol->crc_type)
-              {
-              case RF_CHECKSUM_TYPE_GALLAGER:
-              case RF_CHECKSUM_TYPE_CRC_MODES:
-              case RF_CHECKSUM_TYPE_NONE:
-                break;
-              case RF_CHECKSUM_TYPE_CCITT_FFFF:
-              case RF_CHECKSUM_TYPE_CCITT_0000:
-              default:
-                crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
-                break;
-              }
-            }
-          }
-        }
-
-        size = size>>1;
+        RadioLib_DataPacket *rxPacket_ptr = &rxPacket;
 
         switch (rl_protocol->crc_type)
         {
         case RF_CHECKSUM_TYPE_GALLAGER:
-          if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
-            success = true;
-          }
-          break;
         case RF_CHECKSUM_TYPE_CRC_MODES:
-#if defined(ENABLE_ADSL)
-          if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
-            success = true;
-          }
-#endif /* ENABLE_ADSL */
+        case RF_CHECKSUM_TYPE_NONE:
+           /* crc16 left not initialized */
+          break;
+        case RF_CHECKSUM_TYPE_CRC8_107:
+          crc8 = 0x71;     /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_0000:
+          crc16 = 0x0000;  /* seed value */
           break;
         case RF_CHECKSUM_TYPE_CCITT_FFFF:
-        case RF_CHECKSUM_TYPE_CCITT_0000:
-          offset = rl_protocol->payload_offset + rl_protocol->payload_size;
-          if (offset + 1 < sizeof(RxBuffer)) {
-            pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
-            if (crc16 == pkt_crc16) {
-
-              success = true;
-            }
-          }
+        default:
+          crc16 = 0xffff;  /* seed value */
           break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_LEGACY:
+          /* take in account NRF905/FLARM "address" bytes */
+          crc16 = update_crc_ccitt(crc16, 0x31);
+          crc16 = update_crc_ccitt(crc16, 0xFA);
+          crc16 = update_crc_ccitt(crc16, 0xB6);
+          break;
+        case RF_PROTOCOL_P3I:
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
         default:
           break;
         }
-      }
-      break;
-    }
 
-    if (success) {
-//      RF_last_rssi = rxPacket_ptr->rssi;
-      rx_packets_counter++;
+        uint8_t i;
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_P3I:
+          offset = rl_protocol->payload_offset;
+          for (i = 0; i < rl_protocol->payload_size; i++)
+          {
+            update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
+                            pgm_read_byte(&whitening_pattern[i]);
+            }
+          }
+
+          pkt_crc8 = rxPacket_ptr->payload[i + offset];
+
+          if (crc8 == pkt_crc8) {
+            success = true;
+          }
+          break;
+        case RF_PROTOCOL_FANET:
+          offset = rl_protocol->payload_offset;
+          size   = rl_protocol->payload_size + rl_protocol->crc_size;
+          for (i = 0; i < size; i++)
+          {
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset];
+            }
+          }
+          success = true;
+          break;
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        case RF_PROTOCOL_LEGACY:
+        default:
+          offset = 0;
+          size   = rl_protocol->payload_offset +
+                   rl_protocol->payload_size +
+                   rl_protocol->payload_size +
+                   rl_protocol->crc_size +
+                   rl_protocol->crc_size;
+          if (rxPacket_ptr->len >= (size + offset)) {
+            uint8_t val1, val2;
+            for (i = 0; i < size; i++) {
+              val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              i++;
+              val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              if ((i>>1) < sizeof(RxBuffer)) {
+                RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
+
+                if (i < size - (rl_protocol->crc_size + rl_protocol->crc_size)) {
+                  switch (rl_protocol->crc_type)
+                  {
+                  case RF_CHECKSUM_TYPE_GALLAGER:
+                  case RF_CHECKSUM_TYPE_CRC_MODES:
+                  case RF_CHECKSUM_TYPE_NONE:
+                    break;
+                  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+                  case RF_CHECKSUM_TYPE_CCITT_0000:
+                  default:
+                    crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
+                    break;
+                  }
+                }
+              }
+            }
+
+            size = size>>1;
+
+            switch (rl_protocol->crc_type)
+            {
+            case RF_CHECKSUM_TYPE_GALLAGER:
+              if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
+                success = true;
+              }
+              break;
+            case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+              if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
+                success = true;
+              }
+#endif /* ENABLE_ADSL */
+              break;
+            case RF_CHECKSUM_TYPE_CCITT_FFFF:
+            case RF_CHECKSUM_TYPE_CCITT_0000:
+              offset = rl_protocol->payload_offset + rl_protocol->payload_size;
+              if (offset + 1 < sizeof(RxBuffer)) {
+                pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
+                if (crc16 == pkt_crc16) {
+
+                  success = true;
+                }
+              }
+              break;
+            default:
+              break;
+            }
+          }
+          break;
+        }
+
+        if (success) {
+          RF_last_rssi = radio->getRSSI();
+          rx_packets_counter++;
+        }
+      }
+
+      memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+      rxPacket.len = 0;
     }
 
     lr112x_receive_complete = false;

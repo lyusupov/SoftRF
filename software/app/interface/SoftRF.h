@@ -141,22 +141,22 @@ enum
 	SOFTRF_PROTOCOL_ADSB_UAT,  /* ADS-B UAT */
 	SOFTRF_PROTOCOL_FANET,     /* Skytraxx */
 	SOFTRF_PROTOCOL_APRS,      /* Ham's 'classic' APRS and 'APRS over LoRa' */
+	SOFTRF_PROTOCOL_ADSL_860,  /* ADS-L.4.SRD-860 */
 	/* Volunteer contributors are welcome */
 	SOFTRF_PROTOCOL_EID,       /* UAS eID */
 	SOFTRF_PROTOCOL_GOTENNA,   /* goTenna Mesh */
-	SOFTRF_PROTOCOL_ADSL_860,  /* ADS-L.4.SRD-860 */
 };
 
 enum
 {
-	SOFTRF_BAND_AUTO = 0,
+	SOFTRF_BAND_AUTO = 0, /* Deprecated - treated as EU */
 	SOFTRF_BAND_EU   = 1, /* 868.4 MHz band */
 	SOFTRF_BAND_US   = 2, /* 915 MHz band */
 	SOFTRF_BAND_AU   = 3, /* 921 MHz band */
 	SOFTRF_BAND_NZ   = 4, /* 869.250 MHz band */
 	SOFTRF_BAND_RU   = 5, /* 868.8 MHz band */
 	SOFTRF_BAND_CN   = 6, /* 470 MHz band */
-	SOFTRF_BAND_UK   = 7, /* 869.52 MHz band */
+	SOFTRF_BAND_UK   = 7, /* 869.52 MHz band. Deprecated - treated as EU */
 	SOFTRF_BAND_IN   = 8, /* 866.0 MHz band */
 	SOFTRF_BAND_IL   = 9, /* 916.2 MHz band */
 	SOFTRF_BAND_KR   = 10 /* 920.9 MHz band */

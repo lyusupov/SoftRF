@@ -23,8 +23,8 @@ enum
 
 class FreqPlan
 { public:
-   uint8_t  Protocol;    // 0=Legacy, 1=OGNTP, 2=P3I, 3=1090ES, 4=UAT, 5=FANET
-   uint8_t  Plan;        // 1=Europe, 2=USA/Canada, 3=Australia/Chile, 4=New Zealand
+   uint8_t  Protocol;    // 0=Legacy, 1=OGNTP, 2=P3I, 3=ADS-B (1090ES), 4=UAT, 5=FANET, 6=APRS, 7=ADS-L (SRD860)
+   uint8_t  Plan;        // 1=Europe, 2=USA/Canada, 3=Australia/Chile, 4=New Zealand, ...
    uint8_t  Channels;    // number of channels
    uint32_t BaseFreq;    // [Hz] base channel (#0) frequency
    uint32_t ChanSepar;   // [Hz] channel spacing

@@ -206,6 +206,8 @@ void ParseData()
       if (settings->nmea_p) {
         StdOut.println(F("$PSRFE,RF loopback is detected on Rx"));
       }
+
+      rx_packets_counter--;
       return;
     }
 
