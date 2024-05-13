@@ -305,9 +305,7 @@ static void lr112x_setup()
     state = radio->setSyncWord((uint8_t) rl_protocol->syncword[0]);
 
     state = radio->setPreambleLength(8);
-#if USE_SX1262
     state = radio->explicitHeader();
-#endif
     state = radio->setCRC(true);
 
     break;
@@ -481,6 +479,11 @@ static bool lr112x_receive()
     rxPacket.len = radio->getPacketLength();
 
     if (rxPacket.len > 0) {
+
+      if (rxPacket.len > sizeof(rxPacket.payload)) {
+        rxPacket.len = sizeof(rxPacket.payload);
+      }
+
       state = radio->readData(rxPacket.payload, rxPacket.len);
       lr112x_receive_active = false;
 

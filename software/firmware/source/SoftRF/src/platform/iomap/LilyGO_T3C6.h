@@ -27,10 +27,13 @@
 #define SOC_GPIO_PIN_T3C6_ANT_TX        14
 
 // I2C (ext.)
-#define SOC_GPIO_PIN_T3C6_SDA           2
-#define SOC_GPIO_PIN_T3C6_SCL           3
+#define SOC_GPIO_PIN_T3C6_SDA           8
+#define SOC_GPIO_PIN_T3C6_SCL           9
+
+// status LED
+#define SOC_GPIO_PIN_T3C6_LED           7
 
 // NRF905 (NC)
-#define SOC_GPIO_PIN_T3C6_TXE           7 /* TBD */
-#define SOC_GPIO_PIN_T3C6_CE            8 /* TBD */
-#define SOC_GPIO_PIN_T3C6_PWR           9 /* TBD */
+#define SOC_GPIO_PIN_T3C6_TXE           2  /* TBD */
+#define SOC_GPIO_PIN_T3C6_CE            3  /* TBD */
+#define SOC_GPIO_PIN_T3C6_PWR           10 /* TBD */
