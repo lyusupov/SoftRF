@@ -35,8 +35,23 @@
 #define LEGACY_TX_INTERVAL_MIN 600 /* in ms */
 #define LEGACY_TX_INTERVAL_MAX 1400
 
+#define USE_AIR_V6             1
+#define USE_AIR_V7             0
+
+#if USE_AIR_V6
 #define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, \
                       0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 }
+#elif USE_AIR_V7
+/*
+ * Volunteer contributors are welcome:
+ * https://pastebin.com/YB1ppAbt
+ */
+
+#define LEGACY_KEY1 { 0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378 }
+#else
+#error "Unknown AIR protocol version"
+#endif /* USE_AIR_Vx */
+
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
 
@@ -115,6 +130,8 @@ enum
 	TX_STATUS_ON
 };
 
+#if USE_AIR_V6
+
 typedef struct {
     /********************/
     unsigned int addr:24;
@@ -144,7 +161,23 @@ typedef struct {
     /********************/
 } __attribute__((packed)) legacy_packet_t;
 
-bool legacy_decode(void *, ufo_t *, ufo_t *);
+#elif USE_AIR_V7
+/*
+ * Volunteer contributors are welcome:
+ * https://pastebin.com/YB1ppAbt
+ */
+
+typedef struct {
+
+    /* TODO */
+
+} __attribute__((packed)) legacy_packet_t;
+
+#else
+#error "Unknown AIR protocol version"
+#endif /* USE_AIR_Vx */
+
+bool   legacy_decode(void *, ufo_t *, ufo_t *);
 size_t legacy_encode(void *, ufo_t *);
 
 extern const rf_proto_desc_t legacy_proto_desc;
