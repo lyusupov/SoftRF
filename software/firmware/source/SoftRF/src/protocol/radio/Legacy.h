@@ -35,23 +35,9 @@
 #define LEGACY_TX_INTERVAL_MIN 600 /* in ms */
 #define LEGACY_TX_INTERVAL_MAX 1400
 
-#define USE_AIR_V6             1
-#define USE_AIR_V7             0
-
-#if USE_AIR_V6
-#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, \
-                      0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 }
-#elif USE_AIR_V7
-/*
- * Volunteer contributors are welcome:
- * https://pastebin.com/YB1ppAbt
- */
-
-#define LEGACY_KEY1 { 0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378 }
-#else
-#error "Unknown AIR protocol version"
-#endif /* USE_AIR_Vx */
-
+#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, /* V6 */ \
+                      0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32, /* V6 */ \
+                      0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378  /* V7 */ }
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
 
@@ -164,17 +150,39 @@ typedef struct {
  */
 
 typedef struct {
-
     /********************/
     unsigned int addr:24;
     unsigned int type:4;
     unsigned int addr_type:3;
     unsigned int _unk1:1;
     /********************/
+    unsigned int _unk2:22;   /* always 0 ? */
+    unsigned int stealth:1;
+    unsigned int no_track:1;
+    unsigned int _unk3:2;    /* always 1 ? */
+    unsigned int _unk4:2;    /* always 0 ? */
+    unsigned int _unk5:2;    /* always 1 ? */
+    unsigned int _unk6:2;    /* always 0 ? */
+    /********************/
+    unsigned int _unk9:2;    /* always 0 ? */
+    unsigned int ts:4;       /* 4 bits of timestamp (unix epoch) */
+    unsigned int aircraft_type:4;
+    unsigned int _unk10:1;   /* always 0 ? */
+    unsigned int alt:13;     /* meters + 1000, enscaled(12,1) */
 
-    /* TBD */
-    uint32_t stub[5];
+    unsigned int lat:20;     /* rounded and with MS bits removed */
+    unsigned int lon:20;     /* rounded and with MS bits removed */
+    int          turn:9;     /* degs/sec times 20, enscaled(6,2) */
+    unsigned int hs:10;      /* m/s times 10, enscaled(8,2) */
+    int          vs:9;       /* m/s times 10, enscaled(6,2) */
+    unsigned int course:10;  /* degrees (0-360) times 2 */
+    unsigned int airborne:2; /* 1 when stationary, 2 when moving, 3 when circling */
 
+    unsigned int hacc:6;     /* meters times 10, enscaled(3,3) */
+    unsigned int vacc:5;     /* meters times  4, enscaled(2,3) */
+    unsigned int _unk11:5;
+    unsigned int _unk12:8;   /* always 0 ? */
+    /********************/
 } __attribute__((packed)) legacy_v7_packet_t;
 
 

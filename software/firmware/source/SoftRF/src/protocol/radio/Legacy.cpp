@@ -28,6 +28,9 @@
 #include "../../driver/RF.h"
 #include "../../driver/EEPROM.h"
 
+#define USE_AIR_V6  1
+#define USE_AIR_V7  0
+
 const rf_proto_desc_t legacy_proto_desc = {
   .name            = {'L','e','g','a','c','y', 0},
   .type            = RF_PROTOCOL_LEGACY,
@@ -136,18 +139,17 @@ long obscure(uint32_t key, uint32_t seed) {
     return m2 ^ (m2 >> 16);
 }
 
-static const uint32_t table[8] = LEGACY_KEY1;
+static const uint32_t table[12] = LEGACY_KEY1;
+static int   xxtea_keys_offset = 0;
 
 void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address) {
     int8_t i, ndx;
     for (i = 0; i < 4; i++) {
-#if USE_AIR_V6
-        ndx = ((timestamp >> 23) & 1) ? i+4 : i ;
-#elif USE_AIR_V7
-        ndx = i ;
-#else
-#error "Unknown AIR protocol version"
-#endif /* USE_AIR_Vx */
+        if (xxtea_keys_offset == 8) {
+            ndx = xxtea_keys_offset + i ;             /* V7 */
+        } else {
+            ndx = ((timestamp >> 23) & 1) ? i+4 : i ; /* V6 */
+        }
         key[i] = obscure(table[ndx] ^ ((timestamp >> 6) ^ address), LEGACY_KEY2) ^ LEGACY_KEY3;
     }
 }
@@ -344,8 +346,11 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
 
     if (pkt->type == 0) { /* Air V6 position */
+      xxtea_keys_offset = 0;
       return legacy_v6_decode(legacy_pkt, this_aircraft, fop);
     }
+
+    xxtea_keys_offset = 8;
 
     /* TODO */
 
@@ -355,6 +360,7 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
+    xxtea_keys_offset = 8;
 
     /* TODO */
 
