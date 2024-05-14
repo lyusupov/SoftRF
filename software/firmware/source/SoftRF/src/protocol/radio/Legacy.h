@@ -130,15 +130,12 @@ enum
 	TX_STATUS_ON
 };
 
-#if USE_AIR_V6
-
 typedef struct {
     /********************/
     unsigned int addr:24;
-    unsigned int _unk0:4;
+    unsigned int type:4;
     unsigned int addr_type:3;
     unsigned int _unk1:1;
-    // unsigned int magic:8;
     /********************/
     int vs:10;
     unsigned int _unk2:2;
@@ -159,9 +156,8 @@ typedef struct {
     int8_t ns[4];
     int8_t ew[4];
     /********************/
-} __attribute__((packed)) legacy_packet_t;
+} __attribute__((packed)) legacy_v6_packet_t;
 
-#elif USE_AIR_V7
 /*
  * Volunteer contributors are welcome:
  * https://pastebin.com/YB1ppAbt
@@ -169,13 +165,18 @@ typedef struct {
 
 typedef struct {
 
-    /* TODO */
+    /********************/
+    unsigned int addr:24;
+    unsigned int type:4;
+    unsigned int addr_type:3;
+    unsigned int _unk1:1;
+    /********************/
 
-} __attribute__((packed)) legacy_packet_t;
+    /* TBD */
+    uint32_t stub[5];
 
-#else
-#error "Unknown AIR protocol version"
-#endif /* USE_AIR_Vx */
+} __attribute__((packed)) legacy_v7_packet_t;
+
 
 bool   legacy_decode(void *, ufo_t *, ufo_t *);
 size_t legacy_encode(void *, ufo_t *);
