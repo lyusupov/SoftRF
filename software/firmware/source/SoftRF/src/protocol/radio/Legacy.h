@@ -39,7 +39,9 @@
                       0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 }
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
-#define LEGACY_KEY4 { 0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378 }
+
+#define LEGACY_KEY4 0x956F6C77
+#define LEGACY_KEY5 { 0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378 }
 
 /* FTD-12 Version: 7.00 */
 enum
@@ -165,7 +167,7 @@ typedef struct {
     unsigned int _unk6:2;    /* always 0 ? */
     /********************/
     unsigned int _unk7:2;    /* always 0 ? */
-    unsigned int ts:4;       /* the LS 4 bits of timestamp (unix epoch) */
+    unsigned int tstamp:4;   /* the LS 4 bits of timestamp (unix epoch) */
     unsigned int aircraft_type:4;
     unsigned int _unk8:1;    /* always 0 ? */
     unsigned int alt:13;     /* meters + 1000, enscaled(12,1) */
@@ -178,8 +180,8 @@ typedef struct {
     unsigned int course:10;  /* degrees (0-360) times 2 */
     unsigned int airborne:2; /* 1 when stationary, 2 when moving, 3 when circling */
 
-    unsigned int hacc:6;     /* meters times 10, enscaled(3,3) */
-    unsigned int vacc:5;     /* meters times  4, enscaled(2,3) */
+    unsigned int hp:6;       /* meters times 10, enscaled(3,3) */
+    unsigned int vp:5;       /* meters times  4, enscaled(2,3) */
     unsigned int _unk9:5;
     unsigned int _unk10:8;   /* always 0 ? */
     /********************/
