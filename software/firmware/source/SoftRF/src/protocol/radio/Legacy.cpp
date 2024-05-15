@@ -432,6 +432,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     int32_t lat = (int32_t) (this_aircraft->latitude  * 1e7);
     int32_t lon = (int32_t) (this_aircraft->longitude * 1e7);
+    int16_t alt = (int16_t) (this_aircraft->altitude  + this_aircraft->geoid_separation);
     uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
 
     float course = this_aircraft->course;
@@ -454,6 +455,15 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->tstamp        = timestamp & 0xF;
     pkt->aircraft_type = acft_type;
 
+    alt += 1000;
+    if (alt <     0) { alt =     0; }
+    if (alt > 16383) { alt = 16383; }
+    if (alt < 4096) {
+      pkt->alt = alt;
+    } else {
+      pkt->alt = (alt >> 2) | (1 << 12); /* TODO */
+    }
+
     pkt->lat = ((lat / 52) + (lat & 0x40 /* TBD */ ? (lat < 0 ? -1 : 1) : 0)) & 0xFFFFF;
 
     int ilat = (int)fabs(this_aircraft->latitude);
@@ -462,14 +472,39 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->lon = (lon / lon_div) & 0xFFFFF;
 
-    pkt->turn     = 0; /* TBD */
-    pkt->hs       = 0; /* TBD */
-    pkt->vs       = 0; /* TBD */
+    pkt->turn = 0; /* TBD */
+
+    uint16_t speed10 = (uint16_t) roundf(speedf * 10.0f);
+    if (speed10 > 1023) { speed10 = 1023; }
+    if (speed10 < 256) {
+      pkt->hs = speed10;
+    } else {
+      pkt->hs = (speed10 >> 2) | (1 << 8); /* TODO */
+    }
+
+    int16_t vs10 = (int16_t) roundf(vsf * 10.0f);
+    if (vs10 >  255) { vs10 =  255; }
+    if (vs10 < -255) { vs10 = -255; }
+    if (vs10 < 64 && vs10 > -64) {
+      pkt->vs = vs10;
+    } else {
+      pkt->vs = 0; /* TODO */
+    }
 
     pkt->course   = (int) (course * 2);
     pkt->airborne = ((int) speedf) >= legacy_GS_threshold[acft_type] ? 2 : 1;
 
     /* TODO */
+    pkt->_unk1  = 0;
+    pkt->_unk2  = 0;
+    pkt->_unk3  = 3;
+    pkt->_unk4  = 0;
+    pkt->_unk5  = 3;
+    pkt->_unk6  = 0;
+    pkt->_unk7  = 0;
+    pkt->_unk8  = 0;
+    // pkt->_unk9  = 0;
+    pkt->_unk10 = 0;
 
     key_v7[0] = wpkt[0];
     key_v7[1] = wpkt[1];
