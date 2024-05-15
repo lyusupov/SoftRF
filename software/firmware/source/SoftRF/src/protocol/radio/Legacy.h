@@ -35,11 +35,11 @@
 #define LEGACY_TX_INTERVAL_MIN 600 /* in ms */
 #define LEGACY_TX_INTERVAL_MAX 1400
 
-#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, /* V6 */ \
-                      0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32, /* V6 */ \
-                      0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378  /* V7 */ }
+#define LEGACY_KEY1 { 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b, \
+                      0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 }
 #define LEGACY_KEY2 0x045d9f3b
 #define LEGACY_KEY3 0x87b562f4
+#define LEGACY_KEY4 { 0xA5F9B21C, 0xAB3F9D12, 0xC6F34E34, 0xD72FA378 }
 
 /* FTD-12 Version: 7.00 */
 enum
@@ -152,7 +152,7 @@ typedef struct {
 typedef struct {
     /********************/
     unsigned int addr:24;
-    unsigned int type:4;
+    unsigned int type:4;     /* 2 new protocol, 0 old protocol, 1 other messages */
     unsigned int addr_type:3;
     unsigned int _unk1:1;
     /********************/
@@ -164,10 +164,10 @@ typedef struct {
     unsigned int _unk5:2;    /* always 1 ? */
     unsigned int _unk6:2;    /* always 0 ? */
     /********************/
-    unsigned int _unk9:2;    /* always 0 ? */
-    unsigned int ts:4;       /* 4 bits of timestamp (unix epoch) */
+    unsigned int _unk7:2;    /* always 0 ? */
+    unsigned int ts:4;       /* the LS 4 bits of timestamp (unix epoch) */
     unsigned int aircraft_type:4;
-    unsigned int _unk10:1;   /* always 0 ? */
+    unsigned int _unk8:1;    /* always 0 ? */
     unsigned int alt:13;     /* meters + 1000, enscaled(12,1) */
 
     unsigned int lat:20;     /* rounded and with MS bits removed */
@@ -180,8 +180,8 @@ typedef struct {
 
     unsigned int hacc:6;     /* meters times 10, enscaled(3,3) */
     unsigned int vacc:5;     /* meters times  4, enscaled(2,3) */
-    unsigned int _unk11:5;
-    unsigned int _unk12:8;   /* always 0 ? */
+    unsigned int _unk9:5;
+    unsigned int _unk10:8;   /* always 0 ? */
     /********************/
 } __attribute__((packed)) legacy_v7_packet_t;
 

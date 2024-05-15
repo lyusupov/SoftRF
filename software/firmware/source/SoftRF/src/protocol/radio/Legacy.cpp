@@ -140,18 +140,34 @@ long obscure(uint32_t key, uint32_t seed) {
 }
 
 static const uint32_t table[12] = LEGACY_KEY1;
-static int   xxtea_keys_offset = 0;
 
-void make_key(uint32_t key[4], uint32_t timestamp, uint32_t address) {
+void make_v6_key(uint32_t key[4], uint32_t timestamp, uint32_t address) {
     int8_t i, ndx;
     for (i = 0; i < 4; i++) {
-        if (xxtea_keys_offset == 8) {
-            ndx = xxtea_keys_offset + i ;             /* V7 */
-        } else {
-            ndx = ((timestamp >> 23) & 1) ? i+4 : i ; /* V6 */
-        }
+        ndx = ((timestamp >> 23) & 1) ? i+4 : i ;
         key[i] = obscure(table[ndx] ^ ((timestamp >> 6) ^ address), LEGACY_KEY2) ^ LEGACY_KEY3;
     }
+}
+
+void make_v7_key(uint32_t key[4]) {
+  uint8_t *bkeys;
+  int p, q, x, y, z, sum;
+
+  bkeys = (uint8_t *) &key[0];
+  x = bkeys[15];
+  sum = 0;
+  q = 2;
+
+  do {
+    sum += 0x9E3779B9;   // "delta"
+    for (p=0; p<16; p++) {
+      z = x & 0xFF;
+      y = bkeys[(p+1) % 16];
+      x = bkeys[p];
+      x += ((((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ (sum ^ y));
+      bkeys[p] = (uint8_t)x;
+    }
+  } while (--q > 0);
 }
 
 static bool legacy_v6_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
@@ -167,7 +183,7 @@ static bool legacy_v6_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop)
     int ndx;
     uint8_t pkt_parity=0;
 
-    make_key(key, timestamp, (pkt->addr << 8) & 0xffffff);
+    make_v6_key(key, timestamp, (pkt->addr << 8) & 0xffffff);
     btea((uint32_t *) pkt + 1, -5, key);
 
     for (ndx = 0; ndx < sizeof (legacy_v6_packet_t); ndx++) {
@@ -322,7 +338,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->parity = (pkt_parity % 2);
 
-    make_key(key, timestamp , (pkt->addr << 8) & 0xffffff);
+    make_v6_key(key, timestamp , (pkt->addr << 8) & 0xffffff);
 
 #if 0
     Serial.print(key[0]);   Serial.print(", ");
@@ -342,15 +358,31 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
  */
 
 bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
+    const uint32_t xxtea_key[4] = LEGACY_KEY4;
+    uint32_t key_v7[4];
 
     legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
 
     if (pkt->type == 0) { /* Air V6 position */
-      xxtea_keys_offset = 0;
       return legacy_v6_decode(legacy_pkt, this_aircraft, fop);
     }
 
-    xxtea_keys_offset = 8;
+    uint32_t *wpkt = (uint32_t *) legacy_pkt;
+    uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
+
+    btea(&wpkt[2], -4, xxtea_key);
+
+    key_v7[0] = wpkt[0];
+    key_v7[1] = wpkt[1];
+    key_v7[2] = timestamp >> 4;
+    key_v7[3] = 0x956F6C77;
+
+    make_v7_key(key_v7);
+
+    wpkt[2] ^= key_v7[0];
+    wpkt[3] ^= key_v7[1];
+    wpkt[4] ^= key_v7[2];
+    wpkt[5] ^= key_v7[3];
 
     /* TODO */
 
@@ -358,11 +390,46 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 }
 
 size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
+    const uint32_t xxtea_key[4] = LEGACY_KEY4;
+    uint32_t key_v7[4];
 
     legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
-    xxtea_keys_offset = 8;
+    uint32_t *wpkt = (uint32_t *) legacy_pkt;
+
+    uint32_t id = this_aircraft->addr;
+    uint8_t acft_type = this_aircraft->aircraft_type > AIRCRAFT_TYPE_STATIC ?
+            AIRCRAFT_TYPE_UNKNOWN : this_aircraft->aircraft_type;
+    uint32_t timestamp = (uint32_t) this_aircraft->timestamp;
+
+    pkt->addr = id & 0x00FFFFFF;
+
+#if !defined(SOFTRF_ADDRESS)
+    pkt->addr_type = ADDR_TYPE_FLARM; /* ADDR_TYPE_ANONYMOUS */
+#else
+    pkt->addr_type = (pkt->addr == SOFTRF_ADDRESS ?
+                      ADDR_TYPE_ICAO : ADDR_TYPE_FLARM); /* ADDR_TYPE_ANONYMOUS */
+#endif
+
+    pkt->stealth  = this_aircraft->stealth;
+    pkt->no_track = this_aircraft->no_track;
+
+    pkt->aircraft_type = acft_type;
 
     /* TODO */
+
+    key_v7[0] = wpkt[0];
+    key_v7[1] = wpkt[1];
+    key_v7[2] = timestamp >> 4;
+    key_v7[3] = 0x956F6C77;
+
+    make_v7_key(key_v7);
+
+    wpkt[2] ^= key_v7[0];
+    wpkt[3] ^= key_v7[1];
+    wpkt[4] ^= key_v7[2];
+    wpkt[5] ^= key_v7[3];
+
+    btea(&wpkt[2], 4, xxtea_key);
 
     return (sizeof(legacy_v7_packet_t));
 }
