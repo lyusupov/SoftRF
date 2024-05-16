@@ -28,9 +28,9 @@
 #include "../../driver/RF.h"
 #include "../../driver/EEPROM.h"
 
-#define USE_AIR_V6      1
-#define USE_AIR_V7      0
-#define USE_INTERLEAVE  0
+#define USE_AIR_V6          1
+#define USE_AIR_V7          0
+#define USE_INTERLEAVING    0
 
 const rf_proto_desc_t legacy_proto_desc = {
   .name            = {'L','e','g','a','c','y', 0},
@@ -361,7 +361,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     return legacy_v6_encode(legacy_pkt, this_aircraft);
 }
 
-#elif USE_AIR_V7 || USE_INTERLEAVE
+#elif USE_AIR_V7 || USE_INTERLEAVING
 /*
  * Volunteer contributors are welcome:
  * https://pastebin.com/YB1ppAbt
@@ -378,11 +378,11 @@ static const uint16_t lon_div_table[] = {
   267, 299, 330, 362, 425, 489, 552, 616, 679, 743, 806, 806
 };
 
-#if USE_INTERLEAVE
+#if USE_INTERLEAVING
 static bool use_v6_on_tx = true;
-#endif /* USE_INTERLEAVE */
+#endif /* USE_INTERLEAVING */
 
-static int descale( unsigned int value, unsigned int mbits, unsigned int ebits)
+static int descale(unsigned int value, unsigned int mbits, unsigned int ebits)
 {
     unsigned int offset   = (1 << mbits);
     unsigned int signbit  = (offset << ebits);
@@ -401,17 +401,43 @@ static int descale( unsigned int value, unsigned int mbits, unsigned int ebits)
     return (negative ? -(int)value : value);
 }
 
+static unsigned int enscale_unsigned(unsigned int value,
+                                     unsigned int mbits,
+                                     unsigned int ebits)
+{
+    unsigned int offset  = (1 << mbits);
+    unsigned int max_val = (offset << ebits) - 1;
+
+    if (value >= offset) {
+      unsigned int e      = 0;
+      unsigned int m      = offset + value;
+      unsigned int mlimit = offset + offset - 1;
+
+      while (m > mlimit) {
+          m >>= 1;
+          e += offset;
+          if (e > max_val) {
+              return (max_val);
+          }
+      }
+      m -= offset;
+      value = (e | m);
+    }
+
+    return (value);
+}
+
 bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
     const uint32_t xxtea_key[4] = LEGACY_KEY5;
     uint32_t key_v7[4];
 
     legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
 
-#if !USE_INTERLEAVE
+#if !USE_INTERLEAVING
     if (pkt->type == 0) { /* Air V6 position */
       return legacy_v6_decode(legacy_pkt, this_aircraft, fop);
     }
-#endif /* USE_INTERLEAVE */
+#endif /* USE_INTERLEAVING */
 
     if (pkt->type != 2) { /* not Air V7 position */
         return false;
@@ -483,14 +509,14 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
 size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
-#if USE_INTERLEAVE
+#if USE_INTERLEAVING
     if (use_v6_on_tx) {
       use_v6_on_tx = false;
       return legacy_v6_encode(legacy_pkt, this_aircraft);
     }
 
     use_v6_on_tx = true;
-#endif /* USE_INTERLEAVE */
+#endif /* USE_INTERLEAVING */
 
     const uint32_t xxtea_key[4] = LEGACY_KEY5;
     uint32_t key_v7[4];
@@ -530,11 +556,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     alt += 1000;
     if (alt <     0) { alt =     0; }
     if (alt > 16383) { alt = 16383; }
-    if (alt < 4096) {
-      pkt->alt = alt;
-    } else {
-      pkt->alt = (alt >> 2) | (1 << 12); /* TODO */
-    }
+    pkt->alt = enscale_unsigned(alt, 12, 1);
 
     pkt->lat = ((lat / 52) + (lat & 0x40 /* TBD */ ? (lat < 0 ? -1 : 1) : 0)) & 0xFFFFF;
 
@@ -548,11 +570,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     uint16_t speed10 = (uint16_t) roundf(speedf * 10.0f);
     if (speed10 > 1023) { speed10 = 1023; }
-    if (speed10 < 256) {
-      pkt->hs = speed10;
-    } else {
-      pkt->hs = (speed10 >> 2) | (1 << 8); /* TODO */
-    }
+    pkt->hs = enscale_unsigned(speed10, 8, 2);
 
     int16_t vs10 = (int16_t) roundf(vsf * 10.0f);
     if (vs10 >  255) { vs10 =  255; }
@@ -575,7 +593,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->_unk6  = 0;
     pkt->_unk7  = 0;
     pkt->_unk8  = 0;
-    // pkt->_unk9  = 0;
+    pkt->_unk9  = 0; /* TBD */
     pkt->_unk10 = 0;
 
     key_v7[0] = wpkt[0];
