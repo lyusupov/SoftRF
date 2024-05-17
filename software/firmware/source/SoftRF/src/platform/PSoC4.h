@@ -220,6 +220,7 @@ extern softSerial swSer;
 
 /* Experimental */
 //#define ENABLE_ADSL            //  +  2 kb
+//#define EXCLUDE_AIR6           //  -1.8 kb
 
 /* trade performance for flash memory usage (-4 Kb) */
 #define cosf(x)                 cos  ((double) (x))
