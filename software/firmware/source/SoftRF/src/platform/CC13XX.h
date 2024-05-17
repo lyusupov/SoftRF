@@ -195,6 +195,7 @@ struct rst_info {
 #define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 #define EXCLUDE_LOG_GNSS_VERSION
 #define EXCLUDE_IMU
+#define EXCLUDE_AIR6
 
 //#define USE_TIME_SLOTS
 
