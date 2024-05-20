@@ -287,7 +287,7 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 
 /* Experimental */
-//#define ENABLE_ADSL
+#define ENABLE_ADSL
 #define ENABLE_PROL
 #if defined(USE_TINYUSB)
 //#define USE_USB_HOST

@@ -363,7 +363,6 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
 #else
 /*
- * Volunteer contributors are welcome:
  * https://pastebin.com/YB1ppAbt
  */
 
@@ -424,6 +423,42 @@ static unsigned int enscale_unsigned(unsigned int value,
     }
 
     return (value);
+}
+
+static unsigned int enscale_signed(  signed int value,
+                                   unsigned int mbits,
+                                   unsigned int ebits)
+{
+    unsigned int offset  = (1 << mbits);
+    unsigned int signbit = (offset << ebits);
+    unsigned int max_val = signbit - 1;
+    unsigned int sign    = 0;
+
+    if (value < 0) {
+      value = -value;
+      sign  = signbit;
+    }
+
+    unsigned int rval;
+    if (value >= offset) {
+      unsigned int e      = 0;
+      unsigned int m      = offset + (unsigned int) value;
+      unsigned int mlimit = offset + offset - 1;
+
+      while (m > mlimit) {
+        m >>= 1;
+        e += offset;
+        if (e > max_val) {
+          return (sign | max_val);
+        }
+      }
+      m -= offset;
+      rval = (sign | e | m);
+    } else {
+      rval = (sign | (unsigned int) value);
+    }
+
+    return (rval);
 }
 
 bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
@@ -574,18 +609,16 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->hs            = enscale_unsigned(speed10, 8, 2); /* 0 ... 3832 */
 
     int16_t vs10       = (int16_t) roundf(vsf * 10.0f);
-    if (vs10 >  952) { vs10 =  952; }
-    if (vs10 < -952) { vs10 = -952; }
-    if (vs10 < 64 && vs10 > -64) {
-      pkt->vs          = vs10;
-    } else {
-      pkt->vs          = (vs10 < 0) ? -63 : 63; /* TODO */
-    }
+    pkt->vs = this_aircraft->stealth ? 0 : enscale_signed(vs10, 6, 2); /* 0 ... 952 */
 
     pkt->course        = (int) (course * 2);
     pkt->airborne      = ((int) speedf) >= legacy_GS_threshold[acft_type] ? 2 : 1;
 
-    /* TODO */
+/*
+ * TODO
+ * Volunteer contributors are welcome:
+ * https://pastebin.com/YB1ppAbt
+ */
     pkt->_unk1         = 0;
     pkt->_unk2         = 0;
     pkt->_unk3         = 3;

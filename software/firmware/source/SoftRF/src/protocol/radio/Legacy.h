@@ -187,7 +187,6 @@ typedef struct {
     /********************/
 } __attribute__((packed)) legacy_v7_packet_t;
 
-
 bool   legacy_decode(void *, ufo_t *, ufo_t *);
 size_t legacy_encode(void *, ufo_t *);
 

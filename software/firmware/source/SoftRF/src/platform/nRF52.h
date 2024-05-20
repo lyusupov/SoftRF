@@ -315,7 +315,7 @@ struct rst_info {
 //#define EXCLUDE_NUS
 //#define EXCLUDE_IMU
 #define USE_OGN_ENCRYPTION
-//#define ENABLE_ADSL
+#define ENABLE_ADSL
 #define ENABLE_PROL
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BLE_MIDI

@@ -135,7 +135,7 @@ extern const char *Hardware_Rev[];
 //#define ENABLE_D1090_INPUT
 
 /* Experimental */
-//#define ENABLE_ADSL
+#define ENABLE_ADSL
 //#define ENABLE_PROL
 
 //#define USE_OGN_RF_DRIVER
