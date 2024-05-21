@@ -2375,7 +2375,7 @@ static void* ESP32_getResetInfoPtr()
     case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
@@ -2412,7 +2412,7 @@ static String ESP32_getResetInfo()
     case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
@@ -2442,7 +2442,7 @@ static String ESP32_getResetReason()
     case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("INTRUSION_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
