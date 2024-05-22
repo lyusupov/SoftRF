@@ -248,6 +248,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-31.jpg)
 
+* [**Prime Edition Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-4.jpg)
+
 * [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
@@ -276,6 +280,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/t-motion-22.jpg)
+
+* [**Midi Edition**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://private-user-images.githubusercontent.com/5849637/254210940-04aac8d5-0128-4154-874e-60641f92d0a1.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTYzNjA2MDMsIm5iZiI6MTcxNjM2MDMwMywicGF0aCI6Ii81ODQ5NjM3LzI1NDIxMDk0MC0wNGFhYzhkNS0wMTI4LTQxNTQtODc0ZS02MDY0MWY5MmQwYTEucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDUyMiUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDA1MjJUMDY0NTAzWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ODE5N2M4M2M0NDg5ODMyZjViYmI2NTdlOTVmOTk0ZTE0MDAwNTVlZmIzNWY2NTdjOTVjYjJkNTQ0ZTdjMzliZiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.zO7jk46uwm6wF59N2bXFZ3u6LlW1rxngedsIXLxIoiY)
 
 * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
 
@@ -322,4 +330,3 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/case/v1/SoftRF-Case-v1-Exterior.jpg)
 -->
-
