@@ -466,6 +466,12 @@ static bool sx12xx_transmit()
     tx_timeout += tx_timeout;
 #endif
 
+#if defined(USE_BASICMAC)
+    if (rf_chip->type == RF_IC_SX1262 && lmic_pins.busy == LMIC_UNUSED_PIN) {
+      tx_timeout += 200;
+    }
+#endif
+
     unsigned long tx_start   = millis();
 
     while (sx12xx_transmit_complete == false) {
