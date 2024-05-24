@@ -104,6 +104,7 @@ struct rst_info {
 #define DFU_MAGIC_SKIP        (0x6d)
 #define BME280_ADDRESS        (0x77)
 #define MPU9250_ADDRESS       (0x68)
+#define ICM20948_ADDRESS      (0x69)
 
 #if defined(ARDUINO_ARCH_MBED)
 #define PCF8563_SLAVE_ADDRESS (0x51)

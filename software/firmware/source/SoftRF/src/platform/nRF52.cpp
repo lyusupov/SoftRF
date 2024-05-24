@@ -284,7 +284,9 @@ ui_settings_t *ui;
 #define IMU_UPDATE_INTERVAL 500 /* ms */
 
 #include <MPU9250.h>
-MPU9250 imu;
+#include <ICM_20948.h>
+MPU9250       imu_1;
+ICM_20948_I2C imu_2;
 
 static bool nRF52_has_imu = false;
 static unsigned long IMU_Time_Marker = 0;
@@ -673,6 +675,10 @@ static void nRF52_setup()
 #if !defined(EXCLUDE_IMU)
   Wire.beginTransmission(MPU9250_ADDRESS);
   nRF52_has_imu = (Wire.endTransmission() == 0);
+  if (nRF52_has_imu == false) {
+    Wire.beginTransmission(ICM20948_ADDRESS);
+    nRF52_has_imu = (Wire.endTransmission() == 0);
+  }
 #endif /* EXCLUDE_IMU */
 
   Wire.end();
@@ -781,14 +787,20 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu && imu.setup(MPU9250_ADDRESS)) {
-    imu.verbose(false);
-    if (imu.isSleeping()) {
-      imu.sleep(false);
+  if (nRF52_has_imu && imu_1.setup(MPU9250_ADDRESS)) {
+    imu_1.verbose(false);
+    if (imu_1.isSleeping()) {
+      imu_1.sleep(false);
     }
     hw_info.imu = IMU_MPU9250;
     hw_info.mag = MAG_AK8963;
     IMU_Time_Marker = millis();
+  } else {
+    if (nRF52_has_imu && imu_2.begin() == ICM_20948_Stat_Ok) {
+      hw_info.imu = IMU_ICM20948;
+      hw_info.mag = MAG_AK09916;
+      IMU_Time_Marker = millis();
+    }
   }
 #endif /* EXCLUDE_IMU */
 
@@ -943,7 +955,8 @@ static void nRF52_post_init()
     Serial.println();
     Serial.println(F("External components:"));
     Serial.print(F("IMU     : "));
-    Serial.println(hw_info.imu    == IMU_MPU9250       ? F("PASS") : F("N/A"));
+    Serial.println(hw_info.imu     == IMU_MPU9250 ||
+                   hw_info.imu     == IMU_ICM20948     ? F("PASS") : F("N/A"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
 
@@ -1128,12 +1141,25 @@ static void nRF52_loop()
 #if !defined(EXCLUDE_IMU)
   if (hw_info.imu == IMU_MPU9250 &&
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    if (imu.update()) {
-      float a_x = imu.getAccX();
-      float a_y = imu.getAccY();
-      float a_z = imu.getAccZ();
+    if (imu_1.update()) {
+      float a_x = imu_1.getAccX();
+      float a_y = imu_1.getAccY();
+      float a_z = imu_1.getAccZ();
 
       IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
+    }
+    IMU_Time_Marker = millis();
+  }
+
+  if (hw_info.imu == IMU_ICM20948 &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    if (imu_2.dataReady()) {
+      // milli g's
+      float a_x = imu_2.accX();
+      float a_y = imu_2.accY();
+      float a_z = imu_2.accZ();
+
+      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 1000;
     }
     IMU_Time_Marker = millis();
   }
@@ -1155,7 +1181,12 @@ static void nRF52_fini(int reason)
 
 #if !defined(EXCLUDE_IMU)
   if (hw_info.imu == IMU_MPU9250) {
-    imu.sleep(true);
+    imu_1.sleep(true);
+  }
+
+  if (hw_info.imu == IMU_ICM20948) {
+    imu_2.sleep(true);
+    // imu_2.lowPower(true);
   }
 #endif /* EXCLUDE_IMU */
 
