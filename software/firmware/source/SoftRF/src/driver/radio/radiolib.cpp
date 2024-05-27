@@ -224,9 +224,12 @@ static void lr112x_setup()
 
   SoC->SPI_begin();
 
-  mod   = new Module(lmic_pins.nss, lmic_pins.dio[0],
-                     lmic_pins.rst, lmic_pins.busy,
-                     SPI);
+  uint32_t irq  = lmic_pins.dio[0] == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.dio[0];
+  uint32_t busy = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.busy;
+
+  mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, SPI);
   radio = new RADIO_TYPE(mod);
 
   switch (settings->rf_protocol)
@@ -452,6 +455,11 @@ static void lr112x_setup()
   state = radio->setDio2AsRfSwitch();
   state = radio->setCurrentLimit(100.0);
   state = radio->setRxBoostedGainMode(true);
+#endif
+
+#if USE_LR1121
+  // state = radio->setDioAsRfSwitch(/* TBD */);
+  state = radio->setRxBoosted(true);
 #endif
 
   radio->setPacketReceivedAction(lr112x_receive_handler);
