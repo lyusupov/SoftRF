@@ -23,6 +23,9 @@
 
 #include <Arduino.h>
 #ifdef ESP32
+  #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+  #include <WiFi.h>
+  #endif /* ESP_IDF_VERSION_MAJOR */
   #include <HTTPClient.h>
 #else
   #include <ESP8266HTTPClient.h>

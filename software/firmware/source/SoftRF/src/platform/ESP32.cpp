@@ -3861,8 +3861,13 @@ static void ESP32_Battery_setup()
                      (adc1_channel_t) ADC1_GPIO35_CHANNEL :
                      (adc1_channel_t) ADC1_GPIO36_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
     if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 0) {
 #if defined(USE_SA8X8)
@@ -3880,10 +3885,17 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
     calibrate_voltage(SOC_GPIO_PIN_C2_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
@@ -4832,13 +4844,13 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #if ARDUINO_USB_CDC_ON_BOOT
 #define USBSerial                Serial
 #else
-#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
 #if HWCDC_SERIAL_IS_DEFINED
 #define USBSerial                HWCDCSerial
 #else
 HWCDC USBSerial;
 #endif /* HWCDC_SERIAL_IS_DEFINED */
-#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
 static void ESP32CX_USB_setup()

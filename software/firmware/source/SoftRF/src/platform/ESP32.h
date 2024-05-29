@@ -430,7 +430,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_SA8X8
 /* Experimental */
 #define ENABLE_REMOTE_ID
-//#define EXCLUDE_VOICE_MESSAGE
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#define EXCLUDE_VOICE_MESSAGE
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
