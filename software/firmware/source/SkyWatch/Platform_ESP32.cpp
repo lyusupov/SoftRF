@@ -595,7 +595,11 @@ static void ESP32_reset()
 static void ESP32_sleep_ms(int ms)
 {
   esp_sleep_enable_timer_wakeup(ms * 1000);
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,ESP_PD_OPTION_ON);
+#else
+  /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
   esp_light_sleep_start();
 }
 
@@ -817,11 +821,19 @@ static void ESP32_Battery_setup()
 
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) {
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
   } else if (hw_info.model == SOFTRF_MODEL_WEBTOP_SERIAL) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
   }
 }

@@ -888,6 +888,7 @@ static void ESP32_WiFiUDP_stopAll()
 
 static void ESP32_Battery_setup()
 {
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 #if defined(CONFIG_IDF_TARGET_ESP32)
   calibrate_voltage(settings->adapter == ADAPTER_TTGO_T5S ?
                     (adc1_channel_t) ADC1_GPIO35_CHANNEL  :
@@ -903,6 +904,9 @@ static void ESP32_Battery_setup()
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
+#else
+  /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 }
 
 static float ESP32_Battery_voltage()
@@ -929,11 +933,11 @@ SoftSPI swSPI(SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_MOSI_WS, /* half duplex */
               SOC_GPIO_PIN_SCK_WS);
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
 static spinlock_t EPD_ident_mutex;
 #else
 static portMUX_TYPE EPD_ident_mutex;
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* ESP_IDF_VERSION_MAJOR */
 
 static ep_model_id ESP32_EPD_ident()
 {

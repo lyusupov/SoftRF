@@ -140,7 +140,10 @@
 //#define USE_ADAFRUIT_MSC
 
 // Audio
-//#define EXCLUDE_AUDIO
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#define EXCLUDE_AUDIO
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 #if !defined(EXCLUDE_AUDIO)
 //#define USE_EXT_I2S_DAC
 #endif /* EXCLUDE_AUDIO */
