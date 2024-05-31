@@ -3856,10 +3856,14 @@ static void ESP32_Battery_setup()
 
   } else {
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
                      (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
                      (adc1_channel_t) ADC1_GPIO35_CHANNEL :
                      (adc1_channel_t) ADC1_GPIO36_CHANNEL);
+#else
+    /* TBD */
+#endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage((adc1_channel_t) ADC1_GPIO9_CHANNEL);
