@@ -2387,7 +2387,7 @@ public:
         if (opt >= XPOWERS_AXP2101_CHG_VOL_MAX)return false;
         int val = readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET);
         if (val == -1)return false;
-        val &= 0xFC;
+        val &= 0xF8;
         return 0 == writeRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET, val | opt);
     }
 
@@ -2397,7 +2397,7 @@ public:
      */
     uint8_t getChargeTargetVoltage(void)
     {
-        return (readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0x03);
+        return (readRegister(XPOWERS_AXP2101_CV_CHG_VOL_SET) & 0x07);
     }
 
 

@@ -4,15 +4,15 @@
 #define SOC_GPIO_PIN_T3S3_CONS_TX       43
 
 // GNSS module (ext.)
-#define SOC_GPIO_PIN_T3S3_GNSS_RX       4
-#define SOC_GPIO_PIN_T3S3_GNSS_TX       5
-#define SOC_GPIO_PIN_T3S3_GNSS_PPS      19
+#define SOC_GPIO_PIN_T3S3_GNSS_RX       35 /* TBD */
+#define SOC_GPIO_PIN_T3S3_GNSS_TX       38 /* TBD */
+#define SOC_GPIO_PIN_T3S3_GNSS_PPS      36 /* TBD */
 
 // USB CDC/JTAG
 #define SOC_GPIO_PIN_T3S3_USB_DP        20
 #define SOC_GPIO_PIN_T3S3_USB_DN        19
 
-// SPI
+// RADIO SPI
 #define SOC_GPIO_PIN_T3S3_MOSI          6
 #define SOC_GPIO_PIN_T3S3_MISO          3
 #define SOC_GPIO_PIN_T3S3_SCK           5
@@ -27,8 +27,8 @@
 #define SOC_GPIO_PIN_T3S3_ANT_TX        10
 
 // I2C (ext.)
-#define SOC_GPIO_PIN_T3S3_SDA           17
-#define SOC_GPIO_PIN_T3S3_SCL           18
+#define SOC_GPIO_PIN_T3S3_SDA           45 /* TBD */
+#define SOC_GPIO_PIN_T3S3_SCL           46 /* TBD */
 
 // status LED
 #define SOC_GPIO_PIN_T3S3_LED           37
