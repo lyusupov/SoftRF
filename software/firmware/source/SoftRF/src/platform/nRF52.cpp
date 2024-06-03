@@ -796,7 +796,7 @@ static void nRF52_setup()
     hw_info.mag = MAG_AK8963;
     IMU_Time_Marker = millis();
   } else {
-    if (nRF52_has_imu && imu_2.begin() == ICM_20948_Stat_Ok) {
+    if (nRF52_has_imu && imu_2.begin(Wire, false) == ICM_20948_Stat_Ok) {
       hw_info.imu = IMU_ICM20948;
       hw_info.mag = MAG_AK09916;
       IMU_Time_Marker = millis();
