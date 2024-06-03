@@ -248,6 +248,7 @@ extern Adafruit_NeoPixel strip;
 #include "iomap/Heltec_Tracker.h"
 #include "iomap/WT0132C6.h"
 #include "iomap/LilyGO_T3C6.h"
+#include "iomap/LilyGO_T3S3_EPD.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -275,6 +276,7 @@ enum esp32_board_id {
   ESP32_LILYGO_T_TWR2,
   ESP32_HELTEC_TRACKER,
   ESP32_LILYGO_T3C6,
+  ESP32_LILYGO_T3S3_EPD,
 };
 
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */

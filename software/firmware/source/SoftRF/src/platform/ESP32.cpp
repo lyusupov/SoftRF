@@ -629,6 +629,9 @@ static void ESP32_setup()
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+      esp32_board    = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
+      break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
       break;
@@ -1294,6 +1297,23 @@ static void ESP32_setup()
     lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_HELTRK_DIO1;
+#endif /* USE_RADIOLIB */
+
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_T3S3_CONS_RX,
+                       SOC_GPIO_PIN_T3S3_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_T3S3_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_T3S3_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_T3S3_BUSY;
+    lmic_pins.txe  = SOC_GPIO_PIN_T3S3_ANT_TX;
+    lmic_pins.rxe  = SOC_GPIO_PIN_T3S3_ANT_RX;
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
 #endif /* USE_RADIOLIB */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -3042,6 +3062,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_T3C6_SCK,  SOC_GPIO_PIN_T3C6_MISO,
                 SOC_GPIO_PIN_T3C6_MOSI, SOC_GPIO_PIN_T3C6_SS);
       break;
+    case ESP32_LILYGO_T3S3_EPD:
+      SPI.begin(SOC_GPIO_PIN_T3S3_SCK,  SOC_GPIO_PIN_T3S3_MISO,
+                SOC_GPIO_PIN_T3S3_MOSI, SOC_GPIO_PIN_T3S3_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -3135,6 +3159,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: LilyGO T3-C6 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
+     } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+      Serial.println(F("INFO: LilyGO T3-S3 EPD is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -4072,6 +4100,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_LILYGO_T3C6) {
 
     Wire.setPins(SOC_GPIO_PIN_T3C6_SDA, SOC_GPIO_PIN_T3C6_SCL);
+
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+
+    Wire.setPins(SOC_GPIO_PIN_T3S3_SDA, SOC_GPIO_PIN_T3S3_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
