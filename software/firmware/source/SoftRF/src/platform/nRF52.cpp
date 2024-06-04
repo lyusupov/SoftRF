@@ -787,19 +787,29 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu && imu_1.setup(MPU9250_ADDRESS)) {
-    imu_1.verbose(false);
-    if (imu_1.isSleeping()) {
-      imu_1.sleep(false);
-    }
-    hw_info.imu = IMU_MPU9250;
-    hw_info.mag = MAG_AK8963;
-    IMU_Time_Marker = millis();
-  } else {
-    if (nRF52_has_imu && imu_2.begin(Wire, false) == ICM_20948_Stat_Ok) {
-      hw_info.imu = IMU_ICM20948;
-      hw_info.mag = MAG_AK09916;
+  if (nRF52_has_imu) {
+
+    Wire.begin();
+
+    if (imu_1.setup(MPU9250_ADDRESS)) {
+      imu_1.verbose(false);
+      if (imu_1.isSleeping()) {
+        imu_1.sleep(false);
+      }
+      hw_info.imu = IMU_MPU9250;
+      hw_info.mag = MAG_AK8963;
       IMU_Time_Marker = millis();
+    } else {
+      for (int t=0; t<3; t++) {
+        if (imu_2.begin(Wire, false) == ICM_20948_Stat_Ok) {
+          hw_info.imu = IMU_ICM20948;
+          hw_info.mag = MAG_AK09916;
+          IMU_Time_Marker = millis();
+
+          break;
+        }
+        delay(IMU_UPDATE_INTERVAL);
+      }
     }
   }
 #endif /* EXCLUDE_IMU */
