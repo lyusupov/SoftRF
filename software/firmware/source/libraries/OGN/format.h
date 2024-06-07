@@ -32,6 +32,7 @@ uint8_t Format_Hex( char *Output, uint16_t Word );
 uint8_t Format_Hex( char *Output, uint32_t Word );
 uint8_t Format_Hex( char *Output, uint32_t Word, uint8_t Digits);
 
+uint8_t Format_HHMMSS(char *Out, uint32_t Time);
 
    int8_t  Read_Hex1(char Digit);
 

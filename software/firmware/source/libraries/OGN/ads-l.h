@@ -24,7 +24,7 @@ class ADSL_Packet
    union                     // 20 bytes
    { uint32_t Word[5];       // this part to be scrambled/encrypted, is aligned to 32-bit
      struct                  // this is aligned to 32-bit
-     { uint8_t Type;         // 2=iConspicuity, bit #7 = Unicast
+     { uint8_t Type;         // 0x02=iConspicuity, 0x41=Telemetry, bit #7 = Unicast
        uint8_t Address  [4]; // Address[30]/Reserved[1]/RelayForward[1] (not aligned to 32-bit !)
        union
        { uint8_t Meta     [2]; // Time[6]/Cat[5]/Emergency[3]/FlightState[2]
@@ -33,44 +33,179 @@ class ADSL_Packet
            uint8_t FlightState :2; // 0=unknown, 1=ground, 2=airborne
            uint8_t AcftCat     :5; // 1=light, 2=small-heavy, 3=heli, 4=glider, 5=baloon/airship, 6=para/hang-glider, 7=skydiver,
            uint8_t Emergency   :3; // 1=OK
-         } ;
+         } __attribute__((packed));
        } ;
        uint8_t Position[11]; // Lat[24]/Lon[24]/Speed[8]/Alt[14]/Climb[9]/Track[9]
        union
        { uint8_t Integrity[2]; // SourceInteg[2]/DesignAssurance[2]/NavigationIntegrity[4]/NorizAccuracy[3]/VertAccuracy[2]/ValocityAccuracy[2]/Reserved[1]
          struct
-         { uint8_t SourceIntegrity:2; // 3=1e-7/h, 2=1e-5/h, 1=1e-3/h
-           uint8_t DesignAssurance:2; // 3=B, 2=C, 1=D
-           uint8_t NavigIntegrity :4; // 12=7.5m, 11=25m, 10=75m
-           uint8_t HorizAccuracy  :3; // 7=3m, 6=10m, 5=30m
-           uint8_t VertAccuracy   :2; // 3=15m, 2=45m, 1=150m
-           uint8_t VelAccuracy    :2; // 3=1m/s 2=3m/s 3=10m/s
+         { uint8_t SourceIntegrity:2; // 3=1e-7/h, 2=1e-5/h, 1=1e-3/h  <= SIL
+           uint8_t DesignAssurance:2; // 3=B, 2=C, 1=D                 <= SDA
+           uint8_t NavigIntegrity :4; // 12=7.5m, 11=25m, 10=75m       <= NIC  +1
+           uint8_t HorizAccuracy  :3; // 7=3m, 6=10m, 5=30m. 4=92.5m   <= NACp -4
+           uint8_t VertAccuracy   :2; // 3=15m, 2=45m, 1=150m          <= GVA
+           uint8_t VelAccuracy    :2; // 3=1m/s 2=3m/s 3=10m/s         <= NACv
            uint8_t Reserved       :1; //
-         } ;
+         } __attribute__((packed));
        } ;
-     } ;
+     } __attribute__((packed)) ;
+
+     struct
+     { uint8_t Type;             // 0x02=iConspicuity, bit #7 = Unicast, 0x42 = telemetry
+       uint8_t Address  [4];     // Address[30]/Reserved[1]/RelayForward[1] (not aligned to 32-bit !)
+       struct                    //
+       { uint8_t  TimeStamp:6;   // [0.25 sec] 0..14.75
+         uint8_t  TelemType:2;   // 0=telemetry, 1=info, 2=flight
+       } __attribute__((packed)) Header;  // 1 byte
+       struct
+       { uint8_t Satellites:4;   // 1-15
+         uint8_t        DOP:5;   // [0.125] 1.0-3.75
+         uint8_t        SNR:5;   // [dB] 10-40 dB, bias by 10 dB
+         uint8_t FixQuality:2;   //
+       } __attribute__((packed)) GPS;     // 2 bytes
+       struct
+       { int16_t  HeightDiff:10; // [m] +/-500m HAE-pAlt
+         uint16_t   Pressure:14; // [8 Pa]
+          int8_t Temperature: 8; // [1/2 deg] -63..+63
+         uint8_t    Humidity: 6; //
+         uint8_t    Spare   : 2;
+       } __attribute__((packed)) Baro;    // 5 bytes
+       struct
+       { uint16_t Voltage : 10;  // [4mV] VR 0.00-15.32V EncodeUR2V8()
+         uint8_t  Capacity:  6;  // [100%/64] 0..100%
+       } __attribute__((packed)) Battery; // 2 bytes
+       struct
+       { uint8_t RxRate:  6;     // [0.25Hz] VR 0-232/4 EncodeUR2V4()
+         uint8_t RxNoise: 6;     // [dB] -120..-60dBm
+         uint8_t TxPower: 4;     // [dBm] 10..25
+       } __attribute__((packed)) Radio;   // 2 bytes
+       struct
+       { uint8_t Accel:8;
+         uint8_t  Gyro:8;
+         uint8_t Spare:8;
+       } __attribute__((packed)) IMU;     // 3 bytes
+     } __attribute__((packed)) Telemetry;
+
+     struct
+     { uint8_t Type;             // 0x02=iConspicuity, bit #7 = Unicast, 0x42 = telemetry
+       uint8_t Address  [4];     // Address[30]/Reserved[1]/RelayForward[1] (not aligned to 32-bit !)
+       struct                    //
+       { uint8_t  InfoType :6;   //
+         uint8_t  TelemType:2;   // 1 = Info
+       } __attribute__((packed)) Header;  // 1 byte
+       char Msg[14];
+     } __attribute__((packed)) Info;
+
+     struct
+     { uint8_t Type;             // 0x02=iConspicuity, bit #7 = Unicast, 0x42 = telemetry
+       uint8_t Address  [4];     // Address[30]/Reserved[1]/RelayForward[1] (not aligned to 32-bit !)
+       struct                    //
+       { uint8_t  TimeStamp:6;   // [0.25 sec] 0..14.75
+         uint8_t  TelemType:2;   // 2 = flight-status
+       } __attribute__((packed)) Header;  // 1 byte
+       struct
+       { uint16_t   Time:16;     // [sec] takeoff/landing time
+         uint16_t  Dist :16;     // [km] distance flown
+          uint8_t   Dir : 8;     // [cyclic] takeoff/landing direction
+          bool  Landing : 1;     // 0=takeoff, 1=landing
+          uint8_t Spare : 7;     //
+          int32_t   Lat :20;     // [cyclic] takeoff/landing latitude
+         uint16_t   Alt :12;     // [m] takeoff/landing altitude HAE
+          int32_t   Lon :20;     // [cyclic] takeoff/landing longitude
+         uint16_t MaxAlt:12;     // [m] max. flight altitude HAE
+       } __attribute__((packed)) Takeoff; // 3x4 = 14 btyes
+
+     } __attribute__((packed)) Flight;
+
    } ;
    uint8_t CRC24[3];           // 24-bit (is aligned to 32-bit)
 
 // --------------------------------------------------------------------------------------------------------
 
+   static const uint8_t InfoParmNum = 15; // [int]  number of info-parameters and their names
+   static const char *InfoParmName(uint8_t Idx) { static const char *Name[InfoParmNum] =
+                                                  { "Pilot", "Manuf", "Model", "Type", "SN", "Reg", "ID", "Class",
+                                                    "Task" , "Base" , "ICE"  , "PilotID", "Hard", "Soft", "Crew" } ;
+                                                  return Idx<InfoParmNum ? Name[Idx]:0; }
+
+// --------------------------------------------------------------------------------------------------------
+
   public:
-   void Init(void)
+   void Init(uint8_t Type=0x02)
    { SYNC[0]=SYNC1; SYNC[1]=SYNC2;
      Length=TxBytes-3; Version=0x00;
      for(int Idx=0; Idx<5; Idx++)
        Word[Idx]=0;
-     Type=0x02; }
+     this->Type=Type; }
 
    void Print(void) const
-   { printf(" v%02X %4.1fs: %02X:%06X [%+09.5f,%+010.5f]deg %dm %+4.1fm/s %05.1fdeg %3.1fm/s\n",
+   { if(Type==0x02)
+       printf(" v%02X %4.1fs: %02X:%06X [%+09.5f,%+010.5f]deg %dm %+4.1fm/s %05.1fdeg %3.1fm/s\n",
          Version, 0.25*TimeStamp, getAddrTable(), getAddress(), FNTtoFloat(getLat()), FNTtoFloat(getLon()),
-         getAlt(), 0.125*getClimb(), (45.0/0x40)*getTrack(), 0.25*getSpeed()); }
+         getAlt(), 0.125*getClimb(), (45.0/0x40)*getTrack(), 0.25*getSpeed());
+     else
+       printf(" v%02X %4.1fs: %02X:%06X\n",
+         Version, 0.25*TimeStamp, getAddrTable(), getAddress() );
+   }
+
+   int PrintFlight(char *Out, uint32_t Time=0) const // type #2 = Flight status
+   { int Len=0;
+     Len+=sprintf(Out+Len, " %s", Flight.Takeoff.Landing?"Landing:":"Takeoff:");
+     Len+=sprintf(Out+Len, "[%+09.5f,%+010.5f] %3dm %03.0f %dm/%dkm",
+             1e-7*FNTtoUBX(Flight.Takeoff.Lat<<4), 1e-7*FNTtoUBX(Flight.Takeoff.Lon<<4),
+             UnsVRdecode<int32_t,12>(Flight.Takeoff.Alt<<2)-316, (90.0/0x40)*Flight.Takeoff.Dir,
+             UnsVRdecode<int32_t,12>(Flight.Takeoff.MaxAlt<<2)-316, Flight.Takeoff.Dist);
+     if(Time)
+     { uint16_t Diff=Time;
+       Diff=Flight.Takeoff.Time-Diff;
+       Time-=Diff;
+       Out[Len++]=' ';
+       Len+=Format_HHMMSS(Out+Len, Time);
+       Out[Len]=0; }
+     return Len; }
+
+   int PrintInfo(char *Out) const // type #1 = Info
+   { int Len=0;
+     if(Info.Header.InfoType<InfoParmNum) Len+=sprintf(Out+Len, " %s=%.14s", InfoParmName(Info.Header.InfoType), Info.Msg);
+                                     else Len+=sprintf(Out+Len, " #%02X=%.14s", Info.Header.InfoType, Info.Msg);
+     return Len; }
+
+   int PrintTelemetry(char *Out) const // type #0 = Telemetry
+   { int Len=0;
+     Len+=sprintf(Out+Len, " %dsat/%d/%3.1f/%ddB",
+                    Telemetry.GPS.Satellites, Telemetry.GPS.FixQuality, 0.25*Telemetry.GPS.DOP, Telemetry.GPS.SNR+10);
+     if(Telemetry.Baro.Pressure)            Len+=sprintf(Out+Len, " %3.1fhPa", 0.08*Telemetry.Baro.Pressure);
+     if(Telemetry.Baro.HeightDiff!=(-512))  Len+=sprintf(Out+Len, "/%+dm",          Telemetry.Baro.HeightDiff);
+     if(Telemetry.Baro.Temperature!=(-128)) Len+=sprintf(Out+Len, "/%+4.1fdegC",0.5*Telemetry.Baro.Temperature);
+     if(Telemetry.Baro.Humidity)            Len+=sprintf(Out+Len, "/%d%%",    ((int)Telemetry.Baro.Humidity*100+32)>>6);
+     Len+=sprintf(Out+Len, " %+5.2fV/%d%%",
+               0.004*DecodeUR2V8(Telemetry.Battery.Voltage), ((int)Telemetry.Battery.Capacity*100+32)>>6);
+     Len+=sprintf(Out+Len, " %d/%+ddBm/%3.1fHz",
+               Telemetry.Radio.TxPower+10, (int8_t)Telemetry.Radio.RxNoise-120, 0.25*DecodeUR2V4(Telemetry.Radio.RxRate));
+     return Len; }
 
    int Print(char *Out) const
-   { return sprintf(Out, "%02X:%06X %4.1fs [%+09.5f,%+010.5f]deg %dm %+4.1fm/s %05.1fdeg %3.1fm/s",
+   { Out[0]=0;
+     if(Type==0x02)
+       return sprintf(Out, "%02X:%06X %4.1fs [%+09.5f,%+010.5f]deg %dm %+4.1fm/s %05.1fdeg %3.1fm/s",
          getAddrTable(), getAddress(), 0.25*TimeStamp, FNTtoFloat(getLat()), FNTtoFloat(getLon()),
-         getAlt(), 0.125*getClimb(), (45.0/0x40)*getTrack(), 0.25*getSpeed()); }
+         getAlt(), 0.125*getClimb(), (45.0/0x40)*getTrack(), 0.25*getSpeed());
+     if(Type==0x42)
+     { int Len=0;
+       if(Telemetry.Header.TelemType==0)
+       { Len=sprintf(Out, "%02X:%06X %4.1fs", getAddrTable(), getAddress(), 0.25*Telemetry.Header.TimeStamp);
+         Len+=PrintTelemetry(Out+Len); }
+       else if(Telemetry.Header.TelemType==1)
+       { Len=sprintf(Out, "%02X:%06X ", getAddrTable(), getAddress() );
+         Len+=PrintInfo(Out+Len); }
+       else if(Telemetry.Header.TelemType==2)
+       { int Len=sprintf(Out, "%02X:%06X ", getAddrTable(), getAddress() );
+         Len+=PrintFlight(Out+Len); }
+       else
+       { Len+=sprintf(Out, "%02X:%06X %d:%02X (telemetry/diagnostic)",
+                getAddrTable(), getAddress(), Telemetry.Header.TelemType, Telemetry.Header.TimeStamp); }
+       return Len; }
+     return 0; }
 
    uint8_t Dump(char *Out)
    { uint8_t Len=0;
@@ -140,8 +275,10 @@ class ADSL_Packet
                                0, 0, 0, 0, 0, 0, 0, 0 } ;
      return Map[AcftCat]; }
 
-   // uint8_t getAcftTypeADSB(void) const
-   // { uint8_t Cat=0; return Cat; }
+   static uint8_t getAcftTypeADSB(uint8_t AcftCat)
+   { uint8_t Cat=0; if(AcftCat>13) return Cat;
+     const uint8_t Map[14] = { 0xA0, 0xA1, 0xA2, 0xA7, 0xB1, 0xB2, 0xB4, 0xB4, 0xB3, 0xA7, 0xA7, 0xB6, 0xB6, 0xB6 } ;
+     return Map[AcftCat]; }
 
 // aircraft-types
 //                   ADS-L   FLARM/OGN/PilotAware  FANET  ADS-B  GDL90
@@ -538,6 +675,6 @@ class ADSL_RxPacket: public ADSL_Packet
    double getTime(void) const { return (double)sTime+0.001*msTime; }
    uint32_t SlotTime(void) const { uint32_t Slot=sTime; if(msTime<=300) Slot--; return Slot; }
 
-};
+} __attribute__((packed));
 
 #endif // __ADSL_H__

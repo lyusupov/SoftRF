@@ -45,8 +45,8 @@ uint16_t EncodeSR2V6(int16_t Value);                                  // Encode 
 // uint16_t EncodeUR2V12(uint16_t Value);                                // encode unsigned 16-bit (0..61432) as 14-bit
 // uint16_t DecodeUR2V12(uint16_t Value);
 
-// uint8_t EncodeUR2V4(uint8_t DOP);
-// uint8_t DecodeUR2V4(uint8_t DOP);
+uint8_t EncodeUR2V4(uint8_t DOP);
+uint8_t DecodeUR2V4(uint8_t DOP);
 
 template <class Type, int Bits>
  Type UnsVRdecode(Type Value)
