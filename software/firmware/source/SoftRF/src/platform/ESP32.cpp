@@ -164,6 +164,7 @@ const char *ESP32SX_Model_Stand  = "Standalone Edition"; /* 303a:8132 */
 const char *ESP32S3_Model_Prime3 = "Prime Edition Mk.3"; /* 303a:8133 */
 const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
 const char *ESP32S3_Model_Midi   = "Midi Edition";       /* 303a:81A0 */
+const char *ESP32S3_Model_Ink    = "Ink Edition";        /* 303a:820A */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -552,6 +553,7 @@ static void ESP32_setup()
    *  Heltec Tracker  |               | GIGADEVICE_GD25Q64
    *                  | WT0132C6-S5   | ZBIT_ZB25VQ32B
    *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
+   *  LilyGO T3-S3-EP | ESP32-S3-MINI |
    */
 
   if (psramFound()) {
@@ -576,6 +578,9 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
       /* specific to psram_type=opi enabled custom build */
       hw_info.model = SOFTRF_MODEL_HAM;
+      break;
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+      esp32_board   = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
       break;
     /* Both Ai-Thinker ESP-S3-12K and LilyGO S3 Core have QSPI PSRAM onboard */
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
@@ -1301,6 +1306,8 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
 
+    hw_info.model = SOFTRF_MODEL_INK;
+
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_T3S3_CONS_RX,
@@ -1355,6 +1362,8 @@ static void ESP32_setup()
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
 
   } else if (esp32_board == ESP32_LILYGO_T3C6) {
+
+    hw_info.model  = SOFTRF_MODEL_ECO;
 
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -1442,6 +1451,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_S3_DEVKIT          ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_LILYGO_T_TWR2      ) ? SOFTRF_USB_PID_HAM        :
           (esp32_board == ESP32_HELTEC_TRACKER     ) ? SOFTRF_USB_PID_MIDI       :
+          (esp32_board == ESP32_LILYGO_T3S3_EPD    ) ? SOFTRF_USB_PID_INK        :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1454,6 +1464,7 @@ static void ESP32_setup()
     USB.productName(esp32_board == ESP32_TTGO_T_BEAM_SUPREME ? ESP32S3_Model_Prime3 :
                     esp32_board == ESP32_LILYGO_T_TWR2       ? ESP32S3_Model_Ham    :
                     esp32_board == ESP32_HELTEC_TRACKER      ? ESP32S3_Model_Midi   :
+                    esp32_board == ESP32_LILYGO_T3S3_EPD     ? ESP32S3_Model_Ink    :
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
@@ -3914,6 +3925,8 @@ static void ESP32_Battery_setup()
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
     } else if (esp32_board == ESP32_HELTEC_TRACKER) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+    } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
@@ -3951,6 +3964,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
+            hw_info.model == SOFTRF_MODEL_INK        ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
@@ -3963,6 +3977,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
+            hw_info.model == SOFTRF_MODEL_INK        ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
@@ -4009,9 +4024,10 @@ static float ESP32_Battery_param(uint8_t param)
       voltage = (float) read_voltage();
 
       /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
-      if (hw_info.model == SOFTRF_MODEL_PRIME_MK2   ||
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
          (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
-          esp32_board   == ESP32_S2_T8_V1_1) {
+          esp32_board   == ESP32_S2_T8_V1_1       ||
+          esp32_board   == ESP32_LILYGO_T3S3_EPD) {
         voltage += voltage;
       } else if (esp32_board == ESP32_C2_DEVKIT ||
                  esp32_board == ESP32_C3_DEVKIT ||
