@@ -21,6 +21,8 @@ typedef XPowersAXP192 XPowersPMU;
 #elif defined(XPOWERS_CHIP_AXP2102)
 #include "XPowersAXP2101.tpp"
 typedef XPowersAXP2101 XPowersPMU;
+#elif defined(POWERS_CHIP_SY6970)
+#include "PowersSY6970.tpp"
 #else
 #error "Please define power management chip model"
 #endif

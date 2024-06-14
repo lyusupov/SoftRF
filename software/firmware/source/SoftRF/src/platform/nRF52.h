@@ -67,6 +67,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_0,     /* 20-8-6 */
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
+  NRF52_LILYGO_TULTIMA,
 };
 
 enum nRF52_display_id {
@@ -74,6 +75,7 @@ enum nRF52_display_id {
   EP_GDEH0154D67,
   EP_GDEP015OC1,
   EP_DEPG0150BN,
+  EP_GDEW0371W7,
 };
 
 typedef struct {
