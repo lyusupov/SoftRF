@@ -72,6 +72,12 @@
 
 #endif
 
+#if defined(ARDUINO_ARCH_MBED)
+#define log_e(...)
+#define log_i(...)
+#define log_d(...)
+#endif
+
 #ifndef ESP32
 #ifndef log_e
 #define log_e(...)          Serial.printf(__VA_ARGS__)
@@ -105,7 +111,9 @@ public:
         __wire->begin();
 #elif defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
         __wire->end();
+#if !defined(ARDUINO_ARCH_MBED)
         __wire->setPins(__sda, __scl);
+#endif /* ARDUINO_ARCH_MBED */
         __wire->begin();
 #else
         __wire->begin(sda, scl);
@@ -278,7 +286,9 @@ protected:
             __wire->begin();
 #elif defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
             __wire->end();
+#if !defined(ARDUINO_ARCH_MBED)
             __wire->setPins(__sda, __scl);
+#endif /* ARDUINO_ARCH_MBED */
             __wire->begin();
 #else
             __wire->begin(__sda, __scl);

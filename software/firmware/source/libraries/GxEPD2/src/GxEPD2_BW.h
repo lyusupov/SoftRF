@@ -21,6 +21,7 @@
 #include "epd/GxEPD2_213_B72.h"
 #include "epd/GxEPD2_213_B73.h"
 #include "epd/GxEPD2_213_flex.h"
+#include "epd/GxEPD2_213_BN.h"
 #include "epd/GxEPD2_260.h"
 #include "epd/GxEPD2_290.h"
 #include "epd/GxEPD2_290_T5.h"
