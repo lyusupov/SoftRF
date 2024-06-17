@@ -56,6 +56,7 @@ enum
 	PMU_AXP192,
 	PMU_AXP202,
 	PMU_AXP2101,
+	PMU_SY6970,
 };
 
 void    Battery_setup(void);

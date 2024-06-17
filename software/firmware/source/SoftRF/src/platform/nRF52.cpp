@@ -582,6 +582,17 @@ static bool play_file(char *filename)
 }
 #endif /* USE_EXT_I2S_DAC */
 
+#if !defined(EXCLUDE_PMU)
+#define  POWERS_CHIP_SY6970
+#define  SDA    SOC_GPIO_PIN_SDA
+#define  SCL    SOC_GPIO_PIN_SCL
+#include <XPowersLib.h>
+
+PowersSY6970 sy6970;
+
+static bool nRF52_has_pmu = false;
+#endif /* EXCLUDE_PMU */
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -640,6 +651,65 @@ static void nRF52_setup()
   USBDevice.setProductDescriptor(nRF52_Device_Model);
   USBDevice.setDeviceVersion(nRF52_Device_Version);
 #endif /* ARDUINO_ARCH_MBED */
+
+#if !defined(EXCLUDE_PMU)
+  nRF52_has_pmu = sy6970.init(Wire, SOC_GPIO_PMU_SDA, SOC_GPIO_PMU_SCL, SY6970_SLAVE_ADDRESS);
+
+  if (nRF52_has_pmu) {
+    nRF52_board   = NRF52_LILYGO_TULTIMA;
+    hw_info.model = SOFTRF_MODEL_NEO;
+    hw_info.pmu   = PMU_SY6970;
+
+    // Set the minimum operating voltage. Below this voltage, the PMU will protect
+    sy6970.setSysPowerDownVoltage(3300);
+
+    // Set input current limit, default is 500mA
+    sy6970.setInputCurrentLimit(3250);
+
+    //Serial.printf("getInputCurrentLimit: %d mA\n",sy6970.getInputCurrentLimit());
+
+    // Disable current limit pin
+    sy6970.disableCurrentLimitPin();
+
+    // Set the charging target voltage, Range:3840 ~ 4608mV ,step:16 mV
+    sy6970.setChargeTargetVoltage(4208);
+
+    // Set the precharge current , Range: 64mA ~ 1024mA ,step:64mA
+    sy6970.setPrechargeCurr(64);
+
+    // The premise is that Limit Pin is disabled, or it will only follow the maximum charging current set by Limi tPin.
+    // Set the charging current , Range:0~5056mA ,step:64mA
+    sy6970.setChargerConstantCurr(832);
+
+    // Get the set charging current
+    sy6970.getChargerConstantCurr();
+    //Serial.printf("getChargerConstantCurr: %d mA\n",sy6970.getChargerConstantCurr());
+
+
+    // To obtain voltage data, the ADC must be enabled first
+    sy6970.enableADCMeasure();
+
+    // Turn on charging function
+    // If there is no battery connected, do not turn on the charging function
+    sy6970.enableCharge();
+
+    // Turn off charging function
+    // If USB is used as the only power input, it is best to turn off the charging function,
+    // otherwise the VSYS power supply will have a sawtooth wave, affecting the discharge output capability.
+    // sy6970.disableCharge();
+
+
+    // The OTG function needs to enable OTG, and set the OTG control pin to HIGH
+    // After OTG is enabled, if an external power supply is plugged in, OTG will be turned off
+
+    // sy6970.enableOTG();
+    // sy6970.disableOTG();
+    // pinMode(OTG_ENABLE_PIN, OUTPUT);
+    // digitalWrite(OTG_ENABLE_PIN, HIGH);
+  } else {
+    Wire.end();
+  }
+#endif /* EXCLUDE_PMU */
 
 #if defined(USE_TINYUSB)
   Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
