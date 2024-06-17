@@ -426,7 +426,7 @@ static void OLED_other()
 
 static int OLED_current = 1;
 
-const char *Aircraft_Type[] = {
+const char *OLED_Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown ",
   [AIRCRAFT_TYPE_GLIDER]     = " Glider ",
   [AIRCRAFT_TYPE_TOWPLANE]   = "Towplane",
@@ -596,7 +596,7 @@ static void OLED_text()
     uint8_t acft_type = traffic_by_dist[OLED_current - 1].fop->aircraft_type;
     acft_type = acft_type > AIRCRAFT_TYPE_STATIC ? AIRCRAFT_TYPE_UNKNOWN : acft_type;
     if (acft_type != prev_type) {
-      strncpy(acft_id_text, Aircraft_Type[acft_type], sizeof(acft_id_text));
+      strncpy(acft_id_text, OLED_Aircraft_Type[acft_type], sizeof(acft_id_text));
       u8x8->draw2x2String(0, 6, acft_id_text);
       prev_type = acft_type;
     }

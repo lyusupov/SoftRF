@@ -137,6 +137,24 @@ void TFT_backlight_on()
 }
 #endif /* USE_TFT */
 
+#if defined(USE_EPAPER)
+#include "../driver/EPD.h"
+
+GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> epd_bn (GxEPD2_213_BN(
+                                                        SOC_GPIO_PIN_T3S3_EPD_SS,
+                                                        SOC_GPIO_PIN_T3S3_EPD_DC,
+                                                        SOC_GPIO_PIN_T3S3_EPD_RST,
+                                                        SOC_GPIO_PIN_T3S3_EPD_BUSY));
+GxEPD2_GFX *display;
+
+const char *Hardware_Rev[] = {
+  [0] = "TBD",
+  [1] = "TBD",
+  [2] = "TBD",
+  [3] = "Unknown"
+};
+#endif /* USE_EPAPER */
+
 AXP20X_Class axp_xxx;
 XPowersPMU   axp_2xxx;
 
@@ -1322,6 +1340,20 @@ static void ESP32_setup()
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
 #endif /* USE_RADIOLIB */
+
+    int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
+
+    /* uSD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_T3S3_SD_SCK,
+                  SOC_GPIO_PIN_T3S3_SD_MISO,
+                  SOC_GPIO_PIN_T3S3_SD_MOSI,
+                  uSD_SS_pin);
+
+    pinMode(uSD_SS_pin, OUTPUT);
+    digitalWrite(uSD_SS_pin, HIGH);
+
+    uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -1906,6 +1938,68 @@ static void ESP32_post_init()
 
     break;
 #endif /* USE_OLED */
+
+#if defined(USE_EPAPER)
+  case DISPLAY_EPD_1_54:
+  case DISPLAY_EPD_2_13:
+    if (hw_info.model == SOFTRF_MODEL_INK) {
+
+      EPD_info1();
+
+      char key[8];
+      char out[64];
+      uint8_t tokens[3] = { 0 };
+      cdbResult rt;
+      int c, i = 0, token_cnt = 0;
+
+      int acfts;
+      char *reg, *mam, *cn;
+      reg = mam = cn = NULL;
+
+      if (ADB_is_open) {
+        acfts = ucdb.recordsNumber();
+
+        snprintf(key, sizeof(key),"%06X", ThisAircraft.addr);
+
+        rt = ucdb.findKey(key, strlen(key));
+
+        switch (rt) {
+          case KEY_FOUND:
+            while ((c = ucdb.readValue()) != -1 && i < (sizeof(out) - 1)) {
+              if (c == '|') {
+                if (token_cnt < (sizeof(tokens) - 1)) {
+                  token_cnt++;
+                  tokens[token_cnt] = i+1;
+                }
+                c = 0;
+              }
+              out[i++] = (char) c;
+            }
+            out[i] = 0;
+
+            reg = out + tokens[1];
+            mam = out + tokens[0];
+            cn  = out + tokens[2];
+
+            break;
+
+          case KEY_NOT_FOUND:
+          default:
+            break;
+        }
+
+        reg = (reg != NULL) && strlen(reg) ? reg : (char *) "REG: N/A";
+        mam = (mam != NULL) && strlen(mam) ? mam : (char *) "M&M: N/A";
+        cn  = (cn  != NULL) && strlen(cn)  ? cn  : (char *) "N/A";
+
+      } else {
+        acfts = -1;
+      }
+
+      EPD_info2(acfts, reg, mam, cn);
+    }
+#endif /* USE_EPAPER */
+    break;
   case DISPLAY_NONE:
   default:
     break;
@@ -3228,9 +3322,10 @@ static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (esp32_board != ESP32_TTGO_T_WATCH &&
-      esp32_board != ESP32_S2_T8_V1_1   &&
-      esp32_board != ESP32_HELTEC_TRACKER) {
+  if (esp32_board != ESP32_TTGO_T_WATCH   &&
+      esp32_board != ESP32_S2_T8_V1_1     &&
+      esp32_board != ESP32_HELTEC_TRACKER &&
+      esp32_board != ESP32_LILYGO_T3S3_EPD) {
 
 #if defined(USE_OLED)
     bool has_oled = false;
@@ -3375,6 +3470,27 @@ static byte ESP32_Display_setup()
     SoC->ADB_ops && SoC->ADB_ops->setup();
 #endif /* USE_OLED */
 
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+#if defined(USE_EPAPER)
+    display = &epd_bn;
+    display->epd2.selectSPI(uSD_SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+
+    if (EPD_setup(true)) {
+
+#if defined(USE_EPD_TASK)
+      Display_Semaphore = xSemaphoreCreateBinary();
+
+      if( Display_Semaphore != NULL ) {
+        xSemaphoreGive( Display_Semaphore );
+      }
+
+      xTaskCreate(EPD_Task, "EPD", EPD_STACK_SZ, NULL, /* TASK_PRIO_HIGH */ TASK_PRIO_LOW , &EPD_Task_Handle);
+
+      TaskInfoTime = millis();
+#endif
+      rval = DISPLAY_EPD_1_54;
+    }
+#endif /* USE_EPAPER */
   } else {
 
 #if defined(USE_TFT)
@@ -3783,6 +3899,13 @@ static void ESP32_Display_loop()
     OLED_loop();
     break;
 #endif /* USE_OLED */
+
+#if defined(USE_EPAPER)
+  case DISPLAY_EPD_1_54:
+  case DISPLAY_EPD_2_13:
+    EPD_loop();
+    break;
+#endif /* USE_EPAPER */
 
   case DISPLAY_NONE:
   default:
@@ -4296,6 +4419,11 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
         OLED_Next_Page();
       }
 #endif /* USE_OLED */
+#if defined(USE_EPAPER)
+      if (button == &button_1 && esp32_board == ESP32_LILYGO_T3S3_EPD) {
+        EPD_Mode();
+      }
+#endif /* USE_EPAPER */
 #if defined(USE_SA8X8)
       if (button     == &button_ptt &&
           hw_info.rf == RF_IC_SA8X8 &&
@@ -4354,11 +4482,13 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_S2_T8_V1_1        ||
        esp32_board == ESP32_LILYGO_T_TWR2     ||
        esp32_board == ESP32_HELTEC_TRACKER    ||
+       esp32_board == ESP32_LILYGO_T3S3_EPD   ||
        esp32_board == ESP32_S3_DEVKIT) {
-    button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON  :
-                 esp32_board == ESP32_S3_DEVKIT  ? SOC_GPIO_PIN_S3_BUTTON     :
-                 esp32_board == ESP32_HELTEC_TRACKER ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_LILYGO_T_TWR2 ?
+    button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
+                 esp32_board == ESP32_S3_DEVKIT       ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_HELTEC_TRACKER  ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_LILYGO_T3S3_EPD ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_LILYGO_T_TWR2   ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
@@ -4417,6 +4547,7 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_S2_T8_V1_1          ||
       esp32_board == ESP32_LILYGO_T_TWR2       ||
       esp32_board == ESP32_HELTEC_TRACKER      ||
+      esp32_board == ESP32_LILYGO_T3S3_EPD     ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
 #if defined(USE_SA8X8)
@@ -4432,6 +4563,7 @@ static void ESP32_Button_fini()
   if (esp32_board == ESP32_S2_T8_V1_1        ||
       esp32_board == ESP32_LILYGO_T_TWR2     ||
       esp32_board == ESP32_HELTEC_TRACKER    ||
+      esp32_board == ESP32_LILYGO_T3S3_EPD   ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?

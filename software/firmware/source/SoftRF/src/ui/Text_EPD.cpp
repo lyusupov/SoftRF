@@ -36,7 +36,7 @@
 
 #include <Fonts/FreeMonoBold12pt7b.h>
 
-const char *Aircraft_Type[] = {
+const char *EPD_Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
   [AIRCRAFT_TYPE_GLIDER]     = "Glider",
   [AIRCRAFT_TYPE_TOWPLANE]   = "Towplane",
@@ -143,7 +143,7 @@ static void EPD_Draw_Text()
     if (ui->idpref == ID_TYPE) {
       uint8_t acft_type = traffic_by_dist[EPD_current - 1].fop->aircraft_type;
       acft_type = acft_type > AIRCRAFT_TYPE_STATIC ? AIRCRAFT_TYPE_UNKNOWN : acft_type;
-      strncpy(id_text, Aircraft_Type[acft_type], sizeof(id_text));
+      strncpy(id_text, EPD_Aircraft_Type[acft_type], sizeof(id_text));
     } else {
       uint32_t id = traffic_by_dist[EPD_current - 1].fop->addr;
 

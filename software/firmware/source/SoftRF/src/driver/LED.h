@@ -72,6 +72,7 @@ enum
 	DISPLAY_TFT_PORTAPACK,
 	DISPLAY_EPD_2_7,
 	DISPLAY_EPD_1_54,
+	DISPLAY_EPD_2_13,
 };
 
 void LED_setup();

@@ -279,6 +279,13 @@ enum esp32_board_id {
   ESP32_LILYGO_T3S3_EPD,
 };
 
+enum ep_model_id {
+	EP_UNKNOWN,
+	EP_GDEW027W3,
+	EP_GDEY027T91,
+	EP_DEPG0213BN,
+};
+
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */
 enum softrf_usb_pid {
   SOFTRF_USB_PID_WEBTOP     = 0x8131,
@@ -434,6 +441,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 /* Experimental */
 #define ENABLE_REMOTE_ID
 //#define EXCLUDE_VOICE_MESSAGE
+//#define USE_EPAPER
 #endif /* S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -459,6 +467,12 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #endif /* USE_OLED */
+
+#if defined(USE_EPAPER)
+typedef void EPD_Task_t;
+
+extern const char *Hardware_Rev[];
+#endif /* USE_EPAPER */
 
 #endif /* PLATFORM_ESP32_H */
 

@@ -93,7 +93,8 @@ bool EPD_setup(bool splash_screen)
 
   display->fillScreen(GxEPD_WHITE);
 
-  if (hw_info.model == SOFTRF_MODEL_BADGE) {
+  if (hw_info.model == SOFTRF_MODEL_BADGE ||
+      hw_info.model == SOFTRF_MODEL_INK) {
 
     x = (display->width()  - tbw1) / 2;
     y = (display->height() + tbh1) / 2 - tbh3;
