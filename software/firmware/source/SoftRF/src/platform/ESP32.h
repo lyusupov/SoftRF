@@ -442,6 +442,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define ENABLE_REMOTE_ID
 //#define EXCLUDE_VOICE_MESSAGE
 //#define USE_EPAPER
+//#define USE_EPD_TASK
 #endif /* S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)

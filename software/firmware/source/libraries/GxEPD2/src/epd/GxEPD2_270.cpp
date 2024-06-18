@@ -315,8 +315,11 @@ void GxEPD2_270::_PowerOn()
 
 void GxEPD2_270::_PowerOff()
 {
-  _writeCommand(0x02); // power off
-  _waitWhileBusy("_PowerOff", power_off_time);
+  if (_power_is_on)
+  {
+    _writeCommand(0x02); // power off
+    _waitWhileBusy("_PowerOff", power_off_time);
+  }
   _power_is_on = false;
   _using_partial_mode = false;
 }

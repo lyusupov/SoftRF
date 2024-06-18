@@ -147,12 +147,21 @@ GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> epd_bn (GxEPD2_213_BN(
                                                         SOC_GPIO_PIN_T3S3_EPD_BUSY));
 GxEPD2_GFX *display;
 
+#if defined(USE_EPD_TASK)
+#define EPD_STACK_SZ      (256*6)
+static TaskHandle_t EPD_Task_Handle = NULL;
+SemaphoreHandle_t Display_Semaphore;
+unsigned long TaskInfoTime;
+#endif /* USE_EPD_TASK */
+
 const char *Hardware_Rev[] = {
   [0] = "TBD",
   [1] = "TBD",
   [2] = "TBD",
   [3] = "Unknown"
 };
+
+static bool screen_saver = false;
 #endif /* USE_EPAPER */
 
 AXP20X_Class axp_xxx;
@@ -1998,8 +2007,10 @@ static void ESP32_post_init()
 
       EPD_info2(acfts, reg, mam, cn);
     }
-#endif /* USE_EPAPER */
+
     break;
+#endif /* USE_EPAPER */
+
   case DISPLAY_NONE:
   default:
     break;
@@ -3484,10 +3495,11 @@ static byte ESP32_Display_setup()
         xSemaphoreGive( Display_Semaphore );
       }
 
-      xTaskCreate(EPD_Task, "EPD", EPD_STACK_SZ, NULL, /* TASK_PRIO_HIGH */ TASK_PRIO_LOW , &EPD_Task_Handle);
+      xTaskCreateUniversal(EPD_Task, "EPD", EPD_STACK_SZ, NULL, 1,
+                           &EPD_Task_Handle, CONFIG_ARDUINO_RUNNING_CORE);
 
       TaskInfoTime = millis();
-#endif
+#endif /* USE_EPD_TASK */
       rval = DISPLAY_EPD_1_54;
     }
 #endif /* USE_EPAPER */
@@ -4001,6 +4013,37 @@ static void ESP32_Display_fini(int reason)
     break;
 #endif /* USE_TFT */
 
+#if defined(USE_EPAPER)
+  case DISPLAY_EPD_1_54:
+  case DISPLAY_EPD_2_13:
+
+    EPD_fini(reason, screen_saver);
+
+#if defined(USE_EPD_TASK)
+    if( EPD_Task_Handle != NULL )
+    {
+      vTaskDelete( EPD_Task_Handle );
+    }
+
+    if( Display_Semaphore != NULL )
+    {
+      vSemaphoreDelete( Display_Semaphore );
+    }
+#endif /* USE_EPD_TASK */
+
+    // uSD_SPI.end();
+
+    // pinMode(SOC_GPIO_PIN_T3S3_EPD_MISO, INPUT);
+    // pinMode(SOC_GPIO_PIN_T3S3_EPD_MOSI, INPUT);
+    // pinMode(SOC_GPIO_PIN_T3S3_EPD_SCK,  INPUT);
+    pinMode(SOC_GPIO_PIN_T3S3_EPD_SS,   INPUT);
+    pinMode(SOC_GPIO_PIN_T3S3_EPD_DC,   INPUT);
+    pinMode(SOC_GPIO_PIN_T3S3_EPD_RST,  INPUT);
+    // pinMode(SOC_GPIO_PIN_T3S3_EPD_BUSY, INPUT);
+
+    break;
+#endif /* USE_EPAPER */
+
   case DISPLAY_NONE:
   default:
     break;
@@ -4420,7 +4463,7 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       }
 #endif /* USE_OLED */
 #if defined(USE_EPAPER)
-      if (button == &button_1 && esp32_board == ESP32_LILYGO_T3S3_EPD) {
+      if (button == &button_1 && hw_info.display == DISPLAY_EPD_1_54) {
         EPD_Mode();
       }
 #endif /* USE_EPAPER */
