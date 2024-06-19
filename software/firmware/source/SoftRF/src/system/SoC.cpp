@@ -50,6 +50,8 @@ byte SoC_setup()
   SoC = &RA4M1_ops;
 #elif defined(ARDUINO_ARCH_SILABS)
   SoC = &EFR32_ops;
+#elif defined(ARDUINO_ARCH_CH32)
+  SoC = &CH32_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

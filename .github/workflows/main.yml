@@ -45,7 +45,8 @@ jobs:
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
             'arduino:mbed_rp2040:pico',
-            'SiliconLabs:silabs:nano_matter'
+            'SiliconLabs:silabs:nano_matter',
+            'WCH:ch32v:CH32V30x_EVT'
           ]
 
     env:
@@ -416,6 +417,12 @@ jobs:
             # arduino-cli board attach -b $BOARD ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://github.com/openwch/board_manager_files/raw/main/package_ch32v_index.json" --save-prefs ;
+            arduino --install-boards WCH:ch32v:1.0.4 ;
+            arduino --board $BOARD --save-prefs ;
+            cd $GITHUB_WORKSPACE ;
+          fi
 
       - name: Run script
         run: |
@@ -504,3 +511,6 @@ jobs:
           if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
+          #if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
+          #  arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          #fi ;
