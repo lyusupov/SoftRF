@@ -72,6 +72,14 @@ eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 #endif /* EXCLUDE_EEPROM */
 
+void CH32_attachInterrupt_func(uint32_t pin, void (*userFunc)(void), int mode)
+{
+  attachInterrupt(pin, GPIO_Mode_IN_FLOATING, userFunc, EXTI_Mode_Interrupt,
+                  mode == RISING  ? EXTI_Trigger_Rising  :
+                  mode == FALLING ? EXTI_Trigger_Falling :
+                  EXTI_Trigger_Rising_Falling /* CHANGE */ );
+}
+
 static void CH32_setup()
 {
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN

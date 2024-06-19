@@ -1318,6 +1318,13 @@ static void ESP32_setup()
     }
   } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+    #define BOARD_F_XTAL_MHZ 26
+
+    rtc_clk_xtal_freq_update((rtc_xtal_freq_t) BOARD_F_XTAL_MHZ);
+    rtc_clk_cpu_freq_set_xtal();
+#endif /* ESP_IDF_VERSION_MAJOR */
+
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_S3_CONS_RX,

@@ -1246,7 +1246,12 @@ byte GNSS_setup() {
 #else
     int interrupt_num = digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS);
     if (interrupt_num != NOT_AN_INTERRUPT) {
+#if defined(plat_attachInterrupt_func)
+      plat_attachInterrupt_func(SOC_GPIO_PIN_GNSS_PPS, SoC->GNSS_PPS_handler,
+                                RISING);
+#else
       attachInterrupt(interrupt_num, SoC->GNSS_PPS_handler, RISING);
+#endif /* plat_attachInterrupt_func */
     }
 #endif
   }

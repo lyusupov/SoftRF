@@ -20,8 +20,6 @@
 #ifndef PLATFORM_CH32_H
 #define PLATFORM_CH32_H
 
-#include <avr/dtostrf.h>
-
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -48,10 +46,6 @@
 #define UATSerial               Serial /* TBD */
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
-
-#ifndef strnlen
-#define strnlen(x,y)            strlen(x) /* TBD */
-#endif
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -169,6 +163,12 @@ extern Adafruit_NeoPixel strip;
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
 #endif /* USE_OLED */
+
+extern void CH32_attachInterrupt_func(uint32_t pin, void (*)(void), int mode);
+
+#define plat_attachInterrupt_func CH32_attachInterrupt_func
+
+#define DEBUG 0 /* https://github.com/openwch/arduino_core_ch32/issues/125 */
 
 #endif /* PLATFORM_CH32_H */
 
