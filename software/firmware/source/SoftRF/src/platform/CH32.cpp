@@ -91,7 +91,20 @@ static void CH32_setup()
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+  SerialOutput.setRx(SOC_GPIO_PIN_CONS_RX);
+  SerialOutput.setTx(SOC_GPIO_PIN_CONS_TX);
+  SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+  Serial_GNSS_In.setRx(SOC_GPIO_PIN_GNSS_RX);
+  Serial_GNSS_In.setTx(SOC_GPIO_PIN_GNSS_TX);
+
+  SPI.setMISO(SOC_GPIO_PIN_MISO);
+  SPI.setMOSI(SOC_GPIO_PIN_MOSI);
+  SPI.setSCLK(SOC_GPIO_PIN_SCK);
+  SPI.setSSEL(SOC_GPIO_PIN_SS);
+
+  Wire.setSCL(SOC_GPIO_PIN_SCL);
+  Wire.setSDA(SOC_GPIO_PIN_SDA);
 }
 
 static void CH32_post_init()
@@ -212,7 +225,10 @@ static void CH32_reset()
 static uint32_t CH32_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = DBGMCU_GetCHIPID(); /* TBD */
+  volatile uint32_t *ch32_uuid = ((volatile uint32_t *) 0x1FFFF7E8UL);
+
+  /* Same method as STM32 OGN tracker does */
+  uint32_t id = ch32_uuid[0] ^ ch32_uuid[1] ^ ch32_uuid[2];
 
   return DevID_Mapper(id);
 #else
