@@ -192,6 +192,10 @@ static void PSoC4_setup()
 
     pinMode(SOC_GPIO_PIN_GNSS_PWR, OUTPUT);
     digitalWrite(SOC_GPIO_PIN_GNSS_PWR, LOW);
+
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
   } else {
     PSoC4_board = (SoC->getChipId() == 0x9b531416) ? PSOC4_AITHINKER_RA_07H : PSOC4_EBYTE_E78;
 

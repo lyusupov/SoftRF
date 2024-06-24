@@ -318,6 +318,10 @@ static void RP2040_setup()
   pinMode(SOC_GPIO_PIN_GNSS_RST, INPUT_PULLUP); // RAK5005-O 3V3_S PWR_EN
 #endif
 
+#if defined(USE_RADIOLIB)
+  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
+
 #if SOC_GPIO_PIN_ANT_RXTX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_PIN_ANT_RXTX, OUTPUT);
   digitalWrite(SOC_GPIO_PIN_ANT_RXTX, HIGH);

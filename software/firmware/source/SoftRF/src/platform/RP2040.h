@@ -300,6 +300,7 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_MBED */
 
 #define USE_BASICMAC
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 

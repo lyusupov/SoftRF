@@ -208,6 +208,7 @@ extern softSerial swSer;
 
 #define USE_BASICMAC
 #define EXCLUDE_SX1276           //  -  3 kb
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 
