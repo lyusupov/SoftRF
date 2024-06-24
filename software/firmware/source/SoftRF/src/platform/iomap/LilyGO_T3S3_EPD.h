@@ -1,12 +1,12 @@
 
 /* ESP32-S3-MINI-1U-N4 */
-#define SOC_GPIO_PIN_T3S3_CONS_RX       44
-#define SOC_GPIO_PIN_T3S3_CONS_TX       43
+#define SOC_GPIO_PIN_T3S3_CONS_RX       39
+#define SOC_GPIO_PIN_T3S3_CONS_TX       40
 
 // GNSS module (ext.)
-#define SOC_GPIO_PIN_T3S3_GNSS_RX       35 /* TBD */
-#define SOC_GPIO_PIN_T3S3_GNSS_TX       38 /* TBD */
-#define SOC_GPIO_PIN_T3S3_GNSS_PPS      36 /* TBD */
+#define SOC_GPIO_PIN_T3S3_GNSS_RX       44
+#define SOC_GPIO_PIN_T3S3_GNSS_TX       43
+#define SOC_GPIO_PIN_T3S3_GNSS_PPS      38
 
 // USB CDC/JTAG
 #define SOC_GPIO_PIN_T3S3_USB_DP        20
@@ -26,9 +26,11 @@
 #define SOC_GPIO_PIN_T3S3_ANT_RX        21
 #define SOC_GPIO_PIN_T3S3_ANT_TX        10
 
+#define SOC_GPIO_PIN_T3S3_3V3EN         35
+
 // I2C (ext.)
-#define SOC_GPIO_PIN_T3S3_SDA           45 /* TBD */
-#define SOC_GPIO_PIN_T3S3_SCL           46 /* TBD */
+#define SOC_GPIO_PIN_T3S3_SDA           41 /* 46 ? */
+#define SOC_GPIO_PIN_T3S3_SCL           42
 
 // status LED
 #define SOC_GPIO_PIN_T3S3_LED           37

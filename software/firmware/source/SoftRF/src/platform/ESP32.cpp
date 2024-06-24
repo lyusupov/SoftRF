@@ -155,7 +155,7 @@ unsigned long TaskInfoTime;
 #endif /* USE_EPD_TASK */
 
 const char *Hardware_Rev[] = {
-  [0] = "TBD",
+  [0] = "2024-02-28",
   [1] = "TBD",
   [2] = "TBD",
   [3] = "Unknown"
@@ -1340,7 +1340,8 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
 
-    hw_info.model = SOFTRF_MODEL_INK;
+    hw_info.model    = SOFTRF_MODEL_INK;
+    hw_info.revision = 0; /* 2024-02-28 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -1356,6 +1357,8 @@ static void ESP32_setup()
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
 #endif /* USE_RADIOLIB */
+
+    pinMode(SOC_GPIO_PIN_T3S3_3V3EN, INPUT_PULLUP);
 
     int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
 
@@ -2476,6 +2479,13 @@ static void ESP32_fini(int reason)
     pinMode(SOC_GPIO_PIN_HELTRK_ADC_EN,    INPUT);
     pinMode(SOC_GPIO_PIN_HELTRK_VEXT_EN,   INPUT);
     pinMode(SOC_GPIO_PIN_HELTRK_LED,       INPUT);
+
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+    pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       INPUT_PULLDOWN);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,

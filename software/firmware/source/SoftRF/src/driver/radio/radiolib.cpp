@@ -57,7 +57,7 @@ const rfchip_ops_t lr112x_ops = {
 Module     *mod;
 RADIO_TYPE *radio;
 
-const rf_proto_desc_t  *rl_protocol = &ogntp_proto_desc;
+const rf_proto_desc_t  *rl_protocol  = &ogntp_proto_desc;
 
 static int8_t lr112x_channel_prev    = (int8_t) -1;
 
@@ -388,7 +388,8 @@ static void lr112x_setup()
     case RF_CHECKSUM_TYPE_CCITT_1D02:
     case RF_CHECKSUM_TYPE_CRC8_107:
     case RF_CHECKSUM_TYPE_RS:
-      /* TBD */
+      /* CRC is driven by software */
+      state = radio->setCRC(0, 0);
       break;
     case RF_CHECKSUM_TYPE_GALLAGER:
     case RF_CHECKSUM_TYPE_CRC_MODES:
@@ -407,7 +408,7 @@ static void lr112x_setup()
       pkt_size += pkt_size;
       break;
     case RF_WHITENING_PN9:
-    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_WHITENING_NONE:
     case RF_WHITENING_NICERF:
     default:
       break;
@@ -415,8 +416,21 @@ static void lr112x_setup()
     state = radio->fixedPacketLengthMode(pkt_size);
 
     state = radio->disableAddressFiltering();
-    state = radio->setSyncWord((uint8_t *) rl_protocol->syncword,
-                               (size_t)    rl_protocol->syncword_size);
+
+    /* Work around premature P3I syncword detection */
+    if (rl_protocol->syncword_size == 2) {
+      uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
+                         0xAA : 0x55;
+      uint8_t sword[4] = { preamble,
+                           preamble,
+                           rl_protocol->syncword[0],
+                           rl_protocol->syncword[1]
+                         };
+      state = radio->setSyncWord(sword, 4);
+    } else {
+      state = radio->setSyncWord((uint8_t *) rl_protocol->syncword,
+                                 (size_t)    rl_protocol->syncword_size);
+    }
     break;
   }
 
@@ -465,6 +479,25 @@ static void lr112x_setup()
   radio->setPacketReceivedAction(lr112x_receive_handler);
 }
 
+static bool memeqzero(const uint8_t *data, size_t length)
+{
+	const uint8_t *p = data;
+	size_t len;
+
+	/* Check first 16 bytes manually */
+	for (len = 0; len < 16; len++) {
+		if (!length)
+			return true;
+		if (*p)
+			return false;
+		p++;
+		length--;
+	}
+
+	/* Now we know that's zero, memcmp with self. */
+	return memcmp((void *) data, (void *) p, length) == 0;
+}
+
 static bool lr112x_receive()
 {
   bool success = false;
@@ -495,7 +528,8 @@ static bool lr112x_receive()
       state = radio->readData(rxPacket.payload, rxPacket.len);
       lr112x_receive_active = false;
 
-      if (state == RADIOLIB_ERR_NONE) {
+      if (state == RADIOLIB_ERR_NONE &&
+         !memeqzero(rxPacket.payload, rxPacket.len)) {
         size_t size = 0;
         uint8_t offset;
 
@@ -647,6 +681,10 @@ static bool lr112x_receive()
       }
 
       memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+#if USE_SX1262 && (RADIOLIB_GODMODE || RADIOLIB_LOW_LEVEL)
+      radio->writeBuffer(rxPacket.payload, rxPacket.len);
+      radio->setBufferBaseAddress();
+#endif
       rxPacket.len = 0;
     }
 
@@ -794,6 +832,13 @@ static bool lr112x_transmit()
   if (state == RADIOLIB_ERR_NONE) {
 
     success = true;
+
+    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+#if USE_SX1262 && (RADIOLIB_GODMODE || RADIOLIB_LOW_LEVEL)
+    radio->setBufferBaseAddress();
+    radio->writeBuffer(txPacket.payload, txPacket.len);
+    radio->setBufferBaseAddress();
+#endif
 
 #if 0
     // the packet was successfully transmitted
