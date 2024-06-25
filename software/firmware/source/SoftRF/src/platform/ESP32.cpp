@@ -228,7 +228,6 @@ PCF8563_Class *rtc              = nullptr;
 I2CBus        *i2c              = nullptr;
 
 static bool ESP32_has_spiflash  = false;
-static uint32_t spiflash_id     = 0;
 static bool FATFS_is_mounted    = false;
 static bool ADB_is_open         = false;
 static bool RTC_sync            = false;
@@ -262,7 +261,7 @@ ui_settings_t ui_settings = {
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
-    .rotate       = ROTATE_90,
+    .rotate       = ROTATE_0,
     .orientation  = DIRECTION_TRACK_UP,
     .adb          = DB_OGN,
     .idpref       = ID_TYPE,
@@ -580,7 +579,7 @@ static void ESP32_setup()
    *  Heltec Tracker  |               | GIGADEVICE_GD25Q64
    *                  | WT0132C6-S5   | ZBIT_ZB25VQ32B
    *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
-   *  LilyGO T3-S3-EP | ESP32-S3-MINI |
+   *  LilyGO T3-S3-EP | ESP32-S3-MINI | XMC_XM25QH32B
    */
 
   if (psramFound()) {
@@ -660,9 +659,6 @@ static void ESP32_setup()
       /* Heltec Tracker has no PSRAM onboard */
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
-      break;
-    case MakeFlashId(ST_ID, XMC_XM25QH32B):
-      esp32_board    = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
       break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
@@ -1435,9 +1431,8 @@ static void ESP32_setup()
   ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                        EXTERNAL_FLASH_DEVICE_COUNT);
   if (ESP32_has_spiflash) {
-    spiflash_id = SPIFlash->getJEDECID();
+    uint32_t capacity = ESP32_getFlashId() & 0xFF;
 
-    uint32_t capacity = spiflash_id & 0xFF;
     if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
       hw_info.storage = STORAGE_FLASH;
 
