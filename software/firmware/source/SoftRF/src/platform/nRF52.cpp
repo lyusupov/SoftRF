@@ -1236,11 +1236,21 @@ static void nRF52_loop()
   if (hw_info.imu == IMU_ICM20948 &&
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
     if (imu_2.dataReady()) {
+      imu_2.getAGMT();
+
       // milli g's
       float a_x = imu_2.accX();
       float a_y = imu_2.accY();
       float a_z = imu_2.accZ();
-
+#if 0
+      Serial.print("{ACCEL: ");
+      Serial.print(a_x);
+      Serial.print(",");
+      Serial.print(a_y);
+      Serial.print(",");
+      Serial.print(a_z);
+      Serial.println("}");
+#endif
       IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 1000;
     }
     IMU_Time_Marker = millis();

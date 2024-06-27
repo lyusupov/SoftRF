@@ -657,11 +657,21 @@ static void STM32_loop()
   if (hw_info.imu == IMU_ICM20948 &&
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
     if (imu.dataReady()) {
+      imu.getAGMT();
+
       // milli g's
       float a_x = imu.accX();
       float a_y = imu.accY();
       float a_z = imu.accZ();
-
+#if 0
+      Serial.print("{ACCEL: ");
+      Serial.print(a_x);
+      Serial.print(",");
+      Serial.print(a_y);
+      Serial.print(",");
+      Serial.print(a_z);
+      Serial.println("}");
+#endif
       IMU_g_x10 = (int) (sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 100);
     }
     IMU_Time_Marker = millis();
