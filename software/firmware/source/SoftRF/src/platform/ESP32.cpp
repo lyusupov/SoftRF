@@ -1423,7 +1423,9 @@ static void ESP32_setup()
     lmic_pins.busy = SOC_GPIO_PIN_T3C6_BUSY;
     lmic_pins.txe  = SOC_GPIO_PIN_T3C6_ANT_TX;
     lmic_pins.rxe  = SOC_GPIO_PIN_T3C6_ANT_RX;
-
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_T3C6_DIO1;
+#endif /* USE_RADIOLIB */
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
   }
 
@@ -4120,7 +4122,11 @@ static void ESP32_Battery_setup()
     /* TBD */
 #endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-    calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
+    if (esp32_board == ESP32_LILYGO_T3C6) {
+      calibrate_voltage(SOC_GPIO_PIN_T3C6_BATTERY);
+    } else {
+      calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
+    }
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
     /* TBD */
 #else
@@ -4142,6 +4148,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
+            hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
@@ -4155,6 +4162,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_PRIME_MK3  || /* TBD */
             hw_info.model == SOFTRF_MODEL_HAM        || /* TBD */
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
+            hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?

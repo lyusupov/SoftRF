@@ -154,6 +154,8 @@ extern Adafruit_NeoPixel strip;
 
 #define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_MIDI      ?\
                                 SOC_GPIO_PIN_HELTRK_LED :               \
+                               hw_info.model == SOFTRF_MODEL_ECO       ?\
+                                SOC_GPIO_PIN_T3C6_LED :                 \
                                hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \
@@ -172,7 +174,9 @@ extern Adafruit_NeoPixel strip;
                                     SOC_UNUSED_PIN) :                     \
                                 (hw_info.model == SOFTRF_MODEL_MIDI ?     \
                                   SOC_GPIO_PIN_HELTRK_GNSS_PPS :          \
-                                  SOC_UNUSED_PIN)))
+                                (hw_info.model == SOFTRF_MODEL_ECO ?      \
+                                  SOC_GPIO_PIN_T3C6_GNSS_PPS :            \
+                                  SOC_UNUSED_PIN))))
 
 #define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
                                 SOC_UNUSED_PIN :                         \
@@ -428,6 +432,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
 #undef USE_NMEALIB
+#undef USE_BLE_MIDI
 #undef ENABLE_PROL
 //#define USE_NIMBLE
 #endif /* C2 || C6 || H2 */

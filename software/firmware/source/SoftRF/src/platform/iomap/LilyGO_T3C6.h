@@ -33,7 +33,8 @@
 // status LED
 #define SOC_GPIO_PIN_T3C6_LED           7
 
-// NRF905 (NC)
-#define SOC_GPIO_PIN_T3C6_TXE           2  /* TBD */
-#define SOC_GPIO_PIN_T3C6_CE            3  /* TBD */
-#define SOC_GPIO_PIN_T3C6_PWR           10 /* TBD */
+// battery voltage (ADC)
+#define SOC_GPIO_PIN_T3C6_BATTERY       2  /* NC */
+
+// spare (LED ring, button or buzzer)
+#define SOC_GPIO_PIN_T3C6_NC1           3
