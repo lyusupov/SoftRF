@@ -140,6 +140,69 @@ static uint8_t sx1262_ReadReg (uint16_t addr) {
 }
 #endif
 
+#if USE_LR1121 && !defined(USE_BASICMAC)
+static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
+
+static void hal_spi_select (int on) {
+
+#if defined(SPI_HAS_TRANSACTION)
+    if (on)
+        SPI.beginTransaction(probe_settings);
+    else
+        SPI.endTransaction();
+#endif
+
+    //Serial.println(val?">>":"<<");
+    digitalWrite(lmic_pins.nss, !on ? HIGH : LOW);
+}
+
+// Datasheet defins typical times until busy goes low. Most are < 200us,
+// except when waking up from sleep, which typically takes 3500us. Since
+// we cannot know here if we are in sleep, we'll have to assume we are.
+// Since 3500 is typical, not maximum, wait a bit more than that.
+static unsigned long MAX_BUSY_TIME = 5000;
+
+static void hal_pin_busy_wait (void) {
+    if (lmic_pins.busy == LMIC_UNUSED_PIN) {
+        // TODO: We could probably keep some state so we know the chip
+        // is in sleep, since otherwise the delay can be much shorter.
+        // Also, all delays after commands (rather than waking up from
+        // sleep) are measured from the *end* of the previous SPI
+        // transaction, so we could wait shorter if we remember when
+        // that was.
+        delayMicroseconds(MAX_BUSY_TIME);
+    } else {
+        unsigned long start = micros();
+
+        while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
+    }
+}
+
+static void lr1121_GetVersion (uint8_t* hw, uint8_t* device,
+                               uint8_t* major, uint8_t* minor) {
+    uint8_t buf[4] = { 0 };
+
+    hal_spi_select(1);
+    hal_pin_busy_wait();
+    hal_spi(RADIOLIB_LR11X0_CMD_GET_VERSION >> 8);
+    hal_spi(RADIOLIB_LR11X0_CMD_GET_VERSION);
+    hal_spi_select(0);
+
+    hal_spi_select(1);
+    hal_pin_busy_wait();
+    hal_spi(RADIOLIB_LR11X0_CMD_NOP);
+    for (uint8_t i = 0; i < sizeof(buf); i++) {
+        buf[i] = hal_spi(0x00);
+    }
+    hal_spi_select(0);
+
+    if (hw)     { *hw     = buf[0]; }
+    if (device) { *device = buf[1]; }
+    if (major)  { *major  = buf[2]; }
+    if (minor)  { *minor  = buf[3]; }
+}
+#endif
+
 // this function is called when a complete packet
 // is received by the module
 // IMPORTANT: this function MUST be 'void' type
@@ -188,11 +251,37 @@ static bool lr112x_probe()
 #endif
 
 #if USE_LR1121
-  bool success = false;
+  u1_t hw, hw_reset;
+  u1_t device, major, minor;
 
-  /* TBD */
+  SoC->SPI_begin();
 
-  return success;
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  lr1121_GetVersion(&hw_reset, &device, &major, &minor);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  lr1121_GetVersion(&hw, &device, &major, &minor);
+
+  pinMode(lmic_pins.nss, INPUT);
+  SPI.end();
+
+  if (hw == RADIOLIB_LR11X0_DEVICE_LR1121) {
+
+    if (hw_reset == RADIOLIB_LR11X0_DEVICE_LR1121) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
 #endif
 }
 
