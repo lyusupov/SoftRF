@@ -77,12 +77,7 @@ typedef struct
 RadioLib_DataPacket txPacket;
 RadioLib_DataPacket rxPacket;
 
-#if USE_SX1262 && !defined(USE_BASICMAC)
-
-#define CMD_READREGISTER            0x1D
-#define REG_LORASYNCWORDLSB         0x0741
-#define SX126X_DEF_LORASYNCWORDLSB  0x24
-
+#if !defined(USE_BASICMAC)
 static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
 
 static void hal_spi_select (int on) {
@@ -119,6 +114,13 @@ static void hal_pin_busy_wait (void) {
         while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
     }
 }
+#endif /* USE_BASICMAC */
+
+#if USE_SX1262
+
+#define CMD_READREGISTER            0x1D
+#define REG_LORASYNCWORDLSB         0x0741
+#define SX126X_DEF_LORASYNCWORDLSB  0x24
 
 static void sx1262_ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
     hal_spi_select(1);
@@ -138,46 +140,9 @@ static uint8_t sx1262_ReadReg (uint16_t addr) {
     sx1262_ReadRegs(addr, &val, 1);
     return val;
 }
-#endif
+#endif /* USE_SX1262 */
 
-#if USE_LR1121 && !defined(USE_BASICMAC)
-static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
-
-static void hal_spi_select (int on) {
-
-#if defined(SPI_HAS_TRANSACTION)
-    if (on)
-        SPI.beginTransaction(probe_settings);
-    else
-        SPI.endTransaction();
-#endif
-
-    //Serial.println(val?">>":"<<");
-    digitalWrite(lmic_pins.nss, !on ? HIGH : LOW);
-}
-
-// Datasheet defins typical times until busy goes low. Most are < 200us,
-// except when waking up from sleep, which typically takes 3500us. Since
-// we cannot know here if we are in sleep, we'll have to assume we are.
-// Since 3500 is typical, not maximum, wait a bit more than that.
-static unsigned long MAX_BUSY_TIME = 5000;
-
-static void hal_pin_busy_wait (void) {
-    if (lmic_pins.busy == LMIC_UNUSED_PIN) {
-        // TODO: We could probably keep some state so we know the chip
-        // is in sleep, since otherwise the delay can be much shorter.
-        // Also, all delays after commands (rather than waking up from
-        // sleep) are measured from the *end* of the previous SPI
-        // transaction, so we could wait shorter if we remember when
-        // that was.
-        delayMicroseconds(MAX_BUSY_TIME);
-    } else {
-        unsigned long start = micros();
-
-        while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
-    }
-}
-
+#if USE_LR1121
 static void lr1121_GetVersion (uint8_t* hw, uint8_t* device,
                                uint8_t* major, uint8_t* minor) {
     uint8_t buf[4] = { 0 };
@@ -201,7 +166,7 @@ static void lr1121_GetVersion (uint8_t* hw, uint8_t* device,
     if (major)  { *major  = buf[2]; }
     if (minor)  { *minor  = buf[3]; }
 }
-#endif
+#endif /* USE_LR1121 */
 
 // this function is called when a complete packet
 // is received by the module
@@ -251,8 +216,8 @@ static bool lr112x_probe()
 #endif
 
 #if USE_LR1121
-  u1_t hw, hw_reset;
-  u1_t device, major, minor;
+  u1_t device, device_reset;
+  u1_t hw, major, minor;
 
   SoC->SPI_begin();
 
@@ -262,7 +227,7 @@ static bool lr112x_probe()
   hal_pin_rst(0); // drive RST pin low
   hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
 
-  lr1121_GetVersion(&hw_reset, &device, &major, &minor);
+  lr1121_GetVersion(&hw, &device_reset, &major, &minor);
 
   hal_pin_rst(2); // configure RST pin floating!
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
@@ -272,9 +237,9 @@ static bool lr112x_probe()
   pinMode(lmic_pins.nss, INPUT);
   SPI.end();
 
-  if (hw == RADIOLIB_LR11X0_DEVICE_LR1121) {
+  if (device == RADIOLIB_LR11X0_DEVICE_LR1121) {
 
-    if (hw_reset == RADIOLIB_LR11X0_DEVICE_LR1121) {
+    if (device_reset == RADIOLIB_LR11X0_DEVICE_LR1121) {
       RF_SX12XX_RST_is_connected = false;
     }
 
