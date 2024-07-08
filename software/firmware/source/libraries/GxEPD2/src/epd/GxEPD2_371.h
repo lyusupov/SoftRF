@@ -64,6 +64,7 @@ class GxEPD2_371 : public GxEPD2_EPD
     void refresh(int16_t x, int16_t y, int16_t w, int16_t h); // screen refresh from controller memory, partial screen
     void powerOff(); // turns off generation of panel driving voltages, avoids screen fading over time
     void hibernate(); // turns powerOff() and sets controller to deep sleep for minimum power use, ONLY if wakeable by RST (rst >= 0)
+    bool probe();
   private:
     void _setPartialRamArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
     void _PowerOn();

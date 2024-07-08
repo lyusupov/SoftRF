@@ -400,3 +400,12 @@ void GxEPD2_371::_Update_Part()
   _writeCommand(0x12); //display refresh
   _waitWhileBusy("_Update_Part", partial_refresh_time);
 }
+
+bool GxEPD2_371::probe()
+{
+  if (_timeout_expired) {
+    return false;
+  } else {
+    return true;
+  }
+}
