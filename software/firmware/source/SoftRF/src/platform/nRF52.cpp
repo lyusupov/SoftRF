@@ -725,7 +725,19 @@ static void nRF52_setup()
   delay(200);
 
 #if !defined(ARDUINO_ARCH_MBED)
-  Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+      break;
+  }
 #endif /* ARDUINO_ARCH_MBED */
   Wire.begin();
 
@@ -1780,14 +1792,26 @@ static void nRF52_EEPROM_extension(int cmd)
 static void nRF52_SPI_begin()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  if (nRF52_board == NRF52_NORDIC_PCA10059) {
-    SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
-                SOC_GPIO_PIN_PCA10059_SCK,
-                SOC_GPIO_PIN_PCA10059_MOSI);
-  } else {
-    SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
-                SOC_GPIO_PIN_TECHO_REV_0_SCK,
-                SOC_GPIO_PIN_TECHO_REV_0_MOSI);
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      SPI.setPins(SOC_GPIO_PIN_TULTIMA_MISO,
+                  SOC_GPIO_PIN_TULTIMA_SCK,
+                  SOC_GPIO_PIN_TULTIMA_MOSI);
+      break;
+    case NRF52_NORDIC_PCA10059:
+      SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
+                  SOC_GPIO_PIN_PCA10059_SCK,
+                  SOC_GPIO_PIN_PCA10059_MOSI);
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    default:
+      SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
+                  SOC_GPIO_PIN_TECHO_REV_0_SCK,
+                  SOC_GPIO_PIN_TECHO_REV_0_MOSI);
+      break;
   }
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -1797,7 +1821,20 @@ static void nRF52_SPI_begin()
 static void nRF52_swSer_begin(unsigned long baud)
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TULTIMA_RX,
+                             SOC_GPIO_PIN_GNSS_TULTIMA_TX);
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+      break;
+  }
 #endif /* ARDUINO_ARCH_MBED */
   Serial_GNSS_In.begin(baud);
 }
