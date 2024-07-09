@@ -200,14 +200,21 @@ GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
 
 #if !defined(ARDUINO_ARCH_MBED)
-Adafruit_FlashTransport_QSPI HWFlashTransport(SOC_GPIO_PIN_SFL_SCK,
-                                              SOC_GPIO_PIN_SFL_SS,
-                                              SOC_GPIO_PIN_SFL_MOSI,
-                                              SOC_GPIO_PIN_SFL_MISO,
-                                              SOC_GPIO_PIN_SFL_WP,
-                                              SOC_GPIO_PIN_SFL_HOLD);
-
-Adafruit_SPIFlash QSPIFlash (&HWFlashTransport);
+Adafruit_FlashTransport_QSPI HWFlashTransport_TEcho(SOC_GPIO_PIN_SFL_SCK,
+                                                    SOC_GPIO_PIN_SFL_SS,
+                                                    SOC_GPIO_PIN_SFL_MOSI,
+                                                    SOC_GPIO_PIN_SFL_MISO,
+                                                    SOC_GPIO_PIN_SFL_WP,
+                                                    SOC_GPIO_PIN_SFL_HOLD);
+Adafruit_FlashTransport_QSPI HWFlashTransport_TUltima(
+                                              SOC_GPIO_PIN_SFL_TULTIMA_SCK,
+                                              SOC_GPIO_PIN_SFL_TULTIMA_SS,
+                                              SOC_GPIO_PIN_SFL_TULTIMA_MOSI,
+                                              SOC_GPIO_PIN_SFL_TULTIMA_MISO,
+                                              SOC_GPIO_PIN_SFL_TULTIMA_WP,
+                                              SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
+Adafruit_SPIFlash QSPIFlash_TEcho  (&HWFlashTransport_TEcho);
+Adafruit_SPIFlash QSPIFlash_TUltima(&HWFlashTransport_TUltima);
 
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
@@ -220,6 +227,7 @@ static uint8_t mx25_status_config[3] = {0x00, 0x00, 0x00};
 enum {
   MX25R1635F_INDEX,
   ZD25WQ16B_INDEX,
+  W25Q128JV_INDEX,
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
@@ -227,7 +235,9 @@ enum {
 static SPIFlash_Device_t possible_devices[] = {
   // LilyGO T-Echo
   [MX25R1635F_INDEX] = MX25R1635F,
-  [ZD25WQ16B_INDEX]  = ZD25WQ16B
+  [ZD25WQ16B_INDEX]  = ZD25WQ16B,
+  // LilyGO T-Ultima
+  [W25Q128JV_INDEX]  = W25Q128JV_PM,
 };
 
 // USB Mass Storage object
@@ -650,19 +660,16 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
-#if !defined(ARDUINO_ARCH_MBED)
-  USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
-  USBDevice.setProductDescriptor(nRF52_Device_Model);
-  USBDevice.setDeviceVersion(nRF52_Device_Version);
-#endif /* ARDUINO_ARCH_MBED */
-
 #if !defined(EXCLUDE_PMU)
-  nRF52_has_pmu = sy6970.init(Wire, SOC_GPIO_PMU_SDA, SOC_GPIO_PMU_SCL, SY6970_SLAVE_ADDRESS);
-
+  nRF52_has_pmu = sy6970.init(Wire,
+                              SOC_GPIO_PIN_TULTIMA_SDA,
+                              SOC_GPIO_PIN_TULTIMA_SCL,
+                              SY6970_SLAVE_ADDRESS);
   if (nRF52_has_pmu) {
-    nRF52_board   = NRF52_LILYGO_TULTIMA;
-    hw_info.model = SOFTRF_MODEL_NEO;
-    hw_info.pmu   = PMU_SY6970;
+    nRF52_board        = NRF52_LILYGO_TULTIMA;
+    hw_info.model      = SOFTRF_MODEL_NEO;
+    hw_info.pmu        = PMU_SY6970;
+    nRF52_Device_Model = "Neo Edition";
 
     // Set the minimum operating voltage. Below this voltage, the PMU will protect
     sy6970.setSysPowerDownVoltage(3300);
@@ -715,18 +722,48 @@ static void nRF52_setup()
   }
 #endif /* EXCLUDE_PMU */
 
+#if !defined(ARDUINO_ARCH_MBED)
+  USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
+  USBDevice.setProductDescriptor(nRF52_Device_Model);
+  USBDevice.setDeviceVersion(nRF52_Device_Version);
+#endif /* ARDUINO_ARCH_MBED */
+
 #if defined(USE_TINYUSB)
-  Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
 #if defined(EXCLUDE_WIFI)
-  Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+      Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* EXCLUDE_WIFI */
+      break;
+  }
 #endif /* USE_TINYUSB */
 
-  digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
-  pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
-  digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
+      pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
+      digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);
 
-  delay(200);
+      delay(200);
+      break;
+  }
 
 #if !defined(ARDUINO_ARCH_MBED)
   switch (nRF52_board)
@@ -845,6 +882,10 @@ static void nRF52_setup()
       hw_info.revision = 2;
       break;
 
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
+      break;
+
     case NRF52_NORDIC_PCA10059:
     default:
       pinMode(SOC_GPIO_LED_PCA10059_STATUS, OUTPUT);
@@ -910,11 +951,12 @@ static void nRF52_setup()
       possible_devices[MX25R1635F_INDEX].max_clock_speed_mhz = 33;
       possible_devices[MX25R1635F_INDEX].supports_qspi = false;
       possible_devices[MX25R1635F_INDEX].supports_qspi_writes = false;
-      SPIFlash = &QSPIFlash;
-      break;
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
-      SPIFlash = &QSPIFlash;
+      SPIFlash = &QSPIFlash_TEcho;
+      break;
+    case NRF52_LILYGO_TULTIMA:
+      SPIFlash = &QSPIFlash_TUltima;
       break;
     case NRF52_NORDIC_PCA10059:
     default:
@@ -978,14 +1020,26 @@ static void nRF52_setup()
 #endif
 
 #if !defined(EXCLUDE_WIFI)
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
 #if defined(_WIFI_ESP_AT_H_)
-  Serial1.begin(115200);
-  WiFi.init(&Serial1);
+      Serial1.begin(115200);
+      WiFi.init(&Serial1);
 #endif /* _WIFI_ESP_AT_H_ */
 
 #if defined(WiFiNINA_h)
-  WiFi.setPins(SPIWIFI_SS, SPIWIFI_ACK, ESP32_RESETN, ESP32_GPIO0, &SPIWIFI);
+      WiFi.setPins(SPIWIFI_SS, SPIWIFI_ACK, ESP32_RESETN, ESP32_GPIO0, &SPIWIFI);
 #endif /* WiFiNINA_h */
+      break;
+  }
 #endif /* EXCLUDE_WIFI */
 }
 
@@ -2136,11 +2190,13 @@ static float nRF52_Battery_param(uint8_t param)
   {
   case BATTERY_PARAM_THRESHOLD:
     rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_THRESHOLD_LIPO   :
                                                  BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
     rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_CUTOFF_LIPO   :
                                                  BATTERY_CUTOFF_NIMHX2;
     break;
 

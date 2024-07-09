@@ -277,11 +277,16 @@ struct rst_info {
 #define SOC_GPIO_PIN_SFL_HOLD           _PINNUM(0,  5) // P0.05 (REV_1 and REV_2)
 #define SOC_GPIO_PIN_SFL_WP             _PINNUM(0,  7) // P0.07 (REV_1 and REV_2)
 
+/* W25Q128JVPIQ SPI flash */
+#define SOC_GPIO_PIN_SFL_TULTIMA_MOSI   _PINNUM(1, 10) // P1.10
+#define SOC_GPIO_PIN_SFL_TULTIMA_MISO   _PINNUM(0, 29) // P0.29
+#define SOC_GPIO_PIN_SFL_TULTIMA_SCK    _PINNUM(1, 13) // P1.13
+#define SOC_GPIO_PIN_SFL_TULTIMA_SS     _PINNUM(0,  2) // P0.02
+#define SOC_GPIO_PIN_SFL_TULTIMA_HOLD   _PINNUM(1, 15) // P1.15
+#define SOC_GPIO_PIN_SFL_TULTIMA_WP     _PINNUM(0, 31) // P0.31
+
 /* RTC */
 #define SOC_GPIO_PIN_R_INT              _PINNUM(0, 16) // P0.16
-
-#define SOC_GPIO_PMU_SDA                _PINNUM(1,  0) // P1.00
-#define SOC_GPIO_PMU_SCL                _PINNUM(0, 24) // P0.24
 
 #define EXCLUDE_WIFI
 //#define EXCLUDE_OTA
