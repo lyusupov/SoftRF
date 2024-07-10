@@ -200,22 +200,6 @@ GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
 
 #if !defined(ARDUINO_ARCH_MBED)
-Adafruit_FlashTransport_QSPI HWFlashTransport_TEcho(SOC_GPIO_PIN_SFL_SCK,
-                                                    SOC_GPIO_PIN_SFL_SS,
-                                                    SOC_GPIO_PIN_SFL_MOSI,
-                                                    SOC_GPIO_PIN_SFL_MISO,
-                                                    SOC_GPIO_PIN_SFL_WP,
-                                                    SOC_GPIO_PIN_SFL_HOLD);
-Adafruit_FlashTransport_QSPI HWFlashTransport_TUltima(
-                                              SOC_GPIO_PIN_SFL_TULTIMA_SCK,
-                                              SOC_GPIO_PIN_SFL_TULTIMA_SS,
-                                              SOC_GPIO_PIN_SFL_TULTIMA_MOSI,
-                                              SOC_GPIO_PIN_SFL_TULTIMA_MISO,
-                                              SOC_GPIO_PIN_SFL_TULTIMA_WP,
-                                              SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
-Adafruit_SPIFlash QSPIFlash_TEcho  (&HWFlashTransport_TEcho);
-Adafruit_SPIFlash QSPIFlash_TUltima(&HWFlashTransport_TUltima);
-
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
 #define SFLASH_CMD_READ_CONFIG  0x15
@@ -945,25 +929,38 @@ static void nRF52_setup()
 
 #if !defined(ARDUINO_ARCH_MBED)
   /* (Q)SPI flash init */
+  Adafruit_FlashTransport_QSPI *ft = NULL;
+
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TECHO_REV_0:
-      possible_devices[MX25R1635F_INDEX].max_clock_speed_mhz = 33;
-      possible_devices[MX25R1635F_INDEX].supports_qspi = false;
+      possible_devices[MX25R1635F_INDEX].max_clock_speed_mhz  = 33;
+      possible_devices[MX25R1635F_INDEX].supports_qspi        = false;
       possible_devices[MX25R1635F_INDEX].supports_qspi_writes = false;
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
-      SPIFlash = &QSPIFlash_TEcho;
+      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
+                                            SOC_GPIO_PIN_SFL_SS,
+                                            SOC_GPIO_PIN_SFL_MOSI,
+                                            SOC_GPIO_PIN_SFL_MISO,
+                                            SOC_GPIO_PIN_SFL_WP,
+                                            SOC_GPIO_PIN_SFL_HOLD);
       break;
     case NRF52_LILYGO_TULTIMA:
-      SPIFlash = &QSPIFlash_TUltima;
+      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_TULTIMA_SCK,
+                                            SOC_GPIO_PIN_SFL_TULTIMA_SS,
+                                            SOC_GPIO_PIN_SFL_TULTIMA_MOSI,
+                                            SOC_GPIO_PIN_SFL_TULTIMA_MISO,
+                                            SOC_GPIO_PIN_SFL_TULTIMA_WP,
+                                            SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
       break;
     case NRF52_NORDIC_PCA10059:
     default:
       break;
   }
 
-  if (SPIFlash != NULL) {
+  if (ft != NULL) {
+    SPIFlash = new Adafruit_SPIFlash(ft);
     nRF52_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
