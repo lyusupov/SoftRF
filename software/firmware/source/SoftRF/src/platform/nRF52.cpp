@@ -339,11 +339,6 @@ static void nRF52_msc_flush_cb (void)
 #define WAV_FILE_PREFIX       "/Audio/"
 #define WAV_FILE_SUFFIX       ".wav"
 
-#define SOC_GPIO_PIN_I2S_MCK  _PINNUM(0, 6) // P0.06
-#define SOC_GPIO_PIN_I2S_LRCK _PINNUM(1, 6) // P1.06
-#define SOC_GPIO_PIN_I2S_BCK  _PINNUM(0, 8) // P0.08
-#define SOC_GPIO_PIN_I2S_DOUT _PINNUM(1, 7) // P1.07
-
 #define I2S_DATA_BLOCK_WORDS  8192
 
 /* these are data structures to process wav file */
@@ -377,9 +372,9 @@ void I2S_begin(uint8_t pinSDOUT, uint8_t pinSCK, uint8_t pinLRCK, int8_t pinMCK)
   // Enable transmission
   NRF_I2S->CONFIG.TXEN     = (I2S_CONFIG_TXEN_TXEN_ENABLE << I2S_CONFIG_TXEN_TXEN_Pos);
   // Enable MCK generator
-  NRF_I2S->CONFIG.MCKEN    = (I2S_CONFIG_MCKEN_MCKEN_ENABLE << I2S_CONFIG_MCKEN_MCKEN_Pos);
-  NRF_I2S->CONFIG.MCKFREQ  = I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11 << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
-  NRF_I2S->CONFIG.RATIO    = I2S_CONFIG_RATIO_RATIO_64X << I2S_CONFIG_RATIO_RATIO_Pos;
+  // NRF_I2S->CONFIG.MCKEN    = (I2S_CONFIG_MCKEN_MCKEN_ENABLE << I2S_CONFIG_MCKEN_MCKEN_Pos);
+  // NRF_I2S->CONFIG.MCKFREQ  = I2S_CONFIG_MCKFREQ_MCKFREQ_32MDIV11 << I2S_CONFIG_MCKFREQ_MCKFREQ_Pos;
+  // NRF_I2S->CONFIG.RATIO    = I2S_CONFIG_RATIO_RATIO_64X << I2S_CONFIG_RATIO_RATIO_Pos;
   // Master mode, 16Bit, left aligned
   NRF_I2S->CONFIG.MODE     = I2S_CONFIG_MODE_MODE_MASTER << I2S_CONFIG_MODE_MODE_Pos;
   NRF_I2S->CONFIG.SWIDTH   = I2S_CONFIG_SWIDTH_SWIDTH_16BIT << I2S_CONFIG_SWIDTH_SWIDTH_Pos;
@@ -393,7 +388,7 @@ void I2S_begin(uint8_t pinSDOUT, uint8_t pinSCK, uint8_t pinLRCK, int8_t pinMCK)
   NRF_I2S->PSEL.SCK   = (pinSCK   << I2S_PSEL_SCK_PIN_Pos);
   NRF_I2S->PSEL.LRCK  = (pinLRCK  << I2S_PSEL_LRCK_PIN_Pos);
   NRF_I2S->PSEL.SDOUT = (pinSDOUT << I2S_PSEL_SDOUT_PIN_Pos);
-  NRF_I2S->PSEL.MCK   = (pinMCK   << I2S_PSEL_MCK_PIN_Pos);
+  // NRF_I2S->PSEL.MCK   = (pinMCK   << I2S_PSEL_MCK_PIN_Pos);
 }
 
 void I2S_stop()
@@ -536,10 +531,10 @@ static bool play_file(char *filename)
             state = DATA;
           }
 
-          I2S_begin(SOC_GPIO_PIN_I2S_DOUT,
-                    SOC_GPIO_PIN_I2S_BCK,
-                    SOC_GPIO_PIN_I2S_LRCK,
-                    SOC_GPIO_PIN_I2S_MCK);
+          I2S_begin(SOC_GPIO_PIN_I2S_TULTIMA_DOUT,
+                    SOC_GPIO_PIN_I2S_TULTIMA_BCK,
+                    SOC_GPIO_PIN_I2S_TULTIMA_LRCK,
+                    SOC_GPIO_PIN_I2S_TULTIMA_MCK);
           I2S_setSampleRate(wavProps.sampleRate);
         }
         break;
@@ -1044,7 +1039,8 @@ static void nRF52_post_init()
 {
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
-      nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+      nRF52_board == NRF52_LILYGO_TULTIMA) {
 
 #if 0
     char strbuf[32];
@@ -1065,7 +1061,9 @@ static void nRF52_post_init()
 #endif
 
     Serial.println();
-    Serial.print  (F("LilyGO T-Echo ("));
+    Serial.print  (F("LilyGO T-"));
+    Serial.print  (nRF52_board == NRF52_LILYGO_TULTIMA ? F("Ultima") : F("Echo"));
+    Serial.print  (F(" ("));
     Serial.print  (hw_info.revision > 2 ?
                    Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
     Serial.println(F(") Power-on Self Test"));
@@ -1076,15 +1074,23 @@ static void nRF52_post_init()
 
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262 ||
-                   hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
+                   hw_info.rf      == RF_IC_SX1262 ||
+                   hw_info.rf      == RF_IC_LR112X     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS    : "));
-    Serial.println(hw_info.gnss == ((hw_info.revision == 0 || hw_info.revision == 1) ?
-                                   GNSS_MODULE_GOKE : GNSS_MODULE_AT65)
-                                   ? F("PASS") : F("FAIL"));
+    if (nRF52_board == NRF52_LILYGO_TULTIMA) {
+      Serial.println(hw_info.gnss  == GNSS_MODULE_U10  ? F("PASS") : F("FAIL"));
+    } else if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
+               nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
+      Serial.println(hw_info.gnss  == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
+    } else {
+      Serial.println(hw_info.gnss  == GNSS_MODULE_AT65 ? F("PASS") : F("FAIL"));
+    }
+
     Serial.flush();
     Serial.print(F("DISPLAY : "));
-    Serial.println(hw_info.display == DISPLAY_EPD_1_54 ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.display == DISPLAY_EPD_1_54 ||
+                   hw_info.display == DISPLAY_EPD_3_71 ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("RTC     : "));
     Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
@@ -1094,18 +1100,24 @@ static void nRF52_post_init()
     Serial.flush();
 
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
-        nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+        nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+        nRF52_board == NRF52_LILYGO_TULTIMA) {
       Serial.print(F("BMx280  : "));
       Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
       Serial.flush();
     }
 
 #if !defined(EXCLUDE_IMU)
-    Serial.println();
-    Serial.println(F("External components:"));
-    Serial.print(F("IMU     : "));
-    Serial.println(hw_info.imu     == IMU_MPU9250 ||
-                   hw_info.imu     == IMU_ICM20948     ? F("PASS") : F("N/A"));
+    if (nRF52_board != NRF52_LILYGO_TULTIMA) {
+      Serial.println();
+      Serial.println(F("External components:"));
+      Serial.print(F("IMU     : "));
+      Serial.println(hw_info.imu   == IMU_MPU9250  ||
+                     hw_info.imu   == IMU_ICM20948     ? F("PASS") : F("N/A"));
+    } else {
+      Serial.print(F("IMU     : "));
+      Serial.println(hw_info.imu   == IMU_BHI260AP     ? F("PASS") : F("FAIL"));
+    }
     Serial.flush();
 #endif /* EXCLUDE_IMU */
 
@@ -1114,16 +1126,17 @@ static void nRF52_post_init()
     Serial.println();
     Serial.flush();
 
+    if (nRF52_board == NRF52_LILYGO_TULTIMA) {
 #if defined(USE_EXT_I2S_DAC)
-    char filename[MAX_FILENAME_LEN];
-    strcpy(filename, WAV_FILE_PREFIX);
-    strcat(filename, "POST");
-    strcat(filename, WAV_FILE_SUFFIX);
-    if (FATFS_is_mounted && fatfs.exists(filename)) {
-      play_file(filename);
-    }
+      char filename[MAX_FILENAME_LEN];
+      strcpy(filename, WAV_FILE_PREFIX);
+      strcat(filename, "POST");
+      strcat(filename, WAV_FILE_SUFFIX);
+      if (FATFS_is_mounted && fatfs.exists(filename)) {
+        play_file(filename);
+      }
 #endif /* USE_EXT_I2S_DAC */
-
+    }
   } else if (nRF52_board == NRF52_NORDIC_PCA10059) {
     Serial.println();
     Serial.println(F("Board: Nordic PCA10059 USB Dongle"));

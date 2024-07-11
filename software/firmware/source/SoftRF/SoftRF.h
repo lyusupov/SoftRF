@@ -259,6 +259,7 @@ enum
 	IMU_BNO080,
 	IMU_ICM20948,
 	IMU_QMI8658,
+	IMU_BHI260AP,
 };
 
 enum
@@ -268,6 +269,7 @@ enum
 	MAG_AK09916,
 	MAG_IIS2MDC,
 	MAG_QMC6310,
+	MAG_BMM150,
 };
 
 extern ufo_t ThisAircraft;
