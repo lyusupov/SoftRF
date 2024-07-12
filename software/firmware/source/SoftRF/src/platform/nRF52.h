@@ -331,7 +331,7 @@ struct rst_info {
 #define EXCLUDE_BLUETOOTH
 #define EXCLUDE_IMU
 #endif /* ARDUINO_ARCH_MBED */
-#define EXCLUDE_PMU
+//#define EXCLUDE_PMU
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"
