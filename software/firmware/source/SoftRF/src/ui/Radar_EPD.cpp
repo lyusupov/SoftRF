@@ -65,16 +65,42 @@ static void EPD_Draw_Radar()
     /* divider is a half of full scale */
     int32_t divider = 2000;
 
+    uint16_t display_width  = display->width();
+    uint16_t display_height = display->height();
+
+#if defined(EPD_ASPECT_RATIO_2C1)
+    int16_t dy = 0;
+
+    if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+      if (display_width  == 128) display_width  = 122;
+      if (display_height == 128) {
+        display_height = 122;
+        if (display->getRotation() == ROTATE_90 ) { dy = 6; }
+      }
+    }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
     display->setFont(&FreeMono9pt7b);
     display->getTextBounds("N", 0, 0, &tbx, &tby, &tbw, &tbh);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     uint16_t radar_x = 0;
-    uint16_t radar_y = (display->height() - display->width()) / 2;
-    uint16_t radar_w = display->width();
+    uint16_t radar_y = (display_height - display_width) / 2;
+    uint16_t radar_w = display_width;
 
     uint16_t radar_center_x = radar_w / 2;
     uint16_t radar_center_y = radar_y + radar_w / 2;
     uint16_t radius = radar_w / 2 - 2;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    uint16_t radar_x = (display_width - display_height) / 4;
+    uint16_t radar_y = 0 + dy;
+    uint16_t radar_w = (display_width + display_height) / 2;
+
+    uint16_t radar_center_x = radar_x + radar_w / 2;
+    uint16_t radar_center_y = radar_y + display_height - display_height / 4;
+    uint16_t radius = radar_w / 2 - 2;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
     if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
       switch(EPD_zoom)
@@ -288,8 +314,14 @@ static void EPD_Draw_Radar()
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds("0", 0, 0, &tbx, &tby, &tbw, &tbh);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       x = radar_x + tbw / 2;
       y = radar_y + radar_w - tbh;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      x = 0 + tbw / 2;
+      y = display_height + dy - tbh;
+#endif /* EPD_ASPECT_RATIO_2C1 */
       display->setCursor(x, y);
 
       display->print(Traffic_Count());
@@ -303,8 +335,14 @@ static void EPD_Draw_Radar()
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds("00 ", 0, 0, &tbx, &tby, &tbw, &tbh);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       x = radar_x + radar_w - tbw;
       y = radar_y + radar_w - tbh;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      x = display_width - tbw;
+      y = display_height + dy - tbh;
+#endif /* EPD_ASPECT_RATIO_2C1 */
       display->setCursor(x, y);
 
       if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
