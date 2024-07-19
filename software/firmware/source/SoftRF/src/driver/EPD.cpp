@@ -49,6 +49,7 @@ const char EPD_GNSS_text[]    = "GNSS    ";
 const char EPD_Display_text[] = "DISPLAY ";
 const char EPD_RTC_text[]     = "RTC     ";
 const char EPD_Flash_text[]   = "FLASH   ";
+const char EPD_Card_text[]    = "CARD    ";
 const char EPD_Baro_text[]    = "BARO  ";
 const char EPD_IMU_text[]     = "IMU   ";
 
@@ -217,9 +218,10 @@ void EPD_info1()
 {
   switch (hw_info.display)
   {
-#if defined(EPD_ASPECT_RATIO_1C1)
+#if defined(EPD_ASPECT_RATIO_1C1) || defined(EPD_ASPECT_RATIO_2C1)
   case DISPLAY_EPD_1_54:
   case DISPLAY_EPD_2_7:
+  case DISPLAY_EPD_2_13:
     int16_t  tbx, tby;
     uint16_t tbw, tbh;
 
@@ -238,6 +240,14 @@ void EPD_info1()
     x = 5;
     y = (tbh + INFO_1_LINE_SPACING - 2);
 
+#if defined(EPD_ASPECT_RATIO_2C1)
+    if (display->epd2.panel    == GxEPD2::DEPG0213BN &&
+        display->height()      == 128                &&
+        display->getRotation() == ROTATE_90) {
+      y += 6;
+    }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
     display->setCursor(x, y);
     display->print(EPD_Radio_text);
     display->print(hw_info.rf != RF_IC_NONE ? "+" : "-");
@@ -248,13 +258,13 @@ void EPD_info1()
     display->print(EPD_GNSS_text);
     display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
 
-    y += (tbh + INFO_1_LINE_SPACING);
-
-    display->setCursor(x, y);
-    display->print(EPD_Display_text);
-    display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
-
     if (hw_info.model == SOFTRF_MODEL_BADGE) {
+      y += (tbh + INFO_1_LINE_SPACING);
+
+      display->setCursor(x, y);
+      display->print(EPD_Display_text);
+      display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
+
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);
@@ -267,16 +277,25 @@ void EPD_info1()
       display->print(EPD_Flash_text);
       display->print(hw_info.storage == STORAGE_FLASH ? "+" : "-");
 
+    } else if (hw_info.model == SOFTRF_MODEL_INK) {
       y += (tbh + INFO_1_LINE_SPACING);
 
-      if (hw_info.baro == BARO_MODULE_NONE) {
-        display->setFont(&FreeMono18pt7b);
-      }
-
       display->setCursor(x, y);
-      display->print(EPD_Baro_text);
-      display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
+      display->print(EPD_Card_text);
+      display->print(hw_info.storage == STORAGE_CARD  ? "+" : "-");
+    }
 
+    y += (tbh + INFO_1_LINE_SPACING);
+
+    if (hw_info.baro == BARO_MODULE_NONE) {
+      display->setFont(&FreeMono18pt7b);
+    }
+
+    display->setCursor(x, y);
+    display->print(EPD_Baro_text);
+    display->print(hw_info.baro != BARO_MODULE_NONE ? "  +" : "N/A");
+
+    if (hw_info.model == SOFTRF_MODEL_BADGE) {
       y += (tbh + INFO_1_LINE_SPACING);
 
       if (hw_info.imu == IMU_NONE) {
@@ -308,7 +327,7 @@ void EPD_info1()
 #endif
 
     break;
-#endif /* EPD_ASPECT_RATIO_1C1 */
+#endif /* EPD_ASPECT_RATIO_1C1 || EPD_ASPECT_RATIO_2C1 */
 
   case DISPLAY_NONE:
   default:
