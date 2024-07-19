@@ -156,8 +156,8 @@ unsigned long TaskInfoTime;
 
 const char *Hardware_Rev[] = {
   [0] = "2024-02-28",
-  [1] = "TBD",
-  [2] = "TBD",
+  [1] = "N/A",
+  [2] = "N/A",
   [3] = "Unknown"
 };
 
@@ -3514,7 +3514,7 @@ static byte ESP32_Display_setup()
 
       TaskInfoTime = millis();
 #endif /* USE_EPD_TASK */
-      rval = DISPLAY_EPD_1_54;
+      rval = DISPLAY_EPD_2_13;
     }
 #endif /* USE_EPAPER */
   } else {
@@ -3523,7 +3523,7 @@ static byte ESP32_Display_setup()
     tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
     tft->init();
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    uint8_t r = ui->rotate;
+    uint8_t r = (ROTATE_90 + ui->rotate) & 0x3; /* 90 deg. is default angle */
 #else
 #if LV_HOR_RES != 135 && LV_HOR_RES != 80
     uint8_t r = 0;
@@ -4483,7 +4483,7 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       }
 #endif /* USE_OLED */
 #if defined(USE_EPAPER)
-      if (button == &button_1 && hw_info.display == DISPLAY_EPD_1_54) {
+      if (button == &button_1 && hw_info.display == DISPLAY_EPD_2_13) {
         EPD_Mode();
       }
 #endif /* USE_EPAPER */

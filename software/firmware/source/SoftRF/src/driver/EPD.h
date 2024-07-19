@@ -50,8 +50,10 @@
 #define EPD_HIBERNATE           display->hibernate()
 //#define EPD_HIBERNATE         display->powerOff()
 
+#ifndef EPD_POWEROFF
 //#define	EPD_POWEROFF		      {}
 #define EPD_POWEROFF            display->powerOff()
+#endif /* EPD_POWEROFF */
 
 enum
 {

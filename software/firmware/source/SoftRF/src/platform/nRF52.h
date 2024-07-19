@@ -307,6 +307,7 @@ struct rst_info {
 //#define EXCLUDE_OLED_BARO_PAGE
 //#define EXCLUDE_OLED_049
 #define USE_EPAPER                 //  +    kb
+#define EPD_ASPECT_RATIO_1C1
 #define USE_EPD_TASK
 #define USE_TIME_SLOTS
 

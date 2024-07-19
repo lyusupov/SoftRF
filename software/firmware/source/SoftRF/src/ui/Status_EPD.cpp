@@ -47,12 +47,24 @@ static navbox_t navbox6;
 
 void EPD_status_setup()
 {
+  uint16_t display_width  = display->width();
+  uint16_t display_height = display->height();
+  int16_t dy = 0;
+
+  if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+    if (display_width  == 128) display_width  = 122;
+    if (display_height == 128) {
+      display_height = 122;
+      if (display->getRotation() == ROTATE_90 ) { dy = 6; }
+    }
+  }
+
   memcpy(navbox1.title, NAVBOX1_TITLE, strlen(NAVBOX1_TITLE));
   navbox1.x = 0;
-  navbox1.y = 0;
-  navbox1.width  = display->width() / 2;
-  navbox1.height = display->height() / 3;
-  navbox1.value      = 0;
+  navbox1.y = 0 + dy;
+  navbox1.width  = display_width  / 2;
+  navbox1.height = display_height / 3;
+  navbox1.value  = 0;
 //  navbox1.prev_value = navbox1.value;
   navbox1.timestamp  = millis();
 
@@ -61,7 +73,7 @@ void EPD_status_setup()
   navbox2.y = navbox1.y;
   navbox2.width  = navbox1.width;
   navbox2.height = navbox1.height;
-  navbox2.value      = 0;
+  navbox2.value  = 0;
 //  navbox2.prev_value = navbox2.value;
   navbox2.timestamp  = millis();
 
@@ -70,16 +82,21 @@ void EPD_status_setup()
   navbox3.y = navbox1.y + navbox1.height;
   navbox3.width  = navbox1.width;
   navbox3.height = navbox1.height;
-  navbox3.value      = ThisAircraft.addr;
+  navbox3.value  = ThisAircraft.addr;
 //  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 
+#if defined(EPD_ASPECT_RATIO_1C1)
   memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+  memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE) - 4);
+#endif /* EPD_ASPECT_RATIO_2C1 */
   navbox4.x = navbox3.width;
   navbox4.y = navbox3.y;
   navbox4.width  = navbox3.width;
   navbox4.height = navbox3.height;
-  navbox4.value      = settings->rf_protocol;
+  navbox4.value  = settings->rf_protocol;
 //  navbox4.prev_value = navbox4.value;
   navbox4.timestamp  = millis();
 
@@ -88,7 +105,7 @@ void EPD_status_setup()
   navbox5.y = navbox3.y + navbox3.height;
   navbox5.width  = navbox3.width;
   navbox5.height = navbox3.height;
-  navbox5.value      = rx_packets_counter % 1000;
+  navbox5.value  = rx_packets_counter % 1000;
 //  navbox5.prev_value = navbox5.value;
   navbox5.timestamp  = millis();
 
@@ -97,7 +114,7 @@ void EPD_status_setup()
   navbox6.y = navbox5.y;
   navbox6.width  = navbox5.width;
   navbox6.height = navbox5.height;
-  navbox6.value      = tx_packets_counter % 1000;
+  navbox6.value  = tx_packets_counter % 1000;
 //  navbox6.prev_value = navbox6.value;
   navbox6.timestamp  = millis();
 }
@@ -116,11 +133,6 @@ static void EPD_Draw_NavBoxes()
 #else
   {
 #endif
-    uint16_t top_navboxes_x = navbox1.x;
-    uint16_t top_navboxes_y = navbox1.y;
-    uint16_t top_navboxes_w = navbox1.width + navbox2.width;
-    uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
-
     display->fillScreen(GxEPD_WHITE);
 
     display->drawRoundRect( navbox1.x + 1, navbox1.y + 1,
@@ -143,10 +155,20 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox1.x + 25, navbox1.y + 52);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox1.x + 75, navbox1.y + 32);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     display->print(navbox1.value);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox2.x + 15, navbox2.y + 52);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox2.x + 55, navbox2.y + 32);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     display->print((float) navbox2.value / 10, 1);
 
     uint16_t middle_navboxes_x = navbox3.x;
@@ -173,21 +195,25 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeSerifBold12pt7b);
 
-    display->setCursor(navbox3.x + 5, navbox3.y + 50);
-
     snprintf(buf, sizeof(buf), "%06X", navbox3.value);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
+    display->setCursor(navbox3.x +  5, navbox3.y + 50);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox3.x + 28, navbox3.y + 30);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     display->print(buf);
 
     display->setFont(&FreeMonoBold18pt7b);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox4.x + 15, navbox4.y + 50);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox4.x + 55, navbox4.y + 30);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     display->print(Protocol_ID[navbox4.value]);
-
-    uint16_t bottom_navboxes_x = navbox5.x;
-    uint16_t bottom_navboxes_y = navbox5.y;
-    uint16_t bottom_navboxes_w = navbox5.width + navbox4.width;
-    uint16_t bottom_navboxes_h = maxof2(navbox5.height, navbox6.height);
 
     display->drawRoundRect( navbox5.x + 1, navbox5.y + 1,
                             navbox5.width - 2, navbox5.height - 2,
@@ -208,10 +234,20 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox5.x + 25, navbox5.y + 50);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox5.x + 55, navbox5.y + 30);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     display->print(navbox5.value);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox6.x + 25, navbox6.y + 50);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox6.x + 55, navbox6.y + 30);
+#endif /* EPD_ASPECT_RATIO_2C1 */
     if (settings->mode        == SOFTRF_MODE_RECEIVER ||
         settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
         settings->txpower     == RF_TX_POWER_OFF) {
