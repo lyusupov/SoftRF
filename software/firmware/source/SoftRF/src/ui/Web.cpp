@@ -197,7 +197,8 @@ void handleSettings() {
   /* Radio specific part 1 */
   if (hw_info.rf == RF_IC_SX1276 ||
       hw_info.rf == RF_IC_SX1262 ||
-      hw_info.rf == RF_IC_LR112X) {
+      hw_info.rf == RF_IC_LR1110 ||
+      hw_info.rf == RF_IC_LR1121) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\

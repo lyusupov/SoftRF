@@ -79,7 +79,8 @@ enum
   RF_IC_R820T,
   RF_IC_MSI001,
   RF_IC_SA8X8,
-  RF_IC_LR112X,
+  RF_IC_LR1110,
+  RF_IC_LR1121,
 };
 
 enum
@@ -171,7 +172,8 @@ extern const rfchip_ops_t sa8x8_ops;
 #endif /* USE_SA8X8 */
 
 #if defined(USE_RADIOLIB)
-extern const rfchip_ops_t lr112x_ops;
+extern const rfchip_ops_t lr1110_ops;
+extern const rfchip_ops_t lr1121_ops;
 #endif /* USE_RADIOLIB */
 
 #endif /* RFHELPER_H */

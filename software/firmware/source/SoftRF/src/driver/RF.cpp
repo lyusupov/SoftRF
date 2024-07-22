@@ -115,8 +115,10 @@ byte RF_setup(void)
       rf_chip = &cc13xx_ops;
 #endif /* EXCLUDE_CC13XX */
 #if defined(USE_RADIOLIB)
-    } else if (lr112x_ops.probe()) {
-      rf_chip = &lr112x_ops;
+    } else if (lr1110_ops.probe()) {
+      rf_chip = &lr1110_ops;
+    } else if (lr1121_ops.probe()) {
+      rf_chip = &lr1121_ops;
 #endif /* USE_RADIOLIB */
 #if defined(USE_SA8X8)
     } else if (sa8x8_ops.probe()) {

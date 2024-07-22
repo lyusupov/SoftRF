@@ -27,35 +27,45 @@
 
 extern size_t RF_tx_size;
 
-static bool lr112x_probe(void);
-static void lr112x_setup(void);
-static void lr112x_channel(int8_t);
-static bool lr112x_receive(void);
-static bool lr112x_transmit(void);
-static void lr112x_shutdown(void);
+static bool lr1110_probe(void);
+static bool lr1121_probe(void);
+static void lr11xx_setup(void);
+static void lr11xx_channel(int8_t);
+static bool lr11xx_receive(void);
+static bool lr11xx_transmit(void);
+static void lr11xx_shutdown(void);
 
-const rfchip_ops_t lr112x_ops = {
-  RF_IC_LR112X,
-  "LR112x",
-  lr112x_probe,
-  lr112x_setup,
-  lr112x_channel,
-  lr112x_receive,
-  lr112x_transmit,
-  lr112x_shutdown
+const rfchip_ops_t lr1110_ops = {
+  RF_IC_LR1110,
+  "LR1110",
+  lr1110_probe,
+  lr11xx_setup,
+  lr11xx_channel,
+  lr11xx_receive,
+  lr11xx_transmit,
+  lr11xx_shutdown
+};
+
+const rfchip_ops_t lr1121_ops = {
+  RF_IC_LR1121,
+  "LR1121",
+  lr1121_probe,
+  lr11xx_setup,
+  lr11xx_channel,
+  lr11xx_receive,
+  lr11xx_transmit,
+  lr11xx_shutdown
 };
 
 #define USE_SX1262      1
-#define USE_LR1121      0
+#define USE_LR11XX      0
 
+Module  *mod;
 #if USE_SX1262
-#define RADIO_TYPE      SX1262
-#elif USE_LR1121
-#define RADIO_TYPE      LR1121
+SX1262  *radio;
+#elif USE_LR11XX
+LR11x0  *radio;
 #endif
-
-Module     *mod;
-RADIO_TYPE *radio;
 
 const rf_proto_desc_t  *rl_protocol  = &ogntp_proto_desc;
 
@@ -142,8 +152,8 @@ static uint8_t sx1262_ReadReg (uint16_t addr) {
 }
 #endif /* USE_SX1262 */
 
-#if USE_LR1121
-static void lr1121_GetVersion (uint8_t* hw, uint8_t* device,
+#if USE_LR11XX
+static void lr11xx_GetVersion (uint8_t* hw, uint8_t* device,
                                uint8_t* major, uint8_t* minor) {
     uint8_t buf[4] = { 0 };
 
@@ -166,7 +176,7 @@ static void lr1121_GetVersion (uint8_t* hw, uint8_t* device,
     if (major)  { *major  = buf[2]; }
     if (minor)  { *minor  = buf[3]; }
 }
-#endif /* USE_LR1121 */
+#endif /* USE_LR11XX */
 
 // this function is called when a complete packet
 // is received by the module
@@ -179,7 +189,47 @@ void lr112x_receive_handler(void) {
   lr112x_receive_complete = true;
 }
 
-static bool lr112x_probe()
+static bool lr1110_probe()
+{
+#if USE_SX1262
+  return false;
+#endif
+#if USE_LR11XX
+  u1_t device, device_reset;
+  u1_t hw, major, minor;
+
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  lr11xx_GetVersion(&hw, &device_reset, &major, &minor);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  lr11xx_GetVersion(&hw, &device, &major, &minor);
+
+  pinMode(lmic_pins.nss, INPUT);
+  SPI.end();
+
+  if (device == RADIOLIB_LR11X0_DEVICE_LR1110) {
+
+    if (device_reset == RADIOLIB_LR11X0_DEVICE_LR1110) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+#endif
+}
+
+static bool lr1121_probe()
 {
 #if USE_SX1262
   u1_t v, v_reset;
@@ -215,7 +265,7 @@ static bool lr112x_probe()
   }
 #endif
 
-#if USE_LR1121
+#if USE_LR11XX
   u1_t device, device_reset;
   u1_t hw, major, minor;
 
@@ -227,12 +277,12 @@ static bool lr112x_probe()
   hal_pin_rst(0); // drive RST pin low
   hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
 
-  lr1121_GetVersion(&hw, &device_reset, &major, &minor);
+  lr11xx_GetVersion(&hw, &device_reset, &major, &minor);
 
   hal_pin_rst(2); // configure RST pin floating!
   hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
 
-  lr1121_GetVersion(&hw, &device, &major, &minor);
+  lr11xx_GetVersion(&hw, &device, &major, &minor);
 
   pinMode(lmic_pins.nss, INPUT);
   SPI.end();
@@ -250,7 +300,7 @@ static bool lr112x_probe()
 #endif
 }
 
-static void lr112x_channel(int8_t channel)
+static void lr11xx_channel(int8_t channel)
 {
   if (channel != -1 && channel != lr112x_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
@@ -272,7 +322,7 @@ static void lr112x_channel(int8_t channel)
   }
 }
 
-static void lr112x_setup()
+static void lr11xx_setup()
 {
   int state;
 
@@ -284,7 +334,20 @@ static void lr112x_setup()
                   RADIOLIB_NC : lmic_pins.busy;
 
   mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, SPI);
-  radio = new RADIO_TYPE(mod);
+#if USE_SX1262
+  radio = new SX1262(mod);
+#endif
+#if USE_LR11XX
+  switch (rf_chip->type)
+  {
+  case RF_IC_LR1110:
+    radio = new LR1110(mod);
+  case RF_IC_LR1121:
+  default:
+    radio = new LR1121(mod);
+    break;
+  }
+#endif
 
   switch (settings->rf_protocol)
   {
@@ -336,7 +399,12 @@ static void lr112x_setup()
   switch (rl_protocol->modulation_type)
   {
   case RF_MODULATION_TYPE_LORA:
+#if USE_SX1262
     state = radio->begin();    // start LoRa mode (and disable FSK)
+#endif
+#if USE_LR11XX
+    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 10, 8, 1.6);
+#endif
 
     switch (RF_FreqPlan.Bandwidth)
     {
@@ -373,8 +441,8 @@ static void lr112x_setup()
 #if USE_SX1262
     state = radio->beginFSK(); // start FSK mode (and disable LoRa)
 #endif
-#if USE_LR1121
-    state = radio->beginGFSK();
+#if USE_LR11XX
+    state = radio->beginGFSK(4.8, 5.0, 156.2, 10, 16, 1.6);
 #endif
 
     switch (rl_protocol->bitrate)
@@ -531,7 +599,7 @@ static void lr112x_setup()
   state = radio->setCurrentLimit(100.0);
 #endif
 
-#if USE_LR1121
+#if USE_LR11XX
   // LR1121
   // set RF switch configuration for Wio WM1110
   // Wio WM1110 uses DIO5 and DIO6 for RF switching
@@ -581,7 +649,7 @@ static bool memeqzero(const uint8_t *data, size_t length)
 	return memcmp((void *) data, (void *) p, length) == 0;
 }
 
-static bool lr112x_receive()
+static bool lr11xx_receive()
 {
   bool success = false;
   int state;
@@ -777,7 +845,7 @@ static bool lr112x_receive()
   return success;
 }
 
-static bool lr112x_transmit()
+static bool lr11xx_transmit()
 {
   u1_t crc8;
   u2_t crc16;
@@ -950,13 +1018,13 @@ static bool lr112x_transmit()
   return success;
 }
 
-static void lr112x_shutdown()
+static void lr11xx_shutdown()
 {
 #if USE_SX1262
   int state = radio->sleep(false);
 #endif
 
-#if USE_LR1121
+#if USE_LR11XX
   int state = radio->sleep(false, 0);
 #endif
 

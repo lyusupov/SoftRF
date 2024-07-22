@@ -1074,8 +1074,9 @@ static void nRF52_post_init()
 
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262 ||
-                   hw_info.rf      == RF_IC_SX1262 ||
-                   hw_info.rf      == RF_IC_LR112X     ? F("PASS") : F("FAIL"));
+                   hw_info.rf      == RF_IC_SX1276 ||
+                   hw_info.rf      == RF_IC_LR1110 ||
+                   hw_info.rf      == RF_IC_LR1121     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS    : "));
     if (nRF52_board == NRF52_LILYGO_TULTIMA) {
