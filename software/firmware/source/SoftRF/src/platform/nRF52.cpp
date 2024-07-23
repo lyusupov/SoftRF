@@ -698,6 +698,22 @@ static void nRF52_setup()
     // digitalWrite(OTG_ENABLE_PIN, HIGH);
   } else {
     Wire.end();
+
+#if !defined(EXCLUDE_IMU)
+#if !defined(ARDUINO_ARCH_MBED)
+    Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
+#endif /* ARDUINO_ARCH_MBED */
+    Wire.begin();
+    Wire.beginTransmission(QMA6100P_ADDRESS);
+    nRF52_has_imu = (Wire.endTransmission() == 0);
+    if (nRF52_has_imu) {
+      nRF52_board        = NRF52_SEEED_T1000;
+      hw_info.model      = SOFTRF_MODEL_CARD;
+      hw_info.imu        = ACC_QMA6100P;
+      nRF52_Device_Model = "Card Edition";
+    }
+    Wire.end();
+#endif /* EXCLUDE_IMU */
   }
 #endif /* EXCLUDE_PMU */
 
@@ -712,6 +728,9 @@ static void nRF52_setup()
   {
     case NRF52_LILYGO_TULTIMA:
       /* TBD */
+      break;
+    case NRF52_SEEED_T1000:
+      Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -750,6 +769,9 @@ static void nRF52_setup()
     case NRF52_LILYGO_TULTIMA:
       Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
       break;
+    case NRF52_SEEED_T1000:
+      Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
+      break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -775,11 +797,13 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  Wire.beginTransmission(MPU9250_ADDRESS);
-  nRF52_has_imu = (Wire.endTransmission() == 0);
   if (nRF52_has_imu == false) {
-    Wire.beginTransmission(ICM20948_ADDRESS);
+    Wire.beginTransmission(MPU9250_ADDRESS);
     nRF52_has_imu = (Wire.endTransmission() == 0);
+    if (nRF52_has_imu == false) {
+      Wire.beginTransmission(ICM20948_ADDRESS);
+      nRF52_has_imu = (Wire.endTransmission() == 0);
+    }
   }
 #endif /* EXCLUDE_IMU */
 

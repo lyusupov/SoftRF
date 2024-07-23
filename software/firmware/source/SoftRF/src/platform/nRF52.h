@@ -108,6 +108,7 @@ struct rst_info {
 #define BME280_ADDRESS        (0x77)
 #define MPU9250_ADDRESS       (0x68)
 #define ICM20948_ADDRESS      (0x68)
+#define QMA6100P_ADDRESS      (0x12) // 0x13 when AD0 = HIGH
 
 #if defined(ARDUINO_ARCH_MBED)
 #define PCF8563_SLAVE_ADDRESS (0x51)
