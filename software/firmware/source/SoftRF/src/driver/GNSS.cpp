@@ -1155,7 +1155,33 @@ static gnss_id_t ag33_probe()
 
 static bool ag33_setup()
 {
-  return false; /* TBD */
+  Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
+  delay(250);
+
+  /* GPS + GLONASS + Galileo + BeiDou + QZSS */
+  Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");         delay(250);
+
+  Serial_GNSS_Out.write("$PAIR062,0,1*3F\r\n");   /* GGA 1s */  delay(250);
+  Serial_GNSS_Out.write("$PAIR062,4,1*3B\r\n");   /* RMC 1s */  delay(250);
+#if 0
+  Serial_GNSS_Out.write("$PAIR062,1,0*3F\r\n");   /* GLL OFF */ delay(250);
+  Serial_GNSS_Out.write("$PAIR062,3,0*3D\r\n");   /* GSV OFF */ delay(250);
+  Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");   /* VTG OFF */ delay(250);
+#endif
+#if defined(NMEA_TCP_SERVICE)
+  if (settings->nmea_out == NMEA_TCP) {
+    Serial_GNSS_Out.write("$PAIR062,2,1*3D\r\n"); /* GSA 1s */
+  }
+  else
+#endif /* NMEA_TCP_SERVICE */
+  {
+    Serial_GNSS_Out.write("$PAIR062,2,0*3C\r\n"); /* GSA OFF */
+  }
+  delay(250);
+
+  Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
+
+  return true;
 }
 
 static void ag33_loop()
@@ -1165,7 +1191,8 @@ static void ag33_loop()
 
 static void ag33_fini()
 {
-  /* TBD */
+  Serial_GNSS_Out.write("$PAIR003*39\r\n"); /* Powers off the GNSS system */
+  delay(250);
 }
 
 const gnss_chip_ops_t ag33_ops = {
