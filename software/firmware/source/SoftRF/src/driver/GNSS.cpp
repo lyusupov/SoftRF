@@ -75,7 +75,8 @@ const char *GNSS_name[] = {
   [GNSS_MODULE_AT65]    = "AT65",
   [GNSS_MODULE_MT33]    = "MT33",
   [GNSS_MODULE_GOKE]    = "GOKE",
-  [GNSS_MODULE_UC65]    = "UC65"
+  [GNSS_MODULE_UC65]    = "UC65",
+  [GNSS_MODULE_AG33]    = "AG33"
 };
 
 #if defined(ENABLE_GNSS_STATS)
@@ -86,6 +87,7 @@ const char *GNSS_name[] = {
  * Neo6: GGA - 138 , RMC -  67
  * MT33: GGA -  48 , RMC - 175
  * UC65: GGA - TBD , RMC - TBD
+ * AG33: GGA - TBD , RMC - TBD
  */
 
 gnss_stat_t gnss_stats;
@@ -1145,6 +1147,36 @@ const gnss_chip_ops_t uc65_ops = {
 };
 #endif /* EXCLUDE_GNSS_UC65 */
 
+#if !defined(EXCLUDE_GNSS_AG33)
+static gnss_id_t ag33_probe()
+{
+  return GNSS_MODULE_NMEA; /* TBD */
+}
+
+static bool ag33_setup()
+{
+  return false; /* TBD */
+}
+
+static void ag33_loop()
+{
+
+}
+
+static void ag33_fini()
+{
+  /* TBD */
+}
+
+const gnss_chip_ops_t ag33_ops = {
+  ag33_probe,
+  ag33_setup,
+  ag33_loop,
+  ag33_fini,
+  0 /* GGA */, 0 /* RMC */
+};
+#endif /* EXCLUDE_GNSS_AG33 */
+
 static bool GNSS_fix_cache = false;
 
 bool isValidGNSSFix()
@@ -1235,6 +1267,10 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &uc65_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_UC65 */
+#if !defined(EXCLUDE_GNSS_AG33)
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &ag33_ops,   gnss_chip->probe()) : gnss_id;
+#endif /* EXCLUDE_GNSS_AG33 */
 
   gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
 
