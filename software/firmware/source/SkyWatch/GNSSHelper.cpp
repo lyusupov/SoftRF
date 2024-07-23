@@ -1167,7 +1167,9 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_BALKAN    ||
       hw_info.model == SOFTRF_MODEL_HAM       ||
-      hw_info.model == SOFTRF_MODEL_MIDI)
+      hw_info.model == SOFTRF_MODEL_MIDI      ||
+      hw_info.model == SOFTRF_MODEL_ECO       ||
+      hw_info.model == SOFTRF_MODEL_INK)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
@@ -1247,7 +1249,12 @@ byte GNSS_setup() {
 #else
     int interrupt_num = digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS);
     if (interrupt_num != NOT_AN_INTERRUPT) {
+#if defined(plat_attachInterrupt_func)
+      plat_attachInterrupt_func(SOC_GPIO_PIN_GNSS_PPS, SoC->GNSS_PPS_handler,
+                                RISING);
+#else
       attachInterrupt(interrupt_num, SoC->GNSS_PPS_handler, RISING);
+#endif /* plat_attachInterrupt_func */
     }
 #endif
 #endif

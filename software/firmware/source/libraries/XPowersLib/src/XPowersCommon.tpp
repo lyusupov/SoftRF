@@ -79,14 +79,28 @@
 #endif
 
 #ifndef ESP32
+#ifdef LOG_FILE_LINE_INFO
+#undef LOG_FILE_LINE_INFO
+#endif
+#define LOG_FILE_LINE_INFO __FILE__, __LINE__
 #ifndef log_e
-#define log_e(...)          Serial.printf(__VA_ARGS__)
+#define log_e(fmt, ...)     Serial.printf("[E][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
 #ifndef log_i
-#define log_i(...)          Serial.printf(__VA_ARGS__)
+#define log_i(fmt, ...)     Serial.printf("[I][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
 #ifndef log_d
-#define log_d(...)          Serial.printf(__VA_ARGS__)
+#define log_d(fmt, ...)     Serial.printf("[D][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
+#endif
+#endif
+
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+#ifndef SDA
+#define SDA     (0xFF)
+#endif
+
+#ifndef SCL
+#define SCL     (0xFF)
 #endif
 #endif
 
@@ -103,20 +117,28 @@ public:
     {
         if (__has_init)return thisChip().initImpl();
         __has_init = true;
+        __sda = sda;
+        __scl = scl;
         __wire = &w;
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
-        __wire->end();
-        __wire->setSDA(__sda);
-        __wire->setSCL(__scl);
-        __wire->begin();
-#elif defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
-        __wire->end();
+
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA) || defined(ARDUINO_ARCH_NRF52840)
+        if (__sda != 0xFF && __scl != 0xFF) {
 #if !defined(ARDUINO_ARCH_MBED)
-        __wire->setPins(__sda, __scl);
+            __wire->setPins(__sda, __scl);
 #endif /* ARDUINO_ARCH_MBED */
+        }
         __wire->begin();
+#elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+        if (__sda != 0xFF && __scl != 0xFF) {
+            __wire->end();
+            __wire->setSDA(__sda);
+            __wire->setSCL(__scl);
+        }
+        __wire->begin();
+#elif defined(ARDUINO_ARCH_ESP32)
+        __wire->begin(__sda, __scl);
 #else
-        __wire->begin(sda, scl);
+        __wire->begin();
 #endif
         __addr = addr;
         return thisChip().initImpl();
@@ -279,19 +301,25 @@ protected:
         __has_init = true;
         if (__wire) {
             log_i("SDA:%d SCL:%d", __sda, __scl);
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
-            __wire->end();
-            __wire->setSDA(__sda);
-            __wire->setSCL(__scl);
-            __wire->begin();
-#elif defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
-            __wire->end();
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA) || defined(ARDUINO_ARCH_NRF52840)
+            if (__sda != 0xFF && __scl != 0xFF) {
+                __wire->end();
 #if !defined(ARDUINO_ARCH_MBED)
-            __wire->setPins(__sda, __scl);
+                __wire->setPins(__sda, __scl);
 #endif /* ARDUINO_ARCH_MBED */
+            }
             __wire->begin();
-#else
+#elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+            if (__sda != 0xFF && __scl != 0xFF) {
+                __wire->end();
+                __wire->setSDA(__sda);
+                __wire->setSCL(__scl);
+            }
+            __wire->begin();
+#elif defined(ARDUINO_ARCH_ESP32)
             __wire->begin(__sda, __scl);
+#else
+            __wire->begin();
 #endif
         }
 #endif  /*ARDUINO*/

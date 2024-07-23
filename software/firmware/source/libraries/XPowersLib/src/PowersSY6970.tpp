@@ -903,7 +903,7 @@ public:
         };
         Serial.println();
         Serial.println("-------------------------");
-        for (int i = 0; i < sizeof(regis) / sizeof(regis[0]); ++i) {
+        for (uint32_t i = 0; i < sizeof(regis) / sizeof(regis[0]); ++i) {
             int val = readRegister(regis[i]);
             if (val == -1) {
                 continue;

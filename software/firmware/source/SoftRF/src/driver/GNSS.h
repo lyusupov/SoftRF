@@ -37,6 +37,7 @@ typedef enum
   GNSS_MODULE_MT33, /* L80 */
   GNSS_MODULE_GOKE, /* Air530 */
   GNSS_MODULE_UC65, /* Unicore FirebirdII UC6580 */
+  GNSS_MODULE_AG33, /* Airoha AG3335 */
 } gnss_id_t;
 
 typedef struct gnss_chip_ops_struct {
