@@ -153,6 +153,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
 
 #define USE_OLED                 //  +3.5 kb
 //#define EXCLUDE_OLED_049
@@ -203,6 +204,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
 //#define EXCLUDE_LOG_GNSS_VERSION
 
 /* Component                         Cost */
@@ -259,6 +261,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
 
 /* Component                         Cost */
 /* -------------------------------------- */
@@ -313,6 +316,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
 
 /* Component                         Cost */
 /* -------------------------------------- */

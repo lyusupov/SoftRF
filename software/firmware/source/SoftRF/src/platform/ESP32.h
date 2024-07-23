@@ -366,6 +366,7 @@ struct rst_info {
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
 //#define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
 
 #define EXCLUDE_CC13XX
 #define EXCLUDE_SOFTRF_HEARTBEAT
