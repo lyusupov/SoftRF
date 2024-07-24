@@ -1170,7 +1170,7 @@ static bool ag33_setup()
   Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");   /* VTG OFF */ delay(250);
 #endif
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->nmea_out == NMEA_TCP) {
+  if (settings->s.nmea_out == NMEA_TCP) {
     Serial_GNSS_Out.write("$PAIR062,2,1*3D\r\n"); /* GSA 1s */
   }
   else
