@@ -8,8 +8,8 @@
 
 #define SOC_GPIO_PIN_GNSS_T1000_PPS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_T1000_IRQ   _PINNUM(1, 12) // P1.12
-#define SOC_GPIO_PIN_GNSS_T1000_RST   _PINNUM(1, 15) // P1.15
-#define SOC_GPIO_PIN_GNSS_T1000_EN    _PINNUM(1, 11) // P1.11
+#define SOC_GPIO_PIN_GNSS_T1000_RST   _PINNUM(1, 15) // P1.15 active HIGH
+#define SOC_GPIO_PIN_GNSS_T1000_EN    _PINNUM(1, 11) // P1.11 active HIGH
 
 /* SPI */
 #define SOC_GPIO_PIN_T1000_MOSI       _PINNUM(1,  9) // P1.09
@@ -19,7 +19,7 @@
 
 /* LR1110 */
 #define SOC_GPIO_PIN_T1000_RST        _PINNUM(1, 10) // P1.10
-#define SOC_GPIO_PIN_T1000_DIO1       _PINNUM(1,  1) // P1.01
+#define SOC_GPIO_PIN_T1000_DIO9       _PINNUM(1,  1) // P1.01
 #define SOC_GPIO_PIN_T1000_BUSY       _PINNUM(0,  7) // P0.07
 
 /* I2C */
@@ -30,11 +30,21 @@
 #define SOC_GPIO_PIN_T1000_BUTTON     _PINNUM(0,  6) // P0.06
 
 /* LED */
-#define SOC_GPIO_LED_T1000_GREEN      _PINNUM(0, 24) // P0.24
+#define SOC_GPIO_LED_T1000_GREEN      _PINNUM(0, 24) // P0.24 active HIGH
 
 /* ADC */
 #define SOC_GPIO_PIN_T1000_BATTERY    _PINNUM(0,  2) // P0.02
+#define SOC_GPIO_PIN_T1000_VCC        _PINNUM(0,  4) // P0.04
+#define SOC_GPIO_PIN_T1000_TEMP       _PINNUM(0, 31) // P0.31
+#define SOC_GPIO_PIN_T1000_LUX        _PINNUM(0, 29) // P0.29
 
 /* buzzer */
 #define SOC_GPIO_PIN_T1000_BUZZER     _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_T1000_BUZZER_EN  _PINNUM(1,  5) // P1.05
+
+/* QMA6100P */
+#define SOC_GPIO_PIN_T1000_ACC_EN     _PINNUM(1,  7) // P1.07 active HIGH
+#define SOC_GPIO_PIN_T1000_ACC_INT    _PINNUM(1,  2) // P1.02
+
+/* Sensors */
+#define SOC_GPIO_PIN_T1000_3V3_EN     _PINNUM(1,  6) // P1.06

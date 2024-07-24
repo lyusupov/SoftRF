@@ -886,7 +886,31 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TULTIMA:
-      /* TBD */
+      lmic_pins.nss  = SOC_GPIO_PIN_TULTIMA_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_TULTIMA_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_TULTIMA_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_TULTIMA_DIO1;
+#endif /* USE_RADIOLIB */
+
+      break;
+
+    case NRF52_SEEED_T1000:
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RST, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_EN, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_T1000_GREEN, OUTPUT);
+      ledOn (SOC_GPIO_LED_T1000_GREEN);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_T1000_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_T1000_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_T1000_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_T1000_DIO9;
+#endif /* USE_RADIOLIB */
+
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -1892,6 +1916,11 @@ static void nRF52_SPI_begin()
                   SOC_GPIO_PIN_TULTIMA_SCK,
                   SOC_GPIO_PIN_TULTIMA_MOSI);
       break;
+    case NRF52_SEEED_T1000:
+      SPI.setPins(SOC_GPIO_PIN_T1000_MISO,
+                  SOC_GPIO_PIN_T1000_SCK,
+                  SOC_GPIO_PIN_T1000_MOSI);
+      break;
     case NRF52_NORDIC_PCA10059:
       SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
                   SOC_GPIO_PIN_PCA10059_SCK,
@@ -1919,6 +1948,11 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_LILYGO_TULTIMA:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TULTIMA_RX,
                              SOC_GPIO_PIN_GNSS_TULTIMA_TX);
+      break;
+    case NRF52_SEEED_T1000:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T1000_RX,
+                             SOC_GPIO_PIN_GNSS_T1000_TX);
+      baud = 115200; /* Airoha AG3335 default value */
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
