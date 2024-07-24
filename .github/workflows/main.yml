@@ -369,7 +369,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:3.9.3 ;
+            arduino --install-boards rp2040:rp2040:3.9.4 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "rp2040:rp2040:rpipicow" ]]; then
               arduino --pref "custom_freq=rpipicow_120"               --save-prefs ;
