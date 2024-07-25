@@ -700,6 +700,9 @@ static void nRF52_setup()
     Wire.end();
 
 #if !defined(EXCLUDE_IMU)
+    pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
+    delay(200);
+
 #if !defined(ARDUINO_ARCH_MBED)
     Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
 #endif /* ARDUINO_ARCH_MBED */
@@ -713,6 +716,7 @@ static void nRF52_setup()
       nRF52_Device_Model = "Card Edition";
     }
     Wire.end();
+    pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT);
 #endif /* EXCLUDE_IMU */
   }
 #endif /* EXCLUDE_PMU */
@@ -750,6 +754,15 @@ static void nRF52_setup()
     case NRF52_LILYGO_TULTIMA:
       /* TBD */
       break;
+
+    case NRF52_SEEED_T1000:
+      pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_T1000_3V3_EN, HIGH);
+
+      pinMode(SOC_GPIO_PIN_T1000_BUZZER_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_T1000_BUZZER_EN, HIGH);
+      break;
+
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -896,10 +909,20 @@ static void nRF52_setup()
       break;
 
     case NRF52_SEEED_T1000:
-      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RST, LOW);
-      pinMode(SOC_GPIO_PIN_GNSS_T1000_RST, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_EN, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_T1000_EN, OUTPUT);
+
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_VRTC, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_VRTC, HIGH);
+
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RST, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_RST, OUTPUT);
+
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_SINT, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_SINT, HIGH);
+
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_RINT, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RINT, LOW);
 
       pinMode(SOC_GPIO_LED_T1000_GREEN, OUTPUT);
       ledOn (SOC_GPIO_LED_T1000_GREEN);
