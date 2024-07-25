@@ -374,6 +374,7 @@ struct rst_info {
 //#define EXCLUDE_IMU
 //#define EXCLUDE_MAG
 #define EXCLUDE_BME680
+#define EXCLUDE_BME280AUX
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 //#define ENABLE_BT_VOICE

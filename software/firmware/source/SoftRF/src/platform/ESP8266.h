@@ -118,6 +118,7 @@ extern Adafruit_NeoPixel strip;
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
 #define EXCLUDE_BME680
+#define EXCLUDE_BME280AUX
 
 /* Experimental */
 #define ENABLE_ADSL
