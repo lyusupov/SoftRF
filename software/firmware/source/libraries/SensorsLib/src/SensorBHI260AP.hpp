@@ -115,10 +115,10 @@ public:
 
     void deinit()
     {
-        if (processBuffer) {
-            free(processBuffer);
+        if (__pro_buf) {
+            free(__pro_buf);
         }
-        processBuffer = NULL;
+        __pro_buf = NULL;
 
         if (bhy2) {
             free(bhy2);
@@ -145,16 +145,21 @@ public:
 
     void update()
     {
-        if (!processBuffer) {
+        if (!__pro_buf) {
             return;
         }
         if (__handler.irq != SENSOR_PIN_NONE) {
             if (__data_available) {
-                bhy2_get_and_process_fifo(processBuffer, processBufferSize, bhy2);
+                bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
             }
         } else {
-            bhy2_get_and_process_fifo(processBuffer, processBufferSize, bhy2);
+            bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
         }
+    }
+
+    void setBootFormFlash(bool boot_from_flash)
+    {
+        __boot_from_flash = boot_from_flash;
     }
 
     bool enablePowerSave()
@@ -364,7 +369,7 @@ public:
         if (__error_code != BHY2_OK) {
             return false;
         }
-        return (boot_status & BHY2_BST_HOST_INTERFACE_READY) == false;
+        return (boot_status & BHY2_BST_HOST_INTERFACE_READY);
     }
 
     uint16_t getKernelVersion()
@@ -374,7 +379,7 @@ public:
         if ((__error_code != BHY2_OK) && (version == 0)) {
             return 0;
         }
-        log_i("Boot successful. Kernel version %u.", version);
+        log_d("Boot successful. Kernel version %u.", version);
         return version;
     }
 
@@ -425,7 +430,7 @@ public:
 
     void setProcessBufferSize(uint32_t size)
     {
-        processBufferSize = size;
+        __pro_buf_size = size;
     }
 
 
@@ -468,7 +473,7 @@ public:
             log_e("%s", get_sensor_error_text(sensor_error));
             return false;
         }
-
+        
 
         if (write2Flash) {
             log_i("Booting from FLASH.");
@@ -496,6 +501,9 @@ public:
 
     bool configure(uint8_t sensor_id, float sample_rate, uint32_t report_latency_ms)
     {
+        if (!bhy2_is_sensor_available(sensor_id, bhy2)) {
+            log_e("Sensor not present"); return false;
+        }
         __error_code = bhy2_set_virt_sensor_cfg(sensor_id, sample_rate, report_latency_ms, bhy2);
         BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_set_virt_sensor_cfg failed!", false);
         log_i("Enable %s at %.2fHz.", get_sensor_name(sensor_id), sample_rate);
@@ -534,6 +542,110 @@ public:
     }
 
 private:
+
+    bool bootFromFlash()
+    {
+        int8_t rslt;
+        uint8_t boot_status, feat_status;
+        uint8_t error_val = 0;
+        uint16_t tries = 300; /* Wait for up to little over 3s */
+
+        log_d("Waiting for firmware verification to complete");
+        do {
+            __error_code = bhy2_get_boot_status(&boot_status, bhy2);
+            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
+            if (boot_status & BHY2_BST_FLASH_VERIFY_DONE) {
+                break;
+            }
+            delay(10);
+        } while (tries--);
+
+        __error_code = bhy2_get_boot_status(&boot_status, bhy2);
+        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
+        print_boot_status(boot_status);
+
+        if (boot_status & BHY2_BST_HOST_INTERFACE_READY) {
+
+            if (boot_status & BHY2_BST_FLASH_DETECTED) {
+
+                /* If no firmware is running, boot from Flash */
+                log_d("Booting from flash");
+                rslt = bhy2_boot_from_flash(bhy2);
+                if (rslt != BHY2_OK) {
+                    log_e("%s. Booting from flash failed.\r\n", get_api_error(rslt));
+                    __error_code = bhy2_get_regs(BHY2_REG_ERROR_VALUE, &error_val, 1, bhy2);
+                    BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_regs failed!", false);
+                    if (error_val) {
+                        log_e("%s\r\n", get_sensor_error_text(error_val));
+                    }
+                    return false;
+                }
+
+                __error_code = bhy2_get_boot_status(&boot_status, bhy2);
+                BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
+                print_boot_status(boot_status);
+
+                if (!(boot_status & BHY2_BST_HOST_INTERFACE_READY)) {
+                    /* hub is not ready, need reset hub */
+                    log_d("Host interface is not ready, triggering a reset");
+                    __error_code = bhy2_soft_reset(bhy2);
+                    BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_soft_reset failed!", false);
+                }
+
+                __error_code = (bhy2_get_feature_status(&feat_status, bhy2));
+                BHY2_RLST_CHECK(__error_code != BHY2_OK, "Reading Feature status failed, booting from flash failed!", false);
+
+            } else {
+                log_e("Can't detect external flash");
+                return false;
+            }
+        } else {
+            log_e("Host interface is not ready");
+            return false;
+        }
+
+        log_d("Booting from flash successful");
+        return true;
+    }
+
+
+
+    void print_boot_status(uint8_t boot_status)
+    {
+        log_d("Boot Status : 0x%02x: ", boot_status);
+        if (boot_status & BHY2_BST_FLASH_DETECTED) {
+            log_d("Flash detected. ");
+        }
+
+        if (boot_status & BHY2_BST_FLASH_VERIFY_DONE) {
+            log_d("Flash verify done. ");
+        }
+
+        if (boot_status & BHY2_BST_FLASH_VERIFY_ERROR) {
+            log_d("Flash verification failed. ");
+        }
+
+        if (boot_status & BHY2_BST_NO_FLASH) {
+            log_d("No flash installed. ");
+        }
+
+        if (boot_status & BHY2_BST_HOST_INTERFACE_READY) {
+            log_d("Host interface ready. ");
+        }
+
+        if (boot_status & BHY2_BST_HOST_FW_VERIFY_DONE) {
+            log_d("Firmware verification done. ");
+        }
+
+        if (boot_status & BHY2_BST_HOST_FW_VERIFY_ERROR) {
+            log_d("Firmware verification error. ");
+        }
+
+        if (boot_status & BHY2_BST_HOST_FW_IDLE) {
+            log_d("Firmware halted. ");
+        }
+    }
+
     static void handleISR()
     {
         __data_available = true;
@@ -595,8 +707,6 @@ private:
             return false;
         }
 
-
-
         __error_code = bhy2_soft_reset(bhy2);
         BHY2_RLST_CHECK(__error_code != BHY2_OK, "reset bhy2 failed!", false);
 
@@ -623,7 +733,19 @@ private:
 #endif
         }
 
-        if (!isReady()) {
+        if (__boot_from_flash) {
+            if (!bootFromFlash()) {
+                //** If the boot from flash fails, re-upload the firmware to flash
+                __error_code = bhy2_soft_reset(bhy2);
+                BHY2_RLST_CHECK(__error_code != BHY2_OK, "reset bhy2 failed!", false);
+
+                if (!uploadFirmware(__firmware, __firmware_size, __write_flash)) {
+                    log_e("uploadFirmware failed!");
+                    return false;
+                }
+            }
+        } else {
+            // ** Upload firmware to RAM
             if (!uploadFirmware(__firmware, __firmware_size, __write_flash)) {
                 log_e("uploadFirmware failed!");
                 return false;
@@ -646,16 +768,16 @@ private:
 
         //Set process buffer
 #if     (defined(ESP32) || defined(ARDUINO_ARCH_ESP32)) && defined(BOARD_HAS_PSRAM)
-        processBuffer = (uint8_t *)ps_malloc(processBufferSize);
+        __pro_buf = (uint8_t *)ps_malloc(__pro_buf_size);
 #else
-        processBuffer = (uint8_t *)malloc(processBufferSize);
+        __pro_buf = (uint8_t *)malloc(__pro_buf_size);
 #endif
-        BHY2_RLST_CHECK(!processBuffer, "process buffer malloc failed!", false);
+        BHY2_RLST_CHECK(!__pro_buf, "process buffer malloc failed!", false);
 
-        __error_code = bhy2_get_and_process_fifo(processBuffer, processBufferSize, bhy2);
+        __error_code = bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
         if (__error_code != BHY2_OK) {
             log_e("bhy2_get_and_process_fifo failed");
-            free(processBuffer);
+            free(__pro_buf);
             return false;
         }
 
@@ -690,11 +812,12 @@ protected:
     SensorLibConfigure __handler;
     int8_t           __error_code;
     static volatile bool __data_available;
-    uint8_t          *processBuffer = NULL;
-    size_t           processBufferSize = BHY_PROCESS_BUFFER_SIZE;
+    uint8_t          *__pro_buf = NULL;
+    size_t           __pro_buf_size = BHY_PROCESS_BUFFER_SIZE;
     const uint8_t    *__firmware;
     size_t          __firmware_size;
     bool            __write_flash;
+    bool            __boot_from_flash;
     uint16_t        __max_rw_length;
     uint8_t         __accuracy;      /* Accuracy is reported as a meta event. */
 };

@@ -20,8 +20,9 @@
 
 #include "Baro.h"
 
-#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280) && \
-    defined(EXCLUDE_BME680) && defined(EXCLUDE_MPL3115A2)
+#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280)    && \
+    defined(EXCLUDE_BME680) && defined(EXCLUDE_BME280AUX) && \
+    defined(EXCLUDE_MPL3115A2)
 byte  Baro_setup()        {return BARO_MODULE_NONE;}
 void  Baro_loop()         {}
 void  Baro_fini()         {}
@@ -39,6 +40,9 @@ float Baro_temperature()  {return 0;}
 #if !defined(EXCLUDE_BME680)
 #include <Adafruit_BME680.h>
 #endif /* EXCLUDE_BME680 */
+#if !defined(EXCLUDE_BME280AUX)
+#include <SensorBHI260AP.hpp>
+#endif /* EXCLUDE_BME280AUX */
 #if !defined(EXCLUDE_MPL3115A2)
 #include <Adafruit_MPL3115A2.h>
 #endif /* EXCLUDE_MPL3115A2 */
@@ -56,6 +60,9 @@ Adafruit_BMP280 bmp280;
 #if !defined(EXCLUDE_BME680)
 Adafruit_BME680 bme680;
 #endif /* EXCLUDE_BME680 */
+#if !defined(EXCLUDE_BME280AUX)
+SensorBHI260AP bhy;
+#endif /* EXCLUDE_BME280AUX */
 #if !defined(EXCLUDE_MPL3115A2)
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
 #endif /* EXCLUDE_MPL3115A2 */
@@ -246,6 +253,117 @@ barochip_ops_t bme680_ops = {
 };
 #endif /* EXCLUDE_BME680 */
 
+#if !defined(EXCLUDE_BME280AUX)
+static float aux_temperature = 0;
+static float aux_pressure    = 0; /* hPa */
+
+void parse_bme280_sensor_data(uint8_t sensor_id, uint8_t *data_ptr,
+                              uint32_t len, uint64_t *timestamp)
+{
+    switch (sensor_id) {
+    case SENSOR_ID_TEMP:
+        bhy2_parse_temperature_celsius(data_ptr, &aux_temperature);
+        Serial.print("temperature: ");
+        Serial.print(aux_temperature);
+        Serial.println(" *C");
+        break;
+    case SENSOR_ID_BARO:
+        bhy2_parse_pressure(data_ptr, &aux_pressure);
+        Serial.print("pressure: ");
+        Serial.print(aux_pressure);
+        Serial.println(" hPa");
+        break;
+    default:
+        break;
+    }
+}
+
+static bool bme280aux_probe()
+{
+    return false; /* TBD */
+}
+
+static void bme280aux_setup()
+{
+    bhy.setPins(SOC_GPIO_PIN_IMU_TULTIMA_RST, SOC_GPIO_PIN_IMU_TULTIMA_INT);
+    bhy.setBootFormFlash(true);
+
+    if (!bhy.init(SPI,
+                  SOC_GPIO_PIN_IMU_TULTIMA_SS, SOC_GPIO_PIN_TULTIMA_MOSI,
+                  SOC_GPIO_PIN_TULTIMA_MISO,   SOC_GPIO_PIN_TULTIMA_SCK)) {
+        Serial.print("Failed to init BHI260AP - ");
+        Serial.println(bhy.getError());
+        while (1) {
+            delay(1000);
+        }
+    }
+
+    Serial.println("Init BHI260AP Sensor success!");
+
+    bhy.printSensors(Serial);
+
+    float sample_rate          = 0.0; /* Read out hintr_ctrl measured at 100Hz */
+    uint32_t report_latency_ms = 0;   /* Report immediately */
+
+    /*
+     * Enable BME280 function
+     * Function depends on BME280.
+     * If the hardware is not connected to BME280, the function cannot be used.
+     */
+    bhy.configure(SENSOR_ID_TEMP, sample_rate, report_latency_ms);
+    bhy.configure(SENSOR_ID_BARO, sample_rate, report_latency_ms);
+
+    bhy.onResultEvent(SENSOR_ID_TEMP, parse_bme280_sensor_data);
+    bhy.onResultEvent(SENSOR_ID_BARO, parse_bme280_sensor_data);
+}
+
+static void bme280aux_fini()
+{
+    /* TBD */
+}
+
+/*!
+ * @brief Calculates the approximate altitude using barometric pressure and the
+ * supplied sea level hPa as a reference.
+ * @param seaLevelhPa
+ *        The current hPa at sea level.
+ * @return The approximate altitude above sea level in meters.
+ */
+static float bme280aux_altitude(float seaLevelhPa)
+{
+    return 44330 * (1.0 - pow(aux_pressure / seaLevelhPa, 0.1903));
+}
+
+/*!
+ * Reads the barometric pressure from the device.
+ * @return Barometric pressure in Pa.
+ */
+static float bme280aux_pressure()
+{
+    return aux_pressure * 100;
+}
+
+/*!
+ * Reads the temperature from the device.
+ * @return The temperature in degress celcius.
+ */
+static float bme280aux_temperature()
+{
+    return aux_temperature;
+}
+
+barochip_ops_t bme280aux_ops = {
+  BARO_MODULE_BME280AUX,
+  "BME280",
+  bme280aux_probe,
+  bme280aux_setup,
+  bme280aux_fini,
+  bme280aux_altitude,
+  bme280aux_pressure,
+  bme280aux_temperature
+};
+#endif /* EXCLUDE_BME280AUX */
+
 #if !defined(EXCLUDE_MPL3115A2)
 static bool mpl3115a2_probe()
 {
@@ -322,6 +440,12 @@ bool Baro_probe()
            false                                            ||
 #endif /* EXCLUDE_BME680 */
 
+#if !defined(EXCLUDE_BME280AUX)
+           (baro_chip = &bme280aux_ops, baro_chip->probe()) ||
+#else
+           false                                            ||
+#endif /* EXCLUDE_BME280AUX */
+
 #if !defined(EXCLUDE_MPL3115A2)
            (baro_chip = &mpl3115a2_ops, baro_chip->probe())
 #else
@@ -366,6 +490,12 @@ void Baro_loop()
   if (baro_chip == NULL) return;
 
   if (isTimeToBaroAltitude()) {
+
+#if !defined(EXCLUDE_BME280AUX)
+    if (baro_chip->type == BARO_MODULE_BME280AUX) {
+      bhy.update();
+    }
+#endif /* EXCLUDE_BME280AUX */
 
     /* Draft of pressure altitude and vertical speed calculation */
     Baro_altitude_cache = baro_chip->altitude(1013.25);
