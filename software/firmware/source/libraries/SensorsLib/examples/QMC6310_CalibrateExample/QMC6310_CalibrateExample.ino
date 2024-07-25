@@ -32,8 +32,18 @@
 #include <Arduino.h>
 #include "SensorQMC6310.hpp"
 
-#define I2C1_SDA                    17
-#define I2C1_SCL                    18
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  17
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  18
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  -1
+#endif
+
 
 SensorQMC6310 qmc;
 
@@ -107,8 +117,38 @@ void calibrate()
     y_offset = (y_max + y_min) / 2;
     z_offset = (z_max + z_min) / 2;
 
-    Serial.printf("x_min:%d x_max:%d y_min:%d y_max:%d z_min:%d z_max:%d\n", x_min, x_max, y_min, y_max, z_min, z_max);
-    Serial.printf("x_offset:%.2f y_offset:%.2f z_offset:%.2f \n", x_offset, y_offset, z_offset);
+    Serial.print("x_min:");
+    Serial.print(x_min);
+
+    Serial.print("x_max:");
+    Serial.print(x_max);
+
+    Serial.print("y_min:");
+    Serial.print(y_min);
+
+    Serial.print("y_max:");
+    Serial.print(y_max);
+
+    Serial.print("z_min:");
+    Serial.print(z_min);
+
+    Serial.print("z_max:");
+    Serial.println(z_max);
+
+
+
+    Serial.print("x_offset:");
+    Serial.print(x_offset);
+
+    Serial.print("y_offset:");
+    Serial.print(y_offset);
+
+    Serial.print("z_offset:");
+    Serial.print(z_offset);
+
+
+    // Serial.printf("x_min:%d x_max:%d y_min:%d y_max:%d z_min:%d z_max:%d\n", x_min, x_max, y_min, y_max, z_min, z_max);
+    // Serial.printf("x_offset:%.2f y_offset:%.2f z_offset:%.2f \n", x_offset, y_offset, z_offset);
 
     // Set the calibration value and the user calculates the deviation
     qmc.setOffset(x_offset, y_offset, z_offset);
@@ -120,12 +160,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#ifdef USE_TBEAMS3
-    extern  bool setupPower();
-    setupPower();
-#endif
-
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C1_SDA, I2C1_SCL)) {
+    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
         while (1) {
             delay(1000);
@@ -196,7 +231,7 @@ void setup()
 void loop()
 {
 
-    //Wiat data ready
+    //Wait data ready
     if (qmc.isDataReady()) {
 
         qmc.readData();

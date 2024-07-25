@@ -34,8 +34,18 @@
 
 // #define USE_WIRE
 
-#define I2C1_SDA                    17
-#define I2C1_SCL                    18
+
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  17
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  18
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  -1
+#endif
 
 SensorQMI8658 qmi;
 
@@ -47,14 +57,11 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#ifdef USE_TBEAMS3
-    extern  bool setupPower();
-    setupPower();
-#endif
+
 
 #ifdef USE_WIRE
     //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C1_SDA, I2C1_SCL)) {
+    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
@@ -71,7 +78,6 @@ void setup()
 #define IMU_CS                      (34)
 #define IMU_INT1                    (33)
 
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
     pinMode(SPI_CS, OUTPUT);    //sdcard pin set high
     digitalWrite(SPI_CS, HIGH);
     if (!qmi.begin(IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK)) {
@@ -217,7 +223,11 @@ void readSensorData(const char *name)
             Serial.print(gyr.z);
             Serial.println("}");
         }
-        Serial.printf("\t\t\t\t > %lu  %.2f *C\n", qmi.getTimestamp(), qmi.getTemperature_C());
+        Serial.print("\t\t\t\t > ");
+        Serial.print(qmi.getTimestamp());
+        Serial.print("  ");
+        Serial.print(qmi.getTemperature_C());
+        Serial.println("*C");
     }
 
 }

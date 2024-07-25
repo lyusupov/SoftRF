@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * @file      QMI8658_BallExample.ino
+ * @file      QMI8658_BlockExample.ino
  * @author    Lewis He (lewishe@outlook.com)
  * @date      2022-10-16
  *
@@ -30,18 +30,31 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+
+#ifdef ARDUINO_ARCH_ESP32
 #include "SensorQMI8658.hpp"
 #include <MadgwickAHRS.h>       //MadgwickAHRS from https://github.com/arduino-libraries/MadgwickAHRS
 #include "SH1106Wire.h"         //Oled display from https://github.com/ThingPulse/esp8266-oled-ssd1306
 
-#define USE_WIRE
+// #define USE_WIRE
 
-#define I2C1_SDA                    17
-#define I2C1_SCL                    18
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  17
+#endif
 
-#define IMU_CS                      5
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  18
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  -1
+#endif
+
+#define I2C1_SDA    22      //Display Wire SDA Pin
+#define I2C1_SCL    21      //Display Wire SCL Pin
 
 SH1106Wire display(0x3c, I2C1_SDA, I2C1_SCL);
+
 SensorQMI8658 qmi;
 
 IMUdata acc;
@@ -60,23 +73,41 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#ifdef USE_TBEAMS3
-    extern  bool setupPower();
-    setupPower();
-#endif
+
 
     display.init();
 
+
 #ifdef USE_WIRE
     //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C1_SDA, I2C1_SCL)) {
+    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
         }
     }
 #else
+
+#ifndef CONFIG_IDF_TARGET_ESP32
+//Use tbeams3 defalut spi pin
+#define SPI_MOSI                    (35)
+#define SPI_SCK                     (36)
+#define SPI_MISO                    (37)
+#define SPI_CS                      (47)
+#define IMU_CS                      (34)
+#define IMU_INT1                    (33)    //INTERRUPT PIN1 & PIN2 ,Use or logic to form a pin
+
+    pinMode(SPI_CS, OUTPUT);    //sdcard pin set high
+    digitalWrite(SPI_CS, HIGH);
+    if (!qmi.begin(IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK)) {
+
+#else
+//Use esp32dev module defalut spi pin
+#define IMU_CS                      (5)
+#define IMU_INT1                    (15)
+#define IMU_INT2                    (22)
     if (!qmi.begin(IMU_CS)) {
+#endif
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
@@ -217,6 +248,16 @@ void loop()
         microsPrevious = microsPrevious + microsPerReading;
     }
 }
+#else
+void setup()
+{
+    Serial.begin(115200);
+}
 
+void loop()
+{
+    Serial.println("The graphics library may not be supported on the current platform"); delay(1000);
+}
+#endif
 
 

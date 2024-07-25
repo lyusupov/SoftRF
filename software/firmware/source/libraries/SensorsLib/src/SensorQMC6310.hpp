@@ -27,7 +27,7 @@
  * @date      2022-10-16
  *
  */
-
+#pragma once
 
 #include "REG/QMC6310Constants.h"
 #include "SensorCommon.tpp"
@@ -93,7 +93,7 @@ public:
     };
 
 #if defined(ARDUINO)
-    SensorQMC6310(TwoWire &w, int sda = SDA, int scl = SCL, uint8_t addr = QMC6310_SLAVE_ADDRESS)
+    SensorQMC6310(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMC6310_SLAVE_ADDRESS)
     {
         __wire = &w;
         __sda = sda;
@@ -106,8 +106,8 @@ public:
     {
 #if defined(ARDUINO)
         __wire = &Wire;
-        __sda = SDA;
-        __scl = SCL;
+        __sda = DEFAULT_SDA;
+        __scl = DEFAULT_SCL;
 #endif
         __addr = QMC6310_SLAVE_ADDRESS;
     }
@@ -117,10 +117,13 @@ public:
         deinit();
     }
 
-    bool init()
+#if defined(ARDUINO)
+    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMC6310_SLAVE_ADDRESS)
     {
-        return begin();
+        return SensorCommon::begin(w, addr, sda, scl);
     }
+#endif
+
 
     void deinit()
     {
@@ -257,15 +260,15 @@ public:
             y = (int16_t)(buffer[3] << 8) | (buffer[2]);
             z = (int16_t)(buffer[5] << 8) | (buffer[4]);
 
-            if (x >= 0x8000) {
+            if (x == 32767) {
                 x = -((65535 - x) + 1);
             }
             x = (x - x_offset);
-            if (y >= 0x8000) {
+            if (y == 32767) {
                 y = -((65535 - y) + 1);
             }
             y = (y - y_offset);
-            if (z >= 0x8000) {
+            if (z == 32767) {
                 z = -((65535 - z) + 1);
             }
             z = (z - z_offset);

@@ -30,11 +30,27 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
+
+#if defined(ARDUINO_ARCH_ESP32)
+
 #include "SensorQMC6310.hpp"
 #include "SH1106Wire.h"         //Oled display from https://github.com/ThingPulse/esp8266-oled-ssd1306
 
-#define I2C1_SDA                    17
-#define I2C1_SCL                    18
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  17
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  18
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  -1
+#endif
+
+
+#define I2C1_SDA    22      //Display Wire SDA Pin
+#define I2C1_SCL    21      //Display Wire SCL Pin
 
 SH1106Wire display(0x3c, I2C1_SDA, I2C1_SCL);
 SensorQMC6310 qmc;
@@ -73,12 +89,9 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#ifdef USE_TBEAMS3
-    extern  bool setupPower();
-    setupPower();
-#endif
 
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C1_SDA, I2C1_SCL)) {
+
+    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
         while (1) {
             delay(1000);
@@ -209,4 +222,14 @@ void loop()
 
     delay(100);
 }
+#else
+void setup()
+{
+    Serial.begin(115200);
+}
 
+void loop()
+{
+    Serial.println("The graphics library may not be supported on the current platform"); delay(1000);
+}
+#endif

@@ -34,8 +34,17 @@
 
 #define USE_WIRE
 
-#define I2C1_SDA                    17
-#define I2C1_SCL                    18
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  17
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  18
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  -1
+#endif
 
 #define IMU_CS                      5
 
@@ -47,14 +56,11 @@ void setup()
     while (!Serial);
 
 
-#ifdef USE_TBEAMS3
-    extern  bool setupPower();
-    setupPower();
-#endif
+
 
 #ifdef USE_WIRE
     //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C1_SDA, I2C1_SCL)) {
+    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
@@ -157,7 +163,6 @@ void setup()
 }
 
 
-
 void loop()
 {
     // Get IMU status
@@ -165,25 +170,25 @@ void loop()
     Serial.printf("STATUS:0x%x BIN:", status);
     Serial.println(status, BIN);
 
-    if (status & SensorQMI8658::EVENT_TAP_MOITON) {
+    if (status & SensorQMI8658::EVENT_TAP_MOTION) {
         Serial.println("Detected TAP event");
         qmi.getTapStatus();
     }
-    if (status & SensorQMI8658::EVENT_WOM_MOITON) {
+    if (status & SensorQMI8658::EVENT_WOM_MOTION) {
         Serial.println("Detected Wom event");
     }
-    if (status & SensorQMI8658::EVENT_PEDOMETER_MOITON) {
+    if (status & SensorQMI8658::EVENT_PEDOMETER_MOTION) {
         Serial.println("Detected Pedometer event");
         uint32_t val = qmi.getPedometerCounter();
         Serial.println(val);
     }
-    if (status & SensorQMI8658::EVENT_ANY_MOITON) {
+    if (status & SensorQMI8658::EVENT_ANY_MOTION) {
         Serial.println("Detected Any Motion event");
     }
-    if (status & SensorQMI8658::EVENT_NO_MOITON) {
+    if (status & SensorQMI8658::EVENT_NO_MOTION) {
         Serial.println("Detected No Motion event");
     }
-    if (status & SensorQMI8658::EVENT_SIGNIFICANT_MOITON) {
+    if (status & SensorQMI8658::EVENT_SIGNIFICANT_MOTION) {
         Serial.println("Detected Significant Motion event");
     }
 

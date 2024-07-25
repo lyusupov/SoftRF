@@ -27,10 +27,14 @@
  * @date      2022-10-16
  *
  */
+#pragma once
 
 #include "REG/QMI8658Constants.h"
 #include "SensorCommon.tpp"
-
+#ifndef ARDUINO
+#include <math.h>
+#include <stdio.h>
+#endif
 typedef struct __IMUdata {
     float x;
     float y;
@@ -158,7 +162,7 @@ public:
     };
 
 #if defined(ARDUINO)
-    SensorQMI8658(TwoWire &w, int sda = SDA, int scl = SCL, uint8_t addr = QMI8658_L_SLAVE_ADDRESS)
+    SensorQMI8658(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMI8658_L_SLAVE_ADDRESS)
     {
         __wire = &w;
         __sda = sda;
@@ -166,7 +170,7 @@ public:
         __addr = addr;
     }
 
-    SensorQMI8658(int cs, int mosi = -1, int miso = -1, int sck = -1, SPIClass &spi = SPI)
+    SensorQMI8658(int cs, int mosi = -1, int miso = -1, int sck = -1, PLATFORM_SPI_TYPE &spi = SPI)
     {
         __spi = &spi;
         __cs = cs;
@@ -181,8 +185,8 @@ public:
     {
 #if defined(ARDUINO)
         __wire = &Wire;
-        __sda = SDA;
-        __scl = SCL;
+        __sda = DEFAULT_SDA;
+        __scl = DEFAULT_SCL;
 #endif
         __addr = QMI8658_L_SLAVE_ADDRESS;
     }
@@ -193,10 +197,12 @@ public:
         deinit();
     }
 
-    bool init()
+#if defined(ARDUINO)
+    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMI8658_L_SLAVE_ADDRESS)
     {
-        return begin();
+        return SensorCommon::begin(w, addr, sda, scl);
     }
+#endif
 
     void deinit()
     {
@@ -205,7 +211,7 @@ public:
 
     bool reset(bool waitResult = true, uint32_t timeout = 500)
     {
-        int val;
+        int val = 0;  // initialize with some value to avoid compilation errors
         writeRegister(QMI8658_REG_RESET, QMI8658_REG_RESET_DEFAULT);
         // Maximum 15ms for the Reset process to be finished
         if (waitResult) {
@@ -757,9 +763,13 @@ public:
 #endif
 
         buffer[0] =  readRegister(QMI8658_REG_FIFOCTRL);
+#if defined(ARDUINO)
         Serial.printf("FIFOCTRL: REG:0x%02X HEX:0x%02X ",  QMI8658_REG_FIFOCTRL, buffer[0]);
         Serial.print(" BIN:0b");
         Serial.println(buffer[0], BIN);
+#else
+        printf("FIFOCTRL: REG:0x%02X HEX:0x%02X \n",  QMI8658_REG_FIFOCTRL, buffer[0]);
+#endif
 
     }
 
