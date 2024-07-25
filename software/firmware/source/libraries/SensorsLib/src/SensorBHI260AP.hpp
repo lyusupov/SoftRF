@@ -34,9 +34,13 @@
 
 #include "bosch/BoschParse.h"
 #include "bosch/SensorBhy2Define.h"
-#include "bosch/firmware/BHI260AP.fw.h"
-
-
+#if defined __has_include
+  #if __has_include ("bosch/firmware/BHI260AP.fw.h")
+    #include "bosch/firmware/BHI260AP.fw.h"
+  #endif
+#else
+  #include "bosch/firmware/BHI260AP.fw.h"
+#endif
 
 
 class SensorBHI260AP
@@ -610,7 +614,13 @@ private:
 
         if (!__firmware) {
             // Default write to ram
+#if defined __has_include
+  #if __has_include ("bosch/firmware/BHI260AP.fw.h")
             setFirmware(bhy2_firmware_image, sizeof(bhy2_firmware_image), false);
+  #endif
+#else
+            setFirmware(bhy2_firmware_image, sizeof(bhy2_firmware_image), false);
+#endif
         }
 
         if (!isReady()) {
