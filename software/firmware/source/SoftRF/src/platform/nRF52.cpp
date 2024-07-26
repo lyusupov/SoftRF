@@ -112,6 +112,8 @@ static nRF52_display_id nRF52_display = EP_UNKNOWN;
 const char *nRF52_Device_Manufacturer = SOFTRF_IDENT;
 const char *nRF52_Device_Model = "Badge Edition";
 const uint16_t nRF52_Device_Version = SOFTRF_USB_FW_VERSION;
+static uint16_t nRF52_USB_VID = 0x239A; /* Adafruit Industries */
+static uint16_t nRF52_USB_PID = 0x8029; /* Feather nRF52840 Express */
 
 const char *Hardware_Rev[] = {
   [0] = "2020-8-6",
@@ -714,6 +716,8 @@ static void nRF52_setup()
       hw_info.model      = SOFTRF_MODEL_CARD;
       hw_info.imu        = ACC_QMA6100P;
       nRF52_Device_Model = "Card Edition";
+      nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+      nRF52_USB_PID      = 0x0057; /* SenseCAP T1000-E */
     }
     Wire.end();
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT);
@@ -722,6 +726,7 @@ static void nRF52_setup()
 #endif /* EXCLUDE_PMU */
 
 #if !defined(ARDUINO_ARCH_MBED)
+  USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
   USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
   USBDevice.setProductDescriptor(nRF52_Device_Model);
   USBDevice.setDeviceVersion(nRF52_Device_Version);
@@ -1175,7 +1180,8 @@ static void nRF52_post_init()
         nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
         nRF52_board == NRF52_LILYGO_TULTIMA) {
       Serial.print(F("BMx280  : "));
-      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+      Serial.println(hw_info.baro == BARO_MODULE_BME280AUX ||
+                     hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
       Serial.flush();
     }
 
