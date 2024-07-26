@@ -155,7 +155,12 @@ static void EPD_Draw_Text()
     display->setFont(&FreeMonoBold12pt7b);
 
     {
+#if defined(EPD_ASPECT_RATIO_1C1)
       uint16_t x = 20;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      uint16_t x = 50;
+#endif /* EPD_ASPECT_RATIO_2C1 */
       uint16_t y = 0;
 
       int16_t  tbx, tby;
@@ -168,11 +173,25 @@ static void EPD_Draw_Text()
       snprintf(info_line, sizeof(info_line), "Traffic %d/%d", EPD_current, j);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;
+
+#if defined(EPD_ASPECT_RATIO_2C1)
+      if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+        if (display->height() == 128) {
+          if (display->getRotation() == ROTATE_270 ) { y -= 6; }
+        }
+      }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
       display->setCursor(x, y);
       display->print(info_line);
 //      Serial.println(info_line);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       y += TEXT_VIEW_LINE_SPACING;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      y += 5;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
       if (oclock == 0) {
         strcpy(info_line, "   ahead");
@@ -185,7 +204,12 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       y += TEXT_VIEW_LINE_SPACING;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      y += 5;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
       snprintf(info_line, sizeof(info_line), "%4.1f %s out", disp_dist, u_dist);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -194,7 +218,12 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       y += TEXT_VIEW_LINE_SPACING;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      y += 5;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
       snprintf(info_line, sizeof(info_line), "%4d %s ", disp_alt, u_alt);
 
@@ -212,8 +241,14 @@ static void EPD_Draw_Text()
       display->print(info_line);
 //      Serial.println(info_line);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       y += TEXT_VIEW_LINE_SPACING;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      y += 5;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
+#if defined(EPD_ASPECT_RATIO_1C1)
       snprintf(info_line, sizeof(info_line), "CoG %3d deg",
                (int) traffic_by_dist[EPD_current - 1].fop->course);
       display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -230,8 +265,25 @@ static void EPD_Draw_Text()
       display->setCursor(x, y);
       display->print(info_line);
 //      Serial.println(info_line);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      char tmp_buf[20];
 
+      snprintf(tmp_buf, sizeof(tmp_buf), "CoG %3d GS %3d %s",
+               (int) traffic_by_dist[EPD_current - 1].fop->course,
+               disp_spd, u_spd);
+      display->getTextBounds(tmp_buf, 0, 0, &tbx, &tby, &tbw, &tbh);
+      y += tbh;
+      display->setCursor(0, y);
+      display->print(tmp_buf);
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
+#if defined(EPD_ASPECT_RATIO_1C1)
       y += TEXT_VIEW_LINE_SPACING;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      y += 5;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
       display->getTextBounds(id_text, 0, 0, &tbx, &tby, &tbw, &tbh);
       y += tbh;

@@ -748,25 +748,40 @@ void EPD_Message(const char *msg1, const char *msg2)
 
     display->fillScreen(GxEPD_WHITE);
 
+    uint16_t display_width  = display->width();
+    uint16_t display_height = display->height();
+    int16_t dy              = 0;
+
+#if defined(EPD_ASPECT_RATIO_2C1)
+
+    if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+      if (display_width  == 128) display_width  = 122;
+      if (display_height == 128) {
+        display_height = 122;
+        if (display->getRotation() == ROTATE_90 ) { dy = 6; }
+      }
+    }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
     if (msg2 == NULL) {
 
       display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = (display->height() + tbh) / 2;
+      x = (display_width - tbw) / 2;
+      y = (display_height + tbh) / 2  + dy;
       display->setCursor(x, y);
       display->print(msg1);
 
     } else {
 
       display->getTextBounds(msg1, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = display->height() / 2 - tbh;
+      x = (display_width - tbw) / 2;
+      y = display_height / 2 - tbh + dy;
       display->setCursor(x, y);
       display->print(msg1);
 
       display->getTextBounds(msg2, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = display->height() / 2 + tbh;
+      x = (display_width - tbw) / 2;
+      y = display_height / 2 + tbh + dy;
       display->setCursor(x, y);
       display->print(msg2);
     }
