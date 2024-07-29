@@ -22,6 +22,13 @@
 #if defined(USE_EPAPER)
 #define ENABLE_GxEPD2_GFX       1
 #include <GxEPD2_BW.h>
+
+extern const GFXfont FreeMono9pt7b PROGMEM;
+extern const GFXfont FreeMonoBold9pt7b PROGMEM;
+extern const GFXfont FreeMonoBold12pt7b PROGMEM;
+extern const GFXfont FreeMono18pt7b PROGMEM;
+extern const GFXfont FreeMonoBold18pt7b PROGMEM;
+extern const GFXfont FreeMonoBold24pt7b PROGMEM;
 #endif /* USE_EPAPER */
 
 #define EPD_EXPIRATION_TIME     5 /* seconds */

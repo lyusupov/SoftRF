@@ -34,8 +34,6 @@
 #include <protocol.h>
 #include "../protocol/radio/Legacy.h"
 
-#include <Fonts/FreeMonoBold12pt7b.h>
-
 const char *EPD_Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
   [AIRCRAFT_TYPE_GLIDER]     = "Glider",

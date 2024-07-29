@@ -28,6 +28,7 @@
 #include "epd/GxEPD2_270.h"
 #include "epd/GxEPD2_270_T91.h"
 #include "epd/GxEPD2_371.h"
+#include "epd/GxEPD2_371_T03.h"
 #include "epd/GxEPD2_420.h"
 #include "epd/GxEPD2_583.h"
 #include "epd/GxEPD2_750.h"

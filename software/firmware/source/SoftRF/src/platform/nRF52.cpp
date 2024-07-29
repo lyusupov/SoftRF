@@ -193,7 +193,7 @@ GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT>   epd_bn (GxEPD2_150_BN(
                                                           SOC_GPIO_PIN_EPD_DC,
                                                           SOC_GPIO_PIN_EPD_RST,
                                                           SOC_GPIO_PIN_EPD_BUSY));
-GxEPD2_BW<GxEPD2_371, GxEPD2_371::HEIGHT>         epd_w7 (GxEPD2_371(
+GxEPD2_BW<GxEPD2_371_T03, GxEPD2_371_T03::HEIGHT> epd_t3 (GxEPD2_371_T03(
                                                           SOC_GPIO_PIN_EPD_TULTIMA_SS,
                                                           SOC_GPIO_PIN_EPD_TULTIMA_DC,
                                                           SOC_GPIO_PIN_EPD_TULTIMA_RST,
@@ -2141,7 +2141,7 @@ static byte nRF52_Display_setup()
       SPI1.setPins(SOC_GPIO_PIN_EPD_TULTIMA_MISO,
                    SOC_GPIO_PIN_EPD_TULTIMA_SCK,
                    SOC_GPIO_PIN_EPD_TULTIMA_MOSI);
-      nRF52_display = EP_GDEW0371W7;
+      nRF52_display = EP_GDEY037T03;
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -2167,8 +2167,8 @@ static byte nRF52_Display_setup()
   case EP_DEPG0150BN:
     display = &epd_bn;
     break;
-  case EP_GDEW0371W7:
-    display = &epd_w7;
+  case EP_GDEY037T03:
+    display = &epd_t3;
     break;
   case EP_GDEH0154D67:
   default:

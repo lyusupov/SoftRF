@@ -31,9 +31,7 @@
 #include "../driver/LED.h"
 #include "../driver/RF.h"
 
-#include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
-#include <Fonts/FreeMonoBold12pt7b.h>
 #include <Fonts/Picopixel.h>
 
 static int EPD_zoom = ZOOM_MEDIUM;

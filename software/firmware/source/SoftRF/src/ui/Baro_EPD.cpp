@@ -23,9 +23,7 @@
 #include "../driver/EPD.h"
 #include "../driver/Baro.h"
 
-#include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeMono12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
 #include <TinyGPS++.h>
 
 const char Altitude_text[]    = "ALTITUDE, ";

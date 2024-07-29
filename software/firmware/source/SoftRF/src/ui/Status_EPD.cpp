@@ -29,7 +29,6 @@
 
 #include <Fonts/FreeMono9pt7b.h>
 #include <Fonts/FreeSerifBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
 
 const char ID_text[]       = "ID";
 const char PROTOCOL_text[] = "PROTOCOL";

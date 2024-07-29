@@ -546,6 +546,10 @@ void EPD_fini(int reason, bool screen_saver)
   uint16_t tbw, tbh;
   uint16_t x, y;
 
+  uint16_t display_width;
+  uint16_t display_height;
+  int16_t dy = 0;
+
   SoC->ADB_ops && SoC->ADB_ops->fini();
 
   const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT ?
@@ -553,12 +557,27 @@ void EPD_fini(int reason, bool screen_saver)
 
   switch (hw_info.display)
   {
-#if defined(EPD_ASPECT_RATIO_1C1)
+#if defined(EPD_ASPECT_RATIO_1C1) || defined(EPD_ASPECT_RATIO_2C1)
   case DISPLAY_EPD_1_54:
+  case DISPLAY_EPD_2_13:
 #if defined(USE_EPD_TASK)
       while (EPD_update_in_progress != EPD_UPDATE_NONE) delay(100);
 //      while (!SoC->Display_lock()) { delay(10); }
 #endif
+    display_width  = display->width();
+    display_height = display->height();
+
+#if defined(EPD_ASPECT_RATIO_2C1)
+
+    if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+      if (display_width  == 128) display_width = 122;
+      if (display_height == 128) {
+        display_height = 122;
+        if (display->getRotation() == ROTATE_90 ) { dy = 6; }
+      }
+    }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
     if (screen_saver) {
       const char *msg_line;
 
@@ -568,16 +587,16 @@ void EPD_fini(int reason, bool screen_saver)
       msg_line = "POWER OFF";
 
       display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = display->height() / 3;
+      x = (display_width - tbw) / 2;
+      y = display_height / 3;
       display->setCursor(x, y);
       display->print(msg_line);
 
       msg_line = "SCREEN SAVER";
 
       display->getTextBounds(msg_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
-      y = (2 * display->height()) / 3;
+      x = (display_width - tbw) / 2;
+      y = (2 * display_height) / 3;
       display->setCursor(x, y);
       display->print(msg_line);
 
@@ -608,19 +627,28 @@ void EPD_fini(int reason, bool screen_saver)
 
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
+      x = (display_width - tbw) / 2;
       y = tbh + tbh / 2;
       display->setCursor(x, y);
       display->print(msg);
 
-      x = (display->width()  - 128) / 2;
-      y = (display->height() - 128) / 2 - tbh / 2;
+#if defined(EPD_ASPECT_RATIO_1C1)
+      x = (display_width  - 128) / 2;
+      y = (display_height - 128) / 2 - tbh / 2;
       display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+#endif /* EPD_ASPECT_RATIO_1C1 */
 
       display->setFont(&Org_01);
       display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
+
+#if defined(EPD_ASPECT_RATIO_1C1)
       x =  5;
       y += 128 + 17;
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+      x = 30;
+      y = (3 * display_height) / 4;
+#endif /* EPD_ASPECT_RATIO_2C1 */
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text4);
 
@@ -629,7 +657,7 @@ void EPD_fini(int reason, bool screen_saver)
 
       display->setFont(&FreeSerif9pt7b);
       display->getTextBounds(EPD_SoftRF_text6, 0, 0, &tbx, &tby, &tbw, &tbh);
-      x = (display->width() - tbw) / 2;
+      x = (display_width - tbw) / 2;
       y += 21;
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text6);
@@ -652,7 +680,7 @@ void EPD_fini(int reason, bool screen_saver)
 
 //    SoC->Display_unlock();
     break;
-#endif /* EPD_ASPECT_RATIO_1C1 */
+#endif /* EPD_ASPECT_RATIO_1C1 || EPD_ASPECT_RATIO_2C1 */
 
   case DISPLAY_NONE:
   default:

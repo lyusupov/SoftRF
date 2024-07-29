@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
 
 #ifndef PLATFORM_NRF52_H
@@ -76,7 +77,7 @@ enum nRF52_display_id {
   EP_GDEH0154D67,
   EP_GDEP015OC1,
   EP_DEPG0150BN,
-  EP_GDEW0371W7,
+  EP_GDEY037T03,
 };
 
 typedef struct {

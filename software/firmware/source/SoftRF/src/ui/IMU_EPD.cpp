@@ -18,14 +18,13 @@
 
 #include "../system/SoC.h"
 
+#if !defined(EXCLUDE_IMU)
+float IMU_g = 0;
+#endif /* EXCLUDE_IMU */
+
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
-
-#include <Fonts/FreeMonoBold24pt7b.h>
-#include <Fonts/FreeMonoBold12pt7b.h>
-
-float IMU_g = 0;
 
 static const char G_load_text[] = "G-load";
 

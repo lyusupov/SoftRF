@@ -33,6 +33,7 @@ GxEPD2_EPD::GxEPD2_EPD(int8_t cs, int8_t dc, int8_t rst, int8_t busy, int8_t bus
   _power_is_on = false;
   _using_partial_mode = false;
   _hibernating = false;
+  _init_display_done = false;
   _timeout_expired = false;
   _busy_callback = 0;
   _busy_callback_parameter = 0;
@@ -51,6 +52,7 @@ void GxEPD2_EPD::init(uint32_t serial_diag_bitrate, bool initial, bool pulldown_
   _power_is_on = false;
   _using_partial_mode = false;
   _hibernating = false;
+  _init_display_done = false;
   _timeout_expired = false;
   if (serial_diag_bitrate > 0)
   {
@@ -266,6 +268,23 @@ void GxEPD2_EPD::_writeCommandDataPGM(const uint8_t* pCommandData, uint8_t datal
   {
     _pSPIx->transfer(pgm_read_byte(&*pCommandData++));
   }
+  if (_cs >= 0) digitalWrite(_cs, HIGH);
+  _pSPIx->endTransaction();
+}
+
+void GxEPD2_EPD::_startTransfer()
+{
+  _pSPIx->beginTransaction(_spi_settings);
+  if (_cs >= 0) digitalWrite(_cs, LOW);
+}
+
+void GxEPD2_EPD::_transfer(uint8_t value)
+{
+  _pSPIx->transfer(value);
+}
+
+void GxEPD2_EPD::_endTransfer()
+{
   if (_cs >= 0) digitalWrite(_cs, HIGH);
   _pSPIx->endTransaction();
 }
