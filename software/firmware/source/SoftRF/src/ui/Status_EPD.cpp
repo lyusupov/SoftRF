@@ -50,6 +50,7 @@ void EPD_status_setup()
   uint16_t display_height = display->height();
   int16_t dy = 0;
 
+#if defined(EPD_ASPECT_RATIO_2C1)
   if (display->epd2.panel == GxEPD2::DEPG0213BN) {
     if (display_width  == 128) display_width  = 122;
     if (display_height == 128) {
@@ -57,6 +58,7 @@ void EPD_status_setup()
       if (display->getRotation() == ROTATE_90 ) { dy = 6; }
     }
   }
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
   memcpy(navbox1.title, NAVBOX1_TITLE, strlen(NAVBOX1_TITLE));
   navbox1.x = 0;

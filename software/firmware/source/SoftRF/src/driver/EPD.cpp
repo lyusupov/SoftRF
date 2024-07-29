@@ -628,13 +628,13 @@ void EPD_fini(int reason, bool screen_saver)
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds(msg, 0, 0, &tbx, &tby, &tbw, &tbh);
       x = (display_width - tbw) / 2;
-      y = tbh + tbh / 2;
+      y = tbh + tbh / 2 + dy;
       display->setCursor(x, y);
       display->print(msg);
 
 #if defined(EPD_ASPECT_RATIO_1C1)
       x = (display_width  - 128) / 2;
-      y = (display_height - 128) / 2 - tbh / 2;
+      y = (display_height - 128) / 2 - tbh / 2 + dy;
       display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
 #endif /* EPD_ASPECT_RATIO_1C1 */
 
@@ -643,11 +643,11 @@ void EPD_fini(int reason, bool screen_saver)
 
 #if defined(EPD_ASPECT_RATIO_1C1)
       x =  5;
-      y += 128 + 17;
+      y += 128 + 17 + dy;
 #endif /* EPD_ASPECT_RATIO_1C1 */
 #if defined(EPD_ASPECT_RATIO_2C1)
       x = 30;
-      y = (3 * display_height) / 4;
+      y = (3 * display_height) / 4 + dy;
 #endif /* EPD_ASPECT_RATIO_2C1 */
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text4);

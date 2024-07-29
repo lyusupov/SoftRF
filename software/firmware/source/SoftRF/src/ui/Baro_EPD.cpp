@@ -38,6 +38,20 @@ static float alt_scale = 1.0;
 
 void EPD_baro_setup()
 {
+  uint16_t display_width  = display->width();
+  uint16_t display_height = display->height();
+  int16_t dy = 0;
+
+#if defined(EPD_ASPECT_RATIO_2C1)
+  if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+    if (display_width  == 128) display_width  = 122;
+    if (display_height == 128) {
+      display_height = 122;
+      if (display->getRotation() == ROTATE_90 ) { dy = 6; }
+    }
+  }
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
   if (hw_info.baro != BARO_MODULE_NONE) {
     EPD_pages_mask |= (1 << VIEW_MODE_BARO);
   }
@@ -48,9 +62,9 @@ void EPD_baro_setup()
   strcpy(navbox1.title + strlen(Altitude_text),
         ui->units == UNITS_METRIC ? "M" : "FT");
   navbox1.x          = 0;
-  navbox1.y          = 0;
-  navbox1.width      = display->width();
-  navbox1.height     = display->height() / 3;
+  navbox1.y          = 0 + dy;
+  navbox1.width      = display_width;
+  navbox1.height     = display_height / 3;
   navbox1.value      = Baro_altitude() * alt_scale;
 //  navbox1.prev_value = navbox1.value;
   navbox1.timestamp  = millis();
@@ -118,6 +132,7 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
+#if defined(EPD_ASPECT_RATIO_1C1)
     display->setCursor(navbox1.x + navbox1.width / 3 + 15, navbox1.y + 52);
     display->print(navbox1.value);
 
@@ -126,6 +141,17 @@ static void EPD_Draw_NavBoxes()
 
     display->setCursor(navbox3.x + navbox3.width / 3 + 15, navbox3.y + 52);
     display->print(navbox3.value);
+#endif /* EPD_ASPECT_RATIO_1C1 */
+#if defined(EPD_ASPECT_RATIO_2C1)
+    display->setCursor(navbox1.x + navbox1.width / 2 + 17, navbox1.y + 32);
+    display->print(navbox1.value);
+
+    display->setCursor(navbox2.x + navbox2.width / 2 + 17, navbox2.y + 32);
+    display->print(navbox2.value);
+
+    display->setCursor(navbox3.x + navbox3.width / 2 + 59, navbox3.y + 32);
+    display->print(navbox3.value);
+#endif /* EPD_ASPECT_RATIO_2C1 */
 
 #if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */
