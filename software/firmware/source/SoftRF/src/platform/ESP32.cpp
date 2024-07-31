@@ -1354,8 +1354,6 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
 #endif /* USE_RADIOLIB */
 
-    pinMode(SOC_GPIO_PIN_T3S3_3V3EN, INPUT_PULLUP);
-
     int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
 
     /* uSD-SPI init */
@@ -1702,6 +1700,15 @@ static void ESP32_setup()
 
     digitalWrite(SOC_GPIO_PIN_HELTRK_LED,  LOW);
     pinMode(SOC_GPIO_PIN_HELTRK_LED,       OUTPUT);
+
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+
+    gpio_deep_sleep_hold_dis();
+    gpio_hold_dis(GPIO_NUM_35);
+    pinMode(SOC_GPIO_PIN_T3S3_3V3EN, INPUT_PULLUP);
+
+    digitalWrite(SOC_GPIO_PIN_T3S3_LED,    LOW);
+    pinMode(SOC_GPIO_PIN_T3S3_LED,         OUTPUT);
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -2482,7 +2489,12 @@ static void ESP32_fini(int reason)
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
-    pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       INPUT_PULLDOWN);
+    WIRE_FINI(Wire);
+
+    pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_T3S3_3V3EN,  LOW);
+    gpio_hold_en(GPIO_NUM_35);
+    gpio_deep_sleep_hold_en();
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,

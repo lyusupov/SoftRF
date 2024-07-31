@@ -164,6 +164,11 @@ public:
         return (res & 0x03);
     }
 
+    void resetDefault()
+    {
+        setRegisterBit(POWERS_SY6970_REG_14H, 7);
+    }
+
     bool init()
     {
         return begin();
@@ -986,7 +991,7 @@ private:
             return false;
         }
         // Set the minimum operating voltage. Below this voltage, the PMU will protect
-        setSysPowerDownVoltage(3300);
+        // setSysPowerDownVoltage(3300);
 
         //Default disable Watchdog
         disableWatchdog();
