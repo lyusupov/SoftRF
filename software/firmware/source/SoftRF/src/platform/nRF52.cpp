@@ -127,6 +127,7 @@ const prototype_entry_t techo_prototype_boards[] = {
   { 0xf353e11726ea8220, NRF52_LILYGO_TECHO_REV_0, EP_GDEH0154D67, 0 }, /* blue   */
   { 0xf4e0f04ded1892da, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* green  */
   { 0x65ab5994ea2c9094, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* blue   */
+  { 0x6460429ea6fb7e39, NRF52_NORDIC_PCA10059,    EP_UNKNOWN,     0 },
 };
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -2143,10 +2144,12 @@ static byte nRF52_Display_setup()
                    SOC_GPIO_PIN_EPD_TULTIMA_MOSI);
       nRF52_display = EP_GDEY037T03;
       break;
+    case NRF52_NORDIC_PCA10059:
+    case NRF52_SEEED_T1000:
+      return rval;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
-    case NRF52_NORDIC_PCA10059:
     default:
       SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                    SOC_GPIO_PIN_EPD_SCK,

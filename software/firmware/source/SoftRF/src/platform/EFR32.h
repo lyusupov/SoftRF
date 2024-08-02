@@ -123,7 +123,7 @@ struct rst_info {
 #error "This EFR32 build variant is not supported!"
 #endif
 
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_EEPROM
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
