@@ -2491,10 +2491,12 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
     WIRE_FINI(Wire);
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       OUTPUT);
     digitalWrite(SOC_GPIO_PIN_T3S3_3V3EN,  LOW);
     gpio_hold_en(GPIO_NUM_35);
     gpio_deep_sleep_hold_en();
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
