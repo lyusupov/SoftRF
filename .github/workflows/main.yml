@@ -45,14 +45,14 @@ jobs:
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
             'arduino:mbed_rp2040:pico',
-            'SiliconLabs:silabs:nano_matter',
+            'SiliconLabs:silabs:nano_matter:protocol_stack=ble_arduino',
             'WCH:ch32v:CH32V30x_EVT'
           ]
 
     env:
       ARDUINO_IDE_VERSION: 1.8.13
       ARDUINO_CLI_VERSION: 0.34.2
-      ARDUINO_BLE_VERSION: 1.3.6
+      ARDUINO_BLE_VERSION: 1.3.7
       ENERGIA_IDE_VERSION: 1.8.10E23
       NIM_BLE_VERSION:     1.4.1
       # NIM_BLE_VERSION:   esp32-c6-test
@@ -415,6 +415,10 @@ jobs:
             arduino-cli core update-index ;
             arduino-cli core install SiliconLabs:silabs@2.1.0 ;
             # arduino-cli board attach -b $BOARD ;
+            wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
+            tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
+            rm ${ARDUINO_BLE_VERSION}.tar.gz ;
+            mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then

@@ -40,7 +40,7 @@ enum
 #include "../platform/bluetooth/Bluefruit.h"
 #elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)
 #include "../platform/bluetooth/BTstack.h"
-#elif defined(ARDUINO_ARCH_RENESAS)
+#elif defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)
 #include "../platform/bluetooth/ArduinoBLE.h"
 #endif /* ESP32 or NRF52 or RP2040 or RENESAS */
 

@@ -29,6 +29,7 @@
 #include "../driver/Baro.h"
 #include "../driver/Sound.h"
 #include "../driver/Battery.h"
+#include "../driver/Bluetooth.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
@@ -605,7 +606,11 @@ const SoC_ops_t EFR32_ops = {
   EFR32_SPI_begin,
   EFR32_swSer_begin,
   EFR32_swSer_enableRx,
-  NULL, /* TODO */
+#if !defined(EXCLUDE_BLUETOOTH)
+  &EFR32_Bluetooth_ops,
+#else
+  NULL,
+#endif /* EXCLUDE_BLUETOOTH */
   NULL,
   NULL,
   EFR32_Display_setup,
