@@ -780,7 +780,6 @@ static void RA4M1_Button_fini()
   if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
-    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
@@ -910,7 +909,7 @@ const SoC_ops_t RA4M1_ops = {
   RA4M1_swSer_begin,
   RA4M1_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
-  &RA4M1_Bluetooth_ops,
+  &ArdBLE_Bluetooth_ops,
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */

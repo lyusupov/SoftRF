@@ -39,7 +39,6 @@
 
 #define BLE_MAX_WRITE_CHUNK_SIZE  20
 
-extern IODev_ops_t RA4M1_Bluetooth_ops;
-extern IODev_ops_t EFR32_Bluetooth_ops;
+extern IODev_ops_t ArdBLE_Bluetooth_ops;
 
 #endif /* ARDUINOBLE_H */

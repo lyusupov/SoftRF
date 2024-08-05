@@ -27,6 +27,8 @@
 
 #define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_ACADEMY
 
+#define ARDUINO_CORE_VERSION    ARDUINO_SILABS
+
 #define isValidFix()            isValidGNSSFix()
 
 #define uni_begin()             strip.begin()
@@ -40,12 +42,10 @@
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 
-#define SerialOutput            Serial /* TBD */
+#define SerialOutput            Serial
 
-#define USBSerial               Serial /* TBD */
-#define Serial_GNSS_In          Serial /* TBD */
+#define Serial_GNSS_In          Serial1
 #define Serial_GNSS_Out         Serial_GNSS_In
-#define UATSerial               Serial /* TBD */
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 
@@ -76,23 +76,20 @@ struct rst_info {
 #if defined(ARDUINO_NANO_MATTER) || defined(ARDUINO_SILABS_BGM220EXPLORERKIT)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // TBD
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // TBD
+#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX
+#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX
 
-#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX // TBD
-#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX // TBD
+#define SOC_GPIO_PIN_GNSS_RX  PIN_SERIAL1_RX
+#define SOC_GPIO_PIN_GNSS_TX  PIN_SERIAL1_TX
 
-#define SOC_GPIO_PIN_STATUS   LED_BUILTIN    // TBD
+#define SOC_GPIO_PIN_STATUS   LED_BUILTIN
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_TX3      SOC_UNUSED_PIN
-
 /* SPI */
-#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI   // TBD
-#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO   // TBD
-#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK    // TBD
-#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_MOSI     PIN_SPI_MOSI
+#define SOC_GPIO_PIN_MISO     PIN_SPI_MISO
+#define SOC_GPIO_PIN_SCK      PIN_SPI_SCK
+#define SOC_GPIO_PIN_SS       PIN_SPI_SS
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -100,21 +97,18 @@ struct rst_info {
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
 /* SX1276 */
-#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_RST      D0             /* PA0 */
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     SOC_UNUSED_PIN // TBD
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO1     D5             /* PC6 */
 
 /* I2C */
-#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA   // TBD
-#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // TBD
+#define SOC_GPIO_PIN_SDA      PIN_WIRE_SDA
+#define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN /* TBD */
-#define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN /* TBD */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_GNSS_PPS D6             /* PB0 */
+#define SOC_GPIO_PIN_BATTERY  A0
+#define SOC_GPIO_PIN_BUTTON   BTN_BUILTIN
 
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
@@ -123,7 +117,9 @@ struct rst_info {
 #error "This EFR32 build variant is not supported!"
 #endif
 
-//#define EXCLUDE_EEPROM
+#if defined(ARDUINO_SILABS_BGM220EXPLORERKIT)
+#define EXCLUDE_BLUETOOTH
+#endif /* ARDUINO_SILABS_BGM220EXPLORERKIT */
 #define EXCLUDE_WIFI
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
@@ -151,7 +147,7 @@ struct rst_info {
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
-//#define EXCLUDE_EGM96          //  -    kb
+#define EXCLUDE_EGM96            //  -    kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 
@@ -161,6 +157,10 @@ struct rst_info {
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
+
+/* Experimental */
+#define ENABLE_ADSL
+#define ENABLE_PROL
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>

@@ -574,7 +574,6 @@ static void EFR32_Button_fini()
   if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
-    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
@@ -607,7 +606,7 @@ const SoC_ops_t EFR32_ops = {
   EFR32_swSer_begin,
   EFR32_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
-  &EFR32_Bluetooth_ops,
+  &ArdBLE_Bluetooth_ops,
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */

@@ -1150,7 +1150,9 @@ const gnss_chip_ops_t uc65_ops = {
 #if !defined(EXCLUDE_GNSS_AG33)
 static gnss_id_t ag33_probe()
 {
-  return GNSS_MODULE_NMEA; /* TBD */
+  /* Firmware version request */
+  return nmea_handshake("$PAIR020*38\r\n", "$PAIR020,", true) ?
+                        GNSS_MODULE_AG33 : GNSS_MODULE_NMEA;
 }
 
 static bool ag33_setup()
