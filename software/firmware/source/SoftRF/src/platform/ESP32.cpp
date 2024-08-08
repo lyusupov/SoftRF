@@ -5339,7 +5339,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_swSer_begin,
   ESP32_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
+#if defined(USE_ARDUINOBLE)
+  &ArdBLE_Bluetooth_ops,
+#else
   &ESP32_Bluetooth_ops,
+#endif /* USE_ARDUINOBLE */
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */

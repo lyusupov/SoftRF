@@ -16,15 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)
-
 #include "../../system/SoC.h"
 
-#if !defined(EXCLUDE_BLUETOOTH)
+#if !defined(EXCLUDE_BLUETOOTH) && (defined(ARDUINO_ARCH_RENESAS) || \
+     defined(ARDUINO_ARCH_SILABS) || defined(USE_ARDUINOBLE))
 
 #include <ArduinoBLE.h>
 
+#if defined(ESP32)
+#include <core_version.h>
+#include <cbuf.h>
+#define ARDUINO_CORE_VERSION    ARDUINO_ESP32_RELEASE
+#else
 #include <api/RingBuffer.h>
+#endif /* ESP32 */
 
 #include "../../driver/EEPROM.h"
 #include "../../driver/Bluetooth.h"
@@ -34,8 +39,12 @@
 bool deviceConnected    = false;
 bool oldDeviceConnected = false;
 
+#if defined(ESP32)
+cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
+#else
 RingBufferN<BLE_FIFO_TX_SIZE> BLE_FIFO_TX = RingBufferN<BLE_FIFO_TX_SIZE>();
 RingBufferN<BLE_FIFO_RX_SIZE> BLE_FIFO_RX = RingBufferN<BLE_FIFO_RX_SIZE>();
+#endif /* ESP32 */
 
 String BT_name = HOSTNAME;
 
@@ -93,12 +102,16 @@ void UARTCharacteristicWritten(BLEDevice         central,
     characteristic.readValue(buf, len);
 
     if (valueLength > len) { valueLength = len; }
-
+#if defined(ESP32)
+    BLE_FIFO_RX->write(buf, (BLE_FIFO_RX->room() > valueLength ?
+                             valueLength : BLE_FIFO_RX->room()));
+#else
     size_t size = BLE_FIFO_RX.availableForStore();
     size = (size < valueLength) ? size : valueLength;
     for (size_t i = 0; i < size; i++) {
       BLE_FIFO_RX.store_char(buf[i]);
     }
+#endif /* ESP32 */
   }
 }
 
@@ -111,6 +124,15 @@ static void ArdBLE_Bluetooth_setup()
   {
   case BLUETOOTH_LE_HM10_SERIAL:
     {
+#if defined(ESP32)
+      BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
+      BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
+      esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+#endif /* ESP32 */
+
       BLE.begin();
 
       char LocalName[BLE_MAX_WRITE_CHUNK_SIZE];
@@ -190,6 +212,16 @@ static void ArdBLE_Bluetooth_loop()
       if (deviceConnected && (millis() - BLE_Notify_TimeMarker > 10)) { /* < 18000 baud */
           uint8_t chunk[BLE_MAX_WRITE_CHUNK_SIZE];
 
+#if defined(ESP32)
+          size_t size = BLE_FIFO_TX->available();
+          size = size < BLE_MAX_WRITE_CHUNK_SIZE ? size : BLE_MAX_WRITE_CHUNK_SIZE;
+
+          if (size > 0) {
+            BLE_FIFO_TX->read((char *) chunk, size);
+
+            UARTCharacteristic.writeValue(chunk, size);
+          }
+#else
           size_t size = BLE_FIFO_TX.available();
           size = size < BLE_MAX_WRITE_CHUNK_SIZE ? size : BLE_MAX_WRITE_CHUNK_SIZE;
 
@@ -199,6 +231,7 @@ static void ArdBLE_Bluetooth_loop()
             }
             UARTCharacteristic.writeValue(chunk, size);
           }
+#endif /* ESP32 */
 
           BLE_Notify_TimeMarker = millis();
       }
@@ -245,7 +278,11 @@ static int ArdBLE_Bluetooth_available()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
+#if defined(ESP32)
+    rval = BLE_FIFO_RX->available();
+#else
     rval = BLE_FIFO_RX.available();
+#endif /* ESP32 */
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
@@ -264,7 +301,11 @@ static int ArdBLE_Bluetooth_read()
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
+#if defined(ESP32)
+    rval = BLE_FIFO_RX->read();
+#else
     rval = BLE_FIFO_RX.read_char();
+#endif /* ESP32 */
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
@@ -283,6 +324,10 @@ static size_t ArdBLE_Bluetooth_write(const uint8_t *buffer, size_t size)
   switch (settings->bluetooth)
   {
   case BLUETOOTH_LE_HM10_SERIAL:
+#if defined(ESP32)
+    rval = BLE_FIFO_TX->write((char *) buffer,
+                        (BLE_FIFO_TX->room() > size ? size : BLE_FIFO_TX->room()));
+#else
     {
       size_t avail = BLE_FIFO_TX.availableForStore();
       if (size > avail) {
@@ -292,6 +337,7 @@ static size_t ArdBLE_Bluetooth_write(const uint8_t *buffer, size_t size)
         BLE_FIFO_TX.store_char(buffer[i]);
       }
     }
+#endif /* ESP32 */
     break;
   case BLUETOOTH_NONE:
   case BLUETOOTH_SPP:
@@ -314,4 +360,3 @@ IODev_ops_t ArdBLE_Bluetooth_ops = {
 };
 
 #endif /* EXCLUDE_BLUETOOTH */
-#endif /* ARDUINO_ARCH_RENESAS  or ARDUINO_ARCH_SILABS */

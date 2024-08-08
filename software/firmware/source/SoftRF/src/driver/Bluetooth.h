@@ -32,6 +32,8 @@ enum
 #if !defined(EXCLUDE_BLUETOOTH)
 #if defined(USE_NIMBLE)
 #include "../platform/bluetooth/NimBLE.h"
+#elif defined(USE_ARDUINOBLE)
+#include "../platform/bluetooth/ArduinoBLE.h"
 #else
 #include "../platform/bluetooth/Bluedroid.h"
 #endif /* USE_NIMBLE */
