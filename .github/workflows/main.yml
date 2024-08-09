@@ -214,7 +214,7 @@ jobs:
             arduino --pref "custom_FlashMode=esp32c6_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32c6_4M"               --save-prefs ;
             arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
-            arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32c6_min_spiffs" --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.4 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
@@ -223,10 +223,13 @@ jobs:
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
             rm ${NIM_BLE_VERSION}.tar.gz ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
-            #wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
-            #tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
-            #rm ${ARDUINO_BLE_VERSION}.tar.gz ;
-            #mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
+            wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
+            tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
+            rm ${ARDUINO_BLE_VERSION}.tar.gz ;
+            mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
+            cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
+            sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
+            sed -i '84 a #endif' HCIVirtualTransport.cpp ;
             cd $GITHUB_WORKSPACE ;
           fi
           #if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
@@ -251,6 +254,13 @@ jobs:
             arduino --pref "custom_UploadSpeed=esp32h2_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.4 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
+            wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
+            tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
+            rm ${ARDUINO_BLE_VERSION}.tar.gz ;
+            mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
+            cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
+            sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
+            sed -i '84 a #endif' HCIVirtualTransport.cpp ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "STM32:stm32:" ]]; then

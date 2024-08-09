@@ -438,10 +438,10 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
 #undef USE_NMEALIB
-//#define USE_ARDUINOBLE
 #undef USE_BLE_MIDI
 #undef ENABLE_PROL
 //#define USE_NIMBLE
+#define USE_ARDUINOBLE
 #endif /* C2 || C6 || H2 */
 #endif /* SX || CX || H2 */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
