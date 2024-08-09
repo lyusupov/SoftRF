@@ -214,7 +214,7 @@ jobs:
             arduino --pref "custom_FlashMode=esp32c6_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32c6_4M"               --save-prefs ;
             arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
-            arduino --pref "custom_PartitionScheme=esp32c6_min_spiffs" --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.4 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
@@ -465,6 +465,7 @@ jobs:
             true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
+            rm -rf $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION} ;
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
             fi ;
           fi ;
