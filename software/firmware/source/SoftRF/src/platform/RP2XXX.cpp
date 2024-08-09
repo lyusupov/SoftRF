@@ -1,5 +1,5 @@
 /*
- * Platform_RP2040.cpp
+ * Platform_RP2XXX.cpp
  * Copyright (C) 2022-2024 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify

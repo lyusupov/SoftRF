@@ -1,5 +1,5 @@
 /*
- * Platform_RP2040.h
+ * Platform_RP2XXX.h
  * Copyright (C) 2022-2024 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  */
 #if defined(ARDUINO_ARCH_RP2040)
 
-#ifndef PLATFORM_RP2040_H
-#define PLATFORM_RP2040_H
+#ifndef PLATFORM_RP2XXX_H
+#define PLATFORM_RP2XXX_H
 
 #include <avr/dtostrf.h>
 
@@ -324,5 +324,5 @@ extern Adafruit_NeoPixel strip;
 #endif /* ARDUINO_GENERIC_RP2040 */
 #endif /* USE_OLED */
 
-#endif /* PLATFORM_RP2040_H */
+#endif /* PLATFORM_RP2XXX_H */
 #endif /* ARDUINO_ARCH_RP2040 */

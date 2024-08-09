@@ -33,7 +33,7 @@
 #include "../platform/SAMD.h"
 #include "../platform/AVR.h"
 #include "../platform/ASR66.h"
-#include "../platform/RP2040.h"
+#include "../platform/RP2XXX.h"
 #include "../platform/RA4M1.h"
 #include "../platform/EFR32.h"
 #include "../platform/CH32.h"

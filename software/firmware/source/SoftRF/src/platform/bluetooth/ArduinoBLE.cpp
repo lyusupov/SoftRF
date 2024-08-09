@@ -127,10 +127,6 @@ static void ArdBLE_Bluetooth_setup()
 #if defined(ESP32)
       BLE_FIFO_RX = new cbuf(BLE_FIFO_RX_SIZE);
       BLE_FIFO_TX = new cbuf(BLE_FIFO_TX_SIZE);
-
-#if defined(CONFIG_IDF_TARGET_ESP32)
-      esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
-#endif /* CONFIG_IDF_TARGET_ESP32 */
 #endif /* ESP32 */
 
       BLE.begin();
@@ -156,12 +152,14 @@ static void ArdBLE_Bluetooth_setup()
                                   hw_info.model == SOFTRF_MODEL_HAM        ? "Ham Edition"        :
                                   hw_info.model == SOFTRF_MODEL_MIDI       ? "Midi Edition"       :
                                   hw_info.model == SOFTRF_MODEL_ACADEMY    ? "Academy Edition"    :
+                                  hw_info.model == SOFTRF_MODEL_ECO        ? "Eco Edition"        :
+                                  hw_info.model == SOFTRF_MODEL_INK        ? "Ink Edition"        :
                                   "Unknown";
       char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());
 
       char Firmware[32];
-      snprintf(Firmware, sizeof(Firmware), "Arduino %s %s", SoC->name, ARDUINO_CORE_VERSION);
+      snprintf(Firmware, sizeof(Firmware), "Core %s %s", SoC->name, ARDUINO_CORE_VERSION);
 
       char Hardware[9];
       snprintf(Hardware, sizeof(Hardware), "%08X", hw_info.revision);
@@ -218,7 +216,6 @@ static void ArdBLE_Bluetooth_loop()
 
           if (size > 0) {
             BLE_FIFO_TX->read((char *) chunk, size);
-
             UARTCharacteristic.writeValue(chunk, size);
           }
 #else
