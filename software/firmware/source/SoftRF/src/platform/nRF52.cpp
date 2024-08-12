@@ -748,7 +748,7 @@ static void nRF52_setup()
     Wire.beginTransmission(QMA6100P_ADDRESS);
     nRF52_has_imu = (Wire.endTransmission() == 0);
     if (nRF52_has_imu) {
-      nRF52_board        = NRF52_SEEED_T1000;
+      nRF52_board        = NRF52_SEEED_T1000E;
       hw_info.model      = SOFTRF_MODEL_CARD;
       hw_info.imu        = ACC_QMA6100P;
       nRF52_Device_Model = "Card Edition";
@@ -767,7 +767,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TULTIMA:
       Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
       break;
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
@@ -833,7 +833,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TULTIMA:
       /* TBD */
       break;
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
       break;
     case NRF52_HELTEC_T114:
@@ -858,7 +858,7 @@ static void nRF52_setup()
       /* TBD */
       break;
 
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_T1000_3V3_EN, HIGH);
 
@@ -970,7 +970,7 @@ static void nRF52_setup()
 
       break;
 
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_EN, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_T1000_EN, OUTPUT);
 
@@ -2021,7 +2021,7 @@ static void nRF52_SPI_begin()
                   SOC_GPIO_PIN_TULTIMA_SCK,
                   SOC_GPIO_PIN_TULTIMA_MOSI);
       break;
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       SPI.setPins(SOC_GPIO_PIN_T1000_MISO,
                   SOC_GPIO_PIN_T1000_SCK,
                   SOC_GPIO_PIN_T1000_MOSI);
@@ -2055,7 +2055,7 @@ static void nRF52_swSer_begin(unsigned long baud)
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TULTIMA_RX,
                              SOC_GPIO_PIN_GNSS_TULTIMA_TX);
       break;
-    case NRF52_SEEED_T1000:
+    case NRF52_SEEED_T1000E:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T1000_RX,
                              SOC_GPIO_PIN_GNSS_T1000_TX);
       baud = 115200; /* Airoha AG3335 default value */
@@ -2214,7 +2214,7 @@ static byte nRF52_Display_setup()
   byte rval = DISPLAY_NONE;
 
   if (nRF52_board == NRF52_NORDIC_PCA10059 ||
-      nRF52_board == NRF52_SEEED_T1000) {
+      nRF52_board == NRF52_SEEED_T1000E) {
       /* Nothing to do */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
 #if defined(USE_TFT)

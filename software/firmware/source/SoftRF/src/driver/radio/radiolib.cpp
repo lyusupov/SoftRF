@@ -342,6 +342,7 @@ static void lr11xx_setup()
   {
   case RF_IC_LR1110:
     radio = new LR1110(mod);
+    break;
   case RF_IC_LR1121:
   default:
     radio = new LR1121(mod);
@@ -600,29 +601,40 @@ static void lr11xx_setup()
 #endif
 
 #if USE_LR11XX
-  // LR1121
-  // set RF switch configuration for Wio WM1110
-  // Wio WM1110 uses DIO5 and DIO6 for RF switching
-  static const uint32_t rfswitch_dio_pins[] = {
-      RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-      RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
-  };
+  switch (hw_info.model)
+  {
+  case SOFTRF_MODEL_CARD:
+    radio->setDioAsRfSwitch(0x0f, 0x0, 0x09, 0x0B, 0x0A, 0x0, 0x4, 0x0);
+    state = radio->setTCXO(1.6);
+    break;
 
-  static const Module::RfSwitchMode_t rfswitch_table[] = {
-      // mode                  DIO5  DIO6
-      { LR11x0::MODE_STBY,   { LOW,  LOW  } },
-      { LR11x0::MODE_RX,     { HIGH, LOW  } },
-      { LR11x0::MODE_TX,     { LOW,  HIGH } },
-      { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
-      { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
-      { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
-      { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
-      END_OF_MODE_TABLE,
-  };
-  radio->setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+  case SOFTRF_MODEL_NEO:
+  default:
+    {
+      // LR1121
+      static const uint32_t rfswitch_dio_pins[] = {
+          RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+          RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+      };
 
-  // LR1121 TCXO Voltage 2.85~3.15V
-  state = radio->setTCXO(3.0);
+      static const Module::RfSwitchMode_t rfswitch_table[] = {
+          // mode                  DIO5  DIO6
+          { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+          { LR11x0::MODE_RX,     { HIGH, LOW  } },
+          { LR11x0::MODE_TX,     { LOW,  HIGH } },
+          { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+          { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+          { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+          { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+          END_OF_MODE_TABLE,
+      };
+      radio->setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+
+      // LR1121 TCXO Voltage 2.85~3.15V
+      state = radio->setTCXO(3.0);
+    }
+    break;
+  }
 #endif
 
   state = radio->setRxBoostedGainMode(true);

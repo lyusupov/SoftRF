@@ -69,7 +69,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
   NRF52_LILYGO_TULTIMA,
-  NRF52_SEEED_T1000,
+  NRF52_SEEED_T1000E,
   NRF52_HELTEC_T114,
 };
 
@@ -258,7 +258,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_R_INT              _PINNUM(0, 16) // P0.16
 
 #include "iomap/LilyGO_TUltima.h"
-#include "iomap/Seeed_T1000.h"
+#include "iomap/Seeed_T1000E.h"
 #include "iomap/Heltec_T114.h"
 
 #define EXCLUDE_WIFI
