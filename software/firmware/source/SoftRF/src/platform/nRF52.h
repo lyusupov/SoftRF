@@ -70,6 +70,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
   NRF52_LILYGO_TULTIMA,
   NRF52_SEEED_T1000,
+  NRF52_HELTEC_T114,
 };
 
 enum nRF52_display_id {
@@ -78,6 +79,7 @@ enum nRF52_display_id {
   EP_GDEP015OC1,
   EP_DEPG0150BN,
   EP_GDEY037T03,
+  TFT_LH114TIF03,
 };
 
 typedef struct {
@@ -257,6 +259,7 @@ struct rst_info {
 
 #include "iomap/LilyGO_TUltima.h"
 #include "iomap/Seeed_T1000.h"
+#include "iomap/Heltec_T114.h"
 
 #define EXCLUDE_WIFI
 //#define EXCLUDE_OTA
@@ -333,10 +336,12 @@ struct rst_info {
 #define USE_BLE_MIDI
 #define ENABLE_REMOTE_ID
 #define USE_EXT_I2S_DAC
+//#define USE_TFT
 #else
 #undef USE_EPAPER
 #define EXCLUDE_BLUETOOTH
 #define EXCLUDE_IMU
+#define EXCLUDE_BME280AUX
 #endif /* ARDUINO_ARCH_MBED */
 //#define EXCLUDE_PMU
 
@@ -373,6 +378,11 @@ extern const char *nRF52_Device_Manufacturer, *nRF52_Device_Model, *Hardware_Rev
 #if defined(USE_EPAPER)
 typedef void EPD_Task_t;
 #endif /* USE_EPAPER */
+
+#if defined(USE_TFT)
+#define LV_HOR_RES                      (135) // Horizontal
+#define LV_VER_RES                      (240) // Vertical
+#endif /* USE_TFT */
 
 #endif /* PLATFORM_NRF52_H */
 

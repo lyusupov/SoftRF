@@ -1,4 +1,5 @@
 // Setup for the Heltec Tracker S3
+#define USER_SETUP_ID 73
 
 // See SetupX_Template.h for all options available
 
@@ -19,12 +20,12 @@
 #define TFT_BL     45 /* V1.0 PCB marking */
 //#define TFT_BL   21 /* V1.1 PCB marking */
 
-#define LOAD_GLCD
+#undef  LOAD_GLCD
 #define LOAD_FONT2
 #define LOAD_FONT4
-#define LOAD_FONT6
-#define LOAD_FONT7
-#define LOAD_FONT8
+#undef  LOAD_FONT6
+#undef  LOAD_FONT7
+#undef  LOAD_FONT8
 #undef  LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 #undef  SMOOTH_FONT
 

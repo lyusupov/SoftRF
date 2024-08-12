@@ -263,9 +263,22 @@ static void ArdBLE_Bluetooth_loop()
 
 static void ArdBLE_Bluetooth_fini()
 {
-  /* TBD */
-
-  BLE.end();
+  switch (settings->bluetooth)
+  {
+  case BLUETOOTH_LE_HM10_SERIAL:
+    BLE.end();
+#if defined(ESP32)
+    delete BLE_FIFO_TX;
+    delete BLE_FIFO_RX;
+#endif /* ESP32 */
+    break;
+  case BLUETOOTH_A2DP_SOURCE:
+    break;
+  case BLUETOOTH_NONE:
+  case BLUETOOTH_SPP:
+  default:
+    break;
+  }
 }
 
 static int ArdBLE_Bluetooth_available()

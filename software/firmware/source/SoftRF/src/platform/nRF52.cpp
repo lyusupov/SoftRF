@@ -59,6 +59,10 @@
 #include "../protocol/radio/RemoteID.h"
 #endif /* ENABLE_REMOTE_ID */
 
+#if defined(USE_TFT)
+#include <TFT_eSPI.h>
+#endif /* USE_TFT */
+
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
 
@@ -201,6 +205,29 @@ GxEPD2_BW<GxEPD2_371_T03, GxEPD2_371_T03::HEIGHT> epd_t3 (GxEPD2_371_T03(
                                                           SOC_GPIO_PIN_EPD_TULTIMA_BUSY));
 GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
+
+#if defined(USE_TFT)
+static TFT_eSPI *tft = NULL;
+
+static const char SoftRF_text1[]  = "SoftRF";
+static const char ID_text[]       = "ID";
+static const char PROTOCOL_text[] = "PROTOCOL";
+static const char RX_text[]       = "RX";
+static const char TX_text[]       = "TX";
+
+static bool TFT_display_frontpage = false;
+
+static void TFT_off()
+{
+    tft->writecommand(TFT_DISPOFF);
+    tft->writecommand(TFT_SLPIN);
+}
+
+static void TFT_backlight_adjust(uint32_t pin, uint8_t level)
+{
+    analogWrite(pin, level);
+}
+#endif /* USE_TFT */
 
 #if !defined(ARDUINO_ARCH_MBED)
 static Adafruit_SPIFlash *SPIFlash = NULL;
@@ -642,6 +669,14 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
+  for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
+    if (techo_prototype_boards[i].id == ((uint64_t) DEVICE_ID_HIGH << 32 | (uint64_t) DEVICE_ID_LOW)) {
+      nRF52_board   = techo_prototype_boards[i].rev;
+      nRF52_display = techo_prototype_boards[i].panel;
+      break;
+    }
+  }
+
 #if !defined(EXCLUDE_PMU)
   nRF52_has_pmu = sy6970.init(Wire,
                               SOC_GPIO_PIN_TULTIMA_SDA,
@@ -727,62 +762,6 @@ static void nRF52_setup()
 #endif /* EXCLUDE_PMU */
 
 #if !defined(ARDUINO_ARCH_MBED)
-  USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
-  USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
-  USBDevice.setProductDescriptor(nRF52_Device_Model);
-  USBDevice.setDeviceVersion(nRF52_Device_Version);
-#endif /* ARDUINO_ARCH_MBED */
-
-#if defined(USE_TINYUSB)
-  switch (nRF52_board)
-  {
-    case NRF52_LILYGO_TULTIMA:
-      /* TBD */
-      break;
-    case NRF52_SEEED_T1000:
-      Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
-      break;
-    case NRF52_LILYGO_TECHO_REV_0:
-    case NRF52_LILYGO_TECHO_REV_1:
-    case NRF52_LILYGO_TECHO_REV_2:
-    case NRF52_NORDIC_PCA10059:
-    default:
-      Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
-#if defined(EXCLUDE_WIFI)
-      Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-#endif /* EXCLUDE_WIFI */
-      break;
-  }
-#endif /* USE_TINYUSB */
-
-  switch (nRF52_board)
-  {
-    case NRF52_LILYGO_TULTIMA:
-      /* TBD */
-      break;
-
-    case NRF52_SEEED_T1000:
-      pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_T1000_3V3_EN, HIGH);
-
-      pinMode(SOC_GPIO_PIN_T1000_BUZZER_EN, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_T1000_BUZZER_EN, HIGH);
-      break;
-
-    case NRF52_LILYGO_TECHO_REV_0:
-    case NRF52_LILYGO_TECHO_REV_1:
-    case NRF52_LILYGO_TECHO_REV_2:
-    case NRF52_NORDIC_PCA10059:
-    default:
-      digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
-      pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
-      digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);
-
-      delay(200);
-      break;
-  }
-
-#if !defined(ARDUINO_ARCH_MBED)
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
@@ -795,6 +774,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_NORDIC_PCA10059:
+    case NRF52_HELTEC_T114:
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
       break;
@@ -828,12 +808,88 @@ static void nRF52_setup()
 
   Wire.end();
 
-  for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
-    if (techo_prototype_boards[i].id == ((uint64_t) DEVICE_ID_HIGH << 32 | (uint64_t) DEVICE_ID_LOW)) {
-      nRF52_board   = techo_prototype_boards[i].rev;
-      nRF52_display = techo_prototype_boards[i].panel;
+#if defined(USE_TFT)
+  if (nRF52_board   == NRF52_LILYGO_TECHO_REV_2 /* default */ &&
+#if !defined(EXCLUDE_IMU)
+      nRF52_has_imu == false                                  &&
+#endif /* EXCLUDE_IMU */
+      nRF52_has_rtc == false) {
+    nRF52_board        = NRF52_HELTEC_T114;
+    hw_info.model      = SOFTRF_MODEL_COZY;
+    nRF52_Device_Model = "Cozy Edition";
+  }
+#endif /* USE_TFT */
+
+#if !defined(ARDUINO_ARCH_MBED)
+  USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
+  USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
+  USBDevice.setProductDescriptor(nRF52_Device_Model);
+  USBDevice.setDeviceVersion(nRF52_Device_Version);
+#endif /* ARDUINO_ARCH_MBED */
+
+#if defined(USE_TINYUSB)
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
       break;
-    }
+    case NRF52_SEEED_T1000:
+      Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
+      break;
+    case NRF52_HELTEC_T114:
+      Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
+      break;
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
+#if defined(EXCLUDE_WIFI)
+      Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* EXCLUDE_WIFI */
+      break;
+  }
+#endif /* USE_TINYUSB */
+
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TULTIMA:
+      /* TBD */
+      break;
+
+    case NRF52_SEEED_T1000:
+      pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_T1000_3V3_EN, HIGH);
+
+      pinMode(SOC_GPIO_PIN_T1000_BUZZER_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_T1000_BUZZER_EN, HIGH);
+      break;
+
+    case NRF52_HELTEC_T114:
+      digitalWrite(SOC_GPIO_PIN_T114_VEXT_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_T114_VEXT_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_T114_TFT_EN, LOW);
+      pinMode(SOC_GPIO_PIN_T114_TFT_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_T114_TFT_BLGT, LOW);
+      pinMode(SOC_GPIO_PIN_T114_TFT_BLGT, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_T114_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_T114_ADC_EN, OUTPUT);
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      digitalWrite(SOC_GPIO_PIN_IO_PWR,  HIGH);
+      pinMode(SOC_GPIO_PIN_IO_PWR,  OUTPUT);  /* VDD_POWR is ON */
+      digitalWrite(SOC_GPIO_PIN_3V3_PWR, INPUT);
+
+      delay(200);
+      break;
   }
 
   /* GPIO pins init */
@@ -942,6 +998,24 @@ static void nRF52_setup()
 
       break;
 
+    case NRF52_HELTEC_T114:
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_RST, HIGH); /* TBD */
+      pinMode(SOC_GPIO_PIN_GNSS_T114_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_T114_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_T114_GREEN, OUTPUT);
+      digitalWrite(SOC_GPIO_LED_T114_GREEN, HIGH);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_T114_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_T114_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_T114_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_T114_DIO1;
+#endif /* USE_RADIOLIB */
+
+      break;
+
     case NRF52_NORDIC_PCA10059:
     default:
       pinMode(SOC_GPIO_LED_PCA10059_STATUS, OUTPUT);
@@ -1011,6 +1085,7 @@ static void nRF52_setup()
       possible_devices[MX25R1635F_INDEX].supports_qspi_writes = false;
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_HELTEC_T114:
       ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
                                             SOC_GPIO_PIN_SFL_SS,
                                             SOC_GPIO_PIN_SFL_MOSI,
@@ -1959,6 +2034,7 @@ static void nRF52_SPI_begin()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_HELTEC_T114:
     default:
       SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
                   SOC_GPIO_PIN_TECHO_REV_0_SCK,
@@ -1983,6 +2059,10 @@ static void nRF52_swSer_begin(unsigned long baud)
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T1000_RX,
                              SOC_GPIO_PIN_GNSS_T1000_TX);
       baud = 115200; /* Airoha AG3335 default value */
+      break;
+    case NRF52_HELTEC_T114:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T114_RX,
+                             SOC_GPIO_PIN_GNSS_T114_TX);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -2133,125 +2213,373 @@ static byte nRF52_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
+  if (nRF52_board == NRF52_NORDIC_PCA10059 ||
+      nRF52_board == NRF52_SEEED_T1000) {
+      /* Nothing to do */
+  } else if (nRF52_board == NRF52_HELTEC_T114) {
+#if defined(USE_TFT)
+#if SPI_INTERFACES_COUNT >= 2
+    SPI1.setPins(SOC_GPIO_PIN_T114_TFT_MISO,
+                 SOC_GPIO_PIN_T114_TFT_SCK,
+                 SOC_GPIO_PIN_T114_TFT_MOSI);
+#endif
+
+    nRF52_display = TFT_LH114TIF03;
+
+    tft = new TFT_eSPI(LV_HOR_RES, LV_VER_RES);
+    tft->init();
+#if LV_HOR_RES != 135 && LV_HOR_RES != 80
+    uint8_t r = 0;
+#else
+    uint8_t r = 1; /* 90 degrees */
+#endif /* LV_HOR_RES */
+    tft->setRotation(r);
+    tft->fillScreen(TFT_NAVY);
+
+    int bl_pin = SOC_GPIO_PIN_T114_TFT_BLGT;
+
+    tft->setTextFont(4);
+    tft->setTextSize(2);
+    tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+    uint16_t tbw = tft->textWidth(SoftRF_text1);
+    uint16_t tbh = tft->fontHeight();
+    tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+    tft->println(SoftRF_text1);
+
+    for (int level = 0; level < 255; level += 25) {
+      TFT_backlight_adjust(bl_pin, level);
+      delay(100);
+    }
+
+#if LV_HOR_RES == 135
+    rval = DISPLAY_TFT_TTGO_135;
+#elif LV_HOR_RES == 80
+    rval = DISPLAY_TFT_HELTEC_80;
+#else
+    rval = DISPLAY_TFT_TTGO_240;
+#endif /* LV_HOR_RES */
+#endif /* USE_TFT */
+  } else {
 #if defined(USE_EPAPER)
 
 #if SPI_INTERFACES_COUNT >= 2
-  switch (nRF52_board)
-  {
-    case NRF52_LILYGO_TULTIMA:
-      SPI1.setPins(SOC_GPIO_PIN_EPD_TULTIMA_MISO,
-                   SOC_GPIO_PIN_EPD_TULTIMA_SCK,
-                   SOC_GPIO_PIN_EPD_TULTIMA_MOSI);
-      nRF52_display = EP_GDEY037T03;
-      break;
-    case NRF52_NORDIC_PCA10059:
-    case NRF52_SEEED_T1000:
-      return rval;
-    case NRF52_LILYGO_TECHO_REV_0:
-    case NRF52_LILYGO_TECHO_REV_1:
-    case NRF52_LILYGO_TECHO_REV_2:
-    default:
-      SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
-                   SOC_GPIO_PIN_EPD_SCK,
-                   SOC_GPIO_PIN_EPD_MOSI);
-      break;
-  }
+    switch (nRF52_board)
+    {
+      case NRF52_LILYGO_TULTIMA:
+        SPI1.setPins(SOC_GPIO_PIN_EPD_TULTIMA_MISO,
+                     SOC_GPIO_PIN_EPD_TULTIMA_SCK,
+                     SOC_GPIO_PIN_EPD_TULTIMA_MOSI);
+        nRF52_display = EP_GDEY037T03;
+        break;
+      case NRF52_LILYGO_TECHO_REV_0:
+      case NRF52_LILYGO_TECHO_REV_1:
+      case NRF52_LILYGO_TECHO_REV_2:
+      default:
+        SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
+                     SOC_GPIO_PIN_EPD_SCK,
+                     SOC_GPIO_PIN_EPD_MOSI);
+        break;
+    }
 #endif
 
-  if (nRF52_display == EP_UNKNOWN) {
-    nRF52_display = nRF52_EPD_ident();
-  }
-
-  switch (nRF52_display)
-  {
-  case EP_GDEP015OC1:
-    display = &epd_c1;
-    break;
-  case EP_DEPG0150BN:
-    display = &epd_bn;
-    break;
-  case EP_GDEY037T03:
-    display = &epd_t3;
-    break;
-  case EP_GDEH0154D67:
-  default:
-    display = &epd_d67;
-    break;
-  }
-
-  display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
-
-  if (EPD_setup(true)) {
-
-#if defined(USE_EPD_TASK)
-    Display_Semaphore = xSemaphoreCreateBinary();
-
-    if( Display_Semaphore != NULL ) {
-      xSemaphoreGive( Display_Semaphore );
+    if (nRF52_display == EP_UNKNOWN) {
+      nRF52_display = nRF52_EPD_ident();
     }
 
-    xTaskCreate(EPD_Task, "EPD", EPD_STACK_SZ, NULL, /* TASK_PRIO_HIGH */ TASK_PRIO_LOW , &EPD_Task_Handle);
+    switch (nRF52_display)
+    {
+    case EP_GDEP015OC1:
+      display = &epd_c1;
+      break;
+    case EP_DEPG0150BN:
+      display = &epd_bn;
+      break;
+    case EP_GDEY037T03:
+      display = &epd_t3;
+      break;
+    case EP_GDEH0154D67:
+    default:
+      display = &epd_d67;
+      break;
+    }
 
-    TaskInfoTime = millis();
+    display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+
+    if (EPD_setup(true)) {
+
+#if defined(USE_EPD_TASK)
+      Display_Semaphore = xSemaphoreCreateBinary();
+
+      if( Display_Semaphore != NULL ) {
+        xSemaphoreGive( Display_Semaphore );
+      }
+
+      xTaskCreate(EPD_Task, "EPD", EPD_STACK_SZ, NULL,
+                  /* TASK_PRIO_HIGH */ TASK_PRIO_LOW , &EPD_Task_Handle);
+
+      TaskInfoTime = millis();
 #endif
-    rval = DISPLAY_EPD_1_54;
-  }
+      rval = DISPLAY_EPD_1_54;
+    }
 
-  /* EPD back light off */
-  pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
-  digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+    /* EPD back light off */
+    pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
 
 #endif /* USE_EPAPER */
+  }
 
   return rval;
 }
 
 static void nRF52_Display_loop()
 {
+  char buf[16];
+  uint32_t disp_value;
+
+  uint16_t tbw;
+  uint16_t tbh;
+
+  switch (hw_info.display)
+  {
 #if defined(USE_EPAPER)
-  EPD_loop();
+  case DISPLAY_EPD_1_54:
+    EPD_loop();
 
 #if 0
-  if (millis() - TaskInfoTime > 5000) {
-    char pcWriteBuffer[512];
-    vTaskList(pcWriteBuffer );
-    Serial.println(pcWriteBuffer); Serial.flush();
-    TaskInfoTime = millis();
-  }
+    if (millis() - TaskInfoTime > 5000) {
+      char pcWriteBuffer[512];
+      vTaskList(pcWriteBuffer );
+      Serial.println(pcWriteBuffer); Serial.flush();
+      TaskInfoTime = millis();
+    }
 #endif
+    break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_TFT)
+#if LV_HOR_RES == 135
+  case DISPLAY_TFT_TTGO_135:
+    if (tft) {
+      if (!TFT_display_frontpage) {
+        tft->fillScreen(TFT_NAVY);
+
+        tft->setTextFont(2);
+        tft->setTextSize(2);
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        tbw = tft->textWidth(ID_text);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth(" "), tft->height()/4 - tbh - 1);
+        tft->print(ID_text);
+
+        tbw = tft->textWidth(PROTOCOL_text);
+
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/4 - tbh - 1);
+        tft->print(PROTOCOL_text);
+
+        tbw = tft->textWidth(RX_text);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth("   "), 3*tft->height()/4 - tbh - 1);
+        tft->print(RX_text);
+
+        tbw = tft->textWidth(TX_text);
+
+        tft->setCursor(tft->width()/2 + tft->textWidth("   "),
+                       3*tft->height()/4 - tbh - 1);
+        tft->print(TX_text);
+
+        tft->setTextFont(2);
+        tft->setTextSize(3);
+
+        snprintf (buf, sizeof(buf), "%06X", ThisAircraft.addr);
+
+        tbw = tft->textWidth(buf);
+        tbh = tft->fontHeight();
+
+        tft->setCursor(tft->textWidth(" "), tft->height()/4 - 7);
+        tft->print(buf);
+
+        tbw = tft->textWidth("O");
+
+        tft->setCursor(tft->width() - tbw - tft->textWidth(" "),
+                       tft->height()/4 - 7);
+        tft->print(Protocol_ID[ThisAircraft.protocol][0]);
+
+        itoa(rx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->textWidth(" "), 3*tft->height()/4 - 7);
+        tft->print(buf);
+
+        itoa(tx_packets_counter % 1000, buf, 10);
+        tft->setCursor(tft->width()/2 + tft->textWidth(" "), 3*tft->height()/4 - 7);
+        tft->print(buf);
+
+        TFT_display_frontpage = true;
+
+      } else { /* TFT_display_frontpage */
+
+        if (rx_packets_counter > prev_rx_packets_counter) {
+          disp_value = rx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          tft->setTextFont(2);
+          tft->setTextSize(3);
+
+          tft->setCursor(tft->textWidth(" "), 3*tft->height()/4 - 7);
+          tft->print(buf);
+
+          prev_rx_packets_counter = rx_packets_counter;
+        }
+        if (tx_packets_counter > prev_tx_packets_counter) {
+          disp_value = tx_packets_counter % 1000;
+          itoa(disp_value, buf, 10);
+
+          if (disp_value < 10) {
+            strcat_P(buf,PSTR("  "));
+          } else {
+            if (disp_value < 100) {
+              strcat_P(buf,PSTR(" "));
+            };
+          }
+
+          tft->setTextFont(2);
+          tft->setTextSize(3);
+
+          tft->setCursor(tft->width()/2 + tft->textWidth(" "), 3*tft->height()/4 - 7);
+          tft->print(buf);
+
+          prev_tx_packets_counter = tx_packets_counter;
+        }
+      }
+    }
+
+    break;
+
+#endif /* LV_HOR_RES == 135 */
+#endif /* USE_TFT */
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 static void nRF52_Display_fini(int reason)
 {
+  switch (hw_info.display)
+  {
 #if defined(USE_EPAPER)
+  case DISPLAY_EPD_1_54:
 
-  EPD_fini(reason, screen_saver);
+    EPD_fini(reason, screen_saver);
 
 #if defined(USE_EPD_TASK)
-  if( EPD_Task_Handle != NULL )
-  {
-    vTaskDelete( EPD_Task_Handle );
-  }
+    if( EPD_Task_Handle != NULL )
+    {
+      vTaskDelete( EPD_Task_Handle );
+    }
 
-  if( Display_Semaphore != NULL )
-  {
-    vSemaphoreDelete( Display_Semaphore );
-  }
+    if( Display_Semaphore != NULL )
+    {
+      vSemaphoreDelete( Display_Semaphore );
+    }
 #endif
 
-  SPI1.end();
+    SPI1.end();
 
-  // pinMode(SOC_GPIO_PIN_EPD_MISO, INPUT);
-  // pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
-  // pinMode(SOC_GPIO_PIN_EPD_SCK,  INPUT);
-  pinMode(SOC_GPIO_PIN_EPD_SS,   INPUT);
-  pinMode(SOC_GPIO_PIN_EPD_DC,   INPUT);
-  pinMode(SOC_GPIO_PIN_EPD_RST,  INPUT);
-  // pinMode(SOC_GPIO_PIN_EPD_BUSY, INPUT);
-  pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
+    // pinMode(SOC_GPIO_PIN_EPD_MISO, INPUT);
+    // pinMode(SOC_GPIO_PIN_EPD_MOSI, INPUT);
+    // pinMode(SOC_GPIO_PIN_EPD_SCK,  INPUT);
+    pinMode(SOC_GPIO_PIN_EPD_SS,   INPUT);
+    pinMode(SOC_GPIO_PIN_EPD_DC,   INPUT);
+    pinMode(SOC_GPIO_PIN_EPD_RST,  INPUT);
+    // pinMode(SOC_GPIO_PIN_EPD_BUSY, INPUT);
+    pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
 
+    break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_TFT)
+  case DISPLAY_TFT_TTGO_135:
+    if (tft) {
+        int level;
+        const char *msg = (reason == SOFTRF_SHUTDOWN_LOWBAT) ?
+                   "LOW BAT" : "  OFF  ";
+
+        int bl_pin = SOC_GPIO_PIN_T114_TFT_BLGT;
+
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(bl_pin, level);
+          delay(100);
+        }
+
+        tft->fillScreen(TFT_NAVY);
+        tft->setTextFont(4);
+#if LV_VER_RES == 160
+        if (reason == SOFTRF_SHUTDOWN_LOWBAT) {
+          tft->setTextSize(1);
+        } else
+#endif
+        {
+          tft->setTextSize(2);
+        }
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        uint16_t tbw = tft->textWidth(msg);
+        uint16_t tbh = tft->fontHeight();
+
+        tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+        tft->print(msg);
+
+        for (level = 0; level <= 250; level += 25) {
+          TFT_backlight_adjust(bl_pin, level);
+          delay(100);
+        }
+
+        delay(2000);
+
+        for (level = 250; level >= 0; level -= 25) {
+          TFT_backlight_adjust(bl_pin, level);
+          delay(100);
+        }
+
+        TFT_backlight_adjust(bl_pin, 0);
+        /* TODO: turn PWM off */
+        pinMode(bl_pin, INPUT_PULLDOWN);
+
+        tft->fillScreen(TFT_NAVY);
+        TFT_off();
+    }
+
+    SPI1.end();
+
+    // pinMode(SOC_GPIO_PIN_T114_TFT_MISO, INPUT);
+    // pinMode(SOC_GPIO_PIN_T114_TFT_MOSI, INPUT);
+    // pinMode(SOC_GPIO_PIN_T114_TFT_SCK,  INPUT);
+    pinMode(SOC_GPIO_PIN_T114_TFT_SS,   INPUT);
+    pinMode(SOC_GPIO_PIN_T114_TFT_DC,   INPUT);
+    pinMode(SOC_GPIO_PIN_T114_TFT_RST,  INPUT);
+    pinMode(SOC_GPIO_PIN_T114_TFT_BLGT, INPUT);
+
+    break;
+#endif /* USE_TFT */
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 #if !defined(ARDUINO_ARCH_MBED)

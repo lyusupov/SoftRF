@@ -32,6 +32,10 @@
 #include <User_Setups/Setup45_TTGO_T_Watch.h>      // Setup file for ESP32 and TTGO T-Watch ST7789 SPI bus TFT  240x240
 #endif /* CONFIG_IDF_TARGET_ESP32SX */
 
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
+#include <User_Setups/Setup74_Heltec_T114.h> // Setup file for nRF52840 and Heltec Mesh Node T114 ST7789 SPI TFT 135x240
+#endif /* ARDUINO_ARCH_NRF52 */
+
 //#include <User_Setups/Setup1_ILI9341.h>  // Setup file for ESP8266 configured for my ILI9341
 //#include <User_Setups/Setup2_ST7735.h>   // Setup file for ESP8266 configured for my ST7735
 //#include <User_Setups/Setup3_ILI9163.h>  // Setup file for ESP8266 configured for my ILI9163

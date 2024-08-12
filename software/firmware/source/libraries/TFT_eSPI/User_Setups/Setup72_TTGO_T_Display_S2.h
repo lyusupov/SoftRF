@@ -1,5 +1,6 @@
 // Setup for the TTGO T-Display S2
 // Note SPI DMA with ESP32 S2 is not currently supported
+#define USER_SETUP_ID 72
 
 // See SetupX_Template.h for all options available
 
