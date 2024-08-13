@@ -1230,7 +1230,10 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_HAM       ||
       hw_info.model == SOFTRF_MODEL_MIDI      ||
       hw_info.model == SOFTRF_MODEL_ECO       ||
-      hw_info.model == SOFTRF_MODEL_INK)
+      hw_info.model == SOFTRF_MODEL_INK       ||
+      hw_info.model == SOFTRF_MODEL_CARD      ||
+      hw_info.model == SOFTRF_MODEL_COZY      ||
+      hw_info.model == SOFTRF_MODEL_NEO)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
