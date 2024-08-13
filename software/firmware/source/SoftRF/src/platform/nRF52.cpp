@@ -837,6 +837,7 @@ static void nRF52_setup()
                                             SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
       break;
     case NRF52_NORDIC_PCA10059:
+    case NRF52_SEEED_T1000E:
     default:
       break;
   }
@@ -2785,7 +2786,24 @@ void handleEvent(AceButton* button, uint8_t eventType,
       if (button == &button_1) {
 
 #if defined(USE_EPAPER)
-        if (digitalRead(SOC_GPIO_PIN_PAD) == LOW) {
+        int up_button_pin = -1;
+
+        switch (nRF52_board)
+        {
+          case NRF52_LILYGO_TULTIMA:
+            up_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON2;
+            break;
+
+          case NRF52_LILYGO_TECHO_REV_0:
+          case NRF52_LILYGO_TECHO_REV_1:
+          case NRF52_LILYGO_TECHO_REV_2:
+          case NRF52_NORDIC_PCA10059:
+            up_button_pin = SOC_GPIO_PIN_PAD;
+          default:
+            break;
+        }
+
+        if (up_button_pin >= 0 && digitalRead(up_button_pin) == LOW) {
           screen_saver = true;
         }
 #endif
@@ -2810,7 +2828,7 @@ void onUpButtonEvent() {
 static void nRF52_Button_setup()
 {
   int mode_button_pin;
-  int up_button_pin = SOC_GPIO_PIN_PAD;
+  int up_button_pin = -1;
 
   switch (nRF52_board)
   {
@@ -2831,6 +2849,7 @@ static void nRF52_Button_setup()
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_NORDIC_PCA10059:
+      up_button_pin   = SOC_GPIO_PIN_PAD;
     default:
       mode_button_pin = SOC_GPIO_PIN_BUTTON;
       break;
@@ -2838,10 +2857,10 @@ static void nRF52_Button_setup()
 
   // Button(s) uses external pull up resistor.
   pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
-  pinMode(up_button_pin, INPUT);
+  if (up_button_pin >= 0) { pinMode(up_button_pin, INPUT); }
 
   button_1.init(mode_button_pin);
-  button_2.init(up_button_pin);
+  if (up_button_pin >= 0) { button_2.init(up_button_pin); }
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
@@ -2867,19 +2886,47 @@ static void nRF52_Button_setup()
   UpButtonConfig->setLongPressDelay(2000);
 
 //  attachInterrupt(digitalPinToInterrupt(mode_button_pin), onModeButtonEvent, CHANGE );
-  attachInterrupt(digitalPinToInterrupt(up_button_pin),   onUpButtonEvent,   CHANGE );
+  if (up_button_pin >= 0) {
+    attachInterrupt(digitalPinToInterrupt(up_button_pin),   onUpButtonEvent,   CHANGE );
+  }
 }
 
 static void nRF52_Button_loop()
 {
   button_1.check();
-  button_2.check();
+
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+    case NRF52_LILYGO_TULTIMA:
+      button_2.check();
+      break;
+    default:
+      break;
+  }
 }
 
 static void nRF52_Button_fini()
 {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
-  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
+
+  switch (nRF52_board)
+  {
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_NORDIC_PCA10059:
+      detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
+      break;
+    case NRF52_LILYGO_TULTIMA:
+      detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TULTIMA_BUTTON2));
+      break;
+    default:
+      break;
+  }
 }
 
 #if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)
