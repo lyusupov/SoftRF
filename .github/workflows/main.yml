@@ -45,6 +45,7 @@ jobs:
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
             'arduino:mbed_rp2040:pico',
+            #'arduino:mbed_nano:nanorp2040connect',
             'SiliconLabs:silabs:nano_matter:protocol_stack=ble_arduino',
             'WCH:ch32v:CH32V30x_EVT'
           ]
@@ -397,9 +398,9 @@ jobs:
           fi
           if [[ "$BOARD" =~ "arduino:mbed_rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
-            arduino --install-boards arduino:mbed_rp2040:4.1.1 ;
+            arduino --install-boards arduino:mbed_rp2040:4.1.5 ;
             arduino --board $BOARD --save-prefs ;
-            cd $HOME/.arduino15/packages/arduino/hardware/mbed_rp2040/4.1.1/variants/RASPBERRY_PI_PICO ;
+            cd $HOME/.arduino15/packages/arduino/hardware/mbed_rp2040/4.1.5/variants/RASPBERRY_PI_PICO ;
             sed -i '62 a // Serial2'                   ${PINS_ARDUINO} ;
             sed -i '63 a #define PIN_SERIAL2_TX (4ul)' ${PINS_ARDUINO} ;
             sed -i '64 a #define PIN_SERIAL2_RX (5ul)' ${PINS_ARDUINO} ;

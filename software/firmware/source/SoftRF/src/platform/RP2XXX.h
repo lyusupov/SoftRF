@@ -153,7 +153,8 @@ struct rst_info {
 
 #define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+      defined(ARDUINO_NANO_RP2040_CONNECT)
 
 /* Console I/O */
 #define SOC_GPIO_PIN_CONS_RX  (5u)
@@ -251,7 +252,16 @@ struct rst_info {
 //#define Serial_setDebugOutput(x) ({})
 //#define WIFI_STA_TIMEOUT      20000
 
+#if !defined(ARDUINO_ARCH_MBED)
 #define EXCLUDE_BLUETOOTH
+#else
+#if defined(ARDUINO_NANO_RP2040_CONNECT)
+//#define EXCLUDE_BLUETOOTH
+#define USE_ARDUINOBLE
+#else
+#define EXCLUDE_BLUETOOTH
+#endif /* ARDUINO_NANO_RP2040_CONNECT */
+#endif /* ARDUINO_ARCH_MBED */
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
 #define EXCLUDE_CC13XX
@@ -299,6 +309,12 @@ struct rst_info {
 #define USE_BOOTSEL_BUTTON
 #else
 #define EXCLUDE_EEPROM
+
+#if defined(USE_ARDUINOBLE)
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#define ARDUINO_CORE_VERSION  STR(CORE_MAJOR) "." STR(CORE_MINOR) "." STR(CORE_PATCH)
+#endif /* USE_ARDUINOBLE */
 #endif /* ARDUINO_ARCH_MBED */
 
 #define USE_BASICMAC

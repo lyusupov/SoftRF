@@ -1525,7 +1525,11 @@ const SoC_ops_t RP2040_ops = {
   RP2040_swSer_begin,
   RP2040_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
+#if defined(USE_ARDUINOBLE)
+  &ArdBLE_Bluetooth_ops,
+#else
   &CYW43_Bluetooth_ops,
+#endif /* USE_ARDUINOBLE */
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */

@@ -20,7 +20,7 @@
 
 #include "../../system/SoC.h"
 
-#if !defined(EXCLUDE_BLUETOOTH)
+#if !defined(EXCLUDE_BLUETOOTH) && !defined(USE_ARDUINOBLE)
 
 #include <queue>
 #include <pico/cyw43_arch.h>
