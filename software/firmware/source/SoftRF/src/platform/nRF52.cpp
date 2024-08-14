@@ -3187,7 +3187,11 @@ const SoC_ops_t nRF52_ops = {
   nRF52_swSer_begin,
   nRF52_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
+#if defined(USE_ARDUINOBLE)
+  &ArdBLE_Bluetooth_ops,
+#else
   &nRF52_Bluetooth_ops,
+#endif /* USE_ARDUINOBLE */
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */

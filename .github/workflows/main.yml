@@ -357,8 +357,12 @@ jobs:
           fi
           if [[ "$BOARD" =~ "arduino:mbed_edge:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
-            arduino --install-boards arduino:mbed_edge:4.1.1 ;
+            arduino --install-boards arduino:mbed_edge:4.1.5 ;
             arduino --board $BOARD --save-prefs ;
+            wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
+            tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
+            rm ${ARDUINO_BLE_VERSION}.tar.gz ;
+            mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "arduino:samd:" ]]; then

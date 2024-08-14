@@ -115,6 +115,10 @@ struct rst_info {
 
 #if defined(ARDUINO_ARCH_MBED)
 #define PCF8563_SLAVE_ADDRESS (0x51)
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#define ARDUINO_CORE_VERSION  STR(CORE_MAJOR) "." STR(CORE_MINOR) "." STR(CORE_PATCH)
 #endif /* ARDUINO_ARCH_MBED */
 
 #define MIDI_CHANNEL_TRAFFIC  1
@@ -339,7 +343,8 @@ struct rst_info {
 //#define USE_TFT
 #else
 #undef USE_EPAPER
-#define EXCLUDE_BLUETOOTH
+//#define EXCLUDE_BLUETOOTH
+#define USE_ARDUINOBLE
 #define EXCLUDE_IMU
 #define EXCLUDE_BME280AUX
 #endif /* ARDUINO_ARCH_MBED */
