@@ -101,7 +101,6 @@ struct rst_info {
 
 #define VBAT_MV_PER_LSB       (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
 #define SOC_ADC_VOLTAGE_DIV   (2.0F)          // 100K + 100K voltage divider on VBAT
-#define REAL_VBAT_MV_PER_LSB  (SOC_ADC_VOLTAGE_DIV * VBAT_MV_PER_LSB)
 
 #if !defined(_PINNUM)
 #define _PINNUM(port, pin)    ((port)*32 + (pin))

@@ -40,6 +40,8 @@
 #define SOC_GPIO_PIN_T1000_TEMP       _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_T1000_LUX        _PINNUM(0, 29) // P0.29
 
+#define SOC_ADC_T1000_VOLTAGE_DIV     (2.0F) // 100K + 100K voltage divider on VBAT
+
 /* buzzer */
 #define SOC_GPIO_PIN_T1000_BUZZER     _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_T1000_BUZZER_EN  _PINNUM(1,  5) // P1.05

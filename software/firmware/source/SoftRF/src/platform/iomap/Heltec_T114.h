@@ -36,6 +36,8 @@
 #define SOC_GPIO_PIN_T114_BATTERY   _PINNUM(0,  4) // P0.04
 #define SOC_GPIO_PIN_T114_ADC_EN    _PINNUM(0,  6) // P0.06
 
+#define SOC_ADC_T114_VOLTAGE_DIV    (4.9F) // 390K + 100K voltage divider on VBAT
+
 /* Ext. sensors */
 #define SOC_GPIO_PIN_T114_VEXT_EN   _PINNUM(0, 21) // P0.21
 

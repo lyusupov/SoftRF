@@ -2640,19 +2640,24 @@ static void nRF52_Battery_setup()
 
 static float nRF52_Battery_param(uint8_t param)
 {
-  float rval, voltage;
+  uint32_t bat_adc_pin;
+  float rval, voltage, mult;
 
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
     rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD  ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_COZY  ? BATTERY_THRESHOLD_LIPO   :
                                                  BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
     rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD  ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_COZY  ? BATTERY_CUTOFF_LIPO   :
                                                  BATTERY_CUTOFF_NIMHX2;
     break;
 
@@ -2675,31 +2680,68 @@ static float nRF52_Battery_param(uint8_t param)
 
   case BATTERY_PARAM_VOLTAGE:
   default:
+    voltage = 0.0;
 
-    // Set the analog reference to 3.0V (default = 3.6V)
+    switch (hw_info.pmu)
+    {
+#if !defined(EXCLUDE_PMU)
+    case PMU_SY6970:
+      if (sy6970.isBatteryConnect() /* TODO */) {
+        voltage = sy6970.getBattVoltage();
+      }
+      break;
+#endif /* EXCLUDE_PMU */
+    case PMU_NONE:
+    default:
+      // Set the analog reference to 3.0V (default = 3.6V)
 #if !defined(ARDUINO_ARCH_MBED)
-    analogReference(AR_INTERNAL_3_0);
+      analogReference(AR_INTERNAL_3_0);
 #endif /* ARDUINO_ARCH_MBED */
 
-    // Set the resolution to 12-bit (0..4095)
-    analogReadResolution(12); // Can be 8, 10, 12 or 14
+      // Set the resolution to 12-bit (0..4095)
+      analogReadResolution(12); // Can be 8, 10, 12 or 14
 
-    // Let the ADC settle
-    delay(1);
+      // Let the ADC settle
+      delay(1);
 
-    // Get the raw 12-bit, 0..3000mV ADC value
-    voltage = analogRead(SOC_GPIO_PIN_BATTERY);
+      switch (nRF52_board)
+      {
+        case NRF52_SEEED_T1000E:
+          bat_adc_pin = SOC_GPIO_PIN_T1000_BATTERY;
+          mult        = SOC_ADC_T1000_VOLTAGE_DIV;
+          break;
+        case NRF52_HELTEC_T114:
+          bat_adc_pin = SOC_GPIO_PIN_T114_BATTERY;
+          mult        = SOC_ADC_T114_VOLTAGE_DIV;
+          break;
+        case NRF52_LILYGO_TECHO_REV_0:
+        case NRF52_LILYGO_TECHO_REV_1:
+        case NRF52_LILYGO_TECHO_REV_2:
+        case NRF52_NORDIC_PCA10059:
+        default:
+          bat_adc_pin = SOC_GPIO_PIN_BATTERY;
+          mult        = SOC_ADC_VOLTAGE_DIV;
+          break;
+      }
 
-    // Set the ADC back to the default settings
+      // Get the raw 12-bit, 0..3000mV ADC value
+      voltage = analogRead(bat_adc_pin);
+
+      // Set the ADC back to the default settings
 #if !defined(ARDUINO_ARCH_MBED)
-    analogReference(AR_DEFAULT);
+      analogReference(AR_DEFAULT);
 #endif /* ARDUINO_ARCH_MBED */
-    analogReadResolution(10);
+      analogReadResolution(10);
 
-    // Convert the raw value to compensated mv, taking the resistor-
-    // divider into account (providing the actual LIPO voltage)
-    // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
-    rval = voltage * REAL_VBAT_MV_PER_LSB * 0.001;
+      // Convert the raw value to compensated mv, taking the resistor-
+      // divider into account (providing the actual LIPO voltage)
+      // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
+      voltage *= (mult * VBAT_MV_PER_LSB);
+
+      break;
+    }
+
+    rval = voltage * 0.001;
     break;
   }
 
