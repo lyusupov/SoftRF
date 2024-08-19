@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 
 #include "../../system/SoC.h"
 
@@ -701,8 +701,8 @@ static void CYW43_Bluetooth_setup()
 
       // Setup device information service
       device_information_service_server_init();
-      device_information_service_server_set_manufacturer_name(RP2040_Device_Manufacturer);
-      device_information_service_server_set_model_number(RP2040_Device_Model);
+      device_information_service_server_set_manufacturer_name(RP2xxx_Device_Manufacturer);
+      device_information_service_server_set_model_number(RP2xxx_Device_Model);
       device_information_service_server_set_serial_number(SerialNum);
       device_information_service_server_set_hardware_revision(Hardware);
       device_information_service_server_set_firmware_revision(Firmware);
@@ -906,4 +906,4 @@ IODev_ops_t CYW43_Bluetooth_ops = {
   CYW43_Bluetooth_write
 };
 #endif /* EXCLUDE_BLUETOOTH */
-#endif /* ARDUINO_ARCH_RP2040 */
+#endif /* ARDUINO_ARCH_RP2XXX */

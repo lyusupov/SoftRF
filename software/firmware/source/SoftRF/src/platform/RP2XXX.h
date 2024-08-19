@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 
 #ifndef PLATFORM_RP2XXX_H
 #define PLATFORM_RP2XXX_H
@@ -62,12 +62,13 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
-enum RP2040_board_id {
+enum RP2xxx_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
   RP2040_RPIPICO,
   RP2040_RPIPICO_W,
   RP2040_WEACT,
+  RP2350_RPIPICO_2,
 };
 
 struct rst_info {
@@ -153,7 +154,9 @@ struct rst_info {
 
 #define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)   || \
+      defined(ARDUINO_RASPBERRY_PI_PICO_2) || \
+      defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
       defined(ARDUINO_NANO_RP2040_CONNECT)
 
 /* Console I/O */
@@ -324,7 +327,7 @@ struct rst_info {
 
 #define USE_OGN_ENCRYPTION
 
-extern const char *RP2040_Device_Manufacturer, *RP2040_Device_Model;
+extern const char *RP2xxx_Device_Manufacturer, *RP2xxx_Device_Model;
 
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>
@@ -341,4 +344,4 @@ extern Adafruit_NeoPixel strip;
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_RP2XXX_H */
-#endif /* ARDUINO_ARCH_RP2040 */
+#endif /* ARDUINO_ARCH_RP2XXX */

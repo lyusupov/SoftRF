@@ -94,12 +94,12 @@
 
 #endif /* ARDUINO_ARCH_NRF52 */
 
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 
 #undef  SPI
 #define SPI SPI1
 
-#endif /* ARDUINO_ARCH_RP2040 */
+#endif /* ARDUINO_ARCH_RP2040 || ARDUINO_ARCH_RP2350 */
 
 #if defined(ARDUINO_ARCH_RENESAS)
 #ifndef SPI_HAS_TRANSACTION

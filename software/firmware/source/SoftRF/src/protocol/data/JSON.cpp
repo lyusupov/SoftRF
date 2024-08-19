@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || \
-    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ESP32)
+#if defined(RASPBERRY_PI)        || defined(ARDUINO_ARCH_NRF52)  || \
+    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) || \
+    defined(ARDUINO_ARCH_ESP32)
 
 #include "../../system/SoC.h"
 #include <TinyGPS++.h>
@@ -669,8 +670,9 @@ void parseUISettings(JsonObject& root)
 }
 #endif /* RASPBERRY_PI || ARDUINO_ARCH_NRF52 */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_NRF52) || \
-    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ESP32)
+#if defined(RASPBERRY_PI)        || defined(ARDUINO_ARCH_NRF52)  || \
+    defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) || \
+    defined(ARDUINO_ARCH_ESP32)
 
 void parseSettings(JsonObject& root)
 {

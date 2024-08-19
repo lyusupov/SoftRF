@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 
 #include <SPI.h>
 #include <Wire.h>
@@ -135,19 +135,19 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
-static RP2040_board_id RP2040_board    = RP2040_RAK11300; /* default */
+static RP2xxx_board_id RP2xxx_board    = RP2040_RAK11300; /* default */
 
-const char *RP2040_Device_Manufacturer = SOFTRF_IDENT;
-const char *RP2040_Device_Model        = "Lego Edition";
-const uint16_t RP2040_Device_Version   = SOFTRF_USB_FW_VERSION;
+const char *RP2xxx_Device_Manufacturer = SOFTRF_IDENT;
+const char *RP2xxx_Device_Model        = "Lego Edition";
+const uint16_t RP2xxx_Device_Version   = SOFTRF_USB_FW_VERSION;
 
 #define UniqueIDsize 2
 
 static union {
 #if !defined(ARDUINO_ARCH_MBED)
-  pico_unique_board_id_t RP2040_unique_flash_id;
+  pico_unique_board_id_t RP2xxx_unique_flash_id;
 #endif /* ARDUINO_ARCH_MBED */
-  uint32_t RP2040_chip_id[UniqueIDsize];
+  uint32_t RP2xxx_chip_id[UniqueIDsize];
 };
 
 #if defined(EXCLUDE_EEPROM)
@@ -216,7 +216,7 @@ static SPIFlash_Device_t possible_devices[] = {
 };
 #endif /* ARDUINO_ARCH_MBED */
 
-static bool RP2040_has_spiflash = false;
+static bool RP2xxx_has_spiflash = false;
 static uint32_t spiflash_id     = 0;
 static bool FATFS_is_mounted    = false;
 
@@ -228,15 +228,15 @@ Adafruit_USBD_MSC usb_msc;
 // file system object from SdFat
 FatVolume fatfs;
 
-#define RP2040_JSON_BUFFER_SIZE  1024
+#define RP2XXX_JSON_BUFFER_SIZE  1024
 
-StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+StaticJsonBuffer<RP2XXX_JSON_BUFFER_SIZE> RP2xxx_jsonBuffer;
 
 #if !defined(ARDUINO_ARCH_MBED)
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and
 // return number of copied bytes (must be multiple of block size)
-static int32_t RP2040_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
+static int32_t RP2xxx_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
 {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
@@ -246,7 +246,7 @@ static int32_t RP2040_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and
 // return number of written bytes (must be multiple of block size)
-static int32_t RP2040_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
+static int32_t RP2xxx_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
 {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
@@ -255,7 +255,7 @@ static int32_t RP2040_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufs
 
 // Callback invoked when WRITE10 command is completed (status received and accepted by host).
 // used to flush any pending cache.
-static void RP2040_msc_flush_cb (void)
+static void RP2xxx_msc_flush_cb (void)
 {
   // sync with flash
   SPIFlash->syncBlocks();
@@ -270,12 +270,12 @@ static void RP2040_msc_flush_cb (void)
 SPIClassRP2040 SPI0(spi0, PIN_SPI0_MISO, PIN_SPI0_SS, PIN_SPI0_SCK, PIN_SPI0_MOSI);
 #endif /* EXCLUDE_WIFI */
 
-static void RP2040_setup()
+static void RP2xxx_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
-  pico_get_unique_board_id(&RP2040_unique_flash_id);
+  pico_get_unique_board_id(&RP2xxx_unique_flash_id);
 #else
-  flash_get_unique_id((uint8_t *)&RP2040_chip_id);
+  flash_get_unique_id((uint8_t *)&RP2xxx_chip_id);
 #endif /* ARDUINO_ARCH_MBED */
 
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
@@ -288,9 +288,9 @@ static void RP2040_setup()
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
 #if defined(USE_TINYUSB)
-  USBDevice.setManufacturerDescriptor(RP2040_Device_Manufacturer);
-  USBDevice.setProductDescriptor(RP2040_Device_Model);
-  USBDevice.setDeviceVersion(RP2040_Device_Version);
+  USBDevice.setManufacturerDescriptor(RP2xxx_Device_Manufacturer);
+  USBDevice.setProductDescriptor(RP2xxx_Device_Model);
+  USBDevice.setDeviceVersion(RP2xxx_Device_Version);
 #endif /* USE_TINYUSB */
 
 #if !defined(ARDUINO_ARCH_MBED)
@@ -328,21 +328,21 @@ static void RP2040_setup()
 #endif
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO)
-  RP2040_board = RP2040_RPIPICO;
+  RP2xxx_board = RP2040_RPIPICO;
 #if !defined(EXCLUDE_WIFI) && !defined(ESPHOSTSPI)
   WiFi.setPins(PIN_SPI0_SS, D26, D24, D20, &SPI0);
 #endif /* EXCLUDE_WIFI */
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2040_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
+  RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
-  RP2040_board = (SoC->getChipId() == 0xcf516424) ?
-                  RP2040_WEACT : RP2040_board;
+  RP2xxx_board = (SoC->getChipId() == 0xcf516424) ?
+                  RP2040_WEACT : RP2xxx_board;
 
 #if !defined(ARDUINO_ARCH_MBED)
-  RP2040_has_spiflash = SPIFlash->begin(possible_devices,
+  RP2xxx_has_spiflash = SPIFlash->begin(possible_devices,
                                         EXTERNAL_FLASH_DEVICE_COUNT);
-  if (RP2040_has_spiflash) {
+  if (RP2xxx_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
 
     uint32_t capacity = spiflash_id & 0xFF;
@@ -352,12 +352,12 @@ static void RP2040_setup()
 #if defined(USE_TINYUSB)
       // Set disk vendor id, product id and revision
       // with string up to 8, 16, 4 characters respectively
-      usb_msc.setID(RP2040_Device_Manufacturer, "Internal Flash", "1.0");
+      usb_msc.setID(RP2xxx_Device_Manufacturer, "Internal Flash", "1.0");
 
       // Set callback
-      usb_msc.setReadWriteCallback(RP2040_msc_read_cb,
-                                   RP2040_msc_write_cb,
-                                   RP2040_msc_flush_cb);
+      usb_msc.setReadWriteCallback(RP2xxx_msc_read_cb,
+                                   RP2xxx_msc_write_cb,
+                                   RP2xxx_msc_flush_cb);
 
       // Set disk size, block size should be 512 regardless of spi flash page size
       usb_msc.setCapacity(SPIFlash->size()/512, 512);
@@ -378,7 +378,7 @@ static void RP2040_setup()
   for (int i=0; i < 20; i++) {if (USBSerial) break; else delay(100);}
 }
 
-static void RP2040_post_init()
+static void RP2xxx_post_init()
 {
 #if 0
     Serial.println();
@@ -461,7 +461,7 @@ static unsigned long rx_led_time_marker = 0;
 
 #define	LED_BLINK_TIME 100
 
-static void RP2040_loop()
+static void RP2xxx_loop()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
@@ -505,18 +505,18 @@ static void RP2040_loop()
 #include <boards/pico_w.h>
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
-static void RP2040_fini(int reason)
+static void RP2xxx_fini(int reason)
 {
   Wire.end();
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  if (RP2040_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W) {
     if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
     pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
   }
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
-  if (RP2040_has_spiflash) {
+  if (RP2xxx_has_spiflash) {
 #if defined(USE_TINYUSB)
     usb_msc.setUnitReady(false);
 //  usb_msc.end(); /* N/A */
@@ -568,7 +568,7 @@ static void RP2040_fini(int reason)
 #endif
 }
 
-static void RP2040_reset()
+static void RP2xxx_reset()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   rp2040.restart();
@@ -577,10 +577,10 @@ static void RP2040_reset()
 #endif /* ARDUINO_ARCH_MBED */
 }
 
-static uint32_t RP2040_getChipId()
+static uint32_t RP2xxx_getChipId()
 {
 #if !defined(SOFTRF_ADDRESS)
-  uint32_t id = __builtin_bswap32(RP2040_chip_id[UniqueIDsize - 1]);
+  uint32_t id = __builtin_bswap32(RP2xxx_chip_id[UniqueIDsize - 1]);
 
   return DevID_Mapper(id);
 #else
@@ -588,12 +588,12 @@ static uint32_t RP2040_getChipId()
 #endif
 }
 
-static void* RP2040_getResetInfoPtr()
+static void* RP2xxx_getResetInfoPtr()
 {
   return (void *) &reset_info;
 }
 
-static String RP2040_getResetInfo()
+static String RP2xxx_getResetInfo()
 {
   switch (reset_info.reason)
   {
@@ -601,7 +601,7 @@ static String RP2040_getResetInfo()
   }
 }
 
-static String RP2040_getResetReason()
+static String RP2xxx_getResetReason()
 {
   switch (reset_info.reason)
   {
@@ -616,7 +616,7 @@ static String RP2040_getResetReason()
   }
 }
 
-static uint32_t RP2040_getFreeHeap()
+static uint32_t RP2xxx_getFreeHeap()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   return rp2040.getFreeHeap();
@@ -625,7 +625,7 @@ static uint32_t RP2040_getFreeHeap()
 #endif /* ARDUINO_ARCH_MBED */
 }
 
-static long RP2040_random(long howsmall, long howBig)
+static long RP2xxx_random(long howsmall, long howBig)
 {
   if(howsmall >= howBig) {
       return howsmall;
@@ -635,7 +635,7 @@ static long RP2040_random(long howsmall, long howBig)
   return random(diff) + howsmall;
 }
 
-static void RP2040_Sound_test(int var)
+static void RP2xxx_Sound_test(int var)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
     tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
@@ -645,7 +645,7 @@ static void RP2040_Sound_test(int var)
   }
 }
 
-static void RP2040_Sound_tone(int hz, uint8_t volume)
+static void RP2xxx_Sound_tone(int hz, uint8_t volume)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
     if (hz > 0) {
@@ -656,12 +656,12 @@ static void RP2040_Sound_tone(int hz, uint8_t volume)
   }
 }
 
-static uint32_t RP2040_maxSketchSpace()
+static uint32_t RP2xxx_maxSketchSpace()
 {
   return 1048576; /* TBD */
 }
 
-static void RP2040_WiFi_set_param(int ndx, int value)
+static void RP2xxx_WiFi_set_param(int ndx, int value)
 {
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   switch (ndx)
@@ -696,15 +696,15 @@ static void RP2040_WiFi_set_param(int ndx, int value)
 #include <dhcpserver/dhcpserver.h>
 #endif /* EXCLUDE_WIFI */
 
-union rp2040_ip {
+union rp2xxx_ip {
   uint32_t addr;
   uint8_t bytes[4];
 };
 
-static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+static void RP2xxx_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
-  union rp2040_ip ipv4;
+  union rp2xxx_ip ipv4;
   IPAddress ClientIP;
   ipv4.addr       = (uint32_t) WiFi.localIP();
   WiFiMode_t mode = WiFi.getMode();
@@ -739,18 +739,18 @@ static void RP2040_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 #endif /* EXCLUDE_WIFI */
 }
 
-static void RP2040_WiFiUDP_stopAll()
+static void RP2xxx_WiFiUDP_stopAll()
 {
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   WiFiUDP::stopAll();
 #endif /* EXCLUDE_WIFI */
 }
 
-static bool RP2040_WiFi_hostname(String aHostname)
+static bool RP2xxx_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
-  if (RP2040_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }
@@ -758,7 +758,7 @@ static bool RP2040_WiFi_hostname(String aHostname)
   return rval;
 }
 
-static int RP2040_WiFi_clients_count()
+static int RP2xxx_WiFi_clients_count()
 {
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
   WiFiMode_t mode = WiFi.getMode();
@@ -780,7 +780,7 @@ static int RP2040_WiFi_clients_count()
 #endif /* EXCLUDE_WIFI */
 }
 
-static bool RP2040_EEPROM_begin(size_t size)
+static bool RP2xxx_EEPROM_begin(size_t size)
 {
 #if !defined(EXCLUDE_EEPROM)
   EEPROM.begin(size);
@@ -789,17 +789,17 @@ static bool RP2040_EEPROM_begin(size_t size)
   return true;
 }
 
-static void RP2040_EEPROM_extension(int cmd)
+static void RP2xxx_EEPROM_extension(int cmd)
 {
   if (cmd == EEPROM_EXT_LOAD) {
 
-    if ( RP2040_has_spiflash && FATFS_is_mounted ) {
+    if ( RP2xxx_has_spiflash && FATFS_is_mounted ) {
       File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
       if (file) {
-        // StaticJsonBuffer<RP2040_JSON_BUFFER_SIZE> RP2040_jsonBuffer;
+        // StaticJsonBuffer<RP2XXX_JSON_BUFFER_SIZE> RP2xxx_jsonBuffer;
 
-        JsonObject &root = RP2040_jsonBuffer.parseObject(file);
+        JsonObject &root = RP2xxx_jsonBuffer.parseObject(file);
 
         if (root.success()) {
           JsonVariant msg_class = root["class"];
@@ -870,7 +870,7 @@ static void RP2040_EEPROM_extension(int cmd)
 #endif /* USE_USB_HOST */
 #endif /* EXCLUDE_WIFI and EXCLUDE_BLUETOOTH */
 
-    if (RP2040_board != RP2040_RPIPICO_W &&
+    if (RP2xxx_board != RP2040_RPIPICO_W &&
         settings->bluetooth != BLUETOOTH_NONE) {
       settings->bluetooth = BLUETOOTH_NONE;
     }
@@ -882,22 +882,22 @@ static void RP2040_EEPROM_extension(int cmd)
   }
 }
 
-static void RP2040_SPI_begin()
+static void RP2xxx_SPI_begin()
 {
   SPI1.begin();
 }
 
-static void RP2040_swSer_begin(unsigned long baud)
+static void RP2xxx_swSer_begin(unsigned long baud)
 {
   Serial_GNSS_In.begin(baud);
 }
 
-static void RP2040_swSer_enableRx(boolean arg)
+static void RP2xxx_swSer_enableRx(boolean arg)
 {
   /* NONE */
 }
 
-static byte RP2040_Display_setup()
+static byte RP2xxx_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
@@ -912,21 +912,21 @@ static byte RP2040_Display_setup()
   return rval;
 }
 
-static void RP2040_Display_loop()
+static void RP2xxx_Display_loop()
 {
 #if defined(USE_OLED)
   OLED_loop();
 #endif /* USE_OLED */
 }
 
-static void RP2040_Display_fini(int reason)
+static void RP2xxx_Display_fini(int reason)
 {
 #if defined(USE_OLED)
   OLED_fini(reason);
 #endif /* USE_OLED */
 }
 
-static void RP2040_Battery_setup()
+static void RP2xxx_Battery_setup()
 {
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
   analogReadResolution(12);
@@ -937,19 +937,19 @@ static void RP2040_Battery_setup()
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 
-static float RP2040_Battery_param(uint8_t param)
+static float RP2xxx_Battery_param(uint8_t param)
 {
   float rval, voltage;
 
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = RP2040_board == RP2040_RPIPICO || RP2040_board == RP2040_RPIPICO_W ?
+    rval = RP2xxx_board == RP2040_RPIPICO || RP2xxx_board == RP2040_RPIPICO_W ?
            BATTERY_THRESHOLD_NIMHX2 : BATTERY_THRESHOLD_LIPO;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = RP2040_board == RP2040_RPIPICO || RP2040_board == RP2040_RPIPICO_W ?
+    rval = RP2xxx_board == RP2040_RPIPICO || RP2xxx_board == RP2040_RPIPICO_W ?
            BATTERY_CUTOFF_NIMHX2 : BATTERY_CUTOFF_LIPO;
     break;
 
@@ -981,7 +981,7 @@ static float RP2040_Battery_param(uint8_t param)
       uint pin25_dir;
       uint pin29_dir;
 
-      if (RP2040_board == RP2040_RPIPICO_W) {
+      if (RP2xxx_board == RP2040_RPIPICO_W) {
         pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
         pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
         adc_gpio_init(SOC_GPIO_PIN_BATTERY);
@@ -996,7 +996,7 @@ static float RP2040_Battery_param(uint8_t param)
 
       mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
 
-      if (RP2040_board == RP2040_RPIPICO_W) {
+      if (RP2xxx_board == RP2040_RPIPICO_W) {
 #if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
         gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
         gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
@@ -1013,29 +1013,29 @@ static float RP2040_Battery_param(uint8_t param)
   return rval;
 }
 
-void RP2040_GNSS_PPS_Interrupt_handler() {
+void RP2xxx_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
 
-static unsigned long RP2040_get_PPS_TimeMarker() {
+static unsigned long RP2xxx_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
-static bool RP2040_Baro_setup() {
+static bool RP2xxx_Baro_setup() {
   return true;
 }
 
-static void RP2040_UATSerial_begin(unsigned long baud)
+static void RP2xxx_UATSerial_begin(unsigned long baud)
 {
 
 }
 
-static void RP2040_UATModule_restart()
+static void RP2xxx_UATModule_restart()
 {
 
 }
 
-static void RP2040_WDT_setup()
+static void RP2xxx_WDT_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   Watchdog.enable(5000);
@@ -1043,7 +1043,7 @@ static void RP2040_WDT_setup()
   wdt_is_active = true;
 }
 
-static void RP2040_WDT_fini()
+static void RP2xxx_WDT_fini()
 {
   if (wdt_is_active) {
 #if !defined(ARDUINO_ARCH_MBED)
@@ -1089,7 +1089,7 @@ void onPageButtonEvent() {
 }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 
-static void RP2040_Button_setup()
+static void RP2xxx_Button_setup()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_LEGO) {
@@ -1125,7 +1125,7 @@ static bool prev_bootsel_state = false;
 static bool is_bootsel_click = false;
 #endif /* USE_BOOTSEL_BUTTON */
 
-static void RP2040_Button_loop()
+static void RP2xxx_Button_loop()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_LEGO) {
@@ -1164,7 +1164,7 @@ static void RP2040_Button_loop()
 #endif /* USE_BOOTSEL_BUTTON */
 }
 
-static void RP2040_Button_fini()
+static void RP2xxx_Button_fini()
 {
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
   if (hw_info.model == SOFTRF_MODEL_LEGO) {
@@ -1178,7 +1178,7 @@ static void RP2040_Button_fini()
 #endif /* USE_BOOTSEL_BUTTON */
 }
 
-static void RP2040_USB_setup()
+static void RP2xxx_USB_setup()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   if (USBSerial && USBSerial != Serial) {
@@ -1199,7 +1199,7 @@ static void RP2040_USB_setup()
 RingBufferN<USB_TX_FIFO_SIZE> USB_TX_FIFO = RingBufferN<USB_TX_FIFO_SIZE>();
 RingBufferN<USB_RX_FIFO_SIZE> USB_RX_FIFO = RingBufferN<USB_RX_FIFO_SIZE>();
 
-static void RP2040_USB_loop()
+static void RP2xxx_USB_loop()
 {
 #if !defined(USE_TINYUSB) && !defined(ARDUINO_ARCH_MBED)
   uint8_t buf[USBD_CDC_IN_OUT_MAX_SIZE];
@@ -1239,7 +1239,7 @@ static void RP2040_USB_loop()
 #endif /* USE_TINYUSB */
 }
 
-static void RP2040_USB_fini()
+static void RP2xxx_USB_fini()
 {
 #if !defined(ARDUINO_ARCH_MBED)
   if (USBSerial && USBSerial != Serial) {
@@ -1248,7 +1248,7 @@ static void RP2040_USB_fini()
 #endif /* ARDUINO_ARCH_MBED */
 }
 
-static int RP2040_USB_available()
+static int RP2xxx_USB_available()
 {
   int rval = 0;
 
@@ -1263,7 +1263,7 @@ static int RP2040_USB_available()
   return rval;
 }
 
-static int RP2040_USB_read()
+static int RP2xxx_USB_read()
 {
   int rval = -1;
 
@@ -1278,7 +1278,7 @@ static int RP2040_USB_read()
   return rval;
 }
 
-static size_t RP2040_USB_write(const uint8_t *buffer, size_t size)
+static size_t RP2xxx_USB_write(const uint8_t *buffer, size_t size)
 {
 #if !defined(USE_TINYUSB) && !defined(ARDUINO_ARCH_MBED)
   size_t written;
@@ -1487,43 +1487,48 @@ void tuh_umount_cb(uint8_t daddr)
 
 #endif /* USE_USB_HOST */
 
-IODev_ops_t RP2040_USBSerial_ops = {
-  "RP2040 USB ACM",
-  RP2040_USB_setup,
-  RP2040_USB_loop,
-  RP2040_USB_fini,
-  RP2040_USB_available,
-  RP2040_USB_read,
-  RP2040_USB_write
+IODev_ops_t RP2xxx_USBSerial_ops = {
+  "RP2XXX USB ACM",
+  RP2xxx_USB_setup,
+  RP2xxx_USB_loop,
+  RP2xxx_USB_fini,
+  RP2xxx_USB_available,
+  RP2xxx_USB_read,
+  RP2xxx_USB_write
 };
 
-const SoC_ops_t RP2040_ops = {
+const SoC_ops_t RP2xxx_ops = {
+#if defined(ARDUINO_ARCH_RP2040)
   SOC_RP2040,
   "RP2040",
-  RP2040_setup,
-  RP2040_post_init,
-  RP2040_loop,
-  RP2040_fini,
-  RP2040_reset,
-  RP2040_getChipId,
-  RP2040_getResetInfoPtr,
-  RP2040_getResetInfo,
-  RP2040_getResetReason,
-  RP2040_getFreeHeap,
-  RP2040_random,
-  RP2040_Sound_test,
-  RP2040_Sound_tone,
-  RP2040_maxSketchSpace,
-  RP2040_WiFi_set_param,
-  RP2040_WiFi_transmit_UDP,
-  RP2040_WiFiUDP_stopAll,
-  RP2040_WiFi_hostname,
-  RP2040_WiFi_clients_count,
-  RP2040_EEPROM_begin,
-  RP2040_EEPROM_extension,
-  RP2040_SPI_begin,
-  RP2040_swSer_begin,
-  RP2040_swSer_enableRx,
+#elif defined(ARDUINO_ARCH_RP2350)
+  SOC_RP2350_ARM,
+  "RP2350",
+#endif /* 2XXX */
+  RP2xxx_setup,
+  RP2xxx_post_init,
+  RP2xxx_loop,
+  RP2xxx_fini,
+  RP2xxx_reset,
+  RP2xxx_getChipId,
+  RP2xxx_getResetInfoPtr,
+  RP2xxx_getResetInfo,
+  RP2xxx_getResetReason,
+  RP2xxx_getFreeHeap,
+  RP2xxx_random,
+  RP2xxx_Sound_test,
+  RP2xxx_Sound_tone,
+  RP2xxx_maxSketchSpace,
+  RP2xxx_WiFi_set_param,
+  RP2xxx_WiFi_transmit_UDP,
+  RP2xxx_WiFiUDP_stopAll,
+  RP2xxx_WiFi_hostname,
+  RP2xxx_WiFi_clients_count,
+  RP2xxx_EEPROM_begin,
+  RP2xxx_EEPROM_extension,
+  RP2xxx_SPI_begin,
+  RP2xxx_swSer_begin,
+  RP2xxx_swSer_enableRx,
 #if !defined(EXCLUDE_BLUETOOTH)
 #if defined(USE_ARDUINOBLE)
   &ArdBLE_Bluetooth_ops,
@@ -1533,24 +1538,24 @@ const SoC_ops_t RP2040_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
-  &RP2040_USBSerial_ops,
+  &RP2xxx_USBSerial_ops,
   NULL,
-  RP2040_Display_setup,
-  RP2040_Display_loop,
-  RP2040_Display_fini,
-  RP2040_Battery_setup,
-  RP2040_Battery_param,
-  RP2040_GNSS_PPS_Interrupt_handler,
-  RP2040_get_PPS_TimeMarker,
-  RP2040_Baro_setup,
-  RP2040_UATSerial_begin,
-  RP2040_UATModule_restart,
-  RP2040_WDT_setup,
-  RP2040_WDT_fini,
-  RP2040_Button_setup,
-  RP2040_Button_loop,
-  RP2040_Button_fini,
+  RP2xxx_Display_setup,
+  RP2xxx_Display_loop,
+  RP2xxx_Display_fini,
+  RP2xxx_Battery_setup,
+  RP2xxx_Battery_param,
+  RP2xxx_GNSS_PPS_Interrupt_handler,
+  RP2xxx_get_PPS_TimeMarker,
+  RP2xxx_Baro_setup,
+  RP2xxx_UATSerial_begin,
+  RP2xxx_UATModule_restart,
+  RP2xxx_WDT_setup,
+  RP2xxx_WDT_fini,
+  RP2xxx_Button_setup,
+  RP2xxx_Button_loop,
+  RP2xxx_Button_fini,
   NULL
 };
 
-#endif /* ARDUINO_ARCH_RP2040 */
+#endif /* ARDUINO_ARCH_RP2XXX */

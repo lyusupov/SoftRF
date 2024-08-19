@@ -30,7 +30,7 @@
       defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_AVR)      || \
       defined(ARDUINO_ARCH_RP2040)  || defined(HACKRF_ONE)            || \
       defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)   || \
-      defined(ARDUINO_ARCH_CH32))
+      defined(ARDUINO_ARCH_CH32))   || defined(ARDUINO_ARCH_RP2350)
 #include <Adafruit_Sensor.h>
 #endif
 

@@ -112,6 +112,8 @@ enum
 	SOC_AVR,
 	SOC_ASR66,
 	SOC_RP2040,
+	SOC_RP2350_ARM,
+	SOC_RP2350_RISC,
 	SOC_RA4M1,
 	SOC_EFR32,
 	SOC_CH32
@@ -151,8 +153,8 @@ extern const SoC_ops_t AVR_ops;
 #if defined(ARDUINO_ARCH_ASR6601)
 extern const SoC_ops_t ASR66_ops;
 #endif
-#if defined(ARDUINO_ARCH_RP2040)
-extern const SoC_ops_t RP2040_ops;
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
+extern const SoC_ops_t RP2xxx_ops;
 #endif
 #if defined(ARDUINO_ARCH_RENESAS)
 extern const SoC_ops_t RA4M1_ops;

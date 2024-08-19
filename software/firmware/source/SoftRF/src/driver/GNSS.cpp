@@ -401,7 +401,9 @@ static void setup_UBX()
   }
 
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->nmea_out != NMEA_TCP)
+  if (settings->nmea_out != NMEA_TCP       && // SD
+      settings->nmea_out != NMEA_BLUETOOTH && // SD
+      hw_info.gnss       == GNSS_MODULE_U10)
 #endif /* NMEA_TCP_SERVICE */
   {
     GNSS_DEBUG_PRINTLN(F("Switching off NMEA GSA: "));
@@ -1028,7 +1030,8 @@ static bool at65_setup()
   delay(250);
 
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->nmea_out == NMEA_TCP) {
+  if (settings->nmea_out == NMEA_TCP ||       // SD
+      settings->nmea_out == NMEA_BLUETOOTH) { // SD
     /* GGA,RMC and GSA */
     Serial_GNSS_Out.write("$PCAS03,1,0,1,0,1,0,0,0,0,0,,,0,0*03\r\n");
   }
