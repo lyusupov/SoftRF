@@ -117,6 +117,8 @@ void EEPROM_defaults()
 #if (ARDUINO_USB_CDC_ON_BOOT && !defined(USE_USB_HOST)) || \
     (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB))
   eeprom_block.field.settings.nmea_out   = NMEA_USB;
+#elif defined(ARDUINO_ARCH_SILABS)
+  eeprom_block.field.settings.nmea_out   = NMEA_UART;
 #else
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE     ?
                                            NMEA_BLUETOOTH :

@@ -278,12 +278,9 @@ static String EFR32_getResetReason()
   }
 }
 
-extern "C" void * _sbrk   (int);
-
 static uint32_t EFR32_getFreeHeap()
 {
-  char top;
-  return &top - reinterpret_cast<char*>(_sbrk(0));
+  return 0; /* TODO */
 }
 
 static long EFR32_random(long howsmall, long howBig)
