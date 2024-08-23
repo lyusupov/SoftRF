@@ -132,13 +132,19 @@ static void EFR32_setup()
   {
       reset_info.reason = REASON_WDT_RST;
   }
+#if defined(ARDUINO_NANO_MATTER)
+  else if (reset_cause & EMU_RSTCAUSE_WDOG1) /* Watchdog 1 Reset */
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+#endif /* ARDUINO_NANO_MATTER */
   else if (reset_cause & EMU_RSTCAUSE_LOCKUP) /* M33 Core Lockup Reset */
   {
       reset_info.reason = REASON_EXCEPTION_RST;
   }
   else if (reset_cause & EMU_RSTCAUSE_SYSREQ) /* M33 Core Sys Reset */
   {
-      reset_info.reason = REASON_EXCEPTION_RST;
+      reset_info.reason = REASON_SOFT_RESTART;
   }
   else if (reset_cause & EMU_RSTCAUSE_DVDDBOD) /* HVBOD Reset */
   {
@@ -160,10 +166,18 @@ static void EFR32_setup()
   {
       reset_info.reason = REASON_EXCEPTION_RST;
   }
+#if defined(ARDUINO_NANO_MATTER)
+  else if (reset_cause & EMU_RSTCAUSE_SETAMPER) /* SE Tamper event Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+#endif /* ARDUINO_NANO_MATTER */
+#if defined(ARDUINO_SILABS_BGM220EXPLORERKIT)
   else if (reset_cause & EMU_RSTCAUSE_DCI) /* DCI reset */
   {
       reset_info.reason = REASON_EXCEPTION_RST;
   }
+#endif /* ARDUINO_SILABS_BGM220EXPLORERKIT */
   else if (reset_cause & EMU_RSTCAUSE_VREGIN) /* DCDC VREGIN comparator */
   {
       reset_info.reason = REASON_EXCEPTION_RST;
