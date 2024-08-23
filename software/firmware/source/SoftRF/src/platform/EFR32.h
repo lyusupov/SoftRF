@@ -127,7 +127,7 @@ struct rst_info {
 //#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 //#define EXCLUDE_LK8EX1
 
-#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
@@ -154,6 +154,10 @@ struct rst_info {
 #define USE_OLED                 //       kb
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
+
+//#define USE_BASICMAC
+//#define EXCLUDE_SX1276         //  -  3 kb
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION

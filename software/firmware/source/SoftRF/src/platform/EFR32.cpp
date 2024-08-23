@@ -34,6 +34,8 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#include <ArduinoLowPower.h>
+
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -112,6 +114,61 @@ settings_t *settings = &eeprom_block.field.settings;
 
 static void EFR32_setup()
 {
+  uint32_t reset_cause = get_system_reset_cause();
+
+  if      (reset_cause & EMU_RSTCAUSE_POR) /* Power On Reset */
+  {
+      reset_info.reason = REASON_DEFAULT_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_PIN) /* Pin Reset */
+  {
+      reset_info.reason = REASON_EXT_SYS_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_EM4) /* EM4 Wakeup Reset */
+  {
+      reset_info.reason = REASON_DEEP_SLEEP_AWAKE;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_WDOG0) /* Watchdog 0 Reset */
+  {
+      reset_info.reason = REASON_WDT_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_LOCKUP) /* M33 Core Lockup Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_SYSREQ) /* M33 Core Sys Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_DVDDBOD) /* HVBOD Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_DVDDLEBOD) /* LEBOD Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_DECBOD) /* LVBOD Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_AVDDBOD) /* LEBOD1 Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_IOVDD0BOD) /* LEBOD2 Reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_DCI) /* DCI reset */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+  else if (reset_cause & EMU_RSTCAUSE_VREGIN) /* DCDC VREGIN comparator */
+  {
+      reset_info.reason = REASON_EXCEPTION_RST;
+  }
+
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   pinMode(SOC_GPIO_RADIO_LED_TX, OUTPUT);
   digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
@@ -231,7 +288,8 @@ static void EFR32_loop()
 
 static void EFR32_fini(int reason)
 {
-  NVIC_SystemReset(); /* TODO */
+  LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON, nullptr, RISING);
+  LowPower.deepSleep();
 }
 
 static void EFR32_reset()
