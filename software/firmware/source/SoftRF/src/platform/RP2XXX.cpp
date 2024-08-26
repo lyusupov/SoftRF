@@ -976,8 +976,13 @@ static float RP2xxx_Battery_param(uint8_t param)
       uint16_t mV = 0;
 
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+#if PICO_SDK_VERSION_MAJOR < 2
       enum gpio_function pin25_func;
       enum gpio_function pin29_func;
+#else
+      gpio_function_t pin25_func;
+      gpio_function_t pin29_func;
+#endif /* PICO_SDK_VERSION_MAJOR */
       uint pin25_dir;
       uint pin29_dir;
 

@@ -236,6 +236,9 @@ struct rst_info {
 #define Serial_setDebugOutput(x) ({})
 #define WIFI_STA_TIMEOUT      20000
 #define NMEA_TCP_SERVICE
+#if PICO_SDK_VERSION_MAJOR == 2
+#define EXCLUDE_BLUETOOTH
+#endif /* PICO_SDK_VERSION_MAJOR */
 /* Experimental */
 //#define ENABLE_BT_VOICE
 #else

@@ -158,7 +158,9 @@ static void RP2040_fini()
 #if 0 /* TBD */
   // back from dormant state
   rosc_enable();
+#if PICO_SDK_VERSION_MAJOR < 2
   clocks_init();
+#endif /* PICO_SDK_VERSION_MAJOR */
 
   rp2040.restart();
 #endif
@@ -341,8 +343,13 @@ static float RP2040_Battery_voltage()
   uint16_t mV = 0;
 
 #if SOC_GPIO_PIN_BATTERY != SOC_UNUSED_PIN
+#if PICO_SDK_VERSION_MAJOR < 2
   enum gpio_function pin25_func;
   enum gpio_function pin29_func;
+#else
+  gpio_function_t pin25_func;
+  gpio_function_t pin29_func;
+#endif /* PICO_SDK_VERSION_MAJOR */
   uint pin25_dir;
   uint pin29_dir;
 
