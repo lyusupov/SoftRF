@@ -24,13 +24,14 @@ public:
     // Transaction Functions
     void beginTransaction(SPISettings settings);
     void endTransaction(void);
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RENESAS)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RENESAS) || \
+    defined(ARDUINO_ARCH_SILABS)
     /* compatibility with Arduino RP2040 Core */
     void usingInterrupt(int interruptNumber);
     void notUsingInterrupt(int interruptNumber);
     void attachInterrupt();
     void detachInterrupt();
-#endif /* ARDUINO_ARCH_RP2040 || ARDUINO_ARCH_RENESAS */
+#endif /* RP2040 || RENESAS || SILABS */
 private:
     uint8_t _miso;
     uint8_t _mosi;

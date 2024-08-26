@@ -83,7 +83,8 @@ void EEPROM_defaults()
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
-  eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ?
+  eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
+                                              hw_info.model == SOFTRF_MODEL_CARD ?
                                               RF_PROTOCOL_FANET :
                                               hw_info.model == SOFTRF_MODEL_ES ?
                                               RF_PROTOCOL_ADSB_1090 :

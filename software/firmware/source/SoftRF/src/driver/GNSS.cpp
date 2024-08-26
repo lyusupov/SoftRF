@@ -1227,6 +1227,7 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
+      hw_info.model == SOFTRF_MODEL_ACADEMY   ||
       hw_info.model == SOFTRF_MODEL_LEGO      ||
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_BALKAN    ||
