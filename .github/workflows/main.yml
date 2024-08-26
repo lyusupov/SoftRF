@@ -44,6 +44,7 @@ jobs:
             'arduino:renesas_uno:unor4wifi',
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
+            'rp2040:rp2040:rpipico2',
             'arduino:mbed_rp2040:pico',
             #'arduino:mbed_nano:nanorp2040connect',
             'SiliconLabs:silabs:nano_matter:protocol_stack=ble_arduino',

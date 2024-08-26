@@ -45,7 +45,9 @@ extern "C"
 }
 #endif /* ARDUINO_ARCH_MBED */
 
+#if !defined(ARDUINO_RASPBERRY_PI_PICO_2)
 #include <pico_sleep.h>
+#endif /* ARDUINO_RASPBERRY_PI_PICO_2 */
 
 #if defined(USE_TINYUSB)
 #if defined(USE_USB_HOST)
