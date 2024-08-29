@@ -6,6 +6,7 @@
 DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 
 ## Features
 
@@ -15,8 +16,8 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Plug-and-Play**
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Portable**
-    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
 * **Classic** 2.25 inch instrument
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
@@ -63,7 +64,6 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 <!--
 [<img src="https://user-images.githubusercontent.com/5849637/128593239-cf30ef4c-1761-4dc1-874a-2be9eaacab77.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 -->
-[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 
 # Compatibility <sup>1</sup>
 Type|Protocol|FLARM|OGN tracker|PilotAware|Skytraxx|SoftRF
@@ -110,7 +110,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)|[STMicroelectronics](https://en.wikipedia.org/wiki/STMicroelectronics)<br>[STM32**WLE5**](https://www.st.com/en/microcontrollers-microprocessors/stm32wle5cc.html)|Q3 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;holds [**CE** mark](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition#certificates)
 [**WebTop USB**](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)|[Espressif<br>ESP32-S2](https://en.wikipedia.org/wiki/ESP32#ESP32-S2)|Q4 2022|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|
 [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)|[Espressif<br>ESP32-C3](https://en.wikipedia.org/wiki/ESP32#ESP32-C3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)
-1&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>3&nbsp;[**Ham**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>4&nbsp;[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
+1&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico#alternative-hardware-option)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>3&nbsp;[**Ham**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>4&nbsp;[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-S3](https://en.wikipedia.org/wiki/ESP32#ESP32-S3)|Q1 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 [**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-C6](https://en.wikipedia.org/wiki/ESP32#ESP32-C6)|Q1 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|2 [RISC-V](https://en.wikipedia.org/wiki/RISC-V) cores<br>big.LITTLE
 [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif) **upgrade**|[Renesas<br>RA4M1](https://en.wikipedia.org/wiki/Renesas_Electronics#The_RA_MCU_family)|Q1 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 Academy|[Silicon Labs](https://en.wikipedia.org/wiki/Silicon_Labs)<br>[EFx32](https://en.wikipedia.org/wiki/EFM32)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
@@ -143,7 +143,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 * SoftRF overview
     * [Part 1](https://github.com/lyusupov/SoftRF/blob/master/documents/SoftRF-release-1.pdf) (PDF, December 2015)
     * [Part 2](https://github.com/lyusupov/SoftRF/raw/master/documents/SoftRF-release-2.pdf) (PDF, March 2017)
-* [Prime Edition MkIII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [Prime Edition MkIII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Quick-start)
     * [Screen pages](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Screen-pages)
     * [Aircrafts database](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-Aircrafts-database)
@@ -157,7 +157,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Display care](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Display-care)
     * [Expansion module](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition.-Expansion-module)
 <!-- * [Bracelet Edition](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) -->
-* [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+* [Prime Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII.-Quick-start)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v5)
     * Firmware update
@@ -171,7 +171,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [Assembly](https://github.com/lyusupov/SoftRF/tree/master/hardware)
     * [Enclosure](https://github.com/lyusupov/SoftRF/tree/master/case/v4)
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
-    * [ESP32‐C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [ESP32-C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Ham Edition](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition.-Quick-start)
 * [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
@@ -249,11 +249,11 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-31.jpg)
 
-* [**Prime Edition Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Prime Edition Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-4.jpg)
 
-* [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+* [**Prime Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
 
