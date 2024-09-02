@@ -340,6 +340,7 @@ struct rst_info {
 #define ENABLE_REMOTE_ID
 #define USE_EXT_I2S_DAC
 //#define USE_TFT
+//#define ENABLE_RECORDER
 #else
 #undef USE_EPAPER
 //#define EXCLUDE_BLUETOOTH

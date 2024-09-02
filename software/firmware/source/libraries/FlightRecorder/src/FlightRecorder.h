@@ -43,11 +43,12 @@ liftoff_threshold=1.5
 log_interval=5
 */
 
-#if !defined(ARDUINO_ARCH_ESP32)
+#if !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_NRF52) && \
+    !defined(ARDUINO_ARCH_CH32)
 typedef struct __attribute__((__packed__))
 #else
 typedef struct
-#endif /* ARDUINO_ARCH_ESP32 */
+#endif /* ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_CH32 */
 {
     char pilot[80];
     char copilot[80];

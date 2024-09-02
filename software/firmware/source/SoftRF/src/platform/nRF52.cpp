@@ -616,6 +616,14 @@ PowersSY6970 sy6970;
 static bool nRF52_has_pmu = false;
 #endif /* EXCLUDE_PMU */
 
+#if defined(ENABLE_RECORDER)
+#define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(8), &SPI)
+
+SdFat uSD;
+
+static bool uSD_is_attached = false;
+#endif /* ENABLE_RECORDER */
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -1012,6 +1020,26 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_TULTIMA_DIO1;
 #endif /* USE_RADIOLIB */
 
+#if defined(ENABLE_RECORDER)
+      {
+        int uSD_SS_pin = SOC_GPIO_PIN_SD_TULTIMA_SS;
+
+        /* micro-SD SPI is shared with Radio SPI */
+        SPI.setPins(SOC_GPIO_PIN_TULTIMA_MISO,
+                    SOC_GPIO_PIN_TULTIMA_SCK,
+                    SOC_GPIO_PIN_TULTIMA_MOSI);
+
+        pinMode(uSD_SS_pin, OUTPUT);
+        digitalWrite(uSD_SS_pin, HIGH);
+
+        uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+        if (uSD_is_attached && uSD.card()->cardSize() > 0) {
+          hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
+                            STORAGE_FLASH_AND_CARD : STORAGE_CARD;
+        }
+      }
+#endif /* ENABLE_RECORDER */
       break;
 
     case NRF52_SEEED_T1000E:
@@ -1251,7 +1279,8 @@ static void nRF52_post_init()
     Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("FLASH   : "));
-    Serial.println(hw_info.storage == STORAGE_FLASH    ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.storage == STORAGE_FLASH_AND_CARD ||
+                   hw_info.storage == STORAGE_FLASH    ? F("PASS") : F("FAIL"));
     Serial.flush();
 
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
