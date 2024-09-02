@@ -182,6 +182,8 @@ struct rst_info {
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
 
+//#define ENABLE_RECORDER
+
 #if !defined(EXCLUDE_LED_RING)
 #include <Adafruit_NeoPixel.h>
 

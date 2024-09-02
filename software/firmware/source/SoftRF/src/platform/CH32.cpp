@@ -72,6 +72,18 @@ eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 #endif /* EXCLUDE_EEPROM */
 
+#if defined(ENABLE_RECORDER)
+#include <SdFat.h>
+
+SPIClass uSD_SPI;
+
+#define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(8), &uSD_SPI)
+
+SdFat uSD;
+
+static bool uSD_is_attached = false;
+#endif /* ENABLE_RECORDER */
+
 void CH32_attachInterrupt_func(uint32_t pin, void (*userFunc)(void), int mode)
 {
   attachInterrupt(pin, GPIO_Mode_IN_FLOATING, userFunc, EXTI_Mode_Interrupt,
