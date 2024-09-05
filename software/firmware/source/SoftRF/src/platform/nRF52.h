@@ -295,7 +295,7 @@ struct rst_info {
 //#define EXCLUDE_GNSS_GOKE     /* 'Air530' GK9501 GPS/GLO/BDS (GAL inop.) */
 //#define EXCLUDE_GNSS_AT65     /* Quectel L76K */
 #define EXCLUDE_GNSS_UC65
-#define EXCLUDE_GNSS_AG33
+//#define EXCLUDE_GNSS_AG33
 
 /* Component                         Cost */
 /* -------------------------------------- */
