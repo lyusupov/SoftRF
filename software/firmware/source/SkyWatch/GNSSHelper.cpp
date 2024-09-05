@@ -1225,13 +1225,17 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
+      hw_info.model == SOFTRF_MODEL_ACADEMY   ||
       hw_info.model == SOFTRF_MODEL_LEGO      ||
       hw_info.model == SOFTRF_MODEL_ES        ||
       hw_info.model == SOFTRF_MODEL_BALKAN    ||
       hw_info.model == SOFTRF_MODEL_HAM       ||
       hw_info.model == SOFTRF_MODEL_MIDI      ||
       hw_info.model == SOFTRF_MODEL_ECO       ||
-      hw_info.model == SOFTRF_MODEL_INK)
+      hw_info.model == SOFTRF_MODEL_INK       ||
+      hw_info.model == SOFTRF_MODEL_CARD      ||
+      hw_info.model == SOFTRF_MODEL_COZY      ||
+      hw_info.model == SOFTRF_MODEL_NEO)
   {
     // power on by wakeup call
     Serial_GNSS_Out.write((uint8_t) 0); GNSS_FLUSH(); delay(500);
@@ -1286,10 +1290,6 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &mtk_ops,    gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_MTK */
-#if !defined(EXCLUDE_GNSS_GOKE)
-  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
-            (gnss_chip = &goke_ops,   gnss_chip->probe()) : gnss_id;
-#endif /* EXCLUDE_GNSS_GOKE */
 #if !defined(EXCLUDE_GNSS_AT65)
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &at65_ops,   gnss_chip->probe()) : gnss_id;
@@ -1302,6 +1302,10 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &ag33_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_AG33 */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &goke_ops,   gnss_chip->probe()) : gnss_id;
+#endif /* EXCLUDE_GNSS_GOKE */
 
   gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
 

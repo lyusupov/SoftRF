@@ -1292,10 +1292,6 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &mtk_ops,    gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_MTK */
-#if !defined(EXCLUDE_GNSS_GOKE)
-  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
-            (gnss_chip = &goke_ops,   gnss_chip->probe()) : gnss_id;
-#endif /* EXCLUDE_GNSS_GOKE */
 #if !defined(EXCLUDE_GNSS_AT65)
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &at65_ops,   gnss_chip->probe()) : gnss_id;
@@ -1308,6 +1304,10 @@ byte GNSS_setup() {
   gnss_id = gnss_id == GNSS_MODULE_NMEA ?
             (gnss_chip = &ag33_ops,   gnss_chip->probe()) : gnss_id;
 #endif /* EXCLUDE_GNSS_AG33 */
+#if !defined(EXCLUDE_GNSS_GOKE)
+  gnss_id = gnss_id == GNSS_MODULE_NMEA ?
+            (gnss_chip = &goke_ops,   gnss_chip->probe()) : gnss_id;
+#endif /* EXCLUDE_GNSS_GOKE */
 
   gnss_chip = gnss_id == GNSS_MODULE_NMEA ? &generic_nmea_ops : gnss_chip;
 
