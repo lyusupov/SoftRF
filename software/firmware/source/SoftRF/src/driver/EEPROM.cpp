@@ -126,6 +126,7 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_ES        ?
                                            NMEA_OFF :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY  ||
+                                           hw_info.model == SOFTRF_MODEL_CARD     ||
                                            hw_info.model == SOFTRF_MODEL_LEGO      ?
                                            NMEA_USB : NMEA_UART;
 #endif

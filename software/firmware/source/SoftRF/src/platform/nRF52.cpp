@@ -887,9 +887,15 @@ static void nRF52_setup()
       break;
     case NRF52_SEEED_T1000E:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
+#if defined(EXCLUDE_WIFI)
+      Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* EXCLUDE_WIFI */
       break;
     case NRF52_HELTEC_T114:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
+#if defined(EXCLUDE_WIFI)
+      Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* EXCLUDE_WIFI */
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1068,6 +1074,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_T1000_DIO9;
 #endif /* USE_RADIOLIB */
 
+      hw_info.revision = 3; /* Unknown */
       break;
 
     case NRF52_HELTEC_T114:
@@ -1086,6 +1093,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_T114_DIO1;
 #endif /* USE_RADIOLIB */
 
+      hw_info.revision = 3; /* Unknown */
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -1322,6 +1330,32 @@ static void nRF52_post_init()
       }
 #endif /* USE_EXT_I2S_DAC */
     }
+  } else if (nRF52_board == NRF52_SEEED_T1000E) {
+    Serial.println();
+    Serial.println(F("Seeed T1000-E Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf    == RF_IC_LR1110     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss  == GNSS_MODULE_AG33 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+
+#if !defined(EXCLUDE_IMU)
+    Serial.print(F("IMU     : "));
+    Serial.println(hw_info.imu   == ACC_QMA6100P     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+#endif /* EXCLUDE_IMU */
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+
   } else if (nRF52_board == NRF52_NORDIC_PCA10059) {
     Serial.println();
     Serial.println(F("Board: Nordic PCA10059 USB Dongle"));
