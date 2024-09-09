@@ -1140,7 +1140,7 @@ static void ArdBLE_Bluetooth_setup()
       snprintf(Hardware, sizeof(Hardware), "%08X", hw_info.revision);
 
       const char *Manufacturer  = SOFTRF_IDENT;
-      const char *Software      = SOFTRF_FIRMWARE_VERSION;
+      const char *Software      = SKYWATCH_FIRMWARE_VERSION;
 
       ModelCharacteristic.       writeValue((char *) Model);
       SerialCharacteristic.      writeValue((char *) SerialNum);
