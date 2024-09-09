@@ -290,7 +290,7 @@ void handleSettings_master() {
   /* SoC specific part 1 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
-      SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -353,7 +353,8 @@ void handleSettings_master() {
     offset += len;
     size -= len;
 
-  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
+             SoC->id == SOC_ESP32C6) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -399,7 +400,8 @@ void handleSettings_master() {
 
   /* SoC specific part 2 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -446,7 +448,8 @@ void handleSettings_master() {
 
   /* SoC specific part 3 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -480,7 +483,8 @@ void handleSettings_master() {
 
   /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -760,7 +764,7 @@ void handleSettings_master() {
 
 void handleSettings_slave() {
 
-  size_t size = 7204;
+  size_t size = 7290;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -818,6 +822,8 @@ void handleSettings_slave() {
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
 <option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
 </select>\
 </td>\
 </tr>"),
@@ -832,7 +838,11 @@ void handleSettings_slave() {
     (settings->s.rf_protocol == RF_PROTOCOL_ADSB_UAT  ? "selected" : ""),
      RF_PROTOCOL_ADSB_UAT, "UAT",
     (settings->s.rf_protocol == RF_PROTOCOL_ADSB_1090 ? "selected" : ""),
-     RF_PROTOCOL_ADSB_1090, "1090ES"
+     RF_PROTOCOL_ADSB_1090, "1090ES",
+    (settings->s.rf_protocol == RF_PROTOCOL_ADSL_860  ? "selected" : ""),
+     RF_PROTOCOL_ADSL_860, "ADS-L",
+    (settings->s.rf_protocol == RF_PROTOCOL_APRS      ? "selected" : ""),
+     RF_PROTOCOL_APRS, "PRoL"
     );
   } else {
     snprintf_P ( offset, size,
@@ -1088,7 +1098,8 @@ void handleSettings_slave() {
 
 #if 0
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1123,7 +1134,8 @@ void handleSettings_slave() {
 
 #if 0
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1604,7 +1616,9 @@ void handleStatus() {
         ThisDevice.protocol == RF_PROTOCOL_P3I       ? "P3I"    :
         ThisDevice.protocol == RF_PROTOCOL_ADSB_1090 ? "ADS-B"  :
         ThisDevice.protocol == RF_PROTOCOL_ADSB_UAT  ? "UAT"    :
-        ThisDevice.protocol == RF_PROTOCOL_FANET     ? "FANET"  : "UNK",
+        ThisDevice.protocol == RF_PROTOCOL_FANET     ? "FANET"  :
+        ThisDevice.protocol == RF_PROTOCOL_ADSL_860  ? "ADS-L"  :
+        ThisDevice.protocol == RF_PROTOCOL_APRS      ? "PRoL"   : "UNK",
         tx_packets_counter, rx_packets_counter
       );
       break;

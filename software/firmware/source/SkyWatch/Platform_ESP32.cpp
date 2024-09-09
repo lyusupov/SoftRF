@@ -56,6 +56,9 @@
 #define CONFIG_IDF_TARGET_ESP32 0
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <esp_mac.h>
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#undef CONFIG_IDF_TARGET_ESP32
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ESP_IDF_VERSION_MAJOR */
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
@@ -216,6 +219,10 @@ static void ESP32_setup()
 
   ++bootCount;
 
+#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+  ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
+  if (ret != ESP_OK) {
+#else
   ret = esp_efuse_mac_get_custom(efuse_mac);
   if (ret != ESP_OK) {
       ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
@@ -223,7 +230,7 @@ static void ESP32_setup()
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
-
+#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
     ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
@@ -236,19 +243,20 @@ static void ESP32_setup()
   uint32_t flash_id = ESP32_getFlashId();
 
   /*
-   *    Board          |   Module   |  Flash memory IC
-   *  -----------------+------------+--------------------
-   *  DoIt ESP32       | WROOM      | GIGADEVICE_GD25Q32
-   *  TTGO LoRa32 V2.0 | PICO-D4 IC | GIGADEVICE_GD25Q32
-   *  TTGO T-Beam V06  |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T8  V1.8    | WROVER     | GIGADEVICE_GD25LQ32
-   *  TTGO T5S V1.9    |            | WINBOND_NEX_W25Q32_V
-   *  TTGO T-Watch     |            | WINBOND_NEX_W25Q128_V
-   *  TTGO T8 S2 V1.1  |            | WINBOND_NEX_W25Q32_V
-   *  Ai-T NodeMCU-S3  | ESP-S3-12K | GIGADEVICE_GD25Q64C
-   *  TTGO T-Dongle    |            | BOYA_BY25Q32AL
-   *  TTGO S3 Core     |            | GIGADEVICE_GD25Q64C
-   *  TTGO T-01C3      |            | BOYA_BY25Q32AL
+   *    Board          |   Module      |  Flash memory IC
+   *  -----------------+---------------+--------------------
+   *  DoIt ESP32       | WROOM         | GIGADEVICE_GD25Q32
+   *  TTGO LoRa32 V2.0 | PICO-D4 IC    | GIGADEVICE_GD25Q32
+   *  TTGO T-Beam V06  |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T8  V1.8    | WROVER        | GIGADEVICE_GD25LQ32
+   *  TTGO T5S V1.9    |               | WINBOND_NEX_W25Q32_V
+   *  TTGO T-Watch     |               | WINBOND_NEX_W25Q128_V
+   *  TTGO T8 S2 V1.1  |               | WINBOND_NEX_W25Q32_V
+   *  Ai-T NodeMCU-S3  | ESP-S3-12K    | GIGADEVICE_GD25Q64C
+   *  TTGO T-Dongle    |               | BOYA_BY25Q32AL
+   *  TTGO S3 Core     |               | GIGADEVICE_GD25Q64C
+   *  TTGO T-01C3      |               | BOYA_BY25Q32AL
+   *  LilyGO T3-C6     | ESP32-C6-MINI | XMC_XM25QH32B
    */
 
   if (psramFound()) {
@@ -293,6 +301,18 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_T01C3;
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+      hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
+      {
+        uint32_t pkg_ver = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_3_REG,
+                                         EFUSE_PKG_VERSION);
+        hw_info.revision = (pkg_ver == 1) /* QFN32 */ ?
+                           HW_REV_TULTIMA /* ESP32-C6-MINI-1U */ :
+                           HW_REV_DEVKIT_C6;
+      }
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
     default:
       hw_info.model = SOFTRF_MODEL_WEBTOP_SERIAL;
       hw_info.revision = HW_REV_UNKNOWN;
@@ -364,7 +384,7 @@ static void ESP32_setup()
     }
   }
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   /* SD-SPI init */
   uSD_SPI.begin(
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -379,9 +399,11 @@ static void ESP32_setup()
                 SOC_GPIO_PIN_TDONGLE_SS
 #endif /* CONFIG_IDF_TARGET_ESP32SX */
                );
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 
-#if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+#if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || \
+                                defined(CONFIG_IDF_TARGET_ESP32S3) || \
+                                defined(CONFIG_IDF_TARGET_ESP32C6))
   Serial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
@@ -554,9 +576,9 @@ static void ESP32_loop()
 
 static void ESP32_fini()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   uSD_SPI.end();
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 
   esp_wifi_stop();
 
@@ -578,7 +600,7 @@ static void ESP32_fini()
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
   }
 
 //  Serial.println("Going to sleep now");
@@ -796,7 +818,11 @@ static void ESP32_swSer_begin(unsigned long baud)
 #endif /* USE_USB_HOST */
 #endif /* ARDUINO_USB_ON_BOOT */
 #else
+#if ARDUINO_USB_CDC_ON_BOOT == 1
+    SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+#else
     Serial.updateBaudRate(baud);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 #endif /* defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) */
   }
 }
@@ -855,7 +881,7 @@ static float ESP32_Battery_voltage()
 
 static bool ESP32_DB_init()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
   return false;
 #else
   int ss_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
@@ -896,12 +922,12 @@ static bool ESP32_DB_init()
   }
 
   return true;
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }
 
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
   return false;
 #else
   sqlite3_stmt *stmt;
@@ -1002,7 +1028,7 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
   free(query);
 
   return rval;
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }
 
 static void ESP32_DB_fini()
@@ -1276,7 +1302,7 @@ void onModeButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   int button_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                    SOC_GPIO_PIN_TDONGLE_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
@@ -1298,14 +1324,14 @@ static void ESP32_Button_setup()
   ModeButtonConfig->setLongPressDelay(2000);
 
   attachInterrupt(digitalPinToInterrupt(button_pin), onModeButtonEvent, CHANGE );
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }
 
 static void ESP32_Button_loop()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
   button_mode.check();
-#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }
 
 static void ESP32_Button_fini()
@@ -1709,9 +1735,19 @@ static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
   return rval;
 }
 
-#elif ARDUINO_USB_CDC_ON_BOOT
+#elif defined(ARDUINO_USB_CDC_ON_BOOT)
 
-#define USBSerial Serial
+#if ARDUINO_USB_CDC_ON_BOOT
+#define USBSerial                Serial
+#else
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#if HWCDC_SERIAL_IS_DEFINED
+#define USBSerial                HWCDCSerial
+#else
+HWCDC USBSerial;
+#endif /* HWCDC_SERIAL_IS_DEFINED */
+#endif /* ESP_IDF_VERSION_MAJOR */
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 
 static void ESP32SX_USB_setup()
 {
@@ -1825,7 +1861,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_fini,
   ESP32_Service_Mode,
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+  &ArdBLE_Bluetooth_ops,
+#else
   &ESP32_Bluetooth_ops,
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */

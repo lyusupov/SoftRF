@@ -135,7 +135,8 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32C3) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -225,7 +226,8 @@ void handleSettings() {
 
   /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
     (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE);
     len = strlen(offset);
@@ -282,7 +284,7 @@ void handleSettings() {
   /* SoC specific part 6 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
-      SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -437,7 +439,7 @@ void handleSettings() {
 #if !defined(EXCLUDE_AUDIO)
   /* SoC specific part 7 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32C3) {
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\

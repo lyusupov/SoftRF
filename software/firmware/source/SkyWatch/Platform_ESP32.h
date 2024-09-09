@@ -130,6 +130,22 @@
 
 #define SOC_GPIO_PIN_TDONGLE_LED        39
 
+/* LilyGO T-Ultima C6 section */
+#define SOC_GPIO_PIN_TULTIMA_CONS_RX    17 /* U0RXD */
+#define SOC_GPIO_PIN_TULTIMA_CONS_TX    16 /* U0TXD */
+
+/* ESP32-Host interface */
+#define SOC_GPIO_PIN_TULTIMA_ESP_MOSI   7
+#define SOC_GPIO_PIN_TULTIMA_ESP_MISO   2
+#define SOC_GPIO_PIN_TULTIMA_ESP_SCK    6
+#define SOC_GPIO_PIN_TULTIMA_ESP_SS     5
+#define SOC_GPIO_PIN_TULTIMA_ESP_DR     4
+#define SOC_GPIO_PIN_TULTIMA_ESP_HS     3
+
+// USB CDC/JTAG
+#define SOC_GPIO_PIN_TULTIMA_USB_DP     13
+#define SOC_GPIO_PIN_TULTIMA_USB_DN     12
+
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #define LV_HOR_RES                      (240) //Horizontal
 #else
@@ -139,14 +155,18 @@
 #define BACKLIGHT_CHANNEL               ((uint8_t)1)
 
 /* Boya Microelectronics Inc. */
-#define BOYA_ID                 0x68
-#define BOYA_BY25Q32AL          0x4016
+#define BOYA_ID                         0x68
+#define BOYA_BY25Q32AL                  0x4016
+
+/* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
+#define ST_ID                           0x20
+#define XMC_XM25QH32B                   0x4016
 
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
 
-#define MAX_FILENAME_LEN      64
-#define WAV_FILE_PREFIX       "/Audio/"
+#define MAX_FILENAME_LEN                64
+#define WAV_FILE_PREFIX                 "/Audio/"
 
 /* these are data structures to process wav file */
 typedef enum headerState_e {
@@ -210,13 +230,30 @@ extern PCF8563_Class *rtc;
 #endif /* CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#define EXCLUDE_RTC
+#define EXCLUDE_TFT
+#endif /* CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
 #undef  SOC_GPIO_PIN_GNSS_RX
 #undef  SOC_GPIO_PIN_GNSS_TX
 #define SOC_GPIO_PIN_GNSS_RX            18
 #define SOC_GPIO_PIN_GNSS_TX            19
-#define EXCLUDE_RTC
-#define EXCLUDE_TFT
-#endif /* CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#undef  Serial_GNSS_In
+#undef  Serial_GNSS_Out
+#define Serial_GNSS_In                  Serial0
+#define Serial_GNSS_Out                 Serial0
+
+#undef  SOC_GPIO_PIN_GNSS_RX
+#undef  SOC_GPIO_PIN_GNSS_TX
+#define SOC_GPIO_PIN_GNSS_RX            SOC_GPIO_PIN_TULTIMA_ESP_MOSI
+#define SOC_GPIO_PIN_GNSS_TX            SOC_GPIO_PIN_TULTIMA_ESP_MISO
+
+extern IODev_ops_t ArdBLE_Bluetooth_ops;
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
 #endif /* PLATFORM_ESP32_H */
 

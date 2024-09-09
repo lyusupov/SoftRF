@@ -611,14 +611,14 @@ static void lr11xx_setup()
       };
 
       static const Module::RfSwitchMode_t rfswitch_table[] = {
-          // mode               DIO5  DIO6  DIO7  DIO8
-          {LR11x0::MODE_STBY,  { LOW,  LOW,  LOW,  LOW}},
-          {LR11x0::MODE_RX,    {HIGH,  LOW,  LOW, HIGH}},
-          {LR11x0::MODE_TX,    {HIGH, HIGH,  LOW, HIGH}},
-          {LR11x0::MODE_TX_HP, {LOW,  HIGH,  LOW, HIGH}},
-          {LR11x0::MODE_TX_HF, {LOW,   LOW,  LOW,  LOW}},
-          {LR11x0::MODE_GNSS,  { LOW,  LOW, HIGH,  LOW}},
-          {LR11x0::MODE_WIFI,  { LOW,  LOW,  LOW,  LOW}},
+          // mode                  DIO5  DIO6  DIO7  DIO8
+          { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
+          { LR11x0::MODE_RX,     { HIGH, LOW,  LOW,  HIGH } },
+          { LR11x0::MODE_TX,     { HIGH, HIGH, LOW,  HIGH } },
+          { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW,  HIGH } },
+          { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  LOW  } },
+          { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH, LOW  } },
+          { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
           END_OF_MODE_TABLE,
       };
       radio->setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
