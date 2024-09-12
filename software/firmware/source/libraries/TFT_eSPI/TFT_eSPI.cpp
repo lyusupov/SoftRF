@@ -5400,7 +5400,9 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
     tft_settings.tft_rd_freq = SPI_READ_FREQUENCY/100000;
   #endif
   #ifdef TFT_SPI_PORT
+    #if !defined(ARDUINO_ARCH_NRF52)
     tft_settings.port = TFT_SPI_PORT;
+    #endif
   #else
     tft_settings.port = 255;
   #endif

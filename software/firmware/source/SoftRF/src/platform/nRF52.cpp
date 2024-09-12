@@ -225,7 +225,7 @@ static void TFT_off()
 
 static void TFT_backlight_adjust(uint32_t pin, uint8_t level)
 {
-    analogWrite(pin, level);
+    analogWrite(pin, 255 - level);
 }
 #endif /* USE_TFT */
 
@@ -624,6 +624,11 @@ SdFat uSD;
 static bool uSD_is_attached = false;
 #endif /* ENABLE_RECORDER */
 
+#if !defined(EXCLUDE_LED_RING)
+Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
+                                                  NEO_GRB + NEO_KHZ800);
+#endif /* EXCLUDE_LED_RING */
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -928,6 +933,8 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_T114_VEXT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_T114_VEXT_EN, OUTPUT);
 
+      delay(200);
+
       digitalWrite(SOC_GPIO_PIN_T114_TFT_EN, LOW);
       pinMode(SOC_GPIO_PIN_T114_TFT_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_T114_TFT_BLGT, LOW);
@@ -1084,7 +1091,12 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_GNSS_T114_WKE, OUTPUT);
 
       pinMode(SOC_GPIO_LED_T114_GREEN, OUTPUT);
-      digitalWrite(SOC_GPIO_LED_T114_GREEN, HIGH);
+      ledOn(SOC_GPIO_LED_T114_GREEN);
+
+#if !defined(EXCLUDE_LED_RING)
+      T114_Pixels.begin();
+      T114_Pixels.show(); // Initialize all pixels to 'off'
+#endif /* EXCLUDE_LED_RING */
 
       lmic_pins.nss  = SOC_GPIO_PIN_T114_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_T114_RST;
@@ -1330,6 +1342,35 @@ static void nRF52_post_init()
       }
 #endif /* USE_EXT_I2S_DAC */
     }
+
+  } else if (nRF52_board == NRF52_HELTEC_T114) {
+    Serial.println();
+    Serial.println(F("Heltec T114 Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+
+    Serial.println();
+    Serial.println(F("External components:"));
+
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display == DISPLAY_TFT_TTGO_135
+                                                       ? F("PASS") : F("N/A"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("N/A"));
+    Serial.flush();
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+
   } else if (nRF52_board == NRF52_SEEED_T1000E) {
     Serial.println();
     Serial.println(F("Seeed T1000-E Power-on Self Test"));
@@ -1656,6 +1697,23 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_GNSS_RST,  INPUT);
       /* Cut 3.3V power off on REV_2 board */
       pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT_PULLDOWN);
+      break;
+
+    case NRF52_HELTEC_T114:
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_RST, INPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, INPUT);
+
+      ledOff(SOC_GPIO_LED_T114_GREEN);
+      pinMode(SOC_GPIO_LED_T114_GREEN, INPUT);
+
+      pinMode(SOC_GPIO_PIN_T114_ADC_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_T114_TFT_BLGT, INPUT);
+      pinMode(SOC_GPIO_PIN_T114_TFT_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_T114_VEXT_EN,  INPUT);
+
+      pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -2308,7 +2366,7 @@ static byte nRF52_Display_setup()
       /* Nothing to do */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
 #if defined(USE_TFT)
-#if SPI_INTERFACES_COUNT >= 2
+#if SPI_INTERFACES_COUNT == 1
     SPI1.setPins(SOC_GPIO_PIN_T114_TFT_MISO,
                  SOC_GPIO_PIN_T114_TFT_SCK,
                  SOC_GPIO_PIN_T114_TFT_MOSI);

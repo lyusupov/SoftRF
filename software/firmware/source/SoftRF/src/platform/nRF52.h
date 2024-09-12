@@ -341,7 +341,7 @@ struct rst_info {
 #define USE_BLE_MIDI
 #define ENABLE_REMOTE_ID
 #define USE_EXT_I2S_DAC
-//#define USE_TFT
+#define USE_TFT
 //#define ENABLE_RECORDER
 #else
 #undef USE_EPAPER

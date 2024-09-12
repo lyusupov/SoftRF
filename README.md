@@ -138,7 +138,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 [MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>3&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [GOKE](http://www.goke.com/en/)<br>GK9501|[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [UniCore](https://en.unicorecomm.com/)<br>[UC6580](https://en.unicorecomm.com/products/detail/34)|[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
-[Airoha](https://www.airoha.com/about)<br>[AG3335](https://www.airoha.com/products/p/xZqLkWq0jWqtWS1O)|**Card**|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
+[Airoha](https://www.airoha.com/about)<br>[AG3335](https://www.airoha.com/products/p/A0Dmm0pijWW3MScb)|**Card**|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
 
 # Documentation
 

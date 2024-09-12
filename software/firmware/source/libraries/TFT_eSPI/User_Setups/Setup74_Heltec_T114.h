@@ -28,5 +28,7 @@
 #undef  LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 #undef  SMOOTH_FONT
 
+extern  SPIClass             SPI1;
+#define TFT_SPI_PORT         SPI1
 #define SPI_FREQUENCY        27000000
 #define SPI_TOUCH_FREQUENCY  2500000
