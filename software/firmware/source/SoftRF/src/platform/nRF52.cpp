@@ -1365,6 +1365,9 @@ static void nRF52_post_init()
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("N/A"));
     Serial.flush();
+    Serial.print(F("BARO    : "));
+    Serial.println(hw_info.baro    != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
+    Serial.flush();
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
