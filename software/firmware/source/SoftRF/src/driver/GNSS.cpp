@@ -127,7 +127,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
 
       /* skip first line when expected response contains 2 of them */
       if (skipline) {
-        start_time = millis();
+        // start_time = millis();
         while (Serial_GNSS_In.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
       }
 
