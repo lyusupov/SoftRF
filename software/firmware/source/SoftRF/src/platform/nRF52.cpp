@@ -1835,17 +1835,45 @@ static void nRF52_reset()
     // When WDT is active - CRV, RREN and CONFIG are blocked
     // There is no way to stop/disable watchdog using source code
     // It can only be reset by WDT timeout, Pin reset, Power reset
-#if defined(USE_EPAPER)
-    if (hw_info.display == DISPLAY_EPD_1_54) {
 
+    switch (hw_info.display)
+    {
+#if defined(USE_EPAPER)
+    case DISPLAY_EPD_1_54:
 #if defined(USE_EPD_TASK)
       while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
 //    while (!SoC->Display_lock()) { delay(10); }
 #endif
 
       EPD_Message("PLEASE,", "WAIT..");
-    }
+      break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_TFT)
+    case DISPLAY_TFT_TTGO_135:
+      if (tft) {
+        const char *msg = " WAIT..";
+
+        tft->fillScreen(TFT_NAVY);
+        tft->setTextFont(4);
+        tft->setTextSize(2);
+
+        tft->setTextColor(TFT_WHITE, TFT_NAVY);
+
+        uint16_t tbw = tft->textWidth(msg);
+        uint16_t tbh = tft->fontHeight();
+
+        tft->setCursor((tft->width() - tbw)/2, (tft->height() - tbh)/2);
+        tft->print(msg);
+      }
+      break;
+#endif /* USE_TFT */
+
+    case DISPLAY_NONE:
+    default:
+      break;
+    }
+
     while (true) { delay(100); }
   } else {
     NVIC_SystemReset();
@@ -2956,9 +2984,9 @@ void handleEvent(AceButton* button, uint8_t eventType,
 
         switch (nRF52_board)
         {
-          case NRF52_LILYGO_TULTIMA:
-            up_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON2;
-            break;
+          // case NRF52_LILYGO_TULTIMA:
+          //  up_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON2;
+          //  break;
 
           case NRF52_LILYGO_TECHO_REV_0:
           case NRF52_LILYGO_TECHO_REV_1:
@@ -3000,7 +3028,7 @@ static void nRF52_Button_setup()
   {
     case NRF52_LILYGO_TULTIMA:
       mode_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON1;
-      up_button_pin   = SOC_GPIO_PIN_TULTIMA_BUTTON2;
+      // up_button_pin   = SOC_GPIO_PIN_TULTIMA_BUTTON2;
       break;
 
     case NRF52_SEEED_T1000E:
@@ -3087,9 +3115,9 @@ static void nRF52_Button_fini()
     case NRF52_NORDIC_PCA10059:
       detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
       break;
-    case NRF52_LILYGO_TULTIMA:
-      detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TULTIMA_BUTTON2));
-      break;
+    // case NRF52_LILYGO_TULTIMA:
+    //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TULTIMA_BUTTON2));
+    //  break;
     default:
       break;
   }
