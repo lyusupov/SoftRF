@@ -629,9 +629,11 @@ Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
                                                   NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
+#if !defined(ARDUINO_ARCH_MBED)
 #include <ExtensionIOXL9555.hpp>
 ExtensionIOXL9555 *xl9555 = nullptr;
 bool nRF52_has_extension  = false;
+#endif /* ARDUINO_ARCH_MBED */
 
 static void nRF52_setup()
 {
@@ -922,6 +924,7 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
+#if !defined(ARDUINO_ARCH_MBED)
       xl9555 = new ExtensionIOXL9555(Wire,
                                      SOC_GPIO_PIN_TULTIMA_SDA,
                                      SOC_GPIO_PIN_TULTIMA_SCL,
@@ -953,6 +956,7 @@ static void nRF52_setup()
         xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_SD_TULTIMA_DETECT, INPUT);
         xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_TULTIMA_BUTTON2,   INPUT);
       }
+#endif /* ARDUINO_ARCH_MBED */
       /* TBD */
       break;
 
@@ -1887,7 +1891,7 @@ static void nRF52_reset()
 #if defined(USE_TFT)
     case DISPLAY_TFT_TTGO_135:
       if (tft) {
-        const char *msg = " WAIT..";
+        const char *msg = "WAIT";
 
         tft->fillScreen(TFT_NAVY);
         tft->setTextFont(4);
