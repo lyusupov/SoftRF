@@ -208,7 +208,7 @@ jobs:
           #fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.1.0-RC1 ;
+            arduino --install-boards esp32:esp32:3.0.5 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c6_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c6_none"            --save-prefs ;
@@ -218,7 +218,7 @@ jobs:
             arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
-            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC1 ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.0.5 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
             # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
