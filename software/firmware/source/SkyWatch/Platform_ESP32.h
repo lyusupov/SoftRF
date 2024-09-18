@@ -249,8 +249,8 @@ extern PCF8563_Class *rtc;
 
 #undef  SOC_GPIO_PIN_GNSS_RX
 #undef  SOC_GPIO_PIN_GNSS_TX
-#define SOC_GPIO_PIN_GNSS_RX            SOC_GPIO_PIN_TULTIMA_ESP_MOSI
-#define SOC_GPIO_PIN_GNSS_TX            SOC_GPIO_PIN_TULTIMA_ESP_MISO
+#define SOC_GPIO_PIN_GNSS_RX            SOC_GPIO_PIN_TULTIMA_ESP_HS
+#define SOC_GPIO_PIN_GNSS_TX            SOC_GPIO_PIN_TULTIMA_ESP_DR
 
 extern IODev_ops_t ArdBLE_Bluetooth_ops;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */

@@ -21,9 +21,13 @@
 #define SOC_GPIO_PIN_T114_DIO1      _PINNUM(0, 20) // P0.20
 #define SOC_GPIO_PIN_T114_BUSY      _PINNUM(0, 17) // P0.17
 
-/* I2C */
-#define SOC_GPIO_PIN_T114_SDA       _PINNUM(0, 26) // P0.26
-#define SOC_GPIO_PIN_T114_SCL       _PINNUM(0, 27) // P0.27
+/* I2C int. (same that T-Echo has) */
+#define SOC_GPIO_PIN_T114_SDA_INT   _PINNUM(0, 26) // P0.26
+#define SOC_GPIO_PIN_T114_SCL_INT   _PINNUM(0, 27) // P0.27
+
+/* I2C ext. (air pressure sensor) */
+#define SOC_GPIO_PIN_T114_SDA_EXT   _PINNUM(0, 16) // P0.16
+#define SOC_GPIO_PIN_T114_SCL_EXT   _PINNUM(0, 13) // P0.13
 
 /* button */
 #define SOC_GPIO_PIN_T114_BUTTON    _PINNUM(1, 10) // P1.10
