@@ -445,6 +445,13 @@ jobs:
             arduino --pref "boardsmanager.additional.urls=https://github.com/openwch/board_manager_files/raw/main/package_ch32v_index.json" --save-prefs ;
             arduino --install-boards WCH:ch32v:1.0.4 ;
             arduino --board $BOARD --save-prefs ;
+            mkdir -p $HOME/Arduino/hardware/WCH ;
+            cd $HOME/Arduino/hardware/WCH ;
+            wget https://github.com/openwch/arduino_core_ch32/archive/refs/heads/main.zip ;
+            unzip main.zip ;
+            rm main.zip ;
+            mv arduino_core_ch32-main ch32v ;
+            mv $HOME/.arduino15/packages/WCH/hardware/ch32v/1.0.4 /tmp/ ;
             cd $GITHUB_WORKSPACE ;
           fi
 
@@ -536,6 +543,6 @@ jobs:
           if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
-          #if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
-          #  arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
-          #fi ;
+          if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
+            arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
