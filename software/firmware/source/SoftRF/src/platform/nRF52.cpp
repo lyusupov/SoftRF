@@ -629,6 +629,10 @@ Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
                                                   NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
+#include <ExtensionIOXL9555.hpp>
+ExtensionIOXL9555 *xl9555 = nullptr;
+bool nRF52_has_extension  = false;
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -918,6 +922,37 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
+      xl9555 = new ExtensionIOXL9555(Wire,
+                                     SOC_GPIO_PIN_TULTIMA_SDA,
+                                     SOC_GPIO_PIN_TULTIMA_SCL,
+                                     XL9555_ADDRESS);
+      nRF52_has_extension = xl9555->init(Wire,
+                                         SOC_GPIO_PIN_TULTIMA_SDA,
+                                         SOC_GPIO_PIN_TULTIMA_SCL,
+                                         XL9555_ADDRESS);
+      if (nRF52_has_extension) {
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_GNSS_TULTIMA_PWR, HIGH);
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_SENS_TULTIMA_PWR, HIGH);
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_LORA_TULTIMA_PWR, HIGH);
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_WIFI_TULTIMA_PWR, HIGH);
+
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_MOTOR_TULTIMA_EN, HIGH);
+        xl9555->digitalWrite(ExtensionIOXL9555::I2C_EXP_PIN_AMP_TULTIMA_EN,   HIGH);
+
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_GNSS_TULTIMA_PWR, OUTPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_SENS_TULTIMA_PWR, OUTPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_LORA_TULTIMA_PWR, OUTPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_WIFI_TULTIMA_PWR, OUTPUT);
+
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_MOTOR_TULTIMA_EN, OUTPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_AMP_TULTIMA_EN,   OUTPUT);
+
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_CHG_TULTIMA_INS,   INPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_RTC_TULTIMA_INT,   INPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_GNSS_TULTIMA_IRQ,  INPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_SD_TULTIMA_DETECT, INPUT);
+        xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_TULTIMA_BUTTON2,   INPUT);
+      }
       /* TBD */
       break;
 

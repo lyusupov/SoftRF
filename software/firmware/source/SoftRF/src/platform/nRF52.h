@@ -107,10 +107,17 @@ struct rst_info {
 #endif
 
 #define DFU_MAGIC_SKIP        (0x6d)
-#define BME280_ADDRESS        (0x77)
+
+#define BMM150_ADDRESS        (0x10)
+#define QMA6100P_ADDRESS      (0x12)
+#define XL9555_ADDRESS        (0x20) /* A0 = A1 = A2 = LOW */
+#define FT6X36_ADDRESS        (0x38)
+#define M10Q_ADDRESS          (0x42)
+#define BQ27220_ADDRESS       (0x55)
+#define DRV2605_ADDRESS       (0x5A)
 #define MPU9250_ADDRESS       (0x68)
 #define ICM20948_ADDRESS      (0x68)
-#define QMA6100P_ADDRESS      (0x12)
+#define BME280_ADDRESS        (0x77)
 
 #if defined(ARDUINO_ARCH_MBED)
 #define PCF8563_SLAVE_ADDRESS (0x51)
