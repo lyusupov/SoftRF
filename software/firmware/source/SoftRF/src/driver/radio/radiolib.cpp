@@ -404,7 +404,11 @@ static void lr11xx_setup()
     state = radio->begin();    // start LoRa mode (and disable FSK)
 #endif
 #if USE_LR11XX
+#if RADIOLIB_VERSION_MAJOR == 6
     state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 10, 8, 1.6);
+#else
+    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 8, 1.6);
+#endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
     switch (RF_FreqPlan.Bandwidth)
@@ -443,7 +447,11 @@ static void lr11xx_setup()
     state = radio->beginFSK(); // start FSK mode (and disable LoRa)
 #endif
 #if USE_LR11XX
+#if RADIOLIB_VERSION_MAJOR == 6
     state = radio->beginGFSK(4.8, 5.0, 156.2, 10, 16, 1.6);
+#else
+    state = radio->beginGFSK(4.8, 5.0, 156.2, 16, 1.6);
+#endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
     switch (rl_protocol->bitrate)
