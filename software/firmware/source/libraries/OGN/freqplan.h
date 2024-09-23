@@ -56,15 +56,21 @@ class FreqPlan
         {
           case RF_BAND_US:
           case RF_BAND_AU:
-          case RF_BAND_NZ: /* ? */
           case RF_BAND_CN: /* ? */
-          case RF_BAND_IL: /* TBD */
-          case RF_BAND_KR: /* TBD */
             { BaseFreq=920800000; Bandwidth = RF_RX_BANDWIDTH_SS_250KHZ; } // BW500
+            break;
+          case RF_BAND_IN:
+            { BaseFreq=866200000; Bandwidth = RF_RX_BANDWIDTH_SS_125KHZ; } // BW250
+            break;
+          case RF_BAND_IL:
+            { BaseFreq=918500000; Bandwidth = RF_RX_BANDWIDTH_SS_75KHZ; }  // BW125
+            break;
+          case RF_BAND_KR:
+            { BaseFreq=923200000; Bandwidth = RF_RX_BANDWIDTH_SS_75KHZ; }  // BW125
             break;
           case RF_BAND_EU:
           case RF_BAND_RU:
-          case RF_BAND_IN:
+          case RF_BAND_NZ: /* ? */
           default:
             { BaseFreq=868200000; Bandwidth = RF_RX_BANDWIDTH_SS_125KHZ; } // BW250
             break;

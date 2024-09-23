@@ -86,7 +86,7 @@ const char *GNSS_name[] = {
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
  * MT33: GGA -  48 , RMC - 175
- * UC65: GGA -  43 , RMC -  37
+ * UC65: GGA -  35 , RMC -  29
  * AG33: GGA - TBD , RMC - TBD
  */
 
@@ -1146,7 +1146,7 @@ const gnss_chip_ops_t uc65_ops = {
   uc65_setup,
   uc65_loop,
   uc65_fini,
-  43 /* GGA */, 37 /* RMC */
+  35 /* GGA */, 29 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_UC65 */
 

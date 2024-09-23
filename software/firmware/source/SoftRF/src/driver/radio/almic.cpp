@@ -380,7 +380,10 @@ static void sx12xx_setvars()
 
     if (RF_FreqPlan.Bandwidth == RF_RX_BANDWIDTH_SS_250KHZ) {
       LMIC.rps = setBw(LMIC.rps, BW500);
+    } else if (RF_FreqPlan.Bandwidth == RF_RX_BANDWIDTH_SS_75KHZ) {
+      LMIC.rps = setBw(LMIC.rps, BW125);
     }
+
 #if defined(ENABLE_PROL)
   } else if (LMIC.protocol && LMIC.protocol->type == RF_PROTOCOL_APRS) {
     LMIC.rps = setCr(LMIC.rps, CR_4_5);

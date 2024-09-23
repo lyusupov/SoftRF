@@ -416,6 +416,9 @@ static void lr11xx_setup()
     case RF_RX_BANDWIDTH_SS_250KHZ:
       bw = 500.0; /* BW_500 */
       break;
+    case RF_RX_BANDWIDTH_SS_75KHZ:
+      bw = 125.0; /* BW_125 */
+      break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
       bw = 250.0; /* BW_250 */
@@ -490,6 +493,7 @@ static void lr11xx_setup()
     case RF_RX_BANDWIDTH_SS_50KHZ:
       bw = 117.3;
       break;
+    case RF_RX_BANDWIDTH_SS_75KHZ:
     case RF_RX_BANDWIDTH_SS_100KHZ:
       bw = 234.3;
       break;
