@@ -63,10 +63,10 @@ class FreqPlan
             { BaseFreq=866200000; Bandwidth = RF_RX_BANDWIDTH_SS_125KHZ; } // BW250
             break;
           case RF_BAND_IL:
-            { BaseFreq=918500000; Bandwidth = RF_RX_BANDWIDTH_SS_75KHZ; }  // BW125
+            { BaseFreq=918500000; Bandwidth = RF_RX_BANDWIDTH_SS_62KHZ; }  // BW125
             break;
           case RF_BAND_KR:
-            { BaseFreq=923200000; Bandwidth = RF_RX_BANDWIDTH_SS_75KHZ; }  // BW125
+            { BaseFreq=923200000; Bandwidth = RF_RX_BANDWIDTH_SS_62KHZ; }  // BW125
             break;
           case RF_BAND_EU:
           case RF_BAND_RU:
