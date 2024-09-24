@@ -58,8 +58,8 @@ class FreqPlan
           case RF_BAND_AU:
           case RF_BAND_CN: /* ? */
             BaseFreq   = 920800000;
-            MaxTxPower = 15;
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
+            MaxTxPower = 15;
             break;
           case RF_BAND_IN:
             BaseFreq   = 866200000;

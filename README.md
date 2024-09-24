@@ -40,6 +40,9 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * can operate **multiple protocols** at the same time
     * [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
     * [**Duo Concept**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition#duo-concept) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* has **flight recorder**
+    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
+    * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 * **Weatherproof**
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) - IP67
 * **UAV** add-on
@@ -115,6 +118,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 1&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**Eco**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>3&nbsp;[**Duo**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition#duo-concept)![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Espressif<br>ESP32-C6](https://en.wikipedia.org/wiki/ESP32#ESP32-C6)|Q1 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|2 [RISC-V](https://en.wikipedia.org/wiki/RISC-V) cores<br>big.LITTLE
 [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif) **upgrade**|[Renesas<br>RA4M1](https://en.wikipedia.org/wiki/Renesas_Electronics#The_RA_MCU_family)|Q1 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 Academy|[Silicon Labs](https://en.wikipedia.org/wiki/Silicon_Labs)<br>[EFx32](https://en.wikipedia.org/wiki/EFM32)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
+Academy|[Nanjing Qinheng Microelectronics](https://www.wch-ic.com/)<br>[CH32V307](https://www.wch-ic.com/products/CH32V307.html)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
@@ -127,6 +131,7 @@ Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 [Texas Instruments<br>CC13x2R](http://www.ti.com/product/CC1352R)|[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [Maxim Integrated](https://en.wikipedia.org/wiki/Maxim_Integrated)<br>[MAX2837](https://www.maximintegrated.com/en/products/comms/wireless-rf/MAX2837.html)&nbsp;and<br>[MAX5864](https://www.maximintegrated.com/en/products/analog/data-converters/analog-front-end-ics/MAX5864.html)|[**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)|Q2 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|**S**oftware<br>**D**efined<br>**R**adio
 [NiceRF](https://www.nicerf.com)<br>[SA868](https://www.nicerf.com/item/2w-embedded-walkie-talkie-module-sa868)|[**Ham Edition**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|VHF or UHF "Ham Radio" bands
+[Semtech<br>LR1110](https://www.semtech.com/products/wireless-rf/lora-edge/lr1110)|Card Edition|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
 
 ## By GNSS chip
 GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
