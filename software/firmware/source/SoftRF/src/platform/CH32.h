@@ -38,12 +38,23 @@
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 
+#if defined(USE_TINYUSB)
+#define SerialOutput            Serial1
+
+#define USBSerial               SerialTinyUSB
+#define Serial_GNSS_In          Serial1
+#define Serial_GNSS_Out         Serial_GNSS_In
+#define UATSerial               Serial1
+
+#else
+
 #define SerialOutput            Serial /* TBD */
 
 #define USBSerial               Serial /* TBD */
 #define Serial_GNSS_In          Serial /* TBD */
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial /* TBD */
+#endif /* USE_TINYUSB */
 
 #define SOC_ADC_VOLTAGE_DIV     2 /* TBD */
 

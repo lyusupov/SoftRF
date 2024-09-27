@@ -21,6 +21,10 @@
 #include <SPI.h>
 #include <Wire.h>
 
+#if defined(USE_TINYUSB)
+#include <Adafruit_TinyUSB.h>
+#endif
+
 #include "../system/SoC.h"
 #include "../driver/RF.h"
 #include "../driver/EEPROM.h"
@@ -117,6 +121,12 @@ static void CH32_setup()
 
   Wire.setSCL(SOC_GPIO_PIN_SCL);
   Wire.setSDA(SOC_GPIO_PIN_SDA);
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USE_TINYUSB) && defined(USBCON)
+  for (int i=0; i < 40; i++) {if (Serial) break; else delay(100);}
+#endif
 }
 
 static void CH32_post_init()
