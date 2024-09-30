@@ -71,6 +71,9 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
+HardwareSerial Serial2(USART2);
+HardwareSerial Serial3(USART3);
+
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
