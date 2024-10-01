@@ -590,6 +590,67 @@ static void CH32_Button_fini()
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }
 
+#if defined(USE_TINYUSB)
+static void CH32_USB_setup() {
+#if !defined(USBCON)
+  USBSerial.begin(SERIAL_OUT_BR);
+#endif /* USBCON */
+}
+
+static void CH32_USB_loop()  {
+
+}
+
+static void CH32_USB_fini()  {
+#if !defined(USBCON)
+  USBSerial.end();
+#endif /* USBCON */
+}
+
+static int CH32_USB_available()
+{
+  int rval = 0;
+
+  if (USBSerial) {
+    rval = USBSerial.available();
+  }
+
+  return rval;
+}
+
+static int CH32_USB_read()
+{
+  int rval = -1;
+
+  if (USBSerial) {
+    rval = USBSerial.read();
+  }
+
+  return rval;
+}
+
+static size_t CH32_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  if (USBSerial && (size < USBSerial.availableForWrite())) {
+    rval = USBSerial.write(buffer, size);
+  }
+
+  return rval;
+}
+
+IODev_ops_t CH32_USBSerial_ops = {
+  "CH32 USBSerial",
+  CH32_USB_setup,
+  CH32_USB_loop,
+  CH32_USB_fini,
+  CH32_USB_available,
+  CH32_USB_read,
+  CH32_USB_write
+};
+#endif /* USE_TINYUSB */
+
 const SoC_ops_t CH32_ops = {
   SOC_CH32,
   "CH32",
@@ -617,8 +678,12 @@ const SoC_ops_t CH32_ops = {
   CH32_SPI_begin,
   CH32_swSer_begin,
   CH32_swSer_enableRx,
-  NULL, /* TODO */
   NULL,
+#if defined(USE_TINYUSB)
+  &CH32_USBSerial_ops,
+#else
+  NULL,
+#endif /* USE_TINYUSB */
   NULL,
   CH32_Display_setup,
   CH32_Display_loop,
