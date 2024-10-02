@@ -69,8 +69,8 @@ enum rst_reason {
 };
 
 enum CH32_board_id {
-  CH32_WCH-V307V-R1,
-  CH32_YD-V307VCT6,
+  CH32_WCH_V307V_R1,
+  CH32_YD_V307VCT6,
 };
 
 struct rst_info {
