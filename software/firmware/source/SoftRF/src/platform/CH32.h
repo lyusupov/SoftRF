@@ -68,6 +68,11 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum CH32_board_id {
+  CH32_WCH-V307V-R1,
+  CH32_YD-V307VCT6,
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;

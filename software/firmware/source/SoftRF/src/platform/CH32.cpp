@@ -79,6 +79,12 @@ eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
 #endif /* EXCLUDE_EEPROM */
 
+#if defined(USE_TINYUSB)
+const char *CH32_Device_Manufacturer = SOFTRF_IDENT;
+const char *CH32_Device_Model = "Academy Edition";
+const uint16_t CH32_Device_Version = SOFTRF_USB_FW_VERSION;
+#endif /* USE_TINYUSB */
+
 #if defined(ENABLE_RECORDER)
 #include <SdFat.h>
 
@@ -124,6 +130,12 @@ static void CH32_setup()
 
   Wire.setSCL(SOC_GPIO_PIN_SCL);
   Wire.setSDA(SOC_GPIO_PIN_SDA);
+
+#if defined(USE_TINYUSB)
+  USBDevice.setManufacturerDescriptor(CH32_Device_Manufacturer);
+  USBDevice.setProductDescriptor(CH32_Device_Model);
+  USBDevice.setDeviceVersion(CH32_Device_Version);
+#endif /* USE_TINYUSB */
 
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
