@@ -83,11 +83,13 @@ struct rst_info {
   uint32_t depc;
 };
 
+#define FT24C64_ADDRESS       (0x50)
+
 #if defined(CH32V30x)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PIN_SERIAL_RX  // TBD
-#define SOC_GPIO_PIN_CONS_TX  PIN_SERIAL_TX  // TBD
+#define SOC_GPIO_PIN_CONS_RX  PB5
+#define SOC_GPIO_PIN_CONS_TX  PB8
 
 #define SOC_GPIO_PIN_GNSS_RX  PA10
 #define SOC_GPIO_PIN_GNSS_TX  PA9
@@ -112,7 +114,7 @@ struct rst_info {
 /* SX1276 */
 #define SOC_GPIO_PIN_RST      PB0
 #define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     PB8
+#define SOC_GPIO_PIN_DIO1     PA8
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
@@ -122,38 +124,44 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCL      PIN_WIRE_SCL   // PB10
 
 /* USB */
-#define SOC_GPIO_PIN_USB1_DN  PA11
-#define SOC_GPIO_PIN_USB1_DP  PA12
+#define SOC_GPIO_PIN_USB1_DN  PA_11
+#define SOC_GPIO_PIN_USB1_DP  PA_12
 
-#define SOC_GPIO_PIN_USB2_DN  PB6
-#define SOC_GPIO_PIN_USB2_DP  PB7
+#define SOC_GPIO_PIN_USB2_DN  PB_6
+#define SOC_GPIO_PIN_USB2_DP  PB_7
 
 /* SWD */
-#define SOC_GPIO_PIN_SWD_DIO  PA13
-#define SOC_GPIO_PIN_SWD_CLK  PA14
+#define SOC_GPIO_PIN_SWD_DIO  PA_13
+#define SOC_GPIO_PIN_SWD_CLK  PA_14
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS PA3
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN /* PA0 TBD */
-#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN /* PB3 */
+#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 
-/* uSD */
-#define SOC_GPIO_PIN_SD_D0    PC8
-#define SOC_GPIO_PIN_SD_D1    PC9
-#define SOC_GPIO_PIN_SD_D2    PC10
-#define SOC_GPIO_PIN_SD_D3    PC11
-#define SOC_GPIO_PIN_SD_CLK   PC12
-#define SOC_GPIO_PIN_SD_CMD   PD2
-#define SOC_GPIO_PIN_SD_SW    PD7
+/* YD-CH32V307VCT6 */
+#define SOC_GPIO_YD_LED_BLUE  PB_4
+#define SOC_GPIO_YD_LED_RED   PA_15
 
-/* W25Qxx */
-#define SOC_GPIO_PIN_FL_MOSI  PA7
-#define SOC_GPIO_PIN_FL_MISO  PA6
-#define SOC_GPIO_PIN_FL_CLK   PA5
-#define SOC_GPIO_PIN_FL_SS    PA2
+#define SOC_GPIO_YD_BUTTON    PB_3
+
+// uSD
+#define SOC_GPIO_YD_SD_D0     PC_8
+#define SOC_GPIO_YD_SD_D1     PC_9
+#define SOC_GPIO_YD_SD_D2     PC_10
+#define SOC_GPIO_YD_SD_D3     PC_11
+#define SOC_GPIO_YD_SD_CLK    PC_12
+#define SOC_GPIO_YD_SD_CMD    PD_2
+#define SOC_GPIO_YD_SD_SW     PD_7
+
+// W25Q32
+#define SOC_GPIO_YD_FL_MOSI   PA7
+#define SOC_GPIO_YD_FL_MISO   PA6
+#define SOC_GPIO_YD_FL_CLK    PA5
+#define SOC_GPIO_YD_FL_SS     PA2
 
 #else
 #error "This CH32 build variant is not supported!"

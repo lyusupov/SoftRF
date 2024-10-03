@@ -37,6 +37,8 @@
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
 
+#include <Adafruit_SPIFlash.h>
+
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
     .nss = SOC_GPIO_PIN_SS,
@@ -71,8 +73,41 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
+static CH32_board_id CH32_board = CH32_WCH_V307V_R1; /* default */
+
+static bool CH32_has_eeprom    = false;
+static bool CH32_has_spiflash  = false;
+static bool FATFS_is_mounted   = false;
+static bool ADB_is_open        = false;
+
 HardwareSerial Serial2(USART2);
 HardwareSerial Serial3(USART3);
+
+//SPIClass SPI_1;
+#include <SoftSPI.h>
+SoftSPI Flash_SPI(SOC_GPIO_YD_FL_MOSI, SOC_GPIO_YD_FL_MISO, SOC_GPIO_YD_FL_CLK);
+
+static Adafruit_SPIFlash *SPIFlash = NULL;
+
+static uint32_t spiflash_id = 0;
+
+/// Flash device list count
+enum {
+  W25Q32JV_INDEX,
+  EXTERNAL_FLASH_DEVICE_COUNT
+};
+
+static SPIFlash_Device_t possible_devices[] = {
+  [W25Q32JV_INDEX] = W25Q32JV_IQ,
+};
+
+#if defined(USE_TINYUSB)
+// USB Mass Storage object
+Adafruit_USBD_MSC usb_msc;
+#endif /* USE_TINYUSB */
+
+// file system object from SdFat
+FatVolume fatfs;
 
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
@@ -142,6 +177,51 @@ static void CH32_setup()
 #if defined(USE_TINYUSB) && defined(USBCON)
   for (int i=0; i < 40; i++) {if (Serial) break; else delay(100);}
 #endif
+
+  Wire.begin();
+  Wire.beginTransmission(FT24C64_ADDRESS);
+  CH32_has_eeprom = (Wire.endTransmission() == 0);
+  Wire.end();
+
+  if (CH32_has_eeprom) {
+    CH32_board = CH32_YD_V307VCT6;
+  }
+
+  /* (Q)SPI flash init */
+  Adafruit_FlashTransport_SPI *ft = NULL;
+
+  switch (CH32_board)
+  {
+    case CH32_YD_V307VCT6:
+      pin_function(SOC_GPIO_YD_LED_BLUE,
+                   CH_PIN_DATA(CH_MODE_OUTPUT_50MHz, CH_CNF_OUTPUT_PP, 0, 0));
+      digitalWriteFast(SOC_GPIO_YD_LED_BLUE, HIGH);
+
+#if 0
+      SPI_1.setMISO(SOC_GPIO_YD_FL_MISO);
+      SPI_1.setMOSI(SOC_GPIO_YD_FL_MOSI);
+      SPI_1.setSCLK(SOC_GPIO_YD_FL_CLK);
+      SPI_1.setSSEL(SOC_GPIO_YD_FL_SS);
+#endif
+      ft = new Adafruit_FlashTransport_SPI(SOC_GPIO_YD_FL_SS, &Flash_SPI);
+      break;
+
+    case CH32_WCH_V307V_R1:
+    default:
+      break;
+  }
+
+  if (ft != NULL) {
+    SPIFlash = new Adafruit_SPIFlash(ft);
+    CH32_has_spiflash = SPIFlash->begin(possible_devices,
+                                        EXTERNAL_FLASH_DEVICE_COUNT);
+  }
+
+  hw_info.storage = CH32_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
+
+  if (CH32_has_spiflash) {
+    spiflash_id = SPIFlash->getJEDECID();
+  }
 }
 
 static void CH32_post_init()
@@ -152,12 +232,29 @@ static void CH32_post_init()
     Serial.println();
     Serial.flush();
 
+    Serial.print(F("Board: "));
+    Serial.println(CH32_board == CH32_YD_V307VCT6 ?
+                   "YD CH32V307VCT6" : "WCH CH32V307V-R1");
+    Serial.println();
+    Serial.flush();
+
+    Serial.print  (F("SPI FLASH JEDEC ID: "));
+    Serial.print  (spiflash_id, HEX);
+    Serial.println();
+    Serial.println();
+    Serial.flush();
+
     Serial.println(F("Built-in components:"));
 
     Serial.print(F("RADIO   : "));
     Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
+
+    Serial.print(F("FLASH   : "));
+    Serial.println(hw_info.storage == STORAGE_FLASH_AND_CARD ||
+                   hw_info.storage == STORAGE_FLASH     ? F("PASS") : F("N/A"));
+    Serial.flush();
 
     Serial.println();
     Serial.println(F("External components:"));

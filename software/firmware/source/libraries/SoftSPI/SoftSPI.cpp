@@ -2,12 +2,13 @@
 
 #if defined(ARDUINO_ARCH_NRF52)
 SoftSPI::SoftSPI(uint8_t mosi, uint8_t miso, uint8_t sck) : SPIClass(NRF_SPIM0, 0, 0, 0)
-#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040) || \
-      defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)
+#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)   || \
+      defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS) || \
+      defined(ARDUINO_ARCH_CH32)
 SoftSPI::SoftSPI(uint8_t mosi, uint8_t miso, uint8_t sck) : SPIClass()
 #else
 #error "This build architecture is not supported!"
-#endif /* NRF52 || ESP32 || RP2040 || RENESAS || SILABS */
+#endif /* NRF52 || ESP32 || RP2040 || RENESAS || SILABS || CH32 */
 {
     _mosi = mosi;
     _miso = miso;
