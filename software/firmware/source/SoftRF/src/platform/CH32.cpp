@@ -38,6 +38,7 @@
 #include "../protocol/data/D1090.h"
 
 #include <Adafruit_SPIFlash.h>
+#include "uCDB.hpp"
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -101,13 +102,10 @@ static SPIFlash_Device_t possible_devices[] = {
   [W25Q32JV_INDEX] = W25Q32JV_IQ,
 };
 
-#if defined(USE_TINYUSB)
-// USB Mass Storage object
-Adafruit_USBD_MSC usb_msc;
-#endif /* USE_TINYUSB */
-
 // file system object from SdFat
 FatVolume fatfs;
+
+uCDB<FatVolume, File32> ucdb(fatfs);
 
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
@@ -118,6 +116,44 @@ settings_t *settings = &eeprom_block.field.settings;
 const char *CH32_Device_Manufacturer = SOFTRF_IDENT;
 const char *CH32_Device_Model = "Academy Edition";
 const uint16_t CH32_Device_Version = SOFTRF_USB_FW_VERSION;
+
+// USB Mass Storage object
+Adafruit_USBD_MSC usb_msc;
+
+// Callback invoked when received READ10 command.
+// Copy disk's data to buffer (up to bufsize) and
+// return number of copied bytes (must be multiple of block size)
+static int32_t CH32_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
+{
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->readBlocks(lba, (uint8_t*) buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when received WRITE10 command.
+// Process data in buffer to disk's storage and
+// return number of written bytes (must be multiple of block size)
+static int32_t CH32_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
+{
+//  ledOn(SOC_GPIO_LED_USBMSC);
+
+  // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
+  // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
+  return SPIFlash->writeBlocks(lba, buffer, bufsize/512) ? bufsize : -1;
+}
+
+// Callback invoked when WRITE10 command is completed (status received and accepted by host).
+// used to flush any pending cache.
+static void CH32_msc_flush_cb (void)
+{
+  // sync with flash
+  SPIFlash->syncBlocks();
+
+  // clear file system's cache to force refresh
+  fatfs.cacheClear();
+
+//  ledOff(SOC_GPIO_LED_USBMSC);
+}
 #endif /* USE_TINYUSB */
 
 #if defined(ENABLE_RECORDER)
@@ -172,12 +208,6 @@ static void CH32_setup()
   USBDevice.setDeviceVersion(CH32_Device_Version);
 #endif /* USE_TINYUSB */
 
-  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
-
-#if defined(USE_TINYUSB) && defined(USBCON)
-  for (int i=0; i < 40; i++) {if (Serial) break; else delay(100);}
-#endif
-
   Wire.begin();
   Wire.beginTransmission(FT24C64_ADDRESS);
   CH32_has_eeprom = (Wire.endTransmission() == 0);
@@ -196,6 +226,9 @@ static void CH32_setup()
       pin_function(SOC_GPIO_YD_LED_BLUE,
                    CH_PIN_DATA(CH_MODE_OUTPUT_50MHz, CH_CNF_OUTPUT_PP, 0, 0));
       digitalWriteFast(SOC_GPIO_YD_LED_BLUE, HIGH);
+
+      possible_devices[W25Q32JV_INDEX].supports_qspi        = false;
+      possible_devices[W25Q32JV_INDEX].supports_qspi_writes = false;
 
 #if 0
       SPI_1.setMISO(SOC_GPIO_YD_FL_MISO);
@@ -221,7 +254,33 @@ static void CH32_setup()
 
   if (CH32_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
+
+#if defined(USE_TINYUSB)
+    // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
+    usb_msc.setID(CH32_Device_Manufacturer, "External Flash", "1.0");
+
+    // Set callback
+    usb_msc.setReadWriteCallback(CH32_msc_read_cb,
+                                 CH32_msc_write_cb,
+                                 CH32_msc_flush_cb);
+
+    // Set disk size, block size should be 512 regardless of spi flash page size
+    usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+    // MSC is ready for read/write
+    usb_msc.setUnitReady(true);
+
+    usb_msc.begin();
+#endif /* USE_TINYUSB */
+
+    FATFS_is_mounted = fatfs.begin(SPIFlash);
   }
+
+  Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USE_TINYUSB) && defined(USBCON)
+  for (int i=0; i < 40; i++) {if (Serial) break; else delay(100);}
+#endif
 }
 
 static void CH32_post_init()
@@ -348,6 +407,15 @@ static void CH32_loop()
 
 static void CH32_fini(int reason)
 {
+  if (CH32_has_spiflash) {
+#if defined(USE_TINYUSB)
+    usb_msc.setUnitReady(false);
+//  usb_msc.end(); /* N/A */
+#endif /* USE_TINYUSB */
+  }
+
+  if (SPIFlash != NULL) SPIFlash->end();
+
   NVIC_SystemReset(); /* TODO */
 }
 
