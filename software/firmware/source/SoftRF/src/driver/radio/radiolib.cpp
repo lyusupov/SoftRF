@@ -57,8 +57,8 @@ const rfchip_ops_t lr1121_ops = {
   lr11xx_shutdown
 };
 
-#define USE_SX1262      1
-#define USE_LR11XX      0
+#define USE_SX1262      0
+#define USE_LR11XX      1
 
 Module  *mod;
 #if USE_SX1262

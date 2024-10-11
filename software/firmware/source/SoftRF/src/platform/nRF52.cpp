@@ -1179,7 +1179,7 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu) {
+  if (nRF52_has_imu && nRF52_board != NRF52_SEEED_T1000E) {
 
     Wire.begin();
 
@@ -2967,7 +2967,7 @@ static unsigned long nRF52_get_PPS_TimeMarker() {
 }
 
 static bool nRF52_Baro_setup() {
-  return true;
+  return nRF52_board == NRF52_SEEED_T1000E ? false : true;
 }
 
 static void nRF52_UATSerial_begin(unsigned long baud)
