@@ -110,8 +110,9 @@ void EEPROM_defaults()
     eeprom_block.field.settings.pointer     = DIRECTION_NORTH_UP;
   } else {
     if (hw_info.model == SOFTRF_MODEL_CARD) {
-    } else {
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
+    } else {
+      eeprom_block.field.settings.volume    = BUZZER_OFF;
     }
     eeprom_block.field.settings.pointer     = LED_OFF;
   }

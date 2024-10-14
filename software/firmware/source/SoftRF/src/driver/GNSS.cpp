@@ -1186,8 +1186,21 @@ static gnss_id_t ag33_probe()
 
 static bool ag33_setup()
 {
-  Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
-  delay(250);
+  for (int i=0; i<25; i++) {
+    while (Serial_GNSS_Out.available() > 0) Serial_GNSS_Out.read();
+
+    delay(200);
+
+    Serial_GNSS_Out.write("$PAIR382,1*2E\r\n");
+
+    if (ag33_getACK("$PAIR001,382,0*32", 700)) {
+      Serial.println("+++ SLEEP LOCK OFF +++");
+      break;
+    }
+  }
+
+  // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
+  // delay(250);
 
   /* GPS + GLONASS + Galileo + BeiDou + QZSS */
   Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");         delay(250);
@@ -1195,7 +1208,6 @@ static bool ag33_setup()
   Serial_GNSS_Out.write("$PAIR062,0,1*3F\r\n");   /* GGA 1s */  delay(250);
   Serial_GNSS_Out.write("$PAIR062,4,1*3B\r\n");   /* RMC 1s */  delay(250);
 
-#if 0
   Serial_GNSS_Out.write("$PAIR062,1,0*3F\r\n");   /* GLL OFF */ delay(250);
   Serial_GNSS_Out.write("$PAIR062,3,0*3D\r\n");   /* GSV OFF */ delay(250);
   Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");   /* VTG OFF */ delay(250);
@@ -1210,78 +1222,6 @@ static bool ag33_setup()
     Serial_GNSS_Out.write("$PAIR062,2,0*3C\r\n"); /* GSA OFF */
   }
   delay(250);
-#else
-
-  for (int i=0; i<20; i++) {
-    while (Serial_GNSS_Out.available() > 0)
-        Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR062,3,0*3D\r\n");
-
-    if (ag33_getACK("$PAIR001,062,0*3F", 700)) {
-      Serial.println("+++ GSV OFF +++");
-      break;
-    }
-  }
-
-  for (int i=0; i<20; i++) {
-    while (Serial_GNSS_Out.available() > 0)
-        Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR062,1,0*3F\r\n");
-
-    if (ag33_getACK("$PAIR001,062,0*3F", 700)) {
-      Serial.println("+++ GLL OFF +++");
-      break;
-    }
-  }
-
-  for (int i=0; i<20; i++) {
-    while (Serial_GNSS_Out.available() > 0)
-        Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR062,2,0*3C\r\n");
-
-    if (ag33_getACK("$PAIR001,062,0*3F", 700)) {
-      Serial.println("+++ GSA OFF +++");
-      break;
-    }
-  }
-
-  for (int i=0; i<20; i++) {
-    while (Serial_GNSS_Out.available() > 0)
-        Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");
-
-    if (ag33_getACK("$PAIR001,062,0*3F", 700)) {
-      Serial.println("+++ VTG OFF +++");
-      break;
-    }
-  }
-
-  for (int i=0; i<20; i++) {
-    while (Serial_GNSS_Out.available() > 0)
-        Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR062,6,0*38\r\n");
-
-    if (ag33_getACK("$PAIR001,062,0*3F", 700)) {
-      Serial.println("+++ ZDA OFF +++");
-      break;
-    }
-  }
-#endif
 
   Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
 

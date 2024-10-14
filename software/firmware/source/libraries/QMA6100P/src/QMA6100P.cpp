@@ -237,7 +237,7 @@ bool QMA6100P::getRawAccelRegisterData(rawOutputData *rawAccelData)
 
 bool QMA6100P::readRegisterRegion(uint8_t registerAddress, uint8_t* sensorData, int len)
 {
-  Wire.beginTransmission(QMA6100P_ADDRESS_HIGH);
+  Wire.beginTransmission(QMA6100P_ADDRESS_LOW);
   Wire.write(registerAddress); // Register address to read from
   uint8_t err = Wire.endTransmission(); // Send the request without stopping the transmission
 
@@ -245,7 +245,7 @@ bool QMA6100P::readRegisterRegion(uint8_t registerAddress, uint8_t* sensorData, 
     return false;
   }
 
-  uint8_t bytesAvailable = Wire.requestFrom(static_cast<int>(QMA6100P_ADDRESS_HIGH), static_cast<int>(len), static_cast<int>(true)); // Request len byte of data
+  uint8_t bytesAvailable = Wire.requestFrom(static_cast<int>(QMA6100P_ADDRESS_LOW), static_cast<int>(len), static_cast<int>(true)); // Request len byte of data
 
   delay(10);
 
@@ -265,7 +265,7 @@ bool QMA6100P::readRegisterRegion(uint8_t registerAddress, uint8_t* sensorData, 
 
 bool QMA6100P::writeRegisterByte(uint8_t registerAddress, uint8_t data)
 {
-  Wire.beginTransmission(QMA6100P_ADDRESS_HIGH);
+  Wire.beginTransmission(QMA6100P_ADDRESS_LOW);
   Wire.write(registerAddress); // Register address to write to
   Wire.write(data); // Data to write, dereferenced from the pointer
   uint8_t err = Wire.endTransmission(); // End the transmission
