@@ -157,14 +157,16 @@ static void lr11xx_GetVersion (uint8_t* hw, uint8_t* device,
                                uint8_t* major, uint8_t* minor) {
     uint8_t buf[4] = { 0 };
 
-    hal_spi_select(1);
     hal_pin_busy_wait();
-    hal_spi(RADIOLIB_LR11X0_CMD_GET_VERSION >> 8);
-    hal_spi(RADIOLIB_LR11X0_CMD_GET_VERSION);
+    hal_spi_select(1);
+
+    hal_spi((uint8_t)((RADIOLIB_LR11X0_CMD_GET_VERSION & 0xFF00) >> 8));
+    hal_spi((uint8_t) (RADIOLIB_LR11X0_CMD_GET_VERSION & 0x00FF));
     hal_spi_select(0);
 
-    hal_spi_select(1);
     hal_pin_busy_wait();
+    hal_spi_select(1);
+
     hal_spi(RADIOLIB_LR11X0_CMD_NOP);
     for (uint8_t i = 0; i < sizeof(buf); i++) {
         buf[i] = hal_spi(0x00);
@@ -175,6 +177,12 @@ static void lr11xx_GetVersion (uint8_t* hw, uint8_t* device,
     if (device) { *device = buf[1]; }
     if (major)  { *major  = buf[2]; }
     if (minor)  { *minor  = buf[3]; }
+#if 0
+    Serial.print("hw     = "); Serial.println(*hw, HEX);
+    Serial.print("device = "); Serial.println(*device, HEX);
+    Serial.print("major  = "); Serial.println(*major, HEX);
+    Serial.print("minor  = "); Serial.println(*minor, HEX);
+#endif
 }
 #endif /* USE_LR11XX */
 
@@ -209,7 +217,7 @@ static bool lr1110_probe()
   lr11xx_GetVersion(&hw, &device_reset, &major, &minor);
 
   hal_pin_rst(2); // configure RST pin floating!
-  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+  hal_waitUntil(os_getTime()+ms2osticks(300)); // wait 300 ms
 
   lr11xx_GetVersion(&hw, &device, &major, &minor);
 
@@ -280,7 +288,7 @@ static bool lr1121_probe()
   lr11xx_GetVersion(&hw, &device_reset, &major, &minor);
 
   hal_pin_rst(2); // configure RST pin floating!
-  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+  hal_waitUntil(os_getTime()+ms2osticks(300)); // wait 300 ms
 
   lr11xx_GetVersion(&hw, &device, &major, &minor);
 

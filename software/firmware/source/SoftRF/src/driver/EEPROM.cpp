@@ -101,12 +101,18 @@ void EEPROM_defaults()
   eeprom_block.field.settings.bluetooth     = BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
-  /* This will speed up 'factory' boot sequence on Editions other than Standalone */
+  /*
+   * This will speed up 'factory' boot sequence on Editions
+   * other than Standalone and Card
+   */
   if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
     eeprom_block.field.settings.volume      = BUZZER_VOLUME_FULL;
     eeprom_block.field.settings.pointer     = DIRECTION_NORTH_UP;
   } else {
-    eeprom_block.field.settings.volume      = BUZZER_OFF;
+    if (hw_info.model == SOFTRF_MODEL_CARD) {
+    } else {
+      eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
+    }
     eeprom_block.field.settings.pointer     = LED_OFF;
   }
 
@@ -121,13 +127,13 @@ void EEPROM_defaults()
 #elif defined(ARDUINO_ARCH_SILABS)
   eeprom_block.field.settings.nmea_out   = NMEA_UART;
 #else
-  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE     ?
+  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE    ||
+                                           hw_info.model == SOFTRF_MODEL_CARD     ||
+                                           hw_info.model == SOFTRF_MODEL_COZY      ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ES        ?
                                            NMEA_OFF :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY  ||
-                                           hw_info.model == SOFTRF_MODEL_CARD     ||
-                                           hw_info.model == SOFTRF_MODEL_COZY     ||
                                            hw_info.model == SOFTRF_MODEL_LEGO      ?
                                            NMEA_USB : NMEA_UART;
 #endif

@@ -43,8 +43,12 @@
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-#if !defined(LED_STATE_ON)
-#define LED_STATE_ON            LOW  // State when LED is litted
+// State when LED is litted
+#if defined(LED_STATE_ON)
+#undef  LED_STATE_ON
+#define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD ? HIGH : LOW)
+#else
+#define LED_STATE_ON            LOW
 #endif /* LED_STATE_ON */
 
 #define SerialOutput            Serial1
@@ -247,7 +251,7 @@ struct rst_info {
 //#define USE_WEBUSB_SERIAL
 //#define USE_WEBUSB_SETTINGS
 //#define USE_USB_MIDI
-//#define USE_PWM_SOUND
+#define USE_PWM_SOUND
 //#define USE_GDL90_MSL
 //#define USE_IBEACON
 //#define EXCLUDE_NUS
@@ -275,7 +279,8 @@ struct rst_info {
 #define PFLAA_EXT1_ARGS ,Container[i].no_track,data_source,Container[i].rssi
 
 #if defined(USE_PWM_SOUND)
-#define SOC_GPIO_PIN_BUZZER   (hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
+#define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E ? SOC_GPIO_PIN_T1000_BUZZER : \
+                               hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
                                hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
                                hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \
                                SOC_UNUSED_PIN)

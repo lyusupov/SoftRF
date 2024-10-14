@@ -131,7 +131,7 @@ Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 [Texas Instruments<br>CC13x2R](http://www.ti.com/product/CC1352R)|[**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|Q2 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [Maxim Integrated](https://en.wikipedia.org/wiki/Maxim_Integrated)<br>[MAX2837](https://www.maximintegrated.com/en/products/comms/wireless-rf/MAX2837.html)&nbsp;and<br>[MAX5864](https://www.maximintegrated.com/en/products/analog/data-converters/analog-front-end-ics/MAX5864.html)|[**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)|Q2 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|**S**oftware<br>**D**efined<br>**R**adio
 [NiceRF](https://www.nicerf.com)<br>[SA868](https://www.nicerf.com/item/2w-embedded-walkie-talkie-module-sa868)|[**Ham Edition**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|VHF or UHF "Ham Radio" bands
-[Semtech<br>LR1110](https://www.semtech.com/products/wireless-rf/lora-edge/lr1110)|Card Edition|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
+[Semtech<br>LR1110](https://www.semtech.com/products/wireless-rf/lora-edge/lr1110)|Card Edition|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
 
 ## By GNSS chip
 GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes
@@ -142,8 +142,8 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 [Sony<br>CXD5603GF](https://www.sony-semicon.co.jp/e/products/lsi/gps/product.html)|1&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<!-- <br>2&nbsp;[**Bracelet**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition) -->|Q4 2019|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [MediaTek](https://en.wikipedia.org/wiki/MediaTek)<br>MT3339|1&nbsp;[**Raspberry**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)<br>2&nbsp;[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)<br>3&nbsp;[**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)<br>4&nbsp;[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
 [GOKE](http://www.goke.com/en/)<br>GK9501|[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|Q3 2020|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
-[UniCore](https://en.unicorecomm.com/)<br>[UC6580](https://en.unicorecomm.com/products/detail/34)|[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
-[Airoha](https://www.airoha.com/about)<br>[AG3335](https://www.airoha.com/products/p/A0Dmm0pijWW3MScb)|**Card**|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
+[UniCore](https://en.unicorecomm.com/)<br>[UC6580](https://en.unicorecomm.com/products/detail/34)|[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_good.png)|&nbsp;
+[Airoha](https://www.airoha.com/about)<br>[AG3335](https://www.airoha.com/products/p/A0Dmm0pijWW3MScb)|**Card**|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
 
 # Documentation
 
