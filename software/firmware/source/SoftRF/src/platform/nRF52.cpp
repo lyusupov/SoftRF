@@ -2395,7 +2395,16 @@ static void nRF52_swSer_begin(unsigned long baud)
       break;
   }
 #endif /* ARDUINO_ARCH_MBED */
+
   Serial_GNSS_In.begin(baud);
+
+  if (nRF52_board == NRF52_SEEED_T1000E)
+  {
+    for (int i=0; i<25; i++) {
+      /* Enable Sleep mode locking */
+      Serial_GNSS_Out.write("$PAIR382,1*2E\r\n"); delay(40);
+    }
+  }
 }
 
 static void nRF52_swSer_enableRx(boolean arg)

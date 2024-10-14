@@ -1177,28 +1177,12 @@ static  bool ag33_getACK(const char *message, uint32_t waitMillis)
 static gnss_id_t ag33_probe()
 {
   /* Firmware version request */
-//  return nmea_handshake("$PAIR020*38\r\n", "$PAIR020,", true) ?
-//  return nmea_handshake("$PAIR021*39\r\n", "$PAIR021,", true) ?
-//  return nmea_handshake("$PAIR021*39\r\n", "$PAIR001,021", false) ?
-  return hw_info.model == SOFTRF_MODEL_CARD ? /* TODO */
+  return nmea_handshake("$PAIR021*39\r\n", "$PAIR021,", true) ?
                         GNSS_MODULE_AG33 : GNSS_MODULE_NMEA;
 }
 
 static bool ag33_setup()
 {
-  for (int i=0; i<25; i++) {
-    while (Serial_GNSS_Out.available() > 0) Serial_GNSS_Out.read();
-
-    delay(200);
-
-    Serial_GNSS_Out.write("$PAIR382,1*2E\r\n");
-
-    if (ag33_getACK("$PAIR001,382,0*32", 700)) {
-      Serial.println("+++ SLEEP LOCK OFF +++");
-      break;
-    }
-  }
-
   // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
   // delay(250);
 
@@ -1223,6 +1207,20 @@ static bool ag33_setup()
   }
   delay(250);
 
+  /*
+   * 0 = Normal mode
+   * For general purposes.
+   *
+   * 3 = Balloon mode
+   * Used for high-altitude balloon scenario where
+   * the vertical movement has a greater impact on the position
+   * calculation.
+   *
+   * 5 = Drone mode
+   * Used for drone applications with equivalent
+   * dynamic range and vertical acceleration at different flight phases
+   * (for example, hovering and cruising)
+   */
   Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
 
   return true;
