@@ -1151,29 +1151,6 @@ const gnss_chip_ops_t uc65_ops = {
 #endif /* EXCLUDE_GNSS_UC65 */
 
 #if !defined(EXCLUDE_GNSS_AG33)
-static  bool ag33_getACK(const char *message, uint32_t waitMillis)
-{
-    uint8_t buffer[768] = {0};
-    uint8_t b;
-    int bytesRead = 0;
-    uint32_t startTimeout = millis() + waitMillis;
-    while (millis() < startTimeout) {
-        if (Serial_GNSS_Out.available()) {
-            b = Serial_GNSS_Out.read();
-            buffer[bytesRead] = b;
-            bytesRead++;
-            if ((bytesRead == 767) || (b == '\r')) {
-                if (strnstr((char *)buffer, message, bytesRead) != nullptr) {
-                    return true;
-                } else {
-                    bytesRead = 0;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 static gnss_id_t ag33_probe()
 {
   /* Firmware version request */
@@ -1197,7 +1174,8 @@ static bool ag33_setup()
   Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");   /* VTG OFF */ delay(250);
   Serial_GNSS_Out.write("$PAIR062,6,0*38\r\n");   /* ZDA OFF */ delay(250);
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->nmea_out == NMEA_TCP) {
+  if (settings->nmea_out == NMEA_TCP ||       // SD
+      settings->nmea_out == NMEA_BLUETOOTH) { // SD
     Serial_GNSS_Out.write("$PAIR062,2,1*3D\r\n"); /* GSA 1s */
   }
   else

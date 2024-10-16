@@ -93,6 +93,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
                                               AIRCRAFT_TYPE_STATIC :
+                                              hw_info.model == SOFTRF_MODEL_CARD ?
+                                              AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
                                               RF_TX_POWER_OFF :
@@ -109,9 +111,12 @@ void EEPROM_defaults()
     eeprom_block.field.settings.volume      = BUZZER_VOLUME_FULL;
     eeprom_block.field.settings.pointer     = DIRECTION_NORTH_UP;
   } else {
+#if defined(USE_PWM_SOUND)
     if (hw_info.model == SOFTRF_MODEL_CARD) {
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
-    } else {
+    } else
+#endif /* USE_PWM_SOUND */
+    {
       eeprom_block.field.settings.volume    = BUZZER_OFF;
     }
     eeprom_block.field.settings.pointer     = LED_OFF;

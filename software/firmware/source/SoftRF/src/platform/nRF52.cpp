@@ -1103,6 +1103,8 @@ static void nRF52_setup()
         }
       }
 #endif /* ENABLE_RECORDER */
+
+      hw_info.revision = 3; /* Unknown */
       break;
 
     case NRF52_SEEED_T1000E:

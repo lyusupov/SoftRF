@@ -68,6 +68,7 @@
  *   SA818 library is developed by Gibbon Zen
  *   OpenDroneID library is developed by Steve Jack
  *   WiFiWebServer and Functional-Vlpp libraries are developed by Khoi Hoang
+ *   QMA6100P library is developed by Tristan Alderson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

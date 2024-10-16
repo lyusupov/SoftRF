@@ -467,12 +467,12 @@ void nRF52_Bluetooth_setup()
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // To be consistent OTA DFU should be added first if it exists
-  if (hw_info.model == SOFTRF_MODEL_CARD) {
-    bledfusecure.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
-    bledfusecure.begin();
-  } else {
+  //if (hw_info.model == SOFTRF_MODEL_CARD) {
+  //  bledfusecure.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
+  //  bledfusecure.begin();
+  //} else {
     bledfu.begin();
-  }
+  //}
 
   // Configure and Start Device Information Service
   bledis.setManufacturer(nRF52_Device_Manufacturer);
