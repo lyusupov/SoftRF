@@ -120,9 +120,15 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 2. Connect the SoftRF Badge Edition device to your PC by means of a USB cable (Type-A <-> Type-C) ;
 
-3. Double click (within 0.5 seconds) onto the SoftRF device RESET button. A virtual disk with **NRF52BOOT** (or **TECHOBOOT**) label should appear in your "File manager" afterwards.
+3. Double click (within 0.5 seconds) onto the SoftRF device RESET button (LilyGO T-Echo or Heltec T114) or connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed (Seeed T1000-E).<br>
 
-4. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **NRF52BOOT** (or **TECHOBOOT**) disk. Wait until the file transfer is complete.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with a device specific label should appear in your "File manager" afterwards.<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **LilyGO T-Echo** the label is &nbsp; **TECHOBOOT** (or **NRF52BOOT**)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **Seeed T1000-E** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **T1000-E**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **Heltec T114** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **HT-n5262**<br>
+
+4. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **TECHOBOOT** / **NRF52BOOT** / **T1000-E** / **HT-n5262** disk. Wait until the file transfer is complete.
 
 <br>
 

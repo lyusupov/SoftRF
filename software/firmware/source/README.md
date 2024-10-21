@@ -48,7 +48,7 @@
     For **ESP32**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**1.0.5**](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5)<br>
     For **ESP32-S3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
-    For **ESP32-C6**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.0.1**](https://github.com/espressif/arduino-esp32/releases/tag/3.0.1)<br>
+    For **ESP32-C6**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.0.6**](https://github.com/espressif/arduino-esp32/releases/tag/3.0.6)<br>
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
 int ledPin = 2; // use pin 14 for TTGO T-Beam rev.05 or higher   
