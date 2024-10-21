@@ -1158,6 +1158,8 @@ static gnss_id_t ag33_probe()
                         GNSS_MODULE_AG33 : GNSS_MODULE_NMEA;
 }
 
+extern gnss_chip_ops_t ag33_ops;
+
 static bool ag33_setup()
 {
   // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
@@ -1201,6 +1203,16 @@ static bool ag33_setup()
    */
   Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
 
+#if 0
+  if (hw_info.model == SOFTRF_MODEL_CARD) {
+    /* Synchronizes PPS pulse with NMEA */
+    Serial_GNSS_Out.write("$PAIR751,1*3D\r\n"); delay(250);
+
+    ag33_ops.gga_ms = 350;
+    ag33_ops.rmc_ms = 360;
+  }
+#endif
+
   return true;
 }
 
@@ -1215,7 +1227,7 @@ static void ag33_fini()
   delay(250);
 }
 
-const gnss_chip_ops_t ag33_ops = {
+/* const */ gnss_chip_ops_t ag33_ops = {
   ag33_probe,
   ag33_setup,
   ag33_loop,
