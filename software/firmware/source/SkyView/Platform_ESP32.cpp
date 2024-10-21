@@ -611,7 +611,11 @@ static void ESP32_setup()
 #endif /* TBD */
 
 #else
+#if ARDUINO_USB_CDC_ON_BOOT && defined(CONFIG_IDF_TARGET_ESP32C6)
+  Serial.begin(SERIAL_OUT_BR);
+#else
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
 }
 

@@ -176,7 +176,7 @@
 
 ////////////////////////////////////////
 
-#elif (ESP32)
+#elif defined(ESP32)
 
   #if (_WIFI_LOGLEVEL_ > 2)
     #warning Use ESP32 from WiFiWebServer
@@ -184,7 +184,7 @@
 
 ////////////////////////////////////////
   
-#elif (ESP8266)
+#elif defined(ESP8266)
 
   #if (_WIFI_LOGLEVEL_ > 2)
     #warning Use ESP8266 from WiFiWebServer
@@ -272,7 +272,7 @@
 
 // KH, For PROGMEM commands
 // ESP32/ESP8266 includes <pgmspace.h> by default, and memccpy_P was already defined there
-#if !(ESP32 || ESP8266 || defined(ARDUINO_PORTENTA_H7_M7) || defined(ARDUINO_PORTENTA_H7_M4))
+#if !(defined(ESP32) || defined(ESP8266) || defined(ARDUINO_PORTENTA_H7_M7) || defined(ARDUINO_PORTENTA_H7_M4))
   #include <avr/pgmspace.h>
   #define memccpy_P(dest, src, c, n) memccpy((dest), (src), (c), (n))
 #endif
@@ -389,7 +389,7 @@ typedef struct
 
 #include "utility/RequestHandler.h"
 
-#if (ESP32 || ESP8266)
+#if (defined(ESP32) || defined(ESP8266))
     #include "FS.h"
 #endif
 
@@ -400,7 +400,7 @@ class WiFiWebServer
 {
   public:
   
-#if (ESP32 || ESP8266)  
+#if (defined(ESP32) || defined(ESP8266))
     WiFiWebServer(IPAddress addr, int port = 80);
 #endif
     
@@ -551,7 +551,7 @@ class WiFiWebServer
 
 		////////////////////////////////////////
     
-#if !(ESP32 || ESP8266)
+#if !(defined(ESP32) || defined(ESP8266))
     template<typename T> size_t streamFile(T &file, const String& contentType) 
     {
       using namespace mime;
@@ -607,7 +607,7 @@ class WiFiWebServer
 
 		////////////////////////////////////////
 
-#if (ESP32 || ESP8266)		
+#if (defined(ESP32) || defined(ESP8266))
 		virtual size_t _currentClientWrite_P(PGM_P buffer, size_t length) 
 		{ 
 			return _currentClient.write_P( buffer, length ); 
@@ -638,7 +638,7 @@ class WiFiWebServer
     void          _prepareHeader(WWString& response, int code, const char* content_type, size_t contentLength);
     bool          _collectHeader(const char* headerName, const char* headerValue);
     
-#if (ESP32 || ESP8266)
+#if (defined(ESP32) || defined(ESP8266))
     void _streamFileCore(const size_t fileSize, const String & fileName, const String & contentType, const int code = 200);
 
 		////////////////////////////////////////

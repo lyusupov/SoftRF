@@ -710,6 +710,7 @@ static void ESP32_setup()
     hw_info.rtc = RTC_PCF8563;
     hw_info.imu = ACC_BMA423;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
     bool has_axp202 = (Wire1.endTransmission() == 0);
@@ -740,9 +741,11 @@ static void ESP32_setup()
     } else {
       WIRE_FINI(Wire1);
     }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
     Wire1.beginTransmission(AXP192_SLAVE_ADDRESS);
     bool has_axp = (Wire1.endTransmission() == 0);
@@ -828,6 +831,7 @@ static void ESP32_setup()
         hw_info.revision = 2;
       }
     }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
     lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -4354,7 +4358,9 @@ static bool ESP32_Baro_setup()
     /* Try out OLED I2C bus */
     Wire.begin(TTGO_V2_OLED_PIN_SDA, TTGO_V2_OLED_PIN_SCL);
     if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
+#if defined(CONFIG_IDF_TARGET_ESP32)
       Wire1 = Wire;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
     }
     if (!Baro_probe()) {
       if (!(hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8)) {

@@ -330,6 +330,7 @@ static void ESP32_setup()
     bool bma_present = false;
     bool rtc_present = false;
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
     Wire1.beginTransmission(AXP202_SLAVE_ADDRESS);
     axp_present = (Wire1.endTransmission() == 0);
@@ -386,6 +387,7 @@ static void ESP32_setup()
       rtc = new PCF8563_Class(*i2c);
       hw_info.rtc = RTC_PCF8563;
     }
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
