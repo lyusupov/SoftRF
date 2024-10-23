@@ -1697,7 +1697,7 @@ static void nRF52_loop()
     Serial.print(a_z);
     Serial.println("}");
 #endif
-    IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 1000;
+    IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
     IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */

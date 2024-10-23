@@ -1162,6 +1162,54 @@ extern gnss_chip_ops_t ag33_ops;
 
 static bool ag33_setup()
 {
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
+
+  Serial_GNSS_Out.write("$PAIR021*39\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  while ((millis() - start_time) < 2000) {
+    c = Serial_GNSS_In.read();
+    if (c == '\n') break;
+  }
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = Serial_GNSS_In.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 9) {
+    for (int i=9; i < len; i++) {
+      if (GNSSbuf[i] == ',' && GNSSbuf[i-1] == ',' && GNSSbuf[i-2] == ',') {
+        GNSSbuf[i-2] = 0;
+        break;
+      }
+    }
+    Serial.print(F("INFO: GNSS ident - "));
+    Serial.println((char *) &GNSSbuf[9]);
+  }
+
+  delay(250);
+#endif
+
   // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
   // delay(250);
 

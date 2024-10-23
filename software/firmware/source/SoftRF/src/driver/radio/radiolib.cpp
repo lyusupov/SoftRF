@@ -229,7 +229,12 @@ static bool lr1110_probe()
     if (device_reset == RADIOLIB_LR11X0_DEVICE_LR1110) {
       RF_SX12XX_RST_is_connected = false;
     }
-
+#if 0
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d.%d", major, minor);
+    Serial.print("INFO: LR1110 base FW version ");
+    Serial.println(buf);
+#endif
     return true;
   } else {
     return false;
@@ -300,7 +305,12 @@ static bool lr1121_probe()
     if (device_reset == RADIOLIB_LR11X0_DEVICE_LR1121) {
       RF_SX12XX_RST_is_connected = false;
     }
-
+#if 0
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d.%d", major, minor);
+    Serial.print("INFO: LR1121 base FW version ");
+    Serial.println(buf);
+#endif
     return true;
   } else {
     return false;
