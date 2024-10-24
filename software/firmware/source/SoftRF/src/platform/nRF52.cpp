@@ -1228,9 +1228,9 @@ static void nRF52_setup()
         if (imu_3.begin()) {
           imu_3.softwareReset();
           delay(5);
-          imu_3.setRange(SFE_QMA6100P_RANGE32G);
+          imu_3.setRange(SFE_QMA6100P_RANGE4G);
           imu_3.enableAccel(true);
-          // imu_3.calibrateOffsets();
+          imu_3.calibrateOffsets();
           // imu_3.setOffset();
 
           hw_info.imu     = ACC_QMA6100P;

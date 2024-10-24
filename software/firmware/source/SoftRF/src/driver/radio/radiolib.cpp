@@ -1093,7 +1093,9 @@ static void lr11xx_shutdown()
 #endif
 
 #if USE_LR11XX
-  int state = radio->sleep(false, 0);
+  int state = radio->standby(RADIOLIB_LR11X0_STANDBY_RC);
+  state = radio->setTCXO(0);
+  state = radio->sleep(false, 0);
 #endif
 
   SPI.end();
