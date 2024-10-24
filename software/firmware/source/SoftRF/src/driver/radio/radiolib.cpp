@@ -184,6 +184,40 @@ static void lr11xx_GetVersion (uint8_t* hw, uint8_t* device,
     Serial.print("minor  = "); Serial.println(*minor, HEX);
 #endif
 }
+
+static const uint32_t rfswitch_dio_pins_hpdtek[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_hpdtek[] = {
+    // mode                  DIO5  DIO6
+    { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+    { LR11x0::MODE_RX,     { HIGH, LOW  } },
+    { LR11x0::MODE_TX,     { LOW,  HIGH } },
+    { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
+
+static const uint32_t rfswitch_dio_pins_seeed[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_seeed[] = {
+    // mode                  DIO5  DIO6  DIO7  DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_RX,     { HIGH, LOW,  LOW,  HIGH } },
+    { LR11x0::MODE_TX,     { HIGH, HIGH, LOW,  HIGH } },
+    { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW,  HIGH } },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH, LOW  } },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
 #endif /* USE_LR11XX */
 
 // this function is called when a complete packet
@@ -638,57 +672,29 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_CARD:
 #if 1
     radio->setDioAsRfSwitch(0x0f, 0x0, 0x09, 0x0B, 0x0A, 0x0, 0x4, 0x0);
-    state = radio->setTCXO(1.6);
 #else
-    {
-      static const uint32_t rfswitch_dio_pins[] = {
-          RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-          RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
-      };
-
-      static const Module::RfSwitchMode_t rfswitch_table[] = {
-          // mode                  DIO5  DIO6  DIO7  DIO8
-          { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
-          { LR11x0::MODE_RX,     { HIGH, LOW,  LOW,  HIGH } },
-          { LR11x0::MODE_TX,     { HIGH, HIGH, LOW,  HIGH } },
-          { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW,  HIGH } },
-          { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  LOW  } },
-          { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH, LOW  } },
-          { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
-          END_OF_MODE_TABLE,
-      };
-      radio->setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
-
-      // LR1110 TCXO Voltage
-      state = radio->setTCXO(1.6);
-    }
+    radio->setRfSwitchTable(rfswitch_dio_pins_seeed, rfswitch_table_seeed);
 #endif
+    // LR1110 TCXO Voltage
+    state = radio->setTCXO(1.6);
+    break;
+
+  case SOFTRF_MODEL_STANDALONE:
+    /* Ebyte E80-900M2213S */
+    radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0); /* TBD */
+
+    // LR1121 TCXO Voltage
+    state = radio->setTCXO(1.8);
     break;
 
   case SOFTRF_MODEL_NEO:
+  case SOFTRF_MODEL_BADGE:
+  case SOFTRF_MODEL_PRIME_MK3:
   default:
-    {
-      static const uint32_t rfswitch_dio_pins[] = {
-          RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-          RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
-      };
+    radio->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
 
-      static const Module::RfSwitchMode_t rfswitch_table[] = {
-          // mode                  DIO5  DIO6
-          { LR11x0::MODE_STBY,   { LOW,  LOW  } },
-          { LR11x0::MODE_RX,     { HIGH, LOW  } },
-          { LR11x0::MODE_TX,     { LOW,  HIGH } },
-          { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
-          { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
-          { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
-          { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
-          END_OF_MODE_TABLE,
-      };
-      radio->setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
-
-      // LR1121 TCXO Voltage 2.85~3.15V
-      state = radio->setTCXO(3.0);
-    }
+    // LR1121 TCXO Voltage 2.85~3.15V
+    state = radio->setTCXO(3.0);
     break;
   }
 #endif
