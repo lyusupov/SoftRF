@@ -58,6 +58,7 @@ jobs:
       ENERGIA_IDE_VERSION: 1.8.10E23
       NIM_BLE_VERSION:     1.4.1
       # NIM_BLE_VERSION:   esp32-c6-test
+      TINYUSB_VERSION:     3.4.0
       BOARD:               ${{ matrix.board }}
       PINS_ARDUINO:        pins_arduino.h
 
@@ -447,7 +448,7 @@ jobs:
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_clock=CH32V30x_EVT_144MHz_HSE"  --save-prefs ;
             arduino --pref "custom_rtlib=CH32V30x_EVT_nanofp"      --save-prefs ;
-            #arduino --pref "custom_usb=CH32V30x_EVT_tinyusb_usbfs" --save-prefs ;
+            arduino --pref "custom_usb=CH32V30x_EVT_tinyusb_usbfs" --save-prefs ;
             mkdir -p $HOME/Arduino/hardware/WCH ;
             cd $HOME/Arduino/hardware/WCH ;
             wget https://github.com/openwch/arduino_core_ch32/archive/refs/heads/main.zip ;
@@ -455,6 +456,11 @@ jobs:
             rm main.zip ;
             mv arduino_core_ch32-main ch32v ;
             mv $HOME/.arduino15/packages/WCH/hardware/ch32v/1.0.4 /tmp/ ;
+            wget https://github.com/adafruit/Adafruit_TinyUSB_Arduino/archive/refs/tags/${TINYUSB_VERSION}.zip ;
+            unzip ${TINYUSB_VERSION}.zip ;
+            rm ${TINYUSB_VERSION}.zip ;
+            rmdir ch32v/libraries/Adafruit_TinyUSB_Arduino ;
+            mv Adafruit_TinyUSB_Arduino-${TINYUSB_VERSION} ch32v/libraries/Adafruit_TinyUSB_Arduino ;
             cd $GITHUB_WORKSPACE ;
           fi
 
