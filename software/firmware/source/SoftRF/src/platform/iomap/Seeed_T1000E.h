@@ -42,6 +42,11 @@
 
 #define SOC_ADC_T1000_VOLTAGE_DIV     (2.0F) // 100K + 100K voltage divider on VBAT
 
+/* battery charger */
+#define SOC_GPIO_PIN_T1000_CHG_PWR    _PINNUM(0,  5) // P0.05
+#define SOC_GPIO_PIN_T1000_CHG_STATUS _PINNUM(1,  3) // P1.03 active LOW
+#define SOC_GPIO_PIN_T1000_CHG_DONE   _PINNUM(1,  4) // P1.04 active LOW
+
 /* buzzer */
 #define SOC_GPIO_PIN_T1000_BUZZER     _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_T1000_BUZZER_EN  _PINNUM(1,  5) // P1.05

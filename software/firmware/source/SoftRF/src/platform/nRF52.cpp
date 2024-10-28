@@ -700,7 +700,6 @@ static void nRF52_setup()
 
   pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
   pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT_PULLUP);
-  delay(100);
 
 #if !defined(EXCLUDE_PMU)
   nRF52_has_pmu = sy6970.init(Wire,
@@ -764,7 +763,7 @@ static void nRF52_setup()
 
 #if !defined(EXCLUDE_IMU)
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
-    delay(200);
+    delay(5);
 
 #if !defined(ARDUINO_ARCH_MBED)
     Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
@@ -772,15 +771,37 @@ static void nRF52_setup()
     Wire.begin();
     Wire.beginTransmission(QMA6100P_ADDRESS);
     nRF52_has_imu = (Wire.endTransmission() == 0);
+    Wire.end();
+    pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT);
+
     if (nRF52_has_imu) {
       nRF52_board        = NRF52_SEEED_T1000E;
       hw_info.model      = SOFTRF_MODEL_CARD;
       nRF52_Device_Model = "Card Edition";
       nRF52_USB_VID      = 0x2886; /* Seeed Technology */
       nRF52_USB_PID      = 0x0057; /* SenseCAP T1000-E */
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED)
+        pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_SENSE_HIGH);
+
+        uint8_t sd_en;
+        (void) sd_softdevice_is_enabled(&sd_en);
+
+        // Enter System OFF state
+        if ( sd_en ) {
+          sd_power_system_off();
+        } else {
+          NRF_POWER->SYSTEMOFF = 1;
+        }
+#else
+        NRF_POWER->SYSTEMOFF = 1;
+#endif /* ARDUINO_ARCH_MBED */
+      }
     }
-    Wire.end();
-    pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT);
 #endif /* EXCLUDE_IMU */
   }
 #endif /* EXCLUDE_PMU */
@@ -804,7 +825,6 @@ static void nRF52_setup()
     case NRF52_NORDIC_PCA10059:
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT); /* VDD_POWR is ON */
-      delay(100);
     case NRF52_HELTEC_T114: /* internal bus */
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
@@ -816,11 +836,11 @@ static void nRF52_setup()
   Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
   nRF52_has_rtc = (Wire.endTransmission() == 0);
   if (!nRF52_has_rtc) {
-    delay(200);
+    delay(5);
     Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
     nRF52_has_rtc = (Wire.endTransmission() == 0);
     if (!nRF52_has_rtc) {
-      delay(200);
+      delay(5);
       Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
       nRF52_has_rtc = (Wire.endTransmission() == 0);
     }
@@ -892,6 +912,26 @@ static void nRF52_setup()
     nRF52_board        = NRF52_HELTEC_T114;
     hw_info.model      = SOFTRF_MODEL_COZY;
     nRF52_Device_Model = "Cozy Edition";
+
+    if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+      NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+      pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED)
+      pinMode(SOC_GPIO_PIN_T114_BUTTON, INPUT_PULLUP_SENSE);
+
+      uint8_t sd_en;
+      (void) sd_softdevice_is_enabled(&sd_en);
+
+      // Enter System OFF state
+      if ( sd_en ) {
+        sd_power_system_off();
+      } else {
+        NRF_POWER->SYSTEMOFF = 1;
+      }
+#else
+      NRF_POWER->SYSTEMOFF = 1;
+#endif /* ARDUINO_ARCH_MBED */
+    }
 #if !defined(ARDUINO_ARCH_MBED)
     /* external bus */
     Wire.setPins(SOC_GPIO_PIN_T114_SDA_EXT, SOC_GPIO_PIN_T114_SCL_EXT);
@@ -1137,9 +1177,9 @@ static void nRF52_setup()
       break;
 
     case NRF52_HELTEC_T114:
-      digitalWrite(SOC_GPIO_PIN_GNSS_T114_RST, HIGH); /* TBD */
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_RST, HIGH); /* RESET - LOW */
       pinMode(SOC_GPIO_PIN_GNSS_T114_RST, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, HIGH);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, HIGH); /* SLEEP - LOW */
       pinMode(SOC_GPIO_PIN_GNSS_T114_WKE, OUTPUT);
 
       pinMode(SOC_GPIO_LED_T114_GREEN, OUTPUT);

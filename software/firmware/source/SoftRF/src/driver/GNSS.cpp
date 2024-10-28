@@ -1280,7 +1280,7 @@ static void ag33_fini()
   ag33_setup,
   ag33_loop,
   ag33_fini,
-  0 /* GGA */, 0 /* RMC */
+  90 /* GGA */, 100 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_AG33 */
 
