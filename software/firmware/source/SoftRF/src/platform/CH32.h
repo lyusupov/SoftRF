@@ -106,6 +106,12 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      PB13
 #define SOC_GPIO_PIN_SS       PB12
 
+#include <SoftSPI.h>
+extern  SoftSPI RadioSPI;
+#undef  SPI
+#define SPI                   RadioSPI
+#define USE_SOFTSPI
+
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN

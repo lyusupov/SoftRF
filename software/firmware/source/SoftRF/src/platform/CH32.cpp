@@ -84,8 +84,15 @@ static bool ADB_is_open        = false;
 HardwareSerial Serial2(USART2);
 HardwareSerial Serial3(USART3);
 
-//SPIClass SPI_1;
 #include <SoftSPI.h>
+#if defined(USE_SOFTSPI)
+SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
+#else
+SPIClass RadioSPI(SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_MISO,
+                  SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_SS);
+#endif /* USE_SOFTSPI */
+
+//SPIClass SPI_1;
 SoftSPI Flash_SPI(SOC_GPIO_YD_FL_MOSI, SOC_GPIO_YD_FL_MISO, SOC_GPIO_YD_FL_CLK);
 
 static Adafruit_SPIFlash *SPIFlash = NULL;
@@ -194,10 +201,12 @@ static void CH32_setup()
   Serial_GNSS_In.setRx(SOC_GPIO_PIN_GNSS_RX);
   Serial_GNSS_In.setTx(SOC_GPIO_PIN_GNSS_TX);
 
-  SPI.setMISO(SOC_GPIO_PIN_MISO);
-  SPI.setMOSI(SOC_GPIO_PIN_MOSI);
-  SPI.setSCLK(SOC_GPIO_PIN_SCK);
-  SPI.setSSEL(SOC_GPIO_PIN_SS);
+#if !defined(USE_SOFTSPI)
+  RadioSPI.setMISO(SOC_GPIO_PIN_MISO);
+  RadioSPI.setMOSI(SOC_GPIO_PIN_MOSI);
+  RadioSPI.setSCLK(SOC_GPIO_PIN_SCK);
+  RadioSPI.setSSEL(SOC_GPIO_PIN_SS);
+#endif /* USE_SOFTSPI */
 
   Wire.setSCL(SOC_GPIO_PIN_SCL);
   Wire.setSDA(SOC_GPIO_PIN_SDA);
@@ -555,7 +564,7 @@ static void CH32_EEPROM_extension(int cmd)
 
 static void CH32_SPI_begin()
 {
-  SPI.begin();
+  RadioSPI.begin();
 }
 
 static void CH32_swSer_begin(unsigned long baud)
