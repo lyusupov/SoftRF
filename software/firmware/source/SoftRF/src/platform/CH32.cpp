@@ -88,8 +88,7 @@ HardwareSerial Serial3(USART3);
 #if defined(USE_SOFTSPI)
 SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
 #else
-SPIClass RadioSPI(SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_MISO,
-                  SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_SS);
+SPIClass RadioSPI;
 #endif /* USE_SOFTSPI */
 
 //SPIClass SPI_1;
@@ -205,7 +204,6 @@ static void CH32_setup()
   RadioSPI.setMISO(SOC_GPIO_PIN_MISO);
   RadioSPI.setMOSI(SOC_GPIO_PIN_MOSI);
   RadioSPI.setSCLK(SOC_GPIO_PIN_SCK);
-  RadioSPI.setSSEL(SOC_GPIO_PIN_SS);
 #endif /* USE_SOFTSPI */
 
   Wire.setSCL(SOC_GPIO_PIN_SCL);
