@@ -84,15 +84,13 @@ static bool ADB_is_open        = false;
 HardwareSerial Serial2(USART2);
 HardwareSerial Serial3(USART3);
 
-#include <SoftSPI.h>
 #if defined(USE_SOFTSPI)
 SoftSPI RadioSPI(SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_MISO, SOC_GPIO_PIN_SCK);
+SoftSPI FlashSPI(SOC_GPIO_YD_FL_MOSI, SOC_GPIO_YD_FL_MISO, SOC_GPIO_YD_FL_CLK);
 #else
 SPIClass RadioSPI;
+SPIClass FlashSPI;
 #endif /* USE_SOFTSPI */
-
-//SPIClass SPI_1;
-SoftSPI Flash_SPI(SOC_GPIO_YD_FL_MOSI, SOC_GPIO_YD_FL_MISO, SOC_GPIO_YD_FL_CLK);
 
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
@@ -237,13 +235,13 @@ static void CH32_setup()
       possible_devices[W25Q32JV_INDEX].supports_qspi        = false;
       possible_devices[W25Q32JV_INDEX].supports_qspi_writes = false;
 
-#if 0
-      SPI_1.setMISO(SOC_GPIO_YD_FL_MISO);
-      SPI_1.setMOSI(SOC_GPIO_YD_FL_MOSI);
-      SPI_1.setSCLK(SOC_GPIO_YD_FL_CLK);
-      SPI_1.setSSEL(SOC_GPIO_YD_FL_SS);
-#endif
-      ft = new Adafruit_FlashTransport_SPI(SOC_GPIO_YD_FL_SS, &Flash_SPI);
+#if !defined(USE_SOFTSPI)
+      FlashSPI.setMISO(SOC_GPIO_YD_FL_MISO);
+      FlashSPI.setMOSI(SOC_GPIO_YD_FL_MOSI);
+      FlashSPI.setSCLK(SOC_GPIO_YD_FL_CLK);
+#endif /* USE_SOFTSPI */
+
+      ft = new Adafruit_FlashTransport_SPI(SOC_GPIO_YD_FL_SS, &FlashSPI);
       break;
 
     case CH32_WCH_V307V_R1:
