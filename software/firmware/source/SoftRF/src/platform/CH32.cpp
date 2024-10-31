@@ -163,7 +163,11 @@ static void CH32_msc_flush_cb (void)
 #if defined(ENABLE_RECORDER)
 #include <SdFat.h>
 
+#if defined(USE_SOFTSPI)
+SoftSPI uSD_SPI(SOC_GPIO_YD_SD_CMD, SOC_GPIO_YD_SD_D0, SOC_GPIO_YD_SD_CLK);
+#else
 SPIClass uSD_SPI;
+#endif /* USE_SOFTSPI */
 
 #define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(8), &uSD_SPI)
 
@@ -242,6 +246,23 @@ static void CH32_setup()
 #endif /* USE_SOFTSPI */
 
       ft = new Adafruit_FlashTransport_SPI(SOC_GPIO_YD_FL_SS, &FlashSPI);
+
+#if defined(ENABLE_RECORDER)
+      {
+        int uSD_SS_pin = SOC_GPIO_YD_SD_D3;
+
+#if !defined(USE_SOFTSPI)
+        uSD_SPI.setMISO(SOC_GPIO_YD_SD_D0);
+        uSD_SPI.setMOSI(SOC_GPIO_YD_SD_CMD);
+        uSD_SPI.setSCLK(SOC_GPIO_YD_SD_CLK);
+#endif /* USE_SOFTSPI */
+
+        pinMode(uSD_SS_pin, OUTPUT);
+        digitalWrite(uSD_SS_pin, HIGH);
+
+        uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+      }
+#endif /* ENABLE_RECORDER */
       break;
 
     case CH32_WCH_V307V_R1:
@@ -256,6 +277,13 @@ static void CH32_setup()
   }
 
   hw_info.storage = CH32_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
+
+#if defined(ENABLE_RECORDER)
+  if (uSD_is_attached && uSD.card()->cardSize() > 0) {
+    hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
+                      STORAGE_FLASH_AND_CARD : STORAGE_CARD;
+  }
+#endif /* ENABLE_RECORDER */
 
   if (CH32_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
@@ -332,6 +360,41 @@ static void CH32_post_init()
     Serial.println();
     Serial.flush();
   }
+
+#if defined(ENABLE_RECORDER)
+  if (CH32_board == CH32_YD_V307VCT6)
+  {
+    if (!uSD_is_attached) {
+      Serial.println(F("WARNING: unable to attach micro-SD card."));
+    } else {
+      // The number of 512 byte sectors in the card
+      // or zero if an error occurs.
+      size_t cardSize = uSD.card()->cardSize();
+
+      if (cardSize == 0) {
+        Serial.println(F("WARNING: invalid micro-SD card size."));
+      } else {
+        uint8_t cardType = uSD.card()->type();
+
+        Serial.print(F("SD Card Type: "));
+        if(cardType == SD_CARD_TYPE_SD1){
+            Serial.println(F("V1"));
+        } else if(cardType == SD_CARD_TYPE_SD2){
+            Serial.println(F("V2"));
+        } else if(cardType == SD_CARD_TYPE_SDHC){
+            Serial.println(F("SDHC"));
+        } else {
+            Serial.println(F("UNKNOWN"));
+        }
+
+        Serial.print("SD Card Size: ");
+        Serial.print(cardSize / (2 * 1024));
+        Serial.println(" MB");
+      }
+    }
+    Serial.println();
+  }
+#endif /* ENABLE_RECORDER */
 
   Serial.println(F("Data output device(s):"));
 

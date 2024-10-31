@@ -155,12 +155,28 @@ struct rst_info {
 #define SOC_GPIO_YD_BUTTON    PB_3
 
 // uSD
-#define SOC_GPIO_YD_SD_D0     PC_8
+#if defined(PC8)
+#define SOC_GPIO_YD_SD_D0     PC8
+#else
+#define SOC_GPIO_YD_SD_D0     PC_8  /* MISO */
+#endif
 #define SOC_GPIO_YD_SD_D1     PC_9
 #define SOC_GPIO_YD_SD_D2     PC_10
-#define SOC_GPIO_YD_SD_D3     PC_11
+#if defined(PC11)
+#define SOC_GPIO_YD_SD_D3     PC11
+#else
+#define SOC_GPIO_YD_SD_D3     PC_11 /*  SS  */
+#endif
+#if defined(PC12)
+#define SOC_GPIO_YD_SD_CLK    PC12
+#else
 #define SOC_GPIO_YD_SD_CLK    PC_12
-#define SOC_GPIO_YD_SD_CMD    PD_2
+#endif
+#if defined(PD2)
+#define SOC_GPIO_YD_SD_CMD    PD2
+#else
+#define SOC_GPIO_YD_SD_CMD    PD_2  /* MOSI */
+#endif
 #define SOC_GPIO_YD_SD_SW     PD_7
 
 // W25Q32
