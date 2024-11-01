@@ -448,6 +448,34 @@ static void lr11xx_setup()
 
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
+#if USE_LR11XX
+  float Vtcxo;
+
+  switch (hw_info.model)
+  {
+  case SOFTRF_MODEL_STANDALONE:
+    // Ebyte E80-900M2213S
+    // LR1121 TCXO Voltage
+    Vtcxo = 1.8;
+    break;
+
+  case SOFTRF_MODEL_NEO:
+  case SOFTRF_MODEL_BADGE:
+  case SOFTRF_MODEL_PRIME_MK3:
+    // HPDTeK HPD-16E
+    // LR1121 TCXO Voltage 2.85~3.15V
+    Vtcxo = 3.0;
+    break;
+
+  case SOFTRF_MODEL_CARD:
+    // Seeed
+    // LR1110 TCXO Voltage
+  default:
+    Vtcxo = 1.6;
+    break;
+  }
+#endif
+
   float br, fdev, bw;
   switch (rl_protocol->modulation_type)
   {
@@ -457,9 +485,9 @@ static void lr11xx_setup()
 #endif
 #if USE_LR11XX
 #if RADIOLIB_VERSION_MAJOR == 6
-    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 10, 8, 1.6);
+    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 10, 8, Vtcxo);
 #else
-    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 8, 1.6);
+    state = radio->begin(125.0, 9, 7, RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE, 8, Vtcxo);
 #endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
@@ -503,9 +531,9 @@ static void lr11xx_setup()
 #endif
 #if USE_LR11XX
 #if RADIOLIB_VERSION_MAJOR == 6
-    state = radio->beginGFSK(4.8, 5.0, 156.2, 10, 16, 1.6);
+    state = radio->beginGFSK(4.8, 5.0, 156.2, 10, 16, Vtcxo);
 #else
-    state = radio->beginGFSK(4.8, 5.0, 156.2, 16, 1.6);
+    state = radio->beginGFSK(4.8, 5.0, 156.2, 16, Vtcxo);
 #endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
@@ -675,16 +703,11 @@ static void lr11xx_setup()
 #else
     radio->setRfSwitchTable(rfswitch_dio_pins_seeed, rfswitch_table_seeed);
 #endif
-    // LR1110 TCXO Voltage
-    state = radio->setTCXO(1.6);
     break;
 
   case SOFTRF_MODEL_STANDALONE:
     /* Ebyte E80-900M2213S */
     radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0); /* TBD */
-
-    // LR1121 TCXO Voltage
-    state = radio->setTCXO(1.8);
     break;
 
   case SOFTRF_MODEL_NEO:
@@ -692,9 +715,6 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_PRIME_MK3:
   default:
     radio->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
-
-    // LR1121 TCXO Voltage 2.85~3.15V
-    state = radio->setTCXO(3.0);
     break;
   }
 #endif
