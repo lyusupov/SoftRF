@@ -29,6 +29,10 @@
 #define SOC_GPIO_PIN_C6_SDA             10 /* D2 */
 #define SOC_GPIO_PIN_C6_SCL             8  /* D4 */
 
+// LR1121
+#define SOC_GPIO_PIN_C6_BUSY            2  /* D0 */
+#define SOC_GPIO_PIN_C6_DIO9            8  /* D4 */
+
 // battery voltage (ADC)
 #define SOC_GPIO_PIN_C6_BATTERY         1  /* A0 */
 

@@ -136,7 +136,7 @@ Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status
 [Maxim Integrated](https://en.wikipedia.org/wiki/Maxim_Integrated)<br>[MAX2837](https://www.maximintegrated.com/en/products/comms/wireless-rf/MAX2837.html)&nbsp;and<br>[MAX5864](https://www.maximintegrated.com/en/products/analog/data-converters/analog-front-end-ics/MAX5864.html)|[**ES Edition**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)|Q2 2021|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|**S**oftware<br>**D**efined<br>**R**adio
 [NiceRF](https://www.nicerf.com)<br>[SA868](https://www.nicerf.com/item/2w-embedded-walkie-talkie-module-sa868)|[**Ham Edition**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|Q3 2023|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|VHF or UHF "Ham Radio" bands
 [Semtech<br>LR1110](https://www.semtech.com/products/wireless-rf/lora-edge/lr1110)|[**Card**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
-[Semtech<br>LR1121](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)|&nbsp;|Q4 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|&nbsp;
+[Semtech<br>LR1121](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)|&nbsp;|Q4 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|&nbsp;
 
 ## By GNSS chip
 GNSS|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes

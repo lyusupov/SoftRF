@@ -1409,6 +1409,9 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_C6_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_C6_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_C6_CE;
+#endif /* USE_RADIOLIB */
 
   } else if (esp32_board == ESP32_LILYGO_T3C6) {
 
