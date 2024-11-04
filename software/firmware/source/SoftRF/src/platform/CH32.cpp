@@ -163,13 +163,14 @@ static void CH32_msc_flush_cb (void)
 #if defined(ENABLE_RECORDER)
 #include <SdFat.h>
 
-#if defined(USE_SOFTSPI)
-SoftSPI uSD_SPI(SOC_GPIO_YD_SD_CMD, SOC_GPIO_YD_SD_D0, SOC_GPIO_YD_SD_CLK);
-#else
-SPIClass uSD_SPI;
-#endif /* USE_SOFTSPI */
+SoftSpiDriver<SOC_GPIO_YD_SD_D0, SOC_GPIO_YD_SD_CMD, SOC_GPIO_YD_SD_CLK> uSD_SPI;
 
+// Speed argument is ignored for software SPI.
+#if ENABLE_DEDICATED_SPI
+#define SD_CONFIG SdSpiConfig(uSD_SS_pin, DEDICATED_SPI, SD_SCK_MHZ(8), &uSD_SPI)
+#else  // ENABLE_DEDICATED_SPI
 #define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(8), &uSD_SPI)
+#endif  // ENABLE_DEDICATED_SPI
 
 SdFat uSD;
 
@@ -251,7 +252,7 @@ static void CH32_setup()
       {
         int uSD_SS_pin = SOC_GPIO_YD_SD_D3;
 
-#if !defined(USE_SOFTSPI)
+#if !defined(USE_SOFTSPI) && SPI_DRIVER_SELECT != 2
         uSD_SPI.setMISO(SOC_GPIO_YD_SD_D0);
         uSD_SPI.setMOSI(SOC_GPIO_YD_SD_CMD);
         uSD_SPI.setSCLK(SOC_GPIO_YD_SD_CLK);
@@ -790,7 +791,7 @@ static void CH32_Button_setup()
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // Button(s) uses external pull up resistor.
-    pinMode(button_pin, INPUT);
+    pinMode(button_pin, CH32_board == CH32_YD_V307VCT6 ? INPUT_PULLUP : INPUT);
 
     button_1.init(button_pin);
 
@@ -830,7 +831,7 @@ static void CH32_Button_fini()
   if (hw_info.model == SOFTRF_MODEL_ACADEMY) {
 //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_BUTTON));
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == LOW);
-    pinMode(SOC_GPIO_PIN_BUTTON, ANALOG);
+    pinMode(SOC_GPIO_PIN_BUTTON, INPUT);
   }
 #endif /* SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN */
 }

@@ -94,7 +94,11 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_RX  PA10
 #define SOC_GPIO_PIN_GNSS_TX  PA9
 
+#if defined(PB4)
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN /* PA15 PB4 */
+#else
+#define SOC_GPIO_PIN_STATUS   PB4
+#endif
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_RX3      SOC_UNUSED_PIN
@@ -143,10 +147,36 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_GNSS_PPS PA3
 #define SOC_GPIO_PIN_BATTERY  SOC_UNUSED_PIN /* PA0 TBD */
+#if defined(PB3)
+#define SOC_GPIO_PIN_BUTTON   PB3
+#else
 #define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
+#endif
 
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
+
+/* SPI3 */
+#if defined(PB5)
+#define SOC_GPIO_PIN_MOSI3    PB5
+#else
+#define SOC_GPIO_PIN_MOSI3    PB_5
+#endif
+#if defined(PB4)
+#define SOC_GPIO_PIN_MISO3    PB4
+#else
+#define SOC_GPIO_PIN_MISO3    PB_4
+#endif
+#if defined(PB3)
+#define SOC_GPIO_PIN_SCK3     PB3
+#else
+#define SOC_GPIO_PIN_SCK3     PB_3
+#endif
+#if defined(PA15)
+#define SOC_GPIO_PIN_SS3      PA15
+#else
+#define SOC_GPIO_PIN_SS3      PA_15
+#endif
 
 /* YD-CH32V307VCT6 */
 #define SOC_GPIO_YD_LED_BLUE  PB_4
@@ -154,7 +184,7 @@ struct rst_info {
 
 #define SOC_GPIO_YD_BUTTON    PB_3
 
-// uSD
+// SDIO
 #if defined(PC8)
 #define SOC_GPIO_YD_SD_D0     PC8
 #else

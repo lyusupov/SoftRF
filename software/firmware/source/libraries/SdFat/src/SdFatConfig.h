@@ -44,6 +44,10 @@
 #define USE_UTF8_LONG_NAMES 1
 #endif
 
+#if defined(ARDUINO_ARCH_CH32)
+#define SPI_DRIVER_SELECT 2
+#endif  // ARDUINO_ARCH_CH32
+
 // Backward-compatible define
 #define ENABLE_EXTENDED_TRANSFER_CLASS USE_BLOCK_DEVICE_INTERFACE
 #define BaseBlockDriver FsBlockDeviceInterface
