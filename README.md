@@ -185,6 +185,7 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
     * [ESP32 adapter](https://github.com/lyusupov/ESP32-NODEMCU-ADAPTER)
     * [ESP32-C3 upgrade](https://github.com/lyusupov/SoftRF/wiki/ESP32%E2%80%90C3-upgrade-for-Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 * [Card Edition](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Card-Edition.-Quick-start)
 * [Ham Edition](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [Quick start](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition.-Quick-start)
 * [ES Edition](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
