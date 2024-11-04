@@ -95,9 +95,9 @@ struct rst_info {
 #define SOC_GPIO_PIN_GNSS_TX  PA9
 
 #if defined(PB4)
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN /* PA15 PB4 */
-#else
 #define SOC_GPIO_PIN_STATUS   PB4
+#else
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN /* PA15 PB4 */
 #endif
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 
