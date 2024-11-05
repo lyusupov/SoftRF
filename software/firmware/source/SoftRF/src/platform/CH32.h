@@ -247,7 +247,7 @@ struct rst_info {
 #define EXCLUDE_NRF905           //  -    kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
-//#define EXCLUDE_EGM96          //  -    kb
+#define EXCLUDE_EGM96            //  - 16 kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 
