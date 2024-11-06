@@ -309,6 +309,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 <p><img src="https://github.com/lyusupov/SoftRF/blob/master/documents/images/ham-24.jpg" width="800"></p>
 
+* [**Cozy Edition**](https://github.com/lyusupov/SoftRF/wiki/Cozy-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Cozy-1.jpg)
+
 * [**Midi Edition**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/midi-9.jpg)

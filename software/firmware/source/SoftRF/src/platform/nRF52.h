@@ -237,7 +237,6 @@ struct rst_info {
 
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
-#define USE_RADIOLIB
 
 //#define USE_OLED                 //  +    kb
 //#define EXCLUDE_OLED_BARO_PAGE
@@ -264,6 +263,7 @@ struct rst_info {
 #define ENABLE_REMOTE_ID
 #define USE_EXT_I2S_DAC
 #define USE_TFT
+#define USE_RADIOLIB
 //#define ENABLE_RECORDER
 #else
 #undef USE_EPAPER
