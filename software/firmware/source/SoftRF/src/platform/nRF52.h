@@ -237,7 +237,7 @@ struct rst_info {
 
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
-//#define USE_RADIOLIB
+#define USE_RADIOLIB
 
 //#define USE_OLED                 //  +    kb
 //#define EXCLUDE_OLED_BARO_PAGE

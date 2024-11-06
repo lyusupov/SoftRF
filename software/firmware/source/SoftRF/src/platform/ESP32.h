@@ -352,7 +352,6 @@ struct rst_info {
 #define USE_TFT
 #define USE_NMEA_CFG
 #define USE_BASICMAC
-//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 
@@ -452,6 +451,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_SA8X8
 /* Experimental */
 #define ENABLE_REMOTE_ID
+#define USE_RADIOLIB
 //#define EXCLUDE_VOICE_MESSAGE
 //#define USE_ARDUINOBLE
 //#undef USE_BLE_MIDI
