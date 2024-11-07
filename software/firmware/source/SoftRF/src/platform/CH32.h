@@ -258,6 +258,7 @@ struct rst_info {
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
 
+#define USE_RADIOLIB
 //#define ENABLE_RECORDER
 
 #if !defined(EXCLUDE_LED_RING)

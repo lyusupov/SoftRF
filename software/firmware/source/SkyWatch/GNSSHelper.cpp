@@ -86,7 +86,7 @@ const char *GNSS_name[] = {
  * Goke: GGA - 185+, RMC - 265+
  * Neo6: GGA - 138 , RMC -  67
  * MT33: GGA -  48 , RMC - 175
- * UC65: GGA - TBD , RMC - TBD
+ * UC65: GGA -  35 , RMC -  29
  * AG33: GGA - TBD , RMC - TBD
  */
 
@@ -127,7 +127,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
 
       /* skip first line when expected response contains 2 of them */
       if (skipline) {
-        start_time = millis();
+        // start_time = millis();
         while (Serial_GNSS_In.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
       }
 
@@ -1144,7 +1144,7 @@ const gnss_chip_ops_t uc65_ops = {
   uc65_setup,
   uc65_loop,
   uc65_fini,
-  0 /* GGA */, 0 /* RMC */
+  35 /* GGA */, 29 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_UC65 */
 
@@ -1152,28 +1152,78 @@ const gnss_chip_ops_t uc65_ops = {
 static gnss_id_t ag33_probe()
 {
   /* Firmware version request */
-//  return nmea_handshake("$PAIR020*38\r\n", "$PAIR020,", true) ?
   return nmea_handshake("$PAIR021*39\r\n", "$PAIR021,", true) ?
                         GNSS_MODULE_AG33 : GNSS_MODULE_NMEA;
 }
 
+extern gnss_chip_ops_t ag33_ops;
+
 static bool ag33_setup()
 {
-  Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
+#if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
+
+  Serial_GNSS_Out.write("$PAIR021*39\r\n");
+
+  int i=0;
+  char c;
+  unsigned long start_time = millis();
+
+  while ((millis() - start_time) < 2000) {
+    c = Serial_GNSS_In.read();
+    if (c == '\n') break;
+  }
+
+  /* take response into buffer */
+  while ((millis() - start_time) < 2000) {
+
+    c = Serial_GNSS_In.read();
+
+    if (isPrintable(c) || c == '\r' || c == '\n') {
+      if (i >= sizeof(GNSSbuf) - 1) break;
+      GNSSbuf[i++] = c;
+    } else {
+      /* ignore */
+      continue;
+    }
+
+    if (c == '\n') break;
+  }
+
+  GNSSbuf[i] = 0;
+
+  size_t len = strlen((char *) &GNSSbuf[0]);
+
+  if (len > 9) {
+    for (int i=9; i < len; i++) {
+      if (GNSSbuf[i] == ',' && GNSSbuf[i-1] == ',' && GNSSbuf[i-2] == ',') {
+        GNSSbuf[i-2] = 0;
+        break;
+      }
+    }
+    Serial.print(F("INFO: GNSS ident - "));
+    Serial.println((char *) &GNSSbuf[9]);
+  }
+
   delay(250);
+#endif
+
+  // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
+  // delay(250);
 
   /* GPS + GLONASS + Galileo + BeiDou + QZSS */
   Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");         delay(250);
 
   Serial_GNSS_Out.write("$PAIR062,0,1*3F\r\n");   /* GGA 1s */  delay(250);
   Serial_GNSS_Out.write("$PAIR062,4,1*3B\r\n");   /* RMC 1s */  delay(250);
-#if 0
+
   Serial_GNSS_Out.write("$PAIR062,1,0*3F\r\n");   /* GLL OFF */ delay(250);
   Serial_GNSS_Out.write("$PAIR062,3,0*3D\r\n");   /* GSV OFF */ delay(250);
   Serial_GNSS_Out.write("$PAIR062,5,0*3B\r\n");   /* VTG OFF */ delay(250);
-#endif
+  Serial_GNSS_Out.write("$PAIR062,6,0*38\r\n");   /* ZDA OFF */ delay(250);
 #if defined(NMEA_TCP_SERVICE)
-  if (settings->s.nmea_out == NMEA_TCP) {
+  if (settings->s.nmea_out == NMEA_TCP ||       // SD
+      settings->s.nmea_out == NMEA_BLUETOOTH) { // SD
     Serial_GNSS_Out.write("$PAIR062,2,1*3D\r\n"); /* GSA 1s */
   }
   else
@@ -1183,6 +1233,20 @@ static bool ag33_setup()
   }
   delay(250);
 
+  /*
+   * 0 = Normal mode
+   * For general purposes.
+   *
+   * 3 = Balloon mode
+   * Used for high-altitude balloon scenario where
+   * the vertical movement has a greater impact on the position
+   * calculation.
+   *
+   * 5 = Drone mode
+   * Used for drone applications with equivalent
+   * dynamic range and vertical acceleration at different flight phases
+   * (for example, hovering and cruising)
+   */
   Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
 
   return true;
@@ -1199,12 +1263,12 @@ static void ag33_fini()
   delay(250);
 }
 
-const gnss_chip_ops_t ag33_ops = {
+/* const */ gnss_chip_ops_t ag33_ops = {
   ag33_probe,
   ag33_setup,
   ag33_loop,
   ag33_fini,
-  0 /* GGA */, 0 /* RMC */
+  90 /* GGA */, 100 /* RMC */
 };
 #endif /* EXCLUDE_GNSS_AG33 */
 

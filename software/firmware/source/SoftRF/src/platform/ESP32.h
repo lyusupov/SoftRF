@@ -441,6 +441,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef ENABLE_PROL
 //#define USE_NIMBLE
 #define USE_ARDUINOBLE
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#define USE_RADIOLIB
+#endif /* C6 */
 #endif /* C2 || C6 || H2 */
 #endif /* SX || CX || H2 */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
