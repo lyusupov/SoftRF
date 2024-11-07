@@ -210,12 +210,32 @@ static const uint32_t rfswitch_dio_pins_seeed[] = {
 static const Module::RfSwitchMode_t rfswitch_table_seeed[] = {
     // mode                  DIO5  DIO6  DIO7  DIO8
     { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
+    // SKY13373
     { LR11x0::MODE_RX,     { HIGH, LOW,  LOW,  HIGH } },
     { LR11x0::MODE_TX,     { HIGH, HIGH, LOW,  HIGH } },
     { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW,  HIGH } },
     { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  LOW  } },
+    // BGA524N6
     { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH, LOW  } },
+    // LC
     { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
+
+static const uint32_t rfswitch_dio_pins_ebyte[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_LR11X0_DIO7, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_ebyte[] = {
+    // mode                  DIO5  DIO6  DIO7
+    { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_RX,     { LOW,  HIGH, LOW  } },
+    { LR11x0::MODE_TX,     { HIGH, HIGH, LOW  } },
+    { LR11x0::MODE_TX_HP,  { HIGH, LOW,  LOW  } },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH } },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW  } },
     END_OF_MODE_TABLE,
 };
 #endif /* USE_LR11XX */
@@ -707,7 +727,11 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
     /* Ebyte E80-900M2213S */
-    radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0); /* TBD */
+#if 1
+    radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
+#else
+    radio->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
+#endif
     break;
 
   case SOFTRF_MODEL_NEO:
