@@ -204,7 +204,8 @@ static const Module::RfSwitchMode_t rfswitch_table_hpdtek[] = {
 
 static const uint32_t rfswitch_dio_pins_seeed[] = {
     RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-    RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
+    RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8,
+    RADIOLIB_NC
 };
 
 static const Module::RfSwitchMode_t rfswitch_table_seeed[] = {
@@ -223,8 +224,8 @@ static const Module::RfSwitchMode_t rfswitch_table_seeed[] = {
 };
 
 static const uint32_t rfswitch_dio_pins_ebyte[] = {
-    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-    RADIOLIB_LR11X0_DIO7, RADIOLIB_NC
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6, RADIOLIB_LR11X0_DIO7,
+    RADIOLIB_NC, RADIOLIB_NC
 };
 
 static const Module::RfSwitchMode_t rfswitch_table_ebyte[] = {
