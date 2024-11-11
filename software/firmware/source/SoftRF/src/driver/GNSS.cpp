@@ -1213,6 +1213,14 @@ static bool ag33_setup()
   // Serial_GNSS_Out.write("$PAIR002*38\r\n"); /* Powers on the GNSS system */
   // delay(250);
 
+#if 0
+  // test why RMC is missing with SoftRF Tool over BLE (other software is fine)
+  Serial_GNSS_Out.write("$PAIR100,2,0*39\r\n"); /* NMEA 3.01 */ delay(250);
+  Serial_GNSS_Out.write("$PAIR400,0*22\r\n");   /* No DGPS   */ delay(250);
+#else
+  /* NMEA 0183 V4.10 and SBAS DGPS are enabled by default */
+#endif
+
   /* GPS + GLONASS + Galileo + BeiDou + QZSS */
   Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");         delay(250);
 

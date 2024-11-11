@@ -781,7 +781,13 @@ void NMEA_Process_SRF_SKV_Sentences()
           }
           if (C_AcftType.isUpdated())
           {
-            settings->aircraft_type = atoi(C_AcftType.value());
+            const char *ac_type = C_AcftType.value();
+            /* accept FTD-012 hexadecimal aircraft types as well */
+            if (strlen(ac_type) == 1 && ac_type[0] >= 'A' && ac_type[0] <= 'F') {
+              settings->aircraft_type = 10 + (ac_type[0] - 'A');
+            } else {
+              settings->aircraft_type = atoi(ac_type);
+            }
             Serial.print(F("AcftType = ")); Serial.println(settings->aircraft_type);
             cfg_is_updated = true;
           }

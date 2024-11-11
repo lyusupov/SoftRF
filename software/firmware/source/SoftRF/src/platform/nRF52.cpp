@@ -1064,9 +1064,6 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_0_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
-#endif /* USE_RADIOLIB */
 
       hw_info.revision = 0;
       break;
@@ -1085,9 +1082,6 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_TECHO_REV_1_BLUE);
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
-#endif /* USE_RADIOLIB */
 
       hw_info.revision = 1;
       break;
@@ -1109,7 +1103,7 @@ static void nRF52_setup()
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_2_RST;
 #if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1; /* reserved for DIO11 of HPD-16E */
 #endif /* USE_RADIOLIB */
 
       hw_info.revision = 2;
@@ -1120,7 +1114,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_TULTIMA_RST;
       lmic_pins.busy = SOC_GPIO_PIN_TULTIMA_BUSY;
 #if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_TULTIMA_DIO1;
+      lmic_pins.dio[0] = SOC_GPIO_PIN_TULTIMA_DIO1; /* DIO 9 or 11 of HPD-16E */
 #endif /* USE_RADIOLIB */
 
 #if defined(ENABLE_RECORDER)
@@ -1170,7 +1164,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_T1000_RST;
       lmic_pins.busy = SOC_GPIO_PIN_T1000_BUSY;
 #if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_T1000_DIO9;
+      lmic_pins.dio[0] = SOC_GPIO_PIN_T1000_DIO9; /* LR1110 */
 #endif /* USE_RADIOLIB */
 
       hw_info.revision = 3; /* Unknown */
@@ -1193,9 +1187,6 @@ static void nRF52_setup()
       lmic_pins.nss  = SOC_GPIO_PIN_T114_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_T114_RST;
       lmic_pins.busy = SOC_GPIO_PIN_T114_BUSY;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_T114_DIO1;
-#endif /* USE_RADIOLIB */
 
       hw_info.revision = 3; /* Unknown */
       break;

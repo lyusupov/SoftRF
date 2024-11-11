@@ -1169,7 +1169,10 @@ static void ESP32_setup()
     lmic_pins.busy = SOC_GPIO_PIN_S3_BUSY;
 
 #if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_S3_DIO1;
+    if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+      /* reserved for DIO 11 of HPD-16E */
+      lmic_pins.dio[0] = SOC_GPIO_PIN_S3_DIO1;
+    }
 #endif /* USE_RADIOLIB */
 
     int uSD_SS_pin = (esp32_board == ESP32_S3_DEVKIT) ?
@@ -1334,9 +1337,6 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_HELTRK_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_HELTRK_RST;
     lmic_pins.busy = SOC_GPIO_PIN_HELTRK_BUSY;
-#if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_HELTRK_DIO1;
-#endif /* USE_RADIOLIB */
 
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
 
@@ -1355,7 +1355,7 @@ static void ESP32_setup()
     lmic_pins.txe  = SOC_GPIO_PIN_T3S3_ANT_TX;
     lmic_pins.rxe  = SOC_GPIO_PIN_T3S3_ANT_RX;
 #if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
+    lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1; /* reserved for HPD-16E */
 #endif /* USE_RADIOLIB */
 
     int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
@@ -1410,7 +1410,7 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_C6_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
 #if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_C6_CE;
+    lmic_pins.dio[0] = SOC_GPIO_PIN_C6_CE; /* Ebyte E80 */
 #endif /* USE_RADIOLIB */
 
   } else if (esp32_board == ESP32_LILYGO_T3C6) {
@@ -1428,9 +1428,6 @@ static void ESP32_setup()
     lmic_pins.busy = SOC_GPIO_PIN_T3C6_BUSY;
     lmic_pins.txe  = SOC_GPIO_PIN_T3C6_ANT_TX;
     lmic_pins.rxe  = SOC_GPIO_PIN_T3C6_ANT_RX;
-#if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_T3C6_DIO1;
-#endif /* USE_RADIOLIB */
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
   }
 

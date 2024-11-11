@@ -57,10 +57,10 @@ static void hal_io_init () {
     ASSERT(lmic_pins.nss != LMIC_UNUSED_PIN);
 
 #if defined(BRD_sx1272_radio) || defined(BRD_sx1276_radio)
-    //ASSERT(lmic_pins.dio[0] != LMIC_UNUSED_PIN);
-    //ASSERT(lmic_pins.dio[1] != LMIC_UNUSED_PIN || lmic_pins.dio[2] != LMIC_UNUSED_PIN);
+//    ASSERT(lmic_pins.dio[0] != LMIC_UNUSED_PIN);
+//    ASSERT(lmic_pins.dio[1] != LMIC_UNUSED_PIN || lmic_pins.dio[2] != LMIC_UNUSED_PIN);
 #elif defined(BRD_sx1261_radio) || defined(BRD_sx1262_radio)
-    ASSERT(lmic_pins.dio[0] == LMIC_UNUSED_PIN);
+//    ASSERT(lmic_pins.dio[0] == LMIC_UNUSED_PIN);
     ASSERT(lmic_pins.dio[1] == LMIC_UNUSED_PIN);
     ASSERT(lmic_pins.dio[2] == LMIC_UNUSED_PIN);
 #else

@@ -17,7 +17,7 @@ p.warn {
 <script><!--
 
 const version = 1;
-const volume  = 2;
+// const volume = 2;
 const pointer = 2;
 
 // Compute NMEA checksum and display it
@@ -31,7 +31,7 @@ function UpdateChecksum()
       + document.getElementById("actype").value + ","
       + document.getElementById("alarm").value + ","
       + document.getElementById("txpower").value + ","
-      + volume  + ","
+      + document.getElementById("volume").value + ","
       + pointer + ","
       + document.getElementById("gnss").value + ","
       + document.getElementById("priv").value + ","
@@ -111,6 +111,13 @@ function SelTxPower()
 {
   var txpower = document.getElementById("TxPowers");
   document.getElementById("txpower").value = txpower.options[txpower.selectedIndex].value;
+  UpdateChecksum();
+}
+
+function SelVolume()
+{
+  var volume = document.getElementById("Volumes");
+  document.getElementById("volume").value = volume.options[volume.selectedIndex].value;
   UpdateChecksum();
 }
 
@@ -217,8 +224,8 @@ function InitSettings()
   document.getElementById("actype").value     = 1;
   document.getElementById("alarm").value      = 1;
   document.getElementById("txpower").value    = 0;
+  document.getElementById("volume").value     = 2;
 
-//  document.getElementById("volume").value   = 0;
 //  document.getElementById("pointer").value  = 0;
 
   document.getElementById("gnss").value       = 1;
@@ -337,6 +344,17 @@ If you are affected - please, consider to update
 </tr>
 
 <tr>
+<th align=left>Volume</th>
+<td align=right>
+<select id="Volumes" onchange="SelVolume()">
+<option value='0'>Loud</option>
+<option value='1'>Low</option>
+<option selected value='2'>Off</option>
+</select>
+</td>
+</tr>
+
+<tr>
 <th align=left>NMEA sentences:</th>
 </tr>
 <tr>
@@ -436,6 +454,7 @@ If you are affected - please, consider to update
 <!-- A/C type:  --><input type="hidden" id="actype" size="2">
 <!-- Alarm:  --><input type="hidden" id="alarm" size="1">
 <!--<p> Tx power:  --><input hidden="text" id="txpower" size="1">
+<!-- Volume:  --><input type="hidden" id="volume" size="1">
 <!-- GNSS:  --><input type="hidden" id="gnss" size="1">
 <!-- Private:  --><input type="hidden" id="priv" size="1">
 <!-- Legacy:  --><input type="hidden" id="legacy" size="1">
