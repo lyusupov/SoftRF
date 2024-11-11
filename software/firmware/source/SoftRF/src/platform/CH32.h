@@ -88,8 +88,16 @@ struct rst_info {
 #if defined(CH32V30x)
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_RX  PB5
-#define SOC_GPIO_PIN_CONS_TX  PB8
+#if defined(PD6)
+#define SOC_GPIO_PIN_CONS_RX  PD6
+#else
+#define SOC_GPIO_PIN_CONS_RX  PD_6
+#endif
+#if defined(PD5)
+#define SOC_GPIO_PIN_CONS_TX  PD5
+#else
+#define SOC_GPIO_PIN_CONS_TX  PD_5
+#endif
 
 #define SOC_GPIO_PIN_GNSS_RX  PA10
 #define SOC_GPIO_PIN_GNSS_TX  PA9
@@ -110,11 +118,16 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      PB13
 #define SOC_GPIO_PIN_SS       PB12
 
-//#include <SoftSPI.h>
-//extern  SoftSPI RadioSPI;
-//#undef  SPI
-//#define SPI                   RadioSPI
 //#define USE_SOFTSPI
+#if defined(USE_SOFTSPI)
+#include <SoftSPI.h>
+extern  SoftSPI RadioSPI;
+#else
+#include <SPI.h>
+extern  SPIClass RadioSPI;
+#endif /* USE_SOFTSPI */
+#undef  SPI
+#define SPI                   RadioSPI
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN

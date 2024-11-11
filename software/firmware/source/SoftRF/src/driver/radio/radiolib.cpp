@@ -475,6 +475,7 @@ static void lr11xx_setup()
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_STANDALONE:
+  case SOFTRF_MODEL_ACADEMY:
     // Ebyte E80-900M2213S
     // LR1121 TCXO Voltage
     Vtcxo = 1.8;
@@ -727,6 +728,7 @@ static void lr11xx_setup()
     break;
 
   case SOFTRF_MODEL_STANDALONE:
+  case SOFTRF_MODEL_ACADEMY:
     /* Ebyte E80-900M2213S */
 #if 1
     radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
