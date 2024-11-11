@@ -47,7 +47,7 @@ lmic_pinmap lmic_pins = {
     .rxe = LMIC_UNUSED_PIN,
     .rst = SOC_GPIO_PIN_RST,
     .dio = {LMIC_UNUSED_PIN, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
-    .busy = LMIC_UNUSED_PIN,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -310,6 +310,10 @@ static void CH32_setup()
     FATFS_is_mounted = fatfs.begin(SPIFlash);
   }
 
+#if defined(USE_RADIOLIB)
+  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1;
+#endif /* USE_RADIOLIB */
+
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 
 #if defined(USE_TINYUSB) && defined(USBCON)
@@ -340,7 +344,7 @@ static void CH32_post_init()
     Serial.println(F("Built-in components:"));
 
     Serial.print(F("RADIO   : "));
-    Serial.println(hw_info.rf      == RF_IC_SX1276      ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.rf      != RF_IC_NONE        ? F("PASS") : F("FAIL"));
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE  ? F("PASS") : F("FAIL"));
 

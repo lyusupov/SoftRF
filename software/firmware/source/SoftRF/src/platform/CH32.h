@@ -121,10 +121,10 @@ struct rst_info {
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_PWR      SOC_UNUSED_PIN
 
-/* SX1276 */
-#define SOC_GPIO_PIN_RST      PB0
-#define SOC_GPIO_PIN_BUSY     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO1     PA8
+/* SX12XX */
+#define SOC_GPIO_PIN_RST      PB0 /* D9 */
+#define SOC_GPIO_PIN_BUSY     PB9 /* D7 */
+#define SOC_GPIO_PIN_DIO1     PA8 /* D2 */
 
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX SOC_UNUSED_PIN
@@ -258,6 +258,8 @@ struct rst_info {
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
 
+#define USE_BASICMAC
+//#define EXCLUDE_SX1276         //  -    kb
 #define USE_RADIOLIB
 //#define ENABLE_RECORDER
 
