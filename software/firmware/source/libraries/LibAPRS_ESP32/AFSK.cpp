@@ -17,13 +17,14 @@
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && \
     !defined(CONFIG_IDF_TARGET_ESP32C6) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2)
+    !defined(CONFIG_IDF_TARGET_ESP32H2) && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4)
 extern "C"
 {
 #include "soc/syscon_reg.h"
 #include "soc/syscon_struct.h"
 }
-#endif /* CONFIG_IDF_TARGET_ESP32C2 || C6 || H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C6 || H2 || P4 */
 #endif /* I2S_INTERNAL */
 
 #define DEBUG_TNC

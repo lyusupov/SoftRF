@@ -22,13 +22,15 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <esp_bt.h>
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2) && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <soc/rtc_cntl_reg.h>
-#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32C6 || H2 || P4 */
 #include <soc/efuse_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
@@ -624,6 +626,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
     default:
       esp32_board   = ESP32_H2_DEVKIT;
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+    default:
+      esp32_board   = ESP32_P4_DEVKIT;
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -1535,7 +1540,8 @@ static void ESP32_setup()
 #elif ARDUINO_USB_CDC_ON_BOOT && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
        defined(CONFIG_IDF_TARGET_ESP32C6) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2))
+       defined(CONFIG_IDF_TARGET_ESP32H2) || \
+       defined(CONFIG_IDF_TARGET_ESP32P4))
 
   Serial.begin(SERIAL_OUT_BR);
 
@@ -2537,6 +2543,7 @@ static void* ESP32_getResetInfoPtr()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : reset_info.reason = REASON_DEFAULT_RST; break;
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     case DEEPSLEEP_RESET        : reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
     case TG0WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -2554,7 +2561,8 @@ static void* ESP32_getResetInfoPtr()
                                   reset_info.reason = REASON_DEFAULT_RST;
       else
                                   reset_info.reason = REASON_WDT_RST;
-                                  break;
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
     case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
@@ -2574,6 +2582,7 @@ static String ESP32_getResetInfo()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("Vbat power on reset");
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     case DEEPSLEEP_RESET        : return F("Deep Sleep reset digital core");
     case TG0WDT_SYS_RESET       : return F("Timer Group0 Watch dog reset digital core");
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -2586,6 +2595,7 @@ static String ESP32_getResetInfo()
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
     case RTCWDT_BROWN_OUT_RESET : return F("Reset when the vdd voltage is not stable");
     case RTCWDT_RTC_RESET       : return F("RTC Watch dog reset digital core and rtc module");
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : return F("Software reset digital core");
     case OWDT_RESET             : return F("Legacy watch dog reset digital core");
@@ -2604,6 +2614,7 @@ static String ESP32_getResetReason()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("POWERON_RESET");
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     case DEEPSLEEP_RESET        : return F("DEEPSLEEP_RESET");
     case TG0WDT_SYS_RESET       : return F("TG0WDT_SYS_RESET");
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -2616,6 +2627,7 @@ static String ESP32_getResetReason()
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
     case RTCWDT_BROWN_OUT_RESET : return F("RTCWDT_BROWN_OUT_RESET");
     case RTCWDT_RTC_RESET       : return F("RTCWDT_RTC_RESET");
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
     case SW_RESET               : return F("SW_RESET");
     case OWDT_RESET             : return F("OWDT_RESET");
@@ -4145,7 +4157,7 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
     }
-#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+#elif defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32P4)
     /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -5103,7 +5115,8 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #if ARDUINO_USB_MODE && \
     (defined(CONFIG_IDF_TARGET_ESP32C3) || \
      defined(CONFIG_IDF_TARGET_ESP32C6) || \
-     defined(CONFIG_IDF_TARGET_ESP32H2))
+     defined(CONFIG_IDF_TARGET_ESP32H2) || \
+     defined(CONFIG_IDF_TARGET_ESP32P4))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
 #define USB_RX_FIFO_SIZE (256)
@@ -5317,6 +5330,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
   SOC_ESP32H2,
   "ESP32-H2",
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+  SOC_ESP32P4,
+  "ESP32-P4",
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6-H2 */
@@ -5359,7 +5375,8 @@ const SoC_ops_t ESP32_ops = {
 #elif ARDUINO_USB_MODE && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
        defined(CONFIG_IDF_TARGET_ESP32C6) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2))
+       defined(CONFIG_IDF_TARGET_ESP32H2) || \
+       defined(CONFIG_IDF_TARGET_ESP32P4))
   &ESP32CX_USBSerial_ops,
 #else
   NULL,
