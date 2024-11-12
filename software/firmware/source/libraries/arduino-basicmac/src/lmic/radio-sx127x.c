@@ -598,6 +598,8 @@ static void txfsk (void) {
     // power-up tcxo
     power_tcxo();
 
+    writeReg(FSKRegIrqFlags2, IRQ_FSK2_FIFOOVERRUN_MASK);
+
     // enter standby mode (required for FIFO loading))
     writeReg(RegOpMode, OPMODE_FSK_STANDBY);
 

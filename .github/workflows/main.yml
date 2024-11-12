@@ -29,6 +29,7 @@ jobs:
             'esp32:esp32:esp32c3',
             'esp32:esp32:esp32c6',
             'esp32:esp32:esp32h2',
+            'esp32:esp32:esp32p4',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL',
@@ -266,6 +267,22 @@ jobs:
             sed -i '84 a #endif' HCIVirtualTransport.cpp ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
+            arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
+            arduino --install-boards esp32:esp32:3.1.0-RC2 ;
+            arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_CPUFreq=esp32p4_40"                 --save-prefs ;
+            arduino --pref "custom_DebugLevel=esp32p4_none"            --save-prefs ;
+            arduino --pref "custom_FlashFreq=esp32p4_40"               --save-prefs ;
+            arduino --pref "custom_FlashMode=esp32p4_dio"              --save-prefs ;
+            arduino --pref "custom_FlashSize=esp32p4_4M"               --save-prefs ;
+            arduino --pref "custom_PSRAM=esp32p4_enabled"              --save-prefs ;
+            arduino --pref "custom_PartitionScheme=esp32p4_no_fs"      --save-prefs ;
+            arduino --pref "custom_UploadSpeed=esp32p4_921600"         --save-prefs ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC2 ;
+            # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
+            cd $GITHUB_WORKSPACE ;
+          fi
           if [[ "$BOARD" =~ "STM32:stm32:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/stm32duino/BoardManagerFiles/raw/07bcfb337e4c9abe83a029b39e33ddff5a6df2ef/STM32/package_stm_index.json" --save-prefs ;
             arduino --install-boards STM32:stm32:1.9.0 ;
@@ -482,16 +499,16 @@ jobs:
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
             fi ;
           #fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
-            #  SkyWatch is not available for H2
+          if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]] || [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
+            #  SkyWatch is not available for H2 and P4
             true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SkyWatch/SkyWatch.ino ;
             fi ;
           fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
-            #  SkyView is not available for H2
+          if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]] || [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
+            #  SkyView is not available for H2 and P4
             true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then

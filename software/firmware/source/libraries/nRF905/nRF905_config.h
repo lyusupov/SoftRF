@@ -128,7 +128,7 @@
 #define PWR_MODE  10   // D2 // Power mode pin
 #define TX_EN     2    // D0 // TX / RX mode pin
 #define CS_N      7    // D8 // SPI slave select pin
-#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+#elif defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32P4)
 // TBD
 #define TRX_EN    8    // D4 // Enable/standby pin
 #define PWR_MODE  10   // D2 // Power mode pin
