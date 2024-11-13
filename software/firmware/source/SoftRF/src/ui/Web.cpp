@@ -121,7 +121,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
 <tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
 <tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
-<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam, T-Watch and T-TWR</td></tr>\
+<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam, T-Watch, T-TWR and T3-C6</td></tr>\
 <tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
 <tr><th align=left>XCSoar team</th><td align=left>EGM96 data</td></tr>\
 <tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
@@ -134,7 +134,7 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Lewis He</th><td align=left>AXP20X, XPowersLib and SensorsLib libraries</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 <tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
-<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for RP2040 and ESP8266Audio library</td></tr>\
+<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for RP2XXX and ESP8266Audio library</td></tr>\
 <tr><th align=left>Steve Marple</th><td align=left>IniFile library</td></tr>\
 <tr><th align=left>Vasilis Georgitzikis</th><td align=left>MD5 library</td></tr>\
 <tr><th align=left>Evan Krall and Somkiat Nakhonthai</th><td align=left>LibAPRS-ESP32 library</td></tr>\

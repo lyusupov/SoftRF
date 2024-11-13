@@ -78,9 +78,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino uCDB library is developed by **Ioulianos Kakoulidis**
  * libmodes library is developed by **Salvatore Sanfilippo** and **Thomas Watson**
  * Arduino Cores for Atmel SAMD and Renesas RA4 are developed by **Arduino LLC**
- * FlashStorage library is developed by **Arduino LLC**
+ * FlashStorage and ArduinoBLE libraries are developed by **Arduino LLC**
  * USB host library 2.0 for Zero/M0/SAMD is developed by **gdsports625@gmail.com**
- * Arduino Core for Raspberry Pi RP2040 and ESP8266Audio library are developed by **Earle Philhower**
+ * Arduino Core for Raspberry Pi RP2XXX and ESP8266Audio library are developed by **Earle Philhower**
  * MPU-9250 9 DoF sensor library is developed by **Kris Winer** and **Hideaki Tai**
  * Pico PIO USB library is developed by **sekigon-gonnoc**
  * IniFile library is developed by **Steve Marple**
@@ -89,5 +89,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * SA818 library is developed by **Gibbon Zen**
  * OpenDroneID library is developed by **Steve Jack**
  * WiFiWebServer and Functional-Vlpp libraries are developed by **Khoi Hoang**
- * QMA6100P library is developed by **Tristan Alderson**
  * RadioLib library is developed by **Jan Gromes**
+ * Arduino Core for EFR32 Series 2 is developed by **Tamas Jozsi**
+ * Arduino Core for CH32 is developed by **Tianpei Lee**
+ * QMA6100P library is developed by **Tristan Alderson**
