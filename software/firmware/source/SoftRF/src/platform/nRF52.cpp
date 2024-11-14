@@ -816,7 +816,7 @@ static void nRF52_setup()
       Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
 #if !defined(EXCLUDE_IMU)
       pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
-      delay(200);
+      delay(100);
 #endif /* EXCLUDE_IMU */
       break;
     case NRF52_LILYGO_TECHO_REV_0:
@@ -847,7 +847,10 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_has_imu == false) {
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo or T114 */
+    /* MPU9250 or ICM20948 start-up time for register R/W is 11-100 ms */
+    delay(90);
+
     Wire.beginTransmission(MPU9250_ADDRESS);
     nRF52_has_imu = (Wire.endTransmission() == 0);
     if (nRF52_has_imu == false) {
