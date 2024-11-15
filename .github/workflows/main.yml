@@ -246,7 +246,7 @@ jobs:
           #fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.1.0-RC2 ;
+            arduino --install-boards esp32:esp32:3.1.0-RC3 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32h2_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32h2_none"            --save-prefs ;
@@ -256,7 +256,7 @@ jobs:
             arduino --pref "custom_PSRAM=esp32h2_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32h2_no_fs"      --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32h2_921600"         --save-prefs ;
-            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC2 ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC3 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
@@ -269,7 +269,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.1.0-RC2 ;
+            arduino --install-boards esp32:esp32:3.1.0-RC3 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32p4_40"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32p4_none"            --save-prefs ;
@@ -279,7 +279,7 @@ jobs:
             arduino --pref "custom_PSRAM=esp32p4_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32p4_no_fs"      --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32p4_921600"         --save-prefs ;
-            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC2 ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.1.0-RC3 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
