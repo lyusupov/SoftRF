@@ -1757,7 +1757,8 @@ static void ESP32_post_init()
 
     Serial.print(F("RADIO    : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262 ||
-                   hw_info.rf      == RF_IC_SX1276     ? F("PASS") : F("FAIL"));
+                   hw_info.rf      == RF_IC_SX1276 ||
+                   hw_info.rf      == RF_IC_LR1121     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS     : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
