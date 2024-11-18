@@ -27,6 +27,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
+    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
