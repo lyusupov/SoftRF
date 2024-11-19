@@ -127,7 +127,7 @@ bool nmea_handshake(const char *req, const char *resp, bool skipline)
 
       /* skip first line when expected response contains 2 of them */
       if (skipline) {
-        // start_time = millis();
+        start_time = millis();
         while (Serial_GNSS_In.read() != '\n' && (millis() - start_time) < timeout_ms) { yield(); }
       }
 
@@ -1154,7 +1154,7 @@ const gnss_chip_ops_t uc65_ops = {
 static gnss_id_t ag33_probe()
 {
   /* Firmware version request */
-  return nmea_handshake("$PAIR021*39\r\n", "$PAIR021,", true) ?
+  return nmea_handshake("$PAIR021*39\r\n", "$PAIR001,021", false) ?
                         GNSS_MODULE_AG33 : GNSS_MODULE_NMEA;
 }
 
@@ -1163,21 +1163,30 @@ extern gnss_chip_ops_t ag33_ops;
 static bool ag33_setup()
 {
 #if !defined(EXCLUDE_LOG_GNSS_VERSION)
+  int i=0;
+  char c;
+  unsigned long timeout_ms = 2000 ;
+
   while (Serial_GNSS_In.available() > 0) { Serial_GNSS_In.read(); }
+
+  unsigned long start_time = millis();
+
+  while ((millis() - start_time) < timeout_ms) {
+    c = Serial_GNSS_In.read();
+    if (c == '\n') break;
+  }
 
   Serial_GNSS_Out.write("$PAIR021*39\r\n");
 
-  int i=0;
-  char c;
-  unsigned long start_time = millis();
+  start_time = millis();
 
-  while ((millis() - start_time) < 2000) {
+  while ((millis() - start_time) < timeout_ms) {
     c = Serial_GNSS_In.read();
     if (c == '\n') break;
   }
 
   /* take response into buffer */
-  while ((millis() - start_time) < 2000) {
+  while ((millis() - start_time) < timeout_ms) {
 
     c = Serial_GNSS_In.read();
 
