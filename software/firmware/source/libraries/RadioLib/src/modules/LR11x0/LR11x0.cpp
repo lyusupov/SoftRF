@@ -2452,7 +2452,7 @@ int16_t LR11x0::setDioIrqParams(uint32_t irq1, uint32_t irq2) {
 }
 
 int16_t LR11x0::setDioIrqParams(uint32_t irq) {
-  return(setDioIrqParams(irq, 0));
+  return(setDioIrqParams(irq, irq));
 }
 
 int16_t LR11x0::clearIrq(uint32_t irq) {

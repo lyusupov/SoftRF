@@ -831,6 +831,10 @@ static void ESP32_setup()
 
         hw_info.revision = 12;
         hw_info.pmu = PMU_AXP2101;
+#if defined(USE_RADIOLIB)
+        /* reserved for HPD-16E */
+        lmic_pins.dio[0] = SOC_GPIO_PIN_TBEAM_RF_DIO1_V08;
+#endif /* USE_RADIOLIB */
       } else {
         WIRE_FINI(Wire1);
         hw_info.revision = 2;
