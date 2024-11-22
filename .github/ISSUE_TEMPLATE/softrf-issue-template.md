@@ -31,6 +31,8 @@ Recommended:
 - [ ]   SkyView Pico
 - [ ]   Uni
 - [ ]   Ham
+- [ ]   Card
+- [ ]   Cozy
 - [ ]   Midi
 - [ ]   Mini
 <!-- - [ ]   Bracelet -->
