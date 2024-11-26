@@ -69,6 +69,7 @@ enum RP2xxx_board_id {
   RP2040_RPIPICO_W,
   RP2040_WEACT,
   RP2350_RPIPICO_2,
+  RP2040_RPIPICO_2W,
 };
 
 struct rst_info {
@@ -154,9 +155,10 @@ struct rst_info {
 
 #define SOC_ADC_VOLTAGE_DIV   (5.0 / 3)
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)   || \
-      defined(ARDUINO_RASPBERRY_PI_PICO_2) || \
-      defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)    || \
+      defined(ARDUINO_RASPBERRY_PI_PICO_2)  || \
+      defined(ARDUINO_RASPBERRY_PI_PICO_W)  || \
+      defined(ARDUINO_RASPBERRY_PI_PICO_2W) || \
       defined(ARDUINO_NANO_RP2040_CONNECT)
 
 /* Console I/O */
@@ -228,7 +230,8 @@ struct rst_info {
 #error "This RP2040 build variant is not supported!"
 #endif
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #define EXCLUDE_OTA
 #define USE_WIFI_NINA         false
 #define USE_WIFI_CUSTOM       true
@@ -268,7 +271,7 @@ struct rst_info {
 #define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_NANO_RP2040_CONNECT */
 #endif /* ARDUINO_ARCH_MBED */
-#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W or 2W */
 
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE

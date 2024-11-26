@@ -44,10 +44,11 @@ extern "C"
 }
 #endif /* ARDUINO_ARCH_MBED */
 
-#if !defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#if !defined(ARDUINO_RASPBERRY_PI_PICO_2) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <pico_sleep.h>
 #include <pico_rosc.h>
-#endif /* ARDUINO_RASPBERRY_PI_PICO_2 */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_2 or 2W */
 
 #if defined(USE_TINYUSB)
 #if defined(USE_USB_HOST)
@@ -134,10 +135,10 @@ static union {
 #endif /* USE_EXT_I2S_DAC */
 #endif /* EXCLUDE_AUDIO */
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <pico/cyw43_arch.h>
 #include <boards/pico_w.h>
-#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W or 2W */
 
 Adafruit_INA219 ina219(INA219_ADDRESS_ALT);
 
@@ -527,7 +528,8 @@ static void RP2040_fini()
   USBDevice.detach();
 #endif /* USE_TINYUSB */
 
-#if !defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#if !defined(ARDUINO_RASPBERRY_PI_PICO_2) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   sleep_run_from_xosc();
 
 #if SOC_GPIO_PIN_KEY1 != SOC_UNUSED_PIN
@@ -545,7 +547,7 @@ static void RP2040_fini()
 
   // back from dormant state
   rosc_enable();
-#endif /* ARDUINO_RASPBERRY_PI_PICO_2 */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_2 or 2W */
 
 #if PICO_SDK_VERSION_MAJOR < 2
   clocks_init();

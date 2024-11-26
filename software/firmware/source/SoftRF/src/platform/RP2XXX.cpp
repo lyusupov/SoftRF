@@ -46,9 +46,10 @@ extern "C" {
 #include "pico/binary_info.h"
 }
 
-#if !defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#if !defined(ARDUINO_RASPBERRY_PI_PICO_2) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <pico_sleep.h>
-#endif /* ARDUINO_RASPBERRY_PI_PICO_2 */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_2 or 2W */
 #else
 extern "C"
 {
@@ -308,7 +309,9 @@ static void RP2xxx_setup()
   SPI1.setRX(SOC_GPIO_PIN_MISO);
   SPI1.setTX(SOC_GPIO_PIN_MOSI);
   SPI1.setSCK(SOC_GPIO_PIN_SCK);
-#if !defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if !defined(ARDUINO_RASPBERRY_PI_PICO)   && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_W) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   SPI1.setCS(SOC_GPIO_PIN_SS);
 #endif /* ARDUINO_RASPBERRY_PI_PICO or ARDUINO_RASPBERRY_PI_PICO_W */
 
@@ -336,6 +339,8 @@ static void RP2xxx_setup()
 #endif /* EXCLUDE_WIFI */
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+  RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_2W : RP2040_RPIPICO;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2xxx_board = (SoC->getChipId() == 0xcf516424) ?
@@ -502,7 +507,7 @@ static void RP2xxx_loop()
 #endif /* SOC_GPIO_RADIO_LED_RX */
 }
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <pico/cyw43_arch.h>
 #include <boards/pico_w.h>
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
@@ -511,10 +516,12 @@ static void RP2xxx_fini(int reason)
 {
   Wire.end();
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   if (RP2xxx_board == RP2040_RPIPICO_W) {
     if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
+#if !(ARDUINO_PICO_MAJOR == 4 && ARDUINO_PICO_MINOR == 3 && ARDUINO_PICO_REVISION == 0)
     pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
+#endif
   }
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
@@ -550,7 +557,9 @@ static void RP2xxx_fini(int reason)
   USBDevice.detach();
 #endif /* USE_TINYUSB */
 
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#if !defined(ARDUINO_ARCH_MBED)           && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   sleep_run_from_xosc();
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
@@ -993,7 +1002,9 @@ static float RP2xxx_Battery_param(uint8_t param)
         pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
         adc_gpio_init(SOC_GPIO_PIN_BATTERY);
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO)   || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
         pin25_dir  = gpio_get_dir(SOC_GPIO_PIN_CYW43_EN);
         pin25_func = gpio_get_function(SOC_GPIO_PIN_CYW43_EN);
         pinMode(SOC_GPIO_PIN_CYW43_EN, OUTPUT);
@@ -1004,7 +1015,9 @@ static float RP2xxx_Battery_param(uint8_t param)
       mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
 
       if (RP2xxx_board == RP2040_RPIPICO_W) {
-#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO)   || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
         gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
         gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
 #endif /* PICO or PICO W */
@@ -1354,6 +1367,8 @@ void setup1() {
   pio_cfg.pio_rx_num = 0;
   pio_cfg.pio_tx_num = 1;
   pio_cfg.tx_ch      = 9;
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+  /* TBD */
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
   USBHost.configure_pio_usb(1, &pio_cfg);

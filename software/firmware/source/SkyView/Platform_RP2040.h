@@ -20,7 +20,7 @@
 #ifndef PLATFORM_RP2040_H
 #define PLATFORM_RP2040_H
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
@@ -34,7 +34,7 @@ extern WebServer server;
 #include <Arduino.h>
 #define EXCLUDE_WIFI
 #define EXCLUDE_BLUETOOTH
-#endif /* ARDUINO_RASPBERRY_PI_PICO_W */
+#endif /* ARDUINO_RASPBERRY_PI_PICO_W or 2W */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
