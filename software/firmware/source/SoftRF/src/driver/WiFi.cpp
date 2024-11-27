@@ -223,7 +223,8 @@ void WiFi_setup()
   host_name += "-";
   host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
 
-  if (SoC->id == SOC_ESP8266 || SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP8266    || SoC->id == SOC_RP2040 ||
+      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC) {
     WiFi.mode(WIFI_STA);
     if (SoC->WiFi_hostname(host_name) == false) {
       return;

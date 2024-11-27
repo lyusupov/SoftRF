@@ -871,8 +871,18 @@ IODev_ops_t RP2040_USBSerial_ops = {
 };
 
 const SoC_ops_t RP2040_ops = {
+#if defined(PICO_RP2350)
+#if defined(PICO_RISCV)
+  SOC_RP2350_RISC,
+  "RP2350-RISC",
+#else
+  SOC_RP2350_ARM,
+  "RP2350-ARM",
+#endif /* PICO_RISCV */
+#else
   SOC_RP2040,
   "RP2040",
+#endif /* PICO_RP2350 */
   RP2040_setup,
   RP2040_post_init,
   RP2040_loop,

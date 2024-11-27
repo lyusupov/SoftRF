@@ -69,7 +69,7 @@ enum RP2xxx_board_id {
   RP2040_RPIPICO_W,
   RP2040_WEACT,
   RP2350_RPIPICO_2,
-  RP2040_RPIPICO_2W,
+  RP2350_RPIPICO_2W,
 };
 
 struct rst_info {

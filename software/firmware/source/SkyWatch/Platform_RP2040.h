@@ -56,6 +56,8 @@ enum RP2040_board_id {
   RP2040_RPIPICO,
   RP2040_RPIPICO_W,
   RP2040_WEACT,
+  RP2350_RPIPICO_2,
+  RP2350_RPIPICO_2W,
 };
 
 /* Console I/O */

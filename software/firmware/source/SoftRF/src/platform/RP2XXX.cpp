@@ -311,6 +311,7 @@ static void RP2xxx_setup()
   SPI1.setSCK(SOC_GPIO_PIN_SCK);
 #if !defined(ARDUINO_RASPBERRY_PI_PICO)   && \
     !defined(ARDUINO_RASPBERRY_PI_PICO_W) && \
+    !defined(ARDUINO_RASPBERRY_PI_PICO_2) && \
     !defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   SPI1.setCS(SOC_GPIO_PIN_SS);
 #endif /* ARDUINO_RASPBERRY_PI_PICO or ARDUINO_RASPBERRY_PI_PICO_W */
@@ -340,7 +341,7 @@ static void RP2xxx_setup()
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
-  RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_2W : RP2040_RPIPICO;
+  RP2xxx_board = rp2040.isPicoW() ? RP2350_RPIPICO_2W : RP2350_RPIPICO_2;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2xxx_board = (SoC->getChipId() == 0xcf516424) ?
@@ -517,7 +518,7 @@ static void RP2xxx_fini(int reason)
   Wire.end();
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
 #if !(ARDUINO_PICO_MAJOR == 4 && ARDUINO_PICO_MINOR == 3 && ARDUINO_PICO_REVISION == 0)
     pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
@@ -761,7 +762,7 @@ static bool RP2xxx_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI) && !defined(USE_ARDUINO_WIFI)
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }
@@ -881,7 +882,8 @@ static void RP2xxx_EEPROM_extension(int cmd)
 #endif /* USE_USB_HOST */
 #endif /* EXCLUDE_WIFI and EXCLUDE_BLUETOOTH */
 
-    if (RP2xxx_board != RP2040_RPIPICO_W &&
+    if (RP2xxx_board != RP2040_RPIPICO_W  &&
+        RP2xxx_board != RP2350_RPIPICO_2W &&
         settings->bluetooth != BLUETOOTH_NONE) {
       settings->bluetooth = BLUETOOTH_NONE;
     }
@@ -1520,13 +1522,18 @@ IODev_ops_t RP2xxx_USBSerial_ops = {
 };
 
 const SoC_ops_t RP2xxx_ops = {
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(PICO_RP2350)
+#if defined(PICO_RISCV)
+  SOC_RP2350_RISC,
+  "RP2350-RISC",
+#else
+  SOC_RP2350_ARM,
+  "RP2350-ARM",
+#endif /* PICO_RISCV */
+#else
   SOC_RP2040,
   "RP2040",
-#elif defined(ARDUINO_ARCH_RP2350)
-  SOC_RP2350_ARM,
-  "RP2350",
-#endif /* 2XXX */
+#endif /* PICO_RP2350 */
   RP2xxx_setup,
   RP2xxx_post_init,
   RP2xxx_loop,
