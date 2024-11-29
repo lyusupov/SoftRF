@@ -447,7 +447,7 @@ jobs:
           fi
           #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
           #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
-          #  arduino --install-boards SiliconLabs:silabs:2.1.0 ;
+          #  arduino --install-boards SiliconLabs:silabs:2.2.0 ;
           #  arduino --board $BOARD --save-prefs ;
           #  cd $GITHUB_WORKSPACE ;
           #fi
@@ -455,7 +455,7 @@ jobs:
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install SiliconLabs:silabs@2.1.0 ;
+            arduino-cli core install SiliconLabs:silabs@2.2.0 ;
             # arduino-cli board attach -b $BOARD ;
             wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
