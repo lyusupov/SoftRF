@@ -34,6 +34,7 @@
 #include "../protocol/data/D1090.h"
 
 #include <ArduinoLowPower.h>
+#include <WatchdogTimer.h>
 
 // SX127x pin mapping
 lmic_pinmap lmic_pins = {
@@ -285,6 +286,10 @@ static unsigned long rx_led_time_marker = 0;
 
 static void EFR32_loop()
 {
+  if (wdt_is_active) {
+    WatchdogTimer.feed();
+  }
+
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   if (digitalRead(SOC_GPIO_RADIO_LED_TX) != LED_STATE_ON) {
     if (tx_packets_counter != prev_tx_packets_counter) {
@@ -586,12 +591,17 @@ static void EFR32_UATModule_restart()
 
 static void EFR32_WDT_setup()
 {
-  /* TBD */
+  WatchdogTimer.begin(WDOG_PERIOD_8_S);
+  wdt_is_active = true;
 }
 
 static void EFR32_WDT_fini()
 {
-  /* TBD */
+  if (wdt_is_active) {
+    WatchdogTimer.setWatchdogOffWhileSleeping(true);
+    WatchdogTimer.end();
+    wdt_is_active = false;
+  }
 }
 
 #if SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN
