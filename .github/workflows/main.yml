@@ -45,9 +45,9 @@ jobs:
             'arduino:renesas_uno:unor4wifi',
             'rp2040:rp2040:generic',
             'rp2040:rp2040:rpipicow',
-            'rp2040:rp2040:rpipico2:arch=arm',
+            #'rp2040:rp2040:rpipico2:arch=arm',
             'rp2040:rp2040:rpipico2:arch=riscv',
-            #'rp2040:rp2040:rpipico2w:arch=arm',
+            'rp2040:rp2040:rpipico2w:arch=arm',
             #'rp2040:rp2040:rpipico2w:arch=riscv',
             'arduino:mbed_rp2040:pico',
             #'arduino:mbed_nano:nanorp2040connect',
@@ -410,12 +410,15 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:4.2.1 ;
-            #arduino --install-boards rp2040:rp2040:4.3.0 ;
+            arduino --install-boards rp2040:rp2040:4.3.1 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "rp2040:rp2040:rpipicow" ]]; then
               arduino --pref "custom_freq=rpipicow_120"               --save-prefs ;
               arduino --pref "custom_ipbtstack=rpipicow_ipv4btcble"   --save-prefs ;
+            fi
+            if [[ "$BOARD" =~ "rp2040:rp2040:rpipico2w" ]]; then
+              arduino --pref "custom_freq=rpipico2w_120"              --save-prefs ;
+              arduino --pref "custom_ipbtstack=rpipico2w_ipv4btcble"  --save-prefs ;
             fi
             cd $GITHUB_WORKSPACE ;
           fi
