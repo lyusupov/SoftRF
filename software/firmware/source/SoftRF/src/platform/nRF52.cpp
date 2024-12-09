@@ -637,6 +637,32 @@ ExtensionIOXL9555 *xl9555 = nullptr;
 bool nRF52_has_extension  = false;
 #endif /* ARDUINO_ARCH_MBED */
 
+#if defined(ENABLE_NFC)
+#include <NFC.h>
+
+extern "C" int nfcpins_enable(void);
+
+void nfc_func(void *context, nfc_t2t_event_t event,
+              const uint8_t *data, size_t dataLength)
+{
+    (void) context;
+
+    switch (event)
+    {
+        case NFC_T2T_EVENT_FIELD_ON:
+            Serial.println("******NFC_T2T_EVENT_FIELD_ON******");
+            break;
+
+        case NFC_T2T_EVENT_FIELD_OFF:
+            Serial.println("------NFC_T2T_EVENT_FIELD_OFF------");
+            break;
+
+        default:
+            break;
+    }
+}
+#endif /* ENABLE_NFC */
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -1348,6 +1374,26 @@ static void nRF52_setup()
       break;
   }
 #endif /* EXCLUDE_WIFI */
+
+#if defined(ENABLE_NFC)
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+      nRF52_board == NRF52_LILYGO_TULTIMA) {
+    String NFC_name = SOFTRF_IDENT;
+    NFC_name += "-";
+    NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+
+    if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) != (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
+      Serial.println("*** NFC pins are disabled ***");
+      // nfcpins_enable();
+    }
+
+    NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
+    NFC.start();
+    NFC.registerCallback(nfc_func);
+  }
+#endif /* ENABLE_NFC */
 }
 
 static void nRF52_post_init()

@@ -94,3 +94,7 @@
 
 /* RTC */
 #define SOC_GPIO_PIN_R_INT              _PINNUM(0, 16) // P0.16
+
+/* NFC */
+#define SOC_GPIO_PIN_NFC_ANT1           _PINNUM(0,  9) // P0.09
+#define SOC_GPIO_PIN_NFC_ANT2           _PINNUM(0, 10) // P0.10

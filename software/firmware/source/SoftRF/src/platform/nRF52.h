@@ -265,6 +265,7 @@ struct rst_info {
 #define USE_TFT
 #define USE_RADIOLIB
 //#define ENABLE_RECORDER
+//#define ENABLE_NFC
 #else
 #undef USE_EPAPER
 //#define EXCLUDE_BLUETOOTH
