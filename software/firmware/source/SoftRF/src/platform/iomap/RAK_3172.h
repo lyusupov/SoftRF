@@ -26,6 +26,7 @@
 /* SX1262 */
 #define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO0     LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
 
 /* RF antenna switch */

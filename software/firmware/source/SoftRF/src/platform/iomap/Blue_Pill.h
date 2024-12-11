@@ -32,6 +32,9 @@
 #define SOC_GPIO_PIN_RST      PB5
 #define SOC_GPIO_PIN_DIO0     PB4
 
+/* SX1262 */
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
 

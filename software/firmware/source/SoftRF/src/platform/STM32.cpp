@@ -53,7 +53,7 @@ lmic_pinmap lmic_pins = {
     .rst = SOC_GPIO_PIN_RST,
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #endif
-    .busy = LMIC_UNUSED_PIN,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -522,6 +522,10 @@ static void STM32_setup()
       pinMode(lmic_pins.tcxo, OUTPUT);
     }
 #endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
+
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB */
 
     Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 

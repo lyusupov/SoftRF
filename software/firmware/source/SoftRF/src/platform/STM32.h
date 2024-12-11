@@ -44,9 +44,11 @@ extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define yield()                 ({ })
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
+
+//#define yield()                 ({ })
+inline  void yield()            { };
 
 #define AN3155_BR               115200
 #define AN3155_BITS             SERIAL_8E1
@@ -173,13 +175,16 @@ typedef struct stm32_backup_struct {
 //#define USE_OGN_ENCRYPTION
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
+//#define USE_RADIOLIB
 
 //#define ENFORCE_S78G
 #define USE_TIME_SLOTS
 
 /* Experimental */
 #define ENABLE_ADSL              //  +  2 kb
+#if !defined(USE_RADIOLIB)
 #define ENABLE_PROL              //  + 18 kb
+#endif /* USE_RADIOLIB */
 
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
@@ -287,6 +292,7 @@ typedef struct stm32_backup_struct {
 
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
@@ -343,6 +349,7 @@ typedef struct stm32_backup_struct {
 
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
+//#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 

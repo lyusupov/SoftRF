@@ -41,6 +41,9 @@
 #define SOC_GPIO_PIN_DIO4     PB3
 #define SOC_GPIO_PIN_DIO5     PA15
 
+/* SX1262 */
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+
 /* RF antenna switch */
 #define SOC_GPIO_PIN_ANT_RXTX PA1 // 1:Rx, 0:Tx
 
