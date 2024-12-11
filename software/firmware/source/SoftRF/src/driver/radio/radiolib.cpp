@@ -60,6 +60,10 @@ const rfchip_ops_t lr1121_ops = {
 #define USE_SX1262      0
 #define USE_LR11XX      1
 
+#ifndef RadioSPI
+#define RadioSPI        SPI
+#endif
+
 Module  *mod;
 #if USE_SX1262
 SX1262  *radio;
@@ -94,9 +98,9 @@ static void hal_spi_select (int on) {
 
 #if defined(SPI_HAS_TRANSACTION)
     if (on)
-        SPI.beginTransaction(probe_settings);
+        RadioSPI.beginTransaction(probe_settings);
     else
-        SPI.endTransaction();
+        RadioSPI.endTransaction();
 #endif
 
     //Serial.println(val?">>":"<<");
@@ -277,7 +281,7 @@ static bool lr1110_probe()
   lr11xx_GetVersion(&hw, &device, &major, &minor);
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
   if (device == RADIOLIB_LR11X0_DEVICE_LR1110) {
 
@@ -318,7 +322,7 @@ static bool lr1121_probe()
   v = sx1262_ReadReg(REG_LORASYNCWORDLSB);
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
   u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
   if (v == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
@@ -353,7 +357,7 @@ static bool lr1121_probe()
   lr11xx_GetVersion(&hw, &device, &major, &minor);
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
   if (device == RADIOLIB_LR11X0_DEVICE_LR1121) {
 
@@ -406,7 +410,7 @@ static void lr11xx_setup()
   uint32_t busy = lmic_pins.busy == LMIC_UNUSED_PIN ?
                   RADIOLIB_NC : lmic_pins.busy;
 
-  mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, SPI);
+  mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, RadioSPI);
 #if USE_SX1262
   radio = new SX1262(mod);
 #endif
@@ -1151,7 +1155,7 @@ static void lr11xx_shutdown()
   state = radio->sleep(false, 0);
 #endif
 
-  SPI.end();
+  RadioSPI.end();
 }
 
 #endif /* USE_RADIOLIB */

@@ -111,6 +111,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      (10u)
 #define SOC_GPIO_PIN_SS       (13u)
 
+#define RadioSPI              SPI1
+
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_CE       SOC_UNUSED_PIN
@@ -184,6 +186,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_MISO     (12u)
 #define SOC_GPIO_PIN_SCK      (10u)
 #define SOC_GPIO_PIN_SS       (3u)
+
+#define RadioSPI              SPI1
 
 /* NRF905 */
 #define SOC_GPIO_PIN_TXE      SOC_UNUSED_PIN
@@ -327,7 +331,9 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_MBED */
 
 #define USE_BASICMAC
-//#define USE_RADIOLIB
+#if defined(ARDUINO_GENERIC_RP2040)
+#define USE_RADIOLIB
+#endif /* ARDUINO_GENERIC_RP2040 */
 
 #define USE_TIME_SLOTS
 

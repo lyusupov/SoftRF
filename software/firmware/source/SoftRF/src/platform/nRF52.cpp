@@ -1380,18 +1380,18 @@ static void nRF52_setup()
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_LILYGO_TULTIMA) {
-    String NFC_name = SOFTRF_IDENT;
-    NFC_name += "-";
-    NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
-
     if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) != (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
       Serial.println("*** NFC pins are disabled ***");
       // nfcpins_enable();
-    }
+    } else {
+      String NFC_name = SOFTRF_IDENT;
+      NFC_name += "-";
+      NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
 
-    NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
-    NFC.start();
-    NFC.registerCallback(nfc_func);
+      NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
+      NFC.start();
+      NFC.registerCallback(nfc_func);
+    }
   }
 #endif /* ENABLE_NFC */
 }

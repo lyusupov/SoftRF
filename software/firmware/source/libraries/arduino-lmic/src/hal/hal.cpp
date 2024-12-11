@@ -21,6 +21,11 @@
 #include <cc13xx/cc13xx.h>
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 */
 
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
+#undef  SPI
+#define SPI SPI1
+#endif /* ARDUINO_ARCH_RP2040 || ARDUINO_ARCH_RP2350 */
+
 #if defined(ARDUINO_ARCH_RENESAS) // || defined(ARDUINO_ARCH_SILABS)
 #include <SoftSPI.h>
 extern  SoftSPI RadioSPI;

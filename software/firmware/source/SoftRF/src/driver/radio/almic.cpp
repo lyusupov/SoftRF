@@ -30,6 +30,10 @@
 #include "../EEPROM.h"
 #include "../Battery.h"
 
+#ifndef RadioSPI
+#define RadioSPI        SPI
+#endif
+
 extern size_t RF_tx_size;
 
 static bool sx1276_probe(void);
@@ -126,7 +130,7 @@ static bool sx1276_probe()
   v = sx1276_readReg(SX1276_RegVersion);
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
   if (v == 0x12 || v == 0x13) {
 
@@ -185,7 +189,7 @@ static bool sx1262_probe()
   v = sx1262_ReadReg(REG_LORASYNCWORDLSB);
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
   u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
   if (v == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
@@ -498,7 +502,7 @@ static void sx1276_shutdown()
 {
   LMIC_shutdown();
 
-  SPI.end();
+  RadioSPI.end();
 }
 
 #if defined(USE_BASICMAC)
@@ -508,7 +512,7 @@ static void sx1262_shutdown()
   sx126x_ll_ops.radio_sleep();
   delay(1);
 
-  SPI.end();
+  RadioSPI.end();
 }
 #endif /* USE_BASICMAC */
 

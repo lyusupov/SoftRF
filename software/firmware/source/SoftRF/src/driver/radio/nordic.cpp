@@ -31,6 +31,10 @@
 
 #include "../EEPROM.h"
 
+#ifndef RadioSPI
+#define RadioSPI        SPI
+#endif
+
 static bool nrf905_probe(void);
 static void nrf905_setup(void);
 static void nrf905_channel(int8_t);
@@ -63,20 +67,20 @@ static bool nrf905_probe()
   SoC->SPI_begin();
 
 #if defined(ARDUINO) && !defined(RASPBERRY_PI) && !defined(ARDUINO_ARCH_MBED)
-  SPI.setClockDivider(SPI_CLOCK_DIV2);
+  RadioSPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* ARDUINO */
 
   digitalWrite(CS_N, LOW);
 
-  SPI.transfer(NRF905_CMD_R_TX_ADDRESS);
+  RadioSPI.transfer(NRF905_CMD_R_TX_ADDRESS);
   for(uint8_t i=4;i--;) {
-    addr[i] = SPI.transfer(NRF905_CMD_NOP);
+    addr[i] = RadioSPI.transfer(NRF905_CMD_NOP);
   }
 
   digitalWrite(CS_N, HIGH);
   pinMode(CS_N, INPUT);
 
-  SPI.end();
+  RadioSPI.end();
 
 #if 0
   delay(3000);
@@ -210,7 +214,7 @@ static bool nrf905_transmit()
 static void nrf905_shutdown()
 {
   nRF905_powerDown();
-  SPI.end();
+  RadioSPI.end();
 }
 
 #endif /* EXCLUDE_NRF905 */

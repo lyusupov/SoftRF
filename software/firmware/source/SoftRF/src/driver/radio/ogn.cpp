@@ -35,6 +35,10 @@
 #include <rf/combo/rfm.h>
 #endif /* WITH_SI4X32 */
 
+#ifndef RadioSPI
+#define RadioSPI        SPI
+#endif
+
 static bool ognrf_probe(void);
 static void ognrf_setup(void);
 static void ognrf_channel(int8_t);
@@ -97,7 +101,7 @@ static bool ognrf_probe()
   uint8_t ChipVersion = TRX.ReadVersion();
 
   pinMode(lmic_pins.nss, INPUT);
-  SPI.end();
+  RadioSPI.end();
 
 #if defined(WITH_RFM95)
   if (ChipVersion == 0x12 || ChipVersion == 0x13) success = true;
@@ -286,7 +290,7 @@ static bool ognrf_transmit()
 static void ognrf_shutdown()
 {
   TRX.WriteMode(RF_OPMODE_STANDBY);
-  SPI.end();
+  RadioSPI.end();
 
   pinMode(lmic_pins.nss, INPUT);
 }
