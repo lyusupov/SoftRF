@@ -72,6 +72,10 @@ void ICACHE_FLASH_ATTR user_init()
 static void ESP8266_setup()
 {
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
+
+#if defined(USE_RADIOLIB)
+  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB */
 }
 
 static void ESP8266_post_init()

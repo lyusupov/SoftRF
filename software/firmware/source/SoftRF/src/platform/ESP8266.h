@@ -103,6 +103,7 @@ extern Adafruit_NeoPixel strip;
 
 #define USE_NMEALIB
 //#define USE_BASICMAC
+//#define USE_RADIOLIB
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
