@@ -161,9 +161,9 @@ struct rst_info {
 #define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 
-//#define USE_BASICMAC
+#define USE_BASICMAC
 //#define EXCLUDE_SX1276         //  -  3 kb
-//#define USE_RADIOLIB
+#define USE_RADIOLIB
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
