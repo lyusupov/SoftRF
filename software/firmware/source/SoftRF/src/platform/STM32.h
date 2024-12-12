@@ -47,7 +47,6 @@ extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
 #define snprintf_P              snprintf
 #define EEPROM_commit()         {}
 
-//#define yield()                 ({ })
 inline  void yield()            { };
 
 #define AN3155_BR               115200
