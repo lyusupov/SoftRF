@@ -145,6 +145,7 @@ static bool RTC_sync           = false;
 static bool FATFS_is_mounted   = false;
 static bool ADB_is_open        = false;
 static bool screen_saver       = false;
+static bool nRF52_has_vff      = false; /* very first fix */
 
 #if !defined(ARDUINO_ARCH_MBED)
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
@@ -1781,6 +1782,24 @@ static void nRF52_loop()
     IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */
+
+  if (nRF52_board      == NRF52_SEEED_T1000E &&
+      settings->volume != BUZZER_OFF         &&
+      settings->mode   == SOFTRF_MODE_NORMAL &&
+      nRF52_has_vff    == false              &&
+      isValidFix()     == true) {
+    uint8_t v = settings->volume;
+
+    SoC->Sound_tone(1046, v); delay(200); SoC->Sound_tone(0, v);
+    SoC->Sound_tone(1175, v); delay(200); SoC->Sound_tone(0, v);
+    SoC->Sound_tone(1318, v); delay(200); SoC->Sound_tone(0, v);
+    SoC->Sound_tone(1397, v); delay(400); SoC->Sound_tone(0, v);
+                              delay(200);
+    SoC->Sound_tone(1046, v); delay(200); SoC->Sound_tone(0, v);
+    SoC->Sound_tone(1397, v); delay(400); SoC->Sound_tone(0, v);
+
+    nRF52_has_vff = true;
+  }
 }
 
 static void nRF52_fini(int reason)
