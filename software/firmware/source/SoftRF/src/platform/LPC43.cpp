@@ -1,6 +1,6 @@
 /*
  * Platform_LPC43.cpp
- * Copyright (C) 2021-2024 Linar Yusupov
+ * Copyright (C) 2021-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ const uint16_t LPC43_Device_Version   = SOFTRF_USB_FW_VERSION;
 
 const char *LPC43_boot_str1 = SOFTRF_IDENT "-" PLAT_LPC43_NAME
                               " FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: ";
-const char *LPC43_boot_str2 = "Copyright (C) 2015-2024 Linar Yusupov. ";
+const char *LPC43_boot_str2 = "Copyright (C) 2015-2025 Linar Yusupov. ";
 const char *LPC43_boot_str3 = "All rights reserved";
 
 #if defined(USE_PORTAPACK)

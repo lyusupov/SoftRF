@@ -1,6 +1,6 @@
 /*
  * EPDHelper.cpp
- * Copyright (C) 2019-2024 Linar Yusupov
+ * Copyright (C) 2019-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ const char EPD_SkyView_text5 [] = "and LilyGO";
 const char EPD_SkyView_text6 [] = "SkyView";
 const char EPD_SkyView_text7 [] = "Author:";
 const char EPD_SkyView_text8 [] = "Linar Yusupov";
-const char EPD_SkyView_text9 [] = "(C) 2019-2024";
+const char EPD_SkyView_text9 [] = "(C) 2019-2025";
 const char EPD_SkyView_text10[] = "POWER";
 const char EPD_SkyView_text11[] = "OFF";
 const char EPD_SkyView_text12[] = "Screen";

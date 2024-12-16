@@ -2,7 +2,7 @@
  * Protocol_APRS.cpp
  *
  * Encoder and decoder for Automatic Packet Reporting System radio protocol
- * Copyright (C) 2023-2024 Linar Yusupov
+ * Copyright (C) 2023-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

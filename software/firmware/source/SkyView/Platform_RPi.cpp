@@ -1,6 +1,6 @@
 /*
  * Platform_RPi.cpp
- * Copyright (C) 2019-2024 Linar Yusupov
+ * Copyright (C) 2019-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -780,7 +780,7 @@ int main(int argc, char *argv[])
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2019-2024 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2019-2025 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   RPi_ParseSettings();

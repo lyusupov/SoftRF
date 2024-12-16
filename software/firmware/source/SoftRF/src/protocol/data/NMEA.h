@@ -1,6 +1,6 @@
 /*
  * NMEAHelper.h
- * Copyright (C) 2017-2024 Linar Yusupov
+ * Copyright (C) 2017-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

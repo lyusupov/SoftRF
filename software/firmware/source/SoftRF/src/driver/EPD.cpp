@@ -1,6 +1,6 @@
 /*
  * EPDHelper.cpp
- * Copyright (C) 2019-2024 Linar Yusupov
+ * Copyright (C) 2019-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ const char EPD_SoftRF_text2[] =  "and"  ;
 const char EPD_SoftRF_text3[] = "LilyGO";
 const char EPD_SoftRF_text4[] = "Author: ";
 const char EPD_SoftRF_text5[] = "Linar Yusupov";
-const char EPD_SoftRF_text6[] = "(C) 2016-2024";
+const char EPD_SoftRF_text6[] = "(C) 2016-2025";
 
 
 const char EPD_Radio_text[]   = "RADIO   ";

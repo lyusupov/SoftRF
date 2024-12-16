@@ -1,6 +1,6 @@
 /*
  * Platform_LPC43.h
- * Copyright (C) 2021-2024 Linar Yusupov
+ * Copyright (C) 2021-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

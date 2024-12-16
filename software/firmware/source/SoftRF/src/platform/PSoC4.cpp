@@ -1,6 +1,6 @@
 /*
  * Platform_PSoC4.cpp
- * Copyright (C) 2020-2024 Linar Yusupov
+ * Copyright (C) 2020-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

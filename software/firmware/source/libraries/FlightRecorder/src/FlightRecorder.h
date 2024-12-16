@@ -1,7 +1,7 @@
 /*
  * FlightRecorder.h
  *
- * Copyright (C) 2023-2024 Linar Yusupov. All rights reserved.
+ * Copyright (C) 2023-2025 Linar Yusupov. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

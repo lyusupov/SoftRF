@@ -1,6 +1,6 @@
 /*
  * EPDHelper.h
- * Copyright (C) 2019-2024 Linar Yusupov
+ * Copyright (C) 2019-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ enum ep_model_id {
 	EP_UNKNOWN,
 	EP_GDEW027W3,
 	EP_GDEY027T91,
+	EP_DEPG0213BN,
 };
 
 byte EPD_setup(bool);

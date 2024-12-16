@@ -1,6 +1,6 @@
 /*
  * UAT_Receiver(.ino) firmware
- * Copyright (C) 2019-2024 Linar Yusupov
+ * Copyright (C) 2019-2025 Linar Yusupov
  *
  * Author: Linar Yusupov, linar.r.yusupov@gmail.com
  *
@@ -222,7 +222,7 @@ void setup() {
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2024 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2015-2025 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   EEPROM_setup();

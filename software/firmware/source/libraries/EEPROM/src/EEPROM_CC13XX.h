@@ -4,7 +4,7 @@
   Copyright (c) 2014 Ivan Grokhotkov. All rights reserved.
   This file is part of the esp8266 core for Arduino environment.
  
-  Copyright (C) 2020-2024 Linar Yusupov. All rights reserved.
+  Copyright (C) 2020-2025 Linar Yusupov. All rights reserved.
   Ported onto TI CC13X0 and TI CC13X2 targets as a part of SoftRF project.
 
   This library is free software; you can redistribute it and/or
