@@ -105,6 +105,9 @@ bool AudioOutputPWM::ConsumeSample(int16_t sample[2]) {
      MakeSampleStereo16( ms );
   }
 
+  ms[LEFTCHANNEL] = Amplify(ms[LEFTCHANNEL]);
+  ms[RIGHTCHANNEL] = Amplify(ms[RIGHTCHANNEL]);
+
   if (pwm.available()) {
       pwm.write((int16_t) ms[0]);
       pwm.write((int16_t) ms[1]);
