@@ -52,6 +52,7 @@ class AudioOutputI2S : public AudioOutput
     bool SetOutputModeMono(bool mono);  // Force mono output no matter the input
     bool SetLsbJustified(bool lsbJustified);  // Allow supporting non-I2S chips, e.g. PT8211 
     bool SetMclk(bool enabled);  // Enable MCLK output (if supported)
+    bool SwapClocks(bool swap_clocks);  // Swap BCLK and WCLK
 #if defined(ARDUINO_ARCH_RP2040)
     bool SetBuffers(size_t buffers = 6, size_t bufferWords = 128);
 #endif /* ARDUINO_ARCH_RP2040 */
@@ -67,6 +68,7 @@ class AudioOutputI2S : public AudioOutput
     int dma_buf_count;
     int use_apll;
     bool use_mclk;
+    bool swap_clocks;
     // We can restore the old values and free up these pins when in NoDAC mode
     uint32_t orig_bck;
     uint32_t orig_ws;

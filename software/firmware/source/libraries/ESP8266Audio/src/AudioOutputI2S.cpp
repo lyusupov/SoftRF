@@ -68,6 +68,7 @@ AudioOutputI2S::AudioOutputI2S(long sampleRate, pin_size_t sck, pin_size_t data)
     doutPin = data;
     mclkPin = 0;
     use_mclk = false;
+    swap_clocks = false;
     SetGain(1.0);
 }
 #endif
@@ -173,6 +174,15 @@ bool AudioOutputI2S::SetOutputModeMono(bool mono)
 bool AudioOutputI2S::SetLsbJustified(bool lsbJustified)
 {
   this->lsb_justified = lsbJustified;
+  return true;
+}
+
+bool AudioOutputI2S::SwapClocks(bool swap_clocks)
+{
+  if (i2sOn) {
+    return false; // Not allowed
+  }
+  this->swap_clocks = swap_clocks;
   return true;
 }
 
