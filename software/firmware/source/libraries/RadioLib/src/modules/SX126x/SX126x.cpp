@@ -74,7 +74,6 @@ int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleL
   this->pulseShape = RADIOLIB_SX126X_GFSK_FILTER_GAUSS_0_5;
   this->crcTypeFSK = RADIOLIB_SX126X_GFSK_CRC_2_BYTE_INV;     // CCITT CRC configuration
   this->preambleLengthFSK = preambleLength;
-  this->addrComp = RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF;
 
   // set module properties and perform initial setup
   int16_t state = this->modSetup(tcxoVoltage, useRegulatorLDO, RADIOLIB_SX126X_PACKET_TYPE_GFSK);
@@ -468,8 +467,10 @@ int16_t SX126x::standby(uint8_t mode, bool wakeup) {
   this->mod->setRfSwitchState(Module::MODE_IDLE);
 
   if(wakeup) {
-    // pull NSS low to wake up
-    this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelLow);
+    // send a NOP command - this pulls the NSS low to exit the sleep mode,
+    // while preventing interference with possible other SPI transactions
+    // see https://github.com/jgromes/RadioLib/discussions/1364
+    (void)this->mod->SPIwriteStream(RADIOLIB_SX126X_CMD_NOP, NULL, 0, false, false);
   }
 
   uint8_t data[] = { mode };
@@ -515,13 +516,15 @@ void SX126x::clearChannelScanAction() {
 static unsigned long MAX_BUSY_TIME = 5000;
 
 int16_t SX126x::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
+  (void)addr;
+  
   // check packet length
   if(len > RADIOLIB_SX126X_MAX_PACKET_LENGTH) {
     return(RADIOLIB_ERR_PACKET_TOO_LONG);
   }
 
   // maximum packet length is decreased by 1 when address filtering is active
-  if((this->addrComp != RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF) && (len > RADIOLIB_SX126X_MAX_PACKET_LENGTH - 1)) {
+  if((RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF != RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF) && (len > RADIOLIB_SX126X_MAX_PACKET_LENGTH - 1)) {
     return(RADIOLIB_ERR_PACKET_TOO_LONG);
   }
 
@@ -532,13 +535,7 @@ int16_t SX126x::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
     state = setPacketParams(this->preambleLengthLoRa, this->crcTypeLoRa, len, this->headerType, this->invertIQEnabled);
   
   } else if(modem == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType, len);
-    
-    // address is taken from the register
-    if(this->addrComp != RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF) {
-      RADIOLIB_ASSERT(state);
-      state = writeRegister(RADIOLIB_SX126X_REG_NODE_ADDRESS, &addr, 1);
-    }
+    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType, len);
 
   } else if(modem != RADIOLIB_SX126X_PACKET_TYPE_LR_FHSS) {
     return(RADIOLIB_ERR_UNKNOWN);
@@ -642,12 +639,6 @@ int16_t SX126x::finishTransmit() {
   int16_t state = clearIrqStatus();
   RADIOLIB_ASSERT(state);
 
-  // restore the original node address
-  if(getPacketType() == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    state = writeRegister(RADIOLIB_SX126X_REG_NODE_ADDRESS, &this->nodeAddr, 1);
-    RADIOLIB_ASSERT(state);
-  }
-
   // set mode to standby to disable transmitter/RF switch
   return(standby());
 }
@@ -657,7 +648,12 @@ int16_t SX126x::startReceive() {
 }
 
 int16_t SX126x::startReceive(uint32_t timeout, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask, size_t len) {
-  (void)len;
+  // in implicit header mode, use the provided length if it is nonzero
+  // otherwise we trust the user has previously set the payload length manually
+  if((this->headerType == RADIOLIB_SX126X_LORA_HEADER_IMPLICIT) && (len != 0)) {
+    this->implicitLen = len;
+  }
+
   int16_t state = startReceiveCommon(timeout, irqFlags, irqMask);
   RADIOLIB_ASSERT(state);
 
@@ -759,7 +755,7 @@ int16_t SX126x::startReceiveCommon(uint32_t timeout, RadioLibIrqFlags_t irqFlags
   if(modem == RADIOLIB_SX126X_PACKET_TYPE_LORA) {
     state = setPacketParams(this->preambleLengthLoRa, this->crcTypeLoRa, this->implicitLen, this->headerType, this->invertIQEnabled);
   } else if(modem == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
+    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType);
   } else {
     return(RADIOLIB_ERR_UNKNOWN);
   }
@@ -984,12 +980,15 @@ int16_t SX126x::setPreambleLength(size_t preambleLength) {
     return(setPacketParams(this->preambleLengthLoRa, this->crcTypeLoRa, this->implicitLen, this->headerType, this->invertIQEnabled));
   } else if(modem == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
     this->preambleLengthFSK = preambleLength;
-    this->preambleDetLength = preambleLength >= 32 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_32 :
-                              preambleLength >= 24 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_24 :
-                              preambleLength >= 16 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_16 :
-                              preambleLength >   0 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_8 :
+    // maximum preamble detector length is limited by sync word length
+    // for details, see the note in SX1261 datasheet, Rev 2.1, section 6.2.2.1, page 45
+    uint8_t maxDetLen = RADIOLIB_MIN(this->syncWordLength, this->preambleLengthFSK);
+    this->preambleDetLength = maxDetLen >= 32 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_32 :
+                              maxDetLen >= 24 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_24 :
+                              maxDetLen >= 16 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_16 :
+                              maxDetLen >   0 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_8 :
                               RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_OFF;
-    return(setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType));
+    return(setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType));
   }
 
   return(RADIOLIB_ERR_UNKNOWN);
@@ -1225,7 +1224,16 @@ int16_t SX126x::setSyncWord(uint8_t* syncWord, size_t len) {
 
     // update packet parameters
     this->syncWordLength = len * 8;
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
+    
+    // maximum preamble detector length is limited by sync word length
+    // for details, see the note in SX1261 datasheet, Rev 2.1, section 6.2.2.1, page 45
+    uint8_t maxDetLen = RADIOLIB_MIN(this->syncWordLength, this->preambleLengthFSK);
+    this->preambleDetLength = maxDetLen >= 32 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_32 :
+                              maxDetLen >= 24 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_24 :
+                              maxDetLen >= 16 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_16 :
+                              maxDetLen >   0 ? RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_8 :
+                              RADIOLIB_SX126X_GFSK_PREAMBLE_DETECT_OFF;
+    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType);
 
     return(state);
   
@@ -1267,52 +1275,6 @@ int16_t SX126x::setSyncBits(uint8_t *syncWord, uint8_t bitsLen) {
   return(setSyncWord(syncWord, bytesLen));
 }
 
-int16_t SX126x::setNodeAddress(uint8_t addr) {
-  // check active modem
-  if(getPacketType() != RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    return(RADIOLIB_ERR_WRONG_MODEM);
-  }
-
-  // enable address filtering (node only)
-  this->addrComp = RADIOLIB_SX126X_GFSK_ADDRESS_FILT_NODE;
-  int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
-  RADIOLIB_ASSERT(state);
-
-  // set node address
-  this->nodeAddr = addr;
-  state = writeRegister(RADIOLIB_SX126X_REG_NODE_ADDRESS, &addr, 1);
-
-  return(state);
-}
-
-int16_t SX126x::setBroadcastAddress(uint8_t broadAddr) {
-  // check active modem
-  if(getPacketType() != RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    return(RADIOLIB_ERR_WRONG_MODEM);
-  }
-
-  // enable address filtering (node and broadcast)
-  this->addrComp = RADIOLIB_SX126X_GFSK_ADDRESS_FILT_NODE_BROADCAST;
-  int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
-  RADIOLIB_ASSERT(state);
-
-  // set broadcast address
-  state = writeRegister(RADIOLIB_SX126X_REG_BROADCAST_ADDRESS, &broadAddr, 1);
-
-  return(state);
-}
-
-int16_t SX126x::disableAddressFiltering() {
-  // check active modem
-  if(getPacketType() != RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    return(RADIOLIB_ERR_WRONG_MODEM);
-  }
-
-  // disable address filtering
-  this->addrComp = RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF;
-  return(setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening));
-}
-
 int16_t SX126x::setCRC(uint8_t len, uint16_t initial, uint16_t polynomial, bool inverted) {
   // check active modem
   uint8_t modem = getPacketType();
@@ -1341,7 +1303,7 @@ int16_t SX126x::setCRC(uint8_t len, uint16_t initial, uint16_t polynomial, bool 
         return(RADIOLIB_ERR_INVALID_CRC_CONFIGURATION);
     }
 
-    int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
+    int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType);
     RADIOLIB_ASSERT(state);
 
     // write initial CRC value
@@ -1383,7 +1345,7 @@ int16_t SX126x::setWhitening(bool enabled, uint16_t initial) {
     // disable whitening
     this->whitening = RADIOLIB_SX126X_GFSK_WHITENING_OFF;
 
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
+    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType);
     RADIOLIB_ASSERT(state);
 
   } else {
@@ -1403,7 +1365,7 @@ int16_t SX126x::setWhitening(bool enabled, uint16_t initial) {
     state = writeRegister(RADIOLIB_SX126X_REG_WHITENING_INITIAL_MSB, data, 2);
     RADIOLIB_ASSERT(state);
 
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, this->packetType);
+    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, this->packetType);
     RADIOLIB_ASSERT(state);
   }
   return(state);
@@ -2065,7 +2027,7 @@ int16_t SX126x::setPacketMode(uint8_t mode, uint8_t len) {
   }
 
   // set requested packet mode
-  int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, this->addrComp, this->whitening, mode, len);
+  int16_t state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening, mode, len);
   RADIOLIB_ASSERT(state);
 
   // update cached value
