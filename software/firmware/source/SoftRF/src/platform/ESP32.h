@@ -450,7 +450,11 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define USE_NIMBLE
 #define USE_ARDUINOBLE
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if ARDUINO_USB_CDC_ON_BOOT
 //#define USE_RADIOLIB
+#else
+#define USE_RADIOLIB
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 #endif /* C6 */
 #endif /* C2 || C6 || H2 */
 #endif /* SX || CX || H2 */
