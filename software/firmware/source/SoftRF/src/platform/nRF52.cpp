@@ -1399,6 +1399,37 @@ static void nRF52_setup()
 
 static void nRF52_post_init()
 {
+  uint32_t variant = NRF_FICR->INFO.VARIANT;
+  char bc_high     = (variant >> 8) & 0xFF;
+  char bc_low      = (variant     ) & 0xFF;
+  const char *rev  = "UNKNOWN";
+
+  switch (bc_high)
+  {
+    case 'A': rev = "Engineering A"; break;
+    case 'B': rev = "Engineering B"; break;
+    case 'C':
+      if (bc_low == 'A')
+              rev = "Engineering C";
+      else
+              rev = "1";
+      break;
+    case 'D':
+      if (bc_low == 'A')
+              rev = "Engineering D";
+      else
+              rev = "2";
+      break;
+    case 'F': rev = "3";             break;
+    default:                         break;
+  }
+
+#if 0
+  Serial.println();
+  Serial.print  (F("MCU Revision: "));
+  Serial.println(rev);
+#endif
+
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
