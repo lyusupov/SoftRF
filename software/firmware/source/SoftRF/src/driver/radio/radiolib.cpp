@@ -475,14 +475,22 @@ static void lr11xx_setup()
 
 #if USE_LR11XX
   float Vtcxo;
+  uint64_t eui;
+
+  state = radio->getChipEui((uint8_t*) &eui); /* big endian */
 
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    // Ebyte E80-900M2213S
-    // LR1121 TCXO Voltage
-    Vtcxo = 1.8;
+    if (eui == 0xdeadbeefdeadbeef) /* TBD */
+      // Ebyte E80-900M2213S
+      // LR1121 TCXO Voltage
+      Vtcxo = 1.8;
+    else
+      // HPDTeK HPD-16E
+      // LR1121 TCXO Voltage 2.85~3.15V
+      Vtcxo = 3.0;
     break;
 
   case SOFTRF_MODEL_NEO:
@@ -733,12 +741,15 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    /* Ebyte E80-900M2213S */
+    if (eui == 0xdeadbeefdeadbeef) /* TBD */
+      /* Ebyte E80-900M2213S */
 #if 1
-    radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
+      radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
 #else
-    radio->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
+      radio->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
 #endif
+    else
+      radio->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
     break;
 
   case SOFTRF_MODEL_NEO:
