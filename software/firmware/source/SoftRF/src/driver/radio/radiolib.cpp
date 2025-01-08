@@ -475,15 +475,16 @@ static void lr11xx_setup()
 
 #if USE_LR11XX
   float Vtcxo;
-  uint64_t eui;
+  uint64_t eui_be, eui_le;
 
-  state = radio->getChipEui((uint8_t*) &eui); /* big endian */
+  state  = radio->getChipEui((uint8_t*) &eui_be);
+  eui_le = __builtin_bswap64(eui_be);
 
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui == 0xdeadbeefdeadbeef) /* TBD */
+    if (eui_le == 0xdeadbeefdeadbeef) /* TBD */
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
       Vtcxo = 1.8;
@@ -741,7 +742,7 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui == 0xdeadbeefdeadbeef) /* TBD */
+    if (eui_le == 0xdeadbeefdeadbeef) /* TBD */
       /* Ebyte E80-900M2213S */
 #if 1
       radio->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
