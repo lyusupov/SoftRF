@@ -208,6 +208,9 @@ extern  SoftSPI RadioSPI;
 //#define EXCLUDE_SX1276         //  -  3 kb
 #if defined(ARDUINO_UNOR4_MINIMA)
 #define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 #endif /* ARDUINO_UNOR4_MINIMA */
 
 #if defined(EXCLUDE_WIFI)

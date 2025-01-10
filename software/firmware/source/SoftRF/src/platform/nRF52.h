@@ -264,6 +264,9 @@ struct rst_info {
 #define USE_EXT_I2S_DAC
 #define USE_TFT
 #define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 //#define ENABLE_RECORDER
 //#define ENABLE_NFC
 #else

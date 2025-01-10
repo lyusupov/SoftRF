@@ -104,6 +104,9 @@ extern Adafruit_NeoPixel strip;
 #define USE_NMEALIB
 //#define USE_BASICMAC
 //#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

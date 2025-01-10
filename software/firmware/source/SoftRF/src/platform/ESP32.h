@@ -360,12 +360,18 @@ struct rst_info {
 #define USE_BASICMAC
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #if ARDUINO_USB_CDC_ON_BOOT
 //#define USE_RADIOLIB
 #else
 #define USE_RADIOLIB
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 #endif /* S3 C3 C6 */
 
 #define USE_TIME_SLOTS

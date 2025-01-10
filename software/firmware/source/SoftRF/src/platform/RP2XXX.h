@@ -333,6 +333,9 @@ struct rst_info {
 #define USE_BASICMAC
 #if defined(ARDUINO_GENERIC_RP2040)
 #define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 #endif /* ARDUINO_GENERIC_RP2040 */
 
 #define USE_TIME_SLOTS

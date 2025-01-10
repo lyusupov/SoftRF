@@ -175,6 +175,9 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
 //#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 
 //#define ENFORCE_S78G
 #define USE_TIME_SLOTS
@@ -292,6 +295,9 @@ typedef struct stm32_backup_struct {
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
 //#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
@@ -349,6 +355,9 @@ typedef struct stm32_backup_struct {
 #define USE_BASICMAC             //  +  7 kb
 #define EXCLUDE_SX1276           //  -  3 kb
 //#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 
 #define USE_TIME_SLOTS
 
