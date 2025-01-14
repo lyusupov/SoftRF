@@ -25,6 +25,12 @@
 
 #include <manchester.h>
 
+#ifndef RadioSPI
+#define RadioSPI        SPI
+#endif
+
+Module *mod;
+
 extern size_t RF_tx_size;
 
 #if !defined(EXCLUDE_LR11XX)
@@ -62,11 +68,6 @@ const rfchip_ops_t lr1121_ops = {
 #define USE_SX1262      0
 #define USE_LR11XX      1
 
-#ifndef RadioSPI
-#define RadioSPI        SPI
-#endif
-
-Module  *mod;
 #if USE_SX1262
 SX1262  *radio_semtech;
 #elif USE_LR11XX
@@ -1197,6 +1198,7 @@ const rfchip_ops_t cc1101_ops = {
   cc1101_shutdown
 };
 
+CC1101 *radio_ti;
 
 static bool cc1101_probe()
 {
@@ -1227,7 +1229,7 @@ static bool cc1101_transmit()
 
 static void cc1101_shutdown()
 {
-
+  int state = radio_ti->sleep();
 }
 #endif /* EXCLUDE_CC1101 */
 
