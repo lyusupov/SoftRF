@@ -209,13 +209,15 @@ static Adafruit_SPIFlash *SPIFlash = &QSPIFlash;
 
 /// Flash device list count
 enum {
-  W25Q16JV_IQ_INDEX,
+  W25Q16JV_IQ_INDEX, /* Pico and compatible */
+  W25Q32JV_IQ_INDEX, /* Pico 2 */
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
 /// List of all possible flash devices used by RP2040 boards
 static SPIFlash_Device_t possible_devices[] = {
   [W25Q16JV_IQ_INDEX] = W25Q16JV_IQ,
+  [W25Q32JV_IQ_INDEX] = W25Q32JV_IQ,
 };
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -957,12 +959,18 @@ static float RP2xxx_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = RP2xxx_board == RP2040_RPIPICO || RP2xxx_board == RP2040_RPIPICO_W ?
+    rval = RP2xxx_board == RP2040_RPIPICO    ||
+           RP2xxx_board == RP2040_RPIPICO_W  ||
+           RP2xxx_board == RP2350_RPIPICO_2  ||
+           RP2xxx_board == RP2350_RPIPICO_2W ?
            BATTERY_THRESHOLD_NIMHX2 : BATTERY_THRESHOLD_LIPO;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = RP2xxx_board == RP2040_RPIPICO || RP2xxx_board == RP2040_RPIPICO_W ?
+    rval = RP2xxx_board == RP2040_RPIPICO    ||
+           RP2xxx_board == RP2040_RPIPICO_W  ||
+           RP2xxx_board == RP2350_RPIPICO_2  ||
+           RP2xxx_board == RP2350_RPIPICO_2W ?
            BATTERY_CUTOFF_NIMHX2 : BATTERY_CUTOFF_LIPO;
     break;
 
@@ -999,7 +1007,8 @@ static float RP2xxx_Battery_param(uint8_t param)
       uint pin25_dir;
       uint pin29_dir;
 
-      if (RP2xxx_board == RP2040_RPIPICO_W) {
+      if (RP2xxx_board == RP2040_RPIPICO_W ||
+          RP2xxx_board == RP2350_RPIPICO_2W) {
         pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
         pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
         adc_gpio_init(SOC_GPIO_PIN_BATTERY);
@@ -1016,7 +1025,8 @@ static float RP2xxx_Battery_param(uint8_t param)
 
       mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
 
-      if (RP2xxx_board == RP2040_RPIPICO_W) {
+      if (RP2xxx_board == RP2040_RPIPICO_W ||
+          RP2xxx_board == RP2350_RPIPICO_2W) {
 #if defined(ARDUINO_RASPBERRY_PI_PICO)   || \
     defined(ARDUINO_RASPBERRY_PI_PICO_W) || \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W)

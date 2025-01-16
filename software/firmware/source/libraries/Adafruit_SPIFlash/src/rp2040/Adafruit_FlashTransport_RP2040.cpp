@@ -93,7 +93,7 @@ void Adafruit_FlashTransport_RP2040::begin(void) {
   uint8_t data[4];
   fl_lock();
 #if !defined(ARDUINO_ARCH_MBED)
-  flash_do_cmd(cmd, data, 5);
+  flash_do_cmd(cmd, data, 4);
 #endif /* ARDUINO_ARCH_MBED */
   fl_unlock();
 

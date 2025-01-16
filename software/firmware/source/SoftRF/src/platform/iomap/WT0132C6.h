@@ -40,6 +40,10 @@
 #define SOC_GPIO_PIN_C6_BUZZER          21 /* 10 */
 #define SOC_GPIO_PIN_C6_STATUS          SOC_UNUSED_PIN
 
+// LP I2C pins are fixed on ESP32-C6
+#define SOC_GPIO_PIN_C6_LP_SDA          6
+#define SOC_GPIO_PIN_C6_LP_SCL          7
+
 
 /* WT018684-S5 (ESP32-C2) */
 #define SOC_GPIO_PIN_C2_CONS_RX         19
