@@ -192,6 +192,33 @@ static void lr11xx_GetVersion (uint8_t* hw, uint8_t* device,
 #endif
 }
 
+static void lr11xx_GetChipEui (uint64_t* eui) {
+    uint8_t buf[8] = { 0 };
+
+    hal_pin_busy_wait();
+    hal_spi_select(1);
+
+    hal_spi((uint8_t)((RADIOLIB_LR11X0_CMD_GET_CHIP_EUI & 0xFF00) >> 8));
+    hal_spi((uint8_t) (RADIOLIB_LR11X0_CMD_GET_CHIP_EUI & 0x00FF));
+    hal_spi_select(0);
+
+    hal_pin_busy_wait();
+    hal_spi_select(1);
+
+    hal_spi(RADIOLIB_LR11X0_CMD_NOP);
+    for (uint8_t i = 0; i < sizeof(buf); i++) {
+        buf[i] = hal_spi(0x00);
+    }
+    hal_spi_select(0);
+
+    if (eui) { memcpy(eui, buf, sizeof(buf)); }
+#if 0
+    Serial.print("eui = "); Serial.println(*eui, HEX);
+#endif
+}
+
+static uint64_t lr11xx_eui_be = 0xdeadbeefdeadbeef;
+
 static const uint32_t rfswitch_dio_pins_hpdtek[] = {
     RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
     RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
@@ -359,6 +386,10 @@ static bool lr1121_probe()
 
   lr11xx_GetVersion(&hw, &device, &major, &minor);
 
+  if (device != 0x00 && device != 0xFF) {
+    lr11xx_GetChipEui(&lr11xx_eui_be);
+  }
+
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
@@ -478,16 +509,13 @@ static void lr11xx_setup()
 
 #if USE_LR11XX
   float Vtcxo;
-  uint64_t eui_be, eui_le;
-
-  state  = radio_semtech->getChipEui((uint8_t*) &eui_be);
-  eui_le = __builtin_bswap64(eui_be);
+  uint64_t eui_le = __builtin_bswap64(lr11xx_eui_be);
 
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui_le == 0xdeadbeefdeadbeef) /* TBD */
+    if (eui_le == 0x0016c001f047ac30)
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
       Vtcxo = 1.8;
@@ -749,7 +777,7 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui_le == 0xdeadbeefdeadbeef) /* TBD */
+    if (eui_le == 0x0016c001f047ac30)
       /* Ebyte E80-900M2213S */
 #if 1
       radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
