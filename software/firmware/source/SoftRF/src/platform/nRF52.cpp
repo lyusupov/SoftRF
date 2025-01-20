@@ -651,11 +651,15 @@ void nfc_func(void *context, nfc_t2t_event_t event,
     switch (event)
     {
         case NFC_T2T_EVENT_FIELD_ON:
+#if 0
             Serial.println("******NFC_T2T_EVENT_FIELD_ON******");
+#endif
             break;
 
         case NFC_T2T_EVENT_FIELD_OFF:
+#if 0
             Serial.println("------NFC_T2T_EVENT_FIELD_OFF------");
+#endif
             break;
 
         default:
@@ -1384,14 +1388,6 @@ static void nRF52_setup()
     if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) != (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
       Serial.println("*** NFC pins are disabled ***");
       // nfcpins_enable();
-    } else {
-      String NFC_name = SOFTRF_IDENT;
-      NFC_name += "-";
-      NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
-
-      NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
-      NFC.start();
-      NFC.registerCallback(nfc_func);
     }
   }
 #endif /* ENABLE_NFC */
@@ -1533,6 +1529,18 @@ static void nRF52_post_init()
       }
 #endif /* USE_EXT_I2S_DAC */
     }
+
+#if defined(ENABLE_NFC) && defined(EXCLUDE_BLUETOOTH)
+    if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
+      String NFC_name = SOFTRF_IDENT;
+      NFC_name += "-";
+      NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+
+      NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
+      NFC.start();
+      NFC.registerCallback(nfc_func);
+    }
+#endif /* ENABLE_NFC */
 
   } else if (nRF52_board == NRF52_HELTEC_T114) {
     Serial.println();

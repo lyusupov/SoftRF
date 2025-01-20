@@ -269,6 +269,7 @@ struct rst_info {
 #define EXCLUDE_SI443X
 //#define ENABLE_RECORDER
 //#define ENABLE_NFC
+//#define EXCLUDE_BLUETOOTH
 #else
 #undef USE_EPAPER
 //#define EXCLUDE_BLUETOOTH
