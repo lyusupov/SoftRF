@@ -170,7 +170,8 @@ void handleSettings() {
     (settings->adapter == ADAPTER_NODEMCU           ? "selected" : ""), ADAPTER_NODEMCU,
     (settings->adapter == ADAPTER_WAVESHARE_ESP8266 ? "selected" : ""), ADAPTER_WAVESHARE_ESP8266
     );
-  } else if (SoC->id == SOC_RP2040 || SoC->id == SOC_ESP32S3) {
+  } else if (SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_ARM ||
+             SoC->id == SOC_RP2350_RISC || SoC->id == SOC_ESP32S3) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -207,7 +208,9 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id != SOC_RP2040 /* || WiFi.getMode() != WIFI_AP */) {
+  if (SoC->id != SOC_RP2040      &&
+      SoC->id != SOC_RP2350_RISC &&
+      SoC->id != SOC_RP2350_ARM /* || WiFi.getMode() != WIFI_AP */) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>WiFi UDP</option>"),
       (settings->connection == CON_WIFI_UDP ? "selected" : ""), CON_WIFI_UDP);
     len = strlen(offset);
@@ -216,7 +219,8 @@ void handleSettings() {
   }
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_RP2040 ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth SPP</option>"),
     (settings->connection == CON_BLUETOOTH_SPP ? "selected" : ""), CON_BLUETOOTH_SPP);
     len = strlen(offset);
@@ -225,9 +229,10 @@ void handleSettings() {
   }
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3     ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6     ||
+      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
     (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE);
     len = strlen(offset);
@@ -236,7 +241,9 @@ void handleSettings() {
   }
 
   /* SoC specific part 5 */
-  if (SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_RP2040      ||
+      SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>USB</option>"),
       (settings->connection == CON_USB ? "selected" : ""), CON_USB);
     len = strlen(offset);
@@ -284,7 +291,8 @@ void handleSettings() {
   /* SoC specific part 6 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
-      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040) {
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -462,7 +470,8 @@ void handleSettings() {
     len = strlen(offset);
     offset += len;
     size -= len;
-  } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_RP2040) {
+  } else if (SoC->id == SOC_ESP32S3     || SoC->id == SOC_RP2040 ||
+             SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -680,7 +689,9 @@ void handleRoot() {
   size -= len;
 
   /* SoC specific part 5 */
-  if (SoC->id != SOC_RP2040) {
+  if (SoC->id != SOC_RP2040      &&
+      SoC->id != SOC_RP2350_RISC &&
+      SoC->id != SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
     len = strlen(offset);

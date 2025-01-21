@@ -217,7 +217,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUTTON   (23u) // WeAct
 #define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
 
-#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 32 (CYW43 GPIO 0)
+#define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 64 (CYW43 GPIO 0)
 #define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 

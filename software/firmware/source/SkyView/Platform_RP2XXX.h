@@ -113,9 +113,9 @@ enum RP2xxx_board_id {
 #define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
 #define SOC_GPIO_PIN_VSYS     (29u) // Pico/Pico W
 #define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS
-#define SOC_GPIO_PIN_LED_W    (32u) // Pico W (CYW43 GPIO 0)
-#define SOC_GPIO_PIN_SMPS_W   (33u) // Pico W (CYW43 GPIO 1)
-#define SOC_GPIO_PIN_VBUS_W   (34u) // Pico W (CYW43 GPIO 2)
+#define SOC_GPIO_PIN_LED_W    (64u) // Pico W (CYW43 GPIO 0)
+#define SOC_GPIO_PIN_SMPS_W   (65u) // Pico W (CYW43 GPIO 1)
+#define SOC_GPIO_PIN_VBUS_W   (66u) // Pico W (CYW43 GPIO 2)
 
 //#define EXCLUDE_AUDIO
 
@@ -144,7 +144,9 @@ enum RP2xxx_board_id {
 //#define USE_EXT_I2S_DAC
 #endif /* EXCLUDE_AUDIO */
 #if defined(USE_TINYUSB) // && !defined(USE_EXT_I2S_DAC)
+#if !defined(PICO_RP2350)
 #define USE_USB_HOST
+#endif /* PICO_RP2350 */
 #endif /* USE_TINYUSB */
 
 #endif /* PLATFORM_RP2XXX_H */

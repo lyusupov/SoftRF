@@ -254,12 +254,17 @@ static void RP2xxx_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2xxx_board;
+  RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W  : RP2xxx_board;
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+  RP2xxx_board = rp2040.isPicoW() ? RP2350_RPIPICO_2W : RP2xxx_board;
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
   RP2xxx_board = (SoC->getChipId() == 0xcf516424) ? RP2040_WEACT : RP2xxx_board;
 
-  hw_info.revision = RP2xxx_board == RP2040_RPIPICO_W ? HW_REV_PICO_W : HW_REV_PICO;
+  hw_info.revision = RP2xxx_board == RP2040_RPIPICO_W  ? HW_REV_PICO_W  :
+                     RP2xxx_board == RP2350_RPIPICO_2  ? HW_REV_PICO_2  :
+                     RP2xxx_board == RP2350_RPIPICO_2W ? HW_REV_PICO_2W :
+                     HW_REV_PICO;
 
 #if !defined(ARDUINO_ARCH_MBED)
   RP2xxx_has_spiflash = SPIFlash->begin(possible_devices,
@@ -327,7 +332,8 @@ static void RP2xxx_setup()
     ina219.setCalibration_16V_400mA();
   }
 
-  pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ?
+  pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ||
+                       RP2xxx_board == RP2350_RPIPICO_2W ?
                        SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
   pinMode(pin_LED, OUTPUT);
   /* Indicate positive power supply */
@@ -340,6 +346,7 @@ static void RP2xxx_setup()
     pinMode(SOC_GPIO_PIN_VBUS, INPUT);
     break;
   case RP2040_RPIPICO_W:
+  case RP2350_RPIPICO_2W:
     pinMode(SOC_GPIO_PIN_VBUS_W, INPUT);
     break;
   case RP2040_WEACT:
@@ -393,6 +400,7 @@ static void RP2xxx_post_init()
   switch (RP2xxx_board)
   {
   case RP2040_RPIPICO_W    : Serial.println(F("Pico W"));   break;
+  case RP2350_RPIPICO_2W   : Serial.println(F("Pico 2W"));  break;
   case RP2040_WEACT        : Serial.println(F("WeAct"));    break;
   case RP2040_RPIPICO      :
   default                  : Serial.println(F("Pico"));     break;
@@ -455,7 +463,8 @@ static void RP2xxx_loop()
 
   if (isTimeToToggle()) {
     bool vbus_is_on = false;
-    pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ?
+    pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ||
+                         RP2xxx_board == RP2350_RPIPICO_2W ?
                          SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
 
     switch (RP2xxx_board)
@@ -464,6 +473,7 @@ static void RP2xxx_loop()
       vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS);
       break;
     case RP2040_RPIPICO_W:
+    case RP2350_RPIPICO_2W:
       if (RP2xxx_board != RP2040_RPIPICO_W || settings->connection != CON_USB) {
         vbus_is_on = digitalRead(SOC_GPIO_PIN_VBUS_W);
       }
@@ -499,12 +509,13 @@ static void RP2xxx_fini()
   pinMode(SOC_GPIO_PIN_PWM_OUT, INPUT);
 #endif /* EXCLUDE_AUDIO */
 
-  pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ?
+  pin_size_t pin_LED = RP2xxx_board == RP2040_RPIPICO_W ||
+                       RP2xxx_board == RP2350_RPIPICO_2W ?
                        SOC_GPIO_PIN_LED_W : SOC_GPIO_PIN_LED;
   pinMode(pin_LED, INPUT);
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     if (cyw43_is_initialized(&cyw43_state)) cyw43_arch_deinit();
 #if !(ARDUINO_PICO_MAJOR == 4 && ARDUINO_PICO_MINOR == 3 && ARDUINO_PICO_REVISION == 0)
     pinMode(CYW43_PIN_WL_REG_ON, INPUT_PULLDOWN);
@@ -608,7 +619,7 @@ static void RP2xxx_EEPROM_extension(int cmd)
       }
     }
 
-    if (RP2xxx_board != RP2040_RPIPICO_W &&
+    if (RP2xxx_board != RP2040_RPIPICO_W && RP2xxx_board != RP2350_RPIPICO_2W &&
         (settings->connection == CON_BLUETOOTH_SPP ||
          settings->connection == CON_BLUETOOTH_LE)) {
       settings->connection = CON_USB; /* matches EEPROMHelper.cpp default value */
@@ -627,7 +638,7 @@ static bool RP2xxx_WiFi_hostname(String aHostname)
 {
   bool rval = false;
 #if !defined(EXCLUDE_WIFI)
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     WiFi.hostname(aHostname.c_str());
     rval = true;
   }
@@ -690,7 +701,7 @@ static float RP2xxx_Battery_voltage()
   uint pin25_dir;
   uint pin29_dir;
 
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     pin29_dir  = gpio_get_dir(SOC_GPIO_PIN_BATTERY);
     pin29_func = gpio_get_function(SOC_GPIO_PIN_BATTERY);
     adc_gpio_init(SOC_GPIO_PIN_BATTERY);
@@ -703,7 +714,7 @@ static float RP2xxx_Battery_voltage()
 
   mV = (analogRead(SOC_GPIO_PIN_BATTERY) * 3300UL) >> 12;
 
-  if (RP2xxx_board == RP2040_RPIPICO_W) {
+  if (RP2xxx_board == RP2040_RPIPICO_W || RP2xxx_board == RP2350_RPIPICO_2W) {
     gpio_set_function(SOC_GPIO_PIN_CYW43_EN, pin25_func);
     gpio_set_dir(SOC_GPIO_PIN_CYW43_EN, pin25_dir);
     gpio_set_function(SOC_GPIO_PIN_BATTERY,  pin29_func);
