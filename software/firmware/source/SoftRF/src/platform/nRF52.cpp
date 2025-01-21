@@ -1533,8 +1533,10 @@ static void nRF52_post_init()
 #if defined(ENABLE_NFC) && defined(EXCLUDE_BLUETOOTH)
     if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
       String NFC_name = SOFTRF_IDENT;
+      char id_06x[8];
+      snprintf(id_06x, sizeof(id_06x),"%06x", SoC->getChipId() & 0x00FFFFFFU);
       NFC_name += "-";
-      NFC_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+      NFC_name += String(id_06x);
 
       NFC.setTXTmessage((NFC_name+"-NFC").c_str(), "en");
       NFC.start();

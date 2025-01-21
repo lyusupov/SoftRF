@@ -124,6 +124,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 [**Academy**](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif) **upgrade**|[Renesas<br>RA4M1](https://en.wikipedia.org/wiki/Renesas_Electronics#The_RA_MCU_family)|Q1 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 Academy|[Silicon Labs](https://en.wikipedia.org/wiki/Silicon_Labs)<br>[EFx32](https://en.wikipedia.org/wiki/EFM32)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 Academy|[Nanjing Qinheng Microelectronics](https://www.wch-ic.com/)<br>[CH32V307](https://www.wch-ic.com/products/CH32V307.html)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)<br>IMAFC
+[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)|[Raspberry Pi<br>Foundation<br>**RP2350**](https://en.wikipedia.org/wiki/RP2350)|Q1 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes

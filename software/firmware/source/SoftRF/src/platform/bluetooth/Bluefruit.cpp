@@ -442,8 +442,10 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void nRF52_Bluetooth_setup()
 {
+  char id_06x[8];
+  snprintf(id_06x, sizeof(id_06x),"%06x", SoC->getChipId() & 0x00FFFFFFU);
   BT_name += "-";
-  BT_name += String(SoC->getChipId() & 0x00FFFFFFU, HEX);
+  BT_name += String(id_06x);
 
 #if defined(ENABLE_REMOTE_ID)
   rid_init();
