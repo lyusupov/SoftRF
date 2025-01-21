@@ -24,7 +24,7 @@
 #include "Platform_RPi.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
-#include "Platform_RP2040.h"
+#include "Platform_RP2XXX.h"
 #include "SkyView.h"
 #include "BluetoothHelper.h"
 
