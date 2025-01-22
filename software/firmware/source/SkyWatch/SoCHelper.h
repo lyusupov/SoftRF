@@ -24,7 +24,7 @@
 #include "SkyWatch.h"
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
-#include "Platform_RP2040.h"
+#include "Platform_RP2XXX.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
