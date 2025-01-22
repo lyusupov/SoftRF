@@ -144,9 +144,9 @@ enum RP2xxx_board_id {
 //#define USE_EXT_I2S_DAC
 #endif /* EXCLUDE_AUDIO */
 #if defined(USE_TINYUSB) // && !defined(USE_EXT_I2S_DAC)
-#if !defined(PICO_RP2350)
+//#if !defined(PICO_RP2350)
 #define USE_USB_HOST
-#endif /* PICO_RP2350 */
+//#endif /* PICO_RP2350 */
 #endif /* USE_TINYUSB */
 
 #endif /* PLATFORM_RP2XXX_H */
