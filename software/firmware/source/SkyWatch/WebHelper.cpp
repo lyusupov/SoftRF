@@ -288,9 +288,10 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3 ||
-      SoC->id == SOC_ESP32C6 || SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3     || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_ESP32C6     || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -331,7 +332,8 @@ void handleSettings_master() {
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
   /* SoC specific part 1 */
-  if (SoC->id == SOC_ESP32 || SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_RP2040 ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -399,9 +401,10 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3     ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6     ||
+      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>TCP</option>\
@@ -447,9 +450,10 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3     ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6     ||
+      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -482,9 +486,10 @@ void handleSettings_master() {
   size -= len;
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-      SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S3     ||
+      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6     ||
+      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>Bluetooth</option>"),
@@ -1644,7 +1649,8 @@ void handleStatus() {
   size -= len;
 
   /* SoC specific part 1 */
-  if (SoC->id != SOC_RP2040) {
+  if (SoC->id != SOC_RP2040 && SoC->id != SOC_RP2350_RISC &&
+      SoC->id != SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
     len = strlen(offset);

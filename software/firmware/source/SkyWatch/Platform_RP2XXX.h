@@ -1,5 +1,5 @@
 /*
- * Platform_RP2040.h
+ * Platform_RP2XXX.h
  * Copyright (C) 2023-2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if defined(ARDUINO_ARCH_RP2040)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 
-#ifndef PLATFORM_RP2040_H
-#define PLATFORM_RP2040_H
+#ifndef PLATFORM_RP2XXX_H
+#define PLATFORM_RP2XXX_H
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include <WiFi.h>
@@ -50,7 +50,7 @@ extern WebServer server;
 #define USBSerial             SerialUSB
 #endif /* ARDUINO_ARCH_MBED */
 
-enum RP2040_board_id {
+enum RP2xxx_board_id {
   RP2040_RAK11300,
   RP2040_RESERVED1,
   RP2040_RPIPICO,
@@ -98,5 +98,5 @@ enum RP2040_board_id {
 #define EXCLUDE_RTC
 #define EXCLUDE_TFT
 
-#endif /* PLATFORM_RP2040_H */
-#endif /* ARDUINO_ARCH_RP2040 */
+#endif /* PLATFORM_RP2XXX_H */
+#endif /* ARDUINO_ARCH_RP2XXX */
