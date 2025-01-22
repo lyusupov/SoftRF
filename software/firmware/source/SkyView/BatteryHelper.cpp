@@ -64,6 +64,8 @@ void Battery_loop()
          hw_info.revision == HW_REV_T5S_2_8 ||
          hw_info.revision == HW_REV_PICO    ||
          hw_info.revision == HW_REV_PICO_W  ||
+         hw_info.revision == HW_REV_PICO_2  ||
+         hw_info.revision == HW_REV_PICO_2W ||
          hw_info.revision == HW_REV_BPI     )) {
 
       if (voltage > BATTERY_THRESHOLD_INVALID &&

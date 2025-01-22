@@ -97,11 +97,14 @@ size_t WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
  */
 void WiFi_setup()
 {
+  char id_06x[8];
+  snprintf(id_06x, sizeof(id_06x),"%06x", SoC->getChipId() & 0x00FFFFFFU);
   // Set Hostname.
   host_name += "-";
-  host_name += String((SoC->getChipId() & 0xFFFFFF), HEX);
+  host_name += String(id_06x);
 
-  if (SoC->id == SOC_ESP8266 || SoC->id == SOC_RP2040) {
+  if (SoC->id == SOC_ESP8266     || SoC->id == SOC_RP2040     ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     WiFi.mode(WIFI_STA);
     if (SoC->WiFi_hostname(host_name) == false) {
       return;
@@ -254,7 +257,9 @@ void WiFi_loop()
   if ((settings->power_save & POWER_SAVE_WIFI) && WiFi.getMode() == WIFI_AP) {
     if (SoC->WiFi_clients_count() == 0) {
       if ((millis() - WiFi_No_Clients_Time_ms) > POWER_SAVING_WIFI_TIMEOUT) {
-        if (SoC->id == SOC_RP2040 &&
+        if ((SoC->id == SOC_RP2040      ||
+             SoC->id == SOC_RP2350_RISC ||
+             SoC->id == SOC_RP2350_ARM) &&
             (settings->connection == CON_BLUETOOTH_SPP ||
              settings->connection == CON_BLUETOOTH_LE)) {
           /* TBD */
