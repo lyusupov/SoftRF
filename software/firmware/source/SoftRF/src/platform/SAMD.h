@@ -233,6 +233,7 @@ struct rst_info {
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
+#define EXCLUDE_SX1231
 
 #define USE_OLED                 //       kb
 #define EXCLUDE_OLED_049

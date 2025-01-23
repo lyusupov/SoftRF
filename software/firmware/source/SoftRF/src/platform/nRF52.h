@@ -267,6 +267,7 @@ struct rst_info {
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
+#define EXCLUDE_SX1231
 //#define ENABLE_RECORDER
 //#define ENABLE_NFC
 //#define EXCLUDE_BLUETOOTH

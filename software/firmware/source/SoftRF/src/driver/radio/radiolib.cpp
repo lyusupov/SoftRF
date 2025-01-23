@@ -31,6 +31,8 @@
 
 Module *mod;
 
+const rf_proto_desc_t *rl_protocol = &ogntp_proto_desc;
+
 extern size_t RF_tx_size;
 
 #if !defined(EXCLUDE_LR11XX)
@@ -73,8 +75,6 @@ SX1262  *radio_semtech;
 #elif USE_LR11XX
 LR11x0  *radio_semtech;
 #endif
-
-const rf_proto_desc_t  *rl_protocol  = &ogntp_proto_desc;
 
 static int8_t lr112x_channel_prev    = (int8_t) -1;
 
@@ -357,7 +357,7 @@ static bool lr1121_probe()
   u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
   if (v == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
 
-    if (v_reset == SX126X_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
+    if (v_reset == SX126X_DEF_LORASYNCWORDLSB || v_reset == fanet_sw_lsb) {
       RF_SX12XX_RST_is_connected = false;
     }
 
@@ -498,7 +498,7 @@ static void lr11xx_setup()
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
-     * Enforce legacy protocol setting for SX1276
+     * Enforce legacy protocol setting for LR11XX
      * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
@@ -1260,5 +1260,313 @@ static void cc1101_shutdown()
   int state = radio_ti->sleep();
 }
 #endif /* EXCLUDE_CC1101 */
+
+#if !defined(EXCLUDE_SX1231)
+
+static bool sx1231_probe(void);
+static void sx1231_setup(void);
+static void sx1231_channel(int8_t);
+static bool sx1231_receive(void);
+static bool sx1231_transmit(void);
+static void sx1231_shutdown(void);
+
+const rfchip_ops_t sx1231_ops = {
+  RF_IC_SX1231,
+  "SX1231",
+  sx1231_probe,
+  sx1231_setup,
+  sx1231_channel,
+  sx1231_receive,
+  sx1231_transmit,
+  sx1231_shutdown
+};
+
+SX1231 *radio_hoperf;
+
+static volatile bool sx1231_receive_complete = false;
+
+static u1_t sx1231_readReg (u1_t addr) {
+#if defined(USE_BASICMAC)
+    hal_spi_select(1);
+#else
+    hal_pin_nss(0);
+#endif
+    hal_spi(addr & 0x7F);
+    u1_t val = hal_spi(0x00);
+#if defined(USE_BASICMAC)
+    hal_spi_select(0);
+#else
+    hal_pin_nss(1);
+#endif
+    return val;
+}
+
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+#if defined(ESP8266) || defined(ESP32)
+  ICACHE_RAM_ATTR
+#endif
+void sx1231_receive_handler(void) {
+  sx1231_receive_complete = true;
+}
+
+static bool sx1231_probe()
+{
+  u1_t v, v_reset;
+
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  v_reset = sx1231_readReg(RADIOLIB_RF69_REG_VERSION);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  v = sx1231_readReg(RADIOLIB_RF69_REG_VERSION);
+
+  pinMode(lmic_pins.nss, INPUT);
+  RadioSPI.end();
+
+  if (v == RADIOLIB_SX123X_CHIP_REVISION_2_A ||
+      v == RADIOLIB_SX123X_CHIP_REVISION_2_B ||
+      v == RADIOLIB_SX123X_CHIP_REVISION_2_C ||
+      v == RADIOLIB_SX123X_CHIP_REVISION_2_D) {
+
+    if (v_reset == RADIOLIB_SX123X_CHIP_REVISION_2_A ||
+        v_reset == RADIOLIB_SX123X_CHIP_REVISION_2_B ||
+        v_reset == RADIOLIB_SX123X_CHIP_REVISION_2_C ||
+        v_reset == RADIOLIB_SX123X_CHIP_REVISION_2_D) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
+static void sx1231_channel(int8_t channel)
+{
+
+}
+
+static void sx1231_setup()
+{
+  int state;
+
+  SoC->SPI_begin();
+
+  uint32_t irq  = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.busy;
+
+  mod = new Module(lmic_pins.nss, irq, lmic_pins.rst, RADIOLIB_NC, RadioSPI);
+  radio_hoperf = new SX1231(mod);
+
+  switch (settings->rf_protocol)
+  {
+  case RF_PROTOCOL_OGNTP:
+    rl_protocol     = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
+    break;
+  case RF_PROTOCOL_P3I:
+    rl_protocol     = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
+    break;
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    rl_protocol     = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+    break;
+#endif /* ENABLE_ADSL */
+  case RF_PROTOCOL_LEGACY:
+  default:
+    rl_protocol     = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
+    /*
+     * Enforce legacy protocol setting for SX1231
+     * if other value (UAT) left in EEPROM from other (UATM) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_LEGACY;
+    break;
+  }
+
+  RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
+
+  float br, fdev, bw;
+
+  state = radio_hoperf->begin(); // start FSK mode (and disable LoRa)
+
+  switch (rl_protocol->bitrate)
+  {
+  case RF_BITRATE_38400:
+    br = 38.4;
+    break;
+  case RF_BITRATE_100KBPS:
+  default:
+    br = 100.0;
+    break;
+  }
+  state = radio_hoperf->setBitRate(br);
+
+  switch (rl_protocol->deviation)
+  {
+  case RF_FREQUENCY_DEVIATION_9_6KHZ:
+    fdev = 9.6;
+    break;
+  case RF_FREQUENCY_DEVIATION_19_2KHZ:
+    fdev = 19.2;
+    break;
+  case RF_FREQUENCY_DEVIATION_25KHZ:
+    fdev = 25.0;
+    break;
+  case RF_FREQUENCY_DEVIATION_50KHZ:
+  case RF_FREQUENCY_DEVIATION_NONE:
+  default:
+    fdev = 50.0;
+    break;
+  }
+  state = radio_hoperf->setFrequencyDeviation(fdev);
+
+  switch (rl_protocol->bandwidth)
+  {
+  case RF_RX_BANDWIDTH_SS_50KHZ:
+    bw = 117.3;
+    break;
+  case RF_RX_BANDWIDTH_SS_62KHZ:
+    bw = 156.2;
+    break;
+  case RF_RX_BANDWIDTH_SS_100KHZ:
+    bw = 234.3;
+    break;
+  case RF_RX_BANDWIDTH_SS_166KHZ:
+    bw = 312.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_200KHZ:
+  case RF_RX_BANDWIDTH_SS_250KHZ:
+  case RF_RX_BANDWIDTH_SS_1567KHZ:
+    bw = 467.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_125KHZ:
+  default:
+    bw = 234.3;
+    break;
+  }
+  state = radio_hoperf->setRxBandwidth(bw);
+
+  state = radio_hoperf->setEncoding(RADIOLIB_ENCODING_NRZ);
+  state = radio_hoperf->setPreambleLength(rl_protocol->preamble_size * 8);
+  state = radio_hoperf->setDataShaping(RADIOLIB_SHAPING_0_5);
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  case RF_CHECKSUM_TYPE_CCITT_1D02:
+  case RF_CHECKSUM_TYPE_CRC8_107:
+  case RF_CHECKSUM_TYPE_RS:
+    /* CRC is driven by software */
+    state = radio_hoperf->setCrcFiltering(0);
+    break;
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+  default:
+    state = radio_hoperf->setCrcFiltering(0);
+    break;
+  }
+
+  size_t pkt_size = rl_protocol->payload_offset + rl_protocol->payload_size +
+                    rl_protocol->crc_size;
+
+  switch (rl_protocol->whitening)
+  {
+  case RF_WHITENING_MANCHESTER:
+    pkt_size += pkt_size;
+    break;
+  case RF_WHITENING_PN9:
+  case RF_WHITENING_NONE:
+  case RF_WHITENING_NICERF:
+  default:
+    break;
+  }
+  state = radio_hoperf->fixedPacketLengthMode(pkt_size);
+
+  state = radio_hoperf->disableAddressFiltering();
+
+  /* Work around premature P3I syncword detection */
+  if (rl_protocol->syncword_size == 2) {
+    uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
+                       0xAA : 0x55;
+    uint8_t sword[4] = { preamble,
+                         preamble,
+                         rl_protocol->syncword[0],
+                         rl_protocol->syncword[1]
+                       };
+    state = radio_hoperf->setSyncWord(sword, 4);
+  } else {
+    state = radio_hoperf->setSyncWord((uint8_t *) rl_protocol->syncword,
+                                      (size_t)    rl_protocol->syncword_size);
+  }
+
+  float txpow;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    /* Load regional max. EIRP at first */
+    txpow = RF_FreqPlan.MaxTxPower;
+
+    if (txpow > 20)
+      txpow = 20;
+
+#if 1
+    /*
+     * Enforce Tx power limit until confirmation
+     * that SX1231 is doing well
+     * when antenna is not connected
+     */
+    if (txpow > 17)
+      txpow = 17;
+#endif
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    txpow = 2;
+    break;
+  }
+
+  state = radio_hoperf->setOutputPower(txpow);
+
+  radio_hoperf->setPacketReceivedAction(sx1231_receive_handler);
+}
+
+static bool sx1231_receive()
+{
+  return false;
+}
+
+static bool sx1231_transmit()
+{
+  return false;
+}
+
+static void sx1231_shutdown()
+{
+  int state = radio_hoperf->sleep();
+}
+#endif /* EXCLUDE_SX1231 */
 
 #endif /* USE_RADIOLIB */

@@ -82,6 +82,7 @@ enum
   RF_IC_LR1110,
   RF_IC_LR1121,
   RF_IC_CC1101,
+  RF_IC_SX1231,
 };
 
 enum
@@ -176,6 +177,7 @@ extern const rfchip_ops_t sa8x8_ops;
 extern const rfchip_ops_t lr1110_ops;
 extern const rfchip_ops_t lr1121_ops;
 extern const rfchip_ops_t cc1101_ops;
+extern const rfchip_ops_t sx1231_ops;
 #endif /* USE_RADIOLIB */
 
 #endif /* RFHELPER_H */
