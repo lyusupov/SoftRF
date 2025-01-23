@@ -33,7 +33,76 @@ Module *mod;
 
 const rf_proto_desc_t *rl_protocol = &ogntp_proto_desc;
 
+#define RADIOLIB_MAX_DATA_LENGTH    128
+
+typedef struct
+{
+  uint8_t len;
+  uint8_t payload[RADIOLIB_MAX_DATA_LENGTH];
+} RadioLib_DataPacket;
+
+RadioLib_DataPacket txPacket;
+RadioLib_DataPacket rxPacket;
+
 extern size_t RF_tx_size;
+
+#if !defined(USE_BASICMAC)
+static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
+
+static void hal_spi_select (int on) {
+
+#if defined(SPI_HAS_TRANSACTION)
+    if (on)
+        RadioSPI.beginTransaction(probe_settings);
+    else
+        RadioSPI.endTransaction();
+#endif
+
+    //Serial.println(val?">>":"<<");
+    digitalWrite(lmic_pins.nss, !on ? HIGH : LOW);
+}
+
+// Datasheet defins typical times until busy goes low. Most are < 200us,
+// except when waking up from sleep, which typically takes 3500us. Since
+// we cannot know here if we are in sleep, we'll have to assume we are.
+// Since 3500 is typical, not maximum, wait a bit more than that.
+static unsigned long MAX_BUSY_TIME = 5000;
+
+static void hal_pin_busy_wait (void) {
+    if (lmic_pins.busy == LMIC_UNUSED_PIN) {
+        // TODO: We could probably keep some state so we know the chip
+        // is in sleep, since otherwise the delay can be much shorter.
+        // Also, all delays after commands (rather than waking up from
+        // sleep) are measured from the *end* of the previous SPI
+        // transaction, so we could wait shorter if we remember when
+        // that was.
+        delayMicroseconds(MAX_BUSY_TIME);
+    } else {
+        unsigned long start = micros();
+
+        while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
+    }
+}
+#endif /* USE_BASICMAC */
+
+static bool memeqzero(const uint8_t *data, size_t length)
+{
+	const uint8_t *p = data;
+	size_t len;
+
+	/* Check first 16 bytes manually */
+	for (len = 0; len < 16; len++) {
+		if (!length)
+			return true;
+		if (*p)
+			return false;
+		p++;
+		length--;
+	}
+
+	/* Now we know that's zero, memcmp with self. */
+	return memcmp((void *) data, (void *) p, length) == 0;
+}
 
 #if !defined(EXCLUDE_LR11XX)
 
@@ -82,56 +151,6 @@ static volatile bool lr112x_receive_complete = false;
 
 static bool lr112x_receive_active    = false;
 static bool lr112x_transmit_complete = false;
-
-#define RADIOLIB_MAX_DATA_LENGTH    128
-
-typedef struct
-{
-  uint8_t len;
-  uint8_t payload[RADIOLIB_MAX_DATA_LENGTH];
-} RadioLib_DataPacket;
-
-RadioLib_DataPacket txPacket;
-RadioLib_DataPacket rxPacket;
-
-#if !defined(USE_BASICMAC)
-static const SPISettings probe_settings(1000000UL, MSBFIRST, SPI_MODE0);
-
-static void hal_spi_select (int on) {
-
-#if defined(SPI_HAS_TRANSACTION)
-    if (on)
-        RadioSPI.beginTransaction(probe_settings);
-    else
-        RadioSPI.endTransaction();
-#endif
-
-    //Serial.println(val?">>":"<<");
-    digitalWrite(lmic_pins.nss, !on ? HIGH : LOW);
-}
-
-// Datasheet defins typical times until busy goes low. Most are < 200us,
-// except when waking up from sleep, which typically takes 3500us. Since
-// we cannot know here if we are in sleep, we'll have to assume we are.
-// Since 3500 is typical, not maximum, wait a bit more than that.
-static unsigned long MAX_BUSY_TIME = 5000;
-
-static void hal_pin_busy_wait (void) {
-    if (lmic_pins.busy == LMIC_UNUSED_PIN) {
-        // TODO: We could probably keep some state so we know the chip
-        // is in sleep, since otherwise the delay can be much shorter.
-        // Also, all delays after commands (rather than waking up from
-        // sleep) are measured from the *end* of the previous SPI
-        // transaction, so we could wait shorter if we remember when
-        // that was.
-        delayMicroseconds(MAX_BUSY_TIME);
-    } else {
-        unsigned long start = micros();
-
-        while((micros() - start) < MAX_BUSY_TIME && digitalRead(lmic_pins.busy)) /* wait */;
-    }
-}
-#endif /* USE_BASICMAC */
 
 #if USE_SX1262
 
@@ -802,25 +821,6 @@ static void lr11xx_setup()
   radio_semtech->setPacketReceivedAction(lr112x_receive_handler);
 }
 
-static bool memeqzero(const uint8_t *data, size_t length)
-{
-	const uint8_t *p = data;
-	size_t len;
-
-	/* Check first 16 bytes manually */
-	for (len = 0; len < 16; len++) {
-		if (!length)
-			return true;
-		if (*p)
-			return false;
-		p++;
-		length--;
-	}
-
-	/* Now we know that's zero, memcmp with self. */
-	return memcmp((void *) data, (void *) p, length) == 0;
-}
-
 static bool lr11xx_receive()
 {
   bool success = false;
@@ -1283,7 +1283,12 @@ const rfchip_ops_t sx1231_ops = {
 
 SX1231 *radio_hoperf;
 
+static int8_t sx1231_channel_prev    = (int8_t) -1;
+
 static volatile bool sx1231_receive_complete = false;
+
+static bool sx1231_receive_active    = false;
+static bool sx1231_transmit_complete = false;
 
 static u1_t sx1231_readReg (u1_t addr) {
 #if defined(USE_BASICMAC)
@@ -1354,7 +1359,24 @@ static bool sx1231_probe()
 
 static void sx1231_channel(int8_t channel)
 {
+  if (channel != -1 && channel != sx1231_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
 
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
+
+    int state = radio_hoperf->setFrequency(frequency / 1000000.0);
+
+    sx1231_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    sx1231_receive_active = false;
+  }
 }
 
 static void sx1231_setup()
@@ -1405,7 +1427,7 @@ static void sx1231_setup()
 
   float br, fdev, bw;
 
-  state = radio_hoperf->begin(); // start FSK mode (and disable LoRa)
+  state = radio_hoperf->begin(); // start FSK mode
 
   switch (rl_protocol->bitrate)
   {
@@ -1555,12 +1577,351 @@ static void sx1231_setup()
 
 static bool sx1231_receive()
 {
-  return false;
+  bool success = false;
+  int state;
+
+  if (settings->power_save & POWER_SAVE_NORECEIVE) {
+    return success;
+  }
+
+  if (!sx1231_receive_active) {
+
+    state = radio_hoperf->startReceive();
+    if (state == RADIOLIB_ERR_NONE) {
+      sx1231_receive_active = true;
+    }
+  }
+
+  if (sx1231_receive_complete == true) {
+
+    rxPacket.len = radio_hoperf->getPacketLength();
+
+    if (rxPacket.len > 0) {
+
+      if (rxPacket.len > sizeof(rxPacket.payload)) {
+        rxPacket.len = sizeof(rxPacket.payload);
+      }
+
+      state = radio_hoperf->readData(rxPacket.payload, rxPacket.len);
+      sx1231_receive_active = false;
+
+      if (state == RADIOLIB_ERR_NONE &&
+         !memeqzero(rxPacket.payload, rxPacket.len)) {
+        size_t size = 0;
+        uint8_t offset;
+
+        u1_t crc8, pkt_crc8;
+        u2_t crc16, pkt_crc16;
+
+        RadioLib_DataPacket *rxPacket_ptr = &rxPacket;
+
+        switch (rl_protocol->crc_type)
+        {
+        case RF_CHECKSUM_TYPE_GALLAGER:
+        case RF_CHECKSUM_TYPE_CRC_MODES:
+        case RF_CHECKSUM_TYPE_NONE:
+           /* crc16 left not initialized */
+          break;
+        case RF_CHECKSUM_TYPE_CRC8_107:
+          crc8 = 0x71;     /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_0000:
+          crc16 = 0x0000;  /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_FFFF:
+        default:
+          crc16 = 0xffff;  /* seed value */
+          break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_LEGACY:
+          /* take in account NRF905/FLARM "address" bytes */
+          crc16 = update_crc_ccitt(crc16, 0x31);
+          crc16 = update_crc_ccitt(crc16, 0xFA);
+          crc16 = update_crc_ccitt(crc16, 0xB6);
+          break;
+        case RF_PROTOCOL_P3I:
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        default:
+          break;
+        }
+
+        uint8_t i;
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_P3I:
+          offset = rl_protocol->payload_offset;
+          for (i = 0; i < rl_protocol->payload_size; i++)
+          {
+            update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
+                            pgm_read_byte(&whitening_pattern[i]);
+            }
+          }
+
+          pkt_crc8 = rxPacket_ptr->payload[i + offset];
+
+          if (crc8 == pkt_crc8) {
+            success = true;
+          }
+          break;
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        case RF_PROTOCOL_LEGACY:
+        default:
+          offset = 0;
+          size   = rl_protocol->payload_offset +
+                   rl_protocol->payload_size +
+                   rl_protocol->payload_size +
+                   rl_protocol->crc_size +
+                   rl_protocol->crc_size;
+          if (rxPacket_ptr->len >= (size + offset)) {
+            uint8_t val1, val2;
+            for (i = 0; i < size; i++) {
+              val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              i++;
+              val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              if ((i>>1) < sizeof(RxBuffer)) {
+                RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
+
+                if (i < size - (rl_protocol->crc_size + rl_protocol->crc_size)) {
+                  switch (rl_protocol->crc_type)
+                  {
+                  case RF_CHECKSUM_TYPE_GALLAGER:
+                  case RF_CHECKSUM_TYPE_CRC_MODES:
+                  case RF_CHECKSUM_TYPE_NONE:
+                    break;
+                  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+                  case RF_CHECKSUM_TYPE_CCITT_0000:
+                  default:
+                    crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
+                    break;
+                  }
+                }
+              }
+            }
+
+            size = size>>1;
+
+            switch (rl_protocol->crc_type)
+            {
+            case RF_CHECKSUM_TYPE_GALLAGER:
+              if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
+                success = true;
+              }
+              break;
+            case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+              if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
+                success = true;
+              }
+#endif /* ENABLE_ADSL */
+              break;
+            case RF_CHECKSUM_TYPE_CCITT_FFFF:
+            case RF_CHECKSUM_TYPE_CCITT_0000:
+              offset = rl_protocol->payload_offset + rl_protocol->payload_size;
+              if (offset + 1 < sizeof(RxBuffer)) {
+                pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
+                if (crc16 == pkt_crc16) {
+
+                  success = true;
+                }
+              }
+              break;
+            default:
+              break;
+            }
+          }
+          break;
+        }
+
+        if (success) {
+          RF_last_rssi = radio_hoperf->getRSSI();
+          rx_packets_counter++;
+        }
+      }
+
+      memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+      rxPacket.len = 0;
+    }
+
+    sx1231_receive_complete = false;
+  }
+
+  return success;
 }
 
 static bool sx1231_transmit()
 {
-  return false;
+  u1_t crc8;
+  u2_t crc16;
+  u1_t i;
+
+  bool success = false;
+
+  if (RF_tx_size <= 0) {
+    return success;
+  }
+
+  sx1231_receive_active = false;
+  sx1231_transmit_complete = false;
+
+  size_t PayloadLen = 0;
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  switch (rl_protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 24) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 16) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  8) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    txPacket.payload[PayloadLen++] = rl_protocol->payload_size;
+
+    /* insert byte with CRC-8 seed value when necessary */
+    if (rl_protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
+      txPacket.payload[PayloadLen++] = crc8;
+    }
+
+    break;
+  case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
+  default:
+    break;
+  }
+
+  for (i=0; i < RF_tx_size; i++) {
+
+    switch (rl_protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
+      break;
+    case RF_WHITENING_MANCHESTER:
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
+      PayloadLen++;
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
+      break;
+    case RF_WHITENING_NONE:
+    default:
+      txPacket.payload[PayloadLen] = TxBuffer[i];
+      break;
+    }
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(txPacket.payload[PayloadLen]));
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(TxBuffer[i]));
+      } else {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(txPacket.payload[PayloadLen]));
+      }
+      break;
+    }
+
+    PayloadLen++;
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    txPacket.payload[PayloadLen++] = crc8;
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
+      PayloadLen++;
+    } else {
+      txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
+      txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
+    }
+    break;
+  }
+
+  txPacket.len = PayloadLen;
+
+  int state = radio_hoperf->transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+
+  if (state == RADIOLIB_ERR_NONE) {
+
+    success = true;
+
+    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+
+#if 0
+    // the packet was successfully transmitted
+    Serial.println(F("success!"));
+
+    // print measured data rate
+    Serial.print(F("[SX1231] Datarate:\t"));
+    Serial.print(radio_hoperf->getDataRate());
+    Serial.println(F(" bps"));
+
+  } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
+    // the supplied packet was longer than 256 bytes
+    Serial.println(F("too long!"));
+
+  } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
+    // timeout occured while transmitting packet
+    Serial.println(F("timeout!"));
+
+  } else {
+    // some other error occurred
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+#endif
+  }
+
+  return success;
 }
 
 static void sx1231_shutdown()
