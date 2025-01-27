@@ -1,0 +1,43 @@
+name: Create aircraft data
+
+# Controls when the workflow will run
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "adb"
+  adb:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      #- name: Setup tmate session
+      #  uses: mxschmitt/action-tmate@v3
+
+      - name: Run script
+        run: |
+            cd $GITHUB_WORKSPACE/software/utils ;
+            rm -f data/ogn.cdb data/ogn.md5 ;
+            rm -f data/fln.cdb data/fln.md5 ;
+            sh ogn.sh ;
+            mv ogn.db db/ ;
+            mv ogn.cdb data/ ;
+            md5sum db/ogn.db > db/ogn.md5 ;
+            md5sum data/ogn.cdb > data/ogn.md5 ;
+            chmod a-w data/ogn.cdb data/ogn.md5 ;
+            sh fln.sh ;
+            mv fln.db db/ ;
+            mv fln.cdb data/ ;
+            md5sum db/fln.db > db/fln.md5 ;
+            md5sum data/fln.cdb > data/fln.md5 ;
+            chmod a-w data/fln.cdb data/fln.md5 ;
+
