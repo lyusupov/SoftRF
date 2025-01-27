@@ -117,6 +117,10 @@ byte RF_setup(void)
     } else if (sx1231_ops.probe()) {
       rf_chip = &sx1231_ops;
 #endif /* EXCLUDE_SX1231 */
+#if !defined(EXCLUDE_SI443X)
+    } else if (si4432_ops.probe()) {
+      rf_chip = &si4432_ops;
+#endif /* EXCLUDE_SI443X */
 #endif /* USE_RADIOLIB */
 #if !defined(EXCLUDE_NRF905)
     } else if (nrf905_ops.probe()) {

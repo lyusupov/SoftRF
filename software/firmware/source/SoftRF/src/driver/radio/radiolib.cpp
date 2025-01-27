@@ -1290,6 +1290,8 @@ static volatile bool sx1231_receive_complete = false;
 static bool sx1231_receive_active    = false;
 static bool sx1231_transmit_complete = false;
 
+static uint8_t sx1231_chip_rev_cache = (uint8_t) -1;
+
 static u1_t sx1231_readReg (u1_t addr) {
 #if defined(USE_BASICMAC)
     hal_spi_select(1);
@@ -1351,6 +1353,8 @@ static bool sx1231_probe()
       RF_SX12XX_RST_is_connected = false;
     }
 
+    sx1231_chip_rev_cache = v;
+
     return true;
   } else {
     return false;
@@ -1372,6 +1376,13 @@ static void sx1231_channel(int8_t channel)
     }
 
     int state = radio_hoperf->setFrequency(frequency / 1000000.0);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[RF69] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
 
     sx1231_channel_prev = channel;
     /* restart Rx upon a channel switch */
@@ -1427,7 +1438,21 @@ static void sx1231_setup()
 
   float br, fdev, bw;
 
+#if RADIOLIB_DEBUG_BASIC
+  Serial.print(F("[RF69] Initializing ... "));
+#endif
+
   state = radio_hoperf->begin(); // start FSK mode
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+#endif
 
   switch (rl_protocol->bitrate)
   {
@@ -1440,6 +1465,17 @@ static void sx1231_setup()
     break;
   }
   state = radio_hoperf->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[RF69] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[RF69] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[RF69] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
 
   switch (rl_protocol->deviation)
   {
@@ -1460,31 +1496,51 @@ static void sx1231_setup()
   }
   state = radio_hoperf->setFrequencyDeviation(fdev);
 
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+    Serial.println(F("[RF69] Selected frequency deviation is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
   switch (rl_protocol->bandwidth)
   {
   case RF_RX_BANDWIDTH_SS_50KHZ:
-    bw = 117.3;
+    bw = 100.0;
     break;
   case RF_RX_BANDWIDTH_SS_62KHZ:
-    bw = 156.2;
+    bw = 125.0;
     break;
   case RF_RX_BANDWIDTH_SS_100KHZ:
-    bw = 234.3;
+    bw = 200.0;
     break;
   case RF_RX_BANDWIDTH_SS_166KHZ:
-    bw = 312.0;
+    bw = 333.3;
     break;
   case RF_RX_BANDWIDTH_SS_200KHZ:
+    bw = 400.0;
+    break;
   case RF_RX_BANDWIDTH_SS_250KHZ:
   case RF_RX_BANDWIDTH_SS_1567KHZ:
-    bw = 467.0;
+    bw = 500.0;
     break;
   case RF_RX_BANDWIDTH_SS_125KHZ:
   default:
-    bw = 234.3;
+    bw = 250.0;
     break;
   }
   state = radio_hoperf->setRxBandwidth(bw);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_RX_BANDWIDTH) {
+    Serial.println(F("[RF69] Selected receiver bandwidth is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[RF69] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[RF69] Decrease bit rate to set this receiver bandwidth."));
+    while (true) { delay(10); }
+  }
+#endif
 
   state = radio_hoperf->setEncoding(RADIOLIB_ENCODING_NRZ);
   state = radio_hoperf->setPreambleLength(rl_protocol->preamble_size * 8);
@@ -1541,6 +1597,13 @@ static void sx1231_setup()
                                       (size_t)    rl_protocol->syncword_size);
   }
 
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+    Serial.println(F("[RF69] Selected sync word is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
   float txpow;
 
   switch(settings->txpower)
@@ -1570,7 +1633,15 @@ static void sx1231_setup()
     break;
   }
 
-  state = radio_hoperf->setOutputPower(txpow);
+  bool highPower = (sx1231_chip_rev_cache == RADIOLIB_SX123X_CHIP_REVISION_2_D);
+  state = radio_hoperf->setOutputPower(txpow, highPower);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    Serial.println(F("[RF69] Selected output power is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
 
   radio_hoperf->setPacketReceivedAction(sx1231_receive_handler);
 }
@@ -1897,14 +1968,9 @@ static bool sx1231_transmit()
 
     memset(txPacket.payload, 0, sizeof(txPacket.payload));
 
-#if 0
+#if RADIOLIB_DEBUG_BASIC
     // the packet was successfully transmitted
     Serial.println(F("success!"));
-
-    // print measured data rate
-    Serial.print(F("[SX1231] Datarate:\t"));
-    Serial.print(radio_hoperf->getDataRate());
-    Serial.println(F(" bps"));
 
   } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
     // the supplied packet was longer than 256 bytes
@@ -1929,5 +1995,164 @@ static void sx1231_shutdown()
   int state = radio_hoperf->sleep();
 }
 #endif /* EXCLUDE_SX1231 */
+
+#if !defined(EXCLUDE_SI443X)
+
+static bool si4432_probe(void);
+static void si4432_setup(void);
+static void si4432_channel(int8_t);
+static bool si4432_receive(void);
+static bool si4432_transmit(void);
+static void si4432_shutdown(void);
+
+const rfchip_ops_t si4432_ops = {
+  RF_IC_SI4432,
+  "SI4432",
+  si4432_probe,
+  si4432_setup,
+  si4432_channel,
+  si4432_receive,
+  si4432_transmit,
+  si4432_shutdown
+};
+
+Si4432 *radio_silabs;
+
+static u1_t si4432_readReg (u1_t addr) {
+#if defined(USE_BASICMAC)
+    hal_spi_select(1);
+#else
+    hal_pin_nss(0);
+#endif
+    hal_spi(addr & 0x7F);
+    u1_t val = hal_spi(0x00);
+#if defined(USE_BASICMAC)
+    hal_spi_select(0);
+#else
+    hal_pin_nss(1);
+#endif
+    return val;
+}
+
+static bool si4432_probe()
+{
+  u1_t v, v_reset;
+
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  v_reset = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  v = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
+
+  pinMode(lmic_pins.nss, INPUT);
+  RadioSPI.end();
+
+  if (v == RADIOLIB_SI443X_DEVICE_VERSION) {
+
+    if (v_reset == RADIOLIB_SI443X_DEVICE_VERSION) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
+static void si4432_channel(int8_t channel)
+{
+
+}
+
+static void si4432_setup()
+{
+  int state;
+
+  SoC->SPI_begin();
+
+  uint32_t irq  = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.busy;
+
+  mod = new Module(lmic_pins.nss, irq, lmic_pins.rst, RADIOLIB_NC, RadioSPI);
+  radio_silabs = new Si4432(mod);
+
+  switch (settings->rf_protocol)
+  {
+  case RF_PROTOCOL_OGNTP:
+    rl_protocol     = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
+    break;
+  case RF_PROTOCOL_P3I:
+    rl_protocol     = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
+    break;
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    rl_protocol     = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+    break;
+#endif /* ENABLE_ADSL */
+  case RF_PROTOCOL_LEGACY:
+  default:
+    rl_protocol     = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
+    /*
+     * Enforce legacy protocol setting for SX1231
+     * if other value (UAT) left in EEPROM from other (UATM) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_LEGACY;
+    break;
+  }
+
+  RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
+
+  float br, fdev, bw;
+
+#if RADIOLIB_DEBUG_BASIC
+  Serial.print(F("[RF69] Initializing ... "));
+#endif
+
+  state = radio_silabs->begin(); // start FSK mode
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+#endif
+
+}
+
+static bool si4432_receive()
+{
+  return false;
+}
+
+static bool si4432_transmit()
+{
+  return false;
+}
+
+static void si4432_shutdown()
+{
+  int state = radio_silabs->sleep();
+}
+#endif /* EXCLUDE_SI443X */
 
 #endif /* USE_RADIOLIB */

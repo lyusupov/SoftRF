@@ -235,6 +235,34 @@ void handleSettings() {
     (settings->rf_protocol == RF_PROTOCOL_APRS     ? "selected" : ""),
      RF_PROTOCOL_APRS, prol_proto_desc.name
     );
+  } else if (hw_info.rf == RF_IC_SX1231 ||
+             hw_info.rf == RF_IC_SI4432) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Protocol</th>\
+<td align=right>\
+<select name='protocol'>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>"
+#if defined(ENABLE_ADSL)
+"<option %s value='%d'>%s</option>"
+#else
+"<!--<option %s value='%d'>%s</option>-->"
+#endif /* ENABLE_ADSL */
+"</select>\
+</td>\
+</tr>"),
+    (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? "selected" : ""),
+     RF_PROTOCOL_LEGACY, legacy_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_OGNTP    ? "selected" : ""),
+     RF_PROTOCOL_OGNTP, ogntp_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_P3I      ? "selected" : ""),
+     RF_PROTOCOL_P3I, p3i_proto_desc.name,
+    (settings->rf_protocol == RF_PROTOCOL_ADSL_860 ? "selected" : ""),
+     RF_PROTOCOL_ADSL_860, adsl_proto_desc.name
+    );
   } else {
     snprintf_P ( offset, size,
       PSTR("\
