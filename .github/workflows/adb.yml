@@ -21,12 +21,13 @@ jobs:
       - uses: actions/checkout@v4
 
       #- name: Setup tmate session
-      #  uses: mxschmitt/action-tmate@v3
+      uses: mxschmitt/action-tmate@v3
 
       - name: Run install
         run: |
             sudo apt-get update ;
-            sudo apt-get install python2 coreutils ;
+            sudo apt-get install python2-minimal coreutils ;
+            sudo apt-get install libjson-xs-perl libio-socket-ssl-perl ;
 
       - name: Run script
         run: |
