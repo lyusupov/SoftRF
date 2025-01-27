@@ -41,6 +41,7 @@ jobs:
             cd $GITHUB_WORKSPACE/software/utils ;
             rm -f data/ogn.cdb data/ogn.md5 ;
             rm -f data/fln.cdb data/fln.md5 ;
+            mkdir -p db data ;
             sh ogn.sh ;
             mv ogn.db db/ ;
             mv ogn.cdb data/ ;
