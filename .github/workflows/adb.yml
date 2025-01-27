@@ -23,6 +23,11 @@ jobs:
       #- name: Setup tmate session
       #  uses: mxschmitt/action-tmate@v3
 
+      - name: Run install
+        run: |
+            sudo apt-get update ;
+            sudo apt-get install python2.7 coreutils ;
+
       - name: Run script
         run: |
             cd $GITHUB_WORKSPACE/software/utils ;
