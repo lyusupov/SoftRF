@@ -55,3 +55,11 @@ jobs:
             md5sum data/fln.cdb > data/fln.md5 ;
             chmod a-w data/fln.cdb data/fln.md5 ;
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Data
+          path: |
+            software/utils/db/
+            software/utils/data/
+          if-no-files-found: warn
+
