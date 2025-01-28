@@ -62,7 +62,7 @@ jobs:
           name: Data
           path: |
             software/utils/db/
-            software/utils/data/
+            software/utils/cdb/
             software/utils/README.txt
           if-no-files-found: warn
 
