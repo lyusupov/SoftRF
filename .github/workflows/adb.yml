@@ -1,9 +1,9 @@
-name: Create aircraft data
+name: Create aircrafts data
 
 # Controls when the workflow will run
 on:
   schedule:
-    - cron: "0 6,18 * * *"
+    - cron: "0 3,15 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -54,8 +54,10 @@ jobs:
             # md5sum db/fln.db > db/fln.md5 ;
             # md5sum cdb/fln.cdb > cdb/fln.md5 ;
             # chmod a-w cdb/fln.cdb cdb/fln.md5 ;
-            echo 'Use data files in "db"  folder with SkyView EZ' > README.txt
-            echo 'Use data files in "cdb" folder with SkyView Pico, Badge or Prime Mk3 Editions' >> README.txt
+            date >  README.txt ;
+            echo >> README.txt ;
+            echo 'Use data files in "db"  folder with SkyView EZ' >> README.txt ;
+            echo 'Use data files in "cdb" folder with SkyView Pico, Badge or Prime Mk3 Editions' >> README.txt ;
 
       - uses: actions/upload-artifact@v4
         with:
