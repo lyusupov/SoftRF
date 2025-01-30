@@ -42,6 +42,7 @@ jobs:
             # rm -f cdb/ogn.cdb cdb/ogn.md5 ;
             # rm -f cdb/fln.cdb cdb/fln.md5 ;
             mkdir -p db cdb ;
+            wget -P db https://github.com/lyusupov/SoftRF/raw/refs/heads/master/software/data/Aircrafts/icao.db ;
             sh ogn.sh ;
             mv ogn.db db/ ;
             mv ogn.cdb cdb/ ;
