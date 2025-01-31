@@ -530,6 +530,16 @@ static void lr11xx_setup()
   float Vtcxo;
   uint64_t eui_le = __builtin_bswap64(lr11xx_eui_be);
 
+  /*
+   *  Product/Module |   IC   |       EUI          | Use case
+   *  ---------------+--------+--------------------+-----------
+   *  Seeed T1000-E  | LR1110 | TBD                | Card
+   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Standalone
+   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f0182465 | Standalone
+   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f018276a | Prime Mk3
+   *  HPDTeK HPD-16E | LR1121 | TBD                | Badge
+   */
+
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_STANDALONE:
