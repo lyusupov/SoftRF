@@ -1228,21 +1228,329 @@ const rfchip_ops_t cc1101_ops = {
 
 CC1101 *radio_ti;
 
+static int8_t cc1101_channel_prev    = (int8_t) -1;
+
+static volatile bool cc1101_receive_complete = false;
+
+static bool cc1101_receive_active    = false;
+static bool cc1101_transmit_complete = false;
+
+static u1_t cc1101_readStatusReg (u1_t addr) {
+#if defined(USE_BASICMAC)
+    hal_spi_select(1);
+#else
+    hal_pin_nss(0);
+#endif
+    hal_spi(addr | 0xC0);
+    u1_t val = hal_spi(0x00);
+#if defined(USE_BASICMAC)
+    hal_spi_select(0);
+#else
+    hal_pin_nss(1);
+#endif
+
+    return val;
+}
+
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+#if defined(ESP8266) || defined(ESP32)
+  ICACHE_RAM_ATTR
+#endif
+void cc1101_receive_handler(void) {
+  cc1101_receive_complete = true;
+}
+
 static bool cc1101_probe()
 {
-  bool success = false;
+  u1_t v;
 
-  return success;
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  v = cc1101_readStatusReg(RADIOLIB_CC1101_REG_VERSION);
+
+  pinMode(lmic_pins.nss, INPUT);
+  RadioSPI.end();
+
+#if 0
+    Serial.print("CC1101 version = "); Serial.println(v, HEX);
+#endif
+
+  if (v == RADIOLIB_CC1101_VERSION_CURRENT ||
+      v == RADIOLIB_CC1101_VERSION_LEGACY  ||
+      v == RADIOLIB_CC1101_VERSION_CLONE) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 static void cc1101_channel(int8_t channel)
 {
+  if (channel != -1 && channel != cc1101_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
 
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
+
+    int state = radio_ti->setFrequency(frequency / 1000000.0);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[CC1101] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    cc1101_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    cc1101_receive_active = false;
+  }
 }
 
 static void cc1101_setup()
 {
+  int state;
 
+  SoC->SPI_begin();
+
+  uint32_t gdo0  = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                   RADIOLIB_NC : lmic_pins.busy;
+  uint32_t gdo2  = lmic_pins.dio[0] == LMIC_UNUSED_PIN ?
+                   RADIOLIB_NC : lmic_pins.dio[0];
+
+  mod = new Module(lmic_pins.nss, gdo0, RADIOLIB_NC, gdo2, RadioSPI);
+  radio_ti = new CC1101(mod);
+
+  switch (settings->rf_protocol)
+  {
+  case RF_PROTOCOL_OGNTP:
+    rl_protocol     = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
+    break;
+  case RF_PROTOCOL_P3I:
+    rl_protocol     = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
+    break;
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    rl_protocol     = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+    break;
+#endif /* ENABLE_ADSL */
+  case RF_PROTOCOL_LEGACY:
+  default:
+    rl_protocol     = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
+    /*
+     * Enforce legacy protocol setting for SX1231
+     * if other value (UAT) left in EEPROM from other (UATM) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_LEGACY;
+    break;
+  }
+
+  RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
+
+  float br, fdev, bw;
+
+#if RADIOLIB_DEBUG_BASIC
+  Serial.print(F("[CC1101] Initializing ... "));
+#endif
+
+  state = radio_ti->begin(); // start FSK mode
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while (true) { delay(10); }
+  }
+#endif
+
+  switch (rl_protocol->bitrate)
+  {
+  case RF_BITRATE_38400:
+    br = 38.4;
+    break;
+  case RF_BITRATE_100KBPS:
+  default:
+    br = 100.0;
+    break;
+  }
+  state = radio_ti->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[CC1101] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[CC1101] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[CC1101] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
+
+  switch (rl_protocol->deviation)
+  {
+  case RF_FREQUENCY_DEVIATION_9_6KHZ:
+    fdev = 9.6;
+    break;
+  case RF_FREQUENCY_DEVIATION_19_2KHZ:
+    fdev = 19.2;
+    break;
+  case RF_FREQUENCY_DEVIATION_25KHZ:
+    fdev = 25.0;
+    break;
+  case RF_FREQUENCY_DEVIATION_50KHZ:
+  case RF_FREQUENCY_DEVIATION_NONE:
+  default:
+    fdev = 50.0;
+    break;
+  }
+  state = radio_ti->setFrequencyDeviation(fdev);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+    Serial.println(F("[CC1101] Selected frequency deviation is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  switch (rl_protocol->bandwidth)
+  {
+  case RF_RX_BANDWIDTH_SS_50KHZ:
+    bw = 100.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_62KHZ:
+    bw = 125.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_100KHZ:
+    bw = 200.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_166KHZ:
+    bw = 333.3;
+    break;
+  case RF_RX_BANDWIDTH_SS_200KHZ:
+    bw = 400.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_250KHZ:
+  case RF_RX_BANDWIDTH_SS_1567KHZ:
+    bw = 500.0;
+    break;
+  case RF_RX_BANDWIDTH_SS_125KHZ:
+  default:
+    bw = 250.0;
+    break;
+  }
+  state = radio_ti->setRxBandwidth(bw);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_RX_BANDWIDTH) {
+    Serial.println(F("[CC1101] Selected receiver bandwidth is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[CC1101] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[CC1101] Decrease bit rate to set this receiver bandwidth."));
+    while (true) { delay(10); }
+  }
+#endif
+
+  state = radio_ti->setEncoding(RADIOLIB_ENCODING_NRZ);
+  state = radio_ti->setPreambleLength(rl_protocol->preamble_size * 8, 0);
+  state = radio_ti->setDataShaping(RADIOLIB_SHAPING_0_5);
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  case RF_CHECKSUM_TYPE_CCITT_1D02:
+  case RF_CHECKSUM_TYPE_CRC8_107:
+  case RF_CHECKSUM_TYPE_RS:
+    /* CRC is driven by software */
+    state = radio_ti->setCrcFiltering(0);
+    break;
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+  default:
+    state = radio_ti->setCrcFiltering(0);
+    break;
+  }
+
+  size_t pkt_size = rl_protocol->payload_offset + rl_protocol->payload_size +
+                    rl_protocol->crc_size;
+
+  switch (rl_protocol->whitening)
+  {
+  case RF_WHITENING_MANCHESTER:
+    pkt_size += pkt_size;
+    break;
+  case RF_WHITENING_PN9:
+  case RF_WHITENING_NONE:
+  case RF_WHITENING_NICERF:
+  default:
+    break;
+  }
+  state = radio_ti->fixedPacketLengthMode(pkt_size);
+
+  state = radio_ti->disableAddressFiltering();
+
+  state = radio_ti->setSyncWord((uint8_t *) rl_protocol->syncword, 2); /* TBD */
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+    Serial.println(F("[CC1101] Selected sync word is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  float txpow;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    /* Load regional max. EIRP at first */
+    txpow = RF_FreqPlan.MaxTxPower;
+
+    if (txpow > 12)
+      txpow = 12;
+
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    txpow = 2;
+    break;
+  }
+
+  state = radio_ti->setOutputPower(txpow);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    Serial.println(F("[CC1101] Selected output power is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  radio_ti->setPacketReceivedAction(cc1101_receive_handler);
 }
 
 static bool cc1101_receive()
@@ -2122,7 +2430,7 @@ static void si4432_setup()
   float br, fdev, bw;
 
 #if RADIOLIB_DEBUG_BASIC
-  Serial.print(F("[RF69] Initializing ... "));
+  Serial.print(F("[Si4432] Initializing ... "));
 #endif
 
   state = radio_silabs->begin(); // start FSK mode

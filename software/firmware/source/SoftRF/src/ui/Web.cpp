@@ -236,7 +236,8 @@ void handleSettings() {
      RF_PROTOCOL_APRS, prol_proto_desc.name
     );
   } else if (hw_info.rf == RF_IC_SX1231 ||
-             hw_info.rf == RF_IC_SI4432) {
+             hw_info.rf == RF_IC_SI4432 ||
+             hw_info.rf == RF_IC_CC1101) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
