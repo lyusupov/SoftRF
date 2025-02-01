@@ -579,15 +579,9 @@ static void lr11xx_setup()
     state = radio_semtech->begin();    // start LoRa mode (and disable FSK)
 #endif
 #if USE_LR11XX
-#if RADIOLIB_VERSION_MAJOR == 6
-    state = radio_semtech->begin(125.0, 9, 7,
-                                 RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE,
-                                 10, 8, Vtcxo);
-#else
     state = radio_semtech->begin(125.0, 9, 7,
                                  RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE,
                                  8, Vtcxo);
-#endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
     switch (RF_FreqPlan.Bandwidth)
@@ -629,11 +623,7 @@ static void lr11xx_setup()
     state = radio_semtech->beginFSK(); // start FSK mode (and disable LoRa)
 #endif
 #if USE_LR11XX
-#if RADIOLIB_VERSION_MAJOR == 6
-    state = radio_semtech->beginGFSK(4.8, 5.0, 156.2, 10, 16, Vtcxo);
-#else
     state = radio_semtech->beginGFSK(4.8, 5.0, 156.2, 16, Vtcxo);
-#endif /* RADIOLIB_VERSION_MAJOR */
 #endif
 
     switch (rl_protocol->bitrate)
@@ -779,8 +769,6 @@ static void lr11xx_setup()
     break;
   }
 
-  state = radio_semtech->setOutputPower(txpow);
-
 #if USE_SX1262
   uint32_t rxe = lmic_pins.rxe == LMIC_UNUSED_PIN ? RADIOLIB_NC : lmic_pins.rxe;
   uint32_t txe = lmic_pins.txe == LMIC_UNUSED_PIN ? RADIOLIB_NC : lmic_pins.txe;
@@ -791,6 +779,8 @@ static void lr11xx_setup()
   }
 
   state = radio_semtech->setCurrentLimit(100.0);
+
+  state = radio_semtech->setOutputPower(txpow);
 #endif
 
 #if USE_LR11XX
@@ -802,19 +792,23 @@ static void lr11xx_setup()
 #else
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_seeed, rfswitch_table_seeed);
 #endif
+    state = radio_semtech->setOutputPower(txpow, false);
     break;
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui_le == 0x0016c001f047ac30)
+    if (eui_le == 0x0016c001f047ac30) {
       /* Ebyte E80-900M2213S */
 #if 1
       radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
 #else
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
 #endif
-    else
+      state = radio_semtech->setOutputPower(txpow, false);
+    } else {
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
+      state = radio_semtech->setOutputPower(txpow, true);
+    }
     break;
 
   case SOFTRF_MODEL_NEO:
@@ -822,6 +816,7 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_PRIME_MK3:
   default:
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
+    state = radio_semtech->setOutputPower(txpow, true);
     break;
   }
 #endif
