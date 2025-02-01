@@ -1441,27 +1441,29 @@ static void cc1101_setup()
   switch (rl_protocol->bandwidth)
   {
   case RF_RX_BANDWIDTH_SS_50KHZ:
-    bw = 100.0;
+    bw = 102.0;
     break;
   case RF_RX_BANDWIDTH_SS_62KHZ:
-    bw = 125.0;
+    bw = 135.0;
     break;
   case RF_RX_BANDWIDTH_SS_100KHZ:
-    bw = 200.0;
+    bw = 203.0;
     break;
   case RF_RX_BANDWIDTH_SS_166KHZ:
-    bw = 333.3;
+    bw = 406.0;
     break;
   case RF_RX_BANDWIDTH_SS_200KHZ:
-    bw = 400.0;
+    bw = 406.0;
     break;
   case RF_RX_BANDWIDTH_SS_250KHZ:
+    bw = 541.0;
+    break;
   case RF_RX_BANDWIDTH_SS_1567KHZ:
-    bw = 500.0;
+    bw = 812.0;
     break;
   case RF_RX_BANDWIDTH_SS_125KHZ:
   default:
-    bw = 250.0;
+    bw = 270.0;
     break;
   }
   state = radio_ti->setRxBandwidth(bw);
@@ -1513,18 +1515,19 @@ static void cc1101_setup()
   default:
     break;
   }
-  state = radio_ti->fixedPacketLengthMode(pkt_size);
 
-  state = radio_ti->disableAddressFiltering();
-
-  state = radio_ti->setSyncWord((uint8_t *) rl_protocol->syncword, 2); /* TBD */
-
+  state = radio_ti->setSyncWord((uint8_t *) rl_protocol->syncword, 2);
 #if RADIOLIB_DEBUG_BASIC
   if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
     Serial.println(F("[CC1101] Selected sync word is invalid for this module!"));
     while (true) { delay(10); }
   }
 #endif
+
+  pkt_size += (rl_protocol->syncword_size - 2);
+  state = radio_ti->fixedPacketLengthMode(pkt_size);
+
+  state = radio_ti->disableAddressFiltering();
 
   float txpow;
 
@@ -1535,14 +1538,14 @@ static void cc1101_setup()
     /* Load regional max. EIRP at first */
     txpow = RF_FreqPlan.MaxTxPower;
 
-    if (txpow > 12)
-      txpow = 12;
+    if (txpow > 10)
+      txpow = 10;
 
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
   default:
-    txpow = 2;
+    txpow = 0;
     break;
   }
 
@@ -1565,7 +1568,171 @@ static bool cc1101_receive()
 
 static bool cc1101_transmit()
 {
-  return false;
+  u1_t crc8;
+  u2_t crc16;
+  u1_t i;
+
+  bool success = false;
+
+  if (RF_tx_size <= 0) {
+    return success;
+  }
+
+  cc1101_receive_active = false;
+  cc1101_transmit_complete = false;
+
+  size_t PayloadLen = 0;
+
+  if (rl_protocol->syncword_size > 2) {
+    for (i=2; i < rl_protocol->syncword_size; i++) {
+      txPacket.payload[PayloadLen++] = rl_protocol->syncword[i];
+    }
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  switch (rl_protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 24) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 16) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  8) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    txPacket.payload[PayloadLen++] = rl_protocol->payload_size;
+
+    /* insert byte with CRC-8 seed value when necessary */
+    if (rl_protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
+      txPacket.payload[PayloadLen++] = crc8;
+    }
+
+    break;
+  case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
+  default:
+    break;
+  }
+
+  for (i=0; i < RF_tx_size; i++) {
+
+    switch (rl_protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
+      break;
+    case RF_WHITENING_MANCHESTER:
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
+      PayloadLen++;
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
+      break;
+    case RF_WHITENING_NONE:
+    default:
+      txPacket.payload[PayloadLen] = TxBuffer[i];
+      break;
+    }
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(txPacket.payload[PayloadLen]));
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(TxBuffer[i]));
+      } else {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(txPacket.payload[PayloadLen]));
+      }
+      break;
+    }
+
+    PayloadLen++;
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    txPacket.payload[PayloadLen++] = crc8;
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
+      PayloadLen++;
+    } else {
+      txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
+      txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
+    }
+    break;
+  }
+
+  txPacket.len = PayloadLen;
+
+  int state = radio_ti->transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+
+  if (state == RADIOLIB_ERR_NONE) {
+
+    success = true;
+
+    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+
+#if RADIOLIB_DEBUG_BASIC
+    // the packet was successfully transmitted
+    Serial.println(F("success!"));
+
+  } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
+    // the supplied packet was longer than 256 bytes
+    Serial.println(F("too long!"));
+
+  } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
+    // timeout occured while transmitting packet
+    Serial.println(F("timeout!"));
+
+  } else {
+    // some other error occurred
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+#endif
+  }
+
+  return success;
 }
 
 static void cc1101_shutdown()

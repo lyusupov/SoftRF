@@ -68,4 +68,5 @@ jobs:
             software/utils/cdb/
             software/utils/README.txt
           if-no-files-found: warn
+          retention-days: 7
 
