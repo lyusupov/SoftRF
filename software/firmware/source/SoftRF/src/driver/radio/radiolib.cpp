@@ -533,11 +533,11 @@ static void lr11xx_setup()
   /*
    *  Product/Module |   IC   |       EUI          | Use case
    *  ---------------+--------+--------------------+-----------
-   *  Seeed T1000-E  | LR1110 | TBD                | Card
-   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Standalone
    *  HPDTeK HPD-16E | LR1121 | 0x0016c001f0182465 | Standalone
+   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f01824af | Badge
    *  HPDTeK HPD-16E | LR1121 | 0x0016c001f018276a | Prime Mk3
-   *  HPDTeK HPD-16E | LR1121 | TBD                | Badge
+   *  Seeed T1000-E  | LR1110 | 0x0016c001f03a86ab | Card
+   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Standalone
    */
 
   switch (hw_info.model)
