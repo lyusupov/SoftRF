@@ -13,7 +13,7 @@ Follow [**this link**](https://github.com/lyusupov/SoftRF/actions/workflows/adb.
 The file is located in '**Artifacts**' section.
 
 > [!IMPORTANT]
-> [Artifact download](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/storing-and-sharing-data-from-a-workflow) only work for GitHub registered users. Read [this ticket](https://github.com/actions/upload-artifact/issues/51) for more details.
+> [Artifact download](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/storing-and-sharing-data-from-a-workflow) is only available for registered GitHub users. Read [this ticket](https://github.com/actions/upload-artifact/issues/51) for more details.
 
 <br>
 
