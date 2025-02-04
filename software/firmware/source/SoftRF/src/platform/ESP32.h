@@ -59,6 +59,7 @@
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || \
       defined(CONFIG_IDF_TARGET_ESP32C6) || \
       defined(CONFIG_IDF_TARGET_ESP32H2) || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -94,7 +95,8 @@
  */
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
 #define EXCLUDE_LED_RING
-#elif !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+#elif !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+      !defined(CONFIG_IDF_TARGET_ESP32C6) && \
       !defined(CONFIG_IDF_TARGET_ESP32H2) && \
       !defined(CONFIG_IDF_TARGET_ESP32P4)
 #define USE_NEOPIXELBUS_LIBRARY
@@ -147,6 +149,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_LED        19 /* D1 */
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_LED        3 /* D1 */
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
@@ -278,6 +282,7 @@ enum esp32_board_id {
   ESP32_S3_DEVKIT,
   ESP32_C2_DEVKIT,
   ESP32_C3_DEVKIT,
+  ESP32_C5_DEVKIT,
   ESP32_C6_DEVKIT,
   ESP32_H2_DEVKIT,
   ESP32_P4_DEVKIT,
@@ -364,7 +369,9 @@ struct rst_info {
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
-#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || \
+      defined(CONFIG_IDF_TARGET_ESP32C6)
 #if ARDUINO_USB_CDC_ON_BOOT
 //#define USE_RADIOLIB
 #else
@@ -449,12 +456,14 @@ extern const USB_Device_List_t supported_USB_devices[];
 #endif /* USE_USB_HOST */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
       defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || \
       defined(CONFIG_IDF_TARGET_ESP32C6) || \
       defined(CONFIG_IDF_TARGET_ESP32H2) || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
 #undef USE_OLED
 #undef USE_TFT
 #if defined(CONFIG_IDF_TARGET_ESP32C2) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6) || \
     defined(CONFIG_IDF_TARGET_ESP32H2) || \
     defined(CONFIG_IDF_TARGET_ESP32P4)

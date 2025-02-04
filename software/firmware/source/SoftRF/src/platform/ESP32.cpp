@@ -26,11 +26,12 @@
 #include <esp_bt.h>
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2) && \
     !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <soc/rtc_cntl_reg.h>
-#endif /* CONFIG_IDF_TARGET_ESP32C6 || H2 || P4 */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
 #include <soc/efuse_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
@@ -497,7 +498,9 @@ static void ESP32_setup()
   esp_err_t ret = ESP_OK;
   uint8_t null_mac[6] = {0};
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)
   ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
   if (ret != ESP_OK) {
 #else
@@ -508,7 +511,7 @@ static void ESP32_setup()
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
-#endif /* CONFIG_IDF_TARGET_ESP32C6  || H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 */
     ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
@@ -620,6 +623,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     default:
       esp32_board   = ESP32_C3_DEVKIT;
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+    default:
+      esp32_board   = ESP32_C5_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     default:
       esp32_board   = ESP32_C6_DEVKIT;
@@ -683,6 +689,13 @@ static void ESP32_setup()
     case MakeFlashId(ST_ID, XMC_XM25QH32B):
     default:
       esp32_board   = ESP32_C3_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+    switch (flash_id)
+    {
+    default:
+      esp32_board   = ESP32_C5_DEVKIT;
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -1546,6 +1559,7 @@ static void ESP32_setup()
 
 #elif ARDUINO_USB_CDC_ON_BOOT && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
+       defined(CONFIG_IDF_TARGET_ESP32C5) || \
        defined(CONFIG_IDF_TARGET_ESP32C6) || \
        defined(CONFIG_IDF_TARGET_ESP32H2) || \
        defined(CONFIG_IDF_TARGET_ESP32P4))
@@ -2558,7 +2572,9 @@ static void* ESP32_getResetInfoPtr()
     case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
@@ -2597,7 +2613,9 @@ static String ESP32_getResetInfo()
     case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
@@ -2629,7 +2647,9 @@ static String ESP32_getResetReason()
     case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32H2)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("INTRUSION_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
@@ -3171,10 +3191,10 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || \
     defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
     if (settings->bluetooth != BLUETOOTH_NONE) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
       settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
 #else
       settings->bluetooth = BLUETOOTH_NONE;
@@ -4165,7 +4185,9 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
     }
-#elif defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32P4)
+#elif defined(CONFIG_IDF_TARGET_ESP32C5) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2) || \
+      defined(CONFIG_IDF_TARGET_ESP32P4)
     /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -5122,6 +5144,7 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 
 #if ARDUINO_USB_MODE && \
     (defined(CONFIG_IDF_TARGET_ESP32C3) || \
+     defined(CONFIG_IDF_TARGET_ESP32C5) || \
      defined(CONFIG_IDF_TARGET_ESP32C6) || \
      defined(CONFIG_IDF_TARGET_ESP32H2) || \
      defined(CONFIG_IDF_TARGET_ESP32P4))
@@ -5332,6 +5355,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+  SOC_ESP32C5,
+  "ESP32-C5",
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",
@@ -5382,6 +5408,7 @@ const SoC_ops_t ESP32_ops = {
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
       (defined(CONFIG_IDF_TARGET_ESP32C3) || \
+       defined(CONFIG_IDF_TARGET_ESP32C5) || \
        defined(CONFIG_IDF_TARGET_ESP32C6) || \
        defined(CONFIG_IDF_TARGET_ESP32H2) || \
        defined(CONFIG_IDF_TARGET_ESP32P4))

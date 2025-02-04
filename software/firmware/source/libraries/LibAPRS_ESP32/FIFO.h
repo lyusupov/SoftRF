@@ -10,6 +10,7 @@
 #if defined(ESP32) && \
    !defined(CONFIG_IDF_TARGET_ESP32C2) && \
    !defined(CONFIG_IDF_TARGET_ESP32C3) && \
+   !defined(CONFIG_IDF_TARGET_ESP32C5) && \
    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
    !defined(CONFIG_IDF_TARGET_ESP32H2) && \
    !defined(CONFIG_IDF_TARGET_ESP32P4)
