@@ -29,7 +29,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_INTERRUPTS	0
 #else
 #define NRF905_INTERRUPTS	1
@@ -58,7 +59,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_AM_SW		1
 #else
 #define NRF905_AM_SW		0
@@ -77,7 +79,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_COLLISION_AVOID	0
 #else
 #define NRF905_COLLISION_AVOID	1
@@ -204,7 +207,8 @@
 
 #elif defined(ARDUINO_ARCH_SAMD)    || defined(ARDUINO_ARCH_RP2040) || \
       defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS) || \
-      defined(ARDUINO_ARCH_CH32)    || defined(ARDUINO_ARCH_RP2350)
+      defined(ARDUINO_ARCH_CH32)    || defined(ARDUINO_ARCH_RP2350) || \
+      defined(ARDUINO_ARCH_ZEPHYR)
 
 // TBD
 #define TRX_EN    0   // Enable/standby pin
@@ -347,7 +351,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_FREQ			868400000UL
 #else
 #define NRF905_FREQ			433200000UL
@@ -364,7 +369,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_BAND			NRF905_BAND_868
 #else
 #define NRF905_BAND			NRF905_BAND_433
@@ -415,7 +421,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_3
 //#define NRF905_ADDR_SIZE	NRF905_ADDR_SIZE_2
 #else
@@ -430,7 +437,8 @@
     defined(ARDUINO_ARCH_ASR650X)  || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)   || defined(ARDUINO_ARCH_RENESAS) || \
     defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)    || \
-    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)
+    defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2350)  || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #define NRF905_PAYLOAD_SIZE	24
 #else
 #define NRF905_PAYLOAD_SIZE	32 //NRF905_MAX_PAYLOAD

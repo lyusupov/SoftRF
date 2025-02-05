@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
+#if defined(ARDUINO_ARCH_NRF52)  || defined(ARDUINO_ARCH_NRF52840) || \
+   (defined(ARDUINO_ARCH_ZEPHYR) && defined(NRF52840_XXAA))
 
 #ifndef PLATFORM_NRF52_H
 #define PLATFORM_NRF52_H
 
 #include <avr/dtostrf.h>
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 #include <pcf8563.h>
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -53,7 +54,11 @@
 
 #define SerialOutput            Serial1
 #define USBSerial               Serial
+#if !defined(ARDUINO_ARCH_ZEPHYR)
 #define Serial_GNSS_In          Serial2
+#else
+#define Serial_GNSS_In          Serial1 /* TBD */
+#endif /* ARDUINO_ARCH_ZEPHYR */
 #define Serial_GNSS_Out         Serial_GNSS_In
 #define UATSerial               Serial1
 
@@ -258,7 +263,7 @@ struct rst_info {
 #define USE_OGN_ENCRYPTION
 #define ENABLE_ADSL
 #define ENABLE_PROL
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 #define USE_BLE_MIDI
 #define ENABLE_REMOTE_ID
 #define USE_EXT_I2S_DAC
@@ -277,6 +282,11 @@ struct rst_info {
 #define USE_ARDUINOBLE
 #define EXCLUDE_IMU
 #define EXCLUDE_BME280AUX
+#if defined(ARDUINO_ARCH_ZEPHYR)
+#define EXCLUDE_BLUETOOTH
+#define EXCLUDE_EEPROM
+#undef USE_NMEALIB
+#endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 //#define EXCLUDE_PMU
 
@@ -302,11 +312,11 @@ struct rst_info {
 extern Adafruit_NeoPixel strip;
 #endif /* EXCLUDE_LED_RING */
 
-#if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX)
+#if !defined(PIN_SERIAL2_RX) && !defined(PIN_SERIAL2_TX) && !defined(ARDUINO_ARCH_ZEPHYR)
 extern Uart Serial2;
 #endif
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 extern PCF8563_Class *rtc;
 #endif /* ARDUINO_ARCH_MBED */
 extern const char *nRF52_Device_Manufacturer, *nRF52_Device_Model, *Hardware_Rev[];

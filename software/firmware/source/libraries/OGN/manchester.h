@@ -6,7 +6,8 @@
    (defined(ARDUINO_ARCH_RP2040)   && defined(ARDUINO_ARCH_MBED))  || \
    (defined(ARDUINO_ARCH_NRF52840) && defined(ARDUINO_ARCH_MBED))  || \
     defined(ARDUINO_ARCH_RENESAS)  || defined(ARDUINO_ARCH_SAMD)   || \
-    defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)
+    defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)   || \
+    defined(ARDUINO_ARCH_ZEPHYR)
 #include <avr/pgmspace.h>
 #endif
 

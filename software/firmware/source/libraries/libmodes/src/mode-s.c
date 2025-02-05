@@ -46,7 +46,8 @@
 
 static mag_t maglut[129*129];
 
-#if (defined(ENERGIA_ARCH_CC13X2) || defined(ARDUINO_ARCH_SILABS)) && !defined(M_PI)
+#if (defined(ENERGIA_ARCH_CC13X2)  ||  defined(ARDUINO_ARCH_SILABS) || \
+     defined(ARDUINO_ARCH_ZEPHYR)) && !defined(M_PI)
 #define M_PI                  3.14159265358979323846
 #endif /* ENERGIA_ARCH_CC13X2 */
 #else

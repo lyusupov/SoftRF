@@ -4,7 +4,7 @@
 
 #if !defined(ENERGIA_ARCH_CC13XX) && !defined(ENERGIA_ARCH_CC13X2)   && \
     !defined(ARDUINO_ARCH_NRF52)  && !defined(ARDUINO_ARCH_NRF52840) && \
-    !defined(ARDUINO_ARCH_SAMD)
+    !defined(ARDUINO_ARCH_SAMD)   && !defined(ARDUINO_ARCH_ZEPHYR)
 #include <pgmspace.h>
 #if defined(ARDUINO_ARCH_ESP32)
 #include "esp_idf_version.h"
@@ -19,7 +19,7 @@
 #else
 #include <avr/pgmspace.h>
 #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || \
-    defined(ARDUINO_ARCH_SAMD)
+    defined(ARDUINO_ARCH_SAMD)  || defined(ARDUINO_ARCH_ZEPHYR)
 #define	_AND		,
 #define	_CONST		const
 #define	_EXFUN(name, proto)		name proto
