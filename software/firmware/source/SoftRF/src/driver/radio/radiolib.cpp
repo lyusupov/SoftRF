@@ -537,7 +537,7 @@ static void lr11xx_setup()
    *  HPDTeK HPD-16E | LR1121 | 0x0016c001f01824af | Badge
    *  HPDTeK HPD-16E | LR1121 | 0x0016c001f018276a | Prime Mk3
    *  Seeed T1000-E  | LR1110 | 0x0016c001f03a86ab | Card
-   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Standalone
+   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Academy
    */
 
   switch (hw_info.model)
