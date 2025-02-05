@@ -39,6 +39,7 @@ jobs:
             'CubeCell:CubeCell:CubeCell-Board-PRO',
             'adafruit:nrf52:pca10056',
             'arduino:mbed_edge:edge_control',
+            'arduino:zephyr:nano33ble',
             'arduino:samd:mzero_bl',
             'arduino:avr:mega',
             'arduino:renesas_uno:minima',
@@ -491,6 +492,18 @@ jobs:
             mv Adafruit_TinyUSB_Arduino-${TINYUSB_VERSION} ch32v/libraries/Adafruit_TinyUSB_Arduino ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "arduino:zephyr:" ]]; then
+            arduino-cli config init ;
+            arduino-cli config add board_manager.additional_urls https://downloads.arduino.cc/packages/package_zephyr_index.json ;
+            arduino-cli core update-index ;
+            arduino-cli core install arduino:zephyr ;
+            # arduino-cli board attach -b $BOARD ;
+            wget https://github.com/facchinm/ArduinoBLE/archive/refs/heads/zephyr_hci.zip ;
+            unzip zephyr_hci.zip ;
+            rm zephyr_hci.zip ;
+            mv ArduinoBLE-zephyr_hci $HOME/Arduino/libraries/ ;
+            cd $GITHUB_WORKSPACE ;
+          fi
 
       - name: Run script
         run: |
@@ -580,6 +593,9 @@ jobs:
           if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
-          if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
+          if [[ "$BOARD" =~ "WCH:ch32v:"           ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "arduino:zephyr:"      ]]; then
+            arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
