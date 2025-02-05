@@ -286,6 +286,7 @@ struct rst_info {
 #define EXCLUDE_BLUETOOTH
 #define EXCLUDE_EEPROM
 #undef USE_NMEALIB
+#define USE_RADIOLIB
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 //#define EXCLUDE_PMU
