@@ -72,7 +72,7 @@
 
 #endif
 
-#if defined(ARDUINO_ARCH_MBED)
+#if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define log_e(...)
 #define log_i(...)
 #define log_d(...)
@@ -123,7 +123,7 @@ public:
 
 #if defined(NRF52840_XXAA) || defined(NRF52832_XXAA) || defined(ARDUINO_ARCH_NRF52840)
         if (__sda != 0xFF && __scl != 0xFF) {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
             __wire->setPins(__sda, __scl);
 #endif /* ARDUINO_ARCH_MBED */
         }
@@ -304,7 +304,7 @@ protected:
 #if defined(NRF52840_XXAA) || defined(NRF52832_XXAA) || defined(ARDUINO_ARCH_NRF52840)
             if (__sda != 0xFF && __scl != 0xFF) {
                 __wire->end();
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
                 __wire->setPins(__sda, __scl);
 #endif /* ARDUINO_ARCH_MBED */
             }

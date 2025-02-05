@@ -16,18 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
+#if defined(ARDUINO_ARCH_NRF52)  || defined(ARDUINO_ARCH_NRF52840) || \
+   (defined(ARDUINO_ARCH_ZEPHYR) && defined(NRF52840_XXAA))
 
 #include <SPI.h>
 #include <Wire.h>
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 #include <pcf8563.h>
 #include <Adafruit_SPIFlash.h>
 #include "Adafruit_TinyUSB.h"
 #include <Adafruit_SleepyDog.h>
 #endif /* ARDUINO_ARCH_MBED */
+#if !defined(ARDUINO_ARCH_ZEPHYR)
 #include <ArduinoJson.h>
+
 #include "nrf_wdt.h"
+#endif /* ARDUINO_ARCH_ZEPHYR */
 
 #include "../system/SoC.h"
 #include "../driver/RF.h"
@@ -42,7 +46,9 @@
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#if !defined(ARDUINO_ARCH_ZEPHYR)
 #include "../protocol/data/JSON.h"
+#endif /* ARDUINO_ARCH_ZEPHYR */
 #include "../system/Time.h"
 
 #include "uCDB.hpp"
@@ -134,7 +140,7 @@ const prototype_entry_t techo_prototype_boards[] = {
   { 0x6460429ea6fb7e39, NRF52_NORDIC_PCA10059,    EP_UNKNOWN,     0 },
 };
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 PCF8563_Class *rtc = nullptr;
 I2CBus        *i2c = nullptr;
 #endif /* ARDUINO_ARCH_MBED */
@@ -147,7 +153,7 @@ static bool ADB_is_open        = false;
 static bool screen_saver       = false;
 static bool nRF52_has_vff      = false; /* very first fix */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 RTC_Date fw_build_date_time = RTC_Date(__DATE__, __TIME__);
 
 static TaskHandle_t EPD_Task_Handle = NULL;
@@ -161,7 +167,9 @@ static TaskHandle_t EPD_Task_Handle = NULL;
 #define PIN_LED4  0 /* TBD */
 #endif /* ARDUINO_ARCH_MBED */
 
-#if !defined(ARDUINO_NRF52840_PCA10056) && !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_NRF52840_PCA10056) && \
+    !defined(ARDUINO_ARCH_MBED)         && \
+    !defined(ARDUINO_ARCH_ZEPHYR)
 #error "This nRF52 build variant is not supported!"
 #endif
 
@@ -230,7 +238,7 @@ static void TFT_backlight_adjust(uint32_t pin, uint8_t level)
 }
 #endif /* USE_TFT */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 static Adafruit_SPIFlash *SPIFlash = NULL;
 
 #define SFLASH_CMD_READ_CONFIG  0x15
@@ -264,7 +272,9 @@ FatVolume fatfs;
 
 #define NRF52_JSON_BUFFER_SIZE  1024
 
+#if !defined(ARDUINO_ARCH_ZEPHYR)
 StaticJsonBuffer<NRF52_JSON_BUFFER_SIZE> nRF52_jsonBuffer;
+#endif /* ARDUINO_ARCH_ZEPHYR */
 
 #if defined(USE_WEBUSB_SERIAL) || defined(USE_WEBUSB_SETTINGS)
 // USB WebUSB object
@@ -291,7 +301,7 @@ MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI_USB);
 #endif /* USE_USB_MIDI */
 
 ui_settings_t ui_settings = {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     .units        = UNITS_METRIC,
     .zoom         = ZOOM_MEDIUM,
     .protocol     = PROTOCOL_NMEA,
@@ -325,7 +335,7 @@ static unsigned long IMU_Time_Marker = 0;
 extern float IMU_g;
 #endif /* EXCLUDE_IMU */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 uCDB<FatVolume, File32> ucdb(fatfs);
 
 // Callback invoked when received READ10 command.
@@ -632,7 +642,7 @@ Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
                                                   NEO_GRB + NEO_KHZ800);
 #endif /* EXCLUDE_LED_RING */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 #include <ExtensionIOXL9555.hpp>
 ExtensionIOXL9555 *xl9555 = nullptr;
 bool nRF52_has_extension  = false;
@@ -672,7 +682,7 @@ static void nRF52_setup()
 {
   ui = &ui_settings;
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   uint32_t reset_reason = readResetReason();
 #else
   uint32_t reset_reason = 0; /* TBD */
@@ -796,7 +806,7 @@ static void nRF52_setup()
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
     delay(5);
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
 #endif /* ARDUINO_ARCH_MBED */
     Wire.begin();
@@ -816,7 +826,7 @@ static void nRF52_setup()
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
         pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_SENSE_HIGH);
 
         uint8_t sd_en;
@@ -837,7 +847,7 @@ static void nRF52_setup()
   }
 #endif /* EXCLUDE_PMU */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
@@ -893,7 +903,7 @@ static void nRF52_setup()
 
   Wire.end();
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   /* (Q)SPI flash init */
   Adafruit_FlashTransport_QSPI *ft = NULL;
 
@@ -950,7 +960,7 @@ static void nRF52_setup()
     if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
       NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
       pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       pinMode(SOC_GPIO_PIN_T114_BUTTON, INPUT_PULLUP_SENSE);
 
       uint8_t sd_en;
@@ -966,14 +976,14 @@ static void nRF52_setup()
       NRF_POWER->SYSTEMOFF = 1;
 #endif /* ARDUINO_ARCH_MBED */
     }
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     /* external bus */
     Wire.setPins(SOC_GPIO_PIN_T114_SDA_EXT, SOC_GPIO_PIN_T114_SCL_EXT);
 #endif /* ARDUINO_ARCH_MBED */
   }
 #endif /* USE_TFT */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
   USBDevice.setManufacturerDescriptor(nRF52_Device_Manufacturer);
   USBDevice.setProductDescriptor(nRF52_Device_Model);
@@ -1014,7 +1024,7 @@ static void nRF52_setup()
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       xl9555 = new ExtensionIOXL9555(Wire,
                                      SOC_GPIO_PIN_TULTIMA_SDA,
                                      SOC_GPIO_PIN_TULTIMA_SCL,
@@ -1241,7 +1251,7 @@ static void nRF52_setup()
       break;
   }
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   i2c = new I2CBus(Wire);
 
   if (nRF52_has_rtc && (i2c != nullptr)) {
@@ -1309,7 +1319,7 @@ static void nRF52_setup()
   }
 #endif /* EXCLUDE_IMU */
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (nRF52_has_spiflash) {
     spiflash_id = SPIFlash->getJEDECID();
 
@@ -1712,7 +1722,7 @@ static void nRF52_post_init()
 
 static void nRF52_loop()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   // Reload the watchdog
   if (nrf_wdt_started(NRF_WDT)) {
     Watchdog.reset();
@@ -1754,7 +1764,9 @@ static void nRF52_loop()
           Serial.println(F("Restart is in progress. Please, wait..."));
           Serial.println();
           Serial.flush();
+#if !defined(EXCLUDE_EEPROM)
           EEPROM_store();
+#endif /* EXCLUDE_EEPROM */
           RF_Shutdown();
           SoC->reset();
         }
@@ -1847,7 +1859,7 @@ static void nRF52_fini(int reason)
 {
   uint8_t sd_en;
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (nRF52_has_spiflash) {
     usb_msc.setUnitReady(false);
 //  usb_msc.end(); /* N/A */
@@ -1966,7 +1978,7 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_LILYGO_TULTIMA:
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       if (nRF52_has_extension) {
         xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_GNSS_TULTIMA_PWR, INPUT);
         xl9555->pinMode(ExtensionIOXL9555::I2C_EXP_PIN_SENS_TULTIMA_PWR, INPUT);
@@ -2020,7 +2032,7 @@ static void nRF52_fini(int reason)
 
   // pinMode(SOC_GPIO_PIN_BATTERY, INPUT);
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (i2c != nullptr) Wire.end();
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -2080,7 +2092,7 @@ static void nRF52_fini(int reason)
   case SOFTRF_SHUTDOWN_BUTTON:
   case SOFTRF_SHUTDOWN_LOWBAT:
     NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     pinMode(mode_button_pin, nRF52_board == NRF52_SEEED_T1000E ?
                              INPUT_SENSE_HIGH :
                              INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
@@ -2088,7 +2100,7 @@ static void nRF52_fini(int reason)
     break;
 #if defined(USE_SERIAL_DEEP_SLEEP)
   case SOFTRF_SHUTDOWN_NMEA:
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     pinMode(SOC_GPIO_PIN_CONS_RX, INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
 #endif /* ARDUINO_ARCH_MBED */
     break;
@@ -2099,7 +2111,7 @@ static void nRF52_fini(int reason)
 
   Serial.end();
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   (void) sd_softdevice_is_enabled(&sd_en);
 
   // Enter System OFF state
@@ -2115,7 +2127,7 @@ static void nRF52_fini(int reason)
 
 static void nRF52_reset()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (nrf_wdt_started(NRF_WDT)) {
     // When WDT is active - CRV, RREN and CONFIG are blocked
     // There is no way to stop/disable watchdog using source code
@@ -2209,7 +2221,7 @@ static String nRF52_getResetReason()
 
 static uint32_t nRF52_getFreeHeap()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   return dbgHeapTotal() - dbgHeapUsed();
 #else
   return 0; /* TBD */
@@ -2315,11 +2327,13 @@ static void nRF52_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool nRF52_EEPROM_begin(size_t size)
 {
+#if !defined(EXCLUDE_EEPROM)
   if (size > EEPROM.length()) {
     return false;
   }
 
   EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
 
   return true;
 }
@@ -2331,9 +2345,11 @@ static void nRF52_EEPROM_extension(int cmd)
   switch (cmd)
   {
     case EEPROM_EXT_STORE:
+#if !defined(EXCLUDE_EEPROM)
       for (int i=0; i<sizeof(ui_settings_t); i++) {
         EEPROM.write(sizeof(eeprom_t) + i, raw[i]);
       }
+#endif /* EXCLUDE_EEPROM */
       return;
     case EEPROM_EXT_DEFAULTS:
       ui->adapter      = 0;
@@ -2357,11 +2373,12 @@ static void nRF52_EEPROM_extension(int cmd)
       break;
     case EEPROM_EXT_LOAD:
     default:
+#if !defined(EXCLUDE_EEPROM)
       for (int i=0; i<sizeof(ui_settings_t); i++) {
         raw[i] = EEPROM.read(sizeof(eeprom_t) + i);
       }
-
-#if !defined(ARDUINO_ARCH_MBED)
+#endif /* EXCLUDE_EEPROM */
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       if ( nRF52_has_spiflash && FATFS_is_mounted ) {
         File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
@@ -2477,7 +2494,7 @@ static void nRF52_EEPROM_extension(int cmd)
 
 static void nRF52_SPI_begin()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
@@ -2512,7 +2529,7 @@ static void nRF52_SPI_begin()
 
 static void nRF52_swSer_begin(unsigned long baud)
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
     case NRF52_LILYGO_TULTIMA:
@@ -2554,7 +2571,7 @@ static void nRF52_swSer_enableRx(boolean arg)
   /* NONE */
 }
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 SemaphoreHandle_t Display_Semaphore;
 #endif /* ARDUINO_ARCH_MBED */
 unsigned long TaskInfoTime;
@@ -3055,7 +3072,7 @@ static void nRF52_Display_fini(int reason)
   }
 }
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 static bool nRF52_Display_lock()
 {
   bool rval = false;
@@ -3140,12 +3157,14 @@ static float nRF52_Battery_param(uint8_t param)
     case PMU_NONE:
     default:
       // Set the analog reference to 3.0V (default = 3.6V)
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       analogReference(AR_INTERNAL_3_0);
 #endif /* ARDUINO_ARCH_MBED */
 
       // Set the resolution to 12-bit (0..4095)
+#if !defined(ARDUINO_ARCH_ZEPHYR)
       analogReadResolution(12); // Can be 8, 10, 12 or 14
+#endif /* AARDUINO_ARCH_ZEPHYR */
 
       // Let the ADC settle
       delay(1);
@@ -3174,10 +3193,12 @@ static float nRF52_Battery_param(uint8_t param)
       voltage = analogRead(bat_adc_pin);
 
       // Set the ADC back to the default settings
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       analogReference(AR_DEFAULT);
 #endif /* ARDUINO_ARCH_MBED */
+#if !defined(ARDUINO_ARCH_ZEPHYR)
       analogReadResolution(10);
+#endif /* AARDUINO_ARCH_ZEPHYR */
 
       // Convert the raw value to compensated mv, taking the resistor-
       // divider into account (providing the actual LIPO voltage)
@@ -3218,14 +3239,14 @@ static void nRF52_UATModule_restart()
 
 static void nRF52_WDT_setup()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   Watchdog.enable(12000);
 #endif /* ARDUINO_ARCH_MBED */
 }
 
 static void nRF52_WDT_fini()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   // cannot disable nRF's WDT
   if (nrf_wdt_started(NRF_WDT)) {
     Watchdog.reset();
@@ -3426,7 +3447,7 @@ void line_state_callback(bool connected)
 
 static void nRF52_USB_setup()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (USBSerial && USBSerial != Serial) {
     USBSerial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
   }
@@ -3449,7 +3470,7 @@ static void nRF52_USB_loop()
 
 static void nRF52_USB_fini()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (USBSerial && USBSerial != Serial) {
     USBSerial.end();
   }
@@ -3535,7 +3556,7 @@ IODev_ops_t nRF52_USBSerial_ops = {
 
 static bool nRF52_ADB_setup()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (FATFS_is_mounted) {
     const char *fileName;
 
@@ -3565,7 +3586,7 @@ static bool nRF52_ADB_setup()
 
 static bool nRF52_ADB_fini()
 {
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (ADB_is_open) {
     ucdb.close();
     ADB_is_open = false;
@@ -3593,7 +3614,7 @@ static bool nRF52_ADB_query(uint8_t type, uint32_t id, char *buf, size_t size)
     return rval;
   }
 
-#if !defined(ARDUINO_ARCH_MBED)
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   snprintf(key, sizeof(key),"%06X", id);
 
   rt = ucdb.findKey(key, strlen(key));

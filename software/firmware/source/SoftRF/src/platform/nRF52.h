@@ -128,7 +128,7 @@ struct rst_info {
 #define ICM20948_ADDRESS      (0x68)
 #define BME280_ADDRESS        (0x77)
 
-#if defined(ARDUINO_ARCH_MBED)
+#if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
 
 #define STR_HELPER(x) #x
