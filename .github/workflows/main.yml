@@ -95,7 +95,7 @@ jobs:
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
-              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
+              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]] || [[ "$BOARD" =~ "arduino:zephyr:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
                 rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
