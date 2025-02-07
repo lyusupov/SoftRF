@@ -2075,7 +2075,9 @@ static void nRF52_fini(int reason)
   }
 
   // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
-  pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
+  pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP   :
+                           nRF52_board == NRF52_SEEED_T1000E       ? INPUT_PULLDOWN :
+                           INPUT);
   while (digitalRead(mode_button_pin) == (nRF52_board == NRF52_SEEED_T1000E ? HIGH : LOW));
   delay(100);
 
@@ -2094,8 +2096,8 @@ static void nRF52_fini(int reason)
     NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     pinMode(mode_button_pin, nRF52_board == NRF52_SEEED_T1000E ?
-                             INPUT_SENSE_HIGH :
-                             INPUT_PULLUP_SENSE /* INPUT_SENSE_LOW */);
+                             INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */ :
+                             INPUT_PULLUP_SENSE   /* INPUT_SENSE_LOW  */);
 #endif /* ARDUINO_ARCH_MBED */
     break;
 #if defined(USE_SERIAL_DEEP_SLEEP)
@@ -3365,7 +3367,9 @@ static void nRF52_Button_setup()
   }
 
   // Button(s) uses external pull up resistor.
-  pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP : INPUT);
+  pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP   :
+                           nRF52_board == NRF52_SEEED_T1000E       ? INPUT_PULLDOWN :
+                           INPUT);
   if (up_button_pin >= 0) { pinMode(up_button_pin, INPUT); }
 
   button_1.init(mode_button_pin, nRF52_board == NRF52_SEEED_T1000E ? LOW : HIGH);
