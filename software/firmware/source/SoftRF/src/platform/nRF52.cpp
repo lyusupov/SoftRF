@@ -827,7 +827,7 @@ static void nRF52_setup()
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
         pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-        pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_SENSE_HIGH);
+        pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
 
         uint8_t sd_en;
         (void) sd_softdevice_is_enabled(&sd_en);
