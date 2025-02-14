@@ -1362,7 +1362,7 @@ static void cc1101_setup()
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
-     * Enforce legacy protocol setting for SX1231
+     * Enforce legacy protocol setting for CC1101
      * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
@@ -2700,6 +2700,13 @@ const rfchip_ops_t si4432_ops = {
 
 Si4432 *radio_silabs;
 
+static int8_t si4432_channel_prev    = (int8_t) -1;
+
+static volatile bool si4432_receive_complete = false;
+
+static bool si4432_receive_active    = false;
+static bool si4432_transmit_complete = false;
+
 static u1_t si4432_readReg (u1_t addr) {
 #if defined(USE_BASICMAC)
     hal_spi_select(1);
@@ -2716,34 +2723,41 @@ static u1_t si4432_readReg (u1_t addr) {
     return val;
 }
 
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+#if defined(ESP8266) || defined(ESP32)
+  ICACHE_RAM_ATTR
+#endif
+void si4432_receive_handler(void) {
+  si4432_receive_complete = true;
+}
+
 static bool si4432_probe()
 {
-  u1_t v, v_reset;
-
   SoC->SPI_begin();
 
   lmic_hal_init (nullptr);
 
-  // manually reset radio
-  hal_pin_rst(0); // drive RST pin low
-  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+  hal_pin_rst(1); // drive SDN pin high
+  delay(1);
 
-  v_reset = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
+  hal_pin_rst(0); // drive SDN pin low
+  delay(100);
 
-  hal_pin_rst(2); // configure RST pin floating!
-  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+  u1_t v = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
 
-  v = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
+#if 1
+  Serial.print("v = "); Serial.println(v, HEX);
+#endif
 
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
+  hal_pin_rst(2); // configure SDN pin floating!
+
   if (v == RADIOLIB_SI443X_DEVICE_VERSION) {
-
-    if (v_reset == RADIOLIB_SI443X_DEVICE_VERSION) {
-      RF_SX12XX_RST_is_connected = false;
-    }
-
     return true;
   } else {
     return false;
@@ -2752,7 +2766,31 @@ static bool si4432_probe()
 
 static void si4432_channel(int8_t channel)
 {
+  if (channel != -1 && channel != si4432_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
 
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
+
+    int state = radio_silabs->setFrequency(frequency / 1000000.0);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[Si4432] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    si4432_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    si4432_receive_active = false;
+  }
 }
 
 static void si4432_setup()
@@ -2792,7 +2830,7 @@ static void si4432_setup()
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
-     * Enforce legacy protocol setting for SX1231
+     * Enforce legacy protocol setting for Si4432
      * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
@@ -2819,6 +2857,176 @@ static void si4432_setup()
   }
 #endif
 
+  switch (rl_protocol->bitrate)
+  {
+  case RF_BITRATE_38400:
+    br = 38.4;
+    break;
+  case RF_BITRATE_100KBPS:
+  default:
+    br = 100.0;
+    break;
+  }
+  state = radio_silabs->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[Si4432] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[Si4432] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[Si4432] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
+
+  switch (rl_protocol->deviation)
+  {
+  case RF_FREQUENCY_DEVIATION_9_6KHZ:
+    fdev = 9.6;
+    break;
+  case RF_FREQUENCY_DEVIATION_19_2KHZ:
+    fdev = 19.2;
+    break;
+  case RF_FREQUENCY_DEVIATION_25KHZ:
+    fdev = 25.0;
+    break;
+  case RF_FREQUENCY_DEVIATION_50KHZ:
+  case RF_FREQUENCY_DEVIATION_NONE:
+  default:
+    fdev = 50.0;
+    break;
+  }
+  state = radio_silabs->setFrequencyDeviation(fdev);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+    Serial.println(F("[Si4432] Selected frequency deviation is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  switch (rl_protocol->bandwidth)
+  {
+  case RF_RX_BANDWIDTH_SS_50KHZ:
+    bw = 100.0f;
+    break;
+  case RF_RX_BANDWIDTH_SS_62KHZ:
+    bw = 142.8f;
+    break;
+  case RF_RX_BANDWIDTH_SS_100KHZ:
+    bw = 225.1f;
+    break;
+  case RF_RX_BANDWIDTH_SS_166KHZ:
+    bw = 335.5f;
+    break;
+  case RF_RX_BANDWIDTH_SS_200KHZ:
+    bw = 420.2f;
+    break;
+  case RF_RX_BANDWIDTH_SS_250KHZ:
+  case RF_RX_BANDWIDTH_SS_1567KHZ:
+    bw = 518.8f;
+    break;
+  case RF_RX_BANDWIDTH_SS_125KHZ:
+  default:
+    bw = 269.3f;
+    break;
+  }
+  state = radio_silabs->setRxBandwidth(bw);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_RX_BANDWIDTH) {
+    Serial.println(F("[Si4432] Selected receiver bandwidth is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[Si4432] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[Si4432] Decrease bit rate to set this receiver bandwidth."));
+    while (true) { delay(10); }
+  }
+#endif
+
+  state = radio_silabs->setEncoding(RADIOLIB_ENCODING_NRZ);
+  state = radio_silabs->setPreambleLength(rl_protocol->preamble_size * 8);
+  state = radio_silabs->setDataShaping(RADIOLIB_SHAPING_0_5);
+
+  size_t pkt_size = rl_protocol->payload_offset + rl_protocol->payload_size +
+                    rl_protocol->crc_size;
+
+  switch (rl_protocol->whitening)
+  {
+  case RF_WHITENING_MANCHESTER:
+    pkt_size += pkt_size;
+    break;
+  case RF_WHITENING_PN9:
+  case RF_WHITENING_NONE:
+  case RF_WHITENING_NICERF:
+  default:
+    break;
+  }
+  state = radio_silabs->fixedPacketLengthMode(pkt_size);
+
+  /* Work around premature P3I syncword detection */
+  if (rl_protocol->syncword_size == 2) {
+    uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
+                       0xAA : 0x55;
+    uint8_t sword[4] = { preamble,
+                         preamble,
+                         rl_protocol->syncword[0],
+                         rl_protocol->syncword[1]
+                       };
+    state = radio_silabs->setSyncWord(sword, 4);
+  } else {
+    state = radio_silabs->setSyncWord((uint8_t *) rl_protocol->syncword,
+                                      rl_protocol->syncword_size > 4 ? 4 :
+                                      (size_t) rl_protocol->syncword_size);
+  }
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+    Serial.println(F("[Si4432] Selected sync word is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  float txpow;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    /* Load regional max. EIRP at first */
+    txpow = RF_FreqPlan.MaxTxPower;
+
+    if (txpow > 20)
+      txpow = 20;
+
+#if 1
+    /*
+     * Enforce Tx power limit until confirmation
+     * that Si4432 is doing well
+     * when antenna is not connected
+     */
+    if (txpow > 17)
+      txpow = 17;
+#endif
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    txpow = 2;
+    break;
+  }
+
+  state = radio_silabs->setOutputPower(txpow);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    Serial.println(F("[Si4432] Selected output power is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  radio_silabs->setPacketReceivedAction(si4432_receive_handler);
 }
 
 static bool si4432_receive()
