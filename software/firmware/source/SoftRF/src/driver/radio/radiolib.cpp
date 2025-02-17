@@ -672,8 +672,8 @@ static void lr11xx_setup()
       bw = 312.0;
       break;
     case RF_RX_BANDWIDTH_SS_200KHZ:
-    case RF_RX_BANDWIDTH_SS_250KHZ:
-    case RF_RX_BANDWIDTH_SS_1567KHZ:
+    case RF_RX_BANDWIDTH_SS_250KHZ:  /* TBD */
+    case RF_RX_BANDWIDTH_SS_1567KHZ: /* TBD */
       bw = 467.0;
       break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
@@ -1459,7 +1459,7 @@ static void cc1101_setup()
     bw = 541.0;
     break;
   case RF_RX_BANDWIDTH_SS_1567KHZ:
-    bw = 812.0;
+    bw = 812.0; /* TBD */
     break;
   case RF_RX_BANDWIDTH_SS_125KHZ:
   default:
@@ -2203,7 +2203,7 @@ static void sx1231_setup()
     bw = 400.0;
     break;
   case RF_RX_BANDWIDTH_SS_250KHZ:
-  case RF_RX_BANDWIDTH_SS_1567KHZ:
+  case RF_RX_BANDWIDTH_SS_1567KHZ: /* TBD */
     bw = 500.0;
     break;
   case RF_RX_BANDWIDTH_SS_125KHZ:
@@ -2748,10 +2748,6 @@ static bool si4432_probe()
 
   u1_t v = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
 
-#if 1
-  Serial.print("v = "); Serial.println(v, HEX);
-#endif
-
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
@@ -2924,8 +2920,10 @@ static void si4432_setup()
     bw = 420.2f;
     break;
   case RF_RX_BANDWIDTH_SS_250KHZ:
-  case RF_RX_BANDWIDTH_SS_1567KHZ:
     bw = 518.8f;
+    break;
+  case RF_RX_BANDWIDTH_SS_1567KHZ:
+    bw = 620.7f; /* TBD */
     break;
   case RF_RX_BANDWIDTH_SS_125KHZ:
   default:
@@ -2946,7 +2944,17 @@ static void si4432_setup()
 #endif
 
   state = radio_silabs->setEncoding(RADIOLIB_ENCODING_NRZ);
-  state = radio_silabs->setPreambleLength(rl_protocol->preamble_size * 8);
+
+#if 0
+  /* Work around 0xAA preamble in use by OGNTP */
+  uint8_t preambleLen = (rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ?
+                        4 : rl_protocol->preamble_size * 8;
+#else
+  uint8_t preambleLen = rl_protocol->preamble_size * 8;
+  preambleLen += (rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ? 4 : 0;
+#endif
+  state = radio_silabs->setPreambleLength(preambleLen);
+
   state = radio_silabs->setDataShaping(RADIOLIB_SHAPING_0_5);
 
   size_t pkt_size = rl_protocol->payload_offset + rl_protocol->payload_size +
@@ -2963,7 +2971,6 @@ static void si4432_setup()
   default:
     break;
   }
-  state = radio_silabs->fixedPacketLengthMode(pkt_size);
 
   /* Work around premature P3I syncword detection */
   if (rl_protocol->syncword_size == 2) {
@@ -2975,10 +2982,27 @@ static void si4432_setup()
                          rl_protocol->syncword[1]
                        };
     state = radio_silabs->setSyncWord(sword, 4);
+#if 0
+  /* Work around 0xAA preamble in use by OGNTP */
+  } else if (rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA &&
+             rl_protocol->preamble_size == 1) {
+    uint8_t sword[4] = { 0xAA,
+                         rl_protocol->syncword[0],
+                         rl_protocol->syncword[1],
+                         rl_protocol->syncword[2]
+                       };
+    state = radio_silabs->setSyncWord(sword, 4);
+    if (rl_protocol->syncword_size > 3) {
+      pkt_size += rl_protocol->syncword_size - 3;
+    }
+#endif
   } else {
     state = radio_silabs->setSyncWord((uint8_t *) rl_protocol->syncword,
                                       rl_protocol->syncword_size > 4 ? 4 :
                                       (size_t) rl_protocol->syncword_size);
+    if (rl_protocol->syncword_size > 4) {
+      pkt_size += rl_protocol->syncword_size - 4;
+    }
   }
 
 #if RADIOLIB_DEBUG_BASIC
@@ -2987,6 +3011,8 @@ static void si4432_setup()
     while (true) { delay(10); }
   }
 #endif
+
+  state = radio_silabs->fixedPacketLengthMode(pkt_size);
 
   float txpow;
 
@@ -3036,7 +3062,184 @@ static bool si4432_receive()
 
 static bool si4432_transmit()
 {
-  return false;
+  u1_t crc8;
+  u2_t crc16;
+  u1_t i;
+
+  bool success = false;
+
+  if (RF_tx_size <= 0) {
+    return success;
+  }
+
+  si4432_receive_active = false;
+  si4432_transmit_complete = false;
+
+  size_t PayloadLen = 0;
+
+#if 0
+  /* Work around 0xAA preamble in use by OGNTP */
+  if (rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA &&
+      rl_protocol->preamble_size == 1) {
+    if (rl_protocol->syncword_size > 3) {
+      for (i=3; i < rl_protocol->syncword_size; i++) {
+        txPacket.payload[PayloadLen++] = rl_protocol->syncword[i];
+      }
+    }
+  } else
+#endif
+  {
+    if (rl_protocol->syncword_size > 4) {
+      for (i=4; i < rl_protocol->syncword_size; i++) {
+        txPacket.payload[PayloadLen++] = rl_protocol->syncword[i];
+      }
+    }
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  switch (rl_protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 24) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 16) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  8) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    txPacket.payload[PayloadLen++] = rl_protocol->payload_size;
+
+    /* insert byte with CRC-8 seed value when necessary */
+    if (rl_protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
+      txPacket.payload[PayloadLen++] = crc8;
+    }
+
+    break;
+  case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
+  default:
+    break;
+  }
+
+  for (i=0; i < RF_tx_size; i++) {
+
+    switch (rl_protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
+      break;
+    case RF_WHITENING_MANCHESTER:
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
+      PayloadLen++;
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
+      break;
+    case RF_WHITENING_NONE:
+    default:
+      txPacket.payload[PayloadLen] = TxBuffer[i];
+      break;
+    }
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(txPacket.payload[PayloadLen]));
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(TxBuffer[i]));
+      } else {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(txPacket.payload[PayloadLen]));
+      }
+      break;
+    }
+
+    PayloadLen++;
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    txPacket.payload[PayloadLen++] = crc8;
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
+      PayloadLen++;
+    } else {
+      txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
+      txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
+    }
+    break;
+  }
+
+  txPacket.len = PayloadLen;
+
+  int state = radio_silabs->transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+
+  if (state == RADIOLIB_ERR_NONE) {
+
+    success = true;
+
+    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+
+#if RADIOLIB_DEBUG_BASIC
+    // the packet was successfully transmitted
+    Serial.println(F("success!"));
+
+  } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
+    // the supplied packet was longer than 256 bytes
+    Serial.println(F("too long!"));
+
+  } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
+    // timeout occured while transmitting packet
+    Serial.println(F("timeout!"));
+
+  } else {
+    // some other error occurred
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+#endif
+  }
+
+  return success;
 }
 
 static void si4432_shutdown()
