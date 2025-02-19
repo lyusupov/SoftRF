@@ -26,9 +26,10 @@
 #include <esp_bt.h>
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
     !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
@@ -498,8 +499,9 @@ static void ESP32_setup()
   esp_err_t ret = ESP_OK;
   uint8_t null_mac[6] = {0};
 
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6) || \
+#if defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+    defined(CONFIG_IDF_TARGET_ESP32C61) || \
     defined(CONFIG_IDF_TARGET_ESP32H2)
   ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
   if (ret != ESP_OK) {
@@ -629,6 +631,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     default:
       esp32_board   = ESP32_C6_DEVKIT;
+#elif defined(CONFIG_IDF_TARGET_ESP32C61)
+    default:
+      esp32_board   = ESP32_C61_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
     default:
       esp32_board   = ESP32_H2_DEVKIT;
@@ -711,6 +716,13 @@ static void ESP32_setup()
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* WT0132C6-S5 (C6 QFN40) */
     default:
       esp32_board   = ESP32_C6_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32C61)
+    switch (flash_id)
+    {
+    default:
+      esp32_board   = ESP32_C61_DEVKIT;
       break;
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -1558,10 +1570,11 @@ static void ESP32_setup()
 #endif /* TBD */
 
 #elif ARDUINO_USB_CDC_ON_BOOT && \
-      (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-       defined(CONFIG_IDF_TARGET_ESP32C5) || \
-       defined(CONFIG_IDF_TARGET_ESP32C6) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2) || \
+      (defined(CONFIG_IDF_TARGET_ESP32C3)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C61) || \
+       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
        defined(CONFIG_IDF_TARGET_ESP32P4))
 
   Serial.begin(SERIAL_OUT_BR);
@@ -2572,8 +2585,9 @@ static void* ESP32_getResetInfoPtr()
     case TG1WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
-#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
@@ -2613,8 +2627,9 @@ static String ESP32_getResetInfo()
     case TG1WDT_SYS_RESET       : return F("Timer Group1 Watch dog reset digital core");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTC Watch dog Reset digital core");
-#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
@@ -2647,8 +2662,9 @@ static String ESP32_getResetReason()
     case TG1WDT_SYS_RESET       : return F("TG1WDT_SYS_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C2 */
     case RTCWDT_SYS_RESET       : return F("RTCWDT_SYS_RESET");
-#if !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)
     case INTRUSION_RESET        : return F("INTRUSION_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
@@ -3191,10 +3207,12 @@ static void ESP32_EEPROM_extension(int cmd)
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) || \
     defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32C61)
     if (settings->bluetooth != BLUETOOTH_NONE) {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32C61)
       settings->bluetooth = BLUETOOTH_LE_HM10_SERIAL;
 #else
       settings->bluetooth = BLUETOOTH_NONE;
@@ -4185,8 +4203,9 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
     }
-#elif defined(CONFIG_IDF_TARGET_ESP32C5) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2) || \
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C61) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
     /* TBD */
 #else
@@ -5143,10 +5162,11 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if ARDUINO_USB_MODE && \
-    (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-     defined(CONFIG_IDF_TARGET_ESP32C5) || \
-     defined(CONFIG_IDF_TARGET_ESP32C6) || \
-     defined(CONFIG_IDF_TARGET_ESP32H2) || \
+    (defined(CONFIG_IDF_TARGET_ESP32C3)  || \
+     defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+     defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+     defined(CONFIG_IDF_TARGET_ESP32C61) || \
+     defined(CONFIG_IDF_TARGET_ESP32H2)  || \
      defined(CONFIG_IDF_TARGET_ESP32P4))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
@@ -5361,6 +5381,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",
+#elif defined(CONFIG_IDF_TARGET_ESP32C61)
+  SOC_ESP32C61,
+  "ESP32-C61",
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
   SOC_ESP32H2,
   "ESP32-H2",
@@ -5407,10 +5430,11 @@ const SoC_ops_t ESP32_ops = {
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
-      (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-       defined(CONFIG_IDF_TARGET_ESP32C5) || \
-       defined(CONFIG_IDF_TARGET_ESP32C6) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2) || \
+      (defined(CONFIG_IDF_TARGET_ESP32C3)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+       defined(CONFIG_IDF_TARGET_ESP32C61) || \
+       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
        defined(CONFIG_IDF_TARGET_ESP32P4))
   &ESP32CX_USBSerial_ops,
 #else

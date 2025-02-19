@@ -57,11 +57,12 @@
 #undef  SerialOutput
 #define SerialOutput            Serial0
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
-#elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
-      defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2) || \
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C3)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C61) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
 #if ARDUINO_USB_CDC_ON_BOOT
 #define UATSerial               Serial0
@@ -95,9 +96,10 @@
  */
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
 #define EXCLUDE_LED_RING
-#elif !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-      !defined(CONFIG_IDF_TARGET_ESP32C6) && \
-      !defined(CONFIG_IDF_TARGET_ESP32H2) && \
+#elif !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+      !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+      !defined(CONFIG_IDF_TARGET_ESP32C61) && \
+      !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
       !defined(CONFIG_IDF_TARGET_ESP32P4)
 #define USE_NEOPIXELBUS_LIBRARY
 #else
@@ -153,6 +155,8 @@ extern Adafruit_NeoPixel strip;
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_LED        3 /* D1 */
+#elif defined(CONFIG_IDF_TARGET_ESP32C61)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -284,6 +288,7 @@ enum esp32_board_id {
   ESP32_C3_DEVKIT,
   ESP32_C5_DEVKIT,
   ESP32_C6_DEVKIT,
+  ESP32_C61_DEVKIT,
   ESP32_H2_DEVKIT,
   ESP32_P4_DEVKIT,
   ESP32_TTGO_V2_OLED,
@@ -371,7 +376,8 @@ struct rst_info {
 #define EXCLUDE_SX1231
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
       defined(CONFIG_IDF_TARGET_ESP32C5) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6)
+      defined(CONFIG_IDF_TARGET_ESP32C6) || \
+      defined(CONFIG_IDF_TARGET_ESP32C61)
 #if ARDUINO_USB_CDC_ON_BOOT
 //#define USE_RADIOLIB
 #else
@@ -454,18 +460,20 @@ extern ESP32_USBSerial_device_t ESP32_USB_Serial;
 extern const USB_Device_List_t supported_USB_devices[];
 
 #endif /* USE_USB_HOST */
-#elif defined(CONFIG_IDF_TARGET_ESP32C2) || \
-      defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2) || \
+#elif defined(CONFIG_IDF_TARGET_ESP32C2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C3)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+      defined(CONFIG_IDF_TARGET_ESP32C61) || \
+      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
 #undef USE_OLED
 #undef USE_TFT
-#if defined(CONFIG_IDF_TARGET_ESP32C2) || \
-    defined(CONFIG_IDF_TARGET_ESP32C5) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6) || \
-    defined(CONFIG_IDF_TARGET_ESP32H2) || \
+#if defined(CONFIG_IDF_TARGET_ESP32C2)  || \
+    defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)  || \
+    defined(CONFIG_IDF_TARGET_ESP32C61) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)  || \
     defined(CONFIG_IDF_TARGET_ESP32P4)
 #define EXCLUDE_EGM96
 #define EXCLUDE_TEST_MODE

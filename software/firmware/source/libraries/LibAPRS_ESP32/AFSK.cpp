@@ -15,10 +15,11 @@
 #include <driver/rtc_io.h>
 #include "esp_adc_cal.h"
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C2) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2) && \
+#if !defined(CONFIG_IDF_TARGET_ESP32C2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
     !defined(CONFIG_IDF_TARGET_ESP32P4)
 extern "C"
 {
