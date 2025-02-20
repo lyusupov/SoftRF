@@ -36,6 +36,9 @@
 #if defined(USE_RADIOLIB)
 #include <RadioLib.h>
 #endif
+#if defined(USE_RADIOHEAD)
+#include <RadioHead.h>
+#endif
 
 #include "GNSS.h"
 #include "../protocol/radio/Legacy.h"
@@ -178,8 +181,11 @@ extern const rfchip_ops_t sa8x8_ops;
 extern const rfchip_ops_t lr1110_ops;
 extern const rfchip_ops_t lr1121_ops;
 extern const rfchip_ops_t cc1101_ops;
+#endif /* USE_RADIOLIB */
+
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
 extern const rfchip_ops_t sx1231_ops;
 extern const rfchip_ops_t si4432_ops;
-#endif /* USE_RADIOLIB */
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
 #endif /* RFHELPER_H */

@@ -144,23 +144,24 @@ PLAT_CPPS     := $(PLATFORM_PATH)/ESP8266.cpp  \
                  $(PLATFORM_PATH)/EFR32.cpp    \
                  $(PLATFORM_PATH)/CH32.cpp
 
-DRV_CPPS      := $(DRIVER_PATH)/RF.cpp             \
-                 $(DRIVER_PATH)/radio/nordic.cpp   \
-                 $(DRIVER_PATH)/radio/almic.cpp    \
-                 $(DRIVER_PATH)/radio/uatm.cpp     \
-                 $(DRIVER_PATH)/radio/easylink.cpp \
-                 $(DRIVER_PATH)/radio/ogn.cpp      \
-                 $(DRIVER_PATH)/radio/nicerf.cpp   \
-                 $(DRIVER_PATH)/radio/radiolib.cpp \
-                 $(DRIVER_PATH)/GNSS.cpp           \
-                 $(DRIVER_PATH)/Baro.cpp           \
-                 $(DRIVER_PATH)/LED.cpp            \
-                 $(DRIVER_PATH)/OLED.cpp           \
-                 $(DRIVER_PATH)/Battery.cpp        \
-                 $(DRIVER_PATH)/EEPROM.cpp         \
-                 $(DRIVER_PATH)/Bluetooth.cpp      \
-                 $(DRIVER_PATH)/Sound.cpp          \
-                 $(DRIVER_PATH)/WiFi.cpp           \
+DRV_CPPS      := $(DRIVER_PATH)/RF.cpp              \
+                 $(DRIVER_PATH)/radio/nordic.cpp    \
+                 $(DRIVER_PATH)/radio/almic.cpp     \
+                 $(DRIVER_PATH)/radio/uatm.cpp      \
+                 $(DRIVER_PATH)/radio/easylink.cpp  \
+                 $(DRIVER_PATH)/radio/ogn.cpp       \
+                 $(DRIVER_PATH)/radio/nicerf.cpp    \
+                 $(DRIVER_PATH)/radio/radiolib.cpp  \
+                 $(DRIVER_PATH)/radio/radiohead.cpp \
+                 $(DRIVER_PATH)/GNSS.cpp            \
+                 $(DRIVER_PATH)/Baro.cpp            \
+                 $(DRIVER_PATH)/LED.cpp             \
+                 $(DRIVER_PATH)/OLED.cpp            \
+                 $(DRIVER_PATH)/Battery.cpp         \
+                 $(DRIVER_PATH)/EEPROM.cpp          \
+                 $(DRIVER_PATH)/Bluetooth.cpp       \
+                 $(DRIVER_PATH)/Sound.cpp           \
+                 $(DRIVER_PATH)/WiFi.cpp            \
                  $(DRIVER_PATH)/EPD.cpp
 
 UI_CPPS       := $(UI_PATH)/Web.cpp        \

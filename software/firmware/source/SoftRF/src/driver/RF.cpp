@@ -113,6 +113,8 @@ byte RF_setup(void)
     } else if (cc1101_ops.probe()) {
       rf_chip = &cc1101_ops;
 #endif /* EXCLUDE_CC1101 */
+#endif /* USE_RADIOLIB */
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
 #if !defined(EXCLUDE_SX1231)
     } else if (sx1231_ops.probe()) {
       rf_chip = &sx1231_ops;
@@ -121,7 +123,7 @@ byte RF_setup(void)
     } else if (si4432_ops.probe()) {
       rf_chip = &si4432_ops;
 #endif /* EXCLUDE_SI443X */
-#endif /* USE_RADIOLIB */
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
 #if !defined(EXCLUDE_NRF905)
     } else if (nrf905_ops.probe()) {
       rf_chip = &nrf905_ops;
