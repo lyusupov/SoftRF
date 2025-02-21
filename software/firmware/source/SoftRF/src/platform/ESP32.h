@@ -382,6 +382,7 @@ struct rst_info {
 //#define USE_RADIOLIB
 #else
 #define USE_RADIOLIB
+//#define USE_RADIOHEAD
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_CC1101
