@@ -111,7 +111,8 @@ const char *ISO3166_CC[] = {
   [RF_BAND_UK]   = "UK",
   [RF_BAND_IN]   = "IN",
   [RF_BAND_IL]   = "IL",
-  [RF_BAND_KR]   = "KR"
+  [RF_BAND_KR]   = "KR",
+  [RF_BAND_RSVD] = "R "
 };
 
 const char SoftRF_text1[]  = "SoftRF";

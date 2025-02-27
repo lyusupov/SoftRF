@@ -1429,7 +1429,7 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_C3_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C3_TXE;
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_C3_CE; /* Ebyte E80 */
+    lmic_pins.dio[0] = SOC_GPIO_PIN_C3_CE;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
@@ -1447,7 +1447,7 @@ static void ESP32_setup()
     lmic_pins.rst  = SOC_GPIO_PIN_C6_RST;
     lmic_pins.busy = SOC_GPIO_PIN_C6_TXE;
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_C6_CE; /* Ebyte E80 */
+    lmic_pins.dio[0] = SOC_GPIO_PIN_C6_CE;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
   } else if (esp32_board == ESP32_LILYGO_T3C6) {

@@ -18,7 +18,9 @@ enum
   RF_BAND_UK   = 7,  /* 869.52 MHz band. Deprecated - treated as EU */
   RF_BAND_IN   = 8,  /* 866.0 MHz band */
   RF_BAND_IL   = 9,  /* 916.2 MHz band */
-  RF_BAND_KR   = 10  /* 920.9 MHz band */
+  RF_BAND_KR   = 10, /* 920.9 MHz band */
+  RF_BAND_RSVD = 11, /* reserved */
+  RF_BAND_COUNT
 };
 
 class FreqPlan
@@ -75,6 +77,11 @@ class FreqPlan
             BaseFreq   = 923200000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_62KHZ;  // BW125
             MaxTxPower = 15;
+            break;
+          case RF_BAND_RSVD:
+            BaseFreq   = 2450000;
+            Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ;  // BW500
+            MaxTxPower = 13;
             break;
           case RF_BAND_EU:
           case RF_BAND_RU:
@@ -175,8 +182,9 @@ class FreqPlan
    static const char *getPlanName(uint8_t Plan)
    { static const char *Name[11] = { "Default", "Europe/Africa",
        "USA/Canada", "Australia/South America", "New Zealand",
-       "Russia", "China", "PilotAware (UK)", "India", "Israel", "South Korea" } ;
-     if(Plan>RF_BAND_KR) return 0;
+       "Russia", "China", "PilotAware (UK)", "India", "Israel",
+       "South Korea", "Reserved" } ;
+     if(Plan >= RF_BAND_COUNT) return 0;
      return Name[Plan]; }
 
    uint8_t getChannel  (uint32_t Time, uint8_t Slot=0, uint8_t OGN=1) const // OGN-tracker or FLARM, UTC time, slot: 0 or 1

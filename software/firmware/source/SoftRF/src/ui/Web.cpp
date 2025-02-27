@@ -150,7 +150,7 @@ Copyright (C) 2015-2025 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 
 void handleSettings() {
 
-  size_t size = 5470;
+  size_t size = 5520;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -302,6 +302,7 @@ void handleSettings() {
 <option %s value='%d'>IN (866 MHz)</option>\
 <option %s value='%d'>KR (920.9 MHz)</option>\
 <option %s value='%d'>IL (916.2 MHz)</option>\
+<!--<option %s value='%d'>Reserved</option>-->\
 </select>\
 </td>\
 </tr>\
@@ -362,16 +363,17 @@ void handleSettings() {
 </td>\
 </tr>"),
   (settings->band == RF_BAND_AUTO ? "selected" : ""), RF_BAND_AUTO,
-  (settings->band == RF_BAND_EU ? "selected" : ""), RF_BAND_EU,
-  (settings->band == RF_BAND_RU ? "selected" : ""), RF_BAND_RU,
-  (settings->band == RF_BAND_CN ? "selected" : ""), RF_BAND_CN,
-  (settings->band == RF_BAND_US ? "selected" : ""), RF_BAND_US,
-  (settings->band == RF_BAND_NZ ? "selected" : ""), RF_BAND_NZ,
-  (settings->band == RF_BAND_UK ? "selected" : ""), RF_BAND_UK,
-  (settings->band == RF_BAND_AU ? "selected" : ""), RF_BAND_AU,
-  (settings->band == RF_BAND_IN ? "selected" : ""), RF_BAND_IN,
-  (settings->band == RF_BAND_KR ? "selected" : ""), RF_BAND_KR,
-  (settings->band == RF_BAND_IL ? "selected" : ""), RF_BAND_IL,
+  (settings->band == RF_BAND_EU   ? "selected" : ""), RF_BAND_EU,
+  (settings->band == RF_BAND_RU   ? "selected" : ""), RF_BAND_RU,
+  (settings->band == RF_BAND_CN   ? "selected" : ""), RF_BAND_CN,
+  (settings->band == RF_BAND_US   ? "selected" : ""), RF_BAND_US,
+  (settings->band == RF_BAND_NZ   ? "selected" : ""), RF_BAND_NZ,
+  (settings->band == RF_BAND_UK   ? "selected" : ""), RF_BAND_UK,
+  (settings->band == RF_BAND_AU   ? "selected" : ""), RF_BAND_AU,
+  (settings->band == RF_BAND_IN   ? "selected" : ""), RF_BAND_IN,
+  (settings->band == RF_BAND_KR   ? "selected" : ""), RF_BAND_KR,
+  (settings->band == RF_BAND_IL   ? "selected" : ""), RF_BAND_IL,
+  (settings->band == RF_BAND_RSVD ? "selected" : ""), RF_BAND_RSVD,
   (settings->aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
   (settings->aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
