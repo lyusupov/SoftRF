@@ -180,7 +180,7 @@ class FreqPlan
    const char *getPlanName(void) { return getPlanName(Plan); }
 
    static const char *getPlanName(uint8_t Plan)
-   { static const char *Name[11] = { "Default", "Europe/Africa",
+   { static const char *Name[RF_BAND_COUNT] = { "Default", "Europe/Africa",
        "USA/Canada", "Australia/South America", "New Zealand",
        "Russia", "China", "PilotAware (UK)", "India", "Israel",
        "South Korea", "Reserved" } ;
