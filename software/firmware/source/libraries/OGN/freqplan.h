@@ -79,8 +79,8 @@ class FreqPlan
             MaxTxPower = 15;
             break;
           case RF_BAND_RSVD:
-            BaseFreq   = 2450000;
-            Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ;  // BW500
+            BaseFreq   = 2450000000;
+            Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
             MaxTxPower = 13;
             break;
           case RF_BAND_EU:

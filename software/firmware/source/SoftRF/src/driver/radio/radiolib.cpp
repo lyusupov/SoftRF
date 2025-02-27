@@ -446,6 +446,13 @@ static void lr11xx_channel(int8_t channel)
 
     int state = radio_semtech->setFrequency(frequency / 1000000.0);
 
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[LR11XX] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
     lr112x_channel_prev = channel;
     /* restart Rx upon a channel switch */
     lr112x_receive_active = false;
@@ -569,12 +576,19 @@ static void lr11xx_setup()
     Vtcxo = 1.6;
     break;
   }
+
+  uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
+  bool high = (frequency > 1000000000) ; /* above 1GHz */
 #endif
 
   float br, fdev, bw;
   switch (rl_protocol->modulation_type)
   {
   case RF_MODULATION_TYPE_LORA:
+#if RADIOLIB_DEBUG_BASIC
+    Serial.print(F("[LR11XX] Initializing ... "));
+#endif
+
 #if USE_SX1262
     state = radio_semtech->begin();    // start LoRa mode (and disable FSK)
 #endif
@@ -584,20 +598,42 @@ static void lr11xx_setup()
                                  8, Vtcxo);
 #endif
 
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_NONE) {
+      Serial.println(F("success!"));
+    } else {
+      Serial.print(F("failed, code "));
+      Serial.println(state);
+      while (true) { delay(10); }
+    }
+#endif
+
     switch (RF_FreqPlan.Bandwidth)
     {
     case RF_RX_BANDWIDTH_SS_62KHZ:
-      bw = 125.0; /* BW_125 */
+      bw = high ? 203.125 : 125.0; /* BW_125 */
       break;
     case RF_RX_BANDWIDTH_SS_250KHZ:
-      bw = 500.0; /* BW_500 */
+      bw = high ? 812.5   : 500.0; /* BW_500 */
       break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
-      bw = 250.0; /* BW_250 */
+      bw = high ? 406.25  : 250.0; /* BW_250 */
       break;
     }
+#if USE_SX1262
     state = radio_semtech->setBandwidth(bw);
+#endif
+#if USE_LR11XX
+    state = radio_semtech->setBandwidth(bw, high);
+#endif
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+      Serial.println(F("[LR11XX] Selected bandwidth is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
 
     switch (rl_protocol->type)
     {
@@ -609,6 +645,13 @@ static void lr11xx_setup()
     }
 
     state = radio_semtech->setSyncWord((uint8_t) rl_protocol->syncword[0]);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+      Serial.println(F("[LR11XX] Selected sync word is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
 
     state = radio_semtech->setPreambleLength(8);
     state = radio_semtech->explicitHeader();
@@ -807,7 +850,7 @@ static void lr11xx_setup()
       state = radio_semtech->setOutputPower(txpow, false);
     } else {
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
-      state = radio_semtech->setOutputPower(txpow, true);
+      state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
     break;
 
@@ -816,7 +859,7 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_PRIME_MK3:
   default:
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
-    state = radio_semtech->setOutputPower(txpow, true);
+    state = radio_semtech->setOutputPower(txpow, high ? false : true);
     break;
   }
 #endif
@@ -2747,6 +2790,10 @@ static bool si4432_probe()
   delay(100);
 
   u1_t v = si4432_readReg(RADIOLIB_SI443X_REG_DEVICE_VERSION);
+
+#if RADIOLIB_DEBUG_BASIC
+  Serial.print("si4432 version = "); Serial.println(v, HEX);
+#endif
 
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
