@@ -784,6 +784,19 @@ static void lr11xx_setup()
     break;
   }
 
+#if USE_LR11XX
+  if (high) {
+    state = radio_semtech->setFrequency(frequency / 1000000.0);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[LR11XX] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+  }
+#endif /* USE_LR11XX */
+
   float txpow;
 
   switch(settings->txpower)
