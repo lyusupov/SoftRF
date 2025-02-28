@@ -472,6 +472,7 @@ static void lr11xx_setup()
 
   mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, RadioSPI);
 #if USE_SX1262
+  bool high = false;
   radio_semtech = new SX1262(mod);
 #endif
 #if USE_LR11XX

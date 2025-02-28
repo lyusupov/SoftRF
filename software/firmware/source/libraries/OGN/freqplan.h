@@ -142,32 +142,35 @@ class FreqPlan
         switch (Plan)
         {
           case RF_BAND_US:
-            { BaseFreq=902200000; ChanSepar=400000; Channels=65; MaxTxPower = 30; } // USA, 902-928 MHz
+            { BaseFreq= 902200000; ChanSepar=400000; Channels=65; MaxTxPower = 30; } // USA, 902-928 MHz
             break;
           case RF_BAND_AU:
-            { BaseFreq=917000000; ChanSepar=400000; Channels=24; MaxTxPower = 30; } // Australia and South America
+            { BaseFreq= 917000000; ChanSepar=400000; Channels=24; MaxTxPower = 30; } // Australia and South America
             break;
           case RF_BAND_NZ:
-            { BaseFreq=869250000; ChanSepar=200000; Channels= 1; MaxTxPower = 10; } // New Zealand
+            { BaseFreq= 869250000; ChanSepar=200000; Channels= 1; MaxTxPower = 10; } // New Zealand
             break;
           case RF_BAND_RU:
-            { BaseFreq=868800000; ChanSepar=200000; Channels= 1; MaxTxPower = 20; } // Russia
+            { BaseFreq= 868800000; ChanSepar=200000; Channels= 1; MaxTxPower = 20; } // Russia
             break;
           case RF_BAND_CN:
-            { BaseFreq=470100000; ChanSepar=200000; Channels= 1 /* 18 */; MaxTxPower = 17; } // China, 470-473.6 MHz
+            { BaseFreq= 470100000; ChanSepar=200000; Channels= 1 /* 18 */; MaxTxPower = 17; } // China, 470-473.6 MHz
             break;
           case RF_BAND_IN:
-            { BaseFreq=866000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // India
+            { BaseFreq= 866000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // India
             break;
           case RF_BAND_IL:
-            { BaseFreq=916200000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // Israel
+            { BaseFreq= 916200000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // Israel
             break;
           case RF_BAND_KR:
-            { BaseFreq=920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
+            { BaseFreq= 920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
+            break;
+          case RF_BAND_RSVD:
+            { BaseFreq=2450000000; ChanSepar=200000; Channels= 1; MaxTxPower = 13; } // reserved
             break;
           case RF_BAND_EU:
           default: /* AUTO, UK */
-            { BaseFreq=868200000; ChanSepar=200000; Channels= 2; MaxTxPower = 14; } // Europe
+            { BaseFreq= 868200000; ChanSepar=200000; Channels= 2; MaxTxPower = 14; } // Europe
             break;
         }
         break;
