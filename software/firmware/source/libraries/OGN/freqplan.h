@@ -81,7 +81,7 @@ class FreqPlan
           case RF_BAND_RSVD:
             BaseFreq   = 2450000000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
-            MaxTxPower = 13;
+            MaxTxPower = 30;
             break;
           case RF_BAND_EU:
           case RF_BAND_RU:
@@ -166,7 +166,7 @@ class FreqPlan
             { BaseFreq= 920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
             break;
           case RF_BAND_RSVD:
-            { BaseFreq=2450000000; ChanSepar=200000; Channels= 1; MaxTxPower = 13; } // reserved
+            { BaseFreq=2450000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // reserved
             break;
           case RF_BAND_EU:
           default: /* AUTO, UK */

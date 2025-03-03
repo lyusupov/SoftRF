@@ -836,18 +836,22 @@ static void lr11xx_setup()
     /* Load regional max. EIRP at first */
     txpow = RF_FreqPlan.MaxTxPower;
 
-    if (txpow > 22)
-      txpow = 22;
+    if (txpow > 22) txpow = 22;
 
 #if 1
     /*
      * Enforce Tx power limit until confirmation
-     * that LR112x is doing well
+     * that LR11xx is doing well
      * when antenna is not connected
      */
     if (txpow > 17)
       txpow = 17;
 #endif
+
+#if USE_LR11XX
+    if (high && txpow > 13) txpow = 13;
+#endif /* USE_LR11XX */
+
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
@@ -3756,18 +3760,8 @@ static void sx1280_setup()
     /* Load regional max. EIRP at first */
     txpow = RF_FreqPlan.MaxTxPower;
 
-    if (txpow > 22)
-      txpow = 22;
+    if (txpow > 13) txpow = 13;
 
-#if 1
-    /*
-     * Enforce Tx power limit until confirmation
-     * that LR112x is doing well
-     * when antenna is not connected
-     */
-    if (txpow > 17)
-      txpow = 17;
-#endif
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
