@@ -677,10 +677,26 @@ static void lr11xx_setup()
       break;
     case RF_BITRATE_100KBPS:
     default:
+#if USE_SX1262
       br = 100.0;
+#endif
+#if USE_LR11XX
+      br = high ? 125.0 : 100.0; /* SX128x minimum is 125 kbps */
+#endif
       break;
     }
     state = radio_semtech->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[LR11XX] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[LR11XX] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[LR11XX] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
 
     switch (rl_protocol->deviation)
     {
@@ -696,10 +712,22 @@ static void lr11xx_setup()
     case RF_FREQUENCY_DEVIATION_50KHZ:
     case RF_FREQUENCY_DEVIATION_NONE:
     default:
+#if USE_SX1262
       fdev = 50.0;
+#endif
+#if USE_LR11XX
+      fdev = high ? 62.5 : 50.0; /* SX128x minimum is 62.5 kHz */
+#endif
       break;
     }
     state = radio_semtech->setFrequencyDeviation(fdev);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+    Serial.println(F("[LR11XX] Selected frequency deviation is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
 
     switch (rl_protocol->bandwidth)
     {
@@ -727,7 +755,6 @@ static void lr11xx_setup()
     }
     state = radio_semtech->setRxBandwidth(bw);
 
-    state = radio_semtech->setEncoding(RADIOLIB_ENCODING_NRZ);
     state = radio_semtech->setPreambleLength(rl_protocol->preamble_size * 8);
     state = radio_semtech->setDataShaping(RADIOLIB_SHAPING_0_5);
 
@@ -763,6 +790,9 @@ static void lr11xx_setup()
     default:
       break;
     }
+
+    state = radio_semtech->setWhitening(false, 0x0001 /* default SX128x value */);
+
     state = radio_semtech->fixedPacketLengthMode(pkt_size);
 
     state = radio_semtech->disableAddressFiltering();
@@ -1230,7 +1260,7 @@ static bool lr11xx_transmit()
     Serial.println(F("success!"));
 
     // print measured data rate
-    Serial.print(F("[SX1262] Datarate:\t"));
+    Serial.print(F("[LR11XX] Datarate:\t"));
     Serial.print(radio_semtech->getDataRate());
     Serial.println(F(" bps"));
 
@@ -3308,5 +3338,865 @@ static void si4432_shutdown()
   int state = radio_silabs->sleep();
 }
 #endif /* EXCLUDE_SI443X */
+
+#if !defined(EXCLUDE_SX1280)
+
+static bool sx1280_probe(void);
+static void sx1280_setup(void);
+static void sx1280_channel(int8_t);
+static bool sx1280_receive(void);
+static bool sx1280_transmit(void);
+static void sx1280_shutdown(void);
+
+const rfchip_ops_t sx1280_ops = {
+  RF_IC_SX1280,
+  "SX1280",
+  sx1280_probe,
+  sx1280_setup,
+  sx1280_channel,
+  sx1280_receive,
+  sx1280_transmit,
+  sx1280_shutdown
+};
+
+SX1280  *radio_ebyte;
+
+static int8_t sx1280_channel_prev    = (int8_t) -1;
+
+static volatile bool sx1280_receive_complete = false;
+
+static bool sx1280_receive_active    = false;
+static bool sx1280_transmit_complete = false;
+
+#define SX1280_DEF_LORASYNCWORDLSB  0x24
+
+static void sx1280_ReadRegs (uint16_t addr, uint8_t* data, uint8_t len) {
+    hal_spi_select(1);
+    hal_pin_busy_wait();
+    hal_spi(RADIOLIB_SX128X_CMD_READ_REGISTER);
+    hal_spi(addr >> 8);
+    hal_spi(addr);
+    hal_spi(0x00); // NOP
+    for (uint8_t i = 0; i < len; i++) {
+        data[i] = hal_spi(0x00);
+    }
+    hal_spi_select(0);
+}
+
+static uint8_t sx1280_ReadReg (uint16_t addr) {
+    uint8_t val;
+    sx1280_ReadRegs(addr, &val, 1);
+    return val;
+}
+
+
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+#if defined(ESP8266) || defined(ESP32)
+  ICACHE_RAM_ATTR
+#endif
+void sx1280_receive_handler(void) {
+  sx1280_receive_complete = true;
+}
+
+static bool sx1280_probe()
+{
+  u1_t v, v_reset;
+
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  v_reset = sx1280_ReadReg(RADIOLIB_SX128X_REG_LORA_SYNC_WORD_LSB);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(5)); // wait 5ms
+
+  v = sx1280_ReadReg(RADIOLIB_SX128X_REG_LORA_SYNC_WORD_LSB);
+
+#if 0
+    Serial.print("SX1280 SYNCWORD LSB = "); Serial.println(v, HEX);
+#endif
+
+  pinMode(lmic_pins.nss, INPUT);
+  RadioSPI.end();
+
+  u1_t fanet_sw_lsb = ((fanet_proto_desc.syncword[0]  & 0x0F) << 4) | 0x04;
+  if (v == SX1280_DEF_LORASYNCWORDLSB || v == fanet_sw_lsb) {
+
+    if (v_reset == SX1280_DEF_LORASYNCWORDLSB || v_reset == fanet_sw_lsb) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
+static void sx1280_channel(int8_t channel)
+{
+  if (channel != -1 && channel != sx1280_channel_prev) {
+    uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+
+    if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
+      nRF905_band_t nrf_band;
+      uint32_t nrf_freq_resolution;
+
+      nrf_band = (frequency >= 844800000UL ? NRF905_BAND_868 : NRF905_BAND_433);
+      nrf_freq_resolution = (nrf_band == NRF905_BAND_433 ? 100000UL : 200000UL);
+      frequency -= (frequency % nrf_freq_resolution);
+    }
+
+    int state = radio_ebyte->setFrequency(frequency / 1000000.0);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+      Serial.println(F("[SX1280] Selected frequency is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    sx1280_channel_prev = channel;
+    /* restart Rx upon a channel switch */
+    sx1280_receive_active = false;
+  }
+}
+
+static void sx1280_setup()
+{
+  int state;
+
+  SoC->SPI_begin();
+
+  uint32_t irq  = lmic_pins.dio[0] == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.dio[0];
+  uint32_t busy = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                  RADIOLIB_NC : lmic_pins.busy;
+
+  mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, RadioSPI);
+
+  bool high = true;
+  radio_ebyte = new SX1280(mod);
+
+  switch (settings->rf_protocol)
+  {
+  case RF_PROTOCOL_OGNTP:
+    rl_protocol     = &ogntp_proto_desc;
+    protocol_encode = &ogntp_encode;
+    protocol_decode = &ogntp_decode;
+    break;
+  case RF_PROTOCOL_P3I:
+    rl_protocol     = &p3i_proto_desc;
+    protocol_encode = &p3i_encode;
+    protocol_decode = &p3i_decode;
+    break;
+  case RF_PROTOCOL_FANET:
+    rl_protocol     = &fanet_proto_desc;
+    protocol_encode = &fanet_encode;
+    protocol_decode = &fanet_decode;
+    break;
+#if defined(ENABLE_PROL)
+  case RF_PROTOCOL_APRS:
+    rl_protocol     = &prol_proto_desc;
+    protocol_encode = &aprs_encode;
+    protocol_decode = &aprs_decode;
+    break;
+#endif /* ENABLE_PROL */
+#if defined(ENABLE_ADSL)
+  case RF_PROTOCOL_ADSL_860:
+    rl_protocol     = &adsl_proto_desc;
+    protocol_encode = &adsl_encode;
+    protocol_decode = &adsl_decode;
+    break;
+#endif /* ENABLE_ADSL */
+  case RF_PROTOCOL_LEGACY:
+  default:
+    rl_protocol     = &legacy_proto_desc;
+    protocol_encode = &legacy_encode;
+    protocol_decode = &legacy_decode;
+    /*
+     * Enforce legacy protocol setting for SX1280
+     * if other value (UAT) left in EEPROM from other (UATM) radio
+     */
+    settings->rf_protocol = RF_PROTOCOL_LEGACY;
+    break;
+  }
+
+  RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
+
+  float br, fdev, bw;
+  switch (rl_protocol->modulation_type)
+  {
+  case RF_MODULATION_TYPE_LORA:
+#if RADIOLIB_DEBUG_BASIC
+    Serial.print(F("[SX1280] Initializing ... "));
+#endif
+
+    state = radio_ebyte->begin();    // start LoRa mode (and disable FSK)
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_NONE) {
+      Serial.println(F("success!"));
+    } else {
+      Serial.print(F("failed, code "));
+      Serial.println(state);
+      while (true) { delay(10); }
+    }
+#endif
+
+    switch (RF_FreqPlan.Bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_62KHZ:
+      bw = high ? 203.125 : 125.0; /* BW_125 */
+      break;
+    case RF_RX_BANDWIDTH_SS_250KHZ:
+      bw = high ? 812.5   : 500.0; /* BW_500 */
+      break;
+    case RF_RX_BANDWIDTH_SS_125KHZ:
+    default:
+      bw = high ? 406.25  : 250.0; /* BW_250 */
+      break;
+    }
+
+    state = radio_ebyte->setBandwidth(bw);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+      Serial.println(F("[SX1280] Selected bandwidth is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    switch (rl_protocol->type)
+    {
+    case RF_PROTOCOL_FANET:
+    default:
+      state = radio_ebyte->setSpreadingFactor(7); /* SF_7 */
+      state = radio_ebyte->setCodingRate(5);      /* CR_5 */
+      break;
+    }
+
+    state = radio_ebyte->setSyncWord((uint8_t) rl_protocol->syncword[0]);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+      Serial.println(F("[SX1280] Selected sync word is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    state = radio_ebyte->setPreambleLength(8);
+    state = radio_ebyte->explicitHeader();
+    state = radio_ebyte->setCRC(true);
+
+    break;
+  case RF_MODULATION_TYPE_2FSK:
+  case RF_MODULATION_TYPE_PPM: /* TBD */
+  default:
+
+    state = radio_ebyte->beginGFSK(); // start GFSK mode (and disable LoRa)
+
+    switch (rl_protocol->bitrate)
+    {
+    case RF_BITRATE_38400:
+      br = 38.4;
+      break;
+    case RF_BITRATE_100KBPS:
+    default:
+      br = high ? 125.0 : 100.0; /* SX128x minimum is 125 kbps */
+      break;
+    }
+    state = radio_ebyte->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[SX1280] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[SX1280] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[SX1280] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
+
+    switch (rl_protocol->deviation)
+    {
+    case RF_FREQUENCY_DEVIATION_9_6KHZ:
+      fdev = 9.6;
+      break;
+    case RF_FREQUENCY_DEVIATION_19_2KHZ:
+      fdev = 19.2;
+      break;
+    case RF_FREQUENCY_DEVIATION_25KHZ:
+      fdev = 25.0;
+      break;
+    case RF_FREQUENCY_DEVIATION_50KHZ:
+    case RF_FREQUENCY_DEVIATION_NONE:
+    default:
+      fdev = high ? 62.5 : 50.0; /* SX128x minimum is 62.5 kHz */
+      break;
+    }
+    state = radio_ebyte->setFrequencyDeviation(fdev);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+    Serial.println(F("[SX1280] Selected frequency deviation is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+    switch (rl_protocol->bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_50KHZ:
+      bw = 117.3;
+      break;
+    case RF_RX_BANDWIDTH_SS_62KHZ:
+      bw = 156.2;
+      break;
+    case RF_RX_BANDWIDTH_SS_100KHZ:
+      bw = 234.3;
+      break;
+    case RF_RX_BANDWIDTH_SS_166KHZ:
+      bw = 312.0;
+      break;
+    case RF_RX_BANDWIDTH_SS_200KHZ:
+    case RF_RX_BANDWIDTH_SS_250KHZ:  /* TBD */
+    case RF_RX_BANDWIDTH_SS_1567KHZ: /* TBD */
+      bw = 467.0;
+      break;
+    case RF_RX_BANDWIDTH_SS_125KHZ:
+    default:
+      bw = 234.3;
+      break;
+    }
+#if 0 /* TBD */
+    state = radio_ebyte->setRxBandwidth(bw);
+#endif
+
+    state = radio_ebyte->setPreambleLength(rl_protocol->preamble_size * 8);
+    state = radio_ebyte->setDataShaping(RADIOLIB_SHAPING_0_5);
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    case RF_CHECKSUM_TYPE_CCITT_1D02:
+    case RF_CHECKSUM_TYPE_CRC8_107:
+    case RF_CHECKSUM_TYPE_RS:
+      /* CRC is driven by software */
+      state = radio_ebyte->setCRC(0, 0);
+      break;
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_CHECKSUM_TYPE_NONE:
+    default:
+      state = radio_ebyte->setCRC(0, 0);
+      break;
+    }
+
+    size_t pkt_size = rl_protocol->payload_offset + rl_protocol->payload_size +
+                      rl_protocol->crc_size;
+
+    switch (rl_protocol->whitening)
+    {
+    case RF_WHITENING_MANCHESTER:
+      pkt_size += pkt_size;
+      break;
+    case RF_WHITENING_PN9:
+    case RF_WHITENING_NONE:
+    case RF_WHITENING_NICERF:
+    default:
+      break;
+    }
+
+    state = radio_ebyte->setWhitening(false);
+
+    /* Work around premature P3I syncword detection */
+    if (rl_protocol->syncword_size == 2) {
+      uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
+                         0xAA : 0x55;
+      uint8_t sword[4] = { preamble,
+                           preamble,
+                           rl_protocol->syncword[0],
+                           rl_protocol->syncword[1]
+                         };
+      state = radio_ebyte->setSyncWord(sword, 4);
+    } else if (rl_protocol->syncword_size > 5) {
+      state = radio_ebyte->setSyncWord((uint8_t *) rl_protocol->syncword, 5);
+      pkt_size += rl_protocol->syncword_size - 5;
+    } else {
+      state = radio_ebyte->setSyncWord((uint8_t *) rl_protocol->syncword,
+                                       (size_t)    rl_protocol->syncword_size);
+    }
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
+      Serial.println(F("[SX1280] Selected sync word is invalid for this module!"));
+      while (true) { delay(10); }
+    }
+#endif
+
+    state = radio_ebyte->fixedPacketLengthMode(pkt_size);
+
+    break;
+  }
+
+  float txpow;
+
+  switch(settings->txpower)
+  {
+  case RF_TX_POWER_FULL:
+
+    /* Load regional max. EIRP at first */
+    txpow = RF_FreqPlan.MaxTxPower;
+
+    if (txpow > 22)
+      txpow = 22;
+
+#if 1
+    /*
+     * Enforce Tx power limit until confirmation
+     * that LR112x is doing well
+     * when antenna is not connected
+     */
+    if (txpow > 17)
+      txpow = 17;
+#endif
+    break;
+  case RF_TX_POWER_OFF:
+  case RF_TX_POWER_LOW:
+  default:
+    txpow = 2;
+    break;
+  }
+
+  state = radio_ebyte->setOutputPower(txpow);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    Serial.println(F("[SX1280] Selected output power is invalid for this module!"));
+    while (true) { delay(10); }
+  }
+#endif
+
+  state = radio_ebyte->setHighSensitivityMode(true);
+
+  radio_ebyte->setPacketReceivedAction(sx1280_receive_handler);
+}
+
+static bool sx1280_receive()
+{
+  bool success = false;
+  int state;
+
+  if (settings->power_save & POWER_SAVE_NORECEIVE) {
+    return success;
+  }
+
+  if (!sx1280_receive_active) {
+
+    state = radio_ebyte->startReceive();
+    if (state == RADIOLIB_ERR_NONE) {
+      sx1280_receive_active = true;
+    }
+  }
+
+  if (sx1280_receive_complete == true) {
+
+    rxPacket.len = radio_ebyte->getPacketLength();
+
+    if (rxPacket.len > 0) {
+
+      if (rxPacket.len > sizeof(rxPacket.payload)) {
+        rxPacket.len = sizeof(rxPacket.payload);
+      }
+
+      state = radio_ebyte->readData(rxPacket.payload, rxPacket.len);
+      sx1280_receive_active = false;
+
+      if (state == RADIOLIB_ERR_NONE &&
+         !memeqzero(rxPacket.payload, rxPacket.len)) {
+
+        uint8_t i;
+
+        if (rl_protocol->syncword_size > 5) {
+          for (i=5; i < rl_protocol->syncword_size; i++) {
+            if (rxPacket.payload[i-5] != rl_protocol->syncword[i]) {
+#if 0
+              Serial.print("syncword mismatch ");
+              Serial.print("i="); Serial.print(i);
+              Serial.print(" p="); Serial.print(rxPacket.payload[i-5], HEX);
+              Serial.print(" s="); Serial.print(rl_protocol->syncword[i], HEX);
+              Serial.println();
+#endif
+              if (i != 5) {
+                memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+                rxPacket.len = 0;
+                sx1280_receive_complete = false;
+
+                return success;
+              }
+            }
+          }
+
+          memcpy(rxPacket.payload,
+                 rxPacket.payload + rl_protocol->syncword_size - 5,
+                 rxPacket.len - (rl_protocol->syncword_size - 5));
+        }
+
+        size_t size = 0;
+        uint8_t offset;
+
+        u1_t crc8, pkt_crc8;
+        u2_t crc16, pkt_crc16;
+
+        RadioLib_DataPacket *rxPacket_ptr = &rxPacket;
+
+        switch (rl_protocol->crc_type)
+        {
+        case RF_CHECKSUM_TYPE_GALLAGER:
+        case RF_CHECKSUM_TYPE_CRC_MODES:
+        case RF_CHECKSUM_TYPE_NONE:
+           /* crc16 left not initialized */
+          break;
+        case RF_CHECKSUM_TYPE_CRC8_107:
+          crc8 = 0x71;     /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_0000:
+          crc16 = 0x0000;  /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_FFFF:
+        default:
+          crc16 = 0xffff;  /* seed value */
+          break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_LEGACY:
+          /* take in account NRF905/FLARM "address" bytes */
+          crc16 = update_crc_ccitt(crc16, 0x31);
+          crc16 = update_crc_ccitt(crc16, 0xFA);
+          crc16 = update_crc_ccitt(crc16, 0xB6);
+          break;
+        case RF_PROTOCOL_P3I:
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        default:
+          break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_P3I:
+          offset = rl_protocol->payload_offset;
+          for (i = 0; i < rl_protocol->payload_size; i++)
+          {
+            update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
+                            pgm_read_byte(&whitening_pattern[i]);
+            }
+          }
+
+          pkt_crc8 = rxPacket_ptr->payload[i + offset];
+
+          if (crc8 == pkt_crc8) {
+            success = true;
+          }
+          break;
+        case RF_PROTOCOL_FANET:
+          offset = rl_protocol->payload_offset;
+          size   = rl_protocol->payload_size + rl_protocol->crc_size;
+          for (i = 0; i < size; i++)
+          {
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset];
+            }
+          }
+          success = true;
+          break;
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        case RF_PROTOCOL_LEGACY:
+        default:
+          offset = 0;
+          size   = rl_protocol->payload_offset +
+                   rl_protocol->payload_size +
+                   rl_protocol->payload_size +
+                   rl_protocol->crc_size +
+                   rl_protocol->crc_size;
+          if (rxPacket_ptr->len >= (size + offset)) {
+            uint8_t val1, val2;
+            for (i = 0; i < size; i++) {
+              val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              i++;
+              val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              if ((i>>1) < sizeof(RxBuffer)) {
+                RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
+
+                if (i < size - (rl_protocol->crc_size + rl_protocol->crc_size)) {
+                  switch (rl_protocol->crc_type)
+                  {
+                  case RF_CHECKSUM_TYPE_GALLAGER:
+                  case RF_CHECKSUM_TYPE_CRC_MODES:
+                  case RF_CHECKSUM_TYPE_NONE:
+                    break;
+                  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+                  case RF_CHECKSUM_TYPE_CCITT_0000:
+                  default:
+                    crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
+                    break;
+                  }
+                }
+              }
+            }
+
+            size = size>>1;
+
+            switch (rl_protocol->crc_type)
+            {
+            case RF_CHECKSUM_TYPE_GALLAGER:
+              if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
+                success = true;
+              }
+              break;
+            case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+              if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
+                success = true;
+              }
+#endif /* ENABLE_ADSL */
+              break;
+            case RF_CHECKSUM_TYPE_CCITT_FFFF:
+            case RF_CHECKSUM_TYPE_CCITT_0000:
+              offset = rl_protocol->payload_offset + rl_protocol->payload_size;
+              if (offset + 1 < sizeof(RxBuffer)) {
+                pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
+                if (crc16 == pkt_crc16) {
+
+                  success = true;
+                }
+              }
+              break;
+            default:
+              break;
+            }
+          }
+          break;
+        }
+
+        if (success) {
+          RF_last_rssi = radio_ebyte->getRSSI();
+          rx_packets_counter++;
+        }
+      }
+
+      memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+#if USE_SX1262 && (RADIOLIB_GODMODE || RADIOLIB_LOW_LEVEL)
+      radio_ebyte->writeBuffer(rxPacket.payload, rxPacket.len);
+      radio_ebyte->setBufferBaseAddress();
+#endif
+      rxPacket.len = 0;
+    }
+
+    sx1280_receive_complete = false;
+  }
+
+  return success;
+}
+
+static bool sx1280_transmit()
+{
+  u1_t crc8;
+  u2_t crc16;
+  u1_t i;
+
+  bool success = false;
+
+  if (RF_tx_size <= 0) {
+    return success;
+  }
+
+  sx1280_receive_active = false;
+  sx1280_transmit_complete = false;
+
+  size_t PayloadLen = 0;
+
+  if (rl_protocol->syncword_size > 5) {
+    for (i=5; i < rl_protocol->syncword_size; i++) {
+      txPacket.payload[PayloadLen++] = rl_protocol->syncword[i];
+    }
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+     /* crc16 left not initialized */
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    crc8 = 0x71;     /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+    crc16 = 0x0000;  /* seed value */
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  default:
+    crc16 = 0xffff;  /* seed value */
+    break;
+  }
+
+  switch (rl_protocol->type)
+  {
+  case RF_PROTOCOL_LEGACY:
+    /* take in account NRF905/FLARM "address" bytes */
+    crc16 = update_crc_ccitt(crc16, 0x31);
+    crc16 = update_crc_ccitt(crc16, 0xFA);
+    crc16 = update_crc_ccitt(crc16, 0xB6);
+    break;
+  case RF_PROTOCOL_P3I:
+    /* insert Net ID */
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 24) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >> 16) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  8) & 0x000000FF);
+    txPacket.payload[PayloadLen++] = (u1_t) ((rl_protocol->net_id >>  0) & 0x000000FF);
+    /* insert byte with payload size */
+    txPacket.payload[PayloadLen++] = rl_protocol->payload_size;
+
+    /* insert byte with CRC-8 seed value when necessary */
+    if (rl_protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
+      txPacket.payload[PayloadLen++] = crc8;
+    }
+
+    break;
+  case RF_PROTOCOL_OGNTP:
+  case RF_PROTOCOL_ADSL_860:
+  default:
+    break;
+  }
+
+  for (i=0; i < RF_tx_size; i++) {
+
+    switch (rl_protocol->whitening)
+    {
+    case RF_WHITENING_NICERF:
+      txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
+      break;
+    case RF_WHITENING_MANCHESTER:
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
+      PayloadLen++;
+      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
+      break;
+    case RF_WHITENING_NONE:
+    default:
+      txPacket.payload[PayloadLen] = TxBuffer[i];
+      break;
+    }
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_GALLAGER:
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    case RF_CHECKSUM_TYPE_NONE:
+      break;
+    case RF_CHECKSUM_TYPE_CRC8_107:
+      update_crc8(&crc8, (u1_t)(txPacket.payload[PayloadLen]));
+      break;
+    case RF_CHECKSUM_TYPE_CCITT_FFFF:
+    case RF_CHECKSUM_TYPE_CCITT_0000:
+    default:
+      if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(TxBuffer[i]));
+      } else {
+        crc16 = update_crc_ccitt(crc16, (u1_t)(txPacket.payload[PayloadLen]));
+      }
+      break;
+    }
+
+    PayloadLen++;
+  }
+
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+    break;
+  case RF_CHECKSUM_TYPE_CRC8_107:
+    txPacket.payload[PayloadLen++] = crc8;
+    break;
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  default:
+    if (rl_protocol->whitening == RF_WHITENING_MANCHESTER) {
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
+      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
+      PayloadLen++;
+    } else {
+      txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
+      txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
+    }
+    break;
+  }
+
+  txPacket.len = PayloadLen;
+
+  int state = radio_ebyte->transmit((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+
+  if (state == RADIOLIB_ERR_NONE) {
+
+    success = true;
+
+    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+#if USE_SX1262 && (RADIOLIB_GODMODE || RADIOLIB_LOW_LEVEL)
+    radio_ebyte->setBufferBaseAddress();
+    radio_ebyte->writeBuffer(txPacket.payload, txPacket.len);
+    radio_ebyte->setBufferBaseAddress();
+#endif
+
+#if 0
+    // the packet was successfully transmitted
+    Serial.println(F("success!"));
+
+    // print measured data rate
+    Serial.print(F("[SX1280] Datarate:\t"));
+    Serial.print(radio_ebyte->getDataRate());
+    Serial.println(F(" bps"));
+
+  } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
+    // the supplied packet was longer than 256 bytes
+    Serial.println(F("too long!"));
+
+  } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
+    // timeout occured while transmitting packet
+    Serial.println(F("timeout!"));
+
+  } else {
+    // some other error occurred
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+#endif
+  }
+
+  return success;
+}
+
+static void sx1280_shutdown()
+{
+  int state = radio_ebyte->sleep(false);
+
+  RadioSPI.end();
+}
+#endif /* EXCLUDE_SX1280 */
 
 #endif /* USE_RADIOLIB */

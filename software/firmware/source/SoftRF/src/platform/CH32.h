@@ -278,6 +278,7 @@ extern  SPIClass RadioSPI;
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 //#define ENABLE_RECORDER
 
 #if !defined(EXCLUDE_LED_RING)

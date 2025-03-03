@@ -337,6 +337,7 @@ struct rst_info {
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 #endif /* ARDUINO_GENERIC_RP2040 */
 
 #define USE_TIME_SLOTS

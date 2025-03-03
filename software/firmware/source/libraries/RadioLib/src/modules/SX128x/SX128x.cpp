@@ -528,7 +528,7 @@ int16_t SX128x::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
   if(modem == RADIOLIB_SX128X_PACKET_TYPE_LORA) {
     state = setPacketParamsLoRa(this->preambleLengthLoRa, this->headerType, len, this->crcLoRa, this->invertIQEnabled);
   } else if((modem == RADIOLIB_SX128X_PACKET_TYPE_GFSK) || (modem == RADIOLIB_SX128X_PACKET_TYPE_FLRC)) {
-    state = setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, len);
+    state = setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, this->packetType, len);
   } else if(modem == RADIOLIB_SX128X_PACKET_TYPE_BLE) {
     state = setPacketParamsBLE(this->connectionState, this->crcBLE, this->bleTestPayload, this->whitening);
   } else {
@@ -877,8 +877,7 @@ int16_t SX128x::setModem(ModemType_t modem) {
 int16_t SX128x::getModem(ModemType_t* modem) {
   RADIOLIB_ASSERT_PTR(modem);
 
-  uint8_t packetType = getPacketType();
-  switch(packetType) {
+  switch(getPacketType()) {
     case(RADIOLIB_SX128X_PACKET_TYPE_LORA):
       *modem = ModemType_t::RADIOLIB_MODEM_LORA;
       return(RADIOLIB_ERR_NONE);
@@ -932,7 +931,7 @@ int16_t SX128x::setPreambleLength(uint32_t preambleLength) {
 
     // update packet parameters
     this->preambleLengthGFSK = ((preambleLength / 4) - 1) << 4;
-    return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening));
+    return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, this->packetType));
   }
 
   return(RADIOLIB_ERR_WRONG_MODEM);
@@ -1105,7 +1104,7 @@ int16_t SX128x::setSyncWord(const uint8_t* syncWord, uint8_t len) {
   // reverse sync word byte order
   uint8_t syncWordBuff[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
   for(uint8_t i = 0; i < len; i++) {
-    syncWordBuff[4 - i] = syncWord[i];
+    syncWordBuff[/* 4 - */ i] = syncWord[i];
   }
 
   // update sync word
@@ -1119,7 +1118,7 @@ int16_t SX128x::setSyncWord(const uint8_t* syncWord, uint8_t len) {
     /// \todo add support for multiple sync words
     this->syncWordMatch = RADIOLIB_SX128X_GFSK_FLRC_SYNC_WORD_1;
   }
-  return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening));
+  return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, this->packetType));
 }
 
 int16_t SX128x::setSyncWord(uint8_t syncWord, uint8_t controlBits) {
@@ -1150,7 +1149,7 @@ int16_t SX128x::setCRC(uint8_t len, uint32_t initial, uint16_t polynomial) {
       }
     }
     this->crcGFSK = len << 4;
-    state = setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening);
+    state = setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, this->packetType);
     RADIOLIB_ASSERT(state);
 
     // set initial CRC value
@@ -1212,7 +1211,7 @@ int16_t SX128x::setWhitening(bool enabled) {
   }
 
   if(modem == RADIOLIB_SX128X_PACKET_TYPE_GFSK) {
-    return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening));
+    return(setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, this->packetType));
   }
   return(setPacketParamsBLE(this->connectionState, this->crcBLE, this->bleTestPayload, this->whitening));
 }
@@ -1387,6 +1386,14 @@ size_t SX128x::getPacketLength(bool update, uint8_t* offset) {
   if(offset) { *offset = rxBufStatus[1]; }
 
   return((size_t)rxBufStatus[0]);
+}
+
+int16_t SX128x::fixedPacketLengthMode(uint8_t len) {
+  return(setPacketMode(RADIOLIB_SX128X_GFSK_FLRC_PACKET_FIXED, len));
+}
+
+int16_t SX128x::variablePacketLengthMode(uint8_t maxLen) {
+  return(setPacketMode(RADIOLIB_SX128X_GFSK_FLRC_PACKET_VARIABLE, maxLen));
 }
 
 RadioLibTime_t SX128x::getTimeOnAir(size_t len) {
@@ -1586,7 +1593,7 @@ int16_t SX128x::setModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_
   return(this->mod->SPIwriteStream(RADIOLIB_SX128X_CMD_SET_MODULATION_PARAMS, data, 3));
 }
 
-int16_t SX128x::setPacketParamsGFSK(uint8_t preambleLen, uint8_t syncLen, uint8_t syncMatch, uint8_t crcLen, uint8_t whiten, uint8_t payLen, uint8_t hdrType) {
+int16_t SX128x::setPacketParamsGFSK(uint8_t preambleLen, uint8_t syncLen, uint8_t syncMatch, uint8_t crcLen, uint8_t whiten, uint8_t hdrType, uint8_t payLen) {
   uint8_t data[] = { preambleLen, syncLen, syncMatch, hdrType, payLen, crcLen, whiten };
   return(this->mod->SPIwriteStream(RADIOLIB_SX128X_CMD_SET_PACKET_PARAMS, data, 7));
 }
@@ -1628,6 +1635,21 @@ int16_t SX128x::setRangingRole(uint8_t role) {
 int16_t SX128x::setPacketType(uint8_t type) {
   uint8_t data[] = { type };
   return(this->mod->SPIwriteStream(RADIOLIB_SX128X_CMD_SET_PACKET_TYPE, data, 1));
+}
+
+int16_t SX128x::setPacketMode(uint8_t mode, uint8_t len) {
+  // check active modem
+  if(getPacketType() != RADIOLIB_SX128X_PACKET_TYPE_GFSK) {
+    return(RADIOLIB_ERR_WRONG_MODEM);
+  }
+
+  // set requested packet mode
+  int16_t state = setPacketParamsGFSK(this->preambleLengthGFSK, this->syncWordLen, this->syncWordMatch, this->crcGFSK, this->whitening, mode, len);
+  RADIOLIB_ASSERT(state);
+
+  // update cached value
+  this->packetType = mode;
+  return(state);
 }
 
 int16_t SX128x::setHeaderType(uint8_t hdrType, size_t len) {

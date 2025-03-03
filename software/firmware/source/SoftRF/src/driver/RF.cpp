@@ -109,6 +109,10 @@ byte RF_setup(void)
     } else if (lr1121_ops.probe()) {
       rf_chip = &lr1121_ops;
 #endif /* EXCLUDE_LR11XX */
+#if !defined(EXCLUDE_SX1280)
+    } else if (sx1280_ops.probe()) {
+      rf_chip = &sx1280_ops;
+#endif /* EXCLUDE_SX1280 */
 #if !defined(EXCLUDE_CC1101)
     } else if (cc1101_ops.probe()) {
       rf_chip = &cc1101_ops;

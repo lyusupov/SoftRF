@@ -212,6 +212,7 @@ extern  SoftSPI RadioSPI;
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 #endif /* ARDUINO_UNOR4_MINIMA */
 
 #if defined(EXCLUDE_WIFI)

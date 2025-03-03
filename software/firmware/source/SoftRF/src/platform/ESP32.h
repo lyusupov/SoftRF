@@ -374,6 +374,7 @@ struct rst_info {
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
       defined(CONFIG_IDF_TARGET_ESP32C5) || \
       defined(CONFIG_IDF_TARGET_ESP32C6) || \
@@ -388,6 +389,7 @@ struct rst_info {
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 #endif /* S3 C3 C6 */
 
 #define USE_TIME_SLOTS
