@@ -41,10 +41,19 @@ class FreqPlan
      switch (Protocol)
      {
       case RF_PROTOCOL_P3I:
-        { BaseFreq= 869525000; ChanSepar= 200000; Channels= 1; MaxTxPower = 27; }
+        switch (Plan)
+        {
+          case RF_BAND_RSVD:
+            { BaseFreq=2450000000; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } // reserved
+            break;
+          case RF_BAND_EU:
+          default:
+            { BaseFreq= 869525000; ChanSepar= 200000; Channels= 1; MaxTxPower = 27; } // Europe
 #if defined(TEST_PAW_ON_NICERF_SV610_FW466)
-        BaseFreq= 869920000; // Test PAW on NiceRF SV6X0
+              BaseFreq= 869920000; // Test PAW on NiceRF SV6X0
 #endif
+            break;
+        }
         break;
       case RF_PROTOCOL_ADSB_1090:
         { BaseFreq=1090000000; ChanSepar=2000000; Channels= 1; MaxTxPower = -10; }

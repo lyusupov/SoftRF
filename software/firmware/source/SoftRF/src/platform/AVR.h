@@ -165,7 +165,9 @@ struct rst_info {
 //#define USE_RADIOLIB
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
+#define EXCLUDE_SI446X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 
 //#define USE_OLED               //       kb
 #define EXCLUDE_OLED_049

@@ -107,7 +107,9 @@ extern Adafruit_NeoPixel strip;
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
+#define EXCLUDE_SI446X
 #define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY

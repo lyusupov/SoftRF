@@ -673,7 +673,12 @@ static void lr11xx_setup()
     switch (rl_protocol->bitrate)
     {
     case RF_BITRATE_38400:
+#if USE_SX1262
       br = 38.4;
+#endif
+#if USE_LR11XX
+      br = high ? 125.0 :  38.4; /* SX128x minimum is 125 kbps */
+#endif
       break;
     case RF_BITRATE_100KBPS:
     default:
@@ -701,7 +706,12 @@ static void lr11xx_setup()
     switch (rl_protocol->deviation)
     {
     case RF_FREQUENCY_DEVIATION_9_6KHZ:
+#if USE_SX1262
       fdev = 9.6;
+#endif
+#if USE_LR11XX
+      fdev = high ? 62.5 : 9.6; /* SX128x minimum is 62.5 kHz */
+#endif
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       fdev = 19.2;
@@ -3610,7 +3620,7 @@ static void sx1280_setup()
     switch (rl_protocol->bitrate)
     {
     case RF_BITRATE_38400:
-      br = 38.4;
+      br = high ? 125.0 :  38.4; /* SX128x minimum is 125 kbps */
       break;
     case RF_BITRATE_100KBPS:
     default:
@@ -3620,20 +3630,20 @@ static void sx1280_setup()
     state = radio_ebyte->setBitRate(br);
 
 #if RADIOLIB_DEBUG_BASIC
-  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
-    Serial.println(F("[SX1280] Selected bit rate is invalid for this module!"));
-    while (true) { delay(10); }
-  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
-    Serial.println(F("[SX1280] Selected bit rate to bandwidth ratio is invalid!"));
-    Serial.println(F("[SX1280] Increase receiver bandwidth to set this bit rate."));
-    while (true) { delay(10); }
-  }
+    if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+      Serial.println(F("[SX1280] Selected bit rate is invalid for this module!"));
+      while (true) { delay(10); }
+    } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+      Serial.println(F("[SX1280] Selected bit rate to bandwidth ratio is invalid!"));
+      Serial.println(F("[SX1280] Increase receiver bandwidth to set this bit rate."));
+      while (true) { delay(10); }
+    }
 #endif
 
     switch (rl_protocol->deviation)
     {
     case RF_FREQUENCY_DEVIATION_9_6KHZ:
-      fdev = 9.6;
+      fdev = high ? 62.5 :  9.6; /* SX128x minimum is 62.5 kHz */
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       fdev = 19.2;
@@ -3650,10 +3660,10 @@ static void sx1280_setup()
     state = radio_ebyte->setFrequencyDeviation(fdev);
 
 #if RADIOLIB_DEBUG_BASIC
-  if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
-    Serial.println(F("[SX1280] Selected frequency deviation is invalid for this module!"));
-    while (true) { delay(10); }
-  }
+    if (state == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
+      Serial.println(F("[SX1280] Selected frequency deviation is invalid for this module!"));
+      while (true) { delay(10); }
+    }
 #endif
 
     switch (rl_protocol->bandwidth)
@@ -3684,7 +3694,9 @@ static void sx1280_setup()
     state = radio_ebyte->setRxBandwidth(bw);
 #endif
 
-    state = radio_ebyte->setPreambleLength(rl_protocol->preamble_size * 8);
+    uint32_t preambleLength = rl_protocol->preamble_size * 8;
+    if (preambleLength > 32) preambleLength = 32;
+    state = radio_ebyte->setPreambleLength(preambleLength);
     state = radio_ebyte->setDataShaping(RADIOLIB_SHAPING_0_5);
 
     switch (rl_protocol->crc_type)
@@ -3726,12 +3738,13 @@ static void sx1280_setup()
     if (rl_protocol->syncword_size == 2) {
       uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
                          0xAA : 0x55;
-      uint8_t sword[4] = { preamble,
+      uint8_t sword[5] = { preamble,
+                           preamble,
                            preamble,
                            rl_protocol->syncword[0],
                            rl_protocol->syncword[1]
                          };
-      state = radio_ebyte->setSyncWord(sword, 4);
+      state = radio_ebyte->setSyncWord(sword, 5);
     } else if (rl_protocol->syncword_size > 5) {
       state = radio_ebyte->setSyncWord((uint8_t *) rl_protocol->syncword, 5);
       pkt_size += rl_protocol->syncword_size - 5;
