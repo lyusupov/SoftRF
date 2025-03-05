@@ -401,6 +401,10 @@ jobs:
           fi
           if [[ "$BOARD" =~ "arduino:renesas_uno:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://downloads.arduino.cc/packages/package_index.json" --save-prefs ;
+            sed -i 's/"version": "1.3.2"/"version": "1.4.0"/g' ~/.arduino15/package_index.json ;
+            sed -i "s\ArduinoCore-renesas_uno-1.3.2.tar.bz2\ArduinoCore-renesas_uno-1.4.0.tar.bz2\g" ~/.arduino15/package_index.json ;
+            sed -i "s\78d6a3d6f3e3a93a4a1220c07c257d4a3d32c8a076e997e58b92284414fc4333\4e705d414baf5f9eabb62d7800872db14e759e2ba7dffccf20a36147bf801bef\g" ~/.arduino15/package_index.json ;
+            sed -i "s\10157682\10304196\g" ~/.arduino15/package_index.json ;
             arduino --install-boards arduino:renesas_uno:1.4.0 ;
             arduino --board $BOARD --save-prefs ;
             wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
