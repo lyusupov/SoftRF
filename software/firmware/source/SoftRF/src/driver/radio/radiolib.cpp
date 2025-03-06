@@ -1399,6 +1399,7 @@ static void cc1101_channel(int8_t channel)
 {
   if (channel != -1 && channel != cc1101_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -1409,7 +1410,13 @@ static void cc1101_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio_ti->setFrequency(frequency / 1000000.0);
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+
+    int state = radio_ti->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
@@ -1581,7 +1588,28 @@ static void cc1101_setup()
 #endif
 
   state = radio_ti->setEncoding(RADIOLIB_ENCODING_NRZ);
-  state = radio_ti->setPreambleLength(rl_protocol->preamble_size * 8, 0);
+
+  uint8_t preambleLength = rl_protocol->preamble_size * 8;
+  if (preambleLength <= 16) {
+    preambleLength = 16;
+  } else if (preambleLength <=  24) {
+    preambleLength = 24;
+  } else if (preambleLength <=  32) {
+    preambleLength = 32;
+  } else if (preambleLength <=  48) {
+    preambleLength = 48;
+  } else if (preambleLength <=  64) {
+    preambleLength = 64;
+  } else if (preambleLength <=  96) {
+    preambleLength = 96;
+  } else if (preambleLength <= 128) {
+    preambleLength = 128;
+  } else {
+    preambleLength = 192;
+  }
+
+  state = radio_ti->setPreambleLength(preambleLength, 0);
+
   state = radio_ti->setDataShaping(RADIOLIB_SHAPING_0_5);
 
   switch (rl_protocol->crc_type)
@@ -2148,6 +2176,7 @@ static void sx1231_channel(int8_t channel)
 {
   if (channel != -1 && channel != sx1231_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -2158,7 +2187,13 @@ static void sx1231_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio_hoperf->setFrequency(frequency / 1000000.0);
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+
+    int state = radio_hoperf->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
@@ -2869,6 +2904,7 @@ static void si4432_channel(int8_t channel)
 {
   if (channel != -1 && channel != si4432_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -2879,7 +2915,13 @@ static void si4432_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio_silabs->setFrequency(frequency / 1000000.0);
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+
+    int state = radio_silabs->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {

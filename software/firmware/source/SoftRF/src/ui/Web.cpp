@@ -702,7 +702,10 @@ void handleSettings() {
   size -= len;
 
   /* Radio specific part 3 */
-  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
+  if (rf_chip && (rf_chip->type == RF_IC_SX1276 ||
+                  rf_chip->type == RF_IC_CC1101 ||
+                  rf_chip->type == RF_IC_SX1231 ||
+                  rf_chip->type == RF_IC_SI4432)) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
