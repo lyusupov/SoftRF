@@ -3500,6 +3500,7 @@ static void sx1280_channel(int8_t channel)
 {
   if (channel != -1 && channel != sx1280_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -3510,7 +3511,13 @@ static void sx1280_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio_ebyte->setFrequency(frequency / 1000000.0);
+    if (fc > 90) {
+      fc = 90;
+    } else if (fc < -90) {
+      fc = -90;
+    };
+
+    int state = radio_ebyte->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {

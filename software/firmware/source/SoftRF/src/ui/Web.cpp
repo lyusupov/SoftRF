@@ -705,15 +705,18 @@ void handleSettings() {
   if (rf_chip && (rf_chip->type == RF_IC_SX1276 ||
                   rf_chip->type == RF_IC_CC1101 ||
                   rf_chip->type == RF_IC_SX1231 ||
-                  rf_chip->type == RF_IC_SI4432)) {
+                  rf_chip->type == RF_IC_SI4432 ||
+                  rf_chip->type == RF_IC_SX1280)) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
 <th align=left>Radio CF correction (&#177;, kHz)</th>\
 <td align=right>\
-<INPUT type='number' name='rfc' min='-30' max='30' value='%d'>\
+<INPUT type='number' name='rfc' min='%d' max='%d' value='%d'>\
 </td>\
 </tr>"),
+    rf_chip->type == RF_IC_SX1280 ? -90 : -30,
+    rf_chip->type == RF_IC_SX1280 ?  90 :  30,
     settings->freq_corr);
 
     len = strlen(offset);
