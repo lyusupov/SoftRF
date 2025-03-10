@@ -701,32 +701,16 @@ int16_t RF69::setSyncWord(uint8_t* syncWord, size_t len, uint8_t maxErrBits) {
     }
   }
 
-#if 0
   // enable filtering
   int16_t state = enableSyncWordFiltering(maxErrBits);
   RADIOLIB_ASSERT(state);
 
   // set the length
-  state = this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_SYNC_CONFIG, len-1, 5, 3);
+  state = this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_SYNC_CONFIG, (len-1)<<3, 5, 3);
 
   // set sync word register
   this->mod->SPIwriteRegisterBurst(RADIOLIB_RF69_REG_SYNC_VALUE_1, syncWord, len);
-  if(state == RADIOLIB_ERR_NONE) {
-    this->syncWordLength = len-1;
-  }
-
   return(state);
-#else
-  this->syncWordLength = len-1;
-
-  int16_t state = enableSyncWordFiltering(maxErrBits);
-  RADIOLIB_ASSERT(state);
-
-  // set sync word register
-  this->mod->SPIwriteRegisterBurst(RADIOLIB_RF69_REG_SYNC_VALUE_1, syncWord, len);
-
-  return(state);
-#endif
 }
 
 int16_t RF69::setPreambleLength(uint8_t preambleLen) {
@@ -816,15 +800,11 @@ int16_t RF69::variablePacketLengthMode(uint8_t maxLen) {
 
 int16_t RF69::enableSyncWordFiltering(uint8_t maxErrBits) {
   // enable sync word recognition
-#if 0
   int16_t state = this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_SYNC_CONFIG, RADIOLIB_RF69_SYNC_ON | RADIOLIB_RF69_FIFO_FILL_CONDITION_SYNC, 7, 6);
   RADIOLIB_ASSERT(state);
 
   // set maximum error bits
   return(this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_SYNC_CONFIG, maxErrBits, 2, 0));
-#else
-  return(this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_SYNC_CONFIG, RADIOLIB_RF69_SYNC_ON | RADIOLIB_RF69_FIFO_FILL_CONDITION_SYNC | this->syncWordLength << 3 | maxErrBits, 7, 0));
-#endif
 }
 
 int16_t RF69::disableSyncWordFiltering() {
