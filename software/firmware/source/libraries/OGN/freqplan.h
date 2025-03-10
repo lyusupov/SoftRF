@@ -45,6 +45,7 @@ class FreqPlan
         {
           case RF_BAND_RSVD:
             { BaseFreq=2450000000; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } // reserved
+//            { BaseFreq=2000000000; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } /* S-band */
             break;
           case RF_BAND_EU:
           default:
@@ -89,6 +90,7 @@ class FreqPlan
             break;
           case RF_BAND_RSVD:
             BaseFreq   = 2450000000;
+//            BaseFreq   = 2000000000; /* S-band */
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
             MaxTxPower = 30;
             break;
@@ -176,6 +178,7 @@ class FreqPlan
             break;
           case RF_BAND_RSVD:
             { BaseFreq=2450000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // reserved
+//            { BaseFreq=2000000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } /* S-band */
             break;
           case RF_BAND_EU:
           default: /* AUTO, UK */
