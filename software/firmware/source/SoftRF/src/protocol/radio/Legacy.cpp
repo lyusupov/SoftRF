@@ -559,7 +559,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     const uint32_t xxtea_key[4] = LEGACY_KEY5;
     uint32_t key_v7[4];
 
-    legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
+    volatile legacy_v7_packet_t *pkt = (legacy_v7_packet_t *) legacy_pkt;
     uint32_t *wpkt     = (uint32_t *) legacy_pkt;
 
     uint32_t id        = this_aircraft->addr;
@@ -619,6 +619,9 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
  * Volunteer contributors are welcome:
  * https://pastebin.com/YB1ppAbt
  */
+    pkt->hp            = 0x1d; /* 10 m */
+    pkt->vp            = 0x11; /* 20 m */
+
     pkt->_unk1         = 0;
     pkt->_unk2         = 0;
     pkt->_unk3         = 3;
