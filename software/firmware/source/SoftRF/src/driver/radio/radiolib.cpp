@@ -3204,7 +3204,250 @@ static void si4432_setup()
 
 static bool si4432_receive()
 {
+#if 1
   return false;
+#else
+  bool success = false;
+  int state;
+
+  if (settings->power_save & POWER_SAVE_NORECEIVE) {
+    return success;
+  }
+
+  if (!si4432_receive_active) {
+
+    state = radio_silabs->startReceive();
+    if (state == RADIOLIB_ERR_NONE) {
+      si4432_receive_active = true;
+    }
+  }
+
+  if (si4432_receive_complete == true) {
+
+    rxPacket.len = radio_silabs->getPacketLength();
+
+#if 1
+    Serial.print("getPacketLength() = ");
+    Serial.print(rxPacket.len);
+    Serial.println();
+#endif
+
+    if (rxPacket.len > 0) {
+
+      if (rxPacket.len > sizeof(rxPacket.payload)) {
+        rxPacket.len = sizeof(rxPacket.payload);
+      }
+
+      state = radio_silabs->readData(rxPacket.payload, rxPacket.len);
+      si4432_receive_active = false;
+
+      if (state == RADIOLIB_ERR_NONE &&
+         !memeqzero(rxPacket.payload, rxPacket.len)) {
+
+        uint8_t i;
+
+#if 1
+        if (rl_protocol->syncword_size > 4) {
+          for (i=4; i < rl_protocol->syncword_size; i++) {
+            if (rxPacket.payload[i-4] != rl_protocol->syncword[i]) {
+#if 1
+              Serial.print("syncword mismatch ");
+              Serial.print("i="); Serial.print(i);
+              Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
+              Serial.print(" s="); Serial.print(rl_protocol->syncword[i], HEX);
+              Serial.println();
+#endif
+#if 0
+              if (i != 4) {
+                memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+                rxPacket.len = 0;
+                si4432_receive_complete = false;
+
+                return success;
+              }
+#endif
+            }
+          }
+
+          memcpy(rxPacket.payload,
+                 rxPacket.payload + rl_protocol->syncword_size - 4,
+                 rxPacket.len - (rl_protocol->syncword_size - 4));
+        }
+#else
+        if (rl_protocol->syncword_size > 3) {
+          for (i=3; i < rl_protocol->syncword_size; i++) {
+            if (rxPacket.payload[i-3] != rl_protocol->syncword[i]) {
+#if 1
+              Serial.print("syncword mismatch ");
+              Serial.print("i="); Serial.print(i);
+              Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
+              Serial.print(" s="); Serial.print(rl_protocol->syncword[i], HEX);
+              Serial.println();
+#endif
+#if 0
+              if (i != 4) {
+                memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+                rxPacket.len = 0;
+                si4432_receive_complete = false;
+
+                return success;
+              }
+#endif
+            }
+          }
+
+          memcpy(rxPacket.payload,
+                 rxPacket.payload + rl_protocol->syncword_size - 3,
+                 rxPacket.len - (rl_protocol->syncword_size - 3));
+        }
+#endif
+
+        size_t size = 0;
+        uint8_t offset;
+
+        u1_t crc8, pkt_crc8;
+        u2_t crc16, pkt_crc16;
+
+        RadioLib_DataPacket *rxPacket_ptr = &rxPacket;
+
+        switch (rl_protocol->crc_type)
+        {
+        case RF_CHECKSUM_TYPE_GALLAGER:
+        case RF_CHECKSUM_TYPE_CRC_MODES:
+        case RF_CHECKSUM_TYPE_NONE:
+           /* crc16 left not initialized */
+          break;
+        case RF_CHECKSUM_TYPE_CRC8_107:
+          crc8 = 0x71;     /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_0000:
+          crc16 = 0x0000;  /* seed value */
+          break;
+        case RF_CHECKSUM_TYPE_CCITT_FFFF:
+        default:
+          crc16 = 0xffff;  /* seed value */
+          break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_LEGACY:
+          /* take in account NRF905/FLARM "address" bytes */
+          crc16 = update_crc_ccitt(crc16, 0x31);
+          crc16 = update_crc_ccitt(crc16, 0xFA);
+          crc16 = update_crc_ccitt(crc16, 0xB6);
+          break;
+        case RF_PROTOCOL_P3I:
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        default:
+          break;
+        }
+
+        switch (rl_protocol->type)
+        {
+        case RF_PROTOCOL_P3I:
+          offset = rl_protocol->payload_offset;
+          for (i = 0; i < rl_protocol->payload_size; i++)
+          {
+            update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
+            if (i < sizeof(RxBuffer)) {
+              RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
+                            pgm_read_byte(&whitening_pattern[i]);
+            }
+          }
+
+          pkt_crc8 = rxPacket_ptr->payload[i + offset];
+
+          if (crc8 == pkt_crc8) {
+            success = true;
+          }
+          break;
+        case RF_PROTOCOL_OGNTP:
+        case RF_PROTOCOL_ADSL_860:
+        case RF_PROTOCOL_LEGACY:
+        default:
+          offset = 0;
+          size   = rl_protocol->payload_offset +
+                   rl_protocol->payload_size +
+                   rl_protocol->payload_size +
+                   rl_protocol->crc_size +
+                   rl_protocol->crc_size;
+          if (rxPacket_ptr->len >= (size + offset)) {
+            uint8_t val1, val2;
+            for (i = 0; i < size; i++) {
+              val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              i++;
+              val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              if ((i>>1) < sizeof(RxBuffer)) {
+                RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
+
+                if (i < size - (rl_protocol->crc_size + rl_protocol->crc_size)) {
+                  switch (rl_protocol->crc_type)
+                  {
+                  case RF_CHECKSUM_TYPE_GALLAGER:
+                  case RF_CHECKSUM_TYPE_CRC_MODES:
+                  case RF_CHECKSUM_TYPE_NONE:
+                    break;
+                  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+                  case RF_CHECKSUM_TYPE_CCITT_0000:
+                  default:
+                    crc16 = update_crc_ccitt(crc16, (u1_t)(RxBuffer[i>>1]));
+                    break;
+                  }
+                }
+              }
+            }
+
+            size = size>>1;
+
+            switch (rl_protocol->crc_type)
+            {
+            case RF_CHECKSUM_TYPE_GALLAGER:
+              if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
+                success = true;
+              }
+              break;
+            case RF_CHECKSUM_TYPE_CRC_MODES:
+#if defined(ENABLE_ADSL)
+              if (ADSL_Packet::checkPI((uint8_t  *) &RxBuffer[0], size) == 0) {
+                success = true;
+              }
+#endif /* ENABLE_ADSL */
+              break;
+            case RF_CHECKSUM_TYPE_CCITT_FFFF:
+            case RF_CHECKSUM_TYPE_CCITT_0000:
+              offset = rl_protocol->payload_offset + rl_protocol->payload_size;
+              if (offset + 1 < sizeof(RxBuffer)) {
+                pkt_crc16 = (RxBuffer[offset] << 8 | RxBuffer[offset+1]);
+                if (crc16 == pkt_crc16) {
+
+                  success = true;
+                }
+              }
+              break;
+            default:
+              break;
+            }
+          }
+          break;
+        }
+
+        if (success) {
+          RF_last_rssi = radio_silabs->getRSSI();
+          rx_packets_counter++;
+        }
+      }
+
+      memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+      rxPacket.len = 0;
+    }
+
+    si4432_receive_complete = false;
+  }
+
+  return success;
+#endif
 }
 
 static bool si4432_transmit()

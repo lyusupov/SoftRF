@@ -538,7 +538,17 @@ bool legacy_decode(void *legacy_pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
     /* TODO */
 
+#if 0
+    if (pkt->tstamp == ( timestamp    & 0xF) ||
+        pkt->tstamp == ((timestamp-1) & 0xF) ||
+        pkt->tstamp == ((timestamp+1) & 0xF)) {
+      return true;
+    } else {
+      return false;
+    }
+#else
     return true;
+#endif
 }
 
 #if defined(USE_INTERLEAVING)

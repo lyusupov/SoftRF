@@ -240,7 +240,7 @@ extern  SPIClass RadioSPI;
 //#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 //#define EXCLUDE_LK8EX1
 
-#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
@@ -274,12 +274,13 @@ extern  SPIClass RadioSPI;
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276         //  -    kb
 #define USE_RADIOLIB
+//#define USE_RADIOHEAD
 //#define EXCLUDE_LR11XX
-#define EXCLUDE_CC1101
+//#define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
-#define EXCLUDE_SX1231
-#define EXCLUDE_SX1280
+//#define EXCLUDE_SX1231
+//#define EXCLUDE_SX1280
 //#define ENABLE_RECORDER
 
 #if !defined(EXCLUDE_LED_RING)
