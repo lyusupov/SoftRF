@@ -26,6 +26,13 @@
  #include <pins_arduino.h>
 #endif
 
+#if defined(ARDUINO_ARCH_RP2040)
+#include <stdlib.h>
+#include "hardware/pio.h"
+#include "hardware/clocks.h"
+#include "rp2040_pio.h"
+#endif
+
 // The order of primary colors in the NeoPixel data stream can vary
 // among device types, manufacturers and even different revisions of
 // the same item.  The third parameter to the Adafruit_NeoPixel
@@ -154,6 +161,12 @@ class Adafruit_NeoPixel {
   inline bool
     canShow(void) { return (micros() - endTime) >= 300L; }
 
+private:
+#if defined(ARDUINO_ARCH_RP2040)
+  void  rp2040Init(uint8_t pin, bool is800KHz);
+  void  rp2040Show(uint8_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz);
+#endif
+
  protected:
 
   boolean
@@ -180,6 +193,15 @@ class Adafruit_NeoPixel {
     *port;         // Output PORT register
   uint8_t
     pinMask;       // Output PORT bitmask
+#endif
+#if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_ARDUINO_CORE_STM32) || defined(ARDUINO_ARCH_CH32)
+  GPIO_TypeDef *gpioPort; ///< Output GPIO PORT
+  uint32_t gpioPin;       ///< Output GPIO PIN
+#endif
+#if defined(ARDUINO_ARCH_RP2040)
+  PIO pio = pio0;
+  int sm = 0;
+  bool init = true;
 #endif
 };
 
