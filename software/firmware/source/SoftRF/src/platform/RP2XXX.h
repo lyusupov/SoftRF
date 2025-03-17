@@ -164,16 +164,16 @@ struct rst_info {
       defined(ARDUINO_NANO_RP2040_CONNECT)
 
 /* Console I/O */
-#define SOC_GPIO_PIN_CONS_RX  (5u)
-#define SOC_GPIO_PIN_CONS_TX  (4u)
+#define SOC_GPIO_PIN_CONS_RX  ( 5u) // "RX"
+#define SOC_GPIO_PIN_CONS_TX  ( 4u) // "TX"
 
 /* Waveshare Pico-GPS-L76B (MTK) */
-#define SOC_GPIO_PIN_GNSS_RX  (1u)  // D3, (5u) , H2
-#define SOC_GPIO_PIN_GNSS_TX  (0u)  // D9, (4u) , H1
-#define SOC_GPIO_PIN_GNSS_PPS (16u) // R20 (NC by default)
+#define SOC_GPIO_PIN_GNSS_RX  ( 1u) // D3, (5u) , H2
+#define SOC_GPIO_PIN_GNSS_TX  ( 0u) // D9, (4u) , H1
+#define SOC_GPIO_PIN_GNSS_PPS (16u) // R20      (NC by default)
 #define SOC_GPIO_PIN_GNSS_RST SOC_UNUSED_PIN // NA
-#define SOC_GPIO_PIN_GNSS_SBY (17u) // STANDBY
-#define SOC_GPIO_PIN_GNSS_FON (14u) // FORCE_ON
+#define SOC_GPIO_PIN_GNSS_SBY (17u) // STANDBY  (NC by default)
+#define SOC_GPIO_PIN_GNSS_FON (14u) // FORCE_ON (NC by default)
 
 /* SPI0 */
 #define SOC_GPIO_PIN_MOSI0    (19u)
@@ -210,7 +210,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SDA1     (26u)
 #define SOC_GPIO_PIN_SCL1     (27u)
 
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // D1
+#define SOC_GPIO_PIN_LED      (13u) // D1
 #define SOC_GPIO_PIN_VBUS     (24u) // Pico
 #define SOC_GPIO_PIN_VSYS     (29u) // Pico
 #define SOC_GPIO_PIN_PS       (23u) // Pico
@@ -218,15 +218,15 @@ struct rst_info {
 #define SOC_GPIO_PIN_CYW43_EN (25u) // Pico W
 
 #define SOC_GPIO_PIN_STATUS   PIN_LED // Pico/WeAct - 25, W - 64 (CYW43 GPIO 0)
-#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS // A0
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN    // D10
+#define SOC_GPIO_PIN_BATTERY  SOC_GPIO_PIN_VSYS // A0, (8u)
+#define SOC_GPIO_PIN_BUZZER   ( 9u) // D10
 
 /* Waveshare Pico-LoRa-SX1262-868M */
 #define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 #define SOC_GPIO_RADIO_LED_TX SOC_UNUSED_PIN
 
-#define SOC_GPIO_PIN_USBH_DP  (6u)  // Pin used as D+ for host, D- = D+ + 1
-#define SOC_GPIO_PIN_USBH_DN  (7u)
+#define SOC_GPIO_PIN_USBH_DP  ( 6u) // Pin used as D+ for host, D- = D+ + 1
+#define SOC_GPIO_PIN_USBH_DN  ( 7u)
 
 #define SOC_ADC_VOLTAGE_DIV   (3.0) // 20K + 10K voltage divider of VSYS
 
@@ -304,7 +304,6 @@ struct rst_info {
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 //#define EXCLUDE_EGM96          //  -    kb
-#define EXCLUDE_LED_RING         //  -    kb
 //#define EXCLUDE_SOUND
 
 #define USE_OLED                 //       kb
@@ -320,8 +319,12 @@ struct rst_info {
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
+#if defined(ARDUINO_GENERIC_RP2040)
+#define EXCLUDE_LED_RING
+#endif /* ARDUINO_GENERIC_RP2040 */
 #else
 #define EXCLUDE_EEPROM
+#define EXCLUDE_LED_RING
 
 #if defined(USE_ARDUINOBLE)
 #define STR_HELPER(x) #x

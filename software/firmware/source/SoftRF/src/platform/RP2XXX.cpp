@@ -141,7 +141,11 @@ static bool wdt_is_active = false;
 static RP2xxx_board_id RP2xxx_board    = RP2040_RAK11300; /* default */
 
 const char *RP2xxx_Device_Manufacturer = SOFTRF_IDENT;
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+const char *RP2xxx_Device_Model        = "Standalone Edition";
+#else
 const char *RP2xxx_Device_Model        = "Lego Edition";
+#endif
 const uint16_t RP2xxx_Device_Version   = SOFTRF_USB_FW_VERSION;
 
 #define UniqueIDsize 2
@@ -342,8 +346,10 @@ static void RP2xxx_setup()
 #endif /* EXCLUDE_WIFI */
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   RP2xxx_board = rp2040.isPicoW() ? RP2040_RPIPICO_W : RP2040_RPIPICO;
+  hw_info.model = SOFTRF_MODEL_STANDALONE;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   RP2xxx_board = rp2040.isPicoW() ? RP2350_RPIPICO_2W : RP2350_RPIPICO_2;
+  hw_info.model = SOFTRF_MODEL_STANDALONE;
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
   RP2xxx_board = (SoC->getChipId() == 0xcf516424) ?
