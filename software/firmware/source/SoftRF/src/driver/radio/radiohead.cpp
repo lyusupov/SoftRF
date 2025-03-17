@@ -18,7 +18,7 @@
 
 #include "../RF.h"
 
-#if defined(USE_RADIOHEAD) && !defined(USE_RADIOLIB)
+#if defined(USE_RADIOHEAD)
 
 #include "../EEPROM.h"
 #include "../Battery.h"
@@ -104,38 +104,38 @@ static bool memeqzero(const uint8_t *data, size_t length)
 	return memcmp((void *) data, (void *) p, length) == 0;
 }
 
-#if !defined(EXCLUDE_SI443X)
+#if !defined(EXCLUDE_SI446X)
 
-#include <RH_RF22.h>
+#include <RH_RF24.h>
 
 #define RADIOHEAD_SI443X_DEVICE_VERSION     0x06 //  4 0  chip version register
 
-static bool si4432_probe(void);
-static void si4432_setup(void);
-static void si4432_channel(int8_t);
-static bool si4432_receive(void);
-static bool si4432_transmit(void);
-static void si4432_shutdown(void);
+static bool si4463_probe(void);
+static void si4463_setup(void);
+static void si4463_channel(int8_t);
+static bool si4463_receive(void);
+static bool si4463_transmit(void);
+static void si4463_shutdown(void);
 
-const rfchip_ops_t si4432_ops = {
-  RF_IC_SI4432,
-  "SI4432",
-  si4432_probe,
-  si4432_setup,
-  si4432_channel,
-  si4432_receive,
-  si4432_transmit,
-  si4432_shutdown
+const rfchip_ops_t si4463_ops = {
+  RF_IC_SI4463,
+  "SI4463",
+  si4463_probe,
+  si4463_setup,
+  si4463_channel,
+  si4463_receive,
+  si4463_transmit,
+  si4463_shutdown
 };
 
-RH_RF22 *radio_silabs;
+RH_RF24 *radio_silabs;
 
-static int8_t si4432_channel_prev    = (int8_t) -1;
+static int8_t si4463_channel_prev    = (int8_t) -1;
 
-static bool si4432_receive_active    = false;
-static bool si4432_transmit_complete = false;
+static bool si4463_receive_active    = false;
+static bool si4463_transmit_complete = false;
 
-static u1_t si4432_readReg (u1_t addr) {
+static u1_t si4463_readReg (u1_t addr) {
 #if defined(USE_BASICMAC)
     hal_spi_select(1);
 #else
@@ -151,7 +151,7 @@ static u1_t si4432_readReg (u1_t addr) {
     return val;
 }
 
-static void si4432_writeReg (u1_t addr, u1_t data) {
+static void si4463_writeReg (u1_t addr, u1_t data) {
 #if defined(USE_BASICMAC)
     hal_spi_select(1);
 #else
@@ -166,7 +166,7 @@ static void si4432_writeReg (u1_t addr, u1_t data) {
 #endif
 }
 
-static bool si4432_probe()
+static bool si4463_probe()
 {
   SoC->SPI_begin();
 
@@ -178,11 +178,10 @@ static bool si4432_probe()
   hal_pin_rst(0); // drive SDN pin low
   delay(100);
 
-  u1_t v = si4432_readReg(RH_RF22_REG_01_VERSION_CODE);
-
 #if 0
-  Serial.print("si4432 version = "); Serial.println(v, HEX);
-#endif
+  u1_t v = si4463_readReg(RH_RF22_REG_01_VERSION_CODE);
+
+  Serial.print("si4463 version = "); Serial.println(v, HEX);
 
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
@@ -191,14 +190,16 @@ static bool si4432_probe()
 
   if (v == RADIOHEAD_SI443X_DEVICE_VERSION) {
     return true;
-  } else {
+  } else
+#endif
+  {
     return false;
   }
 }
 
-static void si4432_channel(int8_t channel)
+static void si4463_channel(int8_t channel)
 {
-  if (channel != -1 && channel != si4432_channel_prev) {
+  if (channel != -1 && channel != si4463_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
@@ -214,25 +215,25 @@ static void si4432_channel(int8_t channel)
 
 #if 0
     if (state == false) {
-      Serial.println(F("[Si4432] Selected frequency is invalid for this module!"));
+      Serial.println(F("[Si4463] Selected frequency is invalid for this module!"));
       while (true) { delay(10); }
     }
 #endif
 
-    si4432_channel_prev = channel;
+    si4463_channel_prev = channel;
     /* restart Rx upon a channel switch */
-    si4432_receive_active = false;
+    si4463_receive_active = false;
   }
 }
 
-static void si4432_setup()
+static void si4463_setup()
 {
   SoC->SPI_begin();
 
   uint32_t irq  = lmic_pins.busy == LMIC_UNUSED_PIN ?
                   RH_INVALID_PIN : lmic_pins.busy;
 
-  radio_silabs = new RH_RF22(lmic_pins.nss, irq /*, RadioSPI */);
+  radio_silabs = new RH_RF24(lmic_pins.nss, irq /*, RadioSPI */);
 
   switch (settings->rf_protocol)
   {
@@ -259,7 +260,7 @@ static void si4432_setup()
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
-     * Enforce legacy protocol setting for Si4432
+     * Enforce legacy protocol setting for Si4463
      * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
@@ -269,7 +270,7 @@ static void si4432_setup()
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
 #if 0
-  Serial.print(F("[Si4432] Initializing ... "));
+  Serial.print(F("[Si4463] Initializing ... "));
 #endif
 
   bool success = radio_silabs->init();
@@ -342,6 +343,10 @@ static void si4432_setup()
   }
 
   radio_silabs->setPromiscuous(false);
+
+  rxPacket.len = pkt_size;
+
+#if 0
   radio_silabs->setGpioReversed(false);
 
   const RH_RF22::ModemConfig cfg_38k =
@@ -365,12 +370,10 @@ static void si4432_setup()
     break;
   }
 
-  si4432_writeReg(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX);
-  si4432_writeReg(RH_RF22_REG_32_HEADER_CONTROL1, RH_RF22_BCEN_NONE | RH_RF22_HDCH_NONE);
-  si4432_writeReg(RH_RF22_REG_33_HEADER_CONTROL2, RH_RF22_HDLEN_0 | RH_RF22_FIXPKLEN | RH_RF22_SYNCLEN_4);
-  si4432_writeReg(RH_RF22_REG_3E_PACKET_LENGTH, pkt_size);
-
-  rxPacket.len = pkt_size;
+  si4463_writeReg(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX);
+  si4463_writeReg(RH_RF22_REG_32_HEADER_CONTROL1, RH_RF22_BCEN_NONE | RH_RF22_HDCH_NONE);
+  si4463_writeReg(RH_RF22_REG_33_HEADER_CONTROL2, RH_RF22_HDLEN_0 | RH_RF22_FIXPKLEN | RH_RF22_SYNCLEN_4);
+  si4463_writeReg(RH_RF22_REG_3E_PACKET_LENGTH, pkt_size);
 
   /* Load regional max. EIRP at first */
   float   txpow = RF_FreqPlan.MaxTxPower;;
@@ -385,7 +388,7 @@ static void si4432_setup()
 #if 1
     /*
      * Enforce Tx power limit until confirmation
-     * that Si4432 is doing well
+     * that Si4463 is doing well
      * when antenna is not connected
      */
     if (txpow > 17)
@@ -416,9 +419,10 @@ static void si4432_setup()
   }
 
   radio_silabs->setTxPower(power);
+#endif
 }
 
-static bool si4432_receive()
+static bool si4463_receive()
 {
 #if 1
   return false;
@@ -430,16 +434,16 @@ static bool si4432_receive()
     return success;
   }
 
-  if (!si4432_receive_active) {
+  if (!si4463_receive_active) {
 
     radio_silabs->available();
 
     if (radio_silabs->mode() == RHGenericDriver::RHModeRx) {
-      si4432_receive_active = true;
+      si4463_receive_active = true;
     }
   }
 
-  if (si4432_receive_active == true) {
+  if (si4463_receive_active == true) {
 
     uint8_t len = rxPacket.len;
 
@@ -449,7 +453,7 @@ static bool si4432_receive()
         len = sizeof(rxPacket.payload);
       }
 
-      // si4432_receive_active = false; /* TBD */
+      // si4463_receive_active = false; /* TBD */
 
       if (!memeqzero(rxPacket.payload, len)) {
 
@@ -656,7 +660,7 @@ static bool si4432_receive()
 #endif
 }
 
-static bool si4432_transmit()
+static bool si4463_transmit()
 {
   u1_t crc8;
   u2_t crc16;
@@ -668,8 +672,8 @@ static bool si4432_transmit()
     return success;
   }
 
-  si4432_receive_active = false;
-  si4432_transmit_complete = false;
+  si4463_receive_active = false;
+  si4463_transmit_complete = false;
 
   size_t PayloadLen = 0;
 
@@ -828,10 +832,10 @@ static bool si4432_transmit()
   return success;
 }
 
-static void si4432_shutdown()
+static void si4463_shutdown()
 {
   int state = radio_silabs->sleep();
 }
-#endif /* EXCLUDE_SI443X */
+#endif /* EXCLUDE_SI446X */
 
 #endif /* USE_RADIOHEAD */
