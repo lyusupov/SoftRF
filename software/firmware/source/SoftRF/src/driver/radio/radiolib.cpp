@@ -3161,6 +3161,24 @@ static void si4432_setup()
 
   state = radio_silabs->fixedPacketLengthMode(pkt_size);
 
+  switch (rl_protocol->crc_type)
+  {
+  case RF_CHECKSUM_TYPE_CCITT_FFFF:
+  case RF_CHECKSUM_TYPE_CCITT_0000:
+  case RF_CHECKSUM_TYPE_CCITT_1D02:
+  case RF_CHECKSUM_TYPE_CRC8_107:
+  case RF_CHECKSUM_TYPE_RS:
+    /* CRC is driven by software */
+    state = radio_silabs->setCRC(false);
+    break;
+  case RF_CHECKSUM_TYPE_GALLAGER:
+  case RF_CHECKSUM_TYPE_CRC_MODES:
+  case RF_CHECKSUM_TYPE_NONE:
+  default:
+    state = radio_silabs->setCRC(false);
+    break;
+  }
+
   float txpow;
 
   switch(settings->txpower)
@@ -3204,9 +3222,6 @@ static void si4432_setup()
 
 static bool si4432_receive()
 {
-#if 1
-  return false;
-#else
   bool success = false;
   int state;
 
@@ -3226,12 +3241,6 @@ static bool si4432_receive()
 
     rxPacket.len = radio_silabs->getPacketLength();
 
-#if 1
-    Serial.print("getPacketLength() = ");
-    Serial.print(rxPacket.len);
-    Serial.println();
-#endif
-
     if (rxPacket.len > 0) {
 
       if (rxPacket.len > sizeof(rxPacket.payload)) {
@@ -3250,7 +3259,7 @@ static bool si4432_receive()
         if (rl_protocol->syncword_size > 4) {
           for (i=4; i < rl_protocol->syncword_size; i++) {
             if (rxPacket.payload[i-4] != rl_protocol->syncword[i]) {
-#if 1
+#if 0
               Serial.print("syncword mismatch ");
               Serial.print("i="); Serial.print(i);
               Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
@@ -3447,7 +3456,6 @@ static bool si4432_receive()
   }
 
   return success;
-#endif
 }
 
 static bool si4432_transmit()

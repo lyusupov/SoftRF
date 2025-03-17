@@ -257,6 +257,12 @@ static void sx12xx_setup()
 {
   SoC->SPI_begin();
 
+#if defined(USE_RADIOLIB)
+  if (lmic_pins.dio[0] != LMIC_UNUSED_PIN) {
+    lmic_pins.dio[0] = LMIC_UNUSED_PIN;
+  }
+#endif /* USE_RADIOLIB */
+
   // initialize runtime env
   os_init (nullptr);
 

@@ -167,6 +167,8 @@ bool hal_pin_rst (u1_t val) {
 
 #if !defined(LMIC_USE_INTERRUPTS)
 static void hal_interrupt_init() {
+    check_dio = 0;
+
     // Loop to check / configure all DIO input pin
     for (uint8_t i = 0; i < NUM_DIO; ++i) {
         if (lmic_pins.dio[i] != LMIC_UNUSED_PIN) {
