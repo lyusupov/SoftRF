@@ -584,7 +584,7 @@ static void ESP32_setup()
 #if CONFIG_TINYUSB_ENABLED
   if (USB.manufacturerName(ESP32SX_Device_Manufacturer)) {
     char usb_serial_number[16];
-    uint16_t pid = 0x812BD ; /* Banana Pi BPI-PicoW-S3 - Arduino */
+    uint16_t pid = 0x812B ; /* Banana Pi BPI-PicoW-S3 - Arduino */
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
              "%02X%02X%02X%02X%02X%02X",

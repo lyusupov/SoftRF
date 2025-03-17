@@ -171,6 +171,9 @@ extern Adafruit_NeoPixel strip;
                                 SOC_GPIO_PIN_T3C6_LED :                 \
                                hw_info.model == SOFTRF_MODEL_INK       ?\
                                 SOC_GPIO_PIN_T3S3_LED :                 \
+                               hw_info.model == SOFTRF_MODEL_STANDALONE && \
+                               hw_info.revision == 4                   ?\
+                                SOC_GPIO_PIN_BPIPW_STATUS :             \
                                hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \
@@ -201,7 +204,9 @@ extern Adafruit_NeoPixel strip;
                                 (esp32_board == ESP32_C3_DEVKIT ?        \
                                 SOC_GPIO_PIN_C3_BUZZER :                 \
                                 (esp32_board == ESP32_C6_DEVKIT ?        \
-                                SOC_GPIO_PIN_C6_BUZZER : SOC_UNUSED_PIN))))
+                                SOC_GPIO_PIN_C6_BUZZER :                 \
+                                (esp32_board == ESP32_BANANA_PICOW ?     \
+                                SOC_GPIO_PIN_BPIPW_BUZZER : SOC_UNUSED_PIN)))))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27
@@ -270,6 +275,7 @@ extern Adafruit_NeoPixel strip;
 #include "iomap/WT0132C6.h"
 #include "iomap/LilyGO_T3C6.h"
 #include "iomap/LilyGO_T3S3_EPD.h"
+#include "iomap/Banana_PicoW.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -301,6 +307,7 @@ enum esp32_board_id {
   ESP32_HELTEC_TRACKER,
   ESP32_LILYGO_T3C6,
   ESP32_LILYGO_T3S3_EPD,
+  ESP32_BANANA_PICOW,
 };
 
 enum ep_model_id {
@@ -319,6 +326,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_HAM        = 0x818F,
   SOFTRF_USB_PID_MIDI       = 0x81A0,
   SOFTRF_USB_PID_INK        = 0x820A,
+  SOFTRF_USB_PID_BANANA     = 0x812B,
 };
 
 struct rst_info {

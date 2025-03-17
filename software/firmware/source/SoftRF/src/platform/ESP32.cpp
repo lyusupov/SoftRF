@@ -615,6 +615,9 @@ static void ESP32_setup()
     case MakeFlashId(ST_ID, XMC_XM25QH32B):
       esp32_board   = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
       break;
+    case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
+      esp32_board   = ESP32_BANANA_PICOW;
+      break;
     /* Both Ai-Thinker ESP-S3-12K and LilyGO S3 Core have QSPI PSRAM onboard */
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
@@ -1405,6 +1408,25 @@ static void ESP32_setup()
 
     uSD_is_attached = uSD.cardBegin(SD_CONFIG);
 
+  } else if (esp32_board == ESP32_BANANA_PICOW) {
+
+    hw_info.model    = SOFTRF_MODEL_STANDALONE;
+    hw_info.revision = 4; /* 2022-08-22 */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_BPIPW_CONS_RX,
+                       SOC_GPIO_PIN_BPIPW_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_BPIPW_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_BPIPW_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_BPIPW_BUSY;
+    // lmic_pins.rxe  = SOC_GPIO_PIN_BPIPW_ANT_RXTX; /* RXEN */
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_BPIPW_DIO1;
+#endif /* USE_RADIOLIB */
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -1539,6 +1561,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_LILYGO_T_TWR2      ) ? SOFTRF_USB_PID_HAM        :
           (esp32_board == ESP32_HELTEC_TRACKER     ) ? SOFTRF_USB_PID_MIDI       :
           (esp32_board == ESP32_LILYGO_T3S3_EPD    ) ? SOFTRF_USB_PID_INK        :
+          (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1753,6 +1776,11 @@ static void ESP32_setup()
 
     digitalWrite(SOC_GPIO_PIN_T3S3_LED,    LOW);
     pinMode(SOC_GPIO_PIN_T3S3_LED,         OUTPUT);
+
+  } else if (esp32_board == ESP32_BANANA_PICOW) {
+
+    digitalWrite(SOC_GPIO_PIN_BPIPW_STATUS, LOW);
+    pinMode(SOC_GPIO_PIN_BPIPW_STATUS,      OUTPUT);
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -3272,6 +3300,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_T3S3_SCK,  SOC_GPIO_PIN_T3S3_MISO,
                 SOC_GPIO_PIN_T3S3_MOSI, SOC_GPIO_PIN_T3S3_SS);
       break;
+    case ESP32_BANANA_PICOW:
+      SPI.begin(SOC_GPIO_PIN_BPIPW_SCK,  SOC_GPIO_PIN_BPIPW_MISO,
+                SOC_GPIO_PIN_BPIPW_MOSI, SOC_GPIO_PIN_BPIPW_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -3369,6 +3401,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: LilyGO T3-S3 EPD is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
+     } else if (esp32_board == ESP32_BANANA_PICOW) {
+      Serial.println(F("INFO: Banana Pi PicoW-S3 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_BPIPW_GNSS_RX, SOC_GPIO_PIN_BPIPW_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3472,6 +3508,8 @@ static byte ESP32_Display_setup()
           rval = DISPLAY_OLED_1_3;
         }
       }
+    } else if (esp32_board == ESP32_BANANA_PICOW) {
+      /* TBD */
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
         Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -4183,6 +4221,8 @@ static void ESP32_Battery_setup()
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+    } else if (esp32_board == ESP32_BANANA_PICOW) {
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO8_CHANNEL); /* TBD */
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
@@ -4385,6 +4425,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
 
     Wire.setPins(SOC_GPIO_PIN_T3S3_SDA, SOC_GPIO_PIN_T3S3_SCL);
+
+  } else if (esp32_board == ESP32_BANANA_PICOW) {
+
+    Wire.setPins(SOC_GPIO_PIN_BPIPW_SDA, SOC_GPIO_PIN_BPIPW_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
