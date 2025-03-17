@@ -29,7 +29,7 @@
 #include "Adafruit_SPIFlashBase.h"
 
 // implement SdFat Block Driver
-#include "SdFat.h"
+#include "SdFat_Adafruit_Fork.h"
 
 #if SD_FAT_VERSION >= 20000
 

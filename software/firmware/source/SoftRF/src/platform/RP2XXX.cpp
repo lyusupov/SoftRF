@@ -403,7 +403,8 @@ static void RP2xxx_post_init()
 #endif
   {
     Serial.println();
-    Serial.println(F("SoftRF Lego Edition Power-on Self Test"));
+    Serial.print(F("SoftRF ")); Serial.print(RP2xxx_Device_Model);
+    Serial.println(F(" Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
