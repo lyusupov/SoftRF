@@ -319,7 +319,7 @@ struct rst_info {
 
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
-#if defined(ARDUINO_GENERIC_RP2040)
+#if defined(ARDUINO_GENERIC_RP2040) || defined(PICO_RISCV)
 #define EXCLUDE_LED_RING
 #endif /* ARDUINO_GENERIC_RP2040 */
 #else
