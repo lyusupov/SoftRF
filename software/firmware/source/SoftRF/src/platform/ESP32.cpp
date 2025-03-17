@@ -87,17 +87,10 @@ lmic_pinmap lmic_pins = {
 #if !defined(EXCLUDE_LED_RING)
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PIX_NUM, SOC_GPIO_PIN_LED);
-#else /* USE_ADAFRUIT_NEO_LIBRARY */
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
-                              NEO_GRB + NEO_KHZ800);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+Adafruit_NeoPixel *strip;
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
@@ -1803,6 +1796,27 @@ static void ESP32_setup()
 #endif /* EXCLUDE_IMU */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if !defined(EXCLUDE_LED_RING)
+  if (hw_info.model == SOFTRF_MODEL_STANDALONE)
+  {
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    int16_t pixels_pin = esp32_board == ESP32_BANANA_PICOW ?
+                         SOC_GPIO_PIN_BPIPW_LED : SOC_GPIO_PIN_LED;
+
+    // Parameter 1 = number of pixels in strip
+    // Parameter 2 = Arduino pin number (most are valid)
+    // Parameter 3 = pixel type flags, add together as needed:
+    //   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+    //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+    //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+    //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+
+    strip = new Adafruit_NeoPixel(PIX_NUM, pixels_pin, NEO_GRB + NEO_KHZ800);
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
+  }
+#endif /* EXCLUDE_LED_RING */
+
 }
 
 static void ESP32_post_init()
@@ -2334,6 +2348,12 @@ static void ESP32_loop()
 
 static void ESP32_fini(int reason)
 {
+#if !defined(EXCLUDE_LED_RING)
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+  if (strip) delete strip;
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
+#endif /* EXCLUDE_LED_RING */
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (ESP32_has_spiflash) {
 #if CONFIG_TINYUSB_MSC_ENABLED

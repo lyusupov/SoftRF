@@ -96,7 +96,8 @@
  */
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
 #define EXCLUDE_LED_RING
-#elif !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+#elif !defined(CONFIG_IDF_TARGET_ESP32C3)  && \
+      !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C61) && \
       !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
@@ -118,18 +119,26 @@
 #define color_t                 RgbColor
 
 extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip;
-#else /* USE_ADAFRUIT_NEO_LIBRARY */
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
 #include <Adafruit_NeoPixel.h>
 
-#define uni_begin()             strip.begin()
-#define uni_show()              strip.show()
-#define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
-#define uni_numPixels()         strip.numPixels()
-#define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
+extern Adafruit_NeoPixel *strip;
 
-extern Adafruit_NeoPixel strip;
-#endif /* USE_NEOPIXELBUS_LIBRARY */
+static inline void uni_begin(void) { if (strip) strip->begin(); }
+static inline void uni_show(void)  { if (strip) strip->show();  }
+static inline void uni_setPixelColor(uint16_t i, color_t c) {
+  if (strip) strip->setPixelColor(i, c);
+}
+static inline uint16_t uni_numPixels() {
+  if (strip) return strip->numPixels();
+}
+static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
+  if (strip) return strip->Color(r,g,b);
+}
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
 #endif /* EXCLUDE_LED_RING */
 
 #define LEDC_CHANNEL_BUZZER     0
