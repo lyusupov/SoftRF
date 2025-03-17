@@ -48,11 +48,20 @@
 
 #define LED_STATE_ON            HIGH  // State when LED is litted
 
-#define uni_begin()             strip.begin()
-#define uni_show()              strip.show()
-#define uni_setPixelColor(i, c) strip.setPixelColor(i, c)
-#define uni_numPixels()         strip.numPixels()
-#define uni_Color(r,g,b)        strip.Color(r,g,b)
+extern Adafruit_NeoPixel *strip;
+
+static inline void uni_begin(void) { if (strip) strip->begin(); }
+static inline void uni_show(void)  { if (strip) strip->show();  }
+static inline void uni_setPixelColor(uint16_t i, uint32_t c) {
+  if (strip) strip->setPixelColor(i, c);
+}
+static inline uint16_t uni_numPixels() {
+  if (strip) return strip->numPixels();
+}
+static inline uint32_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
+  if (strip) return strip->Color(r,g,b);
+}
+
 #define color_t                 uint32_t
 
 #define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
@@ -99,7 +108,6 @@ extern Exp_SoftwareSerial swSer;
 #else
 extern SoftwareSerial swSer;
 #endif
-extern Adafruit_NeoPixel strip;
 
 #define USE_NMEALIB
 //#define USE_BASICMAC
