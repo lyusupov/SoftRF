@@ -82,6 +82,9 @@ void aprs_msg_callback(struct AX25Msg *msg) {
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 extern NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel;
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+extern Adafruit_NeoPixel TWR2_Pixel;
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
 
 void sa868_Tx_LED_state(bool val) {
   if (hw_info.model == SOFTRF_MODEL_HAM) {
@@ -92,6 +95,13 @@ void sa868_Tx_LED_state(bool val) {
     TWR2_Pixel.SetPixelColor(0, val ? LED_COLOR_RED : inactive_color);
     TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    color_t inactive_color = hw_info.revision > 0 ? LED_COLOR_BLACK :
+                             settings->power_save & POWER_SAVE_NORECEIVE ?
+                             LED_COLOR_BLACK : LED_COLOR_GREEN;
+    TWR2_Pixel.setPixelColor(0, val ? LED_COLOR_RED : inactive_color);
+    TWR2_Pixel.show();
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
   }
 }
 
@@ -284,6 +294,11 @@ static void sa8x8_setup()
                                 LED_COLOR_GREEN : LED_COLOR_BLACK);
     TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    TWR2_Pixel.setPixelColor(0, rx && hw_info.revision == 0 ?
+                                LED_COLOR_GREEN : LED_COLOR_BLACK);
+    TWR2_Pixel.show();
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
   }
 
   APRS_setTxLEDCallback(sa868_Tx_LED_state);

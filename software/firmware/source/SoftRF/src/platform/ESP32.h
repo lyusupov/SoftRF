@@ -94,10 +94,11 @@
  * NeoPixelBus is already "flickering-free" on ESP32 (with I2S or RMT)
  * but the "Core" needs update onto the most recent one
  */
-#if defined(CONFIG_IDF_TARGET_ESP32C2)
+#if defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32S2)
 #define EXCLUDE_LED_RING
 #elif !defined(CONFIG_IDF_TARGET_ESP32C3)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+      !defined(CONFIG_IDF_TARGET_ESP32S3)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C61) && \
       !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
@@ -155,7 +156,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #define SOC_GPIO_PIN_LED        7
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD 14? */
+#define SOC_GPIO_PIN_LED        2 /* 48 ? */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -446,7 +447,6 @@ struct rst_info {
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #define EXCLUDE_NRF905
-#define EXCLUDE_LED_RING
 
 /* Experimental */
 //#define USE_ADAFRUIT_MSC

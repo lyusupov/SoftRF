@@ -56,10 +56,10 @@ static inline void uni_setPixelColor(uint16_t i, uint32_t c) {
   if (strip) strip->setPixelColor(i, c);
 }
 static inline uint16_t uni_numPixels() {
-  if (strip) return strip->numPixels();
+  if (strip) return strip->numPixels(); else return 0;
 }
 static inline uint32_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
-  if (strip) return strip->Color(r,g,b);
+  if (strip) return strip->Color(r,g,b); else return 0;
 }
 
 #define color_t                 uint32_t

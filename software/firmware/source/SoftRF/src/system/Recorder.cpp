@@ -24,7 +24,7 @@ void Recorder_loop()    {}
 void Recorder_fini()    {}
 #else
 
-#include <SdFat.h>
+#include <SdFat_Adafruit_Fork.h>
 #include <FlightRecorder.h>
 
 #include "Recorder.h"

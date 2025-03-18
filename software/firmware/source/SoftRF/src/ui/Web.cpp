@@ -1050,7 +1050,7 @@ PSTR("<html>\
 
 #if defined(ENABLE_RECORDER)
 
-#include <SdFat.h>
+#include <SdFat_Adafruit_Fork.h>
 extern SdFat uSD;
 
 #define FILESYSTEM       uSD

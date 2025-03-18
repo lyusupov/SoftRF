@@ -29,7 +29,11 @@
 
 // LED
 #define SOC_GPIO_PIN_BPIPW_LED          40 // D1
-#define SOC_GPIO_PIN_BPIPW_STATUS       46
+#define SOC_GPIO_PIN_BPIPW_STATUS       46 // green, active HIGH
 
 #define SOC_GPIO_PIN_BPIPW_BUZZER       16 // D10
 #define SOC_GPIO_PIN_BPIPW_BATTERY      8  // 18, A0, TBD
+
+// Misc.
+#define SOC_GPIO_PIN_BPIPW_NEOPIXEL     48 // WS2812B
+#define SOC_GPIO_PIN_BPIPW_CAPACITOR    34 // 1 uF, UF2 boot

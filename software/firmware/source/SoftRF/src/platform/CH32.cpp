@@ -191,7 +191,7 @@ static void CH32_msc_flush_cb (void)
 #endif /* USE_TINYUSB */
 
 #if defined(ENABLE_RECORDER)
-#include <SdFat.h>
+#include <SdFat_Adafruit_Fork.h>
 
 SoftSpiDriver<SOC_GPIO_YD_SD_D0, SOC_GPIO_YD_SD_CMD, SOC_GPIO_YD_SD_CLK> uSD_SPI;
 

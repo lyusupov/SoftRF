@@ -394,6 +394,10 @@ static bool ESP32_has_32k_xtal = false;
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+Adafruit_NeoPixel TWR2_Pixel = Adafruit_NeoPixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL,
+                                                 NEO_GRB + NEO_KHZ800);
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
 
 #if defined(USE_SA8X8)
 #include <SA818Controller.h>
@@ -1298,6 +1302,11 @@ static void ESP32_setup()
       TWR2_Pixel.Begin();
       TWR2_Pixel.Show(); // Initialize all pixels to 'off'
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+      TWR2_Pixel.begin();
+      TWR2_Pixel.show(); // Initialize all pixels to 'off'
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
+
     } else {
       WIRE_FINI(Wire);
 
@@ -2336,6 +2345,24 @@ static void ESP32_loop()
       }
     }
     #endif /* USE_NEOPIXELBUS_LIBRARY */
+    #if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    color_t color = TWR2_Pixel.getPixelColor(0);
+
+    if (color != LED_COLOR_RED) {
+      bool sql = digitalRead(SOC_GPIO_PIN_TWR2_RADIO_SQL);
+      if (sql == LOW) {
+        if (color == LED_COLOR_BLACK) {
+          TWR2_Pixel.setPixelColor(0, LED_COLOR_GREEN);
+          TWR2_Pixel.show();
+        }
+      } else {
+        if (color == LED_COLOR_GREEN) {
+          TWR2_Pixel.setPixelColor(0, LED_COLOR_BLACK);
+          TWR2_Pixel.show();
+        }
+      }
+    }
+    #endif /* USE_ADAFRUIT_NEO_LIBRARY */
   }
   #endif /* USE_SA8X8 */
 
@@ -2534,6 +2561,10 @@ static void ESP32_fini(int reason)
     TWR2_Pixel.SetPixelColor(0, LED_COLOR_BLACK);
     TWR2_Pixel.Show();
 #endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    TWR2_Pixel.setPixelColor(0, LED_COLOR_BLACK);
+    TWR2_Pixel.show();
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     switch (hw_info.pmu)
