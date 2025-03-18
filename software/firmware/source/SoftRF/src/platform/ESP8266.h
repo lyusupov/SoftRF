@@ -59,7 +59,7 @@ static inline uint16_t uni_numPixels() {
   if (strip) return strip->numPixels(); else return 0;
 }
 static inline uint32_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
-  if (strip) return strip->Color(r,g,b); else return 0;
+  return Adafruit_NeoPixel::Color(r,g,b);
 }
 
 #define color_t                 uint32_t
