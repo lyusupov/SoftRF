@@ -71,12 +71,12 @@ class FreqPlan
           case RF_BAND_CN: /* ? */
             BaseFreq   = 920800000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
-            MaxTxPower = 15;
+            MaxTxPower = 15 /* LoRaWAN: 30 */;
             break;
           case RF_BAND_IN:
             BaseFreq   = 866200000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_125KHZ; // BW250
-            MaxTxPower = 14;
+            MaxTxPower = 14 /* LoRaWAN: 30 */;
             break;
           case RF_BAND_IL:
             BaseFreq   = 918500000;
@@ -86,7 +86,7 @@ class FreqPlan
           case RF_BAND_KR:
             BaseFreq   = 923200000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_62KHZ;  // BW125
-            MaxTxPower = 15;
+            MaxTxPower = 15 /* LoRaWAN: 23 */;
             break;
           case RF_BAND_RSVD:
             BaseFreq   = 2450000000;
