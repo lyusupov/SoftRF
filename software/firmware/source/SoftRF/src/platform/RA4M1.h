@@ -140,7 +140,7 @@ extern  SoftSPI RadioSPI;
 #define SOC_GPIO_PIN_SCL      WIRE_SCL_PIN
 #endif /* ARDUINO_UNOR4_WIFI */
 
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED      PIN_A2
 #define SOC_GPIO_PIN_GNSS_PPS PIN_A3
 //#define NOT_AN_INTERRUPT      SOC_GPIO_PIN_GNSS_PPS
 #define SOC_GPIO_PIN_BATTERY  PIN_A1
@@ -201,8 +201,8 @@ extern  SoftSPI RadioSPI;
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
 #define EXCLUDE_EGM96            //  -    kb
-#define EXCLUDE_LED_RING         //  -    kb
-#define EXCLUDE_SOUND
+//#define EXCLUDE_LED_RING       //  -    kb
+//#define EXCLUDE_SOUND
 
 //#define USE_BASICMAC
 //#define EXCLUDE_SX1276         //  -  3 kb
