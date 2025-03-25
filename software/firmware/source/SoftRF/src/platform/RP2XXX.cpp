@@ -675,6 +675,7 @@ static void RP2xxx_Sound_tone(int hz, uint8_t volume)
       tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
     } else {
       noTone(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
     }
   }
 }

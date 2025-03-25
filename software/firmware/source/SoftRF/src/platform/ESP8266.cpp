@@ -160,6 +160,8 @@ static void ESP8266_Sound_test(int var)
       tone(SOC_GPIO_PIN_BUZZER, 440, 500);
     }
     delay(600);
+    noTone(SOC_GPIO_PIN_BUZZER);
+    pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
 
 //    Serial_GNSS_In.enableRx(true);
   }
@@ -168,7 +170,12 @@ static void ESP8266_Sound_test(int var)
 static void ESP8266_Sound_tone(int hz, uint8_t volume)
 {
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
-    tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    if (hz > 0) {
+      tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+    } else {
+      noTone(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+    }
   }
 }
 
