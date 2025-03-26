@@ -27,9 +27,6 @@
 #define Serial_setDebugOutput(x) ({})
 #define WIFI_STA_TIMEOUT         20000
 extern WebServer server;
-#if PICO_SDK_VERSION_MAJOR == 2
-#define EXCLUDE_BLUETOOTH
-#endif /* PICO_SDK_VERSION_MAJOR */
 #else
 #include <Arduino.h>
 #define EXCLUDE_WIFI

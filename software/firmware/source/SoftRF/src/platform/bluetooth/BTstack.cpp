@@ -699,7 +699,7 @@ static void CYW43_Bluetooth_setup()
       static char Hardware[9];
       snprintf(Hardware,  sizeof(Hardware),  "%08X", hw_info.revision);
 
-      const char *Firmware = "Arduino RP2040 " ARDUINO_PICO_VERSION_STR;
+      const char *Firmware = "Arduino RP2XXX " ARDUINO_PICO_VERSION_STR;
 
       // Setup device information service
       device_information_service_server_init();

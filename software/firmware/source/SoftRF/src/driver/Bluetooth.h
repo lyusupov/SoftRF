@@ -46,7 +46,7 @@ enum
 #include "../platform/bluetooth/ArduinoBLE.h"
 #endif /* USE_ARDUINOBLE */
 #elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "../platform/bluetooth/BTstack.h"
 #elif defined(ARDUINO_NANO_RP2040_CONNECT)
 #if defined(USE_ARDUINOBLE)
