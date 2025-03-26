@@ -59,7 +59,8 @@ enum
 extern IODev_ops_t ESP32_Bluetooth_ops;
 extern Bluetooth_ctl_t ESP32_BT_ctl;
 
-#elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_ARCH_RP2040) && \
+     (defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_W))
 
 #define UART_SERVICE_UUID         "0000ffe0-0000-1000-8000-00805f9b34fb"
 #define UART_CHARACTERISTIC_UUID  "0000ffe1-0000-1000-8000-00805f9b34fb"
