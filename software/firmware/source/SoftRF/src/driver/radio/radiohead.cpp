@@ -135,39 +135,58 @@ static int8_t si4463_channel_prev    = (int8_t) -1;
 static bool si4463_receive_active    = false;
 static bool si4463_transmit_complete = false;
 
-static u1_t si4463_readReg (u1_t addr) {
-#if defined(USE_BASICMAC)
-    hal_spi_select(1);
-#else
-    hal_pin_nss(0);
-#endif
-    hal_spi(addr & 0x7F);
-    u1_t val = hal_spi(0x00);
-#if defined(USE_BASICMAC)
-    hal_spi_select(0);
-#else
-    hal_pin_nss(1);
-#endif
-    return val;
-}
+static bool si4463_CommandRead(uint8_t cmd, uint8_t* read_buf, uint8_t read_len)
+{
+  bool done = false;
 
-static void si4463_writeReg (u1_t addr, u1_t data) {
+#if defined(USE_BASICMAC)
+  hal_spi_select(1);
+#else
+  hal_pin_nss(0);
+#endif
+
+  hal_spi(cmd);
+
+#if defined(USE_BASICMAC)
+  hal_spi_select(0);
+#else
+  hal_pin_nss(1);
+#endif
+
+  uint16_t count; // Number of times we have tried to get CTS
+  for (count = 0; !done && count < RH_RF24_CTS_RETRIES; count++)
+  {
 #if defined(USE_BASICMAC)
     hal_spi_select(1);
 #else
     hal_pin_nss(0);
 #endif
-    hal_spi(addr | 0x80);
-    hal_spi(data);
+
+    hal_spi(RH_RF24_CMD_READ_BUF);
+    if (hal_spi(0x00) == RH_RF24_REPLY_CTS) {
+        // Now read any expected reply data
+        if (read_buf && read_len) {
+          while (read_len--)
+              *read_buf++ = hal_spi(0x00);
+        }
+        done = true;
+    }
+
 #if defined(USE_BASICMAC)
     hal_spi_select(0);
 #else
     hal_pin_nss(1);
 #endif
+  }
+
+  return done;
 }
 
 static bool si4463_probe()
 {
+  uint8_t buf[8];
+  uint16_t deviceType;
+
   SoC->SPI_begin();
 
   lmic_hal_init (nullptr);
@@ -178,22 +197,27 @@ static bool si4463_probe()
   hal_pin_rst(0); // drive SDN pin low
   delay(100);
 
-#if 0
-  u1_t v = si4463_readReg(RH_RF22_REG_01_VERSION_CODE);
-
-  Serial.print("si4463 version = "); Serial.println(v, HEX);
+  bool status = si4463_CommandRead(RH_RF24_CMD_PART_INFO, buf, sizeof(buf));
 
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
   hal_pin_rst(2); // configure SDN pin floating!
 
-  if (v == RADIOHEAD_SI443X_DEVICE_VERSION) {
+  if (!status) {
+    return false; // SPI error ? Not connected ?
+  }
+
+  deviceType = (buf[1] << 8) | buf[2];
+
+  Serial.print("si44xx device = "); Serial.println(deviceType, HEX);
+
+  // Check PART to be either 0x4460, 0x4461, 0x4463, 0x4464
+  if (deviceType != 0x4460 && deviceType != 0x4461 &&
+      deviceType != 0x4463 && deviceType != 0x4464) {
+    return false; // Unknown radio type, or not connected
+  } else {
     return true;
-  } else
-#endif
-  {
-    return false;
   }
 }
 
