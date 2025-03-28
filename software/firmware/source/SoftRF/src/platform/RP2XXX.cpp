@@ -1382,15 +1382,13 @@ void setup1() {
   pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
   pio_cfg.pin_dp     = SOC_GPIO_PIN_USBH_DP;
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
   pio_cfg.sm_tx      = 3;
   pio_cfg.sm_rx      = 2;
   pio_cfg.sm_eop     = 3;
   pio_cfg.pio_rx_num = 0;
   pio_cfg.pio_tx_num = 1;
   pio_cfg.tx_ch      = 9;
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
-  /* TBD */
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W */
 
   USBHost.configure_pio_usb(1, &pio_cfg);

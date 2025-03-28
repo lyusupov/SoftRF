@@ -837,7 +837,7 @@ void handleRoot() {
  "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
   <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
   <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
-#if defined(USE_USB_HOST)
+#if defined(USE_USB_HOST) && defined(ESP32)
   "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
 #endif /* USE_USB_HOST */
  "</table>\
@@ -862,7 +862,7 @@ void handleRoot() {
     <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
     <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"),
     ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
-#if defined(USE_USB_HOST)
+#if defined(USE_USB_HOST) && defined(ESP32)
     "H"
 #endif /* USE_USB_HOST */
 #if defined(SOFTRF_ADDRESS)
@@ -878,7 +878,7 @@ void handleRoot() {
 #endif /* ENABLE_AHRS */
     UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
     low_voltage ? "red" : "green", str_Vcc,
-#if defined(USE_USB_HOST)
+#if defined(USE_USB_HOST) && defined(ESP32)
     ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
     ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
 #endif /* USE_USB_HOST */
