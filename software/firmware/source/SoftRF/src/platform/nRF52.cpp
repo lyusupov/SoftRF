@@ -325,9 +325,11 @@ ui_settings_t *ui;
 #include <MPU9250.h>
 #include <ICM_20948.h>
 #include <QMA6100P.h>
-MPU9250       imu_1;
-ICM_20948_I2C imu_2;
-QMA6100P      imu_3;
+#include <SensorBHI260AP.hpp>
+MPU9250         imu_1;
+ICM_20948_I2C   imu_2;
+QMA6100P        imu_3;
+SensorBHI260AP  imu_4;
 
 static bool nRF52_has_imu = false;
 static unsigned long IMU_Time_Marker = 0;
@@ -897,6 +899,10 @@ static void nRF52_setup()
     if (nRF52_has_imu == false) {
       Wire.beginTransmission(ICM20948_ADDRESS);
       nRF52_has_imu = (Wire.endTransmission() == 0);
+      if (nRF52_has_imu == false) {
+        Wire.beginTransmission(BHI260AP_ADDRESS_L);
+        nRF52_has_imu = (Wire.endTransmission() == 0);
+      }
     }
   }
 #endif /* EXCLUDE_IMU */
@@ -1277,6 +1283,19 @@ static void nRF52_setup()
           hw_info.imu = IMU_MPU9250;
           hw_info.mag = MAG_AK8963;
           IMU_Time_Marker = millis();
+        } else if (imu_4.init(Wire,
+                              SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL,
+                              BHI260AP_ADDRESS_L)) {
+          float sample_rate = 100.0;      /* Read out hintr_ctrl measured at 100Hz */
+          uint32_t report_latency_ms = 0; /* Report immediately */
+
+          // Enable acceleration
+          imu_4.configure(SENSOR_ID_ACC_PASS, sample_rate, report_latency_ms);
+          // Enable gyroscope
+          imu_4.configure(SENSOR_ID_GYRO_PASS, sample_rate, report_latency_ms);
+
+          hw_info.imu = IMU_BHI260AP;
+          IMU_Time_Marker = millis();
         } else {
           bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
 
@@ -1515,7 +1534,8 @@ static void nRF52_post_init()
       Serial.println(F("External components:"));
       Serial.print(F("IMU     : "));
       Serial.println(hw_info.imu   == IMU_MPU9250  ||
-                     hw_info.imu   == IMU_ICM20948     ? F("PASS") : F("N/A"));
+                     hw_info.imu   == IMU_ICM20948 ||
+                     hw_info.imu   == IMU_BHI260AP     ? F("PASS") : F("N/A"));
     } else {
       Serial.print(F("IMU     : "));
       Serial.println(hw_info.imu   == IMU_BHI260AP     ? F("PASS") : F("FAIL"));
@@ -1834,6 +1854,13 @@ static void nRF52_loop()
     IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
     IMU_Time_Marker = millis();
   }
+
+  if (hw_info.imu == IMU_BHI260AP &&
+      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    // Update sensor fifo
+    imu_4.update();
+    IMU_Time_Marker = millis();
+  }
 #endif /* EXCLUDE_IMU */
 
   if (nRF52_board      == NRF52_SEEED_T1000E &&
@@ -1880,6 +1907,11 @@ static void nRF52_fini(int reason)
 
   if (hw_info.imu == ACC_QMA6100P) {
     imu_3.enableAccel(false);
+  }
+
+  if (hw_info.imu == IMU_BHI260AP) {
+    /* TBD */
+    // imu_4.deinit();
   }
 #endif /* EXCLUDE_IMU */
 
