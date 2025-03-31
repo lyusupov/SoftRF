@@ -238,6 +238,7 @@ void handleSettings() {
     );
   } else if (hw_info.rf == RF_IC_SX1231 ||
              hw_info.rf == RF_IC_SI4432 ||
+             hw_info.rf == RF_IC_SI4463 ||
              hw_info.rf == RF_IC_CC1101) {
     snprintf_P ( offset, size,
       PSTR("\
@@ -706,6 +707,7 @@ void handleSettings() {
                   rf_chip->type == RF_IC_CC1101 ||
                   rf_chip->type == RF_IC_SX1231 ||
                   rf_chip->type == RF_IC_SI4432 ||
+                  rf_chip->type == RF_IC_SI4463 ||
                   rf_chip->type == RF_IC_SX1280)) {
     snprintf_P ( offset, size,
       PSTR("\

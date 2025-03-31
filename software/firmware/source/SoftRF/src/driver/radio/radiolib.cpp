@@ -2825,7 +2825,7 @@ static void si4432_shutdown(void);
 
 const rfchip_ops_t si4432_ops = {
   RF_IC_SI4432,
-  "SI4432",
+  "Si4432",
   si4432_probe,
   si4432_setup,
   si4432_channel,
@@ -2834,7 +2834,7 @@ const rfchip_ops_t si4432_ops = {
   si4432_shutdown
 };
 
-Si4432 *radio_silabs;
+static Si4432 *radio_silabs;
 
 static int8_t si4432_channel_prev    = (int8_t) -1;
 

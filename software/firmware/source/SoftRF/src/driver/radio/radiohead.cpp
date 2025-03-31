@@ -119,7 +119,7 @@ static void si4463_shutdown(void);
 
 const rfchip_ops_t si4463_ops = {
   RF_IC_SI4463,
-  "SI4463",
+  "Si4463",
   si4463_probe,
   si4463_setup,
   si4463_channel,
@@ -128,12 +128,47 @@ const rfchip_ops_t si4463_ops = {
   si4463_shutdown
 };
 
-RH_RF24 *radio_silabs;
+static RH_RF24 *radio_silabs;
 
 static int8_t si4463_channel_prev    = (int8_t) -1;
 
 static bool si4463_receive_active    = false;
 static bool si4463_transmit_complete = false;
+
+static const uint8_t byte_rev_table[256] = {
+	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
+	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
+	0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+	0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
+	0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+	0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
+	0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+	0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
+	0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+	0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
+	0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+	0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
+	0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+	0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
+	0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+	0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
+	0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+	0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
+	0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+	0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
+	0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+	0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
+	0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+	0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
+	0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+	0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
+	0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+	0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
+	0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+	0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
+	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
+};
 
 static bool si4463_CommandRead(uint8_t cmd, uint8_t* read_buf, uint8_t read_len)
 {
@@ -210,7 +245,9 @@ static bool si4463_probe()
 
   deviceType = (buf[1] << 8) | buf[2];
 
+#if 0
   Serial.print("si44xx device = "); Serial.println(deviceType, HEX);
+#endif
 
   // Check PART to be either 0x4460, 0x4461, 0x4463, 0x4464
   if (deviceType != 0x4460 && deviceType != 0x4461 &&
@@ -225,6 +262,7 @@ static void si4463_channel(int8_t channel)
 {
   if (channel != -1 && channel != si4463_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -235,7 +273,13 @@ static void si4463_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    bool state = radio_silabs->setFrequency(frequency / 1000000.0);
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+
+    bool state = radio_silabs->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if 0
     if (state == false) {
@@ -254,10 +298,13 @@ static void si4463_setup()
 {
   SoC->SPI_begin();
 
-  uint32_t irq  = lmic_pins.busy == LMIC_UNUSED_PIN ?
-                  RH_INVALID_PIN : lmic_pins.busy;
+  uint8_t irq = lmic_pins.busy == LMIC_UNUSED_PIN ?
+                RH_INVALID_PIN : lmic_pins.busy;
 
-  radio_silabs = new RH_RF24(lmic_pins.nss, irq /*, RadioSPI */);
+  uint8_t sdn = lmic_pins.rst  == LMIC_UNUSED_PIN ?
+                RH_INVALID_PIN : lmic_pins.rst;
+
+  radio_silabs = new RH_RF24(lmic_pins.nss, irq, sdn /*, RadioSPI */);
 
   switch (settings->rf_protocol)
   {
@@ -308,15 +355,9 @@ static void si4463_setup()
   }
 #endif
 
-#if 0
-  /* Work around 0xAA preamble in use by OGNTP */
-  uint8_t preambleLen = (rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ?
-                        1 : rh_protocol->preamble_size * 2;
-#else
-  uint8_t preambleLen = rh_protocol->preamble_size * 2;
+  uint8_t preambleLen = rh_protocol->preamble_size;
   preambleLen += (rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ? 1 : 0;
-#endif
-  radio_silabs->setPreambleLength(preambleLen); // in 4-bit nibbles
+  radio_silabs->setPreambleLength(preambleLen); // in bytes
 
   size_t pkt_size = rh_protocol->payload_offset + rh_protocol->payload_size +
                     rh_protocol->crc_size;
@@ -337,30 +378,21 @@ static void si4463_setup()
   if (rh_protocol->syncword_size == 2) {
     uint8_t preamble = rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
                        0xAA : 0x55;
-    uint8_t sword[4] = { preamble,
-                         preamble,
-                         rh_protocol->syncword[0],
-                         rh_protocol->syncword[1]
+    uint8_t sword[4] = { byte_rev_table[preamble],
+                         byte_rev_table[preamble],
+                         byte_rev_table[rh_protocol->syncword[0]],
+                         byte_rev_table[rh_protocol->syncword[1]]
                        };
     radio_silabs->setSyncWords(sword, 4);
-#if 0
-  /* Work around 0xAA preamble in use by OGNTP */
-  } else if (rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA &&
-             rh_protocol->preamble_size == 1) {
-    uint8_t sword[4] = { 0xAA,
-                         rh_protocol->syncword[0],
-                         rh_protocol->syncword[1],
-                         rh_protocol->syncword[2]
-                       };
-    radio_silabs->setSyncWords(sword, 4);
-    if (rh_protocol->syncword_size > 3) {
-      pkt_size += rh_protocol->syncword_size - 3;
-    }
-#endif
   } else {
-    radio_silabs->setSyncWords((uint8_t *) rh_protocol->syncword,
-                               rh_protocol->syncword_size > 4 ? 4 :
-                               (size_t) rh_protocol->syncword_size);
+    uint8_t sword[4];
+    uint8_t sw_size = rh_protocol->syncword_size > 4 ? 4 :
+                      rh_protocol->syncword_size;
+    for (int i=0; i<sw_size; i++) {
+      sword[i] = byte_rev_table[rh_protocol->syncword[i]];
+    }
+
+    radio_silabs->setSyncWords(sword, sw_size);
     if (rh_protocol->syncword_size > 4) {
       pkt_size += rh_protocol->syncword_size - 4;
     }
@@ -370,38 +402,18 @@ static void si4463_setup()
 
   rxPacket.len = pkt_size;
 
-#if 0
-  radio_silabs->setGpioReversed(false);
+  uint8_t l[] = { (uint8_t)(pkt_size)};
+  radio_silabs->set_properties(RH_RF24_PROPERTY_PKT_FIELD_1_LENGTH_7_0, l, sizeof(l));
 
-  const RH_RF22::ModemConfig cfg_38k =
-    //  1c,   1f,   20,   21,   22,   23,   24,   25,   2c,   2d,   2e,   58,   69,   6e,   6f,   70,   71,   72
-    { 0x01, 0x03, 0x68, 0x01, 0x3a, 0x93, 0x07, 0xff, 0x28, 0x20, 0x29, 0x80, 0x60, 0x09, 0xd5, 0x0c, 0x23, 0x0f }; // 38.4, 9.6
+  radio_silabs->setCRCPolynomial(RH_RF24::CRC_NONE);
 
-  const RH_RF22::ModemConfig cfg_100k =
-    //  1c,   1f,   20,   21,   22,   23,   24,   25,   2c,   2d,   2e,   58,   69,   6e,   6f,   70,   71,   72
-    { 0x9a, 0x03, 0x3c, 0x02, 0x22, 0x22, 0x07, 0xff, 0x28, 0x0c, 0x28, 0xc0, 0x60, 0x19, 0x9a, 0x0c, 0x23, 0x50 }; // 100, 50
-
-  switch (rh_protocol->type)
-  {
-  case RF_PROTOCOL_P3I:
-    radio_silabs->setModemRegisters(&cfg_38k);
-    break;
-  case RF_PROTOCOL_LEGACY:
-  case RF_PROTOCOL_OGNTP:
-  case RF_PROTOCOL_ADSL_860:
-  default:
-    radio_silabs->setModemRegisters(&cfg_100k);
-    break;
-  }
-
-  si4463_writeReg(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX);
-  si4463_writeReg(RH_RF22_REG_32_HEADER_CONTROL1, RH_RF22_BCEN_NONE | RH_RF22_HDCH_NONE);
-  si4463_writeReg(RH_RF22_REG_33_HEADER_CONTROL2, RH_RF22_HDLEN_0 | RH_RF22_FIXPKLEN | RH_RF22_SYNCLEN_4);
-  si4463_writeReg(RH_RF22_REG_3E_PACKET_LENGTH, pkt_size);
+  // Default freq comes from the radio config file
+  // About 2.4dBm on RFM24:
+  radio_silabs->setTxPower(0x10);
 
   /* Load regional max. EIRP at first */
   float   txpow = RF_FreqPlan.MaxTxPower;;
-  uint8_t power = RH_RF22_TXPOW_1DBM;
+  uint8_t power = 0x0e; /* < 4.8 dBm */
 
   switch(settings->txpower)
   {
@@ -420,30 +432,25 @@ static void si4463_setup()
 #endif
 
     if (txpow >= 20) {
-      power = RH_RF22_TXPOW_20DBM;
-    } else if (txpow >= 17) {
-      power = RH_RF22_TXPOW_17DBM;
+      power = 0x7f; /* 19.2 dBm */
+    } else if (txpow >= 18) {
+      power = 0x4f; /* 18.0 dBm */
     } else if (txpow >= 14) {
-      power = RH_RF22_TXPOW_14DBM;
+      power = 0x2f; /* 14.2 dBm */
     } else if (txpow >= 11) {
-      power = RH_RF22_TXPOW_11DBM;
-    } else if (txpow >=  8) {
-      power = RH_RF22_TXPOW_8DBM;
+      power = 0x1f; /* 11.0 dBm */
     } else if (txpow >=  5) {
-      power = RH_RF22_TXPOW_5DBM;
-    } else if (txpow >=  2) {
-      power = RH_RF22_TXPOW_2DBM;
+      power = 0x0f; /*  4.8 dBm */
     }
     break;
   case RF_TX_POWER_OFF:
   case RF_TX_POWER_LOW:
   default:
-    /* 1 dBm */
+     /* < 4.8 dBm */
     break;
   }
 
   radio_silabs->setTxPower(power);
-#endif
 }
 
 static bool si4463_receive()
