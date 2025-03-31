@@ -53,7 +53,9 @@ const char *Protocol_ID[] = {
 size_t (*protocol_encode)(void *, ufo_t *);
 bool   (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
-static Slots_descr_t Time_Slots, *ts;
+Slots_descr_t RF_Time_Slots;
+
+static Slots_descr_t *ts;
 static uint8_t       RF_timing = RF_TIMING_INTERVAL;
 
 extern const gnss_chip_ops_t *gnss_chip;
@@ -196,7 +198,7 @@ byte RF_setup(void)
 
     RF_timing         = p->tm_type;
 
-    ts                = &Time_Slots;
+    ts                = &RF_Time_Slots;
     ts->air_time      = p->air_time;
     ts->interval_min  = p->tx_interval_min;
     ts->interval_max  = p->tx_interval_max;
@@ -205,6 +207,7 @@ byte RF_setup(void)
     ts->s1.begin      = p->slot1.begin;
     ts->s0.duration   = p->slot0.end - p->slot0.begin;
     ts->s1.duration   = p->slot1.end - p->slot1.begin;
+    ts->current       = 0;
 
     uint16_t duration = ts->s0.duration + ts->s1.duration;
     ts->adj = duration > ts->interval_mid ? 0 : (ts->interval_mid - duration) / 2;
@@ -375,10 +378,9 @@ bool RF_Transmit(size_t size, bool wait)
       case RF_TIMING_2SLOTS_PPS_SYNC:
         next = RF_FreqPlan.Channels == 1 ? &(ts->s0) :
                ts->current          == 1 ? &(ts->s0) : &(ts->s1);
-        adj  = ts->current ? ts->adj   : 0;
-        TxTimeMarker = next->tmarker    +
-                       ts->interval_mid +
-                       SoC->random(adj, next->duration - ts->air_time);
+        adj  = (next == &(ts->s0)) ? ts->adj : 0;
+        TxTimeMarker = next->tmarker + adj + ts->interval_mid +
+                       SoC->random(0, next->duration - ts->air_time);
         break;
       case RF_TIMING_INTERVAL:
       default:
