@@ -228,7 +228,7 @@ struct rst_info {
 
 /* Component                         Cost */
 /* -------------------------------------- */
-#define USE_NMEALIB
+//#define USE_NMEALIB              //  +  8 kb
 #define USE_NMEA_CFG               //  +    kb
 #define USE_SKYVIEW_CFG            //  +    kb
 //#define EXCLUDE_BMP180           //  -    kb
@@ -239,7 +239,7 @@ struct rst_info {
 //#define EXCLUDE_NRF905           //  -    kb
 //#define EXCLUDE_MAVLINK          //  -    kb
 //#define EXCLUDE_UATM             //  -    kb
-//#define EXCLUDE_EGM96            //  -    kb
+#define EXCLUDE_EGM96              //  - 16 kb
 //#define EXCLUDE_LED_RING         //  -    kb
 
 #define USE_BASICMAC
