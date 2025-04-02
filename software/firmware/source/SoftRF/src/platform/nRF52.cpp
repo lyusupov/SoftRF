@@ -207,11 +207,13 @@ GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT>   epd_bn (GxEPD2_150_BN(
                                                           SOC_GPIO_PIN_EPD_DC,
                                                           SOC_GPIO_PIN_EPD_RST,
                                                           SOC_GPIO_PIN_EPD_BUSY));
+#if !defined(EXCLUDE_WIP)
 GxEPD2_BW<GxEPD2_371_T03, GxEPD2_371_T03::HEIGHT> epd_t3 (GxEPD2_371_T03(
                                                           SOC_GPIO_PIN_EPD_TULTIMA_SS,
                                                           SOC_GPIO_PIN_EPD_TULTIMA_DC,
                                                           SOC_GPIO_PIN_EPD_TULTIMA_RST,
                                                           SOC_GPIO_PIN_EPD_TULTIMA_BUSY));
+#endif /* EXCLUDE_WIP */
 GxEPD2_GFX *display;
 #endif /* USE_EPAPER */
 
@@ -337,7 +339,9 @@ ui_settings_t *ui;
 MPU9250         imu_1;
 ICM_20948_I2C   imu_2;
 QMA6100P        imu_3;
+#if !defined(EXCLUDE_BHI260)
 SensorBHI260AP  imu_4;
+#endif /* EXCLUDE_BHI260 */
 
 static bool nRF52_has_imu = false;
 static unsigned long IMU_Time_Marker = 0;
@@ -868,9 +872,11 @@ static void nRF52_setup()
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
 #if !defined(EXCLUDE_IMU)
@@ -953,6 +959,7 @@ static void nRF52_setup()
                                             SOC_GPIO_PIN_SFL_T1000_WP,
                                             SOC_GPIO_PIN_SFL_T1000_HOLD);
       break;
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_TULTIMA_SCK,
                                             SOC_GPIO_PIN_SFL_TULTIMA_SS,
@@ -961,6 +968,7 @@ static void nRF52_setup()
                                             SOC_GPIO_PIN_SFL_TULTIMA_WP,
                                             SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_NORDIC_PCA10059:
     default:
       break;
@@ -1022,9 +1030,11 @@ static void nRF52_setup()
 #if defined(USE_TINYUSB)
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       /* TBD */
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T1000_RX, SOC_GPIO_PIN_CONS_T1000_TX);
 #if defined(EXCLUDE_WIFI)
@@ -1052,6 +1062,7 @@ static void nRF52_setup()
 
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       xl9555 = new ExtensionIOXL9555(Wire,
@@ -1088,6 +1099,7 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
       /* TBD */
       break;
+#endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
       pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
@@ -1182,6 +1194,7 @@ static void nRF52_setup()
       hw_info.revision = 2;
       break;
 
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       lmic_pins.nss  = SOC_GPIO_PIN_TULTIMA_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_TULTIMA_RST;
@@ -1213,6 +1226,7 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       break;
+#endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_EN, HIGH);
@@ -1306,6 +1320,7 @@ static void nRF52_setup()
           hw_info.imu = IMU_MPU9250;
           hw_info.mag = MAG_AK8963;
           IMU_Time_Marker = millis();
+#if !defined(EXCLUDE_BHI260)
         } else if (imu_4.init(Wire,
                               SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL,
                               BHI260AP_ADDRESS_L)) {
@@ -1319,6 +1334,7 @@ static void nRF52_setup()
 
           hw_info.imu = IMU_BHI260AP;
           IMU_Time_Marker = millis();
+#endif /* EXCLUDE_BHI260 */
         } else {
           bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
 
@@ -1335,9 +1351,11 @@ static void nRF52_setup()
         }
         break;
 
+#if !defined(EXCLUDE_WIP)
       case NRF52_LILYGO_TULTIMA:
         /* TBD */
         break;
+#endif /* EXCLUDE_WIP */
 
       case NRF52_SEEED_T1000E:
         Wire.begin();
@@ -1412,9 +1430,11 @@ static void nRF52_setup()
 #if !defined(EXCLUDE_WIFI)
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       /* TBD */
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -1571,6 +1591,7 @@ static void nRF52_post_init()
     Serial.println();
     Serial.flush();
 
+#if !defined(EXCLUDE_WIP)
     if (nRF52_board == NRF52_LILYGO_TULTIMA) {
 #if defined(USE_EXT_I2S_DAC)
       char filename[MAX_FILENAME_LEN];
@@ -1582,6 +1603,7 @@ static void nRF52_post_init()
       }
 #endif /* USE_EXT_I2S_DAC */
     }
+#endif /* EXCLUDE_WIP */
 
 #if defined(ENABLE_NFC) && defined(EXCLUDE_BLUETOOTH)
     if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
@@ -1887,12 +1909,14 @@ static void nRF52_loop()
     IMU_Time_Marker = millis();
   }
 
+#if !defined(EXCLUDE_BHI260)
   if (hw_info.imu == IMU_BHI260AP &&
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
     // Update sensor fifo
     imu_4.update();
     IMU_Time_Marker = millis();
   }
+#endif /* EXCLUDE_BHI260 */
 #endif /* EXCLUDE_IMU */
 
   if (nRF52_board      == NRF52_SEEED_T1000E &&
@@ -1941,10 +1965,12 @@ static void nRF52_fini(int reason)
     imu_3.enableAccel(false);
   }
 
+#if !defined(EXCLUDE_BHI260)
   if (hw_info.imu == IMU_BHI260AP) {
     /* TBD */
     // imu_4.deinit();
   }
+#endif /* EXCLUDE_BHI260 */
 #endif /* EXCLUDE_IMU */
 
   switch (nRF52_board)
@@ -2041,6 +2067,7 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
       break;
 
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       if (nRF52_has_extension) {
@@ -2055,6 +2082,7 @@ static void nRF52_fini(int reason)
       }
 #endif /* ARDUINO_ARCH_MBED */
       break;
+#endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
       pinMode(SOC_GPIO_PIN_GNSS_T1000_RINT, INPUT_PULLDOWN);
@@ -2118,9 +2146,11 @@ static void nRF52_fini(int reason)
 
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       mode_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON1;
       break;
+#endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
       mode_button_pin = SOC_GPIO_PIN_T1000_BUTTON;
@@ -2564,11 +2594,13 @@ static void nRF52_SPI_begin()
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       SPI.setPins(SOC_GPIO_PIN_TULTIMA_MISO,
                   SOC_GPIO_PIN_TULTIMA_SCK,
                   SOC_GPIO_PIN_TULTIMA_MOSI);
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       SPI.setPins(SOC_GPIO_PIN_T1000_MISO,
                   SOC_GPIO_PIN_T1000_SCK,
@@ -2599,10 +2631,12 @@ static void nRF52_swSer_begin(unsigned long baud)
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TULTIMA_RX,
                              SOC_GPIO_PIN_GNSS_TULTIMA_TX);
       break;
+#endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T1000_RX,
                              SOC_GPIO_PIN_GNSS_T1000_TX);
@@ -2823,12 +2857,14 @@ static byte nRF52_Display_setup()
 #if SPI_INTERFACES_COUNT >= 2
     switch (nRF52_board)
     {
+#if !defined(EXCLUDE_WIP)
       case NRF52_LILYGO_TULTIMA:
         SPI1.setPins(SOC_GPIO_PIN_EPD_TULTIMA_MISO,
                      SOC_GPIO_PIN_EPD_TULTIMA_SCK,
                      SOC_GPIO_PIN_EPD_TULTIMA_MOSI);
         nRF52_display = EP_GDEY037T03;
         break;
+#endif /* EXCLUDE_WIP */
       case NRF52_LILYGO_TECHO_REV_0:
       case NRF52_LILYGO_TECHO_REV_1:
       case NRF52_LILYGO_TECHO_REV_2:
@@ -2852,9 +2888,11 @@ static byte nRF52_Display_setup()
     case EP_DEPG0150BN:
       display = &epd_bn;
       break;
+#if !defined(EXCLUDE_WIP)
     case EP_GDEY037T03:
       display = &epd_t3;
       break;
+#endif /* EXCLUDE_WIP */
     case EP_GDEH0154D67:
     default:
       display = &epd_d67;
@@ -3408,10 +3446,12 @@ static void nRF52_Button_setup()
 
   switch (nRF52_board)
   {
+#if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
       mode_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON1;
       // up_button_pin   = SOC_GPIO_PIN_TULTIMA_BUTTON2;
       break;
+#endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
       mode_button_pin = SOC_GPIO_PIN_T1000_BUTTON;

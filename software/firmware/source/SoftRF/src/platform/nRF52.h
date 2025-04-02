@@ -293,7 +293,11 @@ struct rst_info {
 #define USE_RADIOLIB
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
+
+#define EXCLUDE_BHI260
+/* T-Ultima */
 #define EXCLUDE_PMU
+#define EXCLUDE_WIP
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"
