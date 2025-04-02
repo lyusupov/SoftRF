@@ -526,4 +526,18 @@ typedef struct {
     .single_status_byte = false, .is_fram = false,                             \
   }
 
+// Settings for the Puya Semiconductor P25Q16H 2MiB QSPI flash.
+// Datasheet:
+// https://www.puyasemi.com/uploadfiles/2021/12/202112201130233023.pdf
+#define P25Q16H                                                                \
+  {                                                                            \
+    .total_size = (1 << 21), /* 2 MiB */                                       \
+        .start_up_time_us = 5000, .manufacturer_id = 0x85,                     \
+    .memory_type = 0x60, .capacity = 0x15, .max_clock_speed_mhz = 104,         \
+    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = false, .is_fram = false,                             \
+  }
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

@@ -250,7 +250,12 @@ static uint8_t mx25_status_config[3] = {0x00, 0x00, 0x00};
 enum {
   MX25R1635F_INDEX,
   ZD25WQ16B_INDEX,
+
+  P25Q16H_INDEX,
+  GD25Q64C_INDEX,
+
   W25Q128JV_INDEX,
+
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
@@ -259,6 +264,9 @@ static SPIFlash_Device_t possible_devices[] = {
   // LilyGO T-Echo
   [MX25R1635F_INDEX] = MX25R1635F,
   [ZD25WQ16B_INDEX]  = ZD25WQ16B,
+  // Seeed T1000-E
+  [P25Q16H_INDEX]    = P25Q16H,
+  [GD25Q64C_INDEX]   = GD25Q64C,
   // LilyGO T-Ultima
   [W25Q128JV_INDEX]  = W25Q128JV_PM,
 };
@@ -803,7 +811,10 @@ static void nRF52_setup()
     // digitalWrite(OTG_ENABLE_PIN, HIGH);
   } else {
     Wire.end();
+  }
+#endif /* EXCLUDE_PMU */
 
+  if (nRF52_board != NRF52_LILYGO_TULTIMA) {
 #if !defined(EXCLUDE_IMU)
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
     delay(5);
@@ -844,10 +855,15 @@ static void nRF52_setup()
         NRF_POWER->SYSTEMOFF = 1;
 #endif /* ARDUINO_ARCH_MBED */
       }
+
+      pinMode(SOC_GPIO_PIN_SFL_T1000_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_SFL_T1000_EN, HIGH);
+
+      // pinMode(SOC_GPIO_LED_T1000_RED, OUTPUT);
+      // digitalWrite(SOC_GPIO_LED_T1000_RED, HIGH);
     }
 #endif /* EXCLUDE_IMU */
   }
-#endif /* EXCLUDE_PMU */
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
@@ -929,6 +945,14 @@ static void nRF52_setup()
                                             SOC_GPIO_PIN_SFL_WP,
                                             SOC_GPIO_PIN_SFL_HOLD);
       break;
+    case NRF52_SEEED_T1000E:
+      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_T1000_SCK,
+                                            SOC_GPIO_PIN_SFL_T1000_SS,
+                                            SOC_GPIO_PIN_SFL_T1000_MOSI,
+                                            SOC_GPIO_PIN_SFL_T1000_MISO,
+                                            SOC_GPIO_PIN_SFL_T1000_WP,
+                                            SOC_GPIO_PIN_SFL_T1000_HOLD);
+      break;
     case NRF52_LILYGO_TULTIMA:
       ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_TULTIMA_SCK,
                                             SOC_GPIO_PIN_SFL_TULTIMA_SS,
@@ -938,7 +962,6 @@ static void nRF52_setup()
                                             SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
       break;
     case NRF52_NORDIC_PCA10059:
-    case NRF52_SEEED_T1000E:
     default:
       break;
   }
@@ -1606,6 +1629,12 @@ static void nRF52_post_init()
     Serial.flush();
 
   } else if (nRF52_board == NRF52_SEEED_T1000E) {
+#if 0
+    Serial.println();
+    Serial.print  (F("SPI FLASH JEDEC ID: "));
+    Serial.print  (spiflash_id, HEX);           Serial.print(" ");
+#endif
+
     Serial.println();
     Serial.println(F("Seeed T1000-E Power-on Self Test"));
     Serial.println();
@@ -1618,6 +1647,9 @@ static void nRF52_post_init()
     Serial.flush();
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss  == GNSS_MODULE_AG33 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("FLASH   : "));
+    Serial.println(hw_info.storage == STORAGE_FLASH  ? F("PASS") : F("FAIL"));
     Serial.flush();
 
 #if !defined(EXCLUDE_IMU)
@@ -2040,6 +2072,7 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_T1000_SS,        INPUT_PULLUP);
 
       digitalWrite(SOC_GPIO_LED_T1000_GREEN, 1-LED_STATE_ON);
+      pinMode(SOC_GPIO_PIN_SFL_T1000_EN,    INPUT);
       pinMode(SOC_GPIO_LED_T1000_GREEN,     INPUT);
       break;
 
