@@ -893,6 +893,7 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT); /* VDD_POWR is ON */
     case NRF52_HELTEC_T114: /* internal bus */
+    case NRF52_ELECROW_TN_M1:
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
       break;
@@ -946,6 +947,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_HELTEC_T114:
+    case NRF52_ELECROW_TN_M1:
       ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
                                             SOC_GPIO_PIN_SFL_SS,
                                             SOC_GPIO_PIN_SFL_MOSI,
@@ -1044,6 +1046,7 @@ static void nRF52_setup()
 #endif /* EXCLUDE_WIFI */
       break;
     case NRF52_HELTEC_T114:
+    case NRF52_ELECROW_TN_M1:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
 #if defined(EXCLUDE_WIFI)
       Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -2617,6 +2620,7 @@ static void nRF52_SPI_begin()
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_HELTEC_T114:
+    case NRF52_ELECROW_TN_M1:
     default:
       SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
                   SOC_GPIO_PIN_TECHO_REV_0_SCK,
@@ -2652,6 +2656,7 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_NORDIC_PCA10059:
+    case NRF52_ELECROW_TN_M1:
     default:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
       break;
@@ -2870,6 +2875,7 @@ static byte nRF52_Display_setup()
       case NRF52_LILYGO_TECHO_REV_0:
       case NRF52_LILYGO_TECHO_REV_1:
       case NRF52_LILYGO_TECHO_REV_2:
+      case NRF52_ELECROW_TN_M1:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                      SOC_GPIO_PIN_EPD_SCK,

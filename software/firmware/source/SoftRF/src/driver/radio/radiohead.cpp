@@ -355,9 +355,14 @@ static void si4463_setup()
   }
 #endif
 
-  uint8_t preambleLen = rh_protocol->preamble_size;
-  preambleLen += (rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ? 1 : 0;
-  radio_silabs->setPreambleLength(preambleLen); // in bytes
+  uint8_t pre_type = (rh_protocol->preamble_type == RF_PREAMBLE_TYPE_AA) ?
+                     RH_RF24_PREAMBLE_FIRST_1 | RH_RF24_PREAMBLE_STANDARD_1010 :
+                     RH_RF24_PREAMBLE_FIRST_0 | RH_RF24_PREAMBLE_STANDARD_0101;
+
+  uint8_t pre_cfg[] = { (uint8_t) rh_protocol->preamble_size, 0x14, 0x00, 0x00,
+		                pre_type | RH_RF24_PREAMBLE_LENGTH_BYTES }; // in bytes
+  radio_silabs->set_properties(RH_RF24_PROPERTY_PREAMBLE_TX_LENGTH,
+                               pre_cfg, sizeof(pre_cfg));
 
   size_t pkt_size = rh_protocol->payload_offset + rh_protocol->payload_size +
                     rh_protocol->crc_size;
@@ -398,7 +403,7 @@ static void si4463_setup()
     }
   }
 
-  radio_silabs->setPromiscuous(false);
+  radio_silabs->setPromiscuous(true);
 
   rxPacket.len = pkt_size;
 
@@ -484,13 +489,19 @@ static bool si4463_receive()
         len = sizeof(rxPacket.payload);
       }
 
-      // si4463_receive_active = false; /* TBD */
+      si4463_receive_active = false;
 
       if (!memeqzero(rxPacket.payload, len)) {
 
         uint8_t i;
-
-#if 1
+#if 0
+        Serial.print("Payload ");
+        for (i=0; i < len; i++) {
+            Serial.print(rxPacket.payload[i], HEX);
+            //Serial.print(" ");
+        }
+        Serial.println();
+#endif
         if (rh_protocol->syncword_size > 4) {
           for (i=4; i < rh_protocol->syncword_size; i++) {
             if (rxPacket.payload[i-4] != rh_protocol->syncword[i]) {
@@ -516,33 +527,6 @@ static bool si4463_receive()
                  rxPacket.payload + rh_protocol->syncword_size - 4,
                  len - (rh_protocol->syncword_size - 4));
         }
-#else
-        if (rh_protocol->syncword_size > 3) {
-          for (i=3; i < rh_protocol->syncword_size; i++) {
-            if (rxPacket.payload[i-3] != rh_protocol->syncword[i]) {
-#if 1
-              Serial.print("syncword mismatch ");
-              Serial.print("i="); Serial.print(i);
-              Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
-              Serial.print(" s="); Serial.print(rh_protocol->syncword[i], HEX);
-              Serial.println();
-#endif
-#if 0
-              if (i != 4) {
-                memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
-                len = 0;
-
-                return success;
-              }
-#endif
-            }
-          }
-
-          memcpy(rxPacket.payload,
-                 rxPacket.payload + rh_protocol->syncword_size - 3,
-                 len - (rh_protocol->syncword_size - 3));
-        }
-#endif
 
         size_t size = 0;
         uint8_t offset;
