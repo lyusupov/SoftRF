@@ -88,6 +88,7 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
+#if !defined(EXCLUDE_LED_RING)
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -96,7 +97,8 @@ lmic_pinmap lmic_pins = {
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
-                              NEO_GRB + NEO_KHZ800);
+                                            NEO_GRB + NEO_KHZ800);
+#endif /* EXCLUDE_LED_RING */
 
 #if defined(EXCLUDE_WIFI)
 char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence

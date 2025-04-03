@@ -80,6 +80,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TULTIMA,
   NRF52_SEEED_T1000E,
   NRF52_HELTEC_T114,
+  NRF52_ELECROW_TN_M1,
 };
 
 enum nRF52_display_id {
@@ -145,6 +146,7 @@ struct rst_info {
 #include "iomap/LilyGO_TUltima.h"
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Heltec_T114.h"
+#include "iomap/Elecrow_ThinkNode_M1.h"
 
 #define SOC_GPIO_LED_PCA10059_STATUS    _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_LED_PCA10059_GREEN     _PINNUM(1,  9) // P1.09 (Green)
