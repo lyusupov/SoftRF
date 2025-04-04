@@ -32,7 +32,23 @@ uint8_t FlashClass::page_size_bits() const {
 #endif
 }
 
-uint32_t FlashClass::page_count() const { return (uint32_t)NRF_FICR->CODESIZE; }
+#ifndef LFS_FLASH_ADDR
+#ifdef NRF52840_XXAA
+  #define LFS_FLASH_ADDR        0xED000
+#else
+  #define LFS_FLASH_ADDR        0x6D000
+#endif
+#endif
+
+uint32_t FlashClass::page_count() const {
+  uint32_t code_size = (uint32_t)NRF_FICR->CODESIZE;
+
+  if (code_size * FlashClass::page_size() > LFS_FLASH_ADDR) {
+    code_size = LFS_FLASH_ADDR >> FlashClass::page_size_bits();
+  }
+
+  return code_size;
+}
 
 uint32_t FlashClass::specified_erase_cycles() const {
   return FLASH_ERASE_CYCLES;
