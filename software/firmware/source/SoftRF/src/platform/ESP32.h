@@ -286,6 +286,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #include "iomap/LilyGO_T3C6.h"
 #include "iomap/LilyGO_T3S3_EPD.h"
 #include "iomap/Banana_PicoW.h"
+#include "iomap/Elecrow_ThinkNode_M2.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -318,6 +319,7 @@ enum esp32_board_id {
   ESP32_LILYGO_T3C6,
   ESP32_LILYGO_T3S3_EPD,
   ESP32_BANANA_PICOW,
+  ESP32_ELECROW_TN_M2,
 };
 
 enum ep_model_id {
