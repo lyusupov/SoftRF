@@ -1,5 +1,25 @@
 # Release notes
 
+## revision 0.14
+
+### New features
+
+One more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-processing-unit) (SoCs) that the **SkyView** technology is able to operate on:
+* Raspberry Pi Foundation [**RP2350**](https://en.wikipedia.org/wiki/RP2350) &nbsp; - dual _ARM [Cortex-M33](https://en.wikipedia.org/wiki/ARM_Cortex-M33) cores_ and/or _Hazard3 [RISC-V](https://en.wikipedia.org/wiki/RISC-V) cores_
+
+### Raspberry Pi RP2350
+
+* very first Release of [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico) for RP2350
+* base component: **Raspberry Pico 2W** ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-57.jpg" width="500">
+
+### Known issues and limitations
+
+* same that previous 0.13 release has
+
+<br>
+
 ## revision 0.13
 
 ### New features
