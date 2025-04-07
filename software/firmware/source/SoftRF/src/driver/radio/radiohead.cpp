@@ -133,7 +133,6 @@ static RH_RF24 *radio_silabs;
 static int8_t si4463_channel_prev    = (int8_t) -1;
 
 static bool si4463_receive_active    = false;
-static bool si4463_transmit_complete = false;
 
 static const uint8_t byte_rev_table[256] = {
 	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
@@ -169,6 +168,8 @@ static const uint8_t byte_rev_table[256] = {
 	0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
 };
+
+extern Slots_descr_t RF_Time_Slots;
 
 static bool si4463_CommandRead(uint8_t cmd, uint8_t* read_buf, uint8_t read_len)
 {
@@ -460,9 +461,6 @@ static void si4463_setup()
 
 static bool si4463_receive()
 {
-#if 1
-  return false;
-#else
   bool success = false;
   bool state;
 
@@ -505,20 +503,20 @@ static bool si4463_receive()
         if (rh_protocol->syncword_size > 4) {
           for (i=4; i < rh_protocol->syncword_size; i++) {
             if (rxPacket.payload[i-4] != rh_protocol->syncword[i]) {
-#if 1
+#if 0
               Serial.print("syncword mismatch ");
               Serial.print("i="); Serial.print(i);
               Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
               Serial.print(" s="); Serial.print(rh_protocol->syncword[i], HEX);
               Serial.println();
 #endif
-#if 0
-              if (i != 4) {
+#if 1
+//              if (i != 4) {
                 memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
                 len = 0;
 
                 return success;
-              }
+//              }
 #endif
             }
           }
@@ -672,7 +670,6 @@ static bool si4463_receive()
   }
 
   return success;
-#endif
 }
 
 static bool si4463_transmit()
@@ -688,7 +685,6 @@ static bool si4463_transmit()
   }
 
   si4463_receive_active = false;
-  si4463_transmit_complete = false;
 
   size_t PayloadLen = 0;
 
@@ -830,19 +826,27 @@ static bool si4463_transmit()
   success = radio_silabs->send((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
 
   if (success) {
-    radio_silabs->waitPacketSent();
+    uint16_t timeout = RF_Time_Slots.air_time + RF_Time_Slots.air_time;
+
+    if (radio_silabs->waitPacketSent(timeout) == false) {
+      radio_silabs->setModeIdle();
+
+//      success = false;
+    }
 
     memset(txPacket.payload, 0, sizeof(txPacket.payload));
+  }
 
 #if 0
+  if (success) {
     // the packet was successfully transmitted
     Serial.println(F("success!"));
 
   } else {
     // some other error occurred
     Serial.println(F("failed."));
-#endif
   }
+#endif
 
   return success;
 }
