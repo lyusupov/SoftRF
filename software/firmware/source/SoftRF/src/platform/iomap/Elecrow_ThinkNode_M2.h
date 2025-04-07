@@ -36,8 +36,9 @@
 #define SOC_GPIO_PIN_M2_BATTERY     17
 
 // misc.
-#define SOC_GPIO_PIN_M2_CHARGING    6
-#define SOC_GPIO_PIN_M2_FULL        42
+#define SOC_GPIO_PIN_LED_M2_PWR     6
+#define SOC_GPIO_PIN_ADC_M2         42
+#define SOC_GPIO_PIN_VUSB_M2        7
 
 // pin header
 /* 2, 8, 18, 19, 20, 38, 39, 40, 41, 3V3, VBUS, GND */

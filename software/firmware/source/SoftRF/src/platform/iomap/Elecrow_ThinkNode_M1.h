@@ -7,9 +7,10 @@
 #define SOC_GPIO_PIN_GNSS_M1_RX   _PINNUM(1,  9) // P1.09
 #define SOC_GPIO_PIN_GNSS_M1_TX   _PINNUM(1,  8) // P1.08
 
-#define SOC_GPIO_PIN_GNSS_M1_PPS  _PINNUM(1,  1) // P1.01
+#define SOC_GPIO_PIN_GNSS_M1_PPS  SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_GNSS_M1_WKE  _PINNUM(1,  2) // P1.02
 #define SOC_GPIO_PIN_GNSS_M1_RST  _PINNUM(1,  5) // P1.05
+#define SOC_GPIO_PIN_GNSS_M1_SW   _PINNUM(1,  1) // P1.01
 
 /* SPI */
 #define SOC_GPIO_PIN_M1_MOSI      _PINNUM(0, 22) // P0.22
@@ -71,4 +72,4 @@
 
 /* ADC */
 #define SOC_GPIO_PIN_BATTERY_M1   _PINNUM(0,  8) // P0.08
-#define SOC_GPIO_PIN_USB_M1_CHECK _PINNUM(1,  3) // P1.03
+#define SOC_GPIO_PIN_VUSB_M1      _PINNUM(1,  3) // P1.03
