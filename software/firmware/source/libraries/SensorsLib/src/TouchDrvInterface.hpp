@@ -29,13 +29,7 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <stdio.h>
-#include "SensorLib.h"
-#include "SensorCommon.tpp"
-
-typedef void    (*home_button_callback_t)(void *user_data);
-
+#include "SensorPlatform.hpp"
 
 class TouchData
 {
@@ -69,28 +63,29 @@ public:
 
 
 
-class TouchDrvInterface
+class TouchDrvInterface : public SensorHalCustom
 {
 public:
+    using HomeButtonCallback = void(*)(void *user_data);
+
     TouchDrvInterface();
 
     virtual ~TouchDrvInterface();
 
 #if defined(ARDUINO)
-
-    virtual bool begin(PLATFORM_WIRE_TYPE &wire, uint8_t address, int sda, int scl) = 0;
-
-#elif defined(ESP_PLATFORM) && !defined(ARDUINO)
-
-#if ((ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_SENSORLIB_ESP_IDF_NEW_API))
-    virtual bool begin(i2c_master_bus_handle_t i2c_dev_bus_handle, uint8_t addr) = 0;
-#else
+    virtual bool begin(TwoWire &wire, uint8_t address, int sda, int scl) = 0;
+#elif defined(ESP_PLATFORM)
+#if defined(USEING_I2C_LEGACY)
     virtual bool begin(i2c_port_t port_num, uint8_t addr, int sda, int scl) = 0;
-#endif //ESP_IDF_VERSION
+#else
+    virtual bool begin(i2c_master_bus_handle_t handle, uint8_t addr) = 0;
+#endif
+#endif // defined(ARDUINO)
 
-#endif //defined(ESP_PLATFORM) && !defined(ARDUINO)
 
-    virtual bool begin(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)  = 0;
+    virtual bool begin(SensorCommCustom::CustomCallback callback,
+                       SensorCommCustomHal::CustomHalCallback hal_callback,
+                       uint8_t addr) = 0;
 
     virtual void reset() = 0;
 
@@ -110,9 +105,9 @@ public:
 
     virtual bool getResolution(int16_t *x, int16_t *y) = 0;
 
-    virtual void setGpioCallback(gpio_mode_fptr_t mode_cb,
-                                 gpio_write_fptr_t write_cb,
-                                 gpio_read_fptr_t read_cb) = 0;
+    virtual void setGpioCallback(CustomMode mode_cb,
+                                 CustomWrite write_cb,
+                                 CustomRead read_cb) = 0;
 
     uint32_t getChipID();
 
@@ -127,19 +122,12 @@ public:
     void updateXY(uint8_t pointNum, int16_t *xBuffer, int16_t *yBuffer);
 
 protected:
-    uint16_t __resX, __resY, __xMax, __yMax;
-    bool __swapXY, __mirrorX, __mirrorY;
-    int __rst;
-    int __irq;
-    uint32_t __chipID;
-    home_button_callback_t __homeButtonCb;
-    void *__userData;
+    uint16_t _resX, _resY, _xMax, _yMax;
+    bool _swapXY, _mirrorX, _mirrorY;
+    int _rst;
+    int _irq;
+    uint32_t _chipID;
+    HomeButtonCallback _HButtonCallback;
+    void *_userData;
 
 };
-
-
-
-
-
-
-

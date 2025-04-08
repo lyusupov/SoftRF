@@ -38,7 +38,6 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#include "bosch_interfaces.h"
 #include "bosch/bhy2.h"
 #include "bosch/bhi3.h"
 #include "bosch/bhi3_multi_tap.h"
@@ -48,11 +47,6 @@
 #include "bosch/bhy2_head_tracker.h"
 
 
-#define BHY2_ASSERT(x)             if (x) check_bhy2_api(__LINE__, __FUNCTION__, x)
-
-
-
-void check_bhy2_api(unsigned int line, const char *func, int8_t val);
 void time_to_s_ns(uint64_t time_ticks, uint32_t *s, uint32_t *ns, uint64_t *tns);
 const char *get_api_error(int8_t error_code);
 const char *get_sensor_error_text(uint8_t sensor_error);

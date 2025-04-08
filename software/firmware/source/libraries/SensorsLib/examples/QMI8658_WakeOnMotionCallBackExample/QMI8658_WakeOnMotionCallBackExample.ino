@@ -31,9 +31,14 @@
 #include <Wire.h>
 #include <SPI.h>
 #include "SensorQMI8658.hpp"
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
-// #define USE_WIRE
 
+// #define USE_I2C              //Using the I2C interface
+
+#ifdef USE_I2C
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
 #endif
@@ -42,8 +47,37 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
+#else   /* SPI interface */
+
+#ifndef SPI_MOSI
+#define SPI_MOSI   (35)
+#endif
+
+#ifndef SPI_SCK
+#define SPI_SCK    (36)
+#endif
+
+#ifndef SPI_MISO
+#define SPI_MISO   (37)
+#endif
+
+#ifndef IMU_CS
+#define IMU_CS      34      // IMU CS PIN
+#endif
+
+#endif  /* USE_I2C*/
+
+
+#ifndef IMU_IRQ
+#define IMU_IRQ     33      // IMU INT PIN
+#endif
+
+#ifndef OLED_SDA
+#define OLED_SDA    22      // Display Wire SDA Pin
+#endif
+
+#ifndef OLED_SCL
+#define OLED_SCL    21      // Display Wire SCL Pin
 #endif
 
 
@@ -65,50 +99,44 @@ void wakeUp()
     Serial.println("Awake!");
 }
 
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300); power.enableALDO1();
+    power.setALDO2Voltage(3300); power.enableALDO2();
+#endif
+}
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
 
+    bool ret = false;
+#ifdef USE_I2C
+    ret = qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
+#else
+#if defined(SPI_MOSI) && defined(SPI_SCK) && defined(SPI_MISO)
+    ret = qmi.begin(SPI, IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK);
+#else
+    ret = qmi.begin(SPI, IMU_CS);
+#endif
+#endif
 
-#ifdef USE_WIRE
-    //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!ret) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
         }
     }
-#else
-
-#ifndef CONFIG_IDF_TARGET_ESP32
-    //Use tbeams3 defalut spi pinz
-#define SPI_MOSI                    (35)
-#define SPI_SCK                     (36)
-#define SPI_MISO                    (37)
-#define SPI_CS                      (47)
-#define IMU_CS                      (34)
-#define IMU_INT1                    (33)    //INTERRUPT PIN1 & PIN2 ,Use or logic to form a pin
-
-    pinMode(SPI_CS, OUTPUT);    //sdcard pin set high
-    digitalWrite(SPI_CS, HIGH);
-    if (!qmi.begin(IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK)) {
-
-#else
-//Use esp32dev module defalut spi pin
-#define IMU_CS                      (5)
-#define IMU_INT1                    (15)
-#define IMU_INT2                    (22)
-    if (!qmi.begin(IMU_CS)) {
-#endif
-        Serial.println("Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
-    }
-#endif
 
     /* Get chip id*/
     Serial.print("Device ID:");
@@ -125,14 +153,8 @@ void setup()
      * When the QMI8658 is configured as Wom, the interrupt level is arbitrary,
      * not absolute high or low, and it is in the jump transition state
      */
-    pinMode(IMU_INT1, INPUT_PULLUP);
-#ifdef  IMU_INT2
-    pinMode(IMU_INT2, INPUT_PULLUP);
-    attachInterrupt(IMU_INT2, setFlag, CHANGE);
-#else
-    attachInterrupt(IMU_INT1, setFlag, CHANGE);
-#endif
-
+    pinMode(IMU_IRQ, INPUT_PULLUP);
+    attachInterrupt(IMU_IRQ, setFlag, CHANGE);
 
     // Print register configuration information
     qmi.dumpCtrlRegister();
@@ -141,10 +163,9 @@ void setup()
 
 void loop()
 {
-
     if (interruptFlag) {
         interruptFlag = false;
-        qmi.readSensorStatus();
+        qmi.update();
     }
 }
 

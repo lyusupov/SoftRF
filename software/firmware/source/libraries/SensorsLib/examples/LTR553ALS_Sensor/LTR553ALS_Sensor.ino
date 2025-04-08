@@ -53,7 +53,7 @@ void setup()
 
     pinMode(SENSOR_IRQ, INPUT_PULLUP);
 
-    if (!als.begin(Wire, LTR553_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!als.begin(Wire, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find LTR553 - check your wiring!");
         while (1) {
             delay(1000);
@@ -130,7 +130,7 @@ void setup()
     *   PS_LED_CUR_50MA,
     *   PS_LED_CUR_100MA,
     * * * * * * * */
-    als.setPsLedCurrnet(SensorLTR553::PS_LED_CUR_50MA);
+    als.setPsLedCurrent(SensorLTR553::PS_LED_CUR_50MA);
 
     /*
     *   PS_MEAS_RATE_50MS,

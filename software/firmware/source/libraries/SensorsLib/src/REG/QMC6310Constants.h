@@ -30,24 +30,29 @@
 
 #pragma once
 
-// @brief  device address
-#define QMC6310_SLAVE_ADDRESS                   (0x1C)
-#define QMC6310_DEFAULT_ID                      (0x80)
+#include <stdint.h>
 
 
-#define QMC6310_REG_CHIP_ID                     (0x00)
-#define QMC6310_REG_LSB_DX                      (0X01)
-#define QMC6310_REG_MSB_DX                      (0X02)
-#define QMC6310_REG_LSB_DY                      (0X03)
-#define QMC6310_REG_MSB_DY                      (0X04)
-#define QMC6310_REG_LSB_DZ                      (0X05)
-#define QMC6310_REG_MSB_DZ                      (0X06)
-#define QMC6310_REG_STAT                        (0X09)
-#define QMC6310_REG_CMD1                        (0x0A)
-#define QMC6310_REG_CMD2                        (0x0B)
+
+class QMC6310Constants
+{
+protected:
 
 
-#define QMC6310_REG_SIGN                        (0x29)
+    // Register addresses
+    static constexpr uint8_t REG_CHIP_ID = 0x00;
+    static constexpr uint8_t REG_LSB_DX = 0x01;
+    static constexpr uint8_t REG_MSB_DX = 0x02;
+    static constexpr uint8_t REG_LSB_DY = 0x03;
+    static constexpr uint8_t REG_MSB_DY = 0x04;
+    static constexpr uint8_t REG_LSB_DZ = 0x05;
+    static constexpr uint8_t REG_MSB_DZ = 0x06;
+    static constexpr uint8_t REG_STAT = 0x09;
+    static constexpr uint8_t REG_CMD1 = 0x0A;
+    static constexpr uint8_t REG_CMD2 = 0x0B;
+    static constexpr uint8_t REG_SIGN = 0x29;
+    static constexpr uint8_t QMC6310_CHIP_ID = 0x80;
+};
 
 
 

@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * @file      SensorDRV2605.tpp
+ * @file      SensorDRV2605.hpp
  * @author    Lewis He (lewishe@outlook.com)
  * @date      2023-04-03
  * @note      Source code from https://github.com/adafruit/Adafruit_DRV2605_Library
@@ -30,50 +30,72 @@
 #pragma once
 
 #include "REG/DRV2605Constants.h"
-#include "SensorCommon.tpp"
+#include "SensorPlatform.hpp"
 
-class SensorDRV2605 :
-    public SensorCommon<SensorDRV2605>
+class SensorDRV2605 : public DRV2605Constants
 {
-    friend class SensorCommon<SensorDRV2605>;
 public:
+    static constexpr uint8_t MODE_INTTRIG = 0x00;              //* Internal trigger mode
+    static constexpr uint8_t MODE_EXTTRIGEDGE = 0x01;              //* External edge trigger mode
+    static constexpr uint8_t MODE_EXTTRIGLVL = 0x02;              //* External level trigger mode
+    static constexpr uint8_t MODE_PWMANALOG = 0x03;              //* PWM/Analog input mode
+    static constexpr uint8_t MODE_AUDIOVIBE = 0x04;              //* Audio-to-vibe mode
+    static constexpr uint8_t MODE_REALTIME = 0x05;              //* Real-time playback (RTP) mode
+    static constexpr uint8_t MODE_DIAGNOS = 0x06;              //* Diagnostics mode
+    static constexpr uint8_t MODE_AUTOCAL = 0x07;              //* Auto calibration mode
 
-#if defined(ARDUINO)
-    SensorDRV2605(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = DRV2605_SLAVE_ADDRESS)
-    {
-        __wire = &w;
-        __sda = sda;
-        __scl = scl;
-        __addr = addr;
-    }
-#endif
-
-    SensorDRV2605()
-    {
-#if defined(ARDUINO)
-        __wire = &Wire;
-        __sda = DEFAULT_SDA;
-        __scl = DEFAULT_SCL;
-#endif
-        __addr = DRV2605_SLAVE_ADDRESS;
-    }
+    SensorDRV2605() : comm(nullptr) {}
 
     ~SensorDRV2605()
     {
-        deinit();
+        if (comm) {
+            comm->deinit();
+        }
     }
 
 #if defined(ARDUINO)
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = DRV2605_SLAVE_ADDRESS)
+    bool begin(TwoWire &wire, int sda = -1, int scl = -1)
     {
-        return SensorCommon::begin(w, addr, sda, scl);
+        comm = std::make_unique<SensorCommI2C>(wire, DRV2605_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
-#endif
+#elif defined(ESP_PLATFORM)
 
-
-    void deinit()
+#if defined(USEING_I2C_LEGACY)
+    bool begin(i2c_port_t port_num, int sda = -1, int scl = -1)
     {
-        // end();
+        comm = std::make_unique<SensorCommI2C>(port_num, DRV2605_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#else
+    bool begin(i2c_master_bus_handle_t handle)
+    {
+        comm = std::make_unique<SensorCommI2C>(handle, DRV2605_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#endif  //ESP_PLATFORM
+#endif  //ARDUINO
+
+    bool begin(SensorCommCustom::CustomCallback callback)
+    {
+        comm = std::make_unique<SensorCommCustom>(callback, DRV2605_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
 
     /**************************************************************************/
@@ -89,7 +111,7 @@ public:
     /**************************************************************************/
     void setWaveform(uint8_t slot, uint8_t w)
     {
-        writeRegister(DRV2605_REG_WAVESEQ1 + slot, w);
+        comm->writeRegister(DRV2605_REG_WAVESEQ1 + slot, w);
     }
 
     /**************************************************************************/
@@ -103,7 +125,7 @@ public:
     /**************************************************************************/
     void selectLibrary(uint8_t lib)
     {
-        writeRegister(DRV2605_REG_LIBRARY, lib);
+        comm->writeRegister(DRV2605_REG_LIBRARY, lib);
     }
 
     /**************************************************************************/
@@ -113,7 +135,7 @@ public:
     /**************************************************************************/
     void run()
     {
-        writeRegister(DRV2605_REG_GO, 1);
+        comm->writeRegister(DRV2605_REG_GO, 1);
     }
 
     /**************************************************************************/
@@ -123,7 +145,7 @@ public:
     /**************************************************************************/
     void stop()
     {
-        writeRegister(DRV2605_REG_GO, 0);
+        comm->writeRegister(DRV2605_REG_GO, (uint8_t)0);
     }
 
     /**************************************************************************/
@@ -144,7 +166,7 @@ public:
     /**************************************************************************/
     void setMode(uint8_t mode)
     {
-        writeRegister(DRV2605_REG_MODE, mode);
+        comm->writeRegister(DRV2605_REG_MODE, mode);
     }
 
     /**************************************************************************/
@@ -156,7 +178,7 @@ public:
     /**************************************************************************/
     void setRealtimeValue(uint8_t rtp)
     {
-        writeRegister(DRV2605_REG_RTPIN, rtp);
+        comm->writeRegister(DRV2605_REG_RTPIN, rtp);
     }
 
     /**************************************************************************/
@@ -166,7 +188,7 @@ public:
     /**************************************************************************/
     void useERM()
     {
-        writeRegister(DRV2605_REG_FEEDBACK, readRegister(DRV2605_REG_FEEDBACK) & 0x7F);
+        comm->writeRegister(DRV2605_REG_FEEDBACK, comm->readRegister(DRV2605_REG_FEEDBACK) & 0x7F);
     }
 
     /**************************************************************************/
@@ -176,14 +198,14 @@ public:
     /**************************************************************************/
     void useLRA()
     {
-        writeRegister(DRV2605_REG_FEEDBACK, readRegister(DRV2605_REG_FEEDBACK) | 0x80);
+        comm->writeRegister(DRV2605_REG_FEEDBACK, comm->readRegister(DRV2605_REG_FEEDBACK) | 0x80);
     }
 
 private:
     bool initImpl()
     {
-        int chipID = readRegister(DRV2605_REG_STATUS);
-        if (chipID == -1) {
+        int chipID = comm->readRegister(DRV2605_REG_STATUS);
+        if (chipID < 0) {
             return false;
         }
         chipID >>= 5;
@@ -192,43 +214,38 @@ private:
                 chipID != DRV2605_CHIP_ID &&
                 chipID != DRV2604L_CHIP_ID &&
                 chipID != DRV2605L_CHIP_ID ) {
-            LOG("ChipID:0x%x should be 0x03 or 0x04 or 0x06 or 0x07\n", chipID);
+            log_e("ChipID:0x%x should be 0x03 or 0x04 or 0x06 or 0x07\n", chipID);
             return false;
         }
 
-        writeRegister(DRV2605_REG_MODE, 0x00); // out of standby
+        comm->writeRegister(DRV2605_REG_MODE, (uint8_t)0x00); // out of standby
 
-        writeRegister(DRV2605_REG_RTPIN, 0x00); // no real-time-playback
+        comm->writeRegister(DRV2605_REG_RTPIN, (uint8_t)0x00); // no real-time-playback
 
-        writeRegister(DRV2605_REG_WAVESEQ1, 1); // strong click
-        writeRegister(DRV2605_REG_WAVESEQ2, 0); // end sequence
+        comm->writeRegister(DRV2605_REG_WAVESEQ1, (uint8_t)1); // strong click
+        comm->writeRegister(DRV2605_REG_WAVESEQ2, (uint8_t)0); // end sequence
 
-        writeRegister(DRV2605_REG_OVERDRIVE, 0); // no overdrive
+        comm->writeRegister(DRV2605_REG_OVERDRIVE, (uint8_t)0); // no overdrive
 
-        writeRegister(DRV2605_REG_SUSTAINPOS, 0);
-        writeRegister(DRV2605_REG_SUSTAINNEG, 0);
-        writeRegister(DRV2605_REG_BREAK, 0);
-        writeRegister(DRV2605_REG_AUDIOMAX, 0x64);
+        comm->writeRegister(DRV2605_REG_SUSTAINPOS, (uint8_t)0);
+        comm->writeRegister(DRV2605_REG_SUSTAINNEG, (uint8_t)0);
+        comm->writeRegister(DRV2605_REG_BREAK, (uint8_t)0);
+        comm->writeRegister(DRV2605_REG_AUDIOMAX, (uint8_t)0x64);
 
         // ERM open loop
 
         // turn off N_ERM_LRA
-        writeRegister(DRV2605_REG_FEEDBACK,
-                      readRegister(DRV2605_REG_FEEDBACK) & 0x7F);
+        comm->writeRegister(DRV2605_REG_FEEDBACK,
+                            comm->readRegister(DRV2605_REG_FEEDBACK) & 0x7F);
         // turn on ERM_OPEN_LOOP
-        writeRegister(DRV2605_REG_CONTROL3,
-                      readRegister(DRV2605_REG_CONTROL3) | 0x20);
+        comm->writeRegister(DRV2605_REG_CONTROL3,
+                            comm->readRegister(DRV2605_REG_CONTROL3) | 0x20);
 
         return true;
     }
 
-    int getReadMaskImpl()
-    {
-        return -1;
-    }
-
 protected:
-
+    std::unique_ptr<SensorCommBase> comm;
 };
 
 

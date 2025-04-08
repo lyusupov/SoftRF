@@ -32,24 +32,25 @@
 #include <Arduino.h>
 #include "TouchDrvCSTXXX.hpp"
 
-#ifndef SENSOR_SDA
-#define SENSOR_SDA  8
+#ifndef TOUCH_SDA
+#define TOUCH_SDA  8
 #endif
 
-#ifndef SENSOR_SCL
-#define SENSOR_SCL  10
+#ifndef TOUCH_SCL
+#define TOUCH_SCL  10
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  5
+#ifndef TOUCH_IRQ
+#define TOUCH_IRQ  5
 #endif
 
-#ifndef SENSOR_RST
-#define SENSOR_RST  -1
+#ifndef TOUCH_RST
+#define TOUCH_RST  -1
 #endif
 
 TouchDrvCSTXXX touch;
 int16_t x[5], y[5];
+bool  isPressed = false;
 
 void scanDevices(void)
 {
@@ -60,10 +61,14 @@ void scanDevices(void)
         Wire.beginTransmission(address);
         error = Wire.endTransmission();
         if (error == 0) {
-            Serial.printf("I2C device found at address 0x%02X\n", address);
+            Serial.print("I2C device found at address 0x");
+            Serial.println(address, HEX);
             nDevices++;
         } else if (error != 2) {
-            Serial.printf("Error %d at address 0x%02X\n", error, address);
+            Serial.print("Error ");
+            Serial.print(error);
+            Serial.print(" at address 0x");
+            Serial.println(address, HEX);
         }
     }
     if (nDevices == 0) {
@@ -76,11 +81,11 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#if SENSOR_RST != -1
-    pinMode(SENSOR_RST, OUTPUT);
-    digitalWrite(SENSOR_RST, LOW);
+#if TOUCH_RST != -1
+    pinMode(TOUCH_RST, OUTPUT);
+    digitalWrite(TOUCH_RST, LOW);
     delay(30);
-    digitalWrite(SENSOR_RST, HIGH);
+    digitalWrite(TOUCH_RST, HIGH);
     delay(50);
     // delay(1000);
 #endif
@@ -88,15 +93,17 @@ void setup()
     // Search for known CSTxxx device addresses
     uint8_t address = 0xFF;
 
-#if defined(ARDUINO_ARCH_RP2040)
-    Wire.setSCL(SENSOR_SCL);
-    Wire.setSDA(SENSOR_SDA);
+#if (defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)) && !defined(ARDUINO_ARCH_MBED)
+    Wire.setSCL(TOUCH_SCL);
+    Wire.setSDA(TOUCH_SDA);
     Wire.begin();
-#elif defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
-    Wire.setPins(SENSOR_SDA, SENSOR_SCL);
+#elif defined(ARDUINO_ARCH_NRF52)
+    Wire.setPins(TOUCH_SDA, TOUCH_SCL);
     Wire.begin();
+#elif defined(ARDUINO_ARCH_ESP32)
+    Wire.begin(TOUCH_SDA, TOUCH_SCL);
 #else
-    Wire.begin(SENSOR_SDA, SENSOR_SCL);
+    Wire.begin();
 #endif
 
     // Scan I2C devices
@@ -118,18 +125,38 @@ void setup()
         Serial.println("Could't find touch chip!"); delay(1000);
     }
 
-    touch.setPins(SENSOR_RST, SENSOR_IRQ);
-    touch.begin(Wire, address, SENSOR_SDA, SENSOR_SCL);
+    touch.setPins(TOUCH_RST, TOUCH_IRQ);
 
+    /*
+    * Support type.
+    * TouchDrv_UNKOWN       : Judging by identification ID
+    * TouchDrv_CST8XX       : CST816X,CST328,CST716,CST820
+    * TouchDrv_CST226       : CST226X
+    * TouchDrv_CST92XX      : CST9217,CST9220
+    */
+    // Can choose fixed touch model or automatic identification by ID
+    // touch.setTouchDrvModel(TouchDrv_CST226);
+
+
+    // Support CST81X CST226 CST9217 CST9220 ....
+    bool result = touch.begin(Wire, address, TOUCH_SDA, TOUCH_SCL);
+    if (result == false) {
+        while (1) {
+            Serial.println("Failed to initialize CST series touch, please check the connection...");
+            delay(1000);
+        }
+    }
 
     Serial.print("Model :"); Serial.println(touch.getModelName());
 
-    // T-Display-S3 CST816 touch panel, touch button coordinates are is 85 , 160
-    touch.setCenterButtonCoordinate(85, 360);
+    // T-Display-S3 CST328 touch panel, touch button coordinates are is 85 , 360
+    // touch.setCenterButtonCoordinate(85, 360);
 
     // T-Display-AMOLED 1.91 Inch CST816T touch panel, touch button coordinates is 600, 120.
     // touch.setCenterButtonCoordinate(600, 120);  // Only suitable for AMOLED 1.91 inch
 
+    // T-Display-Bar Inch CST820 touch panel, touch button coordinates is 30,400
+    // touch.setCenterButtonCoordinate(30, 400);  // Only suitable for T-Display-Bar
 
     // Depending on the touch panel, not all touch panels have touch buttons.
     touch.setHomeButtonCallback([](void *user_data) {
@@ -151,25 +178,33 @@ void setup()
     // Set mirror xy
     // touch.setMirrorXY(true, true);
 
+    //Register touch plane interrupt pin
+    attachInterrupt(TOUCH_IRQ, []() {
+        isPressed = true;
+    }, FALLING);
+
 }
 
 void loop()
 {
-    uint8_t touched = touch.getPoint(x, y, touch.getSupportTouchPoint());
-    if (touched) {
-        for (int i = 0; i < touched; ++i) {
-            Serial.print("X[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(x[i]);
-            Serial.print(" ");
-            Serial.print(" Y[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(y[i]);
-            Serial.print(" ");
+    if (isPressed) {
+        isPressed = false;
+        uint8_t touched = touch.getPoint(x, y, touch.getSupportTouchPoint());
+        if (touched) {
+            for (int i = 0; i < touched; ++i) {
+                Serial.print("X[");
+                Serial.print(i);
+                Serial.print("]:");
+                Serial.print(x[i]);
+                Serial.print(" ");
+                Serial.print(" Y[");
+                Serial.print(i);
+                Serial.print("]:");
+                Serial.print(y[i]);
+                Serial.print(" ");
+            }
+            Serial.println();
         }
-        Serial.println();
     }
 
     delay(5);

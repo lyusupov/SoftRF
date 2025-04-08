@@ -38,6 +38,7 @@
 
 #include "bhy2.h"
 #include "bhy2_parse.h"
+#include <math.h>
 
 void bhy2_parse_temperature_celsius(const uint8_t *data, bhy2_float *temperature)
 {
@@ -93,4 +94,22 @@ void bhy2_parse_orientation(const uint8_t *data, struct bhy2_data_orientation *o
 uint32_t bhy2_parse_step_counter(const uint8_t *data)
 {
     return (uint32_t)(data[0] | ((uint32_t)data[1] << 8) | ((uint32_t)data[2] << 16) | ((uint32_t)data[3] << 24));
+}
+
+void bhy2_quaternion_to_euler(const uint8_t *data, float *roll, float *pitch, float *yaw)
+{
+    float w,  x,  y,  z;
+    struct bhy2_data_quaternion quaternion;
+    bhy2_parse_quaternion(data, &quaternion);
+    w = quaternion.w / 16384.0f;
+    x = quaternion.x / 16384.0f;
+    y = quaternion.y / 16384.0f;
+    z = quaternion.z / 16384.0f;
+    *roll = atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
+    *pitch = asin(2 * (w * y - z * x));
+    *yaw = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+    // Convert radians to degrees
+    *roll = *roll * (180.0 / M_PI);
+    *pitch = *pitch * (180.0 / M_PI);
+    *yaw = *yaw * (180.0 / M_PI);
 }

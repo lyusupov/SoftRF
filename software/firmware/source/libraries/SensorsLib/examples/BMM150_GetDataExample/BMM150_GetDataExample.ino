@@ -60,7 +60,7 @@ void setup()
     while (!Serial);
 
     // Using I2C interface
-    if (!bmm.init(Wire, SENSOR_SDA, SENSOR_SCL, BMM150_I2C_ADDRESS_CSB_HIGH_SDO_LOW)) {
+    if (!bmm.begin(Wire, BMM150_I2C_ADDRESS_CSB_HIGH_SDO_LOW, SENSOR_SDA, SENSOR_SCL)) {
         Serial.print("Failed to init BMM150 - check your wiring!");
         while (1) {
             delay(1000);
@@ -85,7 +85,7 @@ void loop()
 {
     int16_t x, y, z;
     /* Read mag data */
-    /* Unit for magnetometer data is microtesla(uT) */
+    /* Unit for magnetometer data is micro tesla(uT) */
     if (bmm.getMag(x, y, z)) {
         Serial.print("X:");
         Serial.print(x);

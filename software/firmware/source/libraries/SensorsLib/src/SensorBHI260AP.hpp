@@ -29,802 +29,610 @@
  *            Simplification for Arduino
  */
 #pragma once
+#include "bosch/BoschSensorControl.hpp"
+#include "bosch/BoschPhySensorInfo.hpp"
+#include "bosch/BoschSensorInfo.hpp"
+#include "SensorPlatform.hpp"
+#include "bosch/BoschSensorID.hpp"
+#include "bosch/BoschParseBase.hpp"
+#include "bosch/BoschParseCallbackManager.hpp"
+
+
+#define BHI260AP_SLAVE_ADDRESS_L          0x28
+#define BHI260AP_SLAVE_ADDRESS_H          0x29
+
+using SensorConfig = struct bhy2_virt_sensor_conf;
+using ProcessCallback = void (*)(void *user_data, uint32_t total, uint32_t transferred);
+
+class SensorBHI260AP : public BoschVirtualSensor, BoschParseBase
+{
+public:
+    using SensorDebugMessageCallback = void (*)(const char *message);
+    using SensorEventCallback = void (*)(uint8_t event, uint8_t sensor_id, uint8_t data);
+
+    enum BoschOrientation {
+        DIRECTION_TOP_RIGHT,
+        DIRECTION_TOP_LEFT,
+        DIRECTION_BOTTOM_LEFT,
+        DIRECTION_BOTTOM_RIGHT,
+    };
+
+    enum SensorEvent {
+        EVENT_FLUSH_COMPLETE           = 1,
+        EVENT_SAMPLE_RATE_CHANGED,
+        EVENT_POWER_MODE_CHANGED,
+        EVENT_ALGORITHM_EVENTS         = 5,
+        EVENT_SENSOR_STATUS,
+        EVENT_BSX_DO_STEPS_MAIN,
+        EVENT_BSX_DO_STEPS_CALIB,
+        EVENT_BSX_GET_OUTPUT_SIGNAL,
+        EVENT_SENSOR_ERROR             = 11,
+        EVENT_FIFO_OVERFLOW,
+        EVENT_DYNAMIC_RANGE_CHANGED,
+        EVENT_FIFO_WATERMARK,
+        EVENT_INITIALIZED              = 16,
+        EVENT_TRANSFER_CAUSE,
+        EVENT_SENSOR_FRAMEWORK,
+        EVENT_RESET,
+    };
+
+    /**
+    * @enum SensorRemap
+    * @brief Enumeration representing different remapping options for the sensor's orientation.
+    *
+    * This enum defines various positions and orientations of the sensor chip. Each value corresponds
+    * to a specific corner or location of the chip, which can be used to remap the axes of the sensor
+    * according to its physical placement.
+    *
+    * Top view of the chip, where 'T' stands for top,
+    * 'B' stands for bottom,
+    * 'L' stands for left, and 'R' stands for right
+    *  -------------
+    * | TL         TR |
+    * |               |
+    * |               |
+    * |               |
+    * | BL         BR |
+    *  -------------
+    *
+    * There is also a bottom view of the chip：
+    *
+    *  -------------
+    * | BT         BB |
+    * |               |
+    * |               |
+    * |               |
+    * | LT         RT |
+    *  -------------
+    */
+    enum SensorRemap {
+        // Chip top view, upper left corner
+        //  -------------
+        // | *             |
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        //  -------------
+        TOP_LAYER_LEFT_CORNER,
+        // Chip top view, upper right corner
+        //  -------------
+        // |             * |
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        //  -------------
+        TOP_LAYER_RIGHT_CORNER,
+        // Chip top view, bottom right corner of the top
+        //  -------------
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        // |             * |
+        //  -------------
+        TOP_LAYER_BOTTOM_RIGHT_CORNER,
+        // The top view of the chip, the lower left corner of the front bottom
+        //  -------------
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        // | *             |
+        //  -------------
+        TOP_LAYER_BOTTOM_LEFT_CORNER,
+        // The bottom view of the chip, the upper left corner of the top
+        //  -------------
+        // | *             |
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        //  -------------
+        BOTTOM_LAYER_TOP_LEFT_CORNER,
+        // The bottom view of the chip, the upper right corner of the top
+        //  -------------
+        // |             * |
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        //  -------------
+        BOTTOM_LAYER_TOP_RIGHT_CORNER,
+        // The bottom view of the chip, the lower right corner of the bottom
+        //  -------------
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        // |             * |
+        //  -------------
+        BOTTOM_LAYER_BOTTOM_RIGHT_CORNER,
+        // Chip bottom view, bottom left corner
+        //  -------------
+        // |               |
+        // |               |
+        // |               |
+        // |               |
+        // | *             |
+        //  -------------
+        BOTTOM_LAYER_BOTTOM_LEFT_CORNER,
+    };
+
+    // The pin names are named according to the sensor manual.
+    enum BHI260AP_GPIO {
+        MCSB1 = 1,
+        RESV1 = 2,
+        RESV2 = 3,
+        MCSB2 = 4,  //It may be connected to the BMM150 sensor, select according to the actual situation
+        MCSB3 = 5,
+        MCSB4 = 6,
+
+        QSPI_CLK = 8, // If BHI260 carries external flash, it is not available
+        QSPI_CSN = 9, // If BHI260 carries external flash, it is not available
+        QSPI_D0 = 10, // If BHI260 carries external flash, it is not available
+        QSPI_D1 = 11, // If BHI260 carries external flash, it is not available
+        QSPI_D2 = 12, // If BHI260 carries external flash, it is not available
+        QSPI_D3 = 13, // If BHI260 carries external flash, it is not available
+
+        M2SCX = 14,
+        M2SDX = 15,
+        M2SDI = 16,
+        M3SCL = 17, //It may be connected to the BMM150 sensor, select according to the actual situation
+        M3SDA = 18, //It may be connected to the BMM150 sensor, select according to the actual situation
+        JTAG_CLK = 19,
+        JTAG_DIO = 20,
+
+        M1SCX = 127, // Invalid Pin
+        M1SDX = 128, // Invalid Pin
+        M1SDI = 129, // Invalid Pin
+        RESV3 = 130, // Invalid Pin
+    };
+
+    ~SensorBHI260AP();
+
+    SensorBHI260AP();
+
+    /**
+     * @brief  setPins
+     * @note   Set the reset pin. reset pin is not set by default.
+     * @param  rst:
+     * @retval None
+     */
+    void setPins(int rst);
 
 #if defined(ARDUINO)
+    /**
+     * @brief   begin
+     * @note    Initialization using the Arduino Wire Interface
+     * @param  &wire: TwoWire Class
+     * @param  addr: Device address, default 0x28, can also be changed to 0x29
+     * @param  sda: Set I2C SCL Pin, not set by default
+     * @param  scl: Set I2C SDA Pin, not set by default
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(TwoWire &wire, uint8_t addr = BHI260AP_SLAVE_ADDRESS_L, int sda = -1, int scl = -1);
 
-#include "bosch/BoschParse.h"
-#include "bosch/SensorBhy2Define.h"
-#if defined __has_include
-  #if __has_include ("bosch/firmware/BHI260AP.fw.h")
-    #include "bosch/firmware/BHI260AP.fw.h"
-  #endif
+    /**
+     * @brief  begin
+     * @note   Initialization using the Arduino SPI Interface
+     * @param  &spi: SPIClass
+     * @param  csPin: Set CS SCL Pin, not set by default
+     * @param  mosi:  Set SPI MOSI SCL Pin, not set by default
+     * @param  miso:  Set SPI MISO SCL Pin, not set by default
+     * @param  sck:   Set SPI SCK SCL Pin, not set by default
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(SPIClass &spi, uint8_t csPin, int mosi = -1, int miso = -1, int sck = -1);
+
+#elif defined(ESP_PLATFORM)
+
+#if defined(USEING_I2C_LEGACY)
+    /**
+     * @brief  begin
+     * @note   Initialization using the ESP-IDF I2C Legacy Interface
+     * @param  port_num: I2C_NUM0 or I2C_NUM1
+     * @param  addr: Device address, default 0x28, can also be changed to 0x29
+     * @param  sda: Set I2C SCL Pin, not set by default
+     * @param  scl: Set I2C SDA Pin, not set by default
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(i2c_port_t port_num, uint8_t addr = BHI260AP_SLAVE_ADDRESS_L, int sda = -1, int scl = -1);
 #else
-  #include "bosch/firmware/BHI260AP.fw.h"
-#endif
-
-
-class SensorBHI260AP
-{
-    friend class BoschParse;
-public:
-    SensorBHI260AP(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = BHI260AP_SLAVE_ADDRESS_L)
-    {
-        __handler.u.i2c_dev.scl = scl;
-        __handler.u.i2c_dev.sda = sda;
-        __handler.u.i2c_dev.addr = addr;
-        __handler.u.i2c_dev.wire = &w;
-        __handler.intf = SENSORLIB_I2C_INTERFACE;
-    }
-
-    SensorBHI260AP(int cs, int mosi = -1, int miso = -1, int sck = -1,
-                   PLATFORM_SPI_TYPE &spi = SPI
-                  )
-    {
-        __handler.u.spi_dev.cs = cs;
-        __handler.u.spi_dev.miso = miso;
-        __handler.u.spi_dev.mosi = mosi;
-        __handler.u.spi_dev.sck = sck;
-        __handler.u.spi_dev.spi = &spi;
-        __handler.intf = SENSORLIB_SPI_INTERFACE;
-    }
-
-    ~SensorBHI260AP()
-    {
-        deinit();
-    }
-
-    SensorBHI260AP()
-    {
-        memset(&__handler, 0, sizeof(__handler));
-    }
-
-    void setPins(int rst, int irq)
-    {
-        __handler.irq = irq;
-        __handler.rst = rst;
-
-    }
-
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = BHI260AP_SLAVE_ADDRESS_L)
-    {
-        __handler.u.i2c_dev.scl = scl;
-        __handler.u.i2c_dev.sda = sda;
-        __handler.u.i2c_dev.addr = addr;
-        __handler.u.i2c_dev.wire = &w;
-        __handler.intf = SENSORLIB_I2C_INTERFACE;
-        return initImpl();
-    }
-
-    bool init(
-        PLATFORM_SPI_TYPE &spi,
-        int cs, int mosi = MOSI, int miso = MISO, int sck = SCK)
-    {
-        __handler.u.spi_dev.cs = cs;
-        __handler.u.spi_dev.miso = miso;
-        __handler.u.spi_dev.mosi = mosi;
-        __handler.u.spi_dev.sck = sck;
-        __handler.u.spi_dev.spi = &spi;
-        __handler.intf = SENSORLIB_SPI_INTERFACE;
-        return initImpl();
-    }
-
-    bool init()
-    {
-        return initImpl();
-    }
-
-    void deinit()
-    {
-        if (__pro_buf) {
-            free(__pro_buf);
-        }
-        __pro_buf = NULL;
-
-        if (bhy2) {
-            free(bhy2);
-            bhy2 = NULL;
-        }
-
-        if (__handler.irq != SENSOR_PIN_NONE) {
-            detachInterrupt(__handler.irq);
-        }
-        // end();
-    }
-
-    void reset()
-    {
-        if (__handler.rst != SENSOR_PIN_NONE) {
-            digitalWrite(__handler.rst, HIGH);
-            delay(5);
-            digitalWrite(__handler.rst, LOW);
-            delay(10);
-            digitalWrite(__handler.rst, HIGH);
-            delay(5);
-        }
-    }
-
-    void update()
-    {
-        if (!__pro_buf) {
-            return;
-        }
-        if (__handler.irq != SENSOR_PIN_NONE) {
-            if (__data_available) {
-                bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
-            }
-        } else {
-            bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
-        }
-    }
-
-    void setBootFormFlash(bool boot_from_flash)
-    {
-        __boot_from_flash = boot_from_flash;
-    }
-
-    bool enablePowerSave()
-    {
-        return true;
-    }
-
-    bool disablePowerSave()
-    {
-
-        return true;
-    }
-
-    void disableInterruptCtrl()
-    {
-    }
-
-    void enableInterruptCtrl()
-    {
-    }
-
-    bhy2_dev *getHandler()
-    {
-        return bhy2;
-    }
-
-    void printSensors(Stream &port)
-    {
-        uint8_t cnt = 0;
-        bool presentBuff[256];
-
-        for (uint16_t i = 0; i < sizeof(bhy2->present_buff); i++) {
-            for (uint8_t j = 0; j < 8; j++) {
-                presentBuff[i * 8 + j] = ((bhy2->present_buff[i] >> j) & 0x01);
-            }
-        }
-
-        port.println("Present sensors: ");
-        for (int i = 0; i < (int)sizeof(presentBuff); i++) {
-            if (presentBuff[i]) {
-                cnt++;
-                port.print(i);
-                port.print(" - ");
-                port.print(get_sensor_name(i));
-                port.println();
-            }
-        }
-        port.printf("Total %u Sensor online .\n", cnt);
-    }
-
-
-    bool printInfo(Stream &stream)
-    {
-        uint16_t kernel_version = 0, user_version = 0;
-        uint16_t rom_version = 0;
-        uint8_t product_id = 0;
-        uint8_t host_status = 0, feat_status = 0;
-        uint8_t boot_status = 0;
-        uint8_t sensor_error;
-        struct bhy2_sensor_info info;
-
-        /* Get product_id */
-        __error_code = (bhy2_get_product_id(&product_id, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_product_id failed!", false);
-
-        /* Get Kernel version */
-        __error_code = (bhy2_get_kernel_version(&kernel_version, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_kernel_version failed!", false);
-
-        /* Get User version */
-        __error_code = (bhy2_get_user_version(&user_version, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_user_version failed!", false);
-
-        /* Get ROM version */
-        __error_code = (bhy2_get_rom_version(&rom_version, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_rom_version failed!", false);
-
-        __error_code = (bhy2_get_host_status(&host_status, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_host_status failed!", false);
-
-        __error_code = (bhy2_get_feature_status(&feat_status, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_feature_status failed!", false);
-
-        stream.printf("Product ID     : %02x\n", product_id);
-        stream.printf("Kernel version : %04u\n", kernel_version);
-        stream.printf("User version   : %04u\n", user_version);
-        stream.printf("ROM version    : %04u\n", rom_version);
-        stream.printf("Power state    : %s\n", (host_status & BHY2_HST_POWER_STATE) ? "sleeping" : "active");
-        stream.printf("Host interface : %s\n", (host_status & BHY2_HST_HOST_PROTOCOL) ? "SPI" : "I2C");
-        stream.printf("Feature status : 0x%02x\n", feat_status);
-
-        /* Read boot status */
-        __error_code = (bhy2_get_boot_status(&boot_status, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
-
-        stream.printf("Boot Status : 0x%02x: ", boot_status);
-
-        if (boot_status & BHY2_BST_FLASH_DETECTED) {
-            stream.println("\tFlash detected. ");
-        }
-
-        if (boot_status & BHY2_BST_FLASH_VERIFY_DONE) {
-            stream.println("\tFlash verify done. ");
-        }
-
-        if (boot_status & BHY2_BST_FLASH_VERIFY_ERROR) {
-            stream.println("Flash verification failed. ");
-        }
-
-        if (boot_status & BHY2_BST_NO_FLASH) {
-            stream.println("\tNo flash installed. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_INTERFACE_READY) {
-            stream.println("\tHost interface ready. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_VERIFY_DONE) {
-            stream.println("\tFirmware verification done. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_VERIFY_ERROR) {
-            stream.println("\tFirmware verification error. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_IDLE) {
-            stream.println("\tFirmware halted. ");
-        }
-
-        /* Read error value */
-        __error_code = (bhy2_get_error_value(&sensor_error, bhy2));
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_error_value failed!", false);
-        if (sensor_error) {
-            log_e("%s", get_sensor_error_text(sensor_error));
-        }
-
-
-        if (feat_status & BHY2_FEAT_STATUS_OPEN_RTOS_MSK) {
-
-            bhy2_update_virtual_sensor_list(bhy2);
-
-            /* Get present virtual sensor */
-            bhy2_get_virt_sensor_list(bhy2);
-
-            stream.printf("Virtual sensor list.\r\n");
-            stream.printf("Sensor ID |                          Sensor Name |  ID | Ver |  Min rate |  Max rate |\r\n");
-            stream.printf("----------+--------------------------------------+-----+-----+-----------+-----------|\r\n");
-            for (uint8_t i = 0; i < BHY2_SENSOR_ID_MAX; i++) {
-                if (bhy2_is_sensor_available(i, bhy2)) {
-                    if (i < BHY2_SENSOR_ID_CUSTOM_START) {
-                        stream.printf(" %8u | %36s ", i, get_sensor_name(i));
-                    }
-                    __error_code = (bhy2_get_sensor_info(i, &info, bhy2));
-                    BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_sensor_info failed!", false);
-                    stream.printf("| %3u | %3u | %9.4f | %9.4f |\r\n",
-                                  info.driver_id,
-                                  info.driver_version,
-                                  info.min_rate.f_val,
-                                  info.max_rate.f_val);
-                }
-            }
-        }
-        return true;
-    }
-
-    bool setInterruptCtrl(uint8_t data)
-    {
-        __error_code = bhy2_set_host_interrupt_ctrl(data, bhy2);
-        if (__error_code != BHY2_OK) {
-            return false;
-        }
-    }
-
-    uint8_t getInterruptCtrl()
-    {
-        uint8_t data;
-        __error_code = bhy2_get_host_interrupt_ctrl(&data, bhy2);
-        if (__error_code != BHY2_OK) {
-            return 0;
-        }
-        return data;
-    }
-
-    void printInterruptCtrl(Stream &stream)
-    {
-        uint8_t data;
-        __error_code = bhy2_get_host_interrupt_ctrl(&data, bhy2);
-        if (__error_code != BHY2_OK) {
-            return ;
-        }
-        stream.printf("Host interrupt control\r\n");
-        stream.printf("-- Wake up FIFO %s.\r\n", (data & BHY2_ICTL_DISABLE_FIFO_W) ? "disabled" : "enabled");
-        stream.printf("-- Non wake up FIFO %s.\r\n", (data & BHY2_ICTL_DISABLE_FIFO_NW) ? "disabled" : "enabled");
-        stream.printf("-- Status FIFO %s.\r\n", (data & BHY2_ICTL_DISABLE_STATUS_FIFO) ? "disabled" : "enabled");
-        stream.printf("-- Debugging %s.\r\n", (data & BHY2_ICTL_DISABLE_DEBUG) ? "disabled" : "enabled");
-        stream.printf("-- Fault %s.\r\n", (data & BHY2_ICTL_DISABLE_FAULT) ? "disabled" : "enabled");
-        stream.printf("-- Interrupt is %s.\r\n", (data & BHY2_ICTL_ACTIVE_LOW) ? "active low" : "active high");
-        stream.printf("-- Interrupt is %s triggered.\r\n", (data & BHY2_ICTL_EDGE) ? "pulse" : "level");
-        stream.printf("-- Interrupt pin drive is %s.\r\n", (data & BHY2_ICTL_OPEN_DRAIN) ? "open drain" : "push-pull");
-    }
-
-    bool isReady()
-    {
-        uint8_t  boot_status = 0;
-        __error_code = bhy2_get_boot_status(&boot_status, bhy2);
-        log_i("boot_status:0x%x", boot_status);
-        if (__error_code != BHY2_OK) {
-            return false;
-        }
-        return (boot_status & BHY2_BST_HOST_INTERFACE_READY);
-    }
-
-    uint16_t getKernelVersion()
-    {
-        uint16_t version = 0;
-        __error_code = bhy2_get_kernel_version(&version, bhy2);
-        if ((__error_code != BHY2_OK) && (version == 0)) {
-            return 0;
-        }
-        log_d("Boot successful. Kernel version %u.", version);
-        return version;
-    }
-
-
-
-    void onEvent(BhySensorEvent event_id, BhyEventCb callback)
-    {
-        SensorEventCbList_t newEventHandler;
-        newEventHandler.cb = callback;
-        newEventHandler.event = event_id;
-        BoschParse::bhyEventVector.push_back(newEventHandler);
-    }
-
-    void removeEvent(BhySensorEvent event_id, BhyEventCb callback)
-    {
-        if (!callback) {
-            return;
-        }
-        for (uint32_t i = 0; i < BoschParse::bhyEventVector.size(); i++) {
-            SensorEventCbList_t entry = BoschParse::bhyEventVector[i];
-            if (entry.cb == callback && entry.event == event_id) {
-                BoschParse::bhyEventVector.erase(BoschParse::bhyEventVector.begin() + i);
-            }
-        }
-    }
-
-
-    void onResultEvent(BhySensorID sensor_id, BhyParseDataCallback callback)
-    {
-        ParseCallBackList_t newEventHandler;
-        newEventHandler.cb = callback;
-        newEventHandler.id = sensor_id;
-        BoschParse::bhyParseEventVector.push_back(newEventHandler);
-    }
-
-    void removeResultEvent(BhySensorID sensor_id, BhyParseDataCallback callback)
-    {
-        if (!callback) {
-            return;
-        }
-        for (uint32_t i = 0; i < BoschParse::bhyParseEventVector.size(); i++) {
-            ParseCallBackList_t entry = BoschParse::bhyParseEventVector[i];
-            if (entry.cb == callback && entry.id == sensor_id) {
-                BoschParse::bhyParseEventVector.erase(BoschParse::bhyParseEventVector.begin() + i);
-            }
-        }
-    }
-
-    void setProcessBufferSize(uint32_t size)
-    {
-        __pro_buf_size = size;
-    }
-
-
-    bool uploadFirmware(const uint8_t *firmware, uint32_t length, bool write2Flash = false)
-    {
-        uint8_t sensor_error;
-        uint8_t boot_status;
-
-        log_i("Upload Firmware ...");
-
-        __error_code = bhy2_get_boot_status(&boot_status, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
-
-        if (write2Flash) {
-            if (boot_status & BHY2_BST_FLASH_DETECTED) {
-                uint32_t start_addr = BHY2_FLASH_SECTOR_START_ADDR;
-                uint32_t end_addr = start_addr + length;
-                log_i("Flash detected. Erasing flash to upload firmware");
-                __error_code = bhy2_erase_flash(start_addr, end_addr, bhy2);
-                BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_erase_flash failed!", false);
-            } else {
-                log_e("Flash not detected");
-                return false;
-            }
-            printf("Loading firmware into FLASH.");
-            __error_code = bhy2_upload_firmware_to_flash(firmware, length, bhy2);
-            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_upload_firmware_to_flash failed!", false);
-        } else {
-            log_i("Loading firmware into RAM.");
-            log_i("upload size = %lu", length);
-            __error_code = bhy2_upload_firmware_to_ram(firmware, length, bhy2);
-            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_upload_firmware_to_ram failed!", false);
-        }
-
-        log_i("Loading firmware into RAM Done");
-        __error_code = bhy2_get_error_value(&sensor_error, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_error_value failed!", false);
-        if (sensor_error != BHY2_OK) {
-            __error_code = bhy2_get_error_value(&sensor_error, bhy2);
-            log_e("%s", get_sensor_error_text(sensor_error));
-            return false;
-        }
-        
-
-        if (write2Flash) {
-            log_i("Booting from FLASH.");
-            __error_code = bhy2_boot_from_flash(bhy2);
-        } else {
-            log_i("Booting from RAM.");
-            __error_code = bhy2_boot_from_ram(bhy2);
-        }
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2 boot failed!", false);
-
-        __error_code = bhy2_get_error_value(&sensor_error, bhy2);
-        if (sensor_error) {
-            log_e("%s", get_sensor_error_text(sensor_error));
-            return false;
-        }
-        return sensor_error == BHY2_OK;
-    }
-
-    String getError()
-    {
-        String err = get_api_error(__error_code);
-        err += " Code:" + String(__error_code);
-        return err;
-    }
-
-    bool configure(uint8_t sensor_id, float sample_rate, uint32_t report_latency_ms)
-    {
-        if (!bhy2_is_sensor_available(sensor_id, bhy2)) {
-            log_e("Sensor not present"); return false;
-        }
-        __error_code = bhy2_set_virt_sensor_cfg(sensor_id, sample_rate, report_latency_ms, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_set_virt_sensor_cfg failed!", false);
-        log_i("Enable %s at %.2fHz.", get_sensor_name(sensor_id), sample_rate);
-        return true;
-    }
-
-    struct bhy2_virt_sensor_conf getConfigure(uint8_t sensor_id)
-    {
-        bhy2_virt_sensor_conf conf;
-        bhy2_get_virt_sensor_cfg(sensor_id, &conf, bhy2);
-        log_i("range:%u sample_rate:%f latency:%lu sensitivity:%u\n", conf.range, conf.sample_rate, conf.latency, conf.sensitivity);
-        return conf;
-    }
-
-    float getScaling(uint8_t sensor_id)
-    {
-        return get_sensor_default_scaling(sensor_id);
-    }
-
-    void setFirmware(const uint8_t *image, size_t image_len, bool write_flash)
-    {
-        __firmware = image;
-        __firmware_size = image_len;
-        __write_flash = write_flash;
-    }
-
-    static const char *getSensorName(uint8_t sensor_id)
-    {
-        return get_sensor_name(sensor_id);
-    }
-
-    // Get an accuracy report
-    uint8_t getAccuracy()
-    {
-        return __accuracy;
-    }
+    /**
+     * @brief begin
+     * @note    Initialization using the ESP-IDF I2C LL Interface idf version > 5.0.0
+     * @param  handle: I2C Handle
+     * @param  addr: Device address, default 0x28, can also be changed to 0x29
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(i2c_master_bus_handle_t handle, uint8_t addr = BHI260AP_SLAVE_ADDRESS_L);
+#endif  //ESP_PLATFORM
+
+
+    /**
+     * @brief  begin
+     * @note   Initialization using the ESP-IDF SPI Interface
+     * @param  host: spi_host_device_t enum
+     * @param  handle: spi_device_handle_t handle
+     * @param  csPin: cs pin
+     * @param  mosi: spi mosi pin
+     * @param  miso: spi miso pin
+     * @param  sck: spi sck pin
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(spi_host_device_t host, spi_device_handle_t handle, uint8_t csPin, int mosi, int miso, int sck);
+
+#endif  //ARDUINO
+
+    /**
+     * @brief  begin
+     * @note   Custom callback interface, suitable for other platforms
+     * @param  interface: Communication mode, COMM_SPI or COMM_I2C
+     * @param  callback: Register read and write callback function
+     * @param  hal_callback: Platform digital IO and delay callback function
+     * @param  addr: Device address, default 0x28, can also be changed to 0x29
+     * @retval bool true-> Success false-> failure
+     */
+    bool begin(CommInterface interface, SensorCommCustom::CustomCallback callback,
+               SensorCommCustomHal::CustomHalCallback hal_callback,
+               uint8_t addr = BHI260AP_SLAVE_ADDRESS_L);
+
+    /**
+     * @brief  reset
+     * @note   Reset sensor
+     * @retval None
+     */
+    void reset();
+
+    /**
+     * @brief  update
+     * @note   Update sensor fifo data
+     * @retval None
+     */
+    void update();
+
+    /**
+     * @brief  setBootFromFlash
+     * @note   Set whether to start from external flash
+     * @param  boot_from_flash: true boot form flash or boot form ram
+     * @retval None
+     */
+    void setBootFromFlash(bool boot_from_flash);
+
+    /**
+     * @brief  getHandler
+     * @note   Get the native BHI API handle
+     * @retval handle
+     */
+    bhy2_dev *getHandler();
+
+    /**
+     * @brief  setInterruptCtrl
+     * @note   Set the interrupt control mask
+     * @param  data:
+     *               BHY2_ICTL_DISABLE_FIFO_W
+     *               BHY2_ICTL_DISABLE_FIFO_NW
+     *               BHY2_ICTL_DISABLE_STATUS_FIFO
+     *               BHY2_ICTL_DISABLE_DEBUG
+     *               BHY2_ICTL_DISABLE_FAULT
+     *               BHY2_ICTL_ACTIVE_LOW
+     *               BHY2_ICTL_EDGE
+     *               BHY2_ICTL_OPEN_DRAIN
+     *
+     * @retval true is success , false is failed
+     */
+    bool setInterruptCtrl(uint8_t data);
+
+    /**
+     * @brief  getInterruptCtrl
+     * @note   Get interrupt control info
+     * @retval SensorBHI260APControl class
+     */
+    SensorBHI260APControl getInterruptCtrl();
+
+
+    /**
+     * @brief  isReady
+     * @note   Query whether the sensor is ready
+     * @retval true OK , false Not ready
+     */
+    bool isReady();
+
+    /**
+     * @brief  getKernelVersion
+     * @note   Get the sensor firmware kernel version
+     * @retval 2 bytes
+     */
+    uint16_t getKernelVersion();
+
+
+    /**
+     * @brief  onEvent
+     * @note   Registered sensor event callback function
+     * @param  callback: Callback Function
+     * @retval None
+     */
+    void onEvent(SensorEventCallback callback);
+
+    /**
+     * @brief  removeEvent
+     * @note   Remove sensor event callback function
+     * @retval None
+     */
+    void removeEvent();
+
+    /**
+     * @brief  onResultEvent
+     * @note   Registered sensor result callback function , The same sensor ID can register multiple event callbacks.
+     *         Please note that you should not register the same event callback repeatedly.
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @param  callback: Callback Function
+     * @param  *user_data: user data,can be null
+     * @retval bool true-> Success false-> failure
+     */
+    bool onResultEvent(BoschSensorID sensor_id, SensorDataParseCallback callback, void *user_data = nullptr);
+
+    /**
+     * @brief  removeResultEvent
+     * @note   Remove the registered result callback function
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @param  callback: Callback Function
+     * @retval bool true-> Success false-> failure
+     */
+    bool removeResultEvent(BoschSensorID sensor_id, SensorDataParseCallback callback);
+
+    /**
+     * @brief  setProcessBufferSize
+     * @note   The default value is 512Bytes , Must be called before initialization
+     * @param  size: The set buffer size is requested by malloc, and if PSRAM is enabled, it is requested from PSRAM
+     * @retval None
+     */
+    void setProcessBufferSize(uint32_t size);
+
+    /**
+     * @brief  uploadFirmware
+     * @note   Update BHI sensor firmware
+     * @param  *firmware: Firmware data address
+     * @param  length: Firmware data length
+     * @param  write2Flash: 1 is written to external flash, 0 is written to RAM
+     * @retval bool true-> Success false-> failure
+     */
+    bool uploadFirmware(const uint8_t *firmware, uint32_t length, bool write2Flash = false);
+
+    /**
+     * @brief  getError
+     * @note   Get the error status string
+     * @retval string
+     */
+    const char *getError();
+
+    /**
+     * @brief  configure
+     * @note   Sensor Configuration
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @param  sample_rate: Data output rate, unit: HZ
+     * @param  report_latency_ms: Report interval in milliseconds
+     * @return bool true-> Success false-> failure
+     */
+    bool configure(uint8_t sensor_id, float sample_rate, uint32_t report_latency_ms);
+
+    /**
+     * @brief  configureRange
+     * @note   Set range of the sensor
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @param  range:     Range for selected SensorID. See Table 79 in BHY260 datasheet 109 page
+     * @retval  bool true-> Success false-> failure
+     */
+    bool configureRange(uint8_t sensor_id, uint16_t range);
+
+
+    /**
+     * @brief  getConfigure
+     * @note   Get sensor configuration
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @retval  SensorConfig
+     */
+    SensorConfig getConfigure(uint8_t sensor_id);
+
+    /**
+     * @brief  getScaling
+     * @note   Get sensor scale factor
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @retval scale factor
+     */
+    float getScaling(uint8_t sensor_id);
+
+    /**
+     * @brief  setFirmware
+     * @note   Set the firmware
+     * @param  *image: firmware data address
+     * @param  image_len: firmware length
+     * @param  write_flash: true : write to flash otherwise ram
+     * @param  force_update: true, rewrite to flash or ram regardless of whether there is firmware, false, do not write if firmware is detected
+     * @retval None
+     */
+    void setFirmware(const uint8_t *image, size_t image_len, bool write_flash = false, bool force_update = false);
+
+    /**
+     * @brief  getSensorName
+     * @note   Get sensor name
+     * @param  sensor_id: Sensor ID , see enum BoschSensorID
+     * @retval sensor name
+     */
+    const char *getSensorName(uint8_t sensor_id);
+
+    /**
+     * @brief  getAccuracy
+     * @note   Get an accuracy report
+     * @retval Current report accuracy
+     */
+    uint8_t getAccuracy();
+
+    /**
+     * @brief  digitalRead
+     * @note   Read GPIO level, only for custom firmware
+     * @param  pin: see BHI260AP_aux_BMM150_BME280_Expand_GPIO example
+     * @param  pullup: true is set pullup or input mode
+     * @retval 1 is high ,0 is low
+     */
+    uint8_t digitalRead(uint8_t pin, bool pullup = false);
+
+    /**
+     * @brief  digitalWrite
+     * @note   Write GPIO level, only for custom firmware
+     * @param  pin: see BHI260AP_aux_BMM150_BME280_Expand_GPIO example
+     * @param  level: 1 is high ,0 is low
+     * @retval None
+     */
+    void digitalWrite(uint8_t pin, uint8_t level);
+
+    /**
+     * @brief  disableGpio
+     * @note   Disable GPIO function
+     * @param  pin: see BHI260AP_aux_BMM150_BME280_Expand_GPIO example
+     * @retval None
+     */
+    void disableGpio(uint8_t pin);
+
+    /**
+     * @brief  setDebug
+     * @note   Whether to enable chip debug output
+     * @param  enable: true Enable message debug , false disable debug , Requires firmware support, the default firmware will not output any messages
+     * @param  &serial: Stream
+     * @retval None
+     */
+    void setDebugKernel(bool enable);
+
+    /**
+     * @brief setDebugCallback
+     * @param  cb: Sensor debug output callback function , Requires firmware support, the default firmware will not output any messages
+     * @retval None
+     */
+    void setDebugCallback(SensorDebugMessageCallback cb);
+
+    /**
+     * @brief  getPhySensorInfo
+     * @note   Get all information about physical sensors
+     * @param  sens_id: ID of the physical sensor
+     * @retval BoschPhySensorInfo Class
+     */
+    BoschPhySensorInfo getPhySensorInfo(uint8_t sens_id);
+
+    /**
+     * @brief  getSensorInfo
+     * @note   Get all information about sensors
+     * @retval BoschSensorInfo Class
+     */
+    BoschSensorInfo getSensorInfo();
+
+
+    /**
+     * @brief  setMaxiTransferSize
+     * @note   Set the maximum number of bytes transmitted by the interface , Called before begin
+     * @param  size_of_bytes: The maximum transmission bytes of different platforms are different.
+     *                        Set it according to the platform. If not set, the default is I2C 32 bytes, SPI 256 bytes.
+     * @retval None
+     */
+    void setMaxiTransferSize(uint16_t size_of_bytes);
+
+
+    /**
+     * @brief  setUpdateProcessCallback
+     * @note   Set the callback function of the firmware update process to obtain the update progress
+     * @param  callback: callback function
+     * @param  *user_data: user data, can be nullptr
+     * @retval None
+     */
+    void setUpdateProcessCallback(ProcessCallback callback, void *user_data = nullptr);
+
+    /**
+     * @brief  availableSensorNums
+     * @note   Get the number of available sensors
+     * @retval available sensors
+     */
+    uint8_t availableSensorNums();
+
+
+    /**
+    * @brief Set the axis remapping for the sensor based on the specified orientation.
+    *
+    * This function allows you to configure the sensor's axis remapping according to a specific
+    * physical orientation of the chip. By passing one of the values from the SensorRemap enum,
+    * you can ensure that the sensor data is correctly interpreted based on how the chip is placed.
+    * [bst-bhi260ab-ds000.pdf](https://www.mouser.com/datasheet/2/783/bst-bhi260ab-ds000-1816249.pdf)
+    * 20.3 Sensing axes and axes remapping
+    * @param remap An enumeration value from SensorRemap that specifies the desired axis remapping.
+    * @return Returns true if the axis remapping is successfully set; false otherwise.
+    */
+    bool setRemapAxes(SensorRemap remap);
+
+protected:
+
+    void parseData(const struct bhy2_fifo_parse_data_info *fifo, void *user_data) override;
+
+    void parseMetaEvent(const struct bhy2_fifo_parse_data_info *callback_info, void *user_data) override;
+
+    void parseDebugMessage(const struct bhy2_fifo_parse_data_info *callback_info, void *user_data) override;
 
 private:
 
-    bool bootFromFlash()
-    {
-        int8_t rslt;
-        uint8_t boot_status, feat_status;
-        uint8_t error_val = 0;
-        uint16_t tries = 300; /* Wait for up to little over 3s */
+    /**
+     * @brief  bootFromFlash
+     * @note   Boot from external flash
+     * @retval bool true-> Success false-> failure
+     */
+    bool bootFromFlash();
 
-        log_d("Waiting for firmware verification to complete");
-        do {
-            __error_code = bhy2_get_boot_status(&boot_status, bhy2);
-            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
-            if (boot_status & BHY2_BST_FLASH_VERIFY_DONE) {
-                break;
-            }
-            delay(10);
-        } while (tries--);
+    void print_boot_status(uint8_t boot_status);
 
-        __error_code = bhy2_get_boot_status(&boot_status, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
-        print_boot_status(boot_status);
-
-        if (boot_status & BHY2_BST_HOST_INTERFACE_READY) {
-
-            if (boot_status & BHY2_BST_FLASH_DETECTED) {
-
-                /* If no firmware is running, boot from Flash */
-                log_d("Booting from flash");
-                rslt = bhy2_boot_from_flash(bhy2);
-                if (rslt != BHY2_OK) {
-                    log_e("%s. Booting from flash failed.\r\n", get_api_error(rslt));
-                    __error_code = bhy2_get_regs(BHY2_REG_ERROR_VALUE, &error_val, 1, bhy2);
-                    BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_regs failed!", false);
-                    if (error_val) {
-                        log_e("%s\r\n", get_sensor_error_text(error_val));
-                    }
-                    return false;
-                }
-
-                __error_code = bhy2_get_boot_status(&boot_status, bhy2);
-                BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_boot_status failed!", false);
-                print_boot_status(boot_status);
-
-                if (!(boot_status & BHY2_BST_HOST_INTERFACE_READY)) {
-                    /* hub is not ready, need reset hub */
-                    log_d("Host interface is not ready, triggering a reset");
-                    __error_code = bhy2_soft_reset(bhy2);
-                    BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_soft_reset failed!", false);
-                }
-
-                __error_code = (bhy2_get_feature_status(&feat_status, bhy2));
-                BHY2_RLST_CHECK(__error_code != BHY2_OK, "Reading Feature status failed, booting from flash failed!", false);
-
-            } else {
-                log_e("Can't detect external flash");
-                return false;
-            }
-        } else {
-            log_e("Host interface is not ready");
-            return false;
-        }
-
-        log_d("Booting from flash successful");
-        return true;
-    }
-
-
-
-    void print_boot_status(uint8_t boot_status)
-    {
-        log_d("Boot Status : 0x%02x: ", boot_status);
-        if (boot_status & BHY2_BST_FLASH_DETECTED) {
-            log_d("Flash detected. ");
-        }
-
-        if (boot_status & BHY2_BST_FLASH_VERIFY_DONE) {
-            log_d("Flash verify done. ");
-        }
-
-        if (boot_status & BHY2_BST_FLASH_VERIFY_ERROR) {
-            log_d("Flash verification failed. ");
-        }
-
-        if (boot_status & BHY2_BST_NO_FLASH) {
-            log_d("No flash installed. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_INTERFACE_READY) {
-            log_d("Host interface ready. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_VERIFY_DONE) {
-            log_d("Firmware verification done. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_VERIFY_ERROR) {
-            log_d("Firmware verification error. ");
-        }
-
-        if (boot_status & BHY2_BST_HOST_FW_IDLE) {
-            log_d("Firmware halted. ");
-        }
-    }
-
-    static void handleISR()
-    {
-        __data_available = true;
-    }
-
-
-    bool initImpl()
-    {
-        uint8_t product_id = 0;
-
-        if (__handler.rst != SENSOR_PIN_NONE) {
-            pinMode(__handler.rst, OUTPUT);
-        }
-
-        reset();
-
-        bhy2 = (struct bhy2_dev *)malloc(sizeof(struct bhy2_dev ));
-        BHY2_RLST_CHECK(!bhy2, " Device handler malloc failed!", false);
-
-        switch (__handler.intf) {
-        case BHY2_I2C_INTERFACE:
-            // esp32s3 test I2C maximum read and write is 64 bytes
-            __max_rw_length = 64;
-            BHY2_RLST_CHECK(!__handler.u.i2c_dev.wire, "Wire ptr NULL", false);
-            if (!SensorInterfaces::setup_interfaces(__handler)) {
-                log_e("setup_interfaces failed");
-                return false;
-            }
-            __error_code = bhy2_init(BHY2_I2C_INTERFACE,
-                                     SensorInterfaces::bhy2_i2c_read,
-                                     SensorInterfaces::bhy2_i2c_write,
-                                     SensorInterfaces::bhy2_delay_us,
-                                     __max_rw_length, &__handler, bhy2);
-            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_init failed!", false);
-            // __error_code = bhy2_set_host_intf_ctrl(BHY2_I2C_INTERFACE, bhy2);
-            // BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_set_host_intf_ctrl failed!", false);
-            break;
-
-        case BHY2_SPI_INTERFACE:
-            // esp32s3 test SPI maximum read and write is 256 bytes
-            __max_rw_length = 256;
-            BHY2_RLST_CHECK(!__handler.u.spi_dev.spi, "SPI ptr NULL", false);
-            if (!SensorInterfaces::setup_interfaces(__handler)) {
-                log_e("setup_interfaces failed");
-                return false;
-            }
-            __error_code = bhy2_init(BHY2_SPI_INTERFACE,
-                                     SensorInterfaces::bhy2_spi_read,
-                                     SensorInterfaces::bhy2_spi_write,
-                                     SensorInterfaces::bhy2_delay_us,
-                                     __max_rw_length,
-                                     &__handler,
-                                     bhy2);
-            BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_init failed!", false);
-            // __error_code = bhy2_set_host_intf_ctrl(BHY2_SPI_INTERFACE, bhy2);
-            // BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_set_host_intf_ctrl failed!", false);
-            break;
-        default:
-            return false;
-        }
-
-        __error_code = bhy2_soft_reset(bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "reset bhy2 failed!", false);
-
-        __error_code = bhy2_get_product_id(&product_id, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_get_product_id failed!", false);
-
-
-        /* Check for a valid product ID */
-        if (product_id != BHY2_PRODUCT_ID) {
-            log_e("Product ID read %X. Expected %X", product_id, BHY2_PRODUCT_ID);
-            return false;
-        } else {
-            log_i("BHI260/BHA260 found. Product ID read %X", product_id);
-        }
-
-        if (!__firmware) {
-            // Default write to ram
-#if defined __has_include
-  #if __has_include ("bosch/firmware/BHI260AP.fw.h")
-            setFirmware(bhy2_firmware_image, sizeof(bhy2_firmware_image), false);
-  #endif
-#else
-            setFirmware(bhy2_firmware_image, sizeof(bhy2_firmware_image), false);
-#endif
-        }
-
-        if (__boot_from_flash) {
-            if (!bootFromFlash()) {
-                //** If the boot from flash fails, re-upload the firmware to flash
-                __error_code = bhy2_soft_reset(bhy2);
-                BHY2_RLST_CHECK(__error_code != BHY2_OK, "reset bhy2 failed!", false);
-
-                if (!uploadFirmware(__firmware, __firmware_size, __write_flash)) {
-                    log_e("uploadFirmware failed!");
-                    return false;
-                }
-            }
-        } else {
-            // ** Upload firmware to RAM
-            if (!uploadFirmware(__firmware, __firmware_size, __write_flash)) {
-                log_e("uploadFirmware failed!");
-                return false;
-            }
-        }
-
-        uint16_t version = getKernelVersion();
-        BHY2_RLST_CHECK(!version, "getKernelVersion failed!", false);
-        log_i("Boot successful. Kernel version %u.", version);
-
-        //Set event callback
-        __error_code = bhy2_register_fifo_parse_callback(BHY2_SYS_ID_META_EVENT, BoschParse::parseMetaEvent, (void *)&__accuracy, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_register_fifo_parse_callback failed!", false);
-
-        __error_code = bhy2_register_fifo_parse_callback(BHY2_SYS_ID_META_EVENT_WU, BoschParse::parseMetaEvent, (void *)&__accuracy, bhy2);
-        BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_register_fifo_parse_callback failed!", false);
-
-        // __error_code = bhy2_register_fifo_parse_callback(BHY2_SYS_ID_DEBUG_MSG, BoschParse::parseDebugMessage, NULL, bhy2);
-        // BHY2_RLST_CHECK(__error_code != BHY2_OK, "bhy2_register_fifo_parse_callback parseDebugMessage failed!", false);
-
-        //Set process buffer
-#if     (defined(ESP32) || defined(ARDUINO_ARCH_ESP32)) && defined(BOARD_HAS_PSRAM)
-        __pro_buf = (uint8_t *)ps_malloc(__pro_buf_size);
-#else
-        __pro_buf = (uint8_t *)malloc(__pro_buf_size);
-#endif
-        BHY2_RLST_CHECK(!__pro_buf, "process buffer malloc failed!", false);
-
-        __error_code = bhy2_get_and_process_fifo(__pro_buf, __pro_buf_size, bhy2);
-        if (__error_code != BHY2_OK) {
-            log_e("bhy2_get_and_process_fifo failed");
-            free(__pro_buf);
-            return false;
-        }
-
-        /* Update the callback table to enable parsing of sensor hintr_ctrl */
-        bhy2_update_virtual_sensor_list(bhy2);
-
-        /* Get present virtual sensor */
-        bhy2_get_virt_sensor_list(bhy2);
-
-        // Only register valid sensor IDs
-        for (uint8_t i = 0; i < BHY2_SENSOR_ID_MAX; i++) {
-            if (bhy2_is_sensor_available(i, bhy2)) {
-                bhy2_register_fifo_parse_callback(i, BoschParse::parseData, NULL, bhy2);
-            }
-        }
-
-        if (__handler.irq != SENSOR_PIN_NONE) {
-#if defined(ARDUINO_ARCH_RP2040)
-            attachInterrupt((pin_size_t)(__handler.irq), handleISR, (PinStatus )RISING);
-#elif defined(NRF52840_XXAA) || defined(NRF52832_XXAA) || defined(ESP32) || defined(ARDUINO_ARCH_ESP32)
-            attachInterrupt(__handler.irq, handleISR, RISING);
-#else
-#error "Interrupt registration not implemented"
-#endif
-        }
-
-        return __error_code == BHY2_OK;
-    }
+    bool initImpl(bhy2_intf interface);
 
 protected:
-    struct bhy2_dev  *bhy2 = NULL;
-    SensorLibConfigure __handler;
-    int8_t           __error_code;
-    static volatile bool __data_available;
-    uint8_t          *__pro_buf = NULL;
-    size_t           __pro_buf_size = BHY_PROCESS_BUFFER_SIZE;
-    const uint8_t    *__firmware;
-    size_t          __firmware_size;
-    bool            __write_flash;
-    bool            __boot_from_flash;
-    uint16_t        __max_rw_length;
-    uint8_t         __accuracy;      /* Accuracy is reported as a meta event. */
+
+    std::unique_ptr<SensorCommBase> comm;
+    std::unique_ptr<SensorHal> hal;
+    std::unique_ptr<SensorCommStatic> staticComm;
+    std::unique_ptr<struct bhy2_dev> _bhy2;
+    int                 _rst;
+    int8_t              _error_code;
+    uint8_t            *_processBuffer;
+    size_t              _processBufferSize;
+    const uint8_t      *_firmware_stream;
+    size_t              _firmware_size;
+    bool                _write_flash;
+    bool                _boot_from_flash;
+    bool                _force_update;
+    int                 _max_rw_length;
+    uint8_t             _accuracy;      /* Accuracy is reported as a meta event. */
+    bool                _debug;
+    ProcessCallback     _process_callback;
+    void               *_process_callback_user_data;
+    SensorEventCallback _event_callback;
+    SensorDebugMessageCallback _debug_callback;
+    BoschParseCallbackManager  _callback_manager;
+    uint8_t             _sensor_available_nums;
+    char                _err_buffer[128];
+
 };
-
-
-#endif /*defined(ARDUINO)*/
-
-
-
-

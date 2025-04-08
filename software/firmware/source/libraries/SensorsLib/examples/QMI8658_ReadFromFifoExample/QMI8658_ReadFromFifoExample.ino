@@ -2,7 +2,7 @@
  *
  * @license MIT License
  *
- * Copyright (c) 2022 lewis he
+ * Copyright (c) 2024 lewis he
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,21 @@
  *
  * @file      QMI8658_ReadFromFifoExample.ino
  * @author    Lewis He (lewishe@outlook.com)
- * @date      2022-10-16
+ * @date      2024-09-25
  *
  */
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include "SensorQMI8658.hpp"
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
-#define USE_WIRE
 
+// #define USE_I2C              //Using the I2C interface
+
+#ifdef USE_I2C
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
 #endif
@@ -42,48 +47,93 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
+#else   /* SPI interface */
+
+#ifndef SPI_MOSI
+#define SPI_MOSI   (35)
 #endif
 
-#define IMU_CS                      5
+#ifndef SPI_SCK
+#define SPI_SCK    (36)
+#endif
+
+#ifndef SPI_MISO
+#define SPI_MISO   (37)
+#endif
+
+#ifndef IMU_CS
+#define IMU_CS      34      // IMU CS PIN
+#endif
+
+#endif  /* USE_I2C*/
+
+
+#ifndef IMU_IRQ
+#define IMU_IRQ     33      // IMU INT PIN
+#endif
+
+#ifndef OLED_SDA
+#define OLED_SDA    22      // Display Wire SDA Pin
+#endif
+
+#ifndef OLED_SCL
+#define OLED_SCL    21      // Display Wire SCL Pin
+#endif
+
 
 SensorQMI8658 qmi;
 
+const uint16_t buffer_size = 128;
+IMUdata accel[buffer_size];
+IMUdata gyro[buffer_size];
+bool disable_fifo = false;
+uint32_t timestamp = 0;
 
-IMUdata acc[128];
-IMUdata gyr[128];
-
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300); power.enableALDO1();
+    power.setALDO2Voltage(3300); power.enableALDO2();
+#endif
+}
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
 
+    beginPower();
 
-
-#ifdef USE_WIRE
-    //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
-        Serial.println("Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
-    }
+    bool ret = false;
+#ifdef USE_I2C
+    ret = qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
 #else
-    //Using SPI !!
-    if (!qmi.begin(IMU_CS)) {
-        Serial.println("Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
-    }
+#if defined(SPI_MOSI) && defined(SPI_SCK) && defined(SPI_MISO)
+    ret = qmi.begin(SPI, IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK);
+#else
+    ret = qmi.begin(SPI, IMU_CS);
+#endif
 #endif
 
-    /* Get chip id*/
-    Serial.print("Device ID:");
-    Serial.println(qmi.getChipID(), HEX);
+    if (!ret) {
+        Serial.println("Failed to find QMI8658 - check your wiring!");
+        while (1) {
+            delay(1000);
+        }
+    }
+
+    /*
+    * Get chip id
+    * */
+    Serial.print("Device ID:"); Serial.println(qmi.getChipID(), HEX);
 
 
     qmi.configAccelerometer(
@@ -112,10 +162,11 @@ void setup()
         *  LPF_MODE_1     //3.63% of ODR
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
+        *  LPF_OFF        // OFF Low-Pass Fitter
         * */
-        SensorQMI8658::LPF_MODE_0,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_0);
+
+
 
 
     qmi.configGyroscope(
@@ -138,22 +189,23 @@ void setup()
          * GYR_ODR_224_2Hz
          * GYR_ODR_112_1Hz
          * GYR_ODR_56_05Hz
-         * GYR_ODR_28_025H
-        * */
+         * GYR_ODR_28_025Hz
+         * */
         SensorQMI8658::GYR_ODR_896_8Hz,
         /*
         *  LPF_MODE_0     //2.66% of ODR
         *  LPF_MODE_1     //3.63% of ODR
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
+        *  LPF_OFF        // OFF Low-Pass Fitter
         * */
-        SensorQMI8658::LPF_MODE_3,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_0);
+
+
 
     qmi.configFIFO(
-        /**
-        * FIFO_MODE_BYPASS      -- Disable fifo
+        /*
+        * FIFO_MODE_BYPASS      -- Disable FIFO
         * FIFO_MODE_FIFO        -- Will not overwrite
         * FIFO_MODE_STREAM      -- Cover
         */
@@ -164,55 +216,97 @@ void setup()
          * FIFO_SAMPLES_64
          * FIFO_SAMPLES_128
         * */
-        SensorQMI8658::FIFO_SAMPLES_16,
+        SensorQMI8658::FIFO_SAMPLES_128,
 
-        //FiFo mapped interrupt IO port
-        SensorQMI8658::IntPin1,
-        // watermark level
-        8);
 
-    // In 6DOF mode (accelerometer and gyroscope are both enabled),
-    // the output data rate is derived from the nature frequency of gyroscope
-    qmi.enableGyroscope();
+        /*
+        * INTERRUPT_PIN_1,
+        * INTERRUPT_PIN_2,
+        * INTERRUPT_PIN_DISABLE
+        * * */
+        SensorQMI8658::INTERRUPT_PIN_1,     //*Route FIFO interrupt to INT1 Pin
+
+        //* Number of samples to trigger interrupt
+        16
+    );
+
+
+    /*
+    * If both the accelerometer and gyroscope sensors are turned on at the same time,
+    * the output frequency will be based on the gyroscope output frequency.
+    * The example configuration is 896.8HZ output frequency,
+    * so the acceleration output frequency is also limited to 896.8HZ
+    * */
+
     qmi.enableAccelerometer();
 
-    // Print register configuration information
-    qmi.dumpCtrlRegister();
+    qmi.enableGyroscope();
+
+
+
+#if IMU_IRQ > 0
+// If you want to enable interrupts, then turn on the interrupt enable
+    qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_1, true);
+    qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_2, false);
+#endif
+
+
+    delay(3000);
+
 
     Serial.println("Read data now...");
 
-}
 
+    // Close FIFO after sampling for 5 seconds
+    timestamp = millis() + 5000;
+}
 
 
 void loop()
 {
-    // If the reading is successful, true will be returned
-    if (!qmi.readFromFifo(acc, 128, gyr, 128)) {
+    if (disable_fifo) {
+        return ;
+    }
+
+    if (millis() >  timestamp) {
+        disable_fifo = true;
+        // Disable FIFO
+        qmi.configFIFO(SensorQMI8658::FIFO_MODE_BYPASS);
+        Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>  Disable FIFO...");
+    }
+
+    // Get the number of samples from the FIFO
+    uint16_t samples_num = qmi.readFromFifo(accel, buffer_size, gyro, buffer_size);
+    if (samples_num == 0) {
         return;
     }
 
-    for (int i = 0; i < 16; ++i) {
-        Serial.print("ACCEL: ");
-        Serial.print("X:");
-        Serial.print(acc[i].x);
-        Serial.print(" Y:");
-        Serial.print(acc[i].y);
-        Serial.print(" Z:");
-        Serial.println(acc[i].z);
-        Serial.print("GYRO: ");
-        Serial.print(" X:");
-        Serial.print(gyr[i].x);
-        Serial.print(" Y:");
-        Serial.print(gyr[i].y );
-        Serial.print(" Z:");
-        Serial.println(gyr[i].z);
+    Serial.print("--------------[");
+    Serial.print(millis());
+    Serial.print("]:data size:");
+    Serial.print(samples_num);
+    Serial.println("--------------");
+
+    for (int i = 0; i < buffer_size; ++i) {
+
+        Serial.print('[');
+        Serial.print(i);
+        Serial.println(']');
+
+        if (qmi.isEnableAccelerometer()) {
+            Serial.print("\t ACCEL.x:"); Serial.print(accel[i].x); Serial.println(" m2/s");
+            Serial.print("\t ACCEL.y:"); Serial.print(accel[i].y); Serial.println(" m2/s");
+            Serial.print("\t ACCEL.z:"); Serial.print(accel[i].z); Serial.println(" m2/s");
+        }
+
+
+        if (qmi.isEnableGyroscope()) {
+            Serial.print("\t GYRO.x:"); Serial.print(gyro[i].x); Serial.println(" degrees/sec");
+            Serial.print("\t GYRO.y:"); Serial.print(gyro[i].y); Serial.println(" degrees/sec");
+            Serial.print("\t GYRO.z:"); Serial.print(gyro[i].z); Serial.println(" degrees/sec");
+        }
     }
-
-    delay(100);
 }
-
-
 
 
 

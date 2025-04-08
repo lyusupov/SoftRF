@@ -32,31 +32,52 @@
 #include <Arduino.h>
 #include "TouchDrvCHSC5816.hpp"
 
-#ifndef SENSOR_SDA
-#define SENSOR_SDA  39
+#ifndef TOUCH_SDA
+#define TOUCH_SDA  1
 #endif
 
-#ifndef SENSOR_SCL
-#define SENSOR_SCL  40
+#ifndef TOUCH_SCL
+#define TOUCH_SCL  2
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  13
+#ifndef TOUCH_IRQ
+#define TOUCH_IRQ  13
 #endif
 
-#ifndef SENSOR_RST
-#define SENSOR_RST  14
+#ifndef TOUCH_RST
+#define TOUCH_RST  14
 #endif
 
 TouchDrvCHSC5816 touch;
+
+#ifdef ARDUINO_T_AMOLED_147
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+XPowersAXP2101 power;
+#endif
+
+void beginPower()
+{
+    // T_AMOLED_147 The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_AMOLED_147)
+    bool ret = power.begin(Wire, AXP2101_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
+    if (!ret) {
+        Serial.println("PMU NOT FOUND!\n");
+    }
+    power.setALDO1Voltage(1800); power.enableALDO1();
+    power.setALDO3Voltage(3300); power.enableALDO3();
+    power.setBLDO1Voltage(1800); power.enableBLDO1();
+#endif
+}
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
-    touch.setPins(SENSOR_RST, SENSOR_IRQ);
-    if (!touch.begin(Wire, CHSC5816_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    beginPower();
+
+    touch.setPins(TOUCH_RST, TOUCH_IRQ);
+    if (!touch.begin(Wire, CHSC5816_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL)) {
         Serial.println("Failed to find CHSC5816 - check your wiring!");
         while (1) {
             delay(1000);
@@ -64,13 +85,20 @@ void setup()
     }
 
     Serial.println("Init CHSC5816 Touch device success!");
+
+    int16_t  width = 0, height = 0;
+    touch.getResolution(&width, &height);
+    Serial.print("Display Width:");
+    Serial.print(width);
+    Serial.print(" Height:");
+    Serial.println(height);
 }
 
 
 void loop()
 {
     int16_t x[2], y[2];
-    if (digitalRead(SENSOR_IRQ) == LOW) {
+    if (digitalRead(TOUCH_IRQ) == LOW) {
         uint8_t touched = touch.getPoint(x, y);
         for (int i = 0; i < touched; ++i) {
             Serial.print("X[");

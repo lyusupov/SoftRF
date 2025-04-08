@@ -152,7 +152,9 @@ int8_t bhy2_hif_upload_to_flash(const uint8_t *firmware,
                                 uint8_t *work_buffer,
                                 uint32_t work_buf_len,
                                 uint32_t *exp_size,
-                                struct bhy2_hif_dev *hif);
+                                struct bhy2_hif_dev *hif,
+                                bhy2_progress_callback progress_cb,
+                                void *user_data);
 
 /**
  * @brief Function to upload data to flash partly

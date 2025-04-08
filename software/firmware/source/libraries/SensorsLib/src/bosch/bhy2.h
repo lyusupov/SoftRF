@@ -305,7 +305,8 @@ int8_t bhy2_erase_flash(uint32_t start_address, uint32_t end_addr, struct bhy2_d
  * @param[in] dev       : Device reference
  * @return API error codes
  */
-int8_t bhy2_upload_firmware_to_flash(const uint8_t *firmware, uint32_t length, struct bhy2_dev *dev);
+int8_t bhy2_upload_firmware_to_flash(const uint8_t *firmware, uint32_t length, struct bhy2_dev *dev,
+                                    bhy2_progress_callback progress_cb, void *user_data);
 
 /**
  * @brief Function to upload part of the firmware to Flash

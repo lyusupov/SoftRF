@@ -40,9 +40,6 @@
 #define SENSOR_SCL  22
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  39
-#endif
 
 SensorDRV2605 drv;
 
@@ -53,9 +50,8 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    pinMode(SENSOR_IRQ, INPUT);
 
-    if (!drv.begin(Wire, DRV2605_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!drv.begin(Wire, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find DRV2605 - check your wiring!");
         while (1) {
             delay(1000);
@@ -68,7 +64,7 @@ void setup()
 
     // I2C trigger by sending 'run' command
     // default, internal trigger when sending RUN command
-    drv.setMode(DRV2605_MODE_INTTRIG);
+    drv.setMode(SensorDRV2605::MODE_INTTRIG);
 }
 
 

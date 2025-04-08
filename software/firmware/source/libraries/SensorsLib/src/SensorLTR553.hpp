@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * @file      SensorLTR553ALS.tpp
+ * @file      SensorLTR553ALS.hpp
  * @author    Lewis He (lewishe@outlook.com)
  * @date      2023-09-09
  *
@@ -30,13 +30,10 @@
 #pragma once
 
 #include "REG/LTR533Constants.h"
-#include "SensorCommon.tpp"
+#include "SensorPlatform.hpp"
 
-
-class SensorLTR553 :
-    public SensorCommon<SensorLTR553>
+class SensorLTR553 :  public LTR553Constants
 {
-    friend class SensorCommon<SensorLTR553>;
 public:
 
     enum IrqLevel {
@@ -112,114 +109,127 @@ public:
         ALS_MEASUREMENT_TIME_2000MS,
     };
 
-#if defined(ARDUINO)
-    SensorLTR553(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = LTR553_SLAVE_ADDRESS)
-    {
-        __wire = &w;
-        __sda = sda;
-        __scl = scl;
-        __addr = addr;
-    }
-#endif
-
-    SensorLTR553()
-    {
-#if defined(ARDUINO)
-        __wire = &Wire;
-        __sda = DEFAULT_SDA;
-        __scl = DEFAULT_SCL;
-#endif
-        __addr = LTR553_SLAVE_ADDRESS;
-    }
+    SensorLTR553() : comm(nullptr) {}
 
     ~SensorLTR553()
     {
-        deinit();
+        if (comm) {
+            comm->deinit();
+        }
     }
 
 #if defined(ARDUINO)
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = LTR553_SLAVE_ADDRESS)
+    bool begin(TwoWire &wire, int sda = -1, int scl = -1)
     {
-        return SensorCommon::begin(w, addr, sda, scl);
+        comm = std::make_unique<SensorCommI2C>(wire, LTR553_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
-#endif
+#elif defined(ESP_PLATFORM)
 
-
-    void deinit()
+#if defined(USEING_I2C_LEGACY)
+    bool begin(i2c_port_t port_num, int sda = -1, int scl = -1)
     {
-        // end();
+        comm = std::make_unique<SensorCommI2C>(port_num, LTR553_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#else
+    bool begin(i2c_master_bus_handle_t handle)
+    {
+        comm = std::make_unique<SensorCommI2C>(handle, LTR553_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#endif  //ESP_PLATFORM
+#endif  //ARDUINO
+
+    bool begin(SensorCommCustom::CustomCallback callback)
+    {
+        comm = std::make_unique<SensorCommCustom>(callback, LTR553_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
 
     void setIRQLevel(IrqLevel  level)
     {
-        level ? setRegisterBit(LTR553_REG_INTERRUPT, 2) : clrRegisterBit(LTR553_REG_INTERRUPT, 2);
+        level ? comm->setRegisterBit(REG_INTERRUPT, 2) : comm->clrRegisterBit(REG_INTERRUPT, 2);
     }
 
     void enableIRQ(IrqMode mode)
     {
-        writeRegister(LTR553_REG_INTERRUPT, 0xFC, mode);
+        comm->writeRegister(REG_INTERRUPT, 0xFC, mode);
     }
 
     void disableIRQ()
     {
-        writeRegister(LTR553_REG_INTERRUPT, 0xFC, 0x00);
+        comm->writeRegister(REG_INTERRUPT, 0xFC, 0x00);
     }
-
 
     //! Light Sensor !
     bool psAvailable()
     {
-        return getRegisterBit(LTR553_REG_ALS_PS_STATUS, 0);
+        return comm->getRegisterBit(REG_ALS_PS_STATUS, 0);
     }
 
     void setLightSensorThreshold(uint16_t low, uint16_t high)
     {
-        uint8_t buffer[4] = {
-            (uint8_t)(high & 0xFF),
-            (uint8_t)((high >> 8) & 0xFF),
-            (uint8_t)(low & 0xFF),
-            (uint8_t)((low >> 8) & 0xFF),
-        };
-        writeRegister(LTR553_REG_ALS_THRES_UP_0, buffer, 4);
+        uint8_t buffer[4] = {lowByte(high), highByte(high),
+                             lowByte(low), highByte(low)
+                            };
+        comm->writeRegister(REG_ALS_THRES_UP_0, buffer, 4);
     }
 
     // Controls the N number of times the measurement data is outside the range
     // defined by the upper and lower threshold limits before asserting the interrupt.
     void setLightSensorPersists(uint8_t count)
     {
-        writeRegister(LTR553_REG_INTERRUPT_PERSIST, 0xF0, count - 1);
+        comm->writeRegister(REG_INTERRUPT_PERSIST, 0xF0, count - 1);
     }
 
     void setLightSensorRate(IntegrationTime integrationTime, MeasurementRate measurementRate)
     {
-        writeRegister(LTR553_REG_ALS_MEAS_RATE, 0x00, (integrationTime & 0xF) << 8 | (measurementRate & 0xF));
+        uint8_t value = (integrationTime & 0xF) << 8 | (measurementRate & 0xF);
+        comm->writeRegister(REG_ALS_MEAS_RATE, 0x00, value);
     }
 
     void enableLightSensor()
     {
-        setRegisterBit(LTR553_REG_ALS_CONTR, 0);
+        comm->setRegisterBit(REG_ALS_CONTR, 0);
     }
 
     void disableLightSensor()
     {
-        clrRegisterBit(LTR553_REG_ALS_CONTR, 0);
+        comm->clrRegisterBit(REG_ALS_CONTR, 0);
     }
 
     void setLightSensorGain(LightSensorGain gain)
     {
-        writeRegister(LTR553_REG_ALS_CONTR, 0xE3, gain);
+        comm->writeRegister(REG_ALS_CONTR, 0xE3, gain << 2);
     }
 
     int getLightSensor(uint8_t ch)
     {
         uint8_t buffer[2] = {0};
         // Check ALS Data is Valid
-        if (getRegisterBit(LTR553_REG_ALS_PS_STATUS, 7) != false) {
+        if (comm->getRegisterBit(REG_ALS_PS_STATUS, 7) != false) {
             return 0;
         }
-        int val = readRegister(ch == 1 ? LTR553_REG_ALS_DATA_CH1_0 : LTR553_REG_ALS_DATA_CH0_0, buffer, 2);
-        if (val == DEV_WIRE_ERR) {
-            return DEV_WIRE_ERR;
+        int val = comm->readRegister(ch == 1 ? REG_ALS_DATA_CH1_0 : REG_ALS_DATA_CH0_0, buffer, 2);
+        if (val == -1) {
+            return -1;
         }
         return buffer[0] | (buffer[1] << 8);
     }
@@ -229,89 +239,89 @@ public:
     // defined by the upper and lower threshold limits before asserting the interrupt.
     void setProximityPersists(uint8_t count)
     {
-        writeRegister(LTR553_REG_INTERRUPT_PERSIST, 0x0F, count == 0 ? 0 : count - 1);
+        comm->writeRegister(REG_INTERRUPT_PERSIST, 0x0F, count == 0 ? 0 : count - 1);
     }
 
     void setProximityThreshold(uint16_t low, uint16_t high)
     {
-        writeRegister(LTR553_REG_PS_THRES_UP_0, lowByte(high));
-        writeRegister(LTR553_REG_PS_THRES_UP_1, lowByte(high >> 8) & 0x0F);
-        writeRegister(LTR553_REG_PS_THRES_LOW_0, lowByte(low));
-        writeRegister(LTR553_REG_PS_THRES_LOW_1, lowByte(low >> 8) & 0x0F);
+        comm->writeRegister(REG_PS_THRES_UP_0, lowByte(high));
+        comm->writeRegister(REG_PS_THRES_UP_1, lowByte(high >> 8) & 0x0F);
+        comm->writeRegister(REG_PS_THRES_LOW_0, lowByte(low));
+        comm->writeRegister(REG_PS_THRES_LOW_1, lowByte(low >> 8) & 0x0F);
     }
 
     void setProximityRate(PsRate rate)
     {
-        writeRegister(LTR553_REG_PS_MEAS_RATE, 0xF0, rate & 0x0F);
+        comm->writeRegister(REG_PS_MEAS_RATE, 0xF0, rate & 0x0F);
     }
 
     void enableProximity()
     {
-        writeRegister(LTR553_REG_PS_CONTR, 0xF3u, 0x03u);
+        comm->writeRegister(REG_PS_CONTR, 0xF3u, 0x03u);
     }
 
     void disableProximity()
     {
-        writeRegister(LTR553_REG_PS_CONTR, 0xF3u, 0x00u);
+        comm->writeRegister(REG_PS_CONTR, 0xF3u, 0x00u);
     }
 
     void enablePsIndicator()
     {
-        setRegisterBit(LTR553_REG_PS_CONTR, 5);
+        comm->setRegisterBit(REG_PS_CONTR, 5);
     }
 
     void disablePsIndicator()
     {
-        clrRegisterBit(LTR553_REG_PS_CONTR, 5);
+        comm->clrRegisterBit(REG_PS_CONTR, 5);
     }
 
     int getProximity(bool *saturated = NULL )
     {
         uint8_t buffer[2] = {0};
-        int val = readRegister(LTR553_REG_PS_DATA_0, buffer, 2);
-        if (val == DEV_WIRE_ERR) {
-            return DEV_WIRE_ERR;
+        int val = comm->readRegister(REG_PS_DATA_0, buffer, 2);
+        if (val == -1) {
+            return -1;
         }
         if (saturated) {
             *saturated = buffer[1] & 0x80;
         }
-        return buffer[0] | (buffer[1] & 0x03);
+        return buffer[0] | (buffer[1] & 0x07);
     }
 
     void setPsLedPulsePeriod(PsLedPeriod period)
     {
-        writeRegister(LTR553_REG_PS_LED, 0x1F, period);
+        comm->writeRegister(REG_PS_LED, 0x1F, period);
     }
 
     void setPsLedDutyCycle(PsLedDuty duty)
     {
-        writeRegister(LTR553_REG_PS_LED, 0xE7, duty);
+        comm->writeRegister(REG_PS_LED, 0xE7, duty);
     }
 
-    void setPsLedCurrnet(PsLedCurrent cur)
+    void setPsLedCurrent(PsLedCurrent cur)
     {
-        writeRegister(LTR553_REG_PS_LED, 0xF8, cur);
+        comm->writeRegister(REG_PS_LED, 0xF8, cur);
     }
 
     void setPsLedPulses(uint8_t pulesNum)
     {
-        writeRegister(LTR553_REG_PS_N_PULSES, 0xF0, pulesNum & 0x0F);
+        comm->writeRegister(REG_PS_N_PULSES, 0xF0, pulesNum & 0x0F);
     }
 
     int getPartID()
     {
-        int val = readRegister(LTR553_REG_PART_ID);
-        if (val == DEV_WIRE_ERR) {
-            return DEV_WIRE_ERR;
+        int val = comm->readRegister(REG_PART_ID);
+        if (val == -1) {
+            return -1;
         }
         return (val >> 4) & 0x0F;
     }
 
     int getRevisionID()
     {
-        int val = readRegister(LTR553_REG_PART_ID);
-        if (val == DEV_WIRE_ERR) {
-            return DEV_WIRE_ERR;
+        int val = comm->readRegister(REG_PART_ID);
+        if (val == -1) {
+            return -1;
         }
         return (val) & 0x0F;
     }
@@ -319,30 +329,26 @@ public:
     int getManufacturerID()
     {
         // Manufacturer ID (0x05H)
-        return readRegister(LTR553_REG_MANUFAC_ID);
+        return comm->readRegister(REG_MANUFAC_ID);
     }
 
     void reset()
     {
-        setRegisterBit(LTR553_REG_ALS_CONTR, 1);
+        comm->setRegisterBit(REG_ALS_CONTR, 1);
     }
 
 private:
 
     bool initImpl()
     {
-        setReadRegisterSendStop(false);
+        I2CParam params(I2CParam::I2C_SET_FLAG, false);
+        comm->setParams(params);
         reset();
         return getManufacturerID() == LTR553_DEFAULT_MAN_ID;
     }
 
-    int getReadMaskImpl()
-    {
-        return -1;
-    }
-
 protected:
-
+    std::unique_ptr<SensorCommBase> comm;
 };
 
 

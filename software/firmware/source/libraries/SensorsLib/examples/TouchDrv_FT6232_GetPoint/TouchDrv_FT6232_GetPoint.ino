@@ -32,16 +32,16 @@
 #include <Arduino.h>
 #include "TouchDrvFT6X36.hpp"
 
-#ifndef SENSOR_SDA
-#define SENSOR_SDA  21
+#ifndef TOUCH_SDA
+#define TOUCH_SDA  23
 #endif
 
-#ifndef SENSOR_SCL
-#define SENSOR_SCL  22
+#ifndef TOUCH_SCL
+#define TOUCH_SCL  32
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  39
+#ifndef TOUCH_IRQ
+#define TOUCH_IRQ  38
 #endif
 
 TouchDrvFT6X36 touch;
@@ -52,9 +52,9 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    pinMode(SENSOR_IRQ, INPUT);
+    pinMode(TOUCH_IRQ, INPUT);
 
-    if (!touch.begin(Wire, FT6X36_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!touch.begin(Wire, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL)) {
         Serial.println("Failed to find FT6X36 - check your wiring!");
         while (1) {
             delay(1000);
@@ -69,7 +69,7 @@ void setup()
 void loop()
 {
     int16_t x[2], y[2];
-    if (digitalRead(SENSOR_IRQ) == LOW) {
+    if (digitalRead(TOUCH_IRQ) == LOW) {
         uint8_t touched = touch.getPoint(x, y, 2);
         for (int i = 0; i < touched; ++i) {
             Serial.print("X[");

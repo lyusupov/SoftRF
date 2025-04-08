@@ -1349,7 +1349,9 @@ int8_t bhy2_hif_upload_to_flash(const uint8_t *firmware,
                                 uint8_t *work_buffer,
                                 uint32_t work_buf_len,
                                 uint32_t *exp_size,
-                                struct bhy2_hif_dev *hif)
+                                struct bhy2_hif_dev *hif,
+                                bhy2_progress_callback progress_cb,
+                                void *user_data)
 {
     int8_t rslt = BHY2_OK;
     uint16_t magic;
@@ -1421,6 +1423,10 @@ int8_t bhy2_hif_upload_to_flash(const uint8_t *firmware,
                 pos += trans_len;
                 remain -= trans_len;
                 sector_addr += hif->read_write_len;
+
+                if (progress_cb != NULL) {
+                    progress_cb(user_data, length, pos);
+                }
             }
         }
     }

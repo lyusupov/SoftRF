@@ -45,6 +45,10 @@ extern "C" {
 
 #include "bhy2.h"
 
+#ifndef M_PI
+#define M_PI        3.14159265358979323846
+#endif
+
 /**
  * @brief Function to parse FIFO frame data into temperature
  * @param[in] data          : Reference to the data buffer storing data from the FIFO
@@ -100,6 +104,17 @@ void bhy2_parse_xyz(const uint8_t *data, struct bhy2_data_xyz *vector);
  * @return[out]         : Reference to the data buffer to step counter
  */
 uint32_t bhy2_parse_step_counter(const uint8_t *data);
+
+
+/**
+ * @brief  Function converts quaternion to Euler angle
+ * @param  *data: Quaternions data
+ * @param  *roll: Data pointer
+ * @param  *pitch: Data pointer
+ * @param  *yaw: Data pointer
+ * @retval None
+ */
+void bhy2_quaternion_to_euler(const uint8_t *data, float *roll, float *pitch, float *yaw);
 
 /* End of CPP Guard */
 #ifdef __cplusplus

@@ -29,17 +29,13 @@
  */
 #pragma once
 #include "REG/PCF85063Constants.h"
-#include "SensorCommon.tpp"
 #include "SensorRTC.h"
-
-
-class SensorPCF85063 :
-    public SensorCommon<SensorPCF85063>,
-    public RTCCommon<SensorPCF85063>
+#include "SensorPlatform.hpp"
+class SensorPCF85063 : public SensorRTC, public PCF85063Constants
 {
-    friend class SensorCommon<SensorPCF85063>;
-    friend class RTCCommon<SensorPCF85063>;
 public:
+    using SensorRTC::setDateTime;
+    using SensorRTC::getDateTime;
 
     enum ClockHz {
         CLK_32768HZ = 0,
@@ -52,67 +48,72 @@ public:
         CLK_LOW,
     };
 
-
-#if defined(ARDUINO)
-    SensorPCF85063(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = PCF85063_SLAVE_ADDRESS)
-    {
-        __wire = &w;
-        __sda = sda;
-        __scl = scl;
-        __addr = addr;
-    }
-#endif
-
-    SensorPCF85063()
-    {
-#if defined(ARDUINO)
-        __wire = &Wire;
-        __sda = DEFAULT_SDA;
-        __scl = DEFAULT_SCL;
-#endif
-        __addr = PCF85063_SLAVE_ADDRESS;
-    }
+    SensorPCF85063() : comm(nullptr) {}
 
     ~SensorPCF85063()
     {
-        deinit();
+        if (comm) {
+            comm->deinit();
+        }
     }
 
 #if defined(ARDUINO)
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = PCF85063_SLAVE_ADDRESS)
+    bool begin(TwoWire &wire, int sda = -1, int scl = -1)
     {
-        return SensorCommon::begin(w, addr, sda, scl);
+        comm = std::make_unique<SensorCommI2C>(wire, PCF85063_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
-#endif
+#elif defined(ESP_PLATFORM)
 
-
-    void deinit()
+#if defined(USEING_I2C_LEGACY)
+    bool begin(i2c_port_t port_num, int sda = -1, int scl = -1)
     {
-        // end();
+        comm = std::make_unique<SensorCommI2C>(port_num, PCF85063_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#else
+    bool begin(i2c_master_bus_handle_t handle)
+    {
+        comm = std::make_unique<SensorCommI2C>(handle, PCF85063_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#endif  //ESP_PLATFORM
+#endif  //ARDUINO
+
+    bool begin(SensorCommCustom::CustomCallback callback)
+    {
+        comm = std::make_unique<SensorCommCustom>(callback, PCF85063_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
 
     void setDateTime(RTC_DateTime datetime)
     {
-        setDateTime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.minute, datetime.second);
-    }
-
-    void setDateTime(uint16_t year,
-                     uint8_t month,
-                     uint8_t day,
-                     uint8_t hour,
-                     uint8_t minute,
-                     uint8_t second)
-    {
         uint8_t buffer[7];
-        buffer[0] = DEC2BCD(second) & 0x7F;
-        buffer[1] = DEC2BCD(minute);
-        buffer[2] = DEC2BCD(hour);
-        buffer[3] = DEC2BCD(day);
-        buffer[4] = getDayOfWeek(day, month, year);
-        buffer[5] = DEC2BCD(month);
-        buffer[6] = DEC2BCD(year % 100);
+        buffer[0] = DEC2BCD(datetime.getSecond()) & 0x7F;
+        buffer[1] = DEC2BCD(datetime.getMinute());
+        buffer[2] = DEC2BCD(datetime.getHour());
+        buffer[3] = DEC2BCD(datetime.getDay());
+        buffer[4] = getDayOfWeek(datetime.getDay(), datetime.getMonth(), datetime.getYear());
+        buffer[5] = DEC2BCD(datetime.getMonth());
+        buffer[6] = DEC2BCD(datetime.getYear() % 100);
 
-        writeRegister(PCF85063_SEC_REG, buffer, 7);
+        comm->writeRegister(PCF85063_SEC_REG, buffer, 7);
     }
 
 
@@ -120,31 +121,30 @@ public:
     {
         RTC_DateTime datetime;
         uint8_t buffer[7];
-        readRegister(PCF85063_SEC_REG, buffer, 7);
-        datetime.available = ((buffer[0] & 0x80) == 0x80) ? false : true;
-        datetime.second = BCD2DEC(buffer[0] & 0x7F);
-        datetime.minute = BCD2DEC(buffer[1] & 0x7F);
+        uint8_t hour = 0;
+        comm->readRegister(PCF85063_SEC_REG, buffer, 7);
+        uint8_t second = BCD2DEC(buffer[0] & 0x7F);
+        uint8_t minute = BCD2DEC(buffer[1] & 0x7F);
         if (is24Hour) {
-            datetime.hour   = BCD2DEC(buffer[2] & 0x3F);    // 24-hour mode
+            hour   = BCD2DEC(buffer[2] & 0x3F);    // 24-hour mode
         } else {
-            datetime.AMPM = (buffer[2] & 0x20) == 0x20 ? 'A' : 'P';
-            datetime.hour   = BCD2DEC(buffer[2] & 0x1F);    // 12-hour mode
+            // datetime.AMPM = (buffer[2] & 0x20) == 0x20 ? 'A' : 'P';
+            hour   = BCD2DEC(buffer[2] & 0x1F);    // 12-hour mode
         }
-        datetime.day    = BCD2DEC(buffer[3] & 0x3F);
-        datetime.week   = BCD2DEC(buffer[4] & 0x07);
-        datetime.month  = BCD2DEC(buffer[5] & 0x1F);
-        datetime.year   = BCD2DEC(buffer[6]) + 2000;
-        return datetime;
+        uint8_t day    = BCD2DEC(buffer[3] & 0x3F);
+        uint8_t week   = BCD2DEC(buffer[4] & 0x07);
+        uint8_t month  = BCD2DEC(buffer[5] & 0x1F);
+        uint16_t year   = BCD2DEC(buffer[6]) + 2000;
+        return RTC_DateTime(year, month, day, hour, minute, second, week);
     }
 
-    void getDateTime(struct tm *timeinfo)
+    bool isClockIntegrityGuaranteed()
     {
-        if (!timeinfo)return;
-        *timeinfo = conversionUnixTime(getDateTime());
+        return comm->getRegisterBit(PCF85063_SEC_REG, 7) == 0;
     }
 
     /*
-    Defalut use 24H mode
+    Default use 24H mode
     bool is24HourMode()
     {
         return is24Hour;
@@ -158,84 +158,76 @@ public:
     void set24Hour()
     {
         is24Hour = true;
-        clrRegisterBit(PCF85063_CTRL1_REG, 1);
+        comm->clrRegisterBit(PCF85063_CTRL1_REG, 1);
     }
 
     void set12Hour()
     {
         is24Hour = false;
-        setRegisterBit(PCF85063_CTRL1_REG, 1);
+        comm->setRegisterBit(PCF85063_CTRL1_REG, 1);
     }
     */
 
     void stop()
     {
-        setRegisterBit(PCF85063_CTRL1_REG, 5);
+        comm->setRegisterBit(PCF85063_CTRL1_REG, 5);
     }
 
     void start()
     {
-        clrRegisterBit(PCF85063_CTRL1_REG, 5);
+        comm->clrRegisterBit(PCF85063_CTRL1_REG, 5);
     }
 
     bool isRunning()
     {
-        return !getRegisterBit(PCF85063_CTRL1_REG, 5);
+        return !comm->getRegisterBit(PCF85063_CTRL1_REG, 5);
     }
 
     void enableAlarm()
     {
-        setRegisterBit(PCF85063_CTRL2_REG, 7);
+        comm->setRegisterBit(PCF85063_CTRL2_REG, 7);
     }
 
     void disableAlarm()
     {
-        clrRegisterBit(PCF85063_CTRL2_REG, 7);
+        comm->clrRegisterBit(PCF85063_CTRL2_REG, 7);
     }
 
     void resetAlarm()
     {
-        clrRegisterBit(PCF85063_CTRL2_REG, 6);
+        comm->clrRegisterBit(PCF85063_CTRL2_REG, 6);
     }
 
     bool isAlarmActive()
     {
-        return getRegisterBit(PCF85063_CTRL2_REG, 6);
+        return comm->getRegisterBit(PCF85063_CTRL2_REG, 6);
     }
 
     RTC_Alarm getAlarm()
     {
         uint8_t buffer[5];
-        readRegister(PCF85063_ALRM_MIN_REG, buffer, 5);
+        comm->readRegister(PCF85063_ALRM_MIN_REG, buffer, 5);
         buffer[0] = BCD2DEC(buffer[0] & 0x80);  //second
         buffer[1] = BCD2DEC(buffer[1] & 0x40);  //minute
         buffer[2] = BCD2DEC(buffer[2] & 0x40);  //hour
         buffer[3] = BCD2DEC(buffer[3] & 0x08);  //day
         buffer[4] = BCD2DEC(buffer[4] & 0x08);  //weekday
-        // RTC_Alarm(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t week)
         return RTC_Alarm(buffer[2], buffer[1], buffer[0], buffer[3], buffer[4]);
     }
 
     void setAlarm(RTC_Alarm alarm)
     {
-        setAlarm(alarm.hour,
-                 alarm.minute,
-                 alarm.second,
-                 alarm.day,
-                 alarm.week);
+        setAlarm(alarm.getHour(), alarm.getMinute(), alarm.getSecond(),
+                 alarm.getDay(), alarm.getWeek());
     }
 
-    void setAlarm(uint8_t hour,
-                  uint8_t minute,
-                  uint8_t second,
-                  uint8_t day,
-                  uint8_t week)
+    void setAlarm(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t week)
     {
         uint8_t buffer[5] = {0};
 
         RTC_DateTime datetime =  getDateTime();
 
-        uint8_t daysInMonth =  getDaysInMonth(datetime.month, datetime.year);
+        uint8_t daysInMonth =  getDaysInMonth(datetime.getMonth(), datetime.getYear());
 
         if (second != PCF85063_NO_ALARM) {
             if (second > 59) {
@@ -277,7 +269,6 @@ public:
             buffer[2] = PCF85063_ALARM_ENABLE;
         }
         if (day != PCF85063_NO_ALARM) {
-            //TODO:Check  day in Month
             buffer[3] = DEC2BCD(((day) < (1) ? (1) : ((day) > (daysInMonth) ? (daysInMonth) : (day))));
             buffer[3] &= ~PCF85063_ALARM_ENABLE;
         } else {
@@ -292,7 +283,7 @@ public:
         } else {
             buffer[4] = PCF85063_ALARM_ENABLE;
         }
-        writeRegister(PCF85063_ALRM_SEC_REG, buffer, 4);
+        comm->writeRegister(PCF85063_ALRM_SEC_REG, buffer, 4);
     }
 
     void setAlarmByHours(uint8_t hour)
@@ -342,34 +333,58 @@ public:
 
     void setClockOutput(ClockHz hz)
     {
-        int val = readRegister(PCF85063_CTRL2_REG);
-        if (val == DEV_WIRE_ERR)return;
+        int val = comm->readRegister(PCF85063_CTRL2_REG);
+        if (val == -1)return;
         val &= 0xF8;
         val |= hz;
-        writeRegister(PCF85063_CTRL2_REG, val);
+        comm->writeRegister(PCF85063_CTRL2_REG, val);
+    }
+
+    const char *getChipName()
+    {
+        return "PCF85063";
     }
 
 private:
 
     bool initImpl()
     {
-        // 230704:Does not use power-off judgment, if the RTC backup battery is not installed,
-        //    it will return failure. Here only to judge whether the device communication is normal
-
         //Check device is online
-        int ret = readRegister(PCF85063_SEC_REG);
-        if (ret == DEV_WIRE_ERR) {
+        int val =  comm->readRegister(PCF85063_RAM_REG);
+        if (val < 0) {
+            log_e("Device is offline!");
             return false;
         }
-        if (BCD2DEC(ret & 0x7F) > 59) {
+        // Read the contents of a RAM register
+        uint8_t tmp = comm->readRegister(PCF85063_RAM_REG);
+
+        bool rlst = false;
+        // By judging whether the highest bit of the RAM register can be changed,
+        // it can be judged whether it belongs to PCF85063
+        comm->writeRegister(PCF85063_RAM_REG, val | _BV(7));
+        val =  comm->readRegister(PCF85063_RAM_REG);
+        if (val & 0x80) {
+            comm->writeRegister(PCF85063_RAM_REG, val & ~_BV(7));
+            val =  comm->readRegister(PCF85063_RAM_REG);
+            if ((val & 0x80) == 0) {
+                rlst = true;
+            }
+        }
+
+        if (!rlst) {
+            log_e("Failed to write to RAM memory register. Maybe this chip is pcf8563.");
             return false;
         }
+
+        // Restore the contents of the RAM registers
+        comm->writeRegister(PCF85063_RAM_REG, tmp);
 
         //Default use 24-hour mode
-        is24Hour = !getRegisterBit(PCF85063_CTRL1_REG, 1);
+        is24Hour = !comm->getRegisterBit(PCF85063_CTRL1_REG, 1);
         if (!is24Hour) {
             // Set 24H Mode
-            clrRegisterBit(PCF85063_CTRL1_REG, 1);
+            comm->clrRegisterBit(PCF85063_CTRL1_REG, 1);
+            is24Hour = true;
         }
 
         //Turn on RTC
@@ -378,14 +393,9 @@ private:
         return isRunning();
     }
 
-    int getReadMaskImpl()
-    {
-        return -1;
-    }
-
 protected:
-
-    bool is24Hour = true;
+    std::unique_ptr<SensorCommBase> comm;
+    bool is24Hour;
 };
 
 

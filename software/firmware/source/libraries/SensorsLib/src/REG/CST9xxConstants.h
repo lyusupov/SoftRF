@@ -29,32 +29,39 @@
  */
 #pragma once
 
-#define CST92XX_SLAVE_ADDRESS       (0x5A)
-#define CST92XX_BOOT_ADDRESS        (0x5A)      //Fixed, immutable
+#include <stdint.h>
 
-#define CST9220_CHIP_ID             (0x9220)
-#define CST9217_CHIP_ID             (0x9217)
+#define CST92XX_SLAVE_ADDRESS                       (0x5A)
 
+class CST92xxConstants
+{
+protected:
+    typedef struct  {
+        uint8_t finger_id;
+        uint8_t evt;
+        uint16_t x;
+        uint16_t y;
+    } cst9xx_point_t;
+    //Fixed, immutable
+    static constexpr uint8_t   CST92XX_BOOT_ADDRESS                = (0x5A);
 
-#define CST92XX_MEM_SIZE            (0x007F80) // 31KB
-#define CST92XX_PROGRAM_PAGE_SIZE   (128)
-#define CST92XX_ACK                 (0xAB)
-#define CST92XX_MAX_FINGER_NUM      (2)
-
-
-#define CST92XX_READ_COMMAND        (0xD000)
-#define CST92XX_REG_DEBUG_MODE      (0xD101)
-#define CST92XX_REG_SLEEP_MODE      (0xD105)
-#define CST92XX_REG_DIS_LOW_POWER_SCAN_MODE      (0xD106)
-#define CST92XX_REG_NORMAL_MODE     (0xD109)
-#define CST92XX_REG_RAW_MODE        (0xD10A)
-#define CST92XX_REG_DIFF_MODE       (0xD10D)
-#define CST92XX_REG_BASE_LINE_MODE  (0xD10E)
-#define CST92XX_REG_LOWPOWER_MODE   (0xD10F)
-#define CST92XX_REG_FACTORY_MODE    (0xD114)
-
-#define CST92XX_GET_FINGER_NUM(X)   (X & 0X7F)
-#define CST92XX_GET_GESTURE(X)      (X & 0xF0)
+    static constexpr uint16_t  CST9220_CHIP_ID                     = (0x9220);
+    static constexpr uint16_t  CST9217_CHIP_ID                     = (0x9217);
+    static constexpr uint16_t  CST92XX_READ_COMMAND                = (0xD000);
+    static constexpr uint16_t  CST92XX_REG_DEBUG_MODE              = (0xD101);
+    static constexpr uint16_t  CST92XX_REG_SLEEP_MODE              = (0xD105);
+    static constexpr uint16_t  CST92XX_REG_DIS_LOW_POWER_SCAN_MODE = (0xD106);
+    static constexpr uint16_t  CST92XX_REG_NORMAL_MODE             = (0xD109);
+    static constexpr uint16_t  CST92XX_REG_RAW_MODE                = (0xD10A);
+    static constexpr uint16_t  CST92XX_REG_DIFF_MODE               = (0xD10D);
+    static constexpr uint16_t  CST92XX_REG_BASE_LINE_MODE          = (0xD10E);
+    static constexpr uint16_t  CST92XX_REG_LOWPOWER_MODE           = (0xD10F);
+    static constexpr uint16_t  CST92XX_REG_FACTORY_MODE            = (0xD114);
+    static constexpr uint8_t   CST92XX_ACK                         = (0xAB);
+    static constexpr uint8_t   CST92XX_MAX_FINGER_NUM              = (2);
+    static constexpr uint8_t   CST92XX_PROGRAM_PAGE_SIZE           = (128);
+    static constexpr uint32_t  CST92XX_MEM_SIZE                    = (0x007F80);// 31KB
+};
 
 const unsigned char cst92xx_firmware[] = {
     0xFC, 0x0F, 0x00, 0x20, 0xAD, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

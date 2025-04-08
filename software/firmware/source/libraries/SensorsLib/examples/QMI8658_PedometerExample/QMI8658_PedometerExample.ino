@@ -2,7 +2,7 @@
  *
  * @license MIT License
  *
- * Copyright (c) 2022 lewis he
+ * Copyright (c) 2024 lewis he
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * @file      QMI8658_GetDataExample.ino
+ * @file      QMI8658_PedometerExample.ino
  * @author    Lewis He (lewishe@outlook.com)
- * @date      2022-10-16
+ * @date      2024-09-26
  *
  */
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include "SensorQMI8658.hpp"
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
-#define USE_WIRE
 
+// #define USE_I2C              //Using the I2C interface
+
+#ifdef USE_I2C
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
 #endif
@@ -42,155 +47,159 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
+#else   /* SPI interface */
+
+#ifndef SPI_MOSI
+#define SPI_MOSI   (35)
 #endif
 
-#define IMU_CS                      5
+#ifndef SPI_SCK
+#define SPI_SCK    (36)
+#endif
+
+#ifndef SPI_MISO
+#define SPI_MISO   (37)
+#endif
+
+#endif  /* USE_I2C*/
+
+#ifndef IMU_CS
+#define IMU_CS      34      // IMU CS PIN
+#endif
+
+#ifndef IMU_IRQ
+#define IMU_IRQ     33      // IMU INT PIN
+#endif
+
+#ifndef OLED_SDA
+#define OLED_SDA    22      // Display Wire SDA Pin
+#endif
+
+#ifndef OLED_SCL
+#define OLED_SCL    21      // Display Wire SCL Pin
+#endif
 
 SensorQMI8658 qmi;
+
+bool interruptFlag = false;
+
+
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300); power.enableALDO1();
+    power.setALDO2Voltage(3300); power.enableALDO2();
+#endif
+}
+
+void setFlag(void)
+{
+    interruptFlag = true;
+}
+
+
+void pedometerEvent()
+{
+    uint32_t val = qmi.getPedometerCounter();
+    Serial.print("Detected Pedometer event : ");
+    Serial.println(val);
+}
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
 
-
-
-#ifdef USE_WIRE
-    //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
-        Serial.println("Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
-    }
+    bool ret = false;
+#ifdef USE_I2C
+    ret = qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
 #else
-    if (!qmi.begin(IMU_CS)) {
+#if defined(SPI_MOSI) && defined(SPI_SCK) && defined(SPI_MISO)
+    ret = qmi.begin(SPI, IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK);
+#else
+    ret = qmi.begin(SPI, IMU_CS);
+#endif
+#endif
+
+    if (!ret) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
         }
     }
-#endif
 
     /* Get chip id*/
     Serial.print("Device ID:");
     Serial.println(qmi.getChipID(), HEX);
 
-    qmi.configAccelerometer(
-        /*
-         * ACC_RANGE_2G
-         * ACC_RANGE_4G
-         * ACC_RANGE_8G
-         * ACC_RANGE_16G
-         * */
-        SensorQMI8658::ACC_RANGE_4G,
-        /*
-         * ACC_ODR_1000H
-         * ACC_ODR_500Hz
-         * ACC_ODR_250Hz
-         * ACC_ODR_125Hz
-         * ACC_ODR_62_5Hz
-         * ACC_ODR_31_25Hz
-         * ACC_ODR_LOWPOWER_128Hz
-         * ACC_ODR_LOWPOWER_21Hz
-         * ACC_ODR_LOWPOWER_11Hz
-         * ACC_ODR_LOWPOWER_3H
-        * */
-        SensorQMI8658::ACC_ODR_125Hz,
-        /*
-        *  LPF_MODE_0     //2.66% of ODR
-        *  LPF_MODE_1     //3.63% of ODR
-        *  LPF_MODE_2     //5.39% of ODR
-        *  LPF_MODE_3     //13.37% of ODR
-        * */
-        SensorQMI8658::LPF_MODE_0,
-        // selfTest enable
-        true);
+    // Equipped with acceleration sensor, 2G, ORR62.5HZ
+    qmi.configAccelerometer(SensorQMI8658::ACC_RANGE_2G, SensorQMI8658::ACC_ODR_62_5Hz);
 
-
-    qmi.configGyroscope(
-        /*
-         * GYR_RANGE_16DPS
-         * GYR_RANGE_32DPS
-         * GYR_RANGE_64DPS
-         * GYR_RANGE_128DPS
-         * GYR_RANGE_256DPS
-         * GYR_RANGE_512DPS
-         * GYR_RANGE_1024DPS
-        * */
-        SensorQMI8658::GYR_RANGE_64DPS,
-        /*
-         * GYR_ODR_7174_4Hz
-         * GYR_ODR_3587_2Hz
-         * GYR_ODR_1793_6Hz
-         * GYR_ODR_896_8Hz
-         * GYR_ODR_448_4Hz
-         * GYR_ODR_224_2Hz
-         * GYR_ODR_112_1Hz
-         * GYR_ODR_56_05Hz
-         * GYR_ODR_28_025H
-        * */
-        SensorQMI8658::GYR_ODR_112_1Hz,
-        /*
-        *  LPF_MODE_0     //2.66% of ODR
-        *  LPF_MODE_1     //3.63% of ODR
-        *  LPF_MODE_2     //5.39% of ODR
-        *  LPF_MODE_3     //13.37% of ODR
-        * */
-        SensorQMI8658::LPF_MODE_3,
-        // selfTest enable
-        true);
-
-
-    // In 6DOF mode (accelerometer and gyroscope are both enabled),
-    // the output data rate is derived from the nature frequency of gyroscope
-    qmi.enableGyroscope();
+    // Enable the accelerometer
     qmi.enableAccelerometer();
 
+    //* Indicates the count of sample batch/window for calculation
+    uint16_t ped_sample_cnt = 50; //50 samples
+    //* Indicates the threshold of the valid peak-to-peak detection
+    uint16_t ped_fix_peak2peak = 200;   //200mg
+    //* Indicates the threshold of the peak detection comparing to average
+    uint16_t ped_fix_peak = 100;    //100mg
+    //* Indicates the maximum duration (timeout window) for a step.
+    //* Reset counting calculation if no peaks detected within this duration.
+    uint16_t ped_time_up = 200; // 200 samples 4s
+    //* Indicates the minimum duration for a step.
+    //* The peaks detected within this duration (quiet time) is ignored.
+    uint8_t ped_time_low = 20; //20 samples
+    //*   Indicates the minimum continuous steps to start the valid step counting.
+    //*   If the continuously detected steps is lower than this count and timeout,the steps will not be take into account;
+    //*   if yes, the detected steps will all be taken into account and counting is started to count every following step before timeout.
+    //*   This is useful to screen out the fake steps detected by non-step vibrations
+    //*   The timeout duration is defined by ped_time_up.
+    uint8_t ped_time_cnt_entry = 10; //10 steps entry count
+    //*   Recommended 0
+    uint8_t ped_fix_precision = 0;
+    //*   The amount of steps when to update the pedometer output registers.
+    uint8_t ped_sig_count = 4; //Every 4 valid steps is detected, update the registers once (added by 4).
 
-    qmi.configPedometer(0x007D, 0x00CC, 0x0066, 0x00C8, 0x14, 0x0A, 0, 0x04);
+    qmi.configPedometer(ped_sample_cnt,
+                        ped_fix_peak2peak,
+                        ped_fix_peak,
+                        ped_time_up,
+                        ped_time_low,
+                        ped_time_cnt_entry,
+                        ped_fix_precision,
+                        ped_sig_count);
 
-    qmi.enablePedometer();
+    // Enable the step counter and enable the interrupt
+    if (!qmi.enablePedometer(SensorQMI8658::INTERRUPT_PIN_1)) {
+        Serial.println("Enable pedometer failed!");
+        while (1);
+    }
 
-    // Print register configuration information
-    qmi.dumpCtrlRegister();
+    // Set the step counter callback function
+    qmi.setPedometerEventCallBack(pedometerEvent);
 
-    Serial.println("Read data now...");
-
+    /*
+     * When the QMI8658 is configured as Wom, the interrupt level is arbitrary,
+     * not absolute high or low, and it is in the jump transition state
+     */
+    attachInterrupt(IMU_IRQ, setFlag, CHANGE);
 }
 
 
 void loop()
 {
-    // Get IMU status
-    uint8_t status =  qmi.getStatusRegister();
-    Serial.printf("STATUS:0x%x BIN:", status);
-    Serial.println(status, BIN);
-
-    if (status & SensorQMI8658::EVENT_TAP_MOTION) {
-        Serial.println("Detected TAP event");
-        qmi.getTapStatus();
+    if (interruptFlag) {
+        interruptFlag = false;
+        qmi.update();
     }
-    if (status & SensorQMI8658::EVENT_WOM_MOTION) {
-        Serial.println("Detected Wom event");
-    }
-    if (status & SensorQMI8658::EVENT_PEDOMETER_MOTION) {
-        Serial.println("Detected Pedometer event");
-        uint32_t val = qmi.getPedometerCounter();
-        Serial.println(val);
-    }
-    if (status & SensorQMI8658::EVENT_ANY_MOTION) {
-        Serial.println("Detected Any Motion event");
-    }
-    if (status & SensorQMI8658::EVENT_NO_MOTION) {
-        Serial.println("Detected No Motion event");
-    }
-    if (status & SensorQMI8658::EVENT_SIGNIFICANT_MOTION) {
-        Serial.println("Detected Significant Motion event");
-    }
-
     delay(500);
 }

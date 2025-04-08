@@ -697,7 +697,8 @@ int8_t bhy2_erase_flash(uint32_t start_address, uint32_t end_addr, struct bhy2_d
     return rslt;
 }
 
-int8_t bhy2_upload_firmware_to_flash(const uint8_t *firmware, uint32_t length, struct bhy2_dev *dev)
+int8_t bhy2_upload_firmware_to_flash(const uint8_t *firmware, uint32_t length, struct bhy2_dev *dev,
+    bhy2_progress_callback progress_cb, void *user_data)
 {
     int8_t rslt = BHY2_OK;
     uint8_t buffer[20] = { 0 };
@@ -709,7 +710,8 @@ int8_t bhy2_upload_firmware_to_flash(const uint8_t *firmware, uint32_t length, s
     }
     else
     {
-        rslt = bhy2_hif_upload_to_flash(firmware, length, buffer, sizeof(buffer), &bytes_read, &dev->hif);
+        rslt = bhy2_hif_upload_to_flash(firmware, length, buffer, sizeof(buffer), &bytes_read, &dev->hif,
+        progress_cb, user_data);
     }
 
     return rslt;

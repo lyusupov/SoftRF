@@ -30,122 +30,123 @@
 #pragma once
 
 #include "REG/PCF8563Constants.h"
-#include "SensorCommon.tpp"
 #include "SensorRTC.h"
+#include "SensorPlatform.hpp"
 
-class SensorPCF8563 :
-    public SensorCommon<SensorPCF8563>,
-    public RTCCommon<SensorPCF8563>
+class SensorPCF8563 : public SensorRTC, public PCF8563Constants
 {
-    friend class SensorCommon<SensorPCF8563>;
-    friend class RTCCommon<SensorPCF8563>;
 public:
+    using SensorRTC::setDateTime;
+    using SensorRTC::getDateTime;
 
-    enum {
-        CLK_32_768KHZ,
-        CLK_1024KHZ,
+    enum ClockHz {
+        CLK_32768HZ,
+        CLK_1024HZ,
         CLK_32HZ,
         CLK_1HZ,
+        CLK_DISABLE,
     };
 
-
-#if defined(ARDUINO)
-    SensorPCF8563(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = PCF8563_SLAVE_ADDRESS)
-    {
-        __wire = &w;
-        __sda = sda;
-        __scl = scl;
-        __addr = addr;
-    }
-#endif
-
-    SensorPCF8563()
-    {
-#if defined(ARDUINO)
-        __wire = &Wire;
-        __sda = DEFAULT_SDA;
-        __scl = DEFAULT_SCL;
-#endif
-        __addr = PCF8563_SLAVE_ADDRESS;
-    }
+    SensorPCF8563() : comm(nullptr) {}
 
     ~SensorPCF8563()
     {
-        deinit();
+        if (comm) {
+            comm->deinit();
+        }
     }
 
 #if defined(ARDUINO)
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = PCF8563_SLAVE_ADDRESS)
+    bool begin(TwoWire &wire, int sda = -1, int scl = -1)
     {
-        return SensorCommon::begin(w, addr, sda, scl);
+        comm = std::make_unique<SensorCommI2C>(wire, PCF8563_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
-#endif
+#elif defined(ESP_PLATFORM)
 
-
-    void deinit()
+#if defined(USEING_I2C_LEGACY)
+    bool begin(i2c_port_t port_num, int sda = -1, int scl = -1)
     {
-        // end();
+        comm = std::make_unique<SensorCommI2C>(port_num, PCF8563_SLAVE_ADDRESS, sda, scl);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#else
+    bool begin(i2c_master_bus_handle_t handle)
+    {
+        comm = std::make_unique<SensorCommI2C>(handle, PCF8563_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
+    }
+#endif  //ESP_PLATFORM
+#endif  //ARDUINO
+
+    bool begin(SensorCommCustom::CustomCallback callback)
+    {
+        comm = std::make_unique<SensorCommCustom>(callback, PCF8563_SLAVE_ADDRESS);
+        if (!comm) {
+            return false;
+        }
+        comm->init();
+        return initImpl();
     }
 
     void setDateTime(RTC_DateTime datetime)
     {
-        setDateTime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.minute, datetime.second);
-    }
-
-
-    void setDateTime(uint16_t year,
-                     uint8_t month,
-                     uint8_t day,
-                     uint8_t hour,
-                     uint8_t minute,
-                     uint8_t second)
-    {
         uint8_t buffer[7];
-        buffer[0] = DEC2BCD(second) & 0x7F;
-        buffer[1] = DEC2BCD(minute);
-        buffer[2] = DEC2BCD(hour);
-        buffer[3] = DEC2BCD(day);
-        buffer[4] = getDayOfWeek(day, month, year);
-        buffer[5] = DEC2BCD(month);
-        buffer[6] = DEC2BCD(year % 100);
+        buffer[0] = DEC2BCD(datetime.getSecond()) & 0x7F;
+        buffer[1] = DEC2BCD(datetime.getMinute());
+        buffer[2] = DEC2BCD(datetime.getHour());
+        buffer[3] = DEC2BCD(datetime.getDay());
+        buffer[4] = getDayOfWeek(datetime.getDay(), datetime.getMonth(), datetime.getYear());
+        buffer[5] = DEC2BCD(datetime.getMonth());
+        buffer[6] = DEC2BCD(datetime.getYear() % 100);
 
-        if ((2000 % year) == 2000) {
+        if ((2000 % datetime.getYear()) == 2000) {
             buffer[5] &= 0x7F;
         } else {
             buffer[5] |= 0x80;
         }
-        writeRegister(PCF8563_SEC_REG, buffer, 7);
+        comm->writeRegister(SEC_REG, buffer, 7);
     }
-
 
     RTC_DateTime getDateTime()
     {
-        RTC_DateTime datetime;
         uint8_t buffer[7];
-        readRegister(PCF8563_SEC_REG, buffer, 7);
-        datetime.available = ((buffer[0] & 0x80) == 0x80) ? false : true;
-        datetime.second = BCD2DEC(buffer[0] & 0x7F);
-        datetime.minute = BCD2DEC(buffer[1] & 0x7F);
-        datetime.hour   = BCD2DEC(buffer[2] & 0x3F);
-        datetime.day    = BCD2DEC(buffer[3] & 0x3F);
-        datetime.week   = BCD2DEC(buffer[4] & 0x07);
-        datetime.month  = BCD2DEC(buffer[5] & 0x1F);
-        datetime.year   = BCD2DEC(buffer[6]);
-        //cetury :  0 = 1900 , 1 = 2000
-        datetime.year += (buffer[5] & PCF8563_CENTURY_MASK) ?  1900 : 2000;
-        return datetime;
+        comm->readRegister(SEC_REG, buffer, 7);
+        uint8_t second = BCD2DEC(buffer[0] & 0x7F);
+        uint8_t minute = BCD2DEC(buffer[1] & 0x7F);
+        uint8_t hour   = BCD2DEC(buffer[2] & 0x3F);
+        uint8_t day    = BCD2DEC(buffer[3] & 0x3F);
+        uint8_t week   = BCD2DEC(buffer[4] & 0x07);
+        uint8_t month  = BCD2DEC(buffer[5] & 0x1F);
+        uint16_t year   = BCD2DEC(buffer[6]);
+        //century :  0 = 1900 , 1 = 2000
+        year += (buffer[5] & CENTURY_MASK) ?  1900 : 2000;
+        return RTC_DateTime(year, month, day, hour, minute, second, week);
     }
 
-    void getDateTime(struct tm *timeinfo)
+
+    bool isClockIntegrityGuaranteed()
     {
-        if (!timeinfo)return;
-        *timeinfo = conversionUnixTime(getDateTime());
+        return comm->getRegisterBit(SEC_REG, 7) == 0;
     }
+
 
     RTC_Alarm getAlarm()
     {
         uint8_t buffer[4];
-        readRegister(PCF8563_ALRM_MIN_REG, buffer, 4);
+        comm->readRegister(ALRM_MIN_REG, buffer, 4);
         buffer[0] = BCD2DEC(buffer[0] & 0x80); //minute
         buffer[1] = BCD2DEC(buffer[1] & 0x40); //hour
         buffer[2] = BCD2DEC(buffer[2] & 0x40); //day
@@ -156,27 +157,27 @@ public:
 
     void enableAlarm()
     {
-        setRegisterBit(PCF8563_STAT2_REG, 1);
+        comm->setRegisterBit(STAT2_REG, 1);
     }
 
     void disableAlarm()
     {
-        clrRegisterBit(PCF8563_STAT2_REG, 1);
+        comm->clrRegisterBit(STAT2_REG, 1);
     }
 
     void resetAlarm()
     {
-        clrRegisterBit(PCF8563_STAT2_REG, 3);
+        comm->clrRegisterBit(STAT2_REG, 3);
     }
 
     bool isAlarmActive()
     {
-        return getRegisterBit(PCF8563_STAT2_REG, 3);
+        return comm->getRegisterBit(STAT2_REG, 3);
     }
 
     void setAlarm(RTC_Alarm alarm)
     {
-        setAlarm( alarm.hour, alarm.minute, alarm.day, alarm.week);
+        setAlarm( alarm.getHour(), alarm.getMinute(), alarm.getDay(), alarm.getWeek());
     }
 
     void setAlarm(uint8_t hour, uint8_t minute, uint8_t day, uint8_t week)
@@ -185,174 +186,139 @@ public:
 
         RTC_DateTime datetime =  getDateTime();
 
-        uint8_t daysInMonth =  getDaysInMonth(datetime.month, datetime.year);
+        uint8_t daysInMonth =  getDaysInMonth(datetime.getMonth(), datetime.getYear());
 
-        if (minute != PCF8563_NO_ALARM) {
+        if (minute != NO_ALARM) {
             if (minute > 59) {
                 minute = 59;
             }
             buffer[0] = DEC2BCD(minute);
-            buffer[0] &= ~PCF8563_ALARM_ENABLE;
+            buffer[0] &= ~ALARM_ENABLE;
         } else {
-            buffer[0] = PCF8563_ALARM_ENABLE;
+            buffer[0] = ALARM_ENABLE;
         }
 
-        if (hour != PCF8563_NO_ALARM) {
+        if (hour != NO_ALARM) {
             if (hour > 23) {
                 hour = 23;
             }
             buffer[1] = DEC2BCD(hour);
-            buffer[1] &= ~PCF8563_ALARM_ENABLE;
+            buffer[1] &= ~ALARM_ENABLE;
         } else {
-            buffer[1] = PCF8563_ALARM_ENABLE;
+            buffer[1] = ALARM_ENABLE;
         }
-        if (day != PCF8563_NO_ALARM) {
-            //TODO:Check  day in Month
+        if (day != NO_ALARM) {
             buffer[2] = DEC2BCD(((day) < (1) ? (1) : ((day) > (daysInMonth) ? (daysInMonth) : (day))));
-            buffer[2] &= ~PCF8563_ALARM_ENABLE;
+            buffer[2] &= ~ALARM_ENABLE;
         } else {
-            buffer[2] = PCF8563_ALARM_ENABLE;
+            buffer[2] = ALARM_ENABLE;
         }
-        if (week != PCF8563_NO_ALARM) {
+        if (week != NO_ALARM) {
             if (week > 6) {
                 week = 6;
             }
             buffer[3] = DEC2BCD(week);
-            buffer[3] &= ~PCF8563_ALARM_ENABLE;
+            buffer[3] &= ~ALARM_ENABLE;
         } else {
-            buffer[3] = PCF8563_ALARM_ENABLE;
+            buffer[3] = ALARM_ENABLE;
         }
-        writeRegister(PCF8563_ALRM_MIN_REG, buffer, 4);
+        comm->writeRegister(ALRM_MIN_REG, buffer, 4);
     }
 
     void setAlarmByMinutes(uint8_t minute)
     {
-        setAlarm(PCF8563_NO_ALARM, minute, PCF8563_NO_ALARM, PCF8563_NO_ALARM);
+        setAlarm(NO_ALARM, minute, NO_ALARM, NO_ALARM);
     }
     void setAlarmByDays(uint8_t day)
     {
-        setAlarm(PCF8563_NO_ALARM, PCF8563_NO_ALARM, day, PCF8563_NO_ALARM);
+        setAlarm(NO_ALARM, NO_ALARM, day, NO_ALARM);
     }
     void setAlarmByHours(uint8_t hour)
     {
-        setAlarm(hour, PCF8563_NO_ALARM, PCF8563_NO_ALARM, PCF8563_NO_ALARM);
+        setAlarm(hour, NO_ALARM, NO_ALARM, NO_ALARM);
     }
     void setAlarmByWeekDay(uint8_t week)
     {
-        setAlarm(PCF8563_NO_ALARM, PCF8563_NO_ALARM, PCF8563_NO_ALARM, week);
+        setAlarm(NO_ALARM, NO_ALARM, NO_ALARM, week);
     }
 
     bool isCountdownTimerEnable()
     {
         uint8_t buffer[2];
-        buffer[0] = readRegister(PCF8563_STAT2_REG);
-        buffer[1] = readRegister(PCF8563_TIMER1_REG);
-        if (buffer[0] & PCF8563_TIMER_TIE) {
-            return buffer[1] & PCF8563_TIMER_TE ? true : false;
+        buffer[0] = comm->readRegister(STAT2_REG);
+        buffer[1] = comm->readRegister(TIMER1_REG);
+        if (buffer[0] & TIMER_TIE) {
+            return buffer[1] & TIMER_TE ? true : false;
         }
         return false;
     }
 
     bool isCountdownTimerActive()
     {
-        return getRegisterBit(PCF8563_STAT2_REG, 2);
+        return comm->getRegisterBit(STAT2_REG, 2);
     }
 
     void enableCountdownTimer()
     {
-        setRegisterBit(PCF8563_STAT2_REG, 0);
+        comm->setRegisterBit(STAT2_REG, 0);
     }
 
     void disableCountdownTimer()
     {
-        clrRegisterBit(PCF8563_STAT2_REG, 0);
+        comm->clrRegisterBit(STAT2_REG, 0);
     }
 
     void setCountdownTimer(uint8_t val, uint8_t freq)
     {
         uint8_t buffer[3];
-        buffer[1] = readRegister(PCF8563_TIMER1_REG);
-        buffer[1] |= (freq &  PCF8563_TIMER_TD10);
+        buffer[1] = comm->readRegister(TIMER1_REG);
+        buffer[1] |= (freq &  TIMER_TD10);
         buffer[2] = val;
-        writeRegister(PCF8563_TIMER1_REG, buffer[1]);
-        writeRegister(PCF8563_TIMER2_REG, buffer[2]);
+        comm->writeRegister(TIMER1_REG, buffer[1]);
+        comm->writeRegister(TIMER2_REG, buffer[2]);
     }
 
     void clearCountdownTimer()
     {
         uint8_t val;
-        val = readRegister(PCF8563_STAT2_REG);
-        val &= ~(PCF8563_TIMER_TF | PCF8563_TIMER_TIE);
-        val |= PCF8563_ALARM_AF;
-        writeRegister(PCF8563_STAT2_REG, val);
-        writeRegister(PCF8563_TIMER1_REG, 0x00);
+        val = comm->readRegister(STAT2_REG);
+        val &= ~(TIMER_TF | TIMER_TIE);
+        val |= ALARM_AF;
+        comm->writeRegister(STAT2_REG, val);
+        comm->writeRegister(TIMER1_REG, (uint8_t)0x00);
     }
 
-    void enableCLK(uint8_t freq)
+    void setClockOutput(ClockHz freq)
     {
-        if (freq > CLK_1HZ) return;
-        writeRegister(PCF8563_SQW_REG,  freq | PCF8563_CLK_ENABLE);
+        if (freq == CLK_DISABLE) {
+            comm->clrRegisterBit(SQW_REG, 7);
+        } else {
+            comm->writeRegister(SQW_REG,  freq | CLK_ENABLE);
+        }
     }
 
-    void disableCLK()
+    const char *getChipName()
     {
-        clrRegisterBit(PCF8563_SQW_REG, 7);
+        return "PCF8563";
     }
-
-
 
 private:
 
     bool initImpl()
     {
-        // Check whether RTC time is valid? If it is invalid, it can be judged
-        // that there is a problem with the hardware, or the RTC power supply voltage is too low
-        /*
-        int count = 0;
-        for (int i = 0; i < 3; ++i) {
-            if (!getRegisterBit(PCF8563_SEC_REG, 7)) {
-                count++;
-            }
-        }
-        if (count != 3 ) {
-            return false;
-        }
-        */
-
-        // 230704:Does not use power-off judgment, if the RTC backup battery is not installed,
-        //    it will return failure. Here only to judge whether the device communication is normal
-
         //Check device is online
-        int ret = readRegister(PCF8563_SEC_REG);
-        if (ret == DEV_WIRE_ERR) {
+        int ret = comm->readRegister(SEC_REG);
+        if (ret < 0) {
             return false;
         }
         if (BCD2DEC(ret & 0x7F) > 59) {
             return false;
         }
-
-        // Determine whether the hardware clock year, month, and day match the internal time of the RTC.
-        // If they do not match, it will be updated to the compilation date
-        // RTC_DateTime compileDatetime =  RTC_DateTime(__DATE__, __TIME__);
-        // RTC_DateTime hwDatetime = getDateTime();
-        // if (compileDatetime.year != hwDatetime.year ||
-        //         compileDatetime.month != hwDatetime.month ||
-        //         compileDatetime.day != hwDatetime.month
-        //    ) {
-        //     LOG("No match yy:mm:dd . set datetime to compilation date time");
-        //     setDateTime(compileDatetime);
-        // }
         return true;
     }
 
-    int getReadMaskImpl()
-    {
-        return -1;
-    }
-
 protected:
-
-
+    std::unique_ptr<SensorCommBase> comm;
 };
 
 

@@ -46,15 +46,39 @@
 
 SensorCM32181 light;
 
+#ifdef ARDUINO_T_AMOLED_147
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+XPowersAXP2101 power;
+#endif
+
+void beginPower()
+{
+    // T_AMOLED_147 The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_AMOLED_147)
+    bool ret = power.begin(Wire, AXP2101_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
+    if (!ret) {
+        Serial.println("PMU NOT FOUND!\n");
+    }
+    power.setALDO1Voltage(1800); power.enableALDO1();
+    power.setALDO3Voltage(3300); power.enableALDO3();
+    power.setBLDO1Voltage(1800); power.enableBLDO1();
+#endif
+}
+
+#include "SensorWireHelper.h"
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
+
+    SensorWireHelper::dumpDevices(Wire);
+
     pinMode(SENSOR_IRQ, INPUT_PULLUP);
 
-    if (!light.begin(Wire, CM32181_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!light.begin(Wire, CM32181_ADDR_PRIMARY, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find CM32181 - check your wiring!");
         while (1) {
             delay(1000);
@@ -120,9 +144,9 @@ void loop()
         // Get conversion data , The manual does not provide information on how to obtain the
         //  calibration value, now use the calibration value 0.28 provided by the manual
         float lux = light.getLux();
-        Serial.printf("IRQ:%d RAW:%u Lux:%.2f\n", pinVal, raw, lux);
-
-
+        Serial.print(" IRQ:"); Serial.print(pinVal);
+        Serial.print(" RAW:"); Serial.print(raw);
+        Serial.print(" Lux:"); Serial.println(lux);
         // Turn on interrupts
         light.enableINT();
     }

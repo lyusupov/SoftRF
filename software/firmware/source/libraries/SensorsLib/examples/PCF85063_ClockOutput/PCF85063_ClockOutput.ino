@@ -69,7 +69,7 @@ String freq_hz_str[] = {
 
 
 SensorPCF85063 rtc;
-uint32_t lastMillis;
+uint32_t intervalue;
 uint8_t i = 0;
 
 
@@ -77,8 +77,8 @@ void setup()
 {
     Serial.begin(115200);
     while (!Serial);
-    if (!rtc.begin(Wire, PCF85063_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
-        Serial.println("Failed to find PCF8563 - check your wiring!");
+    if (!rtc.begin(Wire, SENSOR_SDA, SENSOR_SCL)) {
+        Serial.println("Failed to find PCF85063 - check your wiring!");
         while (1) {
             delay(1000);
         }
@@ -88,8 +88,8 @@ void setup()
 
 void loop()
 {
-    if (millis() - lastMillis > 5000) {
-        lastMillis = millis();
+    if (millis() - intervalue > 5000) {
+        intervalue = millis();
         Serial.print("Set freq : ");
         Serial.println(freq_hz_str[i]);
         rtc.setClockOutput(clock_array[i]);

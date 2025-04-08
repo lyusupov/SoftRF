@@ -32,9 +32,11 @@
 #include <Arduino.h>
 
 #if defined(ARDUINO_ARCH_ESP32)
-
 #include "SensorQMC6310.hpp"
 #include "SH1106Wire.h"         //Oled display from https://github.com/ThingPulse/esp8266-oled-ssd1306
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
@@ -44,15 +46,15 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
+#ifndef OLED_SDA
+#define OLED_SDA    22      // Display Wire SDA Pin
 #endif
 
+#ifndef OLED_SCL
+#define OLED_SCL    21      // Display Wire SCL Pin
+#endif
 
-#define I2C1_SDA    22      //Display Wire SDA Pin
-#define I2C1_SCL    21      //Display Wire SCL Pin
-
-SH1106Wire display(0x3c, I2C1_SDA, I2C1_SCL);
+SH1106Wire display(0x3c, OLED_SDA, OLED_SCL);
 SensorQMC6310 qmc;
 
 int last_dx, last_dy, dx, dy, angle;
@@ -84,14 +86,31 @@ void arrow(int x2, int y2, int x1, int y1, int alength, int awidth, OLEDDISPLAY_
     display.drawLine(x2, y2, x4, y4);
 }
 
+
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300);
+    power.enableALDO1();
+    power.setALDO2Voltage(3300);
+    power.enableALDO2();
+#endif
+}
+
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
 
-
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!qmc.begin(Wire, QMC6310U_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
         while (1) {
             delay(1000);
@@ -151,7 +170,7 @@ void setup()
                 * * */
                 SensorQMC6310::DSR_1);
 
-    if (r != DEV_WIRE_NONE) {
+    if (r < 0) {
         Serial.println("Device config failed!");
         while (1)delay(1000);
     }
@@ -165,7 +184,7 @@ void setup()
 void loop()
 {
 
-    //Wiat data ready
+    //Wait data ready
     if (qmc.isDataReady()) {
 
         qmc.readData();
@@ -230,6 +249,6 @@ void setup()
 
 void loop()
 {
-    Serial.println("The graphics library may not be supported on the current platform"); delay(1000);
+    Serial.println("The graphics library may not be supported on the esp32 platform"); delay(1000);
 }
 #endif

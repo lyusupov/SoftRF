@@ -985,7 +985,7 @@ static void ESP32_setup()
       delay(200);
 
 #if !defined(EXCLUDE_MAG)
-      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310_SLAVE_ADDRESS,
+      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310N_SLAVE_ADDRESS,
                                        SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       if (has_qmc) {
         mag_qmc6310.configMagnetometer(
@@ -1040,12 +1040,12 @@ static void ESP32_setup()
 #endif /* EXCLUDE_MAG */
 
 #if !defined(EXCLUDE_IMU)
-      imu_qmi8658.setSpiSetting(4000000, MSBFIRST, SPI_MODE0);
-      bool has_qmi = imu_qmi8658.begin(SOC_GPIO_PIN_S3_IMU_SS,
+      //imu_qmi8658.setSpiSetting(4000000, MSBFIRST, SPI_MODE0);
+      bool has_qmi = imu_qmi8658.begin(uSD_SPI,
+                                       SOC_GPIO_PIN_S3_IMU_SS,
                                        SOC_GPIO_PIN_S3_IMU_MOSI,
                                        SOC_GPIO_PIN_S3_IMU_MISO,
-                                       SOC_GPIO_PIN_S3_IMU_SCK,
-                                       uSD_SPI);
+                                       SOC_GPIO_PIN_S3_IMU_SCK);
       if (has_qmi) {
         imu_qmi8658.configAccelerometer(
             /*
@@ -1074,9 +1074,7 @@ static void ESP32_setup()
             *  LPF_MODE_2     //5.39% of ODR
             *  LPF_MODE_3     //13.37% of ODR
             * */
-            SensorQMI8658::LPF_MODE_0,
-            // selfTest enable
-            true);
+            SensorQMI8658::LPF_MODE_0);
 
         imu_qmi8658.configGyroscope(
             /*
@@ -1107,9 +1105,7 @@ static void ESP32_setup()
             *  LPF_MODE_2     //5.39% of ODR
             *  LPF_MODE_3     //13.37% of ODR
             * */
-            SensorQMI8658::LPF_MODE_3,
-            // selfTest enable
-            true);
+            SensorQMI8658::LPF_MODE_3);
 
         // In 3DOF mode,
         imu_qmi8658.enableAccelerometer();
@@ -2403,7 +2399,7 @@ static void ESP32_fini(int reason)
     imu_mpu9250.sleep(true);
     break;
   case IMU_QMI8658:
-    imu_qmi8658.deinit();
+    // imu_qmi8658.deinit(); /* TBD */
     break;
   case IMU_NONE:
   default:
@@ -2415,7 +2411,7 @@ static void ESP32_fini(int reason)
   switch (hw_info.mag)
   {
   case MAG_QMC6310:
-    mag_qmc6310.deinit();
+    // mag_qmc6310.deinit(); /* TBD */
     break;
   case MAG_NONE:
   default:

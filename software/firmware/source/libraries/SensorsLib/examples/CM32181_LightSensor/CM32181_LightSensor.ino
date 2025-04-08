@@ -54,7 +54,7 @@ void setup()
 
     pinMode(SENSOR_IRQ, INPUT_PULLUP);
 
-    if (!light.begin(Wire, CM32181_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!light.begin(Wire, CM32181_ADDR_PRIMARY, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find CM32181 - check your wiring!");
         while (1) {
             delay(1000);
@@ -89,7 +89,8 @@ void loop()
     // Get conversion data , The manual does not provide information on how to obtain the
     //  calibration value, now use the calibration value 0.28 provided by the manual
     float lux = light.getLux();
-    Serial.printf("RAW:%u Lux:%.2f\n", raw, lux);
+    Serial.print(" RAW:"); Serial.print(raw);
+    Serial.print(" Lux:"); Serial.println(lux);
     delay(500);
 }
 

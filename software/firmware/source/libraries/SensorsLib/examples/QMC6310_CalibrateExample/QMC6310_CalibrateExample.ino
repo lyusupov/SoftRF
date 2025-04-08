@@ -31,6 +31,9 @@
 #include <SPI.h>
 #include <Arduino.h>
 #include "SensorQMC6310.hpp"
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
@@ -40,13 +43,23 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
-#endif
-
-
 SensorQMC6310 qmc;
 
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300);
+    power.enableALDO1();
+    power.setALDO2Voltage(3300);
+    power.enableALDO2();
+#endif
+}
 
 void calibrate()
 {
@@ -147,9 +160,6 @@ void calibrate()
     Serial.print(z_offset);
 
 
-    // Serial.printf("x_min:%d x_max:%d y_min:%d y_max:%d z_min:%d z_max:%d\n", x_min, x_max, y_min, y_max, z_min, z_max);
-    // Serial.printf("x_offset:%.2f y_offset:%.2f z_offset:%.2f \n", x_offset, y_offset, z_offset);
-
     // Set the calibration value and the user calculates the deviation
     qmc.setOffset(x_offset, y_offset, z_offset);
 }
@@ -160,7 +170,9 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    beginPower();
+
+    if (!qmc.begin(Wire, QMC6310U_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
         while (1) {
             delay(1000);
@@ -215,9 +227,6 @@ void setup()
         * * */
         SensorQMC6310::DSR_1);
 
-
-
-
     // Calibration algorithm reference from
     // https://github.com/CoreElectronics/CE-PiicoDev-QMC6310-MicroPython-Module
     calibrate();
@@ -230,7 +239,6 @@ void setup()
 
 void loop()
 {
-
     //Wait data ready
     if (qmc.isDataReady()) {
 

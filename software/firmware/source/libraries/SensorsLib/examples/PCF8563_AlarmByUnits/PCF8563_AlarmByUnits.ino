@@ -33,22 +33,22 @@
 #include <time.h>
 #include "SensorPCF8563.hpp"
 
-#ifdef ESP32
-#define SENSOR_SDA                     42
-#define SENSOR_SCL                     41
-#define SENSOR_IRQ                     14
-#else
-#define _PINNUM(port, pin)    ((port)*32 + (pin))
-#define SENSOR_SDA             _PINNUM(0,26)
-#define SENSOR_SCL             _PINNUM(0,27)
-#define SENSOR_IRQ             _PINNUM(0,16)
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  42
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  41
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  14
 #endif
 
 
 SensorPCF8563 rtc;
 
-
-uint32_t lastMillis = 0;
+uint32_t intervalue = 0;
 uint8_t nextHour = 22;
 uint8_t nextMonth = 1;
 uint8_t nextDay = 1;
@@ -61,9 +61,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-
-
-    if (!rtc.begin(Wire, PCF8563_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!rtc.begin(Wire, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
         while (1) {
             delay(1000);
@@ -83,21 +81,21 @@ void setup()
 
 void printDateTime()
 {
-    if (millis() - lastMillis > 1000) {
+    if (millis() - intervalue > 1000) {
         /**
         /// Format output time*
         Option:
-            DATETIME_FORMAT_HM
-            DATETIME_FORMAT_HMS
-            DATETIME_FORMAT_YYYY_MM_DD
-            DATETIME_FORMAT_MM_DD_YYYY
-            DATETIME_FORMAT_DD_MM_YYYY
-            DATETIME_FORMAT_YYYY_MM_DD_H_M_S
-        default:   DATETIME_FORMAT_YYYY_MM_DD_H_M_S_WEEK
+            DT_FMT_HM,          // Format Style : Hour:Minute
+            DT_FMT_HMS,         // Format Style : Hour:Minute:Second
+            DT_FMT_YMD,         // Format Style : Year-Month-Day
+            DT_FMT_MDY,         // Format Style : Month-Day-Year
+            DT_FMT_DMY,         // Format Style : Day-Month-Year
+            DT_FMT_YMD_HMS,     // Format Style : Year-Month-Day/Hour:Minute:Second
+            Default : DT_FMT_YMD_HMS_WEEK // Format Style : Year-Month-Day/Hour:Minute:Second - Weekday
         */
         Serial.println(rtc.strftime());
 
-        lastMillis = millis();
+        intervalue = millis();
     }
 }
 

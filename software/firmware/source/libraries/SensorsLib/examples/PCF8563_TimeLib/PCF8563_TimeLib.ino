@@ -33,13 +33,20 @@
 #include "SensorPCF8563.hpp"
 #include <time.h>
 
-// lilygo t-beam-s3-core pin
-#define SENSOR_SDA                     42
-#define SENSOR_SCL                     41
-#define SENSOR_IRQ                     14
+#ifndef SENSOR_SDA
+#define SENSOR_SDA  42
+#endif
+
+#ifndef SENSOR_SCL
+#define SENSOR_SCL  41
+#endif
+
+#ifndef SENSOR_IRQ
+#define SENSOR_IRQ  14
+#endif
 
 SensorPCF8563 rtc;
-uint32_t lastMillis;
+uint32_t intervalue;
 char buf[64];
 
 void setup()
@@ -47,25 +54,35 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-
-
     pinMode(SENSOR_IRQ, INPUT_PULLUP);
 
-    if (!rtc.begin(Wire, PCF8563_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!rtc.begin(Wire, SENSOR_SDA, SENSOR_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
         while (1) {
             delay(1000);
         }
     }
 
+    // The simplest way to set up
+    rtc.setDateTime(2024, 1, 17, 4, 21, 30);
+
+    // Unix tm structure sets the time
+    struct tm timeinfo;
+    timeinfo.tm_yday = 2025 - 1900; //Counting starts from 1900, so subtract 1900 here
+    timeinfo.tm_mon = 1 - 1;        //Months start at 0, so you need to subtract 1.
+    timeinfo.tm_mday = 17;
+    timeinfo.tm_hour = 4;
+    timeinfo.tm_min = 30;
+    timeinfo.tm_sec = 30;
+    rtc.setDateTime(timeinfo);
 }
 
 
 void loop()
 {
-    if (millis() - lastMillis > 1000) {
+    if (millis() - intervalue > 1000) {
 
-        lastMillis = millis();
+        intervalue = millis();
 
         struct tm timeinfo;
         // Get the time C library structure

@@ -30,24 +30,26 @@
 
 #pragma once
 
-#define CM32181_SLAVE_ADDRESS       (0x10)
-
-
+#include <stdint.h>
 
 // CM32181 slave address can be 0x10 or 0x48, determined by pin ADDR configuration
-#define CM32181_ADDR_ALS            (0x10) // 7-bit
-#define CM32181_ADDR_ALS1           (0x48) // 7-bit
+#define CM32181_ADDR_PRIMARY            (0x10)
+#define CM32181_ADDR_SECONDARY          (0x48)
+#define CM32181_SLAVE_ADDRESS           (0x10)  //Compatible with previous version definitions
 
-// CM32181 registers
-#define CM32181_REG_ALS_CONF        (uint8_t)(0x00)
-#define CM32181_REG_ALS_THDH        (uint8_t)(0x01)
-#define CM32181_REG_ALS_THDL        (uint8_t)(0x02)
-#define CM32181_REG_ALS_PSM         (uint8_t)(0x03)
-#define CM32181_REG_ALS_DATA        (uint8_t)(0x04)
-#define CM32181_REG_ALS_STATUS      (uint8_t)(0x06)
-#define CM32181_REG_ID              (uint8_t)(0x07)
-
-#define CM32181_CHIP_ID             (0x81)
+class CM32181Constants
+{
+protected:
+    // CM32181 registers
+    static constexpr uint8_t REG_ALS_CONF = 0x00;
+    static constexpr uint8_t REG_ALS_THDH = 0x01;
+    static constexpr uint8_t REG_ALS_THDL = 0x02;
+    static constexpr uint8_t REG_ALS_PSM = 0x03;
+    static constexpr uint8_t REG_ALS_DATA = 0x04;
+    static constexpr uint8_t REG_ALS_STATUS = 0x06;
+    static constexpr uint8_t REG_ID = 0x07;
+    static constexpr uint8_t CM32181_CHIP_ID = 0x81;
+};
 
 
 

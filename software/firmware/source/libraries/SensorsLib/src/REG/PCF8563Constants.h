@@ -30,41 +30,50 @@
 
 #pragma once
 
-
-#define PCF8563_SLAVE_ADDRESS   (0x51)
-
-#define PCF8563_STAT1_REG       (0x00)
-#define PCF8563_STAT2_REG       (0x01)
-#define PCF8563_SEC_REG         (0x02)
-#define PCF8563_MIN_REG         (0x03)
-#define PCF8563_HR_REG          (0x04)
-#define PCF8563_DAY_REG         (0x05)
-#define PCF8563_WEEKDAY_REG     (0x06)
-#define PCF8563_MONTH_REG       (0x07)
-#define PCF8563_YEAR_REG        (0x08)
-#define PCF8563_ALRM_MIN_REG    (0x09)
-#define PCF8563_SQW_REG         (0x0D)
-#define PCF8563_TIMER1_REG      (0x0E)
-#define PCF8563_TIMER2_REG      (0x0F)
-
-#define PCF8563_VOL_LOW_MASK    (0x80)
-#define PCF8563_MINUTES_MASK    (0x7F)
-#define PCF8563_HOUR_MASK       (0x3F)
-#define PCF8563_WEEKDAY_MASK    (0x07)
-#define PCF8563_CENTURY_MASK    (0x80)
-#define PCF8563_DAY_MASK        (0x3F)
-#define PCF8563_MONTH_MASK      (0x1F)
-#define PCF8563_TIMER_CTL_MASK  (0x03)
+#include <stdint.h>
 
 
-#define PCF8563_ALARM_AF        (0x08)
-#define PCF8563_TIMER_TF        (0x04)
-#define PCF8563_ALARM_AIE       (0x02)
-#define PCF8563_TIMER_TIE       (0x01)
-#define PCF8563_TIMER_TE        (0x80)
-#define PCF8563_TIMER_TD10      (0x03)
+class PCF8563Constants
+{
+protected:
+    // Unique I2C device address
+    static constexpr uint8_t PCF8563_SLAVE_ADDRESS = 0x51;
 
-#define PCF8563_NO_ALARM        (0xFF)
-#define PCF8563_ALARM_ENABLE    (0x80)
-#define PCF8563_CLK_ENABLE      (0x80)
+    // Register addresses
+    static constexpr uint8_t STAT1_REG = 0x00;
+    static constexpr uint8_t STAT2_REG = 0x01;
+    static constexpr uint8_t SEC_REG = 0x02;
+    static constexpr uint8_t MIN_REG = 0x03;
+    static constexpr uint8_t HR_REG = 0x04;
+    static constexpr uint8_t DAY_REG = 0x05;
+    static constexpr uint8_t WEEKDAY_REG = 0x06;
+    static constexpr uint8_t MONTH_REG = 0x07;
+    static constexpr uint8_t YEAR_REG = 0x08;
+    static constexpr uint8_t ALRM_MIN_REG = 0x09;
+    static constexpr uint8_t SQW_REG = 0x0D;
+    static constexpr uint8_t TIMER1_REG = 0x0E;
+    static constexpr uint8_t TIMER2_REG = 0x0F;
 
+    // Mask values
+    static constexpr uint8_t VOL_LOW_MASK = 0x80;
+    static constexpr uint8_t MINUTES_MASK = 0x7F;
+    static constexpr uint8_t HOUR_MASK = 0x3F;
+    static constexpr uint8_t WEEKDAY_MASK = 0x07;
+    static constexpr uint8_t CENTURY_MASK = 0x80;
+    static constexpr uint8_t DAY_MASK = 0x3F;
+    static constexpr uint8_t MONTH_MASK = 0x1F;
+    static constexpr uint8_t TIMER_CTL_MASK = 0x03;
+
+    // Alarm and Timer flags
+    static constexpr uint8_t ALARM_AF = 0x08;
+    static constexpr uint8_t TIMER_TF = 0x04;
+    static constexpr uint8_t ALARM_AIE = 0x02;
+    static constexpr uint8_t TIMER_TIE = 0x01;
+    static constexpr uint8_t TIMER_TE = 0x80;
+    static constexpr uint8_t TIMER_TD10 = 0x03;
+
+    // Other constants
+    static constexpr uint8_t NO_ALARM = 0xFF;
+    static constexpr uint8_t ALARM_ENABLE = 0x80;
+    static constexpr uint8_t CLK_ENABLE = 0x80;
+};

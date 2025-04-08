@@ -30,7 +30,10 @@
 #pragma once
 
 #include "REG/QMC6310Constants.h"
-#include "SensorCommon.tpp"
+#include "SensorPlatform.hpp"
+
+static constexpr uint8_t QMC6310U_SLAVE_ADDRESS = 0x1C;
+static constexpr uint8_t QMC6310N_SLAVE_ADDRESS = 0x3C;
 
 class Polar
 {
@@ -43,13 +46,9 @@ public:
 };
 
 
-class SensorQMC6310 :
-    public SensorCommon<SensorQMC6310>
+class SensorQMC6310 :  public QMC6310Constants
 {
-    friend class SensorCommon<SensorQMC6310>;
 public:
-
-
     enum SensorMode {
         MODE_SUSPEND,
         MODE_NORMAL,
@@ -57,7 +56,7 @@ public:
         MODE_CONTINUOUS,
     };
 
-    // Unit:Guass
+    // Unit:Gauss
     enum MagRange {
         RANGE_30G,
         RANGE_12G,
@@ -92,170 +91,180 @@ public:
         DSR_8,
     };
 
-#if defined(ARDUINO)
-    SensorQMC6310(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMC6310_SLAVE_ADDRESS)
-    {
-        __wire = &w;
-        __sda = sda;
-        __scl = scl;
-        __addr = addr;
-    }
-#endif
-
-    SensorQMC6310()
-    {
-#if defined(ARDUINO)
-        __wire = &Wire;
-        __sda = DEFAULT_SDA;
-        __scl = DEFAULT_SCL;
-#endif
-        __addr = QMC6310_SLAVE_ADDRESS;
-    }
+    SensorQMC6310() : comm(nullptr), hal(nullptr) {}
 
     ~SensorQMC6310()
     {
-        deinit();
+        if (comm) {
+            comm->deinit();
+        }
     }
 
 #if defined(ARDUINO)
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = QMC6310_SLAVE_ADDRESS)
+    bool begin(TwoWire &wire, uint8_t addr = QMC6310U_SLAVE_ADDRESS, int sda = -1, int scl = -1)
     {
-        return SensorCommon::begin(w, addr, sda, scl);
+        if (!beginCommon<SensorCommI2C, HalArduino>(comm, hal, wire, addr, sda, scl)) {
+            return false;
+        }
+        return initImpl();
+    }
+#elif defined(ESP_PLATFORM)
+
+#if defined(USEING_I2C_LEGACY)
+    bool begin(i2c_port_t port_num, uint8_t addr = QMC6310U_SLAVE_ADDRESS, int sda = -1, int scl = -1)
+    {
+        if (!beginCommon<SensorCommI2C, HalEspIDF>(comm, hal, port_num, addr, sda, scl)) {
+            return false;
+        }
+        return initImpl();
+    }
+#else
+    bool begin(i2c_master_bus_handle_t handle, uint8_t addr = QMC6310U_SLAVE_ADDRESS)
+    {
+        if (!beginCommon<SensorCommI2C, HalEspIDF>(comm, hal, handle, addr, sda, scl)) {
+            return false;
+        }
+        return initImpl();
     }
 #endif
+#endif
 
-
-    void deinit()
+    bool begin(SensorCommCustom::CustomCallback callback,
+               SensorCommCustomHal::CustomHalCallback hal_callback,
+               uint8_t addr = QMC6310U_SLAVE_ADDRESS)
     {
-        // end();
+        if (!beginCommCustomCallback<SensorCommCustom, SensorCommCustomHal>(COMM_CUSTOM,
+                callback, hal_callback, addr, comm, hal)) {
+            return false;
+        }
+        return initImpl();
     }
 
     void reset()
     {
-        writeRegister(QMC6310_REG_CMD2, 0x80);
-        delay(10);
-        writeRegister(QMC6310_REG_CMD2, 0x00);
+        comm->writeRegister(REG_CMD2, (uint8_t)0x80);
+        hal->delay(10);
+        comm->writeRegister(REG_CMD2, (uint8_t)0x00);
     }
 
     uint8_t getChipID()
     {
-        return readRegister(QMC6310_REG_CHIP_ID);
+        return comm->readRegister(REG_CHIP_ID);
     }
 
 
     int getStatus()
     {
-        return readRegister(QMC6310_REG_STAT);
+        return comm->readRegister(REG_STAT);
     }
 
     bool isDataReady()
     {
-        if (readRegister(QMC6310_REG_STAT) & 0x01) {
+        if (comm->readRegister(REG_STAT) & 0x01) {
             return true;
         }
-        LOG("No ready!\n");
         return false;
     }
 
     bool isDataOverflow()
     {
-        if (readRegister(QMC6310_REG_STAT) & 0x02) {
+        if (comm->readRegister(REG_STAT) & 0x02) {
             return true;
         }
         return false;
     }
 
-    int setSelfTest(bool en)
+    void setSelfTest(bool en)
     {
-        return en ? setRegisterBit(QMC6310_REG_CMD2, 1)
-               : clrRegisterBit(QMC6310_REG_CMD2, 1);
+        en ? comm->setRegisterBit(REG_CMD2, 1)
+        : comm->clrRegisterBit(REG_CMD2, 1);
     }
 
     int setMode(SensorMode m)
     {
-        return writeRegister(QMC6310_REG_CMD1, 0xFC, m);
+        return comm->writeRegister(REG_CMD1, 0xFC, m);
     }
 
     int setCtrlRegister(CtrlReg c)
     {
-        return writeRegister(QMC6310_REG_CMD2, 0xFC, c);
+        return comm->writeRegister(REG_CMD2, 0xFC, c);
     }
 
     int setDataOutputRate(OutputRate odr)
     {
-        return writeRegister(QMC6310_REG_CMD1, 0xF3, (odr << 2));
+        return comm->writeRegister(REG_CMD1, 0xF3, (odr << 2));
     }
 
     int setOverSampleRate(OverSampleRatio osr)
     {
-        return writeRegister(QMC6310_REG_CMD1, 0xCF, (osr << 4));
+        return comm->writeRegister(REG_CMD1, 0xCF, (osr << 4));
     }
 
     int setDownSampleRate(DownSampleRatio dsr)
     {
-        return writeRegister(QMC6310_REG_CMD1, 0x3F, (dsr << 6));
+        return comm->writeRegister(REG_CMD1, 0x3F, (dsr << 6));
     }
 
     // Define the sign for X Y and Z axis
     int setSign(uint8_t x, uint8_t y, uint8_t z)
     {
         int sign = x + y * 2 + z * 4;
-        return writeRegister(QMC6310_REG_SIGN, sign);
+        return comm->writeRegister(REG_SIGN, sign);
     }
 
     int configMagnetometer(SensorMode mode, MagRange range, OutputRate odr,
                            OverSampleRatio osr, DownSampleRatio dsr)
     {
-        if (setMagRange(range) != DEV_WIRE_NONE) {
-            return DEV_WIRE_ERR;
+        if (setMagRange(range) < 0) {
+            return -1;;
         }
-        if (writeRegister(QMC6310_REG_CMD1, 0xFC, mode) != DEV_WIRE_NONE) {
-            return DEV_WIRE_ERR;
+        if (comm->writeRegister(REG_CMD1, 0xFC, mode) < 0) {
+            return -1;;
         }
-        if (writeRegister(QMC6310_REG_CMD1, 0xF3, (odr << 2)) != DEV_WIRE_NONE) {
-            return DEV_WIRE_ERR;
+        if (comm->writeRegister(REG_CMD1, 0xF3, (odr << 2)) < 0) {
+            return -1;;
         }
-        if (writeRegister(QMC6310_REG_CMD1, 0xCF, (osr << 4)) != DEV_WIRE_NONE) {
-            return DEV_WIRE_ERR;
+        if (comm->writeRegister(REG_CMD1, 0xCF, (osr << 4)) < 0) {
+            return -1;;
         }
-        if (writeRegister(QMC6310_REG_CMD1, 0x3F, (dsr << 6)) != DEV_WIRE_NONE) {
-            return DEV_WIRE_ERR;
+        if (comm->writeRegister(REG_CMD1, 0x3F, (dsr << 6)) < 0) {
+            return -1;;
         }
-        return DEV_WIRE_NONE;
+        return 0;
     }
 
     int setMagRange(MagRange range)
     {
         switch (range) {
         case RANGE_30G:
-            sensitivity = 0.1;
+            _sensitivity = 0.1;
             break;
         case RANGE_12G:
-            sensitivity = 0.04;
+            _sensitivity = 0.04;
             break;
         case RANGE_8G:
-            sensitivity = 0.026;
+            _sensitivity = 0.026;
             break;
         case RANGE_2G:
-            sensitivity = 0.0066;
+            _sensitivity = 0.0066;
             break;
         default:
             break;
         }
-        return writeRegister(QMC6310_REG_CMD2, 0xF3, (range << 2));
+        return comm->writeRegister(REG_CMD2, 0xF3, (range << 2));
     }
 
     void setOffset(int x, int y, int z)
     {
-        x_offset = x; y_offset = y; z_offset = z;
+        _x_offset = x; _y_offset = y; _z_offset = z;
     }
 
     int readData()
     {
         uint8_t buffer[6];
         int16_t x, y, z;
-        if (readRegister(QMC6310_REG_LSB_DX, buffer,
-                         6) != DEV_WIRE_ERR) {
+        if (comm->readRegister(REG_LSB_DX, buffer,
+                               6) != -1) {
             x = (int16_t)(buffer[1] << 8) | (buffer[0]);
             y = (int16_t)(buffer[3] << 8) | (buffer[2]);
             z = (int16_t)(buffer[5] << 8) | (buffer[4]);
@@ -263,26 +272,26 @@ public:
             if (x == 32767) {
                 x = -((65535 - x) + 1);
             }
-            x = (x - x_offset);
+            x = (x - _x_offset);
             if (y == 32767) {
                 y = -((65535 - y) + 1);
             }
-            y = (y - y_offset);
+            y = (y - _y_offset);
             if (z == 32767) {
                 z = -((65535 - z) + 1);
             }
-            z = (z - z_offset);
+            z = (z - _z_offset);
 
-            raw[0] = x;
-            raw[1] = y;
-            raw[2] = z;
+            _raw[0] = x;
+            _raw[1] = y;
+            _raw[2] = z;
 
-            mag[0] = (float)x * sensitivity;
-            mag[1] = (float)y * sensitivity;
-            mag[2] = (float)z * sensitivity;
-            return DEV_WIRE_NONE;
+            _mag[0] = (float)x * _sensitivity;
+            _mag[1] = (float)y * _sensitivity;
+            _mag[2] = (float)z * _sensitivity;
+            return 0;
         }
-        return DEV_WIRE_ERR;
+        return -1;;
     }
 
     void setDeclination(float dec)
@@ -308,63 +317,48 @@ public:
 
     int16_t getRawX()
     {
-        return raw[0];
+        return _raw[0];
     }
 
     int16_t getRawY()
     {
-        return raw[1];
+        return _raw[1];
     }
 
     int16_t getRawZ()
     {
-        return raw[2];
+        return _raw[2];
     }
 
     float getX()
     {
-        return mag[0];
+        return _mag[0];
     }
 
     float getY()
     {
-        return mag[1];
+        return _mag[1];
     }
 
     float getZ()
     {
-        return mag[2];
+        return _mag[2];
     }
 
     void getMag(float &x, float &y, float &z)
     {
-        x = mag[0];
-        y = mag[1];
-        z = mag[2];
+        x = _mag[0];
+        y = _mag[1];
+        z = _mag[2];
     }
 
     void dumpCtrlRegister()
     {
         uint8_t buffer[2];
-        readRegister(QMC6310_REG_CMD1, buffer, 2);
+        comm->readRegister(REG_CMD1, buffer, 2);
         for (int i = 0; i < 2; ++i) {
-#if defined(ARDUINO)
-            Serial.printf("CMD%d: 0x%02x", i + 1, buffer[i]);
-#else
-            printf("CTRL%d: 0x%02x", i + 1, buffer[i]);
-#endif
-#if defined(ARDUINO)
-            Serial.print("\t\t BIN:");
-            Serial.println(buffer[i], BIN);
-#else
-            LOG("\n");
-#endif
+            log_d("CMD%d: 0x%02x", i + 1, buffer[i]);
         }
-#if defined(ARDUINO)
-        Serial.println();
-#else
-        printf("\n");
-#endif
     }
 
 private:
@@ -384,19 +378,17 @@ private:
     bool initImpl()
     {
         reset();
-        return getChipID() == QMC6310_DEFAULT_ID;
+        return getChipID() == QMC6310_CHIP_ID;
     }
 
-    int getReadMaskImpl()
-    {
-        return -1;
-    }
 
 protected:
-    int16_t raw[3];
-    float mag[3];
+    std::unique_ptr<SensorCommBase> comm;
+    std::unique_ptr<SensorHal> hal;
+    int16_t _raw[3];
+    float _mag[3];
     float _declination;
-    float sensitivity;
-    int16_t x_offset = 0, y_offset = 0, z_offset = 0;
+    float _sensitivity;
+    int16_t _x_offset = 0, _y_offset = 0, _z_offset = 0;
 };
 

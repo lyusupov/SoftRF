@@ -30,18 +30,18 @@
 #include "TouchDrvInterface.hpp"
 
 TouchDrvInterface::TouchDrvInterface() :
-    __resX(0),
-    __resY(0),
-    __xMax(0),
-    __yMax(0),
-    __swapXY(false),
-    __mirrorX(false),
-    __mirrorY(false),
-    __rst(-1),
-    __irq(-1),
-    __chipID(0x00),
-    __homeButtonCb(NULL),
-    __userData(NULL)
+    _resX(0),
+    _resY(0),
+    _xMax(0),
+    _yMax(0),
+    _swapXY(false),
+    _mirrorX(false),
+    _mirrorY(false),
+    _rst(-1),
+    _irq(-1),
+    _chipID(0x00),
+    _HButtonCallback(nullptr),
+    _userData(nullptr)
 {
 
 }
@@ -53,31 +53,31 @@ TouchDrvInterface::~TouchDrvInterface()
 
 uint32_t TouchDrvInterface::getChipID()
 {
-    return __chipID;
+    return _chipID;
 }
 
 
 void TouchDrvInterface::setPins(int rst, int irq)
 {
-    __irq = irq;
-    __rst = rst;
+    _irq = irq;
+    _rst = rst;
 }
 
 void TouchDrvInterface::setSwapXY(bool swap)
 {
-    __swapXY = swap;
+    _swapXY = swap;
 }
 
 void TouchDrvInterface::setMirrorXY(bool mirrorX, bool mirrorY)
 {
-    __mirrorX = mirrorX;
-    __mirrorY = mirrorY;
+    _mirrorX = mirrorX;
+    _mirrorY = mirrorY;
 }
 
 void TouchDrvInterface::setMaxCoordinates(uint16_t x, uint16_t y)
 {
-    __xMax = x;
-    __yMax = y;
+    _xMax = x;
+    _yMax = y;
 }
 
 void TouchDrvInterface::updateXY(uint8_t pointNum, int16_t *xBuffer, int16_t *yBuffer)
@@ -85,16 +85,16 @@ void TouchDrvInterface::updateXY(uint8_t pointNum, int16_t *xBuffer, int16_t *yB
     if (!pointNum)
         return;
     for (int i = 0; i < pointNum; ++i) {
-        if (__swapXY) {
+        if (_swapXY) {
             uint16_t tmp = xBuffer[i];
             xBuffer[i] = yBuffer[i];
             yBuffer[i] = tmp;
         }
-        if (__mirrorX && __xMax ) {
-            xBuffer[i] = __xMax - xBuffer[i];
+        if (_mirrorX && _xMax ) {
+            xBuffer[i] = _xMax - xBuffer[i];
         }
-        if (__mirrorY && __yMax) {
-            yBuffer[i] = __yMax - yBuffer[i];
+        if (_mirrorY && _yMax) {
+            yBuffer[i] = _yMax - yBuffer[i];
         }
     }
 }

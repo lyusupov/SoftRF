@@ -337,12 +337,19 @@ ui_settings_t *ui;
 #include <MPU9250.h>
 #include <ICM_20948.h>
 #include <QMA6100P.h>
+#if !defined(EXCLUDE_BHI260)
 #include <SensorBHI260AP.hpp>
+#include <bosch/BoschSensorDataHelper.hpp>
+#endif /* EXCLUDE_BHI260 */
+
 MPU9250         imu_1;
 ICM_20948_I2C   imu_2;
 QMA6100P        imu_3;
 #if !defined(EXCLUDE_BHI260)
 SensorBHI260AP  imu_4;
+
+SensorXYZ bhi_accel(SensorBHI260AP::ACCEL_PASSTHROUGH, imu_4);
+// SensorXYZ bhi_gyro(SensorBHI260AP::GYRO_PASSTHROUGH, imu_4);
 #endif /* EXCLUDE_BHI260 */
 
 static bool nRF52_has_imu = false;
@@ -1326,16 +1333,15 @@ static void nRF52_setup()
           hw_info.mag = MAG_AK8963;
           IMU_Time_Marker = millis();
 #if !defined(EXCLUDE_BHI260)
-        } else if (imu_4.init(Wire,
-                              SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL,
-                              BHI260AP_ADDRESS_L)) {
-          float sample_rate = 100.0;      /* Read out hintr_ctrl measured at 100Hz */
+        } else if (imu_4.begin(Wire, BHI260AP_ADDRESS_L,
+                              SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL)) {
+          float sample_rate = 100.0;      /* Read out data measured at 100Hz */
           uint32_t report_latency_ms = 0; /* Report immediately */
 
           // Enable acceleration
-          imu_4.configure(SENSOR_ID_ACC_PASS, sample_rate, report_latency_ms);
+          bhi_accel.enable(sample_rate, report_latency_ms);
           // Enable gyroscope
-          imu_4.configure(SENSOR_ID_GYRO_PASS, sample_rate, report_latency_ms);
+          // bhi_gyro.enable(sample_rate, report_latency_ms);
 
           hw_info.imu = IMU_BHI260AP;
           IMU_Time_Marker = millis();
@@ -1919,6 +1925,23 @@ static void nRF52_loop()
       (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
     // Update sensor fifo
     imu_4.update();
+
+    if (bhi_accel.hasUpdated()) {
+      float a_x = bhi_accel.getX();
+      float a_y = bhi_accel.getY();
+      float a_z = bhi_accel.getZ();
+#if 0
+      Serial.print("{ACCEL: ");
+      Serial.print(a_x);
+      Serial.print(",");
+      Serial.print(a_y);
+      Serial.print(",");
+      Serial.print(a_z);
+      Serial.println("}");
+#endif
+      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z); /* TBD */
+    }
+
     IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_BHI260 */

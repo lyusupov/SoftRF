@@ -30,34 +30,42 @@
 
 #pragma once
 
+#include <stdint.h>
 
-#define PCF85063_SLAVE_ADDRESS                  (0x51)
+class PCF85063Constants
+{
+protected:
+    // Unique I2C device address
+    static constexpr uint8_t PCF85063_SLAVE_ADDRESS = 0x51;
 
-#define PCF85063_CTRL1_REG                      (0x00)
-#define PCF85063_CTRL2_REG                      (0x01)
-#define PCF85063_OFFSET_REG                     (0x02)
-#define PCF85063_RAM_REG                        (0x03)
-#define PCF85063_SEC_REG                        (0x04)
-#define PCF85063_MIN_REG                        (0x05)
-#define PCF85063_HR_REG                         (0x06)
-#define PCF85063_DAY_REG                        (0x07)
-#define PCF85063_WEEKDAY_REG                    (0x08)
-#define PCF85063_MONTH_REG                      (0x09)
-#define PCF85063_YEAR_REG                       (0x0A)
-#define PCF85063_ALRM_SEC_REG                   (0x0B)
-#define PCF85063_ALRM_MIN_REG                   (0x0C)
-#define PCF85063_ALRM_HR_REG                    (0x0D)
-#define PCF85063_ALRM_DAY_REG                   (0x0E)
-#define PCF85063_ALRM_WEEK_REG                  (0x0F)
-#define PCF85063_TIMER_VAL_REG                  (0x10)
-#define PCF85063_TIMER_MD_REG                   (0x11)
+    // Register addresses
+    static constexpr uint8_t PCF85063_CTRL1_REG = 0x00;
+    static constexpr uint8_t PCF85063_CTRL2_REG = 0x01;
+    static constexpr uint8_t PCF85063_OFFSET_REG = 0x02;
+    static constexpr uint8_t PCF85063_RAM_REG = 0x03;
+    static constexpr uint8_t PCF85063_SEC_REG = 0x04;
+    static constexpr uint8_t PCF85063_MIN_REG = 0x05;
+    static constexpr uint8_t PCF85063_HR_REG = 0x06;
+    static constexpr uint8_t PCF85063_DAY_REG = 0x07;
+    static constexpr uint8_t PCF85063_WEEKDAY_REG = 0x08;
+    static constexpr uint8_t PCF85063_MONTH_REG = 0x09;
+    static constexpr uint8_t PCF85063_YEAR_REG = 0x0A;
+    static constexpr uint8_t PCF85063_ALRM_SEC_REG = 0x0B;
+    static constexpr uint8_t PCF85063_ALRM_MIN_REG = 0x0C;
+    static constexpr uint8_t PCF8563_ALRM_HR_REG = 0x0D;
+    static constexpr uint8_t PCF85063_ALRM_DAY_REG = 0x0E;
+    static constexpr uint8_t PCF85063_ALRM_WEEK_REG = 0x0F;
+    static constexpr uint8_t PCF85063_TIMER_VAL_REG = 0x10;
+    static constexpr uint8_t PCF85063_TIMER_MD_REG = 0x11;
 
-#define PCF85063_CTRL1_TEST_EN_MASK             (1<<7u)
-#define PCF85063_CTRL1_CLOCK_EN_MASK            (1<<5u)
-#define PCF85063_CTRL1_SOFTRST_EN_MASK          (1<<4u)
-#define PCF85063_CTRL1_CIE_EN_MASK              (1<<2u)
-#define PCF85063_CTRL1_HOUR_FORMAT_12H_MASK     (1<<1u)
+    // Mask values
+    static constexpr uint8_t PCF85063_CTRL1_TEST_EN_MASK = (1 << 7u);
+    static constexpr uint8_t PCF85063_CTRL1_CLOCK_EN_MASK = (1 << 5u);
+    static constexpr uint8_t PCF85063_CTRL1_SOFTRST_EN_MASK = (1 << 4u);
+    static constexpr uint8_t PCF85063_CTRL1_CIE_EN_MASK = (1 << 2u);
+    static constexpr uint8_t PCF85063_CTRL1_HOUR_FORMAT_12H_MASK = (1 << 1u);
 
-
-#define PCF85063_NO_ALARM        (0xFF)
-#define PCF85063_ALARM_ENABLE    (0x80)
+    // Other constants
+    static constexpr uint8_t PCF85063_NO_ALARM = 0xFF;
+    static constexpr uint8_t PCF85063_ALARM_ENABLE = 0x80;
+};

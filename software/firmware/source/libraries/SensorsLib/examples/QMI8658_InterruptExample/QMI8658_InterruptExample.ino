@@ -31,10 +31,14 @@
 #include <Wire.h>
 #include <SPI.h>
 #include "SensorQMI8658.hpp"
+#ifdef ARDUINO_T_BEAM_S3_SUPREME
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+#endif
 
-// #define USE_WIRE
 
+// #define USE_I2C              //Using the I2C interface
 
+#ifdef USE_I2C
 #ifndef SENSOR_SDA
 #define SENSOR_SDA  17
 #endif
@@ -43,58 +47,83 @@
 #define SENSOR_SCL  18
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  -1
+#else   /*SPI interface*/
+
+#ifndef SPI_MOSI
+#define SPI_MOSI   (35)
 #endif
+
+#ifndef SPI_SCK
+#define SPI_SCK    (36)
+#endif
+
+#ifndef SPI_MISO
+#define SPI_MISO   (37)
+#endif
+
+#endif  /*USE_I2C*/
+
+#ifndef IMU_CS
+#define IMU_CS      34      // IMU CS PIN
+#endif
+
+#ifndef IMU_IRQ
+#define IMU_IRQ     33      // IMU INT PIN
+#endif
+
+#ifndef OLED_SDA
+#define OLED_SDA    22      // Display Wire SDA Pin
+#endif
+
+#ifndef OLED_SCL
+#define OLED_SCL    21      // Display Wire SCL Pin
+#endif
+
+// #define IMU_IRQ2    -1   //QMI IRQ NUM2
 
 SensorQMI8658 qmi;
 
 IMUdata acc;
 IMUdata gyr;
 
+void beginPower()
+{
+    // T_BEAM_S3_SUPREME The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_BEAM_S3_SUPREME)
+    XPowersAXP2101 power;
+    power.begin(Wire1, AXP2101_SLAVE_ADDRESS, 42, 41);
+    power.disableALDO1();
+    power.disableALDO2();
+    delay(250);
+    power.setALDO1Voltage(3300); power.enableALDO1();
+    power.setALDO2Voltage(3300); power.enableALDO2();
+#endif
+}
+
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
+    beginPower();
 
+    bool ret = false;
+#ifdef USE_I2C
+    ret = qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
+#else
+#if defined(SPI_MOSI) && defined(SPI_SCK) && defined(SPI_MISO)
+    ret = qmi.begin(SPI, IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK);
+#else
+    ret = qmi.begin(SPI, IMU_CS);
+#endif
+#endif
 
-#ifdef USE_WIRE
-    //Using WIRE !!
-    if (!qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    if (!ret) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
         }
     }
-#else
-
-#ifndef CONFIG_IDF_TARGET_ESP32
-//Use tbeams3 defalut spi pin
-#define SPI_MOSI                    (35)
-#define SPI_SCK                     (36)
-#define SPI_MISO                    (37)
-#define SPI_CS                      (47)
-#define IMU_CS                      (34)
-#define IMU_INT1                    (33)
-
-    pinMode(SPI_CS, OUTPUT);    //sdcard pin set high
-    digitalWrite(SPI_CS, HIGH);
-    if (!qmi.begin(IMU_CS, SPI_MOSI, SPI_MISO, SPI_SCK)) {
-
-#else
-//Use esp32dev module defalut spi pin
-#define IMU_CS                      (5)
-#define IMU_INT1                    (15)
-#define IMU_INT2                    (22)
-    if (!qmi.begin(IMU_CS)) {
-#endif
-        Serial.println("Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
-    }
-#endif
 
     /* Get chip id*/
     Serial.print("Device ID:");
@@ -126,10 +155,9 @@ void setup()
         *  LPF_MODE_1     //3.63% of ODR
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
+        *  LPF_OFF        // OFF Low-Pass Fitter
         * */
-        SensorQMI8658::LPF_MODE_0,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_0);
 
 
     qmi.configGyroscope(
@@ -160,26 +188,29 @@ void setup()
         *  LPF_MODE_1     //3.63% of ODR
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
+        *  LPF_OFF        // OFF Low-Pass Fitter
         * */
-        SensorQMI8658::LPF_MODE_3,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_3);
 
 
-    // In 6DOF mode (accelerometer and gyroscope are both enabled),
-    // the output data rate is derived from the nature frequency of gyroscope
+    /*
+    * If both the accelerometer and gyroscope sensors are turned on at the same time,
+    * the output frequency will be based on the gyroscope output frequency.
+    * The example configuration is 896.8HZ output frequency,
+    * so the acceleration output frequency is also limited to 896.8HZ
+    * */
     qmi.enableGyroscope();
     qmi.enableAccelerometer();
 
 
-    pinMode(IMU_INT1, INPUT);
-#ifdef  IMU_INT2
-    pinMode(IMU_INT2, INPUT);
-#endif
+    pinMode(IMU_IRQ, INPUT);
 
-    // qmi.enableINT(SensorQMI8658::IntPin1); //no use
+#ifdef IMU_IRQ2
+    pinMode(IMU_IRQ2, INPUT);
+#endif
+    // qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_1); //no use
     // Enable data ready to interrupt pin2
-    qmi.enableINT(SensorQMI8658::IntPin2);
+    qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_2);
     qmi.enableDataReadyINT();
 
     // Print register configuration information
@@ -234,16 +265,15 @@ void readSensorData(const char *name)
 
 void loop()
 {
-    if (digitalRead(IMU_INT1) == HIGH) {
+    if (digitalRead(IMU_IRQ) == HIGH) {
         readSensorData("INT1");
     }
 
-#ifdef  IMU_INT2
-    if (digitalRead(IMU_INT2) == HIGH) {
+#ifdef IMU_IRQ2
+    if (digitalRead(IMU_IRQ2) == HIGH) {
         readSensorData("INT2");
     }
 #endif
-
 }
 
 

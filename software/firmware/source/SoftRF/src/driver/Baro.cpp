@@ -258,16 +258,16 @@ static float aux_temperature = 0;
 static float aux_pressure    = 0; /* hPa */
 
 void parse_bme280_sensor_data(uint8_t sensor_id, uint8_t *data_ptr,
-                              uint32_t len, uint64_t *timestamp)
+                              uint32_t len, uint64_t *timestamp, void *user_data)
 {
     switch (sensor_id) {
-    case SENSOR_ID_TEMP:
+    case SensorBHI260AP::TEMPERATURE:
         bhy2_parse_temperature_celsius(data_ptr, &aux_temperature);
         Serial.print("temperature: ");
         Serial.print(aux_temperature);
         Serial.println(" *C");
         break;
-    case SENSOR_ID_BARO:
+    case SensorBHI260AP::BAROMETER:
         bhy2_parse_pressure(data_ptr, &aux_pressure);
         Serial.print("pressure: ");
         Serial.print(aux_pressure);
@@ -285,12 +285,12 @@ static bool bme280aux_probe()
 
 static void bme280aux_setup()
 {
-    bhy.setPins(SOC_GPIO_PIN_IMU_TULTIMA_RST, SOC_GPIO_PIN_IMU_TULTIMA_INT);
-    bhy.setBootFormFlash(true);
+    bhy.setPins(SOC_GPIO_PIN_IMU_TULTIMA_RST);
+    bhy.setBootFromFlash(true);
 
-    if (!bhy.init(SPI,
-                  SOC_GPIO_PIN_IMU_TULTIMA_SS, SOC_GPIO_PIN_TULTIMA_MOSI,
-                  SOC_GPIO_PIN_TULTIMA_MISO,   SOC_GPIO_PIN_TULTIMA_SCK)) {
+    if (!bhy.begin(SPI,
+                   SOC_GPIO_PIN_IMU_TULTIMA_SS, SOC_GPIO_PIN_TULTIMA_MOSI,
+                   SOC_GPIO_PIN_TULTIMA_MISO,   SOC_GPIO_PIN_TULTIMA_SCK)) {
         Serial.print("Failed to init BHI260AP - ");
         Serial.println(bhy.getError());
         while (1) {
@@ -300,7 +300,13 @@ static void bme280aux_setup()
 
     Serial.println("Init BHI260AP Sensor success!");
 
-    bhy.printSensors(Serial);
+    // Output all sensors info to Serial
+    BoschSensorInfo info = bhy.getSensorInfo();
+#ifdef PLATFORM_HAS_PRINTF
+    info.printInfo(Serial);
+#else
+    info.printInfo();
+#endif
 
     float sample_rate          = 0.0; /* Read out hintr_ctrl measured at 100Hz */
     uint32_t report_latency_ms = 0;   /* Report immediately */
@@ -310,11 +316,11 @@ static void bme280aux_setup()
      * Function depends on BME280.
      * If the hardware is not connected to BME280, the function cannot be used.
      */
-    bhy.configure(SENSOR_ID_TEMP, sample_rate, report_latency_ms);
-    bhy.configure(SENSOR_ID_BARO, sample_rate, report_latency_ms);
+    bhy.configure(SensorBHI260AP::TEMPERATURE, sample_rate, report_latency_ms);
+    bhy.configure(SensorBHI260AP::BAROMETER, sample_rate, report_latency_ms);
 
-    bhy.onResultEvent(SENSOR_ID_TEMP, parse_bme280_sensor_data);
-    bhy.onResultEvent(SENSOR_ID_BARO, parse_bme280_sensor_data);
+    bhy.onResultEvent(SensorBHI260AP::TEMPERATURE, parse_bme280_sensor_data);
+    bhy.onResultEvent(SensorBHI260AP::BAROMETER, parse_bme280_sensor_data);
 }
 
 static void bme280aux_fini()
