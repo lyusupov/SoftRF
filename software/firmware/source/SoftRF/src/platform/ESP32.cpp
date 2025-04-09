@@ -985,7 +985,7 @@ static void ESP32_setup()
       delay(200);
 
 #if !defined(EXCLUDE_MAG)
-      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310N_SLAVE_ADDRESS,
+      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310U_SLAVE_ADDRESS,
                                        SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       if (has_qmc) {
         mag_qmc6310.configMagnetometer(

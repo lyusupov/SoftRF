@@ -23,7 +23,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Classic** 2.25 inch instrument
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
-    * [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)
+    * [**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
