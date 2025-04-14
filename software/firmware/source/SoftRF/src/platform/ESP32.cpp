@@ -678,7 +678,6 @@ static void ESP32_setup()
       break;
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
       esp32_board    = ESP32_ELECROW_TN_M2;
-      hw_info.model  = SOFTRF_MODEL_GIZMO;
       break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
@@ -1431,8 +1430,8 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_ELECROW_TN_M2) {
 
-    hw_info.model    = SOFTRF_MODEL_STANDALONE; /* TBD */
-    hw_info.revision = 5; /* TBD */
+    hw_info.model    = SOFTRF_MODEL_GIZMO;
+    hw_info.revision = 0; /* TBD */
 
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
