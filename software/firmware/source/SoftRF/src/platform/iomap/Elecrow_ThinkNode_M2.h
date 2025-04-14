@@ -3,9 +3,9 @@
 #define SOC_GPIO_PIN_M2_CONS_TX     43
 
 // GNSS module (ext.)
-#define SOC_GPIO_PIN_M2_GNSS_RX     SOC_UNUSED_PIN /* TBD */
-#define SOC_GPIO_PIN_M2_GNSS_TX     SOC_UNUSED_PIN /* TBD */
-#define SOC_GPIO_PIN_M2_GNSS_PPS    SOC_UNUSED_PIN /* TBD */
+#define SOC_GPIO_PIN_M2_GNSS_RX     40
+#define SOC_GPIO_PIN_M2_GNSS_TX     41
+#define SOC_GPIO_PIN_M2_GNSS_PPS    39
 
 // SX1262
 #define SOC_GPIO_PIN_M2_MOSI        11
@@ -15,7 +15,7 @@
 #define SOC_GPIO_PIN_M2_RST         21
 #define SOC_GPIO_PIN_M2_BUSY        14
 #define SOC_GPIO_PIN_M2_DIO1        3
-#define SOC_GPIO_PIN_PWR_EN         48
+#define SOC_GPIO_PIN_M2_PWR_EN      48
 
 // OLED
 #define SOC_GPIO_PIN_M2_SDA         16
@@ -36,9 +36,9 @@
 #define SOC_GPIO_PIN_M2_BATTERY     17
 
 // misc.
-#define SOC_GPIO_PIN_LED_M2_PWR     6
-#define SOC_GPIO_PIN_ADC_M2         42
-#define SOC_GPIO_PIN_VUSB_M2        7
+#define SOC_GPIO_PIN_M2_LED_PWR     6
+#define SOC_GPIO_PIN_M2_ADC         42
+#define SOC_GPIO_PIN_M2_VUSB        7
 
 // pin header
 /* 2, 8, 18, 19, 20, 38, 39, 40, 41, 3V3, VBUS, GND */

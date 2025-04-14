@@ -189,6 +189,7 @@ const char *ESP32S3_Model_Prime3 = "Prime Edition Mk.3"; /* 303a:8133 */
 const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
 const char *ESP32S3_Model_Midi   = "Midi Edition";       /* 303a:81A0 */
 const char *ESP32S3_Model_Ink    = "Ink Edition";        /* 303a:820A */
+const char *ESP32S3_Model_Gizmo  = "Gizmo Edition";      /* 303a:82D9 */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -1581,6 +1582,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_HELTEC_TRACKER     ) ? SOFTRF_USB_PID_MIDI       :
           (esp32_board == ESP32_LILYGO_T3S3_EPD    ) ? SOFTRF_USB_PID_INK        :
           (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_ELECROW_TN_M2      ) ? SOFTRF_USB_PID_GIZMO      :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1594,6 +1596,7 @@ static void ESP32_setup()
                     esp32_board == ESP32_LILYGO_T_TWR2       ? ESP32S3_Model_Ham    :
                     esp32_board == ESP32_HELTEC_TRACKER      ? ESP32S3_Model_Midi   :
                     esp32_board == ESP32_LILYGO_T3S3_EPD     ? ESP32S3_Model_Ink    :
+                    esp32_board == ESP32_ELECROW_TN_M2       ? ESP32S3_Model_Gizmo  :
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
@@ -1791,7 +1794,7 @@ static void ESP32_setup()
 
     gpio_deep_sleep_hold_dis();
     gpio_hold_dis(GPIO_NUM_35);
-    pinMode(SOC_GPIO_PIN_T3S3_3V3EN, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       INPUT_PULLUP);
 
     digitalWrite(SOC_GPIO_PIN_T3S3_LED,    LOW);
     pinMode(SOC_GPIO_PIN_T3S3_LED,         OUTPUT);
@@ -1799,7 +1802,16 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_BANANA_PICOW) {
 
     digitalWrite(SOC_GPIO_PIN_BPIPW_STATUS, LOW);
-    pinMode(SOC_GPIO_PIN_BPIPW_STATUS,      OUTPUT);
+    pinMode(SOC_GPIO_PIN_BPIPW_STATUS,     OUTPUT);
+
+  } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+
+    pinMode(SOC_GPIO_PIN_M2_LED_PWR,       INPUT_PULLUP); /* status LED */
+    digitalWrite(SOC_GPIO_PIN_M2_LED,      LOW);
+    pinMode(SOC_GPIO_PIN_M2_LED,           OUTPUT);
+
+    pinMode(SOC_GPIO_PIN_M2_VEXT_EN,       INPUT_PULLUP); /* OLED */
+    pinMode(SOC_GPIO_PIN_M2_PWR_EN,        INPUT_PULLUP); /* sub-1 GHz radio */
 
   } else {
 #if !defined(EXCLUDE_IMU)
@@ -3474,6 +3486,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: Banana Pi PicoW-S3 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_BPIPW_GNSS_RX, SOC_GPIO_PIN_BPIPW_GNSS_TX);
+     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+      Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,

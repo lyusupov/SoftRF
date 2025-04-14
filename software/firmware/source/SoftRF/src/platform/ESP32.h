@@ -216,7 +216,9 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 (esp32_board == ESP32_C6_DEVKIT ?        \
                                 SOC_GPIO_PIN_C6_BUZZER :                 \
                                 (esp32_board == ESP32_BANANA_PICOW ?     \
-                                SOC_GPIO_PIN_BPIPW_BUZZER : SOC_UNUSED_PIN)))))
+                                SOC_GPIO_PIN_BPIPW_BUZZER :              \
+                                (esp32_board == ESP32_ELECROW_TN_M2 ?    \
+                                SOC_GPIO_PIN_M2_BUZZER : SOC_UNUSED_PIN))))))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27
@@ -339,6 +341,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_MIDI       = 0x81A0,
   SOFTRF_USB_PID_INK        = 0x820A,
   SOFTRF_USB_PID_BANANA     = 0x812B,
+  SOFTRF_USB_PID_GIZMO      = 0x82D9,
 };
 
 struct rst_info {

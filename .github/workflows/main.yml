@@ -59,7 +59,7 @@ jobs:
     env:
       ARDUINO_IDE_VERSION: 1.8.13
       ARDUINO_CLI_VERSION: 0.34.2
-      ARDUINO_BLE_VERSION: 1.3.7
+      ARDUINO_BLE_VERSION: 1.4.0
       ENERGIA_IDE_VERSION: 1.8.10E23
       NIM_BLE_VERSION:     1.4.1
       # NIM_BLE_VERSION:   esp32-c6-test
@@ -235,9 +235,9 @@ jobs:
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
             rm ${ARDUINO_BLE_VERSION}.tar.gz ;
             mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
-            cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
-            sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
-            sed -i '84 a #endif' HCIVirtualTransport.cpp ;
+            # cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
+            # sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
+            # sed -i '84 a #endif' HCIVirtualTransport.cpp ;
             cd $GITHUB_WORKSPACE ;
           fi
           #if [[ "$BOARD" =~ "esp32:esp32:esp32h2" ]]; then
@@ -266,9 +266,9 @@ jobs:
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
             rm ${ARDUINO_BLE_VERSION}.tar.gz ;
             mv ArduinoBLE-${ARDUINO_BLE_VERSION} $HOME/Arduino/libraries/ ;
-            cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
-            sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
-            sed -i '84 a #endif' HCIVirtualTransport.cpp ;
+            # cd $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION}//src/utility ;
+            # sed -i '82 a #if !(CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)' HCIVirtualTransport.cpp ;
+            # sed -i '84 a #endif' HCIVirtualTransport.cpp ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
