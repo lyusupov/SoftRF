@@ -669,6 +669,8 @@ Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
 #include <ExtensionIOXL9555.hpp>
 ExtensionIOXL9555 *xl9555 = nullptr;
 bool nRF52_has_extension  = false;
+
+#include <SenseCAP.h>
 #endif /* ARDUINO_ARCH_MBED */
 
 #if defined(ENABLE_NFC)
@@ -1690,6 +1692,23 @@ static void nRF52_post_init()
     Serial.println(hw_info.imu   == ACC_QMA6100P     ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_IMU */
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+    analogReference(AR_INTERNAL_3_0);
+    analogReadResolution(10);
+    delay(1);
+
+    Serial.print(F("TEMP    : "));
+    Serial.print((float) t1000e_ntc_sample() / 10.0f);
+    Serial.println(F(" Celsius"));
+    Serial.print(F("LIGHT   : "));
+    Serial.print(t1000e_lux_sample());
+    Serial.println(F(" %"));
+    Serial.print(F("BATTERY : "));
+    Serial.print(t1000e_bat_sample());
+    Serial.println(F(" %"));
+    Serial.flush();
+#endif /* !MBED && !ZEPHYR */
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));

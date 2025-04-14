@@ -1,3 +1,4 @@
+#if defined(ESP32)
 
 #include <esp32-hal-log.h>
 #include <soc/adc_channel.h>
@@ -121,3 +122,4 @@ uint16_t read_voltage() {
 }
 
 #endif /* ESP_IDF_VERSION_MAJOR */
+#endif /* ESP32 */

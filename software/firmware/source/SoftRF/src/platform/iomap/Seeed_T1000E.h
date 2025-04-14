@@ -3,7 +3,7 @@
 #define SOC_GPIO_PIN_CONS_T1000_RX    _PINNUM(0, 17) // P0.17
 #define SOC_GPIO_PIN_CONS_T1000_TX    _PINNUM(0, 16) // P0.16
 
-/* AG3335 */
+/* AG3335MN */
 #define SOC_GPIO_PIN_GNSS_T1000_RX    _PINNUM(0, 14) // P0.14
 #define SOC_GPIO_PIN_GNSS_T1000_TX    _PINNUM(0, 13) // P0.13
 
@@ -61,7 +61,7 @@
 /* Sensors */
 #define SOC_GPIO_PIN_T1000_3V3_EN     _PINNUM(1,  6) // P1.06
 
-/* GD25Q64C (?) or P25Q16H (?) SPI flash */
+/* GD25Q64EN (or P25Q16H ?) QSPI flash */
 #define SOC_GPIO_PIN_SFL_T1000_MOSI   _PINNUM(0, 21) // P0.21
 #define SOC_GPIO_PIN_SFL_T1000_MISO   _PINNUM(0, 22) // P0.22
 #define SOC_GPIO_PIN_SFL_T1000_SCK    _PINNUM(0, 19) // P0.19

@@ -676,6 +676,10 @@ static void ESP32_setup()
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
+      esp32_board    = ESP32_ELECROW_TN_M2;
+      hw_info.model  = SOFTRF_MODEL_GIZMO;
+      break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
       break;
@@ -1423,6 +1427,24 @@ static void ESP32_setup()
     // lmic_pins.rxe  = SOC_GPIO_PIN_BPIPW_ANT_RXTX; /* RXEN */
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_BPIPW_DIO1;
+#endif /* USE_RADIOLIB */
+
+  } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+
+    hw_info.model    = SOFTRF_MODEL_STANDALONE; /* TBD */
+    hw_info.revision = 5; /* TBD */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_M2_CONS_RX,
+                       SOC_GPIO_PIN_M2_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_M2_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_M2_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_M2_BUSY;
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
 #endif /* USE_RADIOLIB */
 
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
@@ -3316,6 +3338,7 @@ static void ESP32_SPI_begin()
       break;
     case ESP32_S3_DEVKIT:
     case ESP32_TTGO_T_BEAM_SUPREME:
+    case ESP32_ELECROW_TN_M2:
       SPI.begin(SOC_GPIO_PIN_S3_SCK,  SOC_GPIO_PIN_S3_MISO,
                 SOC_GPIO_PIN_S3_MOSI, SOC_GPIO_PIN_S3_SS);
       break;
@@ -3557,6 +3580,15 @@ static byte ESP32_Display_setup()
       }
     } else if (esp32_board == ESP32_BANANA_PICOW) {
       /* TBD */
+    } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+      Wire.begin(SOC_GPIO_PIN_M2_SDA, SOC_GPIO_PIN_M2_SCL);
+      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
+      has_oled = (Wire.endTransmission() == 0);
+      WIRE_FINI(Wire);
+      if (has_oled) {
+        u8x8 = &u8x8_1_3;
+        rval = DISPLAY_OLED_1_3;
+      }
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
         Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -4476,6 +4508,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_BANANA_PICOW) {
 
     Wire.setPins(SOC_GPIO_PIN_BPIPW_SDA, SOC_GPIO_PIN_BPIPW_SCL);
+
+  } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+
+    Wire.setPins(SOC_GPIO_PIN_M2_SDA, SOC_GPIO_PIN_M2_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 

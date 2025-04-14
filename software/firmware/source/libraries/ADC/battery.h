@@ -1,6 +1,8 @@
 #ifndef _BATTERY_H
 #define _BATTERY_H
 
+#if defined(ESP32)
+
 uint16_t read_voltage(void);
 
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
@@ -15,4 +17,5 @@ void calibrate_voltage(uint8_t, adc_attenuation_t atten = ADC_11db);
 #define DEFAULT_VREF 1100 // tbd: use adc2_vref_to_gpio() for better estimate
 #define NO_OF_SAMPLES 32  // we do some multisampling to get better values
 
+#endif /* ESP32 */
 #endif /* _BATTERY_H */
