@@ -4317,6 +4317,8 @@ static void ESP32_Battery_setup()
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else if (esp32_board == ESP32_BANANA_PICOW) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO8_CHANNEL); /* TBD */
+    } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+      // calibrate_voltage((adc2_channel_t) ADC2_GPIO17_CHANNEL); /* TBD */
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
@@ -4363,6 +4365,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
             hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
+            hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
@@ -4377,6 +4380,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_MIDI       || /* TBD */
             hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
+            hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
@@ -4435,6 +4439,8 @@ static float ESP32_Battery_param(uint8_t param)
         voltage *= 3.2;
       } else if (esp32_board == ESP32_HELTEC_TRACKER) {
         voltage *= 4.9;
+      } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+        voltage *= 1.548;
       }
       break;
     }

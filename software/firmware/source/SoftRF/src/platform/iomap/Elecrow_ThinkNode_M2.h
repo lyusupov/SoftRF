@@ -41,4 +41,4 @@
 #define SOC_GPIO_PIN_M2_VUSB        7
 
 // pin header
-/* 2, 8, 18, 19, 20, 38, 39, 40, 41, 3V3, VBUS, GND */
+/* 2, 8, 18, 19 (D-), 20 (D+), 38, 39, 40, 41, 3V3, VBUS, GND */

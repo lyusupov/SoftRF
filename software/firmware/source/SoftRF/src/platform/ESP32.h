@@ -184,6 +184,8 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                hw_info.model == SOFTRF_MODEL_STANDALONE && \
                                hw_info.revision == 4                   ?\
                                 SOC_GPIO_PIN_BPIPW_STATUS :             \
+                               hw_info.model == SOFTRF_MODEL_GIZMO     ?\
+                                SOC_GPIO_PIN_M2_LED :                   \
                                hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \
@@ -206,7 +208,9 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                   SOC_GPIO_PIN_T3C6_GNSS_PPS :            \
                                 (hw_info.model == SOFTRF_MODEL_INK ?      \
                                   SOC_GPIO_PIN_T3S3_GNSS_PPS :            \
-                                  SOC_UNUSED_PIN)))))
+                                (hw_info.model == SOFTRF_MODEL_GIZMO ?    \
+                                  SOC_GPIO_PIN_M2_GNSS_PPS :              \
+                                  SOC_UNUSED_PIN))))))
 
 #define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
                                 SOC_UNUSED_PIN :                         \

@@ -474,6 +474,13 @@
 */
 #define RADIOLIB_ERR_RANGING_TIMEOUT                           (-901)
 
+// AX5x43 status codes
+
+/*!
+  \brief Error during PLL ranging.
+*/
+#define RADIOLIB_ERR_RANGING_FAILED                            (-902)
+
 // Pager-specific status codes
 
 /*!
