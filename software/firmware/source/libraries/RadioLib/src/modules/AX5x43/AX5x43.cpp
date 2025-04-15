@@ -1,19 +1,13 @@
 #include "AX5x43.h"
 #if !defined(RADIOLIB_EXCLUDE_AX5X43)
 
-AX5x43::AX5x43(Module* module) : PhysicalLayer(RADIOLIB_AX5X43_FREQUENCY_STEP_SIZE, RADIOLIB_AX5X43_MAX_PACKET_LENGTH) {
-#if 0
-  mod = module;
-#else
+AX5x43::AX5x43(Module* mod) : PhysicalLayer(RADIOLIB_AX5X43_FREQUENCY_STEP_SIZE, RADIOLIB_AX5X43_MAX_PACKET_LENGTH) {
   this->mod = mod;
-#endif
 }
 
-#if 0
 Module* AX5x43::getMod() {
-  return(mod);
+  return(this->mod);
 }
-#endif
 
 int16_t AX5x43::begin(float freq, float br, float freqDev, float rxBw, int8_t power, uint16_t preambleLength) {
   // set module properties

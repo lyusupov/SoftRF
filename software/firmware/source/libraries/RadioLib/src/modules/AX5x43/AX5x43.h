@@ -694,13 +694,7 @@ class AX5x43: public PhysicalLayer {
 
       \param mod Instance of Module that will be used to communicate with the radio.
     */
-#if 0
-    AX5x43(Module* module);
-
-    Module* getMod();
-#else
     explicit AX5x43(Module* mod);
-#endif
 
     // basic methods
 
@@ -734,7 +728,6 @@ class AX5x43: public PhysicalLayer {
   protected:
 #endif
     Module* getMod() override;
-
 
 #ifndef RADIOLIB_GODMODE
   private:

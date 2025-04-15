@@ -68,6 +68,7 @@ class FreqPlan
         {
           case RF_BAND_US:
           case RF_BAND_AU:
+          case RF_BAND_NZ: /* SRD 915-928 MHz, https://www.rsm.govt.nz/assets/Uploads/documents/pibs/table-of-radio-spectrum-usage-in-new-zealand-pib-21.pdf */
           case RF_BAND_CN: /* ? */
             BaseFreq   = 920800000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
@@ -96,7 +97,6 @@ class FreqPlan
             break;
           case RF_BAND_EU:
           case RF_BAND_RU:
-          case RF_BAND_NZ: /* ? */
           default:
             BaseFreq   = 868200000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_125KHZ; // BW250
@@ -158,7 +158,7 @@ class FreqPlan
           case RF_BAND_AU:
             { BaseFreq= 917000000; ChanSepar=400000; Channels=24; MaxTxPower = 30; } // Australia and South America
             break;
-          case RF_BAND_NZ:
+          case RF_BAND_NZ: /* SRD 868-870 MHz, https://www.rsm.govt.nz/assets/Uploads/documents/pibs/table-of-radio-spectrum-usage-in-new-zealand-pib-21.pdf */
             { BaseFreq= 869250000; ChanSepar=200000; Channels= 1; MaxTxPower = 10; } // New Zealand
             break;
           case RF_BAND_RU:
