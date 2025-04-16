@@ -39,8 +39,8 @@ typedef struct
   uint8_t payload[RADIOHEAD_MAX_DATA_LENGTH];
 } RadioHead_DataPacket;
 
-RadioHead_DataPacket txPacket;
-RadioHead_DataPacket rxPacket;
+static RadioHead_DataPacket RH_txPacket;
+static RadioHead_DataPacket RH_rxPacket;
 
 extern size_t RF_tx_size;
 
@@ -578,7 +578,7 @@ static void si4463_setup()
 
   radio_silabs->setPromiscuous(true);
 
-  rxPacket.len = pkt_size;
+  RH_rxPacket.len = pkt_size;
 
   uint8_t l[] = { (uint8_t)(pkt_size)};
   radio_silabs->set_properties(RH_RF24_PROPERTY_PKT_FIELD_1_LENGTH_7_0, l, sizeof(l));
@@ -651,40 +651,40 @@ static bool si4463_receive()
 
   if (si4463_receive_active == true) {
 
-    uint8_t len = rxPacket.len;
+    uint8_t len = RH_rxPacket.len;
 
-    if (radio_silabs->recv(rxPacket.payload, &len)) {
+    if (radio_silabs->recv(RH_rxPacket.payload, &len)) {
 
-      if (len > sizeof(rxPacket.payload)) {
-        len = sizeof(rxPacket.payload);
+      if (len > sizeof(RH_rxPacket.payload)) {
+        len = sizeof(RH_rxPacket.payload);
       }
 
       si4463_receive_active = false;
 
-      if (!memeqzero(rxPacket.payload, len)) {
+      if (!memeqzero(RH_rxPacket.payload, len)) {
 
         uint8_t i;
 #if 0
         Serial.print("Payload ");
         for (i=0; i < len; i++) {
-            Serial.print(rxPacket.payload[i], HEX);
+            Serial.print(RH_rxPacket.payload[i], HEX);
             //Serial.print(" ");
         }
         Serial.println();
 #endif
         if (rh_protocol->syncword_size > 4) {
           for (i=4; i < rh_protocol->syncword_size; i++) {
-            if (rxPacket.payload[i-4] != rh_protocol->syncword[i]) {
+            if (RH_rxPacket.payload[i-4] != rh_protocol->syncword[i]) {
 #if 0
               Serial.print("syncword mismatch ");
               Serial.print("i="); Serial.print(i);
-              Serial.print(" p="); Serial.print(rxPacket.payload[i-4], HEX);
+              Serial.print(" p="); Serial.print(RH_rxPacket.payload[i-4], HEX);
               Serial.print(" s="); Serial.print(rh_protocol->syncword[i], HEX);
               Serial.println();
 #endif
 #if 1
 //              if (i != 4) {
-                memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+                memset(RH_rxPacket.payload, 0, sizeof(RH_rxPacket.payload));
                 len = 0;
 
                 return success;
@@ -693,8 +693,8 @@ static bool si4463_receive()
             }
           }
 
-          memcpy(rxPacket.payload,
-                 rxPacket.payload + rh_protocol->syncword_size - 4,
+          memcpy(RH_rxPacket.payload,
+                 RH_rxPacket.payload + rh_protocol->syncword_size - 4,
                  len - (rh_protocol->syncword_size - 4));
         }
 
@@ -704,7 +704,7 @@ static bool si4463_receive()
         u1_t crc8, pkt_crc8;
         u2_t crc16, pkt_crc16;
 
-        RadioHead_DataPacket *rxPacket_ptr = &rxPacket;
+        RadioHead_DataPacket *RH_rxPacket_ptr = &RH_rxPacket;
 
         switch (rh_protocol->crc_type)
         {
@@ -746,14 +746,14 @@ static bool si4463_receive()
           offset = rh_protocol->payload_offset;
           for (i = 0; i < rh_protocol->payload_size; i++)
           {
-            update_crc8(&crc8, (u1_t)(rxPacket_ptr->payload[i + offset]));
+            update_crc8(&crc8, (u1_t)(RH_rxPacket_ptr->payload[i + offset]));
             if (i < sizeof(RxBuffer)) {
-              RxBuffer[i] = rxPacket_ptr->payload[i + offset] ^
+              RxBuffer[i] = RH_rxPacket_ptr->payload[i + offset] ^
                             pgm_read_byte(&whitening_pattern[i]);
             }
           }
 
-          pkt_crc8 = rxPacket_ptr->payload[i + offset];
+          pkt_crc8 = RH_rxPacket_ptr->payload[i + offset];
 
           if (crc8 == pkt_crc8) {
             success = true;
@@ -769,12 +769,12 @@ static bool si4463_receive()
                    rh_protocol->payload_size +
                    rh_protocol->crc_size +
                    rh_protocol->crc_size;
-          if (rxPacket_ptr->len >= (size + offset)) {
+          if (RH_rxPacket_ptr->len >= (size + offset)) {
             uint8_t val1, val2;
             for (i = 0; i < size; i++) {
-              val1 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              val1 = pgm_read_byte(&ManchesterDecode[RH_rxPacket_ptr->payload[i + offset]]);
               i++;
-              val2 = pgm_read_byte(&ManchesterDecode[rxPacket_ptr->payload[i + offset]]);
+              val2 = pgm_read_byte(&ManchesterDecode[RH_rxPacket_ptr->payload[i + offset]]);
               if ((i>>1) < sizeof(RxBuffer)) {
                 RxBuffer[i>>1] = ((val1 & 0x0F) << 4) | (val2 & 0x0F);
 
@@ -835,7 +835,7 @@ static bool si4463_receive()
         }
       }
 
-      memset(rxPacket.payload, 0, sizeof(rxPacket.payload));
+      memset(RH_rxPacket.payload, 0, sizeof(RH_rxPacket.payload));
       len = 0;
     }
 
@@ -866,7 +866,7 @@ static bool si4463_transmit()
       rh_protocol->preamble_size == 1) {
     if (rh_protocol->syncword_size > 3) {
       for (i=3; i < rh_protocol->syncword_size; i++) {
-        txPacket.payload[PayloadLen++] = rh_protocol->syncword[i];
+        RH_txPacket.payload[PayloadLen++] = rh_protocol->syncword[i];
       }
     }
   } else
@@ -874,7 +874,7 @@ static bool si4463_transmit()
   {
     if (rh_protocol->syncword_size > 4) {
       for (i=4; i < rh_protocol->syncword_size; i++) {
-        txPacket.payload[PayloadLen++] = rh_protocol->syncword[i];
+        RH_txPacket.payload[PayloadLen++] = rh_protocol->syncword[i];
       }
     }
   }
@@ -908,16 +908,16 @@ static bool si4463_transmit()
     break;
   case RF_PROTOCOL_P3I:
     /* insert Net ID */
-    txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >> 24) & 0x000000FF);
-    txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >> 16) & 0x000000FF);
-    txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >>  8) & 0x000000FF);
-    txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >>  0) & 0x000000FF);
+    RH_txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >> 24) & 0x000000FF);
+    RH_txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >> 16) & 0x000000FF);
+    RH_txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >>  8) & 0x000000FF);
+    RH_txPacket.payload[PayloadLen++] = (u1_t) ((rh_protocol->net_id >>  0) & 0x000000FF);
     /* insert byte with payload size */
-    txPacket.payload[PayloadLen++] = rh_protocol->payload_size;
+    RH_txPacket.payload[PayloadLen++] = rh_protocol->payload_size;
 
     /* insert byte with CRC-8 seed value when necessary */
     if (rh_protocol->crc_type == RF_CHECKSUM_TYPE_CRC8_107) {
-      txPacket.payload[PayloadLen++] = crc8;
+      RH_txPacket.payload[PayloadLen++] = crc8;
     }
 
     break;
@@ -932,16 +932,16 @@ static bool si4463_transmit()
     switch (rh_protocol->whitening)
     {
     case RF_WHITENING_NICERF:
-      txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
+      RH_txPacket.payload[PayloadLen] = TxBuffer[i] ^ pgm_read_byte(&whitening_pattern[i]);
       break;
     case RF_WHITENING_MANCHESTER:
-      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
+      RH_txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i] >> 4) & 0x0F]);
       PayloadLen++;
-      txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
+      RH_txPacket.payload[PayloadLen] = pgm_read_byte(&ManchesterEncode[(TxBuffer[i]     ) & 0x0F]);
       break;
     case RF_WHITENING_NONE:
     default:
-      txPacket.payload[PayloadLen] = TxBuffer[i];
+      RH_txPacket.payload[PayloadLen] = TxBuffer[i];
       break;
     }
 
@@ -952,7 +952,7 @@ static bool si4463_transmit()
     case RF_CHECKSUM_TYPE_NONE:
       break;
     case RF_CHECKSUM_TYPE_CRC8_107:
-      update_crc8(&crc8, (u1_t)(txPacket.payload[PayloadLen]));
+      update_crc8(&crc8, (u1_t)(RH_txPacket.payload[PayloadLen]));
       break;
     case RF_CHECKSUM_TYPE_CCITT_FFFF:
     case RF_CHECKSUM_TYPE_CCITT_0000:
@@ -960,7 +960,7 @@ static bool si4463_transmit()
       if (rh_protocol->whitening == RF_WHITENING_MANCHESTER) {
         crc16 = update_crc_ccitt(crc16, (u1_t)(TxBuffer[i]));
       } else {
-        crc16 = update_crc_ccitt(crc16, (u1_t)(txPacket.payload[PayloadLen]));
+        crc16 = update_crc_ccitt(crc16, (u1_t)(RH_txPacket.payload[PayloadLen]));
       }
       break;
     }
@@ -975,27 +975,27 @@ static bool si4463_transmit()
   case RF_CHECKSUM_TYPE_NONE:
     break;
   case RF_CHECKSUM_TYPE_CRC8_107:
-    txPacket.payload[PayloadLen++] = crc8;
+    RH_txPacket.payload[PayloadLen++] = crc8;
     break;
   case RF_CHECKSUM_TYPE_CCITT_FFFF:
   case RF_CHECKSUM_TYPE_CCITT_0000:
   default:
     if (rh_protocol->whitening == RF_WHITENING_MANCHESTER) {
-      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
-      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
-      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
-      txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
+      RH_txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF) >> 4) & 0x0F]);
+      RH_txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16 >>  8) & 0xFF)     ) & 0x0F]);
+      RH_txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF) >> 4) & 0x0F]);
+      RH_txPacket.payload[PayloadLen++] = pgm_read_byte(&ManchesterEncode[(((crc16      ) & 0xFF)     ) & 0x0F]);
       PayloadLen++;
     } else {
-      txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
-      txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
+      RH_txPacket.payload[PayloadLen++] = (crc16 >>  8) & 0xFF;
+      RH_txPacket.payload[PayloadLen++] = (crc16      ) & 0xFF;
     }
     break;
   }
 
-  txPacket.len = PayloadLen;
+  RH_txPacket.len = PayloadLen;
 
-  success = radio_silabs->send((uint8_t *) &txPacket.payload, (size_t) txPacket.len);
+  success = radio_silabs->send((uint8_t *) &RH_txPacket.payload, (size_t) RH_txPacket.len);
 
   if (success) {
     uint16_t timeout = RF_Time_Slots.air_time + RF_Time_Slots.air_time;
@@ -1006,7 +1006,7 @@ static bool si4463_transmit()
 //      success = false;
     }
 
-    memset(txPacket.payload, 0, sizeof(txPacket.payload));
+    memset(RH_txPacket.payload, 0, sizeof(RH_txPacket.payload));
   }
 
 #if 0

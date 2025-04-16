@@ -32,15 +32,15 @@ int16_t AX5x43::begin(float freq, float br, float freqDev, float rxBw, int8_t po
       flagFound = true;
     } else {
       #if defined(RADIOLIB_DEBUG)
-        RADIOLIB_DEBUG_PRINT(F("AX5x43 not found! ("));
-        RADIOLIB_DEBUG_PRINT(i + 1);
-        RADIOLIB_DEBUG_PRINT(F(" of 10 tries) RADIOLIB_AX5X43_REG_REVISION == "));
+        RADIOLIB_DEBUG_BASIC_PRINT("AX5x43 not found! (");
+        RADIOLIB_DEBUG_BASIC_PRINT("%d", i + 1);
+        RADIOLIB_DEBUG_BASIC_PRINT(" of 10 tries) RADIOLIB_AX5X43_REG_REVISION == ");
 
         char buffHex[7];
         sprintf(buffHex, "0x%04X", version);
-        RADIOLIB_DEBUG_PRINT(buffHex);
-        RADIOLIB_DEBUG_PRINT(F(", expected 0x0051"));
-        RADIOLIB_DEBUG_PRINTLN();
+        RADIOLIB_DEBUG_BASIC_PRINT("%s", buffHex);
+        RADIOLIB_DEBUG_BASIC_PRINT(", expected 0x0051");
+        RADIOLIB_DEBUG_BASIC_PRINTLN();
       #endif
       this->mod->hal->delay(10);
       i++;
@@ -48,11 +48,11 @@ int16_t AX5x43::begin(float freq, float br, float freqDev, float rxBw, int8_t po
   }
 
   if(!flagFound) {
-    RADIOLIB_DEBUG_PRINTLN(F("No AX5x43 found!"));
+    RADIOLIB_DEBUG_BASIC_PRINTLN("No AX5x43 found!");
     this->mod->term();
     return(RADIOLIB_ERR_CHIP_NOT_FOUND);
   } else {
-    RADIOLIB_DEBUG_PRINTLN(F("M\tAX5x43"));
+    RADIOLIB_DEBUG_BASIC_PRINTLN("M\tAX5x43");
   }
 
   // setting initial frequency to 0 will force setFrequency to perform VCO ranging
