@@ -8,8 +8,9 @@
 
 // CC1101 physical layer properties
 #define RADIOLIB_CC1101_FREQUENCY_STEP_SIZE                     396.7285156
-#define RADIOLIB_CC1101_MAX_PACKET_LENGTH                       63
-#define RADIOLIB_CC1101_CRYSTAL_FREQ                            26.0
+#define RADIOLIB_CC1101_MAX_PACKET_LENGTH                       255
+#define RADIOLIB_CC1101_FIFO_SIZE                               64
+#define RADIOLIB_CC1101_CRYSTAL_FREQ                            26.0f
 #define RADIOLIB_CC1101_DIV_EXPONENT                            16
 
 // CC1101 SPI commands
@@ -190,9 +191,6 @@
 
 // RADIOLIB_CC1101_REG_SYNC0
 #define RADIOLIB_CC1101_SYNC_WORD_LSB                           0x91        //  7     0   sync word LSB
-
-// RADIOLIB_CC1101_REG_PKTLEN
-#define RADIOLIB_CC1101_PACKET_LENGTH                           0xFF        //  7     0   packet length in bytes
 
 // RADIOLIB_CC1101_REG_PKTCTRL1
 #define RADIOLIB_CC1101_PQT                                     0x00        //  7     5   preamble quality threshold
@@ -563,6 +561,24 @@ class CC1101: public PhysicalLayer {
       uint8_t preambleLength = RADIOLIB_CC1101_DEFAULT_PREAMBLELEN);
     
     /*!
+      \brief Initialization method for 4-FSK modulation.
+      \param freq Carrier frequency in MHz. Defaults to 434 MHz.
+      \param br Bit rate to be used in kbps. Defaults to 4.8 kbps.
+      \param freqDev Frequency deviation from carrier frequency in kHz Defaults to 5.0 kHz.
+      \param rxBw Receiver bandwidth in kHz. Defaults to 135.0 kHz.
+      \param pwr Output power in dBm. Defaults to 10 dBm.
+      \param preambleLength Preamble Length in bits. Defaults to 16 bits.
+      \returns \ref status_codes
+    */
+    int16_t beginFSK4(
+      float freq = RADIOLIB_CC1101_DEFAULT_FREQ,
+      float br = RADIOLIB_CC1101_DEFAULT_BR,
+      float freqDev = RADIOLIB_CC1101_DEFAULT_FREQDEV,
+      float rxBw = RADIOLIB_CC1101_DEFAULT_RXBW,
+      int8_t pwr = RADIOLIB_CC1101_DEFAULT_POWER,
+      uint8_t preambleLength = RADIOLIB_CC1101_DEFAULT_PREAMBLELEN);
+
+    /*!
       \brief Reset method - resets the chip using manual reset sequence (without RESET pin).
     */
     void reset();
@@ -686,7 +702,10 @@ class CC1101: public PhysicalLayer {
     void clearPacketSentAction() override;
 
     /*!
-      \brief Interrupt-driven binary transmit method.
+      \brief Interrupt-driven binary transmit method for packets less than 64 bytes.
+      Method blocks for packets longer than 64 bytes up to a 255 byte limit, until 
+      the last bytes are placed in the FIFO. Some limitations and issues apply; see discussion: 
+      https://github.com/jgromes/RadioLib/discussions/1138
       Overloads for string-based transmissions are implemented in PhysicalLayer.
       \param data Binary data to be sent.
       \param len Number of bytes to send.
@@ -824,7 +843,7 @@ class CC1101: public PhysicalLayer {
       \param requireCarrierSense Require carrier sense above threshold in addition to sync word.
       \returns \ref status_codes
     */
-    int16_t setSyncWord(uint8_t* syncWord, uint8_t len, uint8_t maxErrBits = 0, bool requireCarrierSense = false);
+    int16_t setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErrBits = 0, bool requireCarrierSense = false);
 
     /*!
       \brief Sets preamble length.
@@ -994,7 +1013,7 @@ class CC1101: public PhysicalLayer {
     int16_t SPIsetRegValue(uint8_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2);
     void SPIreadRegisterBurst(uint8_t reg, uint8_t numBytes, uint8_t* inBytes);
     uint8_t SPIreadRegister(uint8_t reg);
-    void SPIwriteRegisterBurst(uint8_t reg, uint8_t* data, size_t len);
+    void SPIwriteRegisterBurst(uint8_t reg, const uint8_t* data, size_t len);
     void SPIwriteRegister(uint8_t reg, uint8_t data);
 
     void SPIsendCommand(uint8_t cmd);
@@ -1020,6 +1039,7 @@ class CC1101: public PhysicalLayer {
 
     int8_t power = RADIOLIB_CC1101_DEFAULT_POWER;
 
+    int16_t beginCommon(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLength);
     int16_t config();
     int16_t transmitDirect(bool sync, uint32_t frf);
     int16_t receiveDirect(bool sync);

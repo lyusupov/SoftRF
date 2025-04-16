@@ -134,7 +134,7 @@ uint8_t Module::SPIreadRegister(uint32_t reg) {
   return(resp);
 }
 
-void Module::SPIwriteRegisterBurst(uint32_t reg, uint8_t* data, size_t numBytes) {
+void Module::SPIwriteRegisterBurst(uint32_t reg, const uint8_t* data, size_t numBytes) {
   if(!spiConfig.stream) {
     SPItransfer(spiConfig.cmds[RADIOLIB_MODULE_SPI_COMMAND_WRITE], reg, data, NULL, numBytes);
   } else {
@@ -166,7 +166,7 @@ void Module::SPIwriteRegister(uint32_t reg, uint8_t data) {
   }
 }
 
-void Module::SPItransfer(uint16_t cmd, uint32_t reg, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes) {
+void Module::SPItransfer(uint16_t cmd, uint32_t reg, const uint8_t* dataOut, uint8_t* dataIn, size_t numBytes) {
   // prepare the buffers
   size_t buffLen = this->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD]/8 + this->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_ADDR]/8 + numBytes;
   #if RADIOLIB_STATIC_ONLY
@@ -256,7 +256,7 @@ int16_t Module::SPIreadStream(uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_
   #endif
 }
 
-int16_t Module::SPIwriteStream(uint16_t cmd, uint8_t* data, size_t numBytes, bool waitForGpio, bool verify) {
+int16_t Module::SPIwriteStream(uint16_t cmd, const uint8_t* data, size_t numBytes, bool waitForGpio, bool verify) {
   uint8_t cmdBuf[2];
   uint8_t* cmdPtr = cmdBuf;
   for(int8_t i = (int8_t)this->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD]/8 - 1; i >= 0; i--) {
@@ -265,7 +265,7 @@ int16_t Module::SPIwriteStream(uint16_t cmd, uint8_t* data, size_t numBytes, boo
   return(this->SPIwriteStream(cmdBuf, this->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD]/8, data, numBytes, waitForGpio, verify));
 }
 
-int16_t Module::SPIwriteStream(uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio, bool verify) {
+int16_t Module::SPIwriteStream(uint8_t* cmd, uint8_t cmdLen, const uint8_t* data, size_t numBytes, bool waitForGpio, bool verify) {
   // send the command
   int16_t state = this->SPItransferStream(cmd, cmdLen, true, data, NULL, numBytes, waitForGpio);
   RADIOLIB_ASSERT(state);
@@ -307,7 +307,7 @@ int16_t Module::SPIcheckStream() {
   return(state);
 }
 
-int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio) {
+int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, const uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio) {
   // prepare the output buffer
   size_t buffLen = cmdLen + numBytes;
   if(!write) {

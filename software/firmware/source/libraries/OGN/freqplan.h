@@ -68,7 +68,7 @@ class FreqPlan
         {
           case RF_BAND_US:
           case RF_BAND_AU:
-          case RF_BAND_NZ: /* SRD 915-928 MHz, https://www.rsm.govt.nz/assets/Uploads/documents/pibs/table-of-radio-spectrum-usage-in-new-zealand-pib-21.pdf */
+          case RF_BAND_NZ: /* ISM 915-928 MHz, https://www.rsm.govt.nz/assets/Uploads/documents/pibs/table-of-radio-spectrum-usage-in-new-zealand-pib-21.pdf */
           case RF_BAND_CN: /* ? */
             BaseFreq   = 920800000;
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
