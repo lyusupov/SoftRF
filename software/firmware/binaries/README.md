@@ -13,6 +13,7 @@
 - [LPC4320](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#lpc4320)
 - [ASR6601](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#asr6601)
 - [RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)
+- [RP2350](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2350)
 - [STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)
 - [CH32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#ch32)
 
@@ -20,8 +21,7 @@
 
 Model|Instructions|Firmware folder
 ---|:---:|:---:
-[Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)<br>[ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)<br>[ESP32-C6](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c6)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)<br>[ESP32C3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C3/SoftRF)<br>[ESP32C6](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C6/SoftRF)<br>[RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2350/SoftRF)
-[Prime Edition Mk2](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)|[ESP32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SoftRF)
+[Standalone Edition](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)<br>[ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)<br>[ESP32-C6](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c6)<br>[RP2350](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2350)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)<br>[ESP32C3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C3/SoftRF)<br>[ESP32C6](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C6/SoftRF)<br>[RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2350/SoftRF)
 [Prime Edition Mk3](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Ham Edition](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Midi Edition](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
@@ -47,7 +47,7 @@ Model|Instructions|Firmware folder
 Model|Instructions|Firmware folder
 ---|:---:|:---:
 [SkyView EZ](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)|[ESP32](https://github.com/lyusupov/SoftRF/wiki/SkyView.-Quick-start)|[ESP32](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32/SkyView)
-[SkyView Pico](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)|[RP2040](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start#raspberry-pico-w)<br>[ESP32-S3](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start#banana-bpi-picow-s3)|[RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/SkyView)<br>[RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2350/SkyView)<br>[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SkyView)
+[SkyView Pico](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)|[RP2040](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start#raspberry-pico-w)<br>[RP2350](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start#raspberry-pico-w)<br>[ESP32-S3](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico.-Quick-start#banana-bpi-picow-s3)|[RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/SkyView)<br>[RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2350/SkyView)<br>[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SkyView)
 [WebTop Serial](https://github.com/lyusupov/SoftRF/wiki/WebTop-Serial-adapter)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/WebTop)
 [WebTop USB](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)|[ESP32-S2](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s2)|[ESP32S2](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S2/WebTop)
 [USB to Bluetooth](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter)|[XIAO](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter#quick-start)|[SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/SAMD21/USB_Bluetooth)
@@ -253,6 +253,24 @@ The bootloader is capable to self-program an application firmware into the devic
 <br>
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Lego-14.jpg" height="295" width="800">
+
+<br>
+
+## RP2350
+
+1. Take an appropriate version of the SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2350/SoftRF) ;
+
+2. Un-zip the firmware file been downloaded ;
+
+3. Press and keep holding BOOT button of the Raspberry **Pico 2W** ;
+
+4. Connect the **Pico 2W** to your PC by means of a USB cable (Type-A <-> micro Type-B) ;
+
+5. Release BOOT button of **Pico 2W**. A virtual disk with **RPI-RP2** label should appear in your "File manager" afterwards ;
+
+6. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **RPI-RP2** disk. Wait until the file transfer is complete ;
+
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-50.jpg" height="287" width="800">
 
 <br>
 
