@@ -15,6 +15,9 @@
 #define	_CONST		const
 #define	_EXFUN(name, proto)		name proto
 #define	_DEFUN(name, arglist, args)	name(args)
+#ifndef _VOID
+#define	_VOID		void
+#endif
 #endif
 #else
 #include <avr/pgmspace.h>
