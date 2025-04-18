@@ -1328,6 +1328,8 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_INK       ||
       hw_info.model == SOFTRF_MODEL_CARD      ||
       hw_info.model == SOFTRF_MODEL_COZY      ||
+      hw_info.model == SOFTRF_MODEL_HANDHELD  ||
+      hw_info.model == SOFTRF_MODEL_GIZMO     ||
       hw_info.model == SOFTRF_MODEL_NEO)
   {
     // power on by wakeup call

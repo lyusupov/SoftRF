@@ -153,14 +153,16 @@ struct rst_info {
 #define SOC_GPIO_LED_PCA10059_RED       _PINNUM(0,  8) // P0.08 (Red)
 #define SOC_GPIO_LED_PCA10059_BLUE      _PINNUM(0, 12) // P0.12 (Blue)
 
-#define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_CARD ? SOC_GPIO_LED_T1000_GREEN : \
-                               hw_info.model == SOFTRF_MODEL_COZY ? SOC_GPIO_LED_T114_GREEN  : \
+#define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_CARD ? SOC_GPIO_LED_T1000_GREEN  : \
+                               hw_info.model == SOFTRF_MODEL_COZY ? SOC_GPIO_LED_T114_GREEN   : \
+                               hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_GREEN : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_GREEN : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
                                SOC_GPIO_LED_PCA10059_STATUS)
 
-#define SOC_GPIO_LED_USBMSC   (hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_RED : \
+#define SOC_GPIO_LED_USBMSC   (hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_RED : \
+                               hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_RED : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_RED : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_RED : \
                                SOC_GPIO_LED_PCA10059_RED)
@@ -169,6 +171,17 @@ struct rst_info {
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_BLUE : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_BLUE : \
                                SOC_GPIO_LED_PCA10059_BLUE)
+
+#define SOC_GPIO_PIN_GNSS_PPS (hw_info.model == SOFTRF_MODEL_BADGE    ? \
+                               SOC_GPIO_PIN_GNSS_TECHO_PPS :            \
+                               hw_info.model == SOFTRF_MODEL_COZY     ? \
+                               SOC_GPIO_PIN_GNSS_T114_PPS :             \
+                               hw_info.model == SOFTRF_MODEL_NEO      ? \
+                               SOC_GPIO_PIN_GNSS_TULTIMA_PPS :          \
+                               hw_info.model == SOFTRF_MODEL_CARD     ? \
+                               SOC_GPIO_PIN_GNSS_T1000_PPS :            \
+                               hw_info.model == SOFTRF_MODEL_HANDHELD ? \
+                               SOC_GPIO_PIN_GNSS_M1_PPS : SOC_UNUSED_PIN)
 
 #define SOC_GPIO_PIN_PCA10059_MOSI      _PINNUM(0, 22) // P0.22
 #define SOC_GPIO_PIN_PCA10059_MISO      _PINNUM(0, 13) // P0.13
@@ -306,7 +319,8 @@ struct rst_info {
 #define PFLAA_EXT1_ARGS ,Container[i].no_track,data_source,Container[i].rssi
 
 #if defined(USE_PWM_SOUND)
-#define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E ? SOC_GPIO_PIN_T1000_BUZZER : \
+#define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E  ? SOC_GPIO_PIN_T1000_BUZZER : \
+                               nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER    : \
                                hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
                                hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
                                hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \

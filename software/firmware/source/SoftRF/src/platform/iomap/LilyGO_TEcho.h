@@ -6,9 +6,9 @@
 #define SOC_GPIO_PIN_GNSS_RX            _PINNUM(1, 9) // P1.09
 #define SOC_GPIO_PIN_GNSS_TX            _PINNUM(1, 8) // P1.08
 
-#define SOC_GPIO_PIN_GNSS_PPS           _PINNUM(1, 4) // P1.04
 #define SOC_GPIO_PIN_GNSS_WKE           _PINNUM(1, 2) // P1.02
 #define SOC_GPIO_PIN_GNSS_RST           _PINNUM(1, 5) // P1.05 (REV_2 only)
+#define SOC_GPIO_PIN_GNSS_TECHO_PPS     _PINNUM(1, 4) // P1.04
 
 #define SOC_GPIO_PIN_LED                SOC_UNUSED_PIN
 

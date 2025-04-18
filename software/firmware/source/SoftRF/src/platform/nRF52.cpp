@@ -1138,6 +1138,11 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_T114_ADC_EN, OUTPUT);
       break;
 
+    case NRF52_ELECROW_TN_M1:
+      pinMode(SOC_GPIO_PIN_IO_M1_PWR, INPUT_PULLUP); /* TBD */
+      pinMode(SOC_GPIO_PIN_M1_RF_PWR, INPUT_PULLUP); /* TBD */
+      break;
+
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -1288,6 +1293,28 @@ static void nRF52_setup()
       lmic_pins.nss  = SOC_GPIO_PIN_T114_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_T114_RST;
       lmic_pins.busy = SOC_GPIO_PIN_T114_BUSY;
+
+      hw_info.revision = 3; /* Unknown */
+      break;
+
+    case NRF52_ELECROW_TN_M1:
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_M1_RST, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M1_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_M1_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_M1_RED,   OUTPUT);
+      // pinMode(SOC_GPIO_LED_M1_PWR,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_M1_GREEN);
+      ledOff(SOC_GPIO_LED_M1_RED);
+      // ledOff(SOC_GPIO_LED_M1_PWR);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_M1_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_M1_BUSY;
 
       hw_info.revision = 3; /* Unknown */
       break;
@@ -1760,7 +1787,8 @@ static void nRF52_post_init()
 #if defined(USE_EPAPER)
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
-      nRF52_board == NRF52_LILYGO_TECHO_REV_2) {
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+      nRF52_board == NRF52_ELECROW_TN_M1) {
     /* EPD back light on */
     digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
 
@@ -2205,6 +2233,10 @@ static void nRF52_fini(int reason)
 
     case NRF52_HELTEC_T114:
       mode_button_pin = SOC_GPIO_PIN_T114_BUTTON;
+      break;
+
+    case NRF52_ELECROW_TN_M1:
+      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON2;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -3264,19 +3296,21 @@ static float nRF52_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_THRESHOLD_LIPO   :
-           hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_THRESHOLD_LIPO   :
-           hw_info.model == SOFTRF_MODEL_CARD  ? BATTERY_THRESHOLD_LIPO   :
-           hw_info.model == SOFTRF_MODEL_COZY  ? BATTERY_THRESHOLD_LIPO   :
-                                                 BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_BADGE    ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NEO      ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD     ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_COZY     ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_HANDHELD ? BATTERY_THRESHOLD_LIPO   :
+                                                    BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_BADGE ? BATTERY_CUTOFF_LIPO   :
-           hw_info.model == SOFTRF_MODEL_NEO   ? BATTERY_CUTOFF_LIPO   :
-           hw_info.model == SOFTRF_MODEL_CARD  ? BATTERY_CUTOFF_LIPO   :
-           hw_info.model == SOFTRF_MODEL_COZY  ? BATTERY_CUTOFF_LIPO   :
-                                                 BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_BADGE    ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NEO      ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD     ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_COZY     ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_HANDHELD ? BATTERY_CUTOFF_LIPO   :
+                                                    BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:
@@ -3333,6 +3367,10 @@ static float nRF52_Battery_param(uint8_t param)
         case NRF52_HELTEC_T114:
           bat_adc_pin = SOC_GPIO_PIN_T114_BATTERY;
           mult        = SOC_ADC_T114_VOLTAGE_DIV;
+          break;
+        case NRF52_ELECROW_TN_M1:
+          bat_adc_pin = SOC_GPIO_PIN_M1_BATTERY;
+          mult        = SOC_ADC_VOLTAGE_DIV;
           break;
         case NRF52_LILYGO_TECHO_REV_0:
         case NRF52_LILYGO_TECHO_REV_1:
@@ -3509,6 +3547,10 @@ static void nRF52_Button_setup()
 
     case NRF52_HELTEC_T114:
       mode_button_pin = SOC_GPIO_PIN_T114_BUTTON;
+      break;
+
+    case NRF52_ELECROW_TN_M1:
+      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON2;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:

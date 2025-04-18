@@ -46,7 +46,7 @@
 #define SOC_GPIO_PIN_M1_SCL_INT   _PINNUM(0, 27) // P0.27
 
 /* buttons */
-#define SOC_GPIO_PIN_M1_BUTTON1   _PINNUM(1,  7) // P1.07
+#define SOC_GPIO_PIN_M1_BUTTON1   _PINNUM(1,  7) // P1.07 conflicts with EPD MISO ?
 #define SOC_GPIO_PIN_M1_BUTTON2   _PINNUM(1, 10) // P1.10
 
 #define SOC_GPIO_PIN_M1_PAD       _PINNUM(0, 11) // P0.11
@@ -57,7 +57,7 @@
 #define SOC_GPIO_LED_M1_PWR       _PINNUM(1,  4) // P1.04
 
 /* buzzer */
-#define SOC_GPIO_PIN_M1_BUZZER    _PINNUM(0,  6) // P0.06 conflict with PWR_EN ?
+#define SOC_GPIO_PIN_M1_BUZZER    _PINNUM(0,  6) // P0.06 conflicts with PWR_EN ?
 
 /* MX25R1635F (?) or WP25R1635F (?) SPI flash */
 #define SOC_GPIO_PIN_SFL_M1_MOSI  _PINNUM(1, 12) // P1.12
@@ -71,5 +71,5 @@
 #define SOC_GPIO_PIN_RTC_M1_INT   _PINNUM(0, 16) // P0.16
 
 /* ADC */
-#define SOC_GPIO_PIN_BATTERY_M1   _PINNUM(0,  8) // P0.08
-#define SOC_GPIO_PIN_VUSB_M1      _PINNUM(1,  3) // P1.03
+#define SOC_GPIO_PIN_M1_BATTERY   _PINNUM(0,  8) // P0.08
+#define SOC_GPIO_PIN_M1_VUSB      _PINNUM(1,  3) // P1.03
