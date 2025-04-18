@@ -161,7 +161,8 @@ struct rst_info {
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
                                SOC_GPIO_LED_PCA10059_STATUS)
 
-#define SOC_GPIO_LED_USBMSC   (hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_RED : \
+#define SOC_GPIO_LED_USBMSC   (hw_info.model == SOFTRF_MODEL_CARD  ? SOC_GPIO_LED_T1000_RED : \
+                               hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_RED : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_RED : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_RED : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_RED : \

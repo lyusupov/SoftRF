@@ -376,7 +376,7 @@ static int32_t nRF52_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
 // return number of written bytes (must be multiple of block size)
 static int32_t nRF52_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
 {
-  ledOn(SOC_GPIO_LED_USBMSC);
+  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) ledOn(SOC_GPIO_LED_USBMSC);
 
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
@@ -393,7 +393,7 @@ static void nRF52_msc_flush_cb (void)
   // clear file system's cache to force refresh
   fatfs.cacheClear();
 
-  ledOff(SOC_GPIO_LED_USBMSC);
+  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) ledOff(SOC_GPIO_LED_USBMSC);
 }
 #endif /* ARDUINO_ARCH_MBED */
 
