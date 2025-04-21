@@ -1,3 +1,4 @@
+/* https://www.elecrow.com/download/product/CIL12901M/ThinkNode%20M1_LoRa_Meshtastic_Transceiver_DataSheet.pdf */
 
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_M1_RX   _PINNUM(0,  9) // P0.09 , No NFC
@@ -21,12 +22,11 @@
 /* SX1262 */
 #define SOC_GPIO_PIN_M1_RST       _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_M1_DIO1      _PINNUM(0, 20) // P0.20
+#define SOC_GPIO_PIN_M1_DIO3      _PINNUM(0, 21) // P0.21
 #define SOC_GPIO_PIN_M1_BUSY      _PINNUM(0, 17) // P0.17
 
-#define SOC_GPIO_PIN_M1_RF_PWR    _PINNUM(0, 21) // P0.21 /* TBD */
-
 /* E-paper */
-#define SOC_GPIO_PIN_EPD_M1_MISO  _PINNUM(1,  7) // P1.07
+#define SOC_GPIO_PIN_EPD_M1_MISO  _PINNUM(0, 11) // P0.11
 #define SOC_GPIO_PIN_EPD_M1_MOSI  _PINNUM(0, 29) // P0.29
 #define SOC_GPIO_PIN_EPD_M1_SCK   _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_EPD_M1_SS    _PINNUM(0, 30) // P0.30
@@ -39,22 +39,20 @@
 #define SOC_GPIO_PIN_IO_M1_PWR    _PINNUM(0, 12) // P0.12
 
 /* Power: TBD */
-#define SOC_GPIO_PIN_M1_PWR_EN    _PINNUM(0,  6) // P0.06
+//#define SOC_GPIO_PIN_M1_PWR_EN    _PINNUM(0,  6) // P0.06
 
 /* I2C int. (same that T-Echo has) */
 #define SOC_GPIO_PIN_M1_SDA_INT   _PINNUM(0, 26) // P0.26
 #define SOC_GPIO_PIN_M1_SCL_INT   _PINNUM(0, 27) // P0.27
 
 /* buttons */
-#define SOC_GPIO_PIN_M1_BUTTON1   _PINNUM(1,  7) // P1.07 conflicts with EPD MISO ?
+#define SOC_GPIO_PIN_M1_BUTTON1   _PINNUM(1,  7) // P1.07
 #define SOC_GPIO_PIN_M1_BUTTON2   _PINNUM(1, 10) // P1.10
 
-#define SOC_GPIO_PIN_M1_PAD       _PINNUM(0, 11) // P0.11
-
 /* LED */
-#define SOC_GPIO_LED_M1_GREEN     _PINNUM(0, 13) // P0.13 (Green)
-#define SOC_GPIO_LED_M1_RED       _PINNUM(1,  6) // P1.06 (Red)
+#define SOC_GPIO_LED_M1_RED       _PINNUM(1,  6) // P1.06
 #define SOC_GPIO_LED_M1_PWR       _PINNUM(1,  4) // P1.04
+#define SOC_GPIO_LED_M1_BLUE      _PINNUM(0, 13) // P0.13
 
 /* buzzer */
 #define SOC_GPIO_PIN_M1_BUZZER    _PINNUM(0,  6) // P0.06 conflicts with PWR_EN ?

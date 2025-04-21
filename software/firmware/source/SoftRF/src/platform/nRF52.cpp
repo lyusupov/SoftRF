@@ -265,7 +265,7 @@ enum {
 
 /// List of all possible flash devices used by nRF52840 boards
 static SPIFlash_Device_t possible_devices[] = {
-  // LilyGO T-Echo
+  // LilyGO T-Echo, Elecrow ThinkNode M1
   [MX25R1635F_INDEX] = MX25R1635F,
   [ZD25WQ16B_INDEX]  = ZD25WQ16B,
   // Seeed T1000-E
@@ -898,11 +898,11 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_ELECROW_TN_M1:
     case NRF52_NORDIC_PCA10059:
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT); /* VDD_POWR is ON */
     case NRF52_HELTEC_T114: /* internal bus */
-    case NRF52_ELECROW_TN_M1:
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
       break;
@@ -924,7 +924,7 @@ static void nRF52_setup()
   }
 
 #if !defined(EXCLUDE_IMU)
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo or T114 */
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo, T114 or M1 */
     /* MPU9250 or ICM20948 start-up time for register R/W is 11-100 ms */
     delay(90);
 
@@ -995,6 +995,16 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
+
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo, T114 or M1 */
+    pinMode(SOC_GPIO_PIN_GNSS_M1_SW, INPUT_PULLUP);
+    delay(1);
+    if (digitalRead(SOC_GPIO_PIN_GNSS_M1_SW) == LOW) { /* GNSS switch is OFF */
+      nRF52_board        = NRF52_ELECROW_TN_M1;
+      hw_info.model      = SOFTRF_MODEL_HANDHELD;
+      nRF52_Device_Model = "Handheld Edition";
+    }
+  }
 
 #if defined(USE_TFT)
   if (nRF52_board        == NRF52_LILYGO_TECHO_REV_2 /* default */ &&
@@ -1139,8 +1149,9 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M1:
-      pinMode(SOC_GPIO_PIN_IO_M1_PWR, INPUT_PULLUP); /* TBD */
-      pinMode(SOC_GPIO_PIN_M1_RF_PWR, INPUT_PULLUP); /* TBD */
+      /* TBD */
+      // digitalWrite(SOC_GPIO_PIN_M1_DIO3, HIGH);
+      // pinMode(SOC_GPIO_PIN_M1_DIO3, OUTPUT);
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -1304,13 +1315,14 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_M1_GREEN, OUTPUT);
-      pinMode(SOC_GPIO_LED_M1_RED,   OUTPUT);
-      // pinMode(SOC_GPIO_LED_M1_PWR,  OUTPUT);
+      pinMode(SOC_GPIO_LED_M1_PWR,      OUTPUT);
+      digitalWrite(SOC_GPIO_LED_M1_PWR, HIGH);
 
-      ledOn (SOC_GPIO_LED_M1_GREEN);
-      ledOff(SOC_GPIO_LED_M1_RED);
-      // ledOff(SOC_GPIO_LED_M1_PWR);
+      pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
+      pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
+
+      ledOn (SOC_GPIO_LED_M1_RED);
+      ledOff(SOC_GPIO_LED_M1_BLUE);
 
       lmic_pins.nss  = SOC_GPIO_PIN_M1_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
@@ -1541,7 +1553,8 @@ static void nRF52_post_init()
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
-      nRF52_board == NRF52_LILYGO_TULTIMA) {
+      nRF52_board == NRF52_LILYGO_TULTIMA     ||
+      nRF52_board == NRF52_ELECROW_TN_M1) {
 
 #if 0
     char strbuf[32];
@@ -1562,8 +1575,9 @@ static void nRF52_post_init()
 #endif
 
     Serial.println();
-    Serial.print  (F("LilyGO T-"));
-    Serial.print  (nRF52_board == NRF52_LILYGO_TULTIMA ? F("Ultima") : F("Echo"));
+    Serial.print  (nRF52_board == NRF52_ELECROW_TN_M1  ? F("Elecrow ") : F("LilyGO T-"));
+    Serial.print  (nRF52_board == NRF52_LILYGO_TULTIMA ? F("Ultima") :
+                   nRF52_board == NRF52_ELECROW_TN_M1  ? F("TN-M1")  :   F("Echo"));
     Serial.print  (F(" ("));
     Serial.print  (hw_info.revision > 2 ?
                    Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
@@ -1790,12 +1804,13 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_ELECROW_TN_M1) {
     /* EPD back light on */
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+    uint8_t bl_state = digitalRead(SOC_GPIO_PIN_EPD_BLGT);
+    if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
 
     EPD_info1();
 
     /* EPD back light off */
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+    if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
 
     char key[8];
     char out[64];
@@ -2179,6 +2194,22 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_T1000_GREEN,     INPUT);
       break;
 
+    case NRF52_ELECROW_TN_M1:
+      ledOff(SOC_GPIO_LED_M1_RED);
+      ledOff(SOC_GPIO_LED_M1_BLUE);
+
+      pinMode(SOC_GPIO_LED_M1_RED,   INPUT);
+      pinMode(SOC_GPIO_LED_M1_BLUE,  INPUT);
+      pinMode(SOC_GPIO_LED_M1_PWR,   INPUT);
+
+      pinMode(SOC_GPIO_PIN_IO_M1_PWR,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_M1_HOLD,  INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_M1_WP,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_M1_SS,    INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_M1_WKE,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_M1_RST,  INPUT);
+      break;
+
     case NRF52_NORDIC_PCA10059:
     default:
 //      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
@@ -2236,7 +2267,7 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_ELECROW_TN_M1:
-      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON2;
+      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON1;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -3002,8 +3033,8 @@ static byte nRF52_Display_setup()
 
     /* EPD back light off */
     pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
-
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, nRF52_board == NRF52_ELECROW_TN_M1 ?
+                                        HIGH : LOW);
 #endif /* USE_EPAPER */
   }
 
@@ -3496,6 +3527,10 @@ void handleEvent(AceButton* button, uint8_t eventType,
           //  up_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON2;
           //  break;
 
+          case NRF52_ELECROW_TN_M1:
+            up_button_pin = SOC_GPIO_PIN_M1_BUTTON2;
+            break;
+
           case NRF52_LILYGO_TECHO_REV_0:
           case NRF52_LILYGO_TECHO_REV_1:
           case NRF52_LILYGO_TECHO_REV_2:
@@ -3550,7 +3585,8 @@ static void nRF52_Button_setup()
       break;
 
     case NRF52_ELECROW_TN_M1:
-      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON2;
+      mode_button_pin = SOC_GPIO_PIN_M1_BUTTON1;
+      up_button_pin   = SOC_GPIO_PIN_M1_BUTTON2;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:

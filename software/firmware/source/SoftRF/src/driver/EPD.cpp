@@ -42,7 +42,7 @@ const char EPD_SoftRF_text3[] = "LilyGO";
 const char EPD_SoftRF_text4[] = "Author: ";
 const char EPD_SoftRF_text5[] = "Linar Yusupov";
 const char EPD_SoftRF_text6[] = "(C) 2016-2025";
-
+const char EPD_SoftRF_text7[] = "Elecrow";
 
 const char EPD_Radio_text[]   = "RADIO   ";
 const char EPD_GNSS_text[]    = "GNSS    ";
@@ -80,9 +80,17 @@ bool EPD_setup(bool splash_screen)
   uint16_t tbw4, tbh4;
   uint16_t x, y;
 
+  const char *partner_text = EPD_SoftRF_text3;
+  uint8_t rotate           = ROTATE_270; /* 270 deg. is default angle */;
+
+  if (hw_info.model == SOFTRF_MODEL_HANDHELD) {
+    partner_text = EPD_SoftRF_text7;
+    rotate       = ROTATE_0;
+  }
+
   display->init( /* 38400 */ );
 
-  display->setRotation((ROTATE_270 + ui->rotate) & 0x3); /* 270 deg. is default angle */
+  display->setRotation((rotate + ui->rotate) & 0x3);
 
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);
@@ -98,10 +106,11 @@ bool EPD_setup(bool splash_screen)
   display->setFont(&FreeMonoBold18pt7b);
 #endif
   display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
-  display->getTextBounds(EPD_SoftRF_text3, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+  display->getTextBounds(partner_text    , 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
 
   if (hw_info.model == SOFTRF_MODEL_BADGE ||
-      hw_info.model == SOFTRF_MODEL_INK) {
+      hw_info.model == SOFTRF_MODEL_INK   ||
+      hw_info.model == SOFTRF_MODEL_HANDHELD) {
 
     x = (display->width()  - tbw1) / 2;
     y = (display->height() + tbh1) / 2 - tbh3;
@@ -134,7 +143,7 @@ bool EPD_setup(bool splash_screen)
     y -= 10;
 #endif /* EPD_ASPECT_RATIO_2C1 */
     display->setCursor(x, y);
-    display->print(EPD_SoftRF_text3);
+    display->print(partner_text);
 
     char buf[32];
     snprintf(buf, sizeof(buf), "HW: %s SW: %s", hw_info.revision > 2 ?

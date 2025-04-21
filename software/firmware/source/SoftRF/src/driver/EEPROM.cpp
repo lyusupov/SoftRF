@@ -112,7 +112,8 @@ void EEPROM_defaults()
     eeprom_block.field.settings.pointer     = DIRECTION_NORTH_UP;
   } else {
 #if defined(USE_PWM_SOUND)
-    if (hw_info.model == SOFTRF_MODEL_CARD) {
+    if (hw_info.model == SOFTRF_MODEL_CARD ||
+        hw_info.model == SOFTRF_MODEL_HANDHELD) {
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
     } else
 #endif /* USE_PWM_SOUND */
@@ -135,7 +136,8 @@ void EEPROM_defaults()
 #else
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE    ||
                                            hw_info.model == SOFTRF_MODEL_CARD     ||
-                                           hw_info.model == SOFTRF_MODEL_COZY      ?
+                                           hw_info.model == SOFTRF_MODEL_COZY     ||
+                                           hw_info.model == SOFTRF_MODEL_HANDHELD  ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ES        ?
                                            NMEA_OFF :

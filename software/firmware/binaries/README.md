@@ -401,7 +401,7 @@ The Bootloader is capable to self-program an application firmware into the devic
 3. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/CH32/SoftRF) ;
 4. Connect the CH32 based device to your PC by means of a USB cable ;
 5. Press and hold **RESET** button, press and hold **BOOT0** button, release **RESET**, release **BOOT0** ;
-6. Follow instructions for the **WCHISPStudio** tool to somplete the firmware installation procedure. Use this picture as an illustration.
+6. Follow instructions in the operating manual for **WCHISPStudio** tool to complete the firmware installation procedure. Use this picture as an illustration.
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Academy-9.jpg" width="800">
 
