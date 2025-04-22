@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# simBuild
+# build a RadioHead example sketch for running as a simulated process
+# on Linux.
+#
+# usage: simBuild sketchname.pde
+# The executable will be saved in the current directory
+
+INPUT=$1
+OUTPUT=$(basename $INPUT ".pde")
+
+g++ -g -I . -I RHutil -x c++ $INPUT tools/simMain.cpp RHGenericDriver.cpp RHMesh.cpp RHRouter.cpp RHReliableDatagram.cpp RHDatagram.cpp RH_TCP.cpp RH_Serial.cpp RHCRC.cpp RHutil/HardwareSerial.cpp -o $OUTPUT

@@ -267,7 +267,8 @@ void EPD_info1()
     display->print(EPD_GNSS_text);
     display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
 
-    if (hw_info.model == SOFTRF_MODEL_BADGE) {
+    if (hw_info.model == SOFTRF_MODEL_BADGE ||
+        hw_info.model == SOFTRF_MODEL_HANDHELD) {
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);

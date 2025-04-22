@@ -1004,6 +1004,7 @@ static void nRF52_setup()
       hw_info.model      = SOFTRF_MODEL_HANDHELD;
       nRF52_Device_Model = "Handheld Edition";
     }
+    pinMode(SOC_GPIO_PIN_GNSS_M1_SW, INPUT);
   }
 
 #if defined(USE_TFT)

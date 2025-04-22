@@ -18,6 +18,10 @@ One more of [hardware platforms](https://github.com/lyusupov/SoftRF#by-processin
 
 * same that previous 0.13 release has
 
+> [!IMPORTANT]
+> Release 0.14 firmware **binaries are available for RP2350** target only.<br>
+> Users of other hardware platforms should stay on Release 0.13 because no changes were made to the software except a few that are RP2350 specific ones.
+
 <br>
 
 ## revision 0.13

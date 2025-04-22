@@ -43,7 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * NeoPixelBus library is developed by **Michael Miller**
  * jQuery library is developed by **JS Foundation**
  * EGM96 data is developed by **XCSoar team**
- * BCM2835 C library is developed by **Mike McCauley**
+ * BCM2835 and RadioHead libraries are developed by **Mike McCauley**
  * SimpleNetwork library is developed by **Dario Longobardi**
  * ArduinoJson library is developed by **Benoit Blanchon**
  * Flashrom library is part of the **flashrom.org project**

@@ -1,0 +1,6 @@
+This directory contains some files to allow RadioHead to be built on STM32F4
+Discovery boards, using the native STM Firmware libraries, in order to support
+Codec2WalkieTalkie and other projects.
+
+The files provide just enough Arduino compatibility to allow RadioHead to
+build in that environment.
