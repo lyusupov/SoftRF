@@ -510,8 +510,11 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef USE_NMEALIB
 #undef USE_BLE_MIDI
 #undef ENABLE_PROL
-//#define USE_NIMBLE
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#define USE_NIMBLE
+#else
 #define USE_ARDUINOBLE
+#endif /* C6 */
 #endif /* C2 || C6 || H2 */
 #endif /* SX || CX || H2 */
 #endif /* CONFIG_IDF_TARGET_ESP32 */

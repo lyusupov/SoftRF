@@ -21,7 +21,7 @@
 
 #include "../../system/SoC.h"
 
-#if defined(USE_NIMBLE)
+#if defined(USE_NIMBLE) && !defined(EXCLUDE_BLUETOOTH)
 /*
  *  BLE code is based on Neil Kolban example for IDF:
  *    https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
@@ -40,6 +40,7 @@
 #include "../../driver/Battery.h"
 
 #include <core_version.h>
+#include <cbuf.h>
 
 NimBLEServer* pServer = NULL;
 NimBLECharacteristic* pUARTCharacteristic = NULL;
@@ -249,7 +250,7 @@ static void ESP32_Bluetooth_setup()
 #endif
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
       pAdvertising->enableScanResponse(true);
-      pAdvertising->setPreferredParams(0x06a, 0x12);
+      pAdvertising->setPreferredParams(0x06, 0x12);
 #else
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue

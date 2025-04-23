@@ -24,7 +24,6 @@
 #include <esp_wifi.h>
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <esp_bt.h>
-#include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
@@ -50,6 +49,13 @@
 #endif /* ESP_IDF_VERSION_MAJOR */
 
 #include "../system/SoC.h"
+
+#if !defined(USE_NIMBLE)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#include <BLEDevice.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#endif /* USE_NIMBLE */
+
 #include "../system/Time.h"
 #include "../driver/Sound.h"
 #include "../driver/EEPROM.h"
