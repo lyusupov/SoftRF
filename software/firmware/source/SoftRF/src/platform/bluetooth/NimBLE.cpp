@@ -247,9 +247,14 @@ static void ESP32_Bluetooth_setup()
 #endif /* USE_BLE_MIDI */
       pAdvertising->setAdvertisementData(BLEAdvData);
 #endif
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+      pAdvertising->enableScanResponse(true);
+      pAdvertising->setPreferredParams(0x06a, 0x12);
+#else
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);
+#endif /* ESP_IDF_VERSION_MAJOR */
       NimBLEDevice::startAdvertising();
 
       BLE_Advertising_TimeMarker = millis();

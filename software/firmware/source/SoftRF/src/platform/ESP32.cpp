@@ -2804,7 +2804,13 @@ static long ESP32_random(long howsmall, long howBig)
 
 #if !defined(EXCLUDE_BLUETOOTH) && defined(USE_BLE_MIDI)
 extern bool deviceConnected;
-extern BLECharacteristic* pMIDICharacteristic;
+
+#if defined(USE_NIMBLE)
+#include <NimBLEDevice.h>
+extern NimBLECharacteristic* pMIDICharacteristic;
+#else
+extern    BLECharacteristic* pMIDICharacteristic;
+#endif /* USE_NIMBLE */
 
 uint8_t midiPacket[] = {
    0x80,  // header
