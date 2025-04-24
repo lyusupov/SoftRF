@@ -101,7 +101,11 @@ class AppClientCallback : public NimBLEClientCallbacks {
   }
 };
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+class AppAdvertisedDeviceCallbacks: public NimBLEScanCallbacks {
+#else
 class AppAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
+#endif /* ESP_IDF_VERSION_MAJOR */
 
   void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
 
@@ -274,7 +278,11 @@ static bool ESP32_BLEConnectToServer() {
     }
 
     if(pRemoteCharacteristic->canNotify())
+#if defined(USE_NIMBLE)
+      pRemoteCharacteristic->subscribe(true, AppNotifyCallback);
+#else
       pRemoteCharacteristic->registerForNotify(AppNotifyCallback);
+#endif /* USE_NIMBLE */
 
     ESP32_BT_ctl.status = BT_STATUS_CON;
     return true;
@@ -328,7 +336,11 @@ static void ESP32_Bluetooth_setup()
       BLEScan* pBLEScan = BLEDevice::getScan();
 #endif /* USE_NIMBLE */
 
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+      pBLEScan->setScanCallbacks(new NimBLEScanCallbacks());
+#else
       pBLEScan->setAdvertisedDeviceCallbacks(new AppAdvertisedDeviceCallbacks());
+#endif /* ESP_IDF_VERSION_MAJOR */
       pBLEScan->setInterval(1349);
       pBLEScan->setWindow(449);
       pBLEScan->setActiveScan(true);
@@ -445,9 +457,11 @@ static void ESP32_Bluetooth_loop()
 
           if (size > 0) {
             BLE_FIFO_TX->read((char *) chunk, size);
-
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+            pRemoteCharacteristic->writeValue(chunk, size, false);
+#else
             pRemoteCharacteristic->writeValue(chunk, size);
-
+#endif /* ESP_IDF_VERSION_MAJOR */
             BLE_Notify_TimeMarker = millis();
           }
       }
