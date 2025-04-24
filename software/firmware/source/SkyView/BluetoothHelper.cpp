@@ -40,7 +40,11 @@
 BluetoothSerial SerialBT;
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
+#if defined(USE_NIMBLE)
+#include <NimBLEDevice.h>
+#else
 #include <BLEDevice.h>
+#endif /* USE_NIMBLE */
 
 #include "WiFiHelper.h"   // HOSTNAME
 
@@ -53,17 +57,69 @@ Bluetooth_ctl_t ESP32_BT_ctl = {
 };
 
 /* LE */
-static BLERemoteCharacteristic* pRemoteCharacteristic;
-static BLEAdvertisedDevice* AppDevice;
-static BLEClient* pClient;
+#if defined(USE_NIMBLE)
+static NimBLERemoteCharacteristic* pRemoteCharacteristic;
+static NimBLEAdvertisedDevice*     AppDevice;
+static NimBLEClient*               pClient;
 
-static BLEUUID  serviceUUID(SERVICE_UUID16);
-static BLEUUID  charUUID(CHARACTERISTIC_UUID16);
+static NimBLEUUID                  serviceUUID(SERVICE_UUID16);
+static NimBLEUUID                  charUUID(CHARACTERISTIC_UUID16);
+#else
+static BLERemoteCharacteristic*    pRemoteCharacteristic;
+static BLEAdvertisedDevice*        AppDevice;
+static BLEClient*                  pClient;
+
+static BLEUUID                     serviceUUID(SERVICE_UUID16);
+static BLEUUID                     charUUID(CHARACTERISTIC_UUID16);
+#endif /* USE_NIMBLE */
 
 cbuf *BLE_FIFO_RX, *BLE_FIFO_TX;
 
 static unsigned long BT_TimeMarker = 0;
 static unsigned long BLE_Notify_TimeMarker = 0;
+
+#if defined(USE_NIMBLE)
+static void AppNotifyCallback(
+  NimBLERemoteCharacteristic* pBLERemoteCharacteristic,
+  uint8_t* pData,
+  size_t length,
+  bool isNotify) {
+    if (length > 0) {
+      BLE_FIFO_RX->write((char *) pData, (BLE_FIFO_RX->room() > length ?
+                                          length : BLE_FIFO_RX->room()));
+    }
+}
+
+class AppClientCallback : public NimBLEClientCallbacks {
+  void onConnect(NimBLEClient* pclient) {
+  }
+
+  void onDisconnect(NimBLEClient* pclient) {
+    ESP32_BT_ctl.status = BT_STATUS_NC;
+
+    Serial.println(F("BLE: disconnected from Server."));
+  }
+};
+
+class AppAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
+
+  void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+
+    if (advertisedDevice->haveServiceUUID() && advertisedDevice->isAdvertisingService(serviceUUID)) {
+
+      NimBLEDevice::getScan()->stop();
+
+      if (AppDevice) {
+        AppDevice->~NimBLEAdvertisedDevice();
+      }
+
+      AppDevice = advertisedDevice;
+      ESP32_BT_ctl.command = BT_CMD_CONNECT;
+    }
+  }
+};
+
+#else /* USE_NIMBLE */
 
 static void AppNotifyCallback(
   BLERemoteCharacteristic* pBLERemoteCharacteristic,
@@ -104,6 +160,7 @@ class AppAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     }
   }
 };
+#endif /* USE_NIMBLE */
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
 static void ESP32_BT_SPP_Connection_Manager(void *parameter)
@@ -195,7 +252,12 @@ static void ESP32_BT_SPP_Connection_Manager(void *parameter)
 static bool ESP32_BLEConnectToServer() {
     pClient->connect(AppDevice);
 
-    BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+#if defined(USE_NIMBLE)
+    NimBLERemoteService* pRemoteService = pClient->getService(serviceUUID);
+#else
+    BLERemoteService*    pRemoteService = pClient->getService(serviceUUID);
+#endif /* USE_NIMBLE */
+
     if (pRemoteService == nullptr) {
       Serial.print(F("BLE: Failed to find our service UUID: "));
       Serial.println(serviceUUID.toString().c_str());
@@ -252,12 +314,20 @@ static void ESP32_Bluetooth_setup()
       esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
-      BLEDevice::init("");
+#if defined(USE_NIMBLE)
+      NimBLEDevice::init("");
+      pClient = NimBLEDevice::createClient();
+      pClient->setClientCallbacks(new AppClientCallback());
 
+      NimBLEScan* pBLEScan = NimBLEDevice::getScan();
+#else
+      BLEDevice::init("");
       pClient = BLEDevice::createClient();
       pClient->setClientCallbacks(new AppClientCallback());
 
       BLEScan* pBLEScan = BLEDevice::getScan();
+#endif /* USE_NIMBLE */
+
       pBLEScan->setAdvertisedDeviceCallbacks(new AppAdvertisedDeviceCallbacks());
       pBLEScan->setInterval(1349);
       pBLEScan->setWindow(449);
@@ -349,7 +419,11 @@ static void ESP32_Bluetooth_loop()
           }
         }
 
+#if defined(USE_NIMBLE)
+        NimBLEDevice::getScan()->start(3, false);
+#else
         BLEDevice::getScan()->start(3, false);
+#endif /* USE_NIMBLE */
 
 #if 0
         /* approx. 170 bytes memory leak still remains */
@@ -403,7 +477,11 @@ static void ESP32_Bluetooth_fini()
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   case CON_BLUETOOTH_LE:
     {
+#if defined(USE_NIMBLE)
+      NimBLEDevice::deinit();
+#else
       BLEDevice::deinit();
+#endif /* USE_NIMBLE */
     }
     break;
   default:

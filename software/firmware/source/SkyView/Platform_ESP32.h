@@ -181,6 +181,7 @@
 #define SOC_GPIO_PIN_USB_DP   19 /* D1 */
 #define SOC_GPIO_PIN_USB_DN   18 /* D2 */
 
+//#define USE_NIMBLE
 #define EXCLUDE_AUDIO
 
 #else
