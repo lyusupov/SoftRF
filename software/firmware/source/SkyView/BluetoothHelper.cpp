@@ -336,7 +336,7 @@ static void ESP32_Bluetooth_setup()
       BLEScan* pBLEScan = BLEDevice::getScan();
 #endif /* USE_NIMBLE */
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(USE_NIMBLE) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
       pBLEScan->setScanCallbacks(new NimBLEScanCallbacks());
 #else
       pBLEScan->setAdvertisedDeviceCallbacks(new AppAdvertisedDeviceCallbacks());
@@ -457,7 +457,7 @@ static void ESP32_Bluetooth_loop()
 
           if (size > 0) {
             BLE_FIFO_TX->read((char *) chunk, size);
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(USE_NIMBLE) && defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
             pRemoteCharacteristic->writeValue(chunk, size, false);
 #else
             pRemoteCharacteristic->writeValue(chunk, size);
