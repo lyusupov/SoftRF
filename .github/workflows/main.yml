@@ -61,8 +61,8 @@ jobs:
       ARDUINO_CLI_VERSION: 0.34.2
       ARDUINO_BLE_VERSION: 1.4.0
       ENERGIA_IDE_VERSION: 1.8.10E23
-      # NIM_BLE_VERSION:     1.4.1
-      NIM_BLE_VERSION:   nimble-1.6-c6-build-working
+      # NIM_BLE_VERSION:   1.4.1
+      NIM_BLE_VERSION:     master
       TINYUSB_VERSION:     3.4.0
       BOARD:               ${{ matrix.board }}
       PINS_ARDUINO:        pins_arduino.h
@@ -534,7 +534,7 @@ jobs:
             true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
-            rm -rf $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION} ;
+            # rm -rf $HOME/Arduino/libraries/ArduinoBLE-${ARDUINO_BLE_VERSION} ;
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SkyView/SkyView.ino ;
             fi ;
           fi ;
