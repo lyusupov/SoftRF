@@ -29,11 +29,14 @@ void TFT_Mode_Cycle()             {}
 #include <TFT_eSPI.h>
 
 #include <FT5206.h>
+#include <bma.h>
 
 #include "TFTHelper.h"
 #include "EEPROMHelper.h"
 #include "TrafficHelper.h"
 #include "BaroHelper.h"
+
+extern BMA *bma;
 
 TFT_eSPI *tft = NULL;
 TFT_eSprite *sprite = NULL;

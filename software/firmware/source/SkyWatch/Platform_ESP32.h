@@ -27,7 +27,6 @@
 #include <Update.h>
 #include <SPIFFS.h>
 #include <pcf8563.h>
-#include <bma.h>
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS            9
@@ -200,7 +199,6 @@ enum softrf_usb_pid {
 extern bool loopTaskWDTEnabled;
 
 extern WebServer server;
-extern BMA *bma;
 extern portMUX_TYPE BMA_mutex;
 extern volatile bool BMA_Irq;
 extern PCF8563_Class *rtc;
@@ -252,7 +250,7 @@ extern PCF8563_Class *rtc;
 #define SOC_GPIO_PIN_GNSS_RX            SOC_GPIO_PIN_TULTIMA_ESP_HS
 #define SOC_GPIO_PIN_GNSS_TX            SOC_GPIO_PIN_TULTIMA_ESP_DR
 
-//#define USE_NIMBLE
+#define USE_NIMBLE
 //#define USE_ARDUINOBLE
 #if defined(USE_ARDUINOBLE)
 extern IODev_ops_t ArdBLE_Bluetooth_ops;

@@ -22,9 +22,7 @@
 
 #if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-#define USE_NIMBLE
-#endif
+#include "SoCHelper.h"
 
 #if !defined(USE_ARDUINOBLE)
 
@@ -51,7 +49,6 @@
 
 #include "esp_gap_bt_api.h"
 
-#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "BluetoothHelper.h"
 
@@ -1030,7 +1027,6 @@ static void bt_app_av_state_disconnecting(uint16_t event, void *param)
 #include <api/RingBuffer.h>
 #endif /* ESP32 */
 
-#include "SoCHelper.h"
 #include "EEPROMHelper.h"
 #include "BluetoothHelper.h"
 #include "WiFiHelper.h"

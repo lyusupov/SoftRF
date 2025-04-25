@@ -997,14 +997,18 @@ static void nRF52_setup()
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo, T114 or M1 */
-    pinMode(SOC_GPIO_PIN_GNSS_M1_SW, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT);
+    int buzzer_high_impedance = digitalRead(SOC_GPIO_PIN_M1_BUZZER);
+    pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT_PULLUP);
     delay(1);
-    if (digitalRead(SOC_GPIO_PIN_GNSS_M1_SW) == LOW) { /* GNSS switch is OFF */
+    int buzzer_pullup = digitalRead(SOC_GPIO_PIN_M1_BUZZER);
+    pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT);
+
+    if (buzzer_high_impedance == LOW && buzzer_pullup == LOW) {
       nRF52_board        = NRF52_ELECROW_TN_M1;
       hw_info.model      = SOFTRF_MODEL_HANDHELD;
       nRF52_Device_Model = "Handheld Edition";
     }
-    pinMode(SOC_GPIO_PIN_GNSS_M1_SW, INPUT);
   }
 
 #if defined(USE_TFT)

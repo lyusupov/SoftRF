@@ -43,6 +43,7 @@
 #include <battery.h>
 #include <sqlite3.h>
 #include <SD.h>
+#include <bma.h>
 
 //#include "driver/i2s.h"
 
