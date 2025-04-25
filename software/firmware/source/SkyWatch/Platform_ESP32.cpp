@@ -1867,11 +1867,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_fini,
   ESP32_Service_Mode,
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(USE_ARDUINOBLE)
   &ArdBLE_Bluetooth_ops,
 #else
   &ESP32_Bluetooth_ops,
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* USE_ARDUINOBLE */
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
