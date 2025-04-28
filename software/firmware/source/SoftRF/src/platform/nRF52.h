@@ -47,7 +47,9 @@
 // State when LED is litted
 #if defined(LED_STATE_ON)
 #undef  LED_STATE_ON
-#define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD ? HIGH : LOW)
+#define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD    || \
+                                 hw_info.model == SOFTRF_MODEL_HANDHELD ? \
+                                 HIGH : LOW)
 #else
 #define LED_STATE_ON            LOW
 #endif /* LED_STATE_ON */

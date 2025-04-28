@@ -376,7 +376,9 @@ static int32_t nRF52_msc_read_cb (uint32_t lba, void* buffer, uint32_t bufsize)
 // return number of written bytes (must be multiple of block size)
 static int32_t nRF52_msc_write_cb (uint32_t lba, uint8_t* buffer, uint32_t bufsize)
 {
-  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) ledOn(SOC_GPIO_LED_USBMSC);
+  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) {
+      digitalWrite(SOC_GPIO_LED_USBMSC, LED_STATE_ON);
+  }
 
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it, yahhhh!!
@@ -393,7 +395,9 @@ static void nRF52_msc_flush_cb (void)
   // clear file system's cache to force refresh
   fatfs.cacheClear();
 
-  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) ledOff(SOC_GPIO_LED_USBMSC);
+  if (SOC_GPIO_LED_USBMSC != SOC_UNUSED_PIN) {
+      digitalWrite(SOC_GPIO_LED_USBMSC, 1-LED_STATE_ON);
+  }
 }
 #endif /* ARDUINO_ARCH_MBED */
 
@@ -1320,14 +1324,16 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_M1_PWR,      OUTPUT);
-      digitalWrite(SOC_GPIO_LED_M1_PWR, HIGH);
+      if (DEVICE_ID_HIGH != 0x85aa831f || DEVICE_ID_LOW != 0x01d3e3e0) {
+        pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
+        digitalWrite(SOC_GPIO_LED_M1_RED_PWR, HIGH);
 
-      pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
-      pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
+        pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
+        pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
 
-      ledOn (SOC_GPIO_LED_M1_RED);
-      ledOff(SOC_GPIO_LED_M1_BLUE);
+        digitalWrite(SOC_GPIO_LED_M1_RED,    LED_STATE_ON);
+        digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
+      }
 
       lmic_pins.nss  = SOC_GPIO_PIN_M1_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
@@ -2014,10 +2020,11 @@ static void nRF52_loop()
 #endif /* EXCLUDE_BHI260 */
 #endif /* EXCLUDE_IMU */
 
-  if (nRF52_board      == NRF52_SEEED_T1000E &&
-      settings->volume != BUZZER_OFF         &&
-      settings->mode   == SOFTRF_MODE_NORMAL &&
-      nRF52_has_vff    == false              &&
+  if ((nRF52_board     == NRF52_SEEED_T1000E   ||
+       nRF52_board     == NRF52_ELECROW_TN_M1) &&
+      settings->volume != BUZZER_OFF           &&
+      settings->mode   == SOFTRF_MODE_NORMAL   &&
+      nRF52_has_vff    == false                &&
       isValidFix()     == true) {
     uint8_t v = settings->volume;
 
@@ -2200,12 +2207,12 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_ELECROW_TN_M1:
-      ledOff(SOC_GPIO_LED_M1_RED);
-      ledOff(SOC_GPIO_LED_M1_BLUE);
+      digitalWrite(SOC_GPIO_LED_M1_RED,  1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
 
-      pinMode(SOC_GPIO_LED_M1_RED,   INPUT);
-      pinMode(SOC_GPIO_LED_M1_BLUE,  INPUT);
-      pinMode(SOC_GPIO_LED_M1_PWR,   INPUT);
+      pinMode(SOC_GPIO_LED_M1_RED,       INPUT);
+      pinMode(SOC_GPIO_LED_M1_BLUE,      INPUT);
+      pinMode(SOC_GPIO_LED_M1_RED_PWR,   INPUT);
 
       pinMode(SOC_GPIO_PIN_IO_M1_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_M1_HOLD,  INPUT);
@@ -2483,6 +2490,9 @@ static void nRF52_Sound_test(int var)
     tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
     tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+
+    noTone(SOC_GPIO_PIN_BUZZER);
+    pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
   }
 #endif /* USE_PWM_SOUND */
 }
@@ -2500,6 +2510,7 @@ static void nRF52_Sound_tone(int hz, uint8_t volume)
       tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
     } else {
       noTone(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
     }
   }
 #endif /* USE_PWM_SOUND */

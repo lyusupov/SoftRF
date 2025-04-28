@@ -50,7 +50,9 @@
 
 #include "../system/SoC.h"
 
-#if !defined(USE_NIMBLE)
+#if defined(USE_NIMBLE)
+#include <NimBLEDevice.h>
+#else
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
@@ -2812,7 +2814,6 @@ static long ESP32_random(long howsmall, long howBig)
 extern bool deviceConnected;
 
 #if defined(USE_NIMBLE)
-#include <NimBLEDevice.h>
 extern NimBLECharacteristic* pMIDICharacteristic;
 #else
 extern    BLECharacteristic* pMIDICharacteristic;
