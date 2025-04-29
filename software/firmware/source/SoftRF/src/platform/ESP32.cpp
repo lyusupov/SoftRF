@@ -4331,7 +4331,7 @@ static void ESP32_Battery_setup()
     } else if (esp32_board == ESP32_BANANA_PICOW) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO8_CHANNEL); /* TBD */
     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-      // calibrate_voltage((adc2_channel_t) ADC2_GPIO17_CHANNEL); /* TBD */
+      adc2_calibrate_voltage((adc2_channel_t) ADC2_GPIO17_CHANNEL);
     } else {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
@@ -4437,23 +4437,29 @@ static float ESP32_Battery_param(uint8_t param)
 
     case PMU_NONE:
     default:
-      voltage = (float) read_voltage();
-
-      /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
-      if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-         (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
-          esp32_board   == ESP32_S2_T8_V1_1       ||
-          esp32_board   == ESP32_LILYGO_T3S3_EPD) {
-        voltage += voltage;
-      } else if (esp32_board == ESP32_C2_DEVKIT ||
-                 esp32_board == ESP32_C3_DEVKIT ||
-                 esp32_board == ESP32_C6_DEVKIT) {
-      /* NodeMCU has voltage divider 100k/220k on board */
-        voltage *= 3.2;
-      } else if (esp32_board == ESP32_HELTEC_TRACKER) {
-        voltage *= 4.9;
-      } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+      if (esp32_board == ESP32_ELECROW_TN_M2) {
+        voltage = (float) adc2_read_voltage();
         voltage *= 1.548;
+      } else
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+      {
+        voltage = (float) read_voltage();
+
+        /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
+        if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
+           (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
+            esp32_board   == ESP32_S2_T8_V1_1       ||
+            esp32_board   == ESP32_LILYGO_T3S3_EPD) {
+          voltage += voltage;
+        } else if (esp32_board == ESP32_C2_DEVKIT ||
+                   esp32_board == ESP32_C3_DEVKIT ||
+                   esp32_board == ESP32_C6_DEVKIT) {
+        /* NodeMCU has voltage divider 100k/220k on board */
+          voltage *= 3.2;
+        } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+          voltage *= 4.9;
+        }
       }
       break;
     }
