@@ -26,7 +26,7 @@
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include <esp_bt.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && !defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <rom/spi_flash.h>
@@ -47,6 +47,7 @@
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <sqlite3.h>
 #include <SD.h>
@@ -166,6 +167,7 @@ SPIClass uSD_SPI(HSPI);
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
 
 /* variables hold file, state of process wav file and wav file properties */
@@ -611,7 +613,8 @@ static void ESP32_setup()
 #endif /* TBD */
 
 #else
-#if ARDUINO_USB_CDC_ON_BOOT && defined(CONFIG_IDF_TARGET_ESP32C6)
+#if ARDUINO_USB_CDC_ON_BOOT && \
+    (defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
   Serial.begin(SERIAL_OUT_BR);
 #else
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -790,7 +793,8 @@ static void ESP32_fini()
    *  SD card in  -            0.2 mA
    *  SD card out -            0.1 mA
    */
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
   esp_sleep_enable_ext1_wakeup(1ULL << wake_gpio_num, ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 */
 
@@ -903,6 +907,8 @@ static void ESP32_Battery_setup()
   calibrate_voltage((adc1_channel_t) ADC1_GPIO3_CHANNEL);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL); /* TBD */
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+  /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   /* TBD */
 #else
@@ -1509,6 +1515,7 @@ static void ESP32_DB_fini()
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
 /* write sample data to I2S */
 int i2s_write_sample_nb(uint32_t sample)
@@ -1668,6 +1675,7 @@ static void ESP32_TTS(char *message)
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
       if (SD.cardType() == CARD_NONE)
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -1727,6 +1735,7 @@ static void ESP32_TTS(char *message)
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
     defined(CONFIG_IDF_TARGET_ESP32S2) || \
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6)
       if (SD.cardType() == CARD_NONE ||
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -1988,6 +1997,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+  SOC_ESP32C5,
+  "ESP32-C5",
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",

@@ -22,7 +22,7 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5) && !defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <rom/spi_flash.h>
@@ -53,11 +53,11 @@
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define CONFIG_IDF_TARGET_ESP32 0
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <esp_mac.h>
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #undef CONFIG_IDF_TARGET_ESP32
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -224,7 +224,8 @@ static void ESP32_setup()
 
   ++bootCount;
 
-#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)
   ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
   if (ret != ESP_OK) {
 #else
@@ -391,7 +392,8 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
   /* SD-SPI init */
   uSD_SPI.begin(
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -410,6 +412,7 @@ static void ESP32_setup()
 
 #if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || \
                                 defined(CONFIG_IDF_TARGET_ESP32S3) || \
+                                defined(CONFIG_IDF_TARGET_ESP32C5) || \
                                 defined(CONFIG_IDF_TARGET_ESP32C6))
   Serial.begin(SERIAL_OUT_BR);
 
@@ -583,7 +586,8 @@ static void ESP32_loop()
 
 static void ESP32_fini()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
   uSD_SPI.end();
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 
@@ -605,7 +609,8 @@ static void ESP32_fini()
 
     delay(20);
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
   }
@@ -888,7 +893,8 @@ static float ESP32_Battery_voltage()
 
 static bool ESP32_DB_init()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
   return false;
 #else
   int ss_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
@@ -934,7 +940,8 @@ static bool ESP32_DB_init()
 
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6)
   return false;
 #else
   sqlite3_stmt *stmt;
@@ -1309,7 +1316,8 @@ void onModeButtonEvent() {
 
 static void ESP32_Button_setup()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
   int button_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                    SOC_GPIO_PIN_TDONGLE_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
@@ -1336,7 +1344,8 @@ static void ESP32_Button_setup()
 
 static void ESP32_Button_loop()
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)
   button_mode.check();
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }
@@ -1830,6 +1839,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+  SOC_ESP32C5,
+  "ESP32-C5",
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",
