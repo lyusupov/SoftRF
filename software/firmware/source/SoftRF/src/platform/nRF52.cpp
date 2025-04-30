@@ -1012,6 +1012,26 @@ static void nRF52_setup()
       nRF52_board        = NRF52_ELECROW_TN_M1;
       hw_info.model      = SOFTRF_MODEL_HANDHELD;
       nRF52_Device_Model = "Handheld Edition";
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_M1_BUTTON1, INPUT_PULLUP_SENSE);
+
+        uint8_t sd_en;
+        (void) sd_softdevice_is_enabled(&sd_en);
+
+        // Enter System OFF state
+        if ( sd_en ) {
+          sd_power_system_off();
+        } else {
+          NRF_POWER->SYSTEMOFF = 1;
+        }
+#else
+        NRF_POWER->SYSTEMOFF = 1;
+#endif /* ARDUINO_ARCH_MBED */
+      }
     }
   }
 
