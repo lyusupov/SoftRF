@@ -707,6 +707,23 @@ void nfc_func(void *context, nfc_t2t_event_t event,
 }
 #endif /* ENABLE_NFC */
 
+static void nRF52_system_off()
+{
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+  uint8_t sd_en;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
+  // Enter System OFF state
+  if ( sd_en ) {
+    sd_power_system_off();
+  } else {
+    NRF_POWER->SYSTEMOFF = 1;
+  }
+#else
+  NRF_POWER->SYSTEMOFF = 1;
+#endif /* ARDUINO_ARCH_MBED */
+}
+
 static void nRF52_setup()
 {
   ui = &ui_settings;
@@ -860,19 +877,8 @@ static void nRF52_setup()
         pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
-
-        uint8_t sd_en;
-        (void) sd_softdevice_is_enabled(&sd_en);
-
-        // Enter System OFF state
-        if ( sd_en ) {
-          sd_power_system_off();
-        } else {
-          NRF_POWER->SYSTEMOFF = 1;
-        }
-#else
-        NRF_POWER->SYSTEMOFF = 1;
 #endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
       }
 
       pinMode(SOC_GPIO_PIN_SFL_T1000_EN, OUTPUT);
@@ -1018,19 +1024,8 @@ static void nRF52_setup()
         pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_M1_BUTTON1, INPUT_PULLUP_SENSE);
-
-        uint8_t sd_en;
-        (void) sd_softdevice_is_enabled(&sd_en);
-
-        // Enter System OFF state
-        if ( sd_en ) {
-          sd_power_system_off();
-        } else {
-          NRF_POWER->SYSTEMOFF = 1;
-        }
-#else
-        NRF_POWER->SYSTEMOFF = 1;
 #endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
       }
     }
   }
@@ -1051,19 +1046,8 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
       pinMode(SOC_GPIO_PIN_T114_BUTTON, INPUT_PULLUP_SENSE);
-
-      uint8_t sd_en;
-      (void) sd_softdevice_is_enabled(&sd_en);
-
-      // Enter System OFF state
-      if ( sd_en ) {
-        sd_power_system_off();
-      } else {
-        NRF_POWER->SYSTEMOFF = 1;
-      }
-#else
-      NRF_POWER->SYSTEMOFF = 1;
 #endif /* ARDUINO_ARCH_MBED */
+      nRF52_system_off();
     }
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
     /* external bus */
@@ -2062,8 +2046,6 @@ static void nRF52_loop()
 
 static void nRF52_fini(int reason)
 {
-  uint8_t sd_en;
-
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   if (nRF52_has_spiflash) {
     usb_msc.setUnitReady(false);
@@ -2350,18 +2332,7 @@ static void nRF52_fini(int reason)
 
   Serial.end();
 
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-  (void) sd_softdevice_is_enabled(&sd_en);
-
-  // Enter System OFF state
-  if ( sd_en ) {
-    sd_power_system_off();
-  } else {
-    NRF_POWER->SYSTEMOFF = 1;
-  }
-#else
-  NRF_POWER->SYSTEMOFF = 1;
-#endif /* ARDUINO_ARCH_MBED */
+  nRF52_system_off();
 }
 
 static void nRF52_reset()
