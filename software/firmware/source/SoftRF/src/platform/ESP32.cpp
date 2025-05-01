@@ -4677,8 +4677,8 @@ static void ESP32_WDT_fini()
 using namespace ace_button;
 
 AceButton button_1(SOC_GPIO_PIN_TBEAM_V05_BUTTON);
+AceButton button_2(SOC_GPIO_PIN_TWR2_BUTTON);
 #if defined(USE_SA8X8)
-AceButton button_ptt(SOC_GPIO_PIN_TWR2_BUTTON);
 static float PTT_TxF;
 #endif /* USE_SA8X8 */
 
@@ -4689,7 +4689,7 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
   switch (eventType) {
 #if defined(USE_SA8X8)
     case AceButton::kEventPressed:
-      if (button     == &button_ptt &&
+      if (button     == &button_2   &&
           hw_info.rf == RF_IC_SA8X8 &&
           Voice_Frequency > 0       &&
           (settings->power_save & POWER_SAVE_NORECEIVE)) {
@@ -4748,7 +4748,7 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       }
 #endif /* USE_EPAPER */
 #if defined(USE_SA8X8)
-      if (button     == &button_ptt &&
+      if (button     == &button_2   &&
           hw_info.rf == RF_IC_SA8X8 &&
           Voice_Frequency > 0       &&
           (settings->power_save & POWER_SAVE_NORECEIVE)) {
@@ -4781,7 +4781,8 @@ void handleAuxEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventClicked:
     case AceButton::kEventReleased:
 #if defined(USE_OLED)
-      if (button == &button_1) {
+      if (button == &button_1 ||
+         (button == &button_2 && esp32_board == ESP32_ELECROW_TN_M2)) {
         OLED_Up();
       }
 #endif /* USE_OLED */
@@ -4832,14 +4833,26 @@ static void ESP32_Button_setup()
     PageButtonConfig->setClickDelay(600);
     PageButtonConfig->setLongPressDelay(2000);
 
+    if (esp32_board == ESP32_ELECROW_TN_M2) {
+      int scroll_pin = SOC_GPIO_PIN_M2_BUTTON_2;
+
+      pinMode(scroll_pin, INPUT_PULLUP);
+      button_2.init(scroll_pin);
+
+      ButtonConfig* ScrollButtonConfig = button_2.getButtonConfig();
+      ScrollButtonConfig->setEventHandler(handleAuxEvent);
+      ScrollButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+      ScrollButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+      ScrollButtonConfig->setClickDelay(600);
+    }
 #if defined(USE_SA8X8)
-    if (esp32_board == ESP32_LILYGO_T_TWR2) {
+    else if (esp32_board == ESP32_LILYGO_T_TWR2) {
       int ptt_pin = SOC_GPIO_PIN_TWR2_BUTTON;
 
       pinMode(ptt_pin, INPUT_PULLUP);
-      button_ptt.init(ptt_pin);
+      button_2.init(ptt_pin);
 
-      ButtonConfig* PTTButtonConfig = button_ptt.getButtonConfig();
+      ButtonConfig* PTTButtonConfig = button_2.getButtonConfig();
       PTTButtonConfig->setEventHandler(handleMainEvent);
       PTTButtonConfig->setFeature(ButtonConfig::kFeatureClick);
       PTTButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
@@ -4876,11 +4889,15 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_ELECROW_TN_M2       ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
+
+    if (esp32_board == ESP32_ELECROW_TN_M2
 #if defined(USE_SA8X8)
-    if (esp32_board == ESP32_LILYGO_T_TWR2) {
-      button_ptt.check();
-    }
+        ||
+        esp32_board == ESP32_LILYGO_T_TWR2
 #endif /* USE_SA8X8 */
+        ) {
+      button_2.check();
+    }
   }
 }
 
