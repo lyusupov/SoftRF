@@ -117,7 +117,9 @@ void EEPROM_defaults()
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
     } else
 #endif /* USE_PWM_SOUND */
-    {
+    if (hw_info.model == SOFTRF_MODEL_GIZMO) {
+      eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
+    } else {
       eeprom_block.field.settings.volume    = BUZZER_OFF;
     }
     eeprom_block.field.settings.pointer     = LED_OFF;
@@ -130,7 +132,8 @@ void EEPROM_defaults()
 
 #if (ARDUINO_USB_CDC_ON_BOOT && !defined(USE_USB_HOST)) || \
     (defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB))
-  eeprom_block.field.settings.nmea_out   = NMEA_USB;
+  eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_GIZMO ?
+                                           NMEA_UART : NMEA_USB;
 #elif defined(ARDUINO_ARCH_SILABS)
   eeprom_block.field.settings.nmea_out   = NMEA_UART;
 #else

@@ -1,4 +1,6 @@
+/* https://www.elecrow.com/download/product/CIL13002M/ThinkNode_M2_Meshtastic_Signal_Transceiver_DataSheet.pdf */
 
+/* CH340K */
 #define SOC_GPIO_PIN_M2_CONS_RX     44
 #define SOC_GPIO_PIN_M2_CONS_TX     43
 
@@ -29,8 +31,9 @@
 #define SOC_GPIO_PIN_M2_BUZZER      5
 
 // buttons
-#define SOC_GPIO_PIN_M2_BUTTON_PWR  4
-#define SOC_GPIO_PIN_M2_BUTTON_MODE 47
+#define SOC_GPIO_PIN_M2_BUTTON_1    4  /* PWR */
+#define SOC_GPIO_PIN_M2_BUTTON_2    47 /* FUNCTION */
+#define SOC_GPIO_PIN_M2_BUTTON_BOOT 0
 
 // battery ADC
 #define SOC_GPIO_PIN_M2_BATTERY     17

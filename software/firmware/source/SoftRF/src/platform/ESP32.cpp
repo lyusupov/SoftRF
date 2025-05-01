@@ -593,6 +593,7 @@ static void ESP32_setup()
    *                  | WT0132C6-S5   | ZBIT_ZB25VQ32B
    *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
    *  LilyGO T3-S3-EP | ESP32-S3-MINI | XMC_XM25QH32B
+   *  Elecrow TN-M2   | ESP32-S3-N4R8 | ZBIT_ZB25VQ32B ?
    */
 
   if (psramFound()) {
@@ -685,8 +686,14 @@ static void ESP32_setup()
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
+    case MakeFlashId(ST_ID, XMC_XM25QH32B):
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
-      esp32_board    = ESP32_ELECROW_TN_M2;
+      /*
+       * Elecrow TinkNode M2 has OPI PSRAM in the WROOM module.
+       * ESP32 Arduino Core 2.0.x is unable to detect OPI PSRAM
+       * unless we do a psram_type=opi custom build.
+       */
+      esp32_board    = ESP32_ELECROW_TN_M2; /* allow psramFound() to fail */
       break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
@@ -1819,8 +1826,13 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_M2_LED,           OUTPUT);
 
     pinMode(SOC_GPIO_PIN_M2_VEXT_EN,       INPUT_PULLUP); /* OLED */
-    pinMode(SOC_GPIO_PIN_M2_PWR_EN,        INPUT_PULLUP); /* sub-1 GHz radio */
-
+    /* sub-1 GHz radio */
+#if 1
+    pinMode(SOC_GPIO_PIN_M2_PWR_EN,        INPUT_PULLUP);
+#else
+    digitalWrite(SOC_GPIO_PIN_M2_PWR_EN,   HIGH);
+    pinMode(SOC_GPIO_PIN_M2_PWR_EN,        OUTPUT);
+#endif
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -4794,11 +4806,13 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_LILYGO_T_TWR2     ||
        esp32_board == ESP32_HELTEC_TRACKER    ||
        esp32_board == ESP32_LILYGO_T3S3_EPD   ||
+       esp32_board == ESP32_ELECROW_TN_M2     ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                  esp32_board == ESP32_S3_DEVKIT       ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_HELTEC_TRACKER  ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_LILYGO_T3S3_EPD ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
                  esp32_board == ESP32_LILYGO_T_TWR2   ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -4859,6 +4873,7 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_LILYGO_T_TWR2       ||
       esp32_board == ESP32_HELTEC_TRACKER      ||
       esp32_board == ESP32_LILYGO_T3S3_EPD     ||
+      esp32_board == ESP32_ELECROW_TN_M2       ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
 #if defined(USE_SA8X8)
@@ -4875,8 +4890,10 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_LILYGO_T_TWR2     ||
       esp32_board == ESP32_HELTEC_TRACKER    ||
       esp32_board == ESP32_LILYGO_T3S3_EPD   ||
+      esp32_board == ESP32_ELECROW_TN_M2     ||
       esp32_board == ESP32_S3_DEVKIT) {
-    int button_pin = esp32_board == ESP32_S2_T8_V1_1 ? SOC_GPIO_PIN_T8_S2_BUTTON :
+    int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
+                     esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == LOW);
