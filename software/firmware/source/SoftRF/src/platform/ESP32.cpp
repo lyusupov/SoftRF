@@ -3707,13 +3707,15 @@ static byte ESP32_Display_setup()
       u8x8->clear();
 
       uint8_t shift_y = hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
-                        hw_info.model == SOFTRF_MODEL_HAM ? 1 : 0;
+                        hw_info.model == SOFTRF_MODEL_HAM       ||
+                        hw_info.model == SOFTRF_MODEL_GIZMO ? 1 : 0;
+      uint8_t shift_x = hw_info.model == SOFTRF_MODEL_GIZMO ? 1 : 0;
 
-      u8x8->draw2x2String( 2, 2 - shift_y, SoftRF_text1);
+      u8x8->draw2x2String  ( 2, 2 - shift_y, SoftRF_text1);
 
       if (shift_y) {
-        u8x8->drawString   ( 6, 3, SoftRF_text2);
-        u8x8->draw2x2String( 2, 4, SoftRF_text3);
+        u8x8->drawString   ( 6,           3, SoftRF_text2);
+        u8x8->draw2x2String( 2 - shift_x, 4, shift_x ? SoftRF_text4 : SoftRF_text3);
       }
 
       u8x8->drawString   ( 3, 6 + shift_y,
