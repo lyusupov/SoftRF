@@ -47,7 +47,7 @@ const rf_proto_desc_t aprs_proto_desc = {
   .crc_size        = APRS_CRC_SIZE,
 
   .bitrate         = RF_BITRATE_38400, /* 1200 */
-  .deviation       = RF_FREQUENCY_DEVIATION_9_6KHZ, /* TBD */
+  .deviation       = RF_FREQUENCY_DEVIATION_NONE, /* TBD */
   .whitening       = RF_WHITENING_NONE, /* TBD */
   .bandwidth       = RF_RX_BANDWIDTH_SS_50KHZ, /* TBD */
 

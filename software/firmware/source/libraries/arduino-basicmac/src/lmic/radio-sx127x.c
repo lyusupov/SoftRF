@@ -624,9 +624,9 @@ static void txfsk (void) {
     // set frequency deviation
     switch (LMIC.protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_9_6KHZ:
-      writeReg(FSKRegFdevMsb, 0x00); // +/- 9.6kHz
-      writeReg(FSKRegFdevLsb, 0x9d);
+    case RF_FREQUENCY_DEVIATION_10KHZ:
+      writeReg(FSKRegFdevMsb, 0x00); // +/- 10kHz
+      writeReg(FSKRegFdevLsb, 0xa4);
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       writeReg(FSKRegFdevMsb, 0x01); // +/- 19.2kHz
@@ -1015,9 +1015,9 @@ static void rxfsk (bool rxcontinuous) {
     // set frequency deviation
     switch (LMIC.protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_9_6KHZ:
-      writeReg(FSKRegFdevMsb, 0x00); // +/- 9.6kHz
-      writeReg(FSKRegFdevLsb, 0x9d);
+    case RF_FREQUENCY_DEVIATION_10KHZ:
+      writeReg(FSKRegFdevMsb, 0x00); // +/- 10kHz
+      writeReg(FSKRegFdevLsb, 0xa4);
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       writeReg(FSKRegFdevMsb, 0x01); // +/- 19.2kHz

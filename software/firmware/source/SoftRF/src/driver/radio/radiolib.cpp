@@ -705,12 +705,12 @@ static void lr11xx_setup()
 
     switch (rl_protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_9_6KHZ:
+    case RF_FREQUENCY_DEVIATION_10KHZ:
 #if USE_SX1262
-      fdev = 9.6;
+      fdev = 10.0;
 #endif
 #if USE_LR11XX
-      fdev = high ? 62.5 : 9.6; /* SX128x minimum is 62.5 kHz */
+      fdev = high ? 62.5 : 10.0; /* SX128x minimum is 62.5 kHz */
 #endif
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
@@ -1522,8 +1522,8 @@ static void cc1101_setup()
 
   switch (rl_protocol->deviation)
   {
-  case RF_FREQUENCY_DEVIATION_9_6KHZ:
-    fdev = 9.6;
+  case RF_FREQUENCY_DEVIATION_10KHZ:
+    fdev = 10.0;
     break;
   case RF_FREQUENCY_DEVIATION_19_2KHZ:
     fdev = 19.2;
@@ -2297,8 +2297,8 @@ static void sx1231_setup()
 
   switch (rl_protocol->deviation)
   {
-  case RF_FREQUENCY_DEVIATION_9_6KHZ:
-    fdev = 9.6;
+  case RF_FREQUENCY_DEVIATION_10KHZ:
+    fdev = 10.0;
     break;
   case RF_FREQUENCY_DEVIATION_19_2KHZ:
     fdev = 19.2;
@@ -3025,8 +3025,8 @@ static void si4432_setup()
 
   switch (rl_protocol->deviation)
   {
-  case RF_FREQUENCY_DEVIATION_9_6KHZ:
-    fdev = 9.6;
+  case RF_FREQUENCY_DEVIATION_10KHZ:
+    fdev = 10.0;
     break;
   case RF_FREQUENCY_DEVIATION_19_2KHZ:
     fdev = 19.2;
@@ -3942,8 +3942,8 @@ static void sx1280_setup()
 
     switch (rl_protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_9_6KHZ:
-      fdev = high ? 62.5 :  9.6; /* SX128x minimum is 62.5 kHz */
+    case RF_FREQUENCY_DEVIATION_10KHZ:
+      fdev = high ? 62.5 :  10.0; /* SX128x minimum is 62.5 kHz */
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       fdev = 19.2;

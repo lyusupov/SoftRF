@@ -98,7 +98,7 @@
 #define P3I_CRC_TYPE        RF_CHECKSUM_TYPE_CRC8_107
 #define P3I_CRC_SIZE        1
 
-#define P3I_FDEV            RF_FREQUENCY_DEVIATION_9_6KHZ
+#define P3I_FDEV            RF_FREQUENCY_DEVIATION_10KHZ
 #define P3I_BANDWIDTH       RF_RX_BANDWIDTH_SS_50KHZ
 
 #define P3I_AIR_TIME        10 /* in ms */

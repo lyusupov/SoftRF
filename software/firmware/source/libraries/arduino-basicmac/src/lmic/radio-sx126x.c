@@ -466,8 +466,8 @@ static void SetModulationParamsFsk (void) {
     uint32_t Fdev;
     switch (LMIC.protocol->deviation)
     {
-    case RF_FREQUENCY_DEVIATION_9_6KHZ:
-      Fdev = 0x2752; /* ( 9600 * (0x1 << 25)) / 32000000 */
+    case RF_FREQUENCY_DEVIATION_10KHZ:
+      Fdev = 0x28F5; /* (10000 * (0x1 << 25)) / 32000000 */
       break;
     case RF_FREQUENCY_DEVIATION_19_2KHZ:
       Fdev = 0x4EA4; /* (19200 * (0x1 << 25)) / 32000000 */
