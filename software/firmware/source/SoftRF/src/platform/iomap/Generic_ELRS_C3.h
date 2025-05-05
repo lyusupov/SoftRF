@@ -18,7 +18,8 @@
 #define SOC_GPIO_PIN_ELRS_DIO9            1
 
 // misc.
-#define SOC_GPIO_PIN_ELRS_LED             8  // 2
+#define SOC_GPIO_PIN_ELRS_LED             SOC_UNUSED_PIN // 2
+#define SOC_GPIO_PIN_ELRS_PIXEL           8
 #define SOC_GPIO_PIN_ELRS_BUTTON          9
 #define SOC_GPIO_PIN_ELRS_ANT_SW          10 // XR3 only
 #define SOC_GPIO_PIN_ELRS_BATTERY         0  // NC

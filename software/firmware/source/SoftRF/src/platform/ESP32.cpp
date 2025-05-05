@@ -472,6 +472,16 @@ static bool play_file(char *filename)
 #endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> XR1_Pixel(1, SOC_GPIO_PIN_ELRS_PIXEL);
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+Adafruit_NeoPixel XR1_Pixel = Adafruit_NeoPixel(1, SOC_GPIO_PIN_ELRS_PIXEL,
+                                                NEO_GRB + NEO_KHZ800);
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+
 #if CONFIG_TINYUSB_ENABLED && \
     (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
 #include <USB.h>
@@ -1512,7 +1522,6 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
   } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
-
     hw_info.model    = SOFTRF_MODEL_DRONE;
     hw_info.revision = 1;
 
@@ -1890,8 +1899,23 @@ static void ESP32_setup()
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
   if (esp32_board == ESP32_RADIOMASTER_XR1) {
+#if SOC_GPIO_PIN_ELRS_LED != SOC_UNUSED_PIN
     digitalWrite(SOC_GPIO_PIN_ELRS_LED, LED_STATE_ON);
     pinMode(SOC_GPIO_PIN_ELRS_LED,      OUTPUT);
+#endif /* SOC_GPIO_PIN_ELRS_LED */
+
+#if defined(USE_NEOPIXELBUS_LIBRARY)
+    XR1_Pixel.Begin();
+    XR1_Pixel.Show(); // Initialize all pixels to 'off'
+    XR1_Pixel.SetPixelColor(0, LED_COLOR_GREEN);
+    XR1_Pixel.Show();
+#endif /* USE_NEOPIXELBUS_LIBRARY */
+#if defined(USE_ADAFRUIT_NEO_LIBRARY)
+    XR1_Pixel.begin();
+    XR1_Pixel.show(); // Initialize all pixels to 'off'
+    XR1_Pixel.setPixelColor(0, LED_COLOR_GREEN);
+    XR1_Pixel.show();
+#endif /* USE_ADAFRUIT_NEO_LIBRARY */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
