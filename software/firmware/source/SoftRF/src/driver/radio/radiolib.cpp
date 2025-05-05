@@ -562,6 +562,16 @@ static void lr11xx_setup()
       Vtcxo = 3.0;
     break;
 
+  case SOFTRF_MODEL_DRONE:
+    if (eui_le == 0x0016c001f047ac30)
+      // Ebyte E80-900M2213S
+      // LR1121 TCXO Voltage
+      Vtcxo = 1.8;
+    else
+      // TBD
+      Vtcxo = 1.6;
+    break;
+
   case SOFTRF_MODEL_NEO:
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
@@ -910,6 +920,20 @@ static void lr11xx_setup()
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
+    break;
+
+  case SOFTRF_MODEL_DRONE:
+    if (eui_le == 0x0016c001f047ac30) {
+      /* Ebyte E80-900M2213S */
+#if 1
+      radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
+#else
+      radio_semtech->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
+#endif
+    } else {
+      radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
+    }
+    state = radio_semtech->setOutputPower(txpow, false);
     break;
 
   case SOFTRF_MODEL_NEO:

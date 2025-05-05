@@ -161,6 +161,8 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define SOC_GPIO_PIN_LED        19 /* D1 */
+#undef  LED_STATE_ON
+#define LED_STATE_ON            LOW
 #elif defined(CONFIG_IDF_TARGET_ESP32C5)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -186,6 +188,9 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 SOC_GPIO_PIN_BPIPW_STATUS :             \
                                hw_info.model == SOFTRF_MODEL_GIZMO     ?\
                                 SOC_GPIO_PIN_M2_LED :                   \
+                               hw_info.model == SOFTRF_MODEL_DRONE   && \
+                               hw_info.revision == 1                   ?\
+                                SOC_GPIO_PIN_ELRS_LED :                 \
                                hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\
                                 SOC_UNUSED_PIN :                        \
                                 (hw_info.revision == 2 ?                \
@@ -293,6 +298,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #include "iomap/LilyGO_T3S3_EPD.h"
 #include "iomap/Banana_PicoW.h"
 #include "iomap/Elecrow_ThinkNode_M2.h"
+#include "iomap/Generic_ELRS_C3.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -326,6 +332,7 @@ enum esp32_board_id {
   ESP32_LILYGO_T3S3_EPD,
   ESP32_BANANA_PICOW,
   ESP32_ELECROW_TN_M2,
+  ESP32_RADIOMASTER_XR1,
 };
 
 enum ep_model_id {

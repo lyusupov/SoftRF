@@ -186,7 +186,9 @@ void setup()
 
 #if !defined(EXCLUDE_MAVLINK)
   if (settings->mode == SOFTRF_MODE_UAV) {
-    Serial.begin(57600);
+    if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
+      Serial.begin(57600);
+    }
     MAVLink_setup();
     ThisAircraft.aircraft_type = AIRCRAFT_TYPE_UAV;  
   }  else

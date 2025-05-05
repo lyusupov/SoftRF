@@ -700,6 +700,25 @@ static void ESP32_setup()
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+    /* TBD */
+#else
+    uint32_t part0 = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_3_REG, EFUSE_SYS_DATA_PART0_0);
+    uint32_t flash_cap = (part0 >> 2) & 0x7;
+
+    uint32_t chip_ver = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_3_REG, EFUSE_PKG_VERSION);
+    uint32_t pkg_ver  = chip_ver & 0x7;
+
+    uint32_t wafer = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_3_REG, EFUSE_WAFER_VERSION);
+    uint32_t wafer_ver  = wafer & 0x7;
+
+    uint32_t sys4 = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_4_REG, EFUSE_SYS_DATA_PART0_1);
+    uint32_t flash_vendor  = sys4 & 0x7;
+
+    uint32_t sys5 = REG_GET_FIELD(EFUSE_RD_MAC_SPI_SYS_5_REG, EFUSE_SYS_DATA_PART0_2);
+    uint32_t major_chip_version  = (sys5 >> 24) & 0x03;
+    uint32_t minor_chip_version  = (sys5 >> 23) & 0x01;
+#endif /* ESP_IDF_VERSION_MAJOR */
     switch (flash_id)
     {
     case MakeFlashId(FMICRO_ID, FMICRO_FM25Q16): /* WT018684-S5 */
@@ -710,6 +729,9 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     switch (flash_id)
     {
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* C3FH4 or 4X with emb. flash */
+      esp32_board   = ESP32_RADIOMASTER_XR1;
+      break;
     case MakeFlashId(ST_ID, XMC_XM25QH32B):
     default:
       esp32_board   = ESP32_C3_DEVKIT;
@@ -1489,6 +1511,17 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_C3_CE;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
+  } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
+
+    hw_info.model    = SOFTRF_MODEL_DRONE;
+    hw_info.revision = 1;
+
+    lmic_pins.nss  = SOC_GPIO_PIN_ELRS_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_ELRS_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_ELRS_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_ELRS_DIO9;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -1854,6 +1887,13 @@ static void ESP32_setup()
 #endif /* EXCLUDE_IMU */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+  if (esp32_board == ESP32_RADIOMASTER_XR1) {
+    digitalWrite(SOC_GPIO_PIN_ELRS_LED, LED_STATE_ON);
+    pinMode(SOC_GPIO_PIN_ELRS_LED,      OUTPUT);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if !defined(EXCLUDE_LED_RING)
   if (hw_info.model == SOFTRF_MODEL_STANDALONE)
@@ -3410,6 +3450,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_BPIPW_SCK,  SOC_GPIO_PIN_BPIPW_MISO,
                 SOC_GPIO_PIN_BPIPW_MOSI, SOC_GPIO_PIN_BPIPW_SS);
       break;
+    case ESP32_RADIOMASTER_XR1:
+      SPI.begin(SOC_GPIO_PIN_ELRS_SCK,  SOC_GPIO_PIN_ELRS_MISO,
+                SOC_GPIO_PIN_ELRS_MOSI, SOC_GPIO_PIN_ELRS_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -3515,6 +3559,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
+     } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
+      Serial.println(F("INFO: RadioMaster XR1 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3569,10 +3617,12 @@ static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (esp32_board != ESP32_TTGO_T_WATCH   &&
-      esp32_board != ESP32_S2_T8_V1_1     &&
-      esp32_board != ESP32_HELTEC_TRACKER &&
-      esp32_board != ESP32_LILYGO_T3S3_EPD) {
+  if (esp32_board == ESP32_RADIOMASTER_XR1) {
+      /* Nothing to do */
+  } else if (esp32_board != ESP32_TTGO_T_WATCH   &&
+             esp32_board != ESP32_S2_T8_V1_1     &&
+             esp32_board != ESP32_HELTEC_TRACKER &&
+             esp32_board != ESP32_LILYGO_T3S3_EPD) {
 
 #if defined(USE_OLED)
     bool has_oled = false;
@@ -4356,7 +4406,11 @@ static void ESP32_Battery_setup()
     calibrate_voltage(SOC_GPIO_PIN_C2_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
-    calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+    if (esp32_board == ESP32_RADIOMASTER_XR1) {
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO0_CHANNEL);
+    } else {
+      calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
+    }
 #else
     /* TBD */
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -4503,7 +4557,8 @@ static unsigned long ESP32_get_PPS_TimeMarker()
 
 static bool ESP32_Baro_setup()
 {
-  if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
+  if (hw_info.model == SOFTRF_MODEL_SKYWATCH ||
+      esp32_board   == ESP32_RADIOMASTER_XR1) {
 
     return false;
 
