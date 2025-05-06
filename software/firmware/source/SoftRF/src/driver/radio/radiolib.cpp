@@ -562,7 +562,7 @@ static void lr11xx_setup()
       Vtcxo = 3.0;
     break;
 
-  case SOFTRF_MODEL_DRONE:
+  case SOFTRF_MODEL_NANO:
     if (eui_le == 0x0016c001f047ac30)
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
@@ -922,7 +922,7 @@ static void lr11xx_setup()
     }
     break;
 
-  case SOFTRF_MODEL_DRONE:
+  case SOFTRF_MODEL_NANO:
     if (eui_le == 0x0016c001f047ac30) {
       /* Ebyte E80-900M2213S */
 #if 1

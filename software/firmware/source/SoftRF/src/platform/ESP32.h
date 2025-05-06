@@ -188,7 +188,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 SOC_GPIO_PIN_BPIPW_STATUS :             \
                                hw_info.model == SOFTRF_MODEL_GIZMO     ?\
                                 SOC_GPIO_PIN_M2_LED :                   \
-                               hw_info.model == SOFTRF_MODEL_DRONE   && \
+                               hw_info.model == SOFTRF_MODEL_NANO    && \
                                hw_info.revision == 1                   ?\
                                 SOC_GPIO_PIN_ELRS_LED :                 \
                                hw_info.model != SOFTRF_MODEL_PRIME_MK2 ?\

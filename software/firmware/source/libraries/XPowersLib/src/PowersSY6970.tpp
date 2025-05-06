@@ -197,7 +197,7 @@ public:
 
     bool isChargeDone()
     {
-        return chargeStatus() != POWERS_SY_CHARGE_DONE;
+        return chargeStatus() == POWERS_SY_CHARGE_DONE;
     }
 
     bool isBatteryConnect(void) __attribute__((error("Not implemented")))

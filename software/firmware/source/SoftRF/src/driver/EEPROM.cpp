@@ -82,7 +82,8 @@ void EEPROM_defaults()
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
+  eeprom_block.field.settings.mode          = hw_info.model == SOFTRF_MODEL_NANO ?
+                                              SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
                                               hw_info.model == SOFTRF_MODEL_CARD ?
                                               RF_PROTOCOL_FANET :
@@ -90,7 +91,7 @@ void EEPROM_defaults()
                                               RF_PROTOCOL_ADSB_1090 :
                                               hw_info.model == SOFTRF_MODEL_HAM ?
                                               RF_PROTOCOL_APRS :
-                                              hw_info.model == SOFTRF_MODEL_DRONE ?
+                                              hw_info.model == SOFTRF_MODEL_NANO ?
                                               RF_PROTOCOL_ADSL_860 : RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?

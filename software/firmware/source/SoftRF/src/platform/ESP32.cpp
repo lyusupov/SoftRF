@@ -1522,7 +1522,7 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
   } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
-    hw_info.model    = SOFTRF_MODEL_DRONE;
+    hw_info.model    = SOFTRF_MODEL_NANO;
     hw_info.revision = 1;
 
     lmic_pins.nss  = SOC_GPIO_PIN_ELRS_SS;
