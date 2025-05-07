@@ -696,7 +696,7 @@ static void ESP32_setup()
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
-    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+    case MakeFlashId(ST_ID, XMC_XM25QH32B): /* TBD */
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
       /*
        * Elecrow TinkNode M2 has OPI PSRAM in the WROOM module.
@@ -710,6 +710,14 @@ static void ESP32_setup()
       break;
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
+    switch (flash_id)
+    {
+    case MakeFlashId(FMICRO_ID, FMICRO_FM25Q16): /* WT018684-S5 */
+    default:
+      esp32_board   = ESP32_C2_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
     /* TBD */
 #else
@@ -729,20 +737,14 @@ static void ESP32_setup()
     uint32_t major_chip_version  = (sys5 >> 24) & 0x03;
     uint32_t minor_chip_version  = (sys5 >> 23) & 0x01;
 #endif /* ESP_IDF_VERSION_MAJOR */
-    switch (flash_id)
-    {
-    case MakeFlashId(FMICRO_ID, FMICRO_FM25Q16): /* WT018684-S5 */
-    default:
-      esp32_board   = ESP32_C2_DEVKIT;
-      break;
-    }
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+
     switch (flash_id)
     {
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* C3FH4 or 4X with emb. flash */
       esp32_board   = ESP32_RADIOMASTER_XR1;
       break;
-    case MakeFlashId(ST_ID, XMC_XM25QH32B):
+    case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL): /* TTGO T-01C3 */
+    case MakeFlashId(ST_ID,   XMC_XM25QH32B):  /* ESP-C3-12F  */
     default:
       esp32_board   = ESP32_C3_DEVKIT;
       break;
@@ -2738,6 +2740,19 @@ static void ESP32_fini(int reason)
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+  } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+    WIRE_FINI(Wire);
+
+    pinMode(SOC_GPIO_PIN_M2_PWR_EN,        INPUT);
+    pinMode(SOC_GPIO_PIN_M2_VEXT_EN,       INPUT);
+
+    pinMode(SOC_GPIO_PIN_M2_LED,           INPUT);
+    pinMode(SOC_GPIO_PIN_M2_LED_PWR,       INPUT);
+
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_M2_BUTTON_1,
+                                 ESP_EXT1_WAKEUP_ANY_HIGH);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   }
 
@@ -4822,6 +4837,9 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       if (button == &button_1) {
         OLED_Next_Page();
       }
+      if (button == &button_2 && esp32_board == ESP32_ELECROW_TN_M2) {
+        OLED_Up();
+      }
 #endif /* USE_OLED */
 #if defined(USE_EPAPER)
       if (button == &button_1 && hw_info.display == DISPLAY_EPD_2_13) {
@@ -4862,8 +4880,7 @@ void handleAuxEvent(AceButton* button, uint8_t eventType,
     case AceButton::kEventClicked:
     case AceButton::kEventReleased:
 #if defined(USE_OLED)
-      if (button == &button_1 ||
-         (button == &button_2 && esp32_board == ESP32_ELECROW_TN_M2)) {
+      if (button == &button_1) {
         OLED_Up();
       }
 #endif /* USE_OLED */
@@ -4901,7 +4918,7 @@ static void ESP32_Button_setup()
     // Button(s) uses external pull up resistor.
     pinMode(button_pin, button_pin == 0 ? INPUT_PULLUP : INPUT);
 
-    button_1.init(button_pin);
+    button_1.init(button_pin, esp32_board == ESP32_ELECROW_TN_M2 ? LOW : HIGH);
 
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
@@ -4921,7 +4938,7 @@ static void ESP32_Button_setup()
       button_2.init(scroll_pin);
 
       ButtonConfig* ScrollButtonConfig = button_2.getButtonConfig();
-      ScrollButtonConfig->setEventHandler(handleAuxEvent);
+      ScrollButtonConfig->setEventHandler(handleMainEvent);
       ScrollButtonConfig->setFeature(ButtonConfig::kFeatureClick);
       ScrollButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
       ScrollButtonConfig->setClickDelay(600);
@@ -4994,7 +5011,7 @@ static void ESP32_Button_fini()
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
-    while (digitalRead(button_pin) == LOW);
+    while (digitalRead(button_pin) == (esp32_board == ESP32_ELECROW_TN_M2 ? HIGH : LOW));
   }
 }
 

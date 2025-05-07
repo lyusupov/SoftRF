@@ -52,11 +52,11 @@ void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 #if defined __AVR_ATmega32U4_
   Serial1.write(ch);
 #elif defined(ESP8266) || defined(ESP32)
-#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
   Serial1.write(ch);
 #else
   Serial.write(ch);
-#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+#endif /* C3 || C6 */
 #elif defined(ARDUINO_ARCH_NRF52)
   Serial1.write(ch);
 #else

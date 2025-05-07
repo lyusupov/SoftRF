@@ -3655,6 +3655,7 @@ static void nRF52_Button_loop()
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_NORDIC_PCA10059:
     case NRF52_LILYGO_TULTIMA:
+    case NRF52_ELECROW_TN_M1:
       button_2.check();
       break;
     default:
@@ -3673,6 +3674,9 @@ static void nRF52_Button_fini()
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_NORDIC_PCA10059:
       detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
+      break;
+    case NRF52_ELECROW_TN_M1:
+      detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_M1_BUTTON2));
       break;
     // case NRF52_LILYGO_TULTIMA:
     //  detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_TULTIMA_BUTTON2));
