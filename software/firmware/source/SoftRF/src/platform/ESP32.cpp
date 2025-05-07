@@ -4547,7 +4547,7 @@ static float ESP32_Battery_param(uint8_t param)
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
       if (esp32_board == ESP32_ELECROW_TN_M2) {
         voltage = (float) adc2_read_voltage();
-        voltage *= 1.548;
+        voltage *= 1.5;
       } else
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
       {

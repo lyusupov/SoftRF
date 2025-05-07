@@ -271,7 +271,7 @@ The bootloader is capable to self-program an application firmware into the devic
 
 6. Drag the downloaded firmware file by your pointing device (mouse, trackball,...) , then drop it into **RPI-RP2** disk. Wait until the file transfer is complete ;
 
-<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/skyview-50.jpg" height="287" width="800">
+<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Lego-14.jpg" width="800">
 
 <br>
 
