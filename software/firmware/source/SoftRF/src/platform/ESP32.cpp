@@ -102,9 +102,10 @@ Adafruit_NeoPixel *strip;
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
-U8X8_OLED_I2C_BUS_TYPE u8x8_ttgo  (TTGO_V2_OLED_PIN_RST);
-U8X8_OLED_I2C_BUS_TYPE u8x8_heltec(HELTEC_OLED_PIN_RST);
-U8X8_SH1106_128X64_NONAME_HW_I2C u8x8_1_3(U8X8_PIN_NONE);
+U8X8_OLED_I2C_BUS_TYPE               u8x8_ttgo   (TTGO_V2_OLED_PIN_RST);
+U8X8_OLED_I2C_BUS_TYPE               u8x8_heltec (HELTEC_OLED_PIN_RST);
+U8X8_SH1106_128X64_NONAME_HW_I2C     u8x8_1_3    (U8X8_PIN_NONE);
+U8X8_SH1106_128X64_NONAME_2ND_HW_I2C u8x8_elecrow(U8X8_PIN_NONE);
 #endif /* USE_OLED */
 
 #if defined(USE_TFT)
@@ -2497,7 +2498,9 @@ static void ESP32_fini(int reason)
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-  if (ESP32_has_spiflash) {
+  if (ESP32_has_spiflash &&
+     (hw_info.storage == STORAGE_FLASH ||
+      hw_info.storage == STORAGE_FLASH_AND_CARD)) {
 #if CONFIG_TINYUSB_MSC_ENABLED
   #if defined(USE_ADAFRUIT_MSC)
     usb_msc.setUnitReady(false);
@@ -2761,6 +2764,14 @@ static void ESP32_fini(int reason)
 
 static void ESP32_reset()
 {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (esp32_board == ESP32_ELECROW_TN_M2) {
+    // pinMode(SOC_GPIO_PIN_M2_BUZZER,       OUTPUT);
+    // digitalWrite(SOC_GPIO_PIN_M2_BUZZER,  LOW);
+    gpio_hold_en(GPIO_NUM_5);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
   ESP.restart();
 }
 
@@ -3038,6 +3049,12 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
       ledcWriteTone(LEDC_CHANNEL_BUZZER, hz);
       ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
     } else {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+      if (esp32_board == ESP32_ELECROW_TN_M2) {
+        gpio_hold_dis(GPIO_NUM_5);
+      }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
       ledcWriteTone(LEDC_CHANNEL_BUZZER, 0); // off
 
       ledcDetachPin(SOC_GPIO_PIN_BUZZER);
@@ -3710,12 +3727,12 @@ static byte ESP32_Display_setup()
     } else if (esp32_board == ESP32_BANANA_PICOW) {
       /* TBD */
     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-      Wire.begin(SOC_GPIO_PIN_M2_SDA, SOC_GPIO_PIN_M2_SCL);
-      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
-      has_oled = (Wire.endTransmission() == 0);
-      WIRE_FINI(Wire);
+      Wire1.begin(SOC_GPIO_PIN_M2_OLED_SDA, SOC_GPIO_PIN_M2_OLED_SCL);
+      Wire1.beginTransmission(SH1106_OLED_I2C_ADDR);
+      has_oled = (Wire1.endTransmission() == 0);
+      WIRE_FINI(Wire1);
       if (has_oled) {
-        u8x8 = &u8x8_1_3;
+        u8x8 = &u8x8_elecrow;
         rval = DISPLAY_OLED_1_3;
       }
     } else if (GPIO_21_22_are_busy) {
@@ -3796,8 +3813,8 @@ static byte ESP32_Display_setup()
       u8x8->clear();
 
       uint8_t shift_y = hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
-                        hw_info.model == SOFTRF_MODEL_HAM       ||
-                        hw_info.model == SOFTRF_MODEL_GIZMO ? 1 : 0;
+                        hw_info.model == SOFTRF_MODEL_HAM    /* || */
+                     /* hw_info.model == SOFTRF_MODEL_GIZMO */ ? 1 : 0;
       uint8_t shift_x = hw_info.model == SOFTRF_MODEL_GIZMO ? 1 : 0;
 
       u8x8->draw2x2String  ( 2, 2 - shift_y, SoftRF_text1);

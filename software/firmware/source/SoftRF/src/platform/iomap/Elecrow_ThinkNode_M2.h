@@ -19,9 +19,13 @@
 #define SOC_GPIO_PIN_M2_DIO1        3
 #define SOC_GPIO_PIN_M2_PWR_EN      48
 
-// OLED
-#define SOC_GPIO_PIN_M2_SDA         16
-#define SOC_GPIO_PIN_M2_SCL         15
+// 1st I2C bus (ext. sensors)
+#define SOC_GPIO_PIN_M2_SDA         8
+#define SOC_GPIO_PIN_M2_SCL         18
+
+/* 2nd I2C bus (OLED display) */
+#define SOC_GPIO_PIN_M2_OLED_SDA    16
+#define SOC_GPIO_PIN_M2_OLED_SCL    15
 #define SOC_GPIO_PIN_M2_VEXT_EN     46 // OLED, active HIGH
 
 // LED
