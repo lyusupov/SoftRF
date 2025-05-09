@@ -2810,7 +2810,7 @@ static void* ESP32_getResetInfoPtr()
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
-    case RTCWDT_BROWN_OUT_RESET : reset_info.reason = REASON_EXT_SYS_RST; break;
+    case RTCWDT_BROWN_OUT_RESET : reset_info.reason = REASON_WDT_RST; break;
     case RTCWDT_RTC_RESET       :
       /* Slow start of GD25LQ32 causes one read fault at boot time with current ESP-IDF */
       if (ESP32_getFlashId() == MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25LQ32))
@@ -2941,8 +2941,9 @@ static void ESP32_Sound_test(int var)
     ledcSetup(LEDC_CHANNEL_BUZZER, 0, LEDC_RESOLUTION_BUZZER);
 #endif /* ESP_IDF_VERSION_MAJOR */
 
-    if (var == REASON_DEFAULT_RST ||
-        var == REASON_EXT_SYS_RST ||
+    if (var == REASON_DEFAULT_RST      ||
+        var == REASON_DEEP_SLEEP_AWAKE ||
+        var == REASON_EXT_SYS_RST      ||
         var == REASON_SOFT_RESTART) {
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
       tone(SOC_GPIO_PIN_BUZZER, 440);delay(500);
