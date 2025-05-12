@@ -1003,7 +1003,10 @@ static void nRF52_setup()
   }
 
   if (FlashTrans != NULL) {
-    // FlashTrans->runCommand(0xAB);
+    FlashTrans->begin();
+    FlashTrans->runCommand(0xAB); /* RDP/RES */
+    FlashTrans->end();
+
     SPIFlash = new Adafruit_SPIFlash(FlashTrans);
     nRF52_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
@@ -2059,7 +2062,7 @@ static void nRF52_fini(int reason)
   }
 
   if (SPIFlash != NULL) {
-    // FlashTrans->runCommand(0xB9);
+    FlashTrans->runCommand(0xB9); /* DP */
     SPIFlash->end();
   }
 #endif /* ARDUINO_ARCH_MBED */
