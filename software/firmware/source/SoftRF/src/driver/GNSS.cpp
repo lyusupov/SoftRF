@@ -1123,10 +1123,22 @@ static bool uc65_setup()
    * Factory default:
    * $CFGSYS,H35155 = GPS + BDS + GLO + GAL + QZSS + SBAS
    * $CFGTP,1000000,500000,1,0,0,0 = PPS is enabled, 500 ms pulse, 1 s interval
+   *
+   * HTIT v1.0
+   * firmware "FB2S UM600,G1B1L1E1,V2.0,R6.0.0.0Build1280,N/A,N/A"
+   * $CFGGEOID,1*1F
+   * $CFGDYN,h00,0,0*55
+   *
+   * HTIT v1.1
+   * firmware "UC6580I,G1B1L1E1,V00,R6.0.0.0Build2810,2400615000268,20230316125509004"
+   * $CFGGEOID,0*1E
+   * $CFGDYN,h00,0,0*55
    */
   Serial_GNSS_Out.write("$CFGMSG,0,2,0\r\n"); delay(250); /* GSA off */
   Serial_GNSS_Out.write("$CFGMSG,0,3,0\r\n"); delay(250); /* GSV off */
   Serial_GNSS_Out.write("$CFGMSG,6,0,0\r\n"); delay(250); /* TXT off */
+
+  Serial_GNSS_Out.write("$CFGGEOID,1\r\n");   delay(250); /* enforce geoid height */
 
   return true;
 }

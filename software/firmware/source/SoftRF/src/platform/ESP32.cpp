@@ -2746,6 +2746,7 @@ static void ESP32_fini(int reason)
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   } else if (esp32_board == ESP32_ELECROW_TN_M2) {
     WIRE_FINI(Wire);
+    WIRE_FINI(Wire1);
 
     pinMode(SOC_GPIO_PIN_M2_PWR_EN,        INPUT);
     pinMode(SOC_GPIO_PIN_M2_VEXT_EN,       INPUT);
@@ -2753,6 +2754,19 @@ static void ESP32_fini(int reason)
     pinMode(SOC_GPIO_PIN_M2_LED,           INPUT);
     pinMode(SOC_GPIO_PIN_M2_LED_PWR,       INPUT);
 
+    pinMode(SOC_GPIO_PIN_M2_SS,            OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M2_SS,       HIGH);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M2_SS);
+
+    pinMode(SOC_GPIO_PIN_M2_BUTTON_1,      INPUT);
+    while (digitalRead(SOC_GPIO_PIN_M2_BUTTON_1) == HIGH);
+
+    pinMode(SOC_GPIO_PIN_M2_BUTTON_1,      OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M2_BUTTON_1, HIGH);
+
+    delay(4000);
+
+    pinMode(SOC_GPIO_PIN_M2_BUTTON_1,      INPUT);
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_M2_BUTTON_1,
                                  ESP_EXT1_WAKEUP_ANY_HIGH);
@@ -4952,7 +4966,7 @@ static void ESP32_Button_setup()
     if (esp32_board == ESP32_ELECROW_TN_M2) {
       int scroll_pin = SOC_GPIO_PIN_M2_BUTTON_2;
 
-      pinMode(scroll_pin, INPUT_PULLUP);
+      pinMode(scroll_pin, INPUT);
       button_2.init(scroll_pin);
 
       ButtonConfig* ScrollButtonConfig = button_2.getButtonConfig();

@@ -140,6 +140,7 @@ const prototype_entry_t techo_prototype_boards[] = {
   { 0xf4e0f04ded1892da, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* green  */
   { 0x65ab5994ea2c9094, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* blue   */
   { 0x6460429ea6fb7e39, NRF52_NORDIC_PCA10059,    EP_UNKNOWN,     0 },
+/*{ 0x0b0e14e96a3beb79, NRF52_ELECROW_TN_M1,      EP_GDEH0154D67, 0 },*/
 };
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -243,7 +244,8 @@ static void TFT_backlight_adjust(uint32_t pin, uint8_t level)
 #endif /* USE_TFT */
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-static Adafruit_SPIFlash *SPIFlash = NULL;
+static Adafruit_FlashTransport_QSPI *FlashTrans = NULL;
+static Adafruit_SPIFlash            *SPIFlash   = NULL;
 
 #define SFLASH_CMD_READ_CONFIG  0x15
 
@@ -267,6 +269,7 @@ enum {
 static SPIFlash_Device_t possible_devices[] = {
   // LilyGO T-Echo, Elecrow ThinkNode M1
   [MX25R1635F_INDEX] = MX25R1635F,
+  // LilyGO T-Echo
   [ZD25WQ16B_INDEX]  = ZD25WQ16B,
   // Seeed T1000-E
   [P25Q16H_INDEX]    = P25Q16H,
@@ -787,6 +790,9 @@ static void nRF52_setup()
 
   pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
   pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT_PULLUP);
+  if (nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
+    pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR,  INPUT_PULLUP);
+  }
 
 #if !defined(EXCLUDE_PMU)
   nRF52_has_pmu = sy6970.init(Wire,
@@ -955,7 +961,6 @@ static void nRF52_setup()
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   /* (Q)SPI flash init */
-  Adafruit_FlashTransport_QSPI *ft = NULL;
 
   switch (nRF52_board)
   {
@@ -967,29 +972,29 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
-      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
-                                            SOC_GPIO_PIN_SFL_SS,
-                                            SOC_GPIO_PIN_SFL_MOSI,
-                                            SOC_GPIO_PIN_SFL_MISO,
-                                            SOC_GPIO_PIN_SFL_WP,
-                                            SOC_GPIO_PIN_SFL_HOLD);
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
+                                                    SOC_GPIO_PIN_SFL_SS,
+                                                    SOC_GPIO_PIN_SFL_MOSI,
+                                                    SOC_GPIO_PIN_SFL_MISO,
+                                                    SOC_GPIO_PIN_SFL_WP,
+                                                    SOC_GPIO_PIN_SFL_HOLD);
       break;
     case NRF52_SEEED_T1000E:
-      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_T1000_SCK,
-                                            SOC_GPIO_PIN_SFL_T1000_SS,
-                                            SOC_GPIO_PIN_SFL_T1000_MOSI,
-                                            SOC_GPIO_PIN_SFL_T1000_MISO,
-                                            SOC_GPIO_PIN_SFL_T1000_WP,
-                                            SOC_GPIO_PIN_SFL_T1000_HOLD);
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_T1000_SCK,
+                                                    SOC_GPIO_PIN_SFL_T1000_SS,
+                                                    SOC_GPIO_PIN_SFL_T1000_MOSI,
+                                                    SOC_GPIO_PIN_SFL_T1000_MISO,
+                                                    SOC_GPIO_PIN_SFL_T1000_WP,
+                                                    SOC_GPIO_PIN_SFL_T1000_HOLD);
       break;
 #if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
-      ft = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_TULTIMA_SCK,
-                                            SOC_GPIO_PIN_SFL_TULTIMA_SS,
-                                            SOC_GPIO_PIN_SFL_TULTIMA_MOSI,
-                                            SOC_GPIO_PIN_SFL_TULTIMA_MISO,
-                                            SOC_GPIO_PIN_SFL_TULTIMA_WP,
-                                            SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_TULTIMA_SCK,
+                                                    SOC_GPIO_PIN_SFL_TULTIMA_SS,
+                                                    SOC_GPIO_PIN_SFL_TULTIMA_MOSI,
+                                                    SOC_GPIO_PIN_SFL_TULTIMA_MISO,
+                                                    SOC_GPIO_PIN_SFL_TULTIMA_WP,
+                                                    SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
       break;
 #endif /* EXCLUDE_WIP */
     case NRF52_NORDIC_PCA10059:
@@ -997,8 +1002,8 @@ static void nRF52_setup()
       break;
   }
 
-  if (ft != NULL) {
-    SPIFlash = new Adafruit_SPIFlash(ft);
+  if (FlashTrans != NULL) {
+    SPIFlash = new Adafruit_SPIFlash(FlashTrans);
     nRF52_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
@@ -2052,7 +2057,10 @@ static void nRF52_fini(int reason)
 //  usb_msc.end(); /* N/A */
   }
 
-  if (SPIFlash != NULL) SPIFlash->end();
+  if (SPIFlash != NULL) {
+    FlashTrans->runCommand(0xB9);
+    SPIFlash->end();
+  }
 #endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
@@ -2129,34 +2137,37 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_1_RED,   INPUT);
       pinMode(SOC_GPIO_LED_TECHO_REV_1_BLUE,  INPUT);
 
-      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
+      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
+      /* Cut 3.3V power off on modded REV_1 board */
+      pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR, INPUT_PULLDOWN);
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
+
       ledOff(SOC_GPIO_LED_TECHO_REV_2_GREEN);
       ledOff(SOC_GPIO_LED_TECHO_REV_2_RED);
       ledOff(SOC_GPIO_LED_TECHO_REV_2_BLUE);
 
-      pinMode(SOC_GPIO_LED_TECHO_REV_2_GREEN, INPUT);
-      pinMode(SOC_GPIO_LED_TECHO_REV_2_RED,   INPUT);
-      pinMode(SOC_GPIO_LED_TECHO_REV_2_BLUE,  INPUT);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_GREEN, INPUT_PULLUP);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_RED,   INPUT_PULLUP);
+      pinMode(SOC_GPIO_LED_TECHO_REV_2_BLUE,  INPUT_PULLUP);
 
-      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
-      pinMode(SOC_GPIO_PIN_GNSS_WKE,  INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_RST,  INPUT);
+      pinMode(SOC_GPIO_PIN_IO_PWR,    INPUT);
       /* Cut 3.3V power off on REV_2 board */
-      pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT_PULLDOWN);
+      // pinMode(SOC_GPIO_PIN_3V3_PWR,   INPUT_PULLDOWN);
       break;
 
     case NRF52_HELTEC_T114:
-      digitalWrite(SOC_GPIO_PIN_GNSS_T114_RST, INPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_T114_RST, INPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_T114_WKE, LOW);
 
       ledOff(SOC_GPIO_LED_T114_GREEN);
       pinMode(SOC_GPIO_LED_T114_GREEN, INPUT);
@@ -2209,6 +2220,8 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_ELECROW_TN_M1:
+      digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, LOW);
+
       digitalWrite(SOC_GPIO_LED_M1_RED,  1-LED_STATE_ON);
       digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
 
@@ -2220,7 +2233,6 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_SFL_M1_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_M1_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_M1_SS,    INPUT);
-      pinMode(SOC_GPIO_PIN_GNSS_M1_WKE,  INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_M1_RST,  INPUT);
       break;
 
@@ -2249,8 +2261,13 @@ static void nRF52_fini(int reason)
   if (i2c != nullptr) Wire.end();
 #endif /* ARDUINO_ARCH_MBED */
 
-  pinMode(SOC_GPIO_PIN_SDA,  INPUT);
-  pinMode(SOC_GPIO_PIN_SCL,  INPUT);
+  if (nRF52_board == NRF52_HELTEC_T114) {
+    pinMode(SOC_GPIO_PIN_T114_SDA_EXT,  INPUT);
+    pinMode(SOC_GPIO_PIN_T114_SCL_EXT,  INPUT);
+  } else {
+    pinMode(SOC_GPIO_PIN_SDA,           INPUT);
+    pinMode(SOC_GPIO_PIN_SCL,           INPUT);
+  }
 
   // pinMode(SOC_GPIO_PIN_MOSI, INPUT);
   // pinMode(SOC_GPIO_PIN_MISO, INPUT);
@@ -2890,6 +2907,7 @@ static nRF52_display_id nRF52_EPD_ident()
  *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2118
  *  00 00 00 FF 00 00 40 01 00 00 00 - D67 SYX 2129
  *  00 00 00 00 00 00 00 00 00 00 00 - DEPG0150BN
+ *  00 00 40 20 10 00 40 03 00 00 00 - TBD (M1)
  *
  *  0x2E:
  *  00 00 00 00 00 00 00 00 00 00    - C1
@@ -2897,6 +2915,7 @@ static nRF52_display_id nRF52_EPD_ident()
  *  00 05 00 9A 00 55 35 37 14 0C    - D67 SYX 2118
  *  00 00 00 00 00 00 00 00 00 00    - D67 SYX 2129
  *  00 00 00 00 00 00 00 00 00 00    - DEPG0150BN
+ *  00 00 00 00 00 00 00 00 00 00    - TBD (M1)
  */
 #endif
 
