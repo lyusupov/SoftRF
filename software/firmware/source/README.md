@@ -372,6 +372,7 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ -> _Raspberry_ _Pi_ _Pico_ _2W_<br>
 8. Select _Tools_ -> _Flash_ _Size_ -> _4MB_ _(Sketch:_ _1MB,_ _FS:_ _3MB)_
 9. Select _Tools_ -> _USB_ _Stack_ -> _Adafruit_ _TinyUSB_
-10. try to build and upload using _Sketch_ -> _Upload_
+10. Select _Tools_ -> _IP/Bluetooth_ _Stack_ -> _IPv4_ _+_ _Bluetooth_
+11. try to build and upload using _Sketch_ -> _Upload_
 
 <br>
