@@ -10,6 +10,7 @@
 * [SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#samd21)<br>
 * [RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#rp2040)<br>
 * [RA4M1](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/source#ra4m1)<br>
+* [RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#rp2350)<br>
 
 <br>
 
@@ -351,5 +352,26 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 7. start **Arduino** application again
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. _Sketch_ -> _Upload_
+
+<br>
+
+## RP2350
+
+1. Follow [these official instructions](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
+  to install Arduino IDE and [latest **stable** Raspberry Pi Pico Arduino core, for all RP2XXX boards](https://github.com/earlephilhower/arduino-pico/releases/tag/4.5.1) (4.5.1)
+2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
+3. create **Arduino** sub-directory
+4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<My Documents>``/Arduino/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<My Documents>``/Arduino/libraries <br>
+
+5. start **Arduino** application
+6. open **SoftRF** sketch from _File_ -> _Open_ menu
+7. For Raspberry Pi Pico 2W:<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ -> _Raspberry_ _Pi_ _Pico_ _2W_<br>
+8. Select _Tools_ -> _Flash_ _Size_ -> _4MB_ _(Sketch:_ _1MB,_ _FS:_ _3MB)_
+9. Select _Tools_ -> _USB_ _Stack_ -> _Adafruit_ _TinyUSB_
+10. try to build and upload using _Sketch_ -> _Upload_
 
 <br>
