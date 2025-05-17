@@ -26,6 +26,7 @@ Model|Instructions|Firmware folder
 [Ham Edition](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Midi Edition](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
+[Handheld Edition](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[Google Drive](https://drive.google.com/file/d/1aVpZ9U5-OY0DYI6tbh-MNnVwAiERELoa/view?usp=sharing)
 [Card Edition](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Cozy Edition](https://github.com/lyusupov/SoftRF/wiki/Cozy-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Dongle Edition](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)|[S76G](https://github.com/lyusupov/SoftRF/wiki/AcSiP-S7xG-flashing-instructions#s76g)|[S76G](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/S76G)
@@ -39,9 +40,10 @@ Model|Instructions|Firmware folder
 [UAV Edition](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)|[NodeMCU](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nodemcu)|[NodeMCU](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/NodeMCU/SoftRF)
 [Academy Edition](https://github.com/lyusupov/SoftRF/wiki/Academy-Edition)|N/A<sup>1</sup>|N/A<sup>1</sup>
 [Eco Edition](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|N/A<sup>2</sup>|N/A<sup>2</sup>
+[Gizmo Edition](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|N/A<sup>2</sup>|N/A<sup>2</sup>
 
 <sup>1</sup> - since primary purpose of the **Academy Edition** is education - we do not provide firmware binaries for this model. Students and a teacher are responsible to [build and install the SoftRF firmware](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/source/README.md) ( [SAMD21](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#samd21) or [RA4M1](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/source#ra4m1) ) from source code by themselves ;<br>
-<sup>2</sup> - users of **Eco Edition** should build and install the SoftRF firmware from source code as well.<br>
+<sup>2</sup> - users of **Eco and Gizmo Editions** should build and install the SoftRF firmware from source code as well.<br>
 <br>
 
 Model|Instructions|Firmware folder
