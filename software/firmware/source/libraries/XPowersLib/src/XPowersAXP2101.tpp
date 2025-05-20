@@ -2177,11 +2177,20 @@ public:
 
     bool enableTSPinMeasure(void)
     {
+        // TS pin is the battery temperature sensor input and will affect the charger
+        uint8_t value =  readRegister(XPOWERS_AXP2101_TS_PIN_CTRL);
+        value &= 0xE0;
+        writeRegister(XPOWERS_AXP2101_TS_PIN_CTRL, value | 0x07);
         return setRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 1);
     }
 
     bool disableTSPinMeasure(void)
     {
+        // TS pin is the external fixed input and doesn't affect the charger
+        uint8_t value =  readRegister(XPOWERS_AXP2101_TS_PIN_CTRL);
+        value &= 0xF0;
+        writeRegister(XPOWERS_AXP2101_TS_PIN_CTRL, value | 0x10);
+
         return clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 1);
     }
 
@@ -2195,7 +2204,47 @@ public:
         return clrRegisterBit(XPOWERS_AXP2101_ADC_DATA_RELUST2, 7);
     }
 
-    uint16_t getTsTemperature(void)
+
+    /**
+     * Calculate temperature from TS pin ADC value using Steinhart-Hart equation.
+     * 
+     * @param SteinhartA Steinhart-Hart coefficient A (default: 1.126e-3)
+     * @param SteinhartB Steinhart-Hart coefficient B (default: 2.38e-4)
+     * @param SteinhartC Steinhart-Hart coefficient C (default: 8.5e-8)
+     * @return Temperature in Celsius. Returns 0 if ADC value is 0x2000 (invalid measurement).
+     *
+     * @details
+     * This function converts the ADC reading from the TS pin to temperature using:
+     * 1. Voltage calculation: V = ADC_raw ? 0.0005 (V)
+     * 2. Resistance calculation: R = V / I (?), where I = 50?A
+     * 3. Temperature calculation: T = 1/(A+B*ln(R)+C*(ln(R))^3) - 273.15 (?)
+     *
+     * @note
+     * The calculation parameters are from the AXP2101 Datasheet, using the TH11-3H103F NTC resistor 
+     *     as the Steinhart-Hart equation calculation parameters
+     * 1. Coefficients A, B, C should be calibrated for specific NTC thermistor.
+     * 2. ADC value 0x2000 indicates sensor fault (e.g., open circuit).
+     * 3. Valid temperature range: typically -20? to 60?. Accuracy may degrade outside this range.
+     */
+    float getTsTemperature(float SteinhartA = 1.126e-3,
+                           float SteinhartB = 2.38e-4,
+                           float SteinhartC = 8.5e-8)
+    {
+        uint16_t  adc_raw =  getTsPinValue();  // Read raw ADC value from TS pin
+
+        // Check for invalid measurement (0x2000 indicates sensor disconnection)
+        if (adc_raw == 0x2000) {
+            return 0;
+        }
+        float current_ma = 0.05f;  // Current source: 50?A
+        float voltage = adc_raw * 0.0005f;  // Convert ADC value to voltage (V)
+        float resistance = voltage / (current_ma / 1000.0f);  // Calculate resistance (?)
+        // Convert resistance to temperature using Steinhart-Hart equation
+        return resistance_to_temperature(resistance, SteinhartA, SteinhartB, SteinhartC);
+    }
+
+    // raw value
+    uint16_t getTsPinValue(void)
     {
         return readRegisterH6L8(XPOWERS_AXP2101_ADC_DATA_RELUST2, XPOWERS_AXP2101_ADC_DATA_RELUST3);
     }
@@ -2853,6 +2902,15 @@ protected:
     }
 
 private:
+
+    float resistance_to_temperature(float resistance, float SteinhartA,
+                                    float SteinhartB,
+                                    float SteinhartC)
+    {
+        float ln_r = log(resistance);
+        float t_inv = SteinhartA + SteinhartB * ln_r + SteinhartC * pow(ln_r, 3);
+        return (1.0f / t_inv) - 273.15f;
+    }
     uint8_t statusRegister[XPOWERS_AXP2101_INTSTS_CNT];
 };
 
