@@ -102,10 +102,11 @@ Adafruit_NeoPixel *strip;
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(USE_OLED)
-U8X8_OLED_I2C_BUS_TYPE               u8x8_ttgo   (TTGO_V2_OLED_PIN_RST);
-U8X8_OLED_I2C_BUS_TYPE               u8x8_heltec (HELTEC_OLED_PIN_RST);
-U8X8_SH1106_128X64_NONAME_HW_I2C     u8x8_1_3    (U8X8_PIN_NONE);
-U8X8_SH1106_128X64_NONAME_2ND_HW_I2C u8x8_elecrow(U8X8_PIN_NONE);
+U8X8_OLED_I2C_BUS_TYPE                u8x8_ttgo   (TTGO_V2_OLED_PIN_RST);
+U8X8_OLED_I2C_BUS_TYPE                u8x8_heltec (HELTEC_OLED_PIN_RST);
+U8X8_SH1106_128X64_NONAME_HW_I2C      u8x8_1_3    (U8X8_PIN_NONE);
+U8X8_SH1106_128X64_NONAME_2ND_HW_I2C  u8x8_elecrow(U8X8_PIN_NONE);
+U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ebyte  (SOC_GPIO_PIN_EHUB_OLED_RST);
 #endif /* USE_OLED */
 
 #if defined(USE_TFT)
@@ -631,7 +632,10 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_HAM;
       break;
     case MakeFlashId(ST_ID, XMC_XM25QH32B):
-      esp32_board   = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
+      if (ESP.getPsramSize() == 2097152)
+        esp32_board = ESP32_EBYTE_HUB_900TB; /* ESP32-S3FH4R2 */
+      else
+        esp32_board = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
       esp32_board   = ESP32_BANANA_PICOW;
@@ -1497,6 +1501,24 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
 #endif /* USE_RADIOLIB */
 
+  } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+
+    hw_info.model    = SOFTRF_MODEL_STANDALONE;
+    hw_info.revision = 5; /* 10722-V1.1 */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_EHUB_CONS_RX,
+                       SOC_GPIO_PIN_EHUB_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_EHUB_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_EHUB_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_EHUB_BUSY;
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_EHUB_DIO9;
+#endif /* USE_RADIOLIB */
+
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -1643,6 +1665,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_LILYGO_T3S3_EPD    ) ? SOFTRF_USB_PID_INK        :
           (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_ELECROW_TN_M2      ) ? SOFTRF_USB_PID_GIZMO      :
+          (esp32_board == ESP32_EBYTE_HUB_900TB    ) ? SOFTRF_USB_PID_STANDALONE :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1878,6 +1901,14 @@ static void ESP32_setup()
     digitalWrite(SOC_GPIO_PIN_M2_PWR_EN,   HIGH);
     pinMode(SOC_GPIO_PIN_M2_PWR_EN,        OUTPUT);
 #endif
+
+  } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+
+    digitalWrite(SOC_GPIO_PIN_EHUB_LED,    LOW);
+    pinMode(SOC_GPIO_PIN_EHUB_LED,         OUTPUT);
+
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3,    INPUT_PULLUP); /* OLED */
+
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -3525,6 +3556,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_ELRS_SCK,  SOC_GPIO_PIN_ELRS_MISO,
                 SOC_GPIO_PIN_ELRS_MOSI, SOC_GPIO_PIN_ELRS_SS);
       break;
+    case ESP32_EBYTE_HUB_900TB:
+      SPI.begin(SOC_GPIO_PIN_EHUB_SCK,  SOC_GPIO_PIN_EHUB_MISO,
+                SOC_GPIO_PIN_EHUB_MOSI, SOC_GPIO_PIN_EHUB_SS);
+      break;
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -3634,6 +3669,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: RadioMaster XR1 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+     } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+      Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_EHUB_GNSS_RX, SOC_GPIO_PIN_EHUB_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3749,6 +3788,15 @@ static byte ESP32_Display_setup()
       if (has_oled) {
         u8x8 = &u8x8_elecrow;
         rval = DISPLAY_OLED_1_3;
+      }
+    } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+      Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA, SOC_GPIO_PIN_EHUB_OLED_SCL);
+      Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      has_oled = (Wire1.endTransmission() == 0);
+      WIRE_FINI(Wire1);
+      if (has_oled) {
+        u8x8 = &u8x8_ebyte;
+        rval = DISPLAY_OLED_TTGO;
       }
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
@@ -4459,9 +4507,9 @@ static void ESP32_Battery_setup()
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 1) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
-    } else if (esp32_board == ESP32_HELTEC_TRACKER) {
-      calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
-    } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+    } else if (esp32_board == ESP32_HELTEC_TRACKER  ||
+               esp32_board == ESP32_LILYGO_T3S3_EPD ||
+               esp32_board == ESP32_EBYTE_HUB_900TB) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else if (esp32_board == ESP32_BANANA_PICOW) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO8_CHANNEL); /* TBD */
@@ -4692,6 +4740,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_ELECROW_TN_M2) {
 
     Wire.setPins(SOC_GPIO_PIN_M2_SDA, SOC_GPIO_PIN_M2_SCL);
+
+  } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+
+    Wire.setPins(SOC_GPIO_PIN_EHUB_SDA, SOC_GPIO_PIN_EHUB_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 

@@ -299,6 +299,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #include "iomap/Banana_PicoW.h"
 #include "iomap/Elecrow_ThinkNode_M2.h"
 #include "iomap/Generic_ELRS_C3.h"
+#include "iomap/Ebyte_EoRa_HUB_900TB.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -333,6 +334,7 @@ enum esp32_board_id {
   ESP32_BANANA_PICOW,
   ESP32_ELECROW_TN_M2,
   ESP32_RADIOMASTER_XR1,
+  ESP32_EBYTE_HUB_900TB,
 };
 
 enum ep_model_id {
