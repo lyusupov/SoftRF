@@ -1511,7 +1511,7 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT_PULLDOWN);
     pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT_PULLDOWN);
 
-    delay(20);
+    delay(10);
 
     Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA , SOC_GPIO_PIN_EHUB_OLED_SCL);
     Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
@@ -1522,7 +1522,8 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT);
 
     if (oled_is_active) {
-      esp32_board = ESP32_LILYGO_T3S3_OLED;
+      esp32_board      = ESP32_LILYGO_T3S3_OLED;
+      hw_info.revision = 6; /* V1.2 V1.3 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
       SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -1953,7 +1954,29 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_EHUB_LED,         OUTPUT);
 
     pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3,    INPUT_PULLUP); /* OLED */
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST,    INPUT_PULLUP);
 
+    rtc_clk_32k_enable(true);
+
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    uint32_t cal_32k = CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+
+    if (cal_32k == 0) {
+        DEBUG_X32K("32K XTAL OSC has not started up");
+    } else {
+        rtc_clk_slow_freq_set(RTC_SLOW_FREQ_32K_XTAL);
+        DEBUG_X32K("Switching of RTC clock source onto 32768 Hz XTAL is successful.");
+        CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+        CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    }
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
+        DEBUG_X32K("Warning: Failed to switch RTC clock source onto 32768 Hz XTAL !");
+        rtc_clk_32k_enable(false);
+    } else {
+        ESP32_has_32k_xtal = true;
+    }
   } else {
 #if !defined(EXCLUDE_IMU)
     Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
@@ -3702,7 +3725,7 @@ static void ESP32_swSer_begin(unsigned long baud)
                            SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
      } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
                 esp32_board == ESP32_LILYGO_T3S3_OLED) {
-      Serial.println(F("INFO: LilyGO T3-S3 EPD is detected."));
+      Serial.println(F("INFO: LilyGO T3-S3 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
      } else if (esp32_board == ESP32_BANANA_PICOW) {
@@ -4617,7 +4640,11 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ||
+            /* Ebyte EoRa-HUB */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  5) ||
+            /* LilyGO T3-S3-OLED */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  6) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -4632,7 +4659,11 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ?
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ||
+            /* Ebyte EoRa-HUB */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  5) ||
+            /* LilyGO T3-S3-OLED */
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  6) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
     break;
 
@@ -4695,7 +4726,8 @@ static float ESP32_Battery_param(uint8_t param)
                    esp32_board == ESP32_C6_DEVKIT) {
         /* NodeMCU has voltage divider 100k/220k on board */
           voltage *= 3.2;
-        } else if (esp32_board == ESP32_HELTEC_TRACKER) {
+        } else if (esp32_board == ESP32_HELTEC_TRACKER ||
+                   esp32_board == ESP32_EBYTE_HUB_900TB) {
           voltage *= 4.9;
         }
       }
@@ -5041,14 +5073,18 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_LILYGO_T_TWR2     ||
        esp32_board == ESP32_HELTEC_TRACKER    ||
        esp32_board == ESP32_LILYGO_T3S3_EPD   ||
+       esp32_board == ESP32_LILYGO_T3S3_OLED  ||
        esp32_board == ESP32_ELECROW_TN_M2     ||
+       esp32_board == ESP32_EBYTE_HUB_900TB   ||
        esp32_board == ESP32_S3_DEVKIT) {
-    button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
-                 esp32_board == ESP32_S3_DEVKIT       ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_HELTEC_TRACKER  ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_LILYGO_T3S3_EPD ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
-                 esp32_board == ESP32_LILYGO_T_TWR2   ?
+    button_pin = esp32_board == ESP32_S2_T8_V1_1    ? SOC_GPIO_PIN_T8_S2_BUTTON :
+                 esp32_board == ESP32_S3_DEVKIT        ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_HELTEC_TRACKER   ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_LILYGO_T3S3_EPD  ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_LILYGO_T3S3_OLED ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_ELECROW_TN_M2  ? SOC_GPIO_PIN_M2_BUTTON_1 :
+                 esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_LILYGO_T_TWR2    ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
     // Button(s) uses external pull up resistor.
@@ -5120,7 +5156,9 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_LILYGO_T_TWR2       ||
       esp32_board == ESP32_HELTEC_TRACKER      ||
       esp32_board == ESP32_LILYGO_T3S3_EPD     ||
+      esp32_board == ESP32_LILYGO_T3S3_OLED    ||
       esp32_board == ESP32_ELECROW_TN_M2       ||
+      esp32_board == ESP32_EBYTE_HUB_900TB     ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
 
@@ -5141,7 +5179,9 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_LILYGO_T_TWR2     ||
       esp32_board == ESP32_HELTEC_TRACKER    ||
       esp32_board == ESP32_LILYGO_T3S3_EPD   ||
+      esp32_board == ESP32_LILYGO_T3S3_OLED  ||
       esp32_board == ESP32_ELECROW_TN_M2     ||
+      esp32_board == ESP32_EBYTE_HUB_900TB   ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :

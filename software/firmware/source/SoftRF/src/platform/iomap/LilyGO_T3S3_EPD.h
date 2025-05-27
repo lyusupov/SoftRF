@@ -18,10 +18,10 @@
 #define SOC_GPIO_PIN_T3S3_SCK           5
 #define SOC_GPIO_PIN_T3S3_SS            7
 
-// SX1262
+// SX1262 or LR1121
 #define SOC_GPIO_PIN_T3S3_RST           8
 #define SOC_GPIO_PIN_T3S3_BUSY          34
-#define SOC_GPIO_PIN_T3S3_DIO1          33
+#define SOC_GPIO_PIN_T3S3_DIO1          33 /* V1.3 LR1121 - DIO11 */
 #define SOC_GPIO_PIN_T3S3_DIO2          9
 #define SOC_GPIO_PIN_T3S3_ANT_RX        21
 #define SOC_GPIO_PIN_T3S3_ANT_TX        10
@@ -55,3 +55,7 @@
 #define SOC_GPIO_PIN_T3S3_SD_SS         13
 #define SOC_GPIO_PIN_T3S3_SD_D1         4
 #define SOC_GPIO_PIN_T3S3_SD_D2         12
+
+// ADC
+#define SOC_GPIO_PIN_T3S3_BATTERY       1 /* 100K/100K */
+#define SOC_GPIO_PIN_T3S3_SOLAR         4 /* V1.3 only, 100K/100K */

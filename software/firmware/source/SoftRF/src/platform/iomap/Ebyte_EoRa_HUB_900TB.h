@@ -35,8 +35,12 @@
 #define SOC_GPIO_PIN_EHUB_BUTTON    0
 
 // battery ADC
-#define SOC_GPIO_PIN_EHUB_BATTERY   1
+#define SOC_GPIO_PIN_EHUB_BATTERY   1 /* 390K/100K */
 #define SOC_GPIO_PIN_EHUB_VBAT_EN   37
+
+// 32768 Hz crystal
+#define SOC_GPIO_PIN_EHUB_XP        15
+#define SOC_GPIO_PIN_EHUB_XN        16
 
 // misc.
 #define SOC_GPIO_PIN_EHUB_CHRG      34

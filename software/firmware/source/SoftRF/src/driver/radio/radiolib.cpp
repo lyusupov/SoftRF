@@ -552,7 +552,8 @@ static void lr11xx_setup()
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui_le == 0x0016c001f047ac30)
+    if (hw_info.revision == 5 /* Ebyte EoRa-HUB */ ||
+        eui_le           == 0x0016c001f047ac30)
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
       Vtcxo = 1.8;
@@ -908,7 +909,8 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (eui_le == 0x0016c001f047ac30) {
+    if (hw_info.revision == 5 /* Ebyte EoRa-HUB */ ||
+        eui_le           == 0x0016c001f047ac30) {
       /* Ebyte E80-900M2213S */
 #if 1
       radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
