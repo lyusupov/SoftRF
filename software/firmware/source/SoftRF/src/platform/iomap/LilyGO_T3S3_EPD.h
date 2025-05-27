@@ -28,9 +28,13 @@
 
 #define SOC_GPIO_PIN_T3S3_3V3EN         35
 
-// I2C (ext.)
+// 1st I2C bus (ext. sensors)
 #define SOC_GPIO_PIN_T3S3_SDA           41 /* 46 ? */
 #define SOC_GPIO_PIN_T3S3_SCL           42
+
+/* 2nd I2C bus (OLED display) */
+#define SOC_GPIO_PIN_T3S3_OLED_SDA      18
+#define SOC_GPIO_PIN_T3S3_OLED_SCL      17
 
 // status LED
 #define SOC_GPIO_PIN_T3S3_LED           37

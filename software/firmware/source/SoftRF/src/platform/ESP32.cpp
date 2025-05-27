@@ -605,7 +605,9 @@ static void ESP32_setup()
    *                  | WT0132C6-S5   | ZBIT_ZB25VQ32B
    *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
    *  LilyGO T3-S3-EP | ESP32-S3-MINI | XMC_XM25QH32B
+   *  LilyGO T3-S3-OL | ESP32-S3FH4R2 |
    *  Elecrow TN-M2   | ESP32-S3-N4R8 | ZBIT_ZB25VQ32B ?
+   *  Ebyte EoRa-HUB  | ESP32-S3FH4R2 |
    */
 
   if (psramFound()) {
@@ -1506,19 +1508,61 @@ static void ESP32_setup()
     hw_info.model    = SOFTRF_MODEL_STANDALONE;
     hw_info.revision = 5; /* 10722-V1.1 */
 
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT_PULLDOWN);
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT_PULLDOWN);
+
+    delay(20);
+
+    Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA , SOC_GPIO_PIN_EHUB_OLED_SCL);
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    bool oled_is_active = (Wire1.endTransmission() == 0);
+    WIRE_FINI(Wire1);
+
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT);
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT);
+
+    if (oled_is_active) {
+      esp32_board = ESP32_LILYGO_T3S3_OLED;
+
 #if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_EHUB_CONS_RX,
-                       SOC_GPIO_PIN_EHUB_CONS_TX);
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_T3S3_CONS_RX,
+                         SOC_GPIO_PIN_T3S3_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    lmic_pins.nss  = SOC_GPIO_PIN_EHUB_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_EHUB_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_EHUB_BUSY;
+      lmic_pins.nss  = SOC_GPIO_PIN_T3S3_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_T3S3_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_T3S3_BUSY;
 #if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_EHUB_DIO9;
+      lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
 #endif /* USE_RADIOLIB */
 
+      int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
+
+      /* uSD-SPI init */
+      uSD_SPI.begin(SOC_GPIO_PIN_T3S3_SD_SCK,
+                    SOC_GPIO_PIN_T3S3_SD_MISO,
+                    SOC_GPIO_PIN_T3S3_SD_MOSI,
+                    uSD_SS_pin);
+
+      pinMode(uSD_SS_pin, OUTPUT);
+      digitalWrite(uSD_SS_pin, HIGH);
+
+      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+    } else {
+#if ARDUINO_USB_CDC_ON_BOOT
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_EHUB_CONS_RX,
+                         SOC_GPIO_PIN_EHUB_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+      lmic_pins.nss  = SOC_GPIO_PIN_EHUB_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_EHUB_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_EHUB_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_EHUB_DIO9;
+#endif /* USE_RADIOLIB */
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -1873,7 +1917,8 @@ static void ESP32_setup()
     digitalWrite(SOC_GPIO_PIN_HELTRK_LED,  LOW);
     pinMode(SOC_GPIO_PIN_HELTRK_LED,       OUTPUT);
 
-  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
+             esp32_board == ESP32_LILYGO_T3S3_OLED) {
 
     gpio_deep_sleep_hold_dis();
     gpio_hold_dis(GPIO_NUM_35);
@@ -2761,7 +2806,8 @@ static void ESP32_fini(int reason)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
-  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
+             esp32_board == ESP32_LILYGO_T3S3_OLED) {
     WIRE_FINI(Wire);
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -3545,6 +3591,7 @@ static void ESP32_SPI_begin()
                 SOC_GPIO_PIN_T3C6_MOSI, SOC_GPIO_PIN_T3C6_SS);
       break;
     case ESP32_LILYGO_T3S3_EPD:
+    case ESP32_LILYGO_T3S3_OLED:
       SPI.begin(SOC_GPIO_PIN_T3S3_SCK,  SOC_GPIO_PIN_T3S3_MISO,
                 SOC_GPIO_PIN_T3S3_MOSI, SOC_GPIO_PIN_T3S3_SS);
       break;
@@ -3653,7 +3700,8 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: LilyGO T3-C6 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
-     } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+     } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
+                esp32_board == ESP32_LILYGO_T3S3_OLED) {
       Serial.println(F("INFO: LilyGO T3-S3 EPD is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
@@ -3789,7 +3837,8 @@ static byte ESP32_Display_setup()
         u8x8 = &u8x8_elecrow;
         rval = DISPLAY_OLED_1_3;
       }
-    } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+    } else if (esp32_board == ESP32_EBYTE_HUB_900TB ||
+               esp32_board == ESP32_LILYGO_T3S3_OLED) {
       Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA, SOC_GPIO_PIN_EHUB_OLED_SCL);
       Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire1.endTransmission() == 0);
@@ -4507,8 +4556,9 @@ static void ESP32_Battery_setup()
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 1) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL, ADC_ATTEN_DB_0);
-    } else if (esp32_board == ESP32_HELTEC_TRACKER  ||
-               esp32_board == ESP32_LILYGO_T3S3_EPD ||
+    } else if (esp32_board == ESP32_HELTEC_TRACKER   ||
+               esp32_board == ESP32_LILYGO_T3S3_EPD  ||
+               esp32_board == ESP32_LILYGO_T3S3_OLED ||
                esp32_board == ESP32_EBYTE_HUB_900TB) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
     } else if (esp32_board == ESP32_BANANA_PICOW) {
@@ -4637,7 +4687,8 @@ static float ESP32_Battery_param(uint8_t param)
         if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
            (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
             esp32_board   == ESP32_S2_T8_V1_1       ||
-            esp32_board   == ESP32_LILYGO_T3S3_EPD) {
+            esp32_board   == ESP32_LILYGO_T3S3_EPD  ||
+            esp32_board   == ESP32_LILYGO_T3S3_OLED) {
           voltage += voltage;
         } else if (esp32_board == ESP32_C2_DEVKIT ||
                    esp32_board == ESP32_C3_DEVKIT ||
@@ -4729,7 +4780,8 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_T3C6_SDA, SOC_GPIO_PIN_T3C6_SCL);
 
-  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+  } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
+             esp32_board == ESP32_LILYGO_T3S3_OLED) {
 
     Wire.setPins(SOC_GPIO_PIN_T3S3_SDA, SOC_GPIO_PIN_T3S3_SCL);
 
