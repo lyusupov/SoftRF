@@ -606,7 +606,7 @@ static void ESP32_setup()
    *  LilyGO T3-C6    | ESP32-C6-MINI | XMC_XM25QH32B
    *  LilyGO T3-S3-EP | ESP32-S3-MINI | XMC_XM25QH32B
    *  LilyGO T3-S3-OL | ESP32-S3FH4R2 |
-   *  Elecrow TN-M2   | ESP32-S3-N4R8 | ZBIT_ZB25VQ32B ?
+   *  Elecrow TN-M2   | ESP32-S3-N4R8 | ZBIT_ZB25VQ32B
    *  Ebyte EoRa-HUB  | ESP32-S3FH4R2 |
    */
 
@@ -703,7 +703,6 @@ static void ESP32_setup()
       esp32_board    = ESP32_HELTEC_TRACKER;
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
-    case MakeFlashId(ST_ID, XMC_XM25QH32B): /* TBD */
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
       /*
        * Elecrow TinkNode M2 has OPI PSRAM in the WROOM module.
@@ -1956,6 +1955,9 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3,    INPUT_PULLUP); /* OLED */
     pinMode(SOC_GPIO_PIN_EHUB_OLED_RST,    INPUT_PULLUP);
 
+    digitalWrite(SOC_GPIO_PIN_EHUB_VBAT_EN, LOW);
+    pinMode(SOC_GPIO_PIN_EHUB_VBAT_EN,     OUTPUT);
+
     rtc_clk_32k_enable(true);
 
     CALIBRATE_ONE(RTC_CAL_RTC_MUX);
@@ -2870,6 +2872,21 @@ static void ESP32_fini(int reason)
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_M2_BUTTON_1,
                                  ESP_EXT1_WAKEUP_ANY_HIGH);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+  } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+    WIRE_FINI(Wire);
+    WIRE_FINI(Wire1);
+
+    pinMode(SOC_GPIO_PIN_EHUB_LED,         INPUT);
+
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3,    INPUT); /* OLED */
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST,    INPUT);
+
+    pinMode(SOC_GPIO_PIN_EHUB_VBAT_EN,     INPUT);
+
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   }
 
