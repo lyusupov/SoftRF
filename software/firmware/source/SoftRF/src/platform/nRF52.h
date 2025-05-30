@@ -149,6 +149,7 @@ struct rst_info {
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Heltec_T114.h"
 #include "iomap/Elecrow_ThinkNode_M1.h"
+#include "iomap/Seeed_Wio_L1.h"
 
 #define SOC_GPIO_LED_PCA10059_STATUS    _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_LED_PCA10059_GREEN     _PINNUM(1,  9) // P1.09 (Green)

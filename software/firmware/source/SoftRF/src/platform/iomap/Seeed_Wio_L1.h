@@ -1,6 +1,6 @@
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_M1_RX   _PINNUM(0,  9) // P0.09 , No NFC
+#define SOC_GPIO_PIN_CONS_L1_RX   _PINNUM(0,  9) // P0.09 , No NFC
 #define SOC_GPIO_PIN_CONS_L1_TX   _PINNUM(0, 10) // P0.10 , No NFC
 
 /* L76K */
@@ -26,7 +26,7 @@
 #define SOC_GPIO_PIN_L1_SDA       _PINNUM(0,  0) // P0.00
 #define SOC_GPIO_PIN_L1_SCL       _PINNUM(0,  1) // P0.01
 
-/* 2nd I2C bus (SSD1306 OLED display) */
+/* 2nd I2C bus (SH1106 OLED display) */
 #define SOC_GPIO_PIN_L1_OLED_SDA  _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_PIN_L1_OLED_SCL  _PINNUM(0,  5) // P0.05
 
@@ -40,7 +40,7 @@
 /* buzzer */
 #define SOC_GPIO_PIN_L1_BUZZER    _PINNUM(1,  0) // P1.00
 
-/* MX25R1635F (?) or WP25R1635F (?) SPI flash */
+/* P25Q16SH SPI flash */
 #define SOC_GPIO_PIN_SFL_L1_MOSI  _PINNUM(0, 20) // P0.20
 #define SOC_GPIO_PIN_SFL_L1_MISO  _PINNUM(0, 24) // P0.24
 #define SOC_GPIO_PIN_SFL_L1_SCK   _PINNUM(0, 21) // P0.21

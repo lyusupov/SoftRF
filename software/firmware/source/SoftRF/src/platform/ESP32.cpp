@@ -101,13 +101,13 @@ Adafruit_NeoPixel *strip;
 #endif /* USE_ADAFRUIT_NEO_LIBRARY */
 #endif /* EXCLUDE_LED_RING */
 
-#if defined(USE_OLED)
-U8X8_OLED_I2C_BUS_TYPE                u8x8_ttgo   (TTGO_V2_OLED_PIN_RST);
-U8X8_OLED_I2C_BUS_TYPE                u8x8_heltec (HELTEC_OLED_PIN_RST);
-U8X8_SH1106_128X64_NONAME_HW_I2C      u8x8_1_3    (U8X8_PIN_NONE);
-U8X8_SH1106_128X64_NONAME_2ND_HW_I2C  u8x8_elecrow(U8X8_PIN_NONE);
-U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ebyte  (SOC_GPIO_PIN_EHUB_OLED_RST);
-#endif /* USE_OLED */
+// #if defined(USE_OLED)
+// U8X8_OLED_I2C_BUS_TYPE                u8x8_ttgo   (TTGO_V2_OLED_PIN_RST);
+// U8X8_OLED_I2C_BUS_TYPE                u8x8_heltec (HELTEC_OLED_PIN_RST);
+// U8X8_SH1106_128X64_NONAME_HW_I2C      u8x8_1_3    (U8X8_PIN_NONE);
+// U8X8_SH1106_128X64_NONAME_2ND_HW_I2C  u8x8_elecrow(U8X8_PIN_NONE);
+// U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C u8x8_ebyte  (SOC_GPIO_PIN_EHUB_OLED_RST);
+// #endif /* USE_OLED */
 
 #if defined(USE_TFT)
 static TFT_eSPI *tft = NULL;
@@ -3833,9 +3833,9 @@ static byte ESP32_Display_setup()
       if (has_oled) {
         rval = ESP32_OLED_ident(&Wire);
         if (rval == DISPLAY_OLED_1_3) {
-          u8x8 = &u8x8_1_3;
+          u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
         } else {
-          u8x8 = &u8x8_ttgo;
+          u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
         }
       }
       WIRE_FINI(Wire);
@@ -3845,7 +3845,7 @@ static byte ESP32_Display_setup()
       has_oled = (Wire.endTransmission() == 0);
       WIRE_FINI(Wire);
       if (has_oled) {
-        u8x8 = &u8x8_1_3;
+        u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
         rval = DISPLAY_OLED_1_3;
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
@@ -3854,14 +3854,14 @@ static byte ESP32_Display_setup()
       Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
       if (has_oled) {
-        u8x8 = &u8x8_1_3;
+        u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
         rval = DISPLAY_OLED_1_3;
       } else {
         /* T-TWR V2.1 UHF */
         Wire.beginTransmission(SH1106_OLED_I2C_ADDR_ALT);
         has_oled = (Wire.endTransmission() == 0);
         if (has_oled) {
-          u8x8 = &u8x8_1_3;
+          u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
           u8x8->setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
           rval = DISPLAY_OLED_1_3;
         }
@@ -3874,7 +3874,7 @@ static byte ESP32_Display_setup()
       has_oled = (Wire1.endTransmission() == 0);
       WIRE_FINI(Wire1);
       if (has_oled) {
-        u8x8 = &u8x8_elecrow;
+        u8x8 = new U8X8_SH1106_128X64_NONAME_2ND_HW_I2C(U8X8_PIN_NONE); // &u8x8_elecrow;
         rval = DISPLAY_OLED_1_3;
       }
     } else if (esp32_board == ESP32_EBYTE_HUB_900TB ||
@@ -3884,7 +3884,7 @@ static byte ESP32_Display_setup()
       has_oled = (Wire1.endTransmission() == 0);
       WIRE_FINI(Wire1);
       if (has_oled) {
-        u8x8 = &u8x8_ebyte;
+        u8x8 = new U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C(SOC_GPIO_PIN_EHUB_OLED_RST); // &u8x8_ebyte;
         rval = DISPLAY_OLED_TTGO;
       }
     } else if (GPIO_21_22_are_busy) {
@@ -3896,12 +3896,12 @@ static byte ESP32_Display_setup()
 #if 0
           rval = ESP32_OLED_ident(&Wire1);
           if (rval == DISPLAY_OLED_1_3) {
-            u8x8 = &u8x8_1_3;
+            u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
           } else {
-            u8x8 = &u8x8_ttgo;
+            u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
           }
 #else
-          u8x8 = &u8x8_ttgo;
+          u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
           rval = DISPLAY_OLED_TTGO;
 #endif
         }
@@ -3911,7 +3911,7 @@ static byte ESP32_Display_setup()
         has_oled = (Wire1.endTransmission() == 0);
         WIRE_FINI(Wire1);
         if (has_oled) {
-          u8x8 = &u8x8_heltec;
+          u8x8 = new U8X8_OLED_I2C_BUS_TYPE(HELTEC_OLED_PIN_RST); // &u8x8_heltec;
           esp32_board = ESP32_HELTEC_OLED;
           rval = DISPLAY_OLED_HELTEC;
         }
@@ -3924,12 +3924,12 @@ static byte ESP32_Display_setup()
 #if 0
         rval = ESP32_OLED_ident(&Wire1);
         if (rval == DISPLAY_OLED_1_3) {
-          u8x8 = &u8x8_1_3;
+          u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
         } else {
-          u8x8 = &u8x8_ttgo;
+          u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
         }
 #else
-        u8x8 = &u8x8_ttgo;
+        u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
         rval = DISPLAY_OLED_TTGO;
 #endif
         if (hw_info.model == SOFTRF_MODEL_STANDALONE) {
@@ -3950,7 +3950,7 @@ static byte ESP32_Display_setup()
           has_oled = (Wire1.endTransmission() == 0);
           WIRE_FINI(Wire1);
           if (has_oled) {
-            u8x8 = &u8x8_heltec;
+            u8x8 = new U8X8_OLED_I2C_BUS_TYPE(HELTEC_OLED_PIN_RST); // &u8x8_heltec;
             esp32_board = ESP32_HELTEC_OLED;
             rval = DISPLAY_OLED_HELTEC;
           }
