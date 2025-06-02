@@ -710,6 +710,32 @@ void nfc_func(void *context, nfc_t2t_event_t event,
 }
 #endif /* ENABLE_NFC */
 
+static bool nRF52_bl_check(const char* signature)
+{
+    int  i, j;
+	bool match    = false;
+    uint8_t* data = (uint8_t*) 0x000F4000UL;
+    int length    = 0xFE000 - 0xF4000 - 2048 ; /* 38 KB */
+	int str_len   = strlen(signature);
+
+	for (i = 0; i < length - str_len; i++) {
+		if (data[i] == signature[0]) {
+			match = true;
+			for (j = 1; j < str_len; j++) {
+				if ((data[i + j * 2] != signature[j]) ||
+				    (data[1 + i + j * 2] != 0x00)) {
+					match = false;
+					break;
+				}
+			}
+			if (match) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 static void nRF52_system_off()
 {
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -779,6 +805,15 @@ static void nRF52_setup()
   pinMode(PIN_LED2, INPUT);
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
+
+#if 0
+  nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
+                nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
+                nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
+                nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
+                nRF52_bl_check("L1BOOT")      ? NRF52_SEEED_WIO_L1       : /* TBD */
+                nRF52_board;
+#endif
 
   for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
     if (techo_prototype_boards[i].id == ((uint64_t) DEVICE_ID_HIGH << 32 | (uint64_t) DEVICE_ID_LOW)) {
@@ -911,6 +946,9 @@ static void nRF52_setup()
       delay(100);
 #endif /* EXCLUDE_IMU */
       break;
+    case NRF52_SEEED_WIO_L1:
+      Wire.setPins(SOC_GPIO_PIN_L1_OLED_SDA, SOC_GPIO_PIN_L1_OLED_SCL); /* TBD */
+      break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -986,6 +1024,14 @@ static void nRF52_setup()
                                                     SOC_GPIO_PIN_SFL_T1000_MISO,
                                                     SOC_GPIO_PIN_SFL_T1000_WP,
                                                     SOC_GPIO_PIN_SFL_T1000_HOLD);
+      break;
+    case NRF52_SEEED_WIO_L1:
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_L1_SCK,
+                                                    SOC_GPIO_PIN_SFL_L1_SS,
+                                                    SOC_GPIO_PIN_SFL_L1_MOSI,
+                                                    SOC_GPIO_PIN_SFL_L1_MISO,
+                                                    SOC_GPIO_PIN_SFL_L1_WP,
+                                                    SOC_GPIO_PIN_SFL_L1_HOLD);
       break;
 #if !defined(EXCLUDE_WIP)
     case NRF52_LILYGO_TULTIMA:
@@ -1088,6 +1134,7 @@ static void nRF52_setup()
       break;
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
+    case NRF52_SEEED_WIO_L1:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
 #if defined(EXCLUDE_WIFI)
       Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -1174,6 +1221,10 @@ static void nRF52_setup()
       /* TBD */
       // digitalWrite(SOC_GPIO_PIN_M1_DIO3, HIGH);
       // pinMode(SOC_GPIO_PIN_M1_DIO3, OUTPUT);
+      break;
+
+    case NRF52_SEEED_WIO_L1:
+      /* TBD */
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -1337,16 +1388,14 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
 
-      if (DEVICE_ID_HIGH != 0x85aa831f || DEVICE_ID_LOW != 0x01d3e3e0) {
-        pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
-        digitalWrite(SOC_GPIO_LED_M1_RED_PWR, HIGH);
+      pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
+      digitalWrite(SOC_GPIO_LED_M1_RED_PWR, HIGH);
 
-        pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
-        pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
+      pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
+      pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
 
-        digitalWrite(SOC_GPIO_LED_M1_RED,    LED_STATE_ON);
-        digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
-      }
+      digitalWrite(SOC_GPIO_LED_M1_RED,    LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
 
       lmic_pins.nss  = SOC_GPIO_PIN_M1_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
