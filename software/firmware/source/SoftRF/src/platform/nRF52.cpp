@@ -712,28 +712,27 @@ void nfc_func(void *context, nfc_t2t_event_t event,
 
 static bool nRF52_bl_check(const char* signature)
 {
-    int  i, j;
-	bool match    = false;
-    uint8_t* data = (uint8_t*) 0x000F4000UL;
-    int length    = 0xFE000 - 0xF4000 - 2048 ; /* 38 KB */
-	int str_len   = strlen(signature);
+  int  i, j;
+  bool match    = false;
+  uint8_t* data = (uint8_t*) 0x000F4000UL;
+  int length    = 0xFE000 - 0xF4000 - 2048 ; /* 38 KB */
+  int str_len   = strlen(signature);
 
-	for (i = 0; i < length - str_len; i++) {
-		if (data[i] == signature[0]) {
-			match = true;
-			for (j = 1; j < str_len; j++) {
-				if ((data[i + j * 2] != signature[j]) ||
-				    (data[1 + i + j * 2] != 0x00)) {
-					match = false;
-					break;
-				}
-			}
-			if (match) {
-				return true;
-			}
-		}
-	}
-	return false;
+  for (i = 0; i < length - str_len; i++) {
+    if (data[i] == signature[0]) {
+      match = true;
+      for (j = 1; j < str_len; j++) {
+        if (data[i + j] != signature[j]) {
+            match = false;
+            break;
+        }
+      }
+      if (match) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 static void nRF52_system_off()
@@ -2991,6 +2990,18 @@ static nRF52_display_id nRF52_EPD_ident()
 
 #endif /* USE_EPAPER */
 
+#if defined(USE_OLED)
+#include "../driver/OLED.h"
+
+bool nRF52_OLED_probe_func()
+{
+  /* SH1106 I2C OLED probing */
+  Wire.begin();
+  Wire.beginTransmission(SH1106_OLED_I2C_ADDR_ALT);
+  return (Wire.endTransmission() == 0);
+}
+#endif /* USE_OLED */
+
 static byte nRF52_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -2998,6 +3009,10 @@ static byte nRF52_Display_setup()
   if (nRF52_board == NRF52_NORDIC_PCA10059 ||
       nRF52_board == NRF52_SEEED_T1000E) {
       /* Nothing to do */
+  } else if (nRF52_board == NRF52_SEEED_WIO_L1) {
+#if defined(USE_OLED)
+    rval = OLED_setup();
+#endif /* USE_OLED */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
 #if defined(USE_TFT)
 #if SPI_INTERFACES_COUNT == 1
@@ -3257,6 +3272,14 @@ static void nRF52_Display_loop()
 #endif /* LV_HOR_RES == 135 */
 #endif /* USE_TFT */
 
+#if defined(USE_OLED)
+  case DISPLAY_OLED_1_3:
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    OLED_loop();
+    break;
+#endif /* USE_OLED */
+
   case DISPLAY_NONE:
   default:
     break;
@@ -3362,6 +3385,14 @@ static void nRF52_Display_fini(int reason)
 
     break;
 #endif /* USE_TFT */
+
+#if defined(USE_OLED)
+  case DISPLAY_OLED_1_3:
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    OLED_fini(reason);
+    break;
+#endif /* USE_OLED */
 
   case DISPLAY_NONE:
   default:

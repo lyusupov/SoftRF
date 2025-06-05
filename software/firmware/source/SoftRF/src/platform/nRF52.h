@@ -265,9 +265,12 @@ struct rst_info {
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
 
-//#define USE_OLED                 //  +    kb
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+//#define USE_OLED                 //  +  6 kb
 //#define EXCLUDE_OLED_BARO_PAGE
 //#define EXCLUDE_OLED_049
+#endif /* ARDUINO_ARCH_MBED || ARDUINO_ARCH_ZEPHYR */
+
 #define USE_EPAPER                 //  +    kb
 #define EPD_ASPECT_RATIO_1C1
 #define USE_EPD_TASK
@@ -359,6 +362,14 @@ typedef void EPD_Task_t;
 #define LV_HOR_RES                      (135) // Horizontal
 #define LV_VER_RES                      (240) // Vertical
 #endif /* USE_TFT */
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE          U8X8_SH1106_128X64_NONAME_HW_I2C
+
+extern bool nRF52_OLED_probe_func();
+
+#define plat_oled_probe_func            nRF52_OLED_probe_func
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_NRF52_H */
 
