@@ -634,10 +634,7 @@ static void ESP32_setup()
       hw_info.model = SOFTRF_MODEL_HAM;
       break;
     case MakeFlashId(ST_ID, XMC_XM25QH32B):
-      if (ESP.getPsramSize() == 2097152)
-        esp32_board = ESP32_EBYTE_HUB_900TB; /* ESP32-S3FH4R2 */
-      else
-        esp32_board = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U */
+      esp32_board = ESP32_LILYGO_T3S3_EPD; /* ESP32-S3-MINI-1U ESP32-S3FH4R2 */
       break;
     case MakeFlashId(WINBOND_NEX_ID, WINBOND_NEX_W25Q64_V):
       esp32_board   = ESP32_BANANA_PICOW;
@@ -1434,37 +1431,83 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
 
-    hw_info.model    = SOFTRF_MODEL_INK;
-    hw_info.revision = 0; /* 2024-02-28 */
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT_PULLDOWN);
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT_PULLDOWN);
+
+    delay(150);
+
+    Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA , SOC_GPIO_PIN_EHUB_OLED_SCL);
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    bool off_oled_is_active = (Wire1.endTransmission() == 0);
+
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT);
+    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT);
+
+    delay(150);
+
+    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    bool on_oled_is_active = (Wire1.endTransmission() == 0);
+
+    WIRE_FINI(Wire1);
+
+    if (off_oled_is_active == false && on_oled_is_active == true) {
+
+      esp32_board      = ESP32_EBYTE_HUB_900TB;
+      hw_info.model    = SOFTRF_MODEL_STANDALONE;
+      hw_info.revision = 5; /* 10722-V1.1 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_T3S3_CONS_RX,
-                       SOC_GPIO_PIN_T3S3_CONS_TX);
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_EHUB_CONS_RX,
+                         SOC_GPIO_PIN_EHUB_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    lmic_pins.nss  = SOC_GPIO_PIN_T3S3_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_T3S3_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_T3S3_BUSY;
-    lmic_pins.txe  = SOC_GPIO_PIN_T3S3_ANT_TX;
-    lmic_pins.rxe  = SOC_GPIO_PIN_T3S3_ANT_RX;
+      lmic_pins.nss  = SOC_GPIO_PIN_EHUB_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_EHUB_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_EHUB_BUSY;
 #if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1; /* reserved for HPD-16E */
+      lmic_pins.dio[0] = SOC_GPIO_PIN_EHUB_DIO9;
 #endif /* USE_RADIOLIB */
 
-    int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
+    } else {
 
-    /* uSD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_T3S3_SD_SCK,
-                  SOC_GPIO_PIN_T3S3_SD_MISO,
-                  SOC_GPIO_PIN_T3S3_SD_MOSI,
-                  uSD_SS_pin);
+      if (off_oled_is_active) {
+        esp32_board      = ESP32_LILYGO_T3S3_OLED;
+        hw_info.model    = SOFTRF_MODEL_STANDALONE;
+        hw_info.revision = 6; /* V1.2 V1.3 */
+      } else {
+        hw_info.model    = SOFTRF_MODEL_INK;
+        hw_info.revision = 0; /* 2024-02-28 */
+      }
 
-    pinMode(uSD_SS_pin, OUTPUT);
-    digitalWrite(uSD_SS_pin, HIGH);
+#if ARDUINO_USB_CDC_ON_BOOT
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_T3S3_CONS_RX,
+                         SOC_GPIO_PIN_T3S3_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+      lmic_pins.nss  = SOC_GPIO_PIN_T3S3_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_T3S3_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_T3S3_BUSY;
+   // lmic_pins.txe  = SOC_GPIO_PIN_T3S3_ANT_TX;
+   // lmic_pins.rxe  = SOC_GPIO_PIN_T3S3_ANT_RX;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
+#endif /* USE_RADIOLIB */
 
+      int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
+
+      /* uSD-SPI init */
+      uSD_SPI.begin(SOC_GPIO_PIN_T3S3_SD_SCK,
+                    SOC_GPIO_PIN_T3S3_SD_MISO,
+                    SOC_GPIO_PIN_T3S3_SD_MOSI,
+                    uSD_SS_pin);
+
+      pinMode(uSD_SS_pin, OUTPUT);
+      digitalWrite(uSD_SS_pin, HIGH);
+
+      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+    }
   } else if (esp32_board == ESP32_BANANA_PICOW) {
 
     hw_info.model    = SOFTRF_MODEL_STANDALONE;
@@ -1504,65 +1547,7 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
-    hw_info.model    = SOFTRF_MODEL_STANDALONE;
-    hw_info.revision = 5; /* 10722-V1.1 */
 
-    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT_PULLDOWN);
-    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT_PULLDOWN);
-
-    delay(10);
-
-    Wire1.begin(SOC_GPIO_PIN_EHUB_OLED_SDA , SOC_GPIO_PIN_EHUB_OLED_SCL);
-    Wire1.beginTransmission(SSD1306_OLED_I2C_ADDR);
-    bool oled_is_active = (Wire1.endTransmission() == 0);
-    WIRE_FINI(Wire1);
-
-    pinMode(SOC_GPIO_PIN_EHUB_OLED_3V3, INPUT);
-    pinMode(SOC_GPIO_PIN_EHUB_OLED_RST, INPUT);
-
-    if (oled_is_active) {
-      esp32_board      = ESP32_LILYGO_T3S3_OLED;
-      hw_info.revision = 6; /* V1.2 V1.3 */
-
-#if ARDUINO_USB_CDC_ON_BOOT
-      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                         SOC_GPIO_PIN_T3S3_CONS_RX,
-                         SOC_GPIO_PIN_T3S3_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
-      lmic_pins.nss  = SOC_GPIO_PIN_T3S3_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_T3S3_RST;
-      lmic_pins.busy = SOC_GPIO_PIN_T3S3_BUSY;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_T3S3_DIO1;
-#endif /* USE_RADIOLIB */
-
-      int uSD_SS_pin = SOC_GPIO_PIN_T3S3_SD_SS;
-
-      /* uSD-SPI init */
-      uSD_SPI.begin(SOC_GPIO_PIN_T3S3_SD_SCK,
-                    SOC_GPIO_PIN_T3S3_SD_MISO,
-                    SOC_GPIO_PIN_T3S3_SD_MOSI,
-                    uSD_SS_pin);
-
-      pinMode(uSD_SS_pin, OUTPUT);
-      digitalWrite(uSD_SS_pin, HIGH);
-
-      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
-    } else {
-#if ARDUINO_USB_CDC_ON_BOOT
-      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                         SOC_GPIO_PIN_EHUB_CONS_RX,
-                         SOC_GPIO_PIN_EHUB_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
-      lmic_pins.nss  = SOC_GPIO_PIN_EHUB_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_EHUB_RST;
-      lmic_pins.busy = SOC_GPIO_PIN_EHUB_BUSY;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_EHUB_DIO9;
-#endif /* USE_RADIOLIB */
-    }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
