@@ -69,6 +69,12 @@
 #include <TFT_eSPI.h>
 #endif /* USE_TFT */
 
+#if defined(USE_OLED)
+#include "../driver/OLED.h"
+
+extern U8X8 u8x8_i2c;
+#endif /* USE_OLED */
+
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
 
@@ -223,11 +229,13 @@ GxEPD2_GFX *display;
 #if defined(USE_TFT)
 static TFT_eSPI *tft = NULL;
 
+#if !defined(USE_OLED)
 static const char SoftRF_text1[]  = "SoftRF";
 static const char ID_text[]       = "ID";
 static const char PROTOCOL_text[] = "PROTOCOL";
 static const char RX_text[]       = "RX";
 static const char TX_text[]       = "TX";
+#endif /* USE_OLED */
 
 static bool TFT_display_frontpage = false;
 
@@ -1937,6 +1945,13 @@ static void nRF52_post_init()
     EPD_info2(acfts, reg, mam, cn);
   }
 #endif /* USE_EPAPER */
+
+#if defined(USE_OLED)
+  if (hw_info.display == DISPLAY_OLED_1_3 ||
+      hw_info.display == DISPLAY_OLED_TTGO) {
+    OLED_info1();
+  }
+#endif /* USE_OLED */
 }
 
 static void nRF52_loop()
@@ -2991,8 +3006,6 @@ static nRF52_display_id nRF52_EPD_ident()
 #endif /* USE_EPAPER */
 
 #if defined(USE_OLED)
-#include "../driver/OLED.h"
-
 bool nRF52_OLED_probe_func()
 {
   /* SH1106 I2C OLED probing */
@@ -3011,6 +3024,7 @@ static byte nRF52_Display_setup()
       /* Nothing to do */
   } else if (nRF52_board == NRF52_SEEED_WIO_L1) {
 #if defined(USE_OLED)
+    u8x8_i2c.setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
     rval = OLED_setup();
 #endif /* USE_OLED */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
@@ -3614,7 +3628,14 @@ void handleEvent(AceButton* button, uint8_t eventType,
       } else if (button == &button_2) {
         EPD_Up();
       }
-#endif
+#endif /* USE_EPAPER */
+#if defined(USE_OLED)
+      if (button == &button_1 &&
+         (hw_info.display == DISPLAY_OLED_1_3 ||
+          hw_info.display == DISPLAY_OLED_TTGO)) {
+        OLED_Next_Page();
+      }
+#endif /* USE_OLED */
       break;
     case AceButton::kEventDoubleClicked:
 #if defined(USE_EPAPER)

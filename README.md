@@ -5,6 +5,7 @@
 
 DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Handheld-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)

@@ -3835,7 +3835,7 @@ static byte ESP32_Display_setup()
         if (rval == DISPLAY_OLED_1_3) {
           u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
         } else {
-          u8x8 = new U8X8_OLED_I2C_BUS_TYPE(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
+          u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
         }
       }
       WIRE_FINI(Wire);
