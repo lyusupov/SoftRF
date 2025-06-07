@@ -47,8 +47,9 @@
 // State when LED is litted
 #if defined(LED_STATE_ON)
 #undef  LED_STATE_ON
-#define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD    || \
-                                 hw_info.model == SOFTRF_MODEL_HANDHELD ? \
+#define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD     || \
+                                 hw_info.model == SOFTRF_MODEL_HANDHELD || \
+                                 hw_info.model == SOFTRF_MODEL_DECENT    ? \
                                  HIGH : LOW)
 #else
 #define LED_STATE_ON            LOW
@@ -160,6 +161,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_CARD ? SOC_GPIO_LED_T1000_GREEN : \
                                hw_info.model == SOFTRF_MODEL_COZY ? SOC_GPIO_LED_T114_GREEN  : \
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_RED  : \
+                               hw_info.model == SOFTRF_MODEL_DECENT  ? SOC_GPIO_LED_L1_GREEN : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_GREEN : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
@@ -186,7 +188,9 @@ struct rst_info {
                                hw_info.model == SOFTRF_MODEL_CARD     ? \
                                SOC_GPIO_PIN_GNSS_T1000_PPS :            \
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? \
-                               SOC_GPIO_PIN_GNSS_M1_PPS : SOC_UNUSED_PIN)
+                               SOC_GPIO_PIN_GNSS_M1_PPS :               \
+                               hw_info.model == SOFTRF_MODEL_DECENT   ? \
+                               SOC_GPIO_PIN_GNSS_L1_PPS : SOC_UNUSED_PIN)
 
 #define SOC_GPIO_PIN_PCA10059_MOSI      _PINNUM(0, 22) // P0.22
 #define SOC_GPIO_PIN_PCA10059_MISO      _PINNUM(0, 13) // P0.13
@@ -265,11 +269,9 @@ struct rst_info {
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
 
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 //#define USE_OLED                 //  +  6 kb
 //#define EXCLUDE_OLED_BARO_PAGE
 //#define EXCLUDE_OLED_049
-#endif /* ARDUINO_ARCH_MBED || ARDUINO_ARCH_ZEPHYR */
 
 #define USE_EPAPER                 //  +    kb
 #define EPD_ASPECT_RATIO_1C1
@@ -329,6 +331,7 @@ struct rst_info {
 #if defined(USE_PWM_SOUND)
 #define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E  ? SOC_GPIO_PIN_T1000_BUZZER : \
                                nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER    : \
+                               nRF52_board == NRF52_SEEED_WIO_L1  ? SOC_GPIO_PIN_L1_BUZZER    : \
                                hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
                                hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
                                hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \

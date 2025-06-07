@@ -55,6 +55,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP65
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) - IP67
 * **UAV** add-on
+    * [**Nano Edition**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**UAV Edition**](https://github.com/lyusupov/SoftRF/wiki/UAV-Edition)
 * Raspberry Pi **friendly**
     * [**Raspberry Edition**](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)

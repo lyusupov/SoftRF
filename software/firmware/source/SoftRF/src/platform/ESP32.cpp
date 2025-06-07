@@ -746,8 +746,13 @@ static void ESP32_setup()
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* C3FH4 or 4X with emb. flash */
       esp32_board   = ESP32_RADIOMASTER_XR1;
       break;
+    case MakeFlashId(ST_ID,   XMC_XM25QH32B):
+      if (wafer_ver == 4)
+        esp32_board = ESP32_RADIOMASTER_XR1;
+      else
+        esp32_board = ESP32_C3_DEVKIT;  /* ESP-C3-12F  */
+      break;
     case MakeFlashId(BOYA_ID, BOYA_BY25Q32AL): /* TTGO T-01C3 */
-    case MakeFlashId(ST_ID,   XMC_XM25QH32B):  /* ESP-C3-12F  */
     default:
       esp32_board   = ESP32_C3_DEVKIT;
       break;
@@ -1544,10 +1549,6 @@ static void ESP32_setup()
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
 #endif /* USE_RADIOLIB */
-
-  } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
-
-
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
