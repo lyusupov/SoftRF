@@ -2353,6 +2353,8 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_SFL_L1_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_L1_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_L1_SS,    INPUT);
+
+      pinMode(SOC_GPIO_PIN_L1_VBAT_EN,   INPUT);
       break;
 
     case NRF52_NORDIC_PCA10059:

@@ -539,13 +539,14 @@ static void lr11xx_setup()
   uint64_t eui_le = __builtin_bswap64(lr11xx_eui_be);
 
   /*
-   *  Product/Module |   IC   |       EUI          | Use case
-   *  ---------------+--------+--------------------+-----------
-   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f0182465 | Standalone
-   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f01824af | Badge
-   *  HPDTeK HPD-16E | LR1121 | 0x0016c001f018276a | Prime Mk3
-   *  Seeed T1000-E  | LR1110 | 0x0016c001f03a86ab | Card
-   *  Ebyte E80      | LR1121 | 0x0016c001f047ac30 | Academy
+   *  Product/Module  |   IC   |       EUI          | Use case
+   *  ----------------+--------+--------------------+-----------
+   *  HPDTeK HPD-16E  | LR1121 | 0x0016c001f0182465 | Standalone
+   *  HPDTeK HPD-16E  | LR1121 | 0x0016c001f01824af | Badge
+   *  HPDTeK HPD-16E  | LR1121 | 0x0016c001f018276a | Prime Mk3
+   *  Seeed T1000-E   | LR1110 | 0x0016c001f03a86ab | Card
+   *  Ebyte E80       | LR1121 | 0x0016c001f047ac30 | Academy
+   *  RadioMaster XR1 | LR1121 | 0x0016c001f09aa1b7 | Nano
    */
 
   switch (hw_info.model)
@@ -932,10 +933,11 @@ static void lr11xx_setup()
 #else
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
 #endif
+      state = radio_semtech->setOutputPower(txpow, false);
     } else {
       radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
+      state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
-    state = radio_semtech->setOutputPower(txpow, false);
     break;
 
   case SOFTRF_MODEL_NEO:

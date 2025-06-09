@@ -292,6 +292,10 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-1.jpg)
 
+* [**Nano Edition**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-1.jpg)
+
 * [**Gizmo Edition**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 ![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Gizmo-1.jpg)
