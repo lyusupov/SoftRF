@@ -37,6 +37,9 @@ void Web_fini()     {}
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#if !defined(EXCLUDE_MAVLINK)
+#include "../protocol/data/MAVLink.h"
+#endif /* EXCLUDE_MAVLINK */
 #include "../system/Time.h"
 
 #if defined(ENABLE_AHRS)
@@ -787,7 +790,14 @@ void handleRoot() {
   bool low_voltage = (Battery_voltage() <= Battery_threshold());
 
   unsigned int timestamp = (unsigned int) ThisAircraft.timestamp;
-  unsigned int sats = gnss.satellites.value(); // Number of satellites in use (u32)
+  unsigned int sats;
+
+#if !defined(EXCLUDE_MAVLINK)
+  if (settings->mode == SOFTRF_MODE_UAV)
+    sats = the_aircraft.gps.num_sats;
+  else
+#endif /* EXCLUDE_MAVLINK */
+    sats = gnss.satellites.value(); // Number of satellites in use (u32)
 
   char str_lat[16];
   char str_lon[16];

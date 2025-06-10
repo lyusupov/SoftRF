@@ -4436,6 +4436,9 @@ static void ESP32_Display_fini(int reason)
       delay(3000); /* Keep shutdown message on OLED for 3 seconds */
 
       u8x8->noDisplay();
+
+      delete u8x8;
+      u8x8 = NULL;
     }
     break;
 #endif /* USE_OLED */

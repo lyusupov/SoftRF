@@ -460,6 +460,8 @@ void uav()
   MAVLinkTimeSync();
   MAVLinkSetWiFiPower();
 
+  hw_info.gnss = get_num_heartbeats() > 0 ? GNSS_MODULE_MAV : GNSS_MODULE_NONE;
+
   ThisAircraft.timestamp = now();
 
   if (isValidMAVFix()) {
