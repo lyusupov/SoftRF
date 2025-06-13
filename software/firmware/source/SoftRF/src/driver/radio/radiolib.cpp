@@ -434,6 +434,7 @@ static void lr11xx_channel(int8_t channel)
 {
   if (channel != -1 && channel != lr112x_channel_prev) {
     uint32_t frequency = RF_FreqPlan.getChanFrequency((uint8_t) channel);
+    int8_t fc = settings->freq_corr;
 
     if (settings->rf_protocol == RF_PROTOCOL_LEGACY) {
       nRF905_band_t nrf_band;
@@ -444,7 +445,13 @@ static void lr11xx_channel(int8_t channel)
       frequency -= (frequency % nrf_freq_resolution);
     }
 
-    int state = radio_semtech->setFrequency(frequency / 1000000.0);
+    if (fc > 30) {
+      fc = 30;
+    } else if (fc < -30) {
+      fc = -30;
+    };
+
+    int state = radio_semtech->setFrequency((frequency + (fc * 1000)) / 1000000.0);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
@@ -565,13 +572,15 @@ static void lr11xx_setup()
     break;
 
   case SOFTRF_MODEL_NANO:
-    if (eui_le == 0x0016c001f047ac30)
+    if (eui_le == 0x0016c001f047ac30) {
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
       Vtcxo = 1.8;
-    else
-      // TBD
-      Vtcxo = 1.6;
+    } else {
+      // YL320 XTAL on XR1 V1.0
+      Vtcxo = 0.0f;
+      radio_semtech->XTAL = true;
+    }
     break;
 
   case SOFTRF_MODEL_NEO:

@@ -711,6 +711,7 @@ void handleSettings() {
                   rf_chip->type == RF_IC_SX1231 ||
                   rf_chip->type == RF_IC_SI4432 ||
                   rf_chip->type == RF_IC_SI4463 ||
+     (rf_chip->type == RF_IC_LR1121 && hw_info.model == SOFTRF_MODEL_NANO) ||
                   rf_chip->type == RF_IC_SX1280)) {
     snprintf_P ( offset, size,
       PSTR("\

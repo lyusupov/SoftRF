@@ -32,6 +32,8 @@ Recommended:
 - [ ]   Uni
 - [ ]   Ham
 - [ ]   Card
+- [ ]   Handheld
+- [ ]   Nano
 - [ ]   Cozy
 - [ ]   Midi
 - [ ]   Mini
