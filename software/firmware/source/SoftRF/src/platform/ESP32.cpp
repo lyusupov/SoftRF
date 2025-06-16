@@ -650,7 +650,7 @@ static void ESP32_setup()
     default:
       esp32_board   = ESP32_P4_DEVKIT;
 #else
-#error "This ESP32 family build variant is not supported!"
+    default:
 #endif
       break;
     }
