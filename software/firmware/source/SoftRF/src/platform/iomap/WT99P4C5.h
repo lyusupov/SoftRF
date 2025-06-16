@@ -86,6 +86,7 @@
 #define SOC_GPIO_PIN_C5_SS              SOC_GPIO_PIN_C5_SD_D3
 
 // SX12xx or LR112x
+#define SOC_GPIO_PIN_C5_RST             LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_C5_DIO             SOC_GPIO_PIN_C5_SD_D1
 #define SOC_GPIO_PIN_C5_BUSY            SOC_GPIO_PIN_C5_SD_D2
 
