@@ -1580,6 +1580,23 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+  } else if (esp32_board == ESP32_C5_DEVKIT) {
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_C5_CONS_RX,
+                       SOC_GPIO_PIN_C5_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_C5_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_C5_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_C5_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_C5_DIO;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
   } else if (esp32_board == ESP32_C6_DEVKIT) {
 
@@ -1612,6 +1629,23 @@ static void ESP32_setup()
     lmic_pins.txe  = SOC_GPIO_PIN_T3C6_ANT_TX;
     lmic_pins.rxe  = SOC_GPIO_PIN_T3C6_ANT_RX;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  } else if (esp32_board == ESP32_P4_DEVKIT) {
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_P4_CONS_RX,
+                       SOC_GPIO_PIN_P4_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_P4_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_P4_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_P4_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_P4_DIO;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -3691,23 +3725,18 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F(" is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
     } else if (esp32_board == ESP32_S2_T8_V1_1) {
       Serial.println(F("INFO: TTGO T8_S2 rev. 1.1 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T8_S2_GNSS_RX,
                            SOC_GPIO_PIN_T8_S2_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     } else if (esp32_board == ESP32_S3_DEVKIT) {
       Serial.println(F("INFO: ESP32-S3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_S3_GNSS_RX, SOC_GPIO_PIN_S3_GNSS_TX);
-    } else if (esp32_board == ESP32_C2_DEVKIT) {
-      Serial.println(F("INFO: ESP32-C2 DevKit is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_C2_GNSS_RX, SOC_GPIO_PIN_C2_GNSS_TX);
-    } else if (esp32_board == ESP32_C3_DEVKIT) {
-      Serial.println(F("INFO: ESP32-C3 DevKit is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 0) {
       Serial.println(F("INFO: LilyGO T-TWR rev. 2.0 is detected."));
 #if defined(USE_SA8X8)
@@ -3732,10 +3761,47 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(115200, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_HELTRK_GNSS_RX,
                            SOC_GPIO_PIN_HELTRK_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
+               esp32_board == ESP32_LILYGO_T3S3_OLED) {
+      Serial.println(F("INFO: LilyGO T3-S3 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
+    } else if (esp32_board == ESP32_BANANA_PICOW) {
+      Serial.println(F("INFO: Banana Pi PicoW-S3 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_BPIPW_GNSS_RX, SOC_GPIO_PIN_BPIPW_GNSS_TX);
+    } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+      Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
+    } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
+      Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_EHUB_GNSS_RX, SOC_GPIO_PIN_EHUB_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+    } else if (esp32_board == ESP32_C2_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C2 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C2_GNSS_RX, SOC_GPIO_PIN_C2_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    } else if (esp32_board == ESP32_C3_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C3 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
+    } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
+      Serial.println(F("INFO: RadioMaster XR1 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
     } else if (esp32_board == ESP32_C5_DEVKIT) {
       Serial.println(F("INFO: ESP32-C5 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_C5_GNSS_RX, SOC_GPIO_PIN_C5_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
     } else if (esp32_board == ESP32_C6_DEVKIT) {
       Serial.println(F("INFO: ESP32-C6 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3744,31 +3810,13 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: LilyGO T3-C6 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
-     } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
-                esp32_board == ESP32_LILYGO_T3S3_OLED) {
-      Serial.println(F("INFO: LilyGO T3-S3 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_T3S3_GNSS_RX, SOC_GPIO_PIN_T3S3_GNSS_TX);
-     } else if (esp32_board == ESP32_BANANA_PICOW) {
-      Serial.println(F("INFO: Banana Pi PicoW-S3 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_BPIPW_GNSS_RX, SOC_GPIO_PIN_BPIPW_GNSS_TX);
-     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-      Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
-     } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
-      Serial.println(F("INFO: RadioMaster XR1 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
-     } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
-      Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_EHUB_GNSS_RX, SOC_GPIO_PIN_EHUB_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
     } else if (esp32_board == ESP32_P4_DEVKIT) {
       Serial.println(F("INFO: ESP32-P4 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_P4_GNSS_RX, SOC_GPIO_PIN_P4_GNSS_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -4792,41 +4840,17 @@ static bool ESP32_Baro_setup()
 
     return false;
 
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
 
     Wire.setPins(SOC_GPIO_PIN_T8_S2_SDA, SOC_GPIO_PIN_T8_S2_SCL);
 
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   } else if (esp32_board == ESP32_S3_DEVKIT ||
              esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
 
     Wire.setPins(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-
-  } else if (esp32_board == ESP32_C2_DEVKIT) {
-
-    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
-        RF_SX12XX_RST_is_connected) {
-      return false;
-    }
-
-    Wire.setPins(SOC_GPIO_PIN_C2_SDA, SOC_GPIO_PIN_C2_SCL);
-
-  } else if (esp32_board == ESP32_C3_DEVKIT) {
-
-    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
-        RF_SX12XX_RST_is_connected) {
-      return false;
-    }
-
-    Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
-
-  } else if (esp32_board == ESP32_C5_DEVKIT) {
-
-    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
-        RF_SX12XX_RST_is_connected) {
-      return false;
-    }
-
-    Wire.setPins(SOC_GPIO_PIN_C5_SDA, SOC_GPIO_PIN_C5_SCL);
 
   } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
 
@@ -4835,19 +4859,6 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_HELTEC_TRACKER) {
 
     Wire.setPins(SOC_GPIO_PIN_HELTRK_SDA, SOC_GPIO_PIN_HELTRK_SCL);
-
-  } else if (esp32_board == ESP32_C6_DEVKIT) {
-
-    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
-        RF_SX12XX_RST_is_connected) {
-      return false;
-    }
-
-    Wire.setPins(SOC_GPIO_PIN_C6_SDA, SOC_GPIO_PIN_C6_SCL);
-
-  } else if (esp32_board == ESP32_LILYGO_T3C6) {
-
-    Wire.setPins(SOC_GPIO_PIN_T3C6_SDA, SOC_GPIO_PIN_T3C6_SCL);
 
   } else if (esp32_board == ESP32_LILYGO_T3S3_EPD ||
              esp32_board == ESP32_LILYGO_T3S3_OLED) {
@@ -4866,10 +4877,61 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_EHUB_SDA, SOC_GPIO_PIN_EHUB_SCL);
 
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+  } else if (esp32_board == ESP32_C2_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
+    Wire.setPins(SOC_GPIO_PIN_C2_SDA, SOC_GPIO_PIN_C2_SCL);
+
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+  } else if (esp32_board == ESP32_C3_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
+    Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
+
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+  } else if (esp32_board == ESP32_C5_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
+    Wire.setPins(SOC_GPIO_PIN_C5_SDA, SOC_GPIO_PIN_C5_SCL);
+
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+  } else if (esp32_board == ESP32_C6_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
+    Wire.setPins(SOC_GPIO_PIN_C6_SDA, SOC_GPIO_PIN_C6_SCL);
+
+  } else if (esp32_board == ESP32_LILYGO_T3C6) {
+
+    Wire.setPins(SOC_GPIO_PIN_T3C6_SDA, SOC_GPIO_PIN_T3C6_SCL);
+
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
   } else if (esp32_board == ESP32_P4_DEVKIT) {
 
     Wire.setPins(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
 
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||

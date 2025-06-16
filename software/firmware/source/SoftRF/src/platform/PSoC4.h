@@ -168,6 +168,7 @@ extern softSerial swSer;
 #endif /* CubeCell_GPS */
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE

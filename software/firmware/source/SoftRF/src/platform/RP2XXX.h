@@ -314,6 +314,8 @@ struct rst_info {
 //#define USE_USB_HOST
 #endif /* USE_TINYUSB */
 
+#define EXCLUDE_ETHERNET
+
 #if !defined(ARDUINO_ARCH_MBED)
 #define USE_BOOTSEL_BUTTON
 #if defined(ARDUINO_GENERIC_RP2040)

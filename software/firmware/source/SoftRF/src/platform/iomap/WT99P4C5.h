@@ -24,7 +24,7 @@
 
 // SX12xx
 #define SOC_GPIO_PIN_P4_RST             37
-#define SOC_GPIO_PIN_P4_DIO0            47
+#define SOC_GPIO_PIN_P4_DIO             47
 #define SOC_GPIO_PIN_P4_BUSY            27
 
 // SDIO 1 - SDMMC
