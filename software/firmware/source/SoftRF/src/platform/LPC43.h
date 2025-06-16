@@ -100,6 +100,7 @@ extern usb_data_t usb_data_type;
 #define SOC_GPIO_LED_USB      (P4_1)  /* Green */
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1

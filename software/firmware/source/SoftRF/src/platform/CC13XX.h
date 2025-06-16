@@ -83,6 +83,7 @@ struct rst_info {
 
 #define USE_NMEA_CFG
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 //#define EXCLUDE_EEPROM
 #define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND

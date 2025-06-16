@@ -294,6 +294,8 @@ jobs:
             arduino --pref "custom_FlashFreq=esp32p4_40"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32p4_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32p4_4M"               --save-prefs ;
+            arduino --pref "custom_USBMode=esp32p4_default"            --save-prefs ;
+            arduino --pref "custom_CDCOnBoot=esp32p4_cdc"              --save-prefs ;
             arduino --pref "custom_PSRAM=esp32p4_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32p4_no_fs"      --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32p4_921600"         --save-prefs ;

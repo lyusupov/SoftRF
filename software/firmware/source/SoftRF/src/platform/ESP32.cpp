@@ -643,24 +643,9 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
-#elif defined(CONFIG_IDF_TARGET_ESP32C2)
-    default:
-      esp32_board   = ESP32_C2_DEVKIT;
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    default:
-      esp32_board   = ESP32_C3_DEVKIT;
-#elif defined(CONFIG_IDF_TARGET_ESP32C5)
-    default:
-      esp32_board   = ESP32_C5_DEVKIT;
-#elif defined(CONFIG_IDF_TARGET_ESP32C6)
-    default:
-      esp32_board   = ESP32_C6_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32C61)
     default:
       esp32_board   = ESP32_C61_DEVKIT;
-#elif defined(CONFIG_IDF_TARGET_ESP32H2)
-    default:
-      esp32_board   = ESP32_H2_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
     default:
       esp32_board   = ESP32_P4_DEVKIT;
@@ -784,6 +769,13 @@ static void ESP32_setup()
     {
     default:
       esp32_board   = ESP32_C61_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    switch (flash_id)
+    {
+    default:
+      esp32_board   = ESP32_H2_DEVKIT;
       break;
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -3582,27 +3574,18 @@ static void ESP32_SPI_begin()
 {
   switch (esp32_board)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
     case ESP32_S2_T8_V1_1:
       SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
                 SOC_GPIO_PIN_T8_S2_MOSI, SOC_GPIO_PIN_T8_S2_SS);
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     case ESP32_S3_DEVKIT:
     case ESP32_TTGO_T_BEAM_SUPREME:
     case ESP32_ELECROW_TN_M2:
       SPI.begin(SOC_GPIO_PIN_S3_SCK,  SOC_GPIO_PIN_S3_MISO,
                 SOC_GPIO_PIN_S3_MOSI, SOC_GPIO_PIN_S3_SS);
-      break;
-    case ESP32_C2_DEVKIT:
-      SPI.begin(SOC_GPIO_PIN_C2_SCK,  SOC_GPIO_PIN_C2_MISO,
-                SOC_GPIO_PIN_C2_MOSI, SOC_GPIO_PIN_C2_SS);
-      break;
-    case ESP32_C3_DEVKIT:
-      SPI.begin(SOC_GPIO_PIN_C3_SCK,  SOC_GPIO_PIN_C3_MISO,
-                SOC_GPIO_PIN_C3_MOSI, SOC_GPIO_PIN_C3_SS);
-      break;
-    case ESP32_C6_DEVKIT:
-      SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
-                SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
       break;
     case ESP32_LILYGO_T_TWR2:
       SPI.begin(SOC_GPIO_PIN_TWR2_SCK,  SOC_GPIO_PIN_TWR2_MISO,
@@ -3611,10 +3594,6 @@ static void ESP32_SPI_begin()
     case ESP32_HELTEC_TRACKER:
       SPI.begin(SOC_GPIO_PIN_HELTRK_SCK,  SOC_GPIO_PIN_HELTRK_MISO,
                 SOC_GPIO_PIN_HELTRK_MOSI, SOC_GPIO_PIN_HELTRK_SS);
-      break;
-    case ESP32_LILYGO_T3C6:
-      SPI.begin(SOC_GPIO_PIN_T3C6_SCK,  SOC_GPIO_PIN_T3C6_MISO,
-                SOC_GPIO_PIN_T3C6_MOSI, SOC_GPIO_PIN_T3C6_SS);
       break;
     case ESP32_LILYGO_T3S3_EPD:
     case ESP32_LILYGO_T3S3_OLED:
@@ -3625,14 +3604,49 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_BPIPW_SCK,  SOC_GPIO_PIN_BPIPW_MISO,
                 SOC_GPIO_PIN_BPIPW_MOSI, SOC_GPIO_PIN_BPIPW_SS);
       break;
-    case ESP32_RADIOMASTER_XR1:
-      SPI.begin(SOC_GPIO_PIN_ELRS_SCK,  SOC_GPIO_PIN_ELRS_MISO,
-                SOC_GPIO_PIN_ELRS_MOSI, SOC_GPIO_PIN_ELRS_SS);
-      break;
     case ESP32_EBYTE_HUB_900TB:
       SPI.begin(SOC_GPIO_PIN_EHUB_SCK,  SOC_GPIO_PIN_EHUB_MISO,
                 SOC_GPIO_PIN_EHUB_MOSI, SOC_GPIO_PIN_EHUB_SS);
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C2)
+    case ESP32_C2_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C2_SCK,  SOC_GPIO_PIN_C2_MISO,
+                SOC_GPIO_PIN_C2_MOSI, SOC_GPIO_PIN_C2_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C2 */
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    case ESP32_C3_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C3_SCK,  SOC_GPIO_PIN_C3_MISO,
+                SOC_GPIO_PIN_C3_MOSI, SOC_GPIO_PIN_C3_SS);
+      break;
+    case ESP32_RADIOMASTER_XR1:
+      SPI.begin(SOC_GPIO_PIN_ELRS_SCK,  SOC_GPIO_PIN_ELRS_MISO,
+                SOC_GPIO_PIN_ELRS_MOSI, SOC_GPIO_PIN_ELRS_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+    case ESP32_C5_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C5_SCK,  SOC_GPIO_PIN_C5_MISO,
+                SOC_GPIO_PIN_C5_MOSI, SOC_GPIO_PIN_C5_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+    case ESP32_C6_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_C6_SCK,  SOC_GPIO_PIN_C6_MISO,
+                SOC_GPIO_PIN_C6_MOSI, SOC_GPIO_PIN_C6_SS);
+      break;
+    case ESP32_LILYGO_T3C6:
+      SPI.begin(SOC_GPIO_PIN_T3C6_SCK,  SOC_GPIO_PIN_T3C6_MISO,
+                SOC_GPIO_PIN_T3C6_MOSI, SOC_GPIO_PIN_T3C6_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    case ESP32_P4_DEVKIT:
+      SPI.begin(SOC_GPIO_PIN_P4_SCK,  SOC_GPIO_PIN_P4_MISO,
+                SOC_GPIO_PIN_P4_MOSI, SOC_GPIO_PIN_P4_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     default:
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
@@ -3718,6 +3732,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(115200, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_HELTRK_GNSS_RX,
                            SOC_GPIO_PIN_HELTRK_GNSS_TX);
+    } else if (esp32_board == ESP32_C5_DEVKIT) {
+      Serial.println(F("INFO: ESP32-C5 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_C5_GNSS_RX, SOC_GPIO_PIN_C5_GNSS_TX);
     } else if (esp32_board == ESP32_C6_DEVKIT) {
       Serial.println(F("INFO: ESP32-C6 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -3747,6 +3765,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_EHUB_GNSS_RX, SOC_GPIO_PIN_EHUB_GNSS_TX);
+    } else if (esp32_board == ESP32_P4_DEVKIT) {
+      Serial.println(F("INFO: ESP32-P4 DevKit is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_P4_GNSS_RX, SOC_GPIO_PIN_P4_GNSS_TX);
     } else {
       /* open Standalone's GNSS port */
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -4797,6 +4819,15 @@ static bool ESP32_Baro_setup()
 
     Wire.setPins(SOC_GPIO_PIN_C3_SDA, SOC_GPIO_PIN_C3_SCL);
 
+  } else if (esp32_board == ESP32_C5_DEVKIT) {
+
+    if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
+        RF_SX12XX_RST_is_connected) {
+      return false;
+    }
+
+    Wire.setPins(SOC_GPIO_PIN_C5_SDA, SOC_GPIO_PIN_C5_SCL);
+
   } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
 
     Wire.setPins(SOC_GPIO_PIN_TWR2_SDA, SOC_GPIO_PIN_TWR2_SCL);
@@ -4834,6 +4865,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
     Wire.setPins(SOC_GPIO_PIN_EHUB_SDA, SOC_GPIO_PIN_EHUB_SCL);
+
+  } else if (esp32_board == ESP32_P4_DEVKIT) {
+
+    Wire.setPins(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
 
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
 

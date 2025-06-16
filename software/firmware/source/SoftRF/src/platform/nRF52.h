@@ -220,6 +220,7 @@ struct rst_info {
                                SOC_GPIO_PIN_TECHO_REV_0_BUTTON)
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 //#define EXCLUDE_OTA
 //#define USE_ARDUINO_WIFI
 //#define USE_WIFI_NINA         false

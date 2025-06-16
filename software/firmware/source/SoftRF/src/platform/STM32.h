@@ -143,6 +143,7 @@ typedef struct stm32_backup_struct {
 #include "iomap/LilyGO_TMotion.h"
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
@@ -205,6 +206,7 @@ typedef struct stm32_backup_struct {
 #include "iomap/Blue_Pill.h"
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
@@ -263,6 +265,7 @@ typedef struct stm32_backup_struct {
 #include "iomap/Olimex_STM32WL.h"
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE
@@ -326,6 +329,7 @@ typedef struct stm32_backup_struct {
 
 #define EXCLUDE_EEPROM
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 #define EXCLUDE_WATCHOUT_MODE

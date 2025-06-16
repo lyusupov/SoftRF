@@ -300,6 +300,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #include "iomap/Elecrow_ThinkNode_M2.h"
 #include "iomap/Generic_ELRS_C3.h"
 #include "iomap/Ebyte_EoRa_HUB_900TB.h"
+#include "iomap/WT99P4C5.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -455,6 +456,8 @@ struct rst_info {
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 
+#define EXCLUDE_ETHERNET
+
 #if defined(CONFIG_IDF_TARGET_ESP32)
 //#define ENABLE_BT_VOICE
 //#define USE_NIMBLE
@@ -555,8 +558,8 @@ extern const USB_Device_List_t supported_USB_devices[];
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #define EXCLUDE_BLUETOOTH
-#define EXCLUDE_WIFI
-#undef NMEA_TCP_SERVICE
+//#define EXCLUDE_WIFI
+//#undef NMEA_TCP_SERVICE
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
