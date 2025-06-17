@@ -22,9 +22,13 @@
 #include <SPI.h>
 #include <esp_err.h>
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32C5) && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32C61) && \
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <soc/rtc_cntl_reg.h>
-#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
 #include <rom/spi_flash.h>
 #include <soc/adc_channel.h>
 #include <flashchips.h>
@@ -48,16 +52,20 @@
 //#include "driver/i2s.h"
 
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <esp_bt.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32P4)
 #define CONFIG_IDF_TARGET_ESP32 0
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #include <esp_mac.h>
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || \
+    defined(CONFIG_IDF_TARGET_ESP32C6) || \
+    defined(CONFIG_IDF_TARGET_ESP32P4)
 #undef CONFIG_IDF_TARGET_ESP32
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ESP_IDF_VERSION_MAJOR */
@@ -414,7 +422,8 @@ static void ESP32_setup()
 #if ARDUINO_USB_CDC_ON_BOOT && (defined(CONFIG_IDF_TARGET_ESP32S2) || \
                                 defined(CONFIG_IDF_TARGET_ESP32S3) || \
                                 defined(CONFIG_IDF_TARGET_ESP32C5) || \
-                                defined(CONFIG_IDF_TARGET_ESP32C6))
+                                defined(CONFIG_IDF_TARGET_ESP32C6) || \
+                                defined(CONFIG_IDF_TARGET_ESP32P4))
   Serial.begin(SERIAL_OUT_BR);
 
   for (int i=0; i < 20; i++) {if (Serial) break; else delay(100);}
@@ -594,7 +603,7 @@ static void ESP32_fini()
 
   esp_wifi_stop();
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
   esp_bt_controller_disable();
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
@@ -611,7 +620,7 @@ static void ESP32_fini()
     delay(20);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6)
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32P4)
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
   }
@@ -1846,9 +1855,12 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
   SOC_ESP32C6,
   "ESP32-C6",
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+  SOC_ESP32P4,
+  "ESP32-P4",
 #else
 #error "This ESP32 family build variant is not supported!"
-#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6 */
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C5-C6-P4 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,
@@ -1880,7 +1892,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   ESP32_Service_Mode,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #if defined(USE_ARDUINOBLE)
   &ArdBLE_Bluetooth_ops,
 #else

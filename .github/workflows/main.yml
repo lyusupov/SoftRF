@@ -543,8 +543,8 @@ jobs:
             arduino --verify                 --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
             fi ;
           #fi ;
-          if [[ "$BOARD" =~ "esp32:esp32:esp32h2"  ]] || [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
-            #  SkyWatch is not available for H2 and P4
+          if [[ "$BOARD" =~ "esp32:esp32:esp32h2"  ]]; then
+            #  SkyWatch is not available for H2
             true ;
           else
             if [[ "$BOARD" =~ "esp32:esp32:"       ]]; then
