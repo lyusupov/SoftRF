@@ -50,6 +50,9 @@
     For **ESP32-S3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C6**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.0.7**](https://github.com/espressif/arduino-esp32/releases/tag/3.0.7)<br>
+    For **ESP32-P4**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.2.0**](https://github.com/espressif/arduino-esp32/releases/tag/3.2.0)<br>
+    For **ESP32-C5**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.3.0-alpha1**](https://github.com/espressif/arduino-esp32/releases/tag/3.3.0-alpha1)<br>
+
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
 int ledPin = 2; // use pin 14 for TTGO T-Beam rev.05 or higher   
@@ -86,18 +89,38 @@ void loop()
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-S3_ _Dev_ _Module_<br>
     For **ESP32-C3**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-C3_ _Dev_ _Module_<br>
+    For **ESP32-C5**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-C5_ _Dev_ _Module_<br>
     For **ESP32-C6**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-C6_ _Dev_ _Module_<br>
+    For **ESP32-P4**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-P4_ _Dev_ _Module_<br>
 10. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
 11. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
 12. For **ESP32**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
+    For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_<br>
+    For **ESP32-C5**:<br>
     For **ESP32-C6**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _No_ _FS_ _4MB_ _(2MB_ _APP_ _x2)_<br>
-13. Select _Tools_ -> _Flash_ _Frequency_ ->  _80MHz_
-14. Select _Tools_ -> _CPU_ _Frequency_ ->  _80MHz_
+13. For **ESP32**:<br>
+    For **ESP32-S3**:<br>
+    For **ESP32-C3**:<br>
+    For **ESP32-C5**:<br>
+    For **ESP32-C6**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Frequency_ ->  _80MHz_<br>
+    For **ESP32-P4**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Frequency_ ->  _40MHz_<br>
+14. For **ESP32**:<br>
+    For **ESP32-S3**:<br>
+    For **ESP32-C3**:<br>
+    For **ESP32-C5**:<br>
+    For **ESP32-C6**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _CPU_ _Frequency_ ->  _80MHz_<br>
+    For **ESP32-P4**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _CPU_ _Frequency_ ->  _40MHz_<br>
 15. Select _Tools_ -> _PSRAM_ ->  _Enabled_
 16. _Sketch_ -> _Upload_
 

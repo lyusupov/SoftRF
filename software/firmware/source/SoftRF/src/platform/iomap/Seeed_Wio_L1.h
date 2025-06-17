@@ -22,13 +22,13 @@
 #define SOC_GPIO_PIN_L1_BUSY      _PINNUM(1, 10) // P1.10
 #define SOC_GPIO_PIN_L1_RX_EN     _PINNUM(1,  8) // P1.08
 
-// 1st I2C bus (ext. sensors)
-#define SOC_GPIO_PIN_L1_SDA       _PINNUM(0,  0) // P0.00
-#define SOC_GPIO_PIN_L1_SCL       _PINNUM(0,  1) // P0.01
-
-/* 2nd I2C bus (SH1106 OLED display) */
+/* 1st I2C bus (SH1106 OLED display) */
 #define SOC_GPIO_PIN_L1_OLED_SDA  _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_PIN_L1_OLED_SCL  _PINNUM(0,  5) // P0.05
+
+// 2nd I2C bus (ext. sensors)
+#define SOC_GPIO_PIN_L1_SDA       _PINNUM(1, 11) // P1.11
+#define SOC_GPIO_PIN_L1_SCL       _PINNUM(1, 12) // P1.12
 
 /* buttons */
 #define SOC_GPIO_PIN_L1_BUTTON    _PINNUM(0,  8) // P0.08
