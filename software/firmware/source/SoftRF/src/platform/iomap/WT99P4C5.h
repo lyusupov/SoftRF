@@ -56,6 +56,12 @@
 
 #define SOC_GPIO_PIN_P4_PAMP_CTRL       53
 
+// Ethernet
+#define ETH_PHY_TYPE                    ETH_PHY_IP101
+#define SOC_GPIO_PIN_P4_ETH_PHY_MDC     31
+#define SOC_GPIO_PIN_P4_ETH_PHY_MDIO    52
+#define SOC_GPIO_PIN_P4_ETH_PHY_POWER   51 /* PHY_RSTN */
+
 /* ESP32-C5 */
 #define SOC_GPIO_PIN_C5_CONS_RX         12
 #define SOC_GPIO_PIN_C5_CONS_TX         11

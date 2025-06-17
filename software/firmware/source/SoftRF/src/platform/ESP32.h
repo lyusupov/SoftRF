@@ -528,8 +528,11 @@ extern const USB_Device_List_t supported_USB_devices[];
 #else
 #define USE_ARDUINOBLE
 #endif /* C6 */
-#endif /* C2 || C6 || H2 */
-#endif /* SX || CX || H2 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+//#undef EXCLUDE_ETHERNET
+#endif /* P4 */
+#endif /* C2 || C6 || H2 || P4 */
+#endif /* SX || CX || H2 || P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)

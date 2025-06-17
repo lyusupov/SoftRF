@@ -207,6 +207,11 @@ const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #endif /* EXCLUDE_WIFI */
 
+#if !defined(EXCLUDE_ETHERNET)
+#include <ETH.h>
+#include "../driver/Ethernet.h"
+#endif /* EXCLUDE_ETHERNET */
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 //#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
@@ -2035,6 +2040,21 @@ static void ESP32_setup()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (esp32_board == ESP32_P4_DEVKIT) {
+#if !defined(EXCLUDE_ETHERNET)
+    Ethernet_setup();
+
+    ETH.begin(ETH_PHY_TYPE,
+              ETH_PHY_ADDR,
+              SOC_GPIO_PIN_P4_ETH_PHY_MDC,
+              SOC_GPIO_PIN_P4_ETH_PHY_MDIO,
+              SOC_GPIO_PIN_P4_ETH_PHY_POWER,
+              ETH_CLK_MODE);
+#endif /* EXCLUDE_ETHERNET */
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
 #if !defined(EXCLUDE_LED_RING)
   if (hw_info.model == SOFTRF_MODEL_STANDALONE)
   {
@@ -2600,6 +2620,15 @@ static void ESP32_loop()
 //                 digitalRead(SOC_GPIO_PIN_HELTRK_GNSS_PPS));
 //  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (esp32_board == ESP32_P4_DEVKIT) {
+#if !defined(EXCLUDE_ETHERNET)
+    Ethernet_loop();
+#endif /* EXCLUDE_ETHERNET */
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
 }
 
 static void ESP32_fini(int reason)
@@ -2900,6 +2929,13 @@ static void ESP32_fini(int reason)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+
+  } else if (esp32_board == ESP32_P4_DEVKIT) {
+#if !defined(EXCLUDE_ETHERNET)
+    ETH.end();
+
+    Ethernet_fini();
+#endif /* EXCLUDE_ETHERNET */
   }
 
   esp_deep_sleep_start();
