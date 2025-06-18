@@ -217,7 +217,7 @@ i2s_pin_config_t pin_config = {
 RTC_DATA_ATTR int bootCount          = 0;
 static size_t ESP32_Min_AppPart_Size = 0;
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
 //#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_INA219.h>

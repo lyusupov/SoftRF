@@ -162,6 +162,7 @@ DRV_CPPS      := $(DRIVER_PATH)/RF.cpp              \
                  $(DRIVER_PATH)/Bluetooth.cpp       \
                  $(DRIVER_PATH)/Sound.cpp           \
                  $(DRIVER_PATH)/WiFi.cpp            \
+                 $(DRIVER_PATH)/Ethernet.cpp        \
                  $(DRIVER_PATH)/EPD.cpp
 
 UI_CPPS       := $(UI_PATH)/Web.cpp        \

@@ -212,7 +212,7 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #include "../driver/Ethernet.h"
 #endif /* EXCLUDE_ETHERNET */
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
 //#define SPI_DRIVER_SELECT 3
 #include <Adafruit_SPIFlash.h>
 #include "../driver/EPD.h"
@@ -477,7 +477,7 @@ static bool play_file(char *filename)
 }
 #endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* USE_SA8X8 */
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 #if defined(USE_NEOPIXELBUS_LIBRARY)
@@ -1638,6 +1638,9 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   } else if (esp32_board == ESP32_P4_DEVKIT) {
 
+    pinMode(SOC_GPIO_PIN_P4_485_RW, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
+
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_P4_CONS_RX,
@@ -1650,6 +1653,37 @@ static void ESP32_setup()
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
     lmic_pins.dio[0] = SOC_GPIO_PIN_P4_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
+
+    int uSD_SS_pin = SOC_GPIO_PIN_P4_SD_D3;
+
+    /* uSD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_P4_SD_CLK,
+                  SOC_GPIO_PIN_P4_SD_D0,
+                  SOC_GPIO_PIN_P4_SD_CMD,
+                  uSD_SS_pin);
+
+    pinMode(uSD_SS_pin, OUTPUT);
+    digitalWrite(uSD_SS_pin, HIGH);
+
+    uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+    if (uSD_is_attached && uSD.card()->cardSize() > 0 && uSD.volumeBegin()) {
+      Audio_Gen    = new AudioGeneratorWAV();
+      Audio_Source = new AudioFileSourceSdFat(uSD);
+
+      Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S);
+      Audio_Sink->SetPinout(SOC_GPIO_PIN_P4_I2S_BCK,
+                            SOC_GPIO_PIN_P4_I2S_LRCK,
+                            SOC_GPIO_PIN_P4_I2S_DOUT,
+                            SOC_GPIO_PIN_P4_I2S_MCK);
+      Audio_Sink->SetOutputModeMono(true);
+      Audio_Sink->SetChannels(1);
+      Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
+      Audio_Sink->SetMclk(true);
+      playback_inited = true;
+    }
+#endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 
@@ -2042,6 +2076,9 @@ static void ESP32_setup()
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   if (esp32_board == ESP32_P4_DEVKIT) {
+    pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_P4_PAMP_CTRL, HIGH);
+
 #if !defined(EXCLUDE_ETHERNET)
     Ethernet_setup();
 

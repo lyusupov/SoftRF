@@ -54,6 +54,8 @@
 #define SOC_GPIO_PIN_P4_I2S_DOUT        11
 #define SOC_GPIO_PIN_P4_I2S_DIN         9
 
+// Misc.
+#define SOC_GPIO_PIN_P4_485_RW          3
 #define SOC_GPIO_PIN_P4_PAMP_CTRL       53
 
 // Ethernet
