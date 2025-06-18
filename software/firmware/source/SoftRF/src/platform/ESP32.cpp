@@ -417,6 +417,7 @@ Adafruit_NeoPixel TWR2_Pixel = Adafruit_NeoPixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL,
 
 #if defined(USE_SA8X8)
 #include <SA818Controller.h>
+#include <AFSK.h>
 extern SA818Controller controller;
 extern uint32_t Data_Frequency;
 extern uint32_t Voice_Frequency;
@@ -425,13 +426,13 @@ extern byte     SA8X8_SQL;
 extern void sa868_Tx_LED_state(bool);
 
 bool ESP32_R22_workaround = false;
+#endif /* USE_SA8X8 */
 
 #if !defined(EXCLUDE_VOICE_MESSAGE)
 #include <driver/i2s.h>
 #include <AudioFileSourceSdFat.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
-#include <AFSK.h>
 
 #define MAX_FILENAME_LEN      64
 #define WAV_FILE_PREFIX       "/Audio/"
@@ -476,7 +477,6 @@ static bool play_file(char *filename)
   return rval;
 }
 #endif /* EXCLUDE_VOICE_MESSAGE */
-#endif /* USE_SA8X8 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)

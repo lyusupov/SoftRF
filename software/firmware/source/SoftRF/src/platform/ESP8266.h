@@ -135,6 +135,8 @@ extern SoftwareSerial swSer;
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 
+#define EXCLUDE_ETHERNET
+
 /* Experimental */
 #define ENABLE_ADSL
 #define ENABLE_PROL
