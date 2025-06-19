@@ -1638,7 +1638,10 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   } else if (esp32_board == ESP32_P4_DEVKIT) {
 
-    pinMode(SOC_GPIO_PIN_P4_485_RW, OUTPUT);
+    hw_info.model    = SOFTRF_MODEL_STANDALONE;
+    hw_info.revision = 7;
+
+    pinMode(SOC_GPIO_PIN_P4_485_RW,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
 
 #if ARDUINO_USB_CDC_ON_BOOT
@@ -1664,6 +1667,8 @@ static void ESP32_setup()
 
     pinMode(uSD_SS_pin, OUTPUT);
     digitalWrite(uSD_SS_pin, HIGH);
+
+    pinMode(SOC_GPIO_PIN_P4_SD_DET, INPUT);
 
     uSD_is_attached = uSD.cardBegin(SD_CONFIG);
 
@@ -2076,7 +2081,7 @@ static void ESP32_setup()
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   if (esp32_board == ESP32_P4_DEVKIT) {
-    pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL, OUTPUT);
+    pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_P4_PAMP_CTRL, HIGH);
 
 #if !defined(EXCLUDE_ETHERNET)
@@ -2973,6 +2978,14 @@ static void ESP32_fini(int reason)
 
     Ethernet_fini();
 #endif /* EXCLUDE_ETHERNET */
+
+    pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL,   INPUT);
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    pinMode(SOC_GPIO_PIN_P4_485_RW,      OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
+    gpio_hold_en(GPIO_NUM_3);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 
   esp_deep_sleep_start();

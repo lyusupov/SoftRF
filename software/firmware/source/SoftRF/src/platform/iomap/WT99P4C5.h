@@ -15,15 +15,18 @@
 // SPI
 #define SOC_GPIO_PIN_P4_MOSI            32
 #define SOC_GPIO_PIN_P4_MISO            33
-#define SOC_GPIO_PIN_P4_SCK             36
+#define SOC_GPIO_PIN_P4_SCK             36 /* strapping pin */
 #define SOC_GPIO_PIN_P4_SS              26
 
 // I2C
 #define SOC_GPIO_PIN_P4_SDA             7
 #define SOC_GPIO_PIN_P4_SCL             8
+// touch pad
+#define SOC_GPIO_PIN_P4_TP_INT          21
+#define SOC_GPIO_PIN_P4_TP_RST          23
 
 // SX12xx
-#define SOC_GPIO_PIN_P4_RST             37
+#define SOC_GPIO_PIN_P4_RST             48
 #define SOC_GPIO_PIN_P4_DIO             47
 #define SOC_GPIO_PIN_P4_BUSY            27
 
@@ -35,7 +38,7 @@
 #define SOC_GPIO_PIN_P4_SD_D2           41
 #define SOC_GPIO_PIN_P4_SD_D3           42
 #define SOC_GPIO_PIN_P4_SD_DET          45
-#define SOC_GPIO_PIN_P4_SD_PWR          46
+#define SOC_GPIO_PIN_P4_SD_PWR          46 /* NC ? */
 
 // SDIO 2 - WIFI - ESP32-C5
 #define SOC_GPIO_PIN_P4_ESP_HOSTED_CLK  18
@@ -57,6 +60,11 @@
 // Misc.
 #define SOC_GPIO_PIN_P4_485_RW          3
 #define SOC_GPIO_PIN_P4_PAMP_CTRL       53
+
+#define SOC_GPIO_PIN_P4_BUTTON          35 /* BOOT, active LOW, strapping pin */
+#define SOC_GPIO_PIN_P4_BATTERY         0  /* RSVD, shared with CAM_IO0 */
+#define SOC_GPIO_PIN_P4_BUZZER          1  /* RSVD, shared with CAM_IO1 */
+#define SOC_GPIO_PIN_P4_NEOPIXEL        46 /* RSVD, shared with SD_PWR */
 
 // Ethernet
 #define ETH_PHY_TYPE                    ETH_PHY_IP101
