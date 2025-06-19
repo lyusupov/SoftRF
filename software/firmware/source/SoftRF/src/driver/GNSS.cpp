@@ -599,7 +599,8 @@ static gnss_id_t ublox_probe()
    * ESP8266 NodeMCU and ESP32 DevKit (with NodeMCU adapter)
    * have no any spare GPIO pin to provide GNSS Tx feedback
    */
-  return(hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 0 ?
+  return(hw_info.model == SOFTRF_MODEL_STANDALONE &&
+         hw_info.revision == STD_EDN_REV_DEFAULT ?
          GNSS_MODULE_NMEA : (gnss_id_t) ublox_version());
 }
 

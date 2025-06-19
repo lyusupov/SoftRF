@@ -560,7 +560,7 @@ static void lr11xx_setup()
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (hw_info.revision == 5 /* Ebyte EoRa-HUB */ ||
+    if (hw_info.revision == STD_EDN_REV_EHUB ||
         eui_le           == 0x0016c001f047ac30)
       // Ebyte E80-900M2213S
       // LR1121 TCXO Voltage
@@ -919,7 +919,7 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
-    if (hw_info.revision == 5 /* Ebyte EoRa-HUB */ ||
+    if (hw_info.revision == STD_EDN_REV_EHUB ||
         eui_le           == 0x0016c001f047ac30) {
       /* Ebyte E80-900M2213S */
 #if 1

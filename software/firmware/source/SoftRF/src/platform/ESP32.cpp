@@ -1202,7 +1202,7 @@ static void ESP32_setup()
       WIRE_FINI(Wire1);
       esp32_board      = ESP32_S3_DEVKIT;
       hw_info.model    = SOFTRF_MODEL_STANDALONE;
-      hw_info.revision = 203;
+      hw_info.revision = STD_EDN_REV_S3_DEVKIT;
 
 #if !defined(EXCLUDE_IMU)
 #if 0
@@ -1456,7 +1456,7 @@ static void ESP32_setup()
 
       esp32_board      = ESP32_EBYTE_HUB_900TB;
       hw_info.model    = SOFTRF_MODEL_STANDALONE;
-      hw_info.revision = 5; /* 10722-V1.1 */
+      hw_info.revision = STD_EDN_REV_EHUB; /* 10722-V1.1 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
       SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -1476,7 +1476,7 @@ static void ESP32_setup()
       if (off_oled_is_active) {
         esp32_board      = ESP32_LILYGO_T3S3_OLED;
         hw_info.model    = SOFTRF_MODEL_STANDALONE;
-        hw_info.revision = 6; /* V1.2 V1.3 */
+        hw_info.revision = STD_EDN_REV_T3S3_OLED; /* V1.2 V1.3 */
       } else {
         hw_info.model    = SOFTRF_MODEL_INK;
         hw_info.revision = 0; /* 2024-02-28 */
@@ -1513,7 +1513,7 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_BANANA_PICOW) {
 
     hw_info.model    = SOFTRF_MODEL_STANDALONE;
-    hw_info.revision = 4; /* 2022-08-22 */
+    hw_info.revision = STD_EDN_REV_BPICOW; /* 2022-08-22 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -1639,7 +1639,7 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_P4_DEVKIT) {
 
     hw_info.model    = SOFTRF_MODEL_STANDALONE;
-    hw_info.revision = 7;
+    hw_info.revision = STD_EDN_REV_WT99P4C5;
 
     pinMode(SOC_GPIO_PIN_P4_485_RW,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
@@ -4078,9 +4078,9 @@ static byte ESP32_Display_setup()
           esp32_board = ESP32_TTGO_V2_OLED;
 
           if (RF_SX12XX_RST_is_connected) {
-            hw_info.revision = 16;
+            hw_info.revision = STD_EDN_REV_T3_1_6;
           } else {
-            hw_info.revision = 11;
+            hw_info.revision = STD_EDN_REV_T3_1_1;
           }
           hw_info.storage = STORAGE_CARD;
         }
@@ -4715,7 +4715,8 @@ static void ESP32_Battery_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-                     (esp32_board == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ?
+                     (esp32_board == ESP32_TTGO_V2_OLED &&
+                      hw_info.revision == STD_EDN_REV_T3_1_6) ?
                      (adc1_channel_t) ADC1_GPIO35_CHANNEL :
                      (adc1_channel_t) ADC1_GPIO36_CHANNEL);
 #else
@@ -4802,11 +4803,11 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ||
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  5) ||
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_EHUB)   ||
             /* LilyGO T3-S3-OLED */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  6) ?
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3S3_OLED) ?
             BATTERY_THRESHOLD_LIPO : BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -4821,11 +4822,11 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             /* TTGO T3 V2.1.6 */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == 16) ||
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  5) ||
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_EHUB)   ||
             /* LilyGO T3-S3-OLED */
-           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  6) ?
+           (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3S3_OLED) ?
             BATTERY_CUTOFF_LIPO : BATTERY_CUTOFF_NIMHX2;
     break;
 
@@ -4878,7 +4879,7 @@ static float ESP32_Battery_param(uint8_t param)
 
         /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
         if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
-           (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == 16) ||
+           (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             esp32_board   == ESP32_S2_T8_V1_1       ||
             esp32_board   == ESP32_LILYGO_T3S3_EPD  ||
             esp32_board   == ESP32_LILYGO_T3S3_OLED) {

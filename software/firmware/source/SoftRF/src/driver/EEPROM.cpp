@@ -139,7 +139,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_out   =
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
              /* Ebyte EoRa-HUB */
-             (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision ==  5) ||
+             (hw_info.model == SOFTRF_MODEL_STANDALONE &&
+              hw_info.revision == STD_EDN_REV_EHUB) ||
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
                                            hw_info.model == SOFTRF_MODEL_GIZMO ?
                                            NMEA_UART : NMEA_USB;
