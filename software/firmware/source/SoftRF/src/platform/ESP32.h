@@ -172,7 +172,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
-#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
+#define SOC_GPIO_PIN_LED        46 /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif
@@ -184,7 +184,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                hw_info.model == SOFTRF_MODEL_INK       ?\
                                 SOC_GPIO_PIN_T3S3_LED :                 \
                                hw_info.model == SOFTRF_MODEL_STANDALONE && \
-                               hw_info.revision == 4                   ?\
+                               hw_info.revision == STD_EDN_REV_BPICOW  ?\
                                 SOC_GPIO_PIN_BPIPW_STATUS :             \
                                hw_info.model == SOFTRF_MODEL_GIZMO     ?\
                                 SOC_GPIO_PIN_M2_LED :                   \
@@ -215,7 +215,10 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                   SOC_GPIO_PIN_T3S3_GNSS_PPS :            \
                                 (hw_info.model == SOFTRF_MODEL_GIZMO ?    \
                                   SOC_GPIO_PIN_M2_GNSS_PPS :              \
-                                  SOC_UNUSED_PIN))))))
+                                (hw_info.model == SOFTRF_MODEL_STANDALONE && \
+                                 hw_info.revision == STD_EDN_REV_WT99P4C5 ?\
+                                  SOC_GPIO_PIN_P4_GNSS_PPS :              \
+                                  SOC_UNUSED_PIN)))))))
 
 #define SOC_GPIO_PIN_BUZZER   (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ? \
                                 SOC_UNUSED_PIN :                         \
@@ -227,7 +230,9 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 (esp32_board == ESP32_BANANA_PICOW ?     \
                                 SOC_GPIO_PIN_BPIPW_BUZZER :              \
                                 (esp32_board == ESP32_ELECROW_TN_M2 ?    \
-                                SOC_GPIO_PIN_M2_BUZZER : SOC_UNUSED_PIN))))))
+                                SOC_GPIO_PIN_M2_BUZZER :                 \
+                                (esp32_board == ESP32_P4_DEVKIT ?        \
+                                SOC_GPIO_PIN_P4_BUZZER : SOC_UNUSED_PIN)))))))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27

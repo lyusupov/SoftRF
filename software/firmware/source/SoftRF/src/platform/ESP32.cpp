@@ -5266,6 +5266,7 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_LILYGO_T3S3_OLED  ||
        esp32_board == ESP32_ELECROW_TN_M2     ||
        esp32_board == ESP32_EBYTE_HUB_900TB   ||
+       esp32_board == ESP32_P4_DEVKIT         ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1    ? SOC_GPIO_PIN_T8_S2_BUTTON :
                  esp32_board == ESP32_S3_DEVKIT        ? SOC_GPIO_PIN_S3_BUTTON :
@@ -5274,6 +5275,7 @@ static void ESP32_Button_setup()
                  esp32_board == ESP32_LILYGO_T3S3_OLED ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_ELECROW_TN_M2  ? SOC_GPIO_PIN_M2_BUTTON_1 :
                  esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
+                 esp32_board == ESP32_P4_DEVKIT        ? SOC_GPIO_PIN_P4_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -5372,9 +5374,11 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_LILYGO_T3S3_OLED  ||
       esp32_board == ESP32_ELECROW_TN_M2     ||
       esp32_board == ESP32_EBYTE_HUB_900TB   ||
+      esp32_board == ESP32_P4_DEVKIT         ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
+                     esp32_board == ESP32_P4_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON   :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == (esp32_board == ESP32_ELECROW_TN_M2 ? HIGH : LOW));
