@@ -613,6 +613,7 @@ static void ESP32_setup()
    *  LilyGO T3-S3-OL | ESP32-S3FH4R2 |
    *  Elecrow TN-M2   | ESP32-S3-N4R8 | ZBIT_ZB25VQ32B
    *  Ebyte EoRa-HUB  | ESP32-S3FH4R2 |
+   *  WT99P4C5-S1     | WT0132P4-A1   | ZBIT_ZB25VQ128ASIG
    */
 
   if (psramFound()) {
@@ -652,6 +653,7 @@ static void ESP32_setup()
     default:
       esp32_board   = ESP32_C61_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ128A): /* WT0132P4-A1 ESP32-P4NRW32 */
     default:
       esp32_board   = ESP32_P4_DEVKIT;
 #else

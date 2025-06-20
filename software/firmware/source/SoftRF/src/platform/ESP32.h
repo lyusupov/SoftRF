@@ -385,6 +385,7 @@ struct rst_info {
 /* Zbit Semiconductor, Inc. */
 #define ZBIT_ID                 0x5E
 #define ZBIT_ZB25VQ32B          0x4016
+#define ZBIT_ZB25VQ128A         0x4018
 
 /* Shanghai Fudan Microelectronics Group Co., Ltd. */
 #define FMICRO_ID               0xA1
