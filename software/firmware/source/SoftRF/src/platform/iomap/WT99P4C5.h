@@ -63,8 +63,8 @@
 
 #define SOC_GPIO_PIN_P4_BUTTON          35 /* BOOT, active LOW, strapping pin */
 #define SOC_GPIO_PIN_P4_BATTERY         0  /* RSVD, shared with CAM_IO0 */
-#define SOC_GPIO_PIN_P4_BUZZER          1  /* RSVD, shared with CAM_IO1 */
-#define SOC_GPIO_PIN_P4_NEOPIXEL        46 /* RSVD, shared with SD_PWR */
+#define SOC_GPIO_PIN_P4_BUZZER          SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_P4_NEOPIXEL        1  /* RSVD, shared with CAM_IO1 */
 
 // Ethernet
 #define ETH_PHY_TYPE                    ETH_PHY_IP101

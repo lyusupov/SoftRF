@@ -172,7 +172,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
-#define SOC_GPIO_PIN_LED        46 /* TBD */
+#define SOC_GPIO_PIN_LED        1
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif

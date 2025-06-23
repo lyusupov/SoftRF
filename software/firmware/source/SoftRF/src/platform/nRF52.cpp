@@ -819,7 +819,7 @@ static void nRF52_setup()
                 nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
                 nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
                 nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
-                nRF52_bl_check("L1_BOOT")     ? NRF52_SEEED_WIO_L1       : /* TBD */
+                nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
                 nRF52_board;
 #endif
 

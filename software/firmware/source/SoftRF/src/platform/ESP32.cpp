@@ -490,8 +490,18 @@ Adafruit_NeoPixel XR1_Pixel = Adafruit_NeoPixel(1, SOC_GPIO_PIN_ELRS_PIXEL,
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if CONFIG_TINYUSB_ENABLED && \
-    (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+    (defined(CONFIG_IDF_TARGET_ESP32S2) || \
+     defined(CONFIG_IDF_TARGET_ESP32S3) || \
+     defined(CONFIG_IDF_TARGET_ESP32P4))
 #include <USB.h>
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#ifndef USB_VID
+#define USB_VID 0x303A
+#endif
+#ifndef USB_PID
+#define USB_PID 0x1001
+#endif
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_TINYUSB_ENABLED */
 
 #if defined(ENABLE_D1090_INPUT)
@@ -1694,7 +1704,7 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                        EXTERNAL_FLASH_DEVICE_COUNT);
   if (ESP32_has_spiflash) {
@@ -1750,10 +1760,12 @@ static void ESP32_setup()
     hw_info.storage = (hw_info.storage == STORAGE_FLASH) ?
                       STORAGE_FLASH_AND_CARD : STORAGE_CARD;
   }
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
 #if ARDUINO_USB_CDC_ON_BOOT && \
-    (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+    (defined(CONFIG_IDF_TARGET_ESP32S2) || \
+     defined(CONFIG_IDF_TARGET_ESP32S3) || \
+     defined(CONFIG_IDF_TARGET_ESP32P4))
 #if CONFIG_TINYUSB_ENABLED
   if (USB.manufacturerName(ESP32SX_Device_Manufacturer)) {
     char usb_serial_number[16];
@@ -1768,6 +1780,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_ELECROW_TN_M2      ) ? SOFTRF_USB_PID_GIZMO      :
           (esp32_board == ESP32_EBYTE_HUB_900TB    ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_P4_DEVKIT          ) ? SOFTRF_USB_PID_STANDALONE :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -1804,8 +1817,7 @@ static void ESP32_setup()
        defined(CONFIG_IDF_TARGET_ESP32C5)  || \
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
-       defined(CONFIG_IDF_TARGET_ESP32P4))
+       defined(CONFIG_IDF_TARGET_ESP32H2))
 
   Serial.begin(SERIAL_OUT_BR);
 
@@ -2082,6 +2094,8 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
+  ui = &ui_settings;
+
   if (esp32_board == ESP32_P4_DEVKIT) {
     pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_P4_PAMP_CTRL, HIGH);
@@ -2289,8 +2303,9 @@ static void ESP32_post_init()
   case DISPLAY_OLED_1_3:
     OLED_info1();
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-    if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
+    if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
+        esp32_board == ESP32_P4_DEVKIT)
     {
       char key[8];
       char out[64];
@@ -2302,7 +2317,9 @@ static void ESP32_post_init()
       char *reg, *mam, *cn;
       reg = mam = cn = NULL;
 
-      OLED_info2();
+      if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+        OLED_info2();
+      }
 
       if (ADB_is_open) {
         acfts = ucdb.recordsNumber();
@@ -2346,7 +2363,7 @@ static void ESP32_post_init()
 
       OLED_info3(acfts, reg, mam, cn);
     }
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
     break;
 #endif /* USE_OLED */
@@ -2683,7 +2700,7 @@ static void ESP32_fini(int reason)
 #endif /* USE_ADAFRUIT_NEO_LIBRARY */
 #endif /* EXCLUDE_LED_RING */
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   if (ESP32_has_spiflash &&
      (hw_info.storage == STORAGE_FLASH ||
       hw_info.storage == STORAGE_FLASH_AND_CARD)) {
@@ -2733,7 +2750,7 @@ static void ESP32_fini(int reason)
   }
 
   uSD_SPI.end();
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
   SPI.end();
 
@@ -3264,6 +3281,23 @@ static void ESP32_Sound_test(int var)
     pMIDICharacteristic->notify();
   }
 #endif /* USE_BLE_MIDI */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+  if (esp32_board == ESP32_P4_DEVKIT &&
+     uSD_is_attached                 &&
+     settings->volume != BUZZER_OFF)
+  {
+    char filename[MAX_FILENAME_LEN];
+    strcpy(filename, WAV_FILE_PREFIX);
+    strcat(filename, "POST");
+    strcat(filename, WAV_FILE_SUFFIX);
+    if (uSD.exists(filename)) {
+      play_file(filename);
+    }
+  }
+#endif /* EXCLUDE_VOICE_MESSAGE */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_Sound_tone(int hz, uint8_t volume)
@@ -3506,7 +3540,7 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 static void ESP32_EEPROM_extension(int cmd)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   if (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS) {
     if ( ESP32_has_spiflash && FATFS_is_mounted ) {
       File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
@@ -3650,7 +3684,7 @@ static void ESP32_EEPROM_extension(int cmd)
       }
     }
   }
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
   if (cmd == EEPROM_EXT_LOAD) {
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
@@ -3969,8 +4003,10 @@ static byte ESP32_Display_setup()
 #if defined(USE_OLED)
     bool has_oled = false;
 
-    /* SSD1306 I2C OLED probing */
-    if (esp32_board == ESP32_S3_DEVKIT) {
+    /* SSD1306 or SH1106 I2C OLED probing */
+    if (false) {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    } else if (esp32_board == ESP32_S3_DEVKIT) {
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
@@ -4031,6 +4067,22 @@ static byte ESP32_Display_setup()
         u8x8 = new U8X8_SSD1306_128X64_NONAME_2ND_HW_I2C(SOC_GPIO_PIN_EHUB_OLED_RST); // &u8x8_ebyte;
         rval = DISPLAY_OLED_TTGO;
       }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    } else if (esp32_board == ESP32_P4_DEVKIT) {
+      Wire.begin(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
+      Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      has_oled = (Wire.endTransmission() == 0);
+      if (has_oled) {
+        rval = ESP32_OLED_ident(&Wire);
+        if (rval == DISPLAY_OLED_1_3) {
+          u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
+        } else {
+          u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
+        }
+      }
+      WIRE_FINI(Wire);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
         Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);
@@ -5920,7 +5972,7 @@ IODev_ops_t ESP32CX_USBSerial_ops = {
 };
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 || C6 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
 static bool ESP32_ADB_setup()
 {
   if (FATFS_is_mounted) {
@@ -6028,7 +6080,7 @@ DB_ops_t ESP32_ADB_ops = {
   ESP32_ADB_fini,
   ESP32_ADB_query
 };
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
 const SoC_ops_t ESP32_ops = {
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -6127,11 +6179,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_setup,
   ESP32_Button_loop,
   ESP32_Button_fini,
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   &ESP32_ADB_ops
 #else
   NULL
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 };
 
 #endif /* ESP32 */
