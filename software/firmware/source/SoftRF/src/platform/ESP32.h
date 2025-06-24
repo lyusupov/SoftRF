@@ -566,6 +566,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #endif /* H2 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
+#define ENABLE_RECORDER
 #define EXCLUDE_BLUETOOTH
 //#define EXCLUDE_WIFI
 //#undef NMEA_TCP_SERVICE
