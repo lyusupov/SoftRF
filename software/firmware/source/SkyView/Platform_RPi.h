@@ -37,6 +37,7 @@
 #define SOC_GPIO_BUTTON_4       RPI_V2_GPIO_P1_35
 
 #define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
 
 extern TTYSerial SerialInput;
 

@@ -37,6 +37,8 @@
 #define SOC_A0_VOLTAGE_DIVIDER  (950.0 / 3.2)
 
 /* Peripherals */
+#define EXCLUDE_ETHERNET
+
 #define SOC_GPIO_PIN_SWSER_RX D3
 #define SOC_GPIO_PIN_SWSER_TX D1 // 9  /* not in use */
 #define SOC_GPIO_PIN_BATTERY  A0

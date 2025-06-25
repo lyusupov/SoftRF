@@ -33,6 +33,8 @@ extern WebServer server;
 #define EXCLUDE_BLUETOOTH
 #endif /* ARDUINO_RASPBERRY_PI_PICO_W or 2W */
 
+#define EXCLUDE_ETHERNET
+
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
 

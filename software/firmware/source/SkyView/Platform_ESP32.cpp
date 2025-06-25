@@ -72,6 +72,11 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // Dummy definition to satisfy build s
 WebServer server ( 80 );
 #endif /* EXCLUDE_WIFI */
 
+#if !defined(EXCLUDE_ETHERNET)
+#include <ETH.h>
+#include "EthernetHelper.h"
+#endif /* EXCLUDE_ETHERNET */
+
 /*
  * TTGO-T5S. Pin definition
 
@@ -628,6 +633,19 @@ static void ESP32_setup()
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  Ethernet_setup();
+
+  ETH.begin(ETH_PHY_TYPE,
+            ETH_PHY_ADDR,
+            SOC_GPIO_PIN_ETH_MDC,
+            SOC_GPIO_PIN_ETH_MDIO,
+            SOC_GPIO_PIN_ETH_PWR,
+            ETH_CLK_MODE);
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_post_init()
@@ -733,6 +751,12 @@ static void ESP32_loop()
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  Ethernet_loop();
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_fini()
@@ -759,6 +783,14 @@ static void ESP32_fini()
 
   pinMode(SOC_GPIO_PIN_LED, INPUT);
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  ETH.end();
+
+  Ethernet_fini();
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   int wake_gpio_num = SOC_BUTTON_MODE_DEF;
 

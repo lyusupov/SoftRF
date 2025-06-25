@@ -36,6 +36,8 @@
 /* Peripherals */
 #define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
 
+#define EXCLUDE_ETHERNET
+
 /* TTGO T5 and T5S SPI pins mapping */
 #define SOC_GPIO_PIN_MOSI_T5S 23
 #define SOC_GPIO_PIN_MISO_T5S 12
@@ -184,6 +186,8 @@
 
 //#define USE_ADAFRUIT_MSC
 
+#undef EXCLUDE_ETHERNET
+
 // Audio
 //#define EXCLUDE_AUDIO
 
@@ -206,6 +210,22 @@
 #define SOC_GPIO_PIN_SD_D3    42
 #define SOC_GPIO_PIN_SD_DET   45
 #define SOC_GPIO_PIN_SD_PWR   46 /* NC ? */
+
+// SDIO 2 - WIFI - ESP32-C5
+#define SOC_GPIO_PIN_ESPH_CLK 18
+#define SOC_GPIO_PIN_ESPH_CMD 19
+#define SOC_GPIO_PIN_ESPH_D0  14
+#define SOC_GPIO_PIN_ESPH_D1  15
+#define SOC_GPIO_PIN_ESPH_D2  16
+#define SOC_GPIO_PIN_ESPH_D3  17
+#define SOC_GPIO_PIN_ESPH_RST 54 /* C5 EN */
+#define SOC_GPIO_PIN_ESPH_WKP 6  /* C5 WAKEUP */
+
+// Ethernet
+#define ETH_PHY_TYPE          ETH_PHY_IP101
+#define SOC_GPIO_PIN_ETH_MDC  31
+#define SOC_GPIO_PIN_ETH_MDIO 52
+#define SOC_GPIO_PIN_ETH_PWR  51 /* PHY_RSTN */
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
       defined(CONFIG_IDF_TARGET_ESP32C5) || \
