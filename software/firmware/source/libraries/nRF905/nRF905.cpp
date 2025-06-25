@@ -15,7 +15,8 @@
     !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_ASR6601)  && \
     !defined(ARDUINO_ARCH_RP2040)  && !defined(ARDUINO_ARCH_RENESAS)  && \
     !defined(ARDUINO_ARCH_SILABS)  && !defined(ARDUINO_ARCH_CH32)     && \
-    !defined(ARDUINO_ARCH_RP2350)  && !defined(ARDUINO_ARCH_ZEPHYR)
+    !defined(ARDUINO_ARCH_RP2350)  && !defined(ARDUINO_ARCH_ZEPHYR)   && \
+    !defined(LUCKFOX_LYRA)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -37,7 +38,7 @@
 #define _BV(bit) (1 << (bit))
 #endif /* ENERGIA_ARCH_CC13XX || ENERGIA_ARCH_CC13X2 || ARDUINO_ARCH_NRF52 */
 #else
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #define SPI SPI0
 #include <raspi/raspi.h>
 #elif defined(HACKRF_ONE)
@@ -51,7 +52,7 @@
 #include "nRF905_defs.h"
 #include "nRF905_types.h"
 
-#if defined(RASPBERRY_PI) || defined(HACKRF_ONE)
+#if defined(RASPBERRY_PI) || defined(HACKRF_ONE) || defined(LUCKFOX_LYRA)
 #define ARDUINO
 #endif /* RASPBERRY_PI */
 
@@ -191,7 +192,8 @@ void nRF905_init()
     !defined(ARDUINO_ARCH_ASR650X) && !defined(ARDUINO_ARCH_ASR6601) && \
     !defined(ARDUINO_ARCH_RP2040)  && !defined(ARDUINO_ARCH_RENESAS) && \
     !defined(ARDUINO_ARCH_SILABS)  && !defined(ARDUINO_ARCH_MBED)    && \
-    !defined(ARDUINO_ARCH_RP2350)  && !defined(ARDUINO_ARCH_ZEPHYR)
+    !defined(ARDUINO_ARCH_RP2350)  && !defined(ARDUINO_ARCH_ZEPHYR)  && \
+    !defined(LUCKFOX_LYRA)
 	SPI.setClockDivider(SPI_CLOCK_DIV2);
 #endif /* RASPBERRY_PI */
 #else

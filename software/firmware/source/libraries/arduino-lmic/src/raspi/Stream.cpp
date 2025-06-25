@@ -20,7 +20,7 @@
  parsing functions based on TextFinder library by Michael Margolis
  */
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #include "Arduino.h"
 #include "Stream.h"

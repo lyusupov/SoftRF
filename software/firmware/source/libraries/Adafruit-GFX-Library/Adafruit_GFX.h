@@ -5,7 +5,7 @@
  #include "Arduino.h"
  #include "Print.h"
 #else
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
  #include "WProgram.h"
 #else
  #include <raspi/raspi.h>

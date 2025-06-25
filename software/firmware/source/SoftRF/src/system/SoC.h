@@ -37,6 +37,7 @@
 #include "../platform/RA4M1.h"
 #include "../platform/EFR32.h"
 #include "../platform/CH32.h"
+#include "../platform/RK35XX.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -119,7 +120,8 @@ enum
 	SOC_RP2350_RISC,
 	SOC_RA4M1,
 	SOC_EFR32,
-	SOC_CH32
+	SOC_CH32,
+	SOC_RK3506,
 };
 
 extern const SoC_ops_t *SoC;
@@ -168,6 +170,9 @@ extern const SoC_ops_t EFR32_ops;
 #endif
 #if defined(ARDUINO_ARCH_CH32)
 extern const SoC_ops_t CH32_ops;
+#endif
+#if defined(LUCKFOX_LYRA)
+extern const SoC_ops_t RK35xx_ops;
 #endif
 
 byte SoC_setup(void);

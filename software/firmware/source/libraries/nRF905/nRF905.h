@@ -9,7 +9,7 @@
 #ifndef NRF905_H_
 #define NRF905_H_
 
-#if defined(ARDUINO) && !defined(RASPBERRY_PI)
+#if defined(ARDUINO) && !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
 #include <Arduino.h>
 #else
 #include "nRF905_types.h"
@@ -340,7 +340,8 @@ bool nRF905_receiveBusy(void);
 */
 inline bool nRF905_airwayBusy(void)
 {
-#if defined(ARDUINO) || defined(RASPBERRY_PI) || defined(HACKRF_ONE)
+#if defined(ARDUINO) || defined(RASPBERRY_PI) || \
+    defined(HACKRF_ONE) || defined(LUCKFOX_LYRA)
 	return digitalRead(CD);
 #else
 	return (CD_PORT & _BV(CD_BIT));

@@ -16,7 +16,7 @@
 #include <pgmspace.h>
 #endif
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #define pgm_read_word(addr) (*(const unsigned int *)(addr))
 #endif /* RASPBERRY_PI */
 

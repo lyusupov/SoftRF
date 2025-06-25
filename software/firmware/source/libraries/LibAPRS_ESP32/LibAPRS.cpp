@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
@@ -65,7 +65,7 @@ size_t lastMessageLen;
 bool message_autoAck = false;
 /////////////////////////
 
-#if defined(RASPBERRY_PI) && !defined(USE_SA8X8)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && !defined(USE_SA8X8)
 void aprs_msg_callback(struct AX25Msg *msg) {
     AX25Msg pkg;
     memcpy(&pkg, msg, sizeof(AX25Msg));

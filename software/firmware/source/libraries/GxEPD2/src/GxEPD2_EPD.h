@@ -12,7 +12,7 @@
 #ifndef _GxEPD2_EPD_H_
 #define _GxEPD2_EPD_H_
 
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
 #include <Arduino.h>
 #include <SPI.h>
 #if defined(NRF52840_XXAA) && !defined(USE_TINYUSB)

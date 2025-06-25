@@ -29,7 +29,7 @@
 #include <TimeLib.h>
 #endif /* CC13XX || CC13X2 || HACKRF_ONE || AVR || SILABS */
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 

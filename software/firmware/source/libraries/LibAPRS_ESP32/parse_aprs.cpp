@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 

@@ -20,7 +20,7 @@
 #include <pgmspace.h>
 #endif
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #define INPUT_PULLUP INPUT
 #endif /* RASPBERRY_PI */

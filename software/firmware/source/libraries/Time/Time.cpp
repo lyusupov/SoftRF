@@ -30,7 +30,7 @@
 #if ARDUINO >= 100 || defined(HACKRF_ONE)
 #include <Arduino.h> 
 #else
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #else
 #include <WProgram.h>

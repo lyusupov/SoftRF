@@ -20,7 +20,7 @@
  Modified 03 August 2015 by Chuck Todd
  */
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

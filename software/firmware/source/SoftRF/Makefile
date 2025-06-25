@@ -29,6 +29,7 @@ CXX           = g++
 
 CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
                 -D__BASEFILE__=\"$*\"
+#CFLAGS        = -Winline -MMD -DLUCKFOX_LYRA -D__BASEFILE__=\"$*\"
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
@@ -318,6 +319,8 @@ e6uf2:
 
 pi: bcm $(PROGNAME) $(PROGNAME)-aux
 
+lyra: bcm $(PROGNAME)
+
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
 
@@ -336,6 +339,9 @@ RPi.o: $(PLATFORM_PATH)/RPi.cpp
 RPi-aux.o: $(PLATFORM_PATH)/RPi.cpp
 	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi-aux.o
 
+Lyra.o: $(PLATFORM_PATH)/RK35XX.cpp
+	$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RK35XX.cpp $(INCLUDE) -o Lyra.o
+
 aes.o: $(RADIO_PATH)/aes/lmic.c
 	$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o
 
@@ -345,8 +351,8 @@ $(RADIO_PATH)/lmic/%.o: $(RADIO_PATH)/lmic/%.c
 bcm:
 	(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
 
-$(PROGNAME): $(OBJS) aes.o hal.o RPi.o
-	$(CXX) $(OBJS) aes.o hal.o RPi.o $(LIBS) -o $(PROGNAME)
+$(PROGNAME): $(OBJS) aes.o hal.o RPi.o Lyra.o
+	$(CXX) $(OBJS) aes.o hal.o RPi.o Lyra.o $(LIBS) -o $(PROGNAME)
 
 $(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o RPi-aux.o
 	$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
@@ -356,4 +362,4 @@ bcm-clean:
 
 clean: bcm-clean
 	rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
-	RPi.o RPi-aux.o $(PROGNAME) $(PROGNAME)-aux *.d
+	RPi.o RPi-aux.o Lyra.o $(PROGNAME) $(PROGNAME)-aux *.d

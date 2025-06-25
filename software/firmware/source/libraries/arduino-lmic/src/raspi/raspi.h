@@ -4,7 +4,7 @@
 // using BCM2835 library for GPIO
 // This code has been grabbed from excellent RadioHead Library
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #ifndef RASPI_h
 #define RASPI_h
