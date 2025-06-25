@@ -160,8 +160,56 @@
 #define SOC_GPIO_PIN_LRCK     9
 #define SOC_GPIO_PIN_MCK      8
 
-#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) || \
-      defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32P4)
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+#define SOC_GPIO_PIN_GNSS_RX  5
+#define SOC_GPIO_PIN_GNSS_TX  4
+
+#define SOC_BUTTON_MODE_DEF   35 /* BOOT, active LOW, strapping pin */
+
+#define SOC_GPIO_PIN_MOSI_WS  32
+#define SOC_GPIO_PIN_MISO_WS  33
+#define SOC_GPIO_PIN_SCK_WS   36 /* strapping pin */
+#define SOC_GPIO_PIN_SS_WS    26
+
+#define SOC_EPD_PIN_DC_WS     47
+#define SOC_EPD_PIN_RST_WS    48
+#define SOC_EPD_PIN_BUSY_WS   27
+
+#define SOC_GPIO_PIN_SDA      7
+#define SOC_GPIO_PIN_SCL      8
+
+// USB
+#define SOC_GPIO_PIN_USB_DP   25
+#define SOC_GPIO_PIN_USB_DN   24
+
+//#define USE_ADAFRUIT_MSC
+
+// Audio
+//#define EXCLUDE_AUDIO
+
+#if !defined(EXCLUDE_AUDIO)
+#define USE_EXT_I2S_DAC
+#endif /* EXCLUDE_AUDIO */
+
+/* I2S ES8311 + MIC */
+#define SOC_GPIO_PIN_DATA     11
+#define SOC_GPIO_PIN_BCK      12
+#define SOC_GPIO_PIN_LRCK     10
+#define SOC_GPIO_PIN_MCK      13
+
+// SDIO 1 - SDMMC
+#define SOC_GPIO_PIN_SD_CLK   43
+#define SOC_GPIO_PIN_SD_CMD   44
+#define SOC_GPIO_PIN_SD_D0    39
+#define SOC_GPIO_PIN_SD_D1    40
+#define SOC_GPIO_PIN_SD_D2    41
+#define SOC_GPIO_PIN_SD_D3    42
+#define SOC_GPIO_PIN_SD_DET   45
+#define SOC_GPIO_PIN_SD_PWR   46 /* NC ? */
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || \
+      defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
 #define SOC_GPIO_PIN_GNSS_TX  7
 

@@ -566,10 +566,12 @@ extern const USB_Device_List_t supported_USB_devices[];
 #endif /* H2 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
+#define USE_U10_EXT
 #define ENABLE_RECORDER
 #define EXCLUDE_BLUETOOTH
 //#define EXCLUDE_WIFI
 //#undef NMEA_TCP_SERVICE
+//#define EXCLUDE_VOICE_MESSAGE
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
