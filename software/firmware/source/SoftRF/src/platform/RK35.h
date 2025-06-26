@@ -1,5 +1,5 @@
 /*
- * Platform_RK35XX.h
+ * Platform_RK35.h
  * Copyright (C) 2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,13 @@
 
 #if defined(LUCKFOX_LYRA)
 
-#ifndef PLATFORM_RK35XX_H
-#define PLATFORM_RK35XX_H
+#ifndef PLATFORM_RK35_H
+#define PLATFORM_RK35_H
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_RASPBERRY
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_STANDALONE
 
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
@@ -60,45 +60,30 @@ struct rst_info {
   uint32_t depc;
 };
 
-/* Dragino LoRa/GPS HAT */
-#if 0 /* WiringPi */
-#define SOC_GPIO_PIN_MOSI     12
-#define SOC_GPIO_PIN_MISO     13
-#define SOC_GPIO_PIN_SCK      14
-#define SOC_GPIO_PIN_SS       6
-#define SOC_GPIO_PIN_RST      0
-#define SOC_GPIO_PIN_DIO0     7
+/* Waveshare Pico-LoRa-SX1262-868M, SX1262 */
+#define SOC_GPIO_PIN_MOSI     RMIO6
+#define SOC_GPIO_PIN_MISO     RMIO5
+#define SOC_GPIO_PIN_SCK      RMIO7
+#define SOC_GPIO_PIN_SS       0 // RMIO13
+#define SOC_GPIO_PIN_RST      0 // RMIO2
+#define SOC_GPIO_PIN_BUSY     RMIO12
+#define SOC_GPIO_PIN_DIO0     0 // RMIO27, may cause conflict with SDA
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
-#else /* BCM */
+/* Waveshare Pico-GPS-L76B (MTK) */
+#define SOC_GPIO_PIN_GNSS_RX  RMIO23
+#define SOC_GPIO_PIN_GNSS_TX  RMIO22
+#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RMIO31, R20 (NC by default)
 
-#if defined(USE_SPI1)
-#define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_38
-#define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_35
-#define SOC_GPIO_PIN_SCK      RPI_V2_GPIO_P1_40
-#define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_36
-#define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_37
-#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_33  // IRQ on GPIO13 so P1 connector pin #33
-#else
-#define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_19
-#define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_21
-#define SOC_GPIO_PIN_SCK      RPI_V2_GPIO_P1_23
-#define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_22 // Slave Select on GPIO25 so P1 connector pin #22
-#define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
-#define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
-#endif
+/* Waveshare Pico-Environment-Sensor, BME280 */
+#define SOC_GPIO_PIN_SDA      RMIO27
+#define SOC_GPIO_PIN_SCL      RMIO26
 
-#define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RPI_V2_GPIO_P1_12 /* rev. 1.4 */
-#endif /* GPIO */
-
+#define SOC_GPIO_PIN_NEOPIXEL RMIO4
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUZZER   RMIO8
 
-#if defined(USE_SPI1)
-#define JSON_SRV_TCP_PORT     30008
-#else
 #define JSON_SRV_TCP_PORT     30007
-#endif
 
 extern TTYSerial Serial1;
 extern TTYSerial Serial2;
@@ -151,6 +136,6 @@ extern const char *Hardware_Rev[];
 typedef void* EPD_Task_t;
 #endif /* USE_EPAPER */
 
-#endif /* PLATFORM_RK35XX_H */
+#endif /* PLATFORM_RK35_H */
 
 #endif /* LUCKFOX_LYRA */

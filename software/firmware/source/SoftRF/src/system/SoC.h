@@ -37,7 +37,7 @@
 #include "../platform/RA4M1.h"
 #include "../platform/EFR32.h"
 #include "../platform/CH32.h"
-#include "../platform/RK35XX.h"
+#include "../platform/RK35.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -172,7 +172,7 @@ extern const SoC_ops_t EFR32_ops;
 extern const SoC_ops_t CH32_ops;
 #endif
 #if defined(LUCKFOX_LYRA)
-extern const SoC_ops_t RK35xx_ops;
+extern const SoC_ops_t RK35_ops;
 #endif
 
 byte SoC_setup(void);

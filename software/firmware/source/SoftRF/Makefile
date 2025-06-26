@@ -27,9 +27,10 @@ MIRISDR       ?= no
 CC            = gcc
 CXX           = g++
 
-CFLAGS        = -Winline -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\"
-#CFLAGS        = -Winline -MMD -DLUCKFOX_LYRA -D__BASEFILE__=\"$*\"
+CFLAGS        = -Winline -MMD -D__BASEFILE__=\"$*\" \
+                -DBCM2835_NO_DELAY_COMPATIBILITY
+pi:           CFLAGS += -DRASPBERRY_PI
+lyra:         CFLAGS += -DLUCKFOX_LYRA
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
@@ -339,8 +340,8 @@ RPi.o: $(PLATFORM_PATH)/RPi.cpp
 RPi-aux.o: $(PLATFORM_PATH)/RPi.cpp
 	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi-aux.o
 
-Lyra.o: $(PLATFORM_PATH)/RK35XX.cpp
-	$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RK35XX.cpp $(INCLUDE) -o Lyra.o
+Lyra.o: $(PLATFORM_PATH)/RK35.cpp
+	$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RK35.cpp $(INCLUDE) -o Lyra.o
 
 aes.o: $(RADIO_PATH)/aes/lmic.c
 	$(CC) $(CFLAGS) -c $(RADIO_PATH)/aes/lmic.c $(INCLUDE) -o aes.o

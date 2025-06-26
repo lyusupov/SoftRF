@@ -1,5 +1,5 @@
 /*
- * Platform_RK35XX.cpp
+ * Platform_RK35.cpp
  * Copyright (C) 2025 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
@@ -228,7 +228,7 @@ mode_s_t state;
 
 static uint32_t SerialNumber = 0;
 
-void RK35xx_SerialNumber(void)
+void RK35_SerialNumber(void)
 {
     int fd = open("/dev/vcio", 0);
     if (fd == -1)
@@ -266,7 +266,7 @@ void RK35xx_SerialNumber(void)
 
 //----- end of MIT License ------------------------------------------------
 
-static void RK35xx_setup()
+static void RK35_setup()
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
@@ -299,15 +299,15 @@ static void RK35xx_setup()
 
   ui = &ui_settings;
 
-  RK35xx_SerialNumber();
+  RK35_SerialNumber();
 }
 
-static void RK35xx_post_init()
+static void RK35_post_init()
 {
 
 #if 0
   Serial.println();
-  Serial.println(F("Raspberry Pi Power-on Self Test"));
+  Serial.println(F("Luckfox Lyra Power-on Self Test"));
   Serial.println();
   Serial.flush();
 
@@ -336,7 +336,7 @@ static void RK35xx_post_init()
 
 static bool prev_PPS_state = LOW;
 
-static void RK35xx_loop()
+static void RK35_loop()
 {
 #if SOC_GPIO_PIN_GNSS_PPS != SOC_UNUSED_PIN
   if (digitalPinToInterrupt(SOC_GPIO_PIN_GNSS_PPS) == NOT_AN_INTERRUPT) {
@@ -350,51 +350,51 @@ static void RK35xx_loop()
 #endif
 }
 
-static void RK35xx_fini(int reason)
+static void RK35_fini(int reason)
 {
 
 }
 
-static void RK35xx_reset()
+static void RK35_reset()
 {
 
 }
 
-static uint32_t RK35xx_getChipId()
+static uint32_t RK35_getChipId()
 {
   uint32_t id = SerialNumber ? SerialNumber : gethostid();
 
   return DevID_Mapper(id);
 }
 
-static void* RK35xx_getResetInfoPtr()
+static void* RK35_getResetInfoPtr()
 {
   return (void *) &reset_info;
 }
 
-static long RK35xx_random(long howsmall, long howBig)
+static long RK35_random(long howsmall, long howBig)
 {
   return howsmall + random() % (howBig - howsmall);
 }
 
-static void RK35xx_WiFi_transmit_UDP(int port, byte *buf, size_t size)
+static void RK35_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   /* TBD */
 }
 
-static void RK35xx_SPI_begin()
+static void RK35_SPI_begin()
 {
   SPI.begin();
 }
 
-static void RK35xx_swSer_begin(unsigned long baud)
+static void RK35_swSer_begin(unsigned long baud)
 {
   Serial_GNSS_In.begin(baud);
 }
 
-pthread_t RK35xx_EPD_update_thread;
+pthread_t RK35_EPD_update_thread;
 
-static byte RK35xx_Display_setup()
+static byte RK35_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
@@ -408,7 +408,7 @@ static byte RK35xx_Display_setup()
 
   if (EPD_setup(true)) {
 
-    if ( pthread_create(&RK35xx_EPD_update_thread, NULL, &EPD_Task, (void *)0) != 0) {
+    if ( pthread_create(&RK35_EPD_update_thread, NULL, &EPD_Task, (void *)0) != 0) {
       fprintf( stderr, "pthread_create(EPD_Task) Failed\n\n" );
       exit(EXIT_FAILURE);
     }
@@ -416,7 +416,7 @@ static byte RK35xx_Display_setup()
 #if 0
     struct sched_param  param;
     param.sched_priority = 50;
-    pthread_setschedparam(RK35xx_EPD_update_thread, SCHED_RR, &param);
+    pthread_setschedparam(RK35_EPD_update_thread, SCHED_RR, &param);
 #endif
 
     rval = DISPLAY_EPD_2_7;
@@ -426,7 +426,7 @@ static byte RK35xx_Display_setup()
   return rval;
 }
 
-static void RK35xx_Display_loop()
+static void RK35_Display_loop()
 {
 #if defined(USE_EPAPER)
   if (hw_info.display == DISPLAY_EPD_2_7) {
@@ -435,25 +435,25 @@ static void RK35xx_Display_loop()
 #endif /* USE_EPAPER */
 }
 
-static void RK35xx_Display_fini(int reason)
+static void RK35_Display_fini(int reason)
 {
 #if defined(USE_EPAPER)
 
   EPD_fini(reason, false);
 
-  if ( RK35xx_EPD_update_thread != (pthread_t) 0)
+  if ( RK35_EPD_update_thread != (pthread_t) 0)
   {
-    pthread_cancel( RK35xx_EPD_update_thread );
+    pthread_cancel( RK35_EPD_update_thread );
   }
 #endif /* USE_EPAPER */
 }
 
-static void RK35xx_Battery_setup()
+static void RK35_Battery_setup()
 {
   /* TBD */
 }
 
-static float RK35xx_Battery_param(uint8_t param)
+static float RK35_Battery_param(uint8_t param)
 {
   float rval;
 
@@ -482,22 +482,22 @@ static float RK35xx_Battery_param(uint8_t param)
   return rval;
 }
 
-void RK35xx_GNSS_PPS_Interrupt_handler() {
+void RK35_GNSS_PPS_Interrupt_handler() {
   PPS_TimeMarker = millis();
 }
 
-static unsigned long RK35xx_get_PPS_TimeMarker() {
+static unsigned long RK35_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
-static void RK35xx_UATSerial_begin(unsigned long baud)
+static void RK35_UATSerial_begin(unsigned long baud)
 {
   UATSerial.begin(baud);
   UATSerial.dtr(false);
   UATSerial.rts(false);
 }
 
-static void RK35xx_UATModule_restart()
+static void RK35_UATModule_restart()
 {
   UATSerial.dtr(false);
 
@@ -518,76 +518,76 @@ static void RK35xx_UATModule_restart()
   UATSerial.rts(false);
 }
 
-static void RK35xx_WDT_setup()
+static void RK35_WDT_setup()
 {
   /* TBD */
 }
 
-static void RK35xx_WDT_fini()
+static void RK35_WDT_fini()
 {
   /* TBD */
 }
 
-static void RK35xx_Button_setup()
+static void RK35_Button_setup()
 {
   /* TODO */
 }
 
-static void RK35xx_Button_loop()
+static void RK35_Button_loop()
 {
   /* TODO */
 }
 
-static void RK35xx_Button_fini()
+static void RK35_Button_fini()
 {
   /* TODO */
 }
 
-const SoC_ops_t RK35xx_ops = {
-  SOC_RPi,
-  "RPi",
-  RK35xx_setup,
-  RK35xx_post_init,
-  RK35xx_loop,
-  RK35xx_fini,
-  RK35xx_reset,
-  RK35xx_getChipId,
-  RK35xx_getResetInfoPtr,
+const SoC_ops_t RK35_ops = {
+  SOC_RK3506,
+  "RK3506",
+  RK35_setup,
+  RK35_post_init,
+  RK35_loop,
+  RK35_fini,
+  RK35_reset,
+  RK35_getChipId,
+  RK35_getResetInfoPtr,
   NULL,
   NULL,
   NULL,
-  RK35xx_random,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  RK35xx_WiFi_transmit_UDP,
+  RK35_random,
   NULL,
   NULL,
   NULL,
   NULL,
-  NULL,
-  RK35xx_SPI_begin,
-  RK35xx_swSer_begin,
+  RK35_WiFi_transmit_UDP,
   NULL,
   NULL,
   NULL,
   NULL,
-  RK35xx_Display_setup,
-  RK35xx_Display_loop,
-  RK35xx_Display_fini,
-  RK35xx_Battery_setup,
-  RK35xx_Battery_param,
   NULL,
-  RK35xx_get_PPS_TimeMarker,
+  RK35_SPI_begin,
+  RK35_swSer_begin,
   NULL,
-  RK35xx_UATSerial_begin,
-  RK35xx_UATModule_restart,
-  RK35xx_WDT_setup,
-  RK35xx_WDT_fini,
-  RK35xx_Button_setup,
-  RK35xx_Button_loop,
-  RK35xx_Button_fini,
+  NULL,
+  NULL,
+  NULL,
+  RK35_Display_setup,
+  RK35_Display_loop,
+  RK35_Display_fini,
+  RK35_Battery_setup,
+  RK35_Battery_param,
+  NULL,
+  RK35_get_PPS_TimeMarker,
+  NULL,
+  RK35_UATSerial_begin,
+  RK35_UATModule_restart,
+  RK35_WDT_setup,
+  RK35_WDT_fini,
+  RK35_Button_setup,
+  RK35_Button_loop,
+  RK35_Button_fini,
   NULL
 };
 
@@ -638,7 +638,7 @@ static void parseNMEA(const char *str, int len)
   }
 }
 
-static void RK35xx_PickGNSSFix()
+static void RK35_PickGNSSFix()
 {
   if (inputAvailable()) {
     std::getline(std::cin, input_line);
@@ -688,7 +688,7 @@ static void RK35xx_PickGNSSFix()
   }
 }
 
-static void RK35xx_ReadTraffic()
+static void RK35_ReadTraffic()
 {
   string traffic_input = Traffic_TCP_Server.getMessage();
   if (traffic_input != "") {
@@ -750,12 +750,12 @@ static void RK35xx_ReadTraffic()
 void normal_loop()
 {
     /* Read GNSS data from standard input */
-    RK35xx_PickGNSSFix();
+    RK35_PickGNSSFix();
 
     /* Read NMEA data from GNSS module on GPIO pins */
 //    PickGNSSFix();
 
-    RK35xx_ReadTraffic();
+    RK35_ReadTraffic();
 
     RF_loop();
 
@@ -796,12 +796,12 @@ void normal_loop()
 void relay_loop()
 {
     /* Read GNSS data from standard input */
-    RK35xx_PickGNSSFix();
+    RK35_PickGNSSFix();
 
     /* Read NMEA data from GNSS module on GPIO pins */
 //    PickGNSSFix();
 
-    RK35xx_ReadTraffic();
+    RK35_ReadTraffic();
 
     RF_loop();
 
@@ -868,7 +868,7 @@ void txrx_test_loop()
 
   setTime(time(NULL));
 
-  RK35xx_ReadTraffic();
+  RK35_ReadTraffic();
 
   RF_loop();
 

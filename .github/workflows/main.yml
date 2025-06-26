@@ -574,7 +574,9 @@ jobs:
           fi ;
           if [[ "$BOARD" =~ "raspberry"            ]]; then
             cd $GITHUB_WORKSPACE/software/firmware/source/SoftRF ;
-            make pi;
+            make pi ;
+            make clean ;
+            make lyra ;
           fi ;
           if [[ "$BOARD" =~ "raspberry"            ]]; then
             cd $GITHUB_WORKSPACE/software/firmware/source/SkyView ;
