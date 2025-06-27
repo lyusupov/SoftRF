@@ -61,13 +61,13 @@ struct rst_info {
 };
 
 /* Dragino LoRa/GPS HAT */
-#if 0 /* WiringPi */
-#define SOC_GPIO_PIN_MOSI     12
-#define SOC_GPIO_PIN_MISO     13
-#define SOC_GPIO_PIN_SCK      14
-#define SOC_GPIO_PIN_SS       6
-#define SOC_GPIO_PIN_RST      0
-#define SOC_GPIO_PIN_DIO0     7
+#if defined(USE_LGPIO) /* TBD */
+#define SOC_GPIO_PIN_MOSI     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_MISO     SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SCK      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_DIO0     SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
 #else /* BCM */

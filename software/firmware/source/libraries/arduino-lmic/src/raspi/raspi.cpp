@@ -14,6 +14,7 @@
 static uint64_t epochMilli ;
 static uint64_t epochMicro ;
 
+#if defined(USE_BCMLIB)
 SPIClass::SPIClass(uint8_t spi_bus)
     :_spi_num(spi_bus)
 {}
@@ -96,6 +97,7 @@ byte SPIClass::transfer(byte _data) {
 
 SPIClass SPI0(SPI_PRI);
 SPIClass SPI1(SPI_AUX);
+#endif /* USE_BCMLIB */
 
 /* I2C is not implemented yet */
 TwoWire::TwoWire()
@@ -118,7 +120,8 @@ size_t TwoWire::write(uint8_t byte) {
 }
 
 TwoWire Wire;
- 
+
+#if defined(USE_BCMLIB)
 void pinMode(unsigned char pin, unsigned char mode) {
   if (pin == LMIC_UNUSED_PIN) {
     return;
@@ -143,6 +146,87 @@ unsigned char digitalRead(unsigned char pin) {
   }
   return bcm2835_gpio_lev(pin);
 }
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+SPIClass SPI0(0);
+SPIClass SPI1(1);
+
+static int _gpioHandle = -1;
+static const uint8_t _gpioDevice = 0;
+
+bool lgpio_init() {
+  if(_gpioHandle != -1) {
+    return false;
+  }
+
+  // first initialise lgpio library
+  if((_gpioHandle = lgGpiochipOpen(_gpioDevice)) < 0) {
+    fprintf(stderr, "Could not open GPIO chip: %s\n", lguErrorText(_gpioHandle));
+    return false;
+  }
+
+  return true;
+}
+
+void pinMode(unsigned char pin, unsigned char mode) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return;
+  }
+
+  int result;
+  int flags = 0;
+  switch(mode) {
+    case INPUT:
+      result = lgGpioClaimInput(_gpioHandle, 0, pin);
+      break;
+    case OUTPUT:
+      result = lgGpioClaimOutput(_gpioHandle, flags, pin, LG_HIGH);
+      break;
+    default:
+      fprintf(stderr, "Unknown pinMode mode %" PRIu32 "\n", mode);
+      return;
+  }
+
+  if(result < 0) {
+    fprintf(stderr, "Could not claim pin %" PRIu32 " for mode %" PRIu32 ": %s\n",
+        pin, mode, lguErrorText(result));
+  }
+}
+
+void digitalWrite(unsigned char pin, unsigned char value) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return;
+  }
+
+  int result = lgGpioWrite(_gpioHandle, pin, value);
+  if(result < 0) {
+    fprintf(stderr, "Error writing value to pin %" PRIu32 ": %s\n", pin, lguErrorText(result));
+  }
+}
+
+unsigned char digitalRead(unsigned char pin) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return 0;
+  }
+
+  int result = lgGpioRead(_gpioHandle, pin);
+  if(result < 0) {
+    fprintf(stderr, "Error writing reading from pin %" PRIu32 ": %s\n", pin, lguErrorText(result));
+  }
+  return result;
+}
+
+void lgpio_fini() {
+  if(_gpioHandle == -1) {
+    return;
+  }
+
+  // finally, stop the lgpio library
+  lgGpiochipClose(_gpioHandle);
+  _gpioHandle = -1;
+}
+#endif /* USE_LGPIO */
 
 //Initialize a timestamp for millis/micros calculation
 // Grabbed from WiringPi
@@ -253,8 +337,6 @@ void printKeys(void)
 	os_getDevKey((u1_t*) buf);
 	printKey("AppKey", buf, 16, false);
 }
-
-
 
 bool getDevEuiFromMac(uint8_t * pdeveui) {
   struct ifaddrs *ifaddr=NULL;
@@ -457,5 +539,4 @@ long random(long howsmall, long howbig)
   long diff = howbig - howsmall;
   return random(diff) + howsmall;
 }
-
 #endif // RASPBERRY_PI

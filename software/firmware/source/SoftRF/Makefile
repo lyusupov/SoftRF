@@ -24,6 +24,9 @@ RTLSDR        ?= no
 HACKRF        ?= no
 MIRISDR       ?= no
 
+BCM2835       ?= yes
+LGPIO         ?= no
+
 CC            = gcc
 CXX           = g++
 
@@ -94,6 +97,7 @@ U8G2_PATH     = $(LIB_PATH)/U8g2_for_Adafruit_GFX/src
 EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 MODES_PATH    = $(LIB_PATH)/libmodes/src
 APRS_PATH     = $(LIB_PATH)/LibAPRS_ESP32
+LGPIO_PATH    = $(LIB_PATH)/lg-0.1
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -108,7 +112,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
-                -I$(MODES_PATH)  -I$(APRS_PATH)
+                -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(LGPIO_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -251,7 +255,15 @@ ifeq ($(GDEY027T91), yes)
   CFLAGS      += -DUSE_GDEY027T91
 endif
 
-LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+ifeq ($(BCM2835), yes)
+  LIBS        := -L$(BCMLIB_PATH) -lbcm2835 -lpthread
+  CFLAGS      += -DUSE_BCMLIB
+endif
+
+ifeq ($(LGPIO), yes)
+  LIBS        := -L$(LGPIO_PATH) -llgpio -lpthread
+  CFLAGS      += -DUSE_LGPIO
+endif
 
 ifeq ($(RTLSDR), yes)
   OBJS        += $(MODES_PATH)/sdr/sdr_rtlsdr.o \
@@ -318,9 +330,9 @@ e3uf2:
 e6uf2:
 	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0x540ddf62 -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
-pi: bcm $(PROGNAME) $(PROGNAME)-aux
+pi: bcm lgpio $(PROGNAME) $(PROGNAME)-aux
 
-lyra: bcm $(PROGNAME)
+lyra: bcm lgpio $(PROGNAME)
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
@@ -350,7 +362,14 @@ $(RADIO_PATH)/lmic/%.o: $(RADIO_PATH)/lmic/%.c
 	$(CC) -c $(CFLAGS) $(RADIO_PATH)/lmic/$*.c -o $(RADIO_PATH)/lmic/$*.o $(INCLUDE)
 
 bcm:
+ifeq ($(BCM2835), yes)
 	(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+endif
+
+lgpio:
+ifeq ($(LGPIO), yes)
+	(cd $(LGPIO_PATH)/ ; make)
+endif
 
 $(PROGNAME): $(OBJS) aes.o hal.o RPi.o Lyra.o
 	$(CXX) $(OBJS) aes.o hal.o RPi.o Lyra.o $(LIBS) -o $(PROGNAME)
@@ -359,8 +378,15 @@ $(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o RPi-aux.o
 	$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
+ifeq ($(BCM2835), yes)
 	(cd $(BCMLIB_PATH)/../ ; make distclean)
+endif
 
-clean: bcm-clean
+lgpio-clean:
+ifeq ($(LGPIO), yes)
+	(cd $(LGPIO_PATH)/ ; make clean)
+endif
+
+clean: bcm-clean lgpio-clean
 	rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
 	RPi.o RPi-aux.o Lyra.o $(PROGNAME) $(PROGNAME)-aux *.d

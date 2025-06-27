@@ -22,7 +22,7 @@ GxEPD2_EPD::GxEPD2_EPD(int8_t cs, int8_t dc, int8_t rst, int8_t busy, int8_t bus
   WIDTH(w), HEIGHT(h), panel(p), hasColor(c), hasPartialUpdate(pu), hasFastPartialUpdate(fpu),
   _cs(cs), _dc(dc), _rst(rst), _busy(busy), _busy_level(busy_level), _busy_timeout(busy_timeout), _diag_enabled(false),
   _pSPIx(&SPI),
-#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
   _spi_settings(BCM2835_SPI_CLOCK_DIVIDER_64, BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0)
 #else
   _spi_settings(4000000, MSBFIRST, SPI_MODE0)
@@ -106,11 +106,11 @@ void GxEPD2_EPD::_reset()
       digitalWrite(_rst, LOW);
       pinMode(_rst, OUTPUT);
       delay(20);
-#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
       pinMode(_rst, INPUT);
       //  with a pullup
       bcm2835_gpio_set_pud(_rst, BCM2835_GPIO_PUD_UP);
-#else
+#elif !defined(USE_LGPIO)
       pinMode(_rst, INPUT_PULLUP);
 #endif
       delay(200);

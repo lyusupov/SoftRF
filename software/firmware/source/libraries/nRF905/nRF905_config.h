@@ -241,7 +241,7 @@
 #else /* ARDUINO */
 // Non-Arduino pins
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) && defined(USE_BCMLIB)
 
 #include "bcm2835.h"
 
@@ -257,6 +257,16 @@
 //#define AM        (7)
 
 #elif defined(HACKRF_ONE)
+
+#define TRX_EN    (0)  // Enable/standby pin
+#define PWR_MODE  (0)  // Power mode pin
+#define TX_EN     (0)  // TX / RX mode pin
+#define CS_N      (0)  // SPI slave select pin
+
+#define CD        (0)  // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    (0)
+
+#elif defined(RASPBERRY_PI) && defined(USE_LGPIO) /* TBD */
 
 #define TRX_EN    (0)  // Enable/standby pin
 #define PWR_MODE  (0)  // Power mode pin

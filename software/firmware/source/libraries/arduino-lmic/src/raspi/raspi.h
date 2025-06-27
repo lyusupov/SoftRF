@@ -9,7 +9,12 @@
 #ifndef RASPI_h
 #define RASPI_h
 
+#if defined(USE_BCMLIB)
 #include <bcm2835.h>
+#endif
+#if defined(USE_LGPIO)
+#include <lgpio.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -36,6 +41,7 @@
   #define NULL 0
 #endif
 
+#if defined(USE_BCMLIB)
 #ifndef OUTPUT
   #define OUTPUT BCM2835_GPIO_FSEL_OUTP
 #endif
@@ -43,6 +49,41 @@
 #ifndef INPUT
   #define INPUT BCM2835_GPIO_FSEL_INPT
 #endif
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+#ifndef INPUT
+  #define INPUT  (0)
+#endif
+
+#ifndef OUTPUT
+  #define OUTPUT (1)
+#endif
+
+#ifndef HIGH
+  #define HIGH   LG_HIGH
+#endif
+
+#ifndef LOW
+  #define LOW    LG_LOW
+#endif
+
+#ifndef LSBFIRST
+  #define LSBFIRST 0
+#endif
+
+#ifndef MSBFIRST
+  #define MSBFIRST 1
+#endif
+
+#ifndef SPI_MODE0
+  #define SPI_MODE0 0
+#endif
+
+#ifndef INPUT_PULLUP
+  #define INPUT_PULLUP LG_SET_PULL_UP
+#endif
+#endif /* USE_LGPIO */
 
 #ifndef NOT_A_PIN
   #define NOT_A_PIN 0xFF
@@ -68,8 +109,30 @@
 #define RISING  2
 
 // Delay macros
+#if defined(USE_BCMLIB)
 #define delay(x) bcm2835_delay(x)
 #define delayMicroseconds(m) bcm2835_delayMicroseconds(m)
+#endif
+
+#if defined(USE_LGPIO)
+static inline void delay(unsigned long ms) {
+  if(ms == 0) {
+    sched_yield();
+    return;
+  }
+
+  lguSleep(ms / 1000.0);
+}
+
+static inline void delayMicroseconds(unsigned long us) {
+  if(us == 0) {
+    sched_yield();
+    return;
+  }
+
+  lguSleep(us / 1000000.0);
+}
+#endif
 
 #include <pthread.h>
 #define yield() pthread_yield()
@@ -139,9 +202,11 @@ class SPISettings
     SPISettings(uint16_t divider, uint8_t bitOrder, uint8_t dataMode) {
         init(divider, bitOrder, dataMode);
     }
+#if defined(USE_BCMLIB)
     SPISettings() {
         init(BCM2835_SPI_CLOCK_DIVIDER_256, BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0);
     }
+#endif /* USE_BCMLIB */
   private:
     void init(uint16_t divider, uint8_t bitOrder, uint8_t dataMode) {
       this->divider  = divider ; 
@@ -155,6 +220,7 @@ class SPISettings
   friend class SPIClass;
 };
 
+#if defined(USE_BCMLIB)
 class SPIClass {
   public:
     SPIClass(uint8_t spi_bus=SPI_PRI);
@@ -170,6 +236,70 @@ class SPIClass {
 private:
     int8_t _spi_num;
 };
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+extern bool lgpio_init();
+extern void lgpio_fini();
+
+class SPIClass {
+  public:
+    SPIClass(uint8_t spiChannel, uint32_t spiSpeed = 2000000, uint8_t spiDevice = 0)
+      :
+      _spiDevice(spiDevice),
+      _spiChannel(spiChannel),
+      _spiSpeed(spiSpeed) {
+    }
+
+    void transfer(uint8_t* out, size_t len, uint8_t* in) {
+      int result = lgSpiXfer(_spiHandle, (char *)out, (char*)in, len);
+      if(result < 0) {
+        fprintf(stderr, "Could not perform SPI transfer: %s\n", lguErrorText(result));
+      }
+    }
+
+    byte transfer(byte _data) {
+      uint8_t out = _data;
+      size_t len = 1;
+      uint8_t in;
+
+      int result = lgSpiXfer(_spiHandle, (char *) &out, (char*) &in, len);
+      if (result < 0) {
+        fprintf(stderr, "Could not perform SPI transfer: %s\n", lguErrorText(result));
+        return 0;
+      } else {
+        return in;
+      }
+    }
+
+    void begin() {
+      // now the SPI
+      if(_spiHandle < 0) {
+        if((_spiHandle = lgSpiOpen(_spiDevice, _spiChannel, _spiSpeed, 0)) < 0) {
+          fprintf(stderr, "Could not open SPI handle on 0: %s\n", lguErrorText(_spiHandle));
+        }
+      }
+    }
+
+    void end() {
+      // stop the SPI
+      if(_spiHandle >= 0) {
+        lgSpiClose(_spiHandle);
+        _spiHandle = -1;
+      }
+    }
+
+    void beginTransaction(SPISettings settings) {}
+    void endTransaction() {}
+
+  private:
+    // the HAL can contain any additional private members
+    const unsigned int _spiSpeed;
+    const uint8_t _spiDevice;
+    const uint8_t _spiChannel;
+    int _spiHandle = -1;
+};
+#endif /* USE_BCMLIB */
 
 class TwoWire {
 

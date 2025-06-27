@@ -1003,11 +1003,21 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 
 int main()
 {
+#if defined(USE_BCMLIB)
   // Init GPIO bcm
   if (!bcm2835_init()) {
       fprintf( stderr, "bcm2835_init() Failed\n\n" );
       exit(EXIT_FAILURE);
   }
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+  // Init GPIO lgpio
+  if (!lgpio_init()) {
+      fprintf( stderr, "lgpio_init() Failed\n\n" );
+      exit(EXIT_FAILURE);
+  }
+#endif /* USE_LGPIO */
 
   Serial.begin(SERIAL_OUT_BR);
 
