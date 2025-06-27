@@ -21,7 +21,7 @@ CC            = gcc
 CXX           = g++
 
 CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -D__BASEFILE__=\"$*\"
+                -DUSE_BCMLIB -D__BASEFILE__=\"$*\"
 
 ifeq ($(GDEY027T91), yes)
   CFLAGS      += -DUSE_GDEY027T91
