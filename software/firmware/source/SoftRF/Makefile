@@ -27,6 +27,10 @@ MIRISDR       ?= no
 BCM2835       ?= yes
 LGPIO         ?= no
 
+ifeq ($(LGPIO), yes)
+  RADIOLIB    ?= yes
+endif
+
 CC            = gcc
 CXX           = g++
 
@@ -98,6 +102,7 @@ EPD2_PATH     = $(LIB_PATH)/GxEPD2/src
 MODES_PATH    = $(LIB_PATH)/libmodes/src
 APRS_PATH     = $(LIB_PATH)/LibAPRS_ESP32
 LGPIO_PATH    = $(LIB_PATH)/lg-0.1
+RADIOLIB_PATH = $(LIB_PATH)/RadioLib/src
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -112,7 +117,8 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(ADSB_PATH)   -I$(NMEALIB_PATH) -I$(GEOID_PATH)    \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
-                -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(LGPIO_PATH)
+                -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(RADIOLIB_PATH) \
+                -I$(LGPIO_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -243,6 +249,17 @@ ifeq ($(BASICMAC), yes)
   OBJS        += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
                  $(RADIO_PATH)/lmic/debug.o $(RADIO_PATH)/lmic/lce.o
   CFLAGS      += -DUSE_BASICMAC
+endif
+
+ifeq ($(RADIOLIB), yes)
+  OBJS        += $(RADIOLIB_PATH)/Module.o $(RADIOLIB_PATH)/Hal.o \
+                 $(RADIOLIB_PATH)/protocols/PhysicalLayer/PhysicalLayer.o \
+                 $(RADIOLIB_PATH)/utils/Utils.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR11x0.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR1110.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR1120.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR1121.o
+  CFLAGS      += -DUSE_RADIOLIB
 endif
 
 ifeq ($(NOMAVLINK), no)

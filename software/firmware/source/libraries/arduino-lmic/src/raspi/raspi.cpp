@@ -152,6 +152,8 @@ unsigned char digitalRead(unsigned char pin) {
 SPIClass SPI0(0);
 SPIClass SPI1(1);
 
+#define PI_MAX_USER_GPIO  (31) /* TBD */
+
 static int _gpioHandle = -1;
 static const uint8_t _gpioDevice = 0;
 
@@ -167,6 +169,16 @@ bool lgpio_init() {
   }
 
   return true;
+}
+
+void lgpio_fini() {
+  if(_gpioHandle == -1) {
+    return;
+  }
+
+  // finally, stop the lgpio library
+  lgGpiochipClose(_gpioHandle);
+  _gpioHandle = -1;
 }
 
 void pinMode(unsigned char pin, unsigned char mode) {
@@ -217,15 +229,67 @@ unsigned char digitalRead(unsigned char pin) {
   return result;
 }
 
-void lgpio_fini() {
-  if(_gpioHandle == -1) {
+// interrupt emulation
+bool interruptEnabled[PI_MAX_USER_GPIO + 1];
+uint32_t interruptModes[PI_MAX_USER_GPIO + 1];
+typedef void (*RadioLibISR)(void);
+RadioLibISR interruptCallbacks[PI_MAX_USER_GPIO + 1];
+
+// this handler emulates interrupts
+static void lgpioAlertHandler(int num_alerts, lgGpioAlert_p alerts, void *userdata) {
+  if(!userdata)
+    return;
+
+#if 0 /* TBD */
+  // PiHal instance is passed via the user data
+  PiHal* hal = (PiHal*)userdata;
+
+  // check the interrupt is enabled, the level matches and a callback exists
+  for(lgGpioAlert_t *alert = alerts; alert < (alerts + num_alerts); alert++) {
+    if((hal->interruptEnabled[alert->report.gpio]) &&
+       (hal->interruptModes[alert->report.gpio] == alert->report.level) &&
+       (hal->interruptCallbacks[alert->report.gpio])) {
+      hal->interruptCallbacks[alert->report.gpio]();
+    }
+  }
+#endif
+}
+
+void attachInterrupt(uint32_t interruptNum, void (*interruptCb)(void), uint32_t mode) {
+  if((interruptNum == LMIC_UNUSED_PIN) || (interruptNum > PI_MAX_USER_GPIO)) {
     return;
   }
 
-  // finally, stop the lgpio library
-  lgGpiochipClose(_gpioHandle);
-  _gpioHandle = -1;
+  // set lgpio alert callback
+  int result = lgGpioClaimAlert(_gpioHandle, 0, mode, interruptNum, -1);
+  if(result < 0) {
+    fprintf(stderr, "Could not claim pin %" PRIu32 " for alert: %s\n", interruptNum, lguErrorText(result));
+    return;
+  }
+
+  // enable emulated interrupt
+  interruptEnabled[interruptNum] = true;
+  interruptModes[interruptNum] = mode;
+  interruptCallbacks[interruptNum] = interruptCb;
+
+  lgGpioSetAlertsFunc(_gpioHandle, interruptNum, lgpioAlertHandler, NULL /* (void *)this */);
 }
+
+void detachInterrupt(uint32_t interruptNum) {
+  if((interruptNum == LMIC_UNUSED_PIN) || (interruptNum > PI_MAX_USER_GPIO)) {
+    return;
+  }
+
+  // clear emulated interrupt
+  interruptEnabled[interruptNum] = false;
+  interruptModes[interruptNum] = 0;
+  interruptCallbacks[interruptNum] = NULL;
+
+  // disable lgpio alert callback
+  lgGpioFree(_gpioHandle, interruptNum);
+  lgGpioSetAlertsFunc(_gpioHandle, interruptNum, NULL, NULL);
+}
+
 #endif /* USE_LGPIO */
 
 //Initialize a timestamp for millis/micros calculation

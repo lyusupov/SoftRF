@@ -25,6 +25,10 @@
 
 #include <manchester.h>
 
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <hal/RPi/PiHal.h>
+#endif // RASPBERRY_PI
+
 #ifndef RadioSPI
 #define RadioSPI        SPI
 #endif
@@ -477,7 +481,14 @@ static void lr11xx_setup()
   uint32_t busy = lmic_pins.busy == LMIC_UNUSED_PIN ?
                   RADIOLIB_NC : lmic_pins.busy;
 
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+  PiHal* hal = new PiHal(0); // use SPI channel 0
+
+  mod   = new Module(hal, lmic_pins.nss, irq, lmic_pins.rst, busy);
+#else
   mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, RadioSPI);
+#endif // RASPBERRY_PI
+
 #if USE_SX1262
   bool high = false;
   radio_semtech = new SX1262(mod);

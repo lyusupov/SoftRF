@@ -11,10 +11,10 @@
 
 #if defined(USE_BCMLIB)
 #include <bcm2835.h>
-#endif
+#endif /* USE_BCMLIB */
 #if defined(USE_LGPIO)
 #include <lgpio.h>
-#endif
+#endif /* USE_LGPIO */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -69,11 +69,11 @@
 #endif
 
 #ifndef LSBFIRST
-  #define LSBFIRST 0
+  #define LSBFIRST  0
 #endif
 
 #ifndef MSBFIRST
-  #define MSBFIRST 1
+  #define MSBFIRST  1
 #endif
 
 #ifndef SPI_MODE0
@@ -101,8 +101,14 @@
 #define interrupts()   {}
 #define noInterrupts() {}
 #define digitalPinToInterrupt(p)             (NOT_AN_INTERRUPT)
+#if defined(USE_BCMLIB)
 #define attachInterrupt(irq, userFunc, mode) {}
 #define detachInterrupt(irq)                 {}
+#endif /* USE_BCMLIB */
+#if defined(USE_LGPIO)
+extern void attachInterrupt(uint32_t, void (*interruptCb)(void), uint32_t);
+extern void detachInterrupt(uint32_t);
+#endif /* USE_LGPIO */
 
 #define CHANGE  3
 #define FALLING 1
@@ -112,7 +118,7 @@
 #if defined(USE_BCMLIB)
 #define delay(x) bcm2835_delay(x)
 #define delayMicroseconds(m) bcm2835_delayMicroseconds(m)
-#endif
+#endif /* USE_BCMLIB */
 
 #if defined(USE_LGPIO)
 static inline void delay(unsigned long ms) {
@@ -196,20 +202,20 @@ inline boolean isPrintable(int c){
 
 #ifdef __cplusplus
 
-class SPISettings 
+#if defined(USE_BCMLIB)
+class SPISettings
 {
   public:
     SPISettings(uint16_t divider, uint8_t bitOrder, uint8_t dataMode) {
         init(divider, bitOrder, dataMode);
     }
-#if defined(USE_BCMLIB)
+
     SPISettings() {
         init(BCM2835_SPI_CLOCK_DIVIDER_256, BCM2835_SPI_BIT_ORDER_MSBFIRST, BCM2835_SPI_MODE0);
     }
-#endif /* USE_BCMLIB */
   private:
     void init(uint16_t divider, uint8_t bitOrder, uint8_t dataMode) {
-      this->divider  = divider ; 
+      this->divider  = divider ;
       this->bitOrder = bitOrder;
       this->dataMode = dataMode;
     }
@@ -220,7 +226,6 @@ class SPISettings
   friend class SPIClass;
 };
 
-#if defined(USE_BCMLIB)
 class SPIClass {
   public:
     SPIClass(uint8_t spi_bus=SPI_PRI);
@@ -241,6 +246,26 @@ private:
 #if defined(USE_LGPIO)
 extern bool lgpio_init();
 extern void lgpio_fini();
+
+class SPISettings
+{
+  public:
+    SPISettings(uint32_t Speed, uint8_t bitOrder, uint8_t dataMode) {
+        init(Speed, bitOrder, dataMode);
+    }
+
+  private:
+    void init(uint32_t Speed, uint8_t bitOrder, uint8_t dataMode) {
+      this->Speed    = Speed   ;
+      this->bitOrder = bitOrder;
+      this->dataMode = dataMode;
+    }
+
+    uint32_t Speed    ;
+    uint8_t  bitOrder ;
+    uint8_t  dataMode ;
+  friend class SPIClass;
+};
 
 class SPIClass {
   public:
