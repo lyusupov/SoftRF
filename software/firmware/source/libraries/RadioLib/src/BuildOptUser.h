@@ -35,6 +35,6 @@
 //#define RADIOLIB_EXCLUDE_LR11X0           (1)
 //#define RADIOLIB_EXCLUDE_FSK4             (1)
 //#define RADIOLIB_EXCLUDE_PAGER            (1)
-//#define RADIOLIB_EXCLUDE_AX5X43           (1)
+#define RADIOLIB_EXCLUDE_AX5X43           (1)
 
 #endif

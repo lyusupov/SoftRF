@@ -250,8 +250,8 @@
 #define TX_EN     (RPI_V2_GPIO_P1_07)  // TX / RX mode pin
 #define CS_N      (RPI_V2_GPIO_P1_22)  // SPI slave select pin
 
-#define CD                        (24)  // Carrier detect pin (for collision avoidance, if enabled)
-#define DREADY          (25)
+#define CD        (24)  // Carrier detect pin (for collision avoidance, if enabled)
+#define DREADY    (25)
 
 // Address match pin (not used by library)
 //#define AM        (7)
@@ -266,17 +266,17 @@
 #define CD        (0)  // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    (0)
 
-#elif defined(RASPBERRY_PI) && defined(USE_LGPIO) /* TBD */
+#elif defined(RASPBERRY_PI) && defined(USE_LGPIO)
 
-#define TRX_EN    (0)  // Enable/standby pin
-#define PWR_MODE  (0)  // Power mode pin
-#define TX_EN     (0)  // TX / RX mode pin
-#define CS_N      (0)  // SPI slave select pin
+#define TRX_EN    (24) // Enable/standby pin
+#define PWR_MODE  (17) // Power mode pin
+#define TX_EN     (4)  // TX / RX mode pin
+#define CS_N      (25) // SPI slave select pin
 
 #define CD        (0)  // Carrier detect pin (for collision avoidance, if enabled)
 #define DREADY    (0)
 
-#elif defined(LUCKFOX_LYRA)
+#elif defined(LUCKFOX_LYRA) /* TBD */
 
 #define TRX_EN    (0)  // Enable/standby pin
 #define PWR_MODE  (0)  // Power mode pin

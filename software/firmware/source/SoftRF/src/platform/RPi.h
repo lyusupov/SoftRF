@@ -62,12 +62,21 @@ struct rst_info {
 
 /* Dragino LoRa/GPS HAT */
 #if defined(USE_LGPIO) /* TBD */
-#define SOC_GPIO_PIN_MOSI     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_MISO     SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SCK      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_SS       SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_RST      SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_DIO0     SOC_UNUSED_PIN
+#if defined(USE_SPI1)
+#define SOC_GPIO_PIN_MOSI     20
+#define SOC_GPIO_PIN_MISO     19
+#define SOC_GPIO_PIN_SCK      21
+#define SOC_GPIO_PIN_SS       16
+#define SOC_GPIO_PIN_RST      26
+#define SOC_GPIO_PIN_DIO0     13  // IRQ on GPIO13 so P1 connector pin #33
+#else
+#define SOC_GPIO_PIN_MOSI     10
+#define SOC_GPIO_PIN_MISO     9
+#define SOC_GPIO_PIN_SCK      11
+#define SOC_GPIO_PIN_SS       25 // Slave Select on GPIO25 so P1 connector pin #22
+#define SOC_GPIO_PIN_RST      17 // Reset on GPIO17 so P1 connector pin #11
+#define SOC_GPIO_PIN_DIO0     4 // IRQ on GPIO4 so P1 connector pin #7
+#endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
 #else /* BCM */

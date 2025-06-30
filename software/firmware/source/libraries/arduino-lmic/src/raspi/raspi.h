@@ -101,14 +101,8 @@
 #define interrupts()   {}
 #define noInterrupts() {}
 #define digitalPinToInterrupt(p)             (NOT_AN_INTERRUPT)
-#if defined(USE_BCMLIB)
-#define attachInterrupt(irq, userFunc, mode) {}
-#define detachInterrupt(irq)                 {}
-#endif /* USE_BCMLIB */
-#if defined(USE_LGPIO)
-extern void attachInterrupt(uint32_t, void (*interruptCb)(void), uint32_t);
-extern void detachInterrupt(uint32_t);
-#endif /* USE_LGPIO */
+static inline void attachInterrupt(uint32_t irq, void (*cb)(void), uint32_t mode) {}
+static inline void detachInterrupt(uint32_t irq) {}
 
 #define CHANGE  3
 #define FALLING 1

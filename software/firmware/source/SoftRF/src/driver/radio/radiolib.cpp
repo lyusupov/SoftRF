@@ -482,7 +482,11 @@ static void lr11xx_setup()
                   RADIOLIB_NC : lmic_pins.busy;
 
 #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
-  PiHal* hal = new PiHal(0); // use SPI channel 0
+#if defined(USE_SPI1)
+  PiHal* hal = new PiHal(2, 2000000, 1); // use SPI bus #1, channel 2
+#else
+  PiHal* hal = new PiHal(0);             // use SPI bus #0, channel 0
+#endif /* USE_SPI1 */
 
   mod   = new Module(hal, lmic_pins.nss, irq, lmic_pins.rst, busy);
 #else

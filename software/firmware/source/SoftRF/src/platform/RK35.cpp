@@ -194,7 +194,7 @@ mode_s_t state;
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2015 Andrew Duncan
+// Copyright (c) 2020 Andrew Duncan
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the
@@ -230,38 +230,22 @@ static uint32_t SerialNumber = 0;
 
 void RK35_SerialNumber(void)
 {
-    int fd = open("/dev/vcio", 0);
-    if (fd == -1)
+    FILE *fp = fopen("/sys/firmware/devicetree/base/serial-number", "r");
+
+    if (fp == NULL)
     {
-        perror("open /dev/vcio");
+        perror("/sys/firmware/devicetree/base/serial-number");
         exit(EXIT_FAILURE);
     }
 
-    uint32_t property[32] =
-    {
-        0x00000000,
-        0x00000000,
-        0x00010004,
-        0x00000010,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000
-    };
+    char value[80];
 
-    property[0] = 10 * sizeof(property[0]);
-
-    if (ioctl(fd, _IOWR(100, 0, char *), property) == -1)
+    if (fgets(value, sizeof(value), fp) != NULL)
     {
-        perror("ioctl");
-        exit(EXIT_FAILURE);
+        SerialNumber = strtoull(value, NULL, 16);
     }
 
-    close(fd);
-
-    SerialNumber = property[5];
+    fclose(fp);
 }
 
 //----- end of MIT License ------------------------------------------------
