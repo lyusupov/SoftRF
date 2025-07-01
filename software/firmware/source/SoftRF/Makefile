@@ -163,7 +163,6 @@ DRV_CPPS      := $(DRIVER_PATH)/RF.cpp              \
                  $(DRIVER_PATH)/radio/easylink.cpp  \
                  $(DRIVER_PATH)/radio/ogn.cpp       \
                  $(DRIVER_PATH)/radio/nicerf.cpp    \
-                 $(DRIVER_PATH)/radio/radiolib.cpp  \
                  $(DRIVER_PATH)/radio/radiohead.cpp \
                  $(DRIVER_PATH)/GNSS.cpp            \
                  $(DRIVER_PATH)/Baro.cpp            \
@@ -363,6 +362,12 @@ hal.o: $(RADIO_PATH)/hal/hal.cpp
 hal-aux.o: $(RADIO_PATH)/hal/hal.cpp
 	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(RADIO_PATH)/hal/hal.cpp $(INCLUDE) -o hal-aux.o
 
+radiolib.o: $(DRIVER_PATH)/radio/radiolib.cpp
+	$(CXX) $(CXXFLAGS) -c $(DRIVER_PATH)/radio/radiolib.cpp $(INCLUDE) -o radiolib.o
+
+radiolib-aux.o: $(DRIVER_PATH)/radio/radiolib.cpp
+	$(CXX) $(CXXFLAGS) -DUSE_SPI1 -c $(DRIVER_PATH)/radio/radiolib.cpp $(INCLUDE) -o radiolib-aux.o
+
 RPi.o: $(PLATFORM_PATH)/RPi.cpp
 	$(CXX) $(CXXFLAGS) -c $(PLATFORM_PATH)/RPi.cpp $(INCLUDE) -o RPi.o
 
@@ -388,11 +393,11 @@ ifeq ($(LGPIO), yes)
 	(cd $(LGPIO_PATH)/ ; make)
 endif
 
-$(PROGNAME): $(OBJS) aes.o hal.o RPi.o Lyra.o
-	$(CXX) $(OBJS) aes.o hal.o RPi.o Lyra.o $(LIBS) -o $(PROGNAME)
+$(PROGNAME): $(OBJS) aes.o hal.o radiolib.o RPi.o Lyra.o
+	$(CXX) $(OBJS) aes.o hal.o radiolib.o RPi.o Lyra.o $(LIBS) -o $(PROGNAME)
 
-$(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o RPi-aux.o
-	$(CXX) $(OBJS) aes.o hal-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
+$(PROGNAME)-aux: $(OBJS) aes.o hal-aux.o radiolib-aux.o RPi-aux.o
+	$(CXX) $(OBJS) aes.o hal-aux.o radiolib-aux.o RPi-aux.o $(LIBS) -o $(PROGNAME)-aux
 
 bcm-clean:
 ifeq ($(BCM2835), yes)
@@ -405,5 +410,5 @@ ifeq ($(LGPIO), yes)
 endif
 
 clean: bcm-clean lgpio-clean
-	rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o \
+	rm -f $(OBJS) $(DEPS) aes.o hal.o hal-aux.o radiolib.o radiolib-aux.o \
 	RPi.o RPi-aux.o Lyra.o $(PROGNAME) $(PROGNAME)-aux *.d

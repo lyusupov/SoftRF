@@ -237,8 +237,10 @@ void initialiseEpoch() {
   gettimeofday (&tv, NULL) ;
   epochMilli = (uint64_t)tv.tv_sec * (uint64_t)1000    + (uint64_t)(tv.tv_usec / 1000) ;
   epochMicro = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)(tv.tv_usec) ;
+#if 0
   pinMode(lmic_pins.nss, OUTPUT);
   digitalWrite(lmic_pins.nss, HIGH);
+#endif
 }
 
 unsigned int millis() {

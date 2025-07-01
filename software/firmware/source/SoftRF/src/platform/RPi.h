@@ -61,7 +61,7 @@ struct rst_info {
 };
 
 /* Dragino LoRa/GPS HAT */
-#if defined(USE_LGPIO) /* TBD */
+#if defined(USE_LGPIO)
 #if defined(USE_SPI1)
 #define SOC_GPIO_PIN_MOSI     20
 #define SOC_GPIO_PIN_MISO     19
@@ -69,6 +69,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       16
 #define SOC_GPIO_PIN_RST      26
 #define SOC_GPIO_PIN_DIO0     13  // IRQ on GPIO13 so P1 connector pin #33
+#define SOC_GPIO_PIN_BUSY     12
 #else
 #define SOC_GPIO_PIN_MOSI     10
 #define SOC_GPIO_PIN_MISO     9
@@ -76,6 +77,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       25 // Slave Select on GPIO25 so P1 connector pin #22
 #define SOC_GPIO_PIN_RST      17 // Reset on GPIO17 so P1 connector pin #11
 #define SOC_GPIO_PIN_DIO0     4 // IRQ on GPIO4 so P1 connector pin #7
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN /* TBD */
 #endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
@@ -88,6 +90,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_36
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_37
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_33  // IRQ on GPIO13 so P1 connector pin #33
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
 #else
 #define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_19
 #define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_21
@@ -95,6 +98,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_22 // Slave Select on GPIO25 so P1 connector pin #22
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
+#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
 #endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RPI_V2_GPIO_P1_12 /* rev. 1.4 */

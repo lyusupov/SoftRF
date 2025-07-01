@@ -482,6 +482,10 @@ static void lr11xx_setup()
                   RADIOLIB_NC : lmic_pins.busy;
 
 #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+
+  // deinit GPIO lgpio to let PiHal catch it
+  lgpio_fini();
+
 #if defined(USE_SPI1)
   PiHal* hal = new PiHal(2, 2000000, 1); // use SPI bus #1, channel 2
 #else
@@ -575,6 +579,7 @@ static void lr11xx_setup()
   {
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
+  case SOFTRF_MODEL_RASPBERRY:
     if (hw_info.revision == STD_EDN_REV_EHUB ||
         eui_le           == 0x0016c001f047ac30)
       // Ebyte E80-900M2213S
@@ -640,7 +645,7 @@ static void lr11xx_setup()
       Serial.println(F("success!"));
     } else {
       Serial.print(F("failed, code "));
-      Serial.println(state);
+      Serial.println((int16_t) state);
       while (true) { delay(10); }
     }
 #endif
@@ -934,6 +939,7 @@ static void lr11xx_setup()
 
   case SOFTRF_MODEL_STANDALONE:
   case SOFTRF_MODEL_ACADEMY:
+  case SOFTRF_MODEL_RASPBERRY:
     if (hw_info.revision == STD_EDN_REV_EHUB ||
         eui_le           == 0x0016c001f047ac30) {
       /* Ebyte E80-900M2213S */
@@ -1327,7 +1333,7 @@ static bool lr11xx_transmit()
 
     // print measured data rate
     Serial.print(F("[LR11XX] Datarate:\t"));
-    Serial.print(radio_semtech->getDataRate());
+    Serial.print((unsigned int) radio_semtech->getDataRate());
     Serial.println(F(" bps"));
 
   } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
@@ -1341,7 +1347,7 @@ static bool lr11xx_transmit()
   } else {
     // some other error occurred
     Serial.print(F("failed, code "));
-    Serial.println(state);
+    Serial.println((int16_t) state);
 #endif
   }
 

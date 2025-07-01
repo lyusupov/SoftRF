@@ -85,7 +85,7 @@ lmic_pinmap lmic_pins = {
 #else
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #endif
-    .busy = SOC_GPIO_PIN_DIO0,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -300,6 +300,10 @@ static void RPi_setup()
   ui = &ui_settings;
 
   RPi_SerialNumber();
+
+#if defined(USE_RADIOLIB)
+  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB */
 }
 
 static void RPi_post_init()
