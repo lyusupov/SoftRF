@@ -20,6 +20,8 @@
 
 #include "Baro.h"
 
+barochip_ops_t *baro_chip = NULL;
+
 #if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280)    && \
     defined(EXCLUDE_BME680) && defined(EXCLUDE_BME280AUX) && \
     defined(EXCLUDE_MPL3115A2)
@@ -48,8 +50,6 @@ float Baro_temperature()  {return 0;}
 #endif /* EXCLUDE_MPL3115A2 */
 
 #include <TinyGPS++.h>
-
-barochip_ops_t *baro_chip = NULL;
 
 #if !defined(EXCLUDE_BMP180)
 Adafruit_BMP085 bmp180;

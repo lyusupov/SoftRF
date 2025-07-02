@@ -268,7 +268,7 @@ ifeq ($(BRIDGE), yes)
   OBJS        += $(BRIDGE_PATH)/Bridge.o $(BRIDGE_PATH)/BridgeUdp.o \
                  $(BRIDGE_PATH)/BridgeServer.o $(BRIDGE_PATH)/BridgeClient.o \
                  $(BRIDGE_PATH)/HttpClient.o $(BRIDGE_PATH)/Process.o \
-                 $(BRIDGE_PATH)/Mailbox.o \
+                 $(BRIDGE_PATH)/Mailbox.o $(BRIDGE_PATH)/aWOT.o \
                  $(RADIO_PATH)/raspi/IPAddress.o $(RADIO_PATH)/raspi/cbuf.o \
                  $(RADIO_PATH)/raspi/Stream.o
   CFLAGS      += -DUSE_BRIDGE
