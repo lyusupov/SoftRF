@@ -17,6 +17,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+
 #if defined(ARDUINO)
 #include <Arduino.h>
 #include <IPAddress.h>
@@ -121,3 +123,5 @@ size_t IPAddress::printTo(Print& p) const
     n += p.print(_address.bytes[3], DEC);
     return n;
 }
+
+#endif // RASPBERRY_PI
