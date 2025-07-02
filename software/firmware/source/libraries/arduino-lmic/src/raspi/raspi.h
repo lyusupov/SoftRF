@@ -181,7 +181,9 @@ void randomSeed(unsigned long);
 
 typedef unsigned char byte;
 typedef bool boolean;
+#if 0
 typedef in_addr_t IPAddress;
+#endif
 
 char *dtostrf(double val, signed char width, unsigned char prec, char *sout);
 

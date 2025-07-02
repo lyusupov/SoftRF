@@ -31,6 +31,8 @@ ifeq ($(LGPIO), yes)
   RADIOLIB    ?= yes
 endif
 
+BRIDGE        ?= no
+
 CC            = gcc
 CXX           = g++
 
@@ -103,6 +105,7 @@ MODES_PATH    = $(LIB_PATH)/libmodes/src
 APRS_PATH     = $(LIB_PATH)/LibAPRS_ESP32
 LGPIO_PATH    = $(LIB_PATH)/lg-0.1
 RADIOLIB_PATH = $(LIB_PATH)/RadioLib/src
+BRIDGE_PATH   = $(LIB_PATH)/Bridge/src
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -118,7 +121,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
                 -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(RADIOLIB_PATH) \
-                -I$(LGPIO_PATH)
+                -I$(LGPIO_PATH)  -I$(BRIDGE_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -259,6 +262,16 @@ ifeq ($(RADIOLIB), yes)
                  $(RADIOLIB_PATH)/modules/LR11x0/LR1120.o \
                  $(RADIOLIB_PATH)/modules/LR11x0/LR1121.o
   CFLAGS      += -DUSE_RADIOLIB
+endif
+
+ifeq ($(BRIDGE), yes)
+  OBJS        += $(BRIDGE_PATH)/Bridge.o $(BRIDGE_PATH)/BridgeUdp.o \
+                 $(BRIDGE_PATH)/BridgeServer.o $(BRIDGE_PATH)/BridgeClient.o \
+                 $(BRIDGE_PATH)/HttpClient.o $(BRIDGE_PATH)/Process.o \
+                 $(BRIDGE_PATH)/Mailbox.o \
+                 $(RADIO_PATH)/raspi/IPAddress.o $(RADIO_PATH)/raspi/cbuf.o \
+                 $(RADIO_PATH)/raspi/Stream.o
+  CFLAGS      += -DUSE_BRIDGE
 endif
 
 ifeq ($(NOMAVLINK), no)

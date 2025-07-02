@@ -483,7 +483,7 @@ static void lr11xx_setup()
 
 #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
-  // deinit GPIO lgpio to let PiHal catch it
+  // deinit LGPIO resources for PiHal to re-acquire them
   lgpio_fini();
 
 #if defined(USE_SPI1)

@@ -190,6 +190,14 @@ const char *Hardware_Rev[] = {
 
 mode_s_t state;
 
+#if defined(USE_BRIDGE)
+#include <Bridge.h>
+#include <BridgeServer.h>
+#include <BridgeClient.h>
+
+BridgeServer WebServer(8080);
+#endif /* USE_BRIDGE */
+
 //-------------------------------------------------------------------------
 //
 // The MIT License (MIT)
@@ -352,6 +360,23 @@ static void RPi_loop()
     prev_PPS_state = PPS_state;
   }
 #endif
+
+#if defined(USE_BRIDGE)
+  // Get clients coming from server
+  BridgeClient client = WebServer.accept();
+
+  // There is a new client?
+  if (client) {
+    // read the command
+    String command = client.readString();
+    command.trim();
+
+    Serial.println(command);
+
+    // Close connection and free resources.
+    client.stop();
+  }
+#endif /* USE_BRIDGE */
 }
 
 static void RPi_fini(int reason)
@@ -1111,6 +1136,12 @@ int main()
     fprintf( stderr, "pthread_create(traffic_tcpserv_thread) Failed\n\n" );
     exit(EXIT_FAILURE);
   }
+
+#if defined(USE_BRIDGE)
+  Bridge.begin();
+  WebServer.listenOnLocalhost();
+  WebServer.begin();
+#endif /* USE_BRIDGE */
 
   SoC->post_init();
 
