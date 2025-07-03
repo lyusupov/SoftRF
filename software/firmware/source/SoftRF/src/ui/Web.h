@@ -43,6 +43,7 @@ extern const char about_html[] PROGMEM;
 
 extern char *Root_content();
 extern char *Settings_content();
+extern char *Input_content();
 
 extern String TxDataTemplate;
 

@@ -38,6 +38,14 @@
 #endif /* EXCLUDE_MAVLINK */
 #include "../system/Time.h"
 
+#if defined(ENABLE_AHRS)
+#include "../driver/AHRS.h"
+#endif /* ENABLE_AHRS */
+
+#if defined(ENABLE_RECORDER)
+#include "../system/Recorder.h"
+#endif /* ENABLE_RECORDER */
+
 const char about_html[] PROGMEM = "<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -857,20 +865,70 @@ char *Settings_content() {
   return Settings_temp;
 }
 
+char *Input_content() {
+  size_t size = 1700;
+
+  char *Input_temp = (char *) malloc(size);
+  if (Input_temp == NULL) {
+    return Input_temp;
+  }
+
+  snprintf_P ( Input_temp, size,
+PSTR("<html>\
+<head>\
+<meta http-equiv='refresh' content='15; url=/'>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+<title>SoftRF Settings</title>\
+</head>\
+<body>\
+<h1 align=center>New settings:</h1>\
+<table width=100%%>\
+<tr><th align=left>Mode</th><td align=right>%d</td></tr>\
+<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
+<tr><th align=left>Band</th><td align=right>%d</td></tr>\
+<tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
+<tr><th align=left>Alarm trigger</th><td align=right>%d</td></tr>\
+<tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
+<tr><th align=left>Volume</th><td align=right>%d</td></tr>\
+<tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
+<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
+<tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Sensors</th><td align=right>%s</td></tr>\
+<tr><th align=left>NMEA Out</th><td align=right>%d</td></tr>\
+<tr><th align=left>GDL90</th><td align=right>%d</td></tr>\
+<tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
+<tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
+<tr><th align=left>No track</th><td align=right>%s</td></tr>\
+<tr><th align=left>Power save</th><td align=right>%d</td></tr>\
+<tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
+<tr><th align=left>IGC key</th><td align=right>%08X%08X%08X%08X</td></tr>\
+</table>\
+<hr>\
+  <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
+</body>\
+</html>"),
+  settings->mode, settings->rf_protocol, settings->band,
+  settings->aircraft_type, settings->alarm, settings->txpower,
+  settings->volume, settings->pointer, settings->bluetooth,
+  BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
+  BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
+  settings->nmea_out, settings->gdl90, settings->d1090,
+  BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
+  settings->power_save, settings->freq_corr,
+  settings->igc_key[0], settings->igc_key[1], settings->igc_key[2], settings->igc_key[3]
+  );
+
+  return Input_temp;
+}
+
 #if defined(EXCLUDE_WEBUI) || \
    (defined(EXCLUDE_WIFI)  && defined(EXCLUDE_ETHERNET))
 void Web_setup()    {}
 void Web_loop()     {}
 void Web_fini()     {}
 #else
-
-#if defined(ENABLE_AHRS)
-#include "../driver/AHRS.h"
-#endif /* ENABLE_AHRS */
-
-#if defined(ENABLE_RECORDER)
-#include "../system/Recorder.h"
-#endif /* ENABLE_RECORDER */
 
 static uint32_t prev_rx_pkt_cnt = 0;
 
@@ -961,13 +1019,6 @@ void handleRoot() {
 
 void handleInput() {
 
-  size_t size = 1700;
-
-  char *Input_temp = (char *) malloc(size);
-  if (Input_temp == NULL) {
-    return;
-  }
-
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if (server.argName(i).equals("mode")) {
       settings->mode = server.arg(i).toInt();
@@ -1023,62 +1074,21 @@ void handleInput() {
 #endif
     }
   }
-  snprintf_P ( Input_temp, size,
-PSTR("<html>\
-<head>\
-<meta http-equiv='refresh' content='15; url=/'>\
-<meta name='viewport' content='width=device-width, initial-scale=1'>\
-<title>SoftRF Settings</title>\
-</head>\
-<body>\
-<h1 align=center>New settings:</h1>\
-<table width=100%%>\
-<tr><th align=left>Mode</th><td align=right>%d</td></tr>\
-<tr><th align=left>Protocol</th><td align=right>%d</td></tr>\
-<tr><th align=left>Band</th><td align=right>%d</td></tr>\
-<tr><th align=left>Aircraft type</th><td align=right>%d</td></tr>\
-<tr><th align=left>Alarm trigger</th><td align=right>%d</td></tr>\
-<tr><th align=left>Tx Power</th><td align=right>%d</td></tr>\
-<tr><th align=left>Volume</th><td align=right>%d</td></tr>\
-<tr><th align=left>LED pointer</th><td align=right>%d</td></tr>\
-<tr><th align=left>Bluetooth</th><td align=right>%d</td></tr>\
-<tr><th align=left>NMEA GNSS</th><td align=right>%s</td></tr>\
-<tr><th align=left>NMEA Private</th><td align=right>%s</td></tr>\
-<tr><th align=left>NMEA Legacy</th><td align=right>%s</td></tr>\
-<tr><th align=left>NMEA Sensors</th><td align=right>%s</td></tr>\
-<tr><th align=left>NMEA Out</th><td align=right>%d</td></tr>\
-<tr><th align=left>GDL90</th><td align=right>%d</td></tr>\
-<tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
-<tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
-<tr><th align=left>No track</th><td align=right>%s</td></tr>\
-<tr><th align=left>Power save</th><td align=right>%d</td></tr>\
-<tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
-<tr><th align=left>IGC key</th><td align=right>%08X%08X%08X%08X</td></tr>\
-</table>\
-<hr>\
-  <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
-</body>\
-</html>"),
-  settings->mode, settings->rf_protocol, settings->band,
-  settings->aircraft_type, settings->alarm, settings->txpower,
-  settings->volume, settings->pointer, settings->bluetooth,
-  BOOL_STR(settings->nmea_g), BOOL_STR(settings->nmea_p),
-  BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
-  settings->nmea_out, settings->gdl90, settings->d1090,
-  BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
-  settings->power_save, settings->freq_corr,
-  settings->igc_key[0], settings->igc_key[1], settings->igc_key[2], settings->igc_key[3]
-  );
-  SoC->swSer_enableRx(false);
-  server.send ( 200, "text/html", Input_temp );
+
+  char *input = Input_content();
+
+  if (input) {
+    SoC->swSer_enableRx(false);
+    server.send ( 200, "text/html", input );
 //  SoC->swSer_enableRx(true);
-  delay(1000);
-  free(Input_temp);
-  EEPROM_store();
-  Sound_fini();
-  RF_Shutdown();
-  delay(1000);
-  SoC->reset();
+    delay(1000);
+    free(input);
+    EEPROM_store();
+    Sound_fini();
+    RF_Shutdown();
+    delay(1000);
+    SoC->reset();
+  }
 }
 
 #if defined(ENABLE_RECORDER)

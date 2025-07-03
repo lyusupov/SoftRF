@@ -228,6 +228,23 @@ void settings_page(Request &req, Response &res) {
   }
 }
 
+void input_page(Request &req, Response &res) {
+
+  /* TBD */
+
+  char *content = Input_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
 void about_page(Request &req, Response &res) {
   res.set("Content-Type", "text/html;");
   res.print(about_html);
@@ -1180,6 +1197,7 @@ int main()
 
   WebApp.get("/", &index_page);
   WebApp.get("/settings", &settings_page);
+  WebApp.get("/input", &input_page);
   WebApp.get("/about", &about_page);
   WebApp.notFound(&notFound);
 

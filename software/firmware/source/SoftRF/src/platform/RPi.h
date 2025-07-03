@@ -107,6 +107,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
+#define HTTP_SRV_PORT         8081 /* port 8080 can cause conflict with dump1090 */
+
 #if defined(USE_SPI1)
 #define JSON_SRV_TCP_PORT     30008
 #else
