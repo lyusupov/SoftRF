@@ -38,6 +38,8 @@
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
+#define EEPROM_commit()       {}
+
 #define LED_STATE_ON          HIGH  // State when LED is litted
 
 enum rst_reason {

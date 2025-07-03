@@ -28,6 +28,8 @@
 #include <EEPROM_CC13XX.h>
 #elif defined(ARDUINO_ARCH_SAMD)
 #include <FlashAsEEPROM.h>
+#elif defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/EEPROM.h>
 #else
 #ifdef __cplusplus
 #include <EEPROM.h>

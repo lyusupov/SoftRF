@@ -64,7 +64,7 @@ void EEPROM_setup()
     cmd = EEPROM_EXT_DEFAULTS;
   } else {
     Serial.print(F("EEPROM version: "));
-    Serial.println(eeprom_block.field.version);
+    Serial.println((unsigned long) eeprom_block.field.version);
 
     if (eeprom_block.field.version != SOFTRF_EEPROM_VERSION) {
       Serial.println(F("WARNING! Version mismatch of user defined settings. Loading defaults..."));

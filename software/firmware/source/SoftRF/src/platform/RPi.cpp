@@ -114,8 +114,13 @@ void onEvent (ev_t ev) {
 #endif
 }
 
+#if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#else
+EEPROMClass EEPROM;
+#endif /* EXCLUDE_EEPROM */
+
 ufo_t ThisAircraft;
 
 #if !defined(EXCLUDE_MAVLINK)
@@ -334,6 +339,7 @@ void RPi_SerialNumber(void)
 
 static void RPi_setup()
 {
+#if defined(EXCLUDE_EEPROM)
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
@@ -362,6 +368,7 @@ static void RPi_setup()
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
+#endif /* EXCLUDE_EEPROM */
 
   ui = &ui_settings;
 
@@ -464,6 +471,38 @@ static long RPi_random(long howsmall, long howBig)
 static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   /* TBD */
+}
+
+static bool RPi_EEPROM_begin(size_t size)
+{
+#if !defined(EXCLUDE_EEPROM)
+  if (size > EEPROM.length()) {
+    return false;
+  }
+
+  EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
+
+  return true;
+}
+
+static void RPi_EEPROM_extension(int cmd)
+{
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+        &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+        ) {
+      settings->mode = SOFTRF_MODE_NORMAL;
+    }
+
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
+  }
 }
 
 static void RPi_SPI_begin()
@@ -649,8 +688,8 @@ const SoC_ops_t RPi_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
-  NULL,
+  RPi_EEPROM_begin,
+  RPi_EEPROM_extension,
   RPi_SPI_begin,
   RPi_swSer_begin,
   NULL,

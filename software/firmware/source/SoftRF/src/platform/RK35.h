@@ -38,6 +38,8 @@
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
+#define EEPROM_commit()       {}
+
 #define LED_STATE_ON          HIGH  // State when LED is litted
 
 enum rst_reason {
@@ -66,7 +68,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SCK      RMIO7
 #define SOC_GPIO_PIN_SS       0 // RMIO13
 #define SOC_GPIO_PIN_RST      0 // RMIO2
-#define SOC_GPIO_PIN_BUSY     RMIO12
+#define SOC_GPIO_PIN_BUSY     0 // RMIO12
 #define SOC_GPIO_PIN_DIO0     0 // RMIO27, may cause conflict with SDA
 
 /* Waveshare Pico-GPS-L76B (MTK) */
@@ -83,6 +85,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER   RMIO8
 
+#define HTTP_SRV_PORT         8081 /* port 8080 can cause conflict with dump1090 */
 #define JSON_SRV_TCP_PORT     30007
 
 extern TTYSerial Serial1;

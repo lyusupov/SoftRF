@@ -85,7 +85,7 @@ lmic_pinmap lmic_pins = {
 #else
     .dio = {SOC_GPIO_PIN_DIO0, LMIC_UNUSED_PIN, LMIC_UNUSED_PIN},
 #endif
-    .busy = SOC_GPIO_PIN_DIO0,
+    .busy = SOC_GPIO_PIN_BUSY,
     .tcxo = LMIC_UNUSED_PIN,
 };
 
@@ -114,8 +114,13 @@ void onEvent (ev_t ev) {
 #endif
 }
 
+#if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#else
+EEPROMClass EEPROM;
+#endif /* EXCLUDE_EEPROM */
+
 ufo_t ThisAircraft;
 
 #if !defined(EXCLUDE_MAVLINK)
@@ -190,6 +195,72 @@ const char *Hardware_Rev[] = {
 
 mode_s_t state;
 
+#if defined(USE_BRIDGE)
+#include <Bridge.h>
+#include <BridgeServer.h>
+#include <BridgeClient.h>
+#include <aWOT.h>
+#include <../ui/Web.h>
+
+BridgeServer WebServer(HTTP_SRV_PORT);
+Application WebApp;
+
+void index_page(Request &req, Response &res) {
+  char *content = Root_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+void settings_page(Request &req, Response &res) {
+  char *content = Settings_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+void input_page(Request &req, Response &res) {
+
+  /* TBD */
+
+  char *content = Input_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+void about_page(Request &req, Response &res) {
+  res.set("Content-Type", "text/html;");
+  res.print(about_html);
+}
+
+void notFound(Request &req, Response &res) {
+  res.set("Content-Type", "application/json");
+  res.print("{\"error\":\"This is not the page you are looking for.\"}");
+}
+#endif /* USE_BRIDGE */
+
 //-------------------------------------------------------------------------
 //
 // The MIT License (MIT)
@@ -252,6 +323,7 @@ void RK35_SerialNumber(void)
 
 static void RK35_setup()
 {
+#if defined(EXCLUDE_EEPROM)
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
   eeprom_block.field.settings.mode          = SOFTRF_MODE_NORMAL;
@@ -280,10 +352,15 @@ static void RK35_setup()
   eeprom_block.field.settings.igc_key[1]    = 0;
   eeprom_block.field.settings.igc_key[2]    = 0;
   eeprom_block.field.settings.igc_key[3]    = 0;
+#endif /* EXCLUDE_EEPROM */
 
   ui = &ui_settings;
 
   RK35_SerialNumber();
+
+#if defined(USE_RADIOLIB)
+  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB */
 }
 
 static void RK35_post_init()
@@ -332,6 +409,15 @@ static void RK35_loop()
     prev_PPS_state = PPS_state;
   }
 #endif
+
+#if defined(USE_BRIDGE)
+  BridgeClient client = WebServer.available();
+
+  if (client.connected()) {
+    WebApp.process(&client);
+    client.stop();
+  }
+#endif /* USE_BRIDGE */
 }
 
 static void RK35_fini(int reason)
@@ -356,6 +442,11 @@ static void* RK35_getResetInfoPtr()
   return (void *) &reset_info;
 }
 
+static uint32_t RK35_getFreeHeap()
+{
+  return 0; /* TBD */
+}
+
 static long RK35_random(long howsmall, long howBig)
 {
   return howsmall + random() % (howBig - howsmall);
@@ -364,6 +455,38 @@ static long RK35_random(long howsmall, long howBig)
 static void RK35_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
   /* TBD */
+}
+
+static bool RK35_EEPROM_begin(size_t size)
+{
+#if !defined(EXCLUDE_EEPROM)
+  if (size > EEPROM.length()) {
+    return false;
+  }
+
+  EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
+
+  return true;
+}
+
+static void RK35_EEPROM_extension(int cmd)
+{
+  if (cmd == EEPROM_EXT_LOAD) {
+    if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+        &&
+        settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+        ) {
+      settings->mode = SOFTRF_MODE_NORMAL;
+    }
+
+    /* AUTO and UK RF bands are deprecated since Release v1.3 */
+    if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+      settings->band = RF_BAND_EU;
+    }
+  }
 }
 
 static void RK35_SPI_begin()
@@ -539,7 +662,7 @@ const SoC_ops_t RK35_ops = {
   RK35_getResetInfoPtr,
   NULL,
   NULL,
-  NULL,
+  RK35_getFreeHeap,
   RK35_random,
   NULL,
   NULL,
@@ -549,8 +672,8 @@ const SoC_ops_t RK35_ops = {
   NULL,
   NULL,
   NULL,
-  NULL,
-  NULL,
+  RK35_EEPROM_begin,
+  RK35_EEPROM_extension,
   RK35_SPI_begin,
   RK35_swSer_begin,
   NULL,
@@ -1092,6 +1215,19 @@ int main()
     exit(EXIT_FAILURE);
   }
 
+#if defined(USE_BRIDGE)
+  Bridge.begin();
+
+  WebApp.get("/", &index_page);
+  WebApp.get("/settings", &settings_page);
+  WebApp.get("/input", &input_page);
+  WebApp.get("/about", &about_page);
+  WebApp.notFound(&notFound);
+
+  WebServer.listenOnLocalhost();
+  WebServer.begin();
+#endif /* USE_BRIDGE */
+
   SoC->post_init();
 
   SoC->WDT_setup();
@@ -1116,6 +1252,8 @@ int main()
 #endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
     SoC->loop();
+
+    Time_loop();
 
 #if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
     /* take care of millis() rollover on a long term run */
