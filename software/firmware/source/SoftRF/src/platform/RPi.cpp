@@ -195,227 +195,40 @@ mode_s_t state;
 #include <BridgeServer.h>
 #include <BridgeClient.h>
 #include <aWOT.h>
+#include <../ui/Web.h>
 
-BridgeServer WebServer(8080);
+BridgeServer WebServer(HTTP_SRV_PORT);
 Application WebApp;
 
-static const char about_html[] PROGMEM = "<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>About</title>\
-  </head>\
-<body>\
-<h1 align=center>About</h1>\
-<p>This firmware is a part of SoftRF project</p>\
-<p>URL: http://github.com/lyusupov/SoftRF</p>\
-<p>Author: <b>Linar Yusupov</b></p>\
-<p>E-mail: linar.r.yusupov@gmail.com</p>\
-<h2 align=center>Credits</h2>\
-<p align=center>(in historical order)</p>\
-<table width=100%%>\
-<tr><th align=left>Ivan Grokhotkov</th><td align=left>Arduino Core for ESP8266</td></tr>\
-<tr><th align=left>Zak Kemble</th><td align=left>nRF905 library</td></tr>\
-<tr><th align=left>Stanislaw Pusep</th><td align=left>flarm_decode</td></tr>\
-<tr><th align=left>Paul Stoffregen</th><td align=left>Arduino Time Library</td></tr>\
-<tr><th align=left>Mikal Hart</th><td align=left>TinyGPS++ and PString Libraries</td></tr>\
-<tr><th align=left>Phil Burgess</th><td align=left>Adafruit NeoPixel Library</td></tr>\
-<tr><th align=left>Andy Little</th><td align=left>Aircraft and MAVLink Libraries</td></tr>\
-<tr><th align=left>Peter Knight</th><td align=left>TrueRandom Library</td></tr>\
-<tr><th align=left>Matthijs Kooijman</th><td align=left>IBM LMIC and Semtech Basic MAC frameworks for Arduino</td></tr>\
-<tr><th align=left>David Paiva</th><td align=left>ESP8266FtpServer</td></tr>\
-<tr><th align=left>Lammert Bies</th><td align=left>Lib_crc</td></tr>\
-<tr><th align=left>Pawel Jalocha</th><td align=left>OGN/ADS-L library</td></tr>\
-<tr><th align=left>Timur Sinitsyn, Tobias Simon, Ferry Huberts</th><td align=left>NMEA library</td></tr>\
-<tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
-<tr><th align=left>Hristo Gochkov</th><td align=left>Arduino Core for ESP32</td></tr>\
-<tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
-<tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
-<tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
-<tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
-<tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\
-<tr><th align=left>Michael Miller</th><td align=left>NeoPixelBus library</td></tr>\
-<tr><th align=left>Shenzhen Xin Yuan (LilyGO) ET company</th><td align=left>TTGO T-Beam, T-Watch, T-TWR and T3-C6</td></tr>\
-<tr><th align=left>JS Foundation</th><td align=left>jQuery library</td></tr>\
-<tr><th align=left>XCSoar team</th><td align=left>EGM96 data</td></tr>\
-<tr><th align=left>Mike McCauley</th><td align=left>BCM2835 C library</td></tr>\
-<tr><th align=left>Dario Longobardi</th><td align=left>SimpleNetwork library</td></tr>\
-<tr><th align=left>Benoit Blanchon</th><td align=left>ArduinoJson library</td></tr>\
-<tr><th align=left>flashrom.org project</th><td align=left>Flashrom library</td></tr>\
-<tr><th align=left>Robert Wessels and Tony Cave</th><td align=left>EasyLink library</td></tr>\
-<tr><th align=left>Oliver Jowett</th><td align=left>Dump978 library</td></tr>\
-<tr><th align=left>Phil Karn</th><td align=left>FEC library</td></tr>\
-<tr><th align=left>Lewis He</th><td align=left>AXP20X, XPowersLib and SensorsLib libraries</td></tr>\
-<tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
-<tr><th align=left>Michael Kuyper</th><td align=left>Basic MAC library</td></tr>\
-<tr><th align=left>Earle Philhower</th><td align=left>Arduino Core for RP2XXX and ESP8266Audio library</td></tr>\
-<tr><th align=left>Steve Marple</th><td align=left>IniFile library</td></tr>\
-<tr><th align=left>Vasilis Georgitzikis</th><td align=left>MD5 library</td></tr>\
-<tr><th align=left>Evan Krall and Somkiat Nakhonthai</th><td align=left>LibAPRS-ESP32 library</td></tr>\
-<tr><th align=left>Gibbon Zen</th><td align=left>SA818 library</td></tr>\
-<tr><th align=left>Steve Jack</th><td align=left>OpenDroneID library</td></tr>\
-<tr><th align=left>Martino Facchin</th><td align=left>Arduino Core for Renesas fsp</td></tr>\
-<tr><th align=left>Khoi Hoang</th><td align=left>WiFiWebServer and Functional-Vlpp libraries</td></tr>\
-</table>\
-<hr>\
-Copyright (C) 2015-2025 &nbsp;&nbsp;&nbsp; Linar Yusupov\
-</body>\
-</html>";
+void index_page(Request &req, Response &res) {
+  char *content = Root_content();
 
-void index(Request &req, Response &res) {
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
 
-  float vdd = Battery_voltage() ;
-  bool low_voltage = (Battery_voltage() <= Battery_threshold());
-
-  unsigned int timestamp = (unsigned int) ThisAircraft.timestamp;
-  unsigned int sats;
-
-#if !defined(EXCLUDE_MAVLINK)
-  if (settings->mode == SOFTRF_MODE_UAV)
-    sats = the_aircraft.gps.num_sats;
-  else
-#endif /* EXCLUDE_MAVLINK */
-    sats = gnss.satellites.value(); // Number of satellites in use (u32)
-
-  char str_lat[16];
-  char str_lon[16];
-  char str_alt[16];
-  char str_Vcc[8];
-
-  size_t size = 2420;
-  char *offset;
-  size_t len = 0;
-
-  char *Root_temp = (char *) malloc(size);
-  if (Root_temp == NULL) {
-    return;
+    free(content);
   }
-  offset = Root_temp;
-
-  dtostrf(ThisAircraft.latitude,  8, 4, str_lat);
-  dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
-  dtostrf(ThisAircraft.altitude,  7, 1, str_alt);
-  dtostrf(vdd, 4, 2, str_Vcc);
-
-  snprintf_P ( offset, size,
-    PSTR("<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>SoftRF status</title>\
-  </head>\
-<body>\
- <table width=100%%>\
-  <tr><!-- <td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td> -->\
-  <td align=center><h1>SoftRF status</h1></td>\
-  <!-- <td align=right><img src='/logo.png'></td> --></tr>\
- </table>\
- <table width=100%%>\
-  <tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
-#if !defined(ENABLE_AHRS)
- "</table><table width=100%%>\
-  <tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
-  </table><table width=100%%>"
-#else
- "<tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
-  <tr><td align=left><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>AHRS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>"
-#endif /* ENABLE_AHRS */
- "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
-  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
-#if defined(USE_USB_HOST) && defined(ESP32)
-  "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
-#endif /* USE_USB_HOST */
- "</table>\
- <table width=100%%>\
-   <tr><th align=left>Packets</th>\
-    <td align=right><table><tr>\
-     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
-     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
-   </tr></table></td></tr>\
- </table>\
- <h2 align=center>Most recent GNSS fix</h2>\
- <table width=100%%>\
-  <tr><th align=left>Time</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
-  <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
-  <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
- </table>\
- <hr>\
- <table width=100%%>\
-  <tr>\
-    <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
-    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"),
-    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
-#if defined(USE_USB_HOST) && defined(ESP32)
-    "H"
-#endif /* USE_USB_HOST */
-#if defined(SOFTRF_ADDRESS)
-    "I"
-#endif /* SOFTRF_ADDRESS */
-    ,
-    (SoC == NULL ? "NONE" : SoC->name),
-    GNSS_name[hw_info.gnss],
-    (rf_chip   == NULL ? "NONE" : rf_chip->name),
-    (baro_chip == NULL ? "NONE" : baro_chip->name),
-#if defined(ENABLE_AHRS)
-    (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
-#endif /* ENABLE_AHRS */
-    UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
-    low_voltage ? "red" : "green", str_Vcc,
-#if defined(USE_USB_HOST) && defined(ESP32)
-    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
-    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
-#endif /* USE_USB_HOST */
-    tx_packets_counter, rx_packets_counter,
-    timestamp, sats, str_lat, str_lon, str_alt
-  );
-
-  len = strlen(offset);
-  offset += len;
-  size -= len;
-
-#if defined(ENABLE_RECORDER)
-  if (FR_is_active) {
-    snprintf_P ( offset, size,
-    PSTR("<td align=center>&nbsp;&nbsp;&nbsp;<input type=button onClick=\"location.href='/flights'\" value='Flights'></td>"));
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-#endif /* ENABLE_RECORDER */
-
-  /* SoC specific part 1 */
-  if (SoC->id != SOC_RP2040      && SoC->id != SOC_RP2350_ARM &&
-      SoC->id != SOC_RP2350_RISC && SoC->id != SOC_RA4M1) {
-    snprintf_P ( offset, size, PSTR("\
-    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-
-  snprintf_P ( offset, size, PSTR("\
-  </tr>\
- </table>\
-</body>\
-</html>")
-  );
-
-  res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
-  res.set(F("Pragma"), F("no-cache"));
-  res.set(F("Expires"), F("-1"));
-  res.set("Content-Type", "text/html;");
-  res.write( (uint8_t *) Root_temp, strlen(Root_temp) );
-
-  free(Root_temp);
 }
 
-void about(Request &req, Response &res) {
+void settings_page(Request &req, Response &res) {
+  char *content = Settings_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+void about_page(Request &req, Response &res) {
   res.set("Content-Type", "text/html;");
   res.print(about_html);
 }
@@ -1365,8 +1178,9 @@ int main()
 #if defined(USE_BRIDGE)
   Bridge.begin();
 
-  WebApp.get("/", &index);
-  WebApp.get("/about.html", &about);
+  WebApp.get("/", &index_page);
+  WebApp.get("/settings", &settings_page);
+  WebApp.get("/about", &about_page);
   WebApp.notFound(&notFound);
 
   WebServer.listenOnLocalhost();
@@ -1397,6 +1211,8 @@ int main()
 #endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
     SoC->loop();
+
+    Time_loop();
 
 #if defined(TAKE_CARE_OF_MILLIS_ROLLOVER)
     /* take care of millis() rollover on a long term run */

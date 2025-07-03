@@ -9,7 +9,7 @@ Areas where contributions are welcomed by the project's developer:
     - improvement of "legacy" protocol compatibility
     - improvement of Australia, South and North America channel hopping compliance
     - create, deploy for public use and maintain an SD card image, containing "ready-to-go" setup for [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
-    - create and maintain WebUI for [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition)
+   <!-- - create and maintain WebUI for [Raspberry Edition](https://github.com/lyusupov/SoftRF/wiki/Raspberry-Edition) -->
     - add and maintain support for SoftRF in [Stratux](https://github.com/cyoung/stratux) WebUI
     - tests development and maintenance
     - create and maintain UAS eID radio protocol implementaton

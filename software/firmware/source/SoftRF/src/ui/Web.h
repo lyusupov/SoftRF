@@ -39,6 +39,11 @@ void Web_fini(void);
 void Hex2Bin(String, byte *);
 #endif
 
+extern const char about_html[] PROGMEM;
+
+extern char *Root_content();
+extern char *Settings_content();
+
 extern String TxDataTemplate;
 
 #if defined(ARDUINO) && !defined(EXCLUDE_WIFI)

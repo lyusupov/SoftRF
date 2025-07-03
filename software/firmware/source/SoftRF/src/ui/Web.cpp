@@ -18,19 +18,14 @@
 
 #include "../system/SoC.h"
 
-#if defined(EXCLUDE_WEBUI) || \
-   (defined(EXCLUDE_WIFI)  && defined(EXCLUDE_ETHERNET))
-void Web_setup()    {}
-void Web_loop()     {}
-void Web_fini()     {}
-#else
-
-#include <Arduino.h>
+//#include <Arduino.h>
 
 #include "../driver/Battery.h"
 #include "../driver/RF.h"
+
 #include "Web.h"
 #include "../driver/Baro.h"
+
 #include "../driver/LED.h"
 #include "../driver/Sound.h"
 #include "../driver/Bluetooth.h"
@@ -43,54 +38,7 @@ void Web_fini()     {}
 #endif /* EXCLUDE_MAVLINK */
 #include "../system/Time.h"
 
-#if defined(ENABLE_AHRS)
-#include "../driver/AHRS.h"
-#endif /* ENABLE_AHRS */
-
-#if defined(ENABLE_RECORDER)
-#include "../system/Recorder.h"
-#endif /* ENABLE_RECORDER */
-
-static uint32_t prev_rx_pkt_cnt = 0;
-
-#if !defined(ARDUINO_ARCH_RENESAS)
-#include "../Logo.h"
-#endif /* ARDUINO_ARCH_RENESAS */
-
-#if !defined(EXCLUDE_OTA)
-#include "jquery_min_js.h"
-#endif /* EXCLUDE_OTA */
-
-#if defined(ESPHOSTSPI)
-#include <WebServer.h>
-WebServer server ( 80 );
-#else
-#include <WiFiWebServer.h>
-WiFiWebServer server ( 80 );
-#endif
-
-byte getVal(char c)
-{
-   if(c >= '0' && c <= '9')
-     return (byte)(c - '0');
-   else
-     return (byte)(toupper(c)-'A'+10);
-}
-
-#if DEBUG
-void Hex2Bin(String str, byte *buffer)
-{
-  char hexdata[2 * PKT_SIZE + 1];
-  
-  str.toCharArray(hexdata, sizeof(hexdata));
-  for(int j = 0; j < PKT_SIZE * 2 ; j+=2)
-  {
-    buffer[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
-  }
-}
-#endif
-
-static const char about_html[] PROGMEM = "<html>\
+const char about_html[] PROGMEM = "<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
     <title>About</title>\
@@ -152,7 +100,156 @@ Copyright (C) 2015-2025 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
-void handleSettings() {
+char *Root_content() {
+
+  float vdd = Battery_voltage() ;
+  bool low_voltage = (Battery_voltage() <= Battery_threshold());
+
+  unsigned int timestamp = (unsigned int) ThisAircraft.timestamp;
+  unsigned int sats;
+
+#if !defined(EXCLUDE_MAVLINK)
+  if (settings->mode == SOFTRF_MODE_UAV)
+    sats = the_aircraft.gps.num_sats;
+  else
+#endif /* EXCLUDE_MAVLINK */
+    sats = gnss.satellites.value(); // Number of satellites in use (u32)
+
+  char str_lat[16];
+  char str_lon[16];
+  char str_alt[16];
+  char str_Vcc[8];
+
+  size_t size = 2420;
+  char *offset;
+  size_t len = 0;
+
+  char *Root_temp = (char *) malloc(size);
+  if (Root_temp == NULL) {
+    return Root_temp;
+  }
+  offset = Root_temp;
+
+  dtostrf(ThisAircraft.latitude,  8, 4, str_lat);
+  dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
+  dtostrf(ThisAircraft.altitude,  7, 1, str_alt);
+  dtostrf(vdd, 4, 2, str_Vcc);
+
+  snprintf_P ( offset, size,
+    PSTR("<html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1'>\
+    <title>SoftRF status</title>\
+  </head>\
+<body>\
+ <table width=100%%>\
+  <tr><!-- <td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td> -->\
+  <td align=center><h1>SoftRF status</h1></td>\
+  <!-- <td align=right><img src='/logo.png'></td> --></tr>\
+ </table>\
+ <table width=100%%>\
+  <tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
+  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
+#if !defined(ENABLE_AHRS)
+ "</table><table width=100%%>\
+  <tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
+  </table><table width=100%%>"
+#else
+ "<tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
+  <tr><td align=left><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
+  <td align=right><table><tr><th align=left>AHRS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>"
+#endif /* ENABLE_AHRS */
+ "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
+  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
+  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
+#if defined(USE_USB_HOST) && defined(ESP32)
+  "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
+#endif /* USE_USB_HOST */
+ "</table>\
+ <table width=100%%>\
+   <tr><th align=left>Packets</th>\
+    <td align=right><table><tr>\
+     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
+     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
+   </tr></table></td></tr>\
+ </table>\
+ <h2 align=center>Most recent GNSS fix</h2>\
+ <table width=100%%>\
+  <tr><th align=left>Time</th><td align=right>%u</td></tr>\
+  <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
+  <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
+  <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
+  <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
+ </table>\
+ <hr>\
+ <table width=100%%>\
+  <tr>\
+    <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
+    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"),
+    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
+#if defined(USE_USB_HOST) && defined(ESP32)
+    "H"
+#endif /* USE_USB_HOST */
+#if defined(SOFTRF_ADDRESS)
+    "I"
+#endif /* SOFTRF_ADDRESS */
+    ,
+    (SoC == NULL ? "NONE" : SoC->name),
+    GNSS_name[hw_info.gnss],
+    (rf_chip   == NULL ? "NONE" : rf_chip->name),
+    (baro_chip == NULL ? "NONE" : baro_chip->name),
+#if defined(ENABLE_AHRS)
+    (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
+#endif /* ENABLE_AHRS */
+    UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
+    low_voltage ? "red" : "green", str_Vcc,
+#if defined(USE_USB_HOST) && defined(ESP32)
+    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
+    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
+#endif /* USE_USB_HOST */
+    tx_packets_counter, rx_packets_counter,
+    timestamp, sats, str_lat, str_lon, str_alt
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+#if defined(ENABLE_RECORDER)
+  if (FR_is_active) {
+    snprintf_P ( offset, size,
+    PSTR("<td align=center>&nbsp;&nbsp;&nbsp;<input type=button onClick=\"location.href='/flights'\" value='Flights'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+#endif /* ENABLE_RECORDER */
+
+  /* SoC specific part 1 */
+  if (SoC->id != SOC_RP2040      && SoC->id != SOC_RP2350_ARM &&
+      SoC->id != SOC_RP2350_RISC && SoC->id != SOC_RA4M1      &&
+      SoC->id != SOC_RPi) {
+    snprintf_P ( offset, size, PSTR("\
+    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  }
+
+  snprintf_P ( offset, size, PSTR("\
+  </tr>\
+ </table>\
+</body>\
+</html>")
+  );
+
+  return Root_temp;
+}
+
+char *Settings_content() {
 
   size_t size = 5520;
   char *offset;
@@ -160,7 +257,7 @@ void handleSettings() {
   char *Settings_temp = (char *) malloc(size);
 
   if (Settings_temp == NULL) {
-    return;
+    return Settings_temp;
   }
 
   offset = Settings_temp;
@@ -757,187 +854,109 @@ void handleSettings() {
 </html>")
   );
 
-  SoC->swSer_enableRx(false);
-  server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
-  server.sendHeader(String(F("Pragma")), String(F("no-cache")));
-  server.sendHeader(String(F("Expires")), String(F("-1")));
+  return Settings_temp;
+}
+
+#if defined(EXCLUDE_WEBUI) || \
+   (defined(EXCLUDE_WIFI)  && defined(EXCLUDE_ETHERNET))
+void Web_setup()    {}
+void Web_loop()     {}
+void Web_fini()     {}
+#else
+
+#if defined(ENABLE_AHRS)
+#include "../driver/AHRS.h"
+#endif /* ENABLE_AHRS */
+
+#if defined(ENABLE_RECORDER)
+#include "../system/Recorder.h"
+#endif /* ENABLE_RECORDER */
+
+static uint32_t prev_rx_pkt_cnt = 0;
+
+#if !defined(ARDUINO_ARCH_RENESAS)
+#include "../Logo.h"
+#endif /* ARDUINO_ARCH_RENESAS */
+
+#if !defined(EXCLUDE_OTA)
+#include "jquery_min_js.h"
+#endif /* EXCLUDE_OTA */
+
+#if defined(ESPHOSTSPI)
+#include <WebServer.h>
+WebServer server ( 80 );
+#else
+#include <WiFiWebServer.h>
+WiFiWebServer server ( 80 );
+#endif
+
+byte getVal(char c)
+{
+   if(c >= '0' && c <= '9')
+     return (byte)(c - '0');
+   else
+     return (byte)(toupper(c)-'A'+10);
+}
+
+#if DEBUG
+void Hex2Bin(String str, byte *buffer)
+{
+  char hexdata[2 * PKT_SIZE + 1];
+
+  str.toCharArray(hexdata, sizeof(hexdata));
+  for(int j = 0; j < PKT_SIZE * 2 ; j+=2)
+  {
+    buffer[j>>1] = getVal(hexdata[j+1]) + (getVal(hexdata[j]) << 4);
+  }
+}
+#endif
+
+void handleSettings() {
+  char *settings = Settings_content();
+
+  if (settings) {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
 #if !defined(USE_ARDUINO_WIFI) || defined(USING_WIFI101_GENERIC)
-  server.send ( 200, "text/html", Settings_temp );
+    server.send ( 200, "text/html", settings );
 #else
 
 #define HTML_MAX_CHUNK_SIZE (JS_MAX_CHUNK_SIZE / 2)
 
-  char *content = Settings_temp;
-  size_t bytes_left = strlen(Settings_temp);
-  size_t chunk_size;
+    char *content = settings;
+    size_t bytes_left = strlen(settings);
+    size_t chunk_size;
 
-  server.setContentLength(bytes_left);
-  server.send(200, String(F("text/html")), "");
+    server.setContentLength(bytes_left);
+    server.send(200, String(F("text/html")), "");
 
-  do {
-    chunk_size = bytes_left > HTML_MAX_CHUNK_SIZE ?
-                 HTML_MAX_CHUNK_SIZE : bytes_left;
-    server.sendContent(content, chunk_size);
-    content += chunk_size;
-    bytes_left -= chunk_size;
-  } while (bytes_left > 0) ;
+    do {
+      chunk_size = bytes_left > HTML_MAX_CHUNK_SIZE ?
+                   HTML_MAX_CHUNK_SIZE : bytes_left;
+      server.sendContent(content, chunk_size);
+      content += chunk_size;
+      bytes_left -= chunk_size;
+    } while (bytes_left > 0) ;
 #endif /* USE_ARDUINO_WIFI */
-  SoC->swSer_enableRx(true);
-  free(Settings_temp);
+    SoC->swSer_enableRx(true);
+    free(settings);
+  }
 }
 
 void handleRoot() {
+  char *root = Root_content();
 
-  float vdd = Battery_voltage() ;
-  bool low_voltage = (Battery_voltage() <= Battery_threshold());
-
-  unsigned int timestamp = (unsigned int) ThisAircraft.timestamp;
-  unsigned int sats;
-
-#if !defined(EXCLUDE_MAVLINK)
-  if (settings->mode == SOFTRF_MODE_UAV)
-    sats = the_aircraft.gps.num_sats;
-  else
-#endif /* EXCLUDE_MAVLINK */
-    sats = gnss.satellites.value(); // Number of satellites in use (u32)
-
-  char str_lat[16];
-  char str_lon[16];
-  char str_alt[16];
-  char str_Vcc[8];
-
-  size_t size = 2420;
-  char *offset;
-  size_t len = 0;
-
-  char *Root_temp = (char *) malloc(size);
-  if (Root_temp == NULL) {
-    return;
+  if (root) {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send ( 200, "text/html", root );
+    SoC->swSer_enableRx(true);
+    free(root);
   }
-  offset = Root_temp;
-
-  dtostrf(ThisAircraft.latitude,  8, 4, str_lat);
-  dtostrf(ThisAircraft.longitude, 8, 4, str_lon);
-  dtostrf(ThisAircraft.altitude,  7, 1, str_alt);
-  dtostrf(vdd, 4, 2, str_Vcc);
-
-  snprintf_P ( offset, size,
-    PSTR("<html>\
-  <head>\
-    <meta name='viewport' content='width=device-width, initial-scale=1'>\
-    <title>SoftRF status</title>\
-  </head>\
-<body>\
- <table width=100%%>\
-  <tr><!-- <td align=left><h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h1></td> -->\
-  <td align=center><h1>SoftRF status</h1></td>\
-  <!-- <td align=right><img src='/logo.png'></td> --></tr>\
- </table>\
- <table width=100%%>\
-  <tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
-  <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>"
-#if !defined(ENABLE_AHRS)
- "</table><table width=100%%>\
-  <tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=center><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
-  </table><table width=100%%>"
-#else
- "<tr><td align=left><table><tr><th align=left>GNSS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>Radio&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>\
-  <tr><td align=left><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
-  <td align=right><table><tr><th align=left>AHRS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>"
-#endif /* ENABLE_AHRS */
- "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
-  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
-#if defined(USE_USB_HOST) && defined(ESP32)
-  "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
-#endif /* USE_USB_HOST */
- "</table>\
- <table width=100%%>\
-   <tr><th align=left>Packets</th>\
-    <td align=right><table><tr>\
-     <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
-     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
-   </tr></table></td></tr>\
- </table>\
- <h2 align=center>Most recent GNSS fix</h2>\
- <table width=100%%>\
-  <tr><th align=left>Time</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
-  <tr><th align=left>Latitude</th><td align=right>%s</td></tr>\
-  <tr><th align=left>Longitude</th><td align=right>%s</td></tr>\
-  <tr><td align=left><b>Altitude</b>&nbsp;&nbsp;(above MSL)</td><td align=right>%s</td></tr>\
- </table>\
- <hr>\
- <table width=100%%>\
-  <tr>\
-    <td align=left><input type=button onClick=\"location.href='/settings'\" value='Settings'></td>\
-    <td align=center><input type=button onClick=\"location.href='/about'\" value='About'></td>"),
-    ThisAircraft.addr, SOFTRF_FIRMWARE_VERSION
-#if defined(USE_USB_HOST) && defined(ESP32)
-    "H"
-#endif /* USE_USB_HOST */
-#if defined(SOFTRF_ADDRESS)
-    "I"
-#endif /* SOFTRF_ADDRESS */
-    ,
-    (SoC == NULL ? "NONE" : SoC->name),
-    GNSS_name[hw_info.gnss],
-    (rf_chip   == NULL ? "NONE" : rf_chip->name),
-    (baro_chip == NULL ? "NONE" : baro_chip->name),
-#if defined(ENABLE_AHRS)
-    (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
-#endif /* ENABLE_AHRS */
-    UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
-    low_voltage ? "red" : "green", str_Vcc,
-#if defined(USE_USB_HOST) && defined(ESP32)
-    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
-    ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
-#endif /* USE_USB_HOST */
-    tx_packets_counter, rx_packets_counter,
-    timestamp, sats, str_lat, str_lon, str_alt
-  );
-
-  len = strlen(offset);
-  offset += len;
-  size -= len;
-
-#if defined(ENABLE_RECORDER)
-  if (FR_is_active) {
-    snprintf_P ( offset, size,
-    PSTR("<td align=center>&nbsp;&nbsp;&nbsp;<input type=button onClick=\"location.href='/flights'\" value='Flights'></td>"));
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-#endif /* ENABLE_RECORDER */
-
-  /* SoC specific part 1 */
-  if (SoC->id != SOC_RP2040      && SoC->id != SOC_RP2350_ARM &&
-      SoC->id != SOC_RP2350_RISC && SoC->id != SOC_RA4M1) {
-    snprintf_P ( offset, size, PSTR("\
-    <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-
-  snprintf_P ( offset, size, PSTR("\
-  </tr>\
- </table>\
-</body>\
-</html>")
-  );
-
-  SoC->swSer_enableRx(false);
-  server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
-  server.sendHeader(String(F("Pragma")), String(F("no-cache")));
-  server.sendHeader(String(F("Expires")), String(F("-1")));
-  server.send ( 200, "text/html", Root_temp );
-  SoC->swSer_enableRx(true);
-  free(Root_temp);
 }
 
 void handleInput() {
