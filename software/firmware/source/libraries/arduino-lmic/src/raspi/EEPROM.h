@@ -23,11 +23,26 @@
 
 #include <inttypes.h>
 
-//IMPLEMENT THOSE!!!
-#define E2END -1
-#define eeprom_busy_wait() do {} while (0)
-#define eeprom_read_byte(index) (0)
-static inline void eeprom_write_byte (uint8_t *__p, uint8_t __value) {};
+#define EEPROM_FILENAME "EEPROM.bin"
+#define E2END 511
+
+#include <sys/types.h>
+#include <unistd.h>
+
+static inline uint8_t eeprom_read_byte (uint8_t *i) {
+  uint8_t r = 0;
+  if ((int) i <= E2END) {
+    int d = open(EEPROM_FILENAME, O_RDONLY);
+    if (d != -1) { lseek(d, (off_t) i, SEEK_SET); read(d, &r, 1); close(d); }
+  }
+  return r;
+};
+
+static inline void eeprom_write_byte (uint8_t *i, uint8_t v) {
+  if ((int) i > E2END) return;
+  int d = open(EEPROM_FILENAME, O_RDWR | O_CREAT, 0644);
+  if (d != -1) { lseek(d,(off_t) i, SEEK_SET); write(d, &v, 1); close(d); }
+};
 
 /***
     EERef class.

@@ -1123,6 +1123,8 @@ static void nRF52_setup()
   if (nRF52_board == NRF52_SEEED_WIO_L1) {
     hw_info.model      = SOFTRF_MODEL_DECENT;
     nRF52_Device_Model = "Decent Edition";
+    nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+    nRF52_USB_PID      = 0x1668; /* Wio Tracker L1 */
 
     if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
       NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;

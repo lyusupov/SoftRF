@@ -233,9 +233,83 @@ void settings_page(Request &req, Response &res) {
   }
 }
 
-void input_page(Request &req, Response &res) {
+#define MAX_PARAM_LEN   (32 + 1)
 
-  /* TBD */
+void input_page(Request &req, Response &res) {
+  char buf[MAX_PARAM_LEN];
+
+  if (req.query("mode", buf, MAX_PARAM_LEN)) {
+    settings->mode = atoi(buf);
+  }
+  if (req.query("protocol", buf, MAX_PARAM_LEN)) {
+    settings->rf_protocol = atoi(buf);
+  }
+  if (req.query("band", buf, MAX_PARAM_LEN)) {
+    settings->band = atoi(buf);
+  }
+  if (req.query("acft_type", buf, MAX_PARAM_LEN)) {
+    settings->aircraft_type = atoi(buf);
+  }
+  if (req.query("alarm", buf, MAX_PARAM_LEN)) {
+    settings->alarm = atoi(buf);
+  }
+  if (req.query("txpower", buf, MAX_PARAM_LEN)) {
+    settings->txpower = atoi(buf);
+  }
+  if (req.query("volume", buf, MAX_PARAM_LEN)) {
+    settings->volume = atoi(buf);
+  }
+  if (req.query("pointer", buf, MAX_PARAM_LEN)) {
+    settings->pointer = atoi(buf);
+  }
+  if (req.query("bluetooth", buf, MAX_PARAM_LEN)) {
+    settings->bluetooth = atoi(buf);
+  }
+  if (req.query("nmea_g", buf, MAX_PARAM_LEN)) {
+    settings->nmea_g = atoi(buf);
+  }
+  if (req.query("nmea_p", buf, MAX_PARAM_LEN)) {
+    settings->nmea_p = atoi(buf);
+  }
+  if (req.query("nmea_l", buf, MAX_PARAM_LEN)) {
+    settings->nmea_l = atoi(buf);
+  }
+  if (req.query("nmea_s", buf, MAX_PARAM_LEN)) {
+    settings->nmea_s = atoi(buf);
+  }
+  if (req.query("nmea_out", buf, MAX_PARAM_LEN)) {
+    settings->nmea_out = atoi(buf);
+  }
+  if (req.query("gdl90", buf, MAX_PARAM_LEN)) {
+    settings->gdl90 = atoi(buf);
+  }
+  if (req.query("d1090", buf, MAX_PARAM_LEN)) {
+    settings->d1090 = atoi(buf);
+  }
+  if (req.query("stealth", buf, MAX_PARAM_LEN)) {
+    settings->stealth = atoi(buf);
+  }
+  if (req.query("no_track", buf, MAX_PARAM_LEN)) {
+    settings->no_track = atoi(buf);
+  }
+  if (req.query("power_save", buf, MAX_PARAM_LEN)) {
+    settings->power_save = atoi(buf);
+  }
+  if (req.query("rfc", buf, MAX_PARAM_LEN)) {
+    settings->freq_corr = atoi(buf);
+  }
+#if defined(USE_OGN_ENCRYPTION)
+  if (req.query("igc_key", buf, MAX_PARAM_LEN)) {
+    buf[32] = 0;
+    settings->igc_key[3] = strtoul(buf + 24, NULL, 16);
+    buf[24] = 0;
+    settings->igc_key[2] = strtoul(buf + 16, NULL, 16);
+    buf[16] = 0;
+    settings->igc_key[1] = strtoul(buf +  8, NULL, 16);
+    buf[ 8] = 0;
+    settings->igc_key[0] = strtoul(buf +  0, NULL, 16);
+  }
+#endif
 
   char *content = Input_content();
 
@@ -246,7 +320,18 @@ void input_page(Request &req, Response &res) {
     res.set("Content-Type", "text/html;");
     res.write( (uint8_t *) content, strlen(content) );
 
+    delay(1000);
     free(content);
+
+#if !defined(EXCLUDE_EEPROM)
+    EEPROM_store();
+#endif /* EXCLUDE_EEPROM */
+
+    // Sound_fini();
+    // RF_Shutdown();
+
+    delay(1000);
+    SoC->reset();
   }
 }
 
@@ -438,12 +523,14 @@ static void RPi_loop()
 
 static void RPi_fini(int reason)
 {
-
+  fprintf( stderr, "Program termination. Reason code: %d.\n", reason );
+  exit(EXIT_SUCCESS);
 }
 
 static void RPi_reset()
 {
-
+  fprintf( stderr, "Program restart.\n" );
+  exit(EXIT_SUCCESS + 2);
 }
 
 static uint32_t RPi_getChipId()
@@ -1186,6 +1273,10 @@ int main()
   } else
 #endif /* ENABLE_MIRISDR */
 
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM_setup();
+#endif /* EXCLUDE_EEPROM */
+
   hw_info.rf = RF_setup();
 
   if (hw_info.rf == RF_IC_NONE) {
@@ -1307,8 +1398,8 @@ void shutdown(int reason)
   }
 
   Traffic_TCP_Server.detach();
-  fprintf( stderr, "Program termination. Reason code: %d.\n", reason );
-  exit(EXIT_SUCCESS);
+
+  SoC->fini(reason);
 }
 
 #endif /* RASPBERRY_PI */

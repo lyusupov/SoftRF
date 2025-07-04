@@ -170,9 +170,11 @@ char *Root_content() {
   <tr><td align=left><table><tr><th align=left>Baro&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td>\
   <td align=right><table><tr><th align=left>AHRS&nbsp;&nbsp;</th><td align=right>%s</td></tr></table></td></tr>"
 #endif /* ENABLE_AHRS */
- "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
-  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
+ "<tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>"
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
+ "<tr><th align=left>Free memory</th><td align=right>%u</td></tr>"
+#endif /* RASPBERRY_PI */
+ "<tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>"
 #if defined(USE_USB_HOST) && defined(ESP32)
   "<tr><th align=left>USB client</th><td align=right>%s %s</td></tr>"
 #endif /* USE_USB_HOST */
@@ -212,7 +214,10 @@ char *Root_content() {
 #if defined(ENABLE_AHRS)
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
 #endif /* ENABLE_AHRS */
-    UpTime.hours, UpTime.minutes, UpTime.seconds, SoC->getFreeHeap(),
+    UpTime.hours, UpTime.minutes, UpTime.seconds,
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
+    SoC->getFreeHeap(),
+#endif /* RASPBERRY_PI */
     low_voltage ? "red" : "green", str_Vcc,
 #if defined(USE_USB_HOST) && defined(ESP32)
     ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].first_name : "",
@@ -239,7 +244,7 @@ char *Root_content() {
   /* SoC specific part 1 */
   if (SoC->id != SOC_RP2040      && SoC->id != SOC_RP2350_ARM &&
       SoC->id != SOC_RP2350_RISC && SoC->id != SOC_RA4M1      &&
-      SoC->id != SOC_RPi) {
+      SoC->id != SOC_RPi         && SoC->id != SOC_RK3506) {
     snprintf_P ( offset, size, PSTR("\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
     len = strlen(offset);
