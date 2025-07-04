@@ -327,8 +327,10 @@ void input_page(Request &req, Response &res) {
     EEPROM_store();
 #endif /* EXCLUDE_EEPROM */
 
-    // Sound_fini();
-    // RF_Shutdown();
+    WebServer.end();
+
+    Sound_fini();
+    RF_Shutdown();
 
     delay(1000);
     SoC->reset();
@@ -469,7 +471,7 @@ static void RPi_post_init()
 
 #if 0
   Serial.println();
-  Serial.println(F("Raspberry Pi Power-on Self Test"));
+  Serial.println(F("Raspberry Edition Power-on Self Test"));
   Serial.println();
   Serial.flush();
 
@@ -553,6 +555,64 @@ static uint32_t RPi_getFreeHeap()
 static long RPi_random(long howsmall, long howBig)
 {
   return howsmall + random() % (howBig - howsmall);
+}
+
+#if defined(USE_LGPIO) && defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+#include <hal/RPi/PiHal.h>
+
+extern PiHal *RadioLib_HAL;
+#endif /* USE_RADIOLIB */
+
+static void RPi_Sound_test(int var)
+{
+#if defined(USE_LGPIO)
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+    if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+      RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
+      RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+    } else
+#endif /* USE_RADIOLIB */
+    {
+      tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+      noTone(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+    }
+  }
+#endif /* USE_LGPIO */
+}
+
+static void RPi_Sound_tone(int hz, uint8_t volume)
+{
+#if defined(USE_LGPIO)
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+    if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
+      if (hz > 0) {
+        RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+      } else {
+        RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
+        RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+      }
+    } else
+#endif /* USE_RADIOLIB */
+    {
+      if (hz > 0) {
+        tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+      } else {
+        noTone(SOC_GPIO_PIN_BUZZER);
+        pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+      }
+    }
+  }
+#endif /* USE_LGPIO */
 }
 
 static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
@@ -767,8 +827,8 @@ const SoC_ops_t RPi_ops = {
   NULL,
   RPi_getFreeHeap,
   RPi_random,
-  NULL,
-  NULL,
+  RPi_Sound_test,
+  RPi_Sound_tone,
   NULL,
   NULL,
   RPi_WiFi_transmit_UDP,
@@ -1279,9 +1339,11 @@ int main()
 
   hw_info.rf = RF_setup();
 
+#if 0
   if (hw_info.rf == RF_IC_NONE) {
       exit(EXIT_FAILURE);
   }
+#endif
 
 #if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   if (hw_info.rf == RF_IC_R820T   ||
@@ -1335,6 +1397,9 @@ int main()
   WebServer.begin();
 #endif /* USE_BRIDGE */
 
+  Sound_setup();
+  SoC->Sound_test(reset_info.reason);
+
   SoC->post_init();
 
   SoC->WDT_setup();
@@ -1385,6 +1450,10 @@ int main()
 #endif /* TAKE_CARE_OF_MILLIS_ROLLOVER */
   }
 
+#if defined(USE_BRIDGE)
+  WebServer.end();
+#endif /* USE_BRIDGE */
+
   Traffic_TCP_Server.detach();
   return 0;
 }
@@ -1396,6 +1465,10 @@ void shutdown(int reason)
   if (hw_info.display != DISPLAY_NONE) {
     SoC->Display_fini(reason);
   }
+
+#if defined(USE_BRIDGE)
+  WebServer.end();
+#endif /* USE_BRIDGE */
 
   Traffic_TCP_Server.detach();
 

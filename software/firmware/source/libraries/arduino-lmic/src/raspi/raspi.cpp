@@ -228,6 +228,18 @@ unsigned char digitalRead(unsigned char pin) {
   }
   return result;
 }
+
+void tone(uint32_t pin, unsigned int frequency, unsigned long duration = 0) {
+  if (pin == LMIC_UNUSED_PIN) return;
+
+  lgTxPwm(_gpioHandle, pin, frequency, 50, 0, duration);
+}
+
+void noTone(uint32_t pin) {
+  if (pin == LMIC_UNUSED_PIN) return;
+
+  lgTxPwm(_gpioHandle, pin, 0, 0, 0, 0);
+}
 #endif /* USE_LGPIO */
 
 //Initialize a timestamp for millis/micros calculation

@@ -243,6 +243,9 @@ private:
 extern bool lgpio_init();
 extern void lgpio_fini();
 
+extern void tone(uint32_t, unsigned int, unsigned long);
+extern void noTone(uint32_t);
+
 class SPISettings
 {
   public:

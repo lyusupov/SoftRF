@@ -83,6 +83,7 @@ struct rst_info {
 #endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
+#define SOC_GPIO_PIN_BUZZER   22
 #else /* BCM */
 
 #if defined(USE_SPI1)
@@ -104,6 +105,7 @@ struct rst_info {
 #endif
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RPI_V2_GPIO_P1_12 /* rev. 1.4 */
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #endif /* GPIO */
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN

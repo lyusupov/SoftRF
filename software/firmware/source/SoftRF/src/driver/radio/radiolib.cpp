@@ -470,6 +470,10 @@ static void lr11xx_channel(int8_t channel)
   }
 }
 
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+PiHal *RadioLib_HAL = NULL;
+#endif // RASPBERRY_PI
+
 static void lr11xx_setup()
 {
   int state;
@@ -487,12 +491,12 @@ static void lr11xx_setup()
   lgpio_fini();
 
 #if defined(USE_SPI1)
-  PiHal* hal = new PiHal(2, 2000000, 1); // use SPI bus #1, channel 2
+  RadioLib_HAL = new PiHal(2, 2000000, 1); // use SPI bus #1, channel 2
 #else
-  PiHal* hal = new PiHal(0);             // use SPI bus #0, channel 0
+  RadioLib_HAL = new PiHal(0);             // use SPI bus #0, channel 0
 #endif /* USE_SPI1 */
 
-  mod   = new Module(hal, lmic_pins.nss, irq, lmic_pins.rst, busy);
+  mod   = new Module(RadioLib_HAL, lmic_pins.nss, irq, lmic_pins.rst, busy);
 #else
   mod   = new Module(lmic_pins.nss, irq, lmic_pins.rst, busy, RadioSPI);
 #endif // RASPBERRY_PI
