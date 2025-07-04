@@ -199,11 +199,13 @@ mode_s_t state;
 #include <Bridge.h>
 #include <BridgeServer.h>
 #include <BridgeClient.h>
+#include <BridgeUdp.h>
 #include <aWOT.h>
 #include <../ui/Web.h>
 
 BridgeServer WebServer(HTTP_SRV_PORT);
 Application WebApp;
+BridgeUDP Uni_Udp;
 
 void index_page(Request &req, Response &res) {
   char *content = Root_content();
@@ -617,7 +619,11 @@ static void RPi_Sound_tone(int hz, uint8_t volume)
 
 static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-  /* TBD */
+#if defined(USE_BRIDGE)
+  Uni_Udp.beginPacket();
+  Uni_Udp.write(buf, size);
+  Uni_Udp.endPacket();
+#endif /* USE_BRIDGE */
 }
 
 static bool RPi_EEPROM_begin(size_t size)
@@ -1395,6 +1401,7 @@ int main()
 
   WebServer.listenOnLocalhost();
   WebServer.begin();
+  Uni_Udp.begin(NMEA_UDP_PORT);
 #endif /* USE_BRIDGE */
 
   Sound_setup();
@@ -1452,6 +1459,7 @@ int main()
 
 #if defined(USE_BRIDGE)
   WebServer.end();
+  Uni_Udp.stop();
 #endif /* USE_BRIDGE */
 
   Traffic_TCP_Server.detach();
@@ -1468,6 +1476,7 @@ void shutdown(int reason)
 
 #if defined(USE_BRIDGE)
   WebServer.end();
+  Uni_Udp.stop();
 #endif /* USE_BRIDGE */
 
   Traffic_TCP_Server.detach();
