@@ -72,6 +72,11 @@
   #define LSBFIRST  0
 #endif
 
+#ifndef INPUT_PULLUP
+  #define INPUT_PULLUP LG_SET_PULL_UP
+#endif
+#endif /* USE_LGPIO */
+
 #ifndef MSBFIRST
   #define MSBFIRST  1
 #endif
@@ -79,11 +84,6 @@
 #ifndef SPI_MODE0
   #define SPI_MODE0 0
 #endif
-
-#ifndef INPUT_PULLUP
-  #define INPUT_PULLUP LG_SET_PULL_UP
-#endif
-#endif /* USE_LGPIO */
 
 #ifndef NOT_A_PIN
   #define NOT_A_PIN 0xFF
@@ -237,6 +237,21 @@ class SPIClass {
 private:
     int8_t _spi_num;
 };
+
+class TwoWire {
+
+  public:
+    TwoWire();
+    void begin();
+    void setClock(uint32_t);
+    void beginTransmission(uint8_t);
+    uint8_t endTransmission(void);
+    uint8_t requestFrom(uint8_t, uint8_t);
+    int read(void);
+    size_t write(uint8_t);
+};
+
+extern TwoWire Wire;
 #endif /* USE_BCMLIB */
 
 #if defined(USE_LGPIO)
@@ -323,20 +338,7 @@ class SPIClass {
     const uint8_t _spiChannel;
     int _spiHandle = -1;
 };
-#endif /* USE_BCMLIB */
-
-class TwoWire {
-
-  public:
-    TwoWire();
-    void begin();
-    void setClock(uint32_t);
-    void beginTransmission(uint8_t);
-    uint8_t endTransmission(void);
-    size_t write(uint8_t);
-};
-
-extern TwoWire Wire;
+#endif /* USE_LGPIO */
 
 #if defined(USE_SPI1)
 extern SPIClass SPI1;
@@ -373,6 +375,8 @@ class SerialSimulator {
     static size_t print(char ch);
     static size_t println(char ch);
     static size_t println(int8_t n);
+    static size_t print(float f);
+    static size_t println(float f);
     static size_t print(unsigned char ch, int base = DEC);
     static size_t println(unsigned char ch, int base = DEC);
     static size_t write(char ch);
@@ -395,13 +399,13 @@ void 		printConfig(const uint8_t led) ;
 void 		printKey(const char * name, const uint8_t * key, uint8_t len, bool lsb); 
 void 		printKeys() ;
 bool 		getDevEuiFromMac(uint8_t *);
-char * 	getSystemTime(char * time_buff, int len);
+char * 		getSystemTime(char * time_buff, int len);
 void 		pinMode(unsigned char, unsigned char);
 void 		digitalWrite(unsigned char, unsigned char);
-unsigned char digitalRead(unsigned char) ;
-void          initialiseEpoch();
-unsigned int  millis();
-unsigned int  micros();
+unsigned char	digitalRead(unsigned char) ;
+void		initialiseEpoch();
+unsigned int 	millis();
+unsigned int 	micros();
 
 #ifdef __cplusplus
 }
@@ -409,4 +413,3 @@ unsigned int  micros();
 
 #endif // RASPI_h
 #endif // RASPBERRY_PI
-

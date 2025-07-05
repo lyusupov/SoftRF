@@ -18,6 +18,8 @@
 
 #if (ARDUINO >= 100) || defined(HACKRF_ONE)
  #include "Arduino.h"
+#elif defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/raspi.h>
 #else
  #include "WProgram.h"
 #endif
@@ -31,7 +33,8 @@
       defined(ARDUINO_ARCH_RP2040)  || defined(HACKRF_ONE)            || \
       defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)   || \
       defined(ARDUINO_ARCH_CH32)    || defined(ARDUINO_ARCH_RP2350)   || \
-      defined(ARDUINO_ARCH_ZEPHYR))
+      defined(ARDUINO_ARCH_ZEPHYR)  || defined(RASPBERRY_PI)          || \
+      defined(LUCKFOX_LYRA))
 #include <Adafruit_Sensor.h>
 #endif
 
@@ -39,7 +42,16 @@
  #include "TinyWireM.h"
  #define Wire TinyWireM
 #else
+ #if defined(ARDUINO)
  #include <Wire.h>
+ #endif /* ARDUINO */
+
+ #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+ #if defined(USE_LGPIO)
+ #include <raspi/Wire.h>
+ #endif /* USE_LGPIO */
+ #endif /* RASPBERRY_PI */
+
  #if defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_GENERIC_RP2040)
  #define Wire Wire1
  #elif defined(ARDUINO_ARCH_RENESAS) && defined(ARDUINO_UNOR4_WIFI)

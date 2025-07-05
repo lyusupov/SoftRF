@@ -82,7 +82,7 @@ int BridgeClient::setOption(int option, int *value){
 }
 int BridgeClient::getOption(int option, int *value){
   size_t size = sizeof(int);
-  return getsockopt(sockfd, IPPROTO_TCP, option, (char *)value, &size);
+  return getsockopt(sockfd, IPPROTO_TCP, option, (char *)value, (socklen_t *) &size);
 }
 int BridgeClient::setNoDelay(bool nodelay){
   int flag = nodelay;

@@ -766,6 +766,10 @@ static unsigned long RPi_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static bool RPi_Baro_setup() {
+  return true;
+}
+
 static void RPi_UATSerial_begin(unsigned long baud)
 {
   UATSerial.begin(baud);
@@ -856,7 +860,7 @@ const SoC_ops_t RPi_ops = {
   RPi_Battery_param,
   NULL,
   RPi_get_PPS_TimeMarker,
-  NULL,
+  RPi_Baro_setup,
   RPi_UATSerial_begin,
   RPi_UATModule_restart,
   RPi_WDT_setup,
@@ -1025,6 +1029,10 @@ static void RPi_ReadTraffic()
 
 void normal_loop()
 {
+#if defined(USE_LGPIO)
+    Baro_loop();
+#endif /* USE_LGPIO */
+
     /* Read GNSS data from standard input */
     RPi_PickGNSSFix();
 
@@ -1161,6 +1169,10 @@ void txrx_test_loop()
   ThisAircraft.course = TXRX_TEST_COURSE;
   ThisAircraft.speed = TXRX_TEST_SPEED;
   ThisAircraft.vs = TXRX_TEST_VS;
+
+#if defined(USE_LGPIO)
+  Baro_loop();
+#endif /* USE_LGPIO */
 
 #if DEBUG_TIMING
   tx_start_ms = millis();
@@ -1359,6 +1371,10 @@ int main()
     pthread_create(&state.reader_thread, NULL, readerThreadEntryPoint, NULL);
   }
 #endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
+
+#if defined(USE_LGPIO)
+  hw_info.baro = Baro_setup();
+#endif /* USE_LGPIO */
 
 #if defined(USE_EPAPER)
   Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");

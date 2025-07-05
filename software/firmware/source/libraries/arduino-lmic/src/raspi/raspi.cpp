@@ -97,31 +97,20 @@ byte SPIClass::transfer(byte _data) {
 
 SPIClass SPI0(SPI_PRI);
 SPIClass SPI1(SPI_AUX);
-#endif /* USE_BCMLIB */
 
 /* I2C is not implemented yet */
-TwoWire::TwoWire()
-{}
+TwoWire::TwoWire() {}
 
-void TwoWire::begin() {
-}
-
-void TwoWire::setClock(uint32_t clock) {
-}
-
-void TwoWire::beginTransmission(uint8_t byte) {
-}
-
-uint8_t TwoWire::endTransmission() {
-  return 0;
-}
-
-size_t TwoWire::write(uint8_t byte) {
-}
+void TwoWire::begin() { }
+void TwoWire::setClock(uint32_t clock) { }
+void TwoWire::beginTransmission(uint8_t byte) { }
+uint8_t TwoWire::endTransmission() { return 0; }
+uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity) { return 0; }
+int TwoWire::read() { return 0; }
+size_t TwoWire::write(uint8_t byte) { }
 
 TwoWire Wire;
 
-#if defined(USE_BCMLIB)
 void pinMode(unsigned char pin, unsigned char mode) {
   if (pin == LMIC_UNUSED_PIN) {
     return;
@@ -493,6 +482,14 @@ size_t SerialSimulator::println(char ch) {
 
 size_t SerialSimulator::println(int8_t n) {
   fprintf(stdout, "%d\n", n);
+}
+
+size_t SerialSimulator::print(float f) {
+  fprintf(stdout, "%f", f);
+}
+
+size_t SerialSimulator::println(float f) {
+  fprintf(stdout, "%f\n", f);
 }
 
 size_t SerialSimulator::print(unsigned char ch, int base) {

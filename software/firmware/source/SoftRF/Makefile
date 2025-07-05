@@ -106,6 +106,7 @@ APRS_PATH     = $(LIB_PATH)/LibAPRS_ESP32
 LGPIO_PATH    = $(LIB_PATH)/lg-0.1
 RADIOLIB_PATH = $(LIB_PATH)/RadioLib/src
 BRIDGE_PATH   = $(LIB_PATH)/Bridge/src
+BMP280_PATH   = $(LIB_PATH)/Adafruit_BMP280_Library
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -121,7 +122,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(JSON_PATH)   -I$(TCPSRV_PATH)  -I$(DUMP978_PATH)  \
                 -I$(GFX_PATH)    -I$(U8G2_PATH)    -I$(EPD2_PATH)     \
                 -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(RADIOLIB_PATH) \
-                -I$(LGPIO_PATH)  -I$(BRIDGE_PATH)
+                -I$(LGPIO_PATH)  -I$(BRIDGE_PATH)  -I$(BMP280_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -245,7 +246,8 @@ OBJS          := $(SRC_CPPS:.cpp=.o) \
                  $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
                  $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
                  $(EPD2_PATH)/epd/GxEPD2_270_T91.o \
-                 $(U8G2_PATH)/U8g2_for_Adafruit_GFX.o $(U8G2_PATH)/u8g2_fonts.o
+                 $(U8G2_PATH)/U8g2_for_Adafruit_GFX.o $(U8G2_PATH)/u8g2_fonts.o \
+                 $(BMP280_PATH)/Adafruit_BMP280.o
 
 ifeq ($(BASICMAC), yes)
   OBJS        += $(RADIO_PATH)/lmic/radio-sx127x.o $(RADIO_PATH)/lmic/radio-sx126x.o \
@@ -292,6 +294,7 @@ endif
 ifeq ($(LGPIO), yes)
   LIBS        := -L$(LGPIO_PATH) -llgpio -lpthread
   CFLAGS      += -DUSE_LGPIO
+  OBJS        += $(RADIO_PATH)/raspi/Wire.o
 endif
 
 ifeq ($(RTLSDR), yes)

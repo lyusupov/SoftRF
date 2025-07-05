@@ -31,7 +31,7 @@
 
 static inline uint8_t eeprom_read_byte (uint8_t *i) {
   uint8_t r = 0;
-  if ((int) i <= E2END) {
+  if ((long) i <= E2END) {
     int d = open(EEPROM_FILENAME, O_RDONLY);
     if (d != -1) { lseek(d, (off_t) i, SEEK_SET); read(d, &r, 1); close(d); }
   }
@@ -39,7 +39,7 @@ static inline uint8_t eeprom_read_byte (uint8_t *i) {
 };
 
 static inline void eeprom_write_byte (uint8_t *i, uint8_t v) {
-  if ((int) i > E2END) return;
+  if ((long) i > E2END) return;
   int d = open(EEPROM_FILENAME, O_RDWR | O_CREAT, 0644);
   if (d != -1) { lseek(d,(off_t) i, SEEK_SET); write(d, &v, 1); close(d); }
 };

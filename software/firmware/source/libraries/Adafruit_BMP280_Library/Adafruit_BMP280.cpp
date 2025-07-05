@@ -13,9 +13,19 @@
   Written by Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
+#if defined(ARDUINO)
 #include "Arduino.h"
 #include <Wire.h>
-#if !defined(HACKRF_ONE)
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/raspi.h>
+#if defined(USE_LGPIO)
+#include "raspi/Wire.h"
+#endif /* USE_LGPIO */
+#endif /* RASPBERRY_PI */
+
+#if !defined(HACKRF_ONE) && !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
 #include <SPI.h>
 #endif /* HACKRF_ONE */
 #include "Adafruit_BMP280.h"
