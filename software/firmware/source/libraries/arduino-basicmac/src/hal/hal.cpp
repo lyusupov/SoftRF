@@ -13,7 +13,7 @@
 #include <SPI.h>
 #endif /* ARDUINO */
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
@@ -154,7 +154,7 @@ bool hal_pin_rst (u1_t val) {
         digitalWrite(lmic_pins.rst, val == 1 ? HIGH : LOW);
     } else {
         pinMode(lmic_pins.rst, INPUT);
-#if defined(RASPBERRY_PI)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
         //  with a pullup
         bcm2835_gpio_set_pud(lmic_pins.rst, BCM2835_GPIO_PUD_UP);
 #else
@@ -176,7 +176,7 @@ static void hal_interrupt_init() {
             check_dio = 1; 
             pinMode(lmic_pins.dio[i], INPUT);
 
-#ifdef RASPBERRY_PI
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
             // Enable pull down an rising edge detection on this one
             bcm2835_gpio_set_pud(lmic_pins.dio[i], BCM2835_GPIO_PUD_DOWN);
             bcm2835_gpio_ren(lmic_pins.dio[i]);
@@ -195,7 +195,7 @@ static void hal_io_check() {
             if (lmic_pins.dio[i] == LMIC_UNUSED_PIN)
                 continue;
 
-#ifdef RASPBERRY_PI
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
             // Rising edge fired ?
             if (bcm2835_gpio_eds(lmic_pins.dio[i])) {
                 // Now clear the eds flag by setting it to 1
@@ -339,7 +339,7 @@ void hal_pin_busy_wait (void) {
 // -----------------------------------------------------------------------------
 // SPI
 
-#if defined(RASPBERRY_PI)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_BCMLIB)
 // Raspberry Pi 2:
 //    BCM2835_CORE_CLK_HZ = 250000000
 //    Clock divider / 64 = 3.906 MHz
@@ -567,7 +567,7 @@ u1_t hal_checkTimer (u4_t time) {
     defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RP2350)  || \
     defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)  || \
-    defined(ARDUINO_ARCH_CH32)
+    defined(ARDUINO_ARCH_CH32)    || defined(LUCKFOX_LYRA)
 
 // Fix for STM32 HAL based cores.
 

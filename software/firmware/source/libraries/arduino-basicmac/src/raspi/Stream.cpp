@@ -20,10 +20,18 @@
  parsing functions based on TextFinder library by Michael Margolis
  */
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
+#if defined(ARDUINO)
 #include "Arduino.h"
 #include "Stream.h"
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/raspi.h>
+#include "raspi/Stream.h"
+#endif /* RASPBERRY_PI */
+
 
 #define PARSE_TIMEOUT 1000  // default number of milli-seconds to wait
 #define NO_SKIP_CHAR  1  // a magic char not found in a valid ASCII numeric field

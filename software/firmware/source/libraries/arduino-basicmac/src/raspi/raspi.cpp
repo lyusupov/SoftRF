@@ -4,7 +4,7 @@
 // using BCM2835 library for GPIO
 // This code has been grabbed from excellent RadioHead Library
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <sys/time.h>
 #include <time.h>
 #include <assert.h>
@@ -14,6 +14,7 @@
 static uint64_t epochMilli ;
 static uint64_t epochMicro ;
 
+#if defined(USE_BCMLIB)
 SPIClass::SPIClass(uint8_t spi_bus)
     :_spi_num(spi_bus)
 {}
@@ -98,27 +99,18 @@ SPIClass SPI0(SPI_PRI);
 SPIClass SPI1(SPI_AUX);
 
 /* I2C is not implemented yet */
-TwoWire::TwoWire()
-{}
+TwoWire::TwoWire() {}
 
-void TwoWire::begin() {
-}
-
-void TwoWire::setClock(uint32_t clock) {
-}
-
-void TwoWire::beginTransmission(uint8_t byte) {
-}
-
-uint8_t TwoWire::endTransmission() {
-  return 0;
-}
-
-size_t TwoWire::write(uint8_t byte) {
-}
+void TwoWire::begin() { }
+void TwoWire::setClock(uint32_t clock) { }
+void TwoWire::beginTransmission(uint8_t byte) { }
+uint8_t TwoWire::endTransmission() { return 0; }
+uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity) { return 0; }
+int TwoWire::read() { return 0; }
+size_t TwoWire::write(uint8_t byte) { }
 
 TwoWire Wire;
- 
+
 void pinMode(unsigned char pin, unsigned char mode) {
   if (pin == LMIC_UNUSED_PIN) {
     return;
@@ -143,6 +135,101 @@ unsigned char digitalRead(unsigned char pin) {
   }
   return bcm2835_gpio_lev(pin);
 }
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+SPIClass SPI0(0);
+SPIClass SPI1(2, 2000000, 1);
+
+#define PI_MAX_USER_GPIO  (31) /* TBD */
+
+static int _gpioHandle = -1;
+static const uint8_t _gpioDevice = 0;
+
+bool lgpio_init() {
+  if(_gpioHandle != -1) {
+    return false;
+  }
+
+  // first initialise lgpio library
+  if((_gpioHandle = lgGpiochipOpen(_gpioDevice)) < 0) {
+    fprintf(stderr, "Could not open GPIO chip: %s\n", lguErrorText(_gpioHandle));
+    return false;
+  }
+
+  return true;
+}
+
+void lgpio_fini() {
+  if(_gpioHandle == -1) {
+    return;
+  }
+
+  // finally, stop the lgpio library
+  lgGpiochipClose(_gpioHandle);
+  _gpioHandle = -1;
+}
+
+void pinMode(unsigned char pin, unsigned char mode) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return;
+  }
+
+  int result;
+  int flags = 0;
+  switch(mode) {
+    case INPUT:
+      result = lgGpioClaimInput(_gpioHandle, 0, pin);
+      break;
+    case OUTPUT:
+      result = lgGpioClaimOutput(_gpioHandle, flags, pin, LG_HIGH);
+      break;
+    default:
+      fprintf(stderr, "Unknown pinMode mode %" PRIu32 "\n", mode);
+      return;
+  }
+
+  if(result < 0) {
+    fprintf(stderr, "Could not claim pin %" PRIu32 " for mode %" PRIu32 ": %s\n",
+        pin, mode, lguErrorText(result));
+  }
+}
+
+void digitalWrite(unsigned char pin, unsigned char value) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return;
+  }
+
+  int result = lgGpioWrite(_gpioHandle, pin, value);
+  if(result < 0) {
+    fprintf(stderr, "Error writing value to pin %" PRIu32 ": %s\n", pin, lguErrorText(result));
+  }
+}
+
+unsigned char digitalRead(unsigned char pin) {
+  if (pin == LMIC_UNUSED_PIN) {
+    return 0;
+  }
+
+  int result = lgGpioRead(_gpioHandle, pin);
+  if(result < 0) {
+    fprintf(stderr, "Error writing reading from pin %" PRIu32 ": %s\n", pin, lguErrorText(result));
+  }
+  return result;
+}
+
+void tone(uint32_t pin, unsigned int frequency, unsigned long duration = 0) {
+  if (pin == LMIC_UNUSED_PIN) return;
+
+  lgTxPwm(_gpioHandle, pin, frequency, 50, 0, duration);
+}
+
+void noTone(uint32_t pin) {
+  if (pin == LMIC_UNUSED_PIN) return;
+
+  lgTxPwm(_gpioHandle, pin, 0, 0, 0, 0);
+}
+#endif /* USE_LGPIO */
 
 //Initialize a timestamp for millis/micros calculation
 // Grabbed from WiringPi
@@ -151,8 +238,10 @@ void initialiseEpoch() {
   gettimeofday (&tv, NULL) ;
   epochMilli = (uint64_t)tv.tv_sec * (uint64_t)1000    + (uint64_t)(tv.tv_usec / 1000) ;
   epochMicro = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)(tv.tv_usec) ;
+#if 0
   pinMode(lmic_pins.nss, OUTPUT);
   digitalWrite(lmic_pins.nss, HIGH);
+#endif
 }
 
 unsigned int millis() {
@@ -254,8 +343,6 @@ void printKeys(void)
 	os_getNwkKey((u1_t*) buf);
 	printKey("NwkKey", buf, 16, false);
 }
-
-
 
 bool getDevEuiFromMac(uint8_t * pdeveui) {
   struct ifaddrs *ifaddr=NULL;
@@ -398,6 +485,14 @@ size_t SerialSimulator::println(int8_t n) {
   fprintf(stdout, "%d\n", n);
 }
 
+size_t SerialSimulator::print(float f) {
+  fprintf(stdout, "%f", f);
+}
+
+size_t SerialSimulator::println(float f) {
+  fprintf(stdout, "%f\n", f);
+}
+
 size_t SerialSimulator::print(unsigned char ch, int base) {
   return print((unsigned int)ch, base);
 }
@@ -458,5 +553,4 @@ long random(long howsmall, long howbig)
   long diff = howbig - howsmall;
   return random(diff) + howsmall;
 }
-
 #endif // RASPBERRY_PI

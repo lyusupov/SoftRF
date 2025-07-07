@@ -3,7 +3,7 @@
 // Copyright (C) 2015 Mike McCauley
 // $Id: HardwareSerial.cpp,v 1.3 2015/08/13 02:45:47 mikem Exp mikem $
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #include <string.h>
 #include <unistd.h>

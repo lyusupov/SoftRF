@@ -57,7 +57,7 @@
 #endif
 
 // Force Original AES on RPI
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #ifdef USE_IDEETRON_AES
 #undef USE_IDEETRON_AES
 #define USE_ORIGINAL_AES

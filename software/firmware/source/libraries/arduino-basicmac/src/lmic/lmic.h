@@ -19,7 +19,7 @@
 extern "C"{
 #endif
 
-#ifdef RASPBERRY_PI
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include "raspi/raspi.h"
 #endif
 
