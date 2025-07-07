@@ -203,9 +203,13 @@ mode_s_t state;
 #include <aWOT.h>
 #include <../ui/Web.h>
 
+#include <netdb.h>
+
 BridgeServer WebServer(HTTP_SRV_PORT);
 Application WebApp;
 BridgeUDP Uni_Udp;
+
+static IPAddress dest_IP;
 
 void index_page(Request &req, Response &res) {
   char *content = Root_content();
@@ -571,19 +575,19 @@ static void RPi_Sound_test(int var)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
 #if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
     if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
-      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
-      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
-      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
-      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 440,  220); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 640,  320); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 840,  420); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 1040, 520); delay(600);
       RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
       RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
     } else
 #endif /* USE_RADIOLIB */
     {
-      tone(SOC_GPIO_PIN_BUZZER, 440,  500); delay(500);
-      tone(SOC_GPIO_PIN_BUZZER, 640,  500); delay(500);
-      tone(SOC_GPIO_PIN_BUZZER, 840,  500); delay(500);
-      tone(SOC_GPIO_PIN_BUZZER, 1040, 500); delay(600);
+      tone(SOC_GPIO_PIN_BUZZER, 440,  220); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640,  320); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840,  420); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 520); delay(600);
       noTone(SOC_GPIO_PIN_BUZZER);
       pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
     }
@@ -598,7 +602,7 @@ static void RPi_Sound_tone(int hz, uint8_t volume)
 #if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
     if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
       if (hz > 0) {
-        RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+        RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, hz, (hz * ALARM_TONE_MS) / 1000);
       } else {
         RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
         RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
@@ -607,7 +611,7 @@ static void RPi_Sound_tone(int hz, uint8_t volume)
 #endif /* USE_RADIOLIB */
     {
       if (hz > 0) {
-        tone(SOC_GPIO_PIN_BUZZER, hz, ALARM_TONE_MS);
+        tone(SOC_GPIO_PIN_BUZZER, hz, (hz * ALARM_TONE_MS) / 1000);
       } else {
         noTone(SOC_GPIO_PIN_BUZZER);
         pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
@@ -620,7 +624,9 @@ static void RPi_Sound_tone(int hz, uint8_t volume)
 static void RPi_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if defined(USE_BRIDGE)
-  Uni_Udp.beginPacket();
+  // printf("%08X\n", (unsigned long) dest_IP);
+
+  Uni_Udp.beginPacket(dest_IP, port);
   Uni_Udp.write(buf, size);
   Uni_Udp.endPacket();
 #endif /* USE_BRIDGE */
@@ -1417,7 +1423,23 @@ int main()
 
   WebServer.listenOnLocalhost();
   WebServer.begin();
-  Uni_Udp.begin(NMEA_UDP_PORT);
+
+  struct hostent *this_host = gethostbyname("pione.local");
+
+  if (this_host == NULL) {
+    dest_IP = IPAddress(255,255,255,255);
+  } else {
+    IPAddress this_IP = IPAddress((const uint8_t *)(this_host->h_addr_list[0]));
+    dest_IP = IPAddress((uint32_t) this_IP | ~((uint32_t) 0x00FFFFFF));
+  }
+
+  Serial.print(F("HTTP server has started at port: "));
+  Serial.println((unsigned long) HTTP_SRV_PORT);
+
+  Uni_Udp.begin(RELAY_SRC_PORT);
+
+  Serial.print(F("UDP  server has started at port: "));
+  Serial.println((unsigned long) RELAY_SRC_PORT);
 #endif /* USE_BRIDGE */
 
   Sound_setup();

@@ -199,11 +199,17 @@ mode_s_t state;
 #include <Bridge.h>
 #include <BridgeServer.h>
 #include <BridgeClient.h>
+#include <BridgeUdp.h>
 #include <aWOT.h>
 #include <../ui/Web.h>
 
+#include <netdb.h>
+
 BridgeServer WebServer(HTTP_SRV_PORT);
 Application WebApp;
+BridgeUDP Uni_Udp;
+
+static IPAddress dest_IP;
 
 void index_page(Request &req, Response &res) {
   char *content = Root_content();
@@ -327,8 +333,10 @@ void input_page(Request &req, Response &res) {
     EEPROM_store();
 #endif /* EXCLUDE_EEPROM */
 
-    // Sound_fini();
-    // RF_Shutdown();
+    WebServer.end();
+
+    Sound_fini();
+    RF_Shutdown();
 
     delay(1000);
     SoC->reset();
@@ -453,7 +461,7 @@ static void RK35_post_init()
 
 #if 0
   Serial.println();
-  Serial.println(F("Luckfox Lyra Power-on Self Test"));
+  Serial.println(F("Lyra Edition Power-on Self Test"));
   Serial.println();
   Serial.flush();
 
@@ -539,9 +547,71 @@ static long RK35_random(long howsmall, long howBig)
   return howsmall + random() % (howBig - howsmall);
 }
 
+#if defined(USE_LGPIO) && defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+#include <hal/RPi/PiHal.h>
+
+extern PiHal *RadioLib_HAL;
+#endif /* USE_RADIOLIB */
+
+static void RK35_Sound_test(int var)
+{
+#if defined(USE_LGPIO)
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+    if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 440,  220); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 640,  320); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 840,  420); delay(500);
+      RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, 1040, 520); delay(600);
+      RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
+      RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+    } else
+#endif /* USE_RADIOLIB */
+    {
+      tone(SOC_GPIO_PIN_BUZZER, 440,  220); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 640,  320); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 840,  420); delay(500);
+      tone(SOC_GPIO_PIN_BUZZER, 1040, 520); delay(600);
+      noTone(SOC_GPIO_PIN_BUZZER);
+      pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+    }
+  }
+#endif /* USE_LGPIO */
+}
+
+static void RK35_Sound_tone(int hz, uint8_t volume)
+{
+#if defined(USE_LGPIO)
+  if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && volume != BUZZER_OFF) {
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR11XX)
+    if (rf_chip && RadioLib_HAL && rf_chip->type == RF_IC_LR1121) {
+      if (hz > 0) {
+        RadioLib_HAL->tone(SOC_GPIO_PIN_BUZZER, hz, (hz * ALARM_TONE_MS) / 1000);
+      } else {
+        RadioLib_HAL->noTone(SOC_GPIO_PIN_BUZZER);
+        RadioLib_HAL->pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+      }
+    } else
+#endif /* USE_RADIOLIB */
+    {
+      if (hz > 0) {
+        tone(SOC_GPIO_PIN_BUZZER, hz, (hz * ALARM_TONE_MS) / 1000);
+      } else {
+        noTone(SOC_GPIO_PIN_BUZZER);
+        pinMode(SOC_GPIO_PIN_BUZZER, INPUT);
+      }
+    }
+  }
+#endif /* USE_LGPIO */
+}
+
 static void RK35_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
-  /* TBD */
+#if defined(USE_BRIDGE)
+  Uni_Udp.beginPacket(dest_IP, port);
+  Uni_Udp.write(buf, size);
+  Uni_Udp.endPacket();
+#endif /* USE_BRIDGE */
 }
 
 static bool RK35_EEPROM_begin(size_t size)
@@ -684,6 +754,10 @@ static unsigned long RK35_get_PPS_TimeMarker() {
   return PPS_TimeMarker;
 }
 
+static bool RK35_Baro_setup() {
+  return true;
+}
+
 static void RK35_UATSerial_begin(unsigned long baud)
 {
   UATSerial.begin(baud);
@@ -751,8 +825,8 @@ const SoC_ops_t RK35_ops = {
   NULL,
   RK35_getFreeHeap,
   RK35_random,
-  NULL,
-  NULL,
+  RK35_Sound_test,
+  RK35_Sound_tone,
   NULL,
   NULL,
   RK35_WiFi_transmit_UDP,
@@ -774,7 +848,7 @@ const SoC_ops_t RK35_ops = {
   RK35_Battery_param,
   NULL,
   RK35_get_PPS_TimeMarker,
-  NULL,
+  RK35_Baro_setup,
   RK35_UATSerial_begin,
   RK35_UATModule_restart,
   RK35_WDT_setup,
@@ -943,6 +1017,10 @@ static void RK35_ReadTraffic()
 
 void normal_loop()
 {
+#if defined(USE_LGPIO)
+    Baro_loop();
+#endif /* USE_LGPIO */
+
     /* Read GNSS data from standard input */
     RK35_PickGNSSFix();
 
@@ -1079,6 +1157,10 @@ void txrx_test_loop()
   ThisAircraft.course = TXRX_TEST_COURSE;
   ThisAircraft.speed = TXRX_TEST_SPEED;
   ThisAircraft.vs = TXRX_TEST_VS;
+
+#if defined(USE_LGPIO)
+  Baro_loop();
+#endif /* USE_LGPIO */
 
 #if DEBUG_TIMING
   tx_start_ms = millis();
@@ -1263,9 +1345,11 @@ int main()
 
   hw_info.rf = RF_setup();
 
+#if 0
   if (hw_info.rf == RF_IC_NONE) {
       exit(EXIT_FAILURE);
   }
+#endif
 
 #if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
   if (hw_info.rf == RF_IC_R820T   ||
@@ -1275,6 +1359,10 @@ int main()
     pthread_create(&state.reader_thread, NULL, readerThreadEntryPoint, NULL);
   }
 #endif /* ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
+
+#if defined(USE_LGPIO)
+  hw_info.baro = Baro_setup();
+#endif /* USE_LGPIO */
 
 #if defined(USE_EPAPER)
   Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
@@ -1317,7 +1405,27 @@ int main()
 
   WebServer.listenOnLocalhost();
   WebServer.begin();
+
+  struct hostent *this_host = gethostbyname("pione.local");
+
+  if (this_host == NULL) {
+    dest_IP = IPAddress(255,255,255,255);
+  } else {
+    IPAddress this_IP = IPAddress((const uint8_t *)(this_host->h_addr_list[0]));
+    dest_IP = IPAddress((uint32_t) this_IP | ~((uint32_t) 0x00FFFFFF));
+  }
+
+  Serial.print(F("HTTP server has started at port: "));
+  Serial.println((unsigned long) HTTP_SRV_PORT);
+
+  Uni_Udp.begin(RELAY_SRC_PORT);
+
+  Serial.print(F("UDP  server has started at port: "));
+  Serial.println((unsigned long) RELAY_SRC_PORT);
 #endif /* USE_BRIDGE */
+
+  Sound_setup();
+  SoC->Sound_test(reset_info.reason);
 
   SoC->post_init();
 
@@ -1369,6 +1477,11 @@ int main()
 #endif /* TAKE_CARE_OF_MILLIS_ROLLOVER */
   }
 
+#if defined(USE_BRIDGE)
+  WebServer.end();
+  Uni_Udp.stop();
+#endif /* USE_BRIDGE */
+
   Traffic_TCP_Server.detach();
   return 0;
 }
@@ -1380,6 +1493,11 @@ void shutdown(int reason)
   if (hw_info.display != DISPLAY_NONE) {
     SoC->Display_fini(reason);
   }
+
+#if defined(USE_BRIDGE)
+  WebServer.end();
+  Uni_Udp.stop();
+#endif /* USE_BRIDGE */
 
   Traffic_TCP_Server.detach();
 

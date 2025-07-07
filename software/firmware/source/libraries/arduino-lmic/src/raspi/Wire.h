@@ -58,7 +58,7 @@ class TwoWire : public Stream {
     static uint8_t txBufferLength;
 
   public:
-    TwoWire(uint8_t i2cDevice = 0);
+    TwoWire(uint8_t i2cDevice = 1);
     void begin();
     void end();
     void begin(uint8_t);

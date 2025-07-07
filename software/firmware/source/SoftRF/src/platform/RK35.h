@@ -24,7 +24,7 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS  8
 
-#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_STANDALONE
+#define DEFAULT_SOFTRF_MODEL    SOFTRF_MODEL_LYRA
 
 //#include <raspi/HardwareSerial.h>
 #include <raspi/TTYSerial.h>
@@ -83,7 +83,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_NEOPIXEL RMIO4
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUZZER   RMIO8
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN // RMIO8
 
 #define HTTP_SRV_PORT         8081 /* port 8080 can cause conflict with dump1090 */
 #define JSON_SRV_TCP_PORT     30007
