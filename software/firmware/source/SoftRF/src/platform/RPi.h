@@ -62,8 +62,9 @@ struct rst_info {
   uint32_t depc;
 };
 
-/* Dragino LoRa/GPS HAT */
 #if defined(USE_LGPIO)
+
+/* Dragino LoRa/GPS HAT */
 #if defined(USE_SPI1)
 #define SOC_GPIO_PIN_MOSI     20
 #define SOC_GPIO_PIN_MISO     19
@@ -82,10 +83,25 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN /* TBD */
 #endif
 
+/* Waveshare SX1262 LoRaWAN/GNSS HAT */
+#define SOC_GPIO_PIN_GNSS_WS_RX 15
+#define SOC_GPIO_PIN_GNSS_WS_TX 14
+
+#define SOC_GPIO_PIN_WS_MOSI  10
+#define SOC_GPIO_PIN_WS_MISO  9
+#define SOC_GPIO_PIN_WS_SCK   11
+#define SOC_GPIO_PIN_WS_SS    21
+#define SOC_GPIO_PIN_WS_RST   18
+#define SOC_GPIO_PIN_WS_DIO1  16
+#define SOC_GPIO_PIN_WS_BUSY  20
+
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // 1 /* rev. 1.4 only */
 #define SOC_GPIO_PIN_BUZZER   22
+#define SOC_GPIO_PIN_NEOPIXEL SOC_UNUSED_PIN // 18
+
 #else /* BCM */
 
+/* Dragino LoRa/GPS HAT */
 #if defined(USE_SPI1)
 #define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_38
 #define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_35

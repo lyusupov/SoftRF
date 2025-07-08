@@ -135,6 +135,7 @@ extern const char *Hardware_Rev[];
 /* Experimental */
 #define ENABLE_ADSL
 //#define ENABLE_PROL
+//#define USE_OLED
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
@@ -145,6 +146,12 @@ extern const char *Hardware_Rev[];
 #if defined(USE_EPAPER)
 typedef void* EPD_Task_t;
 #endif /* USE_EPAPER */
+
+#if defined(USE_OLED)
+#define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+
+extern char* itoa(int, char *, int);
+#endif /* USE_OLED */
 
 #endif /* PLATFORM_RK35_H */
 

@@ -121,6 +121,12 @@ settings_t *settings = &eeprom_block.field.settings;
 EEPROMClass EEPROM;
 #endif /* EXCLUDE_EEPROM */
 
+#if defined(USE_OLED)
+#include "../driver/OLED.h"
+
+extern U8X8 u8x8_i2c;
+#endif /* USE_OLED */
+
 ufo_t ThisAircraft;
 
 #if !defined(EXCLUDE_MAVLINK)
@@ -687,29 +693,67 @@ static byte RK35_Display_setup()
   }
 #endif /* USE_EPAPER */
 
+#if defined(USE_OLED)
+  if (rval == DISPLAY_NONE) {
+    // u8x8_i2c.setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
+    rval = OLED_setup();
+  }
+#endif /* USE_OLED */
+
   return rval;
 }
 
 static void RK35_Display_loop()
 {
+  switch (hw_info.display)
+  {
 #if defined(USE_EPAPER)
-  if (hw_info.display == DISPLAY_EPD_2_7) {
+  case DISPLAY_EPD_2_7:
     EPD_loop();
-  }
+    break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_OLED)
+  case DISPLAY_OLED_1_3:
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    OLED_loop();
+    break;
+#endif /* USE_OLED */
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 static void RK35_Display_fini(int reason)
 {
-#if defined(USE_EPAPER)
-
-  EPD_fini(reason, false);
-
-  if ( RK35_EPD_update_thread != (pthread_t) 0)
+  switch (hw_info.display)
   {
-    pthread_cancel( RK35_EPD_update_thread );
-  }
+#if defined(USE_EPAPER)
+  case DISPLAY_EPD_2_7:
+    EPD_fini(reason, false);
+
+    if ( RK35_EPD_update_thread != (pthread_t) 0)
+    {
+      pthread_cancel( RK35_EPD_update_thread );
+    }
+    break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_OLED)
+  case DISPLAY_OLED_1_3:
+  case DISPLAY_OLED_TTGO:
+  case DISPLAY_OLED_HELTEC:
+    OLED_fini(reason);
+    break;
+#endif /* USE_OLED */
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
 static void RK35_Battery_setup()

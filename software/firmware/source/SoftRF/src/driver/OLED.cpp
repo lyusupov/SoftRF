@@ -24,7 +24,7 @@
 #include <Wire.h>
 #endif /* ARDUINO */
 
-#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_LGPIO)
 #include <raspi/Wire.h>
 #endif /* RASPBERRY_PI */
 
