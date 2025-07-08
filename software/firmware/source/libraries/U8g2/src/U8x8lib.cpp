@@ -42,7 +42,14 @@
 #include <SPI.h>
 #endif 
 #ifdef U8X8_HAVE_HW_I2C
+#if defined(ARDUINO) || defined(HACKRF_ONE)
 #include <Wire.h>
+#endif /* ARDUINO */
+
+#if (defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)) && defined(USE_LGPIO)
+#include <raspi/Wire.h>
+#undef INPUT_PULLUP
+#endif /* RASPBERRY_PI */
 #endif
 
 /*=============================================*/

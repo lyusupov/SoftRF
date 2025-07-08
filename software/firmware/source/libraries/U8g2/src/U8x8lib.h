@@ -39,8 +39,15 @@
 #ifndef _U8X8LIB_HH
 #define _U8X8LIB_HH
 
+#if defined(ARDUINO)
 #include <Arduino.h>
 #include <Print.h>
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/raspi.h>
+#include <raspi/Print.h>
+#endif /* RASPBERRY_PI */
 
 #include "clib/u8x8.h"
 
@@ -89,7 +96,7 @@
 #endif 
 #endif
 
-#ifdef HACKRF_ONE
+#if defined(HACKRF_ONE) || defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #ifdef U8X8_HAVE_HW_SPI
 #undef U8X8_HAVE_HW_SPI

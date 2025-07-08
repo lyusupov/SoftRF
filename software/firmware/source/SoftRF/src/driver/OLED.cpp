@@ -20,7 +20,13 @@
 
 #if defined(USE_OLED)
 
+#if defined(ARDUINO) || defined(HACKRF_ONE)
 #include <Wire.h>
+#endif /* ARDUINO */
+
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/Wire.h>
+#endif /* RASPBERRY_PI */
 
 #include "OLED.h"
 

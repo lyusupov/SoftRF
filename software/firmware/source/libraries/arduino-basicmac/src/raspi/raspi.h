@@ -156,6 +156,10 @@ static inline void delayMicroseconds(unsigned long us) {
 #define strlen_P strlen
 #endif
 
+#ifndef strcat_P
+#define strcat_P strcat
+#endif
+
 // F() Macro
 #define F(s)     (s)
 #define PSTR(s)  (s)
@@ -253,6 +257,7 @@ class TwoWire {
     uint8_t requestFrom(uint8_t, uint8_t);
     int read(void);
     size_t write(uint8_t);
+    size_t write(const uint8_t *, size_t);
 };
 
 extern TwoWire Wire;

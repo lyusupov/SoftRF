@@ -108,6 +108,7 @@ uint8_t TwoWire::endTransmission() { return 0; }
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity) { return 0; }
 int TwoWire::read() { return 0; }
 size_t TwoWire::write(uint8_t byte) { }
+size_t TwoWire::write(const uint8_t *data, size_t quantity) { }
 
 TwoWire Wire;
 
