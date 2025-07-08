@@ -32,6 +32,7 @@ ifeq ($(LGPIO), yes)
 endif
 
 BRIDGE        ?= no
+NEOPIXEL      ?= no
 
 CC            = gcc
 CXX           = g++
@@ -108,6 +109,7 @@ LGPIO_PATH    = $(LIB_PATH)/lg-0.1
 RADIOLIB_PATH = $(LIB_PATH)/RadioLib/src
 BRIDGE_PATH   = $(LIB_PATH)/Bridge/src
 BMP280_PATH   = $(LIB_PATH)/Adafruit_BMP280_Library
+WS281X_PATH   = $(LIB_PATH)/rpi_ws281x-1.0.0
 
 ifeq ($(BASICMAC), yes)
 RADIO_PATH    = $(BASICMAC_PATH)
@@ -124,7 +126,7 @@ INCLUDE       = -I$(PRODAT_PATH) -I$(PRORAD_PATH)  -I$(PLATFORM_PATH) \
                 -I$(GFX_PATH)    -I$(U8G2_AF_PATH) -I$(EPD2_PATH)     \
                 -I$(MODES_PATH)  -I$(APRS_PATH)    -I$(RADIOLIB_PATH) \
                 -I$(LGPIO_PATH)  -I$(BRIDGE_PATH)  -I$(BMP280_PATH)   \
-                -I$(U8G2_PATH)
+                -I$(U8G2_PATH)   -I$(WS281X_PATH)
 
 SRC_CPPS      := $(SRC_PATH)/TrafficHelper.cpp \
                  $(SRC_PATH)/Library.cpp
@@ -282,6 +284,13 @@ ifeq ($(BRIDGE), yes)
                  $(RADIO_PATH)/raspi/IPAddress.o $(RADIO_PATH)/raspi/cbuf.o \
                  $(RADIO_PATH)/raspi/Stream.o
   CFLAGS      += -DUSE_BRIDGE
+endif
+
+ifeq ($(NEOPIXEL), yes)
+  OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
+                 $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
+                 $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
+  CFLAGS      += -DUSE_NEOPIXEL
 endif
 
 ifeq ($(NOMAVLINK), no)
