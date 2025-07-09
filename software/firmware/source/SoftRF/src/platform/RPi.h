@@ -38,6 +38,19 @@
 
 #define isValidFix()          (isValidGNSSFix() || isValidGPSDFix())
 
+#if defined(USE_NEOPIXEL)
+#define uni_begin()             ws281x_init()
+#define uni_show()              ws281x_show()
+#define uni_setPixelColor(i, c) ws281x_setPixelColor(i, c)
+#define uni_numPixels()         ws281x_numPixels()
+#define uni_Color(r,g,b)        ws281x_Color(r, g, b)
+#define color_t                 uint32_t
+#else
+
+#define EXCLUDE_LED_RING
+
+#endif /* USE_NEOPIXEL */
+
 #define EEPROM_commit()       {}
 
 #define LED_STATE_ON          HIGH  // State when LED is litted
@@ -124,7 +137,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #endif /* GPIO */
 
-#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // 18
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 
 #define HTTP_SRV_PORT         8081 /* port 8080 can cause conflict with dump1090 */
@@ -142,7 +155,6 @@ extern const char *Hardware_Rev[];
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
-#define EXCLUDE_LED_RING
 #define EXCLUDE_SOUND
 #define EXCLUDE_EEPROM
 #define EXCLUDE_CC13XX
@@ -199,6 +211,14 @@ typedef void* EPD_Task_t;
 
 extern char* itoa(int, char *, int);
 #endif /* USE_OLED */
+
+#if defined(USE_NEOPIXEL)
+extern int ws281x_init(void);
+extern void ws281x_show(void);
+extern int ws281x_numPixels(void);
+extern void ws281x_setPixelColor(int, color_t);
+extern color_t ws281x_Color(uint8_t, uint8_t, uint8_t);
+#endif /* USE_NEOPIXEL */
 
 #endif /* PLATFORM_RPI_H */
 
