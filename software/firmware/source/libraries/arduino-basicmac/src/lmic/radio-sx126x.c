@@ -314,7 +314,8 @@ static void SetDIO3AsTcxoCtrl (uint8_t voltage) {
     uint32_t timeout = 320;
     uint8_t data[] = {voltage, (timeout >> 16) & 0xff, (timeout >> 8) & 0xff, timeout & 0xff };
 
-#if defined(__ASR6501__) || defined(ARDUINO_GENERIC_WLE5CCUX)
+#if defined(__ASR6501__) || defined(ARDUINO_GENERIC_WLE5CCUX) || \
+    defined(RASPBERRY_PI)
     if (hal_pin_tcxo(voltage))
 #elif defined(ARDUINO_ARCH_ASR6601)
     if (LORAC->CR1 & 0x1)

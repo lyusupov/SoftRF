@@ -65,6 +65,11 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum RPi_hat_id {
+  RPI_DRAGINO_LORA_GPS,
+  RPI_WAVESHARE_LORA_GNSS,
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -122,7 +127,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_SS       RPI_V2_GPIO_P1_36
 #define SOC_GPIO_PIN_RST      RPI_V2_GPIO_P1_37
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_33  // IRQ on GPIO13 so P1 connector pin #33
-#define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
+#define SOC_GPIO_PIN_BUSY     RPI_V2_GPIO_P1_32
 #else
 #define SOC_GPIO_PIN_MOSI     RPI_V2_GPIO_P1_19
 #define SOC_GPIO_PIN_MISO     RPI_V2_GPIO_P1_21
@@ -132,6 +137,18 @@ struct rst_info {
 #define SOC_GPIO_PIN_DIO0     RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
 #define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
 #endif
+
+/* Waveshare SX1262 LoRaWAN/GNSS HAT */
+#define SOC_GPIO_PIN_GNSS_WS_RX RPI_V2_GPIO_P1_10
+#define SOC_GPIO_PIN_GNSS_WS_TX RPI_V2_GPIO_P1_08
+
+#define SOC_GPIO_PIN_WS_MOSI  RPI_V2_GPIO_P1_19
+#define SOC_GPIO_PIN_WS_MISO  RPI_V2_GPIO_P1_21
+#define SOC_GPIO_PIN_WS_SCK   RPI_V2_GPIO_P1_23
+#define SOC_GPIO_PIN_WS_SS    RPI_V2_GPIO_P1_40
+#define SOC_GPIO_PIN_WS_RST   RPI_V2_GPIO_P1_12
+#define SOC_GPIO_PIN_WS_DIO1  RPI_V2_GPIO_P1_36
+#define SOC_GPIO_PIN_WS_BUSY  RPI_V2_GPIO_P1_38
 
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RPI_V2_GPIO_P1_12 /* rev. 1.4 */
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
@@ -169,7 +186,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
-#define EXCLUDE_GNSS_AT65
+//#define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
 #define EXCLUDE_GNSS_AG33
 

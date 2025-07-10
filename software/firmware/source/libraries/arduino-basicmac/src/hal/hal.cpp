@@ -283,7 +283,7 @@ void hal_pin_tcxo_init()
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
 bool hal_pin_tcxo (u1_t val) {
-#if !defined(__ASR6501__)
+#if !defined(__ASR6501__) && !defined(RASPBERRY_PI)
     if (lmic_pins.tcxo == LMIC_UNUSED_PIN)
         return false;
 

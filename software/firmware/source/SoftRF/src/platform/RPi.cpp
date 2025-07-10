@@ -196,6 +196,8 @@ const char *Hardware_Rev[] = {
   [0] = "Unknown"
 };
 
+static int RPi_hat = RPI_DRAGINO_LORA_GPS; /* default */
+
 #include "mode-s.h"
 #include "sdr/common.h"
 
@@ -584,9 +586,47 @@ static void RPi_setup()
 
   RPi_SerialNumber();
 
+#if !defined(USE_SPI1)
+  pinMode(SOC_GPIO_PIN_WS_RST,  OUTPUT);
+  pinMode(SOC_GPIO_PIN_WS_BUSY, INPUT);
+
+  digitalWrite(SOC_GPIO_PIN_WS_RST, LOW);
+
+  delay(10);
+
+  if (digitalRead(SOC_GPIO_PIN_WS_BUSY) == HIGH) {
+    digitalWrite(SOC_GPIO_PIN_WS_RST, HIGH);
+
+    delay(50);
+
+    if (digitalRead(SOC_GPIO_PIN_WS_BUSY) == LOW) {
+      RPi_hat = RPI_WAVESHARE_LORA_GNSS;
+    }
+  }
+
+  pinMode(SOC_GPIO_PIN_WS_RST, INPUT);
+#endif /* USE_SPI1 */
+
+  switch (RPi_hat)
+  {
+    case RPI_WAVESHARE_LORA_GNSS:
+      lmic_pins.nss    = SOC_GPIO_PIN_WS_SS;
+      lmic_pins.rst    = SOC_GPIO_PIN_WS_RST;
+      lmic_pins.busy   = SOC_GPIO_PIN_WS_BUSY;
+      if (SoC->getChipId() != 0xD3374780) {
+        lmic_pins.tcxo = lmic_pins.rst; /* SX1262 with XTAL */
+      }
 #if defined(USE_RADIOLIB)
-  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+      lmic_pins.dio[0] = SOC_GPIO_PIN_WS_DIO1;
 #endif /* USE_RADIOLIB */
+      break;
+    case RPI_DRAGINO_LORA_GPS:
+    default:
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB */
+      break;
+  }
 }
 
 static void RPi_post_init()
@@ -1538,6 +1578,19 @@ int main()
 #if !defined(EXCLUDE_EEPROM)
   EEPROM_setup();
 #endif /* EXCLUDE_EEPROM */
+
+  Serial.print(F("Radio & GNSS adapter: "));
+
+  switch (RPi_hat)
+  {
+    case RPI_WAVESHARE_LORA_GNSS:
+      Serial.println(F("Waveshare SX1262 LoRaWAN/GNSS HAT"));
+      break;
+    case RPI_DRAGINO_LORA_GPS:
+    default:
+      Serial.println(F("Dragino SX1276 LoRa/GPS HAT"));
+      break;
+  }
 
   hw_info.rf = RF_setup();
 
