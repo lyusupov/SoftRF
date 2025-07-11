@@ -52,6 +52,16 @@ enum rst_reason {
   REASON_EXT_SYS_RST      = 6   /* external system reset */
 };
 
+enum RK35_board_id {
+  RK35_LUCKFOX_LYRA_B,  /* Pico form factor */
+  RK35_LUCKFOX_LYRA_ZW, /* Zero Wireless    */
+};
+
+enum RK35_hat_id {
+  RK35_WAVESHARE_PICO_LORA,     /* Waveshare Pico-LoRa-SX1262 */
+  RK35_WAVESHARE_HAT_LORA_GNSS, /* Waveshare SX1262-L76K HAT  */
+};
+
 struct rst_info {
   uint32_t reason;
   uint32_t exccause;
@@ -84,6 +94,20 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN // RMIO8
+
+// Luckfox Lyra Zero W with Waveshare SX1262-L76K HAT
+#define SOC_GPIO_PIN_HAT_MOSI 0 RMIO6
+#define SOC_GPIO_PIN_HAT_MISO 0 RMIO7
+#define SOC_GPIO_PIN_HAT_SCK  0 RMIO8
+#define SOC_GPIO_PIN_HAT_SS   0 // RMIO18
+#define SOC_GPIO_PIN_HAT_RST  0 // RMIO14
+#define SOC_GPIO_PIN_HAT_DIO  0 // RMIO29
+#define SOC_GPIO_PIN_HAT_BUSY 0 // RMIO17
+#define SOC_GPIO_PIN_HAT_SDA  RMIO0
+#define SOC_GPIO_PIN_HAT_SCL  RMIO1
+#define SOC_GPIO_PIN_HAT_GNSS_RX    RMIO23
+#define SOC_GPIO_PIN_HAT_GNSS_TX    RMIO22
+#define SOC_GPIO_PIN_HAT_GNSS_PPS   SOC_UNUSED_PIN
 
 #define HTTP_SRV_PORT         8081 /* port 8080 can cause conflict with dump1090 */
 #define JSON_SRV_TCP_PORT     30007

@@ -30,7 +30,7 @@
 #define SOC_GPIO_PIN_P4_DIO             47
 #define SOC_GPIO_PIN_P4_BUSY            27
 
-// Waveshare SX1262-L76K HAT with Espressif ESP32-P4 EVB
+// Waveshare ESP32-P4-Module-DEV-KIT with SX1262-L76K HAT
 #define SOC_GPIO_PIN_P4_WS_MOSI         3
 #define SOC_GPIO_PIN_P4_WS_MISO         2
 #define SOC_GPIO_PIN_P4_WS_SCK          0
@@ -38,6 +38,8 @@
 #define SOC_GPIO_PIN_P4_WS_RST          22
 #define SOC_GPIO_PIN_P4_WS_DIO          46
 #define SOC_GPIO_PIN_P4_WS_BUSY         27
+#define SOC_GPIO_PIN_P4_WS_GNSS_RX      38
+#define SOC_GPIO_PIN_P4_WS_GNSS_TX      37
 #define SOC_GPIO_PIN_P4_WS_GNSS_PPS     SOC_UNUSED_PIN
 
 // SDIO 1 - SDMMC

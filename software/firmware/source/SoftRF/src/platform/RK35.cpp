@@ -196,6 +196,9 @@ const char *Hardware_Rev[] = {
   [0] = "Unknown"
 };
 
+static int RK35_board = RK35_LUCKFOX_LYRA_B;      /* default */
+static int RK35_hat   = RK35_WAVESHARE_PICO_LORA; /* default */
+
 #include "mode-s.h"
 #include "sdr/common.h"
 
