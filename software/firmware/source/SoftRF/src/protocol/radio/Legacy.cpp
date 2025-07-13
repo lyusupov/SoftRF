@@ -318,7 +318,7 @@ static size_t legacy_v6_encode(void *legacy_pkt, ufo_t *this_aircraft) {
 
     pkt->alt = alt < 0 ? 0 : alt;
 
-    pkt->airborne = ((int) speedf) >= legacy_GS_threshold[acft_type] ? 1 : 0;
+    pkt->airborne = ((int) speedf) >= pgm_read_byte(&legacy_GS_threshold[acft_type]) ? 1 : 0;
 
     pkt->ns[0] = ns; pkt->ns[1] = ns; pkt->ns[2] = ns; pkt->ns[3] = ns;
     pkt->ew[0] = ew; pkt->ew[1] = ew; pkt->ew[2] = ew; pkt->ew[3] = ew;
@@ -617,7 +617,7 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->vs = this_aircraft->stealth ? 0 : enscale_signed(vs10, 6, 2); /* 0 ... 952 */
 
     pkt->course        = (int) (course * 2);
-    pkt->airborne      = ((int) speedf) >= legacy_GS_threshold[acft_type] ? 2 : 1;
+    pkt->airborne      = ((int) speedf) >= pgm_read_byte(&legacy_GS_threshold[acft_type]) ? 2 : 1;
 
 /*
  * TODO
