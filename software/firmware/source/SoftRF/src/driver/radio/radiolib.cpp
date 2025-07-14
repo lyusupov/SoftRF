@@ -491,7 +491,7 @@ static void lr11xx_setup()
   lgpio_fini();
 
 #if defined(USE_SPI1)
-  RadioLib_HAL = new PiHal(2, 2000000, 1); // use SPI bus #1, channel 2
+  RadioLib_HAL = new PiHal(0, 2000000, 1); // use SPI bus #1, channel 0
 #else
   RadioLib_HAL = new PiHal(0);             // use SPI bus #0, channel 0
 #endif /* USE_SPI1 */

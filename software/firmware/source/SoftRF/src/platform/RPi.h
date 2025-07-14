@@ -176,8 +176,8 @@ extern const char *Hardware_Rev[];
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
-#define EXCLUDE_SOUND
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_SOUND
+//#define EXCLUDE_EEPROM
 #define EXCLUDE_CC13XX
 #define EXCLUDE_LK8EX1
 
@@ -195,7 +195,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_GNSS_AG33
 
 #define EXCLUDE_BMP180
-#define EXCLUDE_BMP280
+//#define EXCLUDE_BMP280
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
@@ -215,7 +215,7 @@ extern const char *Hardware_Rev[];
 /* Experimental */
 #define ENABLE_ADSL
 //#define ENABLE_PROL
-//#define USE_OLED
+#define USE_OLED
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95
@@ -229,8 +229,10 @@ typedef void* EPD_Task_t;
 
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#define plat_oled_probe_func    RPi_OLED_probe_func
 
 extern char* itoa(int, char *, int);
+extern bool RPi_OLED_probe_func(void);
 #endif /* USE_OLED */
 
 #if defined(USE_NEOPIXEL)

@@ -140,7 +140,7 @@ unsigned char digitalRead(unsigned char pin) {
 
 #if defined(USE_LGPIO)
 SPIClass SPI0(0);
-SPIClass SPI1(2, 2000000, 1);
+SPIClass SPI1(0, 2000000, 1);
 
 #define PI_MAX_USER_GPIO  (31) /* TBD */
 

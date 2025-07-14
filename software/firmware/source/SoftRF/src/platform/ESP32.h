@@ -326,7 +326,8 @@ enum esp32_board_id {
   ESP32_C6_DEVKIT,
   ESP32_C61_DEVKIT,
   ESP32_H2_DEVKIT,
-  ESP32_P4_DEVKIT,
+  ESP32_P4_WT_DEVKIT, /* Wireless Tag */
+  ESP32_P4_WS_DEVKIT, /* Waveshare or Espressif */
   ESP32_TTGO_V2_OLED,
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,

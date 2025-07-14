@@ -665,7 +665,7 @@ static void ESP32_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ128A): /* WT0132P4-A1 ESP32-P4NRW32 */
     default:
-      esp32_board   = ESP32_P4_DEVKIT;
+      esp32_board   = ESP32_P4_WT_DEVKIT;
 #else
     default:
 #endif
@@ -1648,26 +1648,65 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-  } else if (esp32_board == ESP32_P4_DEVKIT) {
+  } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
 
     hw_info.model    = SOFTRF_MODEL_STANDALONE;
     hw_info.revision = STD_EDN_REV_WT99P4C5;
 
-    pinMode(SOC_GPIO_PIN_P4_485_RW,      OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
+#if 0
+    pinMode(SOC_GPIO_PIN_P4_WS_RST,  OUTPUT);
+    pinMode(SOC_GPIO_PIN_P4_WS_BUSY, INPUT);
+
+    digitalWrite(SOC_GPIO_PIN_P4_WS_RST, LOW);
+
+    delay(10);
+
+    if (digitalRead(SOC_GPIO_PIN_P4_WS_BUSY) == HIGH) {
+      digitalWrite(SOC_GPIO_PIN_P4_WS_RST, HIGH);
+
+      delay(50);
+
+      if (digitalRead(SOC_GPIO_PIN_P4_WS_BUSY) == LOW) {
+        hw_info.revision = 8 /* STD_EDN_REV_P4_EVB */; /* TBD */
+      }
+    }
+
+    pinMode(SOC_GPIO_PIN_P4_WS_RST, INPUT);
+#endif
+
+    switch (hw_info.revision)
+    {
+      case 8 /* STD_EDN_REV_P4_EVB */:
+        lmic_pins.nss    = SOC_GPIO_PIN_P4_WS_SS;
+        lmic_pins.rst    = SOC_GPIO_PIN_P4_WS_RST;
+        lmic_pins.busy   = SOC_GPIO_PIN_P4_WS_BUSY;
+        //if (SoC->getChipId() != 0xD3374780) {
+        //  lmic_pins.tcxo = lmic_pins.rst; /* SX1262 with XTAL */
+        //}
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+        lmic_pins.dio[0] = SOC_GPIO_PIN_P4_WS_DIO;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+        break;
+
+      case STD_EDN_REV_WT99P4C5:
+      default:
+        pinMode(SOC_GPIO_PIN_P4_485_RW,      OUTPUT);
+        digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
 
 #if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_P4_CONS_RX,
-                       SOC_GPIO_PIN_P4_CONS_TX);
+        SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                           SOC_GPIO_PIN_P4_CONS_RX,
+                           SOC_GPIO_PIN_P4_CONS_TX);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-    lmic_pins.nss  = SOC_GPIO_PIN_P4_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_P4_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_P4_BUSY;
+        lmic_pins.nss  = SOC_GPIO_PIN_P4_SS;
+        lmic_pins.rst  = SOC_GPIO_PIN_P4_RST;
+        lmic_pins.busy = SOC_GPIO_PIN_P4_BUSY;
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_P4_DIO;
+        lmic_pins.dio[0] = SOC_GPIO_PIN_P4_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
+        break;
+    }
 
     int uSD_SS_pin = SOC_GPIO_PIN_P4_SD_D3;
 
@@ -1780,7 +1819,8 @@ static void ESP32_setup()
           (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_ELECROW_TN_M2      ) ? SOFTRF_USB_PID_GIZMO      :
           (esp32_board == ESP32_EBYTE_HUB_900TB    ) ? SOFTRF_USB_PID_STANDALONE :
-          (esp32_board == ESP32_P4_DEVKIT          ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_P4_WT_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_P4_WS_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -2096,7 +2136,7 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   ui = &ui_settings;
 
-  if (esp32_board == ESP32_P4_DEVKIT) {
+  if (esp32_board == ESP32_P4_WT_DEVKIT) {
     pinMode(SOC_GPIO_PIN_P4_PAMP_CTRL,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_P4_PAMP_CTRL, HIGH);
 
@@ -2305,7 +2345,7 @@ static void ESP32_post_init()
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
     if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
-        esp32_board == ESP32_P4_DEVKIT)
+        esp32_board == ESP32_P4_WT_DEVKIT)
     {
       char key[8];
       char out[64];
@@ -2683,7 +2723,7 @@ static void ESP32_loop()
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-  if (esp32_board == ESP32_P4_DEVKIT) {
+  if (esp32_board == ESP32_P4_WT_DEVKIT) {
 #if !defined(EXCLUDE_ETHERNET)
     Ethernet_loop();
 #endif /* EXCLUDE_ETHERNET */
@@ -2991,7 +3031,7 @@ static void ESP32_fini(int reason)
                                  ESP_EXT1_WAKEUP_ALL_LOW);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
 
-  } else if (esp32_board == ESP32_P4_DEVKIT) {
+  } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
 #if !defined(EXCLUDE_ETHERNET)
     ETH.end();
 
@@ -3284,8 +3324,8 @@ static void ESP32_Sound_test(int var)
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #if !defined(EXCLUDE_VOICE_MESSAGE)
-  if (esp32_board == ESP32_P4_DEVKIT &&
-     uSD_is_attached                 &&
+  if (esp32_board == ESP32_P4_WT_DEVKIT &&
+     uSD_is_attached                    &&
      settings->volume != BUZZER_OFF)
   {
     char filename[MAX_FILENAME_LEN];
@@ -3798,7 +3838,7 @@ static void ESP32_SPI_begin()
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-    case ESP32_P4_DEVKIT:
+    case ESP32_P4_WT_DEVKIT:
       SPI.begin(SOC_GPIO_PIN_P4_SCK,  SOC_GPIO_PIN_P4_MISO,
                 SOC_GPIO_PIN_P4_MOSI, SOC_GPIO_PIN_P4_SS);
       break;
@@ -3934,8 +3974,8 @@ static void ESP32_swSer_begin(unsigned long baud)
                            SOC_GPIO_PIN_T3C6_GNSS_RX, SOC_GPIO_PIN_T3C6_GNSS_TX);
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-    } else if (esp32_board == ESP32_P4_DEVKIT) {
-      Serial.println(F("INFO: ESP32-P4 DevKit is detected."));
+    } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
+      Serial.println(F("INFO: ESP32-P4 Wireless Tag DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_P4_GNSS_RX, SOC_GPIO_PIN_P4_GNSS_TX);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
@@ -4069,7 +4109,7 @@ static byte ESP32_Display_setup()
       }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-    } else if (esp32_board == ESP32_P4_DEVKIT) {
+    } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
       Wire.begin(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
       Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
       has_oled = (Wire.endTransmission() == 0);
@@ -5068,7 +5108,7 @@ static bool ESP32_Baro_setup()
 
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-  } else if (esp32_board == ESP32_P4_DEVKIT) {
+  } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
 
     Wire.setPins(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
 
@@ -5320,7 +5360,7 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_LILYGO_T3S3_OLED  ||
        esp32_board == ESP32_ELECROW_TN_M2     ||
        esp32_board == ESP32_EBYTE_HUB_900TB   ||
-       esp32_board == ESP32_P4_DEVKIT         ||
+       esp32_board == ESP32_P4_WT_DEVKIT      ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1    ? SOC_GPIO_PIN_T8_S2_BUTTON :
                  esp32_board == ESP32_S3_DEVKIT        ? SOC_GPIO_PIN_S3_BUTTON :
@@ -5329,7 +5369,7 @@ static void ESP32_Button_setup()
                  esp32_board == ESP32_LILYGO_T3S3_OLED ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_ELECROW_TN_M2  ? SOC_GPIO_PIN_M2_BUTTON_1 :
                  esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
-                 esp32_board == ESP32_P4_DEVKIT        ? SOC_GPIO_PIN_P4_BUTTON :
+                 esp32_board == ESP32_P4_WT_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -5428,11 +5468,11 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_LILYGO_T3S3_OLED  ||
       esp32_board == ESP32_ELECROW_TN_M2     ||
       esp32_board == ESP32_EBYTE_HUB_900TB   ||
-      esp32_board == ESP32_P4_DEVKIT         ||
+      esp32_board == ESP32_P4_WT_DEVKIT      ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
-                     esp32_board == ESP32_P4_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON   :
+                     esp32_board == ESP32_P4_WT_DEVKIT  ? SOC_GPIO_PIN_P4_BUTTON   :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == (esp32_board == ESP32_ELECROW_TN_M2 ? HIGH : LOW));

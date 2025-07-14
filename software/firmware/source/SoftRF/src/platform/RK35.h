@@ -134,7 +134,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_GNSS_SONY
 //#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
-#define EXCLUDE_GNSS_AT65
+//#define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
 #define EXCLUDE_GNSS_AG33
 
