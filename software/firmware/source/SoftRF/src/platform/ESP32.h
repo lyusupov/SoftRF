@@ -231,7 +231,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 SOC_GPIO_PIN_BPIPW_BUZZER :              \
                                 (esp32_board == ESP32_ELECROW_TN_M2 ?    \
                                 SOC_GPIO_PIN_M2_BUZZER :                 \
-                                (esp32_board == ESP32_P4_DEVKIT ?        \
+                                (esp32_board == ESP32_P4_WT_DEVKIT ?     \
                                 SOC_GPIO_PIN_P4_BUZZER : SOC_UNUSED_PIN)))))))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
