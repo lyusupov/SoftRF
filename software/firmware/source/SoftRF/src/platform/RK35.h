@@ -73,27 +73,27 @@ struct rst_info {
 };
 
 /* Waveshare Pico-LoRa-SX1262-868M, SX1262 */
-#define SOC_GPIO_PIN_MOSI     RMIO6
-#define SOC_GPIO_PIN_MISO     RMIO5
-#define SOC_GPIO_PIN_SCK      RMIO7
-#define SOC_GPIO_PIN_SS       0 // RMIO13
-#define SOC_GPIO_PIN_RST      0 // RMIO2
-#define SOC_GPIO_PIN_BUSY     0 // RMIO12
-#define SOC_GPIO_PIN_DIO0     0 // RMIO27, may cause conflict with SDA
+#define SOC_GPIO_PIN_MOSI     6  // RMIO6
+#define SOC_GPIO_PIN_MISO     5  // RMIO5
+#define SOC_GPIO_PIN_SCK      7  // RMIO7
+#define SOC_GPIO_PIN_SS       13 // RMIO13
+#define SOC_GPIO_PIN_RST      2  // RMIO2
+#define SOC_GPIO_PIN_BUSY     12 // RMIO12
+#define SOC_GPIO_PIN_DIO0     27 // RMIO27, may cause conflict with SDA
 
 /* Waveshare Pico-GPS-L76B (MTK) */
-#define SOC_GPIO_PIN_GNSS_RX  RMIO23
-#define SOC_GPIO_PIN_GNSS_TX  RMIO22
+#define SOC_GPIO_PIN_GNSS_RX  23 // RMIO23
+#define SOC_GPIO_PIN_GNSS_TX  22 // RMIO22
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RMIO31, R20 (NC by default)
 
 /* Waveshare Pico-Environment-Sensor, BME280 */
-#define SOC_GPIO_PIN_SDA      RMIO27
-#define SOC_GPIO_PIN_SCL      RMIO26
+#define SOC_GPIO_PIN_SDA      27 // RMIO27
+#define SOC_GPIO_PIN_SCL      26 // RMIO26
 
-#define SOC_GPIO_PIN_NEOPIXEL RMIO4
+#define SOC_GPIO_PIN_NEOPIXEL 4  // RMIO4
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
-#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN // RMIO8
+#define SOC_GPIO_PIN_BUZZER   8  // RMIO8
 
 // Luckfox Lyra Zero W with Waveshare SX1262-L76K HAT
 #define SOC_GPIO_PIN_HAT_MOSI 0 RMIO6
@@ -120,8 +120,8 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
 #define EXCLUDE_LED_RING
-#define EXCLUDE_SOUND
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_SOUND
+//#define EXCLUDE_EEPROM
 #define EXCLUDE_CC13XX
 #define EXCLUDE_LK8EX1
 
@@ -139,7 +139,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_GNSS_AG33
 
 #define EXCLUDE_BMP180
-#define EXCLUDE_BMP280
+//#define EXCLUDE_BMP280
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
