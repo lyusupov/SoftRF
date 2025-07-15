@@ -173,8 +173,10 @@ typedef void* EPD_Task_t;
 
 #if defined(USE_OLED)
 #define U8X8_OLED_I2C_BUS_TYPE  U8X8_SSD1306_128X64_NONAME_HW_I2C
+#define plat_oled_probe_func    RK35_OLED_probe_func
 
 extern char* itoa(int, char *, int);
+extern bool RK35_OLED_probe_func(void);
 #endif /* USE_OLED */
 
 #endif /* PLATFORM_RK35_H */

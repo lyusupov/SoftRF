@@ -667,6 +667,29 @@ static void RK35_swSer_begin(unsigned long baud)
 
 pthread_t RK35_EPD_update_thread;
 
+#if defined(USE_OLED)
+bool RK35_OLED_probe_func()
+{
+  bool ret = false;
+
+#if defined(USE_LGPIO)
+  uint8_t i2cDevice = 1;
+  uint8_t buf[2] = { 0x00 };
+
+  int i2cHandle = -1;
+  if ((i2cHandle = lgI2cOpen(i2cDevice, SSD1306_OLED_I2C_ADDR, 0)) < 0) {
+    fprintf(stderr, "Could not open I2C handle on 0: %s\n", lguErrorText(i2cHandle));
+  } else {
+    int status = lgI2cWriteDevice(i2cHandle, (char *) buf, 1);
+    if (status < 0) { ret = false; } else { ret = true; }
+    lgI2cClose(i2cHandle);
+  }
+#endif /* USE_LGPIO */
+
+  return ret;
+}
+#endif /* USE_OLED */
+
 static byte RK35_Display_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -1279,6 +1302,8 @@ void txrx_test_loop()
   // Handle Air Connect
   NMEA_loop();
 
+  SoC->Display_loop();
+
   ClearExpired();
 }
 
@@ -1411,8 +1436,8 @@ int main()
   hw_info.baro = Baro_setup();
 #endif /* USE_LGPIO */
 
-#if defined(USE_EPAPER)
-  Serial.print("Intializing E-ink display module (may take up to 10 seconds)... ");
+#if defined(USE_EPAPER) || defined(USE_OLED)
+  Serial.print("Intializing display module (may take up to 10 seconds)... ");
   Serial.flush();
   hw_info.display = SoC->Display_setup();
   if (hw_info.display != DISPLAY_NONE) {
