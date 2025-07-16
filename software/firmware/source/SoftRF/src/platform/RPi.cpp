@@ -393,6 +393,9 @@ static int led_count = LED_COUNT;
 
 ws2811_t ledstring =
 {
+    .render_wait_time = 0,
+    .device = NULL,
+    .rpi_hw = NULL,
     .freq = TARGET_FREQ,
     .dmanum = DMA,
     .channel =
@@ -403,14 +406,27 @@ ws2811_t ledstring =
             .invert = 0,
             .count = LED_COUNT,
             .strip_type = STRIP_TYPE,
+            .leds = 0,
             .brightness = 255,
+            .wshift = 0,
+            .rshift = 0,
+            .gshift = 0,
+            .bshift = 0,
+            .gamma = NULL,
         },
         [1] =
         {
             .gpionum = 0,
             .invert = 0,
             .count = 0,
+            .strip_type = 0,
+            .leds = 0,
             .brightness = 0,
+            .wshift = 0,
+            .rshift = 0,
+            .gshift = 0,
+            .bshift = 0,
+            .gamma = NULL,
         },
     },
 };

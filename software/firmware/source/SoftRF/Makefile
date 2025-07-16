@@ -286,10 +286,14 @@ ifeq ($(BRIDGE), yes)
   CFLAGS      += -DUSE_BRIDGE
 endif
 
+pi:
 ifeq ($(NEOPIXEL), yes)
   OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
                  $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
                  $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
+endif
+
+ifeq ($(NEOPIXEL), yes)
   CFLAGS      += -DUSE_NEOPIXEL
 endif
 

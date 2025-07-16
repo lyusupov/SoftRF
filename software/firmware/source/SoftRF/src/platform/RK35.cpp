@@ -363,6 +363,178 @@ void notFound(Request &req, Response &res) {
 }
 #endif /* USE_BRIDGE */
 
+#if defined(USE_NEOPIXEL)
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <stdint.h>
+#include <linux/spi/spidev.h>
+
+#define SPI_DEVICE "/dev/spidev1.1"
+#define NUM_PIXELS 12
+
+typedef enum
+{
+	SPIMODE0 = SPI_MODE_0,
+	SPIMODE1 = SPI_MODE_1,
+	SPIMODE2 = SPI_MODE_2,
+	SPIMODE3 = SPI_MODE_3,
+} SPI_MODE;
+
+typedef enum
+{
+	S_1M    = 1000000,
+	S_6_75M = 6750000,
+	S_8M    = 8000000,
+	S_13_5M = 13500000,
+	S_27M   = 27000000,
+} SPI_SPEED;
+
+#define isTimeToDisplay() (millis() - LEDTimeMarker     > 1000)
+
+unsigned long LEDTimeMarker = 0;
+
+static unsigned char send_buf[24 * NUM_PIXELS];
+static int spi_fd;
+
+static int spi_init(const char *spi_dev)
+{
+    int fd_spidev;
+    int ret;
+    SPI_MODE mode;
+    char spi_bits;
+    uint32_t spi_speed;
+
+    fd_spidev = open(spi_dev, O_RDWR);
+	if (fd_spidev < 0)
+    {
+		printf("open %s err\n", spi_dev);
+		return -1;
+	}
+
+    /* mode */
+    mode = SPIMODE0;
+    ret = ioctl(fd_spidev, SPI_IOC_WR_MODE, &mode);                // mode 0
+    if (ret < 0)
+    {
+		printf("SPI_IOC_WR_MODE err\n");
+		return -1;
+	}
+
+    /* bits per word */
+    spi_bits = 8;
+    ret = ioctl(fd_spidev, SPI_IOC_WR_BITS_PER_WORD, &spi_bits);   // 8bits
+    if (ret < 0)
+    {
+		printf("SPI_IOC_WR_BITS_PER_WORD err\n");
+		return -1;
+	}
+
+    /* speed */
+    spi_speed = (uint32_t) S_8M;
+    ret = ioctl(fd_spidev, SPI_IOC_WR_MAX_SPEED_HZ, &spi_speed);    // 1MHz
+    if (ret < 0)
+    {
+		printf("SPI_IOC_WR_MAX_SPEED_HZ err\n");
+		return -1;
+	}
+
+    return fd_spidev;
+}
+
+static int spi_write_nbyte_data(unsigned int fd_spidev,
+                                unsigned char *send_buf,
+                                unsigned int send_buf_len)
+{
+    struct spi_ioc_transfer	xfer[2];
+    unsigned char recv_buf[send_buf_len];
+	int status;
+
+    if (send_buf == NULL || send_buf_len < 1)
+        return -1;
+
+    memset(xfer, 0, sizeof(xfer));
+    memset(recv_buf, 0, sizeof(send_buf_len));
+
+	xfer[0].tx_buf = (unsigned long)send_buf;
+    xfer[0].rx_buf = (unsigned long)recv_buf;
+	xfer[0].len = send_buf_len;
+
+	status = ioctl(fd_spidev, SPI_IOC_MESSAGE(1), xfer);
+	if (status < 0)
+    {
+		perror("SPI_IOC_MESSAGE");
+		return -1;
+	}
+
+    return 0;
+}
+
+static void spi_exit(unsigned int fd_spidev)
+{
+    if (fd_spidev >= 0)
+        close(fd_spidev);
+}
+
+static void update_sendbuff(int n, unsigned char r, unsigned char g, unsigned char b)
+{
+    int i = 0;
+
+    // update g
+    for (i = 0; i < 8; i++)
+    {
+        send_buf[i + 24 * n] = (g & 0x80) ? (0xFC) : (0xC0);
+        g <<= 1;
+    }
+
+    // update r
+    for (i = 8; i < 16; i++)
+    {
+        send_buf[i + 24 * n] = (r & 0x80) ? (0xFC) : (0xC0);
+        r <<= 1;
+    }
+
+    // update b
+    for (i = 16; i < 24; i++)
+    {
+        send_buf[i + 24 * n] = (b & 0x80) ? (0xFC) : (0xC0);
+        b <<= 1;
+    }
+}
+
+int ws281x_init(void)
+{
+    spi_fd = spi_init(SPI_DEVICE);
+    if (spi_fd < 0)
+        return -1;
+
+    return 0;
+}
+
+void ws281x_show(void)
+{
+    spi_write_nbyte_data(spi_fd, send_buf, sizeof(send_buf));
+}
+
+int ws281x_numPixels(void)
+{
+    return NUM_PIXELS;
+}
+
+void ws281x_setPixelColor(int n, color_t c)
+{
+    update_sendbuff(n, (c>>16)&0xFF, (c>>8)&0xFF, (c>>0)&0xFF);
+}
+
+color_t ws281x_Color(uint8_t r, uint8_t g, uint8_t b)
+{
+    return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
+}
+#endif /* USE_NEOPIXEL */
+
 //-------------------------------------------------------------------------
 //
 // The MIT License (MIT)
@@ -1115,6 +1287,17 @@ void normal_loop()
       Traffic_loop();
     }
 
+#if defined(USE_NEOPIXEL)
+    if (isTimeToDisplay()) {
+      if (isValidFix()) {
+        LED_DisplayTraffic();
+      } else {
+        LED_Clear();
+      }
+      LEDTimeMarker = millis();
+    }
+#endif /* USE_NEOPIXEL */
+
     if (isTimeToExport()) {
 
       NMEA_Export();
@@ -1256,6 +1439,13 @@ void txrx_test_loop()
 #endif
 
   Traffic_loop();
+
+#if defined(USE_NEOPIXEL)
+  if (isTimeToDisplay()) {
+    LED_DisplayTraffic();
+    LEDTimeMarker = millis();
+  }
+#endif /* USE_NEOPIXEL */
 
 #if DEBUG_TIMING
   export_start_ms = millis();
@@ -1456,6 +1646,11 @@ int main()
 //  hw_info.gnss = GNSS_setup();
 
   Traffic_setup();
+
+#if defined(USE_NEOPIXEL)
+  LED_setup();
+#endif /* USE_NEOPIXEL */
+
   NMEA_setup();
 
   Traffic_TCP_Server.setup(JSON_SRV_TCP_PORT);
@@ -1495,6 +1690,10 @@ int main()
   Serial.print(F("UDP  server has started at port: "));
   Serial.println((unsigned long) RELAY_SRC_PORT);
 #endif /* USE_BRIDGE */
+
+#if defined(USE_NEOPIXEL)
+  LED_test();
+#endif /* USE_NEOPIXEL */
 
   Sound_setup();
   SoC->Sound_test(reset_info.reason);
@@ -1565,6 +1764,10 @@ void shutdown(int reason)
   if (hw_info.display != DISPLAY_NONE) {
     SoC->Display_fini(reason);
   }
+
+#if defined(USE_NEOPIXEL)
+  spi_exit(spi_fd);
+#endif /* USE_NEOPIXEL */
 
 #if defined(USE_BRIDGE)
   WebServer.end();
