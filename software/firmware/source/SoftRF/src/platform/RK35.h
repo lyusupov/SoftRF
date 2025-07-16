@@ -85,6 +85,10 @@ struct rst_info {
   uint32_t depc;
 };
 
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_RX  23 // RMIO23
+#define SOC_GPIO_PIN_CONS_TX  22 // RMIO22
+
 /* Waveshare Pico-LoRa-SX1262-868M, SX1262 */
 #define SOC_GPIO_PIN_MOSI     6  // RMIO6
 #define SOC_GPIO_PIN_MISO     5  // RMIO5
@@ -95,8 +99,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_DIO0     27 // RMIO27, may cause conflict with SDA
 
 /* Waveshare Pico-GPS-L76B (MTK) */
-#define SOC_GPIO_PIN_GNSS_RX  23 // RMIO23
-#define SOC_GPIO_PIN_GNSS_TX  22 // RMIO22
+#define SOC_GPIO_PIN_GNSS_RX  1  // RMIO1
+#define SOC_GPIO_PIN_GNSS_TX  0  // RMIO0
 #define SOC_GPIO_PIN_GNSS_PPS SOC_UNUSED_PIN // RMIO31, R20 (NC by default)
 
 /* Waveshare Pico-Environment-Sensor, BME280 */
@@ -171,7 +175,7 @@ extern const char *Hardware_Rev[];
 /* Experimental */
 #define ENABLE_ADSL
 //#define ENABLE_PROL
-//#define USE_OLED
+#define USE_OLED
 
 //#define USE_OGN_RF_DRIVER
 //#define WITH_RFM95

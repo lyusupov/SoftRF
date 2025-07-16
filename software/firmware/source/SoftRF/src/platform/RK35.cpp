@@ -89,7 +89,7 @@ lmic_pinmap lmic_pins = {
     .tcxo = LMIC_UNUSED_PIN,
 };
 
-TTYSerial Serial1("/dev/ttyAMA0");
+TTYSerial Serial1("/dev/ttyS1");
 TTYSerial Serial2("/dev/ttyUSB0");
 
 // These callbacks are only used in over-the-air activation, so they are
@@ -409,38 +409,38 @@ static int spi_init(const char *spi_dev)
     uint32_t spi_speed;
 
     fd_spidev = open(spi_dev, O_RDWR);
-	if (fd_spidev < 0)
+    if (fd_spidev < 0)
     {
-		printf("open %s err\n", spi_dev);
-		return -1;
-	}
+        printf("open %s err\n", spi_dev);
+        return -1;
+    }
 
     /* mode */
     mode = SPIMODE0;
     ret = ioctl(fd_spidev, SPI_IOC_WR_MODE, &mode);                // mode 0
     if (ret < 0)
     {
-		printf("SPI_IOC_WR_MODE err\n");
-		return -1;
-	}
+        printf("SPI_IOC_WR_MODE err\n");
+        return -1;
+    }
 
     /* bits per word */
     spi_bits = 8;
     ret = ioctl(fd_spidev, SPI_IOC_WR_BITS_PER_WORD, &spi_bits);   // 8bits
     if (ret < 0)
     {
-		printf("SPI_IOC_WR_BITS_PER_WORD err\n");
-		return -1;
-	}
+        printf("SPI_IOC_WR_BITS_PER_WORD err\n");
+        return -1;
+    }
 
     /* speed */
     spi_speed = (uint32_t) S_8M;
     ret = ioctl(fd_spidev, SPI_IOC_WR_MAX_SPEED_HZ, &spi_speed);    // 1MHz
     if (ret < 0)
     {
-		printf("SPI_IOC_WR_MAX_SPEED_HZ err\n");
-		return -1;
-	}
+        printf("SPI_IOC_WR_MAX_SPEED_HZ err\n");
+        return -1;
+    }
 
     return fd_spidev;
 }
@@ -451,7 +451,7 @@ static int spi_write_nbyte_data(unsigned int fd_spidev,
 {
     struct spi_ioc_transfer	xfer[2];
     unsigned char recv_buf[send_buf_len];
-	int status;
+    int status;
 
     if (send_buf == NULL || send_buf_len < 1)
         return -1;
@@ -459,16 +459,16 @@ static int spi_write_nbyte_data(unsigned int fd_spidev,
     memset(xfer, 0, sizeof(xfer));
     memset(recv_buf, 0, sizeof(send_buf_len));
 
-	xfer[0].tx_buf = (unsigned long)send_buf;
+    xfer[0].tx_buf = (unsigned long)send_buf;
     xfer[0].rx_buf = (unsigned long)recv_buf;
-	xfer[0].len = send_buf_len;
+    xfer[0].len = send_buf_len;
 
-	status = ioctl(fd_spidev, SPI_IOC_MESSAGE(1), xfer);
-	if (status < 0)
+    status = ioctl(fd_spidev, SPI_IOC_MESSAGE(1), xfer);
+    if (status < 0)
     {
-		perror("SPI_IOC_MESSAGE");
-		return -1;
-	}
+        perror("SPI_IOC_MESSAGE");
+        return -1;
+    }
 
     return 0;
 }
@@ -639,8 +639,6 @@ static void RK35_setup()
 
 static void RK35_post_init()
 {
-
-#if 0
   Serial.println();
   Serial.println(F("Lyra Edition Power-on Self Test"));
   Serial.println();
@@ -660,13 +658,19 @@ static void RK35_post_init()
   Serial.println(F("Power-on Self Test is complete."));
   Serial.println();
   Serial.flush();
-#endif
 
 #if defined(USE_EPAPER)
 
   EPD_info1();
 
 #endif /* USE_EPAPER */
+
+#if defined(USE_OLED)
+  if (hw_info.display == DISPLAY_OLED_1_3 ||
+      hw_info.display == DISPLAY_OLED_TTGO) {
+    OLED_info1();
+  }
+#endif /* USE_OLED */
 }
 
 static bool prev_PPS_state = LOW;
@@ -835,6 +839,11 @@ static void RK35_SPI_begin()
 static void RK35_swSer_begin(unsigned long baud)
 {
   Serial_GNSS_In.begin(baud);
+}
+
+static void RK35_swSer_enableRx(boolean arg)
+{
+  /* NONE */
 }
 
 pthread_t RK35_EPD_update_thread;
@@ -1079,7 +1088,7 @@ const SoC_ops_t RK35_ops = {
   RK35_EEPROM_extension,
   RK35_SPI_begin,
   RK35_swSer_begin,
-  NULL,
+  RK35_swSer_enableRx,
   NULL,
   NULL,
   NULL,
@@ -1264,10 +1273,11 @@ void normal_loop()
 #endif /* USE_LGPIO */
 
     /* Read GNSS data from standard input */
-    RK35_PickGNSSFix();
+//    RK35_PickGNSSFix();
 
     /* Read NMEA data from GNSS module on GPIO pins */
 //    PickGNSSFix();
+    GNSS_loop();
 
     RK35_ReadTraffic();
 
@@ -1643,7 +1653,7 @@ int main()
   ThisAircraft.stealth  = settings->stealth;
   ThisAircraft.no_track = settings->no_track;
 
-//  hw_info.gnss = GNSS_setup();
+  hw_info.gnss = GNSS_setup();
 
   Traffic_setup();
 
