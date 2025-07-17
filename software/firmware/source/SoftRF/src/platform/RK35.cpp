@@ -597,6 +597,30 @@ void RK35_SerialNumber(void)
 
 static void RK35_setup()
 {
+  FILE *fp = fopen("/sys/firmware/devicetree/base/model", "r");
+
+  if (fp == NULL)
+  {
+      perror("/sys/firmware/devicetree/base/model");
+      exit(EXIT_FAILURE);
+  }
+
+  char value[80];
+
+  if (fgets(value, sizeof(value), fp) != NULL)
+  {
+    if (strncmp(value, "Luckfox Lyra Zero W",      sizeof(value)) == 0 ||
+        strncmp(value, "Luckfox Lyra Zero",        sizeof(value)) == 0) {
+      RK35_board = RK35_LUCKFOX_LYRA_ZW;
+      RK35_hat   = RK35_WAVESHARE_HAT_LORA_GNSS;
+    } else if (strncmp(value, "Luckfox Lyra Plus", sizeof(value)) == 0 ||
+               strncmp(value, "Luckfox Lyra",      sizeof(value)) == 0) {
+      RK35_board = RK35_LUCKFOX_LYRA_B;
+    }
+  }
+
+  fclose(fp);
+
 #if defined(EXCLUDE_EEPROM)
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
@@ -632,9 +656,30 @@ static void RK35_setup()
 
   RK35_SerialNumber();
 
-#if defined(USE_RADIOLIB)
-  lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
-#endif /* USE_RADIOLIB */
+  switch (RK35_board)
+  {
+    case RK35_LUCKFOX_LYRA_ZW:
+      lmic_pins.nss  = SOC_GPIO_PIN_HAT_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_HAT_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_HAT_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_HAT_DIO;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+      break;
+    case RK35_LUCKFOX_LYRA_B:
+    default:
+      lmic_pins.nss    = SOC_GPIO_PIN_SS;
+      lmic_pins.rst    = SOC_GPIO_PIN_RST;
+      lmic_pins.busy   = SOC_GPIO_PIN_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+      break;
+  }
+
+  if (RK35_hat == RK35_WAVESHARE_HAT_LORA_GNSS) {
+    lmic_pins.tcxo = lmic_pins.rst; /* SX1262 with XTAL */
+  }
 }
 
 static void RK35_post_init()
