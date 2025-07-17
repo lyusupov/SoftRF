@@ -656,17 +656,18 @@ static void RK35_setup()
 
   RK35_SerialNumber();
 
-  switch (RK35_board)
+  switch (RK35_hat)
   {
-    case RK35_LUCKFOX_LYRA_ZW:
+    case RK35_WAVESHARE_HAT_LORA_GNSS:
       lmic_pins.nss  = SOC_GPIO_PIN_HAT_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_HAT_RST;
       lmic_pins.busy = SOC_GPIO_PIN_HAT_BUSY;
+      lmic_pins.tcxo = lmic_pins.rst; /* SX1262 with XTAL */
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
       lmic_pins.dio[0] = SOC_GPIO_PIN_HAT_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
       break;
-    case RK35_LUCKFOX_LYRA_B:
+    case RK35_WAVESHARE_PICO_LORA:
     default:
       lmic_pins.nss    = SOC_GPIO_PIN_SS;
       lmic_pins.rst    = SOC_GPIO_PIN_RST;
@@ -675,10 +676,6 @@ static void RK35_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
       break;
-  }
-
-  if (RK35_hat == RK35_WAVESHARE_HAT_LORA_GNSS) {
-    lmic_pins.tcxo = lmic_pins.rst; /* SX1262 with XTAL */
   }
 }
 

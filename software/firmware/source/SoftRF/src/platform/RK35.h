@@ -86,6 +86,32 @@ struct rst_info {
 };
 
 /* Peripherals */
+
+/* Content of /etc/luckfox.cfg for Lyra board
+
+TP_STATUS=0
+SPI0_STATUS=1
+SPI0_SPEED=2000000
+SPI0_SCLK_RM_IO=7
+SPI0_MOSI_RM_IO=6
+SPI0_MISO_RM_IO=5
+SPI0_CS_RM_IO=13
+I2C1_STATUS=1
+I2C1_SPEED=400000
+I2C1_SDA_RM_IO=27
+I2C1_SCL_RM_IO=26
+SPI1_STATUS=1
+SPI1_SPEED=8000000
+SPI1_SCLK_RM_IO=3
+SPI1_MOSI_RM_IO=4
+SPI1_MISO_RM_IO=9
+SPI1_CS_RM_IO=10
+UART1_STATUS=1
+UART1_RX_RM_IO=1
+UART1_TX_RM_IO=0
+
+*/
+
 #define SOC_GPIO_PIN_CONS_RX  23 // RMIO23
 #define SOC_GPIO_PIN_CONS_TX  22 // RMIO22
 
@@ -112,6 +138,8 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUZZER   (RK35_board == RK35_LUCKFOX_LYRA_B ? \
                                8 /* RMIO8 */ : SOC_UNUSED_PIN)
+
+/* Content of /etc/luckfox.cfg for Lyra Zero W board - TBD */
 
 // Luckfox Lyra Zero W with Waveshare SX1262+L76K HAT
 #define SOC_GPIO_PIN_HAT_MOSI 6  // RMIO6
