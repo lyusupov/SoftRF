@@ -125,6 +125,12 @@
 #define PWR_MODE  18   // D2 // Power mode pin
 #define TX_EN     2    // D0 // TX / RX mode pin
 #define CS_N      8    // D8 // SPI slave select pin
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+// WT99P4C5 GPIO pins
+#define TRX_EN    26   // Enable/standby pin
+#define PWR_MODE  25   // Power mode pin
+#define TX_EN     7    // TX / RX mode pin
+#define CS_N      13   // SPI slave select pin
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 // NodeMCU 1.0 + WT0132C6-S5 GPIO pins
 #define TRX_EN    8    // D4 // Enable/standby pin

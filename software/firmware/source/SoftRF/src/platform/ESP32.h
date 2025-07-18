@@ -382,6 +382,7 @@ struct rst_info {
 /* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
 #define ST_ID                   0x20
 #define XMC_XM25QH32B           0x4016
+#define XMC_XM25QH64B           0x4017
 
 /* Zbit Semiconductor, Inc. */
 #define ZBIT_ID                 0x5E
