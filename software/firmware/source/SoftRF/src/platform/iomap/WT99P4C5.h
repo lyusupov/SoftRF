@@ -84,17 +84,22 @@
 #define SOC_GPIO_PIN_P4_ETH_PHY_MDIO    52
 #define SOC_GPIO_PIN_P4_ETH_PHY_POWER   51 /* PHY_RSTN */
 
+
 /* ESP32-C5 */
 #define SOC_GPIO_PIN_C5_CONS_RX         12
 #define SOC_GPIO_PIN_C5_CONS_TX         11
+
+// USB
+#define SOC_GPIO_PIN_C5_USB_DP          14
+#define SOC_GPIO_PIN_C5_USB_DN          13
 
 // ESP HOSTED
 #define SOC_GPIO_PIN_C5_SD_CLK          9
 #define SOC_GPIO_PIN_C5_SD_CMD          10
 #define SOC_GPIO_PIN_C5_SD_D0           8
 #define SOC_GPIO_PIN_C5_SD_D1           7
-#define SOC_GPIO_PIN_C5_SD_D2           14
-#define SOC_GPIO_PIN_C5_SD_D3           13
+#define SOC_GPIO_PIN_C5_SD_D2           14 /* D+ */
+#define SOC_GPIO_PIN_C5_SD_D3           13 /* D- */
 
 #define SOC_GPIO_PIN_C5_IO2             2 /* C5 WAKEUP */
 #define SOC_GPIO_PIN_C5_IO4             4

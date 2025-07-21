@@ -32,7 +32,7 @@
 #include <NimBLEServer.h>
 #include <NimBLEUtils.h>
 
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(CONFIG_IDF_TARGET_ESP32C5)
 #include "esp_gap_bt_api.h"
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 

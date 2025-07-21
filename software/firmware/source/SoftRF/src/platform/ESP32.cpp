@@ -660,6 +660,10 @@ static void ESP32_setup()
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q64):
     default:
       hw_info.model = SOFTRF_MODEL_PRIME_MK3;
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+    case MakeFlashId(ST_ID, XMC_XM25QH64B):
+    default:
+      esp32_board   = ESP32_C5_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32C61)
     default:
       esp32_board   = ESP32_C61_DEVKIT;
@@ -6196,7 +6200,7 @@ const SoC_ops_t ESP32_ops = {
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
       (defined(CONFIG_IDF_TARGET_ESP32C3)  || \
-       defined(CONFIG_IDF_TARGET_ESP32C5)  || \
+    /* defined(CONFIG_IDF_TARGET_ESP32C5)  || */ \
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
        defined(CONFIG_IDF_TARGET_ESP32H2)  || \

@@ -200,7 +200,6 @@ jobs:
             arduino --pref "custom_FlashFreq=esp32c3_80"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32c3_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32c3_4M"               --save-prefs ;
-            arduino --pref "custom_PSRAM=esp32c3_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c3_min_spiffs" --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c3_921600"         --save-prefs ;
             cd $GITHUB_WORKSPACE ;
@@ -241,7 +240,6 @@ jobs:
             arduino --pref "custom_FlashFreq=esp32c6_80"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32c6_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32c6_4M"               --save-prefs ;
-            arduino --pref "custom_PSRAM=esp32c6_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c6_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.2.1 ;
@@ -274,7 +272,6 @@ jobs:
             arduino --pref "custom_FlashFreq=esp32h2_64"               --save-prefs ;
             arduino --pref "custom_FlashMode=esp32h2_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32h2_4M"               --save-prefs ;
-            arduino --pref "custom_PSRAM=esp32h2_enabled"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32h2_no_fs"      --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32h2_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.2.1 ;
