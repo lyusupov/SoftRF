@@ -318,12 +318,23 @@ static u1_t randbuf[16];
 
 //#define FIFO_Push_Inv(x)              writeReg(RegFifo, (u1_t)~(x))
 
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if CONFIG_ARDUINO_ISR_IRAM
+#define ARDUINO_ISR_ATTR IRAM_ATTR
+#else
+#define ARDUINO_ISR_ATTR
+#endif
+extern void ARDUINO_ISR_ATTR delayMicroseconds(uint32_t);
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+
 static void opmode (u1_t mode) {
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || defined(RASPBERRY_PI)
     delay(1);
 #endif
     writeReg(RegOpMode, (readReg(RegOpMode) & ~OPMODE_MASK) | mode);
-#if !defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+    delayMicroseconds(1500);
+#else
     delay(1);
 #endif
 }

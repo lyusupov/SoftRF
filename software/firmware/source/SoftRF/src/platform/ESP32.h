@@ -531,7 +531,10 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef USE_NMEALIB
 #undef USE_BLE_MIDI
 #undef ENABLE_PROL
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#define EXCLUDE_BLUETOOTH
+#define USE_SOFTSPI
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
 #else
 #define USE_ARDUINOBLE
@@ -594,6 +597,13 @@ typedef void EPD_Task_t;
 
 extern const char *Hardware_Rev[];
 #endif /* USE_EPAPER */
+
+#if defined(USE_SOFTSPI)
+#include <SoftSPI.h>
+extern  SoftSPI RadioSPI;
+#undef  SPI
+#define SPI RadioSPI
+#endif /* USE_SOFTSPI */
 
 #endif /* PLATFORM_ESP32_H */
 

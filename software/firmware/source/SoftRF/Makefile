@@ -39,8 +39,6 @@ CXX           = g++
 
 CFLAGS        = -Winline -MMD -D__BASEFILE__=\"$*\" \
                 -DBCM2835_NO_DELAY_COMPATIBILITY
-pi:           CFLAGS += -DRASPBERRY_PI
-lyra:         CFLAGS += -DLUCKFOX_LYRA
 
 CXXFLAGS      = -std=c++11 $(CFLAGS)
 
@@ -286,13 +284,6 @@ ifeq ($(BRIDGE), yes)
   CFLAGS      += -DUSE_BRIDGE
 endif
 
-pi:
-ifeq ($(NEOPIXEL), yes)
-  OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
-                 $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
-                 $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
-endif
-
 ifeq ($(NEOPIXEL), yes)
   CFLAGS      += -DUSE_NEOPIXEL
 endif
@@ -383,8 +374,17 @@ e3uf2:
 e6uf2:
 	$(UF2CONV) $(HEXDIR)/$(BIN_RAW) -c -f 0x540ddf62 -b 0 -o $(HEXDIR)/$(BIN_UF2)
 
+pi:
+ifeq ($(NEOPIXEL), yes)
+	OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
+	               $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
+	               $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
+endif
+
+pi: CFLAGS += -DRASPBERRY_PI
 pi: bcm lgpio $(PROGNAME) $(PROGNAME)-aux
 
+lyra: CFLAGS += -DLUCKFOX_LYRA
 lyra: bcm lgpio $(PROGNAME)
 
 %.o: %.cpp

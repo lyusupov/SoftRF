@@ -1610,6 +1610,7 @@ static void ESP32_setup()
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_C5_CONS_RX,
                        SOC_GPIO_PIN_C5_CONS_TX);
+    SerialOutput.setTxBufferSize(1024);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
     lmic_pins.nss  = SOC_GPIO_PIN_C5_SS;
@@ -3772,6 +3773,12 @@ static void ESP32_EEPROM_extension(int cmd)
   }
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(USE_SOFTSPI)
+SoftSPI RadioSPI(SOC_GPIO_PIN_C5_MOSI, SOC_GPIO_PIN_C5_MISO, SOC_GPIO_PIN_C5_SCK);
+#endif /* USE_SOFTSPI */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
+
 static void ESP32_SPI_begin()
 {
   switch (esp32_board)
@@ -3829,8 +3836,12 @@ static void ESP32_SPI_begin()
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
     case ESP32_C5_DEVKIT:
+#if defined(USE_SOFTSPI)
+      RadioSPI.begin();
+#else
       SPI.begin(SOC_GPIO_PIN_C5_SCK,  SOC_GPIO_PIN_C5_MISO,
                 SOC_GPIO_PIN_C5_MOSI, SOC_GPIO_PIN_C5_SS);
+#endif /* USE_SOFTSPI */
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32C5 */
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -3850,8 +3861,12 @@ static void ESP32_SPI_begin()
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
     default:
+#if defined(USE_SOFTSPI)
+      RadioSPI.begin();
+#else
       SPI.begin(SOC_GPIO_PIN_SCK,  SOC_GPIO_PIN_MISO,
                 SOC_GPIO_PIN_MOSI, SOC_GPIO_PIN_SS);
+#endif /* USE_SOFTSPI */
       break;
   }
 }
