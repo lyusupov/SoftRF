@@ -250,7 +250,7 @@
 #define SOC_GPIO_PIN_USB_DP   19 /* D1 */
 #define SOC_GPIO_PIN_USB_DN   18 /* D2 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
 #endif
 #define EXCLUDE_AUDIO

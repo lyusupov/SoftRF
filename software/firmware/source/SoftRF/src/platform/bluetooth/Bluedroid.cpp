@@ -21,7 +21,7 @@
 
 #include "../../system/SoC.h"
 
-#if defined(CONFIG_BLUEDROID_ENABLED) && !defined(USE_NIMBLE) && !defined(USE_ARDUINOBLE)
+#if !defined(EXCLUDE_BLUETOOTH) && !defined(USE_NIMBLE) && !defined(USE_ARDUINOBLE)
 /*
  *  BLE code is based on Neil Kolban example for IDF:
  *    https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
@@ -32,7 +32,9 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)
 #include "esp_gap_bt_api.h"
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
 
 #include "../../driver/EEPROM.h"
 #include "../../driver/Bluetooth.h"

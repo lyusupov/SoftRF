@@ -28,7 +28,7 @@
 
 #if !defined(USE_ARDUINOBLE)
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#if !defined(CONFIG_BT_ENABLED)
 #error Bluetooth is not enabled!
 #endif
 
@@ -49,7 +49,9 @@
 #include <BLE2902.h>
 #endif /* USE_NIMBLE */
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C5)
 #include "esp_gap_bt_api.h"
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
 
 #include "EEPROMHelper.h"
 #include "BluetoothHelper.h"

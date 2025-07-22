@@ -533,7 +533,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef ENABLE_PROL
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
 //#define EXCLUDE_BLUETOOTH
-#define USE_NIMBLE
+//#define USE_NIMBLE
 #define USE_SOFTSPI
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
