@@ -11,6 +11,7 @@
 * [RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#rp2040)<br>
 * [RA4M1](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/source#ra4m1)<br>
 * [RP2350](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#rp2350)<br>
+* [Luckfox Lyra](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source#luckfox-lyra)<br>
 
 <br>
 
@@ -128,7 +129,7 @@ void loop()
 
 ## Raspberry Pi
 
-Although CLI application's source code for Raspberry Edition is located [at the same place](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)<br> 
+Although CLI application's source code for Raspberry Edition is located [at the same place](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)<br>
 and is shared with other SoftRF platforms - build instructions for the code are different.
 
 This build has to be done on a Raspberry Pi host.<br>
@@ -397,5 +398,36 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 9. Select _Tools_ -> _USB_ _Stack_ -> _Adafruit_ _TinyUSB_
 10. Select _Tools_ -> _IP/Bluetooth_ _Stack_ -> _IPv4_ _+_ _Bluetooth_
 11. try to build and upload using _Sketch_ -> _Upload_
+
+<br>
+
+## Luckfox Lyra
+
+Although CLI application's source code for Lyra Edition is located [at the same place](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source)<br>
+and is shared with other SoftRF platforms - build instructions for the code are different.
+
+This build has to be done on a Luckfox Lyra host.<br>
+Make sure that basic development packages (such as: binutils, g++, GNU make & etc) are installed.<br>
+
+1. transfer full content of **SoftRF** and **libraries** GitHub folders into a temporary build directory:
+
+    [SoftRF](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/SoftRF) &nbsp;&nbsp;**-->** ``<your path>``/SoftRF <br>
+    [libraries](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/source/libraries) **-->** ``<your path>``/libraries <br>
+
+2. change directory on ``<your path>``/SoftRF and execute **make** as follows:<br>
+
+```
+pi@raspberrypi: $ make lyra
+(cd ../libraries/bcm2835/src/../ ; ./configure ; make)
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+
+< ... skipped ... >
+```
+
+As a result of the build, one program binary will become created:
+- **SoftRF** - the program code designed to work with Luckfox Lyra's primary SPI bus;
 
 <br>
