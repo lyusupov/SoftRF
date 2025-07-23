@@ -545,8 +545,8 @@ char *Settings_content() {
     size -= len;
 
   } else if (SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C2 ||
-             SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6 ||
-             SoC->id == SOC_RA4M1) {
+             SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C5 ||
+             SoC->id == SOC_ESP32C6 || SoC->id == SOC_RA4M1) {
 
     snprintf_P ( offset, size,
       PSTR("\
@@ -623,11 +623,11 @@ char *Settings_content() {
   size -= len;
 
   /* SoC specific part 2 */
-  if (SoC->id == SOC_ESP32      || SoC->id == SOC_ESP32S3     ||
-      SoC->id == SOC_ESP32C2    || SoC->id == SOC_ESP32C3     ||
-      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040      ||
-      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC ||
-      SoC->id == SOC_RA4M1) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3    ||
+      SoC->id == SOC_ESP32C2     || SoC->id == SOC_ESP32C3    ||
+      SoC->id == SOC_ESP32C5     || SoC->id == SOC_ESP32C6    ||
+      SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_ARM ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR(
 #if defined(NMEA_TCP_SERVICE)
@@ -643,10 +643,10 @@ char *Settings_content() {
     offset += len;
     size -= len;
   }
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3    ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6    ||
-      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_ARM ||
-      SoC->id == SOC_RP2350_RISC) {
+  if (SoC->id == SOC_ESP32S2    || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3    || SoC->id == SOC_ESP32C5 ||
+      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->nmea_out == NMEA_USB       ? "selected" : ""), NMEA_USB);
@@ -679,11 +679,11 @@ char *Settings_content() {
 
 #if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 3 */
-  if (SoC->id == SOC_ESP32      || SoC->id == SOC_ESP32S3     ||
-      SoC->id == SOC_ESP32C2    || SoC->id == SOC_ESP32C3     ||
-      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040      ||
-      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC ||
-      SoC->id == SOC_RA4M1) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3    ||
+      SoC->id == SOC_ESP32C2     || SoC->id == SOC_ESP32C3    ||
+      SoC->id == SOC_ESP32C5     || SoC->id == SOC_ESP32C6    ||
+      SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_ARM ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->gdl90 == GDL90_BLUETOOTH ? "selected" : ""), GDL90_BLUETOOTH);
@@ -694,10 +694,10 @@ char *Settings_content() {
   }
 #endif /* EXCLUDE_BLUETOOTH */
 
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3    ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6    ||
-      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_ARM ||
-      SoC->id == SOC_RP2350_RISC) {
+  if (SoC->id == SOC_ESP32S2    || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3    || SoC->id == SOC_ESP32C5 ||
+      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->gdl90 == GDL90_USB       ? "selected" : ""), GDL90_USB);
@@ -728,11 +728,11 @@ char *Settings_content() {
 
 #if !defined(EXCLUDE_BLUETOOTH)
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32      || SoC->id == SOC_ESP32S3     ||
-      SoC->id == SOC_ESP32C2    || SoC->id == SOC_ESP32C3     ||
-      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040      ||
-      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC ||
-      SoC->id == SOC_RA4M1) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3    ||
+      SoC->id == SOC_ESP32C2     || SoC->id == SOC_ESP32C3    ||
+      SoC->id == SOC_ESP32C5     || SoC->id == SOC_ESP32C6    ||
+      SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_ARM ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RA4M1) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>Bluetooth</option>"),
       (settings->d1090 == D1090_BLUETOOTH ? "selected" : ""), D1090_BLUETOOTH);
@@ -743,10 +743,10 @@ char *Settings_content() {
   }
 #endif /* EXCLUDE_BLUETOOTH */
 
-  if (SoC->id == SOC_ESP32S2 || SoC->id == SOC_ESP32S3    ||
-      SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C6    ||
-      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_ARM ||
-      SoC->id == SOC_RP2350_RISC) {
+  if (SoC->id == SOC_ESP32S2    || SoC->id == SOC_ESP32S3 ||
+      SoC->id == SOC_ESP32C3    || SoC->id == SOC_ESP32C5 ||
+      SoC->id == SOC_ESP32C6    || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_ARM || SoC->id == SOC_RP2350_RISC) {
     snprintf_P ( offset, size,
       PSTR("<option %s value='%d'>USB</option>"),
       (settings->d1090 == D1090_USB       ? "selected" : ""), D1090_USB);

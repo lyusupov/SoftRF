@@ -534,6 +534,13 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
 //#define EXCLUDE_BLUETOOTH
 //#define USE_NIMBLE
+#undef USE_BASICMAC
+#undef USE_RADIOLIB
+#define EXCLUDE_LR11XX
+#undef EXCLUDE_SOFTRF_HEARTBEAT
+#undef EXCLUDE_EGM96
+#undef EXCLUDE_TEST_MODE
+#define USE_NMEALIB
 #define USE_SOFTSPI
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE

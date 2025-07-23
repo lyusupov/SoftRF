@@ -1243,8 +1243,13 @@ static bool ag33_setup()
   /* NMEA 0183 V4.10 and SBAS DGPS are enabled by default */
 #endif
 
-  /* GPS + GLONASS + Galileo + BeiDou + QZSS */
-  Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");         delay(250);
+  if (settings->band == RF_BAND_IN) {
+    /* GPS + GLONASS + Galileo + NAVIC  + QZSS */
+    Serial_GNSS_Out.write("$PAIR066,1,1,1,0,1,1*3B\r\n");       delay(250);
+  } else {
+    /* GPS + GLONASS + Galileo + BeiDou + QZSS */
+    Serial_GNSS_Out.write("$PAIR066,1,1,1,1,1,0*3B\r\n");       delay(250);
+  }
 
   Serial_GNSS_Out.write("$PAIR062,0,1*3F\r\n");   /* GGA 1s */  delay(250);
   Serial_GNSS_Out.write("$PAIR062,4,1*3B\r\n");   /* RMC 1s */  delay(250);
