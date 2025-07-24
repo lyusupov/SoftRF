@@ -6215,7 +6215,7 @@ const SoC_ops_t ESP32_ops = {
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
       (defined(CONFIG_IDF_TARGET_ESP32C3)  || \
-    /* defined(CONFIG_IDF_TARGET_ESP32C5)  || */ \
+       defined(CONFIG_IDF_TARGET_ESP32C5)  || \
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
        defined(CONFIG_IDF_TARGET_ESP32H2)  || \

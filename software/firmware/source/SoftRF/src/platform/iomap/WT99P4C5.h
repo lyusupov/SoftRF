@@ -86,8 +86,8 @@
 
 
 /* ESP32-C5 */
-#define SOC_GPIO_PIN_C5_CONS_RX         12
-#define SOC_GPIO_PIN_C5_CONS_TX         11
+#define SOC_GPIO_PIN_C5_CONS_RX         23
+#define SOC_GPIO_PIN_C5_CONS_TX         27
 
 // USB
 #define SOC_GPIO_PIN_C5_USB_DP          14
@@ -101,28 +101,25 @@
 #define SOC_GPIO_PIN_C5_SD_D2           14 /* D+ */
 #define SOC_GPIO_PIN_C5_SD_D3           13 /* D- */
 
-#define SOC_GPIO_PIN_C5_IO2             2 /* C5 WAKEUP */
-#define SOC_GPIO_PIN_C5_IO4             4
-#define SOC_GPIO_PIN_C5_IO5             5
-#define SOC_GPIO_PIN_C5_IO27            27 /* NC ? */
-#define SOC_GPIO_PIN_C5_IO28            28
+#define SOC_GPIO_PIN_C5_IO2             2  /* C5 WAKEUP */
+#define SOC_GPIO_PIN_C5_IO28            28 /* BOOT      */
 
 // GNSS module
-#define SOC_GPIO_PIN_C5_GNSS_RX         SOC_GPIO_PIN_C5_IO5
-#define SOC_GPIO_PIN_C5_GNSS_TX         SOC_GPIO_PIN_C5_IO4
-#define SOC_GPIO_PIN_C5_GNSS_PPS        SOC_GPIO_PIN_C5_IO28 /* TBD */
+#define SOC_GPIO_PIN_C5_GNSS_RX         12
+#define SOC_GPIO_PIN_C5_GNSS_TX         11
+#define SOC_GPIO_PIN_C5_GNSS_PPS        24
 
 // SPI
 #define SOC_GPIO_PIN_C5_MOSI            SOC_GPIO_PIN_C5_SD_CMD
 #define SOC_GPIO_PIN_C5_MISO            SOC_GPIO_PIN_C5_SD_D0
 #define SOC_GPIO_PIN_C5_SCK             SOC_GPIO_PIN_C5_SD_CLK
-#define SOC_GPIO_PIN_C5_SS              SOC_GPIO_PIN_C5_SD_D3
+#define SOC_GPIO_PIN_C5_SS              SOC_GPIO_PIN_C5_SD_D1
 
 // SX12xx or LR112x
-#define SOC_GPIO_PIN_C5_RST             LMIC_UNUSED_PIN
-#define SOC_GPIO_PIN_C5_DIO             SOC_GPIO_PIN_C5_SD_D1
-#define SOC_GPIO_PIN_C5_BUSY            SOC_GPIO_PIN_C5_SD_D2
+#define SOC_GPIO_PIN_C5_RST             3
+#define SOC_GPIO_PIN_C5_DIO             0
+#define SOC_GPIO_PIN_C5_BUSY            1
 
 // I2C
-#define SOC_GPIO_PIN_C5_SDA             25 /* NC */
-#define SOC_GPIO_PIN_C5_SCL             26 /* NC */
+#define SOC_GPIO_PIN_C5_SDA             4
+#define SOC_GPIO_PIN_C5_SCL             5
