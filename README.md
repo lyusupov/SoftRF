@@ -132,6 +132,7 @@ Academy|[Nanjing Qinheng Microelectronics](https://www.wch-ic.com/)<br>[CH32V307
 1&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)|[Raspberry Pi<br>Foundation<br>**RP2350**](https://en.wikipedia.org/wiki/RP2350)|Q1 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 **Lyra**|[Rockchip](https://en.wikipedia.org/wiki/Rockchip)<br>RK3506|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 **Academy**|[Espressif<br>ESP32-P4](https://en.wikipedia.org/wiki/ESP32#ESP32-P4)|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
+**Academy**|[Espressif<br>ESP32-C5](https://en.wikipedia.org/wiki/ESP32#ESP32-C5)|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 
 ## By sub-1 GHz radio
 Radio|Model(s)|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Notes

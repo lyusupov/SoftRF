@@ -206,7 +206,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c5" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.3.0-RC1 ;
+            arduino --install-boards esp32:esp32:3.3.0 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c5_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c5_none"            --save-prefs ;
@@ -214,6 +214,7 @@ jobs:
             arduino --pref "custom_FlashMode=esp32c5_dio"              --save-prefs ;
             arduino --pref "custom_FlashSize=esp32c5_4M"               --save-prefs ;
             arduino --pref "custom_PSRAM=esp32c5_enabled"              --save-prefs ;
+            arduino --pref "custom_CDCOnBoot=esp32c5_cdc"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c5_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c5_921600"         --save-prefs ;
             wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
