@@ -4144,6 +4144,21 @@ static byte ESP32_Display_setup()
       }
       WIRE_FINI(Wire);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+    } else if (esp32_board == ESP32_C5_DEVKIT) {
+      Wire.begin(SOC_GPIO_PIN_C5_SDA, SOC_GPIO_PIN_C5_SCL);
+      Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+      has_oled = (Wire.endTransmission() == 0);
+      if (has_oled) {
+        rval = ESP32_OLED_ident(&Wire);
+        if (rval == DISPLAY_OLED_1_3) {
+          u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
+        } else {
+          u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
+        }
+      }
+      WIRE_FINI(Wire);
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
         Wire1.begin(TTGO_V2_OLED_PIN_SDA , TTGO_V2_OLED_PIN_SCL);

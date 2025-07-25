@@ -542,6 +542,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef EXCLUDE_TEST_MODE
 #define USE_NMEALIB
 #define USE_SOFTSPI
+#define USE_OLED
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
 #else
