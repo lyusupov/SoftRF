@@ -53,7 +53,7 @@ jobs:
             #'rp2040:rp2040:rpipico2w:arch=riscv',
             'arduino:mbed_rp2040:pico',
             #'arduino:mbed_nano:nanorp2040connect',
-            'SiliconLabs:gecko:nano_matter:protocol_stack=ble_arduino',
+            'SiliconLabs:silabs:nano_matter:protocol_stack=ble_arduino',
             'WCH:ch32v:CH32V30x_EVT'
           ]
 
@@ -96,7 +96,7 @@ jobs:
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
-              if [[ "$BOARD" =~ "SiliconLabs:gecko:" ]] || [[ "$BOARD" =~ "arduino:zephyr:" ]]; then
+              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]] || [[ "$BOARD" =~ "arduino:zephyr:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
                 rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
@@ -471,17 +471,17 @@ jobs:
             sed -i 's,#define SERIAL_HOWMANY\t\t1,#define SERIAL_HOWMANY\t\t2,g' ${PINS_ARDUINO} ;
             cd $GITHUB_WORKSPACE ;
           fi
-          #if [[ "$BOARD" =~ "SiliconLabs:gecko:" ]]; then
+          #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
           #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
-          #  arduino --install-boards SiliconLabs:gecko:3.0.0 ;
+          #  arduino --install-boards SiliconLabs:silabs:3.0.0 ;
           #  arduino --board $BOARD --save-prefs ;
           #  cd $GITHUB_WORKSPACE ;
           #fi
-          if [[ "$BOARD" =~ "SiliconLabs:gecko:" ]]; then
+          if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install SiliconLabs:gecko@3.0.0 ;
+            arduino-cli core install SiliconLabs:silabs@3.0.0 ;
             # arduino-cli board attach -b $BOARD ;
             wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
@@ -610,7 +610,7 @@ jobs:
           if [[ "$BOARD" =~ "arduino:mbed_rp2040:" ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "SiliconLabs:gecko:"  ]]; then
+          if [[ "$BOARD" =~ "SiliconLabs:silabs:"  ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
           if [[ "$BOARD" =~ "WCH:ch32v:"           ]]; then
