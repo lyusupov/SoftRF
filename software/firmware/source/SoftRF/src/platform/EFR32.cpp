@@ -70,6 +70,7 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
+#if 0
 char* ultoa(unsigned long value, char *string, int radix)
 {
   char tmp[33];
@@ -102,6 +103,7 @@ char* ultoa(unsigned long value, char *string, int radix)
   *sp = 0;
   return string;
 }
+#endif
 
 #if (__GNUC__ <= 9)
 volatile int __sf;
