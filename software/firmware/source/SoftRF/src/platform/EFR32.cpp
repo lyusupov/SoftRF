@@ -70,41 +70,6 @@ static struct rst_info reset_info = {
 static uint32_t bootCount __attribute__ ((section (".noinit")));
 static bool wdt_is_active = false;
 
-#if 0
-char* ultoa(unsigned long value, char *string, int radix)
-{
-  char tmp[33];
-  char *tp = tmp;
-  long i;
-  unsigned long v = value;
-  char *sp;
-  if ( string == NULL )
-  {
-    return 0;
-  }
-  if (radix > 36 || radix <= 1)
-  {
-    return 0;
-  }
- 
-  while (v || tp == tmp)
-  {
-    i = v % radix;
-    v = v / radix;
-    if (i < 10)
-      *tp++ = i+'0';
-    else
-      *tp++ = i + 'a' - 10;
-  }
-  sp = string;
- 
-  while (tp > tmp)
-    *sp++ = *--tp;
-  *sp = 0;
-  return string;
-}
-#endif
-
 #if (__GNUC__ <= 9)
 volatile int __sf;
 #endif
@@ -393,7 +358,7 @@ static String EFR32_getResetReason()
 
 static uint32_t EFR32_getFreeHeap()
 {
-  return 0; /* TODO */
+  return (uint32_t) getFreeHeapSize();
 }
 
 static long EFR32_random(long howsmall, long howBig)
