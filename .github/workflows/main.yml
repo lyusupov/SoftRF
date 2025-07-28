@@ -62,8 +62,8 @@ jobs:
       ARDUINO_CLI_VERSION: 0.34.2
       ARDUINO_BLE_VERSION: 1.4.1
       ENERGIA_IDE_VERSION: 1.8.10E23
-      NIM_BLE_VERSION:     2.3.2
-      # NIM_BLE_VERSION:   master
+      # NIM_BLE_VERSION:     2.3.2
+      NIM_BLE_VERSION:   master
       TINYUSB_VERSION:     3.4.0
       BOARD:               ${{ matrix.board }}
       PINS_ARDUINO:        pins_arduino.h
@@ -217,8 +217,8 @@ jobs:
             arduino --pref "custom_CDCOnBoot=esp32c5_cdc"              --save-prefs ;
             arduino --pref "custom_PartitionScheme=esp32c5_huge_app"   --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32c5_921600"         --save-prefs ;
-            wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
-            # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
+            # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
+            wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
             rm ${NIM_BLE_VERSION}.tar.gz ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
@@ -245,8 +245,8 @@ jobs:
             arduino --pref "custom_UploadSpeed=esp32c6_921600"         --save-prefs ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.2.1 ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
-            wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
-            # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
+            # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/tags/${NIM_BLE_VERSION}.tar.gz ;
+            wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
             rm ${NIM_BLE_VERSION}.tar.gz ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
