@@ -1,4 +1,4 @@
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 /*
  * Given a buffer of uint16_t Q16 magnitude values

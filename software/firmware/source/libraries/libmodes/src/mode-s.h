@@ -139,7 +139,8 @@ typedef struct {
   int interactive_ttl; /* Interactive mode: TTL before deletion. */
 
 #if defined(ENABLE_RTLSDR)  || defined(ENABLE_HACKRF) || \
-    defined(ENABLE_MIRISDR) || defined(RASPBERRY_PI)
+    defined(ENABLE_MIRISDR) || defined(RASPBERRY_PI)  || \
+    defined(LUCKFOX_LYRA)
   pthread_t       reader_thread;
 
   pthread_mutex_t reader_cpu_mutex;       // mutex protecting reader_cpu_accumulator

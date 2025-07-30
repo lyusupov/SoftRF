@@ -314,6 +314,8 @@ ifeq ($(RTLSDR), yes)
                  $(MODES_PATH)/sdr/flavor.armv7a_neon_vfpv4.o
   CFLAGS      += -DENABLE_RTLSDR -march=armv7-a -mfpu=neon-vfpv4 -DSTARCH_MIX_ARM
   LIBS        += -lrtlsdr
+  # INCLUDE   += -I/tmp/rtl-sdr-2.0.2/include
+  # LIBS      += -L/tmp/rtl-sdr-2.0.2/build/src -lrtlsdr
 endif
 
 ifeq ($(HACKRF), yes)

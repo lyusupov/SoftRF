@@ -1,4 +1,4 @@
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 /*
  * Count the number of samples in a uint16_t buffer that are >= a threshold.

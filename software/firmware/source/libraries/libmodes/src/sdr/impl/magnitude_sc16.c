@@ -1,4 +1,4 @@
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #include <math.h>
 
