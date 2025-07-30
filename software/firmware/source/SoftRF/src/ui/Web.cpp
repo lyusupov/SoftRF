@@ -209,7 +209,9 @@ char *Root_content() {
     ,
     (SoC == NULL ? "NONE" : SoC->name),
     GNSS_name[hw_info.gnss],
-    (rf_chip   == NULL ? "NONE" : rf_chip->name),
+    (hw_info.rf == RF_IC_R820T || hw_info.rf == RF_IC_MAX2837 ||
+     hw_info.rf == RF_IC_MSI001 ? "SDR" :
+     rf_chip   == NULL ? "NONE" : rf_chip->name),
     (baro_chip == NULL ? "NONE" : baro_chip->name),
 #if defined(ENABLE_AHRS)
     (ahrs_chip == NULL ? "NONE" : ahrs_chip->name),
@@ -380,6 +382,12 @@ char *Settings_content() {
     (settings->rf_protocol == RF_PROTOCOL_ADSL_860 ? "selected" : ""),
      RF_PROTOCOL_ADSL_860, adsl_proto_desc.name
     );
+  } else if (hw_info.rf == RF_IC_R820T   ||
+             hw_info.rf == RF_IC_MAX2837 ||
+             hw_info.rf == RF_IC_MSI001) {
+    snprintf_P ( offset, size,
+      PSTR("<tr><th align=left>Protocol</th><td align=right>%s</td></tr>"),
+      es1090_proto_desc.name);
   } else {
     snprintf_P ( offset, size,
       PSTR("\

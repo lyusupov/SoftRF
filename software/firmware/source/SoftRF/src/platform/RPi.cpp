@@ -1584,6 +1584,23 @@ int main()
   Serial.println(F("Copyright (C) 2015-2025 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM_setup();
+#endif /* EXCLUDE_EEPROM */
+
+  Serial.print(F("Radio & GNSS adapter: "));
+
+  switch (RPi_hat)
+  {
+    case RPI_WAVESHARE_LORA_GNSS:
+      Serial.println(F("Waveshare SX1262 LoRaWAN/GNSS HAT"));
+      break;
+    case RPI_DRAGINO_LORA_GPS:
+    default:
+      Serial.println(F("Dragino SX1276 LoRa/GPS HAT"));
+      break;
+  }
+
   mode_s_init(&state);
 
 #if defined(ENABLE_RTLSDR) || defined(ENABLE_HACKRF) || defined(ENABLE_MIRISDR)
@@ -1615,23 +1632,6 @@ int main()
     hw_info.rf = RF_IC_MSI001;
   } else
 #endif /* ENABLE_MIRISDR */
-
-#if !defined(EXCLUDE_EEPROM)
-  EEPROM_setup();
-#endif /* EXCLUDE_EEPROM */
-
-  Serial.print(F("Radio & GNSS adapter: "));
-
-  switch (RPi_hat)
-  {
-    case RPI_WAVESHARE_LORA_GNSS:
-      Serial.println(F("Waveshare SX1262 LoRaWAN/GNSS HAT"));
-      break;
-    case RPI_DRAGINO_LORA_GPS:
-    default:
-      Serial.println(F("Dragino SX1276 LoRa/GPS HAT"));
-      break;
-  }
 
   hw_info.rf = RF_setup();
 
