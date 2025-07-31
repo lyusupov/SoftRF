@@ -1458,11 +1458,13 @@ void GNSS_loop()
   /*
    * Both GGA and RMC NMEA sentences are required.
    * No fix when any of them is missing or lost.
-   * Valid date is critical for legacy protocol (only).
+   * Valid date is crucial for legacy protocol (only).
    */
+  FixQuality q   = gnss.location.Quality();
   GNSS_fix_cache = gnss.location.isValid()               &&
                    gnss.altitude.isValid()               &&
                    gnss.date.isValid()                   &&
+                   q >= GPS && q <= FloatRTK             &&
                   (gnss.location.age() <= NMEA_EXP_TIME) &&
                   (gnss.altitude.age() <= NMEA_EXP_TIME) &&
                   (gnss.date.age()     <= NMEA_EXP_TIME);
