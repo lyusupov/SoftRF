@@ -32,38 +32,36 @@
 #define SOC_GPIO_PIN_EPD_M5_DC    40
 #define SOC_GPIO_PIN_EPD_M5_RST   41
 #define SOC_GPIO_PIN_EPD_M5_BUSY  42
-#define SOC_GPIO_PIN_EPD_M5_BLGT  SOC_UNUSED_PIN // TBD
-#define SOC_GPIO_PIN_EPD_M5_PWR   5 // active HIGH, TBD
 
-/* Power: RGB, RF, GNSS */
-#define SOC_GPIO_PIN_IO_M5_PWR    4 // active HIGH
+/* I2C bus 1 */
+#define SOC_GPIO_PIN_M5_SDA       2
+#define SOC_GPIO_PIN_M5_SCL       1
 
-/* I2C */
-//#define SOC_GPIO_PIN_M5_SDA       2
-//#define SOC_GPIO_PIN_M5_SCL       1
-
-/* I2C int. (RTC) */
-#define SOC_GPIO_PIN_M5_SDA_INT   48
-#define SOC_GPIO_PIN_M5_SCL_INT   47
+/* I2C bus 2 (PCA9557) */
+#define SOC_GPIO_PIN_M5_SDA2      48
+#define SOC_GPIO_PIN_M5_SCL2      47
 
 /* buttons */
 #define SOC_GPIO_PIN_M5_BUTTON1   21
-#define SOC_GPIO_PIN_M5_BUTTON2   14
-
-/* LED */
-#define SOC_GPIO_LED_M5_RED       3
-#define SOC_GPIO_LED_M5_RED_PWR   2
+#define SOC_GPIO_PIN_M5_BUTTON2   14 /* touch */
 
 /* buzzer */
-#define SOC_GPIO_PIN_M5_BUZZER    5 // TBD
+#define SOC_GPIO_PIN_M5_BUZZER    9
 
 /* RTC */
-#define SOC_GPIO_PIN_RTC_M5_INT   SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_RTC_M5_INT   3
 
 /* ADC */
-#define SOC_GPIO_PIN_M5_BATTERY   4 // TBD
+#define SOC_GPIO_PIN_M5_BATTERY   8
 
 /* digital input */
-#define SOC_GPIO_PIN_M5_VBAT_SEN  SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_M5_VBAT_SEN  18
 #define SOC_GPIO_PIN_M5_VUSB_SEN  12
-#define SOC_GPIO_PIN_M5_VGPS_SEN  SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_M5_VGPS_SEN  10
+
+/* GPIO expansion (PCA9557) */
+#define SOC_GPIO_LED_M5_BLUE      IO1
+#define SOC_GPIO_LED_M5_RED_PWR   IO2
+#define SOC_GPIO_LED_M5_RED       IO3
+#define SOC_GPIO_PIN_IO_M5_EN     IO4 // active HIGH
+#define SOC_GPIO_PIN_EPD_M5_EN    IO5 // active HIGH

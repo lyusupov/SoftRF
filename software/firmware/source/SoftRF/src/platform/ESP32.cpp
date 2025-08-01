@@ -622,6 +622,7 @@ static void ESP32_setup()
    *  LilyGO T3-S3-EP | ESP32-S3-MINI    | XMC_XM25QH32B
    *  LilyGO T3-S3-OL | ESP32-S3FH4R2    |
    *  Elecrow TN-M2   | ESP32-S3-N4R8    | ZBIT_ZB25VQ32B
+   *  Elecrow TN-M5   | ESP32-S3-N4R8    |
    *  Ebyte EoRa-HUB  | ESP32-S3FH4R2    |
    *  WT99P4C5-S1 CPU | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
    *  WT99P4C5-S1 NCU | ESP32-C5-WROOM-1 | XMC_XM25QH64B
