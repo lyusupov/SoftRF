@@ -1464,7 +1464,7 @@ void GNSS_loop()
   GNSS_fix_cache = gnss.location.isValid()               &&
                    gnss.altitude.isValid()               &&
                    gnss.date.isValid()                   &&
-                   q >= GPS && q <= FloatRTK             &&
+                  (q >= GPS && q <= FloatRTK)            &&
                   (gnss.location.age() <= NMEA_EXP_TIME) &&
                   (gnss.altitude.age() <= NMEA_EXP_TIME) &&
                   (gnss.date.age()     <= NMEA_EXP_TIME);
