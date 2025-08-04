@@ -200,6 +200,7 @@ const char *ESP32S3_Model_Ham    = "Ham Edition";        /* 303a:818F */
 const char *ESP32S3_Model_Midi   = "Midi Edition";       /* 303a:81A0 */
 const char *ESP32S3_Model_Ink    = "Ink Edition";        /* 303a:820A */
 const char *ESP32S3_Model_Gizmo  = "Gizmo Edition";      /* 303a:82D9 */
+const char *ESP32S3_Model_Adv    = "Adventure Edition";  /* 303a:XXXX */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -1565,6 +1566,24 @@ static void ESP32_setup()
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
 #endif /* USE_RADIOLIB */
+
+  } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+
+    hw_info.model    = SOFTRF_MODEL_ADVENTURE;
+    hw_info.revision = 0; /* TBD */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                       SOC_GPIO_PIN_M5_CONS_RX,
+                       SOC_GPIO_PIN_M5_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+    lmic_pins.nss  = SOC_GPIO_PIN_M5_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_M5_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_M5_BUSY;
+#if defined(USE_RADIOLIB)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_M5_DIO1;
+#endif /* USE_RADIOLIB */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -1843,6 +1862,7 @@ static void ESP32_setup()
                     esp32_board == ESP32_HELTEC_TRACKER      ? ESP32S3_Model_Midi   :
                     esp32_board == ESP32_LILYGO_T3S3_EPD     ? ESP32S3_Model_Ink    :
                     esp32_board == ESP32_ELECROW_TN_M2       ? ESP32S3_Model_Gizmo  :
+                    esp32_board == ESP32_ELECROW_TN_M5       ? ESP32S3_Model_Adv    :
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
@@ -3818,6 +3838,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_EHUB_SCK,  SOC_GPIO_PIN_EHUB_MISO,
                 SOC_GPIO_PIN_EHUB_MOSI, SOC_GPIO_PIN_EHUB_SS);
       break;
+    case ESP32_ELECROW_TN_M5:
+      SPI.begin(SOC_GPIO_PIN_M5_SCK,  SOC_GPIO_PIN_M5_MISO,
+                SOC_GPIO_PIN_M5_MOSI, SOC_GPIO_PIN_M5_SS);
+      break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
     case ESP32_C2_DEVKIT:
@@ -3958,6 +3982,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
+    } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+      Serial.println(F("INFO: Elecrow ThinkNode M5 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_M5_GNSS_RX, SOC_GPIO_PIN_M5_GNSS_TX);
     } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
       Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -4878,7 +4906,8 @@ static void ESP32_Battery_setup()
                esp32_board == ESP32_LILYGO_T3S3_OLED ||
                esp32_board == ESP32_EBYTE_HUB_900TB) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO1_CHANNEL);
-    } else if (esp32_board == ESP32_BANANA_PICOW) {
+    } else if (esp32_board == ESP32_BANANA_PICOW ||
+               esp32_board == ESP32_ELECROW_TN_M5) {
       calibrate_voltage((adc1_channel_t) ADC1_GPIO8_CHANNEL); /* TBD */
     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
       adc2_calibrate_voltage((adc2_channel_t) ADC2_GPIO17_CHANNEL);
@@ -5090,6 +5119,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_ELECROW_TN_M2) {
 
     Wire.setPins(SOC_GPIO_PIN_M2_SDA, SOC_GPIO_PIN_M2_SCL);
+
+  } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+
+    Wire.setPins(SOC_GPIO_PIN_M5_SDA, SOC_GPIO_PIN_M5_SCL);
 
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
