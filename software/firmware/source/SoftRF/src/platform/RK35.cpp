@@ -611,11 +611,12 @@ static void RK35_setup()
   {
     if (strncmp(value, "Luckfox Lyra Zero W",      sizeof(value)) == 0 ||
         strncmp(value, "Luckfox Lyra Zero",        sizeof(value)) == 0) {
-      RK35_board = RK35_LUCKFOX_LYRA_ZW;
-      RK35_hat   = RK35_WAVESHARE_HAT_LORA_GNSS;
+      RK35_board    = RK35_LUCKFOX_LYRA_ZW;
+      RK35_hat      = RK35_WAVESHARE_HAT_LORA_GNSS;
     } else if (strncmp(value, "Luckfox Lyra Plus", sizeof(value)) == 0 ||
                strncmp(value, "Luckfox Lyra",      sizeof(value)) == 0) {
-      RK35_board = RK35_LUCKFOX_LYRA_B;
+      RK35_board    = RK35_LUCKFOX_LYRA_B;
+      hw_info.model = SOFTRF_MODEL_STANDALONE;
     }
   }
 
@@ -1328,6 +1329,28 @@ void normal_loop()
     ThisAircraft.timestamp = now();
 
     if (isValidFix()) {
+      ThisAircraft.latitude  = gnss.location.lat();
+      ThisAircraft.longitude = gnss.location.lng();
+      ThisAircraft.altitude  = gnss.altitude.meters();
+      ThisAircraft.course    = gnss.course.deg();
+      ThisAircraft.speed     = gnss.speed.knots();
+      ThisAircraft.hdop      = (uint16_t) gnss.hdop.value();
+      ThisAircraft.geoid_separation = gnss.separation.meters();
+
+#if !defined(EXCLUDE_EGM96)
+      /*
+       * When geoidal separation is zero or not available - use approx. EGM96 value
+       */
+      if (ThisAircraft.geoid_separation == 0.0) {
+        ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                  ThisAircraft.latitude,
+                                                  ThisAircraft.longitude
+                                                );
+        /* we can assume the GPS unit is giving ellipsoid height */
+        ThisAircraft.altitude -= ThisAircraft.geoid_separation;
+      }
+#endif /* EXCLUDE_EGM96 */
+
       RF_Transmit(RF_Encode(&ThisAircraft), true);
     }
 
