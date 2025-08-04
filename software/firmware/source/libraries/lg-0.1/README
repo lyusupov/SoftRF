@@ -1,0 +1,93 @@
+NOTE
+
+The overall install takes just over 1 minute.
+
+INSTALL
+
+Extract the archive to a directory.
+
+IN THAT DIRECTORY
+
+Enter the following commands (in this order)
+
+make
+sudo make install
+
+This will install
+
+o the library (liblgpio.so) in /usr/local/lib
+o the library (librgpio.so) in /usr/local/lib
+o the header file (lgpio.h) in /usr/local/include
+o the header file (rgpio.h) in /usr/local/include
+o the daemon (rgpiod) in /usr/local/bin
+o the socket interface (rgs) in /usr/local/bin
+o man pages in /usr/local/man/man1 and /usr/local/man/man3
+o the lgpio and rgpio Python modules
+
+EXAMPLE CODE
+
+See the EXAMPLES directory
+
+o lgpio - C (local)
+o rgpio - C (local&remote)
+o py_lgpio - Python (local)
+o py_rgpio - Python (local&remote)
+o rgs - shell
+
+HTML
+
+To build the HTML site use
+
+make html
+
+DAEMON
+
+To launch the daemon do
+
+rgpiod &
+
+Use rgpiod -? to see options.
+
+PYTHON MODULE
+
+The Python modules are installed to the default Python location
+for Python 2 and Python 3.
+
+You can install them for additional Python versions as follows.
+
+Go to the PY_LGPIO and PY_RGPIO directories and enter the
+command.
+
+pythonx.y setup.py install
+
+where x.y is the Python version.
+
+STOP DAEMON
+
+To stop the rgpiod daemon
+
+killall rgpiod
+
+RUNNING ON NON LINUX SBC
+
+On Windows machines (and possibly Macs)
+
+The Python rgpio module should install with
+
+python setup.py install
+
+DOCUMENTATION
+
+The most up to date should be http://abyz.me.uk/lg/
+
+On the SBC try
+
+man rgs
+man rgpiod
+
+man lgpio
+man rgpio
+
+pydoc lgpio
+pydoc rgpio
+
