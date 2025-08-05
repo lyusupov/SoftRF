@@ -231,8 +231,10 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
                                 SOC_GPIO_PIN_BPIPW_BUZZER :              \
                                 (esp32_board == ESP32_ELECROW_TN_M2 ?    \
                                 SOC_GPIO_PIN_M2_BUZZER :                 \
+                                (esp32_board == ESP32_ELECROW_TN_M5 ?    \
+                                SOC_GPIO_PIN_M5_BUZZER :                 \
                                 (esp32_board == ESP32_P4_WT_DEVKIT ?     \
-                                SOC_GPIO_PIN_P4_BUZZER : SOC_UNUSED_PIN)))))))
+                                SOC_GPIO_PIN_P4_BUZZER : SOC_UNUSED_PIN))))))))
 
 /* SPI (does match Heltec & TTGO LoRa32 pins mapping) */
 #define SOC_GPIO_PIN_MOSI       27
@@ -567,6 +569,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define USE_ARDUINOBLE
 //#undef USE_BLE_MIDI
 //#define USE_EPAPER
+//#define EPD_ASPECT_RATIO_1C1
 //#define EPD_ASPECT_RATIO_2C1
 //#define USE_EPD_TASK
 //#define	EPD_POWEROFF		      {}
