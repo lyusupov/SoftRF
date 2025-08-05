@@ -413,6 +413,10 @@ static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
 
 static bool ESP32_has_32k_xtal = false;
 
+#include <PCA9557.h>
+PCA9557 *pca9557              = nullptr;
+bool ESP32_has_gpio_extension = false;
+
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> TWR2_Pixel(1, SOC_GPIO_PIN_TWR2_NEOPIXEL);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
@@ -1595,6 +1599,16 @@ static void ESP32_setup()
                   SOC_GPIO_PIN_EPD_M5_MISO,
                   SOC_GPIO_PIN_EPD_M5_MOSI,
                   SOC_GPIO_PIN_EPD_M5_SS);
+
+    Wire1.begin(SOC_GPIO_PIN_M5_SDA2, SOC_GPIO_PIN_M5_SCL2);
+    Wire1.beginTransmission(PCA9557_ADDRESS);
+    ESP32_has_gpio_extension = (Wire1.endTransmission() == 0);
+
+    if (ESP32_has_gpio_extension) {
+      pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
+    } else {
+      WIRE_FINI(Wire1);
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -2096,6 +2110,18 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_M2_PWR_EN,        OUTPUT);
 #endif
 
+  } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+    if (ESP32_has_gpio_extension) {
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED,          OUTPUT);
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
+
+      pca9557->pinMode(SOC_EXPIO_PIN_IO_M5_EN,        OUTPUT);
+      pca9557->pinMode(SOC_EXPIO_PIN_EPD_M5_EN,       OUTPUT);
+      pca9557->digitalWrite(SOC_EXPIO_PIN_IO_M5_EN,   HIGH);
+      pca9557->digitalWrite(SOC_EXPIO_PIN_EPD_M5_EN,  HIGH);
+    }
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
     digitalWrite(SOC_GPIO_PIN_EHUB_LED,    LOW);

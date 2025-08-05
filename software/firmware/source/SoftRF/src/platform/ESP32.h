@@ -354,6 +354,7 @@ enum ep_model_id {
 	EP_GDEW027W3,
 	EP_GDEY027T91,
 	EP_DEPG0213BN,
+	EP_GDEH0154D67,
 };
 
 /* https://github.com/espressif/usb-pids/blob/main/allocated-pids.txt#L313 */
@@ -404,6 +405,8 @@ struct rst_info {
 #define MPU9250_ADDRESS         (0x68)
 #define MPU9250_REG_PWR_MGMT_1  (0x6B)
 #define MPU9250_REG_WHOAMI      (0x75)
+
+#define PCA9557_ADDRESS         (0x18)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0

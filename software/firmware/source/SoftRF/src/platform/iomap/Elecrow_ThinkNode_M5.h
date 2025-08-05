@@ -60,8 +60,8 @@
 #define SOC_GPIO_PIN_M5_VGPS_SEN  10
 
 /* GPIO expansion (PCA9557) */
-#define SOC_GPIO_LED_M5_BLUE      IO1
-#define SOC_GPIO_LED_M5_RED_PWR   IO2
-#define SOC_GPIO_LED_M5_RED       IO3
-#define SOC_GPIO_PIN_IO_M5_EN     IO4 // active HIGH
-#define SOC_GPIO_PIN_EPD_M5_EN    IO5 // active HIGH
+#define SOC_EXPIO_LED_M5_BLUE     1
+#define SOC_EXPIO_LED_M5_RED_PWR  2
+#define SOC_EXPIO_LED_M5_RED      3
+#define SOC_EXPIO_PIN_IO_M5_EN    4 // active HIGH
+#define SOC_EXPIO_PIN_EPD_M5_EN   5 // active HIGH
