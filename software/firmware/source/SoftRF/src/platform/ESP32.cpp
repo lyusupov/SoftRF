@@ -147,16 +147,21 @@ void TFT_backlight_on()
 #if defined(USE_EPAPER)
 #include "../driver/EPD.h"
 
+#if defined(EPD_ASPECT_RATIO_2C1)
 GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> epd_bn (GxEPD2_213_BN(
                                                         SOC_GPIO_PIN_T3S3_EPD_SS,
                                                         SOC_GPIO_PIN_T3S3_EPD_DC,
                                                         SOC_GPIO_PIN_T3S3_EPD_RST,
                                                         SOC_GPIO_PIN_T3S3_EPD_BUSY));
+#endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_d67(GxEPD2_154_D67(
-                                                          SOC_GPIO_PIN_EPD_M5_SS,
-                                                          SOC_GPIO_PIN_EPD_M5_DC,
-                                                          SOC_GPIO_PIN_EPD_M5_RST,
-                                                          SOC_GPIO_PIN_EPD_M5_BUSY));
+                                                          SOC_GPIO_PIN_M5_EPD_SS,
+                                                          SOC_GPIO_PIN_M5_EPD_DC,
+                                                          SOC_GPIO_PIN_M5_EPD_RST,
+                                                          SOC_GPIO_PIN_M5_EPD_BUSY));
+#endif /* EPD_ASPECT_RATIO_1C1 */
+
 GxEPD2_GFX *display;
 
 #if defined(USE_EPD_TASK)
@@ -724,7 +729,7 @@ static void ESP32_setup()
        * ESP32 Arduino Core 2.0.x is unable to detect OPI PSRAM
        * unless we do a psram_type=opi custom build.
        */
-      esp32_board    = ESP32_ELECROW_TN_M2; /* allow psramFound() to fail */
+      esp32_board    = ESP32_ELECROW_TN_M5; /* allow psramFound() to fail */
       break;
     default:
       esp32_board    = ESP32_S3_DEVKIT;
@@ -1558,47 +1563,7 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_BPIPW_DIO1;
 #endif /* USE_RADIOLIB */
 
-  } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-
-    hw_info.model    = SOFTRF_MODEL_GIZMO;
-    hw_info.revision = 0; /* TBD */
-
-#if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_M2_CONS_RX,
-                       SOC_GPIO_PIN_M2_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
-    lmic_pins.nss  = SOC_GPIO_PIN_M2_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_M2_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_M2_BUSY;
-#if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
-#endif /* USE_RADIOLIB */
-
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
-
-    hw_info.model    = SOFTRF_MODEL_AIRVENTURE;
-    hw_info.revision = 0; /* TBD */
-
-#if ARDUINO_USB_CDC_ON_BOOT
-    SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                       SOC_GPIO_PIN_M5_CONS_RX,
-                       SOC_GPIO_PIN_M5_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
-    lmic_pins.nss  = SOC_GPIO_PIN_M5_SS;
-    lmic_pins.rst  = SOC_GPIO_PIN_M5_RST;
-    lmic_pins.busy = SOC_GPIO_PIN_M5_BUSY;
-#if defined(USE_RADIOLIB)
-    lmic_pins.dio[0] = SOC_GPIO_PIN_M5_DIO1;
-#endif /* USE_RADIOLIB */
-
-    /* EPD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_EPD_M5_SCK,
-                  SOC_GPIO_PIN_EPD_M5_MISO,
-                  SOC_GPIO_PIN_EPD_M5_MOSI,
-                  SOC_GPIO_PIN_EPD_M5_SS);
 
     Wire1.begin(SOC_GPIO_PIN_M5_SDA2, SOC_GPIO_PIN_M5_SCL2);
     Wire1.beginTransmission(PCA9557_ADDRESS);
@@ -1606,8 +1571,47 @@ static void ESP32_setup()
 
     if (ESP32_has_gpio_extension) {
       pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
+
+      hw_info.model    = SOFTRF_MODEL_AIRVENTURE;
+      hw_info.revision = 0; /* TBD */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_M5_CONS_RX,
+                         SOC_GPIO_PIN_M5_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+      lmic_pins.nss  = SOC_GPIO_PIN_M5_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_M5_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_M5_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_M5_DIO1;
+#endif /* USE_RADIOLIB */
+
+      /* EPD-SPI init */
+      uSD_SPI.begin(SOC_GPIO_PIN_M5_EPD_SCK,
+                    SOC_GPIO_PIN_M5_EPD_MISO,
+                    SOC_GPIO_PIN_M5_EPD_MOSI,
+                    SOC_GPIO_PIN_M5_EPD_SS);
     } else {
       WIRE_FINI(Wire1);
+
+      esp32_board      = ESP32_ELECROW_TN_M2;
+      hw_info.model    = SOFTRF_MODEL_GIZMO;
+      hw_info.revision = 0; /* TBD */
+
+#if ARDUINO_USB_CDC_ON_BOOT
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_M2_CONS_RX,
+                         SOC_GPIO_PIN_M2_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+      lmic_pins.nss  = SOC_GPIO_PIN_M2_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_M2_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_M2_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
+#endif /* USE_RADIOLIB */
     }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -2111,17 +2115,20 @@ static void ESP32_setup()
 #endif
 
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
-    if (ESP32_has_gpio_extension) {
-      pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
-      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
-      pca9557->pinMode(SOC_EXPIO_LED_M5_RED,          OUTPUT);
-      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
 
-      pca9557->pinMode(SOC_EXPIO_PIN_IO_M5_EN,        OUTPUT);
-      pca9557->pinMode(SOC_EXPIO_PIN_EPD_M5_EN,       OUTPUT);
-      pca9557->digitalWrite(SOC_EXPIO_PIN_IO_M5_EN,   HIGH);
-      pca9557->digitalWrite(SOC_EXPIO_PIN_EPD_M5_EN,  HIGH);
-    }
+    pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
+    pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
+    pca9557->pinMode(SOC_EXPIO_LED_M5_RED,          OUTPUT);
+    pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
+
+    pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,         OUTPUT);
+    pca9557->digitalWrite(SOC_EXPIO_LED_M5_BLUE,    LOW);
+
+    pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,        OUTPUT);
+    pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,       OUTPUT);
+    pca9557->digitalWrite(SOC_EXPIO_PIN_M5_IO_EN,   HIGH);
+    pca9557->digitalWrite(SOC_EXPIO_PIN_M5_EPD_EN,  HIGH);
+
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
     digitalWrite(SOC_GPIO_PIN_EHUB_LED,    LOW);
@@ -4332,12 +4339,17 @@ static byte ESP32_Display_setup()
 #if defined(USE_EPAPER)
     switch (esp32_board)
     {
+#if defined(EPD_ASPECT_RATIO_2C1)
       case ESP32_LILYGO_T3S3_EPD:
         display = &epd_bn;
         break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
+
       case ESP32_ELECROW_TN_M5:
       default:
+#if defined(EPD_ASPECT_RATIO_1C1)
         display = &epd_d67;
+#endif /* EPD_ASPECT_RATIO_1C1 */
         break;
     }
     display->epd2.selectSPI(uSD_SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
@@ -4358,12 +4370,16 @@ static byte ESP32_Display_setup()
 #endif /* USE_EPD_TASK */
       switch (esp32_board)
       {
+#if defined(EPD_ASPECT_RATIO_2C1)
         case ESP32_LILYGO_T3S3_EPD:
           rval = DISPLAY_EPD_2_13;
           break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
         case ESP32_ELECROW_TN_M5:
         default:
+#if defined(EPD_ASPECT_RATIO_1C1)
           rval = DISPLAY_EPD_1_54;
+#endif /* EPD_ASPECT_RATIO_1C1 */
           break;
       }
     }
@@ -5019,6 +5035,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
+            hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */
@@ -5038,6 +5055,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_ECO        || /* TBD */
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
+            hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */

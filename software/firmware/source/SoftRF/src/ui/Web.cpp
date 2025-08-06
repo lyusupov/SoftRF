@@ -1431,6 +1431,7 @@ $('form').submit(function(e){\
     !defined(ARDUINO_ARCH_RP2350)       && \
     !defined(CONFIG_IDF_TARGET_ESP32C2) && \
     !defined(CONFIG_IDF_TARGET_ESP32C6) && \
+    !defined(CONFIG_IDF_TARGET_ESP32S3) && \
     !defined(ARDUINO_ARCH_RENESAS)
 
   server.on ( "/logo.png", []() {
