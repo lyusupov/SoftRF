@@ -5471,8 +5471,15 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       }
 #endif /* USE_OLED */
 #if defined(USE_EPAPER)
-      if (button == &button_1 && hw_info.display == DISPLAY_EPD_2_13) {
+      if (button == &button_1 &&
+          (hw_info.display == DISPLAY_EPD_2_13 ||
+           hw_info.display == DISPLAY_EPD_1_54)) {
         EPD_Mode();
+      }
+      if (button          == &button_2           &&
+          esp32_board     == ESP32_ELECROW_TN_M5 &&
+          hw_info.display == DISPLAY_EPD_1_54) {
+        EPD_Up();
       }
 #endif /* USE_EPAPER */
 #if defined(USE_SA8X8)
@@ -5536,6 +5543,7 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_LILYGO_T3S3_EPD   ||
        esp32_board == ESP32_LILYGO_T3S3_OLED  ||
        esp32_board == ESP32_ELECROW_TN_M2     ||
+       esp32_board == ESP32_ELECROW_TN_M5     ||
        esp32_board == ESP32_EBYTE_HUB_900TB   ||
        esp32_board == ESP32_P4_WT_DEVKIT      ||
        esp32_board == ESP32_S3_DEVKIT) {
@@ -5545,6 +5553,7 @@ static void ESP32_Button_setup()
                  esp32_board == ESP32_LILYGO_T3S3_EPD  ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_LILYGO_T3S3_OLED ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_ELECROW_TN_M2  ? SOC_GPIO_PIN_M2_BUTTON_1 :
+                 esp32_board == ESP32_ELECROW_TN_M5  ? SOC_GPIO_PIN_M5_BUTTON_1 :
                  esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
                  esp32_board == ESP32_P4_WT_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
@@ -5568,6 +5577,17 @@ static void ESP32_Button_setup()
 
     if (esp32_board == ESP32_ELECROW_TN_M2) {
       int scroll_pin = SOC_GPIO_PIN_M2_BUTTON_2;
+
+      pinMode(scroll_pin, INPUT);
+      button_2.init(scroll_pin);
+
+      ButtonConfig* ScrollButtonConfig = button_2.getButtonConfig();
+      ScrollButtonConfig->setEventHandler(handleMainEvent);
+      ScrollButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+      ScrollButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+      ScrollButtonConfig->setClickDelay(600);
+    } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+      int scroll_pin = SOC_GPIO_PIN_M5_BUTTON_2;
 
       pinMode(scroll_pin, INPUT);
       button_2.init(scroll_pin);
@@ -5621,11 +5641,13 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_LILYGO_T3S3_EPD     ||
       esp32_board == ESP32_LILYGO_T3S3_OLED    ||
       esp32_board == ESP32_ELECROW_TN_M2       ||
+      esp32_board == ESP32_ELECROW_TN_M5       ||
       esp32_board == ESP32_EBYTE_HUB_900TB     ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
 
-    if (esp32_board == ESP32_ELECROW_TN_M2
+    if (esp32_board == ESP32_ELECROW_TN_M2     ||
+        esp32_board == ESP32_ELECROW_TN_M5
 #if defined(USE_SA8X8)
         ||
         esp32_board == ESP32_LILYGO_T_TWR2
@@ -5644,11 +5666,13 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_LILYGO_T3S3_EPD   ||
       esp32_board == ESP32_LILYGO_T3S3_OLED  ||
       esp32_board == ESP32_ELECROW_TN_M2     ||
+      esp32_board == ESP32_ELECROW_TN_M5     ||
       esp32_board == ESP32_EBYTE_HUB_900TB   ||
       esp32_board == ESP32_P4_WT_DEVKIT      ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
+                     esp32_board == ESP32_ELECROW_TN_M5 ? SOC_GPIO_PIN_M5_BUTTON_1 :
                      esp32_board == ESP32_P4_WT_DEVKIT  ? SOC_GPIO_PIN_P4_BUTTON   :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
