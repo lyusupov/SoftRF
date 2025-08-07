@@ -564,7 +564,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define EXCLUDE_EGM96
-#undef USE_NMEALIB
+//#undef USE_NMEALIB
 #define USE_U10_EXT
 #define ENABLE_RECORDER
 #define USE_SA8X8

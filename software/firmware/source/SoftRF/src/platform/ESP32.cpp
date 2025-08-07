@@ -2129,6 +2129,16 @@ static void ESP32_setup()
     pca9557->digitalWrite(SOC_EXPIO_PIN_M5_IO_EN,   HIGH);
     pca9557->digitalWrite(SOC_EXPIO_PIN_M5_EPD_EN,  HIGH);
 
+    /* Wake up Quectel L76K GNSS */
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,          HIGH);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,               OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,          HIGH);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,               OUTPUT);
+
+    /* TBD */
+    // digitalWrite(SOC_GPIO_PIN_M5_DIO3,           HIGH);
+    // pinMode(SOC_GPIO_PIN_M5_DIO3,                OUTPUT);
+
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
 
     digitalWrite(SOC_GPIO_PIN_EHUB_LED,    LOW);
@@ -3087,6 +3097,25 @@ static void ESP32_fini(int reason)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_M2_BUTTON_1,
                                  ESP_EXT1_WAKEUP_ANY_HIGH);
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+  } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+    WIRE_FINI(Wire);
+
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,      LOW);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,           INPUT);
+
+    pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,    INPUT);
+    pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,   INPUT);
+
+    pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,  INPUT);
+    pca9557->pinMode(SOC_EXPIO_LED_M5_RED,      INPUT);
+    pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,     INPUT);
+
+    WIRE_FINI(Wire1);
+
+    pinMode(SOC_GPIO_PIN_M5_SS,                 OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_SS,            HIGH);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_SS);
+
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
     WIRE_FINI(Wire);
     WIRE_FINI(Wire1);
@@ -5117,7 +5146,8 @@ static float ESP32_Battery_param(uint8_t param)
            (esp32_board   == ESP32_TTGO_V2_OLED && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             esp32_board   == ESP32_S2_T8_V1_1       ||
             esp32_board   == ESP32_LILYGO_T3S3_EPD  ||
-            esp32_board   == ESP32_LILYGO_T3S3_OLED) {
+            esp32_board   == ESP32_LILYGO_T3S3_OLED ||
+            esp32_board   == ESP32_ELECROW_TN_M5) {
           voltage += voltage;
         } else if (esp32_board == ESP32_C2_DEVKIT ||
                    esp32_board == ESP32_C3_DEVKIT ||

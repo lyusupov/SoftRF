@@ -595,7 +595,11 @@ void NMEA_Position()
     info.longitude += (ThisAircraft.longitude - (int) ThisAircraft.longitude) * 60.0;
     info.speed = ThisAircraft.speed * _GPS_KMPH_PER_KNOT;
     info.elevation = ThisAircraft.altitude; /* above MSL */
+#if !defined(EXCLUDE_EGM96)
     info.height = LookupSeparation(ThisAircraft.latitude, ThisAircraft.longitude);
+#else
+    info.height = 0;
+#endif /* EXCLUDE_EGM96 */
     info.track = ThisAircraft.course;
 
 #if 0
@@ -679,7 +683,9 @@ void NMEA_GGA()
   info.height = gnss.separation.meters();
 
   if (info.height == 0.0 && info.sig != (NmeaSignal) Invalid) {
+#if !defined(EXCLUDE_EGM96)
     info.height = LookupSeparation(latitude, longitude);
+#endif /* EXCLUDE_EGM96 */
     info.elevation -= info.height;
   }
 
