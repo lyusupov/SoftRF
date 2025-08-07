@@ -3103,12 +3103,14 @@ static void ESP32_fini(int reason)
     digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,      LOW);
     pinMode(SOC_GPIO_PIN_M5_GNSS_RST,           INPUT);
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,    INPUT);
     pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,   INPUT);
 
     pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,  INPUT);
     pca9557->pinMode(SOC_EXPIO_LED_M5_RED,      INPUT);
     pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,     INPUT);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     WIRE_FINI(Wire1);
 
