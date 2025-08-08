@@ -97,7 +97,15 @@ void loop()
     For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-P4_ _Dev_ _Module_<br>
 10. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
-11. Select _Tools_ -> _Flash_ _Size_ ->  _4MB_
+11. For **ESP32**:<br>
+    For **ESP32-S3**:<br>
+    For **ESP32-C3**:<br>
+    For **ESP32-C6**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Size_ ->  _4MB_<br>
+    For **ESP32-C5**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Size_ ->  _8MB_<br>
+    For **ESP32-P4**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Size_ ->  _16MB_<br>
 12. For **ESP32**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
