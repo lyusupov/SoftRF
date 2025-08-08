@@ -1565,13 +1565,32 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
 
-    Wire1.begin(SOC_GPIO_PIN_M5_SDA2, SOC_GPIO_PIN_M5_SCL2);
-    Wire1.beginTransmission(PCA9557_ADDRESS);
-    ESP32_has_gpio_extension = (Wire1.endTransmission() == 0);
+    pinMode(SOC_GPIO_PIN_M2_VEXT_EN, INPUT_PULLUP); /* M2 OLED PWR */
+    delay(150);
+    Wire1.begin(SOC_GPIO_PIN_M2_OLED_SDA, SOC_GPIO_PIN_M2_OLED_SCL);
+    Wire1.beginTransmission(SH1106_OLED_I2C_ADDR);
+    bool has_oled = (Wire1.endTransmission() == 0);
+    pinMode(SOC_GPIO_PIN_M2_VEXT_EN, INPUT);
+    WIRE_FINI(Wire1);
 
-    if (ESP32_has_gpio_extension) {
-      pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
+    if (has_oled) {
+      esp32_board      = ESP32_ELECROW_TN_M2;
+      hw_info.model    = SOFTRF_MODEL_GIZMO;
+      hw_info.revision = 0; /* TBD */
 
+#if ARDUINO_USB_CDC_ON_BOOT
+      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
+                         SOC_GPIO_PIN_M2_CONS_RX,
+                         SOC_GPIO_PIN_M2_CONS_TX);
+#endif /* ARDUINO_USB_CDC_ON_BOOT */
+
+      lmic_pins.nss  = SOC_GPIO_PIN_M2_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_M2_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_M2_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
+#endif /* USE_RADIOLIB */
+    } else {
       hw_info.model    = SOFTRF_MODEL_AIRVENTURE;
       hw_info.revision = 0; /* TBD */
 
@@ -1593,25 +1612,16 @@ static void ESP32_setup()
                     SOC_GPIO_PIN_M5_EPD_MISO,
                     SOC_GPIO_PIN_M5_EPD_MOSI,
                     SOC_GPIO_PIN_M5_EPD_SS);
-    } else {
-      WIRE_FINI(Wire1);
 
-      esp32_board      = ESP32_ELECROW_TN_M2;
-      hw_info.model    = SOFTRF_MODEL_GIZMO;
-      hw_info.revision = 0; /* TBD */
+      Wire1.begin(SOC_GPIO_PIN_M5_SDA2, SOC_GPIO_PIN_M5_SCL2);
+      Wire1.beginTransmission(PCA9557_ADDRESS);
+      ESP32_has_gpio_extension = (Wire1.endTransmission() == 0);
 
-#if ARDUINO_USB_CDC_ON_BOOT
-      SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
-                         SOC_GPIO_PIN_M2_CONS_RX,
-                         SOC_GPIO_PIN_M2_CONS_TX);
-#endif /* ARDUINO_USB_CDC_ON_BOOT */
-
-      lmic_pins.nss  = SOC_GPIO_PIN_M2_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_M2_RST;
-      lmic_pins.busy = SOC_GPIO_PIN_M2_BUSY;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_M2_DIO1;
-#endif /* USE_RADIOLIB */
+      if (ESP32_has_gpio_extension) {
+        pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
+      } else {
+        WIRE_FINI(Wire1);
+      }
     }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -2115,25 +2125,26 @@ static void ESP32_setup()
 #endif
 
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+    if (ESP32_has_gpio_extension) {
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED,          OUTPUT);
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
 
-    pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
-    pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
-    pca9557->pinMode(SOC_EXPIO_LED_M5_RED,          OUTPUT);
-    pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,         OUTPUT);
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_BLUE,    LOW);
 
-    pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,         OUTPUT);
-    pca9557->digitalWrite(SOC_EXPIO_LED_M5_BLUE,    LOW);
-
-    pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,        OUTPUT);
-    pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,       OUTPUT);
-    pca9557->digitalWrite(SOC_EXPIO_PIN_M5_IO_EN,   HIGH);
-    pca9557->digitalWrite(SOC_EXPIO_PIN_M5_EPD_EN,  HIGH);
+      pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,        OUTPUT);
+      pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,       OUTPUT);
+      pca9557->digitalWrite(SOC_EXPIO_PIN_M5_IO_EN,   HIGH);
+      pca9557->digitalWrite(SOC_EXPIO_PIN_M5_EPD_EN,  HIGH);
+    }
 
     /* Wake up Quectel L76K GNSS */
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,          HIGH);
-    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,               OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,          HIGH);
-    pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,               OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,            HIGH);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,                 OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,            HIGH);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,                 OUTPUT);
 
     Wire.begin(SOC_GPIO_PIN_M5_SDA, SOC_GPIO_PIN_M5_SCL);
     Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
@@ -3123,22 +3134,24 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
     WIRE_FINI(Wire);
 
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,      LOW);
-    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,           INPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        LOW);
+    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             INPUT);
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,    INPUT);
-    pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,   INPUT);
+    if (ESP32_has_gpio_extension) {
+      pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,    INPUT);
+      pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,   INPUT);
 
-    pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,  INPUT);
-    pca9557->pinMode(SOC_EXPIO_LED_M5_RED,      INPUT);
-    pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,     INPUT);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,  INPUT);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_RED,      INPUT);
+      pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,     INPUT);
+    }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
     WIRE_FINI(Wire1);
 
-    pinMode(SOC_GPIO_PIN_M5_SS,                 OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_M5_SS,            HIGH);
+    pinMode(SOC_GPIO_PIN_M5_SS,                   OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_M5_SS,              HIGH);
     gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_SS);
 
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
