@@ -25,7 +25,7 @@
 #define SOC_GPIO_PIN_M5_BUSY        5
 
 /* E-paper */
-#define SOC_GPIO_PIN_M5_EPD_MISO    SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_M5_EPD_MISO    0 // NC, shared with BOOT
 #define SOC_GPIO_PIN_M5_EPD_MOSI    45
 #define SOC_GPIO_PIN_M5_EPD_SCK     38
 #define SOC_GPIO_PIN_M5_EPD_SS      39

@@ -2135,6 +2135,29 @@ static void ESP32_setup()
     digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,          HIGH);
     pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,               OUTPUT);
 
+    Wire.begin(SOC_GPIO_PIN_M5_SDA, SOC_GPIO_PIN_M5_SCL);
+    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    bool esp32_has_rtc = (Wire.endTransmission() == 0);
+    if (!esp32_has_rtc) {
+      delay(200);
+      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      esp32_has_rtc = (Wire.endTransmission() == 0);
+      if (!esp32_has_rtc) {
+        delay(200);
+        Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+        esp32_has_rtc = (Wire.endTransmission() == 0);
+      }
+    }
+
+    i2c = new I2CBus(Wire);
+
+    if (esp32_has_rtc && (i2c != nullptr)) {
+      rtc = new PCF8563_Class(*i2c);
+
+      pinMode(SOC_GPIO_PIN_M5_RTC_INT, INPUT);
+      hw_info.rtc = RTC_PCF8563;
+    }
+
     /* TBD */
     // digitalWrite(SOC_GPIO_PIN_M5_DIO3,           HIGH);
     // pinMode(SOC_GPIO_PIN_M5_DIO3,                OUTPUT);
