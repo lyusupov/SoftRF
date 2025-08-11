@@ -547,9 +547,11 @@ static void configPower (s1_t pw) {
 
 static void power_tcxo (void) {
     // power-up TCXO and set tcxo as input
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
     if ( hal_pin_tcxo(1) ) {
     	writeReg(RegTcxo, 0b00011001); // reserved=000, tcxo=1, reserved=1001
     }
+#endif /* RASPBERRY_PI */
 }
 
 // continuous wave

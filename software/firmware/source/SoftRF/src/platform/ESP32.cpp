@@ -1733,7 +1733,7 @@ static void ESP32_setup()
       delay(50);
 
       if (digitalRead(SOC_GPIO_PIN_P4_WS_BUSY) == LOW) {
-        hw_info.revision = 8 /* STD_EDN_REV_P4_EVB */; /* TBD */
+        hw_info.revision = STD_EDN_REV_P4_EVB;
       }
     }
 
@@ -1742,7 +1742,7 @@ static void ESP32_setup()
 
     switch (hw_info.revision)
     {
-      case 8 /* STD_EDN_REV_P4_EVB */:
+      case STD_EDN_REV_P4_EVB:
         lmic_pins.nss    = SOC_GPIO_PIN_P4_WS_SS;
         lmic_pins.rst    = SOC_GPIO_PIN_P4_WS_RST;
         lmic_pins.busy   = SOC_GPIO_PIN_P4_WS_BUSY;

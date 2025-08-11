@@ -246,6 +246,8 @@ enum
 	STD_EDN_REV_EHUB       = 5,
 	STD_EDN_REV_T3S3_OLED  = 6,
 	STD_EDN_REV_WT99P4C5   = 7,
+	STD_EDN_REV_P4_EVB     = 8,
+	STD_EDN_REV_LYRA       = 9,
 };
 
 enum

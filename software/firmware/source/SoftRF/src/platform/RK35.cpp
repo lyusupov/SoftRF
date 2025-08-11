@@ -611,12 +611,13 @@ static void RK35_setup()
   {
     if (strncmp(value, "Luckfox Lyra Zero W",      sizeof(value)) == 0 ||
         strncmp(value, "Luckfox Lyra Zero",        sizeof(value)) == 0) {
-      RK35_board    = RK35_LUCKFOX_LYRA_ZW;
-      RK35_hat      = RK35_WAVESHARE_HAT_LORA_GNSS;
+      RK35_board        = RK35_LUCKFOX_LYRA_ZW;
+      RK35_hat          = RK35_WAVESHARE_HAT_LORA_GNSS;
     } else if (strncmp(value, "Luckfox Lyra Plus", sizeof(value)) == 0 ||
                strncmp(value, "Luckfox Lyra",      sizeof(value)) == 0) {
-      RK35_board    = RK35_LUCKFOX_LYRA_B;
-      hw_info.model = SOFTRF_MODEL_STANDALONE;
+      RK35_board        = RK35_LUCKFOX_LYRA_B;
+      hw_info.model     = SOFTRF_MODEL_STANDALONE;
+      hw_info.revision  = STD_EDN_REV_LYRA;
     }
   }
 
