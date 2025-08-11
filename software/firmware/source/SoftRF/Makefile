@@ -24,8 +24,8 @@ RTLSDR        ?= no
 HACKRF        ?= no
 MIRISDR       ?= no
 
-BCM2835       ?= yes
-LGPIO         ?= no
+BCM2835       ?= no
+LGPIO         ?= yes
 
 ifeq ($(LGPIO), yes)
   RADIOLIB    ?= yes
