@@ -31,8 +31,8 @@ ifeq ($(LGPIO), yes)
   RADIOLIB    ?= yes
 endif
 
-BRIDGE        ?= no
-NEOPIXEL      ?= no
+BRIDGE        ?= yes
+NEOPIXEL      ?= yes
 
 CC            = gcc
 CXX           = g++
@@ -378,9 +378,9 @@ e6uf2:
 
 pi:
 ifeq ($(NEOPIXEL), yes)
-	OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
-	               $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
-	               $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
+  OBJS        += $(WS281X_PATH)/mailbox.o $(WS281X_PATH)/ws2811.o \
+                 $(WS281X_PATH)/pwm.o $(WS281X_PATH)/pcm.o \
+                 $(WS281X_PATH)/dma.o $(WS281X_PATH)/rpihw.o
 endif
 
 pi: CFLAGS += -DRASPBERRY_PI
