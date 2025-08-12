@@ -368,6 +368,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_INK        = 0x820A,
   SOFTRF_USB_PID_BANANA     = 0x812B,
   SOFTRF_USB_PID_GIZMO      = 0x82D9,
+  SOFTRF_USB_PID_AIRVENTURE = 0x82F9,
 };
 
 struct rst_info {

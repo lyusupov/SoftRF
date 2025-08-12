@@ -210,7 +210,7 @@ const char *ESP32S3_Model_Ham     = "Ham Edition";        /* 303a:818F */
 const char *ESP32S3_Model_Midi    = "Midi Edition";       /* 303a:81A0 */
 const char *ESP32S3_Model_Ink     = "Ink Edition";        /* 303a:820A */
 const char *ESP32S3_Model_Gizmo   = "Gizmo Edition";      /* 303a:82D9 */
-const char *ESP32S3_Model_AirVent = "Airventure Edition"; /* 303a:XXXX */
+const char *ESP32S3_Model_AirVent = "Airventure Edition"; /* 303a:82F9 */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -1884,6 +1884,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_LILYGO_T3S3_EPD    ) ? SOFTRF_USB_PID_INK        :
           (esp32_board == ESP32_BANANA_PICOW       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_ELECROW_TN_M2      ) ? SOFTRF_USB_PID_GIZMO      :
+          (esp32_board == ESP32_ELECROW_TN_M5      ) ? SOFTRF_USB_PID_AIRVENTURE :
           (esp32_board == ESP32_EBYTE_HUB_900TB    ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_P4_WT_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_P4_WS_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
