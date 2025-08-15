@@ -5,6 +5,7 @@
 
 DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Airventure-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Handheld-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
@@ -130,7 +131,7 @@ Model(s)|Platform|First appearance|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sta
 Academy|[Silicon Labs](https://en.wikipedia.org/wiki/Silicon_Labs)<br>[EFx32](https://en.wikipedia.org/wiki/EFM32)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 Academy|[Nanjing Qinheng Microelectronics](https://www.wch-ic.com/)<br>[CH32V307](https://www.wch-ic.com/products/CH32V307.html)|Q3 2024|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|[RISC-V](https://en.wikipedia.org/wiki/RISC-V)<br>IMAFC
 1&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)|[Raspberry Pi<br>Foundation<br>**RP2350**](https://en.wikipedia.org/wiki/RP2350)|Q1 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
-**Lyra**|[Rockchip](https://en.wikipedia.org/wiki/Rockchip)<br>RK3506|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
+1&nbsp;[**Standalone**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition)&nbsp;**upgrade**![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)<br>2&nbsp;**Lyra**|[Rockchip](https://en.wikipedia.org/wiki/Rockchip)<br>RK3506|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_may_need_imp.png)|
 **Academy**|[Espressif<br>ESP32-P4](https://en.wikipedia.org/wiki/ESP32#ESP32-P4)|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 **Academy**|[Espressif<br>ESP32-C5](https://en.wikipedia.org/wiki/ESP32#ESP32-C5)|Q3 2025|![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/icon_in_progress.png)|
 
