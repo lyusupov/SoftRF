@@ -163,22 +163,27 @@
 #define SOC_GPIO_PIN_MCK      8
 
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
-#define SOC_GPIO_PIN_GNSS_RX  5
-#define SOC_GPIO_PIN_GNSS_TX  4
 
-#define SOC_BUTTON_MODE_DEF   35 /* BOOT, active LOW, strapping pin */
+/* Waveshare Pi HAT 2.7" mapping */
+#define SOC_GPIO_PIN_GNSS_RX  38 // +
+#define SOC_GPIO_PIN_GNSS_TX  37 // +
 
-#define SOC_GPIO_PIN_MOSI_WS  32
-#define SOC_GPIO_PIN_MISO_WS  33
-#define SOC_GPIO_PIN_SCK_WS   36 /* strapping pin */
-#define SOC_GPIO_PIN_SS_WS    26
+#define SOC_GPIO_PIN_MOSI_WS  3  // - 5
+#define SOC_GPIO_PIN_MISO_WS  2  // +
+#define SOC_GPIO_PIN_SCK_WS   0  // +
+#define SOC_GPIO_PIN_SS_WS    36 // +
 
-#define SOC_EPD_PIN_DC_WS     47
-#define SOC_EPD_PIN_RST_WS    48
-#define SOC_EPD_PIN_BUSY_WS   27
+#define SOC_EPD_PIN_DC_WS     1  // +
+#define SOC_EPD_PIN_RST_WS    21 // - 6
+#define SOC_EPD_PIN_BUSY_WS   4  // +
 
-#define SOC_GPIO_PIN_SDA      7
-#define SOC_GPIO_PIN_SCL      8
+#define SOC_GPIO_BUTTON_MODE  33 // +
+#define SOC_GPIO_BUTTON_UP    26 // +
+#define SOC_GPIO_BUTTON_DOWN  49 // - 32
+#define SOC_GPIO_BUTTON_4     53 // - 27
+
+#define SOC_GPIO_PIN_SDA      7  // +
+#define SOC_GPIO_PIN_SCL      8  // +
 
 // USB
 #define SOC_GPIO_PIN_USB_DP   25
