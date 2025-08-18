@@ -598,6 +598,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define EXCLUDE_WIFI
 //#undef NMEA_TCP_SERVICE
 //#define EXCLUDE_VOICE_MESSAGE
+#define USE_OLED
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

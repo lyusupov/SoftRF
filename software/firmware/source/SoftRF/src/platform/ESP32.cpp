@@ -229,6 +229,10 @@ char UDPpacketBuffer[UDP_PACKET_BUFSIZE];
 #include "../driver/EPD.h"
 #include "uCDB.hpp"
 
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+#include "esp_ldo_regulator.h"
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
 SPIClass uSD_SPI(HSPI);
 #define  SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(16), &uSD_SPI)
 SdFat    uSD;
@@ -492,6 +496,40 @@ static bool play_file(char *filename)
   return rval;
 }
 #endif /* EXCLUDE_VOICE_MESSAGE */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#include "esp_check.h"
+#include "es8311.h"
+#include "canon.h"
+
+#define EXAMPLE_SAMPLE_RATE     11025
+#define EXAMPLE_VOICE_VOLUME    75 // 0 - 100
+#define EXAMPLE_MIC_GAIN        (es8311_mic_gain_t)(3) // 0 - 7
+
+#define I2C_NUM                 0
+
+const char *TAG_ES83 = "esp32p4_i2s_es8311";
+
+esp_err_t es8311_codec_init(void) {
+    es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
+    ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG_ES83, "es8311 create failed");
+    const es8311_clock_config_t es_clk = {
+        .mclk_inverted = false,
+        .sclk_inverted = false,
+        .mclk_from_mclk_pin = true,
+        .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
+        .sample_frequency = EXAMPLE_SAMPLE_RATE
+    };
+
+    ESP_ERROR_CHECK(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16));
+    ESP_RETURN_ON_ERROR(es8311_sample_frequency_config(es_handle, es_clk.mclk_frequency, es_clk.sample_frequency), TAG_ES83, "set es8311 sample frequency failed");
+    ESP_RETURN_ON_ERROR(es8311_microphone_config(es_handle, false), TAG_ES83, "set es8311 microphone failed");
+
+    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL), TAG_ES83, "set es8311 volume failed");
+    ESP_RETURN_ON_ERROR(es8311_microphone_gain_set(es_handle, EXAMPLE_MIC_GAIN), TAG_ES83, "set es8311 microphone gain failed");
+    return ESP_OK;
+}
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -1774,6 +1812,15 @@ static void ESP32_setup()
         break;
     }
 
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    esp_ldo_channel_handle_t ldo_sdio = NULL;
+    esp_ldo_channel_config_t ldo_sdio_config = {
+        .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+        .voltage_mv = 3300,
+    };
+    esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
     int uSD_SS_pin = SOC_GPIO_PIN_P4_SD_D3;
 
     /* uSD-SPI init */
@@ -1801,8 +1848,12 @@ static void ESP32_setup()
                             SOC_GPIO_PIN_P4_I2S_MCK);
       Audio_Sink->SetOutputModeMono(true);
       Audio_Sink->SetChannels(1);
-      Audio_Sink->SetGain(/* 0.0625 */ 0.125 /* 0.25 */);
+      Audio_Sink->SetGain(1.0);
       Audio_Sink->SetMclk(true);
+
+      Wire.begin(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
+      es8311_codec_init();
+
       playback_inited = true;
     }
 #endif /* EXCLUDE_VOICE_MESSAGE */
@@ -1813,9 +1864,13 @@ static void ESP32_setup()
   ESP32_has_spiflash = SPIFlash->begin(possible_devices,
                                        EXTERNAL_FLASH_DEVICE_COUNT);
   if (ESP32_has_spiflash) {
+    const esp_partition_t *fat_p;
+    fat_p = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
+                                     ESP_PARTITION_SUBTYPE_DATA_FAT,
+                                     NULL);
     uint32_t capacity = ESP32_getFlashId() & 0xFF;
 
-    if (capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
+    if (fat_p && capacity >= 0x17) { /* equal or greater than 1UL << 23 (8 MiB) */
       hw_info.storage = STORAGE_FLASH;
 
 #if CONFIG_TINYUSB_MSC_ENABLED
@@ -2294,7 +2349,7 @@ static void ESP32_setup()
 
 static void ESP32_post_init()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
   {
     Serial.println();
@@ -2349,7 +2404,8 @@ static void ESP32_post_init()
   }
 
   if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
-      esp32_board == ESP32_LILYGO_T_TWR2)
+      esp32_board == ESP32_LILYGO_T_TWR2       ||
+      esp32_board == ESP32_P4_WT_DEVKIT)
   {
     Serial.println();
 
@@ -2382,7 +2438,9 @@ static void ESP32_post_init()
       }
     }
   }
+#endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 #if !defined(EXCLUDE_VOICE_MESSAGE)
   if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 1 && uSD_is_attached)
   {
@@ -5178,7 +5236,9 @@ static float ESP32_Battery_param(uint8_t param)
       } else
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
       {
+#if !defined(CONFIG_IDF_TARGET_ESP32P4) /* TODO */
         voltage = (float) read_voltage();
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
         /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
         if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
@@ -5582,7 +5642,9 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_ELECROW_TN_M2     ||
        esp32_board == ESP32_ELECROW_TN_M5     ||
        esp32_board == ESP32_EBYTE_HUB_900TB   ||
+#if defined(EXCLUDE_ETHERNET)
        esp32_board == ESP32_P4_WT_DEVKIT      ||
+#endif /* EXCLUDE_ETHERNET */
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1    ? SOC_GPIO_PIN_T8_S2_BUTTON :
                  esp32_board == ESP32_S3_DEVKIT        ? SOC_GPIO_PIN_S3_BUTTON :
@@ -5592,7 +5654,9 @@ static void ESP32_Button_setup()
                  esp32_board == ESP32_ELECROW_TN_M2  ? SOC_GPIO_PIN_M2_BUTTON_1 :
                  esp32_board == ESP32_ELECROW_TN_M5  ? SOC_GPIO_PIN_M5_BUTTON_1 :
                  esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
+#if defined(EXCLUDE_ETHERNET)
                  esp32_board == ESP32_P4_WT_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON :
+#endif /* EXCLUDE_ETHERNET */
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -5705,12 +5769,16 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_ELECROW_TN_M2     ||
       esp32_board == ESP32_ELECROW_TN_M5     ||
       esp32_board == ESP32_EBYTE_HUB_900TB   ||
+#if defined(EXCLUDE_ETHERNET)
       esp32_board == ESP32_P4_WT_DEVKIT      ||
+#endif /* EXCLUDE_ETHERNET */
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
                      esp32_board == ESP32_ELECROW_TN_M5 ? SOC_GPIO_PIN_M5_BUTTON_1 :
+#if defined(EXCLUDE_ETHERNET)
                      esp32_board == ESP32_P4_WT_DEVKIT  ? SOC_GPIO_PIN_P4_BUTTON   :
+#endif /* EXCLUDE_ETHERNET */
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == (esp32_board == ESP32_ELECROW_TN_M2 ? HIGH : LOW));

@@ -66,15 +66,15 @@
 #define SOC_GPIO_PIN_P4_I2S_LRCK        10
 #define SOC_GPIO_PIN_P4_I2S_BCK         12
 #define SOC_GPIO_PIN_P4_I2S_MCK         13
-#define SOC_GPIO_PIN_P4_I2S_DOUT        11
-#define SOC_GPIO_PIN_P4_I2S_DIN         9
+#define SOC_GPIO_PIN_P4_I2S_DOUT        9
+#define SOC_GPIO_PIN_P4_I2S_DIN         11
 
 // Misc.
 #define SOC_GPIO_PIN_P4_485_RW          3
 #define SOC_GPIO_PIN_P4_PAMP_CTRL       53
 
 #define SOC_GPIO_PIN_P4_BUTTON          35 /* BOOT, active LOW, strapping pin */
-#define SOC_GPIO_PIN_P4_BATTERY         0  /* RSVD, shared with CAM_IO0 */
+#define SOC_GPIO_PIN_P4_BATTERY         21 /* RSVD, shared with TP_INT */
 #define SOC_GPIO_PIN_P4_BUZZER          SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_P4_NEOPIXEL        1  /* RSVD, shared with CAM_IO1 */
 
