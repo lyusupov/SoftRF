@@ -203,7 +203,7 @@
 #endif /* EXCLUDE_AUDIO */
 
 /* I2S ES8311 + MIC */
-#define SOC_GPIO_PIN_DATA     11
+#define SOC_GPIO_PIN_DATA     9
 #define SOC_GPIO_PIN_BCK      12
 #define SOC_GPIO_PIN_LRCK     10
 #define SOC_GPIO_PIN_MCK      13
@@ -233,6 +233,9 @@
 #define SOC_GPIO_PIN_ETH_MDC  31
 #define SOC_GPIO_PIN_ETH_MDIO 52
 #define SOC_GPIO_PIN_ETH_PWR  51 /* PHY_RSTN */
+
+// Misc.
+#define SOC_GPIO_PIN_PAMP_EN  53
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
       defined(CONFIG_IDF_TARGET_ESP32C5) || \

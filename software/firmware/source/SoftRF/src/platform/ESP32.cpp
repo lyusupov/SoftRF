@@ -500,7 +500,6 @@ static bool play_file(char *filename)
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #include "esp_check.h"
 #include "es8311.h"
-#include "canon.h"
 
 #define EXAMPLE_SAMPLE_RATE     11025
 #define EXAMPLE_VOICE_VOLUME    75 // 0 - 100

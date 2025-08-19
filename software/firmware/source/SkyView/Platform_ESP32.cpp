@@ -206,12 +206,24 @@ i2s_config_t i2s_config = {
     };
 
 #if 1
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+i2s_pin_config_t pin_config = {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    .mck_io_num   = SOC_GPIO_PIN_MCK,
+#endif
+    .bck_io_num   = SOC_GPIO_PIN_BCK,
+    .ws_io_num    = SOC_GPIO_PIN_LRCK,
+    .data_out_num = SOC_GPIO_PIN_DATA,
+    .data_in_num  = -1  // Not used
+};
+#else
 i2s_pin_config_t pin_config = {
     .bck_io_num   = SOC_GPIO_PIN_BCLK,
     .ws_io_num    = SOC_GPIO_PIN_LRCLK,
     .data_out_num = SOC_GPIO_PIN_DOUT,
     .data_in_num  = -1  // Not used
 };
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #else
 i2s_pin_config_t pin_config = {
     .bck_io_num   = I2S_PIN_NO_CHANGE,
@@ -363,6 +375,39 @@ const char *ESP32SX_Device_Model = SKYVIEW_IDENT " Pico"; /* 303a:8133 */
 const uint16_t ESP32SX_Device_Version = SKYVIEW_USB_FW_VERSION;
 
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#include "esp_check.h"
+#include "es8311.h"
+
+#define EXAMPLE_SAMPLE_RATE     11025
+#define EXAMPLE_VOICE_VOLUME    75 // 0 - 100
+#define EXAMPLE_MIC_GAIN        (es8311_mic_gain_t)(3) // 0 - 7
+
+#define I2C_NUM                 0
+
+const char *TAG_ES83 = "esp32p4_i2s_es8311";
+
+esp_err_t es8311_codec_init(void) {
+    es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
+    ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG_ES83, "es8311 create failed");
+    const es8311_clock_config_t es_clk = {
+        .mclk_inverted = false,
+        .sclk_inverted = false,
+        .mclk_from_mclk_pin = true,
+        .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
+        .sample_frequency = EXAMPLE_SAMPLE_RATE
+    };
+
+    ESP_ERROR_CHECK(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16));
+    ESP_RETURN_ON_ERROR(es8311_sample_frequency_config(es_handle, es_clk.mclk_frequency, es_clk.sample_frequency), TAG_ES83, "set es8311 sample frequency failed");
+    ESP_RETURN_ON_ERROR(es8311_microphone_config(es_handle, false), TAG_ES83, "set es8311 microphone failed");
+
+    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL), TAG_ES83, "set es8311 volume failed");
+    ESP_RETURN_ON_ERROR(es8311_microphone_gain_set(es_handle, EXAMPLE_MIC_GAIN), TAG_ES83, "set es8311 microphone gain failed");
+    return ESP_OK;
+}
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #if CONFIG_TINYUSB_ENABLED && \
     (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
@@ -649,6 +694,13 @@ static void ESP32_setup()
             SOC_GPIO_PIN_ETH_PWR,
             ETH_CLK_MODE);
 #endif /* EXCLUDE_ETHERNET */
+
+  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+  es8311_codec_init();
+
+  pinMode(SOC_GPIO_PIN_PAMP_EN,      OUTPUT);
+  digitalWrite(SOC_GPIO_PIN_PAMP_EN, HIGH);
+
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
