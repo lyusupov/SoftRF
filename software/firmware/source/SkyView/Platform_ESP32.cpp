@@ -164,7 +164,11 @@ static union {
   uint64_t chipmacid;
 };
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32P4)
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+#include "esp_ldo_regulator.h"
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
 static sqlite3 *fln_db  = NULL;
 static sqlite3 *ogn_db  = NULL;
 static sqlite3 *icao_db = NULL;
@@ -970,7 +974,11 @@ static float ESP32_Battery_voltage()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
   float voltage = ((float) read_voltage()) * 0.001 ;
+#else
+  float voltage = 0 ; /* TODO */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   /* T5 has voltage divider 100k/100k on board */
   return (settings->adapter == ADAPTER_TTGO_T5S    ||
@@ -1120,6 +1128,9 @@ static void ESP32_EPD_setup()
   {
   case ADAPTER_WAVESHARE_ESP32:
   case ADAPTER_WAVESHARE_PICO_2_7:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     if (ESP32_display == EP_UNKNOWN) {
       ESP32_display = ESP32_EPD_ident();
     }
@@ -1140,14 +1151,55 @@ static void ESP32_EPD_setup()
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_SS_WS);
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    {
+      esp_ldo_channel_handle_t ldo_sdio = NULL;
+      esp_ldo_channel_config_t ldo_sdio_config = {
+          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+          .voltage_mv = 3300,
+      };
+      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+    }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                  SOC_GPIO_PIN_SD_D0,
+                  SOC_GPIO_PIN_SD_CMD,
+                  SOC_GPIO_PIN_SD_D3);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     break;
   case ADAPTER_WAVESHARE_PICO_2_7_V2:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     display = &epd_waveshare_T91;
     display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     SPI.begin(SOC_GPIO_PIN_SCK_WS,
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_SS_WS);
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    {
+      esp_ldo_channel_handle_t ldo_sdio = NULL;
+      esp_ldo_channel_config_t ldo_sdio_config = {
+          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+          .voltage_mv = 3300,
+      };
+      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+    }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                  SOC_GPIO_PIN_SD_D0,
+                  SOC_GPIO_PIN_SD_CMD,
+                  SOC_GPIO_PIN_SD_D3);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     break;
 #if defined(BUILD_SKYVIEW_HD)
   case ADAPTER_TTGO_T5_4_7:
@@ -1235,8 +1287,12 @@ static bool ESP32_DB_init()
 
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32P4)
   case ADAPTER_TTGO_T5S:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if !defined(BUILD_SKYVIEW_HD)
     {
       sdcard_files_to_open += (settings->adb   == DB_FLN    ? 1 : 0);
@@ -1244,7 +1300,14 @@ static bool ESP32_DB_init()
       sdcard_files_to_open += (settings->adb   == DB_ICAO   ? 1 : 0);
       sdcard_files_to_open += (settings->voice != VOICE_OFF ? 1 : 0);
 
-      if (!SD.begin(SOC_SD_PIN_SS_T5S, uSD_SPI, 4000000, "/sd", sdcard_files_to_open)) {
+#if defined(CONFIG_IDF_TARGET_ESP32)
+      int uSD_SS_pin = SOC_SD_PIN_SS_T5S;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+      int uSD_SS_pin = SOC_GPIO_PIN_SD_D3;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
+      if (!SD.begin(uSD_SS_pin, uSD_SPI, 4000000, "/sd", sdcard_files_to_open)) {
         Serial.println(F("ERROR: Failed to mount microSD card."));
         return rval;
       }
@@ -1337,8 +1400,12 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32P4)
   case ADAPTER_TTGO_T5S:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if !defined(BUILD_SKYVIEW_HD)
     {
       sqlite3_stmt *stmt;
@@ -1513,8 +1580,12 @@ static void ESP32_DB_fini()
 {
   switch (settings->adapter)
   {
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32P4)
   case ADAPTER_TTGO_T5S:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if !defined(BUILD_SKYVIEW_HD)
     if (settings->adb != DB_NONE) {
       if (fln_db != NULL) {
@@ -1708,9 +1779,13 @@ static void ESP32_TTS(char *message)
   char filename[MAX_FILENAME_LEN];
 
   if (strcmp(message, "POST")) {
-    if ( settings->voice   != VOICE_OFF                  &&
-        (settings->adapter == ADAPTER_TTGO_T5S           ||
-         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+    if ( settings->voice   != VOICE_OFF                       &&
+        (settings->adapter == ADAPTER_TTGO_T5S                ||
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+         settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ||
+         settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ||
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7      ||
          settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
 
 #if defined(CONFIG_IDF_TARGET_ESP32)   || \
@@ -1765,9 +1840,13 @@ static void ESP32_TTS(char *message)
       }
     }
   } else {
-    if ( settings->voice   != VOICE_OFF                  &&
-        (settings->adapter == ADAPTER_TTGO_T5S           ||
-         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+    if ( settings->voice   != VOICE_OFF                       &&
+        (settings->adapter == ADAPTER_TTGO_T5S                ||
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+         settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ||
+         settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ||
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+         settings->adapter == ADAPTER_WAVESHARE_PICO_2_7      ||
          settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2)) {
 
       strcpy(filename, WAV_FILE_PREFIX);
@@ -1891,8 +1970,19 @@ static void ESP32_Button_setup()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
-  pinMode(mode_button_pin, settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
-                           settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2 ?
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
+    mode_button_pin = SOC_GPIO_BUTTON_MODE;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
+  pinMode(mode_button_pin, settings->adapter == ADAPTER_WAVESHARE_PICO_2_7      ||
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+                           settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ||
+                           settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ||
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+                           settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2   ?
                            INPUT_PULLUP : INPUT);
 
   button_mode.init(mode_button_pin);
@@ -1980,14 +2070,43 @@ static void ESP32_Button_setup()
     DownButtonConfig->setLongPressDelay(2000);
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
+    pinMode(SOC_GPIO_BUTTON_UP,   INPUT_PULLUP);
+    pinMode(SOC_GPIO_BUTTON_DOWN, INPUT_PULLUP);
+
+    button_up.init(SOC_GPIO_BUTTON_UP,     HIGH);
+    button_down.init(SOC_GPIO_BUTTON_DOWN, HIGH);
+
+    ButtonConfig* UpButtonConfig = button_up.getButtonConfig();
+    UpButtonConfig->setEventHandler(handleEvent);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    UpButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    UpButtonConfig->setClickDelay(100);
+    UpButtonConfig->setLongPressDelay(2000);
+
+    ButtonConfig* DownButtonConfig = button_down.getButtonConfig();
+    DownButtonConfig->setEventHandler(handleEvent);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureClick);
+    DownButtonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    DownButtonConfig->setClickDelay(100);
+    DownButtonConfig->setLongPressDelay(2000);
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_Button_loop()
 {
   button_mode.check();
 
-  if (settings->adapter == ADAPTER_TTGO_T5S           ||
-      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7 ||
+  if (settings->adapter == ADAPTER_TTGO_T5S                ||
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ||
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+      settings->adapter == ADAPTER_WAVESHARE_PICO_2_7      ||
       settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2) {
     button_up.check();
     button_down.check();
@@ -2012,6 +2131,13 @@ static void ESP32_Button_fini()
     mode_button_pin = SOC_GPIO_PIN_KEY1;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
+      settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
+    mode_button_pin = SOC_GPIO_BUTTON_MODE;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 //  detachInterrupt(digitalPinToInterrupt(mode_button_pin));
   while (digitalRead(mode_button_pin) == LOW);

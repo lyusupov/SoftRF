@@ -182,6 +182,8 @@
 #define SOC_GPIO_BUTTON_DOWN  49 // - 32
 #define SOC_GPIO_BUTTON_4     53 // - 27
 
+#define SOC_BUTTON_MODE_DEF   35 /* BOOT, active LOW, strapping pin */
+
 #define SOC_GPIO_PIN_SDA      7  // +
 #define SOC_GPIO_PIN_SCL      8  // +
 

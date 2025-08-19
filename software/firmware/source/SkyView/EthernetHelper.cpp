@@ -27,33 +27,36 @@ void Ethernet_fini()    {}
 #include <ETH.h>
 #include "EthernetHelper.h"
 
-static bool eth_connected = false;
+static bool   eth_connected = false;
+static String eth_host_name = SKYVIEW_IDENT;
 
 // WARNING: onEvent is called from a separate FreeRTOS task (thread)!
 void onEvent(arduino_event_id_t event) {
   switch (event) {
     case ARDUINO_EVENT_ETH_START:
-      Serial.println("ETH Started");
+//      Serial.println("ETH Started");
       // The hostname must be set after the interface is started, but needs
       // to be set before DHCP, so set it from the event handler thread.
-      ETH.setHostname("esp32-ethernet");
+      ETH.setHostname(eth_host_name.c_str());
       break;
-    case ARDUINO_EVENT_ETH_CONNECTED: Serial.println("ETH Connected"); break;
+    case ARDUINO_EVENT_ETH_CONNECTED:
+//      Serial.println("ETH Connected");
+      break;
     case ARDUINO_EVENT_ETH_GOT_IP:
-      Serial.println("ETH Got IP");
+//      Serial.println("ETH Got IP");
       Serial.println(ETH);
       eth_connected = true;
       break;
     case ARDUINO_EVENT_ETH_LOST_IP:
-      Serial.println("ETH Lost IP");
+//      Serial.println("ETH Lost IP");
       eth_connected = false;
       break;
     case ARDUINO_EVENT_ETH_DISCONNECTED:
-      Serial.println("ETH Disconnected");
+//      Serial.println("ETH Disconnected");
       eth_connected = false;
       break;
     case ARDUINO_EVENT_ETH_STOP:
-      Serial.println("ETH Stopped");
+//      Serial.println("ETH Stopped");
       eth_connected = false;
       break;
     default: break;
@@ -62,6 +65,13 @@ void onEvent(arduino_event_id_t event) {
 
 void Ethernet_setup()
 {
+  char id_06x[8];
+  snprintf(id_06x, sizeof(id_06x),"%06x", SoC->getChipId() & 0x00FFFFFFU);
+  // Set Hostname.
+  eth_host_name += "-";
+  eth_host_name += String(id_06x);
+  eth_host_name += "-eth";
+
   Network.onEvent(onEvent);  // Will call onEvent() from another thread.
 }
 

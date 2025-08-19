@@ -187,6 +187,21 @@ void handleSettings() {
     (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7    ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7,
     (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7_V2
     );
+  } else if (SoC->id == SOC_ESP32P4) {
+    snprintf_P ( offset, size,
+      PSTR("\
+<tr>\
+<th align=left>Display adapter</th>\
+<td align=right>\
+<select name='adapter'>\
+<option %s value='%d'>e-Paper Waveshare HAT 2.7</option>\
+<option %s value='%d'>e-Paper Waveshare HAT 2.7 V2</option>\
+</select>\
+</td>\
+</tr>"),
+    (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ? "selected" : ""), ADAPTER_WAVESHARE_PI_HAT_2_7,
+    (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PI_HAT_2_7_V2
+    );
   }
 
   len = strlen(offset);
@@ -230,10 +245,11 @@ void handleSettings() {
   }
 
   /* SoC specific part 4 */
-  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3 ||
-      SoC->id == SOC_ESP32C3     || SoC->id == SOC_ESP32C5 ||
-      SoC->id == SOC_ESP32C6     || SoC->id == SOC_RP2040  ||
-      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3     ||
+      SoC->id == SOC_ESP32C3     || SoC->id == SOC_ESP32C5     ||
+      SoC->id == SOC_ESP32C6  /* || SoC->id == SOC_ESP32P4  */ ||
+      SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_RISC ||
+      SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
     (settings->connection == CON_BLUETOOTH_LE  ? "selected" : ""), CON_BLUETOOTH_LE);
     len = strlen(offset);
@@ -290,11 +306,11 @@ void handleSettings() {
   size -= len;
 
   /* SoC specific part 6 */
-  if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2     ||
-      SoC->id == SOC_ESP32S3 || SoC->id == SOC_ESP32C3     ||
-      SoC->id == SOC_ESP32C5 || SoC->id == SOC_ESP32C6     ||
-      SoC->id == SOC_RP2040  || SoC->id == SOC_RP2350_RISC ||
-      SoC->id == SOC_RP2350_ARM) {
+  if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S2 ||
+      SoC->id == SOC_ESP32S3     || SoC->id == SOC_ESP32C3 ||
+      SoC->id == SOC_ESP32C5     || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_ESP32P4     || SoC->id == SOC_RP2040  ||
+      SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,
       PSTR("\
 <option %s value='%d'>115200</option>\
@@ -450,7 +466,7 @@ void handleSettings() {
   /* SoC specific part 7 */
   if (SoC->id == SOC_ESP32   || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C5 ||
-      SoC->id == SOC_ESP32C6) {
+      SoC->id == SOC_ESP32C6 || SoC->id == SOC_ESP32P4) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\

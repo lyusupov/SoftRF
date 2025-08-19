@@ -81,6 +81,8 @@ void EEPROM_defaults()
     eeprom_block.field.settings.adapter       = ADAPTER_NODEMCU;
   else if (SoC->id == SOC_ESP32C3)
     eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_ESP32;
+  else if (SoC->id == SOC_ESP32P4)
+    eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_PI_HAT_2_7;
   else if (SoC->id == SOC_RP2040     || SoC->id == SOC_RP2350_RISC ||
            SoC->id == SOC_RP2350_ARM || SoC->id == SOC_ESP32S3)
     eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_PICO_2_7_V2;
