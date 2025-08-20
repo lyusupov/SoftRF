@@ -33,6 +33,8 @@
 
 #define SerialInput           Serial1
 
+#define EEPROM_commit()       EEPROM.commit()
+
 /* Peripherals */
 #define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
 

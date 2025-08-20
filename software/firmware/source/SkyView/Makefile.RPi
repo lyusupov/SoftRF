@@ -60,7 +60,7 @@ CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  GDL90Helper.cpp   BatteryHelper.cpp \
                  OLEDHelper.cpp    View_Radar_EPD.cpp \
                  View_Text_EPD.cpp JSONHelper.cpp \
-                 WebHelper.cpp
+                 WebHelper.cpp     EEPROMHelper.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(LMIC_PATH)/raspi/raspi.o \

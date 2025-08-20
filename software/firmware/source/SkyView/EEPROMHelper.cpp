@@ -59,7 +59,7 @@ void EEPROM_setup()
     EEPROM_defaults();
   } else {
     Serial.print(F("EEPROM version: "));
-    Serial.println(eeprom_block.field.version);
+    Serial.println((unsigned long) eeprom_block.field.version);
 
     if (eeprom_block.field.version != SKYVIEW_EEPROM_VERSION) {
       Serial.println(F("WARNING! Version mismatch of user defined settings. Loading defaults..."));
@@ -128,7 +128,7 @@ void EEPROM_store()
     EEPROM.write(i, eeprom_block.raw[i]);  
   }
 
-  EEPROM.commit();
+  EEPROM_commit();
 }
 
 #endif /* EXCLUDE_EEPROM */

@@ -21,6 +21,8 @@
 
 #if defined(ARDUINO) && !defined(ENERGIA_ARCH_CC13XX) && !defined(RASPBERRY_PI)
 #include <EEPROM.h>
+#elif defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+#include <raspi/EEPROM.h>
 #endif /* ARDUINO */
 
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE

@@ -952,6 +952,10 @@ int main(int argc, char *argv[])
   Serial.println(F("Copyright (C) 2019-2025 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM_setup();
+#endif /* EXCLUDE_EEPROM */
+
   RPi_ParseSettings();
 
   Battery_setup();

@@ -49,6 +49,8 @@ extern WebServer server;
 #define USBSerial             SerialUSB
 #endif /* ARDUINO_ARCH_MBED */
 
+#define EEPROM_commit()       EEPROM.commit()
+
 #define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
 
 #define MAX_FILENAME_LEN      64

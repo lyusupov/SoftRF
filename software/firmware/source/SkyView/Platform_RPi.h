@@ -27,6 +27,8 @@
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    9
 
+#define EEPROM_commit()         {}
+
 #define PCM_DEVICE              "default"
 #define WAV_FILE_PREFIX         "Audio/"
 
@@ -40,7 +42,7 @@
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
-#define EXCLUDE_EEPROM
+//#define EXCLUDE_EEPROM
 
 extern TTYSerial SerialInput;
 
