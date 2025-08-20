@@ -41,6 +41,12 @@ void Web_fini(void);
 void Hex2Bin(String, byte *);
 #endif
 
+extern const char about_html[] PROGMEM;
+
+extern char *Root_content();
+extern char *Settings_content();
+extern char *Input_content();
+
 extern uint32_t tx_packets_counter, rx_packets_counter;
 //extern byte TxBuffer[PKT_SIZE];
 extern String TxDataTemplate;

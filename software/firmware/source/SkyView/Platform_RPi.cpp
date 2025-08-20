@@ -88,8 +88,12 @@ u1_t radio_has_irq (void) {
     return 0;
 }
 
+#if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#else
+EEPROMClass EEPROM;
+#endif /* EXCLUDE_EEPROM */
 
 char UDPpacketBuffer[UDP_PACKET_BUFSIZE]; // buffer to hold incoming packets
 
@@ -107,6 +111,139 @@ static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
 
 std::string input_line;
+
+#if defined(USE_BRIDGE)
+#undef ARDUINO
+#include <Bridge.h>
+#include <BridgeServer.h>
+#include <BridgeClient.h>
+#include <BridgeUdp.h>
+#include <aWOT.h>
+#include "WebHelper.h"
+
+#include <netdb.h>
+
+BridgeServer WebServer(HTTP_SRV_PORT);
+Application WebApp;
+// BridgeUDP Uni_Udp;
+
+static IPAddress dest_IP;
+
+void index_page(Request &req, Response &res) {
+  char *content = Root_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+void settings_page(Request &req, Response &res) {
+  char *content = Settings_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    free(content);
+  }
+}
+
+#define MAX_PARAM_LEN   (32 + 1)
+
+void input_page(Request &req, Response &res) {
+  char buf[MAX_PARAM_LEN];
+
+  if (req.query("adapter", buf, MAX_PARAM_LEN)) {
+    settings->adapter = atoi(buf);
+  }
+  if (req.query("connection", buf, MAX_PARAM_LEN)) {
+    settings->connection = atoi(buf);
+  }
+  if (req.query("protocol", buf, MAX_PARAM_LEN)) {
+    settings->protocol = atoi(buf);
+  }
+  if (req.query("baudrate", buf, MAX_PARAM_LEN)) {
+    settings->baudrate = atoi(buf);
+  }
+  /* server - TODO */
+  /* key - TODO */
+  if (req.query("units", buf, MAX_PARAM_LEN)) {
+    settings->units = atoi(buf);
+  }
+  if (req.query("rotation", buf, MAX_PARAM_LEN)) {
+    settings->rotate = atoi(buf);
+  }
+  if (req.query("vmode", buf, MAX_PARAM_LEN)) {
+    settings->vmode = atoi(buf);
+  }
+  if (req.query("orientation", buf, MAX_PARAM_LEN)) {
+    settings->orientation = atoi(buf);
+  }
+  if (req.query("zoom", buf, MAX_PARAM_LEN)) {
+    settings->zoom = atoi(buf);
+  }
+  if (req.query("adb", buf, MAX_PARAM_LEN)) {
+    settings->adb = atoi(buf);
+  }
+  if (req.query("idpref", buf, MAX_PARAM_LEN)) {
+    settings->idpref = atoi(buf);
+  }
+  if (req.query("voice", buf, MAX_PARAM_LEN)) {
+    settings->voice = atoi(buf);
+  }
+  if (req.query("aghost", buf, MAX_PARAM_LEN)) {
+    settings->aghost = atoi(buf);
+  }
+  if (req.query("filter", buf, MAX_PARAM_LEN)) {
+    settings->filter = atoi(buf);
+  }
+  if (req.query("power_save", buf, MAX_PARAM_LEN)) {
+    settings->power_save = atoi(buf);
+  }
+  /* team - TODO */
+
+  char *content = Input_content();
+
+  if (content) {
+    res.set(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+    res.set(F("Pragma"), F("no-cache"));
+    res.set(F("Expires"), F("-1"));
+    res.set("Content-Type", "text/html;");
+    res.write( (uint8_t *) content, strlen(content) );
+
+    delay(1000);
+    free(content);
+
+#if !defined(EXCLUDE_EEPROM)
+    EEPROM_store();
+#endif /* EXCLUDE_EEPROM */
+
+    WebServer.end();
+
+    delay(1000);
+    SoC->reset();
+  }
+}
+
+void about_page(Request &req, Response &res) {
+  res.set("Content-Type", "text/html;");
+  res.print(about_html);
+}
+
+void notFound(Request &req, Response &res) {
+  res.set("Content-Type", "application/json");
+  res.print("{\"error\":\"This is not the page you are looking for.\"}");
+}
+#endif /* USE_BRIDGE */
 
 //-------------------------------------------------------------------------
 //
@@ -186,6 +323,7 @@ void RPi_SerialNumber(void)
 
 static void RPi_setup()
 {
+#if defined(EXCLUDE_EEPROM)
 #if defined(USE_GDEY027T91)
   eeprom_block.field.settings.adapter         = ADAPTER_WAVESHARE_PI_HAT_2_7_V2;
 #else
@@ -211,6 +349,7 @@ static void RPi_setup()
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
   eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
   eeprom_block.field.settings.team            = 0;
+#endif /* EXCLUDE_EEPROM */
 
   RPi_SerialNumber();
 }
@@ -222,7 +361,14 @@ static void RPi_post_init()
 
 static void RPi_loop()
 {
+#if defined(USE_BRIDGE)
+  BridgeClient client = WebServer.available();
 
+  if (client.connected()) {
+    WebApp.process(&client);
+    client.stop();
+  }
+#endif /* USE_BRIDGE */
 }
 
 static void RPi_fini()
@@ -239,6 +385,29 @@ static void RPi_reset()
 static uint32_t RPi_getChipId()
 {
   return SerialNumber ? SerialNumber : gethostid();
+}
+
+static uint32_t RPi_getFreeHeap()
+{
+  return 0; /* TBD */
+}
+
+static bool RPi_EEPROM_begin(size_t size)
+{
+#if !defined(EXCLUDE_EEPROM)
+  if (size > EEPROM.length()) {
+    return false;
+  }
+
+  EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
+
+  return true;
+}
+
+static void RPi_EEPROM_extension(int cmd)
+{
+  /* TBD */
 }
 
 static void RPi_swSer_begin(unsigned long baud)
@@ -670,9 +839,9 @@ const SoC_ops_t RPi_ops = {
   RPi_fini,
   RPi_reset,
   RPi_getChipId,
-  NULL,
-  NULL,
-  NULL,
+  RPi_getFreeHeap,
+  RPi_EEPROM_begin,
+  RPi_EEPROM_extension,
   NULL,
   NULL,
   RPi_swSer_begin,
@@ -842,6 +1011,36 @@ int main(int argc, char *argv[])
 
   Traffic_setup();
 
+#if defined(USE_BRIDGE)
+  Bridge.begin();
+
+  WebApp.get("/", &index_page);
+  WebApp.get("/settings", &settings_page);
+  WebApp.get("/input", &input_page);
+  WebApp.get("/about", &about_page);
+  WebApp.notFound(&notFound);
+
+  WebServer.listenOnLocalhost();
+  WebServer.begin();
+
+  struct hostent *this_host = gethostbyname("pione.local");
+
+  if (this_host == NULL) {
+    dest_IP = IPAddress(255,255,255,255);
+  } else {
+    IPAddress this_IP = IPAddress((const uint8_t *)(this_host->h_addr_list[0]));
+    dest_IP = IPAddress((uint32_t) this_IP | ~((uint32_t) 0x00FFFFFF));
+  }
+
+  Serial.print(F("HTTP server has started at port: "));
+  Serial.println((unsigned long) HTTP_SRV_PORT);
+
+  // Uni_Udp.begin(RELAY_SRC_PORT);
+
+  // Serial.print(F("UDP  server has started at port: "));
+  // Serial.println((unsigned long) RELAY_SRC_PORT);
+#endif /* USE_BRIDGE */
+
   SoC->WDT_setup();
 
   while (true) {
@@ -865,7 +1064,14 @@ int main(int argc, char *argv[])
     }
 
     Traffic_ClearExpired();
+
+    SoC->loop();
   }
+
+#if defined(USE_BRIDGE)
+  WebServer.end();
+  // Uni_Udp.stop();
+#endif /* USE_BRIDGE */
 
   return 0;
 }
@@ -879,6 +1085,11 @@ void shutdown(const char *msg)
   EPD_fini(msg, screen_saver);
 
   SoC->Button_fini();
+
+#if defined(USE_BRIDGE)
+  WebServer.end();
+  // Uni_Udp.stop();
+#endif /* USE_BRIDGE */
 
   SoC_fini();
 }

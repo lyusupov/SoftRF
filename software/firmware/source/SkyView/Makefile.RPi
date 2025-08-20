@@ -17,6 +17,8 @@
 
 GDEY027T91    ?= no
 
+BRIDGE        ?= yes
+
 CC            = gcc
 CXX           = g++
 
@@ -43,6 +45,7 @@ EPD2_PATH     = ../libraries/GxEPD2/src
 GDL90_PATH    = ../libraries/rotobox
 SSD1306_PATH  = ../libraries/Adafruit_SSD1306
 BUTTON_PATH   = ../libraries/AceButton/src
+BRIDGE_PATH   = ../libraries/Bridge/src
 
 INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
@@ -50,13 +53,14 @@ INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
                 -I$(GFX_PATH)     -I$(EPD2_PATH) \
                 -I$(GDL90_PATH)   -I$(SSD1306_PATH) \
-                -I$(BUTTON_PATH)
+                -I$(BUTTON_PATH)  -I$(BRIDGE_PATH)
 
 CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  TrafficHelper.cpp EPDHelper.cpp  \
                  GDL90Helper.cpp   BatteryHelper.cpp \
                  OLEDHelper.cpp    View_Radar_EPD.cpp \
-                 View_Text_EPD.cpp JSONHelper.cpp
+                 View_Text_EPD.cpp JSONHelper.cpp \
+                 WebHelper.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \
                  $(LMIC_PATH)/raspi/raspi.o \
@@ -70,6 +74,16 @@ OBJS          := $(CPPS:.cpp=.o) \
                  $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o \
                  $(BUTTON_PATH)/ace_button/AceButton.o \
                  $(BUTTON_PATH)/ace_button/ButtonConfig.o
+
+ifeq ($(BRIDGE), yes)
+  OBJS        += $(BRIDGE_PATH)/Bridge.o $(BRIDGE_PATH)/BridgeUdp.o \
+                 $(BRIDGE_PATH)/BridgeServer.o $(BRIDGE_PATH)/BridgeClient.o \
+                 $(BRIDGE_PATH)/HttpClient.o $(BRIDGE_PATH)/Process.o \
+                 $(BRIDGE_PATH)/Mailbox.o $(BRIDGE_PATH)/aWOT.o \
+                 $(LMIC_PATH)/raspi/IPAddress.o $(LMIC_PATH)/raspi/cbuf.o \
+                 $(LMIC_PATH)/raspi/Stream.o
+  CFLAGS      += -DUSE_BRIDGE
+endif
 
 LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread -lsqlite3 -lasound -lsndfile
 
