@@ -34,19 +34,29 @@
 
 #define HTTP_SRV_PORT           8081 /* port 8080 can cause conflict with dump1090 */
 
-/* Waveshare Pi HAT 2.7" buttons mapping */
+/* Content of /etc/luckfox.cfg for Lyra board
 
-#if defined(USE_LGPIO)
-#define SOC_GPIO_BUTTON_MODE    5
-#define SOC_GPIO_BUTTON_UP      6
-#define SOC_GPIO_BUTTON_DOWN    13
-#define SOC_GPIO_BUTTON_4       19
-#else
-#define SOC_GPIO_BUTTON_MODE    RPI_V2_GPIO_P1_29
-#define SOC_GPIO_BUTTON_UP      RPI_V2_GPIO_P1_31
-#define SOC_GPIO_BUTTON_DOWN    RPI_V2_GPIO_P1_33
-#define SOC_GPIO_BUTTON_4       RPI_V2_GPIO_P1_35
-#endif /* GPIO */
+TP_STATUS=0
+SPI0_STATUS=1
+SPI0_SPEED=2000000
+SPI0_SCLK_RM_IO=7
+SPI0_MOSI_RM_IO=6
+SPI0_MISO_RM_IO=10
+SPI0_CS_RM_IO=8
+I2C1_STATUS=1
+I2C1_SPEED=400000
+I2C1_SDA_RM_IO=27
+I2C1_SCL_RM_IO=26
+UART1_STATUS=1
+UART1_RX_RM_IO=1
+UART1_TX_RM_IO=0
+
+*/
+
+/* Waveshare Pico e-Paper 2.7" buttons mapping */
+#define SOC_GPIO_PIN_KEY0    2
+#define SOC_GPIO_PIN_KEY1    30
+#define SOC_GPIO_PIN_KEY2    12
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET

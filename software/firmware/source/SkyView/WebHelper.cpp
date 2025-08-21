@@ -108,15 +108,20 @@ char *Root_content() {
  <table width=100%%>\
   <tr><th align=left>Device Id</th><td align=right>%06X</td></tr>\
   <tr><th align=left>Software Version</th><td align=right>%s&nbsp;&nbsp;%s</td></tr>\
-  <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>\
-  <tr><th align=left>Free memory</th><td align=right>%u</td></tr>\
-  <tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
+  <tr><th align=left>Uptime</th><td align=right>%02d:%02d:%02d</td></tr>"
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
+ "<tr><th align=left>Free memory</th><td align=right>%u</td></tr>"
+#endif /* RASPBERRY_PI */
+ "<tr><th align=left>Battery voltage</th><td align=right><font color=%s>%s</font></td></tr>\
   <tr><th align=left>&nbsp;</th><td align=right>&nbsp;</td></tr>\
   <tr><th align=left>Display</th><td align=right>%s</td></tr>\
   <tr><th align=left>Connection type</th><td align=right>%s</td></tr>"),
     SoC->getChipId() & 0xFFFFFF, SKYVIEW_FIRMWARE_VERSION,
     (SoC == NULL ? "NONE" : SoC->name),
-    hr, min % 60, sec % 60, SoC->getFreeHeap(),
+    hr, min % 60, sec % 60,
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
+    SoC->getFreeHeap(),
+#endif /* RASPBERRY_PI */
     low_voltage ? "red" : "green", str_Vcc,
     hw_info.display      == DISPLAY_EPD_2_7   ||
     hw_info.display      == DISPLAY_EPD_4_7   ? "e-Paper" :

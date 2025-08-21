@@ -19,8 +19,8 @@ GDEY027T91    ?= no
 
 BRIDGE        ?= yes
 
-BCM2835       ?= yes
-LGPIO         ?= no
+BCM2835       ?= no
+LGPIO         ?= yes
 
 CC            = gcc
 CXX           = g++

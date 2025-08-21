@@ -581,6 +581,8 @@ jobs:
             cd $GITHUB_WORKSPACE/software/firmware/source/SkyView ;
             make -f Makefile.RPi ;
             make -f Makefile.RPi clean ;
+            make -f Makefile.RK35 ;
+            make -f Makefile.RK35 clean ;
           fi ;
           if [[ "$BOARD" =~ "CubeCell:CubeCell:"   ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
