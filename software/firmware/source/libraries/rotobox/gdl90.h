@@ -1,7 +1,7 @@
 #ifndef GDL90_H_
 #define GDL90_H_
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>

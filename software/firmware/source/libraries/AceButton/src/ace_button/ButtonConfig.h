@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef ACE_BUTTON_BUTTON_CONFIG_H
 #define ACE_BUTTON_BUTTON_CONFIG_H
 
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
 #include <Arduino.h>
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)
 #ifndef nullptr

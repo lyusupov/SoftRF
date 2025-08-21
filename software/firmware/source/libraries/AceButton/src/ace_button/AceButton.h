@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef ACE_BUTTON_ACE_BUTTON_H
 #define ACE_BUTTON_ACE_BUTTON_H
 
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
 #include <Arduino.h>
 #else
 #include <raspi/raspi.h>

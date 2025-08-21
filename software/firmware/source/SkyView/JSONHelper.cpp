@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_RP2040)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA) || defined(ARDUINO_ARCH_RP2040)
 
 #include "SoCHelper.h"
 #include "EEPROMHelper.h"
@@ -25,7 +25,7 @@
 #include "JSONHelper.h"
 
 /* RAM usage optimization */
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 StaticJsonBuffer<JSON_BUFFER_SIZE> jsonBuffer;
 #endif /* RASPBERRY_PI */
 

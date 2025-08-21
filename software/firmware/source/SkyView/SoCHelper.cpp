@@ -46,6 +46,8 @@ byte SoC_setup()
   SoC = &ASR66_ops;
 #elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
   SoC = &RP2xxx_ops;
+#elif defined(LUCKFOX_LYRA)
+  SoC = &RK35_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

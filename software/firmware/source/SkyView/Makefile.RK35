@@ -1,0 +1,149 @@
+#
+# Makefile.RK35
+# Copyright (C) 2025 Linar Yusupov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+GDEY027T91    ?= no
+
+BRIDGE        ?= yes
+
+BCM2835       ?= yes
+LGPIO         ?= no
+
+CC            = gcc
+CXX           = g++
+
+CFLAGS        = -g -MMD -DLUCKFOX_LYRA -DBCM2835_NO_DELAY_COMPATIBILITY \
+                -D__BASEFILE__=\"$*\"
+
+ifeq ($(GDEY027T91), yes)
+  CFLAGS      += -DUSE_GDEY027T91
+endif
+
+CXXFLAGS      = -std=c++11 $(CFLAGS)
+#STATIC        = -static-libstdc++
+
+LMIC_PATH     = ../libraries/arduino-lmic/src
+TIMELIB_PATH  = ../libraries/Time
+GNSSLIB_PATH  = ../libraries/TinyGPSPlus/src
+BCMLIB_PATH   = ../libraries/bcm2835/src
+NMEALIB_PATH  = ../libraries/nmealib/src
+GEOID_PATH    = ../libraries/Geoid
+JSON_PATH     = ../libraries/ArduinoJson/src
+TCPSRV_PATH   = ../libraries/SimpleNetwork/src
+GFX_PATH      = ../libraries/Adafruit-GFX-Library
+EPD2_PATH     = ../libraries/GxEPD2/src
+GDL90_PATH    = ../libraries/rotobox
+SSD1306_PATH  = ../libraries/Adafruit_SSD1306
+BUTTON_PATH   = ../libraries/AceButton/src
+BRIDGE_PATH   = ../libraries/Bridge/src
+LGPIO_PATH    = ../libraries/lg-0.1
+
+INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
+                -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
+                -I$(NMEALIB_PATH) -I$(GEOID_PATH) \
+                -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
+                -I$(GFX_PATH)     -I$(EPD2_PATH) \
+                -I$(GDL90_PATH)   -I$(SSD1306_PATH) \
+                -I$(BUTTON_PATH)  -I$(BRIDGE_PATH) \
+                -I$(LGPIO_PATH)
+
+CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
+                 TrafficHelper.cpp EPDHelper.cpp  \
+                 GDL90Helper.cpp   BatteryHelper.cpp \
+                 OLEDHelper.cpp    View_Radar_EPD.cpp \
+                 View_Text_EPD.cpp JSONHelper.cpp \
+                 WebHelper.cpp     EEPROMHelper.cpp
+
+OBJS          := $(CPPS:.cpp=.o) \
+                 $(LMIC_PATH)/raspi/raspi.o \
+                 $(LMIC_PATH)/raspi/WString.o \
+                 $(LMIC_PATH)/raspi/TTYSerial.o \
+                 $(GNSSLIB_PATH)/TinyGPS++.o \
+                 $(TIMELIB_PATH)/Time.o \
+                 $(GFX_PATH)/Adafruit_GFX.o $(LMIC_PATH)/raspi/Print.o \
+                 $(EPD2_PATH)/GxEPD2_EPD.o $(EPD2_PATH)/epd/GxEPD2_270.o \
+                 $(EPD2_PATH)/epd/GxEPD2_270_T91.o \
+                 $(GDL90_PATH)/gdl90.o $(SSD1306_PATH)/Adafruit_SSD1306.o \
+                 $(BUTTON_PATH)/ace_button/AceButton.o \
+                 $(BUTTON_PATH)/ace_button/ButtonConfig.o
+
+ifeq ($(BRIDGE), yes)
+  OBJS        += $(BRIDGE_PATH)/Bridge.o $(BRIDGE_PATH)/BridgeUdp.o \
+                 $(BRIDGE_PATH)/BridgeServer.o $(BRIDGE_PATH)/BridgeClient.o \
+                 $(BRIDGE_PATH)/HttpClient.o $(BRIDGE_PATH)/Process.o \
+                 $(BRIDGE_PATH)/Mailbox.o $(BRIDGE_PATH)/aWOT.o \
+                 $(LMIC_PATH)/raspi/IPAddress.o $(LMIC_PATH)/raspi/cbuf.o \
+                 $(LMIC_PATH)/raspi/Stream.o
+  CFLAGS      += -DUSE_BRIDGE
+endif
+
+ifeq ($(BCM2835), yes)
+  LIBS        := -L$(BCMLIB_PATH) -lbcm2835
+  CFLAGS      += -DUSE_BCMLIB
+endif
+
+ifeq ($(LGPIO), yes)
+  LIBS        := -L$(LGPIO_PATH) -llgpio
+  CFLAGS      += -DUSE_LGPIO
+  OBJS        += $(LMIC_PATH)/raspi/Wire.o
+endif
+
+LIBS          += -lpthread -lsqlite3 -lasound -lsndfile
+
+PROGNAME      := SkyView
+
+DEPS          := $(OBJS:.o=.d)
+
+all: bcm lgpio $(PROGNAME)
+
+%.o: %.cpp
+				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
+
+%.o: %.c
+				$(CC) -c $(CFLAGS) $*.c -o $*.o $(INCLUDE)
+
+hal.o: $(LMIC_PATH)/hal/hal.cpp
+				$(CXX) $(CXXFLAGS) -c $(LMIC_PATH)/hal/hal.cpp $(INCLUDE) -o hal.o
+
+Platform_RK35.o: Platform_RK35.cpp
+				$(CXX) $(CXXFLAGS) -c Platform_RK35.cpp $(INCLUDE) -o Platform_RK35.o
+
+bcm:
+ifeq ($(BCM2835), yes)
+				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+endif
+
+lgpio:
+ifeq ($(LGPIO), yes)
+				(cd $(LGPIO_PATH)/ ; make)
+endif
+
+$(PROGNAME): $(OBJS) hal.o Platform_RK35.o
+				$(CXX) $(STATIC) $(OBJS) hal.o Platform_RK35.o $(LIBS) -o $(PROGNAME)
+
+bcm-clean:
+ifeq ($(BCM2835), yes)
+				(cd $(BCMLIB_PATH)/../ ; make distclean)
+endif
+
+lgpio-clean:
+ifeq ($(LGPIO), yes)
+				(cd $(LGPIO_PATH)/ ; make clean)
+endif
+
+clean: bcm-clean lgpio-clean
+				rm -f $(OBJS) $(DEPS) hal.o \
+				Platform_RK35.o $(PROGNAME) *.d

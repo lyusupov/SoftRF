@@ -19,7 +19,7 @@
 #ifndef OLEDHELPER_H
 #define OLEDHELPER_H
 
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 
 #include <Adafruit_SSD1306.h>
 

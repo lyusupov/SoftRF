@@ -25,6 +25,7 @@
 #include "Platform_ESP8266.h"
 #include "Platform_ESP32.h"
 #include "Platform_RP2XXX.h"
+#include "Platform_RK35.h"
 #include "SkyView.h"
 #include "BluetoothHelper.h"
 
@@ -136,6 +137,9 @@ extern const SoC_ops_t ASR66_ops;
 #endif
 #if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
 extern const SoC_ops_t RP2xxx_ops;
+#endif
+#if defined(LUCKFOX_LYRA)
+extern const SoC_ops_t RK35_ops;
 #endif
 
 byte SoC_setup(void);

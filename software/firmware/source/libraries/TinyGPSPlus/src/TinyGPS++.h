@@ -24,8 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __TinyGPSPlus_h
 #define __TinyGPSPlus_h
 
-#if (defined(ARDUINO) && ARDUINO >= 100 && !defined(RASPBERRY_PI)) || \
-    defined(HACKRF_ONE)
+#if (defined(ARDUINO) && ARDUINO >= 100 && \
+    !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)) || \
+     defined(HACKRF_ONE)
 #include "Arduino.h"
 #else
 #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)

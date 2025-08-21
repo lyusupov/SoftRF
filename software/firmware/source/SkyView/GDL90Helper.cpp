@@ -280,7 +280,7 @@ void GDL90_loop()
       GDL90_Data_TimeMarker = millis();
     }
     /* read data from microUSB port */
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA)
     if (Serial != SerialInput)
 #endif
     {
