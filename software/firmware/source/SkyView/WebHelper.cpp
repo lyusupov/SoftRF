@@ -290,7 +290,8 @@ char *Settings_content() {
     (settings->adapter == ADAPTER_WAVESHARE_ESP8266 ? "selected" : ""), ADAPTER_WAVESHARE_ESP8266
     );
   } else if (SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_ARM ||
-             SoC->id == SOC_RP2350_RISC || SoC->id == SOC_ESP32S3) {
+             SoC->id == SOC_RP2350_RISC || SoC->id == SOC_ESP32S3    ||
+             SoC->id == SOC_RK3506) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -305,7 +306,7 @@ char *Settings_content() {
     (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7    ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7,
     (settings->adapter == ADAPTER_WAVESHARE_PICO_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PICO_2_7_V2
     );
-  } else if (SoC->id == SOC_ESP32P4) {
+  } else if (SoC->id == SOC_RPi || SoC->id == SOC_ESP32P4) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -427,6 +428,7 @@ char *Settings_content() {
   if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S2 ||
       SoC->id == SOC_ESP32S3     || SoC->id == SOC_ESP32C3 ||
       SoC->id == SOC_ESP32C5     || SoC->id == SOC_ESP32C6 ||
+      SoC->id == SOC_RPi         || SoC->id == SOC_RK3506  ||
       SoC->id == SOC_ESP32P4     || SoC->id == SOC_RP2040  ||
       SoC->id == SOC_RP2350_RISC || SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size,

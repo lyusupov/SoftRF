@@ -36,11 +36,14 @@
   typedef class HardwareSPI SPIClass;
 #endif
 
-#if !defined(RASPBERRY_PI)
+#if !defined(RASPBERRY_PI) &&  !defined(LUCKFOX_LYRA)
 #include <Wire.h>
 #include <SPI.h>
 #else
 #include <raspi/raspi.h>
+#if defined(USE_LGPIO)
+#include <raspi/Wire.h>
+#endif /* USE_LGPIO */
 #endif /* RASPBERRY_PI */
 #include <Adafruit_GFX.h>
 

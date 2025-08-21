@@ -35,10 +35,18 @@
 #define HTTP_SRV_PORT           8081 /* port 8080 can cause conflict with dump1090 */
 
 /* Waveshare Pi HAT 2.7" buttons mapping */
+
+#if defined(USE_LGPIO)
+#define SOC_GPIO_BUTTON_MODE    5
+#define SOC_GPIO_BUTTON_UP      6
+#define SOC_GPIO_BUTTON_DOWN    13
+#define SOC_GPIO_BUTTON_4       19
+#else
 #define SOC_GPIO_BUTTON_MODE    RPI_V2_GPIO_P1_29
 #define SOC_GPIO_BUTTON_UP      RPI_V2_GPIO_P1_31
 #define SOC_GPIO_BUTTON_DOWN    RPI_V2_GPIO_P1_33
 #define SOC_GPIO_BUTTON_4       RPI_V2_GPIO_P1_35
+#endif /* GPIO */
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET

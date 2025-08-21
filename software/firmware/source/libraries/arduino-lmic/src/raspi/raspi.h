@@ -273,6 +273,10 @@ class SPISettings
         init(Speed, bitOrder, dataMode);
     }
 
+    SPISettings() {
+        init(8000000, MSBFIRST, SPI_MODE0);
+    }
+
   private:
     void init(uint32_t Speed, uint8_t bitOrder, uint8_t dataMode) {
       this->Speed    = Speed   ;

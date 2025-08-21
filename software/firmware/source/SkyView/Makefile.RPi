@@ -19,11 +19,14 @@ GDEY027T91    ?= no
 
 BRIDGE        ?= yes
 
+BCM2835       ?= yes
+LGPIO         ?= no
+
 CC            = gcc
 CXX           = g++
 
 CFLAGS        = -g -MMD -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY \
-                -DUSE_BCMLIB -D__BASEFILE__=\"$*\"
+                -D__BASEFILE__=\"$*\"
 
 ifeq ($(GDEY027T91), yes)
   CFLAGS      += -DUSE_GDEY027T91
@@ -46,6 +49,7 @@ GDL90_PATH    = ../libraries/rotobox
 SSD1306_PATH  = ../libraries/Adafruit_SSD1306
 BUTTON_PATH   = ../libraries/AceButton/src
 BRIDGE_PATH   = ../libraries/Bridge/src
+LGPIO_PATH    = ../libraries/lg-0.1
 
 INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(GNSSLIB_PATH) -I$(BCMLIB_PATH) \
@@ -53,7 +57,8 @@ INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
                 -I$(JSON_PATH)    -I$(TCPSRV_PATH) \
                 -I$(GFX_PATH)     -I$(EPD2_PATH) \
                 -I$(GDL90_PATH)   -I$(SSD1306_PATH) \
-                -I$(BUTTON_PATH)  -I$(BRIDGE_PATH)
+                -I$(BUTTON_PATH)  -I$(BRIDGE_PATH) \
+                -I$(LGPIO_PATH)
 
 CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  TrafficHelper.cpp EPDHelper.cpp  \
@@ -85,13 +90,24 @@ ifeq ($(BRIDGE), yes)
   CFLAGS      += -DUSE_BRIDGE
 endif
 
-LIBS          := -L$(BCMLIB_PATH) -lbcm2835 -lpthread -lsqlite3 -lasound -lsndfile
+ifeq ($(BCM2835), yes)
+  LIBS        := -L$(BCMLIB_PATH) -lbcm2835
+  CFLAGS      += -DUSE_BCMLIB
+endif
+
+ifeq ($(LGPIO), yes)
+  LIBS        := -L$(LGPIO_PATH) -llgpio
+  CFLAGS      += -DUSE_LGPIO
+  OBJS        += $(LMIC_PATH)/raspi/Wire.o
+endif
+
+LIBS          += -lpthread -lsqlite3 -lasound -lsndfile
 
 PROGNAME      := SkyView
 
 DEPS          := $(OBJS:.o=.d)
 
-all: bcm $(PROGNAME)
+all: bcm lgpio $(PROGNAME)
 
 %.o: %.cpp
 				$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o $(INCLUDE)
@@ -106,14 +122,28 @@ Platform_RPi.o: Platform_RPi.cpp
 				$(CXX) $(CXXFLAGS) -c Platform_RPi.cpp $(INCLUDE) -o Platform_RPi.o
 
 bcm:
+ifeq ($(BCM2835), yes)
 				(cd $(BCMLIB_PATH)/../ ; ./configure ; make)
+endif
+
+lgpio:
+ifeq ($(LGPIO), yes)
+				(cd $(LGPIO_PATH)/ ; make)
+endif
 
 $(PROGNAME): $(OBJS) hal.o Platform_RPi.o
 				$(CXX) $(STATIC) $(OBJS) hal.o Platform_RPi.o $(LIBS) -o $(PROGNAME)
 
 bcm-clean:
+ifeq ($(BCM2835), yes)
 				(cd $(BCMLIB_PATH)/../ ; make distclean)
+endif
 
-clean: bcm-clean
+lgpio-clean:
+ifeq ($(LGPIO), yes)
+				(cd $(LGPIO_PATH)/ ; make clean)
+endif
+
+clean: bcm-clean lgpio-clean
 				rm -f $(OBJS) $(DEPS) hal.o \
 				Platform_RPi.o $(PROGNAME) *.d

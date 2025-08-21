@@ -437,9 +437,15 @@ static void RPi_EPD_setup()
     display = &epd_waveshare_W3;
     break;
   }
+#if defined(USE_BCMLIB)
   display->epd2.selectSPI(SPI0, SPISettings(BCM2835_SPI_CLOCK_DIVIDER_64,
                                             BCM2835_SPI_BIT_ORDER_MSBFIRST,
                                             BCM2835_SPI_MODE0));
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+  display->epd2.selectSPI(SPI0, SPISettings(8000000, MSBFIRST, SPI_MODE0));
+#endif /* USE_LGPIO */
 }
 
 static void RPi_EPD_fini()
@@ -757,6 +763,8 @@ static void RPi_Button_setup()
 {
   if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
       settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
+
+#if defined(USE_BCMLIB)
     // Sets the pins as input.
     bcm2835_gpio_fsel(SOC_GPIO_BUTTON_MODE,     BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(SOC_GPIO_BUTTON_UP,       BCM2835_GPIO_FSEL_INPT);
@@ -768,6 +776,11 @@ static void RPi_Button_setup()
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_UP);
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_UP);
 //  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_4,     BCM2835_GPIO_PUD_UP);
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+    /* TODO */
+#endif /* USE_LGPIO */
 
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
@@ -812,11 +825,17 @@ static void RPi_Button_fini()
 {
   if (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7 ||
       settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2) {
+#if defined(USE_BCMLIB)
     // Clears the Pull-up mode for the pins.
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_MODE,  BCM2835_GPIO_PUD_OFF);
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_UP,    BCM2835_GPIO_PUD_OFF);
     bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_DOWN,  BCM2835_GPIO_PUD_OFF);
 //  bcm2835_gpio_set_pud(SOC_GPIO_BUTTON_4,     BCM2835_GPIO_PUD_OFF);
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+    /* TODO */
+#endif /* USE_LGPIO */
   }
 }
 
@@ -934,11 +953,21 @@ int main(int argc, char *argv[])
       }
   }
 
+#if defined(USE_BCMLIB)
   // Init GPIO bcm
   if (!bcm2835_init()) {
       fprintf( stderr, "bcm2835_init() Failed\n\n" );
       exit(EXIT_FAILURE);
   }
+#endif /* USE_BCMLIB */
+
+#if defined(USE_LGPIO)
+  // Init GPIO lgpio
+  if (!lgpio_init()) {
+      fprintf( stderr, "lgpio_init() Failed\n\n" );
+      exit(EXIT_FAILURE);
+  }
+#endif /* USE_LGPIO */
 
   Serial.begin(SERIAL_OUT_BR);
 

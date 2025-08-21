@@ -44,7 +44,9 @@
   (*(const unsigned char *)(addr)) ///< PROGMEM workaround for non-AVR
 #endif
 
-#if !defined(__ARM_ARCH) && !defined(ENERGIA) && !defined(ESP8266) && !defined(ESP32) && !defined(RASPBERRY_PI) && !defined(__arc__)
+#if !defined(__ARM_ARCH) && !defined(ENERGIA) && !defined(ESP8266) && \
+    !defined(ESP32) && !defined(RASPBERRY_PI) && !defined(LUCKFOX_LYRA) && \
+    !defined(__arc__)
  #include <util/delay.h>
 #endif
 
@@ -235,7 +237,7 @@ Adafruit_SSD1306::Adafruit_SSD1306(uint8_t w, uint8_t h, SPIClass *spi,
   Adafruit_GFX(w, h), spi(spi ? spi : &SPI), wire(NULL), buffer(NULL),
   mosiPin(-1), clkPin(-1), dcPin(dc_pin), csPin(cs_pin), rstPin(rst_pin) {
 #ifdef SPI_HAS_TRANSACTION
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) && defined(USE_BCMLIB)
 // Raspberry Pi 2:
 //    BCM2835_CORE_CLK_HZ = 250000000
 //    Clock divider / 64 = 3.906 MHz
@@ -305,7 +307,7 @@ Adafruit_SSD1306::Adafruit_SSD1306(int8_t dc_pin, int8_t rst_pin,
   spi(&SPI), wire(NULL), buffer(NULL), mosiPin(-1), clkPin(-1),
   dcPin(dc_pin), csPin(cs_pin), rstPin(rst_pin) {
 #ifdef SPI_HAS_TRANSACTION
-#if defined(RASPBERRY_PI)
+#if defined(RASPBERRY_PI) && defined(USE_BCMLIB)
 // Raspberry Pi 2:
 //    BCM2835_CORE_CLK_HZ = 250000000
 //    Clock divider / 64 = 3.906 MHz
