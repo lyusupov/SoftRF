@@ -208,9 +208,9 @@ char *Root_content() {
   size -= len;
 
   /* SoC specific part 5 */
-  if (SoC->id != SOC_RP2040      &&
-      SoC->id != SOC_RP2350_RISC &&
-      SoC->id != SOC_RP2350_ARM) {
+  if (SoC->id != SOC_RP2040     && SoC->id != SOC_RP2350_RISC &&
+      SoC->id != SOC_RP2350_ARM && SoC->id != SOC_RPi         &&
+      SoC->id != SOC_RK3506) {
     snprintf_P ( offset, size, PSTR("\
     <td align=right><input type=button onClick=\"location.href='/firmware'\" value='Firmware update'></td>"));
     len = strlen(offset);

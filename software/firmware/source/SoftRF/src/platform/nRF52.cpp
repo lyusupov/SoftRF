@@ -107,7 +107,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIX_NUM, SOC_GPIO_PIN_LED,
 #endif /* EXCLUDE_LED_RING */
 
 #if defined(EXCLUDE_WIFI)
-char UDPpacketBuffer[4]; // Dummy definition to satisfy build sequence
+char UDPpacketBuffer[256]; // Dummy definition to satisfy build sequence
 #else
 #if defined(USING_WIFI101_GENERIC) || defined(WiFiNINA_h)
 #include <SoftSPI.h>
