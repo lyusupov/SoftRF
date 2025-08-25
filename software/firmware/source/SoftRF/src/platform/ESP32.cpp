@@ -1702,6 +1702,8 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
   } else if (esp32_board == ESP32_C5_DEVKIT) {
 
+    hw_info.revision = STD_EDN_REV_C5_DEVKIT;
+
 #if ARDUINO_USB_CDC_ON_BOOT
     SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
                        SOC_GPIO_PIN_C5_CONS_RX,
@@ -4277,8 +4279,8 @@ static byte ESP32_Display_setup()
         } else {
           u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(TTGO_V2_OLED_PIN_RST); // &u8x8_ttgo;
         }
+        WIRE_FINI(Wire);
       }
-      WIRE_FINI(Wire);
     } else if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
       Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
@@ -4340,8 +4342,8 @@ static byte ESP32_Display_setup()
         } else {
           u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
         }
+        WIRE_FINI(Wire);
       }
-      WIRE_FINI(Wire);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
     } else if (esp32_board == ESP32_C5_DEVKIT) {
@@ -4355,8 +4357,8 @@ static byte ESP32_Display_setup()
         } else {
           u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
         }
+        WIRE_FINI(Wire);
       }
-      WIRE_FINI(Wire);
 #endif /* CONFIG_IDF_TARGET_ESP32C5 */
     } else if (GPIO_21_22_are_busy) {
       if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 && hw_info.revision >= 8) {
@@ -5127,14 +5129,15 @@ static void ESP32_Battery_setup()
 #else
     /* TBD */
 #endif /* ESP_IDF_VERSION_MAJOR */
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+      calibrate_voltage(SOC_GPIO_PIN_C5_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
     if (esp32_board == ESP32_LILYGO_T3C6) {
       calibrate_voltage(SOC_GPIO_PIN_T3C6_BATTERY);
     } else {
       calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
     }
-#elif defined(CONFIG_IDF_TARGET_ESP32C5)  || \
-      defined(CONFIG_IDF_TARGET_ESP32C61) || \
+#elif defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
     /* TBD */
@@ -5356,12 +5359,12 @@ static bool ESP32_Baro_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
   } else if (esp32_board == ESP32_C5_DEVKIT) {
-
+#if 0
     if ((hw_info.rf != RF_IC_SX1276 && hw_info.rf != RF_IC_SX1262) ||
         RF_SX12XX_RST_is_connected) {
       return false;
     }
-
+#endif
     Wire.setPins(SOC_GPIO_PIN_C5_SDA, SOC_GPIO_PIN_C5_SCL);
 
 #endif /* CONFIG_IDF_TARGET_ESP32C5 */
@@ -5644,6 +5647,7 @@ static void ESP32_Button_setup()
 #if defined(EXCLUDE_ETHERNET)
        esp32_board == ESP32_P4_WT_DEVKIT      ||
 #endif /* EXCLUDE_ETHERNET */
+       esp32_board == ESP32_C5_DEVKIT         ||
        esp32_board == ESP32_S3_DEVKIT) {
     button_pin = esp32_board == ESP32_S2_T8_V1_1    ? SOC_GPIO_PIN_T8_S2_BUTTON :
                  esp32_board == ESP32_S3_DEVKIT        ? SOC_GPIO_PIN_S3_BUTTON :
@@ -5656,6 +5660,7 @@ static void ESP32_Button_setup()
 #if defined(EXCLUDE_ETHERNET)
                  esp32_board == ESP32_P4_WT_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON :
 #endif /* EXCLUDE_ETHERNET */
+                 esp32_board == ESP32_C5_DEVKIT        ? SOC_GPIO_PIN_C5_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
                  SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_TBEAM_V05_BUTTON;
 
@@ -5743,6 +5748,10 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_ELECROW_TN_M2       ||
       esp32_board == ESP32_ELECROW_TN_M5       ||
       esp32_board == ESP32_EBYTE_HUB_900TB     ||
+#if defined(EXCLUDE_ETHERNET)
+      esp32_board == ESP32_P4_WT_DEVKIT        ||
+#endif /* EXCLUDE_ETHERNET */
+      esp32_board == ESP32_C5_DEVKIT           ||
       esp32_board == ESP32_S3_DEVKIT) {
     button_1.check();
 
@@ -5771,6 +5780,7 @@ static void ESP32_Button_fini()
 #if defined(EXCLUDE_ETHERNET)
       esp32_board == ESP32_P4_WT_DEVKIT      ||
 #endif /* EXCLUDE_ETHERNET */
+      esp32_board == ESP32_C5_DEVKIT         ||
       esp32_board == ESP32_S3_DEVKIT) {
     int button_pin = esp32_board == ESP32_S2_T8_V1_1   ? SOC_GPIO_PIN_T8_S2_BUTTON :
                      esp32_board == ESP32_ELECROW_TN_M2 ? SOC_GPIO_PIN_M2_BUTTON_1 :
@@ -5778,6 +5788,7 @@ static void ESP32_Button_fini()
 #if defined(EXCLUDE_ETHERNET)
                      esp32_board == ESP32_P4_WT_DEVKIT  ? SOC_GPIO_PIN_P4_BUTTON   :
 #endif /* EXCLUDE_ETHERNET */
+                     esp32_board == ESP32_C5_DEVKIT     ? SOC_GPIO_PIN_C5_BUTTON   :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
                      SOC_GPIO_PIN_TWR2_ENC_BUTTON : SOC_GPIO_PIN_S3_BUTTON;
     while (digitalRead(button_pin) == (esp32_board == ESP32_ELECROW_TN_M2 ? HIGH : LOW));

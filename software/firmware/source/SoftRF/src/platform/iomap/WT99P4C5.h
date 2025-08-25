@@ -86,8 +86,8 @@
 
 
 /* ESP32-C5 */
-#define SOC_GPIO_PIN_C5_CONS_RX         23
-#define SOC_GPIO_PIN_C5_CONS_TX         27
+#define SOC_GPIO_PIN_C5_CONS_RX         12
+#define SOC_GPIO_PIN_C5_CONS_TX         11
 
 // USB
 #define SOC_GPIO_PIN_C5_USB_DP          14
@@ -105,9 +105,9 @@
 #define SOC_GPIO_PIN_C5_IO28            28 /* BOOT      */
 
 // GNSS module
-#define SOC_GPIO_PIN_C5_GNSS_RX         12
-#define SOC_GPIO_PIN_C5_GNSS_TX         11
-#define SOC_GPIO_PIN_C5_GNSS_PPS        24
+#define SOC_GPIO_PIN_C5_GNSS_RX         23
+#define SOC_GPIO_PIN_C5_GNSS_TX         24
+#define SOC_GPIO_PIN_C5_GNSS_PPS        SOC_GPIO_PIN_C5_IO2
 
 // SPI
 #define SOC_GPIO_PIN_C5_MOSI            SOC_GPIO_PIN_C5_SD_CMD
@@ -123,3 +123,9 @@
 // I2C
 #define SOC_GPIO_PIN_C5_SDA             4
 #define SOC_GPIO_PIN_C5_SCL             5
+
+// Misc.
+#define SOC_GPIO_PIN_C5_BUTTON          SOC_GPIO_PIN_C5_IO28
+#define SOC_GPIO_PIN_C5_BATTERY         6
+#define SOC_GPIO_PIN_C5_BUZZER          25
+#define SOC_GPIO_PIN_C5_NEOPIXEL        26

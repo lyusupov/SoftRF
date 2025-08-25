@@ -26,7 +26,7 @@
 #define SPI SPI1
 #endif /* ARDUINO_ARCH_RP2040 || ARDUINO_ARCH_RP2350 */
 
-#if defined(ARDUINO_ARCH_RENESAS) || defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(ARDUINO_ARCH_RENESAS) // || defined(CONFIG_IDF_TARGET_ESP32C5)
 #include <SoftSPI.h>
 extern  SoftSPI RadioSPI;
 #undef  SPI

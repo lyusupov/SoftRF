@@ -174,8 +174,12 @@ void input_page(Request &req, Response &res) {
   if (req.query("baudrate", buf, MAX_PARAM_LEN)) {
     settings->baudrate = atoi(buf);
   }
-  /* server - TODO */
-  /* key - TODO */
+  if (req.query("server", buf, MAX_PARAM_LEN)) {
+    strncpy(settings->server, buf, sizeof(settings->server));
+  }
+  if (req.query("key", buf, MAX_PARAM_LEN)) {
+    strncpy(settings->key, buf, sizeof(settings->key));
+  }
   if (req.query("units", buf, MAX_PARAM_LEN)) {
     settings->units = atoi(buf);
   }
@@ -209,7 +213,9 @@ void input_page(Request &req, Response &res) {
   if (req.query("power_save", buf, MAX_PARAM_LEN)) {
     settings->power_save = atoi(buf);
   }
-  /* team - TODO */
+  if (req.query("team", buf, MAX_PARAM_LEN)) {
+    settings->team = strtoul(buf, NULL, 16);
+  }
 
   char *content = Input_content();
 
