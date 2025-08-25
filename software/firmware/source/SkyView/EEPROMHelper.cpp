@@ -79,7 +79,8 @@ void EEPROM_defaults()
 
   if (SoC->id == SOC_ESP8266)
     eeprom_block.field.settings.adapter       = ADAPTER_NODEMCU;
-  else if (SoC->id == SOC_ESP32C3)
+  else if (SoC->id == SOC_ESP32C3 || SoC->id == SOC_ESP32C5 ||
+           SoC->id == SOC_ESP32C6)
     eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_ESP32;
   else if (SoC->id == SOC_ESP32P4)
     eeprom_block.field.settings.adapter       = ADAPTER_WAVESHARE_PI_HAT_2_7;

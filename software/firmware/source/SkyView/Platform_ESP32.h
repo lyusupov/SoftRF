@@ -240,7 +240,6 @@
 #define SOC_GPIO_PIN_PAMP_EN  53
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || \
       defined(CONFIG_IDF_TARGET_ESP32C6)
 #define SOC_GPIO_PIN_GNSS_RX  10  /* D4 */
 #define SOC_GPIO_PIN_GNSS_TX  7
@@ -262,9 +261,35 @@
 #define SOC_GPIO_PIN_USB_DP   19 /* D1 */
 #define SOC_GPIO_PIN_USB_DN   18 /* D2 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
-#endif
+#endif /* CONFIG_IDF_TARGET_ESP32C6 */
+#define EXCLUDE_AUDIO
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C5)
+
+#define SOC_GPIO_PIN_GNSS_RX  23
+#define SOC_GPIO_PIN_GNSS_TX  24
+
+#define SOC_BUTTON_MODE_DEF   28 /* BOOT */
+
+#define SOC_GPIO_PIN_MOSI_WS  10
+#define SOC_GPIO_PIN_MISO_WS  8
+#define SOC_GPIO_PIN_SCK_WS   9
+#define SOC_GPIO_PIN_SS_WS    7
+
+#define SOC_EPD_PIN_DC_WS     0
+#define SOC_EPD_PIN_RST_WS    3
+#define SOC_EPD_PIN_BUSY_WS   1
+
+// USB CDC/JTAG
+#define SOC_GPIO_PIN_USB_DP   14
+#define SOC_GPIO_PIN_USB_DN   13
+
+// Misc.
+#define SOC_GPIO_PIN_BATTERY  6
+
+#define USE_NIMBLE
 #define EXCLUDE_AUDIO
 
 #else
