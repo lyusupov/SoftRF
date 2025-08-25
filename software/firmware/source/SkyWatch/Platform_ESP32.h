@@ -248,8 +248,14 @@ extern PCF8563_Class *rtc;
 
 #undef  SOC_GPIO_PIN_GNSS_RX
 #undef  SOC_GPIO_PIN_GNSS_TX
+
+#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#define SOC_GPIO_PIN_GNSS_RX            23
+#define SOC_GPIO_PIN_GNSS_TX            24
+#else
 #define SOC_GPIO_PIN_GNSS_RX            SOC_GPIO_PIN_TULTIMA_ESP_HS
 #define SOC_GPIO_PIN_GNSS_TX            SOC_GPIO_PIN_TULTIMA_ESP_DR
+#endif /* CONFIG_IDF_TARGET_ESP32C5 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
