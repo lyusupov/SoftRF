@@ -203,6 +203,7 @@ extern portMUX_TYPE BMA_mutex;
 extern volatile bool BMA_Irq;
 extern PCF8563_Class *rtc;
 
+#define EXCLUDE_ETHERNET
 #define NMEA_TCP_SERVICE
 //#define USE_DNS_SERVER
 
@@ -266,6 +267,31 @@ extern PCF8563_Class *rtc;
 extern IODev_ops_t ArdBLE_Bluetooth_ops;
 #endif
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#undef  SOC_GPIO_PIN_GNSS_RX
+#undef  SOC_GPIO_PIN_GNSS_TX
+#define SOC_GPIO_PIN_GNSS_RX            38
+#define SOC_GPIO_PIN_GNSS_TX            37
+
+#undef EXCLUDE_ETHERNET
+
+// Ethernet
+#define ETH_PHY_TYPE                    ETH_PHY_IP101
+#define SOC_GPIO_PIN_ETH_MDC            31
+#define SOC_GPIO_PIN_ETH_MDIO           52
+#define SOC_GPIO_PIN_ETH_PWR            51 /* PHY_RSTN */
+
+// SDIO 1 - SDMMC
+#define SOC_GPIO_PIN_SD_CLK             43
+#define SOC_GPIO_PIN_SD_CMD             44
+#define SOC_GPIO_PIN_SD_D0              39
+#define SOC_GPIO_PIN_SD_D1              40
+#define SOC_GPIO_PIN_SD_D2              41
+#define SOC_GPIO_PIN_SD_D3              42
+#define SOC_GPIO_PIN_SD_DET             45
+#define SOC_GPIO_PIN_SD_PWR             46 /* NC ? */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #endif /* PLATFORM_ESP32_H */
 

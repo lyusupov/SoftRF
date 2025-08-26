@@ -70,6 +70,15 @@
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
 #endif /* ESP_IDF_VERSION_MAJOR */
 
+#if !defined(EXCLUDE_ETHERNET)
+#include <ETH.h>
+#include "EthernetHelper.h"
+#endif /* EXCLUDE_ETHERNET */
+
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+#include "esp_ldo_regulator.h"
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  28        /* Time ESP32 will go to sleep (in seconds) */
 
@@ -401,11 +410,27 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   }
 
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+  {
+    esp_ldo_channel_handle_t ldo_sdio = NULL;
+    esp_ldo_channel_config_t ldo_sdio_config = {
+        .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+        .voltage_mv = 3300,
+    };
+    esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+  }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
     !defined(CONFIG_IDF_TARGET_ESP32C6)
   /* SD-SPI init */
   uSD_SPI.begin(
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+                SOC_GPIO_PIN_SD_CLK,
+                SOC_GPIO_PIN_SD_D0,
+                SOC_GPIO_PIN_SD_CMD,
+                SOC_GPIO_PIN_SD_D3
+#elif !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S3)
                 SOC_GPIO_PIN_TWATCH_SD_SCK,
                 SOC_GPIO_PIN_TWATCH_SD_MISO,
                 SOC_GPIO_PIN_TWATCH_SD_MOSI,
@@ -435,6 +460,19 @@ static void ESP32_setup()
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* USE_USB_HOST */
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  Ethernet_setup();
+
+  ETH.begin(ETH_PHY_TYPE,
+            ETH_PHY_ADDR,
+            SOC_GPIO_PIN_ETH_MDC,
+            SOC_GPIO_PIN_ETH_MDIO,
+            SOC_GPIO_PIN_ETH_PWR,
+            ETH_CLK_MODE);
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_post_init()
@@ -592,6 +630,12 @@ static void ESP32_loop()
     }
   }
 #endif /* USE_USB_HOST */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  Ethernet_loop();
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_fini()
@@ -600,6 +644,14 @@ static void ESP32_fini()
     !defined(CONFIG_IDF_TARGET_ESP32C6)
   uSD_SPI.end();
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(EXCLUDE_ETHERNET)
+  ETH.end();
+
+  Ethernet_fini();
+#endif /* EXCLUDE_ETHERNET */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   esp_wifi_stop();
 
@@ -907,8 +959,13 @@ static bool ESP32_DB_init()
     defined(CONFIG_IDF_TARGET_ESP32C6)
   return false;
 #else
+
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
   int ss_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                SOC_GPIO_PIN_TDONGLE_SS : SOC_GPIO_PIN_TWATCH_SD_SS;
+#else
+  int ss_pin = SOC_GPIO_PIN_SD_D3;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   if (!SD.begin(ss_pin, uSD_SPI)) {
     Serial.println(F("ERROR: Failed to mount microSD card."));
@@ -1327,7 +1384,7 @@ void onModeButtonEvent() {
 static void ESP32_Button_setup()
 {
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6)
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32P4)
   int button_pin = (hw_info.model == SOFTRF_MODEL_WEBTOP_USB) ?
                    SOC_GPIO_PIN_TDONGLE_BUTTON : SOC_GPIO_PIN_TWATCH_BUTTON;
 
@@ -1355,7 +1412,7 @@ static void ESP32_Button_setup()
 static void ESP32_Button_loop()
 {
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6)
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32P4)
   button_mode.check();
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
 }

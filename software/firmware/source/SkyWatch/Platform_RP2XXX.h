@@ -95,6 +95,7 @@ enum RP2xxx_board_id {
 
 #define POWER_SAVING_WIFI_TIMEOUT 300000UL /* 5 minutes */
 
+#define EXCLUDE_ETHERNET
 #define EXCLUDE_RTC
 #define EXCLUDE_TFT
 
