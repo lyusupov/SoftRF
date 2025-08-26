@@ -761,6 +761,7 @@ static void ESP32_setup()
       hw_info.model  = SOFTRF_MODEL_MIDI;
       break;
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B):
+    case MakeFlashId(TBD_ID, TBD_25Q32):
       /*
        * Elecrow TinkNode M2 has OPI PSRAM in the WROOM module.
        * ESP32 Arduino Core 2.0.x is unable to detect OPI PSRAM

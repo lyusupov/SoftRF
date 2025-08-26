@@ -83,7 +83,8 @@ bool EPD_setup(bool splash_screen)
   const char *partner_text = EPD_SoftRF_text3;
   uint8_t rotate           = ROTATE_270; /* 270 deg. is default angle */;
 
-  if (hw_info.model == SOFTRF_MODEL_HANDHELD) {
+  if (hw_info.model == SOFTRF_MODEL_HANDHELD ||
+      hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
     partner_text = EPD_SoftRF_text7;
     rotate       = ROTATE_0;
   }

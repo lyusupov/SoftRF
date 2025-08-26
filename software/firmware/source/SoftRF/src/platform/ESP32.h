@@ -399,6 +399,9 @@ struct rst_info {
 #define FMICRO_ID               0xA1
 #define FMICRO_FM25Q16          0x4015
 
+#define TBD_ID                  0x46
+#define TBD_25Q32               0x4016
+
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
 #define MPU6886_REG_PWR_MGMT_1  (0x6B)
