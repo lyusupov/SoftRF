@@ -1007,12 +1007,11 @@ static void ESP32_Battery_setup()
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #else
-#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32P4)
   calibrate_voltage(SOC_GPIO_PIN_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
-      defined(CONFIG_IDF_TARGET_ESP32P4)
+      defined(CONFIG_IDF_TARGET_ESP32H2)
   /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -1031,11 +1030,7 @@ static float ESP32_Battery_voltage()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
   float voltage = ((float) read_voltage()) * 0.001 ;
-#else
-  float voltage = 0 ; /* TODO */
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   /* T5 has voltage divider 100k/100k on board */
   return (settings->adapter == ADAPTER_TTGO_T5S    ||
