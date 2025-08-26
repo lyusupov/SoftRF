@@ -5137,9 +5137,10 @@ static void ESP32_Battery_setup()
     } else {
       calibrate_voltage(SOC_GPIO_PIN_C6_BATTERY);
     }
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+      calibrate_voltage(SOC_GPIO_PIN_P4_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C61) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
-      defined(CONFIG_IDF_TARGET_ESP32P4)
+      defined(CONFIG_IDF_TARGET_ESP32H2)
     /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -5238,9 +5239,7 @@ static float ESP32_Battery_param(uint8_t param)
       } else
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
       {
-#if !defined(CONFIG_IDF_TARGET_ESP32P4) /* TODO */
         voltage = (float) read_voltage();
-#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
         /* T-Beam v02-v07 and T3 V2.1.6 have voltage divider 100k/100k on board */
         if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||

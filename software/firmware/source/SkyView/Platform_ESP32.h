@@ -237,6 +237,7 @@
 #define SOC_GPIO_PIN_ETH_PWR  51 /* PHY_RSTN */
 
 // Misc.
+#define SOC_GPIO_PIN_BATTERY  22 /* RSVD, shared with LCD_EN */
 #define SOC_GPIO_PIN_PAMP_EN  53
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
