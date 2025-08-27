@@ -109,9 +109,10 @@ bool EPD_setup(bool splash_screen)
   display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
   display->getTextBounds(partner_text    , 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
 
-  if (hw_info.model == SOFTRF_MODEL_BADGE ||
-      hw_info.model == SOFTRF_MODEL_INK   ||
-      hw_info.model == SOFTRF_MODEL_HANDHELD) {
+  if (hw_info.model == SOFTRF_MODEL_BADGE    ||
+      hw_info.model == SOFTRF_MODEL_INK      ||
+      hw_info.model == SOFTRF_MODEL_HANDHELD ||
+      hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
 
     x = (display->width()  - tbw1) / 2;
     y = (display->height() + tbh1) / 2 - tbh3;
@@ -268,8 +269,9 @@ void EPD_info1()
     display->print(EPD_GNSS_text);
     display->print(hw_info.gnss != GNSS_MODULE_NONE ? "+" : "-");
 
-    if (hw_info.model == SOFTRF_MODEL_BADGE ||
-        hw_info.model == SOFTRF_MODEL_HANDHELD) {
+    if (hw_info.model == SOFTRF_MODEL_BADGE    ||
+        hw_info.model == SOFTRF_MODEL_HANDHELD ||
+        hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
       y += (tbh + INFO_1_LINE_SPACING);
 
       display->setCursor(x, y);

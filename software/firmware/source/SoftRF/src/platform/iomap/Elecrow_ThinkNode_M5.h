@@ -4,8 +4,8 @@
 #define SOC_GPIO_PIN_M5_CONS_TX     43
 
 /* L76K */
-#define SOC_GPIO_PIN_M5_GNSS_RX     20 /* USB D+ */
-#define SOC_GPIO_PIN_M5_GNSS_TX     19 /* USB D- */
+#define SOC_GPIO_PIN_M5_GNSS_RX     19 /* USB D- */
+#define SOC_GPIO_PIN_M5_GNSS_TX     20 /* USB D+ */
 
 #define SOC_GPIO_PIN_M5_GNSS_PPS    SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_M5_GNSS_WKE    11

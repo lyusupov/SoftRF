@@ -2190,7 +2190,7 @@ static void ESP32_setup()
       pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED,     LOW);
 
       pca9557->pinMode(SOC_EXPIO_LED_M5_BLUE,         OUTPUT);
-      pca9557->digitalWrite(SOC_EXPIO_LED_M5_BLUE,    LOW);
+      pca9557->digitalWrite(SOC_EXPIO_LED_M5_BLUE,    HIGH);
 
       pca9557->pinMode(SOC_EXPIO_PIN_M5_IO_EN,        OUTPUT);
       pca9557->pinMode(SOC_EXPIO_PIN_M5_EPD_EN,       OUTPUT);
@@ -2588,7 +2588,8 @@ static void ESP32_post_init()
 #if defined(USE_EPAPER)
   case DISPLAY_EPD_1_54:
   case DISPLAY_EPD_2_13:
-    if (hw_info.model == SOFTRF_MODEL_INK) {
+    if (hw_info.model == SOFTRF_MODEL_INK ||
+        hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
 
       EPD_info1();
 
@@ -3215,6 +3216,10 @@ static void ESP32_fini(int reason)
     digitalWrite(SOC_GPIO_PIN_M5_SS,              HIGH);
     gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_SS);
 
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_M5_BUTTON_1,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
     WIRE_FINI(Wire);
     WIRE_FINI(Wire1);
