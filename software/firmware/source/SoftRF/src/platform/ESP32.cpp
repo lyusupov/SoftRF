@@ -1963,7 +1963,9 @@ static void ESP32_setup()
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
-    USB.begin();
+    if (esp32_board != ESP32_ELECROW_TN_M5) {
+      USB.begin();
+    }
   }
 #endif /* CONFIG_TINYUSB_ENABLED */
 
@@ -3263,6 +3265,9 @@ static void ESP32_reset()
     // digitalWrite(SOC_GPIO_PIN_M2_BUZZER,  LOW);
     gpio_hold_en(GPIO_NUM_5);
   }
+  if (esp32_board == ESP32_ELECROW_TN_M5) {
+    gpio_hold_en(GPIO_NUM_9);
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   ESP.restart();
@@ -3563,6 +3568,9 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
       if (esp32_board == ESP32_ELECROW_TN_M2) {
         gpio_hold_dis(GPIO_NUM_5);
+      }
+      if (esp32_board == ESP32_ELECROW_TN_M5) {
+        gpio_hold_dis(GPIO_NUM_9);
       }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -5050,13 +5058,25 @@ static void ESP32_Display_fini(int reason)
 
     // uSD_SPI.end();
 
-    // pinMode(SOC_GPIO_PIN_T3S3_EPD_MISO, INPUT);
-    // pinMode(SOC_GPIO_PIN_T3S3_EPD_MOSI, INPUT);
-    // pinMode(SOC_GPIO_PIN_T3S3_EPD_SCK,  INPUT);
-    pinMode(SOC_GPIO_PIN_T3S3_EPD_SS,   INPUT);
-    pinMode(SOC_GPIO_PIN_T3S3_EPD_DC,   INPUT);
-    pinMode(SOC_GPIO_PIN_T3S3_EPD_RST,  INPUT);
-    // pinMode(SOC_GPIO_PIN_T3S3_EPD_BUSY, INPUT);
+    if (esp32_board == ESP32_LILYGO_T3S3_EPD) {
+      // pinMode(SOC_GPIO_PIN_T3S3_EPD_MISO, INPUT);
+      // pinMode(SOC_GPIO_PIN_T3S3_EPD_MOSI, INPUT);
+      // pinMode(SOC_GPIO_PIN_T3S3_EPD_SCK,  INPUT);
+      pinMode(SOC_GPIO_PIN_T3S3_EPD_SS,   INPUT);
+      pinMode(SOC_GPIO_PIN_T3S3_EPD_DC,   INPUT);
+      pinMode(SOC_GPIO_PIN_T3S3_EPD_RST,  INPUT);
+      // pinMode(SOC_GPIO_PIN_T3S3_EPD_BUSY, INPUT);
+    }
+
+    if (esp32_board == ESP32_ELECROW_TN_M5) {
+      // pinMode(SOC_GPIO_PIN_M5_EPD_MISO, INPUT);
+      // pinMode(SOC_GPIO_PIN_M5_EPD_MOSI, INPUT);
+      // pinMode(SOC_GPIO_PIN_M5_EPD_SCK,  INPUT);
+      pinMode(SOC_GPIO_PIN_M5_EPD_SS,   INPUT);
+      pinMode(SOC_GPIO_PIN_M5_EPD_DC,   INPUT);
+      pinMode(SOC_GPIO_PIN_M5_EPD_RST,  INPUT);
+      // pinMode(SOC_GPIO_PIN_M5_EPD_BUSY, INPUT);
+    }
 
     break;
 #endif /* USE_EPAPER */
