@@ -173,7 +173,7 @@ unsigned long TaskInfoTime;
 
 const char *Hardware_Rev[] = {
   [0] = "2024-02-28",
-  [1] = "N/A",
+  [1] = "1.0",
   [2] = "N/A",
   [3] = "Unknown"
 };
@@ -1630,7 +1630,7 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB */
     } else {
       hw_info.model    = SOFTRF_MODEL_AIRVENTURE;
-      hw_info.revision = 0; /* TBD */
+      hw_info.revision = 1; /* PCB 1.0 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
       SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -2171,6 +2171,8 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_ELECROW_TN_M2) {
 
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M2_SS);
+
     pinMode(SOC_GPIO_PIN_M2_LED_PWR,       INPUT_PULLUP); /* status LED */
     digitalWrite(SOC_GPIO_PIN_M2_LED,      LOW);
     pinMode(SOC_GPIO_PIN_M2_LED,           OUTPUT);
@@ -2185,6 +2187,9 @@ static void ESP32_setup()
 #endif
 
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
+
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_SS);
+
     if (ESP32_has_gpio_extension) {
       pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
       pca9557->digitalWrite(SOC_EXPIO_LED_M5_RED_PWR, HIGH);
@@ -2592,9 +2597,10 @@ static void ESP32_post_init()
   case DISPLAY_EPD_2_13:
     if (hw_info.model == SOFTRF_MODEL_INK ||
         hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
-
       EPD_info1();
+    }
 
+    if (hw_info.model == SOFTRF_MODEL_INK) {
       char key[8];
       char out[64];
       uint8_t tokens[3] = { 0 };
@@ -3260,13 +3266,11 @@ static void ESP32_fini(int reason)
 static void ESP32_reset()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-  if (esp32_board == ESP32_ELECROW_TN_M2) {
-    // pinMode(SOC_GPIO_PIN_M2_BUZZER,       OUTPUT);
-    // digitalWrite(SOC_GPIO_PIN_M2_BUZZER,  LOW);
-    gpio_hold_en(GPIO_NUM_5);
-  }
-  if (esp32_board == ESP32_ELECROW_TN_M5) {
-    gpio_hold_en(GPIO_NUM_9);
+  if (esp32_board == ESP32_ELECROW_TN_M2 ||
+      esp32_board == ESP32_ELECROW_TN_M5) {
+    // pinMode(SOC_GPIO_PIN_BUZZER,       OUTPUT);
+    // digitalWrite(SOC_GPIO_PIN_BUZZER,  LOW);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_BUZZER);
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -3566,11 +3570,9 @@ static void ESP32_Sound_tone(int hz, uint8_t volume)
       ledcWrite(LEDC_CHANNEL_BUZZER, volume == BUZZER_VOLUME_FULL ? 0xFF : 0x07);
     } else {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-      if (esp32_board == ESP32_ELECROW_TN_M2) {
-        gpio_hold_dis(GPIO_NUM_5);
-      }
-      if (esp32_board == ESP32_ELECROW_TN_M5) {
-        gpio_hold_dis(GPIO_NUM_9);
+      if (esp32_board == ESP32_ELECROW_TN_M2 ||
+          esp32_board == ESP32_ELECROW_TN_M5) {
+        gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_BUZZER);
       }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
