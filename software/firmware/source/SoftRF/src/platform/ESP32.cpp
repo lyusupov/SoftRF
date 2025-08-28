@@ -3782,19 +3782,87 @@ static int ESP32_WiFi_clients_count()
 #endif /* EXCLUDE_WIFI */
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+EEPROMClass  SkyView_EEPROM("SkyView");
+
+typedef struct SV_EEPROM_S {
+    uint32_t  magic;
+    uint32_t  version;
+    ui_settings_t settings;
+} sv_eeprom_struct_t;
+
+typedef union SV_EEPROM_U {
+   sv_eeprom_struct_t field;
+   uint8_t raw[sizeof(sv_eeprom_struct_t)];
+} sv_eeprom_t;
+
+sv_eeprom_t sv_eeprom_block;
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 static bool ESP32_EEPROM_begin(size_t size)
 {
   bool rval = true;
 
 #if !defined(EXCLUDE_EEPROM)
   rval = EEPROM.begin(size);
-#endif
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (esp32_board == ESP32_ELECROW_TN_M5) {
+    bool sv = SkyView_EEPROM.begin(sizeof(sv_eeprom_t));
+    rval &= sv;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#endif /* EXCLUDE_EEPROM */
 
   return rval;
 }
 
 static void ESP32_EEPROM_extension(int cmd)
 {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  if (esp32_board == ESP32_ELECROW_TN_M5) {
+    switch (cmd)
+    {
+      case EEPROM_EXT_STORE:
+#if !defined(EXCLUDE_EEPROM)
+        for (int i=0; i < sizeof(sv_eeprom_t); i++) {
+          SkyView_EEPROM.write(i, sv_eeprom_block.raw[i]);
+        }
+#endif /* EXCLUDE_EEPROM */
+        return;
+      case EEPROM_EXT_DEFAULTS:
+        ui->adapter      = 0;
+        ui->connection   = 0;
+        ui->units        = UNITS_METRIC;
+        ui->zoom         = ZOOM_MEDIUM;
+        ui->protocol     = PROTOCOL_NMEA;
+        ui->baudrate     = 0;
+        strcpy(ui->server, "");
+        strcpy(ui->key,    "");
+        ui->rotate       = ROTATE_0;
+        ui->orientation  = DIRECTION_TRACK_UP;
+        ui->adb          = DB_OGN;
+        ui->idpref       = ID_TYPE;
+        ui->vmode        = VIEW_MODE_STATUS;
+        ui->voice        = VOICE_OFF;
+        ui->aghost       = ANTI_GHOSTING_OFF;
+        ui->filter       = TRAFFIC_FILTER_OFF;
+        ui->power_save   = 0;
+        ui->team         = 0;
+        break;
+      case EEPROM_EXT_LOAD:
+      default:
+#if !defined(EXCLUDE_EEPROM)
+        for (int i=0; i < sizeof(sv_eeprom_t); i++) {
+          sv_eeprom_block.raw[i] = SkyView_EEPROM.read(i);
+        }
+        ui = &sv_eeprom_block.field.settings;
+#endif /* EXCLUDE_EEPROM */
+        break;
+    }
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
   if (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS) {
     if ( ESP32_has_spiflash && FATFS_is_mounted ) {
@@ -5629,6 +5697,23 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
       break;
     case AceButton::kEventLongPressed:
       if (button == &button_1) {
+#if defined(USE_EPAPER)
+        int up_button_pin = -1;
+
+        switch (esp32_board)
+        {
+          case ESP32_ELECROW_TN_M5:
+            up_button_pin = SOC_GPIO_PIN_M5_BUTTON_2;
+            break;
+
+          default:
+            break;
+        }
+
+        if (up_button_pin >= 0 && digitalRead(up_button_pin) == LOW) {
+          screen_saver = true;
+        }
+#endif
         shutdown(SOFTRF_SHUTDOWN_BUTTON);
       }
       break;

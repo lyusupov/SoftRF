@@ -424,6 +424,7 @@ struct rst_info {
 #define USE_NMEA_CFG
 #define USE_BASICMAC
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define USE_SKYVIEW_CFG
 #define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_CC1101
