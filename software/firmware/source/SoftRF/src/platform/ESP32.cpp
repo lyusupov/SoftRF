@@ -2189,6 +2189,7 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
 
     gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_SS);
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
 
     if (ESP32_has_gpio_extension) {
       pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
@@ -3205,6 +3206,7 @@ static void ESP32_fini(int reason)
     WIRE_FINI(Wire);
 
     digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        LOW);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
     pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             INPUT);
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
