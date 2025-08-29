@@ -23,11 +23,15 @@
 #include "../driver/EPD.h"
 #include "../driver/Battery.h"
 
-#if defined(ARDUINO_ARCH_NRF52)
+#if defined(ARDUINO_ARCH_NRF52) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <pcf8563.h>
-#include <bluefruit.h>
 
+extern PCF8563_Class *rtc;
 extern RTC_Date fw_build_date_time;
+#endif /* ARDUINO_ARCH_NRF52 CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(ARDUINO_ARCH_NRF52)
+#include <bluefruit.h>
 #endif /* ARDUINO_ARCH_NRF52 */
 
 #include "U8g2_for_Adafruit_GFX.h"
@@ -73,8 +77,7 @@ void EPD_time_loop()
     strcpy(buf_hm, "--:--");
     strcpy(buf_sec, "  ");
 
-#if defined(ARDUINO_ARCH_NRF52)
-
+#if defined(ARDUINO_ARCH_NRF52) || defined(CONFIG_IDF_TARGET_ESP32S3)
     if (rtc && rtc->isVaild()) {
       RTC_Date now = rtc->getDateTime();
 
@@ -85,9 +88,10 @@ void EPD_time_loop()
         snprintf(buf_sec, sizeof(buf_sec), "%02d"    , now.second);
       }
     }
+#endif /* ARDUINO_ARCH_NRF52 CONFIG_IDF_TARGET_ESP32S3 */
 
+#if defined(ARDUINO_ARCH_NRF52)
     ble_has_client = Bluefruit.connected();
-
 #endif /* ARDUINO_ARCH_NRF52 */
 
     display->fillScreen(GxEPD_WHITE);

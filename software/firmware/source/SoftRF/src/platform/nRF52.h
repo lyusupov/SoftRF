@@ -23,9 +23,6 @@
 #define PLATFORM_NRF52_H
 
 #include <avr/dtostrf.h>
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-#include <pcf8563.h>
-#endif /* ARDUINO_ARCH_MBED */
 
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
@@ -353,9 +350,6 @@ extern Adafruit_NeoPixel strip;
 extern Uart Serial2;
 #endif
 
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-extern PCF8563_Class *rtc;
-#endif /* ARDUINO_ARCH_MBED */
 extern const char *nRF52_Device_Manufacturer, *nRF52_Device_Model, *Hardware_Rev[];
 
 #if defined(USE_EPAPER)

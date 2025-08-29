@@ -3828,9 +3828,25 @@ static void ESP32_EEPROM_extension(int cmd)
         for (int i=0; i < sizeof(sv_eeprom_t); i++) {
           SkyView_EEPROM.write(i, sv_eeprom_block.raw[i]);
         }
+        SkyView_EEPROM.commit();
 #endif /* EXCLUDE_EEPROM */
         return;
+      case EEPROM_EXT_LOAD:
+#if !defined(EXCLUDE_EEPROM)
+        for (int i=0; i < sizeof(sv_eeprom_t); i++) {
+          sv_eeprom_block.raw[i] = SkyView_EEPROM.read(i);
+        }
+        if (sv_eeprom_block.field.magic   == SOFTRF_EEPROM_MAGIC &&
+            sv_eeprom_block.field.version == SOFTRF_EEPROM_VERSION) {
+          ui = &sv_eeprom_block.field.settings;
+          break;
+        }
+#endif /* EXCLUDE_EEPROM */
       case EEPROM_EXT_DEFAULTS:
+      default:
+        sv_eeprom_block.field.magic   = SOFTRF_EEPROM_MAGIC;
+        sv_eeprom_block.field.version = SOFTRF_EEPROM_VERSION;
+        ui = &sv_eeprom_block.field.settings;
         ui->adapter      = 0;
         ui->connection   = 0;
         ui->units        = UNITS_METRIC;
@@ -3849,15 +3865,6 @@ static void ESP32_EEPROM_extension(int cmd)
         ui->filter       = TRAFFIC_FILTER_OFF;
         ui->power_save   = 0;
         ui->team         = 0;
-        break;
-      case EEPROM_EXT_LOAD:
-      default:
-#if !defined(EXCLUDE_EEPROM)
-        for (int i=0; i < sizeof(sv_eeprom_t); i++) {
-          sv_eeprom_block.raw[i] = SkyView_EEPROM.read(i);
-        }
-        ui = &sv_eeprom_block.field.settings;
-#endif /* EXCLUDE_EEPROM */
         break;
     }
   }
