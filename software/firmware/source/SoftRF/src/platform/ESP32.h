@@ -580,7 +580,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define EPD_ASPECT_RATIO_1C1
 //#define EPD_ASPECT_RATIO_2C1
 #define USE_EPD_TASK
+#if defined(EPD_ASPECT_RATIO_2C1)
 #define	EPD_POWEROFF		      {}
+#endif /* EPD_ASPECT_RATIO_2C1 */
 #endif /* S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
