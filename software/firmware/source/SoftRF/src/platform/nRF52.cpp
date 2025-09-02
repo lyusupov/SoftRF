@@ -2872,6 +2872,11 @@ static void nRF52_SPI_begin()
                   SOC_GPIO_PIN_L1_SCK,
                   SOC_GPIO_PIN_L1_MOSI);
       break;
+    case NRF52_ELECROW_TN_M6:
+      SPI.setPins(SOC_GPIO_PIN_M6_MISO,
+                  SOC_GPIO_PIN_M6_SCK,
+                  SOC_GPIO_PIN_M6_MOSI);
+      break;
     case NRF52_NORDIC_PCA10059:
       SPI.setPins(SOC_GPIO_PIN_PCA10059_MISO,
                   SOC_GPIO_PIN_PCA10059_SCK,
@@ -2916,6 +2921,10 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_SEEED_WIO_L1:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_L1_RX,
                              SOC_GPIO_PIN_GNSS_L1_TX);
+      break;
+    case NRF52_ELECROW_TN_M6:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_M6_RX,
+                             SOC_GPIO_PIN_GNSS_M6_TX);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -3089,7 +3098,8 @@ static byte nRF52_Display_setup()
   byte rval = DISPLAY_NONE;
 
   if (nRF52_board == NRF52_NORDIC_PCA10059 ||
-      nRF52_board == NRF52_SEEED_T1000E) {
+      nRF52_board == NRF52_SEEED_T1000E    ||
+      nRF52_board == NRF52_ELECROW_TN_M6) {
       /* Nothing to do */
   } else if (nRF52_board == NRF52_SEEED_WIO_L1) {
 #if defined(USE_OLED)
