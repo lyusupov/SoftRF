@@ -33,13 +33,14 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
-    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
+    * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
+    * [**Handheld Edition**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
     * [**Mini Edition**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)
     * [**Balkan Edition**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
-    * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
 * can **receive ADS-B** air traffic
     * 978 UAT
         * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
