@@ -201,29 +201,7 @@ SPIClass SPI1(_SPI1_DEV,
               SOC_GPIO_PIN_EPD_MOSI);
 #endif
 
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_d67(GxEPD2_154_D67(
-                                                          SOC_GPIO_PIN_EPD_SS,
-                                                          SOC_GPIO_PIN_EPD_DC,
-                                                          SOC_GPIO_PIN_EPD_RST,
-                                                          SOC_GPIO_PIN_EPD_BUSY));
-GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT>         epd_c1 (GxEPD2_154(
-                                                          SOC_GPIO_PIN_EPD_SS,
-                                                          SOC_GPIO_PIN_EPD_DC,
-                                                          SOC_GPIO_PIN_EPD_RST,
-                                                          SOC_GPIO_PIN_EPD_BUSY));
-GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT>   epd_bn (GxEPD2_150_BN(
-                                                          SOC_GPIO_PIN_EPD_SS,
-                                                          SOC_GPIO_PIN_EPD_DC,
-                                                          SOC_GPIO_PIN_EPD_RST,
-                                                          SOC_GPIO_PIN_EPD_BUSY));
-#if !defined(EXCLUDE_WIP)
-GxEPD2_BW<GxEPD2_371_T03, GxEPD2_371_T03::HEIGHT> epd_t3 (GxEPD2_371_T03(
-                                                          SOC_GPIO_PIN_EPD_TULTIMA_SS,
-                                                          SOC_GPIO_PIN_EPD_TULTIMA_DC,
-                                                          SOC_GPIO_PIN_EPD_TULTIMA_RST,
-                                                          SOC_GPIO_PIN_EPD_TULTIMA_BUSY));
-#endif /* EXCLUDE_WIP */
-GxEPD2_GFX *display;
+GxEPD2_GFX *display = NULL;
 #endif /* USE_EPAPER */
 
 #if defined(USE_TFT)
@@ -3236,19 +3214,39 @@ static byte nRF52_Display_setup()
     switch (nRF52_display)
     {
     case EP_GDEP015OC1:
-      display = &epd_c1;
+      display = new GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> (
+                      GxEPD2_154(
+                      SOC_GPIO_PIN_EPD_SS,
+                      SOC_GPIO_PIN_EPD_DC,
+                      SOC_GPIO_PIN_EPD_RST,
+                      SOC_GPIO_PIN_EPD_BUSY));
       break;
     case EP_DEPG0150BN:
-      display = &epd_bn;
+      display = new GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT> (
+                      GxEPD2_150_BN(
+                        SOC_GPIO_PIN_EPD_SS,
+                        SOC_GPIO_PIN_EPD_DC,
+                        SOC_GPIO_PIN_EPD_RST,
+                        SOC_GPIO_PIN_EPD_BUSY));
       break;
 #if !defined(EXCLUDE_WIP)
     case EP_GDEY037T03:
-      display = &epd_t3;
+      display = new GxEPD2_BW<GxEPD2_371_T03, GxEPD2_371_T03::HEIGHT> (
+                      GxEPD2_371_T03(
+                      SOC_GPIO_PIN_EPD_TULTIMA_SS,
+                      SOC_GPIO_PIN_EPD_TULTIMA_DC,
+                      SOC_GPIO_PIN_EPD_TULTIMA_RST,
+                      SOC_GPIO_PIN_EPD_TULTIMA_BUSY));
       break;
 #endif /* EXCLUDE_WIP */
     case EP_GDEH0154D67:
     default:
-      display = &epd_d67;
+      display = new GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> (
+                      GxEPD2_154_D67(
+                      SOC_GPIO_PIN_EPD_SS,
+                      SOC_GPIO_PIN_EPD_DC,
+                      SOC_GPIO_PIN_EPD_RST,
+                      SOC_GPIO_PIN_EPD_BUSY));
       break;
     }
 
