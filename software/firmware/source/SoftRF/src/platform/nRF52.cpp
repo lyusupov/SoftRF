@@ -792,7 +792,7 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
-#if 0
+#if 1
   nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
                 nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
                 nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
@@ -1058,7 +1058,8 @@ static void nRF52_setup()
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
-  if (nRF52_board == NRF52_LILYGO_TECHO_REV_2) { /* T-Echo, T114 or M1 */
+  if (nRF52_board == NRF52_ELECROW_TN_M1 ||
+      nRF52_board == NRF52_LILYGO_TECHO_REV_2 /* T-Echo, T114 or M1 */) {
     pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT);
     int buzzer_high_impedance = digitalRead(SOC_GPIO_PIN_M1_BUZZER);
     pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT_PULLUP);
@@ -1066,7 +1067,8 @@ static void nRF52_setup()
     int buzzer_pullup = digitalRead(SOC_GPIO_PIN_M1_BUZZER);
     pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT);
 
-    if (buzzer_high_impedance == LOW && buzzer_pullup == LOW) {
+    if (nRF52_board == NRF52_ELECROW_TN_M1 ||
+       (buzzer_high_impedance == LOW && buzzer_pullup == LOW)) {
       nRF52_board        = NRF52_ELECROW_TN_M1;
       hw_info.model      = SOFTRF_MODEL_HANDHELD;
       nRF52_Device_Model = "Handheld Edition";
@@ -1083,12 +1085,13 @@ static void nRF52_setup()
   }
 
 #if defined(USE_TFT)
-  if (nRF52_board        == NRF52_LILYGO_TECHO_REV_2 /* default */ &&
+  if (nRF52_board        == NRF52_HELTEC_T114                      ||
+     (nRF52_board        == NRF52_LILYGO_TECHO_REV_2 /* default */ &&
       nRF52_has_spiflash == false                                  &&
 #if !defined(EXCLUDE_IMU)
       nRF52_has_imu      == false                                  &&
 #endif /* EXCLUDE_IMU */
-      nRF52_has_rtc      == false) {
+      nRF52_has_rtc      == false)) {
     nRF52_board        = NRF52_HELTEC_T114;
     hw_info.model      = SOFTRF_MODEL_COZY;
     nRF52_Device_Model = "Cozy Edition";
