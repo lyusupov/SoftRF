@@ -147,22 +147,7 @@ void TFT_backlight_on()
 #if defined(USE_EPAPER)
 #include "../driver/EPD.h"
 
-#if defined(EPD_ASPECT_RATIO_2C1)
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> epd_bn (GxEPD2_213_BN(
-                                                        SOC_GPIO_PIN_T3S3_EPD_SS,
-                                                        SOC_GPIO_PIN_T3S3_EPD_DC,
-                                                        SOC_GPIO_PIN_T3S3_EPD_RST,
-                                                        SOC_GPIO_PIN_T3S3_EPD_BUSY));
-#endif /* EPD_ASPECT_RATIO_2C1 */
-#if defined(EPD_ASPECT_RATIO_1C1)
-GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> epd_d67(GxEPD2_154_D67(
-                                                          SOC_GPIO_PIN_M5_EPD_SS,
-                                                          SOC_GPIO_PIN_M5_EPD_DC,
-                                                          SOC_GPIO_PIN_M5_EPD_RST,
-                                                          SOC_GPIO_PIN_M5_EPD_BUSY));
-#endif /* EPD_ASPECT_RATIO_1C1 */
-
-GxEPD2_GFX *display;
+GxEPD2_GFX *display = NULL;
 
 #if defined(USE_EPD_TASK)
 #define EPD_STACK_SZ      (256*6)
@@ -4580,14 +4565,24 @@ static byte ESP32_Display_setup()
     {
 #if defined(EPD_ASPECT_RATIO_2C1)
       case ESP32_LILYGO_T3S3_EPD:
-        display = &epd_bn;
+        display = new GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> (
+                        GxEPD2_213_BN(
+                          SOC_GPIO_PIN_T3S3_EPD_SS,
+                          SOC_GPIO_PIN_T3S3_EPD_DC,
+                          SOC_GPIO_PIN_T3S3_EPD_RST,
+                          SOC_GPIO_PIN_T3S3_EPD_BUSY));
         break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
 
       case ESP32_ELECROW_TN_M5:
       default:
 #if defined(EPD_ASPECT_RATIO_1C1)
-        display = &epd_d67;
+        display = new GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> (
+                        GxEPD2_154_D67(
+                          SOC_GPIO_PIN_M5_EPD_SS,
+                          SOC_GPIO_PIN_M5_EPD_DC,
+                          SOC_GPIO_PIN_M5_EPD_RST,
+                          SOC_GPIO_PIN_M5_EPD_BUSY));
 #endif /* EPD_ASPECT_RATIO_1C1 */
         break;
     }
