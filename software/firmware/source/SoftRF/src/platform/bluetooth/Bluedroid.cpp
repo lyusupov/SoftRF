@@ -268,7 +268,7 @@ static void ESP32_Bluetooth_setup()
 
       // Start advertising
       BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-#if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32P4)
       pAdvertising->addServiceUUID(BLEUUID(UART_SERVICE_UUID16));
       pAdvertising->addServiceUUID(BLEUUID(UUID16_SVC_BATTERY));
 #if defined(USE_BLE_MIDI)

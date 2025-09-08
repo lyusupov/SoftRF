@@ -598,6 +598,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_U10_EXT
 #define ENABLE_RECORDER
 #define EXCLUDE_BLUETOOTH
+//#undef USE_ARDUINOBLE
 //#define EXCLUDE_WIFI
 //#undef NMEA_TCP_SERVICE
 //#define EXCLUDE_VOICE_MESSAGE
