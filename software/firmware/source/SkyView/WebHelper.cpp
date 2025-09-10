@@ -371,7 +371,7 @@ char *Settings_content() {
   /* SoC specific part 4 */
   if (SoC->id == SOC_ESP32       || SoC->id == SOC_ESP32S3     ||
       SoC->id == SOC_ESP32C3     || SoC->id == SOC_ESP32C5     ||
-      SoC->id == SOC_ESP32C6  /* || SoC->id == SOC_ESP32P4  */ ||
+      SoC->id == SOC_ESP32C6     || SoC->id == SOC_ESP32P4     ||
       SoC->id == SOC_RP2040      || SoC->id == SOC_RP2350_RISC ||
       SoC->id == SOC_RP2350_ARM) {
     snprintf_P ( offset, size, PSTR("<option %s value='%d'>Bluetooth LE</option>"),
