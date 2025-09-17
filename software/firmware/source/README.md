@@ -51,8 +51,8 @@
     For **ESP32-S3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C6**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.0.7**](https://github.com/espressif/arduino-esp32/releases/tag/3.0.7)<br>
-    For **ESP32-P4**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.3.0**](https://github.com/espressif/arduino-esp32/releases/tag/3.3.0)<br>
-    For **ESP32-C5**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.3.0**](https://github.com/espressif/arduino-esp32/releases/tag/3.3.0)<br>
+    For **ESP32-P4**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.3.1**](https://github.com/espressif/arduino-esp32/releases/tag/3.3.1)<br>
+    For **ESP32-C5**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.3.1**](https://github.com/espressif/arduino-esp32/releases/tag/3.3.1)<br>
 
 2. Become familiar with IDE and **DoIt ESP32 DevKit** by building and uploading of a basic **Blink** sketch:<br>
 ```
