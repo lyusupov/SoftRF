@@ -2262,7 +2262,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_fini,
   ESP32_WDT_setup,
   ESP32_WDT_fini,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2)
   &ESP32_Bluetooth_ops,
 #else
   NULL,
