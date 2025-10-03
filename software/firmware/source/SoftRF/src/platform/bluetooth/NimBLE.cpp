@@ -237,6 +237,36 @@ static void ESP32_Bluetooth_setup()
 
       // Start advertising
       NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
+
+#if CONFIG_BT_NIMBLE_EXT_ADV && defined(USE_NIMBLE_V2)
+      NimBLEExtAdvertisement legacyAdvertising;
+      legacyAdvertising.setLegacyAdvertising(true);
+      legacyAdvertising.setScannable(true);
+      legacyAdvertising.setConnectable(true);
+      legacyAdvertising.setFlags(BLE_HS_ADV_F_DISC_GEN);
+      legacyAdvertising.setCompleteServices(NimBLEUUID(UART_SERVICE_UUID16));
+      legacyAdvertising.setCompleteServices(NimBLEUUID(UUID16_SVC_BATTERY));
+#if defined(USE_BLE_MIDI)
+      legacyAdvertising.setCompleteServices(NimBLEUUID(MIDI_SERVICE_UUID));
+#endif /* USE_BLE_MIDI */
+      legacyAdvertising.setMinInterval(500);
+      legacyAdvertising.setMaxInterval(1000);
+
+      NimBLEExtAdvertisement legacyScanResponse;
+      legacyScanResponse.setLegacyAdvertising(true);
+      legacyScanResponse.setConnectable(true);
+      legacyScanResponse.setName((BT_name+"-LE").c_str());
+
+      if (!pAdvertising->setInstanceData(0, legacyAdvertising)) {
+          // Serial.println("BLE failed to set legacyAdvertising");
+      } else if (!pAdvertising->setScanResponseData(0, legacyScanResponse)) {
+          // Serial.println("BLE failed to set legacyScanResponse");
+      } else if (!pAdvertising->start(0, 0, 0)) {
+          // Serial.println("BLE failed to start legacyAdvertising");
+      }
+
+#else /* USE_NIMBLE_V2 */
+
 #if 0
       pAdvertising->addServiceUUID(NimBLEUUID(UART_SERVICE_UUID16));
       pAdvertising->addServiceUUID(NimBLEUUID(UUID16_SVC_BATTERY));
@@ -263,6 +293,8 @@ static void ESP32_Bluetooth_setup()
       pAdvertising->setMaxPreferred(0x12);
 #endif /* ESP_IDF_VERSION_MAJOR */
       NimBLEDevice::startAdvertising();
+
+#endif /* USE_NIMBLE_V2 */
 
       BLE_Advertising_TimeMarker = millis();
     }

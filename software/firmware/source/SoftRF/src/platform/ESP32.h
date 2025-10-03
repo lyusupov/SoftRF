@@ -546,6 +546,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
 //#define EXCLUDE_BLUETOOTH
 #define USE_NIMBLE
+//#define USE_NIMBLE_V2
 //#define USE_ARDUINOBLE
 #undef EXCLUDE_SOFTRF_HEARTBEAT
 #undef EXCLUDE_TEST_MODE
@@ -554,6 +555,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_OLED
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #define USE_NIMBLE
+//#define USE_NIMBLE_V2
 #else
 #define USE_ARDUINOBLE
 #endif /* C6 */
