@@ -16,19 +16,16 @@
 #define SOC_GPIO_PIN_P4_MOSI            32
 #define SOC_GPIO_PIN_P4_MISO            33
 #define SOC_GPIO_PIN_P4_SCK             36 /* strapping pin */
-#define SOC_GPIO_PIN_P4_SS              26
+#define SOC_GPIO_PIN_P4_SS              46
 
 // I2C
 #define SOC_GPIO_PIN_P4_SDA             7
 #define SOC_GPIO_PIN_P4_SCL             8
-// touch pad
-#define SOC_GPIO_PIN_P4_TP_INT          21
-#define SOC_GPIO_PIN_P4_TP_RST          23
 
 // SX12xx
 #define SOC_GPIO_PIN_P4_RST             48
 #define SOC_GPIO_PIN_P4_DIO             47
-#define SOC_GPIO_PIN_P4_BUSY            27
+#define SOC_GPIO_PIN_P4_BUSY            0  /* shared with CAM_IO0 */
 
 // Waveshare ESP32-P4-Module-DEV-KIT with SX1262-L76K HAT
 #define SOC_GPIO_PIN_P4_WS_MOSI         3
@@ -50,7 +47,7 @@
 #define SOC_GPIO_PIN_P4_SD_D2           41
 #define SOC_GPIO_PIN_P4_SD_D3           42
 #define SOC_GPIO_PIN_P4_SD_DET          45
-#define SOC_GPIO_PIN_P4_SD_PWR          46 /* NC ? */
+#define SOC_GPIO_PIN_P4_SD_PWR          46 /* NC */
 
 // SDIO 2 - WIFI - ESP32-C5
 #define SOC_GPIO_PIN_P4_ESP_HOSTED_CLK  18
@@ -84,6 +81,24 @@
 #define SOC_GPIO_PIN_P4_ETH_PHY_MDIO    52
 #define SOC_GPIO_PIN_P4_ETH_PHY_POWER   51 /* PHY_RSTN */
 
+// 7 inch 1024x600 EK79007 / EK73217 MIPI LCD display
+#define SOC_GPIO_PIN_P4_LCD_EN          22 /* NC */
+#define SOC_GPIO_PIN_P4_LCD_RST         23 /* shared with TP_RST */
+#define SOC_GPIO_PIN_P4_LCD_BLED        20
+#define SOC_GPIO_PIN_P4_LCD_UPDN        26
+#define SOC_GPIO_PIN_P4_LCD_SHLR        27
+
+// Espressif (or Waveshare)  mapping
+#define SOC_GPIO_PIN_P4_WS_LCD_RST      27
+#define SOC_GPIO_PIN_P4_WS_LCD_BLED     26
+
+// GT911 I2C touch sensor
+#define SOC_GPIO_PIN_P4_TP_INT          21
+#define SOC_GPIO_PIN_P4_TP_RST          23 /* shared with LCD_RST */
+
+// SC2336 or OV5647 MIPI CSI camera sensor
+#define SOC_GPIO_PIN_P4_CAM_IO0         0  /* shared with RF BUSY  */
+#define SOC_GPIO_PIN_P4_CAM_IO1         1  /* shared with NEOPIXEL */
 
 /* ESP32-C5 */
 #define SOC_GPIO_PIN_C5_CONS_RX         12

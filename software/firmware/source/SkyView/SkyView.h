@@ -120,6 +120,7 @@ enum
 	DISPLAY_EPD_2_7,
 	DISPLAY_OLED_2_4,
 	DISPLAY_EPD_4_7,
+	DISPLAY_TFT_7_0,
 };
 
 enum

@@ -218,7 +218,7 @@
 #define SOC_GPIO_PIN_SD_D2    41
 #define SOC_GPIO_PIN_SD_D3    42
 #define SOC_GPIO_PIN_SD_DET   45
-#define SOC_GPIO_PIN_SD_PWR   46 /* NC ? */
+#define SOC_GPIO_PIN_SD_PWR   46 /* NC */
 
 // SDIO 2 - WIFI - ESP32-C5
 #define SOC_GPIO_PIN_ESPH_CLK 18
@@ -235,6 +235,17 @@
 #define SOC_GPIO_PIN_ETH_MDC  31
 #define SOC_GPIO_PIN_ETH_MDIO 52
 #define SOC_GPIO_PIN_ETH_PWR  51 /* PHY_RSTN */
+
+// 7 inch 1024x600 EK79007 / EK73217 MIPI LCD display
+#define SOC_GPIO_PIN_LCD_EN   22 /* NC */
+#define SOC_GPIO_PIN_LCD_RST  23 /* shared with TP_RST */
+#define SOC_GPIO_PIN_LCD_BLED 20
+#define SOC_GPIO_PIN_LCD_UPDN 26
+#define SOC_GPIO_PIN_LCD_SHLR 27
+
+// GT911 I2C touch sensor
+#define SOC_GPIO_PIN_TP_INT   21
+#define SOC_GPIO_PIN_TP_RST   23 /* shared with LCD_RST */
 
 // Misc.
 #define SOC_GPIO_PIN_BATTERY  22 /* RSVD, shared with LCD_EN */
