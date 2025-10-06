@@ -243,6 +243,8 @@
 #define SOC_GPIO_PIN_LCD_UPDN 26
 #define SOC_GPIO_PIN_LCD_SHLR 27
 
+//#define USE_TFT
+
 // GT911 I2C touch sensor
 #define SOC_GPIO_PIN_TP_INT   21
 #define SOC_GPIO_PIN_TP_RST   23 /* shared with LCD_RST */

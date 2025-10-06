@@ -63,8 +63,8 @@ INCLUDE       = -I$(LMIC_PATH)    -I$(TIMELIB_PATH) \
 CPPS          := SoCHelper.cpp     NMEAHelper.cpp \
                  TrafficHelper.cpp EPDHelper.cpp  \
                  GDL90Helper.cpp   BatteryHelper.cpp \
-                 OLEDHelper.cpp    View_Radar_EPD.cpp \
-                 View_Text_EPD.cpp JSONHelper.cpp \
+                 OLEDHelper.cpp    TFTHelper.cpp \
+                 View_Text_EPD.cpp View_Radar_EPD.cpp JSONHelper.cpp \
                  WebHelper.cpp     EEPROMHelper.cpp
 
 OBJS          := $(CPPS:.cpp=.o) \

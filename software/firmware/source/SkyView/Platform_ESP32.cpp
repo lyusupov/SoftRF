@@ -1302,6 +1302,51 @@ static void ESP32_EPD_update(int val)
   EPD_task_command = val;
 }
 
+#if defined(USE_TFT)
+
+#include <esp_display_panel.hpp>
+#include <lvgl.h>
+#include "LVGLHelper.h"
+
+using namespace esp_panel::drivers;
+using namespace esp_panel::board;
+
+static void ESP32_TFT_setup()
+{
+  Board *board = new Board();
+  board->init();
+
+#if LVGL_PORT_AVOID_TEARING_MODE
+  auto lcd = board->getLCD();
+  lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
+#endif
+
+  assert(board->begin());
+
+  lvgl_port_init(board->getLCD(), board->getTouch());
+
+  lvgl_port_lock(-1);
+
+  lv_obj_t *label_1 = lv_label_create(lv_scr_act());
+  lv_label_set_text(label_1, "SoftRF");
+  lv_obj_set_style_text_font(label_1, &lv_font_montserrat_30, 0);
+  lv_obj_align(label_1, LV_ALIGN_CENTER, 0, -20);
+  lv_obj_t *label_2 = lv_label_create(lv_scr_act());
+  lv_label_set_text_fmt(
+      label_2, "ESP32_Display_Panel (%d.%d.%d)",
+      ESP_PANEL_VERSION_MAJOR, ESP_PANEL_VERSION_MINOR, ESP_PANEL_VERSION_PATCH
+  );
+  lv_obj_set_style_text_font(label_2, &lv_font_montserrat_16, 0);
+  lv_obj_align_to(label_2, label_1, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+  lv_obj_t *label_3 = lv_label_create(lv_scr_act());
+  lv_label_set_text_fmt(label_3, "LVGL (%d.%d.%d)", LVGL_VERSION_MAJOR, LVGL_VERSION_MINOR, LVGL_VERSION_PATCH);
+  lv_obj_set_style_text_font(label_3, &lv_font_montserrat_16, 0);
+  lv_obj_align_to(label_3, label_2, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+
+  lvgl_port_unlock();
+}
+#endif /* USE_TFT */
+
 static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
   return WiFi_Receive_UDP(buf, max_size);
@@ -2247,7 +2292,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFiUDP_stopAll,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
+#if defined(USE_TFT)
+  ESP32_TFT_setup,
+#else
   ESP32_EPD_setup,
+#endif /* USE_TFT */
   ESP32_EPD_fini,
   ESP32_EPD_is_ready,
   ESP32_EPD_update,
