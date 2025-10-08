@@ -1328,8 +1328,8 @@ static void ESP32_TFT_setup()
   lvgl_port_lock(-1);
 
   lv_obj_t *label_1 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_1, "SoftRF");
-  lv_obj_set_style_text_font(label_1, &lv_font_montserrat_30, 0);
+  lv_label_set_text(label_1, SKYVIEW_IDENT);
+  lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
   lv_obj_align(label_1, LV_ALIGN_CENTER, 0, -20);
   lv_obj_t *label_2 = lv_label_create(lv_scr_act());
   lv_label_set_text_fmt(
