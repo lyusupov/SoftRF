@@ -1321,6 +1321,8 @@ static void ESP32_TFT_setup()
   lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
 #endif
 
+  static_cast<esp_panel::drivers::BusI2C *>(board->getTouch()->getBus())->configI2C_HostSkipInit();
+
   assert(board->begin());
 
   lvgl_port_init(board->getLCD(), board->getTouch());
@@ -1344,6 +1346,36 @@ static void ESP32_TFT_setup()
   lv_obj_align_to(label_3, label_2, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 
   lvgl_port_unlock();
+
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+  {
+    esp_ldo_channel_handle_t ldo_sdio = NULL;
+    esp_ldo_channel_config_t ldo_sdio_config = {
+        .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+        .voltage_mv = 3300,
+    };
+    esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+  }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+  /* SD-SPI init */
+  uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                SOC_GPIO_PIN_SD_D0,
+                SOC_GPIO_PIN_SD_CMD,
+                SOC_GPIO_PIN_SD_D3);
+}
+
+static void ESP32_TFT_fini()
+{
+}
+
+static bool ESP32_TFT_is_ready()
+{
+  return true;
+}
+
+static void ESP32_TFT_update(int val)
+{
 }
 #endif /* USE_TFT */
 
@@ -2294,12 +2326,15 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Battery_voltage,
 #if defined(USE_TFT)
   ESP32_TFT_setup,
+  ESP32_TFT_fini,
+  ESP32_TFT_is_ready,
+  ESP32_TFT_update,
 #else
   ESP32_EPD_setup,
-#endif /* USE_TFT */
   ESP32_EPD_fini,
   ESP32_EPD_is_ready,
   ESP32_EPD_update,
+#endif /* USE_TFT */
   ESP32_WiFi_Receive_UDP,
   ESP32_WiFi_clients_count,
   ESP32_DB_init,
