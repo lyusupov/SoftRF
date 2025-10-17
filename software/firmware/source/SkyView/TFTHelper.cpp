@@ -19,15 +19,109 @@
 #include "SoCHelper.h"
 
 #include "TFTHelper.h"
+#include "EEPROMHelper.h"
 
 #if defined(USE_TFT)
 
-void TFT_setup()
-{
+#include <esp_display_panel.hpp>
 
+#include <lvgl.h>
+#include "LVGLHelper.h"
+
+using namespace esp_panel::board;
+
+Board *panel = NULL;
+
+const char TFT_SkyView_text1 [] = SKYVIEW_IDENT;
+const char TFT_SkyView_text2 [] = "Presented by SoftRF project";
+const char TFT_SkyView_text3 [] = "Author:  Linar Yusupov  (C) 2019-2025";
+const char TFT_SkyView_text4 [] = "POWER";
+const char TFT_SkyView_text5 [] = "OFF";
+const char TFT_SkyView_text6 [] = "Screen";
+const char TFT_SkyView_text7 [] = "Saver";
+const char TFT_SkyView_text8 [] = "VERSION " SKYVIEW_FIRMWARE_VERSION;
+
+unsigned long TFT_TimeMarker = 0;
+bool TFT_display_frontpage = false;
+
+static int TFT_view_mode = 0;
+
+byte TFT_setup()
+{
+  byte rval = DISPLAY_NONE;
+
+  TFT_view_mode = VIEW_MODE_STATUS;
+
+  SoC->EPD_setup();
+
+  if (panel) {
+    lvgl_port_init(panel->getLCD(), panel->getTouch());
+
+    lvgl_port_lock(-1);
+
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_text_color(lv_scr_act(), lv_color_white(), LV_PART_MAIN);
+
+    lv_obj_t *label_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_1, TFT_SkyView_text1);
+    lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
+    lv_obj_align(label_1, LV_ALIGN_CENTER, 0, -60);
+
+    lv_obj_t *label_2 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_2, TFT_SkyView_text8);
+    lv_obj_set_style_text_font(label_2, &lv_font_montserrat_24, 0);
+    lv_obj_align_to(label_2, label_1, LV_ALIGN_OUT_BOTTOM_MID, 0, 40);
+
+    lv_obj_t *label_3 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_3, TFT_SkyView_text2);
+    lv_obj_set_style_text_font(label_3, &lv_font_montserrat_24, 0);
+    lv_obj_align_to(label_3, label_2, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+
+    lv_obj_t *label_4 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_4, TFT_SkyView_text3);
+    lv_obj_set_style_text_font(label_4, &lv_font_montserrat_24, 0);
+    lv_obj_align_to(label_4, label_3, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+
+    lvgl_port_unlock();
+
+    rval = DISPLAY_TFT_7_0;
+  }
+
+  TFT_status_setup();
+
+  TFT_TimeMarker = millis();
+
+  return rval;
 }
 
 void TFT_loop()
+{
+  switch (hw_info.display)
+  {
+  case DISPLAY_TFT_7_0:
+    if (panel) {
+      if (isTimeToDisplay()) {
+        switch (TFT_view_mode)
+        {
+        case VIEW_MODE_STATUS:
+        default:
+          TFT_status_loop();
+          break;
+        }
+
+        TFTTimeMarker = millis();
+      }
+    }
+
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+void TFT_fini()
 {
 
 }

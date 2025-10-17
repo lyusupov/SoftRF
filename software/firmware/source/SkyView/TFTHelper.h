@@ -19,7 +19,13 @@
 #ifndef TFTHELPER_H
 #define TFTHELPER_H
 
-void TFT_setup();
+#define isTimeToDisplay()       (millis() - TFT_TimeMarker > 1000)
+
+byte TFT_setup();
 void TFT_loop();
+void TFT_fini();
+
+void TFT_status_setup();
+void TFT_status_loop();
 
 #endif /* TFTHELPER_H */
