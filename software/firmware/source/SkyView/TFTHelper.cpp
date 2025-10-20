@@ -46,6 +46,26 @@ bool TFT_display_frontpage = false;
 
 static int TFT_view_mode = 0;
 
+void gesture_event_handler(lv_event_t * e)
+{
+  lv_obj_t * screen = lv_event_get_current_target(e);
+  lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+  switch(dir) {
+    case LV_DIR_LEFT:
+      /* TBD */
+      break;
+    case LV_DIR_RIGHT:
+      /* TBD */
+      break;
+    case LV_DIR_TOP:
+      /* TBD */
+      break;
+    case LV_DIR_BOTTOM:
+      /* TBD */
+      break;
+  }
+}
+
 byte TFT_setup()
 {
   byte rval = DISPLAY_NONE;
@@ -81,6 +101,8 @@ byte TFT_setup()
     lv_label_set_text(label_4, TFT_SkyView_text3);
     lv_obj_set_style_text_font(label_4, &lv_font_montserrat_24, 0);
     lv_obj_align_to(label_4, label_3, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+
+    lv_obj_add_event_cb(lv_scr_act(), gesture_event_handler, LV_EVENT_GESTURE, NULL);
 
     lvgl_port_unlock();
 
