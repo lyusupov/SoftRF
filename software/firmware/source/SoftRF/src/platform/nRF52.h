@@ -150,6 +150,7 @@ struct rst_info {
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Heltec_T114.h"
 #include "iomap/Elecrow_ThinkNode_M1.h"
+#include "iomap/Elecrow_ThinkNode_M3.h"
 #include "iomap/Elecrow_ThinkNode_M6.h"
 #include "iomap/Seeed_Wio_L1.h"
 

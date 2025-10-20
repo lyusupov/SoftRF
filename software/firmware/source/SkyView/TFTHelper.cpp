@@ -109,7 +109,7 @@ void TFT_loop()
           break;
         }
 
-        TFTTimeMarker = millis();
+        TFT_TimeMarker = millis();
       }
     }
 
