@@ -19,13 +19,28 @@
 #ifndef TFTHELPER_H
 #define TFTHELPER_H
 
+#define TFT_EXPIRATION_TIME     5 /* seconds */
+
+#define NO_DATA_TEXT            "NO DATA"
+#define NO_FIX_TEXT             "NO FIX"
+
 #define isTimeToDisplay()       (millis() - TFT_TimeMarker > 1000)
 
 byte TFT_setup();
 void TFT_loop();
 void TFT_fini();
 
+void TFT_Clear_Screen();
+void TFT_Message(const char *, const char *);
+
 void TFT_status_setup();
 void TFT_status_loop();
+
+void TFT_radar_setup();
+void TFT_radar_loop();
+void TFT_radar_zoom();
+void TFT_radar_unzoom();
+
+extern bool TFT_vmode_updated;
 
 #endif /* TFTHELPER_H */
