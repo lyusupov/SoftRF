@@ -51,7 +51,7 @@ static void TFT_Draw_Radar()
   char cog_text[6];
 
   /* divider is a half of full scale */
-  int32_t divider = 2000; 
+  int32_t divider = 2000;
 
 #if 0
   lvgl_port_lock(-1);

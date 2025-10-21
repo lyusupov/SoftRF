@@ -73,3 +73,22 @@
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_MDC     31
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_MDIO    52
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_RST     SOC_UNUSED_PIN /* XL 5 */
+
+/* GPIO expansion (XL9535) */
+#define SOC_EXPIO_TDP4_3V3_EN             IO0
+#define SOC_EXPIO_TDP4_RFSW_VCTL          IO1
+#define SOC_EXPIO_TDP4_DSI_RST            IO2
+#define SOC_EXPIO_TDP4_TP_RST             IO3
+#define SOC_EXPIO_TDP4_TP_INT             IO4
+#define SOC_EXPIO_TDP4_ETH_RST            IO5
+#define SOC_EXPIO_TDP4_5V0_EN             IO6
+#define SOC_EXPIO_TDP4_SENS_INT           IO7
+
+#define SOC_EXPIO_TDP4_VCCA_EN            IO10
+#define SOC_EXPIO_TDP4_GNSS_WKE           IO11
+#define SOC_EXPIO_TDP4_RTC_INT            IO12
+#define SOC_EXPIO_TDP4_SLAVE_WKE          IO13
+#define SOC_EXPIO_TDP4_SLAVE_EN           IO14
+#define SOC_EXPIO_TDP4_SD_EN              IO15
+#define SOC_EXPIO_TDP4_RADIO_RST          IO16
+#define SOC_EXPIO_TDP4_RADIO_DIO          IO17
