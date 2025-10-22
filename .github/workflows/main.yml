@@ -34,7 +34,7 @@ jobs:
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WLE5CCUX',
-            #'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WL55CCUX',
+            'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WL55CCUX',
             'raspberry',
             'energia:cc13xx:LAUNCHXL_CC1310',
             'CubeCell:CubeCell:CubeCell-GPS',
@@ -322,7 +322,6 @@ jobs:
             arduino --install-boards STMicroelectronics:stm32:2.4.0 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "STMicroelectronics:stm32:GenWL" ]]; then
-              # arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;
               arduino --pref "custom_opt=GenWL_osstd"              --save-prefs ;
               arduino --pref "custom_rtlib=GenWL_nano"             --save-prefs ;
               arduino --pref "custom_xserial=GenWL_generic"        --save-prefs ;

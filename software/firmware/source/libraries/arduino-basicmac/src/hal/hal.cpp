@@ -128,7 +128,7 @@ bool hal_pin_rst (u1_t val) {
 
     return true;
 }
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 bool hal_pin_rst (u1_t val) {
 #if 0
     if (val == 0)
@@ -296,7 +296,7 @@ bool hal_pin_tcxo (u1_t val) {
 
     digitalWrite(lmic_pins.tcxo, val == 1 ? HIGH : LOW);
 
-#if !defined(ARDUINO_GENERIC_WLE5CCUX)
+#if !defined(ARDUINO_GENERIC_WLE5CCUX) && !defined(ARDUINO_GENERIC_WL55CCUX)
     return true;
 #else
     return false;
@@ -312,7 +312,7 @@ void hal_pin_busy_wait (void) {
 
     while(((micros() - start) < MAX_BUSY_TIME) && (LORAC->SR & 0x100)) /* wait */;
 }
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 void hal_pin_busy_wait (void) {
     unsigned long start = micros();
 
@@ -366,7 +366,7 @@ u1_t hal_spi (u1_t out) {
     return res;
 }
 
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 #ifdef HAL_SUBGHZ_MODULE_ENABLED
 
 #define SUBGHZ_DEFAULT_TIMEOUT     100U    /* HAL Timeout in ms               */

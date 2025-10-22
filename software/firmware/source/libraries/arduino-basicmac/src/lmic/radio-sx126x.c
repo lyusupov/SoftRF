@@ -315,7 +315,8 @@ static void SetDIO3AsTcxoCtrl (uint8_t voltage) {
     uint8_t data[] = {voltage, (timeout >> 16) & 0xff, (timeout >> 8) & 0xff, timeout & 0xff };
 
 #if defined(__ASR6501__)  || defined(ARDUINO_GENERIC_WLE5CCUX) || \
-    defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
+    defined(ARDUINO_GENERIC_WL55CCUX) || defined(RASPBERRY_PI) || \
+    defined(LUCKFOX_LYRA)
     if (hal_pin_tcxo(voltage))
 #elif defined(ARDUINO_ARCH_ASR6601)
     if (LORAC->CR1 & 0x1)
@@ -596,7 +597,7 @@ static void SetDioIrqParams (uint16_t mask) {
 
 // set tx power (in dBm)
 static void SetTxPower (s1_t pw) {
-#if defined(ARDUINO_GENERIC_WLE5CCUX)
+#if defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
     if (lmic_wle_rf_output) {
       // high power PA: -9 ... +22 dBm
       if (pw > 22) pw = 22;
