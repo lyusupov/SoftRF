@@ -87,6 +87,7 @@ enum stm32_board_id {
   STM32_SEEED_E5,      /* RFO_HP, 32 MHz TCXO */
   STM32_ACSIP_ST50H,   /* a.k.a. "RAK3172-SiP", RFO_HP, 32 MHz TCXO */
   STM32_RAK_3172_EB,   /* RFO_HP, 32 MHz XTAL (10 ppm) */
+  STM32_LILYGO_T3_1_0,
 };
 
 enum stm32_boot_action {
@@ -263,6 +264,69 @@ typedef struct stm32_backup_struct {
 #define VREFINT               1200 /* TBD */
 
 #include "iomap/Olimex_STM32WL.h"
+
+#define EXCLUDE_WIFI
+#define EXCLUDE_ETHERNET
+#define EXCLUDE_CC13XX
+#define EXCLUDE_TEST_MODE
+#define EXCLUDE_WATCHOUT_MODE
+
+//#define EXCLUDE_GNSS_UBLOX
+#define EXCLUDE_GNSS_SONY
+#define EXCLUDE_GNSS_MTK
+#define EXCLUDE_GNSS_GOKE
+#define EXCLUDE_GNSS_AT65
+#define EXCLUDE_GNSS_UC65
+#define EXCLUDE_GNSS_AG33
+
+/* Component                         Cost */
+/* -------------------------------------- */
+#define USE_OLED                 //  +3.5 kb
+//#define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_049
+#define USE_NMEA_CFG             //  +2.5 kb
+#define EXCLUDE_BMP180           //  -  1 kb
+//#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_BME680           //  -    kb
+#define EXCLUDE_BME280AUX        //  -    kb
+#define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_NRF905           //  -  2 kb
+#define EXCLUDE_UATM             //  -    kb
+#define EXCLUDE_MAVLINK          //  -    kb
+#define EXCLUDE_EGM96            //  - 16 kb
+//#define EXCLUDE_LED_RING       //  -    kb
+//#define EXCLUDE_SOUND
+//#define EXCLUDE_LK8EX1
+#define EXCLUDE_IMU
+
+#define USE_BASICMAC             //  +  7 kb
+#define EXCLUDE_SX1276           //  -  3 kb
+//#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
+#define EXCLUDE_SI446X
+#define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
+
+#define USE_TIME_SLOTS
+#define USE_OGN_ENCRYPTION
+
+/* Experimental */
+#define ENABLE_ADSL
+#define ENABLE_PROL
+
+#elif defined(ARDUINO_GENERIC_WL55CCUX)
+
+#define Serial_GNSS_In        Serial2
+#define Serial_GNSS_Out       Serial_GNSS_In
+#define UATSerial             Serial
+#define SerialOutput          Serial
+
+#define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
+#define VREFINT               1200 /* TBD */
+
+#include "iomap/LilyGO_T3_STM32.h"
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET

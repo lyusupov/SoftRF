@@ -131,7 +131,7 @@ typedef void(*voidCallbackPtr)(void *);
 #elif defined(STM32G0xx)
 // global RTC/TAMP interrupt
 #define ONESECOND_IRQn RTC_TAMP_IRQn
-#elif defined(STM32WL54xx)|| defined(STM32WL55xx)
+#elif (defined(STM32WL54xx) || defined(STM32WL55xx)) && defined(CORE_CM0PLUS)
 // global RTC/LSS interrupt
 #define ONESECOND_IRQn RTC_LSECSS_IRQn
 #elif defined(RTC_CR_WUTE)

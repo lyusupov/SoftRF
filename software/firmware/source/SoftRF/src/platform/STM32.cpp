@@ -88,7 +88,7 @@ extern int32_t IMU_g_x10;
 HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
 
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 
 HardwareSerial Serial2(USART2);
 
@@ -281,7 +281,9 @@ static void STM32_setup()
         // This reset is induced by calling the ARM CMSIS `NVIC_SystemReset()` function!
         reset_info.reason = REASON_SOFT_RESTART; // "SOFTWARE_RESET"
     }
-#if !defined(ARDUINO_GENERIC_WLE5CCUX) && !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+#if !defined(ARDUINO_GENERIC_WLE5CCUX) && \
+    !defined(ARDUINO_GENERIC_WL55CCUX) && \
+    !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
     else if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
     {
         reset_info.reason = REASON_DEFAULT_RST; // "POWER-ON_RESET (POR) / POWER-DOWN_RESET (PDR)"
@@ -382,6 +384,12 @@ static void STM32_setup()
 
     /* TBD */
     stm32_board = (SoC->getChipId() == 0x725c6907) ? STM32_EBYTE_E77 : STM32_OLIMEX_WLE5CC;
+    hw_info.model = SOFTRF_MODEL_BALKAN;
+
+#elif defined(ARDUINO_GENERIC_WL55CCUX)
+
+    /* TBD */
+    stm32_board = STM32_LILYGO_T3_1_0;
     hw_info.model = SOFTRF_MODEL_BALKAN;
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)

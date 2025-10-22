@@ -171,6 +171,7 @@
 #define CS_N      PA4  // SPI slave select pin
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX) || \
+      defined(ARDUINO_GENERIC_WL55CCUX) || \
       defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
 /* TBD */

@@ -33,7 +33,8 @@ jobs:
             'esp32:esp32:esp32p4',
             'STM32:stm32:Nucleo_64',
             'STMicroelectronics:stm32:GenF1',
-            'STMicroelectronics:stm32:GenWL',
+            'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WLE5CCUX',
+            #'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WL55CCUX',
             'raspberry',
             'energia:cc13xx:LAUNCHXL_CC1310',
             'CubeCell:CubeCell:CubeCell-GPS',
@@ -321,7 +322,7 @@ jobs:
             arduino --install-boards STMicroelectronics:stm32:2.4.0 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "STMicroelectronics:stm32:GenWL" ]]; then
-              arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;
+              # arduino --pref "custom_pnum=GenWL_GENERIC_WLE5CCUX"  --save-prefs ;
               arduino --pref "custom_opt=GenWL_osstd"              --save-prefs ;
               arduino --pref "custom_rtlib=GenWL_nano"             --save-prefs ;
               arduino --pref "custom_xserial=GenWL_generic"        --save-prefs ;
@@ -591,7 +592,7 @@ jobs:
           if [[ "$BOARD" =~ "adafruit:nrf52:"      ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:mbed_edge:" ]]; then
+          if [[ "$BOARD" =~ "arduino:mbed_edge:"   ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
           if [[ "$BOARD" =~ "arduino:samd:"        ]]; then
@@ -621,6 +622,6 @@ jobs:
           if [[ "$BOARD" =~ "WCH:ch32v:"           ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
           fi ;
-          if [[ "$BOARD" =~ "arduino:zephyr_main:"      ]]; then
+          if [[ "$BOARD" =~ "arduino:zephyr_main:" ]]; then
             arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
