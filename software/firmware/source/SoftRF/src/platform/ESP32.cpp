@@ -4152,6 +4152,10 @@ static void ESP32_SPI_begin()
       SPI.begin(SOC_GPIO_PIN_P4_SCK,  SOC_GPIO_PIN_P4_MISO,
                 SOC_GPIO_PIN_P4_MOSI, SOC_GPIO_PIN_P4_SS);
       break;
+    case ESP32_LILYGO_TDISPLAY_P4:
+      SPI.begin(SOC_GPIO_PIN_TDP4_SCK,  SOC_GPIO_PIN_TDP4_MISO,
+                SOC_GPIO_PIN_TDP4_MOSI, SOC_GPIO_PIN_TDP4_SS);
+      break;
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
     default:
 #if defined(USE_SOFTSPI)
@@ -4296,6 +4300,10 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F("INFO: ESP32-P4 Wireless Tag DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_P4_GNSS_RX, SOC_GPIO_PIN_P4_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+      Serial.println(F("INFO: LilyGO T-Display-P4 is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_TDP4_GNSS_RX, SOC_GPIO_PIN_TDP4_GNSS_TX);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
     } else {
       /* open Standalone's GNSS port */
@@ -5505,6 +5513,10 @@ static bool ESP32_Baro_setup()
   } else if (esp32_board == ESP32_P4_WT_DEVKIT) {
 
     Wire.setPins(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
+
+  } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+
+    Wire.setPins(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
 
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {
