@@ -531,7 +531,20 @@ static void STM32_setup()
       hal_pin_tcxo(1);
       pinMode(lmic_pins.tcxo, OUTPUT);
     }
-#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
+
+#elif defined(ARDUINO_GENERIC_WL55CCUX)
+
+    lmic_pins.rxe  = SOC_GPIO_ANT_RX;
+    lmic_pins.txe  = SOC_GPIO_ANT_TX;
+    STM32_has_TCXO = false; /* TBD */
+
+    if (STM32_has_TCXO) {
+      lmic_pins.tcxo = SOC_GPIO_TCXO;
+      hal_pin_tcxo(1);
+      pinMode(lmic_pins.tcxo, OUTPUT);
+    }
+
+#endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
 
 #if defined(USE_RADIOLIB)
     lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
@@ -892,7 +905,7 @@ static void STM32_EEPROM_extension(int cmd)
       if (settings->gdl90    == GDL90_UART) { settings->gdl90    = GDL90_USB; }
       if (settings->d1090    == D1090_UART) { settings->d1090    = D1090_USB; }
     }
-#elif defined(ARDUINO_GENERIC_WLE5CCUX)
+#elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
     if (settings->nmea_out != NMEA_OFF) {
       settings->nmea_out = NMEA_UART;
     }
@@ -1085,11 +1098,14 @@ static bool STM32_Baro_setup() {
 
 static void STM32_UATSerial_begin(unsigned long baud)
 {
+#if !defined(EXCLUDE_UATM)
   UATSerial.begin(baud);
+#endif /* EXCLUDE_UATM */
 }
 
 static void STM32_UATModule_restart()
 {
+#if !defined(EXCLUDE_UATM)
   digitalWrite(SOC_GPIO_PIN_TXE, LOW);
   pinMode(SOC_GPIO_PIN_TXE, OUTPUT);
 
@@ -1100,6 +1116,7 @@ static void STM32_UATModule_restart()
   delay(100);
 
   pinMode(SOC_GPIO_PIN_TXE, INPUT);
+#endif /* EXCLUDE_UATM */
 }
 
 static void STM32_WDT_setup()

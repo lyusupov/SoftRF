@@ -5,9 +5,9 @@
 
 #define SOC_GPIO_PIN_GNSS_RX  PA3
 #define SOC_GPIO_PIN_GNSS_TX  PA2
-#define SOC_GPIO_PIN_GNSS_PPS PB6
+#define SOC_GPIO_PIN_GNSS_PPS PB7
 
-#define SOC_GPIO_PIN_LED      PB7 // ext. NeoPixel
+#define SOC_GPIO_PIN_LED      PB8 // ext. NeoPixel
 
 #define SOC_GPIO_LED_GREEN    PA0 // active HIGH
 #define SOC_GPIO_LED_RED      PA1 // active HIGH
@@ -39,12 +39,11 @@
 #define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO0     LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO1     LMIC_UNUSED_PIN
-
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      PB8
+#define SOC_GPIO_TCXO         PB0
 
 /* RF antenna switch */
-#define SOC_GPIO_ANT_RXTX     PB2 /* TBD */
+#define SOC_GPIO_ANT_RX       PB2 /* active HIGH */
+#define SOC_GPIO_ANT_TX       PB6 /* active HIGH */
 
 /* button */
 #define SOC_GPIO_PIN_BUTTON   PB5 // ext. button
