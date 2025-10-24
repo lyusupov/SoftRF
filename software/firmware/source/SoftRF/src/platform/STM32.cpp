@@ -390,7 +390,7 @@ static void STM32_setup()
 
     /* TBD */
     stm32_board = STM32_LILYGO_T3_1_0;
-    hw_info.model = SOFTRF_MODEL_BALKAN;
+    hw_info.model = SOFTRF_MODEL_LABUBU;
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
@@ -437,7 +437,8 @@ static void STM32_setup()
       }
 #endif /* ARDUINO_NUCLEO_L073RZ */
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
-        pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ?
+        pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ||
+                                     hw_info.model == SOFTRF_MODEL_LABUBU ?
                                      INPUT_PULLDOWN : INPUT);
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
         LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
@@ -447,8 +448,9 @@ static void STM32_setup()
 #endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
         /* do not enter into DFU mode when BOOT button has dual function */
-        while (hw_info.model == SOFTRF_MODEL_DONGLE &&
-               digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
+        while ((hw_info.model == SOFTRF_MODEL_DONGLE ||
+                hw_info.model == SOFTRF_MODEL_LABUBU) &&
+                digitalRead(SOC_GPIO_PIN_BUTTON) == HIGH);
         HAL_NVIC_SystemReset();
       } else {
         STM32_ULP_stop();
@@ -1020,15 +1022,17 @@ static float STM32_Battery_param(uint8_t param)
   switch (param)
   {
   case BATTERY_PARAM_THRESHOLD:
-    rval = hw_info.model == SOFTRF_MODEL_DONGLE  ||
-           hw_info.model == SOFTRF_MODEL_BRACELET ? BATTERY_THRESHOLD_LIPO   :
-                                                    BATTERY_THRESHOLD_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_DONGLE   ||
+           hw_info.model == SOFTRF_MODEL_BRACELET ||
+           hw_info.model == SOFTRF_MODEL_LABUBU ? BATTERY_THRESHOLD_LIPO   :
+                                                  BATTERY_THRESHOLD_NIMHX2;
     break;
 
   case BATTERY_PARAM_CUTOFF:
-    rval = hw_info.model == SOFTRF_MODEL_DONGLE ||
-           hw_info.model == SOFTRF_MODEL_BRACELET ? BATTERY_CUTOFF_LIPO   :
-                                                    BATTERY_CUTOFF_NIMHX2;
+    rval = hw_info.model == SOFTRF_MODEL_DONGLE   ||
+           hw_info.model == SOFTRF_MODEL_BRACELET ||
+           hw_info.model == SOFTRF_MODEL_LABUBU ? BATTERY_CUTOFF_LIPO   :
+                                                  BATTERY_CUTOFF_NIMHX2;
     break;
 
   case BATTERY_PARAM_CHARGE:
@@ -1155,12 +1159,14 @@ static void STM32_Button_setup()
   if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
-       hw_info.model == SOFTRF_MODEL_BALKAN)) {
+       hw_info.model == SOFTRF_MODEL_BALKAN   ||
+       hw_info.model == SOFTRF_MODEL_LABUBU)) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // BOOT0 button(s) uses external pull DOWN resistor.
     pinMode(button_pin,
-            hw_info.model == SOFTRF_MODEL_DONGLE ? INPUT_PULLDOWN :
+            hw_info.model == SOFTRF_MODEL_DONGLE ||
+            hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
             hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
 
     button_1.init(button_pin, hw_info.model == SOFTRF_MODEL_BALKAN ? HIGH : LOW);
@@ -1183,7 +1189,8 @@ static void STM32_Button_loop()
   if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
-       hw_info.model == SOFTRF_MODEL_BALKAN)) {
+       hw_info.model == SOFTRF_MODEL_BALKAN   ||
+       hw_info.model == SOFTRF_MODEL_LABUBU)) {
     button_1.check();
   }
 }
@@ -1193,9 +1200,11 @@ static void STM32_Button_fini()
   if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN   &&
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
-       hw_info.model == SOFTRF_MODEL_BALKAN)) {
+       hw_info.model == SOFTRF_MODEL_BALKAN   ||
+       hw_info.model == SOFTRF_MODEL_LABUBU)) {
     pinMode(SOC_GPIO_PIN_BUTTON,
-            hw_info.model == SOFTRF_MODEL_DONGLE ? INPUT_PULLDOWN :
+            hw_info.model == SOFTRF_MODEL_DONGLE ||
+            hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
             hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
     bool button_is_active = (hw_info.model == SOFTRF_MODEL_BALKAN ? LOW : HIGH);
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == button_is_active);
