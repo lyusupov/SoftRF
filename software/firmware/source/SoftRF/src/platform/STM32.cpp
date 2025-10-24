@@ -959,7 +959,25 @@ static byte STM32_Display_setup()
   byte rval = DISPLAY_NONE;
 
 #if defined(USE_OLED)
-  rval = OLED_setup();
+#if defined(ARDUINO_GENERIC_WL55CCUX)
+  if (stm32_board == STM32_LILYGO_T3_1_0) {
+    u8x8 = new U8X8_SSD1315_128X64_NONAME_4W_HW_SPI(SOC_GPIO_PIN_OLED_SS,
+                                                    SOC_GPIO_PIN_OLED_DC,
+                                                    U8X8_PIN_NONE);
+    u8x8->begin();
+    u8x8->setFlipMode(OLED_flip);
+    u8x8->setFont(u8x8_font_chroma48medium8_r);
+
+    u8x8->draw2x2String( 2, 2, SoftRF_text1);
+    u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
+    u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
+
+    rval = DISPLAY_OLED_TTGO;
+  } else
+#endif /* ARDUINO_GENERIC_WL55CCUX */
+  {
+    rval = OLED_setup();
+  }
 #endif /* USE_OLED */
 
   return rval;
@@ -976,6 +994,17 @@ static void STM32_Display_fini(int reason)
 {
 #if defined(USE_OLED)
   OLED_fini(reason);
+
+#if defined(ARDUINO_GENERIC_WL55CCUX)
+  if (stm32_board == STM32_LILYGO_T3_1_0) {
+    delay(3000); /* Keep shutdown message on OLED for 3 seconds */
+
+    u8x8->noDisplay();
+
+    delete u8x8;
+    u8x8 = NULL;
+  }
+#endif /* ARDUINO_GENERIC_WL55CCUX */
 #endif /* USE_OLED */
 }
 

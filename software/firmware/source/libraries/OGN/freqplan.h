@@ -44,8 +44,8 @@ class FreqPlan
         switch (Plan)
         {
           case RF_BAND_RSVD:
-            { BaseFreq=2450000000; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } // reserved
-//            { BaseFreq=2000000000; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } /* S-band */
+            { BaseFreq=2450000000U; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } // reserved
+//            { BaseFreq=2000000000U; ChanSepar= 200000; Channels= 1; MaxTxPower = 30; } /* S-band */
             break;
           case RF_BAND_EU:
           default:
@@ -90,8 +90,8 @@ class FreqPlan
             MaxTxPower = 15 /* LoRaWAN: 23 */;
             break;
           case RF_BAND_RSVD:
-            BaseFreq   = 2450000000;
-//            BaseFreq   = 2000000000; /* S-band */
+            BaseFreq   = 2450000000U;
+//            BaseFreq   = 2000000000U; /* S-band */
             Bandwidth  = RF_RX_BANDWIDTH_SS_250KHZ; // BW500
             MaxTxPower = 30;
             break;
@@ -177,8 +177,8 @@ class FreqPlan
             { BaseFreq= 920900000; ChanSepar=200000; Channels= 1; MaxTxPower = 23; } // South Korea
             break;
           case RF_BAND_RSVD:
-            { BaseFreq=2450000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // reserved
-//            { BaseFreq=2000000000; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } /* S-band */
+            { BaseFreq=2450000000U; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } // reserved
+//            { BaseFreq=2000000000U; ChanSepar=200000; Channels= 1; MaxTxPower = 30; } /* S-band */
             break;
           case RF_BAND_EU:
           default: /* AUTO, UK */
