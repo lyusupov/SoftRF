@@ -115,6 +115,26 @@ static void TFT_Draw_Radar()
     }
   }
 
+  lvgl_port_lock(-1);
+
+  lv_obj_t *circle_1 = lv_obj_create(lv_scr_act());
+  lv_obj_set_size(circle_1, radius + radius, radius + radius);
+  lv_obj_set_pos(circle_1, 0, 0);
+  lv_obj_set_style_radius(circle_1, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_style_border_color(circle_1, lv_palette_main(LV_PALETTE_GREEN), 0);
+  lv_obj_set_style_border_width(circle_1, 2, 0);
+  lv_obj_set_style_bg_color(circle_1, lv_color_black(), 0);
+
+  lv_obj_t *circle_2 = lv_obj_create(lv_scr_act());
+  lv_obj_set_size(circle_2, radius, radius);
+  lv_obj_set_pos(circle_2, radar_w / 4, radar_w / 4);
+  lv_obj_set_style_radius(circle_2, LV_RADIUS_CIRCLE, 0);
+  lv_obj_set_style_border_color(circle_2, lv_palette_main(LV_PALETTE_GREEN), 0);
+  lv_obj_set_style_border_width(circle_2, 2, 0);
+  lv_obj_set_style_bg_color(circle_2, lv_color_black(), 0);
+
+  lvgl_port_unlock();
+
 #if 0
   sprite->drawCircle(  radar_center_x, radar_center_y,
                         radius, TFT_WHITE);

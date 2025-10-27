@@ -26,12 +26,22 @@
 
 #define isTimeToDisplay()       (millis() - TFT_TimeMarker > 1000)
 
+enum {
+  NO_GESTURE,
+  SWIPE_LEFT,
+  SWIPE_RIGHT,
+  SWIPE_UP,
+  SWIPE_DOWN,
+};
+
 byte TFT_setup();
 void TFT_loop();
 void TFT_fini();
 
 void TFT_Clear_Screen();
 void TFT_Message(const char *, const char *);
+void TFT_Up();
+void TFT_Down();
 
 void TFT_status_setup();
 void TFT_status_loop();

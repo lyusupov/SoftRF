@@ -47,22 +47,28 @@ bool TFT_display_frontpage = false;
 static int TFT_view_mode = 0;
 bool TFT_vmode_updated = true;
 
+static int tp_action = NO_GESTURE;
+
 void gesture_event_handler(lv_event_t * e)
 {
   lv_obj_t * screen = lv_event_get_current_target(e);
   lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
   switch(dir) {
     case LV_DIR_LEFT:
-      /* TBD */
+      // Serial.println("LV_DIR_LEFT");
+      tp_action = SWIPE_LEFT;
       break;
     case LV_DIR_RIGHT:
-      /* TBD */
+      // Serial.println("LV_DIR_RIGHT");
+      tp_action = SWIPE_RIGHT;
       break;
     case LV_DIR_TOP:
-      /* TBD */
+      // Serial.println("LV_DIR_TOP");
+      tp_action = SWIPE_UP;
       break;
     case LV_DIR_BOTTOM:
-      /* TBD */
+      // Serial.println("LV_DIR_BOTTOM");
+      tp_action = SWIPE_DOWN;
       break;
   }
 }
@@ -111,6 +117,7 @@ byte TFT_setup()
   }
 
   TFT_status_setup();
+  TFT_radar_setup();
 
   TFT_TimeMarker = millis();
 
@@ -137,6 +144,33 @@ void TFT_loop()
 
         TFT_TimeMarker = millis();
       }
+
+      switch (tp_action)
+      {
+      case SWIPE_LEFT:
+        if (TFT_view_mode == VIEW_MODE_STATUS) {
+          TFT_view_mode = VIEW_MODE_RADAR;
+          TFT_vmode_updated = true;
+        }
+        break;
+      case SWIPE_RIGHT:
+        if (TFT_view_mode == VIEW_MODE_RADAR) {
+          TFT_view_mode = VIEW_MODE_STATUS;
+          TFT_vmode_updated = true;
+        }
+        break;
+      case SWIPE_DOWN:
+        TFT_Up();
+        break;
+      case SWIPE_UP:
+        TFT_Down();
+        break;
+      case NO_GESTURE:
+      default:
+        break;
+      }
+
+      tp_action = NO_GESTURE;
     }
 
     break;
@@ -189,6 +223,36 @@ void TFT_Message(const char *msg1, const char *msg2)
       tft->setCursor(x, y);
       tft->print(msg2);
 #endif
+    }
+  }
+}
+
+void TFT_Up()
+{
+  if (hw_info.display == DISPLAY_TFT_7_0) {
+    switch (TFT_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      TFT_radar_unzoom();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      break;
+    }
+  }
+}
+
+void TFT_Down()
+{
+  if (hw_info.display == DISPLAY_TFT_7_0) {
+    switch (TFT_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      TFT_radar_zoom();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      break;
     }
   }
 }

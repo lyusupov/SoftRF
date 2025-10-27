@@ -1306,13 +1306,120 @@ static void ESP32_EPD_update(int val)
 
 #include <esp_display_panel.hpp>
 
+using namespace esp_panel::drivers;
 using namespace esp_panel::board;
 
 extern Board *panel;
 
+#undef _TO_STR
+#undef TO_STR
+#define _TO_STR(name) #name
+#define TO_STR(name) _TO_STR(name)
+
+const BoardConfig Board_Config_WTP4C5MP07S = {
+    .name = "WTP4C5MP07S",
+
+    .lcd = BoardConfig::LCD_Config{
+
+        .bus_config = BusDSI::Config{
+            .host = BusDSI::HostPartialConfig{
+                .num_data_lanes = 2,
+                .lane_bit_rate_mbps = 1000,
+            },
+            .refresh_panel = BusDSI::RefreshPanelPartialConfig{
+                .dpi_clock_freq_mhz = 52,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
+                .h_size = 1024,
+                .v_size = 600,
+                .hsync_pulse_width = 10,
+                .hsync_back_porch = 160,
+                .hsync_front_porch = 160,
+                .vsync_pulse_width = 1,
+                .vsync_back_porch = 23,
+                .vsync_front_porch = 12,
+            },
+            .phy_ldo = BusDSI::PHY_LDO_PartialConfig{
+                .chan_id = 3
+            },
+        },
+        .device_name = TO_STR(EK79007),
+        .device_config = {
+            .device = LCD::DevicePartialConfig{
+                .reset_gpio_num = SOC_GPIO_PIN_LCD_RST,
+                .rgb_ele_order = 0,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
+                .flags_reset_active_high = 1,
+            },
+            .vendor = LCD::VendorPartialConfig{
+                .hor_res = 1024,
+                .ver_res = 600,
+            },
+        },
+        .pre_process = {
+            .invert_color = 0,
+        },
+    },
+
+    .touch = BoardConfig::TouchConfig{
+        .bus_config = BusI2C::Config{
+            .host_id = 0,
+            .host = BusI2C::HostPartialConfig{
+                .sda_io_num = SOC_GPIO_PIN_SDA,
+                .scl_io_num = SOC_GPIO_PIN_SCL,
+                .sda_pullup_en = 0,
+                .scl_pullup_en = 0,
+                .clk_speed = 400 * 1000,
+            },
+            .control_panel = BusI2C::ControlPanelFullConfig
+                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG_WITH_ADDR(GT911, 0x5D),
+        },
+        .device_name = TO_STR(GT911),
+        .device_config = {
+            .device = Touch::DevicePartialConfig{
+                .x_max = 1024,
+                .y_max = 600,
+                .rst_gpio_num = -1, // SOC_GPIO_PIN_TP_RST
+                .int_gpio_num = SOC_GPIO_PIN_TP_INT,
+                .levels_reset = 1,
+                .levels_interrupt = 0,
+            },
+        },
+        .pre_process = {
+            .swap_xy = 0,
+            .mirror_x = 1,
+            .mirror_y = 1,
+        },
+    },
+
+    .backlight = BoardConfig::BacklightConfig{
+        .config = BacklightSwitchGPIO::Config{
+            .io_num = SOC_GPIO_PIN_LCD_BLED,
+            .on_level = 1,
+        },
+        .pre_process = {
+            .idle_off = 0,
+        },
+    },
+
+    .stage_callbacks = {
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+    },
+};
+
 static void ESP32_TFT_setup()
 {
-  panel = new Board();
+  panel = new Board(Board_Config_WTP4C5MP07S);
   panel->init();
 
 #if LVGL_PORT_AVOID_TEARING_MODE
