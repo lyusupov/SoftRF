@@ -32,45 +32,27 @@
 
 static int TFT_zoom = ZOOM_MEDIUM;
 
-enum {
-   STATE_RVIEW_NONE,
-   STATE_RVIEW_RADAR,
-   STATE_RVIEW_NOFIX,
-   STATE_RVIEW_NODATA
-};
-
-static int view_state_curr = STATE_RVIEW_NONE;
-static int view_state_prev = STATE_RVIEW_NONE;
-
-static void TFT_Draw_Radar()
+void TFT_radar_setup()
 {
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
-  uint16_t x;
-  uint16_t y;
-  char cog_text[6];
+  TFT_zoom = settings->zoom;
+}
+
+void TFT_radar_loop()
+{
+  bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
+                 settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
+                 false;
+  bool hasFix  = false;
+
+  if (hasData) {
+    hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
+             settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
+             false;
+  }
 
   /* divider is a half of full scale */
   int32_t divider = 2000;
 
-#if 0
-  lvgl_port_lock(-1);
-
-  lv_obj_clean(lv_scr_act());
-
-  lvgl_port_unlock();
-
-  sprite->createSprite(tft->width(), tft->height());
-
-  sprite->fillSprite(TFT_BLACK);
-  sprite->setTextColor(TFT_WHITE);
-
-  sprite->setTextFont(4);
-  sprite->setTextSize(1);
-
-  tbw = sprite->textWidth("N");
-  tbh = sprite->fontHeight();
-#endif
   uint16_t radar_x = 0;
   uint16_t radar_y = 0;
   uint16_t radar_w = min(lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
@@ -117,8 +99,10 @@ static void TFT_Draw_Radar()
 
   lvgl_port_lock(-1);
 
+  lv_obj_clean(lv_scr_act());
+
   lv_obj_t *circle_1 = lv_obj_create(lv_scr_act());
-  lv_obj_set_size(circle_1, radius + radius, radius + radius);
+  lv_obj_set_size(circle_1, radar_w, radar_w);
   lv_obj_set_pos(circle_1, 0, 0);
   lv_obj_set_style_radius(circle_1, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_border_color(circle_1, lv_palette_main(LV_PALETTE_GREEN), 0);
@@ -126,12 +110,65 @@ static void TFT_Draw_Radar()
   lv_obj_set_style_bg_color(circle_1, lv_color_black(), 0);
 
   lv_obj_t *circle_2 = lv_obj_create(lv_scr_act());
-  lv_obj_set_size(circle_2, radius, radius);
+  lv_obj_set_size(circle_2, radar_w / 2, radar_w / 2);
   lv_obj_set_pos(circle_2, radar_w / 4, radar_w / 4);
   lv_obj_set_style_radius(circle_2, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_border_color(circle_2, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_style_border_width(circle_2, 2, 0);
   lv_obj_set_style_bg_color(circle_2, lv_color_black(), 0);
+
+  lv_obj_t *rect = lv_obj_create(lv_scr_act());
+  lv_obj_set_scrollbar_mode(rect, LV_SCROLLBAR_MODE_OFF);
+  lv_obj_set_size(rect, lv_disp_get_hor_res(NULL) - radar_w, radar_w);
+  lv_obj_set_pos(rect, radar_w, 0);
+  lv_obj_set_style_radius(rect, 10, 0);
+  lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
+  lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);
+  lv_obj_set_style_border_width(rect, 2, 0);
+
+  if (hasData == false || hasFix == false) {
+    lv_obj_t *label_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_1, hasData == false ? NO_DATA_TEXT :
+                               hasFix  == false ? NO_FIX_TEXT : "");
+    lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
+    lv_obj_align_to(label_1, rect, LV_ALIGN_CENTER, 0, 0);
+  }
+
+  /* little airplane */
+  static lv_point_t line1_points[] = { {20, 0}, {20,40} };
+  static lv_point_t line2_points[] = { { 0,20}, {40,20} };
+  static lv_point_t line3_points[] = { { 4,18}, {36,18} };
+  static lv_point_t line4_points[] = { {12,40}, {28,40} };
+
+  static lv_style_t style_line;
+  lv_style_init(&style_line);
+  lv_style_set_line_width(&style_line, 4);
+  lv_style_set_line_color(&style_line, lv_color_white());
+  lv_style_set_line_rounded(&style_line, false);
+
+  lv_obj_t * line1;
+  line1 = lv_line_create(lv_scr_act());
+  lv_obj_set_pos(line1, radar_w / 2 - 20, radar_w / 2 - 20);
+  lv_line_set_points(line1, line1_points, 2);
+  lv_obj_add_style(line1, &style_line, 0);
+
+  lv_obj_t * line2;
+  line2 = lv_line_create(lv_scr_act());
+  lv_obj_set_pos(line2, radar_w / 2 - 20, radar_w / 2 - 20);
+  lv_line_set_points(line2, line2_points, 2);
+  lv_obj_add_style(line2, &style_line, 0);
+
+  lv_obj_t * line3;
+  line3 = lv_line_create(lv_scr_act());
+  lv_obj_set_pos(line3, radar_w / 2 - 20, radar_w / 2 - 20);
+  lv_line_set_points(line3, line3_points, 2);
+  lv_obj_add_style(line3, &style_line, 0);
+
+  lv_obj_t * line4;
+  line4 = lv_line_create(lv_scr_act());
+  lv_obj_set_pos(line4, radar_w / 2 - 20, radar_w / 2 - 20);
+  lv_line_set_points(line4, line4_points, 2);
+  lv_obj_add_style(line4, &style_line, 0);
 
   lvgl_port_unlock();
 
@@ -299,60 +336,6 @@ static void TFT_Draw_Radar()
       }
 #endif
     }
-  }
-}
-
-void TFT_radar_setup()
-{
-  TFT_zoom = settings->zoom;
-}
-
-void TFT_radar_loop()
-{
-  bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                 settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                 false;
-
-  if (hasData) {
-
-    bool hasFix = settings->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-                  settings->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-                  false;
-
-    if (hasFix) {
-      view_state_curr = STATE_RVIEW_RADAR;
-    } else {
-      view_state_curr = STATE_RVIEW_NOFIX;
-    }
-  } else {
-    view_state_curr = STATE_RVIEW_NODATA;
-  }
-
-  if (TFT_vmode_updated) {
-    view_state_prev = STATE_RVIEW_NONE;
-    TFT_vmode_updated = false;
-  }
-
-  if (view_state_curr != view_state_prev &&
-      view_state_curr == STATE_RVIEW_NOFIX) {
-    TFT_Clear_Screen();
-    TFT_Message(NO_FIX_TEXT, NULL);
-    view_state_prev = view_state_curr;
-  }
-
-  if (view_state_curr != view_state_prev &&
-      view_state_curr == STATE_RVIEW_NODATA) {
-    TFT_Clear_Screen();
-    TFT_Message(NO_DATA_TEXT, NULL);
-    view_state_prev = view_state_curr;
-  }
-
-  if (view_state_curr == STATE_RVIEW_RADAR) {
-    if (view_state_curr != view_state_prev) {
-       TFT_Clear_Screen();
-       view_state_prev = view_state_curr;
-    }
-    TFT_Draw_Radar();
   }
 }
 
