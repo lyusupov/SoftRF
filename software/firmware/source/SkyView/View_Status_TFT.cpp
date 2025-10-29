@@ -39,6 +39,7 @@ void TFT_status_loop()
   int hr = min / 60;
 
   float vdd = Battery_voltage() ;
+  bool low_voltage = (vdd <= Battery_threshold());
   char str_Vcc[8];
   dtostrf(vdd, 4, 2, str_Vcc);
 
@@ -94,6 +95,9 @@ void TFT_status_loop()
   lv_obj_t *data_5 = lv_label_create(lv_scr_act());
   lv_label_set_text_fmt(data_5, "%s", str_Vcc);
   lv_obj_set_style_text_font(data_5, &lv_font_montserrat_48, 0);
+  lv_obj_set_style_text_color(data_5, low_voltage ?
+                              lv_palette_main(LV_PALETTE_RED) :
+                              lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_align_to(data_5, data_4, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
   lv_obj_t *label_6 = lv_label_create(lv_scr_act());

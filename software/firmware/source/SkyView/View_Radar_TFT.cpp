@@ -170,77 +170,72 @@ void TFT_radar_loop()
   lv_line_set_points(line4, line4_points, 2);
   lv_obj_add_style(line4, &style_line, 0);
 
-  lvgl_port_unlock();
-
-#if 0
-  sprite->drawCircle(  radar_center_x, radar_center_y,
-                        radius, TFT_WHITE);
-  sprite->drawCircle(  radar_center_x, radar_center_y,
-                        radius / 2, TFT_WHITE);
-
-#if 0
-  /* arrow tip */
-  sprite->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                        radar_center_x    , radar_center_y - 5,
-                        radar_center_x + 7, radar_center_y + 5,
-                        TFT_WHITE);
-  sprite->fillTriangle(radar_center_x - 7, radar_center_y + 5,
-                        radar_center_x    , radar_center_y + 2,
-                        radar_center_x + 7, radar_center_y + 5,
-                        TFT_NAVY);
-#else
-  /* little airplane */
-  sprite->drawFastVLine(radar_center_x,      radar_center_y - 4, 14, TFT_WHITE);
-  sprite->drawFastVLine(radar_center_x + 1,  radar_center_y - 4, 14, TFT_WHITE);
-
-  sprite->drawFastHLine(radar_center_x - 8,  radar_center_y,     18, TFT_WHITE);
-  sprite->drawFastHLine(radar_center_x - 10, radar_center_y + 1, 22, TFT_WHITE);
-
-  sprite->drawFastHLine(radar_center_x - 3,  radar_center_y + 8,  8, TFT_WHITE);
-  sprite->drawFastHLine(radar_center_x - 2,  radar_center_y + 9,  6, TFT_WHITE);
-#endif
-
   switch (settings->orientation)
   {
   case DIRECTION_NORTH_UP:
-    x = radar_x + radar_w / 2 - radius + tbw/2;
-    y = radar_y + (radar_w - tbh) / 2;
-    sprite->setCursor(x , y);
-    sprite->print("W");
-    x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
-    y = radar_y + (radar_w - tbh) / 2;
-    sprite->setCursor(x , y);
-    sprite->print("E");
-    x = radar_x + (radar_w - tbw) / 2;
-    y = radar_y + radar_w/2 - radius + tbh/2;
-    sprite->setCursor(x , y);
-    sprite->print("N");
-    x = radar_x + (radar_w - tbw) / 2;
-    y = radar_y + radar_w/2 + radius - tbh;
-    sprite->setCursor(x , y);
-    sprite->print("S");
+    {
+      lv_obj_t *rose_1 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_1, "N");
+      lv_obj_set_style_text_font(rose_1, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_1, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_1, lv_color_black(), 0);
+      lv_obj_align_to(rose_1, circle_1, LV_ALIGN_TOP_MID, 0, 0);
+
+      lv_obj_t *rose_2 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_2, "W");
+      lv_obj_set_style_text_font(rose_2, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_2, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_2, lv_color_black(), 0);
+      lv_obj_align_to(rose_2, circle_1, LV_ALIGN_LEFT_MID, 0, 0);
+
+      lv_obj_t *rose_3 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_3, "E");
+      lv_obj_set_style_text_font(rose_3, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_3, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_3, lv_color_black(), 0);
+      lv_obj_align_to(rose_3, circle_1, LV_ALIGN_RIGHT_MID, 0, 0);
+
+      lv_obj_t *rose_4 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_4, "S");
+      lv_obj_set_style_text_font(rose_4, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_4, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_4, lv_color_black(), 0);
+      lv_obj_align_to(rose_4, circle_1, LV_ALIGN_BOTTOM_MID, 0, 0);
+    }
     break;
   case DIRECTION_TRACK_UP:
-    x = radar_x + radar_w / 2 - radius + tbw/2;
-    y = radar_y + (radar_w - tbh) / 2;
-    sprite->setCursor(x , y);
-    sprite->print("L");
-    x = radar_x + radar_w / 2 + radius - (3 * tbw)/2;
-    y = radar_y + (radar_w - tbh) / 2;
-    sprite->setCursor(x , y);
-    sprite->print("R");
-    x = radar_x + (radar_w - tbw) / 2;
-    y = radar_y + radar_w/2 + radius - tbh;
-    sprite->setCursor(x , y);
-    sprite->print("B");
+    {
+      char cog_text[6];
+      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
 
-    snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
-    tbw = sprite->textWidth(cog_text);
-    tbh = sprite->fontHeight();
-    x = radar_x + (radar_w - tbw) / 2;
-    y = radar_y + radar_w/2 - radius + tbh/2;
-    sprite->setCursor(x , y);
-    sprite->print(cog_text);
+      lv_obj_t *rose_1 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_1, cog_text);
+      lv_obj_set_style_text_font(rose_1, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_1, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_1, lv_color_black(), 0);
+      lv_obj_align_to(rose_1, circle_1, LV_ALIGN_TOP_MID, 0, 0);
+
+      lv_obj_t *rose_2 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_2, "L");
+      lv_obj_set_style_text_font(rose_2, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_2, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_2, lv_color_black(), 0);
+      lv_obj_align_to(rose_2, circle_1, LV_ALIGN_LEFT_MID, 0, 0);
+
+      lv_obj_t *rose_3 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_3, "R");
+      lv_obj_set_style_text_font(rose_3, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_3, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_3, lv_color_black(), 0);
+      lv_obj_align_to(rose_3, circle_1, LV_ALIGN_RIGHT_MID, 0, 0);
+
+      lv_obj_t *rose_4 = lv_label_create(lv_scr_act());
+      lv_label_set_text(rose_4, "B");
+      lv_obj_set_style_text_font(rose_4, &lv_font_montserrat_24, 0);
+      lv_obj_set_style_text_color(rose_4, lv_palette_main(LV_PALETTE_GREEN), 0);
+      lv_obj_set_style_bg_color(rose_4, lv_color_black(), 0);
+      lv_obj_align_to(rose_4, circle_1, LV_ALIGN_BOTTOM_MID, 0, 0);
+    }
 #if 0
     sprite->drawRoundRect( x - 2, y - tbh - 2,
                             tbw + 8, tbh + 6,
@@ -252,6 +247,59 @@ void TFT_radar_loop()
     break;
   }
 
+  const char *scale_lbl_1_txt;
+
+  if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
+    scale_lbl_1_txt = TFT_zoom == ZOOM_LOWEST ? "10 KM" :
+                      TFT_zoom == ZOOM_LOW    ? " 5 KM" :
+                      TFT_zoom == ZOOM_MEDIUM ? " 2 KM" :
+                      TFT_zoom == ZOOM_HIGH   ? " 1 KM" : "";
+  } else { /* TODO */
+    scale_lbl_1_txt = TFT_zoom == ZOOM_LOWEST ? "10 NM" :
+                      TFT_zoom == ZOOM_LOW    ? " 5 NM" :
+                      TFT_zoom == ZOOM_MEDIUM ? " 2 NM" :
+                      TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "";
+  }
+
+  lv_obj_t *pad_1 = lv_obj_create(lv_scr_act());
+  lv_obj_set_size(pad_1, 80, 30);
+  lv_obj_set_pos(pad_1, (radar_w * 8) / 10, (radar_w * 8) / 10);
+  lv_obj_invalidate(pad_1);
+
+  lv_obj_t *scale_lbl_1 = lv_label_create(lv_scr_act());
+  lv_label_set_text(scale_lbl_1, scale_lbl_1_txt);
+  lv_obj_set_style_text_font(scale_lbl_1, &lv_font_montserrat_24, 0);
+  lv_obj_set_style_text_color(scale_lbl_1, lv_palette_main(LV_PALETTE_GREEN), 0);
+  lv_obj_set_pos(scale_lbl_1, (radar_w * 8) / 10, (radar_w * 8) / 10);
+
+  const char *scale_lbl_2_txt;
+
+  if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
+    scale_lbl_2_txt = TFT_zoom == ZOOM_LOWEST ? " 5 KM" :
+                      TFT_zoom == ZOOM_LOW    ? "2.5 K" :
+                      TFT_zoom == ZOOM_MEDIUM ? " 1 KM" :
+                      TFT_zoom == ZOOM_HIGH   ? "500 M" : "";
+  } else { /* TODO */
+    scale_lbl_2_txt = TFT_zoom == ZOOM_LOWEST ? "10 NM" :
+                      TFT_zoom == ZOOM_LOW    ? " 5 NM" :
+                      TFT_zoom == ZOOM_MEDIUM ? " 2 NM" :
+                      TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "";
+  }
+
+  lv_obj_t *pad_2 = lv_obj_create(lv_scr_act());
+  lv_obj_set_size(pad_2, 80, 30);
+  lv_obj_set_pos(pad_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
+  lv_obj_invalidate(pad_2);
+
+  lv_obj_t *scale_lbl_2 = lv_label_create(lv_scr_act());
+  lv_label_set_text(scale_lbl_2, scale_lbl_2_txt);
+  lv_obj_set_style_text_font(scale_lbl_2, &lv_font_montserrat_24, 0);
+  lv_obj_set_style_text_color(scale_lbl_2, lv_palette_main(LV_PALETTE_GREEN), 0);
+  lv_obj_set_pos(scale_lbl_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
+
+  lvgl_port_unlock();
+
+#if 0
   sprite->setTextColor(TFT_WHITE, TFT_BLACK);
   x = radar_x;
   y = radar_y + radar_w - tbh;

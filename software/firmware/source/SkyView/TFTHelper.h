@@ -38,8 +38,6 @@ byte TFT_setup();
 void TFT_loop();
 void TFT_fini();
 
-void TFT_Clear_Screen();
-void TFT_Message(const char *, const char *);
 void TFT_Up();
 void TFT_Down();
 

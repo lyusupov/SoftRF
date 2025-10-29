@@ -42,7 +42,6 @@ const char TFT_SkyView_text7 [] = "Saver";
 const char TFT_SkyView_text8 [] = "VERSION " SKYVIEW_FIRMWARE_VERSION;
 
 unsigned long TFT_TimeMarker = 0;
-bool TFT_display_frontpage = false;
 
 static int TFT_view_mode = 0;
 bool TFT_vmode_updated = true;
@@ -184,47 +183,6 @@ void TFT_loop()
 void TFT_fini()
 {
 
-}
-
-void TFT_Clear_Screen()
-{
-  lvgl_port_lock(-1);
-
-  lv_obj_clean(lv_scr_act());
-
-  lvgl_port_unlock();
-}
-
-void TFT_Message(const char *msg1, const char *msg2)
-{
-  int16_t  tbx, tby;
-  uint16_t tbw, tbh;
-  uint16_t x, y;
-
-  if (msg1 != NULL && strlen(msg1) != 0) {
-#if 0
-    tft->setTextFont(4);
-    tft->setTextSize(2);
-
-    tft->fillScreen(TFT_NAVY);
-
-    tbw = tft->textWidth(msg1);
-    tbh = tft->fontHeight();
-    x = (tft->width() - tbw) / 2;
-    y = msg2 == NULL ? (tft->height() - tbh) / 2 : tft->height() / 2 - tbh;
-    tft->setCursor(x, y);
-    tft->print(msg1);
-#endif
-    if (msg2 != NULL && strlen(msg2) != 0) {
-#if 0
-      tbw = tft->textWidth(msg2);
-      x = (tft->width() - tbw) / 2;
-      y = tft->height() / 2;
-      tft->setCursor(x, y);
-      tft->print(msg2);
-#endif
-    }
-  }
 }
 
 void TFT_Up()
