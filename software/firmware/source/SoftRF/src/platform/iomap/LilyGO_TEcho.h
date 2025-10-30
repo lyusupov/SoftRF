@@ -98,3 +98,7 @@
 /* NFC */
 #define SOC_GPIO_PIN_NFC_ANT1           _PINNUM(0,  9) // P0.09
 #define SOC_GPIO_PIN_NFC_ANT2           _PINNUM(0, 10) // P0.10
+
+/* T-Echo Plus */
+#define SOC_GPIO_PIN_MOTOR_EN           _PINNUM(0,  8) // P0.08
+#define SOC_GPIO_PIN_TECHO_BUZZER       _PINNUM(0,  6) // P0.06

@@ -77,6 +77,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_0,     /* 20-8-6 */
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
+  NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
   NRF52_LILYGO_TULTIMA,
   NRF52_SEEED_T1000E,
   NRF52_HELTEC_T114,
@@ -334,6 +335,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E  ? SOC_GPIO_PIN_T1000_BUZZER : \
                                nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER    : \
                                nRF52_board == NRF52_SEEED_WIO_L1  ? SOC_GPIO_PIN_L1_BUZZER    : \
+                               nRF52_board == NRF52_LILYGO_TECHO_PLUS ? SOC_GPIO_PIN_TECHO_BUZZER : \
                                hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \
                                hw_info.revision == 1 ? SOC_GPIO_PIN_TECHO_REV_1_DIO0 : \
                                hw_info.revision == 2 ? SOC_GPIO_PIN_TECHO_REV_2_DIO0 : \
