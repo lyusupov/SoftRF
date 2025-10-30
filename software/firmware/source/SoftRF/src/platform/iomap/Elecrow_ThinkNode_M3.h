@@ -51,6 +51,8 @@
 #define SOC_GPIO_PIN_M3_BATTERY   _PINNUM(0,  5) // P0.05
 #define SOC_GPIO_PIN_M3_BAT_EN    _PINNUM(0, 17) // P0.17
 
+#define SOC_ADC_M3_VOLTAGE_DIV    (1.75F)
+
 /* digital input */
 #define SOC_GPIO_PIN_M3_VBAT_SEN  _PINNUM(1,  0) // P1.00
 #define SOC_GPIO_PIN_M3_VUSB_SEN  _PINNUM(0, 31) // P0.31

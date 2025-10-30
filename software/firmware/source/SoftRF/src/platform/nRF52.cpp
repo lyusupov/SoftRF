@@ -3719,11 +3719,11 @@ static float nRF52_Battery_param(uint8_t param)
           break;
         case NRF52_ELECROW_TN_M3:
           bat_adc_pin = SOC_GPIO_PIN_M3_BATTERY;
-          mult        = SOC_ADC_VOLTAGE_DIV; /* TBD */
+          mult        = SOC_ADC_M3_VOLTAGE_DIV;
           break;
         case NRF52_ELECROW_TN_M6:
           bat_adc_pin = SOC_GPIO_PIN_M6_BATTERY;
-          mult        = SOC_ADC_VOLTAGE_DIV;
+          mult        = SOC_ADC_VOLTAGE_DIV; /* TBD */
           break;
         case NRF52_SEEED_WIO_L1:
           bat_adc_pin = SOC_GPIO_PIN_L1_BATTERY;
