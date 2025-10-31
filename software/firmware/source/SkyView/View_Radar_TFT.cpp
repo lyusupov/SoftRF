@@ -297,14 +297,7 @@ void TFT_radar_loop()
   lv_obj_set_style_text_color(scale_lbl_2, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_pos(scale_lbl_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
 
-  lvgl_port_unlock();
-
 #if 0
-  sprite->setTextColor(TFT_WHITE, TFT_BLACK);
-  x = radar_x;
-  y = radar_y + radar_w - tbh;
-  sprite->setCursor(x, y);
-
   if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
     sprite->print(TFT_zoom == ZOOM_LOWEST ? "20 KM" :
                   TFT_zoom == ZOOM_LOW    ? "10 KM" :
@@ -316,10 +309,6 @@ void TFT_radar_loop()
                   TFT_zoom == ZOOM_MEDIUM ? " 2 NM" :
                   TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "");
   }
-
-  tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
-  sprite->pushSprite(0, 0);
-  sprite->deleteSprite();
 #endif
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
@@ -359,32 +348,49 @@ void TFT_radar_loop()
         break;
       }
 
-#if 0
       int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
       int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
 
-      uint32_t color = Container[i].AlarmLevel == ALARM_LEVEL_URGENT ? TFT_RED :
-                      (Container[i].AlarmLevel == ALARM_LEVEL_IMPORTANT ?
-                       TFT_YELLOW : TFT_GREEN);
+      lv_color_t color = Container[i].AlarmLevel == ALARM_LEVEL_URGENT ?
+                         lv_palette_main(LV_PALETTE_RED) :
+                        (Container[i].AlarmLevel == ALARM_LEVEL_IMPORTANT ?
+                         lv_palette_main(LV_PALETTE_YELLOW) :
+                         lv_palette_main(LV_PALETTE_GREEN));
+
+      static lv_point_t triangle_down_pts[] = { {0,0}, {20,0}, {10,20}, {0,0} };
+      static lv_point_t triangle_up_pts[] = { {0,20}, {20,20}, {10,0}, {0,20} };
+
+      static lv_style_t style_line;
+      lv_style_init(&style_line);
+      lv_style_set_line_width(&style_line, 4);
+      lv_style_set_line_color(&style_line, color);
+      lv_style_set_line_rounded(&style_line, false);
 
       if        (Container[i].RelativeVertical >   TFT_RADAR_V_THRESHOLD) {
-        tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y + 3,
-                          radar_center_x + x    , radar_center_y - y - 5,
-                          radar_center_x + x + 4, radar_center_y - y + 3,
-                          color);
+        lv_obj_t * triangle_up;
+        triangle_up = lv_line_create(lv_scr_act());
+        lv_obj_set_pos(triangle_up, radar_w / 2 + x - 10, radar_w / 2 + y - 10);
+        lv_line_set_points(triangle_up, triangle_up_pts, 4);
+        lv_obj_add_style(triangle_up, &style_line, 0);
       } else if (Container[i].RelativeVertical < - TFT_RADAR_V_THRESHOLD) {
-        tft->fillTriangle(radar_center_x + x - 4, radar_center_y - y - 3,
-                          radar_center_x + x    , radar_center_y - y + 5,
-                          radar_center_x + x + 4, radar_center_y - y - 3,
-                          color);
+        lv_obj_t * triangle_down;
+        triangle_down = lv_line_create(lv_scr_act());
+        lv_obj_set_pos(triangle_down, radar_w / 2 + x - 10, radar_w / 2 + y - 10);
+        lv_line_set_points(triangle_down, triangle_down_pts, 4);
+        lv_obj_add_style(triangle_down, &style_line, 0);
       } else {
-        tft->fillCircle(radar_center_x + x,
-                        radar_center_y - y,
-                        5, color);
+        lv_obj_t *circle_3 = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(circle_3, 20, 20);
+        lv_obj_set_pos(circle_3, radar_w / 2 + x - 10, radar_w / 2 + y - 10);
+        lv_obj_set_style_radius(circle_3, LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_border_color(circle_3, color, 0);
+        lv_obj_set_style_border_width(circle_3, 4, 0);
+        lv_obj_set_style_bg_color(circle_3, lv_color_black(), 0);
       }
-#endif
     }
   }
+
+  lvgl_port_unlock();
 }
 
 void TFT_radar_zoom()

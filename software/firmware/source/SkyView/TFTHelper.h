@@ -26,6 +26,8 @@
 
 #define isTimeToDisplay()       (millis() - TFT_TimeMarker > 1000)
 
+#define TFT_RADAR_V_THRESHOLD   50      /* metres */
+
 enum {
   NO_GESTURE,
   SWIPE_LEFT,
