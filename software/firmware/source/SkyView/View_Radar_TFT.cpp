@@ -59,7 +59,6 @@ void TFT_radar_loop()
 
   uint16_t radar_center_x = radar_w / 2;
   uint16_t radar_center_y = radar_y + radar_w / 2;
-  uint16_t radius = radar_w / 2 - 1;
 
   if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
     switch(TFT_zoom)
@@ -348,8 +347,8 @@ void TFT_radar_loop()
         break;
       }
 
-      int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
-      int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
+      int16_t x = ((int32_t) rel_x * (int32_t) radar_w / 2) / divider;
+      int16_t y = ((int32_t) rel_y * (int32_t) radar_w / 2) / divider;
 
       lv_color_t color = Container[i].AlarmLevel == ALARM_LEVEL_URGENT ?
                          lv_palette_main(LV_PALETTE_RED) :

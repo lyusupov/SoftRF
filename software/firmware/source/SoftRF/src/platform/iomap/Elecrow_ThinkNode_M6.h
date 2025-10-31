@@ -1,7 +1,7 @@
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_M6_RX   SOC_UNUSED_PIN // TBD
-#define SOC_GPIO_PIN_CONS_M6_TX   SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_CONS_M6_RX   _PINNUM(0, 22) // P0.22
+#define SOC_GPIO_PIN_CONS_M6_TX   _PINNUM(0, 24) // P0.24
 
 /* L76K */
 #define SOC_GPIO_PIN_GNSS_M6_RX   SOC_UNUSED_PIN // TBD
@@ -24,8 +24,8 @@
 #define SOC_GPIO_PIN_M6_BUSY      _PINNUM(1, 11) // P1.11
 
 /* I2C */
-#define SOC_GPIO_PIN_M6_SDA       SOC_UNUSED_PIN // TBD
-#define SOC_GPIO_PIN_M6_SCL       SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_M6_SDA       _PINNUM(1,  9) // P1.09
+#define SOC_GPIO_PIN_M6_SCL       _PINNUM(0,  8) // P0.08
 
 /* button */
 #define SOC_GPIO_PIN_M6_BUTTON    SOC_UNUSED_PIN // TBD
