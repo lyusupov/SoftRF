@@ -837,7 +837,7 @@ static ep_model_id RP2xxx_EPD_ident()
 
 static ep_model_id RP2xxx_display = EP_UNKNOWN;
 
-static void RP2xxx_EPD_setup()
+static byte RP2xxx_Display_setup(bool splash_screen)
 {
   switch(settings->adapter)
   {
@@ -876,14 +876,47 @@ static void RP2xxx_EPD_setup()
     display->epd2.selectSPI(SPI1, SPISettings(4000000, MSBFIRST, SPI_MODE0));
     break;
   }
+
+  return EPD_setup(splash_screen);
 }
 
-static void RP2xxx_EPD_fini()
+static void RP2xxx_Display_loop()
 {
-
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_loop();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_loop();
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
-static bool RP2xxx_EPD_is_ready()
+static void RP2xxx_Display_fini(const char *msg, bool screen_saver)
+{
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_fini();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_fini(msg, screen_saver);
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+static bool RP2xxx_Display_is_ready()
 {
   return true;
 }
@@ -920,7 +953,7 @@ static void RP2xxx_EPD_Busy_Callback(const void* p)
   yield();
 }
 
-static void RP2xxx_EPD_update(int val)
+static void RP2xxx_Display_update(int val)
 {
   display->epd2.setBusyCallback(RP2xxx_EPD_Busy_Callback);
   EPD_Update_Sync(val);
@@ -1098,10 +1131,10 @@ static void RP2xxx_TTS(char *message)
       }
 
       if (hw_info.display == DISPLAY_EPD_2_7) {
-        while (!SoC->EPD_is_ready()) {yield();}
+        while (!SoC->Display_is_ready()) {yield();}
         EPD_Message("VOICE", "ALERT");
-        SoC->EPD_update(EPD_UPDATE_FAST);
-        while (!SoC->EPD_is_ready()) {yield();}
+        SoC->Display_update(EPD_UPDATE_FAST);
+        while (!SoC->Display_is_ready()) {yield();}
       }
 
       char *word = strtok (message, " ");
@@ -1836,10 +1869,11 @@ const SoC_ops_t RP2xxx_ops = {
   RP2xxx_WiFiUDP_stopAll,
   RP2xxx_Battery_setup,
   RP2xxx_Battery_voltage,
-  RP2xxx_EPD_setup,
-  RP2xxx_EPD_fini,
-  RP2xxx_EPD_is_ready,
-  RP2xxx_EPD_update,
+  RP2xxx_Display_setup,
+  RP2xxx_Display_loop,
+  RP2xxx_Display_fini,
+  RP2xxx_Display_is_ready,
+  RP2xxx_Display_update,
   RP2xxx_WiFi_Receive_UDP,
   RP2xxx_WiFi_clients_count,
   RP2xxx_DB_init,

@@ -104,8 +104,6 @@ byte EPD_setup(bool splash_screen)
 
   EPD_view_mode = settings->vmode;
 
-  SoC->EPD_setup();
-
   if (display) {
 
     display->init();
@@ -264,9 +262,9 @@ void EPD_loop()
     }
 
     if (!EPD_display_frontpage) {
-      if (SoC->EPD_is_ready()) {
+      if (SoC->Display_is_ready()) {
         display->fillScreen(GxEPD_WHITE);
-        SoC->EPD_update(EPD_UPDATE_SLOW);
+        SoC->Display_update(EPD_UPDATE_SLOW);
 
         EPD_display_frontpage = true;
       }
@@ -288,8 +286,6 @@ void EPD_loop()
 
 void EPD_fini(const char *msg, bool screen_saver)
 {
-  SoC->EPD_fini();
-
   if (hw_info.display == DISPLAY_EPD_2_7) {
     int16_t  tbx, tby;
     uint16_t tbw, tbh;

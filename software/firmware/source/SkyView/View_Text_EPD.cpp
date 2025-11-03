@@ -326,7 +326,7 @@ void EPD_text_setup()
 
 void EPD_text_loop()
 {
-  if (isTimeToDisplay() && SoC->EPD_is_ready()) {
+  if (isTimeToDisplay() && SoC->Display_is_ready()) {
 
     bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
                    settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
@@ -351,7 +351,7 @@ void EPD_text_loop()
       EPD_text_Draw_Message(NO_DATA_TEXT, NULL);
     }
 
-    SoC->EPD_update(EPD_UPDATE_FAST);
+    SoC->Display_update(EPD_UPDATE_FAST);
 
     EPDTimeMarker = millis();
   }

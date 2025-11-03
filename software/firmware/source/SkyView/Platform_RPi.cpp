@@ -431,7 +431,7 @@ static float RPi_Battery_voltage()
   return 0.0;  /* TBD */
 }
 
-static void RPi_EPD_setup()
+static byte RPi_Display_setup(bool splash_screen)
 {
   switch (settings->adapter)
   {
@@ -452,19 +452,55 @@ static void RPi_EPD_setup()
 #if defined(USE_LGPIO)
   display->epd2.selectSPI(SPI0, SPISettings(8000000, MSBFIRST, SPI_MODE0));
 #endif /* USE_LGPIO */
+
+  return EPD_setup(splash_screen);
 }
 
-static void RPi_EPD_fini()
+static void RPi_Display_loop()
 {
-
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_loop();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_loop();
+    break;
+  case DISPLAY_OLED_2_4:
+    OLED_loop();
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
-static bool RPi_EPD_is_ready()
+static void RPi_Display_fini(const char *msg, bool screen_saver)
+{
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_fini();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_fini(msg, screen_saver);
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+static bool RPi_Display_is_ready()
 {
   return true;
 }
 
-static void RPi_EPD_update(int val)
+static void RPi_Display_update(int val)
 {
   EPD_Update_Sync(val);
 }
@@ -875,10 +911,11 @@ const SoC_ops_t RPi_ops = {
   NULL,
   RPi_Battery_setup,
   RPi_Battery_voltage,
-  RPi_EPD_setup,
-  RPi_EPD_fini,
-  RPi_EPD_is_ready,
-  RPi_EPD_update,
+  RPi_Display_setup,
+  RPi_Display_loop,
+  RPi_Display_fini,
+  RPi_Display_is_ready,
+  RPi_Display_update,
   RPi_WiFi_Receive_UDP,
   RPi_WiFi_clients_count,
   RPi_DB_init,
@@ -1003,7 +1040,7 @@ int main(int argc, char *argv[])
     Serial.print(F("Intializing E-ink display module (may take up to 10 seconds)... "));
     Serial.flush();
 
-    hw_info.display = EPD_setup(!isSysVinit);
+    hw_info.display = SoC->Display_setup(!isSysVinit);
     if (hw_info.display != DISPLAY_NONE) {
       Serial.println(F(" done."));
     } else {
@@ -1022,7 +1059,7 @@ int main(int argc, char *argv[])
   if (isSysVinit) {
     if (hw_info.display == DISPLAY_EPD_2_7) {
       EPD_text_Draw_Message("PLEASE,", "WAIT");
-      SoC->EPD_update(EPD_UPDATE_SLOW);
+      SoC->Display_update(EPD_UPDATE_SLOW);
     }
 
     SoC->Button_fini();
@@ -1090,17 +1127,7 @@ int main(int argc, char *argv[])
 
     Traffic_loop();
 
-    switch (hw_info.display)
-    {
-    case DISPLAY_EPD_2_7:
-      EPD_loop();
-      break;
-    case DISPLAY_OLED_2_4:
-      OLED_loop();
-      break;
-    default:
-      break;
-    }
+    SoC->Display_loop();
 
     Traffic_ClearExpired();
 
@@ -1121,7 +1148,7 @@ void shutdown(const char *msg)
 
   SoC->DB_fini();
 
-  EPD_fini(msg, screen_saver);
+  SoC->Display_fini(msg, screen_saver);
 
   SoC->Button_fini();
 

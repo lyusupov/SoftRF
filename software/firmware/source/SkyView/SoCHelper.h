@@ -49,10 +49,11 @@ typedef struct SoC_ops_struct {
   void (*WiFiUDP_stopAll)();
   void (*Battery_setup)();
   float (*Battery_voltage)();
-  void (*EPD_setup)();
-  void (*EPD_fini)();
-  bool (*EPD_is_ready)();
-  void (*EPD_update)(int);
+  byte (*Display_setup)(bool);
+  void (*Display_loop)();
+  void (*Display_fini)(const char *, bool);
+  bool (*Display_is_ready)();
+  void (*Display_update)(int);
   size_t (*WiFi_Receive_UDP)(uint8_t *, size_t);
   int  (*WiFi_clients_count)();
   bool (*DB_init)();

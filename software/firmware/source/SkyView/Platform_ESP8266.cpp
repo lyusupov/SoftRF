@@ -123,7 +123,7 @@ static float ESP8266_Battery_voltage()
   return analogRead (SOC_GPIO_PIN_BATTERY) / SOC_A0_VOLTAGE_DIVIDER ;
 }
 
-static void ESP8266_EPD_setup()
+static byte ESP8266_Display_setup(bool splash_screen)
 {
   switch(settings->adapter)
   {
@@ -137,19 +137,52 @@ static void ESP8266_EPD_setup()
 //    display = &epd_nodemcu_T91;
     break;
   }
+
+  return EPD_setup(splash_screen);
 }
 
-static void ESP8266_EPD_fini()
+static void ESP8266_Display_loop()
 {
-
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_loop();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_loop();
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
 }
 
-static bool ESP8266_EPD_is_ready()
+static void ESP8266_Display_fini(const char *msg, bool screen_saver)
+{
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_fini();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_fini(msg, screen_saver);
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+static bool ESP8266_Display_is_ready()
 {
   return true;
 }
 
-static void ESP8266_EPD_update(int val)
+static void ESP8266_Display_update(int val)
 {
   EPD_Update_Sync(val);
 }
@@ -254,10 +287,11 @@ const SoC_ops_t ESP8266_ops = {
   ESP8266_WiFiUDP_stopAll,
   ESP8266_Battery_setup,
   ESP8266_Battery_voltage,
-  ESP8266_EPD_setup,
-  ESP8266_EPD_fini,
-  ESP8266_EPD_is_ready,
-  ESP8266_EPD_update,
+  ESP8266_Display_setup,
+  ESP8266_Display_loop,
+  ESP8266_Display_fini,
+  ESP8266_Display_is_ready,
+  ESP8266_Display_update,
   ESP8266_WiFi_Receive_UDP,
   ESP8266_WiFi_clients_count,
   ESP8266_DB_init,

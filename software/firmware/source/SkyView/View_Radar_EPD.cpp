@@ -473,7 +473,7 @@ void EPD_radar_setup()
 
 void EPD_radar_loop()
 {
-  if (isTimeToDisplay() && SoC->EPD_is_ready()) {
+  if (isTimeToDisplay() && SoC->Display_is_ready()) {
 
     bool hasData = settings->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
                    settings->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
@@ -515,7 +515,7 @@ void EPD_radar_loop()
 
     EPD_Draw_NavBoxes();
 
-    SoC->EPD_update(EPD_UPDATE_FAST);
+    SoC->Display_update(EPD_UPDATE_FAST);
 
     EPDTimeMarker = millis();
   }

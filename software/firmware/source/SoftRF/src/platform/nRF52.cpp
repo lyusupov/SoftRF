@@ -944,6 +944,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_ELECROW_TN_M1:
     case NRF52_NORDIC_PCA10059:
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
@@ -1000,6 +1001,7 @@ static void nRF52_setup()
       possible_devices[MX25R1635F_INDEX].supports_qspi_writes = false;
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
       FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
@@ -1186,6 +1188,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     default:
       Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
@@ -1280,6 +1283,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     default:
       break;
@@ -1325,6 +1329,7 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
       /* Wake up Quectel L76K GNSS */
       digitalWrite(SOC_GPIO_PIN_GNSS_RST, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_RST, OUTPUT);
@@ -1551,6 +1556,7 @@ static void nRF52_setup()
     switch (nRF52_board)
     {
       case NRF52_LILYGO_TECHO_REV_2:
+      case NRF52_LILYGO_TECHO_PLUS:
         Wire.begin();
 
         if (imu_1.setup(MPU9250_ADDRESS)) {
@@ -1678,6 +1684,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     default:
 #if defined(_WIFI_ESP_AT_H_)
@@ -1741,6 +1748,7 @@ static void nRF52_post_init()
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+      nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
       nRF52_board == NRF52_LILYGO_TULTIMA     ||
       nRF52_board == NRF52_ELECROW_TN_M1) {
 
@@ -1806,6 +1814,7 @@ static void nRF52_post_init()
 
     if (nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
         nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+        nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
         nRF52_board == NRF52_LILYGO_TULTIMA) {
       Serial.print(F("BMx280  : "));
       Serial.println(hw_info.baro == BARO_MODULE_BME280AUX ||
@@ -1990,6 +1999,7 @@ static void nRF52_post_init()
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
+      nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
       nRF52_board == NRF52_ELECROW_TN_M1) {
     /* EPD back light on */
     uint8_t bl_state = digitalRead(SOC_GPIO_PIN_EPD_BLGT);
@@ -2204,12 +2214,14 @@ static void nRF52_loop()
 #endif /* EXCLUDE_BHI260 */
 #endif /* EXCLUDE_IMU */
 
-  if ((nRF52_board     == NRF52_SEEED_T1000E   ||
-       nRF52_board     == NRF52_ELECROW_TN_M1  ||
-       nRF52_board     == NRF52_SEEED_WIO_L1)  &&
-      settings->volume != BUZZER_OFF           &&
-      settings->mode   == SOFTRF_MODE_NORMAL   &&
-      nRF52_has_vff    == false                &&
+  if ((nRF52_board     == NRF52_SEEED_T1000E      ||
+       nRF52_board     == NRF52_ELECROW_TN_M1     ||
+       nRF52_board     == NRF52_ELECROW_TN_M3     ||
+       nRF52_board     == NRF52_LILYGO_TECHO_PLUS ||
+       nRF52_board     == NRF52_SEEED_WIO_L1)     &&
+      settings->volume != BUZZER_OFF              &&
+      settings->mode   == SOFTRF_MODE_NORMAL      &&
+      nRF52_has_vff    == false                   &&
       isValidFix()     == true) {
     uint8_t v = settings->volume;
 
@@ -2322,6 +2334,7 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
       digitalWrite(SOC_GPIO_PIN_GNSS_WKE, LOW);
 
       ledOff(SOC_GPIO_LED_TECHO_REV_2_GREEN);
@@ -2508,6 +2521,7 @@ static void nRF52_fini(int reason)
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     default:
       mode_button_pin = SOC_GPIO_PIN_BUTTON;
@@ -2967,6 +2981,7 @@ static void nRF52_SPI_begin()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
     default:
@@ -3015,6 +3030,7 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     case NRF52_ELECROW_TN_M1:
     default:
@@ -3254,6 +3270,7 @@ static byte nRF52_Display_setup()
       case NRF52_LILYGO_TECHO_REV_0:
       case NRF52_LILYGO_TECHO_REV_1:
       case NRF52_LILYGO_TECHO_REV_2:
+      case NRF52_LILYGO_TECHO_PLUS:
       case NRF52_ELECROW_TN_M1:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
@@ -3732,6 +3749,7 @@ static float nRF52_Battery_param(uint8_t param)
         case NRF52_LILYGO_TECHO_REV_0:
         case NRF52_LILYGO_TECHO_REV_1:
         case NRF52_LILYGO_TECHO_REV_2:
+        case NRF52_LILYGO_TECHO_PLUS:
         case NRF52_NORDIC_PCA10059:
         default:
           bat_adc_pin = SOC_GPIO_PIN_BATTERY;
@@ -3867,6 +3885,7 @@ void handleEvent(AceButton* button, uint8_t eventType,
           case NRF52_LILYGO_TECHO_REV_0:
           case NRF52_LILYGO_TECHO_REV_1:
           case NRF52_LILYGO_TECHO_REV_2:
+          case NRF52_LILYGO_TECHO_PLUS:
           case NRF52_NORDIC_PCA10059:
             up_button_pin = SOC_GPIO_PIN_PAD;
           default:
@@ -3937,6 +3956,7 @@ static void nRF52_Button_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
       up_button_pin   = SOC_GPIO_PIN_PAD;
     default:
@@ -3991,6 +4011,7 @@ static void nRF52_Button_loop()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     case NRF52_LILYGO_TULTIMA:
     case NRF52_ELECROW_TN_M1:
@@ -4010,6 +4031,7 @@ static void nRF52_Button_fini()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
       detachInterrupt(digitalPinToInterrupt(SOC_GPIO_PIN_PAD));
       break;

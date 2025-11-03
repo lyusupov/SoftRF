@@ -1174,134 +1174,6 @@ static TaskHandle_t EPD_Task_Handle = NULL;
 
 static ep_model_id ESP32_display = EP_UNKNOWN;
 
-static void ESP32_EPD_setup()
-{
-  switch(settings->adapter)
-  {
-  case ADAPTER_WAVESHARE_ESP32:
-  case ADAPTER_WAVESHARE_PICO_2_7:
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-  case ADAPTER_WAVESHARE_PI_HAT_2_7:
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
-    if (ESP32_display == EP_UNKNOWN) {
-      ESP32_display = ESP32_EPD_ident();
-    }
-
-    switch (ESP32_display)
-    {
-    case EP_GDEY027T91:
-      display = &epd_waveshare_T91;
-      break;
-    case EP_GDEW027W3:
-    default:
-      display = &epd_waveshare_W3;
-      break;
-    }
-
-    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
-    SPI.begin(SOC_GPIO_PIN_SCK_WS,
-              SOC_GPIO_PIN_MISO_WS,
-              SOC_GPIO_PIN_MOSI_WS,
-              SOC_GPIO_PIN_SS_WS);
-
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-    {
-      esp_ldo_channel_handle_t ldo_sdio = NULL;
-      esp_ldo_channel_config_t ldo_sdio_config = {
-          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
-          .voltage_mv = 3300,
-      };
-      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
-    }
-#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
-
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                  SOC_GPIO_PIN_SD_D0,
-                  SOC_GPIO_PIN_SD_CMD,
-                  SOC_GPIO_PIN_SD_D3);
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
-    break;
-  case ADAPTER_WAVESHARE_PICO_2_7_V2:
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
-    display = &epd_waveshare_T91;
-    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
-    SPI.begin(SOC_GPIO_PIN_SCK_WS,
-              SOC_GPIO_PIN_MISO_WS,
-              SOC_GPIO_PIN_MOSI_WS,
-              SOC_GPIO_PIN_SS_WS);
-
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-    {
-      esp_ldo_channel_handle_t ldo_sdio = NULL;
-      esp_ldo_channel_config_t ldo_sdio_config = {
-          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
-          .voltage_mv = 3300,
-      };
-      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
-    }
-#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
-
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                  SOC_GPIO_PIN_SD_D0,
-                  SOC_GPIO_PIN_SD_CMD,
-                  SOC_GPIO_PIN_SD_D3);
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
-    break;
-#if defined(BUILD_SKYVIEW_HD)
-  case ADAPTER_TTGO_T5_4_7:
-    display = NULL;
-    break;
-#endif /* BUILD_SKYVIEW_HD */
-  case ADAPTER_TTGO_T5S:
-  default:
-    display = &epd_ttgo_t5s_W3;
-    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
-
-    SPI.begin(SOC_GPIO_PIN_SCK_T5S,
-              SOC_GPIO_PIN_MISO_T5S,
-              SOC_GPIO_PIN_MOSI_T5S,
-              SOC_GPIO_PIN_SS_T5S);
-
-#if defined(CONFIG_IDF_TARGET_ESP32)
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_SD_PIN_SCK_T5S,
-                  SOC_SD_PIN_MISO_T5S,
-                  SOC_SD_PIN_MOSI_T5S,
-                  SOC_SD_PIN_SS_T5S);
-#endif /* CONFIG_IDF_TARGET_ESP32 */
-    break;
-  }
-
-  xTaskCreateUniversal(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, 1,
-                       &EPD_Task_Handle, CONFIG_ARDUINO_RUNNING_CORE);
-}
-
-static void ESP32_EPD_fini()
-{
-  if( EPD_Task_Handle != NULL )
-  {
-    vTaskDelete( EPD_Task_Handle );
-  }
-}
-
-static bool ESP32_EPD_is_ready()
-{
-//  return true;
-  return (EPD_task_command == EPD_UPDATE_NONE);
-}
-
-static void ESP32_EPD_update(int val)
-{
-//  EPD_Update_Sync(val);
-  EPD_task_command = val;
-}
-
 #if defined(USE_TFT)
 
 #include <esp_display_panel.hpp>
@@ -1417,7 +1289,7 @@ const BoardConfig Board_Config_WTP4C5MP07S = {
     },
 };
 
-static void ESP32_TFT_setup()
+static byte ESP32_Display_setup(bool splash_screen)
 {
   panel = new Board(Board_Config_WTP4C5MP07S);
   panel->init();
@@ -1447,21 +1319,204 @@ static void ESP32_TFT_setup()
                 SOC_GPIO_PIN_SD_D0,
                 SOC_GPIO_PIN_SD_CMD,
                 SOC_GPIO_PIN_SD_D3);
+
+  return TFT_setup();
 }
 
-static void ESP32_TFT_fini()
+#else
+
+static byte ESP32_Display_setup(bool splash_screen)
 {
+  switch(settings->adapter)
+  {
+  case ADAPTER_WAVESHARE_ESP32:
+  case ADAPTER_WAVESHARE_PICO_2_7:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+    if (ESP32_display == EP_UNKNOWN) {
+      ESP32_display = ESP32_EPD_ident();
+    }
+
+    switch (ESP32_display)
+    {
+    case EP_GDEY027T91:
+      display = &epd_waveshare_T91;
+      break;
+    case EP_GDEW027W3:
+    default:
+      display = &epd_waveshare_W3;
+      break;
+    }
+
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+    SPI.begin(SOC_GPIO_PIN_SCK_WS,
+              SOC_GPIO_PIN_MISO_WS,
+              SOC_GPIO_PIN_MOSI_WS,
+              SOC_GPIO_PIN_SS_WS);
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    {
+      esp_ldo_channel_handle_t ldo_sdio = NULL;
+      esp_ldo_channel_config_t ldo_sdio_config = {
+          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+          .voltage_mv = 3300,
+      };
+      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+    }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                  SOC_GPIO_PIN_SD_D0,
+                  SOC_GPIO_PIN_SD_CMD,
+                  SOC_GPIO_PIN_SD_D3);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+    break;
+  case ADAPTER_WAVESHARE_PICO_2_7_V2:
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_WAVESHARE_PI_HAT_2_7_V2:
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+    display = &epd_waveshare_T91;
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+    SPI.begin(SOC_GPIO_PIN_SCK_WS,
+              SOC_GPIO_PIN_MISO_WS,
+              SOC_GPIO_PIN_MOSI_WS,
+              SOC_GPIO_PIN_SS_WS);
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    {
+      esp_ldo_channel_handle_t ldo_sdio = NULL;
+      esp_ldo_channel_config_t ldo_sdio_config = {
+          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+          .voltage_mv = 3300,
+      };
+      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+    }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                  SOC_GPIO_PIN_SD_D0,
+                  SOC_GPIO_PIN_SD_CMD,
+                  SOC_GPIO_PIN_SD_D3);
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+    break;
+#if defined(BUILD_SKYVIEW_HD)
+  case ADAPTER_TTGO_T5_4_7:
+    display = NULL;
+    break;
+#endif /* BUILD_SKYVIEW_HD */
+  case ADAPTER_TTGO_T5S:
+  default:
+    display = &epd_ttgo_t5s_W3;
+    display->epd2.selectSPI(SPI, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+
+    SPI.begin(SOC_GPIO_PIN_SCK_T5S,
+              SOC_GPIO_PIN_MISO_T5S,
+              SOC_GPIO_PIN_MOSI_T5S,
+              SOC_GPIO_PIN_SS_T5S);
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_SD_PIN_SCK_T5S,
+                  SOC_SD_PIN_MISO_T5S,
+                  SOC_SD_PIN_MOSI_T5S,
+                  SOC_SD_PIN_SS_T5S);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
+    break;
+  }
+
+  xTaskCreateUniversal(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, 1,
+                       &EPD_Task_Handle, CONFIG_ARDUINO_RUNNING_CORE);
+
+  return EPD_setup(splash_screen);
 }
 
-static bool ESP32_TFT_is_ready()
+#endif /* USE_TFT */
+
+static void ESP32_Display_loop()
 {
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_loop();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    EPD_loop();
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+static void ESP32_Display_fini(const char *msg, bool screen_saver)
+{
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    TFT_fini();
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+    if( EPD_Task_Handle != NULL )
+    {
+      vTaskDelete( EPD_Task_Handle );
+    }
+
+    EPD_fini(msg, screen_saver);
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+static bool ESP32_Display_is_ready()
+{
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    /* TBD */
+    break;
+#endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+//    return true;
+    return (EPD_task_command == EPD_UPDATE_NONE);
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+
   return true;
 }
 
-static void ESP32_TFT_update(int val)
+static void ESP32_Display_update(int val)
 {
-}
+  switch (hw_info.display)
+  {
+#if defined(USE_TFT)
+  case DISPLAY_TFT_7_0:
+    /* TBD */
+    break;
 #endif /* USE_TFT */
+  case DISPLAY_EPD_2_7:
+//    EPD_Update_Sync(val);
+    EPD_task_command = val;
+    break;
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
 
 static size_t ESP32_WiFi_Receive_UDP(uint8_t *buf, size_t max_size)
 {
@@ -2016,10 +2071,10 @@ static void ESP32_TTS(char *message)
         return;
 
       if (hw_info.display == DISPLAY_EPD_2_7) {
-        while (!SoC->EPD_is_ready()) {yield();}
+        while (!SoC->Display_is_ready()) {yield();}
         EPD_Message("VOICE", "ALERT");
-        SoC->EPD_update(EPD_UPDATE_FAST);
-        while (!SoC->EPD_is_ready()) {yield();}
+        SoC->Display_update(EPD_UPDATE_FAST);
+        while (!SoC->Display_is_ready()) {yield();}
       }
 
       bool wdt_status = loopTaskWDTEnabled;
@@ -2408,17 +2463,11 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WiFiUDP_stopAll,
   ESP32_Battery_setup,
   ESP32_Battery_voltage,
-#if defined(USE_TFT)
-  ESP32_TFT_setup,
-  ESP32_TFT_fini,
-  ESP32_TFT_is_ready,
-  ESP32_TFT_update,
-#else
-  ESP32_EPD_setup,
-  ESP32_EPD_fini,
-  ESP32_EPD_is_ready,
-  ESP32_EPD_update,
-#endif /* USE_TFT */
+  ESP32_Display_setup,
+  ESP32_Display_loop,
+  ESP32_Display_fini,
+  ESP32_Display_is_ready,
+  ESP32_Display_update,
   ESP32_WiFi_Receive_UDP,
   ESP32_WiFi_clients_count,
   ESP32_DB_init,

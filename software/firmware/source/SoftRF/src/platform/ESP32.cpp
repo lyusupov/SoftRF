@@ -166,7 +166,9 @@ const char *Hardware_Rev[] = {
 static bool screen_saver = false;
 #endif /* USE_EPAPER */
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
 AXP20X_Class axp_xxx;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 XPowersPMU   axp_2xxx;
 
 static int esp32_board = ESP32_DEVKIT; /* default */
@@ -2657,6 +2659,7 @@ static void ESP32_loop()
 
   switch (hw_info.pmu)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
   case PMU_AXP192:
   case PMU_AXP202:
 
@@ -2705,6 +2708,7 @@ static void ESP32_loop()
       }
     }
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
   case PMU_AXP2101:
     portENTER_CRITICAL_ISR(&PMU_mutex);
@@ -2994,7 +2998,7 @@ static void ESP32_fini(int reason)
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
-
+#if defined(CONFIG_IDF_TARGET_ESP32)
     axp_xxx.setChgLEDMode(AXP20X_LED_OFF);
 
     axp_xxx.setPowerOutPut(AXP202_LDO2, AXP202_OFF); // BL
@@ -3003,15 +3007,15 @@ static void ESP32_fini(int reason)
 
     delay(20);
 
-#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_TWATCH_PMU_IRQ,
                                  ESP_EXT1_WAKEUP_ALL_LOW);
-#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
              hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
 
     switch (hw_info.pmu)
     {
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case PMU_AXP192:
       axp_xxx.setChgLEDMode(AXP20X_LED_OFF);
 
@@ -3073,6 +3077,7 @@ static void ESP32_fini(int reason)
       axp_xxx.shutdown();
 #endif /* PMK2_SLEEP_MODE */
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
     case PMU_AXP2101:
       axp_2xxx.setChargingLedMode(XPOWERS_CHG_LED_OFF);
@@ -5344,12 +5349,14 @@ static float ESP32_Battery_param(uint8_t param)
 
     switch (hw_info.pmu)
     {
+#if defined(CONFIG_IDF_TARGET_ESP32)
     case PMU_AXP192:
     case PMU_AXP202:
       if (axp_xxx.isBatteryConnect()) {
         voltage = axp_xxx.getBattVoltage();
       }
       break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 
     case PMU_AXP2101:
       if (axp_2xxx.isBatteryConnect()) {

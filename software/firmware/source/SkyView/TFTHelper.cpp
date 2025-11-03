@@ -78,8 +78,6 @@ byte TFT_setup()
 
   TFT_view_mode = VIEW_MODE_STATUS;
 
-  SoC->EPD_setup();
-
   if (panel) {
     lvgl_port_init(panel->getLCD(), panel->getTouch());
 
