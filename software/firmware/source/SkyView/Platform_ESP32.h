@@ -243,6 +243,9 @@
 #define SOC_GPIO_PIN_LCD_UPDN 26
 #define SOC_GPIO_PIN_LCD_SHLR 27
 
+// LilyGO T-Display-P4 HI8561 TFT display backlight
+#define SOC_GPIO_PIN_TDP4_BL  51
+
 //#define USE_TFT
 
 // GT911 I2C touch sensor

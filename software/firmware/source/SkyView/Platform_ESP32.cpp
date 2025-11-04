@@ -1291,6 +1291,208 @@ const BoardConfig Board_Config_WTP4C5MP07S = {
         nullptr,
     },
 };
+
+const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
+    .name = "T-DISPLAY-P4-TFT",
+
+    .lcd = BoardConfig::LCD_Config{
+
+        .bus_config = BusDSI::Config{
+            .host = BusDSI::HostPartialConfig{
+                .num_data_lanes = 2,
+                .lane_bit_rate_mbps = 1000,
+            },
+            .refresh_panel = BusDSI::RefreshPanelPartialConfig{
+                .dpi_clock_freq_mhz = 52,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .h_size = 1168,
+                .v_size = 540,
+                .hsync_pulse_width = 10,
+                .hsync_back_porch = 160,
+                .hsync_front_porch = 160,
+                .vsync_pulse_width = 1,
+                .vsync_back_porch = 23,
+                .vsync_front_porch = 12,
+            },
+            .phy_ldo = BusDSI::PHY_LDO_PartialConfig{
+                .chan_id = 3
+            },
+        },
+        .device_name = TO_STR(HI8561),
+        .device_config = {
+            .device = LCD::DevicePartialConfig{
+                .reset_gpio_num = -1, /* XL 2 */
+                .rgb_ele_order = 0,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .flags_reset_active_high = 1, /* TBD */
+            },
+            .vendor = LCD::VendorPartialConfig{
+                .hor_res = 1168,
+                .ver_res = 540,
+            },
+        },
+        .pre_process = {
+            .invert_color = 0,
+        },
+    },
+
+    .touch = BoardConfig::TouchConfig{
+        .bus_config = BusI2C::Config{
+            .host_id = 0,
+            .host = BusI2C::HostPartialConfig{
+                .sda_io_num = SOC_GPIO_PIN_SDA,
+                .scl_io_num = SOC_GPIO_PIN_SCL,
+                .sda_pullup_en = 0,
+                .scl_pullup_en = 0,
+                .clk_speed = 400 * 1000,
+            },
+            .control_panel = BusI2C::ControlPanelFullConfig
+                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(HI8561),
+        },
+        .device_name = TO_STR(HI8561),
+        .device_config = {
+            .device = Touch::DevicePartialConfig{
+                .x_max = 1168,
+                .y_max = 540,
+                .rst_gpio_num = -1, /* XL 3 */
+                .int_gpio_num = -1, /* XL 4 */
+                .levels_reset = 0,
+                .levels_interrupt = 0,
+            },
+        },
+        .pre_process = {
+            .swap_xy = 0,
+            .mirror_x = 1,
+            .mirror_y = 1,
+        },
+    },
+
+    .backlight = BoardConfig::BacklightConfig{
+        .config = BacklightSwitchGPIO::Config{
+            .io_num = SOC_GPIO_PIN_TDP4_BL,
+            .on_level = 1,
+        },
+        .pre_process = {
+            .idle_off = 0,
+        },
+    },
+
+    .stage_callbacks = {
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+    },
+};
+
+const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
+    .name = "T-DISPLAY-P4-AMOLED",
+
+    .lcd = BoardConfig::LCD_Config{
+
+        .bus_config = BusDSI::Config{
+            .host = BusDSI::HostPartialConfig{
+                .num_data_lanes = 2,
+                .lane_bit_rate_mbps = 1000,
+            },
+            .refresh_panel = BusDSI::RefreshPanelPartialConfig{
+                .dpi_clock_freq_mhz = 52,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .h_size = 1232,
+                .v_size = 568,
+                .hsync_pulse_width = 10,
+                .hsync_back_porch = 160,
+                .hsync_front_porch = 160,
+                .vsync_pulse_width = 1,
+                .vsync_back_porch = 23,
+                .vsync_front_porch = 12,
+            },
+            .phy_ldo = BusDSI::PHY_LDO_PartialConfig{
+                .chan_id = 3
+            },
+        },
+        .device_name = TO_STR(RM69A10),
+        .device_config = {
+            .device = LCD::DevicePartialConfig{
+                .reset_gpio_num = -1, /* XL 2 */
+                .rgb_ele_order = 0,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .flags_reset_active_high = 1, /* TBD */
+            },
+            .vendor = LCD::VendorPartialConfig{
+                .hor_res = 1232,
+                .ver_res = 568,
+            },
+        },
+        .pre_process = {
+            .invert_color = 0,
+        },
+    },
+
+    .touch = BoardConfig::TouchConfig{
+        .bus_config = BusI2C::Config{
+            .host_id = 0,
+            .host = BusI2C::HostPartialConfig{
+                .sda_io_num = SOC_GPIO_PIN_SDA,
+                .scl_io_num = SOC_GPIO_PIN_SCL,
+                .sda_pullup_en = 0,
+                .scl_pullup_en = 0,
+                .clk_speed = 400 * 1000,
+            },
+            .control_panel = BusI2C::ControlPanelFullConfig
+                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(GT9895),
+        },
+        .device_name = TO_STR(GT9895),
+        .device_config = {
+            .device = Touch::DevicePartialConfig{
+                .x_max = 1232,
+                .y_max = 568,
+                .rst_gpio_num = -1, /* XL 3 */
+                .int_gpio_num = -1, /* XL 4 */
+                .levels_reset = 0,
+                .levels_interrupt = 0,
+            },
+        },
+        .pre_process = {
+            .swap_xy = 0,
+            .mirror_x = 1,
+            .mirror_y = 1,
+        },
+    },
+
+    .backlight = BoardConfig::BacklightConfig{
+        .config = BacklightSwitchGPIO::Config{
+            .io_num = -1, /* AMOLED */
+            .on_level = 1,
+        },
+        .pre_process = {
+            .idle_off = 0,
+        },
+    },
+
+    .stage_callbacks = {
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+    },
+};
 #endif /* USE_TFT */
 
 static byte ESP32_Display_setup(bool splash_screen)
