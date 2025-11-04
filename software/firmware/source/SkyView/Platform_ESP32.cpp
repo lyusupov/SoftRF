@@ -40,6 +40,9 @@
 
 #include "SoCHelper.h"
 #include "EPDHelper.h"
+#if defined(USE_TFT)
+#include "TFTHelper.h"
+#endif /* USE_TFT */
 #include "EEPROMHelper.h"
 #include "WiFiHelper.h"
 #include "BluetoothHelper.h"
@@ -1288,42 +1291,7 @@ const BoardConfig Board_Config_WTP4C5MP07S = {
         nullptr,
     },
 };
-
-static byte ESP32_Display_setup(bool splash_screen)
-{
-  panel = new Board(Board_Config_WTP4C5MP07S);
-  panel->init();
-
-#if LVGL_PORT_AVOID_TEARING_MODE
-  auto lcd = panel->getLCD();
-  lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
-#endif
-
-  static_cast<esp_panel::drivers::BusI2C *>(panel->getTouch()->getBus())->configI2C_HostSkipInit();
-
-  assert(panel->begin());
-
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-  {
-    esp_ldo_channel_handle_t ldo_sdio = NULL;
-    esp_ldo_channel_config_t ldo_sdio_config = {
-        .chan_id = BOARD_SDMMC_POWER_CHANNEL,
-        .voltage_mv = 3300,
-    };
-    esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
-  }
-#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
-
-  /* SD-SPI init */
-  uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                SOC_GPIO_PIN_SD_D0,
-                SOC_GPIO_PIN_SD_CMD,
-                SOC_GPIO_PIN_SD_D3);
-
-  return TFT_setup();
-}
-
-#else
+#endif /* USE_TFT */
 
 static byte ESP32_Display_setup(bool splash_screen)
 {
@@ -1432,10 +1400,34 @@ static byte ESP32_Display_setup(bool splash_screen)
   xTaskCreateUniversal(EPD_Task, "EPD update", EPD_STACK_SZ, NULL, 1,
                        &EPD_Task_Handle, CONFIG_ARDUINO_RUNNING_CORE);
 
-  return EPD_setup(splash_screen);
-}
+  byte rval = EPD_setup(splash_screen);
 
+#if defined(USE_TFT)
+  if (rval == DISPLAY_NONE) {
+
+    if( EPD_Task_Handle != NULL )
+    {
+      vTaskDelete( EPD_Task_Handle );
+    }
+
+    panel = new Board(Board_Config_WTP4C5MP07S);
+    panel->init();
+
+#if LVGL_PORT_AVOID_TEARING_MODE
+    auto lcd = panel->getLCD();
+    lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
+#endif
+
+    static_cast<esp_panel::drivers::BusI2C *>(panel->getTouch()->getBus())->configI2C_HostSkipInit();
+
+    assert(panel->begin());
+
+    rval = TFT_setup();
+  }
 #endif /* USE_TFT */
+
+  return rval;
+}
 
 static void ESP32_Display_loop()
 {
