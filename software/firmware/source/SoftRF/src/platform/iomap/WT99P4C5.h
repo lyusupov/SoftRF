@@ -39,6 +39,15 @@
 #define SOC_GPIO_PIN_P4_WS_GNSS_TX      37
 #define SOC_GPIO_PIN_P4_WS_GNSS_PPS     SOC_UNUSED_PIN
 
+// Elecrow CrowPanel ESP32-P4 7.0 inch HMI display with optional SX1262 module
+#define SOC_GPIO_PIN_P4_EC_MOSI         6
+#define SOC_GPIO_PIN_P4_EC_MISO         7
+#define SOC_GPIO_PIN_P4_EC_SCK          8
+#define SOC_GPIO_PIN_P4_EC_SS           10
+#define SOC_GPIO_PIN_P4_EC_RST          54
+#define SOC_GPIO_PIN_P4_EC_DIO          53
+#define SOC_GPIO_PIN_P4_EC_BUSY         9
+
 // SDIO 1 - SDMMC
 #define SOC_GPIO_PIN_P4_SD_CLK          43
 #define SOC_GPIO_PIN_P4_SD_CMD          44
