@@ -325,6 +325,10 @@
 #define XMC_XM25QH128C        0x4018
 #define XMC_XM25QH32B         0x4016
 
+/* Zbit Semiconductor, Inc. */
+#define ZBIT_ID               0x5E
+#define ZBIT_ZB25VQ128A       0x4018
+
 #define MakeFlashId(v,d)      ((v  << 16) | d)
 #define CCCC(c1, c2, c3, c4)  ((c4 << 24) | (c3 << 16) | (c2 << 8) | c1)
 

@@ -484,26 +484,37 @@ static void ESP32_setup()
   uint32_t flash_id = ESP32_getFlashId();
 
   /*
-   *    Board         |   Module      |  Flash memory IC
-   *  ----------------+---------------+--------------------
-   *  DoIt ESP32      | WROOM         | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.0   | PICO-D4 IC    | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.1.6 | PICO-D4 IC    | GIGADEVICE_GD25Q32
-   *  TTGO T22 V06    |               | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V08    |               | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V11    |               | BOYA_BY25Q32AL
-   *  TTGO T8  V1.8   | WROVER        | GIGADEVICE_GD25LQ32
-   *  TTGO T8 S2 V1.1 |               | WINBOND_NEX_W25Q32_V
-   *  TTGO T5S V1.9   |               | WINBOND_NEX_W25Q32_V
-   *  TTGO T5S V2.8   |               | BOYA_BY25Q32AL
-   *  TTGO T5  4.7    | WROVER-E      | XMC_XM25QH128C
-   *  TTGO T-Watch    |               | WINBOND_NEX_W25Q128_V
-   *  Ai-T NodeMCU-S3 | ESP-S3-12K    | GIGADEVICE_GD25Q64C
-   *  TTGO T-Dongle   |               | BOYA_BY25Q32AL
-   *  TTGO S3 Core    |               | GIGADEVICE_GD25Q64C
-   *  TTGO T-01C3     |               | BOYA_BY25Q32AL
-   *                  | ESP-C3-12F    | XMC_XM25QH32B
-   *  LilyGO T-TWR    | WROOM-1-N16R8 | GIGADEVICE_GD25Q128
+   *    Board         |   Module         |  Flash memory IC
+   *  ----------------+------------------+--------------------
+   *  DoIt ESP32      | WROOM            | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.0   | PICO-D4 IC       | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.1.6 | PICO-D4 IC       | GIGADEVICE_GD25Q32
+   *  TTGO T22 V06    |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V08    |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V11    |                  | BOYA_BY25Q32AL
+   *  TTGO T22 V12    |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T8  V1.8   | WROVER           | GIGADEVICE_GD25LQ32
+   *  TTGO T8 S2 V1.1 |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V1.9   |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V2.8   |                  | BOYA_BY25Q32AL
+   *  TTGO T5  4.7    | WROVER-E         | XMC_XM25QH128C
+   *  TTGO T-Watch    |                  | WINBOND_NEX_W25Q128_V
+   *  Ai-T NodeMCU-S3 | ESP-S3-12K       | GIGADEVICE_GD25Q64C
+   *  TTGO T-Dongle   |                  | BOYA_BY25Q32AL
+   *  TTGO S3 Core    |                  | GIGADEVICE_GD25Q64C
+   *  TTGO T-01C3     |                  | BOYA_BY25Q32AL
+   *                  | ESP-C3-12F       | XMC_XM25QH32B
+   *  LilyGO T-TWR    | WROOM-1-N16R8    | GIGADEVICE_GD25Q128
+   *  Heltec Tracker  |                  | GIGADEVICE_GD25Q64
+   *                  | WT0132C6-S5      | ZBIT_ZB25VQ32B
+   *  LilyGO T3-C6    | ESP32-C6-MINI    | XMC_XM25QH32B
+   *  LilyGO T3-S3-EP | ESP32-S3-MINI    | XMC_XM25QH32B
+   *  LilyGO T3-S3-OL | ESP32-S3FH4R2    |
+   *  Elecrow TN-M2   | ESP32-S3-N4R8    | ZBIT_ZB25VQ32B
+   *  Elecrow TN-M5   | ESP32-S3-N4R8    |
+   *  Ebyte EoRa-HUB  | ESP32-S3FH4R2    |
+   *  WT99P4C5-S1 CPU | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
+   *  WT99P4C5-S1 NCU | ESP32-C5-WROOM-1 | XMC_XM25QH64B
    */
 
   if (psramFound()) {
@@ -526,6 +537,11 @@ static void ESP32_setup()
       hw_info.revision = HW_REV_DEVKIT;
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ128A): /* WT0132P4-A1 ESP32-P4NRW32 */
+      hw_info.revision = HW_REV_DEVKIT;
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     default:
       hw_info.revision = HW_REV_UNKNOWN;
       break;
@@ -687,22 +703,59 @@ static void ESP32_setup()
 #endif /* ARDUINO_USB_CDC_ON_BOOT && (CONFIG_IDF_TARGET_ESP32S2 || S3) */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-#if !defined(EXCLUDE_ETHERNET)
-  Ethernet_setup();
+  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
-  ETH.begin(ETH_PHY_TYPE,
-            ETH_PHY_ADDR,
-            SOC_GPIO_PIN_ETH_MDC,
-            SOC_GPIO_PIN_ETH_MDIO,
-            SOC_GPIO_PIN_ETH_PWR,
-            ETH_CLK_MODE);
+  Wire.beginTransmission(GT911_ADDRESS);
+  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
+  Wire.beginTransmission(HI8561_ADDRESS);
+  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
+  // Wire.beginTransmission(GT9895_ADDRESS);
+  // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
+
+  switch (hw_info.revision)
+  {
+  case HW_REV_TDISPLAY_P4_TFT:
+    /* TODO */
+    break;
+  case HW_REV_TDISPLAY_P4_AMOLED:
+    /* TODO */
+    break;
+  case HW_REV_DEVKIT:
+  default:
+#if !defined(EXCLUDE_ETHERNET)
+    Ethernet_setup();
+
+    ETH.begin(ETH_PHY_TYPE,
+              ETH_PHY_ADDR,
+              SOC_GPIO_PIN_ETH_MDC,
+              SOC_GPIO_PIN_ETH_MDIO,
+              SOC_GPIO_PIN_ETH_PWR,
+              ETH_CLK_MODE);
 #endif /* EXCLUDE_ETHERNET */
 
-  Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
-  es8311_codec_init();
+    pinMode(SOC_GPIO_PIN_PAMP_EN,      OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_PAMP_EN, HIGH);
 
-  pinMode(SOC_GPIO_PIN_PAMP_EN,      OUTPUT);
-  digitalWrite(SOC_GPIO_PIN_PAMP_EN, HIGH);
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    {
+      esp_ldo_channel_handle_t ldo_sdio = NULL;
+      esp_ldo_channel_config_t ldo_sdio_config = {
+          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+          .voltage_mv = 3300,
+      };
+      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+    }
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
+
+    /* SD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                  SOC_GPIO_PIN_SD_D0,
+                  SOC_GPIO_PIN_SD_CMD,
+                  SOC_GPIO_PIN_SD_D3);
+    break;
+  }
+
+  es8311_codec_init();
 
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
@@ -1524,25 +1577,6 @@ static byte ESP32_Display_setup(bool splash_screen)
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_SS_WS);
-
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-    {
-      esp_ldo_channel_handle_t ldo_sdio = NULL;
-      esp_ldo_channel_config_t ldo_sdio_config = {
-          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
-          .voltage_mv = 3300,
-      };
-      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
-    }
-#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
-
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                  SOC_GPIO_PIN_SD_D0,
-                  SOC_GPIO_PIN_SD_CMD,
-                  SOC_GPIO_PIN_SD_D3);
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     break;
   case ADAPTER_WAVESHARE_PICO_2_7_V2:
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -1554,25 +1588,6 @@ static byte ESP32_Display_setup(bool splash_screen)
               SOC_GPIO_PIN_MISO_WS,
               SOC_GPIO_PIN_MOSI_WS,
               SOC_GPIO_PIN_SS_WS);
-
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-    {
-      esp_ldo_channel_handle_t ldo_sdio = NULL;
-      esp_ldo_channel_config_t ldo_sdio_config = {
-          .chan_id = BOARD_SDMMC_POWER_CHANNEL,
-          .voltage_mv = 3300,
-      };
-      esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
-    }
-#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
-
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                  SOC_GPIO_PIN_SD_D0,
-                  SOC_GPIO_PIN_SD_CMD,
-                  SOC_GPIO_PIN_SD_D3);
-#endif /* CONFIG_IDF_TARGET_ESP32P4 */
     break;
 #if defined(BUILD_SKYVIEW_HD)
   case ADAPTER_TTGO_T5_4_7:
