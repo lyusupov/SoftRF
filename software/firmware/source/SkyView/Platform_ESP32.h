@@ -37,6 +37,9 @@
 
 /* Peripherals */
 #define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
+#define GT911_ADDRESS         (0x5D)
+#define HI8561_ADDRESS        (0x68)
+#define GT9895_ADDRESS        (0x5D) /* same as GT911,TBD */
 
 #define EXCLUDE_ETHERNET
 

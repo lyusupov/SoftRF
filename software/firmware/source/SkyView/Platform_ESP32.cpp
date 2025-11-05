@@ -1347,9 +1347,9 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
                 .clk_speed = 400 * 1000,
             },
             .control_panel = BusI2C::ControlPanelFullConfig
-                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(HI8561),
+                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(GT911), /* HI8561 */
         },
-        .device_name = TO_STR(HI8561),
+        .device_name = TO_STR(GT911),/* HI8561 */
         .device_config = {
             .device = Touch::DevicePartialConfig{
                 .x_max = 1168,
@@ -1448,9 +1448,9 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
                 .clk_speed = 400 * 1000,
             },
             .control_panel = BusI2C::ControlPanelFullConfig
-                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(GT9895),
+                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(GT911), /* GT9895 */
         },
-        .device_name = TO_STR(GT9895),
+        .device_name = TO_STR(GT911), /* GT9895 */
         .device_config = {
             .device = Touch::DevicePartialConfig{
                 .x_max = 1232,
@@ -1612,7 +1612,20 @@ static byte ESP32_Display_setup(bool splash_screen)
       vTaskDelete( EPD_Task_Handle );
     }
 
-    panel = new Board(Board_Config_WTP4C5MP07S);
+    switch (hw_info.revision)
+    {
+    case HW_REV_TDISPLAY_P4_TFT:
+      panel = new Board(Board_Config_LilyGO_TDP4_TFT);
+      break;
+    case HW_REV_TDISPLAY_P4_AMOLED:
+      panel = new Board(Board_Config_LilyGO_TDP4_AMOLED);
+      break;
+    case HW_REV_DEVKIT:
+    default:
+      panel = new Board(Board_Config_WTP4C5MP07S);
+      break;
+    }
+
     panel->init();
 
 #if LVGL_PORT_AVOID_TEARING_MODE

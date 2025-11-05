@@ -85,6 +85,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.mode          = hw_info.model == SOFTRF_MODEL_NANO ?
                                               SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
+                                              hw_info.model == SOFTRF_MODEL_POCKET   ||
                                               hw_info.model == SOFTRF_MODEL_CARD ?
                                               RF_PROTOCOL_FANET :
                                               hw_info.model == SOFTRF_MODEL_ES ?
