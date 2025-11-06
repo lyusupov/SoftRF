@@ -37,9 +37,15 @@
 
 /* Peripherals */
 #define INA219_ADDRESS_ALT    (0x43) // 1000011 (A0=SCL, A1=GND)
+
+#define ES8311_ADDRESS        (0x18)
+
 #define GT911_ADDRESS         (0x5D)
+#define GT911_ADDRESS_ALT     (0x14)
 #define HI8561_ADDRESS        (0x68)
 #define GT9895_ADDRESS        (0x5D) /* same as GT911,TBD */
+
+#define OV5647_ADDRESS        (0x36)
 
 #define EXCLUDE_ETHERNET
 
@@ -192,6 +198,10 @@
 #define SOC_GPIO_PIN_SDA      7  // +
 #define SOC_GPIO_PIN_SCL      8  // +
 
+// LilyGO T-Display-P4 I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
+#define SOC_GPIO_PIN_TDP4_SDA 20
+#define SOC_GPIO_PIN_TDP4_SCL 21
+
 // USB
 #define SOC_GPIO_PIN_USB_DP   25
 #define SOC_GPIO_PIN_USB_DN   24
@@ -212,6 +222,13 @@
 #define SOC_GPIO_PIN_BCK      12
 #define SOC_GPIO_PIN_LRCK     10
 #define SOC_GPIO_PIN_MCK      13
+
+// LilyGO T-Display-P4 I2S ES8311
+#define SOC_GPIO_PIN_TDP4_LR  9
+#define SOC_GPIO_PIN_TDP4_BCK 12
+#define SOC_GPIO_PIN_TDP4_MCK 13
+#define SOC_GPIO_PIN_TDP4_DO  10
+#define SOC_GPIO_PIN_TDP4_DI  11
 
 // SDIO 1 - SDMMC
 #define SOC_GPIO_PIN_SD_CLK   43

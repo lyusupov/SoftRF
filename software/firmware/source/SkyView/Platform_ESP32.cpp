@@ -387,12 +387,10 @@ const uint16_t ESP32SX_Device_Version = SKYVIEW_USB_FW_VERSION;
 #define EXAMPLE_VOICE_VOLUME    75 // 0 - 100
 #define EXAMPLE_MIC_GAIN        (es8311_mic_gain_t)(3) // 0 - 7
 
-#define I2C_NUM                 0
-
 const char *TAG_ES83 = "esp32p4_i2s_es8311";
 
-esp_err_t es8311_codec_init(void) {
-    es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
+esp_err_t es8311_codec_init(const unsigned int i2c_num) {
+    es8311_handle_t es_handle = es8311_create(i2c_num, ES8311_ADDRRES_0);
     ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG_ES83, "es8311 create failed");
     const es8311_clock_config_t es_clk = {
         .mclk_inverted = false,
@@ -707,6 +705,8 @@ static void ESP32_setup()
 
   Wire.beginTransmission(GT911_ADDRESS);
   if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
+  Wire.beginTransmission(GT911_ADDRESS_ALT);
+  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
   Wire.beginTransmission(HI8561_ADDRESS);
   if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
   // Wire.beginTransmission(GT9895_ADDRESS);
@@ -715,11 +715,21 @@ static void ESP32_setup()
   switch (hw_info.revision)
   {
   case HW_REV_TDISPLAY_P4_TFT:
-    /* TODO */
-    break;
   case HW_REV_TDISPLAY_P4_AMOLED:
-    /* TODO */
+
+    // I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
+    Wire1.begin(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    pin_config.mck_io_num   = SOC_GPIO_PIN_TDP4_MCK;
+#endif
+    pin_config.bck_io_num   = SOC_GPIO_PIN_TDP4_BCK;
+    pin_config.ws_io_num    = SOC_GPIO_PIN_TDP4_LR;
+    pin_config.data_out_num = SOC_GPIO_PIN_TDP4_DO;
+
+    es8311_codec_init(1);
     break;
+
   case HW_REV_DEVKIT:
   default:
 #if !defined(EXCLUDE_ETHERNET)
@@ -747,15 +757,15 @@ static void ESP32_setup()
     }
 #endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
 
-    /* SD-SPI init */
-    uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
-                  SOC_GPIO_PIN_SD_D0,
-                  SOC_GPIO_PIN_SD_CMD,
-                  SOC_GPIO_PIN_SD_D3);
+    es8311_codec_init(0);
     break;
   }
 
-  es8311_codec_init();
+  /* SD-SPI init */
+  uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
+                SOC_GPIO_PIN_SD_D0,
+                SOC_GPIO_PIN_SD_CMD,
+                SOC_GPIO_PIN_SD_D3);
 
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
@@ -799,12 +809,16 @@ static void ESP32_post_init()
   case HW_REV_T5S_1_9    : Serial.println(F("LilyGO T5S"));   break;
   case HW_REV_T5S_2_8    : Serial.println(F("LilyGO T5S"));   break;
   case HW_REV_BPI        : Serial.println(F("Banana PicoW")); break;
+  case HW_REV_DEVKIT     : Serial.print(SoC->name);
+                           Serial.println(F(" DevKit"));      break;
   default                : Serial.println(F("OTHER"));        break;
   }
 
   Serial.print(F("Display      : "));
 
-  if (hw_info.display != DISPLAY_EPD_2_7 || display == NULL) {
+  if (hw_info.display == DISPLAY_TFT_7_0) {
+    Serial.println(F("7 inch TFT"));
+  } else if (hw_info.display != DISPLAY_EPD_2_7 || display == NULL) {
     Serial.println(F("NONE"));
   } else {
     switch (display->epd2.panel)
