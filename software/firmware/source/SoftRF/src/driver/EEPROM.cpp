@@ -85,8 +85,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.mode          = hw_info.model == SOFTRF_MODEL_NANO ?
                                               SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
-                                              hw_info.model == SOFTRF_MODEL_POCKET   ||
-                                              hw_info.model == SOFTRF_MODEL_CARD ?
+                                              hw_info.model == SOFTRF_MODEL_CARD     ||
+                                              hw_info.model == SOFTRF_MODEL_POCKET ?
                                               RF_PROTOCOL_FANET :
                                               hw_info.model == SOFTRF_MODEL_ES ?
                                               RF_PROTOCOL_ADSB_1090 :
@@ -97,7 +97,8 @@ void EEPROM_defaults()
   eeprom_block.field.settings.band          = RF_BAND_EU;
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
                                               AIRCRAFT_TYPE_STATIC :
-                                              hw_info.model == SOFTRF_MODEL_CARD ?
+                                              hw_info.model == SOFTRF_MODEL_CARD ||
+                                              hw_info.model == SOFTRF_MODEL_POCKET ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
@@ -118,6 +119,7 @@ void EEPROM_defaults()
 #if defined(USE_PWM_SOUND)
     if (hw_info.model == SOFTRF_MODEL_CARD     ||
         hw_info.model == SOFTRF_MODEL_HANDHELD ||
+        hw_info.model == SOFTRF_MODEL_POCKET   ||
         hw_info.model == SOFTRF_MODEL_DECENT) {
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
     } else
@@ -154,6 +156,7 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_CARD     ||
                                            hw_info.model == SOFTRF_MODEL_COZY     ||
                                            hw_info.model == SOFTRF_MODEL_HANDHELD ||
+                                           hw_info.model == SOFTRF_MODEL_POCKET   ||
                                            hw_info.model == SOFTRF_MODEL_DECENT   ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ES        ?

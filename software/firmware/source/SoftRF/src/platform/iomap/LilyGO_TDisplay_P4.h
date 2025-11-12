@@ -23,8 +23,8 @@
 #define SOC_GPIO_PIN_TDP4_SCL2            21
 
 // SX12xx
-#define SOC_GPIO_PIN_TDP4_RST             SOC_UNUSED_PIN /* XL 16 */
-#define SOC_GPIO_PIN_TDP4_DIO             SOC_UNUSED_PIN /* XL 17 */
+#define SOC_GPIO_PIN_TDP4_RST             LMIC_UNUSED_PIN /* XL 16 */
+#define SOC_GPIO_PIN_TDP4_DIO             LMIC_UNUSED_PIN /* XL 17 */
 #define SOC_GPIO_PIN_TDP4_BUSY            6
 
 // SDIO 1 - SDMMC

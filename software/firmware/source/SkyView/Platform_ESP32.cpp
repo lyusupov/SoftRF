@@ -732,17 +732,6 @@ static void ESP32_setup()
 
   case HW_REV_DEVKIT:
   default:
-#if !defined(EXCLUDE_ETHERNET)
-    Ethernet_setup();
-
-    ETH.begin(ETH_PHY_TYPE,
-              ETH_PHY_ADDR,
-              SOC_GPIO_PIN_ETH_MDC,
-              SOC_GPIO_PIN_ETH_MDIO,
-              SOC_GPIO_PIN_ETH_PWR,
-              ETH_CLK_MODE);
-#endif /* EXCLUDE_ETHERNET */
-
     pinMode(SOC_GPIO_PIN_PAMP_EN,      OUTPUT);
     digitalWrite(SOC_GPIO_PIN_PAMP_EN, HIGH);
 
@@ -760,6 +749,17 @@ static void ESP32_setup()
     es8311_codec_init(0);
     break;
   }
+
+#if !defined(EXCLUDE_ETHERNET)
+  Ethernet_setup();
+
+  ETH.begin(ETH_PHY_TYPE,
+            ETH_PHY_ADDR,
+            SOC_GPIO_PIN_ETH_MDC,
+            SOC_GPIO_PIN_ETH_MDIO,
+            SOC_GPIO_PIN_ETH_PWR,
+            ETH_CLK_MODE);
+#endif /* EXCLUDE_ETHERNET */
 
   /* SD-SPI init */
   uSD_SPI.begin(SOC_GPIO_PIN_SD_CLK,
@@ -2657,6 +2657,180 @@ static void ESP32_WDT_fini()
   disableLoopWDT();
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
+
+#include "rtl-sdr.h"
+#include "esp_libusb.h"
+#include "usb/usb_host.h"
+
+#include <mode-s.h>
+#include <sdr/common.h>
+
+#define DAEMON_TASK_PRIORITY    2
+#define CLASS_TASK_PRIORITY     3
+
+static const char *USBD_TAG = "DAEMON";
+
+extern void class_driver_task(void *arg);
+
+static void host_lib_daemon_task(void *arg)
+{
+    SemaphoreHandle_t sem = (SemaphoreHandle_t)arg;
+
+    ESP_LOGI(USBD_TAG, "Installing USB Host Library");
+    usb_host_config_t host_config = {
+        .skip_phy_setup = false,
+        .intr_flags = ESP_INTR_FLAG_LEVEL1,
+        .fifo_settings_custom = {
+            .nptx_fifo_lines  = 128,
+            .ptx_fifo_lines   = 128,
+            .rx_fifo_lines    = 512
+        },
+    };
+    ESP_ERROR_CHECK(usb_host_install(&host_config));
+
+    // Signal to the class driver task that the host library is installed
+    xSemaphoreGive(sem);
+    vTaskDelay(10); // Short delay to let client task spin up
+
+    bool has_clients = true;
+    bool has_devices = true;
+    while (has_clients || has_devices)
+    {
+        uint32_t event_flags;
+        ESP_ERROR_CHECK(usb_host_lib_handle_events(portMAX_DELAY, &event_flags));
+        if (event_flags & USB_HOST_LIB_EVENT_FLAGS_NO_CLIENTS)
+        {
+            has_clients = false;
+        }
+        if (event_flags & USB_HOST_LIB_EVENT_FLAGS_ALL_FREE)
+        {
+            has_devices = false;
+        }
+    }
+    ESP_LOGI(USBD_TAG, "No more clients and devices");
+
+    // Uninstall the USB Host Library
+    ESP_ERROR_CHECK(usb_host_uninstall());
+    // Wait to be deleted
+    xSemaphoreGive(sem);
+    vTaskSuspend(NULL);
+}
+
+#define MODE_S_LONG_MSG_BITS  112
+
+mode_s_t state;
+
+void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
+
+  MODES_NOTUSED(self);
+
+/* When a new message is available, because it was decoded from the
+ * SDR device, file, or received in the TCP input port, or any other
+ * way we can receive a decoded message, we call this function in order
+ * to use the message.
+ *
+ * Basically this function passes a raw message to the upper layers for
+ * further processing and visualization. */
+
+    if (self->check_crc == 0 || mm->crcok) {
+
+//    printf("%02d %03d %02x%02x%02x\r\n", mm->msgtype, mm->msgbits, mm->aa1, mm->aa2, mm->aa3);
+
+        int acfts_in_sight = 0;
+        struct mode_s_aircraft *a = state.aircrafts;
+
+        while (a) {
+          acfts_in_sight++;
+          a = a->next;
+        }
+
+        if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+          interactiveReceiveData(self, mm);
+        }
+    }
+}
+
+SemaphoreHandle_t signaling_sem;
+
+static void ESP32PX_USB_setup()
+{
+    mode_s_init(&state);
+
+    signaling_sem = xSemaphoreCreateBinary();
+
+    TaskHandle_t daemon_task_hdl;
+    TaskHandle_t class_driver_task_hdl;
+    // Create daemon task
+    xTaskCreatePinnedToCore(host_lib_daemon_task,
+                            "daemon",
+                            4096,
+                            (void *)signaling_sem,
+                            DAEMON_TASK_PRIORITY,
+                            &daemon_task_hdl,
+                            0);
+    // Create the class driver task
+    xTaskCreatePinnedToCore(class_driver_task,
+                            "class",
+                            4096,
+                            (void *)signaling_sem,
+                            CLASS_TASK_PRIORITY,
+                            &class_driver_task_hdl,
+                            0);
+
+    vTaskDelay(10); // Add a short delay to let the tasks run
+}
+
+static void ESP32PX_USB_loop()
+{
+
+}
+
+static void ESP32PX_USB_fini()
+{
+    // Wait for the tasks to complete
+    for (int i = 0; i < 2; i++)
+    {
+        xSemaphoreTake(signaling_sem, portMAX_DELAY);
+    }
+
+    // Delete the tasks
+    vTaskDelete(class_driver_task_hdl);
+    vTaskDelete(daemon_task_hdl);
+}
+
+static int ESP32PX_USB_available()
+{
+  int rval = 0;
+
+  return rval;
+}
+
+static int ESP32PX_USB_read()
+{
+  int rval = -1;
+
+  return rval;
+}
+
+static size_t ESP32PX_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  return rval;
+}
+
+IODev_ops_t ESP32PX_USB_ops = {
+  "ESP32PX USB",
+  ESP32PX_USB_setup,
+  ESP32PX_USB_loop,
+  ESP32PX_USB_fini,
+  ESP32PX_USB_available,
+  ESP32PX_USB_read,
+  ESP32PX_USB_write
+};
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
 const SoC_ops_t ESP32_ops = {
 #if defined(CONFIG_IDF_TARGET_ESP32)
   SOC_ESP32,
@@ -2720,7 +2894,11 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
+  &ESP32PX_USB_ops,
+#else
   NULL,
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 };
 
 #endif /* ESP32 */

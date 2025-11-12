@@ -267,6 +267,7 @@
 #define SOC_GPIO_PIN_TDP4_BL  51
 
 //#define USE_TFT
+//#define USE_USB_HOST
 
 // GT911 I2C touch sensor
 #define SOC_GPIO_PIN_TP_INT   21
