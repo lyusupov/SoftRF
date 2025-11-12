@@ -44,7 +44,11 @@
 #ifndef HACKRF_ONE
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+mag_t maglut[129*129];
+#else
 static mag_t maglut[129*129];
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #if (defined(ENERGIA_ARCH_CC13X2)  ||  defined(ARDUINO_ARCH_SILABS) || \
      defined(ARDUINO_ARCH_ZEPHYR)) && !defined(M_PI)
