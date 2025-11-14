@@ -134,6 +134,7 @@ struct rst_info {
 #define BME280_ADDRESS        (0x77)
 #define BHI260AP_ADDRESS_L    (0x28)
 #define BHI260AP_ADDRESS_H    (0x29)
+#define AHT10_ADDRESS         (0x38)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)

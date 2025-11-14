@@ -296,6 +296,23 @@ static const Module::RfSwitchMode_t rfswitch_table_ebyte[] = {
     { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW  } },
     END_OF_MODE_TABLE,
 };
+
+static const uint32_t rfswitch_dio_pins_elecrow[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_elecrow[] = {
+    // mode                  DIO5  DIO6
+    { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+    { LR11x0::MODE_RX,     { HIGH, LOW  } },
+    { LR11x0::MODE_TX,     { HIGH, HIGH } },
+    { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
 #endif /* USE_LR11XX */
 
 // this function is called when a complete packet
@@ -613,6 +630,11 @@ static void lr11xx_setup()
     // HPDTeK HPD-16E
     // LR1121 TCXO Voltage 2.85~3.15V
     Vtcxo = 3.0;
+    break;
+
+  case SOFTRF_MODEL_POCKET:
+    // LR1110 TCXO Voltage
+    Vtcxo = 3.3;
     break;
 
   case SOFTRF_MODEL_CARD:
@@ -972,6 +994,11 @@ static void lr11xx_setup()
       radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
+    break;
+
+  case SOFTRF_MODEL_POCKET:
+    radio_semtech->setRfSwitchTable(rfswitch_dio_pins_elecrow, rfswitch_table_elecrow);
+    state = radio_semtech->setOutputPower(txpow, false);
     break;
 
   case SOFTRF_MODEL_NEO:

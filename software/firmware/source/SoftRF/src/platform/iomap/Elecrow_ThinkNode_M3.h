@@ -54,10 +54,11 @@
 #define SOC_ADC_M3_VOLTAGE_DIV    (1.75F)
 
 /* digital input */
-#define SOC_GPIO_PIN_M3_VBAT_SEN  _PINNUM(1,  0) // P1.00
+#define SOC_GPIO_PIN_M3_BAT_CHRG  _PINNUM(1,  0) // P1.00
+#define SOC_GPIO_PIN_M3_BAT_FULL  _PINNUM(0, 24) // P0.24
 #define SOC_GPIO_PIN_M3_VUSB_SEN  _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_M3_VGPS_SEN  SOC_UNUSED_PIN // TBD
 
-/* Sensors */
+/* Sensors (ACC + AHT10) */
 #define SOC_GPIO_PIN_M3_ACC_EN    _PINNUM(0,  2) // P0.02
 #define SOC_GPIO_PIN_M3_TEMP_EN   _PINNUM(0,  3) // P0.03

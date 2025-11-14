@@ -420,8 +420,8 @@ static uint32_t ESP32_getFlashId()
   return g_rom_flashchip.device_id;
 }
 
-#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG)
-#define TAG "MAC"
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL>0 && !defined(TAG_MAC)
+#define TAG_MAC "MAC"
 #endif
 
 static void ESP32_setup()
@@ -433,17 +433,17 @@ static void ESP32_setup()
 
   ret = esp_efuse_mac_get_custom(efuse_mac);
   if (ret != ESP_OK) {
-      ESP_LOGE(TAG, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
+      ESP_LOGE(TAG_MAC, "Get base MAC address from BLK3 of EFUSE error (%s)", esp_err_to_name(ret));
     /* If get custom base MAC address error, the application developer can decide what to do:
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
 
-    ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+    ESP_LOGI(TAG_MAC, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
     if (memcmp(efuse_mac, null_mac, 6) == 0) {
-      ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
+      ESP_LOGI(TAG_MAC, "Use base MAC address which is stored in BLK0 of EFUSE");
       chipmacid = ESP.getEfuseMac();
     }
   }
@@ -2669,7 +2669,7 @@ static void ESP32_WDT_fini()
 #define DAEMON_TASK_PRIORITY    2
 #define CLASS_TASK_PRIORITY     3
 
-static const char *USBD_TAG = "DAEMON";
+static const char *TAG_USBD = "DAEMON";
 
 extern void class_driver_task(void *arg);
 
@@ -2677,7 +2677,7 @@ static void host_lib_daemon_task(void *arg)
 {
     SemaphoreHandle_t sem = (SemaphoreHandle_t)arg;
 
-    ESP_LOGI(USBD_TAG, "Installing USB Host Library");
+    ESP_LOGI(TAG_USBD, "Installing USB Host Library");
     usb_host_config_t host_config = {
         .skip_phy_setup = false,
         .intr_flags = ESP_INTR_FLAG_LEVEL1,
@@ -2708,7 +2708,7 @@ static void host_lib_daemon_task(void *arg)
             has_devices = false;
         }
     }
-    ESP_LOGI(USBD_TAG, "No more clients and devices");
+    ESP_LOGI(TAG_USBD, "No more clients and devices");
 
     // Uninstall the USB Host Library
     ESP_ERROR_CHECK(usb_host_uninstall());
@@ -2752,6 +2752,8 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 }
 
 SemaphoreHandle_t signaling_sem;
+TaskHandle_t daemon_task_hdl;
+TaskHandle_t class_driver_task_hdl;
 
 static void ESP32PX_USB_setup()
 {
@@ -2759,9 +2761,6 @@ static void ESP32PX_USB_setup()
 
     signaling_sem = xSemaphoreCreateBinary();
 
-    TaskHandle_t daemon_task_hdl;
-    TaskHandle_t class_driver_task_hdl;
-    // Create daemon task
     xTaskCreatePinnedToCore(host_lib_daemon_task,
                             "daemon",
                             4096,
