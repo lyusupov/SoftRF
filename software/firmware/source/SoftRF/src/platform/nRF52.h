@@ -323,7 +323,7 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 
-#define EXCLUDE_BHI260
+//#define EXCLUDE_BHI260
 /* T-Ultima */
 #define EXCLUDE_PMU
 #define EXCLUDE_WIP

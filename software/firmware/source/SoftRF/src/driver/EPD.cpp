@@ -92,6 +92,7 @@ bool EPD_setup(bool splash_screen)
   display->init( /* 38400 */ );
 
   display->setRotation((rotate + ui->rotate) & 0x3);
+  display->mirror(false);
 
   display->setTextColor(GxEPD_BLACK);
   display->setTextWrap(false);

@@ -983,6 +983,13 @@ static void nRF52_setup()
       if (nRF52_has_imu == false) {
         Wire.beginTransmission(BHI260AP_ADDRESS_L);
         nRF52_has_imu = (Wire.endTransmission() == 0);
+
+        if (nRF52_has_imu) {
+          Wire.beginTransmission(DRV2605_ADDRESS);
+          if (Wire.endTransmission() == 0) {
+            nRF52_board = NRF52_LILYGO_TECHO_PLUS;
+          }
+        }
       }
     }
   }
@@ -1180,6 +1187,7 @@ static void nRF52_setup()
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
     case NRF52_SEEED_WIO_L1:
+    case NRF52_LILYGO_TECHO_PLUS:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
 #if defined(EXCLUDE_WIFI)
       Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -1188,7 +1196,6 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
-    case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     default:
       Serial1.setPins(SOC_GPIO_PIN_CONS_RX, SOC_GPIO_PIN_CONS_TX);
@@ -2819,6 +2826,12 @@ static void nRF52_EEPROM_extension(int cmd)
       ui->filter       = TRAFFIC_FILTER_OFF;
       ui->power_save   = 0;
       ui->team         = 0;
+
+#if defined(USE_PWM_SOUND)
+      if (nRF52_board == NRF52_LILYGO_TECHO_PLUS) {
+        settings->volume = BUZZER_VOLUME_FULL;
+      }
+#endif /* USE_PWM_SOUND */
       break;
     case EEPROM_EXT_LOAD:
     default:
@@ -3972,6 +3985,7 @@ static void nRF52_Button_setup()
 
   button_1.init(mode_button_pin, nRF52_board == NRF52_SEEED_T1000E ? LOW : HIGH);
   if (up_button_pin >= 0) { button_2.init(up_button_pin); }
+
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.
