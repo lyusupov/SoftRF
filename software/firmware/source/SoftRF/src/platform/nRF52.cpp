@@ -330,6 +330,10 @@ ui_settings_t *ui;
 #if !defined(EXCLUDE_BHI260)
 #include <SensorBHI260AP.hpp>
 #include <bosch/BoschSensorDataHelper.hpp>
+
+#if defined(USE_BHI260_RAM_FW)
+#include "bosch/firmware/bosch_app30_shuttle_bhi260.h"
+#endif /* USE_BHI260_RAM_FW */
 #endif /* EXCLUDE_BHI260 */
 
 MPU9250         imu_1;
@@ -1575,9 +1579,15 @@ static void nRF52_setup()
           hw_info.mag = MAG_AK8963;
           IMU_Time_Marker = millis();
 #if !defined(EXCLUDE_BHI260)
-        } else if (imu_4.begin(Wire, BHI260AP_ADDRESS_L,
-                              SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL)) {
-          float sample_rate = 100.0;      /* Read out data measured at 100Hz */
+        } else if (
+#if defined(USE_BHI260_RAM_FW)
+                   imu_4.setFirmware(bosch_firmware_image,
+                                     bosch_firmware_size,
+                                     bosch_firmware_type),
+#endif /* USE_BHI260_RAM_FW */
+                   imu_4.begin(Wire, BHI260AP_ADDRESS_L,
+                                     SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL)) {
+          float sample_rate = 12.5;
           uint32_t report_latency_ms = 0; /* Report immediately */
 
           // Enable acceleration
@@ -1877,6 +1887,13 @@ static void nRF52_post_init()
     }
 #endif /* ENABLE_NFC */
 
+#if 0
+    if (nRF52_board == NRF52_LILYGO_TECHO_PLUS) {
+      BoschSensorInfo info = imu_4.getSensorInfo();
+      info.printInfo(Serial);
+      Serial.flush();
+    }
+#endif
   } else if (nRF52_board == NRF52_HELTEC_T114) {
     Serial.println();
     Serial.println(F("Heltec T114 Power-on Self Test"));
@@ -2196,7 +2213,7 @@ static void nRF52_loop()
 
 #if !defined(EXCLUDE_BHI260)
   if (hw_info.imu == IMU_BHI260AP &&
-      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+      (millis() - IMU_Time_Marker) > (IMU_UPDATE_INTERVAL / 10)) {
     // Update sensor fifo
     imu_4.update();
 
@@ -3985,7 +4002,6 @@ static void nRF52_Button_setup()
 
   button_1.init(mode_button_pin, nRF52_board == NRF52_SEEED_T1000E ? LOW : HIGH);
   if (up_button_pin >= 0) { button_2.init(up_button_pin); }
-
 
   // Configure the ButtonConfig with the event handler, and enable all higher
   // level events.

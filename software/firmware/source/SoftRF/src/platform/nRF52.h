@@ -324,6 +324,8 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_MBED */
 
 //#define EXCLUDE_BHI260
+//#define USE_BHI260_RAM_FW
+
 /* T-Ultima */
 #define EXCLUDE_PMU
 #define EXCLUDE_WIP
