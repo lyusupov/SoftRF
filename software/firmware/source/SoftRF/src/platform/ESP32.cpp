@@ -29,9 +29,10 @@
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32H4)  && \
     !defined(CONFIG_IDF_TARGET_ESP32P4)
 #include <soc/rtc_cntl_reg.h>
-#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || H4 || P4 */
 #include <soc/efuse_reg.h>
 #include <Wire.h>
 #include <rom/rtc.h>
@@ -575,7 +576,8 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32C5)  || \
     defined(CONFIG_IDF_TARGET_ESP32C6)  || \
     defined(CONFIG_IDF_TARGET_ESP32C61) || \
-    defined(CONFIG_IDF_TARGET_ESP32H2)
+    defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+    defined(CONFIG_IDF_TARGET_ESP32H4)
   ret = esp_read_mac(efuse_mac, ESP_MAC_WIFI_STA);
   if (ret != ESP_OK) {
 #else
@@ -586,7 +588,7 @@ static void ESP32_setup()
      * abort or use the default base MAC address which is stored in BLK0 of EFUSE by doing
      * nothing.
      */
-#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || H4 */
     ESP_LOGI(TAG, "Use base MAC address which is stored in BLK0 of EFUSE");
     chipmacid = ESP.getEfuseMac();
   } else {
@@ -841,6 +843,13 @@ static void ESP32_setup()
     {
     default:
       esp32_board   = ESP32_H2_DEVKIT;
+      break;
+    }
+#elif defined(CONFIG_IDF_TARGET_ESP32H4)
+    switch (flash_id)
+    {
+    default:
+      esp32_board   = ESP32_H4_DEVKIT;
       break;
     }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
@@ -1972,7 +1981,8 @@ static void ESP32_setup()
        defined(CONFIG_IDF_TARGET_ESP32C5)  || \
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
-       defined(CONFIG_IDF_TARGET_ESP32H2))
+       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+       defined(CONFIG_IDF_TARGET_ESP32H4))
 
   Serial.begin(SERIAL_OUT_BR);
 
@@ -3319,7 +3329,8 @@ static void* ESP32_getResetInfoPtr()
 #if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2)
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32H4)
     case INTRUSION_RESET        : reset_info.reason = REASON_EXCEPTION_RST; break;
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : reset_info.reason = REASON_WDT_RST; break;
@@ -3361,7 +3372,8 @@ static String ESP32_getResetInfo()
 #if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2)
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32H4)
     case INTRUSION_RESET        : return F("Instrusion tested to reset CPU");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTC Watch dog Reset CPU");
@@ -3396,7 +3408,8 @@ static String ESP32_getResetReason()
 #if !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
-    !defined(CONFIG_IDF_TARGET_ESP32H2)
+    !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32H4)
     case INTRUSION_RESET        : return F("INTRUSION_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32C6 */
     case RTCWDT_CPU_RESET       : return F("RTCWDT_CPU_RESET");
@@ -5272,7 +5285,8 @@ static void ESP32_Battery_setup()
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
       calibrate_voltage(SOC_GPIO_PIN_P4_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C61) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2)
+      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32H4)
     /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -6400,6 +6414,7 @@ IODev_ops_t ESP32SX_USBSerial_ops = {
      defined(CONFIG_IDF_TARGET_ESP32C6)  || \
      defined(CONFIG_IDF_TARGET_ESP32C61) || \
      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+     defined(CONFIG_IDF_TARGET_ESP32H4)  || \
      defined(CONFIG_IDF_TARGET_ESP32P4))
 
 #define USB_TX_FIFO_SIZE (MAX_TRACKING_OBJECTS * 65 + 75 + 75 + 42 + 20)
@@ -6620,12 +6635,15 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
   SOC_ESP32H2,
   "ESP32-H2",
+#elif defined(CONFIG_IDF_TARGET_ESP32H4)
+  SOC_ESP32H4,
+  "ESP32-H4",
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
   SOC_ESP32P4,
   "ESP32-P4",
 #else
 #error "This ESP32 family build variant is not supported!"
-#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6-H2 */
+#endif /* CONFIG_IDF_TARGET_ESP32-S2-S3-C3-C6-H2-H4 */
   ESP32_setup,
   ESP32_post_init,
   ESP32_loop,
@@ -6668,6 +6686,7 @@ const SoC_ops_t ESP32_ops = {
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
        defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+       defined(CONFIG_IDF_TARGET_ESP32H4)  || \
        defined(CONFIG_IDF_TARGET_ESP32P4))
   &ESP32CX_USBSerial_ops,
 #else

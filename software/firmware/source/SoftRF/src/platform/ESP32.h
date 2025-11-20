@@ -63,6 +63,7 @@
       defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32H4)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
 #if ARDUINO_USB_CDC_ON_BOOT
 #define UATSerial               Serial0
@@ -102,6 +103,7 @@
       !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
       !defined(CONFIG_IDF_TARGET_ESP32C61) && \
       !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
+      !defined(CONFIG_IDF_TARGET_ESP32H4)  && \
       !defined(CONFIG_IDF_TARGET_ESP32P4)
 #define USE_NEOPIXELBUS_LIBRARY
 #else
@@ -170,6 +172,8 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #elif defined(CONFIG_IDF_TARGET_ESP32C61)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+#define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
+#elif defined(CONFIG_IDF_TARGET_ESP32H4)
 #define SOC_GPIO_PIN_LED        SOC_UNUSED_PIN /* TBD */
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
 #define SOC_GPIO_PIN_LED        1
@@ -330,6 +334,7 @@ enum esp32_board_id {
   ESP32_C6_DEVKIT,
   ESP32_C61_DEVKIT,
   ESP32_H2_DEVKIT,
+  ESP32_H4_DEVKIT,
   ESP32_P4_WT_DEVKIT, /* Wireless Tag */
   ESP32_P4_WS_DEVKIT, /* Waveshare or Espressif */
   ESP32_TTGO_V2_OLED,
@@ -530,6 +535,7 @@ extern const USB_Device_List_t supported_USB_devices[];
       defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32H4)  || \
       defined(CONFIG_IDF_TARGET_ESP32P4)
 #undef USE_OLED
 #undef USE_TFT
@@ -538,6 +544,7 @@ extern const USB_Device_List_t supported_USB_devices[];
     defined(CONFIG_IDF_TARGET_ESP32C6)  || \
     defined(CONFIG_IDF_TARGET_ESP32C61) || \
     defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+    defined(CONFIG_IDF_TARGET_ESP32H4)  || \
     defined(CONFIG_IDF_TARGET_ESP32P4)
 #define EXCLUDE_EGM96
 #define EXCLUDE_TEST_MODE
@@ -564,8 +571,8 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #undef EXCLUDE_ETHERNET
 #endif /* P4 */
-#endif /* C2 || C6 || H2 || P4 */
-#endif /* SX || CX || H2 || P4 */
+#endif /* C2 || C6 || H2 || H4 || P4 */
+#endif /* SX || CX || H2 || H4 || P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -593,10 +600,10 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define EXCLUDE_BLUETOOTH
 #endif /* S2 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32H2)
+#if defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32H4)
 #define EXCLUDE_WIFI
 #undef NMEA_TCP_SERVICE
-#endif /* H2 */
+#endif /* H2 || H4 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #define USE_U10_EXT
