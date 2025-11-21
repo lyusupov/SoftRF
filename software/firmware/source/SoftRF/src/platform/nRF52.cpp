@@ -1281,7 +1281,12 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M3:
+      /* TBD */
+      break;
+
     case NRF52_ELECROW_TN_M6:
+      digitalWrite(SOC_GPIO_PIN_M6_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M6_ADC_EN, OUTPUT);
       /* TBD */
       break;
 
@@ -1500,9 +1505,6 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_GNSS_M6_RST, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_M6_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M6_WKE, OUTPUT);
-
-      pinMode(SOC_GPIO_LED_M6_RED_PWR,      OUTPUT);
-      digitalWrite(SOC_GPIO_LED_M6_RED_PWR, HIGH);
 
       pinMode(SOC_GPIO_LED_M6_RED,  OUTPUT);
       pinMode(SOC_GPIO_LED_M6_BLUE, OUTPUT);
@@ -3770,7 +3772,7 @@ static float nRF52_Battery_param(uint8_t param)
           break;
         case NRF52_ELECROW_TN_M6:
           bat_adc_pin = SOC_GPIO_PIN_M6_BATTERY;
-          mult        = SOC_ADC_VOLTAGE_DIV; /* TBD */
+          mult        = SOC_ADC_M6_VOLTAGE_DIV;
           break;
         case NRF52_SEEED_WIO_L1:
           bat_adc_pin = SOC_GPIO_PIN_L1_BATTERY;
