@@ -48,7 +48,7 @@
 #define SOC_GPIO_PIN_SFL_M6_EN    _PINNUM(0, 21) // P0.21
 
 /* RTC */
-#define SOC_GPIO_PIN_RTC_M6_INT   SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_RTC_M6_INT   _PINNUM(0,  4) // P0.04
 
 /* ADC */
 #define SOC_GPIO_PIN_M6_BATTERY   _PINNUM(0, 28) // P0.28
