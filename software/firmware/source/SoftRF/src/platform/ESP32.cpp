@@ -6497,6 +6497,95 @@ IODev_ops_t ESP32CX_USBSerial_ops = {
 };
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 || C6 */
 
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
+
+#include "rtl-sdr.h"
+#include "usb/usb_host.h"
+
+#include <mode-s.h>
+#include <sdr/common.h>
+
+#define MODE_S_LONG_MSG_BITS  112
+
+mode_s_t state;
+
+void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
+
+  MODES_NOTUSED(self);
+
+/* When a new message is available, because it was decoded from the
+ * SDR device, file, or received in the TCP input port, or any other
+ * way we can receive a decoded message, we call this function in order
+ * to use the message.
+ *
+ * Basically this function passes a raw message to the upper layers for
+ * further processing and visualization. */
+
+    if (self->check_crc == 0 || mm->crcok) {
+
+//    printf("%02d %03d %02x%02x%02x\r\n", mm->msgtype, mm->msgbits, mm->aa1, mm->aa2, mm->aa3);
+
+        int acfts_in_sight = 0;
+        struct mode_s_aircraft *a = state.aircrafts;
+
+        while (a) {
+          acfts_in_sight++;
+          a = a->next;
+        }
+
+        if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+          interactiveReceiveData(self, mm);
+        }
+    }
+}
+
+static void ESP32PX_USB_setup()
+{
+    mode_s_init(&state);
+}
+
+static void ESP32PX_USB_loop()
+{
+
+}
+
+static void ESP32PX_USB_fini()
+{
+
+}
+
+static int ESP32PX_USB_available()
+{
+  int rval = 0;
+
+  return rval;
+}
+
+static int ESP32PX_USB_read()
+{
+  int rval = -1;
+
+  return rval;
+}
+
+static size_t ESP32PX_USB_write(const uint8_t *buffer, size_t size)
+{
+  size_t rval = size;
+
+  return rval;
+}
+
+IODev_ops_t ESP32PX_USB_ops = {
+  "ESP32PX USB",
+  ESP32PX_USB_setup,
+  ESP32PX_USB_loop,
+  ESP32PX_USB_fini,
+  ESP32PX_USB_available,
+  ESP32PX_USB_read,
+  ESP32PX_USB_write
+};
+#endif /* CONFIG_IDF_TARGET_ESP32P4 && USE_USB_HOST */
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
 static bool ESP32_ADB_setup()
 {
@@ -6677,7 +6766,9 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
-#if (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
+  &ESP32PX_USB_ops,
+#elif (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \

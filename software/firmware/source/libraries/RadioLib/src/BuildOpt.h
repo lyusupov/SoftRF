@@ -241,7 +241,8 @@
   #define RADIOLIB_PLATFORM                           "Arduino Due"
   #define RADIOLIB_TONE_UNSUPPORTED
 
-#elif (defined(NRF52832_XXAA) || defined(NRF52840_XXAA)) && !defined(ARDUINO_ARDUINO_NANO33BLE)
+#elif (defined(NRF52832_XXAA) || defined(NRF52840_XXAA)) && \
+     (!defined(ARDUINO_ARDUINO_NANO33BLE) && !defined(ARDUINO_NANO33BLE))
   // Adafruit nRF52 boards
   #define RADIOLIB_PLATFORM                           "Adafruit nRF52"
 
@@ -263,7 +264,7 @@
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
-#elif defined(ARDUINO_ARDUINO_NANO33BLE)
+#elif defined(ARDUINO_ARDUINO_NANO33BLE) || defined(ARDUINO_NANO33BLE)
   // Arduino Nano 33 BLE
   #define RADIOLIB_PLATFORM                           "Arduino Nano 33 BLE"
   #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
