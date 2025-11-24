@@ -2659,79 +2659,48 @@ static void ESP32_WDT_fini()
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
 
+#include "libusb.h"
 #include "rtl-sdr.h"
-#include "esp_libusb.h"
-#include "usb/usb_host.h"
 
 #include <mode-s.h>
 #include <sdr/common.h>
 
-#define DAEMON_TASK_PRIORITY    2
-#define CLASS_TASK_PRIORITY     3
+#include "freertos/ringbuf.h"
+#include "esp_heap_caps.h"
 
-static const char *TAG_USBD = "DAEMON";
+#define MODE_S_LONG_MSG_BITS    112
+#define SDR_USB_TRANSFER_SIZE   65536
+#define SDR_RINGBUFFER_SIZE     (1024 * 1024)
+#define RTLSDR_TASK_PRIORITY    10 // 4
 
-extern void class_driver_task(void *arg);
+rtlsdr_dev_t *rtlsdr_dev;
 
-static void host_lib_daemon_task(void *arg)
-{
-    SemaphoreHandle_t sem = (SemaphoreHandle_t)arg;
+mag_t *mag;
 
-    ESP_LOGI(TAG_USBD, "Installing USB Host Library");
-    usb_host_config_t host_config = {
-        .skip_phy_setup = false,
-        .intr_flags = ESP_INTR_FLAG_LEVEL1,
-        .fifo_settings_custom = {
-            .nptx_fifo_lines  = 128,
-            .ptx_fifo_lines   = 128,
-            .rx_fifo_lines    = 512
-        },
-    };
-    ESP_ERROR_CHECK(usb_host_install(&host_config));
-
-    // Signal to the class driver task that the host library is installed
-    xSemaphoreGive(sem);
-    vTaskDelay(10); // Short delay to let client task spin up
-
-    bool has_clients = true;
-    bool has_devices = true;
-    while (has_clients || has_devices)
-    {
-        uint32_t event_flags;
-        ESP_ERROR_CHECK(usb_host_lib_handle_events(portMAX_DELAY, &event_flags));
-        if (event_flags & USB_HOST_LIB_EVENT_FLAGS_NO_CLIENTS)
-        {
-            has_clients = false;
-        }
-        if (event_flags & USB_HOST_LIB_EVENT_FLAGS_ALL_FREE)
-        {
-            has_devices = false;
-        }
-    }
-    ESP_LOGI(TAG_USBD, "No more clients and devices");
-
-    // Uninstall the USB Host Library
-    ESP_ERROR_CHECK(usb_host_uninstall());
-    // Wait to be deleted
-    xSemaphoreGive(sem);
-    vTaskSuspend(NULL);
-}
-
-#define MODE_S_LONG_MSG_BITS  112
+int do_exit = 0;
 
 mode_s_t state;
 
+char STR_TMP_BUFFER[128];
+
+RingbufHandle_t s_ringbuf_sdr;
+
+extern int rtlsdr_is_connected;
+extern mag_t maglut[129*129];
+
 void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 
-  MODES_NOTUSED(self);
+    MODES_NOTUSED(self);
 
-/* When a new message is available, because it was decoded from the
- * SDR device, file, or received in the TCP input port, or any other
- * way we can receive a decoded message, we call this function in order
- * to use the message.
- *
- * Basically this function passes a raw message to the upper layers for
- * further processing and visualization. */
+#if 0
+    if (self->check_crc == 0 || mm->crcok) {
+      sprintf(STR_TMP_BUFFER, "%02d %03d %02x%02x%02x\r\n",
+                              mm->msgtype, mm->msgbits, mm->aa1, mm->aa2, mm->aa3);
+
+      Serial.write(STR_TMP_BUFFER, strlen(STR_TMP_BUFFER));
+      Serial.flush();
+    }
+#endif
 
     if (self->check_crc == 0 || mm->crcok) {
 
@@ -2751,51 +2720,209 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
     }
 }
 
-SemaphoreHandle_t signaling_sem;
-TaskHandle_t daemon_task_hdl;
-TaskHandle_t class_driver_task_hdl;
+void process_iq8u_buffer(uint8_t *buf, size_t size) {
+
+    for (int j=0; j<size; j+=2) {
+      int8_t i = buf[j    ] - 127;
+      int8_t q = buf[j + 1] - 127;
+
+      if (i < 0) i = -i;
+      if (q < 0) q = -q;
+
+      mag[j>>1] = maglut[i*129+q];
+    }
+
+    mode_s_detect(&state, mag, size / 2, on_msg);
+}
+
+static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
+{
+  if (do_exit)
+    return;
+
+  if (rtlsdr_is_connected == 0) {
+    do_exit = 1;
+    rtlsdr_cancel_async(rtlsdr_dev);
+  }
+
+  if (xRingbufferSend(s_ringbuf_sdr, buf, len, pdMS_TO_TICKS(10)) != pdTRUE) {
+      Serial.println("Failed to send message into ring buffer!");
+  }
+}
+
+void rtlsdr_task()
+{
+  while (true)
+  {
+    while (rtlsdr_is_connected == 0) {
+      delay(10);
+    }
+
+    int i;
+    char vendor[256], product[256], serial[256];
+
+    int device_count = rtlsdr_get_device_count();
+
+    fprintf(stderr, "Found %d device(s):\n", device_count);
+	for (i = 0; i < device_count; i++) {
+		rtlsdr_get_device_usb_strings(i, vendor, product, serial);
+		fprintf(stderr, "  %d:  %s, %s, SN: %s\n", i, vendor, product, serial);
+	}
+
+    int r = rtlsdr_open(&rtlsdr_dev, 0);
+    if (r < 0) {
+        fprintf(stderr, "Failed to open rtlsdr device #%d.\n", 0);
+    }
+
+    r = rtlsdr_set_sample_rate(rtlsdr_dev, 2000000);
+    if (r < 0) {
+        fprintf(stderr, "WARNING: Failed to set sample rate.\n");
+    } else {
+        fprintf(stderr, "Sampling at %u S/s.\n", 2000000);
+    }
+
+    r = rtlsdr_set_center_freq(rtlsdr_dev, 1090000000);
+    if (r < 0) {
+        fprintf(stderr, "WARNING: Failed to set center freq.\n");
+    } else {
+        fprintf(stderr, "Tuned to %u Hz.\n", 1090000000);
+    }
+#if 1
+    r = rtlsdr_set_tuner_gain_mode(rtlsdr_dev, 0);
+    if (r != 0)
+    {
+        fprintf(stderr, "WARNING: Failed to set tuner gain.\r\n");
+    }
+    else
+    {
+        fprintf(stderr, "Tuner gain set to automatic.\r\n");
+    }
+#else
+    r = rtlsdr_set_tuner_gain_mode(rtlsdr_dev, 1);
+    if (r < 0) {
+        fprintf(stderr, "WARNING: Failed to enable manual gain.\r\n");
+    }
+
+    int gain = nearest_gain(rtlsdr_dev, 316);
+    r = rtlsdr_set_tuner_gain(rtlsdr_dev, gain);
+    if (r != 0) {
+        fprintf(stderr, "WARNING: Failed to set tuner gain.\r\n");
+    } else {
+        fprintf(stderr, "Tuner gain set to %0.2f dB.\r\n", gain/10.0);
+    }
+#endif
+    r = rtlsdr_reset_buffer(rtlsdr_dev);
+    if (r < 0) {
+        fprintf(stderr, "WARNING: Failed to reset buffers.\n");}
+
+    r = rtlsdr_read_async(rtlsdr_dev, rtlsdr_callback,0,4,SDR_USB_TRANSFER_SIZE);
+
+    rtlsdr_close(rtlsdr_dev);
+
+    do_exit = 0;
+  }
+}
 
 static void ESP32PX_USB_setup()
 {
-    mode_s_init(&state);
+  mode_s_init(&state);
 
-    signaling_sem = xSemaphoreCreateBinary();
+  mag = (mag_t *) ps_malloc(SDR_USB_TRANSFER_SIZE / (sizeof(mag_t) * 2));
 
-    xTaskCreatePinnedToCore(host_lib_daemon_task,
-                            "daemon",
-                            4096,
-                            (void *)signaling_sem,
-                            DAEMON_TASK_PRIORITY,
-                            &daemon_task_hdl,
-                            0);
-    // Create the class driver task
-    xTaskCreatePinnedToCore(class_driver_task,
-                            "class",
-                            4096,
-                            (void *)signaling_sem,
-                            CLASS_TASK_PRIORITY,
-                            &class_driver_task_hdl,
-                            0);
+  StaticRingbuffer_t *buffer_struct = nullptr;
+  uint8_t *buffer_storage = nullptr;
+  buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(
+                                                    sizeof(StaticRingbuffer_t),
+                                                    MALLOC_CAP_SPIRAM);
+  buffer_storage = (uint8_t *)heap_caps_malloc(SDR_RINGBUFFER_SIZE,
+                                               MALLOC_CAP_SPIRAM);
+  s_ringbuf_sdr = xRingbufferCreateStatic(SDR_RINGBUFFER_SIZE,
+                                          RINGBUF_TYPE_BYTEBUF,
+                                          buffer_storage,
+                                          buffer_struct);
+  if (s_ringbuf_sdr == NULL) {
+     fprintf(stderr, "xRingbufferCreateStatic failure\n");
+     while (true);
+  }
 
-    vTaskDelay(10); // Add a short delay to let the tasks run
+  usbhost_begin();
+
+  if (libusb_init() == 1) {
+
+	TaskHandle_t rtlsdr_task_handle = NULL;
+	BaseType_t rtlsdr_task_status = xTaskCreatePinnedToCore(
+		(TaskFunction_t) rtlsdr_task,
+		"rtlsdr_reader",
+		4096,
+		NULL,
+		RTLSDR_TASK_PRIORITY,
+		&rtlsdr_task_handle,
+		CONFIG_ARDUINO_RUNNING_CORE
+	);
+
+	if (rtlsdr_task_status != pdPASS) {
+		ESP_LOGE("rtlsdr","Error creating rtlsdr reader task!");
+		while (1) {
+		  vTaskDelay(1000 / portTICK_PERIOD_MS);
+		}
+	}
+  }
 }
+
+#define	MODES_TASK_INTERVAL 998
+
+unsigned long ModeS_Time_Marker = 0;
 
 static void ESP32PX_USB_loop()
 {
+  size_t receivedMessageSize;
+  uint8_t *receivedMessage;
+  receivedMessage = (uint8_t *) xRingbufferReceiveUpTo(s_ringbuf_sdr,
+                                                       &receivedMessageSize,
+                                                       pdMS_TO_TICKS(1000),
+                                                       SDR_USB_TRANSFER_SIZE);
+  if (receivedMessage != NULL) {
+      process_iq8u_buffer(receivedMessage, receivedMessageSize);
+      vRingbufferReturnItem(s_ringbuf_sdr, (void*) receivedMessage);
+  } else {
+      Serial.println("Failed to receive message from ring buffer!");
+  }
 
+  if (millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
+    struct mode_s_aircraft *a;
+
+    for (a = state.aircrafts; a; a = a->next) {
+#if 0
+      Serial.print("even_cprtime = ");  Serial.print(a->even_cprtime);
+      Serial.print(" ");
+      Serial.print("odd_cprtime = ");   Serial.println(a->odd_cprtime);
+#endif
+      if (a->even_cprtime && a->odd_cprtime &&
+          abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+#if 0
+        if (es1090_decode(a, &ThisAircraft, &fo)) {
+          memset(fo.raw, 0, sizeof(fo.raw));
+          Traffic_Update(&fo);
+          Traffic_Add(&fo);
+        }
+#else
+        Serial.print("addr = "); Serial.print(a->addr, HEX); Serial.print(" ");
+        Serial.print("lat = ");  Serial.print(a->lat);       Serial.print(" ");
+        Serial.print("lon = ");  Serial.println(a->lon);
+#endif
+      }
+#endif
+    }
+
+    interactiveRemoveStaleAircrafts(&state);
+
+    ModeS_Time_Marker = millis();
+  }
 }
 
 static void ESP32PX_USB_fini()
 {
-    // Wait for the tasks to complete
-    for (int i = 0; i < 2; i++)
-    {
-        xSemaphoreTake(signaling_sem, portMAX_DELAY);
-    }
 
-    // Delete the tasks
-    vTaskDelete(class_driver_task_hdl);
-    vTaskDelete(daemon_task_hdl);
 }
 
 static int ESP32PX_USB_available()

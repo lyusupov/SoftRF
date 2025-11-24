@@ -165,6 +165,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_STATUS   (hw_info.model == SOFTRF_MODEL_CARD ? SOC_GPIO_LED_T1000_GREEN : \
                                hw_info.model == SOFTRF_MODEL_COZY ? SOC_GPIO_LED_T114_GREEN  : \
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_RED  : \
+                               hw_info.model == SOFTRF_MODEL_POCKET  ? SOC_GPIO_LED_M3_GREEN : \
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? SOC_GPIO_LED_M6_RED  : \
                                hw_info.model == SOFTRF_MODEL_DECENT  ? SOC_GPIO_LED_L1_GREEN : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
@@ -174,13 +175,15 @@ struct rst_info {
 
 #define SOC_GPIO_LED_USBMSC   (hw_info.model == SOFTRF_MODEL_CARD  ? SOC_GPIO_LED_T1000_RED  : \
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_BLUE : \
+                               hw_info.model == SOFTRF_MODEL_POCKET   ? SOC_GPIO_LED_M3_RED  : \
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? SOC_GPIO_LED_M6_BLUE : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_RED : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_RED : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_RED : \
                                SOC_GPIO_LED_PCA10059_RED)
 
-#define SOC_GPIO_LED_BLE      (hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_BLUE : \
+#define SOC_GPIO_LED_BLE      (hw_info.model == SOFTRF_MODEL_POCKET ? SOC_GPIO_LED_M3_BLUE : \
+                               hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_BLUE : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_BLUE : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_BLUE : \
                                SOC_GPIO_LED_PCA10059_BLUE)
