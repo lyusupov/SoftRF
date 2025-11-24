@@ -2668,12 +2668,18 @@ static void ESP32_WDT_fini()
 #include "freertos/ringbuf.h"
 #include "esp_heap_caps.h"
 
+#define MODE_S_PREAMBLE_US      8
 #define MODE_S_LONG_MSG_BITS    112
-#define SDR_USB_TRANSFER_SIZE   65536
+#define MODE_S_SHORT_MSG_BITS   56
+#define MODE_S_ASYNC_BUF_NUMBER 4
+#define MODE_S_DATA_LEN         65536
+#define MODE_S_FULL_LEN         (MODE_S_PREAMBLE_US + MODE_S_LONG_MSG_BITS)
+
 #define SDR_RINGBUFFER_SIZE     (1024 * 1024)
 #define RTLSDR_TASK_PRIORITY    10 // 4
 
 rtlsdr_dev_t *rtlsdr_dev;
+TaskHandle_t rtlsdr_task_handle = NULL;
 
 mag_t *mag;
 
@@ -2683,6 +2689,8 @@ mode_s_t state;
 
 char STR_TMP_BUFFER[128];
 
+StaticRingbuffer_t *buffer_struct = nullptr;
+uint8_t *buffer_storage = nullptr;
 RingbufHandle_t s_ringbuf_sdr;
 
 extern int rtlsdr_is_connected;
@@ -2729,10 +2737,11 @@ void process_iq8u_buffer(uint8_t *buf, size_t size) {
       if (i < 0) i = -i;
       if (q < 0) q = -q;
 
-      mag[j>>1] = maglut[i*129+q];
+      mag[(MODES_FULL_LEN-1)*2 + (j>>1)] = maglut[i*129+q];
     }
 
-    mode_s_detect(&state, mag, size / 2, on_msg);
+    mode_s_detect(&state, mag, (size + (MODES_FULL_LEN-1)*4) / 2, on_msg);
+    memcpy(mag, mag + size, (MODES_FULL_LEN-1)*2);
 }
 
 static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
@@ -2815,7 +2824,8 @@ void rtlsdr_task()
     if (r < 0) {
         fprintf(stderr, "WARNING: Failed to reset buffers.\n");}
 
-    r = rtlsdr_read_async(rtlsdr_dev, rtlsdr_callback,0,4,SDR_USB_TRANSFER_SIZE);
+    r = rtlsdr_read_async(rtlsdr_dev, rtlsdr_callback, 0,
+                          MODE_S_ASYNC_BUF_NUMBER, MODE_S_DATA_LEN);
 
     rtlsdr_close(rtlsdr_dev);
 
@@ -2827,10 +2837,8 @@ static void ESP32PX_USB_setup()
 {
   mode_s_init(&state);
 
-  mag = (mag_t *) ps_malloc(SDR_USB_TRANSFER_SIZE / (sizeof(mag_t) * 2));
+  mag = (mag_t *) ps_malloc((MODE_S_DATA_LEN + (MODES_FULL_LEN-1)*4) / (sizeof(mag_t) * 2));
 
-  StaticRingbuffer_t *buffer_struct = nullptr;
-  uint8_t *buffer_storage = nullptr;
   buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(
                                                     sizeof(StaticRingbuffer_t),
                                                     MALLOC_CAP_SPIRAM);
@@ -2848,8 +2856,6 @@ static void ESP32PX_USB_setup()
   usbhost_begin();
 
   if (libusb_init() == 1) {
-
-	TaskHandle_t rtlsdr_task_handle = NULL;
 	BaseType_t rtlsdr_task_status = xTaskCreatePinnedToCore(
 		(TaskFunction_t) rtlsdr_task,
 		"rtlsdr_reader",
@@ -2869,9 +2875,46 @@ static void ESP32PX_USB_setup()
   }
 }
 
-#define	MODES_TASK_INTERVAL 998
+#include <TinyGPS++.h>
+
+#include "GDL90Helper.h"
+#include "NMEAHelper.h"
+#include "TrafficHelper.h"
+
+#define MODES_TASK_INTERVAL 998
 
 unsigned long ModeS_Time_Marker = 0;
+
+bool es1090_decode(void *pkt, traffic_t *this_aircraft, traffic_t *fop) {
+
+  struct mode_s_aircraft *a = (struct mode_s_aircraft *) pkt;
+
+  fop->ID        = a->addr;
+  fop->IDType = ADDR_TYPE_ICAO;
+
+  fop->latitude  = a->lat;
+  fop->longitude = a->lon;
+  if (a->unit == MODE_S_UNIT_FEET) {
+    fop->altitude = a->altitude / _GPS_FEET_PER_METER;
+  } else {
+    fop->altitude = a->altitude;
+  }
+
+  fop->AlarmLevel = ALARM_LEVEL_NONE;
+
+  fop->Track = a->track;
+//  fop->ClimbRate = a->vert_rate;                              /* TBD */
+  fop->TurnRate = 0;                                            /* TBD */
+  fop->GroundSpeed = a->speed;
+  fop->AcftType = GDL90_TO_AT(a->aircraft_type);
+
+  /* sizeof(mdb.callsign) = 9 ; sizeof(fop->callsign) = 8 */
+  memcpy(fop->callsign, a->flight, sizeof(fop->callsign));
+
+  fop->timestamp = now();
+
+  return true;
+}
 
 static void ESP32PX_USB_loop()
 {
@@ -2880,7 +2923,7 @@ static void ESP32PX_USB_loop()
   receivedMessage = (uint8_t *) xRingbufferReceiveUpTo(s_ringbuf_sdr,
                                                        &receivedMessageSize,
                                                        pdMS_TO_TICKS(1000),
-                                                       SDR_USB_TRANSFER_SIZE);
+                                                       MODE_S_DATA_LEN);
   if (receivedMessage != NULL) {
       process_iq8u_buffer(receivedMessage, receivedMessageSize);
       vRingbufferReturnItem(s_ringbuf_sdr, (void*) receivedMessage);
@@ -2900,10 +2943,10 @@ static void ESP32PX_USB_loop()
       if (a->even_cprtime && a->odd_cprtime &&
           abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
 #if 0
+        fo = EmptyFO;
         if (es1090_decode(a, &ThisAircraft, &fo)) {
-          memset(fo.raw, 0, sizeof(fo.raw));
           Traffic_Update(&fo);
-          Traffic_Add(&fo);
+          Traffic_Add();
         }
 #else
         Serial.print("addr = "); Serial.print(a->addr, HEX); Serial.print(" ");
@@ -2911,7 +2954,6 @@ static void ESP32PX_USB_loop()
         Serial.print("lon = ");  Serial.println(a->lon);
 #endif
       }
-#endif
     }
 
     interactiveRemoveStaleAircrafts(&state);
@@ -2922,7 +2964,15 @@ static void ESP32PX_USB_loop()
 
 static void ESP32PX_USB_fini()
 {
+  if (libusb_init() == 1) {
+      do_exit = 1;
+      vTaskDelete( rtlsdr_task_handle );
+  }
 
+  vRingbufferDelete(s_ringbuf_sdr);
+  free(buffer_storage);
+  free(buffer_struct);
+  free(mag);
 }
 
 static int ESP32PX_USB_available()
