@@ -50,6 +50,7 @@ static int tp_action = NO_GESTURE;
 
 void gesture_event_handler(lv_event_t * e)
 {
+#if LVGL_VERSION_MAJOR == 8
   lv_obj_t * screen = lv_event_get_current_target(e);
   lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
   switch(dir) {
@@ -70,6 +71,7 @@ void gesture_event_handler(lv_event_t * e)
       tp_action = SWIPE_DOWN;
       break;
   }
+#endif /* LVGL_VERSION_MAJOR == 8 */
 }
 
 byte TFT_setup()
@@ -83,6 +85,7 @@ byte TFT_setup()
 
     lvgl_port_lock(-1);
 
+#if LVGL_VERSION_MAJOR == 8
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_text_color(lv_scr_act(), lv_color_white(), LV_PART_MAIN);
 
@@ -107,6 +110,7 @@ byte TFT_setup()
     lv_obj_align_to(label_4, label_3, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
 
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_handler, LV_EVENT_GESTURE, NULL);
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
     lvgl_port_unlock();
 

@@ -55,7 +55,11 @@ void TFT_radar_loop()
 
   uint16_t radar_x = 0;
   uint16_t radar_y = 0;
-  uint16_t radar_w = min(lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+  uint16_t radar_w;
+
+#if LVGL_VERSION_MAJOR == 8
+  radar_w = min(lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
   uint16_t radar_center_x = radar_w / 2;
   uint16_t radar_center_y = radar_y + radar_w / 2;
@@ -98,6 +102,7 @@ void TFT_radar_loop()
 
   lvgl_port_lock(-1);
 
+#if LVGL_VERSION_MAJOR == 8
   lv_obj_clean(lv_scr_act());
 
   lv_obj_t *circle_1 = lv_obj_create(lv_scr_act());
@@ -168,11 +173,13 @@ void TFT_radar_loop()
   lv_obj_set_pos(line4, radar_w / 2 - 20, radar_w / 2 - 20);
   lv_line_set_points(line4, line4_points, 2);
   lv_obj_add_style(line4, &style_line, 0);
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
   switch (settings->orientation)
   {
   case DIRECTION_NORTH_UP:
     {
+#if LVGL_VERSION_MAJOR == 8
       lv_obj_t *rose_1 = lv_label_create(lv_scr_act());
       lv_label_set_text(rose_1, "N");
       lv_obj_set_style_text_font(rose_1, &lv_font_montserrat_24, 0);
@@ -200,6 +207,7 @@ void TFT_radar_loop()
       lv_obj_set_style_text_color(rose_4, lv_palette_main(LV_PALETTE_GREEN), 0);
       lv_obj_set_style_bg_color(rose_4, lv_color_black(), 0);
       lv_obj_align_to(rose_4, circle_1, LV_ALIGN_BOTTOM_MID, 0, 0);
+#endif /* LVGL_VERSION_MAJOR == 8 */
     }
     break;
   case DIRECTION_TRACK_UP:
@@ -207,6 +215,7 @@ void TFT_radar_loop()
       char cog_text[6];
       snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
 
+#if LVGL_VERSION_MAJOR == 8
       lv_obj_t *rose_1 = lv_label_create(lv_scr_act());
       lv_label_set_text(rose_1, cog_text);
       lv_obj_set_style_text_font(rose_1, &lv_font_montserrat_24, 0);
@@ -234,6 +243,7 @@ void TFT_radar_loop()
       lv_obj_set_style_text_color(rose_4, lv_palette_main(LV_PALETTE_GREEN), 0);
       lv_obj_set_style_bg_color(rose_4, lv_color_black(), 0);
       lv_obj_align_to(rose_4, circle_1, LV_ALIGN_BOTTOM_MID, 0, 0);
+#endif /* LVGL_VERSION_MAJOR == 8 */
     }
 #if 0
     sprite->drawRoundRect( x - 2, y - tbh - 2,
@@ -260,6 +270,7 @@ void TFT_radar_loop()
                       TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "";
   }
 
+#if LVGL_VERSION_MAJOR == 8
   lv_obj_t *pad_1 = lv_obj_create(lv_scr_act());
   lv_obj_set_size(pad_1, 80, 30);
   lv_obj_set_pos(pad_1, (radar_w * 8) / 10, (radar_w * 8) / 10);
@@ -270,6 +281,7 @@ void TFT_radar_loop()
   lv_obj_set_style_text_font(scale_lbl_1, &lv_font_montserrat_24, 0);
   lv_obj_set_style_text_color(scale_lbl_1, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_pos(scale_lbl_1, (radar_w * 8) / 10, (radar_w * 8) / 10);
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
   const char *scale_lbl_2_txt;
 
@@ -285,6 +297,7 @@ void TFT_radar_loop()
                       TFT_zoom == ZOOM_HIGH   ? " 1 NM" : "";
   }
 
+#if LVGL_VERSION_MAJOR == 8
   lv_obj_t *pad_2 = lv_obj_create(lv_scr_act());
   lv_obj_set_size(pad_2, 80, 30);
   lv_obj_set_pos(pad_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
@@ -295,6 +308,7 @@ void TFT_radar_loop()
   lv_obj_set_style_text_font(scale_lbl_2, &lv_font_montserrat_24, 0);
   lv_obj_set_style_text_color(scale_lbl_2, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_pos(scale_lbl_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
 #if 0
   if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
@@ -359,6 +373,7 @@ void TFT_radar_loop()
       static lv_point_t triangle_down_pts[] = { {0,0}, {20,0}, {10,20}, {0,0} };
       static lv_point_t triangle_up_pts[] = { {0,20}, {20,20}, {10,0}, {0,20} };
 
+#if LVGL_VERSION_MAJOR == 8
       static lv_style_t style_line;
       lv_style_init(&style_line);
       lv_style_set_line_width(&style_line, 4);
@@ -386,6 +401,7 @@ void TFT_radar_loop()
         lv_obj_set_style_border_width(circle_3, 4, 0);
         lv_obj_set_style_bg_color(circle_3, lv_color_black(), 0);
       }
+#endif /* LVGL_VERSION_MAJOR == 8 */
     }
   }
 

@@ -6577,11 +6577,11 @@ void process_iq8u_buffer(uint8_t *buf, size_t size) {
       if (i < 0) i = -i;
       if (q < 0) q = -q;
 
-      mag[(MODES_FULL_LEN-1)*2 + (j>>1)] = maglut[i*129+q];
+      mag[(MODE_S_FULL_LEN-1)*2 + (j>>1)] = maglut[i*129+q];
     }
 
-    mode_s_detect(&state, mag, (size + (MODES_FULL_LEN-1)*4) / 2, on_msg);
-    memcpy(mag, mag + size, (MODES_FULL_LEN-1)*2);
+    mode_s_detect(&state, mag, (size + (MODE_S_FULL_LEN-1)*4) / 2, on_msg);
+    memcpy(mag, mag + size/2, (MODE_S_FULL_LEN-1)*2);
 }
 
 static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
@@ -6677,7 +6677,7 @@ static void ESP32PX_USB_setup()
 {
   mode_s_init(&state);
 
-  mag = (mag_t *) ps_malloc((MODE_S_DATA_LEN + (MODES_FULL_LEN-1)*4) / (sizeof(mag_t) * 2));
+  mag = (mag_t *) ps_malloc((MODE_S_DATA_LEN + (MODE_S_FULL_LEN-1)*4) / (sizeof(mag_t) * 2));
 
   buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(
                                                     sizeof(StaticRingbuffer_t),

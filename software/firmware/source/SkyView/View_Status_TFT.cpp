@@ -45,6 +45,7 @@ void TFT_status_loop()
 
   lvgl_port_lock(-1);
 
+#if LVGL_VERSION_MAJOR == 8
   lv_obj_clean(lv_scr_act());
 
   lv_obj_t *label_1 = lv_label_create(lv_scr_act());
@@ -128,6 +129,7 @@ void TFT_status_loop()
     settings->connection == CON_WIFI_UDP      ? "WiFi" : "NONE");
   lv_obj_set_style_text_font(data_7, &lv_font_montserrat_48, 0);
   lv_obj_align_to(data_7, data_6, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
   lvgl_port_unlock();
 }
