@@ -912,11 +912,11 @@ static void nRF52_setup()
         nRF52_system_off();
       }
 
-      pinMode(SOC_GPIO_PIN_SFL_T1000_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_SFL_T1000_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_SFL_T1000_EN, OUTPUT);
 
-      // pinMode(SOC_GPIO_LED_T1000_RED, OUTPUT);
       // digitalWrite(SOC_GPIO_LED_T1000_RED, HIGH);
+      // pinMode(SOC_GPIO_LED_T1000_RED, OUTPUT);
     }
 #endif /* EXCLUDE_IMU */
   }
@@ -941,6 +941,15 @@ static void nRF52_setup()
       break;
     case NRF52_ELECROW_TN_M3:
       Wire.setPins(SOC_GPIO_PIN_M3_SDA, SOC_GPIO_PIN_M3_SCL);
+
+#if !defined(EXCLUDE_IMU)
+      pinMode(SOC_GPIO_PIN_M3_ACC_EN, INPUT_PULLUP);
+#endif /* EXCLUDE_IMU */
+
+      digitalWrite(SOC_GPIO_PIN_M3_TEMP_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_TEMP_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_M3_EEPROM_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN, OUTPUT);
       break;
     case NRF52_ELECROW_TN_M6:
       Wire.setPins(SOC_GPIO_PIN_M6_SDA, SOC_GPIO_PIN_M6_SCL);
@@ -1057,7 +1066,7 @@ static void nRF52_setup()
       break;
 #endif /* EXCLUDE_WIP */
     case NRF52_NORDIC_PCA10059:
-    case NRF52_ELECROW_TN_M3: /* TBD */
+    case NRF52_ELECROW_TN_M3:
     default:
       break;
   }
@@ -1252,11 +1261,11 @@ static void nRF52_setup()
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
-      pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_T1000_3V3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_T1000_3V3_EN, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_T1000_BUZZER_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_T1000_BUZZER_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_T1000_BUZZER_EN, OUTPUT);
       break;
 
     case NRF52_HELTEC_T114:
@@ -1281,7 +1290,16 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M3:
-      /* TBD */
+      digitalWrite(SOC_GPIO_PIN_M3_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_ADC_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_M3_EN1, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_EN1, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_M3_EN2, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_EN2, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_M3_BUT_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M3_BUT_EN, OUTPUT);
       break;
 
     case NRF52_ELECROW_TN_M6:
@@ -1386,8 +1404,8 @@ static void nRF52_setup()
                     SOC_GPIO_PIN_TULTIMA_SCK,
                     SOC_GPIO_PIN_TULTIMA_MOSI);
 
-        pinMode(uSD_SS_pin, OUTPUT);
         digitalWrite(uSD_SS_pin, HIGH);
+        pinMode(uSD_SS_pin, OUTPUT);
 
         uSD_is_attached = uSD.cardBegin(SD_CONFIG);
 
@@ -1406,20 +1424,20 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_EN, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_T1000_EN, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_GNSS_T1000_VRTC, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_VRTC, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_VRTC, OUTPUT);
 
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RST, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_T1000_RST, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_GNSS_T1000_SINT, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_SINT, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_SINT, OUTPUT);
 
-      pinMode(SOC_GPIO_PIN_GNSS_T1000_RINT, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_T1000_RINT, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_T1000_RINT, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_T1000_GREEN, OUTPUT);
       digitalWrite(SOC_GPIO_LED_T1000_GREEN, LED_STATE_ON);
+      pinMode(SOC_GPIO_LED_T1000_GREEN, OUTPUT);
 
       lmic_pins.nss  = SOC_GPIO_PIN_T1000_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_T1000_RST;
@@ -1459,8 +1477,8 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
       digitalWrite(SOC_GPIO_LED_M1_RED_PWR, HIGH);
+      pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
 
       pinMode(SOC_GPIO_LED_M1_RED,  OUTPUT);
       pinMode(SOC_GPIO_LED_M1_BLUE, OUTPUT);
@@ -1476,13 +1494,15 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M3:
+      digitalWrite(SOC_GPIO_PIN_GNSS_M3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M3_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_M3_RST, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M3_RST, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_M3_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M3_WKE, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_M3_RGB_PWR,      OUTPUT);
       digitalWrite(SOC_GPIO_LED_M3_RGB_PWR, HIGH);
+      pinMode(SOC_GPIO_LED_M3_RGB_PWR,      OUTPUT);
 
       pinMode(SOC_GPIO_LED_M3_RED,   OUTPUT);
       pinMode(SOC_GPIO_LED_M3_GREEN, OUTPUT);
@@ -2451,6 +2471,28 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_GNSS_M1_RST,  INPUT);
       break;
 
+    case NRF52_ELECROW_TN_M3:
+      digitalWrite(SOC_GPIO_PIN_GNSS_M3_WKE, LOW);
+      digitalWrite(SOC_GPIO_LED_M3_RGB_PWR,  LOW);
+
+      digitalWrite(SOC_GPIO_LED_M1_RED,  1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M3_GREEN,1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_M3_RED,       INPUT);
+      pinMode(SOC_GPIO_LED_M3_GREEN,     INPUT);
+      pinMode(SOC_GPIO_LED_M3_BLUE,      INPUT);
+      pinMode(SOC_GPIO_LED_M3_RGB_PWR,   INPUT);
+
+      pinMode(SOC_GPIO_PIN_GNSS_M3_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN, INPUT);
+      pinMode(SOC_GPIO_PIN_M3_EN1,       INPUT);
+      pinMode(SOC_GPIO_PIN_M3_EN2,       INPUT);
+      pinMode(SOC_GPIO_PIN_M3_ADC_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_M3_ACC_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_M3_TEMP_EN,   INPUT);
+      break;
+
     case NRF52_SEEED_WIO_L1:
       digitalWrite(SOC_GPIO_PIN_GNSS_L1_WKE, LOW);
 
@@ -2505,7 +2547,10 @@ static void nRF52_fini(int reason)
   // pinMode(SOC_GPIO_PIN_SCK,  INPUT);
 
   /* TBD */
-  if (nRF52_board != NRF52_SEEED_T1000E) pinMode(SOC_GPIO_PIN_SS, INPUT_PULLUP);
+  if (nRF52_board != NRF52_SEEED_T1000E &&
+      nRF52_board != NRF52_ELECROW_TN_M3) {
+    pinMode(SOC_GPIO_PIN_SS, INPUT_PULLUP);
+  }
 
   // pinMode(SOC_GPIO_PIN_BUSY, INPUT);
   pinMode(lmic_pins.rst,  INPUT);

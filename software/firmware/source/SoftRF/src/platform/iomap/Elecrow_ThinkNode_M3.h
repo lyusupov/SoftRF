@@ -10,7 +10,7 @@
 #define SOC_GPIO_PIN_GNSS_M3_PPS  SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_GNSS_M3_WKE  _PINNUM(0, 21) // P0.21
 #define SOC_GPIO_PIN_GNSS_M3_RST  _PINNUM(0, 25) // P0.25
-#define SOC_GPIO_PIN_GNSS_M3_EN   _PINNUM(0, 14) // P0.14
+#define SOC_GPIO_PIN_GNSS_M3_EN   _PINNUM(0, 14) // P0.14 active HIGH
 
 /* SPI */
 #define SOC_GPIO_PIN_M3_MOSI      _PINNUM(1, 14) // P1.14
@@ -27,29 +27,29 @@
 #define SOC_GPIO_PIN_M3_SDA       _PINNUM(0, 26) // P0.26
 #define SOC_GPIO_PIN_M3_SCL       _PINNUM(0, 27) // P0.27
 
-#define SOC_GPIO_PIN_M3_EEPROM_EN _PINNUM(0,  7) // P0.07
+#define SOC_GPIO_PIN_M3_EEPROM_EN _PINNUM(0,  7) // P0.07 active HIGH
 
 /* button */
 #define SOC_GPIO_PIN_M3_BUTTON    _PINNUM(0, 12) // P0.12
-#define SOC_GPIO_PIN_M3_BUT_EN    _PINNUM(0, 16) // P0.16
+#define SOC_GPIO_PIN_M3_BUT_EN    _PINNUM(0, 16) // P0.16 active HIGH
 
 /* LED */
 #define SOC_GPIO_LED_M3_RED       _PINNUM(1,  1) // P1.01
 #define SOC_GPIO_LED_M3_GREEN     _PINNUM(1,  3) // P1.03
 #define SOC_GPIO_LED_M3_BLUE      _PINNUM(1,  5) // P1.05
-#define SOC_GPIO_LED_M3_RGB_PWR   _PINNUM(0, 29) // P0.29
+#define SOC_GPIO_LED_M3_RGB_PWR   _PINNUM(0, 29) // P0.29 active HIGH
 
 /* buzzer */
 #define SOC_GPIO_PIN_M3_BUZZER    _PINNUM(0, 23) // P0.23
-#define SOC_GPIO_PIN_M3_EN1       _PINNUM(1,  4) // P1.04
-#define SOC_GPIO_PIN_M3_EN2       _PINNUM(1,  2) // P1.02
+#define SOC_GPIO_PIN_M3_EN1       _PINNUM(1,  4) // P1.04 active HIGH
+#define SOC_GPIO_PIN_M3_EN2       _PINNUM(1,  2) // P1.02 active HIGH
 
 /* RTC */
 #define SOC_GPIO_PIN_RTC_M3_INT   SOC_UNUSED_PIN // TBD
 
 /* ADC */
 #define SOC_GPIO_PIN_M3_BATTERY   _PINNUM(0,  5) // P0.05
-#define SOC_GPIO_PIN_M3_BAT_EN    _PINNUM(0, 17) // P0.17
+#define SOC_GPIO_PIN_M3_ADC_EN    _PINNUM(0, 17) // P0.17 active HIGH
 
 #define SOC_ADC_M3_VOLTAGE_DIV    (1.75F)
 
@@ -60,5 +60,5 @@
 #define SOC_GPIO_PIN_M3_VGPS_SEN  SOC_UNUSED_PIN // TBD
 
 /* Sensors (ACC + AHT10) */
-#define SOC_GPIO_PIN_M3_ACC_EN    _PINNUM(0,  2) // P0.02
-#define SOC_GPIO_PIN_M3_TEMP_EN   _PINNUM(0,  3) // P0.03
+#define SOC_GPIO_PIN_M3_ACC_EN    _PINNUM(0,  2) // P0.02 active HIGH ?
+#define SOC_GPIO_PIN_M3_TEMP_EN   _PINNUM(0,  3) // P0.03 active HIGH

@@ -2671,7 +2671,7 @@ static void ESP32_WDT_fini()
 #define MODE_S_PREAMBLE_US      8
 #define MODE_S_LONG_MSG_BITS    112
 #define MODE_S_SHORT_MSG_BITS   56
-#define MODE_S_ASYNC_BUF_NUMBER 4
+#define MODE_S_ASYNC_BUF_NUMBER 3
 #define MODE_S_DATA_LEN         65536
 #define MODE_S_FULL_LEN         (MODE_S_PREAMBLE_US + MODE_S_LONG_MSG_BITS)
 
@@ -2918,17 +2918,19 @@ bool es1090_decode(void *pkt, traffic_t *this_aircraft, traffic_t *fop) {
 
 static void ESP32PX_USB_loop()
 {
-  size_t receivedMessageSize;
-  uint8_t *receivedMessage;
-  receivedMessage = (uint8_t *) xRingbufferReceiveUpTo(s_ringbuf_sdr,
-                                                       &receivedMessageSize,
-                                                       pdMS_TO_TICKS(1000),
-                                                       MODE_S_DATA_LEN);
-  if (receivedMessage != NULL) {
-      process_iq8u_buffer(receivedMessage, receivedMessageSize);
-      vRingbufferReturnItem(s_ringbuf_sdr, (void*) receivedMessage);
-  } else {
-      Serial.println("Failed to receive message from ring buffer!");
+  if (rtlsdr_is_connected == 1) {
+    size_t receivedMessageSize;
+    uint8_t *receivedMessage;
+    receivedMessage = (uint8_t *) xRingbufferReceiveUpTo(s_ringbuf_sdr,
+                                                         &receivedMessageSize,
+                                                         pdMS_TO_TICKS(1000),
+                                                         MODE_S_DATA_LEN);
+    if (receivedMessage != NULL) {
+        process_iq8u_buffer(receivedMessage, receivedMessageSize);
+        vRingbufferReturnItem(s_ringbuf_sdr, (void*) receivedMessage);
+    } else {
+        Serial.println("Failed to receive message from ring buffer!");
+    }
   }
 
   if (millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
