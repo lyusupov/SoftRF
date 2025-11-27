@@ -352,6 +352,10 @@ static unsigned long IMU_Time_Marker = 0;
 extern float IMU_g;
 #endif /* EXCLUDE_IMU */
 
+#include <SensorDRV2605.hpp>
+SensorDRV2605 vibra;
+static bool nRF52_has_vibra = false;
+
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 uCDB<FatVolume, File32> ucdb(fatfs);
 
@@ -1749,6 +1753,18 @@ static void nRF52_setup()
     }
   }
 #endif /* ENABLE_NFC */
+
+  if (nRF52_board == NRF52_LILYGO_TECHO_PLUS) {
+    nRF52_has_vibra = vibra.begin(Wire);
+
+    if (nRF52_has_vibra) {
+      vibra.selectLibrary(1);
+      vibra.setMode(SensorDRV2605::MODE_INTTRIG);
+
+      digitalWrite(SOC_GPIO_PIN_MOTOR_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_MOTOR_EN, OUTPUT);
+    }
+  }
 }
 
 static void nRF52_post_init()
@@ -2391,6 +2407,12 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_LED_TECHO_REV_2_RED,   INPUT_PULLUP);
       pinMode(SOC_GPIO_LED_TECHO_REV_2_BLUE,  INPUT_PULLUP);
 
+      if (nRF52_board == NRF52_LILYGO_TECHO_PLUS && nRF52_has_vibra == true) {
+        vibra.stop();
+        vibra.setMode(1<<6); /* Standby */
+        pinMode(SOC_GPIO_PIN_MOTOR_EN, INPUT);
+      }
+
       pinMode(SOC_GPIO_PIN_SFL_HOLD,  INPUT);
       pinMode(SOC_GPIO_PIN_SFL_WP,    INPUT);
       pinMode(SOC_GPIO_PIN_SFL_SS,    INPUT);
@@ -2780,6 +2802,12 @@ static void nRF52_Sound_test(int var)
     MIDI_USB.sendNoteOff(note_sequence[current], 0, MIDI_CHANNEL_TRAFFIC);
   }
 #endif /* USE_USB_MIDI */
+
+  if (nRF52_board == NRF52_LILYGO_TECHO_PLUS && nRF52_has_vibra == true) {
+    vibra.setWaveform(0, 75); /* Transition Ramp Down Short Smooth 2 - 100 to 0% */
+    vibra.setWaveform(1, 0);
+    vibra.run();
+  }
 
 #if defined(USE_PWM_SOUND)
   if (SOC_GPIO_PIN_BUZZER != SOC_UNUSED_PIN && settings->volume != BUZZER_OFF) {
