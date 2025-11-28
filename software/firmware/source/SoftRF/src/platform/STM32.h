@@ -148,6 +148,12 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_CC13XX
 #define EXCLUDE_TEST_MODE
 
+/*
+ * One of use cases for Dongle Edition is a long term continous operation
+ * from an external USB power source.
+ * Enforce a restart of the device when it's uptime is more than 46 days
+ * to prevent millis() rollover.
+ */
 #define TAKE_CARE_OF_MILLIS_ROLLOVER
 
 #define EXCLUDE_GNSS_UBLOX

@@ -256,6 +256,14 @@ struct rst_info {
 //#define EXCLUDE_SOFTRF_HEARTBEAT
 //#define EXCLUDE_LK8EX1
 
+/*
+ * One of use cases for Solaris Edition is a long term continous operation
+ * from solar and rechargable battery power sources.
+ * Enforce a restart of the device when it's uptime is more than 46 days
+ * to prevent millis() rollover.
+ */
+#define TAKE_CARE_OF_MILLIS_ROLLOVER
+
 #define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
