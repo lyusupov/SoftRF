@@ -898,6 +898,16 @@ static void ESP32_setup()
     } else {
       WIRE_FINI(Wire1);
     }
+  } else if (esp32_board == ESP32_LILYGO_T_ELRS) {
+    hw_info.model    = SOFTRF_MODEL_NANO;
+    hw_info.revision = 2;
+
+    lmic_pins.nss  = SOC_GPIO_PIN_ELRS_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_ELRS_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_ELRS_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_ELRS_DIO9;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK2) {
     esp32_board = ESP32_TTGO_T_BEAM;
@@ -4090,6 +4100,12 @@ static void ESP32_SPI_begin()
 {
   switch (esp32_board)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    case ESP32_LILYGO_T_ELRS:
+      SPI.begin(SOC_GPIO_PIN_ELRS_SCK,  SOC_GPIO_PIN_ELRS_MISO,
+                SOC_GPIO_PIN_ELRS_MOSI, SOC_GPIO_PIN_ELRS_SS);
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     case ESP32_S2_T8_V1_1:
       SPI.begin(SOC_GPIO_PIN_T8_S2_SCK,  SOC_GPIO_PIN_T8_S2_MISO,
@@ -4203,19 +4219,12 @@ static void ESP32_swSer_begin(unsigned long baud)
                            SOC_GPIO_PIN_TBEAM_V05_RX,
                            SOC_GPIO_PIN_TBEAM_V05_TX);
     }
-  } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
-
-    Serial.println(F("INFO: TTGO T-Beam Supreme is detected."));
-
-    Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                         SOC_GPIO_PIN_S3_GNSS_RX,
-                         SOC_GPIO_PIN_S3_GNSS_TX);
-
   } else {
     if (esp32_board == ESP32_TTGO_T_WATCH) {
       Serial.println(F("INFO: TTGO T-Watch is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TWATCH_RX, SOC_GPIO_PIN_TWATCH_TX);
+#if defined(CONFIG_IDF_TARGET_ESP32)
     } else if (esp32_board == ESP32_TTGO_V2_OLED) {
       /* 'Mini' (TTGO T3 + GNSS) */
       Serial.print(F("INFO: TTGO T3 rev. "));
@@ -4223,6 +4232,11 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F(" is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+    } else if (esp32_board == ESP32_LILYGO_T_ELRS) {
+      Serial.println(F("INFO: LilyGO T-Lora Dual is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     } else if (esp32_board == ESP32_S2_T8_V1_1) {
       Serial.println(F("INFO: TTGO T8_S2 rev. 1.1 is detected."));
@@ -4231,6 +4245,11 @@ static void ESP32_swSer_begin(unsigned long baud)
                            SOC_GPIO_PIN_T8_S2_GNSS_TX);
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+    } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
+      Serial.println(F("INFO: TTGO T-Beam Supreme is detected."));
+      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                           SOC_GPIO_PIN_S3_GNSS_RX,
+                           SOC_GPIO_PIN_S3_GNSS_TX);
     } else if (esp32_board == ESP32_S3_DEVKIT) {
       Serial.println(F("INFO: ESP32-S3 DevKit is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
@@ -4377,7 +4396,8 @@ static byte ESP32_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (esp32_board == ESP32_RADIOMASTER_XR1) {
+  if (esp32_board == ESP32_RADIOMASTER_XR1 ||
+      esp32_board == ESP32_LILYGO_T_ELRS) {
       /* Nothing to do */
   } else if (esp32_board != ESP32_TTGO_T_WATCH   &&
              esp32_board != ESP32_S2_T8_V1_1     &&
@@ -5436,7 +5456,8 @@ static unsigned long ESP32_get_PPS_TimeMarker()
 static bool ESP32_Baro_setup()
 {
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH ||
-      esp32_board   == ESP32_RADIOMASTER_XR1) {
+      esp32_board   == ESP32_RADIOMASTER_XR1 ||
+      esp32_board   == ESP32_LILYGO_T_ELRS) {
 
     return false;
 
