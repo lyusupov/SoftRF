@@ -812,6 +812,8 @@ static void ESP32_setup()
     switch (flash_id)
     {
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* C3FH4 or 4X with emb. flash */
+    /* https://github.com/lyusupov/SoftRF/issues/191 */
+    case MakeFlashId(TBD_ID,  TBD_25Q32):
       esp32_board   = ESP32_RADIOMASTER_XR1;
       break;
     case MakeFlashId(ST_ID,   XMC_XM25QH32B):
