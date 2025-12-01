@@ -313,6 +313,24 @@ static const Module::RfSwitchMode_t rfswitch_table_elecrow[] = {
     { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
     END_OF_MODE_TABLE,
 };
+
+static const uint32_t rfswitch_dio_pins_lilygo[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    10 /* SOC_GPIO_PIN_ELRS_HF_RX */, 14 /* SOC_GPIO_PIN_ELRS_HF_TX */,
+    RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_lilygo[] = {
+    // mode                  DIO5  DIO6  HF_RX HF_TX
+    { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_RX,     { LOW,  HIGH, HIGH, LOW  } },
+    { LR11x0::MODE_TX,     { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  HIGH } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
 #endif /* USE_LR11XX */
 
 // this function is called when a complete packet
@@ -991,7 +1009,13 @@ static void lr11xx_setup()
 #endif
       state = radio_semtech->setOutputPower(txpow, false);
     } else {
-      radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
+      if (hw_info.revision == 2) {
+        /* LilyGO T-Lora Dual LR, a.k.a. LilyGO T-ELRS-LR1121 */
+        radio_semtech->setRfSwitchTable(rfswitch_dio_pins_lilygo, rfswitch_table_lilygo);
+      } else {
+        /* RadioMaster XR1 */
+        radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
+      }
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
     break;

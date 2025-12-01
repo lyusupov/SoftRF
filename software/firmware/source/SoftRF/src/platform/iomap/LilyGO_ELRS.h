@@ -3,8 +3,8 @@
  * ESP32-PICO-D4
  */
 
-#define SOC_GPIO_PIN_ELRS_CONS_RX         12 /* NC */
-#define SOC_GPIO_PIN_ELRS_CONS_TX         23 /* NC */
+#define SOC_GPIO_PIN_ELRS_GNSS_RX         12 /* NC */
+#define SOC_GPIO_PIN_ELRS_GNSS_TX         23 /* NC */
 
 #define SOC_GPIO_PIN_ELRS_MAV_RX          3  /* U0RXD */
 #define SOC_GPIO_PIN_ELRS_MAV_TX          1  /* U0TXD */
@@ -23,8 +23,9 @@
 #define SOC_GPIO_PIN_ELRS_RST             26
 #define SOC_GPIO_PIN_ELRS_DIO9            37
 
-#define SOC_GPIO_PIN_ELRS_ANT_SW_TX       14
-#define SOC_GPIO_PIN_ELRS_ANT_SW_RX       10
+/* AT2401C */
+#define SOC_GPIO_PIN_ELRS_HF_TX           14
+#define SOC_GPIO_PIN_ELRS_HF_RX           10
 #else
 // Radio #2
 #define SOC_GPIO_PIN_ELRS_SS              13
@@ -33,8 +34,9 @@
 #define SOC_GPIO_PIN_ELRS_RST             21
 #define SOC_GPIO_PIN_ELRS_DIO9            34
 
-#define SOC_GPIO_PIN_ELRS_ANT_SW_TX       15
-#define SOC_GPIO_PIN_ELRS_ANT_SW_RX       9
+/* AT2401C */
+#define SOC_GPIO_PIN_ELRS_HF_TX           15
+#define SOC_GPIO_PIN_ELRS_HF_RX           9
 #endif
 
 // misc.

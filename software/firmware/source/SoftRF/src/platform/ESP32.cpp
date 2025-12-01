@@ -520,7 +520,7 @@ esp_err_t es8311_codec_init(void) {
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32)
 #if defined(USE_NEOPIXELBUS_LIBRARY)
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> XR1_Pixel(1, SOC_GPIO_PIN_ELRS_PIXEL);
 #endif /* USE_NEOPIXELBUS_LIBRARY */
@@ -727,9 +727,26 @@ static void ESP32_setup()
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
     uint32_t pkg_ver  = chip_ver & 0x7;
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4) {
-      esp32_board    = ESP32_TTGO_V2_OLED;
-      lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
-      lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
+      esp32_board = ESP32_TTGO_V2_OLED;
+
+#if 0
+      pinMode(SOC_GPIO_PIN_TBEAM_RF_RST_V05, INPUT_PULLDOWN);
+      pinMode(SOC_GPIO_PIN_DIO0, INPUT_PULLUP);
+
+      delay(50);
+
+      if (digitalRead(SOC_GPIO_PIN_DIO0) == HIGH) {
+        esp32_board = ESP32_LILYGO_T_ELRS;
+      }
+
+      pinMode(SOC_GPIO_PIN_DIO0, INPUT);
+      pinMode(SOC_GPIO_PIN_TBEAM_RF_RST_V05, INPUT);
+#endif
+
+      if (esp32_board == ESP32_TTGO_V2_OLED) {
+        lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
+        lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
+      }
     }
 #endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -905,6 +922,8 @@ static void ESP32_setup()
     lmic_pins.nss  = SOC_GPIO_PIN_ELRS_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_ELRS_RST;
     lmic_pins.busy = SOC_GPIO_PIN_ELRS_BUSY;
+    // lmic_pins.txe  = SOC_GPIO_PIN_ELRS_HF_TX; /* 1+ GHz only */
+    // lmic_pins.rxe  = SOC_GPIO_PIN_ELRS_HF_RX; /* 1+ GHz only */
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
     lmic_pins.dio[0] = SOC_GPIO_PIN_ELRS_DIO9;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
@@ -2301,8 +2320,9 @@ static void ESP32_setup()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
-  if (esp32_board == ESP32_RADIOMASTER_XR1) {
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32)
+  if (esp32_board == ESP32_RADIOMASTER_XR1 ||
+      esp32_board == ESP32_LILYGO_T_ELRS) {
 #if SOC_GPIO_PIN_ELRS_LED != SOC_UNUSED_PIN
     digitalWrite(SOC_GPIO_PIN_ELRS_LED, LED_STATE_ON);
     pinMode(SOC_GPIO_PIN_ELRS_LED,      OUTPUT);
@@ -4234,8 +4254,14 @@ static void ESP32_swSer_begin(unsigned long baud)
                            TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_T_ELRS) {
       Serial.println(F("INFO: LilyGO T-Lora Dual is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+      if (settings->mode == SOFTRF_MODE_UAV) {
+        SerialOutput.updateBaudRate(baud);
+        Serial_GNSS_In = SerialOutput;
+      } else {
+        Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                             SOC_GPIO_PIN_ELRS_GNSS_RX,
+                             SOC_GPIO_PIN_ELRS_GNSS_TX);
+      };
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     } else if (esp32_board == ESP32_S2_T8_V1_1) {
@@ -5240,7 +5266,8 @@ static void ESP32_Battery_setup()
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     calibrate_voltage(hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
                      (esp32_board == ESP32_TTGO_V2_OLED &&
-                      hw_info.revision == STD_EDN_REV_T3_1_6) ?
+                      hw_info.revision == STD_EDN_REV_T3_1_6) ||
+                      esp32_board == ESP32_LILYGO_T_ELRS ?
                      (adc1_channel_t) ADC1_GPIO35_CHANNEL :
                      (adc1_channel_t) ADC1_GPIO36_CHANNEL);
 #else

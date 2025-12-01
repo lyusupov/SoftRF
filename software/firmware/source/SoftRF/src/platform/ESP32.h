@@ -493,6 +493,15 @@ struct rst_info {
 #if defined(CONFIG_IDF_TARGET_ESP32)
 //#define ENABLE_BT_VOICE
 //#define USE_NIMBLE
+
+//#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
+#define EXCLUDE_SI446X
+#define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
+
 #else
 
 #define EXCLUDE_UATM
