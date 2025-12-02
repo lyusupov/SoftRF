@@ -664,7 +664,9 @@ static void ESP32_setup()
    *  LilyGO T3-S3-EP | ESP32-S3-MINI    | XMC_XM25QH32B
    *  LilyGO T3-S3-OL | ESP32-S3FH4R2    |
    *  Elecrow TN-M2   | ESP32-S3-N4R8    | ZBIT_ZB25VQ32B
-   *  Elecrow TN-M5   | ESP32-S3-N4R8    |
+   *  RadioMaster XR1 | ESP32-C3 (QFN32) | XMC_XM25QH32B
+   *  RadioMaster XR1 |                  | 0x464016 (TBD)
+   *  Elecrow TN-M5   | ESP32-S3-N4R8    | 0x464016 (TBD)
    *  Ebyte EoRa-HUB  | ESP32-S3FH4R2    |
    *  WT99P4C5-S1 CPU | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
    *  WT99P4C5-S1 NCU | ESP32-C5-WROOM-1 | XMC_XM25QH64B
@@ -812,11 +814,11 @@ static void ESP32_setup()
     switch (flash_id)
     {
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ32B): /* C3FH4 or 4X with emb. flash */
-    /* https://github.com/lyusupov/SoftRF/issues/191 */
-    case MakeFlashId(TBD_ID,  TBD_25Q32):
       esp32_board   = ESP32_RADIOMASTER_XR1;
       break;
     case MakeFlashId(ST_ID,   XMC_XM25QH32B):
+    /* https://github.com/lyusupov/SoftRF/issues/191 */
+    case MakeFlashId(TBD_ID,  TBD_25Q32):
       if (wafer_ver == 4)
         esp32_board = ESP32_RADIOMASTER_XR1;
       else
@@ -2511,44 +2513,49 @@ static void ESP32_post_init()
 #endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
-  Serial.println();
-  Serial.println(F("Data output device(s):"));
+  Stream *Diag;
+  if (esp32_board == ESP32_RADIOMASTER_XR1) { Diag = &Serial_GNSS_Out; } else if
+     (esp32_board == ESP32_ELECROW_TN_M2 || esp32_board == ESP32_ELECROW_TN_M5)
+    { Diag = &SerialOutput; } else { Diag = &Serial; }
 
-  Serial.print(F("NMEA   - "));
+  Diag->println();
+  Diag->println(F("Data output device(s):"));
+
+  Diag->print(F("NMEA   - "));
   switch (settings->nmea_out)
   {
-    case NMEA_UART       :  Serial.println(F("UART"));      break;
-    case NMEA_USB        :  Serial.println(F("USB CDC"));   break;
-    case NMEA_UDP        :  Serial.println(F("UDP"));       break;
-    case NMEA_TCP        :  Serial.println(F("TCP"));       break;
-    case NMEA_BLUETOOTH  :  Serial.println(F("Bluetooth")); break;
+    case NMEA_UART       :  Diag->println(F("UART"));      break;
+    case NMEA_USB        :  Diag->println(F("USB CDC"));   break;
+    case NMEA_UDP        :  Diag->println(F("UDP"));       break;
+    case NMEA_TCP        :  Diag->println(F("TCP"));       break;
+    case NMEA_BLUETOOTH  :  Diag->println(F("Bluetooth")); break;
     case NMEA_OFF        :
-    default              :  Serial.println(F("NULL"));      break;
+    default              :  Diag->println(F("NULL"));      break;
   }
 
-  Serial.print(F("GDL90  - "));
+  Diag->print(F("GDL90  - "));
   switch (settings->gdl90)
   {
-    case GDL90_UART      :  Serial.println(F("UART"));      break;
-    case GDL90_USB       :  Serial.println(F("USB CDC"));   break;
-    case GDL90_UDP       :  Serial.println(F("UDP"));       break;
-    case GDL90_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
+    case GDL90_UART      :  Diag->println(F("UART"));      break;
+    case GDL90_USB       :  Diag->println(F("USB CDC"));   break;
+    case GDL90_UDP       :  Diag->println(F("UDP"));       break;
+    case GDL90_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
     case GDL90_OFF       :
-    default              :  Serial.println(F("NULL"));      break;
+    default              :  Diag->println(F("NULL"));      break;
   }
 
-  Serial.print(F("D1090  - "));
+  Diag->print(F("D1090  - "));
   switch (settings->d1090)
   {
-    case D1090_UART      :  Serial.println(F("UART"));      break;
-    case D1090_USB       :  Serial.println(F("USB CDC"));   break;
-    case D1090_BLUETOOTH :  Serial.println(F("Bluetooth")); break;
+    case D1090_UART      :  Diag->println(F("UART"));      break;
+    case D1090_USB       :  Diag->println(F("USB CDC"));   break;
+    case D1090_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
     case D1090_OFF       :
-    default              :  Serial.println(F("NULL"));      break;
+    default              :  Diag->println(F("NULL"));      break;
   }
 
-  Serial.println();
-  Serial.flush();
+  Diag->println();
+  Diag->flush();
 
   switch (hw_info.display)
   {
@@ -4316,11 +4323,11 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_BPIPW_GNSS_RX, SOC_GPIO_PIN_BPIPW_GNSS_TX);
     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-      Serial.println(F("INFO: Elecrow ThinkNode M2 is detected."));
+      SerialOutput.println(F("INFO: Elecrow ThinkNode M2 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
     } else if (esp32_board == ESP32_ELECROW_TN_M5) {
-      Serial.println(F("INFO: Elecrow ThinkNode M5 is detected."));
+      SerialOutput.println(F("INFO: Elecrow ThinkNode M5 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_M5_GNSS_RX, SOC_GPIO_PIN_M5_GNSS_TX);
     } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
@@ -4340,9 +4347,9 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_C3_GNSS_RX, SOC_GPIO_PIN_C3_GNSS_TX);
     } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
-      Serial.println(F("INFO: RadioMaster XR1 is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+      Serial_GNSS_Out.println(F("INFO: RadioMaster XR1 is detected."));
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
     } else if (esp32_board == ESP32_C5_DEVKIT) {
@@ -4380,9 +4387,13 @@ static void ESP32_swSer_begin(unsigned long baud)
   /* Default Rx buffer size (256 bytes) is sometimes not big enough */
   // Serial_GNSS_In.setRxBufferSize(512);
 
-  /* Need to gather some statistics on variety of flash IC usage */
-  Serial.print(F("Flash memory ID: "));
-  Serial.println(ESP32_getFlashId(), HEX);
+  /* Needs to gather some statistics on variety of flash IC usage */
+  Stream *Diag;
+  if (esp32_board == ESP32_RADIOMASTER_XR1) { Diag = &Serial_GNSS_Out; } else if
+     (esp32_board == ESP32_ELECROW_TN_M2 || esp32_board == ESP32_ELECROW_TN_M5)
+    { Diag = &SerialOutput; } else { Diag = &Serial; }
+  Diag->print(F("Flash memory ID: "));
+  Diag->println(ESP32_getFlashId(), HEX);
 }
 
 static void ESP32_swSer_enableRx(boolean arg)

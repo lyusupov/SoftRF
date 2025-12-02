@@ -523,6 +523,10 @@ class Module {
     void regdump(const char* level, uint16_t start, size_t len);
     #endif
 
+    // RF switch pins and table (in use by external LR11x0 module)
+    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
+    const RfSwitchMode_t *rfSwitchTable = nullptr;
+
 #if !RADIOLIB_GODMODE
   private:
 #endif
@@ -530,10 +534,6 @@ class Module {
     uint32_t irqPin = RADIOLIB_NC;
     uint32_t rstPin = RADIOLIB_NC;
     uint32_t gpioPin = RADIOLIB_NC;
-
-    // RF switch pins and table
-    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
-    const RfSwitchMode_t *rfSwitchTable = nullptr;
 
     #if RADIOLIB_INTERRUPT_TIMING
     uint32_t prevTimingLen = 0;

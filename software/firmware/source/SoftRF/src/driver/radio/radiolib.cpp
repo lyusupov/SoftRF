@@ -324,8 +324,8 @@ static const Module::RfSwitchMode_t rfswitch_table_lilygo[] = {
     // mode                  DIO5  DIO6  HF_RX HF_TX
     { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
     { LR11x0::MODE_RX,     { LOW,  HIGH, HIGH, LOW  } },
-    { LR11x0::MODE_TX,     { LOW,  LOW,  LOW,  LOW  } },
-    { LR11x0::MODE_TX_HP,  { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_TX,     { HIGH, LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_TX_HP,  { HIGH, LOW,  LOW,  LOW  } },
     { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW,  HIGH } },
     { LR11x0::MODE_GNSS,   { LOW,  LOW,  LOW,  LOW  } },
     { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
