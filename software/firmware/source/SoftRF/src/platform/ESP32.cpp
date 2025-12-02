@@ -2521,37 +2521,42 @@ static void ESP32_post_init()
   Diag->println();
   Diag->println(F("Data output device(s):"));
 
-  Diag->print(F("NMEA   - "));
-  switch (settings->nmea_out)
-  {
-    case NMEA_UART       :  Diag->println(F("UART"));      break;
-    case NMEA_USB        :  Diag->println(F("USB CDC"));   break;
-    case NMEA_UDP        :  Diag->println(F("UDP"));       break;
-    case NMEA_TCP        :  Diag->println(F("TCP"));       break;
-    case NMEA_BLUETOOTH  :  Diag->println(F("Bluetooth")); break;
-    case NMEA_OFF        :
-    default              :  Diag->println(F("NULL"));      break;
-  }
+  if (settings->mode == SOFTRF_MODE_UAV) {
+    Diag->println(F("MAV V1 - UART"));
+  } else {
 
-  Diag->print(F("GDL90  - "));
-  switch (settings->gdl90)
-  {
-    case GDL90_UART      :  Diag->println(F("UART"));      break;
-    case GDL90_USB       :  Diag->println(F("USB CDC"));   break;
-    case GDL90_UDP       :  Diag->println(F("UDP"));       break;
-    case GDL90_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
-    case GDL90_OFF       :
-    default              :  Diag->println(F("NULL"));      break;
-  }
+    Diag->print(F("NMEA   - "));
+    switch (settings->nmea_out)
+    {
+      case NMEA_UART       :  Diag->println(F("UART"));      break;
+      case NMEA_USB        :  Diag->println(F("USB CDC"));   break;
+      case NMEA_UDP        :  Diag->println(F("UDP"));       break;
+      case NMEA_TCP        :  Diag->println(F("TCP"));       break;
+      case NMEA_BLUETOOTH  :  Diag->println(F("Bluetooth")); break;
+      case NMEA_OFF        :
+      default              :  Diag->println(F("NULL"));      break;
+    }
 
-  Diag->print(F("D1090  - "));
-  switch (settings->d1090)
-  {
-    case D1090_UART      :  Diag->println(F("UART"));      break;
-    case D1090_USB       :  Diag->println(F("USB CDC"));   break;
-    case D1090_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
-    case D1090_OFF       :
-    default              :  Diag->println(F("NULL"));      break;
+    Diag->print(F("GDL90  - "));
+    switch (settings->gdl90)
+    {
+      case GDL90_UART      :  Diag->println(F("UART"));      break;
+      case GDL90_USB       :  Diag->println(F("USB CDC"));   break;
+      case GDL90_UDP       :  Diag->println(F("UDP"));       break;
+      case GDL90_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
+      case GDL90_OFF       :
+      default              :  Diag->println(F("NULL"));      break;
+    }
+
+    Diag->print(F("D1090  - "));
+    switch (settings->d1090)
+    {
+      case D1090_UART      :  Diag->println(F("UART"));      break;
+      case D1090_USB       :  Diag->println(F("USB CDC"));   break;
+      case D1090_BLUETOOTH :  Diag->println(F("Bluetooth")); break;
+      case D1090_OFF       :
+      default              :  Diag->println(F("NULL"));      break;
+    }
   }
 
   Diag->println();
@@ -4349,6 +4354,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     } else if (esp32_board == ESP32_RADIOMASTER_XR1) {
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_ELRS_MAV_RX, SOC_GPIO_PIN_ELRS_MAV_TX);
+      Serial_GNSS_Out.println();
       Serial_GNSS_Out.println(F("INFO: RadioMaster XR1 is detected."));
 #endif /* CONFIG_IDF_TARGET_ESP32C3 */
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
@@ -4394,6 +4400,7 @@ static void ESP32_swSer_begin(unsigned long baud)
     { Diag = &SerialOutput; } else { Diag = &Serial; }
   Diag->print(F("Flash memory ID: "));
   Diag->println(ESP32_getFlashId(), HEX);
+  Diag->flush();
 }
 
 static void ESP32_swSer_enableRx(boolean arg)
