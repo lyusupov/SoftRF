@@ -259,6 +259,7 @@ static const Module::RfSwitchMode_t rfswitch_table_hpdtek[] = {
     END_OF_MODE_TABLE,
 };
 
+/* setDioAsRfSwitch(0x0f, 0x0, 0x09, 0x0B, 0x0A, 0x0, 0x4, 0x0) */
 static const uint32_t rfswitch_dio_pins_seeed[] = {
     RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
     RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8,
@@ -294,6 +295,27 @@ static const Module::RfSwitchMode_t rfswitch_table_ebyte[] = {
     { LR11x0::MODE_TX_HF,  { LOW,  LOW,  LOW  } },
     { LR11x0::MODE_GNSS,   { LOW,  LOW,  HIGH } },
     { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW  } },
+    END_OF_MODE_TABLE,
+};
+
+/* setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5) */
+static const uint32_t rfswitch_dio_pins_radiomaster[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8,
+    RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_radiomaster[] = {
+    // mode                  DIO5  DIO6  DIO7  DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW,  LOW,  LOW  } },
+    // SKY13373 ( V1-DIO7 V2-DIO8 )
+    { LR11x0::MODE_RX,     { LOW,  LOW,  HIGH, HIGH } },
+    { LR11x0::MODE_TX,     { LOW,  LOW,  LOW,  HIGH } },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW,  LOW,  HIGH } },
+    // AT2401C ( RXEN-DIO5 TXEN-DIO6 )
+    { LR11x0::MODE_TX_HF,  { LOW,  HIGH, HIGH, LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW,  LOW,  LOW  } },
+    { LR11x0::MODE_WIFI,   { HIGH, LOW,  HIGH, LOW  } },
     END_OF_MODE_TABLE,
 };
 
@@ -1014,7 +1036,11 @@ static void lr11xx_setup()
         radio_semtech->setRfSwitchTable(rfswitch_dio_pins_lilygo, rfswitch_table_lilygo);
       } else {
         /* RadioMaster XR1 */
+#if 1
+        radio_semtech->setRfSwitchTable(rfswitch_dio_pins_radiomaster, rfswitch_table_radiomaster);
+#else
         radio_semtech->setDioAsRfSwitch(0x0F, 0x0, 0x0C, 0x08, 0x08, 0x6, 0x0, 0x5);
+#endif
       }
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
     }
