@@ -46,7 +46,7 @@
 #define SOC_GPIO_ANT_TX       PB6 /* active HIGH */
 
 /* button */
-#define SOC_GPIO_PIN_BUTTON   PB5 // ext. button
+#define SOC_GPIO_PIN_BUTTON   PH3 // BOOT0
 
 /* 32768 Hz crystal */
 #define SOC_GPIO_PIN_XP       PC14

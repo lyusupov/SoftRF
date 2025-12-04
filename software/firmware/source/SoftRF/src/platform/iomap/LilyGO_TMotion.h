@@ -72,5 +72,5 @@
 /* button */
 //#define SOC_GPIO_PIN_BUTTON   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUTTON   (hw_info.model == SOFTRF_MODEL_BRACELET ? \
-                              TTGO_TIMPULSE_GPIO_PAD_OUT : PC4)
+                              TTGO_TIMPULSE_GPIO_PAD_OUT : PC4) /* PH3 */
 //#define SOC_GPIO_PIN_BUTTON   PA3

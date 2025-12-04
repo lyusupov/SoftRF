@@ -6600,6 +6600,7 @@ char STR_TMP_BUFFER[128];
 StaticRingbuffer_t *buffer_struct = nullptr;
 uint8_t *buffer_storage = nullptr;
 RingbufHandle_t s_ringbuf_sdr;
+bool rb_reader_is_ready = false;
 
 extern int rtlsdr_is_connected;
 extern mag_t maglut[129*129];
@@ -6662,8 +6663,10 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
     rtlsdr_cancel_async(rtlsdr_dev);
   }
 
-  if (xRingbufferSend(s_ringbuf_sdr, buf, len, pdMS_TO_TICKS(10)) != pdTRUE) {
-      Serial.println("Failed to send message into ring buffer!");
+  if (rb_reader_is_ready) {
+    if (xRingbufferSend(s_ringbuf_sdr, buf, len, pdMS_TO_TICKS(10)) != pdTRUE) {
+        Serial.println("Failed to send message into ring buffer!");
+    }
   }
 }
 
@@ -6791,6 +6794,8 @@ unsigned long ModeS_Time_Marker = 0;
 
 static void ESP32PX_USB_loop()
 {
+  if (!rb_reader_is_ready) { rb_reader_is_ready = true; }
+
   if (rtlsdr_is_connected == 1) {
     size_t receivedMessageSize;
     uint8_t *receivedMessage;
