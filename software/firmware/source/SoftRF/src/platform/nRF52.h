@@ -293,10 +293,6 @@ struct rst_info {
 #define USE_BASICMAC
 //#define EXCLUDE_SX1276           //  -  3 kb
 
-//#define USE_OLED                 //  +  6 kb
-//#define EXCLUDE_OLED_BARO_PAGE
-//#define EXCLUDE_OLED_049
-
 #define USE_EPAPER                 //  +    kb
 #define EPD_ASPECT_RATIO_1C1
 #define USE_EPD_TASK
@@ -348,7 +344,14 @@ struct rst_info {
 
 /* T-Ultima */
 #define EXCLUDE_PMU
+
 #define EXCLUDE_WIP
+
+#if !defined(EXCLUDE_WIP)
+#define USE_OLED                 //  +  6 kb
+//#define EXCLUDE_OLED_BARO_PAGE
+#define EXCLUDE_OLED_049
+#endif /* EXCLUDE_WIP */
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"

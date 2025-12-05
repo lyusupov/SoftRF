@@ -800,14 +800,14 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
-#if 1
   nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
                 nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
                 nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
                 nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
+#if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
+#endif /* EXCLUDE_WIP */
                 nRF52_board;
-#endif
 
   for (int i=0; i < sizeof(techo_prototype_boards) / sizeof(prototype_entry_t); i++) {
     if (techo_prototype_boards[i].id == ((uint64_t) DEVICE_ID_HIGH << 32 | (uint64_t) DEVICE_ID_LOW)) {
@@ -934,7 +934,11 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
     Wire.begin();
     Wire.beginTransmission(AHT20_ADDRESS);
-    if (Wire.endTransmission() == 0) { nRF52_board = NRF52_ELECROW_TN_M3; }
+    if (Wire.endTransmission() == 0) {
+      nRF52_board        = NRF52_ELECROW_TN_M3;
+      hw_info.model      = SOFTRF_MODEL_POCKET;
+      nRF52_Device_Model = "Pocket Edition";
+    }
     Wire.end();
     pinMode(SOC_GPIO_PIN_M3_TEMP_EN, INPUT);
   }
@@ -948,7 +952,14 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
     Wire.begin();
     Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-    if (Wire.endTransmission() == 0) { nRF52_board = NRF52_ELECROW_TN_M6; }
+    if (Wire.endTransmission() == 0) {
+      nRF52_board        = NRF52_ELECROW_TN_M6;
+      hw_info.model      = SOFTRF_MODEL_SOLARIS;
+      nRF52_Device_Model = "Solaris Edition";
+
+      // digitalWrite(SOC_GPIO_PIN_SFL_M6_EN, HIGH);
+      // pinMode(SOC_GPIO_PIN_SFL_M6_EN, OUTPUT);
+    }
     Wire.end();
     pinMode(SOC_GPIO_PIN_IO_M6_PWR, INPUT);
   }
@@ -960,6 +971,9 @@ static void nRF52_setup()
     case NRF52_LILYGO_TULTIMA:
       Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
       break;
+    case NRF52_SEEED_WIO_L1:
+      Wire.setPins(SOC_GPIO_PIN_L1_OLED_SDA, SOC_GPIO_PIN_L1_OLED_SCL); /* TBD */
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
@@ -967,9 +981,6 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
       delay(100);
 #endif /* EXCLUDE_IMU */
-      break;
-    case NRF52_SEEED_WIO_L1:
-      Wire.setPins(SOC_GPIO_PIN_L1_OLED_SDA, SOC_GPIO_PIN_L1_OLED_SCL); /* TBD */
       break;
     case NRF52_ELECROW_TN_M3:
       Wire.setPins(SOC_GPIO_PIN_M3_SDA, SOC_GPIO_PIN_M3_SCL);
@@ -985,6 +996,8 @@ static void nRF52_setup()
       break;
     case NRF52_ELECROW_TN_M6:
       Wire.setPins(SOC_GPIO_PIN_M6_SDA, SOC_GPIO_PIN_M6_SCL);
+      // digitalWrite(SOC_GPIO_PIN_IO_M6_PWR, HIGH);
+      // pinMode(SOC_GPIO_PIN_IO_M6_PWR, OUTPUT);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1071,14 +1084,6 @@ static void nRF52_setup()
                                                     SOC_GPIO_PIN_SFL_T1000_WP,
                                                     SOC_GPIO_PIN_SFL_T1000_HOLD);
       break;
-    case NRF52_SEEED_WIO_L1:
-      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_L1_SCK,
-                                                    SOC_GPIO_PIN_SFL_L1_SS,
-                                                    SOC_GPIO_PIN_SFL_L1_MOSI,
-                                                    SOC_GPIO_PIN_SFL_L1_MISO,
-                                                    SOC_GPIO_PIN_SFL_L1_WP,
-                                                    SOC_GPIO_PIN_SFL_L1_HOLD);
-      break;
     case NRF52_ELECROW_TN_M6:
       FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_M6_SCK,
                                                     SOC_GPIO_PIN_SFL_M6_SS,
@@ -1095,6 +1100,14 @@ static void nRF52_setup()
                                                     SOC_GPIO_PIN_SFL_TULTIMA_MISO,
                                                     SOC_GPIO_PIN_SFL_TULTIMA_WP,
                                                     SOC_GPIO_PIN_SFL_TULTIMA_HOLD);
+      break;
+    case NRF52_SEEED_WIO_L1:
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_L1_SCK,
+                                                    SOC_GPIO_PIN_SFL_L1_SS,
+                                                    SOC_GPIO_PIN_SFL_L1_MOSI,
+                                                    SOC_GPIO_PIN_SFL_L1_MISO,
+                                                    SOC_GPIO_PIN_SFL_L1_WP,
+                                                    SOC_GPIO_PIN_SFL_L1_HOLD);
       break;
 #endif /* EXCLUDE_WIP */
     case NRF52_NORDIC_PCA10059:
@@ -1186,15 +1199,6 @@ static void nRF52_setup()
     }
   }
 #endif /* USE_OLED */
-
-  if (nRF52_board == NRF52_ELECROW_TN_M3) {
-    hw_info.model      = SOFTRF_MODEL_POCKET;
-    nRF52_Device_Model = "Pocket Edition";
-  } else
-  if (nRF52_board == NRF52_ELECROW_TN_M6) {
-    hw_info.model      = SOFTRF_MODEL_SOLARIS;
-    nRF52_Device_Model = "Solaris Edition";
-  }
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
@@ -1290,6 +1294,11 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
       /* TBD */
       break;
+    case NRF52_SEEED_WIO_L1:
+      digitalWrite(SOC_GPIO_PIN_L1_VBAT_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_L1_VBAT_EN, OUTPUT);
+      /* TBD */
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -1337,12 +1346,6 @@ static void nRF52_setup()
     case NRF52_ELECROW_TN_M6:
       digitalWrite(SOC_GPIO_PIN_M6_ADC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_M6_ADC_EN, OUTPUT);
-      /* TBD */
-      break;
-
-    case NRF52_SEEED_WIO_L1:
-      digitalWrite(SOC_GPIO_PIN_L1_VBAT_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_L1_VBAT_EN, OUTPUT);
       /* TBD */
       break;
 
@@ -1450,6 +1453,24 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       break;
+
+    case NRF52_SEEED_WIO_L1:
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_L1_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_L1_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_L1_GREEN, OUTPUT);
+      // pinMode(SOC_GPIO_LED_L1_BLUE,  OUTPUT);
+
+      digitalWrite(SOC_GPIO_LED_L1_GREEN, LED_STATE_ON);
+      // digitalWrite(SOC_GPIO_LED_L1_BLUE,  LED_STATE_ON);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_L1_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_L1_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_L1_BUSY;
+
+      hw_info.revision = 3; /* Unknown */
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -1552,6 +1573,9 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M6:
+      // digitalWrite(SOC_GPIO_PIN_GNSS_M6_EN, HIGH);
+      // pinMode(SOC_GPIO_PIN_GNSS_M6_EN, OUTPUT);
+
       /* Wake up Quectel L76K GNSS */
       digitalWrite(SOC_GPIO_PIN_GNSS_M6_RST, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M6_RST, OUTPUT);
@@ -1567,24 +1591,6 @@ static void nRF52_setup()
       lmic_pins.nss  = SOC_GPIO_PIN_M6_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_M6_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M6_BUSY;
-
-      hw_info.revision = 3; /* Unknown */
-      break;
-
-    case NRF52_SEEED_WIO_L1:
-      /* Wake up Quectel L76K GNSS */
-      digitalWrite(SOC_GPIO_PIN_GNSS_L1_WKE, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_L1_WKE, OUTPUT);
-
-      pinMode(SOC_GPIO_LED_L1_GREEN, OUTPUT);
-      // pinMode(SOC_GPIO_LED_L1_BLUE,  OUTPUT);
-
-      digitalWrite(SOC_GPIO_LED_L1_GREEN, LED_STATE_ON);
-      // digitalWrite(SOC_GPIO_LED_L1_BLUE,  LED_STATE_ON);
-
-      lmic_pins.nss  = SOC_GPIO_PIN_L1_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_L1_RST;
-      lmic_pins.busy = SOC_GPIO_PIN_L1_BUSY;
 
       hw_info.revision = 3; /* Unknown */
       break;
@@ -2486,6 +2492,22 @@ static void nRF52_fini(int reason)
       }
 #endif /* ARDUINO_ARCH_MBED */
       break;
+
+    case NRF52_SEEED_WIO_L1:
+      digitalWrite(SOC_GPIO_PIN_GNSS_L1_WKE, LOW);
+
+      digitalWrite(SOC_GPIO_LED_L1_GREEN, 1-LED_STATE_ON);
+      // digitalWrite(SOC_GPIO_LED_L1_BLUE,  1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_L1_GREEN,     INPUT);
+      // pinMode(SOC_GPIO_LED_L1_BLUE,      INPUT);
+
+      pinMode(SOC_GPIO_PIN_SFL_L1_HOLD,  INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_L1_WP,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_L1_SS,    INPUT);
+
+      pinMode(SOC_GPIO_PIN_L1_VBAT_EN,   INPUT);
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -2547,22 +2569,6 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_M3_TEMP_EN,   INPUT);
       break;
 
-    case NRF52_SEEED_WIO_L1:
-      digitalWrite(SOC_GPIO_PIN_GNSS_L1_WKE, LOW);
-
-      digitalWrite(SOC_GPIO_LED_L1_GREEN, 1-LED_STATE_ON);
-      // digitalWrite(SOC_GPIO_LED_L1_BLUE,  1-LED_STATE_ON);
-
-      pinMode(SOC_GPIO_LED_L1_GREEN,     INPUT);
-      // pinMode(SOC_GPIO_LED_L1_BLUE,      INPUT);
-
-      pinMode(SOC_GPIO_PIN_SFL_L1_HOLD,  INPUT);
-      pinMode(SOC_GPIO_PIN_SFL_L1_WP,    INPUT);
-      pinMode(SOC_GPIO_PIN_SFL_L1_SS,    INPUT);
-
-      pinMode(SOC_GPIO_PIN_L1_VBAT_EN,   INPUT);
-      break;
-
     case NRF52_NORDIC_PCA10059:
     default:
 //      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
@@ -2617,6 +2623,10 @@ static void nRF52_fini(int reason)
     case NRF52_LILYGO_TULTIMA:
       mode_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON1;
       break;
+
+    case NRF52_SEEED_WIO_L1:
+      mode_button_pin = SOC_GPIO_PIN_L1_BUTTON;
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -2637,10 +2647,6 @@ static void nRF52_fini(int reason)
 
     case NRF52_ELECROW_TN_M6:
       mode_button_pin = SOC_GPIO_PIN_M6_BUTTON;
-      break;
-
-    case NRF52_SEEED_WIO_L1:
-      mode_button_pin = SOC_GPIO_PIN_L1_BUTTON;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -3089,16 +3095,17 @@ static void nRF52_SPI_begin()
                   SOC_GPIO_PIN_TULTIMA_SCK,
                   SOC_GPIO_PIN_TULTIMA_MOSI);
       break;
+
+    case NRF52_SEEED_WIO_L1:
+      SPI.setPins(SOC_GPIO_PIN_L1_MISO,
+                  SOC_GPIO_PIN_L1_SCK,
+                  SOC_GPIO_PIN_L1_MOSI);
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       SPI.setPins(SOC_GPIO_PIN_T1000_MISO,
                   SOC_GPIO_PIN_T1000_SCK,
                   SOC_GPIO_PIN_T1000_MOSI);
-      break;
-    case NRF52_SEEED_WIO_L1:
-      SPI.setPins(SOC_GPIO_PIN_L1_MISO,
-                  SOC_GPIO_PIN_L1_SCK,
-                  SOC_GPIO_PIN_L1_MOSI);
       break;
     case NRF52_ELECROW_TN_M3:
       SPI.setPins(SOC_GPIO_PIN_M3_MISO,
@@ -3142,6 +3149,10 @@ static void nRF52_swSer_begin(unsigned long baud)
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TULTIMA_RX,
                              SOC_GPIO_PIN_GNSS_TULTIMA_TX);
       break;
+    case NRF52_SEEED_WIO_L1:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_L1_RX,
+                             SOC_GPIO_PIN_GNSS_L1_TX);
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T1000_RX,
@@ -3151,10 +3162,6 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_HELTEC_T114:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_T114_RX,
                              SOC_GPIO_PIN_GNSS_T114_TX);
-      break;
-    case NRF52_SEEED_WIO_L1:
-      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_L1_RX,
-                             SOC_GPIO_PIN_GNSS_L1_TX);
       break;
     case NRF52_ELECROW_TN_M3:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_M3_RX,
@@ -4065,6 +4072,10 @@ static void nRF52_Button_setup()
       mode_button_pin = SOC_GPIO_PIN_TULTIMA_BUTTON1;
       // up_button_pin   = SOC_GPIO_PIN_TULTIMA_BUTTON2;
       break;
+
+    case NRF52_SEEED_WIO_L1:
+      mode_button_pin = SOC_GPIO_PIN_L1_BUTTON;
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -4086,10 +4097,6 @@ static void nRF52_Button_setup()
 
     case NRF52_ELECROW_TN_M6:
       mode_button_pin = SOC_GPIO_PIN_M6_BUTTON;
-      break;
-
-    case NRF52_SEEED_WIO_L1:
-      mode_button_pin = SOC_GPIO_PIN_L1_BUTTON;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
