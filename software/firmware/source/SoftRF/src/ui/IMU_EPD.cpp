@@ -30,7 +30,8 @@ static const char G_load_text[] = "G-load";
 
 void EPD_imu_setup()
 {
-  if (hw_info.imu != IMU_NONE) {
+  if (hw_info.imu != IMU_NONE &&
+      hw_info.imu != IMU_BHI260AP /* TODO */) {
     EPD_pages_mask |= (1 << VIEW_MODE_IMU);
   }
 }

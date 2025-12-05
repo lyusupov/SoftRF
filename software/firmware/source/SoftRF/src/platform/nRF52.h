@@ -135,7 +135,9 @@ struct rst_info {
 #define BME280_ADDRESS        (0x77)
 #define BHI260AP_ADDRESS_L    (0x28)
 #define BHI260AP_ADDRESS_H    (0x29)
-#define AHT10_ADDRESS         (0x38)
+#define AHT20_ADDRESS         (0x38)
+#define SC7A20H_ADDRESS_L     (0x18)
+#define SC7A20H_ADDRESS_H     (0x19)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
@@ -342,7 +344,7 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_MBED */
 
 //#define EXCLUDE_BHI260
-//#define USE_BHI260_RAM_FW
+#define USE_BHI260_RAM_FW
 
 /* T-Ultima */
 #define EXCLUDE_PMU

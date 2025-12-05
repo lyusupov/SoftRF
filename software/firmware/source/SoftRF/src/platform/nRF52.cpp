@@ -925,6 +925,34 @@ static void nRF52_setup()
 #endif /* EXCLUDE_IMU */
   }
 
+  if (nRF52_board == NRF52_ELECROW_TN_M1) { /* "ELECROWBOOT" */
+    pinMode(SOC_GPIO_PIN_M3_TEMP_EN, INPUT_PULLUP);
+    delay(5);
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+    Wire.setPins(SOC_GPIO_PIN_M3_SDA, SOC_GPIO_PIN_M3_SCL);
+#endif /* ARDUINO_ARCH_MBED */
+    Wire.begin();
+    Wire.beginTransmission(AHT20_ADDRESS);
+    if (Wire.endTransmission() == 0) { nRF52_board = NRF52_ELECROW_TN_M3; }
+    Wire.end();
+    pinMode(SOC_GPIO_PIN_M3_TEMP_EN, INPUT);
+  }
+
+  if (nRF52_board == NRF52_ELECROW_TN_M1) { /* "ELECROWBOOT" */
+    pinMode(SOC_GPIO_PIN_IO_M6_PWR, INPUT_PULLUP);
+    delay(5);
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+    Wire.setPins(SOC_GPIO_PIN_M6_SDA, SOC_GPIO_PIN_M6_SCL);
+#endif /* ARDUINO_ARCH_MBED */
+    Wire.begin();
+    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    if (Wire.endTransmission() == 0) { nRF52_board = NRF52_ELECROW_TN_M6; }
+    Wire.end();
+    pinMode(SOC_GPIO_PIN_IO_M6_PWR, INPUT);
+  }
+
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
@@ -1662,6 +1690,10 @@ static void nRF52_setup()
         }
         break;
 
+      case NRF52_ELECROW_TN_M3:
+        /* TBD */
+        break;
+
       default:
         break;
     }
@@ -2249,7 +2281,7 @@ static void nRF52_loop()
     IMU_Time_Marker = millis();
   }
 
-#if !defined(EXCLUDE_BHI260)
+#if 0 /* TODO */ // !defined(EXCLUDE_BHI260)
   if (hw_info.imu == IMU_BHI260AP &&
       (millis() - IMU_Time_Marker) > (IMU_UPDATE_INTERVAL / 10)) {
     // Update sensor fifo

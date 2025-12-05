@@ -59,6 +59,6 @@
 #define SOC_GPIO_PIN_M3_VUSB_SEN  _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_M3_VGPS_SEN  SOC_UNUSED_PIN // TBD
 
-/* Sensors (ACC + AHT10) */
+/* Sensors (SC7A20H + AHT20) */
 #define SOC_GPIO_PIN_M3_ACC_EN    _PINNUM(0,  2) // P0.02 active HIGH ?
 #define SOC_GPIO_PIN_M3_TEMP_EN   _PINNUM(0,  3) // P0.03 active HIGH
