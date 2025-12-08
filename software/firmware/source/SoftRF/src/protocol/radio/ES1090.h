@@ -24,11 +24,11 @@
 #include <mode-s.h>
 #include <protocol.h>
 
-#define ES1090_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_AA /* TBD */
-#define ES1090_PREAMBLE_SIZE   1                   /* TBD */
+#define ES1090_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_AA
+#define ES1090_PREAMBLE_SIZE   0
 
-#define ES1090_SYNCWORD        { 0x00 }            /* TBD */
-#define ES1090_SYNCWORD_SIZE   1 
+#define ES1090_SYNCWORD        { 0x02, 0x85 }
+#define ES1090_SYNCWORD_SIZE   2
 #define ES1090_PAYLOAD_SIZE    MODE_S_LONG_MSG_BYTES
 #define ES1090_CRC_TYPE        RF_CHECKSUM_TYPE_CRC_MODES
 #define ES1090_CRC_SIZE        3

@@ -35,7 +35,7 @@ const rf_proto_desc_t es1090_proto_desc = {
   .syncword        = ES1090_SYNCWORD,
   .syncword_size   = ES1090_SYNCWORD_SIZE,
   .net_id          = 0x0000, /* not in use */
-  .payload_type    = RF_PAYLOAD_DIRECT,
+  .payload_type    = RF_PAYLOAD_INVERTED,
   .payload_size    = ES1090_PAYLOAD_SIZE,
   .payload_offset  = 0,
   .crc_type        = ES1090_CRC_TYPE,
@@ -43,7 +43,7 @@ const rf_proto_desc_t es1090_proto_desc = {
 
   .bitrate         = RF_BITRATE_1042KBPS,
   .deviation       = RF_FREQUENCY_DEVIATION_NONE,
-  .whitening       = RF_WHITENING_NONE,
+  .whitening       = RF_WHITENING_MANCHESTER,
   .bandwidth       = RF_RX_BANDWIDTH_SS_1567KHZ,
 
   .air_time        = ES1090_AIR_TIME,
