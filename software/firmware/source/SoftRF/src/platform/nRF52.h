@@ -337,6 +337,7 @@ struct rst_info {
 #define EXCLUDE_EEPROM
 #undef USE_NMEALIB
 #define USE_RADIOLIB
+#define EXCLUDE_LR20XX
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 
