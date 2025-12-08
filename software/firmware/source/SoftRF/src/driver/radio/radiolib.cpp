@@ -4665,7 +4665,7 @@ static void sx1280_shutdown()
 }
 #endif /* EXCLUDE_SX1280 */
 
-#if 0 // !defined(EXCLUDE_LR20XX)
+#if !defined(EXCLUDE_LR20XX)
 
 #include <fec.h>
 

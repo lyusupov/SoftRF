@@ -319,6 +319,7 @@ char *Settings_content() {
       hw_info.rf == RF_IC_SX1262 ||
       hw_info.rf == RF_IC_LR1110 ||
       hw_info.rf == RF_IC_LR1121 ||
+      hw_info.rf == RF_IC_LR2021 ||
       hw_info.rf == RF_IC_SX1280) {
     snprintf_P ( offset, size,
       PSTR("\
