@@ -356,6 +356,11 @@ extern float IMU_g;
 SensorDRV2605 vibra;
 static bool nRF52_has_vibra = false;
 
+#if 0
+#include <AHT20.h>
+AHT20 aht20;
+#endif
+
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 uCDB<FatVolume, File32> ucdb(fatfs);
 
@@ -2047,6 +2052,53 @@ static void nRF52_post_init()
     Serial.println(F(" %"));
     Serial.flush();
 #endif /* !MBED && !ZEPHYR */
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+
+  } else if (nRF52_board == NRF52_ELECROW_TN_M3) {
+#if 0
+    Serial.println();
+    Serial.print  (F("SPI FLASH JEDEC ID: "));
+    Serial.print  (spiflash_id, HEX);           Serial.print(" ");
+#endif
+
+    Serial.println();
+    Serial.println(F("Elecrow ThinkNode-M3 Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf    == RF_IC_LR1110     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss  == GNSS_MODULE_AT65 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+
+#if !defined(EXCLUDE_IMU)
+    Serial.print(F("IMU     : "));
+    Serial.println(hw_info.imu   == ACC_SC7A20H      ? F("PASS") : F("FAIL"));
+    Serial.flush();
+#endif /* EXCLUDE_IMU */
+
+#if 0
+    aht20.begin();
+    float humidity, temperature;
+
+    if (aht20.getSensor(&humidity, &temperature)) {
+      Serial.print(F("TEMP    : "));
+      Serial.print(temperature);
+      Serial.println(F(" degrees Celsius"));
+      Serial.print(F("HUMID   : "));
+      Serial.print(humidity*100);
+      Serial.println(F(" % rH"));
+      Serial.flush();
+    }
+#endif
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -3807,6 +3859,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_HANDHELD ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_DECENT   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_SOLARIS  ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_THRESHOLD_LIPO   :
                                                     BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -3818,6 +3871,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_HANDHELD ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_DECENT   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_SOLARIS  ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_CUTOFF_LIPO   :
                                                     BATTERY_CUTOFF_NIMHX2;
     break;
 

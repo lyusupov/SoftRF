@@ -89,6 +89,7 @@ enum
   RF_IC_SX1280,
   RF_IC_SI4432,
   RF_IC_SI4463,
+  RF_IC_LR2021,
 };
 
 enum
@@ -186,6 +187,7 @@ extern const rfchip_ops_t cc1101_ops;
 extern const rfchip_ops_t sx1280_ops;
 extern const rfchip_ops_t sx1231_ops;
 extern const rfchip_ops_t si4432_ops;
+extern const rfchip_ops_t lr2021_ops;
 #endif /* USE_RADIOLIB */
 
 #if defined(USE_RADIOHEAD)

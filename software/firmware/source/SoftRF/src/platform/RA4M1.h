@@ -210,6 +210,7 @@ extern  SoftSPI RadioSPI;
 #if defined(ARDUINO_UNOR4_MINIMA)
 #define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
+#define EXCLUDE_LR20XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X

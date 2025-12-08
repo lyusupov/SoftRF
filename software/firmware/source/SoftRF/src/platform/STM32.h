@@ -184,6 +184,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_IMU
 //#define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
+#define EXCLUDE_LR20XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
@@ -309,6 +310,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SX1276           //  -  3 kb
 //#define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
+#define EXCLUDE_LR20XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
@@ -372,6 +374,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SX1276           //  -  3 kb
 //#define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
+#define EXCLUDE_LR20XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
@@ -436,6 +439,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SX1276           //  -  3 kb
 //#define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
+#define EXCLUDE_LR20XX
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
