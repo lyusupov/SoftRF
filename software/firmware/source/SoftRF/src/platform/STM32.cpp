@@ -632,7 +632,35 @@ static void STM32_post_init()
     Serial.println();
     Serial.flush();
   }
-#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
+#elif defined(ARDUINO_GENERIC_WL55CCUX)
+  if (hw_info.model == SOFTRF_MODEL_LABUBU) {
+    Serial.println();
+    Serial.println(F("SoftRF Labubu Edition Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_SX1262       ? F("PASS") : F("FAIL"));
+    Serial.print(F("CLK SRC : "));
+    Serial.println(STM32_has_TCXO                        ? F("TCXO") : F("XTAL"));
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE       ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE   ? F("PASS") : F("N/A"));
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+  }
+#endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
 
   Serial.println(F("Data output device(s):"));
 

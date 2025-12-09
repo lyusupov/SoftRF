@@ -267,8 +267,8 @@ typedef struct stm32_backup_struct {
 #define UATSerial             Serial
 #define SerialOutput          Serial
 
-#define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
-#define VREFINT               1200 /* TBD */
+#define SOC_ADC_VOLTAGE_DIV   1     /* TBD */
+#define VREFINT               1212  // mV, STM32WLE5 datasheet value
 
 #include "iomap/Olimex_STM32WL.h"
 
@@ -331,8 +331,8 @@ typedef struct stm32_backup_struct {
 #define UATSerial             Serial
 #define SerialOutput          Serial
 
-#define SOC_ADC_VOLTAGE_DIV   1    /* TBD */
-#define VREFINT               1200 /* TBD */
+#define SOC_ADC_VOLTAGE_DIV   2.3   // T3-STM32 has 100k/100k voltage divider
+#define VREFINT               1212  // mV, STM32WL55 datasheet value
 
 #include "iomap/LilyGO_T3_STM32.h"
 

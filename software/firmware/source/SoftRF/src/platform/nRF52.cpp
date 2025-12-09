@@ -1052,6 +1052,9 @@ static void nRF52_setup()
           if (Wire.endTransmission() == 0) {
             nRF52_board = NRF52_LILYGO_TECHO_PLUS;
           }
+        } else {
+          Wire.beginTransmission(SC7A20H_ADDRESS_L);
+          nRF52_has_imu = (Wire.endTransmission() == 0);
         }
       }
     }
@@ -1703,6 +1706,8 @@ static void nRF52_setup()
 
       case NRF52_ELECROW_TN_M3:
         /* TBD */
+        hw_info.imu     = ACC_SC7A20H;
+        IMU_Time_Marker = millis();
         break;
 
       default:
