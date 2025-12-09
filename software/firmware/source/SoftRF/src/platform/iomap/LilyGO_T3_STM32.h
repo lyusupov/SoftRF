@@ -26,6 +26,7 @@
 #define SOC_GPIO_PIN_MOSI     PA7  /* SPI1_MOSI */
 #define SOC_GPIO_PIN_MISO     PA6  /* SPI1_MISO */
 #define SOC_GPIO_PIN_SCK      PA5  /* SPI1_SCK  */
+#define SOC_GPIO_PIN_SS       SOC_GPIO_PIN_SD_SS
 
 /* Micro-SD */
 #define SOC_GPIO_PIN_SD_SS    PA4  /* SPI1_NSS  */
@@ -35,7 +36,6 @@
 #define SOC_GPIO_PIN_OLED_DC  PA8
 
 /* SX1262 */
-#define SOC_GPIO_PIN_SS       LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_RST      LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_BUSY     LMIC_UNUSED_PIN
 #define SOC_GPIO_PIN_DIO0     LMIC_UNUSED_PIN

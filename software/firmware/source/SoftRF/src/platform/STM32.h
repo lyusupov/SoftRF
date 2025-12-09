@@ -331,7 +331,7 @@ typedef struct stm32_backup_struct {
 #define UATSerial             Serial
 #define SerialOutput          Serial
 
-#define SOC_ADC_VOLTAGE_DIV   2.3   // T3-STM32 has 100k/100k voltage divider
+#define SOC_ADC_VOLTAGE_DIV   2.0   // T3-STM32 has 100k/100k voltage divider
 #define VREFINT               1212  // mV, STM32WL55 datasheet value
 
 #include "iomap/LilyGO_T3_STM32.h"
