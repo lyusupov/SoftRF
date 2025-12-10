@@ -18,7 +18,8 @@
 
 #if defined(RASPBERRY_PI)        || defined(ARDUINO_ARCH_NRF52)  || \
     defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) || \
-    defined(ARDUINO_ARCH_ESP32)  || defined(LUCKFOX_LYRA)
+    defined(ARDUINO_ARCH_ESP32)  || defined(LUCKFOX_LYRA)        || \
+    defined(ARDUINO_ARCH_STM32)
 
 #include "../../system/SoC.h"
 #include <TinyGPS++.h>
@@ -672,7 +673,8 @@ void parseUISettings(JsonObject& root)
 
 #if defined(RASPBERRY_PI)        || defined(ARDUINO_ARCH_NRF52)  || \
     defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) || \
-    defined(ARDUINO_ARCH_ESP32)  || defined(LUCKFOX_LYRA)
+    defined(ARDUINO_ARCH_ESP32)  || defined(LUCKFOX_LYRA)        || \
+    defined(ARDUINO_ARCH_STM32)
 
 void parseSettings(JsonObject& root)
 {

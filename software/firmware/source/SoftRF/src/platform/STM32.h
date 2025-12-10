@@ -87,7 +87,7 @@ enum stm32_board_id {
   STM32_SEEED_E5,      /* RFO_HP, 32 MHz TCXO */
   STM32_ACSIP_ST50H,   /* a.k.a. "RAK3172-SiP", RFO_HP, 32 MHz TCXO */
   STM32_RAK_3172_EB,   /* RFO_HP, 32 MHz XTAL (10 ppm) */
-  STM32_LILYGO_T3_1_0,
+  STM32_LILYGO_T3_1_0, /* RFO_HP, 32 MHz XTAL - V1.0 25-10-13 */
 };
 
 enum stm32_boot_action {
@@ -383,6 +383,8 @@ typedef struct stm32_backup_struct {
 
 #define USE_TIME_SLOTS
 #define USE_OGN_ENCRYPTION
+
+//#define ENABLE_RECORDER
 
 /* Experimental */
 #define ENABLE_ADSL

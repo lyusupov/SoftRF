@@ -221,7 +221,8 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
 1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
   to install Arduino IDE and **certain version** of Arduino STM32 Core -<!-- [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0) (1.9.0) --><br>
     For **S76G**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**1.9.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0)<br>
-    For **STM32WLE5**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.4.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/2.4.0)<br>
+    For **STM32WLE5**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.4.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/2.4.0)<br>
+    For **STM32WL55**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.4.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/2.4.0)<br>
     For **STM32F103C8** "Blue Pill":&nbsp;&nbsp;&nbsp;[**2.4.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/2.4.0)<br>
 2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
@@ -242,6 +243,10 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _Generic_ _STM32WL_ _series_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _Generic_ _WLE5CCUx_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(generic_ _'Serial')_<br>
+    For **STM32WL55**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _Generic_ _STM32WL_ _series_<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _Generic_ _WL55CCUx_<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _U(S)ART_ _support_ ->  _Enabled_ _(generic_ _'Serial')_<br>
     For **STM32F103C8** "Blue Pill":<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _Generic_ _STM32F1_ _series_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ _part_ _number_ ->  _BluePill_ _F103CB_ _(or_ _C8_ _with_ _128k)_<br>
@@ -256,6 +261,9 @@ You will need to have an ST-LINK/V2 USB adapter connected in order to put the fi
     For **STM32WLE5**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(SWD)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Port_ ->  ``<your ST-LINK/V2 port device name>``<br>
+    For **STM32WL55**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(Serial)_<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Port_ ->  ``<your Serial port device name>``<br>
     For **S76G "SkyWatch"** or **STM32F103C8** "Blue Pill":<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Upload_ _method_ ->  _STM32CubeProgrammer_ _(SWD)_<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Port_ ->  ``<your ST-LINK/V2 port device name>``<br>

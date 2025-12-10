@@ -44,11 +44,11 @@ log_interval=5
 */
 
 #if !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_NRF52) && \
-    !defined(ARDUINO_ARCH_CH32)
+    !defined(ARDUINO_ARCH_CH32)  && !defined(ARDUINO_ARCH_STM32)
 typedef struct __attribute__((__packed__))
 #else
 typedef struct
-#endif /* ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_NRF52 || ARDUINO_ARCH_CH32 */
+#endif /* ARCH_ESP32 || ARCH_NRF52 || ARCH_CH32 || ARCH_STM32 */
 {
     char pilot[80];
     char copilot[80];
