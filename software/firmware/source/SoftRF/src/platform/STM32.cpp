@@ -108,15 +108,19 @@ void HAL_SUBGHZ_MspInit(SUBGHZ_HandleTypeDef * hsubghz)
 #include <SdFat_Adafruit_Fork.h>
 
 #define SD_CONFIG SdSpiConfig(uSD_SS_pin, SHARED_SPI, SD_SCK_MHZ(8), &SPI)
+#define STM32_JSON_BUFFER_SIZE  1024
+#define LED_BLINK_TIME          100
 
 SdFat uSD;
+StaticJsonBuffer<STM32_JSON_BUFFER_SIZE> STM32_jsonBuffer;
 
 static bool uSD_is_attached  = false;
 static bool FATFS_is_mounted = false;
 
-#define STM32_JSON_BUFFER_SIZE  1024
-
-StaticJsonBuffer<STM32_JSON_BUFFER_SIZE> STM32_jsonBuffer;
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+static unsigned long tx_led_time_marker = 0;
+static unsigned long rx_led_time_marker = 0;
 #endif /* ARDUINO_GENERIC_WL55CCUX */
 
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
@@ -408,26 +412,6 @@ static void STM32_setup()
     stm32_board = STM32_LILYGO_T3_1_0;
     hw_info.model = SOFTRF_MODEL_LABUBU;
 
-    {
-      int uSD_SS_pin = SOC_GPIO_PIN_SD_SS;
-
-      /* micro-SD SPI is shared with OLED SPI */
-      SPI.setMISO(SOC_GPIO_PIN_MISO);
-      SPI.setMOSI(SOC_GPIO_PIN_MOSI);
-      SPI.setSCLK(SOC_GPIO_PIN_SCK);
-
-      digitalWrite(uSD_SS_pin, HIGH);
-      pinMode(uSD_SS_pin, OUTPUT);
-
-      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
-
-      if (uSD_is_attached && uSD.card()->cardSize() > 0) {
-        hw_info.storage = STORAGE_CARD;
-
-        FATFS_is_mounted = uSD.volumeBegin();
-      }
-    }
-
 #elif defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
 
     /* TBD */
@@ -579,6 +563,35 @@ static void STM32_setup()
       hal_pin_tcxo(1);
       pinMode(lmic_pins.tcxo, OUTPUT);
     }
+
+    {
+      int uSD_SS_pin = SOC_GPIO_PIN_SD_SS;
+
+      /* micro-SD SPI is shared with OLED SPI */
+      SPI.setMISO(SOC_GPIO_PIN_MISO);
+      SPI.setMOSI(SOC_GPIO_PIN_MOSI);
+      SPI.setSCLK(SOC_GPIO_PIN_SCK);
+
+      digitalWrite(uSD_SS_pin, HIGH);
+      pinMode(uSD_SS_pin, OUTPUT);
+
+      uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
+      if (uSD_is_attached && uSD.card()->cardSize() > 0) {
+        hw_info.storage = STORAGE_CARD;
+
+        FATFS_is_mounted = uSD.volumeBegin();
+      }
+    }
+
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+    pinMode(SOC_GPIO_RADIO_LED_TX, OUTPUT);
+    digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+#endif /* SOC_GPIO_RADIO_LED_TX */
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+    pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
+    digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+#endif /* SOC_GPIO_RADIO_LED_RX */
 
 #endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
 
@@ -798,6 +811,38 @@ static void STM32_loop()
     IMU_Time_Marker = millis();
   }
 #endif /* EXCLUDE_IMU */
+
+#if defined(ARDUINO_GENERIC_WL55CCUX)
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+  if (digitalRead(SOC_GPIO_RADIO_LED_TX) != LED_STATE_ON) {
+    if (tx_packets_counter != prev_tx_packets_counter) {
+      digitalWrite(SOC_GPIO_RADIO_LED_TX, LED_STATE_ON);
+      prev_tx_packets_counter = tx_packets_counter;
+      tx_led_time_marker = millis();
+    }
+  } else {
+    if (millis() - tx_led_time_marker > LED_BLINK_TIME) {
+      digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+      prev_tx_packets_counter = tx_packets_counter;
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_TX */
+
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  if (digitalRead(SOC_GPIO_RADIO_LED_RX) != LED_STATE_ON) {
+    if (rx_packets_counter != prev_rx_packets_counter) {
+      digitalWrite(SOC_GPIO_RADIO_LED_RX, LED_STATE_ON);
+      prev_rx_packets_counter = rx_packets_counter;
+      rx_led_time_marker = millis();
+    }
+  } else {
+    if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
+      digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+      prev_rx_packets_counter = rx_packets_counter;
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_RX */
+#endif /* ARDUINO_GENERIC_WL55CCUX */
 }
 
 static void STM32_fini(int reason)
@@ -813,6 +858,17 @@ static void STM32_fini(int reason)
 #endif /* EXCLUDE_IMU */
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */
+
+#if defined(ARDUINO_GENERIC_WL55CCUX)
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+  digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+  pinMode(SOC_GPIO_RADIO_LED_TX, INPUT);
+#endif /* SOC_GPIO_RADIO_LED_TX */
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+  digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+  pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
+#endif /* SOC_GPIO_RADIO_LED_RX */
+#endif /* ARDUINO_GENERIC_WL55CCUX */
 
   Serial_GNSS_In.end();
   Wire.end();

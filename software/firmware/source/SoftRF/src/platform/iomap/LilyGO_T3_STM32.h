@@ -11,7 +11,10 @@
 
 #define SOC_GPIO_LED_GREEN    PA0  // active HIGH
 #define SOC_GPIO_LED_RED      PA1  // active HIGH
+
 #define SOC_GPIO_PIN_STATUS   SOC_GPIO_LED_GREEN
+#define SOC_GPIO_RADIO_LED_TX SOC_GPIO_LED_RED
+#define SOC_GPIO_RADIO_LED_RX SOC_UNUSED_PIN
 
 #define SOC_GPIO_PIN_BUZZER   PB4  // ext. buzzer
 
