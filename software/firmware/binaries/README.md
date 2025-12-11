@@ -16,6 +16,7 @@
 - [RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)
 - [RP2350](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2350)
 - [STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)
+- [STM32WL55](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wl55)
 - [CH32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#ch32)
 
 ## List by Model
@@ -309,6 +310,38 @@ C:\OpenOCD-20211118-0.11.0>.\bin\openocd.exe -f interface/cmsis-dap.cfg -c "cmsi
 Example:<br>
 
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Balkan-7.jpg)
+
+<br>
+
+## STM32WL55
+
+1. Download and install **STM32CubeProgrammer** tool for Windows from this location: https://www.st.com/en/development-tools/stm32cubeprog.html ;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/WL55) ;
+3. Connect the SoftRF Labubu Edition device to your PC by means of a USB cable ;
+4. Enter into Device Firmware Update (DFU) mode by
+    * press device `BOOT` button ,
+    * press `RST`button ,
+    * release `RST`button ,
+    * release `BOOT`button
+6. Open up  **STM32CubeProgrammer** application
+    * Select UART download mode
+    * Select COM port the device is connected to
+    * Select Negative pulse mode for RTS and DTR
+    * Clock onto `Connect` button
+
+<img src="https://github.com/Xinyuan-LilyGO/T3-STM32/blob/master/docs/image/image-5.png" width="800">
+
+<br>
+
+7. When the device gets connectected successfully - click on the `+` sign to add the firmware binary been downloaded at Step 2
+
+<img src="https://github.com/Xinyuan-LilyGO/T3-STM32/blob/master/docs/image/image-6.png" width="800">
+
+<br>
+
+8. Click `Download` to start the device firmware update
+   
+<img src="https://learn.rakwireless.com/hc/article_attachments/26687641302423" width="800">
 
 <br>
 
