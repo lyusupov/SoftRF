@@ -1353,6 +1353,7 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_NEO       ||
       hw_info.model == SOFTRF_MODEL_SOLARIS   ||
       hw_info.model == SOFTRF_MODEL_POCKET    ||
+      hw_info.model == SOFTRF_MODEL_LABUBU    ||
       hw_info.model == SOFTRF_MODEL_AIRVENTURE)
   {
     // power on by wakeup call

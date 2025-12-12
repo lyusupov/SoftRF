@@ -344,7 +344,7 @@ typedef struct stm32_backup_struct {
 
 //#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
-#define EXCLUDE_GNSS_MTK
+//#define EXCLUDE_GNSS_MTK
 #define EXCLUDE_GNSS_GOKE
 #define EXCLUDE_GNSS_AT65
 #define EXCLUDE_GNSS_UC65
