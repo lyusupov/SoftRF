@@ -134,7 +134,13 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 2. Connect the SoftRF Badge Edition device to your PC by means of a USB cable (Type-A <-> Type-C) ;
 
-3. Double click (within 0.5 seconds) onto the SoftRF device RESET button _(LilyGO T-Echo, Heltec T114 or Elecrow M1 , M6)_ or connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed _(Seeed T1000-E)_.<br>
+
+3. Enter into Adafruit bootloader USB Mass Storage mode
+   Device|Action
+   ---|---
+   LilyGO T-Echo<br>Heltec T114<br>Elecrow M1 and M6|double click (within 0.5 seconds) onto the SoftRF device RESET button
+   Seeed T1000-E|connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed
+   Elecrow M3|press and keep holding the device button for more than 20 seconds
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with a device specific label should appear in your "File manager" afterwards.<br>
 
