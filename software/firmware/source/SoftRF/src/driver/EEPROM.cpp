@@ -156,6 +156,7 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_CARD     ||
                                            hw_info.model == SOFTRF_MODEL_COZY     ||
                                            hw_info.model == SOFTRF_MODEL_HANDHELD ||
+                                           hw_info.model == SOFTRF_MODEL_SOLARIS  ||
                                            hw_info.model == SOFTRF_MODEL_POCKET   ||
                                            hw_info.model == SOFTRF_MODEL_DECENT   ?
                                            NMEA_BLUETOOTH :

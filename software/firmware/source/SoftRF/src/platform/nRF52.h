@@ -362,6 +362,7 @@ struct rst_info {
 #if defined(USE_PWM_SOUND)
 #define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E  ? SOC_GPIO_PIN_T1000_BUZZER : \
                                nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER    : \
+                               nRF52_board == NRF52_ELECROW_TN_M3 ? SOC_GPIO_PIN_M3_BUZZER    : \
                                nRF52_board == NRF52_SEEED_WIO_L1  ? SOC_GPIO_PIN_L1_BUZZER    : \
                                nRF52_board == NRF52_LILYGO_TECHO_PLUS ? SOC_GPIO_PIN_TECHO_BUZZER : \
                                hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \

@@ -1,7 +1,7 @@
 
 /* Peripherals */
-#define SOC_GPIO_PIN_CONS_M3_RX   SOC_UNUSED_PIN // TBD
-#define SOC_GPIO_PIN_CONS_M3_TX   SOC_UNUSED_PIN // TBD
+#define SOC_GPIO_PIN_CONS_M3_RX   _PINNUM(0,  9) // P0.09 , No NFC
+#define SOC_GPIO_PIN_CONS_M3_TX   _PINNUM(0, 10) // P0.10 , No NFC
 
 /* L76K */
 #define SOC_GPIO_PIN_GNSS_M3_RX   _PINNUM(0, 20) // P0.20
@@ -9,7 +9,7 @@
 
 #define SOC_GPIO_PIN_GNSS_M3_PPS  SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_GNSS_M3_WKE  _PINNUM(0, 21) // P0.21
-#define SOC_GPIO_PIN_GNSS_M3_RST  _PINNUM(0, 25) // P0.25
+#define SOC_GPIO_PIN_GNSS_M3_RST  _PINNUM(0, 25) // P0.25 active HIGH
 #define SOC_GPIO_PIN_GNSS_M3_EN   _PINNUM(0, 14) // P0.14 active HIGH
 
 /* SPI */
@@ -18,9 +18,9 @@
 #define SOC_GPIO_PIN_M3_SCK       _PINNUM(1, 13) // P1.13
 #define SOC_GPIO_PIN_M3_SS        _PINNUM(1, 12) // P1.12
 
-/* SX1262 */
+/* LR1110 */
 #define SOC_GPIO_PIN_M3_RST       _PINNUM(1, 10) // P1.10
-#define SOC_GPIO_PIN_M3_DIO1      _PINNUM(1,  8) // P1.08
+#define SOC_GPIO_PIN_M3_DIO9      _PINNUM(1,  8) // P1.08
 #define SOC_GPIO_PIN_M3_BUSY      _PINNUM(1, 11) // P1.11
 
 /* I2C */

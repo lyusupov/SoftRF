@@ -9,8 +9,8 @@
 
 #define SOC_GPIO_PIN_GNSS_M6_PPS  _PINNUM(0, 31) // P0.31
 #define SOC_GPIO_PIN_GNSS_M6_WKE  _PINNUM(0, 30) // P0.30
-#define SOC_GPIO_PIN_GNSS_M6_RST  _PINNUM(0, 29) // P0.29
-#define SOC_GPIO_PIN_GNSS_M6_EN   _PINNUM(0,  6) // P0.06
+#define SOC_GPIO_PIN_GNSS_M6_RST  _PINNUM(0, 29) // P0.29 active HIGH
+#define SOC_GPIO_PIN_GNSS_M6_EN   _PINNUM(0,  6) // P0.06 active HIGH
 
 /* SPI */
 #define SOC_GPIO_PIN_M6_MOSI      _PINNUM(1, 14) // P1.14

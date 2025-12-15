@@ -5,9 +5,10 @@
 
 DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Solaris-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Pocket-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Airventure-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
-[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Handheld-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
@@ -15,6 +16,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 ## Features
 
 * **Wearable**
+    * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [**Bracelet Edition**](https://github.com/lyusupov/SoftRF/wiki/Bracelet-Edition)
@@ -34,6 +36,8 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
     * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
+    * [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Handheld Edition**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)
     * [**Uni Edition**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
@@ -55,6 +59,8 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 * **Weatherproof**
+    * [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP65
+    * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP66
     * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg) - IP65
     * [**Lego Edition**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition) - IP67
 * **UAV** add-on

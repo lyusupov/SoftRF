@@ -808,6 +808,7 @@ static void nRF52_setup()
   nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
                 nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
                 nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
+                nRF52_bl_check("ThinkNodeM6") ? NRF52_ELECROW_TN_M6      :
                 nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
 #if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
@@ -890,7 +891,9 @@ static void nRF52_setup()
   }
 #endif /* EXCLUDE_PMU */
 
-  if (nRF52_board != NRF52_LILYGO_TULTIMA) {
+  if (nRF52_board != NRF52_LILYGO_TULTIMA &&
+      nRF52_board != NRF52_ELECROW_TN_M1  &&
+      nRF52_board != NRF52_ELECROW_TN_M6) {
 #if !defined(EXCLUDE_IMU)
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
     delay(5);
@@ -931,7 +934,8 @@ static void nRF52_setup()
   }
 
   if (nRF52_board == NRF52_ELECROW_TN_M1) { /* "ELECROWBOOT" */
-    pinMode(SOC_GPIO_PIN_M3_TEMP_EN, INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_M3_EEPROM_EN,  INPUT_PULLUP);
+    pinMode(SOC_GPIO_PIN_M3_TEMP_EN,    INPUT_PULLUP);
     delay(5);
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -945,28 +949,37 @@ static void nRF52_setup()
       nRF52_Device_Model = "Pocket Edition";
     }
     Wire.end();
-    pinMode(SOC_GPIO_PIN_M3_TEMP_EN, INPUT);
+    pinMode(SOC_GPIO_PIN_M3_TEMP_EN,    INPUT);
+    pinMode(SOC_GPIO_PIN_M3_EEPROM_EN,  INPUT);
+
+    if (nRF52_board == NRF52_ELECROW_TN_M3) {
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_M3_BUTTON, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+    }
   }
 
-  if (nRF52_board == NRF52_ELECROW_TN_M1) { /* "ELECROWBOOT" */
-    pinMode(SOC_GPIO_PIN_IO_M6_PWR, INPUT_PULLUP);
-    delay(5);
+  if (nRF52_board == NRF52_ELECROW_TN_M6) { /* "ThinkNodeM6" */
+    hw_info.model      = SOFTRF_MODEL_SOLARIS;
+    nRF52_Device_Model = "Solaris Edition";
 
+    if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+        reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+      NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+      pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-    Wire.setPins(SOC_GPIO_PIN_M6_SDA, SOC_GPIO_PIN_M6_SCL);
+      pinMode(SOC_GPIO_PIN_M6_BUTTON, INPUT_PULLUP_SENSE);
 #endif /* ARDUINO_ARCH_MBED */
-    Wire.begin();
-    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-    if (Wire.endTransmission() == 0) {
-      nRF52_board        = NRF52_ELECROW_TN_M6;
-      hw_info.model      = SOFTRF_MODEL_SOLARIS;
-      nRF52_Device_Model = "Solaris Edition";
-
-      // digitalWrite(SOC_GPIO_PIN_SFL_M6_EN, HIGH);
-      // pinMode(SOC_GPIO_PIN_SFL_M6_EN, OUTPUT);
+      nRF52_system_off();
     }
-    Wire.end();
-    pinMode(SOC_GPIO_PIN_IO_M6_PWR, INPUT);
+
+    pinMode(SOC_GPIO_PIN_SFL_M6_EN, INPUT_PULLUP);
   }
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -991,18 +1004,16 @@ static void nRF52_setup()
       Wire.setPins(SOC_GPIO_PIN_M3_SDA, SOC_GPIO_PIN_M3_SCL);
 
 #if !defined(EXCLUDE_IMU)
-      pinMode(SOC_GPIO_PIN_M3_ACC_EN, INPUT_PULLUP);
+      pinMode(SOC_GPIO_PIN_M3_ACC_EN,       INPUT_PULLUP);
 #endif /* EXCLUDE_IMU */
 
-      digitalWrite(SOC_GPIO_PIN_M3_TEMP_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_M3_TEMP_EN, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_M3_EEPROM_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN, OUTPUT);
+      pinMode(SOC_GPIO_PIN_M3_TEMP_EN,      INPUT_PULLUP);
+      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN,    INPUT_PULLUP);
       break;
     case NRF52_ELECROW_TN_M6:
       Wire.setPins(SOC_GPIO_PIN_M6_SDA, SOC_GPIO_PIN_M6_SCL);
-      // digitalWrite(SOC_GPIO_PIN_IO_M6_PWR, HIGH);
-      // pinMode(SOC_GPIO_PIN_IO_M6_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_IO_M6_PWR, HIGH);
+      pinMode(SOC_GPIO_PIN_IO_M6_PWR, OUTPUT);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1052,12 +1063,12 @@ static void nRF52_setup()
           if (Wire.endTransmission() == 0) {
             nRF52_board = NRF52_LILYGO_TECHO_PLUS;
           }
-        } else {
-          Wire.beginTransmission(SC7A20H_ADDRESS_L);
-          nRF52_has_imu = (Wire.endTransmission() == 0);
         }
       }
     }
+  } else if (nRF52_board == NRF52_ELECROW_TN_M3) {
+    Wire.beginTransmission(SC7A20H_ADDRESS_H);
+    nRF52_has_imu = (Wire.endTransmission() == 0);
   }
 #endif /* EXCLUDE_IMU */
 
@@ -1347,8 +1358,7 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_M3_EN2, HIGH);
       pinMode(SOC_GPIO_PIN_M3_EN2, OUTPUT);
 
-      digitalWrite(SOC_GPIO_PIN_M3_BUT_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_M3_BUT_EN, OUTPUT);
+      pinMode(SOC_GPIO_PIN_M3_BUT_EN, INPUT_PULLUP);
       break;
 
     case NRF52_ELECROW_TN_M6:
@@ -1557,7 +1567,7 @@ static void nRF52_setup()
     case NRF52_ELECROW_TN_M3:
       digitalWrite(SOC_GPIO_PIN_GNSS_M3_EN, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M3_EN, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_M3_RST, HIGH);
+      digitalWrite(SOC_GPIO_PIN_GNSS_M3_RST, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_M3_RST, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_M3_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M3_WKE, OUTPUT);
@@ -1576,16 +1586,19 @@ static void nRF52_setup()
       lmic_pins.nss  = SOC_GPIO_PIN_M3_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_M3_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M3_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_M3_DIO9; /* LR1110 */
+#endif /* USE_RADIOLIB */
 
       hw_info.revision = 3; /* Unknown */
       break;
 
     case NRF52_ELECROW_TN_M6:
-      // digitalWrite(SOC_GPIO_PIN_GNSS_M6_EN, HIGH);
-      // pinMode(SOC_GPIO_PIN_GNSS_M6_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_M6_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M6_EN, OUTPUT);
 
       /* Wake up Quectel L76K GNSS */
-      digitalWrite(SOC_GPIO_PIN_GNSS_M6_RST, HIGH);
+      digitalWrite(SOC_GPIO_PIN_GNSS_M6_RST, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_M6_RST, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_M6_WKE, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_M6_WKE, OUTPUT);
@@ -1625,7 +1638,33 @@ static void nRF52_setup()
   if (nRF52_has_rtc && (i2c != nullptr)) {
     rtc = new PCF8563_Class(*i2c);
 
-    pinMode(SOC_GPIO_PIN_R_INT, INPUT);
+    switch (nRF52_board)
+    {
+#if !defined(EXCLUDE_WIP)
+      case NRF52_LILYGO_TULTIMA:
+        /* TBD */
+        break;
+#endif /* EXCLUDE_WIP */
+      case NRF52_HELTEC_T114:
+        pinMode(SOC_GPIO_PIN_T114_R_INT, INPUT);
+        break;
+      case NRF52_ELECROW_TN_M3:
+        // pinMode(SOC_GPIO_PIN_RTC_M3_INT, INPUT);
+        break;
+      case NRF52_ELECROW_TN_M6:
+        pinMode(SOC_GPIO_PIN_RTC_M6_INT, INPUT);
+        break;
+      case NRF52_LILYGO_TECHO_REV_0:
+      case NRF52_LILYGO_TECHO_REV_1:
+      case NRF52_LILYGO_TECHO_REV_2:
+      case NRF52_LILYGO_TECHO_PLUS:
+      case NRF52_ELECROW_TN_M1:
+      case NRF52_NORDIC_PCA10059:
+      default:
+        pinMode(SOC_GPIO_PIN_R_INT, INPUT);
+        break;
+    }
+
     hw_info.rtc = RTC_PCF8563;
   }
 #endif /* ARDUINO_ARCH_MBED */
@@ -2083,6 +2122,9 @@ static void nRF52_post_init()
     Serial.print(F("GNSS    : "));
     Serial.println(hw_info.gnss  == GNSS_MODULE_AT65 ? F("PASS") : F("FAIL"));
     Serial.flush();
+    Serial.print(F("RTC     : "));
+    Serial.println(hw_info.rtc   == RTC_PCF8563      ? F("PASS") : F("FAIL"));
+    Serial.flush();
 
 #if !defined(EXCLUDE_IMU)
     Serial.print(F("IMU     : "));
@@ -2104,6 +2146,51 @@ static void nRF52_post_init()
       Serial.flush();
     }
 #endif
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+
+  } else if (nRF52_board == NRF52_ELECROW_TN_M6) {
+#if 0
+    Serial.println();
+    Serial.print  (F("SPI FLASH JEDEC ID: "));
+    Serial.print  (spiflash_id, HEX);           Serial.print(" ");
+#endif
+
+    Serial.println();
+    Serial.println(F("Elecrow ThinkNode-M6 Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf    == RF_IC_SX1262     ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss  == GNSS_MODULE_AT65 ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("RTC     : "));
+    Serial.println(hw_info.rtc   == RTC_PCF8563      ? F("PASS") : F("FAIL"));
+    Serial.flush();
+    Serial.print(F("FLASH   : "));
+    Serial.println(hw_info.storage == STORAGE_FLASH  ? F("PASS") : F("N/A"));
+    Serial.flush();
+
+    Serial.println();
+    Serial.println(F("External components:"));
+
+#if defined(USE_OLED)
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE   ? F("PASS") : F("N/A"));
+    Serial.flush();
+#endif /* USE_OLED */
+
+    Serial.print(F("BARO    : "));
+    Serial.println(hw_info.baro  != BARO_MODULE_NONE ? F("PASS") : F("N/A"));
+    Serial.flush();
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -2608,15 +2695,17 @@ static void nRF52_fini(int reason)
       digitalWrite(SOC_GPIO_PIN_GNSS_M3_WKE, LOW);
       digitalWrite(SOC_GPIO_LED_M3_RGB_PWR,  LOW);
 
-      digitalWrite(SOC_GPIO_LED_M1_RED,  1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M3_RED,  1-LED_STATE_ON);
       digitalWrite(SOC_GPIO_LED_M3_GREEN,1-LED_STATE_ON);
-      digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M3_BLUE, 1-LED_STATE_ON);
 
       pinMode(SOC_GPIO_LED_M3_RED,       INPUT);
       pinMode(SOC_GPIO_LED_M3_GREEN,     INPUT);
       pinMode(SOC_GPIO_LED_M3_BLUE,      INPUT);
       pinMode(SOC_GPIO_LED_M3_RGB_PWR,   INPUT);
 
+//      pinMode(SOC_GPIO_PIN_GNSS_M3_WKE,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_M3_RST,  INPUT);
       pinMode(SOC_GPIO_PIN_GNSS_M3_EN,   INPUT);
       pinMode(SOC_GPIO_PIN_M3_EEPROM_EN, INPUT);
       pinMode(SOC_GPIO_PIN_M3_EN1,       INPUT);
@@ -2624,6 +2713,23 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_M3_ADC_EN,    INPUT);
       pinMode(SOC_GPIO_PIN_M3_ACC_EN,    INPUT);
       pinMode(SOC_GPIO_PIN_M3_TEMP_EN,   INPUT);
+      break;
+
+    case NRF52_ELECROW_TN_M6:
+      digitalWrite(SOC_GPIO_PIN_GNSS_M6_WKE, LOW);
+
+      digitalWrite(SOC_GPIO_LED_M6_RED,  1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_M6_BLUE, 1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_M6_RED,       INPUT);
+      pinMode(SOC_GPIO_LED_M6_BLUE,      INPUT);
+
+//      pinMode(SOC_GPIO_PIN_GNSS_M6_WKE,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_M6_RST,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_M6_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_M6_ADC_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_M6_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_IO_M6_PWR,    INPUT);
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -2719,6 +2825,7 @@ static void nRF52_fini(int reason)
   // pinMode(SOC_GPIO_PIN_PAD,    INPUT);
   pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP   :
                            nRF52_board == NRF52_SEEED_T1000E       ? INPUT_PULLDOWN :
+                           nRF52_board == NRF52_ELECROW_TN_M6      ? INPUT_PULLUP   :
                            INPUT);
   while (digitalRead(mode_button_pin) == (nRF52_board == NRF52_SEEED_T1000E ? HIGH : LOW));
   delay(100);
@@ -3404,13 +3511,33 @@ static byte nRF52_Display_setup()
 
   if (nRF52_board == NRF52_NORDIC_PCA10059 ||
       nRF52_board == NRF52_SEEED_T1000E    ||
-      nRF52_board == NRF52_ELECROW_TN_M3   ||
-      nRF52_board == NRF52_ELECROW_TN_M6) {
+      nRF52_board == NRF52_ELECROW_TN_M3) {
       /* Nothing to do */
   } else if (nRF52_board == NRF52_SEEED_WIO_L1) {
 #if defined(USE_OLED)
     u8x8_i2c.setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
     rval = OLED_setup();
+#endif /* USE_OLED */
+  } else if (nRF52_board == NRF52_ELECROW_TN_M6) {
+#if defined(USE_OLED)
+    Wire.begin();
+    Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
+    if (Wire.endTransmission() == 0) {
+      u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
+      rval = DISPLAY_OLED_TTGO;
+      Wire.end();
+    }
+    if (u8x8) {
+      u8x8->begin();
+      u8x8->setFlipMode(OLED_flip);
+      u8x8->setFont(u8x8_font_chroma48medium8_r);
+      u8x8->clear();
+
+      u8x8->draw2x2String( 2, 2, SoftRF_text1);
+
+      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
+      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
+    }
 #endif /* USE_OLED */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
 #if defined(USE_TFT)
@@ -4172,6 +4299,7 @@ static void nRF52_Button_setup()
   // Button(s) uses external pull up resistor.
   pinMode(mode_button_pin, nRF52_board == NRF52_LILYGO_TECHO_REV_1 ? INPUT_PULLUP   :
                            nRF52_board == NRF52_SEEED_T1000E       ? INPUT_PULLDOWN :
+                           nRF52_board == NRF52_ELECROW_TN_M6      ? INPUT_PULLUP   :
                            INPUT);
   if (up_button_pin >= 0) { pinMode(up_button_pin, INPUT); }
 

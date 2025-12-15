@@ -635,6 +635,7 @@ static void lr11xx_setup()
    *  Seeed T1000-E   | LR1110 | 0x0016c001f03a86ab | Card
    *  Ebyte E80       | LR1121 | 0x0016c001f047ac30 | Academy
    *  RadioMaster XR1 | LR1121 | 0x0016c001f09aa1b7 | Nano
+   *  Elecrow TN-M3   | LR1110 | 0x0016c001f00f0b12 | Pocket
    */
 
   switch (hw_info.model)
