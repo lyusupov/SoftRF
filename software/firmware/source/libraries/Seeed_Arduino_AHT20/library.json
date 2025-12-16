@@ -1,0 +1,21 @@
+{
+  "name": "Seeed_Arduino_AHT20",
+  "version": "1.0.1",
+  "keywords": "AHT20,temp,humi",
+  "description": "A arduino library for AHT20 sensor",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/Seeed-Studio/Seeed_Arduino_AHT20"
+  },
+  "authors":
+  [
+    {
+        "name": "Junjie Chen",
+        "email": "59535940@qq.com",
+        "maintainer": true
+    }
+  ],
+  "frameworks": "arduino",
+  "platforms": "*2"
+}

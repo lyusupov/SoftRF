@@ -356,10 +356,8 @@ extern float IMU_g;
 SensorDRV2605 vibra;
 static bool nRF52_has_vibra = false;
 
-#if 0
 #include <AHT20.h>
 AHT20 aht20;
-#endif
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 uCDB<FatVolume, File32> ucdb(fatfs);
@@ -2103,11 +2101,6 @@ static void nRF52_post_init()
     Serial.flush();
 
   } else if (nRF52_board == NRF52_ELECROW_TN_M3) {
-#if 0
-    Serial.println();
-    Serial.print  (F("SPI FLASH JEDEC ID: "));
-    Serial.print  (spiflash_id, HEX);           Serial.print(" ");
-#endif
 
     Serial.println();
     Serial.println(F("Elecrow ThinkNode-M3 Power-on Self Test"));
@@ -2132,7 +2125,6 @@ static void nRF52_post_init()
     Serial.flush();
 #endif /* EXCLUDE_IMU */
 
-#if 0
     aht20.begin();
     float humidity, temperature;
 
@@ -2145,7 +2137,6 @@ static void nRF52_post_init()
       Serial.println(F(" % rH"));
       Serial.flush();
     }
-#endif
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
