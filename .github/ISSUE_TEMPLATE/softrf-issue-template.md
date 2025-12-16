@@ -33,6 +33,9 @@ Recommended:
 - [ ]   Ham
 - [ ]   Card
 - [ ]   Handheld
+- [ ]   Airventure
+- [ ]   Solaris
+- [ ]   Pocket
 - [ ]   Nano
 - [ ]   Cozy
 - [ ]   Midi
