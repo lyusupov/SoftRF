@@ -1,6 +1,6 @@
 /*
  * WebHelper.cpp
- * Copyright (C) 2016-2025 Linar Yusupov
+ * Copyright (C) 2016-2026 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>sekigon-gonnoc</th><td align=left>Pico PIO USB library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2019-2025 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2019-2026 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 

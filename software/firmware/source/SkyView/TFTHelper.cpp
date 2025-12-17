@@ -1,6 +1,6 @@
 /*
  * TFTHelper.cpp
- * Copyright (C) 2025 Linar Yusupov
+ * Copyright (C) 2025-2026 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ Board *panel = NULL;
 
 const char TFT_SkyView_text1 [] = SKYVIEW_IDENT;
 const char TFT_SkyView_text2 [] = "Presented by SoftRF project";
-const char TFT_SkyView_text3 [] = "Author:  Linar Yusupov  (C) 2019-2025";
+const char TFT_SkyView_text3 [] = "Author:  Linar Yusupov  (C) 2019-2026";
 const char TFT_SkyView_text4 [] = "POWER";
 const char TFT_SkyView_text5 [] = "OFF";
 const char TFT_SkyView_text6 [] = "Screen";

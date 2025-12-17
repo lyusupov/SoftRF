@@ -1,6 +1,6 @@
 /*
  * SkyView(.ino) firmware
- * Copyright (C) 2019-2025 Linar Yusupov
+ * Copyright (C) 2019-2026 Linar Yusupov
  *
  * This firmware is essential part of the SoftRF project.
  *
@@ -91,7 +91,7 @@ void setup()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SKYVIEW_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2019-2025 Linar Yusupov. All rights reserved."));
+  Serial.println(F("Copyright (C) 2019-2026 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   EEPROM_setup();

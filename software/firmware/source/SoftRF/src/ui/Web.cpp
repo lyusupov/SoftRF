@@ -1,6 +1,6 @@
 /*
  * WebHelper.cpp
- * Copyright (C) 2016-2025 Linar Yusupov
+ * Copyright (C) 2016-2026 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Khoi Hoang</th><td align=left>WiFiWebServer and Functional-Vlpp libraries</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2015-2025 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2015-2026 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
