@@ -297,9 +297,17 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/SoftRF-Case-v5-Exterior.jpg)
 
-* [**Handheld Edition**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Airventure Edition**](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Handheld-4.jpg" width="600"></p>
+
+* [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+<p><img src="https://media-cdn.elecrow.com/media/webp_image/catalog/product/cache/b6b9577937e6a96f50e53ddc42983628/t/h/thinknode_m6_1_1.webp" width="800"></p>
+
+* [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+<p><img src="https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Pocket-3.jpg" width="800"></p>
 
 * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
