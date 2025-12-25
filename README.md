@@ -174,15 +174,16 @@ Generic<br>NMEA|[Standalone](https://github.com/lyusupov/SoftRF/wiki/Standalone-
 ## By OEM
 OEM|Model(s)
 :---:|:---:
-[LilyGO / TTGO](https://lilygo.cc/)|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)<br>3&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<br>4&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<br>5&nbsp;[**Ham**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)<br>6&nbsp;[**Eco**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition)<br>7&nbsp;[**Labubu**](https://github.com/lyusupov/SoftRF/wiki/Labubu-Edition)
+[LilyGO / TTGO](https://lilygo.cc/)|1&nbsp;[**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII)<br>2&nbsp;[**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)<br>3&nbsp;[**Dongle**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition)<br>4&nbsp;[**SkyView EZ**](https://github.com/lyusupov/SoftRF/wiki/SkyView-EZ)<br>5&nbsp;[**Badge**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<br>6&nbsp;[**WebTop USB**](https://github.com/lyusupov/SoftRF/wiki/WebTop-USB)<br>7&nbsp;[**Ham**](https://github.com/lyusupov/SoftRF/wiki/Ham-Edition)<br>8&nbsp;[**Eco**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition)<br>9&nbsp;[**Labubu**](https://github.com/lyusupov/SoftRF/wiki/Labubu-Edition)
 [Elecrow](http://www.elecrow.com/)|1&nbsp;[**Handheld**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)<br>2&nbsp;[**Gizmo**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)<br>3&nbsp;[**Airventure**](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)<br>4&nbsp;[**Solaris**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)<br>5&nbsp;[**Pocket**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)
 [Heltec Automation](https://heltec.org/)|1&nbsp;[**Mini**](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)<br>2&nbsp;[**Midi**](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)<br>3&nbsp;[**Cozy**](https://github.com/lyusupov/SoftRF/wiki/Cozy-Edition)
+[Waveshare Electronics](https://www.waveshare.com/)|1&nbsp;[**SkyView Pi**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pi)<br>2&nbsp;[**SkyView Pico**](https://github.com/lyusupov/SoftRF/wiki/SkyView-Pico)
+[Seeed Studio](https://www.seeedstudio.com/)|1&nbsp;[**USB to Bluetooth**](https://github.com/lyusupov/SoftRF/wiki/USB-to-Bluetooth-adapter)<br>2&nbsp;[**Card**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
 [Texas Instruments](http://www.ti.com)|[**Uni**](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)
 [Great Scott Gadgets](https://greatscottgadgets.com/)|[**ES**](https://github.com/lyusupov/SoftRF/wiki/ES-Edition)
 [Rak Wireless](https://www.rakwireless.com/en-us)|[**Lego**](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)
 [Olimex](https://www.olimex.com)|[**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
-[Seeed Studio](https://www.seeedstudio.com/)|[**Card**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
-[RadioMaster](https://radiomasterrc.com/)|[**Nano**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
+[RadioMaster RC](https://radiomasterrc.com/)|[**Nano**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
 
 <br>
 
