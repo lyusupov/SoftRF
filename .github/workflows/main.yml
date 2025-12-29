@@ -59,7 +59,7 @@ jobs:
           ]
 
     env:
-      ARDUINO_IDE_VERSION: 1.8.13
+      ARDUINO_IDE_VERSION: 1.8.19
       ARDUINO_CLI_VERSION: 0.34.2
       ARDUINO_BLE_VERSION: 1.4.1
       ENERGIA_IDE_VERSION: 1.8.10E23

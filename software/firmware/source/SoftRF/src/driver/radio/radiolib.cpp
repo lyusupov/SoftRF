@@ -4951,16 +4951,12 @@ static void lr20xx_setup()
     {
     case RF_PROTOCOL_FANET:
     default:
-#if 0
       state = radio_g4->setSpreadingFactor(7); /* SF_7 */
       state = radio_g4->setCodingRate(5);      /* CR_5 */
-#endif
       break;
     }
 
-#if 0
     state = radio_g4->setSyncWord((uint8_t) rl_protocol->syncword[0]);
-#endif
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_SYNC_WORD) {
@@ -4972,8 +4968,8 @@ static void lr20xx_setup()
     state = radio_g4->setPreambleLength(8);
 #if 0
     state = radio_g4->explicitHeader();
-    state = radio_g4->setCRC(true);
 #endif
+    state = radio_g4->setCRC(true);
     break;
   case RF_MODULATION_TYPE_2FSK:
   case RF_MODULATION_TYPE_PPM: /* TBD */
@@ -5069,17 +5065,13 @@ static void lr20xx_setup()
     case RF_CHECKSUM_TYPE_CRC8_107:
     case RF_CHECKSUM_TYPE_RS:
       /* CRC is driven by software */
-#if 0
       state = radio_g4->setCRC(0, 0);
-#endif
       break;
     case RF_CHECKSUM_TYPE_GALLAGER:
     case RF_CHECKSUM_TYPE_CRC_MODES:
     case RF_CHECKSUM_TYPE_NONE:
     default:
-#if 0
       state = radio_g4->setCRC(0, 0);
-#endif
       break;
     }
 
@@ -5113,10 +5105,14 @@ static void lr20xx_setup()
                            rl_protocol->syncword[0],
                            rl_protocol->syncword[1]
                          };
+#if 0
       state = radio_g4->setSyncWord(sword, 4);
+#endif
     } else {
+#if 0
       state = radio_g4->setSyncWord((uint8_t *) rl_protocol->syncword,
                                     (size_t)    rl_protocol->syncword_size);
+#endif
     }
     break;
   }
@@ -5602,9 +5598,7 @@ static bool lr20xx_transmit()
 static void lr20xx_shutdown()
 {
   int state = radio_g4->standby(RADIOLIB_LR2021_STANDBY_RC);
-#if 0
   state = radio_g4->setTCXO(0);
-#endif
   state = radio_g4->sleep(false, 0);
 
   RadioSPI.end();
