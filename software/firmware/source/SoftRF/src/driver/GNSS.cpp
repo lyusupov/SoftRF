@@ -1135,8 +1135,14 @@ static bool uc65_setup()
    * $CFGGEOID,0*1E
    * $CFGDYN,h00,0,0*55
    */
+
 #if 0
-  Serial_GNSS_Out.write("$CFGSYS,H4004\r\n"); /* GPS L5 + GAL E5a */
+  Serial_GNSS_Out.write("$CFGSYS,h1111\r\n"); /* GPS L1 + BDS B1I + GLO L1 + GAL E1 */
+  /* The receiver resets automatically after receiving the $CFGSYS command */
+  delay(500);
+#endif
+#if 0
+  Serial_GNSS_Out.write("$CFGSYS,h4004\r\n"); /* GPS L5 + GAL E5a */
   /* The receiver resets automatically after receiving the $CFGSYS command */
   delay(500);
 #endif
