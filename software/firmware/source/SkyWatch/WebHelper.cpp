@@ -770,7 +770,7 @@ void handleSettings_master() {
 
 void handleSettings_slave() {
 
-  size_t size = 7290;
+  size_t size = 7370;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -895,10 +895,12 @@ void handleSettings_slave() {
 <option %s value='%d'>Glider</option>\
 <option %s value='%d'>Towplane</option>\
 <option %s value='%d'>Powered</option>\
+<option %s value='%d'>Jet</option>\
 <option %s value='%d'>Helicopter</option>\
 <option %s value='%d'>UAV</option>\
 <option %s value='%d'>Hangglider</option>\
 <option %s value='%d'>Paraglider</option>\
+<option %s value='%d'>Parachute</option>\
 <option %s value='%d'>Balloon</option>\
 <option %s value='%d'>Static</option>\
 </select>\
@@ -958,10 +960,12 @@ void handleSettings_slave() {
   (settings->s.aircraft_type == AIRCRAFT_TYPE_GLIDER ? "selected" : ""),  AIRCRAFT_TYPE_GLIDER,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_TOWPLANE ? "selected" : ""),  AIRCRAFT_TYPE_TOWPLANE,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_POWERED ? "selected" : ""),  AIRCRAFT_TYPE_POWERED,
+  (settings->s.aircraft_type == AIRCRAFT_TYPE_JET ? "selected" : ""),  AIRCRAFT_TYPE_JET,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_HELICOPTER ? "selected" : ""),  AIRCRAFT_TYPE_HELICOPTER,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_UAV ? "selected" : ""),  AIRCRAFT_TYPE_UAV,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
+  (settings->s.aircraft_type == AIRCRAFT_TYPE_PARACHUTE ? "selected" : ""),  AIRCRAFT_TYPE_PARACHUTE,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_BALLOON ? "selected" : ""),  AIRCRAFT_TYPE_BALLOON,
   (settings->s.aircraft_type == AIRCRAFT_TYPE_STATIC ? "selected" : ""),  AIRCRAFT_TYPE_STATIC,
   (settings->s.alarm == TRAFFIC_ALARM_NONE ? "selected" : ""),  TRAFFIC_ALARM_NONE,
