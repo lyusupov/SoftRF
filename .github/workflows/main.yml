@@ -227,6 +227,9 @@ jobs:
             wget https://github.com/espressif/arduino-esp32/commit/73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;
             cat 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch | patch -p1 ;
             rm 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;
+            wget https://github.com/espressif/arduino-esp32/commit/bf364e12c805b976f162b107b9cab1a8901bde80.patch ;
+            cat bf364e12c805b976f162b107b9cab1a8901bde80.patch | patch -p1 ;
+            rm bf364e12c805b976f162b107b9cab1a8901bde80.patch ;
             cd $GITHUB_WORKSPACE ;
           fi
           #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
@@ -307,6 +310,9 @@ jobs:
             wget https://github.com/espressif/arduino-esp32/commit/73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;
             cat 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch | patch -p1 ;
             rm 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;
+            wget https://github.com/espressif/arduino-esp32/commit/bf364e12c805b976f162b107b9cab1a8901bde80.patch ;
+            cat bf364e12c805b976f162b107b9cab1a8901bde80.patch | patch -p1 ;
+            rm bf364e12c805b976f162b107b9cab1a8901bde80.patch ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
