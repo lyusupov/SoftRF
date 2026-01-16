@@ -266,7 +266,7 @@ char *Root_content() {
 
 char *Settings_content() {
 
-  size_t size = 5520;
+  size_t size = 5600;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -341,9 +341,7 @@ char *Settings_content() {
 #else
 "<!--<option %s value='%d'>%s</option>-->"
 #endif /* ENABLE_PROL */
-"</select>\
-</td>\
-</tr>"),
+      ),
     (settings->rf_protocol == RF_PROTOCOL_LEGACY   ? "selected" : ""),
      RF_PROTOCOL_LEGACY, legacy_proto_desc.name,
     (settings->rf_protocol == RF_PROTOCOL_OGNTP    ? "selected" : ""),
@@ -357,6 +355,28 @@ char *Settings_content() {
     (settings->rf_protocol == RF_PROTOCOL_APRS     ? "selected" : ""),
      RF_PROTOCOL_APRS, prol_proto_desc.name
     );
+
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+
+    if (hw_info.rf == RF_IC_LR2021) {
+      snprintf_P ( offset, size,
+        PSTR("\
+<option %s value='%d'>%s</option>\
+<option %s value='%d'>%s</option>"),
+      (settings->rf_protocol == RF_PROTOCOL_ADSB_1090 ? "selected" : ""),
+       RF_PROTOCOL_ADSB_1090, es1090_proto_desc.name,
+      (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT  ? "selected" : ""),
+       RF_PROTOCOL_ADSB_UAT, uat978_proto_desc.name
+      );
+
+      len = strlen(offset);
+      offset += len;
+      size -= len;
+    }
+
+    snprintf_P (offset, size, PSTR("</select></td></tr>"));
   } else if (hw_info.rf == RF_IC_SX1231 ||
              hw_info.rf == RF_IC_SI4432 ||
              hw_info.rf == RF_IC_SI4463 ||
