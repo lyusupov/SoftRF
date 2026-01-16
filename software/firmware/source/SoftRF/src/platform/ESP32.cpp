@@ -1145,9 +1145,23 @@ static void ESP32_setup()
       delay(200);
 
 #if !defined(EXCLUDE_MAG)
-      bool has_qmc = mag_qmc6310.begin(Wire, QMC6310U_SLAVE_ADDRESS,
-                                       SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-      if (has_qmc) {
+      bool esp32_has_qmc_u = false;
+      bool esp32_has_qmc_n = false;
+      esp32_has_qmc_u = mag_qmc6310.begin(Wire, QMC6310U_SLAVE_ADDRESS,
+                                          SOC_GPIO_PIN_S3_SDA,
+                                          SOC_GPIO_PIN_S3_SCL);
+      if (esp32_has_qmc_u) {
+        hw_info.mag = MAG_QMC6310U;
+      } else {
+        esp32_has_qmc_n = mag_qmc6310.begin(Wire, QMC6310N_SLAVE_ADDRESS,
+                                            SOC_GPIO_PIN_S3_SDA,
+                                            SOC_GPIO_PIN_S3_SCL);
+        if (esp32_has_qmc_n) {
+          hw_info.mag = MAG_QMC6310N;
+        }
+      }
+
+      if (esp32_has_qmc_u || esp32_has_qmc_n) {
         mag_qmc6310.configMagnetometer(
             /*
             * Run Mode
@@ -1190,8 +1204,6 @@ static void ESP32_setup()
             * DSR_1
             * * */
             SensorQMC6310::DSR_1);
-
-        hw_info.mag = MAG_QMC6310;
       } else {
         WIRE_FINI(Wire);
       }
@@ -2887,7 +2899,8 @@ static void ESP32_loop()
 
     switch (hw_info.mag)
     {
-    case MAG_QMC6310:
+    case MAG_QMC6310U:
+    case MAG_QMC6310N:
       if (mag_qmc6310.isDataReady()) {
         mag_qmc6310.readData();
 
@@ -3024,7 +3037,8 @@ static void ESP32_fini(int reason)
 #if !defined(EXCLUDE_MAG)
   switch (hw_info.mag)
   {
-  case MAG_QMC6310:
+  case MAG_QMC6310U:
+  case MAG_QMC6310N:
     // mag_qmc6310.deinit(); /* TBD */
     break;
   case MAG_NONE:
@@ -4472,11 +4486,23 @@ static byte ESP32_Display_setup()
       }
     } else if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
       Wire.begin(SOC_GPIO_PIN_S3_SDA, SOC_GPIO_PIN_S3_SCL);
-      Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
+#if !defined(EXCLUDE_MAG)
+      if (hw_info.mag == MAG_QMC6310N) {
+        Wire.beginTransmission(SH1106_OLED_I2C_ADDR_ALT);
+      } else
+#endif /* EXCLUDE_MAG */
+      {
+        Wire.beginTransmission(SH1106_OLED_I2C_ADDR);
+      }
       has_oled = (Wire.endTransmission() == 0);
       WIRE_FINI(Wire);
       if (has_oled) {
         u8x8 = new U8X8_SH1106_128X64_NONAME_HW_I2C(U8X8_PIN_NONE); // &u8x8_1_3;
+#if !defined(EXCLUDE_MAG)
+        if (hw_info.mag == MAG_QMC6310N) {
+          u8x8->setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
+        }
+#endif /* EXCLUDE_MAG */
         rval = DISPLAY_OLED_1_3;
       }
     } else if (esp32_board == ESP32_LILYGO_T_TWR2) {
