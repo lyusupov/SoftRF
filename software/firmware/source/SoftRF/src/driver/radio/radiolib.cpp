@@ -240,6 +240,55 @@ static void lr11xx_GetChipEui (uint64_t* eui) {
 #endif
 }
 
+#if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
+static uint8_t lr11xx_roundRampTime(uint32_t rampTimeUs) {
+  uint8_t regVal;
+
+  // Round up the ramp time to nearest discrete register value
+  if(rampTimeUs <= 2) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_2U;
+  } else if(rampTimeUs <= 4) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_4U;
+  } else if(rampTimeUs <= 8) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_8U;
+  } else if(rampTimeUs <= 16) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_16U;
+  } else if(rampTimeUs <= 32) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_32U;
+  } else if(rampTimeUs <= 48) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_48U;
+  } else if(rampTimeUs <= 64) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_64U;
+  } else if(rampTimeUs <= 80) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_80U;
+  } else if(rampTimeUs <= 96) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_96U;
+  } else if(rampTimeUs <= 112) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_112U;
+  } else if(rampTimeUs <= 128) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_128U;
+  } else if(rampTimeUs <= 144) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_144U;
+  } else if(rampTimeUs <= 160) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_160U;
+  } else if(rampTimeUs <= 176) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_176U;
+  } else if(rampTimeUs <= 192) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_192U;
+  } else if(rampTimeUs <= 208) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_208U;
+  } else if(rampTimeUs <= 240) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_240U;
+  } else if(rampTimeUs <= 272) {
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_272U;
+  } else {  // 304
+    regVal = RADIOLIB_LRXXXX_PA_RAMP_304U;
+  }
+
+  return regVal;
+}
+#endif /* RADIOLIB_VERSION */
+
 static uint64_t lr11xx_eui_be = 0xdeadbeefdeadbeef;
 
 static const uint32_t rfswitch_dio_pins_hpdtek[] = {
@@ -999,7 +1048,10 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_CARD:
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_seeed, rfswitch_table_seeed);
-    state = radio_semtech->setOutputPower(txpow); /* TODO */
+    {
+      bool useHp = false || (txpow > 14);
+      state = radio_semtech->setOutputPower(txpow, useHp, useHp, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+    }
 #else
     radio_semtech->setDioAsRfSwitch(0x0f, 0x0, 0x09, 0x0B, 0x0A, 0x0, 0x4, 0x0);
     state = radio_semtech->setOutputPower(txpow, false);
@@ -1014,7 +1066,17 @@ static void lr11xx_setup()
       /* Ebyte E80-900M2213S */
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
-      state = radio_semtech->setOutputPower(txpow); /* TODO */
+      {
+        uint8_t paSel = 0;
+        uint8_t paSupply = 0;
+        if (high) {
+          paSel = 2;
+        } else if (false || (txpow > 14)) {
+          paSel = 1;
+          paSupply = 1;
+        }
+        state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+      }
 #else
       radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
       state = radio_semtech->setOutputPower(txpow, false);
@@ -1022,7 +1084,17 @@ static void lr11xx_setup()
     } else {
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
-      state = radio_semtech->setOutputPower(txpow); /* TODO */
+      {
+        uint8_t paSel = 0;
+        uint8_t paSupply = 0;
+        if (high) {
+          paSel = 2;
+        } else if (true || (txpow > 14)) {
+          paSel = 1;
+          paSupply = 1;
+        }
+        state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+      }
 #else
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
 #endif /* RADIOLIB_VERSION_MINOR */
@@ -1034,7 +1106,17 @@ static void lr11xx_setup()
       /* Ebyte E80-900M2213S */
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
       radio_semtech->setRfSwitchTable(rfswitch_dio_pins_ebyte, rfswitch_table_ebyte);
-      state = radio_semtech->setOutputPower(txpow); /* TODO */
+      {
+        uint8_t paSel = 0;
+        uint8_t paSupply = 0;
+        if (high) {
+          paSel = 2;
+        } else if (false || (txpow > 14)) {
+          paSel = 1;
+          paSupply = 1;
+        }
+        state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+      }
 #else
       radio_semtech->setDioAsRfSwitch(0x07, 0x0, 0x02, 0x03, 0x01, 0x0, 0x4, 0x0);
       state = radio_semtech->setOutputPower(txpow, false);
@@ -1052,7 +1134,17 @@ static void lr11xx_setup()
 #endif
       }
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
-      state = radio_semtech->setOutputPower(txpow); /* TODO */
+      {
+        uint8_t paSel = 0;
+        uint8_t paSupply = 0;
+        if (high) {
+          paSel = 2;
+        } else if (true || (txpow > 14)) {
+          paSel = 1;
+          paSupply = 1;
+        }
+        state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+      }
 #else
       state = radio_semtech->setOutputPower(txpow, high ? false : true);
 #endif /* RADIOLIB_VERSION_MINOR */
@@ -1062,7 +1154,10 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_POCKET:
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_elecrow, rfswitch_table_elecrow);
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
-    state = radio_semtech->setOutputPower(txpow); /* TODO */
+    {
+      bool useHp = false || (txpow > 14);
+      state = radio_semtech->setOutputPower(txpow, useHp, useHp, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+    }
 #else
     state = radio_semtech->setOutputPower(txpow, false);
 #endif /* RADIOLIB_VERSION_MINOR */
@@ -1074,7 +1169,17 @@ static void lr11xx_setup()
   default:
     radio_semtech->setRfSwitchTable(rfswitch_dio_pins_hpdtek, rfswitch_table_hpdtek);
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
-    state = radio_semtech->setOutputPower(txpow); /* TODO */
+    {
+      uint8_t paSel = 0;
+      uint8_t paSupply = 0;
+      if (high) {
+        paSel = 2;
+      } else if (true || (txpow > 14)) {
+        paSel = 1;
+        paSupply = 1;
+      }
+      state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+    }
 #else
     state = radio_semtech->setOutputPower(txpow, high ? false : true);
 #endif /* RADIOLIB_VERSION_MINOR */
