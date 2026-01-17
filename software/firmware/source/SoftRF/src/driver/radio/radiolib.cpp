@@ -4748,9 +4748,71 @@ void lr20xx_receive_handler(void) {
   lr20xx_receive_complete = true;
 }
 
+static void lr2021_GetVersion (uint8_t* major, uint8_t* minor) {
+  uint8_t buf[2] = { 0 };
+
+  hal_pin_busy_wait();
+  hal_spi_select(1);
+
+  hal_spi((uint8_t)((RADIOLIB_LR2021_CMD_GET_VERSION & 0xFF00) >> 8));
+  hal_spi((uint8_t) (RADIOLIB_LR2021_CMD_GET_VERSION & 0x00FF));
+  hal_spi_select(0);
+
+  hal_pin_busy_wait();
+  hal_spi_select(1);
+
+  hal_spi(RADIOLIB_LR2021_CMD_NOP);
+  hal_spi(RADIOLIB_LR2021_CMD_NOP);
+  for (uint8_t i = 0; i < sizeof(buf); i++) {
+      buf[i] = hal_spi(0x00);
+  }
+  hal_spi_select(0);
+
+  if (major)  { *major  = buf[0]; }
+  if (minor)  { *minor  = buf[1]; }
+#if 0
+  Serial.print("major  = "); Serial.println(*major, HEX);
+  Serial.print("minor  = "); Serial.println(*minor, HEX);
+#endif
+}
+
 static bool lr2021_probe()
 {
-  return false;
+  u1_t major, major_reset, minor;
+
+  SoC->SPI_begin();
+
+  lmic_hal_init (nullptr);
+
+  // manually reset radio
+  hal_pin_rst(0); // drive RST pin low
+  hal_waitUntil(os_getTime()+ms2osticks(1)); // wait >100us
+
+  lr2021_GetVersion(&major_reset, &minor);
+
+  hal_pin_rst(2); // configure RST pin floating!
+  hal_waitUntil(os_getTime()+ms2osticks(300)); // wait 300 ms
+
+  lr2021_GetVersion(&major, &minor);
+
+  pinMode(lmic_pins.nss, INPUT);
+  RadioSPI.end();
+
+  if (major == 0x01) {
+
+    if (major_reset == 0x01) {
+      RF_SX12XX_RST_is_connected = false;
+    }
+#if 0
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d.%d", major, minor);
+    Serial.print("INFO: LR2021 base FW version ");
+    Serial.println(buf);
+#endif
+    return true;
+  } else {
+    return false;
+  }
 }
 
 static void lr20xx_channel(int8_t channel)
