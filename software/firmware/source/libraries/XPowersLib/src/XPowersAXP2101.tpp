@@ -2846,11 +2846,11 @@ protected:
         case XPOWERS_BLDO1:
             return setBLDO1Voltage(millivolt);
         case XPOWERS_BLDO2:
-            return setBLDO1Voltage(millivolt);
+            return setBLDO2Voltage(millivolt);
         case XPOWERS_DLDO1:
             return setDLDO1Voltage(millivolt);
         case XPOWERS_DLDO2:
-            return setDLDO1Voltage(millivolt);
+            return setDLDO2Voltage(millivolt);
         case XPOWERS_VBACKUP:
             return setButtonBatteryChargeVoltage(millivolt);
         case XPOWERS_CPULDO:
