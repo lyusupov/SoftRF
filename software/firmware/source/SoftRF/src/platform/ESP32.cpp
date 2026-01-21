@@ -517,6 +517,9 @@ esp_err_t es8311_codec_init(void) {
     ESP_RETURN_ON_ERROR(es8311_microphone_gain_set(es_handle, EXAMPLE_MIC_GAIN), TAG_ES83, "set es8311 microphone gain failed");
     return ESP_OK;
 }
+
+#include <ExtensionIOXL9555.hpp>
+ExtensionIOXL9555 *xl9535 = nullptr;
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
@@ -637,39 +640,40 @@ static void ESP32_setup()
   uint32_t flash_id = ESP32_getFlashId();
 
   /*
-   *    Board         |   Module         |  Flash memory IC
-   *  ----------------+------------------+--------------------
-   *  DoIt ESP32      | WROOM            | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.0   | PICO-D4 IC       | GIGADEVICE_GD25Q32
-   *  TTGO T3  V2.1.6 | PICO-D4 IC       | GIGADEVICE_GD25Q32
-   *  TTGO T22 V06    |                  | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V08    |                  | WINBOND_NEX_W25Q32_V
-   *  TTGO T22 V11    |                  | BOYA_BY25Q32AL
-   *  TTGO T22 V12    |                  | WINBOND_NEX_W25Q32_V
-   *  TTGO T8  V1.8   | WROVER           | GIGADEVICE_GD25LQ32
-   *  TTGO T8 S2 V1.1 |                  | WINBOND_NEX_W25Q32_V
-   *  TTGO T5S V1.9   |                  | WINBOND_NEX_W25Q32_V
-   *  TTGO T5S V2.8   |                  | BOYA_BY25Q32AL
-   *  TTGO T5  4.7    | WROVER-E         | XMC_XM25QH128C
-   *  TTGO T-Watch    |                  | WINBOND_NEX_W25Q128_V
-   *  Ai-T NodeMCU-S3 | ESP-S3-12K       | GIGADEVICE_GD25Q64C
-   *  TTGO T-Dongle   |                  | BOYA_BY25Q32AL
-   *  TTGO S3 Core    |                  | GIGADEVICE_GD25Q64C
-   *  TTGO T-01C3     |                  | BOYA_BY25Q32AL
-   *                  | ESP-C3-12F       | XMC_XM25QH32B
-   *  LilyGO T-TWR    | WROOM-1-N16R8    | GIGADEVICE_GD25Q128
-   *  Heltec Tracker  |                  | GIGADEVICE_GD25Q64
-   *                  | WT0132C6-S5      | ZBIT_ZB25VQ32B
-   *  LilyGO T3-C6    | ESP32-C6-MINI    | XMC_XM25QH32B
-   *  LilyGO T3-S3-EP | ESP32-S3-MINI    | XMC_XM25QH32B
-   *  LilyGO T3-S3-OL | ESP32-S3FH4R2    |
-   *  Elecrow TN-M2   | ESP32-S3-N4R8    | ZBIT_ZB25VQ32B
-   *  RadioMaster XR1 | ESP32-C3 (QFN32) | XMC_XM25QH32B
-   *  RadioMaster XR1 |                  | 0x464016 (TBD)
-   *  Elecrow TN-M5   | ESP32-S3-N4R8    | 0x464016 (TBD)
-   *  Ebyte EoRa-HUB  | ESP32-S3FH4R2    |
-   *  WT99P4C5-S1 CPU | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
-   *  WT99P4C5-S1 NCU | ESP32-C5-WROOM-1 | XMC_XM25QH64B
+   *    Board             |   Module         |  Flash memory IC
+   *  --------------------+------------------+--------------------
+   *  DoIt ESP32          | WROOM            | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.0       | PICO-D4 IC       | GIGADEVICE_GD25Q32
+   *  TTGO T3  V2.1.6     | PICO-D4 IC       | GIGADEVICE_GD25Q32
+   *  TTGO T22 V06        |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V08        |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T22 V11        |                  | BOYA_BY25Q32AL
+   *  TTGO T22 V12        |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T8  V1.8       | WROVER           | GIGADEVICE_GD25LQ32
+   *  TTGO T8 S2 V1.1     |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V1.9       |                  | WINBOND_NEX_W25Q32_V
+   *  TTGO T5S V2.8       |                  | BOYA_BY25Q32AL
+   *  TTGO T5  4.7        | WROVER-E         | XMC_XM25QH128C
+   *  TTGO T-Watch        |                  | WINBOND_NEX_W25Q128_V
+   *  Ai-T NodeMCU-S3     | ESP-S3-12K       | GIGADEVICE_GD25Q64C
+   *  TTGO T-Dongle       |                  | BOYA_BY25Q32AL
+   *  TTGO S3 Core        |                  | GIGADEVICE_GD25Q64C
+   *  TTGO T-01C3         |                  | BOYA_BY25Q32AL
+   *                      | ESP-C3-12F       | XMC_XM25QH32B
+   *  LilyGO T-TWR        | WROOM-1-N16R8    | GIGADEVICE_GD25Q128
+   *  Heltec Tracker      |                  | GIGADEVICE_GD25Q64
+   *                      | WT0132C6-S5      | ZBIT_ZB25VQ32B
+   *  LilyGO T3-C6        | ESP32-C6-MINI    | XMC_XM25QH32B
+   *  LilyGO T3-S3-EP     | ESP32-S3-MINI    | XMC_XM25QH32B
+   *  LilyGO T3-S3-OL     | ESP32-S3FH4R2    |
+   *  Elecrow TN-M2       | ESP32-S3-N4R8    | ZBIT_ZB25VQ32B
+   *  RadioMaster XR1     | ESP32-C3 (QFN32) | XMC_XM25QH32B
+   *  RadioMaster XR1     |                  | 0x464016 (TBD)
+   *  Elecrow TN-M5       | ESP32-S3-N4R8    | 0x464016 (TBD)
+   *  Ebyte EoRa-HUB      | ESP32-S3FH4R2    |
+   *  WT99P4C5-S1 CPU     | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
+   *  WT99P4C5-S1 NCU     | ESP32-C5-WROOM-1 | XMC_XM25QH64B
+   *  LilyGO T-Display P4 |                  | GIGADEVICE_GD25Q128
    */
 
   if (psramFound()) {
@@ -713,6 +717,9 @@ static void ESP32_setup()
     default:
       esp32_board   = ESP32_C61_DEVKIT;
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
+    case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
+      esp32_board   = ESP32_LILYGO_TDISPLAY_P4;
+      break;
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ128A): /* WT0132P4-A1 ESP32-P4NRW32 */
     default:
       esp32_board   = ESP32_P4_WT_DEVKIT;
@@ -1901,6 +1908,54 @@ static void ESP32_setup()
       playback_inited = true;
     }
 #endif /* EXCLUDE_VOICE_MESSAGE */
+  } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+    hw_info.model = SOFTRF_MODEL_CONCORDE;
+
+    lmic_pins.nss  = SOC_GPIO_PIN_TDP4_SS;
+    lmic_pins.rst  = SOC_GPIO_PIN_TDP4_RST;
+    lmic_pins.busy = SOC_GPIO_PIN_TDP4_BUSY;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+    lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_DIO;
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+
+    pinMode(SOC_GPIO_PIN_TDP4_XL9_INT, INPUT);
+
+    xl9535 = new ExtensionIOXL9555(Wire,
+                                   SOC_GPIO_PIN_TDP4_SDA,
+                                   SOC_GPIO_PIN_TDP4_SCL,
+                                   XL9535_ADDRESS);
+    ESP32_has_gpio_extension = xl9535->init(Wire,
+                                            SOC_GPIO_PIN_TDP4_SDA,
+                                            SOC_GPIO_PIN_TDP4_SCL,
+                                            XL9535_ADDRESS);
+    if (ESP32_has_gpio_extension) {
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN, HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN, HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,  HIGH);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN, OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN, OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,  OUTPUT);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RTC_INT,   INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
+    }
+
+    int uSD_SS_pin = SOC_GPIO_PIN_TDP4_SD_D3;
+
+    /* uSD-SPI init */
+    uSD_SPI.begin(SOC_GPIO_PIN_TDP4_SD_CLK,
+                  SOC_GPIO_PIN_TDP4_SD_D0,
+                  SOC_GPIO_PIN_TDP4_SD_CMD,
+                  uSD_SS_pin);
+
+    pinMode(uSD_SS_pin, OUTPUT);
+    digitalWrite(uSD_SS_pin, HIGH);
+
+    uSD_is_attached = uSD.cardBegin(SD_CONFIG);
+
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 

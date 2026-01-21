@@ -6,7 +6,7 @@
 // GNSS module
 #define SOC_GPIO_PIN_TDP4_GNSS_RX         23
 #define SOC_GPIO_PIN_TDP4_GNSS_TX         22
-#define SOC_GPIO_PIN_TDP4_GNSS_PPS        SOC_UNUSED_PIN /* TBD */
+#define SOC_GPIO_PIN_TDP4_GNSS_PPS        SOC_UNUSED_PIN
 
 // SPI
 #define SOC_GPIO_PIN_TDP4_MOSI            3

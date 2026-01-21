@@ -424,6 +424,8 @@ struct rst_info {
 
 #define PCA9557_ADDRESS         (0x18)
 
+#define XL9535_ADDRESS          (0x20) /* A0 = A1 = A2 = LOW */
+
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
 
