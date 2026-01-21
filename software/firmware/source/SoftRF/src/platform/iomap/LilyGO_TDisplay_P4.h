@@ -84,11 +84,11 @@
 #define SOC_EXPIO_TDP4_5V0_EN             IO6
 #define SOC_EXPIO_TDP4_SENS_INT           IO7
 
-#define SOC_EXPIO_TDP4_VCCA_EN            IO10
-#define SOC_EXPIO_TDP4_GNSS_WKE           IO11
-#define SOC_EXPIO_TDP4_RTC_INT            IO12
-#define SOC_EXPIO_TDP4_SLAVE_WKE          IO13
-#define SOC_EXPIO_TDP4_SLAVE_EN           IO14
-#define SOC_EXPIO_TDP4_SD_EN              IO15
-#define SOC_EXPIO_TDP4_RADIO_RST          IO16
-#define SOC_EXPIO_TDP4_RADIO_DIO          IO17
+#define SOC_EXPIO_TDP4_VCCA_EN            IO8
+#define SOC_EXPIO_TDP4_GNSS_WKE           IO9
+#define SOC_EXPIO_TDP4_RTC_INT            IO10
+#define SOC_EXPIO_TDP4_SLAVE_WKE          IO11
+#define SOC_EXPIO_TDP4_SLAVE_EN           IO12
+#define SOC_EXPIO_TDP4_SD_EN              IO13
+#define SOC_EXPIO_TDP4_RADIO_RST          IO14
+#define SOC_EXPIO_TDP4_RADIO_DIO          IO15

@@ -1920,22 +1920,20 @@ static void ESP32_setup()
 
     pinMode(SOC_GPIO_PIN_TDP4_XL9_INT, INPUT);
 
-    xl9535 = new ExtensionIOXL9555(Wire,
-                                   SOC_GPIO_PIN_TDP4_SDA,
-                                   SOC_GPIO_PIN_TDP4_SCL,
-                                   XL9535_ADDRESS);
-    ESP32_has_gpio_extension = xl9535->init(Wire,
-                                            SOC_GPIO_PIN_TDP4_SDA,
-                                            SOC_GPIO_PIN_TDP4_SCL,
-                                            XL9535_ADDRESS);
+    xl9535 = new ExtensionIOXL9555();
+    ESP32_has_gpio_extension = xl9535->begin(Wire, XL9535_ADDRESS,
+                                             SOC_GPIO_PIN_TDP4_SDA,
+                                             SOC_GPIO_PIN_TDP4_SCL);
     if (ESP32_has_gpio_extension) {
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN, HIGH);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN, HIGH);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   HIGH);
 
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN, OUTPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN, OUTPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
 
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
