@@ -288,6 +288,7 @@ jobs:
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
             arduino --install-boards esp32:esp32:3.3.6-RC1 ;
             arduino --board $BOARD --save-prefs ;
+            arduino --pref "custom_ChipVariant=esp32p4_prev3"          --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32p4_40"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32p4_none"            --save-prefs ;
             arduino --pref "custom_FlashFreq=esp32p4_40"               --save-prefs ;
