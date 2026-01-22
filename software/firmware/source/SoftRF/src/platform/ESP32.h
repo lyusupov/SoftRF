@@ -427,6 +427,10 @@ struct rst_info {
 
 #define XL9535_ADDRESS          (0x20) /* A0 = A1 = A2 = LOW */
 #define ICM20948_ADDRESS        (0x68)
+#define AW86224_ADDRESS         (0x58)
+#define SGM38121_ADDRESS        (0x28)
+#define HI8561_ADDRESS          (0x68)
+#define GT9895_ADDRESS          (0x5D)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
