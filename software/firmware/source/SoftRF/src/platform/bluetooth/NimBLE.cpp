@@ -196,6 +196,7 @@ static void ESP32_Bluetooth_setup()
                                   hw_info.model == SOFTRF_MODEL_GIZMO      ? "Gizmo Edition"      :
                                   hw_info.model == SOFTRF_MODEL_NANO       ? "Nano Edition"       :
                                   hw_info.model == SOFTRF_MODEL_AIRVENTURE ? "Airventure Edition" :
+                                  hw_info.model == SOFTRF_MODEL_CONCORDE   ? "Concorde Edition"   :
                                   "Unknown";
       char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());

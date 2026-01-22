@@ -381,6 +381,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_BANANA     = 0x812B,
   SOFTRF_USB_PID_GIZMO      = 0x82D9,
   SOFTRF_USB_PID_AIRVENTURE = 0x82F9,
+  SOFTRF_USB_PID_CONCORDE   = 0x8343,
 };
 
 struct rst_info {
@@ -425,6 +426,7 @@ struct rst_info {
 #define PCA9557_ADDRESS         (0x18)
 
 #define XL9535_ADDRESS          (0x20) /* A0 = A1 = A2 = LOW */
+#define ICM20948_ADDRESS        (0x68)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0

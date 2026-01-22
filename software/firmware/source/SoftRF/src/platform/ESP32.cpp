@@ -199,6 +199,7 @@ const char *ESP32S3_Model_Midi    = "Midi Edition";       /* 303a:81A0 */
 const char *ESP32S3_Model_Ink     = "Ink Edition";        /* 303a:820A */
 const char *ESP32S3_Model_Gizmo   = "Gizmo Edition";      /* 303a:82D9 */
 const char *ESP32S3_Model_AirVent = "Airventure Edition"; /* 303a:82F9 */
+const char *ESP32P4_Model_Concord = "Concorde Edition";   /* 303a:8343 */
 const uint16_t ESP32SX_Device_Version = SOFTRF_USB_FW_VERSION;
 
 #if defined(EXCLUDE_WIFI)
@@ -494,12 +495,10 @@ static bool play_file(char *filename)
 #define EXAMPLE_VOICE_VOLUME    75 // 0 - 100
 #define EXAMPLE_MIC_GAIN        (es8311_mic_gain_t)(3) // 0 - 7
 
-#define I2C_NUM                 0
-
 const char *TAG_ES83 = "esp32p4_i2s_es8311";
 
-esp_err_t es8311_codec_init(void) {
-    es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
+esp_err_t es8311_codec_init(const unsigned int i2c_num) {
+    es8311_handle_t es_handle = es8311_create(i2c_num, ES8311_ADDRRES_0);
     ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG_ES83, "es8311 create failed");
     const es8311_clock_config_t es_clk = {
         .mclk_inverted = false,
@@ -519,7 +518,12 @@ esp_err_t es8311_codec_init(void) {
 }
 
 #include <ExtensionIOXL9555.hpp>
+#include <GaugeBQ27220.hpp>
+#include <ICM_20948.h>
+
 ExtensionIOXL9555 *xl9535 = nullptr;
+GaugeBQ27220      bq_27220;
+ICM_20948_I2C     imu_icm20948;
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
@@ -1903,13 +1907,22 @@ static void ESP32_setup()
       Audio_Sink->SetMclk(true);
 
       Wire.begin(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
-      es8311_codec_init();
+      es8311_codec_init(0);
 
       playback_inited = true;
     }
 #endif /* EXCLUDE_VOICE_MESSAGE */
   } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
     hw_info.model = SOFTRF_MODEL_CONCORDE;
+
+    Wire.begin(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
+    Wire.beginTransmission(BQ27220_SLAVE_ADDRESS);
+    bool has_bq27220 = (Wire.endTransmission() == 0);
+    if (has_bq27220 && bq_27220.begin(Wire,
+                                      SOC_GPIO_PIN_TDP4_SDA,
+                                      SOC_GPIO_PIN_TDP4_SCL)) {
+      hw_info.pmu  = BMU_BQ27220;
+    }
 
     lmic_pins.nss  = SOC_GPIO_PIN_TDP4_SS;
     lmic_pins.rst  = SOC_GPIO_PIN_TDP4_RST;
@@ -1934,11 +1947,6 @@ static void ESP32_setup()
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
-
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RTC_INT,   INPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
     }
 
     int uSD_SS_pin = SOC_GPIO_PIN_TDP4_SD_D3;
@@ -1954,6 +1962,27 @@ static void ESP32_setup()
 
     uSD_is_attached = uSD.cardBegin(SD_CONFIG);
 
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+    if (uSD_is_attached && uSD.card()->cardSize() > 0 && uSD.volumeBegin()) {
+      Audio_Gen    = new AudioGeneratorWAV();
+      Audio_Source = new AudioFileSourceSdFat(uSD);
+
+      Audio_Sink   = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S);
+      Audio_Sink->SetPinout(SOC_GPIO_PIN_TDP4_I2S_BCK,
+                            SOC_GPIO_PIN_TDP4_I2S_LRCK,
+                            SOC_GPIO_PIN_TDP4_I2S_DOUT,
+                            SOC_GPIO_PIN_TDP4_I2S_MCK);
+      Audio_Sink->SetOutputModeMono(true);
+      Audio_Sink->SetChannels(1);
+      Audio_Sink->SetGain(1.0);
+      Audio_Sink->SetMclk(true);
+
+      Wire1.begin(SOC_GPIO_PIN_TDP4_SDA2, SOC_GPIO_PIN_TDP4_SCL2);
+      es8311_codec_init(1);
+
+      playback_inited = true;
+    }
+#endif /* EXCLUDE_VOICE_MESSAGE */
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   }
 
@@ -2040,6 +2069,7 @@ static void ESP32_setup()
           (esp32_board == ESP32_EBYTE_HUB_900TB    ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_P4_WT_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
           (esp32_board == ESP32_P4_WS_DEVKIT       ) ? SOFTRF_USB_PID_STANDALONE :
+          (esp32_board == ESP32_LILYGO_TDISPLAY_P4 ) ? SOFTRF_USB_PID_CONCORDE   :
           USB_PID /* 0x1001 */ ;
 
     snprintf(usb_serial_number, sizeof(usb_serial_number),
@@ -2055,6 +2085,7 @@ static void ESP32_setup()
                     esp32_board == ESP32_LILYGO_T3S3_EPD     ? ESP32S3_Model_Ink     :
                     esp32_board == ESP32_ELECROW_TN_M2       ? ESP32S3_Model_Gizmo   :
                     esp32_board == ESP32_ELECROW_TN_M5       ? ESP32S3_Model_AirVent :
+                    esp32_board == ESP32_LILYGO_TDISPLAY_P4  ? ESP32P4_Model_Concord :
                     ESP32SX_Model_Stand);
     USB.firmwareVersion(ESP32SX_Device_Version);
     USB.serialNumber(usb_serial_number);
@@ -2429,6 +2460,63 @@ static void ESP32_setup()
               SOC_GPIO_PIN_P4_ETH_PHY_POWER,
               ETH_CLK_MODE);
 #endif /* EXCLUDE_ETHERNET */
+  } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+
+    if (ESP32_has_gpio_extension) {
+      /* Wake up Quectel L76K GNSS */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, HIGH);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE,  OUTPUT);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
+    }
+
+    Wire.begin(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
+    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    bool esp32_has_rtc = (Wire.endTransmission() == 0);
+    if (!esp32_has_rtc) {
+      delay(200);
+      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      esp32_has_rtc = (Wire.endTransmission() == 0);
+      if (!esp32_has_rtc) {
+        delay(200);
+        Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
+        esp32_has_rtc = (Wire.endTransmission() == 0);
+      }
+    }
+
+    i2c = new I2CBus(Wire);
+
+    if (esp32_has_rtc && (i2c != nullptr)) {
+      rtc = new PCF8563_Class(*i2c);
+
+      if (ESP32_has_gpio_extension) {
+        xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RTC_INT, INPUT);
+      }
+      hw_info.rtc = RTC_PCF8563;
+    }
+
+#if !defined(EXCLUDE_IMU)
+    Wire1.begin(SOC_GPIO_PIN_TDP4_SDA2, SOC_GPIO_PIN_TDP4_SCL2);
+
+    bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
+    int t;
+    for (t=0; t<3; t++) {
+      if (imu_icm20948.begin(Wire1, ad0) == ICM_20948_Stat_Ok) {
+        hw_info.imu = IMU_ICM20948;
+        hw_info.mag = MAG_AK09916;
+        IMU_Time_Marker = millis();
+
+        break;
+      }
+      delay(IMU_UPDATE_INTERVAL);
+    }
+
+    if (t == 4) {
+      WIRE_FINI(Wire1);
+    }
+#endif /* EXCLUDE_IMU */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
@@ -5457,6 +5545,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
+            hw_info.model == SOFTRF_MODEL_CONCORDE   ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */
@@ -5477,6 +5566,7 @@ static float ESP32_Battery_param(uint8_t param)
             hw_info.model == SOFTRF_MODEL_INK        ||
             hw_info.model == SOFTRF_MODEL_GIZMO      ||
             hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
+            hw_info.model == SOFTRF_MODEL_CONCORDE   ||
             /* TTGO T3 V2.1.6 */
            (hw_info.model == SOFTRF_MODEL_STANDALONE && hw_info.revision == STD_EDN_REV_T3_1_6) ||
             /* Ebyte EoRa-HUB */
