@@ -5076,8 +5076,9 @@ static void lr20xx_setup()
     Serial.print(F("[LR20XX] Initializing ... "));
 #endif
 
-    state = radio_g4->begin(125.0, 9, 7,
-                            RADIOLIB_LR2021_LORA_SYNC_WORD_PRIVATE, 8, Vtcxo);
+    state = radio_g4->begin(434.0, 125.0, 9, 7,
+                            RADIOLIB_LR2021_LORA_SYNC_WORD_PRIVATE,
+                            10, 8, Vtcxo);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_NONE) {
@@ -5103,9 +5104,7 @@ static void lr20xx_setup()
       break;
     }
 
-#if 0
-    state = radio_g4->setBandwidth(bw, high);
-#endif
+    state = radio_g4->setBandwidth(bw);
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_BANDWIDTH) {
@@ -5141,10 +5140,8 @@ static void lr20xx_setup()
   case RF_MODULATION_TYPE_2FSK:
   case RF_MODULATION_TYPE_PPM: /* TBD */
   default:
+    state = radio_g4->beginGFSK(434.0, 4.8, 5.0, 153.8, 10, 16, Vtcxo);
 
-#if 0
-    state = radio_g4->beginGFSK(4.8, 5.0, 156.2, 16, Vtcxo);
-#endif
     switch (rl_protocol->bitrate)
     {
     case RF_BITRATE_38400:
@@ -5218,9 +5215,8 @@ static void lr20xx_setup()
       bw = 234.3;
       break;
     }
-#if 0
+
     state = radio_g4->setRxBandwidth(bw);
-#endif
     state = radio_g4->setPreambleLength(rl_protocol->preamble_size * 8);
     state = radio_g4->setDataShaping(RADIOLIB_SHAPING_0_5);
 
@@ -5256,11 +5252,10 @@ static void lr20xx_setup()
     default:
       break;
     }
-#if 0
+
     state = radio_g4->setWhitening(false, 0x0001 /* default SX128x value */);
-
     state = radio_g4->fixedPacketLengthMode(pkt_size);
-
+#if 0
     state = radio_g4->disableAddressFiltering();
 #endif
     /* Work around premature P3I syncword detection */
@@ -5272,14 +5267,10 @@ static void lr20xx_setup()
                            rl_protocol->syncword[0],
                            rl_protocol->syncword[1]
                          };
-#if 0
       state = radio_g4->setSyncWord(sword, 4);
-#endif
     } else {
-#if 0
       state = radio_g4->setSyncWord((uint8_t *) rl_protocol->syncword,
                                     (size_t)    rl_protocol->syncword_size);
-#endif
     }
     break;
   }
