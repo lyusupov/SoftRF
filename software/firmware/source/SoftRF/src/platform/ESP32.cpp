@@ -1938,16 +1938,25 @@ static void ESP32_setup()
                                              SOC_GPIO_PIN_TDP4_SDA,
                                              SOC_GPIO_PIN_TDP4_SCL);
     if (ESP32_has_gpio_extension) {
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  HIGH);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, HIGH);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   HIGH);
+      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  LOW);
+      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
+      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, LOW);
+      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   LOW);
 
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
+      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
+      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
+      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
+      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
     }
+
+#if SOC_SDMMC_IO_POWER_EXTERNAL
+    esp_ldo_channel_handle_t ldo_sdio = NULL;
+    esp_ldo_channel_config_t ldo_sdio_config = {
+        .chan_id = BOARD_SDMMC_POWER_CHANNEL,
+        .voltage_mv = 3300,
+    };
+    esp_ldo_acquire_channel(&ldo_sdio_config, &ldo_sdio);
+#endif /* SOC_SDMMC_IO_POWER_EXTERNAL */
 
     int uSD_SS_pin = SOC_GPIO_PIN_TDP4_SD_D3;
 
@@ -5614,6 +5623,17 @@ static float ESP32_Battery_param(uint8_t param)
       }
       break;
 
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    case BMU_BQ27220:
+      if (bq_27220.refresh()) {
+        BatteryStatus batteryStatus = bq_27220.getBatteryStatus();
+        if (batteryStatus.isBatteryPresent()) {
+          voltage = bq_27220.getVoltage();
+        }
+      }
+      break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
     case PMU_NONE:
     default:
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -6050,7 +6070,8 @@ static void ESP32_Button_setup()
        esp32_board == ESP32_ELECROW_TN_M5     ||
        esp32_board == ESP32_EBYTE_HUB_900TB   ||
 #if defined(EXCLUDE_ETHERNET)
-       esp32_board == ESP32_P4_WT_DEVKIT      ||
+       esp32_board == ESP32_P4_WT_DEVKIT       ||
+       esp32_board == ESP32_LILYGO_TDISPLAY_P4 ||
 #endif /* EXCLUDE_ETHERNET */
        esp32_board == ESP32_C5_DEVKIT         ||
        esp32_board == ESP32_S3_DEVKIT) {
@@ -6064,6 +6085,7 @@ static void ESP32_Button_setup()
                  esp32_board == ESP32_EBYTE_HUB_900TB  ? SOC_GPIO_PIN_S3_BUTTON :
 #if defined(EXCLUDE_ETHERNET)
                  esp32_board == ESP32_P4_WT_DEVKIT     ? SOC_GPIO_PIN_P4_BUTTON :
+                 esp32_board == ESP32_LILYGO_TDISPLAY_P4 ? SOC_GPIO_PIN_TDP4_BUTTON :
 #endif /* EXCLUDE_ETHERNET */
                  esp32_board == ESP32_C5_DEVKIT        ? SOC_GPIO_PIN_C5_BUTTON :
                  esp32_board == ESP32_LILYGO_T_TWR2    ?
@@ -6155,6 +6177,7 @@ static void ESP32_Button_loop()
       esp32_board == ESP32_EBYTE_HUB_900TB     ||
 #if defined(EXCLUDE_ETHERNET)
       esp32_board == ESP32_P4_WT_DEVKIT        ||
+      esp32_board == ESP32_LILYGO_TDISPLAY_P4  ||
 #endif /* EXCLUDE_ETHERNET */
       esp32_board == ESP32_C5_DEVKIT           ||
       esp32_board == ESP32_S3_DEVKIT) {
@@ -6183,7 +6206,8 @@ static void ESP32_Button_fini()
       esp32_board == ESP32_ELECROW_TN_M5     ||
       esp32_board == ESP32_EBYTE_HUB_900TB   ||
 #if defined(EXCLUDE_ETHERNET)
-      esp32_board == ESP32_P4_WT_DEVKIT      ||
+      esp32_board == ESP32_P4_WT_DEVKIT       ||
+      esp32_board == ESP32_LILYGO_TDISPLAY_P4 ||
 #endif /* EXCLUDE_ETHERNET */
       esp32_board == ESP32_C5_DEVKIT         ||
       esp32_board == ESP32_S3_DEVKIT) {
@@ -6192,6 +6216,7 @@ static void ESP32_Button_fini()
                      esp32_board == ESP32_ELECROW_TN_M5 ? SOC_GPIO_PIN_M5_BUTTON_1 :
 #if defined(EXCLUDE_ETHERNET)
                      esp32_board == ESP32_P4_WT_DEVKIT  ? SOC_GPIO_PIN_P4_BUTTON   :
+                     esp32_board == ESP32_LILYGO_TDISPLAY_P4 ? SOC_GPIO_PIN_TDP4_BUTTON :
 #endif /* EXCLUDE_ETHERNET */
                      esp32_board == ESP32_C5_DEVKIT     ? SOC_GPIO_PIN_C5_BUTTON   :
                      esp32_board == ESP32_LILYGO_T_TWR2 ?
