@@ -5135,8 +5135,76 @@ static void lr20xx_setup()
     state = radio_g4->explicitHeader();
     state = radio_g4->setCRC(true);
     break;
+
+  case RF_MODULATION_TYPE_PPM:
+    state = radio_g4->beginOOK(434.0, 4.8, 153.8, 10, 16, Vtcxo);
+
+    switch (rl_protocol->bitrate)
+    {
+    case RF_BITRATE_1042KBPS:
+    default:
+      br = 1042.0;
+      break;
+    }
+    state = radio_g4->setBitRate(br);
+
+#if RADIOLIB_DEBUG_BASIC
+  if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
+    Serial.println(F("[LR20XX] Selected bit rate is invalid for this module!"));
+    while (true) { delay(10); }
+  } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
+    Serial.println(F("[LR20XX] Selected bit rate to bandwidth ratio is invalid!"));
+    Serial.println(F("[LR20XX] Increase receiver bandwidth to set this bit rate."));
+    while (true) { delay(10); }
+  }
+#endif
+
+    switch (rl_protocol->bandwidth)
+    {
+    case RF_RX_BANDWIDTH_SS_1567KHZ:
+    default:
+      bw = 1567.0;
+      break;
+    }
+
+    state = radio_g4->setRxBandwidth(bw);
+    state = radio_g4->setPreambleLength(rl_protocol->preamble_size * 8);
+    state = radio_g4->setDataShaping(RADIOLIB_SHAPING_NONE);
+
+    switch (rl_protocol->crc_type)
+    {
+    case RF_CHECKSUM_TYPE_CRC_MODES:
+    default:
+      /* CRC is driven by software */
+      state = radio_g4->setCRC(0, 0);
+      break;
+    }
+
+    {
+      size_t pkt_size = rl_protocol->payload_offset +
+                        rl_protocol->payload_size   +
+                        rl_protocol->crc_size;
+
+      switch (rl_protocol->whitening)
+      {
+      case RF_WHITENING_MANCHESTER:
+      default:
+        pkt_size += pkt_size;
+        break;
+        break;
+      }
+
+      /* Manchester whitening is driven by software */
+      state = radio_g4->setEncoding(RADIOLIB_ENCODING_NRZ);
+      state = radio_g4->setWhitening(false);
+      state = radio_g4->fixedPacketLengthMode(pkt_size);
+    }
+
+    state = radio_g4->setSyncWord((uint8_t *) rl_protocol->syncword,
+                                  (size_t)    rl_protocol->syncword_size);
+    break;
+
   case RF_MODULATION_TYPE_2FSK:
-  case RF_MODULATION_TYPE_PPM: /* TBD */
   default:
     state = radio_g4->beginGFSK(434.0, 4.8, 5.0, 153.8, 10, 16, Vtcxo);
 
