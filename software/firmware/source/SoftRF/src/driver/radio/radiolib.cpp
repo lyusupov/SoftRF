@@ -5132,9 +5132,7 @@ static void lr20xx_setup()
 #endif
 
     state = radio_g4->setPreambleLength(8);
-#if 0
     state = radio_g4->explicitHeader();
-#endif
     state = radio_g4->setCRC(true);
     break;
   case RF_MODULATION_TYPE_2FSK:
@@ -5255,9 +5253,8 @@ static void lr20xx_setup()
 
     state = radio_g4->setWhitening(false, 0x0001 /* default SX128x value */);
     state = radio_g4->fixedPacketLengthMode(pkt_size);
-#if 0
     state = radio_g4->disableAddressFiltering();
-#endif
+
     /* Work around premature P3I syncword detection */
     if (rl_protocol->syncword_size == 2) {
       uint8_t preamble = rl_protocol->preamble_type == RF_PREAMBLE_TYPE_AA ?
@@ -5764,3 +5761,4 @@ static void lr20xx_shutdown()
 #endif /* EXCLUDE_LR20XX */
 
 #endif /* USE_RADIOLIB */
+
