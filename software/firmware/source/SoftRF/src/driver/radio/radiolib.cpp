@@ -4806,41 +4806,20 @@ static uint64_t lr20xx_eui_be = 0xdeadbeefdeadbeef;
 
 mode_s_t mode_s_state;
 
-#if 0
-static const uint32_t rfswitch_dio_pins_noname[] = {
+static const uint32_t rfswitch_dio_pins_MXD8721[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6,
     RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
 };
 
-static const Module::RfSwitchMode_t rfswitch_table_noname[] = {
+static const Module::RfSwitchMode_t rfswitch_table_MXD8721[] = {
     // mode                  DIO5  DIO6
     { LR2021::MODE_STBY,   { LOW,  LOW  } },
-    { LR2021::MODE_RX,     { LOW,  LOW  } },
-    { LR2021::MODE_TX,     { LOW,  LOW  } },
-    { LR2021::MODE_TX_HP,  { LOW,  LOW  } },
-    { LR2021::MODE_TX_HF,  { LOW,  LOW  } },
-    { LR2021::MODE_GNSS,   { LOW,  LOW  } },
-    { LR2021::MODE_WIFI,   { LOW,  LOW  } },
+    { LR2021::MODE_RX,     { LOW,  HIGH } },
+    { LR2021::MODE_TX,     { LOW,  HIGH } },
+    { LR2021::MODE_RX_HF,  { HIGH, LOW  } },
+    { LR2021::MODE_TX_HF,  { HIGH, LOW  } },
     END_OF_MODE_TABLE,
 };
-#else
-static const uint32_t rfswitch_dio_pins_noname[] = {
-    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-    RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
-};
-
-static const Module::RfSwitchMode_t rfswitch_table_noname[] = {
-    // mode                  DIO5  DIO6
-    { LR11x0::MODE_STBY,   { LOW,  LOW  } },
-    { LR11x0::MODE_RX,     { LOW,  LOW  } },
-    { LR11x0::MODE_TX,     { LOW,  LOW  } },
-    { LR11x0::MODE_TX_HP,  { LOW,  LOW  } },
-    { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
-    { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
-    { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
-    END_OF_MODE_TABLE,
-};
-#endif
 
 // this function is called when a complete packet
 // is received by the module
@@ -5061,6 +5040,7 @@ static void lr20xx_setup()
   switch (hw_info.model)
   {
   default:
+    radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 1.6;
     break;
   }
@@ -5389,9 +5369,7 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
   default:
-#if 0
-    radio_g4->setRfSwitchTable(rfswitch_dio_pins_noname, rfswitch_table_noname);
-#endif
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721, rfswitch_table_MXD8721);
 #if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
     state = radio_g4->setOutputPower(txpow); /* TODO */
 #else
