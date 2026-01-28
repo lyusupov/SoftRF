@@ -175,6 +175,10 @@
 
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
 
+// LilyGO T-Display-P4 GNSS module
+#define SOC_GPIO_PIN_TDP4_GNSS_RX   22
+#define SOC_GPIO_PIN_TDP4_GNSS_TX   23
+
 /* Waveshare Pi HAT 2.7" mapping */
 #define SOC_GPIO_PIN_GNSS_RX  38 // +
 #define SOC_GPIO_PIN_GNSS_TX  37 // +
@@ -266,12 +270,42 @@
 // LilyGO T-Display-P4 HI8561 TFT display backlight
 #define SOC_GPIO_PIN_TDP4_BL  51
 
+// LilyGO T-Display-P4 XL9535
+#define SOC_GPIO_PIN_TDP4_XL9 5 /* INT */
+
+/* GPIO expansion (XL9535) */
+#define SOC_EXPIO_TDP4_3V3_EN       IO0  // P00
+#define SOC_EXPIO_TDP4_RFSW_VCTL    IO1  // P01
+#define SOC_EXPIO_TDP4_DSI_RST      IO2  // P02
+#define SOC_EXPIO_TDP4_TP_RST       IO3  // P03
+#define SOC_EXPIO_TDP4_TP_INT       IO4  // P04
+#define SOC_EXPIO_TDP4_ETH_RST      IO5  // P05
+#define SOC_EXPIO_TDP4_5V0_EN       IO6  // P06
+#define SOC_EXPIO_TDP4_SENS_INT     IO7  // P07
+
+#define SOC_EXPIO_TDP4_VCCA_EN      IO8  // P10
+#define SOC_EXPIO_TDP4_GNSS_WKE     IO9  // P11
+#define SOC_EXPIO_TDP4_RTC_INT      IO10 // P12
+#define SOC_EXPIO_TDP4_SLAVE_WKE    IO11 // P13
+#define SOC_EXPIO_TDP4_SLAVE_EN     IO12 // P14
+#define SOC_EXPIO_TDP4_SD_EN        IO13 // P15
+#define SOC_EXPIO_TDP4_RADIO_RST    IO14 // P16
+#define SOC_EXPIO_TDP4_RADIO_DIO    IO15 // P17
+
+/* LilyGO T-Display-P4 CON 2.54-2x8 : 25, 26, 27, 32, 33, 36, 53, 54 */
+/* LilyGO T-Display-P4 CON 1.0-4    : 45, 46 */
+/* LilyGO T-Display-P4 CON 1.0-4    : 47, 48 */
+
 //#define USE_TFT
 //#define USE_USB_HOST
 
 // GT911 I2C touch sensor
 #define SOC_GPIO_PIN_TP_INT   21
 #define SOC_GPIO_PIN_TP_RST   23 /* shared with LCD_RST */
+
+// LilyGO T-Display-P4 touch sensor
+#define SOC_GPIO_PIN_TDP4_TP_INT    SOC_UNUSED_PIN /* XL P04 */
+#define SOC_GPIO_PIN_TDP4_TP_RST    SOC_UNUSED_PIN /* XL P03 */
 
 // Misc.
 #define SOC_GPIO_PIN_BATTERY  22 /* RSVD, shared with LCD_EN */
