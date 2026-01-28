@@ -41,7 +41,7 @@ const rf_proto_desc_t es1090_proto_desc = {
   .crc_type        = ES1090_CRC_TYPE,
   .crc_size        = ES1090_CRC_SIZE,
 
-  .bitrate         = RF_BITRATE_1042KBPS,
+  .bitrate         = RF_BITRATE_2000KBPS,
   .deviation       = RF_FREQUENCY_DEVIATION_NONE,
   .whitening       = RF_WHITENING_MANCHESTER,
   .bandwidth       = RF_RX_BANDWIDTH_SS_1567KHZ,

@@ -385,6 +385,7 @@ const uint16_t ESP32SX_Device_Version = SKYVIEW_USB_FW_VERSION;
 #include <ExtensionIOXL9555.hpp>
 
 ExtensionIOXL9555 *xl9535 = nullptr;
+bool ESP32_has_gpio_extension = false;
 
 #define EXAMPLE_SAMPLE_RATE     11025
 #define EXAMPLE_VOICE_VOLUME    75 // 0 - 100

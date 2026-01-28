@@ -5073,14 +5073,14 @@ static void lr20xx_setup()
     switch (RF_FreqPlan.Bandwidth)
     {
     case RF_RX_BANDWIDTH_SS_62KHZ:
-      bw = high ? 203.125 : 125.0; /* BW_125 */
+      bw = high ? 203 : 125.0; /* BW_125 */
       break;
     case RF_RX_BANDWIDTH_SS_250KHZ:
-      bw = high ? 812.5   : 500.0; /* BW_500 */
+      bw = high ? 812 : 500.0; /* BW_500 */
       break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
-      bw = high ? 406.25  : 250.0; /* BW_250 */
+      bw = high ? 406 : 250.0; /* BW_250 */
       break;
     }
 
@@ -5121,9 +5121,9 @@ static void lr20xx_setup()
 
     switch (rl_protocol->bitrate)
     {
-    case RF_BITRATE_1042KBPS:
+    case RF_BITRATE_2000KBPS:
     default:
-      br = 1042.0;
+      br = 2000.0;
       break;
     }
     state = radio_g4->setBitRate(br);
@@ -5143,7 +5143,7 @@ static void lr20xx_setup()
     {
     case RF_RX_BANDWIDTH_SS_1567KHZ:
     default:
-      bw = 1567.0;
+      bw = 3076.0;
       break;
     }
 
@@ -5240,25 +5240,29 @@ static void lr20xx_setup()
     switch (rl_protocol->bandwidth)
     {
     case RF_RX_BANDWIDTH_SS_50KHZ:
-      bw = 117.3;
+      bw = 119.0;
       break;
     case RF_RX_BANDWIDTH_SS_62KHZ:
-      bw = 156.2;
+      bw = 153.8;
       break;
     case RF_RX_BANDWIDTH_SS_100KHZ:
-      bw = 234.3;
+      bw = 238.1;
       break;
     case RF_RX_BANDWIDTH_SS_166KHZ:
-      bw = 312.0;
+      bw = 370.4;
       break;
     case RF_RX_BANDWIDTH_SS_200KHZ:
-    case RF_RX_BANDWIDTH_SS_250KHZ:  /* TBD */
-    case RF_RX_BANDWIDTH_SS_1567KHZ: /* TBD */
-      bw = 467.0;
+      bw = 476.2;
+      break;
+    case RF_RX_BANDWIDTH_SS_250KHZ:
+      bw = 555.6;
+      break;
+    case RF_RX_BANDWIDTH_SS_1567KHZ:
+      bw = 3076.0;
       break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:
-      bw = 234.3;
+      bw = 307.7;
       break;
     }
 
