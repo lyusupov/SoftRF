@@ -5378,10 +5378,8 @@ static void lr20xx_setup()
     break;
   }
 
-#if 0
-  state = radio_g4->setRxBoostedGainMode(true);
-#endif
-
+  state = radio_g4->setRxBoostedGainMode(high ? RADIOLIB_LR2021_RX_BOOST_HF :
+                                                RADIOLIB_LR2021_RX_BOOST_LF);
   radio_g4->setPacketReceivedAction(lr20xx_receive_handler);
 }
 
