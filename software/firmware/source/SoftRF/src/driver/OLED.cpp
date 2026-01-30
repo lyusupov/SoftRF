@@ -267,6 +267,7 @@ static void OLED_radio()
         (hw_info.rf == RF_IC_SX1276 ||
          hw_info.rf == RF_IC_SX1262 ||
          hw_info.rf == RF_IC_LR1121 ||
+         hw_info.rf == RF_IC_LR2021 ||
          hw_info.rf == RF_IC_SA8X8)) {
       u8x8->draw2x2String(0, 6, "OFF");
       prev_rx_packets_counter = rx_packets_counter;
@@ -274,8 +275,9 @@ static void OLED_radio()
       prev_rx_packets_counter = (uint32_t) -1;
     }
 
-    if (settings->mode        == SOFTRF_MODE_RECEIVER ||
-        settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+    if (settings->mode        == SOFTRF_MODE_RECEIVER  ||
+        settings->rf_protocol == RF_PROTOCOL_ADSB_1090 ||
+        settings->rf_protocol == RF_PROTOCOL_ADSB_UAT  ||
         settings->txpower     == RF_TX_POWER_OFF) {
       u8x8->draw2x2String(8, 6, "OFF");
       prev_tx_packets_counter = tx_packets_counter;
@@ -765,7 +767,8 @@ void OLED_049_func()
       if (settings->power_save & POWER_SAVE_NORECEIVE &&
           (hw_info.rf == RF_IC_SX1276 ||
            hw_info.rf == RF_IC_SX1262 ||
-           hw_info.rf == RF_IC_LR1121)) {
+           hw_info.rf == RF_IC_LR1121 ||
+           hw_info.rf == RF_IC_LR2021)) {
         u8x8->draw2x2String(5, 6, "OFF");
         prev_rx_packets_counter = rx_packets_counter;
       } else {
@@ -802,8 +805,9 @@ void OLED_049_func()
 
       u8x8->drawString(10, 4, TX_text);
 
-      if (settings->mode        == SOFTRF_MODE_RECEIVER ||
-          settings->rf_protocol == RF_PROTOCOL_ADSB_UAT ||
+      if (settings->mode        == SOFTRF_MODE_RECEIVER  ||
+          settings->rf_protocol == RF_PROTOCOL_ADSB_1090 ||
+          settings->rf_protocol == RF_PROTOCOL_ADSB_UAT  ||
           settings->txpower     == RF_TX_POWER_OFF) {
         u8x8->draw2x2String(8, 6, "NA");
         prev_tx_packets_counter = tx_packets_counter;
@@ -1170,6 +1174,7 @@ void OLED_Next_Page()
         (hw_info.rf == RF_IC_SX1276 ||
          hw_info.rf == RF_IC_SX1262 ||
          hw_info.rf == RF_IC_LR1121 ||
+         hw_info.rf == RF_IC_LR2021 ||
          hw_info.rf == RF_IC_SA8X8)) {
       OLED_current_page = (OLED_current_page + 1) % page_count;
     }
@@ -1197,7 +1202,8 @@ void OLED_Next_Page()
         (settings->power_save & POWER_SAVE_NORECEIVE) &&
         (hw_info.rf == RF_IC_SX1276 ||
          hw_info.rf == RF_IC_SX1262 ||
-         hw_info.rf == RF_IC_LR1121)) {
+         hw_info.rf == RF_IC_LR1121 ||
+         hw_info.rf == RF_IC_LR2021)) {
       OLED_current_page = (OLED_current_page + 1) % page_count;
     }
 #endif /* EXCLUDE_OLED_049 */

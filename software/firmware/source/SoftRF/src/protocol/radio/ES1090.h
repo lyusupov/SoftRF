@@ -25,9 +25,9 @@
 #include <protocol.h>
 
 #define ES1090_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_AA
-#define ES1090_PREAMBLE_SIZE   0
+#define ES1090_PREAMBLE_SIZE   0 /* N/A */
 
-#define ES1090_SYNCWORD        { 0x00 }
+#define ES1090_SYNCWORD        { 0x00 } /* 0x0285 , LSB first */
 #define ES1090_SYNCWORD_SIZE   0
 #define ES1090_PAYLOAD_SIZE    MODE_S_LONG_MSG_BYTES
 #define ES1090_CRC_TYPE        RF_CHECKSUM_TYPE_CRC_MODES
