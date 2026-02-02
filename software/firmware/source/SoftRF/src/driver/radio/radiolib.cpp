@@ -4818,7 +4818,7 @@ static const Module::RfSwitchMode_t rfswitch_table_MXD8721[] = {
     { LR2021::MODE_TX,     { LOW,  HIGH } },
     { LR2021::MODE_RX_HF,  { HIGH, LOW  } },
     { LR2021::MODE_TX_HF,  { HIGH, LOW  } },
-    END_OF_MODE_TABLE,
+    LR2021::MODE_END_OF_TABLE,
 };
 
 // this function is called when a complete packet
@@ -4882,7 +4882,7 @@ static bool lr2021_probe()
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
-  if (major == 0x01) {
+  if (major == 0x01 && minor >= 0x18) {
 
     if (major_reset == 0x01) {
       RF_SX12XX_RST_is_connected = false;
@@ -4924,7 +4924,7 @@ static void lr20xx_channel(int8_t channel)
 
 #if RADIOLIB_DEBUG_BASIC
     if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
-      Serial.println(F("[LR11XX] Selected frequency is invalid for this module!"));
+      Serial.println(F("[LR20XX] Selected frequency is invalid for this module!"));
       while (true) { delay(10); }
     }
 #endif
@@ -5025,7 +5025,7 @@ static void lr20xx_setup()
     protocol_encode = &legacy_encode;
     protocol_decode = &legacy_decode;
     /*
-     * Enforce legacy protocol setting for LR11XX
+     * Enforce legacy protocol setting for LR20XX
      * if other value (UAT) left in EEPROM from other (UATM) radio
      */
     settings->rf_protocol = RF_PROTOCOL_LEGACY;
@@ -5046,14 +5046,14 @@ static void lr20xx_setup()
   }
 
   uint32_t frequency = RF_FreqPlan.getChanFrequency(0);
-  bool high = (frequency > 1000000000) ; /* above 1GHz */
+  bool high = (frequency >= 1500000000) ; /* above 1.5 GHz */
 
   float br, fdev, bw;
   switch (rl_protocol->modulation_type)
   {
   case RF_MODULATION_TYPE_LORA:
 #if RADIOLIB_DEBUG_BASIC
-    Serial.print(F("[LR20XX] Initializing ... "));
+    Serial.print(F("[LR20XX] Initializing LoRa ... "));
 #endif
 
     state = radio_g4->begin(434.0, 125.0, 9, 7,
@@ -5117,7 +5117,21 @@ static void lr20xx_setup()
     break;
 
   case RF_MODULATION_TYPE_PPM:
+#if RADIOLIB_DEBUG_BASIC
+    Serial.print(F("[LR20XX] Initializing OOK ... "));
+#endif
+
     state = radio_g4->beginOOK(434.0, 4.8, 153.8, 10, 16, Vtcxo);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_NONE) {
+      Serial.println(F("success!"));
+    } else {
+      Serial.print(F("failed, code "));
+      Serial.println((int16_t) state);
+      while (true) { delay(10); }
+    }
+#endif
 
     switch (rl_protocol->bitrate)
     {
@@ -5187,12 +5201,29 @@ static void lr20xx_setup()
 
   case RF_MODULATION_TYPE_2FSK:
   default:
+#if RADIOLIB_DEBUG_BASIC
+    Serial.print(F("[LR20XX] Initializing GFSK ... "));
+#endif
+
     state = radio_g4->beginGFSK(434.0, 4.8, 5.0, 153.8, 10, 16, Vtcxo);
+
+#if RADIOLIB_DEBUG_BASIC
+    if (state == RADIOLIB_ERR_NONE) {
+      Serial.println(F("success!"));
+    } else {
+      Serial.print(F("failed, code "));
+      Serial.println((int16_t) state);
+      while (true) { delay(10); }
+    }
+#endif
 
     switch (rl_protocol->bitrate)
     {
     case RF_BITRATE_38400:
       br = high ? 125.0 :  38.4; /* SX128x minimum is 125 kbps */
+      break;
+    case RF_BITRATE_1042KBPS:
+      br = 1041.667;
       break;
     case RF_BITRATE_100KBPS:
     default:
@@ -5222,6 +5253,9 @@ static void lr20xx_setup()
       break;
     case RF_FREQUENCY_DEVIATION_25KHZ:
       fdev = 25.0;
+      break;
+    case RF_FREQUENCY_DEVIATION_625KHZ:
+      fdev = 500.0; /* FDEV = 500.0 kHz is a specified maximum for LR2021 */
       break;
     case RF_FREQUENCY_DEVIATION_50KHZ:
     case RF_FREQUENCY_DEVIATION_NONE:
@@ -5375,11 +5409,7 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_PRIME_MK3:
   default:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721, rfswitch_table_MXD8721);
-#if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
-    state = radio_g4->setOutputPower(txpow); /* TODO */
-#else
-    state = radio_g4->setOutputPower(txpow, high ? false : true);
-#endif /* RADIOLIB_VERSION_MINOR */
+    state = radio_g4->setOutputPower(txpow);
     break;
   }
 
@@ -5483,6 +5513,7 @@ static bool lr20xx_receive()
             success = true;
           }
           break;
+
         case RF_PROTOCOL_FANET:
           offset = rl_protocol->payload_offset;
           size   = rl_protocol->payload_size + rl_protocol->crc_size;
@@ -5494,6 +5525,7 @@ static bool lr20xx_receive()
           }
           success = true;
           break;
+
         case RF_PROTOCOL_ADSB_1090:
           struct mode_s_msg mm;
           mode_s_decode(&mode_s_state, &mm, RL_rxPacket_ptr->payload);
@@ -5515,6 +5547,7 @@ static bool lr20xx_receive()
             }
           }
           break;
+
         case RF_PROTOCOL_ADSB_UAT:
           int rs_errors;
           int frame_type;
@@ -5539,6 +5572,7 @@ static bool lr20xx_receive()
             }
           }
           break;
+
         case RF_PROTOCOL_OGNTP:
         case RF_PROTOCOL_ADSL_860:
         case RF_PROTOCOL_LEGACY:
@@ -5775,11 +5809,6 @@ static bool lr20xx_transmit()
 #if 0
     // the packet was successfully transmitted
     Serial.println(F("success!"));
-
-    // print measured data rate
-    Serial.print(F("[LR20XX] Datarate:\t"));
-    Serial.print((unsigned int) radio_semtech->getDataRate());
-    Serial.println(F(" bps"));
 
   } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
     // the supplied packet was longer than 256 bytes
