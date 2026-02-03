@@ -1046,6 +1046,10 @@ static bool at65_setup()
 
   Serial_GNSS_Out.write("$PCAS11,6*1B\r\n"); /* Aviation < 2g */ delay(250);
 
+  if (hw_info.model == SOFTRF_MODEL_CONCORDE) {
+    Serial_GNSS_Out.write("$PCAS02,1000*2E\r\n"); /* 1 Hz */     delay(250);
+  }
+
   return true;
 }
 

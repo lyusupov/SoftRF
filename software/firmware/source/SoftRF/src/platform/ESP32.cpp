@@ -1938,13 +1938,13 @@ static void ESP32_setup()
                                              SOC_GPIO_PIN_TDP4_SDA,
                                              SOC_GPIO_PIN_TDP4_SCL);
     if (ESP32_has_gpio_extension) {
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  LOW);
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  LOW);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
       // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, LOW);
       // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   LOW);
 
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
       // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
       // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
     }
@@ -2475,6 +2475,11 @@ static void ESP32_setup()
       /* Wake up Quectel L76K GNSS */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, HIGH);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE,  OUTPUT);
+
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN,  OUTPUT);
+      delay(100);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
 
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
@@ -4544,7 +4549,7 @@ static void ESP32_swSer_begin(unsigned long baud)
                            SOC_GPIO_PIN_P4_GNSS_RX, SOC_GPIO_PIN_P4_GNSS_TX);
     } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
       Serial.println(F("INFO: LilyGO T-Display-P4 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+      Serial_GNSS_In.begin(115200 /* baud */, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_TDP4_GNSS_RX, SOC_GPIO_PIN_TDP4_GNSS_TX);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
     } else {
