@@ -383,8 +383,10 @@ const uint16_t ESP32SX_Device_Version = SKYVIEW_USB_FW_VERSION;
 #include "esp_check.h"
 #include "es8311.h"
 #include <ExtensionIOXL9555.hpp>
+#include <GaugeBQ27220.hpp>
 
 ExtensionIOXL9555 *xl9535 = nullptr;
+GaugeBQ27220      bq_27220;
 bool ESP32_has_gpio_extension = false;
 
 #define EXAMPLE_SAMPLE_RATE     11025
@@ -717,10 +719,14 @@ static void ESP32_setup()
   if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
   Wire.beginTransmission(GT911_ADDRESS_ALT);
   if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
-  Wire.beginTransmission(HI8561_ADDRESS);
-  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
-  // Wire.beginTransmission(GT9895_ADDRESS);
-  // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
+
+  Wire.beginTransmission(BQ27220_SLAVE_ADDRESS);
+  bool has_bq27220 = (Wire.endTransmission() == 0);
+  if (has_bq27220 && bq_27220.begin(Wire,
+                                    SOC_GPIO_PIN_TDP4_SDA,
+                                    SOC_GPIO_PIN_TDP4_SCL)) {
+    ESP32_has_CPM = true;
+  }
 
   switch (hw_info.revision)
   {
@@ -764,8 +770,21 @@ static void ESP32_setup()
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    LOW);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    OUTPUT);
 
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   HIGH);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   OUTPUT);
+
       delay(100);
+
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
+      /* Wake up Quectel L76K GNSS */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, HIGH);
+
+      Wire.beginTransmission(HI8561_ADDRESS);
+      if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
+      // Wire.beginTransmission(GT9895_ADDRESS);
+      // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
     }
 
     // I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
@@ -868,12 +887,14 @@ static void ESP32_post_init()
 
   switch (hw_info.revision)
   {
-  case HW_REV_T5S_1_9    : Serial.println(F("LilyGO T5S"));   break;
-  case HW_REV_T5S_2_8    : Serial.println(F("LilyGO T5S"));   break;
-  case HW_REV_BPI        : Serial.println(F("Banana PicoW")); break;
-  case HW_REV_DEVKIT     : Serial.print(SoC->name);
-                           Serial.println(F(" DevKit"));      break;
-  default                : Serial.println(F("OTHER"));        break;
+  case HW_REV_T5S_1_9            : Serial.println(F("LilyGO T5S"));                 break;
+  case HW_REV_T5S_2_8            : Serial.println(F("LilyGO T5S"));                 break;
+  case HW_REV_BPI                : Serial.println(F("Banana PicoW"));               break;
+  case HW_REV_TDISPLAY_P4_TFT    : Serial.println(F("LilyGO T-Display-P4 TFT"));    break;
+  case HW_REV_TDISPLAY_P4_AMOLED : Serial.println(F("LilyGO T-Display-P4 AMOLED")); break;
+  case HW_REV_DEVKIT             : Serial.print(SoC->name);
+                                   Serial.println(F(" DevKit"));                    break;
+  default                        : Serial.println(F("OTHER"));                      break;
   }
 
   Serial.print(F("Display      : "));
@@ -1055,7 +1076,21 @@ static bool ESP32_EEPROM_begin(size_t size)
 
 static void ESP32_EEPROM_extension(int cmd)
 {
-  /* TBD */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS) {
+    switch (hw_info.revision)
+    {
+    case HW_REV_TDISPLAY_P4_TFT:
+    case HW_REV_TDISPLAY_P4_AMOLED:
+      settings->adapter = ADAPTER_MIPI_DSI;
+      if (cmd == EEPROM_EXT_DEFAULTS) { settings->baudrate = B115200; }
+      break;
+    case HW_REV_DEVKIT:
+    default:
+      break;
+    }
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static const int8_t ESP32_dB_to_power_level[21] = {
@@ -1102,7 +1137,18 @@ static bool ESP32_WiFi_hostname(String aHostname)
 
 static void ESP32_swSer_begin(unsigned long baud)
 {
-  SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+  switch (hw_info.revision)
+  {
+  case HW_REV_TDISPLAY_P4_TFT:
+  case HW_REV_TDISPLAY_P4_AMOLED:
+    SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TDP4_GNSS_RX, SOC_GPIO_PIN_TDP4_GNSS_TX);
+    break;
+  case HW_REV_DEVKIT:
+  default:
+    SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+    break;
+  }
+
   SerialInput.setRxBufferSize(baud / 10); /* 1 second */
 }
 
@@ -1140,7 +1186,10 @@ static void ESP32_Battery_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #else
 #if defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32P4)
-  calibrate_voltage(SOC_GPIO_PIN_BATTERY);
+  if (hw_info.revision != HW_REV_TDISPLAY_P4_TFT &&
+      hw_info.revision != HW_REV_TDISPLAY_P4_AMOLED) {
+    calibrate_voltage(SOC_GPIO_PIN_BATTERY);
+  }
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)
@@ -1161,6 +1210,21 @@ static float ESP32_Battery_voltage()
     return (busvoltage + (shuntvoltage / 1000));
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (ESP32_has_CPM) {
+    float voltage = 0;
+
+    if (bq_27220.refresh()) {
+      BatteryStatus batteryStatus = bq_27220.getBatteryStatus();
+      if (batteryStatus.isBatteryPresent()) {
+        voltage = bq_27220.getVoltage();
+      }
+    }
+
+    return voltage * 0.001;
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
   float voltage = ((float) read_voltage()) * 0.001 ;
 
@@ -1670,6 +1734,11 @@ static byte ESP32_Display_setup(bool splash_screen)
     display = NULL;
     break;
 #endif /* BUILD_SKYVIEW_HD */
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  case ADAPTER_MIPI_DSI:
+    display = NULL;
+    break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
   case ADAPTER_TTGO_T5S:
   default:
     display = &epd_ttgo_t5s_W3;

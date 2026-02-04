@@ -320,11 +320,13 @@ char *Settings_content() {
 <select name='adapter'>\
 <option %s value='%d'>e-Paper Waveshare HAT 2.7</option>\
 <option %s value='%d'>e-Paper Waveshare HAT 2.7 V2</option>\
+<option %s value='%d'>MIPI DSI</option>\
 </select>\
 </td>\
 </tr>"),
     (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7    ? "selected" : ""), ADAPTER_WAVESHARE_PI_HAT_2_7,
-    (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PI_HAT_2_7_V2
+    (settings->adapter == ADAPTER_WAVESHARE_PI_HAT_2_7_V2 ? "selected" : ""), ADAPTER_WAVESHARE_PI_HAT_2_7_V2,
+    (settings->adapter == ADAPTER_MIPI_DSI                ? "selected" : ""), ADAPTER_MIPI_DSI
     );
   }
 
