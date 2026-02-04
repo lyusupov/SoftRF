@@ -734,15 +734,38 @@ static void ESP32_setup()
                                              SOC_GPIO_PIN_SDA,
                                              SOC_GPIO_PIN_SCL);
     if (ESP32_has_gpio_extension) {
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  LOW);
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  HIGH);
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, LOW);
-      // xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   LOW);
+      /* make GNSS inactive prior to 3.3V power ON */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, OUTPUT);
 
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,  OUTPUT);
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,  OUTPUT);
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN, OUTPUT);
-      // xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,   OUTPUT);
+      /* make ESP32-C6 inactive prior to 3.3V power ON */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, OUTPUT);
+
+      /* USB PHY power */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN,  LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN,  OUTPUT);
+
+      /*
+       * Turn ON power of
+       * GNSS, TFT back light, ESP32-C6,
+       * camera (SGM38121), haptic (AW86224), IMU (ICM20948),
+       * ETH PHY and ES8311 digital circuits
+       */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,   LOW);
+
+      /* Power of NS4150 audio amp. and ES8311 analog circuits */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,   HIGH);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,   OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,   OUTPUT);
+
+      /* Power of micro-SD */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    OUTPUT);
+
+      delay(100);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
     }
 
     // I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
