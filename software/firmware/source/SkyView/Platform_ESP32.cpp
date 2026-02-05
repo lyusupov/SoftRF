@@ -901,6 +901,10 @@ static void ESP32_post_init()
 
   if (hw_info.display == DISPLAY_TFT_7_0) {
     Serial.println(F("7 inch TFT"));
+  } else if (hw_info.display == DISPLAY_TFT_4_05) {
+    Serial.println(F("4 inch TFT"));
+  } else if (hw_info.display == DISPLAY_AMOLED_4_1) {
+    Serial.println(F("4.1 inch AMOLED"));
   } else if (hw_info.display != DISPLAY_EPD_2_7 || display == NULL) {
     Serial.println(F("NONE"));
   } else {
@@ -1812,6 +1816,8 @@ static void ESP32_Display_loop()
   {
 #if defined(USE_TFT)
   case DISPLAY_TFT_7_0:
+  case DISPLAY_TFT_4_05:
+  case DISPLAY_AMOLED_4_1:
     TFT_loop();
     break;
 #endif /* USE_TFT */
@@ -1830,6 +1836,8 @@ static void ESP32_Display_fini(const char *msg, bool screen_saver)
   {
 #if defined(USE_TFT)
   case DISPLAY_TFT_7_0:
+  case DISPLAY_TFT_4_05:
+  case DISPLAY_AMOLED_4_1:
     TFT_fini();
     break;
 #endif /* USE_TFT */
@@ -1853,6 +1861,8 @@ static bool ESP32_Display_is_ready()
   {
 #if defined(USE_TFT)
   case DISPLAY_TFT_7_0:
+  case DISPLAY_TFT_4_05:
+  case DISPLAY_AMOLED_4_1:
     /* TBD */
     break;
 #endif /* USE_TFT */
@@ -1874,6 +1884,8 @@ static void ESP32_Display_update(int val)
   {
 #if defined(USE_TFT)
   case DISPLAY_TFT_7_0:
+  case DISPLAY_TFT_4_05:
+  case DISPLAY_AMOLED_4_1:
     /* TBD */
     break;
 #endif /* USE_TFT */

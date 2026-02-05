@@ -125,7 +125,19 @@ byte TFT_setup()
 
     lvgl_port_unlock();
 
-    rval = DISPLAY_TFT_7_0;
+    switch (hw_info.revision)
+    {
+    case HW_REV_TDISPLAY_P4_TFT:
+      rval = DISPLAY_TFT_4_05;
+      break;
+    case HW_REV_TDISPLAY_P4_AMOLED:
+      rval = DISPLAY_AMOLED_4_1;
+      break;
+    case HW_REV_DEVKIT:
+    default:
+      rval = DISPLAY_TFT_7_0;
+      break;
+    }
   }
 
   TFT_status_setup();
@@ -141,6 +153,8 @@ void TFT_loop()
   switch (hw_info.display)
   {
   case DISPLAY_TFT_7_0:
+  case DISPLAY_TFT_4_05:
+  case DISPLAY_AMOLED_4_1:
     if (panel) {
       if (isTimeToDisplay()) {
         switch (TFT_view_mode)
@@ -200,7 +214,9 @@ void TFT_fini()
 
 void TFT_Up()
 {
-  if (hw_info.display == DISPLAY_TFT_7_0) {
+  if (hw_info.display == DISPLAY_TFT_7_0  ||
+      hw_info.display == DISPLAY_TFT_4_05 ||
+      hw_info.display == DISPLAY_AMOLED_4_1) {
     switch (TFT_view_mode)
     {
     case VIEW_MODE_RADAR:
@@ -215,7 +231,9 @@ void TFT_Up()
 
 void TFT_Down()
 {
-  if (hw_info.display == DISPLAY_TFT_7_0) {
+  if (hw_info.display == DISPLAY_TFT_7_0  ||
+      hw_info.display == DISPLAY_TFT_4_05 ||
+      hw_info.display == DISPLAY_AMOLED_4_1) {
     switch (TFT_view_mode)
     {
     case VIEW_MODE_RADAR:
