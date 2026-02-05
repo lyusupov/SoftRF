@@ -86,6 +86,17 @@ byte TFT_setup()
     lvgl_port_lock(-1);
 
 #if LVGL_VERSION_MAJOR == 8
+    switch (hw_info.revision)
+    {
+    case HW_REV_TDISPLAY_P4_TFT:
+    case HW_REV_TDISPLAY_P4_AMOLED:
+      lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
+      break;
+    case HW_REV_DEVKIT:
+    default:
+      break;
+    }
+
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_text_color(lv_scr_act(), lv_color_white(), LV_PART_MAIN);
 

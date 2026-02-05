@@ -775,7 +775,7 @@ static void ESP32_setup()
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  OUTPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   OUTPUT);
 
-      delay(100);
+      delay(200);
 
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
       /* Wake up Quectel L76K GNSS */
@@ -1139,10 +1139,12 @@ static void ESP32_swSer_begin(unsigned long baud)
 {
   switch (hw_info.revision)
   {
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
   case HW_REV_TDISPLAY_P4_TFT:
   case HW_REV_TDISPLAY_P4_AMOLED:
     SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_TDP4_GNSS_RX, SOC_GPIO_PIN_TDP4_GNSS_TX);
     break;
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
   case HW_REV_DEVKIT:
   default:
     SerialInput.begin(baud, SERIAL_8N1, SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
@@ -1498,8 +1500,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
             .refresh_panel = BusDSI::RefreshPanelPartialConfig{
                 .dpi_clock_freq_mhz = 52,
                 .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
-                .h_size = 1168,
-                .v_size = 540,
+                .h_size = 540,
+                .v_size = 1168,
                 .hsync_pulse_width = 10,
                 .hsync_back_porch = 160,
                 .hsync_front_porch = 160,
@@ -1520,8 +1522,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
                 .flags_reset_active_high = 1, /* TBD */
             },
             .vendor = LCD::VendorPartialConfig{
-                .hor_res = 1168,
-                .ver_res = 540,
+                .hor_res = 540,
+                .ver_res = 1168,
             },
         },
         .pre_process = {
@@ -1545,8 +1547,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
         .device_name = TO_STR(GT911),/* HI8561 */
         .device_config = {
             .device = Touch::DevicePartialConfig{
-                .x_max = 1168,
-                .y_max = 540,
+                .x_max = 540,
+                .y_max = 1168,
                 .rst_gpio_num = -1, /* XL 3 */
                 .int_gpio_num = -1, /* XL 4 */
                 .levels_reset = 0,
