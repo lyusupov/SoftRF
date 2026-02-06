@@ -5197,6 +5197,7 @@ static void lr20xx_setup()
     state = radio_g4->setSyncWord((uint8_t *) rl_protocol->syncword,
                                   (size_t)    rl_protocol->syncword_size);
     state = radio_g4->ookDetector(0x0285, 16, 0, false, false, 0);
+    state = radio_g4->setOokDetectionThreshold(70); /* TODO */
     state = radio_g4->setGain(13);
     break;
 

@@ -108,10 +108,12 @@ void TFT_status_loop()
 
   lv_obj_t *data_6 = lv_label_create(lv_scr_act());
   lv_label_set_text_fmt(data_6, "%s",
-    hw_info.display      == DISPLAY_EPD_2_7   ||
-    hw_info.display      == DISPLAY_EPD_4_7   ? "e-Paper" :
-    hw_info.display      == DISPLAY_TFT_7_0   ? "TFT" :
-    hw_info.display      == DISPLAY_OLED_2_4  ? "OLED" : "NONE");
+    hw_info.display == DISPLAY_EPD_2_7    ||
+    hw_info.display == DISPLAY_EPD_4_7    ? "e-Paper" :
+    hw_info.display == DISPLAY_TFT_7_0    ||
+    hw_info.display == DISPLAY_TFT_4_05   ? "TFT" :
+    hw_info.display == DISPLAY_AMOLED_4_1 ? "AMOLED" :
+    hw_info.display == DISPLAY_OLED_2_4   ? "OLED" : "NONE");
   lv_obj_set_style_text_font(data_6, &lv_font_montserrat_48, 0);
   lv_obj_align_to(data_6, data_5, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 

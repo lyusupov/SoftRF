@@ -123,14 +123,17 @@ char *Root_content() {
     SoC->getFreeHeap(),
 #endif /* RASPBERRY_PI */
     low_voltage ? "red" : "green", str_Vcc,
-    hw_info.display      == DISPLAY_EPD_2_7   ||
-    hw_info.display      == DISPLAY_EPD_4_7   ? "e-Paper" :
-    hw_info.display      == DISPLAY_OLED_2_4  ? "OLED" : "NONE",
-    settings->connection == CON_SERIAL_MAIN   ? "Serial" :
-    settings->connection == CON_BLUETOOTH_SPP ? "Bluetooth SPP" :
-    settings->connection == CON_BLUETOOTH_LE  ? "Bluetooth LE" :
-    settings->connection == CON_USB           ? "USB" :
-    settings->connection == CON_WIFI_UDP      ? "WiFi" : "NONE"
+    hw_info.display      == DISPLAY_EPD_2_7    ||
+    hw_info.display      == DISPLAY_EPD_4_7    ? "e-Paper" :
+    hw_info.display      == DISPLAY_TFT_7_0    ||
+    hw_info.display      == DISPLAY_TFT_4_05   ? "TFT" :
+    hw_info.display      == DISPLAY_AMOLED_4_1 ? "AMOLED" :
+    hw_info.display      == DISPLAY_OLED_2_4   ? "OLED" : "NONE",
+    settings->connection == CON_SERIAL_MAIN    ? "Serial" :
+    settings->connection == CON_BLUETOOTH_SPP  ? "Bluetooth SPP" :
+    settings->connection == CON_BLUETOOTH_LE   ? "Bluetooth LE" :
+    settings->connection == CON_USB            ? "USB" :
+    settings->connection == CON_WIFI_UDP       ? "WiFi" : "NONE"
   );
 
   len = strlen(offset);

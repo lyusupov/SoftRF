@@ -546,7 +546,7 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
-      hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
+      hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
       break;
     case MakeFlashId(ZBIT_ID, ZBIT_ZB25VQ128A): /* WT0132P4-A1 ESP32-P4NRW32 */
       hw_info.revision = HW_REV_DEVKIT;
@@ -781,10 +781,10 @@ static void ESP32_setup()
       /* Wake up Quectel L76K GNSS */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, HIGH);
 
+      Wire.beginTransmission(GT9895_ADDRESS);
+      if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
       Wire.beginTransmission(HI8561_ADDRESS);
       if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_TFT;
-      // Wire.beginTransmission(GT9895_ADDRESS);
-      // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_TDISPLAY_P4_AMOLED;
     }
 
     // I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
@@ -1605,8 +1605,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
             .refresh_panel = BusDSI::RefreshPanelPartialConfig{
                 .dpi_clock_freq_mhz = 52,
                 .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
-                .h_size = 1232,
-                .v_size = 568,
+                .h_size = 568,
+                .v_size = 1232,
                 .hsync_pulse_width = 10,
                 .hsync_back_porch = 160,
                 .hsync_front_porch = 160,
@@ -1627,8 +1627,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
                 .flags_reset_active_high = 1, /* TBD */
             },
             .vendor = LCD::VendorPartialConfig{
-                .hor_res = 1232,
-                .ver_res = 568,
+                .hor_res = 568,
+                .ver_res = 1232,
             },
         },
         .pre_process = {
@@ -1652,8 +1652,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
         .device_name = TO_STR(GT911), /* GT9895 */
         .device_config = {
             .device = Touch::DevicePartialConfig{
-                .x_max = 1232,
-                .y_max = 568,
+                .x_max = 568,
+                .y_max = 1232,
                 .rst_gpio_num = -1, /* XL 3 */
                 .int_gpio_num = -1, /* XL 4 */
                 .levels_reset = 0,
