@@ -206,7 +206,7 @@
 #define SOC_GPIO_PIN_SDA      7  // +
 #define SOC_GPIO_PIN_SCL      8  // +
 
-// LilyGO T-Display-P4 I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
+// LilyGO T-Display-P4 I2C #2 (ES8311, AW86224, SGM38121, ICM20948, OV2710)
 #define SOC_GPIO_PIN_TDP4_SDA 20
 #define SOC_GPIO_PIN_TDP4_SCL 21
 

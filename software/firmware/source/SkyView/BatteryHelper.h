@@ -32,6 +32,16 @@
 #define BATTERY_CUTOFF_LIPO       3.2
 #define BATTERY_CUTOFF_NIZNX2     2.9
 
+enum
+{
+	PMU_NONE,
+	PMU_AXP192,
+	PMU_AXP202,
+	PMU_AXP2101,
+	PMU_SY6970,
+	BMU_BQ27220,
+};
+
 void  Battery_setup(void);
 void  Battery_loop(void);
 float Battery_voltage(void);

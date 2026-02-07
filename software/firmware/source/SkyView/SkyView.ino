@@ -63,7 +63,16 @@ hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_SKYVIEW,
   .revision = HW_REV_UNKNOWN,
   .soc      = SOC_NONE,
-  .display  = DISPLAY_NONE
+  .display  = DISPLAY_NONE,
+  .storage  = STORAGE_NONE,
+  .rtc      = RTC_NONE,
+  .imu      = IMU_NONE,
+  .mag      = MAG_NONE,
+  .pmu      = PMU_NONE,
+  .audio    = AUDIO_NONE,
+  .touch    = TOUCH_NONE,
+  .haptic   = HAPTIC_NONE,
+  .camera   = CAMERA_NONE,
 };
 
 bool screen_saver = false;

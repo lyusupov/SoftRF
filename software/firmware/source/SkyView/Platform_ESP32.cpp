@@ -715,10 +715,10 @@ static void ESP32_setup()
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   Wire.begin(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
 
-  Wire.beginTransmission(GT911_ADDRESS);
-  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
-  Wire.beginTransmission(GT911_ADDRESS_ALT);
-  if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
+  // Wire.beginTransmission(GT911_ADDRESS);
+  // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
+  // Wire.beginTransmission(GT911_ADDRESS_ALT);
+  // if (Wire.endTransmission() == 0) hw_info.revision = HW_REV_DEVKIT;
 
   Wire.beginTransmission(BQ27220_SLAVE_ADDRESS);
   bool has_bq27220 = (Wire.endTransmission() == 0);
