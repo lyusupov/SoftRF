@@ -18,7 +18,7 @@
 #define SOC_GPIO_PIN_TDP4_SDA             7
 #define SOC_GPIO_PIN_TDP4_SCL             8
 
-// I2C #2 (ES8311, AW86224, SGM38121, ICM20948, Camera)
+// I2C #2 (ES8311, AW86224, SGM38121, ICM20948, OV2710)
 #define SOC_GPIO_PIN_TDP4_SDA2            20
 #define SOC_GPIO_PIN_TDP4_SCL2            21
 

@@ -165,6 +165,10 @@ typedef struct hardware_info {
     byte  imu;
     byte  mag;
     byte  pmu;
+    byte  audio;
+    byte  touch;
+    byte  haptic;
+    byte  camera;
 } hardware_info_t;
 
 typedef struct IODev_ops_struct {
@@ -300,6 +304,40 @@ enum
 	MAG_QMC6310U,
 	MAG_QMC6310N,
 	MAG_BMM150,
+};
+
+enum
+{
+	AUDIO_NONE,
+	AUDIO_PWM, /* or PDM */
+	AUDIO_MAX98357,
+	AUDIO_NS4168,
+	AUDIO_ES8311,
+};
+
+enum
+{
+	TOUCH_NONE,
+	TOUCH_FT5206,
+	TOUCH_TTP223,
+	TOUCH_FT6336,
+	TOUCH_GT911,
+	TOUCH_JD9365TG, /* HI8561 */
+	TOUCH_GT9895,
+};
+
+enum
+{
+	HAPTIC_NONE,
+	HAPTIC_DRV2605,
+	HAPTIC_AW86224,
+};
+
+enum
+{
+	CAMERA_NONE,
+	CAMERA_OV5647,
+	CAMERA_OV2710,
 };
 
 extern ufo_t ThisAircraft;

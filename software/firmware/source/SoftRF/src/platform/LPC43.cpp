@@ -66,6 +66,10 @@ hardware_info_t hw_info = {
   .imu      = IMU_NONE,
   .mag      = MAG_NONE,
   .pmu      = PMU_NONE,
+  .audio    = AUDIO_NONE,
+  .touch    = TOUCH_NONE,
+  .haptic   = HAPTIC_NONE,
+  .camera   = CAMERA_NONE,
 };
 
 const uint16_t LPC43_Vendor_Id = 0x1d50; /* OpenMoko, Inc. */

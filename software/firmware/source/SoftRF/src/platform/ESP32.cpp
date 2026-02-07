@@ -895,9 +895,10 @@ static void ESP32_setup()
   }
 
   if (hw_info.model == SOFTRF_MODEL_SKYWATCH) {
-    esp32_board = ESP32_TTGO_T_WATCH;
-    hw_info.rtc = RTC_PCF8563;
-    hw_info.imu = ACC_BMA423;
+    esp32_board   = ESP32_TTGO_T_WATCH;
+    hw_info.rtc   = RTC_PCF8563;
+    hw_info.imu   = ACC_BMA423;
+    hw_info.touch = TOUCH_FT5206;
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
     Wire1.begin(SOC_GPIO_PIN_TWATCH_SEN_SDA , SOC_GPIO_PIN_TWATCH_SEN_SCL);
@@ -2548,6 +2549,15 @@ static void ESP32_setup()
       WIRE_FINI(Wire1);
     }
 #endif /* EXCLUDE_IMU */
+
+    hw_info.audio  = AUDIO_ES8311;
+    hw_info.haptic = HAPTIC_AW86224;
+    hw_info.camera = CAMERA_OV2710;
+
+    Wire.beginTransmission(GT9895_ADDRESS);
+    if (Wire.endTransmission() == 0) hw_info.touch = TOUCH_GT9895;
+    Wire.beginTransmission(HI8561_ADDRESS);
+    if (Wire.endTransmission() == 0) hw_info.touch = TOUCH_JD9365TG;
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 

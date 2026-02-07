@@ -1393,6 +1393,7 @@ static void nRF52_setup()
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
 
       hw_info.revision = 0;
+      hw_info.touch    = TOUCH_TTP223;
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1411,6 +1412,7 @@ static void nRF52_setup()
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
 
       hw_info.revision = 1;
+      hw_info.touch    = TOUCH_TTP223;
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
@@ -1435,6 +1437,7 @@ static void nRF52_setup()
 #endif /* USE_RADIOLIB */
 
       hw_info.revision = 2;
+      hw_info.touch    = TOUCH_TTP223;
       break;
 
 #if !defined(EXCLUDE_WIP)
@@ -1468,6 +1471,9 @@ static void nRF52_setup()
 #endif /* ENABLE_RECORDER */
 
       hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_NS4168;
+      hw_info.touch    = TOUCH_FT6336;
+      hw_info.haptic   = HAPTIC_DRV2605;
       break;
 
     case NRF52_SEEED_WIO_L1:
@@ -1516,6 +1522,7 @@ static void nRF52_setup()
 #endif /* USE_RADIOLIB */
 
       hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_PWM;
       break;
 
     case NRF52_HELTEC_T114:
@@ -1560,6 +1567,7 @@ static void nRF52_setup()
       lmic_pins.busy = SOC_GPIO_PIN_M1_BUSY;
 
       hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_PWM;
       break;
 
     case NRF52_ELECROW_TN_M3:
@@ -1589,6 +1597,7 @@ static void nRF52_setup()
 #endif /* USE_RADIOLIB */
 
       hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_PWM;
       break;
 
     case NRF52_ELECROW_TN_M6:
@@ -1848,7 +1857,9 @@ static void nRF52_setup()
 
       digitalWrite(SOC_GPIO_PIN_MOTOR_EN, HIGH);
       pinMode(SOC_GPIO_PIN_MOTOR_EN, OUTPUT);
+      hw_info.haptic = HAPTIC_DRV2605;
     }
+    hw_info.audio = AUDIO_PWM;
   }
 }
 
