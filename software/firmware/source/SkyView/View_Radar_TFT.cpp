@@ -123,8 +123,8 @@ void TFT_radar_loop()
 
   lv_obj_t *rect = lv_obj_create(lv_scr_act());
   lv_obj_set_scrollbar_mode(rect, LV_SCROLLBAR_MODE_OFF);
-  lv_obj_set_size(rect, lv_disp_get_hor_res(NULL) - radar_w, radar_w);
-  lv_obj_set_pos(rect, radar_w, 0);
+  lv_obj_set_size(rect, radar_w, lv_disp_get_ver_res(NULL) - radar_w);
+  lv_obj_set_pos(rect, 0, radar_w);
   lv_obj_set_style_radius(rect, 10, 0);
   lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
   lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);

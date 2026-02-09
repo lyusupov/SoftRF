@@ -80,6 +80,17 @@ void gesture_event_handler(lv_event_t * e)
 #include "TouchDrvGT911.hpp"
 #include "TouchDrvGT9895.hpp"
 
+typedef struct TP_Point_struct {
+  int16_t x;
+  int16_t y;
+} TP_Point;
+
+typedef struct Gesture_struct {
+  bool     touched;
+  TP_Point t_loc;
+  TP_Point d_loc;
+} Gesture_t;
+
 TouchDrvInterface *touchDrv = NULL;
 
 int16_t x[5], y[5];
@@ -134,7 +145,7 @@ byte TFT_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  TFT_view_mode = VIEW_MODE_STATUS;
+  TFT_view_mode = settings->vmode;
 
   if (panel) {
 #if defined(USE_EDPLIB_TOUCH)
@@ -153,10 +164,10 @@ byte TFT_setup()
     {
     case HW_REV_TDISPLAY_P4_TFT:
     case HW_REV_TDISPLAY_P4_AMOLED:
-      lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
       break;
     case HW_REV_DEVKIT:
     default:
+      lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
       break;
     }
 
