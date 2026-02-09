@@ -48,6 +48,7 @@ bool TFT_vmode_updated = true;
 
 static int tp_action = NO_GESTURE;
 
+#if defined(USE_EDPLIB_TOUCH)
 void gesture_event_handler(lv_event_t * e)
 {
 #if LVGL_VERSION_MAJOR == 8
@@ -73,6 +74,61 @@ void gesture_event_handler(lv_event_t * e)
   }
 #endif /* LVGL_VERSION_MAJOR == 8 */
 }
+#endif /* USE_EDPLIB_TOUCH */
+
+#if defined(USE_SENSORLIB_TOUCH)
+#include "TouchDrvGT911.hpp"
+#include "TouchDrvGT9895.hpp"
+
+TouchDrvInterface *touchDrv = NULL;
+
+int16_t x[5], y[5];
+
+static Gesture_t gesture = { false, {0,0}, {0,0} };
+
+bool setupTouchDrv()
+{
+    bool result = false;
+
+    switch (hw_info.revision)
+    {
+    case HW_REV_TDISPLAY_P4_TFT:
+      /* TBD */
+      break;
+
+    case HW_REV_TDISPLAY_P4_AMOLED:
+      touchDrv = new TouchDrvGT9895();
+      touchDrv->setPins(-1 /* XL P03 */, -1 /* XL P04 */);
+      result = touchDrv->begin(Wire, GT9895_SLAVE_ADDRESS_L,
+                               SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+      break;
+
+    case HW_REV_DEVKIT:
+    default:
+      touchDrv = new TouchDrvGT911();
+      touchDrv->setPins(-1 /* SOC_GPIO_PIN_TP_RST */, SOC_GPIO_PIN_TP_INT);
+      result = touchDrv->begin(Wire, GT911_SLAVE_ADDRESS_L,
+                               SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+      touchDrv->setMaxCoordinates(panel->getLCD()->getFrameWidth(),
+                                  panel->getLCD()->getFrameHeight());
+      touchDrv->setMirrorXY(true, true);
+      break;
+    }
+
+    if (result) {
+        Serial.print(touchDrv->getModelName());
+        Serial.println(" TP initialized successfully");
+        return true;
+    }
+    delete touchDrv;
+
+    Serial.println("Unable to find touch device.");
+
+    touchDrv = NULL;
+
+    return false;
+}
+#endif /* USE_SENSORLIB_TOUCH */
 
 byte TFT_setup()
 {
@@ -81,7 +137,14 @@ byte TFT_setup()
   TFT_view_mode = VIEW_MODE_STATUS;
 
   if (panel) {
+#if defined(USE_EDPLIB_TOUCH)
     lvgl_port_init(panel->getLCD(), panel->getTouch());
+#else
+    lvgl_port_init(panel->getLCD(), nullptr);
+#if defined(USE_SENSORLIB_TOUCH)
+    setupTouchDrv();
+#endif /* USE_SENSORLIB_TOUCH */
+#endif /* USE_EDPLIB_TOUCH */
 
     lvgl_port_lock(-1);
 
@@ -120,7 +183,9 @@ byte TFT_setup()
     lv_obj_set_style_text_font(label_4, &lv_font_montserrat_24, 0);
     lv_obj_align_to(label_4, label_3, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
 
+#if defined(USE_EDPLIB_TOUCH)
     lv_obj_add_event_cb(lv_scr_act(), gesture_event_handler, LV_EVENT_GESTURE, NULL);
+#endif /* USE_EDPLIB_TOUCH */
 #endif /* LVGL_VERSION_MAJOR == 8 */
 
     lvgl_port_unlock();
@@ -170,6 +235,73 @@ void TFT_loop()
 
         TFT_TimeMarker = millis();
       }
+
+#if defined(USE_SENSORLIB_TOUCH)
+      if (touchDrv) {
+        if (touchDrv->isPressed()) {
+            uint8_t touched = touchDrv->getPoint(x, y, touchDrv->getSupportTouchPoint());
+#if 0
+            if (touched) {
+                for (int i = 0; i < touched; ++i) {
+                    Serial.print("X[");
+                    Serial.print(i);
+                    Serial.print("]:");
+                    Serial.print(x[i]);
+                    Serial.print(" ");
+                    Serial.print(" Y[");
+                    Serial.print(i);
+                    Serial.print("]:");
+                    Serial.print(y[i]);
+                    Serial.print(" ");
+                }
+                Serial.println();
+            }
+#endif
+            if (touched > 0) {
+              TP_Point p;
+              p.x = x[0];
+              p.y = y[0];
+
+              if (gesture.touched) {
+//                Serial.println("touched > 0 , gesture.touched = true");
+                gesture.d_loc = p;
+              } else {
+//                Serial.println("touched > 0 , gesture.touched = flase");
+                gesture.t_loc = p; gesture.d_loc = p;
+                gesture.touched = true;
+              }
+            }
+        } else {
+//            Serial.println("isPressed() = false");
+            if (gesture.touched) {
+//              Serial.println("isPressed() = false , gesture.touched = true");
+              int16_t FrameWidth  = panel->getLCD()->getFrameWidth();
+              int16_t FrameHeight = panel->getLCD()->getFrameHeight();
+              int16_t threshold_x = FrameWidth  / 10;
+              int16_t threshold_y = FrameHeight / 10;
+              int16_t limit_xl = FrameWidth/2  - threshold_x;
+              int16_t limit_xr = FrameWidth/2  + threshold_x;
+              int16_t limit_yt = FrameHeight/2 - threshold_y;
+              int16_t limit_yb = FrameHeight/2 + threshold_y;
+
+              if (gesture.d_loc.x < limit_xl && gesture.t_loc.x > limit_xr) {
+                tp_action = SWIPE_LEFT;
+              } else if (gesture.d_loc.x > limit_xr && gesture.t_loc.x < limit_xl) {
+                tp_action = SWIPE_RIGHT;
+              } else if (gesture.d_loc.y > limit_yb && gesture.t_loc.y < limit_yt) {
+                tp_action = SWIPE_DOWN;
+              } else if (gesture.d_loc.y < limit_yt && gesture.t_loc.y > limit_yb) {
+                tp_action = SWIPE_UP;
+              }
+
+              gesture.touched = false;
+              gesture.t_loc = gesture.d_loc = {0,0};
+            } else {
+               /* TBD */
+            }
+        }
+      }
+#endif /* USE_SENSORLIB_TOUCH */
 
       switch (tp_action)
       {

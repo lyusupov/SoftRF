@@ -301,6 +301,8 @@
 /* LilyGO T-Display-P4 CON 1.0-4    : 47, 48 */
 
 //#define USE_TFT
+//#define USE_EDPLIB_TOUCH
+#define USE_SENSORLIB_TOUCH
 //#define USE_USB_HOST
 
 // GT911 I2C touch sensor

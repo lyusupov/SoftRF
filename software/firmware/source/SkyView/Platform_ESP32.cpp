@@ -1433,7 +1433,7 @@ const BoardConfig Board_Config_WTP4C5MP07S = {
             .invert_color = 0,
         },
     },
-
+#if defined(USE_EDPLIB_TOUCH)
     .touch = BoardConfig::TouchConfig{
         .bus_config = BusI2C::Config{
             .host_id = 0,
@@ -1464,7 +1464,7 @@ const BoardConfig Board_Config_WTP4C5MP07S = {
             .mirror_y = 1,
         },
     },
-
+#endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
         .config = BacklightSwitchGPIO::Config{
             .io_num = SOC_GPIO_PIN_LCD_BLED,
@@ -1534,7 +1534,7 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
             .invert_color = 0,
         },
     },
-
+#if defined(USE_EDPLIB_TOUCH)
     .touch = BoardConfig::TouchConfig{
         .bus_config = BusI2C::Config{
             .host_id = 0,
@@ -1565,7 +1565,7 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
             .mirror_y = 1,
         },
     },
-
+#endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
         .config = BacklightSwitchGPIO::Config{
             .io_num = SOC_GPIO_PIN_TDP4_BL,
@@ -1635,7 +1635,7 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
             .invert_color = 0,
         },
     },
-
+#if defined(USE_EDPLIB_TOUCH)
     .touch = BoardConfig::TouchConfig{
         .bus_config = BusI2C::Config{
             .host_id = 0,
@@ -1666,7 +1666,7 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
             .mirror_y = 1,
         },
     },
-
+#endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
         .config = BacklightSwitchGPIO::Config{
             .io_num = -1, /* AMOLED */
@@ -1799,8 +1799,9 @@ static byte ESP32_Display_setup(bool splash_screen)
     lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
 #endif
 
+#if defined(USE_EDPLIB_TOUCH)
     static_cast<esp_panel::drivers::BusI2C *>(panel->getTouch()->getBus())->configI2C_HostSkipInit();
-
+#endif /* USE_EDPLIB_TOUCH */
     assert(panel->begin());
 
     rval = TFT_setup();
