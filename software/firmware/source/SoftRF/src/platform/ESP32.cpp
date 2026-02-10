@@ -2490,6 +2490,12 @@ static void ESP32_setup()
               SOC_GPIO_PIN_P4_ETH_PHY_POWER,
               ETH_CLK_MODE);
 #endif /* EXCLUDE_ETHERNET */
+
+    Wire.beginTransmission(GT911_SLAVE_ADDRESS_L);
+    if (Wire.endTransmission() == 0) {
+      hw_info.touch = TOUCH_GT911;
+    }
+
   } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
 
     if (ESP32_has_gpio_extension) {
@@ -2555,9 +2561,15 @@ static void ESP32_setup()
     hw_info.camera = CAMERA_OV2710;
 
     Wire.beginTransmission(GT9895_ADDRESS);
-    if (Wire.endTransmission() == 0) hw_info.touch = TOUCH_GT9895;
+    if (Wire.endTransmission() == 0) {
+      hw_info.revision = 1;
+      hw_info.touch    = TOUCH_GT9895;
+    }
     Wire.beginTransmission(HI8561_ADDRESS);
-    if (Wire.endTransmission() == 0) hw_info.touch = TOUCH_JD9365TG;
+    if (Wire.endTransmission() == 0) {
+      hw_info.revision = 0;
+      hw_info.touch    = TOUCH_JD9365TG;
+    }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
@@ -5247,12 +5259,19 @@ static byte ESP32_Display_setup()
     switch (esp32_board)
     {
       case ESP32_LILYGO_TDISPLAY_P4:
-        panel = new Board(Board_Config_LilyGO_TDP4_TFT);
+        if (hw_info.revision == 1) {
+          panel = new Board(Board_Config_LilyGO_TDP4_AMOLED);
+          rval  = DISPLAY_AMOLED_LILYGO_4_1;
+        } wlaw {
+          panel = new Board(Board_Config_LilyGO_TDP4_TFT);
+          rval  = DISPLAY_TFT_LILYGO_4_05;
+        }
         break;
 
       case ESP32_P4_WT_DEVKIT:
       default:
         panel = new Board(Board_Config_WTP4C5MP07S);
+        rval  = DISPLAY_TFT_WIRELESSTAG_7;
         break;
     }
 
@@ -5269,17 +5288,6 @@ static byte ESP32_Display_setup()
     assert(panel->begin());
 
     DSI_setup();
-
-    switch (esp32_board)
-    {
-      case ESP32_LILYGO_TDISPLAY_P4:
-        rval = DISPLAY_TFT_LILYGO_4_05;
-        break;
-      case ESP32_P4_WT_DEVKIT:
-      default:
-        rval = DISPLAY_TFT_WIRELESSTAG_7;
-        break;
-    }
 #endif /* USE_DSI */
   } else {
 

@@ -102,25 +102,23 @@ bool setupTouchDrv()
 {
     bool result = false;
 
-    switch (hw_info.model)
+    switch (hw_info.touch)
     {
-    case SOFTRF_MODEL_CONCORDE:
+    case TOUCH_JD9365TG:
       /* TBD */
       break;
-#if 0
-    case SOFTRF_MODEL_CONCORDE:
+    case TOUCH_GT9895:
       touchDrv = new TouchDrvGT9895();
       touchDrv->setPins(-1 /* XL P03 */, -1 /* XL P04 */);
       result = touchDrv->begin(Wire, GT9895_SLAVE_ADDRESS_L,
-                               SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+                               SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
       break;
-#endif
-    case SOFTRF_MODEL_STANDALONE:
+    case TOUCH_GT911:
     default:
       touchDrv = new TouchDrvGT911();
       touchDrv->setPins(-1 /* SOC_GPIO_PIN_P4_TP_RST */, SOC_GPIO_PIN_P4_TP_INT);
       result = touchDrv->begin(Wire, GT911_SLAVE_ADDRESS_L,
-                               SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
+                               SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
       touchDrv->setMaxCoordinates(panel->getLCD()->getFrameWidth(),
                                   panel->getLCD()->getFrameHeight());
       touchDrv->setMirrorXY(true, true);
@@ -144,8 +142,6 @@ bool setupTouchDrv()
 
 void DSI_setup()
 {
-  byte rval = DISPLAY_NONE;
-
   DSI_view_mode = ui->vmode;
 
   if (panel) {
@@ -161,11 +157,12 @@ void DSI_setup()
     lvgl_port_lock(-1);
 
 #if LVGL_VERSION_MAJOR == 8
-    switch (hw_info.model)
+    switch (hw_info.display)
     {
-    case SOFTRF_MODEL_CONCORDE:
+    case DISPLAY_TFT_LILYGO_4_05:
+    case DISPLAY_AMOLED_LILYGO_4_1:
       break;
-    case SOFTRF_MODEL_STANDALONE:
+    case DISPLAY_TFT_WIRELESSTAG_7:
     default:
       lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
       break;
@@ -197,7 +194,175 @@ void DSI_setup()
     lvgl_port_unlock();
   }
 
+  DSI_status_setup();
+  DSI_radar_setup();
+
   DSI_TimeMarker = millis();
+}
+
+void DSI_loop()
+{
+  switch (hw_info.display)
+  {
+  case DISPLAY_TFT_WIRELESSTAG_7:
+  case DISPLAY_TFT_LILYGO_4_05:
+  case DISPLAY_AMOLED_LILYGO_4_1:
+    if (panel) {
+      if (isTimeToDisplay()) {
+        switch (DSI_view_mode)
+        {
+        case VIEW_MODE_RADAR:
+          DSI_radar_loop();
+          break;
+        case VIEW_MODE_STATUS:
+        default:
+          DSI_status_loop();
+          break;
+        }
+
+        DSI_TimeMarker = millis();
+      }
+
+#if defined(USE_SENSORLIB_TOUCH)
+      if (touchDrv) {
+        if (touchDrv->isPressed()) {
+            uint8_t touched = touchDrv->getPoint(x, y, touchDrv->getSupportTouchPoint());
+#if 0
+            if (touched) {
+                for (int i = 0; i < touched; ++i) {
+                    Serial.print("X[");
+                    Serial.print(i);
+                    Serial.print("]:");
+                    Serial.print(x[i]);
+                    Serial.print(" ");
+                    Serial.print(" Y[");
+                    Serial.print(i);
+                    Serial.print("]:");
+                    Serial.print(y[i]);
+                    Serial.print(" ");
+                }
+                Serial.println();
+            }
+#endif
+            if (touched > 0) {
+              TP_Point p;
+              p.x = x[0];
+              p.y = y[0];
+
+              if (gesture.touched) {
+//                Serial.println("touched > 0 , gesture.touched = true");
+                gesture.d_loc = p;
+              } else {
+//                Serial.println("touched > 0 , gesture.touched = flase");
+                gesture.t_loc = p; gesture.d_loc = p;
+                gesture.touched = true;
+              }
+            }
+        } else {
+//            Serial.println("isPressed() = false");
+            if (gesture.touched) {
+//              Serial.println("isPressed() = false , gesture.touched = true");
+              int16_t FrameWidth  = panel->getLCD()->getFrameWidth();
+              int16_t FrameHeight = panel->getLCD()->getFrameHeight();
+              int16_t threshold_x = FrameWidth  / 10;
+              int16_t threshold_y = FrameHeight / 10;
+              int16_t limit_xl = FrameWidth/2  - threshold_x;
+              int16_t limit_xr = FrameWidth/2  + threshold_x;
+              int16_t limit_yt = FrameHeight/2 - threshold_y;
+              int16_t limit_yb = FrameHeight/2 + threshold_y;
+
+              if (gesture.d_loc.x < limit_xl && gesture.t_loc.x > limit_xr) {
+                tp_action = SWIPE_LEFT;
+              } else if (gesture.d_loc.x > limit_xr && gesture.t_loc.x < limit_xl) {
+                tp_action = SWIPE_RIGHT;
+              } else if (gesture.d_loc.y > limit_yb && gesture.t_loc.y < limit_yt) {
+                tp_action = SWIPE_DOWN;
+              } else if (gesture.d_loc.y < limit_yt && gesture.t_loc.y > limit_yb) {
+                tp_action = SWIPE_UP;
+              }
+
+              gesture.touched = false;
+              gesture.t_loc = gesture.d_loc = {0,0};
+            } else {
+               /* TBD */
+            }
+        }
+      }
+#endif /* USE_SENSORLIB_TOUCH */
+
+      switch (tp_action)
+      {
+      case SWIPE_LEFT:
+        if (DSI_view_mode == VIEW_MODE_STATUS) {
+          DSI_view_mode = VIEW_MODE_RADAR;
+          DSI_vmode_updated = true;
+        }
+        break;
+      case SWIPE_RIGHT:
+        if (DSI_view_mode == VIEW_MODE_RADAR) {
+          DSI_view_mode = VIEW_MODE_STATUS;
+          DSI_vmode_updated = true;
+        }
+        break;
+      case SWIPE_DOWN:
+        DSI_Up();
+        break;
+      case SWIPE_UP:
+        DSI_Down();
+        break;
+      case NO_GESTURE:
+      default:
+        break;
+      }
+
+      tp_action = NO_GESTURE;
+    }
+
+    break;
+
+  case DISPLAY_NONE:
+  default:
+    break;
+  }
+}
+
+void DSI_fini()
+{
+
+}
+
+void DSI_Up()
+{
+  if (hw_info.display == DISPLAY_TFT_WIRELESSTAG_7 ||
+      hw_info.display == DISPLAY_TFT_LILYGO_4_05   ||
+      hw_info.display == DISPLAY_AMOLED_LILYGO_4_1) {
+    switch (DSI_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      DSI_radar_unzoom();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      break;
+    }
+  }
+}
+
+void DSI_Down()
+{
+  if (hw_info.display == DISPLAY_TFT_WIRELESSTAG_7 ||
+      hw_info.display == DISPLAY_TFT_LILYGO_4_05   ||
+      hw_info.display == DISPLAY_AMOLED_LILYGO_4_1) {
+    switch (DSI_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      DSI_radar_zoom();
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      break;
+    }
+  }
 }
 
 #endif /* USE_DSI */
