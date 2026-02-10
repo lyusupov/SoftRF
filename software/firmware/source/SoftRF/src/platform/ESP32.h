@@ -640,6 +640,8 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define EXCLUDE_VOICE_MESSAGE
 #define USE_OLED
 //#define USE_USB_HOST
+//#define USE_DSI
+//#define USE_SENSORLIB_TOUCH
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */
