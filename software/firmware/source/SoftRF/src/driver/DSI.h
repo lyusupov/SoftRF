@@ -23,6 +23,7 @@
 
 #define NO_DATA_TEXT            "NO DATA"
 #define NO_FIX_TEXT             "NO FIX"
+#define NO_TRAFFIC_TEXT         "NO TRAFFIC"
 
 #define isTimeToDisplay()       (millis() - DSI_TimeMarker > 1000)
 

@@ -31,6 +31,7 @@
 #include "../TrafficHelper.h"
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
+#include "../driver/RF.h"
 
 static int DSI_zoom = ZOOM_MEDIUM;
 
@@ -41,16 +42,8 @@ void DSI_radar_setup()
 
 void DSI_radar_loop()
 {
-  bool hasData = ui->protocol == PROTOCOL_NMEA  ? NMEA_isConnected()  :
-                 ui->protocol == PROTOCOL_GDL90 ? GDL90_isConnected() :
-                 false;
-  bool hasFix  = false;
-
-  if (hasData) {
-    hasFix = ui->protocol == PROTOCOL_NMEA  ? isValidGNSSFix()   :
-             ui->protocol == PROTOCOL_GDL90 ? GDL90_hasOwnShip() :
-             false;
-  }
+  bool hasFix = isValidGNSSFix() || (settings->mode == SOFTRF_MODE_TXRX_TEST);
+  bool hasTraffic = (Traffic_Count() > 0);
 
   /* divider is a half of full scale */
   int32_t divider = 2000;
@@ -132,10 +125,10 @@ void DSI_radar_loop()
   lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);
   lv_obj_set_style_border_width(rect, 2, 0);
 
-  if (hasData == false || hasFix == false) {
+  if (hasTraffic == false || hasFix == false) {
     lv_obj_t *label_1 = lv_label_create(lv_scr_act());
-    lv_label_set_text(label_1, hasData == false ? NO_DATA_TEXT :
-                               hasFix  == false ? NO_FIX_TEXT : "");
+    lv_label_set_text(label_1, hasTraffic == false ? NO_TRAFFIC_TEXT :
+                               hasFix     == false ? NO_FIX_TEXT : "");
     lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
     lv_obj_align_to(label_1, rect, LV_ALIGN_CENTER, 0, 0);
   }
@@ -215,7 +208,7 @@ void DSI_radar_loop()
   case DIRECTION_TRACK_UP:
     {
       char cog_text[6];
-      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.Track);
+      snprintf(cog_text, sizeof(cog_text), "%03d", ThisAircraft.course);
 
 #if LVGL_VERSION_MAJOR == 8
       lv_obj_t *rose_1 = lv_label_create(lv_scr_act());
@@ -326,49 +319,46 @@ void DSI_radar_loop()
   }
 #endif
 
+  int32_t radius = radar_w / 2;
+
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (Container[i].ID && (now() - Container[i].timestamp) <= DSI_EXPIRATION_TIME) {
+    if (Container[i].addr && (now() - Container[i].timestamp) <= DSI_EXPIRATION_TIME) {
 
       int16_t rel_x;
       int16_t rel_y;
       float distance;
       float bearing;
 
+      bool isTeam = (Container[i].addr == ui->team) ;
+
+      distance = Container[i].distance;
+      bearing  = Container[i].bearing;
+
       switch (ui->orientation)
       {
       case DIRECTION_NORTH_UP:
-        rel_x = Container[i].RelativeEast;
-        rel_y = Container[i].RelativeNorth;
         break;
       case DIRECTION_TRACK_UP:
-        distance = sqrtf(Container[i].RelativeNorth * Container[i].RelativeNorth +
-                         Container[i].RelativeEast  * Container[i].RelativeEast);
-
-        bearing = atan2f(Container[i].RelativeNorth,
-                         Container[i].RelativeEast) * 180.0 / PI;  /* -180 ... 180 */
-
-        /* convert from math angle into course relative to north */
-        bearing = (bearing <= 90.0 ? 90.0 - bearing :
-                                    450.0 - bearing);
-
-        bearing -= ThisAircraft.Track;
-
-        rel_x = constrain(distance * sin(radians(bearing)),
-                                     -32768, 32767);
-        rel_y = constrain(distance * cos(radians(bearing)),
-                                     -32768, 32767);
+        bearing -= ThisAircraft.course;
         break;
       default:
         /* TBD */
         break;
       }
 
-      int16_t x = ((int32_t) rel_x * (int32_t) radar_w / 2) / divider;
-      int16_t y = ((int32_t) rel_y * (int32_t) radar_w / 2) / divider;
+      rel_x = constrain(distance * sin(radians(bearing)),
+                                   -32768, 32767);
+      rel_y = constrain(distance * cos(radians(bearing)),
+                                   -32768, 32767);
 
-      lv_color_t color = Container[i].AlarmLevel == ALARM_LEVEL_URGENT ?
+      int16_t x = ((int32_t) rel_x * (int32_t) radius) / divider;
+      int16_t y = ((int32_t) rel_y * (int32_t) radius) / divider;
+
+      float RelativeVertical = Container[i].altitude - ThisAircraft.altitude;
+
+      lv_color_t color = Container[i].alarm_level == ALARM_LEVEL_URGENT ?
                          lv_palette_main(LV_PALETTE_RED) :
-                        (Container[i].AlarmLevel == ALARM_LEVEL_IMPORTANT ?
+                        (Container[i].alarm_level == ALARM_LEVEL_IMPORTANT ?
                          lv_palette_main(LV_PALETTE_YELLOW) :
                          lv_palette_main(LV_PALETTE_GREEN));
 
@@ -382,13 +372,13 @@ void DSI_radar_loop()
       lv_style_set_line_color(&style_line, color);
       lv_style_set_line_rounded(&style_line, false);
 
-      if        (Container[i].RelativeVertical >   DSI_RADAR_V_THRESHOLD) {
+      if        (RelativeVertical >   DSI_RADAR_V_THRESHOLD) {
         lv_obj_t * triangle_up;
         triangle_up = lv_line_create(lv_scr_act());
         lv_obj_set_pos(triangle_up, radar_w / 2 + x - 10, radar_w / 2 + y - 10);
         lv_line_set_points(triangle_up, triangle_up_pts, 4);
         lv_obj_add_style(triangle_up, &style_line, 0);
-      } else if (Container[i].RelativeVertical < - DSI_RADAR_V_THRESHOLD) {
+      } else if (RelativeVertical < - DSI_RADAR_V_THRESHOLD) {
         lv_obj_t * triangle_down;
         triangle_down = lv_line_create(lv_scr_act());
         lv_obj_set_pos(triangle_down, radar_w / 2 + x - 10, radar_w / 2 + y - 10);

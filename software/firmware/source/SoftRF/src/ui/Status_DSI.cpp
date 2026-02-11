@@ -59,47 +59,57 @@ void DSI_status_loop()
   lv_obj_align(data_1, LV_ALIGN_TOP_RIGHT, -40, 20);
 
   lv_obj_t *label_2 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_2, "SW Ver.");
+  lv_label_set_text(label_2, "SoC");
   lv_obj_set_style_text_font(label_2, &lv_font_montserrat_40, 0);
   lv_obj_align_to(label_2, label_1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
   lv_obj_t *data_2 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_2, "%s  %s", SOFTRF_FIRMWARE_VERSION, SoC->name);
+  lv_label_set_text_fmt(data_2, "%s", SoC->name);
   lv_obj_set_style_text_font(data_2, &lv_font_montserrat_40, 0);
   lv_obj_align_to(data_2, data_1, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
   lv_obj_t *label_3 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_3, "Uptime");
+  lv_label_set_text(label_3, "Software Version");
   lv_obj_set_style_text_font(label_3, &lv_font_montserrat_40, 0);
   lv_obj_align_to(label_3, label_2, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
   lv_obj_t *data_3 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_3, "%02d:%02d:%02d", hr, min % 60, sec % 60);
+  lv_label_set_text_fmt(data_3, "%s", SOFTRF_FIRMWARE_VERSION);
   lv_obj_set_style_text_font(data_3, &lv_font_montserrat_40, 0);
   lv_obj_align_to(data_3, data_2, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
   lv_obj_t *label_4 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_4, "Free memory");
+  lv_label_set_text(label_4, "Uptime");
   lv_obj_set_style_text_font(label_4, &lv_font_montserrat_40, 0);
   lv_obj_align_to(label_4, label_3, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
   lv_obj_t *data_4 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_4, "%u", SoC->getFreeHeap());
+  lv_label_set_text_fmt(data_4, "%02d:%02d:%02d", hr, min % 60, sec % 60);
   lv_obj_set_style_text_font(data_4, &lv_font_montserrat_40, 0);
   lv_obj_align_to(data_4, data_3, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
   lv_obj_t *label_5 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_5, "Battery voltage");
+  lv_label_set_text(label_5, "Free memory");
   lv_obj_set_style_text_font(label_5, &lv_font_montserrat_40, 0);
   lv_obj_align_to(label_5, label_4, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
   lv_obj_t *data_5 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_5, "%s", str_Vcc);
+  lv_label_set_text_fmt(data_5, "%u", SoC->getFreeHeap());
   lv_obj_set_style_text_font(data_5, &lv_font_montserrat_40, 0);
-  lv_obj_set_style_text_color(data_5, low_voltage ?
+  lv_obj_align_to(data_5, data_4, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+
+  lv_obj_t *label_6 = lv_label_create(lv_scr_act());
+  lv_label_set_text(label_6, "Battery voltage");
+  lv_obj_set_style_text_font(label_6, &lv_font_montserrat_40, 0);
+  lv_obj_align_to(label_6, label_5, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+  lv_obj_t *data_6 = lv_label_create(lv_scr_act());
+  lv_label_set_text_fmt(data_6, "%s", str_Vcc);
+  lv_obj_set_style_text_font(data_6, &lv_font_montserrat_40, 0);
+  lv_obj_set_style_text_color(data_6, low_voltage ?
                               lv_palette_main(LV_PALETTE_RED) :
                               lv_palette_main(LV_PALETTE_GREEN), 0);
-  lv_obj_align_to(data_5, data_4, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+  lv_obj_align_to(data_6, data_5, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 #endif /* LVGL_VERSION_MAJOR == 8 */
 
   lvgl_port_unlock();

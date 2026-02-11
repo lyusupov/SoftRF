@@ -4665,6 +4665,17 @@ extern Board *panel;
 #define _TO_STR(name) #name
 #define TO_STR(name) _TO_STR(name)
 
+extern "C" esp_err_t set_rm69a10_brightness(esp_lcd_panel_t *panel, uint8_t brightness);
+
+#define ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data)  \
+{  \
+    auto board = static_cast<Board *>(user_data); \
+    auto lcd = board->getLCD(); \
+    esp_lcd_panel_t *panel = lcd->getRefreshPanelHandle() ;  \
+    set_rm69a10_brightness(panel, static_cast<uint8_t>(static_cast<float>(percent) * 2.55)); \
+    return true; \
+}
+
 const BoardConfig Board_Config_WTP4C5MP07S = {
     .name = "WTP4C5MP07S",
 
@@ -4943,9 +4954,10 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
     },
 #endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
-        .config = BacklightSwitchGPIO::Config{
-            .io_num = -1, /* AMOLED */
-            .on_level = 1,
+        .config = BacklightCustom::Config{
+            .callback = [](int percent, void *user_data)
+                ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data),
+            .user_data = nullptr,
         },
         .pre_process = {
             .idle_off = 0,
@@ -5709,6 +5721,14 @@ static void ESP32_Display_loop()
     break;
 #endif /* USE_EPAPER */
 
+#if defined(USE_DSI)
+  case DISPLAY_TFT_WIRELESSTAG_7:
+  case DISPLAY_TFT_LILYGO_4_05:
+  case DISPLAY_AMOLED_LILYGO_4_1:
+    DSI_loop();
+    break;
+#endif /* USE_DSI */
+
   case DISPLAY_NONE:
   default:
     break;
@@ -5848,6 +5868,14 @@ static void ESP32_Display_fini(int reason)
 
     break;
 #endif /* USE_EPAPER */
+
+#if defined(USE_DSI)
+  case DISPLAY_TFT_WIRELESSTAG_7:
+  case DISPLAY_TFT_LILYGO_4_05:
+  case DISPLAY_AMOLED_LILYGO_4_1:
+    DSI_fini();
+    break;
+#endif /* USE_DSI */
 
   case DISPLAY_NONE:
   default:
