@@ -24,6 +24,8 @@
 #include <TimeLib.h>
 
 #include "../driver/DSI.h"
+#include "../driver/EPD.h"
+#include "../driver/LED.h"
 #include "../system/LVGLHelper.h"
 #include "../driver/EEPROM.h"
 #include "../TrafficHelper.h"

@@ -520,6 +520,7 @@ esp_err_t es8311_codec_init(const unsigned int i2c_num) {
 #include <ExtensionIOXL9555.hpp>
 #include <GaugeBQ27220.hpp>
 #include <ICM_20948.h>
+#include <TouchDrvGT911.hpp>
 
 ExtensionIOXL9555 *xl9535 = nullptr;
 GaugeBQ27220      bq_27220;
@@ -5261,9 +5262,11 @@ static byte ESP32_Display_setup()
       case ESP32_LILYGO_TDISPLAY_P4:
         if (hw_info.revision == 1) {
           panel = new Board(Board_Config_LilyGO_TDP4_AMOLED);
+          hw_info.display = DISPLAY_AMOLED_LILYGO_4_1;
           rval  = DISPLAY_AMOLED_LILYGO_4_1;
-        } wlaw {
+        } else {
           panel = new Board(Board_Config_LilyGO_TDP4_TFT);
+          hw_info.display = DISPLAY_TFT_LILYGO_4_05;
           rval  = DISPLAY_TFT_LILYGO_4_05;
         }
         break;
@@ -5271,6 +5274,7 @@ static byte ESP32_Display_setup()
       case ESP32_P4_WT_DEVKIT:
       default:
         panel = new Board(Board_Config_WTP4C5MP07S);
+        hw_info.display = DISPLAY_TFT_WIRELESSTAG_7;
         rval  = DISPLAY_TFT_WIRELESSTAG_7;
         break;
     }

@@ -519,7 +519,7 @@ jobs:
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://downloads.arduino.cc/packages/package_zephyr_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install arduino:zephyr_main@0.53.0 ;
+            arduino-cli core install arduino:zephyr_main@0.53.1 ;
             # arduino-cli board attach -b $BOARD ;
             wget https://github.com/facchinm/ArduinoBLE/archive/refs/heads/zephyr_hci.zip ;
             unzip zephyr_hci.zip ;

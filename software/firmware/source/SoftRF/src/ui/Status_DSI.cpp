@@ -64,7 +64,7 @@ void DSI_status_loop()
   lv_obj_align_to(label_2, label_1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
   lv_obj_t *data_2 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_2, "%s  %s", SKYVIEW_FIRMWARE_VERSION, SoC->name);
+  lv_label_set_text_fmt(data_2, "%s  %s", SOFTRF_FIRMWARE_VERSION, SoC->name);
   lv_obj_set_style_text_font(data_2, &lv_font_montserrat_40, 0);
   lv_obj_align_to(data_2, data_1, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
