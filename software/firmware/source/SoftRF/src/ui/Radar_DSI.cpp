@@ -29,8 +29,6 @@
 #include "../system/LVGLHelper.h"
 #include "../driver/EEPROM.h"
 #include "../TrafficHelper.h"
-#include "../protocol/data/NMEA.h"
-#include "../protocol/data/GDL90.h"
 #include "../driver/RF.h"
 
 static int DSI_zoom = ZOOM_MEDIUM;
@@ -127,8 +125,8 @@ void DSI_radar_loop()
 
   if (hasTraffic == false || hasFix == false) {
     lv_obj_t *label_1 = lv_label_create(lv_scr_act());
-    lv_label_set_text(label_1, hasTraffic == false ? NO_TRAFFIC_TEXT :
-                               hasFix     == false ? NO_FIX_TEXT : "");
+    lv_label_set_text(label_1, hasFix     == false ? NO_FIX_TEXT :
+                               hasTraffic == false ? NO_TRAFFIC_TEXT : "");
     lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
     lv_obj_align_to(label_1, rect, LV_ALIGN_CENTER, 0, 0);
   }

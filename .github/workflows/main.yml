@@ -207,7 +207,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32c5" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.3.6 ;
+            arduino --install-boards esp32:esp32:3.3.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32c5_80"                 --save-prefs ;
             arduino --pref "custom_DebugLevel=esp32c5_none"            --save-prefs ;
@@ -286,7 +286,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:3.3.6 ;
+            arduino --install-boards esp32:esp32:3.3.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_ChipVariant=esp32p4_prev3"          --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32p4_40"                 --save-prefs ;
@@ -300,7 +300,7 @@ jobs:
             arduino --pref "custom_PartitionScheme=esp32p4_no_fs"      --save-prefs ;
             arduino --pref "custom_UploadSpeed=esp32p4_921600"         --save-prefs ;
             arduino --install-library esp-lib-utils,ESP32_IO_Expander,ESP32_Display_Panel,lvgl:8.4.0 ;
-            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.6 ;
+            # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.7 ;
             # wget https://github.com/espressif/arduino-esp32/commit/73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;
             # cat 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch | patch -p1 ;
             # rm 73ef1e6ad3655275a3b597a04e365525b0ccd393.patch ;

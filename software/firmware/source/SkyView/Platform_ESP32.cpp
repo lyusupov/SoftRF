@@ -1390,6 +1390,17 @@ extern Board *panel;
 #define _TO_STR(name) #name
 #define TO_STR(name) _TO_STR(name)
 
+extern "C" esp_err_t set_rm69a10_brightness(esp_lcd_panel_t *panel, uint8_t brightness);
+
+#define ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data)  \
+{  \
+    auto board = static_cast<Board *>(user_data); \
+    auto lcd = board->getLCD(); \
+    esp_lcd_panel_t *panel = lcd->getRefreshPanelHandle() ;  \
+    set_rm69a10_brightness(panel, static_cast<uint8_t>(static_cast<float>(percent) * 2.55)); \
+    return true; \
+}
+
 const BoardConfig Board_Config_WTP4C5MP07S = {
     .name = "WTP4C5MP07S",
 
@@ -1567,9 +1578,10 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
     },
 #endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
-        .config = BacklightSwitchGPIO::Config{
-            .io_num = SOC_GPIO_PIN_TDP4_BL,
-            .on_level = 1,
+        .config = BacklightCustom::Config{
+            .callback = [](int percent, void *user_data)
+                ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data),
+            .user_data = nullptr,
         },
         .pre_process = {
             .idle_off = 0,
