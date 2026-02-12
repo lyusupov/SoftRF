@@ -3821,9 +3821,10 @@ static void ESP32_Sound_test(int var)
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #if !defined(EXCLUDE_VOICE_MESSAGE)
-  if (esp32_board == ESP32_P4_WT_DEVKIT &&
-     uSD_is_attached                    &&
-     settings->volume != BUZZER_OFF)
+  if ((esp32_board == ESP32_LILYGO_TDISPLAY_P4 ||
+       esp32_board == ESP32_P4_WT_DEVKIT) &&
+      uSD_is_attached                     &&
+      settings->volume != BUZZER_OFF)
   {
     char filename[MAX_FILENAME_LEN];
     strcpy(filename, WAV_FILE_PREFIX);
@@ -4794,7 +4795,7 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
                 .lane_bit_rate_mbps = 1000,
             },
             .refresh_panel = BusDSI::RefreshPanelPartialConfig{
-                .dpi_clock_freq_mhz = 52,
+                .dpi_clock_freq_mhz = 60,
                 .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
                 .h_size = 540,
                 .v_size = 1168,

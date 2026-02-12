@@ -124,8 +124,9 @@ void EEPROM_defaults()
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
     } else
 #endif /* USE_PWM_SOUND */
-    if (hw_info.model == SOFTRF_MODEL_GIZMO ||
-        hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
+    if (hw_info.model == SOFTRF_MODEL_GIZMO      ||
+        hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
+        hw_info.model == SOFTRF_MODEL_CONCORDE) {
       eeprom_block.field.settings.volume    = BUZZER_VOLUME_FULL;
     } else {
       eeprom_block.field.settings.volume    = BUZZER_OFF;
