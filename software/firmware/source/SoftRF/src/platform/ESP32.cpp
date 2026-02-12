@@ -2503,7 +2503,13 @@ static void ESP32_setup()
       /* Wake up Quectel L76K GNSS */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, HIGH);
 
-      delay(100);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   HIGH);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,   OUTPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,    OUTPUT);
+
+      delay(200);
+
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
 
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
@@ -4789,15 +4795,15 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
             },
             .refresh_panel = BusDSI::RefreshPanelPartialConfig{
                 .dpi_clock_freq_mhz = 52,
-                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
                 .h_size = 540,
                 .v_size = 1168,
-                .hsync_pulse_width = 10,
-                .hsync_back_porch = 160,
-                .hsync_front_porch = 160,
-                .vsync_pulse_width = 1,
-                .vsync_back_porch = 23,
-                .vsync_front_porch = 12,
+                .hsync_pulse_width = 28,
+                .hsync_back_porch = 26,
+                .hsync_front_porch = 20,
+                .vsync_pulse_width = 2,
+                .vsync_back_porch = 22,
+                .vsync_front_porch = 200,
             },
             .phy_ldo = BusDSI::PHY_LDO_PartialConfig{
                 .chan_id = 3
@@ -4808,8 +4814,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
             .device = LCD::DevicePartialConfig{
                 .reset_gpio_num = -1, /* XL 2 */
                 .rgb_ele_order = 0,
-                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
-                .flags_reset_active_high = 1, /* TBD */
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
+                .flags_reset_active_high = 0,
             },
             .vendor = LCD::VendorPartialConfig{
                 .hor_res = 540,
@@ -4889,16 +4895,16 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
                 .lane_bit_rate_mbps = 1000,
             },
             .refresh_panel = BusDSI::RefreshPanelPartialConfig{
-                .dpi_clock_freq_mhz = 52,
-                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
+                .dpi_clock_freq_mhz = 60,
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
                 .h_size = 568,
                 .v_size = 1232,
-                .hsync_pulse_width = 10,
-                .hsync_back_porch = 160,
-                .hsync_front_porch = 160,
-                .vsync_pulse_width = 1,
-                .vsync_back_porch = 23,
-                .vsync_front_porch = 12,
+                .hsync_pulse_width = 50,
+                .hsync_back_porch = 150,
+                .hsync_front_porch = 50,
+                .vsync_pulse_width = 40,
+                .vsync_back_porch = 120,
+                .vsync_front_porch = 80,
             },
             .phy_ldo = BusDSI::PHY_LDO_PartialConfig{
                 .chan_id = 3
@@ -4909,8 +4915,8 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
             .device = LCD::DevicePartialConfig{
                 .reset_gpio_num = -1, /* XL 2 */
                 .rgb_ele_order = 0,
-                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565, /* TBD */
-                .flags_reset_active_high = 1, /* TBD */
+                .bits_per_pixel = ESP_PANEL_LCD_COLOR_BITS_RGB565,
+                .flags_reset_active_high = 0,
             },
             .vendor = LCD::VendorPartialConfig{
                 .hor_res = 568,
@@ -5272,6 +5278,12 @@ static byte ESP32_Display_setup()
     switch (esp32_board)
     {
       case ESP32_LILYGO_TDISPLAY_P4:
+        if (ESP32_has_gpio_extension) {
+          xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, LOW);
+          delay(20);
+          xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, HIGH);
+          delay(20);
+        }
         if (hw_info.revision == 1) {
           panel = new Board(Board_Config_LilyGO_TDP4_AMOLED);
           hw_info.display = DISPLAY_AMOLED_LILYGO_4_1;

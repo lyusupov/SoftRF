@@ -1578,10 +1578,9 @@ const BoardConfig Board_Config_LilyGO_TDP4_TFT = {
     },
 #endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
-        .config = BacklightCustom::Config{
-            .callback = [](int percent, void *user_data)
-                ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data),
-            .user_data = nullptr,
+        .config = BacklightSwitchGPIO::Config{
+            .io_num = SOC_GPIO_PIN_TDP4_BL,
+            .on_level = 1,
         },
         .pre_process = {
             .idle_off = 0,
@@ -1680,9 +1679,10 @@ const BoardConfig Board_Config_LilyGO_TDP4_AMOLED = {
     },
 #endif /* USE_EDPLIB_TOUCH */
     .backlight = BoardConfig::BacklightConfig{
-        .config = BacklightSwitchGPIO::Config{
-            .io_num = -1, /* AMOLED */
-            .on_level = 1,
+        .config = BacklightCustom::Config{
+            .callback = [](int percent, void *user_data)
+                ESP_PANEL_BOARD_BACKLIGHT_CUSTOM_FUNCTION(percent, user_data),
+            .user_data = nullptr,
         },
         .pre_process = {
             .idle_off = 0,
@@ -1793,9 +1793,21 @@ static byte ESP32_Display_setup(bool splash_screen)
     switch (hw_info.revision)
     {
     case HW_REV_TDISPLAY_P4_TFT:
+      if (ESP32_has_gpio_extension) {
+        xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, LOW);
+        delay(20);
+        xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, HIGH);
+        delay(20);
+      }
       panel = new Board(Board_Config_LilyGO_TDP4_TFT);
       break;
     case HW_REV_TDISPLAY_P4_AMOLED:
+      if (ESP32_has_gpio_extension) {
+        xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, LOW);
+        delay(20);
+        xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST, HIGH);
+        delay(20);
+      }
       panel = new Board(Board_Config_LilyGO_TDP4_AMOLED);
       break;
     case HW_REV_DEVKIT:
