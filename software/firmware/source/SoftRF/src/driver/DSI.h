@@ -43,6 +43,7 @@ void DSI_fini();
 
 void DSI_Up();
 void DSI_Down();
+void DSI_Next_Page();
 
 void DSI_status_setup();
 void DSI_status_loop();

@@ -6437,6 +6437,14 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
         EPD_Up();
       }
 #endif /* USE_EPAPER */
+#if defined(USE_DSI)
+      if (button == &button_1 &&
+          (hw_info.display == DISPLAY_TFT_WIRELESSTAG_7 ||
+           hw_info.display == DISPLAY_TFT_LILYGO_4_05   ||
+           hw_info.display == DISPLAY_AMOLED_LILYGO_4_1)) {
+        DSI_Next_Page();
+      }
+#endif /* USE_DSI */
 #if defined(USE_SA8X8)
       if (button     == &button_2   &&
           hw_info.rf == RF_IC_SA8X8 &&

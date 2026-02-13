@@ -365,4 +365,24 @@ void DSI_Down()
   }
 }
 
+void DSI_Next_Page()
+{
+  if (hw_info.display == DISPLAY_TFT_WIRELESSTAG_7 ||
+      hw_info.display == DISPLAY_TFT_LILYGO_4_05   ||
+      hw_info.display == DISPLAY_AMOLED_LILYGO_4_1) {
+    switch (DSI_view_mode)
+    {
+    case VIEW_MODE_RADAR:
+      DSI_view_mode = VIEW_MODE_STATUS;
+      DSI_vmode_updated = true;
+      break;
+    case VIEW_MODE_STATUS:
+    default:
+      DSI_view_mode = VIEW_MODE_RADAR;
+      DSI_vmode_updated = true;
+      break;
+    }
+  }
+}
+
 #endif /* USE_DSI */

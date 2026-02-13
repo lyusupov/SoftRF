@@ -561,13 +561,18 @@ u1_t hal_checkTimer (u4_t time) {
     return delta_time(time) <= 0;
 }
 
+#if defined(ESP32)
+#include "sdkconfig.h"
+#endif /* ESP32 */
+
 #if defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_ARCH_NRF52) || \
     defined(__ASR6501__)  || defined(ARDUINO_ARCH_ASR650X) || \
     defined(RASPBERRY_PI) || defined(ARDUINO_ARCH_SAMD)    || \
     defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_ARCH_ASR6601) || \
     defined(ARDUINO_ARCH_RP2040)  || defined(ARDUINO_ARCH_RP2350)  || \
     defined(ARDUINO_ARCH_RENESAS) || defined(ARDUINO_ARCH_SILABS)  || \
-    defined(ARDUINO_ARCH_CH32)    || defined(LUCKFOX_LYRA)
+    defined(ARDUINO_ARCH_CH32)    || defined(LUCKFOX_LYRA)         || \
+    defined(CONFIG_IDF_TARGET_ESP32P4)
 
 // Fix for STM32 HAL based cores.
 
