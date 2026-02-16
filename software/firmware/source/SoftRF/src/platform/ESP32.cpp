@@ -522,6 +522,10 @@ esp_err_t es8311_codec_init(const unsigned int i2c_num) {
 #include <ICM_20948.h>
 #include <TouchDrvGT911.hpp>
 
+#if defined(TDP4_ES8311_IIC) && TDP4_ES8311_IIC == 2
+TwoWire Wire2 = TwoWire(2);
+#endif /* TDP4_ES8311_IIC */
+
 ExtensionIOXL9555 *xl9535 = nullptr;
 GaugeBQ27220      bq_27220;
 ICM_20948_I2C     imu_icm20948;
@@ -1917,12 +1921,12 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
     hw_info.model = SOFTRF_MODEL_CONCORDE;
 
-    Wire.begin(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
-    Wire.beginTransmission(BQ27220_SLAVE_ADDRESS);
-    bool has_bq27220 = (Wire.endTransmission() == 0);
-    if (has_bq27220 && bq_27220.begin(Wire,
-                                      SOC_GPIO_PIN_TDP4_SDA,
-                                      SOC_GPIO_PIN_TDP4_SCL)) {
+    TDP4_IIC_1.begin(SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
+    TDP4_IIC_1.beginTransmission(BQ27220_SLAVE_ADDRESS);
+    bool has_bq27220 = (TDP4_IIC_1.endTransmission() == 0);
+    if (has_bq27220 && bq_27220.begin(TDP4_IIC_1,
+                                      SOC_GPIO_PIN_TDP4_SDA_1,
+                                      SOC_GPIO_PIN_TDP4_SCL_1)) {
       hw_info.pmu  = BMU_BQ27220;
     }
 
@@ -1936,9 +1940,9 @@ static void ESP32_setup()
     pinMode(SOC_GPIO_PIN_TDP4_XL9_INT, INPUT);
 
     xl9535 = new ExtensionIOXL9555();
-    ESP32_has_gpio_extension = xl9535->begin(Wire, XL9535_ADDRESS,
-                                             SOC_GPIO_PIN_TDP4_SDA,
-                                             SOC_GPIO_PIN_TDP4_SCL);
+    ESP32_has_gpio_extension = xl9535->begin(TDP4_IIC_1, XL9535_ADDRESS,
+                                             SOC_GPIO_PIN_TDP4_SDA_1,
+                                             SOC_GPIO_PIN_TDP4_SCL_1);
     if (ESP32_has_gpio_extension) {
       /* make GNSS inactive prior to 3.3V power ON */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, LOW);
@@ -2008,8 +2012,8 @@ static void ESP32_setup()
       Audio_Sink->SetGain(1.0);
       Audio_Sink->SetMclk(true);
 
-      Wire1.begin(SOC_GPIO_PIN_TDP4_SDA2, SOC_GPIO_PIN_TDP4_SCL2);
-      es8311_codec_init(1);
+      TDP4_IIC_2.begin(SOC_GPIO_PIN_TDP4_SDA_2, SOC_GPIO_PIN_TDP4_SCL_2);
+      es8311_codec_init(TDP4_ES8311_IIC);
 
       playback_inited = true;
     }
@@ -2517,21 +2521,21 @@ static void ESP32_setup()
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
     }
 
-    Wire.begin(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
-    Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-    bool esp32_has_rtc = (Wire.endTransmission() == 0);
+    TDP4_IIC_1.begin(SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
+    TDP4_IIC_1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+    bool esp32_has_rtc = (TDP4_IIC_1.endTransmission() == 0);
     if (!esp32_has_rtc) {
       delay(200);
-      Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-      esp32_has_rtc = (Wire.endTransmission() == 0);
+      TDP4_IIC_1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+      esp32_has_rtc = (TDP4_IIC_1.endTransmission() == 0);
       if (!esp32_has_rtc) {
         delay(200);
-        Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
-        esp32_has_rtc = (Wire.endTransmission() == 0);
+        TDP4_IIC_1.beginTransmission(PCF8563_SLAVE_ADDRESS);
+        esp32_has_rtc = (TDP4_IIC_1.endTransmission() == 0);
       }
     }
 
-    i2c = new I2CBus(Wire);
+    i2c = new I2CBus(TDP4_IIC_1);
 
     if (esp32_has_rtc && (i2c != nullptr)) {
       rtc = new PCF8563_Class(*i2c);
@@ -2543,12 +2547,12 @@ static void ESP32_setup()
     }
 
 #if !defined(EXCLUDE_IMU)
-    Wire1.begin(SOC_GPIO_PIN_TDP4_SDA2, SOC_GPIO_PIN_TDP4_SCL2);
+    TDP4_IIC_2.begin(SOC_GPIO_PIN_TDP4_SDA_2, SOC_GPIO_PIN_TDP4_SCL_2);
 
     bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
     int t;
     for (t=0; t<3; t++) {
-      if (imu_icm20948.begin(Wire1, ad0) == ICM_20948_Stat_Ok) {
+      if (imu_icm20948.begin(TDP4_IIC_2, ad0) == ICM_20948_Stat_Ok) {
         hw_info.imu = IMU_ICM20948;
         hw_info.mag = MAG_AK09916;
         IMU_Time_Marker = millis();
@@ -2559,24 +2563,46 @@ static void ESP32_setup()
     }
 
     if (t == 4) {
-      WIRE_FINI(Wire1);
+      WIRE_FINI(TDP4_IIC_2);
     }
 #endif /* EXCLUDE_IMU */
 
-    hw_info.audio  = AUDIO_ES8311;
-    hw_info.haptic = HAPTIC_AW86224;
-    hw_info.camera = CAMERA_OV2710;
+#if !defined(EXCLUDE_ETHERNET)
+    Ethernet_setup();
 
-    Wire.beginTransmission(GT9895_ADDRESS);
-    if (Wire.endTransmission() == 0) {
+    ETH.begin(ETH_PHY_TYPE_TDP4,
+              ETH_PHY_ADDR,
+              SOC_GPIO_PIN_TDP4_ETH_PHY_MDC,
+              SOC_GPIO_PIN_TDP4_ETH_PHY_MDIO,
+              SOC_GPIO_PIN_TDP4_ETH_PHY_RST,
+              ETH_CLK_MODE);
+#endif /* EXCLUDE_ETHERNET */
+
+    TDP4_IIC_1.beginTransmission(GT9895_ADDRESS);
+    if (TDP4_IIC_1.endTransmission() == 0) {
       hw_info.revision = 1;
       hw_info.touch    = TOUCH_GT9895;
     }
-    Wire.beginTransmission(HI8561_ADDRESS);
-    if (Wire.endTransmission() == 0) {
+    TDP4_IIC_1.beginTransmission(HI8561_ADDRESS);
+    if (TDP4_IIC_1.endTransmission() == 0) {
       hw_info.revision = 0;
       hw_info.touch    = TOUCH_JD9365TG;
     }
+
+    TDP4_IIC_2.beginTransmission(ES8311_ADDRRES_0);
+    if (TDP4_IIC_2.endTransmission() == 0) {
+      hw_info.audio    = AUDIO_ES8311;
+    }
+    TDP4_IIC_2.beginTransmission(AW86224_ADDRESS);
+    if (TDP4_IIC_2.endTransmission() == 0) {
+      hw_info.haptic   = HAPTIC_AW86224;
+    }
+
+    hw_info.camera = CAMERA_OV2710;
+    // TDP4_IIC_2.beginTransmission(OV2710_ADDRESS);
+    // if (TDP4_IIC_2.endTransmission() == 0) {
+    //  hw_info.camera   = CAMERA_OV2710;
+    //}
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
@@ -2605,7 +2631,8 @@ static void ESP32_setup()
 static void ESP32_post_init()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32P4)
-  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3)
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
+      hw_info.model == SOFTRF_MODEL_CONCORDE)
   {
     Serial.println();
     Serial.println(F("Power-on Self Test"));
@@ -2622,17 +2649,11 @@ static void ESP32_post_init()
     Serial.print(F("GNSS     : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("32K XTAL : "));
-    Serial.println(ESP32_has_32k_xtal                  ? F("PASS") : F("FAIL"));
-    Serial.flush();
     Serial.print(F("DISPLAY  : "));
-    Serial.println(hw_info.display == DISPLAY_OLED_1_3 ? F("PASS") : F("FAIL"));
+    Serial.println(hw_info.display != DISPLAY_NONE     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("RTC      : "));
     Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
-    Serial.flush();
-    Serial.print(F("BARO     : "));
-    Serial.println(hw_info.baro  == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
     Serial.flush();
 #if !defined(EXCLUDE_IMU)
     Serial.print(F("IMU      : "));
@@ -2644,6 +2665,27 @@ static void ESP32_post_init()
     Serial.println(hw_info.mag     != MAG_NONE         ? F("PASS") : F("FAIL"));
     Serial.flush();
 #endif /* EXCLUDE_MAG */
+    if (hw_info.model == SOFTRF_MODEL_PRIME_MK3) {
+      Serial.print(F("32K XTAL : "));
+      Serial.println(ESP32_has_32k_xtal                ? F("PASS") : F("FAIL"));
+      Serial.flush();
+      Serial.print(F("BARO     : "));
+      Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+      Serial.flush();
+    } else {
+      Serial.print(F("AUDIO    : "));
+      Serial.println(hw_info.audio   == AUDIO_ES8311   ? F("PASS") : F("FAIL"));
+      Serial.flush();
+      Serial.print(F("TOUCH    : "));
+      Serial.println(hw_info.touch   != TOUCH_NONE     ? F("PASS") : F("FAIL"));
+      Serial.flush();
+      Serial.print(F("HAPTIC   : "));
+      Serial.println(hw_info.haptic  == HAPTIC_AW86224 ? F("PASS") : F("FAIL"));
+      Serial.flush();
+      Serial.print(F("CAMERA   : "));
+      Serial.println(hw_info.camera  == CAMERA_OV2710  ? F("PASS") : F("FAIL"));
+      Serial.flush();
+    }
 
     Serial.println();
     Serial.println(F("External components:"));
@@ -2660,7 +2702,8 @@ static void ESP32_post_init()
 
   if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
       esp32_board == ESP32_LILYGO_T_TWR2       ||
-      esp32_board == ESP32_P4_WT_DEVKIT)
+      esp32_board == ESP32_P4_WT_DEVKIT        ||
+      esp32_board == ESP32_LILYGO_TDISPLAY_P4)
   {
     Serial.println();
 
@@ -3186,7 +3229,8 @@ static void ESP32_loop()
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
-  if (esp32_board == ESP32_P4_WT_DEVKIT) {
+  if (esp32_board == ESP32_P4_WT_DEVKIT ||
+      esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
 #if !defined(EXCLUDE_ETHERNET)
     Ethernet_loop();
 #endif /* EXCLUDE_ETHERNET */
@@ -3538,6 +3582,52 @@ static void ESP32_fini(int reason)
     digitalWrite(SOC_GPIO_PIN_P4_485_RW, HIGH);
     gpio_hold_en(GPIO_NUM_3);
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
+  } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+
+    if (hw_info.revision == 0) {
+      pinMode(SOC_GPIO_PIN_TDP4_BACKLIGHT, INPUT);
+    }
+
+#if defined(EXCLUDE_ETHERNET)
+    pinMode(SOC_GPIO_PIN_TDP4_BUTTON,    INPUT_PULLUP);
+#else
+    ETH.end();
+
+    Ethernet_fini();
+#endif /* EXCLUDE_ETHERNET */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    if (ESP32_has_gpio_extension) {
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, LOW);
+
+      /* Put Quectel L76K GNSS into sleep */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, LOW);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  INPUT);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   INPUT);
+
+      /* micro-SD */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    LOW);
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    INPUT);
+
+      /* USB PHY */
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_VCCA_EN,  INPUT);
+
+      /* Cut power of NS4150 audio amp. and ES8311 analog circuits */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_5V0_EN,   LOW);
+
+      /*
+       * Turn OFF power of
+       * GNSS, TFT back light, ESP32-C6,
+       * camera (SGM38121), haptic (AW86224), IMU (ICM20948),
+       * ETH PHY and ES8311 digital circuits
+       */
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,   HIGH);
+    }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
+    WIRE_FINI(TDP4_IIC_1);
+    WIRE_FINI(TDP4_IIC_2);
   }
 
   esp_deep_sleep_start();
@@ -6242,7 +6332,7 @@ static bool ESP32_Baro_setup()
 
   } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
 
-    Wire.setPins(SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
+    TDP4_IIC_0.setPins(SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
 
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
   } else if (hw_info.model != SOFTRF_MODEL_PRIME_MK2) {

@@ -93,14 +93,27 @@ void DSI_radar_loop()
     }
   }
 
+  int dx = 0;
+  switch (hw_info.display)
+  {
+  case DISPLAY_AMOLED_LILYGO_4_1:
+    dx = 3;
+    break;
+  case DISPLAY_TFT_WIRELESSTAG_7:
+  case DISPLAY_TFT_LILYGO_4_05:
+  default:
+
+    break;
+  }
+
   lvgl_port_lock(-1);
 
 #if LVGL_VERSION_MAJOR == 8
   lv_obj_clean(lv_scr_act());
 
   lv_obj_t *circle_1 = lv_obj_create(lv_scr_act());
-  lv_obj_set_size(circle_1, radar_w, radar_w);
-  lv_obj_set_pos(circle_1, 0, 0);
+  lv_obj_set_size(circle_1, radar_w - 2*dx, radar_w);
+  lv_obj_set_pos(circle_1, dx, 0);
   lv_obj_set_style_radius(circle_1, LV_RADIUS_CIRCLE, 0);
   lv_obj_set_style_border_color(circle_1, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_style_border_width(circle_1, 2, 0);
@@ -116,8 +129,8 @@ void DSI_radar_loop()
 
   lv_obj_t *rect = lv_obj_create(lv_scr_act());
   lv_obj_set_scrollbar_mode(rect, LV_SCROLLBAR_MODE_OFF);
-  lv_obj_set_size(rect, radar_w, lv_disp_get_ver_res(NULL) - radar_w);
-  lv_obj_set_pos(rect, 0, radar_w);
+  lv_obj_set_size(rect, radar_w - 2*dx, lv_disp_get_ver_res(NULL) - radar_w);
+  lv_obj_set_pos(rect, dx, radar_w);
   lv_obj_set_style_radius(rect, 10, 0);
   lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
   lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);
@@ -358,7 +371,7 @@ void DSI_radar_loop()
                          lv_palette_main(LV_PALETTE_RED) :
                         (Container[i].alarm_level == ALARM_LEVEL_IMPORTANT ?
                          lv_palette_main(LV_PALETTE_YELLOW) :
-                         lv_palette_main(LV_PALETTE_GREEN));
+                         lv_palette_main(LV_PALETTE_BLUE));
 
       static lv_point_t triangle_down_pts[] = { {0,0}, {20,0}, {10,20}, {0,0} };
       static lv_point_t triangle_up_pts[] = { {0,20}, {20,20}, {10,0}, {0,20} };

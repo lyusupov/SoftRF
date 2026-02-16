@@ -110,8 +110,8 @@ bool setupTouchDrv()
     case TOUCH_GT9895:
       touchDrv = new TouchDrvGT9895();
       touchDrv->setPins(-1 /* XL P03 */, -1 /* XL P04 */);
-      result = touchDrv->begin(Wire, GT9895_SLAVE_ADDRESS_L,
-                               SOC_GPIO_PIN_TDP4_SDA, SOC_GPIO_PIN_TDP4_SCL);
+      result = touchDrv->begin(TDP4_IIC_1, GT9895_SLAVE_ADDRESS_L,
+                               SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
       break;
     case TOUCH_GT911:
     default:
@@ -328,7 +328,43 @@ void DSI_loop()
 
 void DSI_fini()
 {
+  if (panel) {
+    lvgl_port_lock(-1);
 
+#if LVGL_VERSION_MAJOR == 8
+    lv_obj_clean(lv_scr_act());
+
+    lv_obj_t *label_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_1, DSI_SkyView_text4);
+    lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
+    lv_obj_align(label_1, LV_ALIGN_CENTER, 0, -60);
+
+#if defined(USE_EDPLIB_TOUCH)
+    lv_obj_remove_event_cb(lv_scr_act(), gesture_event_handler);
+#endif /* USE_EDPLIB_TOUCH */
+#endif /* LVGL_VERSION_MAJOR == 8 */
+
+    lvgl_port_unlock();
+
+    delay(3000); /* Keep shutdown message on DSI display for 3 seconds */
+
+    auto lcd = panel->getLCD();
+    esp_lcd_panel_t *handle = lcd->getRefreshPanelHandle();
+
+    switch (hw_info.display)
+    {
+    case DISPLAY_TFT_LILYGO_4_05:
+      /* TBD */
+      break;
+    case DISPLAY_AMOLED_LILYGO_4_1:
+      /* TBD */
+      break;
+    case DISPLAY_TFT_WIRELESSTAG_7:
+    default:
+      /* TBD */
+      break;
+    }
+  }
 }
 
 void DSI_Up()

@@ -14,13 +14,22 @@
 #define SOC_GPIO_PIN_TDP4_SCK             2
 #define SOC_GPIO_PIN_TDP4_SS              24
 
+#define TDP4_IIC_0                        Wire
+#define TDP4_IIC_1                        Wire
+#define TDP4_IIC_2                        Wire1
+#define TDP4_ES8311_IIC                   1
+
+// I2C #0 (ext. BMx280 air pressure sensor)
+#define SOC_GPIO_PIN_TDP4_SDA_0           25
+#define SOC_GPIO_PIN_TDP4_SCL_0           36
+
 // I2C #1 (XL9535, PCF8563, BQ27220, HI8561, GT9895)
-#define SOC_GPIO_PIN_TDP4_SDA             7
-#define SOC_GPIO_PIN_TDP4_SCL             8
+#define SOC_GPIO_PIN_TDP4_SDA_1           7
+#define SOC_GPIO_PIN_TDP4_SCL_1           8
 
 // I2C #2 (ES8311, AW86224, SGM38121, ICM20948, OV2710)
-#define SOC_GPIO_PIN_TDP4_SDA2            20
-#define SOC_GPIO_PIN_TDP4_SCL2            21
+#define SOC_GPIO_PIN_TDP4_SDA_2           20
+#define SOC_GPIO_PIN_TDP4_SCL_2           21
 
 // SX12xx
 #define SOC_GPIO_PIN_TDP4_RST             LMIC_UNUSED_PIN /* XL P16 */
@@ -69,10 +78,10 @@
 #define SOC_GPIO_PIN_TDP4_BUTTON          35 /* BOOT, active LOW, strapping pin */
 
 // Ethernet
-#define ETH_PHY_TYPE                      ETH_PHY_IP101
+#define ETH_PHY_TYPE_TDP4                 ETH_PHY_IP101
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_MDC     31
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_MDIO    52
-#define SOC_GPIO_PIN_TDP4_ETH_PHY_RST     SOC_UNUSED_PIN /* XL P05 */
+#define SOC_GPIO_PIN_TDP4_ETH_PHY_RST     -1 /* XL P05 */
 
 /* GPIO expansion (XL9535) */
 #define SOC_EXPIO_TDP4_3V3_EN             IO0  // P00

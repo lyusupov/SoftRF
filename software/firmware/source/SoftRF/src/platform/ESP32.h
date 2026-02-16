@@ -431,6 +431,7 @@ struct rst_info {
 #define SGM38121_ADDRESS        (0x28)
 #define HI8561_ADDRESS          (0x68)
 #define GT9895_ADDRESS          (0x5D)
+#define OV2710_ADDRESS          (0x36)
 
 /* Disable brownout detection (avoid unexpected reset on some boards) */
 #define ESP32_DISABLE_BROWNOUT_DETECTOR 0
