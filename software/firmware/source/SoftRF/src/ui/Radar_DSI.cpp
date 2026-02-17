@@ -102,7 +102,6 @@ void DSI_radar_loop()
   case DISPLAY_TFT_WIRELESSTAG_7:
   case DISPLAY_TFT_LILYGO_4_05:
   default:
-
     break;
   }
 
@@ -126,23 +125,6 @@ void DSI_radar_loop()
   lv_obj_set_style_border_color(circle_2, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_style_border_width(circle_2, 2, 0);
   lv_obj_set_style_bg_color(circle_2, lv_color_black(), 0);
-
-  lv_obj_t *rect = lv_obj_create(lv_scr_act());
-  lv_obj_set_scrollbar_mode(rect, LV_SCROLLBAR_MODE_OFF);
-  lv_obj_set_size(rect, radar_w - 2*dx, lv_disp_get_ver_res(NULL) - radar_w);
-  lv_obj_set_pos(rect, dx, radar_w);
-  lv_obj_set_style_radius(rect, 10, 0);
-  lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
-  lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);
-  lv_obj_set_style_border_width(rect, 2, 0);
-
-  if (hasTraffic == false || hasFix == false) {
-    lv_obj_t *label_1 = lv_label_create(lv_scr_act());
-    lv_label_set_text(label_1, hasFix     == false ? NO_FIX_TEXT :
-                               hasTraffic == false ? NO_TRAFFIC_TEXT : "");
-    lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
-    lv_obj_align_to(label_1, rect, LV_ALIGN_CENTER, 0, 0);
-  }
 
   /* little airplane */
   static lv_point_t line1_points[] = { {20, 0}, {20,40} };
@@ -407,6 +389,25 @@ void DSI_radar_loop()
 #endif /* LVGL_VERSION_MAJOR == 8 */
     }
   }
+
+#if LVGL_VERSION_MAJOR == 8
+  lv_obj_t *rect = lv_obj_create(lv_scr_act());
+  lv_obj_set_scrollbar_mode(rect, LV_SCROLLBAR_MODE_OFF);
+  lv_obj_set_size(rect, radar_w - 2*dx, lv_disp_get_ver_res(NULL) - radar_w);
+  lv_obj_set_pos(rect, dx, radar_w);
+  lv_obj_set_style_radius(rect, 10, 0);
+  lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
+  lv_obj_set_style_border_color(rect, lv_palette_main(LV_PALETTE_GREY), 0);
+  lv_obj_set_style_border_width(rect, 2, 0);
+
+  if (hasTraffic == false || hasFix == false) {
+    lv_obj_t *label_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_1, hasFix     == false ? NO_FIX_TEXT :
+                               hasTraffic == false ? NO_TRAFFIC_TEXT : "");
+    lv_obj_set_style_text_font(label_1, &lv_font_montserrat_48, 0);
+    lv_obj_align_to(label_1, rect, LV_ALIGN_CENTER, 0, 0);
+  }
+#endif /* LVGL_VERSION_MAJOR == 8 */
 
   lvgl_port_unlock();
 }
