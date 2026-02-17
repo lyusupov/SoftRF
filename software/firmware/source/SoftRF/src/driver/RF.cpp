@@ -319,9 +319,42 @@ void RF_SetChannel(void)
   }
 }
 
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX)
+#include "../TrafficHelper.h"
+
+extern mode_s_t rl_mode_s_state;
+
+#define MODES_TASK_INTERVAL 998
+
+static unsigned long ModeS_Time_Marker = 0;
+#endif /* USE_RADIOLIB && LR20XX */
+
 void RF_loop()
 {
   RF_SetChannel();
+
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX)
+  if (rf_chip && rf_chip->type == RF_IC_LR2021       &&
+      settings->rf_protocol == RF_PROTOCOL_ADSB_1090 &&
+      millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
+    struct mode_s_aircraft *a;
+
+    for (a = rl_mode_s_state.aircrafts; a; a = a->next) {
+      if (a->even_cprtime && a->odd_cprtime &&
+          abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+        if (es1090_decode(a, &ThisAircraft, &fo)) {
+          memset(fo.raw, 0, sizeof(fo.raw));
+          Traffic_Update(&fo);
+          Traffic_Add(&fo);
+        }
+      }
+    }
+
+    interactiveRemoveStaleAircrafts(&rl_mode_s_state);
+
+    ModeS_Time_Marker = millis();
+  }
+#endif /* USE_RADIOLIB && LR20XX */
 }
 
 size_t RF_Encode(ufo_t *fop)
