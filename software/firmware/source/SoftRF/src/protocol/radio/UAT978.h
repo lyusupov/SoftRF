@@ -25,7 +25,7 @@
 #include <uat_decode.h>
 
 #define UAT978_PREAMBLE_TYPE   RF_PREAMBLE_TYPE_AA /* TBD */
-#define UAT978_PREAMBLE_SIZE   4                   /* TBD */
+#define UAT978_PREAMBLE_SIZE   0                   /* TBD */
 
 #define UAT978_SYNCWORD        { 0xAC, 0xDD, 0xA4, 0xE2 }
 #define UAT978_SYNCWORD_SIZE   4

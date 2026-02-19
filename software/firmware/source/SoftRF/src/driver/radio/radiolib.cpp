@@ -5267,7 +5267,11 @@ static void lr20xx_setup()
       fdev = 25.0;
       break;
     case RF_FREQUENCY_DEVIATION_625KHZ:
+#if RADIOLIB_CHECK_PARAMS == 1
       fdev = 500.0; /* FDEV = 500.0 kHz is a specified maximum for LR2021 */
+#else
+      fdev = 625.0;
+#endif
       break;
     case RF_FREQUENCY_DEVIATION_50KHZ:
     case RF_FREQUENCY_DEVIATION_NONE:
@@ -5351,7 +5355,6 @@ static void lr20xx_setup()
     }
 
     rl_state = radio_g4->setWhitening(false, 0x0001 /* default SX128x value */);
-    rl_state = radio_g4->fixedPacketLengthMode(pkt_size);
     rl_state = radio_g4->disableAddressFiltering();
 
     /* Work around premature P3I syncword detection */
@@ -5368,6 +5371,8 @@ static void lr20xx_setup()
       rl_state = radio_g4->setSyncWord((uint8_t *) rl_protocol->syncword,
                                        (size_t)    rl_protocol->syncword_size);
     }
+
+    rl_state = radio_g4->fixedPacketLengthMode(pkt_size);
     break;
   }
 
