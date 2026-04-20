@@ -43,7 +43,7 @@ extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
 #define snprintf_P              snprintf
 #define EEPROM_commit()         EEPROM.commit()
 
-inline  void yield()            { };
+//inline  void yield()            { };
 
 #if defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
     defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)

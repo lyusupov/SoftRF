@@ -18,6 +18,7 @@
 - [STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)
 - [STM32WL55](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wl55)
 - [CH32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#ch32)
+- [nRF54L15](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf54l15)
 
 ## List by Model
 
@@ -477,5 +478,16 @@ The Bootloader is capable to self-program an application firmware into the devic
 6. Follow instructions in the operating manual for **WCHISPStudio** tool to complete the firmware installation procedure. Use this picture as an illustration.
 
 <img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Academy-9.jpg" width="800">
+
+<br>
+
+## nRF54L15
+
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF54L15/SoftRF) and unzip the archive ;
+2. Connect the nRF54L15 based device to your PC by means of a USB cable ;
+3. Open up this website in Chrome browser: https://freeocd.org/ and launch the **FreeOCD WebDebugger** app ;
+4. Install SoftRF firmware HEX file into your nRF54L15 device. Use this picture as an illustration.
+
+<img width="800" src="https://github.com/user-attachments/assets/31b5c337-4d2b-45cc-b8d5-36bab1d92b1b" />
 
 <br>

@@ -33,6 +33,7 @@
 #include "sensor/MagnetometerBase.hpp"
 
 static constexpr uint8_t QMC6309_SLAVE_ADDRESS = (0x7C);
+static constexpr uint8_t QMC6309H_SLAVE_ADDRESS = (0x0C);
 
 class SensorQMC6309 : public MagnetometerBase, public I2CDeviceWithHal
 {
@@ -42,6 +43,12 @@ public:
         SET_AND_RESET_ON,
         SET_ONLY_ON,
         SET_AND_RESET_OFF
+    };
+
+    enum class VoltageMode {
+        KEEP,
+        VDD_MODE1,
+        VDD_MODE2
     };
 
     /**
@@ -170,16 +177,28 @@ public:
     */
     bool reset() override
     {
-        if (updateBits(REG_0x0B_CMD2, 0x80, 0x80) < 0) {
+        if (writeReg(REG_0x0B_CMD2, 0x80) < 0) {
             log_e("Failed to set soft reset");
             return false;
         }
-        hal->delay(10);
-        if (updateBits(REG_0x0B_CMD2, 0x80, 0x00) < 0) {
+        if (writeReg(REG_0x0B_CMD2, 0x00) < 0) {
             log_e("Failed to clear soft reset");
             return false;
         }
-        return true;
+
+        hal->delay(5);
+
+        uint8_t retry = 0;
+        while (retry++ < 5) {
+            int status = readReg(REG_0x09_STAT);
+            if (status >= 0 && isBitSet(status, 4) && isBitSet(status, 3)) {
+                return true;
+            }
+            hal->delay(1);
+        }
+
+        log_e("NVM not ready after soft reset");
+        return false;
     }
 
     /**
@@ -215,18 +234,27 @@ public:
 
         hal->delay(20);
 
-        writeReg(REG_0x0E_SELFTEST_CTRL, MASK_SOFT_RST);
+        if (writeReg(REG_0x0E_SELFTEST_CTRL, MASK_SOFT_RST) < 0) {
+            log_e("Failed to trigger self-test");
+            return false;
+        }
 
-        hal->delay(1);
-
-        if (!getRegBit(REG_0x09_STAT, 2)) {
+        uint8_t retry = 0;
+        while (!getRegBit(REG_0x09_STAT, 2) && retry++ < 50) {
+            hal->delay(5);
+        }
+        if (retry > 50) {
             log_e("Self-test not ready (ST_RDY bit is 0)");
             return false;
         }
 
-        uint8_t x_test = readReg(REG_0x13_SELFTEST_X);
-        uint8_t y_test = readReg(REG_0x14_SELFTEST_Y);
-        uint8_t z_test = readReg(REG_0x15_SELFTEST_Z);
+        int x_test = readReg(REG_0x13_SELFTEST_X);
+        int y_test = readReg(REG_0x14_SELFTEST_Y);
+        int z_test = readReg(REG_0x15_SELFTEST_Z);
+        if (x_test < 0 || y_test < 0 || z_test < 0) {
+            log_e("Failed to read self-test result");
+            return false;
+        }
 
         x_result = (int8_t)x_test;
         y_result = (int8_t)y_test;
@@ -234,12 +262,16 @@ public:
 
         setOperationMode(OperationMode::SUSPEND);
 
-        bool x_ok = (x_result >= -50 && x_result <= -1);
-        bool y_ok = (y_result >= -50 && y_result <= -1);
-        bool z_ok = (z_result >= -50 && z_result <= -1);
+        int16_t x_abs = x_result < 0 ? -x_result : x_result;
+        int16_t y_abs = y_result < 0 ? -y_result : y_result;
+        int16_t z_abs = z_result < 0 ? -z_result : z_result;
+
+        bool x_ok = (x_abs >= 1 && x_abs <= 50);
+        bool y_ok = (y_abs >= 1 && y_abs <= 50);
+        bool z_ok = (z_abs >= 1 && z_abs <= 50);
 
         if (!x_ok || !y_ok || !z_ok) {
-            log_w("Self-test data out of range: X=%d, Y=%d, Z=%d (expected -50 to -1)",
+            log_w("Self-test data out of range: X=%d, Y=%d, Z=%d (expected abs in 1..50)",
                   x_result, y_result, z_result);
         }
 
@@ -298,7 +330,6 @@ public:
     bool setOutputDataRate(float data_rate_hz) override
     {
         int rangeInt = static_cast<int>(data_rate_hz * 100 + 0.5);
-        log_d("Input: %.2f, Integer: %d\n", data_rate_hz, rangeInt);
         uint8_t regValue = 0;
         switch (rangeInt) {
         case 100:           // 1.0
@@ -508,9 +539,21 @@ public:
         return updateBits(REG_0x0B_CMD2, 0x03, sr_val) == 0;
     }
 
+    /**
+     * @brief  Set the voltage mode for QMC6309H variant.
+     * @note   This function configures the voltage mode for the QMC6309H variant. QMC6309 invalid this setting.
+     * @param  mode: The desired voltage mode. see VoltageMode
+     * @retval None
+     */
+    void setVoltageMode(VoltageMode mode)
+    {
+        _qmc6309h_vdd_mode = mode;
+    }
+
 private:
 
     static constexpr uint8_t QMC6309_CHIP_ID = 0x90;
+    static constexpr uint8_t QMC6309H_CHIP_ID = 0xA5;
     static constexpr uint8_t REG_0x00_CHIP_ID = 0x00;
     static constexpr uint8_t REG_0x01_LSB_DX = 0x01;
     static constexpr uint8_t REG_0x02_MSB_DX = 0x02;
@@ -521,6 +564,8 @@ private:
     static constexpr uint8_t REG_0x09_STAT = 0x09;
     static constexpr uint8_t REG_0x0A_CMD1 = 0x0A;
     static constexpr uint8_t REG_0x0B_CMD2 = 0x0B;
+    static constexpr uint8_t REG_0x40_IO_CONFIG = 0x40;
+    static constexpr uint8_t REG_0x28_OTP_CTRL = 0x28;
     static constexpr uint8_t REG_0x29_SIGN = 0x29;
 
     static constexpr uint8_t REG_0x0E_SELFTEST_CTRL = 0x0E;  // Self-test control register
@@ -538,36 +583,122 @@ private:
     static constexpr uint8_t MASK_RNG = 0x0C;
     static constexpr uint8_t MASK_SET_RESET_MODE = 0x03;
 
+    bool _is_qmc6309h = false;
+    VoltageMode _qmc6309h_vdd_mode = VoltageMode::KEEP;
+
+    bool applyQMC6309HVoltageMode()
+    {
+        if (!_is_qmc6309h || _qmc6309h_vdd_mode == VoltageMode::KEEP) {
+            return true;
+        }
+
+        int reg = readReg(REG_0x40_IO_CONFIG);
+        if (reg < 0) {
+            log_e("Failed to read QMC6309H IO config");
+            return false;
+        }
+
+        uint8_t value = (uint8_t)reg;
+        switch (_qmc6309h_vdd_mode) {
+        case VoltageMode::VDD_MODE1:
+            value = (value & 0x3F) | 0x80;
+            break;
+        case VoltageMode::VDD_MODE2:
+            value = (value & 0x3F) | 0x40;
+            break;
+        case VoltageMode::KEEP:
+            return true;
+        }
+
+        if (writeReg(REG_0x40_IO_CONFIG, value) < 0) {
+            log_e("Failed to write QMC6309H IO config");
+            return false;
+        }
+        hal->delay(1);
+        return true;
+    }
+
+    bool reloadOTP()
+    {
+        for (uint8_t retry = 0; retry < 20; ++retry) {
+            if (writeReg(REG_0x28_OTP_CTRL, 0x02) < 0) {
+                hal->delay(2);
+                continue;
+            }
+
+            hal->delay(2);
+
+            for (uint8_t count = 0; count < 100; ++count) {
+                int status = readReg(REG_0x09_STAT);
+                if (status >= 0 && isBitSet(status, 4)) {
+                    return true;
+                }
+                hal->delay(1);
+            }
+        }
+
+        log_e("Failed to reload OTP");
+        return false;
+    }
+
     bool initImpl(uint8_t param) override
     {
-        reset();
+        (void)param;
 
-        hal->delay(20);
+        if (!reset()) {
+            return false;
+        }
+
+        if (!reloadOTP()) {
+            return false;
+        }
 
         _info.uid = readReg(REG_0x00_CHIP_ID);
         _info.manufacturer = "QSTMagnetic";
         _info.type = SensorType::MAGNETOMETER;
-        _info.model = "QMC6309";
         _info.i2c_address = _addr;
         _info.version = 1;  // Set a default version
 
-
-        // Set default configuration
-        configMagnetometer(OperationMode::SUSPEND,
-                           MagFullScaleRange::FS_8G,
-                           50.0f,
-                           MagOverSampleRatio::OSR_8);
-
-        _config.mode = OperationMode::SUSPEND;
-        _config.range = 8.0f;
-        _config.sample_rate = 50.0f;
-        _config.latency = 0;
-        _config.type = SensorType::MAGNETOMETER;
-
-        if (_info.uid != QMC6309_CHIP_ID) {
+        if (_info.uid == QMC6309_CHIP_ID) {
+            _is_qmc6309h = false;
+            _info.model = "QMC6309";
+        } else if (_info.uid == QMC6309H_CHIP_ID) {
+            _is_qmc6309h = true;
+            _info.model = "QMC6309H";
+        } else {
             log_e("Unsupported chip ID");
             return false;
         }
+
+        if (!applyQMC6309HVoltageMode()) {
+            return false;
+        }
+
+        // Follow vendor init defaults: HPFM + 32G + set/reset on + OSR1=8 + LPF4.
+        if (!setSetResetMode(MagSetResetMode::SET_AND_RESET_ON)) {
+            return false;
+        }
+        if (!setFullScaleRange(MagFullScaleRange::FS_32G)) {
+            return false;
+        }
+        if (!setOutputDataRate(1.0f)) {
+            return false;
+        }
+        if (!setOversamplingRate(MagOverSampleRatio::OSR_8)) {
+            return false;
+        }
+        if (!setLowPassFilter(MagLowPassFilter::LPF_4)) {
+            return false;
+        }
+        if (!setOperationMode(OperationMode::CONTINUOUS_MEASUREMENT)) {
+            return false;
+        }
+
+        _config.mode = OperationMode::CONTINUOUS_MEASUREMENT;
+        _config.range = 32.0f;
+        _config.sample_rate = 1.0f;
+        _config.latency = 0;
+        _config.type = SensorType::MAGNETOMETER;
 
         return true;
     }
