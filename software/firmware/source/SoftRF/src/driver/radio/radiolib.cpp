@@ -4909,9 +4909,10 @@ static bool lr2021_probe()
   pinMode(lmic_pins.nss, INPUT);
   RadioSPI.end();
 
-  if (major == 0x01 && minor >= 0x18) {
+  if ((major == 0x01 && minor >= 0x18) || /* LR2021:    0x01 0x18 */
+      (major == 0x02 && minor == 0x00)) { /* LR2012/22: 0x02 0x00 */
 
-    if (major_reset == 0x01) {
+    if (major_reset == 0x01 || major_reset == 0x02) {
       RF_SX12XX_RST_is_connected = false;
     }
 #if 0

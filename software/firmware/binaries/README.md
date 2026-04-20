@@ -485,7 +485,7 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF54L15/SoftRF) and unzip the archive ;
 2. Connect the nRF54L15 based device to your PC by means of a USB cable ;
-3. Open up this website in Chrome browser: https://freeocd.org/ and launch the **FreeOCD WebDebugger** app ;
+3. Open up this website in Chrome or Edge browser: https://freeocd.org/ and launch the **FreeOCD WebDebugger** app ;
 4. Install SoftRF firmware HEX file into your nRF54L15 device. Use this picture as an illustration.
 
 <img width="800" src="https://github.com/user-attachments/assets/31b5c337-4d2b-45cc-b8d5-36bab1d92b1b" />
