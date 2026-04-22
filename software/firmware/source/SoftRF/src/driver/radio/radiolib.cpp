@@ -5487,16 +5487,27 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_CARD:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_pro,
                                rfswitch_table_seeed_pro);
-    rl_state = radio_g4->setOutputPower(txpow);
     break;
+
+  case SOFTRF_MODEL_ACADEMY:
+    if (SoC->getChipId() == 0x21A44298 || SoC->getChipId() == 0xFCE0D9E0) {
+      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
+                                 rfswitch_table_MXD8721);
+    } else {
+      // Wio-LR202x Module @ 868/915M - Switchless design
+      // radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_wio,
+      //                            rfswitch_table_seeed_wio);
+    }
+    break;
+
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
   default:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
                                rfswitch_table_MXD8721);
-    rl_state = radio_g4->setOutputPower(txpow);
     break;
   }
+  rl_state = radio_g4->setOutputPower(txpow);
 
   rl_state = radio_g4->setRxBoostedGainMode(high ? RADIOLIB_LR2021_RX_BOOST_HF :
                                                    RADIOLIB_LR2021_RX_BOOST_LF);
