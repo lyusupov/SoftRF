@@ -2052,6 +2052,11 @@ static void nRF52_setup()
 
       hw_info.haptic = HAPTIC_DRV2605;
     }
+
+    Wire.beginTransmission(BMM350_ADDRESS);
+    if (Wire.endTransmission() == 0) {
+      hw_info.mag = MAG_BMM350;
+    }
   }
 #endif /* EXCLUDE_WIP */
 }

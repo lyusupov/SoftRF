@@ -140,6 +140,7 @@ struct rst_info {
 #define AHT20_ADDRESS         (0x38)
 #define SC7A20H_ADDRESS_L     (0x18)
 #define SC7A20H_ADDRESS_H     (0x19)
+#define BMM350_ADDRESS        (0x14)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)

@@ -60,7 +60,7 @@
 /* Sensors */
 #define SOC_GPIO_PIN_T1KEP_3V3_EN     _PINNUM(1,  7) // P1.07
 
-/* GD25Q64EN (or P25Q16H ?) QSPI flash */
+/* GD25Q64C QSPI flash */
 #define SOC_GPIO_PIN_SFL_T1KEP_MOSI   _PINNUM(0, 21) // P0.21
 #define SOC_GPIO_PIN_SFL_T1KEP_MISO   _PINNUM(0, 22) // P0.22
 #define SOC_GPIO_PIN_SFL_T1KEP_SCK    _PINNUM(0, 19) // P0.19

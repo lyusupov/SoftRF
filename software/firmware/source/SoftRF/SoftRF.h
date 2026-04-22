@@ -306,6 +306,7 @@ enum
 	MAG_QMC6310U,
 	MAG_QMC6310N,
 	MAG_BMM150,
+	MAG_BMM350,
 };
 
 enum
