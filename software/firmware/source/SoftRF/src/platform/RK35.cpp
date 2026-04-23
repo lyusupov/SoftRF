@@ -1440,7 +1440,7 @@ void relay_loop()
                  Container[i].latitude  != 0.0 &&
                  Container[i].longitude != 0.0 &&
                  Container[i].altitude  != 0.0 &&
-                 Container[i].distance < (ALARM_ZONE_NONE * 2) ) {
+                 Container[i].distance < ALARM_ZONE_NONE_EXT ) {
 
         fo = Container[i];
         fo.timestamp = now(); /* GNSS date&time */

@@ -18,6 +18,7 @@
 
 #include <adsb_encoder.h>
 #include <TimeLib.h>
+#include <protocol.h>
 
 #include "../../system/SoC.h"
 #include "D1090.h"
@@ -106,7 +107,11 @@ void D1090_Export()
 
         distance = Container[i].distance;
 
-        if (distance < ALARM_ZONE_NONE) {
+        float max_distance = Container[i].protocol == RF_PROTOCOL_ADSB_1090 ||
+                             Container[i].protocol == RF_PROTOCOL_ADSB_UAT  ?
+                             ALARM_ZONE_NONE_EXT : ALARM_ZONE_NONE;
+
+        if (distance < max_distance) {
 
           float altitude;
           /* If the aircraft's data has standard pressure altitude - make use it */

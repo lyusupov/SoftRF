@@ -443,7 +443,12 @@ void NMEA_Export()
           if (settings->nmea_l) {
             distance = Container[i].distance;
 
-            if (distance < ALARM_ZONE_NONE) {
+            float max_distance;
+            max_distance = Container[i].protocol == RF_PROTOCOL_ADSB_1090 ||
+                           Container[i].protocol == RF_PROTOCOL_ADSB_UAT  ?
+                           ALARM_ZONE_NONE_EXT : ALARM_ZONE_NONE;
+
+            if (distance < max_distance) {
 
               total_objects++;
 

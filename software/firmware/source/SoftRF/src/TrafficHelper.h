@@ -25,6 +25,8 @@
 #define ALARM_ZONE_LOW        2000  /* zone range is  700m <->  2000m */
 #define ALARM_ZONE_IMPORTANT  700   /* zone range is  400m <->   700m */
 #define ALARM_ZONE_URGENT     400   /* zone range is    0m <->   400m */
+/* ADS-B, UAT */
+#define ALARM_ZONE_NONE_EXT   75500 /* zone range is 1000m <-> 75500m */
 
 #define VERTICAL_SEPARATION         300 /* metres */
 #define VERTICAL_VISIBILITY_RANGE   500 /* value from Classic FLARM data port specs */

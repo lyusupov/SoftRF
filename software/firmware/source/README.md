@@ -452,7 +452,7 @@ As a result of the build, one program binary will become created:
 ## nRF54L15
 
 1. Follow [these instructions](https://github.com/lolren/NRF54L15-Clean-Arduino-core?tab=readme-ov-file#install)
-  to install Arduino IDE and [XIAO nRF54L15 Clean Arduino Core](https://github.com/lolren/NRF54L15-Clean-Arduino-core/releases) (0.1.128)
+  to install Arduino IDE and [XIAO nRF54L15 Clean Arduino Core](https://github.com/lolren/NRF54L15-Clean-Arduino-core/releases) (0.6.30)
 2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
