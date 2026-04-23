@@ -215,10 +215,6 @@ static void Traffic_Voice()
 
     bearing = (int) traffic_by_dist[0].fop->bearing;
 
-    /* convert from math angle into course relative to north */
-    bearing = (bearing <= 90 ? 90 - bearing :
-                              450 - bearing);
-
     /* This bearing is always relative to current ground track */
 //  if (settings->m.orientation == DIRECTION_TRACK_UP) {
       bearing -= ThisAircraft.course;

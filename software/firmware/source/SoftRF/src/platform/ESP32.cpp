@@ -4546,7 +4546,11 @@ static void ESP32_EEPROM_extension(int cmd)
         ui->adb          = DB_OGN;
         ui->idpref       = ID_TYPE;
         ui->vmode        = VIEW_MODE_STATUS;
-        ui->voice        = VOICE_OFF;
+        if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+          ui->voice      = VOICE_1;
+        } else {
+          ui->voice      = VOICE_OFF;
+        }
         ui->aghost       = ANTI_GHOSTING_OFF;
         ui->filter       = TRAFFIC_FILTER_OFF;
         ui->power_save   = 0;
