@@ -93,4 +93,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino Core for EFR32 Series 2 is developed by **Tamas Jozsi**
  * Arduino Core for CH32 is developed by **Tianpei Lee**
  * QMA6100P library is developed by **Tristan Alderson**
- * Arduino Core for nRF54L15 is developed by **lolren**
+ * Arduino Core for nRF54L15 is developed by **Loren Bufanu**

@@ -402,7 +402,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/lolren/NRF54L15-Clean-Arduino-core/refs/heads/main/package_nrf54l15clean_index.json" --save-prefs ;
-            arduino --install-boards nrf54l15clean:nrf54l15clean:0.6.33 ;
+            arduino --install-boards nrf54l15clean:nrf54l15clean:0.6.35 ;
             arduino --pref "custom_clean_vpr=xiao_nrf54l15_off"       --save-prefs ;
             arduino --pref "custom_clean_zigbee=xiao_nrf54l15_off"    --save-prefs ;
             arduino --board $BOARD --save-prefs ;
@@ -488,7 +488,7 @@ jobs:
           fi
           #if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]]; then
           #  arduino --pref "boardsmanager.additional.urls=https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json" --save-prefs ;
-          #  arduino --install-boards SiliconLabs:silabs:3.0.0 ;
+          #  arduino --install-boards SiliconLabs:silabs:4.0.0 ;
           #  arduino --board $BOARD --save-prefs ;
           #  cd $GITHUB_WORKSPACE ;
           #fi
@@ -496,7 +496,7 @@ jobs:
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://siliconlabs.github.io/arduino/package_arduinosilabs_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install SiliconLabs:silabs@3.0.0 ;
+            arduino-cli core install SiliconLabs:silabs@4.0.0 ;
             # arduino-cli board attach -b $BOARD ;
             wget https://github.com/arduino-libraries/ArduinoBLE/archive/refs/tags/${ARDUINO_BLE_VERSION}.tar.gz ;
             tar xzf ${ARDUINO_BLE_VERSION}.tar.gz ;
