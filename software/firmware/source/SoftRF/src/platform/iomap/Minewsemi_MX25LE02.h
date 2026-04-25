@@ -36,10 +36,9 @@
 #define SOC_GPIO_PIN_MX25_BUTTON        PIN_SAMD11_TX  // D19, P1.08
 #define SOC_GPIO_PIN_MX25_BUZZER        PIN_D8         // D8,  P2.06
 #define SOC_GPIO_PIN_MX25_BATTERY       PIN_A7         // A7,  P1.14
-#endif /* ARDUINO_XIAO_NRF54L15 */
 
-#if defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
-    defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
+#elif defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
+      defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_MX25_RX       P1_04 // +
 #define SOC_GPIO_PIN_CONS_MX25_TX       P1_05 // +
@@ -75,9 +74,8 @@
 #define SOC_GPIO_PIN_MX25_BUTTON        P1_08 // -
 #define SOC_GPIO_PIN_MX25_BUZZER        P2_06 // +
 #define SOC_GPIO_PIN_MX25_BATTERY       P1_14 // +
-#endif /* GENERIC */
 
-#if 0
+#elif defined(ARDUINO_NRF54L15DK_PCA10156)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_MX25_RX       _PINNUM(1,  4) // P1.04 +
 #define SOC_GPIO_PIN_CONS_MX25_TX       _PINNUM(1,  5) // P1.05 +

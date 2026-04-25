@@ -69,6 +69,7 @@ enum rst_reason {
 enum nRF54_board_id {
   NRF54_LR2021EVK1XCS1, /* Seeed + Semtech */
   NRF54_MX25LE02,       /* Minewsemi       */
+  NRF54_PCA10156,       /* Nordic Semi DK  */
 };
 
 struct rst_info {

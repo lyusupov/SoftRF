@@ -44,10 +44,9 @@
 #define SOC_GPIO_PIN_EVK_IMU_INT        PIN_IMU_INT    //      P0.02 +
 #define SOC_GPIO_PIN_EVK_PDM_CLK        PIN_PDM_CLK    //      P1.12 +
 #define SOC_GPIO_PIN_EVK_PDM_DATA       PIN_PDM_DATA   //      P1.13 +
-#endif /* ARDUINO_XIAO_NRF54L15 */
 
-#if defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
-    defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
+#elif defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
+      defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_EVK_RX        P1_08 // D19
 #define SOC_GPIO_PIN_CONS_EVK_TX        P1_09 // D18
@@ -99,9 +98,8 @@
 #define SOC_GPIO_PIN_EVK_IMU_INT        P0_02
 #define SOC_GPIO_PIN_EVK_PDM_CLK        P1_12
 #define SOC_GPIO_PIN_EVK_PDM_DATA       P1_13
-#endif /* GENERIC */
 
-#if 0
+#elif defined(ARDUINO_NRF54L15DK_PCA10156)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_EVK_RX        _PINNUM(1,  8) // D19, P1.08 +
 #define SOC_GPIO_PIN_CONS_EVK_TX        _PINNUM(1,  9) // D18, P1.09 +

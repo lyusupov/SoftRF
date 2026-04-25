@@ -45,11 +45,14 @@
 
 #if defined(ARDUINO_XIAO_NRF54L15)          || \
     defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
+    defined(ARDUINO_NRF54L15DK_PCA10156)    || \
     defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
 #include <variant.h>
 #include "nrf54l15_hal.h"
 
 using namespace xiao_nrf54l15;
+#else
+#error "This nRF54 build variant is not supported!"
 #endif /* ARDUINO_XIAO_NRF54L15 */
 
 // RFM95W pin mapping

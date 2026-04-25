@@ -57,6 +57,7 @@ jobs:
             #'arduino:mbed_nano:nanorp2040connect',
             'SiliconLabs:silabs:nano_matter:protocol_stack=ble_arduino',
             'WCH:ch32v:CH32V30x_EVT',
+            #'nrf54l15clean:nrf54l15clean:nrf54l15dk_pca10156',
             'nrf54l15clean:nrf54l15clean:xiao_nrf54l15'
           ]
 
@@ -402,7 +403,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/lolren/NRF54L15-Clean-Arduino-core/refs/heads/main/package_nrf54l15clean_index.json" --save-prefs ;
-            arduino --install-boards nrf54l15clean:nrf54l15clean:0.6.35 ;
+            arduino --install-boards nrf54l15clean:nrf54l15clean:0.6.39 ;
             arduino --pref "custom_clean_vpr=xiao_nrf54l15_off"       --save-prefs ;
             arduino --pref "custom_clean_zigbee=xiao_nrf54l15_off"    --save-prefs ;
             arduino --board $BOARD --save-prefs ;
