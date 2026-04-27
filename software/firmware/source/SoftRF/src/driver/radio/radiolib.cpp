@@ -5704,7 +5704,7 @@ static bool lr20xx_receive()
               a = a->next;
             }
 
-            if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+            if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {
               interactiveReceiveData(&rl_mode_s_state, &mm);
             }
           }

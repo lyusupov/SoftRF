@@ -75,6 +75,16 @@ extern time_t now_C();
 #define time(x) now_C()
 #endif
 
+#if defined(ARDUINO_ARCH_NRF54L15CLEAN)
+#undef time
+#ifndef __cplusplus
+extern time_t now_C();
+#else
+extern "C" time_t now_C();
+#endif /* __cplusplus */
+#define time(x) now_C()
+#endif
+
 #define USE_BYTE_MAG
 #define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
 

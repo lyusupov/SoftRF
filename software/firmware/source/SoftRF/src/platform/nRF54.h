@@ -21,8 +21,6 @@
 #ifndef PLATFORM_NRF54_H
 #define PLATFORM_NRF54_H
 
-//#include <avr/dtostrf.h>
-
 /* Maximum of tracked flying objects is now SoC-specific constant */
 #define MAX_TRACKING_OBJECTS    8
 
@@ -46,6 +44,7 @@ extern char *dtostrf_workaround(double, signed char, unsigned char, char *);
 //inline  void yield()            { };
 
 #if defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
+    defined(ARDUINO_NRF54L15DK_PCA10156)    || \
     defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
 #undef LED_STATE_ON
 #endif /* GENERIC */
@@ -92,6 +91,7 @@ struct rst_info {
 
 #include "iomap/Semtech_LR2021EVK1XCS1.h"
 #include "iomap/Minewsemi_MX25LE02.h"
+#include "iomap/Nordic_PCA10156.h"
 
 #define SOC_GPIO_PIN_GNSS_PPS (hw_info.model == SOFTRF_MODEL_ACADEMY  ? \
                                SOC_GPIO_PIN_GNSS_EVK_PPS : SOC_UNUSED_PIN)
@@ -149,8 +149,8 @@ struct rst_info {
 #define USE_PWM_SOUND
 //#define USE_GDL90_MSL
 //#define USE_IBEACON
-#define EXCLUDE_NUS
-#define EXCLUDE_IMU
+//#define EXCLUDE_NUS
+//#define EXCLUDE_IMU
 #define USE_OGN_ENCRYPTION
 #define ENABLE_ADSL
 #define ENABLE_PROL

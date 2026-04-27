@@ -193,6 +193,11 @@ char *dtostrf_workaround(double number, signed char width, unsigned char prec, c
     return s;
 }
 
+extern "C" time_t now_C(void)
+{
+  return now();
+}
+
 #ifdef NRF_TRUSTZONE_NONSECURE
 static constexpr uintptr_t kPowerBase = 0x4010E000UL;
 static constexpr uintptr_t kResetBase = 0x4010E000UL;
@@ -222,6 +227,25 @@ static uint8_t readGpregret0() {
   return static_cast<uint8_t>(g_power->GPREGRET[0] &
                               POWER_GPREGRET_GPREGRET_Msk);
 }
+
+#include <Adafruit_SPIFlash.h>
+static bool nRF54_has_spiflash = false;
+//static Adafruit_FlashTransport_QSPI *FlashTrans = NULL;
+static Adafruit_FlashTransport_SPI  *FlashTrans = NULL;
+static Adafruit_SPIFlash            *SPIFlash   = NULL;
+
+/// Flash device list count
+enum {
+  MX25R6435F_INDEX,
+
+  EXTERNAL_FLASH_DEVICE_COUNT
+};
+
+/// List of all possible flash devices used by nRF52840 boards
+static SPIFlash_Device_t possible_devices[] = {
+  [MX25R6435F_INDEX] = MX25R6435F,
+};
+
 
 static void nRF54_setup()
 {
@@ -274,7 +298,6 @@ static void nRF54_setup()
   }
   // Wire.end();
 
-#if 0
   pinMode(SOC_GPIO_PIN_MX25_RST,  OUTPUT);
   pinMode(SOC_GPIO_PIN_MX25_BUSY, INPUT);
 
@@ -293,7 +316,50 @@ static void nRF54_setup()
   }
 
   pinMode(SOC_GPIO_PIN_MX25_RST, INPUT);
+
+#if defined(ARDUINO_NRF54L15DK_PCA10156)
+  /* (Q)SPI flash init */
+  switch (nRF54_board)
+  {
+    case NRF54_LR2021EVK1XCS1:
+    case NRF54_PCA10156:
+      possible_devices[MX25R6435F_INDEX].max_clock_speed_mhz  = 33;
+      possible_devices[MX25R6435F_INDEX].supports_qspi        = false;
+      possible_devices[MX25R6435F_INDEX].supports_qspi_writes = false;
+#if 0
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_DK_SCK,
+                                                    SOC_GPIO_PIN_SFL_DK_SS,
+                                                    SOC_GPIO_PIN_SFL_DK_MOSI,
+                                                    SOC_GPIO_PIN_SFL_DK_MISO,
+                                                    SOC_GPIO_PIN_SFL_DK_WP,
+                                                    SOC_GPIO_PIN_SFL_DK_HOLD);
+#else
+      SPI.setPins(SOC_GPIO_PIN_EVK_SCK,
+                  SOC_GPIO_PIN_EVK_MISO,
+                  SOC_GPIO_PIN_EVK_MOSI,
+                  SOC_GPIO_PIN_SFL_DK_SS);
+      FlashTrans = new Adafruit_FlashTransport_SPI(SOC_GPIO_PIN_SFL_DK_SS, SPI);
 #endif
+      break;
+    default:
+      break;
+  }
+
+  if (FlashTrans != NULL) {
+    FlashTrans->begin();
+    FlashTrans->runCommand(0xAB); /* RDP/RES */
+    FlashTrans->end();
+
+    SPIFlash = new Adafruit_SPIFlash(FlashTrans);
+    nRF54_has_spiflash = SPIFlash->begin(possible_devices,
+                                         EXTERNAL_FLASH_DEVICE_COUNT);
+  }
+#endif /* ARDUINO_NRF54L15DK_PCA10156 */
+
+  if (nRF54_has_spiflash) {
+    nRF54_board = NRF54_PCA10156;
+    hw_info.storage = STORAGE_FLASH;
+  }
 
   switch (nRF54_board)
   {
@@ -319,6 +385,25 @@ static void nRF54_setup()
       digitalWrite(SOC_GPIO_PIN_MX25_ANT_SW2, HIGH);
 
       break;
+
+#if defined(ARDUINO_NRF54L15DK_PCA10156)
+    case NRF54_PCA10156:
+#if !defined(USE_RTT)
+      Serial.setPins(SOC_GPIO_PIN_CONS_DK_RX, SOC_GPIO_PIN_CONS_DK_TX);
+#endif /* USE_RTT */
+
+      lmic_pins.nss  = SOC_GPIO_PIN_EVK_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_EVK_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_EVK_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_EVK_DIO8;
+#endif /* USE_RADIOLIB */
+
+      pinMode(SOC_GPIO_PIN_DK_LED0,     OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_DK_LED0, ! LED_STATE_ON);
+
+      break;
+#endif /* ARDUINO_NRF54L15DK_PCA10156 */
 
     case NRF54_LR2021EVK1XCS1:
     default:
@@ -532,6 +617,12 @@ static void nRF54_fini(int reason)
       mode_button_pin = SOC_GPIO_PIN_MX25_BUTTON;
       break;
 
+#if defined(ARDUINO_NRF54L15DK_PCA10156)
+    case NRF54_PCA10156:
+      mode_button_pin = SOC_GPIO_PIN_DK_BUTTON0;
+      break;
+#endif /* ARDUINO_NRF54L15DK_PCA10156 */
+
     case NRF54_LR2021EVK1XCS1:
     default:
       mode_button_pin = SOC_GPIO_PIN_EVK_BUTTON;
@@ -540,6 +631,7 @@ static void nRF54_fini(int reason)
 
   pinMode(mode_button_pin, nRF54_getChipId() == 0x21A44298 ? INPUT_PULLUP :
                            nRF54_getChipId() == 0xFCE0D9E0 ? INPUT_PULLUP :
+                           nRF54_board  ==  NRF54_PCA10156 ? INPUT_PULLUP :
                            INPUT);
   while (digitalRead(mode_button_pin) == LOW);
   delay(100);
@@ -726,6 +818,7 @@ static void nRF54_SPI_begin()
       break;
 
     case NRF54_LR2021EVK1XCS1:
+    case NRF54_PCA10156:
     default:
       SPI.setPins(SOC_GPIO_PIN_EVK_SCK,
                   SOC_GPIO_PIN_EVK_MISO,
@@ -747,6 +840,7 @@ static void nRF54_swSer_begin(unsigned long baud)
       break;
 
     case NRF54_LR2021EVK1XCS1:
+    case NRF54_PCA10156:
     default:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_EVK_RX,
                              SOC_GPIO_PIN_GNSS_EVK_TX);
@@ -765,7 +859,9 @@ static byte nRF54_Display_setup()
 {
   byte rval = DISPLAY_NONE;
 
-  if (nRF54_board == NRF54_LR2021EVK1XCS1 || nRF54_board == NRF54_MX25LE02) {
+  if (nRF54_board == NRF54_LR2021EVK1XCS1 ||
+      nRF54_board == NRF54_MX25LE02       ||
+      nRF54_board == NRF54_PCA10156) {
 #if defined(USE_OLED)
     rval = OLED_setup();
 #endif /* USE_OLED */
@@ -880,6 +976,7 @@ static float nRF54_Battery_param(uint8_t param)
     switch (nRF54_board)
     {
       case NRF54_MX25LE02:
+      case NRF54_PCA10156:
       case NRF54_LR2021EVK1XCS1:
       default:
         bat_adc_pin = SOC_GPIO_PIN_EVK_BATTERY;
@@ -992,6 +1089,13 @@ static void nRF54_Button_setup()
     case NRF54_MX25LE02:
       mode_button_pin = SOC_GPIO_PIN_MX25_BUTTON;
       break;
+
+#if defined(ARDUINO_NRF54L15DK_PCA10156)
+    case NRF54_PCA10156:
+      mode_button_pin = SOC_GPIO_PIN_DK_BUTTON0;
+      break;
+#endif /* ARDUINO_NRF54L15DK_PCA10156 */
+
     case NRF54_LR2021EVK1XCS1:
     default:
       mode_button_pin = SOC_GPIO_PIN_EVK_BUTTON;
@@ -1001,6 +1105,7 @@ static void nRF54_Button_setup()
   // Button(s) uses external pull up resistor.
   pinMode(mode_button_pin, nRF54_getChipId() == 0x21A44298 ? INPUT_PULLUP :
                            nRF54_getChipId() == 0xFCE0D9E0 ? INPUT_PULLUP :
+                           nRF54_board  ==  NRF54_PCA10156 ? INPUT_PULLUP :
                            INPUT);
   button_1.init(mode_button_pin, HIGH);
 
