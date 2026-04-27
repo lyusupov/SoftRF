@@ -1,6 +1,6 @@
 /* Seeed & Semtech LR2021 LoRa Plus™ Evaluation Kit */
 
-#if defined(ARDUINO_XIAO_NRF54L15)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_EVK_RX        PIN_SAMD11_TX  // D19, P1.08 + SD3
 #define SOC_GPIO_PIN_CONS_EVK_TX        PIN_SAMD11_RX  // D18, P1.09 + VN

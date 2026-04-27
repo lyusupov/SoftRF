@@ -1,6 +1,6 @@
 /* Minewsemi MX25LE02 Evaluation Kit */
 
-#if defined(ARDUINO_XIAO_NRF54L15)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_MX25_RX       PIN_D0         // D0,  P1.04
 #define SOC_GPIO_PIN_CONS_MX25_TX       PIN_D1         // D1,  P1.05

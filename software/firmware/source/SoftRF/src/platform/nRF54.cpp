@@ -43,7 +43,7 @@
 #include "../driver/OLED.h"
 #endif /* USE_OLED */
 
-#if defined(ARDUINO_XIAO_NRF54L15)          || \
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN)    || \
     defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
     defined(ARDUINO_NRF54L15DK_PCA10156)    || \
     defined(ARDUINO_GENERIC_NRF54L15_MODULE_36PIN)
@@ -53,7 +53,7 @@
 using namespace xiao_nrf54l15;
 #else
 #error "This nRF54 build variant is not supported!"
-#endif /* ARDUINO_XIAO_NRF54L15 */
+#endif /* ARDUINO_NRF54L15 */
 
 // RFM95W pin mapping
 lmic_pinmap lmic_pins = {
@@ -426,7 +426,7 @@ static void nRF54_setup()
       pinMode(SOC_GPIO_PIN_EVK_ANT_PWR,    OUTPUT);
       digitalWrite(SOC_GPIO_PIN_EVK_ANT_PWR, HIGH);
 
-      #if defined(ARDUINO_XIAO_NRF54L15)
+      #if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
       BoardControl::setBatterySenseEnabled(true);
 
       xiaoNrf54l15SetAntenna(XIAO_NRF54L15_ANTENNA_CERAMIC);
@@ -434,7 +434,7 @@ static void nRF54_setup()
       // pinMode(SOC_GPIO_PIN_EVK_VBAT_EN,    INPUT_PULLDOWN);
 
       pinMode(SOC_GPIO_PIN_EVK_ANT_SW,     INPUT_PULLDOWN); /* ANT 1 */
-      #endif /* ARDUINO_XIAO_NRF54L15 */
+      #endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
 
       break;
   }
@@ -593,12 +593,12 @@ static void nRF54_fini(int reason)
       pinMode(SOC_GPIO_PIN_EVK_BUTTON_AUX,   INPUT);
       pinMode(SOC_GPIO_PIN_EVK_ANT_PWR,      INPUT);
 
-      #if defined(ARDUINO_XIAO_NRF54L15)
+      #if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
       BoardControl::setBatterySenseEnabled(false);
       #else
       // pinMode(SOC_GPIO_PIN_EVK_VBAT_EN,      INPUT);
       pinMode(SOC_GPIO_PIN_EVK_ANT_SW,       INPUT);
-      #endif /* ARDUINO_XIAO_NRF54L15 */
+      #endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
 
       break;
   }
@@ -929,7 +929,7 @@ static float nRF54_Battery_param(uint8_t param)
     break;
 
   case BATTERY_PARAM_CHARGE:
-#if defined(ARDUINO_XIAO_NRF54L15)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
     {
       uint8_t vbatPercent = 0;
       BoardControl::sampleBatteryPercent(&vbatPercent);
@@ -950,12 +950,12 @@ static float nRF54_Battery_param(uint8_t param)
 
     voltage -= 3.6;
     rval = 10 + (voltage * 150 );
-#endif /* ARDUINO_XIAO_NRF54L15 */
+#endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
     break;
 
   case BATTERY_PARAM_VOLTAGE:
   default:
-#if defined(ARDUINO_XIAO_NRF54L15)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN)
     {
       int32_t vbatMilliVolts = 0;
       BoardControl::sampleBatteryMilliVolts(&vbatMilliVolts);
@@ -997,7 +997,7 @@ static float nRF54_Battery_param(uint8_t param)
     // divider into account (providing the actual LIPO voltage)
     // ADC range is 0..3000mV and resolution is 12-bit (0..4095)
     voltage *= (mult * VBAT_MV_PER_LSB);
-#endif /* ARDUINO_XIAO_NRF54L15 */
+#endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
     rval = voltage * 0.001;
     break;
   }
