@@ -5707,6 +5707,10 @@ static bool lr20xx_receive()
                 a = a->next;
               }
 
+#if 0
+              Serial.printf("acfts_in_sight %d\r\n", acfts_in_sight);
+#endif
+
               if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {
                 interactiveReceiveData(&rl_mode_s_state, &mm);
               }

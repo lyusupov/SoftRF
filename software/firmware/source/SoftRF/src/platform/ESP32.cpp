@@ -7739,6 +7739,11 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 
 //    printf("%02d %03d %02x%02x%02x\r\n", mm->msgtype, mm->msgbits, mm->aa1, mm->aa2, mm->aa3);
 
+      if (mm->msgtype == 17 &&
+          ((mm->metype >= 1 && mm->metype <= 4)  ||
+           (mm->metype >= 9 && mm->metype <= 18) ||
+           (mm->metype == 19)) ) {
+
         int acfts_in_sight = 0;
         struct mode_s_aircraft *a = state.aircrafts;
 
@@ -7747,9 +7752,10 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
           a = a->next;
         }
 
-        if (acfts_in_sight < MAX_TRACKING_OBJECTS) {
+        if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {
           interactiveReceiveData(self, mm);
         }
+      }
     }
 }
 
@@ -7929,12 +7935,17 @@ static void ESP32PX_USB_loop()
 
   if (millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
     struct mode_s_aircraft *a;
+    int acfts_in_sight = 0;
 
     for (a = state.aircrafts; a; a = a->next) {
+      acfts_in_sight++;
+
 #if 0
-      Serial.print("even_cprtime = ");  Serial.print(a->even_cprtime);
-      Serial.print(" ");
-      Serial.print("odd_cprtime = ");   Serial.println(a->odd_cprtime);
+      if (a->even_cprtime || a->odd_cprtime) {
+        Serial.print("even_cprtime = ");  Serial.print(a->even_cprtime);
+        Serial.print(" ");
+        Serial.print("odd_cprtime = ");   Serial.println(a->odd_cprtime);
+      }
 #endif
       if (a->even_cprtime && a->odd_cprtime &&
           abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
@@ -7951,6 +7962,10 @@ static void ESP32PX_USB_loop()
 #endif
       }
     }
+
+#if 0
+    Serial.printf("acfts_in_sight %d\r\n", acfts_in_sight);
+#endif
 
     interactiveRemoveStaleAircrafts(&state);
 
