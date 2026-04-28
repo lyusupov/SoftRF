@@ -7681,7 +7681,7 @@ IODev_ops_t ESP32CX_USBSerial_ops = {
 };
 #endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 || C6 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_LIB_RTLSDR)
 
 #include "libusb.h"
 #include "rtl-sdr.h"
@@ -7695,8 +7695,8 @@ IODev_ops_t ESP32CX_USBSerial_ops = {
 #define MODE_S_PREAMBLE_US      8
 #define MODE_S_LONG_MSG_BITS    112
 #define MODE_S_SHORT_MSG_BITS   56
-#define MODE_S_ASYNC_BUF_NUMBER 3
-#define MODE_S_DATA_LEN         65536
+#define MODE_S_ASYNC_BUF_NUMBER 2
+#define MODE_S_DATA_LEN         32768
 #define MODE_S_FULL_LEN         (MODE_S_PREAMBLE_US + MODE_S_LONG_MSG_BITS)
 
 #define SDR_RINGBUFFER_SIZE     (1024 * 1024)
@@ -8001,7 +8001,7 @@ IODev_ops_t ESP32PX_USB_ops = {
   ESP32PX_USB_read,
   ESP32PX_USB_write
 };
-#endif /* CONFIG_IDF_TARGET_ESP32P4 && USE_USB_HOST */
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)  || \
     defined(CONFIG_IDF_TARGET_ESP32S31) || \
@@ -8188,11 +8188,9 @@ const SoC_ops_t ESP32_ops = {
 #else
   NULL,
 #endif /* EXCLUDE_BLUETOOTH */
-#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_USB_HOST)
-  &ESP32PX_USB_ops,
-#elif (defined(CONFIG_IDF_TARGET_ESP32S2) || \
-       defined(CONFIG_IDF_TARGET_ESP32S3) || \
-       defined(CONFIG_IDF_TARGET_ESP32S31)) && \
+#if (defined(CONFIG_IDF_TARGET_ESP32S2) || \
+     defined(CONFIG_IDF_TARGET_ESP32S3) || \
+     defined(CONFIG_IDF_TARGET_ESP32S31)) && \
    (ARDUINO_USB_CDC_ON_BOOT || defined(USE_USB_HOST))
   &ESP32SX_USBSerial_ops,
 #elif ARDUINO_USB_MODE && \
@@ -8201,12 +8199,13 @@ const SoC_ops_t ESP32_ops = {
        defined(CONFIG_IDF_TARGET_ESP32C6)  || \
        defined(CONFIG_IDF_TARGET_ESP32C61) || \
        defined(CONFIG_IDF_TARGET_ESP32H2)  || \
-       defined(CONFIG_IDF_TARGET_ESP32H4)  || \
-       defined(CONFIG_IDF_TARGET_ESP32P4))
+       defined(CONFIG_IDF_TARGET_ESP32H4))
   &ESP32CX_USBSerial_ops,
+#elif defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_LIB_RTLSDR)
+  &ESP32PX_USB_ops,
 #else
   NULL,
-#endif /* USE_USB_HOST */
+#endif /* USB */
   NULL,
   ESP32_Display_setup,
   ESP32_Display_loop,

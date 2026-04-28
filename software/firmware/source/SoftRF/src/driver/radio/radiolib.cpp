@@ -5678,34 +5678,38 @@ static bool lr20xx_receive()
                           mm.msgtype, mm.msgbits, mm.aa1, mm.aa2, mm.aa3,
                           (int) radio_g4->getRSSI(true));
 #endif
+            if (mm.msgtype == 17 &&
+                ((mm.metype >= 1 && mm.metype <= 4)  ||
+                 (mm.metype >= 9 && mm.metype <= 18) ||
+                 (mm.metype == 19)) ) {
+              size = mm.msgbits >> 3;
 
-            size = mm.msgbits >> 3;
+              if (size > sizeof(RxBuffer)) {
+                size = sizeof(RxBuffer);
+              }
 
-            if (size > sizeof(RxBuffer)) {
-              size = sizeof(RxBuffer);
-            }
-
-            if (size > 0) {
+              if (size > 0) {
 #if OPT_DF17 == 0
-              memcpy(RxBuffer, RL_rxPacket_ptr->payload, size);
+                memcpy(RxBuffer, RL_rxPacket_ptr->payload, size);
 #endif /* OPT_DF17 == 0 */
 #if OPT_DF17 == 1 || OPT_DF17 == 2
-              memcpy(RxBuffer, buf, size);
+                memcpy(RxBuffer, buf, size);
 #endif /* OPT_DF17 == 1 | 2 */
 
-              success = true;
-            }
+                success = true;
+              }
 
-            int acfts_in_sight = 0;
-            struct mode_s_aircraft *a = rl_mode_s_state.aircrafts;
+              int acfts_in_sight = 0;
+              struct mode_s_aircraft *a = rl_mode_s_state.aircrafts;
 
-            while (a) {
-              acfts_in_sight++;
-              a = a->next;
-            }
+              while (a) {
+                acfts_in_sight++;
+                a = a->next;
+              }
 
-            if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {
-              interactiveReceiveData(&rl_mode_s_state, &mm);
+              if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {
+                interactiveReceiveData(&rl_mode_s_state, &mm);
+              }
             }
           }
           break;
