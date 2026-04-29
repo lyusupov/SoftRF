@@ -7719,7 +7719,12 @@ RingbufHandle_t s_ringbuf_sdr;
 bool rb_reader_is_ready = false;
 
 extern int rtlsdr_is_connected;
+
+#if defined(MAGLUT_IN_ROM)
+extern const mag_t maglut_ro[129*129];
+#else
 extern mag_t maglut[129*129];
+#endif /* MAGLUT_IN_ROM */
 
 void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
 
@@ -7768,7 +7773,11 @@ void process_iq8u_buffer(uint8_t *buf, size_t size) {
       if (i < 0) i = -i;
       if (q < 0) q = -q;
 
+#if defined(MAGLUT_IN_ROM)
+      mag[(MODE_S_FULL_LEN-1)*2 + (j>>1)] = maglut_ro[i*129+q];
+#else
       mag[(MODE_S_FULL_LEN-1)*2 + (j>>1)] = maglut[i*129+q];
+#endif /* MAGLUT_IN_ROM */
     }
 
     mode_s_detect(&state, mag, (size + (MODE_S_FULL_LEN-1)*4) / 2, on_msg);

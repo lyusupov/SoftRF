@@ -1,4 +1,9 @@
-#if defined(HACKRF_ONE) && defined(MAGLUT_IN_ROM)
+#if defined(ESP32)
+#include "sdkconfig.h"
+#endif /* ESP32 */
+
+#if (defined(HACKRF_ONE) && defined(MAGLUT_IN_ROM)) || \
+     defined(CONFIG_IDF_TARGET_ESP32P4)
 
 #include <mode-s.h>
 

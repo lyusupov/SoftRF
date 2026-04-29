@@ -45,7 +45,9 @@
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(MAGLUT_IN_ROM)
 mag_t maglut[129*129];
+#endif /* MAGLUT_IN_ROM */
 #else
 static mag_t maglut[129*129];
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
@@ -95,7 +97,9 @@ void mode_s_init(mode_s_t *self) {
   // different I/Q pair will result in a different magnitude value, not losing
   // any resolution.
 
-#if !defined(HACKRF_ONE) || (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))
+#if (!defined(HACKRF_ONE) && !defined(CONFIG_IDF_TARGET_ESP32P4)) || \
+     (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))             || \
+     (defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(MAGLUT_IN_ROM))
   int i, q;
 
   if (!maglut_initialized) {
@@ -567,6 +571,7 @@ void mode_s_decode(mode_s_t *self, struct mode_s_msg *mm, unsigned char *msg) {
   mm->phase_corrected = 0; // Set to 1 by the caller if needed.
 }
 
+#if !defined(MAGLUT_IN_ROM)
 // Turn I/Q samples pointed by `data` into the magnitude vector pointed by `mag`
 void mode_s_compute_magnitude_vector(unsigned char *data, mag_t *mag, uint32_t size) {
   uint32_t j;
@@ -582,6 +587,7 @@ void mode_s_compute_magnitude_vector(unsigned char *data, mag_t *mag, uint32_t s
     mag[j/2] = maglut[i*129+q];
   }
 }
+#endif /* MAGLUT_IN_ROM */
 
 // Return -1 if the message is out of fase left-side
 // Return  1 if the message is out of fase right-size

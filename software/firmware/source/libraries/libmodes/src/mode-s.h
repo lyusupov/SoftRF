@@ -73,7 +73,16 @@ typedef long long ms_time_t;
 #undef time
 extern time_t now_C();
 #define time(x) now_C()
-#endif
+
+#ifdef DFU_MODE
+#ifdef MAGLUT_IN_ROM
+#undef MAGLUT_IN_ROM
+#endif /* MAGLUT_IN_ROM */
+#ifndef MAG_LUT_128X128
+#define MAG_LUT_128X128
+#endif /* MAG_LUT_128X128 */
+#endif /* DFU_MODE */
+#endif /* HACKRF_ONE */
 
 #if defined(ARDUINO_ARCH_NRF54L15CLEAN)
 #undef time
@@ -83,22 +92,17 @@ extern time_t now_C();
 extern "C" time_t now_C();
 #endif /* __cplusplus */
 #define time(x) now_C()
-#endif
+#endif /* ARDUINO_ARCH_NRF54L15CLEAN */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#define MAGLUT_IN_ROM
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #define USE_BYTE_MAG
 #define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
 
-#ifdef DFU_MODE
-#ifdef MAGLUT_IN_ROM
-#undef MAGLUT_IN_ROM
-#endif
-#ifndef MAG_LUT_128X128
-#define MAG_LUT_128X128
-#endif
-#endif
-
 typedef unsigned long ms_time_t;
-#endif
+#endif /* ! HACKRF_ONE && ! ARDUINO */
 
 #if defined(USE_BYTE_MAG)
 typedef uint8_t mag_t;
