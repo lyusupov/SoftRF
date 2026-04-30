@@ -286,7 +286,10 @@ static void sendUBX(const uint8_t *MSG, uint8_t len) {
     Serial_GNSS_Out.write( MSG[i]);
     GNSS_DEBUG_PRINT(MSG[i], HEX);
   }
+
 //  Serial_GNSS_Out.println();
+
+  GNSS_FLUSH();
 }
 
 // Calculate expected UBX ACK packet and parse UBX response from GPS
