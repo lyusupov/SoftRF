@@ -34,7 +34,7 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define EEPROM_commit()         {}
+#define EEPROM_commit()         EEPROM.commit()
 
 #define LED_STATE_ON            LOW  // State when LED is litted
 

@@ -5068,7 +5068,11 @@ static void lr20xx_setup()
   switch (hw_info.model)
   {
   case SOFTRF_MODEL_ACADEMY:
-    radio_g4->irqDioNum = 8; /* DIO8 as IRQ on WIO-2021 */
+    if (SoC->getChipId() == 0x36D2512E /* WCH */) {
+      radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
+    } else {
+      radio_g4->irqDioNum =  8; /* DIO8 as IRQ on WIO-2021 */
+    }
     Vtcxo = 0.0; /* XTAL */
     break;
   case SOFTRF_MODEL_CARD:
@@ -5490,7 +5494,9 @@ static void lr20xx_setup()
     break;
 
   case SOFTRF_MODEL_ACADEMY:
-    if (SoC->getChipId() == 0x21A44298 || SoC->getChipId() == 0xFCE0D9E0) {
+    if (SoC->getChipId() == 0x21A44298 /* 25007 */||
+        SoC->getChipId() == 0xFCE0D9E0 /* 25007 */||
+        SoC->getChipId() == 0x36D2512E /* WCH */) {
       radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
                                  rfswitch_table_MXD8721);
     } else {
@@ -5708,7 +5714,7 @@ static bool lr20xx_receive()
               }
 
 #if 0
-              Serial.printf("acfts_in_sight %d\r\n", acfts_in_sight);
+              Serial.print("acfts_in_sight "); Serial.println(acfts_in_sight);
 #endif
 
               if (acfts_in_sight < (4 * MAX_TRACKING_OBJECTS)) {

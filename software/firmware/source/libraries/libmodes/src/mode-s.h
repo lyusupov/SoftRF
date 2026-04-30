@@ -84,7 +84,7 @@ extern time_t now_C();
 #endif /* DFU_MODE */
 #endif /* HACKRF_ONE */
 
-#if defined(ARDUINO_ARCH_NRF54L15CLEAN)
+#if defined(ARDUINO_ARCH_NRF54L15CLEAN) || defined(ARDUINO_ARCH_CH32)
 #undef time
 #ifndef __cplusplus
 extern time_t now_C();

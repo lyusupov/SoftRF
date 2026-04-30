@@ -215,6 +215,11 @@ void CH32_attachInterrupt_func(uint32_t pin, void (*userFunc)(void), int mode)
                   EXTI_Trigger_Rising_Falling /* CHANGE */ );
 }
 
+extern "C" time_t now_C(void)
+{
+  return now();
+}
+
 static void CH32_setup()
 {
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
@@ -623,6 +628,10 @@ static void CH32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 
 static bool CH32_EEPROM_begin(size_t size)
 {
+#if !defined(EXCLUDE_EEPROM)
+  EEPROM.begin();
+#endif /* EXCLUDE_EEPROM */
+
   return true;
 }
 
