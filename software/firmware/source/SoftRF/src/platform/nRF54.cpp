@@ -193,11 +193,6 @@ char *dtostrf_workaround(double number, signed char width, unsigned char prec, c
     return s;
 }
 
-extern "C" time_t now_C(void)
-{
-  return now();
-}
-
 #ifdef NRF_TRUSTZONE_NONSECURE
 static constexpr uintptr_t kPowerBase = 0x4010E000UL;
 static constexpr uintptr_t kResetBase = 0x4010E000UL;

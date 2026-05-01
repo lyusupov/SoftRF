@@ -280,19 +280,17 @@ uint8_t makeUBXCFG(uint8_t cl, uint8_t id, uint8_t msglen, const uint8_t *msg)
   return (msglen + 8);
 }
 
-// Send a byte array of UBX protocol to the GPS
+// Send a byte array of UBX protocol to the GNSS
 static void sendUBX(const uint8_t *MSG, uint8_t len) {
   for (int i = 0; i < len; i++) {
     Serial_GNSS_Out.write( MSG[i]);
     GNSS_DEBUG_PRINT(MSG[i], HEX);
   }
 
-//  Serial_GNSS_Out.println();
-
   GNSS_FLUSH();
 }
 
-// Calculate expected UBX ACK packet and parse UBX response from GPS
+// Calculate expected UBX ACK packet and parse UBX response from GNSS
 static boolean getUBX_ACK(uint8_t cl, uint8_t id) {
   uint8_t b;
   uint8_t ackByteID = 0;
@@ -537,7 +535,7 @@ static byte ublox_version() {
   uint8_t msglen = makeUBXCFG(0x0A, 0x04, 0, NULL); // MON-VER
   sendUBX(GNSSbuf, msglen);
 
-  // Get the message back from the GPS
+  // Get the message back from the GNSS
   GNSS_DEBUG_PRINT(F(" * Reading response: "));
 
   while ((millis() - startTime) < 2000 ) {
@@ -614,7 +612,7 @@ static bool ublox_setup()
 {
 #if 1
   // Set the navigation mode (Airborne, 1G)
-  // Turning off some GPS NMEA sentences on the uBlox modules
+  // Turning off some GNSS NMEA sentences on the uBlox modules
   setup_UBX();
 #else
   //Serial_GNSS_Out.write("$PUBX,41,1,0007,0003,9600,0*10\r\n");
@@ -623,7 +621,7 @@ static bool ublox_setup()
   GNSS_FLUSH();
   SoC->swSer_begin(38400);
 
-  // Turning off some GPS NMEA strings on the uBlox modules
+  // Turning off some GNSS NMEA strings on the uBlox modules
   Serial_GNSS_Out.write("$PUBX,40,GLL,0,0,0,0*5C\r\n"); delay(250);
   Serial_GNSS_Out.write("$PUBX,40,GSV,0,0,0,0*59\r\n"); delay(250);
   Serial_GNSS_Out.write("$PUBX,40,VTG,0,0,0,0*5E\r\n"); delay(250);
@@ -690,7 +688,7 @@ const gnss_chip_ops_t ublox_ops = {
 
 static void ublox_factory_reset()
 {
-  // reset GPS to factory settings
+  // reset GNSS to factory settings
   for (int i = 0; i < sizeof(factoryUBX); i++) {
     Serial_GNSS_Out.write(pgm_read_byte(&factoryUBX[i]));
   }

@@ -84,7 +84,7 @@ extern time_t now_C();
 #endif /* DFU_MODE */
 #endif /* HACKRF_ONE */
 
-#if defined(ARDUINO_ARCH_NRF54L15CLEAN) || defined(ARDUINO_ARCH_CH32)
+#if defined(ARDUINO)
 #undef time
 #ifndef __cplusplus
 extern time_t now_C();
@@ -92,7 +92,7 @@ extern time_t now_C();
 extern "C" time_t now_C();
 #endif /* __cplusplus */
 #define time(x) now_C()
-#endif /* ARDUINO_ARCH_NRF54L15CLEAN */
+#endif /* ARDUINO */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #define MAGLUT_IN_ROM

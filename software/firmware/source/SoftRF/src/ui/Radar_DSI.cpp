@@ -85,34 +85,34 @@ void DSI_radar_loop()
     switch(DSI_zoom)
     {
     case ZOOM_LOWEST:
-      divider = 10000; /* 20 KM */
+      divider = 75000; /* 75 KM */
       break;
     case ZOOM_LOW:
-      divider =  5000; /* 10 KM */
+      divider =  5000; /*  5 KM */
       break;
     case ZOOM_HIGH:
-      divider =  1000; /*  2 KM */
+      divider =  1000; /*  1 KM */
       break;
     case ZOOM_MEDIUM:
     default:
-      divider =  2000;  /* 4 KM */
+      divider =  2000;  /* 2 KM */
       break;
     }
   } else {
     switch(DSI_zoom)
     {
     case ZOOM_LOWEST:
-      divider = 9260;  /* 10 NM */
+      divider = 74080;  /* 40 NM */
       break;
     case ZOOM_LOW:
-      divider = 4630;  /*  5 NM */
+      divider =  9260;  /*  5 NM */
       break;
     case ZOOM_HIGH:
-      divider =  926;  /*  1 NM */
+      divider = 1852;   /*  1 NM */
       break;
-    case ZOOM_MEDIUM:  /*  2 NM */
+    case ZOOM_MEDIUM:
     default:
-      divider = 1852;
+      divider = 3704;   /*  2 NM */
       break;
     }
   }
@@ -257,11 +257,6 @@ void DSI_radar_loop()
       lv_obj_align_to(rose_4, circle_1, LV_ALIGN_BOTTOM_MID, 0, 0);
 #endif /* LVGL_VERSION_MAJOR == 8 */
     }
-#if 0
-    sprite->drawRoundRect( x - 2, y - tbh - 2,
-                            tbw + 8, tbh + 6,
-                            4, TFT_WHITE);
-#endif
     break;
   default:
     /* TBD */
@@ -271,12 +266,12 @@ void DSI_radar_loop()
   const char *scale_lbl_1_txt;
 
   if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
-    scale_lbl_1_txt = DSI_zoom == ZOOM_LOWEST ? "10 KM" :
+    scale_lbl_1_txt = DSI_zoom == ZOOM_LOWEST ? "75 KM" :
                       DSI_zoom == ZOOM_LOW    ? " 5 KM" :
                       DSI_zoom == ZOOM_MEDIUM ? " 2 KM" :
                       DSI_zoom == ZOOM_HIGH   ? " 1 KM" : "";
   } else { /* TODO */
-    scale_lbl_1_txt = DSI_zoom == ZOOM_LOWEST ? "10 NM" :
+    scale_lbl_1_txt = DSI_zoom == ZOOM_LOWEST ? "40 NM" :
                       DSI_zoom == ZOOM_LOW    ? " 5 NM" :
                       DSI_zoom == ZOOM_MEDIUM ? " 2 NM" :
                       DSI_zoom == ZOOM_HIGH   ? " 1 NM" : "";
@@ -298,15 +293,15 @@ void DSI_radar_loop()
   const char *scale_lbl_2_txt;
 
   if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
-    scale_lbl_2_txt = DSI_zoom == ZOOM_LOWEST ? " 5 KM" :
+    scale_lbl_2_txt = DSI_zoom == ZOOM_LOWEST ? "37 KM" :
                       DSI_zoom == ZOOM_LOW    ? "2.5 K" :
                       DSI_zoom == ZOOM_MEDIUM ? " 1 KM" :
                       DSI_zoom == ZOOM_HIGH   ? "500 M" : "";
   } else { /* TODO */
-    scale_lbl_2_txt = DSI_zoom == ZOOM_LOWEST ? "10 NM" :
-                      DSI_zoom == ZOOM_LOW    ? " 5 NM" :
-                      DSI_zoom == ZOOM_MEDIUM ? " 2 NM" :
-                      DSI_zoom == ZOOM_HIGH   ? " 1 NM" : "";
+    scale_lbl_2_txt = DSI_zoom == ZOOM_LOWEST ? "20 NM" :
+                      DSI_zoom == ZOOM_LOW    ? "2.5 M" :
+                      DSI_zoom == ZOOM_MEDIUM ? " 1 NM" :
+                      DSI_zoom == ZOOM_HIGH   ? "0.5 M" : "";
   }
 
 #if LVGL_VERSION_MAJOR == 8
@@ -321,20 +316,6 @@ void DSI_radar_loop()
   lv_obj_set_style_text_color(scale_lbl_2, lv_palette_main(LV_PALETTE_GREEN), 0);
   lv_obj_set_pos(scale_lbl_2, (radar_w * 6) / 10 + 20, (radar_w * 6) / 10);
 #endif /* LVGL_VERSION_MAJOR == 8 */
-
-#if 0
-  if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
-    sprite->print(DSI_zoom == ZOOM_LOWEST ? "20 KM" :
-                  DSI_zoom == ZOOM_LOW    ? "10 KM" :
-                  DSI_zoom == ZOOM_MEDIUM ? " 4 KM" :
-                  DSI_zoom == ZOOM_HIGH   ? " 2 KM" : "");
-  } else {
-    sprite->print(DSI_zoom == ZOOM_LOWEST ? "10 NM" :
-                  DSI_zoom == ZOOM_LOW    ? " 5 NM" :
-                  DSI_zoom == ZOOM_MEDIUM ? " 2 NM" :
-                  DSI_zoom == ZOOM_HIGH   ? " 1 NM" : "");
-  }
-#endif
 
   int32_t radius = radar_w / 2;
 

@@ -275,6 +275,11 @@ time_t now() {
   return (time_t)sysTime;
 }
 
+extern "C" time_t now_C(void)
+{
+  return now();
+}
+
 void setTime(time_t t) { 
 #ifdef TIME_DRIFT_INFO
  if(sysUnsyncedTime == 0) 
