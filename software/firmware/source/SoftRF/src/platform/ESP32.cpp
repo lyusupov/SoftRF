@@ -7719,6 +7719,8 @@ RingbufHandle_t s_ringbuf_sdr;
 bool rb_reader_is_ready = false;
 
 extern int rtlsdr_is_connected;
+uint32_t   rtlsdr_df17_frames_counter = 0;
+int        rtlsdr_acfts_in_sight      = 0;
 
 #if defined(MAGLUT_IN_ROM)
 extern const mag_t maglut_ro[129*129];
@@ -7748,6 +7750,8 @@ void on_msg(mode_s_t *self, struct mode_s_msg *mm) {
           ((mm->metype >= 1 && mm->metype <= 4)  ||
            (mm->metype >= 9 && mm->metype <= 18) ||
            (mm->metype == 19)) ) {
+
+        rtlsdr_df17_frames_counter++;
 
         int acfts_in_sight = 0;
         struct mode_s_aircraft *a = state.aircrafts;
@@ -7796,7 +7800,9 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
 
   if (rb_reader_is_ready) {
     if (xRingbufferSend(s_ringbuf_sdr, buf, len, pdMS_TO_TICKS(10)) != pdTRUE) {
+#if 0
         Serial.println("Failed to send message into ring buffer!");
+#endif
     }
   }
 }
@@ -7938,16 +7944,18 @@ static void ESP32PX_USB_loop()
         process_iq8u_buffer(receivedMessage, receivedMessageSize);
         vRingbufferReturnItem(s_ringbuf_sdr, (void*) receivedMessage);
     } else {
+#if 0
         Serial.println("Failed to receive message from ring buffer!");
+#endif
     }
   }
 
   if (millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
     struct mode_s_aircraft *a;
-    int acfts_in_sight = 0;
+    rtlsdr_acfts_in_sight = 0;
 
     for (a = state.aircrafts; a; a = a->next) {
-      acfts_in_sight++;
+      rtlsdr_acfts_in_sight++;
 
 #if 0
       if (a->even_cprtime || a->odd_cprtime) {
@@ -7973,7 +7981,7 @@ static void ESP32PX_USB_loop()
     }
 
 #if 0
-    Serial.printf("acfts_in_sight %d\r\n", acfts_in_sight);
+    Serial.printf("acfts_in_sight %d\r\n", rtlsdr_acfts_in_sight);
 #endif
 
     interactiveRemoveStaleAircrafts(&state);

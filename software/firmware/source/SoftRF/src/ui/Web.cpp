@@ -46,6 +46,12 @@
 #include "../system/Recorder.h"
 #endif /* ENABLE_RECORDER */
 
+#if defined(USE_LIB_RTLSDR)
+extern int      rtlsdr_is_connected;
+extern uint32_t rtlsdr_df17_frames_counter;
+extern int      rtlsdr_acfts_in_sight;
+#endif /* USE_LIB_RTLSDR */
+
 const char about_html[] PROGMEM = "<html>\
   <head>\
     <meta name='viewport' content='width=device-width, initial-scale=1'>\
@@ -128,7 +134,7 @@ char *Root_content() {
   char str_alt[16];
   char str_Vcc[8];
 
-  size_t size = 2420;
+  size_t size = 2700;
   char *offset;
   size_t len = 0;
 
@@ -185,8 +191,18 @@ char *Root_content() {
      <th align=left>Tx&nbsp;&nbsp;</th><td align=right>%u</td>\
      <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;Rx&nbsp;&nbsp;</th><td align=right>%u</td>\
    </tr></table></td></tr>\
- </table>\
- <h2 align=center>Most recent GNSS fix</h2>\
+ </table>"
+#if defined(USE_LIB_RTLSDR)
+ "</table>\
+ <table width=100%%>\
+   <tr><th align=left>RTL-SDR</th>\
+    <td align=right><table><tr>\
+     <th align=left>DF17&nbsp;&nbsp;</th><td align=right>%u</td>\
+     <th align=left>&nbsp;&nbsp;&nbsp;&nbsp;ACFTS&nbsp;&nbsp;</th><td align=right>%u</td>\
+   </tr></table></td></tr>\
+ </table>"
+#endif /* USE_LIB_RTLSDR */
+"<h2 align=center>Most recent GNSS fix</h2>\
  <table width=100%%>\
   <tr><th align=left>Time</th><td align=right>%u</td></tr>\
   <tr><th align=left>Satellites</th><td align=right>%d</td></tr>\
@@ -226,6 +242,9 @@ char *Root_content() {
     ESP32_USB_Serial.connected ? supported_USB_devices[ESP32_USB_Serial.index].last_name  : "N/A",
 #endif /* USE_USB_HOST */
     tx_packets_counter, rx_packets_counter,
+#if defined(USE_LIB_RTLSDR)
+    rtlsdr_df17_frames_counter, rtlsdr_acfts_in_sight,
+#endif /* USE_LIB_RTLSDR */
     timestamp, sats, str_lat, str_lon, str_alt
   );
 

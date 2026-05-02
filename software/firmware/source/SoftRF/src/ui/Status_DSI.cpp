@@ -33,6 +33,12 @@
 #include "../protocol/data/MAVLink.h"
 #endif /* EXCLUDE_MAVLINK */
 
+#if defined(USE_LIB_RTLSDR)
+extern int      rtlsdr_is_connected;
+extern uint32_t rtlsdr_df17_frames_counter;
+extern int      rtlsdr_acfts_in_sight;
+#endif /* USE_LIB_RTLSDR */
+
 void DSI_status_setup()
 {
 
@@ -195,15 +201,63 @@ void DSI_status_loop()
   lv_obj_set_style_text_font(data_12, &lv_font_montserrat_40, 0);
   lv_obj_align_to(data_12, data_11, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
-  lv_obj_t *label_13 = lv_label_create(lv_scr_act());
-  lv_label_set_text(label_13, "            Fix");
-  lv_obj_set_style_text_font(label_13, &lv_font_montserrat_40, 0);
-  lv_obj_align_to(label_13, label_12, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+  lv_obj_t *label_13;
+  lv_obj_t *data_13;
 
-  lv_obj_t *data_13 = lv_label_create(lv_scr_act());
-  lv_label_set_text_fmt(data_13, " ");
-  lv_obj_set_style_text_font(data_13, &lv_font_montserrat_40, 0);
-  lv_obj_align_to(data_13, data_12, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+#if defined(USE_LIB_RTLSDR)
+  if (rtlsdr_is_connected == 1) {
+    lv_obj_t *label_es_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_es_1, "            ADS-B");
+    lv_obj_set_style_text_font(label_es_1, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(label_es_1, label_12, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+    lv_obj_t *data_es_1 = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(data_es_1, " ");
+    lv_obj_set_style_text_font(data_es_1, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(data_es_1, data_12, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+
+    lv_obj_t *label_es_2 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_es_2, "DF17 frames");
+    lv_obj_set_style_text_font(label_es_2, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(label_es_2, label_es_1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+    lv_obj_t *data_es_2 = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(data_es_2, "%u", rtlsdr_df17_frames_counter);
+    lv_obj_set_style_text_font(data_es_2, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(data_es_2, data_es_1, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+
+    lv_obj_t *label_es_3 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_es_3, "Aircrafts in sight");
+    lv_obj_set_style_text_font(label_es_3, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(label_es_3, label_es_2, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+    lv_obj_t *data_es_3 = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(data_es_3, "%u", rtlsdr_acfts_in_sight);
+    lv_obj_set_style_text_font(data_es_3, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(data_es_3, data_es_2, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+
+    label_13 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_13, "            Fix");
+    lv_obj_set_style_text_font(label_13, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(label_13, label_es_3, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+    data_13 = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(data_13, " ");
+    lv_obj_set_style_text_font(data_13, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(data_13, data_es_3, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+  } else
+#endif /* USE_LIB_RTLSDR */
+  {
+    label_13 = lv_label_create(lv_scr_act());
+    lv_label_set_text(label_13, "            Fix");
+    lv_obj_set_style_text_font(label_13, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(label_13, label_12, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+    data_13 = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(data_13, " ");
+    lv_obj_set_style_text_font(data_13, &lv_font_montserrat_40, 0);
+    lv_obj_align_to(data_13, data_12, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+  }
 
   lv_obj_t *label_14 = lv_label_create(lv_scr_act());
   lv_label_set_text(label_14, "Time");

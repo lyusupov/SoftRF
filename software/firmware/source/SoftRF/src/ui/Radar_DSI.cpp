@@ -38,6 +38,9 @@ static int DSI_zoom = ZOOM_MEDIUM;
 static int DSI_current = 1;
 static int prev_j      = 0;
 
+static lv_style_t style_line_own_position;
+static lv_style_t style_line_traffic;
+
 const char *DSI_Aircraft_Type[] = {
   [AIRCRAFT_TYPE_UNKNOWN]    = "Unknown",
   [AIRCRAFT_TYPE_GLIDER]     = "Glider",
@@ -60,6 +63,20 @@ const char *DSI_Aircraft_Type[] = {
 void DSI_radar_setup()
 {
   DSI_zoom = ui->zoom;
+
+  lvgl_port_lock(-1);
+#if LVGL_VERSION_MAJOR == 8
+  lv_style_init(&style_line_own_position);
+  lv_style_set_line_width(&style_line_own_position, 4);
+  lv_style_set_line_color(&style_line_own_position, lv_color_white());
+  lv_style_set_line_rounded(&style_line_own_position, false);
+
+  lv_style_init(&style_line_traffic);
+  lv_style_set_line_width(&style_line_traffic, 4);
+  lv_style_set_line_color(&style_line_traffic, lv_color_white());
+  lv_style_set_line_rounded(&style_line_traffic, false);
+#endif /* LVGL_VERSION_MAJOR == 8 */
+  lvgl_port_unlock();
 }
 
 void DSI_radar_loop()
@@ -156,35 +173,29 @@ void DSI_radar_loop()
   static lv_point_t line3_points[] = { { 4,18}, {36,18} };
   static lv_point_t line4_points[] = { {12,40}, {28,40} };
 
-  static lv_style_t style_line;
-  lv_style_init(&style_line);
-  lv_style_set_line_width(&style_line, 4);
-  lv_style_set_line_color(&style_line, lv_color_white());
-  lv_style_set_line_rounded(&style_line, false);
-
   lv_obj_t * line1;
   line1 = lv_line_create(lv_scr_act());
   lv_obj_set_pos(line1, radar_w / 2 - 20, radar_w / 2 - 20);
   lv_line_set_points(line1, line1_points, 2);
-  lv_obj_add_style(line1, &style_line, 0);
+  lv_obj_add_style(line1, &style_line_own_position, 0);
 
   lv_obj_t * line2;
   line2 = lv_line_create(lv_scr_act());
   lv_obj_set_pos(line2, radar_w / 2 - 20, radar_w / 2 - 20);
   lv_line_set_points(line2, line2_points, 2);
-  lv_obj_add_style(line2, &style_line, 0);
+  lv_obj_add_style(line2, &style_line_own_position, 0);
 
   lv_obj_t * line3;
   line3 = lv_line_create(lv_scr_act());
   lv_obj_set_pos(line3, radar_w / 2 - 20, radar_w / 2 - 20);
   lv_line_set_points(line3, line3_points, 2);
-  lv_obj_add_style(line3, &style_line, 0);
+  lv_obj_add_style(line3, &style_line_own_position, 0);
 
   lv_obj_t * line4;
   line4 = lv_line_create(lv_scr_act());
   lv_obj_set_pos(line4, radar_w / 2 - 20, radar_w / 2 - 20);
   lv_line_set_points(line4, line4_points, 2);
-  lv_obj_add_style(line4, &style_line, 0);
+  lv_obj_add_style(line4, &style_line_own_position, 0);
 #endif /* LVGL_VERSION_MAJOR == 8 */
 
   switch (ui->orientation)
@@ -364,24 +375,20 @@ void DSI_radar_loop()
       static lv_point_t triangle_up_pts[] = { {0,20}, {20,20}, {10,0}, {0,20} };
 
 #if LVGL_VERSION_MAJOR == 8
-      static lv_style_t style_line;
-      lv_style_init(&style_line);
-      lv_style_set_line_width(&style_line, 4);
-      lv_style_set_line_color(&style_line, color);
-      lv_style_set_line_rounded(&style_line, false);
+      lv_style_set_line_color(&style_line_traffic, color);
 
       if        (RelativeVertical >   DSI_RADAR_V_THRESHOLD) {
         lv_obj_t * triangle_up;
         triangle_up = lv_line_create(lv_scr_act());
         lv_obj_set_pos(triangle_up, radar_w / 2 + x - 10, radar_w / 2 - y - 10);
         lv_line_set_points(triangle_up, triangle_up_pts, 4);
-        lv_obj_add_style(triangle_up, &style_line, 0);
+        lv_obj_add_style(triangle_up, &style_line_traffic, 0);
       } else if (RelativeVertical < - DSI_RADAR_V_THRESHOLD) {
         lv_obj_t * triangle_down;
         triangle_down = lv_line_create(lv_scr_act());
         lv_obj_set_pos(triangle_down, radar_w / 2 + x - 10, radar_w / 2 - y - 10);
         lv_line_set_points(triangle_down, triangle_down_pts, 4);
-        lv_obj_add_style(triangle_down, &style_line, 0);
+        lv_obj_add_style(triangle_down, &style_line_traffic, 0);
       } else {
         lv_obj_t *circle_3 = lv_obj_create(lv_scr_act());
         lv_obj_set_size(circle_3, 20, 20);
