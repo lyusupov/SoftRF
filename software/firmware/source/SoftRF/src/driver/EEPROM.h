@@ -32,7 +32,11 @@
 #include <raspi/EEPROM.h>
 #else
 #ifdef __cplusplus
+#if defined(USE_EXT_EEPROM)
+#include <JC_EEPROM.h>
+#else
 #include <EEPROM.h>
+#endif /* USE_EXT_EEPROM */
 #endif /* __cplusplus */
 #endif /* CC13XX or CC13X2 */
 #endif /* EXCLUDE_EEPROM */

@@ -34,8 +34,6 @@
 #define uni_Color(r,g,b)        strip.Color(r,g,b)
 #define color_t                 uint32_t
 
-#define EEPROM_commit()         EEPROM.commit()
-
 #define LED_STATE_ON            LOW  // State when LED is litted
 
 #if defined(USE_TINYUSB)
@@ -233,6 +231,14 @@ extern  SPIClass RadioSPI;
 #endif
 
 //#define EXCLUDE_EEPROM
+#define USE_EXT_EEPROM
+
+#if defined(USE_EXT_EEPROM)
+#define EEPROM_commit()       {}
+#else
+#define EEPROM_commit()       EEPROM.commit()
+#endif /* USE_EXT_EEPROM */
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX

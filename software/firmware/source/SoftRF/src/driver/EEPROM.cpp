@@ -40,6 +40,10 @@ void EEPROM_store()    {}
 eeprom_t eeprom_block;
 settings_t *settings;
 
+#if defined(USE_EXT_EEPROM)
+extern JC_EEPROM EEPROM;
+#endif /* USE_EXT_EEPROM */
+
 void EEPROM_setup()
 {
   int cmd = EEPROM_EXT_LOAD;

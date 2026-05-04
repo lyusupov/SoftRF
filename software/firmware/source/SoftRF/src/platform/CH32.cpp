@@ -144,6 +144,10 @@ uCDB<FatVolume, File32> ucdb(fatfs);
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
 settings_t *settings = &eeprom_block.field.settings;
+#else
+#if defined(USE_EXT_EEPROM)
+JC_EEPROM EEPROM(JC_EEPROM::kbits_64, 1, 64, FT24C64_ADDRESS);
+#endif /* USE_EXT_EEPROM */
 #endif /* EXCLUDE_EEPROM */
 
 #if defined(USE_TINYUSB)
@@ -624,6 +628,16 @@ static void CH32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 static bool CH32_EEPROM_begin(size_t size)
 {
 #if !defined(EXCLUDE_EEPROM)
+#if defined(USE_EXT_EEPROM)
+  if (CH32_has_eeprom == false) {
+    return false;
+  }
+#else
+  if (size > 58) {
+    return false;
+  }
+#endif /* USE_EXT_EEPROM */
+
   EEPROM.begin();
 #endif /* EXCLUDE_EEPROM */
 

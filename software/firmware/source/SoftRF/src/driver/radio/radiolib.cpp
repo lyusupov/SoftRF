@@ -5079,6 +5079,7 @@ static void lr20xx_setup()
     radio_g4->irqDioNum = 8; /* DIO8 as IRQ on T1000-E PRO */
     Vtcxo = 1.6;
     break;
+  case SOFTRF_MODEL_CONCORDE:
   default:
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 1.6;
@@ -5508,6 +5509,7 @@ static void lr20xx_setup()
 
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
+  case SOFTRF_MODEL_CONCORDE:
   default:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
                                rfswitch_table_MXD8721);

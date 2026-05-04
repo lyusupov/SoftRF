@@ -74,6 +74,7 @@
  *   Arduino Core for CH32 is developed by Tianpei Lee
  *   QMA6100P library is developed by Tristan Alderson
  *   Arduino Core for nRF54L15 is developed by Loren Bufanu
+ *   Arduino EEPROM library is developed by Jack Christensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
