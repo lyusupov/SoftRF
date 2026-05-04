@@ -28,7 +28,6 @@
 unsigned long UpdateTrafficTimeMarker = 0;
 
 static unsigned long Traffic_Voice_TimeMarker = 0;
-static uint32_t Traffic_Voice_ID_prev = 0;
 
 ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 traffic_by_dist_t traffic_by_dist[MAX_TRACKING_OBJECTS];
@@ -187,6 +186,55 @@ bool Traffic_Add(ufo_t *fop)
   return false;
 }
 
+static traffic_voice_alert_t voice_alerts_cache[MAX_TRACKING_OBJECTS];
+
+static void voice_alert_add(uint32_t id)
+{
+  int i;
+
+  time_t min_ts = now();
+
+  for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (voice_alerts_cache[i].addr == 0) {
+      voice_alerts_cache[i].addr  = id;
+      voice_alerts_cache[i].ts    = now();
+
+      break;
+    }
+
+    if (voice_alerts_cache[i].ts < min_ts) {
+      min_ts = voice_alerts_cache[i].ts;
+    }
+  }
+
+  if (i < MAX_TRACKING_OBJECTS) {
+    return;
+  }
+
+  for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (voice_alerts_cache[i].ts == min_ts) {
+      voice_alerts_cache[i].addr  = id;
+      voice_alerts_cache[i].ts    = now();
+
+      break;
+    }
+  }
+}
+
+static bool voice_alert_find(uint32_t id)
+{
+  bool rval = false;
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (voice_alerts_cache[i].addr == id) {
+      rval = true;
+      break;
+    }
+  }
+
+  return rval;
+}
+
 static void Traffic_Voice()
 {
   int j=0;
@@ -202,7 +250,7 @@ static void Traffic_Voice()
     }
   }
 
-  if (j > 0 && traffic_by_dist[0].fop->addr != Traffic_Voice_ID_prev) {
+  if (j > 0 && voice_alert_find(traffic_by_dist[0].fop->addr) == false) {
 
     const char *u_dist, *u_alt;
     float voc_dist;
@@ -319,7 +367,14 @@ static void Traffic_Voice()
 
     SoC->TTS(message);
 
-    Traffic_Voice_ID_prev = traffic_by_dist[0].fop->addr;
+    voice_alert_add(traffic_by_dist[0].fop->addr);
+  }
+
+  for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+    if (now() - voice_alerts_cache[i].ts > (5 * 60) /* seconds */) {
+      voice_alerts_cache[i].addr  = 0;
+      voice_alerts_cache[i].ts    = 0;
+    }
   }
 }
 

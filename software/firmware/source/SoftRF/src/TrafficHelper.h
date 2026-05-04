@@ -42,6 +42,11 @@ typedef struct traffic_by_dist_struct {
   float distance;
 } traffic_by_dist_t;
 
+typedef struct traffic_voice_alert_struct {
+  uint32_t  addr;
+  time_t    ts;
+} traffic_voice_alert_t;
+
 enum
 {
 	TRAFFIC_ALARM_NONE,
