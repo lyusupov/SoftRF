@@ -7102,6 +7102,43 @@ static void ESP32_Button_fini()
   }
 }
 
+void play_task()
+{
+  RF_loop();
+
+  switch (settings->mode)
+  {
+  case SOFTRF_MODE_NORMAL:
+    GNSS_loop();
+    break;
+#if !defined(EXCLUDE_MAVLINK)
+  case SOFTRF_MODE_UAV:
+    PickMAVLinkFix();
+    break;
+#endif /* EXCLUDE_MAVLINK */
+  default:
+    break;
+  }
+
+  SoC->loop();
+
+  if (SoC->Bluetooth_ops) {
+    SoC->Bluetooth_ops->loop();
+  }
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && defined(USE_LIB_RTLSDR)
+  extern bool rb_reader_is_ready;
+  extern int rtlsdr_is_connected;
+  if (SoC->USB_ops && rb_reader_is_ready && (rtlsdr_is_connected == 1)) {
+    SoC->USB_ops->loop();
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
+
+  if (loopTaskWDTEnabled) {
+    feedLoopWDT();
+  }
+}
+
 static void ESP32_TTS(char *message)
 {
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
@@ -7118,27 +7155,6 @@ static void ESP32_TTS(char *message)
       // EPD_Message("VOICE", "ALERT");
     }
 
-    void (*bg_func)() = NULL;
-    switch (settings->mode)
-    {
-    case SOFTRF_MODE_NORMAL:
-      bg_func = GNSS_loop;
-      break;
-#if !defined(EXCLUDE_MAVLINK)
-    case SOFTRF_MODE_UAV:
-      bg_func = PickMAVLinkFix;
-      break;
-#endif /* EXCLUDE_MAVLINK */
-    default:
-      break;
-    }
-
-    bool wdt_status = loopTaskWDTEnabled;
-
-    if (wdt_status) {
-      disableLoopWDT();
-    }
-
     char *word = strtok (message, " ");
 
     while (word != NULL)
@@ -7150,17 +7166,10 @@ static void ESP32_TTS(char *message)
                           "" )));
         strcat(filename, word);
         strcat(filename, WAV_FILE_SUFFIX);
-        play_file(filename, bg_func);
+        play_file(filename, play_task);
         word = strtok (NULL, " ");
 
         yield();
-
-        /* Poll input source(s) */
-        // Input_loop();
-    }
-
-    if (wdt_status) {
-      enableLoopWDT();
     }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */

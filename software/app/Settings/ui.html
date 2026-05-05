@@ -23,7 +23,6 @@ const protocol = 1;
 const baudrate = 0;
 const server = "";
 const key = "";
-const voice = 0;
 const power_save = 0;
 
 // Compute NMEA checksum and display it
@@ -44,7 +43,7 @@ function UpdateChecksum()
       + document.getElementById("adb").value + ","
       + document.getElementById("idpref").value + ","
       + document.getElementById("vmode").value + ","
-      + voice  + ","
+      + document.getElementById("voice").value + ","
       + document.getElementById("aghost").value + ","
       + document.getElementById("filter").value + ","
       + power_save  + ","
@@ -127,6 +126,13 @@ function SelIDPref()
   UpdateChecksum();
 }
 
+function SelVoice()
+{
+  var voice = document.getElementById("Voice");
+  document.getElementById("voice").value = voice.options[voice.selectedIndex].value;
+  UpdateChecksum();
+}
+
 function SelAGhost()
 {
   var aghost = document.getElementById("AGhostTimes");
@@ -159,6 +165,7 @@ function InitSettings()
   document.getElementById("zoom").value         = 2;
   document.getElementById("adb").value          = 3;
   document.getElementById("idpref").value       = 3;
+  document.getElementById("voice").value        = 0;
   document.getElementById("aghost").value       = 0;
   document.getElementById("filter").value       = 0;
   document.getElementById("team").value         = "000000";
@@ -256,6 +263,18 @@ function InitSettings()
 </tr>
 
 <tr>
+<th align=left>Voice</th>
+<td align=right>
+<select id="Voice" onchange="SelVoice()">
+<option selected value='0'>off</option>
+<option value='1'>voice 1</option>
+<option value='2'>voice 2</option>
+<option value='3'>voice 3</option>
+</select>
+</td>
+</tr>
+
+<tr>
 <th align=left>e-Paper 'ghosts' removal</th>
 <td align=right>
 <select id="AGhostTimes" onchange="SelAGhost()">
@@ -292,6 +311,7 @@ function InitSettings()
 <!-- Zoom:  --><input type="hidden" id="zoom" size="1">
 <!-- ADB:  --><input type="hidden" id="adb" size="1">
 <!-- IDPref:  --><input type="hidden" id="idpref" size="1">
+<!-- Voice:  --><input type="hidden" id="voice" size="1">
 <!-- AGhost:  --><input hidden="text" id="aghost" size="1">
 <!-- Filter:  --><input type="hidden" id="filter" size="1">
 <!-- Team:  --><input type="hidden" id="team" size="6">

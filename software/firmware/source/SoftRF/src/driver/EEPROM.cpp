@@ -110,7 +110,9 @@ void EEPROM_defaults()
                                               RF_TX_POWER_OFF :
                                               hw_info.model == SOFTRF_MODEL_HAM ?
                                               RF_TX_POWER_LOW : RF_TX_POWER_FULL;
-  eeprom_block.field.settings.bluetooth     = BLUETOOTH_NONE;
+  eeprom_block.field.settings.bluetooth     = hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
+                                              hw_info.model == SOFTRF_MODEL_CONCORDE ?
+                                              BLUETOOTH_LE_HM10_SERIAL : BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
   /*
