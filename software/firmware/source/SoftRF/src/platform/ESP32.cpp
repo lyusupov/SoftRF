@@ -72,6 +72,9 @@
 #include "../protocol/data/NMEA.h"
 #include "../protocol/data/GDL90.h"
 #include "../protocol/data/D1090.h"
+#if !defined(EXCLUDE_MAVLINK)
+#include "../protocol/data/MAVLink.h"
+#endif /* EXCLUDE_MAVLINK */
 #if defined(ENABLE_REMOTE_ID)
 #include "../protocol/radio/RemoteID.h"
 #endif /* ENABLE_REMOTE_ID */
@@ -465,7 +468,7 @@ AudioOutputI2S       *Audio_Sink;
 
 bool playback_inited = false;
 
-static bool play_file(char *filename)
+static bool play_file(char *filename, void (*func)())
 {
   bool rval = false;
 
@@ -481,6 +484,8 @@ static bool play_file(char *filename)
 
     while (Audio_Gen->loop()) {
       // feedLoopWDT();
+      if (func) { (*func)(); }
+
       if (millis() - Audio_Timemarker > 30000) {
         Audio_Gen->stop();
         Serial.println("ERROR: Audio timeout. Playback aborted.");
@@ -2949,7 +2954,7 @@ static void ESP32_post_init()
                             I2S_PIN_NO_CHANGE);
       Audio_Sink->SetGain(/* 0.25 */ 0.5 /* 1 */);
 
-      play_file(filename);
+      play_file(filename, NULL);
 
       axp_2xxx.disableALDO3();
       I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
@@ -4227,7 +4232,7 @@ static void ESP32_Sound_test(int var)
     strcat(filename, "POST");
     strcat(filename, WAV_FILE_SUFFIX);
     if (uSD.exists(filename)) {
-      play_file(filename);
+      play_file(filename, NULL);
     }
   }
 #endif /* EXCLUDE_VOICE_MESSAGE */
@@ -6822,7 +6827,7 @@ void handleMainEvent(AceButton* button, uint8_t eventType,
           strcat(filename, WAV_FILE_SUFFIX);
           if (uSD.exists(filename)) {
             delay(700);
-            play_file(filename);
+            play_file(filename, NULL);
             I2S_Init((i2s_mode_t) (I2S_MODE_TX | I2S_MODE_PDM),
                       I2S_BITS_PER_SAMPLE_16BIT);
           }
@@ -7113,6 +7118,21 @@ static void ESP32_TTS(char *message)
       // EPD_Message("VOICE", "ALERT");
     }
 
+    void (*bg_func)() = NULL;
+    switch (settings->mode)
+    {
+    case SOFTRF_MODE_NORMAL:
+      bg_func = GNSS_loop;
+      break;
+#if !defined(EXCLUDE_MAVLINK)
+    case SOFTRF_MODE_UAV:
+      bg_func = PickMAVLinkFix;
+      break;
+#endif /* EXCLUDE_MAVLINK */
+    default:
+      break;
+    }
+
     bool wdt_status = loopTaskWDTEnabled;
 
     if (wdt_status) {
@@ -7130,7 +7150,7 @@ static void ESP32_TTS(char *message)
                           "" )));
         strcat(filename, word);
         strcat(filename, WAV_FILE_SUFFIX);
-        play_file(filename);
+        play_file(filename, bg_func);
         word = strtok (NULL, " ");
 
         yield();
