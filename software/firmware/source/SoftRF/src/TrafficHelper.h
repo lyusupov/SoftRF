@@ -42,10 +42,10 @@ typedef struct traffic_by_dist_struct {
   float distance;
 } traffic_by_dist_t;
 
-typedef struct traffic_voice_alert_struct {
+typedef struct traffic_alert_struct {
   uint32_t  addr;
   time_t    ts;
-} traffic_voice_alert_t;
+} traffic_alert_t;
 
 enum
 {
@@ -55,10 +55,8 @@ enum
 	TRAFFIC_ALARM_LEGACY
 };
 
-#define TRAFFIC_ALERT_SOUND   1
-
-#define isTimeToVoice()       (millis() - Traffic_Voice_TimeMarker > 2000)
-#define VOICE_EXPIRATION_TIME 5 /* seconds */
+#define isTimeToAlert()       (millis() - Traffic_Alert_TimeMarker > 2000)
+#define ALERT_EXPIRATION_TIME 5 /* seconds */
 
 void ParseData(void);
 void Traffic_setup(void);

@@ -27,7 +27,7 @@
 
 unsigned long UpdateTrafficTimeMarker = 0;
 
-static unsigned long Traffic_Voice_TimeMarker = 0;
+static unsigned long Traffic_Alert_TimeMarker = 0;
 
 ufo_t fo, Container[MAX_TRACKING_OBJECTS], EmptyFO;
 traffic_by_dist_t traffic_by_dist[MAX_TRACKING_OBJECTS];
@@ -145,9 +145,7 @@ bool Traffic_Add(ufo_t *fop)
 
   for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
     if (Container[i].addr == fo.addr) {
-      uint8_t alert_bak = Container[i].alert;
       Container[i] = fo;
-      Container[i].alert = alert_bak;
       return true;
     }
   }
@@ -186,24 +184,24 @@ bool Traffic_Add(ufo_t *fop)
   return false;
 }
 
-static traffic_voice_alert_t voice_alerts_cache[MAX_TRACKING_OBJECTS];
+static traffic_alert_t traffic_alerts_cache[MAX_TRACKING_OBJECTS];
 
-static void voice_alert_add(uint32_t id)
+static void traffic_alert_add(uint32_t id)
 {
   int i;
 
   time_t min_ts = now();
 
   for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (voice_alerts_cache[i].addr == 0) {
-      voice_alerts_cache[i].addr  = id;
-      voice_alerts_cache[i].ts    = now();
+    if (traffic_alerts_cache[i].addr == 0) {
+      traffic_alerts_cache[i].addr  = id;
+      traffic_alerts_cache[i].ts    = now();
 
       break;
     }
 
-    if (voice_alerts_cache[i].ts < min_ts) {
-      min_ts = voice_alerts_cache[i].ts;
+    if (traffic_alerts_cache[i].ts < min_ts) {
+      min_ts = traffic_alerts_cache[i].ts;
     }
   }
 
@@ -212,21 +210,21 @@ static void voice_alert_add(uint32_t id)
   }
 
   for (i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (voice_alerts_cache[i].ts == min_ts) {
-      voice_alerts_cache[i].addr  = id;
-      voice_alerts_cache[i].ts    = now();
+    if (traffic_alerts_cache[i].ts == min_ts) {
+      traffic_alerts_cache[i].addr  = id;
+      traffic_alerts_cache[i].ts    = now();
 
       break;
     }
   }
 }
 
-static bool voice_alert_find(uint32_t id)
+static bool traffic_alert_find(uint32_t id)
 {
   bool rval = false;
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (voice_alerts_cache[i].addr == id) {
+    if (traffic_alerts_cache[i].addr == id) {
       rval = true;
       break;
     }
@@ -235,14 +233,14 @@ static bool voice_alert_find(uint32_t id)
   return rval;
 }
 
-static void Traffic_Voice()
+static void Traffic_Alert()
 {
   int j=0;
   int bearing;
   char message[80];
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (Container[i].addr && (now() - Container[i].timestamp) <= VOICE_EXPIRATION_TIME) {
+    if (Container[i].addr && (now() - Container[i].timestamp) <= ALERT_EXPIRATION_TIME) {
 
       traffic_by_dist[j].fop = &Container[i];
       traffic_by_dist[j].distance = Container[i].distance;
@@ -250,130 +248,142 @@ static void Traffic_Voice()
     }
   }
 
-  if (j > 0 && voice_alert_find(traffic_by_dist[0].fop->addr) == false) {
+  if (j > 0 && traffic_alert_find(traffic_by_dist[0].fop->addr) == false) {
 
-    const char *u_dist, *u_alt;
-    float voc_dist;
-    int   voc_alt;
-    const char *where;
-    char how_far[32];
-    char elev[32];
+#if defined(USE_EPAPER) || defined(USE_DSI)
+    if (ui->voice == VOICE_OFF) {
+#else
+    if (true) {
+#endif /* EPAPER || DSI */
 
-    qsort(traffic_by_dist, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
+      Sound_Notify();
 
-    bearing = (int) traffic_by_dist[0].fop->bearing;
-
-    /* This bearing is always relative to current ground track */
-//  if (settings->m.orientation == DIRECTION_TRACK_UP) {
-      bearing -= ThisAircraft.course;
-//  }
-
-    if (bearing < 0) {
-      bearing += 360;
-    }
-
-    int oclock = ((bearing + 15) % 360) / 30;
-    float Relative_Vertical = traffic_by_dist[0].fop->altitude -
-                              ThisAircraft.altitude;
-
-    switch (oclock)
-    {
-    case 0:
-      where = "ahead";
-      break;
-    case 1:
-      where = "1oclock";
-      break;
-    case 2:
-      where = "2oclock";
-      break;
-    case 3:
-      where = "3oclock";
-      break;
-    case 4:
-      where = "4oclock";
-      break;
-    case 5:
-      where = "5oclock";
-      break;
-    case 6:
-      where = "6oclock";
-      break;
-    case 7:
-      where = "7oclock";
-      break;
-    case 8:
-      where = "8oclock";
-      break;
-    case 9:
-      where = "9oclock";
-      break;
-    case 10:
-      where = "10oclock";
-      break;
-    case 11:
-      where = "11oclock";
-      break;
-    }
-
-    switch (ui->units)
-    {
-    case UNITS_IMPERIAL:
-      u_dist = "nautical miles";
-      u_alt  = "feet";
-      voc_dist = (traffic_by_dist[0].distance * _GPS_MILES_PER_METER) /
-                  _GPS_MPH_PER_KNOT;
-      voc_alt  = abs((int) (Relative_Vertical * _GPS_FEET_PER_METER));
-      break;
-    case UNITS_MIXED:
-      u_dist = "kms";
-      u_alt  = "feet";
-      voc_dist = traffic_by_dist[0].distance / 1000.0;
-      voc_alt  = abs((int) (Relative_Vertical * _GPS_FEET_PER_METER));
-      break;
-    case UNITS_METRIC:
-    default:
-      u_dist = "kms";
-      u_alt  = "metres";
-      voc_dist = traffic_by_dist[0].distance / 1000.0;
-      voc_alt  = abs((int) Relative_Vertical);
-      break;
-    }
-
-    if (voc_dist < 1.0) {
-      strcpy(how_far, "near");
     } else {
-      if (voc_dist > 9.0) {
-        voc_dist = 9.0;
-      }
-      snprintf(how_far, sizeof(how_far), "%u %s", (int) voc_dist, u_dist);
-    }
+#if defined(USE_EPAPER) || defined(USE_DSI)
+      const char *u_dist, *u_alt;
+      float voc_dist;
+      int   voc_alt;
+      const char *where;
+      char how_far[32];
+      char elev[32];
 
-    if (voc_alt < 100) {
-      strcpy(elev, "near");
-    } else {
-      if (voc_alt > 500) {
-        voc_alt = 500;
+      qsort(traffic_by_dist, j, sizeof(traffic_by_dist_t), traffic_cmp_by_distance);
+
+      bearing = (int) traffic_by_dist[0].fop->bearing;
+
+      /* This bearing is always relative to current ground track */
+//    if (settings->m.orientation == DIRECTION_TRACK_UP) {
+        bearing -= ThisAircraft.course;
+//    }
+
+      if (bearing < 0) {
+        bearing += 360;
       }
 
-      snprintf(elev, sizeof(elev), "%u hundred %s %s",
-        (voc_alt / 100), u_alt,
-        Relative_Vertical > 0 ? "above" : "below");
+      int oclock = ((bearing + 15) % 360) / 30;
+      float Relative_Vertical = traffic_by_dist[0].fop->altitude -
+                                ThisAircraft.altitude;
+
+      switch (oclock)
+      {
+      case 0:
+        where = "ahead";
+        break;
+      case 1:
+        where = "1oclock";
+        break;
+      case 2:
+        where = "2oclock";
+        break;
+      case 3:
+        where = "3oclock";
+        break;
+      case 4:
+        where = "4oclock";
+        break;
+      case 5:
+        where = "5oclock";
+        break;
+      case 6:
+        where = "6oclock";
+        break;
+      case 7:
+        where = "7oclock";
+        break;
+      case 8:
+        where = "8oclock";
+        break;
+      case 9:
+        where = "9oclock";
+        break;
+      case 10:
+        where = "10oclock";
+        break;
+      case 11:
+        where = "11oclock";
+        break;
+      }
+
+      switch (ui->units)
+      {
+      case UNITS_IMPERIAL:
+        u_dist = "nautical miles";
+        u_alt  = "feet";
+        voc_dist = (traffic_by_dist[0].distance * _GPS_MILES_PER_METER) /
+                    _GPS_MPH_PER_KNOT;
+        voc_alt  = abs((int) (Relative_Vertical * _GPS_FEET_PER_METER));
+        break;
+      case UNITS_MIXED:
+        u_dist = "kms";
+        u_alt  = "feet";
+        voc_dist = traffic_by_dist[0].distance / 1000.0;
+        voc_alt  = abs((int) (Relative_Vertical * _GPS_FEET_PER_METER));
+        break;
+      case UNITS_METRIC:
+      default:
+        u_dist = "kms";
+        u_alt  = "metres";
+        voc_dist = traffic_by_dist[0].distance / 1000.0;
+        voc_alt  = abs((int) Relative_Vertical);
+        break;
+      }
+
+      if (voc_dist < 1.0) {
+        strcpy(how_far, "near");
+      } else {
+        if (voc_dist > 9.0) {
+          voc_dist = 9.0;
+        }
+        snprintf(how_far, sizeof(how_far), "%u %s", (int) voc_dist, u_dist);
+      }
+
+      if (voc_alt < 100) {
+        strcpy(elev, "near");
+      } else {
+        if (voc_alt > 500) {
+          voc_alt = 500;
+        }
+
+        snprintf(elev, sizeof(elev), "%u hundred %s %s",
+          (voc_alt / 100), u_alt,
+          Relative_Vertical > 0 ? "above" : "below");
+      }
+
+      snprintf(message, sizeof(message),
+                  "traffic %s distance %s altitude %s",
+                  where, how_far, elev);
+
+      SoC->TTS(message);
+#endif /* EPAPER || DSI */
     }
 
-    snprintf(message, sizeof(message),
-                "traffic %s distance %s altitude %s",
-                where, how_far, elev);
-
-    SoC->TTS(message);
-
-    voice_alert_add(traffic_by_dist[0].fop->addr);
+    traffic_alert_add(traffic_by_dist[0].fop->addr);
   }
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (now() - voice_alerts_cache[i].ts > (5 * 60) /* seconds */) {
-      voice_alerts_cache[i].addr  = 0;
-      voice_alerts_cache[i].ts    = 0;
+    if (now() - traffic_alerts_cache[i].ts > (5 * 60) /* seconds */) {
+      traffic_alerts_cache[i].addr  = 0;
+      traffic_alerts_cache[i].ts    = 0;
     }
   }
 }
@@ -433,7 +443,7 @@ void Traffic_setup()
   }
 
   UpdateTrafficTimeMarker  = millis();
-  Traffic_Voice_TimeMarker = millis();
+  Traffic_Alert_TimeMarker = millis();
 }
 
 void Traffic_loop()
@@ -446,10 +456,6 @@ void Traffic_loop()
         if ((ThisAircraft.timestamp - Container[i].timestamp) >= TRAFFIC_VECTOR_UPDATE_INTERVAL) {
           Traffic_Update(&Container[i]);
         }
-        if ((Container[i].alert & TRAFFIC_ALERT_SOUND) == 0) {
-          Sound_Notify();
-          Container[i].alert |= TRAFFIC_ALERT_SOUND;
-        }
       } else {
         Container[i] = EmptyFO;
       }
@@ -458,14 +464,9 @@ void Traffic_loop()
     UpdateTrafficTimeMarker = millis();
   }
 
-  if (isTimeToVoice()) {
-#if defined(USE_EPAPER) || defined(USE_DSI)
-    if (ui->voice != VOICE_OFF) {
-      Traffic_Voice();
-    }
-#endif
-
-    Traffic_Voice_TimeMarker = millis();
+  if (isTimeToAlert()) {
+    Traffic_Alert();
+    Traffic_Alert_TimeMarker = millis();
   }
 }
 

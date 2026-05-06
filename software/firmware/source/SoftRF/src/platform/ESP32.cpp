@@ -7102,7 +7102,9 @@ static void ESP32_Button_fini()
   }
 }
 
-void play_task()
+#include "../TrafficHelper.h"
+
+static void play_task()
 {
   RF_loop();
 
@@ -7110,10 +7112,39 @@ void play_task()
   {
   case SOFTRF_MODE_NORMAL:
     GNSS_loop();
+
+    ThisAircraft.timestamp = now();
+
+#if 1
+    if (isValidFix()) {
+      ThisAircraft.latitude  = gnss.location.lat();
+      ThisAircraft.longitude = gnss.location.lng();
+      ThisAircraft.altitude  = gnss.altitude.meters();
+      ThisAircraft.course    = gnss.course.deg();
+      ThisAircraft.speed     = gnss.speed.knots();
+      ThisAircraft.hdop      = (uint16_t) gnss.hdop.value();
+      ThisAircraft.geoid_separation = gnss.separation.meters();
+
+#if !defined(EXCLUDE_EGM96)
+      if (ThisAircraft.geoid_separation == 0.0) {
+        ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                                  ThisAircraft.latitude,
+                                                  ThisAircraft.longitude
+                                                );
+        ThisAircraft.altitude -= ThisAircraft.geoid_separation;
+      }
+#endif /* EXCLUDE_EGM96 */
+
+      RF_Transmit(RF_Encode(&ThisAircraft), true);
+    }
+
+    if (RF_Receive() && isValidFix()) ParseData();
+#endif
     break;
 #if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:
     PickMAVLinkFix();
+    MAVLinkTimeSync();
     break;
 #endif /* EXCLUDE_MAVLINK */
   default:
@@ -7951,8 +7982,6 @@ static void ESP32PX_USB_setup()
 	}
   }
 }
-
-#include "../TrafficHelper.h"
 
 #define MODES_TASK_INTERVAL 998
 
