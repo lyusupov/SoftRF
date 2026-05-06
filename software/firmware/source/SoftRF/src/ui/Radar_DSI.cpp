@@ -331,7 +331,8 @@ void DSI_radar_loop()
   int32_t radius = radar_w / 2;
 
   for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-    if (Container[i].addr && (now() - Container[i].timestamp) <= DSI_EXPIRATION_TIME) {
+    if (hasFix && Container[i].addr &&
+       (now() - Container[i].timestamp) <= DSI_EXPIRATION_TIME) {
 
       int16_t rel_x;
       int16_t rel_y;

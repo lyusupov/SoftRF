@@ -4344,7 +4344,13 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-    /* TBD */
+    extern esp_netif_t *get_esp_interface_netif(esp_interface_t interface);
+
+    esp_netif_dhcps_option(
+      get_esp_interface_netif(ESP_IF_WIFI_AP),
+      (esp_netif_dhcp_option_mode_t) ESP_NETIF_OP_SET,
+      (esp_netif_dhcp_option_id_t)   ESP_NETIF_IP_ADDRESS_LEASE_TIME,
+      (void*) &lt, sizeof(lt));
 #else
     tcpip_adapter_dhcps_option(
       (tcpip_adapter_dhcp_option_mode_t) TCPIP_ADAPTER_OP_SET,
@@ -4363,7 +4369,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
   IPAddress broadcastIp;
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-  /* TBD */
+  broadcastIp = WiFi.broadcastIP();
 #else
   tcpip_adapter_ip_info_t info;
 
@@ -4378,6 +4384,10 @@ static IPAddress ESP32_WiFi_get_broadcast()
 
   return broadcastIp;
 }
+
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#include <esp_wifi_ap_get_sta_list.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
 
 static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
@@ -4401,10 +4411,12 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-    /* TBD */
+    wifi_sta_mac_ip_list_t infoList;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list_with_ip(&stations, &infoList));
 #else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
+#endif /* ESP_IDF_VERSION_MAJOR */
 
     while(i < infoList.num) {
       ClientIP = infoList.sta[i++].ip.addr;
@@ -4414,7 +4426,6 @@ static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
         Uni_Udp->endPacket();
       }
     }
-#endif /* ESP_IDF_VERSION_MAJOR */
     break;
   case WIFI_OFF:
   default:
@@ -4451,15 +4462,14 @@ static int ESP32_WiFi_clients_count()
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-    /* TBD */
-
-    return stations.num;
+    wifi_sta_mac_ip_list_t infoList;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list_with_ip(&stations, &infoList));
 #else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
-
-    return infoList.num;
 #endif /* ESP_IDF_VERSION_MAJOR */
+    return infoList.num;
+
   case WIFI_STA:
   default:
     return -1; /* error */
