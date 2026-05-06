@@ -47,6 +47,7 @@
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
 #include <esp_mac.h>
 #include <esp_flash.h>
+#include <esp_wifi_ap_get_sta_list.h>
 #endif /* ESP_IDF_VERSION_MAJOR */
 
 #include "../system/SoC.h"
@@ -4385,10 +4386,6 @@ static IPAddress ESP32_WiFi_get_broadcast()
   return broadcastIp;
 }
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
-#include <esp_wifi_ap_get_sta_list.h>
-#endif /* ESP_IDF_VERSION_MAJOR */
-
 static void ESP32_WiFi_transmit_UDP(int port, byte *buf, size_t size)
 {
 #if !defined(EXCLUDE_WIFI)
@@ -7125,7 +7122,6 @@ static void play_task()
 
     ThisAircraft.timestamp = now();
 
-#if 1
     if (isValidFix()) {
       ThisAircraft.latitude  = gnss.location.lat();
       ThisAircraft.longitude = gnss.location.lng();
@@ -7149,7 +7145,7 @@ static void play_task()
     }
 
     if (RF_Receive() && isValidFix()) ParseData();
-#endif
+
     break;
 #if !defined(EXCLUDE_MAVLINK)
   case SOFTRF_MODE_UAV:

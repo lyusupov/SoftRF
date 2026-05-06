@@ -64,6 +64,7 @@
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
 #include <esp_mac.h>
 #include <esp_flash.h>
+#include <esp_wifi_ap_get_sta_list.h>
 #endif /* ESP_IDF_VERSION_MAJOR */
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
@@ -1940,15 +1941,14 @@ static int ESP32_WiFi_clients_count()
     ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&stations));
 
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
-    /* TBD */
-
-    return stations.num;
+    wifi_sta_mac_ip_list_t infoList;
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list_with_ip(&stations, &infoList));
 #else
     tcpip_adapter_sta_list_t infoList;
     ESP_ERROR_CHECK(tcpip_adapter_get_sta_list(&stations, &infoList));
-
-    return infoList.num;
 #endif /* ESP_IDF_VERSION_MAJOR */
+    return infoList.num;
+
   case WIFI_STA:
   default:
     return -1; /* error */
