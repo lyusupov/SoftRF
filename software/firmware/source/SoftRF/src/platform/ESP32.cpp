@@ -2774,11 +2774,18 @@ static void ESP32_setup()
       hw_info.revision = 1;
       hw_info.touch    = TOUCH_GT9895;
     }
+#if 1 /* TODO */
+    else {
+      hw_info.revision = 0;
+      hw_info.touch    = TOUCH_JD9365TG;
+    }
+#else
     TDP4_IIC_1.beginTransmission(HI8561_ADDRESS);
     if (TDP4_IIC_1.endTransmission() == 0) {
       hw_info.revision = 0;
       hw_info.touch    = TOUCH_JD9365TG;
     }
+#endif
 
     TDP4_IIC_2.beginTransmission(ES8311_ADDRRES_0);
     if (TDP4_IIC_2.endTransmission() == 0) {
