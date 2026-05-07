@@ -283,12 +283,17 @@ extern  SPIClass RadioSPI;
 #define USE_RADIOLIB
 //#define USE_RADIOHEAD
 //#define EXCLUDE_LR11XX
+#if defined(USE_RADIOLIB)
+#include <BuildOpt.h>
+#if RADIOLIB_VERSION_MAJOR <= 7 && RADIOLIB_VERSION_MINOR < 6
 #define EXCLUDE_LR20XX
-//#define EXCLUDE_CC1101
-//#define EXCLUDE_SI443X
+#endif /* RADIOLIB_VERSION */
+#endif /* USE_RADIOLIB */
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
-//#define EXCLUDE_SX1231
-//#define EXCLUDE_SX1280
+#define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
 //#define ENABLE_RECORDER
 
 #if !defined(EXCLUDE_LED_RING)

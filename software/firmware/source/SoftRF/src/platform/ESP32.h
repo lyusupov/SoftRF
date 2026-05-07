@@ -447,6 +447,7 @@ struct rst_info {
 #define USE_NMEA_CFG
 #define USE_BASICMAC
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+
 #define USE_SKYVIEW_CFG
 #define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
@@ -457,6 +458,7 @@ struct rst_info {
 #define EXCLUDE_SX1231
 #define EXCLUDE_SX1280
 #define USE_FEM
+
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) || \
       defined(CONFIG_IDF_TARGET_ESP32C5) || \
       defined(CONFIG_IDF_TARGET_ESP32C6) || \
@@ -468,13 +470,36 @@ struct rst_info {
 //#define USE_RADIOHEAD
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 //#define EXCLUDE_LR11XX
+#if defined(USE_RADIOLIB)
+#include <BuildOpt.h>
+#if RADIOLIB_VERSION_MAJOR <= 7 && RADIOLIB_VERSION_MINOR < 6
 #define EXCLUDE_LR20XX
+#endif /* RADIOLIB_VERSION */
+#endif /* USE_RADIOLIB */
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
 #define EXCLUDE_SX1231
 #define EXCLUDE_SX1280
-#endif /* S3 C3 C6 */
+
+#elif defined(CONFIG_IDF_TARGET_ESP32P4)
+
+#define USE_SKYVIEW_CFG
+#define USE_RADIOLIB
+//#define EXCLUDE_LR11XX
+#if defined(USE_RADIOLIB)
+#include <BuildOpt.h>
+#if RADIOLIB_VERSION_MAJOR <= 7 && RADIOLIB_VERSION_MINOR < 6
+#define EXCLUDE_LR20XX
+#endif /* RADIOLIB_VERSION */
+#endif /* USE_RADIOLIB */
+#define EXCLUDE_CC1101
+#define EXCLUDE_SI443X
+#define EXCLUDE_SI446X
+#define EXCLUDE_SX1231
+#define EXCLUDE_SX1280
+
+#endif /* S3 C3 C6 P4 */
 
 #define USE_TIME_SLOTS
 
@@ -649,7 +674,6 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define USE_LIB_RTLSDR
 //#define USE_DSI
 #define USE_SENSORLIB_TOUCH
-#define USE_SKYVIEW_CFG
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

@@ -337,7 +337,12 @@ struct rst_info {
 #define USE_RADIOLIB
 //#define USE_RADIOHEAD
 //#define EXCLUDE_LR11XX
+#if defined(USE_RADIOLIB)
+#include <BuildOpt.h>
+#if RADIOLIB_VERSION_MAJOR <= 7 && RADIOLIB_VERSION_MINOR < 6
 #define EXCLUDE_LR20XX
+#endif /* RADIOLIB_VERSION */
+#endif /* USE_RADIOLIB */
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
