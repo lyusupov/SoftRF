@@ -270,7 +270,12 @@ ifeq ($(RADIOLIB), yes)
                  $(RADIOLIB_PATH)/modules/LR11x0/LR11x0.o \
                  $(RADIOLIB_PATH)/modules/LR11x0/LR1110.o \
                  $(RADIOLIB_PATH)/modules/LR11x0/LR1120.o \
-                 $(RADIOLIB_PATH)/modules/LR11x0/LR1121.o
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR1121.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_commands.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_crypto.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_gnss.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_wifi.o \
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR_common.o
   CFLAGS      += -DUSE_RADIOLIB
 endif
 
