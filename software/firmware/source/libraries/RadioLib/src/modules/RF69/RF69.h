@@ -12,7 +12,7 @@
 // RF69 physical layer properties
 #define RADIOLIB_RF69_FREQUENCY_STEP_SIZE                       61.03515625
 #define RADIOLIB_RF69_MAX_PACKET_LENGTH                         64
-#define RADIOLIB_RF69_CRYSTAL_FREQ                              32.0
+#define RADIOLIB_RF69_CRYSTAL_FREQ                              32.0f
 #define RADIOLIB_RF69_DIV_EXPONENT                              19
 
 // RF69 register map
@@ -528,11 +528,13 @@ class RF69: public PhysicalLayer {
     /*!
       \brief Blocking binary receive method.
       Overloads for string-based transmissions are implemented in PhysicalLayer.
-      \param data Binary data to be sent.
-      \param len Number of bytes to send.
+      \param data Pointer to array to save the received binary data.
+      \param len Number of bytes that will be received. Must be known in advance for binary transmissions.
+      \param timeout Reception timeout in milliseconds. If set to 0,
+      timeout period will be calculated automatically based on the radio configuration.
       \returns \ref status_codes
     */
-    int16_t receive(uint8_t* data, size_t len) override;
+    int16_t receive(uint8_t* data, size_t len, RadioLibTime_t timeout = 0) override;
 
     /*!
       \brief Sets the module to sleep mode.
@@ -577,7 +579,7 @@ class RF69: public PhysicalLayer {
       \brief Sets AES key.
       \param key Key to be used for AES encryption. Must be exactly 16 bytes long.
     */
-    void setAESKey(uint8_t* key);
+    void setAESKey(const uint8_t* key);
 
     /*!
       \brief Enables AES encryption.
@@ -647,6 +649,14 @@ class RF69: public PhysicalLayer {
       \brief Clears interrupt service routine to call when  FIFO is empty.
     */
     void clearFifoEmptyAction();
+
+    /*!
+      \brief Set FIFO threshold level.
+      Be aware that threshold is also set in setFifoFullAction method.
+      setFifoThreshold method must be called AFTER calling setFifoFullAction!
+      \param threshold Threshold level in bytes.
+    */
+    void setFifoThreshold(uint8_t threshold);
 
     /*!
       \brief Set interrupt service routine function to call when FIFO is full.
@@ -719,6 +729,12 @@ class RF69: public PhysicalLayer {
     */
     int16_t readData(uint8_t* data, size_t len) override;
 
+    /*!
+      \brief Clean up after reception is done.
+      \returns \ref status_codes
+    */
+    int16_t finishReceive() override;
+
     // configuration methods
 
     /*!
@@ -781,14 +797,14 @@ class RF69: public PhysicalLayer {
       \param len Sync word length in bytes.
       \param maxErrBits Maximum allowed number of bit errors in received sync word. Defaults to 0.
     */
-    int16_t setSyncWord(uint8_t* syncWord, size_t len, uint8_t maxErrBits = 0);
+    int16_t setSyncWord(const uint8_t* syncWord, size_t len, uint8_t maxErrBits = 0);
 
     /*!
       \brief Sets preamble length.
       \param preambleLen Preamble length to be set (in bits), allowed values: 16, 24, 32, 48, 64, 96, 128 and 192.
       \returns \ref status_codes
     */
-    int16_t setPreambleLength(uint8_t preambleLen);
+    int16_t setPreambleLength(size_t preambleLen) override;
 
     /*!
       \brief Sets node address. Calling this method will also enable address filtering for node address only.
@@ -941,7 +957,7 @@ class RF69: public PhysicalLayer {
     int16_t setLnaTestBoost(bool value);
 
     /*!
-      \brief Gets RSSI (Recorded Signal Strength Indicator) of the last received packet.
+      \brief Gets RSSI (Received Signal Strength Indicator) of the last received packet.
       \returns Last packet RSSI in dBm.
     */
     float getRSSI() override;
@@ -991,7 +1007,7 @@ class RF69: public PhysicalLayer {
       \param value The value that indicates which function to place on that pin. See chip datasheet for details.
       \returns \ref status_codes
     */
-    int16_t setDIOMapping(uint32_t pin, uint32_t value) override;
+    int16_t setDIOMapping(uint32_t pin, uint32_t value);
 
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:

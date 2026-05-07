@@ -34,7 +34,7 @@ int16_t FSK4Client::begin(float base, uint32_t shift, uint16_t rate) {
   }
 
   // calculate 24-bit frequency
-  baseFreq = (base * 1000000.0) / phyLayer->getFreqStep();
+  baseFreq = (base * 1000000.0f) / phyLayer->freqStep;
 
   // configure for direct mode
   return(phyLayer->startDirect());
@@ -54,7 +54,7 @@ int16_t FSK4Client::setCorrection(int16_t offsets[], float length) {
   return(RADIOLIB_ERR_NONE);
 }
 
-size_t FSK4Client::write(uint8_t* buff, size_t len) {
+size_t FSK4Client::write(const uint8_t* buff, size_t len) {
   size_t n = 0;
   for(size_t i = 0; i < len; i++) {
     n += FSK4Client::write(buff[i]);
@@ -109,7 +109,7 @@ int16_t FSK4Client::standby() {
 
 int32_t FSK4Client::getRawShift(int32_t shift) {
   // calculate module carrier frequency resolution
-  int32_t step = round(phyLayer->getFreqStep());
+  int32_t step = round(phyLayer->freqStep);
 
   // check minimum shift value
   if(RADIOLIB_ABS(shift) < step / 2) {

@@ -62,6 +62,11 @@
 #define RADIOLIB_ENCODING_WHITENING                             (0x02)
 
 /*!
+  \brief Inverted Manchester encoding.
+*/
+#define RADIOLIB_ENCODING_MANCHESTER_INV                        (0x03)
+
+/*!
   \}
 */
 
@@ -254,6 +259,11 @@
   \brief The requested IRQ configuration is not valid for this module.
 */
 #define RADIOLIB_ERR_INVALID_IRQ                               (-29)
+
+/*!
+  \brief Packet supplied to transmission method was shorter than required.
+*/
+#define RADIOLIB_ERR_PACKET_TOO_SHORT                          (-30)
 
 // RF69-specific status codes
 
@@ -474,13 +484,6 @@
 */
 #define RADIOLIB_ERR_RANGING_TIMEOUT                           (-901)
 
-// AX5x43 status codes
-
-/*!
-  \brief Error during PLL ranging.
-*/
-#define RADIOLIB_ERR_RANGING_FAILED                            (-902)
-
 // Pager-specific status codes
 
 /*!
@@ -536,7 +539,7 @@
 #define RADIOLIB_ERR_INVALID_CID                                (-1107)
 
 /*!
-  \brief User requested to start uplink while still inside RX window or under dutycycle.
+  \brief User requested to start uplink while under dutycycle.
 */
 #define RADIOLIB_ERR_UPLINK_UNAVAILABLE                         (-1108)
 
@@ -556,14 +559,14 @@
 #define RADIOLIB_ERR_JOIN_NONCE_INVALID                         (-1111)
 
 /*!
-  \brief Received downlink Network frame counter is invalid (lower than last heard value).
+  \brief The downlink MIC could not be verified (incorrect key or invalid FCnt)
 */
-#define RADIOLIB_ERR_N_FCNT_DOWN_INVALID                        (-1112)
+#define RADIOLIB_ERR_MIC_MISMATCH                               (-1112)
 
 /*!
-  \brief Received downlink Application frame counter is invalid (lower than last heard value).
+  \brief Multicast frame counter is invalid (outside bounds).
 */
-#define RADIOLIB_ERR_A_FCNT_DOWN_INVALID                        (-1113)
+#define RADIOLIB_ERR_MULTICAST_FCNT_INVALID                     (-1113)
 
 /*!
   \brief Uplink payload length at this datarate exceeds the active dwell time limitations.
@@ -605,6 +608,11 @@
 */
 #define RADIOLIB_ERR_INVALID_MODE                               (-1121)
 
+/*!
+  \brief The requested multicast group is invalid (higher than maximum).
+*/
+#define RADIOLIB_ERR_INVALID_MULTICAST_GROUP                    (-1122)
+
 // LR11x0-specific status codes
 
 /*!
@@ -632,6 +640,28 @@
 #define RADIOLIB_ERR_GNSS_SOLVER_OFFSET                         (-1230)
 #define RADIOLIB_ERR_GNSS_SOLVER(X)                             (RADIOLIB_ERR_GNSS_SOLVER_OFFSET - (X))
 #define RADIOLIB_GET_GNSS_SOLVER_ERROR(X)                       (-((X) - RADIOLIB_ERR_GNSS_SOLVER_OFFSET))
+
+// LR2021-specific status codes
+/*!
+  \brief Front end calibration failed. Often this is caused by a neraby high-power transmitter.
+*/
+#define RADIOLIB_ERR_FRONTEND_CALIBRATION_FAILED                (-1300)
+
+/*!
+  \brief Multi-SF side detector configuration is invalid.
+*/
+#define RADIOLIB_ERR_INVALID_SIDE_DETECT                        (-1301)
+
+// ADS-B-specific status codes
+/*!
+  \brief The message type is invalid for this operation.
+*/
+#define RADIOLIB_ERR_ADSB_INVALID_MSG_TYPE                      (-1400)
+
+/*!
+  \brief The parsed aircraft category is invalid.
+*/
+#define RADIOLIB_ERR_ADSB_INVALID_CATEGORY                      (-1401)
 
 /*!
   \}

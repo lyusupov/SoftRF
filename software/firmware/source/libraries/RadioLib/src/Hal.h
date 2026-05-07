@@ -6,6 +6,9 @@
 
 #include "BuildOpt.h"
 
+/*! \brief Global-scope function that returns timestamp since start (in microseconds). */
+RadioLibTime_t rlb_time_us();
+
 /*!
   \class RadioLibHal
   \brief Hardware abstraction library base interface.
@@ -56,6 +59,11 @@ class RadioLibHal {
       \param falling Value to be used as the "falling" GPIO level change direction.
     */
     RadioLibHal(const uint32_t input, const uint32_t output, const uint32_t low, const uint32_t high, const uint32_t rising, const uint32_t falling);
+
+    /*!
+      \brief Default destructor.
+    */
+    virtual ~RadioLibHal() = default;
 
     // pure virtual methods - these must be implemented by the hardware abstraction for RadioLib to function
 
@@ -207,6 +215,14 @@ class RadioLibHal {
       \returns The interrupt number of a given pin.
     */
     virtual uint32_t pinToInterrupt(uint32_t pin);
+
+    /*!
+      \brief Enable or disable pull up or pull down for a specific pin.
+      \param pin Pin to change.
+      \param enable True to enable, false to disable.
+      \param up Pull direction, true for pull up, false for pull down.
+    */
+    virtual void pullUpDown(uint32_t pin, bool enable, bool up);
 };
 
 #endif

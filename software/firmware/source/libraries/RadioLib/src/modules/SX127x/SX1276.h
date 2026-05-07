@@ -27,9 +27,10 @@ class SX1276: public SX1278 {
     /*!
       \brief %LoRa modem initialization method. Must be called at least once from Arduino sketch to initialize the module.
       \param freq Carrier frequency in MHz. Allowed values range from 137.0 MHz to 1020.0 MHz.
-      \param bw %LoRa link bandwidth in kHz. Allowed values are 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250 and 500 kHz.
+      \param bw %LoRa link bandwidth in kHz. Allowed values are 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250 and 500 kHz.
       \param sf %LoRa link spreading factor. Allowed values range from 6 to 12.
-      \param cr %LoRa link coding rate denominator. Allowed values range from 5 to 8.
+      \param cr %LoRa link coding rate denominator. Allowed values range from 4 to 8. Note that a value of 4 means no coding,
+      is undocumented and not recommended without your own FEC.
       \param syncWord %LoRa sync word. Can be used to distinguish different networks. Note that value 0x34 is reserved for LoRaWAN networks.
       \param power Transmission output power in dBm. Allowed values range from 2 to 17 dBm.
       \param preambleLength Length of %LoRa transmission preamble in symbols. The actual preamble length is 4.25 symbols longer than the set number.
@@ -38,7 +39,7 @@ class SX1276: public SX1278 {
       Set to 0 to enable automatic gain control (recommended).
       \returns \ref status_codes
     */
-    int16_t begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD, int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0);
+    int16_t begin(float freq = 434.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD, int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0) override;
 
     /*!
       \brief FSK modem initialization method. Must be called at least once from Arduino sketch to initialize the module.
@@ -52,12 +53,12 @@ class SX1276: public SX1278 {
       \param enableOOK Use OOK modulation instead of FSK.
       \returns \ref status_codes
     */
-    int16_t beginFSK(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 125.0, int8_t power = 10, uint16_t preambleLength = 16, bool enableOOK = false);
+    int16_t beginFSK(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 125.0, int8_t power = 10, uint16_t preambleLength = 16, bool enableOOK = false) override;
 
     // configuration methods
 
     /*!
-      \brief Sets carrier frequency. Allowed values range from 137.0 MHz to 1020.0 MHz.
+      \brief Sets carrier frequency. Allowed values range from 137.0 MHz to 175.0 MHz, 395.0 to 525.0 MHz (datasheet minimum is 410.0 MHz, hardware works lower) and 862.0 to 1020 MHz.
       \param freq Carrier frequency to be set in MHz.
       \returns \ref status_codes
     */

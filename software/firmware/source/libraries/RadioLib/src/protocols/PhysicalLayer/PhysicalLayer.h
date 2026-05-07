@@ -35,8 +35,8 @@ struct LoRaRate_t {
   
   /*! \brief LoRa bandwidth in kHz */
   float bandwidth;
-  
-  /*! \brief LoRa coding rate */
+
+  /*! \brief LoRa coding rate denominator */
   uint8_t codingRate;
 };
 
@@ -80,6 +80,46 @@ union DataRate_t {
 
   /*! \brief Interpretation for LR-FHSS modems */
   LrFhssRate_t lrFhss;
+};
+
+struct LoRaPacketConfig_t {
+  /*! \brief LoRa preamble length */
+  uint16_t preambleLength;
+
+  /*! \brief LoRa implicit header mode */
+  bool implicitHeader;
+
+  /*! \brief LoRa CRC mode */
+  bool crcEnabled;
+
+  /*! \brief LoRa low data rate optimization */
+  bool ldrOptimize;
+};
+
+struct FSKPacketConfig_t {
+  /*! \brief FSK preamble length in bits */
+  uint16_t preambleLength;
+
+  /*! \brief Length of the sync word in bits */
+  uint8_t syncWordLength;
+
+  /*! \brief FSK CRC length in bytes */
+  uint8_t crcLength;
+};
+
+struct LrFhssPacketConfig_t {
+  /*! \brief LR-FHSS header count (1 - 4) */
+  uint8_t hdrCount;
+};
+
+/*!
+  \union PacketConfig_t
+  \brief Common packet configuration structure
+*/
+union PacketConfig_t {
+  LoRaPacketConfig_t lora;
+  FSKPacketConfig_t fsk;
+  LrFhssPacketConfig_t lrFhss;
 };
 
 /*!
@@ -130,6 +170,58 @@ union ChannelScanConfig_t {
   RSSIScanConfig_t rssi;
 };
 
+struct StandbyConfig_t {
+  /*! \brief Module-specific standby mode configuration. */
+  uint8_t mode;
+};
+
+struct ReceiveConfig_t {
+  /*! \brief  Raw timeout value. Some modules use this argument to specify operation mode (single vs. continuous receive). */
+  uint32_t timeout;
+  
+  /*! \brief Sets the IRQ flags. */
+  RadioLibIrqFlags_t irqFlags;
+  
+  /*! \brief Sets the mask of IRQ flags that will trigger the radio interrupt pin. */
+  RadioLibIrqFlags_t irqMask;
+  
+  /*! \brief Packet length, needed for some modules under special circumstances (e.g. LoRa implicit header mode). */
+  size_t len;
+};
+
+struct TransmitConfig_t {
+  /*! \brief Binary data that will be transmitted. */
+  const uint8_t* data;
+
+  /*! \brief Length of binary data to transmit (in bytes). */
+  size_t len;
+
+  /*! \brief Node address to transmit the packet to. Only used in FSK mode. */
+  uint8_t addr;
+};
+
+struct SleepConfig_t {
+  /*! \brief Module-specific sleep mode configuration. */
+  uint8_t mode;
+};
+
+union RadioModeConfig_t {
+  /*! \brief Interpretation for standby mode */
+  StandbyConfig_t standby;
+
+  /*! \brief Interpretation for Rx mode */
+  ReceiveConfig_t receive;
+
+  /*! \brief Interpretation for Tx mode */
+  TransmitConfig_t transmit;
+
+  /*! \brief Interpretation for scanning */
+  ChannelScanConfig_t scan;
+
+  /*! \brief Interpretation for sleep mode */
+  SleepConfig_t sleep;
+};
+
 /*!
   \enum ModemType_t
   \brief Type of modem, used by setModem.
@@ -138,6 +230,20 @@ enum ModemType_t {
   RADIOLIB_MODEM_FSK = 0,
   RADIOLIB_MODEM_LORA,
   RADIOLIB_MODEM_LRFHSS,
+  RADIOLIB_MODEM_NONE,  // last entry
+};
+
+/*!
+  \enum RadioModeType_t
+  \brief Basic radio operating modes, used by stageMode.
+*/
+enum RadioModeType_t {
+  RADIOLIB_RADIO_MODE_NONE = 0,
+  RADIOLIB_RADIO_MODE_STANDBY,
+  RADIOLIB_RADIO_MODE_RX,
+  RADIOLIB_RADIO_MODE_TX,
+  RADIOLIB_RADIO_MODE_SCAN,
+  RADIOLIB_RADIO_MODE_SLEEP,
 };
 
 /*!
@@ -151,14 +257,23 @@ enum ModemType_t {
 class PhysicalLayer {
   public:
 
+    /*! \brief  Frequency step of the synthesizer in Hz. */
+    float freqStep;
+
+    /*! \brief  Maximum length of packet that can be received by the module. */
+    size_t maxPacketLength;
+
     // constructor
 
     /*!
       \brief Default constructor.
-      \param step Frequency step of the synthesizer in Hz.
-      \param maxLen Maximum length of packet that can be received by the module.
     */
-    PhysicalLayer(float step, size_t maxLen);
+    PhysicalLayer();
+
+    /*!
+      \brief Default destructor.
+    */
+    virtual ~PhysicalLayer() = default;
 
     // basic methods
 
@@ -201,10 +316,12 @@ class PhysicalLayer {
     /*!
       \brief Arduino String receive method.
       \param str Address of Arduino String to save the received data.
-      \param len Expected number of characters in the message. Leave as 0 if expecting a unknown size packet
+      \param len Expected number of characters in the message. Leave as 0 if expecting a unknown size packet.
+      \param timeout Reception timeout in milliseconds. If set to 0,
+      timeout period will be calculated automatically based on the radio configuration.
       \returns \ref status_codes
     */
-    int16_t receive(String& str, size_t len = 0);
+    int16_t receive(String& str, size_t len = 0, RadioLibTime_t timeout = 0);
     #endif
 
     /*!
@@ -241,15 +358,17 @@ class PhysicalLayer {
       \param len Packet length, needed for some modules under special circumstances (e.g. LoRa implicit header mode).
       \returns \ref status_codes
     */
-    virtual int16_t startReceive(uint32_t timeout, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask, size_t len);
+    virtual int16_t startReceive(uint32_t timeout, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK, size_t len = 0);
 
     /*!
       \brief Binary receive method. Must be implemented in module class.
       \param data Pointer to array to save the received binary data.
       \param len Packet length, needed for some modules under special circumstances (e.g. LoRa implicit header mode).
+      \param timeout Reception timeout in milliseconds. If set to 0,
+      timeout period will be calculated automatically based on the radio configuration.
       \returns \ref status_codes
     */
-    virtual int16_t receive(uint8_t* data, size_t len);
+    virtual int16_t receive(uint8_t* data, size_t len, RadioLibTime_t timeout = 0);
 
     #if defined(RADIOLIB_BUILD_ARDUINO)
     /*!
@@ -285,6 +404,12 @@ class PhysicalLayer {
       \returns \ref status_codes
     */
     virtual int16_t finishTransmit();
+
+    /*!
+      \brief Clean up after reception is done.
+      \returns \ref status_codes
+    */
+    virtual int16_t finishReceive();
 
     #if defined(RADIOLIB_BUILD_ARDUINO)
     /*!
@@ -372,7 +497,6 @@ class PhysicalLayer {
       \returns \ref status_codes
     */
     virtual int16_t setOutputPower(int8_t power);
-    virtual int16_t setOutputPower(int8_t power, bool forceHighPower);
 
     /*!
       \brief Check if output power is configurable. Must be implemented in module class if the module supports it.
@@ -381,7 +505,6 @@ class PhysicalLayer {
       \returns \ref status_codes
     */
     virtual int16_t checkOutputPower(int8_t power, int8_t* clipped);
-    virtual int16_t checkOutputPower(int8_t power, int8_t* clipped, bool forceHighPower);
 
     /*!
       \brief Set sync word. Must be implemented in module class if the module supports it.
@@ -399,24 +522,22 @@ class PhysicalLayer {
     virtual int16_t setPreambleLength(size_t len);
     
     /*!
-      \brief Set data. Must be implemented in module class if the module supports it.
-      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \brief Set data rate. Must be implemented in module class if the module supports it.
+      \param dr Data rate struct.
+      \param modem The modem corresponding to the requested datarate (FSK, LoRa or LR-FHSS). 
+      Defaults to currently active modem if not supplied.
       \returns \ref status_codes
     */
-    virtual int16_t setDataRate(DataRate_t dr);
+    virtual int16_t setDataRate(DataRate_t dr, ModemType_t modem = RADIOLIB_MODEM_NONE);
 
     /*!
       \brief Check the data rate can be configured by this module. Must be implemented in module class if the module supports it.
-      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \param dr Data rate struct.
+      \param modem The modem corresponding to the requested datarate (FSK, LoRa or LR-FHSS). 
+      Defaults to currently active modem if not supplied.
       \returns \ref status_codes
     */
-    virtual int16_t checkDataRate(DataRate_t dr);
-
-    /*!
-      \brief Gets the module frequency step size that was set in constructor.
-      \returns Synthesizer frequency step size in Hz.
-    */
-    float getFreqStep() const;
+    virtual int16_t checkDataRate(DataRate_t dr, ModemType_t modem = RADIOLIB_MODEM_NONE);
 
     /*!
       \brief Query modem for the packet length of received payload. Must be implemented in module class.
@@ -426,7 +547,7 @@ class PhysicalLayer {
     virtual size_t getPacketLength(bool update = true);
 
     /*!
-      \brief Gets RSSI (Recorded Signal Strength Indicator) of the last received packet.
+      \brief Gets RSSI (Received Signal Strength Indicator) of the last received packet.
       \returns RSSI of the last received packet in dBm.
     */
     virtual float getRSSI();
@@ -436,6 +557,16 @@ class PhysicalLayer {
       \returns SNR of the last received packet in dB.
     */
     virtual float getSNR();
+    
+    /*!
+      \brief Calculate the expected time-on-air for a given modem, data rate, packet configuration and payload size.
+      \param modem Modem type.
+      \param dr Data rate.
+      \param pc Packet config.
+      \param len Payload length in bytes.
+      \returns Expected time-on-air in microseconds.
+    */
+    virtual RadioLibTime_t calculateTimeOnAir(ModemType_t modem, DataRate_t dr, PacketConfig_t pc, size_t len);
 
     /*!
       \brief Get expected time-on-air for a given size of payload
@@ -616,14 +747,6 @@ class PhysicalLayer {
     #endif
 
     /*!
-      \brief Configure DIO pin mapping to get a given signal on a DIO pin (if available).
-      \param pin Pin number onto which a signal is to be placed.
-      \param value The value that indicates which function to place on that pin. See chip datasheet for details.
-      \returns \ref status_codes
-    */
-    virtual int16_t setDIOMapping(uint32_t pin, uint32_t value);
-
-    /*!
       \brief Sets interrupt service routine to call when a packet is received.
       \param func ISR to call.
     */
@@ -671,6 +794,20 @@ class PhysicalLayer {
     */
     virtual int16_t getModem(ModemType_t* modem);
 
+    /*!
+      \brief Stage mode of the radio to be launched later using launchMode.
+      \param mode Radio mode to prepare.
+      \param cfg Configuration of this mode (mode-dependent).
+      \returns \ref status_codes
+    */
+    virtual int16_t stageMode(RadioModeType_t mode, RadioModeConfig_t* cfg);
+
+    /*!
+      \brief Launch previously staged mode.
+      \returns \ref status_codes
+    */
+    virtual int16_t launchMode();
+
     #if RADIOLIB_INTERRUPT_TIMING
 
     /*!
@@ -692,6 +829,7 @@ class PhysicalLayer {
   protected:
 #endif
     uint32_t irqMap[10] = { 0 };
+    RadioModeType_t stagedMode = RADIOLIB_RADIO_MODE_NONE;
 
 #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     void updateDirectBuffer(uint8_t bit);
@@ -700,8 +838,6 @@ class PhysicalLayer {
 #if !RADIOLIB_GODMODE
   private:
 #endif
-    float freqStep;
-    size_t maxPacketLength;
 
     #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     uint8_t bufferBitPos = 0;

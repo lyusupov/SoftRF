@@ -1,6 +1,8 @@
 #ifndef PICO_HAL_H
 #define PICO_HAL_H
 
+#if defined(RADIOLIB_BUILD_RPI_PICO)
+
 // include RadioLib
 #include <RadioLib.h>
 
@@ -10,41 +12,32 @@
 #include "hardware/timer.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
+#include "hardware/gpio.h"
 #include "pico/multicore.h"
 
-uint32_t toneLoopPin;
-unsigned int toneLoopFrequency;
-unsigned long toneLoopDuration;
+#define PI_PICO_MAX_USER_GPIO  (NUM_BANK0_GPIOS)
 
-// pre-calculated pulse-widths for 1200 and 2200Hz
-// we do this to save calculation time (see https://github.com/khoih-prog/RP2040_PWM/issues/6)
-#define SLEEP_1200 416.666
-#define SLEEP_2200 227.272
+// because the Pico SDK does not allow to pass user data into interrupt handlers,
+// we keep it as a global here. This is hacky and means that multiple PicoHal
+// instances share the same interrupts, which is weird and will probably break.
+// However, there seems to be no real use case for creating multiple intances of the HAL
+static irq_handler_t picoHalUserCallbacks[PI_PICO_MAX_USER_GPIO] = { 0 };
+static uint32_t picoHalIrqEventMasks[PI_PICO_MAX_USER_GPIO] = { 0 };
+static uint64_t picoHalIrqMask = 0;
 
-// === NOTE ===
-// The tone(...) implementation uses the second core on the RPi Pico. This is to diminish as much 
-// jitter in the output tones as possible.
-
-void toneLoop(){
-  gpio_set_dir(toneLoopPin, GPIO_OUT);
-
-  uint32_t sleep_dur;
-  if (toneLoopFrequency == 1200) {
-    sleep_dur = SLEEP_1200;
-  } else if (toneLoopFrequency == 2200) {
-    sleep_dur = SLEEP_2200;
-  } else {
-    sleep_dur = 500000 / toneLoopFrequency;
-  }
-
-
-  // tone bitbang
-  while(1){
-    gpio_put(toneLoopPin, 1);
-    sleep_us(sleep_dur);
-    gpio_put(toneLoopPin, 0);
-    sleep_us(sleep_dur);
-    tight_loop_contents();
+static void picoInterruptHandler(void) {
+  for(unsigned int gpio = 0; gpio < PI_PICO_MAX_USER_GPIO; gpio++) {
+    // Skip pins that are not managed by us.
+    if(picoHalIrqEventMasks[gpio] == 0) {
+      continue;
+    }
+    uint32_t activeEvents = gpio_get_irq_event_mask(gpio);
+    if(activeEvents) {
+      gpio_acknowledge_irq(gpio, activeEvents);
+      if((activeEvents & picoHalIrqEventMasks[gpio]) && picoHalUserCallbacks[gpio]) {
+        picoHalUserCallbacks[gpio]();
+      }
+    }
   }
 }
 
@@ -103,7 +96,28 @@ public:
       return;
     }
 
-    gpio_set_irq_enabled_with_callback(interruptNum, mode, true, (gpio_irq_callback_t)interruptCb);
+    // set callbacks
+    picoHalUserCallbacks[interruptNum] = (irq_handler_t)interruptCb;
+    picoHalIrqEventMasks[interruptNum] = mode;
+
+    // is it a new interrupt for us to grab ?
+    if (!(picoHalIrqMask & (1ULL << interruptNum))) {
+      // if we have a handler in place, we must remove it to avoid 'assert' in the PDK
+      // and we must disable interrupt to make sure we don't miss anything during that
+      // shuffling
+      if (picoHalIrqMask) {
+        irq_set_enabled(IO_IRQ_BANK0, false);
+        gpio_remove_raw_irq_handler_masked64(picoHalIrqMask, picoInterruptHandler);
+      }
+
+      // (re-)add shared handler with the new mask
+      picoHalIrqMask |= (1ULL << interruptNum);
+      gpio_add_raw_irq_handler_masked64(picoHalIrqMask, picoInterruptHandler);
+      irq_set_enabled(IO_IRQ_BANK0, true);
+    }
+
+    // enable GPIO to generate interrupt
+    gpio_set_irq_enabled(interruptNum, mode, true);
   }
 
   void detachInterrupt(uint32_t interruptNum) override {
@@ -111,7 +125,12 @@ public:
       return;
     }
 
-    gpio_set_irq_enabled_with_callback(interruptNum, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, false, NULL);
+    // disable the IRQ
+    gpio_set_irq_enabled(interruptNum, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, false);
+
+    // clear callbacks
+    picoHalUserCallbacks[interruptNum] = NULL;
+    picoHalIrqEventMasks[interruptNum] = 0;
   }
 
   void delay(unsigned long ms) override {
@@ -148,16 +167,10 @@ public:
     return (this->micros() - start);
   }
 
-  void tone(uint32_t pin, unsigned int frequency, unsigned long duration = 0) override {
-    // tones on the Pico are generated using bitbanging. This process is offloaded to the Pico's second core
-    multicore_reset_core1();
-    toneLoopPin = pin;
-    toneLoopFrequency = frequency;
-    toneLoopDuration = duration;
-    multicore_launch_core1(toneLoop);
-  }
+  void tone(uint32_t pin, unsigned int frequency, unsigned long duration = 0) override;
 
   void noTone(uint32_t pin) override {
+    (void)pin; // avoid unused parameter warning
     multicore_reset_core1();
   }
 
@@ -194,5 +207,7 @@ private:
   uint32_t _mosiPin;
   uint32_t _sckPin;
 };
+
+#endif
 
 #endif

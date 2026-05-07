@@ -23,7 +23,7 @@ MorseClient::MorseClient(AFSKClient* audio) {
 int16_t MorseClient::begin(float base, uint8_t speed) {
   // calculate 24-bit frequency
   baseFreqHz = base;
-  baseFreq = (base * 1000000.0) / phyLayer->getFreqStep();
+  baseFreq = (base * 1000000.0f) / phyLayer->freqStep;
 
   // calculate tone period for decoding
   basePeriod = (1000000.0f/base)/2.0f;
@@ -48,7 +48,8 @@ char MorseClient::decode(uint8_t symbol, uint8_t len) {
 
   // iterate over the table
   for(uint8_t i = 0; i < sizeof(MorseTable); i++) {
-    uint8_t code = RADIOLIB_NONVOLATILE_READ_BYTE(&MorseTable[i]);
+    uint8_t* ptr = const_cast<uint8_t*>(&MorseTable[i]);
+    uint8_t code = RADIOLIB_NONVOLATILE_READ_BYTE(ptr);
     if(code == symbol) {
       // match, return the index + ASCII offset
       return((char)(i + RADIOLIB_MORSE_ASCII_OFFSET));
@@ -56,7 +57,7 @@ char MorseClient::decode(uint8_t symbol, uint8_t len) {
   }
 
   // nothing found
-  return(RADIOLIB_MORSE_UNSUPPORTED);
+  return(RADIOLIB_MORSE_UNKNOWN_SYMBOL);
 }
 
 #if !RADIOLIB_EXCLUDE_AFSK
@@ -129,7 +130,8 @@ size_t MorseClient::write(uint8_t b) {
   }
 
   // get morse code from lookup table
-  uint8_t code = RADIOLIB_NONVOLATILE_READ_BYTE(&MorseTable[(uint8_t)(toupper(b) - RADIOLIB_MORSE_ASCII_OFFSET)]);
+  uint8_t* ptr = const_cast<uint8_t*>(&MorseTable[(uint8_t)(toupper(b) - RADIOLIB_MORSE_ASCII_OFFSET)]);
+  uint8_t code = RADIOLIB_NONVOLATILE_READ_BYTE(ptr);
 
   // check unsupported characters
   if(code == RADIOLIB_MORSE_UNSUPPORTED) {
@@ -137,15 +139,16 @@ size_t MorseClient::write(uint8_t b) {
   }
 
   // iterate through codeword until guard bit is reached
+  RADIOLIB_DEBUG_PROTOCOL_PRINT("%c ", b);
   while(code > RADIOLIB_MORSE_GUARDBIT) {
 
     // send dot or dash
     if (code & RADIOLIB_MORSE_DASH) {
-      RADIOLIB_DEBUG_PROTOCOL_PRINT("-");
+      RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG("-");
       transmitDirect(baseFreq, baseFreqHz);
       mod->waitForMicroseconds(mod->hal->micros(), dashLength*1000);
     } else {
-      RADIOLIB_DEBUG_PROTOCOL_PRINT(".");
+      RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(".");
       transmitDirect(baseFreq, baseFreqHz);
       mod->waitForMicroseconds(mod->hal->micros(), dotLength*1000);
     }

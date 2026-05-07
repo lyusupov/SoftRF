@@ -18,7 +18,10 @@ int16_t SX1233::begin(float freq, float br, float freqDev, float rxBw, int8_t po
   bool flagFound = false;
   while((i < 10) && !flagFound) {
     int16_t version = getChipVersion();
-    if((version == RADIOLIB_SX123X_CHIP_REVISION_2_A) || (version == RADIOLIB_SX123X_CHIP_REVISION_2_B) || (version == RADIOLIB_SX123X_CHIP_REVISION_2_C)) {
+    if((version == RADIOLIB_SX123X_CHIP_REVISION_2_A) ||
+       (version == RADIOLIB_SX123X_CHIP_REVISION_2_B) ||
+       (version == RADIOLIB_SX123X_CHIP_REVISION_2_C) ||
+       (version == RADIOLIB_SX123X_CHIP_REVISION_2_D)) {
       flagFound = true;
       this->chipRevision = version;
     } else {
@@ -93,11 +96,11 @@ int16_t SX1233::begin(float freq, float br, float freqDev, float rxBw, int8_t po
 int16_t SX1233::setBitRate(float br) {
   // check high bit-rate operation
   uint8_t pllBandwidth = RADIOLIB_SX1233_PLL_BW_LOW_BIT_RATE;
-  if((fabsf(br - 500.0f) < 0.1) || (fabsf(br - 600.0f) < 0.1)) {
+  if((fabsf(br - 500.0f) < 0.1f) || (fabsf(br - 600.0f) < 0.1f)) {
     pllBandwidth = RADIOLIB_SX1233_PLL_BW_HIGH_BIT_RATE;
   } else {
     // datasheet says 1.2 kbps should be the smallest possible, but 0.512 works fine
-    RADIOLIB_CHECK_RANGE(br, 0.5, 300.0, RADIOLIB_ERR_INVALID_BIT_RATE);
+    RADIOLIB_CHECK_RANGE(br, 0.5f, 300.0f, RADIOLIB_ERR_INVALID_BIT_RATE);
   }
   
 

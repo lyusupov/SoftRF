@@ -7,7 +7,7 @@ SX1279::SX1279(Module* mod) : SX1278(mod) {
 
 int16_t SX1279::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t power, uint16_t preambleLength, uint8_t gain) {
   // execute common part
-  uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
+  const uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
   int16_t state = SX127x::begin(versions, 3, syncWord, preambleLength);
   RADIOLIB_ASSERT(state);
 
@@ -39,7 +39,7 @@ int16_t SX1279::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t sync
 
 int16_t SX1279::beginFSK(float freq, float br, float freqDev, float rxBw, int8_t power, uint16_t preambleLength, bool enableOOK) {
   // execute common part
-  uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
+  const uint8_t versions[] = { RADIOLIB_SX1278_CHIP_VERSION, RADIOLIB_SX1278_CHIP_VERSION_ALT, RADIOLIB_SX1278_CHIP_VERSION_RFM9X };
   int16_t state = SX127x::beginFSK(versions, 3, freqDev, rxBw, preambleLength, enableOOK);
   RADIOLIB_ASSERT(state);
 
@@ -69,7 +69,15 @@ int16_t SX1279::beginFSK(float freq, float br, float freqDev, float rxBw, int8_t
 }
 
 int16_t SX1279::setFrequency(float freq) {
-  RADIOLIB_CHECK_RANGE(freq, 137.0, 960.0, RADIOLIB_ERR_INVALID_FREQUENCY);
+  // NOTE: The datasheet specifies Band 2 as 410-480 MHz, but the hardware has been
+  // verified to work down to ~395 MHz. The lower bound is set here to 395 MHz to
+  // accommodate real-world use cases (e.g. TinyGS satellites, radiosondes) while
+  // adding a small margin below the 400 MHz practical limit.
+  if(!(((freq >= 137.0f) && (freq <= 160.0f)) ||
+       ((freq >= 395.0f) && (freq <= 480.0f)) ||
+       ((freq >= 779.0f) && (freq <= 960.0f)))) {
+    return(RADIOLIB_ERR_INVALID_FREQUENCY);
+  }
 
   // set frequency and if successful, save the new setting
   int16_t state = SX127x::setFrequencyRaw(freq);

@@ -1,4 +1,4 @@
-version: "7.1.0"
+version: "7.6.0"
 description: "Universal wireless communication library. User-friendly library for sub-GHz radio modules (SX1278, RF69, CC1101, SX1268, and many others), as well as ham radio digital modes (RTTY, SSTV, AX.25 etc.) and other protocols (Pagers, LoRaWAN)."
 tags:
   - radio
@@ -33,6 +33,8 @@ tags:
   - lr1110
   - lr1120
   - lr1121
+  - lr2021
+  - adsb
 url: "https://github.com/jgromes/RadioLib"
 repository: "https://github.com/jgromes/RadioLib.git"
 license: "MIT"

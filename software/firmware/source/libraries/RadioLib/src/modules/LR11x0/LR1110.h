@@ -27,7 +27,8 @@ class LR1110: public LR11x0 {
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LoRa bandwidth in kHz. Defaults to 125.0 kHz.
       \param sf LoRa spreading factor. Defaults to 9.
-      \param cr LoRa coding rate denominator. Defaults to 7 (coding rate 4/7).
+      \param cr LoRa coding rate denominator. Defaults to 7 (coding rate 4/7). Allowed values range from 4 to 8. Note that a value of 4 means no coding,
+      is undocumented and not recommended without your own FEC.
       \param syncWord 1-byte LoRa sync word. Defaults to RADIOLIB_LR11X0_LORA_SYNC_WORD_PRIVATE (0x12).
       \param power Output power in dBm. Defaults to 10 dBm.
       \param preambleLength LoRa preamble length in symbols. Defaults to 8 symbols.
@@ -56,8 +57,8 @@ class LR1110: public LR11x0 {
     /*!
       \brief Initialization method for LR-FHSS modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
-      \param bw LR-FHSS bandwidth, one of RADIOLIB_LR11X0_LR_FHSS_BW_* values. Defaults to 722.66 kHz.
-      \param cr LR-FHSS coding rate, one of RADIOLIB_LR11X0_LR_FHSS_CR_* values. Defaults to 2/3 coding rate.
+      \param bw LR-FHSS bandwidth, one of RADIOLIB_LRXXXX_LR_FHSS_BW_* values. Defaults to 722.66 kHz.
+      \param cr LR-FHSS coding rate, one of RADIOLIB_LRXXXX_LR_FHSS_CR_* values. Defaults to 2/3 coding rate.
       \param narrowGrid Whether to use narrow (3.9 kHz) or wide (25.39 kHz) grid spacing. Defaults to true (narrow/non-FCC) grid.
       \param power Output power in dBm. Defaults to 10 dBm.
       \param tcxoVoltage TCXO reference voltage to be set. Defaults to 1.6 V.
@@ -65,7 +66,7 @@ class LR1110: public LR11x0 {
       To use XTAL, either set this value to 0, or set LR11x0::XTAL to true.
       \returns \ref status_codes
     */
-    int16_t beginLRFHSS(float freq = 434.0, uint8_t bw = RADIOLIB_LR11X0_LR_FHSS_BW_722_66, uint8_t cr = RADIOLIB_LR11X0_LR_FHSS_CR_2_3, bool narrowGrid = true, int8_t power = 10, float tcxoVoltage = 1.6);
+    int16_t beginLRFHSS(float freq = 434.0, uint8_t bw = RADIOLIB_LRXXXX_LR_FHSS_BW_722_66, uint8_t cr = RADIOLIB_LRXXXX_LR_FHSS_CR_2_3, bool narrowGrid = true, int8_t power = 10, float tcxoVoltage = 1.6);
 
     // configuration methods
 
@@ -103,9 +104,11 @@ class LR1110: public LR11x0 {
       \param power Output power to be set in dBm.
       \param forceHighPower Force using the high-power PA. If set to false, PA will be determined automatically
       based on configured output power, preferring the low-power PA. If set to true, only high-power PA will be used.
+      \param rampTimeUs PA power ramping time in microseconds. Provided value is rounded up to the
+      nearest discrete ramp time supported by the PA. Defaults to 48 us.
       \returns \ref status_codes
     */
-    int16_t setOutputPower(int8_t power, bool forceHighPower) override;
+    int16_t setOutputPower(int8_t power, bool forceHighPower, uint32_t rampTimeUs = 48);
 
     /*!
       \brief Check if output power is configurable.
@@ -124,7 +127,7 @@ class LR1110: public LR11x0 {
       based on configured output power, preferring the low-power PA. If set to true, only high-power PA will be used.
       \returns \ref status_codes
     */
-    int16_t checkOutputPower(int8_t power, int8_t* clipped, bool forceHighPower) override;
+    int16_t checkOutputPower(int8_t power, int8_t* clipped, bool forceHighPower);
 
     /*!
       \brief Set modem for the radio to use. Will perform full reset and reconfigure the radio

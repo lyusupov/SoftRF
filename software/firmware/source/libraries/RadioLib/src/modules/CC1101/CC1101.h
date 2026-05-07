@@ -597,11 +597,13 @@ class CC1101: public PhysicalLayer {
     /*!
       \brief Blocking binary receive method.
       Overloads for string-based transmissions are implemented in PhysicalLayer.
-      \param data Binary data to be sent.
-      \param len Number of bytes to send.
+      \param data Pointer to array to save the received binary data.
+      \param len Number of bytes that will be received. Must be known in advance for binary transmissions.
+      \param timeout Reception timeout in milliseconds. If set to 0,
+      timeout period will be calculated automatically based on the radio configuration.
       \returns \ref status_codes
     */
-    int16_t receive(uint8_t* data, size_t len) override;
+    int16_t receive(uint8_t* data, size_t len, RadioLibTime_t timeout = 0) override;
 
     /*!
       \brief Sets the module to standby mode.
@@ -747,6 +749,12 @@ class CC1101: public PhysicalLayer {
     */
     int16_t readData(uint8_t* data, size_t len) override;
 
+    /*!
+      \brief Clean up after reception is done.
+      \returns \ref status_codes
+    */
+    int16_t finishReceive() override;
+
     // configuration methods
 
     /*!
@@ -827,6 +835,14 @@ class CC1101: public PhysicalLayer {
     int16_t checkOutputPower(int8_t power, int8_t* clipped, uint8_t* raw);
 
     /*!
+      \brief Set 1 or 2 bytes of sync word.
+      \param sync Pointer to the sync word.
+      \param len Sync word length in bytes. Maximum length depends on the module used.
+      \returns \ref status_codes
+    */
+    int16_t setSyncWord(uint8_t *sync, size_t len) override;
+
+    /*!
       \brief Sets 16-bit sync word as a two byte value.
       \param syncH MSB of the sync word.
       \param syncL LSB of the sync word.
@@ -845,6 +861,13 @@ class CC1101: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErrBits = 0, bool requireCarrierSense = false);
+
+    /*!
+      \brief Sets preamble length.
+      \param len Preamble length to be set (in bits), allowed values: 16, 24, 32, 48, 64, 96, 128 and 192.
+      \returns \ref status_codes
+    */
+    int16_t setPreambleLength(size_t len) override;
 
     /*!
       \brief Sets preamble length.
@@ -877,7 +900,7 @@ class CC1101: public PhysicalLayer {
     int16_t setOOK(bool enableOOK);
 
     /*!
-      \brief Gets RSSI (Recorded Signal Strength Indicator) of the last received packet.
+      \brief Gets RSSI (Received Signal Strength Indicator) of the last received packet.
       In direct or asynchronous direct mode, returns the current RSSI level.
       \returns RSSI in dBm.
     */
@@ -1002,7 +1025,7 @@ class CC1101: public PhysicalLayer {
       \param value The value that indicates which function to place on that pin. See chip datasheet for details.
       \returns \ref status_codes
     */
-    int16_t setDIOMapping(uint32_t pin, uint32_t value) override;
+    int16_t setDIOMapping(uint32_t pin, uint32_t value);
 
   #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
     protected:

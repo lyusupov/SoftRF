@@ -31,7 +31,8 @@
 #define RADIOLIB_SX1272_BW_125_00_KHZ                           0b00000000  //  7     6   bandwidth:  125 kHz
 #define RADIOLIB_SX1272_BW_250_00_KHZ                           0b01000000  //  7     6               250 kHz
 #define RADIOLIB_SX1272_BW_500_00_KHZ                           0b10000000  //  7     6               500 kHz
-#define RADIOLIB_SX1272_CR_4_5                                  0b00001000  //  5     3   error coding rate:  4/5
+#define RADIOLIB_SX1272_CR_4_4                                  0b00000000  //  5     3   error coding rate:  4/4 (undocumented)
+#define RADIOLIB_SX1272_CR_4_5                                  0b00001000  //  5     3                       4/5
 #define RADIOLIB_SX1272_CR_4_6                                  0b00010000  //  5     3                       4/6
 #define RADIOLIB_SX1272_CR_4_7                                  0b00011000  //  5     3                       4/7
 #define RADIOLIB_SX1272_CR_4_8                                  0b00100000  //  5     3                       4/8
@@ -109,7 +110,8 @@ class SX1272: public SX127x {
       \param freq Carrier frequency in MHz. Allowed values range from 860.0 MHz to 1020.0 MHz.
       \param bw %LoRa link bandwidth in kHz. Allowed values are 125, 250 and 500 kHz.
       \param sf %LoRa link spreading factor. Allowed values range from 6 to 12.
-      \param cr %LoRa link coding rate denominator. Allowed values range from 5 to 8.
+      \param cr %LoRa link coding rate denominator. Allowed values range from 4 to 8. Note that a value of 4 means no coding,
+      is undocumented and not recommended without your own FEC.
       \param syncWord %LoRa sync word. Can be used to distinguish different networks. Note that value 0x34 is reserved for LoRaWAN networks.
       \param power Transmission output power in dBm. Allowed values range from 2 to 17 dBm.
       \param preambleLength Length of %LoRa transmission preamble in symbols. The actual preamble length is 4.25 symbols longer than the set number.
@@ -118,7 +120,7 @@ class SX1272: public SX127x {
       Set to 0 to enable automatic gain control (recommended).
       \returns \ref status_codes
     */
-    int16_t begin(float freq = 915.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD, int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0);
+    virtual int16_t begin(float freq = 915.0, float bw = 125.0, uint8_t sf = 9, uint8_t cr = 7, uint8_t syncWord = RADIOLIB_SX127X_SYNC_WORD, int8_t power = 10, uint16_t preambleLength = 8, uint8_t gain = 0);
 
     /*!
       \brief FSK modem initialization method. Must be called at least once from Arduino sketch to initialize the module.
@@ -160,10 +162,11 @@ class SX1272: public SX127x {
       \param sf %LoRa link spreading factor to be set.
       \returns \ref status_codes
     */
-    int16_t setSpreadingFactor(uint8_t sf);
+    virtual int16_t setSpreadingFactor(uint8_t sf);
 
     /*!
-      \brief Sets %LoRa link coding rate denominator. Allowed values range from 5 to 8. Only available in %LoRa mode.
+      \brief Sets %LoRa link coding rate denominator. Allowed values range from 4 to 8. Only available in %LoRa mode.
+      Note that a value of 4 means no coding, is undocumented and not recommended without your own FEC. 
       \param cr %LoRa link coding rate denominator to be set.
       \returns \ref status_codes
     */
@@ -177,18 +180,22 @@ class SX1272: public SX127x {
     int16_t setBitRate(float br) override;
     
     /*!
-      \brief Set data.
-      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \brief Set data rate.
+      \param dr Data rate struct.
+      \param modem The modem corresponding to the requested datarate (FSK or LoRa). 
+      Defaults to currently active modem if not supplied.
       \returns \ref status_codes
     */
-    int16_t setDataRate(DataRate_t dr) override;
+    int16_t setDataRate(DataRate_t dr, ModemType_t modem = RADIOLIB_MODEM_NONE) override;
     
     /*!
       \brief Check the data rate can be configured by this module.
-      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \param dr Data rate struct.
+      \param modem The modem corresponding to the requested datarate (FSK or LoRa). 
+      Defaults to currently active modem if not supplied.
       \returns \ref status_codes
     */
-    int16_t checkDataRate(DataRate_t dr) override;
+    int16_t checkDataRate(DataRate_t dr, ModemType_t modem = RADIOLIB_MODEM_NONE) override;
 
     /*!
       \brief Sets transmission output power. Allowed values range from -1 to 14 dBm (RFO pin) or +2 to +20 dBm (PA_BOOST pin).
@@ -205,7 +212,7 @@ class SX1272: public SX127x {
       or to leave the selection up to user (false) based on power output.
       \returns \ref status_codes
     */
-    int16_t setOutputPower(int8_t power, bool forceRfo) override;
+    int16_t setOutputPower(int8_t power, bool forceRfo);
 
     /*!
       \brief Check if output power is configurable.
@@ -223,7 +230,7 @@ class SX1272: public SX127x {
       \param useRfo Whether to use the RFO (true) or the PA_BOOST (false) pin for the RF output.
       \returns \ref status_codes
     */
-    int16_t checkOutputPower(int8_t power, int8_t* clipped, bool useRfo) override;
+    int16_t checkOutputPower(int8_t power, int8_t* clipped, bool useRfo);
 
     /*!
       \brief Sets gain of receiver LNA (low-noise amplifier). Can be set to any integer in range 1 to 6 where 1 is the highest gain.
@@ -251,14 +258,14 @@ class SX1272: public SX127x {
     int16_t setDataShapingOOK(uint8_t sh);
 
     /*!
-      \brief Gets recorded signal strength indicator.
+      \brief Gets received signal strength indicator.
       Overload with packet mode enabled for PhysicalLayer compatibility.
       \returns RSSI value in dBm.
     */
     float getRSSI() override;
 
     /*!
-      \brief Gets recorded signal strength indicator.
+      \brief Gets received signal strength indicator.
       \param packet Whether to read last packet RSSI, or the current value. LoRa mode only, ignored for FSK.
       \param skipReceive Set to true to skip putting radio in receive mode for the RSSI measurement in FSK/OOK mode.
       \returns RSSI value in dBm.
@@ -318,14 +325,8 @@ class SX1272: public SX127x {
     int16_t setSpreadingFactorRaw(uint8_t newSpreadingFactor);
     int16_t setCodingRateRaw(uint8_t newCodingRate);
 
-    int16_t configFSK();
+    int16_t configFSK() override;
     void errataFix(bool rx) override;
-
-#if !RADIOLIB_GODMODE
-  private:
-#endif
-    bool ldroAuto = true;
-    bool ldroEnabled = false;
 
 };
 

@@ -51,7 +51,7 @@ int16_t LR1110::setFrequency(float freq) {
 }
 
 int16_t LR1110::setFrequency(float freq, bool skipCalibration, float band) {
-  RADIOLIB_CHECK_RANGE(freq, 150.0, 960.0, RADIOLIB_ERR_INVALID_FREQUENCY);
+  RADIOLIB_CHECK_RANGE(freq, 150.0f, 960.0f, RADIOLIB_ERR_INVALID_FREQUENCY);
   
   // check if we need to recalibrate image
   int16_t state;
@@ -71,22 +71,20 @@ int16_t LR1110::setOutputPower(int8_t power) {
   return(this->setOutputPower(power, false));
 }
 
-int16_t LR1110::setOutputPower(int8_t power, bool forceHighPower) {
+int16_t LR1110::setOutputPower(int8_t power, bool forceHighPower, uint32_t rampTimeUs) {
   // check if power value is configurable
   int16_t state = this->checkOutputPower(power, NULL, forceHighPower);
   RADIOLIB_ASSERT(state);
 
   // determine whether to use HP or LP PA and check range accordingly
   bool useHp = forceHighPower || (power > 14);
+  this->txMode = useHp ? LR11x0::MODE_TX_HP : LR11x0::MODE_TX;
   
   // TODO how and when to configure OCP?
 
-  // update PA config - always use VBAT for high-power PA
-  state = setPaConfig((uint8_t)useHp, (uint8_t)useHp, 0x04, 0x07);
-  RADIOLIB_ASSERT(state);
-
-  // set output power
-  state = setTxParams(power, RADIOLIB_LR11X0_PA_RAMP_48U);
+  // update PA config and set output power - always use VBAT for high-power PA
+  // the value returned by LRxxxx class is offset by 3 for LR11x0
+  state = LR11x0::setOutputPower(power, (uint8_t)useHp, (uint8_t)useHp, 0x04, 0x07, roundRampTime(rampTimeUs) - 0x03);
   return(state);
 }
 
@@ -122,6 +120,8 @@ int16_t LR1110::setModem(ModemType_t modem) {
     case(ModemType_t::RADIOLIB_MODEM_LRFHSS): {
       return(this->beginLRFHSS());
     } break;
+    default:
+      return(RADIOLIB_ERR_WRONG_MODEM);
   }
   return(RADIOLIB_ERR_WRONG_MODEM);
 }

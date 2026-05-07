@@ -185,7 +185,7 @@ class AX25Frame {
       \param info Information field, in the form of arbitrary binary buffer.
       \param infoLen Number of bytes in the information field.
     */
-    AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control, uint8_t protocolID, uint8_t* info, uint16_t infoLen);
+    AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control, uint8_t protocolID, const uint8_t* info, uint16_t infoLen);
 
     /*!
       \brief Copy constructor.
@@ -211,7 +211,7 @@ class AX25Frame {
       \param numRepeaters Number of repeaters, maximum is 8.
       \returns \ref status_codes
     */
-    int16_t setRepeaters(char** repeaterCallsigns, uint8_t* repeaterSSIDs, uint8_t numRepeaters);
+    int16_t setRepeaters(char** repeaterCallsigns, const uint8_t* repeaterSSIDs, uint8_t numRepeaters);
 
     /*!
       \brief Method to set receive sequence number.
@@ -281,6 +281,13 @@ class AX25Client {
     */
     int16_t begin(const char* srcCallsign, uint8_t srcSSID = 0x00, uint8_t preLen = 8);
 
+    /*!
+      \brief Set scrambling polynomail and initial value.
+      \param poly Scramling polynomial. Use RADIOLIB_SCRAMBLER_G3RUH_POLY for G3RUH coding.
+      \param poly Initial scrambler value. Use RADIOLIB_SCRAMBLER_G3RUH_INIT for G3RUH coding.
+    */
+    void setScrambler(uint32_t poly, uint32_t init = 0);
+
     #if defined(RADIOLIB_BUILD_ARDUINO)
     /*!
       \brief Transmit unnumbered information (UI) frame.
@@ -324,6 +331,8 @@ class AX25Client {
     char sourceCallsign[RADIOLIB_AX25_MAX_CALLSIGN_LEN + 1] = { 0 };
     uint8_t sourceSSID = 0;
     uint16_t preambleLen = 0;
+    uint32_t scramblerInit = 0;
+    uint32_t scramblerPoly = 0;
 
     void getCallsign(char* buff);
     uint8_t getSSID();

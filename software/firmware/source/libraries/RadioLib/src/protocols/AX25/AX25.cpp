@@ -14,7 +14,7 @@ AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* src
 
 }
 
-AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control, uint8_t protocolID, uint8_t* info, uint16_t infoLen) {
+AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control, uint8_t protocolID, const uint8_t* info, uint16_t infoLen) {
   // destination callsign/SSID
   memcpy(this->destCallsign, destCallsign, strlen(destCallsign));
   this->destCallsign[strlen(destCallsign)] = '\0';
@@ -142,7 +142,7 @@ AX25Frame& AX25Frame::operator=(const AX25Frame& frame) {
   return(*this);
 }
 
-int16_t AX25Frame::setRepeaters(char** repeaterCallsigns, uint8_t* repeaterSSIDs, uint8_t numRepeaters) {
+int16_t AX25Frame::setRepeaters(char** repeaterCallsigns, const uint8_t* repeaterSSIDs, uint8_t numRepeaters) {
   // check number of repeaters
   if((numRepeaters < 1) || (numRepeaters > 8)) {
     return(RADIOLIB_ERR_INVALID_NUM_REPEATERS);
@@ -263,6 +263,11 @@ int16_t AX25Client::begin(const char* srcCallsign, uint8_t srcSSID, uint8_t preL
   return(phyLayer->startDirect());
 }
 
+void AX25Client::setScrambler(uint32_t poly, uint32_t init) {
+  this->scramblerPoly = poly;
+  this->scramblerInit = init;
+}
+
 #if defined(RADIOLIB_BUILD_ARDUINO)
 int16_t AX25Client::transmit(String& str, const char* destCallsign, uint8_t destSSID) {
   return(transmit(str.c_str(), destCallsign, destSSID));
@@ -307,7 +312,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   #if !RADIOLIB_STATIC_ONLY
     uint8_t* frameBuff = new uint8_t[frameBuffLen + 2];
   #else
-    uint8_t frameBuff[RADIOLIB_STATIC_ARRAY_SIZE];
+    uint8_t frameBuff[RADIOLIB_STATIC_ARRAY_SIZE + 2];
   #endif
   uint8_t* frameBuffPtr = frameBuff;
 
@@ -390,7 +395,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
     // worst-case scenario: sequence of 1s, will have 120% of the original length, stuffed frame also includes both flags
     uint8_t* stuffedFrameBuff = new uint8_t[preambleLen + 1 + (6*frameBuffLen)/5 + 2];
   #else
-    uint8_t stuffedFrameBuff[RADIOLIB_STATIC_ARRAY_SIZE];
+    uint8_t stuffedFrameBuff[1 + (6*RADIOLIB_STATIC_ARRAY_SIZE)/5 + 2];
   #endif
 
   // initialize buffer to all zeros
@@ -472,6 +477,11 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
         SET_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos);
       }
     }
+  }
+
+  // do the scrambling
+  if(scramblerPoly) {
+    rlb_scrambler(stuffedFrameBuff, stuffedFrameBuffLen, scramblerPoly, scramblerInit, true);
   }
 
   // transmit

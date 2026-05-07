@@ -177,6 +177,7 @@ class Module {
       BITS_0 = 0,
       BITS_8 = 8,
       BITS_16 = 16,
+      BITS_24 = 24,
       BITS_32 = 32,
     };
 
@@ -272,9 +273,10 @@ class Module {
       \param lsb Least significant bit of the register variable. Bits below this one will not be affected by the write operation.
       \param checkInterval Number of milliseconds between register writing and verification reading. Some registers need up to 10ms to process the change.
       \param checkMask Mask of bits to check, only bits set to 1 will be verified.
+      \param force Write new value even if the old value is the same.
       \returns \ref status_codes
     */
-    int16_t SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF);
+    int16_t SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF, bool force = false);
 
     /*!
       \brief SPI burst read method.
@@ -343,7 +345,7 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIreadStream(uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIreadStream(const uint8_t* cmd, uint8_t cmdLen, uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
     
     /*!
       \brief Method to perform a write transaction with SPI stream.
@@ -366,7 +368,7 @@ class Module {
       \param verify Whether to verify the result of the transaction after it is finished.
       \returns \ref status_codes
     */
-    int16_t SPIwriteStream(uint8_t* cmd, uint8_t cmdLen, const uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
+    int16_t SPIwriteStream(const uint8_t* cmd, uint8_t cmdLen, const uint8_t* data, size_t numBytes, bool waitForGpio = true, bool verify = true);
     
     /*!
       \brief SPI single transfer method for modules with stream-type SPI interface (SX126x, SX128x etc.).
@@ -382,12 +384,9 @@ class Module {
     int16_t SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, const uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio);
 
     // pin number access methods
-
-    /*!
-      \brief Access method to get the pin number of SPI chip select.
-      \returns Pin number of SPI chip select configured in the constructor.
-    */
-    uint32_t getCs() const { return(csPin); }
+    // getCs is omitted on purpose, as it can interfere when accessing the SPI in a concurrent environment
+    // so it is considered to be part of the SPI pins and hence not accessible from outside
+    // see https://github.com/jgromes/RadioLib/discussions/1364
 
     /*!
       \brief Access method to get the pin number of interrupt/GPIO.
@@ -523,10 +522,6 @@ class Module {
     void regdump(const char* level, uint16_t start, size_t len);
     #endif
 
-    // RF switch pins and table (in use by external LR11x0 module)
-    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
-    const RfSwitchMode_t *rfSwitchTable = nullptr;
-
 #if !RADIOLIB_GODMODE
   private:
 #endif
@@ -534,6 +529,10 @@ class Module {
     uint32_t irqPin = RADIOLIB_NC;
     uint32_t rstPin = RADIOLIB_NC;
     uint32_t gpioPin = RADIOLIB_NC;
+
+    // RF switch pins and table
+    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
+    const RfSwitchMode_t *rfSwitchTable = nullptr;
 
     #if RADIOLIB_INTERRUPT_TIMING
     uint32_t prevTimingLen = 0;

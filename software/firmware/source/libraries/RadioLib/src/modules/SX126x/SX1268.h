@@ -33,7 +33,8 @@ class SX1268: public SX126x {
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LoRa bandwidth in kHz. Defaults to 125.0 kHz.
       \param sf LoRa spreading factor. Defaults to 9.
-      \param cr LoRa coding rate denominator. Defaults to 7 (coding rate 4/7).
+      \param cr LoRa coding rate denominator. Defaults to 7 (coding rate 4/7). Allowed values range from 4 to 8. 
+      Note that a value of 4 means no coding, is undocumented and not recommended without your own FEC.
       \param syncWord 1-byte LoRa sync word. Defaults to RADIOLIB_SX126X_SYNC_WORD_PRIVATE (0x12).
       \param power Output power in dBm. Defaults to 10 dBm.
       \param preambleLength LoRa preamble length in symbols. Defaults to 8 symbols.
@@ -60,7 +61,21 @@ class SX1268: public SX126x {
       \returns \ref status_codes
     */
     int16_t beginFSK(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 156.2, int8_t power = 10, uint16_t preambleLength = 16, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
-
+    
+    /*!
+      \brief Initialization method for BPSK modem.
+      NOTE: Proceed with caution! BPSK support in SX126x is epxerimental and poorly documented!
+      \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
+      \param br FSK bit rate in kbps. Defaults to 600 bps, only 100 and 600 bps is supported.
+      \param power Output power in dBm. Defaults to 10 dBm.
+      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set SX126x::XTAL to true.
+      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
+      \returns \ref status_codes
+    */
+    virtual int16_t beginBPSK(float freq = 434.0, float br = 0.6, int8_t power = 10, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
+    
     /*!
       \brief Initialization method for LR-FHSS modem. This modem only supports transmission!
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
@@ -103,6 +118,14 @@ class SX1268: public SX126x {
       \returns \ref status_codes
     */
     int16_t setOutputPower(int8_t power) override;
+
+    /*!
+      \brief Sets output power. Allowed values are in range from -9 to 22 dBm.
+      \param power Output power to be set in dBm.
+      \param optimize Whether to use power-optimized PA configuration (true) or datasheet default (false).
+      \returns \ref status_codes
+    */
+    int16_t setOutputPower(int8_t power, bool optimize);
 
     /*!
       \brief Check if output power is configurable.

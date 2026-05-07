@@ -106,6 +106,12 @@
   #define RADIOLIB_STATIC_ARRAY_SIZE   (256)
 #endif
 
+// allow user to set custom SPI buffer size
+// the default covers the maximum supported SPI command, address and status
+#if !defined(RADIOLIB_STATIC_SPI_ARRAY_SIZE)
+  #define RADIOLIB_STATIC_SPI_ARRAY_SIZE   (3*sizeof(uint32_t) + (RADIOLIB_STATIC_ARRAY_SIZE))
+#endif
+
 /*
  * Uncomment on boards whose clock runs too slow or too fast
  * Set the value according to the following scheme:
@@ -141,10 +147,8 @@
  * RADIOLIB_DEFAULT_SPI - default SPIClass instance to use.
  * RADIOLIB_NONVOLATILE - macro to place variable into program storage (usually Flash).
  * RADIOLIB_NONVOLATILE_READ_BYTE - function/macro to read variables saved in program storage (usually Flash).
- * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually vai the `using` keyword.
+ * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually via the `using` keyword.
  * RADIOLIB_TONE_UNSUPPORTED - some platforms do not have tone()/noTone(), which is required for AFSK.
- *
- * In addition, some platforms may require RadioLib to disable specific drivers (such as ESP8266).
  *
  * Users may also specify their own configuration by uncommenting the RADIOLIB_CUSTOM_ARDUINO,
  * and then specifying all platform parameters in the section below. This will override automatic
@@ -198,6 +202,12 @@
   //#define RADIOLIB_EXCLUDE_RTTY             (1)
   //#define RADIOLIB_EXCLUDE_SSTV             (1)
   //#define RADIOLIB_EXCLUDE_DIRECT_RECEIVE   (1)
+  //#define RADIOLIB_EXCLUDE_BELL             (1)
+  //#define RADIOLIB_EXCLUDE_APRS             (1)
+  //#define RADIOLIB_EXCLUDE_LORAWAN          (1)
+  //#define RADIOLIB_EXCLUDE_LR11X0           (1)
+  //#define RADIOLIB_EXCLUDE_FSK4             (1)
+  //#define RADIOLIB_EXCLUDE_PAGER            (1)
 
 #elif defined(__AVR__) && !(defined(ARDUINO_AVR_UNO_WIFI_REV2) || defined(ARDUINO_AVR_NANO_EVERY) || defined(ARDUINO_ARCH_MEGAAVR))
   // Arduino AVR boards (except for megaAVR) - Uno, Mega etc.
@@ -241,10 +251,14 @@
   #define RADIOLIB_PLATFORM                           "Arduino Due"
   #define RADIOLIB_TONE_UNSUPPORTED
 
-#elif (defined(NRF52832_XXAA) || defined(NRF52840_XXAA)) && \
-     (!defined(ARDUINO_ARDUINO_NANO33BLE) && !defined(ARDUINO_NANO33BLE))
+#elif (defined(NRF52832_XXAA) || defined(NRF52840_XXAA)) && !defined(ARDUINO_ARDUINO_NANO33BLE)
   // Adafruit nRF52 boards
   #define RADIOLIB_PLATFORM                           "Adafruit nRF52"
+
+#elif defined(NRF54L15_XXAA)
+  // Arduino nRF54 core
+  #define RADIOLIB_PLATFORM                           "Nordic nRF54 (unofficial)"
+//  #include <cstdio>
 
 #elif defined(ARDUINO_ARC32_TOOLS)
   // Intel Curie
@@ -264,7 +278,7 @@
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
-#elif defined(ARDUINO_ARDUINO_NANO33BLE) || defined(ARDUINO_NANO33BLE)
+#elif defined(ARDUINO_ARDUINO_NANO33BLE)
   // Arduino Nano 33 BLE
   #define RADIOLIB_PLATFORM                           "Arduino Nano 33 BLE"
   #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
@@ -341,7 +355,6 @@
   #define RADIOLIB_YIELD_UNSUPPORTED
   #if defined(yield)
   #undef yield
-  inline void yield() { };
   #endif
 
 #elif defined(RASPI)
@@ -382,6 +395,13 @@
 #elif defined(ARDUINO_ARCH_SILABS)
   // Silicon Labs Arduino
   #define RADIOLIB_PLATFORM                           "Arduino Silicon Labs"
+  #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
+  #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
+  #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
+
+#elif defined(ARDUINO_ARCH_ZEPHYR) && defined(ARDUINO_UNO_Q)
+  // Arduino Uno Q (Zephyr OS)
+  #define RADIOLIB_PLATFORM                           "Arduino Uno Q (Zephyr OS)"
   #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
@@ -445,8 +465,8 @@
 
   #define RADIOLIB_NC                                 (0xFFFFFFFF)
   #define RADIOLIB_NONVOLATILE
-  #define RADIOLIB_NONVOLATILE_READ_BYTE(addr)        (*((uint8_t *)(void *)(addr)))
-  #define RADIOLIB_NONVOLATILE_READ_DWORD(addr)       (*((uint32_t *)(void *)(addr)))
+  #define RADIOLIB_NONVOLATILE_READ_BYTE(addr)        (*(reinterpret_cast<uint8_t *>(reinterpret_cast<void *>(addr))))
+  #define RADIOLIB_NONVOLATILE_READ_DWORD(addr)       (*(reinterpret_cast<uint32_t *>(reinterpret_cast<void *>(addr))))
   #define RADIOLIB_TYPE_ALIAS(type, alias)            using alias = type;
 
   #define DEC 10
@@ -477,76 +497,90 @@
 #endif
 
 #if RADIOLIB_DEBUG
-  #if defined(RADIOLIB_BUILD_ARDUINO)
-    #define RADIOLIB_DEBUG_PRINT(...) rlb_printf(__VA_ARGS__)
-    #define RADIOLIB_DEBUG_PRINTLN(M, ...) rlb_printf(M "" RADIOLIB_LINE_FEED, ##__VA_ARGS__)
-    #define RADIOLIB_DEBUG_PRINT_LVL(LEVEL, M, ...) rlb_printf(LEVEL "" M, ##__VA_ARGS__)
-    #define RADIOLIB_DEBUG_PRINTLN_LVL(LEVEL, M, ...) rlb_printf(LEVEL "" M "" RADIOLIB_LINE_FEED, ##__VA_ARGS__)
+  #if !defined(RADIOLIB_DEBUG_PRINT)
+    #define RADIOLIB_DEBUG_PRINT(M, ...) rlb_printf(false, M, ##__VA_ARGS__)
+    #define RADIOLIB_DEBUG_PRINT_LVL(LEVEL, M, ...) rlb_printf(true, LEVEL "" M, ##__VA_ARGS__)
+  #endif
 
-    // some platforms do not support printf("%f"), so it has to be done this way
-    #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL); RADIOLIB_DEBUG_PORT.print(VAL, DECIMALS)
+  #if !defined(RADIOLIB_DEBUG_PRINTLN)
+    #define RADIOLIB_DEBUG_PRINTLN(M, ...) rlb_printf(false, M RADIOLIB_LINE_FEED, ##__VA_ARGS__)
+    #define RADIOLIB_DEBUG_PRINTLN_LVL(LEVEL, M, ...) rlb_printf(true, LEVEL "" M RADIOLIB_LINE_FEED, ##__VA_ARGS__)
+  #endif
+
+  // some Arduino platforms do not support printf("%f"), so it has to be done this way
+  #if defined(RADIOLIB_BUILD_ARDUINO)
+    #define RADIOLIB_DEBUG_PRINT_FLOAT(VAL, DECIMALS) RADIOLIB_DEBUG_PORT.print(VAL, DECIMALS)
+    #define RADIOLIB_DEBUG_PRINT_FLOAT_LVL(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL); RADIOLIB_DEBUG_PORT.print(VAL, DECIMALS)
   #else
-    #if !defined(RADIOLIB_DEBUG_PRINT)
-      #define RADIOLIB_DEBUG_PRINT(...) fprintf(RADIOLIB_DEBUG_PORT, __VA_ARGS__)
-      #define RADIOLIB_DEBUG_PRINT_LVL(LEVEL, M, ...) fprintf(RADIOLIB_DEBUG_PORT, LEVEL "" M, ##__VA_ARGS__)
-    #endif
-    #if !defined(RADIOLIB_DEBUG_PRINTLN)
-      #define RADIOLIB_DEBUG_PRINTLN(M, ...) fprintf(RADIOLIB_DEBUG_PORT, M "" RADIOLIB_LINE_FEED, ##__VA_ARGS__)
-      #define RADIOLIB_DEBUG_PRINTLN_LVL(LEVEL, M, ...) fprintf(RADIOLIB_DEBUG_PORT, LEVEL "" M "" RADIOLIB_LINE_FEED, ##__VA_ARGS__)
-    #endif
-    #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL "%.3f", VAL)
+    #define RADIOLIB_DEBUG_PRINT_FLOAT(VAL, DECIMALS) RADIOLIB_DEBUG_PRINT("%.3f", VAL)
+    #define RADIOLIB_DEBUG_PRINT_FLOAT_LVL(LEVEL, VAL, DECIMALS) RADIOLIB_DEBUG_PRINT(LEVEL "%.3f", VAL)
   #endif
 
   #define RADIOLIB_DEBUG_HEXDUMP(LEVEL, ...) rlb_hexdump(LEVEL, __VA_ARGS__)
 #else
   #define RADIOLIB_DEBUG_PRINT(...) {}
   #define RADIOLIB_DEBUG_PRINTLN(...) {}
-  #define RADIOLIB_DEBUG_PRINT_FLOAT(VAL, DECIMALS) {}
+  #define RADIOLIB_DEBUG_PRINT_FLOAT(LEVEL, VAL, DECIMALS) {}
   #define RADIOLIB_DEBUG_HEXDUMP(...) {}
 #endif
 
+#define RADIOLIB_DEBUG_TAG            ": "
+#define RADIOLIB_DEBUG_TAG_BASIC      "RLB_DBG" RADIOLIB_DEBUG_TAG
+#define RADIOLIB_DEBUG_TAG_PROTOCOL   "RLB_PRO" RADIOLIB_DEBUG_TAG
+#define RADIOLIB_DEBUG_TAG_SPI        "RLB_SPI" RADIOLIB_DEBUG_TAG
+
 #if RADIOLIB_DEBUG_BASIC
-  #define RADIOLIB_DEBUG_BASIC_PRINT(...) RADIOLIB_DEBUG_PRINT_LVL("RLB_DBG: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...) RADIOLIB_DEBUG_PRINT_LVL("", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_BASIC_PRINTLN(...) RADIOLIB_DEBUG_PRINTLN_LVL("RLB_DBG: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...) RADIOLIB_DEBUG_PRINT_FLOAT("RLB_DBG: ", __VA_ARGS__);
-  #define RADIOLIB_DEBUG_BASIC_HEXDUMP(...) RADIOLIB_DEBUG_HEXDUMP("RLB_DBG: ", __VA_ARGS__);
+  #define RADIOLIB_DEBUG_BASIC_PRINT(...)         RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN(...)       RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_HEXDUMP(...)       RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...)   RADIOLIB_DEBUG_PRINT_FLOAT_LVL(RADIOLIB_DEBUG_TAG_BASIC, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...)   RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN_NOTAG(...) RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT_NOTAG(...)  RADIOLIB_DEBUG_PRINT_FLOAT(__VA_ARGS__)
 #else
   #define RADIOLIB_DEBUG_BASIC_PRINT(...) {}
-  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...) {}
   #define RADIOLIB_DEBUG_BASIC_PRINTLN(...) {}
-  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...) {}
   #define RADIOLIB_DEBUG_BASIC_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINTLN_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_BASIC_PRINT_FLOAT_NOTAG(...) {}
 #endif
 
 #if RADIOLIB_DEBUG_PROTOCOL
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINT(...) RADIOLIB_DEBUG_PRINT_LVL("RLB_PRO: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...) RADIOLIB_DEBUG_PRINT_LVL("", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN(...) RADIOLIB_DEBUG_PRINTLN_LVL("RLB_PRO: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...) RADIOLIB_DEBUG_PRINT_FLOAT("RLB_PRO: ", __VA_ARGS__);
-  #define RADIOLIB_DEBUG_PROTOCOL_HEXDUMP(...) RADIOLIB_DEBUG_HEXDUMP("RLB_PRO: ", __VA_ARGS__);
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT(...)          RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN(...)        RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_HEXDUMP(...)        RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...)    RADIOLIB_DEBUG_PRINT_FLOAT_LVL(RADIOLIB_DEBUG_TAG_PROTOCOL, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...)    RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN_NOTAG(...)  RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT_NOTAG(...)  RADIOLIB_DEBUG_PRINT_FLOAT(__VA_ARGS__)
 #else
   #define RADIOLIB_DEBUG_PROTOCOL_PRINT(...) {}
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...) {}
   #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN(...) {}
-  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...) {}
   #define RADIOLIB_DEBUG_PROTOCOL_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINTLN_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_PROTOCOL_PRINT_FLOAT_NOTAG(...) {}
 #endif
 
 #if RADIOLIB_DEBUG_SPI
-  #define RADIOLIB_DEBUG_SPI_PRINT(...) RADIOLIB_DEBUG_PRINT_LVL("RLB_SPI: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...) RADIOLIB_DEBUG_PRINT_LVL("", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_SPI_PRINTLN(...) RADIOLIB_DEBUG_PRINTLN_LVL("RLB_SPI: ", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...) RADIOLIB_DEBUG_PRINTLN_LVL("", __VA_ARGS__)
-  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...) RADIOLIB_DEBUG_PRINT_FLOAT("RLB_SPI: ", __VA_ARGS__);
-  #define RADIOLIB_DEBUG_SPI_HEXDUMP(...) RADIOLIB_DEBUG_HEXDUMP("RLB_SPI: ", __VA_ARGS__);
+  #define RADIOLIB_DEBUG_SPI_PRINT(...)           RADIOLIB_DEBUG_PRINT_LVL(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINTLN(...)         RADIOLIB_DEBUG_PRINTLN_LVL(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_HEXDUMP(...)         RADIOLIB_DEBUG_HEXDUMP(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...)     RADIOLIB_DEBUG_PRINT_FLOAT_LVL(RADIOLIB_DEBUG_TAG_SPI, __VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...)     RADIOLIB_DEBUG_PRINT(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...)   RADIOLIB_DEBUG_PRINTLN(__VA_ARGS__)
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT_NOTAG(...)  RADIOLIB_DEBUG_PRINT_FLOAT(__VA_ARGS__)
 #else
   #define RADIOLIB_DEBUG_SPI_PRINT(...) {}
-  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...) {}
   #define RADIOLIB_DEBUG_SPI_PRINTLN(...) {}
-  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...) {}
-  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...) {}
   #define RADIOLIB_DEBUG_SPI_HEXDUMP(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINT_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG(...) {}
+  #define RADIOLIB_DEBUG_SPI_PRINT_FLOAT_NOTAG(...) {}
 #endif
 
 // debug info strings
@@ -596,7 +630,7 @@
 
 // version definitions
 #define RADIOLIB_VERSION_MAJOR  7
-#define RADIOLIB_VERSION_MINOR  1
+#define RADIOLIB_VERSION_MINOR  6
 #define RADIOLIB_VERSION_PATCH  0
 #define RADIOLIB_VERSION_EXTRA  0
 

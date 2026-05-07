@@ -39,10 +39,10 @@ int16_t PagerClient::begin(float base, uint16_t speed, bool invert, uint16_t shi
 
   // calculate 24-bit frequency
   baseFreq = base;
-  baseFreqRaw = (baseFreq * 1000000.0) / phyLayer->getFreqStep();
+  baseFreqRaw = (baseFreq * 1000000.0f) / phyLayer->freqStep;
 
   // calculate module carrier frequency resolution
-  uint16_t step = round(phyLayer->getFreqStep());
+  uint16_t step = round(phyLayer->freqStep);
 
   // calculate raw frequency shift
   shiftFreqHz = shift;
@@ -67,10 +67,10 @@ int16_t PagerClient::transmit(String& str, uint32_t addr, uint8_t encoding, uint
 #endif
 
 int16_t PagerClient::transmit(const char* str, uint32_t addr, uint8_t encoding, uint8_t function) {
-  return(PagerClient::transmit((uint8_t*)str, strlen(str), addr, encoding, function));
+  return(PagerClient::transmit(reinterpret_cast<uint8_t*>(const_cast<char*>(str)), strlen(str), addr, encoding, function));
 }
 
-int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t encoding, uint8_t function) {
+int16_t PagerClient::transmit(const uint8_t* data, size_t len, uint32_t addr, uint8_t encoding, uint8_t function) {
   if(addr > RADIOLIB_PAGER_ADDRESS_MAX) {
     return(RADIOLIB_ERR_INVALID_ADDRESS_WIDTH);
   }
@@ -93,7 +93,7 @@ int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t 
   }
 
   // Automatically set function bits based on given encoding
-  if (function == RADIOLIB_PAGER_FUNC_AUTO) {
+  if(function == RADIOLIB_PAGER_FUNC_AUTO) {
     if(encoding == RADIOLIB_PAGER_BCD) {
       function = RADIOLIB_PAGER_FUNC_BITS_NUMERIC;
 
@@ -101,14 +101,14 @@ int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t 
       function = RADIOLIB_PAGER_FUNC_BITS_ALPHA;
 
     } else {
-    return(RADIOLIB_ERR_INVALID_ENCODING);
+      return(RADIOLIB_ERR_INVALID_ENCODING);
 
     }
     if(len == 0) {
       function = RADIOLIB_PAGER_FUNC_BITS_TONE;
     }
   }
-  if (function > RADIOLIB_PAGER_FUNC_BITS_ALPHA) {
+  if(function > RADIOLIB_PAGER_FUNC_BITS_ALPHA) {
     return(RADIOLIB_ERR_INVALID_FUNCTION);
   }
 
@@ -124,13 +124,8 @@ int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t 
     numDataBlocks += 1;
   }
 
-  // calculate number of batches
-  size_t numBatches = (1 + framePos + numDataBlocks) / RADIOLIB_PAGER_BATCH_LEN + 1;
-  if((1 + numDataBlocks) % RADIOLIB_PAGER_BATCH_LEN == 0) {
-    numBatches -= 1;
-  }
-
-  // calculate message length in 32-bit code words
+  // calculate number of batches and message length in 32-bit code words
+  size_t numBatches = (framePos + numDataBlocks + RADIOLIB_PAGER_BATCH_LEN) / RADIOLIB_PAGER_BATCH_LEN;
   size_t msgLen = RADIOLIB_PAGER_PREAMBLE_LENGTH + (1 + RADIOLIB_PAGER_BATCH_LEN) * numBatches;
 
   #if RADIOLIB_STATIC_ONLY
@@ -168,10 +163,11 @@ int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t 
       uint8_t blockPos = RADIOLIB_PAGER_PREAMBLE_LENGTH + 1 + framePos + 1 + i;
 
       // check if we need to skip a frame sync marker
-      if(((blockPos - (RADIOLIB_PAGER_PREAMBLE_LENGTH + 1)) % RADIOLIB_PAGER_BATCH_LEN) == 0) {
+      if(((blockPos - RADIOLIB_PAGER_PREAMBLE_LENGTH) % (RADIOLIB_PAGER_BATCH_LEN + 1)) == 0) {
         blockPos++;
         i++;
       }
+      RADIOLIB_DEBUG_PROTOCOL_PRINT("blockPos = %d\n", blockPos);
 
       // mark this as a message code word
       msg[blockPos] = RADIOLIB_PAGER_MESSAGE_CODE_WORD << (RADIOLIB_PAGER_CODE_WORD_LEN - 1);
@@ -323,17 +319,17 @@ int16_t PagerClient::readData(String& str, size_t len, uint32_t* addr) {
   state = readData(data, &length, addr);
 
   if(state == RADIOLIB_ERR_NONE) {
-    // check tone-only tramsissions
+    // check tone-only transmissions
     if(length == 0) {
       length = 6;
-      strncpy((char*)data, "<tone>", length + 1);
+      strncpy(reinterpret_cast<char*>(data), "<tone>", length + 1);
     }
 
     // add null terminator
     data[length] = 0;
 
     // initialize Arduino String class
-    str = String((char*)data);
+    str = String(reinterpret_cast<char*>(data));
   }
 
   // deallocate temporary buffer
@@ -494,9 +490,10 @@ bool PagerClient::addressMatched(uint32_t addr) {
   return(false);
 }
 
-void PagerClient::write(uint32_t* data, size_t len) {
+void PagerClient::write(const uint32_t* data, size_t len) {
   // write code words from buffer
   for(size_t i = 0; i < len; i++) {
+    RADIOLIB_DEBUG_PROTOCOL_PRINTLN("POCSAG W\t%lu\t%08lX", (long unsigned int)i, (long unsigned int)data[i]);
     PagerClient::write(data[i]);
   }
 }

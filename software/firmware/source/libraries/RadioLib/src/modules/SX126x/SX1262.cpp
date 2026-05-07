@@ -3,6 +3,45 @@
 
 #if !RADIOLIB_EXCLUDE_SX126X
 
+// this is a lookup table for optimized PA configuration
+// it was determined by testing in https://github.com/jgromes/RadioLib/issues/1628
+// see also https://github.com/radiolib-org/power-tests
+static  const SX126x::paTableEntry_t paOptTable[32] = {
+  { .paDutyCycle = 2, .hpMax = 2, .paVal = -5 },
+  { .paDutyCycle = 2, .hpMax = 1, .paVal = 0 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 3 },
+  { .paDutyCycle = 1, .hpMax = 2, .paVal = 0 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 6 },
+  { .paDutyCycle = 1, .hpMax = 2, .paVal = 3 },
+  { .paDutyCycle = 2, .hpMax = 2, .paVal = 2 },
+  { .paDutyCycle = 4, .hpMax = 1, .paVal = 6 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 11 },
+  { .paDutyCycle = 2, .hpMax = 1, .paVal = 11 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 14 },
+  { .paDutyCycle = 2, .hpMax = 1, .paVal = 14 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 20 },
+  { .paDutyCycle = 1, .hpMax = 1, .paVal = 22 },
+  { .paDutyCycle = 2, .hpMax = 2, .paVal = 11 },
+  { .paDutyCycle = 3, .hpMax = 1, .paVal = 21 },
+  { .paDutyCycle = 1, .hpMax = 2, .paVal = 17 },
+  { .paDutyCycle = 4, .hpMax = 2, .paVal = 13 },
+  { .paDutyCycle = 1, .hpMax = 2, .paVal = 20 },
+  { .paDutyCycle = 1, .hpMax = 2, .paVal = 22 },
+  { .paDutyCycle = 2, .hpMax = 2, .paVal = 21 },
+  { .paDutyCycle = 3, .hpMax = 2, .paVal = 21 },
+  { .paDutyCycle = 1, .hpMax = 4, .paVal = 19 },
+  { .paDutyCycle = 1, .hpMax = 4, .paVal = 20 },
+  { .paDutyCycle = 3, .hpMax = 3, .paVal = 20 },
+  { .paDutyCycle = 2, .hpMax = 5, .paVal = 19 },
+  { .paDutyCycle = 1, .hpMax = 6, .paVal = 22 },
+  { .paDutyCycle = 2, .hpMax = 5, .paVal = 22 },
+  { .paDutyCycle = 3, .hpMax = 5, .paVal = 22 },
+  { .paDutyCycle = 3, .hpMax = 6, .paVal = 22 },
+  { .paDutyCycle = 4, .hpMax = 6, .paVal = 22 },
+  { .paDutyCycle = 4, .hpMax = 7, .paVal = 22 },
+};
+
+
 SX1262::SX1262(Module* mod) : SX126x(mod) {
   chipType = RADIOLIB_SX1262_CHIP_TYPE;
 }
@@ -49,6 +88,24 @@ int16_t SX1262::beginFSK(float freq, float br, float freqDev, float rxBw, int8_t
   return(state);
 }
 
+int16_t SX1262::beginBPSK(float freq, float br, int8_t power, float tcxoVoltage, bool useRegulatorLDO) {
+  // execute common part
+  int16_t state = SX126x::beginBPSK(br, tcxoVoltage, useRegulatorLDO);
+  RADIOLIB_ASSERT(state);
+
+  // configure publicly accessible settings
+  state = setFrequency(freq);
+  RADIOLIB_ASSERT(state);
+
+  state = SX126x::fixPaClamping();
+  RADIOLIB_ASSERT(state);
+
+  state = setOutputPower(power);
+  RADIOLIB_ASSERT(state);
+
+  return(state);
+}
+
 int16_t SX1262::beginLRFHSS(float freq, uint8_t bw, uint8_t cr, bool narrowGrid, int8_t power, float tcxoVoltage, bool useRegulatorLDO) {
   // execute common part
   int16_t state = SX126x::beginLRFHSS(bw, cr, narrowGrid, tcxoVoltage, useRegulatorLDO);
@@ -72,7 +129,7 @@ int16_t SX1262::setFrequency(float freq) {
 }
 
 int16_t SX1262::setFrequency(float freq, bool skipCalibration) {
-  RADIOLIB_CHECK_RANGE(freq, 150.0, 960.0, RADIOLIB_ERR_INVALID_FREQUENCY);
+  RADIOLIB_CHECK_RANGE(freq, 150.0f, 960.0f, RADIOLIB_ERR_INVALID_FREQUENCY);
 
   // check if we need to recalibrate image
   if(!skipCalibration && (fabsf(freq - this->freqMHz) >= RADIOLIB_SX126X_CAL_IMG_FREQ_TRIG_MHZ)) {
@@ -85,25 +142,19 @@ int16_t SX1262::setFrequency(float freq, bool skipCalibration) {
 }
 
 int16_t SX1262::setOutputPower(int8_t power) {
+  return(setOutputPower(power, true));
+}
+
+int16_t SX1262::setOutputPower(int8_t power, bool optimize) {
   // check if power value is configurable
   int16_t state = checkOutputPower(power, NULL);
   RADIOLIB_ASSERT(state);
 
-  // get current OCP configuration
-  uint8_t ocp = 0;
-  state = readRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1);
-  RADIOLIB_ASSERT(state);
-
   // set PA config
-  state = SX126x::setPaConfig(0x04, RADIOLIB_SX126X_PA_CONFIG_SX1262);
-  RADIOLIB_ASSERT(state);
-
-  // set output power with default 200us ramp
-  state = SX126x::setTxParams(power, RADIOLIB_SX126X_PA_RAMP_200U);
-  RADIOLIB_ASSERT(state);
-
-  // restore OCP configuration
-  return(writeRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1));
+  int8_t paVal = optimize ? paOptTable[power + 9].paVal : power;
+  uint8_t paDutyCycle = optimize ? paOptTable[power + 9].paDutyCycle : 0x04;
+  uint8_t hpMax = optimize ? paOptTable[power + 9].hpMax : 0x07;
+  return(SX126x::setOutputPower(paVal, paDutyCycle, hpMax, RADIOLIB_SX126X_PA_CONFIG_SX1262));
 }
 
 int16_t SX1262::checkOutputPower(int8_t power, int8_t* clipped) {
