@@ -4369,6 +4369,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
 {
   IPAddress broadcastIp;
 
+#if !defined(EXCLUDE_WIFI)
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
   broadcastIp = WiFi.broadcastIP();
 #else
@@ -4382,6 +4383,7 @@ static IPAddress ESP32_WiFi_get_broadcast()
 
   broadcastIp = ~info.netmask.addr | info.ip.addr;
 #endif /* ESP_IDF_VERSION_MAJOR */
+#endif /* EXCLUDE_WIFI */
 
   return broadcastIp;
 }
