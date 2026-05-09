@@ -4831,6 +4831,32 @@ static const Module::RfSwitchMode_t rfswitch_table_MXD8721[] = {
     LR2021::MODE_END_OF_TABLE,
 };
 
+static const uint32_t rfswitch_dio_pins_XY16E3AXP33[] = {
+    RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6,
+    RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8,
+    RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_sub1g[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW  } },
+    { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH } }, // Sub-1G DIO8 SET HIGH
+    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW  } }, // Sub-1G ALL DIO SET LOW
+    { LR2021::MODE_RX_HF,  { LOW,  LOW, LOW, LOW  } },
+    { LR2021::MODE_TX_HF,  { LOW,  LOW, LOW, LOW  } },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_2g4[] = {
+    // mode                  DIO5  DIO6  DIO7  DIO8
+    { LR2021::MODE_STBY,   { LOW,  LOW,  LOW,  LOW } },
+    { LR2021::MODE_TX,     { LOW,  LOW,  LOW,  LOW } },
+    { LR2021::MODE_RX,     { LOW,  LOW,  LOW,  LOW } },
+    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW,  LOW } }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW,  LOW,  HIGH, LOW } }, // 2.4G TX DIO7 SET HIGH
+    END_OF_MODE_TABLE,
+};
+
 static const uint32_t rfswitch_dio_pins_seeed_pro[] = {
     RADIOLIB_NC, RADIOLIB_NC,
     RADIOLIB_NC, RADIOLIB_NC,
@@ -5080,6 +5106,7 @@ static void lr20xx_setup()
     Vtcxo = 1.6;
     break;
   case SOFTRF_MODEL_CONCORDE:
+  case SOFTRF_MODEL_PRIME_MK4:
   default:
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 1.6;
@@ -5505,6 +5532,12 @@ static void lr20xx_setup()
       // radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_wio,
       //                            rfswitch_table_seeed_wio);
     }
+    break;
+
+  case SOFTRF_MODEL_PRIME_MK4:
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_XY16E3AXP33, high ?
+                               rfswitch_table_XY16E3AXP33_2g4 :
+                               rfswitch_table_XY16E3AXP33_sub1g);
     break;
 
   case SOFTRF_MODEL_BADGE:

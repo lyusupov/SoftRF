@@ -319,6 +319,7 @@ static inline color_t uni_Color(uint8_t r, uint8_t g, uint8_t b) {
 #include "iomap/Ebyte_EoRa_HUB_900TB.h"
 #include "iomap/WT99P4C5.h"
 #include "iomap/LilyGO_TDisplay_P4.h"
+#include "iomap/LilyGO_TBeam_1W.h"
 
 enum rst_reason {
   REASON_DEFAULT_RST      = 0,  /* normal startup by power on */
@@ -347,6 +348,7 @@ enum esp32_board_id {
   ESP32_HELTEC_OLED,
   ESP32_TTGO_T_BEAM,
   ESP32_TTGO_T_BEAM_SUPREME,
+  ESP32_TTGO_T_BEAM_1W,
   ESP32_TTGO_T_WATCH,
   ESP32_S2_T8_V1_1,
   ESP32_LILYGO_T_TWR2,
