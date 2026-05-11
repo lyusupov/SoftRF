@@ -316,7 +316,9 @@ static void sx12xx_setup()
   RF_FreqPlan.setPlan(settings->band, settings->rf_protocol);
 
 #if defined(USE_FEM)
-  bool has_fem = hw_info.model == SOFTRF_MODEL_MIDI && hw_info.revision == 23 ?
+  bool has_fem = (hw_info.model    == SOFTRF_MODEL_MIDI &&
+                  hw_info.revision == 23) ||
+                  hw_info.model    == SOFTRF_MODEL_PRIME_MK4 ?
                  true : false;
 #endif /* USE_FEM */
 
@@ -329,8 +331,11 @@ static void sx12xx_setup()
 
 #if defined(USE_FEM)
     if (has_fem == true) {
-      if (LMIC.txpow > 28)
-        LMIC.txpow = 28;
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
+        if (LMIC.txpow > 32) LMIC.txpow = 32;
+      } else {
+        if (LMIC.txpow > 28) LMIC.txpow = 28;
+      }
     } else
 #endif /* USE_FEM */
     {
@@ -385,6 +390,8 @@ static void sx12xx_setup()
             break;
         }
     }
+  } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
+    LMIC.txpow -= 10; /* 32 - 22 = 10 */
   }
 #endif /* USE_FEM */
 }

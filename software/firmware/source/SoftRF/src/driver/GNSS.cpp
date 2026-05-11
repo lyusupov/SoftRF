@@ -1354,6 +1354,7 @@ byte GNSS_setup() {
 
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK2 ||
       hw_info.model == SOFTRF_MODEL_PRIME_MK3 ||
+      hw_info.model == SOFTRF_MODEL_PRIME_MK4 ||
       hw_info.model == SOFTRF_MODEL_UNI       ||
       hw_info.model == SOFTRF_MODEL_BADGE     ||
       hw_info.model == SOFTRF_MODEL_ACADEMY   ||

@@ -10,7 +10,7 @@
 #define SOC_GPIO_PIN_1W_GNSS_PPS        7
 #define SOC_GPIO_PIN_1W_GNSS_WAKE       16
 
-// LR2021 ( XY16E3A_X_P33 )
+// LR2021 ( XY16E3A_X_P33 ) or LR1121 ( XY16E_X_P33 )
 #define SOC_GPIO_PIN_1W_MOSI            11
 #define SOC_GPIO_PIN_1W_MISO            12
 #define SOC_GPIO_PIN_1W_SCK             13
@@ -20,6 +20,9 @@
 #define SOC_GPIO_PIN_1W_DIO10           1
 #define SOC_GPIO_PIN_1W_DIO11           21
 #define SOC_GPIO_PIN_1W_PWR_EN          40
+// SX1262 ( XY16P35X )
+#define SOC_GPIO_PIN_1W_DIO1            1
+#define SOC_GPIO_PIN_1W_ANT_RX          21 /* active HIGH */
 
 // micro-SD
 #define SOC_GPIO_PIN_1W_SD_MOSI         11

@@ -403,6 +403,36 @@ static const Module::RfSwitchMode_t rfswitch_table_lilygo[] = {
     { LR11x0::MODE_WIFI,   { LOW,  LOW,  LOW,  LOW  } },
     END_OF_MODE_TABLE,
 };
+
+static const uint32_t rfswitch_dio_pins_XY16EXP33[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+    RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8,
+    RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_XY16EXP33_sub1g[] = {
+    // mode                  DIO5 DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW, LOW, LOW, LOW  } },
+    { LR11x0::MODE_TX,     { LOW, LOW, LOW, LOW  } },
+    { LR11x0::MODE_RX,     { LOW, LOW, LOW, LOW  } },
+    { LR11x0::MODE_TX_HP,  { LOW, LOW, LOW, HIGH } }, // Sub-1G DIO8 SET HIGH
+    { LR11x0::MODE_TX_HF,  { LOW, LOW, LOW, LOW  } },
+    { LR11x0::MODE_GNSS,   { LOW, LOW, LOW, HIGH } },
+    { LR11x0::MODE_WIFI,   { LOW, LOW, LOW, HIGH } },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_XY16EXP33_2g4[] = {
+    // mode                  DIO5 DIO6  DIO7  DIO8
+    { LR11x0::MODE_STBY,   { LOW, LOW,  LOW,  LOW } },
+    { LR11x0::MODE_TX,     { LOW, LOW,  LOW,  LOW } },
+    { LR11x0::MODE_RX,     { LOW, LOW,  LOW,  LOW } },
+    { LR11x0::MODE_TX_HP,  { LOW, LOW,  LOW,  LOW } },
+    { LR11x0::MODE_TX_HF,  { LOW, LOW,  HIGH, LOW } }, // 2.4G TX DIO7 SET HIGH
+    { LR11x0::MODE_GNSS,   { LOW, LOW,  LOW,  LOW } },
+    { LR11x0::MODE_WIFI,   { LOW, HIGH, LOW,  LOW } }, // 2.4G RX DIO6 SET HIGH
+    END_OF_MODE_TABLE,
+};
 #endif /* USE_LR11XX */
 
 // this function is called when a complete packet
@@ -718,6 +748,7 @@ static void lr11xx_setup()
   case SOFTRF_MODEL_NEO:
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
+  case SOFTRF_MODEL_PRIME_MK4:
     // HPDTeK HPD-16E
     // LR1121 TCXO Voltage 2.85~3.15V
     Vtcxo = 3.0;
@@ -995,6 +1026,10 @@ static void lr11xx_setup()
   }
 #endif /* USE_LR11XX */
 
+#if defined(USE_FEM)
+  bool has_fem = (hw_info.model == SOFTRF_MODEL_PRIME_MK4) ? true : false;
+#endif /* USE_FEM */
+
   float txpow;
 
   switch(settings->txpower)
@@ -1004,21 +1039,29 @@ static void lr11xx_setup()
     /* Load regional max. EIRP at first */
     txpow = RF_FreqPlan.MaxTxPower;
 
-    if (txpow > 22) txpow = 22;
+#if defined(USE_FEM)
+    if (has_fem == true) {
+      if (txpow > 34)
+        txpow = 34;
+    } else
+#endif /* USE_FEM */
+    {
+      if (txpow > 22) txpow = 22;
 
 #if 1
-    /*
-     * Enforce Tx power limit until confirmation
-     * that LR11xx is doing well
-     * when antenna is not connected
-     */
-    if (txpow > 17)
-      txpow = 17;
+      /*
+       * Enforce Tx power limit until confirmation
+       * that LR11xx is doing well
+       * when antenna is not connected
+       */
+      if (txpow > 17)
+        txpow = 17;
 #endif
 
 #if USE_LR11XX
-    if (high && txpow > 13) txpow = 13;
+      if (high && txpow > 13) txpow = 13;
 #endif /* USE_LR11XX */
+    }
 
     break;
   case RF_TX_POWER_OFF:
@@ -1027,6 +1070,16 @@ static void lr11xx_setup()
     txpow = 2;
     break;
   }
+
+#if defined(USE_FEM)
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
+    if (high) {
+      if (txpow > 0 /* 1 ? */ ) txpow = 0 /* 1 ? */;
+    } else {
+      txpow -= 12; /* 34 - 22 = 12 */
+    }
+  }
+#endif /* USE_FEM */
 
 #if USE_SX1262
   uint32_t rxe = lmic_pins.rxe == LMIC_UNUSED_PIN ? RADIOLIB_NC : lmic_pins.rxe;
@@ -1160,6 +1213,27 @@ static void lr11xx_setup()
     }
 #else
     rl_state = radio_semtech->setOutputPower(txpow, false);
+#endif /* RADIOLIB_VERSION_MINOR */
+    break;
+
+  case SOFTRF_MODEL_PRIME_MK4:
+    radio_semtech->setRfSwitchTable(rfswitch_dio_pins_XY16EXP33, high ?
+                                    rfswitch_table_XY16EXP33_2g4 :
+                                    rfswitch_table_XY16EXP33_sub1g);
+#if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR > 1
+    {
+      uint8_t paSel = 0;
+      uint8_t paSupply = 0;
+      if (high) {
+        paSel = 2;
+      } else if (true || (txpow > 14)) {
+        paSel = 1;
+        paSupply = 1;
+      }
+      rl_state = radio_semtech->setOutputPower(txpow, paSel, paSupply, 0x04, 0x07, lr11xx_roundRampTime(48) - 0x03);
+    }
+#else
+    rl_state = radio_semtech->setOutputPower(txpow, high ? false : true);
 #endif /* RADIOLIB_VERSION_MINOR */
     break;
 
@@ -4838,12 +4912,12 @@ static const uint32_t rfswitch_dio_pins_XY16E3AXP33[] = {
 };
 
 static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_sub1g[] = {
-    // mode                  DIO5  DIO6 DIO7 DIO8
-    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW  } },
-    { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH } }, // Sub-1G DIO8 SET HIGH
-    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW  } }, // Sub-1G ALL DIO SET LOW
-    { LR2021::MODE_RX_HF,  { LOW,  LOW, LOW, LOW  } },
-    { LR2021::MODE_TX_HF,  { LOW,  LOW, LOW, LOW  } },
+    // mode                  DIO5 DIO6 DIO7 DIO8
+    { LR2021::MODE_STBY,   { LOW, LOW, LOW, LOW  } },
+    { LR2021::MODE_TX,     { LOW, LOW, LOW, HIGH } }, // Sub-1G DIO8 SET HIGH
+    { LR2021::MODE_RX,     { LOW, LOW, LOW, LOW  } }, // Sub-1G ALL DIO SET LOW
+    { LR2021::MODE_RX_HF,  { LOW, LOW, LOW, LOW  } },
+    { LR2021::MODE_TX_HF,  { LOW, LOW, LOW, LOW  } },
     END_OF_MODE_TABLE,
 };
 
@@ -5105,8 +5179,11 @@ static void lr20xx_setup()
     radio_g4->irqDioNum = 8; /* DIO8 as IRQ on T1000-E PRO */
     Vtcxo = 1.6;
     break;
-  case SOFTRF_MODEL_CONCORDE:
   case SOFTRF_MODEL_PRIME_MK4:
+    radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
+    Vtcxo = 3.0;
+    break;
+  case SOFTRF_MODEL_CONCORDE:
   default:
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 1.6;
@@ -5481,6 +5558,10 @@ static void lr20xx_setup()
 #endif
   }
 
+#if defined(USE_FEM)
+  bool has_fem = (hw_info.model == SOFTRF_MODEL_PRIME_MK4) ? true : false;
+#endif /* USE_FEM */
+
   float txpow = 2;
 
   switch(settings->txpower)
@@ -5493,19 +5574,27 @@ static void lr20xx_setup()
       txpow = RF_FreqPlan.MaxTxPower;
     }
 
-    if (txpow > 22) txpow = 22;
+#if defined(USE_FEM)
+    if (has_fem == true) {
+      if (txpow > 33)
+        txpow = 33;
+    } else
+#endif /* USE_FEM */
+    {
+      if (txpow > 22) txpow = 22;
 
 #if 1
-    /*
-     * Enforce Tx power limit until confirmation
-     * that LR20xx is doing well
-     * when antenna is not connected
-     */
-    if (txpow > 17)
-      txpow = 17;
+      /*
+       * Enforce Tx power limit until confirmation
+       * that LR20xx is doing well
+       * when antenna is not connected
+       */
+      if (txpow > 17)
+        txpow = 17;
 #endif
 
-    if (high && txpow > 13) txpow = 13;
+      if (high && txpow > 13) txpow = 13;
+    }
 
     break;
   case RF_TX_POWER_OFF:
@@ -5513,6 +5602,16 @@ static void lr20xx_setup()
   default:
     break;
   }
+
+#if defined(USE_FEM)
+  if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
+    if (high) {
+      if (txpow > 8) txpow = 8;
+    } else {
+      txpow -= 11; /* 33 - 22 = 11 */
+    }
+  }
+#endif /* USE_FEM */
 
   switch (hw_info.model)
   {
