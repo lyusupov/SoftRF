@@ -32,6 +32,7 @@ Recommended:
 - [ ]   Uni
 - [ ]   Ham
 - [ ]   Card
+- [ ]   Concorde
 - [ ]   Handheld
 - [ ]   Airventure
 - [ ]   Solaris

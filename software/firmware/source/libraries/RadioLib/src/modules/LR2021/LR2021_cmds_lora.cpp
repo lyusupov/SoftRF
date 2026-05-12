@@ -27,7 +27,7 @@ int16_t LR2021::setLoRaModulationParams(uint8_t sf, uint8_t bw, uint8_t cr, uint
 int16_t LR2021::setLoRaPacketParams(uint16_t preambleLen, uint8_t hdrType, uint8_t payloadLen, uint8_t crcType, uint8_t invertIQ) {
   uint8_t buff[] = { 
     (uint8_t)((preambleLen >> 8) & 0xFF), (uint8_t)(preambleLen & 0xFF), payloadLen,
-    (uint8_t)(((hdrType & 0x01) << 2) | ((crcType & 0x01) << 1) | (invertIQ & 0x01)),
+    (uint8_t)((hdrType & 0x04) | (crcType & 0x02) | (invertIQ & 0x01)),
   };
   return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_LORA_PACKET_PARAMS, true, buff, sizeof(buff)));
 }
@@ -119,7 +119,7 @@ int16_t LR2021::setLoRaTxSync(uint8_t function, uint8_t dioNum) {
 
 int16_t LR2021::setLoRaSideDetCad(const uint8_t* pnrDelta, const uint8_t* detPeak, size_t numSideDets) {
   uint8_t buff[6] = { 0 };
-  for(uint8_t i = 0; i < numSideDets; i++) {
+  for(size_t i = 0; i < numSideDets; i++) {
     if(i >= 3) { return(RADIOLIB_ERR_UNKNOWN); }
     buff[2*i] = pnrDelta[i] & 0x0F;
     buff[2*i + 1] = detPeak[i] & 0x7F;

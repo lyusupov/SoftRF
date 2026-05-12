@@ -565,9 +565,11 @@ int16_t LR11x0::setSpreadingFactor(uint8_t sf, bool legacy) {
 
   RADIOLIB_CHECK_RANGE(sf, 5, 12, RADIOLIB_ERR_INVALID_SPREADING_FACTOR);
 
-  // TODO enable SF6 legacy mode
   if(legacy && (sf == 6)) {
-    //this->mod->SPIsetRegValue(RADIOLIB_LR11X0_REG_SF6_SX127X_COMPAT, RADIOLIB_LR11X0_SF6_SX127X, 18, 18);
+    // Enable LR1121 SF6 compatibility with SX127x family
+    // Register 0xF20414: bit18 = 1, bit23 = 0
+    state = this->writeRegMemMask32(RADIOLIB_LR11X0_REG_SF6_SX127X_COMPAT, (0x1UL << 18) | (0x1UL << 23), RADIOLIB_LR11X0_SF6_SX127X);
+    RADIOLIB_ASSERT(state);
   }
 
   // update modulation parameters
@@ -1158,16 +1160,16 @@ size_t LR11x0::getPacketLength(bool update) {
 size_t LR11x0::getPacketLength(bool update, uint8_t* offset) {
   (void)update;
 
-  // in implicit mode, return the cached value
+  // in implicit mode, return the cached value if the offset was not requested
   uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
   (void)getPacketType(&type);
-  if((type == RADIOLIB_LR11X0_PACKET_TYPE_LORA) && (this->headerType == RADIOLIB_LRXXXX_LORA_HEADER_IMPLICIT)) {
+  if((type == RADIOLIB_LR11X0_PACKET_TYPE_LORA) && (this->headerType == RADIOLIB_LRXXXX_LORA_HEADER_IMPLICIT) && (!offset)) {
     return(this->implicitLen);
   }
 
+  // if offset was requested, or in explicit mode, we always have to perform the SPI transaction
   uint8_t len = 0;
   int state = getRxBufferStatus(&len, offset);
-  RADIOLIB_DEBUG_BASIC_PRINT("getRxBufferStatus state = %d\n", state);
   (void)state;
   return((size_t)len);
 }
