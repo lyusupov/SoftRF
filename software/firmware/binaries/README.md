@@ -30,7 +30,7 @@ Model|Instructions|Firmware folder
 [Midi Edition](https://github.com/lyusupov/SoftRF/wiki/Midi-Edition)|[ESP32-S3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-s3)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/MassStorage)
 [Gizmo Edition](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)|[Web Flasher](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition#quick-start)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/OTA)
 [Airventure Edition](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[Web Flasher](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition#quick-start)|[ESP32S3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32S3/SoftRF/OTA)
-[Concorde Edition](https://github.com/lyusupov/SoftRF/wiki/Concorde-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|Web Flasher|[ESP32P4](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32P4/SoftRF/Merged)
+[Concorde Edition](https://github.com/lyusupov/SoftRF/wiki/Concorde-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[ESP32-P4](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-p4)|[ESP32P4](https://github.com/user-attachments/files/27507018/SoftRF-P4_merged.zip) <!-- (https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32P4/SoftRF/Merged) -->
 [Nano Edition](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)|[ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)|[ESP32C3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C3/SoftRF)
 [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Handheld Edition](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
@@ -447,7 +447,7 @@ The Bootloader is capable to self-program an application firmware into the devic
 <br>
 
 ## ESP32-P4
-
+<!--
 1. Take ESP32 flash download tool from this location: http://www.espressif.com/en/support/download/other-tools <br>
 
 2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32P4/SoftRF) and unzip the archive ; <br>
@@ -462,12 +462,18 @@ The Bootloader is capable to self-program an application firmware into the devic
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Standalone-ESP32P4-2.jpg)
 
-
-
 6. Press **START** button and wait for completion.
 
-"Stock" devices may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.
+"Stock" devices may also require to apply full flash memory erase (use **ERASE** UI "button") prior to first flashing with SoftRF's firmware.  -->
 
+1. Download an appropriate version of SoftRF firmware from [this location](https://github.com/user-attachments/files/27507018/SoftRF-P4_merged.zip) <!--(https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32P4/SoftRF) --> and unzip the archive ; <br>
+2. Connect the ESP32-P4 based device to your PC by means of a USB cable ; <br>
+3. Open up this website in Chrome or Edge browser: https://espressif.github.io/esptool-js/ ; <br>
+4. Install SoftRF firmware BIN file into your ESP32-P4 device. Use this picture as an illustration.
+
+<img width="790" height="926" alt="image" src="https://github.com/user-attachments/assets/2be654b5-0abe-4259-9cb9-8180c8e99b59" />
+
+<br>
 <br>
 
 ## CH32
