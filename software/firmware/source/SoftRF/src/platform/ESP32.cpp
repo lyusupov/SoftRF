@@ -723,7 +723,7 @@ static void ESP32_setup()
    *  WT99P4C5-S1 CPU     | WT0132P4-A1      | ZBIT_ZB25VQ128ASIG
    *  WT99P4C5-S1 NCU     | ESP32-C5-WROOM-1 | XMC_XM25QH64B
    *  LilyGO T-Display P4 |                  | GIGADEVICE_GD25Q128
-   *  LilyGO T-Beam 1W    | WROOM-1-N16R8    |
+   *  LilyGO T-Beam 1W    | WROOM-1-N16R8    | 0x464018 (TBD)
    */
 
   if (psramFound()) {
@@ -746,6 +746,7 @@ static void ESP32_setup()
       esp32_board   = ESP32_S2_T8_V1_1;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
+    case MakeFlashId(TBD_ID, GIGADEVICE_GD25Q128):
       /* specific to psram_type=opi enabled custom build */
       hw_info.model = SOFTRF_MODEL_HAM;
       break;
@@ -814,8 +815,9 @@ static void ESP32_setup()
     switch (flash_id)
     {
     case MakeFlashId(GIGADEVICE_ID, GIGADEVICE_GD25Q128):
+    case MakeFlashId(TBD_ID, GIGADEVICE_GD25Q128):
       /*
-       * LilyGO T-TWR has OPI PSRAM in the WROVER module.
+       * LilyGO T-TWR and T-Beam 1W have OPI PSRAM in the WROOM module.
        * ESP32 Arduino Core 2.0.x is unable to detect OPI PSRAM
        * unless we do a psram_type=opi custom build.
        */
