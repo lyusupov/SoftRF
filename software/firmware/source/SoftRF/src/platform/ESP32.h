@@ -422,6 +422,7 @@ struct rst_info {
 
 #define TBD_ID                  0x46
 #define TBD_25Q32               0x4016
+#define TBD_25Q128              0x4018
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 

@@ -391,7 +391,7 @@ static void sx12xx_setup()
         }
     }
   } else if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
-    LMIC.txpow -= 10; /* 32 - 22 = 10 */
+    LMIC.txpow -= 12; /* HM06S006P */
   }
 #endif /* USE_FEM */
 }

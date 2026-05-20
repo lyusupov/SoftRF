@@ -1074,9 +1074,10 @@ static void lr11xx_setup()
 #if defined(USE_FEM)
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
     if (high) {
+      txpow -= 34; /* CB5337CX */
       if (txpow > 0 /* 1 ? */ ) txpow = 0 /* 1 ? */;
     } else {
-      txpow -= 12; /* 34 - 22 = 12 */
+      txpow -= 12; /* HM06S006P */
     }
   }
 #endif /* USE_FEM */
@@ -5606,9 +5607,10 @@ static void lr20xx_setup()
 #if defined(USE_FEM)
   if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
     if (high) {
+      txpow -= 34; /* CB5337CX */
       if (txpow > 8) txpow = 8;
     } else {
-      txpow -= 11; /* 33 - 22 = 11 */
+      txpow -= 12; /* HM06S006P */
     }
   }
 #endif /* USE_FEM */
