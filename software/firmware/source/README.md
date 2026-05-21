@@ -110,10 +110,10 @@ void loop()
 12. For **ESP32**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
-    For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_<br>
     For **ESP32-C5**:<br>
     For **ESP32-C6**:<br>
+    For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _No_ _FS_ _4MB_ _(2MB_ _APP_ _x2)_<br>
 13. For **ESP32**:<br>
     For **ESP32-S3**:<br>
@@ -452,7 +452,7 @@ As a result of the build, one program binary will become created:
 ## nRF54L15
 
 1. Follow [these instructions](https://github.com/lolren/NRF54L15-Clean-Arduino-core?tab=readme-ov-file#install)
-  to install Arduino IDE and [XIAO nRF54L15 Clean Arduino Core](https://github.com/lolren/NRF54L15-Clean-Arduino-core/releases) (0.7.0)
+  to install Arduino IDE and [XIAO nRF54L15 Clean Arduino Core](https://github.com/lolren/NRF54L15-Clean-Arduino-core/releases) (0.7.51)
 2. open ``<My Documents>`` (Windows) , ``<Home>`` (Linux) or ``<Documents>`` (MacOS) directory
 3. create **Arduino** sub-directory
 4. transfer full content of **SoftRF** and **libraries** GitHub folders into the sub-directory:
