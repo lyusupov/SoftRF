@@ -225,6 +225,7 @@ static void ESP32_Bluetooth_setup()
                                   hw_info.model == SOFTRF_MODEL_NANO       ? "Nano Edition"       :
                                   hw_info.model == SOFTRF_MODEL_AIRVENTURE ? "Airventure Edition" :
                                   hw_info.model == SOFTRF_MODEL_CONCORDE   ? "Concorde Edition"   :
+                                  hw_info.model == SOFTRF_MODEL_PRIME_MK4  ? "Prime Mark IV"      :
                                   "Unknown";
       char SerialNum[9];
       snprintf(SerialNum, sizeof(SerialNum), "%08X", SoC->getChipId());

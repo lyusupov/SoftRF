@@ -390,6 +390,7 @@ enum softrf_usb_pid {
   SOFTRF_USB_PID_GIZMO      = 0x82D9,
   SOFTRF_USB_PID_AIRVENTURE = 0x82F9,
   SOFTRF_USB_PID_CONCORDE   = 0x8343,
+  SOFTRF_USB_PID_PRIME_MK4  = 0x8367,
 };
 
 struct rst_info {
@@ -456,6 +457,7 @@ struct rst_info {
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
 
 #define USE_SKYVIEW_CFG
+#define EXCLUDE_SX1276
 #define USE_RADIOLIB
 //#define EXCLUDE_LR11XX
 #define EXCLUDE_LR20XX
