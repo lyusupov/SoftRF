@@ -647,7 +647,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define ENABLE_RECORDER
 #define USE_SA8X8
 /* Experimental */
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 #define ENABLE_REMOTE_ID
+#endif /* ESP_IDF_VERSION_MAJOR */
 //#define EXCLUDE_VOICE_MESSAGE
 //#define USE_ARDUINOBLE
 //#define USE_NIMBLE
