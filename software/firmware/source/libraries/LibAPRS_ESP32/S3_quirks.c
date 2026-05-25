@@ -9,7 +9,11 @@
 
 #define MCLK_FREQ (I2S_LL_PDM_BCK_FACTOR * 8 * 960 * 100)
 
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 static int mclk_calc(i2s_ll_mclk_div_t *cal)
+#else
+static int mclk_calc(hal_utils_clk_div_t *cal)
+#endif /* ESP_IDF_VERSION_MAJOR */
 {
     int ma = 0;
     int mb = 0;
@@ -54,8 +58,13 @@ static int mclk_calc(i2s_ll_mclk_div_t *cal)
 
 int S3_i2s_mclk_quirk(int i2s_num, uint16_t *a, uint16_t *b, uint16_t *c)
 {
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     i2s_ll_mclk_div_t cal_val;
     i2s_ll_mclk_div_t *cal = &cal_val;
+#else
+    hal_utils_clk_div_t cal_val;
+    hal_utils_clk_div_t *cal = &cal_val;
+#endif /* ESP_IDF_VERSION_MAJOR */
 
     int rval = mclk_calc(cal);
 
