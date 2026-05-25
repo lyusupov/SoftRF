@@ -217,7 +217,9 @@ extern PCF8563_Class *rtc;
     (ARDUINO_USB_ON_BOOT == 0)
 
 /* Experimental */
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 #define USE_USB_HOST
+#endif /* ESP_IDF_VERSION_MAJOR */
 //#define ENABLE_USB_HOST_DEBUG
 
 #define EXCLUDE_GNSS_GOKE
