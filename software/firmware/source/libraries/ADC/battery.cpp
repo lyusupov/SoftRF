@@ -192,5 +192,23 @@ uint16_t adc1_read_voltage() {
   return (uint16_t) adc_reading;
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+
+/* TODO */
+uint16_t adc2_read_voltage() {
+  // multisample ADC
+  uint32_t adc_reading = 0;
+
+  for (int i = 0; i < NO_OF_SAMPLES; i++) {
+    adc_reading += analogReadMilliVolts(adc_pin);
+    yield();
+  }
+
+  adc_reading /= NO_OF_SAMPLES;
+
+  return (uint16_t) adc_reading;
+}
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
 #endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* ESP32 */
