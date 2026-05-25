@@ -147,6 +147,8 @@
 #define SOC_GPIO_PIN_LED      46 // active HIGH
 #define SOC_GPIO_PIN_NEOPIXEL 48
 #define SOC_GPIO_PIN_CAP      34 // RST+RST for UF2 boot
+// TODO
+#define SOC_GPIO_PIN_BATTERY  3
 
 #define LED_STATE_ON          HIGH // State when LED is litted
 

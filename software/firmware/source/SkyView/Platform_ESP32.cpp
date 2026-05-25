@@ -1197,6 +1197,8 @@ static void ESP32_Battery_setup()
       hw_info.revision != HW_REV_TDISPLAY_P4_AMOLED) {
     calibrate_voltage(SOC_GPIO_PIN_BATTERY);
   }
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+  calibrate_voltage(SOC_GPIO_PIN_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)
