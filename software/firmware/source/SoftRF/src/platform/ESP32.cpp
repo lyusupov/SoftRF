@@ -7650,7 +7650,10 @@ static size_t ESP32SX_USB_write(const uint8_t *buffer, size_t size)
 #elif ARDUINO_USB_CDC_ON_BOOT
 
 #define USE_ASYNC_USB_OUTPUT
+
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 #define USBSerial                Serial
+#endif /* ESP_IDF_VERSION_MAJOR */
 
 #if !ARDUINO_USB_MODE && defined(USE_ASYNC_USB_OUTPUT)
 #define USB_MAX_WRITE_CHUNK_SIZE CONFIG_TINYUSB_CDC_TX_BUFSIZE
