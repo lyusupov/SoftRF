@@ -37,7 +37,7 @@ jobs:
             'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WLE5CCUX',
             'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WL55CCUX',
             'raspberry',
-            'energia:cc13xx:LAUNCHXL_CC1310',
+            #'energia:cc13xx:LAUNCHXL_CC1310',
             'CubeCell:CubeCell:CubeCell-GPS',
             'CubeCell:CubeCell:CubeCell-Board-PRO',
             'adafruit:nrf52:pca10056',
