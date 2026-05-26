@@ -193,14 +193,20 @@ uint16_t adc1_read_voltage() {
 }
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
+static uint32_t prev_adc2_reading = 0;
 
-/* TODO */
 uint16_t adc2_read_voltage() {
   // multisample ADC
   uint32_t adc_reading = 0;
 
   for (int i = 0; i < NO_OF_SAMPLES; i++) {
-    adc_reading += analogReadMilliVolts(adc_pin);
+    uint32_t mV = analogReadMilliVolts(adc_pin);
+    if (mV == 0) { /* assume ESP_ERR_TIMEOUT when Wi-Fi is active */
+      adc_reading += prev_adc2_reading;
+    } else {
+      adc_reading += mV;
+      prev_adc2_reading = mV;
+    }
     yield();
   }
 
