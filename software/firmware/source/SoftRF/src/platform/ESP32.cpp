@@ -6455,7 +6455,33 @@ static void ESP32_Battery_setup()
       calibrate_voltage((adc1_channel_t) ADC1_GPIO2_CHANNEL);
     }
 #else
-    /* TBD */
+    /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
+    if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 0) {
+#if defined(USE_SA8X8)
+      if (ESP32_R22_workaround) {
+        calibrate_voltage(GPIO_NUM_1);
+      } else
+#endif /* USE_SA8X8 */
+      {
+        calibrate_voltage(GPIO_NUM_1, ADC_0db);
+      }
+    } else if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 1) {
+      calibrate_voltage(GPIO_NUM_1, ADC_0db);
+    } else if (esp32_board == ESP32_HELTEC_TRACKER   ||
+               esp32_board == ESP32_LILYGO_T3S3_EPD  ||
+               esp32_board == ESP32_LILYGO_T3S3_OLED ||
+               esp32_board == ESP32_EBYTE_HUB_900TB) {
+      calibrate_voltage(GPIO_NUM_1);
+    } else if (esp32_board == ESP32_BANANA_PICOW ||
+               esp32_board == ESP32_ELECROW_TN_M5) {
+      calibrate_voltage(SOC_GPIO_PIN_M5_BATTERY);
+    } else if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
+      calibrate_voltage(SOC_GPIO_PIN_1W_BATTERY);
+    } else if (esp32_board == ESP32_ELECROW_TN_M2) {
+      adc2_calibrate_voltage(SOC_GPIO_PIN_M2_BATTERY);
+    } else {
+      calibrate_voltage(GPIO_NUM_2);
+    }
 #endif /* ESP_IDF_VERSION_MAJOR */
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
     calibrate_voltage(SOC_GPIO_PIN_C2_BATTERY);
