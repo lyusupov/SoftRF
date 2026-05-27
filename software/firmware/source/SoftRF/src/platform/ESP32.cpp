@@ -6478,7 +6478,7 @@ static void ESP32_Battery_setup()
     } else if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
       calibrate_voltage(SOC_GPIO_PIN_1W_BATTERY);
     } else if (esp32_board == ESP32_ELECROW_TN_M2) {
-      adc2_calibrate_voltage(SOC_GPIO_PIN_M2_BATTERY);
+      calibrate_voltage(SOC_GPIO_PIN_M2_BATTERY); /* ADC2 */
     } else {
       calibrate_voltage(GPIO_NUM_2);
     }
