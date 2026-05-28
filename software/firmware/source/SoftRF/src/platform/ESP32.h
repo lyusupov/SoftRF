@@ -652,7 +652,9 @@ extern const USB_Device_List_t supported_USB_devices[];
 #endif /* ESP_IDF_VERSION_MAJOR */
 //#define EXCLUDE_VOICE_MESSAGE
 //#define USE_ARDUINOBLE
-//#define USE_NIMBLE
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
+#define USE_NIMBLE
+#endif /* ESP_IDF_VERSION_MAJOR */
 //#undef USE_BLE_MIDI
 #define USE_EPAPER
 #define EPD_ASPECT_RATIO_1C1
