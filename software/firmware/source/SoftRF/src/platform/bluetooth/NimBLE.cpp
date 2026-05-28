@@ -267,7 +267,7 @@ static void ESP32_Bluetooth_setup()
           // Serial.println("BLE failed to start legacyAdvertising");
       }
 
-#else /* USE_NIMBLE_V2 */
+#else /* CONFIG_BT_NIMBLE_EXT_ADV */
 
 #if 0
       pAdvertising->addServiceUUID(NimBLEUUID(UART_SERVICE_UUID16));
@@ -286,17 +286,17 @@ static void ESP32_Bluetooth_setup()
 #endif /* USE_BLE_MIDI */
       pAdvertising->setAdvertisementData(BLEAdvData);
 #endif
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#if defined(USE_NIMBLE_V2)
       pAdvertising->enableScanResponse(true);
       pAdvertising->setPreferredParams(0x06, 0x12);
 #else
       pAdvertising->setScanResponse(true);
       pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
       pAdvertising->setMaxPreferred(0x12);
-#endif /* ESP_IDF_VERSION_MAJOR */
+#endif /* USE_NIMBLE_V2 */
       NimBLEDevice::startAdvertising();
 
-#endif /* USE_NIMBLE_V2 */
+#endif /* CONFIG_BT_NIMBLE_EXT_ADV */
 
       BLE_Advertising_TimeMarker = millis();
     }
