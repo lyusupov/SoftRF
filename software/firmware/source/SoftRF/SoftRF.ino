@@ -479,6 +479,16 @@ void uav()
     ThisAircraft.hdop      = the_aircraft.location.gps_hdop;
     ThisAircraft.pressure_altitude = the_aircraft.location.baro_alt;
 
+#if !defined(EXCLUDE_EGM96)
+    /*
+     * When geoidal separation is not available - use approx. EGM96 value
+     */
+    ThisAircraft.geoid_separation = (float) LookupSeparation(
+                                              ThisAircraft.latitude,
+                                              ThisAircraft.longitude
+                                              );
+#endif /* EXCLUDE_EGM96 */
+
     RF_Transmit(RF_Encode(&ThisAircraft), true);
   }
 
