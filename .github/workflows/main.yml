@@ -549,13 +549,13 @@ jobs:
             arduino-cli config init ;
             arduino-cli config add board_manager.additional_urls https://downloads.arduino.cc/packages/package_zephyr_index.json ;
             arduino-cli core update-index ;
-            arduino-cli core install arduino:zephyr_main@0.55.0 ;
+            arduino-cli core install arduino:zephyr_main@0.55.2 ;
             # arduino-cli board attach -b $BOARD ;
             wget https://github.com/facchinm/ArduinoBLE/archive/refs/heads/zephyr_hci.zip ;
             unzip zephyr_hci.zip ;
             rm zephyr_hci.zip ;
             mv ArduinoBLE-zephyr_hci $HOME/Arduino/libraries/ ;
-            # cd $HOME/.arduino15/packages/arduino/hardware/zephyr_main/0.55.0 ;
+            # cd $HOME/.arduino15/packages/arduino/hardware/zephyr_main/0.55.2 ;
             # sed -i "s\nano33ble.upload.maximum_size=98304\nano33ble.upload.maximum_size=786432\g" boards.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
