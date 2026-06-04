@@ -741,7 +741,9 @@ static void lr11xx_setup()
     } else {
       // YL320 XTAL on XR1 V1.0
       Vtcxo = 0.0f;
+#if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR < 7
       radio_semtech->XTAL = true;
+#endif /* RADIOLIB_VERSION_MINOR */
     }
     break;
 
@@ -856,8 +858,13 @@ static void lr11xx_setup()
     rl_state = radio_semtech->beginFSK(); // start FSK mode (and disable LoRa)
 #endif
 #if USE_LR11XX
+#if RADIOLIB_VERSION_MAJOR >= 7 && RADIOLIB_VERSION_MINOR < 7
     rl_state = radio_semtech->beginGFSK(4.8, 5.0, 156.2, 16, Vtcxo);
-#endif
+#else
+    radio_semtech->tcxoVoltage = Vtcxo;
+    rl_state = radio_semtech->beginGFSK(4.8, 5.0, 156.2, 16);
+#endif /* RADIOLIB_VERSION_MINOR */
+#endif /* USE_LR11XX */
 
     switch (rl_protocol->bitrate)
     {
