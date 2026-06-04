@@ -24,7 +24,7 @@ import hashlib
 def hostid():
     #return os.popen("settings get secure android_id").read().strip()
     serial = os.popen("getprop ro.serialno").read().strip()
-    hash_object = hashlib.md5(serial)
+    hash_object = hashlib.sha256(serial.encode())
     return hash_object.hexdigest()
 
 def platform_name():
