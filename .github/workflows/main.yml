@@ -238,7 +238,7 @@ jobs:
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.9 ;
             wget https://github.com/lucasssvaz/arduino-esp32/commit/77b555b8287087cf3aefd67828a25e24d1190c58.patch ;
-            cat 77b555b8287087cf3aefd67828a25e24d1190c58.patch | patch -p1 ;
+            cat 77b555b8287087cf3aefd67828a25e24d1190c58.patch | patch -p1 -t ;
             rm 77b555b8287087cf3aefd67828a25e24d1190c58.patch ;
             cd $GITHUB_WORKSPACE ;
           fi
@@ -319,7 +319,7 @@ jobs:
             arduino --install-library esp-lib-utils,ESP32_IO_Expander,ESP32_Display_Panel,lvgl:8.4.0 ;
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.9 ;
             wget https://github.com/lucasssvaz/arduino-esp32/commit/77b555b8287087cf3aefd67828a25e24d1190c58.patch ;
-            cat 77b555b8287087cf3aefd67828a25e24d1190c58.patch | patch -p1 ;
+            cat 77b555b8287087cf3aefd67828a25e24d1190c58.patch | patch -p1 -t ;
             rm 77b555b8287087cf3aefd67828a25e24d1190c58.patch ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
