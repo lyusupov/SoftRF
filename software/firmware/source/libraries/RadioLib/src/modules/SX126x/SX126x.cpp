@@ -7,7 +7,6 @@ SX126x::SX126x(Module* mod) : PhysicalLayer() {
   this->freqStep = RADIOLIB_SX126X_FREQUENCY_STEP_SIZE;
   this->maxPacketLength = RADIOLIB_SX126X_MAX_PACKET_LENGTH;
   this->mod = mod;
-  this->XTAL = false;
   this->standbyXOSC = false;
   this->irqMap[RADIOLIB_IRQ_TX_DONE] = RADIOLIB_SX126X_IRQ_TX_DONE;
   this->irqMap[RADIOLIB_IRQ_RX_DONE] = RADIOLIB_SX126X_IRQ_RX_DONE;
@@ -21,7 +20,7 @@ SX126x::SX126x(Module* mod) : PhysicalLayer() {
   this->irqMap[RADIOLIB_IRQ_TIMEOUT] = RADIOLIB_SX126X_IRQ_TIMEOUT;
 }
 
-int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage, bool useRegulatorLDO) {
+int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength) {
   // BW in kHz and SF are required in order to calculate LDRO for setModulationParams
   // set the defaults, this will get overwritten later anyway
   this->bandwidthKhz = 500.0;
@@ -38,7 +37,7 @@ int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, flo
   this->implicitLen = 0xFF;
 
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, useRegulatorLDO, RADIOLIB_SX126X_PACKET_TYPE_LORA);
+  int16_t state = this->modSetup(RADIOLIB_SX126X_PACKET_TYPE_LORA);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -67,7 +66,7 @@ int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, flo
   return(state);
 }
 
-int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleLength, float tcxoVoltage, bool useRegulatorLDO) {
+int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleLength) {
   // initialize configuration variables (will be overwritten during public settings configuration)
   this->bitRate = 21333;                                  // 48.0 kbps
   this->frequencyDev = 52428;                             // 50.0 kHz
@@ -78,7 +77,7 @@ int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleL
   this->preambleLengthFSK = preambleLength;
 
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, useRegulatorLDO, RADIOLIB_SX126X_PACKET_TYPE_GFSK);
+  int16_t state = this->modSetup(RADIOLIB_SX126X_PACKET_TYPE_GFSK);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -120,9 +119,9 @@ int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleL
   return(state);
 }
 
-int16_t SX126x::beginBPSK(float br, float tcxoVoltage, bool useRegulatorLDO) {
+int16_t SX126x::beginBPSK(float br) {
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, useRegulatorLDO, RADIOLIB_SX126X_PACKET_TYPE_BPSK);
+  int16_t state = this->modSetup(RADIOLIB_SX126X_PACKET_TYPE_BPSK);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -136,11 +135,11 @@ int16_t SX126x::beginBPSK(float br, float tcxoVoltage, bool useRegulatorLDO) {
   return(state);
 }
 
-int16_t SX126x::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoVoltage, bool useRegulatorLDO) {
+int16_t SX126x::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid) {
   this->lrFhssGridNonFcc = narrowGrid;
   
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, useRegulatorLDO, RADIOLIB_SX126X_PACKET_TYPE_LR_FHSS);
+  int16_t state = this->modSetup(RADIOLIB_SX126X_PACKET_TYPE_LR_FHSS);
   RADIOLIB_ASSERT(state);
 
   // set publicly accessible settings that are not a part of begin method
@@ -424,9 +423,9 @@ int16_t SX126x::scanChannel() {
   return(this->scanChannel(cfg));
 }
 
-int16_t SX126x::scanChannel(const ChannelScanConfig_t &config) {
+int16_t SX126x::scanChannel(const ChannelScanConfig_t &cfg) {
   // set mode to CAD
-  int state = startChannelScan(config);
+  int state = startChannelScan(cfg);
   RADIOLIB_ASSERT(state);
 
   // wait for channel activity detected or timeout
@@ -494,7 +493,16 @@ int16_t SX126x::startReceiveDutyCycle(uint32_t rxPeriod, uint32_t sleepPeriod, R
     return(RADIOLIB_ERR_INVALID_SLEEP_PERIOD);
   }
 
-  int16_t state = startReceiveCommon(RADIOLIB_SX126X_RX_TIMEOUT_INF, irqFlags, irqMask);
+  // set up Rx mode
+  RadioModeConfig_t cfg = {
+    .receive = {
+      .timeout = RADIOLIB_SX126X_RX_TIMEOUT_INF,
+      .irqFlags = irqFlags,
+      .irqMask = irqMask,
+      .len = 0,
+    }
+  };
+  int16_t state = this->stageMode(RADIOLIB_RADIO_MODE_RX, &cfg);
   RADIOLIB_ASSERT(state);
 
   const uint8_t data[6] = {(uint8_t)((rxPeriodRaw >> 16) & 0xFF), (uint8_t)((rxPeriodRaw >> 8) & 0xFF), (uint8_t)(rxPeriodRaw & 0xFF),
@@ -503,44 +511,18 @@ int16_t SX126x::startReceiveDutyCycle(uint32_t rxPeriod, uint32_t sleepPeriod, R
 }
 
 int16_t SX126x::startReceiveDutyCycleAuto(uint16_t senderPreambleLength, uint16_t minSymbols, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask) {
-  if(senderPreambleLength == 0) {
-    senderPreambleLength = this->preambleLengthLoRa;
-  } else if (senderPreambleLength > this->preambleLengthLoRa) {
-    // the unit must be configured to expect a preamble length at least as long as the sender is using
-    return(RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH);
-  }
-  if(minSymbols == 0) {
-    if (this->spreadingFactor <= 6) {
-      minSymbols = 12;
-    } else {
-      minSymbols = 8;
+  // calculate the sleep and wake periods
+  uint32_t wakePeriod = 0;
+  uint32_t sleepPeriod = 0;
+  DataRate_t dr = {
+    .lora = {
+      .spreadingFactor = this->spreadingFactor,
+      .bandwidth = this->bandwidthKhz,
+      .codingRate = this->codingRate,
     }
-  }
-
-  // worst case is that the sender starts transmitting when we're just less than minSymbols from going back to sleep.
-  // in this case, we don't catch minSymbols before going to sleep,
-  // so we must be awake for at least that long before the sender stops transmitting.
-  uint16_t sleepSymbols = senderPreambleLength - 2 * minSymbols;
-
-  // if we're not to sleep at all, just use the standard startReceive.
-  if(2 * minSymbols > senderPreambleLength) {
-    return(startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF, irqFlags, irqMask));
-  }
-
-  uint32_t symbolLength = ((uint32_t)(10 * 1000) << this->spreadingFactor) / (10 * this->bandwidthKhz);
-  uint32_t sleepPeriod = symbolLength * sleepSymbols;
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Auto sleep period: %lu", (long unsigned int)sleepPeriod);
-
-  // when the unit detects a preamble, it starts a timer that will timeout if it doesn't receive a header in time.
-  // the duration is sleepPeriod + 2 * wakePeriod.
-  // The sleepPeriod doesn't take into account shutdown and startup time for the unit (~1ms)
-  // We need to ensure that the timeout is longer than senderPreambleLength.
-  // So we must satisfy: wakePeriod > (preamblePeriod - (sleepPeriod - 1000)) / 2. (A)
-  // we also need to ensure the unit is awake to see at least minSymbols. (B)
-  uint32_t wakePeriod = RADIOLIB_MAX(
-    (symbolLength * (senderPreambleLength + 1) - (sleepPeriod - 1000)) / 2, // (A)
-    symbolLength * (minSymbols + 1)); //(B)
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Auto wake period: %lu", (long unsigned int)wakePeriod);
+  };
+  int16_t state = calculateRxDutyCycle(senderPreambleLength, this->preambleLengthLoRa, minSymbols, &dr, &wakePeriod, &sleepPeriod);
+  RADIOLIB_ASSERT(state);
 
   // If our sleep period is shorter than our transition time, just use the standard startReceive
   if(sleepPeriod < this->tcxoDelay + 1016) {
@@ -548,40 +530,6 @@ int16_t SX126x::startReceiveDutyCycleAuto(uint16_t senderPreambleLength, uint16_
   }
 
   return(startReceiveDutyCycle(wakePeriod, sleepPeriod, irqFlags, irqMask));
-}
-
-int16_t SX126x::startReceiveCommon(uint32_t timeout, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask) {
-  // ensure we are in standby
-  int16_t state = standby();
-  RADIOLIB_ASSERT(state);
-
-  // set DIO mapping
-  if(timeout != RADIOLIB_SX126X_RX_TIMEOUT_INF) {
-    irqMask |= (1UL << RADIOLIB_IRQ_TIMEOUT);
-  }
-  state = setDioIrqParams(getIrqMapped(irqFlags), getIrqMapped(irqMask));
-  RADIOLIB_ASSERT(state);
-
-  // set buffer pointers
-  state = setBufferBaseAddress();
-  RADIOLIB_ASSERT(state);
-
-  // clear interrupt flags
-  state = clearIrqStatus();
-  RADIOLIB_ASSERT(state);
-
-  // restore original packet length
-  uint8_t modem = getPacketType();
-  if(modem == RADIOLIB_SX126X_PACKET_TYPE_LORA) {
-    state = setPacketParams(this->preambleLengthLoRa, this->crcTypeLoRa, this->implicitLen, this->headerType, this->invertIQEnabled);
-  } else if(modem == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
-    state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening,
-      this->packetType, (this->packetType == RADIOLIB_SX126X_GFSK_PACKET_FIXED) ? this->implicitLen : RADIOLIB_SX126X_MAX_PACKET_LENGTH);
-  } else {
-    return(RADIOLIB_ERR_UNKNOWN);
-  }
-
-  return(state);
 }
 
 int16_t SX126x::readData(uint8_t* data, size_t len) {
@@ -639,7 +587,7 @@ int16_t SX126x::startChannelScan() {
   return(this->startChannelScan(cfg));
 }
 
-int16_t SX126x::startChannelScan(const ChannelScanConfig_t &config) {
+int16_t SX126x::startChannelScan(const ChannelScanConfig_t &cfg) {
   // check active modem
   if(getPacketType() != RADIOLIB_SX126X_PACKET_TYPE_LORA) {
     return(RADIOLIB_ERR_WRONG_MODEM);
@@ -653,7 +601,7 @@ int16_t SX126x::startChannelScan(const ChannelScanConfig_t &config) {
   this->mod->setRfSwitchState(Module::MODE_RX);
 
   // set DIO pin mapping
-  state = setDioIrqParams(getIrqMapped(config.cad.irqFlags), getIrqMapped(config.cad.irqMask));
+  state = setDioIrqParams(getIrqMapped(cfg.cad.irqFlags), getIrqMapped(cfg.cad.irqMask));
   RADIOLIB_ASSERT(state);
 
   // clear interrupt flags
@@ -661,7 +609,7 @@ int16_t SX126x::startChannelScan(const ChannelScanConfig_t &config) {
   RADIOLIB_ASSERT(state);
 
   // set mode to CAD
-  state = setCad(config.cad.symNum, config.cad.detPeak, config.cad.detMin, config.cad.exitMode, config.cad.timeout);
+  state = setCad(cfg.cad.symNum, cfg.cad.detPeak, cfg.cad.detMin, cfg.cad.exitMode, cfg.cad.timeout);
   return(state);
 }
 
@@ -1006,8 +954,35 @@ int16_t SX126x::stageMode(RadioModeType_t mode, RadioModeConfig_t* cfg) {
         this->implicitLen = cfg->receive.len;
       }
 
-      state = startReceiveCommon(cfg->receive.timeout, cfg->receive.irqFlags, cfg->receive.irqMask);
+      // ensure we are in standby
+      state = standby();
       RADIOLIB_ASSERT(state);
+
+      // set DIO mapping
+      if(cfg->receive.timeout != RADIOLIB_SX126X_RX_TIMEOUT_INF) {
+        cfg->receive.irqMask |= (1UL << RADIOLIB_IRQ_TIMEOUT);
+      }
+      state = setDioIrqParams(getIrqMapped(cfg->receive.irqFlags), getIrqMapped(cfg->receive.irqMask));
+      RADIOLIB_ASSERT(state);
+
+      // set buffer pointers
+      state = setBufferBaseAddress();
+      RADIOLIB_ASSERT(state);
+
+      // clear interrupt flags
+      state = clearIrqStatus();
+      RADIOLIB_ASSERT(state);
+
+      // restore original packet length
+      uint8_t modem = getPacketType();
+      if(modem == RADIOLIB_SX126X_PACKET_TYPE_LORA) {
+        state = setPacketParams(this->preambleLengthLoRa, this->crcTypeLoRa, this->implicitLen, this->headerType, this->invertIQEnabled);
+      } else if(modem == RADIOLIB_SX126X_PACKET_TYPE_GFSK) {
+        state = setPacketParamsFSK(this->preambleLengthFSK, this->preambleDetLength, this->crcTypeFSK, this->syncWordLength, RADIOLIB_SX126X_GFSK_ADDRESS_FILT_OFF, this->whitening,
+          this->packetType, (this->packetType == RADIOLIB_SX126X_GFSK_PACKET_FIXED) ? this->implicitLen : RADIOLIB_SX126X_MAX_PACKET_LENGTH);
+      } else {
+        return(RADIOLIB_ERR_UNKNOWN);
+      }
 
       // if max(uint32_t) is used, revert to RxContinuous
       if(cfg->receive.timeout == 0xFFFFFFFF) {
@@ -1424,7 +1399,7 @@ Module* SX126x::getMod() {
   return(this->mod);
 }
 
-int16_t SX126x::modSetup(float tcxoVoltage, bool useRegulatorLDO, uint8_t modem) {
+int16_t SX126x::modSetup(uint8_t modem) {
   // set module properties
   this->mod->init();
   this->mod->hal->pinMode(this->mod->getIrq(), this->mod->hal->GpioModeInput);
@@ -1450,8 +1425,8 @@ int16_t SX126x::modSetup(float tcxoVoltage, bool useRegulatorLDO, uint8_t modem)
   int16_t state = RADIOLIB_ERR_NONE;
 
   // set TCXO control, if requested
-  if(!this->XTAL && tcxoVoltage > 0.0f) {
-    state = setTCXO(tcxoVoltage);
+  if(this->tcxoVoltage > 0.0f) {
+    state = setTCXO(this->tcxoVoltage);
     RADIOLIB_ASSERT(state);
   }
 
@@ -1469,7 +1444,7 @@ int16_t SX126x::modSetup(float tcxoVoltage, bool useRegulatorLDO, uint8_t modem)
     if((state == RADIOLIB_ERR_SPI_CMD_FAILED) && (errors & RADIOLIB_SX126X_XOSC_START_ERR)) {
       // typically users with XTAL devices will try to call the default begin method
       // disable TCXO and try to run config again
-      this->XTAL = false;
+      this->tcxoVoltage = 0;
       RADIOLIB_DEBUG_BASIC_PRINTLN("Bad oscillator selected, trying XTAL");
 
       state = setTCXO(0);
@@ -1480,7 +1455,7 @@ int16_t SX126x::modSetup(float tcxoVoltage, bool useRegulatorLDO, uint8_t modem)
   }
   RADIOLIB_ASSERT(state);
 
-  if (useRegulatorLDO) {
+  if(this->useRegulatorLDO) {
     state = setRegulatorLDO();
   } else {
     state = setRegulatorDCDC();
@@ -1506,7 +1481,9 @@ bool SX126x::findChip(const char* verStr) {
   bool flagFound = false;
   while((i < 10) && !flagFound) {
     // reset the module
-    reset(true);
+    if(this->resetOnStartup) {
+      reset(true);
+    }
 
     // read the version string
     char version[16] = { 0 };

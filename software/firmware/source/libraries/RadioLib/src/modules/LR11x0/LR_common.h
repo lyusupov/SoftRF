@@ -93,11 +93,6 @@ class LRxxxx: public PhysicalLayer {
     explicit LRxxxx(Module* mod);
 
     /*!
-      \brief Whether the module has an XTAL (true) or TCXO (false). Defaults to false.
-    */
-    bool XTAL;
-
-    /*!
       \brief Reset method. Will reset the chip to the default state using RST pin.
       \returns \ref status_codes
     */
@@ -146,7 +141,7 @@ class LRxxxx: public PhysicalLayer {
       \brief Calculate the expected time-on-air for a given modem, data rate, packet configuration and payload size.
       \param modem Modem type.
       \param dr Data rate.
-      \param pc Packet config.
+      \param pc Packet cfg.
       \param len Payload length in bytes.
       \returns Expected time-on-air in microseconds.
     */
@@ -164,6 +159,7 @@ class LRxxxx: public PhysicalLayer {
     
     float freqMHz = 0;
     uint32_t rxTimeout = 0;
+    uint32_t tcxoDelay = 0;
 
     // cached LoRa parameters
     uint8_t bandwidth = 0, spreadingFactor = 0, codingRate = 0, ldrOptimize = 0, crcTypeLoRa = 0, headerType = 0;
@@ -190,7 +186,7 @@ class LRxxxx: public PhysicalLayer {
     int16_t lrFhssBuildFrame(uint16_t cmd, uint8_t hdrCount, uint8_t cr, uint8_t grid, uint8_t hop, uint8_t bw, uint16_t hopSeq, int8_t devOffset, const uint8_t* payload, size_t len);
     uint8_t roundRampTime(uint32_t rampTimeUs);
     int16_t findRxBw(float rxBw, const uint8_t* lut, size_t lutSize, float rxBwMax, uint8_t* val);
-    RadioLibTime_t getTimeOnAir(size_t len, ModemType_t modem);
+    RadioLibTime_t getToA(size_t len, ModemType_t modem);
 
     // several commands just send unsigned 32-bit number
     int16_t setU32(uint16_t cmd, uint32_t u32);

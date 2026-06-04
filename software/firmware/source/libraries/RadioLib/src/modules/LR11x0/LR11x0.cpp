@@ -21,9 +21,9 @@ LR11x0::LR11x0(Module* mod) : LRxxxx(mod) {
   this->irqMap[RADIOLIB_IRQ_TIMEOUT] = RADIOLIB_LR11X0_IRQ_TIMEOUT;
 }
 
-int16_t LR11x0::begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage, bool high) {
+int16_t LR11x0::begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, bool high) {
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LORA);
+  int16_t state = this->modSetup(RADIOLIB_LR11X0_PACKET_TYPE_LORA);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -55,9 +55,9 @@ int16_t LR11x0::begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16
   return(RADIOLIB_ERR_NONE);
 }
 
-int16_t LR11x0::beginGFSK(float br, float freqDev, float rxBw, uint16_t preambleLength, float tcxoVoltage) {
+int16_t LR11x0::beginGFSK(float br, float freqDev, float rxBw, uint16_t preambleLength) {
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_GFSK);
+  int16_t state = this->modSetup(RADIOLIB_LR11X0_PACKET_TYPE_GFSK);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -96,9 +96,9 @@ int16_t LR11x0::beginGFSK(float br, float freqDev, float rxBw, uint16_t preamble
   return(RADIOLIB_ERR_NONE);
 }
 
-int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoVoltage) {
+int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid) {
   // set module properties and perform initial setup
-  int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS);
+  int16_t state = this->modSetup(RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS);
   RADIOLIB_ASSERT(state);
 
   // set grid spacing
@@ -119,9 +119,9 @@ int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoV
   return(setModulationParamsLrFhss(RADIOLIB_LRXXXX_LR_FHSS_BIT_RATE_RAW, RADIOLIB_LR11X0_LR_FHSS_SHAPING_GAUSSIAN_BT_1_0));
 }
 
-int16_t LR11x0::beginGNSS(uint8_t constellations, float tcxoVoltage) {
+int16_t LR11x0::beginGNSS(uint8_t constellations) {
   // set module properties and perform initial setup - packet type does not matter
-  int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LORA);
+  int16_t state = this->modSetup(RADIOLIB_LR11X0_PACKET_TYPE_LORA);
   RADIOLIB_ASSERT(state);
 
   state = this->clearErrors();
@@ -382,6 +382,62 @@ int16_t LR11x0::startReceive() {
   return(this->startReceive(RADIOLIB_LR11X0_RX_TIMEOUT_INF, RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RADIOLIB_IRQ_RX_DEFAULT_MASK, 0));
 }
 
+int16_t LR11x0::startReceiveDutyCycle(uint32_t rxPeriod, uint32_t sleepPeriod, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask) {
+  // datasheet claims time to go to sleep is ~500us, same to wake up, compensate for that with 1 ms + TCXO delay
+  uint32_t transitionTime = this->tcxoDelay + 1000;
+  sleepPeriod -= transitionTime;
+
+  // divide by 30.517 microseconds (RTC period, 1/32.768 kHz)
+  uint32_t rxPeriodRaw = (rxPeriod * 32768UL) / 1000000UL;
+  uint32_t sleepPeriodRaw = (sleepPeriod * 32768UL) / 1000000UL;
+
+  // check 24 bit limit and zero value (likely not intended)
+  if((rxPeriodRaw & 0xFF000000) || (rxPeriodRaw == 0)) {
+    return(RADIOLIB_ERR_INVALID_RX_PERIOD);
+  }
+
+  // this check of the high byte also catches underflow when we subtracted transitionTime
+  if((sleepPeriodRaw & 0xFF000000) || (sleepPeriodRaw == 0)) {
+    return(RADIOLIB_ERR_INVALID_SLEEP_PERIOD);
+  }
+
+  // set up Rx mode
+  RadioModeConfig_t cfg = {
+    .receive = {
+      .timeout = RADIOLIB_LR11X0_RX_TIMEOUT_INF,
+      .irqFlags = irqFlags,
+      .irqMask = irqMask,
+      .len = 0,
+    }
+  };
+  int16_t state = this->stageMode(RADIOLIB_RADIO_MODE_RX, &cfg);
+  RADIOLIB_ASSERT(state);
+
+  return(this->setRxDutyCycle(rxPeriodRaw, sleepPeriodRaw, RADIOLIB_LR11X0_RX_DUTY_CYCLE_MODE_RX));
+}
+
+int16_t LR11x0::startReceiveDutyCycleAuto(uint16_t senderPreambleLength, uint16_t minSymbols, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask) {
+  // calculate the sleep and wake periods
+  uint32_t wakePeriod = 0;
+  uint32_t sleepPeriod = 0;
+  DataRate_t dr = {
+    .lora = {
+      .spreadingFactor = this->spreadingFactor,
+      .bandwidth = this->bandwidthKhz,
+      .codingRate = this->codingRate,
+    }
+  };
+  int16_t state = calculateRxDutyCycle(senderPreambleLength, this->preambleLengthLoRa, minSymbols, &dr, &wakePeriod, &sleepPeriod);
+  RADIOLIB_ASSERT(state);
+
+  // If our sleep period is shorter than our transition time, just use the standard startReceive
+  if(sleepPeriod < this->tcxoDelay + 1016) {
+    return(startReceive(RADIOLIB_LR11X0_RX_TIMEOUT_INF, irqFlags, irqMask));
+  }
+
+  return(startReceiveDutyCycle(wakePeriod, sleepPeriod, irqFlags, irqMask));
+}
+
 int16_t LR11x0::readData(uint8_t* data, size_t len) {
   // check active modem
   int16_t state = RADIOLIB_ERR_NONE;
@@ -451,7 +507,7 @@ int16_t LR11x0::startChannelScan() {
   return(this->startChannelScan(cfg));
 }
 
-int16_t LR11x0::startChannelScan(const ChannelScanConfig_t &config) {
+int16_t LR11x0::startChannelScan(const ChannelScanConfig_t &cfg) {
   // check active modem
   int16_t state = RADIOLIB_ERR_NONE;
   uint8_t modem = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
@@ -469,7 +525,7 @@ int16_t LR11x0::startChannelScan(const ChannelScanConfig_t &config) {
   this->mod->setRfSwitchState(Module::MODE_RX);
 
   // set DIO pin mapping
-  uint16_t irqFlags = (config.cad.irqFlags == RADIOLIB_IRQ_NOT_SUPPORTED) ? RADIOLIB_LR11X0_IRQ_CAD_DETECTED | RADIOLIB_LR11X0_IRQ_CAD_DONE : config.cad.irqFlags;
+  uint16_t irqFlags = (cfg.cad.irqFlags == RADIOLIB_IRQ_NOT_SUPPORTED) ? RADIOLIB_LR11X0_IRQ_CAD_DETECTED | RADIOLIB_LR11X0_IRQ_CAD_DONE : cfg.cad.irqFlags;
   state = setDioIrqParams(getIrqMapped(irqFlags), getIrqMapped(irqFlags));
   RADIOLIB_ASSERT(state);
 
@@ -478,7 +534,7 @@ int16_t LR11x0::startChannelScan(const ChannelScanConfig_t &config) {
   RADIOLIB_ASSERT(state);
 
   // set mode to CAD
-  return(startCad(config.cad.symNum, config.cad.detPeak, config.cad.detMin, config.cad.exitMode, config.cad.timeout));
+  return(startCad(cfg.cad.symNum, cfg.cad.detPeak, cfg.cad.detMin, cfg.cad.exitMode, cfg.cad.timeout));
 }
 
 int16_t LR11x0::getChannelScanResult() {
@@ -989,11 +1045,6 @@ int16_t LR11x0::setPreambleLength(size_t preambleLength) {
 }
 
 int16_t LR11x0::setTCXO(float voltage, uint32_t delay) {
-  // check if TCXO is enabled at all
-  if(this->XTAL) {
-    return(RADIOLIB_ERR_INVALID_TCXO_VOLTAGE);
-  }
-
   // set mode to standby
   standby();
 
@@ -1034,6 +1085,7 @@ int16_t LR11x0::setTCXO(float voltage, uint32_t delay) {
   }
 
   // calculate delay value
+  this->tcxoDelay = delay;
   uint32_t delayValue = (uint32_t)((float)delay / 30.52f);
   if(delayValue == 0) {
     delayValue = 1;
@@ -1177,7 +1229,7 @@ size_t LR11x0::getPacketLength(bool update, uint8_t* offset) {
 RadioLibTime_t LR11x0::getTimeOnAir(size_t len) {
   ModemType_t modem;
   getModem(&modem);
-  return(LRxxxx::getTimeOnAir(len, modem));
+  return(LRxxxx::getToA(len, modem));
 }
 
 uint32_t LR11x0::getIrqFlags() {
@@ -1575,7 +1627,7 @@ int16_t LR11x0::workaroundGFSK() {
   return(this->writeRegMemMask32(RADIOLIB_LR11X0_REG_GFSK_FIX3, 0x01FF03, valFix3));
 }
 
-int16_t LR11x0::modSetup(float tcxoVoltage, uint8_t modem) {
+int16_t LR11x0::modSetup(uint8_t modem) {
   this->mod->init();
   this->mod->hal->pinMode(this->mod->getIrq(), this->mod->hal->GpioModeInput);
   this->mod->hal->pinMode(this->mod->getGpio(), this->mod->hal->GpioModeInput);
@@ -1600,8 +1652,8 @@ int16_t LR11x0::modSetup(float tcxoVoltage, uint8_t modem) {
   RADIOLIB_ASSERT(state);
 
   // set TCXO control, if requested
-  if(!this->XTAL && tcxoVoltage > 0.0f) {
-    state = setTCXO(tcxoVoltage);
+  if(this->tcxoVoltage > 0.0f) {
+    state = setTCXO(this->tcxoVoltage);
     RADIOLIB_ASSERT(state);
   }
 
@@ -1677,6 +1729,13 @@ int16_t LR11x0::config(uint8_t modem) {
   #else
   RADIOLIB_ASSERT(state);
   #endif
+
+  // enable driving DIOs in sleep mode
+  // this prevents IRQ going high when the device goes to sleep
+  // especially when using Rx duty cycle, this woukld make it look like received packets
+  // there seems to be no measurable impact on power consumption in sleep mode
+  state = this->driveDiosInSleepMode(true);
+  RADIOLIB_ASSERT(state);
 
   // set modem
   state = this->setPacketType(modem);

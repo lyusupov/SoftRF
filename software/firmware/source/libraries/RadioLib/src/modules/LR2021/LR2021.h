@@ -39,13 +39,15 @@ class LR2021: public LRxxxx {
 
     /*!
       \brief Which DIO pin is to be used as the interrupt pin.
+      \ingroup module_config_vars
     */
     uint32_t irqDioNum = 5;
 
     /*! 
       \brief Determines the type of Lora CAD to perform, either "standard" CAD
-      (same as is implem,ented LR11x0, SX126x and others), or a "fast" CAD if set to true.
+      (same as is implemented LR11x0, SX126x and others), or a "fast" CAD if set to true.
       If there is no signal to be detected, fast CAD should return faster than standard CAD.
+      \ingroup module_config_vars
     */
     bool fastCad = false;
 
@@ -69,19 +71,26 @@ class LR2021: public LRxxxx {
     };
 
     /*!
-      \struct paTableEntry_t
-      \brief This structure is used as entry in the PA lookup table, 
-      to optimize PA configuration for minimum power consumption.
+      \brief TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, set this value to 0.
+      \ingroup module_config_vars
     */
-    struct __attribute__((packed)) paTableEntry_t {
-      uint8_t paDutyCycle: 4;
-      uint8_t paSlices: 4;
-      int8_t paVal;
-    };
+    float tcxoVoltage = 1.6;
 
     // basic methods
 
     /*!
+      \brief Initialization method for LoRa modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t begin(const ConfigLoRa_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigLoRa_t& config) instead.
       \brief Initialization method for LoRa modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LoRa bandwidth in kHz. Defaults to 125.0 kHz.
@@ -100,6 +109,16 @@ class LR2021: public LRxxxx {
 
     /*!
       \brief Initialization method for FSK modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginGFSK(const ConfigFSK_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigFSK_t& config) instead.
+      \brief Initialization method for FSK modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br FSK bit rate in kbps. Defaults to 4.8 kbps.
       \param freqDev Frequency deviation from carrier frequency in kHz. Defaults to 5.0 kHz.
@@ -115,6 +134,16 @@ class LR2021: public LRxxxx {
     
     /*!
       \brief Initialization method for OOK modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginOOK(const ConfigOOK_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigOOK_t& config) instead.
+      \brief Initialization method for OOK modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br OOK bit rate in kbps. Defaults to 4.8 kbps.
       \param rxBw Receiver bandwidth in kHz. Defaults to 153.8 kHz.
@@ -126,8 +155,18 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t beginOOK(float freq = 434.0, float br = 4.8, float rxBw = 153.8, int8_t power = 10, uint16_t preambleLength = 16, float tcxoVoltage = 1.6);
-    
+ 
     /*!
+      \brief Initialization method for LR-FHSS modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginLRFHSS(const ConfigLRFHSS_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigLRFHSS_t& config) instead.
       \brief Initialization method for LR-FHSS modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LR-FHSS bandwidth, one of RADIOLIB_LRXXXX_LR_FHSS_BW_* values. Defaults to 722.66 kHz.
@@ -140,8 +179,18 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t beginLRFHSS(float freq = 434.0, uint8_t bw = RADIOLIB_LRXXXX_LR_FHSS_BW_722_66, uint8_t cr = RADIOLIB_LRXXXX_LR_FHSS_CR_2_3, bool narrowGrid = true, int8_t power = 10, float tcxoVoltage = 1.6);
+ 
+    /*!
+      \brief Initialization method for FLRC modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginFLRC(const ConfigFLRC_t& config);
 
     /*!
+      \deprecated Use \ref begin(const ConfigFLRC_t& config) instead.
       \brief Initialization method for FLRC modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br FLRC bit rate in kbps. Defaults to 650 kbps.
@@ -149,6 +198,9 @@ class LR2021: public LRxxxx {
       \param pwr Output power in dBm. Defaults to 10 dBm.
       \param preambleLength FLRC preamble length in bits. Defaults to 16 bits.
       \param dataShaping Time-bandwidth product of the Gaussian filter to be used for shaping. Defaults to 0.5.
+      \param tcxoVoltage TCXO reference voltage to be set. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set LR2021::XTAL to true.
       \returns \ref status_codes
     */
     int16_t beginFLRC(float freq = 434.0, uint16_t br = 650, uint8_t cr = RADIOLIB_LR2021_FLRC_CR_2_3, int8_t pwr = 10, uint16_t preambleLength = 16, uint8_t dataShaping = RADIOLIB_SHAPING_0_5, float tcxoVoltage = 1.6);
@@ -264,6 +316,40 @@ class LR2021: public LRxxxx {
     int16_t startReceive() override;
 
     /*!
+      \brief Interrupt-driven receive method where the device mostly sleeps and periodically wakes to listen.
+      Note that this function assumes the unit will take 500us + TCXO_delay to change state.
+      See datasheet section 13.1.7, version 1.2.
+
+      \param rxPeriod The duration the receiver will be in Rx mode, in microseconds.
+      \param sleepPeriod The duration the receiver will not be in Rx mode, in microseconds.
+
+      \param irqFlags Sets the IRQ flags, defaults to RX done, RX timeout, CRC error and header error. 
+      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RX done.
+      \returns \ref status_codes
+    */
+    int16_t startReceiveDutyCycle(uint32_t rxPeriod, uint32_t sleepPeriod, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK);
+
+    /*!
+      \brief Calls \ref startReceiveDutyCycle with rxPeriod and sleepPeriod set so the unit shouldn't miss any messages.
+      \param senderPreambleLength Expected preamble length of the messages to receive.
+      If set to zero, the currently configured preamble length will be used. Defaults to zero.
+      This value cannot exceed the configured preamble length. If the sender preamble length is variable, set the
+      maximum expected length by calling setPreambleLength(maximumExpectedLength) prior to this method, and use the
+      minimum expected length here.
+
+      \param minSymbols Ensure that the unit will catch at least this many symbols of any preamble of the specified senderPreambleLength.
+      To reliably latch a preamble, the receiver requires 8 symbols for SF7-12 and 12 symbols for SF5-6 (see datasheet section 6.1.1.1, version 1.2).
+      If set to zero, the minimum required symbols will be used. Defaults to 0.
+
+      If senderPreambleLength is less than 2*minSymbols + 1, this method is equivalent to startReceive().
+
+      \param irqFlags Sets the IRQ flags, defaults to RX done, RX timeout, CRC error and header error.
+      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RX done.
+      \returns \ref status_codes
+    */
+    int16_t startReceiveDutyCycleAuto(uint16_t senderPreambleLength = 0, uint16_t minSymbols = 0, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK);
+
+    /*!
       \brief Reads data received after calling startReceive method. When the packet length is not known in advance,
       getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
@@ -289,10 +375,10 @@ class LR2021: public LRxxxx {
     /*!
       \brief Interrupt-driven channel activity detection method. IRQ pin will be activated
       when LoRa preamble is detected, or upon timeout.
-      \param config CAD configuration structure.
+      \param cfg CAD configuration structure.
       \returns \ref status_codes
     */
-    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
+    int16_t startChannelScan(const ChannelScanConfig_t &cfg) override;
 
     /*!
       \brief Read the channel scan result
@@ -370,6 +456,17 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t setOutputPower(int8_t power, uint32_t rampTimeUs);
+
+    /*!
+      \brief Sets custom PA configuration table.
+      \param table Pointer to user-provided PA configuration table.
+      The table MUST containt exactly RADIOLIB_LR2021_PA_TABLE_LEN entries,
+      one per each half-dBm step. The table is not copied, only reference to it is stored.
+      Set to NULL to return back to the default tables.
+      \param highFreq Whether this PA configuration is for the low-frequency sub-GHz PA (false),
+      or the high-frequency 2.4 GHz PA (true).
+    */
+    void setPaTable(LR2021PaTableEntry_t* table, bool highFreq);
 
     /*!
       \brief Check if output power is configurable.
@@ -740,7 +837,10 @@ class LR2021: public LRxxxx {
     uint16_t bitRateFlrc = 0;
     uint8_t codingRateFlrc = 0;
 
-    int16_t modSetup(float freq, float tcxoVoltage, uint8_t modem);
+    // pointers to PA lookup tables - may be overridden by the user
+    LR2021PaTableEntry_t* paOptTable[2] = { nullptr, nullptr };
+
+    int16_t modSetup(float freq, uint8_t modem);
     bool findChip(void);
     int16_t config(uint8_t modem);
     int16_t setPacketMode(uint8_t mode, uint8_t len);
@@ -757,7 +857,7 @@ class LR2021: public LRxxxx {
     int16_t setRx(uint32_t timeout);
     int16_t setTx(uint32_t timeout);
     int16_t setRxTxFallbackMode(uint8_t mode);
-    int16_t setRxDutyCycle(uint32_t rxMaxTime, uint32_t cycleTime, uint8_t cfg);
+    int16_t setRxDutyCycle(uint32_t rxMaxTime, uint32_t cycleTime, uint8_t mode);
     int16_t autoTxRx(uint32_t delay, uint8_t mode, uint32_t timeout);
     int16_t getRxPktLength(uint16_t* len);
     int16_t resetRxStats(void);

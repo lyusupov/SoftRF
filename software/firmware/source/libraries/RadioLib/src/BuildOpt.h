@@ -124,6 +124,17 @@
   //#define RADIOLIB_CLOCK_DRIFT_MS                         (0)
 #endif
 
+/*
+ * Enable custom implementation of AES-128
+ * This is useful when using platforms which provides hardware acceleration for AES.
+ * The default RadioLib implementation has a softwre AES-128, which takes a lot of time to calculate.
+ * When set, you will have to create a new AES-128 class which overrides the default implementations 
+ * in RadioLibAES128 class, create an instance of that class and provide it to RadioLibHal::aes128.
+ */
+#if !defined(RADIOLIB_CUSTOM_AES128)
+  #define RADIOLIB_CUSTOM_AES128  (0)
+#endif
+
 #if !defined(RADIOLIB_LINE_FEED)
   #define RADIOLIB_LINE_FEED    "\r\n"
 #endif
@@ -461,6 +472,26 @@
     #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST
   #endif
 
+#elif defined(STM32WLE5xx) || defined(STM32WL55xx)    // Cube does not expose a more explicit macro
+  #define RADIOLIB_PLATFORM                           "STM32WL using STM32Cube"
+  #define STM32CubeWL                                 // define a more explicit macro
+
+  #define RADIOLIB_NC                                 (0xFFFFFFFF)
+  #define RADIOLIB_NONVOLATILE
+  #define RADIOLIB_NONVOLATILE_READ_BYTE(addr)        (*(reinterpret_cast<uint8_t *>(reinterpret_cast<void *>(addr))))
+  #define RADIOLIB_NONVOLATILE_READ_DWORD(addr)       (*(reinterpret_cast<uint32_t *>(reinterpret_cast<void *>(addr))))
+  #define RADIOLIB_TYPE_ALIAS(type, alias)            using alias = type;
+
+  #undef RADIOLIB_DEBUG_PORT
+  #define RADIOLIB_DEBUG_PORT                         stdout
+
+  #define DEC 10
+  #define HEX 16
+  #define OCT 8
+  #define BIN 2
+
+  #include <stdint.h>
+
 #else
   // generic non-Arduino platform
   #define RADIOLIB_PLATFORM                           "Generic"
@@ -482,7 +513,7 @@
 
 // This only compiles on STM32 boards with SUBGHZ module, but also
 // include when generating docs
-#if (!defined(ARDUINO_ARCH_STM32) || !defined(SUBGHZSPI_BASE)) && !defined(DOXYGEN)
+#if (!defined(ARDUINO_ARCH_STM32) || !defined(SUBGHZSPI_BASE)) && !defined(DOXYGEN) && !defined(STM32CubeWL)
   #define RADIOLIB_EXCLUDE_STM32WLX (1)
 #endif
 
@@ -588,6 +619,7 @@
 // debug info strings
 #define RADIOLIB_VALUE_TO_STRING(x) #x
 #define RADIOLIB_VALUE(x) RADIOLIB_VALUE_TO_STRING(x)
+#define RADIOLIB_VALUE_USED(x) __asm__ __volatile__("" :: "m" (x))
 
 #define RADIOLIB_INFO "\r\nRadioLib Info\nVersion:  \"" \
   RADIOLIB_VALUE(RADIOLIB_VERSION_MAJOR) "." \
@@ -632,8 +664,8 @@
 
 // version definitions
 #define RADIOLIB_VERSION_MAJOR  7
-#define RADIOLIB_VERSION_MINOR  6
-#define RADIOLIB_VERSION_PATCH  0
+#define RADIOLIB_VERSION_MINOR  7
+#define RADIOLIB_VERSION_PATCH  1
 #define RADIOLIB_VERSION_EXTRA  0
 
 #define RADIOLIB_VERSION (((RADIOLIB_VERSION_MAJOR) << 24) | ((RADIOLIB_VERSION_MINOR) << 16) | ((RADIOLIB_VERSION_PATCH) << 8) | (RADIOLIB_VERSION_EXTRA))

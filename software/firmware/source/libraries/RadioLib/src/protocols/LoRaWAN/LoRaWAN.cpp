@@ -6,6 +6,26 @@
 
 #if !RADIOLIB_EXCLUDE_LORAWAN
 
+constexpr LoRaWANMacCommand_t MacTable[RADIOLIB_LORAWAN_NUM_MAC_COMMANDS] = {
+  { RADIOLIB_LORAWAN_MAC_RESET,               1, 1, true,  false },
+  { RADIOLIB_LORAWAN_MAC_LINK_CHECK,          2, 0, false, true  },
+  { RADIOLIB_LORAWAN_MAC_LINK_ADR,            4, 1, false, false },
+  { RADIOLIB_LORAWAN_MAC_DUTY_CYCLE,          1, 0, false, false },
+  { RADIOLIB_LORAWAN_MAC_RX_PARAM_SETUP,      4, 1, true,  false },
+  { RADIOLIB_LORAWAN_MAC_DEV_STATUS,          0, 2, false, false },
+  { RADIOLIB_LORAWAN_MAC_NEW_CHANNEL,         5, 1, false, false },
+  { RADIOLIB_LORAWAN_MAC_RX_TIMING_SETUP,     1, 0, true,  false },
+  { RADIOLIB_LORAWAN_MAC_TX_PARAM_SETUP,      1, 0, true,  false },
+  { RADIOLIB_LORAWAN_MAC_DL_CHANNEL,          4, 1, true,  false },
+  { RADIOLIB_LORAWAN_MAC_REKEY,               1, 1, true,  false },
+  { RADIOLIB_LORAWAN_MAC_ADR_PARAM_SETUP,     1, 0, false, false },
+  { RADIOLIB_LORAWAN_MAC_DEVICE_TIME,         5, 0, false, true  },
+  { RADIOLIB_LORAWAN_MAC_FORCE_REJOIN,        2, 0, false, false },
+  { RADIOLIB_LORAWAN_MAC_REJOIN_PARAM_SETUP,  1, 1, false, false },
+  { RADIOLIB_LORAWAN_MAC_DEVICE_MODE,         1, 1, true,  false },
+  { RADIOLIB_LORAWAN_MAC_PROPRIETARY,         5, 0, false, true  },
+};
+
 LoRaWANNode::LoRaWANNode(PhysicalLayer* phy, const LoRaWANBand_t* band, uint8_t subBand) {
   this->phyLayer = phy;
   this->band = band;
@@ -17,6 +37,13 @@ LoRaWANNode::LoRaWANNode(PhysicalLayer* phy, const LoRaWANBand_t* band, uint8_t 
   for(int i = 0; i < RADIOLIB_LORAWAN_MAX_NUM_MC_GROUPS; i++) {
     this->mcGroups[i] = RADIOLIB_MULTICAST_GROUP_NONE;
   }
+
+  // if the user does not provide their own AES-128, use the software one
+  #if !RADIOLIB_CUSTOM_AES128
+  static RadioLibSoftwareAES128 RadioLibAES128Instance;
+  Module *mod = this->phyLayer->getMod();
+  mod->hal->aes128 = &RadioLibAES128Instance;
+  #endif
 }
 
 #if defined(RADIOLIB_BUILD_ARDUINO)
@@ -747,14 +774,15 @@ int16_t LoRaWANNode::processJoinAccept(LoRaWANJoinEvent_t *joinEvent) {
   // decrypt the join accept message
   // this is done by encrypting again in ECB mode
   // the first byte is the MAC header which is not encrypted
+  Module* mod = this->phyLayer->getMod();
   uint8_t joinAcceptMsg[RADIOLIB_LORAWAN_JOIN_ACCEPT_MAX_LEN];
   joinAcceptMsg[0] = joinAcceptMsgEnc[0];
   if(this->rev == 1) {
-    RadioLibAES128Instance.init(this->nwkKey);
+    mod->hal->aes128->init(this->nwkKey);
   } else {
-    RadioLibAES128Instance.init(this->appKey);
+    mod->hal->aes128->init(this->appKey);
   }
-  RadioLibAES128Instance.encryptECB(&joinAcceptMsgEnc[1], RADIOLIB_LORAWAN_JOIN_ACCEPT_MAX_LEN - 1, &joinAcceptMsg[1]);
+  mod->hal->aes128->encryptECB(&joinAcceptMsgEnc[1], RADIOLIB_LORAWAN_JOIN_ACCEPT_MAX_LEN - 1, &joinAcceptMsg[1]);
 
   // get current joinNonce from downlink
   uint32_t joinNonceNew = LoRaWANNode::ntoh<uint32_t>(&joinAcceptMsg[RADIOLIB_LORAWAN_JOIN_ACCEPT_JOIN_NONCE_POS], 3);
@@ -789,8 +817,8 @@ int16_t LoRaWANNode::processJoinAccept(LoRaWANJoinEvent_t *joinEvent) {
     uint8_t keyDerivationBuff[RADIOLIB_AES128_BLOCK_SIZE] = { 0 };
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_JS_INT_KEY;
     LoRaWANNode::hton<uint64_t>(&keyDerivationBuff[1], this->devEUI);
-    RadioLibAES128Instance.init(this->nwkKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->jSIntKey);
+    mod->hal->aes128->init(this->nwkKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->jSIntKey);
 
     // prepare the buffer for MIC calculation
     uint8_t micBuff[3*RADIOLIB_AES128_BLOCK_SIZE] = { 0 };
@@ -840,32 +868,32 @@ int16_t LoRaWANNode::processJoinAccept(LoRaWANJoinEvent_t *joinEvent) {
     LoRaWANNode::hton<uint16_t>(&keyDerivationBuff[RADIOLIB_LORAWAN_JOIN_ACCEPT_AES_DEV_NONCE_POS], this->devNonce - 1);
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_APP_S_KEY;
 
-    RadioLibAES128Instance.init(this->appKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->appSKey);
+    mod->hal->aes128->init(this->appKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->appSKey);
 
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_F_NWK_S_INT_KEY;
-    RadioLibAES128Instance.init(this->nwkKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->fNwkSIntKey);
+    mod->hal->aes128->init(this->nwkKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->fNwkSIntKey);
 
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_S_NWK_S_INT_KEY;
-    RadioLibAES128Instance.init(this->nwkKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->sNwkSIntKey);
+    mod->hal->aes128->init(this->nwkKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->sNwkSIntKey);
 
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_NWK_S_ENC_KEY;
-    RadioLibAES128Instance.init(this->nwkKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->nwkSEncKey);
+    mod->hal->aes128->init(this->nwkKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->nwkSEncKey);
 
   } else {
     // 1.0 version, just derive the keys
     LoRaWANNode::hton<uint32_t>(&keyDerivationBuff[RADIOLIB_LORAWAN_JOIN_ACCEPT_HOME_NET_ID_POS], homeNetId, 3);
     LoRaWANNode::hton<uint16_t>(&keyDerivationBuff[RADIOLIB_LORAWAN_JOIN_ACCEPT_DEV_ADDR_POS], this->devNonce - 1);
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_APP_S_KEY;
-    RadioLibAES128Instance.init(this->appKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->appSKey);
+    mod->hal->aes128->init(this->appKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->appSKey);
 
     keyDerivationBuff[0] = RADIOLIB_LORAWAN_JOIN_ACCEPT_F_NWK_S_INT_KEY;
-    RadioLibAES128Instance.init(this->appKey);
-    RadioLibAES128Instance.encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->fNwkSIntKey);
+    mod->hal->aes128->init(this->appKey);
+    mod->hal->aes128->encryptECB(keyDerivationBuff, RADIOLIB_AES128_BLOCK_SIZE, this->fNwkSIntKey);
 
     memcpy(this->sNwkSIntKey, this->fNwkSIntKey, RADIOLIB_AES128_KEY_SIZE);
     memcpy(this->nwkSEncKey, this->fNwkSIntKey, RADIOLIB_AES128_KEY_SIZE);
@@ -1888,7 +1916,15 @@ int16_t LoRaWANNode::parseDownlink(uint8_t* data, size_t* len, uint8_t window, L
 
   // MHDR(1) - DevAddr(4) - FCtrl(1) - FCnt(2) - FOpts - Payload - MIC(4)
   // potentially also an FPort, will find out next
-  uint8_t payLen = downlinkMsgLen - 1 - 4 - 1 - 2 - fOptsLen - 4;
+  // guard against integer underflow when downlinkMsgLen is too short
+  uint8_t minLen = 1 + 4 + 1 + 2 + fOptsLen + 4;
+  if(downlinkMsgLen < minLen) {
+    #if !RADIOLIB_STATIC_ONLY
+      delete[] downlinkMsg;
+    #endif
+    return(RADIOLIB_ERR_DOWNLINK_MALFORMED);
+  }
+  uint8_t payLen = downlinkMsgLen - minLen;
 
   // in LoRaWAN v1.1, a frame is a Network frame if there is no Application payload
   // i.e.: either no payload at all (empty frame or FOpts only), or MAC only payload
@@ -1929,7 +1965,7 @@ int16_t LoRaWANNode::parseDownlink(uint8_t* data, size_t* len, uint8_t window, L
       isAppDownlink = true;
     }
     // check if any of the packages use this FPort
-    if(fPort >= RADIOLIB_LORAWAN_FPORT_RESERVED && this->packages[fPort - RADIOLIB_LORAWAN_FPORT_RESERVED].enabled) {
+    if(fPort >= RADIOLIB_LORAWAN_FPORT_RESERVED && (fPort - RADIOLIB_LORAWAN_FPORT_RESERVED) < RADIOLIB_LORAWAN_NUM_RESERVED_PACKAGES && this->packages[fPort - RADIOLIB_LORAWAN_FPORT_RESERVED].enabled) {
       ok = true;
       isAppDownlink = this->packages[fPort - RADIOLIB_LORAWAN_FPORT_RESERVED].isAppPack;
     }
@@ -1997,6 +2033,18 @@ int16_t LoRaWANNode::parseDownlink(uint8_t* data, size_t* len, uint8_t window, L
     }
   }
 
+  bool isConfirmedDown = false;
+  // check if this is a confirmed downlink and if that is even allowed
+  if((downlinkMsg[RADIOLIB_LORAWAN_FHDR_LEN_START_OFFS] & 0xFE) == RADIOLIB_LORAWAN_MHDR_MTYPE_CONF_DATA_DOWN) {
+    if(multicast) {
+      #if !RADIOLIB_STATIC_ONLY
+        delete[] downlinkMsg;
+      #endif
+      return(RADIOLIB_ERR_DOWNLINK_MALFORMED);
+    }
+    isConfirmedDown = true;
+  }
+
   // check if the ACK bit is set, indicating this frame acknowledges the previous uplink
   bool isConfirmingUp = false;
   if((downlinkMsg[RADIOLIB_LORAWAN_FHDR_FCTRL_POS] & RADIOLIB_LORAWAN_FCTRL_ACK)) {
@@ -2046,15 +2094,15 @@ int16_t LoRaWANNode::parseDownlink(uint8_t* data, size_t* len, uint8_t window, L
     }
   }
 
-  bool isConfirmedDown = false;
+  // if this is a confirmed downlink, save the downlink FCnt value
+  // this sets the ACK bit on the next uplink
+  if(isConfirmedDown) {
+    this->confFCntDown = this->aFCntDown;
+  }
 
   // do some housekeeping for normal Class A downlinks (not allowed for RxB / RxC)
-  if(this->lwClass == RADIOLIB_LORAWAN_CLASS_A || window < RADIOLIB_LORAWAN_RX_BC) {
-    // if this is a confirmed frame, save the downlink number (only app frames can be confirmed)
-    if((downlinkMsg[RADIOLIB_LORAWAN_FHDR_LEN_START_OFFS] & 0xFE) == RADIOLIB_LORAWAN_MHDR_MTYPE_CONF_DATA_DOWN) {
-      this->confFCntDown = this->aFCntDown;
-      isConfirmedDown = true;
-    }
+  // this is either in Rx1 or Rx2 for any class, or any Rx window for Class A (including RxR in Relay)
+  if(window < RADIOLIB_LORAWAN_RX_BC || this->lwClass == RADIOLIB_LORAWAN_CLASS_A) {
 
     // a Class A downlink was received, so restart the ADR counter with the next uplink
     this->adrFCnt = this->getFCntUp() + 1;
@@ -3687,9 +3735,10 @@ uint32_t LoRaWANNode::generateMIC(const uint8_t* msg, size_t len, uint8_t* key) 
     return(0);
   }
 
-  RadioLibAES128Instance.init(key);
+  Module* mod = this->phyLayer->getMod();
+  mod->hal->aes128->init(key);
   uint8_t cmac[RADIOLIB_AES128_BLOCK_SIZE];
-  RadioLibAES128Instance.generateCMAC(msg, len, cmac);
+  mod->hal->aes128->generateCMAC(msg, len, cmac);
   return(((uint32_t)cmac[0]) | ((uint32_t)cmac[1] << 8) | ((uint32_t)cmac[2] << 16) | ((uint32_t)cmac[3]) << 24);
 }
 
@@ -3826,8 +3875,9 @@ void LoRaWANNode::processAES(const uint8_t* in, size_t len, uint8_t* key, uint8_
     }
 
     // encrypt the buffer
-    RadioLibAES128Instance.init(key);
-    RadioLibAES128Instance.encryptECB(encBlock, RADIOLIB_AES128_BLOCK_SIZE, encBuffer);
+    Module* mod = this->phyLayer->getMod();
+    mod->hal->aes128->init(key);
+    mod->hal->aes128->encryptECB(encBlock, RADIOLIB_AES128_BLOCK_SIZE, encBuffer);
 
     // now xor the buffer with the input
     size_t xorLen = remLen;
