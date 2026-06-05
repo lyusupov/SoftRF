@@ -281,6 +281,7 @@ static void ESP32_Bluetooth_setup()
       BLEAdvData.setFlags(0x06);
       BLEAdvData.setCompleteServices(NimBLEUUID(UART_SERVICE_UUID16));
       BLEAdvData.setCompleteServices(NimBLEUUID(UUID16_SVC_BATTERY));
+      BLEAdvData.setName((BT_name+"-LE").c_str());
 #if defined(USE_BLE_MIDI)
       BLEAdvData.setCompleteServices(NimBLEUUID(MIDI_SERVICE_UUID));
 #endif /* USE_BLE_MIDI */
@@ -335,7 +336,12 @@ static void ESP32_Bluetooth_loop()
       // disconnecting
       if (!deviceConnected && oldDeviceConnected && (millis() - BLE_Advertising_TimeMarker > 500) ) {
           // give the bluetooth stack the chance to get things ready
-          pServer->startAdvertising(); // restart advertising
+#if CONFIG_BT_NIMBLE_EXT_ADV && defined(USE_NIMBLE_V2)
+          NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
+          pAdvertising->start(0, 0, 0);     // restart advertising
+#else /* CONFIG_BT_NIMBLE_EXT_ADV */
+          NimBLEDevice::startAdvertising(); // restart advertising
+#endif /* CONFIG_BT_NIMBLE_EXT_ADV */
           oldDeviceConnected = deviceConnected;
           BLE_Advertising_TimeMarker = millis();
       }

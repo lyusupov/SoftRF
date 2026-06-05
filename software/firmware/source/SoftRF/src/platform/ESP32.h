@@ -654,7 +654,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define USE_ARDUINOBLE
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
 #define USE_NIMBLE
-#define USE_NIMBLE_V2
+//#define USE_NIMBLE_V2
 #endif /* ESP_IDF_VERSION_MAJOR */
 //#undef USE_BLE_MIDI
 #define USE_EPAPER
