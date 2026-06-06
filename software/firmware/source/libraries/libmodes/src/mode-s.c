@@ -97,7 +97,9 @@ void mode_s_init(mode_s_t *self) {
   // different I/Q pair will result in a different magnitude value, not losing
   // any resolution.
 
-#if (!defined(HACKRF_ONE) && !defined(CONFIG_IDF_TARGET_ESP32P4)) || \
+#if (!defined(HACKRF_ONE)                && \
+     !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+     !defined(ARDUINO_BLUEPILL_F103CB))  || \
      (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))             || \
      (defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(MAGLUT_IN_ROM))
   int i, q;
@@ -834,7 +836,7 @@ good_preamble:
 
 static ms_time_t mstime(void) {
 #if !defined(HACKRF_ONE) && !defined(ARDUINO_ARCH_AVR) && \
-    !defined(ARDUINO_ARCH_RENESAS)
+    !defined(ARDUINO_ARCH_RENESAS) && !defined(ARDUINO_ARCH_STM32)
 
     struct timeval tv;
     ms_time_t mst;

@@ -69,7 +69,7 @@ void STM32RTC::begin(bool resetTime, Hour_Format format)
   }
 
   _format = format;
-#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION  > 0x01090000)
+#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION > 0x01090000)
   reinit = RTC_init((format == HOUR_12) ? HOUR_FORMAT_12 : HOUR_FORMAT_24,
                     (_clockSource == LSE_CLOCK) ? ::LSE_CLOCK :
                     (_clockSource == HSE_CLOCK) ? ::HSE_CLOCK : ::LSI_CLOCK
@@ -142,8 +142,14 @@ void STM32RTC::setClockSource(Source_Clock source)
   */
 void STM32RTC::getPrediv(uint32_t *predivA, int16_t *dummy)
 {
+#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION > 0x01090000)
   UNUSED(dummy);
   RTC_getPrediv(predivA);
+#else
+  int8_t predivA_8;
+  RTC_getPrediv(&predivA_8, dummy);
+  *predivA = (uint32_t) predivA_8;
+#endif /* STM32_CORE_VERSION */
 }
 #else
 /**
@@ -171,8 +177,12 @@ void STM32RTC::getPrediv(int8_t *predivA, int16_t *predivS)
   */
 void STM32RTC::setPrediv(uint32_t predivA, int16_t dummy)
 {
+#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION > 0x01090000)
   UNUSED(dummy);
   RTC_setPrediv(predivA);
+#else
+  RTC_setPrediv((int8_t) predivA, dummy);
+#endif /* STM32_CORE_VERSION */
 }
 #else
 /**
@@ -962,7 +972,7 @@ void STM32RTC::configForLowPower(Source_Clock source)
     setDate(weekDay, day, month, years);
     setAlarmTime(alarmHours, alarmMinutes, alarmSeconds, alarmPeriod);
     setAlarmDay(alarmDay);
-#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION  > 0x01090000)
+#if defined(STM32_CORE_VERSION) && (STM32_CORE_VERSION > 0x01090000)
     if (RTC_IsAlarmSet())
 #endif
     {

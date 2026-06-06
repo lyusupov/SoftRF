@@ -4896,7 +4896,9 @@ static bool lr20xx_transmit_complete = false;
 
 static uint64_t lr20xx_eui_be = 0xdeadbeefdeadbeef;
 
+#if !defined(EXCLUDE_ES1090)
 mode_s_t rl_mode_s_state;
+#endif /* EXCLUDE_ES1090 */
 
 static const uint32_t rfswitch_dio_pins_MXD8721[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6,
@@ -5127,6 +5129,7 @@ static void lr20xx_setup()
     protocol_encode = &fanet_encode;
     protocol_decode = &fanet_decode;
     break;
+#if !defined(EXCLUDE_ES1090)
   case RF_PROTOCOL_ADSB_1090:
     rl_protocol     = &es1090_proto_desc;
     protocol_encode = NULL;
@@ -5134,6 +5137,8 @@ static void lr20xx_setup()
 
     mode_s_init(&rl_mode_s_state);
     break;
+#endif /* EXCLUDE_ES1090 */
+#if !defined(EXCLUDE_UAT978)
   case RF_PROTOCOL_ADSB_UAT:
     rl_protocol     = &uat978_proto_desc;
     protocol_encode = &uat978_encode;
@@ -5141,6 +5146,7 @@ static void lr20xx_setup()
 
     init_fec();
     break;
+#endif /* EXCLUDE_UAT978 */
 #if defined(ENABLE_PROL)
   case RF_PROTOCOL_APRS:
     rl_protocol     = &prol_proto_desc;
@@ -5793,6 +5799,7 @@ static bool lr20xx_receive()
           success = true;
           break;
 
+#if !defined(EXCLUDE_ES1090)
         case RF_PROTOCOL_ADSB_1090:
         {
           struct mode_s_msg mm;
@@ -5867,6 +5874,9 @@ static bool lr20xx_receive()
           }
           break;
         }
+#endif /* EXCLUDE_ES1090 */
+
+#if !defined(EXCLUDE_UAT978)
         case RF_PROTOCOL_ADSB_UAT:
           int rs_errors;
           int frame_type;
@@ -5891,6 +5901,7 @@ static bool lr20xx_receive()
             }
           }
           break;
+#endif /* EXCLUDE_UAT978 */
 
         case RF_PROTOCOL_OGNTP:
         case RF_PROTOCOL_ADSL_860:

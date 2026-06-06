@@ -319,7 +319,7 @@ void RF_SetChannel(void)
   }
 }
 
-#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX)
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
 #include "../TrafficHelper.h"
 
 extern mode_s_t rl_mode_s_state;
@@ -327,13 +327,13 @@ extern mode_s_t rl_mode_s_state;
 #define MODES_TASK_INTERVAL 998
 
 static unsigned long ModeS_Time_Marker = 0;
-#endif /* USE_RADIOLIB && LR20XX */
+#endif /* USE_RADIOLIB && LR20XX && ES1090 */
 
 void RF_loop()
 {
   RF_SetChannel();
 
-#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX)
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
   if (rf_chip && rf_chip->type == RF_IC_LR2021       &&
       settings->rf_protocol == RF_PROTOCOL_ADSB_1090 &&
       millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
@@ -354,7 +354,7 @@ void RF_loop()
 
     ModeS_Time_Marker = millis();
   }
-#endif /* USE_RADIOLIB && LR20XX */
+#endif /* USE_RADIOLIB && LR20XX && ES1090 */
 }
 
 size_t RF_Encode(ufo_t *fop)
