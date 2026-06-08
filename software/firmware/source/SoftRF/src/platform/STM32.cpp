@@ -86,8 +86,14 @@ extern int32_t IMU_g_x10;
 #endif /* EXCLUDE_IMU */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
+#if defined(USBCON)
 HardwareSerial Serial2(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 HardwareSerial Serial3(SOC_GPIO_PIN_RX3,     SOC_GPIO_PIN_TX3);
+#else
+HardwareSerial Serial3(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
+#endif /* USBCON */
+
+static bool STM32_enforce_uav_mode = false;
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 
@@ -398,7 +404,17 @@ static void STM32_setup()
     pinMode(SOC_GPIO_PIN_SS,  INPUT_PULLUP);
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
-    stm32_board = STM32_BLUE_PILL;
+
+#if defined(USBCON)
+    stm32_board   = STM32_BLUE_PILL;
+#else
+    stm32_board   = STM32_EBYTE_E80_900MBL_02;
+    hw_info.model = SOFTRF_MODEL_RETRO_MK2;
+
+    if (STM32_probe_pin(SOC_GPIO_PIN_MODE_SW, INPUT_PULLUP) == LOW) {
+      STM32_enforce_uav_mode = true;
+    }
+#endif /* USBCON */
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
 
@@ -596,6 +612,7 @@ static void STM32_setup()
 #endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
 
 #if defined(USE_RADIOLIB)
+    lmic_pins.rst    = SOC_GPIO_PIN_RST;
     lmic_pins.dio[0] = SOC_GPIO_PIN_DIO0;
 #endif /* USE_RADIOLIB */
 
@@ -739,7 +756,37 @@ static void STM32_post_init()
     }
     Serial.println();
   }
-#endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
+#elif defined(ARDUINO_BLUEPILL_F103CB) && !defined(USBCON)
+  if (hw_info.model == SOFTRF_MODEL_RETRO_MK2) {
+    Serial.println();
+    Serial.println(F("SoftRF Retro Edition Mk.II Power-on Self Test"));
+    Serial.println();
+    Serial.flush();
+
+    Serial.println(F("Built-in components:"));
+
+    Serial.print(F("RADIO   : "));
+    Serial.println(hw_info.rf      == RF_IC_LR2021       ? F("PASS") : F("FAIL"));
+
+    Serial.println();
+    Serial.println(F("External components:"));
+    Serial.print(F("GNSS    : "));
+    Serial.println(hw_info.gnss    != GNSS_MODULE_NONE   ? F("PASS") : F("N/A"));
+#if !defined(EXCLUDE_BMP280)
+    Serial.print(F("BMx280  : "));
+    Serial.println(hw_info.baro    == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
+#endif /* EXCLUDE_BMP280 */
+#if defined(USE_OLED)
+    Serial.print(F("DISPLAY : "));
+    Serial.println(hw_info.display != DISPLAY_NONE       ? F("PASS") : F("N/A"));
+#endif /* USE_OLED */
+
+    Serial.println();
+    Serial.println(F("Power-on Self Test is complete."));
+    Serial.println();
+    Serial.flush();
+  }
+#endif /* L073RZ || WLE5CCUX || WL55CCUX || BLUEPILL_F103CB */
 
   Serial.println(F("Data output device(s):"));
 
@@ -1107,7 +1154,22 @@ static void STM32_EEPROM_extension(int cmd)
     if (settings->d1090 != D1090_OFF) {
       settings->d1090 = D1090_UART;
     }
-#endif /* ARDUINO_NUCLEO_L073RZ || ARDUINO_GENERIC_WLE5CCUX */
+#elif defined(ARDUINO_BLUEPILL_F103CB) && !defined(USBCON)
+    if (stm32_board == STM32_EBYTE_E80_900MBL_02) {
+      if (settings->nmea_out != NMEA_OFF) {
+        settings->nmea_out = NMEA_UART;
+      }
+      if (settings->gdl90 != GDL90_OFF) {
+        settings->gdl90 = GDL90_UART;
+      }
+      if (settings->d1090 != D1090_OFF) {
+        settings->d1090 = D1090_UART;
+      }
+
+      settings->mode = (STM32_enforce_uav_mode == true) ?
+                       SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
+    }
+#endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || BLUEPILL_F103CB */
 
     /* AUTO and UK RF bands are deprecated since Release v1.3 */
     if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
@@ -1369,7 +1431,8 @@ static void STM32_Button_setup()
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
        hw_info.model == SOFTRF_MODEL_BALKAN   ||
-       hw_info.model == SOFTRF_MODEL_LABUBU)) {
+       hw_info.model == SOFTRF_MODEL_LABUBU   ||
+       hw_info.model == SOFTRF_MODEL_RETRO_MK2)) {
     int button_pin = SOC_GPIO_PIN_BUTTON;
 
     // BOOT0 button(s) uses external pull DOWN resistor.
@@ -1378,7 +1441,9 @@ static void STM32_Button_setup()
             hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
             hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
 
-    button_1.init(button_pin, hw_info.model == SOFTRF_MODEL_BALKAN ? HIGH : LOW);
+    button_1.init(button_pin, hw_info.model == SOFTRF_MODEL_BALKAN   ||
+                              hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+                              HIGH : LOW);
 
     // Configure the ButtonConfig with the event handler, and enable all higher
     // level events.
@@ -1399,7 +1464,8 @@ static void STM32_Button_loop()
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
        hw_info.model == SOFTRF_MODEL_BALKAN   ||
-       hw_info.model == SOFTRF_MODEL_LABUBU)) {
+       hw_info.model == SOFTRF_MODEL_LABUBU   ||
+       hw_info.model == SOFTRF_MODEL_RETRO_MK2)) {
     button_1.check();
   }
 }
@@ -1410,12 +1476,15 @@ static void STM32_Button_fini()
       (hw_info.model == SOFTRF_MODEL_DONGLE   ||
        hw_info.model == SOFTRF_MODEL_BRACELET ||
        hw_info.model == SOFTRF_MODEL_BALKAN   ||
-       hw_info.model == SOFTRF_MODEL_LABUBU)) {
+       hw_info.model == SOFTRF_MODEL_LABUBU   ||
+       hw_info.model == SOFTRF_MODEL_RETRO_MK2)) {
     pinMode(SOC_GPIO_PIN_BUTTON,
             hw_info.model == SOFTRF_MODEL_DONGLE ||
             hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
             hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
-    bool button_is_active = (hw_info.model == SOFTRF_MODEL_BALKAN ? LOW : HIGH);
+    bool button_is_active = hw_info.model == SOFTRF_MODEL_BALKAN   ||
+                            hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+                            LOW : HIGH;
     while (digitalRead(SOC_GPIO_PIN_BUTTON) == button_is_active);
 
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)

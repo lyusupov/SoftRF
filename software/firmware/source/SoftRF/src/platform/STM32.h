@@ -88,6 +88,7 @@ enum stm32_board_id {
   STM32_ACSIP_ST50H,   /* a.k.a. "RAK3172-SiP", RFO_HP, 32 MHz TCXO */
   STM32_RAK_3172_EB,   /* RFO_HP, 32 MHz XTAL (10 ppm) */
   STM32_LILYGO_T3_1_0, /* RFO_HP, 32 MHz XTAL - V1.0 25-10-13 */
+  STM32_EBYTE_E80_900MBL_02,
 };
 
 enum stm32_boot_action {
@@ -275,6 +276,9 @@ typedef struct stm32_backup_struct {
 
 #include "iomap/Ebyte_E80_900MBL_02.h"
 
+#undef  LED_STATE_ON
+#define LED_STATE_ON          LOW
+
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET
 #define EXCLUDE_CC13XX
@@ -295,7 +299,7 @@ typedef struct stm32_backup_struct {
 //#define USE_OLED               //  +3.5 kb
 #define EXCLUDE_OLED_BARO_PAGE
 #define EXCLUDE_OLED_049
-//#define USE_NMEA_CFG           //  +2.5 kb
+#define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_BMP180           //  -  1 kb
 #define EXCLUDE_BMP280           //  -  2 kb
 #define EXCLUDE_BME680           //  -    kb
@@ -303,14 +307,14 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_MPL3115A2        //  -  1 kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
-#define EXCLUDE_MAVLINK          //  -    kb
+//#define EXCLUDE_MAVLINK        //  -  2 kb
 #define EXCLUDE_EGM96            //  - 16 kb
 #define EXCLUDE_LED_RING         //  -    kb
 #define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
 #define EXCLUDE_MAG
-#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
+//#define EXCLUDE_TRAFFIC_FILTER_EXTENSION
 //#define EXCLUDE_AIR7           //  -1.8 kb
 #define EXCLUDE_AIR6
 
@@ -320,14 +324,20 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LR11XX
 
 //#define EXCLUDE_LR20XX
+#define EXCLUDE_OGNTP
+#define EXCLUDE_P3I
+#define EXCLUDE_FANET
 //#define EXCLUDE_ES1090
 #define EXCLUDE_UAT978
+//#define ENABLE_ADSL
 
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
 #define EXCLUDE_SI446X
 #define EXCLUDE_SX1231
 #define EXCLUDE_SX1280
+
+#define USE_TIME_SLOTS
 
 #endif /* USBCON */
 

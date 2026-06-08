@@ -5114,21 +5114,27 @@ static void lr20xx_setup()
 
   switch (settings->rf_protocol)
   {
+#if !defined(EXCLUDE_OGNTP)
   case RF_PROTOCOL_OGNTP:
     rl_protocol     = &ogntp_proto_desc;
     protocol_encode = &ogntp_encode;
     protocol_decode = &ogntp_decode;
     break;
+#endif /* EXCLUDE_OGNTP */
+#if !defined(EXCLUDE_P3I)
   case RF_PROTOCOL_P3I:
     rl_protocol     = &p3i_proto_desc;
     protocol_encode = &p3i_encode;
     protocol_decode = &p3i_decode;
     break;
+#endif /* EXCLUDE_P3I */
+#if !defined(EXCLUDE_FANET)
   case RF_PROTOCOL_FANET:
     rl_protocol     = &fanet_proto_desc;
     protocol_encode = &fanet_encode;
     protocol_decode = &fanet_decode;
     break;
+#endif /* EXCLUDE_FANET */
 #if !defined(EXCLUDE_ES1090)
   case RF_PROTOCOL_ADSB_1090:
     rl_protocol     = &es1090_proto_desc;
@@ -5184,10 +5190,11 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_ACADEMY:
     if (SoC->getChipId() == 0x36D2512E /* WCH */) {
       radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
+      Vtcxo = 0.0; /* TCXO with ext. power */
     } else {
       radio_g4->irqDioNum =  8; /* DIO8 as IRQ on WIO-2021 */
+      Vtcxo = 0.0; /* XTAL */
     }
-    Vtcxo = 0.0; /* XTAL */
     break;
   case SOFTRF_MODEL_CARD:
     radio_g4->irqDioNum = 8; /* DIO8 as IRQ on T1000-E PRO */
@@ -5196,6 +5203,15 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_PRIME_MK4:
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 3.0;
+    break;
+  case SOFTRF_MODEL_RETRO_MK2:
+    if (SoC->getChipId() == 0xd733484f /* Blue Pill */) {
+      radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
+      Vtcxo = 0.0; /* TCXO with ext. power */
+    } else {
+      radio_g4->irqDioNum =  9; /* DIO9 as IRQ on Ebyte E80-900MBL-02 */
+      Vtcxo = 1.6; /* TBD */
+    }
     break;
   case SOFTRF_MODEL_CONCORDE:
   default:
@@ -5654,6 +5670,15 @@ static void lr20xx_setup()
                                rfswitch_table_XY16E3AXP33_sub1g);
     break;
 
+  case SOFTRF_MODEL_RETRO_MK2:
+    if (SoC->getChipId() == 0xd733484f /* Blue Pill */) {
+      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
+                                 rfswitch_table_MXD8721);
+    } else {
+      /* TODO: Switchless design ? */
+    }
+    break;
+
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
   case SOFTRF_MODEL_CONCORDE:
@@ -5944,9 +5969,11 @@ static bool lr20xx_receive()
             switch (rl_protocol->crc_type)
             {
             case RF_CHECKSUM_TYPE_GALLAGER:
+#if !defined(EXCLUDE_OGNTP)
               if (LDPC_Check((uint8_t  *) &RxBuffer[0]) == 0) {
                 success = true;
               }
+#endif /* EXCLUDE_OGNTP */
               break;
             case RF_CHECKSUM_TYPE_CRC_MODES:
 #if defined(ENABLE_ADSL)

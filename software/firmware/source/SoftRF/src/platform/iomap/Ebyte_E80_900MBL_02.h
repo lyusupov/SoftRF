@@ -8,13 +8,11 @@
 #define SOC_GPIO_PIN_GNSS_PPS PB9
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
-#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_STATUS   PB13 /* active LOW */
+#define SOC_GPIO_RADIO_LED_RX PB12 /* active LOW */
 
-#define SOC_GPIO_PIN_BUZZER   PB8
-#define SOC_GPIO_PIN_BATTERY  PB3
-
-#define SOC_GPIO_PIN_RX3      PB13
-#define SOC_GPIO_PIN_TX3      PB12
+#define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
+#define SOC_GPIO_PIN_BATTERY  PA0
 
 /* SPI */
 #define SOC_GPIO_PIN_MOSI     PA7
@@ -30,26 +28,21 @@
 #define SOC_GPIO_PIN_DIO9     PB1
 #define SOC_GPIO_PIN_DIO0     SOC_GPIO_PIN_DIO9
 
-/* NRF905 */
-#define SOC_GPIO_PIN_TXE      SOC_GPIO_PIN_BUSY
-#define SOC_GPIO_PIN_CE       SOC_GPIO_PIN_DIO9
-#define SOC_GPIO_PIN_PWR      SOC_GPIO_PIN_RST
-
-/* RF antenna switch */
-#define SOC_GPIO_PIN_ANT_RXTX LMIC_UNUSED_PIN
-
 /* I2C */
 #define SOC_GPIO_PIN_SDA      PB7
 #define SOC_GPIO_PIN_SCL      PB6
 
 /* Buttons */
-#define SOC_GPIO_PIN_BUTTON   PB15 /* KEY 1 */
-#define SOC_GPIO_PIN_BTN2     PB14 /* KEY 2 */
+#define SOC_GPIO_PIN_BUTTON   PB15 /* KEY 1 , active LOW */
+#define SOC_GPIO_PIN_BTN2     PB14 /* KEY 2 , active LOW */
 
 /* 32768 Hz crystal */
 #define SOC_GPIO_PIN_XP       PC14
 #define SOC_GPIO_PIN_XN       PC15
 
-// USB
+// USB (availale at pin header)
 #define SOC_GPIO_PIN_USB_DP   PA12
 #define SOC_GPIO_PIN_USB_DN   PA11
+
+// Jumper
+#define SOC_GPIO_PIN_MODE_SW  PC13 /* active LOW for UAV ( MAVLINK ) mode */

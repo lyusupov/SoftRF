@@ -86,32 +86,34 @@ void EEPROM_defaults()
 {
   eeprom_block.field.magic                  = SOFTRF_EEPROM_MAGIC;
   eeprom_block.field.version                = SOFTRF_EEPROM_VERSION;
-  eeprom_block.field.settings.mode          = hw_info.model == SOFTRF_MODEL_NANO ?
+  eeprom_block.field.settings.mode          = hw_info.model == SOFTRF_MODEL_NANO      ?
                                               SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
                                               hw_info.model == SOFTRF_MODEL_POCKET   ||
-                                              hw_info.model == SOFTRF_MODEL_RUGGED ?
+                                              hw_info.model == SOFTRF_MODEL_RUGGED    ?
                                               RF_PROTOCOL_FANET :
-                                              hw_info.model == SOFTRF_MODEL_ES ?
+                                              hw_info.model == SOFTRF_MODEL_ES       ||
+                                              hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
                                               RF_PROTOCOL_ADSB_1090 :
-                                              hw_info.model == SOFTRF_MODEL_HAM ?
+                                              hw_info.model == SOFTRF_MODEL_HAM       ?
                                               RF_PROTOCOL_APRS :
-                                              hw_info.model == SOFTRF_MODEL_NANO ?
+                                              hw_info.model == SOFTRF_MODEL_NANO      ?
                                               RF_PROTOCOL_ADSL_860 : RF_PROTOCOL_OGNTP;
   eeprom_block.field.settings.band          = RF_BAND_EU;
-  eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET ?
+  eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET  ?
                                               AIRCRAFT_TYPE_STATIC :
-                                              hw_info.model == SOFTRF_MODEL_CARD ||
-                                              hw_info.model == SOFTRF_MODEL_POCKET ?
+                                              hw_info.model == SOFTRF_MODEL_CARD     ||
+                                              hw_info.model == SOFTRF_MODEL_POCKET    ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES ?
+  eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES       ||
+                                              hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
                                               RF_TX_POWER_OFF :
-                                              hw_info.model == SOFTRF_MODEL_HAM ?
+                                              hw_info.model == SOFTRF_MODEL_HAM       ?
                                               RF_TX_POWER_LOW : RF_TX_POWER_FULL;
   eeprom_block.field.settings.bluetooth     = hw_info.model == SOFTRF_MODEL_AIRVENTURE ||
-                                              hw_info.model == SOFTRF_MODEL_CONCORDE ?
+                                              hw_info.model == SOFTRF_MODEL_CONCORDE  ?
                                               BLUETOOTH_LE_HM10_SERIAL : BLUETOOTH_NONE;
   eeprom_block.field.settings.alarm         = TRAFFIC_ALARM_DISTANCE;
 
@@ -169,9 +171,10 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_SOLARIS  ||
                                            hw_info.model == SOFTRF_MODEL_POCKET   ||
                                            hw_info.model == SOFTRF_MODEL_RUGGED   ||
-                                           hw_info.model == SOFTRF_MODEL_DECENT   ?
+                                           hw_info.model == SOFTRF_MODEL_DECENT    ?
                                            NMEA_BLUETOOTH :
-                                           hw_info.model == SOFTRF_MODEL_ES        ?
+                                           hw_info.model == SOFTRF_MODEL_ES       ||
+                                           hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
                                            NMEA_OFF :
                                            hw_info.model == SOFTRF_MODEL_ACADEMY  ||
                                            hw_info.model == SOFTRF_MODEL_LEGO      ?
@@ -179,13 +182,15 @@ void EEPROM_defaults()
 #endif
 
   eeprom_block.field.settings.gdl90      = hw_info.model == SOFTRF_MODEL_ES        ?
-                                           GDL90_USB : GDL90_OFF;
+                                           GDL90_USB :
+                                           hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+                                           GDL90_UART : GDL90_OFF;
   eeprom_block.field.settings.d1090      = D1090_OFF;
   eeprom_block.field.settings.json       = JSON_OFF;
   eeprom_block.field.settings.stealth    = false;
   eeprom_block.field.settings.no_track   = false;
   eeprom_block.field.settings.power_save = hw_info.model == SOFTRF_MODEL_BRACELET ||
-                                           hw_info.model == SOFTRF_MODEL_HAM      ?
+                                           hw_info.model == SOFTRF_MODEL_HAM       ?
                                            POWER_SAVE_NORECEIVE : POWER_SAVE_NONE;
   eeprom_block.field.settings.freq_corr  = 0;
   eeprom_block.field.settings.igc_key[0] = 0;
