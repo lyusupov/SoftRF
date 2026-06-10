@@ -237,8 +237,9 @@ jobs:
             rm ${NIM_BLE_VERSION}.tar.gz ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.10 ;
-            rm -f platform.txt ;
-            wget https://github.com/lucasssvaz/arduino-esp32/raw/bca210127d6456f3873464265f9901bc436ae0f1/platform.txt ;
+            wget https://github.com/lucasssvaz/arduino-esp32/commit/bca210127d6456f3873464265f9901bc436ae0f1.patch ;
+            cat bca210127d6456f3873464265f9901bc436ae0f1.patch | tail -15 | patch -p1 ;
+            rm bca210127d6456f3873464265f9901bc436ae0f1.patch ;
             cd $GITHUB_WORKSPACE ;
           fi
           #if [[ "$BOARD" =~ "esp32:esp32:esp32c6" ]]; then
@@ -317,8 +318,9 @@ jobs:
             arduino --pref "custom_UploadSpeed=esp32p4_921600"         --save-prefs ;
             arduino --install-library esp-lib-utils,ESP32_IO_Expander,ESP32_Display_Panel,lvgl:8.4.0 ;
             cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.10 ;
-            rm -f platform.txt ;
-            wget https://github.com/lucasssvaz/arduino-esp32/raw/bca210127d6456f3873464265f9901bc436ae0f1/platform.txt ;
+            wget https://github.com/lucasssvaz/arduino-esp32/commit/bca210127d6456f3873464265f9901bc436ae0f1.patch ;
+            cat bca210127d6456f3873464265f9901bc436ae0f1.patch | tail -15 | patch -p1 ;
+            rm bca210127d6456f3873464265f9901bc436ae0f1.patch ;
             # sed -i "s\echo '-DARDUINO_CORE_BUILD'\echo -DARDUINO_CORE_BUILD\g" platform.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
