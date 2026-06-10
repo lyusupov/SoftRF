@@ -9,7 +9,7 @@
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
 #define SOC_GPIO_PIN_STATUS   PB13 /* active LOW */
-#define SOC_GPIO_RADIO_LED_RX PB12 /* active LOW */
+#define SOC_GPIO_RADIO_LED_RX (SoC->getChipId() == 0xd733484f ? PC13 : PB12)  /* active LOW */
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  PA0
@@ -40,9 +40,9 @@
 #define SOC_GPIO_PIN_XP       PC14
 #define SOC_GPIO_PIN_XN       PC15
 
-// USB (availale at pin header)
+// USB (available at pin header)
 #define SOC_GPIO_PIN_USB_DP   PA12
 #define SOC_GPIO_PIN_USB_DN   PA11
 
 // Jumper
-#define SOC_GPIO_PIN_MODE_SW  PC13 /* active LOW for UAV ( MAVLINK ) mode */
+#define SOC_GPIO_PIN_MODE_SW  (SoC->getChipId() == 0xd733484f ? PB4 : PC13)  /* active LOW for UAV ( MAVLINK ) mode */

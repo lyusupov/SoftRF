@@ -1377,6 +1377,7 @@ byte GNSS_setup() {
       hw_info.model == SOFTRF_MODEL_LABUBU    ||
       hw_info.model == SOFTRF_MODEL_CONCORDE  ||
       hw_info.model == SOFTRF_MODEL_RUGGED    ||
+      hw_info.model == SOFTRF_MODEL_RETRO_MK2 ||
       hw_info.model == SOFTRF_MODEL_AIRVENTURE)
   {
     // power on by wakeup call

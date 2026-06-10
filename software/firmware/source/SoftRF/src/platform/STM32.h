@@ -204,6 +204,9 @@ typedef struct stm32_backup_struct {
 /* Secondary target ("Blue pill") */
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
+#undef  LED_STATE_ON
+#define LED_STATE_ON          LOW
+
 #if defined(USBCON)
 
 #define Serial_GNSS_In        Serial2
@@ -275,9 +278,6 @@ typedef struct stm32_backup_struct {
 #define VREFINT               1200  // mV, STM32F103x8 datasheet value
 
 #include "iomap/Ebyte_E80_900MBL_02.h"
-
-#undef  LED_STATE_ON
-#define LED_STATE_ON          LOW
 
 #define EXCLUDE_WIFI
 #define EXCLUDE_ETHERNET

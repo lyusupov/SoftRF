@@ -95,6 +95,13 @@ HardwareSerial Serial3(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
 
 static bool STM32_enforce_uav_mode = false;
 
+#define LED_BLINK_TIME          100
+
+static uint32_t prev_tx_packets_counter = 0;
+static uint32_t prev_rx_packets_counter = 0;
+static unsigned long tx_led_time_marker = 0;
+static unsigned long rx_led_time_marker = 0;
+
 #elif defined(ARDUINO_GENERIC_WLE5CCUX) || defined(ARDUINO_GENERIC_WL55CCUX)
 
 HardwareSerial Serial2(USART2);
@@ -525,7 +532,18 @@ static void STM32_setup()
       IMU_Time_Marker = millis();
 #endif /* EXCLUDE_IMU */
     }
+
+#elif defined(ARDUINO_BLUEPILL_F103CB)
+
+#if defined(SOC_GPIO_RADIO_LED_RX)
+    if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
+      pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
+      digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+    }
+#endif /* SOC_GPIO_RADIO_LED_RX */
+
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
+
     switch (stm32_board)
     {
     case STM32_EBYTE_E77:
@@ -609,7 +627,7 @@ static void STM32_setup()
     digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
-#endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || GENERIC_WL55CCUX */
+#endif /* L073RZ || BLUEPILL_F103CB || WLE5CCUX || WL55CCUX */
 
 #if defined(USE_RADIOLIB)
     lmic_pins.rst    = SOC_GPIO_PIN_RST;
@@ -889,7 +907,26 @@ static void STM32_loop()
     }
   }
 #endif /* SOC_GPIO_RADIO_LED_RX */
-#endif /* ARDUINO_GENERIC_WL55CCUX */
+
+#elif defined(ARDUINO_BLUEPILL_F103CB)
+
+#if defined(SOC_GPIO_RADIO_LED_RX)
+  if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
+    if (digitalRead(SOC_GPIO_RADIO_LED_RX) != LED_STATE_ON) {
+      if (rx_packets_counter != prev_rx_packets_counter) {
+        digitalWrite(SOC_GPIO_RADIO_LED_RX, LED_STATE_ON);
+        prev_rx_packets_counter = rx_packets_counter;
+        rx_led_time_marker = millis();
+      }
+    } else {
+      if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
+        digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+        prev_rx_packets_counter = rx_packets_counter;
+      }
+    }
+  }
+#endif /* SOC_GPIO_RADIO_LED_RX */
+#endif /* GENERIC_WL55CCUX || BLUEPILL_F103CB */
 }
 
 static void STM32_fini(int reason)
@@ -915,7 +952,14 @@ static void STM32_fini(int reason)
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
   pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
 #endif /* SOC_GPIO_RADIO_LED_RX */
-#endif /* ARDUINO_GENERIC_WL55CCUX */
+#elif defined(ARDUINO_BLUEPILL_F103CB)
+#if defined(SOC_GPIO_RADIO_LED_RX)
+  if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
+    digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
+    pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
+  }
+#endif /* SOC_GPIO_RADIO_LED_RX */
+#endif /* GENERIC_WL55CCUX || BLUEPILL_F103CB */
 
   Serial_GNSS_In.end();
   Wire.end();
