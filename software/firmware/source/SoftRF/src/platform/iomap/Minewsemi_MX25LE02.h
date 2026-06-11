@@ -75,7 +75,8 @@
 #define SOC_GPIO_PIN_MX25_BUZZER        P2_06 // +
 #define SOC_GPIO_PIN_MX25_BATTERY       P1_14 // +
 
-#elif defined(ARDUINO_NRF54L15DK_PCA10156)
+#elif defined(ARDUINO_NRF54L15DK_PCA10156) || \
+      defined(ARDUINO_XIAO_NRF54LM20B_CLEAN) /* TODO */
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_MX25_RX       _PINNUM(1,  4) // P1.04 +
 #define SOC_GPIO_PIN_CONS_MX25_TX       _PINNUM(1,  5) // P1.05 +

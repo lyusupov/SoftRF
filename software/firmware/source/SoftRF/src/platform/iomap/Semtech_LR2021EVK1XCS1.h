@@ -99,7 +99,8 @@
 #define SOC_GPIO_PIN_EVK_PDM_CLK        P1_12
 #define SOC_GPIO_PIN_EVK_PDM_DATA       P1_13
 
-#elif defined(ARDUINO_NRF54L15DK_PCA10156)
+#elif defined(ARDUINO_NRF54L15DK_PCA10156) || \
+      defined(ARDUINO_XIAO_NRF54LM20B_CLEAN) /* TODO */
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_EVK_RX        _PINNUM(1,  8) // D19, P1.08 +
 #define SOC_GPIO_PIN_CONS_EVK_TX        _PINNUM(1,  9) // D18, P1.09 +

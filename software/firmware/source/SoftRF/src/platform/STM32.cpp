@@ -802,6 +802,9 @@ static void STM32_post_init()
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
     Serial.println();
+
+    Serial.print(F("MODE    : "));
+    Serial.println(settings->mode  == SOFTRF_MODE_UAV    ? F("UAV")  : F("Normal"));
     Serial.flush();
   }
 #endif /* L073RZ || WLE5CCUX || WL55CCUX || BLUEPILL_F103CB */
