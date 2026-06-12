@@ -207,7 +207,7 @@
 #define SOC_GPIO_PIN_EVK_BUTTON_AUX     _PINNUM(3,  3) // TBD, D14, EVK, NO PULLUP
 #define SOC_GPIO_PIN_EVK_D15            _PINNUM(3,  4) // D15
 
-#define SOC_GPIO_PIN_EVK_IMU_INT        _PINNUM(0,  2) // P0.06
+#define SOC_GPIO_PIN_EVK_IMU_INT        _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_PIN_EVK_IMU_CS         _PINNUM(3, 12) // P3.12
 #define SOC_GPIO_PIN_EVK_PDM_CLK        _PINNUM(1, 13) // P1.13
 #define SOC_GPIO_PIN_EVK_PDM_DATA       _PINNUM(1, 14) // P1.14
