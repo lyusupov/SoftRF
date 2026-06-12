@@ -267,7 +267,7 @@
   // Adafruit nRF52 boards
   #define RADIOLIB_PLATFORM                           "Adafruit nRF52"
 
-#elif defined(NRF54L15_XXAA) || defined(NRF54LM20B_XXAA)
+#elif defined(NRF54L15_XXAA) || defined(NRF54LM20A_XXAA) || defined(NRF54LM20B_XXAA)
   // Arduino nRF54 core
   #define RADIOLIB_PLATFORM                           "Nordic nRF54 (unofficial)"
 //  #include <cstdio>

@@ -44,6 +44,7 @@
 #endif /* USE_OLED */
 
 #if defined(ARDUINO_XIAO_NRF54L15_CLEAN)    || \
+    defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)  || \
     defined(ARDUINO_XIAO_NRF54LM20B_CLEAN)  || \
     defined(ARDUINO_HOLYIOT_25007_NRF54L15) || \
     defined(ARDUINO_NRF54L15DK_PCA10156)    || \
@@ -419,18 +420,20 @@ static void nRF54_setup()
 
       pinMode(SOC_GPIO_PIN_EVK_BUTTON_AUX, INPUT_PULLUP);
 
+#if !defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
       pinMode(SOC_GPIO_PIN_EVK_ANT_PWR,    OUTPUT);
       digitalWrite(SOC_GPIO_PIN_EVK_ANT_PWR, HIGH);
+#endif /* ARDUINO_XIAO_NRF54LM20A_CLEAN */
 
-      #if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20B_CLEAN)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
       BoardControl::setBatterySenseEnabled(true);
 
       xiaoNrf54l15SetAntenna(XIAO_NRF54L15_ANTENNA_CERAMIC);
-      #else
+#else
       // pinMode(SOC_GPIO_PIN_EVK_VBAT_EN,    INPUT_PULLDOWN);
 
       pinMode(SOC_GPIO_PIN_EVK_ANT_SW,     INPUT_PULLDOWN); /* ANT 1 */
-      #endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
+#endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
 
       break;
   }
@@ -586,15 +589,17 @@ static void nRF54_fini(int reason)
       digitalWrite(SOC_GPIO_PIN_EVK_STATUS,  !LED_STATE_ON);
       pinMode(SOC_GPIO_PIN_EVK_STATUS,       INPUT);
 
+#if !defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
       pinMode(SOC_GPIO_PIN_EVK_BUTTON_AUX,   INPUT);
       pinMode(SOC_GPIO_PIN_EVK_ANT_PWR,      INPUT);
+#endif /* ARDUINO_XIAO_NRF54LM20A_CLEAN */
 
-      #if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20B_CLEAN)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
       BoardControl::setBatterySenseEnabled(false);
-      #else
+#else
       // pinMode(SOC_GPIO_PIN_EVK_VBAT_EN,      INPUT);
       pinMode(SOC_GPIO_PIN_EVK_ANT_SW,       INPUT);
-      #endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
+#endif /* ARDUINO_XIAO_NRF54L15_CLEAN */
 
       break;
   }
@@ -925,7 +930,7 @@ static float nRF54_Battery_param(uint8_t param)
     break;
 
   case BATTERY_PARAM_CHARGE:
-#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20B_CLEAN)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
     {
       uint8_t vbatPercent = 0;
       BoardControl::sampleBatteryPercent(&vbatPercent);
@@ -951,7 +956,7 @@ static float nRF54_Battery_param(uint8_t param)
 
   case BATTERY_PARAM_VOLTAGE:
   default:
-#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20B_CLEAN)
+#if defined(ARDUINO_XIAO_NRF54L15_CLEAN) || defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
     {
       int32_t vbatMilliVolts = 0;
       BoardControl::sampleBatteryMilliVolts(&vbatMilliVolts);

@@ -99,8 +99,7 @@
 #define SOC_GPIO_PIN_EVK_PDM_CLK        P1_12
 #define SOC_GPIO_PIN_EVK_PDM_DATA       P1_13
 
-#elif defined(ARDUINO_NRF54L15DK_PCA10156) || \
-      defined(ARDUINO_XIAO_NRF54LM20B_CLEAN) /* TODO */
+#elif defined(ARDUINO_NRF54L15DK_PCA10156)
 /* Peripherals */
 #define SOC_GPIO_PIN_CONS_EVK_RX        _PINNUM(1,  8) // D19, P1.08 +
 #define SOC_GPIO_PIN_CONS_EVK_TX        _PINNUM(1,  9) // D18, P1.09 +
@@ -152,6 +151,74 @@
 #define SOC_GPIO_PIN_EVK_IMU_INT        _PINNUM(0,  2) //      P0.02 +
 #define SOC_GPIO_PIN_EVK_PDM_CLK        _PINNUM(1, 12) //      P1.12 +
 #define SOC_GPIO_PIN_EVK_PDM_DATA       _PINNUM(1, 13) //      P1.13 +
+
+#elif defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
+/* Peripherals */
+#define SOC_GPIO_PIN_CONS_EVK_RX        _PINNUM(1, 10) // P1.10
+#define SOC_GPIO_PIN_CONS_EVK_TX        _PINNUM(1, 11) // P1.11
+
+#define SOC_GPIO_PIN_GNSS_EVK_RX        _PINNUM(1,  9) // D7
+#define SOC_GPIO_PIN_GNSS_EVK_TX        _PINNUM(1,  8) // D6
+#define SOC_GPIO_PIN_GNSS_EVK_PPS       _PINNUM(3,  2) // D13
+
+/* SPI */
+#define SOC_GPIO_PIN_EVK_MOSI           _PINNUM(1,  6) // D10
+#define SOC_GPIO_PIN_EVK_MISO           _PINNUM(1,  5) // D9
+#define SOC_GPIO_PIN_EVK_SCK            _PINNUM(1,  4) // D8
+#define SOC_GPIO_PIN_EVK_SS             _PINNUM(1, 29) // D3
+
+/* LR2021 */
+#define SOC_GPIO_PIN_EVK_RST            _PINNUM(1, 30) // D2
+#define SOC_GPIO_PIN_EVK_DIO7           _PINNUM(1,  8) // D6
+#define SOC_GPIO_PIN_EVK_DIO8           _PINNUM(1,  0) // D0
+#define SOC_GPIO_PIN_EVK_DIO11          _PINNUM(1,  9) // D7
+#define SOC_GPIO_PIN_EVK_BUSY           _PINNUM(1, 31) // D1
+
+/* I2C #0 (ext.) */
+#define SOC_GPIO_PIN_EVK_SDA            _PINNUM(1,  3) // D4
+#define SOC_GPIO_PIN_EVK_SCL            _PINNUM(1,  7) // D5
+
+/* I2C #1 (IMU) */
+#define SOC_GPIO_PIN_EVK_SDA1           _PINNUM(0,  8) // P0.08
+#define SOC_GPIO_PIN_EVK_SCL1           _PINNUM(0,  7) // P0.07
+
+/* I2C #2 (PMIC) */
+#define SOC_GPIO_PIN_EVK_SDA2           _PINNUM(1, 18) // P1.18
+#define SOC_GPIO_PIN_EVK_SCL2           _PINNUM(1, 17) // P1.17
+
+/* NFC */
+#define SOC_GPIO_PIN_NFC_ANT1           _PINNUM(1,  1) // P1.01
+#define SOC_GPIO_PIN_NFC_ANT2           _PINNUM(1,  2) // P1.02
+
+/* 32K XTAL */
+#define SOC_GPIO_PIN_32K_XL1            _PINNUM(1, 20) // P1.20
+#define SOC_GPIO_PIN_32K_XL2            _PINNUM(1, 21) // P1.21
+
+#define SOC_GPIO_PIN_EVK_LED_RED        _PINNUM(1, 22) // P1.22
+#define SOC_GPIO_PIN_EVK_LED_BLUE       _PINNUM(1, 23) // P1.23
+#define SOC_GPIO_PIN_EVK_LED_GREEN      _PINNUM(1, 24) // P1.24
+
+#define SOC_GPIO_PIN_EVK_STATUS         SOC_GPIO_PIN_EVK_LED_GREEN
+#define SOC_GPIO_PIN_EVK_BUTTON         _PINNUM(0,  9) // P0.09, XIAO
+#define SOC_GPIO_PIN_EVK_BUZZER         SOC_GPIO_PIN_EVK_D15
+
+#define SOC_GPIO_PIN_EVK_D11            _PINNUM(3,  0) // D11
+#define SOC_GPIO_PIN_EVK_D12            _PINNUM(3,  1) // D12
+#define SOC_GPIO_PIN_EVK_BUTTON_AUX     _PINNUM(3,  3) // TBD, D14, EVK, NO PULLUP
+#define SOC_GPIO_PIN_EVK_D15            _PINNUM(3,  4) // D15
+
+#define SOC_GPIO_PIN_EVK_IMU_INT        _PINNUM(0,  2) // P0.06
+#define SOC_GPIO_PIN_EVK_IMU_CS         _PINNUM(3, 12) // P3.12
+#define SOC_GPIO_PIN_EVK_PDM_CLK        _PINNUM(1, 13) // P1.13
+#define SOC_GPIO_PIN_EVK_PDM_DATA       _PINNUM(1, 14) // P1.14
+
+/* PY25Q64HA (Q)SPI flash */
+#define SOC_GPIO_PIN_SFL_EVK_MOSI       _PINNUM(2,  2) // P2.02
+#define SOC_GPIO_PIN_SFL_EVK_MISO       _PINNUM(2,  4) // P2.04
+#define SOC_GPIO_PIN_SFL_EVK_SCK        _PINNUM(2,  1) // P2.01
+#define SOC_GPIO_PIN_SFL_EVK_SS         _PINNUM(2,  5) // P2.05
+#define SOC_GPIO_PIN_SFL_EVK_HOLD       _PINNUM(2,  0) // P2.00
+#define SOC_GPIO_PIN_SFL_EVK_WP         _PINNUM(2,  3) // P2.03
 #endif
 
 #define SOC_ADC_EVK_VOLTAGE_DIV         (2.0F)         // 10K + 10K voltage divider on VBAT
