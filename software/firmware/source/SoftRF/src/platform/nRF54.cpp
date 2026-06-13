@@ -234,8 +234,11 @@ static Adafruit_FlashTransport_SPI        *FlashTrans = NULL;
 #endif /* ARDUINO_XIAO_NRF54LM20A_CLEAN */
 
 #include <Adafruit_SPIFlash.h>
-static Adafruit_SPIFlash                  *SPIFlash   = NULL;
-static bool nRF54_has_spiflash                        = false;
+static Adafruit_SPIFlash *SPIFlash = NULL;
+
+static bool nRF54_has_spiflash     = false;
+static bool FATFS_is_mounted       = false;
+static uint32_t spiflash_id        = 0;
 
 /// Flash device list count
 enum {
@@ -269,6 +272,13 @@ static SPIFlash_Device_t nrf54_possible_devices[] = {
   [PY25Q64HA_INDEX]  = P25Q64HA,
 };
 
+#include <SdFat_Adafruit_Fork.h>
+// file system object from SdFat
+FatVolume fatfs;
+
+#define NRF54_JSON_BUFFER_SIZE  1024
+
+StaticJsonBuffer<NRF54_JSON_BUFFER_SIZE> nRF54_jsonBuffer;
 
 static void nRF54_setup()
 {
@@ -490,6 +500,34 @@ static void nRF54_setup()
 #if !defined(USE_RTT)
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* USE_RTT */
+
+  if (nRF54_has_spiflash) {
+    uint8_t manufacturer, memoryType, capacity;
+
+    if (SPIFlash->getJEDECID(&manufacturer, &memoryType, &capacity)) {
+      spiflash_id = (manufacturer << 16) | (memoryType << 8) | capacity;
+    }
+
+#if 0
+    // Set disk vendor id, product id and revision with string up to 8, 16, 4 characters respectively
+    usb_msc.setID(nRF5x_Device_Manufacturer, "External Flash", "1.0");
+
+    // Set callback
+    usb_msc.setReadWriteCallback(nRF54_msc_read_cb,
+                                 nRF54_msc_write_cb,
+                                 nRF54_msc_flush_cb);
+
+    // Set disk size, block size should be 512 regardless of spi flash page size
+    usb_msc.setCapacity(SPIFlash->size()/512, 512);
+
+    // MSC is ready for read/write
+    usb_msc.setUnitReady(true);
+
+    usb_msc.begin();
+#endif
+
+    FATFS_is_mounted = fatfs.begin(SPIFlash);
+  }
 }
 
 static void nRF54_post_init()
@@ -849,7 +887,66 @@ static bool nRF54_EEPROM_begin(size_t size)
 
 static void nRF54_EEPROM_extension(int cmd)
 {
+  switch (cmd)
+  {
+    case EEPROM_EXT_STORE:
+      /* TBD */
+      return;
+    case EEPROM_EXT_DEFAULTS:
+      /* TBD */
+      break;
+    case EEPROM_EXT_LOAD:
+    default:
+      if ( nRF54_has_spiflash && FATFS_is_mounted ) {
+        File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
 
+        if (file) {
+          // StaticJsonBuffer<NRF54_JSON_BUFFER_SIZE> nRF54_jsonBuffer;
+
+          JsonObject &root = nRF54_jsonBuffer.parseObject(file);
+
+          if (root.success()) {
+            JsonVariant msg_class = root["class"];
+
+            if (msg_class.success()) {
+              const char *msg_class_s = msg_class.as<char*>();
+
+              if (!strcmp(msg_class_s,"SOFTRF")) {
+                parseSettings  (root);
+              }
+            }
+          }
+          file.close();
+        }
+      }
+
+      if (settings->mode != SOFTRF_MODE_NORMAL
+#if !defined(EXCLUDE_TEST_MODE)
+          &&
+          settings->mode != SOFTRF_MODE_TXRX_TEST
+#endif /* EXCLUDE_TEST_MODE */
+          ) {
+        settings->mode = SOFTRF_MODE_NORMAL;
+      }
+
+      if (settings->nmea_out == NMEA_UDP  ||
+          settings->nmea_out == NMEA_TCP ) {
+        settings->nmea_out = NMEA_BLUETOOTH;
+      }
+      if (settings->gdl90 == GDL90_UDP) {
+        settings->gdl90 = GDL90_BLUETOOTH;
+      }
+      if (settings->d1090 == D1090_UDP) {
+        settings->d1090 = D1090_BLUETOOTH;
+      }
+
+      /* AUTO and UK RF bands are deprecated since Release v1.3 */
+      if (settings->band == RF_BAND_AUTO || settings->band == RF_BAND_UK) {
+        settings->band = RF_BAND_EU;
+      }
+
+      break;
+  }
 }
 
 static void nRF54_SPI_begin()
