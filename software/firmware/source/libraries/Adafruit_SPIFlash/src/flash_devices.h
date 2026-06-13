@@ -540,4 +540,18 @@ typedef struct {
     .single_status_byte = false, .is_fram = false,                             \
   }
 
+// Settings for the Puya Semiconductor P25Q64HA 8MiB QSPI flash.
+// Datasheet:
+// https://www.puyasemi.com/download_path/%E6%95%B0%E6%8D%AE%E6%89%8B%E5%86%8C/Flash/PY25Q64HA_Datasheet_V1.9.pdf
+#define P25Q64HA                                                               \
+  {                                                                            \
+    .total_size = (1 << 23), /* 8 MiB */                                       \
+        .start_up_time_us = 5000, .manufacturer_id = 0x85,                     \
+    .memory_type = 0x60, .capacity = 0x17, .max_clock_speed_mhz = 104,         \
+    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = false, .is_fram = false,                             \
+  }
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

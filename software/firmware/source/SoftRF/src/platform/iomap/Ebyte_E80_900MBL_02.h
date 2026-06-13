@@ -45,4 +45,4 @@
 #define SOC_GPIO_PIN_USB_DN   PA11
 
 // Jumper
-#define SOC_GPIO_PIN_MODE_SW  (SoC->getChipId() == 0xd733484f ? PB4 : PC13)  /* active LOW for UAV ( MAVLINK ) mode */
+#define SOC_GPIO_PIN_MODE_SW  (SoC->getChipId() == 0xd733484f ? PB5 : PC13)  /* active LOW for UAV ( MAVLINK ) mode */

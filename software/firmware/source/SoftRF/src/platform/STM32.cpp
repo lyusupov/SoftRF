@@ -805,6 +805,7 @@ static void STM32_post_init()
 
     Serial.print(F("MODE    : "));
     Serial.println(settings->mode  == SOFTRF_MODE_UAV    ? F("UAV")  : F("Normal"));
+    Serial.println();
     Serial.flush();
   }
 #endif /* L073RZ || WLE5CCUX || WL55CCUX || BLUEPILL_F103CB */
@@ -1212,9 +1213,6 @@ static void STM32_EEPROM_extension(int cmd)
       if (settings->d1090 != D1090_OFF) {
         settings->d1090 = D1090_UART;
       }
-
-      settings->mode = (STM32_enforce_uav_mode == true) ?
-                       SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
     }
 #endif /* NUCLEO_L073RZ || GENERIC_WLE5CCUX || BLUEPILL_F103CB */
 
@@ -1223,6 +1221,14 @@ static void STM32_EEPROM_extension(int cmd)
       settings->band = RF_BAND_EU;
     }
   }
+
+#if defined(ARDUINO_BLUEPILL_F103CB) && !defined(USBCON)
+  if (stm32_board == STM32_EBYTE_E80_900MBL_02 &&
+      (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS)) {
+    settings->mode = (STM32_enforce_uav_mode == true) ?
+                     SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
+  }
+#endif /* BLUEPILL_F103CB */
 }
 
 static void STM32_SPI_begin()

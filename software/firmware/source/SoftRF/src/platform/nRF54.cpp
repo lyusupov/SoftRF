@@ -234,13 +234,15 @@ static Adafruit_SPIFlash            *SPIFlash   = NULL;
 /// Flash device list count
 enum {
   MX25R6435F_INDEX,
+  PY25Q64HA_INDEX,
 
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
-/// List of all possible flash devices used by nRF52840 boards
+/// List of all possible flash devices used by nRF54 boards
 static SPIFlash_Device_t possible_devices[] = {
   [MX25R6435F_INDEX] = MX25R6435F,
+  [PY25Q64HA_INDEX]  = P25Q64HA,
 };
 
 
@@ -314,12 +316,33 @@ static void nRF54_setup()
 
   pinMode(SOC_GPIO_PIN_MX25_RST, INPUT);
 
-#if defined(ARDUINO_NRF54L15DK_PCA10156)
   /* (Q)SPI flash init */
   switch (nRF54_board)
   {
     case NRF54_LR2021EVK1XCS1:
+#if defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
+      possible_devices[PY25Q64HA_INDEX].max_clock_speed_mhz  = 33;
+      possible_devices[PY25Q64HA_INDEX].supports_qspi        = false;
+      possible_devices[PY25Q64HA_INDEX].supports_qspi_writes = false;
+#if 0
+      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_EVK_SCK,
+                                                    SOC_GPIO_PIN_SFL_EVK_SS,
+                                                    SOC_GPIO_PIN_SFL_EVK_MOSI,
+                                                    SOC_GPIO_PIN_SFL_EVK_MISO,
+                                                    SOC_GPIO_PIN_SFL_EVK_WP,
+                                                    SOC_GPIO_PIN_SFL_EVK_HOLD);
+#else
+      SPI_HS.setPins(SOC_GPIO_PIN_SFL_EVK_SCK,
+                     SOC_GPIO_PIN_SFL_EVK_MISO,
+                     SOC_GPIO_PIN_SFL_EVK_MOSI,
+                     SOC_GPIO_PIN_SFL_EVK_SS);
+      FlashTrans = new Adafruit_FlashTransport_SPI(SOC_GPIO_PIN_SFL_EVK_SS, SPI_HS);
+#endif
+#endif /* ARDUINO_XIAO_NRF54LM20A_CLEAN */
+      break;
+
     case NRF54_PCA10156:
+#if defined(ARDUINO_NRF54L15DK_PCA10156)
       possible_devices[MX25R6435F_INDEX].max_clock_speed_mhz  = 33;
       possible_devices[MX25R6435F_INDEX].supports_qspi        = false;
       possible_devices[MX25R6435F_INDEX].supports_qspi_writes = false;
@@ -331,12 +354,13 @@ static void nRF54_setup()
                                                     SOC_GPIO_PIN_SFL_DK_WP,
                                                     SOC_GPIO_PIN_SFL_DK_HOLD);
 #else
-      SPI.setPins(SOC_GPIO_PIN_EVK_SCK,
-                  SOC_GPIO_PIN_EVK_MISO,
-                  SOC_GPIO_PIN_EVK_MOSI,
-                  SOC_GPIO_PIN_SFL_DK_SS);
-      FlashTrans = new Adafruit_FlashTransport_SPI(SOC_GPIO_PIN_SFL_DK_SS, SPI);
+      SPI_HS.setPins(SOC_GPIO_PIN_EVK_SCK,
+                     SOC_GPIO_PIN_EVK_MISO,
+                     SOC_GPIO_PIN_EVK_MOSI,
+                     SOC_GPIO_PIN_SFL_DK_SS);
+      FlashTrans = new Adafruit_FlashTransport_SPI(SOC_GPIO_PIN_SFL_DK_SS, SPI_HS);
 #endif
+#endif /* ARDUINO_NRF54L15DK_PCA10156 */
       break;
     default:
       break;
@@ -351,7 +375,6 @@ static void nRF54_setup()
     nRF54_has_spiflash = SPIFlash->begin(possible_devices,
                                          EXTERNAL_FLASH_DEVICE_COUNT);
   }
-#endif /* ARDUINO_NRF54L15DK_PCA10156 */
 
   if (nRF54_has_spiflash) {
     nRF54_board = NRF54_PCA10156;
