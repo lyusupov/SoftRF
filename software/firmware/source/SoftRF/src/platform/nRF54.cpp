@@ -225,22 +225,46 @@ static uint8_t readGpregret0() {
                               POWER_GPREGRET_GPREGRET_Msk);
 }
 
+#if defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
+#include <Adafruit_FlashTransport_QSPI_NRF54.h>
+static Adafruit_FlashTransport_QSPI_NRF54 *FlashTrans = NULL;
+#else
+#include <Adafruit_FlashTransport_SPI.h>
+static Adafruit_FlashTransport_SPI        *FlashTrans = NULL;
+#endif /* ARDUINO_XIAO_NRF54LM20A_CLEAN */
+
 #include <Adafruit_SPIFlash.h>
-static bool nRF54_has_spiflash = false;
-//static Adafruit_FlashTransport_QSPI *FlashTrans = NULL;
-static Adafruit_FlashTransport_SPI  *FlashTrans = NULL;
-static Adafruit_SPIFlash            *SPIFlash   = NULL;
+static Adafruit_SPIFlash                  *SPIFlash   = NULL;
+static bool nRF54_has_spiflash                        = false;
 
 /// Flash device list count
 enum {
   MX25R6435F_INDEX,
   PY25Q64HA_INDEX,
 
-  EXTERNAL_FLASH_DEVICE_COUNT
+  NRF54_EXTERNAL_FLASH_DEVICE_COUNT
 };
 
+#if !defined(MX25R6435F)
+// Settings for the Macronix MX25R6435F 8MiB SPI flash.
+// Datasheet:
+// http://www.macronix.com/Lists/Datasheet/Attachments/7428/MX25R6435F,%20Wide%20Range,%2064Mb,%20v1.4.pdf
+// By default its in lower power mode which can only do 8mhz. In high power mode
+// it can do 80mhz.
+#define MX25R6435F                                                             \
+  {                                                                            \
+    .total_size = (1UL << 23), /* 8 MiB */                                     \
+        .start_up_time_us = 5000, .manufacturer_id = 0xc2,                     \
+    .memory_type = 0x28, .capacity = 0x17, .max_clock_speed_mhz = 8,           \
+    .quad_enable_bit_mask = 0x40, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = false,        \
+    .single_status_byte = true, .is_fram = false,                              \
+  }
+#endif /* MX25R6435F */
+
 /// List of all possible flash devices used by nRF54 boards
-static SPIFlash_Device_t possible_devices[] = {
+static SPIFlash_Device_t nrf54_possible_devices[] = {
   [MX25R6435F_INDEX] = MX25R6435F,
   [PY25Q64HA_INDEX]  = P25Q64HA,
 };
@@ -321,16 +345,17 @@ static void nRF54_setup()
   {
     case NRF54_LR2021EVK1XCS1:
 #if defined(ARDUINO_XIAO_NRF54LM20A_CLEAN)
-      possible_devices[PY25Q64HA_INDEX].max_clock_speed_mhz  = 33;
-      possible_devices[PY25Q64HA_INDEX].supports_qspi        = false;
-      possible_devices[PY25Q64HA_INDEX].supports_qspi_writes = false;
-#if 0
-      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_EVK_SCK,
-                                                    SOC_GPIO_PIN_SFL_EVK_SS,
-                                                    SOC_GPIO_PIN_SFL_EVK_MOSI,
-                                                    SOC_GPIO_PIN_SFL_EVK_MISO,
-                                                    SOC_GPIO_PIN_SFL_EVK_WP,
-                                                    SOC_GPIO_PIN_SFL_EVK_HOLD);
+      nrf54_possible_devices[PY25Q64HA_INDEX].max_clock_speed_mhz  = 33;
+      nrf54_possible_devices[PY25Q64HA_INDEX].supports_qspi        = false;
+      nrf54_possible_devices[PY25Q64HA_INDEX].supports_qspi_writes = false;
+#if 1
+      FlashTrans = new Adafruit_FlashTransport_QSPI_NRF54(
+                     SOC_GPIO_PIN_SFL_EVK_SCK,
+                     SOC_GPIO_PIN_SFL_EVK_SS,
+                     SOC_GPIO_PIN_SFL_EVK_MOSI,
+                     SOC_GPIO_PIN_SFL_EVK_MISO,
+                     SOC_GPIO_PIN_SFL_EVK_WP,
+                     SOC_GPIO_PIN_SFL_EVK_HOLD);
 #else
       SPI_HS.setPins(SOC_GPIO_PIN_SFL_EVK_SCK,
                      SOC_GPIO_PIN_SFL_EVK_MISO,
@@ -343,16 +368,17 @@ static void nRF54_setup()
 
     case NRF54_PCA10156:
 #if defined(ARDUINO_NRF54L15DK_PCA10156)
-      possible_devices[MX25R6435F_INDEX].max_clock_speed_mhz  = 33;
-      possible_devices[MX25R6435F_INDEX].supports_qspi        = false;
-      possible_devices[MX25R6435F_INDEX].supports_qspi_writes = false;
+      nrf54_possible_devices[MX25R6435F_INDEX].max_clock_speed_mhz  = 33;
+      nrf54_possible_devices[MX25R6435F_INDEX].supports_qspi        = false;
+      nrf54_possible_devices[MX25R6435F_INDEX].supports_qspi_writes = false;
 #if 0
-      FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_DK_SCK,
-                                                    SOC_GPIO_PIN_SFL_DK_SS,
-                                                    SOC_GPIO_PIN_SFL_DK_MOSI,
-                                                    SOC_GPIO_PIN_SFL_DK_MISO,
-                                                    SOC_GPIO_PIN_SFL_DK_WP,
-                                                    SOC_GPIO_PIN_SFL_DK_HOLD);
+      FlashTrans = new Adafruit_FlashTransport_QSPI_NRF54(
+                     SOC_GPIO_PIN_SFL_DK_SCK,
+                     SOC_GPIO_PIN_SFL_DK_SS,
+                     SOC_GPIO_PIN_SFL_DK_MOSI,
+                     SOC_GPIO_PIN_SFL_DK_MISO,
+                     SOC_GPIO_PIN_SFL_DK_WP,
+                     SOC_GPIO_PIN_SFL_DK_HOLD);
 #else
       SPI_HS.setPins(SOC_GPIO_PIN_EVK_SCK,
                      SOC_GPIO_PIN_EVK_MISO,
@@ -372,8 +398,8 @@ static void nRF54_setup()
     FlashTrans->end();
 
     SPIFlash = new Adafruit_SPIFlash(FlashTrans);
-    nRF54_has_spiflash = SPIFlash->begin(possible_devices,
-                                         EXTERNAL_FLASH_DEVICE_COUNT);
+    nRF54_has_spiflash = SPIFlash->begin(nrf54_possible_devices,
+                                         NRF54_EXTERNAL_FLASH_DEVICE_COUNT);
   }
 
   if (nRF54_has_spiflash) {
