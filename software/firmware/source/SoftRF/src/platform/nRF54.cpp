@@ -79,7 +79,12 @@ static bool wdt_is_active = false;
 static nRF54_board_id nRF54_board = NRF54_LR2021EVK1XCS1; /* default */
 
 const char *nRF5x_Device_Manufacturer = SOFTRF_IDENT;
-const char *nRF5x_Device_Model = "Academy Edition";
+const char *nRF5x_Device_Model        = "Academy Edition";
+const uint16_t nRF54_Device_Version   = SOFTRF_USB_FW_VERSION;
+
+static uint16_t nRF54_USB_VID       = 0x2886; /* Seeed Technology */
+static uint16_t nRF54_USB_PID_L15   = 0x0066; /* XIAO L15 */
+static uint16_t nRF54_USB_PID_LM20A = 0x0068; /* XIAO LM20A */
 
 const char *Hardware_Rev[] = {
   [0] = "Unknown",
@@ -242,7 +247,9 @@ static uint32_t spiflash_id        = 0;
 
 /// Flash device list count
 enum {
+  // Nordic Semi L15 and LM20 DKs
   MX25R6435F_INDEX,
+  // Seeed Studio XIAO LM20A
   PY25Q64HA_INDEX,
 
   NRF54_EXTERNAL_FLASH_DEVICE_COUNT
@@ -269,7 +276,7 @@ enum {
 /// List of all possible flash devices used by nRF54 boards
 static SPIFlash_Device_t nrf54_possible_devices[] = {
   [MX25R6435F_INDEX] = MX25R6435F,
-  [PY25Q64HA_INDEX]  = P25Q64HA,
+  [PY25Q64HA_INDEX]  = P25Q64HA_ALT_JEDEC,
 };
 
 #include <SdFat_Adafruit_Fork.h>
