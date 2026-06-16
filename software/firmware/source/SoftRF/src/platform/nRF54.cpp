@@ -247,9 +247,8 @@ static uint32_t spiflash_id        = 0;
 
 /// Flash device list count
 enum {
-  // Nordic Semi L15 and LM20 DKs
   MX25R6435F_INDEX,
-  // Seeed Studio XIAO LM20A
+
   PY25Q64HA_INDEX,
 
   NRF54_EXTERNAL_FLASH_DEVICE_COUNT
@@ -275,7 +274,9 @@ enum {
 
 /// List of all possible flash devices used by nRF54 boards
 static SPIFlash_Device_t nrf54_possible_devices[] = {
+  // Nordic Semi L15 and LM20 DKs
   [MX25R6435F_INDEX] = MX25R6435F,
+  // Seeed Studio XIAO LM20A
   [PY25Q64HA_INDEX]  = P25Q64HA_ALT_JEDEC,
 };
 

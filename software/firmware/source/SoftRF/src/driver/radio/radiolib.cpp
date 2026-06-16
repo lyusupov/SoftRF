@@ -5210,7 +5210,7 @@ static void lr20xx_setup()
       Vtcxo = 0.0; /* TCXO with ext. power */
     } else {
       radio_g4->irqDioNum =  9; /* DIO9 as IRQ on Ebyte E80-900MBL-02 */
-      Vtcxo = 1.6; /* TBD */
+      Vtcxo = 2.2;
     }
     break;
   case SOFTRF_MODEL_CONCORDE:
