@@ -30,7 +30,7 @@
 #define SOC_GPIO_PIN_AM36_SCL1          10
 
 // User button
-#define SOC_GPIO_PIN_AM36_BUTTON_AUX    4
+#define SOC_GPIO_PIN_AM36_BUTTON        4
 
 // NeoPixel
 #define SOC_GPIO_PIN_AM36_LED           18
