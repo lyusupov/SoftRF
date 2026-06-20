@@ -535,11 +535,13 @@ static void STM32_setup()
 
 #elif defined(ARDUINO_BLUEPILL_F103CB)
 
-#if defined(SOC_GPIO_RADIO_LED_RX)
-    if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
-      pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
-      digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
-    }
+#if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
+    pinMode(SOC_GPIO_RADIO_LED_TX, OUTPUT);
+    digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
+#endif /* SOC_GPIO_RADIO_LED_TX */
+#if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
+    pinMode(SOC_GPIO_RADIO_LED_RX, OUTPUT);
+    digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
 #endif /* SOC_GPIO_RADIO_LED_RX */
 
 #elif defined(ARDUINO_GENERIC_WLE5CCUX)
@@ -881,7 +883,7 @@ static void STM32_loop()
   }
 #endif /* EXCLUDE_IMU */
 
-#if defined(ARDUINO_GENERIC_WL55CCUX)
+#if defined(ARDUINO_GENERIC_WL55CCUX) || defined(ARDUINO_BLUEPILL_F103CB)
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   if (digitalRead(SOC_GPIO_RADIO_LED_TX) != LED_STATE_ON) {
     if (tx_packets_counter != prev_tx_packets_counter) {
@@ -911,25 +913,6 @@ static void STM32_loop()
     }
   }
 #endif /* SOC_GPIO_RADIO_LED_RX */
-
-#elif defined(ARDUINO_BLUEPILL_F103CB)
-
-#if defined(SOC_GPIO_RADIO_LED_RX)
-  if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
-    if (digitalRead(SOC_GPIO_RADIO_LED_RX) != LED_STATE_ON) {
-      if (rx_packets_counter != prev_rx_packets_counter) {
-        digitalWrite(SOC_GPIO_RADIO_LED_RX, LED_STATE_ON);
-        prev_rx_packets_counter = rx_packets_counter;
-        rx_led_time_marker = millis();
-      }
-    } else {
-      if (millis() - rx_led_time_marker > LED_BLINK_TIME) {
-        digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
-        prev_rx_packets_counter = rx_packets_counter;
-      }
-    }
-  }
-#endif /* SOC_GPIO_RADIO_LED_RX */
 #endif /* GENERIC_WL55CCUX || BLUEPILL_F103CB */
 }
 
@@ -947,7 +930,7 @@ static void STM32_fini(int reason)
   }
 #endif /* ARDUINO_NUCLEO_L073RZ */
 
-#if defined(ARDUINO_GENERIC_WL55CCUX)
+#if defined(ARDUINO_GENERIC_WL55CCUX) || defined(ARDUINO_BLUEPILL_F103CB)
 #if SOC_GPIO_RADIO_LED_TX != SOC_UNUSED_PIN
   digitalWrite(SOC_GPIO_RADIO_LED_TX, ! LED_STATE_ON);
   pinMode(SOC_GPIO_RADIO_LED_TX, INPUT);
@@ -955,13 +938,6 @@ static void STM32_fini(int reason)
 #if SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN
   digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
   pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
-#endif /* SOC_GPIO_RADIO_LED_RX */
-#elif defined(ARDUINO_BLUEPILL_F103CB)
-#if defined(SOC_GPIO_RADIO_LED_RX)
-  if (SOC_GPIO_RADIO_LED_RX != SOC_UNUSED_PIN) {
-    digitalWrite(SOC_GPIO_RADIO_LED_RX, ! LED_STATE_ON);
-    pinMode(SOC_GPIO_RADIO_LED_RX, INPUT);
-  }
 #endif /* SOC_GPIO_RADIO_LED_RX */
 #endif /* GENERIC_WL55CCUX || BLUEPILL_F103CB */
 

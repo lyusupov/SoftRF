@@ -45,6 +45,7 @@ void LED_setup() {
   }
 #endif /* EXCLUDE_LED_RING */
 
+#if !defined(EXCLUDE_STATUS_LED)
   status_LED = SOC_GPIO_PIN_STATUS;
 
   if (status_LED != SOC_UNUSED_PIN) {
@@ -52,6 +53,7 @@ void LED_setup() {
     /* Indicate positive power supply */
     digitalWrite(status_LED, LED_STATE_ON);
   }
+#endif /* EXCLUDE_STATUS_LED */
 }
 
 #if !defined(EXCLUDE_LED_RING)
@@ -200,6 +202,7 @@ void LED_DisplayTraffic() {
 }
 
 void LED_loop() {
+#if !defined(EXCLUDE_STATUS_LED)
   if (status_LED != SOC_UNUSED_PIN) {
     if (Battery_voltage() > Battery_threshold() ) {
       /* Indicate positive power supply */
@@ -213,4 +216,5 @@ void LED_loop() {
       }
     }
   }
+#endif /* EXCLUDE_STATUS_LED */
 }

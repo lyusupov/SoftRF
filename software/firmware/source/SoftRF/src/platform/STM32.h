@@ -310,6 +310,7 @@ typedef struct stm32_backup_struct {
 //#define EXCLUDE_MAVLINK        //  -  2 kb
 #define EXCLUDE_EGM96            //  - 16 kb
 #define EXCLUDE_LED_RING         //  -    kb
+#define EXCLUDE_STATUS_LED
 #define EXCLUDE_SOUND
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU

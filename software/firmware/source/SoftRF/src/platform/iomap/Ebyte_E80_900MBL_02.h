@@ -8,8 +8,9 @@
 #define SOC_GPIO_PIN_GNSS_PPS PB9
 
 #define SOC_GPIO_PIN_LED      SOC_UNUSED_PIN // PA8
-#define SOC_GPIO_PIN_STATUS   PB13 /* active LOW */
-#define SOC_GPIO_RADIO_LED_RX (SoC->getChipId() == 0xd733484f ? PC13 : PB12)  /* active LOW */
+#define SOC_GPIO_PIN_STATUS   SOC_UNUSED_PIN
+#define SOC_GPIO_RADIO_LED_RX PB12 /* active LOW */
+#define SOC_GPIO_RADIO_LED_TX PB13 /* active LOW */
 
 #define SOC_GPIO_PIN_BUZZER   SOC_UNUSED_PIN
 #define SOC_GPIO_PIN_BATTERY  PA0
@@ -45,4 +46,4 @@
 #define SOC_GPIO_PIN_USB_DN   PA11
 
 // Jumper
-#define SOC_GPIO_PIN_MODE_SW  (SoC->getChipId() == 0xd733484f ? PB5 : PC13)  /* active LOW for UAV ( MAVLINK ) mode */
+#define SOC_GPIO_PIN_MODE_SW  PC13 /* active LOW for UAV ( MAVLINK ) mode */

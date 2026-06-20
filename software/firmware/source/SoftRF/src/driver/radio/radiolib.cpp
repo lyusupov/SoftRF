@@ -5205,13 +5205,8 @@ static void lr20xx_setup()
     Vtcxo = 3.0;
     break;
   case SOFTRF_MODEL_RETRO_MK2:
-    if (SoC->getChipId() == 0xd733484f /* Blue Pill */) {
-      radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
-      Vtcxo = 0.0; /* TCXO with ext. power */
-    } else {
-      radio_g4->irqDioNum =  9; /* DIO9 as IRQ on Ebyte E80-900MBL-02 */
-      Vtcxo = 2.2;
-    }
+    radio_g4->irqDioNum =  9; /* DIO9 as IRQ on Ebyte E80-900MBL-02 */
+    Vtcxo = 2.2;
     break;
   case SOFTRF_MODEL_CONCORDE:
   default:
@@ -5671,12 +5666,7 @@ static void lr20xx_setup()
     break;
 
   case SOFTRF_MODEL_RETRO_MK2:
-    if (SoC->getChipId() == 0xd733484f /* Blue Pill */) {
-      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
-                                 rfswitch_table_MXD8721);
-    } else {
-      /* TODO: Switchless design ? */
-    }
+    /* TODO: Switchless design ? */
     break;
 
   case SOFTRF_MODEL_BADGE:
