@@ -19,6 +19,7 @@
 - [STM32WL55](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wl55)
 - [CH32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#ch32)
 - [nRF54L15](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf54l15)
+- [E80-900MBL](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/binaries/README.md#e80-900mbl)
 
 ## List by Model
 
@@ -497,5 +498,24 @@ The Bootloader is capable to self-program an application firmware into the devic
 4. Install SoftRF firmware HEX file into your nRF54L15 device. Use this picture as an illustration.
 
 <img width="800" src="https://github.com/user-attachments/assets/31b5c337-4d2b-45cc-b8d5-36bab1d92b1b" />
+
+<br>
+<br>
+
+## E80-900MBL
+
+1. Take pre-built **OpenOCD** tool for Windows from this location: https://gnutoolchains.com/arm-eabi/openocd/ and extract the archive ;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/E80) ;
+3. Connect the SoftRF Retro Edition Mark II device to your CMSIS-DAP ( "DAPLINK" ) adapter ;
+4. Connect the DAPLINK adapter to your PC by means of a USB cable ;
+5. Use Windows command line tool to execute firmware flashing procedure as follows:
+
+```
+C:\OpenOCD-20211118-0.11.0>.\bin\openocd.exe -f interface\cmsis-dap.cfg -f board\stm32f103c8_blue_pill.cfg -c "program SoftRF-firmware-v1.9.1-E80.bin 0x08000000 verify reset exit"
+```
+
+Example:<br>
+
+![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Retro2-1.jpg)
 
 <br>
