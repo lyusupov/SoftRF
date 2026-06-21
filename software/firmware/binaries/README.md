@@ -19,7 +19,7 @@
 - [STM32WL55](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wl55)
 - [CH32](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#ch32)
 - [nRF54L15](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf54l15)
-- [E80-900MBL](https://github.com/lyusupov/SoftRF/edit/master/software/firmware/binaries/README.md#e80-900mbl)
+- [E80-900MBL](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#e80-900mbl) (STM32F103)
 
 ## List by Model
 
@@ -44,6 +44,7 @@ Model|Instructions|Firmware folder
 [Lego Edition](https://github.com/lyusupov/SoftRF/wiki/Lego-Edition)|[RP2040](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#rp2040)|[RP2040](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/RP2040/SoftRF)
 [Balkan Edition](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)|[STM32WLE5](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wle5)|[STM32WLE5](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/WLE5)
 [Labubu Edition](https://github.com/lyusupov/SoftRF/wiki/Labubu-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[STM32WL55](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#stm32wl55)|[STM32WL55](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/WL55)
+[Retro Edition MkII](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition-MkII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[E80-900MBL](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#e80-900mbl)|[E80-900MBL](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/E80)
 [Uni Edition](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition)|[CC1352R](https://github.com/lyusupov/SoftRF/wiki/Uni-Edition.-Firmware-maintenance-procedures#initial-installation)|[CC1352](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/CC13XX/CC1352)
 [Mini Edition](https://github.com/lyusupov/SoftRF/wiki/Mini-Edition)|[CubeCell](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#cubecell)|[ASR650x](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR650x)
 [Octave Concept](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)|[ASR6601](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#asr6601)|[ASR6601](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ASR6601)
@@ -507,6 +508,9 @@ The Bootloader is capable to self-program an application firmware into the devic
 1. Take pre-built **OpenOCD** tool for Windows from this location: https://gnutoolchains.com/arm-eabi/openocd/ and extract the archive ;
 2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/E80) ;
 3. Connect the SoftRF Retro Edition Mark II device to your CMSIS-DAP ( "DAPLINK" ) adapter ;
+
+![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Retro2-7.jpg)
+
 4. Connect the DAPLINK adapter to your PC by means of a USB cable ;
 5. Use Windows command line tool to execute firmware flashing procedure as follows:
 
