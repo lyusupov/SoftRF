@@ -328,6 +328,10 @@ OEM|Model(s)
 
 <p><img src="https://github.com/user-attachments/assets/7cc81eee-0940-497c-b4f2-1635fe507958" width="600"></p>
 
+* [**Retro Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition-MkII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+<p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Retro2-2.jpg" width="600"></p>
+
 * [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 <p><img src="https://media-cdn.elecrow.com/media/webp_image/catalog/product/cache/b6b9577937e6a96f50e53ddc42983628/t/h/thinknode_m6_1_1.webp" width="800"></p>
@@ -340,11 +344,11 @@ OEM|Model(s)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-1.jpg)
 
-* [**Nano Edition**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Nano Edition**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
 ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-1.jpg)
 
-* [**Gizmo Edition**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+* [**Gizmo Edition**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)
 
 ![](https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Gizmo-1.jpg)
 
