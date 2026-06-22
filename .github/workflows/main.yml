@@ -421,7 +421,7 @@ jobs:
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/lolren/NRF54L15-Clean-Arduino-core/refs/heads/main/package_nrf54l15clean_index.json" --save-prefs ;
             # arduino --pref "boardsmanager.additional.urls=https://github.com/lolren/nrf54-arduino-core/releases/download/v0.7.0/package_nrf54l15clean_index.json" --save-prefs ;
-            arduino --install-boards nrf54l15clean:nrf54l15clean:0.9.188 ;
+            arduino --install-boards nrf54l15clean:nrf54l15clean:0.9.197 ;
             arduino --pref "custom_clean_cpu=xiao_nrf54l15_cpu128" --save-prefs ;
             arduino --pref "custom_clean_vpr=xiao_nrf54l15_off"    --save-prefs ;
             arduino --pref "custom_clean_zigbee=xiao_nrf54l15_off" --save-prefs ;
@@ -471,7 +471,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "rp2040:rp2040:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" --save-prefs ;
-            arduino --install-boards rp2040:rp2040:5.6.0 ;
+            arduino --install-boards rp2040:rp2040:5.6.1 ;
             arduino --board $BOARD --save-prefs ;
             if [[ "$BOARD" =~ "rp2040:rp2040:rpipicow" ]]; then
               arduino --pref "custom_freq=rpipicow_120"               --save-prefs ;
