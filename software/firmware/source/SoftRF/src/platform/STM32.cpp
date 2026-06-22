@@ -480,13 +480,18 @@ static void STM32_setup()
       }
 #endif /* ARDUINO_NUCLEO_L073RZ */
       if (SOC_GPIO_PIN_BUTTON != SOC_UNUSED_PIN) {
-        pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE ||
-                                     hw_info.model == SOFTRF_MODEL_LABUBU ?
-                                     INPUT_PULLDOWN : INPUT);
+        pinMode(SOC_GPIO_PIN_BUTTON, hw_info.model == SOFTRF_MODEL_DONGLE   ||
+                                     hw_info.model == SOFTRF_MODEL_LABUBU    ?
+                                     INPUT_PULLDOWN :
+                                     hw_info.model == SOFTRF_MODEL_BALKAN   ||
+                                     hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+                                     INPUT_PULLUP : INPUT);
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
         LowPower.attachInterruptWakeup(SOC_GPIO_PIN_BUTTON,
-                                       STM32_ButtonWakeup, RISING);
-
+                                       STM32_ButtonWakeup,
+                                       hw_info.model == SOFTRF_MODEL_BALKAN   ||
+                                       hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+                                       FALLING : RISING);
         LowPower.deepSleep();
 #endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
@@ -1468,7 +1473,8 @@ static void STM32_Button_setup()
     pinMode(button_pin,
             hw_info.model == SOFTRF_MODEL_DONGLE ||
             hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
-            hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
+            hw_info.model == SOFTRF_MODEL_BALKAN ||
+            hw_info.model == SOFTRF_MODEL_RETRO_MK2 ? INPUT_PULLUP : INPUT);
 
     button_1.init(button_pin, hw_info.model == SOFTRF_MODEL_BALKAN   ||
                               hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
@@ -1510,7 +1516,8 @@ static void STM32_Button_fini()
     pinMode(SOC_GPIO_PIN_BUTTON,
             hw_info.model == SOFTRF_MODEL_DONGLE ||
             hw_info.model == SOFTRF_MODEL_LABUBU ? INPUT_PULLDOWN :
-            hw_info.model == SOFTRF_MODEL_BALKAN ? INPUT_PULLUP : INPUT);
+            hw_info.model == SOFTRF_MODEL_BALKAN ||
+            hw_info.model == SOFTRF_MODEL_RETRO_MK2 ? INPUT_PULLUP : INPUT);
     bool button_is_active = hw_info.model == SOFTRF_MODEL_BALKAN   ||
                             hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
                             LOW : HIGH;

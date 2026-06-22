@@ -421,7 +421,7 @@ jobs:
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/lolren/NRF54L15-Clean-Arduino-core/refs/heads/main/package_nrf54l15clean_index.json" --save-prefs ;
             # arduino --pref "boardsmanager.additional.urls=https://github.com/lolren/nrf54-arduino-core/releases/download/v0.7.0/package_nrf54l15clean_index.json" --save-prefs ;
-            arduino --install-boards nrf54l15clean:nrf54l15clean:0.9.201 ;
+            arduino --install-boards nrf54l15clean:nrf54l15clean:0.9.203 ;
             arduino --pref "custom_clean_cpu=xiao_nrf54l15_cpu128" --save-prefs ;
             arduino --pref "custom_clean_vpr=xiao_nrf54l15_off"    --save-prefs ;
             arduino --pref "custom_clean_zigbee=xiao_nrf54l15_off" --save-prefs ;
