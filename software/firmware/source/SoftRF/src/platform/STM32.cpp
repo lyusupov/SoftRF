@@ -418,6 +418,10 @@ static void STM32_setup()
     stm32_board   = STM32_EBYTE_E80_900MBL_02;
     hw_info.model = SOFTRF_MODEL_RETRO_MK2;
 
+#if defined(EXCLUDE_BMP280) && !defined(USE_OLED)
+    Wire.begin();
+#endif /* BMP280 */
+
     if (STM32_probe_pin(SOC_GPIO_PIN_MODE_SW, INPUT_PULLUP) == LOW) {
       STM32_enforce_uav_mode = true;
     }
