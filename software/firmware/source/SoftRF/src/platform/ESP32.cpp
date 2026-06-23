@@ -2757,6 +2757,10 @@ static void ESP32_setup()
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
+
+      // Select RF1 antenna input ( SKY13453 )
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL,      OUTPUT);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL, HIGH);
     }
 
     TDP4_IIC_1.begin(SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
@@ -3978,6 +3982,9 @@ static void ESP32_fini(int reason)
 
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   INPUT);
+
+      // SKY13453
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL,INPUT);
 
       /* micro-SD */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SD_EN,    LOW);
