@@ -189,12 +189,12 @@ uint8_t *GDL90_EscapeFilter(uint8_t *buf, uint8_t *p, int size)
   return (buf);
 }
 
-static void *msgHeartbeat()
+static void *msgHeartbeat(bool fix)
 {
   time_t ts = elapsedSecsToday(now());
 
   /* Status Byte 1 */
-  HeartBeat.gnss_pos_valid  = isValidFix() ;
+  HeartBeat.gnss_pos_valid  = fix ;
   HeartBeat.maint_reqd      = 0;
   HeartBeat.ident           = 0;
   HeartBeat.addr_type       = 0;
@@ -219,7 +219,7 @@ static void *msgHeartbeat()
   return (&HeartBeat);
 }
 
-static void *msgType10and20(ufo_t *aircraft)
+static void *msgType10and20(ufo_t *aircraft, bool fix)
 {
   int altitude;
 
@@ -263,8 +263,13 @@ static void *msgType10and20(ufo_t *aircraft)
   Traffic.alert_status  = 0 /* 0x1 */;
   Traffic.addr_type     = 0 /* 0x2 */;
   Traffic.addr          = pack24bit(aircraft->addr) /* pack24bit(0x345678) */;
-  Traffic.latitude      = pack24bit(makeLatitude(aircraft->latitude)) /* pack24bit(0x9abcde) */;
-  Traffic.longitude     = pack24bit(makeLongitude(aircraft->longitude)) /* pack24bit(0xf12345) */;
+  if (fix) {
+    Traffic.latitude    = pack24bit(makeLatitude(aircraft->latitude))   /* pack24bit(0x9abcde) */;
+    Traffic.longitude   = pack24bit(makeLongitude(aircraft->longitude)) /* pack24bit(0xf12345) */;
+  } else {
+    Traffic.latitude    = 0;
+    Traffic.longitude   = 0;
+  }
 
   /*
    * workaround against "implementation dependant"
@@ -273,8 +278,13 @@ static void *msgType10and20(ufo_t *aircraft)
   Traffic.altitude      = ((altitude >> 4) & 0xFF) | (misc << 8);
   Traffic.misc          = (altitude & 0x00F);
 
-  Traffic.nic           = 8 /* 0xa */;
-  Traffic.nacp          = 8 /* 0xb */;
+  if (fix) {
+    Traffic.nic         = 8 /* 0xa */;
+    Traffic.nacp        = 8 /* 0xb */;
+  } else {
+    Traffic.nic         = 0; /* Unknown */
+    Traffic.nacp        = 0; /* Unknown */
+  }
 
   /*
    * workaround against "implementation dependant"
@@ -343,10 +353,10 @@ static void *msgOwnershipGeometricAltitude(ufo_t *aircraft)
   return (&GeometricAltitude);
 }
 
-static size_t makeHeartbeat(uint8_t *buf)
+static size_t makeHeartbeat(uint8_t *buf, bool fix)
 {
   uint8_t *ptr = buf;
-  uint8_t *msg = (uint8_t *) msgHeartbeat();
+  uint8_t *msg = (uint8_t *) msgHeartbeat(fix);
   uint16_t fcs = GDL90_calcFCS(GDL90_HEARTBEAT_MSG_ID, msg,
                                sizeof(GDL90_Msg_HeartBeat_t));
   uint8_t fcs_lsb, fcs_msb;
@@ -364,10 +374,10 @@ static size_t makeHeartbeat(uint8_t *buf)
   return(ptr-buf);
 }
 
-static size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft)
+static size_t makeType10and20(uint8_t *buf, uint8_t id, ufo_t *aircraft, bool fix)
 {
   uint8_t *ptr = buf;
-  uint8_t *msg = (uint8_t *) msgType10and20(aircraft);
+  uint8_t *msg = (uint8_t *) msgType10and20(aircraft, fix);
   uint16_t fcs = GDL90_calcFCS(id, msg, sizeof(GDL90_Msg_Traffic_t));
   uint8_t fcs_lsb, fcs_msb;
   
@@ -428,8 +438,8 @@ static size_t makeFFid(uint8_t *buf)
 }
 #endif
 
-#define makeOwnershipReport(b,a)  makeType10and20(b, GDL90_OWNSHIP_MSG_ID, a)
-#define makeTrafficReport(b,a)    makeType10and20(b, GDL90_TRAFFIC_MSG_ID, a)
+#define makeOwnershipReport(b,a,f) makeType10and20(b, GDL90_OWNSHIP_MSG_ID, a, f)
+#define makeTrafficReport(b,a)     makeType10and20(b, GDL90_TRAFFIC_MSG_ID, a, true)
 
 static void GDL90_Out(byte *buf, size_t size)
 {
@@ -478,7 +488,9 @@ void GDL90_Export()
                               NMEABuffer : UDPpacketBuffer);
 
   if (settings->gdl90 != GDL90_OFF) {
-    size = makeHeartbeat(buf);
+    bool hasfix = isValidFix();
+
+    size = makeHeartbeat(buf, hasfix);
     GDL90_Out(buf, size);
 
 #if defined(DO_GDL90_FF_EXT)
@@ -491,10 +503,22 @@ void GDL90_Export()
     GDL90_Out(buf, size);
 #endif /* ENABLE_AHRS */
 
-    if (isValidFix()) {
-      size = makeOwnershipReport(buf, &ThisAircraft);
+/*
+ * Specs say that a device should supply OwnershipReport with lat=lon=NIC=0
+ * when own GNSS location is not available.
+ * However,
+ * 1) not every GDL90 device behavies this way ;
+ * 2) some EFBs get confused when they receive lat=lon=NIC=0 values
+ */
+#if 1
+    if (hasfix)
+#endif
+    {
+      size = makeOwnershipReport(buf, &ThisAircraft, hasfix);
       GDL90_Out(buf, size);
+    }
 
+    if (hasfix) {
       size = makeGeometricAltitude(buf, &ThisAircraft);
       GDL90_Out(buf, size);
     }
