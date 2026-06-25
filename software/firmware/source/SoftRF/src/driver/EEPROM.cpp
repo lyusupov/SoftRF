@@ -107,8 +107,7 @@ void EEPROM_defaults()
                                               hw_info.model == SOFTRF_MODEL_POCKET    ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
-  eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES       ||
-                                              hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
+  eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES        ?
                                               RF_TX_POWER_OFF :
                                               hw_info.model == SOFTRF_MODEL_HAM       ?
                                               RF_TX_POWER_LOW : RF_TX_POWER_FULL;

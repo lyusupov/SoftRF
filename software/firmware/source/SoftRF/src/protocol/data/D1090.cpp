@@ -101,84 +101,82 @@ void D1090_Export()
   interactiveRemoveStaleAircrafts(&state);
 #endif /* ENABLE_D1090_INPUT || ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
-  if (settings->d1090 != D1090_OFF
-#if 0
-      && isValidFix()
-#endif
-      ) {
+  if (settings->d1090 != D1090_OFF) {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
       if (Container[i].addr &&
          (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
-#if 0
-        distance = Container[i].distance;
-
-        float max_distance = Container[i].protocol == RF_PROTOCOL_ADSB_1090 ||
-                             Container[i].protocol == RF_PROTOCOL_ADSB_UAT  ||
-                             Container[i].protocol == RF_PROTOCOL_FANET ?
-                             ALARM_ZONE_NONE_EXT : ALARM_ZONE_NONE;
-
-        if (distance < max_distance) {
-#endif
-          float altitude;
-          /* If the aircraft's data has standard pressure altitude - make use it */
-          if (Container[i].pressure_altitude != 0.0) {
-            altitude = Container[i].pressure_altitude;
-          } else if (ThisAircraft.pressure_altitude != 0.0) {
-            /* If this SoftRF unit is equiped with baro sensor - try to make an adjustment */
-            float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
-            altitude = Container[i].altitude + altDiff;
-          } else {
-            /* If no other choice - report GNSS altitude as pressure altitude */
-            altitude = Container[i].altitude;
-          }
-          altitude *= _GPS_FEET_PER_METER;
-
-          df17 = make_air_position_frame(11, Container[i].addr,
-            Container[i].latitude, Container[i].longitude,
-            altitude, CPR_EVEN, DF17);
-
-          str = "*";
-          DF17_FRAME_TO_HEX_STR(str);
-          str += ";\r\n*";
-
-          df17 = make_air_position_frame(11, Container[i].addr,
-            Container[i].latitude, Container[i].longitude,
-            altitude, CPR_ODD, DF17);
-
-          DF17_FRAME_TO_HEX_STR(str);
-          str += ";\r\n*";
-
-          String callsign = String(GDL90_CallSign_Prefix[Container[i].protocol]);
-        
-          ADDR_TO_HEX_STR(callsign, (Container[i].addr >> 16) & 0xFF);
-          ADDR_TO_HEX_STR(callsign, (Container[i].addr >>  8) & 0xFF);
-          ADDR_TO_HEX_STR(callsign, (Container[i].addr      ) & 0xFF);
-
-          callsign.toUpperCase();
-
-          df17 = make_aircraft_identification_frame(Container[i].addr,
-            (unsigned char*) callsign.c_str(),
-            Category_Set_D,
-            AT_TO_GDL90(Container[i].aircraft_type),
-            DF17);
-
-          DF17_FRAME_TO_HEX_STR(str);
-          str += ";\r\n*";
-
-          df17 = make_velocity_frame(Container[i].addr,
-            Container[i].speed * cos(Container[i].course * PI / 180),
-            Container[i].speed * sin(Container[i].course * PI / 180),
-            Container[i].vs,
-            DF17);
-
-          DF17_FRAME_TO_HEX_STR(str);
-          str.toUpperCase();
-          str += ";\r\n";
-
-          D1090_Out((byte *) str.c_str(), str.length());
-#if 0
+        float altitude;
+        /* If the aircraft's data has standard pressure altitude - make use it */
+        if (Container[i].pressure_altitude != 0.0) {
+          altitude = Container[i].pressure_altitude;
+        } else if (ThisAircraft.pressure_altitude != 0.0) {
+          /* If this SoftRF unit is equiped with baro sensor - try to make an adjustment */
+          float altDiff = ThisAircraft.pressure_altitude - ThisAircraft.altitude;
+          altitude = Container[i].altitude + altDiff;
+        } else {
+          /* If no other choice - report GNSS altitude as pressure altitude */
+          altitude = Container[i].altitude;
         }
-#endif
+        altitude *= _GPS_FEET_PER_METER;
+
+        df17 = make_air_position_frame(11, Container[i].addr,
+          Container[i].latitude, Container[i].longitude,
+          altitude, CPR_EVEN, DF17);
+
+        str = "*";
+        DF17_FRAME_TO_HEX_STR(str);
+        str += ";\r\n*";
+
+        df17 = make_air_position_frame(11, Container[i].addr,
+          Container[i].latitude, Container[i].longitude,
+          altitude, CPR_ODD, DF17);
+
+        DF17_FRAME_TO_HEX_STR(str);
+        str += ";\r\n*";
+
+        /*
+         * When callsign is available - send it to a D1090 client.
+         * If it is not - generate a callsign substitute,
+         * based upon a protocol ID and the ICAO address
+         */
+        unsigned char *callsign;
+
+        if (strnlen((char *) Container[i].callsign, sizeof(Container[i].callsign)) > 0) {
+          callsign = Container[i].callsign;
+        } else {
+          String cs = String(GDL90_CallSign_Prefix[Container[i].protocol]);
+
+          ADDR_TO_HEX_STR(cs, (Container[i].addr >> 16) & 0xFF);
+          ADDR_TO_HEX_STR(cs, (Container[i].addr >>  8) & 0xFF);
+          ADDR_TO_HEX_STR(cs, (Container[i].addr      ) & 0xFF);
+
+          cs.toUpperCase();
+
+          callsign = (unsigned char *) cs.c_str();
+        }
+
+        df17 = make_aircraft_identification_frame(
+          Container[i].addr,
+          callsign,
+          Category_Set_D,
+          AT_TO_GDL90(Container[i].aircraft_type),
+          DF17);
+
+        DF17_FRAME_TO_HEX_STR(str);
+        str += ";\r\n*";
+
+        df17 = make_velocity_frame(
+          Container[i].addr,
+          Container[i].speed * cos(Container[i].course * PI / 180),
+          Container[i].speed * sin(Container[i].course * PI / 180),
+          Container[i].vs,
+          DF17);
+
+        DF17_FRAME_TO_HEX_STR(str);
+        str.toUpperCase();
+        str += ";\r\n";
+
+        D1090_Out((byte *) str.c_str(), str.length());
       }
     }
   }
