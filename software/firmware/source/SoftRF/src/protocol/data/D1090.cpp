@@ -101,10 +101,15 @@ void D1090_Export()
   interactiveRemoveStaleAircrafts(&state);
 #endif /* ENABLE_D1090_INPUT || ENABLE_RTLSDR || ENABLE_HACKRF || ENABLE_MIRISDR */
 
-  if (settings->d1090 != D1090_OFF && isValidFix()) {
+  if (settings->d1090 != D1090_OFF
+#if 0
+      && isValidFix()
+#endif
+      ) {
     for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
-      if (Container[i].addr && (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
-
+      if (Container[i].addr &&
+         (this_moment - Container[i].timestamp) <= EXPORT_EXPIRATION_TIME) {
+#if 0
         distance = Container[i].distance;
 
         float max_distance = Container[i].protocol == RF_PROTOCOL_ADSB_1090 ||
@@ -113,7 +118,7 @@ void D1090_Export()
                              ALARM_ZONE_NONE_EXT : ALARM_ZONE_NONE;
 
         if (distance < max_distance) {
-
+#endif
           float altitude;
           /* If the aircraft's data has standard pressure altitude - make use it */
           if (Container[i].pressure_altitude != 0.0) {
@@ -171,7 +176,9 @@ void D1090_Export()
           str += ";\r\n";
 
           D1090_Out((byte *) str.c_str(), str.length());
+#if 0
         }
+#endif
       }
     }
   }
