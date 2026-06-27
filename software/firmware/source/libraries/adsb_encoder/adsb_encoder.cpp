@@ -91,6 +91,9 @@ unsigned int modes_crc(unsigned char *buf, size_t  len)
 	return rem;
 }
 
+#if defined(ARDUINO_ARCH_STM32) && defined(ARDUINO_BLUEPILL_F103CB)
+extern "C" int cprNLFunction(double lat);
+#endif /* ARDUINO_BLUEPILL_F103CB */
 
 int    CPR_NL(double lat)
 {
@@ -106,6 +109,9 @@ int    CPR_NL(double lat)
 	return static_cast<int>(floor(2.0*M_PI* 1.0 / (acos(1 - U / (T*T)))));
 #endif
 
+#if defined(ARDUINO_ARCH_STM32) && defined(ARDUINO_BLUEPILL_F103CB)
+	return cprNLFunction(lat);
+#else
 	if (lat < 0) lat = -lat;
 	if (lat < 10.47047130) return 59;
 	if (lat < 14.82817437) return 58;
@@ -166,7 +172,7 @@ int    CPR_NL(double lat)
 	if (lat < 86.53536998) return 3;
 	if (lat < 87.00000000) return 2;
 	else return 1;
-	
+#endif /* ARDUINO_BLUEPILL_F103CB */
 }
 
 int CPR_N(double lat, int odd)

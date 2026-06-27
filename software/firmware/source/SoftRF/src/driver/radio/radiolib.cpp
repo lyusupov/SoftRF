@@ -5259,6 +5259,7 @@ static void lr20xx_setup()
   float br, fdev, bw;
   switch (rl_protocol->modulation_type)
   {
+#if !defined(EXCLUDE_FANET) || defined(ENABLE_PROL)
   case RF_MODULATION_TYPE_LORA:
 #if RADIOLIB_DEBUG_BASIC
     Serial.print(F("[LR20XX] Initializing LoRa ... "));
@@ -5323,7 +5324,9 @@ static void lr20xx_setup()
     rl_state = radio_g4->explicitHeader();
     rl_state = radio_g4->setCRC(true);
     break;
+#endif /* EXCLUDE_FANET */
 
+#if !defined(EXCLUDE_ES1090)
   case RF_MODULATION_TYPE_PPM:
 #if RADIOLIB_DEBUG_BASIC
     Serial.print(F("[LR20XX] Initializing OOK ... "));
@@ -5444,6 +5447,7 @@ static void lr20xx_setup()
 
     rl_state = radio_g4->setOokDetectionThreshold(-80); /* TODO */
     break;
+#endif /* EXCLUDE_ES1090 */
 
   case RF_MODULATION_TYPE_2FSK:
   default:

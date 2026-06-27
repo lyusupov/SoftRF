@@ -325,12 +325,12 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_LR11XX
 
 //#define EXCLUDE_LR20XX
-#define EXCLUDE_OGNTP
+//#define EXCLUDE_OGNTP
 #define EXCLUDE_P3I
-#define EXCLUDE_FANET
+//#define EXCLUDE_FANET
 //#define EXCLUDE_ES1090
 #define EXCLUDE_UAT978
-//#define ENABLE_ADSL
+#define ENABLE_ADSL
 
 #define EXCLUDE_CC1101
 #define EXCLUDE_SI443X
@@ -339,6 +339,12 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_SX1280
 
 #define USE_TIME_SLOTS
+
+/* trade performance for flash memory usage (-4 Kb) */
+#define cosf(x)                 cos  ((double) (x))
+#define sinf(x)                 sin  ((double) (x))
+//#define sqrtf(x)              sqrt ((double) (x))
+//#define atan2f(y,x)           atan2((double) (y), (double) (x))
 
 #endif /* USBCON */
 

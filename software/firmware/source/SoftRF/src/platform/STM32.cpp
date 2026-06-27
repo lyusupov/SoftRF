@@ -337,8 +337,12 @@ static void STM32_setup()
     hw_info.model = SOFTRF_MODEL_RETRO;
 
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
+#if !defined(EXCLUDE_BMP180)    || !defined(EXCLUDE_BMP280)    || \
+    !defined(EXCLUDE_BME680)    || !defined(EXCLUDE_BME280AUX) || \
+    !defined(EXCLUDE_MPL3115A2) || defined(USE_OLED)
     Wire.setSCL(SOC_GPIO_PIN_SCL);
     Wire.setSDA(SOC_GPIO_PIN_SDA);
+#endif
 #endif /* ARDUINO_WisDuo_RAK3172_Evaluation_Board */
 
 #if defined(ARDUINO_NUCLEO_L073RZ)
@@ -417,10 +421,6 @@ static void STM32_setup()
 #else
     stm32_board   = STM32_EBYTE_E80_900MBL_02;
     hw_info.model = SOFTRF_MODEL_RETRO_MK2;
-
-#if defined(EXCLUDE_BMP280) && !defined(USE_OLED)
-    Wire.begin();
-#endif /* BMP280 */
 
     if (STM32_probe_pin(SOC_GPIO_PIN_MODE_SW, INPUT_PULLUP) == LOW) {
       STM32_enforce_uav_mode = true;
@@ -951,7 +951,12 @@ static void STM32_fini(int reason)
 #endif /* GENERIC_WL55CCUX || BLUEPILL_F103CB */
 
   Serial_GNSS_In.end();
+
+#if !defined(EXCLUDE_BMP180)    || !defined(EXCLUDE_BMP280)    || \
+    !defined(EXCLUDE_BME680)    || !defined(EXCLUDE_BME280AUX) || \
+    !defined(EXCLUDE_MPL3115A2) || defined(USE_OLED)
   Wire.end();
+#endif
 
 #if !defined(ARDUINO_WisDuo_RAK3172_Evaluation_Board)
   pinMode(SOC_GPIO_PIN_SDA,  INPUT_ANALOG);
