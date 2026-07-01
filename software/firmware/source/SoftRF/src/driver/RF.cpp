@@ -294,7 +294,7 @@ void RF_SetChannel(void)
         ts->current = 0;
         chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN | ADSL);
       }
-      if ((ms_since_boot - ts->s1.tmarker) >= ts->interval_mid) {
+      else if ((ms_since_boot - ts->s1.tmarker) >= ts->interval_mid) {
         ts->s1.tmarker = ref_time_ms + ts->s1.begin;
         ts->current = 1;
         chan = (int8_t) RF_FreqPlan.getChannel(Time, ts->current, OGN | ADSL);

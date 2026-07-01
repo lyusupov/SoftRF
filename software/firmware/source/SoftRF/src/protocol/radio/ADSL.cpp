@@ -122,6 +122,11 @@ bool adsl_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   r.Descramble();
 
+  // iConspicuity
+  if (r.Type != 0x02) {
+    return false;
+  }
+
   fop->protocol  = RF_PROTOCOL_ADSL_860;
 
   fop->addr      = r.getAddress();

@@ -215,7 +215,7 @@ static const char settings_html[] PROGMEM = "<html>\
 
 void handleSettings_master() {
 
-  size_t size = 7204;
+  size_t size = 7240;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -254,6 +254,7 @@ void handleSettings_master() {
 <select name='dprotocol'>\
 <option %s value='%d'>NMEA</option>\
 <option %s value='%d'>GDL90</option>\
+<option %s value='%d'>D1090</option>\
 </select>\
 </td>\
 </tr>\
@@ -276,6 +277,7 @@ void handleSettings_master() {
   (settings->m.connection == CON_BLUETOOTH    ? "selected" : ""), CON_BLUETOOTH,
   (settings->m.protocol   == PROTOCOL_NMEA    ? "selected" : ""), PROTOCOL_NMEA,
   (settings->m.protocol   == PROTOCOL_GDL90   ? "selected" : ""), PROTOCOL_GDL90,
+  (settings->m.protocol   == PROTOCOL_D1090   ? "selected" : ""), PROTOCOL_D1090,
   (settings->m.baudrate   == B4800            ? "selected" : ""), B4800,
   (settings->m.baudrate   == B9600            ? "selected" : ""), B9600,
   (settings->m.baudrate   == B19200           ? "selected" : ""), B19200,
@@ -1598,6 +1600,12 @@ void handleStatus() {
         GDL90_isConnected()  ? "" : "not",
         GDL90_isConnected()  && !GDL90_hasHeartBeat() ? "UNK" : "",
         GDL90_hasHeartBeat() ? "GDL90"  : ""
+      );
+      break;
+    case PROTOCOL_D1090:
+      snprintf_P ( offset, size,
+        PSTR("\
+<tr><th align=left>Connection status</th><td align=right>N/A</td></tr>")
       );
       break;
     case PROTOCOL_NMEA:

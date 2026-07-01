@@ -45,6 +45,7 @@
 #include "WebHelper.h"
 #include "BatteryHelper.h"
 #include "GDL90Helper.h"
+#include "D1090Helper.h"
 #include "TFTHelper.h"
 #include "BaroHelper.h"
 #include "GNSSHelper.h"
@@ -158,6 +159,9 @@ void setup()
   case PROTOCOL_GDL90:
     GDL90_setup();
     break;
+  case PROTOCOL_D1090:
+    D1090_setup();
+    break;
   case PROTOCOL_NMEA:
   default:
     NMEA_setup();
@@ -211,6 +215,9 @@ void normal_loop()
   {
   case PROTOCOL_GDL90:
     GDL90_loop();
+    break;
+  case PROTOCOL_D1090:
+    D1090_loop();
     break;
   case PROTOCOL_NMEA:
   default:
