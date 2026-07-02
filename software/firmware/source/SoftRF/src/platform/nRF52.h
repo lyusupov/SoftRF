@@ -81,7 +81,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
   NRF52_LILYGO_TULTIMA,
   NRF52_SEEED_T1000E,
-  NRF52_SEEED_T1000E_PRO,       /* 2026 */
+  NRF52_SEEED_X1,               /* 2026 */
   NRF52_HELTEC_T114,
   NRF52_ELECROW_TN_M1,
   NRF52_ELECROW_TN_M3,
@@ -156,9 +156,9 @@ struct rst_info {
 #include "iomap/LilyGO_TEcho.h"
 #include "iomap/LilyGO_TUltima.h"
 #include "iomap/Seeed_T1000E.h"
-#include "iomap/Seeed_T1000E_Pro.h"
 #include "iomap/Seeed_T2000.h"
 #include "iomap/Seeed_Wio_L1.h"
+#include "iomap/Seeed_X1.h"
 #include "iomap/Heltec_T114.h"
 #include "iomap/Elecrow_ThinkNode_M1.h"
 #include "iomap/Elecrow_ThinkNode_M3.h"
@@ -371,7 +371,7 @@ struct rst_info {
 
 #if defined(USE_PWM_SOUND)
 #define SOC_GPIO_PIN_BUZZER   (nRF52_board == NRF52_SEEED_T1000E  ? SOC_GPIO_PIN_T1000_BUZZER     : \
-                               nRF52_board == NRF52_SEEED_T1000E_PRO ? SOC_GPIO_PIN_T1KEP_BUZZER  : \
+                               nRF52_board == NRF52_SEEED_X1 ? SOC_GPIO_PIN_X1_BUZZER             : \
                                nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER        : \
                                nRF52_board == NRF52_ELECROW_TN_M3 ? SOC_GPIO_PIN_M3_BUZZER        : \
                                nRF52_board == NRF52_SEEED_WIO_L1  ? SOC_GPIO_PIN_L1_BUZZER        : \
