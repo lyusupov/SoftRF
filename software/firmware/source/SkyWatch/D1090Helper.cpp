@@ -29,9 +29,41 @@
 
 static unsigned long D1090_Data_TimeMarker = 0;
 
+char D1090Buffer[D1090_BUFFER_SIZE]; // buffer for D1090 data
+int D1090_cnt = 0;
+
 static void D1090_Parse_Character(char c)
 {
-  /* TODO */
+  if (c == -1) {
+    /* retry */
+    return;
+  }
+
+  if (isPrintable(c) || c == '\r' || c == '\n') {
+    D1090Buffer[D1090_cnt] = c;
+  } else {
+    /* ignore */
+    return;
+  }
+
+  int ndx = D1090_cnt - 31;
+
+  if (ndx >= 0) {
+    if (D1090Buffer[ndx   ] == '*'  &&
+        D1090Buffer[ndx+29] == ';'  &&
+        D1090Buffer[ndx+30] == '\r' &&
+        D1090Buffer[ndx+31] == '\n') {
+
+      size_t write_size = D1090_cnt - ndx + 1;
+      D1090_Out((byte *) &D1090Buffer[ndx], write_size);
+    }
+  }
+
+  if (D1090Buffer[D1090_cnt] == '\n' || D1090_cnt == sizeof(D1090Buffer)-1) {
+    D1090_cnt = 0;
+  } else {
+    D1090_cnt++;
+  }
 }
 
 void D1090_setup()

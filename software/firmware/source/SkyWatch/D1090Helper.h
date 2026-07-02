@@ -19,7 +19,9 @@
 #ifndef D1090HELPER_H
 #define D1090HELPER_H
 
-#define D1090_DST_PORT    47909
+#define D1090_DST_PORT      47909
+
+#define D1090_BUFFER_SIZE   128
 
 void D1090_setup(void);
 void D1090_loop(void);
