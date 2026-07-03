@@ -82,7 +82,7 @@ const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>yangbinbin (yangbinbin_ytu@163.com)</th><td align=left>ADS-B encoder C++ library</td></tr>\
 <tr><th align=left>Hristo Gochkov</th><td align=left>Arduino Core for ESP32</td></tr>\
 <tr><th align=left>Evandro Copercini</th><td align=left>ESP32 BT SPP library</td></tr>\
-<tr><th align=left>Limor Fried and Ladyada</th><td align=left>Adafruit BMP085 library</td></tr>\
+<tr><th align=left>Limor Fried ( Ladyada )</th><td align=left>Adafruit BMP085 library</td></tr>\
 <tr><th align=left>Kevin Townsend</th><td align=left>Adafruit BMP280 library</td></tr>\
 <tr><th align=left>Limor Fried and Kevin Townsend</th><td align=left>Adafruit MPL3115A2 library</td></tr>\
 <tr><th align=left>Oliver Kraus</th><td align=left>U8g2 LCD, OLED and eInk library</td></tr>\

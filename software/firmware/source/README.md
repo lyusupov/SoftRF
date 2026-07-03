@@ -49,6 +49,7 @@
 1. Follow [these official instructions](https://github.com/espressif/arduino-esp32/blob/master/docs/source/installing.rst)
   to install Arduino IDE and a **certain version** of Arduino ESP32 Core<!--[**stable** Arduino ESP32 Core](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5) (1.0.5)--><br>
     For **ESP32**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**1.0.5**](https://github.com/espressif/arduino-esp32/releases/tag/1.0.5)<br>
+    For **ESP32-S2**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-S3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C3**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**2.0.9**](https://github.com/espressif/arduino-esp32/releases/tag/2.0.9)<br>
     For **ESP32-C6**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**3.0.7**](https://github.com/espressif/arduino-esp32/releases/tag/3.0.7)<br>
@@ -87,6 +88,8 @@ void loop()
 8. open **SoftRF** sketch from _File_ -> _Open_ menu
 9. For **ESP32**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32_ _Dev_ _Module_<br>
+    For **ESP32-S2**:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-S2_ _Dev_ _Module_<br>
     For **ESP32-S3**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-S3_ _Dev_ _Module_<br>
     For **ESP32-C3**:<br>
@@ -99,6 +102,7 @@ void loop()
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Board_ ->  _ESP32-P4_ _Dev_ _Module_<br>
 10. Select _Tools_ -> _Flash_ _Mode_ ->  _DIO_
 11. For **ESP32**:<br>
+    For **ESP32-S2**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
     For **ESP32-C6**:<br>
@@ -108,6 +112,7 @@ void loop()
     For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Size_ ->  _16MB_<br>
 12. For **ESP32**:<br>
+    For **ESP32-S2**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _Minimal_ _SPIFFS_<br>
@@ -116,6 +121,7 @@ void loop()
     For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Partition_ _Scheme_ ->  _No_ _FS_ _4MB_ _(2MB_ _APP_ _x2)_<br>
 13. For **ESP32**:<br>
+    For **ESP32-S2**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
     For **ESP32-C5**:<br>
@@ -124,6 +130,7 @@ void loop()
     For **ESP32-P4**:<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Select _Tools_ -> _Flash_ _Frequency_ ->  _40MHz_<br>
 14. For **ESP32**:<br>
+    For **ESP32-S2**:<br>
     For **ESP32-S3**:<br>
     For **ESP32-C3**:<br>
     For **ESP32-C5**:<br>

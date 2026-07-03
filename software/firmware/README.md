@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * NMEA library is developed by **Timur Sinitsyn**, **Tobias Simon**, **Ferry Huberts**
  * ADS-B encoder C++ library is developed by **yangbinbin** (yangbinbin_ytu@163.com)
  * Arduino Core for ESP32 is developed by **Hristo Gochkov**
- * Adafruit BMP085 library is developed by **Limor Fried** and **Ladyada**
+ * Adafruit BMP085 library is developed by **Limor Fried** ( **Ladyada** )
  * Adafruit BMP280 library is developed by **Kevin Townsend**
  * Adafruit MPL3115A2 library is developed by **Limor Fried** and **Kevin Townsend**
  * U8g2 monochrome LCD, OLED and eInk library is developed by **Oliver Kraus**
@@ -95,3 +95,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * QMA6100P library is developed by **Tristan Alderson**
  * Arduino Core for nRF54L15 is developed by **Loren Bufanu**
  * Arduino EEPROM library is developed by **Jack Christensen**
+ * Adafruit SPA06-003 library is developed by **Limor Fried**
