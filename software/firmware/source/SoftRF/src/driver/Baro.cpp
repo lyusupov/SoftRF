@@ -24,7 +24,7 @@ barochip_ops_t *baro_chip = NULL;
 
 #if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280)    && \
     defined(EXCLUDE_BME680) && defined(EXCLUDE_BME280AUX) && \
-    defined(EXCLUDE_MPL3115A2)
+    defined(EXCLUDE_MPL3115A2) && defined(EXCLUDE_SPA06)
 byte  Baro_setup()        {return BARO_MODULE_NONE;}
 void  Baro_loop()         {}
 void  Baro_fini()         {}
@@ -48,6 +48,9 @@ float Baro_temperature()  {return 0;}
 #if !defined(EXCLUDE_MPL3115A2)
 #include <Adafruit_MPL3115A2.h>
 #endif /* EXCLUDE_MPL3115A2 */
+#if !defined(EXCLUDE_SPA06)
+#include <Adafruit_SPA06_003.h>
+#endif /* EXCLUDE_SPA06 */
 
 #include <TinyGPS++.h>
 
@@ -66,6 +69,9 @@ SensorBHI260AP bhy;
 #if !defined(EXCLUDE_MPL3115A2)
 Adafruit_MPL3115A2 mpl3115a2 = Adafruit_MPL3115A2();
 #endif /* EXCLUDE_MPL3115A2 */
+#if !defined(EXCLUDE_SPA06)
+Adafruit_SPA06_003 spa06 = Adafruit_SPA06_003();
+#endif /* EXCLUDE_SPA06 */
 
 static float Baro_altitude_cache            = 0;
 static float Baro_pressure_cache            = 0;
@@ -425,6 +431,70 @@ barochip_ops_t mpl3115a2_ops = {
 };
 #endif /* EXCLUDE_MPL3115A2 */
 
+#if !defined(EXCLUDE_SPA06)
+static bool spa06_probe()
+{
+  return spa06.begin(SPA06_003_DEFAULT_ADDR);
+}
+
+static float spa06_altitude(float sealevelPressure)
+{
+  // Equation taken from BMP180 datasheet (page 16):
+  //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
+
+  // Note that using the equation from wikipedia can give bad results
+  // at high altitude. See this thread for more information:
+  //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
+
+  float atmospheric = spa06.readPressure() / 100.0F;
+  return 44330.0 * (1.0 - pow(atmospheric / sealevelPressure, 0.1903));
+}
+
+static void spa06_setup()
+{
+    Serial.print(F("Temperature = "));
+    Serial.print(spa06.readTemperature());
+    Serial.println(F(" *C"));
+
+    Serial.print(F("Pressure = "));
+    Serial.print(spa06.readPressure());
+    Serial.println(F(" Pa"));
+
+    Serial.print(F("Approx altitude = "));
+    Serial.print(spa06_altitude(1013.25));
+    Serial.println(F(" m"));
+
+    Serial.println();
+    delay(500);
+}
+
+static void spa06_fini()
+{
+  /* TBD */
+}
+
+static float spa06_pressure()
+{
+    return spa06.readPressure();
+}
+
+static float spa06_temperature()
+{
+    return spa06.readTemperature();
+}
+
+barochip_ops_t spa06_ops = {
+  BARO_MODULE_SPA06,
+  "SPA06",
+  spa06_probe,
+  spa06_setup,
+  spa06_fini,
+  spa06_altitude,
+  spa06_pressure,
+  spa06_temperature
+};
+#endif /* EXCLUDE_SPA06 */
+
 bool Baro_probe()
 {
   return (
@@ -453,10 +523,16 @@ bool Baro_probe()
 #endif /* EXCLUDE_BME280AUX */
 
 #if !defined(EXCLUDE_MPL3115A2)
-           (baro_chip = &mpl3115a2_ops, baro_chip->probe())
+           (baro_chip = &mpl3115a2_ops, baro_chip->probe()) ||
+#else
+           false                                            ||
+#endif /* EXCLUDE_MPL3115A2 */
+
+#if !defined(EXCLUDE_SPA06)
+           (baro_chip = &spa06_ops, baro_chip->probe())
 #else
            false
-#endif /* EXCLUDE_MPL3115A2 */
+#endif /* EXCLUDE_SPA06 */
          );
 }
 
