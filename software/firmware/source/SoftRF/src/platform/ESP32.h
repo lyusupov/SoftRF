@@ -535,6 +535,7 @@ struct rst_info {
 //#define EXCLUDE_MAG
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
+#define EXCLUDE_SPA06
 
 #define EXCLUDE_ETHERNET
 

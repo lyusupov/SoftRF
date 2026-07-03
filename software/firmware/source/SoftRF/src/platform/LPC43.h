@@ -129,6 +129,7 @@ extern usb_data_t usb_data_type;
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
+#define EXCLUDE_SPA06
 
 #define USE_NMEA_CFG
 

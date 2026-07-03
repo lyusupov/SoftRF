@@ -81,13 +81,13 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
   NRF52_LILYGO_TULTIMA,
   NRF52_SEEED_T1000E,
-  NRF52_SEEED_X1,               /* 2026 */
   NRF52_HELTEC_T114,
   NRF52_ELECROW_TN_M1,
   NRF52_ELECROW_TN_M3,
   NRF52_ELECROW_TN_M6,
   NRF52_SEEED_WIO_L1,
   NRF52_SEEED_T2000,
+  NRF52_SEEED_X1,
 };
 
 enum nRF52_display_id {
@@ -141,6 +141,7 @@ struct rst_info {
 #define SC7A20H_ADDRESS_L     (0x18)
 #define SC7A20H_ADDRESS_H     (0x19)
 #define BMM350_ADDRESS        (0x14)
+#define SPA06_ADDRESS         (0x77) /* SDO = HIGH */
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
@@ -289,6 +290,7 @@ struct rst_info {
 #define EXCLUDE_BME680             //  -    kb
 #define EXCLUDE_BME280AUX          //  -    kb
 //#define EXCLUDE_MPL3115A2        //  -    kb
+#define EXCLUDE_SPA06              //  -    kb
 //#define EXCLUDE_NRF905           //  -    kb
 //#define EXCLUDE_MAVLINK          //  -    kb
 //#define EXCLUDE_UATM             //  -    kb

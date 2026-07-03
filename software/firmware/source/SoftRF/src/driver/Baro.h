@@ -36,6 +36,7 @@ enum
   BARO_MODULE_BME680,
   BARO_MODULE_BME280AUX,
   BARO_MODULE_MPL3115A2,
+  BARO_MODULE_SPA06,
 };
 
 typedef struct barochip_ops_struct {

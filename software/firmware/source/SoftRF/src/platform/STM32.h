@@ -172,6 +172,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_EGM96            //  - 16 kb
 #define USE_SERIAL_DEEP_SLEEP    //  + 12 kb
@@ -246,6 +247,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
@@ -305,6 +307,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 //#define EXCLUDE_MAVLINK        //  -  2 kb
@@ -385,6 +388,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
@@ -449,6 +453,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb
@@ -516,6 +521,7 @@ typedef struct stm32_backup_struct {
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
+#define EXCLUDE_SPA06            //  -    kb
 #define EXCLUDE_NRF905           //  -  2 kb
 #define EXCLUDE_UATM             //  -    kb
 #define EXCLUDE_MAVLINK          //  -    kb

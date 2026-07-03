@@ -132,6 +132,7 @@ struct rst_info {
 #define EXCLUDE_BMP280
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
+#define EXCLUDE_SPA06
 #define EXCLUDE_IMU
 
 #elif defined(BOARD_E70_XXXT14S2)
@@ -191,6 +192,7 @@ struct rst_info {
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
+#define EXCLUDE_SPA06
 #define EXCLUDE_D1090
 
 #define EXCLUDE_MAVLINK
@@ -284,6 +286,7 @@ extern SCSerial                 scSerial;
 
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
+#define EXCLUDE_SPA06
 
 #else
 #error "This board is not supported!"

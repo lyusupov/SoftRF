@@ -199,6 +199,7 @@ extern const char *Hardware_Rev[];
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
+#define EXCLUDE_SPA06
 //#define EXCLUDE_MAVLINK
 
 //#define EXCLUDE_LR11XX
