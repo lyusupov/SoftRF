@@ -32,6 +32,8 @@ extern "C" {
 
 #define GDL90_RINGBUF_SIZE  sizeof(gdl_message_escaped_t)
 
+unsigned long GDL90_HeartBeat_Count = 0;
+
 static unsigned long GDL90_Data_TimeMarker = 0;
 static unsigned long GDL90_HeartBeat_TimeMarker = 0;
 static unsigned long GDL90_OwnShip_TimeMarker = 0;
@@ -101,6 +103,8 @@ static void GDL90_Parse_Character(char c)
 //      print_gdl90_heartbeat(&heartbeat);
 
         GDL90_HeartBeat_TimeMarker = millis();
+
+        GDL90_HeartBeat_Count++;
       }
     }
 

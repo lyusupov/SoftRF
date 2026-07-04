@@ -434,7 +434,7 @@ barochip_ops_t mpl3115a2_ops = {
 #if !defined(EXCLUDE_SPA06)
 static bool spa06_probe()
 {
-  return spa06.begin(SPA06_003_DEFAULT_ADDR);
+  return spa06.begin(SPA06_003_DEFAULT_ADDR) || spa06.begin(SPA06_ADDRESS_ALT);
 }
 
 static float spa06_altitude(float sealevelPressure)

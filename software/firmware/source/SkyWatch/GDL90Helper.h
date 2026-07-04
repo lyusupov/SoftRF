@@ -34,5 +34,6 @@ void GDL90_Out(byte *, size_t);
    AIRCRAFT_TYPE_UNKNOWN : pgm_read_byte(&gdl90_to_aircraft_type[(x)]))
 
 extern const uint8_t gdl90_to_aircraft_type[] PROGMEM;
+extern unsigned long GDL90_HeartBeat_Count;
 
 #endif /* GDL90HELPER_H */

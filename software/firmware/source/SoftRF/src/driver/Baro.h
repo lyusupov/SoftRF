@@ -20,6 +20,7 @@
 #define BAROHELPER_H
 
 #define BMP280_ADDRESS_ALT    0x76 /* GY-91, SA0 is NC */
+#define SPA06_ADDRESS_ALT     0x76 /* SDO = LOW */
 
 #define VS_AVERAGING_FACTOR   3
 

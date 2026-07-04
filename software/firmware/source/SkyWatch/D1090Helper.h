@@ -27,4 +27,7 @@ void D1090_setup(void);
 void D1090_loop(void);
 void D1090_Out(byte *, size_t);
 
+extern unsigned long D1090_Frames_Count;
+extern unsigned long D1090_Acfts_Count;
+
 #endif /* D1090HELPER_H */

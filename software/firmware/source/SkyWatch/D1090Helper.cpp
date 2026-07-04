@@ -28,9 +28,14 @@
 #include "WiFiHelper.h"
 
 static unsigned long D1090_Data_TimeMarker = 0;
+static char D1090Buffer[D1090_BUFFER_SIZE]; // buffer for D1090 data
+static int D1090_cnt = 0;
 
-char D1090Buffer[D1090_BUFFER_SIZE]; // buffer for D1090 data
-int D1090_cnt = 0;
+unsigned long D1090_Frames_Count = 0;
+unsigned long D1090_Acfts_Count  = 0;
+
+#include <mode-s.h>
+mode_s_t modes_state;
 
 static void D1090_Parse_Character(char c)
 {
@@ -54,8 +59,61 @@ static void D1090_Parse_Character(char c)
         D1090Buffer[ndx+30] == '\r' &&
         D1090Buffer[ndx+31] == '\n') {
 
+      D1090_Frames_Count++;
+
       size_t write_size = D1090_cnt - ndx + 1;
       D1090_Out((byte *) &D1090Buffer[ndx], write_size);
+
+      uint8_t buf[14];
+      struct mode_s_msg mm;
+
+      uint8_t *msg = (uint8_t *) &D1090Buffer[ndx+1];
+
+      for (int i=0; i<28; i+=2) {
+        if (msg[1 + i] == ';') break;
+
+        uint8_t out = 0;
+        uint8_t h = msg[1 + i];
+
+        if (isdigit(h)) {
+          out |= ((h - '0'     ) << 4);
+        } else if (islower(h)) {
+          out |= ((h - 'a' + 10) << 4);
+        } else {
+          out |= ((h - 'A' + 10) << 4);
+        }
+
+        uint8_t l = msg[1 + i + 1];
+
+        if (isdigit(l)) {
+          out |= (l - '0'     );
+        } else if (islower(l)) {
+          out |= (l - 'a' + 10);
+        } else {
+          out |= (l - 'A' + 10);
+        }
+
+        buf[i>>1] = out;
+      }
+
+      mode_s_decode(&modes_state, &mm, buf);
+
+      if (modes_state.check_crc == 0 || mm.crcok) {
+
+//  printf("%02d %03d %02x%02x%02x\r\n", mm.msgtype, mm.msgbits, mm.aa1, mm.aa2, mm.aa3);
+
+          D1090_Acfts_Count = 0;
+          struct mode_s_aircraft *a = modes_state.aircrafts;
+
+          while (a) {
+            D1090_Acfts_Count++;
+            a = a->next;
+          }
+
+          if (D1090_Acfts_Count < MAX_TRACKING_OBJECTS) {
+            interactiveReceiveData(&modes_state, &mm);
+          }
+      }
     }
   }
 
@@ -180,6 +238,8 @@ void D1090_loop()
   default:
     break;
   }
+
+  interactiveRemoveStaleAircrafts(&modes_state);
 }
 
 void D1090_Out(byte *buf, size_t size)

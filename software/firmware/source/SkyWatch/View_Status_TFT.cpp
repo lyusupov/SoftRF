@@ -25,26 +25,32 @@
 #include "BatteryHelper.h"
 #include "NMEAHelper.h"
 #include "GDL90Helper.h"
+#include "D1090Helper.h"
 #include "EEPROMHelper.h"
 #include <protocol.h>
 
 extern uint32_t tx_packets_counter, rx_packets_counter;
 
-const char *TFT_Protocol_ID[] = {
+static const char *TFT_Protocol_ID[] = {
   [RF_PROTOCOL_LEGACY]    = "L",
   [RF_PROTOCOL_OGNTP]     = "O",
   [RF_PROTOCOL_P3I]       = "P",
-  [RF_PROTOCOL_ADSB_1090] = "A",
+  [RF_PROTOCOL_ADSB_1090] = "E",
   [RF_PROTOCOL_ADSB_UAT]  = "U",
-  [RF_PROTOCOL_FANET]     = "F"
+  [RF_PROTOCOL_FANET]     = "F",
+  [RF_PROTOCOL_APRS]      = "H",
+  [RF_PROTOCOL_ADSL_860]  = "A",
 };
 
-const char ID_text[]       = "ID";
-const char PROTOCOL_text[] = "PROTOCOL";
-const char RX_text[]       = "RX";
-const char TX_text[]       = "TX";
-const char ACFTS_text[]    = "ACFTS";
-const char BAT_text[]      = "BAT";
+static const char ID_text[]       = "ID";
+static const char PROTOCOL_text[] = "PROTOCOL";
+static const char RX_text[]       = "RX";
+static const char TX_text[]       = "TX";
+static const char ACFTS_text[]    = "ACFTS";
+static const char BAT_text[]      = "BAT";
+static const char DATA_text[]     = "DATA";
+static const char HB_text[]       = "HBs";
+static const char FRAMES_text[]   = "FRAMES";
 
 void TFT_status_setup()
 {
@@ -61,16 +67,6 @@ void TFT_status_loop()
 
   bool has_connection = false;
 
-  switch (settings->m.protocol)
-  {
-  case PROTOCOL_GDL90:
-    has_connection = GDL90_isConnected();
-    break;
-  case PROTOCOL_NMEA:
-    has_connection = NMEA_isConnected();
-    break;
-  }
-
   sprite->createSprite(tft->width(), tft->height());
 
   sprite->fillSprite(TFT_BLACK);
@@ -79,154 +75,273 @@ void TFT_status_loop()
   sprite->setTextFont(2);
   sprite->setTextSize(2);
 
-  tbw = sprite->textWidth(ID_text);
-  tbh = sprite->fontHeight();
+  switch (settings->m.protocol)
+  {
+  case PROTOCOL_NMEA:
+    has_connection = NMEA_isConnected();
+
+    tbw = sprite->textWidth(ID_text);
+    tbh = sprite->fontHeight();
 
 #if LV_HOR_RES == 240
-  sprite->setCursor(sprite->textWidth(" "), sprite->height()/6 - tbh);
-  sprite->print(ID_text);
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/6 - tbh);
+    sprite->print(ID_text);
 
-  tbw = sprite->textWidth(PROTOCOL_text);
+    tbw = sprite->textWidth(PROTOCOL_text);
 
-  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
-                    sprite->height()/6 - tbh);
-  sprite->print(PROTOCOL_text);
+    sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                      sprite->height()/6 - tbh);
+    sprite->print(PROTOCOL_text);
 
-  tbw = sprite->textWidth(RX_text);
+    tbw = sprite->textWidth(RX_text);
 
-  sprite->setCursor(sprite->textWidth("   "), sprite->height()/2 - tbh);
-  sprite->print(RX_text);
+    sprite->setCursor(sprite->textWidth("   "), sprite->height()/2 - tbh);
+    sprite->print(RX_text);
 
-  tbw = sprite->textWidth(TX_text);
+    tbw = sprite->textWidth(TX_text);
 
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
-                    sprite->height()/2 - tbh);
-  sprite->print(TX_text);
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                      sprite->height()/2 - tbh);
+    sprite->print(TX_text);
 
-  tbw = sprite->textWidth(ACFTS_text);
+    tbw = sprite->textWidth(ACFTS_text);
 
-  sprite->setCursor(sprite->textWidth(" "), (5 * sprite->height()/6) - tbh);
-  sprite->print(ACFTS_text);
+    sprite->setCursor(sprite->textWidth(" "), (5 * sprite->height()/6) - tbh);
+    sprite->print(ACFTS_text);
 
-  tbw = sprite->textWidth(BAT_text);
+    tbw = sprite->textWidth(BAT_text);
 
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
-                    (5 * sprite->height()/6) - tbh);
-  sprite->print(BAT_text);
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                      (5 * sprite->height()/6) - tbh);
+    sprite->print(BAT_text);
 
-  snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
+    snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
 
-  sprite->setTextFont(4);
-  sprite->setTextSize(2);
+    sprite->setTextFont(4);
+    sprite->setTextSize(2);
 
-  sprite->setCursor(sprite->textWidth(" "), sprite->height()/6);
-  sprite->print(buf);
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/6);
+    sprite->print(buf);
 
-  tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
+    tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
 
-  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
-                    sprite->height()/6);
-  sprite->print(TFT_Protocol_ID[ThisDevice.protocol]);
+    sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                      sprite->height()/6);
+    sprite->print(TFT_Protocol_ID[ThisDevice.protocol]);
 
+    disp_value = rx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-  disp_value = rx_packets_counter % 1000;
-  itoa(disp_value, buf, 10);
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("  "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
 
-  if (disp_value < 10) {
-    strcat_P(buf,PSTR("  "));
-  } else {
-    if (disp_value < 100) {
-      strcat_P(buf,PSTR(" "));
-    };
-  }
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/2);
+    sprite->print(buf);
 
-  sprite->setCursor(sprite->textWidth(" "), sprite->height()/2);
-  sprite->print(buf);
+    disp_value = tx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-  disp_value = tx_packets_counter % 1000;
-  itoa(disp_value, buf, 10);
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("  "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
 
-  if (disp_value < 10) {
-    strcat_P(buf,PSTR("  "));
-  } else {
-    if (disp_value < 100) {
-      strcat_P(buf,PSTR(" "));
-    };
-  }
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), sprite->height()/2);
+    sprite->print(buf);
 
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), sprite->height()/2);
-  sprite->print(buf);
+    sprite->setCursor(sprite->textWidth("  "), (5 * sprite->height())/6);
+    sprite->print(Traffic_Count());
 
-  sprite->setCursor(sprite->textWidth("  "), (5 * sprite->height())/6);
-  sprite->print(Traffic_Count());
-
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth("  "), (5 * sprite->height())/6);
-  sprite->print(Battery_voltage(), 1);
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("  "), (5 * sprite->height())/6);
+    sprite->print(Battery_voltage(), 1);
 #endif /* LV_HOR_RES == 240 */
 
 #if LV_HOR_RES == 135
-  sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - tbh - 1);
-  sprite->print(ID_text);
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - tbh - 1);
+    sprite->print(ID_text);
 
-  tbw = sprite->textWidth(PROTOCOL_text);
+    tbw = sprite->textWidth(PROTOCOL_text);
 
-  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
-                    sprite->height()/4 - tbh - 1);
-  sprite->print(PROTOCOL_text);
+    sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                      sprite->height()/4 - tbh - 1);
+    sprite->print(PROTOCOL_text);
 
-  tbw = sprite->textWidth(RX_text);
+    tbw = sprite->textWidth(RX_text);
 
-  sprite->setCursor(sprite->textWidth("   "), 3*sprite->height()/4 - tbh - 1);
-  sprite->print(RX_text);
+    sprite->setCursor(sprite->textWidth("   "), 3*sprite->height()/4 - tbh - 1);
+    sprite->print(RX_text);
 
-  tbw = sprite->textWidth(TX_text);
+    tbw = sprite->textWidth(TX_text);
 
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
-                    3*sprite->height()/4 - tbh - 1);
-  sprite->print(TX_text);
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                      3*sprite->height()/4 - tbh - 1);
+    sprite->print(TX_text);
 
-  snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
+    snprintf (buf, sizeof(buf), "%06X", ThisDevice.addr & 0xFFFFFF);
 
-  sprite->setTextSize(3);
+    sprite->setTextSize(3);
 
-  sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
-  sprite->print(has_connection ? buf : "N/A");
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
+    sprite->print(has_connection ? buf : "N/A");
 
-  tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
+   tbw = sprite->textWidth(TFT_Protocol_ID[ThisDevice.protocol]);
 
-  sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
-                    sprite->height()/4 - 7);
-  sprite->print(has_connection ? TFT_Protocol_ID[ThisDevice.protocol] : "-");
+    sprite->setCursor(sprite->width() - tbw - sprite->textWidth(" "),
+                      sprite->height()/4 - 7);
+    sprite->print(has_connection ? TFT_Protocol_ID[ThisDevice.protocol] : "-");
 
 
-  disp_value = rx_packets_counter % 1000;
-  itoa(disp_value, buf, 10);
+    disp_value = rx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-  if (disp_value < 10) {
-    strcat_P(buf,PSTR("   "));
-  } else {
-    if (disp_value < 100) {
-      strcat_P(buf,PSTR(" "));
-    };
-  }
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
 
-  sprite->setCursor(sprite->textWidth(" "), 3*sprite->height()/4 - 7);
-  sprite->print(buf);
+    sprite->setCursor(sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
 
-  disp_value = tx_packets_counter % 1000;
-  itoa(disp_value, buf, 10);
+    disp_value = tx_packets_counter % 1000;
+    itoa(disp_value, buf, 10);
 
-  if (disp_value < 10) {
-    strcat_P(buf,PSTR("   "));
-  } else {
-    if (disp_value < 100) {
-      strcat_P(buf,PSTR(" "));
-    };
-  }
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
 
-  sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), 3*sprite->height()/4 - 7);
-  sprite->print(buf);
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
 #endif /* LV_HOR_RES == 135 */
+
+    break;
+
+  case PROTOCOL_GDL90:
+    has_connection = GDL90_isConnected();
+
+    tbw = sprite->textWidth(DATA_text);
+    tbh = sprite->fontHeight();
+
+#if LV_HOR_RES == 135
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - tbh - 1);
+    sprite->print(DATA_text);
+
+    tbw = sprite->textWidth(HB_text);
+
+    sprite->setCursor(sprite->textWidth("   "), 3*sprite->height()/4 - tbh - 1);
+    sprite->print(HB_text);
+
+    tbw = sprite->textWidth(ACFTS_text);
+
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                      3*sprite->height()/4 - tbh - 1);
+    sprite->print(ACFTS_text);
+
+    sprite->setTextSize(3);
+
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
+    sprite->print("GDL90");
+
+    disp_value = GDL90_HeartBeat_Count % 1000;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
+
+    sprite->setCursor(sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
+
+    disp_value = Traffic_Count() % 1000;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
+
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
+#endif /* LV_HOR_RES == 135 */
+
+    break;
+
+  case PROTOCOL_D1090:
+    tbw = sprite->textWidth(DATA_text);
+    tbh = sprite->fontHeight();
+
+#if LV_HOR_RES == 135
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - tbh - 1);
+    sprite->print(DATA_text);
+
+    tbw = sprite->textWidth(FRAMES_text);
+
+    sprite->setCursor(sprite->textWidth("   "), 3*sprite->height()/4 - tbh - 1);
+    sprite->print(FRAMES_text);
+
+    tbw = sprite->textWidth(ACFTS_text);
+
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth("   "),
+                      3*sprite->height()/4 - tbh - 1);
+    sprite->print(ACFTS_text);
+
+    sprite->setTextSize(3);
+
+    sprite->setCursor(sprite->textWidth(" "), sprite->height()/4 - 7);
+    sprite->print("D1090");
+
+    disp_value = D1090_Frames_Count % 1000;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
+
+    sprite->setCursor(sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
+
+    disp_value = D1090_Acfts_Count % 1000;
+    itoa(disp_value, buf, 10);
+
+    if (disp_value < 10) {
+      strcat_P(buf,PSTR("   "));
+    } else {
+      if (disp_value < 100) {
+        strcat_P(buf,PSTR(" "));
+      };
+    }
+
+    sprite->setCursor(sprite->width()/2 + sprite->textWidth(" "), 3*sprite->height()/4 - 7);
+    sprite->print(buf);
+#endif /* LV_HOR_RES == 135 */
+
+    break;
+  }
 
   tft->setBitmapColor(TFT_WHITE, TFT_NAVY);
   sprite->pushSprite(0, 0);
