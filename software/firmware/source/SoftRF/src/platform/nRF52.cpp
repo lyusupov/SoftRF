@@ -831,6 +831,7 @@ static void nRF52_setup()
                 nRF52_bl_check("X1-BOOT")     ? NRF52_SEEED_X1           :
                 nRF52_bl_check("T2000")       ? NRF52_SEEED_T2000        :
                 nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
+                nRF52_bl_check("TRACKER L1")  ? NRF52_SEEED_WIO_L1       : /* TBD */
 #endif /* EXCLUDE_WIP */
                 nRF52_board;
 
