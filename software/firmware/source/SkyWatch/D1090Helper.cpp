@@ -176,6 +176,8 @@ void D1090_setup()
       break;
     }
 
+    mode_s_init(&modes_state);
+
     D1090_Data_TimeMarker = millis();
   }
 }
@@ -240,6 +242,14 @@ void D1090_loop()
   }
 
   interactiveRemoveStaleAircrafts(&modes_state);
+
+  D1090_Acfts_Count = 0;
+  struct mode_s_aircraft *a = modes_state.aircrafts;
+
+  while (a) {
+    D1090_Acfts_Count++;
+    a = a->next;
+  }
 }
 
 void D1090_Out(byte *buf, size_t size)

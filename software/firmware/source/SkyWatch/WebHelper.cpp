@@ -928,7 +928,7 @@ void handleSettings_slave() {
 </select>\
 </td>\
 </tr>\
-<!-- <tr>\
+<tr>\
 <th align=left>Volume</th>\
 <td align=right>\
 <select name='volume'>\
@@ -938,7 +938,7 @@ void handleSettings_slave() {
 </select>\
 </td>\
 </tr>\
-<tr>\
+<!-- <tr>\
 <th align=left>LED ring direction</th>\
 <td align=right>\
 <select name='pointer'>\

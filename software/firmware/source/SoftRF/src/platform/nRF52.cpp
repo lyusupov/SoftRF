@@ -822,15 +822,13 @@ static void nRF52_setup()
   pinMode(PIN_LED4, INPUT);
 
   nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
-#if !defined(EXCLUDE_WIP)
-                nRF52_bl_check("T1000-E Pro") ? NRF52_SEEED_X1           : /* TBD */
-#endif /* EXCLUDE_WIP */
                 nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
                 nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
                 nRF52_bl_check("ThinkNodeM3") ? NRF52_ELECROW_TN_M3      :
                 nRF52_bl_check("ThinkNodeM6") ? NRF52_ELECROW_TN_M6      :
                 nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
 #if !defined(EXCLUDE_WIP)
+                nRF52_bl_check("X1-BOOT")     ? NRF52_SEEED_X1           :
                 nRF52_bl_check("T2000")       ? NRF52_SEEED_T2000        :
                 nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
 #endif /* EXCLUDE_WIP */
@@ -969,10 +967,10 @@ static void nRF52_setup()
 
     if (nRF52_has_vibra) {
       nRF52_board        = NRF52_SEEED_X1;
-      hw_info.model      = SOFTRF_MODEL_CARD;
-      nRF5x_Device_Model = "Card Edition";
+      hw_info.model      = SOFTRF_MODEL_CARD_MK2;
+      nRF5x_Device_Model = "Card Mark II";
       nRF52_USB_VID      = 0x2886; /* Seeed Technology */
-      nRF52_USB_PID      = 0x0057; /* SenseCAP T1000-E */
+      nRF52_USB_PID      = 0x0057; /* TBD */
 
       if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
@@ -4273,6 +4271,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_SOLARIS  ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_THRESHOLD_LIPO   :
                                                     BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -4286,6 +4285,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_SOLARIS  ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_CUTOFF_LIPO   :
                                                     BATTERY_CUTOFF_NIMHX2;
     break;
 

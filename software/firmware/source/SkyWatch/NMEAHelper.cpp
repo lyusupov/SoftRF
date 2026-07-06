@@ -655,20 +655,28 @@ bool NMEA_Request_Settings()
 
 bool NMEA_Save_Settings()
 {
-    int nmea_out = NMEA_UART;
+    int nmea_out = settings->s.nmea_out;
+    int gdl90    = settings->s.gdl90;
+    int d1090    = settings->s.d1090;
 
     if (hw_info.model == SOFTRF_MODEL_WEBTOP_USB &&
         settings->m.connection == CON_USB) {
-      nmea_out = NMEA_USB;
+      if (nmea_out != NMEA_OFF ) { nmea_out = NMEA_USB;  }
+      if (gdl90    != GDL90_OFF) { gdl90    = GDL90_USB; }
+      if (d1090    != D1090_OFF) { d1090    = D1090_USB; }
+    } else {
+      if (nmea_out != NMEA_OFF ) { nmea_out = NMEA_UART;  }
+      if (gdl90    != GDL90_OFF) { gdl90    = GDL90_UART; }
+      if (d1090    != D1090_OFF) { d1090    = D1090_UART; }
     }
 
     snprintf_P(NMEABuffer, sizeof(NMEABuffer),
             PSTR("$PSRFC,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d*"),
             PSRFC_VERSION, settings->s.mode, settings->s.rf_protocol,
             settings->s.band, settings->s.aircraft_type, settings->s.alarm,
-            settings->s.txpower, BUZZER_OFF, LED_OFF,
+            settings->s.txpower, settings->s.volume, LED_OFF,
             settings->s.nmea_g, settings->s.nmea_p, settings->s.nmea_l,
-            settings->s.nmea_s, nmea_out, GDL90_OFF, D1090_OFF,
+            settings->s.nmea_s, nmea_out, gdl90, d1090,
             settings->s.stealth, settings->s.no_track, settings->s.power_save );
 
     NMEA_add_checksum(NMEABuffer, sizeof(NMEABuffer) - strlen(NMEABuffer));
