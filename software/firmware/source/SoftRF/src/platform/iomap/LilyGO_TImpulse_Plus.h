@@ -33,7 +33,7 @@
 #define SOC_GPIO_PIN_TIP_OLED_SCL  _PINNUM(0, 15) // P0.15
 
 // 2nd I2C bus (ICM20948, SGM41562)
-#define SOC_GPIO_PIN_TIP_SDA       _PINNUM(1,  9) // P1.08
+#define SOC_GPIO_PIN_TIP_SDA       _PINNUM(1,  8) // P1.08
 #define SOC_GPIO_PIN_TIP_SCL       _PINNUM(0, 11) // P0.11
 
 // Sensors
@@ -48,8 +48,8 @@
 #define SOC_GPIO_PIN_TIP_MOTOR     _PINNUM(0, 22) // P0.22 active HIGH
 
 /* ZD25WQ32C QSPI flash */
-#define SOC_GPIO_PIN_SFL_TIP_MOSI  _PINNUM(1,  9) // P1.09
-#define SOC_GPIO_PIN_SFL_TIP_MISO  _PINNUM(0,  6) // P0.06
+#define SOC_GPIO_PIN_SFL_TIP_MOSI  _PINNUM(0,  6) // P0.06
+#define SOC_GPIO_PIN_SFL_TIP_MISO  _PINNUM(1,  9) // P1.09
 #define SOC_GPIO_PIN_SFL_TIP_SCK   _PINNUM(0,  4) // P0.04
 #define SOC_GPIO_PIN_SFL_TIP_SS    _PINNUM(0, 12) // P0.12
 #define SOC_GPIO_PIN_SFL_TIP_HOLD  _PINNUM(0, 26) // P0.26

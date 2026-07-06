@@ -80,14 +80,16 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
   NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
   NRF52_LILYGO_TULTIMA,
+  NRF52_LILYGO_TIMPULSE_PLUS,
   NRF52_SEEED_T1000E,
-  NRF52_HELTEC_T114,
-  NRF52_ELECROW_TN_M1,
-  NRF52_ELECROW_TN_M3,
-  NRF52_ELECROW_TN_M6,
   NRF52_SEEED_WIO_L1,
   NRF52_SEEED_T2000,
   NRF52_SEEED_X1,
+  NRF52_HELTEC_T114,
+  NRF52_HELTEC_T1,
+  NRF52_ELECROW_TN_M1,
+  NRF52_ELECROW_TN_M3,
+  NRF52_ELECROW_TN_M6,
 };
 
 enum nRF52_display_id {
@@ -134,6 +136,7 @@ struct rst_info {
 #define DRV2605_ADDRESS       (0x5A)
 #define MPU9250_ADDRESS       (0x68)
 #define ICM20948_ADDRESS      (0x68)
+#define ICM20948_ADDRESS_ALT  (0x69)
 #define BME280_ADDRESS        (0x77)
 #define BHI260AP_ADDRESS_L    (0x28)
 #define BHI260AP_ADDRESS_H    (0x29)
@@ -142,6 +145,7 @@ struct rst_info {
 #define SC7A20H_ADDRESS_H     (0x19)
 #define BMM350_ADDRESS        (0x14)
 #define SPA06_ADDRESS         (0x77) /* SDO = HIGH */
+#define SGM41562_ADDRESS      (0x03)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
@@ -156,11 +160,13 @@ struct rst_info {
 
 #include "iomap/LilyGO_TEcho.h"
 #include "iomap/LilyGO_TUltima.h"
+#include "iomap/LilyGO_TImpulse_Plus.h"
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Seeed_T2000.h"
 #include "iomap/Seeed_Wio_L1.h"
 #include "iomap/Seeed_X1.h"
 #include "iomap/Heltec_T114.h"
+#include "iomap/Heltec_T1.h"
 #include "iomap/Elecrow_ThinkNode_M1.h"
 #include "iomap/Elecrow_ThinkNode_M3.h"
 #include "iomap/Elecrow_ThinkNode_M6.h"
