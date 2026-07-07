@@ -46,9 +46,9 @@
 #define SOC_GPIO_PIN_T1_BUTTON2   _PINNUM(0, 14) // P0.14
 
 /* LED */
-#define SOC_GPIO_LED_T1_GREEN     _PINNUM(0, 16) // P0.16 active LOW
+#define SOC_GPIO_LED_T1_WHITE     _PINNUM(0, 16) // P0.16 active HIGH
 
-/* buzzer */
+/* buzzer (PAM8904EGPR) */
 #define SOC_GPIO_PIN_T1_BUZZER    _PINNUM(0,  9) // P0.09
 #define SOC_GPIO_PIN_T1_VM_1      _PINNUM(1,  2) // P1.02
 #define SOC_GPIO_PIN_T1_VM_2      _PINNUM(1,  5) // P1.05

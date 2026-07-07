@@ -244,10 +244,11 @@ enum {
   ZD25WQ16B_INDEX,
 
   GD25Q64C_INDEX,
+#if !defined(EXCLUDE_WIP)
   P25Q16H_INDEX,
-
   W25Q128JV_INDEX,
-
+  ZD25WQ32C_INDEX,
+#endif /* EXCLUDE_WIP */
   EXTERNAL_FLASH_DEVICE_COUNT
 };
 
@@ -259,10 +260,14 @@ static SPIFlash_Device_t possible_devices[] = {
   [ZD25WQ16B_INDEX]  = ZD25WQ16B,
   // Seeed T1000-E
   [GD25Q64C_INDEX]   = GD25Q64C,
+#if !defined(EXCLUDE_WIP)
   // Seeed Wio L1
   [P25Q16H_INDEX]    = P25Q16H,
   // LilyGO T-Ultima
   [W25Q128JV_INDEX]  = W25Q128JV_PM,
+  // LilyGO T-Impulse Plus
+  [ZD25WQ32C_INDEX]  = ZD25WQ32C,
+#endif /* EXCLUDE_WIP */
 };
 
 // USB Mass Storage object
@@ -821,17 +826,17 @@ static void nRF52_setup()
   pinMode(PIN_LED3, INPUT);
   pinMode(PIN_LED4, INPUT);
 
-  nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2 :
-                nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E       :
-                nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114        :
-                nRF52_bl_check("ThinkNodeM3") ? NRF52_ELECROW_TN_M3      :
-                nRF52_bl_check("ThinkNodeM6") ? NRF52_ELECROW_TN_M6      :
-                nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1      :
+  nRF52_board = nRF52_bl_check("TECHOBOOT")   ? NRF52_LILYGO_TECHO_REV_2   :
+                nRF52_bl_check("T1000-E")     ? NRF52_SEEED_T1000E         :
+                nRF52_bl_check("HT-n5262")    ? NRF52_HELTEC_T114          :
+                nRF52_bl_check("ThinkNodeM3") ? NRF52_ELECROW_TN_M3        :
+                nRF52_bl_check("ThinkNodeM6") ? NRF52_ELECROW_TN_M6        :
+                nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1        :
 #if !defined(EXCLUDE_WIP)
-                nRF52_bl_check("X1-BOOT")     ? NRF52_SEEED_X1           :
-                nRF52_bl_check("T2000")       ? NRF52_SEEED_T2000        :
-                nRF52_bl_check("XIAO")        ? NRF52_SEEED_WIO_L1       : /* TBD */
-                nRF52_bl_check("TRACKER L1")  ? NRF52_SEEED_WIO_L1       : /* TBD */
+                nRF52_bl_check("X1-BOOT")     ? NRF52_SEEED_X1             :
+                nRF52_bl_check("T-Impulse")   ? NRF52_LILYGO_TIMPULSE_PLUS :
+                nRF52_bl_check("T2000")       ? NRF52_SEEED_T2000          :
+                nRF52_bl_check("TRACKER L1")  ? NRF52_SEEED_WIO_L1         :
 #endif /* EXCLUDE_WIP */
                 nRF52_board;
 
@@ -1632,7 +1637,6 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       hw_info.touch    = TOUCH_TTP223;
-      hw_info.haptic   = HAPTIC_DRV2605;
       break;
 
     case NRF52_SEEED_WIO_L1:
@@ -1706,8 +1710,8 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_T1_EN, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_T1_EN, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_T1_GREEN, OUTPUT);
-      digitalWrite(SOC_GPIO_LED_T1_GREEN, LED_STATE_ON);
+      pinMode(SOC_GPIO_LED_T1_WHITE, OUTPUT);
+      digitalWrite(SOC_GPIO_LED_T1_WHITE, LED_STATE_ON);
 
       lmic_pins.nss  = SOC_GPIO_PIN_T1_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_T1_RST;

@@ -70,10 +70,10 @@ static void D1090_Parse_Character(char c)
       uint8_t *msg = (uint8_t *) &D1090Buffer[ndx+1];
 
       for (int i=0; i<28; i+=2) {
-        if (msg[1 + i] == ';') break;
+        if (msg[i] == ';') break;
 
         uint8_t out = 0;
-        uint8_t h = msg[1 + i];
+        uint8_t h = msg[i];
 
         if (isdigit(h)) {
           out |= ((h - '0'     ) << 4);
@@ -83,7 +83,7 @@ static void D1090_Parse_Character(char c)
           out |= ((h - 'A' + 10) << 4);
         }
 
-        uint8_t l = msg[1 + i + 1];
+        uint8_t l = msg[i + 1];
 
         if (isdigit(l)) {
           out |= (l - '0'     );
