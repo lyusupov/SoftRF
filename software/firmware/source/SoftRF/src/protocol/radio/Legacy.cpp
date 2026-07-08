@@ -627,16 +627,16 @@ size_t legacy_encode(void *legacy_pkt, ufo_t *this_aircraft) {
     pkt->hp            = 0x1d; /* 10 m */
     pkt->vp            = 0x11; /* 20 m */
 
-    pkt->_unk1         = 0;
-    pkt->_unk2         = 0;
-    pkt->_unk3         = 3;
-    pkt->_unk4         = 0;
-    pkt->_unk5         = 3;
-    pkt->_unk6         = 0;
-    pkt->_unk7         = 0;
-    pkt->_unk8         = 0;
-    pkt->_unk9         = 0; /* TBD */
-    pkt->_unk10        = 0;
+    pkt->urgency       = 0;
+    pkt->address_ext   = 0;
+    pkt->msg_type_ext  = 0;
+    pkt->ver           = 3;
+    pkt->ver_max       = 3;
+    pkt->qsec          = 0;
+    pkt->acc_vel       = 0;
+    pkt->sil           = 0;
+    pkt->sda           = 0;
+    pkt->nic           = 0;
 
     key_v7[0]          = wpkt[0];
     key_v7[1]          = wpkt[1];

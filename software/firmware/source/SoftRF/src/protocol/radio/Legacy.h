@@ -50,6 +50,7 @@ enum
 	ADDR_TYPE_ICAO,
 	ADDR_TYPE_FLARM,
 	ADDR_TYPE_ANONYMOUS, /* FLARM stealth, OGN */
+
 	ADDR_TYPE_P3I,
 	ADDR_TYPE_FANET
 };
@@ -152,38 +153,40 @@ typedef struct {
  */
 
 typedef struct {
+    /****** header ******/
+    unsigned int addr         :24;
+    unsigned int type         : 4; /* 2 new protocol, 0 old protocol, 1 other messages */
+    unsigned int addr_type    : 2;
+    unsigned int urgency      : 2;
     /********************/
-    unsigned int addr:24;
-    unsigned int type:4;     /* 2 new protocol, 0 old protocol, 1 other messages */
-    unsigned int addr_type:3;
-    unsigned int _unk1:1;
-    /********************/
-    unsigned int _unk2:22;   /* always 0 ? */
-    unsigned int stealth:1;
-    unsigned int no_track:1;
-    unsigned int _unk3:2;    /* always 1 ? */
-    unsigned int _unk4:2;    /* always 0 ? */
-    unsigned int _unk5:2;    /* always 1 ? */
-    unsigned int _unk6:2;    /* always 0 ? */
-    /********************/
-    unsigned int _unk7:2;    /* always 0 ? */
-    unsigned int tstamp:4;   /* the LS 4 bits of timestamp (unix epoch) */
-    unsigned int aircraft_type:4;
-    unsigned int _unk8:1;    /* always 0 ? */
-    unsigned int alt:13;     /* meters + 1000, enscaled(12,1) */
+    unsigned int address_ext  :16; /* always 0 ? */
+    unsigned int msg_type_ext : 6; /* always 0 ? */
+    unsigned int stealth      : 1;
+    unsigned int no_track     : 1;
 
-    unsigned int lat:20;     /* rounded and with MS bits removed */
-    unsigned int lon:20;     /* rounded and with MS bits removed */
-    int          turn:9;     /* degs/sec times 20, enscaled(6,2) */
-    unsigned int hs:10;      /* m/s times 10, enscaled(8,2) */
-    int          vs:9;       /* m/s times 10, enscaled(6,2) */
-    unsigned int course:10;  /* degrees (0-360) times 2 */
-    unsigned int airborne:2; /* 1 when stationary, 2 when moving, 3 when circling */
+    /****** payload *****/
+    unsigned int ver          : 4; /* always 1 ? */
+    unsigned int ver_max      : 4; /* always 1 ? */
+    /********************/
+    unsigned int qsec         : 2; /* always 0 ? */
+    unsigned int tstamp       : 4; /* the LS 4 bits of timestamp (unix epoch) */
+    unsigned int aircraft_type: 5;
+    unsigned int alt          :13; /* meters + 1000, enscaled(12,1) */
 
-    unsigned int hp:6;       /* meters times 10, enscaled(3,3) */
-    unsigned int vp:5;       /* meters times  4, enscaled(2,3) */
-    unsigned int _unk9:5;
-    unsigned int _unk10:8;   /* always 0 ? */
+    unsigned int lat          :20; /* rounded and with MS bits removed */
+    unsigned int lon          :20; /* rounded and with MS bits removed */
+    int          turn         : 9; /* degs/sec times 20, enscaled(6,2) */
+    unsigned int hs           :10; /* m/s times 10, enscaled(8,2) */
+    int          vs           : 9; /* m/s times 10, enscaled(6,2) */
+    unsigned int course       :10; /* degrees (0-360) times 2 */
+    unsigned int airborne     : 2; /* 1 when stationary, 2 when moving, 3 when circling */
+
+    unsigned int hp           : 6; /* meters times 10, enscaled(3,3) */
+    unsigned int vp           : 5; /* meters times  4, enscaled(2,3) */
+    unsigned int acc_vel      : 5;
+    unsigned int sil          : 2; /* always 0 ? */
+    unsigned int sda          : 2; /* always 0 ? */
+    unsigned int nic          : 4; /* always 0 ? */
     /********************/
 } __attribute__((packed)) legacy_v7_packet_t;
 
