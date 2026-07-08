@@ -45,11 +45,19 @@ const char *EPD_Aircraft_Type[] = {
   [AIRCRAFT_TYPE_PARAGLIDER] = "Paraglider",
   [AIRCRAFT_TYPE_POWERED]    = "Powered",
   [AIRCRAFT_TYPE_JET]        = "Jet",
+#if defined(EXCLUDE_AIR7)
   [AIRCRAFT_TYPE_UFO]        = "UFO",
+#else
+  [AIRCRAFT_TYPE_GYROCOPTER] = "Gyrocopter",
+#endif /* EXCLUDE_AIR7 */
   [AIRCRAFT_TYPE_BALLOON]    = "Balloon",
   [AIRCRAFT_TYPE_ZEPPELIN]   = "Zeppelin",
   [AIRCRAFT_TYPE_UAV]        = "UAV",
+#if defined(EXCLUDE_AIR7)
   [AIRCRAFT_TYPE_RESERVED]   = "Reserved",
+#else
+  [AIRCRAFT_TYPE_AIRFIELD]   = "Airfield",
+#endif /* EXCLUDE_AIR7 */
   [AIRCRAFT_TYPE_STATIC]     = "Static"
 };
 
