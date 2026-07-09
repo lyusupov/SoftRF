@@ -23,8 +23,8 @@
 #include <Arduino.h>
 #endif /* ARDUINO */
 
-#define SKYWATCH_FIRMWARE_VERSION  "1.2"
-#define SKYWATCH_USB_FW_VERSION    0x0102
+#define SKYWATCH_FIRMWARE_VERSION  "1.3"
+#define SKYWATCH_USB_FW_VERSION    0x0103
 #define SKYWATCH_IDENT    "SkyWatch"
 #define WEBTOP_IDENT      "WebTop"
 #define SOFTRF_IDENT      "SoftRF"
