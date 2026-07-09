@@ -181,6 +181,8 @@ static const USB_Device_List_t supported_USB_devices[] = {
   { 0x303a, 0x820a, USBSER_TYPE_CDC, SOFTRF_MODEL_INK, "Ink", "Edition" },
   { 0x303a, 0x82d9, USBSER_TYPE_CDC, SOFTRF_MODEL_GIZMO, "Gizmo", "Edition" },
   { 0x2886, 0x0057, USBSER_TYPE_CDC, SOFTRF_MODEL_CARD, "Card", "Edition" },
+  { 0x303a, 0x8343, USBSER_TYPE_CDC, SOFTRF_MODEL_CONCORDE, "Concorde", "Edition" },
+  { 0x303a, 0x8367, USBSER_TYPE_CDC, SOFTRF_MODEL_PRIME_MK4, "Prime 4", "Edition" },
   { 0x10c4, 0xea60, USBSER_TYPE_CP210X, SOFTRF_MODEL_UNKNOWN, "CP210X", "device" },
   { 0x0403, 0x6001, USBSER_TYPE_FTDI, SOFTRF_MODEL_UNKNOWN, "FT232", "device" },
   { 0x1a86, 0x7523, USBSER_TYPE_CH34X, SOFTRF_MODEL_UNKNOWN, "CH340", "device" },
