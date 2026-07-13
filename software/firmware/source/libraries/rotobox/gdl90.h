@@ -60,6 +60,7 @@
 #define GDL90_MSG_LEN_OWNSHIP_GEOMETRIC     (4)
 #define GDL90_MSG_LEN_SHORT_UAT             (21)
 #define GDL90_MSG_LEN_LONG_UAT              (37)
+#define GDL90_MSG_LEN_FOREFLIGHT            (38)
 #define GDL90_MSG_LEN_UPLINK_DATA           (435)
 
 #define GDL90_FLAG_BYTE         0x7E
@@ -226,7 +227,8 @@ typedef enum {
     MSG_ID_OWNSHIP_GEOMETRIC    = 11,
     MSG_ID_TRAFFIC_REPORT       = 20,
     MSG_ID_BASIC_REPORT         = 30,
-    MSG_ID_LONG_REPORT          = 31
+    MSG_ID_LONG_REPORT          = 31,
+    MSG_ID_FOREFLIGHT           = 101,
 } gdl_msg_id_t;
 
 #pragma pack(push, 1)

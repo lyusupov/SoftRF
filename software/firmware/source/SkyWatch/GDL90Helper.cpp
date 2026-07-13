@@ -38,10 +38,11 @@ static unsigned long GDL90_Data_TimeMarker = 0;
 static unsigned long GDL90_HeartBeat_TimeMarker = 0;
 static unsigned long GDL90_OwnShip_TimeMarker = 0;
 static unsigned char gdl90_ringbuf[GDL90_RINGBUF_SIZE];
-static unsigned int gdl90buf_head = 0;
+static unsigned long gdl90buf_head = 0;
 static unsigned char prev_c = 0;
 
-gdl_message_t message;
+static gdl_message_t message;
+static gdl_message_escaped_t escapedMsg;
 
 gdl90_msg_heartbeat heartbeat;
 gdl90_msg_traffic_report_t gdl_traffic;
@@ -77,17 +78,17 @@ static void GDL90_Parse_Character(char c)
       return;
     } else if (prev_c == GDL90_CONTROL_ESCAPE) {
       prev_c = c;
-      c ^= GDL90_ESCAPE_BYTE;
+      gdl90_ringbuf[gdl90buf_head % GDL90_RINGBUF_SIZE] = c ^ GDL90_ESCAPE_BYTE;
     } else {
       prev_c = c;
+      gdl90_ringbuf[gdl90buf_head % GDL90_RINGBUF_SIZE] = c;
     }
 
-    gdl90_ringbuf[gdl90buf_head % GDL90_RINGBUF_SIZE] = c;
     gdl90buf_head++;
 
     msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_HEARTBEAT + 2 /* FC */ + 1 /* flag */;
     gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
+    if (c == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_HEARTBEAT) {
 
@@ -96,7 +97,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
-      GDL90_Out(buf, msg_size);
+      gdl90_escape_message_for_tx(&message, &escapedMsg);
+      GDL90_Out(escapedMsg.data, escapedMsg.length);
 
       if (decode_gdl90_heartbeat(&message, &heartbeat)) {
 
@@ -110,7 +112,7 @@ static void GDL90_Parse_Character(char c)
 
     msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_GEOMETRIC + 2 /* FC */ + 1 /* flag */;
     gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
+    if (c == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_GEOMETRIC) {
 
@@ -119,7 +121,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
-      GDL90_Out(buf, msg_size);
+      gdl90_escape_message_for_tx(&message, &escapedMsg);
+      GDL90_Out(escapedMsg.data, escapedMsg.length);
 
       decode_gdl90_ownship_geo_altitude(&message, &geo_altitude);
 //    print_gdl90_ownship_geo_altitude(&geo_altitude);
@@ -127,7 +130,7 @@ static void GDL90_Parse_Character(char c)
 
     msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_TRAFFIC_REPORT + 2 /* FC */ + 1 /* flag */;
     gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
+    if (c == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_TRAFFIC_REPORT) {
 
@@ -136,7 +139,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
-      GDL90_Out(buf, msg_size);
+      gdl90_escape_message_for_tx(&message, &escapedMsg);
+      GDL90_Out(escapedMsg.data, escapedMsg.length);
 
       if (decode_gdl90_traffic_report(&message, &gdl_traffic)) {
 
@@ -183,7 +187,7 @@ static void GDL90_Parse_Character(char c)
 
     msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_OWNSHIP_REPORT + 2 /* FC */ + 1 /* flag */;
     gdl90buf_tail = gdl90buf_head - msg_size;
-    if (c == GDL90_FLAG_BYTE && 
+    if (c == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
         gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_OWNSHIP_REPORT) {
 
@@ -192,7 +196,8 @@ static void GDL90_Parse_Character(char c)
           buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
       }
 
-      GDL90_Out(buf, msg_size);
+      gdl90_escape_message_for_tx(&message, &escapedMsg);
+      GDL90_Out(escapedMsg.data, escapedMsg.length);
 
       if (decode_gdl90_traffic_report(&message, &ownship)) {
 
@@ -221,6 +226,23 @@ static void GDL90_Parse_Character(char c)
         GDL90_OwnShip_TimeMarker = millis();
       }
     }
+
+#if defined(DO_GDL90_FF_EXT)
+    msg_size = 1 /* flag */ + 1 /* id */ + GDL90_MSG_LEN_FOREFLIGHT + 2 /* FC */ + 1 /* flag */;
+    gdl90buf_tail = gdl90buf_head - msg_size;
+    if (c == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[ gdl90buf_tail    % GDL90_RINGBUF_SIZE] == GDL90_FLAG_BYTE &&
+        gdl90_ringbuf[(gdl90buf_tail+1) % GDL90_RINGBUF_SIZE] == MSG_ID_FOREFLIGHT) {
+
+      unsigned char *buf = (unsigned char *) &message;
+      for (uint8_t i=0; i < msg_size; i++) {
+          buf[i] = gdl90_ringbuf[(gdl90buf_tail + i) % GDL90_RINGBUF_SIZE];
+      }
+
+      gdl90_escape_message_for_tx(&message, &escapedMsg);
+      GDL90_Out(escapedMsg.data, escapedMsg.length);
+    }
+#endif /* DO_GDL90_FF_EXT */
 }
 
 void GDL90_setup()

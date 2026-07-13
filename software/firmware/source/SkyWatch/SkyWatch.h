@@ -467,4 +467,6 @@ extern bool inServiceMode;
 
 extern void shutdown(const char *);
 
+#define  DO_GDL90_FF_EXT
+
 #endif /* SKYWATCH_H */
