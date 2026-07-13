@@ -1056,7 +1056,10 @@ static void nRF52_setup()
       Wire.setPins(SOC_GPIO_PIN_TULTIMA_SDA, SOC_GPIO_PIN_TULTIMA_SCL);
       break;
     case NRF52_LILYGO_TIMPULSE_PLUS:
-      Wire.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
+      Wire.setPins(SOC_GPIO_PIN_TIP_OLED_SDA, SOC_GPIO_PIN_TIP_OLED_SCL);
+#if WIRE_INTERFACES_COUNT > 1
+      Wire1.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
+#endif /* WIRE_INTERFACES_COUNT */
       break;
     case NRF52_SEEED_WIO_L1:
       Wire.setPins(SOC_GPIO_PIN_L1_OLED_SDA, SOC_GPIO_PIN_L1_OLED_SCL); /* TBD */
@@ -3885,9 +3888,10 @@ static nRF52_display_id nRF52_EPD_ident()
 #if defined(USE_OLED)
 bool nRF52_OLED_probe_func()
 {
-  /* SH1106 I2C OLED probing */
   Wire.begin();
-  Wire.beginTransmission(SH1106_OLED_I2C_ADDR_ALT);
+  uint8_t addr = (nRF52_board == NRF52_SEEED_WIO_L1) ?
+                 SH1106_OLED_I2C_ADDR_ALT : SSD1306_OLED_I2C_ADDR;
+  Wire.beginTransmission(addr);
   return (Wire.endTransmission() == 0);
 }
 #endif /* USE_OLED */
@@ -3907,26 +3911,10 @@ static byte nRF52_Display_setup()
     u8x8_i2c.setI2CAddress(SH1106_OLED_I2C_ADDR_ALT << 1);
     rval = OLED_setup();
 #endif /* USE_OLED */
-  } else if (nRF52_board == NRF52_ELECROW_TN_M6) {
+  } else if (nRF52_board == NRF52_ELECROW_TN_M6 ||
+             nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
 #if defined(USE_OLED)
-    Wire.begin();
-    Wire.beginTransmission(SSD1306_OLED_I2C_ADDR);
-    if (Wire.endTransmission() == 0) {
-      u8x8 = new U8X8_SSD1306_128X64_NONAME_HW_I2C(U8X8_PIN_NONE);
-      rval = DISPLAY_OLED_TTGO;
-      Wire.end();
-    }
-    if (u8x8) {
-      u8x8->begin();
-      u8x8->setFlipMode(OLED_flip);
-      u8x8->setFont(u8x8_font_chroma48medium8_r);
-      u8x8->clear();
-
-      u8x8->draw2x2String( 2, 2, SoftRF_text1);
-
-      u8x8->drawString   ( 3, 6, SOFTRF_FIRMWARE_VERSION);
-      u8x8->drawString   (11, 6, ISO3166_CC[settings->band]);
-    }
+    rval = OLED_setup();
 #endif /* USE_OLED */
   } else if (nRF52_board == NRF52_HELTEC_T114) {
 #if defined(USE_TFT)

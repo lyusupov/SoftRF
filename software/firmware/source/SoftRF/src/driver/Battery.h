@@ -58,6 +58,7 @@ enum
 	PMU_AXP2101,
 	PMU_SY6970,
 	BMU_BQ27220,
+	BMU_SGM41562,
 };
 
 void    Battery_setup(void);

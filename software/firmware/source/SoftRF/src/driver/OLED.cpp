@@ -175,6 +175,7 @@ byte OLED_setup() {
     rval = (hw_info.model == SOFTRF_MODEL_MINI     ? DISPLAY_OLED_HELTEC :
             hw_info.model == SOFTRF_MODEL_BRACELET ? DISPLAY_OLED_0_49   :
             hw_info.model == SOFTRF_MODEL_DECENT   ? DISPLAY_OLED_1_3    :
+            hw_info.model == SOFTRF_MODEL_STYLUS   ? DISPLAY_OLED_0_49   :
             DISPLAY_OLED_TTGO);
   }
 
