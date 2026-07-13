@@ -919,7 +919,8 @@ static void nRF52_setup()
   if (nRF52_board != NRF52_LILYGO_TULTIMA &&
       nRF52_board != NRF52_ELECROW_TN_M1  &&
       nRF52_board != NRF52_ELECROW_TN_M3  &&
-      nRF52_board != NRF52_ELECROW_TN_M6) {
+      nRF52_board != NRF52_ELECROW_TN_M6  &&
+      nRF52_board != NRF52_LILYGO_TIMPULSE_PLUS) {
 #if !defined(EXCLUDE_IMU)
     pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
     delay(5);
@@ -1046,6 +1047,21 @@ static void nRF52_setup()
     }
 
     pinMode(SOC_GPIO_PIN_SFL_M6_EN, INPUT_PULLUP);
+  }
+
+  if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
+    hw_info.model      = SOFTRF_MODEL_STYLUS;
+    nRF5x_Device_Model = "Stylus Edition";
+
+    if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+        reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+      NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+      pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+      pinMode(SOC_GPIO_PIN_TIP_BUTTON, INPUT_PULLUP_SENSE); /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
+      nRF52_system_off();
+    }
   }
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -4382,6 +4398,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_THRESHOLD_LIPO   :
                                                     BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -4396,6 +4413,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_CUTOFF_LIPO   :
                                                     BATTERY_CUTOFF_NIMHX2;
     break;
 

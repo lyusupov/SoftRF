@@ -182,6 +182,7 @@ struct rst_info {
                                hw_info.model == SOFTRF_MODEL_POCKET  ? SOC_GPIO_LED_M3_GREEN : \
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? SOC_GPIO_LED_M6_RED  : \
                                hw_info.model == SOFTRF_MODEL_DECENT  ? SOC_GPIO_LED_L1_GREEN : \
+                               hw_info.model == SOFTRF_MODEL_STYLUS  ? SOC_UNUSED_PIN        : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_GREEN : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
