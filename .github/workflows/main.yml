@@ -33,7 +33,8 @@ jobs:
             'esp32:esp32:esp32h2',
             'esp32:esp32:esp32p4',
             'STM32:stm32:Nucleo_64',
-            'STMicroelectronics:stm32:GenF1',
+            'STM32:stm32:GenF1',
+            #'STMicroelectronics:stm32:GenF1',
             'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WLE5CCUX',
             'STMicroelectronics:stm32:GenWL:pnum=GENERIC_WL55CCUX',
             'raspberry',
@@ -337,6 +338,14 @@ jobs:
               arduino --pref "custom_xserial=Nucleo_64_none"       --save-prefs ;
               arduino --pref "custom_xusb=Nucleo_64_FS"            --save-prefs ;
             fi ;
+            if [[ "$BOARD" =~ "STM32:stm32:GenF1" ]]; then
+              arduino --pref "custom_pnum=GenF1_BLUEPILL_F103CB"   --save-prefs ;
+              arduino --pref "custom_opt=GenF1_osstd"              --save-prefs ;
+              arduino --pref "custom_rtlib=GenF1_nano"             --save-prefs ;
+              arduino --pref "custom_usb=GenF1_none"               --save-prefs ;
+              arduino --pref "custom_xserial=GenF1_generic"        --save-prefs ;
+              arduino --pref "custom_xusb=GenF1_FS"                --save-prefs ;
+            fi ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "STMicroelectronics:stm32:" ]]; then
@@ -421,7 +430,7 @@ jobs:
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/lolren/NRF54L15-Clean-Arduino-core/refs/heads/main/package_nrf54l15clean_index.json" --save-prefs ;
             # arduino --pref "boardsmanager.additional.urls=https://github.com/lolren/nrf54-arduino-core/releases/download/v0.7.0/package_nrf54l15clean_index.json" --save-prefs ;
-            arduino --install-boards nrf54l15clean:nrf54l15clean:1.0.0 ;
+            arduino --install-boards nrf54l15clean:nrf54l15clean:1.0.1 ;
             arduino --pref "custom_clean_cpu=xiao_nrf54l15_cpu128" --save-prefs ;
             arduino --pref "custom_clean_vpr=xiao_nrf54l15_off"    --save-prefs ;
             arduino --pref "custom_clean_zigbee=xiao_nrf54l15_off" --save-prefs ;
