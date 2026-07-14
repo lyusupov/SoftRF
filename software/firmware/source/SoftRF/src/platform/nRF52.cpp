@@ -2154,6 +2154,8 @@ static void nRF52_setup()
       hw_info.haptic = HAPTIC_DRV2605;
     }
 
+    pinMode(SOC_GPIO_PIN_X1_BUZZER, INPUT_PULLDOWN);
+
     Wire.beginTransmission(BMM350_ADDRESS);
     if (Wire.endTransmission() == 0) {
       hw_info.mag = MAG_BMM350;
@@ -4492,6 +4494,10 @@ static float nRF52_Battery_param(uint8_t param)
         case NRF52_SEEED_T2000:
           bat_adc_pin = SOC_GPIO_PIN_T2000_BATTERY;
           mult        = SOC_ADC_T2000_VOLTAGE_DIV;
+          break;
+        case NRF52_LILYGO_TIMPULSE_PLUS:
+          bat_adc_pin = SOC_GPIO_PIN_TIP_BATTERY;
+          mult        = SOC_ADC_VOLTAGE_DIV;
           break;
         case NRF52_LILYGO_TECHO_REV_0:
         case NRF52_LILYGO_TECHO_REV_1:
