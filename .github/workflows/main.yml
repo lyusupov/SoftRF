@@ -344,7 +344,6 @@ jobs:
               arduino --pref "custom_rtlib=GenF1_nano"             --save-prefs ;
               arduino --pref "custom_usb=GenF1_none"               --save-prefs ;
               arduino --pref "custom_xserial=GenF1_generic"        --save-prefs ;
-              arduino --pref "custom_xusb=GenF1_FS"                --save-prefs ;
             fi ;
             cd $GITHUB_WORKSPACE ;
           fi
