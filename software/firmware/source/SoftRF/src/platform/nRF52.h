@@ -368,11 +368,9 @@ struct rst_info {
 
 #define EXCLUDE_WIP
 
-#if !defined(EXCLUDE_WIP)
-#define USE_OLED                 //  +  6 kb
-//#define EXCLUDE_OLED_BARO_PAGE
-#define EXCLUDE_OLED_049
-#endif /* EXCLUDE_WIP */
+#define USE_OLED                 //  +  7 kb
+#define EXCLUDE_OLED_BARO_PAGE
+//#define EXCLUDE_OLED_049       //  -  2 kb
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"
