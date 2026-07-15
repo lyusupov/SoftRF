@@ -79,7 +79,6 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
   NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
-  NRF52_LILYGO_TULTIMA,
   NRF52_LILYGO_TIMPULSE_PLUS,
   NRF52_SEEED_T1000E,
   NRF52_SEEED_WIO_L1,
@@ -97,7 +96,6 @@ enum nRF52_display_id {
   EP_GDEH0154D67,
   EP_GDEP015OC1,
   EP_DEPG0150BN,
-  EP_GDEY037T03,
   TFT_LH114TIF03,
 };
 
@@ -159,7 +157,6 @@ struct rst_info {
 #define MIDI_CHANNEL_VARIO    2
 
 #include "iomap/LilyGO_TEcho.h"
-#include "iomap/LilyGO_TUltima.h"
 #include "iomap/LilyGO_TImpulse_Plus.h"
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Seeed_T2000.h"
@@ -207,8 +204,6 @@ struct rst_info {
                                SOC_GPIO_PIN_GNSS_TECHO_PPS :            \
                                hw_info.model == SOFTRF_MODEL_COZY     ? \
                                SOC_GPIO_PIN_GNSS_T114_PPS :             \
-                               hw_info.model == SOFTRF_MODEL_NEO      ? \
-                               SOC_GPIO_PIN_GNSS_TULTIMA_PPS :          \
                                hw_info.model == SOFTRF_MODEL_CARD     ? \
                                SOC_GPIO_PIN_GNSS_T1000_PPS :            \
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? \
@@ -362,9 +357,6 @@ struct rst_info {
 
 //#define EXCLUDE_BHI260
 #define USE_BHI260_RAM_FW
-
-/* T-Ultima */
-#define EXCLUDE_PMU
 
 #define EXCLUDE_WIP
 
