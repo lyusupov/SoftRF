@@ -407,7 +407,7 @@ typedef void EPD_Task_t;
 #endif /* USE_TFT */
 
 #if defined(USE_OLED)
-#define U8X8_OLED_I2C_BUS_TYPE          U8X8_SH1106_128X64_NONAME_HW_I2C
+#define U8X8_OLED_I2C_BUS_TYPE          U8X8_SSD1315_128X64_NONAME_HW_I2C
 
 extern bool nRF52_OLED_probe_func();
 

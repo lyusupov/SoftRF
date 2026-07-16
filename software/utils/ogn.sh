@@ -37,6 +37,7 @@ cat $RAW | gawk -v id_type=int -f $GAWK > $CSV
 sqlite3 -init $SQL $DB .exit
 rm -f $CSV
 # wget -q -O - $URL > $CSV
-cat $RAW | gawk -v id_type=hex -f $GAWK > $CSV
+# cat $RAW | gawk -v id_type=hex -f $GAWK > $CSV
+cat $RAW | gawk -v id_type=hex -f $GAWK | grep -v -e ",Paraglider,,," -e ",HangGlider,,," -e ",Ultralight,,," -e ",Unknown,,," -e ",Drone/UAV,,," -e ",Other,,," > $CSV
 python2 $PTN
 rm -f $CSV $RAW
