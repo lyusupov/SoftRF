@@ -39,10 +39,12 @@
 // Sensors
 #define SOC_GPIO_PIN_TIP_INT1      _PINNUM(0,  7) // P0.07 ICM20948
 #define SOC_GPIO_PIN_TIP_INT2      _PINNUM(0, 16) // P0.16 SGM41562 ?
+// touch pad
+#define SOC_GPIO_PIN_TIP_PAD       _PINNUM(1,  4) // P1.04 TTP223
+#define SOC_GPIO_PIN_TIP_AHLB      _PINNUM(0, 13) // P0.13 TTP223
 
-/* button(s) */
-#define SOC_GPIO_PIN_TIP_BUTTON    _PINNUM(1,  4) // P1.04 TTP223, active LOW
-#define SOC_GPIO_PIN_TIP_BOOT      _PINNUM(0, 24) // P0.24 active LOW
+/* button */
+#define SOC_GPIO_PIN_TIP_BUTTON    _PINNUM(0, 24) // P0.24 active LOW
 
 /* Haptic */
 #define SOC_GPIO_PIN_TIP_MOTOR     _PINNUM(0, 22) // P0.22 active HIGH
