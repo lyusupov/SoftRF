@@ -60,7 +60,7 @@
 /* DRV2605 */
 #define SOC_GPIO_PIN_X1_HAPTIC_EN  _PINNUM(1,  5) // P1.05
 
-// Sensors
+/* Sensors */
 #define SOC_GPIO_PIN_X1_INT1       _PINNUM(1,  2) // P1.02 LSM6
 #define SOC_GPIO_PIN_X1_INT2       _PINNUM(1, 12) // P1.12 BMM350
 
