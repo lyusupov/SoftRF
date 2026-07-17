@@ -45,6 +45,7 @@
 #if defined(LED_STATE_ON)
 #undef  LED_STATE_ON
 #define LED_STATE_ON            (hw_info.model == SOFTRF_MODEL_CARD     || \
+                                 hw_info.model == SOFTRF_MODEL_CARD_MK2 || \
                                  hw_info.model == SOFTRF_MODEL_HANDHELD || \
                                  hw_info.model == SOFTRF_MODEL_SOLARIS  || \
                                  hw_info.model == SOFTRF_MODEL_DECENT    ? \
@@ -180,6 +181,7 @@ struct rst_info {
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? SOC_GPIO_LED_M6_RED  : \
                                hw_info.model == SOFTRF_MODEL_DECENT  ? SOC_GPIO_LED_L1_GREEN : \
                                hw_info.model == SOFTRF_MODEL_STYLUS  ? SOC_UNUSED_PIN        : \
+                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ? SOC_GPIO_LED_X1_GREEN: \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_GREEN : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_GREEN : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_GREEN : \
@@ -189,12 +191,14 @@ struct rst_info {
                                hw_info.model == SOFTRF_MODEL_HANDHELD ? SOC_GPIO_LED_M1_BLUE : \
                                hw_info.model == SOFTRF_MODEL_POCKET   ? SOC_GPIO_LED_M3_RED  : \
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? SOC_GPIO_LED_M6_BLUE : \
+                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ? SOC_GPIO_LED_X1_RED  : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_RED : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_RED : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_RED : \
                                SOC_GPIO_LED_PCA10059_RED)
 
-#define SOC_GPIO_LED_BLE      (hw_info.model == SOFTRF_MODEL_POCKET ? SOC_GPIO_LED_M3_BLUE : \
+#define SOC_GPIO_LED_BLE      (hw_info.model == SOFTRF_MODEL_POCKET   ? SOC_GPIO_LED_M3_BLUE : \
+                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ? SOC_GPIO_LED_X1_BLUE : \
                                hw_info.revision == 0 ? SOC_GPIO_LED_TECHO_REV_0_BLUE : \
                                hw_info.revision == 1 ? SOC_GPIO_LED_TECHO_REV_1_BLUE : \
                                hw_info.revision == 2 ? SOC_GPIO_LED_TECHO_REV_2_BLUE : \
@@ -212,6 +216,8 @@ struct rst_info {
                                SOC_GPIO_PIN_GNSS_M3_PPS :               \
                                hw_info.model == SOFTRF_MODEL_SOLARIS  ? \
                                SOC_GPIO_PIN_GNSS_M6_PPS :               \
+                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ? \
+                               SOC_GPIO_PIN_GNSS_X1_PPS :               \
                                hw_info.model == SOFTRF_MODEL_DECENT   ? \
                                SOC_GPIO_PIN_GNSS_L1_PPS : SOC_UNUSED_PIN)
 

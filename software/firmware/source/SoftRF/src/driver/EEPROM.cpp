@@ -90,6 +90,7 @@ void EEPROM_defaults()
                                               SOFTRF_MODE_UAV : SOFTRF_MODE_NORMAL;
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
+                                              hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
                                               hw_info.model == SOFTRF_MODEL_POCKET   ||
                                               hw_info.model == SOFTRF_MODEL_RUGGED    ?
                                               RF_PROTOCOL_FANET :
@@ -104,6 +105,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.aircraft_type = hw_info.model == SOFTRF_MODEL_BRACELET  ?
                                               AIRCRAFT_TYPE_STATIC :
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
+                                              hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
                                               hw_info.model == SOFTRF_MODEL_POCKET    ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
@@ -126,6 +128,7 @@ void EEPROM_defaults()
   } else {
 #if defined(USE_PWM_SOUND)
     if (hw_info.model == SOFTRF_MODEL_CARD     ||
+        hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
         hw_info.model == SOFTRF_MODEL_HANDHELD ||
         hw_info.model == SOFTRF_MODEL_POCKET   ||
         hw_info.model == SOFTRF_MODEL_DECENT) {
@@ -165,6 +168,7 @@ void EEPROM_defaults()
 #else
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE    ||
                                            hw_info.model == SOFTRF_MODEL_CARD     ||
+                                           hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
                                            hw_info.model == SOFTRF_MODEL_COZY     ||
                                            hw_info.model == SOFTRF_MODEL_HANDHELD ||
                                            hw_info.model == SOFTRF_MODEL_SOLARIS  ||

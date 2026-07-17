@@ -46,8 +46,3 @@
 // Misc.
 #define SOC_GPIO_PIN_HELTEC_RC32_ADC         7  /* battery voltage ( x 4.9 ) */
 #define SOC_GPIO_PIN_HELTEC_RC32_ADC_EN      15 /* active HIGH */
-#define SOC_GPIO_PIN_HELTEC_RC32_VEXT_EN     3  /* active HIGH */
-
-// 32768 Hz crystal (TBD)
-#define SOC_GPIO_PIN_HELTEC_RC32_XP          15
-#define SOC_GPIO_PIN_HELTEC_RC32_XN          16

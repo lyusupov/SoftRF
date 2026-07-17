@@ -825,8 +825,8 @@ static void nRF52_setup()
                 nRF52_bl_check("ThinkNodeM6") ? NRF52_ELECROW_TN_M6        :
                 nRF52_bl_check("ELECROWBOOT") ? NRF52_ELECROW_TN_M1        :
                 nRF52_bl_check("T-Impulse")   ? NRF52_LILYGO_TIMPULSE_PLUS :
-#if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("X1-BOOT")     ? NRF52_SEEED_X1             :
+#if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("T2000")       ? NRF52_SEEED_T2000          :
                 nRF52_bl_check("TRACKER L1")  ? NRF52_SEEED_WIO_L1         :
 #endif /* EXCLUDE_WIP */
@@ -888,7 +888,6 @@ static void nRF52_setup()
     }
 #endif /* EXCLUDE_IMU */
 
-#if !defined(EXCLUDE_WIP)
     pinMode(SOC_GPIO_PIN_X1_HAPTIC_EN, INPUT_PULLUP);
     delay(5);
 
@@ -925,7 +924,6 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_X1_RTC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_X1_RTC_EN, OUTPUT);
     }
-#endif /* EXCLUDE_WIP */
   }
 
   if (nRF52_board == NRF52_ELECROW_TN_M1 || /* "ELECROWBOOT" */
@@ -1003,9 +1001,6 @@ static void nRF52_setup()
     case NRF52_SEEED_T2000:
       Wire.setPins(SOC_GPIO_PIN_T2000_SDA, SOC_GPIO_PIN_T2000_SCL);
       break;
-    case NRF52_SEEED_X1:
-      Wire.setPins(SOC_GPIO_PIN_X1_SDA, SOC_GPIO_PIN_X1_SCL);
-      break;
     case NRF52_HELTEC_T1:
       Wire.setPins(SOC_GPIO_PIN_T1_SDA, SOC_GPIO_PIN_T1_SCL);
       break;
@@ -1043,6 +1038,9 @@ static void nRF52_setup()
 #endif /* FlexWire.h */
 #endif /* __has_include */
 #endif /* WIRE_INTERFACES_COUNT */
+      break;
+    case NRF52_SEEED_X1:
+      Wire.setPins(SOC_GPIO_PIN_X1_SDA, SOC_GPIO_PIN_X1_SCL);
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1356,14 +1354,6 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_T2000_VBAT_EN, OUTPUT);
       /* TBD */
       break;
-    case NRF52_SEEED_X1:
-      digitalWrite(SOC_GPIO_PIN_X1_3V3_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_X1_3V3_EN, OUTPUT);
-
-      digitalWrite(SOC_GPIO_PIN_X1_VBAT_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_X1_VBAT_EN, OUTPUT);
-      /* TBD */
-      break;
     case NRF52_HELTEC_T1:
       digitalWrite(SOC_GPIO_PIN_T1_ADC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_T1_ADC_EN, OUTPUT);
@@ -1424,6 +1414,15 @@ static void nRF52_setup()
 
       digitalWrite(SOC_GPIO_PIN_TIP_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_TIP_VBAT_EN, OUTPUT);
+      /* TBD */
+      break;
+
+    case NRF52_SEEED_X1:
+      digitalWrite(SOC_GPIO_PIN_X1_3V3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_X1_3V3_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_X1_VBAT_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_X1_VBAT_EN, OUTPUT);
       /* TBD */
       break;
 
@@ -1537,36 +1536,6 @@ static void nRF52_setup()
       lmic_pins.busy = SOC_GPIO_PIN_T2000_BUSY;
 
       hw_info.revision = 3; /* Unknown */
-      break;
-
-    case NRF52_SEEED_X1:
-      digitalWrite(SOC_GPIO_PIN_GNSS_X1_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_EN, OUTPUT);
-
-      digitalWrite(SOC_GPIO_PIN_GNSS_X1_VRTC, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_VRTC, OUTPUT);
-
-      digitalWrite(SOC_GPIO_PIN_GNSS_X1_RST, LOW);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_RST, OUTPUT);
-
-      digitalWrite(SOC_GPIO_PIN_GNSS_X1_SINT, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_SINT, OUTPUT);
-
-      digitalWrite(SOC_GPIO_PIN_GNSS_X1_RINT, LOW);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_RINT, OUTPUT);
-
-      digitalWrite(SOC_GPIO_LED_X1_GREEN, LED_STATE_ON);
-      pinMode(SOC_GPIO_LED_X1_GREEN, OUTPUT);
-
-      lmic_pins.nss  = SOC_GPIO_PIN_X1_SS;
-      lmic_pins.rst  = SOC_GPIO_PIN_X1_RST;
-      lmic_pins.busy = SOC_GPIO_PIN_X1_BUSY;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_X1_DIO8; /* LR2021 */
-#endif /* USE_RADIOLIB */
-
-      hw_info.revision = 3; /* Unknown */
-      hw_info.audio    = AUDIO_PWM;
       break;
 
     case NRF52_HELTEC_T1:
@@ -1730,6 +1699,36 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       hw_info.touch    = TOUCH_TTP223;
+      break;
+
+    case NRF52_SEEED_X1:
+      digitalWrite(SOC_GPIO_PIN_GNSS_X1_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_GNSS_X1_VRTC, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_VRTC, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_GNSS_X1_RST, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_RST, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_GNSS_X1_SINT, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_SINT, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_GNSS_X1_RINT, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_RINT, OUTPUT);
+
+      digitalWrite(SOC_GPIO_LED_X1_GREEN, LED_STATE_ON);
+      pinMode(SOC_GPIO_LED_X1_GREEN, OUTPUT);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_X1_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_X1_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_X1_BUSY;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_X1_DIO8; /* LR2021 */
+#endif /* USE_RADIOLIB */
+
+      hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_PWM;
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -1974,7 +1973,6 @@ static void nRF52_setup()
     hw_info.audio = AUDIO_PWM;
   }
 
-#if !defined(EXCLUDE_WIP)
   if (nRF52_board == NRF52_SEEED_X1) {
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
     nRF52_has_vibra = vibra.begin(Wire);
@@ -2002,7 +2000,6 @@ static void nRF52_setup()
       hw_info.mag = MAG_BMM350;
     }
   }
-#endif /* EXCLUDE_WIP */
 }
 
 static void nRF52_post_init()
@@ -2799,27 +2796,6 @@ static void nRF52_fini(int reason)
 
       pinMode(SOC_GPIO_PIN_T2000_VBAT_EN,   INPUT);
       break;
-
-    case NRF52_SEEED_X1:
-      pinMode(SOC_GPIO_PIN_GNSS_X1_RINT,    INPUT_PULLDOWN);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_SINT,    INPUT_PULLDOWN);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_RST,     INPUT_PULLDOWN);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_VRTC,    INPUT_PULLUP);
-      pinMode(SOC_GPIO_PIN_GNSS_X1_EN,      INPUT_PULLDOWN);
-
-      pinMode(SOC_GPIO_PIN_X1_3V3_EN,       INPUT_PULLDOWN);
-
-      pinMode(SOC_GPIO_PIN_X1_SS,           INPUT_PULLUP);
-
-      digitalWrite(SOC_GPIO_LED_X1_GREEN,    1-LED_STATE_ON);
-      pinMode(SOC_GPIO_LED_X1_GREEN,        INPUT);
-      digitalWrite(SOC_GPIO_LED_X1_BLUE,    1-LED_STATE_ON);
-      pinMode(SOC_GPIO_LED_X1_BLUE,         INPUT);
-
-      pinMode(SOC_GPIO_PIN_SFL_X1_EN,       INPUT);
-      pinMode(SOC_GPIO_PIN_X1_HAPTIC_EN,    INPUT);
-      pinMode(SOC_GPIO_PIN_X1_RTC_EN,       INPUT);
-      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -2914,6 +2890,27 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_TIP_MOTOR,    INPUT);
       pinMode(SOC_GPIO_PIN_TIP_VBAT_EN,  INPUT);
       pinMode(SOC_GPIO_PIN_TIP_3V3_EN,   INPUT_PULLDOWN); /* LOW ? */
+      break;
+
+    case NRF52_SEEED_X1:
+      pinMode(SOC_GPIO_PIN_GNSS_X1_RINT,    INPUT_PULLDOWN);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_SINT,    INPUT_PULLDOWN);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_RST,     INPUT_PULLDOWN);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_VRTC,    INPUT_PULLUP);
+      pinMode(SOC_GPIO_PIN_GNSS_X1_EN,      INPUT_PULLDOWN);
+
+      pinMode(SOC_GPIO_PIN_X1_3V3_EN,       INPUT_PULLDOWN);
+
+      pinMode(SOC_GPIO_PIN_X1_SS,           INPUT_PULLUP);
+
+      digitalWrite(SOC_GPIO_LED_X1_GREEN,    1-LED_STATE_ON);
+      pinMode(SOC_GPIO_LED_X1_GREEN,        INPUT);
+      digitalWrite(SOC_GPIO_LED_X1_BLUE,    1-LED_STATE_ON);
+      pinMode(SOC_GPIO_LED_X1_BLUE,         INPUT);
+
+      pinMode(SOC_GPIO_PIN_SFL_X1_EN,       INPUT);
+      pinMode(SOC_GPIO_PIN_X1_HAPTIC_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_X1_RTC_EN,       INPUT);
       break;
 
     case NRF52_NORDIC_PCA10059:

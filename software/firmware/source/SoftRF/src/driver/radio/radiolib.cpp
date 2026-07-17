@@ -4972,13 +4972,13 @@ static const Module::RfSwitchMode_t rfswitch_table_ELRS[] = {
     END_OF_MODE_TABLE,
 };
 
-static const uint32_t rfswitch_dio_pins_seeed_pro[] = {
+static const uint32_t rfswitch_dio_pins_seeed_x1[] = {
     RADIOLIB_NC, RADIOLIB_NC,
     RADIOLIB_NC, RADIOLIB_NC,
     RADIOLIB_NC
 };
 
-static const Module::RfSwitchMode_t rfswitch_table_seeed_pro[] = {
+static const Module::RfSwitchMode_t rfswitch_table_seeed_x1[] = {
     // mode
     { LR2021::MODE_STBY,   { } },
     { LR2021::MODE_RX,     { } },
@@ -5227,8 +5227,8 @@ static void lr20xx_setup()
       Vtcxo = 0.0; /* XTAL */
     }
     break;
-  case SOFTRF_MODEL_CARD:
-    radio_g4->irqDioNum = 8; /* DIO8 as IRQ on T1000-E PRO */
+  case SOFTRF_MODEL_CARD_MK2:
+    radio_g4->irqDioNum = 8; /* DIO8 as IRQ on Seeed X1 */
     Vtcxo = 1.6;
     break;
   case SOFTRF_MODEL_CONCORDE:
@@ -5683,9 +5683,9 @@ static void lr20xx_setup()
 
   switch (hw_info.model)
   {
-  case SOFTRF_MODEL_CARD:
-    radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_pro,
-                               rfswitch_table_seeed_pro);
+  case SOFTRF_MODEL_CARD_MK2:
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_x1,
+                               rfswitch_table_seeed_x1);
     break;
 
   case SOFTRF_MODEL_ACADEMY:
