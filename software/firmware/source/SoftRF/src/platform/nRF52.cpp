@@ -379,6 +379,15 @@ static bool nRF52_has_vibra = false;
 #include <AHT20.h>
 AHT20 aht20;
 
+#if WIRE_INTERFACES_COUNT == 1
+#if defined __has_include
+#if __has_include(<FlexWire.h>)
+#include <FlexWire.h>
+FlexWire Wire1;
+#endif /* FlexWire.h */
+#endif /* __has_include */
+#endif /* WIRE_INTERFACES_COUNT */
+
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 uCDB<FatVolume, File32> ucdb(fatfs);
 
@@ -1027,6 +1036,12 @@ static void nRF52_setup()
       Wire.setPins(SOC_GPIO_PIN_TIP_OLED_SDA, SOC_GPIO_PIN_TIP_OLED_SCL);
 #if WIRE_INTERFACES_COUNT > 1
       Wire1.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
+#else
+#if defined __has_include
+#if __has_include(<FlexWire.h>)
+      Wire1.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
+#endif /* FlexWire.h */
+#endif /* __has_include */
 #endif /* WIRE_INTERFACES_COUNT */
       break;
     case NRF52_LILYGO_TECHO_REV_0:
