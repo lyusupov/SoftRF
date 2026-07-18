@@ -857,7 +857,6 @@ static void nRF52_setup()
       if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
-        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
 #endif /* ARDUINO_ARCH_MBED */
@@ -880,7 +879,6 @@ static void nRF52_setup()
       if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
-        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_X1_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
 #endif /* ARDUINO_ARCH_MBED */
@@ -1233,7 +1231,7 @@ static void nRF52_setup()
       break;
 #if 1 /* REFACTOR */
     case NRF52_HELTEC_T114:
-      /* internal bus */
+      /* external bus */
       Wire.setPins(SOC_GPIO_PIN_T114_SDA_EXT, SOC_GPIO_PIN_T114_SCL_EXT);
       break;
 #endif /* REFACTOR */
@@ -2243,7 +2241,8 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
-      nRF52_board == NRF52_ELECROW_TN_M1) {
+      nRF52_board == NRF52_ELECROW_TN_M1      ||
+      nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
 
 #if 0
     char strbuf[32];
@@ -2265,7 +2264,9 @@ static void nRF52_post_init()
 
     Serial.println();
     Serial.print  (nRF52_board == NRF52_ELECROW_TN_M1  ? F("Elecrow ") : F("LilyGO T-"));
-    Serial.print  (nRF52_board == NRF52_ELECROW_TN_M1  ? F("TN-M1")  :   F("Echo"));
+    Serial.print  (nRF52_board == NRF52_ELECROW_TN_M1  ? F("TN-M1") :
+                   nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS ? F("Impulse Plus") :
+                   F("Echo"));
     Serial.print  (F(" ("));
     Serial.print  (hw_info.revision > 2 ?
                    Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
@@ -2282,21 +2283,26 @@ static void nRF52_post_init()
                    hw_info.rf      == RF_IC_LR1121     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS    : "));
-    if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
-        nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
+    if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
+      Serial.println(hw_info.gnss  == GNSS_MODULE_U10  ? F("PASS") : F("FAIL"));
+    } else if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
+               nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
       Serial.println(hw_info.gnss  == GNSS_MODULE_GOKE ? F("PASS") : F("FAIL"));
     } else {
       Serial.println(hw_info.gnss  == GNSS_MODULE_AT65 ? F("PASS") : F("FAIL"));
     }
-
     Serial.flush();
     Serial.print(F("DISPLAY : "));
-    Serial.println(hw_info.display == DISPLAY_EPD_1_54 ||
+    Serial.println(hw_info.display == DISPLAY_EPD_1_54  ||
+                   hw_info.display == DISPLAY_OLED_0_49 ||
                    hw_info.display == DISPLAY_EPD_3_71 ? F("PASS") : F("FAIL"));
     Serial.flush();
-    Serial.print(F("RTC     : "));
-    Serial.println(hw_info.rtc     == RTC_PCF8563      ? F("PASS") : F("FAIL"));
-    Serial.flush();
+    if (nRF52_board != NRF52_LILYGO_TIMPULSE_PLUS) {
+      Serial.print(F("RTC     : "));
+      Serial.println(hw_info.rtc   == RTC_PCF8563      ? F("PASS") : F("FAIL"));
+      Serial.flush();
+    }
+
     Serial.print(F("FLASH   : "));
     Serial.println(hw_info.storage == STORAGE_FLASH_AND_CARD ||
                    hw_info.storage == STORAGE_FLASH    ? F("PASS") : F("FAIL"));
@@ -2308,17 +2314,16 @@ static void nRF52_post_init()
       Serial.print(F("BMx280  : "));
       Serial.println(hw_info.baro == BARO_MODULE_BMP280 ? F("PASS") : F("N/A"));
       Serial.flush();
-    }
-
 #if !defined(EXCLUDE_IMU)
-    Serial.println();
-    Serial.println(F("External components:"));
-    Serial.print(F("IMU     : "));
-    Serial.println(hw_info.imu     == IMU_MPU9250  ||
-                   hw_info.imu     == IMU_ICM20948 ||
-                   hw_info.imu     == IMU_BHI260AP     ? F("PASS") : F("N/A"));
-    Serial.flush();
+      Serial.println();
+      Serial.println(F("External components:"));
+      Serial.print(F("IMU     : "));
+      Serial.println(hw_info.imu  == IMU_MPU9250  ||
+                     hw_info.imu  == IMU_ICM20948 ||
+                     hw_info.imu  == IMU_BHI260AP       ? F("PASS") : F("N/A"));
+      Serial.flush();
 #endif /* EXCLUDE_IMU */
+    }
 
     Serial.println();
     Serial.println(F("Power-on Self Test is complete."));
@@ -2398,7 +2403,9 @@ static void nRF52_post_init()
 #endif
 
     Serial.println();
-    Serial.println(F("Seeed T1000-E Power-on Self Test"));
+    Serial.print  (F("Seeed "));
+    Serial.print  (nRF52_board == NRF52_SEEED_X1 ? F("X1") : F("T1000-E"));
+    Serial.println(F(" Power-on Self Test"));
     Serial.println();
     Serial.flush();
 
@@ -2438,6 +2445,10 @@ static void nRF52_post_init()
       Serial.println(F(" %"));
       Serial.flush();
 #endif /* !MBED && !ZEPHYR */
+    } else {
+      Serial.print(F("BARO    : "));
+      Serial.println(hw_info.baro  != BARO_MODULE_NONE ? F("PASS") : F("FAIL"));
+      Serial.flush();
     }
 
     Serial.println();

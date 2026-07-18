@@ -174,7 +174,8 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_SOLARIS  ||
                                            hw_info.model == SOFTRF_MODEL_POCKET   ||
                                            hw_info.model == SOFTRF_MODEL_RUGGED   ||
-                                           hw_info.model == SOFTRF_MODEL_DECENT    ?
+                                           hw_info.model == SOFTRF_MODEL_DECENT   ||
+                                           hw_info.model == SOFTRF_MODEL_STYLUS ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ES       ||
                                            hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
