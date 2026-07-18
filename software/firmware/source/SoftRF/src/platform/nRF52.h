@@ -280,7 +280,7 @@ struct rst_info {
  */
 #define TAKE_CARE_OF_MILLIS_ROLLOVER
 
-#define EXCLUDE_GNSS_UBLOX
+//#define EXCLUDE_GNSS_UBLOX
 #define EXCLUDE_GNSS_SONY
 #define EXCLUDE_GNSS_MTK
 //#define EXCLUDE_GNSS_GOKE     /* 'Air530' GK9501 GPS/GLO/BDS (GAL inop.) */
@@ -293,12 +293,12 @@ struct rst_info {
 //#define USE_NMEALIB              //  +  8 kb
 #define USE_NMEA_CFG               //  +    kb
 #define USE_SKYVIEW_CFG            //  +    kb
-//#define EXCLUDE_BMP180           //  -    kb
+#define EXCLUDE_BMP180             //  -  2 kb
 //#define EXCLUDE_BMP280           //  -    kb
 #define EXCLUDE_BME680             //  -    kb
 #define EXCLUDE_BME280AUX          //  -    kb
-//#define EXCLUDE_MPL3115A2        //  -    kb
-#define EXCLUDE_SPA06              //  -    kb
+#define EXCLUDE_MPL3115A2          //  -  1 kb
+//#define EXCLUDE_SPA06            //  -  5 kb
 //#define EXCLUDE_NRF905           //  -    kb
 //#define EXCLUDE_MAVLINK          //  -    kb
 //#define EXCLUDE_UATM             //  -    kb

@@ -727,9 +727,13 @@ static bool nRF52_bl_check(const char* signature)
 {
   int  i, j;
   bool match    = false;
+  int str_len   = strlen(signature);
   uint8_t* data = (uint8_t*) 0x000F4000UL;
   int length    = 0xFE000 - 0xF4000 - 2048 ; /* 38 KB */
-  int str_len   = strlen(signature);
+  int offset    = 0x07000 ;
+
+  data   += offset;
+  length -= offset;
 
   for (i = 0; i < length - str_len; i++) {
     if (data[i] == signature[0]) {
@@ -839,6 +843,188 @@ static void nRF52_setup()
       break;
     }
   }
+
+#if 1 /* REFACTOR */
+
+  switch (nRF52_board)
+  {
+    case NRF52_SEEED_T1000E:
+      hw_info.model      = SOFTRF_MODEL_CARD;
+      nRF5x_Device_Model = "Card Edition";
+      nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+      nRF52_USB_PID      = 0x0057; /* SenseCAP T1000-E */
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_T1000_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      digitalWrite(SOC_GPIO_PIN_SFL_T1000_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_SFL_T1000_EN, OUTPUT);
+
+      // digitalWrite(SOC_GPIO_LED_T1000_RED, HIGH);
+      // pinMode(SOC_GPIO_LED_T1000_RED, OUTPUT);
+      break;
+
+    case NRF52_SEEED_X1:
+      hw_info.model      = SOFTRF_MODEL_CARD_MK2;
+      nRF5x_Device_Model = "Card Mark II";
+      nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+      nRF52_USB_PID      = 0x0057;
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+        pinMode(SOC_GPIO_PIN_IO_PWR, INPUT);
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_X1_BUTTON, INPUT_PULLDOWN_SENSE /* INPUT_SENSE_HIGH */);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      digitalWrite(SOC_GPIO_PIN_SFL_X1_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_SFL_X1_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_X1_HAPTIC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_X1_HAPTIC_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_X1_RTC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_X1_RTC_EN, OUTPUT);
+      pinMode(SOC_GPIO_PIN_X1_RTC_INT,INPUT);
+
+      break;
+
+#if !defined(EXCLUDE_WIP)
+    case NRF52_SEEED_WIO_L1:
+      hw_info.model      = SOFTRF_MODEL_DECENT;
+      nRF5x_Device_Model = "Decent Edition";
+      nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+      nRF52_USB_PID      = 0x1668; /* Wio Tracker L1 */
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_L1_BUTTON, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      break;
+
+    case NRF52_SEEED_T2000:
+      hw_info.model      = SOFTRF_MODEL_RUGGED;
+      nRF5x_Device_Model = "Rugged Edition";
+      nRF52_USB_VID      = 0x2886; /* Seeed Technology */
+      nRF52_USB_PID      = 0x1668; /* TBD */
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_T2000_BUTTON, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      break;
+#endif /* EXCLUDE_WIP */
+
+    case NRF52_HELTEC_T114:
+      hw_info.model      = SOFTRF_MODEL_COZY;
+      nRF5x_Device_Model = "Cozy Edition";
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_T114_BUTTON, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      break;
+
+    case NRF52_ELECROW_TN_M1: /* "ELECROWBOOT" */
+    case NRF52_ELECROW_TN_M3: /* "ELECROWBOOT" , "ThinkNodeM3" */
+      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN,  INPUT_PULLUP);
+      pinMode(SOC_GPIO_PIN_M3_TEMP_EN,    INPUT_PULLUP);
+      delay(5);
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+      Wire.setPins(SOC_GPIO_PIN_M3_SDA, SOC_GPIO_PIN_M3_SCL);
+#endif /* ARDUINO_ARCH_MBED */
+      Wire.begin();
+      Wire.beginTransmission(AHT20_ADDRESS);
+      if (Wire.endTransmission() == 0) {
+        nRF52_board        = NRF52_ELECROW_TN_M3;
+        hw_info.model      = SOFTRF_MODEL_POCKET;
+        nRF5x_Device_Model = "Pocket Edition";
+      } else {
+        hw_info.model      = SOFTRF_MODEL_HANDHELD;
+        nRF5x_Device_Model = "Handheld Edition";
+      }
+      Wire.end();
+      pinMode(SOC_GPIO_PIN_M3_TEMP_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_M3_EEPROM_EN,  INPUT);
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(nRF52_board == NRF52_ELECROW_TN_M1 ?
+                SOC_GPIO_PIN_M1_BUTTON1 : SOC_GPIO_PIN_M3_BUTTON,
+                INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      break;
+
+    case NRF52_ELECROW_TN_M6: /* "ThinkNodeM6" */
+      hw_info.model      = SOFTRF_MODEL_SOLARIS;
+      nRF5x_Device_Model = "Solaris Edition";
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_M6_BUTTON, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      pinMode(SOC_GPIO_PIN_SFL_M6_EN, INPUT_PULLUP);
+      break;
+
+    case NRF52_LILYGO_TIMPULSE_PLUS:
+      hw_info.model      = SOFTRF_MODEL_STYLUS;
+      nRF5x_Device_Model = "Stylus Edition";
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
+          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_TIP_BUTTON, INPUT_PULLUP_SENSE); /* TBD */
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+      break;
+
+    case NRF52_LILYGO_TECHO_REV_0:
+    case NRF52_LILYGO_TECHO_REV_1:
+    case NRF52_LILYGO_TECHO_REV_2:
+    case NRF52_LILYGO_TECHO_PLUS:
+    case NRF52_NORDIC_PCA10059:
+    default:
+      pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
+      pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT_PULLUP);
+      if (nRF52_board == NRF52_LILYGO_TECHO_REV_1) {
+        pinMode(SOC_GPIO_PIN_TECHO_REV_1_3V3_PWR,  INPUT_PULLUP);
+      }
+      break;
+  }
+
+#else /* REFACTOR */
 
   pinMode(SOC_GPIO_PIN_3V3_PWR, INPUT);
   pinMode(SOC_GPIO_PIN_IO_PWR,  INPUT_PULLUP);
@@ -992,6 +1178,8 @@ static void nRF52_setup()
     }
   }
 
+#endif /* REFACTOR */
+
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
@@ -1043,6 +1231,12 @@ static void nRF52_setup()
     case NRF52_SEEED_X1:
       Wire.setPins(SOC_GPIO_PIN_X1_SDA, SOC_GPIO_PIN_X1_SCL);
       break;
+#if 1 /* REFACTOR */
+    case NRF52_HELTEC_T114:
+      /* internal bus */
+      Wire.setPins(SOC_GPIO_PIN_T114_SDA_EXT, SOC_GPIO_PIN_T114_SCL_EXT);
+      break;
+#endif /* REFACTOR */
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
@@ -1051,7 +1245,9 @@ static void nRF52_setup()
     case NRF52_NORDIC_PCA10059:
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT); /* VDD_POWR is ON */
+#if 0 /* REFACTOR */
     case NRF52_HELTEC_T114: /* internal bus */
+#endif /* REFACTOR */
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
       break;
@@ -1185,6 +1381,7 @@ static void nRF52_setup()
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
 
+#if 0 /* REFACTOR */
   if (nRF52_board == NRF52_ELECROW_TN_M1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 /* T-Echo, T114 or M1 */) {
     pinMode(SOC_GPIO_PIN_M1_BUZZER, INPUT);
@@ -1273,6 +1470,7 @@ static void nRF52_setup()
     }
   }
 #endif /* EXCLUDE_WIP */
+#endif /* REFACTOR */
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);

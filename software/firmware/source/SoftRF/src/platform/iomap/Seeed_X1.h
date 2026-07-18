@@ -25,7 +25,7 @@
 #define SOC_GPIO_PIN_X1_DIO8       _PINNUM(1,  1) // P1.01
 #define SOC_GPIO_PIN_X1_BUSY       _PINNUM(0,  7) // P0.07
 
-/* I2C #0 (SPA06, LSM6, BMM350) */
+/* I2C #0 (SPA06, LSM6DSO, BMM350) */
 #define SOC_GPIO_PIN_X1_SDA        _PINNUM(1, 15) // P1.15
 #define SOC_GPIO_PIN_X1_SCL        _PINNUM(1, 14) // P1.14
 
