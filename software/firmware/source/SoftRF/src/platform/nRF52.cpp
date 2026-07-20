@@ -872,7 +872,7 @@ static void nRF52_setup()
 
     case NRF52_SEEED_X1:
       hw_info.model      = SOFTRF_MODEL_CARD_MK2;
-      nRF5x_Device_Model = "Card Mark II";
+      nRF5x_Device_Model = "Card Edition Mk2";
       nRF52_USB_VID      = 0x2886; /* Seeed Technology */
       nRF52_USB_PID      = 0x0057;
 
@@ -1197,6 +1197,12 @@ static void nRF52_setup()
 #if !defined(EXCLUDE_IMU)
       pinMode(SOC_GPIO_PIN_T1000_ACC_EN, INPUT_PULLUP);
       delay(100);
+#if 1 /* REFACTOR */
+      Wire.begin();
+      Wire.beginTransmission(QMA6100P_ADDRESS);
+      nRF52_has_imu = (Wire.endTransmission() == 0);
+      Wire.end();
+#endif /* REFACTOR */
 #endif /* EXCLUDE_IMU */
       break;
     case NRF52_ELECROW_TN_M3:
@@ -1914,13 +1920,13 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_X1_RINT, LOW);
       pinMode(SOC_GPIO_PIN_GNSS_X1_RINT, OUTPUT);
 
-      pinMode(SOC_GPIO_LED_X1_RED,   OUTPUT);
-      pinMode(SOC_GPIO_LED_X1_GREEN, OUTPUT);
-      pinMode(SOC_GPIO_LED_X1_BLUE,  OUTPUT);
-
       digitalWrite(SOC_GPIO_LED_X1_RED,  1-LED_STATE_ON);
       digitalWrite(SOC_GPIO_LED_X1_GREEN,  LED_STATE_ON);
       digitalWrite(SOC_GPIO_LED_X1_BLUE, 1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_X1_RED,   OUTPUT);
+      pinMode(SOC_GPIO_LED_X1_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_X1_BLUE,  OUTPUT);
 
       lmic_pins.nss  = SOC_GPIO_PIN_X1_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_X1_RST;
