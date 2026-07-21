@@ -874,7 +874,7 @@ enum mad_flow mad_synth_frame(struct mad_synth *synth, struct mad_frame const *f
 //void mad_synth_frame(struct mad_synth *synth, struct mad_frame const *frame)
 {
   unsigned int nch, ns;
-  enum mad_flow (*synth_frame)(struct mad_synth *, struct mad_frame const *, unsigned int, unsigned int, unsigned int, enum mad_flow (*output_func)(), void *);
+  enum mad_flow (*synth_frame)(struct mad_synth *, struct mad_frame const *, unsigned int, unsigned int, unsigned int, enum mad_flow (*output_func)(void *, const struct mad_header *, struct mad_pcm *), void *);
 
   nch = MAD_NCHANNELS(&frame->header);
   ns  = MAD_NSBSAMPLES(&frame->header);
@@ -904,7 +904,7 @@ enum mad_flow mad_synth_frame(struct mad_synth *synth, struct mad_frame const *f
 enum mad_flow mad_synth_frame_onens(struct mad_synth *synth, struct mad_frame const *frame, unsigned int ns)
 {
   unsigned int nch; //, ns;
-  enum mad_flow (*synth_frame)(struct mad_synth *, struct mad_frame const *, unsigned int, unsigned int, unsigned int, enum mad_flow (*output_func)(), void *);
+  enum mad_flow (*synth_frame)(struct mad_synth *, struct mad_frame const *, unsigned int, unsigned int, unsigned int, enum mad_flow (*output_func)(void *, const struct mad_header *, struct mad_pcm *), void *);
 
   nch = MAD_NCHANNELS(&frame->header);
 //  ns  = MAD_NSBSAMPLES(&frame->header);
