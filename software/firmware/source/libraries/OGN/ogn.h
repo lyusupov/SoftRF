@@ -629,7 +629,7 @@ class OGN_Packet           // Packet structure for the OGN tracker
      return (Heading*3600+512)>>10; }
 
    void EncodeHeading(int16_t Heading)
-   { Position.Heading = (((int32_t)Heading<<10)+180)/3600; }
+   { Position.Heading = (((int32_t)Heading<<10)+1800)/3600; }
 
    void setHeadingAngle(uint16_t HeadingAngle)
    { Position.Heading = (((HeadingAngle+32)>>6)); }
