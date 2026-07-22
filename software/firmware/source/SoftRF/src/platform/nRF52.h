@@ -145,6 +145,7 @@ struct rst_info {
 #define BMM350_ADDRESS        (0x14)
 #define SPA06_ADDRESS         (0x77) /* SDO = HIGH */
 #define SGM41562_ADDRESS      (0x03)
+#define LSM6DSO_ADDRESS       (0x6A)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
