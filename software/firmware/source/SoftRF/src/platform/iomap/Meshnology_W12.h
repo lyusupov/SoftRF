@@ -4,12 +4,12 @@
 #define SOC_GPIO_PIN_W12_CONS_TX     43
 
 // L76K
-#define SOC_GPIO_PIN_W12_GNSS_RX     38
-#define SOC_GPIO_PIN_W12_GNSS_TX     39
+#define SOC_GPIO_PIN_W12_GNSS_RX     39
+#define SOC_GPIO_PIN_W12_GNSS_TX     38
 #define SOC_GPIO_PIN_W12_GNSS_PPS    41
 #define SOC_GPIO_PIN_W12_GNSS_RST    42
 #define SOC_GPIO_PIN_W12_GNSS_WKE    40
-#define SOC_GPIO_PIN_W12_GNSS_EN     48
+#define SOC_GPIO_PIN_W12_GNSS_EN     48 /* active LOW */
 
 // LR2021
 #define SOC_GPIO_PIN_W12_MOSI        10
@@ -18,8 +18,8 @@
 #define SOC_GPIO_PIN_W12_SS          8
 #define SOC_GPIO_PIN_W12_RST         12
 #define SOC_GPIO_PIN_W12_BUSY        13
-#define SOC_GPIO_PIN_W12_DIO5        14
-#define SOC_GPIO_PIN_W12_DIO6        7
+#define SOC_GPIO_PIN_W12_DIO8        14
+#define SOC_GPIO_PIN_W12_DIO7        7
 
 // GC1109 FEM
 #define SOC_GPIO_PIN_W12_PA_EN_M     4  /* 868/915 MHz */
