@@ -725,6 +725,7 @@ static void ESP32_setup()
    *  WT99P4C5-S1 NCU     | ESP32-C5-WROOM-1 | XMC_XM25QH64B
    *  LilyGO T-Display P4 |                  | GIGADEVICE_GD25Q128
    *  LilyGO T-Beam 1W    | WROOM-1-N16R8    | 0x464018 (TBD)
+   *  Meshnology W12      | ESP32-S3R8       | WINBOND_NEX_W25Q128_V
    */
 
   if (psramFound()) {

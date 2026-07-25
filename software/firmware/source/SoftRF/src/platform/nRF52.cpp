@@ -384,6 +384,24 @@ AHT20 aht20;
 #if __has_include(<FlexWire.h>)
 #include <FlexWire.h>
 FlexWire Wire1;
+#else
+TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn,
+              SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
+extern "C"
+{
+  void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void)
+  {
+    #if CFG_SYSVIEW
+    SEGGER_SYSVIEW_RecordEnterISR();
+    #endif
+
+    Wire1.onService();
+
+    #if CFG_SYSVIEW
+    SEGGER_SYSVIEW_RecordExitISR();
+    #endif
+  }
+}
 #endif /* FlexWire.h */
 #endif /* __has_include */
 #endif /* WIRE_INTERFACES_COUNT */
@@ -1221,16 +1239,8 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_IO_M6_PWR, OUTPUT);
       break;
     case NRF52_LILYGO_TIMPULSE_PLUS:
-      Wire.setPins(SOC_GPIO_PIN_TIP_OLED_SDA, SOC_GPIO_PIN_TIP_OLED_SCL);
-#if WIRE_INTERFACES_COUNT > 1
-      Wire1.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
-#else
-#if defined __has_include
-#if __has_include(<FlexWire.h>)
-      Wire1.setPins(SOC_GPIO_PIN_TIP_SDA, SOC_GPIO_PIN_TIP_SCL);
-#endif /* FlexWire.h */
-#endif /* __has_include */
-#endif /* WIRE_INTERFACES_COUNT */
+      Wire.setPins (SOC_GPIO_PIN_TIP_OLED_SDA, SOC_GPIO_PIN_TIP_OLED_SCL);
+      Wire1.setPins(SOC_GPIO_PIN_TIP_SDA,      SOC_GPIO_PIN_TIP_SCL);
       break;
     case NRF52_SEEED_X1:
       Wire.setPins(SOC_GPIO_PIN_X1_SDA, SOC_GPIO_PIN_X1_SCL);
@@ -2068,7 +2078,21 @@ static void nRF52_setup()
         break;
 
       case NRF52_LILYGO_TIMPULSE_PLUS:
-        /* TBD */
+        Wire1.begin();
+        {
+          bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
+
+          for (int t=0; t<3; t++) {
+            if (imu_2.begin(Wire1, ad0) == ICM_20948_Stat_Ok) {
+              hw_info.imu = IMU_ICM20948;
+              hw_info.mag = MAG_AK09916;
+              IMU_Time_Marker = millis();
+
+              break;
+            }
+            delay(IMU_UPDATE_INTERVAL);
+          }
+        }
         break;
 
       default:
