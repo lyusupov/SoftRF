@@ -710,6 +710,7 @@ Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
 #include <SenseCAP.h>
 #endif /* ARDUINO_ARCH_MBED */
+#include <SGM41562.h>
 
 #if defined(ENABLE_NFC)
 #include <NFC.h>
@@ -2232,6 +2233,13 @@ static void nRF52_setup()
       hw_info.mag = MAG_BMM350;
     }
   }
+
+  if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
+    // Wire1.begin();
+    if (initSGM41562(Wire1)) {
+      hw_info.pmu = BMU_SGM41562;
+    }
+  }
 }
 
 static void nRF52_post_init()
@@ -2327,7 +2335,13 @@ static void nRF52_post_init()
                    hw_info.display == DISPLAY_OLED_0_49 ||
                    hw_info.display == DISPLAY_EPD_3_71 ? F("PASS") : F("FAIL"));
     Serial.flush();
-    if (nRF52_board != NRF52_LILYGO_TIMPULSE_PLUS) {
+    if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
+      Serial.print(F("IMU     : "));
+      Serial.println(hw_info.imu   == IMU_ICM20948     ? F("PASS") : F("FAIL"));
+      Serial.print(F("BMU     : "));
+      Serial.println(hw_info.pmu   == BMU_SGM41562     ? F("PASS") : F("FAIL"));
+      Serial.flush();
+    } else {
       Serial.print(F("RTC     : "));
       Serial.println(hw_info.rtc   == RTC_PCF8563      ? F("PASS") : F("FAIL"));
       Serial.flush();
