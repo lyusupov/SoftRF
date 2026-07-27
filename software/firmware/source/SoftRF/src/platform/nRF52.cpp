@@ -1211,6 +1211,9 @@ static void nRF52_setup()
     case NRF52_HELTEC_T1:
       Wire.setPins(SOC_GPIO_PIN_T1_SDA, SOC_GPIO_PIN_T1_SCL);
       break;
+    case NRF52_ELECROW_TN_M8:
+      Wire.setPins(SOC_GPIO_PIN_M8_SDA, SOC_GPIO_PIN_M8_SCL);
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
       Wire.setPins(SOC_GPIO_PIN_T1000_SDA, SOC_GPIO_PIN_T1000_SCL);
@@ -1334,6 +1337,7 @@ static void nRF52_setup()
     case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
+    case NRF52_ELECROW_TN_M8:
       FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
                                                     SOC_GPIO_PIN_SFL_SS,
                                                     SOC_GPIO_PIN_SFL_MOSI,
@@ -1544,6 +1548,7 @@ static void nRF52_setup()
     case NRF52_ELECROW_TN_M1:
     case NRF52_SEEED_WIO_L1:
     case NRF52_LILYGO_TECHO_PLUS:
+    case NRF52_ELECROW_TN_M8:
       Serial1.setPins(SOC_GPIO_PIN_CONS_T114_RX, SOC_GPIO_PIN_CONS_T114_TX);
 #if defined(EXCLUDE_WIFI)
       Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
@@ -1578,6 +1583,11 @@ static void nRF52_setup()
     case NRF52_HELTEC_T1:
       digitalWrite(SOC_GPIO_PIN_T1_ADC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_T1_ADC_EN, OUTPUT);
+      /* TBD */
+      break;
+    case NRF52_ELECROW_TN_M8:
+      digitalWrite(SOC_GPIO_PIN_M8_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M8_ADC_EN, OUTPUT);
       /* TBD */
       break;
 #endif /* EXCLUDE_WIP */
@@ -1773,6 +1783,23 @@ static void nRF52_setup()
 
       pinMode(SOC_GPIO_PIN_T1_SENS_INT1, INPUT);
       pinMode(SOC_GPIO_PIN_T1_SENS_INT2, INPUT);
+
+      hw_info.revision = 3; /* Unknown */
+      break;
+
+    case NRF52_ELECROW_TN_M8:
+      digitalWrite(SOC_GPIO_PIN_GNSS_M8_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M8_EN, OUTPUT);
+
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_M8_RST, LOW);
+      pinMode(SOC_GPIO_PIN_GNSS_M8_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_M8_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_M8_WKE, OUTPUT);
+
+      lmic_pins.nss  = SOC_GPIO_PIN_M8_SS;
+      lmic_pins.rst  = SOC_GPIO_PIN_M8_RST;
+      lmic_pins.busy = SOC_GPIO_PIN_M8_BUSY;
 
       hw_info.revision = 3; /* Unknown */
       break;
@@ -3750,6 +3777,11 @@ static void nRF52_SPI_begin()
                   SOC_GPIO_PIN_T1_SCK,
                   SOC_GPIO_PIN_T1_MOSI);
       break;
+    case NRF52_ELECROW_TN_M8:
+      SPI.setPins(SOC_GPIO_PIN_M8_MISO,
+                  SOC_GPIO_PIN_M8_SCK,
+                  SOC_GPIO_PIN_M8_MOSI);
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
     case NRF52_SEEED_X1:
@@ -3810,6 +3842,10 @@ static void nRF52_swSer_begin(unsigned long baud)
       break;
     case NRF52_HELTEC_T1:
       /* TBD */
+      break;
+    case NRF52_ELECROW_TN_M8:
+      Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_M8_RX,
+                             SOC_GPIO_PIN_GNSS_M8_TX);
       break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
