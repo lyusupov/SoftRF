@@ -2242,7 +2242,10 @@ static void nRF52_setup()
   }
 
   if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
-    if (nRF52_has_imu == false) {
+#if !defined(EXCLUDE_IMU)
+    if (nRF52_has_imu == false)
+#endif
+    {
       Wire1.begin();
     }
     if (initSGM41562(Wire1)) {
@@ -3159,7 +3162,11 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_TIP_VBAT_EN,  INPUT);
       pinMode(SOC_GPIO_PIN_TIP_3V3_EN,   INPUT_PULLDOWN); /* LOW ? */
 
+#if !defined(EXCLUDE_IMU)
       if (nRF52_has_imu || hw_info.pmu == BMU_SGM41562) {
+#else
+      if (hw_info.pmu == BMU_SGM41562) {
+#endif
         Wire1.end();
       }
       break;
