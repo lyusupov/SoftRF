@@ -90,6 +90,7 @@ enum nRF52_board_id {
   NRF52_ELECROW_TN_M1,
   NRF52_ELECROW_TN_M3,
   NRF52_ELECROW_TN_M6,
+  NRF52_ELECROW_TN_M8,
 };
 
 enum nRF52_display_id {
@@ -169,6 +170,7 @@ struct rst_info {
 #include "iomap/Elecrow_ThinkNode_M1.h"
 #include "iomap/Elecrow_ThinkNode_M3.h"
 #include "iomap/Elecrow_ThinkNode_M6.h"
+#include "iomap/Elecrow_ThinkNode_M8.h"
 
 #define SOC_GPIO_LED_PCA10059_STATUS    _PINNUM(0,  6) // P0.06
 #define SOC_GPIO_LED_PCA10059_GREEN     _PINNUM(1,  9) // P1.09 (Green)

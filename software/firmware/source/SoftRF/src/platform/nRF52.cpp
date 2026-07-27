@@ -846,6 +846,7 @@ static void nRF52_setup()
                 nRF52_bl_check("HT-n5262")       ? NRF52_HELTEC_T114          :
                 nRF52_bl_check("ThinkNodeM3")    ? NRF52_ELECROW_TN_M3        :
                 nRF52_bl_check("ThinkNodeM6")    ? NRF52_ELECROW_TN_M6        :
+                nRF52_bl_check("ThinkNodeM8")    ? NRF52_ELECROW_TN_M8        :
                 nRF52_bl_check("ELECROWBOOT")    ? NRF52_ELECROW_TN_M1        :
                 nRF52_bl_check("T-Impulse-Plus") ? NRF52_LILYGO_TIMPULSE_PLUS :
                 nRF52_bl_check("MeshTracker-X1") ? NRF52_SEEED_X1             :
@@ -1242,6 +1243,12 @@ static void nRF52_setup()
     case NRF52_LILYGO_TIMPULSE_PLUS:
       Wire.setPins (SOC_GPIO_PIN_TIP_OLED_SDA, SOC_GPIO_PIN_TIP_OLED_SCL);
       Wire1.setPins(SOC_GPIO_PIN_TIP_SDA,      SOC_GPIO_PIN_TIP_SCL);
+#if !defined(EXCLUDE_IMU)
+      Wire1.begin();
+      Wire1.beginTransmission(ICM20948_ADDRESS_ALT);
+      nRF52_has_imu = (Wire1.endTransmission() == 0);
+      Wire1.end();
+#endif /* EXCLUDE_IMU */
       break;
     case NRF52_SEEED_X1:
       Wire.setPins(SOC_GPIO_PIN_X1_SDA, SOC_GPIO_PIN_X1_SCL);
@@ -2081,7 +2088,7 @@ static void nRF52_setup()
       case NRF52_LILYGO_TIMPULSE_PLUS:
         Wire1.begin();
         {
-          bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
+          bool ad0 = (ICM20948_ADDRESS_ALT == 0x69) ? true : false;
 
           for (int t=0; t<3; t++) {
             if (imu_2.begin(Wire1, ad0) == ICM_20948_Stat_Ok) {
@@ -2235,7 +2242,9 @@ static void nRF52_setup()
   }
 
   if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
-    // Wire1.begin();
+    if (nRF52_has_imu == false) {
+      Wire1.begin();
+    }
     if (initSGM41562(Wire1)) {
       hw_info.pmu = BMU_SGM41562;
     }
@@ -3149,6 +3158,10 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_TIP_MOTOR,    INPUT);
       pinMode(SOC_GPIO_PIN_TIP_VBAT_EN,  INPUT);
       pinMode(SOC_GPIO_PIN_TIP_3V3_EN,   INPUT_PULLDOWN); /* LOW ? */
+
+      if (nRF52_has_imu || hw_info.pmu == BMU_SGM41562) {
+        Wire1.end();
+      }
       break;
 
     case NRF52_SEEED_X1:

@@ -237,6 +237,7 @@ jobs:
             # wget https://github.com/h2zero/NimBLE-Arduino/archive/refs/heads/${NIM_BLE_VERSION}.tar.gz ;
             tar xzf ${NIM_BLE_VERSION}.tar.gz ;
             rm ${NIM_BLE_VERSION}.tar.gz ;
+            sed -i '173 s/$/ \&\& 0/' NimBLE-Arduino-${NIM_BLE_VERSION}/src/nimble/porting/nimble/include/os/os_mempool.h ;
             mv NimBLE-Arduino-${NIM_BLE_VERSION} $HOME/Arduino/libraries/ ;
             # cd $HOME/.arduino15/packages/esp32/hardware/esp32/3.3.10 ;
             # wget https://github.com/lucasssvaz/arduino-esp32/commit/bca210127d6456f3873464265f9901bc436ae0f1.patch ;
