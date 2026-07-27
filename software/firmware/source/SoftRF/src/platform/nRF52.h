@@ -382,6 +382,7 @@ struct rst_info {
                                nRF52_board == NRF52_SEEED_X1 ? SOC_GPIO_PIN_X1_BUZZER             : \
                                nRF52_board == NRF52_ELECROW_TN_M1 ? SOC_GPIO_PIN_M1_BUZZER        : \
                                nRF52_board == NRF52_ELECROW_TN_M3 ? SOC_GPIO_PIN_M3_BUZZER        : \
+                               nRF52_board == NRF52_ELECROW_TN_M8 ? SOC_GPIO_PIN_M8_BUZZER        : \
                                nRF52_board == NRF52_SEEED_WIO_L1  ? SOC_GPIO_PIN_L1_BUZZER        : \
                                nRF52_board == NRF52_LILYGO_TECHO_PLUS ? SOC_GPIO_PIN_TECHO_BUZZER : \
                                hw_info.rf != RF_IC_SX1262 ? SOC_UNUSED_PIN           : \

@@ -1213,6 +1213,8 @@ static void nRF52_setup()
       break;
     case NRF52_ELECROW_TN_M8:
       Wire.setPins(SOC_GPIO_PIN_M8_SDA, SOC_GPIO_PIN_M8_SCL);
+      digitalWrite(SOC_GPIO_PIN_M8_IIC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_M8_IIC_EN, OUTPUT);
       break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
@@ -1588,6 +1590,8 @@ static void nRF52_setup()
     case NRF52_ELECROW_TN_M8:
       digitalWrite(SOC_GPIO_PIN_M8_ADC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_M8_ADC_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_EPD_M8_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_EPD_M8_EN, OUTPUT);
       /* TBD */
       break;
 #endif /* EXCLUDE_WIP */
@@ -1801,7 +1805,10 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_M8_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M8_BUSY;
 
+      pinMode(SOC_GPIO_PIN_M8_ANT_SW,   INPUT_PULLUP);
+
       hw_info.revision = 3; /* Unknown */
+      hw_info.audio    = AUDIO_PWM;
       break;
 #endif /* EXCLUDE_WIP */
 
@@ -2674,7 +2681,8 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
-      nRF52_board == NRF52_ELECROW_TN_M1) {
+      nRF52_board == NRF52_ELECROW_TN_M1      ||
+      nRF52_board == NRF52_ELECROW_TN_M8) {
     /* EPD back light on */
     uint8_t bl_state = digitalRead(SOC_GPIO_PIN_EPD_BLGT);
     if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
@@ -2892,6 +2900,7 @@ static void nRF52_loop()
        nRF52_board     == NRF52_SEEED_X1          ||
        nRF52_board     == NRF52_ELECROW_TN_M1     ||
        nRF52_board     == NRF52_ELECROW_TN_M3     ||
+       nRF52_board     == NRF52_ELECROW_TN_M8     ||
        nRF52_board     == NRF52_LILYGO_TECHO_PLUS ||
        nRF52_board     == NRF52_SEEED_WIO_L1)     &&
       settings->volume != BUZZER_OFF              &&
@@ -3308,6 +3317,10 @@ static void nRF52_fini(int reason)
 
     case NRF52_ELECROW_TN_M6:
       mode_button_pin = SOC_GPIO_PIN_M6_BUTTON;
+      break;
+
+    case NRF52_ELECROW_TN_M8:
+      mode_button_pin = SOC_GPIO_PIN_M8_ENC_BTN;
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
@@ -4128,6 +4141,7 @@ static byte nRF52_Display_setup()
       case NRF52_LILYGO_TECHO_REV_2:
       case NRF52_LILYGO_TECHO_PLUS:
       case NRF52_ELECROW_TN_M1:
+      case NRF52_ELECROW_TN_M8:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                      SOC_GPIO_PIN_EPD_SCK,
@@ -4190,7 +4204,8 @@ static byte nRF52_Display_setup()
 
     /* EPD back light off */
     pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, nRF52_board == NRF52_ELECROW_TN_M1 ?
+    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, nRF52_board == NRF52_ELECROW_TN_M1 ||
+                                        nRF52_board == NRF52_ELECROW_TN_M8 ?
                                         HIGH : LOW);
 #endif /* USE_EPAPER */
   }
@@ -4590,6 +4605,10 @@ static float nRF52_Battery_param(uint8_t param)
           bat_adc_pin = SOC_GPIO_PIN_M6_BATTERY;
           mult        = SOC_ADC_M6_VOLTAGE_DIV;
           break;
+        case NRF52_ELECROW_TN_M8:
+          bat_adc_pin = SOC_GPIO_PIN_M8_BATTERY;
+          mult        = SOC_ADC_M8_VOLTAGE_DIV;
+          break;
         case NRF52_SEEED_WIO_L1:
           bat_adc_pin = SOC_GPIO_PIN_L1_BATTERY;
           mult        = SOC_ADC_VOLTAGE_DIV;
@@ -4810,6 +4829,10 @@ static void nRF52_Button_setup()
 
     case NRF52_ELECROW_TN_M6:
       mode_button_pin = SOC_GPIO_PIN_M6_BUTTON;
+      break;
+
+    case NRF52_ELECROW_TN_M8:
+      mode_button_pin = SOC_GPIO_PIN_M8_ENC_BTN;
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:

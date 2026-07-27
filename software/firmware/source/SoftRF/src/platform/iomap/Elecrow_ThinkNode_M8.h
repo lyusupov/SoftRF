@@ -22,6 +22,7 @@
 #define SOC_GPIO_PIN_M8_RST       _PINNUM(0, 24) // P0.24
 #define SOC_GPIO_PIN_M8_DIO1      _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_M8_BUSY      _PINNUM(1,  0) // P1.00
+/* PE4259 /CTRL */
 #define SOC_GPIO_PIN_M8_ANT_SW    _PINNUM(0, 23) // P0.23
 
 /* E-paper */
@@ -63,6 +64,8 @@
 /* ADC */
 #define SOC_GPIO_PIN_M8_BATTERY   _PINNUM(0,  4) // P0.04 (AIN2)
 #define SOC_GPIO_PIN_M8_ADC_EN    _PINNUM(1,  8) // P1.08
+
+#define SOC_ADC_M8_VOLTAGE_DIV    (1.75F)
 
 /* charger */
 #define SOC_GPIO_PIN_M8_CHRG_VUSB _PINNUM(1,  3) // P1.03
