@@ -2491,7 +2491,10 @@ static void nRF52_post_init()
 #endif /* USE_EPAPER */
 
 #if defined(USE_OLED)
-  if (hw_info.display == DISPLAY_OLED_1_3 ||
+  if (hw_info.display == DISPLAY_OLED_1_3  ||
+#if !defined(EXCLUDE_OLED_049)
+      hw_info.display == DISPLAY_OLED_0_49 ||
+#endif /* EXCLUDE_OLED_049 */
       hw_info.display == DISPLAY_OLED_TTGO) {
     OLED_info1();
   }
@@ -4096,6 +4099,9 @@ static void nRF52_Display_loop()
 #endif /* USE_TFT */
 
 #if defined(USE_OLED)
+#if !defined(EXCLUDE_OLED_049)
+  case DISPLAY_OLED_0_49:
+#endif /* EXCLUDE_OLED_049 */
   case DISPLAY_OLED_1_3:
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
@@ -4210,6 +4216,9 @@ static void nRF52_Display_fini(int reason)
 #endif /* USE_TFT */
 
 #if defined(USE_OLED)
+#if !defined(EXCLUDE_OLED_049)
+  case DISPLAY_OLED_0_49:
+#endif /* EXCLUDE_OLED_049 */
   case DISPLAY_OLED_1_3:
   case DISPLAY_OLED_TTGO:
   case DISPLAY_OLED_HELTEC:
@@ -4473,7 +4482,10 @@ void handleEvent(AceButton* button, uint8_t eventType, uint8_t buttonState) {
 #endif /* USE_EPAPER */
 #if defined(USE_OLED)
       if (button == &button_1 &&
-         (hw_info.display == DISPLAY_OLED_1_3 ||
+         (hw_info.display == DISPLAY_OLED_1_3  ||
+#if !defined(EXCLUDE_OLED_049)
+          hw_info.display == DISPLAY_OLED_0_49 ||
+#endif /* EXCLUDE_OLED_049 */
           hw_info.display == DISPLAY_OLED_TTGO)) {
         OLED_Next_Page();
       }
