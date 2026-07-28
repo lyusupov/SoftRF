@@ -1020,7 +1020,7 @@ static void nRF52_setup()
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-        pinMode(SOC_GPIO_PIN_TIP_BUTTON, INPUT_PULLUP_SENSE); /* TBD */
+        pinMode(SOC_GPIO_PIN_TIP_PAD, INPUT_PULLUP_SENSE); /* TBD */
 #endif /* ARDUINO_ARCH_MBED */
         nRF52_system_off();
       }
@@ -3068,7 +3068,7 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
-      mode_button_pin = SOC_GPIO_PIN_TIP_BUTTON;
+      mode_button_pin = SOC_GPIO_PIN_TIP_PAD;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -4581,7 +4581,7 @@ static void nRF52_Button_setup()
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
-      mode_button_pin = SOC_GPIO_PIN_TIP_BUTTON;
+      mode_button_pin = SOC_GPIO_PIN_TIP_PAD;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
