@@ -3626,6 +3626,7 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_LILYGO_TIMPULSE_PLUS:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TIP_RX,
                              SOC_GPIO_PIN_GNSS_TIP_TX);
+      baud = 38400; /* u-blox MIA-M10Q default value (9600 in the safe boot) */
       break;
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
