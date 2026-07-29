@@ -362,7 +362,10 @@ SensorXYZ bhi_accel(BoschSensorID::ACCEL_PASSTHROUGH, imu_4);
 static bool nRF52_has_imu = false;
 static unsigned long IMU_Time_Marker = 0;
 
-extern float IMU_g;
+extern float   IMU_g;
+#if defined(USE_OLED)
+extern int32_t IMU_g_x10;
+#endif /* USE_OLED */
 #endif /* EXCLUDE_IMU */
 
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
@@ -2589,6 +2592,9 @@ static void nRF52_loop()
       Serial.println("}");
 #endif
       IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 1000;
+#if defined(USE_OLED)
+      IMU_g_x10 = (int32_t) (IMU_g * 10);
+#endif /* USE_OLED */
     }
     IMU_Time_Marker = millis();
   }

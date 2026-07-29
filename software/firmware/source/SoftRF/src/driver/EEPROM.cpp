@@ -92,7 +92,8 @@ void EEPROM_defaults()
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
                                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
                                               hw_info.model == SOFTRF_MODEL_POCKET   ||
-                                              hw_info.model == SOFTRF_MODEL_RUGGED    ?
+                                              hw_info.model == SOFTRF_MODEL_RUGGED   ||
+                                              hw_info.model == SOFTRF_MODEL_STYLUS    ?
                                               RF_PROTOCOL_FANET :
                                               hw_info.model == SOFTRF_MODEL_ES       ||
                                               hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
@@ -106,7 +107,8 @@ void EEPROM_defaults()
                                               AIRCRAFT_TYPE_STATIC :
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
                                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
-                                              hw_info.model == SOFTRF_MODEL_POCKET    ?
+                                              hw_info.model == SOFTRF_MODEL_POCKET   ||
+                                              hw_info.model == SOFTRF_MODEL_STYLUS    ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
                                               AIRCRAFT_TYPE_GLIDER;
   eeprom_block.field.settings.txpower       = hw_info.model == SOFTRF_MODEL_ES        ?
@@ -175,7 +177,7 @@ void EEPROM_defaults()
                                            hw_info.model == SOFTRF_MODEL_POCKET   ||
                                            hw_info.model == SOFTRF_MODEL_RUGGED   ||
                                            hw_info.model == SOFTRF_MODEL_DECENT   ||
-                                           hw_info.model == SOFTRF_MODEL_STYLUS ?
+                                           hw_info.model == SOFTRF_MODEL_STYLUS    ?
                                            NMEA_BLUETOOTH :
                                            hw_info.model == SOFTRF_MODEL_ES       ||
                                            hw_info.model == SOFTRF_MODEL_RETRO_MK2 ?
