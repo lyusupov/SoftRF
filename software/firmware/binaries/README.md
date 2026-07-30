@@ -36,6 +36,7 @@ Model|Instructions|Firmware folder
 [Nano Edition](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)|[ESP32-C3](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#esp32-c3)|[ESP32C3](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/ESP32C3/SoftRF)
 [Badge Edition](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Handheld Edition](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
+[Stylus Edition](https://github.com/lyusupov/SoftRF/wiki/Stylus-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|TBD <!--[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)-->
 [Card Edition Mk2](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|TBD <!--[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)-->
 [Card Edition](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
 [Cozy Edition](https://github.com/lyusupov/SoftRF/wiki/Cozy-Edition)|[nRF52840](https://github.com/lyusupov/SoftRF/blob/master/software/firmware/binaries/README.md#nrf52840)|[nRF52840](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/nRF52840)
@@ -144,8 +145,8 @@ The Bootloader is capable to self-program an application firmware into the devic
 3. Enter into Adafruit bootloader USB Mass Storage mode
    Device|Action
    ---|---
-   LilyGO T-Echo<br>Heltec T114<br>Elecrow M1 and M6|double click (within 0.5 seconds) onto the SoftRF device RESET button
-   Seeed T1000-E|connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed
+   LilyGO T-Echo<br>LilyGO T-Impulse Plus<br>Heltec T114<br>Elecrow M1 and M6|double click (within 0.5 seconds) onto the SoftRF device RESET button
+   Seeed T1000-E<br>Seeed X1|connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed
    Elecrow M3|press and keep holding the device button for more than 20 seconds
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with a device specific label should appear in your "File manager" afterwards.<br>
