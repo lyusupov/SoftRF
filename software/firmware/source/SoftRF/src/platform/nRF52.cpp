@@ -333,6 +333,7 @@ ui_settings_t *ui;
 #if !defined(EXCLUDE_BHI260)
 #include <SensorBHI260AP.hpp>
 #include <bosch/BoschSensorDataHelper.hpp>
+#include <Adafruit_LIS3DH.h>
 
 #if defined(USE_BHI260_RAM_FW)
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
@@ -349,7 +350,10 @@ ICM_20948_I2C   imu_2;
 QMA6100P        imu_3;
 #if !defined(EXCLUDE_BHI260)
 SensorBHI260AP  imu_4;
+#endif /* EXCLUDE_BHI260 */
+Adafruit_LIS3DH imu_5;
 
+#if !defined(EXCLUDE_BHI260)
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
 SensorXYZ bhi_accel(SensorBHI260AP::ACCEL_PASSTHROUGH, imu_4);
 // SensorXYZ bhi_gyro(SensorBHI260AP::GYRO_PASSTHROUGH, imu_4);
@@ -1155,7 +1159,8 @@ static void nRF52_setup()
         }
       }
     }
-  } else if (nRF52_board == NRF52_ELECROW_TN_M3) {
+  } else if (nRF52_board == NRF52_ELECROW_TN_M3 ||
+             nRF52_board == NRF52_ELECROW_TN_M8) {
     Wire.beginTransmission(SC7A20H_ADDRESS_H);
     nRF52_has_imu = (Wire.endTransmission() == 0);
   }
@@ -1861,9 +1866,15 @@ static void nRF52_setup()
         break;
 
       case NRF52_ELECROW_TN_M3:
-        /* TBD */
-        hw_info.imu     = ACC_SC7A20H;
-        IMU_Time_Marker = millis();
+      case NRF52_ELECROW_TN_M8:
+        Wire.begin();
+        imu_5 = Adafruit_LIS3DH(&Wire);
+        if (imu_5.begin(SC7A20H_ADDRESS_H, 0x11)) {
+          imu_5.setRange(LIS3DH_RANGE_4_G);
+
+          hw_info.imu     = ACC_SC7A20H;
+          IMU_Time_Marker = millis();
+        }
         break;
 
       case NRF52_LILYGO_TIMPULSE_PLUS:
@@ -2561,54 +2572,68 @@ static void nRF52_loop()
 #endif /* USE_WEBUSB_SETTINGS */
 
 #if !defined(EXCLUDE_IMU)
-  if (hw_info.imu == IMU_MPU9250 &&
-      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    if (imu_1.update()) {
-      float a_x = imu_1.getAccX();
-      float a_y = imu_1.getAccY();
-      float a_z = imu_1.getAccZ();
+  if ((millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
+    float a_x = 0;
+    float a_y = 0;
+    float a_z = 0;
 
-      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
+    switch (hw_info.imu)
+    {
+      case IMU_MPU9250:
+        if (imu_1.update()) {
+          a_x = imu_1.getAccX();
+          a_y = imu_1.getAccY();
+          a_z = imu_1.getAccZ();
+        }
+        break;
+
+      case IMU_ICM20948:
+        if (imu_2.dataReady()) {
+          imu_2.getAGMT();
+
+          // milli g's
+          a_x = imu_2.accX() / 1000;
+          a_y = imu_2.accY() / 1000;
+          a_z = imu_2.accZ() / 1000;
+        }
+        break;
+
+      case ACC_QMA6100P:
+        {
+          outputData data;
+
+          imu_3.getAccelData(&data);
+          imu_3.offsetValues(data.xData, data.yData, data.zData);
+
+          a_x = data.xData;
+          a_y = data.yData;
+          a_z = data.zData;
+        }
+        break;
+
+#if 0 /* TODO */ // !defined(EXCLUDE_BHI260)
+      case IMU_BHI260AP:
+        imu_4.update();
+
+        if (bhi_accel.hasUpdated()) {
+          a_x = bhi_accel.getX(); /* TBD */
+          a_y = bhi_accel.getY(); /* TBD */
+          a_z = bhi_accel.getZ(); /* TBD */
+        }
+        break;
+#endif /* EXCLUDE_BHI260 */
+
+      case ACC_SC7A20H:
+        imu_5.read();
+        a_x = imu_5.x_g;
+        a_y = imu_5.y_g;
+        a_z = imu_5.z_g;
+        break;
+
+      default:
+        break;
     }
-    IMU_Time_Marker = millis();
-  }
 
-  if (hw_info.imu == IMU_ICM20948 &&
-      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    if (imu_2.dataReady()) {
-      imu_2.getAGMT();
-
-      // milli g's
-      float a_x = imu_2.accX();
-      float a_y = imu_2.accY();
-      float a_z = imu_2.accZ();
-#if 0
-      Serial.print("{ACCEL: ");
-      Serial.print(a_x);
-      Serial.print(",");
-      Serial.print(a_y);
-      Serial.print(",");
-      Serial.print(a_z);
-      Serial.println("}");
-#endif
-      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z) / 1000;
-#if defined(USE_OLED)
-      IMU_g_x10 = (int32_t) (IMU_g * 10);
-#endif /* USE_OLED */
-    }
-    IMU_Time_Marker = millis();
-  }
-
-  if (hw_info.imu == ACC_QMA6100P &&
-      (millis() - IMU_Time_Marker) > IMU_UPDATE_INTERVAL) {
-    outputData data;
-
-    imu_3.getAccelData(&data);
-    imu_3.offsetValues(data.xData, data.yData, data.zData);
-
-    float a_x = data.xData;
-    float a_y = data.yData;
-    float a_z = data.zData;
 #if 0
     Serial.print("{ACCEL: ");
     Serial.print(a_x);
@@ -2618,35 +2643,21 @@ static void nRF52_loop()
     Serial.print(a_z);
     Serial.println("}");
 #endif
+
     IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z);
-    IMU_Time_Marker = millis();
-  }
 
-#if 0 /* TODO */ // !defined(EXCLUDE_BHI260)
-  if (hw_info.imu == IMU_BHI260AP &&
-      (millis() - IMU_Time_Marker) > (IMU_UPDATE_INTERVAL / 10)) {
-    // Update sensor fifo
-    imu_4.update();
-
-    if (bhi_accel.hasUpdated()) {
-      float a_x = bhi_accel.getX();
-      float a_y = bhi_accel.getY();
-      float a_z = bhi_accel.getZ();
 #if 0
-      Serial.print("{ACCEL: ");
-      Serial.print(a_x);
-      Serial.print(",");
-      Serial.print(a_y);
-      Serial.print(",");
-      Serial.print(a_z);
-      Serial.println("}");
+    Serial.print("G load: ");
+    Serial.print(IMU_g);
+    Serial.println();
 #endif
-      IMU_g = sqrtf(a_x*a_x + a_y*a_y + a_z*a_z); /* TBD */
-    }
+
+#if defined(USE_OLED)
+    IMU_g_x10 = (int32_t) (IMU_g * 10);
+#endif /* USE_OLED */
 
     IMU_Time_Marker = millis();
   }
-#endif /* EXCLUDE_BHI260 */
 #endif /* EXCLUDE_IMU */
 
   if ((nRF52_board     == NRF52_SEEED_T1000E      ||
@@ -2689,25 +2700,29 @@ static void nRF52_fini(int reason)
 #endif /* ARDUINO_ARCH_MBED */
 
 #if !defined(EXCLUDE_IMU)
-  if (hw_info.imu == IMU_MPU9250) {
-    imu_1.sleep(true);
-  }
-
-  if (hw_info.imu == IMU_ICM20948) {
-    imu_2.sleep(true);
-    // imu_2.lowPower(true);
-  }
-
-  if (hw_info.imu == ACC_QMA6100P) {
-    imu_3.enableAccel(false);
-  }
-
-#if !defined(EXCLUDE_BHI260)
-  if (hw_info.imu == IMU_BHI260AP) {
-    /* TBD */
-    // imu_4.deinit();
-  }
+  switch (hw_info.imu)
+  {
+    case IMU_MPU9250:
+      imu_1.sleep(true);
+      break;
+    case IMU_ICM20948:
+      imu_2.sleep(true);
+      break;
+    case ACC_QMA6100P:
+      imu_3.enableAccel(false);
+      break;
+#if 0 /* TODO */ // !defined(EXCLUDE_BHI260)
+    case IMU_BHI260AP:
+      /* TBD */
+      // imu_4.deinit();
+      break;
 #endif /* EXCLUDE_BHI260 */
+    case ACC_SC7A20H:
+      /* TBD */
+      break;
+    default:
+      break;
+  }
 #endif /* EXCLUDE_IMU */
 
   switch (nRF52_board)
