@@ -38,7 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino Core for ESP32 is developed by **Hristo Gochkov**
  * Adafruit BMP085 library is developed by **Limor Fried** ( **Ladyada** )
  * Adafruit BMP280 library is developed by **Kevin Townsend**
- * Adafruit MPL3115A2 library is developed by **Limor Fried** and **Kevin Townsend**
+ * Adafruit MPL3115A2 and LIS3DH libraries are developed by **Limor Fried** and **Kevin Townsend**
  * U8g2 monochrome LCD, OLED and eInk library is developed by **Oliver Kraus**
  * NeoPixelBus library is developed by **Michael Miller**
  * jQuery library is developed by **JS Foundation**
