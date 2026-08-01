@@ -80,6 +80,7 @@ enum nRF52_board_id {
   NRF52_LILYGO_TECHO_REV_1,     /* 2020-12-12 */
   NRF52_LILYGO_TECHO_REV_2,     /* 2021-3-26 */
   NRF52_LILYGO_TECHO_PLUS,      /* 2025 */
+  NRF52_LILYGO_TECHO_CARD,
   NRF52_LILYGO_TIMPULSE_PLUS,
   NRF52_SEEED_T1000E,
   NRF52_SEEED_WIO_L1,
@@ -147,6 +148,7 @@ struct rst_info {
 #define SPA06_ADDRESS         (0x77) /* SDO = HIGH */
 #define SGM41562_ADDRESS      (0x03)
 #define LSM6DSO_ADDRESS       (0x6A)
+#define YSN8900_ADDRESS       (0x32)
 
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
 #define PCF8563_SLAVE_ADDRESS (0x51)
@@ -160,6 +162,7 @@ struct rst_info {
 #define MIDI_CHANNEL_VARIO    2
 
 #include "iomap/LilyGO_TEcho.h"
+#include "iomap/LilyGO_TEcho_Card.h"
 #include "iomap/LilyGO_TImpulse_Plus.h"
 #include "iomap/Seeed_T1000E.h"
 #include "iomap/Seeed_T2000.h"

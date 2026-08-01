@@ -25,7 +25,7 @@ enum
 {
   RTC_NONE,
   RTC_PCF8563,
-  RTC_YSN8900,
+  RTC_YSN8900, /* Epson RX8900 */
 };
 
 typedef struct UpTime_struct {
