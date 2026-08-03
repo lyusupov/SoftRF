@@ -38,7 +38,7 @@
 
 /* button(s) */
 #define SOC_GPIO_PIN_TEC_BUTTON    _PINNUM(1, 10) // P1.10 active LOW
-#define SOC_GPIO_PIN_TEC_BTN1      _PINNUM(0, 24) // P0.24 active LOW
+#define SOC_GPIO_PIN_TEC_BOOT      _PINNUM(0, 24) // P0.24 active LOW
 
 /* NeoPixels */
 #define SOC_GPIO_LED_TEC_LED1      _PINNUM(0, 28) // P0.28

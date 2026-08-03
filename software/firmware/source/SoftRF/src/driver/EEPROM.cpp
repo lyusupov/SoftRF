@@ -91,6 +91,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.rf_protocol   = hw_info.model == SOFTRF_MODEL_BRACELET ||
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
                                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
+                                              hw_info.model == SOFTRF_MODEL_CARD_MK3 ||
                                               hw_info.model == SOFTRF_MODEL_POCKET   ||
                                               hw_info.model == SOFTRF_MODEL_RUGGED   ||
                                               hw_info.model == SOFTRF_MODEL_STYLUS    ?
@@ -107,6 +108,7 @@ void EEPROM_defaults()
                                               AIRCRAFT_TYPE_STATIC :
                                               hw_info.model == SOFTRF_MODEL_CARD     ||
                                               hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
+                                              hw_info.model == SOFTRF_MODEL_CARD_MK3 ||
                                               hw_info.model == SOFTRF_MODEL_POCKET   ||
                                               hw_info.model == SOFTRF_MODEL_STYLUS    ?
                                               AIRCRAFT_TYPE_PARAGLIDER :
@@ -131,6 +133,7 @@ void EEPROM_defaults()
 #if defined(USE_PWM_SOUND)
     if (hw_info.model == SOFTRF_MODEL_CARD     ||
         hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
+        hw_info.model == SOFTRF_MODEL_CARD_MK3 ||
         hw_info.model == SOFTRF_MODEL_HANDHELD ||
         hw_info.model == SOFTRF_MODEL_POCKET   ||
         hw_info.model == SOFTRF_MODEL_DECENT) {
@@ -171,6 +174,7 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_out   = hw_info.model == SOFTRF_MODEL_BADGE    ||
                                            hw_info.model == SOFTRF_MODEL_CARD     ||
                                            hw_info.model == SOFTRF_MODEL_CARD_MK2 ||
+                                           hw_info.model == SOFTRF_MODEL_CARD_MK3 ||
                                            hw_info.model == SOFTRF_MODEL_COZY     ||
                                            hw_info.model == SOFTRF_MODEL_HANDHELD ||
                                            hw_info.model == SOFTRF_MODEL_SOLARIS  ||

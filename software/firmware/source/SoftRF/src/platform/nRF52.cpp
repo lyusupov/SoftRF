@@ -657,12 +657,11 @@ static bool play_file(char *filename)
           if (n == 4) {
             state = DATA;
           }
-#if 0
-          I2S_begin(SOC_GPIO_PIN_I2S_TULTIMA_DOUT,
-                    SOC_GPIO_PIN_I2S_TULTIMA_BCK,
-                    SOC_GPIO_PIN_I2S_TULTIMA_LRCK,
-                    SOC_GPIO_PIN_I2S_TULTIMA_MCK);
-#endif
+
+          I2S_begin(SOC_GPIO_PIN_I2S_TEC_DOUT,
+                    SOC_GPIO_PIN_I2S_TEC_BCK,
+                    SOC_GPIO_PIN_I2S_TEC_LRCK,
+                    SOC_GPIO_PIN_I2S_TEC_MCK);
           I2S_setSampleRate(wavProps.sampleRate);
         }
         break;
@@ -714,6 +713,14 @@ static bool uSD_is_attached = false;
 #if !defined(EXCLUDE_LED_RING)
 Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
                                                   NEO_GRB + NEO_KHZ800);
+#if 0
+Adafruit_NeoPixel TEC_Pixel1  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED1,
+                                                  NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel TEC_Pixel2  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED2,
+                                                  NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel TEC_Pixel3  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED3,
+                                                  NEO_GRB + NEO_KHZ800);
+#endif
 #endif /* EXCLUDE_LED_RING */
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -1438,6 +1445,12 @@ static void nRF52_setup()
 
       digitalWrite(SOC_GPIO_PIN_TEC_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_TEC_VBAT_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_I2S_TEC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_I2S_TEC_EN, OUTPUT);
+
+      digitalWrite(SOC_GPIO_PIN_I2S_TEC_PWR, HIGH);
+      pinMode(SOC_GPIO_PIN_I2S_TEC_PWR, OUTPUT);
       /* TBD */
       break;
 
@@ -1755,9 +1768,30 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_GNSS_TEC_SW, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_TEC_SW, OUTPUT);
 
+#if !defined(EXCLUDE_LED_RING)
+#if 0
+      TEC_Pixel1.begin();
+      TEC_Pixel1.setPixelColor(0, LED_COLOR_GREEN);
+      TEC_Pixel1.show();
+      TEC_Pixel2.begin();
+      TEC_Pixel2.show(); // Initialize pixel to 'off'
+      TEC_Pixel3.begin();
+      TEC_Pixel3.show(); // Initialize pixel to 'off'
+#else
+      T114_Pixels.updateLength(1);
+      T114_Pixels.setPin(SOC_GPIO_LED_TEC_LED1);
+      T114_Pixels.begin();
+      T114_Pixels.setPixelColor(0, LED_COLOR_GREEN);
+      T114_Pixels.show();
+#endif
+#endif /* EXCLUDE_LED_RING */
+
       lmic_pins.nss  = SOC_GPIO_PIN_TEC_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_TEC_RST;
       lmic_pins.busy = SOC_GPIO_PIN_TEC_BUSY;
+
+      lmic_pins.txe  = SOC_GPIO_PIN_TEC_TX_EN;
+      lmic_pins.rxe  = SOC_GPIO_PIN_TEC_RX_EN;
 
       pinMode(SOC_GPIO_PIN_TEC_INT, INPUT);
 
@@ -2154,8 +2188,8 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
-      nRF52_board == NRF52_ELECROW_TN_M1      ||
       nRF52_board == NRF52_LILYGO_TECHO_CARD  ||
+      nRF52_board == NRF52_ELECROW_TN_M1      ||
       nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
 
 #if 0
@@ -2212,12 +2246,15 @@ static void nRF52_post_init()
                    hw_info.display == DISPLAY_OLED_0_49 ||
                    hw_info.display == DISPLAY_EPD_3_71 ? F("PASS") : F("FAIL"));
     Serial.flush();
-    if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
+    if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS ||
+        nRF52_board == NRF52_LILYGO_TECHO_CARD) {
       Serial.print(F("IMU     : "));
       Serial.println(hw_info.imu   == IMU_ICM20948     ? F("PASS") : F("FAIL"));
+     if (nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS) {
       Serial.print(F("BMU     : "));
       Serial.println(hw_info.pmu   == BMU_SGM41562     ? F("PASS") : F("FAIL"));
       Serial.flush();
+     }
     } else {
       Serial.print(F("RTC     : "));
       Serial.println(hw_info.rtc   == RTC_PCF8563      ? F("PASS") : F("FAIL"));
@@ -2252,15 +2289,17 @@ static void nRF52_post_init()
     Serial.flush();
 
 #if 0
+    if (nRF52_board == NRF52_LILYGO_TECHO_CARD) {
 #if defined(USE_EXT_I2S_DAC)
-    char filename[MAX_FILENAME_LEN];
-    strcpy(filename, WAV_FILE_PREFIX);
-    strcat(filename, "POST");
-    strcat(filename, WAV_FILE_SUFFIX);
-    if (FATFS_is_mounted && fatfs.exists(filename)) {
-      play_file(filename);
-    }
+      char filename[MAX_FILENAME_LEN];
+      strcpy(filename, WAV_FILE_PREFIX);
+      strcat(filename, "POST");
+      strcat(filename, WAV_FILE_SUFFIX);
+      if (FATFS_is_mounted && fatfs.exists(filename)) {
+        play_file(filename);
+      }
 #endif /* USE_EXT_I2S_DAC */
+    }
 #endif
 
 #if defined(ENABLE_NFC) && defined(EXCLUDE_BLUETOOTH)
@@ -2739,6 +2778,7 @@ static void nRF52_loop()
        nRF52_board     == NRF52_ELECROW_TN_M3     ||
        nRF52_board     == NRF52_ELECROW_TN_M8     ||
        nRF52_board     == NRF52_LILYGO_TECHO_PLUS ||
+       nRF52_board     == NRF52_LILYGO_TECHO_CARD ||
        nRF52_board     == NRF52_SEEED_WIO_L1)     &&
       settings->volume != BUZZER_OFF              &&
       settings->mode   == SOFTRF_MODE_NORMAL      &&
@@ -3046,6 +3086,35 @@ static void nRF52_fini(int reason)
 #endif
         Wire1.end();
       }
+      break;
+
+    case NRF52_LILYGO_TECHO_CARD:
+//      pinMode(SOC_GPIO_PIN_GNSS_TEC_WKE,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_TEC_PWR, INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_TEC_SW,  INPUT);
+
+#if !defined(EXCLUDE_LED_RING)
+#if 0
+      TEC_Pixel1.setPixelColor(0, LED_COLOR_BLACK);
+      TEC_Pixel1.show();
+#else
+      T114_Pixels.setPixelColor(0, LED_COLOR_BLACK);
+      T114_Pixels.show();
+#endif
+#endif /* EXCLUDE_LED_RING */
+
+      pinMode(SOC_GPIO_PIN_SFL_TEC_HOLD, INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_TEC_WP,   INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_TEC_SS,   INPUT);
+
+      pinMode(SOC_GPIO_PIN_TEC_RX_EN,    INPUT);
+      pinMode(SOC_GPIO_PIN_TEC_TX_EN,    INPUT);
+
+      pinMode(SOC_GPIO_PIN_I2S_TEC_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_I2S_TEC_PWR,  INPUT);
+
+      pinMode(SOC_GPIO_PIN_TEC_VBAT_EN,  INPUT);
+      pinMode(SOC_GPIO_PIN_TEC_3V3_EN,   INPUT_PULLDOWN); /* LOW ? */
       break;
 
     case NRF52_SEEED_X1:
@@ -4387,6 +4456,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD_MK3 ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_THRESHOLD_LIPO   :
                                                     BATTERY_THRESHOLD_NIMHX2;
     break;
@@ -4402,6 +4472,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_POCKET   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_RUGGED   ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_CARD_MK3 ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_CUTOFF_LIPO   :
                                                     BATTERY_CUTOFF_NIMHX2;
     break;

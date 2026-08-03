@@ -145,13 +145,14 @@ The Bootloader is capable to self-program an application firmware into the devic
 3. Enter into Adafruit bootloader USB Mass Storage mode
    Device|Action
    ---|---
-   LilyGO T-Echo<br>LilyGO T-Impulse Plus<br>Heltec T114<br>Elecrow M1 and M6|double click (within 0.5 seconds) onto the SoftRF device RESET button
+   LilyGO T-Echo<br>LilyGO T-Echo Card<br>LilyGO T-Impulse Plus<br>Heltec T114<br>Elecrow M1 and M6|double click (within 0.5 seconds) onto the SoftRF device RESET button
    Seeed T1000-E<br>Seeed X1|connect twice (within 0.5 seconds) the USB cable while holding the device button been pressed
    Elecrow M3|press and keep holding the device button for more than 20 seconds
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A virtual disk with a device specific label should appear in your "File manager" afterwards.<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **LilyGO T-Echo** the label is &nbsp; **TECHOBOOT** (or **NRF52BOOT**)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **LilyGO T-Echo Card**  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **NRF52BOOT**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **LilyGO T-Impulse Plus**  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **NRF52BOOT**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **Seeed T1000-E** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **T1000-E**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For **Seeed X1** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **X1**<br>
