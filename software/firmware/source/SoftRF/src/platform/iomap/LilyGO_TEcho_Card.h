@@ -9,7 +9,7 @@
 
 #define SOC_GPIO_PIN_GNSS_TEC_PPS  _PINNUM(0, 23) // P0.23
 #define SOC_GPIO_PIN_GNSS_TEC_WKE  _PINNUM(0, 25) // P0.25
-#define SOC_GPIO_PIN_GNSS_TEC_PWR  _PINNUM(1, 15) // P1.15 active LOW ?
+#define SOC_GPIO_PIN_GNSS_TEC_PWR  _PINNUM(1, 15) // P1.15 active LOW
 #define SOC_GPIO_PIN_GNSS_TEC_SW   _PINNUM(0, 29) // P0.29 active HIGH ?
 
 /* SPI */
@@ -18,7 +18,7 @@
 #define SOC_GPIO_PIN_TEC_SCK       _PINNUM(0, 13) // P0.13
 #define SOC_GPIO_PIN_TEC_SS        _PINNUM(0, 11) // P0.11
 
-/* SX1262 (AcSiP S68F) */
+/* SX1262 (AcSiP S62F) */
 #define SOC_GPIO_PIN_TEC_RST       _PINNUM(0,  7) // P0.07
 #define SOC_GPIO_PIN_TEC_DIO1      _PINNUM(1,  8) // P1.08
 #define SOC_GPIO_PIN_TEC_DIO2      _PINNUM(0,  5) // P0.05
@@ -39,6 +39,9 @@
 /* button(s) */
 #define SOC_GPIO_PIN_TEC_BUTTON    _PINNUM(1, 10) // P1.10 active LOW
 #define SOC_GPIO_PIN_TEC_BOOT      _PINNUM(0, 24) // P0.24 active LOW
+
+/* LED */
+#define SOC_GPIO_LED_TEC_LED       _PINNUM(1, 14) // P1.14
 
 /* NeoPixels */
 #define SOC_GPIO_LED_TEC_LED1      _PINNUM(0, 28) // P0.28
@@ -83,6 +86,20 @@
     .single_status_byte = false, .is_fram = false,                             \
   }
 #endif /* ZD25WQ32C */
+
+#if !defined(ZD25Q32D)
+// Settings for the Zetta Device ZD25Q32D 4MiB SPI flash.
+#define ZD25Q32D                                                               \
+  {                                                                            \
+    .total_size = (1UL << 22), /* 4 MiB */                                     \
+    .start_up_time_us = 12000, .manufacturer_id = 0xba,                        \
+    .memory_type = 0x40, .capacity = 0x16, .max_clock_speed_mhz = 133,         \
+    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = true,         \
+    .single_status_byte = false, .is_fram = false,                             \
+  }
+#endif /* ZD25Q32D */
 
 /* ADC */
 #define SOC_GPIO_PIN_TEC_BATTERY   _PINNUM(0,  2) // P0.02 100K-!00K

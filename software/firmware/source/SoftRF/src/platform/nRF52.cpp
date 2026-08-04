@@ -244,7 +244,9 @@ static uint8_t mx25_status_config[3] = {0x00, 0x00, 0x00};
 enum {
   MX25R1635F_INDEX,
   ZD25WQ16B_INDEX,
+
   ZD25WQ32C_INDEX,
+  ZD25Q32D_INDEX,
 
   GD25Q64C_INDEX,
 #if !defined(EXCLUDE_WIP)
@@ -259,8 +261,11 @@ static SPIFlash_Device_t possible_devices[] = {
   [MX25R1635F_INDEX] = MX25R1635F,
   // LilyGO T-Echo
   [ZD25WQ16B_INDEX]  = ZD25WQ16B,
-  // LilyGO T-Impulse Plus
+
+  // LilyGO T-Impulse Plus, T-Echo Card
   [ZD25WQ32C_INDEX]  = ZD25WQ32C,
+  [ZD25Q32D_INDEX]   = ZD25Q32D,
+
   // Seeed T1000-E, X1
   [GD25Q64C_INDEX]   = GD25Q64C,
 #if !defined(EXCLUDE_WIP)
@@ -1750,6 +1755,9 @@ static void nRF52_setup()
       lmic_pins.nss  = SOC_GPIO_PIN_TIP_SS;
       lmic_pins.rst  = SOC_GPIO_PIN_TIP_RST;
       lmic_pins.busy = SOC_GPIO_PIN_TIP_BUSY;
+
+      lmic_pins.txe  = SOC_GPIO_PIN_TIP_TX_EN;
+      lmic_pins.rxe  = SOC_GPIO_PIN_TIP_RX_EN;
 
       pinMode(SOC_GPIO_PIN_TIP_INT1, INPUT);
       pinMode(SOC_GPIO_PIN_TIP_INT2, INPUT);

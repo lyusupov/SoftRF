@@ -226,7 +226,7 @@ $ make ihex
 
 You will need to have an ST-LINK/V2 USB adapter connected in order to put the firmware into your hardware's flash memory.<br>
 
-1. Follow [these official instructions](https://github.com/stm32duino/wiki/wiki/Getting-Started)
+1. Follow these official instructions [Version 1.x](https://github.com/stm32duino/Arduino_Core_STM32/tree/1.9.0#getting-started) or [Version 2.x](https://github.com/stm32duino/Arduino_Core_STM32/tree/2.4.0#getting-started)
   to install Arduino IDE and **certain version** of Arduino STM32 Core -<!-- [latest **stable** Arduino STM32 Core](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0) (1.9.0) --><br>
     For **S76G**:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[**1.9.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0)<br>
     For **STM32F103C8** "Blue Pill":&nbsp;&nbsp;&nbsp;[**1.9.0**](https://github.com/stm32duino/Arduino_Core_STM32/releases/tag/1.9.0)<br>

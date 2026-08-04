@@ -16,7 +16,7 @@
 #define SOC_GPIO_PIN_TIP_SCK       _PINNUM(0,  3) // P0.03
 #define SOC_GPIO_PIN_TIP_SS        _PINNUM(1, 14) // P1.14
 
-/* SX1262 (AcSiP S68F) */
+/* SX1262 (AcSiP S62F) */
 #define SOC_GPIO_PIN_TIP_RST       _PINNUM(0,  2) // P0.02
 #define SOC_GPIO_PIN_TIP_DIO1      _PINNUM(0, 29) // P0.29
 #define SOC_GPIO_PIN_TIP_DIO2      _PINNUM(1, 15) // P1.15
@@ -57,6 +57,7 @@
 #define SOC_GPIO_PIN_SFL_TIP_HOLD  _PINNUM(0, 26) // P0.26
 #define SOC_GPIO_PIN_SFL_TIP_WP    _PINNUM(0,  8) // P0.08
 
+#if !defined(ZD25WQ32C)
 // Settings for the Zetta Device ZD25WQ32C 4MiB SPI flash.
 // Datasheet: http://en.zettadevice.com/uploads/files/1009/WQ32C/1665301640977617c282766299.pdf
 #define ZD25WQ32C                                                              \
@@ -69,6 +70,21 @@
     .supports_qspi_writes = true, .write_status_register_split = false,        \
     .single_status_byte = false, .is_fram = false,                             \
   }
+#endif /* ZD25WQ32C */
+
+#if !defined(ZD25Q32D)
+// Settings for the Zetta Device ZD25Q32D 4MiB SPI flash.
+#define ZD25Q32D                                                               \
+  {                                                                            \
+    .total_size = (1UL << 22), /* 4 MiB */                                     \
+    .start_up_time_us = 12000, .manufacturer_id = 0xba,                        \
+    .memory_type = 0x40, .capacity = 0x16, .max_clock_speed_mhz = 133,         \
+    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = true,         \
+    .single_status_byte = false, .is_fram = false,                             \
+  }
+#endif /* ZD25Q32D */
 
 /* ADC */
 #define SOC_GPIO_PIN_TIP_BATTERY   _PINNUM(0,  5) // P0.05 100K-!00K
