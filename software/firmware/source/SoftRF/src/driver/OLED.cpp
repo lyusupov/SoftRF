@@ -176,7 +176,7 @@ byte OLED_setup() {
             hw_info.model == SOFTRF_MODEL_BRACELET ? DISPLAY_OLED_0_49   :
             hw_info.model == SOFTRF_MODEL_DECENT   ? DISPLAY_OLED_1_3    :
             hw_info.model == SOFTRF_MODEL_STYLUS   ? DISPLAY_OLED_0_49   :
-            hw_info.model == SOFTRF_MODEL_CARD_MK3 ? DISPLAY_OLED_0_49   :
+            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? DISPLAY_OLED_0_49   :
             DISPLAY_OLED_TTGO);
   }
 

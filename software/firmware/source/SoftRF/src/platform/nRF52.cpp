@@ -911,8 +911,8 @@ static void nRF52_setup()
       break;
 
     case NRF52_SEEED_X1:
-      hw_info.model      = SOFTRF_MODEL_CARD_MK2;
-      nRF5x_Device_Model = "Card Edition Mk2";
+      hw_info.model      = SOFTRF_MODEL_CARD_MK3;
+      nRF5x_Device_Model = "Card Edition Mk3";
       nRF52_USB_VID      = 0x2886; /* Seeed Technology */
       nRF52_USB_PID      = 0x0057;
 #if 0 /* TODO */
@@ -1048,8 +1048,8 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TECHO_CARD:
-      hw_info.model      = SOFTRF_MODEL_CARD_MK3;
-      nRF5x_Device_Model = "Card Edition Mk3";
+      hw_info.model      = SOFTRF_MODEL_CARD_MK2;
+      nRF5x_Device_Model = "Card Edition Mk2";
 
       if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
@@ -3189,9 +3189,13 @@ static void nRF52_fini(int reason)
   // pinMode(SOC_GPIO_PIN_SCK,  INPUT);
 
   /* TBD */
-  if (nRF52_board != NRF52_SEEED_T1000E  &&
-      nRF52_board != NRF52_SEEED_X1      &&
-      nRF52_board != NRF52_ELECROW_TN_M3) {
+  if (nRF52_board != NRF52_SEEED_T1000E         &&
+      nRF52_board != NRF52_SEEED_X1             &&
+      nRF52_board != NRF52_LILYGO_TECHO_CARD    &&
+      nRF52_board != NRF52_LILYGO_TIMPULSE_PLUS &&
+      nRF52_board != NRF52_ELECROW_TN_M3        &&
+      nRF52_board != NRF52_ELECROW_TN_M6        &&
+      nRF52_board != NRF52_ELECROW_TN_M8) {
     pinMode(SOC_GPIO_PIN_SS, INPUT_PULLUP);
   }
 

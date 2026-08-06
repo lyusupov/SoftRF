@@ -5227,7 +5227,7 @@ static void lr20xx_setup()
       Vtcxo = 0.0; /* XTAL */
     }
     break;
-  case SOFTRF_MODEL_CARD_MK2:
+  case SOFTRF_MODEL_CARD_MK3:
     radio_g4->irqDioNum = 8; /* DIO8 as IRQ on Seeed X1 */
     Vtcxo = 1.6;
     break;
@@ -5683,7 +5683,7 @@ static void lr20xx_setup()
 
   switch (hw_info.model)
   {
-  case SOFTRF_MODEL_CARD_MK2:
+  case SOFTRF_MODEL_CARD_MK3:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_x1,
                                rfswitch_table_seeed_x1);
     break;
