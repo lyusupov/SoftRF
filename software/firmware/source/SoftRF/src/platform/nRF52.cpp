@@ -925,6 +925,9 @@ static void nRF52_setup()
         nRF52_system_off();
       }
 #endif
+
+      digitalWrite(SOC_GPIO_PIN_X1_3V3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_X1_3V3_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_SFL_X1_EN, HIGH);
       pinMode(SOC_GPIO_PIN_SFL_X1_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_X1_HAPTIC_EN, HIGH);
@@ -1031,6 +1034,7 @@ static void nRF52_setup()
       }
 
       pinMode(SOC_GPIO_PIN_SFL_M6_EN, INPUT_PULLUP);
+
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
@@ -1045,6 +1049,11 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
         nRF52_system_off();
       }
+
+      digitalWrite(SOC_GPIO_PIN_TIP_3V3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_TIP_3V3_EN, OUTPUT);
+      delay(30);
+
       break;
 
     case NRF52_LILYGO_TECHO_CARD:
@@ -1059,6 +1068,11 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
         nRF52_system_off();
       }
+
+      digitalWrite(SOC_GPIO_PIN_TEC_3V3_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_TEC_3V3_EN, OUTPUT);
+      delay(30);
+
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -1436,18 +1450,12 @@ static void nRF52_setup()
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
-      digitalWrite(SOC_GPIO_PIN_TIP_3V3_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_TIP_3V3_EN, OUTPUT);
-
       digitalWrite(SOC_GPIO_PIN_TIP_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_TIP_VBAT_EN, OUTPUT);
       /* TBD */
       break;
 
     case NRF52_LILYGO_TECHO_CARD:
-      digitalWrite(SOC_GPIO_PIN_TEC_3V3_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_TEC_3V3_EN, OUTPUT);
-
       digitalWrite(SOC_GPIO_PIN_TEC_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_TEC_VBAT_EN, OUTPUT);
 
@@ -1460,9 +1468,6 @@ static void nRF52_setup()
       break;
 
     case NRF52_SEEED_X1:
-      digitalWrite(SOC_GPIO_PIN_X1_3V3_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_X1_3V3_EN, OUTPUT);
-
       digitalWrite(SOC_GPIO_PIN_X1_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_X1_VBAT_EN, OUTPUT);
       /* TBD */
