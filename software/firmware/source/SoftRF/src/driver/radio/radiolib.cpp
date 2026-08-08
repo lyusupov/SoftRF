@@ -4900,18 +4900,33 @@ static uint64_t lr20xx_eui_be = 0xdeadbeefdeadbeef;
 mode_s_t rl_mode_s_state;
 #endif /* EXCLUDE_ES1090 */
 
-static const uint32_t rfswitch_dio_pins_MXD8721[] = {
+static const uint32_t rfswitch_dio_pins_MXD8721_V02[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6,
     RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
 };
 
-static const Module::RfSwitchMode_t rfswitch_table_MXD8721[] = {
+static const Module::RfSwitchMode_t rfswitch_table_MXD8721_V02[] = {
     // mode                  DIO5  DIO6
     { LR2021::MODE_STBY,   { LOW,  LOW  } },
     { LR2021::MODE_RX,     { LOW,  HIGH } },
     { LR2021::MODE_TX,     { LOW,  HIGH } },
     { LR2021::MODE_RX_HF,  { HIGH, LOW  } },
     { LR2021::MODE_TX_HF,  { HIGH, LOW  } },
+    LR2021::MODE_END_OF_TABLE,
+};
+
+static const uint32_t rfswitch_dio_pins_MXD8721_V03[] = {
+    RADIOLIB_LR2021_DIO8, RADIOLIB_LR2021_DIO10,
+    RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t rfswitch_table_MXD8721_V03[] = {
+    // mode                  DIO8  DIO10
+    { LR2021::MODE_STBY,   { LOW,  LOW  } },
+    { LR2021::MODE_RX,     { HIGH, LOW  } },
+    { LR2021::MODE_TX,     { HIGH, LOW  } },
+    { LR2021::MODE_RX_HF,  { LOW,  HIGH } },
+    { LR2021::MODE_TX_HF,  { LOW,  HIGH } },
     LR2021::MODE_END_OF_TABLE,
 };
 
@@ -5692,8 +5707,8 @@ static void lr20xx_setup()
     if (SoC->getChipId() == 0x21A44298 /* 25007 */||
         SoC->getChipId() == 0xFCE0D9E0 /* 25007 */||
         SoC->getChipId() == 0x36D2512E /* WCH */) {
-      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
-                                 rfswitch_table_MXD8721);
+      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V02,
+                                 rfswitch_table_MXD8721_V02);
     } else {
       // Wio-LR202x Module @ 868/915M - Switchless design
       // radio_g4->setRfSwitchTable(rfswitch_dio_pins_seeed_wio,
@@ -5723,9 +5738,13 @@ static void lr20xx_setup()
 
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK3:
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V03,
+                               rfswitch_table_MXD8721_V03);
+    break;
+
   default:
-    radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721,
-                               rfswitch_table_MXD8721);
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V02,
+                               rfswitch_table_MXD8721_V02);
     break;
   }
   rl_state = radio_g4->setOutputPower(txpow);
