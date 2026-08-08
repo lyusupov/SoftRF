@@ -5,11 +5,11 @@
 
 DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awareness system for general aviation.
 
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime4-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIV)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card2-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkII)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Stylus-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Stylus-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Retro2-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition-MkII)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Concorde-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Concorde-Edition)
-[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Solaris-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Pocket-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Airventure-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
