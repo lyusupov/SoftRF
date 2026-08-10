@@ -41,6 +41,14 @@
 //#define NRF52_DISABLE_INT
 #endif
 
+#if defined(ARDUINO_ARCH_NRF52840)
+#if defined __has_include
+#if __has_include(<pinDefinitions.h>)
+#include <pinDefinitions.h>
+#endif
+#endif
+#endif
+
 // Constructor when length, pin and type are known at compile-time:
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, neoPixelType t) :
   begun(false), brightness(0), pixels(NULL), endTime(0)  
@@ -1585,6 +1593,8 @@ void Adafruit_NeoPixel::show(void) {
 // PSEL must be configured before enabling PWM
 #if defined(ARDUINO_ARCH_NRF52840)
     pwm->PSEL.OUT[0] = g_APinDescription[pin].name;
+#elif defined(ARDUINO_ARCH_ZEPHYR)
+    /* TODO */
 #else
     pwm->PSEL.OUT[0] = g_ADigitalPinMap[pin];
 #endif
