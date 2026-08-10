@@ -33,7 +33,7 @@
 
 #include "Adafruit_NeoPixel.h"
 
-#if defined(NRF52)
+#if defined(NRF52) || defined(NRF52_SERIES)
 #include "nrf.h"
 
 // Interrupt is only disabled if there is no PWM device available
@@ -342,7 +342,7 @@ void Adafruit_NeoPixel::show(void) {
   // to the PORT register as needed.
 
   // NRF52 may use PWM + DMA (if available), may not need to disable interrupt
-#if !defined(NRF52) && !defined(ESP32)
+#if !(defined(NRF52) || defined(NRF52_SERIES) || defined(ESP32))
   noInterrupts(); // Need 100% focus on instruction timing
 #endif
 
@@ -1402,18 +1402,18 @@ void Adafruit_NeoPixel::show(void) {
 #error "Sorry, only 48 MHz is supported, please set Tools > CPU Speed to 48 MHz"
 #endif // F_CPU == 48000000
 
-// Begin of support for NRF52832 based boards  -------------------------
+  // Begin of support for nRF52 based boards  -------------------------
 
-#elif defined(NRF52)
+#elif defined(NRF52) || defined(NRF52_SERIES)
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
 //                                    by the Hackerspace San Salvador]]]
 // This technique uses the PWM peripheral on the NRF52. The PWM uses the
-// EasyDMA feature included on the chip. This technique loads the duty 
-// cycle configuration for each cycle when the PWM is enabled. For this 
+// EasyDMA feature included on the chip. This technique loads the duty
+// cycle configuration for each cycle when the PWM is enabled. For this
 // to work we need to store a 16 bit configuration for each bit of the
 // RGB(W) values in the pixel buffer.
 // Comparator values for the PWM were hand picked and are guaranteed to
-// be 100% organic to preserve freshness and high accuracy. Current 
+// be 100% organic to preserve freshness and high accuracy. Current
 // parameters are:
 //   * PWM Clock: 16Mhz
 //   * Minimum step time: 62.5ns
@@ -1431,35 +1431,35 @@ void Adafruit_NeoPixel::show(void) {
 //#define MAGIC_T1H              12UL | (0x8000) // 0.75us
 
 // WS2812B (rev B) timing is 0.4 and 0.8 us
-#define MAGIC_T0H               6UL | (0x8000) // 0.375us
-#define MAGIC_T1H              13UL | (0x8000) // 0.8125us
+#define MAGIC_T0H 6UL | (0x8000) // 0.375us
+#define MAGIC_T1H 13UL | (0x8000) // 0.8125us
 
 // WS2811 (400 khz) timing is 0.5 and 1.2
-#define MAGIC_T0H_400KHz        8UL  | (0x8000) // 0.5us
-#define MAGIC_T1H_400KHz        19UL | (0x8000) // 1.1875us
+#define MAGIC_T0H_400KHz 8UL | (0x8000) // 0.5us
+#define MAGIC_T1H_400KHz 19UL | (0x8000) // 1.1875us
 
 // For 400Khz, we double value of CTOPVAL
-#define CTOPVAL                20UL            // 1.25us
-#define CTOPVAL_400KHz         40UL            // 2.5us
+#define CTOPVAL 20UL // 1.25us
+#define CTOPVAL_400KHz 40UL // 2.5us
 
 // ---------- END Constants for the EasyDMA implementation -------------
-// 
+//
 // If there is no device available an alternative cycle-counter
 // implementation is tried.
-// The nRF52832 runs with a fixed clock of 64Mhz. The alternative
+// The nRF52 runs with a fixed clock of 64Mhz. The alternative
 // implementation is the same as the one used for the Teensy 3.0/1/2 but
 // with the Nordic SDK HAL & registers syntax.
-// The number of cycles was hand picked and is guaranteed to be 100% 
+// The number of cycles was hand picked and is guaranteed to be 100%
 // organic to preserve freshness and high accuracy.
 // ---------- BEGIN Constants for cycle counter implementation ---------
-#define CYCLES_800_T0H  18  // ~0.36 uS
-#define CYCLES_800_T1H  41  // ~0.76 uS
-#define CYCLES_800      71  // ~1.25 uS
+#define CYCLES_800_T0H 18 // ~0.36 uS
+#define CYCLES_800_T1H 41 // ~0.76 uS
+#define CYCLES_800 71 // ~1.25 uS
 
-#define CYCLES_400_T0H  26  // ~0.50 uS
-#define CYCLES_400_T1H  70  // ~1.26 uS
-#define CYCLES_400      156 // ~2.50 uS
-// ---------- END of Constants for cycle counter implementation --------
+#define CYCLES_400_T0H 26 // ~0.50 uS
+#define CYCLES_400_T1H 70 // ~1.26 uS
+#define CYCLES_400 156 // ~2.50 uS
+  // ---------- END of Constants for cycle counter implementation --------
 
   // To support both the SoftDevice + Neopixels we use the EasyDMA
   // feature from the NRF25. However this technique implies to
@@ -1471,49 +1471,60 @@ void Adafruit_NeoPixel::show(void) {
   //
   // If there is not enough memory, we will fall back to cycle counter
   // using DWT
-  uint32_t  pattern_size   = numBytes*8*sizeof(uint16_t)+2*sizeof(uint16_t);
-  uint16_t* pixels_pattern = NULL;
+  uint32_t pattern_size =
+      numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t);
+  uint16_t *pixels_pattern = NULL;
 
-  NRF_PWM_Type* pwm = NULL;
+  NRF_PWM_Type *pwm = NULL;
 
   // Try to find a free PWM device, which is not enabled
   // and has no connected pins
-  NRF_PWM_Type* PWM[3] = {NRF_PWM0, NRF_PWM1, NRF_PWM2};
-  for(int device = 0; device<3; device++) {
-    if( (PWM[device]->ENABLE == 0)                            &&
+  NRF_PWM_Type *PWM[] = {
+    NRF_PWM0,
+    NRF_PWM1,
+    NRF_PWM2
+#if defined(NRF_PWM3)
+    ,
+    NRF_PWM3
+#endif
+  };
+
+  for (unsigned int device = 0; device < (sizeof(PWM) / sizeof(PWM[0]));
+       device++) {
+    if ((PWM[device]->ENABLE == 0) &&
         (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) &&
         (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
         (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) &&
-        (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk)
-    ) {
+        (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk)) {
       pwm = PWM[device];
       break;
     }
   }
-  
+
   // only malloc if there is PWM device available
-  if ( pwm != NULL ) {
-    #ifdef ARDUINO_FEATHER52 // use thread-safe malloc
-      pixels_pattern = (uint16_t *) rtos_malloc(pattern_size);
-    #else
-      pixels_pattern = (uint16_t *) malloc(pattern_size);
-    #endif
+  if (pwm != NULL) {
+#if defined(ARDUINO_NRF52_ADAFRUIT) // use thread-safe malloc
+    pixels_pattern = (uint16_t *)rtos_malloc(pattern_size);
+#else
+    pixels_pattern = (uint16_t *)malloc(pattern_size);
+#endif
   }
 
   // Use the identified device to choose the implementation
   // If a PWM device is available use DMA
-  if( (pixels_pattern != NULL) && (pwm != NULL) ) {
+  if ((pixels_pattern != NULL) && (pwm != NULL)) {
     uint16_t pos = 0; // bit position
 
-    for(uint16_t n=0; n<numBytes; n++) {
+    for (uint16_t n = 0; n < numBytes; n++) {
       uint8_t pix = pixels[n];
 
-      for(uint8_t mask=0x80, i=0; mask>0; mask >>= 1, i++) {
-        #ifdef NEO_KHZ400
-        if( !is800KHz ) {
-          pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H_400KHz : MAGIC_T0H_400KHz;
-        }else
-        #endif
+      for (uint8_t mask = 0x80; mask > 0; mask >>= 1) {
+#if defined(NEO_KHZ400)
+        if (!is800KHz) {
+          pixels_pattern[pos] =
+              (pix & mask) ? MAGIC_T1H_400KHz : MAGIC_T0H_400KHz;
+        } else
+#endif
         {
           pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
         }
@@ -1523,22 +1534,23 @@ void Adafruit_NeoPixel::show(void) {
     }
 
     // Zero padding to indicate the end of que sequence
-    pixels_pattern[++pos] = 0 | (0x8000); // Seq end
-    pixels_pattern[++pos] = 0 | (0x8000); // Seq end
+    pixels_pattern[pos++] = 0 | (0x8000); // Seq end
+    pixels_pattern[pos++] = 0 | (0x8000); // Seq end
 
     // Set the wave mode to count UP
     pwm->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
 
     // Set the PWM to use the 16MHz clock
-    pwm->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_1 << PWM_PRESCALER_PRESCALER_Pos);
+    pwm->PRESCALER =
+        (PWM_PRESCALER_PRESCALER_DIV_1 << PWM_PRESCALER_PRESCALER_Pos);
 
     // Setting of the maximum count
     // but keeping it on 16Mhz allows for more granularity just
     // in case someone wants to do more fine-tuning of the timing.
-#ifdef NEO_KHZ400
-    if( !is800KHz ) {
+#if defined(NEO_KHZ400)
+    if (!is800KHz) {
       pwm->COUNTERTOP = (CTOPVAL_400KHz << PWM_COUNTERTOP_COUNTERTOP_Pos);
-    }else
+    } else
 #endif
     {
       pwm->COUNTERTOP = (CTOPVAL << PWM_COUNTERTOP_COUNTERTOP_Pos);
@@ -1557,10 +1569,10 @@ void Adafruit_NeoPixel::show(void) {
     pwm->SEQ[0].PTR = (uint32_t)(pixels_pattern) << PWM_SEQ_PTR_PTR_Pos;
 
     // Calculation of the number of steps loaded from memory.
-    pwm->SEQ[0].CNT = (pattern_size/sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos;
+    pwm->SEQ[0].CNT = (pattern_size / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos;
 
     // The following settings are ignored with the current config.
-    pwm->SEQ[0].REFRESH  = 0;
+    pwm->SEQ[0].REFRESH = 0;
     pwm->SEQ[0].ENDDELAY = 0;
 
     // The Neopixel implementation is a blocking algorithm. DMA
@@ -1568,25 +1580,28 @@ void Adafruit_NeoPixel::show(void) {
     // operation we enable the interruption for the end of sequence
     // and block the execution thread until the event flag is set by
     // the peripheral.
-//    pwm->INTEN |= (PWM_INTEN_SEQEND0_Enabled<<PWM_INTEN_SEQEND0_Pos);
+    //    pwm->INTEN |= (PWM_INTEN_SEQEND0_Enabled<<PWM_INTEN_SEQEND0_Pos);
 
-    // PSEL must be configured before enabling PWM
+// PSEL must be configured before enabling PWM
+#if defined(ARDUINO_ARCH_NRF52840)
+    pwm->PSEL.OUT[0] = g_APinDescription[pin].name;
+#else
     pwm->PSEL.OUT[0] = g_ADigitalPinMap[pin];
+#endif
 
     // Enable the PWM
     pwm->ENABLE = 1;
 
     // After all of this and many hours of reading the documentation
     // we are ready to start the sequence...
-    pwm->EVENTS_SEQEND[0]  = 0;
+    pwm->EVENTS_SEQEND[0] = 0;
     pwm->TASKS_SEQSTART[0] = 1;
 
     // But we have to wait for the flag to be set.
-    while(!pwm->EVENTS_SEQEND[0])
-    {
-      #ifdef ARDUINO_FEATHER52
+    while (!pwm->EVENTS_SEQEND[0]) {
+#if defined(ARDUINO_NRF52_ADAFRUIT) || defined(ARDUINO_ARCH_NRF52840)
       yield();
-      #endif
+#endif
     }
 
     // Before leave we clear the flag for the event.
@@ -1600,38 +1615,39 @@ void Adafruit_NeoPixel::show(void) {
 
     pwm->PSEL.OUT[0] = 0xFFFFFFFFUL;
 
-    #ifdef ARDUINO_FEATHER52  // use thread-safe free
-      rtos_free(pixels_pattern);
-    #else
-      free(pixels_pattern);
-    #endif
-  }// End of DMA implementation
+#if defined(ARDUINO_NRF52_ADAFRUIT) // use thread-safe free
+    rtos_free(pixels_pattern);
+#else
+    free(pixels_pattern);
+#endif
+  } // End of DMA implementation
   // ---------------------------------------------------------------------
-  else{
-    // Fall back to DWT
-    #ifdef ARDUINO_FEATHER52
-      // Bluefruit Feather 52 uses freeRTOS
-      // Critical Section is used since it does not block SoftDevice execution
-      taskENTER_CRITICAL();
-    #elif defined(NRF52_DISABLE_INT)
-      // If you are using the Bluetooth SoftDevice we advise you to not disable
-      // the interrupts. Disabling the interrupts even for short periods of time
-      // causes the SoftDevice to stop working.
-      // Disable the interrupts only in cases where you need high performance for
-      // the LEDs and if you are not using the EasyDMA feature.
-      __disable_irq();
-    #endif
+  else {
+#ifndef ARDUINO_ARCH_NRF52840
+// Fall back to DWT
+#if defined(ARDUINO_NRF52_ADAFRUIT)
+    // Bluefruit Feather 52 uses freeRTOS
+    // Critical Section is used since it does not block SoftDevice execution
+    taskENTER_CRITICAL();
+#elif defined(NRF52_DISABLE_INT)
+    // If you are using the Bluetooth SoftDevice we advise you to not disable
+    // the interrupts. Disabling the interrupts even for short periods of time
+    // causes the SoftDevice to stop working.
+    // Disable the interrupts only in cases where you need high performance for
+    // the LEDs and if you are not using the EasyDMA feature.
+    __disable_irq();
+#endif
 
-    uint32_t pinMask = 1UL << g_ADigitalPinMap[pin];
+    NRF_GPIO_Type *nrf_port = (NRF_GPIO_Type *)digitalPinToPort(pin);
+    uint32_t pinMask = digitalPinToBitMask(pin);
 
-    uint32_t CYCLES_X00     = CYCLES_800;
+    uint32_t CYCLES_X00 = CYCLES_800;
     uint32_t CYCLES_X00_T1H = CYCLES_800_T1H;
     uint32_t CYCLES_X00_T0H = CYCLES_800_T0H;
 
-#ifdef NEO_KHZ400
-    if( !is800KHz )
-    {
-      CYCLES_X00     = CYCLES_400;
+#if defined(NEO_KHZ400)
+    if (!is800KHz) {
+      CYCLES_X00 = CYCLES_400;
       CYCLES_X00_T1H = CYCLES_400_T1H;
       CYCLES_X00_T0H = CYCLES_400_T0H;
     }
@@ -1642,36 +1658,39 @@ void Adafruit_NeoPixel::show(void) {
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
     // Tries to re-send the frame if is interrupted by the SoftDevice.
-    while(1) {
+    while (1) {
       uint8_t *p = pixels;
 
       uint32_t cycStart = DWT->CYCCNT;
       uint32_t cyc = 0;
 
-      for(uint16_t n=0; n<numBytes; n++) {
+      for (uint16_t n = 0; n < numBytes; n++) {
         uint8_t pix = *p++;
 
-        for(uint8_t mask = 0x80; mask; mask >>= 1) {
-          while(DWT->CYCCNT - cyc < CYCLES_X00);
-          cyc  = DWT->CYCCNT;
+        for (uint8_t mask = 0x80; mask; mask >>= 1) {
+          while (DWT->CYCCNT - cyc < CYCLES_X00)
+            ;
+          cyc = DWT->CYCCNT;
 
-          NRF_GPIO->OUTSET |= pinMask;
+          nrf_port->OUTSET |= pinMask;
 
-          if(pix & mask) {
-            while(DWT->CYCCNT - cyc < CYCLES_X00_T1H);
+          if (pix & mask) {
+            while (DWT->CYCCNT - cyc < CYCLES_X00_T1H)
+              ;
           } else {
-            while(DWT->CYCCNT - cyc < CYCLES_X00_T0H);
+            while (DWT->CYCCNT - cyc < CYCLES_X00_T0H)
+              ;
           }
 
-          NRF_GPIO->OUTCLR |= pinMask;
+          nrf_port->OUTCLR |= pinMask;
         }
       }
-      while(DWT->CYCCNT - cyc < CYCLES_X00);
-
+      while (DWT->CYCCNT - cyc < CYCLES_X00)
+        ;
 
       // If total time longer than 25%, resend the whole data.
       // Since we are likely to be interrupted by SoftDevice
-      if ( (DWT->CYCCNT - cycStart) < ( 8*numBytes*((CYCLES_X00*5)/4) ) ) {
+      if ((DWT->CYCCNT - cycStart) < (8 * numBytes * ((CYCLES_X00 * 5) / 4))) {
         break;
       }
 
@@ -1679,14 +1698,15 @@ void Adafruit_NeoPixel::show(void) {
       delayMicroseconds(300);
     }
 
-    // Enable interrupts again
-    #ifdef ARDUINO_FEATHER52
-      taskEXIT_CRITICAL();
-    #elif defined(NRF52_DISABLE_INT)
-      __enable_irq();
-    #endif
+// Enable interrupts again
+#if defined(ARDUINO_NRF52_ADAFRUIT)
+    taskEXIT_CRITICAL();
+#elif defined(NRF52_DISABLE_INT)
+    __enable_irq();
+#endif
+#endif
   }
-// END of NRF52 implementation
+  // END of NRF52 implementation
 
 #elif defined (__SAMD21E17A__) || defined(__SAMD21G18A__)  || defined(__SAMD21E18A__) || defined(__SAMD21J18A__) // Arduino Zero, Gemma/Trinket M0, SODAQ Autonomo and others
   // Tried this with a timer/counter, couldn't quite get adequate
@@ -2317,7 +2337,7 @@ void Adafruit_NeoPixel::show(void) {
 
 // END ARCHITECTURE SELECT ------------------------------------------------
 
-#if !defined(NRF52) && !defined(ESP32)
+#if !(defined(NRF52) || defined(NRF52_SERIES) || defined(ESP32))
   interrupts();
 #endif
 
