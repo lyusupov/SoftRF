@@ -716,16 +716,8 @@ static bool uSD_is_attached = false;
 #endif /* ENABLE_RECORDER */
 
 #if !defined(EXCLUDE_LED_RING)
-Adafruit_NeoPixel T114_Pixels = Adafruit_NeoPixel(2, SOC_GPIO_PIN_T114_LED,
+Adafruit_NeoPixel nRF52_Pixel = Adafruit_NeoPixel(0, SOC_UNUSED_PIN,
                                                   NEO_GRB + NEO_KHZ800);
-#if 0
-Adafruit_NeoPixel TEC_Pixel1  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED1,
-                                                  NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel TEC_Pixel2  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED2,
-                                                  NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel TEC_Pixel3  = Adafruit_NeoPixel(1, SOC_GPIO_LED_TEC_LED3,
-                                                  NEO_GRB + NEO_KHZ800);
-#endif
 #endif /* EXCLUDE_LED_RING */
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
@@ -1664,8 +1656,10 @@ static void nRF52_setup()
       ledOn(SOC_GPIO_LED_T114_GREEN);
 
 #if !defined(EXCLUDE_LED_RING)
-      T114_Pixels.begin();
-      T114_Pixels.show(); // Initialize all pixels to 'off'
+      nRF52_Pixel.updateLength(2);
+      nRF52_Pixel.setPin(SOC_GPIO_PIN_T114_LED);
+      nRF52_Pixel.begin();
+      nRF52_Pixel.show(); // Initialize all pixels to 'off'
 #endif /* EXCLUDE_LED_RING */
 
       lmic_pins.nss  = SOC_GPIO_PIN_T114_SS;
@@ -1782,21 +1776,11 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_GNSS_TEC_SW, OUTPUT);
 
 #if !defined(EXCLUDE_LED_RING)
-#if 0
-      TEC_Pixel1.begin();
-      TEC_Pixel1.setPixelColor(0, LED_COLOR_GREEN);
-      TEC_Pixel1.show();
-      TEC_Pixel2.begin();
-      TEC_Pixel2.show(); // Initialize pixel to 'off'
-      TEC_Pixel3.begin();
-      TEC_Pixel3.show(); // Initialize pixel to 'off'
-#else
-      T114_Pixels.updateLength(1);
-      T114_Pixels.setPin(SOC_GPIO_LED_TEC_LED3);
-      T114_Pixels.begin();
-      T114_Pixels.setPixelColor(0, LED_COLOR_GREEN);
-      T114_Pixels.show();
-#endif
+      nRF52_Pixel.updateLength(1);
+      nRF52_Pixel.setPin(SOC_GPIO_LED_TEC_LED3);
+      nRF52_Pixel.begin();
+      nRF52_Pixel.setPixelColor(0, LED_COLOR_GREEN);
+      nRF52_Pixel.show();
 #endif /* EXCLUDE_LED_RING */
 
       lmic_pins.nss  = SOC_GPIO_PIN_TEC_SS;
@@ -3123,13 +3107,8 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_GNSS_TEC_SW,  INPUT);
 
 #if !defined(EXCLUDE_LED_RING)
-#if 0
-      TEC_Pixel1.setPixelColor(0, LED_COLOR_BLACK);
-      TEC_Pixel1.show();
-#else
-      T114_Pixels.setPixelColor(0, LED_COLOR_BLACK);
-      T114_Pixels.show();
-#endif
+      nRF52_Pixel.setPixelColor(0, LED_COLOR_BLACK);
+      nRF52_Pixel.show();
 #endif /* EXCLUDE_LED_RING */
 
       pinMode(SOC_GPIO_PIN_SFL_TEC_HOLD, INPUT);
