@@ -1792,7 +1792,7 @@ static void nRF52_setup()
       TEC_Pixel3.show(); // Initialize pixel to 'off'
 #else
       T114_Pixels.updateLength(1);
-      T114_Pixels.setPin(SOC_GPIO_LED_TEC_LED1);
+      T114_Pixels.setPin(SOC_GPIO_LED_TEC_LED3);
       T114_Pixels.begin();
       T114_Pixels.setPixelColor(0, LED_COLOR_GREEN);
       T114_Pixels.show();
@@ -1914,7 +1914,6 @@ static void nRF52_setup()
     {
       case NRF52_LILYGO_TECHO_REV_2:
       case NRF52_LILYGO_TECHO_PLUS:
-      case NRF52_LILYGO_TECHO_CARD:
         Wire.begin();
 
         if (imu_1.setup(MPU9250_ADDRESS)) {
@@ -1957,6 +1956,23 @@ static void nRF52_setup()
               break;
             }
             delay(IMU_UPDATE_INTERVAL);
+          }
+        }
+        break;
+
+      case NRF52_LILYGO_TECHO_CARD:
+        Wire.begin();
+        {
+          bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
+
+          for (int t=0; t<3; t++) {
+            if (imu_2.begin(Wire, ad0) == ICM_20948_Stat_Ok) {
+              hw_info.imu = IMU_ICM20948;
+              hw_info.mag = MAG_AK09916;
+              IMU_Time_Marker = millis();
+
+              break;
+            }
           }
         }
         break;
