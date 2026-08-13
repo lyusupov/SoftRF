@@ -1082,6 +1082,13 @@ static void nRF52_setup()
   }
 
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+  USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
+  USBDevice.setManufacturerDescriptor(nRF5x_Device_Manufacturer);
+  USBDevice.setProductDescriptor(nRF5x_Device_Model);
+  USBDevice.setDeviceVersion(nRF52_Device_Version);
+#endif /* ARDUINO_ARCH_MBED */
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
   switch (nRF52_board)
   {
 #if !defined(EXCLUDE_WIP)
@@ -1306,13 +1313,6 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
 
   hw_info.storage = nRF52_has_spiflash ? STORAGE_FLASH : STORAGE_NONE;
-
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-  USBDevice.setID(nRF52_USB_VID, nRF52_USB_PID);
-  USBDevice.setManufacturerDescriptor(nRF5x_Device_Manufacturer);
-  USBDevice.setProductDescriptor(nRF5x_Device_Model);
-  USBDevice.setDeviceVersion(nRF52_Device_Version);
-#endif /* ARDUINO_ARCH_MBED */
 
 #if defined(USE_TINYUSB)
   switch (nRF52_board)
