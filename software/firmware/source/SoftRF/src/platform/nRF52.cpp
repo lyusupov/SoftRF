@@ -2420,7 +2420,9 @@ static void nRF52_post_init()
 #endif /* !MBED && !ZEPHYR */
     } else {
       Serial.print(F("BARO    : "));
-      Serial.println(hw_info.baro  != BARO_MODULE_NONE ? F("PASS") : F("FAIL"));
+      Serial.println(hw_info.baro   == BARO_MODULE_SPA06 ? F("PASS") : F("FAIL"));
+      Serial.print(F("HAPTIC  : "));
+      Serial.println(hw_info.haptic == HAPTIC_DRV2605    ? F("PASS") : F("FAIL"));
       Serial.flush();
     }
 
@@ -4616,9 +4618,10 @@ static unsigned long nRF52_get_PPS_TimeMarker() {
 }
 
 static bool nRF52_Baro_setup() {
-  return nRF52_board == NRF52_SEEED_T1000E ||
-         nRF52_board == NRF52_SEEED_X1     ||
-         nRF52_board == NRF52_ELECROW_TN_M3 ?
+  return nRF52_board == NRF52_SEEED_T1000E         ||
+         nRF52_board == NRF52_LILYGO_TECHO_CARD    ||
+         nRF52_board == NRF52_LILYGO_TIMPULSE_PLUS ||
+         nRF52_board == NRF52_ELECROW_TN_M3        ?
          false : true;
 }
 
