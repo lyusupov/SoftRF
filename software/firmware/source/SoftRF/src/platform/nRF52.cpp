@@ -3353,6 +3353,17 @@ static void nRF52_reset()
       break;
 #endif /* USE_TFT */
 
+#if defined(USE_OLED)
+#if !defined(EXCLUDE_OLED_049)
+    case DISPLAY_OLED_0_49:
+      if (u8x8) {
+        u8x8->clear();
+        u8x8->draw2x2String(4, 5, "WAIT");
+      }
+      break;
+#endif /* EXCLUDE_OLED_049 */
+#endif /* USE_OLED */
+
     case DISPLAY_NONE:
     default:
       break;
