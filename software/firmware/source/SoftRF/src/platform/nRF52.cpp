@@ -3704,6 +3704,38 @@ static void nRF52_EEPROM_extension(int cmd)
         settings->band = RF_BAND_EU;
       }
 
+#if defined(USE_TINYUSB)
+      switch (nRF52_board)
+      {
+        /* Serial-Out pins are not exposed on these models */
+        case NRF52_ELECROW_TN_M1:
+        case NRF52_ELECROW_TN_M3:
+        case NRF52_LILYGO_TECHO_PLUS:
+        case NRF52_LILYGO_TECHO_CARD:
+        case NRF52_LILYGO_TIMPULSE_PLUS:
+        case NRF52_SEEED_T1000E:
+        case NRF52_SEEED_X1:
+          if (settings->nmea_out == NMEA_UART) {
+            settings->nmea_out = NMEA_BLUETOOTH;
+          }
+          if (settings->gdl90 == GDL90_UART) {
+            settings->gdl90 = GDL90_BLUETOOTH;
+          }
+          if (settings->d1090 == D1090_UART) {
+            settings->d1090 = D1090_BLUETOOTH;
+          }
+          break;
+
+        case NRF52_LILYGO_TECHO_REV_0:
+        case NRF52_LILYGO_TECHO_REV_1:
+        case NRF52_LILYGO_TECHO_REV_2:
+        case NRF52_HELTEC_T114:
+        case NRF52_ELECROW_TN_M6:
+        case NRF52_NORDIC_PCA10059:
+        default:
+          break;
+      }
+#endif /* USE_TINYUSB */
       break;
   }
 }
