@@ -569,6 +569,107 @@ static bool ESP32_has_vibra = false;
 #if defined(USE_DSI)
 #include "../driver/DSI.h"
 #endif /* USE_DSI */
+
+#define SGM38121_REG_CHIP_REV      0x00
+#define SGM38121_REG_DISCH         0x02
+#define SGM38121_REG_DVDD1_VOUT    0x03
+#define SGM38121_REG_DVDD2_VOUT    0x04
+#define SGM38121_REG_AVDD1_VOUT    0x05
+#define SGM38121_REG_AVDD2_VOUT    0x06
+#define SGM38121_REG_FUNCTION      0x07
+#define SGM38121_REG_SEQ_DVDD      0x0A
+#define SGM38121_REG_SEQ_AVDD      0x0B
+#define SGM38121_REG_ENABLE        0x0E
+#define SGM38121_REG_SEQ_CTRL      0x0F
+
+#define SGM38121_ENABLE_DVDD1_BIT  BIT0
+#define SGM38121_ENABLE_DVDD2_BIT  BIT1
+#define SGM38121_ENABLE_AVDD1_BIT  BIT2
+#define SGM38121_ENABLE_AVDD2_BIT  BIT3
+
+static bool sgm38121_read_reg(TwoWire *wire, uint8_t reg, uint8_t *value)
+{
+    wire->beginTransmission(SGM38121_ADDRESS);
+    wire->write(reg);
+    if (wire->endTransmission(false) != 0)
+        return false;
+    if (wire->requestFrom(SGM38121_ADDRESS, 1) != 1)
+        return false;
+    *value = wire->read();
+    return true;
+}
+
+static bool sgm38121_write_reg(TwoWire *wire, uint8_t reg, uint8_t value)
+{
+    wire->beginTransmission(SGM38121_ADDRESS);
+    wire->write(reg);
+    wire->write(value);
+    return wire->endTransmission() == 0;
+}
+
+static int sgm38121_decode_dvdd_mv(uint8_t reg_value)
+{
+    if (reg_value < 0x03 || reg_value > 0x7D) {
+        return -1;
+    }
+    return 504 + (reg_value * 8);
+}
+
+static int sgm38121_decode_avdd_mv(uint8_t reg_value)
+{
+    if (reg_value < 0x0F) {
+        return -1;
+    }
+    return 1384 + (reg_value * 8);
+}
+
+static uint8_t sgm38121_encode_dvdd_mv_rounded(int target_mv, int *actual_mv)
+{
+    int clamped_mv = target_mv;
+    if (clamped_mv < 528) {
+        clamped_mv = 528;
+    }
+    if (clamped_mv > 1504) {
+        clamped_mv = 1504;
+    }
+
+    int reg_value = (clamped_mv - 504 /* + 4*/ ) / 8;
+    if (reg_value < 0x0F) {
+        reg_value = 0x0F;
+    }
+    if (reg_value > 0xFF) {
+        reg_value = 0xFF;
+    }
+
+    if (actual_mv) {
+        *actual_mv = sgm38121_decode_dvdd_mv((uint8_t)reg_value);
+    }
+    return (uint8_t)reg_value;
+}
+
+static uint8_t sgm38121_encode_avdd_mv_rounded(int target_mv, int *actual_mv)
+{
+    int clamped_mv = target_mv;
+    if (clamped_mv < 1504) {
+        clamped_mv = 1504;
+    }
+    if (clamped_mv > 3424) {
+        clamped_mv = 3424;
+    }
+
+    int reg_value = (clamped_mv - 1384 /* + 4*/) / 8;
+    if (reg_value < 0x0F) {
+        reg_value = 0x0F;
+    }
+    if (reg_value > 0xFF) {
+        reg_value = 0xFF;
+    }
+
+    if (actual_mv) {
+        *actual_mv = sgm38121_decode_avdd_mv((uint8_t)reg_value);
+    }
+    return (uint8_t)reg_value;
+}
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
@@ -2856,11 +2957,85 @@ static void ESP32_setup()
       }
     }
 
-    hw_info.camera = CAMERA_OV2710;
-    // TDP4_IIC_2.beginTransmission(OV2710_ADDRESS);
-    // if (TDP4_IIC_2.endTransmission() == 0) {
-    //  hw_info.camera   = CAMERA_OV2710;
-    //}
+    uint8_t sgm38121_chip_rev = 0;
+    sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_CHIP_REV, &sgm38121_chip_rev);
+
+    if (sgm38121_chip_rev == 0x80) {
+      int dvdd1_actual_mv = 0;
+      int avdd1_actual_mv = 0;
+      int avdd2_actual_mv = 0;
+      uint8_t dvdd1_reg = sgm38121_encode_dvdd_mv_rounded(1500, &dvdd1_actual_mv);
+      uint8_t avdd1_reg = sgm38121_encode_avdd_mv_rounded(1700, &avdd1_actual_mv);
+      uint8_t avdd2_reg = sgm38121_encode_avdd_mv_rounded(3000, &avdd2_actual_mv);
+      uint8_t enable_mask = 0;
+
+      sgm38121_write_reg(&TDP4_IIC_2, SGM38121_REG_DVDD1_VOUT, dvdd1_reg);
+      enable_mask |= SGM38121_ENABLE_DVDD1_BIT;
+      sgm38121_write_reg(&TDP4_IIC_2, SGM38121_REG_AVDD1_VOUT, avdd1_reg);
+      enable_mask |= SGM38121_ENABLE_AVDD1_BIT;
+      sgm38121_write_reg(&TDP4_IIC_2, SGM38121_REG_AVDD2_VOUT, avdd2_reg);
+      enable_mask |= SGM38121_ENABLE_AVDD2_BIT;
+      sgm38121_write_reg(&TDP4_IIC_2, SGM38121_REG_ENABLE, enable_mask);
+
+      uint8_t discharge  = 0;
+      uint8_t dvdd1_vout = 0;
+      uint8_t dvdd2_vout = 0;
+      uint8_t avdd1_vout = 0;
+      uint8_t avdd2_vout = 0;
+      uint8_t function   = 0;
+      uint8_t seq_dvdd   = 0;
+      uint8_t seq_avdd   = 0;
+      uint8_t enable     = 0;
+      uint8_t seq_ctrl   = 0;
+
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_DISCH,      &discharge);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_DVDD1_VOUT, &dvdd1_vout);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_DVDD2_VOUT, &dvdd2_vout);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_AVDD1_VOUT, &avdd1_vout);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_AVDD2_VOUT, &avdd2_vout);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_FUNCTION,   &function);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_SEQ_DVDD,   &seq_dvdd);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_SEQ_AVDD,   &seq_avdd);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_ENABLE,     &enable);
+      sgm38121_read_reg(&TDP4_IIC_2, SGM38121_REG_SEQ_CTRL,   &seq_ctrl);
+
+#if 0
+      Serial.printf(
+             "CHIP_REV=0x%02X DISCH=0x%02X FUNC=0x%02X SEQ_DV=0x%02X SEQ_AV=0x%02X EN=0x%02X SEQ_CTRL=0x%02X\r\n",
+             sgm38121_chip_rev,
+             discharge,
+             function,
+             seq_dvdd,
+             seq_avdd,
+             enable,
+             seq_ctrl);
+
+      Serial.printf(
+             "DVDD1 reg=0x%02X (%d mV, %s), DVDD2 reg=0x%02X (%d mV, %s)\r\n",
+             dvdd1_vout,
+             sgm38121_decode_dvdd_mv(dvdd1_vout),
+             (enable & SGM38121_ENABLE_DVDD1_BIT) ? "enabled" : "disabled",
+             dvdd2_vout,
+             sgm38121_decode_dvdd_mv(dvdd2_vout),
+             (enable & SGM38121_ENABLE_DVDD2_BIT) ? "enabled" : "disabled");
+
+      Serial.printf(
+             "AVDD1 reg=0x%02X (%d mV, %s), AVDD2 reg=0x%02X (%d mV, %s)\r\n",
+             avdd1_vout,
+             sgm38121_decode_avdd_mv(avdd1_vout),
+             (enable & SGM38121_ENABLE_AVDD1_BIT) ? "enabled" : "disabled",
+             avdd2_vout,
+             sgm38121_decode_avdd_mv(avdd2_vout),
+             (enable & SGM38121_ENABLE_AVDD2_BIT) ? "enabled" : "disabled");
+#endif
+
+      delay(200);
+
+      TDP4_IIC_2.beginTransmission(OV2710_ADDRESS);
+      if (TDP4_IIC_2.endTransmission() == 0) {
+        hw_info.camera = CAMERA_OV2710;
+      }
+    }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 

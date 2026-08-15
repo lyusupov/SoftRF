@@ -792,32 +792,46 @@ void DSI_info1()
       lv_obj_align_to(data_8, data_7, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
       lv_obj_t *label_9 = lv_label_create(lv_scr_act());
-      lv_label_set_text(label_9, "CARD");
+      lv_label_set_text(label_9, "CAMERA");
       lv_obj_set_style_text_font(label_9, &lv_font_montserrat_48, 0);
       lv_obj_align_to(label_9, label_8, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
       lv_obj_t *data_9 = lv_label_create(lv_scr_act());
-      lv_label_set_text_fmt(data_9, "%s", hw_info.storage == STORAGE_CARD ?
-                            "PASS" : "N/A");
+      lv_label_set_text_fmt(data_9, "%s", hw_info.camera == CAMERA_OV2710 ?
+                            "PASS" : "FAIL");
       lv_obj_set_style_text_font(data_9, &lv_font_montserrat_48, 0);
-      lv_obj_set_style_text_color(data_9, hw_info.storage == STORAGE_CARD ?
+      lv_obj_set_style_text_color(data_9, hw_info.camera == CAMERA_OV2710 ?
                                   lv_palette_main(LV_PALETTE_GREEN) :
-                                  lv_palette_main(LV_PALETTE_YELLOW), 0);
+                                  lv_palette_main(LV_PALETTE_RED), 0);
       lv_obj_align_to(data_9, data_8, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
       lv_obj_t *label_10 = lv_label_create(lv_scr_act());
-      lv_label_set_text(label_10, "BARO");
+      lv_label_set_text(label_10, "CARD");
       lv_obj_set_style_text_font(label_10, &lv_font_montserrat_48, 0);
       lv_obj_align_to(label_10, label_9, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
       lv_obj_t *data_10 = lv_label_create(lv_scr_act());
-      lv_label_set_text_fmt(data_10, "%s", hw_info.baro != BARO_MODULE_NONE ?
+      lv_label_set_text_fmt(data_10, "%s", hw_info.storage == STORAGE_CARD ?
                             "PASS" : "N/A");
       lv_obj_set_style_text_font(data_10, &lv_font_montserrat_48, 0);
-      lv_obj_set_style_text_color(data_10, hw_info.baro != BARO_MODULE_NONE ?
+      lv_obj_set_style_text_color(data_10, hw_info.storage == STORAGE_CARD ?
                                   lv_palette_main(LV_PALETTE_GREEN) :
                                   lv_palette_main(LV_PALETTE_YELLOW), 0);
       lv_obj_align_to(data_10, data_9, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
+
+      lv_obj_t *label_11 = lv_label_create(lv_scr_act());
+      lv_label_set_text(label_11, "BARO");
+      lv_obj_set_style_text_font(label_11, &lv_font_montserrat_48, 0);
+      lv_obj_align_to(label_11, label_10, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+
+      lv_obj_t *data_11 = lv_label_create(lv_scr_act());
+      lv_label_set_text_fmt(data_11, "%s", hw_info.baro != BARO_MODULE_NONE ?
+                            "PASS" : "N/A");
+      lv_obj_set_style_text_font(data_11, &lv_font_montserrat_48, 0);
+      lv_obj_set_style_text_color(data_11, hw_info.baro != BARO_MODULE_NONE ?
+                                  lv_palette_main(LV_PALETTE_GREEN) :
+                                  lv_palette_main(LV_PALETTE_YELLOW), 0);
+      lv_obj_align_to(data_11, data_10, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
       }
 #endif /* LVGL_VERSION_MAJOR == 8 */
 
