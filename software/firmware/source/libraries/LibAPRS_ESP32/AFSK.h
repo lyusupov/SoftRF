@@ -209,7 +209,7 @@ inline static uint8_t sinSample(uint16_t i)
 
 //#define SQL
 
-#if defined(ESP32)
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 #define I2S_INTERNAL
 #endif
 

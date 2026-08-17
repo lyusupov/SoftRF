@@ -38,7 +38,7 @@ int adcVal;
 
 bool input_HPF = false;
 
-#if defined(ESP32)
+#if defined(ESP32) && !defined(CONFIG_IDF_TARGET_ESP32P4)
 static const adc_unit_t unit = ADC_UNIT_1;
 #endif /* ESP32 */
 
@@ -1055,7 +1055,9 @@ void IRAM_ATTR sample_isr()
       }
 #endif
       // digitalWrite(4, HIGH);
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
       adcVal = adc1_get_raw((adc1_channel_t) SPK_PIN); // Read ADC1_0 From PIN 36(VP)
+#endif
       // Auto offset level
       offset_new += adcVal;
       offset_count++;
