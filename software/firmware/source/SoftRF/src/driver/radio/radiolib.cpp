@@ -4957,17 +4957,18 @@ static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_2g4[] = {
 };
 
 static const uint32_t rfswitch_dio_pins_tdisplay_p4[] = {
-    RADIOLIB_NC, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7,
-    RADIOLIB_NC, RADIOLIB_NC
+    RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7,
+    RADIOLIB_LR2021_DIO8, RADIOLIB_LR2021_DIO10,
+    RADIOLIB_NC
 };
 
 static const Module::RfSwitchMode_t rfswitch_table_tdisplay_p4[] = {
-    // mode                  DIO5  DIO6  DIO7
-    {LR2021::MODE_STBY,    { LOW,  LOW,  LOW  } },
-    {LR2021::MODE_RX,      { LOW,  LOW,  LOW  } },
-    {LR2021::MODE_TX,      { LOW,  LOW,  LOW  } },
-    {LR2021::MODE_RX_HF,   { LOW,  HIGH, LOW  } },
-    {LR2021::MODE_TX_HF,   { LOW,  LOW,  HIGH } },
+    // mode                  DIO6  DIO7  DIO8  DIO10
+    {LR2021::MODE_STBY,    { LOW,  LOW,  LOW,  LOW  } },
+    {LR2021::MODE_RX,      { LOW,  LOW,  HIGH, LOW  } },
+    {LR2021::MODE_TX,      { LOW,  LOW,  HIGH, LOW  } },
+    {LR2021::MODE_RX_HF,   { HIGH, LOW,  LOW,  HIGH } },
+    {LR2021::MODE_TX_HF,   { LOW,  HIGH, LOW , HIGH } },
     END_OF_MODE_TABLE,
 };
 
