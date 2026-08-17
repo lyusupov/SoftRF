@@ -689,6 +689,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 //#define USE_LIB_RTLSDR
 //#define USE_DSI
 #define USE_SENSORLIB_TOUCH
+//#define USE_CAMERA
 #endif /* P4 */
 
 #define POWER_SAVING_WIFI_TIMEOUT 600000UL /* 10 minutes */

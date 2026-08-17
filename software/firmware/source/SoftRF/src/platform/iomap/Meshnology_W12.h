@@ -37,7 +37,6 @@
 #define SOC_GPIO_PIN_W12_LED         46 /* NeoPixel */
 
 // Misc.
-#define SOC_GPIO_PIN_W12_ADC         1  /* battery voltage */
-#define SOC_GPIO_PIN_W12_ADC2        2  /* solar/VUSB */
-//#define SOC_GPIO_PIN_W12_ADC_EN      37
+#define SOC_GPIO_PIN_W12_ADC         1  /* battery voltage, 390K/100K divider */
+#define SOC_GPIO_PIN_W12_ADC_EN      2  /* active HIGH */
 #define SOC_GPIO_PIN_W12_VEXT_EN     45

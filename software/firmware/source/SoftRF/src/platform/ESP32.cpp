@@ -451,7 +451,9 @@ bool ESP32_R22_workaround = false;
 #endif /* USE_SA8X8 */
 
 #if !defined(EXCLUDE_VOICE_MESSAGE)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <driver/i2s.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #include <AudioFileSourceSdFat.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
@@ -670,6 +672,12 @@ static uint8_t sgm38121_encode_avdd_mv_rounded(int target_mv, int *actual_mv)
     }
     return (uint8_t)reg_value;
 }
+
+#if defined(USE_CAMERA)
+#include <ESP32CSI_Vision.h>
+
+ESP32P4_Camera cam;
+#endif /* USE_CAMERA */
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
@@ -2359,7 +2367,11 @@ static void ESP32_setup()
 
     if (esp32_board == ESP32_LILYGO_TDISPLAY_P4 &&
         hw_info.storage == STORAGE_CARD) {
-      if (playback_inited || uSD.volumeBegin()) {
+      if ( false           ||
+#if !defined(EXCLUDE_VOICE_MESSAGE)
+           playback_inited ||
+#endif /* EXCLUDE_VOICE_MESSAGE */
+           uSD.volumeBegin()) {
         FATFS_is_mounted = fatfs.begin(uSD.card());
       }
     }
@@ -2860,9 +2872,12 @@ static void ESP32_setup()
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO, INPUT);
 
-      // Select RF1 antenna input ( SKY13453 )
-      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL,      OUTPUT);
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL, HIGH);
+      /* Select antenna input ( SKY13453 ) */
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL, OUTPUT);
+      // RF1 (internal)
+//    xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL, HIGH);
+      // RF2 (external)
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RFSW_VCTL, LOW);
     }
 
     TDP4_IIC_1.begin(SOC_GPIO_PIN_TDP4_SDA_1, SOC_GPIO_PIN_TDP4_SCL_1);
@@ -3033,7 +3048,22 @@ static void ESP32_setup()
 
       TDP4_IIC_2.beginTransmission(OV2710_ADDRESS);
       if (TDP4_IIC_2.endTransmission() == 0) {
+#if defined(USE_CAMERA)
+        esp32p4_cam_config_t cfg = esp32p4_cam_config_board(ESP32P4_BOARD_CUSTOM);
+        cfg.wire = &TDP4_IIC_2;
+        cfg.sda = SOC_GPIO_PIN_TDP4_SDA_2;
+        cfg.scl = SOC_GPIO_PIN_TDP4_SCL_2;
+        cfg.pixel_format = ESP32P4_PIXFORMAT_RAW10;
+        cfg.sensor = ESP32P4_SENSOR_OV2710;
+
+        if (cam.begin(cfg)) {
+          hw_info.camera = CAMERA_OV2710;
+        } else {
+          Serial.println("ERROR: OV2710 camera init failure");
+        }
+#else
         hw_info.camera = CAMERA_OV2710;
+#endif /* USE_CAMERA */
       }
     }
   }
@@ -4175,7 +4205,7 @@ static void ESP32_fini(int reason)
       /*
        * Turn OFF power of
        * GNSS, TFT back light, ESP32-C6,
-       * camera (SGM38121), haptic (AW86224), IMU (ICM20948),
+       * camera PMIC (SGM38121), haptic (AW86224), IMU (ICM20948),
        * ETH PHY and ES8311 digital circuits
        */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_3V3_EN,   HIGH);
@@ -4829,7 +4859,7 @@ static void ESP32_EEPROM_extension(int cmd)
     defined(CONFIG_IDF_TARGET_ESP32P4)
   if (cmd == EEPROM_EXT_LOAD || cmd == EEPROM_EXT_DEFAULTS) {
     if (FATFS_is_mounted) {
-      File32 file = fatfs.open(SETTINGS_JSON_PATH, FILE_READ);
+      File32 file = fatfs.open(SETTINGS_JSON_PATH, O_RDONLY /* FILE_READ */);
 
       if (file) {
         // StaticJsonBuffer<ESP32_JSON_BUFFER_SIZE> ESP32_jsonBuffer;
@@ -7482,7 +7512,7 @@ static void play_task()
 
 static void ESP32_TTS(char *message)
 {
-#if defined(CONFIG_IDF_TARGET_ESP32P4)
+#if defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(EXCLUDE_VOICE_MESSAGE)
   char filename[MAX_FILENAME_LEN];
 
   if (ui->voice != VOICE_OFF) {
