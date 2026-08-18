@@ -677,6 +677,7 @@ static uint8_t sgm38121_encode_avdd_mv_rounded(int target_mv, int *actual_mv)
 #include <ESP32CSI_Vision.h>
 
 ESP32P4_Camera cam;
+ESP32P4_MjpegServer stream;
 #endif /* USE_CAMERA */
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
@@ -3491,6 +3492,17 @@ static void ESP32_post_init()
   default:
     break;
   }
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  if (esp32_board == ESP32_P4_WT_DEVKIT ||
+      esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+#if defined(USE_CAMERA)
+    if (hw_info.camera != CAMERA_NONE) {
+      stream.begin(&cam, 81, 35);
+    }
+#endif /* USE_CAMERA */
+  }
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
 
 static void ESP32_loop()
@@ -3798,9 +3810,14 @@ static void ESP32_loop()
 #if !defined(EXCLUDE_ETHERNET)
     Ethernet_loop();
 #endif /* EXCLUDE_ETHERNET */
+
+#if defined(USE_CAMERA)
+    if (hw_info.camera != CAMERA_NONE) {
+      stream.loop();
+    }
+#endif /* USE_CAMERA */
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
-
 }
 
 static void ESP32_fini(int reason)
