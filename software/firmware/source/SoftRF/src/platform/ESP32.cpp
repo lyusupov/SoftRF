@@ -2854,6 +2854,25 @@ static void ESP32_setup()
       hw_info.touch = TOUCH_GT911;
     }
 
+    Wire.beginTransmission(OV5647_ADDRESS);
+    if (Wire.endTransmission() == 0) {
+#if defined(USE_CAMERA)
+      esp32p4_cam_config_t cfg = esp32p4_cam_config_board(ESP32P4_BOARD_CUSTOM);
+      cfg.wire = &Wire;
+      cfg.sda = SOC_GPIO_PIN_P4_SDA;
+      cfg.scl = SOC_GPIO_PIN_P4_SCL;
+      cfg.pixel_format = ESP32P4_PIXFORMAT_RGB565;
+      cfg.sensor = ESP32P4_SENSOR_OV5647;
+
+      if (cam.begin(cfg)) {
+        hw_info.camera = CAMERA_OV5647;
+      } else {
+        Serial.println("ERROR: OV5647 camera init failure");
+      }
+#else
+      hw_info.camera = CAMERA_OV5647;
+#endif /* USE_CAMERA */
+    }
   } else if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
 
     if (ESP32_has_gpio_extension) {
@@ -3054,7 +3073,7 @@ static void ESP32_setup()
         cfg.wire = &TDP4_IIC_2;
         cfg.sda = SOC_GPIO_PIN_TDP4_SDA_2;
         cfg.scl = SOC_GPIO_PIN_TDP4_SCL_2;
-        cfg.pixel_format = ESP32P4_PIXFORMAT_RAW10;
+        cfg.pixel_format = ESP32P4_PIXFORMAT_RGB565;
         cfg.sensor = ESP32P4_SENSOR_OV2710;
 
         if (cam.begin(cfg)) {
