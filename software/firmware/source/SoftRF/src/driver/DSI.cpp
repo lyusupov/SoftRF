@@ -783,10 +783,10 @@ void DSI_info1()
       lv_obj_align_to(label_8, label_7, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
       lv_obj_t *data_8 = lv_label_create(lv_scr_act());
-      lv_label_set_text_fmt(data_8, "%s", hw_info.haptic == HAPTIC_AW86224 ?
+      lv_label_set_text_fmt(data_8, "%s", hw_info.haptic != HAPTIC_NONE ?
                             "PASS" : "FAIL");
       lv_obj_set_style_text_font(data_8, &lv_font_montserrat_48, 0);
-      lv_obj_set_style_text_color(data_8, hw_info.haptic == HAPTIC_AW86224 ?
+      lv_obj_set_style_text_color(data_8, hw_info.haptic != HAPTIC_NONE ?
                                   lv_palette_main(LV_PALETTE_GREEN) :
                                   lv_palette_main(LV_PALETTE_RED), 0);
       lv_obj_align_to(data_8, data_7, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
@@ -797,10 +797,10 @@ void DSI_info1()
       lv_obj_align_to(label_9, label_8, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
       lv_obj_t *data_9 = lv_label_create(lv_scr_act());
-      lv_label_set_text_fmt(data_9, "%s", hw_info.camera == CAMERA_OV2710 ?
+      lv_label_set_text_fmt(data_9, "%s", hw_info.camera != CAMERA_NONE ?
                             "PASS" : "FAIL");
       lv_obj_set_style_text_font(data_9, &lv_font_montserrat_48, 0);
-      lv_obj_set_style_text_color(data_9, hw_info.camera == CAMERA_OV2710 ?
+      lv_obj_set_style_text_color(data_9, hw_info.camera != CAMERA_NONE ?
                                   lv_palette_main(LV_PALETTE_GREEN) :
                                   lv_palette_main(LV_PALETTE_RED), 0);
       lv_obj_align_to(data_9, data_8, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);

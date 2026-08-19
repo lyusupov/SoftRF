@@ -2849,6 +2849,12 @@ static void ESP32_setup()
               ETH_CLK_MODE);
 #endif /* EXCLUDE_ETHERNET */
 
+    Wire.begin(SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
+    Wire.beginTransmission(ES8311_ADDRRES_0);
+    if (Wire.endTransmission() == 0) {
+      hw_info.audio = AUDIO_ES8311;
+    }
+
     Wire.beginTransmission(GT911_SLAVE_ADDRESS_L);
     if (Wire.endTransmission() == 0) {
       hw_info.touch = TOUCH_GT911;
@@ -5744,6 +5750,9 @@ static byte ESP32_Display_setup()
              esp32_board != ESP32_S2_T8_V1_1         &&
              esp32_board != ESP32_HELTEC_TRACKER     &&
              esp32_board != ESP32_ELECROW_TN_M5      &&
+#if defined(USE_DSI)
+             esp32_board != ESP32_P4_WT_DEVKIT       &&
+#endif /* USE_DSI */
              esp32_board != ESP32_LILYGO_TDISPLAY_P4 &&
              esp32_board != ESP32_LILYGO_T3S3_EPD) {
 
