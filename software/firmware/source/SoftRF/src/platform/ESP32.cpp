@@ -3523,7 +3523,7 @@ static void ESP32_post_init()
       esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
 #if defined(USE_CAMERA)
     if (hw_info.camera != CAMERA_NONE) {
-      stream.begin(&cam, 81, 35);
+      stream.begin(&cam, 8080, 35);
     }
 #endif /* USE_CAMERA */
   }

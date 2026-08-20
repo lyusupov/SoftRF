@@ -278,7 +278,7 @@ bool setupTouchDrv()
                                SOC_GPIO_PIN_P4_SDA, SOC_GPIO_PIN_P4_SCL);
       touchDrv->setMaxCoordinates(panel->getLCD()->getFrameWidth(),
                                   panel->getLCD()->getFrameHeight());
-      touchDrv->setMirrorXY(true, true);
+//      touchDrv->setMirrorXY(true, true);
       break;
     }
 

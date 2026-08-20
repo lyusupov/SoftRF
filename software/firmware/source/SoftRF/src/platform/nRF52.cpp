@@ -926,6 +926,7 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_X1_HAPTIC_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_X1_RTC_EN, HIGH);
       pinMode(SOC_GPIO_PIN_X1_RTC_EN, OUTPUT);
+      delay(30);
 
       break;
 
