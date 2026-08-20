@@ -57,6 +57,8 @@ byte SoC_setup()
   SoC = &RK35_ops;
 #elif defined(ARDUINO_ARCH_NRF54L15CLEAN)
   SoC = &nRF54_ops;
+#elif defined(ARDUINO_ARCH_SF32LB52)
+  SoC = &SF32_ops;
 #else
 #error "This hardware platform is not supported!"
 #endif

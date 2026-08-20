@@ -327,6 +327,10 @@ static u1_t randbuf[16];
 extern void ARDUINO_ISR_ATTR delayMicroseconds(uint32_t);
 #endif /* CONFIG_IDF_TARGET_ESP32C5 */
 
+#if defined(ARDUINO_ARCH_SF32LB52)
+#include <inlines.h>
+#endif /* ARDUINO_ARCH_SF32LB52 */
+
 static void opmode (u1_t mode) {
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2) || defined(RASPBERRY_PI)
     delay(1);

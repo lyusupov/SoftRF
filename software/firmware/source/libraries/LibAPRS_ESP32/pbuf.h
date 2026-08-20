@@ -34,7 +34,7 @@
 #include <time.h>
 #endif /* __AVR__ */
 
-#if defined(ARDUINO_ARCH_SILABS)
+#if defined(ARDUINO_ARCH_SILABS) || defined(ARDUINO_ARCH_SF32LB52)
 #include <TimeLib.h>
 #endif /* ARDUINO_ARCH_SILABS */
 

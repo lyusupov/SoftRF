@@ -39,6 +39,7 @@
 #include "../platform/CH32.h"
 #include "../platform/RK35.h"
 #include "../platform/nRF54.h"
+#include "../platform/SF32.h"
 
 typedef struct SoC_ops_struct {
   uint8_t id;
@@ -127,6 +128,7 @@ enum
 	SOC_EFR32,
 	SOC_CH32,
 	SOC_RK3506,
+	SOC_SF32,
 };
 
 extern const SoC_ops_t *SoC;
@@ -181,6 +183,9 @@ extern const SoC_ops_t RK35_ops;
 #endif
 #if defined(ARDUINO_ARCH_NRF54L15CLEAN)
 extern const SoC_ops_t nRF54_ops;
+#endif
+#if defined(ARDUINO_ARCH_SF32LB52)
+extern const SoC_ops_t SF32_ops;
 #endif
 
 byte SoC_setup(void);

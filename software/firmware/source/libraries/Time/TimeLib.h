@@ -16,6 +16,9 @@
 #include <sys/types.h> // for __time_t_defined, but avr libc lacks sys/types.h
 #endif
 
+#if defined(ARDUINO_ARCH_SF32LB52)
+#define __time_t_defined
+#endif /* ARDUINO_ARCH_SF32LB52 */
 
 #if !defined(__time_t_defined) // avoid conflict with newlib or other posix libc
 typedef unsigned long time_t;
