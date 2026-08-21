@@ -60,7 +60,8 @@ jobs:
             'WCH:ch32v:CH32V30x_EVT',
             #'nrf54l15clean:nrf54l15clean:nrf54l15dk_pca10156',
             #'nrf54l15clean:nrf54l15clean:xiao_nrf54lm20b',
-            'nrf54l15clean:nrf54l15clean:xiao_nrf54l15'
+            'nrf54l15clean:nrf54l15clean:xiao_nrf54l15',
+            'sifli:sf32lb52:sf32lb52devkitlcd'
           ]
 
     env:
@@ -103,7 +104,7 @@ jobs:
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
             else
-              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]] || [[ "$BOARD" =~ "arduino:zephyr_main:" ]]; then
+              if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]] || [[ "$BOARD" =~ "arduino:zephyr_main:" ]] || [[ "$BOARD" =~ "sifli:sf32lb52:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
                 tar xzf arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz arduino-cli ;
                 rm arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
@@ -575,6 +576,13 @@ jobs:
             # sed -i "s\nano33ble.upload.maximum_size=98304\nano33ble.upload.maximum_size=786432\g" boards.txt ;
             cd $GITHUB_WORKSPACE ;
           fi
+          if [[ "$BOARD" =~ "sifli:sf32lb52:" ]]; then
+            arduino-cli config init ;
+            arduino-cli config add board_manager.additional_urls https://github.com/OpenSiFli/ArduinoCore-zephyr/releases/latest/download/package_sifli_index.json ;
+            arduino-cli core update-index ;
+            arduino-cli core install sifli:sf32lb52@0.1.6 ;
+            cd $GITHUB_WORKSPACE ;
+          fi
 
       - name: Run script
         run: |
@@ -678,4 +686,7 @@ jobs:
           fi ;
           if [[ "$BOARD" =~ "nrf54l15clean:nrf54l15clean:" ]]; then
             arduino --verify --verbose-build --board $BOARD $PWD/software/firmware/source/SoftRF/SoftRF.ino ;
+          fi ;
+          if [[ "$BOARD" =~ "sifli:sf32lb52:"      ]]; then
+            arduino-cli compile -v -b "$BOARD" $PWD/software/firmware/source/SoftRF ;
           fi ;
