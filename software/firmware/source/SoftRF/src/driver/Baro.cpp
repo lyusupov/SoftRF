@@ -446,7 +446,7 @@ static float spa06_altitude(float sealevelPressure)
   // at high altitude. See this thread for more information:
   //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
 
-  float atmospheric = spa06.readPressure() / 100.0F;
+  float atmospheric = spa06.readPressure();
   return 44330.0 * (1.0 - pow(atmospheric / sealevelPressure, 0.1903));
 }
 
@@ -458,7 +458,7 @@ static void spa06_setup()
 
     Serial.print(F("Pressure = "));
     Serial.print(spa06.readPressure());
-    Serial.println(F(" Pa"));
+    Serial.println(F(" hPa"));
 
     Serial.print(F("Approx altitude = "));
     Serial.print(spa06_altitude(1013.25));
@@ -475,7 +475,7 @@ static void spa06_fini()
 
 static float spa06_pressure()
 {
-    return spa06.readPressure();
+    return spa06.readPressure() * 100;
 }
 
 static float spa06_temperature()
