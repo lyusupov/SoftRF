@@ -530,3 +530,12 @@ Example:<br>
 ![](https://github.com/lyusupov/SoftRF/blob/master/documents/images/Retro2-1.jpg)
 
 <br>
+
+# Alternative: STM32CubeProgrammer with ST-Link V2
+
+1. Use the **STM32CubeProgrammer** already used for some flight controllers;
+2. Download an appropriate version of SoftRF firmware from [this location](https://github.com/lyusupov/SoftRF/tree/master/software/firmware/binaries/STM32/E80);
+3. Wire the ST-Link V2 to the device: **SWDIO**, **SWCLK** and **GND**. Leave 3.3V unconnected when the board is powered over its own USB port;
+4. Connect the ST-Link adapter to your PC;
+5. Load Firmware, set Adress 0x080000000
+6. Download -> Finished
