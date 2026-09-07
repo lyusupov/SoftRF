@@ -2875,6 +2875,7 @@ static void ESP32_setup()
       cfg.scl = SOC_GPIO_PIN_P4_SCL;
       cfg.pixel_format = ESP32P4_PIXFORMAT_RGB565;
       cfg.sensor = ESP32P4_SENSOR_OV5647;
+      cfg.frame_size = ESP32P4_FRAMESIZE_VGA;
 
       if (cam.begin(cfg)) {
         hw_info.camera = CAMERA_OV5647;
