@@ -32,6 +32,7 @@ Recommended:
 - [ ]   Uni
 - [ ]   Ham
 - [ ]   Card
+- [ ]   Card Mark III
 - [ ]   Concorde
 - [ ]   Retro Mark II
 - [ ]   Handheld
