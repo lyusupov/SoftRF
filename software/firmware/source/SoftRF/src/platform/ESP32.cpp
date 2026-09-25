@@ -1202,6 +1202,10 @@ static void ESP32_setup()
 #endif /* CONFIG_IDF_TARGET_ESP32 */
     lmic_pins.rst  = SOC_GPIO_PIN_TBEAM_RF_RST_V05;
     lmic_pins.busy = SOC_GPIO_PIN_TBEAM_RF_BUSY_V08;
+#if defined(USE_RADIOLIB)
+    /* reserved for DIO 11 of LilyGO LR2021 module */
+    lmic_pins.dio[0] = SOC_GPIO_PIN_TBEAM_RF_DIO1_V08;
+#endif /* USE_RADIOLIB */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;

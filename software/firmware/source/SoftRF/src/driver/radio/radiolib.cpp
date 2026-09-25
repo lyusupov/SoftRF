@@ -2057,6 +2057,10 @@ static void lr20xx_setup()
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 3.0; /* 3.3V in TDP4 demo */
     break;
+  case SOFTRF_MODEL_PRIME_MK2:
+    radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
+    Vtcxo = 0.0; /* TCXO with ext. power */
+    break;
   case SOFTRF_MODEL_PRIME_MK4:
     radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
     Vtcxo = 3.0;
@@ -2544,6 +2548,7 @@ static void lr20xx_setup()
     break;
 
   case SOFTRF_MODEL_BADGE:
+  case SOFTRF_MODEL_PRIME_MK2:
   case SOFTRF_MODEL_PRIME_MK3:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V03,
                                rfswitch_table_MXD8721_V03);
