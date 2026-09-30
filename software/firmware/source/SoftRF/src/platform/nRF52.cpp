@@ -907,7 +907,7 @@ static void nRF52_setup()
       nRF5x_Device_Model = "Card Edition Mk3";
       nRF52_USB_VID      = 0x2886; /* Seeed Technology */
       nRF52_USB_PID      = 0x0057;
-#if 0 /* TODO */
+
       if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
           reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
@@ -916,7 +916,6 @@ static void nRF52_setup()
 #endif /* ARDUINO_ARCH_MBED */
         nRF52_system_off();
       }
-#endif
 
       digitalWrite(SOC_GPIO_PIN_X1_3V3_EN, HIGH);
       pinMode(SOC_GPIO_PIN_X1_3V3_EN, OUTPUT);

@@ -1308,6 +1308,8 @@ static bool ag33_setup()
    */
   Serial_GNSS_Out.write("$PAIR080,0*2E\r\n"); /* Normal Mode */ delay(250);
 
+  Serial_GNSS_Out.write("$PAIR154,0*26\r\n");     /* RLM OFF */ delay(250);
+
 #if 0
   if (hw_info.model == SOFTRF_MODEL_CARD) {
     /* Synchronizes PPS pulse with NMEA */
