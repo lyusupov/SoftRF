@@ -14,9 +14,9 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Pocket-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Airventure-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Prime3-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
-[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
+[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Badge-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)<!--
 [<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)
-[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
+-->[<img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Nano-banner.jpg">](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
 
 ## Features
 
@@ -341,6 +341,10 @@ OEM|Model(s)
 
 <p><img src="https://github.com/user-attachments/assets/7cc81eee-0940-497c-b4f2-1635fe507958" width="600"></p>
 
+* [**Card Edition Mark III**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+
+![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card3-1.jpg)
+
 * [**Retro Edition Mark II**](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition-MkII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 <p><img src="https://github.com/lyusupov/SoftRF/raw/master/documents/images/Retro2-2.jpg" width="600"></p>
@@ -352,10 +356,6 @@ OEM|Model(s)
 * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
 
 <p><img src="https://raw.githubusercontent.com/lyusupov/SoftRF/master/documents/images/Pocket-3.jpg" width="800"></p>
-
-* [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
-
-![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/Card-1.jpg)
 
 * [**Nano Edition**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 
