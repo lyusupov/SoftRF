@@ -33,7 +33,7 @@
 #define SOC_GPIO_PIN_M3_BUTTON    _PINNUM(0, 12) // P0.12
 #define SOC_GPIO_PIN_M3_BUT_EN    _PINNUM(0, 16) // P0.16 active HIGH
 
-/* LED */
+/* LEDs: Red preempts Green, Green preempts BLue */
 #define SOC_GPIO_LED_M3_RED       _PINNUM(1,  1) // P1.01
 #define SOC_GPIO_LED_M3_GREEN     _PINNUM(1,  3) // P1.03
 #define SOC_GPIO_LED_M3_BLUE      _PINNUM(1,  5) // P1.05

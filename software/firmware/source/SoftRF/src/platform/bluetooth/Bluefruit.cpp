@@ -282,6 +282,7 @@ err_t BLEDfuSecure::begin(void)
 
 static unsigned long BLE_Notify_TimeMarker  = 0;
 static unsigned long BLE_SensBox_TimeMarker = 0;
+static unsigned long BLE_LED_TimeMarker     = 0;
 
 /*********************************************************************
  This is an example for our nRF52 based Bluefruit LE modules
@@ -530,6 +531,7 @@ void nRF5x_Bluetooth_setup()
 
   BLE_Notify_TimeMarker  = millis();
   BLE_SensBox_TimeMarker = millis();
+  BLE_LED_TimeMarker     = millis();
 }
 
 /*********************************************************************
@@ -550,6 +552,20 @@ static void nRF5x_Bluetooth_loop()
 
   if (isTimeToBattery()) {
     blebas.write(Battery_charge());
+  }
+
+  if (SOC_GPIO_LED_BLE != SOC_UNUSED_PIN &&
+      SOC_GPIO_LED_BLE != LED_BLUE) {
+    if (Bluefruit.connected()) {
+      digitalWrite(SOC_GPIO_LED_BLE, LED_STATE_ON);
+    } else if (Bluefruit.Advertising.isRunning()) {
+      if (millis() - BLE_LED_TimeMarker > CFG_ADV_BLINKY_INTERVAL) {
+        digitalToggle(SOC_GPIO_LED_BLE);
+        BLE_LED_TimeMarker = millis();
+      }
+    } else {
+      digitalWrite(SOC_GPIO_LED_BLE, 1-LED_STATE_ON);
+    }
   }
 
 #if defined(ARDUINO_ARCH_NRF52)
