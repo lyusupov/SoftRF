@@ -44,6 +44,10 @@
 #ifndef HACKRF_ONE
 #define MODE_S_ICAO_CACHE_TTL 60   // Time to live of cached addresses.
 
+#if defined(ESP32)
+#include "sdkconfig.h"
+#endif /* ESP32 */
+
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 #if !defined(MAGLUT_IN_ROM)
 mag_t maglut[129*129];
@@ -98,8 +102,11 @@ void mode_s_init(mode_s_t *self) {
   // any resolution.
 
 #if (!defined(HACKRF_ONE)                && \
+     !defined(ARDUINO_BLUEPILL_F103CB)   && \
+     !defined(CONFIG_IDF_TARGET_ESP32)   && \
      !defined(CONFIG_IDF_TARGET_ESP32P4) && \
-     !defined(ARDUINO_BLUEPILL_F103CB))  || \
+     !defined(ARDUINO_ARCH_NRF52)        && \
+     !defined(ARDUINO_ARCH_CH32))        || \
      (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))             || \
      (defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(MAGLUT_IN_ROM))
   int i, q;

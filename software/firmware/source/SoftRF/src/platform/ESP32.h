@@ -544,7 +544,7 @@ struct rst_info {
 //#define ENABLE_BT_VOICE
 //#define USE_NIMBLE
 
-//#define USE_RADIOLIB
+#define USE_RADIOLIB
 #define EXCLUDE_LR11XX
 #if defined(USE_RADIOLIB)
 #include <BuildOpt.h>

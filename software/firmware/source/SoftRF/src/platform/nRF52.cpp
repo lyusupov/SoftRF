@@ -337,10 +337,10 @@ ui_settings_t *ui;
 #include <MPU9250.h>
 #include <ICM_20948.h>
 #include <QMA6100P.h>
+#include <Adafruit_LIS3DH.h>
 #if !defined(EXCLUDE_BHI260)
 #include <SensorBHI260AP.hpp>
 #include <bosch/BoschSensorDataHelper.hpp>
-#include <Adafruit_LIS3DH.h>
 
 #if defined(USE_BHI260_RAM_FW)
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)

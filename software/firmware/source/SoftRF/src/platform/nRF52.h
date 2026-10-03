@@ -375,14 +375,14 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 
-//#define EXCLUDE_BHI260
+//#define EXCLUDE_BHI260           //  -117 kb
 #define USE_BHI260_RAM_FW
 
 #define EXCLUDE_WIP
 
-#define USE_OLED                 //  +  7 kb
+#define USE_OLED                   //  +  7 kb
 #define EXCLUDE_OLED_BARO_PAGE
-//#define EXCLUDE_OLED_049       //  -  2 kb
+//#define EXCLUDE_OLED_049         //  -  2 kb
 
 /* FTD-012 data port protocol version 8 and 9 */
 #define PFLAA_EXT1_FMT  ",%d,%d,%d"
