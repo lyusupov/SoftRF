@@ -1001,7 +1001,9 @@ static void lr11xx_setup()
 
     rl_state = radio_semtech->fixedPacketLengthMode(pkt_size);
 
+#if USE_LR11XX
     rl_state = radio_semtech->disableAddressFiltering();
+#endif /* USE_LR11XX */
 
     /* Work around premature P3I syncword detection */
     if (rl_protocol->syncword_size == 2) {
@@ -1290,6 +1292,14 @@ static bool lr11xx_receive()
       lr112x_receive_active = true;
     }
   }
+
+#if defined(plat_radio_irq_func)
+  if (mod->getIrq() == RADIOLIB_NC) {
+   if (plat_radio_irq_func(mod->getIrq())) {
+     lr112x_receive_handler();
+   }
+  }
+#endif /* plat_radio_irq_func */
 
   if (lr112x_receive_complete == true) {
 
@@ -1603,7 +1613,48 @@ static bool lr11xx_transmit()
 
   RL_txPacket.len = PayloadLen;
 
-  int rl_state = radio_semtech->transmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+  int rl_state;
+
+#if defined(plat_radio_irq_func)
+  if (mod->getIrq() == RADIOLIB_NC) {
+    RadioLibTime_t timeout = radio_semtech->getTimeOnAir(RL_txPacket.len);
+
+#if USE_SX1262
+    // calculate timeout (5ms + 500 % of expected time-on-air)
+    timeout = 5000 + (timeout * 5);
+#endif
+#if USE_LR11XX
+    if (rl_protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
+      // calculate timeout (150% of expected time-on-air)
+      timeout = (timeout * 3) / 2;
+    } else {
+      // calculate timeout (500% of expected time-on-air)
+      timeout = timeout * 5;
+    }
+#endif
+    RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout in %lu us", timeout);
+
+    rl_state = radio_semtech->startTransmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+    RADIOLIB_ASSERT(rl_state);
+
+    RadioLibTime_t start = mod->hal->micros();
+    while (!plat_radio_irq_func(mod->getIrq())) {
+      mod->hal->yield();
+      if (mod->hal->micros() - start > timeout) {
+        radio_semtech->finishTransmit();
+        rl_state = RADIOLIB_ERR_TX_TIMEOUT;
+        break;
+      }
+    }
+
+    if (rl_state != RADIOLIB_ERR_TX_TIMEOUT) {
+      rl_state = radio_semtech->finishTransmit();
+    }
+  } else
+#endif /* plat_radio_irq_func */
+  {
+    rl_state = radio_semtech->transmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+  }
 
   if (rl_state == RADIOLIB_ERR_NONE) {
 
@@ -2598,6 +2649,14 @@ static bool lr20xx_receive()
     }
   }
 
+#if defined(plat_radio_irq_func)
+  if (mod->getIrq() == RADIOLIB_NC) {
+   if (plat_radio_irq_func(mod->getIrq())) {
+     lr20xx_receive_handler();
+   }
+  }
+#endif /* plat_radio_irq_func */
+
   if (lr20xx_receive_complete == true) {
 
     lr20xx_receive_complete = false;
@@ -3027,7 +3086,43 @@ static bool lr20xx_transmit()
 
   RL_txPacket.len = PayloadLen;
 
-  int rl_state = radio_g4->transmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+  int rl_state;
+
+#if defined(plat_radio_irq_func)
+  if (mod->getIrq() == RADIOLIB_NC) {
+    RadioLibTime_t timeout = radio_g4->getTimeOnAir(RL_txPacket.len);
+
+    if (rl_protocol->modulation_type == RF_MODULATION_TYPE_LORA) {
+      // calculate timeout (150% of expected time-on-air)
+      timeout = (timeout * 3) / 2;
+    } else {
+      // calculate timeout (500% of expected time-on-air)
+      timeout = timeout * 5;
+    }
+
+    RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout in %lu us", timeout);
+
+    rl_state = radio_g4->startTransmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+    RADIOLIB_ASSERT(rl_state);
+
+    RadioLibTime_t start = mod->hal->micros();
+    while (!plat_radio_irq_func(mod->getIrq())) {
+      mod->hal->yield();
+      if (mod->hal->micros() - start > timeout) {
+        radio_g4->finishTransmit();
+        rl_state = RADIOLIB_ERR_TX_TIMEOUT;
+        break;
+      }
+    }
+
+    if (rl_state != RADIOLIB_ERR_TX_TIMEOUT) {
+      rl_state = radio_g4->finishTransmit();
+    }
+  } else
+#endif /* plat_radio_irq_func */
+  {
+    rl_state = radio_g4->transmit((uint8_t *) &RL_txPacket.payload, (size_t) RL_txPacket.len);
+  }
 
   if (rl_state == RADIOLIB_ERR_NONE) {
 

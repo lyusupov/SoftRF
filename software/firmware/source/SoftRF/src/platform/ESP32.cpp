@@ -1202,6 +1202,11 @@ static void ESP32_setup()
     /* reserved for DIO 11 of LilyGO LR2021 module */
     lmic_pins.dio[0] = SOC_GPIO_PIN_TBEAM_RF_DIO1_V08;
 #endif /* USE_RADIOLIB */
+  } else if (esp32_board == ESP32_DEVKIT) {
+#if defined(USE_RADIOLIB)
+    /* reserved for DIO 11 of LilyGO LR2021 module */
+    lmic_pins.dio[0] = SOC_GPIO_PIN_CE;
+#endif /* USE_RADIOLIB */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
@@ -8609,6 +8614,28 @@ DB_ops_t ESP32_ADB_ops = {
   ESP32_ADB_query
 };
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+bool ESP32C3_radio_irq_func(int pin)
+{
+  if (esp32_board == ESP32_C3_DEVKIT) {
+    return digitalRead(SOC_GPIO_PIN_C3_CE);
+  } else {
+    return digitalRead(pin);
+  }
+}
+#endif /* CONFIG_IDF_TARGET_ESP32C3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+bool ESP32P4_radio_irq_func(int pin)
+{
+  if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
+    return xl9535->digitalRead(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO);
+  } else {
+    return digitalRead(pin);
+  }
+}
+#endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 const SoC_ops_t ESP32_ops = {
 #if defined(CONFIG_IDF_TARGET_ESP32)

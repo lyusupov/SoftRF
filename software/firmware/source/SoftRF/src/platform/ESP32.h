@@ -724,6 +724,18 @@ extern  SoftSPI RadioSPI;
 #define SPI RadioSPI
 #endif /* USE_SOFTSPI */
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+extern bool ESP32C3_radio_irq_func(int);
+//#define plat_radio_irq_func ESP32C3_radio_irq_func
+//#undef USE_BASICMAC
+#endif /* C3 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+extern bool ESP32P4_radio_irq_func(int);
+#define plat_radio_irq_func ESP32P4_radio_irq_func
+//#undef USE_BASICMAC
+#endif /* P4 */
+
 #endif /* PLATFORM_ESP32_H */
 
 #endif /* ESP32 */

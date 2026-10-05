@@ -105,6 +105,7 @@ void mode_s_init(mode_s_t *self) {
      !defined(ARDUINO_BLUEPILL_F103CB)   && \
      !defined(CONFIG_IDF_TARGET_ESP32)   && \
      !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+     !defined(CONFIG_IDF_TARGET_ESP32C3) && \
      !defined(ARDUINO_ARCH_NRF52)        && \
      !defined(ARDUINO_ARCH_CH32))        || \
      (defined(HACKRF_ONE) && !defined(MAGLUT_IN_ROM))             || \
