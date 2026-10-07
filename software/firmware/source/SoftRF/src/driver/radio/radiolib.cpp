@@ -1757,6 +1757,7 @@ static uint64_t lr20xx_eui_be = 0xdeadbeefdeadbeef;
 mode_s_t rl_mode_s_state;
 #endif /* EXCLUDE_ES1090 */
 
+/* LilyGO T-LR2021 V0.2 */
 static const uint32_t rfswitch_dio_pins_MXD8721_V02[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6,
     RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
@@ -1772,6 +1773,7 @@ static const Module::RfSwitchMode_t rfswitch_table_MXD8721_V02[] = {
     LR2021::MODE_END_OF_TABLE,
 };
 
+/* LilyGO T-LR2021 V0.3 */
 static const uint32_t rfswitch_dio_pins_MXD8721_V03[] = {
     RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7,
     RADIOLIB_LR2021_DIO8, RADIOLIB_LR2021_DIO10,
@@ -1794,40 +1796,14 @@ static const uint32_t rfswitch_dio_pins_XY16E3AXP33[] = {
     RADIOLIB_NC
 };
 
-static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_sub1g[] = {
-    // mode                  DIO5 DIO6 DIO7 DIO8
-    { LR2021::MODE_STBY,   { LOW, LOW, LOW, LOW  } },
-    { LR2021::MODE_RX,     { LOW, LOW, LOW, LOW  } }, // Sub-1G ALL DIO SET LOW
-    { LR2021::MODE_TX,     { LOW, LOW, LOW, HIGH } }, // Sub-1G DIO8 SET HIGH
-    { LR2021::MODE_RX_HF,  { LOW, LOW, LOW, LOW  } },
-    { LR2021::MODE_TX_HF,  { LOW, LOW, LOW, LOW  } },
-    END_OF_MODE_TABLE,
-};
-
-static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33_2g4[] = {
-    // mode                  DIO5  DIO6  DIO7  DIO8
-    { LR2021::MODE_STBY,   { LOW,  LOW,  LOW,  LOW } },
-    { LR2021::MODE_RX,     { LOW,  LOW,  LOW,  LOW } },
-    { LR2021::MODE_TX,     { LOW,  LOW,  LOW,  LOW } },
-    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW,  LOW } }, // 2.4G RX DIO6 SET HIGH
-    { LR2021::MODE_TX_HF,  { LOW,  LOW,  HIGH, LOW } }, // 2.4G TX DIO7 SET HIGH
-    END_OF_MODE_TABLE,
-};
-
-static const uint32_t rfswitch_dio_pins_tdisplay_p4[] = {
-    RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7,
-    RADIOLIB_LR2021_DIO8, RADIOLIB_LR2021_DIO10,
-    RADIOLIB_NC
-};
-
-static const Module::RfSwitchMode_t rfswitch_table_tdisplay_p4[] = {
-    // mode                  DIO6  DIO7  DIO8  DIO10
-    {LR2021::MODE_STBY,    { LOW,  LOW,  LOW,  LOW  } },
-    {LR2021::MODE_RX,      { LOW,  LOW,  HIGH, LOW  } },
-    {LR2021::MODE_TX,      { LOW,  LOW,  HIGH, LOW  } },
-    {LR2021::MODE_RX_HF,   { HIGH, LOW,  LOW,  HIGH } },
-    {LR2021::MODE_TX_HF,   { LOW,  HIGH, LOW , HIGH } },
-    END_OF_MODE_TABLE,
+static const Module::RfSwitchMode_t rfswitch_table_XY16E3AXP33[] = {
+    // mode                  DIO5 DIO6  DIO7  DIO8
+    { LR2021::MODE_STBY,   { LOW, LOW,  LOW,  LOW  } },
+    { LR2021::MODE_RX,     { LOW, LOW,  LOW,  LOW  } }, // Sub-1G ALL DIO SET LOW
+    { LR2021::MODE_TX,     { LOW, LOW,  LOW,  HIGH } }, // Sub-1G DIO8 SET HIGH
+    { LR2021::MODE_RX_HF,  { LOW, HIGH, LOW,  LOW  } }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW, LOW,  HIGH, LOW  } }, // 2.4G TX DIO7 SET HIGH
+    LR2021::MODE_END_OF_TABLE,
 };
 
 static const uint32_t rfswitch_dio_pins_ELRS[] = {
@@ -1843,7 +1819,7 @@ static const Module::RfSwitchMode_t rfswitch_table_ELRS[] = {
     { LR2021::MODE_TX,     { LOW,  LOW,  HIGH, LOW  } },
     { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW,  LOW  } },
     { LR2021::MODE_TX_HF,  { HIGH, LOW,  LOW,  LOW  } },
-    END_OF_MODE_TABLE,
+    LR2021::MODE_END_OF_TABLE,
 };
 
 static const uint32_t rfswitch_dio_pins_seeed_x1[] = {
@@ -2106,11 +2082,8 @@ static void lr20xx_setup()
     Vtcxo = 1.6;
     break;
   case SOFTRF_MODEL_CONCORDE:
-    radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ */
-    Vtcxo = 3.0; /* 3.3V in TDP4 demo */
-    break;
   case SOFTRF_MODEL_PRIME_MK2:
-    radio_g4->irqDioNum = 11; /* DIO11 as IRQ */
+    radio_g4->irqDioNum = 11; /* LR2021 DIO11 as IRQ on T-LR2021 V0.3 */
     Vtcxo = 0.0; /* TCXO with ext. power */
     break;
   case SOFTRF_MODEL_PRIME_MK4:
@@ -2579,15 +2552,9 @@ static void lr20xx_setup()
     }
     break;
 
-  case SOFTRF_MODEL_CONCORDE:
-    radio_g4->setRfSwitchTable(rfswitch_dio_pins_tdisplay_p4,
-                               rfswitch_table_tdisplay_p4);
-    break;
-
   case SOFTRF_MODEL_PRIME_MK4:
-    radio_g4->setRfSwitchTable(rfswitch_dio_pins_XY16E3AXP33, high ?
-                               rfswitch_table_XY16E3AXP33_2g4 :
-                               rfswitch_table_XY16E3AXP33_sub1g);
+    radio_g4->setRfSwitchTable(rfswitch_dio_pins_XY16E3AXP33,
+                               rfswitch_table_XY16E3AXP33);
     break;
 
   case SOFTRF_MODEL_RETRO_MK2:
@@ -2602,6 +2569,7 @@ static void lr20xx_setup()
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK2:
   case SOFTRF_MODEL_PRIME_MK3:
+  case SOFTRF_MODEL_CONCORDE:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V03,
                                rfswitch_table_MXD8721_V03);
     break;
