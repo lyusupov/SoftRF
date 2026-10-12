@@ -120,8 +120,10 @@ struct mode_s_aircraft {
     int altitude;       /* Altitude */
     int unit;           /* meters or feet */
     int speed;          /* Velocity computed from EW and NS components. */
+    int vert_rate;      /* feet per minute */
     int track;          /* Angle of flight. */
     time_t seen;        /* Time at which the last packet was received. */
+    int rssi;
     long messages;      /* Number of Mode S messages received. */
     /* Encoded latitude and longitude as extracted by odd and even
      * CPR encoded messages. */
@@ -194,6 +196,7 @@ struct mode_s_msg {
   int errorbit;               // Bit corrected. -1 if no bit corrected.
   int aa1, aa2, aa3;          // ICAO Address bytes 1 2 and 3
   int phase_corrected;        // True if phase correction was applied.
+  int rssi;
 
   // DF 11
   int ca;                     // Responder capabilities.

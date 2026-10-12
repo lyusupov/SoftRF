@@ -139,7 +139,7 @@ typedef struct UFO {
 
     float     geoid_separation; /* metres */
     uint16_t  hdop; /* cm */
-    int8_t    rssi; /* SX1276 only */
+    int16_t   rssi;
 
     /* 'legacy' specific data */
     float     distance;

@@ -82,8 +82,9 @@ bool es1090_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
   fop->aircraft_type = GDL90_TO_AT(a->aircraft_type);
   fop->course = a->track;
   fop->speed = a->speed;
-//  fop->vs = a->vert_rate;                                     /* TBD */
-  fop->hdop = 0;                                                /* TBD */
+  fop->vs = a->vert_rate;
+
+  fop->hdop = 0; /* TBD */
 
   fop->addr_type = ADDR_TYPE_ICAO;
   fop->timestamp = this_aircraft->timestamp;
@@ -97,6 +98,8 @@ bool es1090_decode(void *pkt, ufo_t *this_aircraft, ufo_t *fop) {
 
   /* sizeof(mdb.callsign) = 9 ; sizeof(fop->callsign) = 8 */
   memcpy(fop->callsign, a->flight, sizeof(fop->callsign));
+
+  fop->rssi = a->rssi;
 
   return true;
 }

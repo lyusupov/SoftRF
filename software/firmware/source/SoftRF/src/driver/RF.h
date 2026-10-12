@@ -150,7 +150,7 @@ extern bool (*protocol_decode)(void *, ufo_t *, ufo_t *);
 
 extern FreqPlan RF_FreqPlan;
 
-extern int8_t RF_last_rssi;
+extern int16_t RF_last_rssi;
 extern const char *Protocol_ID[];
 
 #if !defined(EXCLUDE_NRF905)

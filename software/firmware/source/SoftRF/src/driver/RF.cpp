@@ -30,7 +30,7 @@ byte TxBuffer[MAX_PKT_SIZE] __attribute__((aligned(sizeof(uint32_t))));
 uint32_t tx_packets_counter = 0;
 uint32_t rx_packets_counter = 0;
 
-int8_t RF_last_rssi = 0;
+int16_t RF_last_rssi = 0;
 
 FreqPlan RF_FreqPlan;
 

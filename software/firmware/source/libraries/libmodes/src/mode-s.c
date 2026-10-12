@@ -929,6 +929,7 @@ struct mode_s_aircraft *interactiveCreateAircraft(uint32_t addr) {
       a->altitude = 0;
       a->unit = 0;
       a->speed = 0;
+      a->vert_rate = 0;
       a->track = 0;
       a->odd_cprlat = 0;
       a->odd_cprlon = 0;
@@ -939,6 +940,7 @@ struct mode_s_aircraft *interactiveCreateAircraft(uint32_t addr) {
       a->lat = 0;
       a->lon = 0;
       a->seen = time(NULL);
+      a->rssi = 0;
       a->messages = 0;
       a->next = NULL;
     }
@@ -1124,6 +1126,7 @@ struct mode_s_aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg
 
     a->seen = time(NULL);
     a->messages++;
+    a->rssi = mm->rssi;
 
     if (mm->msgtype == 0 || mm->msgtype == 4 || mm->msgtype == 20) {
         a->altitude = mm->altitude;
@@ -1152,6 +1155,8 @@ struct mode_s_aircraft *interactiveReceiveData(mode_s_t *self, struct mode_s_msg
         } else if (mm->metype == 19) {
             if (mm->mesub == 1 || mm->mesub == 2) {
                 a->speed = mm->velocity;
+                a->vert_rate = (mm->vert_rate - 1) << 6; // * 64
+                if (mm->vert_rate_sign) { a->vert_rate = - a->vert_rate; }
                 a->track = mm->heading;
             }
         }

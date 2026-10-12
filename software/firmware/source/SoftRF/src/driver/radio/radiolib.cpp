@@ -2652,6 +2652,7 @@ static bool lr20xx_receive()
         u2_t crc16, pkt_crc16;
 
         lr20xx_last_rx_marker = millis();
+        RF_last_rssi = radio_g4->getRSSI(true);
 
         RadioLib_DataPacket *RL_rxPacket_ptr = &RL_rxPacket;
 
@@ -2751,6 +2752,8 @@ static bool lr20xx_receive()
 
           mode_s_decode(&rl_mode_s_state, &mm, buf);
 #endif /* OPT_DF17 == 1 | 2 */
+
+          mm.rssi = RF_last_rssi;
 
           if (rl_mode_s_state.check_crc == 0 || mm.crcok) {
 #if 0
@@ -2900,7 +2903,6 @@ static bool lr20xx_receive()
         }
 
         if (success) {
-          RF_last_rssi = radio_g4->getRSSI();
           rx_packets_counter++;
         }
       }
