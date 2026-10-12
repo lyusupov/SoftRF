@@ -3,13 +3,20 @@
 #define SOC_GPIO_PIN_M5_CONS_RX     44
 #define SOC_GPIO_PIN_M5_CONS_TX     43
 
-/* L76K */
-#define SOC_GPIO_PIN_M5_GNSS_RX     19 /* USB D- */
-#define SOC_GPIO_PIN_M5_GNSS_TX     20 /* USB D+ */
+/* V1: L76K */
+#define SOC_GPIO_PIN_M5_V1_GNSS_RX  19 /* USB D- */
+#define SOC_GPIO_PIN_M5_V1_GNSS_TX  20 /* USB D+ */
+
+/* V2: AG3352 */
+#define SOC_GPIO_PIN_M5_V2_GNSS_RX  20
+#define SOC_GPIO_PIN_M5_V2_GNSS_TX  19
 
 #define SOC_GPIO_PIN_M5_GNSS_PPS    SOC_UNUSED_PIN // TBD
-#define SOC_GPIO_PIN_M5_GNSS_WKE    11
-#define SOC_GPIO_PIN_M5_GNSS_RST    13
+
+#define SOC_GPIO_PIN_M5_GNSS_WKE    11 /* V1 */
+#define SOC_GPIO_PIN_M5_GNSS_RINT   11 /* V2 */
+
+#define SOC_GPIO_PIN_M5_GNSS_RST    13 // active: LOW for L76K, HIGH for AG3352
 #define SOC_GPIO_PIN_M5_GNSS_SW     10
 
 /* SPI */
@@ -58,7 +65,9 @@
 /* digital input */
 #define SOC_GPIO_PIN_M5_VBAT_SEN    18
 #define SOC_GPIO_PIN_M5_VUSB_SEN    12
-#define SOC_GPIO_PIN_M5_VGPS_SEN    10
+
+#define SOC_GPIO_PIN_M5_VGPS_SEN    10 /* V1 */
+#define SOC_GPIO_PIN_M5_GNSS_0V8_EN 10 /* V2 */
 
 /* GPIO expansion (PCA9557) */
 #define SOC_EXPIO_LED_M5_BLUE       1 // active HIGH
@@ -66,3 +75,6 @@
 #define SOC_EXPIO_LED_M5_RED        3 // active HIGH
 #define SOC_EXPIO_PIN_M5_IO_EN      4 // active HIGH
 #define SOC_EXPIO_PIN_M5_EPD_EN     5 // active HIGH
+// V2 only
+#define SOC_EXPIO_PIN_M5_GNSS_PPS   6
+#define SOC_EXPIO_PIN_M5_GNSS_VER   7 // HIGH for V2 (AG3352)

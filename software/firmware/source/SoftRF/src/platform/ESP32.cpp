@@ -1977,7 +1977,6 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB */
     } else {
       hw_info.model    = SOFTRF_MODEL_AIRVENTURE;
-      hw_info.revision = 1; /* PCB 1.0 */
 
 #if ARDUINO_USB_CDC_ON_BOOT
       SerialOutput.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS,
@@ -2002,8 +2001,21 @@ static void ESP32_setup()
       Wire1.beginTransmission(PCA9557_ADDRESS);
       ESP32_has_gpio_extension = (Wire1.endTransmission() == 0);
 
+      hw_info.revision = 1; /* PCB 1.0 , L76K GNSS */
+
       if (ESP32_has_gpio_extension) {
         pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
+        pca9557->pinMode(SOC_EXPIO_PIN_M5_GNSS_VER, INPUT);
+
+        delay(2);
+
+        uint8_t high_cnt = 0;
+        for (uint8_t i = 0; i < 5; i++) {
+          high_cnt += pca9557->digitalRead(SOC_EXPIO_PIN_M5_GNSS_VER) == HIGH;
+        }
+        if (high_cnt >= 3) {
+          hw_info.revision = 2; /* PCB 2.x , AG3352 GNSS */
+        }
       } else {
         WIRE_FINI(Wire1);
       }
@@ -2715,7 +2727,16 @@ static void ESP32_setup()
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
 
     gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_SS);
-    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
+
+    switch (hw_info.revision)
+    {
+      case 2:/* AG3352 */
+        break;
+      case 1:/* L76K */
+      default:
+        gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
+        break;
+    }
 
     if (ESP32_has_gpio_extension) {
       pca9557->pinMode(SOC_EXPIO_LED_M5_RED_PWR,      OUTPUT); /* status LED */
@@ -2732,11 +2753,37 @@ static void ESP32_setup()
       pca9557->digitalWrite(SOC_EXPIO_PIN_M5_EPD_EN,  HIGH);
     }
 
-    /* Wake up Quectel L76K GNSS */
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,            HIGH);
-    pinMode(SOC_GPIO_PIN_M5_GNSS_RST,                 OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,            HIGH);
-    pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,                 OUTPUT);
+    switch (hw_info.revision)
+    {
+      case 2:/* AG3352 */
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,        LOW);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             OUTPUT);
+
+        pinMode(SOC_GPIO_PIN_M5_GNSS_RINT,            OUTPUT);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_RINT,       LOW);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_0V8_EN,          OUTPUT);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_0V8_EN,     LOW);
+        delay(10);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_0V8_EN,     HIGH);
+        delay(100);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_RINT,       HIGH);
+        delay(10);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_RINT,       LOW);
+
+        if (ESP32_has_gpio_extension) {
+          pca9557->pinMode(SOC_EXPIO_PIN_M5_GNSS_PPS, INPUT);
+        }
+        break;
+
+      case 1:/* L76K */
+      default:
+        /* Wake up Quectel L76K GNSS */
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,        HIGH);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             OUTPUT);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        HIGH);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_WKE,             OUTPUT);
+        break;
+    }
 
     Wire.begin(SOC_GPIO_PIN_M5_SDA, SOC_GPIO_PIN_M5_SCL);
     Wire.beginTransmission(PCF8563_SLAVE_ADDRESS);
@@ -5309,9 +5356,26 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            SOC_GPIO_PIN_M2_GNSS_RX, SOC_GPIO_PIN_M2_GNSS_TX);
     } else if (esp32_board == ESP32_ELECROW_TN_M5) {
-      SerialOutput.println(F("INFO: Elecrow ThinkNode M5 is detected."));
-      Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
-                           SOC_GPIO_PIN_M5_GNSS_RX, SOC_GPIO_PIN_M5_GNSS_TX);
+      SerialOutput.print(F("INFO: Elecrow ThinkNode M5 "));
+      switch (hw_info.revision)
+      {
+        case 2:/* AG3352 */
+          SerialOutput.print(F("V2"));
+          Serial_GNSS_In.begin(115200, /* Airoha default value */
+                               SERIAL_IN_BITS,
+                               SOC_GPIO_PIN_M5_V2_GNSS_RX,
+                               SOC_GPIO_PIN_M5_V2_GNSS_TX);
+          break;
+
+        case 1:/* L76K */
+        default:
+          SerialOutput.print(F("V1"));
+          Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
+                               SOC_GPIO_PIN_M5_V1_GNSS_RX,
+                               SOC_GPIO_PIN_M5_V1_GNSS_TX);
+          break;
+      }
+      SerialOutput.println(F(" is detected."));
     } else if (esp32_board == ESP32_EBYTE_HUB_900TB) {
       Serial.println(F("INFO: Ebyte EoRa_HUB_900TB is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
