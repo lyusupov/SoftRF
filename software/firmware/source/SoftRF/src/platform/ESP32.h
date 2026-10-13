@@ -513,6 +513,10 @@ struct rst_info {
 
 #define USE_TIME_SLOTS
 
+/* FTD-012 data port protocol version 8 and 9 */
+#define PFLAA_EXT1_FMT  ",%d,%d,%d"
+#define PFLAA_EXT1_ARGS ,Container[i].no_track,data_source,Container[i].rssi
+
 /* Experimental */
 #define USE_BLE_MIDI
 //#define USE_GDL90_MSL
@@ -532,7 +536,7 @@ struct rst_info {
 #endif /* S3 */
 
 #define EXCLUDE_CC13XX
-#define EXCLUDE_SOFTRF_HEARTBEAT
+//#define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 //#define EXCLUDE_IMU
 //#define EXCLUDE_MAG
@@ -631,7 +635,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_NIMBLE
 #define USE_NIMBLE_V2
 //#define USE_ARDUINOBLE
-#undef EXCLUDE_SOFTRF_HEARTBEAT
+//#undef EXCLUDE_SOFTRF_HEARTBEAT
 #undef EXCLUDE_TEST_MODE
 #define USE_NMEALIB
 //#define USE_SOFTSPI

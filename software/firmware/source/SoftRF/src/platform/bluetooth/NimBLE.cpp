@@ -69,8 +69,6 @@ String BT_name = HOSTNAME;
 static unsigned long BLE_Notify_TimeMarker = 0;
 static unsigned long BLE_Advertising_TimeMarker = 0;
 
-// NimBLEDescriptor UserDescriptor(NimBLEUUID((uint16_t)0x2901));
-
 class MyServerCallbacks: public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer) {
       deviceConnected = true;
@@ -125,66 +123,72 @@ static void ESP32_Bluetooth_setup()
       pServer = NimBLEDevice::createServer();
       pServer->setCallbacks(new MyServerCallbacks());
 
-      // Create the BLE Service
-      NimBLEService *pService = pServer->createService(NimBLEUUID(UART_SERVICE_UUID16));
+      // Create the BLE UART Service
+      NimBLEService *uart_svc = pServer->createService(NimBLEUUID(UART_SERVICE_UUID16));
 
       // Create a BLE Characteristic
-      pUARTCharacteristic = pService->createCharacteristic(
+      pUARTCharacteristic = uart_svc->createCharacteristic(
                               NimBLEUUID(UART_CHARACTERISTIC_UUID16),
                               NIMBLE_PROPERTY::READ   |
                               NIMBLE_PROPERTY::NOTIFY |
                               NIMBLE_PROPERTY::WRITE_NR
                             );
 
-//      UserDescriptor.setValue("HMSoft");
-//      pUARTCharacteristic->addDescriptor(&UserDescriptor);
+      NimBLEDescriptor* UserDescriptor = pUARTCharacteristic->createDescriptor(
+                                           NimBLEUUID((uint16_t) 0x2901),
+                                           NIMBLE_PROPERTY::READ |
+                                           NIMBLE_PROPERTY::WRITE,
+                                           8
+                                         );
+      UserDescriptor->setValue("HMSoft");
 
       pUARTCharacteristic->setCallbacks(new UARTCallbacks());
 
-      // Start the service
-      pService->start();
+      // Start the UART service
+      uart_svc->start();
 
-      // Create the BLE Service
-      pService = pServer->createService(NimBLEUUID(UUID16_SVC_BATTERY));
+      // Create the BAT Service
+      NimBLEService *bat_svc = pServer->createService(NimBLEUUID(UUID16_SVC_BATTERY));
 
       // Create a BLE Characteristic
-      pBATCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_BATTERY_LEVEL),
-                              NIMBLE_PROPERTY::READ   |
-                              NIMBLE_PROPERTY::NOTIFY
-                            );
+      pBATCharacteristic = bat_svc->createCharacteristic(
+                             NimBLEUUID(UUID16_CHR_BATTERY_LEVEL),
+                             NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
+                           );
 
-      // Start the service
-      pService->start();
+      // Start the BAT service
+      bat_svc->start();
 
-      // Create the BLE Service
-      pService = pServer->createService(NimBLEUUID(UUID16_SVC_DEVICE_INFORMATION));
+      // Create the BLE INFO Service
+      NimBLEService *info_svc = pServer->createService(
+                                  NimBLEUUID(UUID16_SVC_DEVICE_INFORMATION)
+                                );
 
       // Create BLE Characteristics
-      pModelCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_MODEL_NUMBER_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
-      pSerialCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_SERIAL_NUMBER_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
-      pFirmwareCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_FIRMWARE_REVISION_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
-      pHardwareCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_HARDWARE_REVISION_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
-      pSoftwareCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_SOFTWARE_REVISION_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
-      pManufacturerCharacteristic = pService->createCharacteristic(
-                              NimBLEUUID(UUID16_CHR_MANUFACTURER_NAME_STRING),
-                              NIMBLE_PROPERTY::READ
-                            );
+      pModelCharacteristic =    info_svc->createCharacteristic(
+                                  NimBLEUUID(UUID16_CHR_MODEL_NUMBER_STRING),
+                                  NIMBLE_PROPERTY::READ
+                                );
+      pSerialCharacteristic =   info_svc->createCharacteristic(
+                                  NimBLEUUID(UUID16_CHR_SERIAL_NUMBER_STRING),
+                                  NIMBLE_PROPERTY::READ
+                                );
+      pFirmwareCharacteristic = info_svc->createCharacteristic(
+                                  NimBLEUUID(UUID16_CHR_FIRMWARE_REVISION_STRING),
+                                  NIMBLE_PROPERTY::READ
+                                );
+      pHardwareCharacteristic = info_svc->createCharacteristic(
+                                  NimBLEUUID(UUID16_CHR_HARDWARE_REVISION_STRING),
+                                  NIMBLE_PROPERTY::READ
+                                );
+      pSoftwareCharacteristic = info_svc->createCharacteristic(
+                                  NimBLEUUID(UUID16_CHR_SOFTWARE_REVISION_STRING),
+                                  NIMBLE_PROPERTY::READ
+                                );
+      pManufacturerCharacteristic = info_svc->createCharacteristic(
+                                      NimBLEUUID(UUID16_CHR_MANUFACTURER_NAME_STRING),
+                                      NIMBLE_PROPERTY::READ
+                                    );
 
       const char *Model         = hw_info.model == SOFTRF_MODEL_STANDALONE ? "Standalone Edition" :
                                   hw_info.model == SOFTRF_MODEL_PRIME_MK2  ? "Prime Mark II"      :
@@ -217,15 +221,15 @@ static void ESP32_Bluetooth_setup()
       pSoftwareCharacteristic->    setValue((uint8_t *) Software,     strlen(Software));
       pManufacturerCharacteristic->setValue((uint8_t *) Manufacturer, strlen(Manufacturer));
 
-      // Start the service
-      pService->start();
+      // Start the INFO service
+      info_svc->start();
 
 #if defined(USE_BLE_MIDI)
-      // Create the BLE Service
-      pService = pServer->createService(NimBLEUUID(MIDI_SERVICE_UUID));
+      // Create the BLE MIDI Service
+      NimBLEService *midi_svc = pServer->createService(NimBLEUUID(MIDI_SERVICE_UUID));
 
       // Create a BLE Characteristic
-      pMIDICharacteristic = pService->createCharacteristic(
+      pMIDICharacteristic = midi_svc->createCharacteristic(
                               NimBLEUUID(MIDI_CHARACTERISTIC_UUID),
                               NIMBLE_PROPERTY::READ   |
                               NIMBLE_PROPERTY::WRITE  |
@@ -233,8 +237,8 @@ static void ESP32_Bluetooth_setup()
                               NIMBLE_PROPERTY::WRITE_NR
                             );
 
-      // Start the service
-      pService->start();
+      // Start the MIDI service
+      midi_svc->start();
 #endif /* USE_BLE_MIDI */
 
       // Start advertising
@@ -280,7 +284,8 @@ static void ESP32_Bluetooth_setup()
       NimBLEAdvertisementData BLEAdvData;
       BLEAdvData.setFlags(0x06);
       BLEAdvData.setCompleteServices(NimBLEUUID(UART_SERVICE_UUID16));
-      BLEAdvData.setCompleteServices(NimBLEUUID(UUID16_SVC_BATTERY));
+//      BLEAdvData.setCompleteServices16( { NimBLEUUID(UART_SERVICE_UUID16),
+//                                          NimBLEUUID(UUID16_SVC_BATTERY) } );
       BLEAdvData.setName((BT_name+"-LE").c_str());
 #if defined(USE_BLE_MIDI)
       BLEAdvData.setCompleteServices(NimBLEUUID(MIDI_SERVICE_UUID));
