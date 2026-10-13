@@ -2731,6 +2731,7 @@ static void ESP32_setup()
     switch (hw_info.revision)
     {
       case 2:/* AG3352 */
+        /* TODO */
         break;
       case 1:/* L76K */
       default:
@@ -3887,6 +3888,20 @@ static void ESP32_loop()
 //    digitalWrite(SOC_GPIO_PIN_HELTRK_LED,
 //                 digitalRead(SOC_GPIO_PIN_HELTRK_GNSS_PPS));
 //  }
+
+  if (SOC_GPIO_PIN_GNSS_PPS == SOC_UNUSED_PIN      &&
+      esp32_board           == ESP32_ELECROW_TN_M5 &&
+      hw_info.revision      == 2                   &&
+      ESP32_has_gpio_extension) {
+    static bool prev_PPS_state = LOW;
+
+    bool PPS_state = pca9557->digitalRead(SOC_EXPIO_PIN_M5_GNSS_PPS);
+
+    if (PPS_state == HIGH && prev_PPS_state == LOW) {
+      SoC->GNSS_PPS_handler();
+    }
+    prev_PPS_state = PPS_state;
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3-S31 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
