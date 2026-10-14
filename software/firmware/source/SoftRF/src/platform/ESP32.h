@@ -699,7 +699,11 @@ extern const USB_Device_List_t supported_USB_devices[];
 #define USE_OLED
 //#define USE_USB_HOST
 //#define USE_LIB_RTLSDR
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+#define EXCLUDE_BLUETOOTH
+#else
 //#define USE_DSI
+#endif /* ESP_IDF_VERSION_MAJOR */
 #define USE_SENSORLIB_TOUCH
 //#define USE_CAMERA
 #endif /* P4 */

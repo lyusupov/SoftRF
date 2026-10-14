@@ -407,7 +407,11 @@ extern int32_t MAG_heading;
 #endif /* EXCLUDE_MAG */
 
 #include "soc/rtc.h"
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+static uint32_t calibrate_one(soc_clk_freq_calculation_src_t cal_clk, const char *name)
+#else
 static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
+#endif /* ESP_IDF_VERSION_MAJOR */
 {
     const uint32_t cal_count = 1000;
     const float factor = (1 << 19) * 1000.0f;
@@ -4741,7 +4745,9 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+    /* TODO */
+#elif defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR == 5
     extern esp_netif_t *get_esp_interface_netif(esp_interface_t interface);
 
     esp_netif_dhcps_option(
