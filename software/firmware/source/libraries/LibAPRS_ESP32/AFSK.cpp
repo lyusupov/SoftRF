@@ -10,10 +10,19 @@
 #include "fir_filter.h"
 
 #ifdef I2S_INTERNAL
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+#include <esp_adc/adc_oneshot.h>
+#include <driver/i2s_pdm.h>
+#else
 #include <driver/adc.h>
 #include <driver/i2s.h>
+#endif /* ESP_IDF_VERSION_MAJOR */
 #include <driver/rtc_io.h>
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+#include <esp_adc/adc_cali.h>
+#else
 #include "esp_adc_cal.h"
+#endif /* ESP_IDF_VERSION_MAJOR */
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C5)  && \
@@ -21,7 +30,8 @@
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
     !defined(CONFIG_IDF_TARGET_ESP32H4)  && \
-    !defined(CONFIG_IDF_TARGET_ESP32P4)
+    !defined(CONFIG_IDF_TARGET_ESP32P4)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 extern "C"
 {
 #include "soc/syscon_reg.h"
@@ -89,7 +99,9 @@ cppQueue adcq(sizeof(int8_t), 19200, IMPLEMENTATION); // Instantiate queue
     return (ret_val);                                                                 \
   }
 
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 i2s_event_t i2s_evt;
+#endif /* ESP_IDF_VERSION_MAJOR < 6 */
 static QueueHandle_t i2s_event_queue;
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -145,6 +157,7 @@ static esp_err_t adc_set_i2s_data_pattern(adc_unit_t adc_unit, int seq_num, adc_
 }
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
 {
   i2s_config_t i2s_config = {
@@ -278,6 +291,7 @@ void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS)
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 }
 #endif /* I2S_INTERNAL */
+#endif /* ESP_IDF_VERSION_MAJOR < 6 */
 
 #if !defined(I2S_INTERNAL) || defined(CONFIG_IDF_TARGET_ESP32S3)
 hw_timer_t *timer = NULL;
@@ -506,12 +520,14 @@ static void AFSK_txStart(Afsk *afsk)
     AFSK_DAC_IRQ_START();
 #if defined(ESP32)
 #if defined(I2S_INTERNAL)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
     i2s_zero_dma_buffer(I2S_NUM_0);
 #if defined(CONFIG_IDF_TARGET_ESP32)
     // i2s_adc_disable(I2S_NUM_0);
     dac_i2s_enable();
 #endif /* CONFIG_IDF_TARGET_ESP32 */
     // i2s_start(I2S_NUM_0);
+#endif /* ESP_IDF_VERSION_MAJOR < 6 */
 #endif /* I2S_INTERNAL */
 #endif /* ESP32 */
   }
@@ -1121,6 +1137,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
 
   if (hw_afsk_dac_isr)
   {
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 #if defined(I2S_INTERNAL)
     memset(pcm_out, 0, sizeof(pcm_out));
     for (x = 0; x < ADC_SAMPLES_COUNT; x++)
@@ -1230,6 +1247,7 @@ void AFSK_Poll(bool SA818, bool RFPower, uint8_t powerPin)
       }
     }
 #endif /* I2S_INTERNAL */
+#endif /* ESP_IDF_VERSION_MAJOR < 6 */
   }
   else
   {

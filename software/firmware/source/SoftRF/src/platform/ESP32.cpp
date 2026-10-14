@@ -30,7 +30,8 @@
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
     !defined(CONFIG_IDF_TARGET_ESP32H4)  && \
-    !defined(CONFIG_IDF_TARGET_ESP32P4)
+    !defined(CONFIG_IDF_TARGET_ESP32P4)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || H4 || P4 */
 #include <soc/efuse_reg.h>
@@ -52,6 +53,7 @@
 
 #include "../system/SoC.h"
 
+#if !defined(EXCLUDE_BLUETOOTH)
 #if defined(USE_NIMBLE)
 #include <NimBLEDevice.h>
 #else
@@ -59,6 +61,7 @@
 #include <BLEDevice.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 #endif /* USE_NIMBLE */
+#endif /* EXCLUDE_BLUETOOTH */
 
 #include "../system/Time.h"
 #include "../driver/Sound.h"

@@ -216,10 +216,17 @@ inline static uint8_t sinSample(uint16_t i)
 #include "pinout.h"
 
 #ifdef I2S_INTERNAL
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+#include "driver/i2s_pdm.h"
+#else
 #include "driver/i2s.h"
+#endif /* ESP_IDF_VERSION_MAJOR */
+
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 #if defined(CONFIG_IDF_TARGET_ESP32)
 #include "driver/dac.h"
 #endif
+#endif /* ESP_IDF_VERSION_MAJOR */
 
 #define SAMPLE_RATE SAMPLERATE //9580 ปรับชดเชยแซมปลิงค์ของ I2S
 #define PIN_I2S_BCLK    26
@@ -234,7 +241,10 @@ typedef enum
 } SampleIndex;
 /// @parameter MODE : I2S_MODE_RX or I2S_MODE_TX
 /// @parameter BPS : I2S_BITS_PER_SAMPLE_16BIT or I2S_BITS_PER_SAMPLE_32BIT
+
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 void I2S_Init(i2s_mode_t MODE, i2s_bits_per_sample_t BPS);
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* I2S_INTERNAL */
 
 typedef struct Hdlc

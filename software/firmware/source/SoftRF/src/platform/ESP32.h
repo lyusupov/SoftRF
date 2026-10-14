@@ -631,10 +631,14 @@ extern const USB_Device_List_t supported_USB_devices[];
 #undef USE_BLE_MIDI
 #undef ENABLE_PROL
 #if defined(CONFIG_IDF_TARGET_ESP32C5)
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+#define EXCLUDE_BLUETOOTH
+#else
 //#define EXCLUDE_BLUETOOTH
 #define USE_NIMBLE
 #define USE_NIMBLE_V2
 //#define USE_ARDUINOBLE
+#endif /* ESP_IDF_VERSION_MAJOR */
 //#undef EXCLUDE_SOFTRF_HEARTBEAT
 #undef EXCLUDE_TEST_MODE
 #define USE_NMEALIB
