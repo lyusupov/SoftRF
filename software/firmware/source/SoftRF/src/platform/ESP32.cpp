@@ -1840,7 +1840,7 @@ static void ESP32_setup()
     }
   } else if (hw_info.model == SOFTRF_MODEL_MIDI) {
 
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR == 5
     #define BOARD_F_XTAL_MHZ 26
 
     rtc_clk_xtal_freq_update((rtc_xtal_freq_t) BOARD_F_XTAL_MHZ);
@@ -2479,7 +2479,7 @@ static void ESP32_setup()
   Serial.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* ARDUINO_USB_CDC_ON_BOOT */
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   ui = &ui_settings;
 
   if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME)
@@ -2872,7 +2872,7 @@ static void ESP32_setup()
     hw_info.mag = (hw_info.imu == IMU_MPU9250) ? MAG_AK8963 : hw_info.mag;
 #endif /* EXCLUDE_IMU */
   }
-#endif /* CONFIG_IDF_TARGET_ESP32S3-S31 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32)
   if (esp32_board == ESP32_RADIOMASTER_XR1 ||
@@ -4193,12 +4193,12 @@ static void ESP32_fini(int reason)
              esp32_board == ESP32_LILYGO_T3S3_OLED) {
     WIRE_FINI(Wire);
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     pinMode(SOC_GPIO_PIN_T3S3_3V3EN,       OUTPUT);
     digitalWrite(SOC_GPIO_PIN_T3S3_3V3EN,  LOW);
     gpio_hold_en(GPIO_NUM_35);
     gpio_deep_sleep_hold_en();
-#endif /* CONFIG_IDF_TARGET_ESP32S3-S31 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
@@ -4378,7 +4378,7 @@ static void* ESP32_getResetInfoPtr()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : reset_info.reason = REASON_DEFAULT_RST; break;
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(CONFIG_IDF_TARGET_ESP32S31)
     case DEEPSLEEP_RESET        : reset_info.reason = REASON_DEEP_SLEEP_AWAKE; break;
     case TG0WDT_SYS_RESET       : reset_info.reason = REASON_WDT_RST; break;
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -4403,12 +4403,14 @@ static void* ESP32_getResetInfoPtr()
       break;
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
     case SW_RESET               : reset_info.reason = REASON_SOFT_RESTART; break;
     case OWDT_RESET             : reset_info.reason = REASON_WDT_RST; break;
     case SDIO_RESET             : reset_info.reason = REASON_EXCEPTION_RST; break;
     case TGWDT_CPU_RESET        : reset_info.reason = REASON_WDT_RST; break;
     case SW_CPU_RESET           : reset_info.reason = REASON_SOFT_RESTART; break;
     case EXT_CPU_RESET          : reset_info.reason = REASON_EXT_SYS_RST; break;
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : reset_info.reason = REASON_DEFAULT_RST;
   }
@@ -4421,7 +4423,7 @@ static String ESP32_getResetInfo()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("Vbat power on reset");
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(CONFIG_IDF_TARGET_ESP32S31)
     case DEEPSLEEP_RESET        : return F("Deep Sleep reset digital core");
     case TG0WDT_SYS_RESET       : return F("Timer Group0 Watch dog reset digital core");
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -4440,12 +4442,14 @@ static String ESP32_getResetInfo()
     case RTCWDT_RTC_RESET       : return F("RTC Watch dog reset digital core and rtc module");
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
     case SW_RESET               : return F("Software reset digital core");
     case OWDT_RESET             : return F("Legacy watch dog reset digital core");
     case SDIO_RESET             : return F("Reset by SLC module, reset digital core");
     case TGWDT_CPU_RESET        : return F("Time Group reset CPU");
     case SW_CPU_RESET           : return F("Software reset CPU");
     case EXT_CPU_RESET          : return F("for APP CPU, reseted by PRO CPU");
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : return F("No reset information available");
   }
@@ -4457,7 +4461,7 @@ static String ESP32_getResetReason()
   switch (rtc_get_reset_reason(0))
   {
     case POWERON_RESET          : return F("POWERON_RESET");
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32P4) && !defined(CONFIG_IDF_TARGET_ESP32S31)
     case DEEPSLEEP_RESET        : return F("DEEPSLEEP_RESET");
     case TG0WDT_SYS_RESET       : return F("TG0WDT_SYS_RESET");
 #if !defined(CONFIG_IDF_TARGET_ESP32C2)
@@ -4476,12 +4480,14 @@ static String ESP32_getResetReason()
     case RTCWDT_RTC_RESET       : return F("RTCWDT_RTC_RESET");
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
     case SW_RESET               : return F("SW_RESET");
     case OWDT_RESET             : return F("OWDT_RESET");
     case SDIO_RESET             : return F("SDIO_RESET");
     case TGWDT_CPU_RESET        : return F("TGWDT_CPU_RESET");
     case SW_CPU_RESET           : return F("SW_CPU_RESET");
     case EXT_CPU_RESET          : return F("EXT_CPU_RESET");
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
     default                     : return F("NO_MEAN");
   }
@@ -5314,6 +5320,7 @@ static void ESP32_swSer_begin(unsigned long baud)
       Serial.println(F(" is detected."));
       Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
                            TTGO_V2_PIN_GNSS_RX, TTGO_V2_PIN_GNSS_TX);
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
     } else if (esp32_board == ESP32_LILYGO_T_ELRS) {
       Serial.println(F("INFO: LilyGO T-Lora Dual is detected."));
       if (settings->mode == SOFTRF_MODE_UAV) {
@@ -5324,6 +5331,7 @@ static void ESP32_swSer_begin(unsigned long baud)
                              SOC_GPIO_PIN_ELRS_GNSS_RX,
                              SOC_GPIO_PIN_ELRS_GNSS_TX);
       };
+#endif /* ESP_IDF_VERSION_MAJOR */
 #endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
     } else if (esp32_board == ESP32_S2_T8_V1_1) {
@@ -6784,7 +6792,7 @@ static void ESP32_Battery_setup()
 #else
     /* TBD */
 #endif /* ESP_IDF_VERSION_MAJOR */
-#elif defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 5
     /* use this procedure on T-TWR Plus (has PMU) to calibrate audio ADC */
     if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 0) {
@@ -6866,7 +6874,8 @@ static void ESP32_Battery_setup()
       calibrate_voltage(SOC_GPIO_PIN_P4_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C61) || \
       defined(CONFIG_IDF_TARGET_ESP32H2)  || \
-      defined(CONFIG_IDF_TARGET_ESP32H4)
+      defined(CONFIG_IDF_TARGET_ESP32H4)  || \
+      defined(CONFIG_IDF_TARGET_ESP32S31)
     /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -6981,12 +6990,12 @@ static float ESP32_Battery_param(uint8_t param)
 
     case PMU_NONE:
     default:
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
       if (esp32_board == ESP32_ELECROW_TN_M2) {
         voltage = (float) adc2_read_voltage();
         voltage *= 1.5;
       } else
-#endif /* CONFIG_IDF_TARGET_ESP32S3-S31 */
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
       {
         voltage = (float) read_voltage();
 

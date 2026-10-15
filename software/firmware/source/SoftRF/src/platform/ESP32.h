@@ -574,7 +574,9 @@ struct rst_info {
 #define EXCLUDE_NRF905
 
 /* Experimental */
+#if !defined(ESP_IDF_VERSION_MAJOR) || ESP_IDF_VERSION_MAJOR < 6
 //#define USE_ADAFRUIT_MSC
+#endif /* ESP_IDF_VERSION_MAJOR */
 //#define USE_USB_HOST
 
 #if defined(USE_USB_HOST)
@@ -686,6 +688,15 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
 #define EXCLUDE_BLUETOOTH
 #endif /* S2 */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S31)
+#define EXCLUDE_BLUETOOTH
+#define EXCLUDE_VOICE_MESSAGE
+#undef USE_SA8X8
+#undef CONFIG_IDF_TARGET_ESP32
+#undef USE_OLED
+#undef USE_TFT
+#endif /* S31 */
 
 #if defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32H4)
 #define EXCLUDE_WIFI
