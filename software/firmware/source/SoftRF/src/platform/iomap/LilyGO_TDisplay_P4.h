@@ -83,6 +83,24 @@
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_MDIO    52
 #define SOC_GPIO_PIN_TDP4_ETH_PHY_RST     -1 /* XL P05 */
 
+/* CON1 2.54-2x8 : 25, 26, 27, 32, 33, 36, 53, 54 */
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO25      25
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO26      26
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO27      27
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO32      32
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO33      33
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO36      36
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO53      53
+#define SOC_GPIO_PIN_TDP4_2X8_GPIO54      54
+
+/* CON2 1.0-4 : 45, 46 */
+#define SOC_GPIO_PIN_TDP4_CNC2_GPIO45     45
+#define SOC_GPIO_PIN_TDP4_CNC2_GPIO46     46
+
+/* CON3 1.0-4 : 47, 48 */
+#define SOC_GPIO_PIN_TDP4_CNC3_GPIO47     47
+#define SOC_GPIO_PIN_TDP4_CNC3_GPIO48     48
+
 /* GPIO expansion (XL9535) */
 #define SOC_EXPIO_TDP4_3V3_EN             IO0  // P00
 #define SOC_EXPIO_TDP4_RFSW_VCTL          IO1  // P01
@@ -101,7 +119,3 @@
 #define SOC_EXPIO_TDP4_SD_EN              IO13 // P15
 #define SOC_EXPIO_TDP4_RADIO_RST          IO14 // P16
 #define SOC_EXPIO_TDP4_RADIO_DIO          IO15 // P17
-
-/* CON 2.54-2x8 : 25, 26, 27, 32, 33, 36, 53, 54 */
-/* CON 1.0-4    : 45, 46 */
-/* CON 1.0-4    : 47, 48 */
