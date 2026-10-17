@@ -2565,10 +2565,19 @@ static void lr20xx_setup()
                                rfswitch_table_ELRS);
     break;
 
+  case SOFTRF_MODEL_CONCORDE:
+    if (SoC->getChipId() == 0xa0e1bf01) {
+      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V02,
+                                 rfswitch_table_MXD8721_V02);
+    } else {
+      radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V03,
+                                 rfswitch_table_MXD8721_V03);
+    }
+    break;
+
   case SOFTRF_MODEL_BADGE:
   case SOFTRF_MODEL_PRIME_MK2:
   case SOFTRF_MODEL_PRIME_MK3:
-  case SOFTRF_MODEL_CONCORDE:
     radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V03,
                                rfswitch_table_MXD8721_V03);
     break;

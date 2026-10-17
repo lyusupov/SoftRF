@@ -2244,7 +2244,34 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
-    pinMode(SOC_GPIO_PIN_TDP4_XL9_INT, INPUT);
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, OUTPUT); // RST
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT);  // BUSY
+
+    digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO27, LOW);
+
+    delay(10);
+
+    if (digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO33) == HIGH) {
+      digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO27, HIGH);
+
+      delay(50);
+
+      if (digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO33) == LOW) {
+        lmic_pins.nss  = SOC_GPIO_PIN_TDP4_2X8_GPIO36;
+        lmic_pins.rst  = SOC_GPIO_PIN_TDP4_2X8_GPIO27;
+        lmic_pins.busy = SOC_GPIO_PIN_TDP4_2X8_GPIO33;
+#if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
+        lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_2X8_GPIO25;
+
+        if (lmic_pins.dio[0] == LMIC_UNUSED_PIN) {
+          pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO25, INPUT);
+        }
+#endif /* USE_RADIOLIB || USE_RADIOHEAD */
+      }
+    }
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, INPUT);
+
+    pinMode(SOC_GPIO_PIN_TDP4_XL9_INT,    INPUT);
 
     xl9535 = new ExtensionIOXL9555();
     ESP32_has_gpio_extension = xl9535->begin(TDP4_IIC_1, XL9535_ADDRESS,
@@ -3203,7 +3230,8 @@ static void ESP32_post_init()
     Serial.print(F("RADIO    : "));
     Serial.println(hw_info.rf      == RF_IC_SX1262 ||
                    hw_info.rf      == RF_IC_SX1276 ||
-                   hw_info.rf      == RF_IC_LR1121     ? F("PASS") : F("FAIL"));
+                   hw_info.rf      == RF_IC_LR1121 ||
+                   hw_info.rf      == RF_IC_LR2021     ? F("PASS") : F("FAIL"));
     Serial.flush();
     Serial.print(F("GNSS     : "));
     Serial.println(hw_info.gnss    != GNSS_MODULE_NONE ? F("PASS") : F("FAIL"));
@@ -8727,7 +8755,11 @@ bool ESP32C3_radio_irq_func(int pin)
 bool ESP32P4_radio_irq_func(int pin)
 {
   if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
-    return xl9535->digitalRead(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO);
+    if (SoC->getChipId() == 0xa0e1bf01) {
+      return digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO25);
+    } else {
+      return xl9535->digitalRead(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO);
+    }
   } else {
     return digitalRead(pin);
   }
