@@ -2566,7 +2566,8 @@ static void lr20xx_setup()
     break;
 
   case SOFTRF_MODEL_CONCORDE:
-    if (SoC->getChipId() == 0xa0e1bf01) {
+    if (SoC->getChipId() == 0xa0e1bf01 /* AMOLED */ ||
+        SoC->getChipId() == 0xa0e1d7e7 /* TFT    */) {
       radio_g4->setRfSwitchTable(rfswitch_dio_pins_MXD8721_V02,
                                  rfswitch_table_MXD8721_V02);
     } else {

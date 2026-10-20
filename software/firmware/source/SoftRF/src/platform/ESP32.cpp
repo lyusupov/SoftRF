@@ -2244,8 +2244,8 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, OUTPUT); // RST
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT);  // BUSY
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, OUTPUT);         // RST
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT_PULLDOWN); // BUSY
 
     digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO27, LOW);
 
@@ -2270,6 +2270,7 @@ static void ESP32_setup()
       }
     }
     pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, INPUT);
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT);
 
     pinMode(SOC_GPIO_PIN_TDP4_XL9_INT,    INPUT);
 
@@ -2984,9 +2985,14 @@ static void ESP32_setup()
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_DSI_RST,  HIGH);
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_RST,   HIGH);
 
+      /* Reset sub-1GHz radio */
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_RST, OUTPUT);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_RST, LOW);
+
       delay(200);
 
-      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN,  HIGH);
+      xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_RST, HIGH);
 
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_TP_INT,    INPUT);
       xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_SENS_INT,  INPUT);
@@ -4334,6 +4340,8 @@ static void ESP32_fini(int reason)
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
     if (ESP32_has_gpio_extension) {
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_SLAVE_EN, LOW);
+
+      xl9535->pinMode(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_RST, INPUT);
 
       /* Put Quectel L76K GNSS into sleep */
       xl9535->digitalWrite(ExtensionIOXL9555::SOC_EXPIO_TDP4_GNSS_WKE, LOW);
@@ -8755,7 +8763,7 @@ bool ESP32C3_radio_irq_func(int pin)
 bool ESP32P4_radio_irq_func(int pin)
 {
   if (esp32_board == ESP32_LILYGO_TDISPLAY_P4) {
-    if (SoC->getChipId() == 0xa0e1bf01) {
+    if (lmic_pins.nss == SOC_GPIO_PIN_TDP4_2X8_GPIO36) {
       return digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO25);
     } else {
       return xl9535->digitalRead(ExtensionIOXL9555::SOC_EXPIO_TDP4_RADIO_DIO);
