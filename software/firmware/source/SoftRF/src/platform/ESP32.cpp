@@ -2244,21 +2244,21 @@ static void ESP32_setup()
     lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_DIO;
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
 
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, OUTPUT);         // RST
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT_PULLDOWN); // BUSY
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO53, OUTPUT); // RST
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT);  // BUSY
 
-    digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO27, LOW);
+    digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO53, LOW);
 
     delay(10);
 
     if (digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO33) == HIGH) {
-      digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO27, HIGH);
+      digitalWrite(SOC_GPIO_PIN_TDP4_2X8_GPIO53, HIGH);
 
       delay(50);
 
       if (digitalRead(SOC_GPIO_PIN_TDP4_2X8_GPIO33) == LOW) {
         lmic_pins.nss  = SOC_GPIO_PIN_TDP4_2X8_GPIO36;
-        lmic_pins.rst  = SOC_GPIO_PIN_TDP4_2X8_GPIO27;
+        lmic_pins.rst  = SOC_GPIO_PIN_TDP4_2X8_GPIO53;
         lmic_pins.busy = SOC_GPIO_PIN_TDP4_2X8_GPIO33;
 #if defined(USE_RADIOLIB) || defined(USE_RADIOHEAD)
         lmic_pins.dio[0] = SOC_GPIO_PIN_TDP4_2X8_GPIO25;
@@ -2269,8 +2269,7 @@ static void ESP32_setup()
 #endif /* USE_RADIOLIB || USE_RADIOHEAD */
       }
     }
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO27, INPUT);
-    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO33, INPUT);
+    pinMode(SOC_GPIO_PIN_TDP4_2X8_GPIO53, INPUT);
 
     pinMode(SOC_GPIO_PIN_TDP4_XL9_INT,    INPUT);
 
