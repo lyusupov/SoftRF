@@ -1162,6 +1162,7 @@ static void nRF52_setup()
     case NRF52_NORDIC_PCA10059:
       digitalWrite(SOC_GPIO_PIN_IO_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_IO_PWR, OUTPUT); /* VDD_POWR is ON */
+    case NRF52_RADIODDITY_NODARA:
     default:
       Wire.setPins(SOC_GPIO_PIN_SDA, SOC_GPIO_PIN_SCL);
       break;
@@ -1237,6 +1238,7 @@ static void nRF52_setup()
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
     case NRF52_ELECROW_TN_M8:
+    case NRF52_RADIODDITY_NODARA:
       FlashTrans = new Adafruit_FlashTransport_QSPI(SOC_GPIO_PIN_SFL_SCK,
                                                     SOC_GPIO_PIN_SFL_SS,
                                                     SOC_GPIO_PIN_SFL_MOSI,
@@ -1884,6 +1886,7 @@ static void nRF52_setup()
         case NRF52_LILYGO_TECHO_PLUS:
         case NRF52_ELECROW_TN_M1:
         case NRF52_NORDIC_PCA10059:
+        case NRF52_RADIODDITY_NODARA:
         default:
           pinMode(SOC_GPIO_PIN_R_INT, INPUT);
           break;
@@ -3258,6 +3261,7 @@ static void nRF52_fini(int reason)
     case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_ELECROW_TN_M1:
     case NRF52_NORDIC_PCA10059:
+    case NRF52_RADIODDITY_NODARA:
     default:
       pinMode(SOC_GPIO_PIN_SDA, INPUT);
       pinMode(SOC_GPIO_PIN_SCL, INPUT);
@@ -3787,6 +3791,7 @@ static void nRF52_EEPROM_extension(int cmd)
         case NRF52_LILYGO_TIMPULSE_PLUS:
         case NRF52_SEEED_T1000E:
         case NRF52_SEEED_X1:
+        case NRF52_RADIODDITY_NODARA:
           if (settings->nmea_out == NMEA_UART) {
             settings->nmea_out = NMEA_BLUETOOTH;
           }
@@ -3876,6 +3881,7 @@ static void nRF52_SPI_begin()
     case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
+    case NRF52_RADIODDITY_NODARA:
     default:
       SPI.setPins(SOC_GPIO_PIN_TECHO_REV_0_MISO,
                   SOC_GPIO_PIN_TECHO_REV_0_SCK,
@@ -3942,6 +3948,7 @@ static void nRF52_swSer_begin(unsigned long baud)
     case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
     case NRF52_ELECROW_TN_M1:
+    case NRF52_RADIODDITY_NODARA:
     default:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
       break;
@@ -4196,6 +4203,7 @@ static byte nRF52_Display_setup()
       case NRF52_LILYGO_TECHO_PLUS:
       case NRF52_ELECROW_TN_M1:
       case NRF52_ELECROW_TN_M8:
+      case NRF52_RADIODDITY_NODARA:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                      SOC_GPIO_PIN_EPD_SCK,
@@ -4692,6 +4700,7 @@ static float nRF52_Battery_param(uint8_t param)
         case NRF52_LILYGO_TECHO_REV_2:
         case NRF52_LILYGO_TECHO_PLUS:
         case NRF52_NORDIC_PCA10059:
+        case NRF52_RADIODDITY_NODARA:
         default:
           bat_adc_pin = SOC_GPIO_PIN_BATTERY;
           mult        = SOC_ADC_VOLTAGE_DIV;

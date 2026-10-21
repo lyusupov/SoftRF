@@ -17,7 +17,7 @@
 #define SOC_GPIO_PIN_M5_GNSS_RINT   11 /* V2 */
 
 #define SOC_GPIO_PIN_M5_GNSS_RST    13 // active: LOW for L76K, HIGH for AG3352
-#define SOC_GPIO_PIN_M5_GNSS_SW     10
+#define SOC_GPIO_PIN_M5_GNSS_SW     10 /* V1 */
 
 /* SPI */
 #define SOC_GPIO_PIN_M5_MOSI        15
