@@ -251,6 +251,7 @@ enum {
   GD25Q64C_INDEX,
 #if !defined(EXCLUDE_WIP)
   P25Q16H_INDEX,
+  P25Q32H_INDEX,
 #endif /* EXCLUDE_WIP */
   EXTERNAL_FLASH_DEVICE_COUNT
 };
@@ -271,6 +272,8 @@ static SPIFlash_Device_t possible_devices[] = {
 #if !defined(EXCLUDE_WIP)
   // Seeed Wio L1
   [P25Q16H_INDEX]    = P25Q16H,
+  // Radioddity Nodara
+  [P25Q32H_INDEX]    = P25Q32H,
 #endif /* EXCLUDE_WIP */
 };
 
@@ -867,6 +870,7 @@ static void nRF52_setup()
 #if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("T2000")          ? NRF52_SEEED_T2000          :
                 nRF52_bl_check("TRACKER L1")     ? NRF52_SEEED_WIO_L1         :
+                nRF52_bl_check("NODARA")         ? NRF52_RADIODDITY_NODARA    :
 #endif /* EXCLUDE_WIP */
                 nRF52_board;
 
@@ -1329,6 +1333,9 @@ static void nRF52_setup()
     case NRF52_HELTEC_T1:
       /* TBD */
       break;
+    case NRF52_RADIODDITY_NODARA:
+      /* TBD */
+      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
     case NRF52_SEEED_X1:
@@ -1392,6 +1399,15 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_M8_ADC_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_EPD_M8_EN, HIGH);
       pinMode(SOC_GPIO_PIN_EPD_M8_EN, OUTPUT);
+      /* TBD */
+      break;
+    case NRF52_RADIODDITY_NODARA:
+      digitalWrite(SOC_GPIO_PIN_ND_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_ND_ADC_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_EPD_ND_PWR, LOW);
+      pinMode(SOC_GPIO_PIN_EPD_ND_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_PWR, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, OUTPUT);
       /* TBD */
       break;
 #endif /* EXCLUDE_WIP */
@@ -1615,6 +1631,27 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_RST, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_ND_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_ND_BLUE,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_ND_GREEN);
+      ledOff(SOC_GPIO_LED_ND_BLUE);
+
+      lmic_pins.rst = SOC_GPIO_PIN_ND_RST;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_ND_DIO1;
+#endif /* USE_RADIOLIB */
+
+      hw_info.revision = 3; /* Unknown */
       break;
 #endif /* EXCLUDE_WIP */
 

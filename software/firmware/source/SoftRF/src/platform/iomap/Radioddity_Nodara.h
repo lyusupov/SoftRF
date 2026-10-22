@@ -65,4 +65,18 @@
 
 /* ADC */
 #define SOC_GPIO_PIN_ND_BATTERY   _PINNUM(0,  4) // P0.04 (AIN2)
-#define SOC_GPIO_PIN_ND_VBAT_EN   _PINNUM(0, 15) // P0.15 active HIGH
+#define SOC_GPIO_PIN_ND_ADC_EN    _PINNUM(0, 15) // P0.15 active HIGH
+
+// Settings for the Puya Semiconductor P25Q32H 4MiB QSPI flash.
+// Datasheet:
+// https://datasheet.lcsc.com/lcsc/1912111437_-PUYA--P25Q32H-UXH-IR_C414068.pdf
+#define P25Q32H                                                                \
+  {                                                                            \
+    .total_size = (1 << 22), /* 4 MiB */                                       \
+        .start_up_time_us = 5000, .manufacturer_id = 0x85,                     \
+    .memory_type = 0x60, .capacity = 0x16, .max_clock_speed_mhz = 104,         \
+    .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
+    .supports_fast_read = true, .supports_qspi = true,                         \
+    .supports_qspi_writes = true, .write_status_register_split = true,         \
+    .single_status_byte = false, .is_fram = false,                             \
+  }
