@@ -100,6 +100,8 @@ enum nRF52_display_id {
   EP_GDEH0154D67,
   EP_GDEP015OC1,
   EP_DEPG0150BN,
+  EP_GDEM0213B74,
+  EP_DEPG0213BN,
   TFT_LH114TIF03,
 };
 
@@ -326,6 +328,7 @@ struct rst_info {
 
 #define USE_EPAPER                 //  +    kb
 #define EPD_ASPECT_RATIO_1C1
+//#define EPD_ASPECT_RATIO_2C1
 #define USE_EPD_TASK
 #define USE_TIME_SLOTS
 

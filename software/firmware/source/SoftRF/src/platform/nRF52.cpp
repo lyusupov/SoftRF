@@ -4197,13 +4197,14 @@ static byte nRF52_Display_setup()
 #if SPI_INTERFACES_COUNT >= 2
     switch (nRF52_board)
     {
+      case NRF52_RADIODDITY_NODARA:
+        nRF52_display = EP_GDEM0213B74;
       case NRF52_LILYGO_TECHO_REV_0:
       case NRF52_LILYGO_TECHO_REV_1:
       case NRF52_LILYGO_TECHO_REV_2:
       case NRF52_LILYGO_TECHO_PLUS:
       case NRF52_ELECROW_TN_M1:
       case NRF52_ELECROW_TN_M8:
-      case NRF52_RADIODDITY_NODARA:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                      SOC_GPIO_PIN_EPD_SCK,
@@ -4234,6 +4235,24 @@ static byte nRF52_Display_setup()
                         SOC_GPIO_PIN_EPD_RST,
                         SOC_GPIO_PIN_EPD_BUSY));
       break;
+    case EP_GDEM0213B74:
+      display = new GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> (
+                      GxEPD2_213_B74(
+                        SOC_GPIO_PIN_EPD_SS,
+                        SOC_GPIO_PIN_EPD_DC,
+                        SOC_GPIO_PIN_EPD_RST,
+                        SOC_GPIO_PIN_EPD_BUSY));
+      break;
+#if 0
+    case EP_DEPG0213BN:
+      display = new GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT> (
+                      GxEPD2_213_BN(
+                        SOC_GPIO_PIN_EPD_SS,
+                        SOC_GPIO_PIN_EPD_DC,
+                        SOC_GPIO_PIN_EPD_RST,
+                        SOC_GPIO_PIN_EPD_BUSY));
+      break;
+#endif
     case EP_GDEH0154D67:
     default:
       display = new GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> (

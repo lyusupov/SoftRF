@@ -39,6 +39,7 @@ class GxEPD2
       GDE0213B1,  Waveshare_2_13_bw = GDE0213B1,
       GDEH0213B72,  Waveshare_2_13_bw_B72 = GDEH0213B72,
       GDEH0213B73,  Waveshare_2_13_bw_B73 = GDEH0213B73,
+      GDEM0213B74,
       GDEW0213I5F, Waveshare_2_13_flex = GDEW0213I5F,
       DEPG0213BN,
       GDEW026T0,  Waveshare_2_6_bw = GDEW026T0,

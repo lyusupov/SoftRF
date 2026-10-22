@@ -26,7 +26,7 @@
 #define SOC_GPIO_PIN_ND_BUSY      _PINNUM(0, 17) // P0.17
 #define SOC_GPIO_PIN_ND_PWR       _PINNUM(0, 13) // P0.13 active HIGH
 
-/* GDEM0213B74 E-paper (250?122) */
+/* GDEM0213B74 E-paper (250x122) */
 #define SOC_GPIO_PIN_EPD_ND_MISO  SOC_UNUSED_PIN // TBD
 #define SOC_GPIO_PIN_EPD_ND_MOSI  _PINNUM(0, 29) // P0.29
 #define SOC_GPIO_PIN_EPD_ND_SCK   _PINNUM(0, 31) // P0.31
@@ -49,7 +49,7 @@
 #define SOC_GPIO_PIN_ND_BUTTON6   _PINNUM(0, 11) // P0.11
 
 /* LEDs , active LOW */
-#define SOC_GPIO_LED_ND_RED       _PINNUM(0, 14) // P0.14
+#define SOC_GPIO_LED_ND_GREEN     _PINNUM(0, 14) // P0.14
 #define SOC_GPIO_LED_ND_BLUE      _PINNUM(1,  1) // P1.01
 
 /* P25Q32 QSPI flash */

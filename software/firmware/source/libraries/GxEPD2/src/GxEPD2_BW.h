@@ -20,6 +20,7 @@
 #include "epd/GxEPD2_213.h"
 #include "epd/GxEPD2_213_B72.h"
 #include "epd/GxEPD2_213_B73.h"
+#include "epd/GxEPD2_213_B74.h"
 #include "epd/GxEPD2_213_flex.h"
 #include "epd/GxEPD2_213_BN.h"
 #include "epd/GxEPD2_260.h"
