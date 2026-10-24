@@ -21,6 +21,7 @@
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
+#include "../driver/LED.h"
 #include "../TrafficHelper.h"
 #include "../driver/Battery.h"
 #include "../driver/EEPROM.h"
@@ -87,12 +88,21 @@ void EPD_status_setup()
 //  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-  memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
-#endif /* EPD_ASPECT_RATIO_1C1 */
+  switch (hw_info.display)
+  {
 #if defined(EPD_ASPECT_RATIO_2C1)
-  memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE) - 4);
+    case DISPLAY_EPD_2_13:
+      memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE) - 4);
+      break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+    case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+    default:
+      memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
+      break;
+  }
+
   navbox4.x = navbox3.width;
   navbox4.y = navbox3.y;
   navbox4.width  = navbox3.width;
@@ -156,20 +166,38 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox1.x + 25, navbox1.y + 52);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox1.x + 75, navbox1.y + 32);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox1.x + 75, navbox1.y + 32);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox1.x + 25, navbox1.y + 52);
+        break;
+    }
+
     display->print(navbox1.value);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox2.x + 15, navbox2.y + 52);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox2.x + 55, navbox2.y + 32);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox2.x + 55, navbox2.y + 32);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox2.x + 15, navbox2.y + 52);
+        break;
+    }
+
     display->print((float) navbox2.value / 10, 1);
 
     uint16_t middle_navboxes_x = navbox3.x;
@@ -198,22 +226,40 @@ static void EPD_Draw_NavBoxes()
 
     snprintf(buf, sizeof(buf), "%06X", navbox3.value);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox3.x +  5, navbox3.y + 50);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox3.x + 28, navbox3.y + 30);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox3.x + 28, navbox3.y + 30);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox3.x +  5, navbox3.y + 50);
+        break;
+    }
+
     display->print(buf);
 
     display->setFont(&FreeMonoBold18pt7b);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox4.x + 15, navbox4.y + 50);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox4.x + 55, navbox4.y + 30);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox4.x + 55, navbox4.y + 30);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox4.x + 15, navbox4.y + 50);
+        break;
+    }
+
     display->print(Protocol_ID[navbox4.value]);
 
     display->drawRoundRect( navbox5.x + 1, navbox5.y + 1,
@@ -235,20 +281,38 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox5.x + 25, navbox5.y + 50);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox5.x + 55, navbox5.y + 30);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox5.x + 55, navbox5.y + 30);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox5.x + 25, navbox5.y + 50);
+        break;
+    }
+
     display->print(navbox5.value);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox6.x + 25, navbox6.y + 50);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox6.x + 55, navbox6.y + 30);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox6.x + 55, navbox6.y + 30);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox6.x + 25, navbox6.y + 50);
+        break;
+    }
+
     if (settings->mode        == SOFTRF_MODE_RECEIVER  ||
         settings->rf_protocol == RF_PROTOCOL_ADSB_1090 ||
         settings->rf_protocol == RF_PROTOCOL_ADSB_UAT  ||

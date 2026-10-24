@@ -19,7 +19,7 @@
 #define SOC_GPIO_PIN_ND_SCK       _PINNUM(0, 19) // P0.19
 #define SOC_GPIO_PIN_ND_SS        _PINNUM(0, 24) // P0.24
 
-/* SX1262 */
+/* SX1262 , XTAL ? */
 #define SOC_GPIO_PIN_ND_RST       _PINNUM(0, 25) // P0.25
 #define SOC_GPIO_PIN_ND_DIO1      _PINNUM(0, 20) // P0.20
 #define SOC_GPIO_PIN_ND_DIO3      _PINNUM(0, 21) // P0.21
@@ -41,12 +41,12 @@
 #define SOC_GPIO_PIN_ND_SCL       _PINNUM(0, 27) // P0.27
 
 /* buttons , active LOW */
-#define SOC_GPIO_PIN_ND_BUTTON1   _PINNUM(1, 11) // P1.11
-#define SOC_GPIO_PIN_ND_BUTTON2   _PINNUM(0,  9) // P0.09 [NFC1]
-#define SOC_GPIO_PIN_ND_BUTTON3   _PINNUM(0,  6) // P0.06
-#define SOC_GPIO_PIN_ND_BUTTON4   _PINNUM(0,  8) // P0.08
-#define SOC_GPIO_PIN_ND_BUTTON5   _PINNUM(0, 10) // P0.10 [NFC2]
-#define SOC_GPIO_PIN_ND_BUTTON6   _PINNUM(0, 11) // P0.11
+#define SOC_GPIO_PIN_ND_BUTTON1   _PINNUM(1, 11) // P1.11 UP
+#define SOC_GPIO_PIN_ND_BUTTON2   _PINNUM(0,  9) // P0.09 LEFT , No NFC
+#define SOC_GPIO_PIN_ND_BUTTON3   _PINNUM(0,  6) // P0.06 RIGHT
+#define SOC_GPIO_PIN_ND_BUTTON4   _PINNUM(0,  8) // P0.08 DOWN
+#define SOC_GPIO_PIN_ND_BUTTON5   _PINNUM(0, 10) // P0.10 A    , No NFC
+#define SOC_GPIO_PIN_ND_BUTTON6   _PINNUM(0, 11) // P0.11 B
 
 /* LEDs , active LOW */
 #define SOC_GPIO_LED_ND_GREEN     _PINNUM(0, 14) // P0.14
@@ -60,7 +60,7 @@
 #define SOC_GPIO_PIN_SFL_ND_HOLD  _PINNUM(0,  5) // P0.05
 #define SOC_GPIO_PIN_SFL_ND_WP    _PINNUM(0,  7) // P0.07
 
-/* RTC */
+/* PCF8563 RTC */
 #define SOC_GPIO_PIN_RTC_ND_INT   _PINNUM(0, 16) // P0.16
 
 /* ADC */

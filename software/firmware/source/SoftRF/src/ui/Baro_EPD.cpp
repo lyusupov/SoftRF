@@ -21,6 +21,7 @@
 #if defined(USE_EPAPER)
 
 #include "../driver/EPD.h"
+#include "../driver/LED.h"
 #include "../driver/Baro.h"
 
 #include <Fonts/FreeMono12pt7b.h>
@@ -132,26 +133,34 @@ static void EPD_Draw_NavBoxes()
 
     display->setFont(&FreeMonoBold18pt7b);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    display->setCursor(navbox1.x + navbox1.width / 3 + 15, navbox1.y + 52);
-    display->print(navbox1.value);
-
-    display->setCursor(navbox2.x + navbox2.width / 3 + 15, navbox2.y + 52);
-    display->print(navbox2.value);
-
-    display->setCursor(navbox3.x + navbox3.width / 3 + 15, navbox3.y + 52);
-    display->print(navbox3.value);
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    display->setCursor(navbox1.x + navbox1.width / 2 + 17, navbox1.y + 32);
-    display->print(navbox1.value);
+      case DISPLAY_EPD_2_13:
+        display->setCursor(navbox1.x + navbox1.width / 2 + 17, navbox1.y + 32);
+        display->print(navbox1.value);
 
-    display->setCursor(navbox2.x + navbox2.width / 2 + 17, navbox2.y + 32);
-    display->print(navbox2.value);
+        display->setCursor(navbox2.x + navbox2.width / 2 + 17, navbox2.y + 32);
+        display->print(navbox2.value);
 
-    display->setCursor(navbox3.x + navbox3.width / 2 + 59, navbox3.y + 32);
-    display->print(navbox3.value);
+        display->setCursor(navbox3.x + navbox3.width / 2 + 59, navbox3.y + 32);
+        display->print(navbox3.value);
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setCursor(navbox1.x + navbox1.width / 3 + 15, navbox1.y + 52);
+        display->print(navbox1.value);
+
+        display->setCursor(navbox2.x + navbox2.width / 3 + 15, navbox2.y + 52);
+        display->print(navbox2.value);
+
+        display->setCursor(navbox3.x + navbox3.width / 3 + 15, navbox3.y + 52);
+        display->print(navbox3.value);
+        break;
+    }
 
 #if defined(USE_EPD_TASK)
     /* a signal to background EPD update task */

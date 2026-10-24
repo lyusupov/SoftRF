@@ -965,6 +965,20 @@ static void nRF52_setup()
       }
 
       break;
+
+    case NRF52_RADIODDITY_NODARA:
+      hw_info.model      = SOFTRF_MODEL_NODARA;
+      nRF5x_Device_Model = "Nodara Edition";
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_ND_BUTTON5, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
+
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_HELTEC_T114:
@@ -1408,6 +1422,8 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_EPD_ND_PWR, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_GNSS_ND_PWR, HIGH);
       pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_ND_PWR, HIGH); /* sub-1GHz */
+      pinMode(SOC_GPIO_PIN_ND_PWR, OUTPUT);
       /* TBD */
       break;
 #endif /* EXCLUDE_WIP */
@@ -3040,6 +3056,25 @@ static void nRF52_fini(int reason)
 
       pinMode(SOC_GPIO_PIN_T2000_VBAT_EN,   INPUT);
       break;
+
+    case NRF52_RADIODDITY_NODARA:
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_WKE, LOW);
+
+      digitalWrite(SOC_GPIO_LED_ND_GREEN, 1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_ND_BLUE,  1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_ND_GREEN,    INPUT);
+      pinMode(SOC_GPIO_LED_ND_BLUE,     INPUT);
+
+      pinMode(SOC_GPIO_PIN_SFL_ND_HOLD, INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_ND_WP,   INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_ND_SS,   INPUT);
+
+      pinMode(SOC_GPIO_PIN_ND_ADC_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_EPD_ND_PWR,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, INPUT);
+      pinMode(SOC_GPIO_PIN_ND_PWR,      INPUT); /* sub-1GHz */
+      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -3327,6 +3362,10 @@ static void nRF52_fini(int reason)
 
     case NRF52_HELTEC_T1:
       mode_button_pin = SOC_GPIO_PIN_T1_BUTTON1;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
       break;
 #endif /* EXCLUDE_WIP */
 
@@ -4256,22 +4295,8 @@ static byte nRF52_Display_setup()
 
     switch (nRF52_display)
     {
-    case EP_GDEP015OC1:
-      display = new GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> (
-                      GxEPD2_154(
-                        SOC_GPIO_PIN_EPD_SS,
-                        SOC_GPIO_PIN_EPD_DC,
-                        SOC_GPIO_PIN_EPD_RST,
-                        SOC_GPIO_PIN_EPD_BUSY));
-      break;
-    case EP_DEPG0150BN:
-      display = new GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT> (
-                      GxEPD2_150_BN(
-                        SOC_GPIO_PIN_EPD_SS,
-                        SOC_GPIO_PIN_EPD_DC,
-                        SOC_GPIO_PIN_EPD_RST,
-                        SOC_GPIO_PIN_EPD_BUSY));
-      break;
+#if defined(EPD_ASPECT_RATIO_2C1)
+#if !defined(EXCLUDE_WIP)
     case EP_GDEM0213B74:
       display = new GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> (
                       GxEPD2_213_B74(
@@ -4290,7 +4315,27 @@ static byte nRF52_Display_setup()
                         SOC_GPIO_PIN_EPD_BUSY));
       break;
 #endif
+#endif /* EXCLUDE_WIP */
+#endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+    case EP_GDEP015OC1:
+      display = new GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> (
+                      GxEPD2_154(
+                        SOC_GPIO_PIN_EPD_SS,
+                        SOC_GPIO_PIN_EPD_DC,
+                        SOC_GPIO_PIN_EPD_RST,
+                        SOC_GPIO_PIN_EPD_BUSY));
+      break;
+    case EP_DEPG0150BN:
+      display = new GxEPD2_BW<GxEPD2_150_BN, GxEPD2_150_BN::HEIGHT> (
+                      GxEPD2_150_BN(
+                        SOC_GPIO_PIN_EPD_SS,
+                        SOC_GPIO_PIN_EPD_DC,
+                        SOC_GPIO_PIN_EPD_RST,
+                        SOC_GPIO_PIN_EPD_BUSY));
+      break;
     case EP_GDEH0154D67:
+#endif /* EPD_ASPECT_RATIO_1C1 */
     default:
       display = new GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> (
                       GxEPD2_154_D67(
@@ -4317,7 +4362,24 @@ static byte nRF52_Display_setup()
 
       TaskInfoTime = millis();
 #endif
-      rval = DISPLAY_EPD_1_54;
+
+      switch (display->epd2.panel)
+      {
+#if defined(EPD_ASPECT_RATIO_2C1)
+        case GxEPD2::GDEM0213B74:
+        case GxEPD2::DEPG0213BN:
+          rval = DISPLAY_EPD_2_13;
+          break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+        case GxEPD2::GDEP015OC1:
+        case GxEPD2::GDEH0154D67:
+        case GxEPD2::DEPG0150BN:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+        default:
+          rval = DISPLAY_EPD_1_54;
+          break;
+      }
     }
 
     /* EPD back light off */
@@ -4941,6 +5003,10 @@ static void nRF52_Button_setup()
     case NRF52_HELTEC_T1:
       mode_button_pin = SOC_GPIO_PIN_T1_BUTTON1;
       // up_button_pin   = SOC_GPIO_PIN_T1_BUTTON2;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
       break;
 #endif /* EXCLUDE_WIP */
 

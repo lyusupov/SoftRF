@@ -80,6 +80,26 @@ bool EPD_setup(bool splash_screen)
   uint16_t tbw4, tbh4;
   uint16_t x, y;
 
+  byte dt = DISPLAY_NONE;
+
+  switch (display->epd2.panel)
+  {
+#if defined(EPD_ASPECT_RATIO_2C1)
+    case GxEPD2::GDEM0213B74:
+    case GxEPD2::DEPG0213BN:
+      dt = DISPLAY_EPD_2_13;
+      break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+    case GxEPD2::GDEP015OC1:
+    case GxEPD2::GDEH0154D67:
+    case GxEPD2::DEPG0150BN:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+    default:
+      dt = DISPLAY_EPD_1_54;
+      break;
+  }
+
   const char *partner_text = EPD_SoftRF_text3;
   uint8_t rotate           = ROTATE_270; /* 270 deg. is default angle */;
 
@@ -102,11 +122,21 @@ bool EPD_setup(bool splash_screen)
   display->fillScreen(GxEPD_WHITE);
 
 #if defined(EPD_ASPECT_RATIO_1C1) || defined(EPD_ASPECT_RATIO_2C1)
+  switch (dt)
+  {
+#if defined(EPD_ASPECT_RATIO_2C1)
+    case DISPLAY_EPD_2_13:
+      display->setFont(&FreeMonoBold18pt7b);
+      break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 #if defined(EPD_ASPECT_RATIO_1C1)
-  display->setFont(&FreeMonoBold24pt7b);
-#elif defined(EPD_ASPECT_RATIO_2C1)
-  display->setFont(&FreeMonoBold18pt7b);
-#endif
+    case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+    default:
+      display->setFont(&FreeMonoBold24pt7b);
+      break;
+  }
+
   display->getTextBounds(EPD_SoftRF_text1, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
   display->getTextBounds(partner_text    , 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
 
@@ -117,9 +147,11 @@ bool EPD_setup(bool splash_screen)
 
     x = (display->width()  - tbw1) / 2;
     y = (display->height() + tbh1) / 2 - tbh3;
-#if defined(EPD_ASPECT_RATIO_2C1)
-    y -= 10;
-#endif /* EPD_ASPECT_RATIO_2C1 */
+
+    if (dt == DISPLAY_EPD_2_13) {
+      y -= 10;
+    }
+
     display->setCursor(x, y);
     display->print(EPD_SoftRF_text1);
 
@@ -128,23 +160,36 @@ bool EPD_setup(bool splash_screen)
 
     x = (display->width()  - tbw2) / 2;
     y = (display->height() + tbh2) / 2;
-#if defined(EPD_ASPECT_RATIO_2C1)
-    y -= 10;
-#endif /* EPD_ASPECT_RATIO_2C1 */
+
+    if (dt == DISPLAY_EPD_2_13) {
+      y -= 10;
+    }
+
     display->setCursor(x, y);
     display->print(EPD_SoftRF_text2);
 
+    switch (dt)
+    {
+#if defined(EPD_ASPECT_RATIO_2C1)
+      case DISPLAY_EPD_2_13:
+        display->setFont(&FreeMonoBold18pt7b);
+        break;
+#endif /* EPD_ASPECT_RATIO_2C1 */
 #if defined(EPD_ASPECT_RATIO_1C1)
-    display->setFont(&FreeMonoBold24pt7b);
-#elif defined(EPD_ASPECT_RATIO_2C1)
-    display->setFont(&FreeMonoBold18pt7b);
-#endif
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        display->setFont(&FreeMonoBold24pt7b);
+        break;
+    }
 
     x = (display->width()  - tbw3) / 2;
     y = (display->height() + tbh3) / 2 + tbh3;
-#if defined(EPD_ASPECT_RATIO_2C1)
-    y -= 10;
-#endif /* EPD_ASPECT_RATIO_2C1 */
+
+    if (dt == DISPLAY_EPD_2_13) {
+      y -= 10;
+    }
+
     display->setCursor(x, y);
     display->print(partner_text);
   } else {
@@ -586,7 +631,6 @@ void EPD_fini(int reason, bool screen_saver)
     display_height = display->height();
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-
     if (display->epd2.panel == GxEPD2::DEPG0213BN) {
       if (display_width  == 128) display_width = 122;
       if (display_height == 128) {
@@ -651,21 +695,27 @@ void EPD_fini(int reason, bool screen_saver)
       display->print(msg);
 
 #if defined(EPD_ASPECT_RATIO_1C1)
-      x = (display_width  - 128) / 2;
-      y = (display_height - 128) / 2 - tbh / 2 + dy;
-      display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+      if (hw_info.display == DISPLAY_EPD_1_54) {
+        x = (display_width  - 128) / 2;
+        y = (display_height - 128) / 2 - tbh / 2 + dy;
+        display->drawBitmap(x, y, sleep_icon_128x128, 128, 128, GxEPD_BLACK);
+      }
 #endif /* EPD_ASPECT_RATIO_1C1 */
 
       display->setFont(&Org_01);
       display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
 
 #if defined(EPD_ASPECT_RATIO_1C1)
-      x =  5;
-      y += 128 + 17 + dy;
+      if (hw_info.display == DISPLAY_EPD_1_54) {
+        x =  5;
+        y += 128 + 17 + dy;
+      }
 #endif /* EPD_ASPECT_RATIO_1C1 */
 #if defined(EPD_ASPECT_RATIO_2C1)
-      x = 30;
-      y = (3 * display_height) / 4 + dy;
+      if (hw_info.display == DISPLAY_EPD_2_13) {
+        x = 30;
+        y = (3 * display_height) / 4 + dy;
+      }
 #endif /* EPD_ASPECT_RATIO_2C1 */
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text4);
@@ -799,9 +849,8 @@ void EPD_Message(const char *msg1, const char *msg2)
     int16_t dy              = 0;
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-
     if (display->epd2.panel == GxEPD2::DEPG0213BN) {
-      if (display_width  == 128) display_width  = 122;
+      if (display_width  == 128) display_width = 122;
       if (display_height == 128) {
         display_height = 122;
         if (display->getRotation() == ROTATE_90 ) { dy = 6; }

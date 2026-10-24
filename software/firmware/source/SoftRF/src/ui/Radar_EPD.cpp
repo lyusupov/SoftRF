@@ -81,24 +81,40 @@ static void EPD_Draw_Radar()
     display->setFont(&FreeMono9pt7b);
     display->getTextBounds("N", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-    uint16_t radar_x = 0;
-    uint16_t radar_y = (display_height - display_width) / 2;
-    uint16_t radar_w = display_width;
+    uint16_t radar_x;
+    uint16_t radar_y;
+    uint16_t radar_w;
 
-    uint16_t radar_center_x = radar_w / 2;
-    uint16_t radar_center_y = radar_y + radar_w / 2;
-    uint16_t radius = radar_w / 2 - 2;
-#endif /* EPD_ASPECT_RATIO_1C1 */
+    uint16_t radar_center_x;
+    uint16_t radar_center_y;
+    uint16_t radius;
+
+    switch (hw_info.display)
+    {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    uint16_t radar_x = (display_width - display_height) / 4;
-    uint16_t radar_y = 0 + dy;
-    uint16_t radar_w = (display_width + display_height) / 2;
+      case DISPLAY_EPD_2_13:
+        radar_x = (display_width - display_height) / 4;
+        radar_y = 0 + dy;
+        radar_w = (display_width + display_height) / 2;
 
-    uint16_t radar_center_x = radar_x + radar_w / 2;
-    uint16_t radar_center_y = radar_y + display_height - display_height / 4;
-    uint16_t radius = radar_w / 2 - 2;
+        radar_center_x = radar_x + radar_w / 2;
+        radar_center_y = radar_y + display_height - display_height / 4;
+        radius = radar_w / 2 - 2;
+        break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+      case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+      default:
+        radar_x = 0;
+        radar_y = (display_height - display_width) / 2;
+        radar_w = display_width;
+
+        radar_center_x = radar_w / 2;
+        radar_center_y = radar_y + radar_w / 2;
+        radius = radar_w / 2 - 2;
+        break;
+    }
 
     if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
       switch(EPD_zoom)
@@ -312,14 +328,23 @@ static void EPD_Draw_Radar()
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds("0", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-      x = radar_x + tbw / 2;
-      y = radar_y + radar_w - tbh;
-#endif /* EPD_ASPECT_RATIO_1C1 */
+      switch (hw_info.display)
+      {
 #if defined(EPD_ASPECT_RATIO_2C1)
-      x = 0 + tbw / 2;
-      y = display_height + dy - tbh;
+        case DISPLAY_EPD_2_13:
+          x = 0 + tbw / 2;
+          y = display_height + dy - tbh;
+          break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+        case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+        default:
+          x = radar_x + tbw / 2;
+          y = radar_y + radar_w - tbh;
+          break;
+      }
+
       display->setCursor(x, y);
 
       display->print(Traffic_Count());
@@ -333,14 +358,23 @@ static void EPD_Draw_Radar()
       display->setFont(&FreeMonoBold12pt7b);
       display->getTextBounds("00 ", 0, 0, &tbx, &tby, &tbw, &tbh);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-      x = radar_x + radar_w - tbw;
-      y = radar_y + radar_w - tbh;
-#endif /* EPD_ASPECT_RATIO_1C1 */
+      switch (hw_info.display)
+      {
 #if defined(EPD_ASPECT_RATIO_2C1)
-      x = display_width - tbw;
-      y = display_height + dy - tbh;
+        case DISPLAY_EPD_2_13:
+          x = display_width - tbw;
+          y = display_height + dy - tbh;
+          break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+        case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+        default:
+          x = radar_x + radar_w - tbw;
+          y = radar_y + radar_w - tbh;
+          break;
+      }
+
       display->setCursor(x, y);
 
       if (ui->units == UNITS_METRIC || ui->units == UNITS_MIXED) {
