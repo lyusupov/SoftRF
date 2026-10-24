@@ -705,18 +705,23 @@ void EPD_fini(int reason, bool screen_saver)
       display->setFont(&Org_01);
       display->getTextBounds(EPD_SoftRF_text4, 0, 0, &tbx, &tby, &tbw, &tbh);
 
-#if defined(EPD_ASPECT_RATIO_1C1)
-      if (hw_info.display == DISPLAY_EPD_1_54) {
-        x =  5;
-        y += 128 + 17 + dy;
-      }
-#endif /* EPD_ASPECT_RATIO_1C1 */
+      switch (hw_info.display)
+      {
 #if defined(EPD_ASPECT_RATIO_2C1)
-      if (hw_info.display == DISPLAY_EPD_2_13) {
-        x = 30;
-        y = (3 * display_height) / 4 + dy;
-      }
+        case DISPLAY_EPD_2_13:
+          x = 30;
+          y = (3 * display_height) / 4 + dy;
+          break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
+#if defined(EPD_ASPECT_RATIO_1C1)
+        case DISPLAY_EPD_1_54:
+#endif /* EPD_ASPECT_RATIO_1C1 */
+        default:
+          x =  5;
+          y += 128 + 17 + dy;
+          break;
+      }
+
       display->setCursor(x, y);
       display->print(EPD_SoftRF_text4);
 
