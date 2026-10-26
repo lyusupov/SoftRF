@@ -147,6 +147,7 @@ const prototype_entry_t techo_prototype_boards[] = {
   { 0xf4e0f04ded1892da, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* green  */
   { 0x65ab5994ea2c9094, NRF52_LILYGO_TECHO_REV_1, EP_GDEH0154D67, 0 }, /* blue   */
   { 0x6460429ea6fb7e39, NRF52_NORDIC_PCA10059,    EP_UNKNOWN,     0 },
+/*{ 0x85aa831f01d3e3e0, NRF52_RADIODDITY_NODARA,  EP_UNKNOWN,     0 },*/
 /*{ 0x0b0e14e96a3beb79, NRF52_ELECROW_TN_M1,      EP_GDEH0154D67, 0 },*/
 };
 
@@ -969,6 +970,7 @@ static void nRF52_setup()
     case NRF52_RADIODDITY_NODARA:
       hw_info.model      = SOFTRF_MODEL_NODARA;
       nRF5x_Device_Model = "Nodara Edition";
+      nRF52_display      = EP_GDEM0213B74;
 
       if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
@@ -2314,6 +2316,9 @@ static void nRF52_post_init()
     Serial.flush();
     Serial.print(F("DISPLAY : "));
     Serial.println(hw_info.display == DISPLAY_EPD_1_54  ||
+#if defined(EPD_ASPECT_RATIO_2C1)
+                   hw_info.display == DISPLAY_EPD_2_13  ||
+#endif /* EPD_ASPECT_RATIO_2C1 */
                    hw_info.display == DISPLAY_OLED_0_49 ||
                    hw_info.display == DISPLAY_EPD_3_71 ? F("PASS") : F("FAIL"));
     Serial.flush();
@@ -2627,15 +2632,22 @@ static void nRF52_post_init()
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
       nRF52_board == NRF52_LILYGO_TECHO_PLUS  ||
       nRF52_board == NRF52_ELECROW_TN_M1      ||
-      nRF52_board == NRF52_ELECROW_TN_M8) {
-    /* EPD back light on */
-    uint8_t bl_state = digitalRead(SOC_GPIO_PIN_EPD_BLGT);
-    if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+      nRF52_board == NRF52_ELECROW_TN_M8      ||
+      nRF52_board == NRF52_RADIODDITY_NODARA) {
+
+    uint8_t bl_state;
+    if (nRF52_board != NRF52_RADIODDITY_NODARA) {
+      /* EPD back light on */
+      bl_state = digitalRead(SOC_GPIO_PIN_EPD_BLGT);
+      if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, HIGH);
+    }
 
     EPD_info1();
 
-    /* EPD back light off */
-    if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+    if (nRF52_board != NRF52_RADIODDITY_NODARA) {
+      /* EPD back light off */
+      if (bl_state == LOW) digitalWrite(SOC_GPIO_PIN_EPD_BLGT, LOW);
+    }
 
     char key[8];
     char out[64];
@@ -3473,6 +3485,9 @@ static void nRF52_reset()
     switch (hw_info.display)
     {
 #if defined(USE_EPAPER)
+#if defined(EPD_ASPECT_RATIO_2C1)
+    case DISPLAY_EPD_2_13:
+#endif /* EPD_ASPECT_RATIO_2C1 */
     case DISPLAY_EPD_1_54:
 #if defined(USE_EPD_TASK)
       while (EPD_update_in_progress != EPD_UPDATE_NONE) { delay(100); }
@@ -4149,6 +4164,7 @@ static nRF52_display_id nRF52_EPD_ident()
  *  00 00 00 00 00 00 00 00 00 00 00 - DEPG0150BN
  *  00 00 40 20 10 00 40 03 00 00 00 - TBD (M1)
  *                                   - "20.05.21" (Plus)
+ *  00 00 00 00 00 00 00 00 00 00 00 - DEPG0213BN
  *
  *  0x2E:
  *  00 00 00 00 00 00 00 00 00 00    - C1
@@ -4158,6 +4174,7 @@ static nRF52_display_id nRF52_EPD_ident()
  *  00 00 00 00 00 00 00 00 00 00    - DEPG0150BN
  *  00 00 00 00 00 00 00 00 00 00    - TBD (M1)
  *                                   - "20.05.21" (Plus)
+ *  00 00 00 00 00 00 00 00 00 00    - DEPG0213BN
  */
 #endif
 
@@ -4172,7 +4189,7 @@ static nRF52_display_id nRF52_EPD_ident()
   }
 
   if (is_00) {
-    rval = EP_DEPG0150BN;
+    rval = nRF52_board == NRF52_RADIODDITY_NODARA ? EP_DEPG0213BN : EP_DEPG0150BN;
   }
 
   return rval;
@@ -4273,14 +4290,13 @@ static byte nRF52_Display_setup()
 #if SPI_INTERFACES_COUNT >= 2
     switch (nRF52_board)
     {
-      case NRF52_RADIODDITY_NODARA:
-        nRF52_display = EP_GDEM0213B74;
       case NRF52_LILYGO_TECHO_REV_0:
       case NRF52_LILYGO_TECHO_REV_1:
       case NRF52_LILYGO_TECHO_REV_2:
       case NRF52_LILYGO_TECHO_PLUS:
       case NRF52_ELECROW_TN_M1:
       case NRF52_ELECROW_TN_M8:
+      case NRF52_RADIODDITY_NODARA:
       default:
         SPI1.setPins(SOC_GPIO_PIN_EPD_MISO,
                      SOC_GPIO_PIN_EPD_SCK,
@@ -4382,11 +4398,13 @@ static byte nRF52_Display_setup()
       }
     }
 
-    /* EPD back light off */
-    pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
-    digitalWrite(SOC_GPIO_PIN_EPD_BLGT, nRF52_board == NRF52_ELECROW_TN_M1 ||
-                                        nRF52_board == NRF52_ELECROW_TN_M8 ?
-                                        HIGH : LOW);
+    if (nRF52_board != NRF52_RADIODDITY_NODARA) {
+      /* EPD back light off */
+      pinMode(SOC_GPIO_PIN_EPD_BLGT, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_EPD_BLGT, nRF52_board == NRF52_ELECROW_TN_M1 ||
+                                          nRF52_board == NRF52_ELECROW_TN_M8 ?
+                                          HIGH : LOW);
+    }
 #endif /* USE_EPAPER */
   }
 
@@ -4404,6 +4422,9 @@ static void nRF52_Display_loop()
   switch (hw_info.display)
   {
 #if defined(USE_EPAPER)
+#if defined(EPD_ASPECT_RATIO_2C1)
+  case DISPLAY_EPD_2_13:
+#endif /* EPD_ASPECT_RATIO_2C1 */
   case DISPLAY_EPD_1_54:
     EPD_loop();
 
@@ -4552,6 +4573,9 @@ static void nRF52_Display_fini(int reason)
   switch (hw_info.display)
   {
 #if defined(USE_EPAPER)
+#if defined(EPD_ASPECT_RATIO_2C1)
+  case DISPLAY_EPD_2_13:
+#endif /* EPD_ASPECT_RATIO_2C1 */
   case DISPLAY_EPD_1_54:
 
     EPD_fini(reason, screen_saver);
@@ -4577,7 +4601,10 @@ static void nRF52_Display_fini(int reason)
     pinMode(SOC_GPIO_PIN_EPD_DC,   INPUT);
     pinMode(SOC_GPIO_PIN_EPD_RST,  INPUT);
     // pinMode(SOC_GPIO_PIN_EPD_BUSY, INPUT);
-    pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
+
+    if (nRF52_board != NRF52_RADIODDITY_NODARA) {
+      pinMode(SOC_GPIO_PIN_EPD_BLGT, INPUT);
+    }
 
     break;
 #endif /* USE_EPAPER */
@@ -4713,6 +4740,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK3 ? BATTERY_THRESHOLD_LIPO   :
            hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_THRESHOLD_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NODARA   ? BATTERY_THRESHOLD_LIPO   :
                                                     BATTERY_THRESHOLD_NIMHX2;
     break;
 
@@ -4729,6 +4757,7 @@ static float nRF52_Battery_param(uint8_t param)
            hw_info.model == SOFTRF_MODEL_CARD_MK2 ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_CARD_MK3 ? BATTERY_CUTOFF_LIPO   :
            hw_info.model == SOFTRF_MODEL_STYLUS   ? BATTERY_CUTOFF_LIPO   :
+           hw_info.model == SOFTRF_MODEL_NODARA   ? BATTERY_CUTOFF_LIPO   :
                                                     BATTERY_CUTOFF_NIMHX2;
     break;
 
@@ -4933,7 +4962,7 @@ void handleEvent(AceButton* button, uint8_t eventType, uint8_t buttonState) {
       break;
     case AceButton::kEventDoubleClicked:
 #if defined(USE_EPAPER)
-      if (button == &button_1) {
+      if (button == &button_1 && nRF52_board != NRF52_RADIODDITY_NODARA) {
 //        Serial.println(F("kEventDoubleClicked."));
         digitalWrite(SOC_GPIO_PIN_EPD_BLGT,
                      digitalRead(SOC_GPIO_PIN_EPD_BLGT) == LOW);

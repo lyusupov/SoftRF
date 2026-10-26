@@ -209,9 +209,10 @@ bool EPD_setup(bool splash_screen)
   x = (display->width() - tbw4) / 2;
   y = display->height() - tbh4;
 #if defined(EPD_ASPECT_RATIO_2C1)
-  if (display->epd2.panel    == GxEPD2::DEPG0213BN &&
-      display->height()      == 128                &&
-      display->getRotation() == ROTATE_270) {
+  if ((display->epd2.panel    == GxEPD2::DEPG0213BN   ||
+       display->epd2.panel    == GxEPD2::GDEM0213B74) &&
+       display->height()      == 128                  &&
+       display->getRotation() == ROTATE_270) {
     y -= 6;
   }
 #endif /* EPD_ASPECT_RATIO_2C1 */
@@ -298,9 +299,10 @@ void EPD_info1()
     y = (tbh + INFO_1_LINE_SPACING - 2);
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-    if (display->epd2.panel    == GxEPD2::DEPG0213BN &&
-        display->height()      == 128                &&
-        display->getRotation() == ROTATE_90) {
+    if ((display->epd2.panel    == GxEPD2::DEPG0213BN   ||
+         display->epd2.panel    == GxEPD2::GDEM0213B74) &&
+         display->height()      == 128                  &&
+         display->getRotation() == ROTATE_90) {
       y += 6;
     }
 #endif /* EPD_ASPECT_RATIO_2C1 */
@@ -317,12 +319,15 @@ void EPD_info1()
 
     if (hw_info.model == SOFTRF_MODEL_BADGE    ||
         hw_info.model == SOFTRF_MODEL_HANDHELD ||
+        hw_info.model == SOFTRF_MODEL_NODARA   ||
         hw_info.model == SOFTRF_MODEL_AIRVENTURE) {
-      y += (tbh + INFO_1_LINE_SPACING);
+      if (hw_info.model != SOFTRF_MODEL_NODARA) {
+        y += (tbh + INFO_1_LINE_SPACING);
 
-      display->setCursor(x, y);
-      display->print(EPD_Display_text);
-      display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
+        display->setCursor(x, y);
+        display->print(EPD_Display_text);
+        display->print(hw_info.display != DISPLAY_NONE ? "+" : "-");
+      }
 
       y += (tbh + INFO_1_LINE_SPACING);
 
@@ -346,6 +351,7 @@ void EPD_info1()
     }
 
     if (hw_info.model != SOFTRF_MODEL_HANDHELD &&
+        hw_info.model != SOFTRF_MODEL_NODARA   &&
         hw_info.model != SOFTRF_MODEL_AIRVENTURE) {
       y += (tbh + INFO_1_LINE_SPACING);
 
@@ -631,7 +637,8 @@ void EPD_fini(int reason, bool screen_saver)
     display_height = display->height();
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-    if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+    if (display->epd2.panel == GxEPD2::DEPG0213BN ||
+        display->epd2.panel == GxEPD2::GDEM0213B74) {
       if (display_width  == 128) display_width = 122;
       if (display_height == 128) {
         display_height = 122;
@@ -854,7 +861,8 @@ void EPD_Message(const char *msg1, const char *msg2)
     int16_t dy              = 0;
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-    if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+    if (display->epd2.panel == GxEPD2::DEPG0213BN ||
+        display->epd2.panel == GxEPD2::GDEM0213B74) {
       if (display_width  == 128) display_width = 122;
       if (display_height == 128) {
         display_height = 122;

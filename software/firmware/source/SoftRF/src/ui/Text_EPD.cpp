@@ -192,7 +192,8 @@ static void EPD_Draw_Text()
       y += tbh;
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-      if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+      if (display->epd2.panel == GxEPD2::DEPG0213BN ||
+          display->epd2.panel == GxEPD2::GDEM0213B74) {
         if (display->height() == 128) {
           if (display->getRotation() == ROTATE_270 ) { y -= 6; }
         }
@@ -286,22 +287,9 @@ static void EPD_Draw_Text()
       {
 #if defined(EPD_ASPECT_RATIO_2C1)
         case DISPLAY_EPD_2_13:
-          y += 5;
-          break;
-#endif /* EPD_ASPECT_RATIO_2C1 */
-#if defined(EPD_ASPECT_RATIO_1C1)
-        case DISPLAY_EPD_1_54:
-#endif /* EPD_ASPECT_RATIO_1C1 */
-        default:
-          y += TEXT_VIEW_LINE_SPACING;
-          break;
-      }
-
-      switch (hw_info.display)
-      {
-#if defined(EPD_ASPECT_RATIO_2C1)
-        case DISPLAY_EPD_2_13:
           char tmp_buf[20];
+
+//          y += 5;
 
           snprintf(tmp_buf, sizeof(tmp_buf), "CoG %3d GS %3d %s",
                    (int) traffic_by_dist[EPD_current - 1].fop->course,
@@ -310,12 +298,16 @@ static void EPD_Draw_Text()
           y += tbh;
           display->setCursor(0, y);
           display->print(tmp_buf);
+
+//          y += 5;
           break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
 #if defined(EPD_ASPECT_RATIO_1C1)
         case DISPLAY_EPD_1_54:
 #endif /* EPD_ASPECT_RATIO_1C1 */
         default:
+          y += TEXT_VIEW_LINE_SPACING;
+
           snprintf(info_line, sizeof(info_line), "CoG %3d deg",
                    (int) traffic_by_dist[EPD_current - 1].fop->course);
           display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -332,20 +324,7 @@ static void EPD_Draw_Text()
           display->setCursor(x, y);
           display->print(info_line);
 //        Serial.println(info_line);
-          break;
-      }
 
-      switch (hw_info.display)
-      {
-#if defined(EPD_ASPECT_RATIO_2C1)
-        case DISPLAY_EPD_2_13:
-          y += 5;
-          break;
-#endif /* EPD_ASPECT_RATIO_2C1 */
-#if defined(EPD_ASPECT_RATIO_1C1)
-        case DISPLAY_EPD_1_54:
-#endif /* EPD_ASPECT_RATIO_1C1 */
-        default:
           y += TEXT_VIEW_LINE_SPACING;
           break;
       }

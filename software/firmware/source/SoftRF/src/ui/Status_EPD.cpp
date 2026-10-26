@@ -52,7 +52,8 @@ void EPD_status_setup()
   int16_t dy = 0;
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-  if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+  if (display->epd2.panel == GxEPD2::DEPG0213BN ||
+      display->epd2.panel == GxEPD2::GDEM0213B74) {
     if (display_width  == 128) display_width  = 122;
     if (display_height == 128) {
       display_height = 122;
@@ -88,15 +89,18 @@ void EPD_status_setup()
 //  navbox3.prev_value = navbox3.value;
   navbox3.timestamp  = millis();
 
-  switch (hw_info.display)
+  switch (display->epd2.panel)
   {
 #if defined(EPD_ASPECT_RATIO_2C1)
-    case DISPLAY_EPD_2_13:
+    case GxEPD2::GDEM0213B74:
+    case GxEPD2::DEPG0213BN:
       memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE) - 4);
       break;
 #endif /* EPD_ASPECT_RATIO_2C1 */
 #if defined(EPD_ASPECT_RATIO_1C1)
-    case DISPLAY_EPD_1_54:
+    case GxEPD2::GDEP015OC1:
+    case GxEPD2::GDEH0154D67:
+    case GxEPD2::DEPG0150BN:
 #endif /* EPD_ASPECT_RATIO_1C1 */
     default:
       memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));

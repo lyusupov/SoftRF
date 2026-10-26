@@ -44,7 +44,8 @@ void EPD_baro_setup()
   int16_t dy = 0;
 
 #if defined(EPD_ASPECT_RATIO_2C1)
-  if (display->epd2.panel == GxEPD2::DEPG0213BN) {
+  if (display->epd2.panel == GxEPD2::DEPG0213BN ||
+      display->epd2.panel == GxEPD2::GDEM0213B74) {
     if (display_width  == 128) display_width  = 122;
     if (display_height == 128) {
       display_height = 122;
