@@ -1723,6 +1723,9 @@ static void lr11xx_shutdown()
  */
 #define OPT_DF17 1
 
+#define RADIOLIB_LR2021_REG_OOK_QUIRK   (0xF30150)
+#define RADIOLIB_LR2021_REG_CRC_QUIRK   (0xF30844)
+
 static bool lr2021_probe(void);
 static void lr20xx_setup(void);
 static void lr20xx_channel(int8_t);
@@ -1875,6 +1878,69 @@ static void lr2021_GetVersion (uint8_t* major, uint8_t* minor) {
   Serial.print("major  = "); Serial.println(*major, HEX);
   Serial.print("minor  = "); Serial.println(*minor, HEX);
 #endif
+}
+
+static uint32_t lr2021_readRegMem32 (uint32_t addr) {
+  uint8_t buf[4] = { 0 };
+
+  hal_pin_busy_wait();
+  hal_spi_select(1);
+
+  hal_spi((uint8_t)((RADIOLIB_LR2021_CMD_READ_REG_MEM_32 & 0xFF00) >> 8));
+  hal_spi((uint8_t) (RADIOLIB_LR2021_CMD_READ_REG_MEM_32 & 0x00FF));
+
+  hal_spi((uint8_t)((addr & 0x00FF0000) >> 16));
+  hal_spi((uint8_t)((addr & 0x0000FF00) >>  8));
+  hal_spi((uint8_t) (addr & 0x000000FF)       );
+
+  hal_spi((uint8_t) 1);
+
+  hal_spi_select(0);
+
+  hal_pin_busy_wait();
+  hal_spi_select(1);
+
+  hal_spi(RADIOLIB_LR2021_CMD_NOP);
+  hal_spi(RADIOLIB_LR2021_CMD_NOP);
+  for (uint8_t i = 0; i < sizeof(buf); i++) {
+      buf[i] = hal_spi(0x00);
+  }
+  hal_spi_select(0);
+
+#if 0
+  Serial.print("buf[0] = "); Serial.println(buf[0], HEX);
+  Serial.print("buf[1] = "); Serial.println(buf[1], HEX);
+  Serial.print("buf[2] = "); Serial.println(buf[2], HEX);
+  Serial.print("buf[3] = "); Serial.println(buf[3], HEX);
+#endif
+
+  return ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) | ((uint32_t)buf[2] << 8) | (uint32_t)buf[3];
+}
+
+static void lr2021_writeRegMemMask32 (uint32_t addr, uint32_t mask, uint32_t data) {
+  hal_pin_busy_wait();
+  hal_spi_select(1);
+
+  hal_spi((uint8_t)((RADIOLIB_LR2021_CMD_WRITE_REG_MEM_MASK_32 & 0xFF00) >> 8));
+  hal_spi((uint8_t) (RADIOLIB_LR2021_CMD_WRITE_REG_MEM_MASK_32 & 0x00FF));
+
+  hal_spi((uint8_t)((addr & 0x00FF0000) >> 16));
+  hal_spi((uint8_t)((addr & 0x0000FF00) >>  8));
+  hal_spi((uint8_t) (addr & 0x000000FF)       );
+
+  hal_spi((uint8_t)((mask & 0xFF000000) >> 24));
+  hal_spi((uint8_t)((mask & 0x00FF0000) >> 16));
+  hal_spi((uint8_t)((mask & 0x0000FF00) >>  8));
+  hal_spi((uint8_t) (mask & 0x000000FF)       );
+
+  hal_spi((uint8_t)((data & 0xFF000000) >> 24));
+  hal_spi((uint8_t)((data & 0x00FF0000) >> 16));
+  hal_spi((uint8_t)((data & 0x0000FF00) >>  8));
+  hal_spi((uint8_t) (data & 0x000000FF)       );
+
+  hal_spi_select(0);
+
+  hal_pin_busy_wait();
 }
 
 static bool lr2021_probe()
@@ -2296,6 +2362,16 @@ static void lr20xx_setup()
 #endif /* OPT_DF17 == 2 */
 
     rl_state = radio_g4->setOokDetectionThreshold(-80); /* TODO */
+
+#if RADIOLIB_DEBUG_BASIC
+    Serial.print("REG [0xF30150] = ");
+    Serial.println(lr2021_readRegMem32(RADIOLIB_LR2021_REG_OOK_QUIRK), HEX);
+    Serial.print("REG [0xF30844] = ");
+    Serial.println(lr2021_readRegMem32(RADIOLIB_LR2021_REG_CRC_QUIRK), HEX);
+#endif
+
+    lr2021_writeRegMemMask32(RADIOLIB_LR2021_REG_OOK_QUIRK, 0x000000FF, 0x18);
+
     break;
 #endif /* EXCLUDE_ES1090 */
 
