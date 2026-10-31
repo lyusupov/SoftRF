@@ -37,8 +37,8 @@
 #define SOC_GPIO_PIN_TEC_INT       _PINNUM(1, 13) // P1.13 ICM20948
 
 /* button(s) */
-#define SOC_GPIO_PIN_TEC_BUTTON    _PINNUM(1, 10) // P1.10 active LOW
-#define SOC_GPIO_PIN_TEC_BOOT      _PINNUM(0, 24) // P0.24 active LOW
+#define SOC_GPIO_PIN_TEC_BUTTON    _PINNUM(0, 24) // P0.24 active LOW
+#define SOC_GPIO_PIN_TEC_BTN2      _PINNUM(1, 10) // P1.10 active LOW
 
 /* LED */
 #define SOC_GPIO_LED_TEC_LED       _PINNUM(1, 14) // P1.14

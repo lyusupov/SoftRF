@@ -73,7 +73,7 @@
 #define P25Q32H                                                                \
   {                                                                            \
     .total_size = (1 << 22), /* 4 MiB */                                       \
-        .start_up_time_us = 5000, .manufacturer_id = 0x85,                     \
+        .start_up_time_us = 10000, .manufacturer_id = 0x85,                    \
     .memory_type = 0x60, .capacity = 0x16, .max_clock_speed_mhz = 104,         \
     .quad_enable_bit_mask = 0x02, .has_sector_protection = false,              \
     .supports_fast_read = true, .supports_qspi = true,                         \

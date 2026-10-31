@@ -1914,33 +1914,19 @@ static uint32_t lr2021_readRegMem32 (uint32_t addr) {
   Serial.print("buf[3] = "); Serial.println(buf[3], HEX);
 #endif
 
-  return ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) | ((uint32_t)buf[2] << 8) | (uint32_t)buf[3];
+  return ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
+         ((uint32_t)buf[2] <<  8) |  (uint32_t)buf[3];
 }
 
-static void lr2021_writeRegMemMask32 (uint32_t addr, uint32_t mask, uint32_t data) {
-  hal_pin_busy_wait();
-  hal_spi_select(1);
-
-  hal_spi((uint8_t)((RADIOLIB_LR2021_CMD_WRITE_REG_MEM_MASK_32 & 0xFF00) >> 8));
-  hal_spi((uint8_t) (RADIOLIB_LR2021_CMD_WRITE_REG_MEM_MASK_32 & 0x00FF));
-
-  hal_spi((uint8_t)((addr & 0x00FF0000) >> 16));
-  hal_spi((uint8_t)((addr & 0x0000FF00) >>  8));
-  hal_spi((uint8_t) (addr & 0x000000FF)       );
-
-  hal_spi((uint8_t)((mask & 0xFF000000) >> 24));
-  hal_spi((uint8_t)((mask & 0x00FF0000) >> 16));
-  hal_spi((uint8_t)((mask & 0x0000FF00) >>  8));
-  hal_spi((uint8_t) (mask & 0x000000FF)       );
-
-  hal_spi((uint8_t)((data & 0xFF000000) >> 24));
-  hal_spi((uint8_t)((data & 0x00FF0000) >> 16));
-  hal_spi((uint8_t)((data & 0x0000FF00) >>  8));
-  hal_spi((uint8_t) (data & 0x000000FF)       );
-
-  hal_spi_select(0);
-
-  hal_pin_busy_wait();
+static int16_t lr2021_writeRegMemMask32(uint32_t addr, uint32_t mask, uint32_t data)
+{
+  uint8_t buf[11] = {
+    (uint8_t)(addr >> 16), (uint8_t)(addr >>  8), (uint8_t) addr,
+    (uint8_t)(mask >> 24), (uint8_t)(mask >> 16), (uint8_t)(mask >> 8), (uint8_t) mask,
+    (uint8_t)(data >> 24), (uint8_t)(data >> 16), (uint8_t)(data >> 8), (uint8_t) data,
+  };
+  return mod->SPIwriteStream(RADIOLIB_LR2021_CMD_WRITE_REG_MEM_MASK_32,
+                             buf, sizeof(buf), true, true);
 }
 
 static bool lr2021_probe()

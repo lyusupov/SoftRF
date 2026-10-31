@@ -1062,8 +1062,9 @@ void OLED_info1()
         delay(3000);
 
         const char buf[] = SOFTRF_FIRMWARE_VERSION;
-        int ndx = strlen(buf) - 3;
-        ndx = ndx < 0 ? 0 : ndx;
+        // int ndx = strlen(buf) - 3;
+        // ndx = ndx < 0 ? 0 : ndx;
+        int ndx = 0;
         u8x8->clear();
         u8x8->drawString  (4, 4, "VERSION");
         u8x8->draw2x2Glyph(5, 6, toupper(buf[ndx++]));

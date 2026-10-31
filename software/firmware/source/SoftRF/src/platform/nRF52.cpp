@@ -342,6 +342,7 @@ ui_settings_t *ui;
 #include <ICM_20948.h>
 #include <QMA6100P.h>
 #include <Adafruit_LIS3DH.h>
+#include <SensorQMI8658.hpp>
 #if !defined(EXCLUDE_BHI260)
 #include <SensorBHI260AP.hpp>
 #include <bosch/BoschSensorDataHelper.hpp>
@@ -363,6 +364,7 @@ QMA6100P        imu_3;
 SensorBHI260AP  imu_4;
 #endif /* EXCLUDE_BHI260 */
 Adafruit_LIS3DH imu_5;
+SensorQMI8658   imu_6;
 
 #if !defined(EXCLUDE_BHI260)
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
@@ -382,6 +384,13 @@ extern float   IMU_g;
 extern int32_t IMU_g_x10;
 #endif /* USE_OLED */
 #endif /* EXCLUDE_IMU */
+
+#if !defined(EXCLUDE_MAG)
+#if SENSORLIB_VERSION >= SENSORLIB_VERSION_VAL(0, 4, 1)
+#include <SensorQMC6309.hpp>
+SensorQMC6309   mag_1;
+#endif /* (0, 4, 1) */
+#endif /* EXCLUDE_MAG */
 
 #if SENSORLIB_VERSION == SENSORLIB_VERSION_VAL(0, 3, 1)
 #include <SensorDRV2605.hpp>
@@ -1834,7 +1843,7 @@ static void nRF52_setup()
 
 #if !defined(EXCLUDE_LED_RING)
       nRF52_Pixel.updateLength(1);
-      nRF52_Pixel.setPin(SOC_GPIO_LED_TEC_LED3);
+      nRF52_Pixel.setPin(SOC_GPIO_LED_TEC_LED2);
       nRF52_Pixel.begin();
       nRF52_Pixel.setPixelColor(0, LED_COLOR_GREEN);
       nRF52_Pixel.show();
