@@ -592,12 +592,14 @@ static void OLED_text()
     }
 
     int disp_dist = (int) (distance * 10);
+    if (disp_dist > 999) { disp_dist = 999; }
     if (disp_dist != prev_dist) {
       snprintf(info_line, sizeof(info_line), "%2d.%1d", disp_dist / 10, disp_dist % 10);
       u8x8->draw2x2String(3, 2, info_line);
       prev_dist = disp_dist;
     }
 
+    if (disp_alt > 9999) { disp_alt = 9999; }
     if (disp_alt != prev_alt) {
       if ((int) RelativeVertical >= 0) {
         u8x8->drawTile (0, 4, 1, (uint8_t *) Up_Tile1);

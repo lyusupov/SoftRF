@@ -1209,11 +1209,13 @@ static void ESP32_setup()
     /* reserved for DIO 11 of LilyGO LR2021 module */
     lmic_pins.dio[0] = SOC_GPIO_PIN_TBEAM_RF_DIO1_V08;
 #endif /* USE_RADIOLIB */
+#if defined(CONFIG_IDF_TARGET_ESP32)
   } else if (esp32_board == ESP32_DEVKIT) {
 #if defined(USE_RADIOLIB)
     /* reserved for DIO 11 of LilyGO LR2021 module */
     lmic_pins.dio[0] = SOC_GPIO_PIN_CE;
 #endif /* USE_RADIOLIB */
+#endif /* CONFIG_IDF_TARGET_ESP32 */
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
   } else if (esp32_board == ESP32_S2_T8_V1_1) {
     lmic_pins.nss  = SOC_GPIO_PIN_T8_S2_LORA_SS;
@@ -2616,17 +2618,21 @@ static void ESP32_setup()
 
   } else if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
 
+    gpio_deep_sleep_hold_dis();
+
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_1W_SS);
+
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_1W_GNSS_PPS);
+    pinMode(SOC_GPIO_PIN_1W_GNSS_PPS, INPUT);
+
     /* Wake up Quectel L76K GNSS */
+    gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_1W_GNSS_WAKE);
     digitalWrite(SOC_GPIO_PIN_1W_GNSS_WAKE, HIGH);
     pinMode(SOC_GPIO_PIN_1W_GNSS_WAKE, OUTPUT);
 
     /* turn on the radio power */
     digitalWrite(SOC_GPIO_PIN_1W_PWR_EN, HIGH);
     pinMode(SOC_GPIO_PIN_1W_PWR_EN, OUTPUT);
-
-    /* turn on radio cooling fan */
-    digitalWrite(SOC_GPIO_PIN_1W_FAN, HIGH);
-    pinMode(SOC_GPIO_PIN_1W_FAN, OUTPUT);
 
     pinMode(SOC_GPIO_PIN_1W_BUTTON_2, INPUT);
 
@@ -3360,6 +3366,14 @@ static void ESP32_post_init()
     }
   }
 #endif /* EXCLUDE_VOICE_MESSAGE */
+
+  if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
+    if (settings->txpower != RF_TX_POWER_OFF) {
+      /* turn on radio cooling fan */
+      digitalWrite(SOC_GPIO_PIN_1W_FAN, HIGH);
+      pinMode(SOC_GPIO_PIN_1W_FAN, OUTPUT);
+    }
+  }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
   Stream *Diag;
@@ -4193,15 +4207,31 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
     WIRE_FINI(Wire);
 
+    pinMode(SOC_GPIO_PIN_1W_SS,       OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_1W_SS,  HIGH);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_1W_SS);
+
     digitalWrite(SOC_GPIO_PIN_1W_GNSS_WAKE, LOW);
     gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_1W_GNSS_WAKE);
 
+    pinMode(SOC_GPIO_PIN_1W_GNSS_PPS, OUTPUT);
+    digitalWrite(SOC_GPIO_PIN_1W_GNSS_PPS, LOW);
+    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_1W_GNSS_PPS);
+
     /* turn off the radio power */
-    pinMode(SOC_GPIO_PIN_1W_PWR_EN, INPUT);
+    pinMode(SOC_GPIO_PIN_1W_PWR_EN,   INPUT);
 
     /* turn off radio cooling fan */
-    pinMode(SOC_GPIO_PIN_1W_FAN, INPUT);
+    pinMode(SOC_GPIO_PIN_1W_FAN,      INPUT);
 
+    pinMode(SOC_GPIO_PIN_1W_LED,      INPUT);
+
+    gpio_deep_sleep_hold_en();
+
+#if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+    esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
+                                 ESP_EXT1_WAKEUP_ALL_LOW);
+#endif /* CONFIG_IDF_TARGET_ESP32C2 || C3 */
   } else if (esp32_board == ESP32_HELTEC_TRACKER) {
     if (hw_info.revision < 5) {
       pinMode(SOC_GPIO_PIN_HELTRK_GNSS_EN, INPUT);

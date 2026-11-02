@@ -1066,7 +1066,7 @@ static void at65_loop()
 
 static void at65_fini()
 {
-
+  Serial_GNSS_Out.write("$PCAS12,0*1E\r\n"); /* standby */       delay(250);
 }
 
 const gnss_chip_ops_t at65_ops = {
