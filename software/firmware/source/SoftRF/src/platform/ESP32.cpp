@@ -4226,7 +4226,9 @@ static void ESP32_fini(int reason)
 
     pinMode(SOC_GPIO_PIN_1W_LED,      INPUT);
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
     gpio_deep_sleep_hold_en();
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C2) && !defined(CONFIG_IDF_TARGET_ESP32C3)
     esp_sleep_enable_ext1_wakeup(1ULL << SOC_GPIO_PIN_S3_BUTTON,
