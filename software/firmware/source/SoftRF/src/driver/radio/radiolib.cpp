@@ -2416,12 +2416,8 @@ static void lr20xx_setup()
     case RF_FREQUENCY_DEVIATION_25KHZ:
       fdev = 25.0;
       break;
-    case RF_FREQUENCY_DEVIATION_625KHZ:
-#if RADIOLIB_CHECK_PARAMS == 1
-      fdev = 500.0; /* FDEV = 500.0 kHz is a specified maximum for LR2021 */
-#else
-      fdev = 625.0;
-#endif
+    case RF_FREQUENCY_DEVIATION_312_5KHZ:
+      fdev = 312.5;
       break;
     case RF_FREQUENCY_DEVIATION_50KHZ:
     case RF_FREQUENCY_DEVIATION_NONE:

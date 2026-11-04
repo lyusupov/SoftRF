@@ -383,7 +383,7 @@ char *Settings_content() {
       snprintf_P ( offset, size,
         PSTR("\
 <option %s value='%d'>%s</option>\
-<!--<option %s value='%d'>%s</option>-->"), /* https://github.com/Lora-net/usp/issues/4 */
+<option %s value='%d'>%s</option>"),
       (settings->rf_protocol == RF_PROTOCOL_ADSB_1090 ? "selected" : ""),
        RF_PROTOCOL_ADSB_1090, es1090_proto_desc.name,
       (settings->rf_protocol == RF_PROTOCOL_ADSB_UAT  ? "selected" : ""),

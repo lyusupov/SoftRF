@@ -42,7 +42,7 @@ const rf_proto_desc_t uat978_proto_desc = {
   .crc_size        = UAT978_CRC_SIZE,
 
   .bitrate         = RF_BITRATE_1042KBPS,
-  .deviation       = RF_FREQUENCY_DEVIATION_625KHZ,
+  .deviation       = RF_FREQUENCY_DEVIATION_312_5KHZ,
   .whitening       = RF_WHITENING_NONE,
   .bandwidth       = RF_RX_BANDWIDTH_SS_1567KHZ,
 
